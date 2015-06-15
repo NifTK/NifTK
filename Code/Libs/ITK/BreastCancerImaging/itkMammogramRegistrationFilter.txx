@@ -14,7 +14,7 @@
 
 #ifndef __itkMammogramRegistrationFilter_txx
 #define __itkMammogramRegistrationFilter_txx
- 
+
 #include "itkMammogramRegistrationFilter.h"
 
 #include <QProcess>
@@ -49,7 +49,7 @@ namespace fs = boost::filesystem;
 
 namespace itk
 {
- 
+
 /* -----------------------------------------------------------------------
    Constructor
    ----------------------------------------------------------------------- */
@@ -59,6 +59,8 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>::MammogramRegistrationFil
 {
   m_FlgVerbose = false;
   m_FlgDebug = false;
+
+  m_FlgOverwrite = false;
 
   m_FlgRegisterNonRigid = false;
 
@@ -82,23 +84,23 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>::MammogramRegistrationFil
 
   this->SetNumberOfRequiredInputs( 4 );
   this->SetNumberOfRequiredOutputs( 2 );
- 
+
   this->SetNthOutput( 0, this->MakeOutput(0) );
   this->SetNthOutput( 1, this->MakeOutput(1) );
 }
- 
- 
+
+
 
 /* -----------------------------------------------------------------------
    MakeOutput()
    ----------------------------------------------------------------------- */
 
 template< class TInputImage, class TOutputImage >
-DataObject::Pointer 
+DataObject::Pointer
 MammogramRegistrationFilter<TInputImage, TOutputImage>::MakeOutput(unsigned int idx)
 {
   DataObject::Pointer output;
- 
+
   switch ( idx )
   {
 
@@ -115,7 +117,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>::MakeOutput(unsigned int 
 
   return output.GetPointer();
 }
- 
+
 
 /* -----------------------------------------------------------------------
    Print()
@@ -125,7 +127,7 @@ template< class TInputImage, class TOutputImage >
 void
 MammogramRegistrationFilter<TInputImage, TOutputImage>
 ::Print( void )
-{ 
+{
   std::cout << std::endl
             << "MammogramRegistrationFilter: " << std::endl;
 
@@ -133,7 +135,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     std::cout << "   Verbose output: YES" << std::endl;
   else
     std::cout << "   Verbose output: NO" << std::endl;
- 
+
   if ( m_FlgDebug )
     std::cout << "   Debug output: YES" << std::endl;
   else
@@ -143,59 +145,59 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     std::cout << "   NonRigid registration: YES" << std::endl;
   else
     std::cout << "   NonRigid registration: NO" << std::endl;
-  
+
   std::cout << "   Input images to register: " << m_TypeOfInputImagesToRegister << std::endl;
 
-  std::cout << "   The final control point spacing in mm: " 
+  std::cout << "   The final control point spacing in mm: "
             << m_ControlPointSpacing << std::endl;
 
-  std::cout << "   The number of multi-scale registration levels: " 
+  std::cout << "   The number of multi-scale registration levels: "
             << m_NumberOfLevels << std::endl;
-  std::cout << "   The number of multi-scale registration levels to use: " 
+  std::cout << "   The number of multi-scale registration levels to use: "
             << m_NumberOfLevelsToUse << std::endl;
 
-  std::cout << "   A working directory for storing any intermediate files: " 
+  std::cout << "   A working directory for storing any intermediate files: "
             << m_DirWorking << std::endl;
-  std::cout << "   A directory to look for executables in: " 
+  std::cout << "   A directory to look for executables in: "
             << m_DirExecutable << std::endl;
 
-  std::cout << "   The input target image filename: " 
+  std::cout << "   The input target image filename: "
             << m_FileTarget << std::endl;
-  std::cout << "   The input source image filename: " 
+  std::cout << "   The input source image filename: "
             << m_FileSource << std::endl;
 
-  std::cout << "   The input target mask image filename: " 
+  std::cout << "   The input target mask image filename: "
             << m_FileTargetMask << std::endl;
-  std::cout << "   The input source mask image filename: " 
+  std::cout << "   The input source mask image filename: "
             << m_FileSourceMask << std::endl;
 
-  std::cout << "   The input target registration mask filename: " 
+  std::cout << "   The input target registration mask filename: "
             << m_FileInputTargetRegistrationMask << std::endl;
 
-  std::cout << "   The output target registration mask filename: " 
+  std::cout << "   The output target registration mask filename: "
             << m_FileOutputTargetRegistrationMask << std::endl;
 
-  std::cout << "   The output target mask distance transform image: " 
+  std::cout << "   The output target mask distance transform image: "
             << m_FileTargetDistanceTransform << std::endl;
-  std::cout << "   The output source mask distance transform image: " 
+  std::cout << "   The output source mask distance transform image: "
             << m_FileSourceDistanceTransform << std::endl;
-  
-  std::cout << "   The output affine transformation matrix: " 
+
+  std::cout << "   The output affine transformation matrix: "
             << m_FileOutputAffineTransformation << std::endl;
-  std::cout << "   The output non-rigid transformation: " 
+  std::cout << "   The output non-rigid transformation: "
             << m_FileOutputNonRigidTransformation << std::endl;
-  
-  std::cout << "   The output deformation field: " 
+
+  std::cout << "   The output deformation field: "
             << m_FileOutputDeformation << std::endl;
 
-  std::cout << "   The output affine registered image: " 
+  std::cout << "   The output affine registered image: "
             << m_FileOutputAffineRegistered << std::endl;
-  std::cout << "   The output non-rigidly registered image: " 
+  std::cout << "   The output non-rigidly registered image: "
             << m_FileOutputNonRigidRegistered << std::endl;
 
   std::cout << std::endl;
 }
- 
+
 
 /* -----------------------------------------------------------------------
    ImageFileIsNiftiOrConvert()
@@ -205,7 +207,7 @@ template< class TInputImage, class TOutputImage >
 std::string
 MammogramRegistrationFilter<TInputImage, TOutputImage>
 ::ImageFileIsNiftiOrConvert( std::string fileInput )
-{ 
+{
   std::string fileOutput;
 
   itk::NiftiImageIO::Pointer niftiIO = itk::NiftiImageIO::New();
@@ -221,7 +223,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
   if ( m_DirWorking.length() )
   {
-    fileOutput = niftk::ConcatenatePath( m_DirWorking, 
+    fileOutput = niftk::ConcatenatePath( m_DirWorking,
                                          fs::path( fileOutput ).filename().string() );
   }
 
@@ -242,7 +244,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
   return fileOutput;
 }
- 
+
 
 /* -----------------------------------------------------------------------
    GetDistanceTransform()
@@ -252,7 +254,7 @@ template< class TInputImage, class TOutputImage >
 typename MammogramRegistrationFilter<TInputImage, TOutputImage>::InputImagePointer
 MammogramRegistrationFilter<TInputImage, TOutputImage>
 ::GetDistanceTransform( InputImagePointer imMask )
-{ 
+{
   typedef float RealType;
   typedef itk::Image< RealType, ImageDimension > RealImageType;
 
@@ -270,7 +272,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   duplicator->Update();
 
   typename InputImageType::Pointer imMaskZeroBorder = duplicator->GetOutput();
-  imMaskZeroBorder->DisconnectPipeline();  
+  imMaskZeroBorder->DisconnectPipeline();
 
 
   typedef itk::ImageLinearIteratorWithIndex< InputImageType > LineIteratorType;
@@ -317,10 +319,10 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   distanceTransform->SetInsideIsPositive( true );
   distanceTransform->UseImageSpacingOn();
   distanceTransform->SquaredDistanceOff();
-  
+
   std::cout << "Computing distance transform of breast mask" << std::endl;
   distanceTransform->UpdateLargestPossibleRegion();
-  
+
 
   // Apply the input mask
 
@@ -334,12 +336,12 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
 
   InputImagePointer imDistanceTransform = maskFilter->GetOutput();
-  imDistanceTransform->DisconnectPipeline();  
+  imDistanceTransform->DisconnectPipeline();
 
 
   return imDistanceTransform;
 }
- 
+
 
 /* -----------------------------------------------------------------------
    GetTargetRegistrationMask()
@@ -349,7 +351,7 @@ template< class TInputImage, class TOutputImage >
 typename MammogramRegistrationFilter<TInputImage, TOutputImage>::InputImagePointer
 MammogramRegistrationFilter<TInputImage, TOutputImage>
 ::GetTargetRegistrationMask( InputImagePointer imMask )
-{ 
+{
   typedef float RealType;
   typedef itk::Image< RealType, ImageDimension > RealImageType;
 
@@ -362,28 +364,28 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   distanceTransform->SetInsideIsPositive( false );
   distanceTransform->UseImageSpacingOn();
   distanceTransform->SquaredDistanceOff();
-  
+
   std::cout << "Computing distance transform of breast edge mask for registration" << std::endl;
   distanceTransform->UpdateLargestPossibleRegion();
-  
+
   typedef typename itk::BinaryThresholdImageFilter<RealImageType, InputImageType> BinaryThresholdFilterType;
-  
-  
+
+
   typename BinaryThresholdFilterType::Pointer thresholdFilter = BinaryThresholdFilterType::New();
-  
+
   RealType threshold = 10;
-  
+
   thresholdFilter->SetInput( distanceTransform->GetOutput() );
-  
+
   thresholdFilter->SetOutsideValue( 0 );
   thresholdFilter->SetInsideValue( 255 );
   thresholdFilter->SetLowerThreshold( threshold );
-  
+
   std::cout << "Thresholding distance transform of breast edge mask at: "
             << threshold << std::endl;
   thresholdFilter->UpdateLargestPossibleRegion();
 
-  
+
   typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<InputImageType> InvertFilterType;
 
   typename InvertFilterType::Pointer invertFilter = InvertFilterType::New();
@@ -393,7 +395,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   invertFilter->UpdateLargestPossibleRegion();
 
   InputImagePointer imRegnMask = invertFilter->GetOutput();
-  imRegnMask->DisconnectPipeline();  
+  imRegnMask->DisconnectPipeline();
 
   return imRegnMask;
 }
@@ -411,37 +413,37 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 {
   typedef typename ImageMomentCalculatorType::AffineTransformType AffineTransformType;
 
-  typename ImageMomentCalculatorType::Pointer fixedImageMomentCalculator = ImageMomentCalculatorType::New(); 
+  typename ImageMomentCalculatorType::Pointer fixedImageMomentCalculator = ImageMomentCalculatorType::New();
 
-  fixedImageMomentCalculator->SetImage( imTarget ); 
-  fixedImageMomentCalculator->Compute(); 
+  fixedImageMomentCalculator->SetImage( imTarget );
+  fixedImageMomentCalculator->Compute();
 
-  typename ImageMomentCalculatorType::Pointer movingImageMomentCalculator = ImageMomentCalculatorType::New(); 
+  typename ImageMomentCalculatorType::Pointer movingImageMomentCalculator = ImageMomentCalculatorType::New();
 
-  movingImageMomentCalculator->SetImage( imSource ); 
-  movingImageMomentCalculator->Compute(); 
+  movingImageMomentCalculator->SetImage( imSource );
+  movingImageMomentCalculator->Compute();
 
-  
+
   // Compute the scale factors in 'x' and 'y' from the normalised principal moments
 
-  typename ImageMomentCalculatorType::ScalarType 
+  typename ImageMomentCalculatorType::ScalarType
     fixedTotalMass = fixedImageMomentCalculator->GetTotalMass();
 
-  typename ImageMomentCalculatorType::VectorType 
+  typename ImageMomentCalculatorType::VectorType
     fixedPrincipalMoments = fixedImageMomentCalculator->GetPrincipalMoments();
 
-  typename ImageMomentCalculatorType::ScalarType 
+  typename ImageMomentCalculatorType::ScalarType
     movingTotalMass = movingImageMomentCalculator->GetTotalMass();
 
-  typename ImageMomentCalculatorType::VectorType 
-    movingPrincipalMoments = movingImageMomentCalculator->GetPrincipalMoments(); 
+  typename ImageMomentCalculatorType::VectorType
+    movingPrincipalMoments = movingImageMomentCalculator->GetPrincipalMoments();
 
   typename FactoryType::EulerAffineTransformType::ScaleType scaleFactor;
   scaleFactor.SetSize( ImageDimension );
 
   for ( unsigned int iDim=0; iDim<ImageDimension; iDim++ )
   {
-    scaleFactor[ iDim ] = 
+    scaleFactor[ iDim ] =
       sqrt(movingPrincipalMoments[ iDim ] / movingTotalMass )
       / sqrt( fixedPrincipalMoments[ iDim ] / fixedTotalMass );
   }
@@ -463,7 +465,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
                          InputImagePointer imSource,
                          int finalInterpolator,
                          int registrationInterpolator )
-{ 
+{
 
   typedef float DeformableScalarType;
 
@@ -501,10 +503,10 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   int symmetricMetric;
   bool isRescaleIntensity;
   bool userSetPadValue;
-  bool useWeighting; 
-  double weightingThreshold; 
-  double parameterChangeTolerance; 
-  bool useCogInitialisation; 
+  bool useWeighting;
+  double weightingThreshold;
+  double parameterChangeTolerance;
+  bool useCogInitialisation;
 
 
   // Set defaults
@@ -537,16 +539,16 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   symmetricMetric = 0;
   isRescaleIntensity = false;
   userSetPadValue = true;
-  useWeighting = false; 
-  useCogInitialisation = true; 
-  
+  useWeighting = false;
+  useCogInitialisation = true;
+
 
 
 
   // The factory.
 
   typename FactoryType::Pointer factory = FactoryType::New();
-  
+
   // Start building.
 
   typename BuilderType::Pointer builder = BuilderType::New();
@@ -557,59 +559,59 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   typename SimilarityMeasureType::Pointer metric = builder->CreateMetric( (itk::MetricTypeEnum) similarityMeasure );
 
   metric->SetSymmetricMetric( symmetricMetric );
-  metric->SetUseWeighting( useWeighting ); 
+  metric->SetUseWeighting( useWeighting );
 
   if (useWeighting)
   {
-    metric->SetWeightingDistanceThreshold( weightingThreshold ); 
+    metric->SetWeightingDistanceThreshold( weightingThreshold );
   }
-  
+
   m_AffineTransform = dynamic_cast< typename FactoryType::EulerAffineTransformType* >
     ( builder->CreateTransform((itk::TransformTypeEnum) transformation,
                                static_cast<const InputImageType * >( imTarget ) ).GetPointer() );
 
-  int dof = m_AffineTransform->GetNumberOfDOF(); 
-  
-  
+  int dof = m_AffineTransform->GetNumberOfDOF();
+
+
   // Compute and initial registration using the image moments
-  
+
   InitialiseTransformationFromImageMoments( imTarget, imSource );
 
-  typename ImageMomentCalculatorType::VectorType fixedImgeCOG; 
-  typename ImageMomentCalculatorType::VectorType movingImgeCOG; 
+  typename ImageMomentCalculatorType::VectorType fixedImgeCOG;
+  typename ImageMomentCalculatorType::VectorType movingImgeCOG;
 
-  fixedImgeCOG.Fill(0.); 
-  movingImgeCOG.Fill(0.); 
-  
-  // Calculate the CoG for the initialisation using CoG or for the symmetric transformation. 
+  fixedImgeCOG.Fill(0.);
+  movingImgeCOG.Fill(0.);
+
+  // Calculate the CoG for the initialisation using CoG or for the symmetric transformation.
 
   if (useCogInitialisation || symmetricMetric == 2)
   {
-    typename ImageMomentCalculatorType::Pointer fixedImageMomentCalculator = ImageMomentCalculatorType::New(); 
+    typename ImageMomentCalculatorType::Pointer fixedImageMomentCalculator = ImageMomentCalculatorType::New();
 
-    fixedImageMomentCalculator->SetImage(imTarget); 
-    fixedImageMomentCalculator->Compute(); 
-    fixedImgeCOG = fixedImageMomentCalculator->GetCenterOfGravity(); 
+    fixedImageMomentCalculator->SetImage(imTarget);
+    fixedImageMomentCalculator->Compute();
+    fixedImgeCOG = fixedImageMomentCalculator->GetCenterOfGravity();
 
-    typename ImageMomentCalculatorType::Pointer movingImageMomentCalculator = ImageMomentCalculatorType::New(); 
+    typename ImageMomentCalculatorType::Pointer movingImageMomentCalculator = ImageMomentCalculatorType::New();
 
-    movingImageMomentCalculator->SetImage(imSource); 
+    movingImageMomentCalculator->SetImage(imSource);
 
-    movingImageMomentCalculator->Compute(); 
-    movingImgeCOG = movingImageMomentCalculator->GetCenterOfGravity(); 
+    movingImageMomentCalculator->Compute();
+    movingImgeCOG = movingImageMomentCalculator->GetCenterOfGravity();
   }
-  
+
   if (symmetricMetric == 2)
   {
     builder->CreateFixedImageInterpolator( (itk::InterpolationTypeEnum) registrationInterpolator );
     builder->CreateMovingImageInterpolator( (itk::InterpolationTypeEnum) registrationInterpolator );
-    
-    // Change the center of the transformation for the symmetric transform. 
+
+    // Change the center of the transformation for the symmetric transform.
 
     typename InputImageType::PointType centerPoint;
 
     for (unsigned int i = 0; i < ImageDimension; i++)
-      centerPoint[i] = (fixedImgeCOG[i] + movingImgeCOG[i])/2.; 
+      centerPoint[i] = (fixedImgeCOG[i] + movingImgeCOG[i])/2.;
 
     typename FactoryType::EulerAffineTransformType::FullAffineTransformType* fullAffineTransform = m_AffineTransform->GetFullAffineTransform();
 
@@ -617,20 +619,20 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     m_AffineTransform->SetCenter(centerPoint);
     m_AffineTransform->SetNumberOfDOF(dof);
   }
-  
-  // Initialise the transformation using the CoG. 
+
+  // Initialise the transformation using the CoG.
 
   if (useCogInitialisation)
   {
     if (symmetricMetric == 2)
     {
-      m_AffineTransform->InitialiseUsingCenterOfMass(fixedImgeCOG/2.0, 
-                                             movingImgeCOG/2.0); 
+      m_AffineTransform->InitialiseUsingCenterOfMass(fixedImgeCOG/2.0,
+                                             movingImgeCOG/2.0);
     }
     else
     {
-      m_AffineTransform->InitialiseUsingCenterOfMass(fixedImgeCOG, 
-                                             movingImgeCOG); 
+      m_AffineTransform->InitialiseUsingCenterOfMass(fixedImgeCOG,
+                                             movingImgeCOG);
 
       typename InputImageType::PointType centerPoint;
 
@@ -640,7 +642,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
       m_AffineTransform->SetCenter(centerPoint);
     }
   }
-  
+
   builder->CreateOptimizer((itk::OptimizerTypeEnum)optimizer);
 
   // Get the single res method.
@@ -654,13 +656,13 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     multiResMethod->SetDebug( true );
   }
 
-  // Sort out metric and optimizer  
+  // Sort out metric and optimizer
 
   typedef typename itk::SimilarityMeasure< InputImageType, InputImageType >  SimilarityType;
   typedef SimilarityType* SimilarityPointer;
 
   SimilarityPointer similarityPointer = dynamic_cast< SimilarityPointer >(singleResMethod->GetMetric());
-  
+
   if (optimizer == itk::SIMPLEX)
   {
     typedef typename itk::UCLSimplexOptimizer OptimizerType;
@@ -731,7 +733,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     op->SetStepTolerance(minStep);
     op->SetMaximumLineIteration(10);
     op->SetValueTolerance(0.0001);
-    op->SetMaximize(similarityPointer->ShouldBeMaximized());      
+    op->SetMaximize(similarityPointer->ShouldBeMaximized());
 
     OptimizerType::ScalesType scales = m_AffineTransform->GetRelativeParameterWeightingFactors();
     op->SetScales( scales );
@@ -772,7 +774,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     op->SetMaximumLineIteration(15);
     op->SetValueTolerance(1.0e-14);
     op->SetParameterTolerance(parameterChangeTolerance);
-    op->SetMaximize(similarityPointer->ShouldBeMaximized());      
+    op->SetMaximize(similarityPointer->ShouldBeMaximized());
 
     OptimizerType::ScalesType scales = m_AffineTransform->GetRelativeParameterWeightingFactors();
     op->SetScales( scales );
@@ -787,12 +789,12 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   // Finish configuring single-res object
   singleResMethod->SetNumberOfDilations(dilations);
   singleResMethod->SetThresholdFixedMask(true);
-  singleResMethod->SetThresholdMovingMask(true);  
+  singleResMethod->SetThresholdMovingMask(true);
   singleResMethod->SetFixedMaskMinimum(maskMinimumThreshold);
   singleResMethod->SetMovingMaskMinimum(maskMinimumThreshold);
   singleResMethod->SetFixedMaskMaximum(maskMaximumThreshold);
   singleResMethod->SetMovingMaskMaximum(maskMaximumThreshold);
-  
+
   if (isRescaleIntensity)
   {
     singleResMethod->SetRescaleFixedImage(true);
@@ -802,7 +804,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     singleResMethod->SetRescaleMovingMinimum((InputImagePixelType)lowerIntensity);
     singleResMethod->SetRescaleMovingMaximum((InputImagePixelType)higherIntensity);
   }
-  
+
   // Finish configuring multi-res object.
   multiResMethod->SetInitialTransformParameters( singleResMethod->GetTransform()->GetParameters() );
   multiResMethod->SetSingleResMethod(singleResMethod);
@@ -824,7 +826,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
       singleResMethod->SetRescaleFixedUpperThreshold(intensityFixedUpperBound);
       singleResMethod->SetRescaleFixedMinimum((InputImagePixelType)lowerIntensity+1);
       singleResMethod->SetRescaleFixedMaximum((InputImagePixelType)higherIntensity);
-          
+
       singleResMethod->SetRescaleMovingImage(true);
       singleResMethod->SetRescaleMovingBoundaryValue(lowerIntensity);
       singleResMethod->SetRescaleMovingLowerThreshold(intensityMovingLowerBound);
@@ -855,40 +857,40 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   if ( m_FlgDebug ) imSource->Print( std::cout );
 
   std::cout << "Setting fixed mask"<< std::endl;
-  filter->SetFixedMask( m_TargetRegnMask );  
+  filter->SetFixedMask( m_TargetRegnMask );
   if ( m_FlgDebug ) m_TargetRegnMask->Print( std::cout );
 
   // If we havent asked for output, turn off reslicing.
   filter->SetDoReslicing(true);
 
   filter->SetInterpolator(factory->CreateInterpolator((itk::InterpolationTypeEnum)finalInterpolator));
-    
+
   // Set the padding value
   if (!userSetPadValue)
   {
     typename InputImageType::IndexType index;
     for (unsigned int i = 0; i < ImageDimension; i++)
     {
-      index[i] = 0;  
+      index[i] = 0;
     }
     movingImagePadValue = imSource->GetPixel(index);
 
-    std::cout << "Setting  moving image pad value to:" 
+    std::cout << "Setting  moving image pad value to:"
       + niftk::ConvertToString(movingImagePadValue)<< std::endl;
   }
   similarityPointer->SetTransformedMovingImagePadValue(movingImagePadValue);
   filter->SetResampledMovingImagePadValue(movingImagePadValue);
-    
+
   // Run the registration
   filter->Update();
 
   // Make sure we get the final one.
   m_AffineTransform = dynamic_cast< typename FactoryType::EulerAffineTransformType* >(singleResMethod->GetTransform());
-  m_AffineTransform->SetFullAffine(); 
+  m_AffineTransform->SetFullAffine();
 
-    
+
   InputImagePointer imRegistered = filter->GetOutput();
-  imRegistered->DisconnectPipeline();  
+  imRegistered->DisconnectPipeline();
 
   return imRegistered;
 }
@@ -901,7 +903,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 template< class TInputImage, class TOutputImage >
 std::string
 MammogramRegistrationFilter<TInputImage, TOutputImage>
-::AddSamplingFactorSuffix( std::string filename, float sampling ) 
+::AddSamplingFactorSuffix( std::string filename, float sampling )
 {
   char strSampling[128];
 
@@ -911,7 +913,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   std::string extension = pathname.extension().string();
   std::string stem = pathname.stem().string();
 
-  if ( extension == std::string( ".gz" ) ) 
+  if ( extension == std::string( ".gz" ) )
   {
     stem = pathname.stem().stem().string();
   }
@@ -920,17 +922,17 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
   if ( m_DirWorking.length() )
   {
-    fileOutput = niftk::ConcatenatePath( m_DirWorking, 
+    fileOutput = niftk::ConcatenatePath( m_DirWorking,
                                          fs::path( stem
                                                    + std::string( strSampling ) ).string() );
   }
   else
   {
-    fileOutput = niftk::ConcatenatePath( pathname.parent_path().string(), 
+    fileOutput = niftk::ConcatenatePath( pathname.parent_path().string(),
                                          fs::path( stem
                                                    + std::string( strSampling ) ).string() );
   }
-    
+
   return fileOutput;
 }
 
@@ -943,7 +945,7 @@ template< class TInputImage, class TOutputImage >
 std::string
 MammogramRegistrationFilter<TInputImage, TOutputImage>
 ::FileOfImageWithDimensionsLessThan2048( std::string fileInput )
-{ 
+{
   unsigned int numberOfDimensions = 0;
   itk::ImageIOBase::Pointer imageIO;
 
@@ -956,8 +958,8 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
   if ( numberOfDimensions != 2 )
   {
-    std::cerr << "WARNING: Image " << fileInput << " dimensionality,  " << numberOfDimensions 
-              << " is not equal to 2." << std::endl; 
+    std::cerr << "WARNING: Image " << fileInput << " dimensionality,  " << numberOfDimensions
+              << " is not equal to 2." << std::endl;
   }
 
   std::cout << "  dimensions: ";
@@ -1011,7 +1013,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
   sampler->SetSubsamplingFactors( factor );
 
-  sampler->SetInput( imageReader->GetOutput() );  
+  sampler->SetInput( imageReader->GetOutput() );
 
   std::cout << "Computing subsampled image" << std::endl;
   sampler->Update();
@@ -1042,7 +1044,7 @@ template< class TInputImage, class TOutputImage >
 typename MammogramRegistrationFilter<TInputImage, TOutputImage>::InputImagePointer
 MammogramRegistrationFilter<TInputImage, TOutputImage>
 ::RunNonRigidRegistration( void )
-{ 
+{
   bool flgFinished;
 
   std::string fileOutput;
@@ -1067,23 +1069,22 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   QProcessEnvironment env;
   QStringList envStringList;
 
-
-  std::string progRegNonRigid( "reg_f3d" ); 
+  std::string progRegNonRigid( "reg_f3d" );
 
   if ( ! niftk::FileExists( progRegNonRigid ) )
   {
-    std::string fileSearchRegNonRigid = niftk::ConcatenatePath( m_DirExecutable, 
+    std::string fileSearchRegNonRigid = niftk::ConcatenatePath( m_DirExecutable,
                                                           progRegNonRigid );
-          
+
     if ( niftk::FileExists( fileSearchRegNonRigid ) )
     {
       progRegNonRigid = fileSearchRegNonRigid;
     }
   }
 
-  QStringList argsRegNonRigid; 
+  QStringList argsRegNonRigid;
 
-  argsRegNonRigid 
+  argsRegNonRigid
     << "-pad" << "0."
     << "-ln"  << ssNumberOfLevels.str().c_str()
     << "-lp"  << ssNumberOfLevelsToUse.str().c_str()
@@ -1107,7 +1108,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     fileTarget = FileOfImageWithDimensionsLessThan2048( m_FileTargetDistanceTransform );
     fileSource = FileOfImageWithDimensionsLessThan2048( m_FileSourceDistanceTransform );
 
-    fileOutput = niftk::ModifyImageFileSuffix( m_FileOutputNonRigidRegistered, 
+    fileOutput = niftk::ModifyImageFileSuffix( m_FileOutputNonRigidRegistered,
                                                std::string( "_DistTrans.nii.gz" ) );
 
     argsRegNonRigid << "-res" << fileOutput.c_str();
@@ -1120,13 +1121,13 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
     fileSuffix = niftk::ExtractImageFileSuffix( m_FileOutputNonRigidRegistered );
 
-    fileOutput = niftk::ModifyImageFileSuffix( m_FileOutputNonRigidRegistered, 
+    fileOutput = niftk::ModifyImageFileSuffix( m_FileOutputNonRigidRegistered,
                                                std::string( "_Mask" ) + fileSuffix );
 
     argsRegNonRigid << "-res" << fileOutput.c_str();
 
   }
-  else 
+  else
   {
     fileTarget = FileOfImageWithDimensionsLessThan2048( m_FileTarget );
     fileSource = FileOfImageWithDimensionsLessThan2048( m_FileSource );
@@ -1138,7 +1139,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   fileSource = ImageFileIsNiftiOrConvert( fileSource );
 
 
-  argsRegNonRigid 
+  argsRegNonRigid
     << "-target" << fileTarget.c_str()
     << "-source" << fileSource.c_str()
     << "-rmask"  << fileMask.c_str()
@@ -1152,24 +1153,24 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     std::cout << " " << argsRegNonRigid[i].toStdString();
   }
   std::cout << std::endl << std::endl;
-  
+
   QProcess callRegNonRigid;
   QString outRegNonRigid;
-  
+
   callRegNonRigid.setProcessChannelMode( QProcess::MergedChannels );
 
 
   startTime = boost::posix_time::second_clock::local_time();
 
   callRegNonRigid.start( progRegNonRigid.c_str(), argsRegNonRigid );
-  
+
   flgFinished = callRegNonRigid.waitForFinished( 10800000 ); // Wait three hours
-  
+
   endTime = boost::posix_time::second_clock::local_time();
   duration = endTime - startTime;
-  
+
   outRegNonRigid = callRegNonRigid.readAllStandardOutput();
-  
+
   std::cout << outRegNonRigid.toStdString();
 
   std::cout << "Execution time: " << boost::posix_time::to_simple_string(duration) << std::endl
@@ -1178,37 +1179,37 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
   env = callRegNonRigid.processEnvironment();
   envStringList = env.toStringList();
-    
+
   std::cout << "Environment:" << std::endl;
   for ( i=0; i<envStringList.size(); i++ )
   {
     std::cout << " " << envStringList[i].toStdString();
   }
   std::cout << std::endl << std::endl;
-    
 
-  if ( ( ! flgFinished ) || 
-       ( callRegNonRigid.exitCode() ) || 
+
+  if ( ( ! flgFinished ) ||
+       ( callRegNonRigid.exitCode() ) ||
        ( callRegNonRigid.exitStatus() != QProcess::NormalExit ) )
   {
-    itkExceptionMacro( << "Could not execute: " << progRegNonRigid << " ( " 
+    itkExceptionMacro( << "Could not execute: " << progRegNonRigid << " ( "
                        << callRegNonRigid.errorString().toStdString() << " )" << std::endl );
     return 0;
   }
-  
+
   callRegNonRigid.close();
-  
-  
+
+
   // Convert the B-Spline grid to a deformation field: x' = T(x)
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  std::string progBsplineToDeformation( "reg_transform" ); 
+  std::string progBsplineToDeformation( "reg_transform" );
 
   if ( ! niftk::FileExists( progBsplineToDeformation ) )
   {
-    std::string fileSearchBsplineToDeformation = niftk::ConcatenatePath( m_DirExecutable, 
+    std::string fileSearchBsplineToDeformation = niftk::ConcatenatePath( m_DirExecutable,
                                                           progBsplineToDeformation );
-          
+
     if ( niftk::FileExists( fileSearchBsplineToDeformation ) )
     {
       progBsplineToDeformation = fileSearchBsplineToDeformation;
@@ -1221,17 +1222,17 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
     fileSuffix = niftk::ExtractImageFileSuffix( m_FileOutputNonRigidTransformation );
 
-    m_FileOutputDeformation = niftk::ModifyImageFileSuffix( m_FileOutputNonRigidTransformation, 
+    m_FileOutputDeformation = niftk::ModifyImageFileSuffix( m_FileOutputNonRigidTransformation,
                                                             std::string( "_Deformation.nii.gz" ) );
   }
 
-  QStringList argsBsplineToDeformation; 
+  QStringList argsBsplineToDeformation;
 
   m_FileTarget = ImageFileIsNiftiOrConvert( m_FileTarget );
 
-  argsBsplineToDeformation 
-    << "-ref" << m_FileTarget.c_str() 
-    << "-def" 
+  argsBsplineToDeformation
+    << "-ref" << m_FileTarget.c_str()
+    << "-def"
     << m_FileOutputNonRigidTransformation.c_str()
     << m_FileOutputDeformation.c_str();
 
@@ -1243,24 +1244,24 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     std::cout << " " << argsBsplineToDeformation[i].toStdString();
   }
   std::cout << std::endl << std::endl;
-  
+
   QProcess callBsplineToDeformation;
   QString outBsplineToDeformation;
-  
+
   callBsplineToDeformation.setProcessChannelMode( QProcess::MergedChannels );
 
 
   startTime = boost::posix_time::second_clock::local_time();
 
   callBsplineToDeformation.start( progBsplineToDeformation.c_str(), argsBsplineToDeformation );
-  
+
   flgFinished = callBsplineToDeformation.waitForFinished( 10800000 ); // Wait three hours
-  
+
   endTime = boost::posix_time::second_clock::local_time();
   duration = endTime - startTime;
-  
+
   outBsplineToDeformation = callBsplineToDeformation.readAllStandardOutput();
-  
+
   std::cout << outBsplineToDeformation.toStdString();
   std::cout << "Execution time: " << boost::posix_time::to_simple_string(duration) << std::endl
             << "Exit Code: "      << callBsplineToDeformation.exitCode() << std::endl
@@ -1268,7 +1269,7 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
   env = callBsplineToDeformation.processEnvironment();
   envStringList = env.toStringList();
-    
+
   std::cout << "Environment:" << std::endl;
   for ( i=0; i<envStringList.size(); i++ )
   {
@@ -1276,56 +1277,23 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   }
   std::cout << std::endl << std::endl;
 
-  if ( ( ! flgFinished ) || 
+  if ( ( ! flgFinished ) ||
        ( callBsplineToDeformation.exitCode() ) ||
        ( callBsplineToDeformation.exitStatus() != QProcess::NormalExit ) )
   {
-    itkExceptionMacro( << "Could not execute: " << progBsplineToDeformation << " ( " 
+    itkExceptionMacro( << "Could not execute: " << progBsplineToDeformation << " ( "
                        << callBsplineToDeformation.errorString().toStdString() << " )" << std::endl );
     return 0;
   }
-  
+
   callBsplineToDeformation.close();
 
   // Read the deformation field
 
-  typedef itk::ImageFileReader< DeformationFieldType  > DeformationFieldReaderType;
-
-  typename DeformationFieldReaderType::Pointer readerDefField = DeformationFieldReaderType::New();
-
-  readerDefField->SetFileName( m_FileOutputDeformation );
-
-  std::cout << std::endl
-            << "Reading the deformation field: " << m_FileOutputDeformation << std::endl;
-
-  itk::NiftiImageIO::Pointer imageIO;
-
-  imageIO = itk::NiftiImageIO::New();
-
-  imageIO->SetFileName( m_FileOutputDeformation.c_str() );
-  imageIO->ReadImageInformation();
-
-  std::cout << "ImageDimension: " << imageIO->GetNumberOfDimensions() << std::endl
-            << "ComponentType: "  << imageIO->GetComponentType() << std::endl;
-
-  for ( i=0; i<imageIO->GetNumberOfDimensions(); i++ )
+  if ( ! m_DeformationField  )
   {
-    std::cout << "  nVoxels( " << i << " ): " << imageIO->GetDimensions(i) << std::endl;
+    ReadNonRigidDeformationField( m_FileOutputDeformation );
   }
-
-  imageIO->SetPixelType( itk::ImageIOBase::VECTOR );
-
-  readerDefField->SetImageIO( imageIO );
-
-  readerDefField->Update();
-
-  imageIO = static_cast<itk::NiftiImageIO*>( readerDefField->GetImageIO() );
-
-  std::cout << "PixelType: " << imageIO->GetPixelTypeAsString( imageIO->GetPixelType() )
-            << std::endl;
-
-  m_DeformationField = readerDefField->GetOutput();
-  m_DeformationField->DisconnectPipeline();  
 
 
   // Resample the original source image
@@ -1334,80 +1302,8 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   if ( ( m_TypeOfInputImagesToRegister == REGISTER_DISTANCE_TRANSFORMS ) ||
        ( m_TypeOfInputImagesToRegister == REGISTER_MASKS ) )
   {
-    std::string progResample( "reg_resample" ); 
-
-    if ( ! niftk::FileExists( progResample ) )
-    {
-      std::string fileSearchResample = niftk::ConcatenatePath( m_DirExecutable, 
-                                                               progResample );
-      
-      if ( niftk::FileExists( fileSearchResample ) )
-      {
-        progResample = fileSearchResample;
-      }
-    }
-
-    m_FileSource = ImageFileIsNiftiOrConvert( m_FileSource );
-
-
-    QStringList argsResample; 
-
-    argsResample 
-      << "-ref" << m_FileTarget.c_str() 
-      << "-flo" << m_FileSource.c_str()
-      << "-res" << m_FileOutputNonRigidRegistered.c_str()
-      << "-trans" << m_FileOutputNonRigidTransformation.c_str();
-
-    std::cout << std::endl << "Executing non-rigid resampling (QProcess): "
-              << std::endl << "   " << progResample;
-    for ( i=0; i<argsResample.size(); i++)
-    {
-      std::cout << " " << argsResample[i].toStdString();
-    }
-    std::cout << std::endl << std::endl;
-  
-    QProcess callResample;
-    QString outResample;
-  
-    callResample.setProcessChannelMode( QProcess::MergedChannels );
-
-
-    boost::posix_time::ptime startTime = boost::posix_time::second_clock::local_time();
-
-    callResample.start( progResample.c_str(), argsResample );
-  
-    bool flgFinished = callResample.waitForFinished( 10800000 ); // Wait three hours
-  
-    boost::posix_time::ptime endTime = boost::posix_time::second_clock::local_time();
-    boost::posix_time::time_duration duration = endTime - startTime;
-  
-    outResample = callResample.readAllStandardOutput();
-  
-    std::cout << outResample.toStdString();
-    std::cout << "Execution time: " << boost::posix_time::to_simple_string(duration) << std::endl
-              << "Exit Code: "      << callResample.exitCode() << std::endl
-              << "Exit Status: "    << callResample.exitStatus() << std::endl;
-
-    env = callResample.processEnvironment();
-    envStringList = env.toStringList();
-    
-    std::cout << "Environment:" << std::endl;
-    for ( i=0; i<envStringList.size(); i++ )
-    {
-      std::cout << " " << envStringList[i].toStdString();
-    }
-    std::cout << std::endl << std::endl;
-
-    if ( ( ! flgFinished ) || 
-         ( callResample.exitCode() ) ||
-         ( callResample.exitStatus() != QProcess::NormalExit ) )
-    {
-      itkExceptionMacro( << "Could not execute: " << progResample << " ( " 
-                         << callResample.errorString().toStdString() << " )" << std::endl );
-      return 0;
-    }
-  
-    callResample.close();
+    NonRigidlyTransformImageFile( m_FileSource,
+				  m_FileOutputNonRigidRegistered );
   }
 
 
@@ -1435,14 +1331,104 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
 
 /* -----------------------------------------------------------------------
+   NonRigidlyTransformImageFile()
+   ----------------------------------------------------------------------- */
+
+template< class TInputImage, class TOutputImage >
+void
+MammogramRegistrationFilter<TInputImage, TOutputImage>
+::NonRigidlyTransformImageFile( std::string fileImage, std::string fileResult )
+{
+  unsigned int i;
+  std::string progResample( "reg_resample" );
+
+  if ( ! niftk::FileExists( progResample ) )
+  {
+    std::string fileSearchResample = niftk::ConcatenatePath( m_DirExecutable,
+							     progResample );
+
+    if ( niftk::FileExists( fileSearchResample ) )
+    {
+      progResample = fileSearchResample;
+    }
+  }
+
+  fileImage = ImageFileIsNiftiOrConvert( fileImage );
+
+
+  QStringList argsResample;
+
+  argsResample
+    << "-ref" << m_FileTarget.c_str()
+    << "-flo" << fileImage.c_str()
+    << "-res" << fileResult.c_str()
+    << "-trans" << m_FileOutputNonRigidTransformation.c_str();
+
+  std::cout << std::endl << "Executing non-rigid resampling (QProcess): "
+	    << std::endl << "   " << progResample;
+  for ( i=0; i<argsResample.size(); i++)
+  {
+    std::cout << " " << argsResample[i].toStdString();
+  }
+  std::cout << std::endl << std::endl;
+
+  QProcess callResample;
+  QString outResample;
+
+  callResample.setProcessChannelMode( QProcess::MergedChannels );
+
+
+  boost::posix_time::ptime startTime = boost::posix_time::second_clock::local_time();
+
+  callResample.start( progResample.c_str(), argsResample );
+
+  bool flgFinished = callResample.waitForFinished( 10800000 ); // Wait three hours
+
+  boost::posix_time::ptime endTime = boost::posix_time::second_clock::local_time();
+  boost::posix_time::time_duration duration = endTime - startTime;
+
+  outResample = callResample.readAllStandardOutput();
+
+  std::cout << outResample.toStdString();
+  std::cout << "Execution time: " << boost::posix_time::to_simple_string(duration) << std::endl
+	    << "Exit Code: "      << callResample.exitCode() << std::endl
+	    << "Exit Status: "    << callResample.exitStatus() << std::endl;
+
+  QProcessEnvironment env;
+  QStringList envStringList;
+
+  env = callResample.processEnvironment();
+  envStringList = env.toStringList();
+
+  std::cout << "Environment:" << std::endl;
+  for ( i=0; i<envStringList.size(); i++ )
+  {
+    std::cout << " " << envStringList[i].toStdString();
+  }
+  std::cout << std::endl << std::endl;
+
+  if ( ( ! flgFinished ) ||
+       ( callResample.exitCode() ) ||
+       ( callResample.exitStatus() != QProcess::NormalExit ) )
+  {
+    itkExceptionMacro( << "Could not execute: " << progResample << " ( "
+		       << callResample.errorString().toStdString() << " )" << std::endl );
+    return;
+  }
+
+  callResample.close();
+}
+
+
+/* -----------------------------------------------------------------------
    TransformPoint()
    ----------------------------------------------------------------------- */
 
 template< class TInputImage, class TOutputImage >
-typename MammogramRegistrationFilter<TInputImage, TOutputImage>::InputImagePointType 
+typename MammogramRegistrationFilter<TInputImage, TOutputImage>::InputImagePointType
 MammogramRegistrationFilter<TInputImage, TOutputImage>
 ::TransformPoint( InputImagePointType point )
-{ 
+{
   typename InputImageType::IndexType index;
 
   m_Target->TransformPhysicalPointToIndex( point, index );
@@ -1479,14 +1465,163 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
 
 /* -----------------------------------------------------------------------
+   ReadAffineTransformation()
+   ----------------------------------------------------------------------- */
+
+template< class TInputImage, class TOutputImage >
+bool MammogramRegistrationFilter<TInputImage, TOutputImage>::ReadAffineTransformation( std::string fileAffineTransformation )
+{
+
+  itk::TransformFactoryBase::RegisterDefaultTransforms();
+
+  typedef itk::TransformFileReader TransformReaderType;
+  TransformReaderType::Pointer transformFileReader = TransformReaderType::New();
+
+  transformFileReader->SetFileName( fileAffineTransformation );
+
+  try
+  {
+    transformFileReader->Update();
+  }
+  catch ( itk::ExceptionObject &e )
+  {
+    std::cout << "ERROR: Failed to read " << fileAffineTransformation << std::endl;
+    return false;
+  }
+
+  typedef TransformReaderType::TransformListType TransformListType;
+  typedef TransformReaderType::TransformType BaseTransformType;
+
+  TransformListType *list = transformFileReader->GetTransformList();
+  BaseTransformType::Pointer transform = list->front();
+
+  transform->Print( std::cout );
+
+  m_AffineTransform = static_cast< EulerAffineTransformType * >( transform.GetPointer() );
+
+  if ( ! m_AffineTransform )
+  {
+    std::cout << "ERROR: Could not cast: " << fileAffineTransformation << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+
+/* -----------------------------------------------------------------------
+   ReadNonRigidDeformationField()
+   ----------------------------------------------------------------------- */
+
+template< class TInputImage, class TOutputImage >
+bool MammogramRegistrationFilter<TInputImage, TOutputImage>::ReadNonRigidDeformationField( std::string fileInputDeformation )
+{
+  unsigned int i;
+
+  if ( fileInputDeformation.length() &&
+       niftk::FileExists( fileInputDeformation ) )
+  {
+
+    typedef itk::ImageFileReader< DeformationFieldType  > DeformationFieldReaderType;
+
+    typename DeformationFieldReaderType::Pointer readerDefField = DeformationFieldReaderType::New();
+
+    readerDefField->SetFileName( fileInputDeformation );
+
+    std::cout << std::endl
+	      << "Reading the deformation field: " << fileInputDeformation << std::endl;
+
+    itk::NiftiImageIO::Pointer imageIO;
+
+    imageIO = itk::NiftiImageIO::New();
+
+    imageIO->SetFileName( fileInputDeformation.c_str() );
+    imageIO->ReadImageInformation();
+
+    std::cout << "ImageDimension: " << imageIO->GetNumberOfDimensions() << std::endl
+	      << "ComponentType: "  << imageIO->GetComponentType() << std::endl;
+
+    for ( i=0; i<imageIO->GetNumberOfDimensions(); i++ )
+    {
+      std::cout << "  nVoxels( " << i << " ): " << imageIO->GetDimensions(i) << std::endl;
+    }
+
+    imageIO->SetPixelType( itk::ImageIOBase::VECTOR );
+
+    readerDefField->SetImageIO( imageIO );
+
+    readerDefField->Update();
+
+    imageIO = static_cast<itk::NiftiImageIO*>( readerDefField->GetImageIO() );
+
+    std::cout << "PixelType: " << imageIO->GetPixelTypeAsString( imageIO->GetPixelType() )
+	      << std::endl;
+
+    m_DeformationField = readerDefField->GetOutput();
+    m_DeformationField->DisconnectPipeline();
+
+    return true;
+  }
+
+  return false;
+}
+
+
+/* -----------------------------------------------------------------------
+   ReadRegistrationData()
+   ----------------------------------------------------------------------- */
+
+template< class TInputImage, class TOutputImage >
+bool MammogramRegistrationFilter<TInputImage, TOutputImage>::ReadRegistrationData()
+{
+  // Get the target image
+
+  m_Target = static_cast< InputImageType* >( this->ProcessObject::GetInput( 0 ) );
+
+  if ( ! m_Target )
+  {
+    return false;
+  }
+
+  // Non-rigid transformation
+
+  if ( m_FlgRegisterNonRigid )
+  {
+    return ReadNonRigidDeformationField( m_FileOutputNonRigidTransformation );
+  }
+
+
+  // The affine transformation
+
+  if ( m_FileOutputAffineTransformation.length() &&
+       niftk::FileExists( m_FileOutputAffineTransformation ) )
+  {
+    return ReadAffineTransformation( m_FileOutputAffineTransformation );
+  }
+
+  return false;
+}
+
+
+/* -----------------------------------------------------------------------
    GenerateData()
    ----------------------------------------------------------------------- */
 
 template< class TInputImage, class TOutputImage >
 void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
-{ 
+{
   std::string fileOutput;
   std::string fileSuffix;
+
+
+  // Can we just read the registration result?
+
+  if ( ( ! m_FlgOverwrite ) && ReadRegistrationData() )
+  {
+    return;
+  }
+
+  // No, so run registrations
 
   if ( m_FlgRegisterNonRigid )
   {
@@ -1501,7 +1636,7 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
           if ( m_DirWorking.length() )
           {
-            m_FileTargetDistanceTransform = 
+            m_FileTargetDistanceTransform =
               niftk::ConcatenatePath( m_DirWorking, fs::path( m_FileTargetDistanceTransform ).filename().string() );
           }
         }
@@ -1521,7 +1656,7 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
           if ( m_DirWorking.length() )
           {
-            m_FileSourceDistanceTransform = 
+            m_FileSourceDistanceTransform =
               niftk::ConcatenatePath( m_DirWorking, fs::path( m_FileSourceDistanceTransform ).filename().string() );
           }
         }
@@ -1539,11 +1674,11 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
       {
         if ( m_FileTarget.length() )
         {
-          m_FileTargetMask = niftk::ModifyImageFileSuffix( m_FileTarget, 
+          m_FileTargetMask = niftk::ModifyImageFileSuffix( m_FileTarget,
                                                      std::string( "_Mask.nii.gz" ) );
           if ( m_DirWorking.length() )
           {
-            m_FileTargetMask = 
+            m_FileTargetMask =
               niftk::ConcatenatePath( m_DirWorking, fs::path( m_FileTargetMask ).filename().string() );
           }
         }
@@ -1558,11 +1693,11 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
       {
         if ( m_FileSource.length() )
         {
-          m_FileSourceMask = niftk::ModifyImageFileSuffix( m_FileSource, 
+          m_FileSourceMask = niftk::ModifyImageFileSuffix( m_FileSource,
                                                      std::string( "_Mask.nii.gz" ) );
           if ( m_DirWorking.length() )
           {
-            m_FileSourceMask = 
+            m_FileSourceMask =
               niftk::ConcatenatePath( m_DirWorking, fs::path( m_FileSourceMask ).filename().string() );
           }
         }
@@ -1616,13 +1751,13 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
     {
       if ( m_FileTarget.length() )
       {
-        m_FileOutputTargetRegistrationMask = niftk::ModifyImageFileSuffix( m_FileTarget, 
+        m_FileOutputTargetRegistrationMask = niftk::ModifyImageFileSuffix( m_FileTarget,
                                                    std::string( "_RegnMask.nii.gz" ) );
 
         if ( m_DirWorking.length() )
         {
-          m_FileOutputTargetRegistrationMask 
-            = niftk::ConcatenatePath( m_DirWorking, 
+          m_FileOutputTargetRegistrationMask
+            = niftk::ConcatenatePath( m_DirWorking,
                                       fs::path( m_FileOutputTargetRegistrationMask )
                                       .filename().string() );
         }
@@ -1650,7 +1785,7 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
   m_TargetRegnMask = static_cast< InputImageType* >( this->ProcessObject::GetInput( 4 ) );
 
-  
+
   // Create the mask images?
   // ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1679,7 +1814,7 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
       if ( m_FileTargetMask.length() > 0 )
       {
-        itk::WriteImageToFile< InputImageType >( m_FileTargetMask.c_str(), 
+        itk::WriteImageToFile< InputImageType >( m_FileTargetMask.c_str(),
                                                  "target mask image", m_TargetMask );
       }
     }
@@ -1710,7 +1845,7 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
       if ( m_FileSourceMask.length() > 0 )
       {
-        itk::WriteImageToFile< InputImageType >( m_FileSourceMask.c_str(), 
+        itk::WriteImageToFile< InputImageType >( m_FileSourceMask.c_str(),
                                                  "source mask image", m_SourceMask );
       }
     }
@@ -1724,7 +1859,7 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
   {
     if ( m_FileOutputTargetRegistrationMask.length() > 0 )
     {
-      itk::WriteImageToFile< InputImageType >( m_FileOutputTargetRegistrationMask.c_str(), 
+      itk::WriteImageToFile< InputImageType >( m_FileOutputTargetRegistrationMask.c_str(),
                                                "target registration mask image", m_TargetRegnMask );
     }
   }
@@ -1732,32 +1867,32 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
   else if ( m_FileInputTargetRegistrationMask.length() > 0 )
   {
     typedef itk::ImageFileReader< InputImageType  > ImageReaderType;
-    
+
     typename ImageReaderType::Pointer reader = ImageReaderType::New();
-    
+
     reader->SetFileName( m_FileInputTargetRegistrationMask );
-    
+
     std::cout << std::endl
-              << "Reading the target registration mask image: " 
+              << "Reading the target registration mask image: "
               << m_FileInputTargetRegistrationMask << std::endl;
-    
+
     reader->Update();
-    
+
     m_TargetRegnMask = reader->GetOutput();
     m_TargetRegnMask->DisconnectPipeline();
   }
-  
+
   else
   {
     m_TargetRegnMask = GetTargetRegistrationMask( m_TargetMask );
-    
+
     if ( m_FileOutputTargetRegistrationMask.length() > 0 )
     {
-      itk::WriteImageToFile< InputImageType >( m_FileOutputTargetRegistrationMask.c_str(), 
+      itk::WriteImageToFile< InputImageType >( m_FileOutputTargetRegistrationMask.c_str(),
                                                "target registration mask image", m_TargetRegnMask );
     }
   }
-    
+
 
   // Affine register the images
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1772,8 +1907,8 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
     if ( m_FileTargetDistanceTransform.length() )
     {
-      itk::WriteImageToFile< InputImageType >( m_FileTargetDistanceTransform.c_str(), 
-                                               "target mask distance transform image", 
+      itk::WriteImageToFile< InputImageType >( m_FileTargetDistanceTransform.c_str(),
+                                               "target mask distance transform image",
                                                imTargetDistTrans );
     }
 
@@ -1781,12 +1916,12 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
     if ( m_FileSourceDistanceTransform.length() )
     {
-      itk::WriteImageToFile< InputImageType >( m_FileSourceDistanceTransform.c_str(), 
-                                               "source mask distance transform image", 
+      itk::WriteImageToFile< InputImageType >( m_FileSourceDistanceTransform.c_str(),
+                                               "source mask distance transform image",
                                                imSourceDistTrans );
     }
 
-    InputImagePointer imAffineRegisteredDistTrans 
+    InputImagePointer imAffineRegisteredDistTrans
       = RunAffineRegistration( imTargetDistTrans, imSourceDistTrans, 2, 2 );
 
     // Save the registered distance transform image?
@@ -1797,11 +1932,11 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
       fileSuffix = niftk::ExtractImageFileSuffix( m_FileOutputAffineRegistered );
 
-      fileOutput = niftk::ModifyImageFileSuffix( m_FileOutputAffineRegistered, 
+      fileOutput = niftk::ModifyImageFileSuffix( m_FileOutputAffineRegistered,
                                                  std::string( "_DistTrans" ) + fileSuffix );
 
-      itk::WriteImageToFile< InputImageType >( fileOutput.c_str(), 
-                                               "affine registered distance transform", 
+      itk::WriteImageToFile< InputImageType >( fileOutput.c_str(),
+                                               "affine registered distance transform",
                                                imAffineRegisteredDistTrans );
     }
 
@@ -1810,18 +1945,18 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
     typedef typename itk::ResampleImageFilter< InputImageType, InputImageType >   ResampleFilterType;
     typename ResampleFilterType::Pointer resampleFilter = ResampleFilterType::New();
-  
+
     resampleFilter->SetTransform( m_AffineTransform );
     resampleFilter->SetInput( m_Source );
 
-    resampleFilter->SetUseReferenceImage( true ); 
+    resampleFilter->SetUseReferenceImage( true );
     resampleFilter->SetReferenceImage( m_Target );
 
-    std::cout << "Resampling the source image using the affine transformation" << std::endl; 
+    std::cout << "Resampling the source image using the affine transformation" << std::endl;
     resampleFilter->Update();
 
     imAffineRegistered = resampleFilter->GetOutput();
-    imAffineRegistered->DisconnectPipeline();  
+    imAffineRegistered->DisconnectPipeline();
   }
 
   // Register the image masks?
@@ -1829,7 +1964,7 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
   else if ( m_TypeOfInputImagesToRegister == REGISTER_MASKS )
   {
 
-    InputImagePointer imAffineRegisteredMask 
+    InputImagePointer imAffineRegisteredMask
       = RunAffineRegistration( m_TargetMask, m_SourceMask, 1, 1 );
 
     // Save the registered mask image?
@@ -1840,11 +1975,11 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
       fileSuffix = niftk::ExtractImageFileSuffix( m_FileOutputAffineRegistered );
 
-      fileOutput = niftk::ModifyImageFileSuffix( m_FileOutputAffineRegistered, 
+      fileOutput = niftk::ModifyImageFileSuffix( m_FileOutputAffineRegistered,
                                                  std::string( "_Mask" ) + fileSuffix );
 
-      itk::WriteImageToFile< InputImageType >( fileOutput.c_str(), 
-                                               "affine registered mask", 
+      itk::WriteImageToFile< InputImageType >( fileOutput.c_str(),
+                                               "affine registered mask",
                                                imAffineRegisteredMask );
     }
 
@@ -1853,22 +1988,22 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
     typedef typename itk::ResampleImageFilter< InputImageType, InputImageType >   ResampleFilterType;
     typename ResampleFilterType::Pointer resampleFilter = ResampleFilterType::New();
-  
+
     resampleFilter->SetTransform( m_AffineTransform );
     resampleFilter->SetInput( m_Source );
 
-    resampleFilter->SetUseReferenceImage( true ); 
+    resampleFilter->SetUseReferenceImage( true );
     resampleFilter->SetReferenceImage( m_Target );
 
-    std::cout << "Resampling the source image using the affine transformation" << std::endl; 
+    std::cout << "Resampling the source image using the affine transformation" << std::endl;
     resampleFilter->Update();
 
     imAffineRegistered = resampleFilter->GetOutput();
-    imAffineRegistered->DisconnectPipeline();  
+    imAffineRegistered->DisconnectPipeline();
   }
 
   // Register the original images
-  
+
   else
   {
     imAffineRegistered = RunAffineRegistration(  m_Target, m_Source );
@@ -1878,8 +2013,8 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
   if ( m_FileOutputAffineRegistered.length() > 0 )
   {
-    itk::WriteImageToFile< InputImageType >( m_FileOutputAffineRegistered.c_str(), 
-                                             "affine registered image", 
+    itk::WriteImageToFile< InputImageType >( m_FileOutputAffineRegistered.c_str(),
+                                             "affine registered image",
                                              imAffineRegistered );
   }
 
@@ -1893,7 +2028,7 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
     m_AffineTransform->SaveNiftyRegAffineMatrix( m_FileOutputAffineTransformation );
   }
 
-  this->GraftNthOutput( 0, imAffineRegistered );  
+  this->GraftNthOutput( 0, imAffineRegistered );
 
 
   // Run a non-rigid registration
@@ -1903,7 +2038,7 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
   imNonRigidRegistered = RunNonRigidRegistration();
 
-  this->GraftNthOutput( 1, imNonRigidRegistered );  
+  this->GraftNthOutput( 1, imNonRigidRegistered );
 
 }
 
