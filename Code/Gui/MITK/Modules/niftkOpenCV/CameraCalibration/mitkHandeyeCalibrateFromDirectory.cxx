@@ -21,6 +21,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <ctime>
 #include <opencv2/opencv.hpp>
 #include <highgui.h>
 #include <niftkFileHelper.h>
@@ -51,6 +52,7 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_TranslationVectorRightToLeft(cvCreateMat(3,1,CV_64FC1))
 , m_OptimiseIntrinsics(true)
 , m_OptimiseRightToLeft(true)
+, m_Randomise(false)
 {
   m_PixelScaleFactor.Fill(1);
   cvSetIdentity(m_IntrinsicMatrixLeft);
@@ -257,7 +259,15 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   //std::default_random_engine generator;
   //std::uniform_int_distribution<int> distribution (0, numberOfFrames/2);
 
-  std::srand(0);
+  if (m_Randomise)
+  {
+    std::srand(std::time(NULL));
+  }
+  else
+  {
+    std::srand(0);
+  }
+
   std::vector <int> LeftFramesToUse;
   std::vector <int> RightFramesToUse;
   while ( LeftFramesToUse.size() < m_FramesToUse * m_BadFrameFactor )
