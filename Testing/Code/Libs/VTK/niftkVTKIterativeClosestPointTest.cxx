@@ -18,9 +18,6 @@
 
 #include <niftkVTKIterativeClosestPoint.h>
 #include <niftkVTKFunctions.h>
-
-#include <iostream>
-#include <cstdlib>
 #include <vtkPolyDataReader.h>
 #include <vtkMinimalStandardRandomSequence.h>
 #include <vtkBoxMuellerRandomSequence.h>
@@ -28,7 +25,10 @@
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkPolyDataNormals.h>
 #include <vtkPolyDataWriter.h>
+#include <iostream>
+#include <cstdlib>
 #include <sstream>
+#include <stdexcept>
 
 double CheckMatrixAgainstIdentity(const vtkMatrix4x4& transform,
                                   const double rotationTolerance, const double translationTolerance)
