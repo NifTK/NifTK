@@ -97,7 +97,7 @@ double Mean(const std::vector<double>& input)
 //-----------------------------------------------------------------------------
 double StdDev(const std::vector<double>& input)
 {
-  if (input.size() == 0)
+  if (input.size() < 2)
   {
     return 0;
   }
