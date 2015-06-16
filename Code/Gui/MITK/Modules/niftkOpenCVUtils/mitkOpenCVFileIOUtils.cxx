@@ -481,8 +481,7 @@ void SavePickedObjects ( const std::vector < mitk::PickedObject > & points, std:
     }
   }
   boost::property_tree::xml_writer_settings<std::string> settings(' ',2);
-  std::locale locale();
-  boost::property_tree::write_xml (os, pt, settings);// std::locale());// settings);
+  boost::property_tree::write_xml (os, pt, settings);
 
 }
 

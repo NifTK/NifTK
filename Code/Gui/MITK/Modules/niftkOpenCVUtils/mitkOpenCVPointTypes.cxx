@@ -398,11 +398,21 @@ PickedObject::~PickedObject()
 //-----------------------------------------------------------------------------
 bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject, const long long& allowableTimingError) const
 {
+  long long timingError;
+  if ( m_TimeStamp > otherPickedObject.m_TimeStamp )
+  {
+    timingError = m_TimeStamp - otherPickedObject.m_TimeStamp;
+  }
+  else
+  {
+    timingError = otherPickedObject.m_TimeStamp - m_TimeStamp;
+  }
+
   if ( ( m_Channel ==  otherPickedObject.m_Channel ) &&  
        ( m_IsLine == otherPickedObject.m_IsLine ) &&
        ( m_FrameNumber == otherPickedObject.m_FrameNumber ) &&
        ( ( m_Id == otherPickedObject.m_Id ) || ( otherPickedObject.m_Id == -1 ) ) &&
-       ( abs ( m_TimeStamp - otherPickedObject.m_TimeStamp ) < allowableTimingError ) )
+       ( timingError < allowableTimingError ) )
   {
     return true;
   }

@@ -69,6 +69,7 @@ mitk::PickedObject ProjectionErrorCalculator::FindNearestScreenPoint ( mitk::Pic
   {
     mitkThrow() << "mitkProjectionErrors::FindNearestScreenPoint found no matches: " << matches;
   }
+  return matchingObject;
 }
 
 } // end namespace
