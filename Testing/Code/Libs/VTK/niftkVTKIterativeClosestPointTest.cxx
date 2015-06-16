@@ -18,6 +18,7 @@
 
 #include <niftkVTKIterativeClosestPoint.h>
 #include <niftkVTKFunctions.h>
+#include <niftkMathsUtils.h>
 #include <vtkPolyDataReader.h>
 #include <vtkMinimalStandardRandomSequence.h>
 #include <vtkBoxMuellerRandomSequence.h>
@@ -198,7 +199,7 @@ int niftkVTKIterativeClosestPointTest ( int argc, char * argv[] )
     } // end for each iteration
 
     // Print results.
-    std::cerr << range << " " << iterations << " " << rms[0].front() << " " << rms[1].front() << std::endl;
+    std::cerr << range << " " << iterations << " " << niftk::Mean(rms[0]) << " " << " " << niftk::StdDev(rms[0]) << " " << niftk::Mean(rms[1]) << " " << niftk::StdDev(rms[1]) << std::endl;
 
   } // end for range
   return EXIT_SUCCESS;
