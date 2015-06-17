@@ -81,12 +81,8 @@ if(BUILD_IGI)
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    if(EP_ALWAYS_USE_INSTALL_DIR)
-      set(OpenCV_DIR ${proj_INSTALL})
-      set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
-    else()
-      set(OpenCV_DIR ${proj_BUILD})
-    endif()
+    set(OpenCV_DIR ${proj_INSTALL})
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
     message("SuperBuild loading OpenCV from ${OpenCV_DIR}")
 

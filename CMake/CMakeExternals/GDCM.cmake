@@ -71,12 +71,8 @@ if(NOT DEFINED GDCM_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  if(EP_ALWAYS_USE_INSTALL_DIR)
-    set(GDCM_DIR ${proj_INSTALL})
-    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
-  else()
-    set(GDCM_DIR ${proj_BUILD})
-  endif()
+  set(GDCM_DIR ${proj_INSTALL})
+  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
   message("SuperBuild loading GDCM from ${GDCM_DIR}")
 

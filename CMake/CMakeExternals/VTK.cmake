@@ -120,12 +120,8 @@ if(NOT DEFINED VTK_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  if(EP_ALWAYS_USE_INSTALL_DIR)
-    set(VTK_DIR ${proj_INSTALL})
-    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
-  else()
-    set(VTK_DIR ${proj_BUILD})
-  endif()
+  set(VTK_DIR ${proj_INSTALL})
+  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
 
   message("SuperBuild loading VTK from ${VTK_DIR}")
 
