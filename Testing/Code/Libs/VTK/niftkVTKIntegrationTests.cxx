@@ -22,7 +22,7 @@
 void RegisterTests()
 {
   REGISTER_TEST(niftkVTKIterativeClosestPointTest);
-  REGISTER_TEST(niftkVTKIterativeClosestPointRepeatTest);
+  REGISTER_TEST(niftkVTKIterativeClosestPointTargettingTest);
   REGISTER_TEST(niftkVTK3PointReaderTest);
   REGISTER_TEST(niftkVTK4PointReaderTest);
   REGISTER_TEST(niftkVTKDistanceToSurfaceTest);
