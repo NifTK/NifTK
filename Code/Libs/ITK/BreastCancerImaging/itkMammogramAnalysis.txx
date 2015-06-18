@@ -838,6 +838,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
 	itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
 					    "diagnostic image",  m_ImDiagnostic );
       }
+
       m_FileDiagnosticRegn = fileOutput;
     }
     else
