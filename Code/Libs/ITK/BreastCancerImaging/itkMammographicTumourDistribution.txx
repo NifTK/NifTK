@@ -379,7 +379,6 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
 
   // Write the data to the output csv file
 
-<<<<<<< HEAD
   std::string fileDiagnosticCSV = this->BuildOutputFilename( this->m_FileDiagnostic,
 							     ".csv" );
 
@@ -399,29 +398,6 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
   }
 
   WriteDataToCSVFile( m_foutOutputCSV );
-=======
-  *m_foutOutputCSV
-    << std::setprecision( 9 )
-    << std::right << std::setw(10) << this->m_SetNumberDiagnostic << ", "
-    << std::right << std::setw(17) << this->m_IdDiagnosticImage << ", "
-    << std::right << std::setw(60) << this->m_FileDiagnostic << ", "
-
-    << std::right << std::setw(17) << this->m_SetNumberControl << ", "
-    << std::right << std::setw(17) << this->m_IdControlImage << ", "
-    << std::right << std::setw(60) << this->m_FileControl << ", "
-
-    << std::right << std::setw( 9) << this->m_StrTumourID << ", "
-    << std::right << std::setw(17) << this->m_StrTumourImageID << ", "
-
-    << std::right << std::setw(17) << this->m_DiagTumourCenterIndex[0] << ", "
-    << std::right << std::setw(17) << this->m_DiagTumourCenterIndex[1] << ", "
-
-    << std::right << std::setw(17) << this->m_ControlCenterIndex[0] << ", "
-    << std::right << std::setw(17) << this->m_ControlCenterIndex[1]
-
-    << std::endl;
-
->>>>>>> e497a7c2c3684065e8d31479e22bba42a83c6612
 
 };
 
