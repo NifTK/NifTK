@@ -746,11 +746,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   std::ofstream *foutMatrix;
 
   foutMatrix = new std::ofstream( filename.c_str() );
-<<<<<<< HEAD
 
-=======
-  
->>>>>>> e497a7c2c3684065e8d31479e22bba42a83c6612
   if ( (! *foutMatrix) || foutMatrix->bad() ) {
     niftkitkErrorMacro( "SaveNiftyRegAffineMatrix(" << filename << ") Failed to open file." );
     return false;
@@ -758,7 +754,6 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 
 
   if (InputSpaceDimension == 3)
-<<<<<<< HEAD
   {
     *foutMatrix <<  this->m_Matrix[0][0] << " " <<  this->m_Matrix[0][1] << " " << -this->m_Matrix[0][2] << " " << -this->m_Offset[0] << std::endl;
     *foutMatrix <<  this->m_Matrix[1][0] << " " <<  this->m_Matrix[1][1] << " " << -this->m_Matrix[1][2] << " " << -this->m_Offset[1] << std::endl;
@@ -773,22 +768,6 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
     *foutMatrix <<               0 << " " <<               0 << " " << 1 << " " <<            0 << std::endl;
 
     *foutMatrix << 0 << " " << 0 << " " << 0 << " " << 1 << std::endl;
-=======
-  {      
-    *foutMatrix <<  this->m_Matrix[0][0] << " " <<  this->m_Matrix[0][1] << " " << -this->m_Matrix[0][2] << " " << -this->m_Offset[0] << std::endl;
-    *foutMatrix <<  this->m_Matrix[1][0] << " " <<  this->m_Matrix[1][1] << " " << -this->m_Matrix[1][2] << " " << -this->m_Offset[1] << std::endl;
-    *foutMatrix << -this->m_Matrix[2][0] << " " << -this->m_Matrix[2][1] << " " <<  this->m_Matrix[2][2] << " " <<  this->m_Offset[2] << std::endl;
-    
-    *foutMatrix << 0 << " " << 0 << " " << 0 << " " << 1 << std::endl;
-  }
-  else if (InputSpaceDimension == 2)
-  {        
-    *foutMatrix <<  this->m_Matrix[0][0] << " " <<  this->m_Matrix[0][1] << " " << 0 << " " << -this->m_Offset[0] << std::endl;
-    *foutMatrix <<  this->m_Matrix[1][0] << " " <<  this->m_Matrix[1][1] << " " << 0 << " " << -this->m_Offset[1] << std::endl;
-    *foutMatrix <<               0 << " " <<               0 << " " << 1 << " " <<            0 << std::endl;
-    
-    *foutMatrix << 0 << " " << 0 << " " << 0 << " " << 1 << std::endl;    
->>>>>>> e497a7c2c3684065e8d31479e22bba42a83c6612
   }
   else
   {
@@ -798,11 +777,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   foutMatrix->close();
   delete foutMatrix;
 
-<<<<<<< HEAD
   return true;
-=======
-
->>>>>>> e497a7c2c3684065e8d31479e22bba42a83c6612
 }
 
 } // namespace
