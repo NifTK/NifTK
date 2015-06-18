@@ -65,8 +65,11 @@ public:
 
   void SetOutputCSV( std::ofstream *foutOutputCSV ) { m_foutOutputCSV = foutOutputCSV; };
 
+<<<<<<< HEAD
   void WriteDataToCSVFile( std::ofstream *foutCSV );
 
+=======
+>>>>>>> e497a7c2c3684065e8d31479e22bba42a83c6612
   void Compute();
 
 protected:
