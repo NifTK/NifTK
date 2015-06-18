@@ -19,7 +19,7 @@
 #include <itkCommandLineHelper.h>
 
 #include <itkDOMReader.h>
-
+#include <niftkCSVRow.h>
 
 #include <itkMammographicTumourDistribution.h>
 
@@ -181,8 +181,8 @@ int main(int argc, char** argv)
   }
 
 
-  // Open the output CSV density measurements file
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Open the output CSV file
+  // ~~~~~~~~~~~~~~~~~~~~~~~~
 
   if ( fileOutputCSV.length() != 0 ) {
     foutOutputCSV
@@ -753,12 +753,55 @@ int main(int argc, char** argv)
 	      << progress << std::endl
 	      << "</filter-progress>" << std::endl;
 
+    if ( ( ! (*itPatient)->GetFileDiagnostic().length() ) ||
+	 ( ! (*itPatient)->GetFileControl().length() ) )
+    {
+      std::cout << "WARNING: Skipping patient, because diagnostic "
+		<< "or reference file names are not set." << std::endl << std::endl;
+      continue;
+    }
+
     (*itPatient)->LoadImages();
 
     progress = (iFile + 0.25)/nFiles;
     std::cout << "<filter-progress>" << std::endl
 	      << progress << std::endl
 	      << "</filter-progress>" << std::endl;
+
+
+    // If csv file exists for this diagnostic image then read it and continue
+
+    std::string fileCSV =
+      niftk::ConcatenatePath( dirOutput,
+			      niftk::ModifyImageFileSuffix( (*itPatient)->GetFileDiagnostic(), ".csv" ) );
+
+
+    if ( niftk::FileExists( fileCSV ) )
+    {
+      std::cout << "CSV file exists: " << fileCSV << std::endl;
+
+      std::ifstream fin( fileCSV.c_str() );
+
+      if ((! fin) || fin.bad())
+      {
+        std::cerr << "ERROR: Could not open file: " << fileCSV << std::endl;
+      }
+
+      else
+      {
+	std::cout << std::endl << "Reading CSV file: " << fileCSV << std::endl;
+
+	niftk::CSVRow csvRow;
+
+	while( fin >> csvRow )
+	{
+	  std::cout << csvRow << std::endl;
+	  *foutOutputCSV << csvRow << std::endl;
+	}
+
+	continue;
+      }
+    }
 
     try
     {

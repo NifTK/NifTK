@@ -65,6 +65,8 @@ public:
 
   void SetOutputCSV( std::ofstream *foutOutputCSV ) { m_foutOutputCSV = foutOutputCSV; };
 
+  void WriteDataToCSVFile( std::ofstream *foutCSV );
+
   void Compute();
 
 protected:

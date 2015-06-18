@@ -833,8 +833,11 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
       niftk::CreateDirAndParents( fs::path( fileOutput ).branch_path().string() );
 
-      itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
-                                               "diagnostic image",  m_ImDiagnostic );
+      if ( m_FlgOverwrite || ( ! niftk::FileExists( fileOutput ) ) )
+      {
+	itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
+					    "diagnostic image",  m_ImDiagnostic );
+      }
       m_FileDiagnosticRegn = fileOutput;
     }
     else
@@ -868,8 +871,12 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
       niftk::CreateDirAndParents( fs::path( fileOutput ).branch_path().string() );
 
-      itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
-                                               "pre-diagnostic image",  m_ImPreDiagnostic );
+      if ( m_FlgOverwrite || ( ! niftk::FileExists( fileOutput ) ) )
+      {
+	itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
+					    "pre-diagnostic image",  m_ImPreDiagnostic );
+      }
+
       m_FilePreDiagnosticRegn = fileOutput;
     }
     else
@@ -903,8 +910,12 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
       niftk::CreateDirAndParents( fs::path( fileOutput ).branch_path().string() );
 
-      itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
-                                               "control image",  m_ImControl );
+      if ( m_FlgOverwrite || ( ! niftk::FileExists( fileOutput ) ) )
+      {
+	itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
+					    "control image",  m_ImControl );
+      }
+
       m_FileControlRegn = fileOutput;
     }
     else

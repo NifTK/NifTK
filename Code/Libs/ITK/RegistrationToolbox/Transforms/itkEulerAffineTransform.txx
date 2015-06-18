@@ -35,8 +35,8 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::EulerAffineTransform()
   : Superclass(OutputSpaceDimension, ParametersDimension)
 {
-  m_ChangeOrigin.SetIdentity(); 
-  m_UnChangeOrigin.SetIdentity(); 
+  m_ChangeOrigin.SetIdentity();
+  m_UnChangeOrigin.SetIdentity();
 }
 
 
@@ -44,12 +44,12 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 template<class TScalarType, unsigned int NInputDimensions,
                             unsigned int NOutputDimensions>
 EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::EulerAffineTransform( unsigned int outputDims, 
+::EulerAffineTransform( unsigned int outputDims,
                              unsigned int paramDims   )
   : Superclass(outputDims, paramDims)
 {
-  m_ChangeOrigin.SetIdentity(); 
-  m_UnChangeOrigin.SetIdentity(); 
+  m_ChangeOrigin.SetIdentity();
+  m_UnChangeOrigin.SetIdentity();
 }
 
 
@@ -69,7 +69,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::ComputeComponentMatrices( void ) const
 {
   double toRadians = vnl_math::pi/180.0;
-  
+
   if ( InputSpaceDimension == 2 )
     {
       double cx=this->GetCenter()[0];
@@ -82,11 +82,11 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
       double k0=this->GetSkew()[0];
       double srz=vcl_sin(rz*toRadians);
       double crz=vcl_cos(rz*toRadians);
-      
+
       m_ChangeOrigin.SetIdentity();
       m_ChangeOrigin[0][2]=-cx;
       m_ChangeOrigin[1][2]=-cy;
-      
+
       m_Rz.SetIdentity();
       m_Rz[0][0]=crz;
       m_Rz[0][1]=srz;
@@ -107,7 +107,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
       m_UnChangeOrigin.SetIdentity();
       m_UnChangeOrigin[0][2]=cx;
       m_UnChangeOrigin[1][2]=cy;
-      
+
     }
   else if ( InputSpaceDimension == 3 )
     {
@@ -132,12 +132,12 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
       double cry=vcl_cos(ry*toRadians);
       double srz=vcl_sin(rz*toRadians);
       double crz=vcl_cos(rz*toRadians);
-      
+
       m_ChangeOrigin.SetIdentity();
       m_ChangeOrigin[0][3]=-cx;
       m_ChangeOrigin[1][3]=-cy;
       m_ChangeOrigin[2][3]=-cz;
-      
+
       m_Rz.SetIdentity();
       m_Rz[0][0]=crz;
       m_Rz[0][1]=srz;
@@ -165,7 +165,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
       m_Scale[0][0]=sx;
       m_Scale[1][1]=sy;
       m_Scale[2][2]=sz;
-      
+
       m_Skew.SetIdentity();
       m_Skew[0][1]=k0;
       m_Skew[0][2]=k1;
@@ -175,25 +175,25 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
       m_UnChangeOrigin[0][3]=cx;
       m_UnChangeOrigin[1][3]=cy;
       m_UnChangeOrigin[2][3]=cz;
-      
+
     }
   else
     {
       itkExceptionMacro( << "EulerAffineTransform, number of Input Dimensions, should be 2 or 3");
     }
 }
- 
+
 template<class TScalarType, unsigned int NInputDimensions,
                             unsigned int NOutputDimensions>
-const typename EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>::JacobianType 
+const typename EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>::JacobianType
 EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::GetJacobian( const InputPointType &p ) const
 {
   JacobianType tmp;
   this->ComputeJacobianWithRespectToParameters( p, tmp );
-  return tmp;	
+  return tmp;
 }
- 
+
 template<class TScalarType, unsigned int NInputDimensions,
                             unsigned int NOutputDimensions>
 void
@@ -204,11 +204,11 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   double toRadians = vnl_math::pi/180.0;
 
   int i = 0;
-  
+
   if ( InputSpaceDimension == 2 )
     {
       jacobian.SetSize(2, dof);
-      
+
       double cx=this->GetCenter()[0];
       double cy=this->GetCenter()[1];
       double th=this->GetRotation()[0];
@@ -219,7 +219,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
       double cth=vcl_cos(th*toRadians);
       double one=sx*((p[0]-cx)-k0*(p[1]-cy));
       double two=sy*((p[1]-cy));
-      
+
       if (this->GetOptimiseRotation())
         {
           // dx/dtheta, dy/dtheta
@@ -227,20 +227,20 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
           jacobian[1][i]= -cth*one - sth*two;
           i++;
         }
-        
+
       if (this->GetOptimiseTranslation())
         {
           // dx/dtx, dy/dtx
           jacobian[0][i]=1;
           jacobian[1][i]=0;
           i++;
-          
+
           // dy/dtx, dy/dty
           jacobian[0][i]=0;
           jacobian[1][i]=1;
-          i++;          
+          i++;
         }
-        
+
       if (this->GetOptimiseScale())
         {
           // dx/dsx, dy/dsx
@@ -255,14 +255,14 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
           jacobian[1][i] = cth*(twoDerivSy);
           i++;
         }
-      
+
       if (this->GetOptimiseSkew())
         {
           // dx/dk1, dy/dk1
           double sxTimesDerivSy = -sx*(p[1]-cy);
           jacobian[0][i] = cth*(sxTimesDerivSy);
           jacobian[1][i] = -sth*(sxTimesDerivSy);
-          i++;        
+          i++;
         }
     }
   else if ( InputSpaceDimension == 3 )
@@ -290,15 +290,15 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
       double one=sx*((p[0]-cx) + k1*(p[1]-cy) + k2*(p[2]-cz));
       double two=sy*((p[1]-cy) + k3*(p[2]-cz));
       double three=sz*(p[2]-cz);
-      
+
       double r1,r2,r3,r4,r5,r6,r7,r8,r9;
       r1 =  cry*crz;                r2 =  cry*srz;               r3 = -sry;
       r4 = -crx*srz + srx*sry*crz;  r5 =  crx*crz + srx*sry*srz; r6 =  srx*cry;
       r7 =  srx*srz + crx*sry*crz;  r8 = -srx*crz + crx*sry*srz; r9 =  crx*cry;
-       
+
       if (this->GetOptimiseRotation())
         {
-          
+
           // dx,y,z w.r.t. rx.
           jacobian[0][i] = 0;
           jacobian[1][i] = one * ( srx*srz + crx*sry*crz) + two * (crx*sry*srz - srx*crz) + three * (crx*cry);
@@ -316,9 +316,9 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
           jacobian[1][i] = one * (-crx*crz - srx*sry*srz) + two * (-crx*srz + srx*sry*crz);
           jacobian[2][i] = one * ( srx*crz - crx*sry*srz) + two * (srx*srz + crx*sry*crz);
           i++;
-           
+
         }
-              
+
       if (this->GetOptimiseTranslation())
         {
 
@@ -365,7 +365,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
           i++;
         }
 
-        
+
       if (this->GetOptimiseSkew())
         {
           // dx,y,z w.r.t. k1
@@ -409,7 +409,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 }
 
 // Return jacobian with respect to position.
-template <class TScalarType, 
+template <class TScalarType,
           unsigned int NInputDimensions,
           unsigned int NOutputDimensions>
 void
@@ -424,18 +424,18 @@ template<class TScalarType, unsigned int NInputDimensions,
                             unsigned int NOutputDimensions>
 void
 EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::ComputeMatrixAndOffset( void ) 
+::ComputeMatrixAndOffset( void )
 {
 
   this->ComputeComponentMatrices();
-  Matrix<TScalarType,NInputDimensions+1,NInputDimensions+1> Result;	
+  Matrix<TScalarType,NInputDimensions+1,NInputDimensions+1> Result;
 
   if (InputSpaceDimension == 3)
     {
       Result = (m_UnChangeOrigin * (m_Trans * (m_Rx * (m_Ry * (m_Rz * (m_Scale * (m_Skew * m_ChangeOrigin)))))));
     }
   else if (InputSpaceDimension == 2)
-    {        
+    {
       Result =  (m_UnChangeOrigin * (m_Trans * (m_Rz * (m_Scale * (m_Skew * m_ChangeOrigin)))));
     }
   else
@@ -458,19 +458,19 @@ template<class TScalarType, unsigned int NInputDimensions,
                             unsigned int NOutputDimensions>
 void
 EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::ComputeParametersFromMatrixAndOffset( void ) 
+::ComputeParametersFromMatrixAndOffset( void )
 {
   if (InputSpaceDimension == 3)
     {
-      itkExceptionMacro( << "ComputeParametersFromMatrixAndOffset() not implemented yet.");  
+      itkExceptionMacro( << "ComputeParametersFromMatrixAndOffset() not implemented yet.");
     }
   else if (InputSpaceDimension == 2)
     {
-      itkExceptionMacro( << "ComputeParametersFromMatrixAndOffset() not implemented yet.");  
+      itkExceptionMacro( << "ComputeParametersFromMatrixAndOffset() not implemented yet.");
     }
   else
     {
-      itkExceptionMacro( << "EulerAffineTransform, number of Input Dimensions, should be 2 or 3");  
+      itkExceptionMacro( << "EulerAffineTransform, number of Input Dimensions, should be 2 or 3");
     }
 }
 
@@ -480,8 +480,8 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::GetInv(UCLBaseTransform< TScalarType, NInputDimensions, NOutputDimensions >* inverse) const
 {
   Superclass* switchableAffineTransformInverse = dynamic_cast<Superclass*>(inverse);
-  
-  return this->GetInverse(switchableAffineTransformInverse);  
+
+  return this->GetInverse(switchableAffineTransformInverse);
 }
 
 template<class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
@@ -491,7 +491,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 {
   typename Self::Pointer inverse = Self::New();
   GetInv(inverse);
-  out = inverse->TransformPoint(point);       
+  out = inverse->TransformPoint(point);
 }
 
 template<class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
@@ -502,10 +502,10 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 
   int numberOfDOF = 12;
   this->SetNumberOfDOF(numberOfDOF);
-  
+
   ParametersType P;
   P.SetSize(numberOfDOF);
-  
+
   typedef vnl_matrix<double> VnlAffineMatrixType;
   typedef vnl_matrix<double> VnlRotationMatrixType;
 
@@ -515,7 +515,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   VnlRotationMatrixType RTranspose;
   VnlRotationMatrixType RTransposeTimesR;
   VnlRotationMatrixType C;
-  
+
   for (unsigned int i = 0; i < NOutputDimensions+1; i++)
   {
     for (unsigned int j = 0; j < NInputDimensions+1; j++)
@@ -524,15 +524,15 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
       matrix[i][j] = fullAffine->GetParameters()[index];
     }
   }
-  
-  // We are doing the rotations around the centre of the image. 
-  // We need to move the matrix to the centre of the image before decomposing the matrix. 
-  // See this: 
+
+  // We are doing the rotations around the centre of the image.
+  // We need to move the matrix to the centre of the image before decomposing the matrix.
+  // See this:
   // Result = (m_UnChangeOrigin * (m_Trans * (m_Rx * (m_Ry * (m_Rz * (m_Scale * (m_Skew * m_ChangeOrigin)))))));
-  // from ComputeMatrixAndOffset(). 
-  vnl_matrix<double> unChangeOriginInverse = m_UnChangeOrigin.GetInverse(); 
-  matrix = matrix*m_ChangeOrigin.GetInverse(); 
-  matrix = unChangeOriginInverse*matrix; 
+  // from ComputeMatrixAndOffset().
+  vnl_matrix<double> unChangeOriginInverse = m_UnChangeOrigin.GetInverse();
+  matrix = matrix*m_ChangeOrigin.GetInverse();
+  matrix = unChangeOriginInverse*matrix;
 
   for (unsigned int i = 0; i < NOutputDimensions; i++)
   {
@@ -540,12 +540,12 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
     {
       R[i][j] = matrix[i][j];
     }
-  }    
+  }
   RTranspose = R.transpose();
   RTransposeTimesR = RTranspose*R;
   vnl_cholesky cholesky(RTransposeTimesR);
   C = cholesky.upper_triangle();
-  
+
   // Set translations
   P[0] = matrix[0][3];
   P[1] = matrix[1][3];
@@ -555,7 +555,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
       << ", ty=" << P[1] \
       << ", tz=" << P[2] \
       );
-  
+
   // Set scale = diagonal of C.
   P[6] = C[0][0];
   P[7] = C[1][1];
@@ -569,17 +569,17 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   if (vnl_determinant(R) < 0)
     {
       P[6] = -C[0][0];
-      
+
       niftkitkDebugMacro(<< "SetParameters():Decomposed scale sx=" << P[6]);
     }
-  
+
   // Work out skews
   VnlRotationMatrixType CDiag(NOutputDimensions, NInputDimensions);
   CDiag.set_identity();
   CDiag[0][0] = C[0][0];
   CDiag[1][1] = C[1][1];
   CDiag[2][2] = C[2][2];
-  
+
   VnlRotationMatrixType CDiagInverse = vnl_matrix_inverse<double>(CDiag);
   C = CDiagInverse*C;
   P[9]  = C[0][1];
@@ -594,7 +594,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   // Work out rotations
   Pointer R0Transform = Self::New();
   R0Transform->SetNumberOfDOF(numberOfDOF);
-  
+
   ParametersType Q;
   Q.SetSize(numberOfDOF);
   Q.Fill(0);
@@ -611,27 +611,27 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
     for (unsigned int j = 0; j < NInputDimensions+1; j++)
     {
       int index = i*(NOutputDimensions+1) + j;
-      matrix[i][j] = R0Transform->GetFullAffineTransform()->GetParameters()[index];      
+      matrix[i][j] = R0Transform->GetFullAffineTransform()->GetParameters()[index];
     }
   }
 
   VnlRotationMatrixType R0(NOutputDimensions, NInputDimensions);
-  
+
   for (unsigned int i = 0; i < NOutputDimensions; i++)
   {
     for (unsigned int j = 0; j < NInputDimensions; j++)
     {
       R0[i][j] = matrix[i][j];
     }
-  }    
-  
+  }
+
   VnlRotationMatrixType R0Inverse = vnl_matrix_inverse<double>(R0);
   VnlRotationMatrixType R1 = R * R0Inverse;
 
   P[4] = vcl_asin(niftk::fixRangeTo1(R1[0][2]));
-  
+
   double tmp;
-  
+
   tmp = fabs(P[11]) - vnl_math::pi/2.0;
   if (tmp*tmp < 0.000000001)
     {
@@ -639,7 +639,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
       P[5] = atan2(-1 * niftk::fixRangeTo1(R1[1][0]) , niftk::fixRangeTo1(R1[2][0] / R1[0][2]));
     }
   else
-    { 
+    {
       tmp = vcl_cos(P[4]);
       P[3] = atan2(niftk::fixRangeTo1(R1[1][2]/tmp), niftk::fixRangeTo1(R1[2][2]/tmp));
       P[5] = atan2(niftk::fixRangeTo1(R1[0][1]/tmp), niftk::fixRangeTo1(R1[0][0]/tmp));
@@ -649,7 +649,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   P[3] /= degreesToRadians;
   P[4] /= degreesToRadians;
   P[5] /= degreesToRadians;
-  
+
   niftkitkDebugMacro(<< "SetParameters():Decomposed rotations rx=" << P[3] \
       << ", ry=" << P[4] \
       << ", rz=" << P[5] \
@@ -667,13 +667,13 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::SaveFullAffineMatrix(std::string filename)
 {
   // TODO: Robust error handling!
-  
+
   typename FullAffineTransformType::Pointer affine = this->GetFullAffineTransform();
   std::ofstream outputFile;
   outputFile.open(filename.c_str());
   for (unsigned int i = 0; i < 4; i++)
     {
-      outputFile << boost::format("%10.6f  %10.6f  %10.6f  %10.6f") % affine->GetParameters()[i*4 + 0] % affine->GetParameters()[i*4 + 1] % affine->GetParameters()[i*4 + 2] % affine->GetParameters()[i*4 + 3] << std::endl;    
+      outputFile << boost::format("%10.6f  %10.6f  %10.6f  %10.6f") % affine->GetParameters()[i*4 + 0] % affine->GetParameters()[i*4 + 1] % affine->GetParameters()[i*4 + 2] % affine->GetParameters()[i*4 + 3] << std::endl;
     }
    outputFile.close();
    return true;
@@ -686,16 +686,16 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::LoadFullAffineMatrix(std::string filename)
 {
   // TODO: Robust error handling!
-   
+
   unsigned int numberOfDOF = 16;
   bool result = false;
- 
+
   double value;
   std::vector<double> list;
-  
+
   std::ifstream inputFile;
-  inputFile.open(filename.c_str(), std::ifstream::in); 
-  
+  inputFile.open(filename.c_str(), std::ifstream::in);
+
   while (!inputFile.eof())
     {
       inputFile >> value;
@@ -707,22 +707,22 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   inputFile.close();
 
   niftkitkDebugMacro(<< "LoadFullAffineMatrix():Loaded " << list.size() << " parameters");
-  
+
   if (list.size() == numberOfDOF)
   {
     ParametersType p;
     p.SetSize(numberOfDOF);
     p.Fill(0);
-    
+
     for (unsigned int i = 0; i < numberOfDOF; i++)
     {
       p[i] = list[i];
     }
     niftkitkDebugMacro(<< "LoadFullAffineMatrix(" << filename << "):Read transform parameters:" << p );
-  
+
     typename FullAffineTransformType::Pointer affine = this->GetFullAffineTransform();
     affine->SetParameters(p);
-  
+
     this->SetParametersFromTransform(affine);
     result = true;
   }
@@ -746,7 +746,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   std::ofstream *foutMatrix;
 
   foutMatrix = new std::ofstream( filename.c_str() );
-  
+
   if ( (! *foutMatrix) || foutMatrix->bad() ) {
     niftkitkErrorMacro( "SaveNiftyRegAffineMatrix(" << filename << ") Failed to open file." );
     return false;
@@ -754,20 +754,20 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
 
 
   if (InputSpaceDimension == 3)
-  {      
+  {
     *foutMatrix <<  this->m_Matrix[0][0] << " " <<  this->m_Matrix[0][1] << " " << -this->m_Matrix[0][2] << " " << -this->m_Offset[0] << std::endl;
     *foutMatrix <<  this->m_Matrix[1][0] << " " <<  this->m_Matrix[1][1] << " " << -this->m_Matrix[1][2] << " " << -this->m_Offset[1] << std::endl;
     *foutMatrix << -this->m_Matrix[2][0] << " " << -this->m_Matrix[2][1] << " " <<  this->m_Matrix[2][2] << " " <<  this->m_Offset[2] << std::endl;
-    
+
     *foutMatrix << 0 << " " << 0 << " " << 0 << " " << 1 << std::endl;
   }
   else if (InputSpaceDimension == 2)
-  {        
+  {
     *foutMatrix <<  this->m_Matrix[0][0] << " " <<  this->m_Matrix[0][1] << " " << 0 << " " << -this->m_Offset[0] << std::endl;
     *foutMatrix <<  this->m_Matrix[1][0] << " " <<  this->m_Matrix[1][1] << " " << 0 << " " << -this->m_Offset[1] << std::endl;
     *foutMatrix <<               0 << " " <<               0 << " " << 1 << " " <<            0 << std::endl;
-    
-    *foutMatrix << 0 << " " << 0 << " " << 0 << " " << 1 << std::endl;    
+
+    *foutMatrix << 0 << " " << 0 << " " << 0 << " " << 1 << std::endl;
   }
   else
   {
@@ -777,7 +777,7 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   foutMatrix->close();
   delete foutMatrix;
 
-
+  return true;
 }
 
 } // namespace

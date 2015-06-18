@@ -107,6 +107,37 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
 
 
 // --------------------------------------------------------------------------
+// WriteDataToCSVFile()
+// --------------------------------------------------------------------------
+
+template <class InputPixelType, unsigned int InputDimension>
+void
+MammographicTumourDistribution< InputPixelType, InputDimension >
+::WriteDataToCSVFile( std::ofstream *foutCSV )
+{
+  *foutCSV << std::setprecision( 9 )
+	   << std::right << std::setw(10) << this->m_SetNumberDiagnostic << ", "
+	   << std::right << std::setw(17) << this->m_IdDiagnosticImage << ", "
+	   << std::right << std::setw(60) << this->m_FileDiagnostic << ", "
+
+	   << std::right << std::setw(17) << this->m_SetNumberControl << ", "
+	   << std::right << std::setw(17) << this->m_IdControlImage << ", "
+	   << std::right << std::setw(60) << this->m_FileControl << ", "
+
+	   << std::right << std::setw( 9) << this->m_StrTumourID << ", "
+	   << std::right << std::setw(17) << this->m_StrTumourImageID << ", "
+
+	   << std::right << std::setw(17) << this->m_DiagTumourCenterIndex[0] << ", "
+	   << std::right << std::setw(17) << this->m_DiagTumourCenterIndex[1] << ", "
+
+	   << std::right << std::setw(17) << this->m_ControlCenterIndex[0] << ", "
+	   << std::right << std::setw(17) << this->m_ControlCenterIndex[1]
+
+	   << std::endl;
+};
+
+
+// --------------------------------------------------------------------------
 // Compute()
 // --------------------------------------------------------------------------
 
@@ -348,27 +379,25 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
 
   // Write the data to the output csv file
 
-  *m_foutOutputCSV
-    << std::setprecision( 9 )
-    << std::right << std::setw(10) << this->m_SetNumberDiagnostic << ", "
-    << std::right << std::setw(17) << this->m_IdDiagnosticImage << ", "
-    << std::right << std::setw(60) << this->m_FileDiagnostic << ", "
+  std::string fileDiagnosticCSV = this->BuildOutputFilename( this->m_FileDiagnostic,
+							     ".csv" );
 
-    << std::right << std::setw(17) << this->m_SetNumberControl << ", "
-    << std::right << std::setw(17) << this->m_IdControlImage << ", "
-    << std::right << std::setw(60) << this->m_FileControl << ", "
+  std::ofstream foutDiagnosticCSV( fileDiagnosticCSV.c_str(), std::ios::binary );
 
-    << std::right << std::setw( 9) << this->m_StrTumourID << ", "
-    << std::right << std::setw(17) << this->m_StrTumourImageID << ", "
+  if ( ( ! foutDiagnosticCSV ) ||
+       foutDiagnosticCSV.bad() ||
+       foutDiagnosticCSV.fail() )
+  {
+    std::cerr << "ERROR: Could not open CSV output file: "
+	      << fileDiagnosticCSV << std::endl;
+  }
+  else
+  {
+    WriteDataToCSVFile( &foutDiagnosticCSV );
+    foutDiagnosticCSV.close();
+  }
 
-    << std::right << std::setw(17) << this->m_DiagTumourCenterIndex[0] << ", "
-    << std::right << std::setw(17) << this->m_DiagTumourCenterIndex[1] << ", "
-
-    << std::right << std::setw(17) << this->m_ControlCenterIndex[0] << ", "
-    << std::right << std::setw(17) << this->m_ControlCenterIndex[1]
-
-    << std::endl;
-
+  WriteDataToCSVFile( m_foutOutputCSV );
 
 };
 
