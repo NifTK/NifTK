@@ -457,7 +457,7 @@ set(OPENCV_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for OpenCV
 mark_as_advanced(OPENCV_ADDITIONAL_CXX_FLAGS)
 set(OPENCV_WITH_CUDA OFF CACHE BOOL "Build OpenCV with CUDA support (takes a long time)")
 mark_as_advanced(OPENCV_WITH_CUDA)
-set(OPENCV_WITH_FFMPEG OFF CACHE BOOL "Build OpenCV with FFMPEG support")
+set(OPENCV_WITH_FFMPEG ON CACHE BOOL "Build OpenCV with FFMPEG support")
 mark_as_advanced(OPENCV_WITH_FFMPEG)
 set(OPENCV_WITH_NONFREE OFF CACHE BOOL "Build OpenCV with nonfree library")
 mark_as_advanced(OPENCV_WITH_NONFREE)
