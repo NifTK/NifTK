@@ -45,11 +45,11 @@
     </integer>
 
     <boolean>
-      <name>orderedPoints</name>
-      <longflag>orderedPoints</longflag>
-      <description>Pick ordered points (where you know the point ID)</description>
-      <label>Pick ordered points (where yoy know the point ID</label>
-      <default>1</default>
+      <name>unOrderedPoints</name>
+      <longflag>unOrderedPoints</longflag>
+      <description>Pick un ordered points (where you don't know the point ID)</description>
+      <label>Pick un ordered points (where you don't know the point ID</label>
+      <default>0</default>
     </boolean>
    
     <boolean>

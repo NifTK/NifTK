@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     mitk::PickPointsOnStereoVideo::Pointer projector = mitk::PickPointsOnStereoVideo::New();
     projector->SetAllowableTimingError(maxTimingError * 1e6);
     projector->SetFrequency(frequency*2);
-    projector->SetOrderedPoints(orderedPoints);
+    projector->SetOrderedPoints( ! unOrderedPoints);
     projector->SetAskOverWrite(queryOverWrite);
     projector->SetWriteAnnotatedImages(saveAnnotatedImages);
     
