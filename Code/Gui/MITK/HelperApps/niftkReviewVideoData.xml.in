@@ -59,7 +59,7 @@
     </boolean>
  
     <boolean>
-      <name>
+      <name>noVisualise</name>
       <longflag>noVisualise</longflag>
       <description>Don't Visualise the results</description>
       <label>Don't Visualise the results</label>
