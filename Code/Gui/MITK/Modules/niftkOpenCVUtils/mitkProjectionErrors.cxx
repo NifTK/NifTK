@@ -28,6 +28,14 @@
 namespace mitk {
 
 //-----------------------------------------------------------------------------
+ProjectionErrorCalculator::ProjectionErrorCalculator ()
+{}
+
+//-----------------------------------------------------------------------------
+ProjectionErrorCalculator::~ProjectionErrorCalculator ()
+{}
+
+//-----------------------------------------------------------------------------
 mitk::PickedObject ProjectionErrorCalculator::FindNearestScreenPoint ( mitk::PickedObject GSPoint, std::string channel , double* minRatio)
 {
   unsigned int matches =0;
