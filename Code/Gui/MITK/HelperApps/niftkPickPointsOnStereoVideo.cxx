@@ -61,7 +61,8 @@ int main(int argc, char** argv)
       MITK_ERROR << "Projector failed to initialise, halting.";
       return -1;
     }
-    matcher->SetFlipMatrices(FlipTracking);
+    bool flipTracking = false; 
+    matcher->SetFlipMatrices(flipTracking);
     matcher->SetWriteTimingErrors(WriteTimingErrors);
     projector->SetTrackerIndex(trackerIndex);
     projector->SetReferenceIndex(referenceIndex);
