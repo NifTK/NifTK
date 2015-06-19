@@ -37,7 +37,7 @@ int main(int argc, char** argv)
   try
   {
     mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
-    projector->SetVisualise(Visualise);
+    projector->SetVisualise(! noVisualise);
     projector->SetAllowableTimingError(maxTimingError * 1e6);
     projector->SetDontProject(true);
     projector->SetVisualiseTrackingStatus(true);
