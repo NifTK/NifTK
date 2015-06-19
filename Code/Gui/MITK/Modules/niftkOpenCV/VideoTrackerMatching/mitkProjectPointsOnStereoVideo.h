@@ -54,6 +54,13 @@ public:
    * and sets up the videotracker matcher
    */
   void Initialise (std::string directory, std::string calibrationParameterDirectory);
+ /** 
+   * \brief
+   * Set up the projector, finds the video file in the directory, and the tracking data, 
+   * and sets up the videotracker matcher, without any calibration information
+   */
+  void Initialise (std::string directory);
+  
   /**
    * \brief
    * performs the point projection
@@ -93,6 +100,8 @@ public:
   itkSetMacro ( DrawLines, bool);
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( HaltOnVideoReadFail, bool);
+  itkSetMacro ( DontProject, bool);
+  itkSetMacro ( VisualiseTrackingStatus, bool);
   itkSetMacro ( AllowablePointMatchingRatio, double);
   itkSetMacro ( AllowableTimingError, long long);
   void SetLeftGoldStandardPoints ( std::vector <GoldStandardPoint> points );
@@ -170,6 +179,8 @@ private:
   bool                          m_LeftGSFramesAreEven; // true if the left GS frame numbers are even
   bool                          m_RightGSFramesAreEven; // true if the right GS frame numbers are even
   bool                          m_HaltOnVideoReadFail; //stop processing if video read fails
+  bool                          m_DontProject; //don't project anything, useful for just reviewing video data
+  bool                          m_VisualiseTrackingStatus; //draw something on screen to indicate whether tracking was working got frame
   int                           m_RightGSFrameOffset; //0 if right and left gold standard points have the same frame number 
   int                           m_MaxGoldStandardIndex; //useful if we're just triangulating gold standard points
 
@@ -217,7 +228,7 @@ private:
   std::vector < cv::Point3d >   m_RightReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
   std::vector < cv::Point3d >   m_TriangulationErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
 
-  cv::VideoCapture*                  m_Capture;
+  cv::VideoCapture*             m_Capture;
   CvVideoWriter*                m_LeftWriter;
   CvVideoWriter*                m_RightWriter;
 
