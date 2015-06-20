@@ -1068,7 +1068,6 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
     std::string fileSearchRegNonRigid = niftk::ConcatenatePath( m_DirExecutable,
                                                           progRegNonRigid );
 
-
     if ( niftk::FileExists( fileSearchRegNonRigid ) )
     {
       progRegNonRigid = fileSearchRegNonRigid;

@@ -131,10 +131,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     imNonRigidRegistered = this->m_RegistrationControl->GetOutput( 1 );
 
     this->WriteRegistrationDifferenceImage( this->m_FileControl,
-                                      std::string( "_ControlReg2DiagNonRigidDifference.jpg" ),
-                                      "non-rigidly  registered control difference image",
-                                      imNonRigidRegistered,
-                                      this->m_DiagDictionary );
+					    std::string( "_ControlReg2DiagNonRigidDifference.jpg" ),
+					    "non-rigidly  registered control difference image",
+					    imNonRigidRegistered,
+					    this->m_DiagDictionary );
   }
 
 };
