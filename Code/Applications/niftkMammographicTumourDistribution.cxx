@@ -356,7 +356,7 @@ int main(int argc, char** argv)
       else
       {
         reference = patient;
-        listOfPatients.push_back( patient );
+        listOfPatients.push_front( patient );
       }
     }
 
@@ -736,6 +736,20 @@ int main(int argc, char** argv)
   }
 
 
+  // Set the control data for each patient
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( flgDebug )
+  {
+    for ( itPatient = listOfPatients.begin();
+	  itPatient != listOfPatients.end();
+	  itPatient++ )
+    {
+      (*itPatient)->Print();
+    }
+  }
+
+
   // Iterate through the patients analysing each image pair
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -752,11 +766,10 @@ int main(int argc, char** argv)
 	      << progress << std::endl
 	      << "</filter-progress>" << std::endl;
 
-    if ( ( ! (*itPatient)->GetFileDiagnostic().length() ) ||
-	 ( ! (*itPatient)->GetFileControl().length() ) )
+    if ( ! (*itPatient)->GetFileControl().length() )
     {
-      std::cout << "WARNING: Skipping patient, because diagnostic "
-		<< "or reference file names are not set." << std::endl << std::endl;
+      std::cout << "WARNING: Skipping patient, because reference file name not set."
+		<< std::endl << std::endl;
       continue;
     }
 
