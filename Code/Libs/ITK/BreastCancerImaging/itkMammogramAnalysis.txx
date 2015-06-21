@@ -146,6 +146,30 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
 
 // --------------------------------------------------------------------------
+// CreateDirectoryAndParents()
+// --------------------------------------------------------------------------
+
+template <class InputPixelType, unsigned int InputDimension>
+void
+MammogramAnalysis< InputPixelType, InputDimension >
+::CreateDirectoryAndParents( std::string filename )
+{
+  fs::path pathname( filename );
+
+  if ( pathname.has_branch_path() )
+  {
+    std::cout << "Creating directory: " << pathname.branch_path().string()
+              << std::endl;
+    niftk::CreateDirAndParents( pathname.branch_path().string() );
+  }
+  else
+  {
+    std::cout << "No directory to create for: " << filename << std::endl;
+  }
+}
+
+
+// --------------------------------------------------------------------------
 // LoadImages()
 // --------------------------------------------------------------------------
 
@@ -198,8 +222,8 @@ MammogramAnalysis< InputPixelType, InputDimension >
             << "Patient ID: " << m_Id << std::endl;
 
   std::cout << std::endl
-            << "    Input image directory: " << m_DirInput << std::endl
-            << "    Output directory: "      << m_DirOutput << std::endl;
+            << "   Input image directory: " << m_DirInput << std::endl
+            << "   Output directory: "      << m_DirOutput << std::endl;
 
   if ( m_FlgVerbose )
     std::cout << "   Verbose output: YES" << std::endl;
@@ -831,12 +855,12 @@ MammogramAnalysis< InputPixelType, InputDimension >
                                 niftk::ModifyImageFileSuffix( fileImage,
                                                               std::string( ".nii.gz" ) ) );
 
-      niftk::CreateDirAndParents( fs::path( fileOutput ).branch_path().string() );
-
       if ( m_FlgOverwrite || ( ! niftk::FileExists( fileOutput ) ) )
       {
-	itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
-					    "diagnostic image",  m_ImDiagnostic );
+        CreateDirectoryAndParents( fileOutput );
+
+        itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
+                                            "diagnostic image",  m_ImDiagnostic );
       }
 
       m_FileDiagnosticRegn = fileOutput;
@@ -870,12 +894,12 @@ MammogramAnalysis< InputPixelType, InputDimension >
                                 niftk::ModifyImageFileSuffix( fileImage,
                                                               std::string( ".nii.gz" ) ) );
 
-      niftk::CreateDirAndParents( fs::path( fileOutput ).branch_path().string() );
-
       if ( m_FlgOverwrite || ( ! niftk::FileExists( fileOutput ) ) )
       {
-	itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
-					    "pre-diagnostic image",  m_ImPreDiagnostic );
+        CreateDirectoryAndParents( fileOutput );
+
+        itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
+                                            "pre-diagnostic image",  m_ImPreDiagnostic );
       }
 
       m_FilePreDiagnosticRegn = fileOutput;
@@ -909,12 +933,12 @@ MammogramAnalysis< InputPixelType, InputDimension >
                                 niftk::ModifyImageFileSuffix( fileImage,
                                                               std::string( ".nii.gz" ) ) );
 
-      niftk::CreateDirAndParents( fs::path( fileOutput ).branch_path().string() );
-
       if ( m_FlgOverwrite || ( ! niftk::FileExists( fileOutput ) ) )
       {
-	itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
-					    "control image",  m_ImControl );
+        CreateDirectoryAndParents( fileOutput );
+
+        itk::WriteImageToFile< ImageType >( fileOutput.c_str(),
+                                            "control image",  m_ImControl );
       }
 
       m_FileControlRegn = fileOutput;
@@ -1054,14 +1078,14 @@ MammogramAnalysis< InputPixelType, InputDimension >
      fileModifiedOutput = BuildOutputFilename( fileInput, suffix );
 
     return CastImageAndWriteToFile< TOutputPixelType >( fileModifiedOutput,
-							description,
-							image,
-							dictionary );
+                                                        description,
+                                                        image,
+                                                        dictionary );
   }
   else
   {
     std::cerr << "Failed to write " << description
-	      << " to file - filename is empty " << std::endl;
+              << " to file - filename is empty " << std::endl;
   }
 
   return fileModifiedOutput;
@@ -1091,15 +1115,15 @@ MammogramAnalysis< InputPixelType, InputDimension >
     if ( ! m_FlgOverwrite )
     {
       std::cerr << std::endl << "WARNING: File " << fileOutput << " exists"
-		<< std::endl << "         and can't be overwritten. Consider option: 'overwrite'."
-		<< std::endl << std::endl;
+                << std::endl << "         and can't be overwritten. Consider option: 'overwrite'."
+                << std::endl << std::endl;
       return fileOutput;
     }
     else
     {
       std::cerr << std::endl << "WARNING: File " << fileOutput << " exists"
-		<< std::endl << "         and will be overwritten."
-		<< std::endl << std::endl;
+                << std::endl << "         and will be overwritten."
+                << std::endl << std::endl;
     }
   }
 
@@ -1127,7 +1151,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
   typename ImageIOBase::Pointer imageIO;
   imageIO = ImageIOFactory::CreateImageIO(fileOutput.c_str(),
-					  ImageIOFactory::WriteMode);
+                                          ImageIOFactory::WriteMode);
 
   imageIO->SetMetaDataDictionary( dictionary );
 
@@ -1139,14 +1163,14 @@ MammogramAnalysis< InputPixelType, InputDimension >
   try
   {
     std::cout << "Writing " << description << " to file: "
-	      << fileOutput.c_str() << std::endl;
+              << fileOutput.c_str() << std::endl;
     writer->Update();
   }
 
   catch (ExceptionObject &ex)
   {
     std::cerr << "ERROR: Could not write file: " << fileOutput << std::endl
-	      << ex << std::endl;
+              << ex << std::endl;
     throw( ex );
   }
 
@@ -1170,14 +1194,18 @@ MammogramAnalysis< InputPixelType, InputDimension >
 {
   std::string fileModifiedOutput;
 
+  image->Print( std::cout );
+
   if ( fileInput.length() )
   {
-    niftk::CreateDirAndParents( fs::path( fileInput ).branch_path().string() );
+    CreateDirectoryAndParents( fileInput );
 
     typedef ImageFileWriter< TOutputImageType > FileWriterType;
 
-    fileModifiedOutput = niftk::ModifyImageFileSuffix( fileInput,
-						       suffix );
+    fileModifiedOutput =
+        niftk::ConcatenatePath( m_DirOutput,
+                                niftk::ModifyImageFileSuffix( fileInput,
+                                                              suffix ) );
 
     if ( niftk::FileExists( fileModifiedOutput ) )
     {
@@ -1188,7 +1216,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
     typename FileWriterType::Pointer writer = FileWriterType::New();
 
-    image->DisconnectPipeline();
+    //image->DisconnectPipeline();
 
     typename ImageIOBase::Pointer imageIO;
     imageIO = ImageIOFactory::CreateImageIO(fileModifiedOutput.c_str(),
@@ -1210,7 +1238,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
     catch (ExceptionObject &ex)
     {
-      std::cerr << "ERROR: Could notwrite file: " << fileModifiedOutput << std::endl
+      std::cerr << "ERROR: Could not write file: " << fileModifiedOutput << std::endl
                 << ex << std::endl;
       throw( ex );
     }
@@ -1288,8 +1316,8 @@ MammogramAnalysis< InputPixelType, InputDimension >
   itk::ImageRegionIterator< ImageType > itImage( image, tumourRegion );
 
   for ( itImage.GoToBegin();
-	! itImage.IsAtEnd();
-	++itImage )
+        ! itImage.IsAtEnd();
+        ++itImage )
   {
     itImage.Set( imMaximum - ( itImage.Get() - imMinimum ) );
   }
@@ -1314,7 +1342,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
 {
   if ( fileInput.length() )
   {
-    niftk::CreateDirAndParents( fs::path( fileInput ).branch_path().string() );
+    CreateDirectoryAndParents( fileInput );
 
     typedef itk::RGBPixel<unsigned char>             RGBPixelType;
     typedef itk::Image<RGBPixelType, InputDimension> RGBImageType;
@@ -1384,6 +1412,8 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
     // Set the tumour region to white
 
+    std::cout << "Setting tumour region: " << tumourRegion << std::endl;
+
     itk::ImageRegionIterator< LabelImageType > itLabel( image, tumourRegion );
     itk::ImageRegionIterator< RGBImageType > itRGBImage( rgbImage, tumourRegion );
 
@@ -1401,6 +1431,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
       }
     }
 
+    std::cout << "done" << std::endl;
 
     // Write the output to a file
 
@@ -2087,7 +2118,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
 {
   if ( fileInput.length() )
   {
-    niftk::CreateDirAndParents( fs::path( fileInput ).branch_path().string() );
+    CreateDirectoryAndParents( fileInput );
 
     typedef typename itk::CastImageFilter< ImageType, OutputImageType > CastFilterType;
 
