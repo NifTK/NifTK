@@ -509,6 +509,8 @@ protected:
   typename RegistrationFilterType::Pointer m_RegistrationPreDiag;
   typename RegistrationFilterType::Pointer m_RegistrationControl;
 
+  void CreateDirectoryAndParents( std::string filename );
+
   void PrintDictionary( DictionaryType &dictionary );
 
   typename ImageType::SpacingType GetImageResolutionFromDictionary( DictionaryType &dictionary );
