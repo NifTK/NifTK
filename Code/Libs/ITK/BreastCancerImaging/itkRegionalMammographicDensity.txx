@@ -57,84 +57,98 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
   if ( this->m_ImDiagnostic && this->m_ImPreDiagnostic )
   {
+    std::cout << "Registering diagnostic and pre-diagnostic images" << std::endl;
+
     this->WriteRegistrationDifferenceImage( this->m_FilePreDiagnostic,
-                                      std::string( "_PreDiag2DiagDifference.jpg" ),
-                                      "un-registered pre-diagnostic difference image",
-                                      this->m_ImPreDiagnostic,
-                                      this->m_DiagDictionary );
+                                            std::string( "_PreDiag2DiagDifference.jpg" ),
+                                            "un-registered pre-diagnostic difference image",
+                                            this->m_ImPreDiagnostic,
+                                            this->m_DiagDictionary );
 
     this->m_RegistrationPreDiag =
       this->RegisterTheImages( this->m_ImPreDiagnostic,
-                         this->m_FilePreDiagnosticRegn,
-                         this->m_ImPreDiagnosticMask,
+                               this->m_FilePreDiagnosticRegn,
+                               this->m_ImPreDiagnosticMask,
 
-                         this->BuildOutputFilename( this->m_FileDiagnostic,
-                                              "_PreDiagReg2Diag_AffineTransform.txt" ),
-                         this->BuildOutputFilename( this->m_FileDiagnostic,
-                                              "_PreDiagReg2Diag_AffineRegistered.nii.gz" ),
+                               this->BuildOutputFilename( this->m_FileDiagnostic,
+                                                          "_PreDiagReg2Diag_AffineTransform.txt" ),
+                               this->BuildOutputFilename( this->m_FileDiagnostic,
+                                                          "_PreDiagReg2Diag_AffineRegistered.nii.gz" ),
 
-                         this->BuildOutputFilename( this->m_FileDiagnostic,
-                                              "_PreDiagReg2Diag_NonRigidTransform.nii.gz" ),
-                         this->BuildOutputFilename( this->m_FileDiagnostic,
-                                              "_PreDiagReg2Diag_NonRigidRegistered.nii.gz" ) );
+                               this->BuildOutputFilename( this->m_FileDiagnostic,
+                                                          "_PreDiagReg2Diag_NonRigidTransform.nii.gz" ),
+                               this->BuildOutputFilename( this->m_FileDiagnostic,
+                                                          "_PreDiagReg2Diag_NonRigidRegistered.nii.gz" ) );
 
     imAffineRegistered   = this->m_RegistrationPreDiag->GetOutput( 0 );
 
     this->WriteRegistrationDifferenceImage( this->m_FilePreDiagnostic,
-                                      std::string( "_PreDiagReg2DiagAffineDifference.jpg" ),
-                                      "affine registered pre-diagnostic difference image",
-                                      imAffineRegistered,
-                                      this->m_DiagDictionary );
+                                            std::string( "_PreDiagReg2DiagAffineDifference.jpg" ),
+                                            "affine registered pre-diagnostic difference image",
+                                            imAffineRegistered,
+                                            this->m_DiagDictionary );
 
     imNonRigidRegistered = this->m_RegistrationPreDiag->GetOutput( 1 );
 
     this->WriteRegistrationDifferenceImage( this->m_FilePreDiagnostic,
-                                      std::string( "_PreDiagReg2DiagNonRigidDifference.jpg" ),
-                                      "non-rigidly registered pre-diagnostic difference image",
-                                      imNonRigidRegistered,
-                                      this->m_DiagDictionary );
+                                            std::string( "_PreDiagReg2DiagNonRigidDifference.jpg" ),
+                                            "non-rigidly registered pre-diagnostic difference image",
+                                            imNonRigidRegistered,
+                                            this->m_DiagDictionary );
+  }
+  else
+  {
+    std::cout << "Could not register diagnostic and pre-diagnostic images"
+              << ", images not set."<< std::endl;
   }
 
   // The control image registration
 
   if ( this->m_ImDiagnostic && this->m_ImControl )
   {
+    std::cout << "Registering diagnostic and control images" << std::endl;
+
     this->WriteRegistrationDifferenceImage( this->m_FileControl,
-                                      std::string( "_Control2DiagDifference.jpg" ),
-                                      "un-registered control difference image",
-                                      this->m_ImControl,
-                                      this->m_DiagDictionary );
+                                            std::string( "_Control2DiagDifference.jpg" ),
+                                            "un-registered control difference image",
+                                            this->m_ImControl,
+                                            this->m_DiagDictionary );
 
     this->m_RegistrationControl =
       this->RegisterTheImages( this->m_ImControl,
-                         this->m_FileControlRegn,
-                         this->m_ImControlMask,
+                               this->m_FileControlRegn,
+                               this->m_ImControlMask,
 
-                         this->BuildOutputFilename( this->m_FileDiagnostic,
-                                              "_ControlReg2Diag_AffineTransform.txt" ),
-                         this->BuildOutputFilename( this->m_FileDiagnostic,
-                                              "_ControlReg2Diag_AffineRegistered.nii.gz" ),
+                               this->BuildOutputFilename( this->m_FileDiagnostic,
+                                                          "_ControlReg2Diag_AffineTransform.txt" ),
+                               this->BuildOutputFilename( this->m_FileDiagnostic,
+                                                          "_ControlReg2Diag_AffineRegistered.nii.gz" ),
 
-                         this->BuildOutputFilename( this->m_FileDiagnostic,
-                                              "_ControlReg2Diag_NonRigidTransform.nii.gz" ),
-                         this->BuildOutputFilename( this->m_FileDiagnostic,
-                                              "_ControlReg2Diag_NonRigidRegistered.nii.gz" ) );
+                               this->BuildOutputFilename( this->m_FileDiagnostic,
+                                                          "_ControlReg2Diag_NonRigidTransform.nii.gz" ),
+                               this->BuildOutputFilename( this->m_FileDiagnostic,
+                                                          "_ControlReg2Diag_NonRigidRegistered.nii.gz" ) );
 
     imAffineRegistered   = this->m_RegistrationControl->GetOutput( 0 );
 
     this->WriteRegistrationDifferenceImage( this->m_FileControl,
-                                      std::string( "_ControlReg2DiagAffineDifference.jpg" ),
-                                      "affine registered control difference image",
-                                      imAffineRegistered,
-                                      this->m_DiagDictionary );
+                                            std::string( "_ControlReg2DiagAffineDifference.jpg" ),
+                                            "affine registered control difference image",
+                                            imAffineRegistered,
+                                            this->m_DiagDictionary );
 
     imNonRigidRegistered = this->m_RegistrationControl->GetOutput( 1 );
 
     this->WriteRegistrationDifferenceImage( this->m_FileControl,
-					    std::string( "_ControlReg2DiagNonRigidDifference.jpg" ),
-					    "non-rigidly  registered control difference image",
-					    imNonRigidRegistered,
-					    this->m_DiagDictionary );
+                                            std::string( "_ControlReg2DiagNonRigidDifference.jpg" ),
+                                            "non-rigidly  registered control difference image",
+                                            imNonRigidRegistered,
+                                            this->m_DiagDictionary );
+  }
+  else
+  {
+    std::cout << "Could not register diagnostic and control images"
+              << ", images not set."<< std::endl;
   }
 
 };
@@ -250,10 +264,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
       this->m_ImDiagnosticMask = this->MaskWithPolygon( Superclass::DIAGNOSTIC_MAMMO );
 
       this->template CastImageAndWriteToFile< unsigned char >( this->m_FileDiagnostic,
-                                                diagMaskSuffix,
-                                                "diagnostic mask",
-                                                this->m_ImDiagnosticMask,
-                                                this->m_DiagDictionary );
+                                                               diagMaskSuffix,
+                                                               "diagnostic mask",
+                                                               this->m_ImDiagnosticMask,
+                                                               this->m_DiagDictionary );
     }
   }
 
@@ -322,10 +336,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
       this->m_ImPreDiagnosticMask = this->MaskWithPolygon( Superclass::PREDIAGNOSTIC_MAMMO );
 
       this->template CastImageAndWriteToFile< unsigned char >( this->m_FilePreDiagnostic,
-                                                preDiagMaskSuffix,
-                                                "pre-diagnostic mask",
-                                                this->m_ImPreDiagnosticMask,
-                                                this->m_PreDiagDictionary );
+                                                               preDiagMaskSuffix,
+                                                               "pre-diagnostic mask",
+                                                               this->m_ImPreDiagnosticMask,
+                                                               this->m_PreDiagDictionary );
     }
   }
 
@@ -394,10 +408,10 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
       this->m_ImControlMask = this->MaskWithPolygon( Superclass::CONTROL_MAMMO );
 
       this->template CastImageAndWriteToFile< unsigned char >( this->m_FileControl,
-							       controlMaskSuffix,
-							       "control mask",
-							       this->m_ImControlMask,
-							       this->m_ControlDictionary );
+                                                               controlMaskSuffix,
+                                                               "control mask",
+                                                               this->m_ImControlMask,
+                                                               this->m_ControlDictionary );
     }
   }
 
@@ -418,27 +432,29 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
 
     this->m_ImDiagnosticLabels = this->GenerateRegionLabels( this->m_BreastSideDiagnostic,
-                                                 this->m_DiagTumourCenterIndex,
-                                                 this->m_DiagTumourRegion,
-                                                 this->m_DiagTumourRegionValue,
-                                                 this->m_ImDiagnostic,
-                                                 this->m_ImDiagnosticMask,
-                                                 this->m_DiagPatches,
-                                                 this->m_ThresholdDiagnostic );
+                                                             this->m_DiagTumourCenterIndex,
+                                                             this->m_DiagTumourRegion,
+                                                             this->m_DiagTumourRegionValue,
+                                                             this->m_ImDiagnostic,
+                                                             this->m_ImDiagnosticMask,
+                                                             this->m_DiagPatches,
+                                                             this->m_ThresholdDiagnostic );
 
     if ( this->m_FlgDebug )
     {
       this->template WriteImageFile<LabelImageType>( this->m_FileDiagnostic,
-                                      std::string( "_DiagLabels.dcm" ),
-                                      "diagnostic labels",
-                                      this->m_ImDiagnosticLabels, this->m_DiagDictionary );
+                                                     std::string( "_DiagLabels.nii.gz" ),
+                                                     "diagnostic labels",
+                                                     this->m_ImDiagnosticLabels,
+                                                     this->m_DiagDictionary );
     }
 
     this->WriteLabelImageFile( this->m_FileDiagnostic,
-                         std::string( "_DiagLabels.jpg" ),
-                         "diagnostic labels",
-                         this->m_ImDiagnosticLabels,  this->m_DiagTumourRegion,
-                         this->m_DiagDictionary );
+                               std::string( "_DiagLabels.jpg" ),
+                               "diagnostic labels",
+                               this->m_ImDiagnosticLabels,
+                               this->m_DiagTumourRegion,
+                               this->m_DiagDictionary );
   }
 
   // Calculate the pre-diagnostic labels
@@ -451,8 +467,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     if ( this->m_FlgRegister || this->m_FlgRegisterNonRigid )
     {
       this->m_PreDiagCenterIndex = this->TransformTumourPositionIntoImage( this->m_DiagTumourCenterIndex,
-                                                               this->m_ImPreDiagnostic,
-                                                               this->m_RegistrationPreDiag );
+                                                                           this->m_ImPreDiagnostic,
+                                                                           this->m_RegistrationPreDiag );
 
       if ( this->m_FlgVerbose )
         std::cout << "   Tumour center in pre-diag image: "
@@ -465,27 +481,27 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     }
 
     this->m_ImPreDiagnosticLabels = this->GenerateRegionLabels( this->m_BreastSidePreDiagnostic,
-                                                    this->m_PreDiagCenterIndex,
-                                                    this->m_PreDiagTumourRegion,
-                                                    this->m_PreDiagTumourRegionValue,
-                                                    this->m_ImPreDiagnostic,
-                                                    this->m_ImPreDiagnosticMask,
-                                                    this->m_PreDiagPatches,
-                                                    this->m_ThresholdPreDiagnostic );
+                                                                this->m_PreDiagCenterIndex,
+                                                                this->m_PreDiagTumourRegion,
+                                                                this->m_PreDiagTumourRegionValue,
+                                                                this->m_ImPreDiagnostic,
+                                                                this->m_ImPreDiagnosticMask,
+                                                                this->m_PreDiagPatches,
+                                                                this->m_ThresholdPreDiagnostic );
 
     if ( this->m_FlgDebug )
     {
       this->template WriteImageFile<LabelImageType>( this->m_FilePreDiagnostic,
-                                      std::string( "_PreDiagLabels.dcm" ),
-                                      "pre-diagnostic labels",
-                                      this->m_ImPreDiagnosticLabels, this->m_PreDiagDictionary );
+                                                     std::string( "_PreDiagLabels.nii.gz" ),
+                                                     "pre-diagnostic labels",
+                                                     this->m_ImPreDiagnosticLabels, this->m_PreDiagDictionary );
     }
 
     this->WriteLabelImageFile( this->m_FilePreDiagnostic,
-                         std::string( "_PreDiagLabels.jpg" ),
-                         "pre-diagnostic labels",
-                         this->m_ImPreDiagnosticLabels, this->m_PreDiagTumourRegion,
-                         this->m_PreDiagDictionary );
+                               std::string( "_PreDiagLabels.jpg" ),
+                               "pre-diagnostic labels",
+                               this->m_ImPreDiagnosticLabels, this->m_PreDiagTumourRegion,
+                               this->m_PreDiagDictionary );
   }
 
   // Calculate the control-diagnostic labels
@@ -498,8 +514,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     if ( this->m_FlgRegister || this->m_FlgRegisterNonRigid )
     {
       this->m_ControlCenterIndex = this->TransformTumourPositionIntoImage( this->m_DiagTumourCenterIndex,
-									   this->m_ImControl,
-									   this->m_RegistrationControl );
+                                                                           this->m_ImControl,
+                                                                           this->m_RegistrationControl );
 
       if ( this->m_FlgVerbose )
         std::cout << "   Tumour center in control image: "
@@ -512,28 +528,28 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
     }
 
     this->m_ImControlLabels = this->GenerateRegionLabels( this->m_BreastSideControl,
-							  this->m_ControlCenterIndex,
-							  this->m_ControlTumourRegion,
-							  this->m_ControlTumourRegionValue,
-							  this->m_ImControl,
-							  this->m_ImControlMask,
-							  this->m_ControlPatches,
-							  this->m_ThresholdControl );
+                                                          this->m_ControlCenterIndex,
+                                                          this->m_ControlTumourRegion,
+                                                          this->m_ControlTumourRegionValue,
+                                                          this->m_ImControl,
+                                                          this->m_ImControlMask,
+                                                          this->m_ControlPatches,
+                                                          this->m_ThresholdControl );
 
     if ( this->m_FlgDebug )
     {
       this->template WriteImageFile<LabelImageType>( this->m_FileControl,
-						     std::string( "_ControlLabels.dcm" ),
-						     "control labels",
-						     this->m_ImControlLabels,
-						     this->m_ControlDictionary );
+                                                     std::string( "_ControlLabels.nii.gz" ),
+                                                     "control labels",
+                                                     this->m_ImControlLabels,
+                                                     this->m_ControlDictionary );
     }
 
     this->WriteLabelImageFile( this->m_FileControl,
-			       std::string( "_ControlLabels.jpg" ),
-			       "control labels",
-			       this->m_ImControlLabels, this->m_ControlTumourRegion,
-			       this->m_ControlDictionary );
+                               std::string( "_ControlLabels.jpg" ),
+                               "control labels",
+                               this->m_ImControlLabels, this->m_ControlTumourRegion,
+                               this->m_ControlDictionary );
   }
 };
 
