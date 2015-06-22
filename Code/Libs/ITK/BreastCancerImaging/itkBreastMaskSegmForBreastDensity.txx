@@ -82,7 +82,7 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
 
   // Segment the Pectoral Muscle
 
-#if 1
+#if 0
 
   typename InternalImageType::SizeType 
     maxSize = this->imStructural->GetLargestPossibleRegion().GetSize();
@@ -98,7 +98,7 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
     this->SegmentThePectoralMuscle( 0., iPointPec );
 
 
-  // Demean the pectoral points
+  // Calculate the most posterior pectoral point
 
   RealType rYHeightOffset = 0.;
   PointDataIterator pointDataIt;
@@ -107,12 +107,13 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
         pointDataIt != pecPointSet->GetPointData()->End();
         ++pointDataIt )
   {    
-    rYHeightOffset += pointDataIt.Value()[0];
+    if ( pointDataIt.Value()[0] > rYHeightOffset )
+    {
+      rYHeightOffset = pointDataIt.Value()[0];
+    }
   }
 
-  rYHeightOffset /= static_cast< RealType >( pecPointSet->GetNumberOfPoints() );
-
-  std::cout << "Mean pectoral muscle height: " << rYHeightOffset << std::endl;
+  std::cout << "Most posterior pectoral muscle height: " << rYHeightOffset << std::endl;
 
   for ( pointDataIt = pecPointSet->GetPointData()->Begin();
         pointDataIt != pecPointSet->GetPointData()->End();
@@ -324,7 +325,7 @@ BreastMaskSegmForBreastDensity< ImageDimension, InputPixelType >
                           this->flgLeft, this->flgRight );
 
 
- // Discard anything within the pectoral mask (i.e. below the surface fit)
+  // Discard anything within the pectoral mask (i.e. below the surface fit)
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   IteratorType itSeg    = IteratorType( this->imSegmented,        

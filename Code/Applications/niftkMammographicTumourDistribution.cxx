@@ -19,11 +19,11 @@
 #include <itkCommandLineHelper.h>
 
 #include <itkDOMReader.h>
+#include <niftkCSVRow.h>
 
+#include <itkMammographicTumourDistribution.h>
 
-#include <itkRegionalMammographicDensity.h>
-
-#include <niftkRegionalMammographicDensityCLP.h>
+#include <niftkMammographicTumourDistributionCLP.h>
 
 namespace fs = boost::filesystem;
 
@@ -95,41 +95,34 @@ std::string GetText( itk::DOMNode::ChildrenListType::iterator &itNode, std::stri
 // WriteHeaderToCSVFile()
 // --------------------------------------------------------------------------
 
-void WriteToCSVFile( std::ofstream *foutOutputDensityCSV )
+void WriteToCSVFile( std::ofstream *foutOutputCSV )
 {
   //                                   123456789012345678901234567890
 
-  *foutOutputDensityCSV
-    << std::right << std::setw(10) << "Patient id" << ", "
-
+  *foutOutputCSV
+    << std::right << std::setw(10) << "Diagnostic SNO"  << ", "
     << std::right << std::setw(17) << "Diagnostic ID"   << ", "
     << std::right << std::setw(60) << "Diagnostic file" << ", "
-    << std::right << std::setw(18) << "Diag threshold"  << ", "
 
-    << std::right << std::setw(15) << "Pre-diagnostic or Control?"   << ", "
-
-    << std::right << std::setw(17) << "Pre-diagnostic/Control ID"   << ", "
-    << std::right << std::setw(60) << "Pre-diagnostic/Control file" << ", "
-    << std::right << std::setw(18) << "Pre-diag/Control threshold"  << ", "
+    << std::right << std::setw(10) << "Reference SNO"  << ", "
+    << std::right << std::setw(17) << "Reference ID"   << ", "
+    << std::right << std::setw(60) << "Reference file" << ", "
 
     << std::right << std::setw( 9) << "Tumour ID"         << ", "
     << std::right << std::setw(17) << "Tumour image ID"   << ", "
-    << std::right << std::setw(17) << "Tumour center (x)" << ", "
-    << std::right << std::setw(17) << "Tumour center (y)" << ", "
 
-    << std::right << std::setw(11) << "Patch size" << ", "
+    << std::right << std::setw(17) << "Tumour diagnostic center (x)" << ", "
+    << std::right << std::setw(17) << "Tumour diagnostic center (y)" << ", "
 
-    << std::right << std::setw(22) << "Pre-diag/Control patch number" << ", "
-    << std::right << std::setw(15) << "Patch index (x)" << ", "
-    << std::right << std::setw(15) << "Patch index (y)" << ", "
-    << std::right << std::setw(22) << "Pre-diag/Control patch density"
+    << std::right << std::setw(17) << "Tumour reference center (x)" << ", "
+    << std::right << std::setw(17) << "Tumour reference center (y)" << ", "
 
     << std::endl;
 };
 
 
 // -----------------------------------------------------------------------------------
-/** \brief Calculates the density of regions on interest across a mammogram */
+/** \brief Calculates the distribution of tumours in a set of diagnostic mammograms */
 // -----------------------------------------------------------------------------------
 
 int main(int argc, char** argv)
@@ -138,7 +131,7 @@ int main(int argc, char** argv)
 
   std::string dirOutputFullPath;
 
-  std::ofstream *foutOutputDensityCSV = 0;
+  std::ofstream *foutOutputCSV = 0;
 
   const unsigned int   InputDimension = 2;
   typedef float InputPixelType;
@@ -154,19 +147,10 @@ int main(int argc, char** argv)
 
   itk::DOMTextNode::Pointer textNode;
 
-  std::string strPatientID;
-  std::string strImageID, strFilename, strThreshold, strImageOrder, strMammoType;
-  std::string strComments, strCase, strSetNumber, strDiagPreDiagOrControl;
-  std::string strTumourID, strTumourLeft, strTumourRight, strTumourDiameter;
-  std::string strTumourTop, strTumourBottom, strTumourImageID;
-  std::string strBreastEdgeID, strXCoord, strYCoord, strBreastEdgeImageID;
-  std::string strPectoralID, strPectoralImageID;
+  typedef itk::MammographicTumourDistribution<InputPixelType, InputDimension> TumourDistribType;
 
-
-  typedef itk::RegionalMammographicDensity<InputPixelType, InputDimension> ROIMammoDensityType;
-
-  std::list< ROIMammoDensityType::Pointer > listOfPatients;
-  std::list< ROIMammoDensityType::Pointer >::iterator itPatient;
+  std::list< TumourDistribType::Pointer > listOfPatients;
+  std::list< TumourDistribType::Pointer >::iterator itPatient;
 
 
   // To pass around command line args
@@ -178,11 +162,9 @@ int main(int argc, char** argv)
             << "Input tumour mask info XML file: " << fileTumourXML << std::endl
             << "Input breast edge points XML file: " << fileBreastEdgeXML << std::endl
             << "Input pectoralis XML file: " << filePectoralisLinePointXML << std::endl
-            << "Region size in mm: " << regionSizeInMM << std::endl
-            << "Affine registration? " << flgRegisterAffine << std::endl
             << "Non-rigid registration? " << flgRegisterNonRigid << std::endl
             << "Ouput directory: " << dirOutput << std::endl
-            << "Output CSV file: " << fileOutputDensityCSV << std::endl
+            << "Output CSV file: " << fileOutputCSV << std::endl
             << "Verbose? " << flgVerbose << std::endl
             << "Overwrite? " << flgOverwrite << std::endl
             << "Debug? " << flgDebug << std::endl
@@ -199,20 +181,20 @@ int main(int argc, char** argv)
   }
 
 
-  // Open the output CSV density measurements file
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Open the output CSV file
+  // ~~~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( fileOutputDensityCSV.length() != 0 ) {
-    foutOutputDensityCSV
-      = new std::ofstream( fileOutputDensityCSV.c_str(), std::ios::binary );
+  if ( fileOutputCSV.length() != 0 ) {
+    foutOutputCSV
+      = new std::ofstream( fileOutputCSV.c_str(), std::ios::binary );
 
-    if ((! foutOutputDensityCSV) || foutOutputDensityCSV->bad() || foutOutputDensityCSV->fail()) {
-      std::cerr << "ERROR: Could not open CSV output file: " << fileOutputDensityCSV << std::endl;
+    if ((! foutOutputCSV) || foutOutputCSV->bad() || foutOutputCSV->fail()) {
+      std::cerr << "ERROR: Could not open CSV output file: " << fileOutputCSV << std::endl;
       return EXIT_FAILURE;
     }
   }
 
-  WriteToCSVFile( foutOutputDensityCSV );
+  WriteToCSVFile( foutOutputCSV );
 
 
   // Read the XML files
@@ -229,10 +211,25 @@ int main(int argc, char** argv)
   // Iterate through the images
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  TumourDistribType::Pointer reference = 0;
+
   for ( iNode = 0;
         iNode < static_cast<NodeIdentifierType>( domImage->GetNumberOfChildren() );
         iNode++ )
   {
+    std::string strBreastArea;
+
+    std::string strCase;
+    std::string strComments;
+    std::string strFilename;
+    std::string strImageID;
+    std::string strImageOrder;
+    std::string strReferenceImage;
+    std::string strSetNumber;
+    std::string strThreshold;
+
+    std::string strPatientID;
+
     node = domImage->GetChild( iNode );
 
     std::cout << std::endl << "Image: " << iNode << std::endl;
@@ -273,41 +270,26 @@ int main(int argc, char** argv)
       {
         strThreshold  = textNode->GetText();
       }
+      else if ( nodeRecord->GetName() == std::string( "BreastArea_raster" ) )
+      {
+        strBreastArea = textNode->GetText();
+      }
       else if ( nodeRecord->GetName() == std::string( "image_order" ) )
       {
         strImageOrder = textNode->GetText();
+      }
+      else if ( nodeRecord->GetName() == std::string( "sno" ) )
+      {
+        strSetNumber = textNode->GetText();
       }
       else if ( nodeRecord->GetName() == std::string( "comments" ) )
       {
         strComments = textNode->GetText();
       }
-      else if ( nodeRecord->GetName() == std::string( "case" ) )
+      else if ( nodeRecord->GetName() == std::string( "ref" ) )
       {
-        strDiagPreDiagOrControl = textNode->GetText();
+        strReferenceImage = textNode->GetText();
       }
-      else if ( nodeRecord->GetName() == std::string( "setnum" ) )
-      {
-        strSetNumber = textNode->GetText();
-      }
-    }
-
-    if (      strDiagPreDiagOrControl == std::string( "1" ) )
-    {
-      strMammoType = "pre-diagnostic";
-    }
-    else if ( strDiagPreDiagOrControl == std::string( "2" ) )
-    {
-      strMammoType = "diagnostic";
-    }
-    else if ( strDiagPreDiagOrControl == std::string( "3" ) )
-    {
-      strMammoType = "control";
-    }
-    else
-    {
-      strMammoType = "undefined";
-      std::cerr << "ERROR: Mammogram type (prediagnostic/diagnostic/control) undefined" << std::endl;
-      exit( EXIT_FAILURE );
     }
 
     strPatientID = fs::path( strFilename ).branch_path().string();
@@ -316,17 +298,17 @@ int main(int argc, char** argv)
               << "    image id:             " << strImageID              << std::endl
               << "    file_name:            " << strFilename             << std::endl
               << "    threshold:            " << strThreshold            << std::endl
+              << "    breast area:          " << strBreastArea           << std::endl
               << "    order:                " << strImageOrder           << std::endl
               << "    comments:             " << strComments             << std::endl
-              << "    prediag/diag/control: " << strDiagPreDiagOrControl << std::endl
               << "    setnum:               " << strSetNumber            << std::endl
-              << "    type:                 " << strMammoType            << std::endl;
+              << "    type:                 " << strReferenceImage       << std::endl;
 
     // Find a patient with this ID
 
     bool flgFound = false;
 
-    ROIMammoDensityType::Pointer patient = 0;
+    TumourDistribType::Pointer patient = 0;
 
     for ( itPatient = listOfPatients.begin();
           itPatient != listOfPatients.end();
@@ -342,44 +324,73 @@ int main(int argc, char** argv)
 
     if ( ! flgFound )
     {
-      patient = ROIMammoDensityType::New();
+      patient = TumourDistribType::New();
 
       patient->SetPatientID( strPatientID );
       patient->SetInputDirectory( dirInput );
       patient->SetOutputDirectory( dirOutput );
-      patient->SetRegionSizeInMM( regionSizeInMM );
+
+      patient->SetOutputCSV( foutOutputCSV );
 
       if ( flgOverwrite ) patient->SetOverwriteOn();
 
-      if ( flgRegisterAffine )   patient->SetRegisterOn();
       if ( flgRegisterNonRigid ) patient->SetRegisterNonRigidOn();
 
       if ( flgVerbose )   patient->SetVerboseOn();
       if ( flgDebug )     patient->SetDebugOn();
     }
 
-    if ( strMammoType == std::string( "diagnostic" ) )
-    {
-      patient->SetIDDiagnosticImage(   strImageID );
-      patient->SetFileDiagnostic(      strFilename );
-      patient->SetThresholdDiagnostic( atoi( strThreshold.c_str() ) );
-    }
-    else if  ( strMammoType == std::string( "pre-diagnostic" ) )
-    {
-      patient->SetIDPreDiagnosticImage(   strImageID );
-      patient->SetFilePreDiagnostic(      strFilename );
-      patient->SetThresholdPreDiagnostic( atoi( strThreshold.c_str() ) );
-    }
-    else if  ( strMammoType == std::string( "control" ) )
+    if  ( strReferenceImage == std::string( "reference_image" ) )
     {
       patient->SetIDControlImage(   strImageID );
       patient->SetFileControl(      strFilename );
       patient->SetThresholdControl( atoi( strThreshold.c_str() ) );
+      patient->SetBreastAreaControl( atoi( strBreastArea.c_str() ) );
+      patient->SetSetNumberControl( atoi(strSetNumber.c_str() ) );
+
+      if ( reference )
+      {
+        std::cerr << "ERROR: Reference image is already defined" << std::endl;
+        exit( EXIT_FAILURE );
+      }
+      else
+      {
+        reference = patient;
+        listOfPatients.push_front( patient );
+      }
     }
 
-    if ( ! flgFound )
+    else
     {
-      listOfPatients.push_back( patient );
+      patient->SetIDDiagnosticImage(   strImageID );
+      patient->SetFileDiagnostic(      strFilename );
+      patient->SetThresholdDiagnostic( atoi( strThreshold.c_str() ) );
+      patient->SetBreastAreaDiagnostic( atoi( strBreastArea.c_str() ) );
+      patient->SetSetNumberDiagnostic( atoi( strSetNumber.c_str() ) );
+
+      if ( ! flgFound )
+      {
+        listOfPatients.push_back( patient );
+      }
+    }
+  }
+
+  if ( ! reference )
+  {
+    std::cerr << "ERROR: No reference image found" << std::endl;
+    exit( EXIT_FAILURE );
+  }
+  else
+  {
+    for ( itPatient = listOfPatients.begin();
+          itPatient != listOfPatients.end();
+          itPatient++ )
+    {
+      (*itPatient)->SetIDControlImage(    reference->GetIDControlImage() );
+      (*itPatient)->SetFileControl(       reference->GetFileControl() );
+      (*itPatient)->SetThresholdControl(  reference->GetThresholdControl() );
+      (*itPatient)->SetSetNumberControl(  reference->GetSetNumberControl() );
+      (*itPatient)->SetBreastAreaControl( reference->GetBreastAreaControl() );
     }
   }
 
@@ -391,6 +402,15 @@ int main(int argc, char** argv)
         iNode < static_cast<NodeIdentifierType>( domTumour->GetNumberOfChildren() );
         iNode++ )
   {
+    std::string strTumourDiameter;
+    std::string strTumourID;
+    std::string strTumourImageID;
+
+    std::string strTumourLeft;
+    std::string strTumourRight;
+    std::string strTumourTop;
+    std::string strTumourBottom;
+
     node = domTumour->GetChild( iNode );
 
     if ( flgDebug )
@@ -458,42 +478,48 @@ int main(int argc, char** argv)
 
     // Find a patient with this image ID
 
-    bool flgFound = false;
+    TumourDistribType::Pointer patient = 0;
 
-    ROIMammoDensityType::Pointer patient = 0;
-
-    for ( itPatient = listOfPatients.begin();
-          itPatient != listOfPatients.end();
-          itPatient++ )
+    if ( reference->GetIDControlImage() == strTumourImageID )
     {
-      if ( (*itPatient)->GetIDDiagnosticImage() == strTumourImageID )
+      std::cout << "IDReferenceImage" << reference->GetIDControlImage()
+                << ", tumour ID " <<  strTumourImageID << std::endl;
+
+      patient = reference;
+    }
+
+    else
+    {
+      for ( itPatient = listOfPatients.begin();
+            itPatient != listOfPatients.end();
+            itPatient++ )
       {
-        patient = (*itPatient);
-        flgFound = true;
-        break;
-      };
+        if ( (*itPatient)->GetIDDiagnosticImage() == strTumourImageID )
+        {
+          std::cout << "IDDiagnosticImage" << (*itPatient)->GetIDDiagnosticImage()
+                    << ", tumour ID " <<  strTumourImageID << std::endl;
+
+          patient = (*itPatient);
+          break;
+        };
+      }
     }
 
-    if ( ! flgFound )
+    if ( ! patient )
     {
-      std::cerr << "ERROR: Failed to find a patient corresponding to image id: "
+      std::cerr << "WARNING: Failed to find a patient corresponding to image id: "
                 << strTumourImageID << std::endl;
-      exit( EXIT_FAILURE );
     }
-
-    patient->SetTumourID(      strTumourID );
-    patient->SetTumourImageID( strTumourImageID );
-
-    patient->SetTumourLeft(   atoi( strTumourLeft.c_str() ) );
-    patient->SetTumourRight(  atoi( strTumourRight.c_str() ) );
-    patient->SetTumourTop(    atoi( strTumourTop.c_str() ) );
-    patient->SetTumourBottom( atoi( strTumourBottom.c_str() ) );
-
-    patient->SetTumourDiameter( atof( strTumourDiameter.c_str() ) );
-
-    if ( ! flgFound )
+    else
     {
-      listOfPatients.push_back( patient );
+      patient->SetTumourID(      strTumourID );
+      patient->SetTumourImageID( strTumourImageID );
+
+      patient->SetTumourLeft(   atoi( strTumourLeft.c_str() ) );
+      patient->SetTumourRight(  atoi( strTumourRight.c_str() ) );
+      patient->SetTumourTop(    atoi( strTumourTop.c_str() ) );
+      patient->SetTumourBottom( atoi( strTumourBottom.c_str() ) );
+      patient->SetTumourDiameter( atof( strTumourDiameter.c_str() ) );
     }
   }
 
@@ -507,6 +533,11 @@ int main(int argc, char** argv)
         iNode < static_cast<NodeIdentifierType>( domBreastEdge->GetNumberOfChildren() );
         iNode++ )
   {
+    std::string strBreastEdgeID;
+    std::string strBreastEdgeImageID;
+    std::string strXCoord;
+    std::string strYCoord;
+
     node = domBreastEdge->GetChild( iNode );
 
     std::cout << "BreastEdge: " << std::left << std::setw(6) << iNode;
@@ -537,15 +568,15 @@ int main(int argc, char** argv)
 
       if ( nodeRecord->GetName() == std::string( "ID" ) )
       {
-        strBreastEdgeID    = textNode->GetText();
+        strBreastEdgeID = textNode->GetText();
       }
       else if ( nodeRecord->GetName() == std::string( "x" ) )
       {
-        strXCoord   = textNode->GetText();
+        strXCoord = textNode->GetText();
       }
       else if ( nodeRecord->GetName() == std::string( "y" ) )
       {
-        strYCoord  = textNode->GetText();
+        strYCoord = textNode->GetText();
       }
       else if ( nodeRecord->GetName() == std::string( "Image_ID" ) )
       {
@@ -561,45 +592,57 @@ int main(int argc, char** argv)
 
     // Find a patient with this image ID
 
-    bool flgFound = false;
+    TumourDistribType::Pointer patient = 0;
 
-    ROIMammoDensityType::Pointer patient = 0;
-
-    for ( itPatient = listOfPatients.begin();
-          itPatient != listOfPatients.end();
-          itPatient++ )
+    if ( reference->GetIDControlImage() == strBreastEdgeImageID )
     {
-      if ( ( (*itPatient)->GetIDDiagnosticImage() == strBreastEdgeImageID ) ||
-           ( (*itPatient)->GetIDPreDiagnosticImage() == strBreastEdgeImageID ) ||
-           ( (*itPatient)->GetIDControlImage() == strBreastEdgeImageID ) )
+      std::cout << "IDReferenceImage" << reference->GetIDControlImage()
+                << ", BreastEdgeImageID " <<  strBreastEdgeImageID << std::endl;
+
+      patient = reference;
+    }
+
+    else
+    {
+      for ( itPatient = listOfPatients.begin();
+            itPatient != listOfPatients.end();
+            itPatient++ )
       {
-        patient = (*itPatient);
-        flgFound = true;
-        break;
-      };
+        if ( (*itPatient)->GetIDDiagnosticImage() == strBreastEdgeImageID )
+        {
+          patient = (*itPatient);
+          break;
+        }
+      }
     }
 
-    if ( ! flgFound )
+    if ( ! patient )
     {
-      std::cerr << "ERROR: Failed to find a patient corresponding to image id: "
+      std::cerr << "WARNING: Failed to find a patient corresponding to image id: "
                 << strBreastEdgeImageID << std::endl;
-      exit( EXIT_FAILURE );
     }
-
-    patient->PushBackBreastEdgeCoord( strBreastEdgeImageID,
-                                      atoi( strBreastEdgeID.c_str() ),
-                                      atoi( strXCoord.c_str() ),
-                                      atoi( strYCoord.c_str() ) );
+    else
+    {
+      patient->PushBackBreastEdgeCoord( strBreastEdgeImageID,
+                                        atoi( strBreastEdgeID.c_str() ),
+                                        atoi( strXCoord.c_str() ),
+                                        atoi( strYCoord.c_str() ) );
+    }
   }
 
 
   // Iterate through the pectoral points
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   for ( iNode = 0;
         iNode < static_cast<NodeIdentifierType>( domPectoral->GetNumberOfChildren() );
         iNode++ )
   {
+    std::string strPectoralID;
+    std::string strPectoralImageID;
+    std::string strXCoord;
+    std::string strYCoord;
+
     node = domPectoral->GetChild( iNode );
 
     std::cout << "Pectoral:   " << std::left << std::setw(6) << iNode;
@@ -654,40 +697,47 @@ int main(int argc, char** argv)
 
     // Find a patient with this image ID
 
-    bool flgFound = false;
+    TumourDistribType::Pointer patient = 0;
 
-    ROIMammoDensityType::Pointer patient = 0;
-
-    for ( itPatient = listOfPatients.begin();
-          itPatient != listOfPatients.end();
-          itPatient++ )
+    if ( reference->GetIDControlImage() == strPectoralImageID )
     {
-      if ( ( (*itPatient)->GetIDDiagnosticImage() == strPectoralImageID ) ||
-           ( (*itPatient)->GetIDPreDiagnosticImage() == strPectoralImageID ) ||
-           ( (*itPatient)->GetIDControlImage() == strPectoralImageID ) )
+      std::cout << "IDReferenceImage " << reference->GetIDControlImage()
+                 << std::endl;
+
+      patient = reference;
+    }
+
+    else
+    {
+      for ( itPatient = listOfPatients.begin();
+            itPatient != listOfPatients.end();
+            itPatient++ )
       {
-        patient = (*itPatient);
-        flgFound = true;
-        break;
-      };
+        if ( (*itPatient)->GetIDDiagnosticImage() == strPectoralImageID )
+        {
+          patient = (*itPatient);
+          break;
+        }
+      }
     }
 
-    if ( ! flgFound )
+    if ( ! patient )
     {
-      std::cerr << "ERROR: Failed to find a patient corresponding to image id: "
+      std::cerr << "WARNING: Failed to find a patient corresponding to image id: "
                 << strPectoralImageID << std::endl;
-      exit( EXIT_FAILURE );
     }
-
-    patient->PushBackPectoralCoord( strPectoralImageID,
+    else
+    {
+      patient->PushBackPectoralCoord( strPectoralImageID,
                                       atoi( strPectoralID.c_str() ),
                                       atoi( strXCoord.c_str() ),
                                       atoi( strYCoord.c_str() ) );
+    }
   }
 
 
-  // Print out the patients
-  // ~~~~~~~~~~~~~~~~~~~~~~
+  // Set the control data for each patient
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   if ( flgDebug )
   {
@@ -716,12 +766,54 @@ int main(int argc, char** argv)
 	      << progress << std::endl
 	      << "</filter-progress>" << std::endl;
 
+    if ( ! (*itPatient)->GetFileControl().length() )
+    {
+      std::cout << "WARNING: Skipping patient, because reference file name not set."
+		<< std::endl << std::endl;
+      continue;
+    }
+
     (*itPatient)->LoadImages();
 
     progress = (iFile + 0.25)/nFiles;
     std::cout << "<filter-progress>" << std::endl
 	      << progress << std::endl
 	      << "</filter-progress>" << std::endl;
+
+
+    // If csv file exists for this diagnostic image then read it and continue
+
+    std::string fileCSV =
+      niftk::ConcatenatePath( dirOutput,
+			      niftk::ModifyImageFileSuffix( (*itPatient)->GetFileDiagnostic(), ".csv" ) );
+
+
+    if ( niftk::FileExists( fileCSV ) )
+    {
+      std::cout << "CSV file exists: " << fileCSV << std::endl;
+
+      std::ifstream fin( fileCSV.c_str() );
+
+      if ((! fin) || fin.bad())
+      {
+        std::cerr << "ERROR: Could not open file: " << fileCSV << std::endl;
+      }
+
+      else
+      {
+	std::cout << std::endl << "Reading CSV file: " << fileCSV << std::endl;
+
+	niftk::CSVRow csvRow;
+
+	while( fin >> csvRow )
+	{
+	  std::cout << csvRow << std::endl;
+	  *foutOutputCSV << csvRow << std::endl;
+	}
+
+	continue;
+      }
+    }
 
     try
     {
@@ -744,11 +836,6 @@ int main(int argc, char** argv)
 
     (*itPatient)->Print( flgVerbose );
 
-    if ( foutOutputDensityCSV )
-    {
-      (*itPatient)->WriteDataToCSVFile( foutOutputDensityCSV );
-    }
-
     progress = (iFile + 0.75)/nFiles;
     std::cout << "<filter-progress>" << std::endl
 	      << progress << std::endl
@@ -767,10 +854,10 @@ int main(int argc, char** argv)
   // Close the CSV file?
   // ~~~~~~~~~~~~~~~~~~~
 
-  if ( foutOutputDensityCSV )
+  if ( foutOutputCSV )
   {
-    foutOutputDensityCSV->close();
-    delete foutOutputDensityCSV;
+    foutOutputCSV->close();
+    delete foutOutputCSV;
   }
 
   return result;

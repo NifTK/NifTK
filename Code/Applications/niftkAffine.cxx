@@ -48,6 +48,7 @@ struct arguments
   std::string movingImage;
   std::string outputImage;
   std::string outputMatrixTransformFile; 
+  std::string outputNiftyRegMatrixFile; 
   std::string outputUCLTransformFile;
   std::string inputTransformFile;
   std::string fixedMask;
@@ -125,24 +126,24 @@ int DoMain(arguments args)
   // Load both images to be registered.
   try 
     { 
-      std::cout << "Loading fixed image:" << args.fixedImage<< std::endl;
+      std::cout << "Loading fixed image: " << args.fixedImage<< std::endl;
       fixedImageReader->Update();
       std::cout << "Done"<< std::endl;
       
-      std::cout << "Loading moving image:" << args.movingImage<< std::endl;
+      std::cout << "Loading moving image: " << args.movingImage<< std::endl;
       movingImageReader->Update();
       std::cout << "Done"<< std::endl;
          
       if (args.fixedMask.length() > 0)
         {
-          std::cout << "Loading fixed mask:" << args.fixedMask<< std::endl;
+          std::cout << "Loading fixed mask: " << args.fixedMask<< std::endl;
           fixedMaskReader->Update();  
           std::cout << "Done"<< std::endl;
         }
          
       if (args.movingMask.length() > 0)
         {
-          std::cout << "Loading moving mask:" << args.movingMask<< std::endl;
+          std::cout << "Loading moving mask: " << args.movingMask<< std::endl;
           movingMaskReader->Update();  
           std::cout << "Done"<< std::endl;
         }
@@ -518,11 +519,17 @@ int DoMain(arguments args)
 
     // Save the transform (as 16 parameter matrix transform).
     if (args.outputMatrixTransformFile.length() > 0)
-      {
-        transformFileWriter->SetInput(transform->GetFullAffineTransform());
-        transformFileWriter->SetFileName(args.outputMatrixTransformFile);
-        transformFileWriter->Update(); 
-      }
+    {
+      transformFileWriter->SetInput(transform->GetFullAffineTransform());
+      transformFileWriter->SetFileName(args.outputMatrixTransformFile);
+      transformFileWriter->Update(); 
+    }
+
+    // Save the transform as a NiftyReg compatible matrix transform.
+    if (args.outputNiftyRegMatrixFile.length() > 0)
+    {
+      transform->SaveNiftyRegAffineMatrix( args.outputNiftyRegMatrixFile );
+    }
     
   }
   catch( itk::ExceptionObject & excp )
@@ -566,6 +573,7 @@ int main(int argc, char** argv)
   args.outputImage = outputImage;
 
   args.outputMatrixTransformFile = outputMatrixTransformFile;
+  args.outputNiftyRegMatrixFile = outputNiftyRegMatrixFile;
 
   args.inputTransformFile = inputTransformFile;
 
