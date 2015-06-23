@@ -256,6 +256,10 @@ private:
    */
   cv::Point2d FindNearestScreenPoint ( GoldStandardPoint GSPoint, 
       bool left,  double* minRatio = NULL ,unsigned int * index = NULL );
+
+  /* \brief use this this find video data, used m_Directory and set m_VideoIn
+   */
+  void FindVideoData (mitk::VideoTrackerMatching::Pointer trackerMatcher);
   
 }; // end class
 

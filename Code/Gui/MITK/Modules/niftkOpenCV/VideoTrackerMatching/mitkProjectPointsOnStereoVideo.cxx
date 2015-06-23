@@ -119,7 +119,14 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory)
   m_Directory = directory;
   
   m_OutDirectory = m_Directory + niftk::GetFileSeparator() +  "ProjectionResults";
-  
+ 
+  m_InitOK = true;
+  return;
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::FindVideoData(mitk::VideoTrackerMatching::Pointer trackerMatcher) 
+{
   if ( m_Visualise || m_SaveVideo ) 
   {
     if ( m_Capture == NULL ) 
@@ -133,7 +140,23 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory)
       }
       if ( videoFiles.size() > 1 ) 
       {
-        MITK_WARN << "Found multiple video files, will only use " << videoFiles[0];
+        MITK_WARN << "Found multiple video files, seeing which one matches framemap.log";
+
+        unsigned int matches = 0;
+        m_VideoIn = videoFiles[0];
+        for ( std::vector<std::string>::iterator it = videoFiles.begin () ; it < videoFiles.end() ; ++ it )
+        {
+          if ( niftk::Basename (niftk::Basename ( trackerMatcher->GetFrameMap() )) == niftk::Basename ( *it) )
+          {
+            matches ++;
+            if ( matches == 1 )
+            {
+              m_VideoIn = *it;
+            }
+          }
+        }
+        MITK_WARN << "Using " << m_VideoIn;
+
       }
       m_VideoIn = videoFiles[0];
    
@@ -144,8 +167,7 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory)
       catch (std::exception& e)
       {
         MITK_ERROR << "Caught exception " << e.what();
-        m_InitOK=false;
-        return;
+        exit(1);
       }
     }
   
@@ -170,11 +192,8 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory)
       m_LeftWriter =cvCreateVideoWriter(std::string( m_OutDirectory + niftk::Basename(m_VideoIn) +  "_leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
       m_RightWriter =cvCreateVideoWriter(std::string(m_OutDirectory + niftk::Basename(m_VideoIn) + "_rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
     }
-    }
-
-  m_InitOK = true;
+  }
   return;
-
 }
 
 //-----------------------------------------------------------------------------
@@ -211,6 +230,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     return;
   }
  
+  this->FindVideoData(trackerMatcher);
+
   m_ProjectOK = false;
   m_ProjectedPoints.clear();
   m_PointsInLeftLensCS.clear();

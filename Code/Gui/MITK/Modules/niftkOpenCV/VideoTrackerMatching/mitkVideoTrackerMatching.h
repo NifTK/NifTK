@@ -78,6 +78,12 @@ public:
    * \brief Set a flag to determine what to do if a skipped frame is found, by default we halt
    */
   itkSetMacro (HaltOnFrameSkip, bool);
+  
+  /**
+   * \brief Set a flag to determine what to do if a skipped frame is found, by default we halt
+   */
+  itkGetMacro (FrameMap, std::string);
+
   /**
    * \brief Get the frame count.
    */
