@@ -18,7 +18,6 @@ set(CPP_FILES
   TrackedPointer/mitkTrackedPointer.cxx
   Utils/mitkMakeGeometry.cxx
   PointClouds/mitkMergePointClouds.cxx
-  CentreLines/mitkBifurcationToPointSet.cxx
   Rendering/mitkImage2DToTexturePlaneMapper3D.cxx
   Rendering/vtkCalibratedModelRenderingPipeline.cxx
 )
