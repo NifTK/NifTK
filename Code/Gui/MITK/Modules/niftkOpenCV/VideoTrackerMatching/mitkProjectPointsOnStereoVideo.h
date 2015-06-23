@@ -94,7 +94,7 @@ public:
      std::vector <double> * perturbation = NULL);
 
   void SetVisualise( bool) ;
-  void SetSaveVideo( bool state, std::string prefix = "" );
+  void SetSaveVideo( bool state );
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawLines, bool);
@@ -164,8 +164,8 @@ private:
   std::string                   m_VideoIn; //the video in file
   std::string                   m_VideoOut; //video needs to be saved on the fly
   std::string                   m_Directory; //the directory containing the data
-  std::string                   m_VideoOutPrefix; //where to write out any video
-  std::string                   m_TriangulatedPointsOutName; //where to write the triangulated points out to
+  std::string                   m_OutDirectory; //where to write out any video
+  std::string                   m_TriangulatedPointsOutName; // where to write out triangulated points
   std::vector< mitk::WorldPoint >     
                                 m_WorldPoints;  //the world points to project, and their accompanying scalar values 
 

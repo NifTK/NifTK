@@ -34,7 +34,6 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_VideoIn("")
 , m_VideoOut("")
 , m_Directory("")
-, m_VideoOutPrefix("")
 , m_TriangulatedPointsOutName("")
 , m_TrackerIndex(0)
 , m_ReferenceIndex(-1)
@@ -92,8 +91,7 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory,
     std::string calibrationParameterDirectory)
 {
   m_InitOK = false;
-  m_Directory = directory;
-  
+
   Initialise ( directory );
   try
   {
@@ -119,6 +117,8 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory)
 {
   m_InitOK = false;
   m_Directory = directory;
+  
+  m_OutDirectory = m_Directory + niftk::GetFileSeparator() +  "ProjectionResults";
   
   if ( m_Visualise || m_SaveVideo ) 
   {
@@ -149,15 +149,28 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory)
       }
     }
   
+    if ( m_SaveVideo ) 
+    {
+      try
+      {
+        niftk::CreateDirAndParents ( m_OutDirectory );
+      }
+      catch (std::exception& e)
+      {
+        MITK_ERROR << "Caught exception " << e.what();
+        exit(1);
+      }
+    }
+
     if ( m_SaveVideo )
     {
       cv::Size S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
       double fps = static_cast<double>(m_Capture->get(CV_CAP_PROP_FPS));
       double halfFPS = fps/2.0;
-      m_LeftWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
-      m_RightWriter =cvCreateVideoWriter(std::string(m_VideoOutPrefix + "rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
+      m_LeftWriter =cvCreateVideoWriter(std::string( m_OutDirectory + niftk::Basename(m_VideoIn) +  "_leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
+      m_RightWriter =cvCreateVideoWriter(std::string(m_OutDirectory + niftk::Basename(m_VideoIn) + "_rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
     }
-  }
+    }
 
   m_InitOK = true;
   return;
@@ -176,14 +189,13 @@ void ProjectPointsOnStereoVideo::SetVisualise ( bool visualise )
   return;
 }
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo, std::string prefix )
+void ProjectPointsOnStereoVideo::SetSaveVideo ( bool savevideo )
 {
   if ( m_InitOK ) 
   {
     MITK_WARN << "Changing save video  state after initialisation, will need to re-initialise";
   }
   m_SaveVideo = savevideo;
-  m_VideoOutPrefix = prefix;
 
   m_InitOK = false;
   return;

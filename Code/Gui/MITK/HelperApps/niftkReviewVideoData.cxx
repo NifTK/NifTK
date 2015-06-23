@@ -42,9 +42,9 @@ int main(int argc, char** argv)
     projector->SetDontProject(true);
     projector->SetVisualiseTrackingStatus(true);
     
-    if ( outputVideo.length() != 0 ) 
+    if ( outputVideo ) 
     {
-      projector->SetSaveVideo(true, outputVideo);
+      projector->SetSaveVideo(true);
     }
     projector->Initialise(trackingInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
