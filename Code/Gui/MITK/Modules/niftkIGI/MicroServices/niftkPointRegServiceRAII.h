@@ -30,6 +30,8 @@ namespace niftk
 /**
 * \class PointRegServiceRAII
 * \brief RAII object to run Point Based Registration via a PointRegServiceI implementation.
+*
+* Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
 class NIFTKIGI_EXPORT PointRegServiceRAII : public PointRegServiceI
 {
@@ -37,18 +39,18 @@ class NIFTKIGI_EXPORT PointRegServiceRAII : public PointRegServiceI
 public:
 
   /**
-  * @brief Obtains service or throws mitk::Exception.
+  * \brief Obtains service or throws mitk::Exception.
   */
   PointRegServiceRAII(const std::string& method="SVD");
 
   /**
-  * @brief Releases service.
+  * \brief Releases service.
   */
   virtual ~PointRegServiceRAII();
 
   /**
-  * @brief Calls service to do Point Based Registration.
-  * @see PointRegServiceI
+  * \brief Calls service to do Point Based Registration.
+  * \see PointRegServiceI
   */
   virtual double PointBasedRegistration(const mitk::PointSet::Pointer& fixedPoints,
                                         const mitk::PointSet::Pointer& movingPoints,

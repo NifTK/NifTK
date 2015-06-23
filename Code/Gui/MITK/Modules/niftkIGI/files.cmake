@@ -23,5 +23,7 @@ set(CPP_FILES
   Rendering/vtkCalibratedModelRenderingPipeline.cxx
   MicroServices/niftkPointRegServiceI.cxx
   MicroServices/niftkPointRegServiceRAII.cxx
+  MicroServices/niftkSurfaceRegServiceI.cxx
+  MicroServices/niftkSurfaceRegServiceRAII.cxx
 )
 

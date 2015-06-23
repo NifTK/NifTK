@@ -27,6 +27,8 @@ namespace niftk
 /**
 * \class PointRegServiceI
 * \brief Interface for a Point Based Registration Service.
+*
+* Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
 class NIFTKIGI_EXPORT PointRegServiceI
 {
@@ -34,7 +36,8 @@ class NIFTKIGI_EXPORT PointRegServiceI
 public:
 
   /**
-  * @brief Does Point Based Registration of equal length, corresponding, ordered point sets.
+  * \brief Does Point Based Registration of equal length, corresponding, ordered point sets.
+  * \return fiducial registration error (mean RMS error over all matching landmark points)
   */
   virtual double PointBasedRegistration(const mitk::PointSet::Pointer& fixedPoints,
                                         const mitk::PointSet::Pointer& movingPoints,
