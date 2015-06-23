@@ -14,6 +14,7 @@
 
 #include "mitkStereoCameraCalibration.h"
 #include "mitkCameraCalibrationFacade.h"
+#include <mitkOpenCVFileIOUtils.h>
 #include <ios>
 #include <fstream>
 #include <iostream>

@@ -13,7 +13,6 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <boost/math/special_functions/fpclassify.hpp>
 #include <mitkPointSetReader.h>
 #include <mitkPointSetWriter.h>
 #include <vtkTransform.h>

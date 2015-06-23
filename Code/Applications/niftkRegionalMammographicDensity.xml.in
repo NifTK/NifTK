@@ -75,11 +75,17 @@
     </float>
 
     <boolean>
-      <name>flgRegister</name>
-      <flag>r</flag>
-      <longflag>register</longflag>
-      <description>Register the pre-diagnostic image to the diagnostic image to enable the tumour location to be mapped into the diagnostic image.</description>
-      <label>Register pre-diagnostic image to the diagnostic image?</label>
+      <name>flgRegisterAffine</name>
+      <longflag>regAffine</longflag>
+      <description>Affine register the input image to the diagnostic image to enable the tumour location to be mapped into the pre-diagnostic image.</description>
+      <label>Affine register to the diagnostic image?</label>
+    </boolean>
+
+    <boolean>
+      <name>flgRegisterNonRigid</name>
+      <longflag>regNonRigid</longflag>
+      <description>Non-rigidly register the input image to the diagnostic image to enable the tumour location to be mapped into the pre-diagnostic image.</description>
+      <label>Non-rigidly register to the diagnostic image?</label>
     </boolean>
 
   </parameters>

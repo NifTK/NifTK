@@ -13,7 +13,7 @@
 #============================================================================*/
 
 
-set(_depends MitkOpenCVVideoSupport MitkCameraCalibration niftkCore niftkOpenCVUtils niftkPointReg)
+set(_depends MitkOpenCVVideoSupport MitkCameraCalibration niftkCore niftkOpenCVUtils)
 
 # if cuda is available and enabled then we have possibility of doing
 # some computer vision stuff on the gpu.

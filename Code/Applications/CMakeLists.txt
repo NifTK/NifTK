@@ -99,6 +99,7 @@ if(SlicerExecutionModel_FOUND)
     niftkLogInvertImage
     niftkMammogramFatSubtraction
     niftkMammogramMaskSegmentation
+    niftkMammographicTumourDistribution
     niftkMaskDICOMMammograms
     niftkMammogramPectoralisSegmentation
     niftkMultiply
@@ -217,6 +218,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkConvertToMidasStr
   niftkConvertTransformToRIREFormat
   niftkCreateAffineTransform
+  niftkCreateAffineTransform2D
   niftkCreateMaskFromLabels
   niftkCreateTransformation
   niftkCTEAcosta2009Subsampling

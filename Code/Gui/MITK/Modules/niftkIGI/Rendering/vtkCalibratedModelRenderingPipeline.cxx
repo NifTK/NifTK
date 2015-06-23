@@ -15,8 +15,9 @@
 #include "vtkCalibratedModelRenderingPipeline.h"
 #include <mitkExceptionMacro.h>
 #include <niftkFileHelper.h>
-#include <niftkVTKFunctions.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
+#include <niftkVTKFunctions.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkCameraCalibrationFacade.h>
 

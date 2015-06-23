@@ -524,4 +524,276 @@ void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istr
   }             
 }
 
+
+
+//-----------------------------------------------------------------------------
+std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectoryName)
+{
+  std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
+  std::sort(files.begin(),files.end(),niftk::NumericStringCompare);
+  std::vector<cv::Mat> myMatrices;
+
+  if (files.size() > 0)
+  {
+    for(unsigned int i = 0; i < files.size();i++)
+    {
+      cv::Mat Matrix = cvCreateMat(4,4,CV_64FC1);
+      std::ifstream fin(files[i].c_str());
+      for ( int row = 0; row < 4; row ++ )
+      {
+        for ( int col = 0; col < 4; col ++ )
+        {
+          fin >> Matrix.at<double>(row,col);
+        }
+      }
+      myMatrices.push_back(Matrix);
+    }
+  }
+  else
+  {
+    mitkThrow() << "No files found in directory!" << std::endl;
+  }
+
+  if (myMatrices.size() == 0)
+  {
+    mitkThrow() << "No Matrices found in directory!" << std::endl;
+  }
+  std::cout << "Loaded " << myMatrices.size() << " Matrices from " << fullDirectoryName << std::endl;
+  return myMatrices;
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDirectoryName)
+{
+  std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
+  std::sort(files.begin(),files.end());
+  std::vector<cv::Mat> myMatrices;
+
+  if (files.size() > 0)
+  {
+    for(unsigned int i = 0; i < files.size();i++)
+    {
+      if ( niftk::FilenameHasPrefixAndExtension(files[i],"",".extrinsic.xml") )
+      {
+        cv::Mat Extrinsic = (cv::Mat)cvLoadImage(files[i].c_str());
+        if (Extrinsic.rows != 4 )
+        {
+          mitkThrow() << "Failed to load camera intrinsic params" << std::endl;
+        }
+        else
+        {
+          myMatrices.push_back(Extrinsic);
+          std::cout << "Loaded: " << Extrinsic << std::endl << "From " << files[i] << std::endl;
+        }
+      }
+    }
+  }
+  else
+  {
+    mitkThrow() << "No files found in directory!";
+  }
+
+  if (myMatrices.size() == 0)
+  {
+    mitkThrow() << "No Matrices found in directory!";
+  }
+  std::cout << "Loaded " << myMatrices.size() << " Matrices from " << fullDirectoryName << std::endl;
+  return myMatrices;
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileName)
+{
+
+  std::vector<cv::Mat> myMatrices;
+  std::ifstream fin(fullFileName.c_str());
+
+  cv::Mat RotationVector = cvCreateMat(3,1,CV_64FC1);
+  cv::Mat TranslationVector = cvCreateMat(3,1,CV_64FC1);
+  double temp_d[6];
+  while ( fin >> temp_d[0] >> temp_d[1] >> temp_d[2] >> temp_d[3] >> temp_d[4] >> temp_d[5] )
+  {
+    RotationVector.at<double>(0,0) = temp_d[0];
+    RotationVector.at<double>(1,0) = temp_d[1];
+    RotationVector.at<double>(2,0) = temp_d[2];
+    TranslationVector.at<double>(0,0) = temp_d[3];
+    TranslationVector.at<double>(1,0) = temp_d[4];
+    TranslationVector.at<double>(2,0) = temp_d[5];
+
+    cv::Mat Matrix = cvCreateMat(4,4,CV_64FC1);
+    cv::Mat RotationMatrix = cvCreateMat(3,3,CV_64FC1);
+    cv::Rodrigues (RotationVector, RotationMatrix);
+
+    for ( int row = 0; row < 3; row ++ )
+    {
+      for ( int col = 0; col < 3; col ++ )
+      {
+        Matrix.at<double>(row,col) = RotationMatrix.at<double>(row,col);
+      }
+    }
+
+    for ( int row = 0; row < 3; row ++ )
+    {
+      Matrix.at<double>(row,3) = TranslationVector.at<double>(row,0);
+    }
+    for ( int col = 0; col < 3; col ++ )
+    {
+      Matrix.at<double>(3,col) = 0.0;
+    }
+    Matrix.at<double>(3,3) = 1.0;
+    myMatrices.push_back(Matrix);
+  }
+  return myMatrices;
+}
+
+
+//-----------------------------------------------------------------------------
+void LoadStereoCameraParametersFromDirectory (const std::string& directory,
+  cv::Mat* leftCameraIntrinsic, cv::Mat* leftCameraDistortion,
+  cv::Mat* rightCameraIntrinsic, cv::Mat* rightCameraDistortion,
+  cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector,
+  cv::Mat* leftCameraToTracker)
+{
+  boost::filesystem::directory_iterator end_itr;
+  boost::regex leftIntrinsicFilter ("(.+)(left.intrinsic.txt)");
+  boost::regex rightIntrinsicFilter ("(.+)(right.intrinsic.txt)");
+  boost::regex r2lFilter ("(.+)(r2l.txt)");
+  boost::regex handeyeFilter ("(.+)(left.handeye.txt)");
+
+  std::vector<std::string> leftIntrinsicFiles;
+  std::vector<std::string> rightIntrinsicFiles;
+  std::vector<std::string> r2lFiles;
+  std::vector<std::string> handeyeFiles;
+
+  for ( boost::filesystem::directory_iterator it(directory);it != end_itr ; ++it)
+  {
+    if ( boost::filesystem::is_regular_file (it->status()) )
+    {
+      boost::cmatch what;
+      char *  stringthing = new char [512] ;
+      strcpy (stringthing,it->path().string().c_str());
+      if ( boost::regex_match( stringthing,what,leftIntrinsicFilter) )
+      {
+        leftIntrinsicFiles.push_back(it->path().string());
+      }
+      if ( boost::regex_match( stringthing,what,rightIntrinsicFilter) )
+      {
+        rightIntrinsicFiles.push_back(it->path().string());
+      }
+      if ( boost::regex_match( stringthing,what,r2lFilter) )
+      {
+        r2lFiles.push_back(it->path().string());
+      }
+      if ( boost::regex_match( stringthing,what,handeyeFilter) )
+      {
+        handeyeFiles.push_back(it->path().string());
+      }
+    }
+  }
+
+  if ( leftIntrinsicFiles.size() != 1 )
+  {
+    mitkThrow() << "Found the wrong number of left intrinsic files";
+  }
+
+  if ( rightIntrinsicFiles.size() != 1 )
+  {
+    mitkThrow() << "Found the wrong number of right intrinsic files";
+  }
+
+  if ( r2lFiles.size() != 1 )
+  {
+    mitkThrow() << "Found the wrong number of right to left files" << std::endl;
+  }
+
+  if ( handeyeFiles.size() != 1 )
+  {
+    mitkThrow() << "Found the wrong number of handeye files" << std::endl;
+  }
+
+  std::cout << "Loading left intrinsics from  " << leftIntrinsicFiles[0] << std::endl;
+  LoadCameraIntrinsicsFromPlainText (leftIntrinsicFiles[0],leftCameraIntrinsic, leftCameraDistortion);
+  std::cout << "Loading right intrinsics from  " << rightIntrinsicFiles[0] << std::endl;
+  LoadCameraIntrinsicsFromPlainText (rightIntrinsicFiles[0],rightCameraIntrinsic, rightCameraDistortion);
+  std::cout << "Loading right to left from  " << r2lFiles[0] << std::endl;
+  LoadStereoTransformsFromPlainText (r2lFiles[0],rightToLeftRotationMatrix, rightToLeftTranslationVector);
+  std::cout << "Loading handeye from  " << handeyeFiles[0] << std::endl;
+  LoadHandeyeFromPlainText (handeyeFiles[0],leftCameraToTracker);
+
+}
+
+
+//-----------------------------------------------------------------------------
+void LoadCameraIntrinsicsFromPlainText (const std::string& filename,
+    cv::Mat* CameraIntrinsic, cv::Mat* CameraDistortion)
+{
+  std::ifstream fin(filename.c_str());
+  // make sure we throw an exception if parsing fails for any reason.
+  fin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+  for ( int row = 0; row < 3; row ++ )
+  {
+    for ( int col = 0; col < 3; col ++ )
+    {
+       fin >> CameraIntrinsic->at<double>(row,col);
+    }
+  }
+
+  if (CameraDistortion != 0)
+  {
+    // this should work around any row-vs-column vector opencv matrix confusion issues.
+    for (int row = 0; row < CameraDistortion->size().height; ++row)
+    {
+      for (int col = 0; col < CameraDistortion->size().width; ++col)
+      {
+        fin >> CameraDistortion->at<double>(row, col);
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void LoadStereoTransformsFromPlainText (const std::string& filename,
+    cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector)
+{
+  std::ifstream fin(filename.c_str());
+  // make sure we throw an exception if parsing fails for any reason.
+  fin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+  for ( int row = 0; row < 3; row ++ )
+  {
+    for ( int col = 0; col < 3; col ++ )
+    {
+       fin >> rightToLeftRotationMatrix->at<double>(row,col);
+    }
+  }
+
+  for (int row = 0; row < rightToLeftTranslationVector->size().height; ++row)
+  {
+    for (int col = 0; col < rightToLeftTranslationVector->size().width; ++col)
+    {
+      fin >> rightToLeftTranslationVector->at<double>(row, col);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void LoadHandeyeFromPlainText (const std::string& filename,
+    cv::Mat* leftCameraToTracker)
+{
+  std::ifstream fin(filename.c_str());
+  for ( int row = 0; row < 4; row ++ )
+  {
+    for ( int col = 0; col < 4; col ++ )
+    {
+       fin >> leftCameraToTracker->at<double>(row,col);
+    }
+  }
+
+}
+
 } // end namespace

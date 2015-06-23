@@ -24,7 +24,7 @@
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
-#include <mitkSurfaceBasedRegistration.h>
+#include <niftkSurfaceBasedRegistration.h>
 
 const std::string SurfaceRegViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igisurfacereg");
 
@@ -125,7 +125,7 @@ void SurfaceRegViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void SurfaceRegViewPreferencePage::Update()
 {
-  m_MaximumIterations->setValue(m_SurfaceRegViewPreferencesNode->GetInt("Maximum number of ICP iterations",mitk::SurfaceBasedRegistration::DEFAULT_MAX_ITERATIONS));
-  m_MaximumPoints->setValue(m_SurfaceRegViewPreferencesNode->GetInt("Maximum number of points to use in ICP",mitk::SurfaceBasedRegistration::DEFAULT_MAX_POINTS));
-  m_TryDeformableRegistration->setChecked(m_SurfaceRegViewPreferencesNode->GetBool("Use the deformable registration algorithm",mitk::SurfaceBasedRegistration::DEFAULT_USE_DEFORMABLE));
+  m_MaximumIterations->setValue(m_SurfaceRegViewPreferencesNode->GetInt("Maximum number of ICP iterations",niftk::SurfaceBasedRegistrationConstants::DEFAULT_MAX_ITERATIONS));
+  m_MaximumPoints->setValue(m_SurfaceRegViewPreferencesNode->GetInt("Maximum number of points to use in ICP",niftk::SurfaceBasedRegistrationConstants::DEFAULT_MAX_POINTS));
+  m_TryDeformableRegistration->setChecked(m_SurfaceRegViewPreferencesNode->GetBool("Use the deformable registration algorithm",niftk::SurfaceBasedRegistrationConstants::DEFAULT_USE_DEFORMABLE));
 }

@@ -12,6 +12,8 @@
 
 =============================================================================*/
 
+#include <niftkFileHelper.h>
+
 #include <itkBreastMaskSegmentationFromMRI.h>
 #include <itkHistogramMatchingImageFilter.h>
 #include <itkScalarConnectedComponentImageFilter.h>
@@ -24,6 +26,7 @@
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkAddImageFilter.h>
 #include <itkSignedMaurerDistanceMapImageFilter.h>
+#include <itkThinPlateSplineScatteredDataPointSetToImageFilter.h>
 
 #include <boost/filesystem.hpp>
 
@@ -74,7 +77,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   coilCropDistance = 10.0;
   cropDistPosteriorToMidSternum = 40.0;
 
-  pecControlPointSpacing = 30.;
+  pecControlPointSpacing = 31.;
 
   imStructural = 0;
   imFatSat = 0;
@@ -1574,9 +1577,10 @@ void
 BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 ::ComputeElevationOfAnteriorSurface( bool flgCoilCrop )
 {
-  typename InternalImageType::RegionType region3D;
-  typename InternalImageType::SizeType   size3D;
-  typename InternalImageType::IndexType  start3D;
+  typename InternalImageType::RegionType    region3D;
+  typename InternalImageType::SizeType      size3D;
+  typename InternalImageType::IndexType     start3D;
+  typename InternalImageType::DirectionType direction3D;
 
   typename AxialImageType::RegionType region2D;
   typename AxialImageType::SizeType   size2D;
@@ -1586,9 +1590,10 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   float maxElevation = 0.;
 
 
-  region3D = imSegmented->GetLargestPossibleRegion();
-  start3D  = region3D.GetIndex();
-  size3D   = region3D.GetSize();
+  region3D    = imSegmented->GetLargestPossibleRegion();
+  start3D     = region3D.GetIndex();
+  size3D      = region3D.GetSize();
+  direction3D = imSegmented->GetDirection();
 
   size2D[0] = size3D[0];
   size2D[1] = size3D[2];
@@ -1624,6 +1629,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
   imSkinElevationMap->Allocate();
   imSkinElevationMap->FillBuffer( 0 );
+
 
   LineIteratorType itSegLinear( imSegmented, region3D );
 
@@ -1852,7 +1858,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
       connectedThreshold->Update();
 
-      imSkinElevationMap = connectedThreshold->GetOutput();
+      typename AxialImageType::Pointer imSkinElevationMask = connectedThreshold->GetOutput();
 
       // Expand the mask by a certain radius?
 
@@ -1863,7 +1869,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
         typename DistanceMapFilterType::Pointer distFilter = DistanceMapFilterType::New();
 
-        distFilter->SetInput( imSkinElevationMap );
+        distFilter->SetInput( imSkinElevationMask );
         distFilter->SetUseImageSpacing(true);
 
         std::cout << "Computing distance transform for skin elevation mask" << std::endl;
@@ -1886,8 +1892,8 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
 
         thresholder->Update();
   
-        imSkinElevationMap = thresholder->GetOutput();
-        imSkinElevationMap->DisconnectPipeline();  
+        imSkinElevationMask = thresholder->GetOutput();
+        imSkinElevationMask->DisconnectPipeline();  
 
       }
 
@@ -1926,7 +1932,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
         if ( flgVerbose )
           std::cout << "Iterating over left region: " << lateralRegion << std::endl;
 
-        AxialLateralIteratorType itLeftRegion( imSkinElevationMap, lateralRegion );
+        AxialLateralIteratorType itLeftRegion( imSkinElevationMask, lateralRegion );
 
         for ( itLeftRegion.GoToBegin(); 
               ! itLeftRegion.IsAtEnd();
@@ -1971,7 +1977,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
         if ( flgVerbose )
           std::cout << "Iterating over left axilla region: " << lateralRegion << std::endl;
         
-        AxialLateralIteratorType itLeftAxilla( imSkinElevationMap, lateralRegion );
+        AxialLateralIteratorType itLeftAxilla( imSkinElevationMask, lateralRegion );
 
         for ( itLeftAxilla.GoToBegin(); 
               ! itLeftAxilla.IsAtEnd();
@@ -2006,7 +2012,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
         if ( flgVerbose )
           std::cout << "Iterating over right region: " << lateralRegion << std::endl;
 
-        AxialLateralIteratorType itRightRegion( imSkinElevationMap, lateralRegion );
+        AxialLateralIteratorType itRightRegion( imSkinElevationMask, lateralRegion );
 
         for ( itRightRegion.GoToBegin(); 
               ! itRightRegion.IsAtEnd();
@@ -2051,7 +2057,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
         if ( flgVerbose )
           std::cout << "Iterating over right axilla region: " << lateralRegion << std::endl;
         
-        AxialLateralIteratorType itRightAxilla( imSkinElevationMap, lateralRegion );
+        AxialLateralIteratorType itRightAxilla( imSkinElevationMask, lateralRegion );
 
         for ( itRightAxilla.GoToBegin(); 
               ! itRightAxilla.IsAtEnd();
@@ -2088,13 +2094,162 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
                                    std::string( "_Mask" ) );
 
         writer->SetFileName( fileOutput );
-        writer->SetInput( imSkinElevationMap );
+        writer->SetInput( imSkinElevationMask );
 
         std::cout << "Writing elevation map mask to file: "
                   << fileOutput << std::endl;
 
         writer->Update();
       }
+
+      
+      // Fit a thin-plate spline to the skin area outside the breasts
+
+      if ( fileOutputSkinSurfaceNoBreasts.length() )
+      {
+        typedef itk::PointSet<double, ImageDimension> LandmarkPointSetType;
+
+        typedef typename itk::ThinPlateSplineScatteredDataPointSetToImageFilter< LandmarkPointSetType, InternalImageType > ThinPlateSplineFilterType;
+
+        typedef typename ThinPlateSplineFilterType::LandmarkPointType LandmarkPointType;
+
+        typename LandmarkPointSetType::Pointer PointSet = LandmarkPointSetType::New();
+
+        LandmarkPointType point; 
+
+        typedef itk::ImageRegionIteratorWithIndex< AxialImageType > AxialIteratorType;  
+
+        AxialIteratorType itElevationMap(  imSkinElevationMap,  region2D );
+        AxialIteratorType itElevationMask( imSkinElevationMask, region2D );
+
+        typename AxialImageType::IndexType idx2D;
+
+        typename InternalImageType::IndexType idx3D;
+        typename InternalImageType::PointType pt3D;
+
+        unsigned int iSkip = 0;
+        unsigned int iLandmark = 0;
+        unsigned int stride = 0;
+        unsigned int nLandmarks = 0;
+
+        // Count the number of points
+
+        itElevationMask.GoToBegin();
+
+        while ( ! itElevationMask.IsAtEnd() )
+        {
+          if ( ! itElevationMask.Get() )
+          {
+            nLandmarks++;
+          }
+          ++itElevationMask;
+        }
+
+        if ( nLandmarks > 100 )
+        {
+          stride = nLandmarks / 100;
+        }
+
+        std::cout << "Number of potential points: " << nLandmarks
+                  << ", skipping: " << stride << std::endl;
+
+        std::string fileOutput = niftk::ModifyImageFileSuffix( fileOutputSkinSurfaceNoBreasts,
+                                                               std::string( ".pts" ) );
+     
+        std::fstream fout;
+        fout.open(fileOutput.c_str(), std::ios::out);
+    
+        if ((! fout) || fout.bad()) 
+        {
+          itkExceptionMacro( << "ERROR: Failed to open file: " << fileOutput.c_str() );
+        }
+
+        // Create the point set
+
+        itElevationMask.GoToBegin();
+        itElevationMap.GoToBegin();
+
+        while ( (! itElevationMask.IsAtEnd()) && (! itElevationMap.IsAtEnd()) )
+        {
+          if ( ! itElevationMask.Get() )
+          {
+            idx2D = itElevationMask.GetIndex();
+
+            idx3D[0] = idx2D[0];
+            idx3D[2] = idx2D[1];
+
+            elevation = itElevationMap.Get();
+            idx3D[1] = static_cast<RealType>(size3D[1] - 1) - elevation/spacing3D[1];
+
+            imSegmented->TransformIndexToPhysicalPoint( idx3D, pt3D );
+
+            std::cout << iLandmark << ": " << idx3D << " " << pt3D << std::endl;
+            fout << pt3D[0] << " " << pt3D[1] << " " << pt3D[2] << std::endl;
+
+            PointSet->SetPoint( iLandmark, pt3D );
+
+            iLandmark++;
+
+            ++itElevationMask;
+            ++itElevationMap;
+
+            iSkip = 0;
+            while ( ( iSkip < stride ) && 
+                    (! itElevationMask.IsAtEnd()) && (! itElevationMap.IsAtEnd()) )
+            {
+              if ( ! itElevationMask.Get() )
+              {
+                iSkip++;
+              }
+
+              ++itElevationMask;
+              ++itElevationMap;
+            }
+          }
+          else
+          {
+            ++itElevationMask;
+            ++itElevationMap;
+          }
+        }
+
+        fout.close();
+
+        // Fit a thin-plate spline
+        
+        typename ThinPlateSplineFilterType::Pointer filter = ThinPlateSplineFilterType::New();
+
+        filter->SetInput( PointSet );
+        
+        filter->SetSpacing( spacing3D );
+        filter->SetOrigin(  origin3D );
+        filter->SetSize(    size3D );
+
+        filter->SetInvert( true );
+
+        filter->SetSplineHeightDimension( 1 );
+        filter->SetStiffness( 100 );
+
+        filter->Print( std::cout );
+        filter->Update();
+        
+        // Write the image
+
+        typedef itk::ImageFileWriter< InternalImageType > FileWriterType;
+
+        typename FileWriterType::Pointer writer = FileWriterType::New();
+
+        writer->SetFileName( fileOutputSkinSurfaceNoBreasts );
+        writer->SetInput( filter->GetOutput() );
+
+        std::cout << "Writing skin surface mask to file: "
+                  << fileOutputSkinSurfaceNoBreasts << std::endl;
+
+        writer->Update();
+
+      }
+
+      imSkinElevationMap = imSkinElevationMask;
   }
 
 
@@ -4132,10 +4287,15 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   filter->SetSplineOrder( splineOrder );  
 
   typename InternalImageType::SizeType size = region.GetSize();
-  RealType numOfControlPoints = (static_cast<RealType>( size[0] )*spacing[0])/controlPointSpacingInMM;
+  RealType numOfControlPoints = ceil( ( static_cast<RealType>( size[0] )*spacing[0] )
+                                       /controlPointSpacingInMM );
 
   if (flgVerbose) 
-    std::cout << "Number of control points: " << numOfControlPoints 
+    std::cout << "Region: " << region << std::endl
+              << "PointSet: " << pointSet << std::endl
+              << "Origin: " << origin << std::endl
+              << "Spacing: " << spacing << std::endl
+              << "Number of control points: " << numOfControlPoints 
               << " ( spacing: " << controlPointSpacingInMM << " mm )" << std::endl;
 
   typename FilterType::ArrayType ncps;  
@@ -4164,7 +4324,7 @@ BreastMaskSegmentationFromMRI< ImageDimension, InputPixelType >
   filter->SetSize   ( bsDomainSize    );
   filter->SetInput  ( pointSet        );
 
-  filter->SetDebug( false );
+  filter->Print( std::cout );
 
   filter->Update();
 

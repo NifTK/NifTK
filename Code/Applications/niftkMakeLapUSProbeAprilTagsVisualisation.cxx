@@ -70,11 +70,12 @@ int main(int argc, char** argv)
 
   vtkSmartPointer<vtkTexture> text = vtkSmartPointer<vtkTexture>::New();
   text->SetInputConnection(imageReader->GetOutputPort());
-  text->InterpolateOn();
+  text->InterpolateOff();
 
   vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   mapper->SetInputConnection(modelReader->GetOutputPort());
   mapper->ScalarVisibilityOff();
+  mapper->Update();
 
   vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
   actor->SetMapper(mapper);

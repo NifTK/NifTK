@@ -215,6 +215,7 @@ public:
   void SetOutputVTKSurface( std::string fn ) { fileOutputVTKSurface = fn; }
 
   void SetOutputSkinElevationMap( std::string fn ) { fileOutputSkinElevationMap = fn; }
+  void SetOutputSkinSurfaceNoBreasts( std::string fn ) { fileOutputSkinSurfaceNoBreasts = fn; }
 
 
   void SetStructuralImage( typename InternalImageType::Pointer image ) { imStructural = image; }
@@ -352,6 +353,7 @@ protected:
   std::string fileOutputVTKSurface;
 
   std::string fileOutputSkinElevationMap;
+  std::string fileOutputSkinSurfaceNoBreasts;
 
   typename InternalImageType::Pointer imStructural;
   typename InternalImageType::Pointer imFatSat;

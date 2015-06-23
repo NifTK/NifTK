@@ -45,6 +45,7 @@ int main(int argc, char** argv)
     calibrator->SetNumberCornersWidth(NumberCornerWidth);
     calibrator->SetNumberCornersHeight(NumberCornerHeight);
     calibrator->SetSquareSizeInMillimetres(squareSizeInmm);
+    calibrator->SetRandomise(randomise);
     calibrator->InitialiseOutputDirectory();
     calibrator->InitialiseTracking();
 

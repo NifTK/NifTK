@@ -34,7 +34,6 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/progress.hpp>
 #include <boost/iostreams/tee.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -171,6 +170,9 @@ public:
   bool flgDebug;
   bool flgCompression;
   bool flgOverwrite;
+  bool flgDoNotRegister;
+
+  int minNumberOfSlices;
 
   std::string dirInput;
   std::string dirOutput;
@@ -203,7 +205,8 @@ public:
 
   InputParameters( TCLAP::CmdLine &commandLine, 
                    bool verbose, bool flgSave, 
-                   bool compression, bool debug, bool overwrite,
+                   bool compression, bool debug, bool overwrite, bool noRegistration,
+                   int minNSlices,
                    std::string dInput, std::string dOutput,
                    std::string logfile, std::string csvfile,
                    std::string strT1,
@@ -221,7 +224,10 @@ public:
     flgDebug = debug;
     flgCompression = compression;
     flgOverwrite = overwrite;
-    
+    flgDoNotRegister = noRegistration;
+
+    minNumberOfSlices = minNSlices;
+
     dirInput  = dInput;
     dirOutput = dOutput;
 
@@ -344,6 +350,7 @@ public:
             << "Compress images?: "            << flgCompression << std::endl
             << "Debugging output?: "           << flgDebug       << std::endl
             << "Overwrite previous results?: " << flgOverwrite   << std::endl
+            << "Turn off registration?: "      << flgDoNotRegister   << std::endl
             << std::noboolalpha
             << std::endl
             << "Output log file: " << fileLog       << std::endl
@@ -369,14 +376,21 @@ public:
 
     std::cout << message.str();
     message.str( "" );
-    teeStream->flush();
+
+    if ( teeStream )
+    {
+      teeStream->flush();
+    }
   }
     
   void PrintError( std::stringstream &message ) {
 
     std::cerr << "ERROR: " << message.str();
     message.str( "" );
-    teeStream->flush();
+    if ( teeStream )
+    {
+      teeStream->flush();
+    }
   }
     
   void PrintErrorAndExit( std::stringstream &message ) {
@@ -390,7 +404,10 @@ public:
 
     std::cerr << "WARNING: " << message.str();
     message.str( "" );
-    teeStream->flush();
+    if ( teeStream )
+    {
+      teeStream->flush();
+    }
   }
 
   void PrintTag( const DictionaryType &dictionary, 
@@ -844,7 +861,8 @@ int main( int argc, char *argv[] )
 
   InputParameters args( commandLine, 
                         flgVerbose, flgSaveImages, 
-                        flgCompression, flgDebug, flgOverwrite,
+                        flgCompression, flgDebug, flgOverwrite, flgDoNotRegister,
+                        minNumberOfSlices,
                         dirInput, dirOutput,
                         fileLog, fileOutputCSV,
                         strSeriesDescT1W,
@@ -1024,6 +1042,7 @@ int main( int argc, char *argv[] )
   nameGenerator->SetLoadPrivateTags( true ); 
 
   nameGenerator->SetUseSeriesDetails( true );
+  nameGenerator->SetRecursive( true );
   
   nameGenerator->SetDirectory( args.dirInput );
   
@@ -1142,7 +1161,7 @@ int main( int argc, char *argv[] )
   // Load the T1W image
   // ~~~~~~~~~~~~~~~~~~
 
-  if ( flgOverwrite || 
+  if ( args.flgOverwrite || 
        ( ! args.ReadImageFromFile( args.dirOutput, fileI01_T1_BiasFieldCorr, 
                                    std::string( "bias field corrected '") +
                                    args.strSeriesDescT1W + "' image", 
@@ -1153,7 +1172,7 @@ int main( int argc, char *argv[] )
                                      std::string( "T1W '" ) + args.strSeriesDescT1W 
                                      + "' image", imT1 ) ) )
     {
-      if ( fileNamesT1.size() > 0 )
+      if ( fileNamesT1.size() > args.minNumberOfSlices )
       {
             
         SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
@@ -1212,24 +1231,24 @@ int main( int argc, char *argv[] )
 
   
 
-  if ( flgOverwrite || 
+  if ( args.flgOverwrite || args.flgDoNotRegister ||
        ( ! args.ReadImageFromFile( args.dirOutput, fileRegisteredT2W, 
                                    std::string( "registered '") +
                                    args.strSeriesDescT2W + "' image", 
                                    imT2 ) ) )
   {
-    if ( flgOverwrite || 
+    if ( args.flgOverwrite || 
          ( ! args.ReadImageFromFile( args.dirOutput, fileI01_T2_BiasFieldCorr, 
                                      std::string( "bias field corrected '" ) + 
                                      args.strSeriesDescT2W + "' image", imT2 ) ) )
     {
-      if ( flgOverwrite || 
+      if ( args.flgOverwrite || 
            ( ! args.ReadImageFromFile( args.dirOutput, fileI00_T2,
                                        std::string( "T2W '" ) + 
                                        args.strSeriesDescT2W + "' image", 
                                        imT2 ) ) )
       {
-        if ( fileNamesT2.size() > 0 )
+        if ( fileNamesT2.size() > args.minNumberOfSlices )
         {
           
           SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
@@ -1293,17 +1312,20 @@ int main( int argc, char *argv[] )
       
     // Register the T2W image to the T1W image
 
-    if ( ! ( RegisterImages( fileRegistrationTarget,
-                             fileI01_T2_BiasFieldCorr,
-                             fileRegisteredT2W,
-                             args ) 
-             &&
-             args.ReadImageFromFile( args.dirOutput, fileRegisteredT2W, 
-                                     std::string( "registered '") +
-                                     args.strSeriesDescT2W + "' image", 
-                                     imT2 ) ) )
+    if ( imT2 && imT1 && ( ! args.flgDoNotRegister ) )
     {
-      imT2 = 0;
+      if ( ! ( RegisterImages( fileRegistrationTarget,
+                               fileI01_T2_BiasFieldCorr,
+                               fileRegisteredT2W,
+                               args ) 
+               &&
+               args.ReadImageFromFile( args.dirOutput, fileRegisteredT2W, 
+                                       std::string( "registered '") +
+                                       args.strSeriesDescT2W + "' image", 
+                                       imT2 ) ) )
+      {
+        imT2 = 0;
+      }
     }
   }
 
@@ -1313,8 +1335,7 @@ int main( int argc, char *argv[] )
   if ( ! ( imT2 && imT1 ) )
   {
     message << "Both of T1W and T2W images not found" << std::endl << std::endl;
-    args.PrintError( message );
-    return EXIT_FAILURE;
+    args.PrintWarning( message );
   }
   
   iTask++;
@@ -1357,10 +1378,10 @@ int main( int argc, char *argv[] )
     float sigmaBIF = 3.0;
 
     bool flgProneSupineBoundary = false;
-    float cropProneSupineDistPostMidSternum  = 40.0;
 
-    bool flgCropWithFittedSurface = true;
-
+    bool flgExcludeAxilla = false;
+    bool flgCropFit = false;
+    float coilCropDistance = 10.;
 
     ImageType::Pointer imBIFs;
 
@@ -1414,8 +1435,9 @@ int main( int argc, char *argv[] )
 
     breastMaskSegmentor->SetSigmaBIF( sigmaBIF );
 
-    breastMaskSegmentor->SetCropFit( flgCropWithFittedSurface );
-    breastMaskSegmentor->SetCropDistancePosteriorToMidSternum( cropProneSupineDistPostMidSternum );
+    breastMaskSegmentor->SetExcludeAxilla( flgExcludeAxilla );
+    breastMaskSegmentor->SetCropFit( flgCropFit );
+    breastMaskSegmentor->SetCoilCropDistance( coilCropDistance );
           
 
     if ( args.flgDebug )
@@ -1458,8 +1480,19 @@ int main( int argc, char *argv[] )
       breastMaskSegmentor->SetOutputBIFS( niftk::ConcatenatePath( args.dirOutput, fileBIFs ) );
     }        
 
-    breastMaskSegmentor->SetStructuralImage( imT2 );
-    breastMaskSegmentor->SetFatSatImage( imT1 );
+    if ( imT1 && imT2 )
+    {
+      breastMaskSegmentor->SetStructuralImage( imT2 );
+      breastMaskSegmentor->SetFatSatImage( imT1 );
+    }
+    else if ( imT1 )
+    {
+      breastMaskSegmentor->SetStructuralImage( imT1 );
+    }
+    else if ( imT2 )
+    {
+      breastMaskSegmentor->SetStructuralImage( imT2 );
+    }
 
     breastMaskSegmentor->Execute();
 
@@ -1471,7 +1504,7 @@ int main( int argc, char *argv[] )
   }
       
 
-  // SEGMENT the parenchyma
+  // Segment the parenchyma
   // ~~~~~~~~~~~~~~~~~~~~~~
 
   if ( flgOverwrite || 
@@ -1540,7 +1573,7 @@ int main( int argc, char *argv[] )
 
   
 
-  if ( flgOverwrite || 
+  if ( flgOverwrite || args.flgDoNotRegister ||
        ( ! args.ReadImageFromFile( args.dirOutput, fileRegisteredADC, 
                                    std::string( "registered '") +
                                    args.strSeriesDescADC + "' image", 
@@ -1551,7 +1584,7 @@ int main( int argc, char *argv[] )
                                      std::string( "ADC '" ) + args.strSeriesDescADC 
                                      + "' image", imADC ) ) )
     {
-      if ( fileNamesADC.size() > 0 )
+      if ( fileNamesADC.size() > args.minNumberOfSlices )
       {
             
         SeriesReaderType::Pointer seriesReader = SeriesReaderType::New();
@@ -1573,7 +1606,8 @@ int main( int argc, char *argv[] )
       
     // Register the ADC image to the T1W image
 
-    if ( ! ( RegisterImages( fileRegistrationTarget,
+    if ( ( !  args.flgDoNotRegister ) &&
+         ! ( RegisterImages( fileRegistrationTarget,
                              fileI00_ADC,
                              fileRegisteredADC,
                              args ) 
@@ -1636,7 +1670,7 @@ int main( int argc, char *argv[] )
 
   
 
-    if ( flgOverwrite || 
+    if ( flgOverwrite || args.flgDoNotRegister || 
          ( ! args.ReadImageFromFile( args.dirOutput, fileRegisteredDCE, 
                                      std::string( "registered '") +
                                      args.strSeriesDescDCE + "' image", 
@@ -1647,7 +1681,7 @@ int main( int argc, char *argv[] )
                                        std::string( "DCE '" ) + args.strSeriesDescDCE 
                                        + "' image", imDCE ) ) )
       {
-        if ( fileNames.size() > 0 )
+        if ( fileNames.size() > args.minNumberOfSlices )
         {
             
           fileNamesDCEImages.insert( std::pair< unsigned int, 
@@ -1673,7 +1707,8 @@ int main( int argc, char *argv[] )
       
       // Register the DCE image to the T1W image
 
-      if ( ! ( RegisterImages( fileRegistrationTarget,
+      if ( ( !  args.flgDoNotRegister ) &&
+           ! ( RegisterImages( fileRegistrationTarget,
                                fileI00_DCE,
                                fileRegisteredDCE,
                                args ) 

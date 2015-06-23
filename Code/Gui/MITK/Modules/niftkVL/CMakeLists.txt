@@ -32,6 +32,10 @@ if(BUILD_IGI)
   set(_modules ${_modules} niftkOpenCV MitkCameraCalibration)
 endif()
 
+# vl renderer can draw nice textured point clouds.
+if(BUILD_PCL)
+  set(_modules ${_modules} niftkPCL)
+endif()
 
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
   # if cuda is available then it can dump the renderer output into datastorage.
@@ -52,7 +56,10 @@ target_link_libraries(niftkVL
   ${VL_LIBRARIES}
 )
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
+# Note:
+# Cotire must be off on Linux because of a symbol name class in Xlib.h and qstyleoption.h
+# Cotire must be ON on Windows and Mac.
+if (COMMAND cotire AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   cotire(niftkVL)
 endif()
 

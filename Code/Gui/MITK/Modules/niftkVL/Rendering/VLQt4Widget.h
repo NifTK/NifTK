@@ -57,6 +57,9 @@ class LightweightCUDAImage;
 namespace mitk
 {
 class DataStorage;
+}
+namespace niftk
+{
 class PCLData;
 }
 struct VLUserData;
@@ -190,7 +193,7 @@ protected:
   vl::mat4 GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data);
   void EnableTrackballManipulator(bool enable);
   vl::ref<vl::Actor> AddPointsetActor(const mitk::PointSet::Pointer& mitkPS);
-  vl::ref<vl::Actor> AddPointCloudActor(mitk::PCLData* pcl);
+  vl::ref<vl::Actor> AddPointCloudActor(niftk::PCLData* pcl);
   vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
   vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
   vl::ref<vl::Actor> Add2DImageActor(const mitk::Image::Pointer& mitkImg);

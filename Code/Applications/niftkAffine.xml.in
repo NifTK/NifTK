@@ -65,6 +65,15 @@
     </file>
 
     <file>
+      <name>outputNiftyRegMatrixFile</name>
+      <longflag>omNR</longflag>
+      <description>A NiftyReg compatible matrix transformation output file.</description>      
+      <label>Output NiftyReg affine matrix transformation</label>
+      <default></default>
+      <channel>output</channel>
+    </file>
+
+    <file>
       <name>inputTransformFile</name>
       <longflag>it</longflag>
       <description>The initial input transform file name.</description>      

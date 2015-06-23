@@ -42,7 +42,15 @@ if(BUILD_IGI)
     niftkOpenCV 
     niftkIGI
     niftkIGIGui
+    niftkICPReg
+    niftkSurfRecon
     niftkPointReg
+  )
+endif()
+
+if(BUILD_PCL)
+  list(APPEND HELPER_APPS_REQUIRED_MODULES
+    niftkPCL
   )
 endif()
 
@@ -61,7 +69,6 @@ if(BUILD_IGI)
   if(BUILD_PCL)
     set(HELPER_APPS
       ${HELPER_APPS}
-      niftkPointCloudWrite
     )    
   endif()
 endif()
@@ -102,8 +109,16 @@ list(APPEND HELPER_APP_LIBRARIES
   niftkOpenCV 
   niftkIGIGui
   niftkPointReg
+  niftkSurfRecon
+  niftkICPReg
   MitkLegacyIO
 )
+
+if(BUILD_PCL)
+  list(APPEND HELPER_APP_LIBRARIES
+    niftkPCL
+  )
+endif()
 
 list(REMOVE_DUPLICATES HELPER_APP_INCLUDE_DIRECTORIES)
 list(REMOVE_DUPLICATES HELPER_APP_LINK_DIRECTORIES)
@@ -170,11 +185,11 @@ if(SlicerExecutionModel_FOUND)
       niftkMakeLapUSProbeSimulationData
       niftkImageFeatureMatching
     )
-    
+
     if(BUILD_PCL)
       set(SLICER_HELPER_APPS
         ${SLICER_HELPER_APPS}
-        FitPlaneToPointCloud
+        niftkFitPlaneToPointCloud
       )
     endif()
 
@@ -185,14 +200,19 @@ if(SlicerExecutionModel_FOUND)
       )
     endif()
 
-  endif()  
+  endif()
+
+  set(SLICER_HELPER_APP_LIBRARIES
+    ${HELPER_APP_LIBRARIES}
+    ${Boost_LIBRARIES}
+  )
 
   foreach(APP ${SLICER_HELPER_APPS})
     NIFTK_CREATE_COMMAND_LINE_APPLICATION(
       NAME ${APP}
       BUILD_SLICER
       INSTALL_SCRIPT
-      TARGET_LIBRARIES ${HELPER_APP_LIBRARIES}
+      TARGET_LIBRARIES ${SLICER_HELPER_APP_LIBRARIES}
     )
   endforeach()
 endif()

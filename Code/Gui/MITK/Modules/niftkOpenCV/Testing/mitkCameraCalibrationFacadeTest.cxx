@@ -19,7 +19,7 @@
 #include <string>
 #include <CameraCalibration/mitkCameraCalibrationFacade.h>
 #include <mitkOpenCVMaths.h>
-
+#include <mitkOpenCVFileIOUtils.h>
 
 //-----------------------------------------------------------------------------
 static void CheckExceptionsForLoadingFromPlaintext()

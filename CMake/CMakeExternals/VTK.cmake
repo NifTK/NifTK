@@ -102,6 +102,7 @@ if(NOT DEFINED VTK_DIR)
         -DVTK_LEGACY_REMOVE:BOOL=ON
         -DModule_vtkTestingRendering:BOOL=ON
         -DVTK_MAKE_INSTANTIATORS:BOOL=ON
+        -DVTK_REPORT_OPENGL_ERRORS:BOOL=OFF
         ${additional_cmake_args}
         ${VTK_QT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}

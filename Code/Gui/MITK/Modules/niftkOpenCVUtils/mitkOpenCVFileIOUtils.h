@@ -110,6 +110,64 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT void SavePickedObjects ( const std::vector 
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istream& is );
 
+/**
+ * \brief Read a set of matrices, stored as plain text, 4x4 matrices from a directory and
+ * put them in a vector of 4x4 cvMats
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectoryName);
+
+
+/**
+ * \brief Read a set of matrices, stored in openCV xml matrix format from a directory and
+ * put them in a vector of 4x4 cvMats
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT std::vector<cv::Mat> LoadOpenCVMatricesFromDirectory (const std::string& fullDirectoryName);
+
+
+ /**
+  * \brief Load a set of matrices from a file describing the
+  * extrinsic parameters of a standard camera calibration
+  */
+extern "C++" NIFTKOPENCVUTILS_EXPORT std::vector<cv::Mat> LoadMatricesFromExtrinsicFile (const std::string& fullFileName);
+
+
+/**
+  * \brief Load stereo camera parameters from a directory
+  */
+extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadStereoCameraParametersFromDirectory (const std::string& directory,
+  cv::Mat* leftCameraIntrinsic, cv::Mat* leftCameraDistortion,
+  cv::Mat* rightCameraIntrinsic, cv::Mat* rightCameraDisortion,
+  cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector,
+  cv::Mat* leftCameraToTracker);
+
+
+/**
+ * \brief Load camera intrinsics from a plain text file and return results as
+ * cv::Mat
+ * \param cameraIntrinsic 3x3 matrix (double!)
+ * \param cameraDistortion is optional, number of components needs to match the file! (double!)
+ * \throws exception if parsing fails for any reason.
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadCameraIntrinsicsFromPlainText ( const std::string& filename,
+  cv::Mat* cameraIntrinsic, cv::Mat* cameraDistortion);
+
+
+/**
+ * \brief Load stereo camera parameters from a plain text file
+ * cv::Mat
+ * \throws exception if parsing fails for any reason.
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadStereoTransformsFromPlainText ( const std::string& filename,
+  cv::Mat* rightToLeftRotationMatrix, cv::Mat* rightToLeftTranslationVector);
+
+
+/**
+ * \brief Load the handeye matrix from a plain text file
+ * cv::Mat
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadHandeyeFromPlainText ( const std::string& filename,
+    cv::Mat* leftCameraToTracker);
+
 } // end namespace
 
 #endif

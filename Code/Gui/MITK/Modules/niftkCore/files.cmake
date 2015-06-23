@@ -42,8 +42,3 @@ set(CPP_FILES
   Interactions/mitkPointSetUpdate.cxx
 )
 
-if(BUILD_PCL)
-  list(APPEND CPP_FILES
-    PointClouds/mitkPCLData.cxx
-  )
-endif()

@@ -36,7 +36,6 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/progress.hpp>
 #include <boost/iostreams/tee.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -270,6 +269,10 @@ public:
   bool flgCropFit;
   float coilCropDistance;
 
+  // Bias field correction
+  float MaximumNumberOfIterations;
+  float NumberOfFittingLevels;
+
   std::string dirInput;
   std::string dirOutput;
 
@@ -312,6 +315,7 @@ public:
                    bool verbose, bool flgRegister, bool flgSave, 
                    bool compression, bool debug, bool overwrite,
                    bool excludeAxilla, bool cropFit, float coilCropDist,
+                   float maxNumberOfIterations, float nFittingLevels,
                    bool doNotBiasFieldCorrectT1w, bool doNotBiasFieldCorrectT2w,
                    std::string subdirMRI, std::string subdirData, 
                    std::string prefix, 
@@ -343,6 +347,9 @@ public:
     flgExcludeAxilla = excludeAxilla;
     flgCropFit = cropFit;
     coilCropDistance = coilCropDist;
+
+    MaximumNumberOfIterations = maxNumberOfIterations;
+    NumberOfFittingLevels = nFittingLevels;
 
     dirSubMRI  = subdirMRI;
     dirSubData = subdirData;
@@ -499,6 +506,9 @@ public:
             << "Clip segmentation with fitted surface?: " << flgCropFit << std::endl       
             << std::noboolalpha
             << "MR coil coronal crop distance: " << coilCropDistance << std::endl       
+            << std::endl
+            << "Max no. of bias field iterations: " << MaximumNumberOfIterations << std::endl
+            << "No. of bias field fitting levels: " << NumberOfFittingLevels << std::endl
             << std::endl
             << "Structural series description: " << strSeriesDescStructuralT2 << std::endl
             << "Complementary image series description" << strSeriesDescFatSatT1 << std::endl
@@ -692,91 +702,6 @@ public:
 
 
 // -------------------------------------------------------------------------
-// ConvertAffineTransformationMatrixToRegF3D()
-// -------------------------------------------------------------------------
-
-bool ConvertAffineTransformationMatrixToRegF3D( std::string fileAffineTransformFullPath,
-                                                InputParameters &args ) 
-{
-  std::stringstream message;
-
-  typedef itk::AffineTransform<double,3> DoubleAffineType;
-
-  itk::TransformFactoryBase::RegisterDefaultTransforms();
-
-  typedef itk::TransformFileReader TransformReaderType;
-  TransformReaderType::Pointer transformFileReader = TransformReaderType::New();
-
-  transformFileReader->SetFileName( fileAffineTransformFullPath );
-
-  try
-  {
-    transformFileReader->Update();         
-  }
-  catch ( itk::ExceptionObject &e )
-  {
-    message << "Failed to read " << fileAffineTransformFullPath << std::endl;
-    args.PrintError( message );
-    return false;
-  }
- 
-  typedef TransformReaderType::TransformListType TransformListType;
-  typedef TransformReaderType::TransformType BaseTransformType;
-  
-  TransformListType *list = transformFileReader->GetTransformList();
-  BaseTransformType::Pointer transform = list->front();
-  
-  transform->Print( std::cout );
-
-  DoubleAffineType *doubleAffine = static_cast< DoubleAffineType * >( transform.GetPointer() );
- 
-  if( doubleAffine == NULL )
-  {
-    message << "Could not cast: " << fileAffineTransformFullPath << std::endl;
-    args.PrintError( message );
-    return false;
-  }
-
-  std::ofstream *foutMatrix;
-
-  foutMatrix = new std::ofstream( fileAffineTransformFullPath.c_str() );
-  
-  if ( (! *foutMatrix) || foutMatrix->bad() ) {
-    message << "ERROR: Could not open output file: " << fileAffineTransformFullPath << std::endl;
-    args.PrintMessage( message );
-    return false;
-  }
-
-
-  DoubleAffineType::MatrixType matrix = doubleAffine->GetMatrix();
-  DoubleAffineType::OffsetType offset = doubleAffine->GetOffset();
-
-  int i, j;
-
-  for ( j=0; j<3; j++ )
-  {
-    for ( i=0; i<3; i++ )
-    {
-      *foutMatrix << matrix[j][i] << " ";
-    }
-  }
-
-  for ( j=0; j<3; j++ )
-  {
-    *foutMatrix << offset[j] << " ";
-  }
-
-  *foutMatrix << 0 << " " << 0 << " " << 0 << " " << 1 << std::endl;
-
-  message << "Affine matrix: " << matrix << std::endl;
-  args.PrintMessage( message );
-
-  foutMatrix->close();
-  delete foutMatrix;
-};
-
-
-// -------------------------------------------------------------------------
 // AffineRegisterImages()
 // -------------------------------------------------------------------------
 
@@ -804,7 +729,7 @@ bool AffineRegisterImages( std::string fileTarget,
       << "--ti" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
       << "--si" << niftk::ConcatenatePath( args.dirOutput, fileSource.c_str() ).c_str()
       << "--oi" << niftk::ConcatenatePath( args.dirOutput, fileRegistered.c_str() ).c_str()
-      << "--om" << fileAffineTransformFullPath.c_str();
+      << "--omNR" << fileAffineTransformFullPath.c_str();
   }
   else if ( args.progRegAffine.find( "reg_aladin" ) != std::string::npos ) 
   {
@@ -857,13 +782,6 @@ bool AffineRegisterImages( std::string fileTarget,
   callRegAffine.close();
 
 
-  // Convert the transformation to reg_f3d compatibility
-
-  if ( flgUsingNiftkAffine )
-  {
-    return ConvertAffineTransformationMatrixToRegF3D( fileAffineTransformFullPath, args );
-  }
-
   return true;
 };
 
@@ -889,11 +807,11 @@ bool NonRigidRegisterImages( std::string fileTarget,
   QStringList argsRegNonRigid = args.argsRegNonRigid; 
 
   argsRegNonRigid
-    << "-target" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
-    << "-source" << niftk::ConcatenatePath( args.dirOutput, fileSource.c_str() ).c_str()
-    << "-res"    << niftk::ConcatenatePath( args.dirOutput, fileRegistered.c_str() ).c_str()
-    << "-aff"    << niftk::ConcatenatePath( args.dirOutput, fileAffineTransform.c_str() ).c_str()
-    << "-cpp"    << niftk::ConcatenatePath( args.dirOutput, fileNonRigidTransform.c_str() ).c_str();
+    << "-ref" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
+    << "-flo" << niftk::ConcatenatePath( args.dirOutput, fileSource.c_str() ).c_str()
+    << "-res" << niftk::ConcatenatePath( args.dirOutput, fileRegistered.c_str() ).c_str()
+    << "-aff" << niftk::ConcatenatePath( args.dirOutput, fileAffineTransform.c_str() ).c_str()
+    << "-cpp" << niftk::ConcatenatePath( args.dirOutput, fileNonRigidTransform.c_str() ).c_str();
   
   message << std::endl << "Executing non-rigid registration (QProcess): "
           << std::endl << "   " << args.progRegNonRigid;
@@ -989,8 +907,8 @@ bool ResampleImages( std::string fileTarget,
     << resamplingInterpolation.c_str()
     << "-ref" << niftk::ConcatenatePath( args.dirOutput, fileTarget.c_str() ).c_str()
     << "-flo" << niftk::ConcatenatePath( args.dirOutput, fileResampleInput.c_str() ).c_str()
-    << "-res"    << niftk::ConcatenatePath( args.dirOutput, fileResampleOutput.c_str() ).c_str()
-    << "-cpp"    << niftk::ConcatenatePath( args.dirOutput, fileNonRigidTransform.c_str() ).c_str();
+    << "-res"   << niftk::ConcatenatePath( args.dirOutput, fileResampleOutput.c_str() ).c_str()
+    << "-trans" << niftk::ConcatenatePath( args.dirOutput, fileNonRigidTransform.c_str() ).c_str();
   
   message << std::endl << "Executing registration resampling (QProcess): "
           << std::endl << "   " << args.progRegResample;
@@ -1935,6 +1853,7 @@ int main( int argc, char *argv[] )
                         flgVerbose, flgRegister, flgSaveImages, 
                         flgCompression, flgDebug, flgOverwrite,
                         flgExcludeAxilla, flgCropFit, coilCropDistance,
+                        MaximumNumberOfIterations, NumberOfFittingLevels,
                         flgDoNotBiasFieldCorrectT1w, flgDoNotBiasFieldCorrectT2w,
                         dirSubMRI, dirSubData, dirPrefix, dirInput,
                         fileLog, fileT1wOutputCSV, fileT2wOutputCSV,
@@ -2408,6 +2327,10 @@ int main( int argc, char *argv[] )
           BiasFieldCorrectionType::Pointer biasFieldCorrector = BiasFieldCorrectionType::New();
           
           biasFieldCorrector->SetInput( imFatSatT1 );
+
+          biasFieldCorrector->SetMaximumNumberOfIterations( args.MaximumNumberOfIterations );
+          biasFieldCorrector->SetNumberOfFittingLevels( args.NumberOfFittingLevels );
+
           biasFieldCorrector->Update();
           
           imFatSatT1 = biasFieldCorrector->GetOutput();
@@ -2493,6 +2416,10 @@ int main( int argc, char *argv[] )
               BiasFieldCorrectionType::Pointer biasFieldCorrector = BiasFieldCorrectionType::New();
               
               biasFieldCorrector->SetInput( imStructuralT2 );
+
+              biasFieldCorrector->SetMaximumNumberOfIterations( args.MaximumNumberOfIterations );
+              biasFieldCorrector->SetNumberOfFittingLevels( args.NumberOfFittingLevels );
+
               biasFieldCorrector->Update();
               
               imStructuralT2 = biasFieldCorrector->GetOutput();
@@ -2624,7 +2551,7 @@ int main( int argc, char *argv[] )
         bool flgLeft = false;
         bool flgRight = false;
 
-        bool flgExtInitialPect = true;
+        bool flgExtInitialPect = false;
 
         int regGrowXcoord = 0;
         int regGrowYcoord = 0;
@@ -2680,7 +2607,7 @@ int main( int argc, char *argv[] )
 
         breastMaskSegmentor->SetSigmaBIF( sigmaBIF );
 
-        breastMaskSegmentor->SetCropFit( flgExcludeAxilla );
+        breastMaskSegmentor->SetExcludeAxilla( flgExcludeAxilla );
         breastMaskSegmentor->SetCropFit( flgCropFit );
         breastMaskSegmentor->SetCoilCropDistance( coilCropDistance );
           
