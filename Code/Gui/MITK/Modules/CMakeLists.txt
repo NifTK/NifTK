@@ -52,13 +52,14 @@ if(BUILD_IGI)
     ${MODULE_DIRS}
     niftkOpenCVUtils
     niftkPointReg
+    niftkICPReg
     niftkOpenCV
+    niftkIGIServices
+    niftkPointRegService
+    niftkICPRegService
     niftkIGI
     niftkIGIGui
     niftkIGIDataSources
-    niftkICPReg
-    niftkICPRegService
-    niftkPointRegService
     niftkSurfRecon
   )
 

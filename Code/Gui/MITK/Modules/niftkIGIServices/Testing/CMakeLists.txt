@@ -12,16 +12,5 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE(niftkIGI
-  EXPORT_DEFINE NIFTKIGI_EXPORT
-  INCLUDE_DIRS CentreLines TrackedImage TrackedPointer  Utils Rendering MicroServices
-  DEPENDS niftkCore niftkOpenCV niftkOpenCVUtils niftkIGIServices
-)
+MITK_CREATE_MODULE_TESTS(LABELS niftkIGIServices)
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkIGI)
-endif()
-
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif()

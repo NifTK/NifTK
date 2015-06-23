@@ -15,7 +15,7 @@
 #ifndef niftkPointRegServiceRAII_h
 #define niftkPointRegServiceRAII_h
 
-#include <niftkIGIExports.h>
+#include <niftkIGIServicesExports.h>
 #include "niftkPointRegServiceI.h"
 
 #include <usServiceReference.h>
@@ -33,7 +33,7 @@ namespace niftk
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class NIFTKIGI_EXPORT PointRegServiceRAII : public PointRegServiceI
+class NIFTKIGISERVICES_EXPORT PointRegServiceRAII : public PointRegServiceI
 {
 
 public:

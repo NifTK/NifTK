@@ -15,7 +15,7 @@
 #ifndef niftkSurfaceRegServiceRAII_h
 #define niftkSurfaceRegServiceRAII_h
 
-#include <niftkIGIExports.h>
+#include <niftkIGIServicesExports.h>
 #include "niftkSurfaceRegServiceI.h"
 
 #include <usServiceReference.h>
@@ -33,7 +33,7 @@ namespace niftk
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class NIFTKIGI_EXPORT SurfaceRegServiceRAII : public SurfaceRegServiceI
+class NIFTKIGISERVICES_EXPORT SurfaceRegServiceRAII : public SurfaceRegServiceI
 {
 
 public:

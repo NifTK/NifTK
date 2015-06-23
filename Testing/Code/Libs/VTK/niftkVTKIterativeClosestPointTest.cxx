@@ -90,7 +90,7 @@ void TestICP(std::string targetFileName,
   {
     checkingByPoint = true;
   }
-iterations=1000;
+
   vtkSmartPointer<vtkPolyDataReader> sourceReader = vtkSmartPointer<vtkPolyDataReader>::New();
   sourceReader->SetFileName(sourceFileName.c_str());
   sourceReader->Update();
@@ -107,6 +107,8 @@ iterations=1000;
 
   vtkSmartPointer<vtkBoxMuellerRandomSequence> gaussRand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
   gaussRand->SetUniformSequence(uniRand2);
+
+  std::cerr << "Range Iterations MeanRMSForICP StdDevForICP MinRMSForICP MaxRMSForICP MeanRMSForTLS StdDevForTLS MinRMSForTLS MaxRMSForTLS MeanErrorForTargetUsingICP MaxErrorForTargetUsingICP MeanErrorForTargetUsingTLS MaxErrorForTargetUsingTLS " << std::endl;
 
   for (unsigned int range = minRange; range <= maxRange; range += stepSize)
   {
@@ -170,9 +172,8 @@ iterations=1000;
 
         if (range <= rangeThreshold)
         {
-
-          double rotationTolerance = 0.001;   // component of a rotation matrix.
-          double translationTolerance = 0.25; // millimetres
+          double rotationTolerance = 0.1;    // component of a rotation matrix.
+          double translationTolerance = 1.0; // millimetres
           try
           {
             CheckMatrixAgainstIdentity(*result, rotationTolerance, translationTolerance);
@@ -209,8 +210,7 @@ iterations=1000;
     } // end for each iteration
 
     // Print results.
-    std::cerr << "Range Iterations MeanRMSForICP StdDevForICP MeanRMSForTLS StdDevForTLS MeanErrorForTargetUsingICP MaxErrorForTargetUsingICP MeanErrorForTargetUsingTLS MaxErrorForTargetUsingTLS " << std::endl;
-    std::cerr << range << " " << iterations << " " << niftk::Mean(rms[0]) << " " << " " << niftk::StdDev(rms[0]) << " " << niftk::Mean(rms[1]) << " " << niftk::StdDev(rms[1]);
+    std::cerr << range << " " << iterations << " " << niftk::Mean(rms[0]) << " " << " " << niftk::StdDev(rms[0]) << " " << *(std::min_element(rms[0].begin(), rms[0].end())) << " " << *(std::max_element(rms[0].begin(), rms[0].end())) << " " << niftk::Mean(rms[1]) << " " << niftk::StdDev(rms[1]) << " " << *(std::min_element(rms[1].begin(), rms[1].end())) << " " << *(std::max_element(rms[1].begin(), rms[1].end()));
     if (checkingByPoint)
     {
       std::cerr << " " << niftk::Mean(errs[0]) << " " << niftk::Mean(errs[1]) << " " << *(std::max_element(errs[0].begin(), errs[0].end())) << " " << *(std::max_element(errs[1].begin(), errs[1].end()));

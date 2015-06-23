@@ -21,9 +21,5 @@ set(CPP_FILES
   CentreLines/mitkBifurcationToPointSet.cxx
   Rendering/mitkImage2DToTexturePlaneMapper3D.cxx
   Rendering/vtkCalibratedModelRenderingPipeline.cxx
-  MicroServices/niftkPointRegServiceI.cxx
-  MicroServices/niftkPointRegServiceRAII.cxx
-  MicroServices/niftkSurfaceRegServiceI.cxx
-  MicroServices/niftkSurfaceRegServiceRAII.cxx
 )
 

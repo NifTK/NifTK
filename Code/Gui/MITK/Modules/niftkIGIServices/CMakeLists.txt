@@ -12,20 +12,22 @@
 #
 #============================================================================*/
 
-##############################################################################
-# Note: As a 'Service Only' Module, this module should only depend on
-# niftkIGIServices and niftkPointReg. It should not be necessary to add
-# any other module dependencies. Extra dependencies could/should be added
-# to niftkPointReg.
-##############################################################################
+###############################################################################
+# Note:
+# This Module should not depend on any module in NifTK.
+# It should just define pure interfaces, and RAII objects to load them.
+# Hence it should just depend on MitkCore.
+###############################################################################
 
-MITK_CREATE_MODULE(niftkPointRegService
-  DEPENDS niftkIGIServices niftkPointReg
-  AUTOLOAD_WITH niftkIGIServices
-  PACKAGE_DEPENDS
+MITK_CREATE_MODULE(niftkIGIServices
+  EXPORT_DEFINE NIFTKIGISERVICES_EXPORT
+  DEPENDS MitkCore
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkPointRegService)
+  cotire(niftkIGIServices)
 endif()
 
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()

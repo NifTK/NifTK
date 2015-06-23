@@ -16,7 +16,6 @@
 set(MODULE_TESTS
   mitkTrackedImageTest.cxx
   mitkTrackedPointerTest.cxx
-  niftkPointRegServiceRAIITest.cxx
   mitkMergePointCloudsTest.cxx
 )
 
