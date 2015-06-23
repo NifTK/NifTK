@@ -35,7 +35,9 @@ bool IsCloseToZero(const double& value, const double& tolerance)
 
 
 //-----------------------------------------------------------------------------
-std::pair <double, double >  FindMinimumValues ( std::vector < std::pair < double, double > > inputValues, std::pair < unsigned int , unsigned int >  * indexes )
+std::pair <double, double >  FindMinimumValues (
+    std::vector < std::pair < double, double > > inputValues,
+    std::pair < unsigned int , unsigned int >  * indexes )
 {
   std::pair < double , double > minimumValues;
 
@@ -50,7 +52,7 @@ std::pair <double, double >  FindMinimumValues ( std::vector < std::pair < doubl
       indexes->second = 0;
     }
   }
-  for ( unsigned int i = 0 ; i < inputValues.size() ; i ++ )
+  for (unsigned int i = 0; i < inputValues.size(); i++ )
   {
     if ( inputValues[i].first < minimumValues.first )
     {
@@ -134,6 +136,3 @@ double SafeSQRT(double value)
 }
 
 } // end namespace
-
-
-
