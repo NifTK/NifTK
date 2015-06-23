@@ -21,8 +21,6 @@
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkPolyDataNormals.h>
-#include <mitkFileIOUtils.h>
-#include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkSurface.h>

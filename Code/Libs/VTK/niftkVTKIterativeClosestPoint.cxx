@@ -179,8 +179,9 @@ vtkSmartPointer<vtkMatrix4x4> VTKIterativeClosestPoint::InternalRunICP(vtkPolyDa
   icp->GetLandmarkTransform()->SetModeToRigidBody();
   icp->SetMaximumNumberOfLandmarks(landmarks);
   icp->SetMaximumNumberOfIterations(iterations);
-  icp->CheckMeanDistanceOn();
-  icp->SetMaximumMeanDistance(0.001);
+  icp->SetLocator(m_Locator);           // This is to avoid vtkIterativeClosestPointTransform creating a new one at each iteration of TLS.
+//  icp->CheckMeanDistanceOn();         // These just stop the ICP early, if its not moving far each iteration.
+//  icp->SetMaximumMeanDistance(0.001); // These just stop the ICP early, if its not moving far each iteration.
   icp->SetSource(source);
   icp->SetTarget(target);
   icp->Modified();
