@@ -57,8 +57,8 @@ PointRegServiceRAII::~PointRegServiceRAII()
 
 //-----------------------------------------------------------------------------
 double PointRegServiceRAII::PointBasedRegistration(
-  const mitk::PointSet::Pointer& fixedPoints,
-  const mitk::PointSet::Pointer& movingPoints,
+  const mitk::PointSet::Pointer fixedPoints,
+  const mitk::PointSet::Pointer movingPoints,
   vtkMatrix4x4& matrix) const
 {
   return m_Service->PointBasedRegistration(fixedPoints, movingPoints, matrix);

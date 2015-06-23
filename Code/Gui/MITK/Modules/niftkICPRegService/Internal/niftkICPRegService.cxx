@@ -34,8 +34,8 @@ ICPRegService::~ICPRegService()
 
 
 //-----------------------------------------------------------------------------
-double ICPRegService::SurfaceBasedRegistration(const mitk::DataNode::Pointer& fixedDataSet,
-                                               const mitk::DataNode::Pointer& movingDataSet,
+double ICPRegService::SurfaceBasedRegistration(const mitk::DataNode::Pointer fixedDataSet,
+                                               const mitk::DataNode::Pointer movingDataSet,
                                                vtkMatrix4x4& matrix) const
 {
   // not yet implemented.

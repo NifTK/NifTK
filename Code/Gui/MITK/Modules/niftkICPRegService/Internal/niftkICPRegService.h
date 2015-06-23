@@ -35,8 +35,8 @@ public:
   * \see niftk::SurfaceRegServiceI
   * \throws mitk::Exception for all errors
   */
-  virtual double SurfaceBasedRegistration(const mitk::DataNode::Pointer& fixedDataSet,
-                                          const mitk::DataNode::Pointer& movingDataSet,
+  virtual double SurfaceBasedRegistration(const mitk::DataNode::Pointer fixedDataSet,
+                                          const mitk::DataNode::Pointer movingDataSet,
                                           vtkMatrix4x4& matrix) const;
 
 private:

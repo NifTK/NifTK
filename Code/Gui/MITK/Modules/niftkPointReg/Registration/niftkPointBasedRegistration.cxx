@@ -39,8 +39,8 @@ PointBasedRegistration::~PointBasedRegistration()
 
 //-----------------------------------------------------------------------------
 double PointBasedRegistration::Update(
-    const mitk::PointSet::Pointer& fixedPointSet,
-    const mitk::PointSet::Pointer& movingPointSet,
+    const mitk::PointSet::Pointer fixedPointSet,
+    const mitk::PointSet::Pointer movingPointSet,
     vtkMatrix4x4& outputTransform) const
 
 {

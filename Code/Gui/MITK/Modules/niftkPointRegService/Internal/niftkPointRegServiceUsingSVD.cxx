@@ -33,8 +33,8 @@ PointRegServiceUsingSVD::~PointRegServiceUsingSVD()
 
 
 //-----------------------------------------------------------------------------
-double PointRegServiceUsingSVD::PointBasedRegistration(const mitk::PointSet::Pointer& fixedPoints,
-                                                       const mitk::PointSet::Pointer& movingPoints,
+double PointRegServiceUsingSVD::PointBasedRegistration(const mitk::PointSet::Pointer fixedPoints,
+                                                       const mitk::PointSet::Pointer movingPoints,
                                                        vtkMatrix4x4& matrix) const
 {
   return niftk::PointBasedRegistrationUsingSVD(fixedPoints, movingPoints, matrix);
