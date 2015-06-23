@@ -106,6 +106,12 @@ public:
    */
   void SetCameraToTrackers ( std::string filename );
 
+  /*
+   * \brief Return the size of the TrackingMatrices vector (how many tracker indeces are available)
+   */
+  unsigned int GetTrackingMatricesSize ();
+
+
 protected:
   VideoTrackerMatching();
   virtual ~VideoTrackerMatching();

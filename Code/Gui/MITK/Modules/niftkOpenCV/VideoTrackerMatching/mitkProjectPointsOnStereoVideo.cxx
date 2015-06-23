@@ -19,11 +19,11 @@
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkPointSetWriter.h>
 #include <cv.h>
-//#include <opencv2/highgui/highgui.hpp>
 #include <highgui.h>
 #include <niftkFileHelper.h>
 
 #include <boost/math/special_functions/fpclassify.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace mitk {
 
@@ -373,8 +373,6 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       {
         cv::Mat videoImage;
         m_Capture->read(videoImage);
-        for ( unsigned thing = 0 ; thing < m_WorldPoints.size() ; thing ++ )
-          MITK_INFO << framenumber << " " << m_WorldPoints[thing].m_Point << " " << pointsInLeftLensCS.m_Points[thing].m_Point << " => " << screenPoints[thing].m_Left << screenPoints[thing].m_Right;
         if ( drawProjection )
         {
           if ( ! m_DrawLines ) 
@@ -432,7 +430,29 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           }
           if ( m_VisualiseTrackingStatus )
           {
-            cv::putText(videoImage , "Tracker Status",cv::Point2i( 1000, 100),0,1.0, cvScalar (255,0,0)); 
+            unsigned int howMany = trackerMatcher->GetTrackingMatricesSize();
+
+            
+            for ( unsigned int i = 0 ; i < howMany ; i ++ ) 
+            {
+
+              long long timingError;
+              trackerMatcher->GetCameraTrackingMatrix(framenumber , &timingError , i);
+              cv::Point2d textLocation = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.03 ) , (i+1) *  m_VideoHeight * 0.07  );
+              cv::Point2d location = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) , (i) *  m_VideoHeight * 0.07 + m_VideoHeight * 0.02  );
+              cv::Point2d location1 = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) + ( m_VideoWidth * 0.025 ) , 
+                  (i) *  m_VideoHeight * 0.07 + (m_VideoHeight * 0.06) + m_VideoHeight * 0.02);
+              if ( timingError < m_AllowableTimingError )
+              {
+                cv::rectangle ( videoImage, location, location1  , cvScalar (0,255,0), CV_FILLED);
+                cv::putText(videoImage , "T" + boost::lexical_cast<std::string>(i), textLocation ,0,1.0, cvScalar ( 255,255,255), 4.0);
+              }
+              else
+              {
+                cv::rectangle ( videoImage, location, location1  , cvScalar (0,0,255), CV_FILLED);
+                cv::putText(videoImage , "T" + boost::lexical_cast<std::string>(i), textLocation ,0,1.0, cvScalar ( 255,255,255), 4.0);
+              }
+            }
           }
 
         }
