@@ -14,7 +14,7 @@
 
 #include <cstdlib>
 #include <mitkTestingMacros.h>
-#include <PointClouds/mitkMergePointClouds.h>
+#include <mitkMergePointClouds.h>
 
 
 //-----------------------------------------------------------------------------

@@ -16,7 +16,7 @@
 #define mitkMergePointClouds_h
 
 
-#include "niftkIGIExports.h"
+#include "niftkCoreExports.h"
 #include <string>
 #include <ostream>
 #include <mitkCommon.h>
@@ -34,7 +34,7 @@ namespace mitk
  * Will not preserve point IDs in the merged output!
  * Order of points is not necessarily preserved.
  */
-class NIFTKIGI_EXPORT MergePointClouds : public itk::Object
+class NIFTKCORE_EXPORT MergePointClouds : public itk::Object
 {
 public:
   mitkClassMacro(MergePointClouds, itk::Object);
