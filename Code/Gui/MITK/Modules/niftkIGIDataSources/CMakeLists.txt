@@ -24,7 +24,7 @@ endif()
 
 MITK_CREATE_MODULE(niftkIGIDataSources
   EXPORT_DEFINE NIFTKIGIDATASOURCES_EXPORT
-  DEPENDS niftkOpenCV
+  DEPENDS niftkIGIGui niftkOpenCV
   PACKAGE_DEPENDS ${_packages}
 )
 
