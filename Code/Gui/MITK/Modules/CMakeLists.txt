@@ -57,6 +57,7 @@ if(BUILD_IGI)
     niftkIGIGui
     niftkIGIDataSources
     niftkICPReg
+    niftkICPRegService
     niftkPointRegService
     niftkSurfRecon
   )
