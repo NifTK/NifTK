@@ -49,12 +49,12 @@ public:
   virtual ~SurfaceRegServiceRAII();
 
   /**
-  * \brief Calls service to do Point Based Registration.
+  * \brief Calls service to do Surface Based Registration.
   * \see SurfaceRegServiceI
   */
-  virtual double SurfaceBasedRegistration(const mitk::DataNode::Pointer fixedDataSet,
-                                          const mitk::DataNode::Pointer movingDataSet,
-                                          vtkMatrix4x4& matrix) const;
+  virtual double Register(const mitk::DataNode::Pointer fixedDataSet,
+                          const mitk::DataNode::Pointer movingDataSet,
+                          vtkMatrix4x4& matrix) const;
 
 private:
   SurfaceRegServiceRAII(const SurfaceRegServiceRAII&); // deliberately not implemented

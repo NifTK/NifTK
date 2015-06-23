@@ -46,9 +46,9 @@ public:
   * data are. Data-sets can be large, and hence copy operations can be slow. Either
   * way, its up to the implementor of each service to consider efficiency.
   */
-  virtual double SurfaceBasedRegistration(const mitk::DataNode::Pointer fixedDataSet,
-                                          const mitk::DataNode::Pointer movingDataSet,
-                                          vtkMatrix4x4& matrix) const = 0;
+  virtual double Register(const mitk::DataNode::Pointer fixedDataSet,
+                          const mitk::DataNode::Pointer movingDataSet,
+                          vtkMatrix4x4& matrix) const = 0;
 
 protected:
   SurfaceRegServiceI();

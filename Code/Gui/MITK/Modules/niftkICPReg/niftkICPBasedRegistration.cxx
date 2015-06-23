@@ -47,7 +47,7 @@ ICPBasedRegistration::~ICPBasedRegistration()
 
 
 //-----------------------------------------------------------------------------
-void ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
+double ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
                                      vtkPolyData* movingPoly,
                                      vtkMatrix4x4& transformMovingToFixed)
 {
@@ -68,7 +68,7 @@ void ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
   icp->SetTarget(fixedPoly);
 
   // Throws exception if fails.
-  icp->Run();
+  double residual = icp->Run();
 
   // Retrieve transformation
   vtkSmartPointer<vtkMatrix4x4> temp = icp->GetTransform();
@@ -76,13 +76,15 @@ void ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
 
   // Tidy up
   delete icp;
+
+  return residual;
 }
 
 
 //-----------------------------------------------------------------------------
-void ICPBasedRegistration::Update(const mitk::DataNode::Pointer fixedNode,
-                                  const mitk::DataNode::Pointer movingNode,
-                                  vtkMatrix4x4& transformMovingToFixed)
+double ICPBasedRegistration::Update(const mitk::DataNode::Pointer fixedNode,
+                                    const mitk::DataNode::Pointer movingNode,
+                                    vtkMatrix4x4& transformMovingToFixed)
 {
   vtkSmartPointer<vtkPolyData> fixedPoly = vtkSmartPointer<vtkPolyData>::New();
   NodeToPolyData ( fixedNode, *fixedPoly);
@@ -90,7 +92,7 @@ void ICPBasedRegistration::Update(const mitk::DataNode::Pointer fixedNode,
   vtkSmartPointer<vtkPolyData> movingPoly = vtkSmartPointer<vtkPolyData>::New();
   NodeToPolyData ( movingNode, *movingPoly, m_CameraNode, m_FlipNormals);
 
-  RunVTKICP ( fixedPoly, movingPoly, transformMovingToFixed );
+  return RunVTKICP ( fixedPoly, movingPoly, transformMovingToFixed );
 }
 
 

@@ -22,7 +22,7 @@ namespace niftk
 //-----------------------------------------------------------------------------
 ICPRegService::ICPRegService()
 {
-
+  m_Registerer = niftk::ICPBasedRegistration::New();
 }
 
 
@@ -34,12 +34,11 @@ ICPRegService::~ICPRegService()
 
 
 //-----------------------------------------------------------------------------
-double ICPRegService::SurfaceBasedRegistration(const mitk::DataNode::Pointer fixedDataSet,
-                                               const mitk::DataNode::Pointer movingDataSet,
-                                               vtkMatrix4x4& matrix) const
+double ICPRegService::Register(const mitk::DataNode::Pointer fixedDataSet,
+                               const mitk::DataNode::Pointer movingDataSet,
+                               vtkMatrix4x4& matrix) const
 {
-  // not yet implemented.
-  return 0.0;
+  return m_Registerer->Update(fixedDataSet, movingDataSet, matrix);
 }
 
 } // end namespace

@@ -53,10 +53,11 @@ public:
   * \brief Runs ICP registration.
   * \param fixedNode pointer to mitk::DataNode containing either mitk::Surface or mitk::Pointset.
   * \param movingNode pointer to mitk::DataNode containing either mitk::Surface or mitk::Pointset.
+  * \return RMS residual for points in moving node
   */
-  void Update(const mitk::DataNode::Pointer fixedNode,
-              const mitk::DataNode::Pointer movingNode,
-              vtkMatrix4x4& transformMovingToFixed);
+  double Update(const mitk::DataNode::Pointer fixedNode,
+                const mitk::DataNode::Pointer movingNode,
+                vtkMatrix4x4& transformMovingToFixed);
 
   /**
   * \brief Generates a poly data from a mitk::DataNode.
@@ -86,9 +87,9 @@ private:
   mitk::DataNode::Pointer       m_CameraNode;
   bool                          m_FlipNormals;
 
-  void RunVTKICP(vtkPolyData* fixedPoly,
-                 vtkPolyData* movingPoly,
-                 vtkMatrix4x4& transformMovingToFixed);
+  double RunVTKICP(vtkPolyData* fixedPoly,
+                   vtkPolyData* movingPoly,
+                   vtkMatrix4x4& transformMovingToFixed);
 
 }; // end class
 

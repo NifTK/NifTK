@@ -56,12 +56,12 @@ PointRegServiceRAII::~PointRegServiceRAII()
 
 
 //-----------------------------------------------------------------------------
-double PointRegServiceRAII::PointBasedRegistration(
+double PointRegServiceRAII::Register(
   const mitk::PointSet::Pointer fixedPoints,
   const mitk::PointSet::Pointer movingPoints,
   vtkMatrix4x4& matrix) const
 {
-  return m_Service->PointBasedRegistration(fixedPoints, movingPoints, matrix);
+  return m_Service->Register(fixedPoints, movingPoints, matrix);
 }
 
 } // end namespace

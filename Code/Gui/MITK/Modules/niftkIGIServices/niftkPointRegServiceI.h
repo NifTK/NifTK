@@ -39,9 +39,9 @@ public:
   * \brief Does Point Based Registration of equal length, corresponding, ordered point sets.
   * \return fiducial registration error (mean RMS error over all matching landmark points)
   */
-  virtual double PointBasedRegistration(const mitk::PointSet::Pointer fixedPoints,
-                                        const mitk::PointSet::Pointer movingPoints,
-                                        vtkMatrix4x4& matrix) const = 0;
+  virtual double Register(const mitk::PointSet::Pointer fixedPoints,
+                          const mitk::PointSet::Pointer movingPoints,
+                          vtkMatrix4x4& matrix) const = 0;
 
 protected:
   PointRegServiceI();

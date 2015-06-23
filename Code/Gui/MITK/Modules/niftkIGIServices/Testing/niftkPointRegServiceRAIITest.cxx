@@ -63,7 +63,7 @@ void TranslationTest()
   matrix->Identity();
 
   niftk::PointRegServiceRAII registerer;
-  double fre = registerer.PointBasedRegistration(fixedPoints, movingPoints, *matrix);
+  double fre = registerer.Register(fixedPoints, movingPoints, *matrix);
 
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(fre, 0),".. Testing fre=0, and it equals:" << fre);
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(matrix->GetElement(0,3), -1),".. Testing x translation=-1 and it equals:" << matrix->GetElement(0,3));
@@ -147,7 +147,7 @@ void RotationTest()
   actual->Identity();
 
   niftk::PointRegServiceRAII registerer;
-  double fre = registerer.PointBasedRegistration(fixedPoints, movingPoints, *actual);
+  double fre = registerer.Register(fixedPoints, movingPoints, *actual);
 
   double tolerance = 0.001;
   MITK_TEST_CONDITION_REQUIRED(fre < tolerance, ".. Testing fre < " << tolerance << " and it equals:" << fre);

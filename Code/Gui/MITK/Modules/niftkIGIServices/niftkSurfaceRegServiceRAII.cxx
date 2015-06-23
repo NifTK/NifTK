@@ -56,12 +56,12 @@ SurfaceRegServiceRAII::~SurfaceRegServiceRAII()
 
 
 //-----------------------------------------------------------------------------
-double SurfaceRegServiceRAII::SurfaceBasedRegistration(
+double SurfaceRegServiceRAII::Register(
   const mitk::DataNode::Pointer fixedDataSet,
   const mitk::DataNode::Pointer movingDataSet,
   vtkMatrix4x4& matrix) const
 {
-  return m_Service->SurfaceBasedRegistration(fixedDataSet, movingDataSet, matrix);
+  return m_Service->Register(fixedDataSet, movingDataSet, matrix);
 }
 
 } // end namespace
