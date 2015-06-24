@@ -31,6 +31,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
+#include <limits>
 
 double CheckMatrixAgainstIdentity(const vtkMatrix4x4& transform,
                                   const double rotationTolerance, const double translationTolerance)
@@ -299,12 +300,12 @@ int niftkVTKIterativeClosestPointTargettingTest ( int argc, char * argv[] )
   int maxRange = atoi(argv[5]);
   int stepSize = atoi(argv[6]);
   int rangeThreshold = atoi(argv[7]);
-  double noiseLevel = atof(argv[8]);
-  double testX = atof(argv[9]);
-  double testY = atof(argv[10]);
-  double testZ = atof(argv[11]);
-  double meanErrorThreshold = atof(argv[12]);
-  double maxErrorThreshold = atof(argv[13]);
+  float noiseLevel = atof(argv[8]);
+  float testX = atof(argv[9]);
+  float testY = atof(argv[10]);
+  float testZ = atof(argv[11]);
+  float meanErrorThreshold = atof(argv[12]);
+  float maxErrorThreshold = atof(argv[13]);
 
   // Will throw exceptions on error.
   TestICP(strTarget, strSource, iterations, minRange, maxRange, stepSize, rangeThreshold, noiseLevel,

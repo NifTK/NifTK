@@ -201,9 +201,6 @@ vtkSmartPointer<vtkMatrix4x4> VTKIterativeClosestPoint::InternalRunICP(vtkPolyDa
 //-----------------------------------------------------------------------------
 double VTKIterativeClosestPoint::Run()
 {
-  vtkSmartPointer<vtkMatrix4x4> result = vtkSmartPointer<vtkMatrix4x4>::New();
-  m_Locator = vtkSmartPointer<vtkCellLocator>::New(); // always over-writes current locator.
-
   vtkPolyData *source = m_Source;
   vtkPolyData *target = m_Target;
 
@@ -214,7 +211,10 @@ double VTKIterativeClosestPoint::Run()
     target = m_Source;
   }
 
+  vtkSmartPointer<vtkMatrix4x4> result = vtkSmartPointer<vtkMatrix4x4>::New();
+
   // At this point, we know the Target has cells.
+  m_Locator = vtkSmartPointer<vtkCellLocator>::New(); // always over-writes current locator.
   m_Locator->SetDataSet(target);
   m_Locator->SetNumberOfCellsPerBucket(1);
   m_Locator->BuildLocator();
@@ -333,8 +333,10 @@ double VTKIterativeClosestPoint::InternalGetRMSResidual(vtkPolyData& source,
   int subId;
   double distance;
 
+  int step = this->GetStepSize(&source);
   vtkIdType numberSourcePoints = source.GetNumberOfPoints();
-  for (vtkIdType pointCounter = 0; pointCounter < numberSourcePoints; pointCounter += 1)
+  for (vtkIdType pointCounter = 0; pointCounter < numberSourcePoints
+       && numberOfPointsUsed < m_ICPMaxLandmarks; pointCounter+=step)
   {
     source.GetPoint(pointCounter, sourcePoint); // this retrieves x, y, z.
     sourcePoint[3] = 1;                         // but we need the w (homogeneous coords) for matrix multiply.
