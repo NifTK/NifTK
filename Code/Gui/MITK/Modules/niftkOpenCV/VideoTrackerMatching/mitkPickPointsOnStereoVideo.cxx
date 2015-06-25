@@ -61,7 +61,7 @@ void PickPointsOnStereoVideo::Initialise(std::string directory)
 {
   m_InitOK = false;
   m_Directory = directory;
-  
+  m_OutDirectory = m_Directory + niftk::GetFileSeparator() +  "PickedVideoPoints";  
   if ( m_Capture == NULL ) 
   {
     std::vector <std::string> videoFiles = niftk::FindVideoData(m_Directory);
@@ -85,6 +85,16 @@ void PickPointsOnStereoVideo::Initialise(std::string directory)
       MITK_ERROR << "Caught exception " << e.what();
       exit(1);
     }
+    try 
+    {
+      niftk::CreateDirAndParents ( m_OutDirectory );
+    }
+    catch (std::exception& e)
+    {
+      MITK_ERROR << "Caught exception " << e.what();
+      exit(1);
+    }
+
   }
 
   m_InitOK = true;
@@ -166,9 +176,9 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             }
           }
           
-          std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints";
+          std::string leftOutName = m_OutDirectory + niftk::GetFileSeparator() + boost::lexical_cast<std::string>(timeStamp) + "_leftPoints";
           trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
-          std::string rightOutName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints";
+          std::string rightOutName = m_OutDirectory + niftk::GetFileSeparator() + boost::lexical_cast<std::string>(timeStamp) + "_rightPoints";
           bool overWriteLeft = true;
           bool overWriteRight = true;
           key = 0;
@@ -226,14 +236,16 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
 
           PickedPointList::Pointer leftPickedPoints = PickedPointList::New();
           PickedPointList::Pointer rightPickedPoints = PickedPointList::New();
-          leftPickedPoints->SetInLineMode (m_PickingLine);
-          leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
           leftPickedPoints->SetFrameNumber (framenumber);
           leftPickedPoints->SetChannel ("left");
-          rightPickedPoints->SetInLineMode (m_PickingLine);
-          rightPickedPoints->SetInOrderedMode ( m_OrderedPoints);
+          leftPickedPoints->SetTimeStamp(timeStamp);
+          leftPickedPoints->SetInLineMode (m_PickingLine);
+          leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
           rightPickedPoints->SetFrameNumber (framenumber + 1);
           rightPickedPoints->SetChannel ("right");
+          rightPickedPoints->SetTimeStamp(timeStamp);
+          rightPickedPoints->SetInLineMode (m_PickingLine);
+          rightPickedPoints->SetInOrderedMode ( m_OrderedPoints);
 
           cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
           cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();

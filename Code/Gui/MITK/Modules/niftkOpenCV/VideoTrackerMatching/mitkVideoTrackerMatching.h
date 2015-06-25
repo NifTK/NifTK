@@ -78,6 +78,12 @@ public:
    * \brief Set a flag to determine what to do if a skipped frame is found, by default we halt
    */
   itkSetMacro (HaltOnFrameSkip, bool);
+  
+  /**
+   * \brief Set a flag to determine what to do if a skipped frame is found, by default we halt
+   */
+  itkGetMacro (FrameMap, std::string);
+
   /**
    * \brief Get the frame count.
    */
@@ -105,6 +111,12 @@ public:
    * tracker indices
    */
   void SetCameraToTrackers ( std::string filename );
+
+  /*
+   * \brief Return the size of the TrackingMatrices vector (how many tracker indeces are available)
+   */
+  unsigned int GetTrackingMatricesSize ();
+
 
 protected:
   VideoTrackerMatching();

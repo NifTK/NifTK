@@ -422,7 +422,6 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT cv::Mat PerturbTransform (
     const double tx, const double ty, const double tz, 
     const double rx, const double ry, const double rz );
 
-
 /** 
  * \brief Searches through vector of 2D points to find the one closest (by distance)
  * to the passed point, and returns the index of that point
@@ -431,6 +430,13 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT cv::Point2d FindNearestPoint ( const cv::Po
     const std::vector < cv::Point2d >& matchingPonints , 
     double* minRatio = NULL , unsigned int * index = NULL );
 
+/** 
+ * \brief Searches through vector of 3D points and lines to find the one closest (by distance)
+ * to the passed point. Returns an empty PickedPoint if no point found 
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedObject FindNearestPoint ( const mitk::PickedObject& point,
+    const std::vector < mitk::PickedObject >& matchingPoints , 
+    double* minRatio = NULL );
 
 /**
  * \brief Compare two cv point based on their distance from 0,0
@@ -552,6 +558,11 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT std::string MatrixType(const cv::Mat& matri
 extern "C++" NIFTKOPENCVUTILS_EXPORT bool IsNaN(const cv::Point2d&);
 
 /** 
+ * \brief check if point has a NaN value
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT bool IsNaN(const cv::Point3d&);
+
+/** 
  * \brief check if 2D point has a NaN  or inf value
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT bool IsNotNaNorInf(const cv::Point2d&);
@@ -567,6 +578,29 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT bool IsNotNaNorInf(const cv::Point3d&);
  * \param the point
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceToLine ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& point);
+
+/**
+ * \brief calculates the distance between two points
+ * \param point 1
+ * \param point 2
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2 );
+
+/**
+ * \brief calculates the shortest distance between two splines.  
+ * \param control points for spline 1, each of which is used for a measurement
+ * \param control points for spline 2, which form the line segments for the measurement
+ * \param order the polynomial order of the spline (only 1 is implemented)
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s0,
+    const std::vector <cv::Point3d>& s1, unsigned int splineOrder );
+
+/**
+ * \brief calculates the distance between a line segment and a point
+ * \param the line defined by the two end points of the line segment
+ * \param the point
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& point);
 
 /**
  * \brief calculates the shortest distance between two lines  
@@ -589,6 +623,12 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT std::pair < cv::Point3d , cv::Point3d > Two
  * \param the vectors as points
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT cv::Point3d CrossProduct ( const cv::Point3d& p1, const cv::Point3d& p2);
+
+/**
+ * \brief Calculates the dot product of two vectors (cv::Point3D)
+ * \param the vectors as points
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT double DotProduct ( const cv::Point3d& p1, const cv::Point3d& p2);
 
 /**
  * \brief Calculates the norm product of a vectors (cv::Point3D)

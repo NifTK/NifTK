@@ -14,11 +14,13 @@
 
 #include <cstdlib>
 #include <limits>
+
+#include <mitkProjectPointsOnStereoVideo.h>
+#include <mitkOpenCVMaths.h>
+#include <mitkOpenCVPointTypes.h>
+#include <niftkReviewVideoDataCLP.h>
+
 #include <fstream>
-
-#include <mitkPickPointsOnStereoVideo.h>
-#include <niftkPickPointsOnStereoVideoCLP.h>
-
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
@@ -34,13 +36,16 @@ int main(int argc, char** argv)
 
   try
   {
-    mitk::PickPointsOnStereoVideo::Pointer projector = mitk::PickPointsOnStereoVideo::New();
+    mitk::ProjectPointsOnStereoVideo::Pointer projector = mitk::ProjectPointsOnStereoVideo::New();
+    projector->SetVisualise(! noVisualise);
     projector->SetAllowableTimingError(maxTimingError * 1e6);
-    projector->SetFrequency(frequency*2);
-    projector->SetOrderedPoints( ! unOrderedPoints);
-    projector->SetAskOverWrite(queryOverWrite);
-    projector->SetWriteAnnotatedImages(saveAnnotatedImages);
+    projector->SetDontProject(true);
+    projector->SetVisualiseTrackingStatus(true);
     
+    if ( outputVideo ) 
+    {
+      projector->SetSaveVideo(true);
+    }
     projector->Initialise(trackingInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
     matcher->Initialise(trackingInputDirectory);
@@ -61,11 +66,9 @@ int main(int argc, char** argv)
       MITK_ERROR << "Projector failed to initialise, halting.";
       return -1;
     }
-    bool flipTracking = false; 
-    matcher->SetFlipMatrices(flipTracking);
+    matcher->SetFlipMatrices(false);
     matcher->SetWriteTimingErrors(WriteTimingErrors);
-    projector->SetTrackerIndex(trackerIndex);
-    projector->SetReferenceIndex(referenceIndex);
+   
 
     projector->Project(matcher);
 

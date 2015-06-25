@@ -15,11 +15,14 @@
 #include "mitkOpenCVPointTypes.h"
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/math/special_functions/round.hpp>
 #include <numeric>
 #include <algorithm>
 #include <functional>
 #include <mitkMathsUtils.h>
 #include <mitkExceptionMacro.h>
+#include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <string>
 #include <fstream>
 
@@ -359,14 +362,83 @@ void VideoFrame::OutputVideoInformation (cv::VideoCapture * capture)
 
 //-----------------------------------------------------------------------------
 PickedObject::PickedObject()
-: id (-1)
-, isLine (false)
+: m_Id (-1)
+, m_IsLine (false)
+, m_FrameNumber(0)
+, m_TimeStamp(0)
+, m_Channel("")
 {
+}
+
+//-----------------------------------------------------------------------------
+PickedObject::PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp)
+: m_Id (-1)
+, m_IsLine (false)
+, m_FrameNumber(framenumber)
+, m_TimeStamp(timestamp)
+, m_Channel(channel)
+{
+}
+
+//-----------------------------------------------------------------------------
+PickedObject::PickedObject(GoldStandardPoint gsp)
+: m_Id (gsp.m_Index)
+, m_IsLine (false)
+, m_FrameNumber(gsp.m_FrameNumber)
+, m_TimeStamp(0)
+, m_Channel("")
+{
+  m_Points.push_back(cv::Point3d ( gsp.m_Point.x, gsp.m_Point.y, 0.0 ));
 }
 
 //-----------------------------------------------------------------------------
 PickedObject::~PickedObject()
 {}
+
+//-----------------------------------------------------------------------------
+bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject, const long long& allowableTimingError) const
+{
+  long long timingError;
+  if ( m_TimeStamp > otherPickedObject.m_TimeStamp )
+  {
+    timingError = m_TimeStamp - otherPickedObject.m_TimeStamp;
+  }
+  else
+  {
+    timingError = otherPickedObject.m_TimeStamp - m_TimeStamp;
+  }
+
+  if ( ( m_Channel ==  otherPickedObject.m_Channel ) &&  
+       ( m_IsLine == otherPickedObject.m_IsLine ) &&
+       ( m_FrameNumber == otherPickedObject.m_FrameNumber ) &&
+       ( ( m_Id == otherPickedObject.m_Id ) || ( otherPickedObject.m_Id == -1 ) ) &&
+       ( timingError < allowableTimingError ) )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+//-----------------------------------------------------------------------------
+double PickedObject::DistanceTo(const PickedObject& otherPickedObject , const long long& allowableTimingError) const
+{
+  if ( ! otherPickedObject.HeadersMatch (*this) )
+  {
+    return std::numeric_limits<double>::infinity();
+  }
+  if ( m_IsLine )
+  {
+    unsigned int splineOrder = 1;
+    return mitk::DistanceBetweenTwoSplines ( m_Points, otherPickedObject.m_Points , splineOrder );
+  }
+  else
+  {
+    return mitk::DistanceBetweenTwoPoints ( m_Points[0], otherPickedObject.m_Points[0] );
+  }
+}
 
 //-----------------------------------------------------------------------------
 PickedPointList::PickedPointList()
@@ -383,42 +455,7 @@ PickedPointList::~PickedPointList()
 //-----------------------------------------------------------------------------
 void PickedPointList::PutOut (std::ofstream& os )
 {
-  os << "<frame>" <<  m_FrameNumber << "</frame>" << std::endl;
-  os << "<channel>" << m_Channel <<"</channel>" << std::endl;
-      
-  for ( int i = 0 ; i < m_PickedObjects.size(); i ++ )
-  {
-    if ( m_PickedObjects[i].isLine )
-    {
-      if ( m_PickedObjects[i].points.size() > 0 )
-      {
-        os << "<line>" << std::endl;
-        os << "<id>" << m_PickedObjects[i].id << "</id>" << std::endl;
-        os << "<coordinates>" <<std::endl;
-        for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
-        {
-          os << m_PickedObjects[i].points[j];
-        }
-        os << std::endl << "</coordinates>" <<std::endl;
-        os << "</line>" << std::endl;
-      }
-    }
-    else
-    {
-      if ( m_PickedObjects[i].points.size() > 0 )
-      {
-        os << "<point>" << std::endl;
-        os << "<id>" << m_PickedObjects[i].id << "</id>" << std::endl;
-        os << "<coordinates>" <<std::endl;
-        for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
-        {
-          os << m_PickedObjects[i].points[j];
-        }
-        os << std::endl << "</coordinates>" <<std::endl;
-        os << "</point>" << std::endl;
-      }
-    }
-  }
+  mitk::SavePickedObjects ( m_PickedObjects, os );
 }
 
 //-----------------------------------------------------------------------------
@@ -427,37 +464,41 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
   for ( int i = 0 ; i < m_PickedObjects.size() ; i ++ )
   {
     std::string number;
-    if ( m_PickedObjects[i].id == -1 )
+    if ( m_PickedObjects[i].m_Id == -1 )
     {
       number = "#";
     }
     else
     {
-      number = boost::lexical_cast<std::string>(m_PickedObjects[i].id);
+      number = boost::lexical_cast<std::string>(m_PickedObjects[i].m_Id);
     }
-    if ( ! m_PickedObjects[i].isLine )
+    if ( ! m_PickedObjects[i].m_IsLine )
     {
-      assert ( m_PickedObjects[i].points.size() <= 1 );
-      for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
+      assert ( m_PickedObjects[i].m_Points.size() <= 1 );
+      for ( unsigned int j = 0 ; j < m_PickedObjects[i].m_Points.size() ; j ++ )
       {
-        cv::putText(image,number,m_PickedObjects[i].points[j],0,1.0,cv::Scalar(255,255,255));
-        cv::circle(image, m_PickedObjects[i].points[j],5,cv::Scalar(255,255,255),1,1);
+        cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
+        cv::putText(image,number,point,0,1.0,cv::Scalar(255,255,255));
+        cv::circle(image, point,5,cv::Scalar(255,255,255),1,1);
       }
     }
     else
     {
-      if ( m_PickedObjects[i].points.size() > 0 )
+      if ( m_PickedObjects[i].m_Points.size() > 0 )
       {
-        for ( unsigned int j = 0 ; j < m_PickedObjects[i].points.size() ; j ++ )
+        for ( unsigned int j = 0 ; j < m_PickedObjects[i].m_Points.size() ; j ++ )
         {
           if ( j == 0 )
           {
-            cv::putText(image,number,m_PickedObjects[i].points[j],0,1.0,cv::Scalar(255,255,255));
-            cv::circle(image, m_PickedObjects[i].points[j],5,cv::Scalar(255,255,255),1,1);
+            cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
+            cv::putText(image,number,point,0,1.0,cv::Scalar(255,255,255));
+            cv::circle(image, point,5,cv::Scalar(255,255,255),1,1);
           }
           else
           {
-            cv::line(image,  m_PickedObjects[i].points[j],  m_PickedObjects[i].points[j-1], cv::Scalar(255,255,255));
+            cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
+            cv::Point2i point2 = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j-1]);
+            cv::line(image,  point, point2, cv::Scalar(255,255,255));
           }
         }
       }
@@ -473,11 +514,17 @@ cv::Mat PickedPointList::CreateMaskImage(const cv::Mat& image)
   std::vector < std::vector < cv::Point2i > > contours;
   for ( int i = 0 ; i < m_PickedObjects.size() ; i ++ )
   {
-    if ( m_PickedObjects[i].isLine )
+    if ( m_PickedObjects[i].m_IsLine )
     {
-      if ( m_PickedObjects[i].points.size() > 0 )
+      if ( m_PickedObjects[i].m_Points.size() > 0 )
       {
-        contours.push_back( m_PickedObjects[i].points );
+        std::vector < cv::Point2i > points;
+        
+        for ( unsigned int j = 0 ; j <  m_PickedObjects[i].m_Points.size() ; j ++ )
+        {
+          points.push_back(mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]));
+        }
+        contours.push_back( points );
       }
     }
   }
@@ -495,18 +542,18 @@ int PickedPointList::GetNextAvailableID( bool ForLine )
   int lastPoint = -1 ;
   for ( unsigned int i = 0 ; i < m_PickedObjects.size() ; i ++ )
   {
-    if ( (! ForLine ) && (! m_PickedObjects[i].isLine) )
+    if ( (! ForLine ) && (! m_PickedObjects[i].m_IsLine) )
     {
-      if ( m_PickedObjects[i].id > lastPoint )
+      if ( m_PickedObjects[i].m_Id > lastPoint )
       {
-        lastPoint = m_PickedObjects[i].id;
+        lastPoint = m_PickedObjects[i].m_Id;
       }
     }
-    if ( ( ForLine ) && (m_PickedObjects[i].isLine) )
+    if ( ( ForLine ) && (m_PickedObjects[i].m_IsLine) )
     {
-      if ( m_PickedObjects[i].id > lastPoint )
+      if ( m_PickedObjects[i].m_Id > lastPoint )
       {
-        lastPoint = m_PickedObjects[i].id;
+        lastPoint = m_PickedObjects[i].m_Id;
       }
     }
   }
@@ -525,12 +572,12 @@ void PickedPointList::SetInOrderedMode(const bool& mode)
   {
     if ( ! m_InOrderedMode )
     {
-      m_PickedObjects.back().id = -1;
+      m_PickedObjects.back().m_Id = -1;
     }
     else
     {
       int pointID=this->GetNextAvailableID(true);
-      m_PickedObjects.back().id = pointID;
+      m_PickedObjects.back().m_Id = pointID;
     }
     m_IsModified = true;
   }
@@ -547,14 +594,14 @@ void PickedPointList::SetInLineMode(const bool& mode)
   if ( m_InLineMode )
   {
     int pointID = -1;
-    PickedObject pickedObject;
-    pickedObject.isLine = true;
+    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+    pickedObject.m_IsLine = true;
 
     if ( m_InOrderedMode )
     {
       pointID = this->GetNextAvailableID(true);
     }
-    pickedObject.id = pointID;
+    pickedObject.m_Id = pointID;
 
     m_PickedObjects.push_back(pickedObject);
   }
@@ -571,23 +618,24 @@ bool PickedPointList::GetIsModified()
 //-----------------------------------------------------------------------------
 unsigned int PickedPointList::AddPoint(const cv::Point2i& point)
 {
+  cv::Point3d myPoint = cv::Point3d (point.x,point.y,0.0);
   if ( m_InLineMode )
   {
-    if (  m_PickedObjects.back().isLine )
+    if (  m_PickedObjects.back().m_IsLine )
     {
-      m_PickedObjects.back().points.push_back(point);
-      MITK_INFO << "Added a point to line " << m_PickedObjects.back().id;
+      m_PickedObjects.back().m_Points.push_back(myPoint);
+      MITK_INFO << "Added a point to line " << m_PickedObjects.back().m_Id;
     }
     else
     {
       int pointID=this->GetNextAvailableID(true);
-      PickedObject pickedObject;
-      pickedObject.isLine = true;
-      pickedObject.id = pointID;
-      pickedObject.points.push_back(point);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      pickedObject.m_IsLine = true;
+      pickedObject.m_Id = pointID;
+      pickedObject.m_Points.push_back(myPoint);
 
       m_PickedObjects.push_back(pickedObject);
-      MITK_INFO << "Created new line at " << m_PickedObjects.back().id;
+      MITK_INFO << "Created new line at " << m_PickedObjects.back().m_Id;
     }
   }
   else
@@ -595,23 +643,23 @@ unsigned int PickedPointList::AddPoint(const cv::Point2i& point)
     if ( m_InOrderedMode )
     {
       int pointID=this->GetNextAvailableID(false);
-      PickedObject pickedObject;
-      pickedObject.isLine = false;
-      pickedObject.id = pointID;
-      pickedObject.points.push_back(point);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      pickedObject.m_IsLine = false;
+      pickedObject.m_Id = pointID;
+      pickedObject.m_Points.push_back(myPoint);
 
       m_PickedObjects.push_back(pickedObject);
-      MITK_INFO << "Picked ordered point " << pointID << " , " <<  point;
+      MITK_INFO << "Picked ordered point " << pointID << " , " <<  myPoint;
     }
     else
     {
-      PickedObject pickedObject;
-      pickedObject.isLine = false;
-      pickedObject.id = -1;
-      pickedObject.points.push_back(point);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      pickedObject.m_IsLine = false;
+      pickedObject.m_Id = -1;
+      pickedObject.m_Points.push_back(myPoint);
       m_PickedObjects.push_back(pickedObject);
 
-      MITK_INFO << "Picked unordered point, " <<  point;
+      MITK_INFO << "Picked unordered point, " <<  myPoint;
     }
   }
   m_IsModified=true;
@@ -628,24 +676,24 @@ unsigned int PickedPointList::RemoveLastPoint()
       std::vector<PickedObject>::iterator it = m_PickedObjects.end() -1 ;
       while ( it >= m_PickedObjects.begin() )
       {
-        if ( it->isLine )
+        if ( it->m_IsLine )
         {
-          MITK_INFO << "found a line at " << it->id;
-          if ( it->points.size() > 0 )
+          MITK_INFO << "found a line at " << it->m_Id;
+          if ( it->m_Points.size() > 0 )
           {
-            it->points.pop_back();
-            MITK_INFO << "Removed last point from line " << it->id;
+            it->m_Points.pop_back();
+            MITK_INFO << "Removed last point from line " << it->m_Id;
           }
           else
           {
-            MITK_INFO << "Removed line " << it->id;
+            MITK_INFO << "Removed line " << it->m_Id;
             m_PickedObjects.erase(it);
           }
           break;
         }
         else
         {
-          MITK_INFO << it->id << " is not a line";
+          MITK_INFO << it->m_Id << " is not a line";
         }
         it -- ;
       }
@@ -656,7 +704,7 @@ unsigned int PickedPointList::RemoveLastPoint()
       std::vector<PickedObject>::iterator it = m_PickedObjects.end() - 1;
       while ( it >= m_PickedObjects.begin() )
       {
-        if ( ! (it->isLine) )
+        if ( ! (it->m_IsLine) )
         {
           MITK_INFO << "found a point";
           m_PickedObjects.erase(it);
@@ -681,9 +729,9 @@ unsigned int PickedPointList::SkipOrderedPoint()
     }
     else 
     {
-      PickedObject pickedObject;
-      pickedObject.isLine = true;
-      pickedObject.id = -1;
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      pickedObject.m_IsLine = true;
+      pickedObject.m_Id = -1;
 
       m_PickedObjects.push_back(pickedObject);
 
@@ -695,9 +743,9 @@ unsigned int PickedPointList::SkipOrderedPoint()
   if ( ! m_InLineMode )
   {
     int pointID=this->GetNextAvailableID(false);
-    PickedObject pickedObject;
-    pickedObject.isLine = false;
-    pickedObject.id = pointID;
+    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+    pickedObject.m_IsLine = false;
+    pickedObject.m_Id = pointID;
 
     m_PickedObjects.push_back(pickedObject);
 
@@ -707,9 +755,9 @@ unsigned int PickedPointList::SkipOrderedPoint()
   {
     int pointID=this->GetNextAvailableID(true);
 
-    PickedObject pickedObject;
-    pickedObject.isLine = true;
-    pickedObject.id = pointID;
+    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+    pickedObject.m_IsLine = true;
+    pickedObject.m_Id = pointID;
 
     m_PickedObjects.push_back(pickedObject);
 
@@ -736,5 +784,13 @@ void PointPickingCallBackFunc(int event, int x, int y, int flags, void* userdata
   }
 }
 
-
+//-----------------------------------------------------------------------------
+cv::Point2i Point3dToPoint2i (const cv::Point3d& point)
+{
+  if ( fabs ( point.z ) > 1e-6 )
+  {
+    mitkThrow() << "Attempted to cast point3d to point2i with non zero z";
+  }
+  return cv::Point2i ( boost::math::round(point.x), boost::math::round(point.y) );
+}
 } // end namespace
