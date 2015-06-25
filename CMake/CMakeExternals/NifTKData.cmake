@@ -23,8 +23,8 @@ if (DEFINED NIFTK_DATA_DIR AND NOT EXISTS ${NIFTK_DATA_DIR})
 endif ()
 
 if (BUILD_TESTING)
-	       
-  set(version "b0eaac8889")
+
+  set(version "bb6e5f498c")
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTKData.git")
 
   niftkMacroDefineExternalProjectVariables(NifTKData ${version} ${location})
