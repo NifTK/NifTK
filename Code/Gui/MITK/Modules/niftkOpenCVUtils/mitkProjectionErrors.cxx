@@ -20,7 +20,7 @@
 #include <numeric>
 #include <algorithm>
 #include <functional>
-#include <mitkMathsUtils.h>
+#include <niftkMathsUtils.h>
 #include <mitkExceptionMacro.h>
 #include <string>
 #include <fstream>
