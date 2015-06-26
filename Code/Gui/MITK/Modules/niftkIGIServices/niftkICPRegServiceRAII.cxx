@@ -12,16 +12,17 @@
 
 =============================================================================*/
 
-#include "niftkSurfaceRegServiceRAII.h"
+#include "niftkICPRegServiceRAII.h"
 
 #include <mitkExceptionMacro.h>
 #include <usGetModuleContext.h>
+#include "niftkServiceConfigurationI.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-SurfaceRegServiceRAII::SurfaceRegServiceRAII(const std::string &method)
+ICPRegServiceRAII::ICPRegServiceRAII(const int& maxLandmarks, const int& maxIterations)
 : m_ModuleContext(NULL)
 , m_Service(NULL)
 {
@@ -29,34 +30,52 @@ SurfaceRegServiceRAII::SurfaceRegServiceRAII(const std::string &method)
 
   if (m_ModuleContext == NULL)
   {
-    mitkThrow() << "Unable to get us::ModuleContext from us::GetModuleContext().";
+    mitkThrow() << "Unable to get us::ModuleContext.";
   }
 
-  m_Refs = m_ModuleContext->GetServiceReferences<SurfaceRegServiceI>("(Method=" + method +")");
+  m_Refs = m_ModuleContext->GetServiceReferences<SurfaceRegServiceI>("(Method=ICP)");
 
   if (m_Refs.size() == 0)
   {
-    mitkThrow() << "Unable to get us::ServiceReference in SurfaceRegServiceRAII(" << method << ").";
+    mitkThrow() << "Unable to get us::ServiceReference based on ICP.";
+  }
+
+  if (m_Refs.size() > 1)
+  {
+    MITK_WARN << "Multiple ICP based services are found! This may be a problem." << std::endl;
   }
 
   m_Service = m_ModuleContext->GetService<niftk::SurfaceRegServiceI>(m_Refs.front());
 
   if (m_Service == NULL)
   {
-    mitkThrow() << "Unable to get niftk::SurfaceRegServiceI in SurfaceRegServiceRAII(" << method << ").";
+    mitkThrow() << "Unable to get niftk::SurfaceRegServiceI.";
   }
+
+  niftk::ServiceConfigurationI *configurableService = dynamic_cast<ServiceConfigurationI*>(m_Service);
+
+  if (configurableService == NULL)
+  {
+    mitkThrow() << "Retrieved niftk::SurfaceRegServiceI but it was not also a niftk::ServiceConfigurationI";
+  }
+
+  us::ServiceProperties props;
+  props["MaxLandmarks"] = maxLandmarks;
+  props["MaxIterations"] = maxIterations;
+
+  configurableService->Configure(props);
 }
 
 
 //-----------------------------------------------------------------------------
-SurfaceRegServiceRAII::~SurfaceRegServiceRAII()
+ICPRegServiceRAII::~ICPRegServiceRAII()
 {
   m_ModuleContext->UngetService(m_Refs.front());
 }
 
 
 //-----------------------------------------------------------------------------
-double SurfaceRegServiceRAII::Register(
+double ICPRegServiceRAII::Register(
   const mitk::DataNode::Pointer fixedDataSet,
   const mitk::DataNode::Pointer movingDataSet,
   vtkMatrix4x4& matrix) const

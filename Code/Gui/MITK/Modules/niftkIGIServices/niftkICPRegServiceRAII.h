@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkSurfaceRegServiceRAII_h
-#define niftkSurfaceRegServiceRAII_h
+#ifndef niftkICPRegServiceRAII_h
+#define niftkICPRegServiceRAII_h
 
 #include <niftkIGIServicesExports.h>
 #include "niftkSurfaceRegServiceI.h"
@@ -28,37 +28,39 @@ namespace niftk
 {
 
 /**
-* \class SurfaceRegServiceRAII
-* \brief RAII object to run Surface Based Registration via a SurfaceRegServiceI implementation.
+* \class ICPRegServiceRAII
+* \brief RAII object to run ICP Surface Based Registration.
 *
-* Note: All errors should thrown as mitk::Exception or sub-classes thereof.
+* Note: All errors should thrown as mitk::Exception or sub-classes thereof. 
 */
-class NIFTKIGISERVICES_EXPORT SurfaceRegServiceRAII : public SurfaceRegServiceI
+class NIFTKIGISERVICES_EXPORT ICPRegServiceRAII : public SurfaceRegServiceI
 {
 
 public:
 
   /**
   * \brief Obtains service or throws mitk::Exception.
+  * \param maxLandmarks The number of points to use in the ICP.
+  * \param maxIterations The number of iterations to use in the ICP.
   */
-  SurfaceRegServiceRAII(const std::string& method="ICP");
+  ICPRegServiceRAII(const int& maxLandmarks, const int& maxIterations);
 
   /**
   * \brief Releases service.
   */
-  virtual ~SurfaceRegServiceRAII();
+  virtual ~ICPRegServiceRAII();
 
   /**
-  * \brief Calls service to do Surface Based Registration.
-  * \see SurfaceRegServiceI
+  * \brief Calls service to do ICP Surface Based Registration.
+  * \see SurfaceRegServiceI::Register()
   */
   virtual double Register(const mitk::DataNode::Pointer fixedDataSet,
                           const mitk::DataNode::Pointer movingDataSet,
                           vtkMatrix4x4& matrix) const;
 
 private:
-  SurfaceRegServiceRAII(const SurfaceRegServiceRAII&); // deliberately not implemented
-  SurfaceRegServiceRAII& operator=(const SurfaceRegServiceRAII&); // deliberately not implemented
+  ICPRegServiceRAII(const ICPRegServiceRAII&); // deliberately not implemented
+  ICPRegServiceRAII& operator=(const ICPRegServiceRAII&); // deliberately not implemented
 
   us::ModuleContext*                                     m_ModuleContext;
   std::vector<us::ServiceReference<SurfaceRegServiceI> > m_Refs;

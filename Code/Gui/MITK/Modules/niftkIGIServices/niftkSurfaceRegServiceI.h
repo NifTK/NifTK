@@ -20,6 +20,7 @@
 #include <mitkServiceInterface.h>
 #include <mitkDataNode.h>
 #include <vtkMatrix4x4.h>
+#include <usServiceProperties.h>
 
 namespace niftk
 {
@@ -37,14 +38,16 @@ public:
 
   /**
   * \brief Does Surface Based Registration.
+  * \param matrix output matrix to transform moving points to fixed points.
   * \return RMS residual error (RMS error for each movingDataSet point)
+  * \throws mitk::Exception for all errors
   *
   * Note: DataNode could contain mitk::PointSet, mitk::Surface or other.
   * Its up to the service to validate and throw mitk::Exception if incorrect.
   *
   * Also, implementors should consider what the implications of copying/re-formatting
   * data are. Data-sets can be large, and hence copy operations can be slow. Either
-  * way, its up to the implementor of each service to consider efficiency.
+  * way, its up to the implementor of each service to consider efficiency and statefulness.
   */
   virtual double Register(const mitk::DataNode::Pointer fixedDataSet,
                           const mitk::DataNode::Pointer movingDataSet,

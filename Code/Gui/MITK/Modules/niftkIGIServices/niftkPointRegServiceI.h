@@ -37,6 +37,7 @@ public:
 
   /**
   * \brief Does Point Based Registration of equal length, corresponding, ordered point sets.
+  * \param matrix output matrix to transform moving points to fixed points.
   * \return fiducial registration error (mean RMS error over all matching landmark points)
   */
   virtual double Register(const mitk::PointSet::Pointer fixedPoints,

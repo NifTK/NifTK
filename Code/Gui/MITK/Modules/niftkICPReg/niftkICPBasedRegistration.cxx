@@ -24,6 +24,8 @@
 #include <mitkAffineTransformDataNodeProperty.h>
 #include <mitkDataStorageUtils.h>
 #include <mitkSurface.h>
+#include <mitkExceptionMacro.h>
+#include <limits>
 
 namespace niftk
 {
@@ -59,21 +61,29 @@ double ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
     mitkThrow() << "In ICPBasedRegistration::RunVTKICP, movingPoly is NULL";
   }
 
-  niftk::VTKIterativeClosestPoint *icp = new  niftk::VTKIterativeClosestPoint();
-  icp->SetICPMaxLandmarks(m_MaximumNumberOfLandmarkPointsToUse);
-  icp->SetICPMaxIterations(m_MaximumIterations);
-  icp->SetSource(movingPoly);
-  icp->SetTarget(fixedPoly);
+  double residual = std::numeric_limits<double>::max();
 
-  // Throws exception if fails.
-  double residual = icp->Run();
+  try
+  {
+    niftk::VTKIterativeClosestPoint *icp = new  niftk::VTKIterativeClosestPoint();
+    icp->SetICPMaxLandmarks(m_MaximumNumberOfLandmarkPointsToUse);
+    icp->SetICPMaxIterations(m_MaximumIterations);
+    icp->SetSource(movingPoly);
+    icp->SetTarget(fixedPoly);
 
-  // Retrieve transformation
-  vtkSmartPointer<vtkMatrix4x4> temp = icp->GetTransform();
-  transformMovingToFixed.DeepCopy(temp);
+    residual = icp->Run();
 
-  // Tidy up
-  delete icp;
+    // Retrieve transformation
+    vtkSmartPointer<vtkMatrix4x4> temp = icp->GetTransform();
+    transformMovingToFixed.DeepCopy(temp);
+
+    // Tidy up
+    delete icp;
+  }
+  catch (const std::exception& e)
+  {
+    mitkThrow() << e.what();
+  }
 
   return residual;
 }

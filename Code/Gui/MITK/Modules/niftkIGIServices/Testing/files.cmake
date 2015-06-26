@@ -14,9 +14,10 @@
 
 # tests with no extra command line parameter
 set(MODULE_TESTS
-  niftkPointRegServiceRAIITest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
+  niftkPointRegServiceRAIITest.cxx
+  niftkICPRegServiceRAIITest.cxx
 )
 

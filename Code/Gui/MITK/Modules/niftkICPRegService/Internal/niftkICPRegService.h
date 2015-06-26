@@ -16,16 +16,18 @@
 #define niftkICPRegService_h
 
 #include <niftkSurfaceRegServiceI.h>
+#include <niftkServiceConfigurationI.h>
 #include <niftkICPBasedRegistration.h>
 
 namespace niftk
 {
 
 /**
-* @class ICPRegService
-* @brief Implements niftk::SurfaceRegServiceI using niftk::ICPBasedRegistration.
+* \class ICPRegService
+* \brief Implements niftk::SurfaceRegServiceI using niftk::ICPBasedRegistration.
 */
-class ICPRegService : public niftk::SurfaceRegServiceI
+class ICPRegService : public niftk::SurfaceRegServiceI,
+                      public niftk::ServiceConfigurationI
 {
 public:
 
@@ -34,11 +36,15 @@ public:
 
   /**
   * \see niftk::SurfaceRegServiceI
-  * \throws mitk::Exception for all errors
   */
   virtual double Register(const mitk::DataNode::Pointer fixedDataSet,
                           const mitk::DataNode::Pointer movingDataSet,
                           vtkMatrix4x4& matrix) const;
+
+  /**
+  * \see niftk::SurfaceRegServiceI
+  */
+  virtual void Configure(const us::ServiceProperties& properties);
 
 private:
 
@@ -46,7 +52,6 @@ private:
   ICPRegService& operator=(const ICPRegService&); // deliberately not implemented
 
   niftk::ICPBasedRegistration::Pointer m_Registerer;
-
 };
 
 } // end namespace

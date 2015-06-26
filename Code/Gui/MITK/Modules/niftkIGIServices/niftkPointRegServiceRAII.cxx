@@ -29,7 +29,7 @@ PointRegServiceRAII::PointRegServiceRAII(const std::string &method)
 
   if (m_ModuleContext == NULL)
   {
-    mitkThrow() << "Unable to get us::ModuleContext from us::GetModuleContext().";
+    mitkThrow() << "Unable to get us::ModuleContext.";
   }
 
   m_Refs = m_ModuleContext->GetServiceReferences<PointRegServiceI>("(Method=" + method +")");

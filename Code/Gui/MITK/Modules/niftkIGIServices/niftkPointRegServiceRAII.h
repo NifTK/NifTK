@@ -50,6 +50,7 @@ public:
 
   /**
   * \brief Calls service to do Point Based Registration.
+  * \param matrix output matrix to transform moving points to fixed points.
   * \see PointRegServiceI
   */
   virtual double Register(const mitk::PointSet::Pointer fixedPoints,

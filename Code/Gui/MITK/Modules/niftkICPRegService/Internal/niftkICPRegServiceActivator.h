@@ -24,8 +24,8 @@ namespace niftk
 {
 
 /**
-* @class ICPRegServiceActivator
-* @brief Activator to register instances of niftk::SurfaceRegServiceI, currently only niftk::ICPRegService.
+* \class ICPRegServiceActivator
+* \brief Activator to register instances of niftk::SurfaceRegServiceI, currently only niftk::ICPRegService.
 */
 class ICPRegServiceActivator : public us::ModuleActivator
 {

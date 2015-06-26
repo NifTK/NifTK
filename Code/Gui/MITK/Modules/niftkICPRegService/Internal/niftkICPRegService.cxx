@@ -34,6 +34,30 @@ ICPRegService::~ICPRegService()
 
 
 //-----------------------------------------------------------------------------
+void ICPRegService::Configure(const us::ServiceProperties& properties)
+{
+  if (properties.size() == 0)
+  {
+    return;
+  }
+
+  if (properties.find("MaxLandmarks") != properties.end())
+  {
+    int maxLandmarks = us::any_cast<int>((*(properties.find("MaxLandmarks"))).second);
+    m_Registerer->SetMaximumNumberOfLandmarkPointsToUse(maxLandmarks);
+    MITK_INFO << "Configured ICPRegService[MaxLandmarks]=" << maxLandmarks;
+  }
+
+  if (properties.find("MaxIterations") != properties.end())
+  {
+    int maxIterations = us::any_cast<int>((*(properties.find("MaxIterations"))).second);
+    m_Registerer->SetMaximumIterations(maxIterations);
+    MITK_INFO << "Configured ICPRegService[MaxIterations]=" << maxIterations;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 double ICPRegService::Register(const mitk::DataNode::Pointer fixedDataSet,
                                const mitk::DataNode::Pointer movingDataSet,
                                vtkMatrix4x4& matrix) const
