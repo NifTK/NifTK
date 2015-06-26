@@ -63,7 +63,7 @@ This section only describes the changes between authorised published versions.
 \section ICPBRSIntro Introduction
 
 The purpose of this Component Specification Document (CSD) is to describe the
-ICP Based Registration Service (PBRS).  It is intended to be read by those wanting
+ICP Based Registration Service (ICPBRS).  It is intended to be read by those wanting
 to gain a technical understanding as to the fundamental requirements, design and
 implementation.  This document is not intended for end-users.
 
@@ -73,10 +73,22 @@ This document defines the requirements, design and implementation.
 
 \subsection ICPBRSGeneral General Description
 
+The general description can be found in [4]. The aim is to register two point sets.
+One or both point sets can be surfaces, meaning that points are grouped into triangles.
+If a triangle mesh is available, interpolation across the face of the triangle should be considered.
+
 \section ICPBRSRequirements Requirements
 \subsection ICPBRSFuncReq Functional Requirements
 
 These functional requirements shall be expressed, each on a single line.
+
+REQ-2001-CSD-0002-002-01: If number of fixed points < 3, throw mitk::Exception.
+
+REQ-2001-CSD-0002-003-01: If number of moving points < 3, throw mitk::Exception.
+
+REQ-2001-CSD-0002-004-01: Two point sets, identical apart from translation should register with RMS residual < 0.001
+
+REQ-2001-CSD-0002-005-01: Two point sets, identical apart from rotation should register with RMS residual < 0.001
 
 \subsection ICPBRSNonFuncReq Non-Functional Requirements
 
@@ -84,14 +96,28 @@ These non-functional requirements shall be expressed, each on a single line.
 
 REQ-2001-CSD-0002-001-01: The ICPBRS shall be available as a Micro Service.
 
+REQ-2001-CSD-0002-006-01: Point sets of 100,000 corresponding points must register in < 0.001 seconds.
+
 \section ICPBRSDesign Design
 \subsection ICPBRSArchitecture Architecture
 
-Please read background information on the <a href="http://docs.mitk.org/2014.03/MicroServices_Overview.html">MITK Micro Services</a>.
+The architecture is based on MITK Micro Services [5].
+
+The architecture shall be:
+
+\li An abstract interface in the niftkIGIServices module.
+\li A stateless function in the niftkICPReg module.
+\li An MITK auto-loaded Micro Service in niftkICPRegService module that implements the abstract interface and calls the stateless function.
+\li An RAII object in niftkIGIServices module that may implement the abstract interface.
+
+This means that clients such as unit tests, other modules, or GUI code can
+either link directly to niftkICPReg which forces a link-time
+dependency, or they can have zero link-time dependency and rely on the Micro
+Service based approach.
 
 \subsection ICPBRSError Error Handling
 
-From a design perspective, all errors shall be communicated by throwing an mitk::Exception.
+All errors shall be communicated by throwing an mitk::Exception.
 
 \section ICPBRSImpl Implementation
 
@@ -99,10 +125,16 @@ A few implementation details are described below.
 
 \subsection ICPBRSLogging Logging
 
-This service is primarily a function call to a mathematical routine. It is a stateless,
-synchronous design, and as errors will be thrown immediately there is no need for logging.
-Any logging to describe which points have been registered can be performed by the calling client.
+The service is currently implemented using vtkIterativeClosestPointTransform,
+which does not log each iteration of the ICP function. This service however should
+output the final RMS residual as a console message to a log file.
 
 \subsection ICPBRSClassesFunctions Classes and Functions
+
+\li The abstract interface is in niftk::SurfaceRegServiceI in the niftkIGIServices module.
+\li This is implemented by niftk::ICPRegService in the niftkICPRegService module.
+\li It is also implemented by the RAII object niftk::ICPRegServiceRAII in the niftkIGIServices module.
+\li Main registration class is in niftk::ICPBasedRegistration in the niftkICPReg module, which wraps
+niftk::VTKIterativeClosestPoint in the niftkVTK library.
 
 */

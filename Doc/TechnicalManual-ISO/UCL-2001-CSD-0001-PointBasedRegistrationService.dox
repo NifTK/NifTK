@@ -150,8 +150,6 @@ These non-functional requirements shall be expressed, each on a single line.
 
 REQ-2001-CSD-0001-006-01: Point sets of 100,000 corresponding points must register in < 0.001 seconds.
 
-REQ-2001-CSD-0001-007-01: If an implementation uses a 3rd party mathematical library, symbols from this 3rd party library must not be exported.
-
 REQ-2001-CSD-0001-008-01: The PBRS shall be available as a Micro Service.
 
 \section PBRSDesign Design
@@ -164,7 +162,7 @@ The architecture shall be:
 \li An abstract interface in the niftkIGIServices module.
 \li A stateless function in the niftkPointReg module.
 \li An MITK auto-loaded Micro Service in niftkPointRegService module that implements the abstract interface and calls the stateless function.
-\li An RAII object in niftkIGIServices module that optionally implements the abstract interface.
+\li An RAII object in niftkIGIServices module that may implement the abstract interface.
 
 This means that clients such as unit tests, other modules, or GUI code can
 either link directly to niftkPointReg which forces a link-time
@@ -173,7 +171,7 @@ Service based approach.
 
 \subsection PBRSError Error Handling
 
-From a design perspective, all errors shall be communicated by throwing an mitk::Exception.
+All errors shall be communicated by throwing an mitk::Exception.
 
 \section PBRSImpl Implementation
 
@@ -191,13 +189,5 @@ Any logging to describe which points have been registered can be performed by th
 \li This is implemented by niftk::PointRegServiceUsingSVD in the niftkPointRegService module.
 \li It is also implemented by the RAII object niftk::PointRegServiceRAII in the niftkIGIServices module.
 \li Main registration function in file \ref niftkArunLeastSquaresPointRegistration.h in the niftkPointReg module.
-
-The purpose of the RAII object is so that clients of the service can easily
-instantiate the object, where the constructor performs all necessary lookups.
-If the constructor completes without throwing exceptions, the service is
-guaranteed to be ready to use. The C++ language also guarantees to call destructors
-on fully constructed objects when an exception is thrown. So, when
-the niftk::PointRegServiceRAII object is destroyed, the service is
-released in the destructor, guaranteeing no dangling references.
 
 */
