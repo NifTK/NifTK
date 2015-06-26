@@ -4,34 +4,19 @@
 
 \section PBRSPBRS Point Based Registration Service (PBRS)
 
+\li \ref UCLCopyrightStatement
+\li \ref UCLDefinitionsAcronyms
+\li \ref UCLRequirementsTraceability
+\li \ref UCLReferences
+
 \subsection PBRSCSD Component Specification Document (CSD)
 
 <table>
 <tr><td>Document ID:</td><td>UCL-2001-CSD-0001-PointBasedRegistrationService.dox</td></tr>
 <tr><td>Prepared By:</td><td>Matt Clarkson</td></tr>
 <tr><td>Authorised By:</td><td></td></tr>
-<tr><td>Last Modified:</td><td>20 May 2015</td></tr>
+<tr><td>Last Modified:</td><td>26 Jun 2015</td></tr>
 </table>
-
-\subsection PBRSCopyright Copyright
-
-Copyright University College London (UCL)
-
-Any information and data contained herein is the property of University College London,
-and may not be copied, used or disclosed in whole or part expect with the prior written
-permission of University College London.
-
-\verbatim
-University College London
-Centre for Medical Image Computing
-Gower Street
-London
-WC1E 2BT
-UK
-Tel: 020 7679 0221
-Fax: 020 7679 0255
-\endverbatim
-<a href="http://www.ucl.ac.uk/cmic">www.ucl.ac.uk/cmic</a>
 
 \subsection PBRSHistory Revision History
 
@@ -90,6 +75,23 @@ This section only describes the changes between authorised published versions.
       All
     </td>
   </tr>
+  <tr>
+    <td>
+      0.3
+    </td>
+    <td>
+      26 Jun 2015
+    </td>
+    <td>
+      Matt Clarkson
+    </td>
+    <td>
+      Refactored out common parts (Copyright, defn, refs, traceability), added REQ-2001-CSD-0001-008-01.
+    </td>
+    <td>
+      All
+    </td>
+  </tr>
 </table>
 
 \section PBRSIntro Introduction
@@ -102,49 +104,6 @@ implementation.  This document is not intended for end-users.
 \subsection PBRSScope Scope
 
 This document defines the requirements, design and implementation.
-
-\subsection PBRCTraceability Traceability
-
-All traceable requirements are identified with a unique requirements identifier.
-The identifier has the following naming convention:
-
-\verbatim
-REQ-<Project Code>-<Document Type>-<Document ID>-<Number>-<Version>
-\endverbatim
-
-where
-
-<table>
-<tr><td>Project Code:</td><td>Four digit number allocated to the project with leading zeros to facilitate searching and sorting.</td></tr>
-<tr><td>Document Type:</td><td>The two or three letter code of the document. e.g. Component Specification Document (CSD)</td></tr>
-<tr><td>Document ID:</td><td>Four digit number allocated to the document with leading zeros to facilitate searching and sorting.</td></tr>
-<tr><td>Number:</td><td>A three digit number with leading zeros to facilitate searching and sorting.
-It is not necessary for numbers to be contiguous. If requirements are removed,
-existing requirements should maintain their numbers.</td></tr>
-<tr><td>Version:</td><td>A two digit number with leading zeros to facilitate search and sorting, incremented
-only for substantive change to a requirement. It is not incremented for clarifications or rewording.</td></tr>
-</table>
-
-\subsection PBRSDefinitions Definitions, Acronyms and Abbreviations
-
-<table>
-<tr><th>Term</th><th>Description</th></tr>
-<tr><td>shall</td><td>Wording used to indicate a requirement that must be fulfilled.</td></tr>
-<tr><td>should</td><td>Wording used to suggest a course of action that would be expected.
-It is never used to indicate a requirement that must be fulfilled.
-</td></tr>
-<tr><td>may</td><td>Wording used to suggest an optional course of action.
-It is never used to indicate a requirement that must be fulfilled.
-</td></tr>
-<tr><td>can</td><td>Wording used to indicate a possibility of, or ability to do something.
-It is never used to indicate a requirement that must be fulfilled.
-</td></tr>
-<tr><td>CT</td><td>Computed Tomography</td></tr>
-<tr><td>GUI</td><td>Graphical User Interface</td></tr>
-<tr><td>MR</td><td>Magnetic Resonance</td></tr>
-<tr><td>RAII</td><td>Resource Allocation Is Initialisation</td></tr>
-<tr><td>SVD</td><td>Singular Value Decomposition</td></tr>
-</table>
 
 \subsection PBRSGeneral General Description
 
@@ -167,18 +126,8 @@ The general requirement is therefore that
 \li The two point sets are the same length as each point must have a corresponding partner.
 \li The point sets are ordered, or have some form of 1 to 1 correspondence (e.g. unique identifiers for each point).
 
-In this service, we implement the algorithm describe in [1],
+In this service, we implement the algorithm describe in [3],
 which results in a rigid body transformation, meaning rotations and translations.
-
-\subsection PBRSReferences References
-
-The following referenced documents relate to this document and may provide further detail or
-background information.  For dated references, only the edition cited applies.  For undated
-references, the latest edition of the referenced document (including any amendments) applies.
-
-\li [1]: <a href="http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=4767965">Least-Squares Fitting of two, 3-D Point Sets, Arun, 1987, 10.1109/TPAMI.1987.4767965</a>.
-\li [2]: Council Directive 93/42/EEC of 14 June 1993, concerning medical devices
-\li [3]: Directive 2007/47/EC of the European Parliament and of the council of 5 September 2007
 
 \section PBRSRequirements Requirements
 \subsection PBRSFuncReq Functional Requirements
@@ -203,6 +152,8 @@ REQ-2001-CSD-0001-006-01: Point sets of 100,000 corresponding points must regist
 
 REQ-2001-CSD-0001-007-01: If an implementation uses a 3rd party mathematical library, symbols from this 3rd party library must not be exported.
 
+REQ-2001-CSD-0001-008-01: The PBRS shall be available as a Micro Service.
+
 \section PBRSDesign Design
 \subsection PBRSArchitecture Architecture
 
@@ -210,10 +161,10 @@ Please read background information on the <a href="http://docs.mitk.org/2014.03/
 
 The architecture shall be:
 
-\li An abstract interface in niftkIGI module.
-\li A stateless function in an MITK module in niftkPointReg module.
+\li An abstract interface in the niftkIGIServices module.
+\li A stateless function in the niftkPointReg module.
 \li An MITK auto-loaded Micro Service in niftkPointRegService module that implements the abstract interface and calls the stateless function.
-\li An RAII object in niftkIGI module that optionally implements the abstract interface.
+\li An RAII object in niftkIGIServices module that optionally implements the abstract interface.
 
 This means that clients such as unit tests, other modules, or GUI code can
 either link directly to niftkPointReg which forces a link-time
@@ -236,10 +187,10 @@ Any logging to describe which points have been registered can be performed by th
 
 \subsection PBRSClassesFunctions Classes and Functions
 
-\li Main registration function in method niftk::PointBasedRegistrationUsingSVD in the niftkPointReg module.
-\li The abstract interface is in niftk::PointRegServiceI in the niftkIGI module.
-\li This is implemented by niftk::PointRegServiceUsingSVD in the niftkPointRegServiceModule.
-\li It is also implemented by the RAII object niftk::PointRegServiceRAII in the niftkIGI module.
+\li The abstract interface is in niftk::PointRegServiceI in the niftkIGIServices module.
+\li This is implemented by niftk::PointRegServiceUsingSVD in the niftkPointRegService module.
+\li It is also implemented by the RAII object niftk::PointRegServiceRAII in the niftkIGIServices module.
+\li Main registration function in file \ref niftkArunLeastSquaresPointRegistration.h in the niftkPointReg module.
 
 The purpose of the RAII object is so that clients of the service can easily
 instantiate the object, where the constructor performs all necessary lookups.
