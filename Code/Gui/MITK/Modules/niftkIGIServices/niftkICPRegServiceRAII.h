@@ -31,7 +31,7 @@ namespace niftk
 * \class ICPRegServiceRAII
 * \brief RAII object to run ICP Surface Based Registration.
 *
-* Note: All errors should thrown as mitk::Exception or sub-classes thereof. 
+* Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
 class NIFTKIGISERVICES_EXPORT ICPRegServiceRAII : public SurfaceRegServiceI
 {
