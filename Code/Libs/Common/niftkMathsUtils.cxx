@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#include "mitkMathsUtils.h"
+#include "niftkMathsUtils.h"
 #include <numeric>
 #include <algorithm>
 #include <functional>
 #include <cmath>
 
-namespace mitk {
+namespace niftk {
 
 //-----------------------------------------------------------------------------
 bool IsCloseToZero(const double& value, const double& tolerance)
@@ -35,7 +35,9 @@ bool IsCloseToZero(const double& value, const double& tolerance)
 
 
 //-----------------------------------------------------------------------------
-std::pair <double, double >  FindMinimumValues ( std::vector < std::pair < double, double > > inputValues, std::pair < unsigned int , unsigned int >  * indexes )
+std::pair <double, double >  FindMinimumValues (
+    std::vector < std::pair < double, double > > inputValues,
+    std::pair < unsigned int , unsigned int >  * indexes )
 {
   std::pair < double , double > minimumValues;
 
@@ -50,7 +52,7 @@ std::pair <double, double >  FindMinimumValues ( std::vector < std::pair < doubl
       indexes->second = 0;
     }
   }
-  for ( unsigned int i = 0 ; i < inputValues.size() ; i ++ )
+  for (unsigned int i = 0; i < inputValues.size(); i++ )
   {
     if ( inputValues[i].first < minimumValues.first )
     {
@@ -97,12 +99,12 @@ double Mean(const std::vector<double>& input)
 //-----------------------------------------------------------------------------
 double StdDev(const std::vector<double>& input)
 {
-  if (input.size() == 0)
+  if (input.size() < 2)
   {
     return 0;
   }
 
-  double mean = mitk::Mean(input);
+  double mean = niftk::Mean(input);
 
   std::vector<double> diff(input.size());
   std::transform(input.begin(), input.end(), diff.begin(), std::bind2nd(std::minus<double>(), mean));
@@ -134,6 +136,3 @@ double SafeSQRT(double value)
 }
 
 } // end namespace
-
-
-

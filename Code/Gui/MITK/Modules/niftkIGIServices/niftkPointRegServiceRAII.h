@@ -15,7 +15,7 @@
 #ifndef niftkPointRegServiceRAII_h
 #define niftkPointRegServiceRAII_h
 
-#include <niftkIGIExports.h>
+#include <niftkIGIServicesExports.h>
 #include "niftkPointRegServiceI.h"
 
 #include <usServiceReference.h>
@@ -30,29 +30,32 @@ namespace niftk
 /**
 * \class PointRegServiceRAII
 * \brief RAII object to run Point Based Registration via a PointRegServiceI implementation.
+*
+* Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class NIFTKIGI_EXPORT PointRegServiceRAII : public PointRegServiceI
+class NIFTKIGISERVICES_EXPORT PointRegServiceRAII : public PointRegServiceI
 {
 
 public:
 
   /**
-  * @brief Obtains service or throws mitk::Exception.
+  * \brief Obtains service or throws mitk::Exception.
   */
   PointRegServiceRAII(const std::string& method="SVD");
 
   /**
-  * @brief Releases service.
+  * \brief Releases service.
   */
   virtual ~PointRegServiceRAII();
 
   /**
-  * @brief Calls service to do Point Based Registration.
-  * @see PointRegServiceI
+  * \brief Calls service to do Point Based Registration.
+  * \param matrix output matrix to transform moving points to fixed points.
+  * \see PointRegServiceI
   */
-  virtual double PointBasedRegistration(const mitk::PointSet::Pointer& fixedPoints,
-                                        const mitk::PointSet::Pointer& movingPoints,
-                                        vtkMatrix4x4& matrix) const;
+  virtual double Register(const mitk::PointSet::Pointer fixedPoints,
+                          const mitk::PointSet::Pointer movingPoints,
+                          vtkMatrix4x4& matrix) const;
 
 private:
   PointRegServiceRAII(const PointRegServiceRAII&); // deliberately not implemented

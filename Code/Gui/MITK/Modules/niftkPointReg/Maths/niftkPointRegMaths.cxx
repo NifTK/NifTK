@@ -13,9 +13,9 @@
 =============================================================================*/
 
 #include "niftkPointRegMaths.h"
-#include <mitkExceptionMacro.h>
+#include <niftkMathsUtils.h>
 #include <mitkOpenCVMaths.h>
-#include <mitkMathsUtils.h>
+#include <mitkExceptionMacro.h>
 
 namespace niftk {
 
@@ -81,9 +81,9 @@ double DoSVDPointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
   bool haveTriedToFixDeterminantIssue = false;
 
   if ( detX < 0
-       && (   mitk::IsCloseToZero(svd.w.at<double>(0,0))
-           || mitk::IsCloseToZero(svd.w.at<double>(1,1))
-           || mitk::IsCloseToZero(svd.w.at<double>(2,2))
+       && (   niftk::IsCloseToZero(svd.w.at<double>(0,0))
+           || niftk::IsCloseToZero(svd.w.at<double>(1,1))
+           || niftk::IsCloseToZero(svd.w.at<double>(2,2))
           )
      )
   {

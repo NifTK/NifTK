@@ -29,7 +29,7 @@ PointRegServiceRAII::PointRegServiceRAII(const std::string &method)
 
   if (m_ModuleContext == NULL)
   {
-    mitkThrow() << "Unable to get us::ModuleContext from us::GetModuleContext().";
+    mitkThrow() << "Unable to get us::ModuleContext.";
   }
 
   m_Refs = m_ModuleContext->GetServiceReferences<PointRegServiceI>("(Method=" + method +")");
@@ -56,12 +56,12 @@ PointRegServiceRAII::~PointRegServiceRAII()
 
 
 //-----------------------------------------------------------------------------
-double PointRegServiceRAII::PointBasedRegistration(
-  const mitk::PointSet::Pointer& fixedPoints,
-  const mitk::PointSet::Pointer& movingPoints,
+double PointRegServiceRAII::Register(
+  const mitk::PointSet::Pointer fixedPoints,
+  const mitk::PointSet::Pointer movingPoints,
   vtkMatrix4x4& matrix) const
 {
-  return m_Service->PointBasedRegistration(fixedPoints, movingPoints, matrix);
+  return m_Service->Register(fixedPoints, movingPoints, matrix);
 }
 
 } // end namespace

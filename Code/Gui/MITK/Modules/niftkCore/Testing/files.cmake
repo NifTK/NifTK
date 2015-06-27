@@ -16,6 +16,7 @@
 set(MODULE_TESTS
   mitkITKRegionParametersDataNodePropertyTest.cxx
   mitkPointUtilsTest.cxx
+  mitkMergePointCloudsTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS

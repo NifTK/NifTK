@@ -15,12 +15,12 @@
 #include "mitkCameraCalibrationFacade.h"
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVPointTypes.h>
-#include <mitkMathsUtils.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkExceptionMacro.h>
 #include <mitkStereoDistortionCorrectionVideoProcessor.h>
 #include <mitkPointSet.h>
 #include <mitkIOUtil.h>
+#include <niftkMathsUtils.h>
 #include <niftkFileHelper.h>
 #include <iostream>
 #include <fstream>

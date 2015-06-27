@@ -19,7 +19,6 @@
 #include <numeric>
 #include <algorithm>
 #include <functional>
-#include <mitkMathsUtils.h>
 #include <mitkExceptionMacro.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVFileIOUtils.h>

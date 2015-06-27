@@ -74,8 +74,8 @@ public:
   * point set into the coordinate system of the fixed point set.
   * @return fiducial registration error
   */
-  double Update(const mitk::PointSet::Pointer& fixedPoints,
-                const mitk::PointSet::Pointer& movingPoints,
+  double Update(const mitk::PointSet::Pointer fixedPoints,
+                const mitk::PointSet::Pointer movingPoints,
                 vtkMatrix4x4& outputMatrix) const;
 
 protected:

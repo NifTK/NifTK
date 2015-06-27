@@ -62,5 +62,11 @@ add_test(VTK-4Point-Reader-Test ${VTK_INTEGRATION_TESTS} niftkVTK4PointReaderTes
 add_test(VTK-3Point-Reader-Test ${VTK_INTEGRATION_TESTS} niftkVTK3PointReaderTest ${INPUT_DATA}/3points.txt)
 add_test(VTK-Distance-To-Surface-PolyData-Test ${VTK_INTEGRATION_TESTS} niftkVTKDistanceToSurfaceTest ${INPUT_DATA}/3points.txt  ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/PointsToSurfaceDist.txt)
 add_test(VTK-Distance-To-Surface-Single-Test ${VTK_INTEGRATION_TESTS} niftkVTKDistanceToSurfaceTestSinglePoint 5.4 2.20 1.134 ${INPUT_DATA}/liver.vtk 146.72)
-add_test(SLS-VTK-ICP-Test ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk noperturb)
-
+add_test(SLS-VTK-ICP-Test ${VTK_INTEGRATION_TESTS}    niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk      1 10 10 10 10 0)
+#add_test(SLS-VTK-ICP-Reps ${VTK_INTEGRATION_TESTS}    niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk    20 10 90 20  5 0)
+#add_test(SLS-VTK-ICP-Purturb-2 ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk  20 10 90 20  5 2)
+#add_test(SLS-VTK-ICP-Purturb-4 ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk  20 10 90 20  5 4)
+#add_test(SLS-VTK-ICP-Purturb-6 ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk  20 10 90 20  5 6)
+#add_test(SLS-VTK-ICP-Purturb-8 ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk  20 10 90 20  5 8)
+#add_test(SLS-VTK-ICP-Purturb-10 ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointTest ${INPUT_DATA}/liver.vtk ${INPUT_DATA}/liver.vtk 20 10 90 20  5 10)
+#add_test(SLS-VTK-ICP-Rep-Test ${VTK_INTEGRATION_TESTS} niftkVTKIterativeClosestPointTargettingTest ${INPUT_DATA}/maskedliver.vtk ${INPUT_DATA}/liver.vtk 1000 10 10 10 1 1 160 80 160 3.0 10.0)

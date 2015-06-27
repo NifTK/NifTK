@@ -28,6 +28,7 @@
 #include <vtkVersion.h>
 #include <vtkMath.h>
 #include <sstream>
+#include <cstdlib>
 
 namespace niftk {
 
@@ -241,11 +242,50 @@ void TranslatePolyData(vtkPolyData* polydata, vtkTransform * transform)
 
 
 //-----------------------------------------------------------------------------
+void PerturbPolyDataAlongNormal(vtkPolyData * polydata,
+  double stdDev, vtkRandomSequence * rng)
+{
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  points->ShallowCopy(polydata->GetPoints());
+
+  vtkDataArray* normals = polydata->GetPointData()->GetNormals();
+  double *n;
+  double p[3];
+
+  double offset;
+  vtkSmartPointer<vtkMinimalStandardRandomSequence> uniRand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+  uniRand->SetSeed(2);
+  vtkIdType pointId = 0;
+
+  for(vtkIdType i = 0; i < points->GetNumberOfPoints(); i++)
+  {
+    // Choosing a random point id.
+    uniRand->Next();
+    pointId = static_cast<vtkIdType>((uniRand->GetValue() * (points->GetNumberOfPoints()-1)));
+
+    points->GetPoint(pointId, p);
+    n = normals->GetTuple3(pointId);
+
+    rng->Next();
+    offset = NormalisedRNG(rng) * stdDev ;
+
+    p[0] += n[0]*offset;
+    p[1] += n[1]*offset;
+    p[2] += n[2]*offset;
+
+    points->SetPoint(pointId, p);
+  }
+  polydata->SetPoints(points);
+}
+
+
+//-----------------------------------------------------------------------------
 void PerturbPolyData(vtkPolyData* polydata,
     double xerr, double yerr, double zerr, vtkRandomSequence* rng)
 {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   points->ShallowCopy(polydata->GetPoints());
+
   for(vtkIdType i = 0; i < points->GetNumberOfPoints(); i++)
   {
     double p[3];

@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(niftkNVidia
   EXPORT_DEFINE NIFTKNVIDIA_EXPORT
   INCLUDE_DIRS DataSources
-  DEPENDS niftkIGI niftkIGIDataSources
+  DEPENDS niftkIGIDataSources
 )
 
 target_link_libraries(niftkNVidia

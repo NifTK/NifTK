@@ -22,7 +22,7 @@ set(CPP_FILES
   Common/mitkMIDASImageUtils.cxx
   Common/mitkMIDASOrientationUtils.cxx
   Common/mitkPointUtils.cxx
-  Common/mitkMathsUtils.cxx
+  Common/mitkMergePointClouds.cxx
   DataManagement/mitkDataNodeBoolPropertyFilter.cxx
   DataManagement/mitkDataNodeStringPropertyFilter.cxx
   DataManagement/mitkDataStorageUtils.cxx

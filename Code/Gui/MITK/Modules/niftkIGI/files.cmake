@@ -17,11 +17,7 @@ set(CPP_FILES
   TrackedImage/mitkTrackedImage.cxx
   TrackedPointer/mitkTrackedPointer.cxx
   Utils/mitkMakeGeometry.cxx
-  PointClouds/mitkMergePointClouds.cxx
-  CentreLines/mitkBifurcationToPointSet.cxx
   Rendering/mitkImage2DToTexturePlaneMapper3D.cxx
   Rendering/vtkCalibratedModelRenderingPipeline.cxx
-  MicroServices/niftkPointRegServiceI.cxx
-  MicroServices/niftkPointRegServiceRAII.cxx
 )
 

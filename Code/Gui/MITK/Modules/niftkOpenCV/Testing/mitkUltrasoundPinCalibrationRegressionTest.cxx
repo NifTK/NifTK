@@ -22,8 +22,8 @@
 #include <mitkUltrasoundPinCalibration.h>
 #include <mitkVector.h>
 #include <mitkOpenCVMaths.h>
-#include <mitkMathsUtils.h>
 #include <mitkOpenCVFileIOUtils.h>
+#include <niftkMathsUtils.h>
 
 /**
  * \class UltrasoundPinCalibrationRegressionTest
@@ -111,10 +111,10 @@ public:
     {
       for (int j = 0; j < 4; j++)
       {
-        MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(comparisonMatrix(i, j) - calibrationMatrix(i, j)),0.05), "Checking element " << i << ", " << j << " is correct, expecting " << comparisonMatrix(i,j) << ", but got " << calibrationMatrix(i, j));
+        MITK_TEST_CONDITION_REQUIRED(niftk::IsCloseToZero(fabs(comparisonMatrix(i, j) - calibrationMatrix(i, j)),0.05), "Checking element " << i << ", " << j << " is correct, expecting " << comparisonMatrix(i,j) << ", but got " << calibrationMatrix(i, j));
       }
     }
-    MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(fabs(0.486643 - residualError),0.001), "Checking residual error is correct, expecting " << 0.486643 << ", but got " << residualError);
+    MITK_TEST_CONDITION_REQUIRED(niftk::IsCloseToZero(fabs(0.486643 - residualError),0.001), "Checking residual error is correct, expecting " << 0.486643 << ", but got " << residualError);
     MITK_TEST_OUTPUT(<< "Finished DoCalibration...");
   }
 };

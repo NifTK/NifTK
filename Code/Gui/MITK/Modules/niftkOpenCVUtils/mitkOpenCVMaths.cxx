@@ -17,8 +17,8 @@
 #include <numeric>
 #include <algorithm>
 #include <functional>
-#include <mitkMathsUtils.h>
 #include <mitkExceptionMacro.h>
+#include <niftkMathsUtils.h>
 #include <niftkVTKFunctions.h>
 
 namespace mitk {
@@ -144,9 +144,9 @@ bool DoSVDPointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
   bool haveTriedToFixDeterminantIssue = false;
 
   if ( detX < 0
-       && (   IsCloseToZero(svd.w.at<double>(0,0))
-           || IsCloseToZero(svd.w.at<double>(1,1))
-           || IsCloseToZero(svd.w.at<double>(2,2))
+       && (   niftk::IsCloseToZero(svd.w.at<double>(0,0))
+           || niftk::IsCloseToZero(svd.w.at<double>(1,1))
+           || niftk::IsCloseToZero(svd.w.at<double>(2,2))
           )
      )
   {
@@ -2038,19 +2038,19 @@ double DistanceBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
 cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix)
 {
   cv::Mat q = cvCreateMat(4,1,CV_64FC1);
-  q.at<double>(0,0) = 0.5 * SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) -
+  q.at<double>(0,0) = 0.5 * niftk::SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) -
   dc_Matrix.at<double>(1,1) - dc_Matrix.at<double>(2,2) ) *
-  ModifiedSignum ( dc_Matrix.at<double>(1,2) - dc_Matrix.at<double>(2,1));
+  niftk::ModifiedSignum ( dc_Matrix.at<double>(1,2) - dc_Matrix.at<double>(2,1));
 
-  q.at<double>(1,0) = 0.5 * SafeSQRT ( 1 - dc_Matrix.at<double>(0,0) +
+  q.at<double>(1,0) = 0.5 * niftk::SafeSQRT ( 1 - dc_Matrix.at<double>(0,0) +
   dc_Matrix.at<double>(1,1) - dc_Matrix.at<double>(2,2) ) *
-  ModifiedSignum ( dc_Matrix.at<double>(2,0) - dc_Matrix.at<double>(0,2));
+  niftk::ModifiedSignum ( dc_Matrix.at<double>(2,0) - dc_Matrix.at<double>(0,2));
 
-  q.at<double>(2,0) = 0.5 * SafeSQRT ( 1 - dc_Matrix.at<double>(0,0) -
+  q.at<double>(2,0) = 0.5 * niftk::SafeSQRT ( 1 - dc_Matrix.at<double>(0,0) -
   dc_Matrix.at<double>(1,1) + dc_Matrix.at<double>(2,2) ) *
-  ModifiedSignum ( dc_Matrix.at<double>(0,1) - dc_Matrix.at<double>(1,0));
+  niftk::ModifiedSignum ( dc_Matrix.at<double>(0,1) - dc_Matrix.at<double>(1,0));
 
-  q.at<double>(3,0) = 0.5 * SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) +
+  q.at<double>(3,0) = 0.5 * niftk::SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) +
   dc_Matrix.at<double>(1,1) + dc_Matrix.at<double>(2,2) );
 
   return q;

@@ -89,10 +89,10 @@ double PointAndNormalBasedRegistrationUsingSVD(const std::vector<cv::Point3d>& f
 
 
 //-----------------------------------------------------------------------------
-double PointAndNormalBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fixedPoints,
-                                               const mitk::PointSet::Pointer& fixedNormals,
-                                               const mitk::PointSet::Pointer& movingPoints,
-                                               const mitk::PointSet::Pointer& movingNormals,
+double PointAndNormalBasedRegistrationUsingSVD(const mitk::PointSet::Pointer fixedPoints,
+                                               const mitk::PointSet::Pointer fixedNormals,
+                                               const mitk::PointSet::Pointer movingPoints,
+                                               const mitk::PointSet::Pointer movingNormals,
                                                vtkMatrix4x4& matrix)
 {
   if (fixedPoints.IsNull())

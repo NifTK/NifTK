@@ -12,9 +12,16 @@
 #
 #============================================================================*/
 
+##############################################################################
+# Note: As a 'Service Only' Module, this module should only depend on
+# niftkIGIServices and niftkPointReg. It should not be necessary to add
+# any other module dependencies. Extra dependencies could/should be added
+# to niftkPointReg.
+##############################################################################
+
 MITK_CREATE_MODULE(niftkPointRegService
-  DEPENDS niftkIGI niftkPointReg
-  AUTOLOAD_WITH niftkIGI
+  DEPENDS niftkIGIServices niftkPointReg
+  AUTOLOAD_WITH niftkIGIServices
   PACKAGE_DEPENDS
 )
 

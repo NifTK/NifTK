@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(niftkIGIGui
   EXPORT_DEFINE NIFTKIGIGUI_EXPORT
   INCLUDE_DIRS Common OverlayEditor
-  DEPENDS MitkQtWidgetsExt MitkIGTUI niftkCoreGui niftkIGI niftkOpenCV
+  DEPENDS MitkQtWidgetsExt MitkIGTUI niftkCoreGui niftkIGI
   PACKAGE_DEPENDS Qt4|QtGui QVTK NiftyLink
 )
 

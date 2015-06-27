@@ -195,8 +195,8 @@ int main(int argc, char** argv)
   }
 
   niftk::VTKIterativeClosestPoint * icp = new niftk::VTKIterativeClosestPoint();
-  icp->SetMaxLandmarks(args.maxPoints);
-  icp->SetMaxIterations(args.maxIterations);
+  icp->SetICPMaxLandmarks(args.maxPoints);
+  icp->SetICPMaxIterations(args.maxIterations);
   icp->SetSource(source);
   icp->SetTarget(target);
 

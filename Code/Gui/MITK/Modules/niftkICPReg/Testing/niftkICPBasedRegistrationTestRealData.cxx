@@ -15,7 +15,7 @@
 #include <cstdlib>
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <mitkTestingMacros.h>
-#include <niftkSurfaceBasedRegistration.h>
+#include <niftkICPBasedRegistration.h>
 #include <mitkDataStorage.h>
 #include <mitkIOUtil.h>
 #include <mitkCoordinateAxesData.h>
@@ -40,11 +40,11 @@ bool MatrixOK ( vtkMatrix4x4 * matrix )
   return true;
 }
 
-int niftkSurfaceBasedRegistrationTestRealData(int argc, char* argv[])
+int niftkICPBasedRegistrationTestRealData(int argc, char* argv[])
 {
   if (argc != 5)
   {
-    std::cerr << "Usage: mitkSurfaceBasedRegistrationTestRealData points.vtp/.mps surface.vtp maxiterations numberOfPoints" << std::endl;
+    std::cerr << "Usage: niftkICPBasedRegistrationTestRealData points.vtp/.mps surface.vtp maxiterations numberOfPoints" << std::endl;
     std::cerr << " argc=" << argc << std::endl;
     for (int i = 0; i < argc; ++i)
     {
@@ -84,7 +84,7 @@ int niftkSurfaceBasedRegistrationTestRealData(int argc, char* argv[])
   movingnode->SetData(movingSurface);
 
   vtkSmartPointer<vtkMatrix4x4> resultMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  niftk::SurfaceBasedRegistration::Pointer registerer = niftk::SurfaceBasedRegistration::New();
+  niftk::ICPBasedRegistration::Pointer registerer = niftk::ICPBasedRegistration::New();
   registerer->SetMaximumIterations(MaxIterations);
   registerer->SetMaximumNumberOfLandmarkPointsToUse(MaxLandmarks);
   registerer->Update(fixednode, movingnode, *resultMatrix);

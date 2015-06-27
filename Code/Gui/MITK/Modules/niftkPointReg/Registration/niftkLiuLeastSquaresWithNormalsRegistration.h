@@ -57,10 +57,10 @@ double PointAndNormalBasedRegistrationUsingSVD(const std::vector<cv::Point3d>& f
 * must be in the right order, and corresponding.
 */
 extern "C++" NIFTKPOINTREG_EXPORT
-double PointAndNormalBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fixedPoints,
-                                               const mitk::PointSet::Pointer& fixedNormals,
-                                               const mitk::PointSet::Pointer& movingPoints,
-                                               const mitk::PointSet::Pointer& movingNormals,
+double PointAndNormalBasedRegistrationUsingSVD(const mitk::PointSet::Pointer fixedPoints,
+                                               const mitk::PointSet::Pointer fixedNormals,
+                                               const mitk::PointSet::Pointer movingPoints,
+                                               const mitk::PointSet::Pointer movingNormals,
                                                vtkMatrix4x4& matrix);
 
 } // end namespace
