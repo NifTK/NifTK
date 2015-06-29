@@ -40,9 +40,9 @@ struct ScopedCUDADevice
 
 
 /**
- * Holds information necessary to read from a LightweightCUDAImage.
- * @see CUDAManager::RequestReadAccess
- */
+* Holds information necessary to read from a LightweightCUDAImage.
+* @see CUDAManager::RequestReadAccess
+*/
 struct ReadAccessor
 {
   const void*     m_DevicePointer;
@@ -58,10 +58,10 @@ struct ReadAccessor
 
 
 /**
- * Holds information necessary to write into a CUDA memory block
- * representing an image.
- * @see CUDAManager::RequestOutputImage
- */
+* Holds information necessary to write into a CUDA memory block
+* representing an image.
+* @see CUDAManager::RequestOutputImage
+*/
 struct WriteAccessor
 {
   void*           m_DevicePointer;
@@ -85,38 +85,38 @@ struct StreamCallbackReleasePOD;
 
 
 /**
- * Singleton that owns all CUDA resources.
- * It manages images in a copy-on-write like fashion: you cannot write into an existing
- * CUDA-image, you can only read from these and write data into a newly allocated one.
- *
- * To get access to an image living on the card, do the usual DataNode::GetData(), and a
- * cast to CUDAImage. Then call CUDAImage::GetLightweightCUDAImage() to retrieve a handle
- * to the actual bits in CUDA-memory.
- * Side note: even though LightweightCUDAImage has members you should consider it opaque.
- *
- * This LightweightCUDAImage instance you can use with RequestReadAccess() to obtain a device
- * pointer that you can read from in your kernel.
- * RequestReadAccess() will increment a reference count for that image so that CUDAManager
- * will not recycle it too early.
- *
- * Then call RequestOutputImage() to get a device pointer to where you can write your kernel's
- * output. From an API point of view, RequestOutputImage() will always give you a new memory
- * block so that you never overwrite an existing image.
- *
- * Call GetStream() with your favourite name, or create your own stream, for synchronising and
- * coarse-grain parallelising CUDA tasks.
- *
- * Run your kernel on your stream. But do not synchronise on its completion!
- *
- * When all your work has been submitted to the driver, call FinaliseAndAutorelease() to turn
- * the output device pointer into a proper LightweightCUDAImage that you can stick onto a
- * DataNode. This function will also release your read-request on the input image at the right time
- * so that it can be eventually returned to the memory pool.
- * In addition, Finalise*() functions will queue a "ready" event that you can use on your stream to
- * GPU-synchronise on completion of a previous processing step.
- *
- * CUDAManager is thread-safe: all public methods can be called from any thread at any time.
- */
+* Singleton that owns all CUDA resources.
+* It manages images in a copy-on-write like fashion: you cannot write into an existing
+* CUDA-image, you can only read from these and write data into a newly allocated one.
+*
+* To get access to an image living on the card, do the usual DataNode::GetData(), and a
+* cast to CUDAImage. Then call CUDAImage::GetLightweightCUDAImage() to retrieve a handle
+* to the actual bits in CUDA-memory.
+* Side note: even though LightweightCUDAImage has members you should consider it opaque.
+*
+* This LightweightCUDAImage instance you can use with RequestReadAccess() to obtain a device
+* pointer that you can read from in your kernel.
+* RequestReadAccess() will increment a reference count for that image so that CUDAManager
+* will not recycle it too early.
+*
+* Then call RequestOutputImage() to get a device pointer to where you can write your kernel's
+* output. From an API point of view, RequestOutputImage() will always give you a new memory
+* block so that you never overwrite an existing image.
+*
+* Call GetStream() with your favourite name, or create your own stream, for synchronising and
+* coarse-grain parallelising CUDA tasks.
+*
+* Run your kernel on your stream. But do not synchronise on its completion!
+*
+* When all your work has been submitted to the driver, call FinaliseAndAutorelease() to turn
+* the output device pointer into a proper LightweightCUDAImage that you can stick onto a
+* DataNode. This function will also release your read-request on the input image at the right time
+* so that it can be eventually returned to the memory pool.
+* In addition, Finalise*() functions will queue a "ready" event that you can use on your stream to
+* GPU-synchronise on completion of a previous processing step.
+*
+* CUDAManager is thread-safe: all public methods can be called from any thread at any time.
+*/
 class NIFTKCUDA_EXPORT CUDAManager : public QThread
 {
   friend class LightweightCUDAImage;
@@ -124,9 +124,9 @@ class NIFTKCUDA_EXPORT CUDAManager : public QThread
 
 public:
   /**
-   *
-   * @throws std::runtime_error if CUDA is not available on the system.
-   */
+  *
+  * @throws std::runtime_error if CUDA is not available on the system.
+  */
   static CUDAManager* GetInstance();
 
 
@@ -136,8 +136,8 @@ public:
   cudaStream_t GetStream(const std::string& name);
 
   /**
-   * @throws std::runtime_error if lwci is not valid.
-   */
+  * @throws std::runtime_error if lwci is not valid.
+  */
   ReadAccessor RequestReadAccess(const LightweightCUDAImage& lwci);
 
   WriteAccessor RequestOutputImage(unsigned int width, unsigned int height, int FIXME_pixeltype);
@@ -148,15 +148,18 @@ public:
   LightweightCUDAImage Finalise(WriteAccessor& writeAccessor, cudaStream_t stream);
 
   /**
-   * Combines Finalise() and Autorelease() into a single call.
-   */
-  LightweightCUDAImage FinaliseAndAutorelease(WriteAccessor& writeAccessor, ReadAccessor& readAccessor, cudaStream_t stream);
+  * Combines Finalise() and Autorelease() into a single call.
+  */
+  LightweightCUDAImage FinaliseAndAutorelease(
+      WriteAccessor& writeAccessor,
+      ReadAccessor& readAccessor,
+      cudaStream_t stream);
 
   /**
-   * Releases the read-request of an image once processing on stream has finished.
-   * This method does not block, it will return immediately.
-   * Make sure you call this method after Finalise(), or use FinaliseAndAutorelease().
-   */
+  * Releases the read-request of an image once processing on stream has finished.
+  * This method does not block, it will return immediately.
+  * Make sure you call this method after Finalise(), or use FinaliseAndAutorelease().
+  */
   void Autorelease(ReadAccessor& readAccessor, cudaStream_t stream);
 
 
@@ -191,26 +194,26 @@ private:
 
 
   /**
-   * Called by the CUDA driver when work has finished.
-   * The callback is queued by FinaliseAndAutorelease() to release an image.
-   * Note: this callback will block work on the stream, therefore the image-ready-events are
-   * triggered before the callback so that work on other streams can proceed in parallel.
-   * @internal
-   */
+  * Called by the CUDA driver when work has finished.
+  * The callback is queued by FinaliseAndAutorelease() to release an image.
+  * Note: this callback will block work on the stream, therefore the image-ready-events are
+  * triggered before the callback so that work on other streams can proceed in parallel.
+  * @internal
+  */
   static void CUDART_CB AutoReleaseStreamCallback(cudaStream_t stream, cudaError_t status, void* userData);
 
 
   /**
-   * Called by StreamCallback (which in turn is triggered by FinaliseAndAutorelease()) to "release"
-   * a previously requested image.
-   * @internal
-   */
+  * Called by StreamCallback (which in turn is triggered by FinaliseAndAutorelease()) to "release"
+  * a previously requested image.
+  * @internal
+  */
   void ReleaseReadAccess(unsigned int id);
 
   /**
-   * Called at opportune moments to free up items on m_AutoreleaseQueue.
-   * @internal
-   */
+  * Called at opportune moments to free up items on m_AutoreleaseQueue.
+  * @internal
+  */
   void ProcessAutoreleaseQueue();
 
 
