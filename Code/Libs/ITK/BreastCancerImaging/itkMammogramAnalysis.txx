@@ -158,9 +158,13 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
   if ( pathname.has_branch_path() )
   {
-    std::cout << "Creating directory: " << pathname.branch_path().string()
-              << std::endl;
-    niftk::CreateDirAndParents( pathname.branch_path().string() );
+    std::string dirFullPath;
+    dirFullPath = niftk::ConvertToFullNativePath( pathname.branch_path().string() );
+    std::cout << "Creating directory: " << dirFullPath << std::endl;
+    if ( ! niftk::CreateDirAndParents( pathname.branch_path().string() ) )
+    {
+      itkExceptionMacro( << "ERROR: Failed to create directory: " << dirFullPath );      
+    }
   }
   else
   {
@@ -1262,6 +1266,13 @@ typename MammogramAnalysis< InputPixelType, InputDimension >::ImageType::Pointer
 MammogramAnalysis< InputPixelType, InputDimension >
 ::DrawTumourRegion( typename ImageType::Pointer image )
 {
+
+  if ( ! image )
+  {
+    std::cout << "WARNING: Cannot draw tumour region, image is not set" << std::endl;
+    return 0;
+  }
+
   typename ImageType::RegionType tumourRegion;
   typename ImageType::IndexType tumourStart;
   typename ImageType::SizeType tumourSize;

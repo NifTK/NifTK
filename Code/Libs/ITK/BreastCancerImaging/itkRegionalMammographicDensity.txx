@@ -159,7 +159,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 // --------------------------------------------------------------------------
 
 template <class InputPixelType, unsigned int InputDimension>
-void
+bool
 RegionalMammographicDensity< InputPixelType, InputDimension >
 ::Compute()
 {
@@ -222,6 +222,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
         std::cerr << "ERROR: Could not read file: "
                   << fileMask << std::endl << ex << std::endl;
         throw( ex );
+        return false;
       }
 
       this->m_ImDiagnosticMask = reader->GetOutput();
@@ -248,6 +249,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
             std::cerr << "ERROR: Could not read file: "
                       << this->m_FileDiagnosticRegnMask << std::endl << ex << std::endl;
             throw( ex );
+            return false;
           }
 
           this->m_ImDiagnosticRegnMask = reader->GetOutput();
@@ -256,6 +258,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
         else
         {
           itkExceptionMacro( << "ERROR: Cannot read diagnostic registration mask: " << this->m_FileDiagnosticRegnMask );
+          return false;
         }
       }
     }
@@ -294,6 +297,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
         std::cerr << "ERROR: Could not read file: "
                   << fileMask << std::endl << ex << std::endl;
         throw( ex );
+        return false;
       }
 
       this->m_ImPreDiagnosticMask = reader->GetOutput();
@@ -320,6 +324,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
             std::cerr << "ERROR: Could not read file: "
                       << fileRegnMask << std::endl << ex << std::endl;
             throw( ex );
+            return false;
           }
 
           this->m_ImPreDiagnosticRegnMask = reader->GetOutput();
@@ -328,6 +333,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
         else
         {
           itkExceptionMacro( << "ERROR: Cannot read pre-diagnostic registration mask: " << fileRegnMask );
+          return false;
         }
       }
     }
@@ -366,6 +372,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
         std::cerr << "ERROR: Could not read file: "
                   << fileMask << std::endl << ex << std::endl;
         throw( ex );
+        return false;
       }
 
       this->m_ImControlMask = reader->GetOutput();
@@ -392,6 +399,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
             std::cerr << "ERROR: Could not read file: "
                       << fileRegnMask << std::endl << ex << std::endl;
             throw( ex );
+            return false;
           }
 
           this->m_ImControlRegnMask = reader->GetOutput();
@@ -400,6 +408,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
         else
         {
           itkExceptionMacro( << "ERROR: Cannot read control registration mask: " << fileRegnMask );
+          return false;
         }
       }
     }
@@ -551,6 +560,8 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
                                this->m_ImControlLabels, this->m_ControlTumourRegion,
                                this->m_ControlDictionary );
   }
+
+  return true;
 };
 
 

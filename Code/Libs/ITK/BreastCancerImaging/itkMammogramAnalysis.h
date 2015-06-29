@@ -375,7 +375,7 @@ public:
 
   void WriteDataToCSVFile( std::ofstream *foutOutputDensityCSV );
 
-  virtual void Compute() {};
+  virtual bool Compute() { return false; };
 
 protected:
 

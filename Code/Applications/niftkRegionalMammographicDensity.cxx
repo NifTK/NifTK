@@ -725,7 +725,13 @@ int main(int argc, char** argv)
 
     try
     {
-      (*itPatient)->Compute();
+      if ( ! (*itPatient)->Compute() )
+      {
+        std::cerr << "WARNING: Could not compute patient: " << iFile << std::endl;
+
+        (*itPatient)->UnloadImages();
+        continue;
+      }        
     }
 
     catch (itk::ExceptionObject &ex)
