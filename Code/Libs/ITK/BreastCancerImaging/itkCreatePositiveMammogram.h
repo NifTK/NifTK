@@ -25,6 +25,7 @@
 #include <itkMinimumMaximumImageCalculator.h>
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkLogNonZeroIntensitiesImageFilter.h>
+#include <itkCastImageFilter.h>
 
 namespace itk
 {
