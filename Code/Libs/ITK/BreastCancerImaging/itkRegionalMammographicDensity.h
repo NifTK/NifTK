@@ -59,7 +59,7 @@ public:
 
   typedef typename Superclass::LeftOrRightSideCalculatorType LeftOrRightSideCalculatorType;
 
-  void Compute();
+  bool Compute( void );
 
 protected:
 

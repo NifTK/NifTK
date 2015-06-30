@@ -161,7 +161,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 template <class InputPixelType, unsigned int InputDimension>
 bool
 RegionalMammographicDensity< InputPixelType, InputDimension >
-::Compute()
+::Compute( void )
 {
   std::string fileMask;
   std::string fileRegnMask;
