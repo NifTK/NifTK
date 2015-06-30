@@ -144,7 +144,7 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
 template <class InputPixelType, unsigned int InputDimension>
 bool
 MammographicTumourDistribution< InputPixelType, InputDimension >
-::Compute()
+::Compute( void )
 {
   std::string fileMask;
   std::string fileRegnMask;

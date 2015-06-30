@@ -68,7 +68,7 @@ public:
   void WriteDataToCSVFile( std::ofstream *foutCSV );
 
   // Returns false is failed to complete
-  bool Compute();
+  bool Compute( void );
 
 protected:
 
