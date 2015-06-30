@@ -367,15 +367,25 @@ public:
 
   void Print( bool flgVerbose = false );
 
+  std::vector< PointOnBoundary > *GetBreastEdgeCoords( std::string strBreastEdgeImageID );
+
+  void SetBreastEdgeCoords( std::string strBreastEdgeImageID,
+                            std::vector< PointOnBoundary > *edgeCoords );
+
   void PushBackBreastEdgeCoord( std::string strBreastEdgeImageID,
                                 int id, int x, int y );
+
+  std::vector< PointOnBoundary > *GetPectoralCoords( std::string strPectoralImageID );
+
+  void SetPectoralCoords( std::string strPectoralImageID,
+                          std::vector< PointOnBoundary > *pecCoords );
 
   void PushBackPectoralCoord( std::string strPectoralImageID,
                               int id, int x, int y );
 
   void WriteDataToCSVFile( std::ofstream *foutOutputDensityCSV );
 
-  virtual bool Compute() { return false; };
+  virtual bool Compute( void ) { return false; };
 
 protected:
 
