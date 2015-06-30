@@ -765,11 +765,22 @@ int main(int argc, char** argv)
   // Set the control data for each patient
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( flgDebug )
+  for ( itPatient = listOfPatients.begin();
+        itPatient != listOfPatients.end();
+        itPatient++ )
   {
-    for ( itPatient = listOfPatients.begin();
-	  itPatient != listOfPatients.end();
-	  itPatient++ )
+    TumourDistribType::Pointer patient = (*itPatient);
+    
+    if ( patient != reference )
+    {
+      patient->SetBreastEdgeCoords( reference->GetIDControlImage(), 
+                                    reference->GetBreastEdgeCoords(reference->GetIDControlImage()) );
+      
+      patient->SetPectoralCoords( reference->GetIDControlImage(), 
+                                  reference->GetPectoralCoords(reference->GetIDControlImage()) );
+    }
+    
+    if ( flgDebug )
     {
       (*itPatient)->Print();
     }
