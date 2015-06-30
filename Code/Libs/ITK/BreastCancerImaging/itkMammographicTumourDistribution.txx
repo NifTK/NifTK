@@ -142,9 +142,9 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
 // --------------------------------------------------------------------------
 
 template <class InputPixelType, unsigned int InputDimension>
-void
+bool
 MammographicTumourDistribution< InputPixelType, InputDimension >
-::Compute()
+::Compute( void )
 {
   std::string fileMask;
   std::string fileRegnMask;
@@ -332,18 +332,36 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
 
   // Register the images
 
-  RunRegistration();
+  if ( this->m_ImDiagnostic && this->m_ImControl )
+  {
+    RunRegistration();
+  }
+  else
+  {
+    std::cerr << "WARNING: Diagnostic and control images are not both set, " << std::endl
+              << "         aborting processing for this patient."
+              << std::endl;
+    return false;
+  }
 
   // Save the diagnostic image with the tumour region inverted
 
   typename ImageType::Pointer imTumour = this->DrawTumourRegion( this->m_ImDiagnostic );
 
-  this->template CastImageAndWriteToFile< unsigned char >( this->m_FileDiagnostic,
-							   std::string( "_Tumour.jpg" ),
-							   "diagnostic tumour image",
-							   imTumour,
-							   this->m_DiagDictionary );
-
+  if ( imTumour )
+  {
+    this->template CastImageAndWriteToFile< unsigned char >( this->m_FileDiagnostic,
+                                                             std::string( "_Tumour.jpg" ),
+                                                             "diagnostic tumour image",
+                                                             imTumour,
+                                                             this->m_DiagDictionary );
+  }
+  else
+  {
+    std::cerr << "WARNING: No diagnostic tumour region, aborting processing for this patient"
+              << std::endl;
+    return false;
+  }
 
 
   // Compute the tumour location in the control image
@@ -390,6 +408,7 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
   {
     std::cerr << "ERROR: Could not open CSV output file: "
 	      << fileDiagnosticCSV << std::endl;
+    return false;
   }
   else
   {
@@ -399,6 +418,7 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
 
   WriteDataToCSVFile( m_foutOutputCSV );
 
+  return true;
 };
 
 

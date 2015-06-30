@@ -33,7 +33,6 @@
       <longflag>om</longflag>
       <description>Output mask image</description>      
       <label>Output mask</label>
-      <default>outputMask.nii</default>
       <channel>output</channel>
     </image>
 
@@ -43,7 +42,6 @@
       <longflag>outputImage</longflag>
       <description>Output image</description>      
       <label>Output image</label>
-      <default>outputMasked.nii</default>
       <channel>output</channel>
     </image>
 

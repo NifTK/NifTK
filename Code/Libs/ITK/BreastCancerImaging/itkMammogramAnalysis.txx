@@ -158,9 +158,13 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
   if ( pathname.has_branch_path() )
   {
-    std::cout << "Creating directory: " << pathname.branch_path().string()
-              << std::endl;
-    niftk::CreateDirAndParents( pathname.branch_path().string() );
+    std::string dirFullPath;
+    dirFullPath = niftk::ConvertToFullNativePath( pathname.branch_path().string() );
+    std::cout << "Creating directory: " << dirFullPath << std::endl;
+    if ( ! niftk::CreateDirAndParents( pathname.branch_path().string() ) )
+    {
+      itkExceptionMacro( << "ERROR: Failed to create directory: " << dirFullPath );      
+    }
   }
   else
   {
@@ -956,6 +960,66 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
 
 // --------------------------------------------------------------------------
+// GetBreastEdgeCoords()
+// --------------------------------------------------------------------------
+
+template <class InputPixelType, unsigned int InputDimension>
+std::vector< PointOnBoundary > *
+MammogramAnalysis< InputPixelType, InputDimension >
+::GetBreastEdgeCoords( std::string strBreastEdgeImageID )
+{
+  if ( strBreastEdgeImageID == m_IdDiagnosticImage )
+  {
+    return &m_DiagBreastEdgePoints;
+  }
+  else if ( strBreastEdgeImageID == m_IdPreDiagnosticImage )
+  {
+    return &m_PreDiagBreastEdgePoints;
+  }
+  else if ( strBreastEdgeImageID == m_IdControlImage )
+  {
+    return &m_ControlBreastEdgePoints;
+  }
+  else
+  {
+    itkExceptionMacro( << "ERROR: This patient doesn't have an image with id: "
+                       << strBreastEdgeImageID );
+    return 0;
+  }
+}
+
+
+// --------------------------------------------------------------------------
+// SetBreastEdgeCoords()
+// --------------------------------------------------------------------------
+
+template <class InputPixelType, unsigned int InputDimension>
+void
+MammogramAnalysis< InputPixelType, InputDimension >
+::SetBreastEdgeCoords( std::string strBreastEdgeImageID,
+                       std::vector< PointOnBoundary > *edgeCoords )
+{
+  if ( strBreastEdgeImageID == m_IdDiagnosticImage )
+  {
+    m_DiagBreastEdgePoints = *edgeCoords;
+  }
+  else if ( strBreastEdgeImageID == m_IdPreDiagnosticImage )
+  {
+    m_PreDiagBreastEdgePoints = *edgeCoords;
+  }
+  else if ( strBreastEdgeImageID == m_IdControlImage )
+  {
+    m_ControlBreastEdgePoints = *edgeCoords;
+  }
+  else
+  {
+    itkExceptionMacro( << "ERROR: This patient doesn't have an image with id: "
+                       << strBreastEdgeImageID );
+  }
+}
+
+
+// --------------------------------------------------------------------------
 // PushBackBreastEdgeCoord()
 // --------------------------------------------------------------------------
 
@@ -992,6 +1056,66 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
 
 // --------------------------------------------------------------------------
+// GetPectoralCoords()
+// --------------------------------------------------------------------------
+
+template <class InputPixelType, unsigned int InputDimension>
+std::vector< PointOnBoundary > *
+MammogramAnalysis< InputPixelType, InputDimension >
+::GetPectoralCoords( std::string strPectoralImageID )
+{
+  if ( strPectoralImageID == m_IdDiagnosticImage )
+  {
+    return &m_DiagPectoralPoints;
+  }
+  else if ( strPectoralImageID == m_IdPreDiagnosticImage )
+  {
+    return &m_PreDiagPectoralPoints;
+  }
+  else if ( strPectoralImageID == m_IdControlImage )
+  {
+    return &m_ControlPectoralPoints;
+  }
+  else
+  {
+    itkExceptionMacro( << "ERROR: This patient doesn't have an image with id: "
+                       << strPectoralImageID );
+    return 0;
+  }
+}
+
+
+// --------------------------------------------------------------------------
+// SetPectoralCoords()
+// --------------------------------------------------------------------------
+
+template <class InputPixelType, unsigned int InputDimension>
+void
+MammogramAnalysis< InputPixelType, InputDimension >
+::SetPectoralCoords( std::string strPectoralImageID,
+                     std::vector< PointOnBoundary > *pecCoords )
+{
+  if ( strPectoralImageID == m_IdDiagnosticImage )
+  {
+    m_DiagPectoralPoints = *pecCoords;
+  }
+  else if ( strPectoralImageID == m_IdPreDiagnosticImage )
+  {
+    m_PreDiagPectoralPoints = *pecCoords;
+  }
+  else if ( strPectoralImageID == m_IdControlImage )
+  {
+    m_ControlPectoralPoints = *pecCoords;
+  }
+  else
+  {
+    itkExceptionMacro( << "ERROR: This patient doesn't have an image with id: "
+                       << strPectoralImageID );
+  }
+}
+
+
+// --------------------------------------------------------------------------
 // PushBackPectoralCoord()
 // --------------------------------------------------------------------------
 
@@ -1022,7 +1146,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
   }
   else
   {
-    itkExceptionMacro( << "ERROR: This patient doesn't have and image with id: "
+    itkExceptionMacro( << "ERROR: This patient doesn't have an image with id: "
                        << strPectoralImageID );
   }
 }
@@ -1262,6 +1386,13 @@ typename MammogramAnalysis< InputPixelType, InputDimension >::ImageType::Pointer
 MammogramAnalysis< InputPixelType, InputDimension >
 ::DrawTumourRegion( typename ImageType::Pointer image )
 {
+
+  if ( ! image )
+  {
+    std::cout << "WARNING: Cannot draw tumour region, image is not set" << std::endl;
+    return 0;
+  }
+
   typename ImageType::RegionType tumourRegion;
   typename ImageType::IndexType tumourStart;
   typename ImageType::SizeType tumourSize;

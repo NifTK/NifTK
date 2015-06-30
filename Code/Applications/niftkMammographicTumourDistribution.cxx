@@ -181,8 +181,34 @@ int main(int argc, char** argv)
   }
 
 
+  // Create the output directory?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( ! niftk::CreateDirAndParents( dirOutput ) )
+  {
+    std::cerr << "ERROR: Failed to create directory: " << dirOutput << std::endl;      
+    return EXIT_FAILURE;
+  }
+  
+
+
   // Open the output CSV file
   // ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  fs::path pathOutputCSV( fileOutputCSV );
+
+  if ( pathOutputCSV.has_branch_path() )
+  {
+    std::string dirOutputCSV;
+    dirOutputCSV = niftk::ConvertToFullNativePath( pathOutputCSV.branch_path().string() );
+    std::cout << "Creating directory: " << dirOutputCSV << std::endl;
+    if ( ! niftk::CreateDirAndParents( pathOutputCSV.branch_path().string() ) )
+    {
+      std::cerr << "ERROR: Failed to create directory: " << dirOutputCSV << std::endl;      
+      return EXIT_FAILURE;
+    }
+  }
+  
 
   if ( fileOutputCSV.length() != 0 ) {
     foutOutputCSV
@@ -739,11 +765,22 @@ int main(int argc, char** argv)
   // Set the control data for each patient
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( flgDebug )
+  for ( itPatient = listOfPatients.begin();
+        itPatient != listOfPatients.end();
+        itPatient++ )
   {
-    for ( itPatient = listOfPatients.begin();
-	  itPatient != listOfPatients.end();
-	  itPatient++ )
+    TumourDistribType::Pointer patient = (*itPatient);
+    
+    if ( patient != reference )
+    {
+      patient->SetBreastEdgeCoords( reference->GetIDControlImage(), 
+                                    reference->GetBreastEdgeCoords(reference->GetIDControlImage()) );
+      
+      patient->SetPectoralCoords( reference->GetIDControlImage(), 
+                                  reference->GetPectoralCoords(reference->GetIDControlImage()) );
+    }
+    
+    if ( flgDebug )
     {
       (*itPatient)->Print();
     }
@@ -817,7 +854,13 @@ int main(int argc, char** argv)
 
     try
     {
-      (*itPatient)->Compute();
+      if ( ! (*itPatient)->Compute() )
+      {
+        std::cerr << "WARNING: Could not compute patient: " << iFile << std::endl;
+
+        (*itPatient)->UnloadImages();
+        continue;
+      }        
     }
 
     catch (itk::ExceptionObject &ex)
