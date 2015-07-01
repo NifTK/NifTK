@@ -2249,8 +2249,6 @@ MammogramAnalysis< InputPixelType, InputDimension >
 {
   if ( fileInput.length() )
   {
-    CreateDirectoryAndParents( fileInput );
-
     typedef typename itk::CastImageFilter< ImageType, OutputImageType > CastFilterType;
 
     typename CastFilterType::Pointer castTargetFilter = CastFilterType::New();
