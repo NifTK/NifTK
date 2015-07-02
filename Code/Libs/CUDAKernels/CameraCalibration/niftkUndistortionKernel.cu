@@ -17,7 +17,6 @@
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 #include <sm_30_intrinsics.h>
-#include <cassert>
 #include <stdexcept>
 #include <fstream>
 #include <cstring>

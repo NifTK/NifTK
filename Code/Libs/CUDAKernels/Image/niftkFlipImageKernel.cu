@@ -17,7 +17,10 @@
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 #include <stdexcept>
+
+#ifdef WIN32
 #include <cassert>
+#endif
 
 namespace niftk
 {
@@ -39,10 +42,12 @@ __global__ void flipimage_kernel(unsigned int* output, int width, int height, in
     int     inx = x;
     int     iny = height - y - 1;
 
+#ifdef WIN32
     assert(iny >= 0);
     assert(iny < height);
     assert(inx >= 0);
     assert(inx < width);
+#endif
 
     unsigned int*   in = &input[inputpitch * iny + inx];
 
@@ -65,7 +70,6 @@ void RunFlipImageKernel(char* output, int widthInBytes, int height, int outputpi
     throw std::runtime_error("Width is larger than pitch");
 
   int   width = (widthInBytes + 3) / 4;
-
 
   // launch config
   dim3  threads(128, 8);

@@ -360,7 +360,7 @@ static bool OffCenterUndistortion()
 }
 
 
-int niftkCUDAKernelsUndistortionTest(int argc, char* argv[])
+int niftkUndistortionKernelTests(int argc, char* argv[])
 {
   bool    result = true;
 

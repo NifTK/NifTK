@@ -12,18 +12,19 @@
 
 =============================================================================*/
 
-#if defined(_MSC_VER)
-#pragma warning ( disable : 4786 )
-#endif
+#ifndef niftkAddTwoIntegers_h
+#define niftkAddTwoIntegers_h
 
-#include <iostream>
-#include <itkTestMain.h>
+#include <niftkCUDAKernelsWin32ExportHeader.h>
 
-void RegisterTests()
+namespace niftk
 {
-  REGISTER_TEST(niftkAddTwoIntegersKernelTests);
-// depends on opencv for validation
-#ifdef BUILD_IGI
-  REGISTER_TEST(niftkUndistortionKernelTests);
+
+/**
+* \brief Pointless minimal function, mainly just to test if anything at all could be run on a device.
+*/
+int NIFTKCUDAKERNELS_WINEXPORT AddTwoIntegers(int a, int b);
+
+} // end namespace
+
 #endif
-}
