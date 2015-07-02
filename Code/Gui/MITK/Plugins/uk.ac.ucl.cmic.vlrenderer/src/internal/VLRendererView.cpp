@@ -47,10 +47,10 @@
 #include <Rendering/SharedOGLContext.h>
 
 #ifdef _USE_CUDA
-#include <CUDAManager/CUDAManager.h>
-#include <CUDAImage/CUDAImage.h>
-#include <CUDAImage/LightweightCUDAImage.h>
-#include <Example/EdgeDetectionKernel.h>
+#include <niftkCUDAManager.h>
+#include <niftkCUDAImage.h>
+#include <niftkLightweightCUDAImage.h>
+#include <Example/niftkEdgeDetectionKernel.h>
 #endif
 
 
@@ -110,10 +110,10 @@ void VLRendererView::CreateQtPartControl(QWidget* parent)
 
     m_Controls->m_BackgroundNode->SetDataStorage(GetDataStorage());
     m_Controls->m_BackgroundNode->SetAutoSelectNewItems(false);
-    mitk::TNodePredicateDataType<mitk::Image>::Pointer    isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+    mitk::TNodePredicateDataType<mitk::Image>::Pointer      isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
 #ifdef _USE_CUDA
-    mitk::TNodePredicateDataType<CUDAImage>::Pointer      isCuda = mitk::TNodePredicateDataType<CUDAImage>::New();
-    mitk::NodePredicateOr::Pointer                        isSuitable = mitk::NodePredicateOr::New(isImage, isCuda);
+    mitk::TNodePredicateDataType<niftk::CUDAImage>::Pointer isCuda = mitk::TNodePredicateDataType<niftk::CUDAImage>::New();
+    mitk::NodePredicateOr::Pointer                          isSuitable = mitk::NodePredicateOr::New(isImage, isCuda);
     m_Controls->m_BackgroundNode->SetPredicate(isSuitable);
 #else
     m_Controls->m_BackgroundNode->SetPredicate(isImage);
@@ -277,13 +277,13 @@ void VLRendererView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::Bas
     mitk::DataNode::Pointer fbonode = GetDataStorage()->GetNamedNode("vl-framebuffer");
     if (fbonode.IsNotNull())
     {
-      CUDAImage::Pointer  cudaImg = dynamic_cast<CUDAImage*>(fbonode->GetData());
+      niftk::CUDAImage::Pointer  cudaImg = dynamic_cast<niftk::CUDAImage*>(fbonode->GetData());
       if (cudaImg.IsNotNull())
       {
-        LightweightCUDAImage    inputLWCI = cudaImg->GetLightweightCUDAImage();
+        niftk::LightweightCUDAImage    inputLWCI = cudaImg->GetLightweightCUDAImage();
         if (inputLWCI.GetId() != 0)
         {
-          CUDAManager*    cudamanager = CUDAManager::GetInstance();
+          niftk::CUDAManager*    cudamanager = niftk::CUDAManager::GetInstance();
           cudaStream_t    mystream    = cudamanager->GetStream("vl example");
           ReadAccessor    inputRA     = cudamanager->RequestReadAccess(inputLWCI);
           WriteAccessor   outputWA    = cudamanager->RequestOutputImage(inputLWCI.GetWidth(), inputLWCI.GetHeight(), 4);
@@ -303,18 +303,18 @@ void VLRendererView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::Bas
 
           // finalise() will queue an event-signal on our stream for us, so that future processing steps can
           // synchronise, just like we did above before starting our kernel.
-          LightweightCUDAImage      outputLWCI  = cudamanager->FinaliseAndAutorelease(outputWA, inputRA, mystream);
-          mitk::DataNode::Pointer   node        = GetDataStorage()->GetNamedNode("vl-cuda-interop sample");
-          bool                      isNewNode   = false;
+          niftk::LightweightCUDAImage outputLWCI  = cudamanager->FinaliseAndAutorelease(outputWA, inputRA, mystream);
+          mitk::DataNode::Pointer     node        = GetDataStorage()->GetNamedNode("vl-cuda-interop sample");
+          bool                        isNewNode   = false;
           if (node.IsNull())
           {
             isNewNode = true;
             node = mitk::DataNode::New();
             node->SetName("vl-cuda-interop sample");
           }
-          CUDAImage::Pointer  img = dynamic_cast<CUDAImage*>(node->GetData());
+          niftk::CUDAImage::Pointer  img = dynamic_cast<niftk::CUDAImage*>(node->GetData());
           if (img.IsNull())
-            img = CUDAImage::New();
+            img = niftk::CUDAImage::New();
           img->SetLightweightCUDAImage(outputLWCI);
           node->SetData(img);
           if (isNewNode)

@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "Undistortion.h"
+#include "niftkUndistortion.h"
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
@@ -20,8 +20,8 @@
 #include <Conversion/ImageConversion.h>
 #include <stdexcept>
 #ifdef _USE_CUDA
-#include <CUDAManager/niftkCUDAManager.h>
-#include <CUDAImage/niftkLightweightCUDAImage.h>
+#include <niftkCUDAManager.h>
+#include <niftkLightweightCUDAImage.h>
 #include <CameraCalibration/niftkUndistortionKernel.h>
 #endif
 
