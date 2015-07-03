@@ -27,5 +27,8 @@
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/CUDAImage/niftk*.cxx
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/CUDAManager/niftk*.h
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/CUDAManager/niftk*.cxx
-@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/Kernels/niftk*.h
-@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/Kernels/niftk*.cxx
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/Image/niftk*.h
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/Image/niftk*.cxx
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/CameraCalibration/niftk*.h
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/CameraCalibration/niftk*.cxx
+

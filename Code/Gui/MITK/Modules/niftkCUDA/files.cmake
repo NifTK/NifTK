@@ -17,5 +17,7 @@ set(CPP_FILES
   CUDAImage/niftkCUDAImage.cxx
   CUDAImage/niftkLightweightCUDAImage.cxx
   CUDAImage/niftkCUDAImageProperty.cxx
-  Kernels/niftkFlipImage.cxx
+  Image/niftkFlipImageLauncher.cxx
+  Image/niftkEdgeDetectionExampleLauncher.cxx
+  CameraCalibration/niftkUndistortionLauncher.cxx
 )

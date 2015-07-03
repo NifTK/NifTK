@@ -19,12 +19,10 @@
 #include <mitkProperties.h>
 #include <Conversion/ImageConversion.h>
 #include <stdexcept>
-#ifdef _USE_CUDA
-#include <niftkCUDAManager.h>
-#include <niftkLightweightCUDAImage.h>
-#include <CameraCalibration/niftkUndistortionKernel.h>
-#endif
 
+#ifdef _USE_CUDA
+#include <niftkUndistortionLauncher.h>
+#endif
 
 namespace niftk
 {
@@ -288,49 +286,12 @@ void Undistortion::CopyImagePropsIfNecessary(const mitk::DataNode::Pointer sourc
 //-----------------------------------------------------------------------------
 void Undistortion::Process(const IplImage* input, IplImage* output, bool recomputeCache)
 {
-  // an example of how to use the cuda interface.
-  // FIXME: this should be factored out into its own class.
-  //        it should probably go to niftkCUDA
 #ifdef _USE_CUDA
   if ((input->nChannels == 4) && (input->depth == 8))
   {
-    CUDAManager*    cm = CUDAManager::GetInstance();
-    cudaStream_t    stream = cm->GetStream("undistortion");
-
-    // currently we don't have CUDAImages in datastorage.
-    // so just upload the mitk ones (wrapped nicely in IplImage).
     assert(input->nChannels == 4);
     assert(input->depth == 8);
     assert(input->widthStep == (input->width * input->nChannels * input->depth / 8));
-    WriteAccessor inputWA = cm->RequestOutputImage(input->width, input->height, 4);
-
-    cudaError_t   err = cudaSuccess;
-    // source of memcpy is not page-locked, so would never be async.
-    err = cudaMemcpyAsync(inputWA.m_DevicePointer, input->imageData, input->widthStep * input->height, cudaMemcpyHostToDevice, stream);
-    assert(err == cudaSuccess);
-
-    // we need another image, this time for actual output.
-    WriteAccessor outputWA = cm->RequestOutputImage(input->width, input->height, 4);
-
-    // wrap the linear memory with our input data in a texture object,
-    // so that we can read filtered results.
-    cudaResourceDesc    resdesc = {cudaResourceTypePitch2D, 0};
-    resdesc.res.pitch2D.devPtr = inputWA.m_DevicePointer;
-    resdesc.res.pitch2D.desc.x = resdesc.res.pitch2D.desc.y = resdesc.res.pitch2D.desc.z = resdesc.res.pitch2D.desc.w = 8;
-    resdesc.res.pitch2D.desc.f = cudaChannelFormatKindUnsigned;
-    resdesc.res.pitch2D.width  = input->width;
-    resdesc.res.pitch2D.height = input->height;
-    resdesc.res.pitch2D.pitchInBytes = input->widthStep;
-
-    cudaTextureDesc     texdesc = {cudaAddressModeWrap};
-    texdesc.addressMode[0] = texdesc.addressMode[1] = texdesc.addressMode[2] = cudaAddressModeClamp;
-    texdesc.filterMode = cudaFilterModeLinear;
-    texdesc.normalizedCoords = 1;
-    texdesc.readMode = cudaReadModeNormalizedFloat;//cudaReadModeElementType;     // could be cudaReadModeNormalizedFloat to have automatic conversion to floating point.
-
-    cudaTextureObject_t   texobj;
-    err = cudaCreateTextureObject(&texobj, &resdesc, &texdesc, 0);
-    assert(err == cudaSuccess);
 
     cv::Mat   cammat(3, 3, CV_32FC1);
     m_Intrinsics->GetCameraMatrix().convertTo(cammat, CV_32FC1);
@@ -339,32 +300,8 @@ void Undistortion::Process(const IplImage* input, IplImage* output, bool recompu
     assert(cammat.type() == CV_32FC1);
     cv::Mat   distmat(1, 4, CV_32FC1);
     m_Intrinsics->GetDistorsionCoeffs().convertTo(distmat, CV_32FC1);
-    //assert(distmat.rows >= 4);
 
-    RunUndistortionKernel((char*) outputWA.m_DevicePointer, input->width, input->height, texobj, (float*) cammat.data, (float*) distmat.data, stream);
-
-    // even though we don't need the image that holds input data,
-    // we still have to finalise it. but we can simply discard the output LightweightCUDAImage.
-    cm->Finalise(inputWA, stream);
-
-    // this time, we do want to keep the result
-    LightweightCUDAImage    outputLWCI = cm->Finalise(outputWA, stream);
-
-
-    // the interface for CUDAManager does intentionally not have readback functionality.
-    // so we need to request read access to our own output.
-    // (obviously we could shortcut this, we have the device pointers. but this exercise is about api.)
-    ReadAccessor outputRA = cm->RequestReadAccess(outputLWCI);
-
-    // even though the name has async in it, it is synchronous because the destination is not page-locked.
-    // but we want the extra stream parameter so that it syncs onto our compute stream.
-    err = cudaMemcpyAsync(output->imageData, outputRA.m_DevicePointer, output->widthStep * output->height, cudaMemcpyDeviceToHost, stream);
-    assert(err == cudaSuccess);
-
-    err = cudaDestroyTextureObject(texobj);
-    assert(err == cudaSuccess);
-
-    cm->Autorelease(outputRA, stream);
+    niftk::UndistortionLauncher(input->imageData, input->width, input->height, input->widthStep, (float*) cammat.data, (float*) distmat.data, output->imageData);
   }
   else
   {

@@ -65,7 +65,7 @@
 #include <niftkCUDAImage.h>
 #include <niftkLightweightCUDAImage.h>
 #include <niftkCUDAImageProperty.h>
-#include <niftkFlipImage.h>
+#include <niftkFlipImageLauncher.h>
 #include <cuda_gl_interop.h>
 
 
@@ -3496,7 +3496,7 @@ void VLQt4Widget::swapBuffers()
     // need to flip the image! ogl is left-bottom, but everywhere else is left-top origin!
     niftk::WriteAccessor  flippedWA   = cudamanager->RequestOutputImage(outputWA.m_PixelWidth, outputWA.m_PixelHeight, 4);
     // FIXME: instead of explicitly flipping we could bind the fboarr to a texture, and do a single write out.
-    niftk::FlipImage(outputWA, flippedWA, mystream);
+    niftk::FlipImageLauncher(outputWA, flippedWA, mystream);
 
     niftk::LightweightCUDAImage lwciFlipped = cudamanager->Finalise(flippedWA, mystream);
     // Finalise() needs to come before Autorelease(), for performance reasons.

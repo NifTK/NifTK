@@ -20,7 +20,10 @@
 #include <common_functions.h>
 #include <texture_types.h>
 #include <driver_types.h>
+
+#ifdef WIN32
 #include <cassert>
+#endif
 
 namespace niftk
 {
@@ -28,8 +31,10 @@ namespace niftk
 //-----------------------------------------------------------------------------
 __global__ void edgedetection_kernel(char* outputRGBA, unsigned int outputPixelPitch, const char* inputRGBA, unsigned int inputPixelPitch, int width, int height)
 {
+#ifdef WIN32
   // should be static assert
   assert(sizeof(uchar4) == sizeof(unsigned int));
+#endif
 
   // these are output coordinates.
   int   x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -50,6 +55,7 @@ __global__ void edgedetection_kernel(char* outputRGBA, unsigned int outputPixelP
 //-----------------------------------------------------------------------------
 void RunEdgeDetectionKernel(char* outputRGBA, unsigned int outputBytePitch, const char* inputRGBA, unsigned int inputBytePitch, int width, int height, cudaStream_t stream)
 {
+#ifdef WIN32
   // should be static assert
   assert(sizeof(uchar4) == sizeof(unsigned int));
 
@@ -57,6 +63,7 @@ void RunEdgeDetectionKernel(char* outputRGBA, unsigned int outputBytePitch, cons
   assert((inputBytePitch % 4) == 0);
   assert((width * 4) <= outputBytePitch);
   assert((width * 4) <= inputBytePitch);
+#endif
 
   // launch config
   dim3  threads(32, 16);
