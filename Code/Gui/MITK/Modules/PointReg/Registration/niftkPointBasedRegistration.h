@@ -45,7 +45,7 @@ class NIFTKPOINTREG_EXPORT PointBasedRegistration : public itk::Object
 {
 public:
 
-  mitkClassMacro(PointBasedRegistration, itk::Object);
+  mitkClassMacroItkParent(PointBasedRegistration, itk::Object);
   itkNewMacro(PointBasedRegistration);
 
   /**

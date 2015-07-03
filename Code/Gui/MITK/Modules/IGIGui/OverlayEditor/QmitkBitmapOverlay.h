@@ -34,7 +34,7 @@ class NIFTKIGIGUI_EXPORT QmitkBitmapOverlay : public itk::Object
 {
 public:
 
-  mitkClassMacro( QmitkBitmapOverlay, itk::Object );
+  mitkClassMacroItkParent( QmitkBitmapOverlay, itk::Object );
   itkNewMacro( Self );
 
   /**

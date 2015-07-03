@@ -23,7 +23,7 @@ namespace mitk
 class PropertyChangedCommand : public itk::Command
 {
 public:
-  mitkClassMacro(PropertyChangedCommand, itk::Command);
+  mitkClassMacroItkParent(PropertyChangedCommand, itk::Command);
   mitkNewMacro3Param(PropertyChangedCommand, DataNodePropertyListener*, mitk::DataNode*, const mitk::BaseRenderer*);
 
   PropertyChangedCommand(DataNodePropertyListener* observer, mitk::DataNode* node, const mitk::BaseRenderer* renderer)

@@ -57,7 +57,7 @@ public:
   friend class QmitkIGIDataSourceManagerClearDownThread;
   friend class QmitkIGIDataSourceManagerGuiUpdateThread;
 
-  mitkClassMacro(QmitkIGIDataSourceManager, itk::Object);
+  mitkClassMacroItkParent(QmitkIGIDataSourceManager, itk::Object);
   itkNewMacro(QmitkIGIDataSourceManager);
 
   static QString GetDefaultPath();

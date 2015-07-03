@@ -43,7 +43,7 @@ class NIFTKICPREG_EXPORT SurfaceBasedRegistration : public itk::Object
 {
 public:
 
-  mitkClassMacro(SurfaceBasedRegistration, itk::Object);
+  mitkClassMacroItkParent(SurfaceBasedRegistration, itk::Object);
   itkNewMacro(SurfaceBasedRegistration);
 
   enum Method

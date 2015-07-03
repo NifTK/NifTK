@@ -47,7 +47,7 @@ class NIFTKOPENCV_EXPORT UltrasoundTransformAndImageMerger : public itk::Object
 
 public:
 
-  mitkClassMacro(UltrasoundTransformAndImageMerger, itk::Object);
+  mitkClassMacroItkParent(UltrasoundTransformAndImageMerger, itk::Object);
   itkNewMacro(UltrasoundTransformAndImageMerger);
 
   /**

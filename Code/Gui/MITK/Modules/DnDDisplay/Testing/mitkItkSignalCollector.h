@@ -41,7 +41,7 @@ public:
 class ItkSignalCollector : public itk::Command
 {
 public:
-  mitkClassMacro(ItkSignalCollector, itk::Command);
+  mitkClassMacroItkParent(ItkSignalCollector, itk::Command);
   itkNewMacro(ItkSignalCollector);
 
   typedef std::pair<const itk::Object*, itk::EventObject*> Signal;

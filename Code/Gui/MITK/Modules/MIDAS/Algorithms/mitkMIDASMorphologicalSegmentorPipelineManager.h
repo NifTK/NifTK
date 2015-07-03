@@ -58,7 +58,7 @@ public:
   static const std::string SEGMENTATION_OF_LAST_STAGE_NAME;
 
 
-  mitkClassMacro(MIDASMorphologicalSegmentorPipelineManager, itk::Object);
+  mitkClassMacroItkParent(MIDASMorphologicalSegmentorPipelineManager, itk::Object);
   itkNewMacro(MIDASMorphologicalSegmentorPipelineManager);
 
   /// \brief Sets the mitk::DataStorage on this object.

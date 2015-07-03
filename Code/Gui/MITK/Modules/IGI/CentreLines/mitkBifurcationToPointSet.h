@@ -36,7 +36,7 @@ class NIFTKIGI_EXPORT BifurcationToPointSet : public itk::Object
 {
 public:
 
-  mitkClassMacro(BifurcationToPointSet, itk::Object);
+  mitkClassMacroItkParent(BifurcationToPointSet, itk::Object);
   itkNewMacro(BifurcationToPointSet);
 
   /**

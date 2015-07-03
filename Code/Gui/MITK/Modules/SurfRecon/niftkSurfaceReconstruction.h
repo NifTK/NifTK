@@ -77,7 +77,7 @@ public:
 
 public:
 
-  mitkClassMacro(SurfaceReconstruction, itk::Object);
+  mitkClassMacroItkParent(SurfaceReconstruction, itk::Object);
   itkNewMacro(SurfaceReconstruction);
 
   /**

@@ -38,7 +38,7 @@ class NIFTKOPENCV_EXPORT BaseVideoProcessor : public itk::Object
 
 public:
 
-  mitkClassMacro(BaseVideoProcessor, itk::Object);
+  mitkClassMacroItkParent(BaseVideoProcessor, itk::Object);
 
   /**
    * \brief This method does any initialization necessary, and derived classes can override

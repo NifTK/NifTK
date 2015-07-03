@@ -34,7 +34,7 @@ class NIFTKOPENCV_EXPORT HandeyeCalibrate : public itk::Object
 
 public:
 
-  mitkClassMacro(HandeyeCalibrate, itk::Object);
+  mitkClassMacroItkParent(HandeyeCalibrate, itk::Object);
   itkNewMacro(HandeyeCalibrate);
   
   /**

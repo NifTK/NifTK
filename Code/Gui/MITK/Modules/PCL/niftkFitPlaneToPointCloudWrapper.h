@@ -37,7 +37,7 @@ namespace niftk
 class NIFTKPCL_EXPORT FitPlaneToPointCloudWrapper : public itk::Object
 {
 public:
-  mitkClassMacro(FitPlaneToPointCloudWrapper, itk::Object);
+  mitkClassMacroItkParent(FitPlaneToPointCloudWrapper, itk::Object);
   itkNewMacro(FitPlaneToPointCloudWrapper);
 
 

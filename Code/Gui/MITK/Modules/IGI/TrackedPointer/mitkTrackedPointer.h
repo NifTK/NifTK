@@ -37,7 +37,7 @@ class NIFTKIGI_EXPORT TrackedPointer : public itk::Object,
 {
 public:
 
-  mitkClassMacro(TrackedPointer, itk::Object);
+  mitkClassMacroItkParent(TrackedPointer, itk::Object);
   itkNewMacro(TrackedPointer);
 
   /**

@@ -34,7 +34,7 @@ class NIFTKOPENCV_EXPORT CameraCalibrationFromDirectory : public itk::Object
 
 public:
 
-  mitkClassMacro(CameraCalibrationFromDirectory, itk::Object);
+  mitkClassMacroItkParent(CameraCalibrationFromDirectory, itk::Object);
   itkNewMacro(CameraCalibrationFromDirectory);
 
   /**

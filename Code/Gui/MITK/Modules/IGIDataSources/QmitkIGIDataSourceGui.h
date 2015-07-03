@@ -31,7 +31,7 @@ class NIFTKIGIDATASOURCES_EXPORT QmitkIGIDataSourceGui : public QWidget, public 
 
 public:
 
-  mitkClassMacro(QmitkIGIDataSourceGui, itk::Object);
+  mitkClassMacroItkParent(QmitkIGIDataSourceGui, itk::Object);
 
   /**
    * \brief Sets the DataSource that this GUI will operate.

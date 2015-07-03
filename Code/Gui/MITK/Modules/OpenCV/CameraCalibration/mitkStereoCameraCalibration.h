@@ -35,7 +35,7 @@ class NIFTKOPENCV_EXPORT StereoCameraCalibration : public itk::Object
 
 public:
 
-  mitkClassMacro(StereoCameraCalibration, itk::Object);
+  mitkClassMacroItkParent(StereoCameraCalibration, itk::Object);
   itkNewMacro(StereoCameraCalibration);
 
   /**

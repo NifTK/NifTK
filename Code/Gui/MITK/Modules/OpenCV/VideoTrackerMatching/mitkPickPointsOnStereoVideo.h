@@ -43,7 +43,7 @@ class NIFTKOPENCV_EXPORT PickPointsOnStereoVideo : public itk::Object
 
 public:
 
-  mitkClassMacro(PickPointsOnStereoVideo, itk::Object);
+  mitkClassMacroItkParent(PickPointsOnStereoVideo, itk::Object);
   itkNewMacro(PickPointsOnStereoVideo);
 
   /** 

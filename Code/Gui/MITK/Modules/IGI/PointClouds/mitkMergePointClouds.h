@@ -37,7 +37,7 @@ namespace mitk
 class NIFTKIGI_EXPORT MergePointClouds : public itk::Object
 {
 public:
-  mitkClassMacro(MergePointClouds, itk::Object);
+  mitkClassMacroItkParent(MergePointClouds, itk::Object);
   itkNewMacro(MergePointClouds);
 
 

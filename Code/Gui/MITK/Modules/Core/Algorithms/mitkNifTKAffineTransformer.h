@@ -81,7 +81,7 @@ public:
 
   //-----------------------------------------------------------------------------
   /// \brief MITK style class and New macros
-  mitkClassMacro(AffineTransformer, itk::Object);
+  mitkClassMacroItkParent(AffineTransformer, itk::Object);
   itkNewMacro(AffineTransformer);
 
   /// Get / Set the "RotateAroundCenter" flag

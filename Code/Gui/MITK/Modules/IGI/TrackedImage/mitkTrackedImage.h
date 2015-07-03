@@ -32,7 +32,7 @@ class NIFTKIGI_EXPORT TrackedImage : public itk::Object
 {
 public:
 
-  mitkClassMacro(TrackedImage, itk::Object);
+  mitkClassMacroItkParent(TrackedImage, itk::Object);
   itkNewMacro(TrackedImage);
 
   /**

@@ -191,7 +191,7 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
 class NIFTKOPENCVUTILS_EXPORT PickedPointList : public itk::Object
 {
 public:
-  mitkClassMacro(PickedPointList, itk::Object);
+  mitkClassMacroItkParent(PickedPointList, itk::Object);
   itkNewMacro(PickedPointList);
 
   void PutOut (std::ofstream& os);

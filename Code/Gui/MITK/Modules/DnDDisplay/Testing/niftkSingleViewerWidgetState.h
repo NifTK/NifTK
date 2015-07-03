@@ -38,7 +38,7 @@ class niftkSingleViewerWidgetState : public itk::Object
 {
 public:
 
-  mitkClassMacro(niftkSingleViewerWidgetState, itk::Object);
+  mitkClassMacroItkParent(niftkSingleViewerWidgetState, itk::Object);
   mitkNewMacro1Param(niftkSingleViewerWidgetState, const niftkSingleViewerWidget*);
   mitkNewMacro1Param(niftkSingleViewerWidgetState, Self::Pointer);
 

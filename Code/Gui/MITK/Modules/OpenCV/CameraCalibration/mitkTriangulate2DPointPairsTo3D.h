@@ -37,7 +37,7 @@ class NIFTKOPENCV_EXPORT Triangulate2DPointPairsTo3D : public itk::Object
 
 public:
 
-  mitkClassMacro(Triangulate2DPointPairsTo3D, itk::Object);
+  mitkClassMacroItkParent(Triangulate2DPointPairsTo3D, itk::Object);
   itkNewMacro(Triangulate2DPointPairsTo3D);
 
   itkSetMacro (Input2DPointPairsFileName, std::string);

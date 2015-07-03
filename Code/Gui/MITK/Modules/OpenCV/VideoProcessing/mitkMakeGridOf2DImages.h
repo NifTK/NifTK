@@ -32,7 +32,7 @@ class NIFTKOPENCV_EXPORT MakeGridOf2DImages : public itk::Object
 
 public:
 
-  mitkClassMacro(MakeGridOf2DImages, itk::Object);
+  mitkClassMacroItkParent(MakeGridOf2DImages, itk::Object);
   itkNewMacro(MakeGridOf2DImages);
 
   void MakeGrid(const std::string &inputDirectory,

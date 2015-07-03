@@ -38,7 +38,7 @@ class NIFTKIGIDATASOURCES_EXPORT IGIDataType : public itk::Object
 {
 public:
 
-  mitkClassMacro(IGIDataType, itk::Object);
+  mitkClassMacroItkParent(IGIDataType, itk::Object);
   itkNewMacro(IGIDataType);
 
   igtlUint64 GetTimeStampInNanoSeconds() const;

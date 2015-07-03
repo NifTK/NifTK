@@ -32,7 +32,7 @@ class NIFTKOPENCV_EXPORT SurfTester : public itk::Object
 
 public:
 
-  mitkClassMacro(SurfTester, itk::Object);
+  mitkClassMacroItkParent(SurfTester, itk::Object);
   itkNewMacro(SurfTester);
 
   void RunSurf(const std::string& inputFileName, const std::string& outputFileName);

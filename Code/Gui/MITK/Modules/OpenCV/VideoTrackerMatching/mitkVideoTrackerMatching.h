@@ -33,7 +33,7 @@ namespace mitk
 class NIFTKOPENCV_EXPORT VideoTrackerMatching : public itk::Object
 {
 public: 
-  mitkClassMacro ( VideoTrackerMatching, itk::Object);
+  mitkClassMacroItkParent ( VideoTrackerMatching, itk::Object);
   itkNewMacro (VideoTrackerMatching);
 
   /**

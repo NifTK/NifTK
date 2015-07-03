@@ -37,7 +37,7 @@ class NIFTKOPENCV_EXPORT InvariantPointCalibration : public itk::Object
 
 public:
 
-  mitkClassMacro(InvariantPointCalibration, itk::Object);
+  mitkClassMacroItkParent(InvariantPointCalibration, itk::Object);
 
   typedef mitk::TimeStampsContainer::TimeStamp TimeStampType;
 

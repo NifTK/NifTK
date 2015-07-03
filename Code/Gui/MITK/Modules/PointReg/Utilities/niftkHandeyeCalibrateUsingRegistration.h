@@ -35,7 +35,7 @@ class NIFTKPOINTREG_EXPORT HandeyeCalibrateUsingRegistration : public itk::Objec
 
 public:
 
-  mitkClassMacro(HandeyeCalibrateUsingRegistration, itk::Object);
+  mitkClassMacroItkParent(HandeyeCalibrateUsingRegistration, itk::Object);
   itkNewMacro(HandeyeCalibrateUsingRegistration);
   
   /**

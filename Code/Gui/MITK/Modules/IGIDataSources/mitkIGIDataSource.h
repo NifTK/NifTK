@@ -55,7 +55,7 @@ public:
     SOURCE_TYPE_MICROPHONE
   };
 
-  mitkClassMacro(IGIDataSource, itk::Object);
+  mitkClassMacroItkParent(IGIDataSource, itk::Object);
 
   /**
    * \brief Sources can have an optional Initialize function to perform any setup after construction,
