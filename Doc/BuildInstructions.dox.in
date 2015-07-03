@@ -75,7 +75,9 @@ People should add any pre-conditions or caveats here as they find them.
   </li>
   <li> Mac OSX
     <ul>
-      <li>None
+      <li>On OSX 10.8, you must force the whole build to use libstdc++. On OSX 10.9 and 10.10, you
+      should use libc++, which is the default for clang. If you plan using CUDA, nvcc only supports libc++ from version 7. So, if you
+      want CUDA < 7, then you must force libstdc++ through the whole build.
       </li>
     </ul>
   </li>
@@ -136,8 +138,6 @@ Then set your PATH variable to contain the /somewhere/non-standard/to/install/qt
 
 \section BuildInstructionsDownloadQtMac 3.2 Compile Qt on Mac
 
-NOTE: If you want CUDA, you must build with libstdc++, see section 3.3.
-
 On Mac Mavericks and Yosemite, you have to build the latest Qt sources from their git repositiory:
 \verbatim
 git clone git://gitorious.org/qt/qt.git qt
@@ -155,7 +155,7 @@ The g++ and gcc binaries are simply wrappers for the clang ones. In addition, g+
 clang links to libc++. These are API compatible, but ABI incompatible, which means you cannot mix libraries that link
 to libstdc++ and libc++.
 
-Therefore, to force clang to link to libstdc++
+Therefore, to force clang to link to libstdc++ when building Qt do:
 
 \verbatim
 git clone git://gitorious.org/qt/qt.git qt
@@ -329,7 +329,7 @@ You can pass these options to the cmake or ccmake commands in the command line l
 \verbatim
   ccmake -DCMAKE_OSX_SYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.8" -DCMAKE_OSX_ARCHITECTURES="x86_64" ../niftk-source-dir
 \endverbatim
-Remember, if you are on Mac and want CUDA, you must build everything with libstdc++, as nvcc uses libstdc++ not libc++.
+Remember, if you are on Mac and want CUDA < version 7, you must build everything with libstdc++, as nvcc uses libstdc++ not libc++.
 </li>
 <li> Select which options you want building. These variables start with BUILD_
 
