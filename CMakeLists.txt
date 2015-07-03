@@ -819,6 +819,13 @@ message("CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 message("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 
 
+# Configure module naming conventions
+set(MITK_MODULE_NAME_REGEX_MATCH "^[A-Z].*$")
+set(MITK_MODULE_NAME_REGEX_NOT_MATCH "^[Nn][Ii][Ff][Tt][Kk].*$")
+set(MITK_MODULE_NAME_PREFIX "niftk")
+set(MITK_MODULE_NAME_DEFAULTS_TO_DIRECTORY_NAME 1)
+set(MITK_LEGACY_EXPORT_MACRO_NAME 0)
+
 # We need this later for a DCMTK workaround
 set(_dcmtk_dir_orig ${DCMTK_DIR})
 
@@ -844,6 +851,9 @@ foreach(ep ${MITK_EXTERNAL_PROJECTS})
     endif()
   endif()
 endforeach()
+
+# MITKConfig.cmake sets this variable therefore we need to clear it again.
+set(MITK_LEGACY_EXPORT_MACRO_NAME 0)
 
 # Ensure that the MITK CMake module path comes first
 set(CMAKE_MODULE_PATH
@@ -1103,6 +1113,7 @@ set(_boost_root ${BOOST_ROOT})
 set(_mitk_use_boost ${MITK_USE_Boost})
 set(_mitk_use_system_boost ${MITK_USE_SYSTEM_Boost})
 set(_mitk_use_boost_libraries ${MITK_USE_Boost_LIBRARIES})
+set(_mitk_legacy_export_macro_name ${MITK_LEGACY_EXPORT_MACRO_NAME})
 
 find_package(MITK REQUIRED)
 if(MITK_FOUND)
@@ -1118,6 +1129,7 @@ set(BOOST_ROOT ${_boost_root})
 set(MITK_USE_Boost ${_mitk_use_boost})
 set(MITK_USE_SYSTEM_Boost ${_mitk_use_system_boost})
 set(MITK_USE_Boost_LIBRARIES ${_mitk_use_boost_libraries})
+set(MITK_LEGACY_EXPORT_MACRO_NAME ${_mitk_legacy_export_macro_name})
 
 ######################################################################
 # Find Optional External packages
