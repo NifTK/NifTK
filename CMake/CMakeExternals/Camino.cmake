@@ -49,12 +49,17 @@ if(BUILD_CAMINO AND NOT WIN32)
         CMAKE_ARGS
           ${EP_COMMON_ARGS}
           -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
+        CMAKE_CACHE_ARGS
+          ${EP_COMMON_CACHE_ARGS}
+        CMAKE_CACHE_DEFAULT_ARGS
+          ${EP_COMMON_CACHE_DEFAULT_ARGS}
         DEPENDS ${proj_DEPENDENCIES}
       )
 
       set(camino_DIR ${proj_SOURCE})
 
-#      set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+      #set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+      #mitkFunctionInstallExternalCMakeProject(${proj})
 
       message("SuperBuild loading Camino from ${camino_DIR}")
 

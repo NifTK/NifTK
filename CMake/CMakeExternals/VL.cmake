@@ -26,7 +26,7 @@ if(BUILD_VL)
 
   set(version "19b0375cbe")
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary.git")
-  
+
   niftkMacroDefineExternalProjectVariables(VL ${version} ${location})
 
   if(NOT DEFINED VL_DIR)
@@ -52,11 +52,16 @@ if(BUILD_VL)
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
         -DVL_GUI_QT4_SUPPORT:BOOL=${QT_FOUND}
         ${additional_cmake_args}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-	set(VL_ROOT ${proj_INSTALL})
+    set(VL_ROOT ${proj_INSTALL})
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading VL from ${VL_ROOT}")
 

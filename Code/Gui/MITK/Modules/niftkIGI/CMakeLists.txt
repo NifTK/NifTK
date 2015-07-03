@@ -13,7 +13,6 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(niftkIGI
-  EXPORT_DEFINE NIFTKIGI_EXPORT
   INCLUDE_DIRS CentreLines TrackedImage TrackedPointer  Utils Rendering MicroServices
   DEPENDS niftkCore niftkOpenCV niftkOpenCVUtils 
 )

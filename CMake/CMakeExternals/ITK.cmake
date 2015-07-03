@@ -150,15 +150,16 @@ if(NOT DEFINED ITK_DIR)
       -DITK_USE_SYSTEM_GDCM:BOOL=ON
       -DGDCM_DIR:PATH=${GDCM_DIR}
       -DOpenCV_DIR:PATH=${OpenCV_DIR}
-     CMAKE_CACHE_ARGS
-       ${ep_common_cache_args}
-     CMAKE_CACHE_DEFAULT_ARGS
-       ${ep_common_cache_default_args}
+    CMAKE_CACHE_ARGS
+      ${EP_COMMON_CACHE_ARGS}
+    CMAKE_CACHE_DEFAULT_ARGS
+      ${EP_COMMON_CACHE_DEFAULT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}
   )
 
   set(ITK_DIR ${proj_INSTALL})
   set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading ITK from ${ITK_DIR}")
 

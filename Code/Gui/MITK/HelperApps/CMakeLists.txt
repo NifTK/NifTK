@@ -79,11 +79,8 @@ endif()
 # properly, so I've done them one by one 
 ##########################################################
 include (${MITK_DIR}/MITKConfig.cmake)
-include (${MITK_DIR}/modulesConf/CppMicroServicesConfig.cmake)
-include (${MITK_DIR}/modulesConf/mbilogConfig.cmake)
-include (${MITK_DIR}/modulesConf/MitkCoreConfig.cmake)
-include (${MITK_DIR}/modulesConf/MitkLegacyIOConfig.cmake)
-include (${MITK_DIR}/modulesConf/MitkTestingHelperConfig.cmake)
+include (${MITK_DIR}/Modules/CppMicroServices/CppMicroServicesConfig.cmake)
+include (${MITK_DIR}/Utilities/mbilog/mbilogConfig.cmake)
 include (${CppUnit_DIR}/CppUnitConfig.cmake)
 include (${tinyxml_DIR}/tinyxmlConfig.cmake)
 

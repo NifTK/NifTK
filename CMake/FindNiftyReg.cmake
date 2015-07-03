@@ -47,7 +47,7 @@ else()
     )
 
   find_library(NIFTYREG_TOOLS_LIBRARY
-    NAMES _reg_tools
+    NAMES _reg_tools${CMAKE_DEBUG_POSTFIX}
     PATHS ${NIFTYREG_DIR}/lib
     NO_DEFAULT_PATH
     )

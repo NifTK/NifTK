@@ -18,7 +18,7 @@ link_directories(${NIFTYREG_LIBRARY_DIR})
 include_directories(${NIFTYREG_INCLUDE_DIR})
 add_definitions(-DUSE_NIFTYREG)
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
+mitk_create_plugin(
   EXPORT_DIRECTIVE NIFTYREG_EXPORTS
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS MitkQtWidgetsExt niftkCore niftkCoreGui
@@ -33,10 +33,11 @@ if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   endif(OPENMP_FOUND)
 endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
-target_link_libraries(${PROJECT_NAME} 
-  niftkITK
-  niftkVTKNiftyReg
-  ${NIFTYREG_LIBRARIES}
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
+    niftkITK
+    niftkVTKNiftyReg
+    ${NIFTYREG_LIBRARIES}
 )
 
 # The NiftyReg plugin currently can't use the CUDA version of NiftyReg
@@ -48,7 +49,8 @@ if(FALSE AND NIFTK_USE_CUDA)
     add_definitions(-D_USE_CUDA)
   endif(CUDA_FOUND)
   
-  target_link_libraries(${PROJECT_NAME} 
+  target_link_libraries(${PROJECT_NAME}
+    PRIVATE
       _reg_aladin
       _reg_f3d
       _reg_thinPlateSpline

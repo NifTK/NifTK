@@ -12,28 +12,78 @@
 #
 #============================================================================*/
 
-option(NIFTK_USE_COTIRE "Use Cotire for compilation speed-up. Experimental." OFF)
-if(NIFTK_USE_COTIRE)
-  set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake;${CMAKE_MODULE_PATH}")
-  include(cotire)
-endif()
-
-###########################################################################
-# Our version number. Edit this to generate a new version.
-# However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
-# Also, Trac 1592, version number must change if CTK changes significantly.
-###########################################################################
-set(NIFTK_VERSION_MAJOR 15 CACHE STRING "Year version number" FORCE )
-set(NIFTK_VERSION_MINOR 05 CACHE STRING "Month version number" FORCE )
-set(NIFTK_VERSION_PATCH 0 CACHE STRING "Patch version number" FORCE )
-mark_as_advanced(NIFTK_VERSION_MAJOR)
-mark_as_advanced(NIFTK_VERSION_MINOR)
-mark_as_advanced(NIFTK_VERSION_PATCH)
-
 ######################################################################
 # Set the minimum CMake version.
 ######################################################################
-cmake_minimum_required(VERSION 3.2)
+set(NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION 3.2)
+cmake_minimum_required(VERSION ${NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION})
+
+##################################################################################
+# Set some CMake Policies.
+# See http://cmake.org/cmake/help/cmake-2-8-docs.html#section_Policies for details
+##################################################################################
+
+set(project_policies
+#  CMP0001 # NEW: CMAKE_BACKWARDS_COMPATIBILITY should no longer be used.
+#  CMP0002 # NEW: Logical target names must be globally unique.
+#  CMP0003 # NEW: Libraries linked via full path no longer produce linker search paths.
+#  CMP0004 # NEW: Libraries linked may NOT have leading or trailing whitespace.
+#  CMP0005 # NEW: Preprocessor definition values are now escaped automatically.
+#  CMP0006 # NEW: Installing MACOSX_BUNDLE targets requires a BUNDLE DESTINATION.
+#  CMP0007 # NEW: List command no longer ignores empty elements.
+#  CMP0008 # NEW: Libraries linked by full-path must have a valid library file name.
+#  CMP0009 # NEW: FILE GLOB_RECURSE calls should not follow symlinks by default.
+#  CMP0010 # NEW: Bad variable reference syntax is an error.
+#  CMP0011 # NEW: Included scripts do automatic cmake_policy PUSH and POP.
+#  CMP0012 # NEW: if() recognizes numbers and boolean constants.
+#  CMP0013 # NEW: Duplicate binary directories are not allowed.
+#  CMP0014 # NEW: Input directories must have CMakeLists.txt
+  )
+foreach(policy ${project_policies})
+  if(POLICY ${policy})
+    cmake_policy(SET ${policy} NEW)
+  endif()
+endforeach()
+
+#if (POLICY CMP0048)
+  # Introduced in CMake 3.0.
+  # OLD: Leave VERSION variables untouched.
+#  cmake_policy(SET CMP0048 OLD)
+#endif ()
+
+#if (POLICY CMP0053)
+  # Introduced in CMake 3.1.
+  # OLD: Leave references and variable expansion as pre version 3.1.
+#  cmake_policy(SET CMP0053 OLD)
+#endif ()
+
+
+###########################################################################
+# Precompiled headers
+###########################################################################
+
+option(NIFTK_USE_COTIRE "Use Cotire for compilation speed-up. Experimental." OFF)
+if(NIFTK_USE_COTIRE)
+  set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake ${CMAKE_MODULE_PATH})
+  include(cotire)
+endif()
+
+######################################################################
+# We have a super-build option. (Terminology comes from MITK/CTK).
+######################################################################
+
+option(BUILD_SUPERBUILD "Build NIFTK and the projects it depends on via SuperBuild.cmake." ON)
+
+if (BUILD_SUPERBUILD)
+  project(NIFTK-superbuild)
+  set(NIFTK_SOURCE_DIR ${PROJECT_SOURCE_DIR})
+  set(NIFTK_BINARY_DIR ${PROJECT_BINARY_DIR})
+else()
+  # Our version number. Edit this to generate a new version.
+  # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
+  # Also, Trac 1592, version number must change if CTK changes significantly.
+  project(NIFTK VERSION 15.05.0)
+endif()
 
 ######################################################################
 # Setting supported build types. Should ONLY be Debug or Release.
@@ -58,56 +108,17 @@ if(WIN32)
 endif()
 
 
-##################################################################################
-# Set some CMake Policies.
-# See http://cmake.org/cmake/help/cmake-2-8-docs.html#section_Policies for details
-##################################################################################
+#-----------------------------------------------------------------------------
+# Additional MITK Options (also shown during superbuild)
+#-----------------------------------------------------------------------------
 
-set(project_policies
-  CMP0001 # NEW: CMAKE_BACKWARDS_COMPATIBILITY should no longer be used.
-  CMP0002 # NEW: Logical target names must be globally unique.
-  CMP0003 # NEW: Libraries linked via full path no longer produce linker search paths.
-  CMP0004 # NEW: Libraries linked may NOT have leading or trailing whitespace.
-  CMP0005 # NEW: Preprocessor definition values are now escaped automatically.
-  CMP0006 # NEW: Installing MACOSX_BUNDLE targets requires a BUNDLE DESTINATION.
-  CMP0007 # NEW: List command no longer ignores empty elements.
-  CMP0008 # NEW: Libraries linked by full-path must have a valid library file name.
-  CMP0009 # NEW: FILE GLOB_RECURSE calls should not follow symlinks by default.
-  CMP0010 # NEW: Bad variable reference syntax is an error.
-  CMP0011 # NEW: Included scripts do automatic cmake_policy PUSH and POP.
-  CMP0012 # NEW: if() recognizes numbers and boolean constants.
-  CMP0013 # NEW: Duplicate binary directories are not allowed.
-  CMP0014 # NEW: Input directories must have CMakeLists.txt
-  )
-foreach(policy ${project_policies})
-  if(POLICY ${policy})
-    cmake_policy(SET ${policy} NEW)
+macro(env_option name doc value)
+  set(_value $ENV{${name}})
+  if("${_value}" STREQUAL "")
+    set(_value ${value})
   endif()
-endforeach()
-
-if (POLICY CMP0048)
-  # Introduced in CMake 3.0.
-  # OLD: Leave VERSION variables untouched.
-  cmake_policy(SET CMP0048 OLD)
-endif ()
-
-if (POLICY CMP0053)
-  # Introduced in CMake 3.1.
-  # OLD: Leave references and variable expansion as pre version 3.1.
-  cmake_policy(SET CMP0053 OLD)
-endif ()
-
-######################################################################
-# We have a super-build option. (Terminology comes from MITK/CTK).
-######################################################################
-
-option(BUILD_SUPERBUILD "Build NIFTK and the projects it depends on via SuperBuild.cmake." ON)
-
-if(BUILD_SUPERBUILD)
-  project(NifTK-superbuild)
-else(BUILD_SUPERBUILD)
-  project(NifTK)
-endif(BUILD_SUPERBUILD)
+  option(${name} "${doc}" ${_value})
+endmacro()
 
 ######################################################################
 # Configure GUI options from the choice of applications.
@@ -327,6 +338,24 @@ include(niftkMacroFixupCommandLineApps)
 include(niftkMacroForcePluginCacheValue)
 include(CMakePackageConfigHelpers)
 
+include(mitkFunctionEnableBuildConfiguration)
+include(mitkFunctionWhitelists)
+include(mitkFunctionAddExternalProject)
+
+
+# Standard CMake macros
+#include(FeatureSummary)
+include(CTestUseLaunchers)
+#include(CMakeParseArguments)
+#include(FindPackageHandleStandardArgs)
+
+# MITK macros
+include(mitkFunctionSuppressWarnings) # includes several functions
+include(mitkMacroEmptyExternalProject)
+#include(mitkFunctionGenerateProjectXml)
+
+SUPPRESS_VC_DEPRECATED_WARNINGS()
+
 ######################################################################
 # Test for some required system information. This came from old
 # ITK CMake scripts, so I (Matt) am unsure if we still need it.
@@ -334,6 +363,20 @@ include(CMakePackageConfigHelpers)
 include(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityC.cmake)
 include(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
 
+
+#-----------------------------------------------------------------------------
+# Check miminum Mac OS X version
+#-----------------------------------------------------------------------------
+# The minimum supported Mac OS X version is 10.9. If you use a version less than 10.9, there is no guarantee that the build still works.
+if(APPLE)
+  exec_program(sw_vers ARGS -productVersion OUTPUT_VARIABLE osx_version)
+  if (osx_version VERSION_LESS "10.10")
+    message(WARNING "Detected OS X version \"${osx_version}\" is not supported anymore. Minimum required OS X version is 10.10 or greater.")
+  endif()
+  if (CMAKE_OSX_DEPLOYMENT_TARGET AND CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS 10.10)
+    message(WARNING "Detected OS X deployment target \"${CMAKE_OSX_DEPLOYMENT_TARGET}\" is not supported anymore. Minimum required OS X version is 10.10 or greater.")
+  endif()
+endif()
 
 #-----------------------------------------------------------------------------
 # Check miminum compiler versions
@@ -459,6 +502,82 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   mitkFunctionGetGccVersion(${CMAKE_CXX_COMPILER} GCC_VERSION)
   message("NifTK gcc=${GCC_VERSION}")
 endif()
+
+
+# ------------------------------------------------------------------------
+# Register external projects which can be build with the MITK superbuild
+# system. Each mitkFunctionAddExternalProject() call registers an external
+# project for which a CMakeExternals/<project>.cmake file must exist. The
+# call also creates a MITK_USE_<project> variable (appearing in the CMake
+# UI if the NO_CACHE option is *not* given).
+
+
+# -----------------------------------------
+# Optional external projects with no inter-dependencies
+
+set_property(GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS "")
+
+#mitkFunctionAddExternalProject(NAME Camino OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME Boost ON DOC "Use the Boost C++ library")
+
+mitkFunctionAddExternalProject(NAME Eigen ON ADVANCED DOC "Use the Eigen library")
+
+mitkFunctionAddExternalProject(NAME OpenCV ON)
+mitkFunctionAddExternalProject(NAME ArUco OFF DEPENDS OpenCV)
+mitkFunctionAddExternalProject(NAME AprilTags OFF DEPENDS OpenCV Eigen)
+mitkFunctionAddExternalProject(NAME FLANN OFF)
+mitkFunctionAddExternalProject(NAME PCL OFF)
+mitkFunctionAddExternalProject(NAME RTK OFF)
+mitkFunctionAddExternalProject(NAME RTK OFF)
+mitkFunctionAddExternalProject(NAME VL OFF)
+mitkFunctionAddExternalProject(NAME RTK OFF)
+mitkFunctionAddExternalProject(NAME CGAL OFF DEPENDS Boost)
+mitkFunctionAddExternalProject(NAME NiftyLink OFF)
+mitkFunctionAddExternalProject(NAME NiftySim OFF)
+mitkFunctionAddExternalProject(NAME NiftySeg OFF)
+mitkFunctionAddExternalProject(NAME NiftyReg OFF)
+#mitkFunctionAddExternalProject(NAME NiftyRec OFF)
+mitkFunctionAddExternalProject(NAME NifTKData OFF)
+
+# -----------------------------------------
+# The following external projects must be ordered according to their inter-dependencies
+
+
+# These are "hard" dependencies and always set to ON
+mitkFunctionAddExternalProject(NAME DCMTK ON DOC "EXPERIMENTAL, superbuild only: Use DCMTK in MITK")
+mitkFunctionAddExternalProject(NAME GDCM ON ADVANCED)
+mitkFunctionAddExternalProject(NAME ITK ON NO_CACHE DEPENDS GDCM OpenCV)
+mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON DEPENDS ITK)
+mitkFunctionAddExternalProject(NAME VTK ON NO_CACHE)
+mitkFunctionAddExternalProject(NAME CTK ON DEPENDS QT DCMTK DOC "Use CTK in MITK")
+mitkFunctionAddExternalProject(NAME MITK ON NO_CACHE)
+
+# -----------------------------------------
+# Other MITK_USE_* options not related to external projects build via the NifTK superbuild
+
+#env_option(MITK_USE_OpenCL "Use OpenCL GPU-Computing library" OFF)
+
+#-----------------------------------------------------------------------------
+# Build configurations
+#-----------------------------------------------------------------------------
+
+set(_buildConfigs "Custom")
+
+file(GLOB _buildConfigFiles CMake/BuildConfigurations/*.cmake)
+
+foreach(_buildConfigFile ${_buildConfigFiles})
+  get_filename_component(_buildConfigFile ${_buildConfigFile} NAME_WE)
+  list(APPEND _buildConfigs ${_buildConfigFile})
+endforeach()
+
+set(MITK_BUILD_CONFIGURATION "Custom" CACHE STRING "Use pre-defined MITK configurations")
+mark_as_advanced(MITK_BUILD_CONFIGURATION)
+set_property(CACHE MITK_BUILD_CONFIGURATION PROPERTY STRINGS ${_buildConfigs})
+
+mitkFunctionEnableBuildConfiguration()
+
+mitkFunctionCreateWhitelistPaths(NifTK)
+mitkFunctionFindWhitelists(NifTK)
 
 ######################################################################
 # Configure Dart testing support.  This should be done before any
@@ -689,6 +808,7 @@ if(BUILD_SUPERBUILD)
   return()
 endif(BUILD_SUPERBUILD)
 
+
 ######################################################################
 # End of SuperBuild. Print out where the source and binary folders
 # are, just to make it really explicit... well, explicit to the user
@@ -697,6 +817,54 @@ endif(BUILD_SUPERBUILD)
 
 message("CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 message("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
+
+
+# We need this later for a DCMTK workaround
+set(_dcmtk_dir_orig ${DCMTK_DIR})
+
+# This property is populated at the top half of this file
+get_property(MITK_EXTERNAL_PROJECTS GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS)
+foreach(ep ${MITK_EXTERNAL_PROJECTS})
+  get_property(_package GLOBAL PROPERTY MITK_${ep}_PACKAGE)
+  get_property(_components GLOBAL PROPERTY MITK_${ep}_COMPONENTS)
+  if(MITK_USE_${ep} AND _package)
+    if(_components)
+      find_package(${_package} COMPONENTS ${_components} REQUIRED CONFIG)
+    else()
+      # Prefer config mode first because it finds external
+      # <proj>Config.cmake files pointed at by <proj>_DIR variables.
+      # Otherwise, existing Find<proj>.cmake files could fail.
+      # (e.g. in the case of GLEW and the FindGLEW.cmake file shipped
+      # with CMake).
+      find_package(${_package} QUIET CONFIG)
+      string(TOUPPER "${_package}" _package_uc)
+      if(NOT (${_package}_FOUND OR ${_package_uc}_FOUND))
+        find_package(${_package} REQUIRED)
+      endif()
+    endif()
+  endif()
+endforeach()
+
+# Ensure that the MITK CMake module path comes first
+set(CMAKE_MODULE_PATH
+  ${MITK_CMAKE_DIR}
+  ${CMAKE_MODULE_PATH}
+  )
+
+set(DCMTK_DIR ${_dcmtk_dir_orig})
+if(MITK_USE_DCMTK)
+  # Due to the preferred CONFIG mode in find_package calls above,
+  # the DCMTKConfig.cmake file is read, which does not provide useful
+  # package information. We explictly need MODULE mode to find DCMTK.
+#  if(${_dcmtk_dir_orig} MATCHES "${MITK_EXTERNAL_PROJECT_PREFIX}.*")
+#    # Help our FindDCMTK.cmake script find our super-build DCMTK
+#    set(DCMTK_DIR ${MITK_EXTERNAL_PROJECT_PREFIX})
+#  else()
+    # Use the original value
+    set(DCMTK_DIR ${_dcmtk_dir_orig})
+#  endif()
+  find_package(DCMTK REQUIRED MODULE)
+endif()
 
 ######################################################################
 # Add additional entries to the CMAKE_MODULE_PATH, now all externals
@@ -1612,13 +1780,47 @@ foreach(target_to_export ${targets_to_export})
   endif()
 endforeach()
 
-set(VISIBILITY_AVAILABLE 0)
-set(visibility_test_flag "")
-mitkFunctionCheckCompilerFlags("-fvisibility=hidden" visibility_test_flag)
-if(visibility_test_flag)
-  # The compiler understands -fvisiblity=hidden (probably gcc >= 4 or Clang)
-  set(VISIBILITY_AVAILABLE 1)
-endif()
+
+# ---------------- External projects -----------------
+
+get_property(MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS_CONFIG GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+
+set(MITK_CONFIG_EXTERNAL_PROJECTS )
+#string(REPLACE "^^" ";" _mitk_external_projects ${MITK_EXTERNAL_PROJECTS})
+
+foreach(ep ${MITK_EXTERNAL_PROJECTS})
+  get_property(_components GLOBAL PROPERTY MITK_${ep}_COMPONENTS)
+  set(MITK_CONFIG_EXTERNAL_PROJECTS "${MITK_CONFIG_EXTERNAL_PROJECTS}
+set(MITK_USE_${ep} ${MITK_USE_${ep}})
+set(MITK_${ep}_DIR \"${${ep}_DIR}\")
+set(MITK_${ep}_COMPONENTS ${_components})
+")
+endforeach()
+
+foreach(ep ${MITK_EXTERNAL_PROJECTS})
+  get_property(_package GLOBAL PROPERTY MITK_${ep}_PACKAGE)
+  get_property(_components GLOBAL PROPERTY MITK_${ep}_COMPONENTS)
+  if(_components)
+      set(_components_arg COMPONENTS \${_components})
+  else()
+    set(_components_arg)
+  endif()
+
+  if(_package)
+    set(MITK_CONFIG_EXTERNAL_PROJECTS "${MITK_CONFIG_EXTERNAL_PROJECTS}
+if(MITK_USE_${ep})
+  set(${ep}_DIR \${MITK_${ep}_DIR})
+  if(MITK_${ep}_COMPONENTS)
+    mitkMacroFindDependency(${_package} COMPONENTS \${MITK_${ep}_COMPONENTS})
+  else()
+    mitkMacroFindDependency(${_package})
+  endif()
+endif()")
+  endif()
+endforeach()
+
+
+
 
 # This generates a C++ header file with values that need compiling into code.
 configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)

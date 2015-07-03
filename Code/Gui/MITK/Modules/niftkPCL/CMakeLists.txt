@@ -13,7 +13,6 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(niftkPCL
-  EXPORT_DEFINE NIFTKPCL_EXPORT
   DEPENDS MitkCore
   PACKAGE_DEPENDS Eigen PCL
 )

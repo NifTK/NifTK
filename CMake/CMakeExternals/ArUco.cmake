@@ -45,12 +45,17 @@ if(BUILD_IGI)
         ${EP_COMMON_ARGS}
         -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
     set(aruco_DIR ${proj_INSTALL})
 
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading ArUco from ${aruco_DIR}")
 

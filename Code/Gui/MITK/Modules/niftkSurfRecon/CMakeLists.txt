@@ -22,7 +22,6 @@ if(BUILD_PCL)
 endif()
 
 MITK_CREATE_MODULE(niftkSurfRecon
-  EXPORT_DEFINE NIFTKSURFRECON_EXPORT
   DEPENDS ${_modules}
   PACKAGE_DEPENDS ${_packages}
 )

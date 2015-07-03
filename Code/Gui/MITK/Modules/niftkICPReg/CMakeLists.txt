@@ -13,7 +13,6 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(niftkICPReg
-  EXPORT_DEFINE NIFTKICPREG_EXPORT
   DEPENDS niftkCore
 )
 

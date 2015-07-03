@@ -13,14 +13,11 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(niftkNVidia
-  EXPORT_DEFINE NIFTKNVIDIA_EXPORT
   INCLUDE_DIRS DataSources
   DEPENDS niftkIGI niftkIGIDataSources
 )
 
-target_link_libraries(niftkNVidia
-  niftknvapi
-  )
+target_link_libraries(niftkNVidia PRIVATE niftknvapi)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkNVidia)

@@ -13,7 +13,6 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(niftkCUDA
-  EXPORT_DEFINE NIFTKCUDA_EXPORT
   INCLUDE_DIRS CUDAManager CUDAImage
   DEPENDS MitkCore
   PACKAGE_DEPENDS Qt4|QtCore Qt4|QtOpenGL
@@ -25,9 +24,10 @@ include_directories(
 )
 
 target_link_libraries(niftkCUDA
-  ${CUDA_CUDA_LIBRARY}
-  ${CUDA_CUDART_LIBRARY}
-  niftkCUDAKernels
+  PRIVATE
+    ${CUDA_CUDA_LIBRARY}
+    ${CUDA_CUDART_LIBRARY}
+    niftkCUDAKernels
 )
 
 

@@ -55,6 +55,10 @@ if(BUILD_NIFTYSEG)
         -DINSTALL_PRIORS_DIRECTORY:PATH=${proj_INSTALL}/priors
         -DUSE_SYSTEM_EIGEN=ON
         -DEigen_INCLUDE_DIR=${Eigen_INCLUDE_DIR}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
@@ -63,6 +67,7 @@ if(BUILD_NIFTYSEG)
     set(NIFTYSEG_LIBRARY_DIR "${NIFTYSEG_ROOT}/lib")
 
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading NiftySeg from ${NIFTYSEG_ROOT}")
 

@@ -15,7 +15,6 @@
 find_package(CUDA REQUIRED)
 
 MITK_CREATE_MODULE(niftkNVidiaGui
-  EXPORT_DEFINE NIFTKNVIDIAGUI_EXPORT
   INCLUDE_DIRS DataSources
   DEPENDS niftkIGIGui niftkNVidia
   PACKAGE_DEPENDS Qt4|QtCore
@@ -28,12 +27,13 @@ include_directories(${CUDA_TOOLKIT_INCLUDE})
 
 # stuffing this into DEPENDS above doesnt work for some reason
 target_link_libraries(niftkNVidiaGui
-  niftknvapi
-  MitkOpenCVVideoSupport
-  Winmm.lib
-  ${CUDA_CUDA_LIBRARY}
-  ${CUDA_CUDART_LIBRARY}
-  )
+  PRIVATE
+    niftknvapi
+    MitkOpenCVVideoSupport
+    Winmm.lib
+    ${CUDA_CUDA_LIBRARY}
+    ${CUDA_CUDART_LIBRARY}
+)
 
 
 if(MSVC AND NIFTK_DELAYLOAD_CUDA)

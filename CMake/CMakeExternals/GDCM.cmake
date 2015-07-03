@@ -65,14 +65,15 @@ if(NOT DEFINED GDCM_DIR)
       -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       -DGDCM_BUILD_SHARED_LIBS:BOOL=ON
     CMAKE_CACHE_ARGS
-      ${ep_common_cache_args}
+      ${EP_COMMON_CACHE_ARGS}
     CMAKE_CACHE_DEFAULT_ARGS
-      ${ep_common_cache_default_args}
+      ${EP_COMMON_CACHE_DEFAULT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}
   )
 
   set(GDCM_DIR ${proj_INSTALL})
   set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading GDCM from ${GDCM_DIR}")
 

@@ -13,15 +13,12 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(niftkDnDDisplay
-  EXPORT_DEFINE NIFTKDNDDISPLAY_EXPORT
   INCLUDE_DIRS Events Dialogs LookupTables
   DEPENDS MitkCore MitkQtWidgets niftkCore
   PACKAGE_DEPENDS Qt4|QtCore CTK|CTKWidgets
 )
 
-target_link_libraries(niftkDnDDisplay
-  niftkITK
-)
+target_link_libraries(niftkDnDDisplay PRIVATE niftkITK)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkDnDDisplay)

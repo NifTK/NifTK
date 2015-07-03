@@ -29,4 +29,4 @@ mitkAddCustomModuleTest(DnDDisplay-GeometryTest4 niftkSingleViewerWidgetTest ${N
 mitkAddCustomModuleTest(DnDDisplay-GeometryTest5 niftkSingleViewerWidgetTest ${NIFTK_DATA_DIR}/Input/volunteers/30257/mdeft_dicom/1.3.12.2.1107.5.2.32.35194.2009102113323066854212777.0.0.0_0002_000001_12561305650450.dcm testGetTimeGeometry)
 mitkAddCustomModuleTest(DnDDisplay-GeometryTest6 niftkSingleViewerWidgetTest ${NIFTK_DATA_DIR}/Input/volunteers/30257/mdeft_dicom/1.3.12.2.1107.5.2.32.35194.2009102113323066854212777.0.0.0_0002_000001_12561305650450.dcm testSetTimeGeometry)
 
-target_link_libraries(niftkDnDDisplayTestDriver ${QT_QTTEST_LIBRARY})
+target_link_libraries(niftkDnDDisplayTestDriver PRIVATE ${QT_QTTEST_LIBRARY})

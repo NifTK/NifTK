@@ -27,7 +27,7 @@ link_directories(${VL_LIBRARIES})
 include_directories(${VL_INCLUDE_DIRS})
 
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
+mitk_create_plugin(
   EXPORT_DIRECTIVE NEWVISUALIZATION_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS ${_depends}
@@ -36,7 +36,7 @@ MACRO_CREATE_MITK_CTK_PLUGIN(
 # not nice...
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
   include_directories(${CUDA_TOOLKIT_INCLUDE} ${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels)
-  target_link_libraries(uk_ac_ucl_cmic_vlrenderer ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} niftkCUDAKernels)
+  target_link_libraries(uk_ac_ucl_cmic_vlrenderer PRIVATE ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} niftkCUDAKernels)
 endif()
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

@@ -12,6 +12,8 @@
 #
 #============================================================================*/
 
+include(mitkFunctionInstallExternalCMakeProject)
+
 # We need a proper patch program. On Linux and MacOS, we assume
 # that "patch" is available. On Windows, we download patch.exe
 # if not patch program is found.
@@ -42,21 +44,20 @@ set_property(DIRECTORY PROPERTY EP_BASE ${EP_BASE})
 
 set(EP_DIRECTORY_PER_VERSION FALSE CACHE BOOL "Use separate directories for different versions of the same external project.")
 
-# Ideally every EP should be built and installed, and the dependent projects (another EP or NifTK)
-# should use them from their install directory. This would be particularly important for ITK
-# because the include directories in the build directory are too many and too long what makes
-# cl.exe (Visual Studio compiler) crash with buffer overflow.
-# However, enabling this option breaks the packaging.
-
-set(_initial_value_EP_ALWAYS_USE_INSTALL_DIR FALSE)
-if(MSVC)
-  set(_initial_value_EP_ALWAYS_USE_INSTALL_DIR TRUE)
-endif()
-set(EP_ALWAYS_USE_INSTALL_DIR ${_initial_value_EP_ALWAYS_USE_INSTALL_DIR} CACHE BOOL "Use GDCM, ITK and VTK from their install directory. It breaks the packaging.")
-
 mark_as_advanced(EP_BASE)
 mark_as_advanced(EP_DIRECTORY_PER_VERSION)
-mark_as_advanced(EP_ALWAYS_USE_INSTALL_DIR)
+
+if(MITK_CTEST_SCRIPT_MODE)
+  # Write a file containing the list of enabled external project targets.
+  # This file can be read by a ctest script to separately build projects.
+  set(SUPERBUILD_TARGETS )
+  foreach(proj ${external_projects})
+    if(MITK_USE_${proj})
+      list(APPEND SUPERBUILD_TARGETS ${proj})
+    endif()
+  endforeach()
+  file(WRITE "${CMAKE_BINARY_DIR}/SuperBuildTargets.cmake" "set(SUPERBUILD_TARGETS ${SUPERBUILD_TARGETS})")
+endif()
 
 # Compute -G arg for configuring external projects with the same CMake generator:
 if(CMAKE_EXTRA_GENERATOR)
@@ -84,48 +85,39 @@ else()
 endif()
 
 
-# Experimental code to install external project libraries with RPATH.
-# It is used when EP_ALWAYS_USE_INSTALL_DIR is enabled.
-# It is known to break the packaging on Mac and Linux.
-set(INSTALL_WITH_RPATH ${EP_ALWAYS_USE_INSTALL_DIR})
+# This is a workaround for passing linker flags
+# actually down to the linker invocation
+set(_cmake_required_flags_orig ${CMAKE_REQUIRED_FLAGS})
+set(CMAKE_REQUIRED_FLAGS "-Wl,-rpath")
+mitkFunctionCheckCompilerFlags(${CMAKE_REQUIRED_FLAGS} _has_rpath_flag)
+set(CMAKE_REQUIRED_FLAGS ${_cmake_required_flags_orig})
 
-if (INSTALL_WITH_RPATH)
-
-  # This is a workaround for passing linker flags
-  # actually down to the linker invocation
-  set(_cmake_required_flags_orig ${CMAKE_REQUIRED_FLAGS})
-  set(CMAKE_REQUIRED_FLAGS "-Wl,-rpath")
-  mitkFunctionCheckCompilerFlags(${CMAKE_REQUIRED_FLAGS} _has_rpath_flag)
-  set(CMAKE_REQUIRED_FLAGS ${_cmake_required_flags_orig})
-
-  set(_install_rpath_linkflag )
-  if(_has_rpath_flag)
-    if(APPLE)
-      set(_install_rpath_linkflag "-Wl,-rpath,@loader_path/../lib")
-    else()
-      set(_install_rpath_linkflag "-Wl,-rpath='$ORIGIN/../lib'")
-    endif()
-  endif()
-
-  set(_install_rpath)
+set(_install_rpath_linkflag )
+if(_has_rpath_flag)
   if(APPLE)
-    set(_install_rpath "@loader_path/../lib")
-  elseif(UNIX)
-    # this work for libraries as well as executables
-    set(_install_rpath "\$ORIGIN/../lib")
+    set(_install_rpath_linkflag "-Wl,-rpath,@loader_path/../lib")
+  else()
+    set(_install_rpath_linkflag "-Wl,-rpath='$ORIGIN/../lib'")
   endif()
+endif()
 
-endif (INSTALL_WITH_RPATH)
+set(_install_rpath)
+if(APPLE)
+  set(_install_rpath "@loader_path/../lib")
+elseif(UNIX)
+  # this works for libraries as well as executables
+  set(_install_rpath "\$ORIGIN/../lib")
+endif()
 
 set(EP_COMMON_ARGS
   -DCMAKE_CXX_EXTENSIONS:STRING=${CMAKE_CXX_EXTENSIONS}
   -DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}
   -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
+  -DCMAKE_DEBUG_POSTFIX:STRING=d
+  -DCMAKE_MACOSX_RPATH:BOOL=TRUE
+  "-DCMAKE_INSTALL_RPATH:STRING=${_install_rpath}"
+  -DBUILD_TESTING:BOOL=OFF
   -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-
-  -DCMAKE_INCLUDE_PATH:PATH=${CMAKE_INCLUDE_PATH}
-  -DCMAKE_LIBRARY_PATH:PATH=${CMAKE_LIBRARY_PATH}
-
   -DBUILD_SHARED_LIBS:BOOL=ON
   -DBUILD_TESTING:BOOL=OFF
   -DBUILD_EXAMPLES:BOOL=OFF
@@ -152,6 +144,16 @@ set(EP_COMMON_ARGS
   -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
   -DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
 )
+
+set(EP_COMMON_CACHE_ARGS
+)
+
+set(EP_COMMON_CACHE_DEFAULT_ARGS
+  "-DCMAKE_PREFIX_PATH:PATH=<INSTALL_DIR>;${CMAKE_PREFIX_PATH}"
+  "-DCMAKE_INCLUDE_PATH:PATH=${CMAKE_INCLUDE_PATH}"
+  "-DCMAKE_LIBRARY_PATH:PATH=${CMAKE_LIBRARY_PATH}"
+)
+
 
 if(INSTALL_WITH_RPATH)
   set(EP_COMMON_ARGS
@@ -202,35 +204,22 @@ endforeach()
 include(niftkExternalProjectHelperMacros)
 
 ######################################################################
-# Loop round for each external project, compiling it
+# External projects
 ######################################################################
 
-set(EXTERNAL_PROJECTS
-  Camino
-  Boost
-  VTK
-  DCMTK
-  GDCM
-  OpenCV
-  ArUco
-  Eigen
-  AprilTags
-  FLANN
-  PCL
-  ITK
-  RTK
-  VL
-  CTK
-  MITK
-  CGAL
-  NiftyLink
-  NiftySim
-  NiftyReg
-  NiftyRec
-  NiftySeg
-  NifTKData
-  SlicerExecutionModel
-)
+get_property(external_projects GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS)
+
+if(MITK_CTEST_SCRIPT_MODE)
+  # Write a file containing the list of enabled external project targets.
+  # This file can be read by a ctest script to separately build projects.
+  set(SUPERBUILD_TARGETS )
+  foreach(proj ${external_projects})
+    if(MITK_USE_${proj})
+      list(APPEND SUPERBUILD_TARGETS ${proj})
+    endif()
+  endforeach()
+  file(WRITE "${CMAKE_BINARY_DIR}/SuperBuildTargets.cmake" "set(SUPERBUILD_TARGETS ${SUPERBUILD_TARGETS})")
+endif()
 
 if(BUILD_IGI)
   if(OPENCV_WITH_CUDA)
@@ -238,7 +227,7 @@ if(BUILD_IGI)
   endif(OPENCV_WITH_CUDA)
 endif(BUILD_IGI)
 
-foreach(p ${EXTERNAL_PROJECTS})
+foreach(p ${external_projects})
   include("CMake/CMakeExternals/${p}.cmake")
 
   list(APPEND NIFTK_APP_OPTIONS -DNIFTK_VERSION_${p}:STRING=${${p}_VERSION})
@@ -322,9 +311,16 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
     PREFIX ${proj}-cmake
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
-      ${EP_COMMON_ARGS}
       -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
+    CMAKE_CACHE_ARGS
+      ${EP_COMMON_ARGS}
+      -DCMAKE_LIBRARY_PATH:PATH=${CMAKE_LIBRARY_PATH}
+      -DCMAKE_INCLUDE_PATH:PATH=${CMAKE_INCLUDE_PATH}
       ${NIFTK_APP_OPTIONS}
+      -DMITK_WHITELIST:STRING=${MITK_WHITELIST}
+      -DMITK_WHITELISTS_EXTERNAL_PATH:STRING=${MITK_WHITELISTS_EXTERNAL_PATH}
+      -DMITK_WHITELISTS_INTERNAL_PATH:STRING=${MITK_WHITELISTS_INTERNAL_PATH}
+      -DNIFTK_EXTERNAL_PROJECT_PREFIX:PATH=${ep_prefix}
       -DNIFTK_BUILD_ALL_APPS:BOOL=${NIFTK_BUILD_ALL_APPS}
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=${CMAKE_VERBOSE_MAKEFILE}
@@ -332,8 +328,8 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DBUILD_SUPERBUILD:BOOL=OFF           # Must force this to be off, or else you will loop forever.
       -DBUILD_PCL:BOOL=${BUILD_PCL}
       -DBUILD_RTK:BOOL=${BUILD_RTK}
-	  -DBUILD_VL:BOOL=${BUILD_VL}
-      -DBUILD_ITKFFTW=${BUILD_ITKFFTW}
+      -DBUILD_VL:BOOL=${BUILD_VL}
+      -DBUILD_ITKFFTW:BOOL=${BUILD_ITKFFTW}
       -DBUILD_CAMINO:BOOL=${BUILD_CAMINO}
       -DBUILD_COMMAND_LINE_PROGRAMS:BOOL=${BUILD_COMMAND_LINE_PROGRAMS}
       -DBUILD_COMMAND_LINE_SCRIPTS:BOOL=${BUILD_COMMAND_LINE_SCRIPTS}
@@ -380,38 +376,30 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DNIFTK_ADDITIONAL_C_FLAGS:STRING=${NIFTK_ADDITIONAL_C_FLAGS}
       -DNIFTK_ADDITIONAL_CXX_FLAGS:STRING=${NIFTK_ADDITIONAL_CXX_FLAGS}
       -DNIFTK_FFTWINSTALL:PATH=${NIFTK_LINK_PREFIX}/fftw     # We don't have CMake SuperBuild version of FFTW, so must rely on it already being there
-      -DNIFTK_DATA_DIR:PATH=${NIFTK_DATA_DIR}
       -DNIFTK_SHOW_CONSOLE_WINDOW:BOOL=${NIFTK_SHOW_CONSOLE_WINDOW}
-      -DGDCM_DIR:PATH=${GDCM_DIR}
-      -DVTK_DIR:PATH=${VTK_DIR}
-      -DITK_DIR:PATH=${ITK_DIR}
-      -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
       -DBOOST_ROOT:PATH=${BOOST_ROOT}
       -DBOOST_VERSION:STRING=${NIFTK_VERSION_Boost}
       -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}
       -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}
       -DMITK_DIR:PATH=${MITK_DIR}
       -DCTK_DIR:PATH=${CTK_DIR}
+      -DDCMTK_CMAKE_DEBUG_POSTFIX:STRING=d
+      -DDCMTK_DIR:PATH=${DCMTK_DIR}
       -DCTK_SOURCE_DIR:PATH=${CTK_SOURCE_DIR}
       -DNiftyLink_DIR:PATH=${NiftyLink_DIR}
       -DNiftyLink_SOURCE_DIR:PATH=${NiftyLink_SOURCE_DIR}
+      -DEigen_ROOT:PATH=${Eigen_ROOT}
+      -DEigen_INCLUDE_DIR:PATH=${Eigen_INCLUDE_DIR}
+      -DFLANN_ROOT:PATH=${FLANN_ROOT}
+      -DVL_ROOT:PATH=${VL_ROOT}
       -DNIFTYREG_DIR:PATH=${NIFTYREG_ROOT}
       -DNIFTYREC_DIR:PATH=${NIFTYREC_ROOT}
       -DNIFTYSIM_DIR:PATH=${NIFTYSIM_ROOT}
       -DNIFTYSEG_DIR:PATH=${NIFTYSEG_ROOT}
-      -Daruco_DIR:PATH=${aruco_DIR}
-      -DOpenCV_DIR:PATH=${OpenCV_DIR}
-      -DEigen_DIR:PATH=${Eigen_DIR}
-      -DEigen_ROOT:PATH=${Eigen_ROOT}
-      -DEigen_INCLUDE_DIR:PATH=${Eigen_INCLUDE_DIR}
-      -Dapriltags_DIR:PATH=${apriltags_DIR}
-      -DFLANN_DIR:PATH=${FLANN_DIR}
-      -DFLANN_ROOT:PATH=${FLANN_ROOT}
-      -DPCL_DIR:PATH=${PCL_DIR}
-      -DRTK_DIR:PATH=${RTK_DIR}
-      -DVL_ROOT:PATH=${VL_ROOT}
-      -DCGAL_DIR:PATH=${CGAL_DIR}
-      DEPENDS ${proj_DEPENDENCIES}
+      -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
+    DEPENDS ${proj_DEPENDENCIES}
   )
+
+  mitkFunctionInstallExternalCMakeProject(${proj})
 
 endif()

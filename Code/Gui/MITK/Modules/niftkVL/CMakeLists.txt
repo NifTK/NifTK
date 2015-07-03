@@ -46,15 +46,12 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
 endif()
 
 MITK_CREATE_MODULE(niftkVL
-  EXPORT_DEFINE NIFTKVL_EXPORT
   INCLUDE_DIRS Rendering
   DEPENDS ${_modules}
   PACKAGE_DEPENDS ${_packages}
 )
 
-target_link_libraries(niftkVL
-  ${VL_LIBRARIES}
-)
+target_link_libraries(niftkVL PRIVATE ${VL_LIBRARIES})
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkVL)

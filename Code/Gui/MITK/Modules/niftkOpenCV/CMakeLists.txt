@@ -22,15 +22,13 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
 endif()
 
 MITK_CREATE_MODULE(niftkOpenCV
-  EXPORT_DEFINE NIFTKOPENCV_EXPORT
   INCLUDE_DIRS CameraCalibration VideoProcessing Registration demo VideoTrackerMatching UltrasoundCalibration PivotCalibration Features
   DEPENDS ${_depends}
   PACKAGE_DEPENDS OpenCV
 )
 
-target_link_libraries(niftkOpenCV
-  niftkcommon
-  )
+message("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ depends niftkcommon")
+target_link_libraries(niftkOpenCV PRIVATE niftkcommon)
 
 
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
@@ -40,7 +38,7 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
   # FIXME: this dependency on niftkCUDAKernels should probably go to niftkCUDA, which wraps
   #        up all kernel calls nicely for other modules to call.
   include_directories(${CUDA_TOOLKIT_INCLUDE} ${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels)
-  target_link_libraries(niftkOpenCV ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} niftkCUDAKernels)
+  target_link_libraries(niftkOpenCV PRIVATE ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} niftkCUDAKernels)
   
   if(MSVC AND NIFTK_DELAYLOAD_CUDA)
     # all of the nvidia-driver/cuda dependencies should be delay-loaded

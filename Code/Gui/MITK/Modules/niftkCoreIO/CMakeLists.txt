@@ -13,15 +13,12 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(niftkCoreIO
-  EXPORT_DEFINE NIFTKCOREIO_EXPORT
   INCLUDE_DIRS 
   DEPENDS niftkCore
   AUTOLOAD_WITH niftkCore
 )
 
-target_link_libraries(niftkCoreIO
-  niftkITK
-)
+target_link_libraries(niftkCoreIO PRIVATE niftkITK)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkCoreIO)

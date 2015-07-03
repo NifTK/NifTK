@@ -14,14 +14,11 @@
 
 
 MITK_CREATE_MODULE(niftkOpenCVUtils
-  EXPORT_DEFINE NIFTKOPENCVUTILS_EXPORT
   DEPENDS niftkCore
   PACKAGE_DEPENDS OpenCV
 )
 
-target_link_libraries(niftkOpenCVUtils
-  niftkcommon
-  )
+target_link_libraries(niftkOpenCVUtils PRIVATE niftkcommon)
 
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

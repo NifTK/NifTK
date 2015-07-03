@@ -33,11 +33,38 @@
 # find_package etc.
 ###############################################################################
 
+if(CMAKE_VERSION VERSION_LESS @MITK_CMAKE_MINIMUM_REQUIRED_VERSION@)
+  message(FATAL_ERROR "NifTK requires at least CMake Version @NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION@")
+endif()
+
+# The NifTK version number
+set(NIFTK_VERSION_MAJOR "@NIFTK_VERSION_MAJOR@")
+set(NIFTK_VERSION_MINOR "@NIFTK_VERSION_MINOR@")
+set(NIFTK_VERSION_PATCH "@NIFTK_VERSION_PATCH@")
+set(NIFTK_VERSION_STRING "@NIFTK_VERSION_STRING@")
+
+#-----------------------------------------------------------------------------
+# C++ language standard
+#-----------------------------------------------------------------------------
+
+set(MITK_CXX_STANDARD @MITK_CXX_STANDARD@)
+
+#-----------------------------------------------------------------------------
+# Include required CMake scripts
+#-----------------------------------------------------------------------------
+
 # Standard CMake macros
 include(FeatureSummary)
 
 # Make all the NifTK CMake macros are available.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "@NIFTK_BINARY_DIR@/CMakeMacros")
+set(NIFTK_CMAKE_MODULE_PATH "@NIFTK_BINARY_DIR@/CMakeMacros")
+list(APPEND CMAKE_MODULE_PATH ${NIFTK_CMAKE_MODULE_PATH})
+
+# Standard CMake macros
+include(CMakeParseArguments)
+include(FeatureSummary)
+include(FindPackageHandleStandardArgs)
+include(GenerateExportHeader)
 
 # The list of 'include' commands should match those in NifTK/CMake folder.
 include(mitkMacroEmptyExternalProject)

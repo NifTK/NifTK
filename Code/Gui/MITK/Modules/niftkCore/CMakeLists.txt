@@ -13,17 +13,12 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(niftkCore
-  EXPORT_DEFINE NIFTKCORE_EXPORT
   INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
   DEPENDS MitkCore
   PACKAGE_DEPENDS  ITK|ITKIOTransformBase VTK|vtkRenderingVolumeOpenGL Boost|boost_system 
 )
 
-target_link_libraries(niftkCore
-  niftkcommon
-  niftkITK
-  niftkVTK
-)
+target_link_libraries(niftkCore PRIVATE niftkcommon niftkITK niftkVTK)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkCore)

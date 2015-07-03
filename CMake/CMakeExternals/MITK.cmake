@@ -49,6 +49,11 @@ if(NOT DEFINED MITK_DIR)
     # Configure the MITK Superbuild, to decide which plugins we want.
     ######################################################################
 
+    # Note:
+    # The DCMTK_DIR variable should not really be set here. This is a workaround because
+    # the variable gets overwritten in MITKConfig.cmake from the DCMTK install directory
+    # to the directory that contains DCMTKConfig.cmake (.../share/dcmtk).
+
     set(MITK_INITIAL_CACHE_FILE "${CMAKE_CURRENT_BINARY_DIR}/mitk_initial_cache.txt")
     file(WRITE "${MITK_INITIAL_CACHE_FILE}" "
       set(MITK_BUILD_APP_CoreApp OFF CACHE BOOL \"Build the MITK CoreApp application. This should be OFF, as NifTK has it's own application NiftyView. \")
@@ -73,6 +78,7 @@ if(NOT DEFINED MITK_DIR)
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.log ON CACHE BOOL \"Build the Blueberry logging plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.help ON CACHE BOOL \"Build the Blueberry Qt help plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.compat ON CACHE BOOL \"Build the Blueberry compat plugin (Matt, what is this for?)\")
+      set(DCMTK_DIR ${DCMTK_DIR} CACHE PATH \"DCMTK install directory\")
     ")
 
     ExternalProject_Add(${proj}
@@ -109,11 +115,16 @@ if(NOT DEFINED MITK_DIR)
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
         -DEigen_DIR:PATH=${Eigen_DIR}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
     set(MITK_DIR ${proj_BUILD}/${proj}-build)
 
 #    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading MITK from ${MITK_DIR}")
 

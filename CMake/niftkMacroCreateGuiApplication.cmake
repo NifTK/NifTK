@@ -98,7 +98,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     set(MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
   endif()
   
-  FunctionCreateBlueBerryApplication(
+  mitkFunctionCreateBlueBerryApplication(
     NAME ${MY_APP_NAME}
     SOURCES ${MY_APP_NAME}.cxx
     PLUGINS ${_total_plugins}

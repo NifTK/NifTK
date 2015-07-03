@@ -13,7 +13,6 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(niftkThumbnail
-  EXPORT_DEFINE niftkThumbnail_EXPORT
   DEPENDS MitkQtWidgets niftkCoreGui
   PACKAGE_DEPENDS Qt4|QtGui
 )

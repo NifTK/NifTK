@@ -28,7 +28,7 @@ find_path(NIFTYSEG_INCLUDE_DIR
   )
 
 find_library(NIFTYSEG_LIBRARIES
-  NAMES _seg_nifti
+  NAMES _seg_nifti${CMAKE_DEBUG_POSTFIX}
   PATHS ${NIFTYSEG_DIR}/lib
   NO_DEFAULT_PATH
   )

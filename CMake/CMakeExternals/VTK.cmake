@@ -114,14 +114,15 @@ if(NOT DEFINED VTK_DIR)
         ${additional_cmake_args}
         ${VTK_QT_ARGS}
     CMAKE_CACHE_ARGS
-      ${ep_common_cache_args}
+      ${EP_COMMON_CACHE_ARGS}
     CMAKE_CACHE_DEFAULT_ARGS
-      ${ep_common_cache_default_args}
+      ${EP_COMMON_CACHE_DEFAULT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}
   )
 
   set(VTK_DIR ${proj_INSTALL})
   set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading VTK from ${VTK_DIR}")
 

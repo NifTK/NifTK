@@ -97,12 +97,17 @@ if(QT_FOUND)
         -DITK_DIR:PATH=${ITK_DIR}
         -DDCMTK_URL:STRING=${NIFTK_EP_TARBALL_LOCATION}/CTK_DCMTK_085525e6.tar.gz
         -DqRestAPI_URL:STRING=${qRestAPI_location}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
     set(CTK_DIR ${proj_BUILD})
     set(CTK_SOURCE_DIR ${proj_SOURCE})
 
-#    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    #set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    #mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading CTK from ${CTK_DIR}")
 

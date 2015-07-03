@@ -75,14 +75,15 @@ if(BUILD_IGI)
         -DADDITIONAL_CXX_FLAGS:STRING=${OPENCV_ADDITIONAL_CXX_FLAGS}
         ${additional_cmake_args}
       CMAKE_CACHE_ARGS
-        ${ep_common_cache_args}
+        ${EP_COMMON_CACHE_ARGS}
       CMAKE_CACHE_DEFAULT_ARGS
-        ${ep_common_cache_default_args}
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
     set(OpenCV_DIR ${proj_INSTALL})
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading OpenCV from ${OpenCV_DIR}")
 

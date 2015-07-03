@@ -42,14 +42,18 @@ if(NOT DEFINED Eigen_DIR)
       ${EP_COMMON_ARGS}
       -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       -DEIGEN_LEAVE_TEST_IN_ALL_TARGET=ON
+    CMAKE_CACHE_ARGS
+      ${EP_COMMON_CACHE_ARGS}
+    CMAKE_CACHE_DEFAULT_ARGS
+      ${EP_COMMON_CACHE_DEFAULT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  set(Eigen_DIR ${proj_SOURCE})
-  set(Eigen_ROOT ${Eigen_DIR})
-  set(Eigen_INCLUDE_DIR ${Eigen_DIR})
+  set(Eigen_DIR ${proj_INSTALL})
+  set(Eigen_INCLUDE_DIR ${Eigen_DIR}/include/eigen3)
 
   set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading Eigen from ${Eigen_DIR}")
 
