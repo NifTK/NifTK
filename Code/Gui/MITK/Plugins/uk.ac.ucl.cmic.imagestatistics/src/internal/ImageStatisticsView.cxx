@@ -35,7 +35,7 @@
 // MITK
 #include <mitkImageAccessByItk.h>
 
-const std::string ImageStatisticsView::VIEW_ID = "uk.ac.ucl.cmic.imagestatistics";
+const QString ImageStatisticsView::VIEW_ID = "uk.ac.ucl.cmic.imagestatistics";
 
 
 //-----------------------------------------------------------------------------
@@ -117,9 +117,7 @@ void ImageStatisticsView::OnPreferencesChanged(const berry::IBerryPreferences*)
 //-----------------------------------------------------------------------------
 void ImageStatisticsView::RetrievePreferenceValues()
 {
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   berry::IBerryPreferences::Pointer prefs
       = (prefService->GetSystemPreferences()->Node(VIEW_ID))

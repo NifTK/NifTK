@@ -87,7 +87,7 @@ protected:
 
   /// \brief Returns the name of the preferences node to look up.
   /// \see QmitkMIDASBaseSegmentationFunctionality::GetPreferencesNodeName
-  virtual std::string GetPreferencesNodeName() { return "/uk.ac.ucl.cmic.mitksegmentation"; }
+  virtual QString GetPreferencesNodeName() { return "/uk.ac.ucl.cmic.mitksegmentation"; }
 
 private:
 

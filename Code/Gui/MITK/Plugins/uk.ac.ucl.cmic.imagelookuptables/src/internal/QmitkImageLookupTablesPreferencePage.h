@@ -40,7 +40,7 @@ public:
   QmitkImageLookupTablesPreferencePage(const QmitkImageLookupTablesPreferencePage& other);
   ~QmitkImageLookupTablesPreferencePage();
 
-  static const std::string PRECISION_NAME;
+  static const QString PRECISION_NAME;
 
   void Init(berry::IWorkbench::Pointer workbench);
 

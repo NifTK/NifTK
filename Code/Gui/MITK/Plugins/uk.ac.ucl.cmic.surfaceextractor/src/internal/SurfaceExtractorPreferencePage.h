@@ -38,15 +38,15 @@ public:
   SurfaceExtractorPreferencePage();
   ~SurfaceExtractorPreferencePage();
 
-  static const std::string GAUSSIAN_SMOOTH_NAME;
+  static const QString GAUSSIAN_SMOOTH_NAME;
   static const bool GAUSSIAN_SMOOTH_DEFAULT;
-  static const std::string GAUSSIAN_STDDEV_NAME;
+  static const QString GAUSSIAN_STDDEV_NAME;
   static const double GAUSSIAN_STDDEV_DEFAULT;
-  static const std::string THRESHOLD_NAME;
+  static const QString THRESHOLD_NAME;
   static const double THRESHOLD_DEFAULT;
-  static const std::string TARGET_REDUCTION_NAME;
+  static const QString TARGET_REDUCTION_NAME;
   static const double TARGET_REDUCTION_DEFAULT;
-  static const std::string MAX_NUMBER_OF_POLYGONS_NAME;
+  static const QString MAX_NUMBER_OF_POLYGONS_NAME;
   static const long MAX_NUMBER_OF_POLYGONS_DEFAULT;
 
   virtual void Init(berry::IWorkbench::Pointer workbench);

@@ -22,7 +22,6 @@
 #include <QApplication>
 #include <QmitkHelpAboutDialog.h>
 #include <mitkDataNode.h>
-#include <mitkDataNodeFactory.h>
 #include <mitkDataStorage.h>
 #include <mitkDataStorageEditorInput.h>
 #include <mitkIDataStorageService.h>
@@ -61,7 +60,7 @@ void QmitkBaseWorkbenchWindowAdvisor::PreWindowOpen()
   QmitkExtWorkbenchWindowAdvisor::PreWindowOpen();
 
   // When the GUI starts, these views are not shown.
-  std::vector<std::string> viewExcludeList = this->GetViewExcludeList();
+  QStringList viewExcludeList = this->GetViewExcludeList();
   viewExcludeList.push_back("org.mitk.views.modules");
   viewExcludeList.push_back("org.blueberry.views.helpcontents");
   viewExcludeList.push_back("org.blueberry.views.helpindex");
@@ -112,7 +111,7 @@ void QmitkBaseWorkbenchWindowAdvisor::PostWindowCreate()
 
 
 //-----------------------------------------------------------------------------
-void QmitkBaseWorkbenchWindowAdvisor::OpenEditor(const std::string &editorName)
+void QmitkBaseWorkbenchWindowAdvisor::OpenEditor(const QString& editorName)
 {
   berry::IWorkbenchWindow::Pointer wnd = this->GetWindowConfigurer()->GetWindow();
   berry::IWorkbenchPage::Pointer page = wnd->GetActivePage();
@@ -131,7 +130,7 @@ void QmitkBaseWorkbenchWindowAdvisor::OpenEditor(const std::string &editorName)
 
 
 //-----------------------------------------------------------------------------
-void QmitkBaseWorkbenchWindowAdvisor::OpenEditorIfEnvironmentVariableIsON(const std::string &envVariable, const std::string &editorName)
+void QmitkBaseWorkbenchWindowAdvisor::OpenEditorIfEnvironmentVariableIsON(const std::string& envVariable, const QString& editorName)
 {
   if (niftk::BooleanEnvironmentVariableIsOn(envVariable))
   {

@@ -47,7 +47,7 @@
 #include <usModuleContext.h>
 #include <usModuleInitialization.h>
 
-const std::string ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables";
+const QString ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables";
 
 //-----------------------------------------------------------------------------
 ImageLookupTablesView::ImageLookupTablesView()
@@ -148,9 +148,7 @@ void ImageLookupTablesView::OnPreferencesChanged(const berry::IBerryPreferences*
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::RetrievePreferenceValues()
 {
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   berry::IBerryPreferences::Pointer prefs
       = (prefService->GetSystemPreferences()->Node(VIEW_ID))

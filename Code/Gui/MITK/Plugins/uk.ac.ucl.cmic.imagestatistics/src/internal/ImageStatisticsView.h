@@ -51,7 +51,7 @@ public:
   ImageStatisticsView();
   virtual ~ImageStatisticsView();
 
-  static const std::string VIEW_ID;
+  static const QString VIEW_ID;
 
   virtual void CreateQtPartControl(QWidget *parent);
 

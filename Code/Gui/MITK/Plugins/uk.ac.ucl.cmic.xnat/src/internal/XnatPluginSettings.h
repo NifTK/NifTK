@@ -15,12 +15,16 @@
 #ifndef XnatPluginSettings_h
 #define XnatPluginSettings_h
 
-#include <berryIPreferences.h>
-
 #include <ctkXnatSettings.h>
 
 #include <QString>
 #include <QMap>
+
+namespace berry
+{
+class IPreferences;
+template <class T> class SmartPointer;
+}
 
 class XnatPluginSettings : public ctkXnatSettings
 {
@@ -50,7 +54,7 @@ public:
   ctkXnatLoginProfile* defaultLoginProfile() const;
 
 private:
-  berry::IPreferences::Pointer preferences;
+  berry::SmartPointer<berry::IPreferences> preferences;
 };
 
 #endif

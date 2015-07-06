@@ -21,7 +21,7 @@
 #include "XnatPluginPreferencePage.h"
 #include "XnatPluginSettings.h"
 
-const std::string XnatBrowserView::VIEW_ID = "uk.ac.ucl.cmic.xnat.browser";
+const QString XnatBrowserView::VIEW_ID = "uk.ac.ucl.cmic.xnat.browser";
 
 class XnatBrowserViewPrivate
 {
@@ -56,7 +56,7 @@ void XnatBrowserView::CreateQtPartControl(QWidget *parent)
   // setup the basic GUI of this view
   m_Parent = parent;
 
-  d->settings = new XnatPluginSettings(GetPreferences());
+  d->settings = new XnatPluginSettings(this->GetPreferences());
 
   d->xnatBrowserWidget = new XnatBrowserWidget(parent);
   QVBoxLayout* layout = new QVBoxLayout();

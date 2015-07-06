@@ -107,7 +107,11 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     ${_app_options}
   )
 
-  mitk_use_modules(TARGET ${MY_APP_NAME} MODULES niftkCore qtsingleapplication)
+  mitk_use_modules(
+    TARGET ${MY_APP_NAME}
+    MODULES niftkCore MitkAppUtil
+    PACKAGES Qt4|QtGui Qt5|Widgets
+  )
 
   #############################################################################
   # Restore this MACOSX_BUNDLE_NAMES variable. See long-winded note above.

@@ -37,7 +37,7 @@ namespace mitk {
  * \brief Abstract class that implements QT and CTK specific functionality to launch the application as a plugin.
  * \ingroup uk_ac_ucl_cmic_gui_qt_commonapps_internal
  */
-class CMIC_QT_COMMONAPPS QmitkCommonAppsApplicationPlugin : public QObject, public berry::AbstractUICTKPlugin
+class CMIC_QT_COMMONAPPS QmitkCommonAppsApplicationPlugin : public berry::AbstractUICTKPlugin
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
@@ -73,16 +73,16 @@ protected:
   void RegisterHelpSystem();
 
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial LevelWindow property to each image.
-  void RegisterLevelWindowProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
+  void RegisterLevelWindowProperty(const QString& preferencesNodeName, mitk::DataNode *constNode);
 
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial "Image Rendering.Mode" property to each image.
-  void RegisterImageRenderingModeProperties(const std::string& preferencesNodeName, mitk::DataNode *constNode);
+  void RegisterImageRenderingModeProperties(const QString& preferencesNodeName, mitk::DataNode *constNode);
 
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial value for Texture Interpolation, and Reslice Interpolation.
-  void RegisterInterpolationProperty(const std::string& preferencesNodeName, mitk::DataNode *constNode);
+  void RegisterInterpolationProperty(const QString& preferencesNodeName, mitk::DataNode *constNode);
 
   /// \brief Deliberately not virtual method that registers initial property values of "outline binary"=true and "opacity"=1 for binary images.
-  void RegisterBinaryImageProperties(const std::string& preferencesNodeName, mitk::DataNode *constNode);
+  void RegisterBinaryImageProperties(const QString& preferencesNodeName, mitk::DataNode *constNode);
 
   /// \brief Deliberately not virtual method thats called by derived classes, to register any extensions that this plugin knows about.
   void RegisterQmitkCommonAppsExtensions();
@@ -118,7 +118,7 @@ private:
   const mitk::DataStorage* GetDataStorage();
 
   /// \brief Retrieves the preferences node name, or Null if unsuccessful.
-  berry::IPreferences* GetPreferencesNode(const std::string& preferencesNodeName);
+  berry::IPreferences::Pointer GetPreferencesNode(const QString& preferencesNodeName);
 
   /// \brief Private utility method to calculate min, max, mean and stdDev of an ITK image.
   template<typename TPixel, unsigned int VImageDimension>

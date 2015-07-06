@@ -24,10 +24,10 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string ImageStatisticsViewPreferencesPage::AUTO_UPDATE_NAME("auto update");
-const std::string ImageStatisticsViewPreferencesPage::ASSUME_BINARY_NAME("assume binary");
-const std::string ImageStatisticsViewPreferencesPage::REQUIRE_SAME_SIZE_IMAGE_NAME("require same size image");
-const std::string ImageStatisticsViewPreferencesPage::BACKGROUND_VALUE_NAME("background value");
+const QString ImageStatisticsViewPreferencesPage::AUTO_UPDATE_NAME("auto update");
+const QString ImageStatisticsViewPreferencesPage::ASSUME_BINARY_NAME("assume binary");
+const QString ImageStatisticsViewPreferencesPage::REQUIRE_SAME_SIZE_IMAGE_NAME("require same size image");
+const QString ImageStatisticsViewPreferencesPage::BACKGROUND_VALUE_NAME("background value");
 
 
 //-----------------------------------------------------------------------------
@@ -68,9 +68,7 @@ void ImageStatisticsViewPreferencesPage::Init(berry::IWorkbench::Pointer )
 //-----------------------------------------------------------------------------
 void ImageStatisticsViewPreferencesPage::CreateQtControl(QWidget* parent)
 {
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_ImageStatisticsPreferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.imagestatistics");
 

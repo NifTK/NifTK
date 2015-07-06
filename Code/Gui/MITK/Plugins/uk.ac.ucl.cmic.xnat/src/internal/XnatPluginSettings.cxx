@@ -14,6 +14,8 @@
 
 #include "XnatPluginSettings.h"
 
+#include <berryIPreferences.h>
+
 #include <mitkLogMacros.h>
 
 #include <QDir>
@@ -35,46 +37,42 @@ XnatPluginSettings::XnatPluginSettings(berry::IPreferences::Pointer preferences)
 
 QString XnatPluginSettings::defaultURL() const
 {
-  std::string server = preferences->Get(XnatPluginPreferencePage::SERVER_NAME, XnatPluginPreferencePage::SERVER_DEFAULT);
-  return QString::fromStdString(server);
+  return preferences->Get(XnatPluginPreferencePage::SERVER_NAME, XnatPluginPreferencePage::SERVER_DEFAULT);
 }
 
 void XnatPluginSettings::setDefaultURL(const QString& url)
 {
-  preferences->Put(XnatPluginPreferencePage::SERVER_NAME, url.toStdString());
+  preferences->Put(XnatPluginPreferencePage::SERVER_NAME, url);
 }
 
 QString XnatPluginSettings::defaultUserID() const
 {
-  std::string user = preferences->Get(XnatPluginPreferencePage::USER_NAME, XnatPluginPreferencePage::USER_DEFAULT);
-  return QString::fromStdString(user);
+  return preferences->Get(XnatPluginPreferencePage::USER_NAME, XnatPluginPreferencePage::USER_DEFAULT);
 }
 
 void XnatPluginSettings::setDefaultUserID(const QString& userID)
 {
-  preferences->Put(XnatPluginPreferencePage::USER_NAME, userID.toStdString());
+  preferences->Put(XnatPluginPreferencePage::USER_NAME, userID);
 }
 
 QString XnatPluginSettings::defaultDirectory() const
 {
-  std::string downloadDirectory = preferences->Get(XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_NAME, XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_DEFAULT);
-  return QString::fromStdString(downloadDirectory);
+  return preferences->Get(XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_NAME, XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_DEFAULT);
 }
 
 void XnatPluginSettings::setDefaultDirectory(const QString& downloadDirectory)
 {
-  preferences->Put(XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_NAME, downloadDirectory.toStdString());
+  preferences->Put(XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_NAME, downloadDirectory);
 }
 
 QString XnatPluginSettings::defaultWorkDirectory() const
 {
-  std::string workDirectory = preferences->Get(XnatPluginPreferencePage::WORK_DIRECTORY_NAME, XnatPluginPreferencePage::WORK_DIRECTORY_DEFAULT);
-  return QString::fromStdString(workDirectory);
+  return preferences->Get(XnatPluginPreferencePage::WORK_DIRECTORY_NAME, XnatPluginPreferencePage::WORK_DIRECTORY_DEFAULT);
 }
 
 void XnatPluginSettings::setDefaultWorkDirectory(const QString& workDirectory)
 {
-  preferences->Put(XnatPluginPreferencePage::WORK_DIRECTORY_NAME, workDirectory.toStdString());
+  preferences->Put(XnatPluginPreferencePage::WORK_DIRECTORY_NAME, workDirectory);
 }
 
 QMap<QString, ctkXnatLoginProfile*> XnatPluginSettings::loginProfiles() const
@@ -82,22 +80,16 @@ QMap<QString, ctkXnatLoginProfile*> XnatPluginSettings::loginProfiles() const
   QMap<QString, ctkXnatLoginProfile*> profiles;
 
   berry::IPreferences::Pointer profilesNode = preferences->Node("profiles");
-  std::vector<std::string> profileNames = profilesNode->ChildrenNames();
-  std::vector<std::string>::iterator itProfileNames = profileNames.begin();
-  std::vector<std::string>::iterator endProfileNames = profileNames.end();
-  while (itProfileNames != endProfileNames)
+  foreach (QString profileName, profilesNode->ChildrenNames())
   {
-    std::string profileName = *itProfileNames;
-    QString qProfileName = QString::fromStdString(profileName);
     berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName);
     ctkXnatLoginProfile* profile = new ctkXnatLoginProfile();
-    profile->setName(QString::fromStdString(profileName));
-    profile->setServerUrl(QString::fromStdString(profileNode->Get("serverUrl", "")));
-    profile->setUserName(QString::fromStdString(profileNode->Get("userName", "")));
-    profile->setPassword(QString::fromStdString(profileNode->Get("password", "")));
+    profile->setName(profileName);
+    profile->setServerUrl(profileNode->Get("serverUrl", ""));
+    profile->setUserName(profileNode->Get("userName", ""));
+    profile->setPassword(profileNode->Get("password", ""));
     profile->setDefault(profileNode->GetBool("default", false));
-    profiles[qProfileName] = profile;
-    ++itProfileNames;
+    profiles[profileName] = profile;
   }
 
   return profiles;
@@ -112,9 +104,9 @@ void XnatPluginSettings::setLoginProfiles(QMap<QString, ctkXnatLoginProfile*> lo
   {
     QString profileName = itProfiles.key();
     ctkXnatLoginProfile* profile = itProfiles.value();
-    berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName.toStdString());
-    profileNode->Put("serverUrl", profile->serverUrl().toString().toStdString());
-    profileNode->Put("userName", profile->userName().toStdString());
+    berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName);
+    profileNode->Put("serverUrl", profile->serverUrl().toString());
+    profileNode->Put("userName", profile->userName());
     // Saving passwords is disabled.
 //    profileNode->Put("password", profile->password().toStdString());
     profileNode->PutBool("default", profile->isDefault());
@@ -125,12 +117,12 @@ void XnatPluginSettings::setLoginProfiles(QMap<QString, ctkXnatLoginProfile*> lo
 ctkXnatLoginProfile* XnatPluginSettings::loginProfile(QString profileName) const
 {
   berry::IPreferences::Pointer profilesNode = preferences->Node("profiles");
-  berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName.toStdString());
+  berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName);
   ctkXnatLoginProfile* profile = new ctkXnatLoginProfile();
   profile->setName(profileName);
-  profile->setServerUrl(QString::fromStdString(profileNode->Get("serverUrl", "")));
-  profile->setUserName(QString::fromStdString(profileNode->Get("userName", "")));
-  profile->setPassword(QString::fromStdString(profileNode->Get("password", "")));
+  profile->setServerUrl(profileNode->Get("serverUrl", ""));
+  profile->setUserName(profileNode->Get("userName", ""));
+  profile->setPassword(profileNode->Get("password", ""));
   profile->setDefault(profileNode->GetBool("default", false));
 
   return profile;
@@ -139,19 +131,19 @@ ctkXnatLoginProfile* XnatPluginSettings::loginProfile(QString profileName) const
 void XnatPluginSettings::setLoginProfile(QString profileName, ctkXnatLoginProfile* profile)
 {
   berry::IPreferences::Pointer profilesNode = preferences->Node("profiles");
-  berry::IPreferences::Pointer profileNode = profilesNode->Node(profile->name().toStdString());
-  profileNode->Put("serverUrl", profile->serverUrl().toString().toStdString());
-  profileNode->Put("userName", profile->userName().toStdString());
+  berry::IPreferences::Pointer profileNode = profilesNode->Node(profile->name());
+  profileNode->Put("serverUrl", profile->serverUrl().toString());
+  profileNode->Put("userName", profile->userName());
 
   // Saving passwords is disabled.
-//  profileNode->Put("password", profile->password().toStdString());
+//  profileNode->Put("password", profile->password());
   profileNode->PutBool("default", profile->isDefault());
 }
 
 void XnatPluginSettings::removeLoginProfile(QString profileName)
 {
   berry::IPreferences::Pointer profilesNode = preferences->Node("profiles");
-  berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName.toStdString());
+  berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName);
   profileNode->RemoveNode();
 }
 
