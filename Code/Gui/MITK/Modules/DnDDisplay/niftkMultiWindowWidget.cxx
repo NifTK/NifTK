@@ -27,6 +27,8 @@
 #include <mitkSlicedGeometry3D.h>
 #include <mitkVtkLayerController.h>
 
+#include <vtkMitkRectangleProp.h>
+
 #include "vtkSideAnnotation_p.h"
 
 /**
@@ -159,9 +161,9 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   this->mitkWidget4->setAcceptDrops(true);
 
   // Set these off, as it wont matter until there is an image dropped, with a specific layout and orientation.
-  m_CornerAnnotaions[AXIAL].cornerText->SetText(0, "");
-  m_CornerAnnotaions[SAGITTAL].cornerText->SetText(0, "");
-  m_CornerAnnotaions[CORONAL].cornerText->SetText(0, "");
+  m_CornerAnnotations[AXIAL]->SetText(0, "");
+  m_CornerAnnotations[SAGITTAL]->SetText(0, "");
+  m_CornerAnnotations[CORONAL]->SetText(0, "");
 
   for (int i = 0; i < 3; ++i)
   {
@@ -390,15 +392,9 @@ void niftkMultiWindowWidget::OnTimeStepChanged(const itk::EventObject& /*geometr
 void niftkMultiWindowWidget::SetBackgroundColour(QColor colour)
 {
   m_BackgroundColour = colour;
-  m_GradientBackground1->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
-  m_GradientBackground1->Enable();
-  m_GradientBackground2->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
-  m_GradientBackground2->Enable();
-  m_GradientBackground3->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
-  m_GradientBackground3->Enable();
-  m_GradientBackground4->SetGradientColors(colour.redF(), colour.greenF(), colour.blueF(), colour.redF(), colour.greenF(), colour.blueF());
-  m_GradientBackground4->Enable();
-  this->RequestUpdate();
+  mitk::Color backgroundColour;
+  backgroundColour.Set(colour.redF(), colour.greenF(), colour.blueF());
+  this->SetGradientBackgroundColors(backgroundColour, backgroundColour);
 }
 
 
@@ -490,39 +486,39 @@ void niftkMultiWindowWidget::UpdateBorders()
   {
     if (m_SelectedWindowIndex == AXIAL)
     {
-      m_RectangleRendering1->Enable(1.0, 0.0, 0.0);
-      m_RectangleRendering2->Disable();
-      m_RectangleRendering3->Disable();
-      m_RectangleRendering4->Disable();
+      m_RectangleProps[0]->SetVisibility(true);
+      m_RectangleProps[1]->SetVisibility(false);
+      m_RectangleProps[2]->SetVisibility(false);
+      m_RectangleProps[3]->SetVisibility(false);
     }
     else if (m_SelectedWindowIndex == SAGITTAL)
     {
-      m_RectangleRendering1->Disable();
-      m_RectangleRendering2->Enable(0.0, 1.0, 0.0);
-      m_RectangleRendering3->Disable();
-      m_RectangleRendering4->Disable();
+      m_RectangleProps[0]->SetVisibility(false);
+      m_RectangleProps[1]->SetVisibility(true);
+      m_RectangleProps[2]->SetVisibility(false);
+      m_RectangleProps[3]->SetVisibility(false);
     }
     else if (m_SelectedWindowIndex == CORONAL)
     {
-      m_RectangleRendering1->Disable();
-      m_RectangleRendering2->Disable();
-      m_RectangleRendering3->Enable(0.0, 0.0, 1.0);
-      m_RectangleRendering4->Disable();
+      m_RectangleProps[0]->SetVisibility(false);
+      m_RectangleProps[1]->SetVisibility(false);
+      m_RectangleProps[2]->SetVisibility(true);
+      m_RectangleProps[3]->SetVisibility(false);
     }
     else // THREE_D
     {
-      m_RectangleRendering1->Disable();
-      m_RectangleRendering2->Disable();
-      m_RectangleRendering3->Disable();
-      m_RectangleRendering4->Enable(1.0, 1.0, 0.0);
+      m_RectangleProps[0]->SetVisibility(false);
+      m_RectangleProps[1]->SetVisibility(false);
+      m_RectangleProps[2]->SetVisibility(false);
+      m_RectangleProps[3]->SetVisibility(true);
     }
   }
   else
   {
-    m_RectangleRendering1->Disable();
-    m_RectangleRendering2->Disable();
-    m_RectangleRendering3->Disable();
-    m_RectangleRendering3->Disable();
+    m_RectangleProps[0]->SetVisibility(false);
+    m_RectangleProps[1]->SetVisibility(false);
+    m_RectangleProps[2]->SetVisibility(false);
+    m_RectangleProps[3]->SetVisibility(false);
   }
 }
 
@@ -992,9 +988,9 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
     }
 
     // Add these annotations the first time we have a real geometry.
-    m_CornerAnnotaions[AXIAL].cornerText->SetText(0, "Axial");
-    m_CornerAnnotaions[SAGITTAL].cornerText->SetText(0, "Sagittal");
-    m_CornerAnnotaions[CORONAL].cornerText->SetText(0, "Coronal");
+    m_CornerAnnotations[AXIAL]->SetText(0, "Axial");
+    m_CornerAnnotations[SAGITTAL]->SetText(0, "Sagittal");
+    m_CornerAnnotations[CORONAL]->SetText(0, "Coronal");
 
     /// The place of the direction annotations on the render window:
     ///
