@@ -48,16 +48,6 @@ namespace niftk
 */
 //boost::filesystem::path ConvertToFullPath(const std::string& pathName);
 
-
-/**
-* Creates a unique file name for a file located in the O/S temporary directory.
-* @param prefix file basename prefix
-* @param suffix file basename suffix
-* @return a unique file name
-*/
-//boost::filesystem::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix = "");
-
-
 //-----------------------------------------------------------------------------
 std::string GetFileSeparator()
 {
@@ -115,7 +105,7 @@ std::string Basename(const std::string& pathName)
 
 
 //-----------------------------------------------------------------------------
-fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix)
+std::string CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix)
 {
   fs::path tmpFileName;
   std::string tmpDirName, fileNameTemplate;
@@ -145,7 +135,7 @@ fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &
     tmpFileName = fs::path(p_namebuffer);
     delete[] p_namebuffer;
 
-    return tmpFileName;
+    return tmpFileName.string();
   }
 #else
   {
@@ -193,7 +183,7 @@ fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &
       throw niftk::IOException("Failed to create unique temp. file.");
     }
 
-    return tmpFileName;
+    return tmpFileName.string();
   }
 #endif
 }
