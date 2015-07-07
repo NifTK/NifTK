@@ -12,6 +12,10 @@
 #
 #============================================================================*/
 
+set(NIFTK_TEST_EXT_ITK_REGISTRATION_TOOLBOX_INCLUDE_DIRS
+  ${ITK_INCLUDE_DIRS}
+  )
+
 set(NIFTK_TEST_EXT_ITK_REGISTRATION_TOOLBOX_LINK_LIBRARIES
   niftkcommon
   niftkITK
@@ -318,4 +322,5 @@ set(RegistrationToolboxUnitTests_SRCS
 )
 
 add_executable(RegistrationToolboxUnitTests RegistrationToolboxUnitTests.cxx ${RegistrationToolboxUnitTests_SRCS})
-target_link_libraries(RegistrationToolboxUnitTests ${NIFTK_TEST_EXT_ITK_REGISTRATION_TOOLBOX_LINK_LIBRARIES} )
+target_include_directories(RegistrationToolboxUnitTests PRIVATE ${NIFTK_TEST_EXT_ITK_REGISTRATION_TOOLBOX_INCLUDE_DIRS})
+target_link_libraries(RegistrationToolboxUnitTests PRIVATE ${NIFTK_TEST_EXT_ITK_REGISTRATION_TOOLBOX_LINK_LIBRARIES})
