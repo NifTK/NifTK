@@ -66,7 +66,7 @@ class QmitkWheelEventEater;
  * \sa mitk::DataStorage
  * \sa mitk::FocusManager
  */
-class niftkThumbnail_EXPORT QmitkThumbnailRenderWindow : public QmitkRenderWindow
+class NIFTKTHUMBNAIL_EXPORT QmitkThumbnailRenderWindow : public QmitkRenderWindow
 {
   Q_OBJECT
 

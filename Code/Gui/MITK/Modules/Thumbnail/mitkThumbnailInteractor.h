@@ -33,7 +33,7 @@ class SliceNavigationController;
  *
  * @ingroup Interaction
  **/
-class niftkThumbnail_EXPORT ThumbnailInteractor: public DisplayInteractor
+class NIFTKTHUMBNAIL_EXPORT ThumbnailInteractor: public DisplayInteractor
 {
 public:
   mitkClassMacro(ThumbnailInteractor, DisplayInteractor)
