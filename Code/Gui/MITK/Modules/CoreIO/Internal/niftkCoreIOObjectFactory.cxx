@@ -24,7 +24,6 @@
 #include <mitkIOMimeTypes.h>
 #include <mitkPointSet.h>
 #include <mitkCoordinateAxesVtkMapper3D.h>
-#include <mitkVolumeDataVtkMapper3D.h>
 #include <mitkImageVtkMapper2D.h>
 #include <mitkFastPointSetVtkMapper3D.h>
 #include <mitkPointSetVtkMapper3D.h>
