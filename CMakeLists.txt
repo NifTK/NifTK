@@ -518,44 +518,49 @@ endif()
 set_property(GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS "")
 
 #mitkFunctionAddExternalProject(NAME Camino OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME Boost ON DOC "Use the Boost C++ library")
+mitkFunctionAddExternalProject(NAME Boost ON ADVANCED DOC "Use the Boost C++ library")
 
 mitkFunctionAddExternalProject(NAME Eigen ON ADVANCED DOC "Use the Eigen library")
 
-mitkFunctionAddExternalProject(NAME OpenCV ON)
-mitkFunctionAddExternalProject(NAME ArUco OFF DEPENDS OpenCV)
-mitkFunctionAddExternalProject(NAME AprilTags OFF DEPENDS OpenCV Eigen)
-mitkFunctionAddExternalProject(NAME FLANN OFF)
-mitkFunctionAddExternalProject(NAME PCL OFF)
-mitkFunctionAddExternalProject(NAME RTK OFF)
-mitkFunctionAddExternalProject(NAME RTK OFF)
+mitkFunctionAddExternalProject(NAME OpenCV ON ADVANCED)
+mitkFunctionAddExternalProject(NAME AprilTags OFF ADVANCED DEPENDS OpenCV Eigen)
+mitkFunctionAddExternalProject(NAME ArUco OFF ADVANCED DEPENDS OpenCV)
+mitkFunctionAddExternalProject(NAME FLANN OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME PCL OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME RTK OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME VL OFF)
-mitkFunctionAddExternalProject(NAME RTK OFF)
-mitkFunctionAddExternalProject(NAME CGAL OFF DEPENDS Boost)
-mitkFunctionAddExternalProject(NAME NiftyLink OFF)
-mitkFunctionAddExternalProject(NAME NiftySim OFF)
-mitkFunctionAddExternalProject(NAME NiftySeg OFF)
-mitkFunctionAddExternalProject(NAME NiftyReg OFF)
-#mitkFunctionAddExternalProject(NAME NiftyRec OFF)
-mitkFunctionAddExternalProject(NAME NifTKData OFF)
+mitkFunctionAddExternalProject(NAME CGAL OFF ADVANCED DEPENDS Boost)
+mitkFunctionAddExternalProject(NAME NiftyLink OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftySim OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftySeg OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftyReg OFF ADVANCED)
+#mitkFunctionAddExternalProject(NAME NiftyRec OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
 
 # -----------------------------------------
 # The following external projects must be ordered according to their inter-dependencies
 
 
 # These are "hard" dependencies and always set to ON
-mitkFunctionAddExternalProject(NAME DCMTK ON DOC "EXPERIMENTAL, superbuild only: Use DCMTK in MITK")
+mitkFunctionAddExternalProject(NAME DCMTK ON ADVANCED DOC "EXPERIMENTAL, superbuild only: Use DCMTK in MITK")
 mitkFunctionAddExternalProject(NAME GDCM ON ADVANCED)
-mitkFunctionAddExternalProject(NAME ITK ON NO_CACHE DEPENDS GDCM OpenCV)
-mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON DEPENDS ITK)
-mitkFunctionAddExternalProject(NAME VTK ON NO_CACHE)
-mitkFunctionAddExternalProject(NAME CTK ON DEPENDS QT DCMTK DOC "Use CTK in MITK")
-mitkFunctionAddExternalProject(NAME MITK ON NO_CACHE)
+mitkFunctionAddExternalProject(NAME ITK ON ADVANCED NO_CACHE DEPENDS GDCM)
+mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON ADVANCED DEPENDS ITK)
+mitkFunctionAddExternalProject(NAME VTK ON ADVANCED NO_CACHE)
+mitkFunctionAddExternalProject(NAME CTK ON ADVANCED DEPENDS QT ITK VTK DCMTK DOC "Use CTK in MITK")
+mitkFunctionAddExternalProject(NAME MITK ON ADVANCED NO_CACHE DEPENDS ITK VTK GDCM DCMTK CTK Eigen)
 
 # -----------------------------------------
 # Other MITK_USE_* options not related to external projects build via the NifTK superbuild
 
 #env_option(MITK_USE_OpenCL "Use OpenCL GPU-Computing library" OFF)
+
+if (BUILD_IGI)
+  set(MITK_USE_AprilTags ON CACHE BOOL "" FORCE)
+  set(MITK_USE_ArUco ON CACHE BOOL "" FORCE)
+  set(MITK_USE_NiftyLink ON CACHE BOOL "" FORCE)
+  set(MITK_USE_OpenCV ON CACHE BOOL "" FORCE)
+endif()
 
 #-----------------------------------------------------------------------------
 # Build configurations
@@ -924,7 +929,7 @@ configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake ${CMAKE_BINARY_DIR}/
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/Findapriltags.cmake ${CMAKE_BINARY_DIR}/Findapriltags.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindAprilTags.cmake ${CMAKE_BINARY_DIR}/FindAprilTags.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)

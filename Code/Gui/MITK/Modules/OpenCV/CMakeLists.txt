@@ -27,7 +27,6 @@ MITK_CREATE_MODULE(
   PACKAGE_DEPENDS OpenCV
 )
 
-message("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ depends niftkcommon")
 target_link_libraries(niftkOpenCV PRIVATE niftkcommon)
 
 
