@@ -106,8 +106,8 @@ void MeshGenerator::Update() throw (niftk::IOException) {
   string inrFileName, meditFileName;
   double imgOrigin[3];
 
-  meditFileName = CreateUniqueTempFileName("niftk", ".mesh").string();
-  inrFileName = CreateUniqueTempFileName("niftk", ".inr").string();
+  meditFileName = CreateUniqueTempFileName("niftk", ".mesh");
+  inrFileName = CreateUniqueTempFileName("niftk", ".inr");
 
   try {
 	  typedef itk::ImageFileWriter<ITKImageType> __ImageWriter;
