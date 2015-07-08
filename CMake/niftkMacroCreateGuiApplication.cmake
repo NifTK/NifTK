@@ -17,9 +17,11 @@
 ###############################################################################
 
 macro(NIFTK_CREATE_GUI_APPLICATION)
-  MACRO_PARSE_ARGUMENTS(_APP
-                        "NAME;INCLUDE_PLUGINS;EXCLUDE_PLUGINS"
+
+  cmake_parse_arguments(_APP
                         ""
+                        "NAME"
+                        "INCLUDE_PLUGINS;EXCLUDE_PLUGINS"
                         ${ARGN}
                         )
 
