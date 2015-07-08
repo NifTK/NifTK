@@ -14,16 +14,14 @@
 
 MITK_CREATE_MODULE(
   INCLUDE_DIRS Events Dialogs LookupTables
-  DEPENDS MitkCore MitkQtWidgets niftkCore
+  DEPENDS MitkCore MitkQtWidgets niftkITK niftkCore
   PACKAGE_DEPENDS Qt4|QtCore CTK|CTKWidgets
 )
-
-target_link_libraries(niftkDnDDisplay PRIVATE niftkITK)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkDnDDisplay)
 endif()
 
-#if(BUILD_TESTING)
+if(BUILD_TESTING)
 #  add_subdirectory(Testing)
-#endif()
+endif()

@@ -14,6 +14,8 @@
 
 MITK_CREATE_MODULE_TESTS()
 
+mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES OpenCV)
+
 # For validation we prefer tests with externalised parameters.
 # Keep each test definition on one line, as the documentation parsing process searches by line.
 # Note that the test ID has to exactly match the requirement ID.

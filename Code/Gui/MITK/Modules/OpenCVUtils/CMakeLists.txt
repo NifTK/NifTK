@@ -14,12 +14,9 @@
 
 
 MITK_CREATE_MODULE(
-  DEPENDS niftkCore
+  DEPENDS MitkLegacyIO niftkcommon niftkCore
   PACKAGE_DEPENDS OpenCV
 )
-
-target_link_libraries(niftkOpenCVUtils PRIVATE niftkcommon)
-
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkOpenCVUtils)

@@ -17,6 +17,8 @@ include(${QT_USE_FILE})
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkDnDDisplay)
 
+mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES Qt4|QtTest)
+
 # Trac 3146
 mitkAddCustomModuleTest(DnDDisplay-SingleViewerWidgetTest niftkSingleViewerWidgetTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)
 mitkAddCustomModuleTest(DnDDisplay-MultiViewerWidgetTest niftkMultiViewerWidgetTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)
@@ -28,5 +30,3 @@ mitkAddCustomModuleTest(DnDDisplay-GeometryTest3 niftkSingleViewerWidgetTest ${N
 mitkAddCustomModuleTest(DnDDisplay-GeometryTest4 niftkSingleViewerWidgetTest ${NIFTK_DATA_DIR}/Input/volunteers/30257/mdeft_nifti/mdeft.1.nii testSetTimeGeometry)
 mitkAddCustomModuleTest(DnDDisplay-GeometryTest5 niftkSingleViewerWidgetTest ${NIFTK_DATA_DIR}/Input/volunteers/30257/mdeft_dicom/1.3.12.2.1107.5.2.32.35194.2009102113323066854212777.0.0.0_0002_000001_12561305650450.dcm testGetTimeGeometry)
 mitkAddCustomModuleTest(DnDDisplay-GeometryTest6 niftkSingleViewerWidgetTest ${NIFTK_DATA_DIR}/Input/volunteers/30257/mdeft_dicom/1.3.12.2.1107.5.2.32.35194.2009102113323066854212777.0.0.0_0002_000001_12561305650450.dcm testSetTimeGeometry)
-
-target_link_libraries(niftkDnDDisplayTestDriver PRIVATE ${QT_QTTEST_LIBRARY})

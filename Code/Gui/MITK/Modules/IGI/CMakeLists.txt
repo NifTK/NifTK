@@ -14,7 +14,7 @@
 
 MITK_CREATE_MODULE(
   INCLUDE_DIRS CentreLines TrackedImage TrackedPointer  Utils Rendering MicroServices
-  DEPENDS niftkCore niftkOpenCV niftkOpenCVUtils 
+  DEPENDS niftkCore niftkOpenCV niftkOpenCVUtils
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

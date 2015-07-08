@@ -14,6 +14,11 @@
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkOpenCV)
 
+mitk_use_modules(TARGET ${TESTDRIVER}
+  MODULES niftkcommon niftkVTK
+  PACKAGES OpenCV
+)
+
 mitkAddCustomModuleTest(CameraCalibRegression mitkCameraCalibrationTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/calibLeft ${NIFTK_DATA_DIR}/Input/CameraCalibration/calibRight ${CMAKE_BINARY_DIR}/Testing/Temporary/CameraCalibration 14 10 3 0.577703 0.913)
 
 mitkAddCustomModuleTest(USPinCalibRegression mitkUltrasoundPinCalibrationRegressionTest ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/2015.04.23-ultrasound_calibration/Aurora_2/1/ ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/2015.04.23-ultrasound_calibration/pins/ ${CMAKE_BINARY_DIR}/Testing/Temporary/UltrasoundPinCalibration.4x4 ${BASELINE}/UltrasoundPinCalibration.4x4  ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/2015.04.23-ultrasound_calibration/initialParameters.txt)
@@ -46,4 +51,3 @@ endif(OPENCV_WITH_FFMPEG)
 #end trac 2669
 
 mitkAddCustomModuleTest(Pivot-Calibration mitkPivotCalibrationRegressionTest ${NIFTK_DATA_DIR}/Input/PivotCalibration ${CMAKE_BINARY_DIR}/Testing/Temporary/PivotCalibration.4x4 ${BASELINE}/PivotCalibration.4x4)
-
