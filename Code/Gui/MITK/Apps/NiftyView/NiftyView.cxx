@@ -12,9 +12,7 @@
 
 =============================================================================*/
 
-//#include "../NifTKApplication.h"
 #include <mitkBaseApplication.h>
-
 
 #include <QVariant>
 
