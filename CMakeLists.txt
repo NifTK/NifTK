@@ -86,17 +86,16 @@ else()
 endif()
 
 ######################################################################
-# Setting supported build types. Should ONLY be Debug or Release.
+# Setting supported build types. Should ONLY be Release or Debug.
 ######################################################################
 
-if(DEFINED CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Valid options are Debug/Release")
-else()
-   set(CMAKE_BUILD_TYPE Release CACHE STRING "Setting build type to Release (default). Valid options: Debug/Release.")
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Valid options are Release or Debug" FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug")
 endif()
 
-if (NOT (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Release"))
-  message(FATAL_ERROR "Build type ${CMAKE_BUILD_TYPE} is not supported.")
+if (NOT (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "Debug"))
+  message(FATAL_ERROR "Build type \"${CMAKE_BUILD_TYPE}\" is not supported.")
 endif()
 
 if(WIN32)
