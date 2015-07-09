@@ -41,42 +41,42 @@ public:
   /**
    * \brief Stores the name of the preferences node.
    */
-  static const std::string PREFERENCES_NODE_NAME;
+  static const QString PREFERENCES_NODE_NAME;
 
   /**
    * \brief Stores the name of the preference node that contains the name of the calibration file.
    */
-  static const std::string CALIBRATION_FILE_NAME;
+  static const QString CALIBRATION_FILE_NAME;
 
   /**
    * \brief Stores the name of the preference node that contains the name of the scale file.
    */
-  static const std::string SCALE_FILE_NAME;
+  static const QString SCALE_FILE_NAME;
 
   /**
    * \brief Stores the name of the preference node that contains the name of the scale file.
    */
-  static const std::string EMTOWORLDCALIBRATION_FILE_NAME;
+  static const QString EMTOWORLDCALIBRATION_FILE_NAME;
 
   /**
    * \brief Stores the name of the preference node that contains whether we flip the x scale factor to be negative.
    */
-  static const std::string FLIP_X_SCALING;
+  static const QString FLIP_X_SCALING;
 
   /**
    * \brief Stores the name of the preference node that contains whether we flip the y scale factor to be negative.
    */
-  static const std::string FLIP_Y_SCALING;
+  static const QString FLIP_Y_SCALING;
 
   /**
    * \brief Stores the name of the preference node that contains status whether we show the clone image button.
    */
-  static const std::string CLONE_IMAGE;
+  static const QString CLONE_IMAGE;
 
   /**
    * \brief Stores the name of the preference node that controls if we show the 2D window.
    */
-  static const std::string SHOW_2D_WINDOW;
+  static const QString SHOW_2D_WINDOW;
 
   TrackedImageViewPreferencePage();
   TrackedImageViewPreferencePage(const TrackedImageViewPreferencePage& other);

@@ -231,14 +231,14 @@ QmitkRenderWindow* QmitkIGIOverlayEditor::GetQmitkRenderWindow(const QString &id
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::SetCalibrationFileName(const std::string& fileName)
+void QmitkIGIOverlayEditor::SetCalibrationFileName(const QString& fileName)
 {
   m_OverlayViewer->SetTrackingCalibrationFileName(fileName);
 }
 
 
 //-----------------------------------------------------------------------------
-std::string QmitkIGIOverlayEditor::GetCalibrationFileName() const
+QString QmitkIGIOverlayEditor::GetCalibrationFileName() const
 {
   return m_OverlayViewer->GetTrackingCalibrationFileName();
 }
@@ -263,9 +263,9 @@ void QmitkIGIOverlayEditor::SetClipToImagePlane(const bool& clipToImagePlane)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::SetDepartmentLogoPath(const std::string path)
+void QmitkIGIOverlayEditor::SetDepartmentLogoPath(const QString& path)
 {
-  m_OverlayViewer->SetDepartmentLogoPath(path.c_str());
+  m_OverlayViewer->SetDepartmentLogoPath(path);
 }
 
 

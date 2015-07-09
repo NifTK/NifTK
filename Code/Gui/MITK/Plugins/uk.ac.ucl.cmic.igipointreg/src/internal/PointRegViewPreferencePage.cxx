@@ -25,9 +25,9 @@
 #include <berryPlatform.h>
 #include <niftkPointBasedRegistration.h>
 
-const std::string PointRegViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igipointreg");
-const std::string PointRegViewPreferencePage::USE_ICP_INITIALISATION("use ICP initialisation");
-const std::string PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING("use point ID for matching");
+const QString PointRegViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igipointreg");
+const QString PointRegViewPreferencePage::USE_ICP_INITIALISATION("use ICP initialisation");
+const QString PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING("use point ID for matching");
 
 //-----------------------------------------------------------------------------
 PointRegViewPreferencePage::PointRegViewPreferencePage()
@@ -67,9 +67,7 @@ void PointRegViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
 
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_PointRegViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 

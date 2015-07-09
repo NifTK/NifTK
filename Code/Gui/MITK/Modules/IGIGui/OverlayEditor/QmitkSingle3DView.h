@@ -128,14 +128,14 @@ public:
   /**
    * \brief Calls mitk::CMICLogo::SetDepartmentLogoPath(), and is currently unused.
    */
-  void SetDepartmentLogoPath( const char * path );
+  void SetDepartmentLogoPath(const QString& path);
 
   /**
    * \brief Sets the Tracking Calibration file name, which causes a re-loading of the tracking calibration matrix.
    */
-  void SetTrackingCalibrationFileName(const std::string& fileName);
+  void SetTrackingCalibrationFileName(const QString& fileName);
 
-  std::string GetTrackingCalibrationFileName() const;
+  QString GetTrackingCalibrationFileName() const;
 
   /**
    * \brief Sets whether or not we are doing camera tracking mode.
@@ -224,7 +224,7 @@ private:
   mitk::GradientBackground::Pointer             m_GradientBackground;
   CMICLogo::Pointer                             m_LogoRendering;
   QmitkBitmapOverlay::Pointer                   m_BitmapOverlay;
-  std::string                                   m_TrackingCalibrationFileName;
+  QString                                       m_TrackingCalibrationFileName;
   vtkSmartPointer<vtkMatrix4x4>                 m_TrackingCalibrationTransform;
   mitk::DataNode::Pointer                       m_TransformNode;
   mitk::Image::Pointer                          m_Image;

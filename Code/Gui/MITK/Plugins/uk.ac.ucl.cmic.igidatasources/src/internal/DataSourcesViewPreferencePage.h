@@ -45,7 +45,7 @@ public:
   /**
    * \brief Stores the name of the preferences node.
    */
-  static const std::string PREFERENCES_NODE_NAME;
+  static const QString PREFERENCES_NODE_NAME;
 
   DataSourcesViewPreferencePage();
   DataSourcesViewPreferencePage(const DataSourcesViewPreferencePage& other);
@@ -94,7 +94,7 @@ private:
   QPushButton    *m_ColorPushButton[3];
   QPushButton    *m_ColorResetPushButton[3];
   QString         m_ColorStyleSheet[3];
-  std::string     m_Color[3];
+  QString         m_Color[3];
 
   // Other controls.
   QSpinBox           *m_FramesPerSecondSpinBox;

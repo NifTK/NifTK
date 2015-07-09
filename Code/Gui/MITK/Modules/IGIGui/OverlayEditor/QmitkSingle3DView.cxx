@@ -247,9 +247,9 @@ void QmitkSingle3DView::DisableDepartmentLogo()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetDepartmentLogoPath( const char * path )
+void QmitkSingle3DView::SetDepartmentLogoPath(const QString& path)
 {
-  m_LogoRendering->SetLogoSource(path);
+  m_LogoRendering->SetLogoSource(qPrintable(path));
 }
 
 
@@ -262,18 +262,18 @@ void QmitkSingle3DView::resizeEvent(QResizeEvent* /*event*/)
 
 
 //-----------------------------------------------------------------------------
-std::string QmitkSingle3DView::GetTrackingCalibrationFileName() const
+QString QmitkSingle3DView::GetTrackingCalibrationFileName() const
 {
   return m_TrackingCalibrationFileName;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetTrackingCalibrationFileName(const std::string& fileName)
+void QmitkSingle3DView::SetTrackingCalibrationFileName(const QString& fileName)
 {
-  if (m_DataStorage.IsNotNull() && fileName.size() > 0 && fileName != this->m_TrackingCalibrationFileName)
+  if (m_DataStorage.IsNotNull() && fileName.size() > 0 && fileName != m_TrackingCalibrationFileName)
   {
-    LoadMatrixOrCreateDefault(fileName, "niftk.ov.cal", true /* helper object */, m_DataStorage);
+    mitk::LoadMatrixOrCreateDefault(fileName.toStdString(), "niftk.ov.cal", true /* helper object */, m_DataStorage);
     m_TrackingCalibrationFileName = fileName;
 
     mitk::DataNode *node = m_DataStorage->GetNamedNode("niftk.ov.cal");

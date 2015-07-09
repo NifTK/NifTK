@@ -69,7 +69,7 @@ public:
   /**
    * \brief Set the full path for the department logo, currently delegating only to QmitkSingle3DView.
    */
-  void SetDepartmentLogoPath(const std::string path);
+  void SetDepartmentLogoPath(const QString& path);
 
   /**
    * \brief Calls QmitkSingle3DView::EnableDepartmentLogo().
@@ -99,9 +99,9 @@ public:
   /**
    * \brief Sets the calibration file (e.g. hand-eye transform for a laparoscope).
    */
-  void SetCalibrationFileName(const std::string& fileName);
+  void SetCalibrationFileName(const QString& fileName);
 
-  std::string GetCalibrationFileName() const;
+  QString GetCalibrationFileName() const;
 
   /**
    * \brief Sets whether or not we are doing camera tracking mode.

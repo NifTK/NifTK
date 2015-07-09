@@ -14,5 +14,8 @@
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkIGIDataSources)
 
+mitk_use_modules(TARGET ${TESTDRIVER}
+  PACKAGES NiftyLink
+)
 mitkAddCustomModuleTest(QmitkIGIUltrasonixToolMemoryTest-greyscale QmitkIGIUltrasonixToolMemoryTest ${NIFTK_DATA_DIR}/Input/cte_circle_gm.png)
 mitkAddCustomModuleTest(QmitkIGIUltrasonixToolMemoryTest-colour QmitkIGIUltrasonixToolMemoryTest ${NIFTK_DATA_DIR}/Baseline/mitkCoordinateAxesDataRenderingTestBaseline.png)
