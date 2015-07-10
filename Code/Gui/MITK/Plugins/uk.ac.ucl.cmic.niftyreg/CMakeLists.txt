@@ -14,8 +14,8 @@
 
 project(uk_ac_ucl_cmic_niftyreg)
 
-link_directories(${NIFTYREG_LIBRARY_DIR})
-include_directories(${NIFTYREG_INCLUDE_DIR})
+link_directories(${NiftyReg_LIBRARY_DIR})
+include_directories(${NiftyReg_INCLUDE_DIR})
 add_definitions(-DUSE_NIFTYREG)
 
 mitk_create_plugin(
@@ -37,7 +37,7 @@ target_link_libraries(${PROJECT_NAME}
   PRIVATE
     niftkITK
     niftkVTKNiftyReg
-    ${NIFTYREG_LIBRARIES}
+    ${NiftyReg_LIBRARIES}
 )
 
 # The NiftyReg plugin currently can't use the CUDA version of NiftyReg

@@ -151,11 +151,6 @@ foreach(NIFTK_APP ${NIFTK_APPS})
       set(BUILD_IGI ON)
     endif()
 
-    if (${app_name} STREQUAL "NiftyView")
-      #set(BUILD_MIDAS ON)
-      #set(BUILD_IGI ON)
-    endif()
-
     if (${app_name} STREQUAL "NiftyMIDAS")
       set(BUILD_MIDAS ON)
     endif()
@@ -173,10 +168,10 @@ endforeach()
 option(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Code/Applications." ON)
 option(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts." ON)
 option(BUILD_CAMINO "Build Camino." OFF)
-option(BUILD_NIFTYREG "Build NiftyReg." ON)
-option(BUILD_NIFTYREC "Build NiftyRec." OFF)
-option(BUILD_NIFTYSIM "Build NiftySim." ON)
-option(BUILD_NIFTYSEG "Build NiftySeg." ON)
+option(BUILD_NiftyReg "Build NiftyReg." ON)
+option(BUILD_NiftyRec "Build NiftyRec." OFF)
+option(BUILD_NiftySim "Build NiftySim." ON)
+option(BUILD_NiftySeg "Build NiftySeg." ON)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
 option(BUILD_RTK "Build RTK - Experimental." OFF)
 option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
@@ -561,6 +556,30 @@ if (BUILD_IGI)
   set(MITK_USE_OpenCV ON CACHE BOOL "" FORCE)
 endif()
 
+if (BUILD_NiftyReg)
+  set(MITK_USE_NiftyReg ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_NiftyReg OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_NiftySeg)
+  set(MITK_USE_NiftySeg ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_NiftySeg OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_NiftySim)
+  set(MITK_USE_NiftySim ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_NiftySim OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_NiftyRec)
+  set(MITK_USE_NiftyRec ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_NiftyRec OFF CACHE BOOL "" FORCE)
+endif()
+
 #-----------------------------------------------------------------------------
 # Build configurations
 #-----------------------------------------------------------------------------
@@ -823,6 +842,37 @@ message("CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 message("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 
 
+######################################################################
+# Configure CMake files before we need to use them in the FIND_XXX.
+#
+# So, the variables NIFTK_BOOSTINSTALL etc.
+# should be passed in on cmake command line, or set up using ccmake.
+######################################################################
+
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindAprilTags.cmake ${CMAKE_BINARY_DIR}/FindAprilTags.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroBuildCLI.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroBuildCLI.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineApplication.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineScript.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateGuiApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateGuiApplication.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGenerateCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGenerateCLIScript.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitBranch.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitBranch.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitDateTime.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitDateTime.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroInstallCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroInstallCLIScript.cmake COPYONLY)
+file(GLOB package_depends_files ${CMAKE_SOURCE_DIR}/CMake/PackageDepends/*.cmake)
+foreach(file_to_copy ${package_depends_files})
+  file(COPY ${file_to_copy} DESTINATION ${CMAKE_BINARY_DIR}/CMakePackageDepends)
+endforeach()
+
+
 # Configure module naming conventions
 set(MITK_MODULE_NAME_REGEX_MATCH "^[A-Z].*$")
 set(MITK_MODULE_NAME_REGEX_NOT_MATCH "^[Nn][Ii][Ff][Tt][Kk].*$")
@@ -914,36 +964,6 @@ if(APPLE)
   endforeach()
 
 endif()
-
-######################################################################
-# Configure CMake files before we need to use them in the FIND_XXX.
-#
-# So, the variables NIFTK_BOOSTINSTALL etc.
-# should be passed in on cmake command line, or set up using ccmake.
-######################################################################
-
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindAprilTags.cmake ${CMAKE_BINARY_DIR}/FindAprilTags.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroBuildCLI.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroBuildCLI.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineApplication.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineScript.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateGuiApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateGuiApplication.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGenerateCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGenerateCLIScript.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitBranch.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitBranch.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitDateTime.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitDateTime.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroInstallCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroInstallCLIScript.cmake COPYONLY)
-file(GLOB package_depends_files ${CMAKE_SOURCE_DIR}/CMake/PackageDepends/*.cmake)
-foreach(file_to_copy ${package_depends_files})
-  file(COPY ${file_to_copy} DESTINATION ${CMAKE_BINARY_DIR}/CMakePackageDepends)
-endforeach()
 
 if(BUILD_IGI)
   add_definitions(-DBUILD_IGI)
@@ -1172,75 +1192,75 @@ if(NIFTK_USE_FFTW)
 endif(NIFTK_USE_FFTW)
 
 ######################################################################
-# Find NIFTYREG - (version will vary according to whether CUDA found)
+# Find NiftyReg - (version will vary according to whether CUDA found)
 ######################################################################
-if(BUILD_NIFTYREG)
+if(BUILD_NiftyReg)
   find_package(NiftyReg)
-  if(NIFTYREG_FOUND)
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NIFTYREG_INCLUDE_DIR})
+  if(NiftyReg_FOUND)
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NiftyReg_INCLUDE_DIR})
     add_definitions(-DUSE_NIFTYREG)
     set(NIFTYREG_NVCC_FLAGS "${NIFTYREG_NVCC_FLAGS};-DUSE_NIFTYREG")
     message("Found NiftyReg")
-  else(NIFTYREG_FOUND)
+  else()
     message("Didn't find NiftyReg")
-  endif(NIFTYREG_FOUND)
-endif(BUILD_NIFTYREG)
+  endif()
+endif()
 
-if(NOT NIFTYREG_FOUND)
+if(NOT NiftyReg_FOUND)
   message("No NiftyReg found, so turning off plugin")
   set("NIFTK_Plugins/uk.ac.ucl.cmic.niftyreg" OFF CACHE BOOL "NiftyReg plugin" FORCE)
 endif()
 
 ######################################################################
-# Find NIFTYREC - (version will vary according to whether CUDA found)
-# NB: Is dependent on NIFTYREG and at time of writing only has GPU version
+# Find NiftyRec - (version will vary according to whether CUDA found)
+# NB: Is dependent on NiftyReg and at time of writing only has GPU version
 ######################################################################
 
-if(BUILD_NIFTYREC)
+if(BUILD_NiftyRec)
   find_package(NiftyRec)
-  if(NIFTYREC_FOUND)
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NIFTYREC_INCLUDE_DIR})
+  if(NiftyRec_FOUND)
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NiftyRec_INCLUDE_DIR})
     add_definitions(-DUSE_NIFTYREC)
     set(NIFTYREC_NVCC_FLAGS "${NIFTYREC_NVCC_FLAGS};-DUSE_NIFTYREC")
     message("Found NiftyRec")
-  else(NIFTYREC_FOUND)
+  else()
     message("Didn't find NiftyRec")
-  endif(NIFTYREC_FOUND)
-endif(BUILD_NIFTYREC)
+  endif()
+endif()
 
 ######################################################################
-# Find NIFTYSIM
+# Find NiftySim
 ######################################################################
 
-if(BUILD_NIFTYSIM)
+if(BUILD_NiftySim)
   find_package(NiftySim)
-  if(NIFTYSIM_FOUND)
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NIFTYSIM_INCLUDE_DIR})
+  if(NiftySim_FOUND)
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NiftySim_INCLUDE_DIR})
     add_definitions(-DUSE_NIFTYSIM)
     set(NIFTYSIM_NVCC_FLAGS "${NIFTYSIM_NVCC_FLAGS};-DUSE_NIFTYSIM")
     message("Found NiftySim")
-  else(NIFTYSIM_FOUND)
+  else()
     message("Didn't find NiftySim")
-  endif(NIFTYSIM_FOUND)
-endif(BUILD_NIFTYSIM)
+  endif()
+endif()
 
 ######################################################################
 # Find NiftySeg
 ######################################################################
 
-if(BUILD_NIFTYSEG)
+if(BUILD_NiftySeg)
   find_package(NiftySeg)
-  if(NIFTYSEG_FOUND)
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NIFTYSEG_INCLUDE_DIR})
+  if(NiftySeg_FOUND)
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NiftySeg_INCLUDE_DIR})
     add_definitions(-DUSE_NIFTYSEG)
     set(NIFTYSEG_NVCC_FLAGS "${NIFTYSEG_NVCC_FLAGS};-DUSE_NIFTYSEG")
     message("Found NiftySeg")
-  else(NIFTYSEG_FOUND)
+  else()
     message("Didn't find NiftySeg")
-  endif(NIFTYSEG_FOUND)
-endif(BUILD_NIFTYSEG)
+  endif()
+endif()
 
-if(NOT NIFTYSEG_FOUND)
+if(NOT NiftySeg_FOUND)
   message("No NiftySeg found, so turning off breast segmentation plugin")
   set("NIFTK_Plugins/uk.ac.ucl.cmic.breastsegmentation" OFF CACHE BOOL "Breast segmentation plugin" FORCE)
 endif()
@@ -1545,65 +1565,65 @@ endif()
 ##########################################################################
 
 # NiftyReg
-if(BUILD_NIFTYREG AND NIFTYREG_FOUND)
-  file(GLOB NIFTY_REG_LIB_FILES
-       ${NIFTYREG_DIR}/lib/*.so
-       ${NIFTYREG_DIR}/lib/*.dylib
+if(BUILD_NiftyReg AND NiftyReg_FOUND)
+  file(GLOB _NiftyReg_LIB_FILES
+       ${NiftyReg_DIR}/lib/*.so
+       ${NiftyReg_DIR}/lib/*.dylib
        )
-  MITK_INSTALL(PROGRAMS ${NIFTY_REG_LIB_FILES})
+  MITK_INSTALL(PROGRAMS ${_NiftyReg_LIB_FILES})
 
-  file(GLOB NIFTY_REG_BIN_FILES ${NIFTYREG_DIR}/bin/*)
-  MITK_INSTALL(PROGRAMS ${NIFTY_REG_BIN_FILES})
+  file(GLOB _NiftyReg_BIN_FILES ${NiftyReg_DIR}/bin/*)
+  MITK_INSTALL(PROGRAMS ${_NiftyReg_BIN_FILES})
 
   foreach(prog reg_aladin reg_f3d reg_jacobian reg_resample)
     set(FULL_APP_NAME ${prog})
     NIFTK_GENERATE_CLI_SCRIPT(NAME ${prog})
   endforeach()
-endif(BUILD_NIFTYREG AND NIFTYREG_FOUND)
+endif()
 
 # NiftySeg
-if(BUILD_NIFTYSEG)
-  file(GLOB NIFTY_SEG_LIB_FILES
-       ${NIFTYSEG_DIR}/lib/*.so
-       ${NIFTYSEG_DIR}/lib/*.dylib
+if(BUILD_NiftySeg)
+  file(GLOB _NiftySeg_LIB_FILES
+       ${NiftySeg_DIR}/lib/*.so
+       ${NiftySeg_DIR}/lib/*.dylib
        )
-  MITK_INSTALL(PROGRAMS ${NIFTY_SEG_LIB_FILES})
+  MITK_INSTALL(PROGRAMS ${_NiftySeg_LIB_FILES})
 
-  file(GLOB NIFTY_SEG_BIN_FILES ${NIFTYSEG_DIR}/bin/*)
-  MITK_INSTALL(PROGRAMS ${NIFTY_SEG_BIN_FILES})
+  file(GLOB _NiftySeg_BIN_FILES ${NiftySeg_DIR}/bin/*)
+  MITK_INSTALL(PROGRAMS ${_NiftySeg_BIN_FILES})
 
   foreach(prog seg_EM seg_LabFusion)
     set(FULL_APP_NAME ${prog})
     NIFTK_GENERATE_CLI_SCRIPT(NAME ${prog})
   endforeach()
 
-  file(GLOB NIFTY_SEG_PRIORS_FILES ${NIFTYSEG_DIR}/priors/*)
-  install(PROGRAMS ${NIFTY_SEG_PRIORS_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/priors COMPONENT applications)
-endif(BUILD_NIFTYSEG)
+  file(GLOB _NiftySeg_PRIORS_FILES ${NiftySeg_DIR}/priors/*)
+  install(PROGRAMS ${_NiftySeg_PRIORS_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/priors COMPONENT applications)
+endif()
 
 # NiftyRec
-if(BUILD_NIFTYREC AND NIFTYREC_FOUND)
-  file(GLOB NIFTY_REC_LIB_FILES
-       ${NIFTYREC_DIR}/lib/*.so
-       ${NIFTYREC_DIR}/lib/*.dylib
+if(BUILD_NiftyRec AND NiftyRec_FOUND)
+  file(GLOB _NiftyRec_LIB_FILES
+       ${NiftyRec_DIR}/lib/*.so
+       ${NiftyRec_DIR}/lib/*.dylib
        )
-  MITK_INSTALL(PROGRAMS ${NIFTY_REC_LIB_FILES})
+  MITK_INSTALL(PROGRAMS ${_NiftyRec_LIB_FILES})
 
-  file(GLOB NIFTY_REC_INCL_FILES ${NIFTYREC_DIR}/include/*)
-  MITK_INSTALL(PROGRAMS ${NIFTY_REC_INCL_FILES})
-endif(BUILD_NIFTYREC AND NIFTYREC_FOUND)
+  file(GLOB _NiftyRec_INCL_FILES ${NiftyRec_DIR}/include/*)
+  MITK_INSTALL(PROGRAMS ${_NiftyRec_INCL_FILES})
+endif()
 
 # NiftySim
-if(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
-  file(GLOB NIFTY_SIM_LIB_FILES
-       ${NIFTYSIM_DIR}/lib/*.so
-       ${NIFTYSIM_DIR}/lib/*.dylib
+if(BUILD_NiftySim AND NiftySim_FOUND)
+  file(GLOB _NiftySim_LIB_FILES
+       ${NiftySim_DIR}/lib/*.so
+       ${NiftySim_DIR}/lib/*.dylib
        )
-  MITK_INSTALL(PROGRAMS ${NIFTY_SIM_LIB_FILES})
+  MITK_INSTALL(PROGRAMS ${_NiftySim_LIB_FILES})
 
-  file(GLOB NIFTY_SIM_BIN_FILES ${NIFTYSIM_DIR}/bin/*)
-  MITK_INSTALL(PROGRAMS ${NIFTY_SIM_BIN_FILES})
-endif(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
+  file(GLOB _NiftySim_BIN_FILES ${NiftySim_DIR}/bin/*)
+  MITK_INSTALL(PROGRAMS ${_NIFTY_SIM_BIN_FILES})
+endif()
 
 # Camino
 if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
@@ -1725,8 +1745,8 @@ if(WIN32)
     endif()
 
     # some other (top secret) fem code needs niftysim at runtime.
-    if(NIFTYSIM_FOUND)
-      set(NIFTYSIM_BIN_PATH_FOR_BATCH_FILE "${NIFTYSIM_DIR}/bin")
+    if(NiftySim_FOUND)
+      set(NIFTYSIM_BIN_PATH_FOR_BATCH_FILE "${NiftySim_DIR}/bin")
     else()
       set(NIFTYSIM_BIN_PATH_FOR_BATCH_FILE "")
     endif()
