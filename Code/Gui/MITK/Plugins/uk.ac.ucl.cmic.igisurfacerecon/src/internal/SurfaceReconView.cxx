@@ -30,6 +30,7 @@
 #include "SurfaceReconViewPreferencePage.h"
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
+#include <berryPlatform.h>
 #include <QtConcurrentRun>
 #include <cctype>
 

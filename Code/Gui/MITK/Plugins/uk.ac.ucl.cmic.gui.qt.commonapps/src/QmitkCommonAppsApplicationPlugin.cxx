@@ -16,6 +16,9 @@
 #include "QmitkCommonAppsApplicationPreferencePage.h"
 #include "QmitkNiftyViewApplicationPreferencePage.h"
 
+#include <berryPlatform.h>
+#include <berryIPreferencesService.h>
+
 #include <mitkCoreServices.h>
 #include <mitkIPropertyExtensions.h>
 #include <mitkFloatPropertyExtension.h>

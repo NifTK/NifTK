@@ -16,6 +16,7 @@
 #include <berryIWorkbenchWindow.h>
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
+#include <berryPlatform.h>
 #include "UndistortView.h"
 #include "UndistortViewPreferencesPage.h"
 #include "uk_ac_ucl_cmic_igiundistort_Activator.h"

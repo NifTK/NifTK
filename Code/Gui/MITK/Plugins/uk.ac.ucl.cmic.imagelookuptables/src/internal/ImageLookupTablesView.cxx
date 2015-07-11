@@ -30,8 +30,10 @@
 #include <mitkRenderingManager.h>
 #include <mitkRenderingModeProperty.h>
 #include <mitkDataStorageUtils.h>
-#include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
+#include <berryIPreferencesService.h>
+#include <berryPlatform.h>
+#include <berryIPreferencesService.h>
 #include "QmitkImageLookupTablesPreferencePage.h"
 #include <QmitkLookupTableManager.h>
 #include <QmitkLookupTableContainer.h>

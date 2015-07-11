@@ -18,7 +18,7 @@
 #include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 #include <ctkServiceTracker.h>
 #include <berryAbstractUICTKPlugin.h>
-#include <berryIPreferencesService.h>
+#include <berryIPreferences.h>
 #include <mitkIDataStorageService.h>
 #include <QmitkLookupTableProviderService.h>
 

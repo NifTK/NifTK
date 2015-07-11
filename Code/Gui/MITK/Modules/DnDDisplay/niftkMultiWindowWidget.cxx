@@ -19,6 +19,7 @@
 #include <itkSpatialOrientationAdapter.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
+#include <vtkTextProperty.h>
 #include <QmitkRenderWindow.h>
 #include <QGridLayout>
 

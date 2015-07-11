@@ -14,8 +14,6 @@
 
 #include "XnatPluginSettings.h"
 
-#include <berryIPreferences.h>
-
 #include <mitkLogMacros.h>
 
 #include <QDir>

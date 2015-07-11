@@ -17,6 +17,7 @@
 #include <berryIWorkbenchWindow.h>
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
+#include <berryPlatform.h>
 
 // Qmitk
 #include "ImageStatisticsView.h"
