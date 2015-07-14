@@ -226,6 +226,8 @@ public:
   itkSetMacro (FrameNumber, unsigned int);
   itkSetMacro (Channel, std::string);
   itkSetMacro (TimeStamp, unsigned long long);
+  itkSetMacro (XScale, double);
+  itkSetMacro (YScale, double);
 
   unsigned int AddPoint (const cv::Point2i& point);
   unsigned int RemoveLastPoint ();
@@ -243,6 +245,9 @@ private:
   bool m_InLineMode;
   bool m_InOrderedMode;
   bool m_IsModified;
+  double m_XScale; // When adding points, we can scale the x pixel location
+  double m_YScale; // When adding points, we can scale the y pixel location
+
   unsigned long long m_TimeStamp;
   unsigned int m_FrameNumber;
   std::string m_Channel;

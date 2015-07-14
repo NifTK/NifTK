@@ -40,6 +40,7 @@ int main(int argc, char** argv)
     projector->SetOrderedPoints( ! unOrderedPoints);
     projector->SetAskOverWrite(queryOverWrite);
     projector->SetWriteAnnotatedImages(saveAnnotatedImages);
+    projector->SetHalfImageWidth(halfImageWidth);
     
     projector->Initialise(trackingInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();

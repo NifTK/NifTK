@@ -119,9 +119,10 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
   cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
      
   cv::Mat blankMat = cvCreateMat(10,100,CV_32FC3);
-  IplImage blankImage(blankMat);
-  cvShowImage("Left Channel" , &blankImage);
-  cvShowImage("Right Channel" , &blankImage);
+
+  cv::imshow("Left Channel", blankMat);
+  cv::imshow("Right Channel", blankMat);
+
   unsigned long long startTime;
   trackerMatcher->GetVideoFrame(0, &startTime);
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
@@ -137,7 +138,12 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
     {
       long long timingError;
       cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, NULL, m_ReferenceIndex).inv();
-
+      
+      double xScale = 1.0;
+      if ( m_HalfImageWidth )
+      {
+        xScale = 0.5;
+      }
       cv::Mat tempMat;
       cv::Mat leftVideoImage;
       m_Capture->read(tempMat);
@@ -241,11 +247,13 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
           leftPickedPoints->SetTimeStamp(timeStamp);
           leftPickedPoints->SetInLineMode (m_PickingLine);
           leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
+          leftPickedPoints->SetXScale ( 1.0 / xScale ); 
           rightPickedPoints->SetFrameNumber (framenumber + 1);
           rightPickedPoints->SetChannel ("right");
           rightPickedPoints->SetTimeStamp(timeStamp);
           rightPickedPoints->SetInLineMode (m_PickingLine);
           rightPickedPoints->SetInOrderedMode ( m_OrderedPoints);
+          rightPickedPoints->SetXScale ( 1.0 / xScale ); 
 
           cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
           cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
@@ -300,8 +308,9 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                   }
                 }
                 
-                IplImage image(leftAnnotatedVideoImage);
-                cvShowImage("Left Channel" , &image);
+                cv::Mat limage;
+                cv::resize ( leftAnnotatedVideoImage, limage, cv::Size(0,0), xScale, 1.0, CV_INTER_CUBIC);
+                cv::imshow("Left Channel" , limage);
               }
 
               if ( overWriteRight )
@@ -322,13 +331,14 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                   }
                 }
                 
-                IplImage rimage(rightAnnotatedVideoImage);
-                cvShowImage("Right Channel" , &rimage);
+                cv::Mat rimage;
+                cv::resize ( rightAnnotatedVideoImage, rimage, cv::Size(0,0), xScale, 1.0, CV_INTER_CUBIC);
+                cv::imshow("Right Channel" ,rimage);
               }
             }
           }
-          cvShowImage("Left Channel" , &blankImage);
-          cvShowImage("Right Channel" , &blankImage);
+          cv::imshow("Left Channel", blankMat);
+          cv::imshow("Right Channel", blankMat);
         } 
       }
       else
