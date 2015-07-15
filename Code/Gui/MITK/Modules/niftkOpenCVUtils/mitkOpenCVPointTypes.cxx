@@ -444,6 +444,8 @@ PickedPointList::PickedPointList()
 : m_InLineMode (false)
 , m_InOrderedMode (false)
 , m_IsModified (false)
+, m_XScale (1.0)
+, m_YScale (1.0)
 {
 }
 
@@ -617,10 +619,10 @@ bool PickedPointList::GetIsModified()
 //-----------------------------------------------------------------------------
 unsigned int PickedPointList::AddPoint(const cv::Point2i& point)
 {
-  cv::Point3d myPoint = cv::Point3d (point.x,point.y,0.0);
+  cv::Point3d myPoint = cv::Point3d (static_cast<double>(point.x) * m_XScale,static_cast<double>(point.y) * m_YScale,0.0);
   if ( m_InLineMode )
   {
-    if (  m_PickedObjects.back().m_IsLine )
+    if ( m_PickedObjects.back().m_IsLine )
     {
       m_PickedObjects.back().m_Points.push_back(myPoint);
       MITK_INFO << "Added a point to line " << m_PickedObjects.back().m_Id;
