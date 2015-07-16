@@ -47,7 +47,7 @@ QmitkCalibratedModelRenderingPipeline::QmitkCalibratedModelRenderingPipeline(con
   m_CalibratedWindowSize[0] = calibratedWindowSize[0];
   m_CalibratedWindowSize[1] = calibratedWindowSize[1];
   this->SetRenderWindow(m_Pipeline.GetRenderWindow());
-  //this->GetInteractor()->Disable();
+  this->GetInteractor()->Disable();
 }
 
 
