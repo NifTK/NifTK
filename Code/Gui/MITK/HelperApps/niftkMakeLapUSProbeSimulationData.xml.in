@@ -123,5 +123,21 @@
       <default>0.0,0.0,0.0,0.0,0.0,0.0</default>
     </float-vector>
 
+    <file fileExtensions=".png">
+      <name>ultrasoundImage</name>
+      <longflag>ultrasoundImage</longflag>
+      <description>Ultrasound Image to visualise relative to US Probe</description>
+      <label>Ultrasound Image</label>
+      <channel>input</channel>
+    </file>
+
+    <file fileExtensions=".4x4">
+      <name>ultrasoundCalibration</name>
+      <longflag>ultrasoundCalibration</longflag>
+      <description>Ultrasound Calibration Matrix</description>
+      <label>Ultrasound Calibration Matrix</label>
+      <channel>input</channel>
+    </file>
+
   </parameters>
 </executable>
