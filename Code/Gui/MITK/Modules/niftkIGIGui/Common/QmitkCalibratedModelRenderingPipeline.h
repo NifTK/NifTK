@@ -42,6 +42,8 @@ public:
     const std::string& rightToLeftFileName,
     const std::string& textureFileName,
     const std::string& trackingModelFileName,
+    const std::string& ultrasoundCalibrationMatrixFileName,
+    const std::string& ultrasoundImageFileName,
     const float& trackingGlyphRadius,
     const std::string& outputData,
     QWidget *parent = 0

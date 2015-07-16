@@ -33,11 +33,13 @@ QmitkCalibratedModelRenderingPipeline::QmitkCalibratedModelRenderingPipeline(con
   const std::string& rightToLeftFileName,
   const std::string& textureFileName,
   const std::string& trackingModelFileName,
+  const std::string& ultrasoundCalibrationMatrixFileName,
+  const std::string& ultrasoundImageFileName,
   const float& trackingGlyphRadius,
   const std::string &outputData,
   QWidget *parent)
 : QVTKWidget(parent)
-, m_Pipeline(name, windowSize, calibratedWindowSize, leftIntrinsicsFileName, rightIntrinsicsFileName, visualisationModelFileName, rightToLeftFileName, textureFileName, trackingModelFileName, trackingGlyphRadius)
+, m_Pipeline(name, windowSize, calibratedWindowSize, leftIntrinsicsFileName, rightIntrinsicsFileName, visualisationModelFileName, rightToLeftFileName, textureFileName, trackingModelFileName, ultrasoundCalibrationMatrixFileName, ultrasoundImageFileName, trackingGlyphRadius)
 , m_OutputData(outputData)
 {
   m_WindowSize[0] = windowSize[0];
