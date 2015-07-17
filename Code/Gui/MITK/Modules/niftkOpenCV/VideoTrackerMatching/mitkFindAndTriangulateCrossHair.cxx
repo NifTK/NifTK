@@ -106,7 +106,7 @@ void FindAndTriangulateCrossHair::Initialise(std::string directory,
 
   if ( m_Capture == NULL ) 
   {
-    m_VideoIn = niftk::FindVideoFile(m_Directory);
+    m_VideoIn = niftk::FindVideoFile(m_Directory,  niftk::Basename (niftk::Basename ( m_TrackerMatcher->GetFrameMap())));
     if ( m_VideoIn == ""  ) 
     {
       m_InitOK = false;
