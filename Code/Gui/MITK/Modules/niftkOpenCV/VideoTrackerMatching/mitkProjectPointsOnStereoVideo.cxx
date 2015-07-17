@@ -131,35 +131,12 @@ void ProjectPointsOnStereoVideo::FindVideoData(mitk::VideoTrackerMatching::Point
   {
     if ( m_Capture == NULL ) 
     {
-      std::vector <std::string> videoFiles = niftk::FindVideoData(m_Directory);
-      if ( videoFiles.size() == 0 ) 
+      m_VideoIn = niftk::FindVideoFile ( m_Directory , niftk::Basename (niftk::Basename ( trackerMatcher->GetFrameMap() )));
+      if ( m_VideoIn == "" )
       {
-        MITK_ERROR << "Failed to find any video files";
         m_InitOK = false;
         return;
       }
-      if ( videoFiles.size() > 1 ) 
-      {
-        MITK_WARN << "Found multiple video files, seeing which one matches framemap.log";
-
-        unsigned int matches = 0;
-        m_VideoIn = videoFiles[0];
-        for ( std::vector<std::string>::iterator it = videoFiles.begin () ; it < videoFiles.end() ; ++ it )
-        {
-          if ( niftk::Basename (niftk::Basename ( trackerMatcher->GetFrameMap() )) == niftk::Basename ( *it) )
-          {
-            matches ++;
-            if ( matches == 1 )
-            {
-              m_VideoIn = *it;
-            }
-          }
-        }
-        MITK_WARN << "Using " << m_VideoIn;
-
-      }
-      m_VideoIn = videoFiles[0];
-   
       try
       {
         m_Capture = mitk::InitialiseVideoCapture(m_VideoIn, ( ! m_HaltOnVideoReadFail ));

@@ -466,6 +466,48 @@ std::vector<std::string> FindVideoData(const std::string& directory)
   return returnStrings;
 }
 
+//-----------------------------------------------------------------------------
+std::string FindVideoFile(const std::string& directory, const std::string& mask)
+{
+  std::vector <std::string> videoFiles = niftk::FindVideoData(directory);
+  if ( videoFiles.size() == 0 )
+  {
+    std::cout << "Failed to find any video files";
+    return "";
+  }
+  if ( videoFiles.size() > 1 )
+  {
+    if ( mask == "" )
+    {
+      std::cout << "Found multiple video files, no mask so using the first one, " << videoFiles[0];
+      return videoFiles[0];
+    }
+    else
+    {
+      std::cout << "Found multiple video files, seeing which one matches mask " << mask;  
+    
+      unsigned int matches = 0;
+      std::string videoFile = videoFiles[0];
+      for ( std::vector<std::string>::iterator it = videoFiles.begin () ; it < videoFiles.end() ; ++ it )
+      {
+        if ( mask == niftk::Basename ( *it) )
+        {
+          matches ++;
+          if ( matches == 1 )
+          {
+            std::cout << "Using " << videoFile;
+            return *it;
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    return videoFiles[0];
+  }
+  return "";
+}
 
 //-----------------------------------------------------------------------------
 std::vector<std::string> FindFilesWithGivenExtension(const std::string& fullDirectoryName, const std::string& extension)

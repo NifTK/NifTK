@@ -61,18 +61,12 @@ void MakeMaskImagesFromStereoVideo::Initialise(std::string directory)
   
   if ( m_Capture == NULL ) 
   {
-    std::vector <std::string> videoFiles = niftk::FindVideoData(m_Directory);
-    if ( videoFiles.size() == 0 ) 
+    m_VideoIn = niftk::FindVideoFile(m_Directory);
+    if ( m_VideoIn == "" ) 
     {
-      MITK_ERROR << "Failed to find any video files";
       m_InitOK = false;
       return;
     }
-    if ( videoFiles.size() > 1 ) 
-    {
-      MITK_WARN << "Found multiple video files, will only use " << videoFiles[0];
-    }
-    m_VideoIn = videoFiles[0];
     try
     {
       m_Capture = mitk::InitialiseVideoCapture(m_VideoIn, (! m_HaltOnVideoReadFail )); 
