@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "mitkLabelMapReader.h"
-#include "../Internal/niftkEpiNavIOMimeTypes.h"
+#include "../Internal/niftkCoreGuiIOMimeTypes.h"
 
 #include <mitkCustomMimeType.h>
 #include <mitkLogMacros.h>
@@ -22,7 +22,7 @@
 #include <sstream>
 
 mitk::LabelMapReader::LabelMapReader()
-  : mitk::AbstractFileReader(CustomMimeType( niftk::EpiNavIOMimeTypes::LABELMAP_MIMETYPE_NAME() ), niftk::EpiNavIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION() )
+  : mitk::AbstractFileReader(CustomMimeType( niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_NAME() ), niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION() )
 {
   m_ServiceReg = this->RegisterService();
 }

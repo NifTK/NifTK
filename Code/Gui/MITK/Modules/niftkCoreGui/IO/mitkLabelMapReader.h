@@ -12,54 +12,48 @@
 
 =============================================================================*/
 
-#ifndef __mitkLabelMapWriter_h
-#define __mitkLabelMapWriter_h
+#ifndef __mitkLabelMapReader_h
+#define __mitkLabelMapReader_h
 
 
+#include <mitkAbstractFileReader.h>
 
-#include <mitkAbstractFileWriter.h>
-#include "niftkEpiNavExports.h"
+#include "mitkLabelMapWriter.h"
 
-#include <QColor>
+#include <QColor.h>
+#include <QString.h>
 
 namespace mitk 
 
 {
 
-struct LabelMapItem
-{
-  double  value;
-  QColor  color;
-  QString name;
-};
-
 /**
 * /brief Reader for label map files. 
 * /ingroup IO
 */
-class NIFTKEPINAV_EXPORT LabelMapWriter : public AbstractFileWriter
+class NIFTKCOREGUI_EXPORT LabelMapReader : public AbstractFileReader
 {
 
 public: 
-  LabelMapWriter();
-  LabelMapWriter(const LabelMapWriter & other);
-  virtual LabelMapWriter * Clone() const;
-  virtual ~LabelMapWriter(){};
+  LabelMapReader();
+  LabelMapReader(const LabelMapReader & other);
+  virtual LabelMapReader * Clone() const;
+  virtual ~LabelMapReader(){};
   
-  using mitk::AbstractFileWriter::Write;
-  virtual void Write();  
+  using mitk::AbstractFileReader::Read;
+  virtual std::vector<itk::SmartPointer<BaseData> > Read();  
   
-  inline void SetLabels(std::vector< LabelMapItem >  labels){ m_Labels = labels; }
-
-  void WriteLabelMap();  
+  inline std::vector< LabelMapItem > GetLabels(){ return m_Labels; }
 
 private: 
+  void ReadLabelMap();  
   
   std::vector< LabelMapItem > m_Labels;
   
+  us::ServiceRegistration<mitk::IFileReader> m_ServiceReg;
 
 };
 
 } // namespace mitk
 
-#endif
+#endif // __mitkLabelMapReader_h
