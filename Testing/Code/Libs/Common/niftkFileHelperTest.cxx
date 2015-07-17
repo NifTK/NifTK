@@ -424,6 +424,35 @@ int TestModifyFileSuffix()
   return EXIT_SUCCESS;
 }
 
+//-----------------------------------------------------------------------------
+int TestFindVideoData(std::string directory)
+{
+  std::vector<std::string> videoFiles = niftk::FindVideoData(directory);
+  if ( videoFiles.size() != 4 )
+  {
+    std::cerr << "The method niftk::FindVideoData should "
+              << "return 4 files for directory " << directory << ", not " << videoFiles.size() 
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
+//-----------------------------------------------------------------------------
+int TestFindVideoFile(std::string directory)
+{
+  std::string videoFile = niftk::FindVideoFile(directory, "capture-2013_7_26-16_0_36");
+  std::string rightFile = directory +  "/QmitkIGINVidiaDataSource_5/capture-2013_7_26-16_0_36.264";
+  if ( videoFile != rightFile )
+  {
+    std::cerr << "The method niftk::FindVideoFile should "
+              << "find " << rightFile << " in the directory " << directory 
+              << ", not "<< videoFile
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
 
 /**
  * \brief Basic test harness for FileHelper.h
@@ -482,6 +511,15 @@ int niftkFileHelperTest(int argc, char * argv[])
   {
     return TestModifyFileSuffix();
   }
+   else if (testNumber == 12)
+  {
+    return TestFindVideoData(argv[2]);
+  }
+   else if (testNumber == 13)
+  {
+    return TestFindVideoFile(argv[2]);
+  }
+  
   else
   {
     return EXIT_FAILURE;
