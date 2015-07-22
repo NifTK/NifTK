@@ -487,7 +487,6 @@ std::string FindVideoFile(const std::string& directory, const std::string& mask)
       std::cout << "Found multiple video files, seeing which one matches mask " << mask;  
     
       unsigned int matches = 0;
-      std::string videoFile = videoFiles[0];
       for ( std::vector<std::string>::iterator it = videoFiles.begin () ; it < videoFiles.end() ; ++ it )
       {
         if ( mask == niftk::Basename ( *it) )
@@ -495,7 +494,7 @@ std::string FindVideoFile(const std::string& directory, const std::string& mask)
           matches ++;
           if ( matches == 1 )
           {
-            std::cout << "Using " << videoFile;
+            std::cout << ". Using " << *it;
             return *it;
           }
         }

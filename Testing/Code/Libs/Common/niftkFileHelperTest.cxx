@@ -442,7 +442,7 @@ int TestFindVideoData(std::string directory)
 int TestFindVideoFile(std::string directory)
 {
   std::string videoFile = niftk::FindVideoFile(directory, "capture-2013_7_26-16_0_36");
-  std::string rightFile = directory +  "/QmitkIGINVidiaDataSource_5/capture-2013_7_26-16_0_36.264";
+  std::string rightFile = directory + niftk::GetFileSeparator() + "QmitkIGINVidiaDataSource_5" + niftk::GetFileSeparator() + "capture-2013_7_26-16_0_36.264";
   if ( videoFile != rightFile )
   {
     std::cerr << "The method niftk::FindVideoFile should "
