@@ -14,7 +14,7 @@
 
 MITK_CREATE_MODULE(
   INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
-  DEPENDS MitkCore
+  DEPENDS MitkCore MitkSceneSerializationBase
   PACKAGE_DEPENDS ITK|ITKIOTransformBase Boost|boost_system 
 )
 

@@ -38,6 +38,10 @@ set(CPP_FILES
   DataNodeProperties/mitkAffineTransformDataNodeProperty.cxx
   DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cxx
   DataNodeProperties/mitkNamedLookupTableProperty.cxx
+  IO/mitkNamedLookupTablePropertySerializer.cxx
+  IO/mitkRawImageReader.cxx
+  IO/mitkRawImageWriter.cxx
+  IO/mitkRawImageWriterFactory.cxx
   IO/mitkFileIOUtils.cxx
   Interactions/mitkPointSetUpdate.cxx
 )
