@@ -62,20 +62,28 @@ void PickPointsOnStereoVideo::Initialise(std::string directory)
   m_InitOK = false;
   m_Directory = directory;
   m_OutDirectory = m_Directory + niftk::GetFileSeparator() +  "PickedVideoPoints";  
+  m_InitOK = true;
+  return;
+
+}
+
+//-----------------------------------------------------------------------------
+void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer trackerMatcher)
+{
+  if ( ! m_InitOK )
+  {
+    MITK_WARN << "Called project before initialise.";
+    return;
+  }
+ 
   if ( m_Capture == NULL ) 
   {
-    std::vector <std::string> videoFiles = niftk::FindVideoData(m_Directory);
-    if ( videoFiles.size() == 0 ) 
+    m_VideoIn = niftk::FindVideoFile(m_Directory, niftk::Basename (niftk::Basename ( trackerMatcher->GetFrameMap() )));
+    if ( m_VideoIn == "" ) 
     {
-      MITK_ERROR << "Failed to find any video files";
       m_InitOK = false;
       return;
     }
-    if ( videoFiles.size() > 1 ) 
-    {
-      MITK_WARN << "Found multiple video files, will only use " << videoFiles[0];
-    }
-    m_VideoIn = videoFiles[0];
     try
     {
       m_Capture = mitk::InitialiseVideoCapture(m_VideoIn, (! m_HaltOnVideoReadFail )); 
@@ -94,23 +102,9 @@ void PickPointsOnStereoVideo::Initialise(std::string directory)
       MITK_ERROR << "Caught exception " << e.what();
       exit(1);
     }
-
   }
 
-  m_InitOK = true;
-  return;
-
-}
-
-//-----------------------------------------------------------------------------
-void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer trackerMatcher)
-{
-  if ( ! m_InitOK )
-  {
-    MITK_WARN << "Called project before initialise.";
-    return;
-  }
-    
+   
   m_ProjectOK = false;
 
   int framenumber = 0 ;
