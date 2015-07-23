@@ -771,17 +771,22 @@ unsigned int PickedPointList::SkipOrderedPoint()
 void PointPickingCallBackFunc(int event, int x, int y, int flags, void* userdata)
 {
   PickedPointList* out = static_cast<PickedPointList*>(userdata);
-  if  ( event == cv::EVENT_LBUTTONDOWN )
+  if  ( flags == cv::EVENT_FLAG_LBUTTON  )
   {
     out->AddPoint (cv::Point2i ( x,y));
+    return;
   }
-  else if  ( event == cv::EVENT_RBUTTONDOWN )
+  else if  ( flags == cv::EVENT_FLAG_RBUTTON )
   {
     out->RemoveLastPoint();
+    return;
   }
-  else if  ( event == cv::EVENT_MBUTTONDOWN )
+  else if  ( ( event == cv::EVENT_MBUTTONDOWN ) ||
+      ( flags == cv::EVENT_FLAG_CTRLKEY + cv::EVENT_FLAG_LBUTTON ) ||
+      ( flags == cv::EVENT_FLAG_CTRLKEY + cv::EVENT_FLAG_RBUTTON ) )
   {
     out->SkipOrderedPoint();
+    return;
   }
 }
 
