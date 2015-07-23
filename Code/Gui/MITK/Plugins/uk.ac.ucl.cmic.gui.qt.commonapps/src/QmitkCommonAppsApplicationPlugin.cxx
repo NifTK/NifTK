@@ -525,15 +525,22 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
     {
       float lowestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_OPACITY, 1);
       float highestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
-      unsigned int defaultIndex = 0;
 
-      // Get LUT from Micro Service.
-      QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
-      mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultIndex, lowestOpacity, highestOpacity);
+      mitk::BaseProperty::Pointer lutProp = node->GetProperty("LookupTable");
+      const mitk::NamedLookupTableProperty* prop = dynamic_cast<const mitk::NamedLookupTableProperty*>(lutProp.GetPointer());
+      if(prop == NULL )
+      {
+        unsigned int defaultIndex = 0;
 
-      node->ReplaceProperty("LookupTable", mitkLUTProperty);
-      node->SetIntProperty("LookupTableIndex", defaultIndex);
-      node->SetProperty("Image Rendering.Mode", mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR));
+        // Get LUT from Micro Service.
+        QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
+        mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultIndex, lowestOpacity, highestOpacity);
+
+        node->ReplaceProperty("LookupTable", mitkLUTProperty);
+        node->SetIntProperty("LookupTableIndex", defaultIndex);
+        node->SetProperty("Image Rendering.Mode", mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR));
+      }
+
       node->SetProperty("Image Rendering.Lowest Value Opacity", mitk::FloatProperty::New(lowestOpacity));
       node->SetProperty("Image Rendering.Highest Value Opacity", mitk::FloatProperty::New(highestOpacity));
 
