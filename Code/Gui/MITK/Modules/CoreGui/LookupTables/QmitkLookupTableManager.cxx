@@ -32,39 +32,14 @@ QmitkLookupTableManager::QmitkLookupTableManager()
 	MapType map;
 
 	// TODO: How can I automatically read a list of filenames within a plugin?
-	QStringList fileList;
-  fileList.push_back(":imagej_fire.lut");
-  fileList.push_back(":blue.lut");
-  fileList.push_back(":cyan.lut");
-  fileList.push_back(":green.lut");
-  fileList.push_back(":grey.lut");
-  fileList.push_back(":inverse_grey.lut");
-  fileList.push_back(":hot.lut");
-  fileList.push_back(":hsv.lut");
-  fileList.push_back(":jet.lut");
-  fileList.push_back(":magenta.lut");
-  fileList.push_back(":matlab_autumn.lut");
-  fileList.push_back(":matlab_bipolar_256_0.1.lut");
-  fileList.push_back(":matlab_bipolar_256_0.9.lut");
-  fileList.push_back(":matlab_cool.lut");
-  fileList.push_back(":matlab_hot.lut");
-  fileList.push_back(":matlab_spring.lut");
-  fileList.push_back(":matlab_summer.lut");
-  fileList.push_back(":matlab_winter.lut");
-  fileList.push_back(":midas_bands.lut");
-  fileList.push_back(":midas_hot_iron.lut");
-  fileList.push_back(":midas_overlay.lut");
-  fileList.push_back(":midas_pet_map.lut");
-  fileList.push_back(":midas_spectrum.lut");
-  fileList.push_back(":nih.lut");
-  fileList.push_back(":red.lut");
-  fileList.push_back(":sea.lut");
-  fileList.push_back(":yellow.lut");
+  QDir directory(":");
+  QStringList filters;
+  filters << "*.lut";
+	QStringList fileList = directory.entryList(filters, QDir::Files);
 
 	for (int i = 0; i < fileList.size(); i++)
 	{
-
-	  QString fileName = fileList[i];
+    QString fileName = directory.absoluteFilePath(fileList[i]);
     MITK_DEBUG << "QmitkLookupTableManager():Loading lut " << fileName.toLocal8Bit().constData();
 
     QFile file(fileName);
