@@ -1,0 +1,23 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.igisurfacereg} The Surface Based Registration View
+
+\image html icon.png "The Icon for the Surface Based Registration View"
+
+\section SurfaceRegIntro Introduction
+
+Do an introduction here.
+
+\section SurfaceRegUsage Usage
+
+Put all usage information here.
+
+\section SurfaceRegPreferences Preferences
+
+Put all information on user configurable preferences here.
+
+\section SurfaceRegReferences References
+
+Put lots of useful references here, including html links, and DOI references.
+
+*/
+

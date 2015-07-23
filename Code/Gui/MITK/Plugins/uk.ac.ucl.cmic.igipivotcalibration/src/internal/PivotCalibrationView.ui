@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PivotCalibrationView</class>
+ <widget class="QWidget" name="PivotCalibrationView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>753</width>
+    <height>786</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QGroupBox" name="m_SegmetationGroup">
+     <property name="title">
+      <string>Options</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_22">
+      <item row="0" column="0">
+       <layout class="QGridLayout" name="gridLayout_17">
+        <item row="0" column="0">
+         <widget class="QLabel" name="m_PercentageLabel">
+          <property name="text">
+           <string>percentage</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QSpinBox" name="m_PercentageSpinBox">
+          <property name="maximum">
+           <number>100</number>
+          </property>
+          <property name="value">
+           <number>100</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSpinBox" name="m_NumberOfReRunsSpinBox">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100000</number>
+          </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>1000</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="m_VesselHistPeakLabel">
+          <property name="text">
+           <string>number of re-runs</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="m_ImageFromDiskGroup">
+     <property name="title">
+      <string>Calibration</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="0" column="1">
+         <widget class="QLabel" name="m_TrackingMatrixFolderLabel">
+          <property name="text">
+           <string>tracking matrix folder</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLabel" name="m_CalibrationMatrixLabel">
+          <property name="text">
+           <string>Calibration matrix</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="3">
+         <widget class="ctkMatrixWidget" name="m_MatrixWidget" native="true"/>
+        </item>
+        <item row="2" column="1">
+         <widget class="QPushButton" name="m_DoPivotCalibrationPushButton">
+          <property name="text">
+           <string>Do Pivot Calibration</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="ctkPathLineEdit" name="m_MatrixDirectoryChooser" native="true"/>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLabel" name="m_ResidualErrorLabel">
+          <property name="text">
+           <string>residual error</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="3">
+         <widget class="QLabel" name="m_ResidualErrorDisplayLabel">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="m_SaveTransformationGroup">
+     <property name="title">
+      <string>Save transformation</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_26">
+      <item row="0" column="0">
+       <layout class="QGridLayout" name="gridLayout_32">
+        <item row="0" column="1">
+         <widget class="QPushButton" name="m_SaveToFileButton">
+          <property name="text">
+           <string>Save to file</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLineEdit" name="m_PivotCalibrationMatrixLineEdit"/>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ctkMatrixWidget</class>
+   <extends>QWidget</extends>
+   <header>ctkMatrixWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkPathLineEdit</class>
+   <extends>QWidget</extends>
+   <header>ctkPathLineEdit.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
