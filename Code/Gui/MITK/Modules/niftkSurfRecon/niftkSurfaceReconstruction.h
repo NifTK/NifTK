@@ -23,7 +23,7 @@
 #include <mitkGenericProperty.h>
 //#include <opencv2/core/core.hpp>
 #include <itkMatrix.h>
-#include <CameraCalibration/Undistortion.h>
+#include <niftkUndistortion.h>
 
 // forward-decl
 namespace niftk 

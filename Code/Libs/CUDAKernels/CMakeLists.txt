@@ -15,9 +15,10 @@
 find_package(CUDA REQUIRED)
  
 set(niftkCUDAKernels_SRCS
-  CameraCalibration/UndistortionKernel.cu
-  Example/EdgeDetectionKernel.cu
-  Image/FlipImageKernel.cu
+  Example/niftkAddTwoIntegers.cu
+  Example/niftkEdgeDetectionKernel.cu
+  CameraCalibration/niftkUndistortionKernel.cu
+  Image/niftkFlipImageKernel.cu
 )
 
 # with all the itk etc stuff, nvcc dies with "command line too long".
@@ -25,6 +26,7 @@ set(niftkCUDAKernels_SRCS
 # http://www.cmake.org/Bug/print_bug_page.php?bug_id=12198
 set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "" )
 include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels)
+include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels/Common)
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 
@@ -36,7 +38,6 @@ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--ptxas-options=-v;--generate-code arch=c
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-G)
 endif()
-
 
 CUDA_ADD_LIBRARY(niftkCUDAKernels ${niftkCUDAKernels_SRCS})
 

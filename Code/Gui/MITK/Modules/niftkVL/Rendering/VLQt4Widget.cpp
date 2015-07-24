@@ -43,7 +43,7 @@
 #include "ScopedOGLContext.h"
 #include "TrackballManipulator.h"
 #ifdef BUILD_IGI
-#include <CameraCalibration/Undistortion.h>
+#include <CameraCalibration/niftkUndistortion.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkCameraIntrinsics.h>
 #endif
@@ -61,11 +61,11 @@
 
 #ifdef _USE_CUDA
 #include <Rendering/VLFramebufferToCUDA.h>
-#include <CUDAManager/CUDAManager.h>
-#include <CUDAImage/CUDAImage.h>
-#include <CUDAImage/LightweightCUDAImage.h>
-#include <CUDAImage/CUDAImageProperty.h>
-#include <Kernels/FlipImage.h>
+#include <niftkCUDAManager.h>
+#include <niftkCUDAImage.h>
+#include <niftkLightweightCUDAImage.h>
+#include <niftkCUDAImageProperty.h>
+#include <niftkFlipImageLauncher.h>
 #include <cuda_gl_interop.h>
 
 
@@ -1071,7 +1071,7 @@ void VLQt4Widget::PrepareBackgroundActor(const mitk::Image* img, const mitk::Bas
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::PrepareBackgroundActor(const LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
+void VLQt4Widget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -1171,10 +1171,10 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
     if (imgdata.IsNotNull())
     {
 #ifdef _USE_CUDA
-      CUDAImageProperty::Pointer    cudaimgprop = dynamic_cast<CUDAImageProperty*>(imgdata->GetProperty("CUDAImageProperty").GetPointer());
+      niftk::CUDAImageProperty::Pointer    cudaimgprop = dynamic_cast<niftk::CUDAImageProperty*>(imgdata->GetProperty("CUDAImageProperty").GetPointer());
       if (cudaimgprop.IsNotNull())
       {
-        LightweightCUDAImage    lwci = cudaimgprop->Get();
+        niftk::LightweightCUDAImage    lwci = cudaimgprop->Get();
 
         // does the size of cuda-image have to match the mitk-image where it's attached to?
         // i think it does: it is supposed to be the same data living in cuda.
@@ -1197,10 +1197,10 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
     else
     {
 #ifdef _USE_CUDA
-      CUDAImage::Pointer    cudaimgdata = dynamic_cast<CUDAImage*>(basedata.GetPointer());
+      niftk::CUDAImage::Pointer    cudaimgdata = dynamic_cast<niftk::CUDAImage*>(basedata.GetPointer());
       if (cudaimgdata.IsNotNull())
       {
-        LightweightCUDAImage    lwci = cudaimgdata->GetLightweightCUDAImage();
+        niftk::LightweightCUDAImage    lwci = cudaimgdata->GetLightweightCUDAImage();
         PrepareBackgroundActor(&lwci, cudaimgdata->GetGeometry(), node);
         result = true;
 
@@ -1275,11 +1275,11 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 #endif
   mitk::CoordinateAxesData::Pointer   coords = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
 #ifdef _USE_CUDA
-  mitk::BaseData::Pointer cudaImg   = dynamic_cast<CUDAImage*>(node->GetData());
+  mitk::BaseData::Pointer cudaImg   = dynamic_cast<niftk::CUDAImage*>(node->GetData());
   // this check will prefer a CUDAImageProperty attached to the node's data object.
   // e.g. if there is mitk::Image and an attached CUDAImageProperty then CUDAImageProperty wins and
   // mitk::Image is ignored.
-  doMitkImageIfSuitable = !(dynamic_cast<CUDAImageProperty*>(node->GetData()->GetProperty("CUDAImageProperty").GetPointer()) != 0);
+  doMitkImageIfSuitable = !(dynamic_cast<niftk::CUDAImageProperty*>(node->GetData()->GetProperty("CUDAImageProperty").GetPointer()) != 0);
   if (doMitkImageIfSuitable == false)
   {
     cudaImg = node->GetData();
@@ -1603,9 +1603,9 @@ void VLQt4Widget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& n
   assert(QGLContext::currentContext() == QGLWidget::context());
 
 #ifdef _USE_CUDA
-  LightweightCUDAImage    lwcImage;
+  niftk::LightweightCUDAImage    lwcImage;
 
-  CUDAImage::Pointer cudaimg = dynamic_cast<CUDAImage*>(node->GetData());
+  niftk::CUDAImage::Pointer cudaimg = dynamic_cast<niftk::CUDAImage*>(node->GetData());
   if (cudaimg.IsNotNull())
   {
     lwcImage = cudaimg->GetLightweightCUDAImage();
@@ -1615,7 +1615,7 @@ void VLQt4Widget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& n
     mitk::Image::Pointer    img = dynamic_cast<mitk::Image*>(node->GetData());
     if (img.IsNotNull())
     {
-      CUDAImageProperty::Pointer prop = dynamic_cast<CUDAImageProperty*>(img->GetProperty("CUDAImageProperty").GetPointer());
+      niftk::CUDAImageProperty::Pointer prop = dynamic_cast<niftk::CUDAImageProperty*>(img->GetProperty("CUDAImageProperty").GetPointer());
       if (prop.IsNotNull())
       {
         lwcImage = prop->Get();
@@ -1677,9 +1677,9 @@ void VLQt4Widget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& n
       {
         assert(vlActor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
 
-        CUDAManager*    cudamng   = CUDAManager::GetInstance();
-        cudaStream_t    mystream  = cudamng->GetStream("VLQt4Widget vl-texture update");
-        ReadAccessor    inputRA   = cudamng->RequestReadAccess(lwcImage);
+        niftk::CUDAManager*  cudamng   = niftk::CUDAManager::GetInstance();
+        cudaStream_t         mystream  = cudamng->GetStream("VLQt4Widget vl-texture update");
+        niftk::ReadAccessor  inputRA   = cudamng->RequestReadAccess(lwcImage);
 
         // make sure producer of the cuda-image finished.
         err = cudaStreamWaitEvent(mystream, inputRA.m_ReadyEvent, 0);
@@ -2003,15 +2003,15 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* _cudaImg
   assert(QGLContext::currentContext() == QGLWidget::context());
 
 #ifdef _USE_CUDA
-  LightweightCUDAImage    lwci;
-  const CUDAImage*        cudaImg = dynamic_cast<const CUDAImage*>(_cudaImg);
+  niftk::LightweightCUDAImage lwci;
+  const niftk::CUDAImage* cudaImg = dynamic_cast<const niftk::CUDAImage*>(_cudaImg);
   if (cudaImg != 0)
   {
     lwci = cudaImg->GetLightweightCUDAImage();
   }
   else
   {
-    CUDAImageProperty::Pointer prop = dynamic_cast<CUDAImageProperty*>(_cudaImg->GetProperty("CUDAImageProperty").GetPointer());
+    niftk::CUDAImageProperty::Pointer prop = dynamic_cast<niftk::CUDAImageProperty*>(_cudaImg->GetProperty("CUDAImageProperty").GetPointer());
     if (prop.IsNotNull())
     {
       lwci = prop->Get();
@@ -3476,11 +3476,11 @@ void VLQt4Widget::swapBuffers()
 #ifdef _USE_CUDA
   if (m_CUDAInteropPimpl)
   {
-    cudaError_t     err         = cudaSuccess;
-    CUDAManager*    cudamanager = CUDAManager::GetInstance();
-    cudaStream_t    mystream    = cudamanager->GetStream(m_CUDAInteropPimpl->m_NodeName);
-    WriteAccessor   outputWA    = cudamanager->RequestOutputImage(QWidget::width(), QWidget::height(), 4);
-    cudaArray_t     fboarr      = m_CUDAInteropPimpl->m_FBOAdaptor->Map(mystream);
+    cudaError_t          err         = cudaSuccess;
+    niftk::CUDAManager*  cudamanager = niftk::CUDAManager::GetInstance();
+    cudaStream_t         mystream    = cudamanager->GetStream(m_CUDAInteropPimpl->m_NodeName);
+    niftk::WriteAccessor outputWA    = cudamanager->RequestOutputImage(QWidget::width(), QWidget::height(), 4);
+    cudaArray_t          fboarr      = m_CUDAInteropPimpl->m_FBOAdaptor->Map(mystream);
 
     // side note: cuda-arrays are always measured in bytes, never in pixels.
     err = cudaMemcpy2DFromArrayAsync(outputWA.m_DevicePointer, outputWA.m_BytePitch, fboarr, 0, 0, outputWA.m_PixelWidth * 4, outputWA.m_PixelHeight, cudaMemcpyDeviceToDevice, mystream);
@@ -3494,11 +3494,11 @@ void VLQt4Widget::swapBuffers()
     m_CUDAInteropPimpl->m_FBOAdaptor->Unmap(mystream);
 
     // need to flip the image! ogl is left-bottom, but everywhere else is left-top origin!
-    WriteAccessor   flippedWA   = cudamanager->RequestOutputImage(outputWA.m_PixelWidth, outputWA.m_PixelHeight, 4);
+    niftk::WriteAccessor  flippedWA   = cudamanager->RequestOutputImage(outputWA.m_PixelWidth, outputWA.m_PixelHeight, 4);
     // FIXME: instead of explicitly flipping we could bind the fboarr to a texture, and do a single write out.
-    FlipImage(outputWA, flippedWA, mystream);
+    niftk::FlipImageLauncher(outputWA, flippedWA, mystream);
 
-    LightweightCUDAImage lwciFlipped = cudamanager->Finalise(flippedWA, mystream);
+    niftk::LightweightCUDAImage lwciFlipped = cudamanager->Finalise(flippedWA, mystream);
     // Finalise() needs to come before Autorelease(), for performance reasons.
     cudamanager->Autorelease(outputWA, mystream);
 
@@ -3512,9 +3512,9 @@ void VLQt4Widget::swapBuffers()
       node->SetVisibility(false);
       //node->SetBoolProperty("helper object", true);
     }
-    CUDAImage::Pointer  img = dynamic_cast<CUDAImage*>(node->GetData());
+    niftk::CUDAImage::Pointer  img = dynamic_cast<niftk::CUDAImage*>(node->GetData());
     if (img.IsNull())
-      img = CUDAImage::New();
+      img = niftk::CUDAImage::New();
     img->SetLightweightCUDAImage(lwciFlipped);
     node->SetData(img);
     if (isNewNode)

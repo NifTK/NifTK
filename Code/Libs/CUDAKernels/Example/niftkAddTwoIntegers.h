@@ -12,15 +12,19 @@
 
 =============================================================================*/
 
-#ifndef EdgeDetectionKernel_h
-#define EdgeDetectionKernel_h
+#ifndef niftkAddTwoIntegers_h
+#define niftkAddTwoIntegers_h
 
 #include <niftkCUDAKernelsWin32ExportHeader.h>
-#include <driver_types.h>
-#include <texture_types.h>
 
+namespace niftk
+{
 
-void NIFTKCUDAKERNELS_WINEXPORT RunEdgeDetectionKernel(char* outputRGBA, unsigned int outputBytePitch, const char* inputRGBA, unsigned int inputBytePitch, int width, int height, cudaStream_t stream);
+/**
+* \brief Pointless minimal function, mainly just to test if anything at all could be run on a device.
+*/
+int NIFTKCUDAKERNELS_WINEXPORT AddTwoIntegers(int a, int b);
 
+} // end namespace
 
-#endif // EdgeDetectionKernel_h
+#endif

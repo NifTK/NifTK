@@ -12,18 +12,21 @@
 
 =============================================================================*/
 
-#if defined(_MSC_VER)
-#pragma warning ( disable : 4786 )
-#endif
+#ifndef niftkEdgeDetectionKernel_h
+#define niftkEdgeDetectionKernel_h
 
-#include <iostream>
-#include <itkTestMain.h>
+#include <niftkCUDAKernelsWin32ExportHeader.h>
+#include <driver_types.h>
+#include <texture_types.h>
 
-void RegisterTests()
+namespace niftk
 {
-  REGISTER_TEST(niftkAddTwoIntegersKernelTests);
-// depends on opencv for validation
-#ifdef BUILD_IGI
-  REGISTER_TEST(niftkUndistortionKernelTests);
+
+/**
+* \brief Basic example kernel to do some edge detection, but is not yet implemented.
+*/
+void NIFTKCUDAKERNELS_WINEXPORT RunEdgeDetectionKernel(char* outputRGBA, unsigned int outputBytePitch, const char* inputRGBA, unsigned int inputBytePitch, int width, int height, cudaStream_t stream);
+
+} // end namespace
+
 #endif
-}

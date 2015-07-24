@@ -38,7 +38,7 @@ set(CPP_FILES
   CameraCalibration/mitkStereoPointProjectionIntoTwoImages.cxx
   CameraCalibration/mitkHandeyeCalibrate.cxx
   CameraCalibration/mitkHandeyeCalibrateFromDirectory.cxx
-  CameraCalibration/Undistortion.cxx
+  CameraCalibration/niftkUndistortion.cxx
   CameraCalibration/mitkTriangulate2DPointPairsTo3D.cxx
   CameraCalibration/mitkEvaluateIntrinsicParametersOnNumberOfFrames.cxx
   UltrasoundCalibration/itkInvariantPointCalibrationCostFunction.cxx

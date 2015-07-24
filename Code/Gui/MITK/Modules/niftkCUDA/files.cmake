@@ -13,9 +13,11 @@
 #============================================================================*/
 
 set(CPP_FILES
-  CUDAManager/CUDAManager.cxx
-  CUDAImage/CUDAImage.cxx
-  CUDAImage/LightweightCUDAImage.cxx
-  CUDAImage/CUDAImageProperty.cxx
-  Kernels/FlipImage.cxx
+  CUDAManager/niftkCUDAManager.cxx
+  CUDAImage/niftkCUDAImage.cxx
+  CUDAImage/niftkLightweightCUDAImage.cxx
+  CUDAImage/niftkCUDAImageProperty.cxx
+  Image/niftkFlipImageLauncher.cxx
+  Image/niftkEdgeDetectionExampleLauncher.cxx
+  CameraCalibration/niftkUndistortionLauncher.cxx
 )

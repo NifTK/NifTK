@@ -22,7 +22,7 @@
 #include <cassert>
 #include <string>
 #include <stdexcept>
-#include <CameraCalibration/UndistortionKernel.h>
+#include <CameraCalibration/niftkUndistortionKernel.h>
 #include <boost/gil/gil_all.hpp>
 #include <cuda_runtime_api.h>
 #include <opencv2/core/types_c.h>
@@ -108,7 +108,7 @@ static boost::gil::rgba8_image_t RunKernel(boost::gil::rgba8_view_t input, const
   assert(err == cudaSuccess);
 
 
-  RunUndistortionKernel((char*) outptr, input.width(), input.height(), texobj, (float*) cammat.data, (float*) distmat.data, 0);
+  niftk::RunUndistortionKernel((char*) outptr, input.width(), input.height(), texobj, (float*) cammat.data, (float*) distmat.data, 0);
 
   err = cudaDeviceSynchronize();
   if (err != cudaSuccess)
@@ -360,7 +360,7 @@ static bool OffCenterUndistortion()
 }
 
 
-int niftkCUDAKernelsUndistortionTest(int argc, char* argv[])
+int niftkUndistortionKernelTests(int argc, char* argv[])
 {
   bool    result = true;
 

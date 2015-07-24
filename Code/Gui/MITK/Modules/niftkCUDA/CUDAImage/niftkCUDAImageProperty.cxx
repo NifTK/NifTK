@@ -12,8 +12,10 @@
 
 =============================================================================*/
 
-#include "CUDAImageProperty.h"
+#include "niftkCUDAImageProperty.h"
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 bool CUDAImageProperty::IsEqual(const mitk::BaseProperty& property) const
@@ -50,3 +52,5 @@ void CUDAImageProperty::Set(LightweightCUDAImage lwci)
 {
   m_LWCI = lwci;
 }
+
+} // end namespace

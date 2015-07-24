@@ -25,7 +25,7 @@
 #include <QMessageBox>
 #include <QTableWidgetItem>
 #include <QFileDialog>
-#include <Undistortion.h>
+#include <niftkUndistortion.h>
 #include <boost/typeof/typeof.hpp>
 #include <QtConcurrentRun>
 #include <QFile>

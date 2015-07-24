@@ -22,7 +22,7 @@
 #include <vtkCamera.h>
 #include <vtkTransform.h>
 #include <niftkVTKFunctions.h>
-#include <Undistortion.h>
+#include <niftkUndistortion.h>
 
 //-----------------------------------------------------------------------------
 QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager)

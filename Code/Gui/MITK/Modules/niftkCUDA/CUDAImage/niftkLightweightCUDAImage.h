@@ -13,36 +13,37 @@
 =============================================================================*/
 
 
-#ifndef LightweightCUDAImage_h
-#define LightweightCUDAImage_h
+#ifndef niftkLightweightCUDAImage_h
+#define niftkLightweightCUDAImage_h
 
 #include "niftkCUDAExports.h"
 #include <cuda_runtime_api.h>
 #include <QAtomicInt>
 
+namespace niftk
+{
 
 // forward-decl
 class CUDAManager;
 
-
 /**
- * Wraps a device memory pointer with a bit of meta data and reference count.
- * Instances are created by CUDAManager.
- */
+* Wraps a device memory pointer with a bit of meta data and reference count.
+* Instances are created by CUDAManager.
+*/
 class NIFTKCUDA_EXPORT LightweightCUDAImage
 {
   friend class CUDAManager;
 
 public:
   /**
-   * The default constructor creates an invalid object.
-   * Only CUDAManager can create a valid one.
-   */
+  * The default constructor creates an invalid object.
+  * Only CUDAManager can create a valid one.
+  */
   LightweightCUDAImage();
 
   /**
-   * Non-virtual destructor: do not derive from this class.
-   */
+  * Non-virtual destructor: do not derive from this class.
+  */
   ~LightweightCUDAImage();
 
   /** Copy constructor to handle reference count correctly. */
@@ -52,8 +53,8 @@ public:
 
 
   /**
-   * Returns the ID of this image. Note that zero is not a valid ID!
-   */
+  * Returns the ID of this image. Note that zero is not a valid ID!
+  */
   unsigned int GetId() const;
 
   unsigned int GetWidth() const;
@@ -61,10 +62,10 @@ public:
   unsigned int GetBytePitch() const;
 
   /**
-   * Returns the CUDA event object that can be used to synchronise kernel
-   * calls with completion of previous steps.
-   * Use with cudaStreamWaitEvent().
-   */
+  * Returns the CUDA event object that can be used to synchronise kernel
+  * calls with completion of previous steps.
+  * Use with cudaStreamWaitEvent().
+  */
   cudaEvent_t GetReadyEvent() const;
 
 
@@ -87,4 +88,6 @@ private:
   cudaStream_t    m_LastUsedByStream;
 };
 
-#endif // LightweightCUDAImage_h
+} // end namespace
+
+#endif

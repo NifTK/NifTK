@@ -12,13 +12,15 @@
 
 =============================================================================*/
 
-#include "FlipImage.h"
-#include <Image/FlipImageKernel.h>
+#include "niftkFlipImageLauncher.h"
+#include <Image/niftkFlipImageKernel.h>
 #include <stdexcept>
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-void FlipImage(const WriteAccessor& src, WriteAccessor& dest, cudaStream_t stream)
+void FlipImageLauncher(const WriteAccessor& src, WriteAccessor& dest, cudaStream_t stream)
 {
   if (dest.m_SizeInBytes < src.m_SizeInBytes)
     throw std::runtime_error("Output buffer is smaller than input");
@@ -39,7 +41,7 @@ void FlipImage(const WriteAccessor& src, WriteAccessor& dest, cudaStream_t strea
 
 
 //-----------------------------------------------------------------------------
-void FlipImage(const ReadAccessor& src, WriteAccessor& dest, cudaStream_t stream)
+void FlipImageLauncher(const ReadAccessor& src, WriteAccessor& dest, cudaStream_t stream)
 {
   if (dest.m_SizeInBytes < src.m_SizeInBytes)
     throw std::runtime_error("Output buffer is smaller than input");
@@ -57,3 +59,5 @@ void FlipImage(const ReadAccessor& src, WriteAccessor& dest, cudaStream_t stream
       stream
   );
 }
+
+} // end namespace

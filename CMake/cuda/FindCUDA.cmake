@@ -614,8 +614,8 @@ else()
   # CUDA_HOST_COMPILER is specified manually we should skip -ccbin and let
   # nvcc use its own default C compiler.
   if(DEFINED CMAKE_C_COMPILER AND NOT DEFINED CUDA_HOST_COMPILER)
-    get_filename_component(c_compiler_realpath "${CMAKE_C_COMPILER}" REALPATH)
-    set(CUDA_HOST_COMPILER "${c_compiler_realpath}" CACHE FILEPATH "Host side compiler used by NVCC")
+    get_filename_component(cxx_compiler_realpath "${CMAKE_CXX_COMPILER}" REALPATH)
+    set(CUDA_HOST_COMPILER "${cxx_compiler_realpath}" CACHE FILEPATH "Host side compiler used by NVCC")
   endif()
 endif()
 

@@ -12,9 +12,11 @@
 
 =============================================================================*/
 
-#include "LightweightCUDAImage.h"
-#include <CUDAManager/CUDAManager.h>
+#include "niftkLightweightCUDAImage.h"
+#include <CUDAManager/niftkCUDAManager.h>
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 LightweightCUDAImage::LightweightCUDAImage()
@@ -125,3 +127,5 @@ LightweightCUDAImage& LightweightCUDAImage::operator=(const LightweightCUDAImage
 
   return *this;
 }
+
+} // end namespace

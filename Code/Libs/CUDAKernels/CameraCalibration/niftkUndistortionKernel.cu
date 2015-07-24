@@ -12,30 +12,24 @@
 
 =============================================================================*/
 
-#include "../niftkCUDAKernelsWin32ExportHeader.h"
-#include "UndistortionKernel.h"
+#include "niftkUndistortionKernel.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 #include <sm_30_intrinsics.h>
-#include <cassert>
 #include <stdexcept>
 #include <fstream>
 #include <cstring>
 #include <common_functions.h>
 
-
-//-----------------------------------------------------------------------------
-__global__ void donothing_kernel()
+namespace niftk
 {
 
-}
-
-
+//-----------------------------------------------------------------------------
 template <typename T, int S>
 struct Array
 {
-  T     data[S];
+  T data[S];
 };
 
 
@@ -105,3 +99,5 @@ void NIFTKCUDAKERNELS_WINEXPORT RunUndistortionKernel(char* outputRGBA, int widt
   // note to self: the third param is "dynamically allocated shared mem".
   undistortion_kernel<<<grid, threads, 0, stream>>>(outputRGBA, width, height, texture, intrinsic, distortion);
 }
+
+} // end namespace
