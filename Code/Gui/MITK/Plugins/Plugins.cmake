@@ -60,6 +60,13 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
 )
 
+if(BUILD_VL)
+  set(PROJECT_PLUGINS
+    ${PROJECT_PLUGINS}
+    Plugins/uk.ac.ucl.cmic.vlrenderer:ON              # Prototype
+  )
+endif()
+
 # ---------------------------------------------------------------------------------------------------
 # MIDAS Specific Plugins
 # ---------------------------------------------------------------------------------------------------
@@ -100,11 +107,25 @@ set(IGI_PLUGINS
   Plugins/uk.ac.ucl.cmic.igipointsetcropper:ON
 )
 
+if(WIN32)
+  set(IGI_PLUGINS
+    ${IGI_PLUGINS}
+    Plugins/uk.ac.ucl.cmic.igifootpedalhotkey:ON
+  )
+endif()
+
 if(BUILD_IGI)
   set(PROJECT_PLUGINS
     ${PROJECT_PLUGINS}
     ${IGI_PLUGINS}
   )
+
+  if(BUILD_VL)
+    set(PROJECT_PLUGINS
+      ${PROJECT_PLUGINS}
+      Plugins/uk.ac.ucl.cmic.igivleditor:ON
+    )
+  endif()
 endif()
 
 # ---------------------------------------------------------------------------------------------------

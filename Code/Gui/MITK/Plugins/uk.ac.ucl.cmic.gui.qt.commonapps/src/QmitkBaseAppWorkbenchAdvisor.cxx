@@ -38,7 +38,7 @@ berry::WorkbenchWindowAdvisor* QmitkBaseAppWorkbenchAdvisor::CreateWorkbenchWind
   // Exclude the help perspective from org.blueberry.ui.qt.help from the normal perspective list.
   // The perspective gets a dedicated menu entry in the help menu.
 
-  std::vector<std::string> excludePerspectives;
+  QStringList excludePerspectives;
   excludePerspectives.push_back("org.blueberry.perspectives.help");
 
   advisor->SetPerspectiveExcludeList(excludePerspectives);

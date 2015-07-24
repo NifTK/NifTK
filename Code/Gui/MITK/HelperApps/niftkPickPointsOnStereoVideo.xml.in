@@ -20,13 +20,6 @@
       <label>Tracking Matrix Input directory.</label>
     </directory>    
    
-    <directory>
-      <name>calibrationInputDirectory</name>
-      <longflag>calibration</longflag>
-      <description>The directory containing the camera calibration files.</description>
-      <label>calibration Input directory.</label>
-    </directory>    
-   
     <integer>
       <name>videoLag</name>
       <longflag>videoLag</longflag>

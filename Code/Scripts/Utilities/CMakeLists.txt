@@ -12,5 +12,10 @@
 #
 #============================================================================*/
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/anonymise.sh ${EXECUTABLE_OUTPUT_PATH}/anonymise.sh @ONLY )
-MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/anonymise.sh)
+set (scripts 
+  anonymise.sh
+)
+foreach(script ${scripts})
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script} ${EXECUTABLE_OUTPUT_PATH}/${script} @ONLY )
+  MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${script})
+endforeach()

@@ -13,45 +13,42 @@
 #============================================================================*/
 
 
-set(NIFTYSIM_FOUND 0)
+if (NOT NiftySim_FOUND)
 
-if(NOT NIFTYSIM_DIR)
-  set(NIFTYSIM_DIR ${NIFTK_LINK_PREFIX}/nifty_sim CACHE PATH "Directory containing NiftySim installation")
-else(NOT NIFTYSIM_DIR)
-  set(NIFTYSIM_DIR @NIFTYSIM_DIR@ CACHE PATH "Directory containing NiftySim installation")
-endif(NOT NIFTYSIM_DIR)
+  set(NiftySim_DIR @NiftySim_DIR@ CACHE PATH "Directory containing NiftySim installation")
 
-if(CUDA_FOUND AND NIFTYSIM_USE_CUDA)
+  if(CUDA_FOUND AND NiftySim_USE_CUDA)
 
-  find_path(NIFTYSIM_INCLUDE_DIR
-    NAME tledSolverGPU.h
-    PATHS ${NIFTYSIM_DIR}/include
-    NO_DEFAULT_PATH
-  )
+    find_path(NiftySim_INCLUDE_DIR
+      NAME tledSolverGPU.h
+      PATHS ${NiftySim_DIR}/include
+      NO_DEFAULT_PATH
+    )
   
-  find_library(NIFTYSIM_LIBRARIES
-    NAMES tled
-    PATHS ${NIFTYSIM_DIR}/lib
-    NO_DEFAULT_PATH
-  )
+    find_library(NiftySim_LIBRARIES
+      NAMES tled${NiftySim_DEBUG_POSTFIX}
+      PATHS ${NiftySim_DIR}/lib
+      NO_DEFAULT_PATH
+    )
 
-else()
+  else()
 
-  find_path(NIFTYSIM_INCLUDE_DIR
-    NAME tledSolverCPU.h
-    PATHS ${NIFTYSIM_DIR}/include
-    NO_DEFAULT_PATH
-  )
+    find_path(NiftySim_INCLUDE_DIR
+      NAME tledSolverCPU.h
+      PATHS ${NiftySim_DIR}/include
+      NO_DEFAULT_PATH
+    )
 
-  find_library(NIFTYSIM_LIBRARIES
-    NAMES tled
-    PATHS ${NIFTYSIM_DIR}/lib
-    NO_DEFAULT_PATH
-  )
+    find_library(NiftySim_LIBRARIES
+      NAMES tled${NiftySim_DEBUG_POSTFIX}
+      PATHS ${NiftySim_DIR}/lib
+      NO_DEFAULT_PATH
+    )
+
+  endif()
+
+  if(NiftySim_LIBRARIES AND NiftySim_INCLUDE_DIR)
+    set(NiftySim_FOUND 1)
+  endif(NiftySim_LIBRARIES AND NiftySim_INCLUDE_DIR)
 
 endif()
-
-if(NIFTYSIM_LIBRARIES AND NIFTYSIM_INCLUDE_DIR)
-  set(NIFTYSIM_FOUND 1)
-endif(NIFTYSIM_LIBRARIES AND NIFTYSIM_INCLUDE_DIR)
-

@@ -41,11 +41,11 @@ public:
   QmitkCommonAppsApplicationPreferencePage(const QmitkCommonAppsApplicationPreferencePage& other);
   ~QmitkCommonAppsApplicationPreferencePage();
 
-  static const std::string IMAGE_RESLICE_INTERPOLATION;
-  static const std::string IMAGE_TEXTURE_INTERPOLATION;
-  static const std::string LOWEST_VALUE_OPACITY;
-  static const std::string HIGHEST_VALUE_OPACITY;
-  static const std::string BINARY_OPACITY_NAME;
+  static const QString IMAGE_RESLICE_INTERPOLATION;
+  static const QString IMAGE_TEXTURE_INTERPOLATION;
+  static const QString LOWEST_VALUE_OPACITY;
+  static const QString HIGHEST_VALUE_OPACITY;
+  static const QString BINARY_OPACITY_NAME;
   static const double BINARY_OPACITY_VALUE;
 
   void Init(berry::IWorkbench::Pointer workbench);

@@ -18,8 +18,6 @@
 #include <mitkNodePredicateOr.h>
 #include <mitkSurface.h>
 #include <vtkMatrix4x4.h>
-#include <mitkSurfaceBasedRegistration.h>
-#include <mitkPointBasedRegistration.h>
 #include <mitkDataStorageUtils.h>
 #include <QMessageBox>
 #include <QtConcurrentRun>
@@ -159,10 +157,10 @@ void SurfaceRegView::OnComputeDistance()
     // we should do that before we kick off the worker thread! 
     // otherwise someone else might move around the node's matrices.
     vtkPolyData *fixedPoly = vtkPolyData::New();
-    mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), *fixedPoly);
+    niftk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), *fixedPoly);
 
     vtkPolyData *movingPoly = vtkPolyData::New();
-    mitk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), *movingPoly);
+    niftk::SurfaceBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), *movingPoly);
 
     // this seems a bit messy here:
     // the "surface" passed in first needs to have vtk cells, otherwise it crashes.
@@ -292,7 +290,7 @@ void SurfaceRegView::OnCalculateButtonPressed()
     return;
   }
   
-  mitk::SurfaceBasedRegistration::Pointer registration = mitk::SurfaceBasedRegistration::New();
+  niftk::SurfaceBasedRegistration::Pointer registration = niftk::SurfaceBasedRegistration::New();
   if (m_Controls->m_HiddenSurfaceRemovalGroupBox->isChecked())
   {
     registration->SetCameraNode(m_Controls->m_CameraNodeComboBox->GetSelectedNode());

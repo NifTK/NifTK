@@ -66,7 +66,7 @@ protected:
   virtual void RetrievePreferenceValues();
 
   /// \brief Derived classes decide which preferences are actually read.
-  virtual std::string GetPreferencesNodeName();
+  virtual QString GetPreferencesNodeName();
 
 private:
 

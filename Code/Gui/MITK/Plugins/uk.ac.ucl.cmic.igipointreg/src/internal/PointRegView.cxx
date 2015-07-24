@@ -18,7 +18,7 @@
 #include <mitkNodePredicateDataType.h>
 #include <mitkPointSet.h>
 #include <vtkMatrix4x4.h>
-#include <mitkPointBasedRegistration.h>
+#include <niftkPointBasedRegistration.h>
 #include <mitkNodePredicateDataType.h>
 #include <QMessageBox>
 #include <QmitkIGIUtils.h>
@@ -106,8 +106,8 @@ void PointRegView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-    m_UseICPInitialisation = prefs->GetBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, mitk::PointBasedRegistration::DEFAULT_USE_ICP_INITIALISATION);
-    m_UsePointIDToMatch = prefs->GetBool(PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING, mitk::PointBasedRegistration::DEFAULT_USE_POINT_ID_TO_MATCH);
+    m_UseICPInitialisation = prefs->GetBool(PointRegViewPreferencePage::USE_ICP_INITIALISATION, niftk::PointBasedRegistrationConstants::DEFAULT_USE_ICP_INITIALISATION);
+    m_UsePointIDToMatch = prefs->GetBool(PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING, niftk::PointBasedRegistrationConstants::DEFAULT_USE_POINT_ID_TO_MATCH);
   }
 }
 
@@ -190,29 +190,28 @@ void PointRegView::OnCalculateButtonPressed()
     }
   }
 
-  mitk::PointBasedRegistration::Pointer registration = mitk::PointBasedRegistration::New();
+  niftk::PointBasedRegistration::Pointer registration = niftk::PointBasedRegistration::New();
   registration->SetUseICPInitialisation(m_UseICPInitialisation);
   registration->SetUsePointIDToMatchPoints(m_UsePointIDToMatch);
 
-  double fiducialRegistrationError = std::numeric_limits<double>::max();
-  bool isSuccessful = registration->Update(fixedPoints, movingPoints, *m_Matrix, fiducialRegistrationError);
-
-  for (int i = 0; i < 4; i++)
+  try
   {
-    for (int j = 0; j < 4; j++)
+    double fiducialRegistrationError = registration->Update(fixedPoints, movingPoints, *m_Matrix);
+
+    for (int i = 0; i < 4; i++)
     {
-      m_Controls->m_MatrixWidget->setValue(i, j, m_Matrix->GetElement(i, j));
+      for (int j = 0; j < 4; j++)
+      {
+        m_Controls->m_MatrixWidget->setValue(i, j, m_Matrix->GetElement(i, j));
+      }
     }
-  }
 
-  if (isSuccessful)
-  {
     QString formattedDouble = QString::number(fiducialRegistrationError);
     m_Controls->m_RMSError->setText(QString("FRE = ") + formattedDouble);
-  }
-  else
+
+  } catch (const mitk::Exception& e)
   {
-    m_Controls->m_RMSError->setText(QString("Registration FAILED"));
+    m_Controls->m_RMSError->setText(QString("Registration FAILED:") + QString::fromStdString(e.what()));
   }
 }
 

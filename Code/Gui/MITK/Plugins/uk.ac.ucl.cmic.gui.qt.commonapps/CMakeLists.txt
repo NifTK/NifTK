@@ -14,10 +14,10 @@
 
 project(uk_ac_ucl_cmic_gui_qt_commonapps)
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
+mitk_create_plugin(
   EXPORT_DIRECTIVE CMIC_QT_COMMONAPPS
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS MitkQtWidgetsExt MitkSceneSerialization niftkCoreGui
+  MODULE_DEPENDS niftkCoreGui
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

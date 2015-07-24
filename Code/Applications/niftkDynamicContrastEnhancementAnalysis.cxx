@@ -27,8 +27,6 @@
 #include <itkDynamicContrastEnhancementAnalysisImageFilter.h>
 #include <itkRescaleImageUsingHistogramPercentilesFilter.h>
 
-#include <boost/filesystem.hpp>
-
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_SWITCH, "dbg", 0, "Output debugging information."},

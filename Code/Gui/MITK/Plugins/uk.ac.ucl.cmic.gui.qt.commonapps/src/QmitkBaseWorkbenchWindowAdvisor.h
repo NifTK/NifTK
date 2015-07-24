@@ -53,12 +53,12 @@ protected:
   /**
    * \brief Directly tries to open the given editor: use sparingly.
    */
-  void OpenEditor(const std::string &editorName);
+  void OpenEditor(const QString& editorName);
 
   /**
    * \brief Checks if the environment variable contains a string value "ON" or "1", and if so tries to open the given editor.
    */
-  void OpenEditorIfEnvironmentVariableIsON(const std::string &envVariable, const std::string &editorName);
+  void OpenEditorIfEnvironmentVariableIsON(const std::string& envVariable, const QString& editorName);
 };
 
 #endif /*QMITKBASEWORKBENCHWINDOWADVISOR_H_*/

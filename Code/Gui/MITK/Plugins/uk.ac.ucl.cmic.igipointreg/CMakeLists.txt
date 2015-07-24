@@ -14,10 +14,10 @@
 
 project(uk_ac_ucl_cmic_igipointreg)
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
+mitk_create_plugin(
   EXPORT_DIRECTIVE POINTREG_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS niftkIGIGui niftkCoreGui
+  MODULE_DEPENDS niftkIGIGui niftkPointReg
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

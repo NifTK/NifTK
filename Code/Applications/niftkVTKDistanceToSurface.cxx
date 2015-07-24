@@ -51,7 +51,6 @@
 #include <vtkPointData.h>
 #include <vtkLookupTable.h>
 
-#include <boost/algorithm/string/predicate.hpp>
 
 /**
  * \brief Measure the distances of a set of points from a poly data surface

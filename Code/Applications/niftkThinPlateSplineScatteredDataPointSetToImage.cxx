@@ -336,15 +336,9 @@ int main(int argc, char** argv)
   int result;
   int numberOfDimensions;
 
-  int *clo_size = 0;		// The size of the reconstructed volume
-
-  float *clo_res = 0;		// The resolution of the reconstructed volume
-  float *clo_origin = 0;		// The origin of the reconstructed volume
-
   struct arguments args;
 
   PARSE_ARGS;
-  GENERATE_ECHOARGS;
 
   args.flgVerbose = flgVerbose;
   args.flgDebug = flgDebug;

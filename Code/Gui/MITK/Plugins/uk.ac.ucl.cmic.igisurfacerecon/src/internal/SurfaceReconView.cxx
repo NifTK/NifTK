@@ -30,8 +30,8 @@
 #include "SurfaceReconViewPreferencePage.h"
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
+#include <berryPlatform.h>
 #include <QtConcurrentRun>
-#include <boost/bind.hpp>
 #include <cctype>
 
 
@@ -132,6 +132,10 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
   }
   // enable box only if there is any method.
   MethodComboBox->setEnabled(MethodComboBox->count() > 0);
+
+#ifndef _USE_PCL
+  m_GeneratePCLPointCloudRadioBox->setEnabled(false);
+#endif
 }
 
 
@@ -145,7 +149,7 @@ void SurfaceReconView::OnPreferencesChanged(const berry::IBerryPreferences*)
 //-----------------------------------------------------------------------------
 void SurfaceReconView::RetrievePreferenceValues()
 {
-  berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(SurfaceReconViewPreferencePage::s_PrefsNodeName)).Cast<berry::IBerryPreferences>();
   assert(prefs);
 
@@ -164,13 +168,13 @@ void SurfaceReconView::RetrievePreferenceValues()
     berry::IBerryPreferences::Pointer undistortPrefs = (prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.igiundistort")).Cast<berry::IBerryPreferences>();
     if (undistortPrefs.IsNotNull())
     {
-      QString lastDirectory = QString::fromStdString(undistortPrefs->Get("default calib file path", ""));
+      QString lastDirectory = undistortPrefs->Get("default calib file path", "");
       this->m_StereoCameraCalibrationSelectionWidget->SetLastDirectory(lastDirectory);
     }
   }
   else
   {
-    QString lastDirectory = QString::fromStdString(prefs->Get(SurfaceReconViewPreferencePage::s_DefaultCalibrationFilePathPrefsName, ""));
+    QString lastDirectory = prefs->Get(SurfaceReconViewPreferencePage::s_DefaultCalibrationFilePathPrefsName, "");
     this->m_StereoCameraCalibrationSelectionWidget->SetLastDirectory(lastDirectory);
   }
 }
@@ -225,7 +229,8 @@ void SurfaceReconView::WriteCurrentConfig(const QString& directory) const
     info << "outputnodeisvisible=" << (OutputNodeIsVisibleCheckBox->isChecked() ? "yes" : "no") << "\n";
     info << "outputnode=" << OutputNodeNameLineEdit->text() << "\n";
     info << "autoincoutputnodename=" << (AutoIncNodeNameCheckBox->isChecked() ? "yes" : "no") << "\n";
-    info << "outputtype=" << (GenerateDisparityImageRadioBox->isChecked() ? "disparityimage" : "pointcloud") << "\n";
+    info << "outputtype=" << (GenerateDisparityImageRadioBox->isChecked() ? "disparityimage"
+                                : (m_GeneratePCLPointCloudRadioBox->isChecked() ? "pclpointcloud" : "mitkpointcloud")) << "\n";
 
     mitk::DataNode::Pointer camNode = m_StereoImageAndCameraSelectionWidget->GetCameraNode();
     info << "cameranode=" << (camNode.IsNotNull() ? QString::fromStdString("\"" + camNode->GetName() + "\"") : "null") << "\n";
@@ -365,17 +370,27 @@ void SurfaceReconView::DoSurfaceReconstruction()
       niftk::Undistortion::CopyImagePropsIfNecessary(leftNode,  leftImage);
       niftk::Undistortion::CopyImagePropsIfNecessary(rightNode, rightImage);
 
-      niftk::SurfaceReconstruction::OutputType  outputtype = niftk::SurfaceReconstruction::POINT_CLOUD;
+      niftk::SurfaceReconstruction::OutputType  outputtype = niftk::SurfaceReconstruction::PCL_POINT_CLOUD;
       if (GenerateDisparityImageRadioBox->isChecked())
       {
-        assert(!GeneratePointCloudRadioBox->isChecked());
+        assert(!m_GenerateMITKPointCloudRadioBox->isChecked());
+        assert(!m_GeneratePCLPointCloudRadioBox->isChecked());
         outputtype = niftk::SurfaceReconstruction::DISPARITY_IMAGE;
       }
-      if (GeneratePointCloudRadioBox->isChecked())
+      if (m_GenerateMITKPointCloudRadioBox->isChecked())
       {
         assert(!GenerateDisparityImageRadioBox->isChecked());
-        outputtype = niftk::SurfaceReconstruction::POINT_CLOUD;
+        assert(!m_GeneratePCLPointCloudRadioBox->isChecked());
+        outputtype = niftk::SurfaceReconstruction::MITK_POINT_CLOUD;
       }
+#ifdef _USE_PCL
+      if (m_GeneratePCLPointCloudRadioBox->isChecked())
+      {
+        assert(!GenerateDisparityImageRadioBox->isChecked());
+        assert(!m_GenerateMITKPointCloudRadioBox->isChecked());
+        outputtype = niftk::SurfaceReconstruction::PCL_POINT_CLOUD;
+      }
+#endif
 
       // where to place the point cloud in 3d space
       // is ok if node doesnt exist, SurfaceReconstruction will deal with that.

@@ -93,4 +93,5 @@ add_executable(itkBSILocalTests itkLocalTests.cxx
                itkMultipleDilateImageFilterTest.cxx
                itkSimpleKMeansClusteringImageFilterTest.cxx)
 
-target_link_libraries(itkBSILocalTests ${ITK_LIBRARIES})
+target_include_directories(itkBSILocalTests PRIVATE ${ITK_INCLUDE_DIRS})
+target_link_libraries(itkBSILocalTests PRIVATE ${ITK_LIBRARIES})

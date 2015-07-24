@@ -25,11 +25,11 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string QmitkCommonAppsApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION("default reslice interpolation");
-const std::string QmitkCommonAppsApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION("default texture interpolation");
-const std::string QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_OPACITY("lowest value opacity");
-const std::string QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_OPACITY("highest value opacity");
-const std::string QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_NAME("binary opacity");
+const QString QmitkCommonAppsApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION("default reslice interpolation");
+const QString QmitkCommonAppsApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION("default texture interpolation");
+const QString QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_OPACITY("lowest value opacity");
+const QString QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_OPACITY("highest value opacity");
+const QString QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_NAME("binary opacity");
 const double QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_VALUE = 1.0;
 
 //-----------------------------------------------------------------------------
@@ -71,9 +71,7 @@ void QmitkCommonAppsApplicationPreferencePage::Init(berry::IWorkbench::Pointer )
 //-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPreferencePage::CreateQtControl(QWidget* parent)
 {
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_PreferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.gui.qt.commonapps");
 

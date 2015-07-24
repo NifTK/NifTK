@@ -114,7 +114,7 @@ void SurfaceReconViewPreferencePage::CreateQtControl(QWidget* parent)
   ok = connect(m_UseOwnLocationRadioButton, SIGNAL(clicked()), this, SLOT(OnUseUndistortRadioButtonClicked()), Qt::QueuedConnection);
   assert(ok);
 
-  berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   m_SurfaceReconViewPreferencesNode = prefService->GetSystemPreferences()->Node(s_PrefsNodeName);
 
   Update();
@@ -131,7 +131,7 @@ QWidget* SurfaceReconViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool SurfaceReconViewPreferencePage::PerformOk()
 {
-  m_SurfaceReconViewPreferencesNode->Put(s_DefaultCalibrationFilePathPrefsName, m_DefaultCalibrationLocationLineEdit->text().toStdString());
+  m_SurfaceReconViewPreferencesNode->Put(s_DefaultCalibrationFilePathPrefsName, m_DefaultCalibrationLocationLineEdit->text());
   m_SurfaceReconViewPreferencesNode->PutBool(s_UseUndistortionDefaultPathPrefsName, m_UseUndistortionDefaultPathRadioButton->isChecked());
   m_SurfaceReconViewPreferencesNode->PutFloat(s_DefaultTriangulationErrorPrefsName, (float) m_DefaultTriangulationErrorThresholdSpinBox->value());
   m_SurfaceReconViewPreferencesNode->PutFloat(s_DefaultMinDepthRangePrefsName, (float) m_MinDefaultDepthRangeSpinBox->value());
@@ -152,7 +152,7 @@ void SurfaceReconViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void SurfaceReconViewPreferencePage::Update()
 {
-  m_DefaultCalibrationFilePath = QString::fromStdString(m_SurfaceReconViewPreferencesNode->Get(s_DefaultCalibrationFilePathPrefsName, ""));
+  m_DefaultCalibrationFilePath = m_SurfaceReconViewPreferencesNode->Get(s_DefaultCalibrationFilePathPrefsName, "");
   m_DefaultCalibrationLocationLineEdit->setText(m_DefaultCalibrationFilePath);
 
   m_UseUndistortPluginDefaultPath = m_SurfaceReconViewPreferencesNode->GetBool(s_UseUndistortionDefaultPathPrefsName, true);

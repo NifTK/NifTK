@@ -59,7 +59,7 @@ public:
   QmitkIGIOverlayEditor* m_IGIOverlayEditor;
   std::string m_FirstBackgroundColor;
   std::string m_SecondBackgroundColor;
-  berry::IPartListener::Pointer m_PartListener;
+  QScopedPointer<berry::IPartListener> m_PartListener;
 };
 
 
@@ -151,7 +151,7 @@ IGIOverlayEditor::IGIOverlayEditor()
 //-----------------------------------------------------------------------------
 IGIOverlayEditor::~IGIOverlayEditor()
 {
-  this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener);
+  this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener.data());
 }
 
 
@@ -277,7 +277,7 @@ void IGIOverlayEditor::CreateQtPartControl(QWidget* parent)
     mitk::DataStorage::Pointer ds = this->GetDataStorage();
     d->m_IGIOverlayEditor->SetDataStorage(ds);
 
-    this->GetSite()->GetPage()->AddPartListener(d->m_PartListener);
+    this->GetSite()->GetPage()->AddPartListener(d->m_PartListener.data());
 
     QMetaObject::invokeMethod(this, "OnPreferencesChanged", Qt::QueuedConnection);
 
@@ -318,15 +318,13 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
   // Enable change of logo. If no DepartmentLogo was set explicitly, MBILogo is used.
   // Set new department logo by prefs->Set("DepartmentLogo", "PathToImage");
 
-  std::vector<std::string> keys = prefs->Keys();
-  
-  for( unsigned int i = 0; i < keys.size(); ++i )
+  foreach (QString key, prefs->Keys())
   {
-    if( keys[i] == "DepartmentLogo")
+    if( key == "DepartmentLogo")
     {
-      std::string departmentLogoLocation = prefs->Get("DepartmentLogo", "");
+      QString departmentLogoLocation = prefs->Get("DepartmentLogo", "");
 
-      if (departmentLogoLocation.empty())
+      if (departmentLogoLocation.isEmpty())
       {
         d->m_IGIOverlayEditor->DisableDepartmentLogo();
       }
@@ -341,7 +339,7 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
  
   // Preferences for gradient background
   float color = 255.0;
-  QString firstColorName = QString::fromStdString (prefs->GetByteArray(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, ""));
+  QString firstColorName = prefs->Get(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, "");
   QColor firstColor(firstColorName);
   mitk::Color upper;
   if (firstColorName=="") // default values
@@ -357,7 +355,7 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
     upper[2] = firstColor.blue() / color;
   }
 
-  QString secondColorName = QString::fromStdString (prefs->GetByteArray(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, ""));
+  QString secondColorName = prefs->Get(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, "");
   QColor secondColor(secondColorName);
   mitk::Color lower;
   if (secondColorName=="") // default values
@@ -375,7 +373,7 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
   d->m_IGIOverlayEditor->SetGradientBackgroundColors(upper, lower);
   d->m_IGIOverlayEditor->EnableGradientBackground();
 
-  std::string calibrationFileName = prefs->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "");
+  QString calibrationFileName = prefs->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "");
   d->m_IGIOverlayEditor->SetCalibrationFileName(calibrationFileName);
   d->m_IGIOverlayEditor->SetCameraTrackingMode(prefs->GetBool(IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE, true));
   d->m_IGIOverlayEditor->SetClipToImagePlane(prefs->GetBool(IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, true));
@@ -416,7 +414,7 @@ void IGIOverlayEditor::WriteCurrentConfig(const QString& directory) const
     QTextStream   info(&infoFile);
     info.setCodec("UTF-8");
     info << "START: " << QDateTime::currentDateTime().toString() << "\n";
-    info << "calibfile=" << QString::fromStdString(d->m_IGIOverlayEditor->GetCalibrationFileName()) << "\n";
+    info << "calibfile=" << d->m_IGIOverlayEditor->GetCalibrationFileName() << "\n";
   }
 }
 

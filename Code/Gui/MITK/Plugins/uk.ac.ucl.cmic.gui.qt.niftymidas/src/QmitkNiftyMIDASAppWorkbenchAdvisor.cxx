@@ -31,14 +31,14 @@
 #include <QmitkCommonAppsApplicationPlugin.h>
 
 //-----------------------------------------------------------------------------
-std::string QmitkNiftyMIDASAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
+QString QmitkNiftyMIDASAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
 {
   return "uk.ac.ucl.cmic.gui.qt.niftymidas.segmentation_perspective";
 }
 
 
 //-----------------------------------------------------------------------------
-std::string QmitkNiftyMIDASAppWorkbenchAdvisor::GetWindowIconResourcePath() const
+QString QmitkNiftyMIDASAppWorkbenchAdvisor::GetWindowIconResourcePath() const
 {
   return ":/QmitkNiftyMIDASApplication/icon_ion.xpm";
 }

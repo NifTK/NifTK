@@ -67,7 +67,7 @@ IF(NIFTK_USE_CPPCHECK)
 
       SET(CPPCHECK_ARGUMENTS_CODE
         --file-list=${CPPCHECK_NIFTK_FILES_LIST}
-        --enable=warning,style,performance,portability,information,missingInclude
+        --enable=warning,style,performance,portability,missingInclude
         --error-exitcode=2
         --quiet
       )

@@ -12,46 +12,11 @@
 #
 #============================================================================*/
 
-option(NIFTK_USE_COTIRE "Use Cotire for compilation speed-up. Experimental." OFF)
-if(NIFTK_USE_COTIRE)
-  set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake;${CMAKE_MODULE_PATH}")
-  include(cotire)
-endif()
-
-###########################################################################
-# Our version number. Edit this to generate a new version.
-# However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
-# Also, Trac 1592, version number must change if CTK changes significantly.
-###########################################################################
-set(NIFTK_VERSION_MAJOR 15 CACHE STRING "Year version number" FORCE )
-set(NIFTK_VERSION_MINOR 04 CACHE STRING "Month version number" FORCE )
-set(NIFTK_VERSION_PATCH 0 CACHE STRING "Patch version number" FORCE )
-mark_as_advanced(NIFTK_VERSION_MAJOR)
-mark_as_advanced(NIFTK_VERSION_MINOR)
-mark_as_advanced(NIFTK_VERSION_PATCH)
-
 ######################################################################
 # Set the minimum CMake version.
 ######################################################################
-if(WIN32)
-  cmake_minimum_required(VERSION 3.1)
-else()
-  cmake_minimum_required(VERSION 2.8.12)
-endif()
-
-######################################################################
-# Setting supported build types. Should ONLY be Debug or Release.
-######################################################################
-
-if(DEFINED CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Valid options are Debug/Release")
-else()
-   set(CMAKE_BUILD_TYPE Release CACHE STRING "Setting build type to Release (default). Valid options: Debug/Release.")
-endif()
-
-if (NOT (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Release"))
-  message(FATAL_ERROR "Build type ${CMAKE_BUILD_TYPE} is not supported.")
-endif()
+set(NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION 3.2)
+cmake_minimum_required(VERSION ${NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION})
 
 ##################################################################################
 # Set some CMake Policies.
@@ -59,20 +24,20 @@ endif()
 ##################################################################################
 
 set(project_policies
-  CMP0001 # NEW: CMAKE_BACKWARDS_COMPATIBILITY should no longer be used.
-  CMP0002 # NEW: Logical target names must be globally unique.
-  CMP0003 # NEW: Libraries linked via full path no longer produce linker search paths.
-  CMP0004 # NEW: Libraries linked may NOT have leading or trailing whitespace.
-  CMP0005 # NEW: Preprocessor definition values are now escaped automatically.
-  CMP0006 # NEW: Installing MACOSX_BUNDLE targets requires a BUNDLE DESTINATION.
-  CMP0007 # NEW: List command no longer ignores empty elements.
-  CMP0008 # NEW: Libraries linked by full-path must have a valid library file name.
-  CMP0009 # NEW: FILE GLOB_RECURSE calls should not follow symlinks by default.
-  CMP0010 # NEW: Bad variable reference syntax is an error.
-  CMP0011 # NEW: Included scripts do automatic cmake_policy PUSH and POP.
-  CMP0012 # NEW: if() recognizes numbers and boolean constants.
-  CMP0013 # NEW: Duplicate binary directories are not allowed.
-  CMP0014 # NEW: Input directories must have CMakeLists.txt
+#  CMP0001 # NEW: CMAKE_BACKWARDS_COMPATIBILITY should no longer be used.
+#  CMP0002 # NEW: Logical target names must be globally unique.
+#  CMP0003 # NEW: Libraries linked via full path no longer produce linker search paths.
+#  CMP0004 # NEW: Libraries linked may NOT have leading or trailing whitespace.
+#  CMP0005 # NEW: Preprocessor definition values are now escaped automatically.
+#  CMP0006 # NEW: Installing MACOSX_BUNDLE targets requires a BUNDLE DESTINATION.
+#  CMP0007 # NEW: List command no longer ignores empty elements.
+#  CMP0008 # NEW: Libraries linked by full-path must have a valid library file name.
+#  CMP0009 # NEW: FILE GLOB_RECURSE calls should not follow symlinks by default.
+#  CMP0010 # NEW: Bad variable reference syntax is an error.
+#  CMP0011 # NEW: Included scripts do automatic cmake_policy PUSH and POP.
+#  CMP0012 # NEW: if() recognizes numbers and boolean constants.
+#  CMP0013 # NEW: Duplicate binary directories are not allowed.
+#  CMP0014 # NEW: Input directories must have CMakeLists.txt
   )
 foreach(policy ${project_policies})
   if(POLICY ${policy})
@@ -80,17 +45,28 @@ foreach(policy ${project_policies})
   endif()
 endforeach()
 
-if (POLICY CMP0048)
+#if (POLICY CMP0048)
   # Introduced in CMake 3.0.
   # OLD: Leave VERSION variables untouched.
-  cmake_policy(SET CMP0048 OLD)
-endif ()
+#  cmake_policy(SET CMP0048 OLD)
+#endif ()
 
-if (POLICY CMP0053)
+#if (POLICY CMP0053)
   # Introduced in CMake 3.1.
   # OLD: Leave references and variable expansion as pre version 3.1.
-  cmake_policy(SET CMP0053 OLD)
-endif ()
+#  cmake_policy(SET CMP0053 OLD)
+#endif ()
+
+
+###########################################################################
+# Precompiled headers
+###########################################################################
+
+option(NIFTK_USE_COTIRE "Use Cotire for compilation speed-up. Experimental." OFF)
+if(NIFTK_USE_COTIRE)
+  set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake ${CMAKE_MODULE_PATH})
+  include(cotire)
+endif()
 
 ######################################################################
 # We have a super-build option. (Terminology comes from MITK/CTK).
@@ -98,11 +74,50 @@ endif ()
 
 option(BUILD_SUPERBUILD "Build NIFTK and the projects it depends on via SuperBuild.cmake." ON)
 
-if(BUILD_SUPERBUILD)
-  project(NIFTK-SUPERBUILD)
-else(BUILD_SUPERBUILD)
-  project(NIFTK)
-endif(BUILD_SUPERBUILD)
+if (BUILD_SUPERBUILD)
+  project(NIFTK-superbuild)
+  set(NIFTK_SOURCE_DIR ${PROJECT_SOURCE_DIR})
+  set(NIFTK_BINARY_DIR ${PROJECT_BINARY_DIR})
+else()
+  # Our version number. Edit this to generate a new version.
+  # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
+  # Also, Trac 1592, version number must change if CTK changes significantly.
+  project(NIFTK VERSION 15.05.0)
+endif()
+
+######################################################################
+# Setting supported build types. Should ONLY be Release or Debug.
+######################################################################
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Valid options are Release or Debug" FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug")
+endif()
+
+if (NOT (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "Debug"))
+  message(FATAL_ERROR "Build type \"${CMAKE_BUILD_TYPE}\" is not supported.")
+endif()
+
+if(WIN32)
+  # Restrict the generated configuration to be what we configured above.
+  # No point creating project files for build types that will not compile.
+  # Note: it's set to FORCE so that both CMAKE_BUILD_TYPE and CMAKE_CONFIGURATION_TYPES match up.
+  set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "Build configurations to generate." FORCE)
+  mark_as_advanced(CMAKE_CONFIGURATION_TYPES)
+endif()
+
+
+#-----------------------------------------------------------------------------
+# Additional MITK Options (also shown during superbuild)
+#-----------------------------------------------------------------------------
+
+macro(env_option name doc value)
+  set(_value $ENV{${name}})
+  if("${_value}" STREQUAL "")
+    set(_value ${value})
+  endif()
+  option(${name} "${doc}" ${_value})
+endmacro()
 
 ######################################################################
 # Configure GUI options from the choice of applications.
@@ -136,11 +151,6 @@ foreach(NIFTK_APP ${NIFTK_APPS})
       set(BUILD_IGI ON)
     endif()
 
-    if (${app_name} STREQUAL "NiftyView")
-      #set(BUILD_MIDAS ON)
-      #set(BUILD_IGI ON)
-    endif()
-
     if (${app_name} STREQUAL "NiftyMIDAS")
       set(BUILD_MIDAS ON)
     endif()
@@ -158,12 +168,13 @@ endforeach()
 option(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Code/Applications." ON)
 option(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts." ON)
 option(BUILD_CAMINO "Build Camino." OFF)
-option(BUILD_NIFTYREG "Build NiftyReg." ON)
-option(BUILD_NIFTYREC "Build NiftyRec." OFF)
-option(BUILD_NIFTYSIM "Build NiftySim." ON)
-option(BUILD_NIFTYSEG "Build NiftySeg." ON)
+option(BUILD_NiftyReg "Build NiftyReg." ON)
+option(BUILD_NiftyRec "Build NiftyRec." OFF)
+option(BUILD_NiftySim "Build NiftySim." ON)
+option(BUILD_NiftySeg "Build NiftySeg." ON)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
 option(BUILD_RTK "Build RTK - Experimental." OFF)
+option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
 option(BUILD_ITKFFTW "Build ITK's FFTW - Not Supported." OFF)
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
@@ -172,11 +183,11 @@ option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
 option(BUILD_NIFTYPIPE "Build NiftyPipe: python pipelines." ON)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 # the console window is normally shown only for debug builds. but can be explicitly enabled.
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
+#if(CMAKE_BUILD_TYPE MATCHES "Debug")
   set(NIFTK_SHOW_CONSOLE_WINDOW_VAL ON)
-else()
-  set(NIFTK_SHOW_CONSOLE_WINDOW_VAL OFF)
-endif()
+#else()
+#  set(NIFTK_SHOW_CONSOLE_WINDOW_VAL OFF)
+#endif()
 option(NIFTK_SHOW_CONSOLE_WINDOW "Use this to enable or disable the console window when starting GUI Applications on Windows" ${NIFTK_SHOW_CONSOLE_WINDOW_VAL})
 option(NIFTK_BUILD_ALL_PLUGINS "Build all NIFTK plugins" OFF)
 option(NIFTK_GENERATE_DOXYGEN_HELP "Use this to generate Doxygen help in GUI" OFF)
@@ -322,12 +333,105 @@ include(niftkMacroFixupCommandLineApps)
 include(niftkMacroForcePluginCacheValue)
 include(CMakePackageConfigHelpers)
 
+include(mitkFunctionEnableBuildConfiguration)
+include(mitkFunctionWhitelists)
+include(mitkFunctionAddExternalProject)
+
+
+# Standard CMake macros
+#include(FeatureSummary)
+include(CTestUseLaunchers)
+#include(CMakeParseArguments)
+#include(FindPackageHandleStandardArgs)
+
+# MITK macros
+include(mitkFunctionSuppressWarnings) # includes several functions
+include(mitkMacroEmptyExternalProject)
+#include(mitkFunctionGenerateProjectXml)
+
+SUPPRESS_VC_DEPRECATED_WARNINGS()
+
 ######################################################################
 # Test for some required system information. This came from old
 # ITK CMake scripts, so I (Matt) am unsure if we still need it.
 ######################################################################
 include(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityC.cmake)
 include(${CMAKE_ROOT}/Modules/CMakeBackwardCompatibilityCXX.cmake)
+
+
+#-----------------------------------------------------------------------------
+# Check miminum Mac OS X version
+#-----------------------------------------------------------------------------
+# The minimum supported Mac OS X version is 10.9. If you use a version less than 10.9, there is no guarantee that the build still works.
+if(APPLE)
+  exec_program(sw_vers ARGS -productVersion OUTPUT_VARIABLE osx_version)
+  if (osx_version VERSION_LESS "10.10")
+    message(WARNING "Detected OS X version \"${osx_version}\" is not supported anymore. Minimum required OS X version is 10.10 or greater.")
+  endif()
+  if (CMAKE_OSX_DEPLOYMENT_TARGET AND CMAKE_OSX_DEPLOYMENT_TARGET VERSION_LESS 10.10)
+    message(WARNING "Detected OS X deployment target \"${CMAKE_OSX_DEPLOYMENT_TARGET}\" is not supported anymore. Minimum required OS X version is 10.10 or greater.")
+  endif()
+endif()
+
+#-----------------------------------------------------------------------------
+# Check miminum compiler versions
+#-----------------------------------------------------------------------------
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  # require at least gcc 4.7.3 as provided by ppa:ubuntu-toolchain-r/test for Ubuntu 12.04
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.7.3)
+    message(FATAL_ERROR "GCC version must be at least 4.7.3
+If you are using Ubuntu 12.04, you can easily install gcc and g++ 4.7.3 (or any later version available) in addition to your version ${CMAKE_CXX_COMPILER_VERSION}:
+  sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  sudo apt-get update
+  sudo apt-get install gcc-4.7 g++-4.7
+Make sure to explicitly specify these compilers when configuring MITK:
+  CMAKE_C_COMPILER:FILEPATH=/usr/bin/gcc-4.7
+  CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/g++-4.7
+For more information on the proposed PPA see the Toolchain Updates section of https://wiki.ubuntu.com/ToolChain.")
+  endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  # require at least clang 3.4 as provided by Ubuntu 12.04
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.4)
+    message(FATAL_ERROR "Clang version must be at least 3.4")
+  endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+  # require at least clang 5.0
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
+    message(FATAL_ERROR "Apple Clang version must be at least 5.0")
+  endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  # require at least Visual Studio 2012
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 17.0.61030.0)
+    message(FATAL_ERROR "Microsoft Visual Studio 2012 Update 4 or newer required (MSVC 17.0.61030.0)")
+  endif()
+else()
+  message(WARNING "You are using an unsupported compiler! Compilation has only been tested with Clang (Linux or Apple), GCC and MSVC.")
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+  mitkFunctionGetGccVersion(${CMAKE_CXX_COMPILER} GCC_VERSION)
+else()
+  set(GCC_VERSION 0)
+endif()
+
+set(MITK_CXX_STANDARD 11)
+
+set(CMAKE_CXX_EXTENSIONS 0)
+set(CMAKE_CXX_STANDARD ${MITK_CXX_STANDARD})
+set(CMAKE_CXX_STANDARD_REQUIRED 1)
+
+# This is necessary to avoid problems with compile feature checks.
+# CMAKE_CXX_STANDARD seems to only set the -std=c++11 flag for targets.
+# However, compile flag checks also need to be done with -std=c++11.
+# The MITK_CXX11_FLAG variable is also used for external projects
+# build during the MITK super-build.
+mitkFunctionCheckCompilerFlags("-std=c++11" MITK_CXX11_FLAG)
+if(NOT MITK_CXX11_FLAG)
+  # Older gcc compilers use -std=c++0x
+  mitkFunctionCheckCompilerFlags("-std=c++0x" MITK_CXX11_FLAG)
+endif()
+
 
 ######################################################################
 # Setting build name based on local system details
@@ -393,6 +497,111 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   mitkFunctionGetGccVersion(${CMAKE_CXX_COMPILER} GCC_VERSION)
   message("NifTK gcc=${GCC_VERSION}")
 endif()
+
+
+# ------------------------------------------------------------------------
+# Register external projects which can be build with the MITK superbuild
+# system. Each mitkFunctionAddExternalProject() call registers an external
+# project for which a CMakeExternals/<project>.cmake file must exist. The
+# call also creates a MITK_USE_<project> variable (appearing in the CMake
+# UI if the NO_CACHE option is *not* given).
+
+
+# -----------------------------------------
+# Optional external projects with no inter-dependencies
+
+set_property(GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS "")
+
+#mitkFunctionAddExternalProject(NAME Camino OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME Boost ON ADVANCED DOC "Use the Boost C++ library")
+
+mitkFunctionAddExternalProject(NAME Eigen ON ADVANCED DOC "Use the Eigen library")
+
+mitkFunctionAddExternalProject(NAME OpenCV ON ADVANCED)
+mitkFunctionAddExternalProject(NAME AprilTags OFF ADVANCED DEPENDS OpenCV Eigen)
+mitkFunctionAddExternalProject(NAME ArUco OFF ADVANCED DEPENDS OpenCV)
+mitkFunctionAddExternalProject(NAME FLANN OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME PCL OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME RTK OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME VL OFF)
+mitkFunctionAddExternalProject(NAME CGAL OFF ADVANCED DEPENDS Boost)
+mitkFunctionAddExternalProject(NAME NiftyLink OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftySim OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftySeg OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftyReg OFF ADVANCED)
+#mitkFunctionAddExternalProject(NAME NiftyRec OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
+
+# -----------------------------------------
+# The following external projects must be ordered according to their inter-dependencies
+
+
+# These are "hard" dependencies and always set to ON
+mitkFunctionAddExternalProject(NAME DCMTK ON ADVANCED DOC "EXPERIMENTAL, superbuild only: Use DCMTK in MITK")
+mitkFunctionAddExternalProject(NAME GDCM ON ADVANCED)
+mitkFunctionAddExternalProject(NAME ITK ON ADVANCED NO_CACHE DEPENDS GDCM)
+mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON ADVANCED DEPENDS ITK)
+mitkFunctionAddExternalProject(NAME VTK ON ADVANCED NO_CACHE)
+mitkFunctionAddExternalProject(NAME CTK ON ADVANCED DEPENDS QT ITK VTK DCMTK DOC "Use CTK in MITK")
+mitkFunctionAddExternalProject(NAME MITK ON ADVANCED NO_CACHE DEPENDS ITK VTK GDCM DCMTK CTK Eigen)
+
+# -----------------------------------------
+# Other MITK_USE_* options not related to external projects build via the NifTK superbuild
+
+#env_option(MITK_USE_OpenCL "Use OpenCL GPU-Computing library" OFF)
+
+if (BUILD_IGI)
+  set(MITK_USE_AprilTags ON CACHE BOOL "" FORCE)
+  set(MITK_USE_ArUco ON CACHE BOOL "" FORCE)
+  set(MITK_USE_NiftyLink ON CACHE BOOL "" FORCE)
+  set(MITK_USE_OpenCV ON CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_NiftyReg)
+  set(MITK_USE_NiftyReg ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_NiftyReg OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_NiftySeg)
+  set(MITK_USE_NiftySeg ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_NiftySeg OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_NiftySim)
+  set(MITK_USE_NiftySim ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_NiftySim OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_NiftyRec)
+  set(MITK_USE_NiftyRec ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_NiftyRec OFF CACHE BOOL "" FORCE)
+endif()
+
+#-----------------------------------------------------------------------------
+# Build configurations
+#-----------------------------------------------------------------------------
+
+set(_buildConfigs "Custom")
+
+file(GLOB _buildConfigFiles CMake/BuildConfigurations/*.cmake)
+
+foreach(_buildConfigFile ${_buildConfigFiles})
+  get_filename_component(_buildConfigFile ${_buildConfigFile} NAME_WE)
+  list(APPEND _buildConfigs ${_buildConfigFile})
+endforeach()
+
+set(MITK_BUILD_CONFIGURATION "Custom" CACHE STRING "Use pre-defined MITK configurations")
+mark_as_advanced(MITK_BUILD_CONFIGURATION)
+set_property(CACHE MITK_BUILD_CONFIGURATION PROPERTY STRINGS ${_buildConfigs})
+
+mitkFunctionEnableBuildConfiguration()
+
+mitkFunctionCreateWhitelistPaths(NifTK)
+mitkFunctionFindWhitelists(NifTK)
 
 ######################################################################
 # Configure Dart testing support.  This should be done before any
@@ -623,6 +832,7 @@ if(BUILD_SUPERBUILD)
   return()
 endif(BUILD_SUPERBUILD)
 
+
 ######################################################################
 # End of SuperBuild. Print out where the source and binary folders
 # are, just to make it really explicit... well, explicit to the user
@@ -631,6 +841,95 @@ endif(BUILD_SUPERBUILD)
 
 message("CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 message("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
+
+
+######################################################################
+# Configure CMake files before we need to use them in the FIND_XXX.
+#
+# So, the variables NIFTK_BOOSTINSTALL etc.
+# should be passed in on cmake command line, or set up using ccmake.
+######################################################################
+
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindAprilTags.cmake ${CMAKE_BINARY_DIR}/FindAprilTags.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroBuildCLI.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroBuildCLI.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineApplication.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineScript.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateGuiApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateGuiApplication.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGenerateCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGenerateCLIScript.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitBranch.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitBranch.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitDateTime.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitDateTime.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroInstallCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroInstallCLIScript.cmake COPYONLY)
+file(GLOB package_depends_files ${CMAKE_SOURCE_DIR}/CMake/PackageDepends/*.cmake)
+foreach(file_to_copy ${package_depends_files})
+  file(COPY ${file_to_copy} DESTINATION ${CMAKE_BINARY_DIR}/CMakePackageDepends)
+endforeach()
+
+
+# Configure module naming conventions
+set(MITK_MODULE_NAME_REGEX_MATCH "^[A-Z].*$")
+set(MITK_MODULE_NAME_REGEX_NOT_MATCH "^[Nn][Ii][Ff][Tt][Kk].*$")
+set(MITK_MODULE_NAME_PREFIX "niftk")
+set(MITK_MODULE_NAME_DEFAULTS_TO_DIRECTORY_NAME 1)
+set(MITK_LEGACY_EXPORT_MACRO_NAME 0)
+
+# We need this later for a DCMTK workaround
+set(_dcmtk_dir_orig ${DCMTK_DIR})
+
+# This property is populated at the top half of this file
+get_property(MITK_EXTERNAL_PROJECTS GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS)
+foreach(ep ${MITK_EXTERNAL_PROJECTS})
+  get_property(_package GLOBAL PROPERTY MITK_${ep}_PACKAGE)
+  get_property(_components GLOBAL PROPERTY MITK_${ep}_COMPONENTS)
+  if(MITK_USE_${ep} AND _package)
+    if(_components)
+      find_package(${_package} COMPONENTS ${_components} REQUIRED CONFIG)
+    else()
+      # Prefer config mode first because it finds external
+      # <proj>Config.cmake files pointed at by <proj>_DIR variables.
+      # Otherwise, existing Find<proj>.cmake files could fail.
+      # (e.g. in the case of GLEW and the FindGLEW.cmake file shipped
+      # with CMake).
+      find_package(${_package} QUIET CONFIG)
+      string(TOUPPER "${_package}" _package_uc)
+      if(NOT (${_package}_FOUND OR ${_package_uc}_FOUND))
+        find_package(${_package} REQUIRED)
+      endif()
+    endif()
+  endif()
+endforeach()
+
+# MITKConfig.cmake sets this variable therefore we need to clear it again.
+set(MITK_LEGACY_EXPORT_MACRO_NAME 0)
+
+# Ensure that the MITK CMake module path comes first
+set(CMAKE_MODULE_PATH
+  ${MITK_CMAKE_DIR}
+  ${CMAKE_MODULE_PATH}
+  )
+
+set(DCMTK_DIR ${_dcmtk_dir_orig})
+if(MITK_USE_DCMTK)
+  # Due to the preferred CONFIG mode in find_package calls above,
+  # the DCMTKConfig.cmake file is read, which does not provide useful
+  # package information. We explictly need MODULE mode to find DCMTK.
+#  if(${_dcmtk_dir_orig} MATCHES "${MITK_EXTERNAL_PROJECT_PREFIX}.*")
+#    # Help our FindDCMTK.cmake script find our super-build DCMTK
+#    set(DCMTK_DIR ${MITK_EXTERNAL_PROJECT_PREFIX})
+#  else()
+    # Use the original value
+    set(DCMTK_DIR ${_dcmtk_dir_orig})
+#  endif()
+  find_package(DCMTK REQUIRED MODULE)
+endif()
 
 ######################################################################
 # Add additional entries to the CMAKE_MODULE_PATH, now all externals
@@ -666,36 +965,6 @@ if(APPLE)
   endforeach()
 
 endif()
-
-######################################################################
-# Configure CMake files before we need to use them in the FIND_XXX.
-#
-# So, the variables NIFTK_BOOSTINSTALL etc.
-# should be passed in on cmake command line, or set up using ccmake.
-######################################################################
-
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/Findapriltags.cmake ${CMAKE_BINARY_DIR}/Findapriltags.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroBuildCLI.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroBuildCLI.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineApplication.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineScript.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateGuiApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateGuiApplication.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGenerateCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGenerateCLIScript.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitBranch.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitBranch.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroGetGitDateTime.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroGetGitDateTime.cmake COPYONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroInstallCLIScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroInstallCLIScript.cmake COPYONLY)
-file(GLOB package_depends_files ${CMAKE_SOURCE_DIR}/CMake/PackageDepends/*.cmake)
-foreach(file_to_copy ${package_depends_files})
-  file(COPY ${file_to_copy} DESTINATION ${CMAKE_BINARY_DIR}/CMakePackageDepends)
-endforeach()
 
 if(BUILD_IGI)
   add_definitions(-DBUILD_IGI)
@@ -856,6 +1125,21 @@ if(NIFTK_GENERATE_DOXYGEN_HELP)
   set(BLUEBERRY_USE_QT_HELP ON)
 endif(NIFTK_GENERATE_DOXYGEN_HELP)
 
+# Note:
+# We build NifTK with Boost but MITK without it. The next 'find_package(MITK REQUIRED)'
+# loads values from MITKConfig.cmake that overwrites some Boost related variables, e.g.
+# MITK_USE_Boost. This causes that if a module depends on the Boost package, the
+# MITK_CREATE_MODULE macro will think that the software is being built without Boost,
+# and it will not create the module because of the missing dependency.
+# As a workaround, here we save the values of these variables and restore them after
+# the find_package() call.
+
+set(_boost_root ${BOOST_ROOT})
+set(_mitk_use_boost ${MITK_USE_Boost})
+set(_mitk_use_system_boost ${MITK_USE_SYSTEM_Boost})
+set(_mitk_use_boost_libraries ${MITK_USE_Boost_LIBRARIES})
+set(_mitk_legacy_export_macro_name ${MITK_LEGACY_EXPORT_MACRO_NAME})
+
 find_package(MITK REQUIRED)
 if(MITK_FOUND)
   message("Found MITK")
@@ -866,9 +1150,16 @@ if(MITK_FOUND)
   link_directories(${MITK_LINK_DIRECTORIES})
 endif(MITK_FOUND)
 
+set(BOOST_ROOT ${_boost_root})
+set(MITK_USE_Boost ${_mitk_use_boost})
+set(MITK_USE_SYSTEM_Boost ${_mitk_use_system_boost})
+set(MITK_USE_Boost_LIBRARIES ${_mitk_use_boost_libraries})
+set(MITK_LEGACY_EXPORT_MACRO_NAME ${_mitk_legacy_export_macro_name})
+
 ######################################################################
 # Find Optional External packages
 ######################################################################
+
 
 ######################################################################
 # Find CGAL.
@@ -902,75 +1193,75 @@ if(NIFTK_USE_FFTW)
 endif(NIFTK_USE_FFTW)
 
 ######################################################################
-# Find NIFTYREG - (version will vary according to whether CUDA found)
+# Find NiftyReg - (version will vary according to whether CUDA found)
 ######################################################################
-if(BUILD_NIFTYREG)
+if(BUILD_NiftyReg)
   find_package(NiftyReg)
-  if(NIFTYREG_FOUND)
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NIFTYREG_INCLUDE_DIR})
+  if(NiftyReg_FOUND)
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NiftyReg_INCLUDE_DIR})
     add_definitions(-DUSE_NIFTYREG)
     set(NIFTYREG_NVCC_FLAGS "${NIFTYREG_NVCC_FLAGS};-DUSE_NIFTYREG")
     message("Found NiftyReg")
-  else(NIFTYREG_FOUND)
+  else()
     message("Didn't find NiftyReg")
-  endif(NIFTYREG_FOUND)
-endif(BUILD_NIFTYREG)
+  endif()
+endif()
 
-if(NOT NIFTYREG_FOUND)
+if(NOT NiftyReg_FOUND)
   message("No NiftyReg found, so turning off plugin")
   set("NIFTK_Plugins/uk.ac.ucl.cmic.niftyreg" OFF CACHE BOOL "NiftyReg plugin" FORCE)
 endif()
 
 ######################################################################
-# Find NIFTYREC - (version will vary according to whether CUDA found)
-# NB: Is dependent on NIFTYREG and at time of writing only has GPU version
+# Find NiftyRec - (version will vary according to whether CUDA found)
+# NB: Is dependent on NiftyReg and at time of writing only has GPU version
 ######################################################################
 
-if(BUILD_NIFTYREC)
+if(BUILD_NiftyRec)
   find_package(NiftyRec)
-  if(NIFTYREC_FOUND)
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NIFTYREC_INCLUDE_DIR})
+  if(NiftyRec_FOUND)
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NiftyRec_INCLUDE_DIR})
     add_definitions(-DUSE_NIFTYREC)
     set(NIFTYREC_NVCC_FLAGS "${NIFTYREC_NVCC_FLAGS};-DUSE_NIFTYREC")
     message("Found NiftyRec")
-  else(NIFTYREC_FOUND)
+  else()
     message("Didn't find NiftyRec")
-  endif(NIFTYREC_FOUND)
-endif(BUILD_NIFTYREC)
+  endif()
+endif()
 
 ######################################################################
-# Find NIFTYSIM
+# Find NiftySim
 ######################################################################
 
-if(BUILD_NIFTYSIM)
+if(BUILD_NiftySim)
   find_package(NiftySim)
-  if(NIFTYSIM_FOUND)
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NIFTYSIM_INCLUDE_DIR})
+  if(NiftySim_FOUND)
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NiftySim_INCLUDE_DIR})
     add_definitions(-DUSE_NIFTYSIM)
     set(NIFTYSIM_NVCC_FLAGS "${NIFTYSIM_NVCC_FLAGS};-DUSE_NIFTYSIM")
     message("Found NiftySim")
-  else(NIFTYSIM_FOUND)
+  else()
     message("Didn't find NiftySim")
-  endif(NIFTYSIM_FOUND)
-endif(BUILD_NIFTYSIM)
+  endif()
+endif()
 
 ######################################################################
 # Find NiftySeg
 ######################################################################
 
-if(BUILD_NIFTYSEG)
+if(BUILD_NiftySeg)
   find_package(NiftySeg)
-  if(NIFTYSEG_FOUND)
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NIFTYSEG_INCLUDE_DIR})
+  if(NiftySeg_FOUND)
+    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NiftySeg_INCLUDE_DIR})
     add_definitions(-DUSE_NIFTYSEG)
     set(NIFTYSEG_NVCC_FLAGS "${NIFTYSEG_NVCC_FLAGS};-DUSE_NIFTYSEG")
     message("Found NiftySeg")
-  else(NIFTYSEG_FOUND)
+  else()
     message("Didn't find NiftySeg")
-  endif(NIFTYSEG_FOUND)
-endif(BUILD_NIFTYSEG)
+  endif()
+endif()
 
-if(NOT NIFTYSEG_FOUND)
+if(NOT NiftySeg_FOUND)
   message("No NiftySeg found, so turning off breast segmentation plugin")
   set("NIFTK_Plugins/uk.ac.ucl.cmic.breastsegmentation" OFF CACHE BOOL "Breast segmentation plugin" FORCE)
 endif()
@@ -986,6 +1277,18 @@ if(BUILD_RTK)
     include(${RTK_USE_FILE})
   endif(RTK_FOUND)
 endif(BUILD_RTK)
+
+######################################################################
+# Find VL
+######################################################################
+
+if(BUILD_VL)
+  find_package(VL COMPONENTS VLCore VLGraphics VLVolume REQUIRED)
+  if(VL_FOUND)
+    message("Found VL")
+    #include(${VL_USE_FILE})
+  endif(VL_FOUND)
+endif(BUILD_VL)
 
 ######################################################################
 # Find SlicerExecutionModel
@@ -1084,8 +1387,15 @@ foreach(type LIBRARY RUNTIME ARCHIVE)
   mark_as_advanced(CMAKE_${type}_OUTPUT_DIRECTORY)
 endforeach()
 
+######################################################################
+# For doxygen:
+######################################################################
+
 configure_file(${CMAKE_SOURCE_DIR}/Utilities/GenerateCommandLineDoxygen.sh.in
   ${EXECUTABLE_OUTPUT_PATH}/GenerateCommandLineDoxygen @ONLY)
+
+configure_file(${CMAKE_SOURCE_DIR}/Utilities/GenerateTestingReports.sh.in
+  ${EXECUTABLE_OUTPUT_PATH}/GenerateTestingReports @ONLY)
 
 ######################################################################
 # Compilation specific stuff, like flags etc.
@@ -1187,6 +1497,7 @@ configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/DCMTK.txt ${CMAKE_BINARY_DIR}/LI
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/GDCM.txt ${CMAKE_BINARY_DIR}/LICENSE_GDCM.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt ${CMAKE_BINARY_DIR}/LICENSE_ITK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/RTK.txt ${CMAKE_BINARY_DIR}/LICENSE_RTK.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/VL.txt ${CMAKE_BINARY_DIR}/LICENSE_VL.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt ${CMAKE_BINARY_DIR}/LICENSE_VTK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt ${CMAKE_BINARY_DIR}/LICENSE_MITK.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyReg.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftyReg.txt)
@@ -1218,6 +1529,7 @@ set(NIFTK_VTK_LIBS_WITH_QT vtkViewsQt vtkRenderingQt vtkGUISupportQt vtkGUISuppo
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Boost.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/RTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VL.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
@@ -1256,65 +1568,65 @@ endif()
 ##########################################################################
 
 # NiftyReg
-if(BUILD_NIFTYREG AND NIFTYREG_FOUND)
-  file(GLOB NIFTY_REG_LIB_FILES
-       ${NIFTYREG_DIR}/lib/*.so
-       ${NIFTYREG_DIR}/lib/*.dylib
+if(BUILD_NiftyReg AND NiftyReg_FOUND)
+  file(GLOB _NiftyReg_LIB_FILES
+       ${NiftyReg_DIR}/lib/*.so
+       ${NiftyReg_DIR}/lib/*.dylib
        )
-  MITK_INSTALL(PROGRAMS ${NIFTY_REG_LIB_FILES})
+  MITK_INSTALL(PROGRAMS ${_NiftyReg_LIB_FILES})
 
-  file(GLOB NIFTY_REG_BIN_FILES ${NIFTYREG_DIR}/bin/*)
-  MITK_INSTALL(PROGRAMS ${NIFTY_REG_BIN_FILES})
+  file(GLOB _NiftyReg_BIN_FILES ${NiftyReg_DIR}/bin/*)
+  MITK_INSTALL(PROGRAMS ${_NiftyReg_BIN_FILES})
 
   foreach(prog reg_aladin reg_f3d reg_jacobian reg_resample)
     set(FULL_APP_NAME ${prog})
     NIFTK_GENERATE_CLI_SCRIPT(NAME ${prog})
   endforeach()
-endif(BUILD_NIFTYREG AND NIFTYREG_FOUND)
+endif()
 
 # NiftySeg
-if(BUILD_NIFTYSEG)
-  file(GLOB NIFTY_SEG_LIB_FILES
-       ${NIFTYSEG_DIR}/lib/*.so
-       ${NIFTYSEG_DIR}/lib/*.dylib
+if(BUILD_NiftySeg)
+  file(GLOB _NiftySeg_LIB_FILES
+       ${NiftySeg_DIR}/lib/*.so
+       ${NiftySeg_DIR}/lib/*.dylib
        )
-  MITK_INSTALL(PROGRAMS ${NIFTY_SEG_LIB_FILES})
+  MITK_INSTALL(PROGRAMS ${_NiftySeg_LIB_FILES})
 
-  file(GLOB NIFTY_SEG_BIN_FILES ${NIFTYSEG_DIR}/bin/*)
-  MITK_INSTALL(PROGRAMS ${NIFTY_SEG_BIN_FILES})
+  file(GLOB _NiftySeg_BIN_FILES ${NiftySeg_DIR}/bin/*)
+  MITK_INSTALL(PROGRAMS ${_NiftySeg_BIN_FILES})
 
   foreach(prog seg_EM seg_LabFusion)
     set(FULL_APP_NAME ${prog})
     NIFTK_GENERATE_CLI_SCRIPT(NAME ${prog})
   endforeach()
 
-  file(GLOB NIFTY_SEG_PRIORS_FILES ${NIFTYSEG_DIR}/priors/*)
-  install(PROGRAMS ${NIFTY_SEG_PRIORS_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/priors COMPONENT applications)
-endif(BUILD_NIFTYSEG)
+  file(GLOB _NiftySeg_PRIORS_FILES ${NiftySeg_DIR}/priors/*)
+  install(PROGRAMS ${_NiftySeg_PRIORS_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/priors COMPONENT applications)
+endif()
 
 # NiftyRec
-if(BUILD_NIFTYREC AND NIFTYREC_FOUND)
-  file(GLOB NIFTY_REC_LIB_FILES
-       ${NIFTYREC_DIR}/lib/*.so
-       ${NIFTYREC_DIR}/lib/*.dylib
+if(BUILD_NiftyRec AND NiftyRec_FOUND)
+  file(GLOB _NiftyRec_LIB_FILES
+       ${NiftyRec_DIR}/lib/*.so
+       ${NiftyRec_DIR}/lib/*.dylib
        )
-  MITK_INSTALL(PROGRAMS ${NIFTY_REC_LIB_FILES})
+  MITK_INSTALL(PROGRAMS ${_NiftyRec_LIB_FILES})
 
-  file(GLOB NIFTY_REC_INCL_FILES ${NIFTYREC_DIR}/include/*)
-  MITK_INSTALL(PROGRAMS ${NIFTY_REC_INCL_FILES})
-endif(BUILD_NIFTYREC AND NIFTYREC_FOUND)
+  file(GLOB _NiftyRec_INCL_FILES ${NiftyRec_DIR}/include/*)
+  MITK_INSTALL(PROGRAMS ${_NiftyRec_INCL_FILES})
+endif()
 
 # NiftySim
-if(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
-  file(GLOB NIFTY_SIM_LIB_FILES
-       ${NIFTYSIM_DIR}/lib/*.so
-       ${NIFTYSIM_DIR}/lib/*.dylib
+if(BUILD_NiftySim AND NiftySim_FOUND)
+  file(GLOB _NiftySim_LIB_FILES
+       ${NiftySim_DIR}/lib/*.so
+       ${NiftySim_DIR}/lib/*.dylib
        )
-  MITK_INSTALL(PROGRAMS ${NIFTY_SIM_LIB_FILES})
+  MITK_INSTALL(PROGRAMS ${_NiftySim_LIB_FILES})
 
-  file(GLOB NIFTY_SIM_BIN_FILES ${NIFTYSIM_DIR}/bin/*)
-  MITK_INSTALL(PROGRAMS ${NIFTY_SIM_BIN_FILES})
-endif(BUILD_NIFTYSIM AND NIFTYSIM_FOUND)
+  file(GLOB _NiftySim_BIN_FILES ${NiftySim_DIR}/bin/*)
+  MITK_INSTALL(PROGRAMS ${_NIFTY_SIM_BIN_FILES})
+endif()
 
 # Camino
 if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
@@ -1454,8 +1766,8 @@ if(WIN32)
     endif()
 
     # some other (top secret) fem code needs niftysim at runtime.
-    if(NIFTYSIM_FOUND)
-      set(NIFTYSIM_BIN_PATH_FOR_BATCH_FILE "${NIFTYSIM_DIR}/bin")
+    if(NiftySim_FOUND)
+      set(NIFTYSIM_BIN_PATH_FOR_BATCH_FILE "${NiftySim_DIR}/bin")
     else()
       set(NIFTYSIM_BIN_PATH_FOR_BATCH_FILE "")
     endif()
@@ -1525,13 +1837,47 @@ foreach(target_to_export ${targets_to_export})
   endif()
 endforeach()
 
-set(VISIBILITY_AVAILABLE 0)
-set(visibility_test_flag "")
-mitkFunctionCheckCompilerFlags("-fvisibility=hidden" visibility_test_flag)
-if(visibility_test_flag)
-  # The compiler understands -fvisiblity=hidden (probably gcc >= 4 or Clang)
-  set(VISIBILITY_AVAILABLE 1)
-endif()
+
+# ---------------- External projects -----------------
+
+get_property(MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS_CONFIG GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+
+set(MITK_CONFIG_EXTERNAL_PROJECTS )
+#string(REPLACE "^^" ";" _mitk_external_projects ${MITK_EXTERNAL_PROJECTS})
+
+foreach(ep ${MITK_EXTERNAL_PROJECTS})
+  get_property(_components GLOBAL PROPERTY MITK_${ep}_COMPONENTS)
+  set(MITK_CONFIG_EXTERNAL_PROJECTS "${MITK_CONFIG_EXTERNAL_PROJECTS}
+set(MITK_USE_${ep} ${MITK_USE_${ep}})
+set(MITK_${ep}_DIR \"${${ep}_DIR}\")
+set(MITK_${ep}_COMPONENTS ${_components})
+")
+endforeach()
+
+foreach(ep ${MITK_EXTERNAL_PROJECTS})
+  get_property(_package GLOBAL PROPERTY MITK_${ep}_PACKAGE)
+  get_property(_components GLOBAL PROPERTY MITK_${ep}_COMPONENTS)
+  if(_components)
+      set(_components_arg COMPONENTS \${_components})
+  else()
+    set(_components_arg)
+  endif()
+
+  if(_package)
+    set(MITK_CONFIG_EXTERNAL_PROJECTS "${MITK_CONFIG_EXTERNAL_PROJECTS}
+if(MITK_USE_${ep})
+  set(${ep}_DIR \${MITK_${ep}_DIR})
+  if(MITK_${ep}_COMPONENTS)
+    mitkMacroFindDependency(${_package} COMPONENTS \${MITK_${ep}_COMPONENTS})
+  else()
+    mitkMacroFindDependency(${_package})
+  endif()
+endif()")
+  endif()
+endforeach()
+
+
+
 
 # This generates a C++ header file with values that need compiling into code.
 configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)

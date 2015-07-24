@@ -27,7 +27,6 @@
 #include <itkBreastMaskSegmForBreastDensity.h>
 #include <itkRescaleImageUsingHistogramPercentilesFilter.h>
 
-#include <boost/filesystem.hpp>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 

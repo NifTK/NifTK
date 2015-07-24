@@ -46,7 +46,7 @@ public:
   /**
    * \brief Each view for a plugin has its own globally unique ID.
    */
-  static const std::string VIEW_ID;
+  static const QString VIEW_ID;
 
   /**
    * \brief Called by framework, this method creates all the controls for this view.

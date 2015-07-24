@@ -86,6 +86,7 @@ if(SlicerExecutionModel_FOUND)
     niftkCropImage
     niftkDenoise
     niftkDilate
+    niftkElasticBodySplineWarp
     niftkErode
     niftkExportDICOMTagsToCSVFile
     niftkExtracellularVolumeFractionFromContrastEnhancedCT
@@ -112,6 +113,7 @@ if(SlicerExecutionModel_FOUND)
     niftkSubsampleImage
     niftkSubtract
     niftkThinPlateSplineScatteredDataPointSetToImage
+    niftkThinPlateSplineWarp
     niftkUnaryImageOperatorsOnDirectoryTree
     niftkVesselExtractor
     niftkVotingBinaryIterativeHoleFillingImageFilter

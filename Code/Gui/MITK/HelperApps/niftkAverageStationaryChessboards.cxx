@@ -247,12 +247,7 @@ int main(int argc, char** argv)
         point[2] = pointsIn3D[i].z;
         pointSet->InsertPoint(i, point);
       }
-      if (!mitk::IOUtil::SavePointSet(pointSet, outputPoints))
-      {
-        std::ostringstream errorMessage;
-        errorMessage << "Failed to save points to " << outputPoints << std::endl;
-        mitkThrow() << errorMessage.str();
-      }
+      mitk::IOUtil::Save(pointSet, outputPoints);
     }
     else
     {
