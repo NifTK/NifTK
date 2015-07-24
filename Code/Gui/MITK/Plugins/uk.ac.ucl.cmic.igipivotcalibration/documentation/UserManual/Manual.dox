@@ -1,23 +1,47 @@
 /**
-\bundlemainpage{uk.ac.ucl.cmic.igisurfacereg} The Surface Based Registration View
+\bundlemainpage{uk.ac.ucl.cmic.igipivotcalibration} The Pivot Calibration View
 
-\image html icon.png "The Icon for the Surface Based Registration View"
+\image html icon.png "The Icon for the Pivot Calibration View"
 
-\section SurfaceRegIntro Introduction
+\section PivotCalibrationIntro Introduction
 
-Do an introduction here.
+The Pivot Calibration View plugin provides pointing device calibration which determines the translation between the tip of the pointer to the marker attached to the pointer.
 
-\section SurfaceRegUsage Usage
+\section PivotCalibrationUsage Usage
 
-Put all usage information here.
+\subsection PivotCalibrationOptionalInput Optional Input
 
-\section SurfaceRegPreferences Preferences
+\image html optionalinput.png "Figure 1. The optional input from the plugin."
 
-Put all information on user configurable preferences here.
+<ul>
+percentage: The percentage of data to use, which triggers multiple re-runs to get mean and standard deviation of residual.
 
-\section SurfaceRegReferences References
+number of re-runs: The number of re-runs to do if percentage != 100.
+</ul>
 
-Put lots of useful references here, including html links, and DOI references.
+\subsection PivotCalibrationMadatoryInput Mandatory Input
+
+\image html mandatoryinput.png "Figure 2. The mandatory input from the plugin."
+
+<ul>
+tracking matrix folder: input the directory containing 4x4 tracking matrices in plain text files.
+</ul>
+
+\subsection PivotCalibrationDisplayResult Do Calibration
+
+<ul>
+press the button \image html calibbutton.png to do pivot calibration.
+
+The transformation matrix and the residual error is displayed as shown in Figure 3.
+
+\image html displayresult.png "Figure 3. Pivot calibration."
+
+</ul>
+
+\section PivotCalibrationPreferences Preferences
+
+
+\section PivotCalibrationReferences References
 
 */
 
