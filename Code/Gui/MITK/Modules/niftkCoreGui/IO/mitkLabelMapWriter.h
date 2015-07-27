@@ -18,7 +18,7 @@
 
 
 #include <mitkAbstractFileWriter.h>
-#include <niftkCoreGuiExports.h>
+#include "niftkCoreGuiExports.h"
 
 #include <QColor>
 
