@@ -129,11 +129,6 @@ set(BUILD_GUI OFF)
 set(BUILD_IGI OFF)
 set(BUILD_MIDAS OFF)
 
-# Please leave this off, as we can then JUST build command line apps, without
-# filling the CMakeCache.txt with GUI related variables which will only confuse
-# when someone subsequently tries to switch all the GUIs off.
-option(NIFTK_BUILD_ALL_APPS "Build all NifTK Graphical User Interfaces" OFF)
-
 # Check each GUI application.
 foreach(NIFTK_APP ${NIFTK_APPS})
 
@@ -143,7 +138,7 @@ foreach(NIFTK_APP ${NIFTK_APPS})
   list(GET target_info_list 1 option_name)
   list(GET target_info_list 0 app_name)
 
-  if(${option_name} OR NIFTK_BUILD_ALL_APPS)
+  if(${option_name})
 
     set(BUILD_GUI ON)
 
@@ -554,6 +549,11 @@ if (BUILD_IGI)
   set(MITK_USE_ArUco ON CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyLink ON CACHE BOOL "" FORCE)
   set(MITK_USE_OpenCV ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_AprilTags OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_ArUco OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_NiftyLink OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_OpenCV OFF CACHE BOOL "" FORCE)
 endif()
 
 if (BUILD_NiftyReg)
@@ -957,7 +957,7 @@ if(APPLE)
     list(GET target_info_list 1 option_name)
     list(GET target_info_list 0 app_name)
 
-    if(${option_name} OR NIFTK_BUILD_ALL_APPS)
+    if(${option_name})
       set(MACOSX_BUNDLE_NAMES ${MACOSX_BUNDLE_NAMES} ${app_name})
     endif()
 
