@@ -69,7 +69,7 @@ class QtSignalCollector : public QObject, public itk::Object, private QtSignalLi
   Q_OBJECT
 
 public:
-  mitkClassMacro(QtSignalCollector, QObject);
+  mitkClassMacroItkParent(QtSignalCollector, QObject);
   itkNewMacro(QtSignalCollector);
 
   typedef std::pair<const QObject*, QByteArray> Signal;

@@ -17,6 +17,8 @@
 
 #include "niftkMIDASExports.h"
 
+#include <mitkCommon.h>
+
 namespace mitk
 {
 
@@ -36,6 +38,8 @@ class NIFTKMIDAS_EXPORT MIDASEventFilter
 {
 
 public:
+
+  mitkClassMacroNoParent(MIDASEventFilter);
 
   MIDASEventFilter();
   virtual ~MIDASEventFilter();
