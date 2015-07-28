@@ -6,3 +6,6 @@ mitk_create_plugin(
   MODULE_DEPENDS MitkQtWidgetsExt
 )
 
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(uk_ac_ucl_cmic_igipointsetcropper)
+endif()
