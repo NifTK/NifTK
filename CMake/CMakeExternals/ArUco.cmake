@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_IGI)
 
-  set(version "1.2.4")
+  set(version "1.3.0")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/aruco-${version}.tar.gz")
 
   niftkMacroDefineExternalProjectVariables(ArUco ${version} ${location})
