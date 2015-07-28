@@ -26,12 +26,12 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_COLOUR("thumbnail view box colour");
-const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_COLOUR_STYLE_SHEET("thumbnail view box colour style sheet");
-const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_THICKNESS("thumbnail view box thickness");
-const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_OPACITY("thumbnail view box opacity");
-const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_LAYER("thumbnail view box layer");
-const std::string QmitkThumbnailViewPreferencePage::THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS("thumbnail track only main windows");
+const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_COLOUR("thumbnail view box colour");
+const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_COLOUR_STYLE_SHEET("thumbnail view box colour style sheet");
+const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_THICKNESS("thumbnail view box thickness");
+const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_OPACITY("thumbnail view box opacity");
+const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_LAYER("thumbnail view box layer");
+const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS("thumbnail track only main windows");
 
 //-----------------------------------------------------------------------------
 QmitkThumbnailViewPreferencePage::QmitkThumbnailViewPreferencePage()
@@ -74,9 +74,7 @@ void QmitkThumbnailViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
 
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_ThumbnailPreferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.thumbnail");
 
@@ -148,8 +146,8 @@ QWidget* QmitkThumbnailViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool QmitkThumbnailViewPreferencePage::PerformOk()
 {
-  m_ThumbnailPreferencesNode->Put(THUMBNAIL_BOX_COLOUR_STYLE_SHEET, m_BoxColorStyleSheet.toStdString());
-  m_ThumbnailPreferencesNode->PutByteArray(THUMBNAIL_BOX_COLOUR, m_BoxColor);
+  m_ThumbnailPreferencesNode->Put(THUMBNAIL_BOX_COLOUR_STYLE_SHEET, m_BoxColorStyleSheet);
+  m_ThumbnailPreferencesNode->Put(THUMBNAIL_BOX_COLOUR, m_BoxColor);
   m_ThumbnailPreferencesNode->PutDouble(THUMBNAIL_BOX_OPACITY, m_BoxOpacity->value());
   m_ThumbnailPreferencesNode->PutInt(THUMBNAIL_BOX_THICKNESS, m_BoxThickness->value());
   m_ThumbnailPreferencesNode->PutInt(THUMBNAIL_BOX_LAYER, m_BoxLayer->value());
@@ -168,8 +166,8 @@ void QmitkThumbnailViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void QmitkThumbnailViewPreferencePage::Update()
 {
-  m_BoxColorStyleSheet = QString::fromStdString(m_ThumbnailPreferencesNode->Get(THUMBNAIL_BOX_COLOUR_STYLE_SHEET, ""));
-  m_BoxColor = m_ThumbnailPreferencesNode->GetByteArray(THUMBNAIL_BOX_COLOUR, "");
+  m_BoxColorStyleSheet = m_ThumbnailPreferencesNode->Get(THUMBNAIL_BOX_COLOUR_STYLE_SHEET, "");
+  m_BoxColor = m_ThumbnailPreferencesNode->Get(THUMBNAIL_BOX_COLOUR, "");
   if (m_BoxColorStyleSheet=="")
   {
     m_BoxColorStyleSheet = "background-color: rgb(255,0,0)";
@@ -209,7 +207,7 @@ void QmitkThumbnailViewPreferencePage::OnBoxColourChanged()
     QStringList boxColor;
     boxColor << colour.name();
 
-    m_BoxColor = boxColor.replaceInStrings(";","\\;").join(";").toStdString();
+    m_BoxColor = boxColor.replaceInStrings(";","\\;").join(";");
   }
  }
 

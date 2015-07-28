@@ -27,7 +27,7 @@
 
 #include <QmitkMIDASBaseSegmentationFunctionality.h>
 
-const std::string MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasmorphologicalsegmentor");
+const QString MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasmorphologicalsegmentor");
 
 
 //-----------------------------------------------------------------------------
@@ -66,9 +66,7 @@ void MIDASMorphologicalSegmentorViewPreferencePage::Init(berry::IWorkbench::Poin
 void MIDASMorphologicalSegmentorViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_MIDASMorphologicalSegmentorViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 
@@ -110,8 +108,8 @@ QWidget* MIDASMorphologicalSegmentorViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool MIDASMorphologicalSegmentorViewPreferencePage::PerformOk()
 {
-  m_MIDASMorphologicalSegmentorViewPreferencesNode->Put(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet.toStdString());
-  m_MIDASMorphologicalSegmentorViewPreferencesNode->PutByteArray(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, m_DefaultColor);
+  m_MIDASMorphologicalSegmentorViewPreferencesNode->Put(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet);
+  m_MIDASMorphologicalSegmentorViewPreferencesNode->Put(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, m_DefaultColor);
 
   return true;
 }
@@ -126,7 +124,7 @@ void MIDASMorphologicalSegmentorViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewPreferencePage::Update()
 {
-  m_DefauleColorStyleSheet = QString::fromStdString(m_MIDASMorphologicalSegmentorViewPreferencesNode->Get(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, ""));
+  m_DefauleColorStyleSheet = m_MIDASMorphologicalSegmentorViewPreferencesNode->Get(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, "");
   m_DefaultColor = m_MIDASMorphologicalSegmentorViewPreferencesNode->GetByteArray(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, "");
   if (m_DefauleColorStyleSheet=="")
   {
@@ -162,7 +160,7 @@ void MIDASMorphologicalSegmentorViewPreferencePage::OnDefaultColourChanged()
     QStringList defColor;
     defColor << colour.name();
 
-    m_DefaultColor = defColor.replaceInStrings(";","\\;").join(";").toStdString();
+    m_DefaultColor = defColor.replaceInStrings(";","\\;").join(";");
   }
 }
 

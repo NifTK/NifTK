@@ -56,62 +56,62 @@ public:
   virtual void Update();
 
   /// \brief Stores the preference name for the default image interpolation in the DnD Display.
-  static const std::string DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE;
+  static const QString DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE;
 
   /// \brief Stores the preference name for the default background colour in the DnD Display.
-  static const std::string DNDDISPLAY_BACKGROUND_COLOUR;
+  static const QString DNDDISPLAY_BACKGROUND_COLOUR;
 
   /// \brief Stores the preference name for the default background colour stylesheet in the NifTK DnD Display.
-  static const std::string DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET;
+  static const QString DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET;
 
   /// \brief Stores the preference name for slice select tracking
-  static const std::string DNDDISPLAY_SLICE_SELECT_TRACKING;
+  static const QString DNDDISPLAY_SLICE_SELECT_TRACKING;
 
   /// \brief Stores the preference name for time select tracking
-  static const std::string DNDDISPLAY_TIME_SELECT_TRACKING;
+  static const QString DNDDISPLAY_TIME_SELECT_TRACKING;
 
   /// \brief Stores the preference name for magnification select tracking
-  static const std::string DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING;
+  static const QString DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING;
 
   /// \brief Stores the preference name for whether we show the 2D cursors as people may prefer them to always be off.
-  static const std::string DNDDISPLAY_SHOW_2D_CURSORS;
+  static const QString DNDDISPLAY_SHOW_2D_CURSORS;
 
   /// \brief Stores the preference name for whether we show the direction annotations.
-  static const std::string DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS;
+  static const QString DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS;
 
   /// \brief Stores the preference name for whether we show the 3D window in multiple window layout, as screen can get a bit cluttered.
-  static const std::string DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT;
+  static const QString DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT;
 
   /// \brief Stores the preference name for the default window layout in the NifTK DnD Display.
-  static const std::string DNDDISPLAY_DEFAULT_WINDOW_LAYOUT;
+  static const QString DNDDISPLAY_DEFAULT_WINDOW_LAYOUT;
 
   /// \brief Stores the preference name for whether to revert to last remembered slice, timestep and magnification when switching window layout.
-  static const std::string DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT;
+  static const QString DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT;
 
   /// \brief Stores the preference name for the default number of rows in the DnD Display.
-  static const std::string DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER;
+  static const QString DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER;
 
   /// \brief Stores the preference name for the default number of columns in the DnD Display.
-  static const std::string DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER;
+  static const QString DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER;
 
   /// \brief Stores the preference name for the default drop type (single, multiple, all).
-  static const std::string DNDDISPLAY_DEFAULT_DROP_TYPE;
+  static const QString DNDDISPLAY_DEFAULT_DROP_TYPE;
 
   /// \brief Stores the preference name for whether we show the magnification slider, as most people wont need it.
-  static const std::string DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER;
+  static const QString DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER;
 
   /// \brief Stores the preference name for whether we show the the options to show/hide cursor,
   /// direction annotations and 3D window in multi window layout.
-  static const std::string DNDDISPLAY_SHOW_SHOWING_OPTIONS;
+  static const QString DNDDISPLAY_SHOW_SHOWING_OPTIONS;
 
   /// \brief Stores the preference name for whether we show the window layout controls.
-  static const std::string DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS;
+  static const QString DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS;
 
   /// \brief Stores the preference name for whether we show the viewer number controls.
-  static const std::string DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS;
+  static const QString DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS;
 
   /// \brief Stores the preference name for a simple on/off preference for whether we show the single, multiple, all checkbox.
-  static const std::string DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS;
+  static const QString DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS;
 
 public slots:
 
@@ -124,7 +124,7 @@ private:
   QWidget* m_MainControl;
 
   QString m_BackgroundColorStyleSheet;
-  std::string m_BackgroundColor;
+  QString m_BackgroundColor;
 
   QComboBox* m_ImageInterpolationComboBox;
   QCheckBox* m_SliceSelectTracking;

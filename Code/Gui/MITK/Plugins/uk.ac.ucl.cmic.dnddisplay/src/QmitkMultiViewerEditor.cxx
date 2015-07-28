@@ -17,6 +17,7 @@
 #include <berryUIException.h>
 #include <berryIWorkbenchPage.h>
 #include <berryIPreferencesService.h>
+#include <berryPlatform.h>
 
 #include <QWidget>
 #include <QGridLayout>
@@ -29,7 +30,7 @@
 #include <niftkMultiViewerVisibilityManager.h>
 #include "QmitkDnDDisplayPreferencePage.h"
 
-const std::string QmitkMultiViewerEditor::EDITOR_ID = "org.mitk.editors.dndmultidisplay";
+const QString QmitkMultiViewerEditor::EDITOR_ID = "org.mitk.editors.dndmultidisplay";
 
 class QmitkMultiViewerEditorPrivate
 {
@@ -40,7 +41,7 @@ public:
   niftkMultiViewerWidget* m_MultiViewer;
   niftkMultiViewerVisibilityManager::Pointer m_MultiViewerVisibilityManager;
   mitk::RenderingManager::Pointer m_RenderingManager;
-  berry::IPartListener::Pointer m_PartListener;
+  QScopedPointer<berry::IPartListener> m_PartListener;
   mitk::IRenderingManager* m_RenderingManagerInterface;
 };
 
@@ -164,7 +165,7 @@ QmitkMultiViewerEditor::QmitkMultiViewerEditor()
 //-----------------------------------------------------------------------------
 QmitkMultiViewerEditor::~QmitkMultiViewerEditor()
 {
-  this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener);
+  this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener.data());
 }
 
 
@@ -176,7 +177,7 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
 
-    berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+    berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
     berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(EDITOR_ID)).Cast<berry::IBerryPreferences>();
     assert( prefs );
 
@@ -233,7 +234,7 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_MultiViewer->SetMagnificationTracking(magnificationTracking);
     d->m_MultiViewer->SetDefaultWindowLayout(defaultLayout);
 
-    this->GetSite()->GetPage()->AddPartListener(berry::IPartListener::Pointer(d->m_PartListener));
+    this->GetSite()->GetPage()->AddPartListener(d->m_PartListener.data());
 
     QGridLayout *gridLayout = new QGridLayout(parent);
     gridLayout->addWidget(d->m_MultiViewer, 0, 0);
@@ -268,7 +269,7 @@ void QmitkMultiViewerEditor::OnPreferencesChanged( const berry::IBerryPreference
 {
   if (d->m_MultiViewer != NULL)
   {
-    QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black"));
+    QString backgroundColourName = prefs->Get(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black");
     QColor backgroundColour(backgroundColourName);
     d->m_MultiViewer->SetBackgroundColour(backgroundColour);
     d->m_MultiViewer->SetInterpolationType((DnDDisplayInterpolationType)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2)));

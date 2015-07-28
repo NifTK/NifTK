@@ -17,6 +17,7 @@
 #include <berryUIException.h>
 #include <berryIWorkbenchPage.h>
 #include <berryIPreferencesService.h>
+#include <berryPlatform.h>
 
 #include <QGridLayout>
 #include <QToolButton>
@@ -35,7 +36,7 @@
 #include <ctkPopupWidget.h>
 #include <niftkSingleViewerControls.h>
 
-const std::string QmitkSingleViewerEditor::EDITOR_ID = "org.mitk.editors.dnddisplay";
+const QString QmitkSingleViewerEditor::EDITOR_ID = "org.mitk.editors.dnddisplay";
 
 class QmitkSingleViewerEditorPrivate
 {
@@ -46,7 +47,7 @@ public:
   niftkSingleViewerWidget* m_SingleViewer;
   niftkMultiViewerVisibilityManager::Pointer m_VisibilityManager;
   mitk::RenderingManager::Pointer m_RenderingManager;
-  berry::IPartListener::Pointer m_PartListener;
+  QScopedPointer<berry::IPartListener> m_PartListener;
   mitk::IRenderingManager* m_RenderingManagerInterface;
 
   bool m_ShowCursor;
@@ -178,7 +179,7 @@ QmitkSingleViewerEditor::QmitkSingleViewerEditor()
 //-----------------------------------------------------------------------------
 QmitkSingleViewerEditor::~QmitkSingleViewerEditor()
 {
-  this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener);
+  this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener.data());
 
   // Deregister focus observer.
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -282,7 +283,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
 
-    berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+    berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
     berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(EDITOR_ID)).Cast<berry::IBerryPreferences>();
     assert( prefs );
 
@@ -291,7 +292,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     WindowLayout defaultLayout =
         (WindowLayout)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2)); // default = coronal
 
-    QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black"));
+    QString backgroundColourName = prefs->Get(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black");
     QColor backgroundColour(backgroundColourName);
     bool showDirectionAnnotations = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true);
     bool showShowingOptions = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true);
@@ -338,7 +339,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 
     d->m_VisibilityManager->RegisterViewer(d->m_SingleViewer);
 
-    this->GetSite()->GetPage()->AddPartListener(berry::IPartListener::Pointer(d->m_PartListener));
+    this->GetSite()->GetPage()->AddPartListener(d->m_PartListener.data());
 
     d->m_LayoutForRenderWindows->addWidget(d->m_SingleViewer, 0, 0);
 
@@ -421,7 +422,7 @@ void QmitkSingleViewerEditor::OnPreferencesChanged( const berry::IBerryPreferenc
 {
   if (d->m_SingleViewer != NULL)
   {
-    QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black"));
+    QString backgroundColourName = prefs->Get(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black");
     QColor backgroundColour(backgroundColourName);
     d->m_SingleViewer->SetBackgroundColour(backgroundColour);
     d->m_VisibilityManager->SetInterpolationType((DnDDisplayInterpolationType)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2)));

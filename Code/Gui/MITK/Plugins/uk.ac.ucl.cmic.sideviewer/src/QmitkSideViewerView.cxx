@@ -15,6 +15,7 @@
 #include "QmitkSideViewerView.h"
 
 #include <berryIBerryPreferences.h>
+#include <berryPlatform.h>
 
 #include <mitkVtkResliceInterpolationProperty.h>
 
@@ -102,9 +103,7 @@ void QmitkSideViewerView::OnPreferencesChanged(const berry::IBerryPreferences*)
 //-----------------------------------------------------------------------------
 void QmitkSideViewerView::RetrievePreferenceValues()
 {
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   assert( prefService );
 

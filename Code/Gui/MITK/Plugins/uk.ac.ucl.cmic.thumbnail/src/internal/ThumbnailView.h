@@ -104,7 +104,7 @@ private:
   bool m_TrackOnlyMainWindows;
 
   /// \brief Listener to catch events when an editor becomes visible or gets destroyed.
-  berry::IPartListener::Pointer m_EditorLifeCycleListener;
+  QScopedPointer<berry::IPartListener> m_EditorLifeCycleListener;
 
 };
 

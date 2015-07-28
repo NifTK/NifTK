@@ -16,6 +16,7 @@
 #include "QmitkNiftyMIDASWorkbenchWindowAdvisor.h"
 
 #include <berryIWorkbenchConfigurer.h>
+#include <berryPlatform.h>
 #include <QmitkMultiViewerEditor.h>
 #include <niftkMultiViewerWidget.h>
 
@@ -57,14 +58,14 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 {
   Superclass::PostStartup();
 
-  std::vector<std::string> args = berry::Platform::GetApplicationArgs();
+  QStringList args = berry::Platform::GetApplicationArgs();
 
   berry::IWorkbenchConfigurer::Pointer workbenchConfigurer = this->GetWorkbenchConfigurer();
   berry::IWorkbench* workbench = workbenchConfigurer->GetWorkbench();
   berry::IWorkbenchWindow::Pointer workbenchWindow = workbench->GetActiveWorkbenchWindow();
   if (!workbenchWindow)
   {
-    std::vector<berry::IWorkbenchWindow::Pointer> workbenchWindows = workbench->GetWorkbenchWindows();
+    QList<berry::IWorkbenchWindow::Pointer> workbenchWindows = workbench->GetWorkbenchWindows();
     if (!workbenchWindows.empty())
     {
       workbenchWindow = workbenchWindows[0];
@@ -76,13 +77,13 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
     }
   }
 
-  for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); ++it)
+  for (QStringList::const_iterator it = args.begin(); it != args.end(); ++it)
   {
-    std::string arg = *it;
-    if (arg == "--perspective")
+    QString arg = *it;
+    if (arg == QString("--perspective"))
     {
       if (it + 1 == args.end()
-          || (it + 1)->empty()
+          || (it + 1)->isEmpty()
           || (*(it + 1))[0] == '-')
       {
         MITK_ERROR << "Invalid arguments: perspective name missing.";
@@ -90,7 +91,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       }
 
       ++it;
-      std::string perspectiveLabel = *it;
+      QString perspectiveLabel = *it;
 
       berry::IPerspectiveRegistry* perspectiveRegistry = workbench->GetPerspectiveRegistry();
       berry::IPerspectiveDescriptor::Pointer perspectiveDescriptor = perspectiveRegistry->FindPerspectiveWithLabel(perspectiveLabel);
@@ -103,10 +104,10 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 
       workbench->ShowPerspective(perspectiveDescriptor->GetId(), workbenchWindow);
     }
-    else if (arg == "--viewer-number")
+    else if (arg == QString("--viewer-number"))
     {
       if (it + 1 == args.end()
-          || (it + 1)->empty()
+          || (it + 1)->isEmpty()
           || (*(it + 1))[0] == '-')
       {
         MITK_ERROR << "Invalid arguments: viewer number missing.";
@@ -114,7 +115,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       }
 
       ++it;
-      QString viewerNumberArg = QString::fromStdString(*it);
+      QString viewerNumberArg = *it;
 
       int viewerRows = 0;
       int viewerColumns = 0;
@@ -142,10 +143,10 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       niftkMultiViewerWidget* multiViewer = dndDisplay->GetMultiViewer();
       multiViewer->SetViewerNumber(viewerRows, viewerColumns);
     }
-    else if (arg == "--dnd" || arg == "--drag-and-drop")
+    else if (arg == QString("--dnd") || arg == QString("--drag-and-drop"))
     {
       if (it + 1 == args.end()
-          || (it + 1)->empty()
+          || (it + 1)->isEmpty()
           || (*(it + 1))[0] == '-')
       {
         MITK_ERROR << "Invalid arguments: no data specified to drag.";
@@ -153,7 +154,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       }
 
       ++it;
-      QString dndArg = QString::fromStdString(*it);
+      QString dndArg = *it;
       QStringList dndArgParts = dndArg.split(":");
 
       int viewerRow = 0;
@@ -234,10 +235,10 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 
       this->DropNodes(selectedWindow, nodes);
     }
-    else if (arg == "--window-layout")
+    else if (arg == QString("--window-layout"))
     {
       if (it + 1 == args.end()
-          || (it + 1)->empty()
+          || (it + 1)->isEmpty()
           || (*(it + 1))[0] == '-')
       {
         MITK_ERROR << "Invalid arguments: window layout name missing.";
@@ -245,7 +246,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       }
 
       ++it;
-      QString windowLayoutArg = QString::fromStdString(*it);
+      QString windowLayoutArg = *it;
       QStringList windowLayoutArgParts = windowLayoutArg.split(":");
 
       int viewerRow = 0;
@@ -307,10 +308,10 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
 
       viewer->SetWindowLayout(windowLayout);
     }
-    else if (arg == "--bind-windows")
+    else if (arg == QString("--bind-windows"))
     {
       if (it + 1 == args.end()
-          || (it + 1)->empty()
+          || (it + 1)->isEmpty()
           || (*(it + 1))[0] == '-')
       {
         MITK_ERROR << "Invalid arguments: window layout name missing.";
@@ -318,7 +319,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       }
 
       ++it;
-      QString windowBindingsArg = QString::fromStdString(*it);
+      QString windowBindingsArg = *it;
       QStringList windowBindingsArgParts = windowBindingsArg.split(":");
 
       int viewerRow = 0;
@@ -476,10 +477,10 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       viewer->SetCursorPositionBinding(bindingOptions & CursorBinding);
       viewer->SetScaleFactorBinding(bindingOptions & MagnificationBinding);
     }
-    else if (arg == "--bind-viewers")
+    else if (arg == QString("--bind-viewers"))
     {
       if (it + 1 == args.end()
-          || (it + 1)->empty()
+          || (it + 1)->isEmpty()
           || (*(it + 1))[0] == '-')
       {
         MITK_ERROR << "Invalid arguments: missing argument for viewer bindings.";
@@ -487,7 +488,7 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       }
 
       ++it;
-      QString viewerBindingArg = QString::fromStdString(*it);
+      QString viewerBindingArg = *it;
 
       QStringList viewerBindingOptions = viewerBindingArg.split(",");
 

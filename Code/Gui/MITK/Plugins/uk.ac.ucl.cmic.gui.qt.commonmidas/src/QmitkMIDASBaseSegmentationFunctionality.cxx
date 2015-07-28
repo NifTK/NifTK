@@ -14,6 +14,8 @@
 
 #include "QmitkMIDASBaseSegmentationFunctionality.h"
 
+#include <berryPlatform.h>
+
 #include <QMessageBox>
 #include "internal/MIDASActivator.h"
 #include <mitkILinkedRenderWindowPart.h>
@@ -41,8 +43,8 @@
 #include <mitkMIDASSeedTool.h>
 #include <mitkMIDASOrientationUtils.h>
 
-const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR("midas editor default colour");
-const std::string QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
+const QString QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR("midas editor default colour");
+const QString QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
 
 
 //-----------------------------------------------------------------------------
@@ -720,9 +722,7 @@ void QmitkMIDASBaseSegmentationFunctionality::OnPreferencesChanged(const berry::
 //-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::RetrievePreferenceValues()
 {
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   assert( prefService );
 
@@ -732,7 +732,7 @@ void QmitkMIDASBaseSegmentationFunctionality::RetrievePreferenceValues()
 
   assert( prefs );
 
-  QString defaultColorName = QString::fromStdString (prefs->GetByteArray(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, ""));
+  QString defaultColorName = prefs->Get(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, "");
   m_DefaultSegmentationColor = QColor(defaultColorName);
   if (defaultColorName == "") // default values
   {

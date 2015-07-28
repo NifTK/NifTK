@@ -70,7 +70,7 @@ public:
   QmitkSingleViewerEditor();
   ~QmitkSingleViewerEditor();
 
-  static const std::string EDITOR_ID;
+  static const QString EDITOR_ID;
 
   /// \brief Get hold of the internal niftkSingleViewerWidget.
   niftkSingleViewerWidget* GetSingleViewer();

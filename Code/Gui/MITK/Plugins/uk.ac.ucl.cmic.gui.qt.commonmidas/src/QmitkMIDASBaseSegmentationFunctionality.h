@@ -73,12 +73,12 @@ public:
   /**
    * \brief Stores the preference name of the default outline colour (defaults to pure green).
    */
-  static const std::string DEFAULT_COLOUR;
+  static const QString DEFAULT_COLOUR;
 
   /**
    * \brief Stores the preference name of the default outline colour style sheet (defaults to pure green).
    */
-  static const std::string DEFAULT_COLOUR_STYLE_SHEET;
+  static const QString DEFAULT_COLOUR_STYLE_SHEET;
 
   /**
    * \brief Creates from derived classes when the the user hits the "New segmentation", producing a dialog box,

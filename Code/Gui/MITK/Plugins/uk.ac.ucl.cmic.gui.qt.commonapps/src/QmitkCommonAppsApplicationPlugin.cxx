@@ -15,6 +15,8 @@
 #include "QmitkCommonAppsApplicationPlugin.h"
 #include "QmitkCommonAppsApplicationPreferencePage.h"
 #include "QmitkNiftyViewApplicationPreferencePage.h"
+#include "internal/QmitkAppInstancesPreferencePage.h"
+#include "internal/QmitkModuleView.h"
 
 #include <berryPlatform.h>
 #include <berryIPreferencesService.h>
@@ -38,8 +40,6 @@
 #include <mitkVtkResliceInterpolationProperty.h>
 
 #include <berryPlatformUI.h>
-
-#include <Poco/Util/OptionProcessor.h>
 
 #include <itkStatisticsImageFilter.h>
 #include <itkCommand.h>
@@ -182,14 +182,9 @@ void QmitkCommonAppsApplicationPlugin::start(ctkPluginContext* context)
     connect(qApp, SIGNAL(messageReceived(QByteArray)), this, SLOT(handleIPCMessage(QByteArray)));
   }
 
-  std::vector<std::string> args = berry::Platform::GetApplicationArgs();
-  QStringList qargs;
-  for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); ++it)
-  {
-    qargs << QString::fromStdString(*it);
-  }
+  QStringList args = berry::Platform::GetApplicationArgs();
   // This is a potentially long running operation.
-  LoadDataFromDisk(qargs, true);
+  LoadDataFromDisk(args, true);
 }
 
 
@@ -1107,9 +1102,9 @@ void QmitkCommonAppsApplicationPlugin::startNewInstance(const QStringList &args,
 {
   QStringList newArgs(args);
 #ifdef Q_OS_UNIX
-  newArgs << QString("--") + QString::fromStdString(berry::Platform::ARG_NEWINSTANCE);
+  newArgs << QString("--") + berry::Platform::PROP_NEWINSTANCE;
 #else
-  newArgs << QString("/") + QString::fromStdString(berry::Platform::ARG_NEWINSTANCE);
+  newArgs << QString("/") + berry::Platform::PROP_NEWINSTANCE;
 #endif
   newArgs << files;
   QProcess::startDetached(qApp->applicationFilePath(), newArgs);
@@ -1138,9 +1133,7 @@ void QmitkCommonAppsApplicationPlugin::handleIPCMessage(const QByteArray& msg)
   mainWindow->activateWindow();
 
   // Get the preferences for the instantiation behavior
-  berry::IPreferencesService::Pointer prefService
-      = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node("/General");
   bool newInstanceAlways = prefs->GetBool("newInstance.always", false);
   bool newInstanceScene = prefs->GetBool("newInstance.scene", true);
@@ -1151,19 +1144,12 @@ void QmitkCommonAppsApplicationPlugin::handleIPCMessage(const QByteArray& msg)
   QStringList fileArgs;
   QStringList sceneArgs;
 
-  Poco::Util::OptionSet os;
-  berry::Platform::GetOptionSet(os);
-  Poco::Util::OptionProcessor processor(os);
-#if !defined(POCO_OS_FAMILY_UNIX)
-  processor.setUnixStyle(false);
-#endif
+  QStringList applicationArgs = berry::Platform::GetApplicationArgs();
   args.pop_front();
   QStringList::Iterator it = args.begin();
   while (it != args.end())
   {
-    std::string name;
-    std::string value;
-    if (processor.process(it->toStdString(), name, value))
+    if (it->startsWith("-"))
     {
       ++it;
     }
