@@ -32,7 +32,8 @@ TiXmlElement* NamedLookupTablePropertySerializer::Serialize()
   {
     TiXmlElement* element = new TiXmlElement("NamedLookupTable");
     element->SetAttribute("Name", prop->GetName() );
-    
+    element->SetAttribute("IsScaled", prop->GetIsScaled() );
+
     const LookupTableProperty* baseProp = dynamic_cast< const LookupTableProperty*>(m_Property.GetPointer());
     this->SetProperty( baseProp);
     TiXmlElement* child = this->Superclass::Serialize();
@@ -57,7 +58,11 @@ BaseProperty::Pointer NamedLookupTablePropertySerializer::Deserialize(TiXmlEleme
   {
     namedLUT->SetName(name);
   }
-
+  bool* scaled;
+  if( element->QueryBoolAttribute("IsScaled", scaled) == TIXML_SUCCESS )
+  {
+    namedLUT->SetIsScaled(scaled);
+  }
   TiXmlElement* child = element->FirstChildElement("LookupTable");
   BaseProperty::Pointer baseProp;
   if( child )

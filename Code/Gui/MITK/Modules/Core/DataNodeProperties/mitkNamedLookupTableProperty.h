@@ -33,11 +33,17 @@ public:
   mitkClassMacro(NamedLookupTableProperty, mitk::LookupTableProperty);
   itkNewMacro(NamedLookupTableProperty);
   mitkNewMacro2Param(NamedLookupTableProperty, const std::string&, const mitk::LookupTable::Pointer);
+  mitkNewMacro3Param(NamedLookupTableProperty, const std::string&, const mitk::LookupTable::Pointer, bool);
 
   virtual std::string GetValueAsString() const;
 
   itkSetStringMacro(Name);
   itkGetStringMacro(Name);
+
+  itkSetMacro(IsScaled,bool);
+  itkGetConstMacro(IsScaled,bool);
+  
+  itkBooleanMacro(IsScaled);
 
 protected:
 
@@ -45,6 +51,7 @@ protected:
   NamedLookupTableProperty();
   NamedLookupTableProperty(const NamedLookupTableProperty& other);
   NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut);
+  NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut, bool scale);
 
 private:
 
@@ -55,6 +62,7 @@ private:
   virtual bool Assign(const BaseProperty& property);
 
   std::string m_Name;
+  bool        m_IsScaled;
 };
 
 } // namespace mitk

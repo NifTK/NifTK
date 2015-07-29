@@ -20,6 +20,7 @@ namespace mitk {
 NamedLookupTableProperty::NamedLookupTableProperty()
 : Superclass()
 , m_Name("n/a")
+, m_IsScaled(1)
 {
 }
 
@@ -28,6 +29,7 @@ NamedLookupTableProperty::NamedLookupTableProperty()
 NamedLookupTableProperty::NamedLookupTableProperty(const NamedLookupTableProperty& other)
 : Superclass(other)
 , m_Name(other.m_Name)
+, m_IsScaled(other.m_IsScaled)
 {
 
 }
@@ -37,6 +39,16 @@ NamedLookupTableProperty::NamedLookupTableProperty(const NamedLookupTablePropert
 NamedLookupTableProperty::NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut)
 : Superclass(lut)
 , m_Name(name)
+, m_IsScaled(1)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+NamedLookupTableProperty::NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut, bool scale)
+: Superclass(lut)
+, m_Name(name)
+, m_IsScaled(scale)
 {
 }
 
@@ -67,6 +79,7 @@ bool NamedLookupTableProperty::IsEqual(const BaseProperty& property) const
 {
   return *(this->m_LookupTable) == *(static_cast<const Self&>(property).m_LookupTable)
       && this->m_Name == static_cast<const Self&>(property).m_Name
+      && this->m_IsScaled == static_cast<const Self&>(property).m_IsScaled
       ;
 }
 
@@ -76,6 +89,7 @@ bool NamedLookupTableProperty::Assign(const BaseProperty& property)
 {
   this->m_LookupTable = static_cast<const Self&>(property).m_LookupTable;
   this->m_Name = static_cast<const Self&>(property).m_Name;
+  this->m_IsScaled = static_cast<const Self&>(property).m_IsScaled;
   return true;
 
 }
