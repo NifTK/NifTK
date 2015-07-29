@@ -14,7 +14,7 @@
 
 find_package(OpenMP)
 
-set(_packages )
+set(_packages Boost|gil)
 set(_modules MitkCore niftkOpenCV )
 if(BUILD_PCL)
   list(APPEND _packages PCL)

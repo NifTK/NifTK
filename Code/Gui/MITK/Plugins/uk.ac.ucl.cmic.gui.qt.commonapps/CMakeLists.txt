@@ -17,7 +17,7 @@ project(uk_ac_ucl_cmic_gui_qt_commonapps)
 mitk_create_plugin(
   EXPORT_DIRECTIVE CMIC_QT_COMMONAPPS
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS niftkCoreGui
+  MODULE_DEPENDS niftkCoreGui niftkcommon
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

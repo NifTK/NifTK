@@ -13,7 +13,7 @@
 #============================================================================*/
 
 
-set(_depends MitkOpenCVVideoSupport MitkCameraCalibration niftkCore niftkOpenCVUtils)
+set(_depends MitkOpenCVVideoSupport MitkCameraCalibration niftkCore niftkOpenCVUtils niftkcommon)
 
 # if cuda is available and enabled then we have possibility of doing
 # some computer vision stuff on the gpu.
@@ -24,11 +24,8 @@ endif()
 MITK_CREATE_MODULE(
   INCLUDE_DIRS CameraCalibration VideoProcessing Registration demo VideoTrackerMatching UltrasoundCalibration PivotCalibration Features
   DEPENDS ${_depends}
-  PACKAGE_DEPENDS OpenCV
+  PACKAGE_DEPENDS OpenCV Boost|filesystem
 )
-
-target_link_libraries(niftkOpenCV PRIVATE niftkcommon)
-
 
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
   # the mitk module niftkOpenCV will not contain any cuda kernels but it
