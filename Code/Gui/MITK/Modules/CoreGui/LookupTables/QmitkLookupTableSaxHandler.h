@@ -71,6 +71,9 @@ private:
   /** To temporarily store the order. */
   int m_Order;
 
+  /** To temporarily store the scaled flag. */
+  bool m_IsScaled;
+
   /** To temporarily store the display name. */
   QString m_DisplayName;
 

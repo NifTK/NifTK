@@ -22,9 +22,11 @@
 QmitkLookupTableSaxHandler::QmitkLookupTableSaxHandler()
 {
 	m_IsPreMultiplied = false;
-	m_Order = -1;
-	m_DisplayName = QString("None");
-	m_List.clear();
+	m_IsScaled = true;
+  m_Order = -1;
+  m_DisplayName = QString("None");
+  m_List.clear();
+
 }
 
 
@@ -47,6 +49,7 @@ QmitkLookupTableContainer* QmitkLookupTableSaxHandler::GetLookupTableContainer()
   QmitkLookupTableContainer *lookupTableContainer = new QmitkLookupTableContainer(lookupTable);
 	lookupTableContainer->SetOrder(m_Order);
 	lookupTableContainer->SetDisplayName(m_DisplayName);
+  lookupTableContainer->SetIsScaled(m_IsScaled);
 
 	return lookupTableContainer;
 }
@@ -64,12 +67,16 @@ bool QmitkLookupTableSaxHandler::startElement(
 
 		m_Order = (attributes.value("order")).toInt();
 		m_DisplayName = attributes.value("displayName");
-
 		int premultiplied = (attributes.value("premultiplied")).toInt();
 		if (premultiplied == 1)
 		{
 			m_IsPreMultiplied = true;
 		}
+
+    bool* isScaledConverted;
+    bool isScaled = (attributes.value("isScaled")).toInt(isScaledConverted);
+    if( isScaledConverted && isScaled == 0)
+      m_IsScaled = false;
 
 	}
 	else if (qName == "colour")
