@@ -50,6 +50,12 @@ public:
   /** Get the display name. */
   QString GetDisplayName() const { return m_DisplayName; }
 
+  /** Set scaled property. */
+  void SetIsScaled(const bool s) { m_IsScaled = s; }
+
+  /** Get scaled property. */
+  bool GetIsScaled() const { return m_IsScaled; }
+
 protected:
 
 private:
@@ -65,6 +71,9 @@ private:
 
   /** Display name for display in GUI. */
   QString m_DisplayName;
+
+  /** What type of lookup table */
+  bool m_IsScaled;
 
   /** Store the order that it is to be displayed in GUI. */
   int m_Order;

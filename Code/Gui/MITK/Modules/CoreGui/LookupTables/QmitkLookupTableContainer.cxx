@@ -20,6 +20,7 @@ QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut)
 	m_LookupTable = lut;
 	m_DisplayName = QString("");
 	m_Order = 0;
+  m_IsScaled = true;
 }
 
 
