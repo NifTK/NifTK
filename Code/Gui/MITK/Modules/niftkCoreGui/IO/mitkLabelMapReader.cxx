@@ -14,12 +14,17 @@
 
 #include "mitkLabelMapReader.h"
 #include "../Internal/niftkCoreGuiIOMimeTypes.h"
+#include "QmitkLookupTableContainer.h"
 
 #include <mitkCustomMimeType.h>
 #include <mitkLogMacros.h>
 
-#include <itksys/SystemTools.hxx>
+
+#include <vtkSmartPointer.h>
+#include <vtkLookupTable.h>
+
 #include <sstream>
+#include <iostream>
 
 mitk::LabelMapReader::LabelMapReader()
   : mitk::AbstractFileReader(CustomMimeType( niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_NAME() ), niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION() )
@@ -48,15 +53,51 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
     const std::string& currLocale = setlocale( LC_ALL, NULL );
     setlocale(LC_ALL, locale.c_str());
 
-    std::string filename = this->GetInputLocation();
+    std::string fileName = this->GetInputLocation();
+    std::ifstream infile(fileName, std::ifstream::in);
 
-    std::string ext = itksys::SystemTools::GetFilenameLastExtension(filename);
-    ext = itksys::SystemTools::LowerCase(ext);
+    bool isLoaded = false;
+    if( infile.is_open() )
+    {
+      isLoaded = this->ReadLabelMap(infile);
 
-    this->ReadLabelMap();
-    
-    setlocale(LC_ALL, currLocale.c_str());
-    MITK_DEBUG << "NifTK label map readed";
+      QString labelName = QString::fromStdString(fileName);
+      int startInd = labelName.lastIndexOf("/")+1;
+      int endInd = labelName.lastIndexOf(".");
+      m_DisplayName = labelName.mid(startInd, endInd-startInd);
+     
+      infile.close();
+    }
+    else
+    {
+      
+      m_InputQFile->open(QIODevice::ReadOnly);   
+      QString labelName = m_InputQFile->fileName();
+      int startInd = labelName.lastIndexOf("/")+1;
+      int endInd = labelName.lastIndexOf(".");
+      m_DisplayName = labelName.mid(startInd, endInd-startInd);
+
+      // this is a dirt hack to get the resource file in the right format to read
+      QDataStream qstream(m_InputQFile);
+
+      std::string blah(m_InputQFile->readAll());
+      std::stringstream stream; 
+      stream << blah;
+
+      isLoaded = this->ReadLabelMap(stream);
+
+    }
+
+    if( isLoaded )
+    {
+      setlocale(LC_ALL, currLocale.c_str());
+      MITK_DEBUG << "NifTK label map readed";
+    }
+    else
+    {
+      result.clear();
+       MITK_ERROR << "Unable to read NifTK label map!";
+    }
   }
   catch(...)
   {
@@ -65,69 +106,118 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
   return result;
 }
 
-void mitk::LabelMapReader::ReadLabelMap()
+bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
 {
-  std::string inputRaw;
-  QString descriptorString;
-  descriptorString.clear();
+  bool isLoaded = false;
 
-  QString fName;
-  fName.append(this->GetInputLocation().c_str());
-
-  std::ifstream infile(fName.toStdString().c_str(), std::ifstream::in);
-  if (infile.is_open())
+  //while there are still lines in the file, keep reading:
+  while (!file.eof())
   {
-    //while there are still lines in the file, keep reading:
-    while (!infile.eof())
+    std::string line;
+    //place the line from input into the raw string
+    getline(file, line);
+
+    if( line.empty() || line.at(0) == '#')
+      continue;
+
+    try
     {
-      std::string line;
-      //place the line from input into the raw string
-      getline(infile, line);
-
-      if( line.empty() || line.at(0) == '#')
-        continue;
-
-      try
-      {
-        int value,red,green,blue,alpha;
+      int value,red,green,blue,alpha;
       
-        // find value
-        size_t firstSpace = line.find_first_of(' ');
-        std::string firstDigit = line.substr(0, firstSpace);
-        sscanf(firstDigit.c_str(), "%i", &value);
+      // find value
+      size_t firstSpace = line.find_first_of(' ');
+      std::string firstDigit = line.substr(0, firstSpace);
+      sscanf(firstDigit.c_str(), "%i", &value);
 
-        // find name
-        size_t firstLtr = line.find_first_not_of(' ', firstSpace);
-        size_t lastLtr  = line.find_first_of(' ', firstLtr);
+      // find name
+      size_t firstLtr = line.find_first_not_of(' ', firstSpace);
+      size_t lastLtr  = line.find_first_of(' ', firstLtr);
 
-        std::string nameInFile = line.substr(firstLtr, (lastLtr)-firstLtr);
-        QString name = QString::fromStdString(nameInFile);
+      std::string nameInFile = line.substr(firstLtr, (lastLtr)-firstLtr);
+      QString name = QString::fromStdString(nameInFile);
 
-        // if the name is just the special character set as empty
-        if(name.compare(QString('*'))==0)
-          name.clear();
+      // if the name is just the special character set as empty
+      if(name.compare(QString('*'))==0)
+        name.clear();
 
-        name.replace('*',' '); // swapping the white space back in
+      name.replace('*',' '); // swapping the white space back in
 
-        // colors;
-        std::string colorStr = line.substr(lastLtr, line.size() - lastLtr);
-        sscanf(colorStr.c_str(), "%i %i %i %i", &red, &green, &blue, &alpha);
+      // colors;
+      std::string colorStr = line.substr(lastLtr, line.size() - lastLtr);
+      sscanf(colorStr.c_str(), "%i %i %i %i", &red, &green, &blue, &alpha);
 
-	      LabelMapItem label;
-        label.value = value;
-        label.name  = name;
+     LabelMapItem label;
+      label.value = value;
+      label.name  = name;
 	  
-  	    QColor fileColor(red, green, blue, alpha);
-	      label.color = fileColor;
+	    QColor fileColor(red, green, blue, alpha);
+     label.color = fileColor;
 
-  	    m_Labels.push_back(label);
-      }
-      catch(...)
-      {
-        std::cout <<"Unable to parse line " << line.c_str() << ". Skipping." << std::endl;
-      }
+	    m_Labels.push_back(label);
+      isLoaded = true;
+    }
+    catch(...)
+    {
+      std::cout <<"Unable to parse line " << line.c_str() << ". Skipping." << std::endl;
     }
   }
-  infile.close();
 
+  return isLoaded;
+}
+
+
+QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
+{
+  if(m_Labels.size() < 1)
+    return NULL;
+
+  MITK_DEBUG << "GetLookupTableContainer():labels.size()=" << m_Labels.size();
+
+  // get the size of vtkLUT from the range of values
+  int min = m_Labels.at(0).value;
+  int max = min ;
+
+  for(unsigned int i=1;i<m_Labels.size();i++)
+  {
+    int val = m_Labels.at(i).value;
+    if(val<min)
+      min = val;
+    else if (val>max)
+      max = val;
+  }
+
+  vtkSmartPointer<vtkLookupTable> lookupTable = vtkLookupTable::New();
+  
+  //because vtk is stupid to initialize with empty settings I have to restrict all ranges to 0
+  lookupTable->SetValueRange(0,0);
+  lookupTable->SetHueRange(0,0);
+  lookupTable->SetSaturationRange(0,0);
+  lookupTable->SetAlphaRange(0,0);
+
+  // number of table values
+  int numberOfValues = (max-min)+2;
+  lookupTable->SetNumberOfTableValues( numberOfValues ); 
+  lookupTable->SetTableRange(min-1,max+1);
+  lookupTable->SetNanColor(0,0,0,0);
+
+  //vtkLUT->SetIndexedLookup(true);  
+  lookupTable->Build();
+
+  for( unsigned int i=0;i<m_Labels.size();i++)
+  {
+    double value = m_Labels.at(i).value - min+1;
+    double r = double(m_Labels.at(i).color.red())/255;
+    double g = double(m_Labels.at(i).color.green())/255;
+    double b = double(m_Labels.at(i).color.blue())/255;
+    double a = double(m_Labels.at(i).color.alpha())/255;
+    
+    lookupTable->SetTableValue(value,r,g,b,a);
+  }
+
+  QmitkLookupTableContainer *lookupTableContainer = new QmitkLookupTableContainer(lookupTable);
+  lookupTableContainer->SetIsScaled(false);
+  lookupTableContainer->SetDisplayName(m_DisplayName);
+  lookupTableContainer->SetOrder(m_Order);
+
+  return lookupTableContainer;
 }
