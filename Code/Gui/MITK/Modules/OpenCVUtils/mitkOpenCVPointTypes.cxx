@@ -51,10 +51,9 @@ GoldStandardPoint::GoldStandardPoint( std::istream &is)
   if ( std::getline(is,line) )
   {
     std::stringstream linestream(line);
-    bool parseSuccess;
     double parse[4];
-    parseSuccess = linestream >> parse[0] >> parse[1] >> parse[2] >> parse[3];
-    if ( parseSuccess )
+    linestream >> parse[0] >> parse[1] >> parse[2] >> parse[3];
+    if ( linestream.good() )
     {
       m_FrameNumber = static_cast<unsigned int> (parse[0]);
       m_Index = static_cast<int>(parse[1]);
@@ -65,8 +64,8 @@ GoldStandardPoint::GoldStandardPoint( std::istream &is)
     else
     {
       std::stringstream linestream2(line);
-      parseSuccess = linestream2 >> parse[0] >> parse[1] >> parse[2];
-      if ( parseSuccess )
+      linestream2 >> parse[0] >> parse[1] >> parse[2];
+      if ( linestream2.good() )
       {
         m_FrameNumber = static_cast<unsigned int> (parse[0]);
         m_Point.x = parse[1];
@@ -93,17 +92,16 @@ std::istream& operator>> (std::istream &is, GoldStandardPoint &GSP )
   if ( std::getline(is,line) )
   {
     std::stringstream linestream(line);
-    bool parseSuccess;
-    parseSuccess = linestream >> GSP.m_FrameNumber >> GSP.m_Index >> GSP.m_Point.x >> GSP.m_Point.y;
-    if ( parseSuccess )
+    linestream >> GSP.m_FrameNumber >> GSP.m_Index >> GSP.m_Point.x >> GSP.m_Point.y;
+    if ( linestream.good() )
     {
       return is;
     }
     else
     {
       std::stringstream linestream2(line);
-      parseSuccess = linestream2 >> GSP.m_FrameNumber >> GSP.m_Point.x >> GSP.m_Point.y;
-      if ( parseSuccess )
+      linestream2 >> GSP.m_FrameNumber >> GSP.m_Point.x >> GSP.m_Point.y;
+      if ( linestream2.good() )
       {
         GSP.m_Index = -1;
       }
@@ -293,8 +291,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
   }
   
   std::string line;
-  bool ok = std::getline (*frameMapLogFile, line);
-  if ( ! ok )
+  if ( std::getline(*frameMapLogFile, line).bad() )
   {
     mitkThrow() << "mitk::VideoFrame, error getting line from frame map log file";
     return;
@@ -302,8 +299,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
 
   while ( line[0] == '#' )
   {
-    ok = std::getline (*frameMapLogFile, line);
-    if ( ! ok )
+    if ( std::getline(*frameMapLogFile, line).bad() )
     {
       mitkThrow() << "mitk::VideoFrame, error getting line from frame map log file while skipping comments";
       return;
@@ -311,8 +307,8 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
   }
   
   std::stringstream linestream(line);
-  bool parseSuccess = linestream >> m_FrameNumber >> m_SequenceNumber >> m_Channel >> m_TimeStamp;
-  if ( ! parseSuccess )
+  linestream >> m_FrameNumber >> m_SequenceNumber >> m_Channel >> m_TimeStamp;
+  if ( linestream.bad() )
   {
     mitkThrow() << "mitk::VideoFrame, error parsing line from frame map log file";
     return;
