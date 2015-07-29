@@ -57,7 +57,12 @@ public:
   /**
    * \brief Returns the display name.
    */
-  QString GetName(const unsigned int& n);
+  QString GetName(const unsigned int& n);  
+  
+  /**
+  *
+  */
+  void AddLookupTableContainer(QmitkLookupTableContainer*);
 
 private:
 

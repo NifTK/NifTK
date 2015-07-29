@@ -22,6 +22,7 @@
 #include <map>
 #include <vtkLookupTable.h>
 #include <mitkLogMacros.h>
+#include <mitkLabelMapReader.h>
 
 //-----------------------------------------------------------------------------
 QmitkLookupTableManager::QmitkLookupTableManager()
@@ -31,15 +32,17 @@ QmitkLookupTableManager::QmitkLookupTableManager()
 
 	MapType map;
 
-	// TODO: How can I automatically read a list of filenames within a plugin?
-  QDir directory(":");
-  QStringList filters;
-  filters << "*.lut";
-	QStringList fileList = directory.entryList(filters, QDir::Files);
+	// Read all lut files from the resource directory
+  QDir fileDir(":");
+  fileDir.makeAbsolute();
 
-	for (int i = 0; i < fileList.size(); i++)
+  QStringList lutFilter;
+  lutFilter << "*.lut";
+	QStringList lutList = fileDir.entryList(lutFilter, QDir::Files);
+
+	for (int i = 0; i < lutList.size(); i++)
 	{
-    QString fileName = directory.absoluteFilePath(fileList[i]);
+    QString fileName = fileDir.absoluteFilePath(lutList[i]);
     MITK_DEBUG << "QmitkLookupTableManager():Loading lut " << fileName.toLocal8Bit().constData();
 
     QFile file(fileName);
@@ -62,6 +65,35 @@ QmitkLookupTableManager::QmitkLookupTableManager()
       MITK_ERROR << "QmitkLookupTableManager():failed to parse XML file (" << fileName.toLocal8Bit().constData() \
 	  			<< ") so returning null";
 	  }
+
+		if (lut != NULL)
+		{
+      map.insert(PairType(lut->GetOrder(), const_cast<const QmitkLookupTableContainer*>(lut)));
+		}
+		else
+		{
+      MITK_ERROR << "QmitkLookupTableManager():failed to load lookup table:" << fileName.toLocal8Bit().constData();
+		}
+	}
+
+  QStringList txtFilter;
+  txtFilter << "*.txt";
+	QStringList labelMapList = fileDir.entryList(txtFilter, QDir::Files);
+
+  for (int i = 0; i < labelMapList.size(); i++)
+	{
+    QString fileName = fileDir.filePath(labelMapList[i]);
+    MITK_DEBUG << "QmitkLookupTableManager():Loading txt " << fileName.toLocal8Bit().constData();
+    
+    QFile file(fileName);
+    
+    // intialized label map reader
+    mitk::LabelMapReader reader;
+    reader.SetQFile(file);
+    reader.SetOrder(lutList.size()+i);
+    reader.Read();
+
+    QmitkLookupTableContainer *lut = reader.GetLookupTableContainer();
 
 		if (lut != NULL)
 		{
@@ -147,4 +179,9 @@ bool QmitkLookupTableManager::CheckIndex(const unsigned int& n)
 	{
 		return true;
 	}
+}
+
+void QmitkLookupTableManager::AddLookupTableContainer(QmitkLookupTableContainer *container)
+{
+  m_List.push_back(container);
 }
