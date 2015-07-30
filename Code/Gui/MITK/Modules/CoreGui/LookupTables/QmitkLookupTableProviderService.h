@@ -18,6 +18,7 @@
 #include <vector>
 #include <string>
 #include <mitkNamedLookupTableProperty.h>
+#include <mitkLabeledLookupTableProperty.h>
 
 // Microservices
 #include <mitkServiceInterface.h>
@@ -47,16 +48,32 @@ struct QmitkLookupTableProviderService
                                             float highestValueOpacity) = 0;
 
   /**
-   * \brief Same, as CreateLookupTable, but wraps it into a mitk::NamedLookupTableProperty.
+   * \brief Same as CreateLookupTable, but wraps it into a mitk::NamedLookupTableProperty.
    */
   virtual mitk::NamedLookupTableProperty::Pointer CreateLookupTableProperty(unsigned int lookupTableIndex,
                                                                             float lowestValueOpacity,
                                                                             float highestValueOpacity) = 0;
 
   /**
+   * \brief Similar to CreateLookupTable, but also sets labels and place it into a mitk::LabeledLookupTableProperty.
+   */
+  virtual mitk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(unsigned int lookupTableIndex) = 0;
+
+  /**
    * \brief Returns the display name of the given table.
    */
   std::string GetName(unsigned int lookupTableIndex);
+
+  /**
+   * \brief Returns whether the given table should be scaled to the window and level.
+   */
+  virtual bool GetIsScaled(unsigned int lookupTableIndex) = 0;
+
+  /**
+  * \brief Returns labels for the given table.
+  */
+  mitk::LabeledLookupTableProperty::LabelsListType GetLabels(unsigned int labels);
+
 };
 
 MITK_DECLARE_SERVICE_INTERFACE(QmitkLookupTableProviderService, "QmitkLookupTableProviderService/1.0")

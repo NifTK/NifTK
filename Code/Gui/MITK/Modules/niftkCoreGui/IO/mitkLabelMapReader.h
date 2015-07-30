@@ -54,7 +54,7 @@ public:
   // get the mitk base data from a file
   virtual std::vector<itk::SmartPointer<BaseData> > Read();  
   
-  inline std::vector< LabelMapItem > GetLabels(){ return m_Labels; }
+  inline std::vector< LabelMapItem > GetLabelMap(){ return m_LabelMap; }
   
   // get a QmitkLookupTableContainer from a file
   virtual QmitkLookupTableContainer* GetLookupTableContainer();
@@ -68,7 +68,7 @@ private:
 
   bool ReadLabelMap(std::istream &);  
   
-  std::vector< LabelMapItem > m_Labels;
+  std::vector< LabelMapItem > m_LabelMap;
   
   us::ServiceRegistration<mitk::IFileReader> m_ServiceReg;
 

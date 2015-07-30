@@ -181,6 +181,8 @@ bool QmitkLookupTableManager::CheckIndex(const unsigned int& n)
 	}
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkLookupTableManager::AddLookupTableContainer(QmitkLookupTableContainer *container)
 {
   m_List.push_back(container);

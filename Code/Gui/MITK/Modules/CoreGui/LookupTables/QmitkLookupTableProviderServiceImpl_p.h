@@ -17,6 +17,7 @@
 
 #include "QmitkLookupTableProviderService.h"
 #include <mitkNamedLookupTableProperty.h>
+#include <mitkLabeledLookupTableProperty.h>
 #include <memory>
 
 class QmitkLookupTableManager;
@@ -50,17 +51,28 @@ public:
   virtual mitk::NamedLookupTableProperty::Pointer CreateLookupTableProperty(unsigned int lookupTableIndex,
                                                                             float lowestValueOpacity,
                                                                             float highestValueOpacity);
+  
+  /**
+   * \see QmitkLookupTableProviderService::CreateLookupTableProperty()
+   */
+  virtual mitk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(unsigned int lookupTableIndex);
+
+  
+  /**
+   * \see QmitkLookupTableProviderService::GetIsScaled
+   */
+  virtual bool GetIsScaled(unsigned int lookupTableIndex);
 
   /**
    * \see QmitkLookupTableProviderService::GetName
    */
   std::string GetName(unsigned int lookupTableIndex);
 
-
+  
   /**
-   * \see QmitkLookupTableProviderService::GetIsScaled
+   * \see QmitkLookupTableProviderService::GetLabels
    */
-  bool GetIsScaled(unsigned int lookupTableIndex);
+  mitk::LabeledLookupTableProperty::LabelsListType GetLabels(unsigned int labels);
 
 private:
   QmitkLookupTableManager* GetManager();

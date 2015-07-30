@@ -67,8 +67,21 @@ bool QmitkLookupTableProviderServiceImpl::GetIsScaled(unsigned int lookupTableIn
     mitkThrow() << "Lookup table index " << lookupTableIndex << " is invalid." << std::endl;
   }
 
-  bool isScaled = lutContainer->GetIsScaled();
-  return isScaled;
+  return lutContainer->GetIsScaled();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::LabeledLookupTableProperty::LabelsListType
+QmitkLookupTableProviderServiceImpl::GetLabels(unsigned int lookupTableIndex)
+{
+  const QmitkLookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableIndex);
+  if (lutContainer == NULL)
+  {
+    mitkThrow() << "Lookup table index " << lookupTableIndex << " is invalid." << std::endl;
+  }
+
+  return lutContainer->GetLabels();
 }
 
 
@@ -130,3 +143,25 @@ mitk::NamedLookupTableProperty::Pointer QmitkLookupTableProviderServiceImpl::Cre
   return mitkLUTProperty;
 }
 
+
+mitk::LabeledLookupTableProperty::Pointer QmitkLookupTableProviderServiceImpl::CreateLookupTableProperty(
+  unsigned int lookupTableIndex )
+{
+
+  if (lookupTableIndex >= this->GetNumberOfLookupTables())
+  {
+    mitkThrow() << "Lookup table index " << lookupTableIndex << " is out of range." << std::endl;
+  }
+    vtkLookupTable *vtkLUT = this->CreateLookupTable(lookupTableIndex, 0, 0);
+
+  mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
+  mitkLUT->SetVtkLookupTable(vtkLUT);
+
+  mitk::LabeledLookupTableProperty::Pointer mitkLUTProperty = mitk::LabeledLookupTableProperty::New();
+  mitkLUTProperty->SetLookupTable(mitkLUT);
+  mitkLUTProperty->SetName(this->GetName(lookupTableIndex));
+  mitkLUTProperty->SetIsScaled(this->GetIsScaled(lookupTableIndex));
+  mitkLUTProperty->SetLabels(this->GetLabels(lookupTableIndex));
+
+  return mitkLUTProperty;
+}
