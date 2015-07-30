@@ -13,12 +13,11 @@
 =============================================================================*/
 
 #include "mitkLabelMapReader.h"
-#include "../Internal/niftkCoreGuiIOMimeTypes.h"
+#include "niftkCoreGuiIOMimeTypes.h"
 #include "QmitkLookupTableContainer.h"
 
 #include <mitkCustomMimeType.h>
 #include <mitkLogMacros.h>
-
 
 #include <vtkSmartPointer.h>
 #include <vtkLookupTable.h>
@@ -26,23 +25,29 @@
 #include <sstream>
 #include <iostream>
 
+//-----------------------------------------------------------------------------
 mitk::LabelMapReader::LabelMapReader()
   : mitk::AbstractFileReader(CustomMimeType( niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_NAME() ), niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION() )
 {
   m_ServiceReg = this->RegisterService();
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::LabelMapReader::LabelMapReader(const LabelMapReader &other)
   :mitk::AbstractFileReader(other)
 {
 }
 
+
+//-----------------------------------------------------------------------------
 mitk::LabelMapReader * mitk::LabelMapReader::Clone() const
 {
   return new mitk::LabelMapReader(*this);
 }
 
 
+//-----------------------------------------------------------------------------
 std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
 {
 
@@ -57,46 +62,40 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
     std::ifstream infile(fileName, std::ifstream::in);
 
     bool isLoaded = false;
+    QString labelName;
     if( infile.is_open() )
     {
+      labelName = QString::fromStdString(fileName);
       isLoaded = this->ReadLabelMap(infile);
-
-      QString labelName = QString::fromStdString(fileName);
-      int startInd = labelName.lastIndexOf("/")+1;
-      int endInd = labelName.lastIndexOf(".");
-      m_DisplayName = labelName.mid(startInd, endInd-startInd);
-     
       infile.close();
     }
     else
     {
-      
       m_InputQFile->open(QIODevice::ReadOnly);   
-      QString labelName = m_InputQFile->fileName();
-      int startInd = labelName.lastIndexOf("/")+1;
-      int endInd = labelName.lastIndexOf(".");
-      m_DisplayName = labelName.mid(startInd, endInd-startInd);
+      labelName = m_InputQFile->fileName();
 
       // this is a dirt hack to get the resource file in the right format to read
       QDataStream qstream(m_InputQFile);
 
-      std::string blah(m_InputQFile->readAll());
-      std::stringstream stream; 
-      stream << blah;
+      std::string fileStr(m_InputQFile->readAll());
+      std::stringstream sStream; 
+      sStream << fileStr;
 
-      isLoaded = this->ReadLabelMap(stream);
-
+      isLoaded = this->ReadLabelMap(sStream);
     }
 
     if( isLoaded )
     {
+      int startInd = labelName.lastIndexOf("/")+1;
+      int endInd = labelName.lastIndexOf(".");
+      m_DisplayName = labelName.mid(startInd, endInd-startInd);
       setlocale(LC_ALL, currLocale.c_str());
       MITK_DEBUG << "NifTK label map readed";
     }
     else
     {
       result.clear();
-       MITK_ERROR << "Unable to read NifTK label map!";
+      MITK_ERROR << "Unable to read NifTK label map!";
     }
   }
   catch(...)
@@ -106,6 +105,8 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
 {
   bool isLoaded = false;
@@ -166,6 +167,7 @@ bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
 }
 
 
+//-----------------------------------------------------------------------------
 QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
 {
   if(m_Labels.size() < 1)
@@ -175,7 +177,7 @@ QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
 
   // get the size of vtkLUT from the range of values
   int min = m_Labels.at(0).value;
-  int max = min ;
+  int max = min;
 
   for(unsigned int i=1;i<m_Labels.size();i++)
   {

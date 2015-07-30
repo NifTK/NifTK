@@ -19,6 +19,7 @@
 
 #include <mitkAbstractFileWriter.h>
 #include "niftkCoreGuiExports.h"
+#include "mitkLabelMapReader.h"
 
 #include <QColor>
 
@@ -26,12 +27,6 @@ namespace mitk
 
 {
 
-struct LabelMapItem
-{
-  double  value;
-  QColor  color;
-  QString name;
-};
 
 /**
 * /brief Reader for label map files. 
