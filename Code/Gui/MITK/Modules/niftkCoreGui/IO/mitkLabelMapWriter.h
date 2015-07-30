@@ -18,8 +18,10 @@
 
 
 #include <mitkAbstractFileWriter.h>
+
 #include "niftkCoreGuiExports.h"
 #include "mitkLabelMapReader.h"
+#include "QmitkLookupTableContainer.h"
 
 #include <QColor>
 
@@ -36,6 +38,8 @@ class NIFTKCOREGUI_EXPORT LabelMapWriter : public AbstractFileWriter
 {
 
 public: 
+  typedef QmitkLookupTableContainer::LabelsListType LabelsListType;
+
   LabelMapWriter();
   LabelMapWriter(const LabelMapWriter & other);
   virtual LabelMapWriter * Clone() const;
@@ -45,6 +49,8 @@ public:
   virtual void Write();  
   
   inline void SetLabels(std::vector< LabelMapItem >  labels){ m_Labels = labels; }
+
+  void SetLabelsAndLookupTable(LabelsListType labels, vtkLookupTable* vtkLUT);
 
   void WriteLabelMap();  
 

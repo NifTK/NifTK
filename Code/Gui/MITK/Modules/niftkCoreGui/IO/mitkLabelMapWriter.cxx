@@ -19,6 +19,7 @@
 #include <mitkCustomMimeType.h>
 #include <mitkLogMacros.h>
 #include <mitkCommon.h>
+#include <vtkSmartPointer.h>
 
 #include <fstream>
 
@@ -36,6 +37,25 @@ mitk::LabelMapWriter::LabelMapWriter(const mitk::LabelMapWriter & other)
 mitk::LabelMapWriter * mitk::LabelMapWriter::Clone() const
 {
   return new mitk::LabelMapWriter(*this);
+}
+
+void mitk::LabelMapWriter::SetLabelsAndLookupTable(LabelsListType labels, vtkLookupTable* vtkLUT)
+{
+  m_Labels.clear();
+
+  for(unsigned int i=0;i<labels.size();i++)
+  {
+    LabelMapItem item;
+    item.value = labels.at(i).first;
+    item.name = QString::fromStdString(labels.at(i).second);
+
+    double rgb[3];
+    vtkLUT->GetColor(item.value,rgb);
+    QColor newColor(255*rgb[0],255*rgb[1],255*rgb[2]);
+    item.color = newColor;
+
+    m_Labels.push_back(item);
+  }
 }
 
 void mitk::LabelMapWriter::Write()

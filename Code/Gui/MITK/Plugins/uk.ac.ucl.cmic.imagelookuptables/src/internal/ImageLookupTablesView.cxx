@@ -30,6 +30,7 @@
 #include <mitkLookupTableProperty.h>
 #include <mitkNamedLookupTableProperty.h>
 #include <mitkLabeledLookupTableProperty.h>
+#include <mitkLabelMapWriter.h>
 #include <mitkRenderingManager.h>
 #include <mitkRenderingModeProperty.h>
 #include <mitkDataStorageUtils.h>
@@ -145,6 +146,7 @@ void ImageLookupTablesView::CreateConnections()
   this->connect(m_Controls->m_MaxLimitDoubleSpinBox, SIGNAL(editingFinished()), SLOT(OnRangeChanged()));
   this->connect(m_Controls->m_LookupTableComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnLookupTableComboBoxChanged(int)));
   this->connect(m_Controls->m_ResetButton, SIGNAL(pressed()), this, SLOT(OnResetButtonPressed()));
+  this->connect(m_Controls->btn_Save, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
 }
 
 
@@ -627,23 +629,10 @@ void ImageLookupTablesView::OnLoadButtonPressed()
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnSaveButtonPressed()
 {
-  // save a lookup table
-}
+  if(m_CurrentNode.IsNull())
+    return;
 
-
-//-----------------------------------------------------------------------------
-void ImageLookupTablesView::OnNewButtonPressed()
-{
-  // create a lookup table
-}
-
-void ImageLookupTablesView::UpdateLabelMapTable()
-{
-
-  bool en = m_Controls->widget_LabelTable->blockSignals(true);
-  // initialize to size of labels
-  m_Controls->widget_LabelTable->clearContents();
-
+  // get the labeledlookuptable property
   mitk::BaseProperty::Pointer mitkLUT = m_CurrentNode->GetProperty("LookupTable");
   if( mitkLUT.IsNull())
   {
@@ -657,6 +646,70 @@ void ImageLookupTablesView::UpdateLabelMapTable()
   if( labelProperty.IsNull())
   {
     MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
+    return;
+  }
+
+  QString fileName = m_Controls->m_LookupTableComboBox->currentText();
+
+  if (fileName.isNull() || fileName.isEmpty())
+    fileName = QString("lookupTable.txt");
+  else if (!fileName.contains(".txt"))
+    fileName.append(".txt");
+
+  QFileInfo finfo(fileName);
+  QString fileNameAndPath = QFileDialog::getSaveFileName(0, tr("Save File"), finfo.fileName(), tr("Text files (*.txt)"));
+
+  int index = fileNameAndPath.lastIndexOf("/")+1;
+  QString labelName = fileNameAndPath.mid(index);
+  index = labelName.lastIndexOf(".");
+  labelName.truncate(index);
+
+  mitk::LabelMapWriter writer;
+  writer.SetOutputLocation(fileNameAndPath.toStdString());
+   
+  writer.SetLabelsAndLookupTable(labelProperty->GetLabels(), labelProperty->GetLookupTable()->GetVtkLookupTable());
+  writer.Write();
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnNewButtonPressed()
+{
+  // create a lookup table
+  if (m_CurrentNode.IsNotNull())
+  {
+    QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+  }
+}
+
+void ImageLookupTablesView::UpdateLabelMapTable()
+{
+
+  if(m_CurrentNode.IsNull())
+    return;
+
+  bool en = m_Controls->widget_LabelTable->blockSignals(true);
+
+  // initialize labels widget to empty
+  m_Controls->widget_LabelTable->clearContents();
+  m_Controls->widget_LabelTable->setRowCount(0);
+
+  // get the labeledlookuptable property
+  mitk::BaseProperty::Pointer mitkLUT = m_CurrentNode->GetProperty("LookupTable");
+  if( mitkLUT.IsNull())
+  {
+    MITK_ERROR << "No lookup table assigned to " << m_CurrentNode->GetName();
+    m_Controls->widget_LabelTable->blockSignals(en);
+    return;
+  }
+
+  mitk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+
+  if( labelProperty.IsNull())
+  {
+    MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
+    m_Controls->widget_LabelTable->blockSignals(en);
     return;
   }
 
