@@ -113,6 +113,21 @@ protected slots:
    */
   void OnResetButtonPressed();
 
+  /**
+   * \brief Called when the load button is pressed which will display a dialog allowing the user to load a lookup table
+   */
+  void OnLoadButtonPressed();
+
+  /**
+   * \brief Called when the save button is pressed which will display a dialog allowing the user to save the current lookup table
+   */
+  void OnSaveButtonPressed();
+
+  /**
+   * \brief Called when the create new lookup table is pressed which will create an unscaled lookup table that is empty
+   */
+  void OnNewButtonPressed();
+
 private:
 
   /**
@@ -155,6 +170,22 @@ private:
    * \brief Enables/Disables controls.
    */
   void EnableControls(bool b);
+
+  /**
+   * \brief Shows/hides controls related to scaling
+   */
+  void DisplayScalingControls(bool b);
+
+  /**
+   * \brief Shows/hides controls related to a label map
+   */
+  void DisplayLabelMapControls(bool b);
+
+
+  /**
+   * \brief Updates the list of labels
+   */
+  void UpdateLabelMapTable();
 
   /**
    * \brief Retrieve's the pref values from preference service, and stores in member variables.

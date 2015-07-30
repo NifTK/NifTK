@@ -17,6 +17,8 @@
 #include <QButtonGroup>
 #include <QSlider>
 #include <QDebug>
+#include <qfiledialog.h>
+#include <qsignalmapper.h>
 #include <itkImage.h>
 #include <itkCommand.h>
 #include <itkStatisticsImageFilter.h>
@@ -27,6 +29,7 @@
 #include <mitkLookupTable.h>
 #include <mitkLookupTableProperty.h>
 #include <mitkNamedLookupTableProperty.h>
+#include <mitkLabeledLookupTableProperty.h>
 #include <mitkRenderingManager.h>
 #include <mitkRenderingModeProperty.h>
 #include <mitkDataStorageUtils.h>
@@ -34,6 +37,7 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 #include <berryIPreferencesService.h>
+#include <mitkLabelMapReader.h>
 #include "QmitkImageLookupTablesPreferencePage.h"
 #include <QmitkLookupTableManager.h>
 #include <QmitkLookupTableContainer.h>
@@ -44,6 +48,7 @@
 #include <mitkNodePredicateProperty.h>
 #include <mitkNodePredicateAnd.h>
 #include <mitkNodePredicateNot.h>
+#include <mitkVtkResliceInterpolationProperty.h>
 #include <usModule.h>
 #include <usModuleRegistry.h>
 #include <usModuleContext.h>
@@ -109,6 +114,9 @@ void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
     // Decide which group boxes are open/closed.
     m_Controls->m_RangeGroupBox->setCollapsed(false);
     m_Controls->m_LimitsGroupBox->setCollapsed(true);
+    
+    this->DisplayScalingControls(true);
+    this->DisplayLabelMapControls(false);
 
     // Populate combo box with lookup table names.
     for (unsigned int i = 0; i < m_LookupTableManager->GetNumberOfLookupTables(); i++)
@@ -195,6 +203,23 @@ void ImageLookupTablesView::EnableControls(bool b)
   m_Controls->m_MinLimitDoubleSpinBox->setEnabled(b);
   m_Controls->m_MaxLimitDoubleSpinBox->setEnabled(b);
   m_Controls->m_ResetButton->setEnabled(b);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::DisplayScalingControls(bool b)
+{
+  m_Controls->m_RangeGroupBox->setVisible(b);
+  m_Controls->m_LimitsGroupBox->setVisible(b);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::DisplayLabelMapControls(bool b)
+{
+  m_Controls->m_EditLabelsGroupBox->setVisible(b);
+  if(b)
+    this->UpdateLabelMapTable();
 }
 
 
@@ -515,20 +540,46 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
       mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
     }
 
-    float lowestOpacity = 1;
-    m_CurrentNode->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
-
-    float highestOpacity = 1;
-    m_CurrentNode->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
-
-    // Get LUT from Micro Service.
-    mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(comboBoxIndex, lowestOpacity, highestOpacity);
-
-    // and give to the node property.
-    mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
-    m_CurrentNode->SetProperty("Image Rendering.Mode", renderProp);
-    m_CurrentNode->SetProperty("LookupTable", mitkLUTProperty);
     m_CurrentNode->SetIntProperty("LookupTableIndex", comboBoxIndex);
+    bool isScaled = lutService->GetIsScaled(comboBoxIndex);
+
+    if( isScaled )
+    {
+      float lowestOpacity = 1;
+      m_CurrentNode->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
+
+      float highestOpacity = 1;
+      m_CurrentNode->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
+
+      // Get LUT from Micro Service.
+      mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(comboBoxIndex, lowestOpacity, highestOpacity);
+      m_CurrentNode->SetProperty("LookupTable", mitkLUTProperty);
+
+      mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
+      m_CurrentNode->SetProperty("Image Rendering.Mode", renderProp);
+
+      mitk::VtkResliceInterpolationProperty::Pointer resliceProp = mitk::VtkResliceInterpolationProperty::New(VTK_CUBIC_INTERPOLATION);
+      m_CurrentNode->ReplaceProperty( "reslice interpolation", resliceProp );
+
+      m_CurrentNode->ReplaceProperty( "texture interpolation", mitk::BoolProperty::New( true ) );
+    }
+    else
+    {
+      // Get LUT from Micro Service.
+      mitk::LabeledLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(comboBoxIndex);
+      m_CurrentNode->SetProperty("LookupTable", mitkLUTProperty);
+
+      mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_COLOR);
+      m_CurrentNode->SetProperty("Image Rendering.Mode", renderProp);
+      
+      mitk::VtkResliceInterpolationProperty::Pointer resliceProp = mitk::VtkResliceInterpolationProperty::New(VTK_RESLICE_NEAREST);
+      m_CurrentNode->ReplaceProperty( "reslice interpolation", resliceProp );
+
+      m_CurrentNode->ReplaceProperty( "texture interpolation", mitk::BoolProperty::New( false ) );
+    }
+
+    this->DisplayScalingControls(isScaled);
+    this->DisplayLabelMapControls(!isScaled);
 
     // Force redraw.
     m_CurrentNode->Update();
@@ -536,7 +587,6 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
     this->RequestRenderWindowUpdate();
   }
 }
-
 
 
 //-----------------------------------------------------------------------------
@@ -567,3 +617,94 @@ void ImageLookupTablesView::OnResetButtonPressed()
 }
 
 
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnLoadButtonPressed()
+{
+  // load a lookup table
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnSaveButtonPressed()
+{
+  // save a lookup table
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnNewButtonPressed()
+{
+  // create a lookup table
+}
+
+void ImageLookupTablesView::UpdateLabelMapTable()
+{
+
+  bool en = m_Controls->widget_LabelTable->blockSignals(true);
+  // initialize to size of labels
+  m_Controls->widget_LabelTable->clearContents();
+
+  mitk::BaseProperty::Pointer mitkLUT = m_CurrentNode->GetProperty("LookupTable");
+  if( mitkLUT.IsNull())
+  {
+    MITK_ERROR << "No lookup table assigned to " << m_CurrentNode->GetName();
+    return;
+  }
+
+  mitk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+
+  if( labelProperty.IsNull())
+  {
+    MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
+    return;
+  }
+
+  mitk::LabeledLookupTableProperty::LabelsListType labels = labelProperty->GetLabels();
+  vtkSmartPointer<vtkLookupTable> vtkLUT = labelProperty->GetLookupTable()->GetVtkLookupTable();
+
+  m_Controls->widget_LabelTable->setRowCount(labels.size());
+
+  QSignalMapper* colorMapper = new QSignalMapper(this);
+
+  for(unsigned int i=0;i<labels.size();i++)
+  {
+
+    // set value
+    int value = labels.at(i).first;
+
+    QTableWidgetItem * newValueItem = new QTableWidgetItem();
+    QString valueStr = QString::number(value);
+    newValueItem->setText(valueStr);
+    m_Controls->widget_LabelTable->setItem(i,1,newValueItem);
+
+    // set name
+    QTableWidgetItem * newNameItem = new QTableWidgetItem();
+    QString name = QString::fromStdString(labels.at(i).second);
+    newNameItem->setText(name);
+    m_Controls->widget_LabelTable->setItem(i,2,newNameItem);
+
+    // set color 
+    QPushButton* btnColor = new QPushButton;
+    btnColor->setFixedWidth(35);
+    btnColor->setAutoFillBackground(true);
+    
+    double rgb[3];
+    vtkLUT->GetColor(value, rgb);
+
+    QColor currColor(255*rgb[0], 255*rgb[1], 255*rgb[2]);
+    btnColor->setStyleSheet(QString("background-color:rgb(%1,%2, %3)").arg(currColor.red()).arg(currColor.green()).arg(currColor.blue()));
+
+    m_Controls->widget_LabelTable->setCellWidget(i,0,btnColor);
+
+    connect(btnColor, SIGNAL(clicked()), colorMapper, SLOT(map()) );
+    colorMapper->setMapping(btnColor, i);
+
+
+  }
+
+  connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(On_ColorPressed(int)) );
+
+  m_Controls->widget_LabelTable->blockSignals(en);
+
+}
