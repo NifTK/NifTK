@@ -56,6 +56,12 @@ public:
    */
   std::string GetName(unsigned int lookupTableIndex);
 
+
+  /**
+   * \see QmitkLookupTableProviderService::GetIsScaled
+   */
+  bool GetIsScaled(unsigned int lookupTableIndex);
+
 private:
   QmitkLookupTableManager* GetManager();
   std::auto_ptr<QmitkLookupTableManager> m_Manager;

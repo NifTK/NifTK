@@ -59,6 +59,20 @@ std::string QmitkLookupTableProviderServiceImpl::GetName(unsigned int lookupTabl
 
 
 //-----------------------------------------------------------------------------
+bool QmitkLookupTableProviderServiceImpl::GetIsScaled(unsigned int lookupTableIndex)
+{
+  const QmitkLookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableIndex);
+  if (lutContainer == NULL)
+  {
+    mitkThrow() << "Lookup table index " << lookupTableIndex << " is invalid." << std::endl;
+  }
+
+  bool isScaled = lutContainer->GetIsScaled();
+  return isScaled;
+}
+
+
+//-----------------------------------------------------------------------------
 vtkLookupTable* QmitkLookupTableProviderServiceImpl::CreateLookupTable(unsigned int lookupTableIndex,
                                                                        float lowestValueOpacity,
                                                                        float highestValueOpacity)
@@ -77,15 +91,17 @@ vtkLookupTable* QmitkLookupTableProviderServiceImpl::CreateLookupTable(unsigned 
     mitkThrow() << "Lookup table index " << lookupTableIndex << " has no colours." << std::endl;
   }
 
-  double rgba[4];
-  vtkLUT->GetTableValue(0, rgba);
-  rgba[3] = lowestValueOpacity;
-  vtkLUT->SetTableValue(0, rgba);
+  if( lutContainer->GetIsScaled() )
+  {
+    double rgba[4];
+    vtkLUT->GetTableValue(0, rgba);
+    rgba[3] = lowestValueOpacity;
+    vtkLUT->SetTableValue(0, rgba);
 
-  vtkLUT->GetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
-  rgba[3] = highestValueOpacity;
-  vtkLUT->SetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
-
+    vtkLUT->GetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
+    rgba[3] = highestValueOpacity;
+    vtkLUT->SetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
+  }
   return vtkLUT;
 }
 
@@ -109,6 +125,7 @@ mitk::NamedLookupTableProperty::Pointer QmitkLookupTableProviderServiceImpl::Cre
   mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = mitk::NamedLookupTableProperty::New();
   mitkLUTProperty->SetLookupTable(mitkLUT);
   mitkLUTProperty->SetName(this->GetName(lookupTableIndex));
+  mitkLUTProperty->SetIsScaled(this->GetIsScaled(lookupTableIndex));
 
   return mitkLUTProperty;
 }
