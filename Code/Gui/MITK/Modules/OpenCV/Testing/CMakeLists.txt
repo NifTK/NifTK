@@ -14,9 +14,14 @@
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkOpenCV)
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # Suppress warning because of a bug in the Boost gil library.
+  set_target_properties(${TESTDRIVER} PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
+endif()
+
 mitk_use_modules(TARGET ${TESTDRIVER}
   MODULES niftkcommon niftkVTK
-  PACKAGES OpenCV Boost|gil
+  PACKAGES OpenCV
 )
 
 mitkAddCustomModuleTest(CameraCalibRegression mitkCameraCalibrationTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/calibLeft ${NIFTK_DATA_DIR}/Input/CameraCalibration/calibRight ${CMAKE_BINARY_DIR}/Testing/Temporary/CameraCalibration 14 10 3 0.577703 0.913)

@@ -205,4 +205,10 @@ if(SlicerExecutionModel_FOUND)
       TARGET_LIBRARIES ${SLICER_HELPER_APP_LIBRARIES}
     )
   endforeach()
+
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # Suppress warning because of a bug in the Boost gil library.
+    set_target_properties(niftkImageFeatureMatching PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
+  endif()
+
 endif()

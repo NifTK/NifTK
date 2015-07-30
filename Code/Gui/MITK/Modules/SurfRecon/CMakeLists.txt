@@ -14,7 +14,7 @@
 
 find_package(OpenMP)
 
-set(_packages Boost|gil)
+set(_packages )
 set(_modules MitkCore niftkOpenCV )
 if(BUILD_PCL)
   list(APPEND _packages PCL)
@@ -25,6 +25,11 @@ MITK_CREATE_MODULE(
   DEPENDS ${_modules}
   PACKAGE_DEPENDS ${_packages}
 )
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # Suppress warning because of a bug in the Boost gil library.
+  set_target_properties(niftkSurfRecon PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
+endif()
 
 # only enable openmp on windows, for now.
 # see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2502
