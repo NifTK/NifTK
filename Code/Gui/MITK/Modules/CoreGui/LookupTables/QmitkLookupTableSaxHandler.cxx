@@ -73,9 +73,9 @@ bool QmitkLookupTableSaxHandler::startElement(
 			m_IsPreMultiplied = true;
 		}
 
-    bool* isScaledConverted;
-    bool isScaled = (attributes.value("isScaled")).toInt(isScaledConverted);
-    if( isScaledConverted && isScaled == 0)
+    QString scaledStr = attributes.value("isScaled");
+    bool isScaled = scaledStr.toInt();
+    if( !scaledStr.isEmpty() && isScaled == 0)
       m_IsScaled = false;
 
 	}
