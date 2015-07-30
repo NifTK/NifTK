@@ -27,7 +27,7 @@ endif()
 MITK_CREATE_MODULE(
   INCLUDE_DIRS DataSources
   DEPENDS ${niftkIGIDataSourcesManager_DEPENDS}
-  PACKAGE_DEPENDS Qt4|QtGui
+  PACKAGE_DEPENDS Qt4|QtGui NiftyLink|OpenIGTLink
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
