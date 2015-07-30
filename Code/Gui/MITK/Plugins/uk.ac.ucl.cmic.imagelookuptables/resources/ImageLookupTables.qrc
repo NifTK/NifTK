@@ -1,5 +1,12 @@
 <!DOCTYPE RCC><RCC version="1.0">
  <qresource prefix="/ImageLookupTables">
      <file>ImageLookupTables.png</file>
+	 <file>btnAdd.png</file>
+     <file>btnLoad.png</file>
+     <file>btnMoveDown.png</file>
+     <file>btnMoveUp.png</file>
+     <file>btnNew.png</file>
+     <file>btnRemove.png</file>
+     <file>btnSave.png</file>
  </qresource>
  </RCC>

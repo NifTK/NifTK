@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>666</width>
-    <height>368</height>
+    <width>665</width>
+    <height>571</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -25,34 +25,16 @@
   <layout class="QHBoxLayout" name="horizontalLayout_3">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
-     <property name="leftMargin">
-      <number>5</number>
-     </property>
-     <property name="topMargin">
-      <number>5</number>
-     </property>
-     <property name="rightMargin">
-      <number>5</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>5</number>
      </property>
      <item>
       <layout class="QGridLayout" name="m_ComboBoxSelectorGridLayout">
-       <property name="leftMargin">
-        <number>5</number>
-       </property>
-       <property name="topMargin">
-        <number>5</number>
-       </property>
-       <property name="rightMargin">
-        <number>5</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>5</number>
        </property>
        <property name="spacing">
-        <number>-1</number>
+        <number>6</number>
        </property>
        <item row="0" column="0">
         <widget class="QLabel" name="m_LookupTableLabel">
@@ -63,45 +45,90 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>lookup table</string>
+          <string>Lookup Table</string>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
         <widget class="QComboBox" name="m_LookupTableComboBox"/>
        </item>
+       <item row="0" column="4">
+        <widget class="QPushButton" name="btn_Save">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../resources/ImageLookupTables.qrc">
+           <normaloff>:/ImageLookupTables/btnSave.png</normaloff>:/ImageLookupTables/btnSave.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>16</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="btn_New">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../resources/ImageLookupTables.qrc">
+           <normaloff>:/ImageLookupTables/btnNew.png</normaloff>:/ImageLookupTables/btnNew.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QPushButton" name="btn_Load">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../resources/ImageLookupTables.qrc">
+           <normaloff>:/ImageLookupTables/btnLoad.png</normaloff>:/ImageLookupTables/btnLoad.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>19</width>
+           <height>16</height>
+          </size>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>
       <widget class="ctkCollapsibleGroupBox" name="m_RangeGroupBox">
        <property name="title">
-        <string>intensity range</string>
+        <string>Intensity Range</string>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout">
-        <property name="leftMargin">
-         <number>5</number>
-        </property>
-        <property name="topMargin">
-         <number>5</number>
-        </property>
-        <property name="rightMargin">
-         <number>5</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>5</number>
         </property>
         <item>
          <layout class="QGridLayout" name="m_RangeGridLayout">
-          <property name="leftMargin">
-           <number>5</number>
-          </property>
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>5</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>5</number>
           </property>
           <item row="0" column="0">
@@ -176,33 +203,15 @@
      <item>
       <widget class="ctkCollapsibleGroupBox" name="m_LimitsGroupBox">
        <property name="title">
-        <string>data limits</string>
+        <string>Data Limits</string>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="leftMargin">
-         <number>5</number>
-        </property>
-        <property name="topMargin">
-         <number>5</number>
-        </property>
-        <property name="rightMargin">
-         <number>5</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>5</number>
         </property>
         <item>
          <layout class="QGridLayout" name="m_LimitsGridLayout">
-          <property name="leftMargin">
-           <number>5</number>
-          </property>
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>5</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>5</number>
           </property>
           <item row="0" column="0">
@@ -292,6 +301,118 @@
       </widget>
      </item>
      <item>
+      <widget class="QGroupBox" name="m_EditLabelsGroupBox">
+       <property name="title">
+        <string>Edit Labels</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QTableWidget" name="widget_LabelTable">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ContiguousSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="showGrid">
+           <bool>true</bool>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
+          <property name="columnCount">
+           <number>3</number>
+          </property>
+          <attribute name="horizontalHeaderCascadingSectionResizes">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="horizontalHeaderDefaultSectionSize">
+           <number>50</number>
+          </attribute>
+          <attribute name="horizontalHeaderMinimumSectionSize">
+           <number>27</number>
+          </attribute>
+          <attribute name="horizontalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
+          <column>
+           <property name="text">
+            <string>Color</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Value</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QPushButton" name="btn_AddLabel">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resources/ImageLookupTables.qrc">
+              <normaloff>:/ImageLookupTables/btnAdd.png</normaloff>:/ImageLookupTables/btnAdd.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_RemoveLabel">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resources/ImageLookupTables.qrc">
+              <normaloff>:/ImageLookupTables/btnRemove.png</normaloff>:/ImageLookupTables/btnRemove.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_MoveLabelUp">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resources/ImageLookupTables.qrc">
+              <normaloff>:/ImageLookupTables/btnMoveUp.png</normaloff>:/ImageLookupTables/btnMoveUp.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btn_MoveLabelDown">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resources/ImageLookupTables.qrc">
+              <normaloff>:/ImageLookupTables/btnMoveDown.png</normaloff>:/ImageLookupTables/btnMoveDown.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
       <spacer name="m_BottomVerticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
@@ -323,6 +444,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../resources/ImageLookupTables.qrc"/>
+ </resources>
  <connections/>
 </ui>
