@@ -456,10 +456,10 @@ void DistanceBetweenLinesTest ()
 {
   //a line through the origin an (1,1,0) 
   cv::Point3d P0 (0,0,0);
-  cv::Point3d u (0.70711,0.7011,0);
+  cv::Point3d u (0.70711,0.70711,0);
   //a line through (1,0,1) and (0,1,1)
   cv::Point3d Q0 (1,0,1);
-  cv::Point3d v (-0.70711,0.7011,0);
+  cv::Point3d v (-0.70711,0.70711,0);
   cv::Point3d midPoint;
   double distance = mitk::DistanceBetweenLines(P0, u, Q0 , v , midPoint);
   
@@ -469,27 +469,27 @@ void DistanceBetweenLinesTest ()
   //parallel  lines
   //a line through the origin and (1,1,0)
   P0 = cv::Point3d (0,0,0);
-  u = cv::Point3d (0.70711,0.7011,0);
+  u = cv::Point3d (0.70711,0.70711,0);
   //a line through (1,0,0) and (2,1,0)
   Q0 = cv::Point3d(1,0,0);
-  v = cv::Point3d (0.70711,0.7011,0);
+  v = cv::Point3d (0.70711,0.70711,0);
   distance = mitk::DistanceBetweenLines(P0, u, Q0 , v , midPoint);
 
-  MITK_TEST_CONDITION ( ( distance - sqrt ( 0.5 * 0.5 + 0.5 * 0.5 ) )  < 1e-6, "Checking distance between two parallel lines " << distance );
+  MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 0.5 * 0.5 + 0.5 * 0.5 ) ))  < 1e-6, "Checking distance between two parallel lines " << distance );
   MITK_TEST_CONDITION( ( ! mitk::IsNotNaNorInf (midPoint)), "Checking midpoint for parallel lines " << midPoint);
 
-  v = cv::Point3d (-0.70711,-0.7011,0);
+  v = cv::Point3d (-0.70711,-0.70711,0);
   distance = mitk::DistanceBetweenLines(P0, u, Q0 , v , midPoint);
 
-  MITK_TEST_CONDITION ( ( distance - sqrt ( 0.5 * 0.5 + 0.5 * 0.5 ) )  < 1e-6, "Checking distance between two parallel lines 2 " << distance );
+  MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 0.5 * 0.5 + 0.5 * 0.5 )) )  < 1e-6, "Checking distance between two parallel lines 2 " << distance );
   MITK_TEST_CONDITION( ( ! mitk::IsNotNaNorInf (midPoint)), "Checking midpoint for parallel lines 2 " << midPoint);
 
-  Q0 = cv::Point3d(10,9,9);
-  v = cv::Point3d (0.70711,0.7011,0);
+  Q0 = cv::Point3d(10,9,0);
+  v = cv::Point3d (0.70711,0.70711,0);
 
   distance = mitk::DistanceBetweenLines(P0, u, Q0 , v , midPoint);
 
-  MITK_TEST_CONDITION ( ( distance - sqrt ( 0.5 * 0.5 + 0.5 * 0.5 ) )  < 1e-6, "Checking distance between two parallel lines 3 " << distance );
+  MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 0.5 * 0.5 + 0.5 * 0.5 )) )  < 1e-6, "Checking distance between two parallel lines 3 " << distance );
   MITK_TEST_CONDITION( ( ! mitk::IsNotNaNorInf (midPoint)), "Checking midpoint for parallel lines 3 " << midPoint);
 
 
