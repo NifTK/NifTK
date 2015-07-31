@@ -1662,48 +1662,11 @@ std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
     v.y = rhsRayTransformed.at<double>(1,0);
     v.z = rhsRayTransformed.at<double>(2,0);
 
-    // Method 1. Solve for shortest line joining two rays, then get midpoint.
-    // Taken from: http://geomalgorithms.com/a07-_distance.html
-
-    double sc, tc, a, b, c, d, e;
-
-    cv::Point3d Psc;
-    cv::Point3d Qtc;
-    cv::Point3d W0;
     cv::Point3d midPoint;
+    double distance = mitk::DistanceBetweenLines ( P0, u, Q0, v, midPoint);
 
-    // Difference of two origins
-    W0.x = P0.x - Q0.x;
-    W0.y = P0.y - Q0.y;
-    W0.z = P0.z - Q0.z;
-
-    a = u.x*u.x + u.y*u.y + u.z*u.z;
-    b = u.x*v.x + u.y*v.y + u.z*v.z;
-    c = v.x*v.x + v.y*v.y + v.z*v.z;
-    d = u.x*W0.x + u.y*W0.y + u.z*W0.z;
-    e = v.x*W0.x + v.y*W0.y + v.z*W0.z;
-
-    sc = (b*e - c*d) / (a*c - b*b);
-    tc = (a*e - b*d) / (a*c - b*b);
-
-    Psc.x = P0.x + sc*u.x;
-    Psc.y = P0.y + sc*u.y;
-    Psc.z = P0.z + sc*u.z;
-
-    Qtc.x = Q0.x + tc*v.x;
-    Qtc.y = Q0.y + tc*v.y;
-    Qtc.z = Q0.z + tc*v.z;
-
-    double distance = sqrt((Psc.x - Qtc.x)*(Psc.x - Qtc.x)
-                          +(Psc.y - Qtc.y)*(Psc.y - Qtc.y)
-                          +(Psc.z - Qtc.z)*(Psc.z - Qtc.z)
-                          );
-    if ( distance < twiceTolerance )
+    if ( ( distance < twiceTolerance ) && ( mitk::IsNotNaNorInf ( midPoint )) )
     {
-      midPoint.x = (Psc.x + Qtc.x)/2.0;
-      midPoint.y = (Psc.y + Qtc.y)/2.0;
-      midPoint.z = (Psc.z + Qtc.z)/2.0;
-
       outputPoints.push_back(midPoint);
     }
     else 
