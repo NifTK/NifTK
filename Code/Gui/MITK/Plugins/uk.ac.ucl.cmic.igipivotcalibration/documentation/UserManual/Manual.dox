@@ -9,34 +9,20 @@ The Pivot Calibration View plugin provides pointing device calibration which det
 
 \section PivotCalibrationUsage Usage
 
-\subsection PivotCalibrationOptionalInput Optional Input
-
-\image html optionalinput.png "Figure 1. The optional input from the plugin."
-
-<ul>
-percentage: The percentage of data to use, which triggers multiple re-runs to get mean and standard deviation of residual.
-
-number of re-runs: The number of re-runs to do if percentage != 100.
-</ul>
-
 \subsection PivotCalibrationMadatoryInput Mandatory Input
 
-\image html mandatoryinput.png "Figure 2. The mandatory input from the plugin."
-
-<ul>
 tracking matrix folder: input the directory containing 4x4 tracking matrices in plain text files.
-</ul>
+
+\image html mandatoryinput.png "Figure 1. The mandatory input from the plugin."
 
 \subsection PivotCalibrationDisplayResult Do Calibration
 
-<ul>
-press the button \image html calibbutton.png to do pivot calibration.
+press the button "Do Pivot Calibration" for calibration.
 
-The transformation matrix and the residual error is displayed as shown in Figure 3.
+The transformation matrix and the residual error is displayed as shown in Figure 2.
 
-\image html displayresult.png "Figure 3. Pivot calibration."
+\image html displayresult.png "Figure 2. Pivot calibration."
 
-</ul>
 
 \section PivotCalibrationPreferences Preferences
 

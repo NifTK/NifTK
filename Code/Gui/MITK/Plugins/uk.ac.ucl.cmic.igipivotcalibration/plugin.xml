@@ -8,10 +8,4 @@
           icon="resources/icon.xpm" />
   </extension>
 
-  <extension point="org.blueberry.ui.preferencePages">
-    <page id="uk.ac.ucl.cmic.PivotCalibrationViewPreferencePage" name="Pivot Calibration" class="PivotCalibrationViewPreferencePage">
-      <keywordreference id="uk.ac.ucl.cmic.PivotCalibrationViewKeywords"></keywordreference>
-    </page>
-  </extension>
-
 </plugin>

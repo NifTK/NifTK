@@ -15,60 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QGroupBox" name="m_SegmetationGroup">
-     <property name="title">
-      <string>Options</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_22">
-      <item row="0" column="0">
-       <layout class="QGridLayout" name="gridLayout_17">
-        <item row="0" column="0">
-         <widget class="QLabel" name="m_PercentageLabel">
-          <property name="text">
-           <string>percentage</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QSpinBox" name="m_PercentageSpinBox">
-          <property name="maximum">
-           <number>100</number>
-          </property>
-          <property name="value">
-           <number>100</number>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QSpinBox" name="m_NumberOfReRunsSpinBox">
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>100000</number>
-          </property>
-          <property name="singleStep">
-           <number>1</number>
-          </property>
-          <property name="value">
-           <number>1000</number>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="m_VesselHistPeakLabel">
-          <property name="text">
-           <string>number of re-runs</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="m_ImageFromDiskGroup">
+    <widget class="QGroupBox" name="m_PivotCalibrationGroup">
      <property name="title">
       <string>Calibration</string>
      </property>

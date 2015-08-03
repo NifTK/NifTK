@@ -19,7 +19,6 @@ set(SRC_CPP_FILES
 set(INTERNAL_CPP_FILES
   PivotCalibrationViewActivator.cxx
   PivotCalibrationView.cxx
-  PivotCalibrationViewPreferencePage.cxx
 )
 
 set(UI_FILES
@@ -29,7 +28,6 @@ set(UI_FILES
 set(MOC_H_FILES
   src/internal/PivotCalibrationViewActivator.h
   src/internal/PivotCalibrationView.h
-  src/internal/PivotCalibrationViewPreferencePage.h
 )
 
 # list of resource files which can be used by the plug-in

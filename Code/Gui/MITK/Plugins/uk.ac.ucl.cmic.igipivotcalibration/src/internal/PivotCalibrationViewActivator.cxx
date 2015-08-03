@@ -15,7 +15,6 @@
 #include "PivotCalibrationViewActivator.h"
 #include <QtPlugin>
 #include "PivotCalibrationView.h"
-#include "PivotCalibrationViewPreferencePage.h"
 
 namespace mitk {
 
@@ -25,7 +24,6 @@ ctkPluginContext* PivotCalibrationViewActivator::m_PluginContext = 0;
 void PivotCalibrationViewActivator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(PivotCalibrationView, context)
-  BERRY_REGISTER_EXTENSION_CLASS(PivotCalibrationViewPreferencePage, context)
   m_PluginContext = context;
 }
 

@@ -15,7 +15,6 @@
 // Qmitk
 #include "PivotCalibrationView.h"
 #include "PivotCalibrationViewActivator.h"
-#include "PivotCalibrationViewPreferencePage.h"
 
 #include <QmitkIGIUtils.h>
 #include <mitkCoordinateAxesData.h>
@@ -89,8 +88,6 @@ void PivotCalibrationView::CreateQtPartControl( QWidget *parent )
     m_Controls = new Ui::PivotCalibrationView();
     m_Controls->setupUi(parent);
 
-    this->RetrievePreferenceValues();
-
     bool  ok = false;
 
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
@@ -98,7 +95,7 @@ void PivotCalibrationView::CreateQtPartControl( QWidget *parent )
 
     m_Controls->m_MatrixDirectoryChooser->setFilters(ctkPathLineEdit::Dirs);
     m_Controls->m_MatrixDirectoryChooser->setOptions(ctkPathLineEdit::ShowDirsOnly);
-    m_Controls->m_MatrixDirectoryChooser->setCurrentPath(tr(m_OutputDirectory.c_str()));
+    m_Controls->m_MatrixDirectoryChooser->setCurrentPath("");
 
     m_Controls->m_MatrixWidget->setEditable(false);
     m_Controls->m_MatrixWidget->setRange(-1e4, 1e4);
@@ -107,8 +104,6 @@ void PivotCalibrationView::CreateQtPartControl( QWidget *parent )
 
     ok = QObject::connect(m_Controls->m_SaveToFileButton, SIGNAL(clicked()), this, SLOT(OnSaveToFileButtonClicked()));
     assert(ok);
-
-    this->SetGuiParameterValues();
 
     dataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<PivotCalibrationView, const mitk::DataNode*>(this, &PivotCalibrationView::DataStorageEventListener));
   }
@@ -135,8 +130,8 @@ void PivotCalibrationView::OnPivotCalibrationButtonClicked()
   }
   
   double residualError = std::numeric_limits<double>::max();
-  int percentage = m_Controls->m_PercentageSpinBox->value();
-  int numberOfReruns = m_Controls->m_NumberOfReRunsSpinBox->value();
+  int percentage = 100;
+  int numberOfReruns = 1000;
   
   // Do calibration
     mitk::PivotCalibration::Pointer calibration = mitk::PivotCalibration::New();
@@ -166,8 +161,7 @@ void PivotCalibrationView::OnSaveToFileButtonClicked()
 {
   QString fileName = QFileDialog::getSaveFileName( NULL,
                                                    tr("Save Transform As ..."),
-                                                   //QDir::currentPath(),
-                                                   QString(m_OutputDirectory.c_str()),
+                                                   QDir::currentPath(),
                                                    "Matrix file (*.mat);;4x4 file (*.4x4);;Text file (*.txt);;All files (*.*)" );
   if (fileName.size() > 0)
   {
@@ -188,37 +182,3 @@ std::string PivotCalibrationView::GetViewID() const
   return VIEW_ID;
 }
 
-
-//-----------------------------------------------------------------------------
-void PivotCalibrationView::OnPreferencesChanged(const berry::IBerryPreferences*)
-{
-  this->RetrievePreferenceValues();
-}
-
-
-//-----------------------------------------------------------------------------
-void PivotCalibrationView::RetrievePreferenceValues()
-{
-  berry::IPreferences::Pointer prefs = GetPreferences();
-  if (prefs.IsNotNull())
-  {
-    m_OutputDirectory = prefs->Get(PivotCalibrationViewPreferencePage::OUTPUT_DIRECTORY, "");
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void PivotCalibrationView::SetGuiParameterValues()
-{
-  // Options
-    
-  m_Controls->m_PercentageSpinBox->setKeyboardTracking ( false );
-  m_Controls->m_PercentageSpinBox->setMinimum( 0 );
-  m_Controls->m_PercentageSpinBox->setMaximum( 100 );
-  m_Controls->m_PercentageSpinBox->setValue( 100 );
-  
-  m_Controls->m_NumberOfReRunsSpinBox->setKeyboardTracking ( false );
-  m_Controls->m_NumberOfReRunsSpinBox->setMinimum( 1 );
-  m_Controls->m_NumberOfReRunsSpinBox->setMaximum( 100000 );
-  m_Controls->m_NumberOfReRunsSpinBox->setValue( 1000 );
-}
