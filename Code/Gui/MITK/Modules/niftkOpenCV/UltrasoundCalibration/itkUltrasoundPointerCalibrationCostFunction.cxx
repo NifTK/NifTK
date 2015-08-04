@@ -168,9 +168,12 @@ void UltrasoundPointerCalibrationCostFunction::GetDerivative(
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkMatrix4x4> UltrasoundPointerCalibrationCostFunction::GetRigidMatrix(const ParametersType & parameters) const
 {
-  cv::Matx44d scalingMatrix = mitk::ConstructScalingTransformation(parameters[6], parameters[7]);
+  cv::Matx44d rigidBodyMatrix = mitk::ConstructRodriguesTransformationMatrix(
+        parameters[0], parameters[1], parameters[2],
+        parameters[3], parameters[4], parameters[5]
+      );
   vtkSmartPointer<vtkMatrix4x4> output = vtkSmartPointer<vtkMatrix4x4>::New();
-  mitk::CopyToVTK4x4Matrix(scalingMatrix, *output);
+  mitk::CopyToVTK4x4Matrix(rigidBodyMatrix, *output);
   return output;
 }
 
@@ -178,12 +181,9 @@ vtkSmartPointer<vtkMatrix4x4> UltrasoundPointerCalibrationCostFunction::GetRigid
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkMatrix4x4> UltrasoundPointerCalibrationCostFunction::GetScalingMatrix(const ParametersType & parameters) const
 {
-  cv::Matx44d rigidBodyMatrix = mitk::ConstructRodriguesTransformationMatrix(
-        parameters[0], parameters[1], parameters[2],
-        parameters[3], parameters[4], parameters[5]
-      );
+  cv::Matx44d scalingMatrix = mitk::ConstructScalingTransformation(parameters[6], parameters[7]);
   vtkSmartPointer<vtkMatrix4x4> output = vtkSmartPointer<vtkMatrix4x4>::New();
-  mitk::CopyToVTK4x4Matrix(rigidBodyMatrix, *output);
+  mitk::CopyToVTK4x4Matrix(scalingMatrix, *output);
   return output;
 }
 
