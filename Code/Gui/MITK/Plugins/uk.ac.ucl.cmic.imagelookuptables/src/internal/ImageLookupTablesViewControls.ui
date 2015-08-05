@@ -53,7 +53,7 @@
         <widget class="QComboBox" name="m_LookupTableComboBox"/>
        </item>
        <item row="0" column="4">
-        <widget class="QPushButton" name="btn_Save">
+        <widget class="QPushButton" name="m_SaveButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -76,7 +76,7 @@
         </widget>
        </item>
        <item row="0" column="2">
-        <widget class="QPushButton" name="btn_New">
+        <widget class="QPushButton" name="m_NewButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -93,7 +93,7 @@
         </widget>
        </item>
        <item row="0" column="3">
-        <widget class="QPushButton" name="btn_Load">
+        <widget class="QPushButton" name="m_LoadButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>

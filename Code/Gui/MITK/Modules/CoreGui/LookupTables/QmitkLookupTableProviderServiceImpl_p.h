@@ -57,6 +57,10 @@ public:
    */
   virtual mitk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(unsigned int lookupTableIndex);
 
+  /**
+   * \see QmitkLookupTableProviderService::AddNewLookupTableContainer()
+   */
+  virtual bool AddNewLookupTableContainer(QmitkLookupTableContainer* container);
   
   /**
    * \see QmitkLookupTableProviderService::GetIsScaled
@@ -66,7 +70,7 @@ public:
   /**
    * \see QmitkLookupTableProviderService::GetName
    */
-  std::string GetName(unsigned int lookupTableIndex);
+  virtual std::string GetName(unsigned int lookupTableIndex);
 
   
   /**

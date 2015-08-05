@@ -183,9 +183,15 @@ private:
 
 
   /**
-   * \brief Updates the list of labels
+   * \brief Updates the label map table
    */
   void UpdateLabelMapTable();
+
+
+  /**
+   * \brief Updates the list of lookuptables
+   */
+  void UpdateLookupTableComboBox();
 
   /**
    * \brief Retrieve's the pref values from preference service, and stores in member variables.
@@ -201,11 +207,6 @@ private:
    * \brief All the controls for the main view part.
    */
   Ui::ImageLookupTablesViewControls* m_Controls;
-
-  /**
-   * \brief We contain a LookupTableManager containing vtkLookupTables loaded from the resource system.
-   */
-  QmitkLookupTableManager *m_LookupTableManager;
 
   /**
    * \brief Tracks the currently selected node.

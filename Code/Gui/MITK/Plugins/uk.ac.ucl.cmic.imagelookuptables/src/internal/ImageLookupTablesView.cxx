@@ -14,22 +14,29 @@
 
 #include "ImageLookupTablesView.h"
 #include "ImageLookupTablesViewActivator.h"
+
+
 #include <QButtonGroup>
 #include <QSlider>
 #include <QDebug>
 #include <qfiledialog.h>
 #include <qsignalmapper.h>
+
+
 #include <itkImage.h>
 #include <itkCommand.h>
 #include <itkStatisticsImageFilter.h>
 #include <itkEventObject.h>
+
 #include <vtkLookupTable.h>
+
 #include <mitkImage.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkLookupTable.h>
 #include <mitkLookupTableProperty.h>
 #include <mitkNamedLookupTableProperty.h>
 #include <mitkLabeledLookupTableProperty.h>
+
 #include <mitkLabelMapWriter.h>
 #include <mitkRenderingManager.h>
 #include <mitkRenderingModeProperty.h>
@@ -60,7 +67,6 @@ const QString ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables
 //-----------------------------------------------------------------------------
 ImageLookupTablesView::ImageLookupTablesView()
 : m_Controls(0)
-, m_LookupTableManager(0)
 , m_CurrentNode(0)
 , m_CurrentImage(0)
 , m_Precision(2)
@@ -70,7 +76,6 @@ ImageLookupTablesView::ImageLookupTablesView()
 , m_LowestIsOpaquePropertyObserverTag(0)
 , m_HighestIsOpaquePropertyObserverTag(0)
 {
-  m_LookupTableManager = new QmitkLookupTableManager();
 }
 
 
@@ -93,10 +98,6 @@ ImageLookupTablesView::~ImageLookupTablesView()
     delete m_Controls;
   }
 
-  if (m_LookupTableManager != NULL)
-  {
-    delete m_LookupTableManager;
-  }
 }
 
 
@@ -119,12 +120,7 @@ void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
     this->DisplayScalingControls(true);
     this->DisplayLabelMapControls(false);
 
-    // Populate combo box with lookup table names.
-    for (unsigned int i = 0; i < m_LookupTableManager->GetNumberOfLookupTables(); i++)
-    {
-      const QmitkLookupTableContainer *container = m_LookupTableManager->GetLookupTableContainer(i);
-      m_Controls->m_LookupTableComboBox->insertItem(container->GetOrder(), container->GetDisplayName());
-    }
+    this->UpdateLookupTableComboBox();
 
     /// This is probably superfluous because the AbstractView::AfterCreateQtPartControl() calls
     /// OnPreferencesChanged that calls RetrievePreferenceValues. It would need testing.
@@ -146,7 +142,9 @@ void ImageLookupTablesView::CreateConnections()
   this->connect(m_Controls->m_MaxLimitDoubleSpinBox, SIGNAL(editingFinished()), SLOT(OnRangeChanged()));
   this->connect(m_Controls->m_LookupTableComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnLookupTableComboBoxChanged(int)));
   this->connect(m_Controls->m_ResetButton, SIGNAL(pressed()), this, SLOT(OnResetButtonPressed()));
-  this->connect(m_Controls->btn_Save, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
+  this->connect(m_Controls->m_SaveButton, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
+  this->connect(m_Controls->m_LoadButton, SIGNAL(pressed()), this, SLOT(OnLoadButtonPressed()));
+
 }
 
 
@@ -205,6 +203,7 @@ void ImageLookupTablesView::EnableControls(bool b)
   m_Controls->m_MinLimitDoubleSpinBox->setEnabled(b);
   m_Controls->m_MaxLimitDoubleSpinBox->setEnabled(b);
   m_Controls->m_ResetButton->setEnabled(b);
+
 }
 
 
@@ -350,6 +349,7 @@ void ImageLookupTablesView::Unregister()
   }
 }
 
+
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::DifferentImageSelected()
 {
@@ -382,6 +382,30 @@ void ImageLookupTablesView::DifferentImageSelected()
   }
 
   this->BlockSignals(false);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::UpdateLookupTableComboBox()
+{
+  
+  bool en = m_Controls->m_LookupTableComboBox->blockSignals(true);
+  int currentIndex = m_Controls->m_LookupTableComboBox->currentIndex();
+
+  // create a lookup table
+  QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+
+  m_Controls->m_LookupTableComboBox->clear();
+ 
+  // Populate combo box with lookup table names.
+  for (unsigned int i = 0; i < lutService->GetNumberOfLookupTables(); i++)
+  {
+    QString displayName = QString::fromStdString(lutService->GetName(i));
+    m_Controls->m_LookupTableComboBox->insertItem(i, displayName);
+  }
+
+  m_Controls->m_LookupTableComboBox->setCurrentIndex(currentIndex);
+  m_Controls->m_LookupTableComboBox->blockSignals(en);
 }
 
 
@@ -622,7 +646,35 @@ void ImageLookupTablesView::OnResetButtonPressed()
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnLoadButtonPressed()
 {
-  // load a lookup table
+  if(m_CurrentNode.IsNull())
+    return;
+
+  // create a lookup table
+  QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+  
+  // load a label
+  QString filenameWithPath = QFileDialog::getOpenFileName(0, tr("Open File"), "", tr("Text files (*.txt);;XML files (*.xml)"));
+
+  // intialized label map reader
+  mitk::LabelMapReader reader;
+
+  reader.SetInput(filenameWithPath.toStdString());
+  reader.Read();
+
+  QmitkLookupTableContainer * loadedContainer = reader.GetLookupTableContainer();
+  bool isLoaded = lutService->AddNewLookupTableContainer( loadedContainer );
+
+  if(!isLoaded)
+    MITK_ERROR << "Unable to load label map from " << filenameWithPath.toStdString().c_str();
+
+  this->UpdateLookupTableComboBox();
+
+  // try to set the loaded reader as the selected container
+  QString containerName = loadedContainer->GetDisplayName();
+  int index = m_Controls->m_LookupTableComboBox->findText(containerName);
+
+  if(index > -1)
+    m_Controls->m_LookupTableComboBox->setCurrentIndex(index); 
 }
 
 
@@ -682,6 +734,8 @@ void ImageLookupTablesView::OnNewButtonPressed()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void ImageLookupTablesView::UpdateLabelMapTable()
 {
 

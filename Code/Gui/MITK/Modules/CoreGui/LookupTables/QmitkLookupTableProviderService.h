@@ -24,6 +24,7 @@
 #include <mitkServiceInterface.h>
 
 class vtkLookupTable;
+class QmitkLookupTableContainer;
 
 /**
  * \class QmitkLookupTableProviderService
@@ -55,14 +56,19 @@ struct QmitkLookupTableProviderService
                                                                             float highestValueOpacity) = 0;
 
   /**
-   * \brief Similar to CreateLookupTable, but also sets labels and place it into a mitk::LabeledLookupTableProperty.
+   * \brief Similar to CreateLookupTable, but create a mitk::LabeledLookupTableProperty.
    */
   virtual mitk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(unsigned int lookupTableIndex) = 0;
 
   /**
+   * \brief Returns true if the QmitkLookupTableContainer is succeseefully added to the LookupTableManager.
+   */
+  virtual bool AddNewLookupTableContainer(QmitkLookupTableContainer* container) = 0;
+
+  /**
    * \brief Returns the display name of the given table.
    */
-  std::string GetName(unsigned int lookupTableIndex);
+  virtual std::string GetName(unsigned int lookupTableIndex) = 0;
 
   /**
    * \brief Returns whether the given table should be scaled to the window and level.
@@ -70,7 +76,7 @@ struct QmitkLookupTableProviderService
   virtual bool GetIsScaled(unsigned int lookupTableIndex) = 0;
 
   /**
-  * \brief Returns labels for the given table.
+  * \brief Returns labels for the given table, if they exist.
   */
   mitk::LabeledLookupTableProperty::LabelsListType GetLabels(unsigned int labels);
 

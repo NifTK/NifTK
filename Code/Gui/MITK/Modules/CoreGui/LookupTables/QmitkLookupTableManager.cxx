@@ -78,7 +78,7 @@ QmitkLookupTableManager::QmitkLookupTableManager()
 
   QStringList txtFilter;
   txtFilter << "*.txt";
-	QStringList labelMapList = fileDir.entryList(txtFilter, QDir::Files);
+  QStringList labelMapList = fileDir.entryList(txtFilter, QDir::Files,QDir::SortFlag::Name);
 
   for (int i = 0; i < labelMapList.size(); i++)
 	{

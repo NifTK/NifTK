@@ -165,3 +165,15 @@ mitk::LabeledLookupTableProperty::Pointer QmitkLookupTableProviderServiceImpl::C
 
   return mitkLUTProperty;
 }
+
+bool QmitkLookupTableProviderServiceImpl::AddNewLookupTableContainer(
+  QmitkLookupTableContainer* container) 
+{
+ 
+  QmitkLookupTableManager* manager = this->GetManager();
+  if(manager == NULL)
+    return false;
+
+  manager->AddLookupTableContainer(container);
+  return true;
+}
