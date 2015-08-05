@@ -21,7 +21,7 @@
 #include <QDebug>
 #include <qfiledialog.h>
 #include <qsignalmapper.h>
-
+#include <qinputdialog.h>
 
 #include <itkImage.h>
 #include <itkCommand.h>
@@ -144,6 +144,7 @@ void ImageLookupTablesView::CreateConnections()
   this->connect(m_Controls->m_ResetButton, SIGNAL(pressed()), this, SLOT(OnResetButtonPressed()));
   this->connect(m_Controls->m_SaveButton, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
   this->connect(m_Controls->m_LoadButton, SIGNAL(pressed()), this, SLOT(OnLoadButtonPressed()));
+  this->connect(m_Controls->m_NewButton, SIGNAL(pressed()), this, SLOT(OnNewButtonPressed()));
 }
 
 
@@ -670,9 +671,9 @@ void ImageLookupTablesView::OnLoadButtonPressed()
   reader.Read();
 
   QmitkLookupTableContainer * loadedContainer = reader.GetLookupTableContainer();
-  bool isLoaded = lutService->AddNewLookupTableContainer( loadedContainer );
+  bool isAdded = lutService->AddNewLookupTableContainer( loadedContainer );
 
-  if(!isLoaded)
+  if(!isAdded)
   {
     MITK_ERROR << "Unable to load label map from " << filenameWithPath.toStdString().c_str();
     return;
@@ -738,11 +739,37 @@ void ImageLookupTablesView::OnSaveButtonPressed()
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnNewButtonPressed()
 {
-  // create a lookup table
-  if (m_CurrentNode.IsNotNull())
+  // create an empty LookupTable
+  if (m_CurrentNode.IsNull())
+    return;
+
+  QString newLabelName = QInputDialog::getText(0, tr("Create New Label"),
+                                         tr("New label name:"), QLineEdit::Normal );
+
+  QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+
+  const vtkLookupTable* emptyLUT = vtkLookupTable::New();
+
+  QmitkLookupTableContainer * newContainer = new QmitkLookupTableContainer(emptyLUT);
+  newContainer->SetDisplayName(newLabelName);
+  newContainer->SetIsScaled(false);
+  newContainer->SetOrder(lutService->GetNumberOfLookupTables());
+
+  bool isAdded = lutService->AddNewLookupTableContainer( newContainer );
+
+  if(!isAdded)
   {
-    QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+    MITK_ERROR << "Unable to create new label map.";
+    return;
   }
+
+  this->UpdateLookupTableComboBox();
+
+  // try to set the loaded reader as the selected container
+  int index = m_Controls->m_LookupTableComboBox->findText(newLabelName);
+
+  if(index > -1)
+    m_Controls->m_LookupTableComboBox->setCurrentIndex(index); 
 }
 
 
