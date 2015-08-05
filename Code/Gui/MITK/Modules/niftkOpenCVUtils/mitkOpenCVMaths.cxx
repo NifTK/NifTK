@@ -2542,4 +2542,27 @@ unsigned int RemoveOutliers ( std::vector <cv::Point3d>& points,
   return originalSize - points.size();
 }
 
+
+//-----------------------------------------------------------------------------
+void ExtractRigidBodyParameters(const vtkMatrix4x4& matrix, mitk::Point3D& outputRodriguesRotationParameters, mitk::Point3D& outputTranslationParameters)
+{
+  cv::Matx33d rotationMatrix;
+  cv::Matx31d rotationVector;
+
+  for (int r = 0; r < 3; r++)
+  {
+    for (int c = 0; c < 3; c++)
+    {
+      rotationMatrix(r,c) = matrix.GetElement(r, c);
+    }
+  }
+  cv::Rodrigues(rotationMatrix, rotationVector);
+
+  for (int i = 0; i < 3; i++)
+  {
+    outputRodriguesRotationParameters[i] = rotationVector(i, 0);
+    outputTranslationParameters[i] = matrix.GetElement(i, 3);
+  }
+}
+
 } // end namespace

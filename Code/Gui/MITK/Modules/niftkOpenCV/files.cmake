@@ -44,10 +44,12 @@ set(CPP_FILES
   UltrasoundCalibration/itkInvariantPointCalibrationCostFunction.cxx
   UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
   UltrasoundCalibration/itkVideoHandEyeCalibrationCostFunction.cxx
+  UltrasoundCalibration/itkUltrasoundPointerCalibrationCostFunction.cxx
   UltrasoundCalibration/mitkInvariantPointCalibration.cxx
   UltrasoundCalibration/mitkUltrasoundPinCalibration.cxx
   UltrasoundCalibration/mitkVideoHandEyeCalibration.cxx
   UltrasoundCalibration/mitkUltrasoundTransformAndImageMerger.cxx
+  UltrasoundCalibration/mitkUltrasoundPointerBasedCalibration.cxx
   PivotCalibration/mitkPivotCalibration.cxx
 )
 
