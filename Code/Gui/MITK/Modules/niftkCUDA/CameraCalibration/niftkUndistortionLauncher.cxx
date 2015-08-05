@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkundistortionLauncher.h"
+#include "niftkUndistortionLauncher.h"
 #include <niftkCUDAManager.h>
 #include <niftkLightweightCUDAImage.h>
 #include <CameraCalibration/niftkUndistortionKernel.h>
