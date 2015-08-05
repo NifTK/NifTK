@@ -25,6 +25,7 @@
 class QWidget;
 class QSlider;
 class QmitkLookupTableManager;
+class vtkLookupTable;
 
 /**
  * \class ImageLookupTablesView
@@ -128,6 +129,36 @@ protected slots:
    */
   void OnNewButtonPressed();
 
+  /**
+   * \brief Add a label to the current label map
+   */
+  void OnAddLabelButtonPressed();
+
+  /**
+   * \brief Remove the selected labels to the current label map
+   */
+  void OnRemoveLabelButtonPressed();
+
+  /**
+   * \brief Move the selected labels up one place in the list
+   */
+  void OnMoveLabelUpButtonPressed();
+
+  /**
+   * \brief Move the selected labels down one place in the list
+   */
+  void OnMoveLabelDownButtonPressed();
+
+  /**
+   * \brief Change color of pressed label color
+   */
+  void OnColorButtonPressed(int);
+
+  /**
+   * \brief Change name or value of selected cell
+   */
+  void OnLabelMapTableCellChanged(int, int);
+
 private:
 
   /**
@@ -208,6 +239,7 @@ private:
    */
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
+  void CopyVTKLookupTable( vtkLookupTable* oldLUT, vtkLookupTable* newLUT);
   /**
    * \brief All the controls for the main view part.
    */

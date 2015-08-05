@@ -202,14 +202,13 @@ QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
   lookupTable->SetTableRange(min-1,max+1);
   lookupTable->SetNanColor(0,0,0,0);
 
-  //vtkLUT->SetIndexedLookup(true);  
   lookupTable->Build();
 
   QmitkLookupTableContainer::LabelsListType labels;
   for( unsigned int i=0;i<m_LabelMap.size();i++)
   {
-    double value = m_LabelMap.at(i).value;
-    double vtkInd = value - min + 1;
+    int value = m_LabelMap.at(i).value;
+    int vtkInd = value - min + 1;
     std::string name =  m_LabelMap.at(i).name.toStdString();
     double r = double(m_LabelMap.at(i).color.red())/255;
     double g = double(m_LabelMap.at(i).color.green())/255;

@@ -72,9 +72,8 @@ public:
    */
   virtual std::string GetName(unsigned int lookupTableIndex);
 
-  
   /**
-   * \see QmitkLookupTableProviderService::GetLabels
+   * \see Returns labels for the given table, if they exist.
    */
   mitk::LabeledLookupTableProperty::LabelsListType GetLabels(unsigned int labels);
 

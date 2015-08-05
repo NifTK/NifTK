@@ -364,7 +364,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
-           <widget class="QPushButton" name="btn_AddLabel">
+           <widget class="QPushButton" name="m_AddLabelButton">
             <property name="text">
              <string/>
             </property>
@@ -375,7 +375,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btn_RemoveLabel">
+           <widget class="QPushButton" name="m_RemoveLabelButton">
             <property name="text">
              <string/>
             </property>
@@ -386,7 +386,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btn_MoveLabelUp">
+           <widget class="QPushButton" name="m_MoveLabelUpButton">
             <property name="text">
              <string/>
             </property>
@@ -397,7 +397,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btn_MoveLabelDown">
+           <widget class="QPushButton" name="m_MoveLabelDownButton">
             <property name="text">
              <string/>
             </property>

@@ -75,11 +75,6 @@ struct QmitkLookupTableProviderService
    */
   virtual bool GetIsScaled(unsigned int lookupTableIndex) = 0;
 
-  /**
-  * \brief Returns labels for the given table, if they exist.
-  */
-  mitk::LabeledLookupTableProperty::LabelsListType GetLabels(unsigned int labels);
-
 };
 
 MITK_DECLARE_SERVICE_INTERFACE(QmitkLookupTableProviderService, "QmitkLookupTableProviderService/1.0")

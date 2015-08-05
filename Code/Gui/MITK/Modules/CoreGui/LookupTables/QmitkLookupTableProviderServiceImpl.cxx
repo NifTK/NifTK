@@ -98,6 +98,7 @@ vtkLookupTable* QmitkLookupTableProviderServiceImpl::CreateLookupTable(unsigned 
 
   vtkLookupTable *vtkLUT = vtkLookupTable::New();
   vtkLUT->DeepCopy(dynamic_cast<vtkScalarsToColors*>(const_cast<vtkLookupTable*>(lutContainer->GetLookupTable())));
+  vtkLUT->SetNanColor((const_cast<vtkLookupTable*>(lutContainer->GetLookupTable()))->GetNanColor()); // because the nan color is not automatically copied over
 
   if (vtkLUT->GetNumberOfColors() == 0)
   {
@@ -152,7 +153,7 @@ mitk::LabeledLookupTableProperty::Pointer QmitkLookupTableProviderServiceImpl::C
   {
     mitkThrow() << "Lookup table index " << lookupTableIndex << " is out of range." << std::endl;
   }
-    vtkLookupTable *vtkLUT = this->CreateLookupTable(lookupTableIndex, 0, 0);
+  vtkLookupTable *vtkLUT = this->CreateLookupTable(lookupTableIndex, 0, 0);
 
   mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
   mitkLUT->SetVtkLookupTable(vtkLUT);
