@@ -569,7 +569,7 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 {
   if (m_CurrentNode.IsNotNull())
   {
-    QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+  QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
     if (lutService == NULL)
     {
       mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
@@ -588,10 +588,10 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 
       // Get LUT from Micro Service.
       mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(comboBoxIndex, lowestOpacity, highestOpacity);
-      m_CurrentNode->SetProperty("LookupTable", mitkLUTProperty);
+      m_CurrentNode->ReplaceProperty("LookupTable", mitkLUTProperty);
 
       mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
-      m_CurrentNode->SetProperty("Image Rendering.Mode", renderProp);
+      m_CurrentNode->ReplaceProperty("Image Rendering.Mode", renderProp);
 
       mitk::VtkResliceInterpolationProperty::Pointer resliceProp = mitk::VtkResliceInterpolationProperty::New(VTK_CUBIC_INTERPOLATION);
       m_CurrentNode->ReplaceProperty( "reslice interpolation", resliceProp );
@@ -602,10 +602,10 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
     {
       // Get LUT from Micro Service.
       mitk::LabeledLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(comboBoxIndex);
-      m_CurrentNode->SetProperty("LookupTable", mitkLUTProperty);
+      m_CurrentNode->ReplaceProperty("LookupTable", mitkLUTProperty);
 
       mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_COLOR);
-      m_CurrentNode->SetProperty("Image Rendering.Mode", renderProp);
+      m_CurrentNode->ReplaceProperty("Image Rendering.Mode", renderProp);
       
       mitk::VtkResliceInterpolationProperty::Pointer resliceProp = mitk::VtkResliceInterpolationProperty::New(VTK_RESLICE_NEAREST);
       m_CurrentNode->ReplaceProperty( "reslice interpolation", resliceProp );
