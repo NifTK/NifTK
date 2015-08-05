@@ -22,7 +22,7 @@
 #include <mitkDataNode.h>
 #include <mitkPointSet.h>
 #include <mitkPointSetDataInteractor.h>
-#include <mitkUltrasoundPointerBasedCalibration.h>
+#include <niftkUltrasoundPointerBasedCalibration.h>
 
 /**
  * \class PointerCalibView
@@ -127,15 +127,15 @@ private:
   /**
    * \brief Member variables for keeping state between button clicks.
    */
-  mitk::DataStorage::Pointer                       m_DataStorage;
-  mitk::UltrasoundPointerBasedCalibration::Pointer m_Calibrator;
-  mitk::PointSet::Pointer                          m_ImagePoints;
-  mitk::DataNode::Pointer                          m_ImagePointsNode;
-  mitk::PointSet::Pointer                          m_SensorPoints;
-  mitk::DataNode::Pointer                          m_SensorPointsNode;
-  mitk::PointSetDataInteractor::Pointer            m_Interactor;
-  long                                             m_ImagePointsAddObserverTag;
-  long                                             m_ImagePointsRemoveObserverTag;
+  mitk::DataStorage::Pointer                        m_DataStorage;
+  niftk::UltrasoundPointerBasedCalibration::Pointer m_Calibrator;
+  mitk::PointSet::Pointer                           m_ImagePoints;
+  mitk::DataNode::Pointer                           m_ImagePointsNode;
+  mitk::PointSet::Pointer                           m_SensorPoints;
+  mitk::DataNode::Pointer                           m_SensorPointsNode;
+  mitk::PointSetDataInteractor::Pointer             m_Interactor;
+  long                                              m_ImagePointsAddObserverTag;
+  long                                              m_ImagePointsRemoveObserverTag;
 };
 
 #endif // PointerCalibView_h

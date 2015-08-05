@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#include "itkUltrasoundPointerCalibrationCostFunction.h"
+#include "niftkUltrasoundPointerCalibrationCostFunction.h"
 #include <mitkOpenCVMaths.h>
 #include <mitkExceptionMacro.h>
 
-namespace itk {
+namespace niftk {
 
 //-----------------------------------------------------------------------------
 UltrasoundPointerCalibrationCostFunction::UltrasoundPointerCalibrationCostFunction()

@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#ifndef itkUltrasoundPointerCalibrationCostFunction_h
-#define itkUltrasoundPointerCalibrationCostFunction_h
+#ifndef niftkUltrasoundPointerCalibrationCostFunction_h
+#define niftkUltrasoundPointerCalibrationCostFunction_h
 
 #include <itkMultipleValuedCostFunction.h>
 #include <mitkPointSet.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 
-namespace itk {
+namespace niftk {
 
 /**
  * \class UltrasoundPointerCalibrationCostFunction

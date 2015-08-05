@@ -55,7 +55,7 @@ PointerCalibView::PointerCalibView()
   m_SensorPointsNode->SetData(m_SensorPoints);
   m_SensorPointsNode->SetName("PointerCalibSensorPoints");
 
-  m_Calibrator = mitk::UltrasoundPointerBasedCalibration::New();
+  m_Calibrator = niftk::UltrasoundPointerBasedCalibration::New();
   m_Calibrator->SetImagePoints(m_ImagePoints);
   m_Calibrator->SetSensorPoints(m_SensorPoints);
 

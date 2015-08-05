@@ -17,14 +17,14 @@
 #endif
 
 #include <niftkFileHelper.h>
+#include <niftkMathsUtils.h>
 #include <mitkTestingMacros.h>
 #include <mitkExceptionMacro.h>
 #include <mitkLogMacros.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkIOUtil.h>
 #include <mitkFileIOUtils.h>
-#include <mitkMathsUtils.h>
-#include <mitkUltrasoundPointerBasedCalibration.h>
+#include <niftkUltrasoundPointerBasedCalibration.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <cmath>
@@ -32,21 +32,21 @@
 /**
  * \file Test harness for Ultrasound Pointer based calibration (Muratore 2001).
  */
-int mitkUltrasoundPointerBasedCalibrationTest(int argc, char * argv[])
+int niftkUltrasoundPointerBasedCalibrationTest(int argc, char * argv[])
 {
   // always start with this!
-  MITK_TEST_BEGIN("mitkUltrasoundPointerBasedCalibrationTest");
+  MITK_TEST_BEGIN("niftkUltrasoundPointerBasedCalibrationTest");
 
   if (argc != 4)
   {
-    mitkThrow() << "Usage: mitkUltrasoundPointerBasedCalibration image.mps sensor.mps expected.4x4" << std::endl;
+    mitkThrow() << "Usage: niftkUltrasoundPointerBasedCalibrationTest image.mps sensor.mps expected.4x4" << std::endl;
   }
   mitk::PointSet::Pointer imagePoints = mitk::IOUtil::LoadPointSet(argv[1]);
   mitk::PointSet::Pointer sensorPoints = mitk::IOUtil::LoadPointSet(argv[2]);
 
   vtkSmartPointer<vtkMatrix4x4> expectedResult = mitk::LoadVtkMatrix4x4FromFile(argv[3]);
 
-  mitk::UltrasoundPointerBasedCalibration::Pointer calibrator = mitk::UltrasoundPointerBasedCalibration::New();
+  niftk::UltrasoundPointerBasedCalibration::Pointer calibrator = niftk::UltrasoundPointerBasedCalibration::New();
   calibrator->SetImagePoints(imagePoints);
   calibrator->SetSensorPoints(sensorPoints);
 
@@ -59,7 +59,7 @@ int mitkUltrasoundPointerBasedCalibrationTest(int argc, char * argv[])
   {
     for (int j = 0; j < 4; j++)
     {
-      MITK_TEST_CONDITION_REQUIRED(mitk::IsCloseToZero(
+      MITK_TEST_CONDITION_REQUIRED(niftk::IsCloseToZero(
                                      fabs(expectedResult->GetElement(i, j)
                                           - actualResult->GetElement(i, j)), 0.001),
                                    "Checking element " << i << ", " << j << " is correct, expecting "
