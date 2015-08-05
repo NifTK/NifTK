@@ -61,9 +61,14 @@ struct QmitkLookupTableProviderService
   virtual mitk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(unsigned int lookupTableIndex) = 0;
 
   /**
-   * \brief Returns true if the QmitkLookupTableContainer is succeseefully added to the LookupTableManager.
+   * \brief Add a new LookupTableContainer to the LookupTableManager.
    */
-  virtual bool AddNewLookupTableContainer(QmitkLookupTableContainer* container) = 0;
+  virtual void AddNewLookupTableContainer(QmitkLookupTableContainer* container) = 0;
+
+  /**
+   * \brief Replace the LookupTableContainer at the given index with another.
+   */
+  virtual void ReplaceLookupTableContainer(QmitkLookupTableContainer* container, unsigned int lookupTableIndex) = 0;
 
   /**
    * \brief Returns the display name of the given table.

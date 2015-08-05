@@ -187,3 +187,16 @@ void QmitkLookupTableManager::AddLookupTableContainer(QmitkLookupTableContainer 
 {
   m_List.push_back(container);
 }
+
+
+//-----------------------------------------------------------------------------
+void QmitkLookupTableManager::ReplaceLookupTableContainer(QmitkLookupTableContainer *container, const unsigned int& n)
+{
+	if (n >= this->GetNumberOfLookupTables())
+	{
+	  MITK_ERROR << "CheckIndex(" << n << ") requested, which is out of range";
+		return;
+	}
+  else
+    m_List[n]= container;
+}

@@ -64,6 +64,8 @@ public:
   */
   void AddLookupTableContainer(QmitkLookupTableContainer*);
 
+  void ReplaceLookupTableContainer(QmitkLookupTableContainer *container, const unsigned int& n);
+
 private:
 
   /** A list of lookup table containers that we have loaded. */
