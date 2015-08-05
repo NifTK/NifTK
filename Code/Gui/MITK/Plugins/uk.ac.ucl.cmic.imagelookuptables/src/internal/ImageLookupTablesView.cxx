@@ -144,7 +144,6 @@ void ImageLookupTablesView::CreateConnections()
   this->connect(m_Controls->m_ResetButton, SIGNAL(pressed()), this, SLOT(OnResetButtonPressed()));
   this->connect(m_Controls->m_SaveButton, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
   this->connect(m_Controls->m_LoadButton, SIGNAL(pressed()), this, SLOT(OnLoadButtonPressed()));
-
 }
 
 
@@ -196,6 +195,15 @@ void ImageLookupTablesView::SetFocus()
 void ImageLookupTablesView::EnableControls(bool b)
 {
   m_Controls->m_LookupTableComboBox->setEnabled(b);
+  m_Controls->m_LoadButton->setEnabled(b);
+  m_Controls->m_SaveButton->setEnabled(b);
+  m_Controls->m_NewButton->setEnabled(b);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::EnableScalingControls(bool b)
+{
   m_Controls->m_MinSlider->setEnabled(b);
   m_Controls->m_MaxSlider->setEnabled(b);
   m_Controls->m_WindowSlider->setEnabled(b);
@@ -203,7 +211,6 @@ void ImageLookupTablesView::EnableControls(bool b)
   m_Controls->m_MinLimitDoubleSpinBox->setEnabled(b);
   m_Controls->m_MaxLimitDoubleSpinBox->setEnabled(b);
   m_Controls->m_ResetButton->setEnabled(b);
-
 }
 
 
@@ -212,6 +219,7 @@ void ImageLookupTablesView::DisplayScalingControls(bool b)
 {
   m_Controls->m_RangeGroupBox->setVisible(b);
   m_Controls->m_LimitsGroupBox->setVisible(b);
+  EnableScalingControls(b);
 }
 
 
@@ -665,7 +673,10 @@ void ImageLookupTablesView::OnLoadButtonPressed()
   bool isLoaded = lutService->AddNewLookupTableContainer( loadedContainer );
 
   if(!isLoaded)
+  {
     MITK_ERROR << "Unable to load label map from " << filenameWithPath.toStdString().c_str();
+    return;
+  }
 
   this->UpdateLookupTableComboBox();
 

@@ -172,6 +172,11 @@ private:
   void EnableControls(bool b);
 
   /**
+   * \brief Enable/Disable controls related to scaling.
+   */
+  void EnableScalingControls(bool b);
+
+  /**
    * \brief Shows/hides controls related to scaling
    */
   void DisplayScalingControls(bool b);
