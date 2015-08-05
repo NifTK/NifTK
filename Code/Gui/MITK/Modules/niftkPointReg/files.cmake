@@ -18,5 +18,7 @@ set(CPP_FILES
   Registration/niftkLiuLeastSquaresWithNormalsRegistration.cxx
   Registration/niftkPointBasedRegistration.cxx
   Utilities/niftkHandeyeCalibrateUsingRegistration.cxx
+  Utilities/niftkUltrasoundPointerCalibrationCostFunction.cxx
+  Utilities/niftkUltrasoundPointerBasedCalibration.cxx
 )
 

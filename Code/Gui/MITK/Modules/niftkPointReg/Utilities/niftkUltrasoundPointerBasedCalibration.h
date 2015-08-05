@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef mitkUltrasoundPointerBasedCalibration_h
-#define mitkUltrasoundPointerBasedCalibration_h
+#ifndef niftkUltrasoundPointerBasedCalibration_h
+#define niftkUltrasoundPointerBasedCalibration_h
 
-#include "niftkOpenCVExports.h"
+#include <niftkPointRegExports.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 #include <mitkPointSet.h>
@@ -23,13 +23,13 @@
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 
-namespace mitk {
+namespace niftk {
 
 /**
  * \class UltrasoundPointerBasedCalibration
  * \brief Calibrates an Ultrasound Probe using LM optimisation, as described in Muratore 2001.
  */
-class NIFTKOPENCV_EXPORT UltrasoundPointerBasedCalibration : public itk::Object
+class NIFTKPOINTREG_EXPORT UltrasoundPointerBasedCalibration : public itk::Object
 {
 public:
 

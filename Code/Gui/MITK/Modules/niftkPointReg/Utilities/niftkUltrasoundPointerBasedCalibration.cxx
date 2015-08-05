@@ -12,17 +12,17 @@
 
 =============================================================================*/
 
-#include "mitkUltrasoundPointerBasedCalibration.h"
+#include "niftkUltrasoundPointerBasedCalibration.h"
+#include "niftkUltrasoundPointerCalibrationCostFunction.h"
+#include <niftkArunLeastSquaresPointRegistration.h>
 #include <mitkExceptionMacro.h>
 #include <mitkPointUtils.h>
 #include <mitkOpenCVMaths.h>
-#include <niftkArunLeastSquaresPointRegistration.h>
-#include <itkUltrasoundPointerCalibrationCostFunction.h>
 #include <itkLevenbergMarquardtOptimizer.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 
-namespace mitk
+namespace niftk
 {
 
 //-----------------------------------------------------------------------------
@@ -147,9 +147,9 @@ double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
 
   // Now optimise the scaling and rigid parameters.
 
-  itk::UltrasoundPointerCalibrationCostFunction::Pointer costFunction = itk::UltrasoundPointerCalibrationCostFunction::New();
+  niftk::UltrasoundPointerCalibrationCostFunction::Pointer costFunction = niftk::UltrasoundPointerCalibrationCostFunction::New();
 
-  itk::UltrasoundPointerCalibrationCostFunction::ParametersType parameters;
+  niftk::UltrasoundPointerCalibrationCostFunction::ParametersType parameters;
   parameters.SetSize(costFunction->GetNumberOfParameters());
   parameters[0] = rodriguesRotationParameters[0];
   parameters[1] = rodriguesRotationParameters[1];
@@ -162,7 +162,7 @@ double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
 
   std::cerr << "UltrasoundPointerBasedCalibration: Optimisation started at:" << parameters << std::endl;
 
-  itk::UltrasoundPointerCalibrationCostFunction::ParametersType scaleFactors;
+  niftk::UltrasoundPointerCalibrationCostFunction::ParametersType scaleFactors;
   scaleFactors.SetSize(costFunction->GetNumberOfParameters());
   scaleFactors.Fill(1);
 
@@ -183,7 +183,7 @@ double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
   optimizer->StartOptimization();
   parameters = optimizer->GetCurrentPosition();
 
-  itk::UltrasoundPointerCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
+  niftk::UltrasoundPointerCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
   residualError = costFunction->GetResidual(values);
 
   std::cerr << "UltrasoundPointerBasedCalibration: Optimisation finished at:" << parameters << ", residual=" << residualError << std::endl;
