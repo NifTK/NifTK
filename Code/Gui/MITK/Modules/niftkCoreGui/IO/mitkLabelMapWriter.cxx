@@ -39,25 +39,6 @@ mitk::LabelMapWriter * mitk::LabelMapWriter::Clone() const
   return new mitk::LabelMapWriter(*this);
 }
 
-void mitk::LabelMapWriter::SetLabelsAndLookupTable(LabelsListType labels, vtkLookupTable* vtkLUT)
-{
-  m_Labels.clear();
-
-  for(unsigned int i=0;i<labels.size();i++)
-  {
-    LabelMapItem item;
-    item.value = labels.at(i).first;
-    item.name = QString::fromStdString(labels.at(i).second);
-
-    double rgb[3];
-    vtkLUT->GetColor(item.value,rgb);
-    QColor newColor(255*rgb[0],255*rgb[1],255*rgb[2]);
-    item.color = newColor;
-
-    m_Labels.push_back(item);
-  }
-}
-
 void mitk::LabelMapWriter::Write()
 {
 
@@ -105,13 +86,18 @@ void mitk::LabelMapWriter::Write()
 
 void mitk::LabelMapWriter::WriteLabelMap()
 {
+  if(m_Labels.empty() || m_LookupTable == NULL)
+  {
+    mitkThrow() << "Labels or LookupTable not set.";
+  }
+
   std::ofstream outfile( this->GetOutputLocation().c_str(), std::ofstream::binary);
   
   for( unsigned int i=0; i<m_Labels.size();i++ )
   {
-    int value = m_Labels.at(i).value; 
+    int value = m_Labels.at(i).first; 
     
-    QString name = m_Labels.at(i).name;
+    QString name = m_Labels.at(i).second;
 
     // in the slicer file format white space is used to denote space betweeen values, 
     // replacing all white spaces/empty strings with a character to ensure proper IO.
@@ -120,13 +106,15 @@ void mitk::LabelMapWriter::WriteLabelMap()
     else
       name.replace(" ", "*");
 
-    int red = m_Labels.at(i).color.red();
-    int green = m_Labels.at(i).color.green();
-    int blue = m_Labels.at(i).color.blue();
-    int alpha = m_Labels.at(i).color.alpha();
+    vtkIdType index = m_LookupTable->GetIndex(value);
+    double* rgba = m_LookupTable->GetTableValue(value);
+    int r = rgba[0]*255;
+    int g = rgba[1]*255;
+    int b = rgba[2]*255;
+    int a = rgba[3]*255;
 
     std::ostringstream  line;
-    outfile << value << " " << name.toStdString() << " "<< red << " " << green << " " << blue << " " << alpha << "\n";
+    outfile << value << " " << name.toStdString() << " "<< r << " " << g << " " << b << " " << a << "\n";
   }
 
   outfile.flush();

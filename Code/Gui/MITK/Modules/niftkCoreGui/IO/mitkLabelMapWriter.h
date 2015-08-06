@@ -18,12 +18,10 @@
 
 
 #include <mitkAbstractFileWriter.h>
-
 #include "niftkCoreGuiExports.h"
-#include "mitkLabelMapReader.h"
 #include "QmitkLookupTableContainer.h"
 
-#include <QColor>
+
 
 namespace mitk 
 
@@ -31,14 +29,19 @@ namespace mitk
 
 
 /**
-* /brief Reader for label map files. 
-* /ingroup IO
-*/
+  * /brief Writer to save labeled lookup tables in the format of Slicer v 4.4.0.  
+  *
+  * The labels are assumed to correspond to the range of the 
+  * vtkLookupTable. Out of range label values will be 
+  * assigned a color according to GetTableValue().
+  *
+  * /ingroup IO
+  */
 class NIFTKCOREGUI_EXPORT LabelMapWriter : public AbstractFileWriter
 {
 
 public: 
-  typedef QmitkLookupTableContainer::LabelsListType LabelsListType;
+  typedef QmitkLookupTableContainer::LabelListType LabelListType;
 
   LabelMapWriter();
   LabelMapWriter(const LabelMapWriter & other);
@@ -48,17 +51,16 @@ public:
   using mitk::AbstractFileWriter::Write;
   virtual void Write();  
   
-  inline void SetLabels(std::vector< LabelMapItem >  labels){ m_Labels = labels; }
-
-  void SetLabelsAndLookupTable(LabelsListType labels, vtkLookupTable* vtkLUT);
+  inline void SetLabels(LabelListType labels){m_Labels = labels;}
+  inline void SetVtkLookupTable(vtkLookupTable* vtkLUT){ m_LookupTable = vtkLUT;}
 
   void WriteLabelMap();  
 
 private: 
-  
-  std::vector< LabelMapItem > m_Labels;
-  
 
+  LabelListType m_Labels;
+  vtkLookupTable* m_LookupTable;
+  
 };
 
 } // namespace mitk

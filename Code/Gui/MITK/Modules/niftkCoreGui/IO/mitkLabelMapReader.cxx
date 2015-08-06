@@ -51,6 +51,10 @@ mitk::LabelMapReader * mitk::LabelMapReader::Clone() const
 std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
 {
 
+  // make sure the internal datatypes are empty
+  m_Labels.clear();
+  m_Colors.clear();
+
   std::vector<itk::SmartPointer<mitk::BaseData> > result;
   try
   {
@@ -74,7 +78,7 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
       m_InputQFile->open(QIODevice::ReadOnly);   
       labelName = m_InputQFile->fileName();
 
-      // this is a dirt hack to get the resource file in the right format to read
+      // this is a dirty hack to get the resource file in the right format to read
       QDataStream qstream(m_InputQFile);
 
       std::string fileStr(m_InputQFile->readAll());
@@ -147,14 +151,12 @@ bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
       std::string colorStr = line.substr(lastLtr, line.size() - lastLtr);
       sscanf(colorStr.c_str(), "%i %i %i %i", &red, &green, &blue, &alpha);
 
-     LabelMapItem label;
-      label.value = value;
-      label.name  = name;
-	  
-	    QColor fileColor(red, green, blue, alpha);
-     label.color = fileColor;
+      QmitkLookupTableContainer::LabelType label = std::make_pair(value,name);
+      m_Labels.push_back(label);
 
-	    m_LabelMap.push_back(label);
+      QColor fileColor(red, green, blue, alpha);
+      m_Colors.push_back(fileColor);
+
       isLoaded = true;
     }
     catch(...)
@@ -170,18 +172,18 @@ bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
 //-----------------------------------------------------------------------------
 QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
 {
-  if(m_LabelMap.size() < 1)
+  if(m_Colors.empty() || m_Labels.empty())
     return NULL;
 
-  MITK_DEBUG << "GetLookupTableContainer():labels.size()=" << m_LabelMap.size();
+  MITK_DEBUG << "GetLookupTableContainer():labels.size()=" << m_Labels.size();
 
   // get the size of vtkLUT from the range of values
-  int min = m_LabelMap.at(0).value;
+  int min = m_Labels.at(0).first;
   int max = min;
 
-  for(unsigned int i=1;i<m_LabelMap.size();i++)
+  for(unsigned int i=1;i<m_Labels.size();i++)
   {
-    int val = m_LabelMap.at(i).value;
+    int val = m_Labels.at(i).first;
     if(val<min)
       min = val;
     else if (val>max)
@@ -190,13 +192,19 @@ QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
 
   vtkSmartPointer<vtkLookupTable> lookupTable = vtkLookupTable::New();
   
-  //because vtk is stupid to initialize with empty settings I have to restrict all ranges to 0
+  /** 
+   * To initialize a table with all values for one default color 
+   * (black,completely transparent), I restrict all of the ranges.
+   */
   lookupTable->SetValueRange(0,0);
   lookupTable->SetHueRange(0,0);
   lookupTable->SetSaturationRange(0,0);
   lookupTable->SetAlphaRange(0,0);
 
-  // number of table values
+  /** 
+   * Number of table values: to map values above/below range to
+   * the default color, define table value above/below label range.
+   */
   int numberOfValues = (max-min)+2;
   lookupTable->SetNumberOfTableValues( numberOfValues ); 
   lookupTable->SetTableRange(min-1,max+1);
@@ -204,27 +212,25 @@ QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
 
   lookupTable->Build();
 
-  QmitkLookupTableContainer::LabelsListType labels;
-  for( unsigned int i=0;i<m_LabelMap.size();i++)
+  // iterate and assign each color value
+  for( unsigned int i=0;i<m_Colors.size();i++)
   {
-    int value = m_LabelMap.at(i).value;
+    int value = m_Labels.at(i).first;
     int vtkInd = value - min + 1;
-    std::string name =  m_LabelMap.at(i).name.toStdString();
-    double r = double(m_LabelMap.at(i).color.red())/255;
-    double g = double(m_LabelMap.at(i).color.green())/255;
-    double b = double(m_LabelMap.at(i).color.blue())/255;
-    double a = double(m_LabelMap.at(i).color.alpha())/255;
+
+    double r = m_Colors.at(i).redF();
+    double g = m_Colors.at(i).greenF();
+    double b = m_Colors.at(i).blueF();
+    double a = m_Colors.at(i).alphaF();
     
-    QmitkLookupTableContainer::LabelType label = std::make_pair(value,name);
-    labels.push_back(label);
     lookupTable->SetTableValue(vtkInd,r,g,b,a);
   }
 
-  QmitkLookupTableContainer *lookupTableContainer = new QmitkLookupTableContainer(lookupTable);
-  lookupTableContainer->SetIsScaled(false);
+
+  // place into container
+  QmitkLookupTableContainer *lookupTableContainer = new QmitkLookupTableContainer(lookupTable, m_Labels);
   lookupTableContainer->SetDisplayName(m_DisplayName);
   lookupTableContainer->SetOrder(m_Order);
-  lookupTableContainer->SetLabels(labels);
 
   return lookupTableContainer;
 }
