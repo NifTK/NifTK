@@ -21,6 +21,7 @@ set(CPP_FILES
   LookupTables/QmitkLookupTableManager.cxx
   LookupTables/QmitkLookupTableProviderServiceImpl.cxx
   LookupTables/QmitkLookupTableProviderServiceActivator.cxx
+  LookupTables/vtkLookupTableUtils.cxx
   QmitkDataStorageCheckableComboBox.cxx
   QmitkHelpAboutDialog.cxx
   QmitkCmicLogo.cxx
