@@ -46,8 +46,8 @@ public:
 					           bool);
 
   /** Get/set list of labels*/
-  LabelListType GetLabels(){return m_Labels;};
-  void SetLabels(LabelListType labels){m_Labels = labels;};
+  inline LabelListType GetLabels() const {return m_Labels;};
+  inline void SetLabels(LabelListType labels){m_Labels = labels;};
 
 protected:
 
