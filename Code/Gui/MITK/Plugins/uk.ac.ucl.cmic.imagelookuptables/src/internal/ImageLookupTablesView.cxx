@@ -29,7 +29,6 @@
 #include <itkCommand.h>
 #include <itkStatisticsImageFilter.h>
 #include <itkEventObject.h>
-
 #include <vtkLookupTable.h>
 
 #include <mitkImage.h>
@@ -39,7 +38,6 @@
 #include <mitkNamedLookupTableProperty.h>
 #include <mitkLabeledLookupTableProperty.h>
 
-#include <mitkLabelMapWriter.h>
 #include <mitkRenderingManager.h>
 #include <mitkRenderingModeProperty.h>
 #include <mitkDataStorageUtils.h>
@@ -47,8 +45,11 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 #include <berryIPreferencesService.h>
-#include <mitkLabelMapReader.h>
+
+#include "mitkLabelMapWriter.h"
+#include "mitkLabelMapReader.h"
 #include "QmitkImageLookupTablesPreferencePage.h"
+#include "vtkLookupTableUtils.h"
 #include <QmitkLookupTableManager.h>
 #include <QmitkLookupTableContainer.h>
 #include <QmitkLookupTableProviderService.h>
@@ -59,6 +60,7 @@
 #include <mitkNodePredicateAnd.h>
 #include <mitkNodePredicateNot.h>
 #include <mitkVtkResliceInterpolationProperty.h>
+
 #include <usModule.h>
 #include <usModuleRegistry.h>
 #include <usModuleContext.h>
@@ -681,13 +683,7 @@ void ImageLookupTablesView::OnLoadButtonPressed()
   reader.Read();
 
   QmitkLookupTableContainer * loadedContainer = reader.GetLookupTableContainer();
-  bool isAdded = lutService->AddNewLookupTableContainer( loadedContainer );
-
-  if(!isAdded)
-  {
-    MITK_ERROR << "Unable to load label map from " << filenameWithPath.toStdString().c_str();
-    return;
-  }
+  lutService->AddNewLookupTableContainer( loadedContainer );
 
   this->UpdateLookupTableComboBox();
 
@@ -733,16 +729,27 @@ void ImageLookupTablesView::OnSaveButtonPressed()
   QFileInfo finfo(fileName);
   QString fileNameAndPath = QFileDialog::getSaveFileName(0, tr("Save File"), finfo.fileName(), tr("Text files (*.txt)"));
 
+  mitk::LabelMapWriter writer;
+  writer.SetOutputLocation(fileNameAndPath.toStdString());
+   
+  writer.SetLabels(labelProperty->GetLabels());
+  writer.SetVtkLookupTable(labelProperty->GetLookupTable()->GetVtkLookupTable());
+  writer.Write();
+
+
+  QmitkLookupTableContainer* newLUT = new QmitkLookupTableContainer(labelProperty->GetLookupTable()->GetVtkLookupTable(),labelProperty->GetLabels());
+
   int index = fileNameAndPath.lastIndexOf("/")+1;
   QString labelName = fileNameAndPath.mid(index);
   index = labelName.lastIndexOf(".");
   labelName.truncate(index);
+  newLUT->SetDisplayName(labelName);
 
-  mitk::LabelMapWriter writer;
-  writer.SetOutputLocation(fileNameAndPath.toStdString());
-   
-  writer.SetLabelsAndLookupTable(labelProperty->GetLabels(), labelProperty->GetLookupTable()->GetVtkLookupTable());
-  writer.Write();
+  int comboBoxIndex = -1;
+  m_CurrentNode->GetIntProperty("LookupTableIndex", comboBoxIndex);
+
+  QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+  lutService->ReplaceLookupTableContainer(newLUT, comboBoxIndex);
 }
 
 
@@ -765,19 +772,12 @@ void ImageLookupTablesView::OnNewButtonPressed()
   newContainer->SetIsScaled(false);
   newContainer->SetOrder(lutService->GetNumberOfLookupTables());
 
-  bool isAdded = lutService->AddNewLookupTableContainer( newContainer );
-
-  if(!isAdded)
-  {
-    MITK_ERROR << "Unable to create new label map.";
-    return;
-  }
+  lutService->AddNewLookupTableContainer( newContainer );
 
   this->UpdateLookupTableComboBox();
 
   // try to set the loaded reader as the selected container
   int index = m_Controls->m_LookupTableComboBox->findText(newLabelName);
-
   if(index > -1)
     m_Controls->m_LookupTableComboBox->setCurrentIndex(index); 
 }
@@ -815,28 +815,26 @@ void ImageLookupTablesView::UpdateLabelMapTable()
     return;
   }
 
-  mitk::LabeledLookupTableProperty::LabelsListType labels = labelProperty->GetLabels();
+  // get labels and LUT
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   vtkSmartPointer<vtkLookupTable> vtkLUT = labelProperty->GetLookupTable()->GetVtkLookupTable();
 
   m_Controls->widget_LabelTable->setRowCount(labels.size());
 
   QSignalMapper* colorMapper = new QSignalMapper(this);
 
-  
   for(unsigned int i=0;i<labels.size();i++)
   {
     // set value
     int value = labels.at(i).first;
 
     QTableWidgetItem * newValueItem = new QTableWidgetItem();
-    QString valueStr = QString::number(value);
-    newValueItem->setText(valueStr);
+    newValueItem->setText(QString::number(value));
     m_Controls->widget_LabelTable->setItem(i,1,newValueItem);
 
     // set name
     QTableWidgetItem * newNameItem = new QTableWidgetItem();
-    QString name = QString::fromStdString(labels.at(i).second);
-    newNameItem->setText(name);
+    newNameItem->setText(labels.at(i).second);
     m_Controls->widget_LabelTable->setItem(i,2,newNameItem);
 
     // set color 
@@ -846,17 +844,16 @@ void ImageLookupTablesView::UpdateLabelMapTable()
     
     double rgb[3];
     vtkLUT->GetColor(value, rgb);
-
     QColor currColor(255*rgb[0], 255*rgb[1], 255*rgb[2]);
-    btnColor->setStyleSheet(QString("background-color:rgb(%1,%2, %3)").arg(currColor.red()).arg(currColor.green()).arg(currColor.blue()));
 
+    btnColor->setStyleSheet(QString("background-color:rgb(%1,%2, %3)").arg(currColor.red()).arg(currColor.green()).arg(currColor.blue()));
     m_Controls->widget_LabelTable->setCellWidget(i,0,btnColor);
 
     connect(btnColor, SIGNAL(clicked()), colorMapper, SLOT(map()) );
     colorMapper->setMapping(btnColor, i);
   }
 
-  connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(OnColorButtonPressed(int)) );
+  connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(OnColorButtonPressed(int)));
   m_Controls->widget_LabelTable->blockSignals(en);
 }
 
@@ -878,39 +875,30 @@ void ImageLookupTablesView::OnAddLabelButtonPressed()
   mitk::LabeledLookupTableProperty::Pointer labelProperty 
     = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
 
-  if( labelProperty.IsNull())
+  if(labelProperty.IsNull())
   {
     MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
     return;
   }
 
-  mitk::LabeledLookupTableProperty::LabelsListType labels = labelProperty->GetLabels();
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   vtkSmartPointer<vtkLookupTable> oldLUT = labelProperty->GetLookupTable()->GetVtkLookupTable();
 
   bool en = m_Controls->widget_LabelTable->blockSignals(true);
     
+  // get the range
   double * range = oldLUT->GetRange();
+  QString newName(" ");
 
   int newValue = range[1];
-  int min = range[0]+1; // the minimum value is always +1 of the range
-
-  std::string newName = " ";
   QmitkLookupTableContainer::LabelType newLabel = std::make_pair(newValue,newName);
   labels.push_back(newLabel);
   labelProperty->SetLabels(labels);
 
-  vtkSmartPointer<vtkLookupTable> newLUT = vtkLookupTable::New();
-  
-  // force values outside of the set range to 0,0,0,0
-  int numberOfValues = (newValue-min)+2;
-  newLUT->SetNumberOfColors(numberOfValues);
-  newLUT->SetTableRange(min-1,newValue+1);
-  newLUT->Build();
-
-  CopyVTKLookupTable(oldLUT,newLUT);
-
-  // set the new value
-  newLUT->SetTableValue(newValue-min+1, 0, 0, 0);
+  // increment the range by 1
+  range[1]= newValue+1;
+  vtkSmartPointer<vtkLookupTable> newLUT;
+  newLUT.TakeReference(ResizeLookupTable(oldLUT,range));
   labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
 
   UpdateLabelMapTable();
@@ -946,11 +934,10 @@ void ImageLookupTablesView::OnRemoveLabelButtonPressed()
 
   QList<QTableWidgetSelectionRange> selectedItems = m_Controls->widget_LabelTable->selectedRanges();
   
-  mitk::LabeledLookupTableProperty::LabelsListType labels = labelProperty->GetLabels();
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   vtkSmartPointer<vtkLookupTable> lut = labelProperty->GetLookupTable()->GetVtkLookupTable();
-  
-  double * range = lut->GetRange();
-  int min = range[0]+1;
+
+  QColor nanColor(lut->GetNanColor()[0],lut->GetNanColor()[1],lut->GetNanColor()[2],lut->GetNanColor()[3]);
 
   for(unsigned int i=0;i<selectedItems.size();i++)
   {
@@ -960,7 +947,7 @@ void ImageLookupTablesView::OnRemoveLabelButtonPressed()
     for( unsigned int j=top;j<bottom;j++ )
     {
       int value = labels.at(j).first;
-      lut->SetTableValue(value-min+1, lut->GetNanColor());
+      ChangeColor(lut,value,nanColor);
     }
     
     labels.erase(labels.begin()+top,labels.begin()+bottom);
@@ -998,7 +985,7 @@ void ImageLookupTablesView::OnMoveLabelUpButtonPressed()
 
   bool en = m_Controls->widget_LabelTable->blockSignals(true);
 
-  mitk::LabeledLookupTableProperty::LabelsListType labels = labelProperty->GetLabels();
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   QList<QTableWidgetSelectionRange> selectedItems = m_Controls->widget_LabelTable->selectedRanges();
 
   for(unsigned int i=0;i<selectedItems.size();i++)
@@ -1045,7 +1032,7 @@ void ImageLookupTablesView::OnMoveLabelDownButtonPressed()
 
   bool en = m_Controls->widget_LabelTable->blockSignals(true);
 
-  mitk::LabeledLookupTableProperty::LabelsListType labels = labelProperty->GetLabels();
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   QList<QTableWidgetSelectionRange> selectedItems = m_Controls->widget_LabelTable->selectedRanges();
 
   for(unsigned int i=0;i<selectedItems.size();i++)
@@ -1092,7 +1079,7 @@ void ImageLookupTablesView::OnColorButtonPressed(int index)
 
   bool en = m_Controls->widget_LabelTable->blockSignals(true);
   
-  mitk::LabeledLookupTableProperty::LabelsListType labels = labelProperty->GetLabels();
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   vtkSmartPointer<vtkLookupTable> lut = labelProperty->GetLookupTable()->GetVtkLookupTable();
 
   int value = labels.at(index).first;
@@ -1109,10 +1096,7 @@ void ImageLookupTablesView::OnColorButtonPressed(int index)
     return; 
   }
 
-  double * range = lut->GetRange();
-  int min = range[0]+1;
-
-  lut->SetTableValue(value-min+1, newColor.redF(), newColor.greenF(), newColor.blueF() );
+  ChangeColor(lut,value, newColor);
 
   QPushButton* btnColor = qobject_cast<QPushButton*>(m_Controls->widget_LabelTable->cellWidget(index,0));
   if(btnColor!=0)
@@ -1149,7 +1133,7 @@ void ImageLookupTablesView::OnLabelMapTableCellChanged(int row, int column)
   }
 
   
-  mitk::LabeledLookupTableProperty::LabelsListType labels = labelProperty->GetLabels();
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   vtkSmartPointer<vtkLookupTable> lut = labelProperty->GetLookupTable()->GetVtkLookupTable();
 
   if(column == 1)
@@ -1170,63 +1154,34 @@ void ImageLookupTablesView::OnLabelMapTableCellChanged(int row, int column)
       }
     }
 
-    int digit = atoi(valStr.c_str());
+    int newValue = atoi(valStr.c_str());
 
     for( unsigned int i=0;i<labels.size();i++)
     {
       if(i==row)
         continue;
 
-      if ( labels.at(i).first == digit )
+      if ( labels.at(i).first == newValue )
       {
         QMessageBox::warning(NULL, "Label Map Editor", QString("Value is not unique. Resetting to old value.") );
 
-        QString value = QString::number(labels.at(row).first);
-        item->setText(value);
+        QString oldValueStr = QString::number(labels.at(row).first);
+        item->setText(oldValueStr);
         return;
       }
     }
 
-    double * range = lut->GetRange();
-    int min = range[0]+1;
-
     int oldValue = labels.at(row).first;
-
-    double rgb[3];
-    lut->GetColor(oldValue, rgb);
-    
-    MITK_INFO <<"RGB " << rgb[0] << " " << rgb[1] << " " << rgb[2];
-
-    // change the old value to background
-    lut->SetTableValue(oldValue-min+1, lut->GetNanColor());
-
-    // change the new value to the correct color
-    labels.at(row).first = digit;
-    lut->SetTableValue(digit-min+1, rgb[0], rgb[1], rgb[2]);
+    SwapColors(lut, oldValue, newValue);
+    labels.at(row).first = newValue;
   }
   else if(column == 2)
   {
     QTableWidgetItem* item = m_Controls->widget_LabelTable->item(row,column);
-    labels.at(row).second = item->text().toStdString();
+    labels.at(row).second = item->text();
 
   } // change the name
 
   labelProperty->SetLabels(labels);
   UpdateLabelMapTable();
-}
-
-
-//-----------------------------------------------------------------------------
-void ImageLookupTablesView::CopyVTKLookupTable( vtkLookupTable* oldLUT, vtkLookupTable* newLUT)
-{
-
-  for(int i=0;i< oldLUT->GetNumberOfColors();i++)
-  {
-    double rgba[4];
-    oldLUT->GetTableValue(i, rgba);
-    newLUT->SetTableValue(i,rgba);
-  }
-
-  newLUT->SetNanColor(oldLUT->GetNanColor());
-  
 }

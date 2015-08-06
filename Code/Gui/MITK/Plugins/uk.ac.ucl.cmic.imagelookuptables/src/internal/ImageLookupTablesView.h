@@ -239,7 +239,6 @@ private:
    */
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
-  void CopyVTKLookupTable( vtkLookupTable* oldLUT, vtkLookupTable* newLUT);
   /**
    * \brief All the controls for the main view part.
    */
