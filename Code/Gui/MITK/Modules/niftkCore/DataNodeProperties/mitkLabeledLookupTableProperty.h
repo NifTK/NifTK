@@ -17,6 +17,7 @@
 
 #include "niftkCoreExports.h"
 #include "mitkNamedLookupTableProperty.h"
+#include <QString.h>
 
 namespace mitk {
 
@@ -29,24 +30,24 @@ class NIFTKCORE_EXPORT LabeledLookupTableProperty: public NamedLookupTableProper
 {
 
 public:
-  typedef std::pair<int, std::string> LabelType;
-  typedef std::vector<LabelType> LabelsListType;
+  typedef std::pair<int, QString> LabelType;
+  typedef std::vector<LabelType> LabelListType;
 
   mitkClassMacro(LabeledLookupTableProperty, NamedLookupTableProperty);
   itkNewMacro(LabeledLookupTableProperty);
   mitkNewMacro3Param(LabeledLookupTableProperty, 
                      const std::string&, 
 					           const mitk::LookupTable::Pointer, 
-					           LabelsListType);
+					           LabelListType);
   mitkNewMacro4Param(LabeledLookupTableProperty, 
                      const std::string&, 
 					           const mitk::LookupTable::Pointer, 
-					           LabelsListType, 
+					           LabelListType, 
 					           bool);
 
   /** Get/set list of labels*/
-  LabelsListType GetLabels(){return m_Labels;};
-  void SetLabels(LabelsListType labels){m_Labels = labels;};
+  LabelListType GetLabels(){return m_Labels;};
+  void SetLabels(LabelListType labels){m_Labels = labels;};
 
 protected:
 
@@ -55,10 +56,10 @@ protected:
   LabeledLookupTableProperty(const LabeledLookupTableProperty& other);
   LabeledLookupTableProperty(const std::string& name, 
                              const mitk::LookupTable::Pointer lut, 
-							               LabelsListType labels);
+							               LabelListType labels);
   LabeledLookupTableProperty(const std::string& name, 
                              const mitk::LookupTable::Pointer lut, 
-							               LabelsListType labels, 
+							               LabelListType labels, 
 							               bool scale);
 
 private:
@@ -69,7 +70,7 @@ private:
   virtual bool IsEqual(const BaseProperty& property) const;
   virtual bool Assign(const BaseProperty& property);
 
-  LabelsListType m_Labels;
+  LabelListType m_Labels;
 };
 
 } // namespace mitk

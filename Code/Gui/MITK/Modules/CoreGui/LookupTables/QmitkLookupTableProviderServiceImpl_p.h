@@ -80,7 +80,7 @@ public:
   /**
    * \see Returns labels for the given table, if they exist.
    */
-  mitk::LabeledLookupTableProperty::LabelsListType GetLabels(unsigned int labels);
+  mitk::LabeledLookupTableProperty::LabelListType GetLabels(unsigned int labels);
 
 private:
   QmitkLookupTableManager* GetManager();

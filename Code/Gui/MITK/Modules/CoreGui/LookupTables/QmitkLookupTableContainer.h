@@ -28,9 +28,15 @@
 class NIFTKCOREGUI_EXPORT QmitkLookupTableContainer {
 
 public:
+  
+  typedef std::pair<int, QString> LabelType;
+  typedef std::vector<LabelType> LabelListType; 
 
   /** Constructor that takes a lookup table. */
   QmitkLookupTableContainer(const vtkLookupTable* lut);
+
+  /** Constructor that takes a lookup table and a set of labels*/
+  QmitkLookupTableContainer(const vtkLookupTable* lut, LabelListType labels);
 
   /** Destructor. */
   virtual ~QmitkLookupTableContainer();
@@ -55,15 +61,13 @@ public:
 
   /** Get scaled property. */
   bool GetIsScaled() const { return m_IsScaled; }
-
-  typedef std::pair<int, std::string> LabelType;
-  typedef std::vector<LabelType> LabelsListType;  
+ 
 
   /** Set labels. */
-  void SetLabels(LabelsListType labels){ m_Labels = labels; }
+  void SetLabels(LabelListType labels){ m_Labels = labels; }
   
   /** Get labels. */
- LabelsListType GetLabels()const { return m_Labels; }
+ LabelListType GetLabels()const { return m_Labels; }
 
 protected:
 
@@ -88,7 +92,7 @@ private:
   int m_Order;
 
   /** Labels for the entries in the vtkLUT (optional)*/
-  LabelsListType m_Labels;
+  LabelListType m_Labels;
 
 };
 #endif

@@ -20,6 +20,7 @@
 #include <mitkExceptionMacro.h>
 #include <mitkLookupTable.h>
 
+
 //-----------------------------------------------------------------------------
 QmitkLookupTableProviderServiceImpl::QmitkLookupTableProviderServiceImpl()
 {
@@ -72,7 +73,7 @@ bool QmitkLookupTableProviderServiceImpl::GetIsScaled(unsigned int lookupTableIn
 
 
 //-----------------------------------------------------------------------------
-mitk::LabeledLookupTableProperty::LabelsListType
+mitk::LabeledLookupTableProperty::LabelListType
 QmitkLookupTableProviderServiceImpl::GetLabels(unsigned int lookupTableIndex)
 {
   const QmitkLookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableIndex);
@@ -145,6 +146,7 @@ mitk::NamedLookupTableProperty::Pointer QmitkLookupTableProviderServiceImpl::Cre
 }
 
 
+//-----------------------------------------------------------------------------
 mitk::LabeledLookupTableProperty::Pointer QmitkLookupTableProviderServiceImpl::CreateLookupTableProperty(
   unsigned int lookupTableIndex )
 {
@@ -167,6 +169,8 @@ mitk::LabeledLookupTableProperty::Pointer QmitkLookupTableProviderServiceImpl::C
   return mitkLUTProperty;
 }
 
+
+//-----------------------------------------------------------------------------
 void QmitkLookupTableProviderServiceImpl::AddNewLookupTableContainer(
   QmitkLookupTableContainer* container) 
 {
@@ -179,7 +183,7 @@ void QmitkLookupTableProviderServiceImpl::AddNewLookupTableContainer(
 }
 
 
-
+//-----------------------------------------------------------------------------
 void QmitkLookupTableProviderServiceImpl::ReplaceLookupTableContainer(
   QmitkLookupTableContainer* container, 
   unsigned int lookupTableIndex) 

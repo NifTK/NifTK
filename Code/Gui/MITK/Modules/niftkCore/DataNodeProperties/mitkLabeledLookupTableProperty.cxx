@@ -33,7 +33,7 @@ LabeledLookupTableProperty::LabeledLookupTableProperty(const LabeledLookupTableP
 
 
 //-----------------------------------------------------------------------------
-LabeledLookupTableProperty::LabeledLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut, LabelsListType labels)
+LabeledLookupTableProperty::LabeledLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut, LabelListType labels)
 : Superclass(name, lut, false)
 {
   m_Labels = labels;
@@ -41,7 +41,7 @@ LabeledLookupTableProperty::LabeledLookupTableProperty(const std::string& name, 
 
 
 //-----------------------------------------------------------------------------
-LabeledLookupTableProperty::LabeledLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut,LabelsListType labels, bool scale)
+LabeledLookupTableProperty::LabeledLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut,LabelListType labels, bool scale)
 : Superclass(name, lut, scale)
 {
   m_Labels = labels;
@@ -65,7 +65,7 @@ itk::LightObject::Pointer LabeledLookupTableProperty::InternalClone() const
 //-----------------------------------------------------------------------------
 bool LabeledLookupTableProperty::IsEqual(const BaseProperty& property) const
 {
-  LabelsListType otherLabels = static_cast<const Self&>(property).m_Labels;
+  LabelListType otherLabels = static_cast<const Self&>(property).m_Labels;
   bool sameLabels = (m_Labels.size() == otherLabels.size());
 
   if(sameLabels)

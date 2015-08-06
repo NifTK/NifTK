@@ -25,6 +25,17 @@ QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut)
 
 
 //-----------------------------------------------------------------------------
+QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut, LabelListType labels)
+{
+	m_LookupTable = lut;
+	m_DisplayName = QString("");
+	m_Order = 0;
+  m_IsScaled = false;
+  m_Labels = labels;
+}
+
+
+//-----------------------------------------------------------------------------
 QmitkLookupTableContainer::~QmitkLookupTableContainer()
 {
 	if (m_LookupTable != NULL)
