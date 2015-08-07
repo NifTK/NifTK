@@ -230,9 +230,14 @@ private:
   void UpdateLookupTableComboBox();
 
   /**
-   * \brief Retrieve's the pref values from preference service, and stores in member variables.
+   * \brief Retrieves the pref values from preference service, and stores in member variables.
    */
   void RetrievePreferenceValues();
+
+  /**
+   * \brief Retrieves lookuptables from preference service, and addes to LookupTableProviderService.
+   */
+  void RetrievePreferenceLookupTables();
 
   /**
    * \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
@@ -284,6 +289,7 @@ private:
    */
   unsigned long int m_HighestIsOpaquePropertyObserverTag;
 
+  std::string m_CachedFileNames;
 };
 
 #endif
