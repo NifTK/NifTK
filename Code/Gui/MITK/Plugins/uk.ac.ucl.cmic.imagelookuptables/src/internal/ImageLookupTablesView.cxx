@@ -680,6 +680,7 @@ void ImageLookupTablesView::OnLoadButtonPressed()
   mitk::LabelMapReader reader;
 
   reader.SetInput(filenameWithPath.toStdString());
+  reader.SetOrder(lutService->GetNumberOfLookupTables());
   reader.Read();
 
   QmitkLookupTableContainer * loadedContainer = reader.GetLookupTableContainer();
@@ -746,6 +747,7 @@ void ImageLookupTablesView::OnSaveButtonPressed()
   newLUT->SetDisplayName(labelName);
 
   int comboBoxIndex = -1;
+  newLUT->SetOrder(comboBoxIndex);
   m_CurrentNode->GetIntProperty("LookupTableIndex", comboBoxIndex);
 
   QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
