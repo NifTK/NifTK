@@ -36,7 +36,6 @@ class NIFTKCOREGUI_EXPORT LabelMapReader : public AbstractFileReader
 {
 
 public: 
-
   LabelMapReader();
   LabelMapReader(const LabelMapReader & other);
   virtual LabelMapReader * Clone() const;
@@ -49,7 +48,9 @@ public:
    */
   virtual std::vector<itk::SmartPointer<BaseData> > Read();  
     
-  // get a QmitkLookupTableContainer from a file
+  /**
+   * \brief Get a QmitkLookupTableContainer from file 
+   */
   virtual QmitkLookupTableContainer* GetLookupTableContainer();
  
   /**
@@ -58,22 +59,33 @@ public:
    */
   void SetOrder(int order){m_Order = order;}
 
+  /**
+   * \brief Set the file to read the label information from
+   */
   void SetQFile(QFile &file){m_InputQFile = &file;};
 
 private: 
-
+  /** \brief Parse the istream to determine the labels, colors. */
   bool ReadLabelMap(std::istream &);  
-  
+
+  /** To temporarily store the labels (pixel value/name). */
   QmitkLookupTableContainer::LabelListType m_Labels;
 
   typedef std::vector<QColor> ColorListType;
+  /** To temporarily store the list of colors. */
   ColorListType m_Colors;
 
   us::ServiceRegistration<mitk::IFileReader> m_ServiceReg;
 
+  /** To temporarily store the order. */
   int m_Order;
+
+  /** To temporarily store the display name. */
   QString m_DisplayName;
+
+  /** To store the QFile to read the labels from. */
   QFile* m_InputQFile;
+
 };
 
 } // namespace mitk

@@ -29,13 +29,13 @@ namespace mitk
 
 
 /**
-  * /brief Writer to save labeled lookup tables in the format of Slicer v 4.4.0.  
+  * \brief Writer to save labeled lookup tables in the format of Slicer v 4.4.0.  
   *
   * The labels are assumed to correspond to the range of the 
   * vtkLookupTable. Out of range label values will be 
   * assigned a color according to GetTableValue().
   *
-  * /ingroup IO
+  * \ingroup IO
   */
 class NIFTKCOREGUI_EXPORT LabelMapWriter : public AbstractFileWriter
 {
@@ -49,18 +49,26 @@ public:
   virtual ~LabelMapWriter(){};
   
   using mitk::AbstractFileWriter::Write;
+
+  /** \brief Write labels, lookuptable to file.*/
   virtual void Write();  
-  
+
+  /** \brief Set the labels to write to file. */
   inline void SetLabels(LabelListType labels){m_Labels = labels;}
+
+  /** \brief Set the vtkLookupTable to write to file. */
   inline void SetVtkLookupTable(vtkLookupTable* vtkLUT){ m_LookupTable = vtkLUT;}
 
-  void WriteLabelMap();  
-
 private: 
-
-  LabelListType m_Labels;
-  vtkLookupTable* m_LookupTable;
   
+  /** \brief Write labels, lookuptable to stream. */
+  void WriteLabelMap(); 
+
+  /** To store the labels to write to file. */
+  LabelListType m_Labels;
+
+  /** To store the vtkLookupTable to write to file. */
+  vtkLookupTable* m_LookupTable;
 };
 
 } // namespace mitk

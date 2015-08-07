@@ -18,12 +18,14 @@
 
 #include <mitkCustomMimeType.h>
 #include <mitkLogMacros.h>
+#include <mitkGeometryData.h>
 
 #include <vtkSmartPointer.h>
 #include <vtkLookupTable.h>
 
 #include <sstream>
 #include <iostream>
+
 
 //-----------------------------------------------------------------------------
 mitk::LabelMapReader::LabelMapReader()
@@ -94,7 +96,7 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
       int endInd = labelName.lastIndexOf(".");
       m_DisplayName = labelName.mid(startInd, endInd-startInd);
       setlocale(LC_ALL, currLocale.c_str());
-      MITK_DEBUG << "NifTK label map readed";
+      MITK_DEBUG << "NifTK label map read.";
     }
     else
     {
