@@ -857,6 +857,11 @@ void ImageLookupTablesView::UpdateLabelMapTable()
 
   connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(OnColorButtonPressed(int)));
   m_Controls->widget_LabelTable->blockSignals(en);
+
+  // Force redraw.
+  m_CurrentNode->Update();
+  m_CurrentNode->Modified();
+  this->RequestRenderWindowUpdate();
 }
 
 
