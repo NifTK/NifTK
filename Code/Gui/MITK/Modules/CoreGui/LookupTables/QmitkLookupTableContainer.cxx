@@ -17,7 +17,12 @@
 //-----------------------------------------------------------------------------
 QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut)
 {
-	m_LookupTable = lut;
+  vtkLookupTable *newTable = vtkLookupTable::New();
+  newTable->DeepCopy(const_cast<vtkLookupTable*>(lut));
+  newTable->SetNanColor(const_cast<vtkLookupTable*>(lut)->GetNanColor());
+
+  m_LookupTable = const_cast<vtkLookupTable const*>(newTable);
+
 	m_DisplayName = QString("");
 	m_Order = 0;
   m_IsScaled = true;
@@ -27,7 +32,12 @@ QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut)
 //-----------------------------------------------------------------------------
 QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut, LabelListType labels)
 {
-	m_LookupTable = lut;
+	vtkLookupTable *newTable = vtkLookupTable::New();
+  newTable->DeepCopy(const_cast<vtkLookupTable*>(lut));
+  newTable->SetNanColor(const_cast<vtkLookupTable*>(lut)->GetNanColor());
+
+  m_LookupTable = const_cast<vtkLookupTable const*>(newTable);
+
 	m_DisplayName = QString("");
 	m_Order = 0;
   m_IsScaled = false;
