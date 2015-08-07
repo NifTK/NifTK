@@ -38,12 +38,12 @@
   /**
    * \brief Replace the color in the LookupTable at the given index
    */
-  NIFTKCOREGUI_EXPORT void ChangeColor(vtkLookupTable* lut, int value, QColor newColor);
+  NIFTKCOREGUI_EXPORT vtkLookupTable* ChangeColor(vtkLookupTable* lut, int value, QColor newColor);
 
   /**
-   * \brief Swap colors in the LookupTable at the given indices
+   * \brief Swap colors in the LookupTable at the given indices. 
    */
-  NIFTKCOREGUI_EXPORT void SwapColors(vtkLookupTable* lut, int value1, int value2);
+  NIFTKCOREGUI_EXPORT vtkLookupTable* SwapColors(vtkLookupTable* lut, int value1, int value2);
 
   /**
    * \brief Resize the LookupTable while retaining all of the previously set values.

@@ -21,27 +21,54 @@
 
 
 //-----------------------------------------------------------------------------
-void ChangeColor(vtkLookupTable* lut, int value, QColor newColor)
+vtkLookupTable* ChangeColor(vtkLookupTable* lut, int value, QColor newColor)
 {
-  vtkIdType index = lut->GetIndex(value);
-  lut->SetTableValue(index, newColor.redF(), newColor.greenF(), newColor.blueF() );
+
+  vtkLookupTable* newLUT = vtkLookupTable::New();
+  newLUT->DeepCopy(lut);
+  newLUT->SetNanColor(lut->GetNanColor());
+
+  vtkIdType index = newLUT->GetIndex(value);
+  newLUT->SetTableValue(index, newColor.redF(), newColor.greenF(), newColor.blueF() );
+
+  return newLUT;
 }
 
 
 //-----------------------------------------------------------------------------
-void SwapColors(vtkLookupTable* lut, int value1, int value2)
+vtkLookupTable* SwapColors(vtkLookupTable* lut, int value1, int value2)
 {
+  vtkLookupTable* newLUT;
+  // if either index is not in bounds, resize table
+  double* range = lut->GetRange();
+  if( value1<range[0] || value2<range[0] || value1>range[1] || value2>range[1] )
+  {
+    double newRange[2];
+    double minValue = std::min(value1,value2);
+    newRange[0] = std::min(range[0], minValue-1);
 
-  vtkIdType index1 = lut->GetIndex(value1);
+    double maxValue = std::max(value1,value2);
+    newRange[1] = std::max(range[1],maxValue+1);
+    newLUT = ResizeLookupTable(lut,newRange);
+  }
+  else
+  {
+    newLUT = vtkLookupTable::New();
+    newLUT->DeepCopy(lut);
+    newLUT->SetNanColor(lut->GetNanColor());
+  }
+  vtkIdType index1 = newLUT->GetIndex(value1);
   double rgba1[4];
-  lut->GetIndexedColor(index1,rgba1);
+  newLUT->GetIndexedColor(index1,rgba1);
 
-  vtkIdType index2 = lut->GetIndex(value2);
+  vtkIdType index2 = newLUT->GetIndex(value2);
   double rgba2[4];
-  lut->GetIndexedColor(index2,rgba2);
+  newLUT->GetIndexedColor(index2,rgba2);
 
-  lut->SetTableValue(index1,rgba2);
-  lut->SetTableValue(index2,rgba1);
+  newLUT->SetTableValue(index1,rgba2);
+  newLUT->SetTableValue(index2,rgba1);
+
+  return newLUT;
 }
 
 
@@ -53,9 +80,9 @@ vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double* newRange)
   newLUT->DeepCopy(lut);
   newLUT->SetNanColor(lut->GetNanColor());
 
-  
   newLUT->SetRange(newRange); // this automatically invalidates the old colors so we need to explicitly set them
   int numberOfColors = newRange[1]-newRange[0];
+
   newLUT->SetNumberOfColors(numberOfColors);
 
   newLUT->Build();
@@ -64,6 +91,8 @@ vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double* newRange)
   {
     double rgba[4];
     lut->GetTableValue(i, rgba);
+
+    std::cout << "value "  << i << " color " << rgba[0] << " " << rgba[1] << " "<< rgba[2] << " "<< rgba[3] << std::endl; 
     newLUT->SetTableValue(i,rgba);
   }
 
