@@ -23,4 +23,5 @@ set(CPP_FILES
   Internal/niftkCoreIOMimeTypes.cxx
   Internal/niftkCoreIOActivator.cxx
   Internal/niftkCoreIOObjectFactory.cxx
+  Internal/mitkCoordinateAxesDataSerializer.cxx
 )
