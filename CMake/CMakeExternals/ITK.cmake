@@ -36,6 +36,7 @@ if(MITK_USE_HDF5)
   list(APPEND proj_DEPENDENCIES HDF5)
 endif()
 
+message("Matt, BUILD_IGI=${BUILD_IGI}")
 if(BUILD_IGI)
   list(APPEND proj_DEPENDENCIES OpenCV)
 endif()
@@ -149,7 +150,6 @@ if(NOT DEFINED ITK_DIR)
       ${additional_cmake_args}
       -DITK_USE_SYSTEM_GDCM:BOOL=ON
       -DGDCM_DIR:PATH=${GDCM_DIR}
-      -DOpenCV_DIR:PATH=${OpenCV_DIR}
     CMAKE_CACHE_ARGS
       ${EP_COMMON_CACHE_ARGS}
     CMAKE_CACHE_DEFAULT_ARGS
