@@ -530,13 +530,15 @@ void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istr
 std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectoryName)
 {
   std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
-  std::sort(files.begin(),files.end(),niftk::NumericStringCompare);
+  //std::sort(files.begin(),files.end(),niftk::NumericStringCompare);
   std::vector<cv::Mat> myMatrices;
 
   if (files.size() > 0)
   {
     for(unsigned int i = 0; i < files.size();i++)
     {
+      std::cerr << "Matt file = " << files[i] << std::endl;
+
       cv::Mat Matrix = cvCreateMat(4,4,CV_64FC1);
       std::ifstream fin(files[i].c_str());
       for ( int row = 0; row < 4; row ++ )
@@ -545,6 +547,7 @@ std::vector<cv::Mat> LoadMatricesFromDirectory (const std::string& fullDirectory
         {
           fin >> Matrix.at<double>(row,col);
         }
+        std::cerr << "Matt read row = " << row << ":" << Matrix.at<double>(row, 0) << " " << Matrix.at<double>(row,1) << " " << Matrix.at<double>(row,2) << " " << Matrix.at<double>(row,3) << std::endl;
       }
       myMatrices.push_back(Matrix);
     }

@@ -78,7 +78,10 @@ void UltrasoundPointerCalibrationCostFunction::ValidateSizeOfParametersArray(con
 {
   if (parameters.GetSize() != this->m_NumberOfParameters )
   {
-    mitkThrow() << "UltrasoundPointerCalibrationCostFunction::ValidateSizeOfParametersArray given " << parameters.GetSize() << " parameters, but was expecting " << this->m_NumberOfParameters << " parameters." << std::endl;
+    mitkThrow() << "UltrasoundPointerCalibrationCostFunction::ValidateSizeOfParametersArray given "
+                << parameters.GetSize()
+                << " parameters, but was expecting "
+                << this->m_NumberOfParameters << " parameters." << std::endl;
   }
 }
 
@@ -88,7 +91,10 @@ void UltrasoundPointerCalibrationCostFunction::ValidateSizeOfScalesArray(const P
 {
   if (parameters.GetSize() != this->m_NumberOfParameters )
   {
-    mitkThrow() << "UltrasoundPointerCalibrationCostFunction::ValidateSizeOfScalesArray given " << parameters.GetSize() << " parameters, but was expecting " << this->m_NumberOfParameters << " parameters.";
+    mitkThrow() << "UltrasoundPointerCalibrationCostFunction::ValidateSizeOfScalesArray given "
+                << parameters.GetSize()
+                << " parameters, but was expecting "
+                << this->m_NumberOfParameters << " parameters.";
   }
 }
 
@@ -143,11 +149,10 @@ void UltrasoundPointerCalibrationCostFunction::GetDerivative(
     }
   }
 
-  // Normalise (?)
-  double norm = 0;
   for (unsigned int j = 0; j < this->GetNumberOfValues(); j++)
   {
-    norm = 0;
+    // Normalise (?)
+    double norm = 0;
     for (unsigned int i = 0; i < this->GetNumberOfParameters(); i++)
     {
       norm += (derivative[i][j]*derivative[i][j]);
@@ -166,7 +171,8 @@ void UltrasoundPointerCalibrationCostFunction::GetDerivative(
 
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkMatrix4x4> UltrasoundPointerCalibrationCostFunction::GetRigidMatrix(const ParametersType & parameters) const
+vtkSmartPointer<vtkMatrix4x4> UltrasoundPointerCalibrationCostFunction::GetRigidMatrix(
+    const ParametersType & parameters) const
 {
   cv::Matx44d rigidBodyMatrix = mitk::ConstructRodriguesTransformationMatrix(
         parameters[0], parameters[1], parameters[2],
@@ -179,7 +185,8 @@ vtkSmartPointer<vtkMatrix4x4> UltrasoundPointerCalibrationCostFunction::GetRigid
 
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkMatrix4x4> UltrasoundPointerCalibrationCostFunction::GetScalingMatrix(const ParametersType & parameters) const
+vtkSmartPointer<vtkMatrix4x4> UltrasoundPointerCalibrationCostFunction::GetScalingMatrix(
+    const ParametersType & parameters) const
 {
   cv::Matx44d scalingMatrix = mitk::ConstructScalingTransformation(parameters[6], parameters[7]);
   vtkSmartPointer<vtkMatrix4x4> output = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -189,7 +196,8 @@ vtkSmartPointer<vtkMatrix4x4> UltrasoundPointerCalibrationCostFunction::GetScali
 
 
 //-----------------------------------------------------------------------------
-UltrasoundPointerCalibrationCostFunction::MeasureType UltrasoundPointerCalibrationCostFunction::GetValue(const ParametersType & parameters) const
+UltrasoundPointerCalibrationCostFunction::MeasureType UltrasoundPointerCalibrationCostFunction::GetValue(
+    const ParametersType & parameters) const
 {
   this->ValidateSizeOfParametersArray(parameters);
 
@@ -243,7 +251,6 @@ UltrasoundPointerCalibrationCostFunction::MeasureType UltrasoundPointerCalibrati
     value[counter] = transformedImagePoint(2,0) - sensorPointMITK[2];
     counter++;
   }
-  //std::cerr << "UltrasoundPointerCalibrationCostFunction:" << parameters << "=" << this->GetResidual(value) << std::endl;
   return value;
 }
 
