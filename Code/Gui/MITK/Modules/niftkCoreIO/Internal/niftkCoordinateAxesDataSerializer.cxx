@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkCoordinateAxesDataSerializer.h"
+#include "niftkCoordinateAxesDataSerializer.h"
 #include "mitkCoordinateAxesData.h"
 #include "niftkCoordinateAxesDataWriterService.h"
 
