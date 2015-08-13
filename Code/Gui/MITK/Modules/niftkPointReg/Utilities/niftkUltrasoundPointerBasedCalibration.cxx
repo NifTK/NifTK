@@ -115,12 +115,12 @@ double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
   }
 
   // Take a guess at the relative scale.
-  double scaleOfImagePoints = mitk::FindLargestDistanceBetweenTwoPoints(*m_UltrasoundImagePoints); // e.g. 640x430 pixels
+  double scaleOfImagePoints = mitk::FindLargestDistanceBetweenTwoPoints(*m_UltrasoundImagePoints);
   if (fabs(scaleOfImagePoints) < 0.001)
   {
     mitkThrow() << "Image points too close together";
   }
-  double scaleOfSensorPoints = mitk::FindLargestDistanceBetweenTwoPoints(*m_SensorPoints);         // e.g. 46mm x 46mm US image.
+  double scaleOfSensorPoints = mitk::FindLargestDistanceBetweenTwoPoints(*m_SensorPoints);
   if (fabs(scaleOfSensorPoints) < 0.001)
   {
     mitkThrow() << "Sensor points too close together";
@@ -132,13 +132,12 @@ double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
   mitk::PointSet::Pointer scaledImagePoints = mitk::PointSet::New();
   mitk::ScalePointSets(*m_UltrasoundImagePoints, *scaledImagePoints, millimetresPerPixel);
 
-  // Declare.
-  vtkSmartPointer<vtkMatrix4x4> regMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  double fiducialRegistrationError = std::numeric_limits<double>::max();
-
   // Run SVD based registration, which throws mitk::Exception on error.
-  fiducialRegistrationError = niftk::PointBasedRegistrationUsingSVD(m_SensorPoints, scaledImagePoints, *regMatrix);
-  std::cout << "UltrasoundPointerBasedCalibration: scaling=" << millimetresPerPixel << ", SVD FRE=" << fiducialRegistrationError << std::endl;
+  vtkSmartPointer<vtkMatrix4x4> regMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  double fiducialRegistrationError = niftk::PointBasedRegistrationUsingSVD(
+                                     m_SensorPoints, scaledImagePoints, *regMatrix);
+  std::cout << "UltrasoundPointerBasedCalibration: scaling=" << millimetresPerPixel
+            << ", SVD FRE=" << fiducialRegistrationError << std::endl;
 
   // Extract starting parameters for optimisation.
   mitk::Point3D rodriguesRotationParameters;
@@ -147,7 +146,8 @@ double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
 
   // Now optimise the scaling and rigid parameters.
 
-  niftk::UltrasoundPointerCalibrationCostFunction::Pointer costFunction = niftk::UltrasoundPointerCalibrationCostFunction::New();
+  niftk::UltrasoundPointerCalibrationCostFunction::Pointer costFunction
+      = niftk::UltrasoundPointerCalibrationCostFunction::New();
 
   niftk::UltrasoundPointerCalibrationCostFunction::ParametersType parameters;
   parameters.SetSize(costFunction->GetNumberOfParameters());
@@ -186,7 +186,8 @@ double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
   niftk::UltrasoundPointerCalibrationCostFunction::MeasureType values = costFunction->GetValue(parameters);
   residualError = costFunction->GetResidual(values);
 
-  std::cerr << "UltrasoundPointerBasedCalibration: Optimisation finished at:" << parameters << ", residual=" << residualError << std::endl;
+  std::cerr << "UltrasoundPointerBasedCalibration: Optimisation finished at:" << parameters
+            << ", residual=" << residualError << std::endl;
 
   // Setup the output.
   m_ScalingMatrix = costFunction->GetScalingMatrix(parameters);
@@ -199,4 +200,3 @@ double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
 
 //-----------------------------------------------------------------------------
 } // end namespace
-

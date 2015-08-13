@@ -26,9 +26,9 @@
 namespace niftk {
 
 /**
- * \class UltrasoundPointerBasedCalibration
- * \brief Calibrates an Ultrasound Probe using LM optimisation, as described in Muratore 2001.
- */
+* \class UltrasoundPointerBasedCalibration
+* \brief Calibrates an Ultrasound Probe using LM optimisation, as described in Muratore 2001.
+*/
 class NIFTKPOINTREG_EXPORT UltrasoundPointerBasedCalibration : public itk::Object
 {
 public:
@@ -37,37 +37,37 @@ public:
   itkNewMacro(UltrasoundPointerBasedCalibration);
 
   /**
-   * \brief Returns (copies) the calibration matrix (rigid body and scaling)
-   */
+  * \brief Returns (copies) the calibration matrix (rigid body and scaling)
+  */
   vtkSmartPointer<vtkMatrix4x4> GetCalibrationMatrix() const;
 
   /**
-   * \brief Returns (copies) the rigid body transformation.
-   */
+  * \brief Returns (copies) the rigid body transformation.
+  */
   vtkSmartPointer<vtkMatrix4x4> GetRigidBodyMatrix() const;
 
   /**
-   * \brief Returns (copies) the scaling transformation.
-   */
+  * \brief Returns (copies) the scaling transformation.
+  */
   vtkSmartPointer<vtkMatrix4x4> GetScalingMatrix() const;
 
   /**
-   * \brief Gives this object a pointer to the Sensor ('fixed') points (they are not copied).
-   */
+  * \brief Gives this object a pointer to the Sensor ('fixed') points (they are not copied).
+  */
   void SetSensorPoints(mitk::PointSet::Pointer points);
 
   /**
-   * \brief Gives this object a pointer to the Image ('moving') points (they are not copied).
-   */
+  * \brief Gives this object a pointer to the Image ('moving') points (they are not copied).
+  */
   void SetImagePoints(mitk::PointSet::Pointer points);
 
   /**
-   * \brief Performs calibration.
-   * \return RMS residual error.
-   *
-   * \see GetRegistrationMatrix()
-   * \see GetScalingMatrix()
-   */
+  * \brief Performs calibration.
+  * \return RMS residual error.
+  *
+  * \see GetRegistrationMatrix()
+  * \see GetScalingMatrix()
+  */
   double DoPointerBasedCalibration();
 
 protected:
@@ -75,8 +75,8 @@ protected:
   UltrasoundPointerBasedCalibration(); // Purposefully hidden.
   virtual ~UltrasoundPointerBasedCalibration(); // Purposefully hidden.
 
-  UltrasoundPointerBasedCalibration(const UltrasoundPointerBasedCalibration&); // Purposefully not implemented.
-  UltrasoundPointerBasedCalibration& operator=(const UltrasoundPointerBasedCalibration&); // Purposefully not implemented.
+  UltrasoundPointerBasedCalibration(const UltrasoundPointerBasedCalibration&); // Purposefully not impl.
+  UltrasoundPointerBasedCalibration& operator=(const UltrasoundPointerBasedCalibration&); // Purposefully not impl.
 
 private:
 
