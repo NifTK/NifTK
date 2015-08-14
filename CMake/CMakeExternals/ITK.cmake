@@ -36,7 +36,6 @@ if(MITK_USE_HDF5)
   list(APPEND proj_DEPENDENCIES HDF5)
 endif()
 
-message("Matt, BUILD_IGI=${BUILD_IGI}")
 if(BUILD_IGI)
   list(APPEND proj_DEPENDENCIES OpenCV)
 endif()
