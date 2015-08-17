@@ -15,6 +15,9 @@
 #ifndef __itkMammogramMaskSegmentationImageFilter_txx
 #define __itkMammogramMaskSegmentationImageFilter_txx
 
+#include <deque>
+
+#include <itkImageDuplicator.h>
 #include <itkMinimumMaximumImageCalculator.h>
 #include <itkImageToHistogramFilter.h>
 #include <itkImageMomentsCalculator.h>
@@ -30,8 +33,11 @@
 #include <itkCastImageFilter.h>
 #include <itkWriteImage.h>
 #include <itkImageRegionIterator.h>
+#include <itkImageRegionIteratorWithIndex.h>
 #include <itkImageLinearIteratorWithIndex.h>
 #include <itkMammogramLeftOrRightSideCalculator.h>
+#include <itkSignedMaurerDistanceMapImageFilter.h>
+#include <itkSuperEllipseFit.h>
 
 #include <itkForegroundFromBackgroundImageThresholdCalculator.h>
 
@@ -87,6 +93,33 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 
   if (out) 
     out->SetRequestedRegion( out->GetLargestPossibleRegion() );
+}
+
+
+/* -----------------------------------------------------------------------
+   IsPixelSet()
+   ----------------------------------------------------------------------- */
+
+template <typename TInputImage, typename TOutputImage>
+bool 
+MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
+::IsPixelSet( InputImagePointer &image, InputImageIndexType index, int dx, int dy )
+{
+  index[0] = index[0] + dx;
+  index[1] = index[1] + dy;
+
+  if ( image->GetPixel( index ) > 50 )
+  {
+    if ( this->GetDebug() )
+    {
+      std::cout << "Edge point: " << index << " (" << dx << ", " << dy << ")" << std::endl;
+    }
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 
@@ -277,13 +310,13 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
   InputImageIndexType lowerStart;
   InputImageIndexType upperStart;
     
+  InputImageIndexType index, prevIndex;
 
   if ( ! m_flgIncludeBorderRegion )
   {
 
     typedef typename itk::ImageLinearIteratorWithIndex< TInputImage > LineIteratorType;
 
-    InputImageIndexType index, prevIndex;
     bool flgFirstRow;
     int xDiff;
 
@@ -621,8 +654,10 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
   }
 
 
-  // Add a border to the image to avoid edge interpolation problems
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Extract the breast edge
+  // ~~~~~~~~~~~~~~~~~~~~~~~
+  
+  bool flgFoundEdgePoint;
 
   InputImageSpacingType oldSpacing = imPipelineConnector->GetSpacing();
   InputImageRegionType  oldRegion  = imPipelineConnector->GetLargestPossibleRegion();
@@ -630,6 +665,448 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 
   InputImageSizeType    oldSize    = oldRegion.GetSize();
   InputImageIndexType   oldStart   = oldRegion.GetIndex();
+
+
+  std::deque< InputImageIndexType > breastEdge;
+
+  InputImageIndexType midPoint = comIndex;
+
+
+  // Create the breast edge mask
+
+  typedef typename itk::BinaryThresholdImageFilter< TInputImage, TInputImage > BinaryThresholdFilterType;
+
+  typename BinaryThresholdFilterType::Pointer thresholdMask = BinaryThresholdFilterType::New();
+  
+  thresholdMask->SetLowerThreshold( 50. );
+  //thresholdMask->SetUpperThreshold( 200. );
+
+  thresholdMask->SetOutsideValue(  0  );
+  thresholdMask->SetInsideValue( 100 );
+
+  thresholdMask->SetInput( imPipelineConnector );
+
+  thresholdMask->Update();
+
+
+  typedef SignedMaurerDistanceMapImageFilter<InputImageType, RealImageType> DistanceMapFilterType;
+
+  typename DistanceMapFilterType::Pointer distFilter = DistanceMapFilterType::New();
+
+  distFilter->SetInput( thresholdMask->GetOutput() );
+  distFilter->SetUseImageSpacing( false );
+
+  std::cout << "Computing distance transform for breast mask" << std::endl;
+  distFilter->Update();
+
+  if ( this->GetDebug() )
+  {
+    typename RealImageType::Pointer distTrans = distFilter->GetOutput();
+    WriteImageToFile< RealImageType >( "DistTransform.nii", "distance transform", 
+                                     distTrans ); 
+  }
+
+  typedef typename itk::BinaryThresholdImageFilter< RealImageType, TInputImage > ThresholdDistTransFilterType;
+
+  typename ThresholdDistTransFilterType::Pointer thresholdDistTrans = ThresholdDistTransFilterType::New();
+
+  thresholdDistTrans->SetLowerThreshold( 0 );
+  thresholdDistTrans->SetUpperThreshold( 0.75 );
+
+  thresholdDistTrans->SetOutsideValue(  0  );
+  thresholdDistTrans->SetInsideValue( 100 );
+
+  thresholdDistTrans->SetInput( distFilter->GetOutput() );
+
+  thresholdDistTrans->Update();
+  
+#if 1
+
+  InputImagePointer edgeMask = thresholdDistTrans->GetOutput();
+
+  // Left breast
+  if ( comIndex[0] < outSize[0] - comIndex[0] )
+  {
+    while ( ( ! edgeMask->GetPixel( midPoint ) ) &&
+            ( midPoint[0] < oldSize[0] ) )
+    {
+      midPoint[0] ++;
+    }
+  }
+  // Right breast
+  else 
+  {
+    while ( ( ! edgeMask->GetPixel( midPoint ) ) &&
+            ( midPoint[0] > 0 ) )
+    {
+      midPoint[0] --;
+    }
+  }
+
+  connectedThreshold->SetInput( thresholdDistTrans->GetOutput() );
+
+  connectedThreshold->SetLower( 50  );
+  connectedThreshold->SetUpper( 200 );
+
+  connectedThreshold->SetReplaceValue( 100 );
+
+  if ( m_flgVerbose )
+  {
+    std::cout << "Region-growing the breast edge from edge midpoint: " << midPoint << std::endl;
+  }
+
+  connectedThreshold->SetSeed( midPoint );
+
+  connectedThreshold->Update();
+
+  edgeMask = connectedThreshold->GetOutput();
+  edgeMask->DisconnectPipeline();  
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< TInputImage >( "BreastEdgeMask.nii", "breast edge", 
+                                     edgeMask ); 
+  }
+
+  typedef typename itk::ImageRegionIteratorWithIndex< InputImageType > BreastEdgeIteratorType;
+
+  BreastEdgeIteratorType itBreastEdge( edgeMask,  edgeMask->GetLargestPossibleRegion() );
+      
+  for ( itBreastEdge.GoToBegin();
+        ! itBreastEdge.IsAtEnd();
+        ++itBreastEdge )
+  {
+    if ( itBreastEdge.Get() )
+    {
+      breastEdge.push_back( itBreastEdge.GetIndex() );
+    }
+  }
+
+
+#else
+
+  InputImagePointer edgeMask = thresholdDistTrans->GetOutput();
+  edgeMask->DisconnectPipeline();  
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< TInputImage >( "BreastEdgeMask.nii", "breast edge", 
+                                     edgeMask ); 
+  }
+
+  // Left breast
+  if ( comIndex[0] < outSize[0] - comIndex[0] )
+  {
+    while ( ( imPipelineConnector->GetPixel( midPoint ) > 50 ) &&
+            ( midPoint[0] < oldSize[0] ) )
+    {
+      midPoint[0] ++;
+    }
+
+    breastEdge.push_front( midPoint );
+
+    // North
+
+    index = midPoint;
+    flgFoundEdgePoint = true;
+
+    while ( ( index[1] > 0 ) && flgFoundEdgePoint )
+    {
+      if ( IsPixelSet( edgeMask, index, 1, 0 ) )
+      {
+        index[0] ++;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 0, -1 ) )
+      {
+        index[1] --;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, -1, 0 ) )
+      {
+        index[0] --;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 0, 1 ) )
+      {
+        index[1] ++;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 1, -1 ) )
+      {
+        index[0] ++;
+        index[1] --;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, -1, -1 ) )
+      {
+        index[0] --;
+        index[1] --;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, -1, 1 ) )
+      {
+        index[0] --;
+        index[1] ++;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 1, 1 ) )
+      {
+        index[0] ++;
+        index[1] ++;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else
+      {
+        flgFoundEdgePoint = false;
+      }
+    }
+
+    // South
+
+    index = midPoint;
+    flgFoundEdgePoint = true;
+
+    while ( ( index[1] < oldSize[1] ) && flgFoundEdgePoint )
+    {
+      if ( IsPixelSet( edgeMask, index, 1, 0 ) )
+      {
+        index[0] ++;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 0, 1 ) )
+      {
+        index[1] ++;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, -1, 0 ) )
+      {
+        index[0] --;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 0, -1 ) )
+      {
+        index[1] --;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 1, 1 ) )
+      {
+        index[0] ++;
+        index[1] ++;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, -1, 1 ) )
+      {
+        index[0] --;
+        index[1] ++;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, -1, -1 ) )
+      {
+        index[0] --;
+        index[1] --;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 1, -1 ) )
+      {
+        index[0] ++;
+        index[1] --;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else
+      {
+        flgFoundEdgePoint = false;
+      }
+    }
+  }
+
+  // Right breast
+  else 
+  {
+    while ( ( imPipelineConnector->GetPixel( midPoint ) > 50 ) &&
+            ( midPoint[0] > 0 ) )
+    {
+      midPoint[0] --;
+    }
+
+    breastEdge.push_front( midPoint );
+
+    // North
+
+    index = midPoint;
+    flgFoundEdgePoint = true;
+
+    while ( ( index[1] > 0 ) && flgFoundEdgePoint )
+    {
+      if ( IsPixelSet( edgeMask, index, -1, 0 ) )
+      {
+        index[0] --;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 0, -1 ) )
+      {
+        index[1] --;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 1, 0 ) )
+      {
+        index[0] ++;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 0, 1 ) )
+      {
+        index[1] ++;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, -1, -1 ) )
+      {
+        index[0] --;
+        index[1] --;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 1, -1 ) )
+      {
+        index[0] ++;
+        index[1] --;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 1, 1 ) )
+      {
+        index[0] ++;
+        index[1] ++;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, -1, 1 ) )
+      {
+        index[0] --;
+        index[1] ++;
+        breastEdge.push_front( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else
+      {
+        flgFoundEdgePoint = false;
+      }
+    }
+
+    // South
+
+    index = midPoint;
+    flgFoundEdgePoint = true;
+
+    while ( ( index[1] < oldSize[1] ) && flgFoundEdgePoint )
+    {
+      if ( IsPixelSet( edgeMask, index, -1, 0 ) )
+      {
+        index[0] --;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 0, 1 ) )
+      {
+        index[1] ++;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 1, 0 ) )
+      {
+        index[0] ++;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 0, -1 ) )
+      {
+        index[1] --;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, -1, 1 ) )
+      {
+        index[0] --;
+        index[1] ++;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 1, 1 ) )
+      {
+        index[0] ++;
+        index[1] ++;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, 1, -1 ) )
+      {
+        index[0] ++;
+        index[1] --;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else if ( IsPixelSet( edgeMask, index, -1, -1 ) )
+      {
+        index[0] --;
+        index[1] --;
+        breastEdge.push_back( index );
+        edgeMask->SetPixel( index, 0 );
+      }
+      else
+      {
+        flgFoundEdgePoint = false;
+      }
+    }
+  }
+
+#endif
+
+  typename std::deque< InputImageIndexType >::iterator itBreastEdgeDeque;
+
+  edgeMask->FillBuffer( 0 );
+
+  for ( itBreastEdgeDeque = breastEdge.begin(); 
+        itBreastEdgeDeque != breastEdge.end(); 
+        ++itBreastEdgeDeque ) 
+  {
+    edgeMask->SetPixel( *itBreastEdgeDeque, 100 );
+  }
+
+  if ( this->GetDebug() )
+  {
+    WriteImageToFile< TInputImage >( "BreastEdgePoints.nii", "breast edge", 
+                                     edgeMask ); 
+  }
+
+
+  // Fit a Superllipse
+  // ~~~~~~~~~~~~~~~~~
+
+  SuperEllipseFit( breastEdge );
+
+
+
+  // Add a border to the image to avoid edge interpolation problems
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   InputImageRegionType  newRegion;
   InputImagePointType   newOrigin;
@@ -782,8 +1259,6 @@ MammogramMaskSegmentationImageFilter<TInputImage,TOutputImage>
 
   // And threshold it
   // ~~~~~~~~~~~~~~~~
-
-  typedef typename itk::BinaryThresholdImageFilter< TInputImage, TInputImage > BinaryThresholdFilterType;
 
   typename BinaryThresholdFilterType::Pointer thresholder = BinaryThresholdFilterType::New();
 
