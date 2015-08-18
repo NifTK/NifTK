@@ -24,7 +24,7 @@ if (NOT NiftySeg_FOUND)
   )
 
   find_library(NiftySeg_LIBRARIES
-    NAMES _seg_nifti${NiftySeg_DEBUG_POSTFIX}
+    NAMES _seg_nifti _seg_nifti${NiftySeg_DEBUG_POSTFIX}
     PATHS ${NiftySeg_DIR}/lib
     NO_DEFAULT_PATH
   )

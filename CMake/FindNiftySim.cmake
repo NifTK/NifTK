@@ -24,9 +24,9 @@ if (NOT NiftySim_FOUND)
       PATHS ${NiftySim_DIR}/include
       NO_DEFAULT_PATH
     )
-  
+
     find_library(NiftySim_LIBRARIES
-      NAMES tled${NiftySim_DEBUG_POSTFIX}
+      NAMES tled tled${NiftySim_DEBUG_POSTFIX}
       PATHS ${NiftySim_DIR}/lib
       NO_DEFAULT_PATH
     )
@@ -40,7 +40,7 @@ if (NOT NiftySim_FOUND)
     )
 
     find_library(NiftySim_LIBRARIES
-      NAMES tled${NiftySim_DEBUG_POSTFIX}
+      NAMES tled tled${NiftySim_DEBUG_POSTFIX}
       PATHS ${NiftySim_DIR}/lib
       NO_DEFAULT_PATH
     )
