@@ -530,13 +530,15 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
     std::vector < mitk::GoldStandardPoint > points )
 {
-  m_LeftGoldStandardPoints = points;
+  m_LeftGoldStandardPoints.clear();
+    
   int maxLeftGSIndex = -1;
-  for ( unsigned int i = 0 ; i < m_LeftGoldStandardPoints.size() ; i ++ ) 
+  for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
   {
-    if ( m_LeftGoldStandardPoints[i].m_Index > maxLeftGSIndex ) 
+    m_LeftGoldStandardPoints.push_back(mitk::PickedObject(points[i]));
+    if ( m_LeftGoldStandardPoints[i].m_Id > maxLeftGSIndex ) 
     {
-      maxLeftGSIndex =  m_LeftGoldStandardPoints[i].m_Index;
+      maxLeftGSIndex =  m_LeftGoldStandardPoints[i].m_Id;
     }
     if ( m_LeftGoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
     {

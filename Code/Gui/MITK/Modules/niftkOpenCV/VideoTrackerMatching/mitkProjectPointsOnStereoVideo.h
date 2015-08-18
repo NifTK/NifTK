@@ -214,9 +214,9 @@ private:
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
   // a bunch of stuff for calculating errors
-  std::vector < mitk::GoldStandardPoint >
+  std::vector < mitk::PickedObject >
                                 m_LeftGoldStandardPoints;   //for calculating errors, the gold standard left screen points
-  std::vector < mitk::GoldStandardPoint >
+  std::vector < mitk::PickedObject >
                                 m_RightGoldStandardPoints;   //for calculating errors, the gold standard right screen points
   std::vector<mitk::WorldPoint> m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
   std::vector < mitk::ProjectedPointPairsWithTimingError >
@@ -241,20 +241,20 @@ private:
    * calculates the x and y errors between the passed point and the nearest point in 
    * m_ProjectedPoints, adds result to m_LeftProjectionErrors or m_RightProjectionErrors
    */
-  void CalculateProjectionError (  GoldStandardPoint GSPoint, bool left );
+  void CalculateProjectionError (  mitk::PickedObject GSPoint, bool left );
 
   /* \brief 
    * calculates the x,y, and z error between the passed point and the nearest point in 
    * m_ProjectedPoints when projected onto a plane distant from the camera
    * appends result to m_LeftReProjectionErrors or m_RightReProjectionErrors
    */
-  void CalculateReProjectionError ( GoldStandardPoint GSPoint, bool left );
+  void CalculateReProjectionError ( mitk::PickedObject GSPoint, bool left );
  
   /* \brief 
    * Finds  the nearest point in 
    * m_ProjectedPoints
    */
-  cv::Point2d FindNearestScreenPoint ( GoldStandardPoint GSPoint, 
+  cv::Point2d FindNearestScreenPoint ( mitk::PickedObject GSPoint, 
       bool left,  double* minRatio = NULL ,unsigned int * index = NULL );
 
   /* \brief use this this find video data, used m_Directory and set m_VideoIn
