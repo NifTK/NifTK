@@ -41,9 +41,6 @@ set(CPP_FILES
   DataNodeProperties/mitkLabeledLookupTableProperty.cxx
   IO/mitkNamedLookupTablePropertySerializer.cxx
   IO/mitkLabeledLookupTablePropertySerializer.cxx
-  IO/mitkRawImageReader.cxx
-  IO/mitkRawImageWriter.cxx
-  IO/mitkRawImageWriterFactory.cxx
   IO/mitkFileIOUtils.cxx
   Interactions/mitkPointSetUpdate.cxx
 )
