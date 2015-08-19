@@ -576,14 +576,15 @@ void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
 void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
     std::vector < mitk::GoldStandardPoint > points )
 {
-  m_RightGoldStandardPoints = points;
+  m_RightGoldStandardPoints.clear();
   int maxRightGSIndex = -1;
    
   for ( unsigned int i = 0 ; i < m_RightGoldStandardPoints.size() ; i ++ ) 
   {
-    if ( m_RightGoldStandardPoints[i].m_Index > maxRightGSIndex ) 
+    m_RightGoldStandardPoints.push_back(mitk::PickedObject(points[i]));
+    if ( m_RightGoldStandardPoints[i].m_Id > maxRightGSIndex ) 
     {
-      maxRightGSIndex =  m_RightGoldStandardPoints[i].m_Index;
+      maxRightGSIndex =  m_RightGoldStandardPoints[i].m_Id;
     }
     if ( m_RightGoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
     {
@@ -644,13 +645,17 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
   while ( leftGSIndex < m_LeftGoldStandardPoints.size() && rightGSIndex < m_RightGoldStandardPoints.size() )
   {
     unsigned int frameNumber = m_LeftGoldStandardPoints[leftGSIndex].m_FrameNumber;
-    std::vector < mitk::GoldStandardPoint > leftPoints;
-    std::vector < mitk::GoldStandardPoint > rightPoints;
-    std::vector < std::pair < unsigned int , std::pair < cv::Point2d , cv::Point2d > > > matchedPairs;
+    std::vector < mitk::PickedObject > leftPoints;
+    std::vector < mitk::PickedObject > rightPoints;
+    std::vector < std::pair < unsigned int , std::pair < cv::Point3d , cv::Point3d > > > matchedPairs;
     
     while ( m_LeftGoldStandardPoints[leftGSIndex].m_FrameNumber == frameNumber && leftGSIndex < m_LeftGoldStandardPoints.size() ) 
     {
-      leftPoints.push_back ( m_LeftGoldStandardPoints[leftGSIndex] );
+      if ( ! m_LeftGoldStandardPoints[leftGSIndex].m_IsLine )
+      {
+        //I don't know how to triangulate a line
+        leftPoints.push_back ( m_LeftGoldStandardPoints[leftGSIndex] );
+      }
       leftGSIndex ++;
     }
     while (  m_RightGoldStandardPoints[rightGSIndex].m_FrameNumber < ( frameNumber + m_RightGSFrameOffset ) && rightGSIndex < m_RightGoldStandardPoints.size() )  
@@ -660,7 +665,10 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
 
     while ( m_RightGoldStandardPoints[rightGSIndex].m_FrameNumber == ( frameNumber + m_RightGSFrameOffset )  && rightGSIndex < m_RightGoldStandardPoints.size() )  
     {
-      rightPoints.push_back ( m_RightGoldStandardPoints[rightGSIndex] );
+      if ( ! m_RightGoldStandardPoints[rightGSIndex].m_IsLine )
+      {
+        rightPoints.push_back ( m_RightGoldStandardPoints[rightGSIndex] );
+      }
       rightGSIndex ++;
     }
 //check timing error here
@@ -692,8 +700,8 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
             {
               if ( rightIndex == index ) 
               {
-                matchedPairs.push_back( std::pair < unsigned int , std::pair < cv::Point2d , cv::Point2d > >
-                (index, std::pair <cv::Point2d, cv::Point2d> ( leftPoints[i].m_Point, rightPoints[j].m_Point )));
+                matchedPairs.push_back( std::pair < unsigned int , std::pair < cv::Point3d , cv::Point3d > >
+                (index, std::pair <cv::Point3d, cv::Point3d> ( leftPoints[i].m_Points[0], rightPoints[j].m_Points[0] )));
               }
             }
           }
@@ -703,14 +711,17 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
       for ( unsigned int i = 0 ; i < matchedPairs.size() ; i ++ ) 
       {
         cv::Point2d leftUndistorted;
+        std::pair < cv::Point2d, cv::Point2d > pair = std::pair < cv::Point2d, cv::Point2d > 
+          ( cv::Point2d ( matchedPairs[i].second.first.x, matchedPairs[i].second.first.y ),
+            cv::Point2d ( matchedPairs[i].second.second.x, matchedPairs[i].second.second.y ) );
         bool cropUndistortedPointsToScreen = true;
         double cropValue = std::numeric_limits<double>::quiet_NaN();
-        mitk::UndistortPoint(matchedPairs[i].second.first,
+        mitk::UndistortPoint(pair.first,
                *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,leftUndistorted,
                cropUndistortedPointsToScreen , 
                0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
         cv::Point2d rightUndistorted;
-        mitk::UndistortPoint(matchedPairs[i].second.second,
+        mitk::UndistortPoint(pair.second,
                *m_RightIntrinsicMatrix,*m_RightDistortionVector,rightUndistorted,    
                cropUndistortedPointsToScreen , 
                0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
