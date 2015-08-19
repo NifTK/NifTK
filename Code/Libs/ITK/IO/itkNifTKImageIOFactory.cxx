@@ -16,7 +16,7 @@
 #include <itkCreateObjectFunction.h>
 #include <itkPNGImageIOFactory.h>
 #include <itkVTKImageIOFactory.h>
-#include <itkTransformFactoryBase.h>
+#include <itkTxtTransformIOFactory.h>
 #include "itkDRCAnalyzeImageIO.h"
 #include "itkNiftiImageIO3201.h"
 #include "itkINRImageIO.h"
@@ -78,16 +78,17 @@ class RegisterImageIOFactories
   : m_NifTKImageIOFactory( itk::NifTKImageIOFactory::New() )
   , m_PNGImageIOFactory( itk::PNGImageIOFactory::New() )
   , m_VTKImageIOFactory( itk::VTKImageIOFactory::New() )
+  , m_TxtTransformIOFactory( itk::TxtTransformIOFactory::New() )
   {
     itk::ObjectFactoryBase::RegisterFactory(m_NifTKImageIOFactory, itk::ObjectFactoryBase::INSERT_AT_FRONT);
     itk::ObjectFactoryBase::RegisterFactory(m_PNGImageIOFactory);
     itk::ObjectFactoryBase::RegisterFactory(m_VTKImageIOFactory);
-
-    itk::TransformFactoryBase::RegisterDefaultTransforms();
+    itk::ObjectFactoryBase::RegisterFactory(m_TxtTransformIOFactory);
   }
 
   ~RegisterImageIOFactories()
   {
+    itk::ObjectFactoryBase::UnRegisterFactory(m_TxtTransformIOFactory);
     itk::ObjectFactoryBase::UnRegisterFactory(m_VTKImageIOFactory);
     itk::ObjectFactoryBase::UnRegisterFactory(m_PNGImageIOFactory);
     itk::ObjectFactoryBase::UnRegisterFactory(m_NifTKImageIOFactory);
@@ -96,6 +97,7 @@ class RegisterImageIOFactories
   itk::NifTKImageIOFactory::Pointer m_NifTKImageIOFactory;
   itk::PNGImageIOFactory::Pointer m_PNGImageIOFactory;
   itk::VTKImageIOFactory::Pointer m_VTKImageIOFactory;
+  itk::TxtTransformIOFactory::Pointer m_TxtTransformIOFactory;
 
   static RegisterImageIOFactories s_RegisterImageIOFactories;
 
