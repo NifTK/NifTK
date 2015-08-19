@@ -752,6 +752,9 @@ void ImageLookupTablesView::OnLoadButtonPressed()
   // load a label
   QString filenameWithPath = QFileDialog::getOpenFileName(0, tr("Open File"), "", tr("Text files (*.txt);;XML files (*.xml)"));
 
+  if(filenameWithPath.isEmpty())
+    return;
+
   // intialized label map reader
   mitk::LabelMapReader reader;
 
@@ -833,6 +836,9 @@ void ImageLookupTablesView::OnSaveButtonPressed()
   QFileInfo finfo(fileName);
   QString fileNameAndPath = QFileDialog::getSaveFileName(0, tr("Save File"), finfo.fileName(), tr("Text files (*.txt)"));
 
+  if(fileNameAndPath.isEmpty())
+    return;
+
   mitk::LabelMapWriter writer;
   writer.SetOutputLocation(fileNameAndPath.toStdString());
    
@@ -902,9 +908,7 @@ void ImageLookupTablesView::OnNewButtonPressed()
 
   QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
 
-  const vtkLookupTable* emptyLUT = vtkLookupTable::New();
-
-  QmitkLookupTableContainer * newContainer = new QmitkLookupTableContainer(emptyLUT);
+  QmitkLookupTableContainer * newContainer = new QmitkLookupTableContainer(CreateEmptyLookupTable());
   newContainer->SetDisplayName(newLabelName);
   newContainer->SetIsScaled(false);
   newContainer->SetOrder(lutService->GetNumberOfLookupTables());

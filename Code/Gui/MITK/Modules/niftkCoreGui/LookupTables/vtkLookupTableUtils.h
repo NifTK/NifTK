@@ -51,4 +51,5 @@
    */
   NIFTKCOREGUI_EXPORT vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double* newRange);
 
+  NIFTKCOREGUI_EXPORT vtkLookupTable* CreateEmptyLookupTable();
 #endif // vtkLookupTableUtils_h

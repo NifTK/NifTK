@@ -91,8 +91,6 @@ vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double* newRange)
   {
     double rgba[4];
     lut->GetTableValue(i, rgba);
-
-    std::cout << "value "  << i << " color " << rgba[0] << " " << rgba[1] << " "<< rgba[2] << " "<< rgba[3] << std::endl; 
     newLUT->SetTableValue(i,rgba);
   }
 
@@ -101,4 +99,18 @@ vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double* newRange)
     newLUT->SetTableValue(j, lut->GetNanColor());
   }
   return newLUT;
+}
+
+vtkLookupTable* CreateEmptyLookupTable()
+{
+  
+  vtkLookupTable* lookupTable = vtkLookupTable::New();
+  lookupTable->SetValueRange(0,0);
+  lookupTable->SetHueRange(0,0);
+  lookupTable->SetSaturationRange(0,0);
+  lookupTable->SetAlphaRange(0,0);
+  lookupTable->SetNanColor(0,0,0,0);
+  lookupTable->Build();
+
+  return lookupTable;
 }
