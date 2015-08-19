@@ -32,20 +32,24 @@ void TestPickedObjectCompare()
   mitk::PickedObject p2;
 
   MITK_TEST_CONDITION ( p1.HeadersMatch(p2) , "Testing headers match for empty point list" );
+  MITK_TEST_CONDITION ( (! (p1 < p2)) && (! (p2 < p1)), "Testing < operator for empty picked object");
 
   p1.m_Id = 2;
 
   MITK_TEST_CONDITION ( ! p2.HeadersMatch(p1) , "Testing headers don't match for different ID" );
+  MITK_TEST_CONDITION ( p2 < p1 , "Testing < operator for one point with id 2");
 
   p2.m_Id =2;
   p2.m_IsLine = true;
 
   MITK_TEST_CONDITION ( ! p2.HeadersMatch(p1) , "Testing headers don't match for different isLine" );
+  MITK_TEST_CONDITION ( p1 < p2 , "Testing < operator for points before lines");
 
   p1.m_IsLine = true;
   p1.m_FrameNumber = 200;
 
   MITK_TEST_CONDITION ( ! p1.HeadersMatch(p2) , "Testing headers don't match for different framenumbers" );
+  MITK_TEST_CONDITION ( p2 < p1 , "Testing < operator for frame number = 200");
   
   p2.m_FrameNumber = 200;
   p2.m_Channel = "left";
@@ -55,6 +59,7 @@ void TestPickedObjectCompare()
   p1.m_Channel = "left";
 
   MITK_TEST_CONDITION ( p1.HeadersMatch(p2) , "Testing headers do match" );
+  MITK_TEST_CONDITION ( (! (p1 < p2)) && (! (p2 < p1)), "Testing < operator for both frame numbers = 200, and two left channels");
 
   p1.m_Id = -1;
 
@@ -64,7 +69,6 @@ void TestPickedObjectCompare()
   p1.m_TimeStamp = 100;
   MITK_TEST_CONDITION ( ! p2.HeadersMatch (p1, 10) , "Testing timing error check works - no match" );
   MITK_TEST_CONDITION ( p2.HeadersMatch (p1, 101) , "Testing timing error check works - match" );
-
 
 }
 

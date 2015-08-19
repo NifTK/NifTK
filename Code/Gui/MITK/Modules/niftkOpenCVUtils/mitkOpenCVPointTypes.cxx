@@ -136,6 +136,29 @@ bool operator< (const  GoldStandardPoint &GSP1, const GoldStandardPoint &GSP2 )
   }
 }
 
+//-----------------------------------------------------------------------------
+bool operator< (const PickedObject &po1, const PickedObject &po2 )
+{
+  assert ( po1.m_Channel == po2.m_Channel );
+  if ( po1.m_FrameNumber == po2.m_FrameNumber )
+  {
+    if ( po1.m_IsLine == po2.m_IsLine )
+    {
+      return po1.m_Id < po2.m_Id;
+    }
+    else
+    {
+      //points before lines
+      return ( ! po1.m_IsLine );
+    }
+  }
+  else
+  {
+    return po1.m_FrameNumber < po2.m_FrameNumber;
+  }
+}
+
+
 
 //-----------------------------------------------------------------------------
 WorldPoint::WorldPoint()
