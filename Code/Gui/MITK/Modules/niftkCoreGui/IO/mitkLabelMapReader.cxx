@@ -124,7 +124,7 @@ bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
     //place the line from input into the raw string
     getline(file, line);
 
-    if( line.empty() || line.at(0) == '#')
+    if( line.empty() || line.at(0) == '#' || line == "\r")
       continue;
 
     try
