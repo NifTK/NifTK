@@ -14,6 +14,19 @@
 
 include(mitkFunctionInstallExternalCMakeProject)
 
+#-----------------------------------------------------------------------------
+# Convenient macro allowing to download a file
+#-----------------------------------------------------------------------------
+
+macro(downloadFile url dest)
+  file(DOWNLOAD ${url} ${dest} STATUS status)
+  list(GET status 0 error_code)
+  list(GET status 1 error_msg)
+  if(error_code)
+    message(FATAL_ERROR "error: Failed to download ${url} - ${error_msg}")
+  endif()
+endmacro()
+
 # We need a proper patch program. On Linux and MacOS, we assume
 # that "patch" is available. On Windows, we download patch.exe
 # if not patch program is found.
