@@ -62,10 +62,17 @@ endforeach()
 # Precompiled headers
 ###########################################################################
 
-option(NIFTK_USE_COTIRE "Use Cotire for compilation speed-up. Experimental." OFF)
+option(NIFTK_USE_COTIRE "Use Cotire for compilation speed-up." OFF)
 if(NIFTK_USE_COTIRE)
   set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake ${CMAKE_MODULE_PATH})
   include(cotire)
+  mark_as_advanced(COTIRE_ADDITIONAL_PREFIX_HEADER_IGNORE_EXTENSIONS)
+  mark_as_advanced(COTIRE_ADDITIONAL_PREFIX_HEADER_IGNORE_PATH)
+  mark_as_advanced(COTIRE_DEBUG)
+  mark_as_advanced(COTIRE_MAXIMUM_NUMBER_OF_UNITY_INCLUDES)
+  mark_as_advanced(COTIRE_MINIMUM_NUMBER_OF_TARGET_SOURCES)
+  mark_as_advanced(COTIRE_UNITY_SOURCE_EXCLUDE_EXTENSIONS)
+  mark_as_advanced(COTIRE_VERBOSE)
 endif()
 
 ######################################################################
@@ -499,7 +506,11 @@ endif()
 # project for which a CMakeExternals/<project>.cmake file must exist. The
 # call also creates a MITK_USE_<project> variable (appearing in the CMake
 # UI if the NO_CACHE option is *not* given).
-
+#
+# Although the options are called 'MITK_USE_*', they mean whether NifTK uses
+# those projects. To avoid confusion, we mark these options advanced so that
+# they do not appear in the CMake GUI. We expose the 'BUILD_*' options to the
+# users and set the 'MITK_USE_*' options accordingly.
 
 # -----------------------------------------
 # Optional external projects with no inter-dependencies
@@ -507,9 +518,9 @@ endif()
 set_property(GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS "")
 
 #mitkFunctionAddExternalProject(NAME Camino OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME Boost ON ADVANCED DOC "Use the Boost C++ library")
+mitkFunctionAddExternalProject(NAME Boost ON ADVANCED)
 
-mitkFunctionAddExternalProject(NAME Eigen ON ADVANCED DOC "Use the Eigen library")
+mitkFunctionAddExternalProject(NAME Eigen ON ADVANCED)
 
 mitkFunctionAddExternalProject(NAME OpenCV ON ADVANCED)
 mitkFunctionAddExternalProject(NAME AprilTags OFF ADVANCED DEPENDS OpenCV Eigen)
@@ -517,26 +528,25 @@ mitkFunctionAddExternalProject(NAME ArUco OFF ADVANCED DEPENDS OpenCV)
 mitkFunctionAddExternalProject(NAME FLANN OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME PCL OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME RTK OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME VL OFF)
+mitkFunctionAddExternalProject(NAME VL OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME CGAL OFF ADVANCED DEPENDS Boost)
 mitkFunctionAddExternalProject(NAME NiftyLink OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftySim OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftySeg OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftyReg OFF ADVANCED)
-#mitkFunctionAddExternalProject(NAME NiftyRec OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftyRec OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
 
 # -----------------------------------------
 # The following external projects must be ordered according to their inter-dependencies
 
-
 # These are "hard" dependencies and always set to ON
-mitkFunctionAddExternalProject(NAME DCMTK ON ADVANCED DOC "EXPERIMENTAL, superbuild only: Use DCMTK in MITK")
+mitkFunctionAddExternalProject(NAME DCMTK ON ADVANCED)
 mitkFunctionAddExternalProject(NAME GDCM ON ADVANCED)
 mitkFunctionAddExternalProject(NAME ITK ON ADVANCED NO_CACHE DEPENDS GDCM)
 mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON ADVANCED DEPENDS ITK)
 mitkFunctionAddExternalProject(NAME VTK ON ADVANCED NO_CACHE)
-mitkFunctionAddExternalProject(NAME CTK ON ADVANCED DEPENDS QT ITK VTK DCMTK DOC "Use CTK in MITK")
+mitkFunctionAddExternalProject(NAME CTK ON ADVANCED DEPENDS QT ITK VTK DCMTK)
 mitkFunctionAddExternalProject(NAME MITK ON ADVANCED NO_CACHE DEPENDS ITK VTK GDCM DCMTK CTK Eigen)
 
 # -----------------------------------------
@@ -578,6 +588,12 @@ if (BUILD_NiftyRec)
   set(MITK_USE_NiftyRec ON CACHE BOOL "" FORCE)
 else()
   set(MITK_USE_NiftyRec OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_VL)
+  set(MITK_USE_VL ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_VL OFF CACHE BOOL "" FORCE)
 endif()
 
 #-----------------------------------------------------------------------------
