@@ -149,7 +149,6 @@ if(NOT DEFINED ITK_DIR)
       ${additional_cmake_args}
       -DITK_USE_SYSTEM_GDCM:BOOL=ON
       -DGDCM_DIR:PATH=${GDCM_DIR}
-      -DOpenCV_DIR:PATH=${OpenCV_DIR}
     CMAKE_CACHE_ARGS
       ${EP_COMMON_CACHE_ARGS}
     CMAKE_CACHE_DEFAULT_ARGS

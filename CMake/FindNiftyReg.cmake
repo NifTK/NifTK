@@ -28,7 +28,7 @@ if (NOT NiftyReg_FOUND)
     )
 
     find_library(NiftyReg_TOOLS_LIBRARY
-      NAMES _reg_tools_gpu${NiftyReg_DEBUG_POSTFIX}
+      NAMES _reg_tools_gpu _reg_tools_gpu${NiftyReg_DEBUG_POSTFIX}
       PATHS ${NiftyReg_DIR}/lib
       NO_DEFAULT_PATH
     )
@@ -42,7 +42,7 @@ if (NOT NiftyReg_FOUND)
     )
 
     find_library(NiftyReg_TOOLS_LIBRARY
-      NAMES _reg_tools${NiftyReg_DEBUG_POSTFIX}
+      NAMES _reg_tools _reg_tools${NiftyReg_DEBUG_POSTFIX}
       PATHS ${NiftyReg_DIR}/lib
       NO_DEFAULT_PATH
     )
@@ -72,7 +72,13 @@ if (NOT NiftyReg_FOUND)
         z
       )
 
-      set(NiftyReg_LIBRARIES ${NiftyReg_LIBRARIES} ${_library}${NiftyReg_DEBUG_POSTFIX})
+      find_library(_library_with_postfix
+        NAMES ${_library} ${_library}${NiftyReg_DEBUG_POSTFIX}
+        PATHS ${NiftyReg_DIR}/lib
+        NO_DEFAULT_PATH
+      )
+
+      set(NiftyReg_LIBRARIES ${NiftyReg_LIBRARIES} ${_library_with_postfix}})
 
     endforeach()
 

@@ -27,7 +27,7 @@ if (NOT NiftyRec_FOUND)
     )
 
     find_library(NiftyRec_LIBRARIES
-      NAMES _et_line_integral_gpu${NiftyRec_DEBUG_POSTFIX}
+      NAMES _et_line_integral_gpu _et_line_integral_gpu${NiftyRec_DEBUG_POSTFIX}
       PATHS ${NiftyRec_DIR}/lib
       NO_DEFAULT_PATH
     )
@@ -42,7 +42,7 @@ if (NOT NiftyRec_FOUND)
     )
 
     find_library(NiftyRec_LIBRARIES
-      NAMES _et_line_integral${NiftyRec_DEBUG_POSTFIX}
+      NAMES _et_line_integral _et_line_integral${NiftyRec_DEBUG_POSTFIX}
       PATHS ${NiftyRec_DIR}/lib
       NO_DEFAULT_PATH
     )
