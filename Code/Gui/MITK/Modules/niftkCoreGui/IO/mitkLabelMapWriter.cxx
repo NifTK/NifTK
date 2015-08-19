@@ -117,7 +117,7 @@ void mitk::LabelMapWriter::WriteLabelMap()
       name.replace(" ", "*");
 
     vtkIdType index = m_LookupTable->GetIndex(value);
-    double* rgba = m_LookupTable->GetTableValue(value);
+    double* rgba = m_LookupTable->GetTableValue(index);
     int r = rgba[0]*255;
     int g = rgba[1]*255;
     int b = rgba[2]*255;
