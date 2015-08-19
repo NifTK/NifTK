@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(
   INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
   DEPENDS MitkCore
-  PACKAGE_DEPENDS  ITK|ITKIOTransformBase VTK|vtkRenderingVolumeOpenGL Boost|boost_system 
+  PACKAGE_DEPENDS ITK|ITKIOTransformBase Boost|boost_system 
 )
 
 target_link_libraries(niftkCore PRIVATE niftkcommon niftkITK niftkVTK)
