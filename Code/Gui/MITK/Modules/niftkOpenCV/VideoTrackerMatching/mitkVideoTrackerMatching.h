@@ -57,6 +57,11 @@ public:
   cv::Mat GetVideoFrame ( unsigned int FrameNumber, unsigned long long * TimingStamp = NULL );
 
   /**
+   * \brief Returns the time stamp for a frame of video data
+   */
+  unsigned long long GetVideoFrameTimeStamp ( unsigned int FrameNumber );
+
+  /**
    * \brief returns state of m_Ready
    */
   bool IsReady () 

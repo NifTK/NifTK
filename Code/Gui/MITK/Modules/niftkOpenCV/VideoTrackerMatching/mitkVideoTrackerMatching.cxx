@@ -405,6 +405,13 @@ cv::Mat VideoTrackerMatching::GetVideoFrame ( unsigned int frameNumber , unsigne
 }
 
 //---------------------------------------------------------------------------
+unsigned long long VideoTrackerMatching::GetVideoFrameTimeStamp ( unsigned int frameNumber )
+{
+  return m_VideoTimeStamps.GetTimeStamp(frameNumber);
+}
+
+
+//---------------------------------------------------------------------------
 cv::Mat VideoTrackerMatching::GetCameraTrackingMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  , std::vector <double>* Perturbation, int ReferenceIndex )
 {
    cv::Mat trackerMatrix = GetTrackerMatrix ( FrameNumber, TimingError, TrackerIndex );
