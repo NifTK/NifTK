@@ -97,7 +97,6 @@ public:
   void SetSaveVideo( bool state );
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
-  itkSetMacro ( DrawLines, bool);
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( HaltOnVideoReadFail, bool);
   itkSetMacro ( DontProject, bool);
@@ -121,8 +120,8 @@ public:
    */
   void ClearWorldPoints ();
 
-  itkGetMacro ( PointsInLeftLensCS, std::vector <mitk::WorldPointsWithTimingError> );
-  itkGetMacro ( ProjectedPoints, std::vector <mitk::ProjectedPointPairsWithTimingError>);
+  std::vector < mitk::WorldPointsWithTimingError >  GetPointsInLeftLensCS ();
+  std::vector < mitk::ProjectedPointPairsWithTimingError > GetProjectedPoints ();
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
@@ -166,13 +165,12 @@ private:
   std::string                   m_Directory; //the directory containing the data
   std::string                   m_OutDirectory; //where to write out any video
   std::string                   m_TriangulatedPointsOutName; // where to write out triangulated points
-  std::vector< mitk::WorldPoint >     
+  mitk::PickedPointList::Pointer
                                 m_WorldPoints;  //the world points to project, and their accompanying scalar values 
 
   int                           m_TrackerIndex; //the tracker index to use for frame matching
   int                           m_ReferenceIndex; //the reference index to use for frame matching, not used by default
  
-  bool                          m_DrawLines; //draw lines between the points
   bool                          m_InitOK;
   bool                          m_ProjectOK;
   bool                          m_DrawAxes;
@@ -203,11 +201,8 @@ private:
   double   m_VideoWidth;
   double   m_VideoHeight;
 
-  /* m_ProjectPoints [framenumber](timingError,[pointID](left.right));*/
-  std::vector < mitk::ProjectedPointPairsWithTimingError >
-                                m_ProjectedPoints; // the projected points
-  std::vector < mitk::WorldPointsWithTimingError >    
-                                m_PointsInLeftLensCS; // the points in left lens coordinates.
+  std::vector < mitk::PickedPointList::Pointer > m_ProjectedPointLists; // the projected objects
+  std::vector < mitk::PickedPointList::Pointer > m_PointsInLeftLensCS; // the points in left lens coordinates.
   mitk::ProjectedPointPairsWithTimingError 
                                 m_ScreenAxesPoints; // the projected axes points
 
@@ -218,9 +213,9 @@ private:
                                 m_LeftGoldStandardPoints;   //for calculating errors, the gold standard left screen points
   std::vector < mitk::PickedObject >
                                 m_RightGoldStandardPoints;   //for calculating errors, the gold standard right screen points
-  std::vector<mitk::WorldPoint> m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
-  std::vector < mitk::ProjectedPointPairsWithTimingError >
-                                m_ClassifierProjectedPoints; // the projected points used for classifying the gold standard screen points
+  mitk::PickedPointList::Pointer         m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
+  std::vector < mitk::PickedPointList::Pointer >
+                                m_ClassifierProjectedPointLists; // the projected points used for classifying the gold standard screen points
 
   std::vector < cv::Point2d >   m_LeftProjectionErrors;  //the projection errors in pixels
   std::vector < cv::Point2d >   m_RightProjectionErrors;  //the projection errors in pixels
@@ -266,6 +261,18 @@ private:
    * Reprojects a picked object
    */
   mitk::PickedObject ReprojectPickedObject ( const mitk::PickedObject& po );
+
+  /* \brief 
+   * Projects a picked point list from left lens space to screen space. Uses the framenumber to 
+   * determine whether to project to left or right screen (even is left screen)
+   */
+  mitk::PickedPointList::Pointer ProjectPickedPointList ( const mitk::PickedPointList& po_leftLens, double screenBuffer );
+
+   /* \brief 
+   * Multiplies a picked point list by a matrix
+   */
+   mitk::PickedPointList::Pointer TransformPickedPointListToLeftLens ( const mitk::PickedPointList& po, cv::Mat transform, unsigned long long timestamp, int framenumber );
+
 
   /* \brief use this this find video data, used m_Directory and set m_VideoIn
    */

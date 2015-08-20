@@ -37,7 +37,6 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_TriangulatedPointsOutName("")
 , m_TrackerIndex(0)
 , m_ReferenceIndex(-1)
-, m_DrawLines(false)
 , m_InitOK(false)
 , m_ProjectOK(false)
 , m_DrawAxes(false)
@@ -210,20 +209,20 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   this->FindVideoData(trackerMatcher);
 
   m_ProjectOK = false;
-  m_ProjectedPoints.clear();
+  m_ProjectedPointLists.clear();
   m_PointsInLeftLensCS.clear();
-  m_ClassifierProjectedPoints.clear();
-  if ( static_cast<int>(m_WorldPoints.size()) < m_MaxGoldStandardIndex ) 
+  m_ClassifierProjectedPointLists.clear();
+  if ( static_cast<int>(m_WorldPoints->GetListSize()) < m_MaxGoldStandardIndex ) 
   {
     MITK_INFO << "Filling world points with dummy data to enable triangulation";
-    mitk::WorldPoint emptyWorldPoint;
+    cv::Point2i emptyWorldPoint;
 
-    for ( int i = m_WorldPoints.size() ; i <= m_MaxGoldStandardIndex ; i ++ )
+    for ( int i = m_WorldPoints->GetListSize() ; i <= m_MaxGoldStandardIndex ; i ++ )
     {
-      m_WorldPoints.push_back(emptyWorldPoint);
+      m_WorldPoints->AddPoint(emptyWorldPoint);
     }
   }
-  if ( ! ( m_DontProject ) && ( m_WorldPoints.size() == 0) )
+  if ( ! ( m_DontProject ) && ( m_WorldPoints->GetListSize() == 0) )
   {
     MITK_WARN << "Called project with nothing to project";
     return;
@@ -253,130 +252,36 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     }
     else
     {
-
       //put the world points into the coordinates of the left hand camera.
       //worldtotracker * trackertocamera
       //in general the tracker matrices are trackertoworld
       long long timingError;
       cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, perturbation, m_ReferenceIndex).inv();
       
-      mitk::WorldPointsWithTimingError pointsInLeftLensCS;
-      std::vector < mitk::ProjectedPointPair > screenPoints;
+      unsigned long long matrixTimeStamp;
+      unsigned long long absTimingError = static_cast<unsigned long long> ( abs(timingError));
+      if ( timingError < 0 ) 
+      {
+        matrixTimeStamp = trackerMatcher->GetVideoFrameTimeStamp(framenumber) + absTimingError;
+      }
+      else
+      {
+        matrixTimeStamp = trackerMatcher->GetVideoFrameTimeStamp(framenumber) - absTimingError;
+      }
+
       if ( ! m_DontProject ) 
       {
         m_WorldToLeftCameraMatrices.push_back(WorldToLeftCamera);
-        pointsInLeftLensCS = mitk::WorldPointsWithTimingError ( WorldToLeftCamera * m_WorldPoints, timingError); 
-      
-        mitk::WorldPointsWithTimingError classifierPointsInLeftLensCS = 
-          mitk::WorldPointsWithTimingError ( WorldToLeftCamera * m_ClassifierWorldPoints, timingError);
-
-        m_PointsInLeftLensCS.push_back (pointsInLeftLensCS); 
+        m_PointsInLeftLensCS.push_back (TransformPickedPointListToLeftLens ( m_WorldPoints, WorldToLeftCamera, matrixTimeStamp, framenumber ));
+        mitk::PickedPointLost classifierPointsInLeftLensCS = 
+          TransformPickedPointListToLeftLens ( m_ClassifierWorldPoints, WorldToLeftCamera, matrixTimeStamp, framenumber );
 
         //project onto screen
-        CvMat* outputLeftCameraWorldPointsIn3D = NULL;
-        CvMat* outputLeftCameraWorldNormalsIn3D = NULL ;
-        CvMat* output2DPointsLeft = NULL ;
-        CvMat* output2DPointsRight = NULL;
+        m_ProjectedPointLists.push_back( ProjectPickedPointList ( pointsInLeftLensCS, m_ProjectionScreenBuffer )) ;
+        m_ClassifierProjectedPointLists.push_back (ProjectPickedPointList ( classifierPointsInLeftLensCS , m_ClassifierScreenBuffer );
       
-        cv::Mat leftCameraWorldPoints = cv::Mat (pointsInLeftLensCS.m_Points.size(),3,CV_64FC1);
-        cv::Mat leftCameraWorldNormals = cv::Mat (pointsInLeftLensCS.m_Points.size(),3,CV_64FC1);
-      
-        CvMat* classifierOutputLeftCameraWorldPointsIn3D = NULL;
-        CvMat* classifierOutputLeftCameraWorldNormalsIn3D = NULL ;
-        CvMat* classifierOutput2DPointsLeft = NULL ;
-        CvMat* classifierOutput2DPointsRight = NULL;
-      
-        cv::Mat classifierLeftCameraWorldPoints = cv::Mat (classifierPointsInLeftLensCS.m_Points.size(),3,CV_64FC1);
-        cv::Mat classifierLeftCameraWorldNormals = cv::Mat (classifierPointsInLeftLensCS.m_Points.size(),3,CV_64FC1);
-      
-        for ( unsigned int i = 0 ; i < pointsInLeftLensCS.m_Points.size() ; i ++ ) 
-        {
-          leftCameraWorldPoints.at<double>(i,0) = pointsInLeftLensCS.m_Points[i].m_Point.x;
-          leftCameraWorldPoints.at<double>(i,1) = pointsInLeftLensCS.m_Points[i].m_Point.y;
-          leftCameraWorldPoints.at<double>(i,2) = pointsInLeftLensCS.m_Points[i].m_Point.z;
-          leftCameraWorldNormals.at<double>(i,0) = 0.0;
-          leftCameraWorldNormals.at<double>(i,1) = 0.0;
-          leftCameraWorldNormals.at<double>(i,2) = -1.0;
-        }
-        for ( unsigned int i = 0 ; i < classifierPointsInLeftLensCS.m_Points.size() ; i ++ ) 
-        {
-          classifierLeftCameraWorldPoints.at<double>(i,0) = classifierPointsInLeftLensCS.m_Points[i].m_Point.x;
-          classifierLeftCameraWorldPoints.at<double>(i,1) = classifierPointsInLeftLensCS.m_Points[i].m_Point.y;
-          classifierLeftCameraWorldPoints.at<double>(i,2) = classifierPointsInLeftLensCS.m_Points[i].m_Point.z;
-          classifierLeftCameraWorldNormals.at<double>(i,0) = 0.0;
-          classifierLeftCameraWorldNormals.at<double>(i,1) = 0.0;
-          classifierLeftCameraWorldNormals.at<double>(i,2) = -1.0;
-        }
-     
-        cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_64FC1);
-        leftCameraPositionToFocalPointUnitVector.at<double>(0,0)=0.0;
-        leftCameraPositionToFocalPointUnitVector.at<double>(0,1)=0.0;
-        leftCameraPositionToFocalPointUnitVector.at<double>(0,2)=1.0;
-    
-        bool cropUndistortedPointsToScreen = true;
-        double cropValue = std::numeric_limits<double>::infinity();
-        mitk::ProjectVisible3DWorldPointsToStereo2D
-          ( leftCameraWorldPoints,leftCameraWorldNormals,
-            leftCameraPositionToFocalPointUnitVector,
-            *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,
-            *m_RightIntrinsicMatrix,*m_RightDistortionVector,
-            *m_RightToLeftRotationMatrix,*m_RightToLeftTranslationVector,
-            outputLeftCameraWorldPointsIn3D,
-            outputLeftCameraWorldNormalsIn3D,
-            output2DPointsLeft,
-            output2DPointsRight,
-            cropUndistortedPointsToScreen , 
-            0.0 - m_ProjectorScreenBuffer, m_VideoWidth + m_ProjectorScreenBuffer, 
-            0.0 - m_ProjectorScreenBuffer, m_VideoHeight + m_ProjectorScreenBuffer,
-            cropValue);
-      
-        mitk::ProjectVisible3DWorldPointsToStereo2D
-          ( classifierLeftCameraWorldPoints,classifierLeftCameraWorldNormals,
-            leftCameraPositionToFocalPointUnitVector,
-            *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,
-            *m_RightIntrinsicMatrix,*m_RightDistortionVector,
-            *m_RightToLeftRotationMatrix,*m_RightToLeftTranslationVector,
-            classifierOutputLeftCameraWorldPointsIn3D,
-            classifierOutputLeftCameraWorldNormalsIn3D,
-            classifierOutput2DPointsLeft,
-            classifierOutput2DPointsRight,
-            cropUndistortedPointsToScreen , 
-            0.0 - m_ClassifierScreenBuffer, m_VideoWidth + m_ClassifierScreenBuffer, 
-            0.0 - m_ClassifierScreenBuffer, m_VideoHeight + m_ClassifierScreenBuffer,
-            cropValue);
-
-        std::vector < mitk::ProjectedPointPair > classifierScreenPoints;
-     
-        screenPoints.clear();
-        classifierScreenPoints.clear();
-
-        for ( unsigned int i = 0 ; i < pointsInLeftLensCS.m_Points.size() ; i ++ ) 
-        {
-          mitk::ProjectedPointPair pointPair;
-          pointPair.m_Left = cv::Point2d(CV_MAT_ELEM(*output2DPointsLeft,double,i,0),CV_MAT_ELEM(*output2DPointsLeft,double,i,1));
-          pointPair.m_Right = cv::Point2d(CV_MAT_ELEM(*output2DPointsRight,double,i,0),CV_MAT_ELEM(*output2DPointsRight,double,i,1));
-          screenPoints.push_back(pointPair);
-        }
         m_ProjectedPoints.push_back(mitk::ProjectedPointPairsWithTimingError ( screenPoints, timingError ));
-      
-        for ( unsigned int i = 0 ; i < classifierPointsInLeftLensCS.m_Points.size() ; i ++ ) 
-        {
-          mitk::ProjectedPointPair pointPair;
-          pointPair.m_Left = cv::Point2d(CV_MAT_ELEM(*classifierOutput2DPointsLeft,double,i,0),CV_MAT_ELEM(*classifierOutput2DPointsLeft,double,i,1));
-          pointPair.m_Right = cv::Point2d(CV_MAT_ELEM(*classifierOutput2DPointsRight,double,i,0),CV_MAT_ELEM(*classifierOutput2DPointsRight,double,i,1));
-          classifierScreenPoints.push_back(pointPair);
-        }
         m_ClassifierProjectedPoints.push_back(mitk::ProjectedPointPairsWithTimingError ( classifierScreenPoints, timingError));
-      
-        //de-allocate the matrices    
-        cvReleaseMat(&outputLeftCameraWorldPointsIn3D);
-        cvReleaseMat(&outputLeftCameraWorldNormalsIn3D);
-        cvReleaseMat(&output2DPointsLeft);
-        cvReleaseMat(&output2DPointsRight);
-        cvReleaseMat(&classifierOutputLeftCameraWorldPointsIn3D);
-        cvReleaseMat(&classifierOutputLeftCameraWorldNormalsIn3D);
-        cvReleaseMat(&classifierOutput2DPointsLeft);
-        cvReleaseMat(&classifierOutput2DPointsRight);
       }
 
       if ( m_Visualise || m_SaveVideo ) 
@@ -385,44 +290,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
         m_Capture->read(videoImage);
         if ( drawProjection )
         {
-          if ( ! m_DrawLines ) 
-          {
-            if ( framenumber % 2 == 0 ) 
-            {
-              for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
-              {
-                cv::circle(videoImage, screenPoints[i].m_Left,10, pointsInLeftLensCS.m_Points[i].m_Scalar, 3, 8, 0 );
-              }
-            }
-            else
-            {
-              for ( unsigned int i = 0 ; i < screenPoints.size() ; i ++ ) 
-              {
-                cv::circle(videoImage, screenPoints[i].m_Right,10, pointsInLeftLensCS.m_Points[i].m_Scalar, 3, 8, 0 );
-              } 
-            }
-          }
-          else 
-          {
-            if ( framenumber % 2 == 0 ) 
-            {
-              unsigned int i;
-              for (i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
-              {
-                cv::line(videoImage, screenPoints[i].m_Left,screenPoints[i+1].m_Left, pointsInLeftLensCS.m_Points[i].m_Scalar );
-              }
-              cv::line(videoImage, screenPoints[i].m_Left,screenPoints[0].m_Left, pointsInLeftLensCS.m_Points[i].m_Scalar );
-            }
-            else
-            {
-              unsigned int i;
-              for ( i = 0 ; i < screenPoints.size()-1 ; i ++ ) 
-              {
-                cv::line(videoImage, screenPoints[i].m_Right,screenPoints[i+1].m_Right, pointsInLeftLensCS.m_Points[i].m_Scalar );
-              } 
-              cv::line(videoImage, screenPoints[i].m_Right,screenPoints[0].m_Right, pointsInLeftLensCS.m_Points[i].m_Scalar );
-            }
-          }
+          m_ProjectedPoints.back().AnnotateImage(videoImage);
+          
           if ( m_DrawAxes && drawProjection )
           {
             if ( framenumber % 2 == 0 )
@@ -464,7 +333,6 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
               }
             }
           }
-
         }
         if ( m_SaveVideo )
         {
@@ -1045,6 +913,117 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
 }
 
 //-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::CalculateProjectionError ( mitk::PickedObject GSPoint, bool left )
+{
+  double minRatio;
+  cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio ) ;
+  std::string side;
+  if ( left ) 
+  {
+    side = " left ";
+  }
+  else
+  {
+    side = " right "; 
+  }
+ 
+  if ( abs (m_PointsInLeftLensCS[GSPoint.m_FrameNumber].m_TimingError) > m_AllowableTimingError ) 
+  {
+    MITK_WARN << "High timing error at " << side << "  frame " << GSPoint.m_FrameNumber << " discarding point from projection errors";
+    return;
+  }
+
+
+  if ( minRatio < m_AllowablePointMatchingRatio ) 
+  {
+    MITK_WARN << "Ambiguous point match at " << side << "frame " << GSPoint.m_FrameNumber << " discarding point from projection errors"; 
+    return;
+  }
+  
+  if ( boost::math::isinf(minRatio) ) 
+  {
+    MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.m_FrameNumber << " discarding point from projection errors"; 
+    return;
+  }
+
+
+  if ( left ) 
+  {
+    m_LeftProjectionErrors.push_back(matchingPoint - GSPoint.m_Point);
+  }
+  else
+  {
+    m_RightProjectionErrors.push_back(matchingPoint - GSPoint.m_Point);
+  }
+
+}
+
+//-----------------------------------------------------------------------------
+cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( mitk::PickedObject GSPickedObject, bool left , double* minRatio, unsigned int* index)
+{
+  //I want this to have a time stamp, rather than the timing error being in the projected points
+  std::vector<mitk::PickedObject> ClassifierPoints;
+  for ( unsigned int i = 0 ; i < m_ClassifierProjectedPoints[GSPickedObject.m_FrameNumber].m_Points.size() ; i ++ )
+  {
+    //what here? I think this is to fill Classifier points
+  }
+  std::vector<mitk::PickedObject> ProjectedPoints;
+
+  if ( GSPickedObject.m_Id != -1 )
+  {
+    if ( index != NULL ) 
+    {
+      *index = GSPoint.m_Id;
+    }
+    if ( minRatio != NULL ) 
+    {
+      *minRatio = m_AllowablePointMatchingRatio + 1.0;
+    }
+    if ( left )
+    {
+      return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[GSPoint.m_Index].m_Left;
+    }
+    else
+    {
+      return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[GSPoint.m_Index].m_Right;
+    }
+  }
+  assert ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points.size() ==
+    m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points.size() );
+  std::vector < cv::Point2d > pointVector;
+  for ( unsigned int i = 0 ; i < m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points.size() ; i ++ )
+  {
+    if ( left )
+    {
+      pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points[i].m_Left );
+    }
+    else
+    {
+      pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points[i].m_Right );
+    }
+  }
+  unsigned int myIndex;
+  if ( ! boost::math::isinf(mitk::FindNearestPoint( GSPoint.m_Point , pointVector ,minRatio, &myIndex ).x))
+  {
+    if ( index != NULL ) 
+    {
+      *index = myIndex;
+    }
+    if ( left ) 
+    {
+      return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[myIndex].m_Left;
+    }
+    else
+    {
+      return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[myIndex].m_Right;
+    }
+  }
+  else
+  {
+    return cv::Point2d ( std::numeric_limits<double>::infinity() , std::numeric_limits<double>::infinity() ) ;
+  }
+}
+//-----------------------------------------------------------------------------
 mitk::PickedObject ProjectPointsOnStereoVideo::UndistortPickedObject ( const mitk::PickedObject& po )
 {
   assert ( po.m_Channel == "left" || po.m_Channel == "right" );
@@ -1101,125 +1080,71 @@ mitk::PickedObject ProjectPointsOnStereoVideo::ReprojectPickedObject ( const mit
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::CalculateProjectionError ( mitk::PickedObject GSPoint, bool left )
+std::pair < mitk::PickedObject, mitk::PickedObject >  ProjectPointsOnStereoVideo::ProjectPickedObject ( const mitk::PickedObject& po_leftLens )
 {
-  double minRatio;
-  cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio ) ;
-  std::string side;
-  if ( left ) 
-  {
-    side = " left ";
-  }
-  else
-  {
-    side = " right "; 
-  }
- 
-  if ( abs (m_PointsInLeftLensCS[GSPoint.m_FrameNumber].m_TimingError) > m_AllowableTimingError ) 
-  {
-    MITK_WARN << "High timing error at " << side << "  frame " << GSPoint.m_FrameNumber << " discarding point from projection errors";
-    return;
-  }
+  assert ( po_leftLens.m_Channel == "left_lens" );
 
+  mitk::PickedObject po_leftScreen = po_leftLens.CopyByHeader();
+  mitk::PickedObject po_rightScreen = po_leftLens.CopyByHeader();
 
-  if ( minRatio < m_AllowablePointMatchingRatio ) 
-  {
-    MITK_WARN << "Ambiguous point match at " << side << "frame " << GSPoint.m_FrameNumber << " discarding point from projection errors"; 
-    return;
-  }
-  
-  if ( boost::math::isinf(minRatio) ) 
-  {
-    MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.m_FrameNumber << " discarding point from projection errors"; 
-    return;
-  }
+  po_leftScreen.m_Channel = "left";
+  po_leftScreen.m_Channel = "right";
 
+  cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_64FC1);
+        leftCameraPositionToFocalPointUnitVector.at<double>(0,0)=0.0;
+        leftCameraPositionToFocalPointUnitVector.at<double>(0,1)=0.0;
+        leftCameraPositionToFocalPointUnitVector.at<double>(0,2)=1.0;
+    
+  bool cropUndistortedPointsToScreen = true;
+  double cropValue = std::numeric_limits<double>::infinity();
 
-  if ( left ) 
+   //project onto screen
+   CvMat* outputLeftCameraWorldPointsIn3D = NULL;
+   CvMat* outputLeftCameraWorldNormalsIn3D = NULL ;
+   CvMat* output2DPointsLeft = NULL ;
+   CvMat* output2DPointsRight = NULL;
+      
+   cv::Mat leftCameraWorldPoints = cv::Mat (po_leftLens.m_Points.size(),3,CV_64FC1);
+   cv::Mat leftCameraWorldNormals = cv::Mat (po_leftLens.m_Points.size(),3,CV_64FC1);
+      
+   for ( unsigned int i = 0 ; i < po_leftLens.m_Points.size() ; i ++ ) 
+   {
+     leftCameraWorldPoints.at<double>(i,0) = po_leftLens.m_Points[i].x;
+     leftCameraWorldPoints.at<double>(i,1) = po_leftLens.m_Points[i].y;
+     leftCameraWorldPoints.at<double>(i,2) = po_leftLens.m_Points[i].z;
+     leftCameraWorldNormals.at<double>(i,0) = 0.0;
+     leftCameraWorldNormals.at<double>(i,1) = 0.0;
+     leftCameraWorldNormals.at<double>(i,2) = -1.0;
+   }
+     
+  mitk::ProjectVisible3DWorldPointsToStereo2D
+    ( leftCameraWorldPoints,leftCameraWorldNormals,
+      leftCameraPositionToFocalPointUnitVector,
+      *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,
+      *m_RightIntrinsicMatrix,*m_RightDistortionVector,
+      *m_RightToLeftRotationMatrix,*m_RightToLeftTranslationVector,
+      outputLeftCameraWorldPointsIn3D,
+      outputLeftCameraWorldNormalsIn3D,
+      output2DPointsLeft,
+      output2DPointsRight,
+      cropUndistortedPointsToScreen , 
+      0.0 - m_ProjectorScreenBuffer, m_VideoWidth + m_ProjectorScreenBuffer, 
+      0.0 - m_ProjectorScreenBuffer, m_VideoHeight + m_ProjectorScreenBuffer,
+      cropValue);
+      
+  for ( unsigned int i = 0 ; i < po_leftLens.m_Points.size() ; i ++ ) 
   {
-    m_LeftProjectionErrors.push_back(matchingPoint - GSPoint.m_Point);
+    po_leftScreen.m_Points.push_back ( cv::Point3d ( CV_MAT_ELEM(*output2DPointsLeft,double,i,0), CV_MAT_ELEM(*output2DPointsLeft,double,i,1), 0.0 ) );
+    po_rightScreen.m_Points.push_back ( cv::Point3d ( CV_MAT_ELEM(*output2DPointsRight,double,i,0), CV_MAT_ELEM(*output2DPointsRight,double,i,1), 0.0 ) );
   }
-  else
-  {
-    m_RightProjectionErrors.push_back(matchingPoint - GSPoint.m_Point);
-  }
+  cvReleaseMat(&outputLeftCameraWorldPointsIn3D);
+  cvReleaseMat(&outputLeftCameraWorldNormalsIn3D);
+  cvReleaseMat(&output2DPointsLeft);
+  cvReleaseMat(&output2DPointsRight);
 
+  return std::pair < mitk::PickedObject, mitk::PickedObject > ( po_leftScreen, po_rightScreen );
 }
 
-//-----------------------------------------------------------------------------
-cv::Point2d ProjectPointsOnStereoVideo::FindNearestScreenPoint ( GoldStandardPoint GSPoint, bool left , double* minRatio, unsigned int* index)
-{
-  mitk::PickedObject GSPickedObject ( GSPoint );
-  //I want this to have a time stamp, rather than the timing error being in the projected points
-  if ( left )
-  {
-    GSPickedObject.m_Channel = "left";
-  }
-  else
-  {
-    GSPickedObject.m_Channel = "right";
-  }
-  std::vector<mitk::PickedObject> ClassifierPoints;
-  for ( unsigned int i = 0 ; i < m_ClassifierProjectedPoints[GSPickedObject.m_FrameNumber].m_Points.size() ; i ++ )
-  {
-    //what here?
-  }
-  std::vector<mitk::PickedObject> ProjectedPoints;
-
-  if ( GSPoint.m_Index != -1 )
-  {
-    if ( index != NULL ) 
-    {
-      *index = GSPoint.m_Index;
-    }
-    if ( minRatio != NULL ) 
-    {
-      *minRatio = m_AllowablePointMatchingRatio + 1.0;
-    }
-    if ( left )
-    {
-      return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[GSPoint.m_Index].m_Left;
-    }
-    else
-    {
-      return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[GSPoint.m_Index].m_Right;
-    }
-  }
-  assert ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points.size() ==
-    m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points.size() );
-  std::vector < cv::Point2d > pointVector;
-  for ( unsigned int i = 0 ; i < m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points.size() ; i ++ )
-  {
-    if ( left )
-    {
-      pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points[i].m_Left );
-    }
-    else
-    {
-      pointVector.push_back ( m_ClassifierProjectedPoints[GSPoint.m_FrameNumber].m_Points[i].m_Right );
-    }
-  }
-  unsigned int myIndex;
-  if ( ! boost::math::isinf(mitk::FindNearestPoint( GSPoint.m_Point , pointVector ,minRatio, &myIndex ).x))
-  {
-    if ( index != NULL ) 
-    {
-      *index = myIndex;
-    }
-    if ( left ) 
-    {
-      return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[myIndex].m_Left;
-    }
-    else
-    {
-      return m_ProjectedPoints[GSPoint.m_FrameNumber].m_Points[myIndex].m_Right;
-    }
-  }
-  else
-  {
-    return cv::Point2d ( std::numeric_limits<double>::infinity() , std::numeric_limits<double>::infinity() ) ;
-  }
-}
 
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::AppendWorldPoints ( 
@@ -1227,7 +1152,9 @@ void ProjectPointsOnStereoVideo::AppendWorldPoints (
 {
   for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
   {
-    m_WorldPoints.push_back(points[i]);
+   MITK_ERROR << "Append world points is temporality broke";
+   assert (false);
+   //m_WorldPoints.push_back(points[i]);
   }
   m_ProjectOK = false;
 }
@@ -1269,9 +1196,11 @@ void ProjectPointsOnStereoVideo::AppendWorldPointsByTriangulation
       0.0, m_VideoWidth, 0.0 , m_VideoHeight, 
       std::numeric_limits<double>::quiet_NaN());
 
+   MITK_ERROR << "Append world points is temporality broke";
+   assert (false);
     mitk::WorldPoint point;
-    unsigned int wpSize=m_WorldPoints.size();
-    for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ ) 
+    unsigned int wpSize=m_WorldPoints.GetListSize();
+  /*  for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ ) 
     {
       point = leftLensPoints[i];
       long long timingError;
@@ -1288,7 +1217,7 @@ void ProjectPointsOnStereoVideo::AppendWorldPointsByTriangulation
       MITK_WARN << framenumber[i] << "Point rejected due to excessive timing error: " << timingError << " > " << m_AllowableTimingError;
     }
 
-  }
+  }*/
   m_ProjectOK = false;
 }
 
@@ -1346,7 +1275,7 @@ void ProjectPointsOnStereoVideo::ProjectAxes()
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::ClearWorldPoints()
 {
-  m_WorldPoints.clear();
+  m_WorldPoints.ClearList();
   m_ProjectOK = false;
 }
 
