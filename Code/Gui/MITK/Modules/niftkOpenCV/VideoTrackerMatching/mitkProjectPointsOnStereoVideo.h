@@ -257,6 +257,16 @@ private:
   cv::Point2d FindNearestScreenPoint ( mitk::PickedObject GSPoint, 
       bool left,  double* minRatio = NULL ,unsigned int * index = NULL );
 
+  /* \brief 
+   * Undistorts a picked object
+   */
+  mitk::PickedObject UndistortPickedObject ( const mitk::PickedObject& po );
+
+  /* \brief 
+   * Reprojects a picked object
+   */
+  mitk::PickedObject ReprojectPickedObject ( const mitk::PickedObject& po );
+
   /* \brief use this this find video data, used m_Directory and set m_VideoIn
    */
   void FindVideoData (mitk::VideoTrackerMatching::Pointer trackerMatcher);

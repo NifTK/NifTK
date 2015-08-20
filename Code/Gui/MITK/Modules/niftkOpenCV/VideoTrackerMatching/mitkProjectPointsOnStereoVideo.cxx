@@ -536,6 +536,7 @@ void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
   for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
   {
     m_LeftGoldStandardPoints.push_back(mitk::PickedObject(points[i]));
+    m_LeftGoldStandardPoints[i].m_Channel = "left";
     if ( m_LeftGoldStandardPoints[i].m_Id > maxLeftGSIndex ) 
     {
       maxLeftGSIndex =  m_LeftGoldStandardPoints[i].m_Id;
@@ -582,6 +583,7 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
   for ( unsigned int i = 0 ; i < m_RightGoldStandardPoints.size() ; i ++ ) 
   {
     m_RightGoldStandardPoints.push_back(mitk::PickedObject(points[i]));
+    m_RightGoldStandardPoints[i].m_Channel = "right";
     if ( m_RightGoldStandardPoints[i].m_Id > maxRightGSIndex ) 
     {
       maxRightGSIndex =  m_RightGoldStandardPoints[i].m_Id;
@@ -964,7 +966,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::CalculateReProjectionError ( GoldStandardPoint GSPoint, bool left )
+void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject GSPoint, bool left )
 {
   unsigned int* index = new unsigned int;
   double minRatio;
@@ -995,8 +997,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( GoldStandardPoint 
     MITK_WARN << "Infinite match ratio at " << side  << "frame "  << GSPoint.m_FrameNumber << " discarding point from re-projection errors"; 
     return;
   }
-
-
+  
   cv::Point3d matchingPointInLensCS = m_PointsInLeftLensCS[GSPoint.m_FrameNumber].m_Points[*index].m_Point;
 
   if ( ! left )
@@ -1014,30 +1015,23 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( GoldStandardPoint 
   }
   
   cv::Point3d reProjectionGS;
-  bool cropUndistortedPointsToScreen = true;
-  double cropValue = std::numeric_limits<double>::quiet_NaN();
-  if ( left ) 
+  mitk::PickedObject undistortedObject = UndistortPickedObject ( GSPoint );
+  //do a reprojectPickedobject function as well. At the moment I think we can only do 
+  //reprojection for points. I guess what's needed is for the each point in the gold standard 
+  //we find the nearest point on the projected model line (which generally won't be on a vertex
+  mitk::PickedObject reprojectedObject = ReprojectPickedObject ( undistortedObject );
+  
+  if ( ! reprojectedObject.m_IsLine ) 
   {
-    cv::Point2d undistortedPoint;
-    mitk::UndistortPoint (GSPoint.m_Point, *m_LeftIntrinsicMatrix, 
-        *m_LeftDistortionVector, undistortedPoint,
-        cropUndistortedPointsToScreen , 
-        0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
-    reProjectionGS = mitk::ReProjectPoint (undistortedPoint , *m_LeftIntrinsicMatrix);
+    reProjectionGS = cv::Point3d ( reprojectedObject.m_Points[0].x + matchingPointInLensCS.z,
+                                  reprojectedObject.m_Points[0].y + matchingPointInLensCS.z,
+                                  reprojectedObject.m_Points[0].z + matchingPointInLensCS.z );
   }
   else
   {
-    cv::Point2d undistortedPoint;
-    mitk::UndistortPoint (GSPoint.m_Point, *m_RightIntrinsicMatrix, 
-        *m_RightDistortionVector, undistortedPoint,
-        cropUndistortedPointsToScreen , 
-        0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
-    reProjectionGS = mitk::ReProjectPoint (undistortedPoint , *m_RightIntrinsicMatrix);
+    MITK_ERROR << "I can't do reprojection errors for lines yet";
+    return;
   }
-  
-  reProjectionGS.x *= matchingPointInLensCS.z;
-  reProjectionGS.y *= matchingPointInLensCS.z;
-  reProjectionGS.z *= matchingPointInLensCS.z;
 
   delete index;
   if ( left ) 
@@ -1048,11 +1042,66 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( GoldStandardPoint 
   {
     m_RightReProjectionErrors.push_back (matchingPointInLensCS - reProjectionGS);
   }
+}
+
+//-----------------------------------------------------------------------------
+mitk::PickedObject ProjectPointsOnStereoVideo::UndistortPickedObject ( const mitk::PickedObject& po )
+{
+  assert ( po.m_Channel == "left" || po.m_Channel == "right" );
+  mitk::PickedObject undistortedObject = po.CopyByHeader();
+  bool cropUndistortedPointsToScreen = true;
+  double cropValue = std::numeric_limits<double>::quiet_NaN();
+  for ( unsigned int i = 0 ; i < po.m_Points.size () ; i ++ ) 
+  {
+    assert ( po.m_Points[i].z == 0 );
+    cv::Point2d in = cv::Point2d ( po.m_Points[i].x, po.m_Points[i].y);
+    cv::Point2d out;
+    if ( po.m_Channel == "left" )
+    {
+      mitk::UndistortPoint (in, *m_LeftIntrinsicMatrix, 
+        *m_LeftDistortionVector, out,
+        cropUndistortedPointsToScreen , 
+        0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
+    }
+    else
+    {
+      mitk::UndistortPoint (in, *m_RightIntrinsicMatrix, 
+        *m_RightDistortionVector, out,
+        cropUndistortedPointsToScreen , 
+        0.0, m_VideoWidth, 0.0, m_VideoHeight,cropValue);
+    }
+    undistortedObject.m_Points.push_back(cv::Point3d ( out.x, out.y, 0.0 ));
+  }
+
+  return undistortedObject;
 
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::CalculateProjectionError ( GoldStandardPoint GSPoint, bool left )
+mitk::PickedObject ProjectPointsOnStereoVideo::ReprojectPickedObject ( const mitk::PickedObject& po )
+{
+  assert ( po.m_Channel == "left" || po.m_Channel == "right" );
+  mitk::PickedObject reprojectedObject = po.CopyByHeader();
+  for ( unsigned int i = 0 ; i < po.m_Points.size () ; i ++ ) 
+  {
+    assert ( po.m_Points[i].z == 0 );
+    cv::Point2d in = cv::Point2d ( po.m_Points[i].x, po.m_Points[i].y);
+    cv::Point3d out;
+    if ( po.m_Channel == "left" ) 
+    {
+      out = mitk::ReProjectPoint (in , *m_LeftIntrinsicMatrix);
+    }
+    else
+    {
+      out= mitk::ReProjectPoint ( in , *m_RightIntrinsicMatrix);
+    }
+    reprojectedObject.m_Points.push_back(out);
+  }
+  return reprojectedObject;
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::CalculateProjectionError ( mitk::PickedObject GSPoint, bool left )
 {
   double minRatio;
   cv::Point2d matchingPoint = FindNearestScreenPoint ( GSPoint, left, &minRatio ) ;
