@@ -497,6 +497,30 @@ void PickedPointList::PutOut (std::ofstream& os )
 }
 
 //-----------------------------------------------------------------------------
+std::vector < mitk::PickedObject > PickedPointList::GetPickedObjects ()
+{
+  return m_PickedObjects;
+}
+
+//-----------------------------------------------------------------------------
+void PickedPointList::SetPickedObjects (const std::vector < mitk::PickedObject >& objects )
+{
+  m_PickedObjects = objects;
+}
+
+//-----------------------------------------------------------------------------
+unsigned int  PickedPointList::GetListSize ()
+{
+  return m_PickedObjects.size();
+}
+
+//-----------------------------------------------------------------------------
+void PickedPointList::ClearList ()
+{
+  m_PickedObjects.clear();
+}
+
+//-----------------------------------------------------------------------------
 void PickedPointList::AnnotateImage(cv::Mat& image)
 {
   for ( int i = 0 ; i < m_PickedObjects.size() ; i ++ )

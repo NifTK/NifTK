@@ -232,6 +232,11 @@ public:
   itkSetMacro (TimeStamp, unsigned long long);
   itkSetMacro (XScale, double);
   itkSetMacro (YScale, double);
+  std::vector <mitk::PickedObject> GetPickedObjects();
+  void SetPickedObjects ( const std::vector < mitk::PickedObject > & objects );
+  
+  unsigned int GetListSize();
+  void ClearList();
 
   unsigned int AddPoint (const cv::Point2i& point);
   unsigned int RemoveLastPoint ();
