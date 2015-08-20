@@ -31,11 +31,6 @@ PerspectiveProjectionTransform() : Superclass(ParametersDimension)
   this->m_Parameters[1] = 0.;
   this->m_Parameters[2] = 0.;
 
-  // Haven't worked out how to set the number of fixed parameters to zero
-  this->m_FixedParameters[0] = 0.;
-  this->m_FixedParameters[1] = 0.;
-  this->m_FixedParameters[2] = 0.;
-
   m_k1 = 1.;
   m_k2 = 1.;
 }
