@@ -31,17 +31,12 @@ namespace mitk {
 
 // forward declaration
 class GoldStandardPoint;
-class PickedObject;
-
 
 extern "C++" NIFTKOPENCVUTILS_EXPORT
 std::istream& operator>> (std::istream& is, const GoldStandardPoint& gsp );
 
 extern "C++" NIFTKOPENCVUTILS_EXPORT
 bool operator < ( const GoldStandardPoint &GSP1 , const GoldStandardPoint &GSP2);
-
-extern "C++" NIFTKOPENCVUTILS_EXPORT
-bool operator < ( const PickedObject &PO1 , const PickedObject &PO2);
 
 /**
 * \brief a call back function for dealing with PickedPointLists
@@ -203,10 +198,17 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
      */
     double DistanceTo ( const PickedObject& otherPickedObject, const long long& allowableTimingError = 20e6) const;
 
+    /**
+     * \brief Copy the header information to a new instance
+     */
+    PickedObject CopyByHeader () const; 
+
 };
 
 std::istream& operator >> ( std::istream& is, PickedObject& po);
 std::ostream& operator << ( std::ostream& os, const PickedObject& po);
+
+bool operator < ( const PickedObject &PO1 , const PickedObject &PO2);
 
 /**
  * \class maintains a set a point vectors and ID's that 

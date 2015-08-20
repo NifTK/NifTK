@@ -445,6 +445,20 @@ bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject, const lon
 }
 
 //-----------------------------------------------------------------------------
+PickedObject PickedObject::CopyByHeader() const
+{
+  PickedObject new_po;
+  new_po.m_TimeStamp = m_TimeStamp;
+  new_po.m_Channel = m_Channel;
+  new_po.m_IsLine = m_IsLine;
+  new_po.m_FrameNumber = m_FrameNumber;
+  new_po.m_Id = m_Id;
+
+  return new_po;
+}
+
+
+//-----------------------------------------------------------------------------
 double PickedObject::DistanceTo(const PickedObject& otherPickedObject , const long long& allowableTimingError) const
 {
   if ( ! otherPickedObject.HeadersMatch (*this) )
