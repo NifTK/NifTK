@@ -51,9 +51,12 @@
 struct cudaGraphicsResource;
 typedef struct cudaGraphicsResource* cudaGraphicsResource_t;
 struct CUDAInterop;
+namespace niftk
+{
 class CUDAImage;
 class CUDAImageProperty;
 class LightweightCUDAImage;
+}
 namespace mitk
 {
 class DataStorage;
@@ -264,7 +267,7 @@ protected:
   /**
    * @throws an exception if CUDA support was not enabled at compile time.
    */
-  void PrepareBackgroundActor(const LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
+  void PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
 
   /** @throws an exception if CUDA support was not enabled at compile time. */
   void UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node);
@@ -276,7 +279,7 @@ protected:
   vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
 
   // will only be non-null if cuda support is enabled at compile time.
-  CUDAInterop*         m_CUDAInteropPimpl;
+  CUDAInterop* m_CUDAInteropPimpl;
 
   struct TextureDataPOD
   {

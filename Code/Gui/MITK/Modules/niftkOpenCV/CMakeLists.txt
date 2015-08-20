@@ -32,16 +32,7 @@ target_link_libraries(niftkOpenCV
   niftkcommon
   )
 
-
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
-  # the mitk module niftkOpenCV will not contain any cuda kernels but it
-  # can still call api functions, etc.
-  
-  # FIXME: this dependency on niftkCUDAKernels should probably go to niftkCUDA, which wraps
-  #        up all kernel calls nicely for other modules to call.
-  include_directories(${CUDA_TOOLKIT_INCLUDE} ${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels)
-  target_link_libraries(niftkOpenCV ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} niftkCUDAKernels)
-  
   if(MSVC AND NIFTK_DELAYLOAD_CUDA)
     # all of the nvidia-driver/cuda dependencies should be delay-loaded
     #  so this library would at least load on a machine that doesnt have nv hardware.

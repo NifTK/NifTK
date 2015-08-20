@@ -26,9 +26,9 @@
 #include <vtkImageData.h>
 
 #ifdef _USE_CUDA
-#include <CUDAManager/CUDAManager.h>
-#include <CUDAImage/CUDAImageProperty.h>
-#include <CUDAImage/LightweightCUDAImage.h>
+#include <CUDAManager/niftkCUDAManager.h>
+#include <CUDAImage/niftkCUDAImageProperty.h>
+#include <CUDAImage/niftkLightweightCUDAImage.h>
 #endif
 
 

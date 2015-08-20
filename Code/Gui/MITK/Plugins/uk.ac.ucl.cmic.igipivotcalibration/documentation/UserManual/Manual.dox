@@ -1,0 +1,33 @@
+/**
+\bundlemainpage{uk.ac.ucl.cmic.igipivotcalibration} The Pivot Calibration View
+
+\image html icon.png "The Icon for the Pivot Calibration View"
+
+\section PivotCalibrationIntro Introduction
+
+The Pivot Calibration View plugin provides pointing device calibration which determines the translation between the tip of the pointer to the marker attached to the pointer.
+
+\section PivotCalibrationUsage Usage
+
+\subsection PivotCalibrationMadatoryInput Mandatory Input
+
+tracking matrix folder: input the directory containing 4x4 tracking matrices in plain text files.
+
+\image html mandatoryinput.png "Figure 1. The mandatory input from the plugin."
+
+\subsection PivotCalibrationDisplayResult Do Calibration
+
+press the button "Do Pivot Calibration" for calibration.
+
+The transformation matrix and the residual error is displayed as shown in Figure 2.
+
+\image html displayresult.png "Figure 2. Pivot calibration."
+
+
+\section PivotCalibrationPreferences Preferences
+
+
+\section PivotCalibrationReferences References
+
+*/
+

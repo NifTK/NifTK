@@ -32,6 +32,8 @@ vtkCalibratedModelRenderingPipeline::vtkCalibratedModelRenderingPipeline(
     const std::string& rightToLeftFileName,
     const std::string& textureFileName,
     const std::string& trackingModelFileName,
+    const std::string& ultrasoundCalibrationMatrixFileName,
+    const std::string& ultrasoundImageFileName,
     const float& trackingGlyphRadius
     )
   : m_Name(name), m_UseDistortion(false), m_IsRightHandCamera(false)
@@ -68,6 +70,14 @@ vtkCalibratedModelRenderingPipeline::vtkCalibratedModelRenderingPipeline(
   if (trackingModelFileName.length() > 0 && !niftk::FileExists(trackingModelFileName))
   {
     mitkThrow() << "Tracking model file name is specified but doesn't exist:" << trackingModelFileName;
+  }
+  if (ultrasoundCalibrationMatrixFileName.length() > 0 && !niftk::FileExists(ultrasoundCalibrationMatrixFileName))
+  {
+    mitkThrow() << "Ultrasound calibration matrix file name is specified but doesn't exist:" << ultrasoundCalibrationMatrixFileName;
+  }
+  if (ultrasoundImageFileName.length() > 0 && !niftk::FileExists(ultrasoundImageFileName))
+  {
+    mitkThrow() << "Ultrasound image file name is specified but doesn't exist:" << ultrasoundImageFileName;
   }
 
   // Loading intrinsics.
@@ -185,6 +195,33 @@ vtkCalibratedModelRenderingPipeline::vtkCalibratedModelRenderingPipeline(
     m_VisualisationModelActor->SetTexture(m_Texture);
   }
 
+  // The ultrasound image is also optional.
+  m_UltrasoundCalibrationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  m_UltrasoundCalibrationMatrix->Identity();
+  m_UltrasoundTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  m_UltrasoundTransformMatrix->Identity();
+  m_UltrasoundImageReader = vtkSmartPointer<vtkPNGReader>::New();
+  m_UltrasoundImageYAxisFlipper = vtkSmartPointer<vtkImageFlip>::New();
+  m_UltrasoundImagePlane = vtkSmartPointer<vtkPlaneSource>::New();
+  m_UltrasoundImageTexture = vtkSmartPointer<vtkTexture>::New();
+  m_UltrasoundImageMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+  m_UltrasoundImageActor = vtkSmartPointer<vtkActor>::New();
+  if (ultrasoundCalibrationMatrixFileName.length() > 0 && ultrasoundImageFileName.length() > 0)
+  {
+    m_UltrasoundCalibrationMatrix = niftk::LoadMatrix4x4FromFile(ultrasoundCalibrationMatrixFileName);
+
+    m_UltrasoundImageReader->SetFileName(ultrasoundImageFileName.c_str());
+    m_UltrasoundImageYAxisFlipper->SetInputConnection(m_UltrasoundImageReader->GetOutputPort());
+    m_UltrasoundImageYAxisFlipper->SetFilteredAxes(1); // y axis
+    m_UltrasoundImageYAxisFlipper->Update();
+    this->UpdateUltrasoundPlanePosition();
+
+    m_UltrasoundImageMapper->SetInputConnection(m_UltrasoundImagePlane->GetOutputPort());
+    m_UltrasoundImageTexture->SetInputConnection(m_UltrasoundImageYAxisFlipper->GetOutputPort());
+    m_UltrasoundImageActor->SetMapper(m_UltrasoundImageMapper);
+    m_UltrasoundImageActor->SetTexture(m_UltrasoundImageTexture);
+  }
+
   // This creates the render window.
   m_Renderer = vtkSmartPointer<vtkRenderer>::New();
   m_Renderer->SetBackground(0, 0, 255);  // RGB
@@ -193,6 +230,11 @@ vtkCalibratedModelRenderingPipeline::vtkCalibratedModelRenderingPipeline(
   {
     // Again, tracking model is optional.
     m_Renderer->AddActor(m_TrackingModelActor);
+  }
+  if (ultrasoundCalibrationMatrixFileName.length() > 0 && ultrasoundImageFileName.length() > 0)
+  {
+    // Again, the ultrasound image is also optional.
+    m_Renderer->AddActor(m_UltrasoundImageActor);
   }
   m_Renderer->SetActiveCamera(m_Camera);
   m_Renderer->SetLightFollowCamera(true);
@@ -239,6 +281,7 @@ void vtkCalibratedModelRenderingPipeline::Render()
   m_Camera->Modified();
   m_TrackingModelActor->Modified();
   m_VisualisationModelActor->Modified();
+  m_UltrasoundImageActor->Modified();
   m_Renderer->Modified();
 
   m_RenderWin->Render();
@@ -306,6 +349,8 @@ void vtkCalibratedModelRenderingPipeline::SetModelToWorldMatrix(const vtkMatrix4
   m_TrackingModelTransformFilter->Modified();
   m_VisualisationModelReader->Modified();
   m_VisualisationModelTransformFilter->Modified();
+
+  this->UpdateUltrasoundPlanePosition();
 }
 
 
@@ -348,6 +393,43 @@ void vtkCalibratedModelRenderingPipeline::SetIsRightHandCamera(const bool& isRig
 {
   m_IsRightHandCamera = isRight;
   this->UpdateCamera();
+}
+
+
+//-----------------------------------------------------------------------------
+void vtkCalibratedModelRenderingPipeline::UpdateUltrasoundPlanePosition()
+{
+  if (m_UltrasoundImageReader->GetFileName() != NULL)
+  {
+    int* dims = m_UltrasoundImageReader->GetOutput()->GetDimensions();
+
+    double origin[4] = {-0.5, -0.5, 0, 1};
+    double normal[4] = {-0.5, -0.5, 1, 1};
+    double p1[4]     = {-0.5, -0.5, 0, 1};
+    double p2[4]     = {-0.5, -0.5, 0, 1};
+
+    p1[0] = origin[0] + dims[0];
+    p2[1] = origin[1] + dims[1];
+
+    vtkMatrix4x4::Multiply4x4(m_ModelToWorldMatrix, m_UltrasoundCalibrationMatrix, m_UltrasoundTransformMatrix);
+    m_UltrasoundTransformMatrix->MultiplyPoint(origin, origin);
+    m_UltrasoundTransformMatrix->MultiplyPoint(p1, p1);
+    m_UltrasoundTransformMatrix->MultiplyPoint(p2, p2);
+    m_UltrasoundTransformMatrix->MultiplyPoint(normal, normal);
+
+    double diff[3];
+    double newNormal[3];
+    diff[0] = normal[0] - origin[0];
+    diff[1] = normal[1] - origin[1];
+    diff[2] = normal[2] - origin[2];
+    niftk::NormaliseToUnitLength(diff, newNormal);
+
+    m_UltrasoundImagePlane->SetOrigin(origin[0], origin[1], origin[2]);
+    m_UltrasoundImagePlane->SetPoint1(p1[0], p1[1], p1[2]);
+    m_UltrasoundImagePlane->SetPoint2(p2[0], p2[1], p2[2]);
+    m_UltrasoundImagePlane->SetNormal(newNormal[0], newNormal[1], newNormal[2]);
+    m_UltrasoundImagePlane->Modified();
+  }
 }
 
 

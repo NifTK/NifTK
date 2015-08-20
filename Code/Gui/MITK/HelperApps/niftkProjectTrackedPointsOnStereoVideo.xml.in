@@ -104,7 +104,6 @@
       <description>Write out video files</description>
       <label>Write out video files</label>
       <channel>output</channel>
-      <default>0</default>
     </boolean>
 
     <file>

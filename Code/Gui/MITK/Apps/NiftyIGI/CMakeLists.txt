@@ -52,6 +52,8 @@ set(_include_plugins
   uk.ac.ucl.cmic.igisurfacereg
   uk.ac.ucl.cmic.igiundistort
   uk.ac.ucl.cmic.igirmserror
+  uk.ac.ucl.cmic.igipivotcalibration
+  uk.ac.ucl.cmic.igipointercalib
 )
 
 if(WIN32)

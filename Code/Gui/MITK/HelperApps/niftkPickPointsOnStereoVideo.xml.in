@@ -59,6 +59,14 @@
       <label>If output file exists, ask if you want to overwrite it</label>
       <default>0</default>
     </boolean>
+  
+    <boolean>
+      <name>halfImageWidth</name>
+      <longflag>halfImageWidth</longflag>
+      <description>Half the width of the displayed image (useful for smaller monitors)</description>
+      <label>Half the width of the diplayed image</label>
+      <default>0</default>
+    </boolean>
 
     <boolean>
       <name>saveAnnotatedImages</name>

@@ -10,111 +10,193 @@ whereabouts of binary packages. If you are keen to build your own, then read on.
 
 \section BuildInstructionsSuperBuild Building Using The SuperBuild Process
 
-As of Trac #908, there is a single ''Super Build'' option to build NifTK and all 
-dependencies using CMake. This should work identically on Linux, Windows and Mac, 
-and considerably simplifies the build process. The steps are summarised below, with
-screenshots from a Mac.  On Windows and Linux, the process is almost identical. 
-Most of the dependencies (Boost, VTK, ITK etc.) are automatically downloaded 
-from 
+As of Trac #908, there is a single ''Super Build'' option to build NifTK and its
+dependencies using CMake. However, the ''Super Build'' can't be expected to do absolutely
+everything. The number of combinations of how a machine is setup would be overwhelming. So,
+the ''Super Build'' assumes that Qt, CMake, doxygen, git and all other system
+libraries are in place. In effect the ''Super Build'' is really taking care
+of the application specific libraries, not the necessary system libraries.
+
+The application specific dependencies (Boost, VTK, ITK etc.) are automatically
+downloaded from:
+
 \verbatim
 http://cmic.cs.ucl.ac.uk/platform/dependencies
 \endverbatim
  
-which can be accessed on the CMIC Unix filesystem here:
+which can be accessed on the CS Unix filesystem here:
 
 \verbatim
 /cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/platform/dependencies
 \endverbatim
 
+In principal, the ''Super Build'' concept is identical on Linux, Windows and Mac,
+and the ''Super Build'' considerably simplifies the build process. The steps are
+summarised below, with screenshots from a Mac.
+
 \section BuildInstructionsBeforeStarted 1. Before You Get Started - Known Caveats
 
-People should add any preconditions or caveats here as they find them.
+People should add any pre-conditions or caveats here as they find them.
 
 <ul>
-<li>On a RedHat machine, this may be needed to be able to compile Qt with audio:
-\verbatim
-sudo yum install 'pkgconfig(gstreamer-app-0.10)'
-\endverbatim
-</li>
-<li> On Ubuntu you will need to install libncurses-dev, libxt-dev, libtiff4-dev and libwrap0-dev. (This has been done on hellica and denguefever).</li>
-<li> On most Linux distros you will need to install libbz2-dev.</li>
-<li> On CMIC Centos machines, you will need to use CMAKE_C++_COMPILER=/usr/lib/g++44 and CMAKE_C_COMPILER=/usr/lib/gcc44 in the build below. </li>
-<li> On CMIC Scientific Linux machines, the compiler version is more up to date, as is Qt. 
-So if you are currently running a CMIC Centos machine, you are strongly advised to upgrade your 
-machine to the latest Scientific Linux. Email request@cs.ucl.ac.uk and ask for the new Scientific Linux build. </li>
-<li> On Windows please "tidy up" your system before attempting to build NifTK. If you happen to have multiple old versions of Qt, Boost, Dcmtk etc. scattered all around the disk it is very likely that CMake might pick up one, and your build will fail in a spectacular fashion.
-Do check your system path, if it has Boost, old Qt, random installation of ITK or VTK then please clear them off. </li>
-<li> Make sure that you have at least the "Professional" version of Visual Studio, otherwise you won't have OpenMP support.</li>
+  <li> Windows
+    <ul>
+      <li>Please "tidy up" your system before attempting to build NifTK. If you happen to have multiple old versions of Qt, Boost, DCMTK etc. scattered all around the disk it is very likely that CMake will pick up one, and your build will fail in a spectacular fashion.
+          Do check your system and user PATH. If it has Boost, old Qt, random installations of ITK or VTK mentioned, then please clear them off.
+      </li>
+      <li> Make sure that you have at least the "Professional" version of Visual Studio, otherwise you won't have OpenMP support.
+      </li>
+    </ul>
+  </li>
+  <li> Linux
+    <ul>
+      <li> On CS Centos 5 machines, you will need to set
+      \verbatim
+      CMAKE_C++_COMPILER=/usr/lib/g++44
+      CMAKE_C_COMPILER=/usr/lib/gcc44
+      \endverbatim
+      for the build below. This linux is considered obsolete, and largely unsupported, and you should upgrade to the CS departments recommended linux.
+      </li>
+      <li> On CS Scientific Linux machines, the compiler version is more up to date, as is Qt.
+      So if you are currently running a CS Centos machine, you are strongly advised to upgrade your
+      machine to the latest Scientific Linux. Email request@cs.ucl.ac.uk and ask for the new Scientific Linux build.
+      </li>
+      <li> On most Linux distros apart from managed CS ones you will need to install libbz2-dev.
+      </li>
+      <li> On Ubuntu and Mint you will need to install libncurses-dev, libxt-dev, libtiff4-dev and libwrap0-dev.
+      </li>
+      </li>
+      <li>On a RedHat machine, this may be needed to be able to compile Qt with audio:
+      \verbatim
+      sudo yum install 'pkgconfig(gstreamer-app-0.10)'
+      \endverbatim
+      </li>
+    </ul>
+  </li>
+  <li> Mac OSX
+    <ul>
+      <li>On OSX 10.8, you must force the whole build to use libstdc++. On OSX 10.9 and 10.10, you
+      should use libc++, which is the default for clang. If you plan using CUDA, nvcc only supports libc++ from version 7. So, if you
+      want CUDA < 7, then you must force libstdc++ through the whole build.
+      </li>
+    </ul>
+  </li>
 </ul>
 
 \section BuildInstructionsDownloadCMake 2. Install CMake
 
-Caveat: CMake is very difficult to work with, requiring specific versions on each platform.
+WARNING: CMake is very difficult to work with, requiring specific versions on each platform.
 
-You can build CMake from source or download the pre-compiled binaries for your platform (64bit / 32bit):<br> 
+You can build CMake from source or download the pre-compiled binaries for your platform (64bit / 32bit):
+
 \verbatim
-http://www.cmake.org/files/v2.8/
+http://www.cmake.org
 \endverbatim
 
 <ul>
-<li> On Windows you must use CMake 2.8.11.2.</li>
-<li> On Mac Mountain Lion (10.8) machines you must use CMake 2.8.9. </li>
-<li> On Mac Mavericks (10.9) machines you must use CMake 2.8.12.1. </li>
-<li> On Linux machines you must use CMake 2.8.9. </li>
+<li> On Windows you must use CMake 3.1</li>
+<li> On Mac Mountain Lion (10.8) machines you must use CMake 2.8.12.1 </li>
+<li> On Mac Mavericks (10.9) machines you must use CMake 2.8.12.1 or 3.1.2 </li>
+<li> On Mac Yosemite (10.10) machines you must use CMake 3.1.2 or 3.1.3 </li>
+<li> On Linux machines you must use CMake 2.8.12 or 3.1.2 </li>
 </ul>
 
-Once you have obtained a binary version of CMake or built your own CMake, please install it to a convenient location and make sure to add the bin folder to your system path (e.g. "c:\Program Files\CMake_2.8.11.2\bin\" or "/opt/cmake-2.8.12.1/bin").
+Once you have obtained a binary version of CMake or built your own CMake, please install it to a convenient location and make sure to add the bin folder to your system PATH (e.g. "c:\Program Files\CMake_2.8.11.2\bin\" or "/opt/cmake-2.8.12.1/bin").
 If you have built your own CMake on Linux or Mac, make sure that you have built the 'ccmake' command and it is visible on your PATH.
 
-\section BuildInstructionsDownloadQt 3. Install Qt 4.8.6 
+\section BuildInstructionsDownloadQt 3. Install Qt 4.8.6
 
 Note: Qt series 5 is not supported. You should use the latest Qt series 4.
 
 <ul>
-<li> If you intend to simply build and develop you can install a pre-compiled Qt version. 
-Go to <a href="http://qt-project.org/downloads">here</a>, selecting the full SDK and the 
-LGPL open-source version.  It is essential, that once installed the program qmake is available 
-on the command line, and the correct version. i.e. run qmake --version on the command line. </li>
-<li> If you want to make standalone binary packages for distribution you must download 
-the source code and compile your own, and install it in a non standard place (i.e. not /usr/bin, /usr/lib), 
-then make sure it really is the version you are using. i.e. run qmake --version on the command line. 
-On Linux/Mac try
-\verbatim
-./configure -prefix /somewhere/to/install/qt-4.8.6 -release -shared -script -openssl -no-phonon -no-phonon-backend -nomake examples -nomake demos 
-\endverbatim
-</li>
+  <li> If you intend to simply build and develop you can install a pre-compiled Qt version.
+  Go to <a href="http://qt-project.org/downloads">here</a>, selecting the full SDK and the
+  LGPL open-source version.  It is essential, that once installed the program qmake is available
+  on the command line, and the correct version.
+  </li>
+  <li> If you want to package up standalone binary packages for distribution you must download
+  the source code and compile your own, and install it in a non standard place (i.e. not /usr/bin, /usr/lib),
+  then make sure it really is the version you are using.
+  </li>
+  <li> To check the version, run the following command on the command line:
+       \verbatim
+       qmake --version
+       \endverbatim
+  </li>
+</ul>
 
-<li> On Mac Mavericks you have to build the latest sources from their git repositiory and build it with the Mountain Lion (10.8) system libraries.
-<br>
+\section BuildInstructionsDownloadQtLinux 3.1 Compile Qt on Linux
+
+On Linux use the following commands in the qt source directory:
+\verbatim
+./configure -prefix /somewhere/non-standard/to/install/qt-4.8.6 -release -shared -script -openssl -no-phonon -no-phonon-backend -nomake examples -nomake demos
+make
+make install
+\endverbatim
+
+Then set your PATH variable to contain the /somewhere/non-standard/to/install/qt-4.8.6/bin folder where the binaries where just installed.
+
+\section BuildInstructionsDownloadQtMac 3.2 Compile Qt on Mac
+
+On Mac Mavericks and Yosemite, you have to build the latest Qt sources from their git repositiory:
 \verbatim
 git clone git://gitorious.org/qt/qt.git qt
 cd qt
-./configure -prefix /somewhere/to/install/qt-4.8.6 -sysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -release -shared -script -openssl -no-phonon -no-phonon-backend -nomake examples -nomake demos 
+./configure -prefix /somewhere/non-standard/to/install/qt-4.8.7 -release -shared -script -openssl -no-phonon -no-phonon-backend -nomake examples -nomake demos
+make
+make install
 \endverbatim
-</li>
+This will build with clang and libc++. Again, set the PATH to contain the installed bin folder.
 
-<li> On Windows follow the instructions below to build Qt:<br>
+\section BuildInstructionsDownloadQtMacStdCpp 3.3 Compile Qt on Mac using libstdc++
+
+On Mac OSX, before Mavericks, XCode installed clang and gcc compilers. From Mavericks forwards, only clang is available.
+The g++ and gcc binaries are simply wrappers for the clang ones. In addition, g++ normally links to libstdc++, whereas
+clang links to libc++. These are API compatible, but ABI incompatible, which means you cannot mix libraries that link
+to libstdc++ and libc++.
+
+Therefore, to force clang to link to libstdc++ when building Qt do:
+
+\verbatim
+git clone git://gitorious.org/qt/qt.git qt
+cd qt
+./configure -prefix /somewhere/non-standard/to/install/qt-4.8.7 -sysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk -release -shared -script -openssl -no-phonon -no-phonon-backend -nomake examples -nomake demos
+make
+make install
+\endverbatim
+
+Again, set the PATH to contain the installed bin folder.
+
+\section BuildInstructionsDownloadQtWindows 3.4 Compile Qt on Windows
+
+On Windows follow the instructions below to build Qt:
 
 Instead of compiling Qt yourself, ready-to-use patched source and binaries can be downloaded from
+
 \verbatim
 https://bitbucket.org/bruelltuete/qt-niftk
 \endverbatim
+
 Binaries are available for 
 <a href="http://cmic.cs.ucl.ac.uk/platform/dependencies/Qt-4.8.x-x64-vc11+src_selfextracting-7z.exe">VS2012 64-bit</a>, 
 <a href="http://cmic.cs.ucl.ac.uk/platform/dependencies/Qt-4.8.x-x64-vc10+src_selfextracting-7z.exe">VS2010 64-bit</a> and 
 <a href="http://cmic.cs.ucl.ac.uk/platform/dependencies/Qt-4.8.x-x86-vc10+src_selfextracting-7z.exe">VS2010 32-bit</a>.
 
-First of all, on Windows only the Visual Studio builds are currently supported (no mingw or msys), so you'll need to have Microsoft Visual Studio installed (2010 or 2012 Professional (or better) version is recommended). Note that if you use Microsoft Visual Studio 2010, you must have its Service Pack 1 installed to avoid major build issues, similarly for Visual Studio 2012 please install Update4.<br>
+First of all, on Windows only the Visual Studio builds are currently supported (no mingw or msys), so you'll need to have Microsoft Visual Studio installed (2010 or 2012 Professional (or better) version is recommended). Note that if you use Microsoft Visual Studio 2010, you must have its Service Pack 1 installed to avoid major build issues, similarly for Visual Studio 2012 please install Update4.
+
 You might also want to have the Qt integration pack installed for VS: <a href="http://qt-project.org/downloads#qt-other">Qt VS Integration</a>
 
 On 64bit Windows (or if you are an adventurous Win32 user) you have to build Qt from source. 
 
-The first step is to obtain the source: The latest source code is available <a href="http://qt-project.org/downloads#qt-lib">here</a> as a zip (261 MB) or a tar.gz (223 MB). Or clone Qt from the git repository: git clone git://gitorious.org/qt/qt.git.<br><br>
-Uncompress the files into a build directory of your choice (e. g. "C:\Qt\4.8.6-build"), and create a directory where you want Qt installed (e.g. "C:\Qt\4.8.6"). <br>Note: The install path must not contain any spaces or Windows specific file system characters.<br>
+The first step is to obtain the source: The latest source code is available <a href="http://qt-project.org/downloads#qt-lib">here</a> as a zip (261 MB) or a tar.gz (223 MB). Or clone Qt from the git repository: git clone git://gitorious.org/qt/qt.git.
 
-To configure Qt a Windows version of Perl will be required. Get the installer from here: <a href="http://strawberryperl.com/">StrawberryPerl</a>. Install the package and make sure that the "bin" folders of Perl are added to your system path.<br>
+Uncompress the files into a build directory of your choice (e. g. "C:\Qt\4.8.6-build"), and create a directory where you want Qt installed (e.g. "C:\Qt\4.8.6").
 
-On Windows you'll have to install OpenSSL before attempting to build Qt (OpenSSL is required for the XNAT functionality). Please download the installer from here: <a href="http://slproweb.com/products/Win32OpenSSL.html">Win OpenSSL</a>. Install the package somewhere, but make sure that the install path must not contain any spaces or Windows specific file system characters (e.g. c:\OpenSSL-Win64\).<br><br>
+Note: The install path must not contain any spaces or Windows specific file system characters.
+
+To configure Qt a Windows version of Perl will be required. Get the installer from here: <a href="http://strawberryperl.com/">StrawberryPerl</a>. Install the package and make sure that the "bin" folders of Perl are added to your system path.
+
+On Windows you'll have to install OpenSSL before attempting to build Qt (OpenSSL is required for the XNAT functionality). Please download the installer from here: <a href="http://slproweb.com/products/Win32OpenSSL.html">Win OpenSSL</a>. Install the package somewhere, but make sure that the install path must not contain any spaces or Windows specific file system characters (e.g. c:\OpenSSL-Win64\).
 
 If you need symbols (to be able to debug a crashed release-build, for example, or to performance-profile your code), you'll need to hack mkspec: You need to edit
 \verbatim
@@ -127,19 +209,22 @@ QMAKE_CFLAGS_RELEASE = -O2 -MD -Zi
 ...
 QMAKE_LFLAGS_RELEASE = /INCREMENTAL:NO /DEBUG /OPT:REF
 ...
-\endverbatim<br>
+\endverbatim
 
 The current version of Qt (4.8.6 - from git repo) doesn't build with VS2012 due to header file within the "webkit" module. To fix this issue please replace
 \verbatim
 qt-src-folder\src\3rdparty\webkit\Source\JavaScriptCore\wtf\HashSet.h
-\endverbatim<br>
+\endverbatim
+
 with the HashSet.h file that is available within the zip file containing Qt sources (see link above).</br>
 
 The compilation is done from the Visual Studio command prompt. On 64bit Windows make sure that you use the "Visual Studio x64 Win64 Command Prompt"!
 
 To open the command prompt launch:
+
 - 32bit: Start->All Programs->Microsoft Visual Studio XXXX->Visual Studio Tools->Visual Studio Command Prompt
-- 64bit: Start->All Programs->Microsoft Visual Studio XXXX->Visual Studio Tools->Visual Studio x64 Win64 (Native) Command Prompt <br>
+- 64bit: Start->All Programs->Microsoft Visual Studio XXXX->Visual Studio Tools->Visual Studio x64 Win64 (Native) Command Prompt
+
 where XXXX is the Visual Studio version you'd like to use.
 
 The next step is to configure Qt for the build:
@@ -148,13 +233,13 @@ cd /D C:\Qt\4.8.6-build
 configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -nomake examples -nomake tests -debug-and-release -shared -mp -script -openssl -opensource -confirm-license -platform win32-msvc2012 -prefix c:\Qt\4.8.6 -I c:\OpenSSL-Win64\include -L c:\OpenSSL-Win64\lib
 \endverbatim
 
-The last four parameters have to be adjusted. Set "-platform win32-msvcXXXX" to match the desired Visual Studio version (e.g. -platform win32-msvc2010 or -platform win32-msvc2012). Note when you use x64 command prompt Qt is compiled to x64, despite the "win32" parameter setting.<br><br>
+The last four parameters have to be adjusted. Set "-platform win32-msvcXXXX" to match the desired Visual Studio version (e.g. -platform win32-msvc2010 or -platform win32-msvc2012). Note when you use x64 command prompt Qt is compiled to x64, despite the "win32" parameter setting.
 
-Also, you'll need to specify the installation prefix to specify where to install Qt (e.g. "c:\Qt\4.8.6").<br> 
+Also, you'll need to specify the installation prefix to specify where to install Qt (e.g. "c:\Qt\4.8.6").
 
-The -I and -L parameters are to specify additional include paths and library paths, respectively. Please edit these to point to your installation of OpenSSL, so qmake can find them.<br>
+The -I and -L parameters are to specify additional include paths and library paths, respectively. Please edit these to point to your installation of OpenSSL, so qmake can find them.
 
-<br><br>If you later need to reconfigure and rebuild Qt from the same location, ensure that all traces of the previous configuration are removed by entering the build directory and typing "nmake distclean" before running configure again.<br>
+If you later need to reconfigure and rebuild Qt from the same location, ensure that all traces of the previous configuration are removed by entering the build directory and typing "nmake distclean" before running configure again.
 
 The next step is to compile and build Qt, so type:
 \verbatim
@@ -171,53 +256,47 @@ This will remove all the temporary files used during build-time.
 
 The last step is to add the bin directory to your system path. For newer versions of Windows, PATH can be extended through the Control Panel|System|Advanced|Environment variables menu. Look for 'PATH' and add "c:\Qt\4.8.6\bin;" to the FRONT of the path string.
 You'll have to log off / log on for the changes to make effect.
-</li>
-
-</ul>
 
 \section BuildInstructionsVersioning 4. Version Control
 
 You must also have an up to date svn client, and git client.
 
 <ul>
-<li> On Windows, you'll need <a href="http://www.sliksvn.com/en/download">SlikSVN</a> and <a href="http://code.google.com/p/msysgit/downloads/list?q=full+installer+official+git">Git for Windows</a>.<br>
-These are the essential command line tools. After their installation please make sure that both svn and git are added to your system path. 
-
-If you require an additional graphical interface please install <a href="http://tortoisesvn.tigris.org">TortoiseSVN</a> and <a href="http://code.google.com/p/tortoisegit">TortoiseGIT</a>. <br>
-
-</li>
-<li> On Linux these are widely available, and probably up to date enough, EXCEPT git at the DRC. At the DRC use 
-\verbatim
-/var/drc/software/32bit/git
-\endverbatim
-<li> On Mac, available if you installed the XCode tools.</li>
-
-<br>
-Please do remember to configure your git and svn before attempting to build NifTK!!! For svn to work correctly all you need to do is to check out something from cmicdev, and accept the certificate permanently. For git, please follow the <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/wikis/GitAtCMIC">Git Instructions</a>. 
-
+  <li> On Windows, you'll need <a href="http://www.sliksvn.com/en/download">SlikSVN</a> and <a href="http://code.google.com/p/msysgit/downloads/list?q=full+installer+official+git">Git for Windows</a>.
+  These are the essential command line tools. After their installation please make sure that both svn and git are added to your system path.
+  If you require an additional graphical interface please install <a href="http://tortoisesvn.tigris.org">TortoiseSVN</a> and <a href="http://code.google.com/p/tortoisegit">TortoiseGIT</a>.
+  </li>
+  <li> On Linux these are widely available, and probably up to date enough, EXCEPT git at the DRC. At the DRC use
+    \verbatim
+    /var/drc/software/32bit/git
+    \endverbatim
+  </li>
+  <li> On Mac, available if you installed the XCode tools.
+  </li>
 </ul>
 
+Please do remember to configure your git and svn before attempting to build NifTK!!! For svn to work correctly all you need to do is to check out something from cmicdev, and accept the certificate permanently. For git, please follow the <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/wikis/GitAtCMIC">Git Instructions</a>. 
+
 \section BuildInstructionsDoxygen 5. Doxygen
-<li> 
-In order to compile the documentation you'll need to have Doxygen installed. Please download Doxygen for you platform from <a href="ftp://ftp.stack.nl/pub/users/dimitri/">_this_</a> site (via ftp).<br><br>
-Please note that there are issues with the latest versions, so make sure you install a version no newer than 1.8.0!
 
-</li>
+In order to compile the documentation you'll need to have Doxygen installed. Please download Doxygen for you platform from <a href="ftp://ftp.stack.nl/pub/users/dimitri/">this</a> site (via ftp).
 
-\section BuildInstructionsNSIS 5.5 NSIS - Windows Only!
-<li> 
+The prefered version is 1.8.7.
+
+\section BuildInstructionsNSIS 6 NSIS - Windows Only!
+
 If you would like to have an "official" NifTK installation (that appears under Programs, can be uninstalled, have icons and shortcuts and so on) you'll have to create an installer. 
-On Windows we use NSIS for this task, which can be downloaded from <a href="http://nsis.sourceforge.net/Download">_here_</a>.<br><br>
-Please install NSIS and make sure that it is added to your system path. For further instructions about the installation please refer to Section 10.
-</li>
+On Windows we use NSIS for this task, which can be downloaded from <a href="http://nsis.sourceforge.net/Download">here</a>.
 
-\section BuildInstructionsDownload 6. Download the code
+Please install NSIS and make sure that it is added to your system path. For further instructions about the installation please refer to Section 11.
+
+\section BuildInstructionsDownload 7. Download the code
 
 \verbatim
 git clone https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK.git
 \endverbatim
 
-\section BuildInstructionsCMake 7. CMake
+\section BuildInstructionsCMake 8. CMake
 
 <ol>
 <li> Using CMake, select the source and a different build directory
@@ -231,24 +310,26 @@ on Windows you choose the version of Visual Studio
 
 \image html niftk-build-snapshot2.png "Figure 2. Select the correct generator."
 </li>
+<li> If you want a GUI, turn on variables NIFTK_Apps/<whatever>, or turn on NIFTK_BUILD_ALL_APPS</li>
 <li> Set the CMAKE_BUILD_TYPE. Type either Debug or Release. </li>
-<li> Set the CMAKE_INSTALL_PREFIX.  You must specify the full directory, including the 
-package name such as @NIFTK_DEPLOY_NAME@. For development environments, it doesn't really 
-matter what you call it, so it could be /Users/mattclarkson/install/foo-version-bar and 
-subdirectories will be created below foo-version-bar. For release builds, the version number 
-to use can be found in the top of the CMakeLists.txt file, but the core development team will 
-know this anyway.
+<li> Set the CMAKE_INSTALL_PREFIX.  In general, this is not widely used. This is because
+developers just run all applications from their build folder. To distribute we use "make package"
+which creates an installer, which is then installed to a given folder. However, if you want
+to run "make install", set this variable.
 </li>
-<li>On Mac Mavericks (10.9) you need to set the following CMake variables:
-  <ul>
-    <li>CMAKE_OSX_SYSROOT: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk"</li>
-    <li>CMAKE_OSX_DEPLOYMENT_TARGET: "10.8"</li>
-    <li>CMAKE_OSX_ARCHITECTURES: "x86_64"</li>
-  </ul>
-  You can pass these options to the cmake or ccmake commands in the command line like this:
-  \verbatim
-    ccmake -DCMAKE_OSX_SYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.8" -DCMAKE_OSX_ARCHITECTURES="x86_64" ../niftk-source-dir
-  \endverbatim
+<li>If you want CUDA, turn on NIFTK_USE_CUDA. This is an advanced option.</li>
+<li> Similar to the Qt build, on Mac OSX Mavericks (10.9) and newer, you have the option to build with libstdc++, or libc++.
+By default, clang will pick libc++. You must be consistent throughout the whole build. To build with libstdc++, specify
+\verbatim
+CMAKE_OSX_SYSROOT:           "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk"
+CMAKE_OSX_DEPLOYMENT_TARGET: "10.8"
+CMAKE_OSX_ARCHITECTURES:     "x86_64"
+\endverbatim
+You can pass these options to the cmake or ccmake commands in the command line like this:
+\verbatim
+  ccmake -DCMAKE_OSX_SYSROOT="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.8" -DCMAKE_OSX_ARCHITECTURES="x86_64" ../niftk-source-dir
+\endverbatim
+Remember, if you are on Mac and want CUDA < version 7, you must build everything with libstdc++, as nvcc uses libstdc++ not libc++.
 </li>
 <li> Select which options you want building. These variables start with BUILD_
 
@@ -259,7 +340,7 @@ know this anyway.
 </li>
 <li> Press the generate button to generate the make files. </li>
 
-\section BuildInstructionsUnix 8. Building (Unix)
+\section BuildInstructionsUnix 9. Building (Unix)
 
 At the command prompt, in the build directory
 \verbatim
@@ -274,7 +355,7 @@ ctest -R <whatever>
 etc.
 \endverbatim
 
-\section BuildInstructionsWindows 9. Building (Windows)
+\section BuildInstructionsWindows 10. Building (Windows)
 
 Open the Visual Studio .sln file in the build directory (NifTK-SuperBuildRelease in this example), 
 and execute the BUILD task. Note that Visual Studio defaults to a Debug build, so if you wish to build a Release version you'll have to manually change the build configuration to Release, regardless what was set in CMake. Once successfully completed, exit Visual Studio.
@@ -283,7 +364,7 @@ The repeated cycle of code, compile, test should be done within the subdirectory
 called NifTK-build, where you should use the batch file startNiftyView_Debug.bat or startNiftyView_Release.bat
 to launch Visual Studio, and the BUILD task. Please ALWAYS use these bat files to start VS! NiftyView can be run directly within Visual Studio by setting it as the startup project.
 
-\section BuildInstructionsInstall 10. Installing (Unix, Windows)
+\section BuildInstructionsInstall 11. Installing (Unix, Windows)
 
 A developer can run all the applications from the build directory. Indeed, the test-code-compile-test cycle 
 will mean that the developer is constantly running the compiled output, either through a development environment
@@ -297,20 +378,20 @@ make install
 
 for Linux/Mac.
 
-On Windows, you can run the INSTALL task of the NifTK project (not the Superbuild) in Visual Studio, which will copy the files to the destination directory (defined by CMAKE_INSTALL_PREFIX). Please double check if you have write permissions to the installation folder! <br>
+On Windows, you can run the INSTALL task of the NifTK project (not the Superbuild) in Visual Studio, which will copy the files to the destination directory (defined by CMAKE_INSTALL_PREFIX). Please double check if you have write permissions to the installation folder!
 
 If you have NSIS installed (and added to the system path!!) you can run the PACKAGE task of the NifTK project (not the Superbuild) in Visual Studio.
 This task will run CPack on NifTK, which will generate an NSIS script, which will get eventually processed by NSIS to generate an executable NifTK installer bundle.
 This executable will be placed within the NifTK-build subfolder, once the PACKAGE task finished you can run it to install NifTK onto your system (will appear in Start Menu, can be uninstalled, etc).
  
-\section BuildInstructionsTroubleShooting 11. Trouble shooting
+\section BuildInstructionsTroubleShooting 12. Trouble shooting
 
 <ul>
 <li> On Windows, If you get errors when running CMake related to 'git', ensure that the CMake variable GIT_EXECUTABLE is correctly set. </li>
 <li> On Windows, we only recommend and regularly test Windows 64 bit. While the build is known to work on 32bit Windows 7 and XP, it is less frequently tested. </li>
 <li> On Windows, sometimes building the dependencies can be tricky. Open the Visual Studio project file at the Superbuild level, and build the CLEAN, Boost, GDCM, VTK, ITK, CTK, MITK one at a time, in that order. </li>
-<li> On Windows, the multi-threaded Visual Studio builds are found to be unreliable. Sometimes the build of VTK or ITK are failing randomly, which libraries has been reliably built hundreds of times. <br><br>
-If you are experiencing "unpredictable" problems with your VS build please turn off the multi-threaded build feature.<br>
+<li> On Windows, the multi-threaded Visual Studio builds are found to be unreliable. Sometimes the build of VTK or ITK are failing randomly, which libraries has been reliably built hundreds of times.
+If you are experiencing "unpredictable" problems with your VS build please turn off the multi-threaded build feature.
 Go to Tools > Options > Projects and Solutions > Build and Run, and set the "Maximum number of parallel project builds" variable to 1.
 </ul>
 

@@ -78,6 +78,11 @@ if(MITK_USE_Boost)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeExternals/ChangeBoostLibsInstallNameForMac.cmake.in ${APPLE_CMAKE_SCRIPT} @ONLY)
         set(INSTALL_COMMAND ${CMAKE_COMMAND} -P ${APPLE_CMAKE_SCRIPT})
 
+        set(APPLE_CLANG_FLAGS)
+        if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND "${CMAKE_OSX_DEPLOYMENT_TARGET}" STREQUAL "10.8" )
+          set(APPLE_CLANG_FLAGS toolset=clang cxxflags="-stdlib=libstdc++" linkflags="-stdlib=libstdc++")
+        endif()
+
         # Set OSX_SYSROOT
         set (APPLE_SYSROOT_FLAG)
         if (NOT ${CMAKE_OSX_SYSROOT} STREQUAL "")
@@ -86,7 +91,7 @@ if(MITK_USE_Boost)
 
         # Set the boost build command for apple
         set(_boost_build_cmd ${proj_SOURCE}/bjam ${APPLE_SYSROOT_FLAG} --builddir=${proj_BUILD} --prefix=${proj_INSTALL}
-            ${_boost_toolset} ${_boost_address_model} ${_boost_variant} ${_boost_libs} link=shared,static threading=multi runtime-link=shared -q install)
+            ${_boost_toolset} ${_boost_address_model} ${_boost_variant} ${_boost_libs} link=shared,static threading=multi runtime-link=shared ${APPLE_CLANG_FLAGS} -q install)
       else()
         set(_boost_build_cmd ${proj_SOURCE}/bjam --build-dir=${proj_BUILD} --prefix=${proj_INSTALL} ${_boost_toolset} ${_boost_address_model}
             ${_boost_variant} ${_boost_libs} link=shared threading=multi runtime-link=shared -q install --ignore-site-config)

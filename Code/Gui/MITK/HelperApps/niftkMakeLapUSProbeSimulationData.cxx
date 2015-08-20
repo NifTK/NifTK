@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 
     QApplication app(argc,argv);
 
-    QmitkCalibratedModelRenderingPipeline pl("niftkMakeLapUSProbeSimulationData", ws, cws, leftIntrinsics, rightIntrinsics, modelForVisualisation, rightToLeft, texture, modelForTracking, radius, outputData);
+    QmitkCalibratedModelRenderingPipeline pl("niftkMakeLapUSProbeSimulationData", ws, cws, leftIntrinsics, rightIntrinsics, modelForVisualisation, rightToLeft, texture, modelForTracking, ultrasoundCalibration, ultrasoundImage, radius, outputData);
     pl.setGeometry(0, 0, ws[0], ws[1]);
     pl.setMinimumWidth(ws[0]);
     pl.setMaximumWidth(ws[0]);

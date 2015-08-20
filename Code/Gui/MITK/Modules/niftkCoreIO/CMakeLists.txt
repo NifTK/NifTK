@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(niftkCoreIO
   EXPORT_DEFINE NIFTKCOREIO_EXPORT
   INCLUDE_DIRS 
-  DEPENDS niftkCore
+  DEPENDS niftkCore MitkSceneSerializationBase
   AUTOLOAD_WITH niftkCore
 )
 

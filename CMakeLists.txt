@@ -547,7 +547,7 @@ set(NIFTK_INCLUDE_DIRS_BUILD_TREE
 if (BUILD_MESHING)
   set(NIFTK_INCLUDE_DIRS_BUILD_TREE
     ${NIFTK_INCLUDE_DIRS_BUILD_TREE}
-    ${CMAKE_SOURCE_DIR}/Code/Libs/Common/Meshing
+    ${CMAKE_SOURCE_DIR}/Code/Libs/Meshing
   )
 endif (BUILD_MESHING)
 
@@ -594,6 +594,9 @@ if(NIFTK_USE_CUDA)
     add_definitions(-D_USE_CUDA)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-D_USE_CUDA")
     message("Found CUDA")
+    if(APPLE)
+      set(CMAKE_SHARED_LINKER_FLAGS "-F/Library/Frameworks ${CMAKE_SHARED_LINKER_FLAGS}")
+    endif()
   else(CUDA_FOUND)
     message("Didn't find CUDA")
   endif(CUDA_FOUND)

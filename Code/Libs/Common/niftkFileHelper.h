@@ -176,6 +176,15 @@ NIFTKCOMMON_WINEXPORT std::vector<std::string> FindVideoData(const std::string& 
 
 
 /**
+* Recursively searches a directory looking for video files
+* @param fullDirectoryName
+* @param optional mask
+* @return either the first one or the one that matches the optional input name mask
+*/
+NIFTKCOMMON_WINEXPORT std::string FindVideoFile(const std::string& directory, const std::string& mask = "" );
+
+
+/**
 * Non-recursively searches a directory, looking for files with the specified extension.
 * @param fullDirectoryName Directory name
 * @param extension file extension including the dot.
@@ -232,6 +241,13 @@ NIFTKCOMMON_WINEXPORT std::string ModifyImageFileSuffix(const std::string& fileN
 */
 NIFTKCOMMON_WINEXPORT std::string ModifyFileSuffix(const std::string& fileName,
                                                    std::string newSuffix );
+/**
+* Creates a unique file name for a file located in the O/S temporary directory.
+* @param prefix file basename prefix
+* @param suffix file basename suffix
+* @return a unique file name
+*/
+NIFTKCOMMON_WINEXPORT std::string CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix = "");
 
 } // end namespace
 

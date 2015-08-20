@@ -5,6 +5,7 @@
 @CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkFileHelper*
 @CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkFixedLengthFile*
 @CMAKE_SOURCE_DIR@/Code/Libs/Common/niftkMathsUtils*
+@CMAKE_SOURCE_DIR@/Code/Libs/CUDAKernels/niftk*.h
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCoreIO/Internal/niftk*
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointReg/Maths/niftk*.h
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPointReg/Maths/niftk*.cxx
@@ -21,3 +22,10 @@
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkIGIServices/niftk*.h
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkIGIServices/niftk*.cxx
 @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkPCL/niftk*.cxx
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/CUDAImage/niftk*.h
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/CUDAImage/niftk*.cxx
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/CUDAManager/niftk*.h
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/Image/niftk*.h
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/Image/niftk*.cxx
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/CameraCalibration/niftk*.h
+@CMAKE_SOURCE_DIR@/Code/Gui/MITK/Modules/niftkCUDA/CameraCalibration/niftk*.cxx
