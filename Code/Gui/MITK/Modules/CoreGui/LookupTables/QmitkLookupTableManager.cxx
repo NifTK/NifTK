@@ -108,46 +108,47 @@ QmitkLookupTableManager::QmitkLookupTableManager()
 	MapType::iterator iter;
 	for (iter = map.begin(); iter != map.end(); iter++)
 	{
-		m_List.push_back((*iter).second);
+    m_Containers.emplace((*iter).second->GetDisplayName().toStdString(), (*iter).second);
 	}
 
-  MITK_DEBUG << "QmitkLookupTableManager():Constructed, with " << m_List.size() << " lookup tables";
+  MITK_DEBUG << "QmitkLookupTableManager():Constructed, with " << m_Containers.size() << " lookup tables";
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkLookupTableManager::~QmitkLookupTableManager()
 {
-	for (unsigned int i = 0; i < m_List.size(); i++)
+  LookupTableMapType::iterator mapIter;
+  for (mapIter = m_Containers.begin(); mapIter !=m_Containers.cend();mapIter++)
 	{
-	  if (m_List[i] != NULL)
+    if ((*mapIter).second!= NULL)
 	  {
-	    delete m_List[i];
+	    delete (*mapIter).second;
 	  }
 	}
-	m_List.clear();
+	m_Containers.clear();
 }
 
 
 //-----------------------------------------------------------------------------
 unsigned int QmitkLookupTableManager::GetNumberOfLookupTables()
 {
-	return m_List.size();
+	return m_Containers.size();
 }
 
 
 //-----------------------------------------------------------------------------
-const QmitkLookupTableContainer* QmitkLookupTableManager::GetLookupTableContainer(const unsigned int& n)
+const QmitkLookupTableContainer* QmitkLookupTableManager::GetLookupTableContainer(QString& name)
 {
   const QmitkLookupTableContainer* result = NULL;
 
-	if (this->CheckIndex(n))
+	if (this->CheckName(name))
 	{
-		result = m_List[n];
+    result = m_Containers.at(name.toStdString());
 	}
 	else
 	{
-	  MITK_ERROR << "GetLookupTableContainer(" << n << "):invalid index requested, returning NULL";
+    MITK_ERROR << "GetLookupTableContainer(" << name.toStdString().c_str() << "):invalid name requested, returning NULL";
 	}
 
 	return result;
@@ -155,24 +156,28 @@ const QmitkLookupTableContainer* QmitkLookupTableManager::GetLookupTableContaine
 
 
 //-----------------------------------------------------------------------------
-QString QmitkLookupTableManager::GetName(const unsigned int& n)
+std::vector<QString> QmitkLookupTableManager::GetTableNames()
 {
-  QString result = "";
-  const QmitkLookupTableContainer* container = this->GetLookupTableContainer(n);
-  if (container != 0)
+  std::vector<QString> names;
+
+  LookupTableMapType::iterator mapIter = m_Containers.begin();
+  for(;mapIter!=m_Containers.end();mapIter++)
   {
-    result = container->GetDisplayName();
+    names.push_back( QString::fromStdString((*mapIter).first) );
   }
-  return result;
+
+  return names;
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkLookupTableManager::CheckIndex(const unsigned int& n)
+bool QmitkLookupTableManager::CheckName(QString& name)
 {
-	if (n >= this->GetNumberOfLookupTables())
+  LookupTableMapType::iterator mapIter = m_Containers.find(name.toStdString());
+
+  if(mapIter == m_Containers.end() )
 	{
-	  MITK_ERROR << "CheckIndex(" << n << ") requested, which is out of range";
+	  MITK_ERROR << "CheckName(" << name.toStdString().c_str() << ") requested, which does not exist.";
 		return false;
 	}
 	else
@@ -185,18 +190,16 @@ bool QmitkLookupTableManager::CheckIndex(const unsigned int& n)
 //-----------------------------------------------------------------------------
 void QmitkLookupTableManager::AddLookupTableContainer(QmitkLookupTableContainer *container)
 {
-  m_List.push_back(container);
+  m_Containers.emplace(container->GetDisplayName().toStdString(), container);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkLookupTableManager::ReplaceLookupTableContainer(QmitkLookupTableContainer *container, const unsigned int& n)
+void QmitkLookupTableManager::ReplaceLookupTableContainer(QmitkLookupTableContainer* container, QString& name)
 {
-	if (n >= this->GetNumberOfLookupTables())
-	{
-	  MITK_ERROR << "CheckIndex(" << n << ") requested, which is out of range";
-		return;
-	}
-  else
-    m_List[n]= container;
+  if(this->CheckName(name))
+  {
+    m_Containers.at(name.toStdString()) = container;
+  }
+
 }

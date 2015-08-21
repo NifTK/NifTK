@@ -38,27 +38,32 @@ struct QmitkLookupTableProviderService
   virtual unsigned int GetNumberOfLookupTables() = 0;
 
   /**
+   * \brief Returns if a LookupTable with the given name exists.
+   */
+  virtual bool CheckName(QString& name) = 0;
+
+  /**
    * \brief Returns a pointer to a new instance of a lookup table, as specified by the index, which the client is then responsible for deleting.
    * \param lookupTableIndex a positive integer in the range [0.. (this->GetNumberOfLookupTables() - 1)].
    * \param lowestValueOpacity opacity value in the range [0..1], which if outside this range, is clamped.
    * \param highestValueOpacity opacity value in the range [0..1], which if outside this range, is clamped.
    * \return
    */
-  virtual vtkLookupTable* CreateLookupTable(unsigned int lookupTableIndex,
+  virtual vtkLookupTable* CreateLookupTable(QString& lookupTableName,
                                             float lowestValueOpacity,
                                             float highestValueOpacity) = 0;
 
   /**
    * \brief Same as CreateLookupTable, but wraps it into a mitk::NamedLookupTableProperty.
    */
-  virtual mitk::NamedLookupTableProperty::Pointer CreateLookupTableProperty(unsigned int lookupTableIndex,
+  virtual mitk::NamedLookupTableProperty::Pointer CreateLookupTableProperty(QString& lookupTableName,
                                                                             float lowestValueOpacity,
                                                                             float highestValueOpacity) = 0;
 
   /**
    * \brief Similar to CreateLookupTable, but create a mitk::LabeledLookupTableProperty.
    */
-  virtual mitk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(unsigned int lookupTableIndex) = 0;
+  virtual mitk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(QString& lookupTableName) = 0;
 
   /**
    * \brief Add a new LookupTableContainer to the LookupTableManager.
@@ -66,19 +71,19 @@ struct QmitkLookupTableProviderService
   virtual void AddNewLookupTableContainer(QmitkLookupTableContainer* container) = 0;
 
   /**
-   * \brief Replace the LookupTableContainer at the given index with another.
+   * \brief Replace the LookupTableContainer of the given name with another.
    */
-  virtual void ReplaceLookupTableContainer(QmitkLookupTableContainer* container, unsigned int lookupTableIndex) = 0;
+  virtual void ReplaceLookupTableContainer(QmitkLookupTableContainer* container, QString& lookupTableName) = 0;
 
   /**
-   * \brief Returns the display name of the given table.
+   * \brief Returns the display names of  all table.
    */
-  virtual std::string GetName(unsigned int lookupTableIndex) = 0;
+  virtual std::vector<QString> GetTableNames() = 0;
 
   /**
    * \brief Returns whether the given table should be scaled to the window and level.
    */
-  virtual bool GetIsScaled(unsigned int lookupTableIndex) = 0;
+  virtual bool GetIsScaled(QString& lookupTableName) = 0;
 
 };
 

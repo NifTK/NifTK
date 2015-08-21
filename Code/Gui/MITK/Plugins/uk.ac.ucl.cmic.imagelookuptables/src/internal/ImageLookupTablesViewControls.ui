@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>665</width>
-    <height>571</height>
+    <width>435</width>
+    <height>313</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -23,6 +23,9 @@
    <string>Form1</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetMinimumSize</enum>
+   </property>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <property name="margin">
@@ -60,6 +63,9 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="toolTip">
+          <string extracomment="Save the current label map"/>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -83,6 +89,9 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="toolTip">
+          <string extracomment="Create a new label map"/>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -99,6 +108,9 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string extracomment="Load a lookup table from file"/>
          </property>
          <property name="text">
           <string/>
@@ -118,302 +130,411 @@
       </layout>
      </item>
      <item>
-      <widget class="ctkCollapsibleGroupBox" name="m_RangeGroupBox">
-       <property name="title">
-        <string>Intensity Range</string>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <property name="margin">
-         <number>5</number>
+       <property name="styleSheet">
+        <string notr="true">QTabWidget::tab-bar { alignment: middle; background-color: rgb(216, 212, 200) }</string>
+       </property>
+       <property name="tabShape">
+        <enum>QTabWidget::Triangular</enum>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <property name="elideMode">
+        <enum>Qt::ElideNone</enum>
+       </property>
+       <property name="documentMode">
+        <bool>false</bool>
+       </property>
+       <widget class="QWidget" name="tabScaleLUT">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <item>
-         <layout class="QGridLayout" name="m_RangeGridLayout">
-          <property name="margin">
-           <number>5</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="m_MinIntensityRangeLabel">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>min</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="ctkSliderWidget" name="m_MinSlider" native="true"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="m_MaxIntensityRangeLabel">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>max</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="ctkSliderWidget" name="m_MaxSlider" native="true"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="m_LevelLabel">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>level</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="ctkSliderWidget" name="m_LevelSlider" native="true"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="m_WindowLabel">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>window</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="ctkSliderWidget" name="m_WindowSlider" native="true"/>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="ctkCollapsibleGroupBox" name="m_LimitsGroupBox">
-       <property name="title">
-        <string>Data Limits</string>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="margin">
-         <number>5</number>
+        <property name="minimumSize">
+         <size>
+          <width>351</width>
+          <height>0</height>
+         </size>
         </property>
-        <item>
-         <layout class="QGridLayout" name="m_LimitsGridLayout">
-          <property name="margin">
-           <number>5</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="m_MinLimitLabel">
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
+        <attribute name="title">
+         <string>Scaled Lookup Table</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <property name="spacing">
+          <number>9</number>
+         </property>
+         <property name="topMargin">
+          <number>20</number>
+         </property>
+         <item alignment="Qt::AlignTop">
+          <widget class="ctkCollapsibleGroupBox" name="m_RangeGroupBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="title">
+            <string>Intensity Range</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <property name="margin">
+             <number>5</number>
+            </property>
+            <item>
+             <layout class="QGridLayout" name="m_RangeGridLayout">
+              <property name="margin">
+               <number>5</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="QLabel" name="m_MinIntensityRangeLabel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>min</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="ctkSliderWidget" name="m_MinSlider" native="true"/>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="m_MaxIntensityRangeLabel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>max</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="ctkSliderWidget" name="m_MaxSlider" native="true"/>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="m_LevelLabel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>level</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="ctkSliderWidget" name="m_LevelSlider" native="true"/>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="m_WindowLabel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>window</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="ctkSliderWidget" name="m_WindowSlider" native="true"/>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item alignment="Qt::AlignTop">
+          <widget class="ctkCollapsibleGroupBox" name="m_LimitsGroupBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="title">
+            <string>Data Limits</string>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <property name="margin">
+             <number>5</number>
+            </property>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <property name="margin">
+               <number>5</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="m_MinLimitLabel">
+                <property name="text">
+                 <string>min</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="m_MinLimitDoubleSpinBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>the minimum intensity value to use</string>
+                </property>
+                <property name="decimals">
+                 <number>2</number>
+                </property>
+                <property name="minimum">
+                 <double>-999999999.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>999999999.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="m_MaxLimitLabel">
+                <property name="text">
+                 <string>max</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="m_MaxLimitDoubleSpinBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>the maximum intensity value to use</string>
+                </property>
+                <property name="decimals">
+                 <number>2</number>
+                </property>
+                <property name="minimum">
+                 <double>-999999999.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>999999999.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="m_LimitsHorizontalSpacerRight">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="m_ResetButton">
+                <property name="toolTip">
+                 <string>reset to the full image data range</string>
+                </property>
+                <property name="text">
+                 <string>reset</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tabLabelLUT">
+        <attribute name="title">
+         <string>Labeled Lookup Table</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <property name="topMargin">
+          <number>20</number>
+         </property>
+         <item>
+          <widget class="QTableWidget" name="widget_LabelTable">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ContiguousSelection</enum>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="showGrid">
+            <bool>true</bool>
+           </property>
+           <property name="sortingEnabled">
+            <bool>true</bool>
+           </property>
+           <property name="columnCount">
+            <number>3</number>
+           </property>
+           <attribute name="horizontalHeaderCascadingSectionResizes">
+            <bool>true</bool>
+           </attribute>
+           <attribute name="horizontalHeaderDefaultSectionSize">
+            <number>50</number>
+           </attribute>
+           <attribute name="horizontalHeaderMinimumSectionSize">
+            <number>27</number>
+           </attribute>
+           <attribute name="horizontalHeaderStretchLastSection">
+            <bool>true</bool>
+           </attribute>
+           <attribute name="verticalHeaderVisible">
+            <bool>false</bool>
+           </attribute>
+           <column>
             <property name="text">
-             <string>min</string>
+             <string>Color</string>
             </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="m_MinLimitDoubleSpinBox">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="toolTip">
-             <string>the minimum intensity value to use</string>
-            </property>
-            <property name="decimals">
-             <number>2</number>
-            </property>
-            <property name="minimum">
-             <double>-999999999.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>999999999.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="m_MaxLimitLabel">
+           </column>
+           <column>
             <property name="text">
-             <string>max</string>
+             <string>Value</string>
             </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QDoubleSpinBox" name="m_MaxLimitDoubleSpinBox">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="toolTip">
-             <string>the maximum intensity value to use</string>
-            </property>
-            <property name="decimals">
-             <number>2</number>
-            </property>
-            <property name="minimum">
-             <double>-999999999.000000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>999999999.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="4">
-           <spacer name="m_LimitsHorizontalSpacerRight">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="0" column="5">
-           <widget class="QPushButton" name="m_ResetButton">
-            <property name="toolTip">
-             <string>reset to the full image data range</string>
-            </property>
+           </column>
+           <column>
             <property name="text">
-             <string>reset</string>
+             <string>Name</string>
             </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
+           </column>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QPushButton" name="m_AddLabelButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../resources/ImageLookupTables.qrc">
+               <normaloff>:/ImageLookupTables/btnAdd.png</normaloff>:/ImageLookupTables/btnAdd.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="m_RemoveLabelButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../resources/ImageLookupTables.qrc">
+               <normaloff>:/ImageLookupTables/btnRemove.png</normaloff>:/ImageLookupTables/btnRemove.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="m_MoveLabelUpButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../resources/ImageLookupTables.qrc">
+               <normaloff>:/ImageLookupTables/btnMoveUp.png</normaloff>:/ImageLookupTables/btnMoveUp.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="m_MoveLabelDownButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../resources/ImageLookupTables.qrc">
+               <normaloff>:/ImageLookupTables/btnMoveDown.png</normaloff>:/ImageLookupTables/btnMoveDown.png</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="m_EditLabelsGroupBox">
-       <property name="title">
-        <string>Edit Labels</string>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QTableWidget" name="widget_LabelTable">
-          <property name="selectionMode">
-           <enum>QAbstractItemView::ContiguousSelection</enum>
-          </property>
-          <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectRows</enum>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="showGrid">
-           <bool>true</bool>
-          </property>
-          <property name="sortingEnabled">
-           <bool>true</bool>
-          </property>
-          <property name="columnCount">
-           <number>3</number>
-          </property>
-          <attribute name="horizontalHeaderCascadingSectionResizes">
-           <bool>true</bool>
-          </attribute>
-          <attribute name="horizontalHeaderDefaultSectionSize">
-           <number>50</number>
-          </attribute>
-          <attribute name="horizontalHeaderMinimumSectionSize">
-           <number>27</number>
-          </attribute>
-          <attribute name="horizontalHeaderStretchLastSection">
-           <bool>true</bool>
-          </attribute>
-          <attribute name="verticalHeaderVisible">
-           <bool>false</bool>
-          </attribute>
-          <column>
-           <property name="text">
-            <string>Color</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Value</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Name</string>
-           </property>
-          </column>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_5">
-          <item>
-           <widget class="QPushButton" name="m_AddLabelButton">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="../../resources/ImageLookupTables.qrc">
-              <normaloff>:/ImageLookupTables/btnAdd.png</normaloff>:/ImageLookupTables/btnAdd.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="m_RemoveLabelButton">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="../../resources/ImageLookupTables.qrc">
-              <normaloff>:/ImageLookupTables/btnRemove.png</normaloff>:/ImageLookupTables/btnRemove.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="m_MoveLabelUpButton">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="../../resources/ImageLookupTables.qrc">
-              <normaloff>:/ImageLookupTables/btnMoveUp.png</normaloff>:/ImageLookupTables/btnMoveUp.png</iconset>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="m_MoveLabelDownButton">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="../../resources/ImageLookupTables.qrc">
-              <normaloff>:/ImageLookupTables/btnMoveDown.png</normaloff>:/ImageLookupTables/btnMoveDown.png</iconset>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <spacer name="m_BottomVerticalSpacer">
+      <spacer name="verticalSpacer_2">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>

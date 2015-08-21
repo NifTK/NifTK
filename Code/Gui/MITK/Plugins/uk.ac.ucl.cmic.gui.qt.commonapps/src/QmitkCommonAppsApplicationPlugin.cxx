@@ -483,14 +483,16 @@ void QmitkCommonAppsApplicationPlugin::OnLookupTablePropertyChanged(const itk::O
         float highestOpacity = 1;
         bool gotHighest = node->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
 
-        int lookupTableIndex = 0;
-        bool gotIndex = node->GetIntProperty("LookupTableIndex", lookupTableIndex);
+        std::string defaultName = "grey";
+        bool gotIndex = node->GetStringProperty("LookupTableName", defaultName);
+
+        QString lutName = QString::fromStdString(defaultName);
 
         if (gotLowest && gotHighest && gotIndex)
         {
           // Get LUT from Micro Service.
           QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
-          mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lookupTableIndex, lowestOpacity, highestOpacity);
+          mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
           node->SetProperty("LookupTable", mitkLUTProperty);
         }
       }
@@ -530,14 +532,14 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
       const mitk::NamedLookupTableProperty* prop = dynamic_cast<const mitk::NamedLookupTableProperty*>(lutProp.GetPointer());
       if(prop == NULL )
       {
-        unsigned int defaultIndex = 0;
+        QString defaultName = "grey";
 
         // Get LUT from Micro Service.
         QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
-        mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultIndex, lowestOpacity, highestOpacity);
+        mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultName, lowestOpacity, highestOpacity);
 
         node->ReplaceProperty("LookupTable", mitkLUTProperty);
-        node->SetIntProperty("LookupTableIndex", defaultIndex);
+        node->SetStringProperty("LookupTableName", defaultName.toStdString().c_str());
         node->SetProperty("Image Rendering.Mode", mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR));
       }
 

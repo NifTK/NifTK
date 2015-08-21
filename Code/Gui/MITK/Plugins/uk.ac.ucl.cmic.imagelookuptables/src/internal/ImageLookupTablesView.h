@@ -205,17 +205,13 @@ private:
   /**
    * \brief Enable/Disable controls related to scaling.
    */
-  void EnableScalingControls(bool b);
-
-  /**
-   * \brief Shows/hides controls related to scaling
-   */
-  void DisplayScalingControls(bool b);
+  void EnableScaleControls(bool b);
+;
 
   /**
    * \brief Shows/hides controls related to a label map
    */
-  void DisplayLabelMapControls(bool b);
+  void EnableLabelControls(bool b);
 
 
   /**
@@ -235,9 +231,14 @@ private:
   void RetrievePreferenceValues();
 
   /**
-   * \brief Retrieves lookuptables from preference service, and addes to LookupTableProviderService.
+   * \brief Attempts to load all lookuptables cached in the berry service.
    */
-  void RetrievePreferenceLookupTables();
+  void LoadCachedLookupTables();
+
+  /**
+   * \brief Attempts to load LookupTable from given file, returning display name of LookupTable if successful. 
+   */
+  QString LoadLookupTable(QString& fileName);
 
   /**
    * \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
