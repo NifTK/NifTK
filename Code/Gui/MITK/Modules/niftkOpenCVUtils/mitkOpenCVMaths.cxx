@@ -1450,7 +1450,7 @@ cv::Point2d FindNearestPoint ( const cv::Point2d& point,
 }
 
 //-----------------------------------------------------------------------------
-mitk::PickedObject FindNearestPoint ( const mitk::PickedObject& point, const std::vector <mitk::PickedObject>& matchingPoints , 
+mitk::PickedObject FindNearestPickedObject ( const mitk::PickedObject& point, const std::vector <mitk::PickedObject>& matchingPoints , 
     double* minRatio )
 {
   mitk::PickedObject nearestPoint;

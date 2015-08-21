@@ -208,7 +208,7 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
 std::istream& operator >> ( std::istream& is, PickedObject& po);
 std::ostream& operator << ( std::ostream& os, const PickedObject& po);
 
-bool operator < ( const PickedObject &PO1 , const PickedObject &PO2);
+extern "C++" NIFTKOPENCVUTILS_EXPORT bool operator < ( const PickedObject &PO1 , const PickedObject &PO2);
 
 /**
  * \class maintains a set a point vectors and ID's that 
@@ -228,6 +228,7 @@ public:
   void SetInOrderedMode ( const bool& mode);
   bool GetIsModified();
   itkSetMacro (FrameNumber, unsigned int);
+  itkGetMacro (FrameNumber, unsigned int);
   itkSetMacro (Channel, std::string);
   itkSetMacro (TimeStamp, unsigned long long);
   itkSetMacro (XScale, double);

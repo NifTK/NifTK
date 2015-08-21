@@ -63,7 +63,7 @@ mitk::PickedObject ProjectionErrorCalculator::FindNearestScreenPoint ( mitk::Pic
       mitkThrow() << "mitkProjectionErrors::FindNearestPoint classifier and projected point list sizes differ: " << 
       m_ClassifierProjectedPoints.size() << " != " <<  m_ProjectedPoints.size() ;
     }
-    matchingObject = mitk::FindNearestPoint( GSPoint , m_ClassifierProjectedPoints ,minRatio );
+    matchingObject = mitk::FindNearestPickedObject( GSPoint , m_ClassifierProjectedPoints ,minRatio );
     if ( matchingObject.m_Points.size () != 0)
     {
       matches = 1;

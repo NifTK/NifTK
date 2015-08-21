@@ -434,7 +434,7 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT cv::Point2d FindNearestPoint ( const cv::Po
  * \brief Searches through vector of 3D points and lines to find the one closest (by distance)
  * to the passed point. Returns an empty PickedPoint if no point found 
  */
-extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedObject FindNearestPoint ( const mitk::PickedObject& point,
+extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedObject FindNearestPickedObject ( const mitk::PickedObject& point,
     const std::vector < mitk::PickedObject >& matchingPoints , 
     double* minRatio = NULL );
 
@@ -443,7 +443,6 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedObject FindNearestPoint ( const
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT bool DistanceCompare ( const cv::Point2d& p1,
     const cv::Point2d& p2 );
-
 
 /**
  * \brief works out the rigid rotation correspondence between two sets of corresponding 

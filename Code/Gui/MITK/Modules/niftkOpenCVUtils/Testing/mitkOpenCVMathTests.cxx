@@ -602,28 +602,28 @@ void FindNearestPointTest ()
 
   mitk::PickedObject matched;
   double minRatio = 0 ;
-  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  matched = mitk::FindNearestPickedObject ( p , classifierPoints, &minRatio );
 
   MITK_TEST_CONDITION ( matched.m_Id == 2 , "Testing matched to point 2, got , " << matched.m_Id );
   MITK_TEST_CONDITION ( ( fabs ( minRatio - 0.6708/0.5000)) < 1e-3  , "Testing min ratio is 1.342 , got  " << minRatio) ;
 
   p.m_Id = 3;
-  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  matched = mitk::FindNearestPickedObject ( p , classifierPoints, &minRatio );
   MITK_TEST_CONDITION ( matched.m_Id == 3 , "Testing matched to point 3 when point id set, got , " << matched.m_Id );
   MITK_TEST_CONDITION ( boost::math::isinf(minRatio), "Testing min ratio is infinite , got  " << minRatio) ;
 
   p.m_IsLine = true;
-  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  matched = mitk::FindNearestPickedObject ( p , classifierPoints, &minRatio );
   MITK_TEST_CONDITION ( matched.m_Id == -1 , "Testing matched to nothing (-1) when point id beyond end, got , " << matched.m_Id );
   MITK_TEST_CONDITION ( boost::math::isnan(minRatio), "Testing min ratio is NaN , got  " << minRatio) ;
 
   p.m_Id = -1;
-  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  matched = mitk::FindNearestPickedObject ( p , classifierPoints, &minRatio );
   MITK_TEST_CONDITION ( matched.m_Id == 0 , "Testing matched to line 0 when point id not set, got , " << matched.m_Id );
   MITK_TEST_CONDITION ( boost::math::isinf(minRatio), "Testing min ratio is inf , got  " << minRatio) ;
 
   classifierPoints.clear();
-  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  matched = mitk::FindNearestPickedObject ( p , classifierPoints, &minRatio );
   MITK_TEST_CONDITION ( matched.m_Id == -1 , "Testing matched to nothing (-1) when classifier points in empty " << matched.m_Id );
   MITK_TEST_CONDITION ( boost::math::isnan(minRatio), "Testing min ratio is NaN , got  " << minRatio) ;
   
