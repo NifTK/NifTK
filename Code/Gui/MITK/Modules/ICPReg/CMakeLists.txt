@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  DEPENDS niftkCore
+  DEPENDS niftkCore niftkVTK
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

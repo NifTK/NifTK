@@ -157,8 +157,8 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
-      bool parseSuccess = linestream >> frameNumber >> sequenceNumber >> channel >> timeStamp;
-       if ( parseSuccess )
+      linestream >> frameNumber >> sequenceNumber >> channel >> timeStamp;
+       if ( linestream.good() )
       {
         m_FrameNumbers.push_back(frameNumber);
         m_VideoTimeStamps.Insert(timeStamp);
@@ -480,12 +480,12 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
-      bool parseSuccess = linestream >> m_CameraToTracker[indexnumber].at<double>(row,0) >>
+      linestream >> m_CameraToTracker[indexnumber].at<double>(row,0) >>
         m_CameraToTracker[indexnumber].at<double>(row,1) >>
         m_CameraToTracker[indexnumber].at<double>(row,2) >>
         m_CameraToTracker[indexnumber].at<double>(row,3);
 
-      if ( parseSuccess )
+      if ( linestream.good() )
       {
         row++;
         if ( row == 4 ) 
@@ -527,8 +527,8 @@ std::vector < mitk::WorldPointsWithTimingError > VideoTrackerMatching::ReadPoint
   unsigned int frameNumber; 
   unsigned int linenumber = 0;
   
-  bool ok = getline (fin,line); 
-  while ( ok )
+  std::getline (fin,line); 
+  while ( fin.good() )
   {
     mitk::WorldPointsWithTimingError   framePointsInLensCS;
     mitk::ProjectedPointPairsWithTimingError frameOnScreenPoints;
@@ -547,9 +547,9 @@ std::vector < mitk::WorldPointsWithTimingError > VideoTrackerMatching::ReadPoint
         std::string rxstring;
         std::string rystring;
 
-        bool parseSuccess = linestream >> frameNumber >> xstring >> ystring >> zstring
+        linestream >> frameNumber >> xstring >> ystring >> zstring
          >> lxstring >> lystring >> rxstring >> rystring;
-        if ( parseSuccess )
+        if ( linestream.good() )
         {
           framePointsInLensCS.m_Points.push_back(
               mitk::WorldPoint (cv::Point3d(
@@ -574,7 +574,7 @@ std::vector < mitk::WorldPointsWithTimingError > VideoTrackerMatching::ReadPoint
       {
         pointID --;
       }
-      ok = getline (fin, line);
+      std::getline (fin, line);
     }
     pointsInLensCS.push_back(framePointsInLensCS);
     if ( onScreenPoints != NULL )

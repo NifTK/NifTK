@@ -14,6 +14,19 @@
 
 include(mitkFunctionInstallExternalCMakeProject)
 
+#-----------------------------------------------------------------------------
+# Convenient macro allowing to download a file
+#-----------------------------------------------------------------------------
+
+macro(downloadFile url dest)
+  file(DOWNLOAD ${url} ${dest} STATUS status)
+  list(GET status 0 error_code)
+  list(GET status 1 error_msg)
+  if(error_code)
+    message(FATAL_ERROR "error: Failed to download ${url} - ${error_msg}")
+  endif()
+endmacro()
+
 # We need a proper patch program. On Linux and MacOS, we assume
 # that "patch" is available. On Windows, we download patch.exe
 # if not patch program is found.
@@ -414,11 +427,13 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DNIFTK_ADDITIONAL_C_FLAGS:STRING=${NIFTK_ADDITIONAL_C_FLAGS}
       -DNIFTK_ADDITIONAL_CXX_FLAGS:STRING=${NIFTK_ADDITIONAL_CXX_FLAGS}
       -DNIFTK_FFTWINSTALL:PATH=${NIFTK_LINK_PREFIX}/fftw     # We don't have CMake SuperBuild version of FFTW, so must rely on it already being there
+      -DNIFTK_DATA_DIR:PATH=${NIFTK_DATA_DIR}
       -DNIFTK_SHOW_CONSOLE_WINDOW:BOOL=${NIFTK_SHOW_CONSOLE_WINDOW}
       -DBOOST_ROOT:PATH=${BOOST_ROOT}
       -DBOOST_VERSION:STRING=${NIFTK_VERSION_Boost}
       -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDEDIR}
       -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}
+      -DMITK_USE_Boost_LIBRARIES:STRING=${MITK_USE_Boost_LIBRARIES}
       -DMITK_DIR:PATH=${MITK_DIR}
       -DCTK_DIR:PATH=${CTK_DIR}
       -DDCMTK_CMAKE_DEBUG_POSTFIX:STRING=d

@@ -14,8 +14,8 @@
 
 
 MITK_CREATE_MODULE(
-  DEPENDS MitkLegacyIO niftkcommon niftkCore
-  PACKAGE_DEPENDS OpenCV
+  DEPENDS MitkLegacyIO niftkcommon niftkVTK niftkCore
+  PACKAGE_DEPENDS OpenCV Boost|filesystem
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

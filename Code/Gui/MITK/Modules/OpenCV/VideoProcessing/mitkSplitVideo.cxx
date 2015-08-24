@@ -78,7 +78,7 @@ bool SplitVideo::Split(
   double fps = (double)cvGetCaptureProperty (capturer, CV_CAP_PROP_FPS);
   int codec = (int)cvGetCaptureProperty (capturer,CV_CAP_PROP_FOURCC);
 
-  char EXT[] = {codec & 0XFF , (codec & 0XFF00) >> 8,(codec & 0XFF0000) >> 16,(codec & 0XFF000000) >> 24, 0};
+  long EXT[] = {codec & 0XFF, (codec & 0XFF00) >> 8, (codec & 0XFF0000) >> 16, (codec & 0XFF000000) >> 24, 0};
   MITK_INFO << codec << " " << EXT[0] << ", " << EXT[1] << ", " << EXT[2] << ", " << EXT[3];
 
 
@@ -105,8 +105,8 @@ bool SplitVideo::Split(
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
-      bool parseSuccess = linestream >> frameNumber >> sequenceNumber >> channel >> timeStamp;
-      if ( parseSuccess ) 
+      linestream >> frameNumber >> sequenceNumber >> channel >> timeStamp;
+      if ( linestream.good() ) 
       {
         cv::Mat videoImage = cvQueryFrame ( capturer );
 

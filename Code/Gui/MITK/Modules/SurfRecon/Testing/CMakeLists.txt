@@ -14,3 +14,7 @@
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkSurfRecon)
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # Suppress warning because of a bug in the Boost gil library.
+  set_target_properties(${TESTDRIVER} PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
+endif()

@@ -146,7 +146,7 @@ void EvaluateIntrinsicParametersOnNumberOfFrames::ReadTimeStampFromLogFile()
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
-      bool parseSuccess = linestream >> frameNumber >> sequenceNumber >> channel >> timeStamp;
+      linestream >> frameNumber >> sequenceNumber >> channel >> timeStamp;
 
       m_TimeStamps.push_back(timeStamp); 
       m_NumberOfFrames++;
@@ -162,8 +162,8 @@ void EvaluateIntrinsicParametersOnNumberOfFrames::MatchingVideoFramesToTrackingM
   long long timingError;
   unsigned long long targetTimeStamp; 
 	
-	m_MatchedTrackingMatrix.clear();
-	m_MatchedVideoFrames.clear();
+  m_MatchedTrackingMatrix.clear();
+  m_MatchedVideoFrames.clear();
 
   unsigned int size = m_TimeStamps.size();
 
@@ -173,8 +173,8 @@ void EvaluateIntrinsicParametersOnNumberOfFrames::MatchingVideoFramesToTrackingM
 
     if ( timingError < m_AbsTrackerTimingError && timingError > -m_AbsTrackerTimingError )
     {
-		  m_MatchedVideoFrames.push_back(m_TimeStamps[i]);
-			m_MatchedTrackingMatrix.push_back(targetTimeStamp);
+      m_MatchedVideoFrames.push_back(m_TimeStamps[i]);
+      m_MatchedTrackingMatrix.push_back(targetTimeStamp);
     }
   }
 }
@@ -658,7 +658,7 @@ int EvaluateIntrinsicParametersOnNumberOfFrames::Read2DPointsFromFile(const char
     {
       std::stringstream linestream(line);
       float *pt = new float[2]; 
-      bool parseSuccess = linestream >> pt[0] >> pt[1];
+      linestream >> pt[0] >> pt[1];
 
       ptvec.push_back(pt); 
       counter++;
@@ -686,7 +686,7 @@ int EvaluateIntrinsicParametersOnNumberOfFrames::Read3DPointsFromFile(const char
     {
       std::stringstream linestream(line);
       float *pt = new float[3]; 
-      bool parseSuccess = linestream >> pt[0] >> pt[1] >> pt[2];
+      linestream >> pt[0] >> pt[1] >> pt[2];
 
       ptvec.push_back(pt); 
       counter++;
