@@ -162,9 +162,10 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   this->mitkWidget4->setAcceptDrops(true);
 
   // Set these off, as it wont matter until there is an image dropped, with a specific layout and orientation.
-  m_CornerAnnotations[AXIAL]->SetText(0, "");
-  m_CornerAnnotations[SAGITTAL]->SetText(0, "");
-  m_CornerAnnotations[CORONAL]->SetText(0, "");
+  for (int i = 0; i < 4; ++i)
+  {
+    this->SetDecorationProperties("", this->GetDecorationColor(i), i);
+  }
 
   for (int i = 0; i < 3; ++i)
   {
@@ -989,9 +990,10 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
     }
 
     // Add these annotations the first time we have a real geometry.
-    m_CornerAnnotations[AXIAL]->SetText(0, "Axial");
-    m_CornerAnnotations[SAGITTAL]->SetText(0, "Sagittal");
-    m_CornerAnnotations[CORONAL]->SetText(0, "Coronal");
+    this->SetDecorationProperties("Axial", this->GetDecorationColor(0), 0);
+    this->SetDecorationProperties("Sagittal", this->GetDecorationColor(1), 1);
+    this->SetDecorationProperties("Coronal", this->GetDecorationColor(2), 2);
+    this->SetDecorationProperties("3D", this->GetDecorationColor(3), 3);
 
     /// The place of the direction annotations on the render window:
     ///
