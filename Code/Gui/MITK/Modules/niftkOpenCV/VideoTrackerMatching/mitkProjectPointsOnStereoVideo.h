@@ -139,8 +139,12 @@ public:
   /**
    * \brief calculates the triangulation errors
    */
-  void CalculateTriangulationErrors (std::string outPrefix,  mitk::VideoTrackerMatching::Pointer trackerMatcher);
+  void CalculateTriangulationErrors (std::string outPrefix);
 
+  /**
+   * \brief calculates the triangulation errors
+   */
+  void TriangulateGoldStandardPoints (std::string outPrefix);
 
   /** 
    * \brief Set the projector screen buffer
@@ -173,6 +177,7 @@ private:
  
   bool                          m_InitOK;
   bool                          m_ProjectOK;
+  bool                          m_TriangulateOK;
   bool                          m_DrawAxes;
   bool                          m_LeftGSFramesAreEven; // true if the left GS frame numbers are even
   bool                          m_RightGSFramesAreEven; // true if the right GS frame numbers are even
@@ -209,11 +214,9 @@ private:
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
   // a bunch of stuff for calculating errors
-  std::vector < mitk::PickedObject >
-                                m_LeftGoldStandardPoints;   //for calculating errors, the gold standard left screen points
-  std::vector < mitk::PickedObject >
-                                m_RightGoldStandardPoints;   //for calculating errors, the gold standard right screen points
-  mitk::PickedPointList::Pointer         m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
+  std::vector < mitk::PickedObject >              m_GoldStandardPoints;   //for calculating errors, the gold standard screen points
+  std::vector < mitk::PickedObject >              m_TriangulatedGoldStandardPoints;   //for calculating errors, triangulated into left lens coordinates, where possible.
+  mitk::PickedPointList::Pointer                  m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
   std::vector < mitk::PickedPointList::Pointer >
                                 m_ClassifierProjectedPointLists; // the projected points used for classifying the gold standard screen points
 
@@ -221,7 +224,7 @@ private:
   std::vector < cv::Point2d >   m_RightProjectionErrors;  //the projection errors in pixels
   std::vector < cv::Point3d >   m_LeftReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
   std::vector < cv::Point3d >   m_RightReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
-  std::vector < cv::Point3d >   m_TriangulationErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
+  std::vector < cv::Point3d >   m_TriangulationErrors; // the triangulation errors
 
   cv::VideoCapture*             m_Capture;
   CvVideoWriter*                m_LeftWriter;
@@ -247,10 +250,15 @@ private:
  
   /* \brief 
    * Finds  the nearest point in 
-   * m_ProjectedPoints
+   * m_ProjectedPoints, and assigns the index to the point if necessary. If a point is found it assigns the index
+   * to the point. Returns true if point is found. 
    */
-  cv::Point2d FindNearestScreenPoint ( mitk::PickedObject GSPoint, 
-      bool left,  double* minRatio = NULL ,unsigned int * index = NULL );
+  bool FindNearestScreenPoint ( const mitk::PickedObject& GSPoint );
+
+  /* \brief 
+   * goes through a picked point list and returns the object that corresponds to that passed.
+   */
+  mitk::PickedObject GetMatchingPickedObject ( const mitk::PickedObject& po, const mitk::PickedPointList& list );
 
   /* \brief 
    * Undistorts a picked object
@@ -266,14 +274,28 @@ private:
    * Projects a picked point list from left lens space to screen space. Uses the framenumber to 
    * determine whether to project to left or right screen (even is left screen)
    */
-  mitk::PickedPointList::Pointer ProjectPickedPointList ( const mitk::PickedPointList& po_leftLens, double screenBuffer );
+  mitk::PickedPointList::Pointer ProjectPickedPointList ( const mitk::PickedPointList::Pointer po_leftLens, double screenBuffer );
+
+  /* \brief 
+   * Triangulates gold standard picked objects, populating m_TriangulatedGoldStandardObjects 
+   */
+  bool TriangulateGoldStandardObjectList ( );
+
+  /* \brief 
+   * Triangulates a pair of picked objects into the coordinates of the left lens
+   */
+  mitk::PickedObject TriangulatePickedObjects ( const mitk::PickedObject po_leftScreen, const mitk::PickedObject po_rightScreen );
 
    /* \brief 
    * Multiplies a picked point list by a matrix
    */
-   mitk::PickedPointList::Pointer TransformPickedPointListToLeftLens ( const mitk::PickedPointList& po, cv::Mat transform, unsigned long long timestamp, int framenumber );
+   mitk::PickedPointList::Pointer TransformPickedPointListToLeftLens ( const mitk::PickedPointList::Pointer po, cv::Mat transform, unsigned long long timestamp, int framenumber );
 
-
+   /* \brief 
+   * scans through the vector of gold standard points and classifies them (useful if un ordered picking was used), 
+   * This must be run after project and before any error calculation
+   */
+  void ClassifyGoldStandardPoints ();
   /* \brief use this this find video data, used m_Directory and set m_VideoIn
    */
   void FindVideoData (mitk::VideoTrackerMatching::Pointer trackerMatcher);
