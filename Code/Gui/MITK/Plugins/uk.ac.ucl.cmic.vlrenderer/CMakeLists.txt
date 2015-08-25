@@ -26,12 +26,13 @@ find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
 link_directories(${VL_LIBRARIES})
 include_directories(${VL_INCLUDE_DIRS})
 
-
 mitk_create_plugin(
   EXPORT_DIRECTIVE NEWVISUALIZATION_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS ${_depends}
 )
+
+target_link_libraries(uk_ac_ucl_cmic_vlrenderer PRIVATE ${VL_LIBRARIES})
 
 # not nice...
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
