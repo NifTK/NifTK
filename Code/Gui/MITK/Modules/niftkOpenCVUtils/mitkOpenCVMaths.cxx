@@ -1459,7 +1459,8 @@ mitk::PickedObject FindNearestPickedObject ( const mitk::PickedObject& point, co
 
   for ( std::vector<mitk::PickedObject>::const_iterator it = matchingPoints.begin() ; it < matchingPoints.end() ; it++ )
   {
-    double distance = point.DistanceTo(*it);
+    cv::Point3d delta;
+    double distance = point.DistanceTo(*it, delta);
     if ( distance < nextNearestDistance )
     {
       if ( distance < nearestDistance ) 
@@ -2339,25 +2340,33 @@ double DistanceToLine ( const std::pair<cv::Point3d, cv::Point3d>& line, const c
 }
 
 //-----------------------------------------------------------------------------
-double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2 )
+double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2, cv::Point3d* delta )
 {
+  if ( delta != NULL )
+  {
+    *delta = p1 - p2;
+  }
   return mitk::Norm ( p1 - p2 );
 }
 
 //-----------------------------------------------------------------------------
 double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const std::vector <cv::Point3d>& s2, 
-    unsigned int splineOrder )
+    unsigned int splineOrder, cv::Point3d* delta )
 {
   if ( ( s1.size() < 1) || (s2.size() < 2) )
   {
     MITK_WARN << "Called mitk::DistanceBetweenTwoSplines with insufficient points, returning inf.: " << s1.size() << ", " << s2.size();
     return std::numeric_limits<double>::infinity();
   }
+  std::vector < cv::Point3d > deltas ;
   if ( splineOrder == 1 )
   {
-    double sumOfSquares = 0;
+    double sum = 0;
     for ( std::vector<cv::Point3d>::const_iterator it_1 = s1.begin() ; it_1 < s1.end() ; it_1 ++ )
     {
+      deltas.push_back ( cv::Point3d ( std::numeric_limits<double>::infinity() , 
+            std::numeric_limits<double>::infinity() , 
+            std::numeric_limits<double>::infinity() )); 
       if ( mitk::IsNaN ( *it_1) )
       {
         return std::numeric_limits<double>::quiet_NaN();
@@ -2369,15 +2378,21 @@ double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const s
         {
           return std::numeric_limits<double>::quiet_NaN();
         }
-        double distance = mitk::DistanceToLineSegment ( std::pair < cv::Point3d, cv::Point3d >(*(it_2) , *(it_2-1)), *it_1 );
+        cv::Point3d signedDistance;
+        double distance = mitk::DistanceToLineSegment ( std::pair < cv::Point3d, cv::Point3d >(*(it_2) , *(it_2-1)), *it_1, &signedDistance );
         if ( distance < shortestDistance )
         {
           shortestDistance = distance;
+          deltas.back() = signedDistance;
         }
       }
-      sumOfSquares += shortestDistance * shortestDistance;
+      sum += shortestDistance;
     }
-    return sqrt( sumOfSquares / s1.size() );
+    if ( delta != NULL )
+    {
+      *delta = GetCentroid ( deltas );
+    }
+    return sum/s1.size();
   }
   else
   {
@@ -2387,7 +2402,7 @@ double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const s
 }
 
 //-----------------------------------------------------------------------------
-double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& x0 )
+double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& x0, cv::Point3d* delta )
 {
   //courtesy Wolfram Mathworld
   cv::Point3d x1;
@@ -2400,16 +2415,28 @@ double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, 
   cv::Point3d d2 = x2-x1;
   
   double lambda = mitk::DotProduct ( d2, d1 ) /  mitk::DotProduct ( d2,d2 );
-  if ( lambda < 0 ) //were beyond x2
+  if ( lambda < 0 ) //we're beyond x2
   {
+    if ( delta != NULL ) 
+    {
+      *delta = x0 - x2;
+    }
     return mitk::Norm ( x2 - x0 );
   }
   if ( lambda > 1 ) //we're beyond x1
   {
+    if ( delta != NULL ) 
+    {
+      *delta = x0 - x1;
+    }
     return mitk::Norm ( x1 - x0 );
   }
   //else we're on the line segment
   
+  if ( delta != NULL ) 
+  {
+    *delta = x0 - ( x2 - lambda * d2 );
+  }
   return mitk::Norm ( mitk::CrossProduct ( d2,d1 )) / (mitk::Norm(d2));
 
 }

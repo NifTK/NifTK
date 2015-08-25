@@ -635,18 +635,24 @@ void DistanceBetweenTwoPointsTest()
   cv::Point3d p2 ( 1.1, 10.4, 3.6);
   cv::Point3d p3 ( 1.1, 10.4, std::numeric_limits<double>::quiet_NaN());
   cv::Point3d p4 ( 1.1, 10.4, std::numeric_limits<double>::infinity());
-
+  
+  cv::Point3d delta;
   double distance;
-  distance = mitk::DistanceBetweenTwoPoints ( p1, p2 );
+  distance = mitk::DistanceBetweenTwoPoints ( p1, p2, &delta );
   MITK_TEST_CONDITION ( fabs ( distance - 10.062 ) < 1e-3 , "Testing distance between points = 10.062, got : " << distance );
-  distance = mitk::DistanceBetweenTwoPoints ( p2, p1 );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( delta, cv::Point3d ( -2.2, 9.8, -0.6 ), 1e-6), "Testing delta, got : " << delta );
+  distance = mitk::DistanceBetweenTwoPoints ( p2, p1, &delta );
   MITK_TEST_CONDITION ( fabs ( distance - 10.062 ) < 1e-3 , "Testing distance between points = 10.062, got : " << distance );
-  distance = mitk::DistanceBetweenTwoPoints ( p1, p3 );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( delta, cv::Point3d ( 2.2, -9.8, 0.6 ), 1e-6) ,"Testing delta, got : " << delta );
+  distance = mitk::DistanceBetweenTwoPoints ( p1, p3, &delta );
   MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between points is not a number, got : " << distance );
-  distance = mitk::DistanceBetweenTwoPoints ( p2, p4 );
+  MITK_TEST_CONDITION ( ! mitk::NearlyEqual ( delta, cv::Point3d (  -2.2, 9.8, std::numeric_limits<double>::quiet_NaN()  ), 1e-6), "Testing delta, got : " << delta );
+  distance = mitk::DistanceBetweenTwoPoints ( p2, p4, &delta );
   MITK_TEST_CONDITION ( boost::math::isinf( distance ), "Testing distance between points is infinite, got : " << distance );
-  distance = mitk::DistanceBetweenTwoPoints ( p4, p3 );
+  MITK_TEST_CONDITION ( ! mitk::NearlyEqual ( delta, cv::Point3d ( 0.0, 0.0, std::numeric_limits<double>::infinity() ), 1e-6), "Testing delta, got : " << delta );
+  distance = mitk::DistanceBetweenTwoPoints ( p4, p3, &delta );
   MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between points is not a number, got : " << distance );
+  MITK_TEST_CONDITION ( ! mitk::NearlyEqual ( delta, cv::Point3d ( 0.0, 0.0, std::numeric_limits<double>::quiet_NaN() ), 1e-6), "Testing delta, got : " << delta );
 }
 
 void DistanceBetweenTwoSplinesTest()
@@ -670,26 +676,33 @@ void DistanceBetweenTwoSplinesTest()
   spline2.push_back(p1);
   
   double distance;
-  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1 );
+  cv::Point3d delta;
+  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1, &delta );
   MITK_TEST_CONDITION ( fabs ( distance - 0.408 ) < 1e-3 , "Testing distance between splines = 0.408, got : " << distance );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( delta, cv::Point3d ( 0.333, -0.167, -0.167 ), 1e-3), "Testing delta, got : " << delta );
   spline2.push_back(p2);
-  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1 );
-  MITK_TEST_CONDITION ( fabs ( distance -  0.441 ) < 1e-3 , "Testing distance between splines = 0.441, got : " << distance );
-  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1 );
-  MITK_TEST_CONDITION ( fabs ( distance -  1.094 ) < 1e-3 , "Testing distance between splines = 1.094, got : " << distance );
+  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1, &delta );
+  MITK_TEST_CONDITION ( fabs ( distance -  0.440 ) < 1e-3 , "Testing distance between splines = 0.440, got : " << distance );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( delta, cv::Point3d ( 0.111, -0.139, 0.139 ), 1e-3), "Testing delta, got : " << delta );
+  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1, &delta);
+  MITK_TEST_CONDITION ( fabs ( distance -  0.980 ) < 1e-3 , "Testing distance0.139n splines = 0.980, got : " << distance );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( delta, cv::Point3d ( -0.091, 0.197, -0.136 ), 1e-3), "Testing delta, got : " << delta );
 
   spline1.push_back(l4);
-  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1 );
-  MITK_TEST_CONDITION ( fabs ( distance -  0.441 ) < 1e-3 , "Testing distance between splines = 0.441, got : " << distance );
-  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1 );
+  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1, &delta );
+  MITK_TEST_CONDITION ( fabs ( distance -  0.440 ) < 1e-3 , "Testing distance between splines = 0.440, got : " << distance );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( delta, cv::Point3d ( 0.111, -0.139, 0.139 ), 1e-3), "Testing delta, got : " << delta );
+  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1, &delta );
   MITK_TEST_CONDITION ( boost::math::isinf( distance ), "Testing distance between splines is infinite, got : " << distance );
+  MITK_TEST_CONDITION ( !mitk::IsNotNaNorInf ( delta ), "Testing delta is inf, got : " << delta );
 
   spline1.push_back(l5);
-  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1 );
+  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1, &delta );
   MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between splines is not a number, got : " << distance );
-  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1 );
+  MITK_TEST_CONDITION ( !mitk::IsNotNaNorInf ( delta ), "Testing delta is inf, got : " << delta );
+  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1, &delta );
   MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between splines is not a number, got : " << distance );
-
+  MITK_TEST_CONDITION ( !mitk::IsNotNaNorInf ( delta ), "Testing delta is inf, got : " << delta );
 
 }
 

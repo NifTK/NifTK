@@ -459,7 +459,7 @@ PickedObject PickedObject::CopyByHeader() const
 
 
 //-----------------------------------------------------------------------------
-double PickedObject::DistanceTo(const PickedObject& otherPickedObject , const long long& allowableTimingError) const
+double PickedObject::DistanceTo(const PickedObject& otherPickedObject , cv::Point3d& deltas,  const long long& allowableTimingError) const
 {
   if ( ! otherPickedObject.HeadersMatch (*this) )
   {
@@ -468,11 +468,11 @@ double PickedObject::DistanceTo(const PickedObject& otherPickedObject , const lo
   if ( m_IsLine )
   {
     unsigned int splineOrder = 1;
-    return mitk::DistanceBetweenTwoSplines ( m_Points, otherPickedObject.m_Points , splineOrder );
+    return mitk::DistanceBetweenTwoSplines ( m_Points, otherPickedObject.m_Points , splineOrder , &deltas );
   }
   else
   {
-    return mitk::DistanceBetweenTwoPoints ( m_Points[0], otherPickedObject.m_Points[0] );
+    return mitk::DistanceBetweenTwoPoints ( m_Points[0], otherPickedObject.m_Points[0], &deltas );
   }
 }
 

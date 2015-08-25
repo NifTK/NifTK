@@ -582,24 +582,27 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceToLine ( const std::pair<cv:
  * \brief calculates the distance between two points
  * \param point 1
  * \param point 2
+ * \param optional the signed distance vector between the two points
  */
-extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2 );
+extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2, cv::Point3d* delta = NULL );
 
 /**
- * \brief calculates the shortest distance between two splines.  
+ * \brief calculates the average shortest distance between two splines.  
  * \param control points for spline 1, each of which is used for a measurement
  * \param control points for spline 2, which form the line segments for the measurement
  * \param order the polynomial order of the spline (only 1 is implemented)
+ * \param optional the mean signed distance vector between the two points
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s0,
-    const std::vector <cv::Point3d>& s1, unsigned int splineOrder );
+    const std::vector <cv::Point3d>& s1, unsigned int splineOrder , cv::Point3d* delta = NULL );
 
 /**
  * \brief calculates the distance between a line segment and a point
  * \param the line defined by the two end points of the line segment
  * \param the point
+ * \param optional the signed distance vector between the two points
  */
-extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& point);
+extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& point, cv::Point3d* delta = NULL);
 
 /**
  * \brief calculates the shortest distance between two lines  
