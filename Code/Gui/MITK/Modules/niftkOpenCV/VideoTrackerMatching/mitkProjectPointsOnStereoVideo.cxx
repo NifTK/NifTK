@@ -1116,7 +1116,7 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::TransformPickedPoint
   
   transformedList->SetPickedObjects (pickedObjects);
   transformedList->SetChannel ("left_lens");
-  return mitk::PickedPointList::New();
+  return transformedList;
 }
 
 
