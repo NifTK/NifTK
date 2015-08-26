@@ -275,13 +275,21 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       if ( ! m_DontProject ) 
       {
         m_WorldToLeftCameraMatrices.push_back(WorldToLeftCamera);
-        m_PointsInLeftLensCS.push_back (TransformPickedPointListToLeftLens ( m_WorldPoints, WorldToLeftCamera, matrixTimeStamp, framenumber ));
-        mitk::PickedPointList::Pointer classifierPointsInLeftLensCS = 
-          TransformPickedPointListToLeftLens ( m_ClassifierWorldPoints, WorldToLeftCamera, matrixTimeStamp, framenumber );
 
-        //project onto screen
-        m_ProjectedPointLists.push_back( ProjectPickedPointList ( m_PointsInLeftLensCS.back(), m_ProjectorScreenBuffer )) ;
-        m_ClassifierProjectedPointLists.push_back (ProjectPickedPointList ( classifierPointsInLeftLensCS , m_ClassifierScreenBuffer ));
+        if ( ! m_WorldPoints.IsNull () )
+        {
+          m_PointsInLeftLensCS.push_back (TransformPickedPointListToLeftLens ( m_WorldPoints, WorldToLeftCamera, matrixTimeStamp, framenumber ));
+          m_ProjectedPointLists.push_back( ProjectPickedPointList ( m_PointsInLeftLensCS.back(), m_ProjectorScreenBuffer )) ;
+        }
+        
+        if ( ! m_ClassifierWorldPoints.IsNull() )
+        {
+          mitk::PickedPointList::Pointer classifierPointsInLeftLensCS = 
+            TransformPickedPointListToLeftLens ( m_ClassifierWorldPoints, WorldToLeftCamera, matrixTimeStamp, framenumber );
+
+          //project onto screen
+          m_ClassifierProjectedPointLists.push_back (ProjectPickedPointList ( classifierPointsInLeftLensCS , m_ClassifierScreenBuffer ));
+        }
       }
 
       if ( m_Visualise || m_SaveVideo ) 
