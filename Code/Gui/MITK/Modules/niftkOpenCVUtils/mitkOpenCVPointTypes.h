@@ -229,16 +229,16 @@ public:
   void SetInOrderedMode ( const bool& mode);
   bool GetIsModified();
   itkSetMacro (FrameNumber, unsigned int);
-  itkGetMacro (FrameNumber, unsigned int);
+  itkGetConstMacro (FrameNumber, unsigned int);
   itkSetMacro (Channel, std::string);
   itkGetMacro (Channel, std::string);
   itkSetMacro (TimeStamp, unsigned long long);
   itkSetMacro (XScale, double);
   itkSetMacro (YScale, double);
-  std::vector <mitk::PickedObject> GetPickedObjects();
+  std::vector <mitk::PickedObject> GetPickedObjects() const;
   void SetPickedObjects ( const std::vector < mitk::PickedObject > & objects );
   
-  unsigned int GetListSize();
+  unsigned int GetListSize() const;
   void ClearList();
 
   unsigned int AddPoint (const cv::Point2i& point);

@@ -491,13 +491,31 @@ PickedPointList::~PickedPointList()
 {}
 
 //-----------------------------------------------------------------------------
+PickedPointList::Pointer PickedPointList::CopyByHeader()
+{
+  mitk::PickedPointList::Pointer newPL = mitk::PickedPointList::New();
+   
+  newPL->m_InLineMode = m_InLineMode;
+  newPL->m_InOrderedMode = m_InOrderedMode;
+  newPL->m_IsModified = true;
+  newPL->m_XScale = m_XScale;
+  newPL->m_YScale = m_YScale;
+  
+  newPL->m_TimeStamp = m_TimeStamp;
+  newPL->m_FrameNumber = m_FrameNumber;
+  newPL->m_Channel = m_Channel;
+  return newPL;
+}
+
+
+//-----------------------------------------------------------------------------
 void PickedPointList::PutOut (std::ofstream& os )
 {
   mitk::SavePickedObjects ( m_PickedObjects, os );
 }
 
 //-----------------------------------------------------------------------------
-std::vector < mitk::PickedObject > PickedPointList::GetPickedObjects ()
+std::vector < mitk::PickedObject > PickedPointList::GetPickedObjects  () const 
 {
   return m_PickedObjects;
 }
@@ -509,7 +527,7 @@ void PickedPointList::SetPickedObjects (const std::vector < mitk::PickedObject >
 }
 
 //-----------------------------------------------------------------------------
-unsigned int  PickedPointList::GetListSize ()
+unsigned int  PickedPointList::GetListSize () const
 {
   return m_PickedObjects.size();
 }

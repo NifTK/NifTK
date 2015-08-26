@@ -922,6 +922,41 @@ bool ProjectPointsOnStereoVideo::FindNearestScreenPoint ( mitk::PickedObject& GS
   GSPickedObject.m_Id = nearestObject.m_Id;
   return true;
 }
+
+//-----------------------------------------------------------------------------
+mitk::PickedObject ProjectPointsOnStereoVideo::GetMatchingPickedObject ( const mitk::PickedObject& PickedObject ,
+    const mitk::PickedPointList& PointList )
+{
+  assert ( PickedObject.m_FrameNumber ==  PointList.GetFrameNumber() );
+
+  if ( PickedObject.m_Id == -1 )
+  {
+    MITK_ERROR << "Called get matching picked object with unclassified picked object, error";
+    return mitk::PickedObject();
+  }
+  
+  unsigned int matches = 0;
+  mitk::PickedObject match;
+  for ( unsigned int i = 0 ; i < PointList.GetListSize() ; i ++ )
+  {
+    if ( PickedObject.HeadersMatch ( PointList.GetPickedObjects()[i], m_AllowableTimingError ) )
+    {
+      match =  PointList.GetPickedObjects()[i];
+      matches++;
+    }
+  }
+  if ( matches == 0 )
+  {
+    MITK_ERROR << "Called get matching picked object but got not matches.";
+  }
+  if ( matches > 1 )
+  {
+    MITK_ERROR << "Called get matching picked object but multiple matches " << matches;
+  }
+
+  return match;
+}
+
 //-----------------------------------------------------------------------------
 mitk::PickedObject ProjectPointsOnStereoVideo::UndistortPickedObject ( const mitk::PickedObject& po )
 {
@@ -1103,6 +1138,20 @@ void ProjectPointsOnStereoVideo::AppendClassifierWorldPoints (
   //  m_ClassifierWorldPoints->push_back(points[i]);
   }
   m_ProjectOK = false;
+}
+
+//-----------------------------------------------------------------------------
+std::vector <mitk::WorldPointsWithTimingError> ProjectPointsOnStereoVideo::GetPointsInLeftLensCS ()
+{
+   MITK_ERROR << "get points in left lens cs is  broke";
+   assert (false);
+}
+
+//-----------------------------------------------------------------------------
+std::vector <mitk::ProjectedPointPairsWithTimingError> ProjectPointsOnStereoVideo::GetProjectedPoints ()
+{
+   MITK_ERROR << "get projected points is  broke";
+   assert (false);
 }
 
 //-----------------------------------------------------------------------------

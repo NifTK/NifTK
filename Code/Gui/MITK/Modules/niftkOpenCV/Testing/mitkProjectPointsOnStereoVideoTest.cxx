@@ -257,7 +257,7 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   Projector->SetLeftGoldStandardPoints(leftGS);
   Projector->SetRightGoldStandardPoints(rightGS);
   Projector->CalculateProjectionErrors("");
-  Projector->CalculateTriangulationErrors("", matcher);
+  Projector->CalculateTriangulationErrors("");
 
   MITK_TEST_CONDITION(CheckProjectionErrors(Projector), "Testing projection Errors");
   MITK_TEST_CONDITION(CheckReProjectionErrors(Projector), "Testing re-projection Errors");
