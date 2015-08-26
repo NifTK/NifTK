@@ -57,6 +57,8 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_VideoWidth(1920)
 , m_VideoHeight(540)
 , m_Capture(NULL)
+, m_WorldPoints(NULL)
+, m_ClassifierWorldPoints(NULL)
 , m_LeftWriter(NULL)
 , m_RightWriter(NULL)
 , m_AllowablePointMatchingRatio (1.0) 
@@ -1119,6 +1121,11 @@ void ProjectPointsOnStereoVideo::ClassifyGoldStandardPoints ()
 void ProjectPointsOnStereoVideo::AppendWorldPoints ( 
     std::vector < mitk::WorldPoint > points )
 {
+  if ( m_WorldPoints.IsNull() ) 
+  {
+    m_WorldPoints = mitk::PickedPointList::New();
+    m_WorldPoints->SetChannel ("world");
+  }
   m_WorldPoints->SetInLineMode(false);
   m_WorldPoints->SetInOrderedMode(true);
   for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
@@ -1131,6 +1138,11 @@ void ProjectPointsOnStereoVideo::AppendWorldPoints (
 void ProjectPointsOnStereoVideo::AppendClassifierWorldPoints ( 
     std::vector < mitk::WorldPoint > points )
 {
+  if ( m_ClassifierWorldPoints.IsNull() )
+  {
+    m_ClassifierWorldPoints = mitk::PickedPointList::New();
+    m_ClassifierWorldPoints->SetChannel ("world");
+  }
   m_ClassifierWorldPoints->SetInLineMode(false);
   m_ClassifierWorldPoints->SetInOrderedMode(true);
   for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
@@ -1163,6 +1175,11 @@ void ProjectPointsOnStereoVideo::AppendWorldPointsByTriangulation
 {
   assert ( framenumber.size() == onScreenPointPairs.size() );
 
+  if ( m_WorldPoints.IsNull() ) 
+  {
+    m_WorldPoints = mitk::PickedPointList::New();
+    m_WorldPoints->SetChannel ("world");
+  }
   if ( ! trackerMatcher->IsReady () ) 
   {
     MITK_ERROR << "Attempted to triangulate points without tracking matrices.";
@@ -1181,11 +1198,10 @@ void ProjectPointsOnStereoVideo::AppendWorldPointsByTriangulation
       0.0, m_VideoWidth, 0.0 , m_VideoHeight, 
       std::numeric_limits<double>::quiet_NaN());
 
-   MITK_ERROR << "Append world points is temporality broke";
-   assert (false);
     mitk::WorldPoint point;
     unsigned int wpSize=m_WorldPoints->GetListSize();
-  /*  for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ ) 
+  
+    for ( unsigned int i = 0 ; i < onScreenPointPairs.size() ; i ++ ) 
     {
       point = leftLensPoints[i];
       long long timingError;
@@ -1193,16 +1209,16 @@ void ProjectPointsOnStereoVideo::AppendWorldPointsByTriangulation
           framenumber[i] , &timingError , m_TrackerIndex, perturbation, m_ReferenceIndex) * point;
     if ( abs(timingError) < m_AllowableTimingError )
     {
-      m_WorldPoints.push_back ( point );
+      m_WorldPoints->AddPoint ( point.m_Point, point.m_Scalar );
       MITK_INFO << framenumber[i] << " " << onScreenPointPairs[i].m_Left << ","
-        << onScreenPointPairs[i].m_Right << " => " << point.m_Point << " => " << m_WorldPoints[i+wpSize].m_Point;
+        << onScreenPointPairs[i].m_Right << " => " << point.m_Point << " => " << m_WorldPoints->GetPickedObjects()[i+wpSize].m_Points[0];
     }
     else
     {
       MITK_WARN << framenumber[i] << "Point rejected due to excessive timing error: " << timingError << " > " << m_AllowableTimingError;
     }
 
-  }*/
+  }
   m_ProjectOK = false;
 }
 
