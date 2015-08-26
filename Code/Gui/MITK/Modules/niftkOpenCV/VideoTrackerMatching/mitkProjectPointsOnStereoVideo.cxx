@@ -286,8 +286,6 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
         {
           mitk::PickedPointList::Pointer classifierPointsInLeftLensCS = 
             TransformPickedPointListToLeftLens ( m_ClassifierWorldPoints, WorldToLeftCamera, matrixTimeStamp, framenumber );
-
-          //project onto screen
           m_ClassifierProjectedPointLists.push_back (ProjectPickedPointList ( classifierPointsInLeftLensCS , m_ClassifierScreenBuffer ));
         }
       }
@@ -1100,11 +1098,24 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::ProjectPickedPointLi
 }
 
 //-----------------------------------------------------------------------------
-mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::TransformPickedPointListToLeftLens ( const mitk::PickedPointList::Pointer pl_world, const cv::Mat& transform, const unsigned long long& timestamp, const int& framenumbe )
+mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::TransformPickedPointListToLeftLens ( const mitk::PickedPointList::Pointer pl_world, const cv::Mat& transform, const unsigned long long& timestamp, const int& framenumber)
 {
   //these should be projected to the right or left lens depending on the frame number, even for left, odd for right
   assert ( pl_world->GetChannel() == "world" );
+ 
+  mitk::PickedPointList::Pointer transformedList = pl_world->CopyByHeader();
+  transformedList->SetTimeStamp ( timestamp );
+  transformedList->SetFrameNumber (framenumber);
   
+  std::vector < mitk::PickedObject > pickedObjects = pl_world->GetPickedObjects();
+  
+  for ( unsigned int i = 0 ; i < pickedObjects.size() ; i ++ ) 
+  {
+      pickedObjects[i].m_Points = transform * pickedObjects[i].m_Points;
+  }
+  
+  transformedList->SetPickedObjects (pickedObjects);
+  transformedList->SetChannel ("left_lens");
   return mitk::PickedPointList::New();
 }
 
