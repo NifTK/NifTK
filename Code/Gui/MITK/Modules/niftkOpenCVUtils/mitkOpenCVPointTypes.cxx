@@ -389,6 +389,7 @@ PickedObject::PickedObject()
 , m_FrameNumber(0)
 , m_TimeStamp(0)
 , m_Channel("")
+, m_Scalar (cv::Scalar(255,0,0))
 {
 }
 
@@ -399,6 +400,7 @@ PickedObject::PickedObject(std::string channel, unsigned int framenumber, unsign
 , m_FrameNumber(framenumber)
 , m_TimeStamp(timestamp)
 , m_Channel(channel)
+, m_Scalar (cv::Scalar(255,0,0))
 {
 }
 
@@ -409,6 +411,7 @@ PickedObject::PickedObject(GoldStandardPoint gsp)
 , m_FrameNumber(gsp.m_FrameNumber)
 , m_TimeStamp(0)
 , m_Channel("")
+, m_Scalar (cv::Scalar(255,0,0))
 {
   m_Points.push_back(cv::Point3d ( gsp.m_Point.x, gsp.m_Point.y, 0.0 ));
 }
@@ -745,6 +748,62 @@ unsigned int PickedPointList::AddPoint(const cv::Point2i& point)
   m_IsModified=true;
   return m_PickedObjects.size();
 }
+
+//-----------------------------------------------------------------------------
+unsigned int PickedPointList::AddPoint(const cv::Point3d& point, cv::Scalar scalar)
+{
+  if ( m_InLineMode )
+  {
+    if ( m_PickedObjects.back().m_IsLine )
+    {
+      m_PickedObjects.back().m_Points.push_back(point);
+      m_PickedObjects.back().m_Scalar = scalar;
+
+      MITK_INFO << "Added a point to line " << m_PickedObjects.back().m_Id;
+    }
+    else
+    {
+      int pointID=this->GetNextAvailableID(true);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      pickedObject.m_IsLine = true;
+      pickedObject.m_Id = pointID;
+      pickedObject.m_Scalar = scalar;
+      pickedObject.m_Points.push_back(point);
+
+      m_PickedObjects.push_back(pickedObject);
+      MITK_INFO << "Created new line at " << m_PickedObjects.back().m_Id;
+    }
+  }
+  else
+  {
+    if ( m_InOrderedMode )
+    {
+      int pointID=this->GetNextAvailableID(false);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      pickedObject.m_IsLine = false;
+      pickedObject.m_Id = pointID;
+      pickedObject.m_Scalar = scalar;
+      pickedObject.m_Points.push_back(point);
+
+      m_PickedObjects.push_back(pickedObject);
+      MITK_INFO << "Picked ordered point " << pointID << " , " <<  point;
+    }
+    else
+    {
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      pickedObject.m_IsLine = false;
+      pickedObject.m_Id = -1;
+      pickedObject.m_Scalar = scalar;
+      pickedObject.m_Points.push_back(point);
+      m_PickedObjects.push_back(pickedObject);
+
+      MITK_INFO << "Picked unordered point, " <<  point;
+    }
+  }
+  m_IsModified=true;
+  return m_PickedObjects.size();
+}
+
 
 //-----------------------------------------------------------------------------
 unsigned int PickedPointList::RemoveLastPoint()

@@ -1119,11 +1119,11 @@ void ProjectPointsOnStereoVideo::ClassifyGoldStandardPoints ()
 void ProjectPointsOnStereoVideo::AppendWorldPoints ( 
     std::vector < mitk::WorldPoint > points )
 {
+  m_WorldPoints->SetInLineMode(false);
+  m_WorldPoints->SetInOrderedMode(true);
   for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
   {
-   MITK_ERROR << "Append world points is temporality broke";
-   assert (false);
-   //m_WorldPoints.push_back(points[i]);
+    m_WorldPoints->AddPoint ( points[i].m_Point, points[i].m_Scalar );
   }
   m_ProjectOK = false;
 }
@@ -1131,11 +1131,11 @@ void ProjectPointsOnStereoVideo::AppendWorldPoints (
 void ProjectPointsOnStereoVideo::AppendClassifierWorldPoints ( 
     std::vector < mitk::WorldPoint > points )
 {
+  m_ClassifierWorldPoints->SetInLineMode(false);
+  m_ClassifierWorldPoints->SetInOrderedMode(true);
   for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
   {
-   MITK_ERROR << "Append world points is temporality broke";
-   assert (false);
-  //  m_ClassifierWorldPoints->push_back(points[i]);
+    m_ClassifierWorldPoints->AddPoint (points[i].m_Point, points[i].m_Scalar);
   }
   m_ProjectOK = false;
 }

@@ -179,6 +179,7 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
     unsigned int m_FrameNumber;
     unsigned long long m_TimeStamp;
     std::string m_Channel;
+    cv::Scalar m_Scalar;
 
     PickedObject();
     PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp);
@@ -242,6 +243,7 @@ public:
   void ClearList();
 
   unsigned int AddPoint (const cv::Point2i& point);
+  unsigned int AddPoint (const cv::Point3d& point, cv::Scalar scalar);
   unsigned int RemoveLastPoint ();
   unsigned int SkipOrderedPoint ();
   unsigned int EndLine();
