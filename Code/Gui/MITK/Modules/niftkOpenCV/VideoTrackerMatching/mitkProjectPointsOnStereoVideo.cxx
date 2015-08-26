@@ -1036,11 +1036,10 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::ProjectPickedPointLi
 
   mitk::PickedPointList::Pointer projected_pl = pl_leftLens->CopyByHeader();
 
-  /*mitk::PickedObject po_leftScreen = po_leftLens.CopyByHeader();
-  mitk::PickedObject po_rightScreen = po_leftLens.CopyByHeader();
+  //need to decide whether it's a left or right, then go through the list and project, 
+  //setting channel to "left" or "right" as needed.
+  assert (m_LeftGSFramesAreEven); //I'm not sure what would happen here if this wasn't the case
 
-  po_leftScreen.m_Channel = "left";
-  po_leftScreen.m_Channel = "right";
 
   cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_64FC1);
         leftCameraPositionToFocalPointUnitVector.at<double>(0,0)=0.0;
@@ -1056,8 +1055,8 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::ProjectPickedPointLi
    CvMat* output2DPointsLeft = NULL ;
    CvMat* output2DPointsRight = NULL;
       
-   cv::Mat leftCameraWorldPoints = cv::Mat (po_leftLens.m_Points.size(),3,CV_64FC1);
-   cv::Mat leftCameraWorldNormals = cv::Mat (po_leftLens.m_Points.size(),3,CV_64FC1);
+   cv::Mat leftCameraWorldPoints = cv::Mat (pl_leftLens.m_Points.size(),3,CV_64FC1);
+   cv::Mat leftCameraWorldNormals = cv::Mat (pl_leftLens.m_Points.size(),3,CV_64FC1);
       
    for ( unsigned int i = 0 ; i < po_leftLens.m_Points.size() ; i ++ ) 
    {
@@ -1068,7 +1067,7 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::ProjectPickedPointLi
      leftCameraWorldNormals.at<double>(i,1) = 0.0;
      leftCameraWorldNormals.at<double>(i,2) = -1.0;
    }
-     
+    //this isn't the most efficient way of doing it but it is consistent with previous implementation 
   mitk::ProjectVisible3DWorldPointsToStereo2D
     ( leftCameraWorldPoints,leftCameraWorldNormals,
       leftCameraPositionToFocalPointUnitVector,
@@ -1084,6 +1083,10 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::ProjectPickedPointLi
       0.0 - m_ProjectorScreenBuffer, m_VideoHeight + m_ProjectorScreenBuffer,
       cropValue);
       
+  if ( pl_leftLens->GetFrameNumber ()  % 2 == 0 )
+  {
+    //now decide what do stick based on screen number
+  }
   for ( unsigned int i = 0 ; i < po_leftLens.m_Points.size() ; i ++ ) 
   {
     po_leftScreen.m_Points.push_back ( cv::Point3d ( CV_MAT_ELEM(*output2DPointsLeft,double,i,0), CV_MAT_ELEM(*output2DPointsLeft,double,i,1), 0.0 ) );
@@ -1094,7 +1097,10 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::ProjectPickedPointLi
   cvReleaseMat(&output2DPointsLeft);
   cvReleaseMat(&output2DPointsRight);
 
-  return std::pair < mitk::PickedObject, mitk::PickedObject > ( po_leftScreen, po_rightScreen ); */
+  po_leftScreen.m_Channel = "left";
+  po_leftScreen.m_Channel = "right";
+
+  return std::pair < mitk::PickedObject, mitk::PickedObject > ( po_leftScreen, po_rightScreen );
 }
 
 //-----------------------------------------------------------------------------
