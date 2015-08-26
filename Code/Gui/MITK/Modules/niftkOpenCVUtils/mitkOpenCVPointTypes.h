@@ -231,6 +231,7 @@ public:
   itkSetMacro (FrameNumber, unsigned int);
   itkGetMacro (FrameNumber, unsigned int);
   itkSetMacro (Channel, std::string);
+  itkGetMacro (Channel, std::string);
   itkSetMacro (TimeStamp, unsigned long long);
   itkSetMacro (XScale, double);
   itkSetMacro (YScale, double);
@@ -244,6 +245,8 @@ public:
   unsigned int RemoveLastPoint ();
   unsigned int SkipOrderedPoint ();
   unsigned int EndLine();
+
+  mitk::PickedPointList::Pointer CopyByHeader();
 
 protected:
   PickedPointList();

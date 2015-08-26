@@ -239,21 +239,21 @@ private:
    * calculates the x and y errors between the passed point and the nearest point in 
    * m_ProjectedPoints, adds result to m_LeftProjectionErrors or m_RightProjectionErrors
    */
-  void CalculateProjectionError (  mitk::PickedObject GSPoint, bool left );
+  void CalculateProjectionError ( mitk::PickedObject GSPoint );
 
   /* \brief 
    * calculates the x,y, and z error between the passed point and the nearest point in 
    * m_ProjectedPoints when projected onto a plane distant from the camera
    * appends result to m_LeftReProjectionErrors or m_RightReProjectionErrors
    */
-  void CalculateReProjectionError ( mitk::PickedObject GSPoint, bool left );
+  void CalculateReProjectionError ( mitk::PickedObject GSPoint );
  
   /* \brief 
    * Finds  the nearest point in 
    * m_ProjectedPoints, and assigns the index to the point if necessary. If a point is found it assigns the index
    * to the point. Returns true if point is found. 
    */
-  bool FindNearestScreenPoint ( const mitk::PickedObject& GSPoint );
+  bool FindNearestScreenPoint ( mitk::PickedObject& GSPoint );
 
   /* \brief 
    * goes through a picked point list and returns the object that corresponds to that passed.
@@ -268,13 +268,13 @@ private:
   /* \brief 
    * Reprojects a picked object
    */
-  mitk::PickedObject ReprojectPickedObject ( const mitk::PickedObject& po );
+  mitk::PickedObject ReprojectPickedObject ( const mitk::PickedObject& po, const mitk::PickedObject& depthReference );
 
   /* \brief 
    * Projects a picked point list from left lens space to screen space. Uses the framenumber to 
    * determine whether to project to left or right screen (even is left screen)
    */
-  mitk::PickedPointList::Pointer ProjectPickedPointList ( const mitk::PickedPointList::Pointer po_leftLens, double screenBuffer );
+  mitk::PickedPointList::Pointer ProjectPickedPointList ( const mitk::PickedPointList::Pointer po_leftLens, const double& screenBuffer );
 
   /* \brief 
    * Triangulates gold standard picked objects, populating m_TriangulatedGoldStandardObjects 
@@ -289,7 +289,7 @@ private:
    /* \brief 
    * Multiplies a picked point list by a matrix
    */
-   mitk::PickedPointList::Pointer TransformPickedPointListToLeftLens ( const mitk::PickedPointList::Pointer po, cv::Mat transform, unsigned long long timestamp, int framenumber );
+   mitk::PickedPointList::Pointer TransformPickedPointListToLeftLens ( const mitk::PickedPointList::Pointer po, const cv::Mat& transform, const unsigned long long& timestamp, const int& framenumber );
 
    /* \brief 
    * scans through the vector of gold standard points and classifies them (useful if un ordered picking was used), 
