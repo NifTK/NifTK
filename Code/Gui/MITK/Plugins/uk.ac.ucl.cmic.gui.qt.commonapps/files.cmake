@@ -81,6 +81,7 @@ set(QRC_FILES
 # current plugin. To minimise differences between the duplicated code, we
 # leave the resource file with its original name and contents.
   resources/org_mitk_gui_qt_ext.qrc
+  resources/org_mitk_icons.qrc
 )
 
 set(CPP_FILES )
