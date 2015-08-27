@@ -261,14 +261,14 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
           for (int axis = __ImageSizeType::GetSizeDimension() - 1; axis >= 0; axis--)
           {
             if (   (int)imgIdx[axis] < (int)m_RegionOfInterest.GetIndex()[axis]
-                && abs(m_RegionOfInterest.GetIndex()[axis] - imgIdx[axis]) <= (int)m_MaximumSeedProjectionDistanceInVoxels
+                && std::abs(m_RegionOfInterest.GetIndex()[axis] - imgIdx[axis]) <= (int)m_MaximumSeedProjectionDistanceInVoxels
                )
             {
               imgIdx[axis] = m_RegionOfInterest.GetIndex()[axis];
             }
             else if (
                        (int)imgIdx[axis] > (int)(m_RegionOfInterest.GetIndex()[axis] + m_RegionOfInterest.GetSize()[axis] - 1)
-                    && abs(long(m_RegionOfInterest.GetIndex()[axis] + m_RegionOfInterest.GetSize()[axis] -1 - imgIdx[axis])) <= (int)m_MaximumSeedProjectionDistanceInVoxels
+                    && std::abs(long(m_RegionOfInterest.GetIndex()[axis] + m_RegionOfInterest.GetSize()[axis] -1 - imgIdx[axis])) <= (int)m_MaximumSeedProjectionDistanceInVoxels
                     )
             {
               imgIdx[axis] = m_RegionOfInterest.GetIndex()[axis] + m_RegionOfInterest.GetSize()[axis] - 1;
