@@ -134,6 +134,13 @@ protected:
    */
   virtual void Hidden();
 
+  /**
+   * @brief Registers the tools provided by this view.
+   * Subclasses should override it.
+   * @param toolManager the tool manager where the tools should be registered
+   */
+  virtual void RegisterTools(mitk::ToolManager::Pointer toolManager);
+
   /// \brief Gets a single binary image registered with the ToolManager (that tools can edit), or NULL if it can't be found or is not an image.
   mitk::Image* GetWorkingImageFromToolManager(int i);
 

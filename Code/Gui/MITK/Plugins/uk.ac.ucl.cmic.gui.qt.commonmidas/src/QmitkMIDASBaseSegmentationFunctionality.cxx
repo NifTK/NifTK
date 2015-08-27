@@ -176,6 +176,13 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
 
 
 //-----------------------------------------------------------------------------
+void QmitkMIDASBaseSegmentationFunctionality::RegisterTools(mitk::ToolManager::Pointer toolManager)
+{
+  Q_UNUSED(toolManager);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *parent)
 {
   if (!m_ImageAndSegmentationSelector)
@@ -183,7 +190,8 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
 
     // Create an own tool manager and connect it to the data storage straight away.
     mitk::ToolManager::Pointer toolManager = mitk::ToolManager::New(this->GetDataStorage());
-    toolManager->InitializeTools();
+
+    this->RegisterTools(toolManager);
 
     mitk::ToolManager::ToolVectorTypeConst tools = toolManager->GetTools();
     mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();

@@ -308,6 +308,11 @@ protected:
   /// \see mitk::ILifecycleAwarePart::PartHidden
   virtual void Hidden();
 
+  /// \brief Registers the tools provided by this view.
+  /// Registers the draw, seed, poly and posn tools.
+  /// \param toolManager the tool manager where the tools should be registered
+  void RegisterTools(mitk::ToolManager::Pointer toolManager) override;
+
   /// \brief Called by framework, this method creates all the controls for this view.
   virtual void CreateQtPartControl(QWidget *parent);
 
