@@ -77,6 +77,7 @@ if(SlicerExecutionModel_FOUND)
     niftkAddBorderToImage
     niftkAffine
     niftkAnonymiseDICOMMammograms
+    niftkAnonymiseDICOMImages
     niftkApplyMaskToImage
     niftkBreastDensityCalculationGivenMRISegmentation
     niftkConvertImage
@@ -373,7 +374,7 @@ endif(VTK_FOUND)
 ##############################################################
 # Other command line applications, that require CUDA.
 ##############################################################
-  
+
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
 
   ##############################################################
