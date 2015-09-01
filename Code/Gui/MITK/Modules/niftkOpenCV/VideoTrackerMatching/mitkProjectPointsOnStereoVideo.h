@@ -177,6 +177,7 @@ private:
  
   bool                          m_InitOK;
   bool                          m_ProjectOK;
+  bool                          m_GoldStandardPointsClassifiedOK;
   bool                          m_TriangulateOK;
   bool                          m_DrawAxes;
   bool                          m_LeftGSFramesAreEven; // true if the left GS frame numbers are even

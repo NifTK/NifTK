@@ -39,6 +39,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_ReferenceIndex(-1)
 , m_InitOK(false)
 , m_ProjectOK(false)
+, m_GoldStandardPointsClassifiedOK(false)
 , m_TriangulateOK(false)
 , m_DrawAxes(false)
 , m_HaltOnVideoReadFail(true)
@@ -398,8 +399,6 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   }
   m_ProjectOK = true;
 
-  ClassifyGoldStandardPoints ();
-
 }
 
 //-----------------------------------------------------------------------------
@@ -503,6 +502,7 @@ bool ProjectPointsOnStereoVideo::TriangulateGoldStandardObjectList ( )
   }
   //everything should already be clasified and sorted so all we need to to do is go through the vector looking for clear();
   //matched pairs
+
   m_TriangulatedGoldStandardPoints.clear();
   for ( unsigned int i = 0 ; i < m_GoldStandardPoints.size() ; i ++ )
   {
@@ -528,7 +528,12 @@ bool ProjectPointsOnStereoVideo::TriangulateGoldStandardObjectList ( )
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPrefix )
 {
-   if ( ! m_TriangulateOK )
+  if ( ! m_GoldStandardPointsClassifiedOK )
+  {
+    ClassifyGoldStandardPoints ();
+  }
+
+  if ( ! m_TriangulateOK )
   {
     if ( this->TriangulateGoldStandardObjectList() ) 
     {
@@ -585,6 +590,12 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (std::string outPrefix )
 {
+
+  if ( ! m_GoldStandardPointsClassifiedOK )
+  {
+    ClassifyGoldStandardPoints ();
+  }
+
   if ( ! m_TriangulateOK )
   {
     if ( this->TriangulateGoldStandardObjectList() ) 
@@ -719,6 +730,10 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
     return;
   }
 
+  if ( ! m_GoldStandardPointsClassifiedOK )
+  {
+    ClassifyGoldStandardPoints ();
+  }
   // for each point in the gold standard vectors m_LeftGoldStandardPoints
   // find the corresponding point in m_ProjectedPoints and calculate the projection 
   // error in pixels. We don't define what the point correspondence is, so 
@@ -900,7 +915,8 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( mitk::PickedObject G
 bool ProjectPointsOnStereoVideo::FindNearestScreenPoint ( mitk::PickedObject& GSPickedObject )
 {
   //we're assuming that  m_ClassifierProjectedPoints is in order of frames, better check this
-  assert ( GSPickedObject.m_FrameNumber ==  m_ClassifierProjectedPointLists[GSPickedObject.m_FrameNumber]->GetFrameNumber() );
+  MITK_INFO << "finding nearest screen point in frame " <<  GSPickedObject.m_FrameNumber;
+  assert ( m_ProjectedPointLists[GSPickedObject.m_FrameNumber].IsNotNull() );
   assert ( GSPickedObject.m_FrameNumber ==  m_ProjectedPointLists[GSPickedObject.m_FrameNumber]->GetFrameNumber() );
 
   //let's check the timing errors while we're here
@@ -917,6 +933,8 @@ bool ProjectPointsOnStereoVideo::FindNearestScreenPoint ( mitk::PickedObject& GS
     return true;
   }
   
+  assert ( m_ClassifierProjectedPointLists[GSPickedObject.m_FrameNumber].IsNotNull() );
+  assert ( GSPickedObject.m_FrameNumber ==  m_ClassifierProjectedPointLists[GSPickedObject.m_FrameNumber]->GetFrameNumber() );
   std::vector<mitk::PickedObject> ClassifierPoints = m_ClassifierProjectedPointLists[GSPickedObject.m_FrameNumber]->GetPickedObjects();
  
   double minRatio;
@@ -1147,17 +1165,21 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::TransformPickedPoint
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::ClassifyGoldStandardPoints ()
 {
+  assert (m_ProjectOK);
   std::sort ( m_GoldStandardPoints.begin(), m_GoldStandardPoints.end());
   unsigned int startsize = m_GoldStandardPoints.size();
+  MITK_INFO << "MITK classifing " << startsize << " gold standard points ";
   for ( std::vector<mitk::PickedObject>::iterator it = m_GoldStandardPoints.end() - 1  ; it > m_GoldStandardPoints.begin() ; --it ) 
   {
+    MITK_INFO << "MITK classifing point " ;//<< it;
     if ( ! this->FindNearestScreenPoint ( *it ) )
     {
       m_GoldStandardPoints.erase ( it );
     }
   }
   MITK_INFO << "Removed " << startsize - m_GoldStandardPoints.size() << " objects from gold standard vector, " <<  m_GoldStandardPoints.size() << " objects left.";
-
+ 
+  m_GoldStandardPointsClassifiedOK = true;
 }
 
 //-----------------------------------------------------------------------------
