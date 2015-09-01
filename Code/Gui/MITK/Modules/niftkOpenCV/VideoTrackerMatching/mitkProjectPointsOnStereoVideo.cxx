@@ -1036,10 +1036,7 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::ProjectPickedPointLi
 
   mitk::PickedPointList::Pointer projected_pl = pl_leftLens->CopyByHeader();
 
-  //need to decide whether it's a left or right, then go through the list and project, 
-  //setting channel to "left" or "right" as needed.
   assert (m_LeftGSFramesAreEven); //I'm not sure what would happen here if this wasn't the case
-
 
   cv::Mat leftCameraPositionToFocalPointUnitVector = cv::Mat(1,3,CV_64FC1);
         leftCameraPositionToFocalPointUnitVector.at<double>(0,0)=0.0;
@@ -1049,58 +1046,79 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::ProjectPickedPointLi
   bool cropUndistortedPointsToScreen = true;
   double cropValue = std::numeric_limits<double>::infinity();
 
-   //project onto screen
-   CvMat* outputLeftCameraWorldPointsIn3D = NULL;
-   CvMat* outputLeftCameraWorldNormalsIn3D = NULL ;
-   CvMat* output2DPointsLeft = NULL ;
-   CvMat* output2DPointsRight = NULL;
+  std::vector < mitk::PickedObject > pickedObjects = pl_leftLens->GetPickedObjects();
+  std::vector < mitk::PickedObject > projectedObjects = pl_leftLens->GetPickedObjects();
+  for ( unsigned int i = 0 ; i < pickedObjects.size() ; i ++ ) 
+  {
+    //project onto screen
+    mitk::PickedObject projectedObject = pickedObjects[i].CopyByHeader();
+    CvMat* outputLeftCameraWorldPointsIn3D = NULL;
+    CvMat* outputLeftCameraWorldNormalsIn3D = NULL ;
+    CvMat* output2DPointsLeft = NULL ;
+    CvMat* output2DPointsRight = NULL;
       
-   cv::Mat leftCameraWorldPoints = cv::Mat (pl_leftLens.m_Points.size(),3,CV_64FC1);
-   cv::Mat leftCameraWorldNormals = cv::Mat (pl_leftLens.m_Points.size(),3,CV_64FC1);
+    cv::Mat leftCameraWorldPoints = cv::Mat (pickedObjects[i].m_Points.size(),3,CV_64FC1);
+    cv::Mat leftCameraWorldNormals = cv::Mat (pickedObjects[i].m_Points.size(),3,CV_64FC1);
       
-   for ( unsigned int i = 0 ; i < po_leftLens.m_Points.size() ; i ++ ) 
-   {
-     leftCameraWorldPoints.at<double>(i,0) = po_leftLens.m_Points[i].x;
-     leftCameraWorldPoints.at<double>(i,1) = po_leftLens.m_Points[i].y;
-     leftCameraWorldPoints.at<double>(i,2) = po_leftLens.m_Points[i].z;
-     leftCameraWorldNormals.at<double>(i,0) = 0.0;
-     leftCameraWorldNormals.at<double>(i,1) = 0.0;
-     leftCameraWorldNormals.at<double>(i,2) = -1.0;
-   }
+    for ( unsigned int i = 0 ; i < pickedObjects[i].m_Points.size() ; i ++ ) 
+    {
+      leftCameraWorldPoints.at<double>(i,0) = pickedObjects[i].m_Points[i].x;
+      leftCameraWorldPoints.at<double>(i,1) = pickedObjects[i].m_Points[i].y;
+      leftCameraWorldPoints.at<double>(i,2) = pickedObjects[i].m_Points[i].z;
+      leftCameraWorldNormals.at<double>(i,0) = 0.0;
+      leftCameraWorldNormals.at<double>(i,1) = 0.0;
+      leftCameraWorldNormals.at<double>(i,2) = -1.0;
+    }
     //this isn't the most efficient way of doing it but it is consistent with previous implementation 
-  mitk::ProjectVisible3DWorldPointsToStereo2D
-    ( leftCameraWorldPoints,leftCameraWorldNormals,
-      leftCameraPositionToFocalPointUnitVector,
-      *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,
-      *m_RightIntrinsicMatrix,*m_RightDistortionVector,
-      *m_RightToLeftRotationMatrix,*m_RightToLeftTranslationVector,
-      outputLeftCameraWorldPointsIn3D,
-      outputLeftCameraWorldNormalsIn3D,
-      output2DPointsLeft,
-      output2DPointsRight,
-      cropUndistortedPointsToScreen , 
-      0.0 - m_ProjectorScreenBuffer, m_VideoWidth + m_ProjectorScreenBuffer, 
-      0.0 - m_ProjectorScreenBuffer, m_VideoHeight + m_ProjectorScreenBuffer,
-      cropValue);
-      
+    mitk::ProjectVisible3DWorldPointsToStereo2D
+      ( leftCameraWorldPoints,leftCameraWorldNormals,
+        leftCameraPositionToFocalPointUnitVector,
+        *m_LeftIntrinsicMatrix,*m_LeftDistortionVector,
+        *m_RightIntrinsicMatrix,*m_RightDistortionVector,
+        *m_RightToLeftRotationMatrix,*m_RightToLeftTranslationVector,
+        outputLeftCameraWorldPointsIn3D,
+        outputLeftCameraWorldNormalsIn3D,
+        output2DPointsLeft,
+        output2DPointsRight,
+        cropUndistortedPointsToScreen , 
+        0.0 - m_ProjectorScreenBuffer, m_VideoWidth + m_ProjectorScreenBuffer, 
+        0.0 - m_ProjectorScreenBuffer, m_VideoHeight + m_ProjectorScreenBuffer,
+        cropValue);
+        
+    if ( pl_leftLens->GetFrameNumber ()  % 2 == 0 )
+    {
+      for ( unsigned int i = 0 ; i < pickedObjects[i].m_Points.size() ; i ++ ) 
+      {
+        projectedObject.m_Points.push_back ( cv::Point3d ( CV_MAT_ELEM(*output2DPointsLeft,double,i,0), CV_MAT_ELEM(*output2DPointsLeft,double,i,1), 0.0 ) );
+      }
+      projectedObject.m_Channel = "left";
+    }
+    else 
+    {
+      for ( unsigned int i = 0 ; i < pickedObjects[i].m_Points.size() ; i ++ ) 
+      {
+        projectedObject.m_Points.push_back ( cv::Point3d ( CV_MAT_ELEM(*output2DPointsRight,double,i,0), CV_MAT_ELEM(*output2DPointsRight,double,i,1), 0.0 ) );
+      }
+      projectedObject.m_Channel = "right";
+    }
+    projectedObjects.push_back (projectedObject);
+
+    cvReleaseMat(&outputLeftCameraWorldPointsIn3D);
+    cvReleaseMat(&outputLeftCameraWorldNormalsIn3D);
+    cvReleaseMat(&output2DPointsLeft);
+    cvReleaseMat(&output2DPointsRight);
+  }
+  projected_pl->SetPickedObjects ( projectedObjects );
   if ( pl_leftLens->GetFrameNumber ()  % 2 == 0 )
   {
-    //now decide what do stick based on screen number
+    projected_pl->SetChannel ( "left" );
   }
-  for ( unsigned int i = 0 ; i < po_leftLens.m_Points.size() ; i ++ ) 
+  else
   {
-    po_leftScreen.m_Points.push_back ( cv::Point3d ( CV_MAT_ELEM(*output2DPointsLeft,double,i,0), CV_MAT_ELEM(*output2DPointsLeft,double,i,1), 0.0 ) );
-    po_rightScreen.m_Points.push_back ( cv::Point3d ( CV_MAT_ELEM(*output2DPointsRight,double,i,0), CV_MAT_ELEM(*output2DPointsRight,double,i,1), 0.0 ) );
+    projected_pl->SetChannel ( "right" );
   }
-  cvReleaseMat(&outputLeftCameraWorldPointsIn3D);
-  cvReleaseMat(&outputLeftCameraWorldNormalsIn3D);
-  cvReleaseMat(&output2DPointsLeft);
-  cvReleaseMat(&output2DPointsRight);
 
-  po_leftScreen.m_Channel = "left";
-  po_leftScreen.m_Channel = "right";
-
-  return std::pair < mitk::PickedObject, mitk::PickedObject > ( po_leftScreen, po_rightScreen );
+  return projected_pl;
 }
 
 //-----------------------------------------------------------------------------
