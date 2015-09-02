@@ -139,17 +139,34 @@ bool operator< (const  GoldStandardPoint &GSP1, const GoldStandardPoint &GSP2 )
 //-----------------------------------------------------------------------------
 bool operator< (const PickedObject &po1, const PickedObject &po2 )
 {
-  assert ( po1.m_Channel == po2.m_Channel );
+  //by frame number first
   if ( po1.m_FrameNumber == po2.m_FrameNumber )
   {
-    if ( po1.m_IsLine == po2.m_IsLine )
+    //left before right
+    if ( po1.m_Channel == po2.m_Channel )
     {
-      return po1.m_Id < po2.m_Id;
+      if ( po1.m_IsLine == po2.m_IsLine )
+      {
+        return po1.m_Id < po2.m_Id;
+      }
+      else
+      {
+        //points before lines
+        return ( ! po1.m_IsLine );
+      }
     }
     else
     {
-      //points before lines
-      return ( ! po1.m_IsLine );
+      if ( po1.m_Channel == "left" )
+      {
+        assert ( po2.m_Channel == "right" );
+        return true;
+      }
+      else
+      {
+        assert ( (po1.m_Channel == "right")  && ( po2.m_Channel == "left") );
+        return false;
+      }
     }
   }
   else
@@ -405,7 +422,7 @@ PickedObject::PickedObject(std::string channel, unsigned int framenumber, unsign
 }
 
 //-----------------------------------------------------------------------------
-PickedObject::PickedObject(GoldStandardPoint gsp)
+PickedObject::PickedObject(const GoldStandardPoint& gsp)
 : m_Id (gsp.m_Index)
 , m_IsLine (false)
 , m_FrameNumber(gsp.m_FrameNumber)
