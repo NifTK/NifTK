@@ -409,7 +409,8 @@ void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
   for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
   {
     m_GoldStandardPoints.push_back(mitk::PickedObject(points[i]));
-    m_GoldStandardPoints[i].m_Channel = "left";
+    m_GoldStandardPoints.back().m_Channel = "left";
+
     if ( m_GoldStandardPoints[i].m_Id > maxLeftGSIndex ) 
     {
       maxLeftGSIndex =  m_GoldStandardPoints[i].m_Id;
@@ -418,7 +419,7 @@ void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
     {
       if ( ! m_LeftGSFramesAreEven ) 
       {
-        MITK_ERROR << "Detected inconsistent frame numbering in the left gold standard points";
+        MITK_ERROR << "Detected inconsistent frame numbering in the left gold standard points, left GS should be odd";
         exit(1);
       }
     }
@@ -426,7 +427,7 @@ void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
     {
       if ( ( i > 0 ) && ( m_LeftGSFramesAreEven ) ) 
       {
-        MITK_ERROR << "Detected inconsistent frame numbering in the left gold standard points";
+        MITK_ERROR << "Detected inconsistent frame numbering in the left gold standard points, left GS should be even";
         exit(1);
       }
       m_LeftGSFramesAreEven = false;
@@ -452,10 +453,10 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
 {
   int maxRightGSIndex = -1;
    
-  for ( unsigned int i = 0 ; i < m_GoldStandardPoints.size() ; i ++ ) 
+  for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
   {
     m_GoldStandardPoints.push_back(mitk::PickedObject(points[i]));
-    m_GoldStandardPoints[i].m_Channel = "right";
+    m_GoldStandardPoints.back().m_Channel = "right";
     if ( m_GoldStandardPoints[i].m_Id > maxRightGSIndex ) 
     {
       maxRightGSIndex =  m_GoldStandardPoints[i].m_Id;
@@ -464,7 +465,7 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
     {
       if ( ! m_RightGSFramesAreEven ) 
       {
-        MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points";
+        MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points, right GS should be odd, fn = " <<  m_GoldStandardPoints[i].m_FrameNumber;
         exit(1);
       }
     }
@@ -472,7 +473,7 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
     {
       if ( ( i > 0 ) && ( m_RightGSFramesAreEven ) ) 
       {
-        MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points";
+        MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points, right GS should be even";
         exit(1);
       }
       m_RightGSFramesAreEven = false;
