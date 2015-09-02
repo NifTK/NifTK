@@ -34,7 +34,7 @@ bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> p
   frame1155points.push_back(cv::Point3d(20.06107  ,   2.37748 ,  123.02983  ));
   frame1155points.push_back(cv::Point3d( 21.62069  , -24.75377 ,  126.98338));
 
-  if ( points[1155]->GetChannel() != "left lens" )
+  if ( points[1155]->GetChannel() != "left_lens" )
   {
     MITK_ERROR << "Points in left lens returned with wrong channel name " << points[1155]->GetChannel();
     return false;
@@ -54,7 +54,7 @@ bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> p
   std::vector < mitk::PickedObject > frame0Points = points[0]->GetPickedObjects();
   std::vector < mitk::PickedObject > frame1155Points = points[1155]->GetPickedObjects();
 
-  if ( ( frame0Points.size() != 4 ) || frame1155Points.size() != 4 )
+  if ( ( frame0Points.size() != 12 ) || frame1155Points.size() != 12 )
   {
     MITK_ERROR << "Points in left lens returned with wrong point vector size " << frame0Points.size() << " , " << frame1155Points.size();
     return false;
@@ -70,13 +70,26 @@ bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> p
     Error += fabs ( frame1155Points[i].m_Points[0].y - frame1155points[i].y);
     Error += fabs ( frame1155Points[i].m_Points[0].z - frame1155points[i].z);
 
+    if ( ( frame0Points[i].m_TimeStamp != 1374854320028272600 ) || ( frame1155Points[i].m_TimeStamp != 1374854339638394200 ) )
+    {
+      MITK_ERROR << "Points in left lens returned with wrong timestamp for set  " << i << " : " << frame0Points[i].m_TimeStamp << " , " << frame1155Points[i].m_TimeStamp;
+      return false;
+    }
+
+    if ( ( frame0Points[i].m_FrameNumber != 0 ) || ( frame1155Points[i].m_FrameNumber != 1155 ) )
+    {
+      MITK_ERROR << "Points in left lens returned with wrong frame number for set  " << i << " : " << frame0Points[i].m_FrameNumber << " , " << frame1155Points[i].m_FrameNumber;
+      return false;
+    }
+
+
     if ( ( frame0Points[i].m_Points.size() != 1 ) || ( frame1155Points[i].m_Points.size() != 1 ) )
     {
       MITK_ERROR << "Points in left lens returned with wrong point vector size for set  " << i << " : " << frame0Points[i].m_Points.size() << " , " << frame1155Points[i].m_Points.size();
       return false;
     }
 
-    if ( ( frame0Points[i].m_Channel != "left lens" ) || ( frame1155Points[i].m_Channel != "left lens" ) )
+    if ( ( frame0Points[i].m_Channel != "left_lens" ) || ( frame1155Points[i].m_Channel != "left_lens" ) )
     {
       MITK_ERROR << "Points in left lens returned with wrong channel for set  " << i << " : " << frame0Points[i].m_Channel << " , " << frame1155Points[i].m_Channel;
       return false;

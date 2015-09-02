@@ -1154,6 +1154,9 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::TransformPickedPoint
   for ( unsigned int i = 0 ; i < pickedObjects.size() ; i ++ ) 
   {
       pickedObjects[i].m_Points = transform * pickedObjects[i].m_Points;
+      pickedObjects[i].m_TimeStamp = timestamp;
+      pickedObjects[i].m_FrameNumber = framenumber;
+      pickedObjects[i].m_Channel = "left_lens";
   }
   
   transformedList->SetPickedObjects (pickedObjects);
