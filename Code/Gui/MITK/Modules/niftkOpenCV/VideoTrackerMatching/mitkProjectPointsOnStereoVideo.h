@@ -120,7 +120,7 @@ public:
    */
   void ClearWorldPoints ();
 
-  std::vector < mitk::WorldPointsWithTimingError >  GetPointsInLeftLensCS ();
+  std::vector < mitk::PickedPointList::Pointer >  GetPointsInLeftLensCS ();
   std::vector < mitk::ProjectedPointPairsWithTimingError > GetProjectedPoints ();
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);

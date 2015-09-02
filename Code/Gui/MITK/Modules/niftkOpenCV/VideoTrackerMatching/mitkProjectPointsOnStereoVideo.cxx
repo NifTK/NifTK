@@ -1218,10 +1218,9 @@ void ProjectPointsOnStereoVideo::AppendClassifierWorldPoints (
 }
 
 //-----------------------------------------------------------------------------
-std::vector <mitk::WorldPointsWithTimingError> ProjectPointsOnStereoVideo::GetPointsInLeftLensCS ()
+std::vector <mitk::PickedPointList::Pointer> ProjectPointsOnStereoVideo::GetPointsInLeftLensCS ()
 {
-   MITK_ERROR << "get points in left lens cs is  broke";
-   assert (false);
+  return m_PointsInLeftLensCS;
 }
 
 //-----------------------------------------------------------------------------
