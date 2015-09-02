@@ -103,8 +103,8 @@ public:
   itkSetMacro ( VisualiseTrackingStatus, bool);
   itkSetMacro ( AllowablePointMatchingRatio, double);
   itkSetMacro ( AllowableTimingError, long long);
-  void SetLeftGoldStandardPoints ( std::vector <GoldStandardPoint> points );
-  void SetRightGoldStandardPoints ( std::vector <GoldStandardPoint > points );
+  void SetLeftGoldStandardPoints ( std::vector <GoldStandardPoint> points , mitk::VideoTrackerMatching::Pointer matcher );
+  void SetRightGoldStandardPoints ( std::vector <GoldStandardPoint > points, mitk::VideoTrackerMatching::Pointer matcher );
 
   /**
    * \brief appends points to  world points and corresponding vectors

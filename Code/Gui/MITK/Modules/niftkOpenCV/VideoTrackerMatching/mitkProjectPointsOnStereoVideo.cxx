@@ -403,12 +403,13 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
-    std::vector < mitk::GoldStandardPoint > points )
+    std::vector < mitk::GoldStandardPoint > points,
+    mitk::VideoTrackerMatching::Pointer matcher )
 {
   int maxLeftGSIndex = -1;
   for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
   {
-    m_GoldStandardPoints.push_back(mitk::PickedObject(points[i]));
+    m_GoldStandardPoints.push_back(mitk::PickedObject(points[i], matcher->GetVideoFrameTimeStamp ( points[i].m_FrameNumber)));
     m_GoldStandardPoints.back().m_Channel = "left";
 
     if ( m_GoldStandardPoints[i].m_Id > maxLeftGSIndex ) 
@@ -449,13 +450,14 @@ void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
 
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
-    std::vector < mitk::GoldStandardPoint > points )
+    std::vector < mitk::GoldStandardPoint > points ,
+    mitk::VideoTrackerMatching::Pointer matcher )
 {
   int maxRightGSIndex = -1;
    
   for ( unsigned int i = 0 ; i < points.size() ; i ++ ) 
   {
-    m_GoldStandardPoints.push_back(mitk::PickedObject(points[i]));
+    m_GoldStandardPoints.push_back(mitk::PickedObject(points[i],  matcher->GetVideoFrameTimeStamp ( points[i].m_FrameNumber)));
     m_GoldStandardPoints.back().m_Channel = "right";
     if ( m_GoldStandardPoints[i].m_Id > maxRightGSIndex ) 
     {
@@ -937,7 +939,7 @@ bool ProjectPointsOnStereoVideo::FindNearestScreenPoint ( mitk::PickedObject& GS
   assert ( m_ClassifierProjectedPointLists[GSPickedObject.m_FrameNumber].IsNotNull() );
   assert ( GSPickedObject.m_FrameNumber ==  m_ClassifierProjectedPointLists[GSPickedObject.m_FrameNumber]->GetFrameNumber() );
   std::vector<mitk::PickedObject> ClassifierPoints = m_ClassifierProjectedPointLists[GSPickedObject.m_FrameNumber]->GetPickedObjects();
- 
+
   double minRatio;
   mitk::PickedObject nearestObject = mitk::FindNearestPickedObject( GSPickedObject , ClassifierPoints , &minRatio );
   if ( minRatio < m_AllowablePointMatchingRatio || boost::math::isinf ( minRatio ) )
@@ -1066,7 +1068,7 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::ProjectPickedPointLi
   double cropValue = std::numeric_limits<double>::infinity();
 
   std::vector < mitk::PickedObject > pickedObjects = pl_leftLens->GetPickedObjects();
-  std::vector < mitk::PickedObject > projectedObjects = pl_leftLens->GetPickedObjects();
+  std::vector < mitk::PickedObject > projectedObjects;
   for ( unsigned int i = 0 ; i < pickedObjects.size() ; i ++ ) 
   {
     //project onto screen
