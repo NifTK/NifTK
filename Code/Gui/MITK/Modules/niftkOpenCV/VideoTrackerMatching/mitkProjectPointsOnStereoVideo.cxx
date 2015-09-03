@@ -412,11 +412,11 @@ void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
     m_GoldStandardPoints.push_back(mitk::PickedObject(points[i], matcher->GetVideoFrameTimeStamp ( points[i].m_FrameNumber)));
     m_GoldStandardPoints.back().m_Channel = "left";
 
-    if ( m_GoldStandardPoints[i].m_Id > maxLeftGSIndex ) 
+    if ( m_GoldStandardPoints.back().m_Id > maxLeftGSIndex ) 
     {
-      maxLeftGSIndex =  m_GoldStandardPoints[i].m_Id;
+      maxLeftGSIndex =  m_GoldStandardPoints.back().m_Id;
     }
-    if ( m_GoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
+    if ( m_GoldStandardPoints.back().m_FrameNumber % 2 == 0 ) 
     {
       if ( ! m_LeftGSFramesAreEven ) 
       {
@@ -459,11 +459,11 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
   {
     m_GoldStandardPoints.push_back(mitk::PickedObject(points[i],  matcher->GetVideoFrameTimeStamp ( points[i].m_FrameNumber)));
     m_GoldStandardPoints.back().m_Channel = "right";
-    if ( m_GoldStandardPoints[i].m_Id > maxRightGSIndex ) 
+    if ( m_GoldStandardPoints.back().m_Id > maxRightGSIndex ) 
     {
       maxRightGSIndex =  m_GoldStandardPoints[i].m_Id;
     }
-    if ( m_GoldStandardPoints[i].m_FrameNumber % 2 == 0 ) 
+    if ( m_GoldStandardPoints.back().m_FrameNumber % 2 == 0 ) 
     {
       if ( ! m_RightGSFramesAreEven ) 
       {
@@ -849,7 +849,9 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject GSPoint )
 {
-  mitk::PickedObject matchingObject = GetMatchingPickedObject ( GSPoint, *m_PointsInLeftLensCS[GSPoint.m_FrameNumber] );
+  mitk::PickedObject toMatch = GSPoint.CopyByHeader();
+  toMatch.m_Channel = "left_lens";
+  mitk::PickedObject matchingObject = GetMatchingPickedObject ( toMatch, *m_PointsInLeftLensCS[GSPoint.m_FrameNumber] );
   assert ( matchingObject.m_FrameNumber == GSPoint.m_FrameNumber );
 
   if ( ! (GSPoint.m_Channel != "left") )
@@ -898,7 +900,6 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::CalculateProjectionError ( mitk::PickedObject GSPoint )
 {
-  double minRatio;
   mitk::PickedObject matchingObject = GetMatchingPickedObject ( GSPoint, *m_ProjectedPointLists[GSPoint.m_FrameNumber] );
   assert ( matchingObject.m_FrameNumber == GSPoint.m_FrameNumber );
 
@@ -1174,7 +1175,7 @@ void ProjectPointsOnStereoVideo::ClassifyGoldStandardPoints ()
   std::sort ( m_GoldStandardPoints.begin(), m_GoldStandardPoints.end());
   unsigned int startsize = m_GoldStandardPoints.size();
   MITK_INFO << "MITK classifing " << startsize << " gold standard points ";
-  for ( std::vector<mitk::PickedObject>::iterator it = m_GoldStandardPoints.end() - 1  ; it > m_GoldStandardPoints.begin() ; --it ) 
+  for ( std::vector<mitk::PickedObject>::iterator it = m_GoldStandardPoints.end() - 1  ; it >= m_GoldStandardPoints.begin() ; --it ) 
   {
     MITK_INFO << "MITK classifing point " ;//<< it;
     if ( ! this->FindNearestScreenPoint ( *it ) )
