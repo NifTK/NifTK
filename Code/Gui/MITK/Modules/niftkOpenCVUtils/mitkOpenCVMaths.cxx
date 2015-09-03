@@ -1457,7 +1457,7 @@ mitk::PickedObject FindNearestPickedObject ( const mitk::PickedObject& point, co
   double nearestDistance = std::numeric_limits<double>::infinity();
   double nextNearestDistance = std::numeric_limits<double>::infinity();
 
-  for ( std::vector<mitk::PickedObject>::const_iterator it = matchingPoints.begin() ; it < matchingPoints.end() ; it++ )
+  for ( std::vector<mitk::PickedObject>::const_iterator it = matchingPoints.begin() ; it < matchingPoints.end() ; ++it )
   {
     cv::Point3d delta;
     double distance = point.DistanceTo(*it, delta);
