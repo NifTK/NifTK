@@ -921,7 +921,6 @@ bool ProjectPointsOnStereoVideo::FindNearestScreenPoint ( mitk::PickedObject& GS
   MITK_INFO << "finding nearest screen point in frame " <<  GSPickedObject.m_FrameNumber;
   assert ( m_ProjectedPointLists[GSPickedObject.m_FrameNumber].IsNotNull() );
   assert ( GSPickedObject.m_FrameNumber ==  m_ProjectedPointLists[GSPickedObject.m_FrameNumber]->GetFrameNumber() );
-
   //let's check the timing errors while we're here
   long long timingError = static_cast<long long> ( GSPickedObject.m_TimeStamp ) -  static_cast <long long> (m_ProjectedPointLists[GSPickedObject.m_FrameNumber]->GetTimeStamp() ) ;
   if ( abs ( timingError > m_AllowableTimingError ) )
@@ -1081,14 +1080,14 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::ProjectPickedPointLi
     cv::Mat leftCameraWorldPoints = cv::Mat (pickedObjects[i].m_Points.size(),3,CV_64FC1);
     cv::Mat leftCameraWorldNormals = cv::Mat (pickedObjects[i].m_Points.size(),3,CV_64FC1);
       
-    for ( unsigned int i = 0 ; i < pickedObjects[i].m_Points.size() ; i ++ ) 
+    for ( unsigned int j = 0 ; j < pickedObjects[i].m_Points.size() ; j ++ ) 
     {
-      leftCameraWorldPoints.at<double>(i,0) = pickedObjects[i].m_Points[i].x;
-      leftCameraWorldPoints.at<double>(i,1) = pickedObjects[i].m_Points[i].y;
-      leftCameraWorldPoints.at<double>(i,2) = pickedObjects[i].m_Points[i].z;
-      leftCameraWorldNormals.at<double>(i,0) = 0.0;
-      leftCameraWorldNormals.at<double>(i,1) = 0.0;
-      leftCameraWorldNormals.at<double>(i,2) = -1.0;
+      leftCameraWorldPoints.at<double>(j,0) = pickedObjects[i].m_Points[j].x;
+      leftCameraWorldPoints.at<double>(j,1) = pickedObjects[i].m_Points[j].y;
+      leftCameraWorldPoints.at<double>(j,2) = pickedObjects[i].m_Points[j].z;
+      leftCameraWorldNormals.at<double>(j,0) = 0.0;
+      leftCameraWorldNormals.at<double>(j,1) = 0.0;
+      leftCameraWorldNormals.at<double>(j,2) = -1.0;
     }
     //this isn't the most efficient way of doing it but it is consistent with previous implementation 
     mitk::ProjectVisible3DWorldPointsToStereo2D
@@ -1108,17 +1107,17 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::ProjectPickedPointLi
         
     if ( pl_leftLens->GetFrameNumber ()  % 2 == 0 )
     {
-      for ( unsigned int i = 0 ; i < pickedObjects[i].m_Points.size() ; i ++ ) 
+      for ( unsigned int j = 0 ; j < pickedObjects[i].m_Points.size() ; j ++ ) 
       {
-        projectedObject.m_Points.push_back ( cv::Point3d ( CV_MAT_ELEM(*output2DPointsLeft,double,i,0), CV_MAT_ELEM(*output2DPointsLeft,double,i,1), 0.0 ) );
+        projectedObject.m_Points.push_back ( cv::Point3d ( CV_MAT_ELEM(*output2DPointsLeft,double,j,0), CV_MAT_ELEM(*output2DPointsLeft,double,j,1), 0.0 ) );
       }
       projectedObject.m_Channel = "left";
     }
     else 
     {
-      for ( unsigned int i = 0 ; i < pickedObjects[i].m_Points.size() ; i ++ ) 
+      for ( unsigned int j = 0 ; j < pickedObjects[i].m_Points.size() ; j ++ ) 
       {
-        projectedObject.m_Points.push_back ( cv::Point3d ( CV_MAT_ELEM(*output2DPointsRight,double,i,0), CV_MAT_ELEM(*output2DPointsRight,double,i,1), 0.0 ) );
+        projectedObject.m_Points.push_back ( cv::Point3d ( CV_MAT_ELEM(*output2DPointsRight,double,j,0), CV_MAT_ELEM(*output2DPointsRight,double,j,1), 0.0 ) );
       }
       projectedObject.m_Channel = "right";
     }
