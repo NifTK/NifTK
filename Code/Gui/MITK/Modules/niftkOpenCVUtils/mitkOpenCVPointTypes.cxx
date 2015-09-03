@@ -422,11 +422,11 @@ PickedObject::PickedObject(std::string channel, unsigned int framenumber, unsign
 }
 
 //-----------------------------------------------------------------------------
-PickedObject::PickedObject(const GoldStandardPoint& gsp)
+PickedObject::PickedObject(const GoldStandardPoint& gsp, const unsigned long long & timestamp)
 : m_Id (gsp.m_Index)
 , m_IsLine (false)
 , m_FrameNumber(gsp.m_FrameNumber)
-, m_TimeStamp(0)
+, m_TimeStamp(timestamp)
 , m_Channel("")
 , m_Scalar (cv::Scalar(255,0,0))
 {

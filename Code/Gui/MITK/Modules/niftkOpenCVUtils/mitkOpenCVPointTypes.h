@@ -183,7 +183,7 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
 
     PickedObject();
     PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp);
-    PickedObject(const GoldStandardPoint& gsp); //cast a gold standard point to a PickedObject
+    PickedObject(const GoldStandardPoint& gsp, const unsigned long long& timestamp); //cast a gold standard point to a PickedObject
     ~PickedObject();
     
     /**
