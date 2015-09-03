@@ -488,11 +488,11 @@ double PickedObject::DistanceTo(const PickedObject& otherPickedObject , cv::Poin
   if ( m_IsLine )
   {
     unsigned int splineOrder = 1;
-    return mitk::DistanceBetweenTwoSplines ( m_Points, otherPickedObject.m_Points , splineOrder , &deltas );
+    return mitk::DistanceBetweenTwoSplines ( otherPickedObject.m_Points, m_Points, splineOrder , &deltas );
   }
   else
   {
-    return mitk::DistanceBetweenTwoPoints ( m_Points[0], otherPickedObject.m_Points[0], &deltas );
+    return mitk::DistanceBetweenTwoPoints ( otherPickedObject.m_Points[0], m_Points[0], &deltas );
   }
 }
 
