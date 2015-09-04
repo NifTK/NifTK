@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkCoordinateAxesDataSerializer.h"
+#include "mitkCoordinateAxesDataSerializer.h"
 #include "mitkCoordinateAxesData.h"
 #include "niftkCoordinateAxesDataWriterService.h"
 
@@ -69,4 +69,3 @@ std::string mitk::CoordinateAxesDataSerializer::Serialize()
   }
   return filename;
 }
-
