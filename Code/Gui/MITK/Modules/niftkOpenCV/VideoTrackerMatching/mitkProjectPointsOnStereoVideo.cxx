@@ -854,7 +854,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
   mitk::PickedObject matchingObject = GetMatchingPickedObject ( toMatch, *m_PointsInLeftLensCS[GSPoint.m_FrameNumber] );
   assert ( matchingObject.m_FrameNumber == GSPoint.m_FrameNumber );
 
-  if ( ! (GSPoint.m_Channel != "left") )
+  if ( GSPoint.m_Channel != "left" )
   {
     //transform points from left right lens
     for ( unsigned int i = 0 ; i < matchingObject.m_Points.size() ; i ++ ) 
@@ -879,6 +879,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
   //we find the nearest point on the projected model line (which generally won't be on a vertex
   mitk::PickedObject reprojectedObject = ReprojectPickedObject ( undistortedObject, matchingObject );
   
+  reprojectedObject.m_Channel = "left_lens";
   if ( reprojectedObject.m_IsLine ) 
   {
     MITK_ERROR << "I can't do reprojection errors for lines yet";

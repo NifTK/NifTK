@@ -175,7 +175,7 @@ bool CheckReProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projecto
     Error += fabs ( Projector->GetRightReProjectionErrors()[i].z - rightErrors[i].z);
   }
 
-  if ( Error < 3e-2 ) 
+  if ( Error < 4e-2 ) 
   {
     return true;
   }
