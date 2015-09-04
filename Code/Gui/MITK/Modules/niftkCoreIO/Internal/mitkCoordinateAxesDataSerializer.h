@@ -26,14 +26,16 @@ namespace mitk
 */
 class CoordinateAxesDataSerializer : public BaseDataSerializer
 {
-  public:
-    mitkClassMacro( CoordinateAxesDataSerializer, BaseDataSerializer );
-    itkFactorylessNewMacro(Self)
-    itkCloneMacro(Self)
-    virtual std::string Serialize();
-  protected:
-    CoordinateAxesDataSerializer();
-    virtual ~CoordinateAxesDataSerializer();
+public:
+  mitkClassMacro( CoordinateAxesDataSerializer, BaseDataSerializer );
+  itkFactorylessNewMacro(Self)
+  itkCloneMacro(Self)
+  virtual std::string Serialize();
+protected:
+  CoordinateAxesDataSerializer();
+  virtual ~CoordinateAxesDataSerializer();
 };
+
 } // namespace
+
 #endif
