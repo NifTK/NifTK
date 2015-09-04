@@ -555,7 +555,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
   {
     mitk::PickedObject leftLensObject = GetMatchingPickedObject ( m_TriangulatedGoldStandardPoints[i], *m_PointsInLeftLensCS[m_TriangulatedGoldStandardPoints[i].m_FrameNumber] );
     cv::Point3d triangulationError;
-    m_TriangulatedGoldStandardPoints[i].DistanceTo ( leftLensObject, triangulationError, m_AllowableTimingError );
+    leftLensObject.DistanceTo ( m_TriangulatedGoldStandardPoints[i], triangulationError, m_AllowableTimingError );
     m_TriangulationErrors.push_back ( triangulationError );
   }
   
