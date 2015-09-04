@@ -2344,7 +2344,7 @@ double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2,
 {
   if ( delta != NULL )
   {
-    *delta = p1 - p2;
+    *delta = p2 - p1;
   }
   return mitk::Norm ( p1 - p2 );
 }
@@ -2435,7 +2435,7 @@ double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, 
   
   if ( delta != NULL ) 
   {
-    *delta = x0 - ( x2 - lambda * d2 );
+    *delta = ( x2 - lambda * d2 ) - x0;
   }
   return mitk::Norm ( mitk::CrossProduct ( d2,d1 )) / (mitk::Norm(d2));
 
