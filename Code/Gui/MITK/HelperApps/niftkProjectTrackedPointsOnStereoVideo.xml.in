@@ -75,13 +75,13 @@
       <channel>input</channel>
     </file>
    
-    <file>
+    <boolean>
       <name>output3D</name>
       <longflag>output3D</longflag>
       <description>Output 3D points</description>
       <label>Output 3D points</label>
       <channel>output</channel>
-    </file>
+    </boolean>
     
     <file>
       <name>output2D</name>
