@@ -952,6 +952,13 @@ cv::Point2i Point3dToPoint2i (const cv::Point3d& point)
   {
     mitkThrow() << "Attempted to cast point3d to point2i with non zero z";
   }
-  return cv::Point2i ( boost::math::round(point.x), boost::math::round(point.y) );
+  if ( mitk::IsNotNaNorInf ( point ) ) 
+  {
+    return cv::Point2i ( boost::math::round(point.x), boost::math::round(point.y) );
+  }
+  else
+  {
+    return cv::Point2i ( 0, 0 );
+  }
 }
 } // end namespace
