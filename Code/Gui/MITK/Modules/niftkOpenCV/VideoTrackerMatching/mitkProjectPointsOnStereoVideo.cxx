@@ -449,6 +449,90 @@ void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
 }
 
 //-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::SetGoldStandardObjects( std::vector < mitk::PickedObject > pickedObjects )
+{
+  int maxLeftGSIndex = -1;
+  int maxRightGSIndex = -1;
+  if ( m_GoldStandardPoints.size() != 0 )
+  {
+    MITK_WARN << "Setting gold standard points with non empty vector, check this is what you intended.";
+  }
+  for ( unsigned int i = 0 ; i < pickedObjects.size() ; i ++ ) 
+  {
+    if ( pickedObjects[i].m_Channel == "left" )
+    {
+      if ( pickedObjects[i].m_Id > maxLeftGSIndex )
+      {
+        maxLeftGSIndex = pickedObjects[i].m_Id;
+      }
+      if ( pickedObjects[i].m_FrameNumber % 2 == 0 )
+      {
+        if ( ! m_LeftGSFramesAreEven )
+        {
+          MITK_ERROR << "Detected inconsistent frame numbering in the left gold standard points, left GS should be odd";
+          exit(1);
+        }
+      }
+      else
+      {
+        if ( ( i > 0 ) && ( m_LeftGSFramesAreEven ) ) 
+        {
+          MITK_ERROR << "Detected inconsistent frame numbering in the left gold standard points, left GS should be even";
+          exit(1);
+        }
+        m_LeftGSFramesAreEven = false;
+      }
+    }
+    else
+    {
+      if ( pickedObjects[i].m_Channel != "right" )
+      {
+        MITK_ERROR << "Attempted to set gold standard point with unknown channel type " << pickedObjects[i].m_Channel;
+        exit(1);
+      }
+      if ( pickedObjects[i].m_Id > maxRightGSIndex ) 
+      {
+        maxRightGSIndex =  pickedObjects[i].m_Id;
+      }
+      if ( pickedObjects[i].m_FrameNumber % 2 == 0 ) 
+      {
+        if ( ! m_RightGSFramesAreEven ) 
+        {
+          MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points, right GS should be odd, fn = " <<  pickedObjects[i].m_FrameNumber;
+          exit(1);
+        }
+      }
+      else
+      {
+        if ( ( i > 0 ) && ( m_RightGSFramesAreEven ) ) 
+        {
+          MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points, right GS should be even";
+          exit(1);
+        }
+        m_RightGSFramesAreEven = false;
+      }
+    }
+    m_GoldStandardPoints.push_back(pickedObjects[i]);
+  }
+
+  if ( m_LeftGSFramesAreEven == m_RightGSFramesAreEven )
+  {
+    m_RightGSFrameOffset = 0 ;
+  }
+  else 
+  {
+    m_RightGSFrameOffset = 1 ;
+  }
+  if ( maxLeftGSIndex > m_MaxGoldStandardIndex )
+  {
+    m_MaxGoldStandardIndex = maxLeftGSIndex;
+  }
+  if ( maxRightGSIndex > m_MaxGoldStandardIndex )
+  {
+    m_MaxGoldStandardIndex = maxRightGSIndex;
+  }
+}
+//-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
     std::vector < mitk::GoldStandardPoint > points ,
     mitk::VideoTrackerMatching::Pointer matcher )
@@ -920,7 +1004,6 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( mitk::PickedObject G
 bool ProjectPointsOnStereoVideo::FindNearestScreenPoint ( mitk::PickedObject& GSPickedObject )
 {
   //we're assuming that  m_ClassifierProjectedPoints is in order of frames, better check this
-  MITK_INFO << "finding nearest screen point in frame " <<  GSPickedObject.m_FrameNumber;
   assert ( m_ProjectedPointLists[GSPickedObject.m_FrameNumber].IsNotNull() );
   assert ( GSPickedObject.m_FrameNumber ==  m_ProjectedPointLists[GSPickedObject.m_FrameNumber]->GetFrameNumber() );
   //let's check the timing errors while we're here
@@ -937,6 +1020,7 @@ bool ProjectPointsOnStereoVideo::FindNearestScreenPoint ( mitk::PickedObject& GS
     return true;
   }
   
+  MITK_INFO << "Finding nearest screen point in frame " <<  GSPickedObject.m_FrameNumber;
   assert ( m_ClassifierProjectedPointLists[GSPickedObject.m_FrameNumber].IsNotNull() );
   assert ( GSPickedObject.m_FrameNumber ==  m_ClassifierProjectedPointLists[GSPickedObject.m_FrameNumber]->GetFrameNumber() );
   std::vector<mitk::PickedObject> ClassifierPoints = m_ClassifierProjectedPointLists[GSPickedObject.m_FrameNumber]->GetPickedObjects();
@@ -1178,7 +1262,6 @@ void ProjectPointsOnStereoVideo::ClassifyGoldStandardPoints ()
   MITK_INFO << "MITK classifing " << startsize << " gold standard points ";
   for ( std::vector<mitk::PickedObject>::iterator it = m_GoldStandardPoints.end() - 1  ; it >= m_GoldStandardPoints.begin() ; --it ) 
   {
-    MITK_INFO << "MITK classifing point " ;//<< it;
     if ( ! this->FindNearestScreenPoint ( *it ) )
     {
       m_GoldStandardPoints.erase ( it );

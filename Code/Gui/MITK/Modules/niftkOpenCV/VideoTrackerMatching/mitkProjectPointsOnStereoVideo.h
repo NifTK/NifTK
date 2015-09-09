@@ -105,9 +105,11 @@ public:
   itkSetMacro ( AllowableTimingError, long long);
   void SetLeftGoldStandardPoints ( std::vector <GoldStandardPoint> points , mitk::VideoTrackerMatching::Pointer matcher );
   void SetRightGoldStandardPoints ( std::vector <GoldStandardPoint > points, mitk::VideoTrackerMatching::Pointer matcher );
+  void SetGoldStandardObjects ( std::vector < mitk::PickedObject > pickedObjects );
 
   /**
-   * \brief appends points to  world points and corresponding vectors
+   * \brief appends points to  world points and corresponding vectors 
+   * WARNING, WorldPoint has no ID, so this gets lost
    */
   void AppendWorldPoints ( std::vector< mitk::WorldPoint > points );
  

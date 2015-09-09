@@ -34,6 +34,14 @@
       <label>Input 3D points</label>
       <channel>input</channel>
     </file>
+   
+    <file fileExtensions=".xml">
+      <name>input3DPickedObjects</name>
+      <longflag>input3DPickedObjects</longflag>
+      <description>Input 3D picked objects</description>
+      <label>Input 3D picked objects</label>
+      <channel>input</channel>
+    </file>
     
     <file fileExtensions=".txt">
       <name>input3DWithScalars</name>
@@ -50,7 +58,15 @@
       <label>Input 2D points</label>
       <channel>input</channel>
     </file>
-
+   
+    <file>
+      <name>goldStandardObjects</name>
+      <longflag>goldStandardObjects</longflag>
+      <description>The measured points in all screens, as a picked object xml file</description>
+      <label>The measured points in all screens, as a picked object xml file</label>
+      <channel>input</channel>
+    </file>
+    
     <file>
       <name>leftGoldStandard</name>
       <longflag>leftGoldStandard</longflag>

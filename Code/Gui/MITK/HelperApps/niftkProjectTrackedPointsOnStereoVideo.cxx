@@ -19,6 +19,7 @@
 #include <mitkProjectPointsOnStereoVideo.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVPointTypes.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <niftkProjectTrackedPointsOnStereoVideoCLP.h>
 #include <boost/lexical_cast.hpp>
 
@@ -185,7 +186,22 @@ int main(int argc, char** argv)
       projector->AppendWorldPoints(worldPointsWithScalars);
       fin.close();
     }
-    
+   
+    if ( goldStandardObjects.length() != 0 ) 
+    {
+      std::ifstream fin ( goldStandardObjects.c_str() );
+      if ( fin ) 
+      {
+        std::vector < mitk::PickedObject > pickedObjects;
+        mitk::LoadPickedObjects ( pickedObjects, fin );
+        projector->SetGoldStandardObjects (pickedObjects);
+        fin.close();
+      }
+      else
+      {
+        MITK_ERROR << "Failed to open " << goldStandardObjects << " for input";
+      }
+    }
     if ( leftGoldStandard.length() != 0 ) 
     {
       std::ifstream fin(leftGoldStandard.c_str());
