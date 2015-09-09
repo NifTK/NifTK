@@ -46,7 +46,8 @@ int main(int argc, char** argv)
   if ( ( input2D.length() == 0 ) && 
        ( input3D.length() == 0 ) && 
        ( input3DWithScalars.length() == 0 ) && 
-       ( leftGoldStandard.length() == 0 || rightGoldStandard.length() == 0 ) )
+       ( leftGoldStandard.length() == 0 || rightGoldStandard.length() == 0 ) &&
+       ( goldStandardObjects.length() == 0 ) )
   {
     std::cout << "no point input files defined " << std::endl;
     commandLine.getOutput()->usage(commandLine);
@@ -305,7 +306,7 @@ int main(int argc, char** argv)
       if ( outputTriangulatedPoints.length() != 0 )
       {
         projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
-        projector->CalculateTriangulationErrors(outputErrors);
+        projector->TriangulateGoldStandardPoints(outputTriangulatedPoints);
       }
     }
    

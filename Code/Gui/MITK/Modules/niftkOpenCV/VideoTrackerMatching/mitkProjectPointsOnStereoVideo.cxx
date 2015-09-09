@@ -216,8 +216,23 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   m_ProjectedPointLists.clear();
   m_PointsInLeftLensCS.clear();
   m_ClassifierProjectedPointLists.clear();
-  if ( static_cast<int>(m_WorldPoints->GetListSize()) < m_MaxGoldStandardIndex ) 
+  if ( m_WorldPoints.IsNotNull() )
   {
+    if ( static_cast<int>(m_WorldPoints->GetListSize()) < m_MaxGoldStandardIndex ) 
+    {
+      MITK_INFO << "Filling world points with dummy data to enable triangulation";
+      cv::Point2i emptyWorldPoint;
+
+      for ( int i = m_WorldPoints->GetListSize() ; i <= m_MaxGoldStandardIndex ; i ++ )
+      {
+        m_WorldPoints->AddPoint(emptyWorldPoint);
+      }
+    }
+  }
+  else
+  {
+    m_WorldPoints = mitk::PickedPointList::New();
+    m_WorldPoints->SetChannel("world");
     MITK_INFO << "Filling world points with dummy data to enable triangulation";
     cv::Point2i emptyWorldPoint;
 
@@ -226,6 +241,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       m_WorldPoints->AddPoint(emptyWorldPoint);
     }
   }
+
   if ( ! ( m_DontProject ) && ( m_WorldPoints->GetListSize() == 0) )
   {
     MITK_WARN << "Called project with nothing to project";
@@ -451,6 +467,7 @@ void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetGoldStandardObjects( std::vector < mitk::PickedObject > pickedObjects )
 {
+  //this index checking doesn't account for lines / points 
   int maxLeftGSIndex = -1;
   int maxRightGSIndex = -1;
   if ( m_GoldStandardPoints.size() != 0 )
@@ -696,21 +713,44 @@ void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (std::string outP
     }
   }
   //go through  m_TriangulatedGoldStandardPoints, for each m_Id (points and lines) find the centroid and output 
-//if forgot we also use this to triangulate stuff. 
-//I guess we want to create a vector of PointLists, into which we can stuff the individual triangulated things.
   mitk::PointSet::Pointer triangulatedPoints = mitk::PointSet::New();
+  std::vector < bool > pointIDTriangulated;
+  for ( unsigned int i = 0 ; i < m_MaxGoldStandardIndex ; i ++ ) 
+  {
+     pointIDTriangulated.push_back(false);
+  }
   for ( unsigned int i = 0 ; i < m_TriangulatedGoldStandardPoints.size() ; i ++ ) 
   {
-/*    cv::Point3d centroid;
-    cv::Point3d stdDev;
-    centroid = mitk::GetCentroid (classifiedPoints[i],true, & stdDev);
+    if (  m_TriangulatedGoldStandardPoints[i].m_IsLine == false )
+    {
+    
+      if ( ! ( pointIDTriangulated [ m_TriangulatedGoldStandardPoints[i].m_Id ] ) )
+      {
+        std::vector < cv::Point3d > matchingPoints;
+    
+        for ( unsigned int j = 0 ; j < m_TriangulatedGoldStandardPoints.size() ; j ++ )
+        {
+          if (  m_TriangulatedGoldStandardPoints[j].m_IsLine == false )
+          {
+            if (  m_TriangulatedGoldStandardPoints[j].m_Id == m_TriangulatedGoldStandardPoints[i].m_Id )
+            {
+              matchingPoints.push_back ( m_TriangulatedGoldStandardPoints[j].m_Points[0] );
+            }
+          }
+        }
+        cv::Point3d centroid;
+        cv::Point3d stdDev;
+        centroid = mitk::GetCentroid (matchingPoints,true, & stdDev);
 
-    mitk::Point3D point;
-    point[0] = centroid.x;
-    point[1] = centroid.y;
-    point[2] = centroid.z;
-    triangulatedPoints->InsertPoint(i,point);
-    MITK_INFO << "Point " << i << " triangulated mean " << centroid << " SD " << stdDev;*/
+        mitk::Point3D point;
+        point[0] = centroid.x;
+        point[1] = centroid.y;
+        point[2] = centroid.z;
+        triangulatedPoints->InsertPoint(m_TriangulatedGoldStandardPoints[i].m_Id,point);
+        MITK_INFO << "Point " <<  m_TriangulatedGoldStandardPoints[i].m_Id << " triangulated mean " << centroid << " SD " << stdDev;
+        pointIDTriangulated [ m_TriangulatedGoldStandardPoints[i].m_Id ] = true;
+      }
+    }
   }
   if ( m_TriangulatedPointsOutName != "" )
   {
