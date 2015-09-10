@@ -692,7 +692,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (std::string outPrefix )
+void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (std::string outPrefix, mitk::VideoTrackerMatching::Pointer trackerMatcher )
 {
 
   if ( ! m_GoldStandardPointsClassifiedOK )
@@ -734,7 +734,8 @@ void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (std::string outP
           {
             if (  m_TriangulatedGoldStandardPoints[j].m_Id == m_TriangulatedGoldStandardPoints[i].m_Id )
             {
-              matchingPoints.push_back ( m_TriangulatedGoldStandardPoints[j].m_Points[0] );
+              cv::Mat leftCameraToWorld = trackerMatcher->GetCameraTrackingMatrix(m_TriangulatedGoldStandardPoints[j].m_FrameNumber, NULL, m_TrackerIndex, NULL, m_ReferenceIndex);
+              matchingPoints.push_back ( leftCameraToWorld * m_TriangulatedGoldStandardPoints[j].m_Points[0]  );
             }
           }
         }

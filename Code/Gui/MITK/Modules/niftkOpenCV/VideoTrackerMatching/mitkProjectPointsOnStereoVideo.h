@@ -144,9 +144,9 @@ public:
   void CalculateTriangulationErrors (std::string outPrefix);
 
   /**
-   * \brief calculates the triangulation errors
+   * \brief Triangulates any stereo matched gold standard objects to world coordinates
    */
-  void TriangulateGoldStandardPoints (std::string outPrefix);
+  void TriangulateGoldStandardPoints (std::string outPrefix, mitk::VideoTrackerMatching::Pointer trackerMatcher);
 
   /** 
    * \brief Set the projector screen buffer
