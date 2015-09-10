@@ -428,7 +428,7 @@ PickedObject::PickedObject(const GoldStandardPoint& gsp, const unsigned long lon
 , m_FrameNumber(gsp.m_FrameNumber)
 , m_TimeStamp(timestamp)
 , m_Channel("")
-, m_Scalar (cv::Scalar(255,0,0))
+, m_Scalar (cv::Scalar(255,255,255))
 {
   m_Points.push_back(cv::Point3d ( gsp.m_Point.x, gsp.m_Point.y, 0.0 ));
 }
@@ -473,6 +473,7 @@ PickedObject PickedObject::CopyByHeader() const
   new_po.m_IsLine = m_IsLine;
   new_po.m_FrameNumber = m_FrameNumber;
   new_po.m_Id = m_Id;
+  new_po.m_Scalar = m_Scalar;
 
   return new_po;
 }
@@ -578,8 +579,8 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
       for ( unsigned int j = 0 ; j < m_PickedObjects[i].m_Points.size() ; j ++ )
       {
         cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
-        cv::putText(image,number,point,0,1.0,cv::Scalar(255,255,255));
-        cv::circle(image, point,5,cv::Scalar(255,255,255),1,1);
+        cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar);
+        cv::circle(image, point,5,m_PickedObjects[i].m_Scalar,1,1);
       }
     }
     else
@@ -591,14 +592,14 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
           if ( j == 0 )
           {
             cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
-            cv::putText(image,number,point,0,1.0,cv::Scalar(255,255,255));
-            cv::circle(image, point,5,cv::Scalar(255,255,255),1,1);
+            cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar);
+            cv::circle(image, point,5,m_PickedObjects[i].m_Scalar,1,1);
           }
           else
           {
             cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
             cv::Point2i point2 = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j-1]);
-            cv::line(image,  point, point2, cv::Scalar(255,255,255));
+            cv::line(image,  point, point2, m_PickedObjects[i].m_Scalar);
           }
         }
       }
