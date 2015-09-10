@@ -265,6 +265,7 @@ public:
   bool flgDoNotBiasFieldCorrectT1w;
   bool flgDoNotBiasFieldCorrectT2w;
 
+  bool flgComputeMaskFromT2Only;
   bool flgExcludeAxilla;
   bool flgCropFit;
   float coilCropDistance;
@@ -314,7 +315,8 @@ public:
   InputParameters( TCLAP::CmdLine &commandLine, 
                    bool verbose, bool flgRegister, bool flgSave, 
                    bool compression, bool debug, bool overwrite,
-                   bool excludeAxilla, bool cropFit, float coilCropDist,
+                   bool computeMaskFromT2Only, bool excludeAxilla, 
+                   bool cropFit, float coilCropDist,
                    float maxNumberOfIterations, float nFittingLevels,
                    bool doNotBiasFieldCorrectT1w, bool doNotBiasFieldCorrectT2w,
                    std::string subdirMRI, std::string subdirData, 
@@ -344,6 +346,7 @@ public:
     flgDoNotBiasFieldCorrectT1w = doNotBiasFieldCorrectT1w;
     flgDoNotBiasFieldCorrectT2w = doNotBiasFieldCorrectT2w;
 
+    flgComputeMaskFromT2Only = computeMaskFromT2Only;
     flgExcludeAxilla = excludeAxilla;
     flgCropFit = cropFit;
     coilCropDistance = coilCropDist;
@@ -502,6 +505,7 @@ public:
             << "Output T2w csv file: " << fileT2wOutputCSV << std::endl
             << std::endl
             << std::boolalpha
+            << "Compute mask from the T2 image only?: " << flgComputeMaskFromT2Only << std::endl
             << "Exclude the axilla?: " << flgExcludeAxilla << std::endl       
             << "Clip segmentation with fitted surface?: " << flgCropFit << std::endl       
             << std::noboolalpha
@@ -1852,7 +1856,8 @@ int main( int argc, char *argv[] )
   InputParameters args( commandLine, 
                         flgVerbose, flgRegister, flgSaveImages, 
                         flgCompression, flgDebug, flgOverwrite,
-                        flgExcludeAxilla, flgCropFit, coilCropDistance,
+                        flgComputeMaskFromT2Only, flgExcludeAxilla, 
+                        flgCropFit, coilCropDistance,
                         MaximumNumberOfIterations, NumberOfFittingLevels,
                         flgDoNotBiasFieldCorrectT1w, flgDoNotBiasFieldCorrectT2w,
                         dirSubMRI, dirSubData, dirPrefix, dirInput,
@@ -2653,7 +2658,11 @@ int main( int argc, char *argv[] )
         }        
 
         breastMaskSegmentor->SetStructuralImage( imStructuralT2 );
-        breastMaskSegmentor->SetFatSatImage( imFatSatT1 );
+
+        if ( ! flgComputeMaskFromT2Only )
+        {
+          breastMaskSegmentor->SetFatSatImage( imFatSatT1 );
+        }
 
         breastMaskSegmentor->Execute();
 

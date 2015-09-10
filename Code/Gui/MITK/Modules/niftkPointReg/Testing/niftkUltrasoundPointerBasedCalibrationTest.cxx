@@ -37,14 +37,14 @@ int niftkUltrasoundPointerBasedCalibrationTest(int argc, char * argv[])
   // always start with this!
   MITK_TEST_BEGIN("niftkUltrasoundPointerBasedCalibrationTest");
 
-  if (argc != 4)
+  if (argc != 5)
   {
-    mitkThrow() << "Usage: niftkUltrasoundPointerBasedCalibrationTest image.mps sensor.mps expected.4x4" << std::endl;
+    mitkThrow() << "Usage: niftkUltrasoundPointerBasedCalibrationTest image.mps sensor.mps expected.4x4 residual" << std::endl;
   }
   mitk::PointSet::Pointer imagePoints = mitk::IOUtil::LoadPointSet(argv[1]);
   mitk::PointSet::Pointer sensorPoints = mitk::IOUtil::LoadPointSet(argv[2]);
-
   vtkSmartPointer<vtkMatrix4x4> expectedResult = mitk::LoadVtkMatrix4x4FromFile(argv[3]);
+  float expectedResidual = atof(argv[4]);
 
   niftk::UltrasoundPointerBasedCalibration::Pointer calibrator = niftk::UltrasoundPointerBasedCalibration::New();
   calibrator->SetImagePoints(imagePoints);
@@ -67,7 +67,7 @@ int niftkUltrasoundPointerBasedCalibrationTest(int argc, char * argv[])
                                    << actualResult->GetElement(i, j));
     }
   }
-  MITK_TEST_CONDITION_REQUIRED(residual < 0.1, "Checking residual < 0.001 (as there is no noise), and got " << residual);
+  MITK_TEST_CONDITION_REQUIRED(residual < expectedResidual, "Checking residual < " << expectedResidual << ", and got " << residual);
   MITK_TEST_END();
 }
 

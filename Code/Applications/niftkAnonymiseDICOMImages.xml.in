@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Breast Cancer Imaging Tools . MG . Directories of Images</category>
+  <category>DICOM Tools</category>
 
-  <title>Anonymise DICOM Mammograms</title>
+  <title>Anonymise DICOM Images</title>
 
-  <description><![CDATA[Search for DICOM mammograms in a directory and anonymise them by removing patient information from the DICOM header and/or applying a rectangular mask to remove the label.]]></description>
+  <description><![CDATA[Search for DICOM images in a directory tree and anonymise them by removing patient information from the DICOM header.]]></description>
 
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
@@ -56,48 +56,6 @@
     </boolean>
 
     <boolean>
-      <name>flgAnonymiseDICOMHeader</name>
-      <longflag>anonHeader</longflag>
-      <description>Anonymise the DICOM header by removing the patient name tag.</description>
-      <label>Anonymise DICOM header</label>
-    </boolean>
-
-    <boolean>
-      <name>flgAnonymiseImageLabel</name>
-      <longflag>anonLabel</longflag>
-      <description>Anonymise the image by setting the rectangular region of the label in the image to zero.</description>
-      <label>Remove image label</label>
-    </boolean>
-
-    <boolean>
-      <name>flgRescaleIntensitiesToMaxRange</name>
-      <longflag>rescale</longflag>
-      <description>Rescale the image intensities to the maximum allowable range.</description>
-      <label>Rescale intensities to max range</label>
-    </boolean>
-
-    <boolean>
-      <name>flgInvert</name>
-      <longflag>invert</longflag>
-      <description>Manually override automatically working out if the image should be inverted on not and invert all image intensities.</description>
-      <label>Invert image intensities</label>
-    </boolean>
-
-    <boolean>
-      <name>flgFlipHorizontally</name>
-      <longflag>flipHorizontally</longflag>
-      <description>Flip all the images horizontally.</description>
-      <label>Flip horizontally</label>
-    </boolean>
-
-    <boolean>
-      <name>flgFlipVertically</name>
-      <longflag>flipVertically</longflag>
-      <description>Flip all the images vertically.</description>
-      <label>Flip vertically</label>
-    </boolean>
-
-    <boolean>
       <name>flgVerbose</name>
       <longflag>verbose</longflag>
       <description>Generate verbose output (i.e. print the DICOM header).</description>
@@ -106,59 +64,6 @@
 
   </parameters>
 
-  <parameters advanced="true">
-
-    <label>DICOM Image Label Anonymisation</label>
-    <description><![CDATA[By default the image will be anonymised by setting a user specified rectangular region to zero to remove a patient label.]]></description>
-
-    <float>
-      <name>labelWidth</name>
-      <longflag>labelWidth</longflag>
-      <description>The width of the label as a percentage of the image width.</description>
-      <label>Label width (% of image).</label>
-      <default>20</default>
-      <constraints>
-        <minimum>0</minimum>
-        <maximum>100</maximum>
-        <step>1</step>
-      </constraints>
-    </float>
-
-    <float>
-      <name>labelHeight</name>
-      <longflag>labelHeight</longflag>
-      <description>The height of the label as a percentage of the image height.</description>
-      <label>Label height (% of image).</label>
-      <default>100</default>
-      <constraints>
-        <minimum>0</minimum>
-        <maximum>100</maximum>
-        <step>1</step>
-      </constraints>
-    </float>
-
-    <string-enumeration>
-      <name>labelPosition</name>
-      <longflag>labelPosn</longflag>
-      <description>The position of the label (i.e. the upper or lower corner of the image).</description>
-      <label>Label position</label>
-      <default>Upper</default>
-      <element>Upper</element>
-      <element>Lower</element>
-    </string-enumeration>
-
-    <string-enumeration>
-      <name>labelSide</name>
-      <longflag>labelSide</longflag>
-      <description>The side that the label is on i.e. left or right. By default the program will use the horizontal center-of-mass to determine whether this is a left or right breast and then assume that the label is along the image edge opposite the chest wall.</description>
-      <label>Label side</label>
-      <default>Automatic</default>
-      <element>Automatic</element>
-      <element>Left</element>
-      <element>Right</element>
-    </string-enumeration>
-
-  </parameters>
 
   <parameters advanced="true">
 

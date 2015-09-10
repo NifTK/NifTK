@@ -139,6 +139,14 @@
     <description><![CDATA[Parameters to modify the breast mask segmentation.]]></description>
 
     <boolean>
+      <name>flgComputeMaskFromT2Only</name>
+      <longflag>maskFromT2Only</longflag>
+      <description>Compute the whole breast mask using the T2 image only [default: no].</description>
+      <label>Compute the breast mask from the T2 image only?</label>
+      <default>false</default>
+    </boolean>
+
+    <boolean>
       <name>flgExcludeAxilla</name>
       <longflag>excludeAxilla</longflag>
       <description>Exclude the axilla region from the segmentation [default: no].</description>
