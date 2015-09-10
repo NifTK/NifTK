@@ -61,7 +61,13 @@ int main(int argc, char** argv)
     projector->SetAllowableTimingError(maxTimingError * 1e6);
     projector->SetProjectorScreenBuffer(projectorScreenBuffer);
     projector->SetClassifierScreenBuffer(classifierScreenBuffer);
-    projector->SetVisualiseTrackingStatus(true);
+    projector->SetVisualiseTrackingStatus(showTrackingStatus);
+    if ( saveAnnotateWithGS )
+    {
+      annotateWithGS = true;
+    }
+    projector->SetAnnotateWithGoldStandards(annotateWithGS);
+    projector->SetWriteAnnotatedGoldStandards(saveAnnotateWithGS);
     
     if ( outputVideo ) 
     {

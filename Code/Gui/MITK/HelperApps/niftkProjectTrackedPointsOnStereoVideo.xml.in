@@ -121,7 +121,31 @@
       <label>Write out video files</label>
       <channel>output</channel>
     </boolean>
+   
+    <boolean>
+      <name>annotateWithGS</name>
+      <longflag>annotateWithGS</longflag>
+      <description>Annotate the projections with gold standard selections</description>
+      <label>Annotate the projections with gold standard selections</label>
+      <channel>output</channel>
+    </boolean>
+  
+    <boolean>
+      <name>saveAnnotateWithGS</name>
+      <longflag>saveAnnotateWithGS</longflag>
+      <description>Save frames annotated with gold standard selections</description>
+      <label>Save frames annotated with gold standard selections</label>
+      <channel>output</channel>
+    </boolean>
 
+    <boolean>
+      <name>showTrackingStatus</name>
+      <longflag>showTrackingStatus</longflag>
+      <description>Show the status of attached trackers</description>
+      <label>Show the status of attached trackers</label>
+      <channel>output</channel>
+    </boolean>
+ 
     <file>
       <name>outputErrors</name>
       <longflag>outputErrors</longflag>

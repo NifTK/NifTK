@@ -44,6 +44,9 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_DrawAxes(false)
 , m_HaltOnVideoReadFail(true)
 , m_DontProject(false)
+, m_VisualiseTrackingStatus(false)
+, m_AnnotateWithGoldStandards(false)
+, m_WriteAnnotatedGoldStandards(false)
 , m_LeftGSFramesAreEven(true)
 , m_RightGSFramesAreEven(true)
 , m_MaxGoldStandardIndex(-1)
@@ -307,14 +310,14 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
         }
       }
 
-      if ( m_Visualise || m_SaveVideo ) 
+      if ( m_Visualise || m_SaveVideo || m_AnnotateWithGoldStandards ) 
       {
         cv::Mat videoImage;
         m_Capture->read(videoImage);
         if ( drawProjection )
         {
           m_ProjectedPointLists.back()->AnnotateImage(videoImage);
-          
+         
           if ( m_DrawAxes && drawProjection )
           {
             if ( framenumber % 2 == 0 )
@@ -357,6 +360,45 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             }
           }
         }
+        if ( m_AnnotateWithGoldStandards )
+        {
+          std::vector < mitk::PickedObject > goldStandardObjects;
+          for ( std::vector<mitk::PickedObject>::iterator it = m_GoldStandardPoints.begin()  ; it < m_GoldStandardPoints.end() ; ++it ) 
+          {
+            if ( it->m_FrameNumber == framenumber ) 
+            {
+              if ( framenumber%2 == 0 )
+              {
+                if ( it->m_Channel == "left" )
+                {
+                  goldStandardObjects.push_back(*it);
+                  goldStandardObjects.back().m_Scalar = cv::Scalar ( 0,255,255);
+                }
+              }
+              if ( framenumber%2 !=0 )
+              {
+                if ( it->m_Channel == "right" )
+                {
+                  goldStandardObjects.push_back(*it);
+                  goldStandardObjects.back().m_Scalar = cv::Scalar ( 0,255,255);
+                }
+              }
+            }
+          }
+          if ( goldStandardObjects.size() != 0 )
+          {
+            mitk::PickedPointList::Pointer goldStandardPointList = mitk::PickedPointList::New();
+            goldStandardPointList->SetPickedObjects(goldStandardObjects);
+            goldStandardPointList->AnnotateImage(videoImage);
+            if ( m_WriteAnnotatedGoldStandards ) 
+            {
+              std::string outname = boost::lexical_cast<std::string>(framenumber) + ".png";
+              cv::imwrite(outname,videoImage);
+            }
+
+          }
+        }
+
         if ( m_SaveVideo )
         {
           if ( m_LeftWriter != NULL ) 
