@@ -512,6 +512,8 @@ void ProjectPointsOnStereoVideo::SetGoldStandardObjects( std::vector < mitk::Pic
   //this index checking doesn't account for lines / points 
   int maxLeftGSIndex = -1;
   int maxRightGSIndex = -1;
+  int leftPoints = 0;
+  int rightPoints = 0;
   if ( m_GoldStandardPoints.size() != 0 )
   {
     MITK_WARN << "Setting gold standard points with non empty vector, check this is what you intended.";
@@ -534,13 +536,14 @@ void ProjectPointsOnStereoVideo::SetGoldStandardObjects( std::vector < mitk::Pic
       }
       else
       {
-        if ( ( i > 0 ) && ( m_LeftGSFramesAreEven ) ) 
+        if ( ( leftPoints > 0 ) && ( m_LeftGSFramesAreEven ) ) 
         {
           MITK_ERROR << "Detected inconsistent frame numbering in the left gold standard points, left GS should be even";
           exit(1);
         }
         m_LeftGSFramesAreEven = false;
       }
+      leftPoints++;
     }
     else
     {
@@ -563,13 +566,14 @@ void ProjectPointsOnStereoVideo::SetGoldStandardObjects( std::vector < mitk::Pic
       }
       else
       {
-        if ( ( i > 0 ) && ( m_RightGSFramesAreEven ) ) 
+        if ( ( rightPoints > 0 ) && ( m_RightGSFramesAreEven ) ) 
         {
           MITK_ERROR << "Detected inconsistent frame numbering in the right gold standard points, right GS should be even";
           exit(1);
         }
         m_RightGSFramesAreEven = false;
       }
+      rightPoints++;
     }
     m_GoldStandardPoints.push_back(pickedObjects[i]);
   }
