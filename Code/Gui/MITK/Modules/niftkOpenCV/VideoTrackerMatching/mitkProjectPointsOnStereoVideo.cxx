@@ -309,6 +309,10 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           m_ClassifierProjectedPointLists.push_back (ProjectPickedPointList ( classifierPointsInLeftLensCS , m_ClassifierScreenBuffer ));
         }
       }
+      else
+      {
+        drawProjection = false;
+      }
 
       if ( m_Visualise || m_SaveVideo || m_AnnotateWithGoldStandards ) 
       {
@@ -317,46 +321,44 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
         if ( drawProjection )
         {
           m_ProjectedPointLists.back()->AnnotateImage(videoImage);
-         
-          if ( m_DrawAxes && drawProjection )
+        }  
+        if ( m_DrawAxes )
+        {
+          if ( framenumber % 2 == 0 )
           {
-            if ( framenumber % 2 == 0 )
+            cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Left,m_ScreenAxesPoints.m_Points[1].m_Left,cvScalar(255,0,0));
+            cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Left,m_ScreenAxesPoints.m_Points[2].m_Left,cvScalar(0,255,0));
+            cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Left,m_ScreenAxesPoints.m_Points[3].m_Left,cvScalar(0,0,255));         
+          }
+          else
+          {
+            cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Right,m_ScreenAxesPoints.m_Points[1].m_Right,cvScalar(255,0,0));
+            cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Right,m_ScreenAxesPoints.m_Points[2].m_Right,cvScalar(0,255,0));
+            cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Right,m_ScreenAxesPoints.m_Points[3].m_Right,cvScalar(0,0,255));         
+          }
+        }
+        if ( m_VisualiseTrackingStatus )
+        {
+          unsigned int howMany = trackerMatcher->GetTrackingMatricesSize();
+
+          for ( unsigned int i = 0 ; i < howMany ; i ++ ) 
+          {
+
+            long long timingError;
+            trackerMatcher->GetCameraTrackingMatrix(framenumber , &timingError , i);
+            cv::Point2d textLocation = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.03 ) , (i+1) *  m_VideoHeight * 0.07  );
+            cv::Point2d location = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) , (i) *  m_VideoHeight * 0.07 + m_VideoHeight * 0.02  );
+            cv::Point2d location1 = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) + ( m_VideoWidth * 0.025 ) , 
+              (i) *  m_VideoHeight * 0.07 + (m_VideoHeight * 0.06) + m_VideoHeight * 0.02);
+            if ( timingError < m_AllowableTimingError )
             {
-              cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Left,m_ScreenAxesPoints.m_Points[1].m_Left,cvScalar(255,0,0));
-              cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Left,m_ScreenAxesPoints.m_Points[2].m_Left,cvScalar(0,255,0));
-              cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Left,m_ScreenAxesPoints.m_Points[3].m_Left,cvScalar(0,0,255));         
+              cv::rectangle ( videoImage, location, location1  , cvScalar (0,255,0), CV_FILLED);
+              cv::putText(videoImage , "T" + boost::lexical_cast<std::string>(i), textLocation ,0,1.0, cvScalar ( 255,255,255), 4.0);
             }
             else
             {
-              cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Right,m_ScreenAxesPoints.m_Points[1].m_Right,cvScalar(255,0,0));
-              cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Right,m_ScreenAxesPoints.m_Points[2].m_Right,cvScalar(0,255,0));
-              cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Right,m_ScreenAxesPoints.m_Points[3].m_Right,cvScalar(0,0,255));         
-            }
-          }
-          if ( m_VisualiseTrackingStatus )
-          {
-            unsigned int howMany = trackerMatcher->GetTrackingMatricesSize();
-
-            
-            for ( unsigned int i = 0 ; i < howMany ; i ++ ) 
-            {
-
-              long long timingError;
-              trackerMatcher->GetCameraTrackingMatrix(framenumber , &timingError , i);
-              cv::Point2d textLocation = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.03 ) , (i+1) *  m_VideoHeight * 0.07  );
-              cv::Point2d location = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) , (i) *  m_VideoHeight * 0.07 + m_VideoHeight * 0.02  );
-              cv::Point2d location1 = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) + ( m_VideoWidth * 0.025 ) , 
-                  (i) *  m_VideoHeight * 0.07 + (m_VideoHeight * 0.06) + m_VideoHeight * 0.02);
-              if ( timingError < m_AllowableTimingError )
-              {
-                cv::rectangle ( videoImage, location, location1  , cvScalar (0,255,0), CV_FILLED);
-                cv::putText(videoImage , "T" + boost::lexical_cast<std::string>(i), textLocation ,0,1.0, cvScalar ( 255,255,255), 4.0);
-              }
-              else
-              {
-                cv::rectangle ( videoImage, location, location1  , cvScalar (0,0,255), CV_FILLED);
-                cv::putText(videoImage , "T" + boost::lexical_cast<std::string>(i), textLocation ,0,1.0, cvScalar ( 255,255,255), 4.0);
-              }
+              cv::rectangle ( videoImage, location, location1  , cvScalar (0,0,255), CV_FILLED);
+              cv::putText(videoImage , "T" + boost::lexical_cast<std::string>(i), textLocation ,0,1.0, cvScalar ( 255,255,255), 4.0);
             }
           }
         }
@@ -442,7 +444,6 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             drawProjection = ! drawProjection;
           }
         }
-
       }
       framenumber ++;
     }
