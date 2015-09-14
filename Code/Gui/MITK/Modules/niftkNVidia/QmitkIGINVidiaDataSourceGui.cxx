@@ -22,7 +22,7 @@
 #include "QmitkIGINVidiaDataSource.h"
 #include "QmitkVideoPreviewWidget.h"
 
-NIFTK_IGISOURCE_GUI_MACRO(NIFTKNVIDIAGUI_EXPORT, QmitkIGINVidiaDataSourceGui, "IGI NVidia Video Gui")
+NIFTK_IGISOURCE_GUI_MACRO(NIFTKNVIDIA_EXPORT, QmitkIGINVidiaDataSourceGui, "IGI NVidia Video Gui")
 
 //-----------------------------------------------------------------------------
 QmitkIGINVidiaDataSourceGui::QmitkIGINVidiaDataSourceGui()

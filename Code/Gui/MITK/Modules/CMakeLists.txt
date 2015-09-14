@@ -67,7 +67,6 @@ if(BUILD_IGI)
     set(MODULE_DIRS
       ${MODULE_DIRS}
       niftkNVidia
-      niftkNVidiaGui
     )
   endif()
 
