@@ -78,8 +78,6 @@ ImageLookupTablesView::ImageLookupTablesView()
 , m_InUpdate(false)
 , m_ThresholdForIntegerBehaviour(50)
 , m_LevelWindowPropertyObserverTag(0)
-, m_LowestIsOpaquePropertyObserverTag(0)
-, m_HighestIsOpaquePropertyObserverTag(0)
 {
 }
 
@@ -147,7 +145,6 @@ void ImageLookupTablesView::CreateConnections()
   this->connect(m_Controls->m_LoadButton, SIGNAL(pressed()), this, SLOT(OnLoadButtonPressed()));
   this->connect(m_Controls->m_NewButton, SIGNAL(pressed()), this, SLOT(OnNewButtonPressed()));
 
-  
   this->connect(m_Controls->m_AddLabelButton, SIGNAL(pressed()), this, SLOT(OnAddLabelButtonPressed()));
   this->connect(m_Controls->m_RemoveLabelButton, SIGNAL(pressed()), this, SLOT(OnRemoveLabelButtonPressed()));
   this->connect(m_Controls->m_MoveLabelUpButton, SIGNAL(pressed()), this, SLOT(OnMoveLabelUpButtonPressed()));
@@ -201,7 +198,6 @@ void ImageLookupTablesView::LoadCachedLookupTables()
 {
   if(m_CachedFileNames.empty())
     return;
-
 
   QString listString = QString::fromStdString(m_CachedFileNames);
 
@@ -324,12 +320,9 @@ void ImageLookupTablesView::BlockSignals(bool b)
 void ImageLookupTablesView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*/,
                                              const QList<mitk::DataNode::Pointer>& nodes )
 {
-
   bool isValid = this->IsSelectionValid(nodes);
 
-  if (!isValid
-      || (nodes[0].IsNotNull() && nodes[0] != m_CurrentNode)
-     )
+  if (!isValid || (nodes[0].IsNotNull() && nodes[0] != m_CurrentNode))
   {
     this->Unregister();
   }
@@ -910,7 +903,16 @@ void ImageLookupTablesView::OnNewButtonPressed()
 
   QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
 
-  QmitkLookupTableContainer * newContainer = new QmitkLookupTableContainer(CreateEmptyLookupTable());
+  float lowestOpacity = 1;
+  m_CurrentNode->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
+
+  float highestOpacity = 1;
+  m_CurrentNode->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
+
+  QColor lowColor(0,0,0,lowestOpacity);
+  QColor highColor(0,0,0,highestOpacity);
+
+  QmitkLookupTableContainer * newContainer = new QmitkLookupTableContainer(CreateEmptyLookupTable(lowColor,highColor));
   newContainer->SetDisplayName(newLabelName);
   newContainer->SetIsScaled(false);
   newContainer->SetOrder(lutService->GetNumberOfLookupTables());

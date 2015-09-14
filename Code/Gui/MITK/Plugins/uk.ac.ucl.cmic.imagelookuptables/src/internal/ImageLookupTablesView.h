@@ -280,16 +280,6 @@ private:
    */
   unsigned long int m_LevelWindowPropertyObserverTag;
 
-  /**
-   * \brief To store the observer ID on the "Image Rendering.Lowest Value Is Opaque" property.
-   */
-  unsigned long int m_LowestIsOpaquePropertyObserverTag;
-
-  /**
-   * \brief To store the observer ID on the "Image Rendering.Highest Value Is Opaque" property.
-   */
-  unsigned long int m_HighestIsOpaquePropertyObserverTag;
-
   std::string m_CachedFileNames;
 };
 

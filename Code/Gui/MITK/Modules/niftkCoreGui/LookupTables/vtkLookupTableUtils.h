@@ -17,6 +17,7 @@
 
 #include "niftkCoreGuiExports.h"
 #include <vector>
+#include <QColor.h>
 
 /**
  * \file vtkLookupTableUtils.h
@@ -24,7 +25,6 @@
  */
  
   class vtkLookupTable;
-  class QColor;
   
 
   /**
@@ -51,5 +51,5 @@
    */
   NIFTKCOREGUI_EXPORT vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double* newRange);
 
-  NIFTKCOREGUI_EXPORT vtkLookupTable* CreateEmptyLookupTable();
+  NIFTKCOREGUI_EXPORT vtkLookupTable* CreateEmptyLookupTable(QColor lowColor = QColor(0,0,0,0), QColor highColor = QColor(0,0,0,0));
 #endif // vtkLookupTableUtils_h

@@ -17,7 +17,6 @@
 #include "vtkLookupTableUtils.h"
 #include <vtkLookupTable.h>
 #include <vtkSmartPointer.h>
-#include <qcolor.h>
 
 
 //-----------------------------------------------------------------------------
@@ -81,7 +80,7 @@ vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double* newRange)
   newLUT->SetNanColor(lut->GetNanColor());
 
   newLUT->SetRange(newRange); // this automatically invalidates the old colors so we need to explicitly set them
-  int numberOfColors = newRange[1]-newRange[0];
+  int numberOfColors = newRange[1]-newRange[0]+1;
 
   newLUT->SetNumberOfColors(numberOfColors);
 
@@ -94,22 +93,27 @@ vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double* newRange)
     newLUT->SetTableValue(i,rgba);
   }
 
+  double rgba[4];
+  lut->GetTableValue(lut->GetNumberOfColors(), rgba);
   for(unsigned int j=lut->GetNumberOfColors();j<newLUT->GetNumberOfColors();j++)
   {
-    newLUT->SetTableValue(j, lut->GetNanColor());
+    newLUT->SetTableValue(j, rgba);
   }
+  
   return newLUT;
 }
 
-vtkLookupTable* CreateEmptyLookupTable()
+vtkLookupTable* CreateEmptyLookupTable(QColor lowColor, QColor highColor)
 {
-  
   vtkLookupTable* lookupTable = vtkLookupTable::New();
-  lookupTable->SetValueRange(0,0);
-  lookupTable->SetHueRange(0,0);
-  lookupTable->SetSaturationRange(0,0);
-  lookupTable->SetAlphaRange(0,0);
-  lookupTable->SetNanColor(0,0,0,0);
+  lookupTable->SetNumberOfColors(2);
+  lookupTable->SetTableRange(0,1);
+  lookupTable->SetValueRange(lowColor.value(),highColor.value());
+  lookupTable->SetHueRange(lowColor.hue(),highColor.hue());
+  lookupTable->SetSaturationRange(lowColor.saturation(),highColor.saturation());
+  lookupTable->SetAlphaRange(lowColor.alpha(),highColor.alpha());
+  lookupTable->SetNanColor(0,0,0,highColor.alpha());
+
   lookupTable->Build();
 
   return lookupTable;
