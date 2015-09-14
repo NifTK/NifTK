@@ -143,8 +143,6 @@ void QmitkIGITrackerSource::InterpretMessage(int /*portNumber*/, niftk::NiftyLin
         return;
       }
 
-      // A single source can have multiple tracked tools. However, we only receive one "Client Info" message.
-      // Subsequently we get a separate message for each tool, so they are set up as separate sources, linked to the same port.
       QStringList trackerTools = dynamic_cast<niftk::NiftyLinkTrackerClientDescriptor*>(clientInfo)->GetTrackerTools();
       std::list<std::string> stringList;
 
@@ -250,6 +248,13 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
     return result;
   }
 
+  igtl::TrackingDataMessage::Pointer trMsg = dynamic_cast<igtl::TrackingDataMessage*>(msgBase.GetPointer());
+  if (trMsg.IsNull())
+  {
+    MITK_ERROR << "QmitkIGITrackerSource::Update is receiving OIGTL messages that are not TrackingDataMessage" << std::endl;
+    return result;
+  }
+
   QString nodeName = msg->GetSenderHostName();
 
   QString header;
@@ -262,72 +267,79 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
   QString matrixAsString = "";
   igtl::Matrix4x4 matrix;
 
-  igtl::TrackingDataMessage::Pointer trMsg = dynamic_cast<igtl::TrackingDataMessage*>(msgBase.GetPointer());
-
-  assert(trMsg);
-  assert(trMsg->GetNumberOfTrackingDataElements() == 1);
-
-  igtl::TrackingDataElement::Pointer elem = igtl::TrackingDataElement::New();
-  trMsg->GetTrackingDataElement(0, elem);
-  elem->GetMatrix(matrix);
-
-  matrixAsString = niftk::GetMatrixAsString(trMsg, 0);
-
-  header.append(", toolId=");
-  header.append(elem->GetName());
-  header.append("\n");
-
-  nodeName = elem->GetName();
-  if (nodeName.length() == 0)
+  // Tracking data messages, can contain > 1 matrix.
+  for (int i = 0; i < trMsg->GetNumberOfTrackingDataElements(); i++)
   {
-    MITK_ERROR << "QmitkIGITrackerSource::Update: Can't work out a node name, aborting" << std::endl;
-    return result;
+    igtl::TrackingDataElement::Pointer elem = igtl::TrackingDataElement::New();
+    trMsg->GetTrackingDataElement(i, elem);
+
+    // Check the tool name
+    std::string messageToolName = elem->GetName();
+    std::string sourceToolName = this->GetDescription();
+
+    if ( messageToolName == sourceToolName )
+    {
+      elem->GetMatrix(matrix);
+      matrixAsString = niftk::GetMatrixAsString(trMsg, 0);
+
+      header.append(", toolId=");
+      header.append(elem->GetName());
+      header.append("\n");
+
+      nodeName = elem->GetName();
+      if (nodeName.length() == 0)
+      {
+        MITK_ERROR << "QmitkIGITrackerSource::Update: Can't work out a node name, aborting" << std::endl;
+        return result;
+      }
+
+      // Get Data Node.
+      nodeName.append(" tracker");
+      mitk::DataNode::Pointer node = this->GetDataNode(nodeName.toStdString(), false);
+      if (node.IsNull())
+      {
+        MITK_ERROR << "QmitkIGITrackerSource::Update: Can't find mitk::DataNode with name " << nodeName.toStdString() << std::endl;
+        return result;
+      }
+
+      // Note: This extracts from the igtl::Matrix4x4 and Pre/Post multiplies it.
+      vtkSmartPointer<vtkMatrix4x4> combinedTransform = this->CombineTransformationsWithPreAndPost(matrix);
+
+      // Extract transformation from node, and put it on the coordinateAxes object.
+      mitk::CoordinateAxesData::Pointer coordinateAxes = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+      if (coordinateAxes.IsNull())
+      {
+        coordinateAxes = mitk::CoordinateAxesData::New();
+
+        // We remove and add to trigger the NodeAdded event,
+        // which is not emmitted if the node was added with no data.
+        m_DataStorage->Remove(node);
+        node->SetData(coordinateAxes);
+        m_DataStorage->Add(node);
+      }
+      coordinateAxes->SetVtkMatrix(*combinedTransform);
+
+      mitk::AffineTransformDataNodeProperty::Pointer affTransProp = mitk::AffineTransformDataNodeProperty::New();
+      affTransProp->SetTransform(*combinedTransform);
+
+      std::string propertyName = "niftk." + nodeName.toStdString();
+      node->SetProperty(propertyName.c_str(), affTransProp);
+      node->Modified();
+
+      if (this->m_DataStorage->GetNamedNode(nodeName.toStdString()) == NULL)
+      {
+        m_DataStorage->Add(node);
+      }
+
+      // And output a status message to console.
+      matrixAsString.append("\n");
+      m_StatusMessage = header + matrixAsString;
+
+      result = true;
+    }
   }
 
-  // Get Data Node.
-  nodeName.append(" tracker");
-  mitk::DataNode::Pointer node = this->GetDataNode(nodeName.toStdString(), false);
-  if (node.IsNull())
-  {
-    MITK_ERROR << "QmitkIGITrackerSource::Update: Can't find mitk::DataNode with name " << nodeName.toStdString() << std::endl;
-    return result;
-  }
-
-  // Note: This extracts from the igtl::Matrix4x4 and Pre/Post multiplies it.
-  vtkSmartPointer<vtkMatrix4x4> combinedTransform = this->CombineTransformationsWithPreAndPost(matrix);
-
-  // Extract transformation from node, and put it on the coordinateAxes object.
-  mitk::CoordinateAxesData::Pointer coordinateAxes = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
-  if (coordinateAxes.IsNull())
-  {
-    coordinateAxes = mitk::CoordinateAxesData::New();
-
-    // We remove and add to trigger the NodeAdded event,
-    // which is not emmitted if the node was added with no data.
-    m_DataStorage->Remove(node);
-    node->SetData(coordinateAxes);
-    m_DataStorage->Add(node);
-  }
-  coordinateAxes->SetVtkMatrix(*combinedTransform);
-
-  mitk::AffineTransformDataNodeProperty::Pointer affTransProp = mitk::AffineTransformDataNodeProperty::New();
-  affTransProp->SetTransform(*combinedTransform);
-
-  std::string propertyName = "niftk." + nodeName.toStdString();
-  node->SetProperty(propertyName.c_str(), affTransProp);
-  node->Modified();
-
-  if (this->m_DataStorage->GetNamedNode(nodeName.toStdString()) == NULL)
-  {
-    m_DataStorage->Add(node);
-  }
-
-  // And output a status message to console.
-  matrixAsString.append("\n");
-  m_StatusMessage = header + matrixAsString;
-
-  result = true;
-  return true;
+  return result;
 }
 
 
