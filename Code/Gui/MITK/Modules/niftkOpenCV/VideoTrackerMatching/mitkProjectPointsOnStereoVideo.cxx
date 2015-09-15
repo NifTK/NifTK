@@ -1046,20 +1046,16 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
   }
   
   mitk::PickedObject undistortedObject = UndistortPickedObject ( GSPoint );
-  //do a reprojectPickedobject function as well. At the moment I think we can only do 
-  //reprojection for points. I guess what's needed is for the each point in the gold standard 
-  //we find the nearest point on the projected model line (which generally won't be on a vertex
   mitk::PickedObject reprojectedObject = ReprojectPickedObject ( undistortedObject, matchingObject );
   
   reprojectedObject.m_Channel = "left_lens";
-  if ( reprojectedObject.m_IsLine ) 
-  {
-    MITK_ERROR << "I can't do reprojection errors for lines yet";
-    return;
-  }
 
   cv::Point3d reprojectionError;
   reprojectedObject.DistanceTo ( matchingObject, reprojectionError, m_AllowableTimingError);
+  if ( fabs (reprojectionError.z ) > 1e-6 )
+  {
+    MITK_WARN << "Non zero reprojection z error. This is expected behaviour if your using the centroid of the world line as the reprojection depth, otherwise it's an error";
+  }
   if ( GSPoint.m_Channel != "left" )
   {
     m_LeftReProjectionErrors.push_back (reprojectionError);
@@ -1199,7 +1195,14 @@ mitk::PickedObject ProjectPointsOnStereoVideo::ReprojectPickedObject ( const mit
   mitk::PickedObject reprojectedObject = po.CopyByHeader();
 
   //for a line we reproject to the plane through the centroid of the reference line. This is probably a good approximation
-  double depth = mitk::GetCentroid ( reference.m_Points ).z;
+  //alternatively we could search along the reference line to find the point with the closest match in the x,y and call this the 
+  //match, a depth =  FindNearestPoint ( cv::Point2d onscreen point,  PickedObject world line), this gives depth, could probably find 
+  //intersections of two lines, and select the one with the smallest residual error
+  std::vector < double > depth;
+  for ( unsigned int i = 0 ; i < po.m_Points.size () ; i ++ )
+  {
+    depth.push_back(mitk::GetCentroid ( reference.m_Points ).z);
+  }
   for ( unsigned int i = 0 ; i < po.m_Points.size () ; i ++ ) 
   {
     assert ( po.m_Points[i].z == 0 );
@@ -1213,9 +1216,9 @@ mitk::PickedObject ProjectPointsOnStereoVideo::ReprojectPickedObject ( const mit
     {
       out= mitk::ReProjectPoint ( in , *m_RightIntrinsicMatrix);
     }
-    out.x *= depth;
-    out.y *= depth;
-    out.z *= depth;
+    out.x *= depth[i];
+    out.y *= depth[i];
+    out.z *= depth[i];
     reprojectedObject.m_Points.push_back(out);
   }
   return reprojectedObject;
