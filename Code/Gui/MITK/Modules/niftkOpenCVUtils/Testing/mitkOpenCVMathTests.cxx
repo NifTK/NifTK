@@ -465,6 +465,12 @@ void DistanceBetweenLinesTest ()
   
   MITK_TEST_CONDITION ( ( distance - 1.0 )  < 1e-6, "Checking distance between two lines " << distance );
   MITK_TEST_CONDITION( mitk::NearlyEqual (midPoint,cv::Point3d(0.5,0.5,0.5),1e-6),"Checking midpoint " << midPoint);
+  cv::Point3d closestPointOnSecondLine;
+  
+  distance = mitk::DistanceBetweenLines(P0, u, Q0 , v , midPoint, &closestPointOnSecondLine);
+  MITK_TEST_CONDITION ( ( distance - 1.0 )  < 1e-6, "Checking distance between two lines " << distance );
+  MITK_TEST_CONDITION( mitk::NearlyEqual (midPoint,cv::Point3d(0.5,0.5,0.5),1e-6),"Checking midpoint " << midPoint);
+  MITK_TEST_CONDITION( mitk::NearlyEqual (closestPointOnSecondLine,cv::Point3d(0.5,0.5,1.0),1e-6),"Checking closest point on second line " << closestPointOnSecondLine);
 
   //parallel  lines
   //a line through the origin and (1,1,0)

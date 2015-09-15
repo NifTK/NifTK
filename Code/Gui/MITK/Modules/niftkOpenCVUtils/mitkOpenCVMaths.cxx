@@ -2444,7 +2444,7 @@ double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, 
 
 //-----------------------------------------------------------------------------
 double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, const cv::Point3d& Q0, const cv::Point3d& v , 
-    cv::Point3d& midpoint)
+    cv::Point3d& midpoint, cv::Point3d* closestPointOnSecondLine)
 {
   // Method 1. Solve for shortest line joining two rays, then get midpoint.
   // Taken from: http://geomalgorithms.com/a07-_distance.html
@@ -2493,6 +2493,10 @@ double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, const
   midpoint.y = (Psc.y + Qtc.y)/2.0;
   midpoint.z = (Psc.z + Qtc.z)/2.0;
                
+  if ( closestPointOnSecondLine != NULL )
+  {
+    *closestPointOnSecondLine = Qtc;
+  }
   return distance;
 }
 

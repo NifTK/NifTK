@@ -609,9 +609,10 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceToLineSegment ( const std::p
  * \param line 1 define as x = P0 + lambda u
  * \param line 2 defined as x = Q0 + lambda v
  * \param holder to return the midpoint
+ * \param optionally return the closest point on the second line
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, 
-    const cv::Point3d& Q0, const cv::Point3d& v , cv::Point3d& midpoint );
+    const cv::Point3d& Q0, const cv::Point3d& v , cv::Point3d& midpoint, cv::Point3d* closestPointOnSecondLine = NULL );
 
 /**
  * \brief converts a line defined by two points on the line to the same line defined by a single point and it's unit vector
