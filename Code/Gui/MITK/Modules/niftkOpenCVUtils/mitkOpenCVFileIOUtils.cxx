@@ -796,4 +796,31 @@ void LoadHandeyeFromPlainText (const std::string& filename,
 
 }
 
+//-----------------------------------------------------------------------------
+void LoadPickedPointListFromDirectory (const std::string& directory, mitk::PickedPointList& pointList )
+{
+  boost::regex pointFilter ( "(points_)([0-9]{2})(.mps)");
+  boost::regex lineFilter ( "(line_)([0-9]{2})(.mps)");
+  boost::filesystem::directory_iterator endItr;
+  
+  for ( boost::filesystem::directory_iterator it(directory); it != endItr ; ++it)
+  {
+    if ( boost::filesystem::is_regular_file (it->status()) )
+    {
+      boost::cmatch what;
+      std::string stringthing = it->path().filename().string();
+      if ( boost::regex_match( stringthing.c_str(), what, pointFilter) )
+      {
+        MITK_INFO << "found point file " << stringthing;
+      }
+      if ( boost::regex_match( stringthing.c_str(), what, lineFilter) )
+      {
+        unsigned int lineID = boost::lexical_cast<unsigned int>(stringthing);
+        MITK_INFO << "found line file file " << stringthing << " , with ID " << lineID;
+      }
+    }
+  }
+}
+
+
 } // end namespace

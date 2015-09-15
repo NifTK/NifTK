@@ -168,6 +168,14 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadStereoTransformsFromPlainText ( co
 extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadHandeyeFromPlainText ( const std::string& filename,
     cv::Mat* leftCameraToTracker);
 
+/**
+ * \brief Create an mitk::PickedPointList object from a directory of mitk point files
+ * directory contains files line_00.mps .. line_nn.mps and points.mps. Point ID's are stored
+ * in the file, while line ID's are stored in the file name
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadPickedPointListFromDirectory (
+    const std::string& directoryName, mitk::PickedPointList&  pointList );
+
 } // end namespace
 
 #endif

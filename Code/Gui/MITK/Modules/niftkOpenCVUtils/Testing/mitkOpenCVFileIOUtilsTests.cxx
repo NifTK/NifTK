@@ -69,6 +69,12 @@ void TestLoadPickedObject ( char * filename )
 
 }
 
+void TestLoadPickedPointListFromDirectory ( char * directory )
+{
+  mitk::PickedPointList::Pointer pl = mitk::PickedPointList::New();
+  mitk::LoadPickedPointListFromDirectory ( directory, *pl );
+}
+
 int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
 {
   // always start with this!
@@ -76,6 +82,7 @@ int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
 
   LoadTimeStampedPointsTest(argv[1]);
   TestLoadPickedObject(argv[2]);
+  TestLoadPickedPointListFromDirectory(argv[3]);
   MITK_TEST_END();
 }
 
