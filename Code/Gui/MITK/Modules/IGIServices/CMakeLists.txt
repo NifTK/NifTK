@@ -19,8 +19,7 @@
 # Hence it should just depend on MitkCore.
 ###############################################################################
 
-MITK_CREATE_MODULE(niftkIGIServices
-  EXPORT_DEFINE NIFTKIGISERVICES_EXPORT
+MITK_CREATE_MODULE(
   DEPENDS MitkCore
 )
 

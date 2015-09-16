@@ -26,10 +26,6 @@ MITK_CREATE_MODULE(
   PACKAGE_DEPENDS OpenCV Boost|filesystem
 )
 
-target_link_libraries(niftkOpenCV
-  niftkcommon
-  )
-
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
   if(MSVC AND NIFTK_DELAYLOAD_CUDA)
     # all of the nvidia-driver/cuda dependencies should be delay-loaded

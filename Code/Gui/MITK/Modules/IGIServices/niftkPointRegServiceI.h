@@ -30,7 +30,7 @@ namespace niftk
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class NIFTKIGISERVICES_EXPORT PointRegServiceI
+class IGISERVICES_EXPORT PointRegServiceI
 {
 
 public:
