@@ -19,6 +19,9 @@ set(H_FILES
 set(CPP_FILES
   Algorithms/mitkNifTKCoreObjectFactory.cxx
   Algorithms/mitkNifTKAffineTransformer.cxx
+  Algorithms/mitkNifTKCMC33.cpp
+  Algorithms/mitkNifTKImageToSurfaceFilter.cpp
+  Algorithms/mitkNifTKMeshSmoother.cpp
   Common/mitkMIDASImageUtils.cxx
   Common/mitkMIDASOrientationUtils.cxx
   Common/mitkPointUtils.cxx
@@ -31,6 +34,10 @@ set(CPP_FILES
   DataManagement/mitkDataNodeVisibilityTracker.cxx
   DataManagement/mitkCoordinateAxesData.cxx
   DataManagement/mitkCoordinateAxesDataOpUpdate.cxx
+  DataManagement/mitkBasicMesh.cpp
+  DataManagement/mitkBasicTriangle.cpp
+  DataManagement/mitkBasicVec3D.cpp
+  DataManagement/mitkBasicVertex.cpp
   Rendering/mitkCoordinateAxesVtkMapper3D.cxx
   Rendering/mitkFastPointSetVtkMapper3D.cxx
   Rendering/vtkOpenGLMatrixDrivenCamera.cxx
