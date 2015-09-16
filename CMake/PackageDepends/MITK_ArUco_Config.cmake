@@ -13,7 +13,7 @@
 #============================================================================*/
 find_package(aruco REQUIRED)
 if(aruco_FOUND)
-  list(APPEND ALL_INCLUDE_DIRECTORIES ${aruco_DIR}/include)
+  list(APPEND ALL_INCLUDE_DIRECTORIES ${aruco_INCLUDE_DIRS})
   list(APPEND ALL_LIBRARIES ${aruco_LIBS})
-  link_directories(${aruco_DIR}/lib)
+  link_directories(${aruco_LIB_DIR})
 endif()
