@@ -31,7 +31,7 @@ if(QT_FOUND)
   list(APPEND proj_DEPENDENCIES CTK)
 endif(QT_FOUND)
 if(BUILD_IGI)
-  list(APPEND proj_DEPENDENCIES ArUco OpenCV AprilTags)
+  list(APPEND proj_DEPENDENCIES OpenCV NiftyLink)
   if(BUILD_PCL)
     list(APPEND proj_DEPENDENCIES FLANN PCL)
   endif()
@@ -114,6 +114,7 @@ if(NOT DEFINED MITK_DIR)
         -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
         -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
+        -DOpenIGTLink_DIR:PATH=${OpenIGTLink_DIR}
         -DEigen_DIR:PATH=${Eigen_DIR}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
       CMAKE_CACHE_ARGS
