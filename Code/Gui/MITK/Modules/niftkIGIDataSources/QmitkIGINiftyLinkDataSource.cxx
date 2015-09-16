@@ -71,7 +71,7 @@ int QmitkIGINiftyLinkDataSource::GetPort() const
 //-----------------------------------------------------------------------------
 bool QmitkIGINiftyLinkDataSource::ListenOnPort(int portNumber)
 {
-  bool isListening = m_Server->listen(QHostAddress::LocalHost, portNumber);
+  bool isListening = m_Server->listen(QHostAddress::Any, portNumber);
   if (isListening)
   {
     this->SetStatus("Listening");
