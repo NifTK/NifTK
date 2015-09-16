@@ -12,42 +12,30 @@
 
 =============================================================================*/
 
-#include "mitkIGIDataType.h"
-#include <itkObjectFactory.h>
-#include <igtlTimeStamp.h>
+#include "QmitkVideoTestClient.h"
+#include <QApplication>
+#include <QMessageBox>
 
-namespace mitk
-{
 
 //-----------------------------------------------------------------------------
-IGIDataType::IGIDataType()
-: m_TimeStamp(0)
-, m_Duration(0)
-, m_FrameId(0)
-, m_IsSaved(false)
-, m_ShouldBeSaved(false)
-, m_FileName("")
-{
-}
-
-//-----------------------------------------------------------------------------
-IGIDataType::~IGIDataType()
+QmitkVideoTestClient::QmitkVideoTestClient(
+    const std::string& hostname,
+    const int& portNumber,
+    const int& numberOfSeconds,
+    QWidget *parent)
+: QWidget(parent)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-igtlUint64 IGIDataType::GetTimeStampInNanoSeconds() const
+QmitkVideoTestClient::~QmitkVideoTestClient()
 {
-  return m_TimeStamp;
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIDataType::SetTimeStampInNanoSeconds(const igtlUint64& time)
+void QmitkVideoTestClient::Run()
 {
-  m_TimeStamp = time;
+
 }
-
-} // end namespace
-

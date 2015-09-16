@@ -15,40 +15,39 @@
 #include "QmitkIGINiftyLinkDataSource.h"
 
 //-----------------------------------------------------------------------------
-QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(mitk::DataStorage* storage, NiftyLinkSocketObject *socket)
+QmitkIGINiftyLinkDataSource::QmitkIGINiftyLinkDataSource(mitk::DataStorage* storage, niftk::NiftyLinkTcpServer* server)
 : QmitkIGIDataSource(storage)
-, m_Socket(socket)
+, m_Server(server)
 , m_ClientDescriptor(NULL)
 {
-  if (m_Socket == NULL)
+  qRegisterMetaType<niftk::NiftyLinkMessageContainer::Pointer>("niftk::NiftyLinkMessageContainer::Pointer");
+
+  if (m_Server == NULL)
   {
-    m_Socket = new NiftyLinkSocketObject();
-    m_UsingSomeoneElsesSocket = false;
+    m_Server = new niftk::NiftyLinkTcpServer();
+    m_UsingSomeoneElsesServer = false;
   }
   else
   {
-    m_UsingSomeoneElsesSocket = true;
+    m_UsingSomeoneElsesServer = true;
   }
-  connect(m_Socket, SIGNAL(ClientConnectedSignal()), this, SLOT(ClientConnected()));
-  connect(m_Socket, SIGNAL(ClientDisconnectedSignal()), this, SLOT(ClientDisconnected()));
-  connect(m_Socket, SIGNAL(MessageReceivedSignal(NiftyLinkMessage::Pointer )), this, SLOT(InterpretMessage(NiftyLinkMessage::Pointer )));
-  if (socket != NULL)
-  {
-  this->ClientConnected();
-  }
+
+  connect(m_Server, SIGNAL(ClientConnected(int)), this, SLOT(ClientConnected()));
+  connect(m_Server, SIGNAL(ClientDisconnected(int)), this, SLOT(ClientDisconnected()));
+  connect(m_Server, SIGNAL(MessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)), this, SLOT(InterpretMessage(int, niftk::NiftyLinkMessageContainer::Pointer)));
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkIGINiftyLinkDataSource::~QmitkIGINiftyLinkDataSource()
 {
-  if ( m_UsingSomeoneElsesSocket )
+  if ( m_UsingSomeoneElsesServer )
   {
-    m_Socket = NULL;
+    m_Server = NULL;
   }
-  if (m_Socket != NULL )
+  if (m_Server != NULL)
   {
-    delete m_Socket;
+    delete m_Server;
   }
   if (m_ClientDescriptor != NULL)
   {
@@ -61,28 +60,18 @@ QmitkIGINiftyLinkDataSource::~QmitkIGINiftyLinkDataSource()
 int QmitkIGINiftyLinkDataSource::GetPort() const
 {
   int result = -1;
-  if (m_Socket != NULL)
+  if (m_Server != NULL)
   {
-    result = m_Socket->GetPort();
+    result = m_Server->serverPort();
   }
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGINiftyLinkDataSource::SendMessage(NiftyLinkMessage::Pointer msg)
-{
-  if (m_Socket != NULL)
-  {
-    m_Socket->SendMessage(msg);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 bool QmitkIGINiftyLinkDataSource::ListenOnPort(int portNumber)
 {
-  bool isListening = m_Socket->ListenOnPort(portNumber);
+  bool isListening = m_Server->listen(QHostAddress::Any, portNumber);
   if (isListening)
   {
     this->SetStatus("Listening");
@@ -113,7 +102,7 @@ void QmitkIGINiftyLinkDataSource::ClientDisconnected()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* clientInfo)
+void QmitkIGINiftyLinkDataSource::ProcessClientInfo(niftk::NiftyLinkClientDescriptor* clientInfo)
 {
   this->SetClientDescriptor(clientInfo);
 
@@ -155,11 +144,4 @@ void QmitkIGINiftyLinkDataSource::ProcessClientInfo(ClientDescriptorXMLBuilder* 
 
   qDebug() << deviceInfo;
   emit DataSourceStatusUpdated(this->GetIdentifier());
-}
-
-
-//-----------------------------------------------------------------------------
-NiftyLinkSocketObject* QmitkIGINiftyLinkDataSource::GetSocket()
-{
-  return this->m_Socket;
 }

@@ -54,7 +54,7 @@ protected:
   /**
    * \brief Called by Initialize(QWidget *parent), where either parent or config could be null.
    */
-  virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder* config) = 0;
+  virtual void Initialize(QWidget *parent, niftk::NiftyLinkClientDescriptor* config) = 0;
 
 }; // end class
 

@@ -15,7 +15,7 @@
 #ifndef QmitkIGINVidiaDataSource_h
 #define QmitkIGINVidiaDataSource_h
 
-#include "niftkNVidiaGuiExports.h"
+#include "niftkNVidiaExports.h"
 #include <QmitkIGILocalDataSource.h>
 #include <mitkIGINVidiaDataType.h>
 #include <QObject>
@@ -33,7 +33,7 @@ class QGLWidget;
  * \class QmitkIGINVidiaDataSource.
  * \brief Data source that provides access to a local NVidia SDI video frame grabber.
  */
-class NIFTKNVIDIAGUI_EXPORT QmitkIGINVidiaDataSource : public QmitkIGILocalDataSource
+class NIFTKNVIDIA_EXPORT QmitkIGINVidiaDataSource : public QmitkIGILocalDataSource
 {
 
   Q_OBJECT

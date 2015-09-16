@@ -47,8 +47,14 @@ IGIDataSource::IGIDataSource(mitk::DataStorage* storage)
 , m_ActualTimeStamp(0)
 , m_ActualData(NULL)
 {
+  // These should be created once and re-used.
   m_RequestedTimeStamp = igtl::TimeStamp::New();
+  m_RequestedTimeStamp->GetTime();
   m_ActualTimeStamp = igtl::TimeStamp::New();
+  m_ActualTimeStamp->GetTime();
+  m_TimeCreated = igtl::TimeStamp::New();
+  m_TimeCreated->GetTime();
+
   m_Buffer.clear();
   m_BufferIterator = m_Buffer.begin();
   m_FrameRateBufferIterator = m_Buffer.begin();
@@ -117,7 +123,7 @@ igtlUint64 IGIDataSource::GetRequestedTimeStamp() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
-  return m_RequestedTimeStamp->GetTimeInNanoSeconds();
+  return m_RequestedTimeStamp->GetTimeStampInNanoseconds();
 }
 
 
@@ -126,7 +132,7 @@ igtlUint64 IGIDataSource::GetActualTimeStamp() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
-  return m_ActualTimeStamp->GetTimeInNanoSeconds();
+  return m_ActualTimeStamp->GetTimeStampInNanoseconds();
 }
 
 
@@ -177,7 +183,7 @@ void IGIDataSource::CleanBuffer()
           && endIter != m_FrameRateBufferIterator
           && (*endIter).IsNotNull()
           && (!((*endIter)->GetShouldBeSaved()) || ((*endIter)->GetShouldBeSaved() && (*endIter)->GetIsSaved()))
-          && ((*endIter)->GetTimeStampInNanoSeconds() < m_ActualTimeStamp->GetTimeInNanoSeconds())
+          && ((*endIter)->GetTimeStampInNanoSeconds() < m_ActualTimeStamp->GetTimeStampInNanoseconds())
         )
     {
       numberToDelete++;
@@ -199,7 +205,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
   // message to the requested time stamp, and leave the m_BufferIterator,
   // m_ActualTimeStamp and m_ActualData at that point, and return the corresponding data.
 
-  m_RequestedTimeStamp->SetTimeInNanoSeconds(requestedTimeStamp);
+  m_RequestedTimeStamp->SetTimeInNanoseconds(requestedTimeStamp);
 
   if (m_IsPlayingBack)
   {
@@ -212,7 +218,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
 
   if (m_Buffer.size() == 0)
   {
-    m_ActualTimeStamp->SetTimeInNanoSeconds(0);
+    m_ActualTimeStamp->SetTimeInNanoseconds(0);
     m_ActualData = NULL;
   }
   else
@@ -238,7 +244,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
     {
       while(     m_BufferIterator != m_Buffer.end()
             && (*m_BufferIterator).IsNotNull()
-            && (*m_BufferIterator)->GetTimeStampInNanoSeconds() < m_RequestedTimeStamp->GetTimeInNanoSeconds()
+            && (*m_BufferIterator)->GetTimeStampInNanoSeconds() < m_RequestedTimeStamp->GetTimeStampInNanoseconds()
             )
       {
         m_BufferIterator++;
@@ -255,7 +261,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
         m_BufferIterator--;
 
         igtlUint64 beforeTimeStamp = (*m_BufferIterator)->GetTimeStampInNanoSeconds();
-        igtlUint64 requestedTimeStamp = m_RequestedTimeStamp->GetTimeInNanoSeconds();
+        igtlUint64 requestedTimeStamp = m_RequestedTimeStamp->GetTimeStampInNanoseconds();
 
         // FIXME: this can under/overflow!
         igtlUint64 beforeToRequested = requestedTimeStamp - beforeTimeStamp;
@@ -269,7 +275,7 @@ mitk::IGIDataType* IGIDataSource::RequestData(igtlUint64 requestedTimeStamp)
     }
 
     m_ActualData = (*m_BufferIterator);
-    m_ActualTimeStamp->SetTimeInNanoSeconds(m_ActualData->GetTimeStampInNanoSeconds());
+    m_ActualTimeStamp->SetTimeInNanoseconds(m_ActualData->GetTimeStampInNanoSeconds());
   }
 
   return m_ActualData;
@@ -281,8 +287,8 @@ bool IGIDataSource::IsWithinTimeTolerance() const
 {
   bool result = false;
 
-  igtlUint64 requestedTimeStamp = m_RequestedTimeStamp->GetTimeInNanoSeconds();
-  igtlUint64 actualTimeStamp = m_ActualTimeStamp->GetTimeInNanoSeconds();
+  igtlUint64 requestedTimeStamp = m_RequestedTimeStamp->GetTimeStampInNanoseconds();
+  igtlUint64 actualTimeStamp = m_ActualTimeStamp->GetTimeStampInNanoseconds();
 
   if (   m_ActualData != NULL
       && fabs((double)requestedTimeStamp - (double)actualTimeStamp) < m_TimeStampTolerance        // the data source can decide what to accept

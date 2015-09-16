@@ -181,13 +181,11 @@ void QmitkIGIOpenCVDataSource::GrabData()
   }
 
   // Now process the data.
-  igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+  m_TimeCreated->GetTime();
 
-  // Aim of this bit is to do something like when a NiftyLink message comes in.
-  // We are essentially just wrapping the data, and stuffing it in a buffer (std::list).
   mitk::IGIOpenCVDataType::Pointer wrapper = mitk::IGIOpenCVDataType::New();
   wrapper->CloneImage(img);
-  wrapper->SetTimeStampInNanoSeconds(timeCreated->GetTimeInNanoSeconds());
+  wrapper->SetTimeStampInNanoSeconds(m_TimeCreated->GetTimeStampInNanoseconds());
   wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
 
   this->AddData(wrapper.GetPointer());

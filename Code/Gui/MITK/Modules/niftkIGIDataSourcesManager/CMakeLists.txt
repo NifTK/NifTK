@@ -20,7 +20,6 @@ if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
   set(niftkIGIDataSourcesManager_DEPENDS
     ${niftkIGIDataSourcesManager_DEPENDS}
     niftkNVidia
-    niftkNVidiaGui
   )
 endif()
 
