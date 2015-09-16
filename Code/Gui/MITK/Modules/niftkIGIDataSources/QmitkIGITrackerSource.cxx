@@ -275,7 +275,7 @@ bool QmitkIGITrackerSource::Update(mitk::IGIDataType* data)
 
     // Check the tool name
     std::string messageToolName = elem->GetName();
-    std::string sourceToolName = this->GetDescription();
+    std::string sourceToolName = m_Description;
 
     if ( messageToolName == sourceToolName )
     {
