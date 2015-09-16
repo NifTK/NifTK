@@ -14,12 +14,12 @@
 
 #include <cstdlib>
 #include <limits>
-#include <mitkPointSetReader.h>
 
 #include <mitkProjectPointsOnStereoVideo.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVPointTypes.h>
 #include <mitkOpenCVFileIOUtils.h>
+#include <mitkIOUtil.h>
 #include <niftkProjectTrackedPointsOnStereoVideoCLP.h>
 #include <boost/lexical_cast.hpp>
 
@@ -124,11 +124,7 @@ int main(int argc, char** argv)
     if ( input3D.length() != 0 ) 
     {
       //try reading it as a mitk point set first
-      mitk::PointSetReader::Pointer reader = mitk::PointSetReader::New();
-      reader->SetFileName(input3D);
-      mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
-      reader->Update();
-      pointSet = reader->GetOutput();
+      mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( input3D ); 
       if ( pointSet->GetSize() == 0 ) 
       {
         //try reading a stream of points instead
