@@ -841,6 +841,14 @@ endif(BUILD_SUPERBUILD)
 message("CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 message("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 
+######################################################################
+# Add additional entries to the CMAKE_MODULE_PATH, now all externals
+# are already built.
+######################################################################
+set(CMAKE_MODULE_PATH
+    ${aruco_DIR}/lib/cmake
+    ${CMAKE_MODULE_PATH}
+   )
 
 ######################################################################
 # Configure CMake files before we need to use them in the FIND_XXX.
@@ -848,7 +856,10 @@ message("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 # So, the variables NIFTK_BOOSTINSTALL etc.
 # should be passed in on cmake command line, or set up using ccmake.
 ######################################################################
-
+find_package(aruco)
+if(aruco_FOUND)
+  configure_file(${CMAKE_SOURCE_DIR}/CMake/FindArUco.cmake ${CMAKE_BINARY_DIR}/FindArUco.cmake @ONLY)
+endif()
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
@@ -871,7 +882,6 @@ file(GLOB package_depends_files ${CMAKE_SOURCE_DIR}/CMake/PackageDepends/*.cmake
 foreach(file_to_copy ${package_depends_files})
   file(COPY ${file_to_copy} DESTINATION ${CMAKE_BINARY_DIR}/CMakePackageDepends)
 endforeach()
-
 
 # Configure module naming conventions
 set(MITK_MODULE_NAME_REGEX_MATCH "^[A-Z].*$")
@@ -929,15 +939,6 @@ if(MITK_USE_DCMTK)
 #  endif()
   find_package(DCMTK REQUIRED MODULE)
 endif()
-
-######################################################################
-# Add additional entries to the CMAKE_MODULE_PATH, now all externals
-# are already built.
-######################################################################
-set(CMAKE_MODULE_PATH
-    ${aruco_DIR}/lib/cmake
-    ${CMAKE_MODULE_PATH}
-   )
 
 ######################################################################
 # Check each GUI application to set up MACOSX_BUNDLE_NAMES
