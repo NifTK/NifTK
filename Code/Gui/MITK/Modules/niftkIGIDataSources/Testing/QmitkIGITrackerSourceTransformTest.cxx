@@ -81,6 +81,7 @@ int QmitkIGITrackerSourceTransformTest(int argc, char* argv[])
 
   mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
   QmitkIGITrackerSource::Pointer tool = QmitkIGITrackerSource::New(dataStorage, NULL);
+  tool->SetDescription("test");
   tool->AddData(dataType);
   tool->SetPickLatestData(true);
 
