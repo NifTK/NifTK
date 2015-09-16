@@ -23,6 +23,7 @@
 #include <mitkLogMacros.h>
 #include <mitkExceptionMacro.h>
 #include <mitkTimeStampsContainer.h>
+#include <mitkIOUtil.h>
 #include <niftkFileHelper.h>
 #include <boost/math/special_functions/fpclassify.hpp>
 
@@ -799,7 +800,7 @@ void LoadHandeyeFromPlainText (const std::string& filename,
 //-----------------------------------------------------------------------------
 void LoadPickedPointListFromDirectory (const std::string& directory, mitk::PickedPointList& pointList )
 {
-  boost::regex pointFilter ( "(points_)([0-9]{2})(.mps)");
+  boost::regex pointFilter ( "(points.mps)");
   boost::regex lineFilter ( "(line_)([0-9]{2})(.mps)");
   boost::filesystem::directory_iterator endItr;
   
@@ -808,15 +809,45 @@ void LoadPickedPointListFromDirectory (const std::string& directory, mitk::Picke
     if ( boost::filesystem::is_regular_file (it->status()) )
     {
       boost::cmatch what;
-      std::string stringthing = it->path().filename().string();
-      if ( boost::regex_match( stringthing.c_str(), what, pointFilter) )
+      std::string filename = it->path().filename().string();
+      
+
+      if ( boost::regex_match( filename.c_str(), what, pointFilter) )
       {
-        MITK_INFO << "found point file " << stringthing;
+        MITK_INFO << "found point file " << filename;
+        mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( it->path().string() );
+
+        mitk::PointSet::DataType* itkPointSet = pointSet->GetPointSet(0);
+        mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
+        mitk::PointSet::PointsIterator pIt;
+        mitk::PointSet::PointType point;
+        mitk::PointSet::PointIdentifier iD;
+       
+        for (pIt = points->Begin(); pIt != points->End(); ++pIt)
+        {
+          point = pIt->Value();
+          iD = pIt->Index();
+          cv::Point3d cvPoint;
+
+          cvPoint.x = point[0];
+          cvPoint.y = point[1];
+          cvPoint.z = point[2];
+          MITK_INFO << "Got point ID " << iD << " " << cvPoint;
+        }
+
+
+
       }
-      if ( boost::regex_match( stringthing.c_str(), what, lineFilter) )
+      if ( boost::regex_match( filename.c_str(), what, lineFilter) )
       {
-        unsigned int lineID = boost::lexical_cast<unsigned int>(stringthing);
-        MITK_INFO << "found line file file " << stringthing << " , with ID " << lineID;
+        std::string::const_iterator i_char = filename.begin();
+       
+        char number[2];
+        number[0] = *(i_char + 5);
+        number[1] = *(i_char + 6);
+        unsigned int lineID = boost::lexical_cast<unsigned int>(number[0]) * 10 + boost::lexical_cast<unsigned int>(number[1]);
+        MITK_INFO << "found line file file " << filename << " , with ID " << number[0] << number [1] << " , "  << lineID;
+        mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( it->path().string() );
       }
     }
   }
