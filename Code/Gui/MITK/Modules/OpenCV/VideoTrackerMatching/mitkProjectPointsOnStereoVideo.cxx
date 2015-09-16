@@ -662,7 +662,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
       rightGSIndex ++;
     }
 //check timing error here
-    if ( abs (m_PointsInLeftLensCS[frameNumber].m_TimingError) < m_AllowableTimingError )
+    if ( std::abs (m_PointsInLeftLensCS[frameNumber].m_TimingError) < m_AllowableTimingError )
     {
       for ( unsigned int i = 0 ; i < leftPoints.size() ; i ++ ) 
       {
@@ -965,7 +965,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( GoldStandardPoint 
   {
     side = " right "; 
   }
-  if ( abs (m_PointsInLeftLensCS[GSPoint.m_FrameNumber].m_TimingError) > m_AllowableTimingError ) 
+  if ( std::abs (m_PointsInLeftLensCS[GSPoint.m_FrameNumber].m_TimingError) > m_AllowableTimingError )
   {
     MITK_WARN << "High timing error at " << side << " frame " << GSPoint.m_FrameNumber << " discarding point from re-projection errors";
     return;
@@ -1053,7 +1053,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( GoldStandardPoint GS
     side = " right "; 
   }
  
-  if ( abs (m_PointsInLeftLensCS[GSPoint.m_FrameNumber].m_TimingError) > m_AllowableTimingError ) 
+  if ( std::abs (m_PointsInLeftLensCS[GSPoint.m_FrameNumber].m_TimingError) > m_AllowableTimingError )
   {
     MITK_WARN << "High timing error at " << side << "  frame " << GSPoint.m_FrameNumber << " discarding point from projection errors";
     return;
@@ -1215,7 +1215,7 @@ void ProjectPointsOnStereoVideo::AppendWorldPointsByTriangulation
       long long timingError;
       point =  trackerMatcher->GetCameraTrackingMatrix(
           framenumber[i] , &timingError , m_TrackerIndex, perturbation, m_ReferenceIndex) * point;
-    if ( abs(timingError) < m_AllowableTimingError )
+    if ( std::abs(timingError) < m_AllowableTimingError )
     {
       m_WorldPoints.push_back ( point );
       MITK_INFO << framenumber[i] << " " << onScreenPointPairs[i].m_Left << ","

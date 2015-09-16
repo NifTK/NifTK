@@ -25,7 +25,7 @@ namespace niftk
 * \class ServiceConfigurationI
 * \brief Interface to describe how any service should be configured.
 */
-class IGISERVICES_EXPORT ServiceConfigurationI
+class NIFTKIGISERVICES_EXPORT ServiceConfigurationI
 {
 
 public:

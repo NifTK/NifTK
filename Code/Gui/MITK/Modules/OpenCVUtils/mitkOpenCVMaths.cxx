@@ -1214,7 +1214,7 @@ std::pair < double, double >  RMSError (
     }
     for ( unsigned int frame = 0 ; frame < actual.size() ; frame += increment ) 
     {
-      if ( measured[frame].m_TimingError < abs (allowableTimingError) )
+      if ( measured[frame].m_TimingError < std::abs (allowableTimingError) )
       {
         if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf() ) || actual[frame].m_Points[index].LeftNaNOrInf() ) 
         {
@@ -1298,7 +1298,7 @@ mitk::ProjectedPointPair MeanError (
     }
     for ( unsigned int frame = 0 ; frame < actual.size() ; frame += increment ) 
     {
-      if ( measured[frame].m_TimingError < abs (allowableTimingError) )
+      if ( measured[frame].m_TimingError < std::abs (allowableTimingError) )
       {
         if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf()  || actual[frame].m_Points[index].LeftNaNOrInf() ) ) 
         {
@@ -1344,7 +1344,7 @@ mitk::ProjectedPointPair MeanError (
     {
       for ( unsigned int frame = 0 ; frame < actual.size() ; frame ++ ) 
       {
-        if ( measured[frame].m_TimingError < abs (allowableTimingError) )
+        if ( measured[frame].m_TimingError < std::abs (allowableTimingError) )
         {
           if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf() || actual[frame].m_Points[index].LeftNaNOrInf() ) ) 
           {

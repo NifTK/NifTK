@@ -37,7 +37,7 @@ class NIFTKOPENCVUTILS_EXPORT ProjectionErrorCalculator : public itk::Object
 {
 public:
 
-  mitkClassMacro (ProjectionErrorCalculator, itk::Object);
+  mitkClassMacroItkParent (ProjectionErrorCalculator, itk::Object);
   itkNewMacro(ProjectionErrorCalculator);
 
   mitk::PickedObject CalculateProjectionError (mitk::PickedObject point , std::string channel); // calculates the projection error in pixels for a single point or line

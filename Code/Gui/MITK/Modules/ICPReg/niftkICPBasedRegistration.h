@@ -40,7 +40,7 @@ class NIFTKICPREG_EXPORT ICPBasedRegistration : public itk::Object
 {
 public:
 
-  mitkClassMacro(ICPBasedRegistration, itk::Object);
+  mitkClassMacroItkParent(ICPBasedRegistration, itk::Object);
   itkNewMacro(ICPBasedRegistration);
 
   itkSetMacro(MaximumIterations, int);

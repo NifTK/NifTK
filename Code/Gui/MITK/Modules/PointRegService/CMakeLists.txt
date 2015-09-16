@@ -22,6 +22,7 @@
 MITK_CREATE_MODULE(
   DEPENDS niftkIGIServices niftkPointReg
   AUTOLOAD_WITH niftkIGIServices
+  PACKAGE_DEPENDS OpenCV
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

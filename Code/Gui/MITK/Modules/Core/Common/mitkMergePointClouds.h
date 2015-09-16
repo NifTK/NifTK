@@ -15,7 +15,6 @@
 #ifndef mitkMergePointClouds_h
 #define mitkMergePointClouds_h
 
-
 #include "niftkCoreExports.h"
 #include <string>
 #include <ostream>
@@ -25,10 +24,8 @@
 #include <itkObjectFactory.h>
 #include <itkObjectFactoryBase.h>
 
-
 namespace mitk
 {
-
 
 /**
  * Will not preserve point IDs in the merged output!
@@ -37,9 +34,8 @@ namespace mitk
 class NIFTKCORE_EXPORT MergePointClouds : public itk::Object
 {
 public:
-  mitkClassMacro(MergePointClouds, itk::Object);
+  mitkClassMacroItkParent(MergePointClouds, itk::Object);
   itkNewMacro(MergePointClouds);
-
 
 protected:
   MergePointClouds();
@@ -49,7 +45,6 @@ protected:
   MergePointClouds(const MergePointClouds&);
   /** Not implemented */
   MergePointClouds& operator=(const MergePointClouds&);
-
 
 public:
   /**
@@ -72,7 +67,6 @@ public:
    * @throws nothing should not throw anything
    */
   mitk::PointSet::Pointer GetOutput() const;
-
 
 private:
   mitk::PointSet::Pointer       m_MergedPointSet;
