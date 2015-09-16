@@ -18,7 +18,6 @@
 #include "ui_XnatBrowserView.h"
 
 #include <berryQtViewPart.h>
-#include <berryIBerryPreferences.h>
 #include <QmitkAbstractView.h>
 #include <mitkDataNode.h>
 
@@ -43,7 +42,7 @@ public:
   virtual ~XnatBrowserView();
 
   /// \brief Each view for a plugin has its own globally unique ID.
-  static const std::string VIEW_ID;
+  static const QString VIEW_ID;
 
 protected:
 

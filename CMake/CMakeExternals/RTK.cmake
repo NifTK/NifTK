@@ -53,6 +53,10 @@ if(BUILD_RTK)
         -DCMAKE_SHARED_LINKER_FLAGS:STRING=-L${GDCM_DIR}/bin
         -DCMAKE_EXE_LINKER_FLAGS:STRING=-L${GDCM_DIR}/bin
         -DBUILD_SHARED_LIBS:BOOL=OFF
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
@@ -60,6 +64,8 @@ if(BUILD_RTK)
     # We use the build folder even if EP_ALWAYS_USE_INSTALL_DIR is TRUE.
     # Using the install folder might work but it has not been tested.
     set(RTK_DIR ${proj_BUILD})
+
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading RTK from ${RTK_DIR}")
 

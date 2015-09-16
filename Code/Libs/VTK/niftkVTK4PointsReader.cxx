@@ -91,16 +91,15 @@ int VTK4PointsReader::RequestData(vtkInformation*,
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
-      bool parseSuccess;
       if ( m_ReadWeights )
       {
-        parseSuccess = linestream >> x[0] >> x[1] >> x[2] >> weight;
+        linestream >> x[0] >> x[1] >> x[2] >> weight;
       }
       else
       {
-        parseSuccess = linestream >> x[0] >> x[1] >> x[2];
+        linestream >> x[0] >> x[1] >> x[2];
       }
-      if ( parseSuccess )
+      if ( linestream.good() )
       {
         bool ok=true;
         for ( int i = 0 ; i < 3 ; i++)

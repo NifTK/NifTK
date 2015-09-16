@@ -336,7 +336,7 @@ protected:
 
   /// \brief Returns the name of the preferences node to look up.
   /// \see QmitkMIDASBaseSegmentationFunctionality::GetPreferencesNodeName
-  virtual std::string GetPreferencesNodeName() { return MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
+  virtual QString GetPreferencesNodeName() { return MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
 
   /// \brief This view registers with the mitk::DataStorage and listens for changing
   /// data, so this method is called when any node is changed, but only performs an update,

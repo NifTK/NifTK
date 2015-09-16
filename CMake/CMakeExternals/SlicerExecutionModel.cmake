@@ -45,6 +45,10 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
       -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       -DSlicerExecutionModel_USE_JSONCPP:BOOL=OFF
       -DITK_DIR:PATH=${ITK_DIR}
+    CMAKE_CACHE_ARGS
+      ${EP_COMMON_CACHE_ARGS}
+    CMAKE_CACHE_DEFAULT_ARGS
+      ${EP_COMMON_CACHE_DEFAULT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}
   )
 
@@ -53,6 +57,8 @@ if(NOT DEFINED SlicerExecutionModel_DIR)
   # The install command does not install the project properly, e.g. it does not
   # install the GenerateCLP command that is needed for the command line applications.
   set(SlicerExecutionModel_DIR ${proj_BUILD})
+
+  #mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading SlicerExecutionModel from ${SlicerExecutionModel_DIR}")
 

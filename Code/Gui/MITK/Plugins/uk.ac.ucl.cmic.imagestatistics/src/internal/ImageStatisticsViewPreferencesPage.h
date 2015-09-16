@@ -15,8 +15,8 @@
 #ifndef ImageStatisticsViewPreferencesPage_h
 #define ImageStatisticsViewPreferencesPage_h
 
-#include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
+#include <berryIQtPreferencePage.h>
 
 class QWidget;
 class QCheckBox;
@@ -41,10 +41,10 @@ public:
   ImageStatisticsViewPreferencesPage(const ImageStatisticsViewPreferencesPage& other);
   ~ImageStatisticsViewPreferencesPage();
 
-  static const std::string AUTO_UPDATE_NAME;
-  static const std::string ASSUME_BINARY_NAME;
-  static const std::string REQUIRE_SAME_SIZE_IMAGE_NAME;
-  static const std::string BACKGROUND_VALUE_NAME;
+  static const QString AUTO_UPDATE_NAME;
+  static const QString ASSUME_BINARY_NAME;
+  static const QString REQUIRE_SAME_SIZE_IMAGE_NAME;
+  static const QString BACKGROUND_VALUE_NAME;
 
   void Init(berry::IWorkbench::Pointer workbench);
 

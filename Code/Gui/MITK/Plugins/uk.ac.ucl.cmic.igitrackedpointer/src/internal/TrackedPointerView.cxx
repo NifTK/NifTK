@@ -133,7 +133,7 @@ void TrackedPointerView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-    m_TipToProbeFileName = prefs->Get(TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
+    m_TipToProbeFileName = prefs->Get(TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME, "").toStdString();
     m_TipToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_TipToProbeFileName);
 
     m_UpdateViewCoordinate = prefs->GetBool(TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointer::UPDATE_VIEW_COORDINATE_DEFAULT);

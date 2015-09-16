@@ -18,11 +18,11 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-if(DEFINED NIFTYSEG_ROOT AND NOT EXISTS ${NIFTYSEG_ROOT})
-  message(FATAL_ERROR "NIFTYSEG_ROOT variable is defined but corresponds to non-existing disegtory \"${NIFTYSEG_ROOT}\".")
+if(DEFINED NiftySeg_DIR AND NOT EXISTS ${NiftySeg_DIR})
+  message(FATAL_ERROR "NiftySeg_DIR variable is defined but corresponds to non-existing disegtory \"${NiftySeg_DIR}\".")
 endif()
 
-if(BUILD_NIFTYSEG)
+if(BUILD_NiftySeg)
 
   set(version "b2decf5160")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftySeg-${version}.tar.gz")
@@ -30,7 +30,7 @@ if(BUILD_NIFTYSEG)
   niftkMacroDefineExternalProjectVariables(NiftySeg ${version} ${location})
   set(proj_DEPENDENCIES Eigen)
 
-  if(NOT DEFINED NIFTYSEG_ROOT)
+  if(NOT DEFINED NiftySeg_DIR)
 
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
@@ -55,21 +55,26 @@ if(BUILD_NIFTYSEG)
         -DINSTALL_PRIORS_DIRECTORY:PATH=${proj_INSTALL}/priors
         -DUSE_SYSTEM_EIGEN=ON
         -DEigen_INCLUDE_DIR=${Eigen_INCLUDE_DIR}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    set(NIFTYSEG_ROOT ${proj_INSTALL})
-    set(NIFTYSEG_INCLUDE_DIR "${NIFTYSEG_ROOT}/include")
-    set(NIFTYSEG_LIBRARY_DIR "${NIFTYSEG_ROOT}/lib")
+    set(NiftySeg_DIR ${proj_INSTALL})
+#    set(NiftySeg_INCLUDE_DIR "${NiftySeg_DIR}/include")
+#    set(NiftySeg_LIBRARY_DIR "${NiftySeg_DIR}/lib")
 
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
-    message("SuperBuild loading NiftySeg from ${NIFTYSEG_ROOT}")
+    message("SuperBuild loading NiftySeg from ${NiftySeg_DIR}")
 
-  else(NOT DEFINED NIFTYSEG_ROOT)
+  else()
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  endif(NOT DEFINED NIFTYSEG_ROOT)
+  endif()
 
-endif(BUILD_NIFTYSEG)
+endif()

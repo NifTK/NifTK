@@ -18,18 +18,18 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-if(DEFINED NIFTYREG_ROOT AND NOT EXISTS ${NIFTYREG_ROOT})
-  message(FATAL_ERROR "NIFTYREG_ROOT variable is defined but corresponds to non-existing directory \"${NIFTYREG_ROOT}\".")
+if(DEFINED NiftyReg_DIR AND NOT EXISTS ${NiftyReg_DIR})
+  message(FATAL_ERROR "NiftyReg_DIR variable is defined but corresponds to non-existing directory \"${NiftyReg_DIR}\".")
 endif()
 
-if(BUILD_NIFTYREG)
+if(BUILD_NiftyReg)
 
   set(version "97383b06b9")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftyReg-${version}.tar.gz")
 
   niftkMacroDefineExternalProjectVariables(NiftyReg ${version} ${location})
 
-  if(NOT DEFINED NIFTYREG_ROOT)
+  if(NOT DEFINED NiftyReg_DIR)
 
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
@@ -46,19 +46,24 @@ if(BUILD_NIFTYREG)
         -DBUILD_ALL_DEP:BOOL=ON
         -DBUILD_SHARED_LIBS:BOOL=OFF
         -DUSE_CUDA:BOOL=OFF
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    set(NIFTYREG_ROOT ${proj_INSTALL})
+    set(NiftyReg_DIR ${proj_INSTALL})
 
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
-    message("SuperBuild loading NiftyReg from ${NIFTYREG_ROOT}")
+    message("SuperBuild loading NiftyReg from ${NiftyReg_DIR}")
 
-  else(NOT DEFINED NIFTYREG_ROOT)
+  else()
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  endif(NOT DEFINED NIFTYREG_ROOT)
+  endif()
 
-endif(BUILD_NIFTYREG)
+endif(BUILD_NiftyReg)

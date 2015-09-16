@@ -217,23 +217,23 @@ int main(int argc, char** argv)
     }
     else if(strcmp(argv[i], "-i") == 0){
       args.inputImage=argv[++i];
-      std::cout << std::cout << "Set -i=" << args.inputImage << std::endl;
+      std::cout << std::endl << "Set -i=" << args.inputImage << std::endl;
     }
     else if(strcmp(argv[i], "-o") == 0){
       args.outputImage=argv[++i];
-      std::cout << std::cout << "Set -o=" << args.outputImage << std::endl;
+      std::cout << std::endl << "Set -o=" << args.outputImage << std::endl;
     }
     else if(strcmp(argv[i], "-g") == 0){
       args.grey=atoi(argv[++i]);
-      std::cout << std::cout << "Set -g=" << niftk::ConvertToString(args.grey) << std::endl;
+      std::cout << std::endl << "Set -g=" << niftk::ConvertToString(args.grey) << std::endl;
     }
     else if(strcmp(argv[i], "-w") == 0){
       args.white=atoi(argv[++i]);
-      std::cout << std::cout << "Set -w=" << niftk::ConvertToString(args.white) << std::endl;
+      std::cout << std::endl << "Set -w=" << niftk::ConvertToString(args.white) << std::endl;
     }
     else if(strcmp(argv[i], "-fc") == 0){
       args.fullyConnected=true;
-      std::cout << std::cout << "Set -fc=" << niftk::ConvertToString(args.fullyConnected) << std::endl;
+      std::cout << std::endl << "Set -fc=" << niftk::ConvertToString(args.fullyConnected) << std::endl;
     }
     else {
       std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;

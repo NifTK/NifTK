@@ -18,18 +18,18 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-if(DEFINED NIFTYSIM_ROOT AND NOT EXISTS ${NIFTYSIM_ROOT})
-  message(FATAL_ERROR "NIFTYSIM_ROOT variable is defined but corresponds to non-existing directory \"${NIFTYSIM_ROOT}\".")
+if(DEFINED NiftySim_DIR AND NOT EXISTS ${NiftySim_DIR})
+  message(FATAL_ERROR "NiftySim_DIR variable is defined but corresponds to non-existing directory \"${NiftySim_DIR}\".")
 endif()
 
-if(BUILD_NIFTYSIM)
+if(BUILD_NiftySim)
 
-  set(version "ebe4396c66")
+  set(version "f3b51bf082")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftySim-${version}.tar.gz")
 
   niftkMacroDefineExternalProjectVariables(NiftySim ${version} ${location})
 
-  if(NOT DEFINED NIFTYSIM_ROOT)
+  if(NOT DEFINED NiftySim_DIR)
     if(DEFINED VTK_DIR)
       set(USE_VTK ON)
     else(DEFINED VTK_DIR)
@@ -63,9 +63,9 @@ if(BUILD_NIFTYSIM)
         mark_as_advanced(CUDA_CUT_INCLUDE_DIR)
       endif (CUDA_VERSION VERSION_GREATER "5.0" OR CUDA_VERSION VERSION_EQUAL "5.0")
     else ()
-      if (NIFTYSIM_USE_CUDA)
+      if (NiftySim_USE_CUDA)
         message(FATAL_ERROR "In order to use CUDA in NiftySim you must enable CUDA support in NifTK.")
-      endif (NIFTYSIM_USE_CUDA)
+      endif (NiftySim_USE_CUDA)
     endif (NIFTK_USE_CUDA)
 
     ExternalProject_Add(${proj}
@@ -82,7 +82,7 @@ if(BUILD_NIFTYSIM)
         ${EP_COMMON_ARGS}
         -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBUILD_SHARED_LIBS:BOOL=OFF
-        -DUSE_CUDA:BOOL=${NIFTYSIM_USE_CUDA}
+        -DUSE_CUDA:BOOL=${NiftySim_USE_CUDA}
         -DCUDA_CUT_INCLUDE_DIR:STRING=${CUDA_CUT_INCLUDE_DIR}
         -DUSE_BOOST:BOOL=OFF
         -DUSE_VIZ:BOOL=${USE_VTK}
@@ -92,22 +92,27 @@ if(BUILD_NIFTYSIM)
         -DCUDA_CUT_INCLUDE_DIR:PATH=${CUDA_CUT_INCLUDE_DIR}
         -DCUDA_COMMON_INCLUDE_DIR:PATH=${CUDA_COMMON_INCLUDE_DIR}
         -DCUDA_HOST_COMPILER:PATH=${CUDA_HOST_COMPILER}
-        -DCMAKE_CXX_FLAGS:STRING=${NIFTYSIM_CMAKE_CXX_FLAGS}
+        -DCMAKE_CXX_FLAGS:STRING=${NiftySim_CMAKE_CXX_FLAGS}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    set(NIFTYSIM_ROOT ${proj_INSTALL})
-    set(NIFTYSIM_INCLUDE_DIR "${NIFTYSIM_ROOT}/include")
-    set(NIFTYSIM_LIBRARY_DIR "${NIFTYSIM_ROOT}/lib")
+    set(NiftySim_DIR ${proj_INSTALL})
+#    set(NiftySim_INCLUDE_DIR "${NiftySim_DIR}/include")
+#    set(NiftySim_LIBRARY_DIR "${NiftySim_DIR}/lib")
 
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
-    message("SuperBuild loading NiftySim from ${NIFTYSIM_ROOT}")
+    message("SuperBuild loading NiftySim from ${NiftySim_DIR}")
 
-  else(NOT DEFINED NIFTYSIM_ROOT)
+  else()
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  endif(NOT DEFINED NIFTYSIM_ROOT)
+  endif()
 
-endif(BUILD_NIFTYSIM)
+endif()

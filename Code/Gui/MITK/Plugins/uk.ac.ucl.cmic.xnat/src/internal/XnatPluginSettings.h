@@ -15,12 +15,13 @@
 #ifndef XnatPluginSettings_h
 #define XnatPluginSettings_h
 
-#include <berryIPreferences.h>
-
 #include <ctkXnatSettings.h>
 
 #include <QString>
 #include <QMap>
+
+#include <berryIPreferences.h>
+
 
 class XnatPluginSettings : public ctkXnatSettings
 {

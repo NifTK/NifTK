@@ -25,11 +25,18 @@ find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
 link_directories(${VL_LIBRARIES})
 include_directories(${VL_INCLUDE_DIRS})
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
+mitk_create_plugin(
   EXPORT_DIRECTIVE NEWVISUALIZATION_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS ${_depends}
 )
+
+# not nice...
+if(CUDA_FOUND AND NIFTK_USE_CUDA)
+  include_directories(${CUDA_TOOLKIT_INCLUDE} ${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels)
+  target_link_libraries(uk_ac_ucl_cmic_vlrenderer PRIVATE ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} niftkCUDAKernels)
+endif()
+target_link_libraries(uk_ac_ucl_cmic_vlrenderer PRIVATE ${VL_LIBRARIES})
 
 # Cotire must be ON on Windows and Mac and must be OFF on Linux.
 if (COMMAND cotire AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Linux")

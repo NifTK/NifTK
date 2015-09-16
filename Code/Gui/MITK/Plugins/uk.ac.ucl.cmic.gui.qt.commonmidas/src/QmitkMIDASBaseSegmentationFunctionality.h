@@ -228,7 +228,7 @@ protected:
   virtual void RetrievePreferenceValues();
 
   /// \brief Derived classes decide which preferences are actually read.
-  virtual std::string GetPreferencesNodeName() = 0;
+  virtual QString GetPreferencesNodeName() = 0;
 
   /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer m_SelectedNode;

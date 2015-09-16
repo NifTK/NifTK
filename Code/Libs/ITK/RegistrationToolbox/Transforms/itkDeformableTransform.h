@@ -145,7 +145,9 @@ public:
                     TScalarType >                             JacobianDeterminantFilterType;
   typedef typename JacobianDeterminantFilterType::Pointer     JacobianDeterminantFilterPointer;
   
-  /** 
+  typedef typename Superclass::JacobianType                   JacobianType;
+
+  /**
    * This method specifies the bulk transform to be applied. 
    */
   itkSetConstObjectMacro( GlobalTransform, GlobalTransformType );
@@ -340,6 +342,12 @@ public:
    */
   void InvertUsingIterativeFixedPoint(typename Self::Pointer invertedTransform, int maxIterations, int maxOuterIterations, double tol); 
   
+  virtual void ComputeJacobianWithRespectToParameters(const InputPointType &, JacobianType &) const
+  {
+    // TODO
+    itkExceptionMacro( << "Not Implemented" );
+  }
+
 protected:
   
   DeformableTransform();

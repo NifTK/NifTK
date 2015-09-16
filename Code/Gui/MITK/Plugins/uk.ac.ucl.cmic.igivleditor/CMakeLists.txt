@@ -18,7 +18,7 @@ project(uk_ac_ucl_cmic_igivleditor)
 find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
 include_directories(${VL_INCLUDE_DIRS})
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
+mitk_create_plugin(
   EXPORT_DIRECTIVE UK_AC_UCL_CMIC_IGIVLEDITOR
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS MitkQtWidgets niftkVL

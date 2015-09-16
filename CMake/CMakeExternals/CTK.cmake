@@ -28,7 +28,7 @@ if(QT_FOUND)
 
   # Note: If the CTK version changes, then you either clear the plugin cache
   # or change the deploy path by changing the patch level.
-  set(version "9331130fe3")
+  set(version "357424007d")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/commontk-CTK-${version}.tar.gz")
 
   set(qRestAPI_version "5f3a03b15d")
@@ -38,6 +38,14 @@ if(QT_FOUND)
   set(proj_DEPENDENCIES VTK ITK DCMTK)
 
   if(NOT DEFINED CTK_DIR)
+
+    set(ctk_optional_cache_args )
+
+    if(CTEST_USE_LAUNCHERS)
+      list(APPEND ctk_optional_cache_args
+        "-DCMAKE_PROJECT_${proj}_INCLUDE:FILEPATH=${CMAKE_ROOT}/Modules/CTestUseLaunchers.cmake"
+      )
+    endif()
 
     set (ctk_qt_args -DCTK_QT_VERSION:STRING=${DESIRED_QT_VERSION})
 
@@ -61,7 +69,12 @@ if(QT_FOUND)
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
         -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
-         ${ctk_qt_args}
+        ${ctk_optional_cache_args}
+        ${ctk_qt_args}
+        # The CTK PluginFramework cannot cope with
+        # a non-empty CMAKE_DEBUG_POSTFIX for the plugin
+        # libraries yet.
+        -DCMAKE_DEBUG_POSTFIX:STRING=
         -DGit_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
         -DGIT_EXECUTABLE:FILEPATH=${GIT_EXECUTABLE}
         -DCTK_LIB_CommandLineModules/Backend/LocalProcess:BOOL=ON
@@ -79,16 +92,22 @@ if(QT_FOUND)
         -DCTK_LIB_XNAT/Core:BOOL=ON
         -DCTK_LIB_XNAT/Widgets:BOOL=ON
         -DDCMTK_DIR:PATH=${DCMTK_DIR}
+        -DDCMTK_CMAKE_DEBUG_POSTFIX:STRING=d
         -DVTK_DIR:PATH=${VTK_DIR}
         -DITK_DIR:PATH=${ITK_DIR}
         -DDCMTK_URL:STRING=${NIFTK_EP_TARBALL_LOCATION}/CTK_DCMTK_085525e6.tar.gz
         -DqRestAPI_URL:STRING=${qRestAPI_location}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
     set(CTK_DIR ${proj_BUILD})
     set(CTK_SOURCE_DIR ${proj_SOURCE})
 
-#    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    #set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    #mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading CTK from ${CTK_DIR}")
 

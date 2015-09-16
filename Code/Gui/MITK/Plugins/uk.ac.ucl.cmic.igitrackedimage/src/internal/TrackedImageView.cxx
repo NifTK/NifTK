@@ -145,7 +145,7 @@ void TrackedImageView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-    std::string calibEmToOpticalFileName = prefs->Get(TrackedImageViewPreferencePage::EMTOWORLDCALIBRATION_FILE_NAME, "").c_str();
+    std::string calibEmToOpticalFileName = prefs->Get(TrackedImageViewPreferencePage::EMTOWORLDCALIBRATION_FILE_NAME, "").toStdString();
     if ( calibEmToOpticalFileName.size() > 0 )
     {
       m_EmToOpticalMatrix = mitk::LoadVtkMatrix4x4FromFile(calibEmToOpticalFileName);
@@ -156,10 +156,10 @@ void TrackedImageView::RetrievePreferenceValues()
       m_EmToOpticalMatrix->Identity();
     }
 
-    std::string imageToTrackingSensorFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
+    std::string imageToTrackingSensorFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").toStdString();
     vtkSmartPointer<vtkMatrix4x4> imageToSensorTransform = mitk::LoadVtkMatrix4x4FromFile(imageToTrackingSensorFileName);
 
-    std::string scaleFileName = prefs->Get(TrackedImageViewPreferencePage::SCALE_FILE_NAME, "").c_str();
+    std::string scaleFileName = prefs->Get(TrackedImageViewPreferencePage::SCALE_FILE_NAME, "").toStdString();
     vtkSmartPointer<vtkMatrix4x4> image2SensorScale = mitk::LoadVtkMatrix4x4FromFile(scaleFileName);
 
     if (prefs->GetBool(TrackedImageViewPreferencePage::FLIP_X_SCALING, false))
