@@ -133,7 +133,7 @@ void ProjectPointsOnStereoVideo::Initialise(std::string directory)
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::FindVideoData(mitk::VideoTrackerMatching::Pointer trackerMatcher) 
 {
-  if ( m_Visualise || m_SaveVideo ) 
+  if ( m_Visualise || m_SaveVideo || m_AnnotateWithGoldStandards )  
   {
     if ( m_Capture == NULL ) 
     {
@@ -265,7 +265,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   {
     if ( ( m_StartFrame < m_EndFrame ) && ( framenumber < m_StartFrame || framenumber > m_EndFrame ) )
     {
-      if ( m_Visualise || m_SaveVideo ) 
+      if ( m_Visualise || m_SaveVideo || m_AnnotateWithGoldStandards )  
       {
         cv::Mat videoImage;
         m_Capture->read(videoImage);
@@ -822,6 +822,16 @@ mitk::PickedObject ProjectPointsOnStereoVideo::TriangulatePickedObjects (mitk::P
 
   if ( po_leftScreen.m_IsLine ) 
   { 
+    //heres the plan, for each picked object resample the line to a vector of 
+    //1000 ? points, maybe do it based on length, so if line is n pixels long, 
+    //we resample it n times ? 
+    //Project the points to a vector of rays, so for each screen we have a 
+    //vector of rays. 
+    //then for each point in each vector we find the closest ray in the other data set. 
+    //if the rays correspond then we say it's a successful match, and add it to the
+    //vector of points in the triangulated object. Also to check that things are'nt off the 
+    //end of the line we could look for a minimum distance ratio, or perhaps an
+    //absolute distance. (2 mm??)
     MITK_WARN << "I don't know how to triangulate a line, giving up";
     return po_leftLens;
   }
