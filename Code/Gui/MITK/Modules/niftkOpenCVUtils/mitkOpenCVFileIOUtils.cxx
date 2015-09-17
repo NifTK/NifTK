@@ -798,23 +798,24 @@ void LoadHandeyeFromPlainText (const std::string& filename,
 }
 
 //-----------------------------------------------------------------------------
-void LoadPickedPointListFromDirectory (const std::string& directory, mitk::PickedPointList& pointList )
+mitk::PickedPointList::Pointer LoadPickedPointListFromDirectory (const std::string& directory,
+    unsigned int frameNumber, unsigned long long timestamp, std::string channel, 
+    cv::Scalar scalar )
 {
   boost::regex pointFilter ( "(points.mps)");
   boost::regex lineFilter ( "(line_)([0-9]{2})(.mps)");
   boost::filesystem::directory_iterator endItr;
-  
+
+  std::vector < mitk::PickedObject > pickedObjects; 
   for ( boost::filesystem::directory_iterator it(directory); it != endItr ; ++it)
   {
     if ( boost::filesystem::is_regular_file (it->status()) )
     {
       boost::cmatch what;
       std::string filename = it->path().filename().string();
-      
-
-      if ( boost::regex_match( filename.c_str(), what, pointFilter) )
+     
+      if (  boost::regex_match( filename.c_str(), what, pointFilter) ||  boost::regex_match( filename.c_str(), what, lineFilter) )
       {
-        MITK_INFO << "found point file " << filename;
         mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( it->path().string() );
 
         mitk::PointSet::DataType* itkPointSet = pointSet->GetPointSet(0);
@@ -822,35 +823,64 @@ void LoadPickedPointListFromDirectory (const std::string& directory, mitk::Picke
         mitk::PointSet::PointsIterator pIt;
         mitk::PointSet::PointType point;
         mitk::PointSet::PointIdentifier iD;
-       
-        for (pIt = points->Begin(); pIt != points->End(); ++pIt)
-        {
-          point = pIt->Value();
-          iD = pIt->Index();
-          cv::Point3d cvPoint;
+     
 
-          cvPoint.x = point[0];
-          cvPoint.y = point[1];
-          cvPoint.z = point[2];
-          MITK_INFO << "Got point ID " << iD << " " << cvPoint;
+        if ( boost::regex_match( filename.c_str(), what, pointFilter) )
+        { 
+          MITK_INFO << "found point file " << filename;
+      
+          for (pIt = points->Begin(); pIt != points->End(); ++pIt)
+          {
+            point = pIt->Value();
+            iD = pIt->Index();
+            cv::Point3d cvPoint;
+
+            cvPoint.x = point[0];
+            cvPoint.y = point[1];
+            cvPoint.z = point[2];
+            
+            mitk::PickedObject pickedObject ( channel, frameNumber, timestamp, scalar );
+            pickedObject.m_IsLine = false;
+            pickedObject.m_Id = iD;
+            pickedObject.m_Points.push_back ( cvPoint );
+
+            pickedObjects.push_back ( pickedObject );
+          }
         }
-
-
-
-      }
-      if ( boost::regex_match( filename.c_str(), what, lineFilter) )
-      {
-        std::string::const_iterator i_char = filename.begin();
+        if ( boost::regex_match( filename.c_str(), what, lineFilter) )
+        {
+          std::string::const_iterator i_char = filename.begin();
        
-        char number[2];
-        number[0] = *(i_char + 5);
-        number[1] = *(i_char + 6);
-        unsigned int lineID = boost::lexical_cast<unsigned int>(number[0]) * 10 + boost::lexical_cast<unsigned int>(number[1]);
-        MITK_INFO << "found line file file " << filename << " , with ID " << number[0] << number [1] << " , "  << lineID;
-        mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( it->path().string() );
+          char number[2];
+          number[0] = *(i_char + 5);
+          number[1] = *(i_char + 6);
+          unsigned int lineID = boost::lexical_cast<unsigned int>(number[0]) * 10 + boost::lexical_cast<unsigned int>(number[1]);
+          MITK_INFO << "found line file file " << filename << " , with ID " << number[0] << number [1] << " , "  << lineID;
+          mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( it->path().string() );
+  
+          mitk::PickedObject pickedObject ( channel, frameNumber, timestamp, scalar );
+          pickedObject.m_IsLine = true;
+          pickedObject.m_Id = lineID;
+
+          for (pIt = points->Begin(); pIt != points->End(); ++pIt)
+          {
+            point = pIt->Value();
+            cv::Point3d cvPoint;
+
+            cvPoint.x = point[0];
+            cvPoint.y = point[1];
+            cvPoint.z = point[2];
+            
+            pickedObject.m_Points.push_back ( cvPoint );
+
+          }
+          pickedObjects.push_back ( pickedObject );
+        }
       }
     }
   }
+  mitk::PickedPointList::Pointer returnPickedPoints = mitk::PickedPointList::New();
+  return returnPickedPoints;
 }
 
 

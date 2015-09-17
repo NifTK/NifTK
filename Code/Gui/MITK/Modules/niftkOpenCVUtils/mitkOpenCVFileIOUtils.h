@@ -172,9 +172,14 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadHandeyeFromPlainText ( const std::
  * \brief Create an mitk::PickedPointList object from a directory of mitk point files
  * directory contains files line_00.mps .. line_nn.mps and points.mps. Point ID's are stored
  * in the file, while line ID's are stored in the file name
+ * framenumber etc are settable by parameters
  */
-extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadPickedPointListFromDirectory (
-    const std::string& directoryName, mitk::PickedPointList&  pointList );
+extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedPointList::Pointer LoadPickedPointListFromDirectory (
+    const std::string& directoryName ,
+    unsigned int frameNumber = 0 ,
+    unsigned long long timestamp = 0, 
+    std::string channel = "world",
+    cv::Scalar scalar = cv::Scalar ( 255, 255, 255 ) );
 
 } // end namespace
 

@@ -71,8 +71,7 @@ void TestLoadPickedObject ( char * filename )
 
 void TestLoadPickedPointListFromDirectory ( char * directory )
 {
-  mitk::PickedPointList::Pointer pl = mitk::PickedPointList::New();
-  mitk::LoadPickedPointListFromDirectory ( directory, *pl );
+  mitk::PickedPointList::Pointer pl = mitk::LoadPickedPointListFromDirectory ( directory  );
 }
 
 int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
