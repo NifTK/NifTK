@@ -35,13 +35,12 @@
       <channel>input</channel>
     </file>
    
-    <file fileExtensions=".xml">
-      <name>input3DPickedObjects</name>
-      <longflag>input3DPickedObjects</longflag>
-      <description>Input 3D picked objects</description>
-      <label>Input 3D picked objects</label>
-      <channel>input</channel>
-    </file>
+    <directory>
+      <name>input3DDirectory</name>
+      <longflag>input3DDirectory</longflag>
+      <description>The 3D world points, stored as a directory of .mps files, names line_XX.mps and points.mps</description>
+      <label>The 3D world points directory</label>
+    </directory>    
     
     <file fileExtensions=".txt">
       <name>input3DWithScalars</name>

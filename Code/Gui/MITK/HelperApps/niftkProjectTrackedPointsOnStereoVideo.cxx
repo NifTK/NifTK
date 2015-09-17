@@ -45,6 +45,7 @@ int main(int argc, char** argv)
 
   if ( ( input2D.length() == 0 ) && 
        ( input3D.length() == 0 ) && 
+       ( input3DDirectory.length() == 0 ) &&
        ( input3DWithScalars.length() == 0 ) && 
        ( leftGoldStandard.length() == 0 || rightGoldStandard.length() == 0 ) &&
        ( goldStandardObjects.length() == 0 ) )
@@ -105,6 +106,10 @@ int main(int argc, char** argv)
     std::vector < mitk::WorldPoint > worldPoints;
     std::vector < mitk::WorldPoint > classifierWorldPoints;
     std::vector < mitk::WorldPoint > worldPointsWithScalars;
+    if ( input3DDirectory.length() != 0 )
+    {
+      projector->SetWorldPoints ( mitk::LoadPickedPointListFromDirectory ( input3DDirectory ));
+    }
     if ( input2D.length() != 0 ) 
     {
       std::ifstream fin(input2D.c_str());

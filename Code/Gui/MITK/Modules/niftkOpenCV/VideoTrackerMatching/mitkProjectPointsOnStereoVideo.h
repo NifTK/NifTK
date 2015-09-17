@@ -157,6 +157,8 @@ public:
 
   itkSetMacro ( ClassifierScreenBuffer, double);
   itkSetMacro ( TriangulatedPointsOutName, std::string );
+  itkSetMacro ( WorldPoints, mitk::PickedPointList::Pointer );
+  itkSetMacro ( ClassifierWorldPoints, mitk::PickedPointList::Pointer );
 protected:
 
   ProjectPointsOnStereoVideo();
