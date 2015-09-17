@@ -71,7 +71,9 @@ void TestLoadPickedObject ( char * filename )
 
 void TestLoadPickedPointListFromDirectory ( char * directory )
 {
-  mitk::PickedPointList::Pointer pl = mitk::LoadPickedPointListFromDirectory ( directory  );
+  mitk::PickedPointList::Pointer ppl = mitk::LoadPickedPointListFromDirectory ( directory  );
+
+  MITK_TEST_CONDITION ( ppl->GetListSize() == 9 , "Testing that there are 9 picked objects in the list : " << ppl->GetListSize() );
 }
 
 int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])

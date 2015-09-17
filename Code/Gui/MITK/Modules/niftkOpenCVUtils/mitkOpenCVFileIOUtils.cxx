@@ -880,6 +880,10 @@ mitk::PickedPointList::Pointer LoadPickedPointListFromDirectory (const std::stri
     }
   }
   mitk::PickedPointList::Pointer returnPickedPoints = mitk::PickedPointList::New();
+  returnPickedPoints->SetFrameNumber ( frameNumber );
+  returnPickedPoints->SetChannel ( channel );
+  returnPickedPoints->SetTimeStamp ( timestamp );
+  returnPickedPoints->SetPickedObjects ( pickedObjects );
   return returnPickedPoints;
 }
 
