@@ -411,13 +411,14 @@ PickedObject::PickedObject()
 }
 
 //-----------------------------------------------------------------------------
-PickedObject::PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp)
+PickedObject::PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp, 
+    cv::Scalar scalar)
 : m_Id (-1)
 , m_IsLine (false)
 , m_FrameNumber(framenumber)
 , m_TimeStamp(timestamp)
 , m_Channel(channel)
-, m_Scalar (cv::Scalar(255,0,0))
+, m_Scalar (scalar)
 {
 }
 
@@ -695,7 +696,7 @@ void PickedPointList::SetInLineMode(const bool& mode)
   if ( m_InLineMode )
   {
     int pointID = -1;
-    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255, 255 ));
     pickedObject.m_IsLine = true;
 
     if ( m_InOrderedMode )
@@ -730,7 +731,7 @@ unsigned int PickedPointList::AddPoint(const cv::Point2i& point)
     else
     {
       int pointID=this->GetNextAvailableID(true);
-      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255,255,255 ));
       pickedObject.m_IsLine = true;
       pickedObject.m_Id = pointID;
       pickedObject.m_Points.push_back(myPoint);
@@ -744,7 +745,7 @@ unsigned int PickedPointList::AddPoint(const cv::Point2i& point)
     if ( m_InOrderedMode )
     {
       int pointID=this->GetNextAvailableID(false);
-      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255, 255 ));
       pickedObject.m_IsLine = false;
       pickedObject.m_Id = pointID;
       pickedObject.m_Points.push_back(myPoint);
@@ -754,7 +755,7 @@ unsigned int PickedPointList::AddPoint(const cv::Point2i& point)
     }
     else
     {
-      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255, 255 ));
       pickedObject.m_IsLine = false;
       pickedObject.m_Id = -1;
       pickedObject.m_Points.push_back(myPoint);
@@ -782,7 +783,7 @@ unsigned int PickedPointList::AddPoint(const cv::Point3d& point, cv::Scalar scal
     else
     {
       int pointID=this->GetNextAvailableID(true);
-      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255, 255 ));
       pickedObject.m_IsLine = true;
       pickedObject.m_Id = pointID;
       pickedObject.m_Scalar = scalar;
@@ -797,7 +798,7 @@ unsigned int PickedPointList::AddPoint(const cv::Point3d& point, cv::Scalar scal
     if ( m_InOrderedMode )
     {
       int pointID=this->GetNextAvailableID(false);
-      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255,255,255));
       pickedObject.m_IsLine = false;
       pickedObject.m_Id = pointID;
       pickedObject.m_Scalar = scalar;
@@ -808,7 +809,7 @@ unsigned int PickedPointList::AddPoint(const cv::Point3d& point, cv::Scalar scal
     }
     else
     {
-      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar (255,255,255 ));
       pickedObject.m_IsLine = false;
       pickedObject.m_Id = -1;
       pickedObject.m_Scalar = scalar;
@@ -886,7 +887,7 @@ unsigned int PickedPointList::SkipOrderedPoint()
     }
     else 
     {
-      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255 , 255 ));
       pickedObject.m_IsLine = true;
       pickedObject.m_Id = -1;
 
@@ -900,7 +901,7 @@ unsigned int PickedPointList::SkipOrderedPoint()
   if ( ! m_InLineMode )
   {
     int pointID=this->GetNextAvailableID(false);
-    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255, 255));
     pickedObject.m_IsLine = false;
     pickedObject.m_Id = pointID;
 
@@ -912,7 +913,7 @@ unsigned int PickedPointList::SkipOrderedPoint()
   {
     int pointID=this->GetNextAvailableID(true);
 
-    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255,  255));
     pickedObject.m_IsLine = true;
     pickedObject.m_Id = pointID;
 

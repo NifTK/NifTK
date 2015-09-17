@@ -578,25 +578,25 @@ void RemoveOutliersTest ()
 
 void FindNearestPointTest ()
 {
-  mitk::PickedObject p ( "left", 0, 0 );
+  mitk::PickedObject p ( "left", 0, 0 , cv::Scalar ( 255, 255 , 255 ));
   std::vector < mitk::PickedObject> classifierPoints;
-  mitk::PickedObject c1( "left", 0, 0 );
+  mitk::PickedObject c1( "left", 0, 0 , cv::Scalar ( 255, 255, 255 ));
   c1.m_Id = 0;
   c1.m_Points.push_back ( cv::Point3d ( 1.0, 0.0, 0.0 ));
   classifierPoints.push_back ( c1 );
-  mitk::PickedObject c2( "left", 0, 0 );
+  mitk::PickedObject c2( "left", 0, 0 , cv::Scalar ( 255, 255, 255 ));
   c2.m_Id = 1;
   c2.m_Points.push_back ( cv::Point3d ( 1.0, 1.0, 0.0 ));
   classifierPoints.push_back ( c2 );
-  mitk::PickedObject c3( "left", 0, 0 );
+  mitk::PickedObject c3( "left", 0, 0 , cv::Scalar ( 255, 255, 255 ));
   c3.m_Id = 2;
   c3.m_Points.push_back ( cv::Point3d ( 0.0, 1.0, 0.0 ));
   classifierPoints.push_back ( c3 );
-  mitk::PickedObject c4( "left", 0, 0 );
+  mitk::PickedObject c4( "left", 0, 0, cv::Scalar ( 255, 255 , 255 ) );
   c4.m_Id = 3;
   c4.m_Points.push_back ( cv::Point3d ( 0.0, 0.0, 0.0 ));
   classifierPoints.push_back ( c4 );
-  mitk::PickedObject c5( "left", 0, 0 );
+  mitk::PickedObject c5( "left", 0, 0 , cv::Scalar (255, 255, 255));
   c5.m_Id = 0;
   c5.m_IsLine = true;
   c5.m_Points.push_back ( cv::Point3d ( 0.0, 0.0, 0.0 ));
