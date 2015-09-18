@@ -244,7 +244,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     for ( int i = m_WorldPoints->GetNumberOfLines() ; i <= m_MaxGoldStandardLineIndex ; i ++ )
     {
       m_WorldPoints->AddPoint(emptyWorldPoint);
-      m_WorldPoints->EndLine();
+      m_WorldPoints->SkipOrderedPoint();
     }
     m_WorldPoints->SetInLineMode(false);
   }

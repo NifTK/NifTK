@@ -249,7 +249,6 @@ public:
   unsigned int AddPoint (const cv::Point3d& point, cv::Scalar scalar);
   unsigned int RemoveLastPoint ();
   unsigned int SkipOrderedPoint ();
-  unsigned int EndLine();
 
   mitk::PickedPointList::Pointer CopyByHeader();
 
