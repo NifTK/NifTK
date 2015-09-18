@@ -1225,11 +1225,8 @@ mitk::PickedObject ProjectPointsOnStereoVideo::ReprojectPickedObject ( const mit
       {
         for ( std::vector<cv::Point3d>::const_iterator it = reference.m_Points.begin() + 1 ; it < reference.m_Points.end() ; ++ it )
         {
-          std::pair < cv::Point3d, cv::Point3d > qV = mitk::TwoPointsToPLambda ( std::pair<cv::Point3d, cv::Point3d> ( *(it-1), *(it) ) );
-          cv::Point3d midpoint;
           cv::Point3d closestPointOnReference;
-          double distance = mitk::DistanceBetweenLines ( cv::Point3d (0.0, 0.0, 0.0), out , qV.first, qV.second, 
-              midpoint, &closestPointOnReference);
+          double distance = mitk::DistanceBetweenLineAndSegment ( cv::Point3d (0.0, 0.0, 0.0), out , *(it-1), *(it), closestPointOnReference);
           if ( distance < shortestDistance )
           {
             shortestDistance = distance;
