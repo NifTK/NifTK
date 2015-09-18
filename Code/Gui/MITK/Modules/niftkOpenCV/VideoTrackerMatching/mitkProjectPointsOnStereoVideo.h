@@ -194,7 +194,8 @@ private:
   bool                          m_AnnotateWithGoldStandards; //Annotate images with the gold standard picked points
   bool                          m_WriteAnnotatedGoldStandards; //Save the annotated gold standard images as png
   int                           m_RightGSFrameOffset; //0 if right and left gold standard points have the same frame number 
-  int                           m_MaxGoldStandardIndex; //useful if we're just triangulating gold standard points
+  int                           m_MaxGoldStandardPointIndex; //useful if we're just triangulating gold standard points
+  int                           m_MaxGoldStandardLineIndex; //useful if we're just triangulating gold standard points
 
   unsigned int                  m_StartFrame; //you can exclude some frames at the start
   unsigned int                  m_EndFrame; // and at the end

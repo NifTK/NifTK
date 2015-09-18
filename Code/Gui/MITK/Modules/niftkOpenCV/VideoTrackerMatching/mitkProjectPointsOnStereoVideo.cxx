@@ -49,7 +49,8 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_WriteAnnotatedGoldStandards(false)
 , m_LeftGSFramesAreEven(true)
 , m_RightGSFramesAreEven(true)
-, m_MaxGoldStandardIndex(-1)
+, m_MaxGoldStandardPointIndex(-1)
+, m_MaxGoldStandardLineIndex(-1)
 , m_RightGSFrameOffset(0)
 , m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
 , m_LeftDistortionVector (new cv::Mat(1,4,CV_64FC1))
@@ -219,31 +220,35 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   m_ProjectedPointLists.clear();
   m_PointsInLeftLensCS.clear();
   m_ClassifierProjectedPointLists.clear();
-  if ( m_WorldPoints.IsNotNull() )
-  {
-    if ( static_cast<int>(m_WorldPoints->GetListSize()) < m_MaxGoldStandardIndex ) 
-    {
-      MITK_INFO << "Filling world points with dummy data to enable triangulation";
-      cv::Point2i emptyWorldPoint;
-
-      for ( int i = m_WorldPoints->GetListSize() ; i <= m_MaxGoldStandardIndex ; i ++ )
-      {
-        m_WorldPoints->AddPoint(emptyWorldPoint);
-      }
-    }
-  }
-  else
+  if ( m_WorldPoints.IsNull() )
   {
     m_WorldPoints = mitk::PickedPointList::New();
     m_WorldPoints->SetChannel("world");
-    MITK_INFO << "Filling world points with dummy data to enable triangulation";
+  }
+  if ( static_cast<int>(m_WorldPoints->GetNumberOfPoints()) < m_MaxGoldStandardPointIndex ) 
+  {
+    MITK_INFO << "Filling world points with dummy points to enable triangulation";
     cv::Point2i emptyWorldPoint;
 
-    for ( int i = m_WorldPoints->GetListSize() ; i <= m_MaxGoldStandardIndex ; i ++ )
+    for ( int i = m_WorldPoints->GetNumberOfPoints() ; i <= m_MaxGoldStandardPointIndex ; i ++ )
     {
       m_WorldPoints->AddPoint(emptyWorldPoint);
     }
   }
+  if ( static_cast<int>(m_WorldPoints->GetNumberOfLines()) < m_MaxGoldStandardLineIndex ) 
+  {
+    MITK_INFO << "Filling world points with dummy lines to enable triangulation";
+    cv::Point2i emptyWorldPoint;
+    m_WorldPoints->SetInLineMode(true);
+
+    for ( int i = m_WorldPoints->GetNumberOfLines() ; i <= m_MaxGoldStandardLineIndex ; i ++ )
+    {
+      m_WorldPoints->AddPoint(emptyWorldPoint);
+      m_WorldPoints->EndLine();
+    }
+    m_WorldPoints->SetInLineMode(false);
+  }
+
 
   if ( ! ( m_DontProject ) && ( m_WorldPoints->GetListSize() == 0) )
   {
@@ -501,9 +506,9 @@ void ProjectPointsOnStereoVideo::SetLeftGoldStandardPoints (
   {
     m_RightGSFrameOffset = 1 ;
   }
-  if ( maxLeftGSIndex > m_MaxGoldStandardIndex )
+  if ( maxLeftGSIndex > m_MaxGoldStandardPointIndex )
   {
-    m_MaxGoldStandardIndex = maxLeftGSIndex;
+    m_MaxGoldStandardPointIndex = maxLeftGSIndex;
   }
 }
 
@@ -513,6 +518,8 @@ void ProjectPointsOnStereoVideo::SetGoldStandardObjects( std::vector < mitk::Pic
   //this index checking doesn't account for lines / points 
   int maxLeftGSIndex = -1;
   int maxRightGSIndex = -1;
+  int maxLeftLinesGSIndex = -1;
+  int maxRightLinesGSIndex = -1;
   int leftPoints = 0;
   int rightPoints = 0;
   if ( m_GoldStandardPoints.size() != 0 )
@@ -523,7 +530,11 @@ void ProjectPointsOnStereoVideo::SetGoldStandardObjects( std::vector < mitk::Pic
   {
     if ( pickedObjects[i].m_Channel == "left" )
     {
-      if ( pickedObjects[i].m_Id > maxLeftGSIndex )
+      if ( pickedObjects[i].m_IsLine && ( pickedObjects[i].m_Id > maxLeftLinesGSIndex ) )
+      {
+        maxLeftLinesGSIndex = pickedObjects[i].m_Id;
+      }
+      if (  ( ! pickedObjects[i].m_IsLine ) && ( pickedObjects[i].m_Id > maxLeftGSIndex ) )
       {
         maxLeftGSIndex = pickedObjects[i].m_Id;
       }
@@ -553,7 +564,11 @@ void ProjectPointsOnStereoVideo::SetGoldStandardObjects( std::vector < mitk::Pic
         MITK_ERROR << "Attempted to set gold standard point with unknown channel type " << pickedObjects[i].m_Channel;
         exit(1);
       }
-      if ( pickedObjects[i].m_Id > maxRightGSIndex ) 
+      if ( pickedObjects[i].m_IsLine && pickedObjects[i].m_Id > maxRightLinesGSIndex ) 
+      {
+        maxRightLinesGSIndex =  pickedObjects[i].m_Id;
+      }
+      if ( (!pickedObjects[i].m_IsLine) && pickedObjects[i].m_Id > maxRightGSIndex ) 
       {
         maxRightGSIndex =  pickedObjects[i].m_Id;
       }
@@ -587,14 +602,23 @@ void ProjectPointsOnStereoVideo::SetGoldStandardObjects( std::vector < mitk::Pic
   {
     m_RightGSFrameOffset = 1 ;
   }
-  if ( maxLeftGSIndex > m_MaxGoldStandardIndex )
+  if ( maxLeftGSIndex > m_MaxGoldStandardPointIndex )
   {
-    m_MaxGoldStandardIndex = maxLeftGSIndex;
+    m_MaxGoldStandardPointIndex = maxLeftGSIndex;
   }
-  if ( maxRightGSIndex > m_MaxGoldStandardIndex )
+  if ( maxRightGSIndex > m_MaxGoldStandardPointIndex )
   {
-    m_MaxGoldStandardIndex = maxRightGSIndex;
+    m_MaxGoldStandardPointIndex = maxRightGSIndex;
   }
+  if ( maxLeftLinesGSIndex > m_MaxGoldStandardLineIndex )
+  {
+    m_MaxGoldStandardLineIndex = maxLeftLinesGSIndex;
+  }
+  if ( maxRightLinesGSIndex > m_MaxGoldStandardLineIndex )
+  {
+    m_MaxGoldStandardLineIndex = maxRightLinesGSIndex;
+  }
+
 }
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
@@ -637,16 +661,16 @@ void ProjectPointsOnStereoVideo::SetRightGoldStandardPoints (
   {
     m_RightGSFrameOffset = 1 ;
   }
-  if ( maxRightGSIndex > m_MaxGoldStandardIndex )
+  if ( maxRightGSIndex > m_MaxGoldStandardPointIndex )
   {
-    m_MaxGoldStandardIndex = maxRightGSIndex;
+    m_MaxGoldStandardPointIndex = maxRightGSIndex;
   }
 }
 
 //-----------------------------------------------------------------------------
 bool ProjectPointsOnStereoVideo::TriangulateGoldStandardObjectList ( )
 {
-  if ( (! m_ProjectOK ) && (m_MaxGoldStandardIndex == -1 ) ) 
+  if ( (! m_ProjectOK ) || (m_MaxGoldStandardPointIndex == -1 && m_MaxGoldStandardLineIndex == -1) ) 
   {
     MITK_ERROR << "Attempted to run CalculateTriangulateErrors, before running project(), no result.";
     return false;
@@ -762,15 +786,19 @@ void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (std::string outP
   //go through  m_TriangulatedGoldStandardPoints, for each m_Id (points and lines) find the centroid and output 
   mitk::PointSet::Pointer triangulatedPoints = mitk::PointSet::New();
   std::vector < bool > pointIDTriangulated;
-  for ( unsigned int i = 0 ; i < m_MaxGoldStandardIndex ; i ++ ) 
+  std::vector < bool > lineIDTriangulated;
+  for ( unsigned int i = 0 ; i < m_MaxGoldStandardPointIndex ; i ++ ) 
   {
      pointIDTriangulated.push_back(false);
+  }
+  for ( unsigned int i = 0 ; i < m_MaxGoldStandardLineIndex ; i ++ ) 
+  {
+     lineIDTriangulated.push_back(false);
   }
   for ( unsigned int i = 0 ; i < m_TriangulatedGoldStandardPoints.size() ; i ++ ) 
   {
     if (  m_TriangulatedGoldStandardPoints[i].m_IsLine == false )
     {
-    
       if ( ! ( pointIDTriangulated [ m_TriangulatedGoldStandardPoints[i].m_Id ] ) )
       {
         std::vector < cv::Point3d > matchingPoints;
@@ -798,6 +826,11 @@ void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (std::string outP
         MITK_INFO << "Point " <<  m_TriangulatedGoldStandardPoints[i].m_Id << " triangulated mean " << centroid << " SD " << stdDev;
         pointIDTriangulated [ m_TriangulatedGoldStandardPoints[i].m_Id ] = true;
       }
+    }
+    else // it is a line
+    {
+      //I can't triangulate a line
+      lineIDTriangulated [ m_TriangulatedGoldStandardPoints[i].m_Id ] = true;
     }
   }
   if ( m_TriangulatedPointsOutName != "" )
@@ -1063,7 +1096,10 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
   cv::Point3d reprojectionError;
   reprojectedObject.DistanceTo ( matchingObject, reprojectionError, m_AllowableTimingError);
   
-  assert ( fabs (reprojectionError.z ) < 1e-6 );
+  MITK_INFO << reprojectionError;
+  //for lines there will be a small residual z error, as the closest point to the projected line may not be
+  //on the plane. Let's check that this remains fairly small
+  assert ( fabs (reprojectionError.z ) < 0.5 );
 
   if ( GSPoint.m_Channel != "left" )
   {

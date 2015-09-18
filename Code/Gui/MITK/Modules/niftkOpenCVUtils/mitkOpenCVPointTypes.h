@@ -241,6 +241,8 @@ public:
   void SetPickedObjects ( const std::vector < mitk::PickedObject > & objects );
   
   unsigned int GetListSize() const;
+  unsigned int GetNumberOfPoints() const;
+  unsigned int GetNumberOfLines() const;
   void ClearList();
 
   unsigned int AddPoint (const cv::Point2i& point);

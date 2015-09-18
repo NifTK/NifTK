@@ -553,6 +553,34 @@ unsigned int  PickedPointList::GetListSize () const
 {
   return m_PickedObjects.size();
 }
+//-----------------------------------------------------------------------------
+unsigned int  PickedPointList::GetNumberOfPoints () const
+{
+  unsigned int count = 0;
+  for ( std::vector<mitk::PickedObject>::const_iterator it = m_PickedObjects.begin() ; it < m_PickedObjects.end() ; ++it )
+  {
+    if ( ! it->m_IsLine )
+    {
+      count ++ ;
+    }
+  }
+  return count;
+}
+//-----------------------------------------------------------------------------
+unsigned int  PickedPointList::GetNumberOfLines () const
+{
+  unsigned int count = 0;
+  for ( std::vector<mitk::PickedObject>::const_iterator it = m_PickedObjects.begin() ; it < m_PickedObjects.end() ; ++it )
+  {
+    if ( it->m_IsLine )
+    {
+      count ++ ;
+    }
+  }
+  return count;
+
+
+}
 
 //-----------------------------------------------------------------------------
 void PickedPointList::ClearList ()
