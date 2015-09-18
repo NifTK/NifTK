@@ -465,12 +465,10 @@ void DistanceBetweenLinesTest ()
   
   MITK_TEST_CONDITION ( ( distance - 1.0 )  < 1e-6, "Checking distance between two lines " << distance );
   MITK_TEST_CONDITION( mitk::NearlyEqual (midPoint,cv::Point3d(0.5,0.5,0.5),1e-6),"Checking midpoint " << midPoint);
-  cv::Point3d closestPointOnSecondLine;
   
-  distance = mitk::DistanceBetweenLines(P0, u, Q0 , v , midPoint, &closestPointOnSecondLine);
+  distance = mitk::DistanceBetweenLines(P0, u, Q0 , v , midPoint);
   MITK_TEST_CONDITION ( ( distance - 1.0 )  < 1e-6, "Checking distance between two lines " << distance );
   MITK_TEST_CONDITION( mitk::NearlyEqual (midPoint,cv::Point3d(0.5,0.5,0.5),1e-6),"Checking midpoint " << midPoint);
-  MITK_TEST_CONDITION( mitk::NearlyEqual (closestPointOnSecondLine,cv::Point3d(0.5,0.5,1.0),1e-6),"Checking closest point on second line " << closestPointOnSecondLine);
 
   //parallel  lines
   //a line through the origin and (1,1,0)
@@ -497,6 +495,57 @@ void DistanceBetweenLinesTest ()
 
   MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 0.5 * 0.5 + 0.5 * 0.5 )) )  < 1e-6, "Checking distance between two parallel lines 3 " << distance );
   MITK_TEST_CONDITION( ( ! mitk::IsNotNaNorInf (midPoint)), "Checking midpoint for parallel lines 3 " << midPoint);
+
+
+}
+
+void DistanceBetweenLineAndSegmentTest ()
+{
+  //a line through the origin and (1,1,0) 
+  cv::Point3d P0 (0,0,0);
+  cv::Point3d u (0.70711,0.70711,0);
+  //a line through (1,0,1) and (0,1,1)
+  cv::Point3d x0 (1,0,1);
+  cv::Point3d x1 (0,1,1);
+  cv::Point3d closestPointOnSecondLine;
+  
+  double distance = mitk::DistanceBetweenLineAndSegment(P0, u, x0, x1 , closestPointOnSecondLine);
+  MITK_TEST_CONDITION ( ( distance - 1.0 )  < 1e-6, "Checking distance between line and segment " << distance );
+  MITK_TEST_CONDITION( mitk::NearlyEqual (closestPointOnSecondLine,cv::Point3d(0.5,0.5,1.0),1e-6),"Checking closest point on second line " << closestPointOnSecondLine);
+
+  //parallel  lines
+  //a line through the origin and (1,1,0)
+  P0 = cv::Point3d (0,0,0);
+  u = cv::Point3d (0.70711,0.70711,0);
+  //a line through (1,0,0) and (2,1,0)
+  x0 = cv::Point3d(1,0,0);
+  x1 = cv::Point3d (2,1,0);
+  distance = mitk::DistanceBetweenLineAndSegment(P0, u, x0, x1 , closestPointOnSecondLine);
+
+  MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 0.5 * 0.5 + 0.5 * 0.5 ) ))  < 1e-6, "Checking distance between line and parallel segment " << distance );
+  MITK_TEST_CONDITION( ( ! mitk::IsNotNaNorInf (closestPointOnSecondLine)), "Checking closest point on parallel segment " << closestPointOnSecondLine);
+
+  x1 = cv::Point3d (0,-1,0);
+  distance = mitk::DistanceBetweenLineAndSegment(P0, u, x0, x1, closestPointOnSecondLine);
+
+  MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 0.5 * 0.5 + 0.5 * 0.5 )) )  < 1e-6, "Checking distance between line and parallel segment " << distance );
+  MITK_TEST_CONDITION( ( ! mitk::IsNotNaNorInf (closestPointOnSecondLine)), "Checking closest point on  parallel segment 2 " << closestPointOnSecondLine);
+
+  x0 = cv::Point3d(5,4,1);
+  x1 = cv::Point3d (4,5,1);
+
+  distance = mitk::DistanceBetweenLineAndSegment(P0, u, x0, x1, closestPointOnSecondLine);
+
+  MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 1.0 )) )  < 1e-6, "Checking distance between line and non parallel line 2 " << distance );
+  MITK_TEST_CONDITION( mitk::NearlyEqual (closestPointOnSecondLine,cv::Point3d(4.5,4.5,1.0),1e-6),"Checking closest point on second line " << closestPointOnSecondLine);
+
+  x0 = cv::Point3d(7,4,1);
+  x1 = cv::Point3d (6,5,1);
+
+  distance = mitk::DistanceBetweenLineAndSegment(P0, u, x0, x1, closestPointOnSecondLine);
+
+  MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 1.0 * 1.0 + 0.5 * 0.5 + 0.5 * 0.5 )) )  < 1e-6, "Checking distance between line and non parallel line 3 " << distance );
+  MITK_TEST_CONDITION( mitk::NearlyEqual (closestPointOnSecondLine,cv::Point3d(6.0,5.0,1.0),1e-6),"Checking closest point on second line " << closestPointOnSecondLine);
 
 
 }
@@ -731,6 +780,7 @@ int mitkOpenCVMathTests(int argc, char * argv[])
   DotAndCrossProductTest();
   NormTest();
   DistanceBetweenLinesTest();
+  DistanceBetweenLineAndSegmentTest();
   TwoPointsToPLambdaTest ();
   RemoveOutliersTest();
   FindNearestPointTest();

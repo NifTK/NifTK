@@ -612,7 +612,18 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceToLineSegment ( const std::p
  * \param optionally return the closest point on the second line
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, 
-    const cv::Point3d& Q0, const cv::Point3d& v , cv::Point3d& midpoint, cv::Point3d* closestPointOnSecondLine = NULL );
+    const cv::Point3d& Q0, const cv::Point3d& v , cv::Point3d& midpoint );
+
+/**
+ * \brief calculates the shortest distance between a line and a segment 
+ * the point must lie on the segment
+ * \param line 1 define as x = P0 + lambda u
+ * \param line 2 defined as the start and end points x0, x1
+ * \param holder for the closest point on the second line
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenLineAndSegment ( const cv::Point3d& P0, const cv::Point3d& u, 
+    const cv::Point3d& x0, const cv::Point3d& x1 , cv::Point3d& closestPointOnSecondLine );
+
 
 /**
  * \brief converts a line defined by two points on the line to the same line defined by a single point and it's unit vector
