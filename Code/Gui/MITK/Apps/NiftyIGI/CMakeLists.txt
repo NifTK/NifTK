@@ -26,6 +26,10 @@ set(_exclude_plugins
   org_mitk_gui_qt_volumevisualization
   org_mitk_gui_qt_segmentation
   org_mitk_gui_qt_moviemaker
+  org_mitk_gui_qt_imagecropper
+  org_mitk_gui_qt_measurement
+  org_mitk_gui_qt_basicimageprocessing
+  org_mitk_gui_qt_measurementtoolbox
 )
 
 ###########################################################
