@@ -24,25 +24,32 @@ if(MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON)
 
   if(NOT DEFINED Python_DIR)
 
-    set(NIFTK_PYTHON_MAJOR_VERSION 2)
-    set(NIFTK_PYTHON_MINOR_VERSION 7)
-    set(NIFTK_PYTHON_PATCH_VERSION 3)
-    set(NIFTK_PYTHON_VERSION "${NIFTK_PYTHON_MAJOR_VERSION}.${NIFTK_PYTHON_MINOR_VERSION}.${NIFTK_PYTHON_PATCH_VERSION}")
+    set(proj Python)
+    set(version "47845c55")
+    set(location "${NIFTK_EP_TARBALL_LOCATION}/python-cmake-buildsystem-${version}.tar.gz")
 
-    set(PYTHON_SOURCE_PACKAGE Python-${NIFTK_PYTHON_VERSION}-src-downloader)
-    set(proj ${PYTHON_SOURCE_PACKAGE})
-    set(location "${NIFTK_EP_TARBALL_LOCATION}/Python-${NIFTK_PYTHON_VERSION}.tar.gz")
-    niftkMacroDefineExternalProjectVariables(${PYTHON_SOURCE_PACKAGE} ${NIFTK_PYTHON_VERSION} ${location})
+    niftkMacroDefineExternalProjectVariables(${proj} ${version} ${location})
+
+
+    set(_python_major_version 2)
+    set(_python_minor_version 7)
+    set(_python_patch_version 3)
+    set(_python_version "${_python_major_version}.${_python_minor_version}.${_python_patch_version}")
+
+    # Helper project to download Python sources
+    set(_pysrc_project pysrc)
+    set(_pysrc_location "${NIFTK_EP_TARBALL_LOCATION}/Python-${_python_version}.tar.gz")
+
+    niftkMacroGetChecksum(_pysrc_checksum ${_pysrc_location})
 
     # download the source code
-    ExternalProject_Add(${proj}
+    ExternalProject_Add(${_pysrc_project}
       LIST_SEPARATOR ^^
-      PREFIX ${proj_CONFIG}
-      SOURCE_DIR ${EP_BASE}/Python-${NIFTK_PYTHON_VERSION} # You have to keep this name, as Python configure command looks for Python-2.7.3 format.
-      BINARY_DIR ${proj_BUILD}
-      INSTALL_DIR ${proj_INSTALL}
-      URL ${proj_LOCATION}
-      URL_MD5 ${proj_CHECKSUM}
+      PREFIX ${proj_DIR}/pysrc-cmake
+      DOWNLOAD_DIR ${proj_DIR}
+      SOURCE_DIR ${proj_DIR}/Python-${_python_version} # You have to keep this name, as Python configure command looks for Python-2.7.3 format.
+      URL ${_pysrc_location}
+      URL_MD5 ${_pysrc_checksum}
       # patch the VS compiler config
       PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/Python-2.7.3.patch
       CONFIGURE_COMMAND ""
@@ -50,11 +57,8 @@ if(MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON)
       INSTALL_COMMAND ""
     )
 
-    set(proj Python)
-    set(version "47845c55")
-    set(location "${NIFTK_EP_TARBALL_LOCATION}/python-cmake-buildsystem-${version}.tar.gz")
-    niftkMacroDefineExternalProjectVariables(${proj} ${version} ${location})
-    set(proj_DEPENDENCIES ZLIB ${PYTHON_SOURCE_PACKAGE})
+
+    set(proj_DEPENDENCIES ZLIB ${_pysrc_project})
 
     set(additional_cmake_cache_args )
     list(APPEND additional_cmake_cache_args
@@ -144,22 +148,22 @@ if(MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON)
     # directly in the ep/lib folder
     set(_python_install_dir )
     if(WIN32)
-      set(_python_install_dir -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}/lib/python${NIFTK_PYTHON_MAJOR_VERSION}.${NIFTK_PYTHON_MINOR_VERSION})
+      set(_python_install_dir -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}/lib/python${_python_major_version}.${_python_minor_version})
     endif()
 
     # CMake build environment for python from:
     # https://github.com/davidsansome/python-cmake-buildsystem
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
-      PREFIX ${EP_BASE}/${proj}-${NIFTK_PYTHON_VERSION}-cmake-prefix
-      SOURCE_DIR ${EP_BASE}/${proj}-${NIFTK_PYTHON_VERSION}-cmake-src
-      BINARY_DIR ${EP_BASE}/${proj}-${NIFTK_PYTHON_VERSION}-cmake-build
+      PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
+      BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
       # fix to build python on i686 and i386 with the python cmake build system,
       # the x86 path must be set as default
-      PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/python-cmake-buildsystem-${version}.patch
+      PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/python-cmake-buildsystem-${proj_VERSION}.patch
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
       CMAKE_CACHE_ARGS
@@ -183,16 +187,16 @@ if(MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON)
     )
 
     # set versions, override
-    set(PYTHON_VERSION_MAJOR ${NIFTK_PYTHON_MAJOR_VERSION})
-    set(PYTHON_VERSION_MINOR ${NIFTK_PYTHON_MINOR_VERSION})
+    set(PYTHON_VERSION_MAJOR ${_python_major_version})
+    set(PYTHON_VERSION_MINOR ${_python_minor_version})
 
     if(UNIX)
       set(Python_DIR "${proj_INSTALL}")
       set(PYTHON_EXECUTABLE "${Python_DIR}/bin/python${CMAKE_EXECUTABLE_SUFFIX}")
-      set(PYTHON_INCLUDE_DIR "${Python_DIR}/include/python${NIFTK_PYTHON_MAJOR_VERSION}.${NIFTK_PYTHON_MINOR_VERSION}")
+      set(PYTHON_INCLUDE_DIR "${Python_DIR}/include/python${_python_major_version}.${_python_minor_version}")
       set(PYTHON_INCLUDE_DIR2 "${PYTHON_INCLUDE_DIR}")
-      set(PYTHON_LIBRARY "${Python_DIR}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}python${NIFTK_PYTHON_MAJOR_VERSION}.${NIFTK_PYTHON_MINOR_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-      set(MITK_PYTHON_SITE_DIR "${Python_DIR}/lib/python${NIFTK_PYTHON_MAJOR_VERSION}.${NIFTK_PYTHON_MINOR_VERSION}/site-packages")
+      set(PYTHON_LIBRARY "${Python_DIR}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}python${_python_major_version}.${_python_minor_version}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+      set(MITK_PYTHON_SITE_DIR "${Python_DIR}/lib/python${_python_major_version}.${_python_minor_version}/site-packages")
 
       # linux custom compile step, set the environment variables and python home to the right
       # path. Other runtimes can mess up the paths of the installation and the stripped executable
@@ -218,11 +222,11 @@ ${PYTHON_EXECUTABLE} -m compileall
       #ExternalProject_Get_Property(${proj} binary_dir)
       #set(PYTHON_EXECUTABLE "${binary_dir}/bin/python${CMAKE_EXECUTABLE_SUFFIX}")
     else()
-      set(Python_DIR "${proj_INSTALL}/lib/python${NIFTK_PYTHON_MAJOR_VERSION}.${NIFTK_PYTHON_MINOR_VERSION}")
+      set(Python_DIR "${proj_INSTALL}/lib/python${_python_major_version}.${_python_minor_version}")
       set(PYTHON_EXECUTABLE "${Python_DIR}/bin/python${CMAKE_EXECUTABLE_SUFFIX}")
       set(PYTHON_INCLUDE_DIR "${Python_DIR}/include")
       set(PYTHON_INCLUDE_DIR2 "${PYTHON_INCLUDE_DIR}")
-      set(PYTHON_LIBRARY "${Python_DIR}/libs/python${NIFTK_PYTHON_MAJOR_VERSION}${NIFTK_PYTHON_MINOR_VERSION}.lib")
+      set(PYTHON_LIBRARY "${Python_DIR}/libs/python${_python_major_version}${_python_minor_version}.lib")
       set(MITK_PYTHON_SITE_DIR "${Python_DIR}/Lib/site-packages")
 
       # pre compile all *.py files in the runtime after install step
@@ -245,4 +249,3 @@ ${PYTHON_EXECUTABLE} -m compileall
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
   endif()
 endif()
-
