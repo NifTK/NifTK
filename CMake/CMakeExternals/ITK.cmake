@@ -29,7 +29,7 @@ niftkMacroDefineExternalProjectVariables(ITK ${version} ${location})
 set(proj_DEPENDENCIES GDCM)
 
 if(MITK_USE_Python)
-  list(APPEND proj_DEPENDENCIES CableSwig)
+  #list(APPEND proj_DEPENDENCIES CableSwig)
 endif()
 
 if(MITK_USE_HDF5)

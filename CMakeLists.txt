@@ -505,10 +505,17 @@ mitkFunctionAddExternalProject(NAME VL OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME CGAL OFF ADVANCED DEPENDS Boost)
 mitkFunctionAddExternalProject(NAME NiftyLink OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftySim OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftySeg OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftySeg OFF ADVANCED Eigen)
 mitkFunctionAddExternalProject(NAME NiftyReg OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftyRec OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
+
+mitkFunctionAddExternalProject(NAME PCRE ON ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME SWIG ON ADVANCED NO_PACKAGE DEPENDS PCRE)
+mitkFunctionAddExternalProject(NAME ZLIB ON ADVANCED NO_PACKAGE NO_CACHE)
+mitkFunctionAddExternalProject(NAME Python ON NO_PACKAGE DEPENDS ZLIB SWIG DOC "Use Python wrapping in NifTK")
+
+# These are "hard" dependencies and always set to ON.
 mitkFunctionAddExternalProject(NAME DCMTK ON ADVANCED)
 mitkFunctionAddExternalProject(NAME GDCM ON ADVANCED)
 mitkFunctionAddExternalProject(NAME ITK ON ADVANCED NO_CACHE DEPENDS GDCM)
