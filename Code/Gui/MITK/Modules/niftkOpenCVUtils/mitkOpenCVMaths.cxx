@@ -2356,6 +2356,10 @@ double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const s
   if ( ( s1.size() < 1) || (s2.size() < 2) )
   {
     MITK_WARN << "Called mitk::DistanceBetweenTwoSplines with insufficient points, returning inf.: " << s1.size() << ", " << s2.size();
+    if ( delta != NULL )
+    {
+      *delta = cv::Point3d ( std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity());
+    }
     return std::numeric_limits<double>::infinity();
   }
   std::vector < cv::Point3d > deltas ;
