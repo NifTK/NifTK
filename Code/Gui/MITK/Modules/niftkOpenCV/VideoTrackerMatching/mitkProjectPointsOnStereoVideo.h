@@ -202,7 +202,8 @@ private:
 
   double                        m_ProjectorScreenBuffer; // A buffer around the screen beyond which projected points will be set to infinity
   double                        m_ClassifierScreenBuffer; // A buffer around the screen, beyond which projected classifier points will be set to infinity
-
+  
+  double                        m_ReprojectionErrorZLimit; // The method for reprojecting lines can leave a residual error in the z direction, if greater than this we reject it
   //the camera calibration parameters
   cv::Mat* m_LeftIntrinsicMatrix;
   cv::Mat* m_LeftDistortionVector;

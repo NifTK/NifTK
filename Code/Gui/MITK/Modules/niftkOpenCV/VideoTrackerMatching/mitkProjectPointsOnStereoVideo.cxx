@@ -72,6 +72,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_EndFrame(0)
 , m_ProjectorScreenBuffer(0.0)
 , m_ClassifierScreenBuffer(100.0)
+, m_ReprojectionErrorZLimit (0.7)
 {
 }
 
@@ -1101,15 +1102,23 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
   MITK_INFO << reprojectionError;
   //for lines there will be a small residual z error, as the closest point to the projected line may not be
   //on the plane. Let's check that this remains fairly small
-  assert ( fabs (reprojectionError.z ) < 0.7 );
-
-  if ( GSPoint.m_Channel != "left" )
+  if ( fabs (reprojectionError.z ) < m_ReprojectionErrorZLimit )
   {
-    m_LeftReProjectionErrors.push_back (reprojectionError);
+    if ( GSPoint.m_Channel != "left" )
+    {
+      m_LeftReProjectionErrors.push_back (reprojectionError);
+    }
+    else
+    {
+      m_RightReProjectionErrors.push_back (reprojectionError);
+    }
   }
   else
   {
-    m_RightReProjectionErrors.push_back (reprojectionError);
+    MITK_WARN << "Rejecting reprojection error for point id " << reprojectedObject.m_Id << 
+      " channel " << GSPoint.m_Channel << 
+      " frame " << reprojectedObject.m_FrameNumber << 
+      " as z component error is too high : " << reprojectionError.z;
   }
 }
 
