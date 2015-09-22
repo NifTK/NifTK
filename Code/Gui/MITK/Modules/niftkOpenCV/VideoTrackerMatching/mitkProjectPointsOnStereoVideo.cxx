@@ -225,21 +225,23 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     m_WorldPoints = mitk::PickedPointList::New();
     m_WorldPoints->SetChannel("world");
   }
-  if ( static_cast<int>(m_WorldPoints->GetNumberOfPoints()) < m_MaxGoldStandardPointIndex ) 
+  if ( static_cast<int>(m_WorldPoints->GetNumberOfPoints()) < m_MaxGoldStandardPointIndex + 1) 
   {
     MITK_INFO << "Filling world points with dummy points to enable triangulation";
     cv::Point2i emptyWorldPoint;
+    m_WorldPoints->SetInOrderedMode(true);
 
     for ( int i = m_WorldPoints->GetNumberOfPoints() ; i <= m_MaxGoldStandardPointIndex ; i ++ )
     {
       m_WorldPoints->AddPoint(emptyWorldPoint);
     }
   }
-  if ( static_cast<int>(m_WorldPoints->GetNumberOfLines()) < m_MaxGoldStandardLineIndex ) 
+  if ( static_cast<int>(m_WorldPoints->GetNumberOfLines()) < m_MaxGoldStandardLineIndex + 1 ) 
   {
     MITK_INFO << "Filling world points with dummy lines to enable triangulation";
     cv::Point2i emptyWorldPoint;
     m_WorldPoints->SetInLineMode(true);
+    m_WorldPoints->SetInOrderedMode(true);
 
     for ( int i = m_WorldPoints->GetNumberOfLines() ; i <= m_MaxGoldStandardLineIndex ; i ++ )
     {
@@ -1099,7 +1101,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
   MITK_INFO << reprojectionError;
   //for lines there will be a small residual z error, as the closest point to the projected line may not be
   //on the plane. Let's check that this remains fairly small
-  assert ( fabs (reprojectionError.z ) < 0.5 );
+  assert ( fabs (reprojectionError.z ) < 0.7 );
 
   if ( GSPoint.m_Channel != "left" )
   {
@@ -1137,7 +1139,7 @@ bool ProjectPointsOnStereoVideo::FindNearestScreenPoint ( mitk::PickedObject& GS
   assert ( GSPickedObject.m_FrameNumber ==  m_ProjectedPointLists[GSPickedObject.m_FrameNumber]->GetFrameNumber() );
   //let's check the timing errors while we're here
   long long timingError = static_cast<long long> ( GSPickedObject.m_TimeStamp ) -  static_cast <long long> (m_ProjectedPointLists[GSPickedObject.m_FrameNumber]->GetTimeStamp() ) ;
-  if ( abs ( timingError > m_AllowableTimingError ) )
+  if ( abs ( timingError ) > m_AllowableTimingError ) 
   {
     MITK_WARN << "Rejecting gold standard points at frame " << GSPickedObject.m_FrameNumber << " due to high timing error = " << timingError;
     return false;
