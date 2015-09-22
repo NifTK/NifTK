@@ -151,7 +151,7 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
     m_TrackingMatrices[i].m_TimingErrors.clear();
     m_TrackingMatrices[i].m_TrackingMatrices.clear();
   }
-
+  unsigned int badMatrices = 0;
   while ( getline(fin,line) )
   {
     if ( line[0] != '#' )
@@ -178,13 +178,33 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
                 timeStamp - m_VideoLag[i], &timingError);
           }
           
-          m_TrackingMatrices[i].m_TimingErrors.push_back(timingError);
 
           std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
           boost::filesystem::path MatrixFileNameFull (m_TrackingMatrixDirectories[i]);
           MatrixFileNameFull /= MatrixFileName;
 
-          mitk::ReadTrackerMatrix(MatrixFileNameFull.string(), trackingMatrix);
+          while ( ! mitk::ReadTrackerMatrix(MatrixFileNameFull.string(), trackingMatrix)  )
+          {
+            MITK_ERROR << "failed to read matrix " << MatrixFileNameFull.string() << " removing from timestamp vector";
+            m_TimeStampsContainer[i].Remove(TargetTimeStamp);
+            if ( m_VideoLeadsTracking[i] )
+            {
+              TargetTimeStamp = m_TimeStampsContainer[i].GetNearestTimeStamp(
+                timeStamp + m_VideoLag[i], &timingError);
+            }
+            else
+            {
+              TargetTimeStamp = m_TimeStampsContainer[i].GetNearestTimeStamp(
+                timeStamp - m_VideoLag[i], &timingError);
+            }
+          
+            MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
+            MatrixFileNameFull = boost::filesystem::path (m_TrackingMatrixDirectories[i]);
+            MatrixFileNameFull /= MatrixFileName;
+            badMatrices ++;
+          }
+          
+          m_TrackingMatrices[i].m_TimingErrors.push_back(timingError);
 
           // This is because because OpenCV overrides the copy constructor.
           cv::Mat tmpMatrix ( 4, 4, CV_64FC1 );
@@ -192,6 +212,7 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
 
           m_TrackingMatrices[i].m_TrackingMatrices.push_back(tmpMatrix);
         }
+
         if ( frameNumber != linenumber++ )
         {
           MITK_WARN << "Skipped frame detected at line " << linenumber ;
@@ -209,8 +230,9 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
       }
     }
   }
-  MITK_INFO << "Read " << linenumber << " lines from " << m_FrameMap;
     
+  MITK_INFO << "Read " << linenumber << " lines from " << m_FrameMap;
+  MITK_INFO << "Got " << badMatrices << " bad matrix files ";
 }
 
 
