@@ -28,6 +28,20 @@ void TimeStampsContainer::Insert(const TimeStamp& timeStamp)
   m_TimeStamps.push_back(timeStamp);
 }
 
+//---------------------------------------------------------------------------
+bool TimeStampsContainer::Remove(const TimeStamp& timeStamp)
+{
+  unsigned int sizeBefore = m_TimeStamps.size();
+  m_TimeStamps.erase(std::remove ( m_TimeStamps.begin(), m_TimeStamps.end(), timeStamp), m_TimeStamps.end());
+  if ((sizeBefore - m_TimeStamps.size()) != 1 )
+  {
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+}
 
 //---------------------------------------------------------------------------
 TimeStampsContainer::TimeStamp TimeStampsContainer::GetTimeStamp(std::vector<TimeStampsContainer::TimeStamp>::size_type frameNumber) const
