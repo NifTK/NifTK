@@ -14,7 +14,7 @@
 
 #include "mitkPointUtils.h"
 #include <mitkCommon.h>
-#include <boost/math/special_functions/fpclassify.hpp>
+#include <cmath>
 
 //-----------------------------------------------------------------------------
 double mitk::CalculateStepSize(double *spacing)
@@ -402,7 +402,7 @@ int mitk::RemoveNaNPoints(
 //-----------------------------------------------------------------------------
 bool mitk::CheckForNaNPoint( const mitk::PointSet::PointType& point )
 {
-  if ( boost::math::isnan( point[0] ) || boost::math::isnan( point[1] ) || boost::math::isnan( point[2] ))
+  if ( std::isnan( point[0] ) || std::isnan( point[1] ) || std::isnan( point[2] ))
   {
     return true;
   }
