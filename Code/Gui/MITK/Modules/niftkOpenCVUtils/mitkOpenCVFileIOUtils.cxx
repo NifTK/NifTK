@@ -154,18 +154,31 @@ bool ReadTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix)
 {
   bool isSuccessful = false;
   std::ifstream fin(filename.c_str());
+  
+  fin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
   if ( !fin )
   {
     MITK_WARN << "ReadTrackerMatrix: Failed to open matrix file " << filename;
     return isSuccessful;
   }
 
-  for ( int row = 0 ; row < 4 ; row ++ )
+  try
   {
-    for ( int col = 0 ; col < 4 ; col ++ )
+    for ( int row = 0 ; row < 4 ; row ++ )
     {
-      fin >> outputMatrix(row, col);
+      for ( int col = 0 ; col < 4 ; col ++ )
+      {
+        if ( ! ( fin >> outputMatrix(row, col) ) )
+        {
+          return isSuccessful;
+        }
+      }
     }
+  }
+  catch ( std::exception& e )
+  {
+    return isSuccessful;
   }
   isSuccessful = true;
   return isSuccessful;
