@@ -23,8 +23,8 @@ if(DEFINED NiftyPipe_ROOT AND NOT EXISTS ${NiftyPipe_ROOT})
 endif()
 
 if(BUILD_NIFTYPIPE)
-
-  set(version "c7787ad640")
+  
+  set(version "d00c0d7302")
   set(location "git@cmiclab.cs.ucl.ac.uk:CMIC/NiftyPipe")
 
   niftkMacroDefineExternalProjectVariables(NiftyPipe ${version} ${location})
