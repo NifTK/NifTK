@@ -39,7 +39,7 @@ void QmitkIGIDataSourceGui::Register() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIDataSourceGui::UnRegister() const noexcept(true)
+void QmitkIGIDataSourceGui::UnRegister() const ITK_NOEXCEPT
 {
   // empty on purpose, just don't let ITK handle calls to UnRegister()
 }

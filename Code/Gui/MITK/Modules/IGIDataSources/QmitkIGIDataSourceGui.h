@@ -55,7 +55,7 @@ public:
 
   // just make sure ITK won't take care of anything (especially not destruction)
   virtual void Register() const;
-  virtual void UnRegister() const noexcept(true);
+  virtual void UnRegister() const ITK_NOEXCEPT;
   virtual void SetReferenceCount(int);
 
 signals:
