@@ -203,7 +203,7 @@ void QmitkCommonAppsApplicationPlugin::RegisterHelpSystem()
 //-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::RegisterQmitkCommonAppsExtensions()
 {
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsApplicationPreferencePage, m_Context);
+  // Probably you want stuff in your application specific sub-class.
 }
 
 

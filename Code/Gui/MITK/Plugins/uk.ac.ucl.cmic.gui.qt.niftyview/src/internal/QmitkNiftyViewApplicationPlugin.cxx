@@ -17,6 +17,7 @@
 #include <QmitkCommonAppsIGIPerspective.h>
 #include <QmitkMIDASSegmentationPerspective.h>
 #include <QmitkNiftyViewApplicationPreferencePage.h>
+#include <QmitkCommonAppsApplicationPreferencePage.h>
 #include "../QmitkNiftyViewApplication.h"
 
 //-----------------------------------------------------------------------------
@@ -46,6 +47,7 @@ void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsMinimalPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsIGIPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsApplicationPreferencePage, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();
