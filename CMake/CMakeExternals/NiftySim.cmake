@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_NiftySim)
 
-  set(version "f3b51bf082")
+  set(version "20c6ef0f04")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftySim-${version}.tar.gz")
 
   niftkMacroDefineExternalProjectVariables(NiftySim ${version} ${location})
