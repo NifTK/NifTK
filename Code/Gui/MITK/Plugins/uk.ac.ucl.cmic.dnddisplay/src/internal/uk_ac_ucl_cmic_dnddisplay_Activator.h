@@ -17,7 +17,15 @@
 
 #include <ctkPluginActivator.h>
 
+#include <vector>
+
+class QmitkRenderWindow;
+
 namespace mitk {
+
+class DataNode;
+class DataStorage;
+
 
 /**
  * \class uk_ac_ucl_cmic_dnddisplay_Activator
@@ -37,7 +45,13 @@ public:
 
   static ctkPluginContext* GetPluginContext();
 
+  void ProcessCommandLineArguments();
+
 private:
+
+  mitk::DataStorage* GetDataStorage();
+
+  void DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes);
 
   static ctkPluginContext* s_PluginContext;
 
