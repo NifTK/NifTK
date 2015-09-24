@@ -28,8 +28,8 @@ if(QT_FOUND)
 
   # Note: If the CTK version changes, then you either clear the plugin cache
   # or change the deploy path by changing the patch level.
-  set(version "357424007d")
-  set(location "${NIFTK_EP_TARBALL_LOCATION}/commontk-CTK-${version}.tar.gz")
+  set(version "910cec7415")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-CTK-${version}.tar.gz")
 
   set(qRestAPI_version "5f3a03b15d")
   set(qRestAPI_location "${NIFTK_EP_TARBALL_LOCATION}/commontk-qRestAPI-${qRestAPI_version}.tar.gz")
