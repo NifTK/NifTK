@@ -86,7 +86,9 @@ if(MITK_USE_ZLIB)
 
     mitkFunctionInstallExternalCMakeProject(${proj})
     message("SuperBuild loading ZLIB from ${ZLIB_DIR}")
-
+    mark_as_advanced(ZLIB_LIBRARY_DEBUG)
+    mark_as_advanced(ZLIB_LIBRARY_RELEASE)
+    mark_as_advanced(ZLIB_LIBRARY)
   else()
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
   endif()

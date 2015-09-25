@@ -530,7 +530,7 @@ mitkFunctionAddExternalProject(NAME MITK ON ADVANCED NO_CACHE DEPENDS ITK VTK GD
 
 # Further optional dependencies.
 mitkFunctionAddExternalProject(NAME PCL OFF ADVANCED DEPENDS Boost Eigen FLANN VTK)
-mitkFunctionAddExternalProject(NAME SimpleITK ON ADVANCED DEPENDS ITK GDCM SWIG)
+mitkFunctionAddExternalProject(NAME SimpleITK ON DEPENDS ITK GDCM SWIG)
 
 # -----------------------------------------
 # Other MITK_USE_* options not related to external projects build via the NifTK superbuild
@@ -577,6 +577,60 @@ if (BUILD_VL)
   set(MITK_USE_VL ON CACHE BOOL "" FORCE)
 else()
   set(MITK_USE_VL OFF CACHE BOOL "" FORCE)
+endif()
+
+######################################################################
+# Python: Sanity check for supported Qt version. Only >= 5.3 is supported by CTK/PythonQt
+######################################################################
+if(MITK_USE_Qt5 AND MITK_USE_Python)
+  set(minimum_required_python_qt5_version "5.3.0")
+  find_package(Qt5 COMPONENTS Core REQUIRED)
+
+  if(${Qt5Core_VERSION_STRING} VERSION_LESS ${minimum_required_python_qt5_version})
+    message(WARNING "Can't build MITK Python with Qt version < ${minimum_required_python_qt5_version}. Disabling Python support")
+    set(MITK_USE_Python OFF CACHE BOOL "Use python wrapping in MITK" FORCE)
+  endif()
+endif()
+
+######################################################################
+# Python: Only windows can't build python in debug mode
+######################################################################
+if(MITK_USE_Python AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" AND WIN32)
+  message(WARNING "Disabling Python support. Building MITK Python in debug mode on Windowsis not supported!")
+  set(MITK_USE_Python OFF CACHE BOOL "Use python wrapping in MITK" FORCE)
+  set(MITK_USE_Numpy OFF CACHE BOOL "Use Numpy" FORCE)
+  set(MITK_USE_SimpleITK OFF CACHE BOOL "Use SimpleITK" FORCE)
+elseif(MITK_USE_Python)
+  set(MITK_USE_ZLIB ON)
+  if(NOT MITK_USE_Numpy)
+    message("> Forcing MITK_USE_Numpy to ON because of MITK_USE_Python")
+    set(MITK_USE_Numpy ON CACHE BOOL "Use Numpy" FORCE)
+  endif()
+  if(NOT MITK_USE_SimpleITK)
+    message("> Forcing MITK_USE_SimpleITK to ON because of MITK_USE_Python")
+    set(MITK_USE_SimpleITK ON CACHE BOOL "Use SimpleITK" FORCE)
+  endif()
+  if(NOT MITK_USE_SWIG)
+    message("> Forcing MITK_USE_SWIG to ON because of MITK_USE_Python")
+    set(MITK_USE_SWIG ON CACHE BOOL "Use SWIG" FORCE)
+  endif()
+  if(NOT MITK_USE_PCRE)
+    message("> Forcing MITK_USE_PCRE to ON because of MITK_USE_Python")
+    set(MITK_USE_PCRE ON CACHE BOOL "Use PCRE" FORCE)
+  endif()
+  if(NOT MITK_USE_ZLIB)
+    message("> Forcing MITK_USE_ZLIB to ON because of MITK_USE_Python")
+    set(MITK_USE_ZLIB ON CACHE BOOL "Use ZLIB" FORCE)
+  endif()
+
+  option(MITK_USE_SYSTEM_PYTHON "Use the system python runtime" OFF)
+  if(MITK_USE_SYSTEM_PYTHON)
+    find_package(PythonLibs REQUIRED)
+    find_package(PythonInterp REQUIRED)
+  endif()
+elseif(MITK_USE_Python AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" AND WIN32)
+  message(WARNING "Disabling Python support. Building MITK Python in debug mode on Windowsis not supported!")
+  set(MITK_USE_Python OFF CACHE BOOL "Use python wrapping in MITK" FORCE)
 endif()
 
 #-----------------------------------------------------------------------------

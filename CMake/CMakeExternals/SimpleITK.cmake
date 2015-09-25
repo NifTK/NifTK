@@ -74,8 +74,6 @@ if(MITK_USE_SimpleITK)
       set(_build_shared OFF)
     endif()
 
-message("Matt, ITK_DIR=${ITK_DIR}")
-
     ExternalProject_Add(${proj}
        LIST_SEPARATOR ^^
        PREFIX ${proj_CONFIG}

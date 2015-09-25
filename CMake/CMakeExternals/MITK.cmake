@@ -36,6 +36,12 @@ if(BUILD_IGI)
     list(APPEND proj_DEPENDENCIES FLANN PCL)
   endif()
 endif(BUILD_IGI)
+if(MITK_USE_Python)
+  list(APPEND proj_DEPENDENCIES Python)
+endif()
+if(MITK_USE_Numpy)
+  list(APPEND proj_DEPENDENCIES Numpy)
+endif()
 
 # explicitly try to tame windows headers.
 if(WIN32)
@@ -77,11 +83,24 @@ if(NOT DEFINED MITK_DIR)
       set(MITK_BUILD_org.mitk.gui.qt.measurementtoolbox ON CACHE BOOL \"Build the MITK measurement toolbox, but we turn the statistics plugin off in the C++ code. \")
       set(MITK_BUILD_org.mitk.gui.qt.moviemaker ON CACHE BOOL \"Build the MITK Movie Maker plugin. \")
       set(MITK_BUILD_org.mitk.gui.qt.aicpregistration ON CACHE BOOL \"Build the MITK Anisotropic ICP plugin. \")
+      set(MITK_BUILD_org.mitk.gui.qt.python ${MITK_USE_Python} CACHE BOOL \"Build the MITK python plugin. \")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.log ON CACHE BOOL \"Build the Blueberry logging plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.help ON CACHE BOOL \"Build the Blueberry Qt help plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.compat ON CACHE BOOL \"Build the Blueberry compat plugin (Matt, what is this for?)\")
       set(DCMTK_DIR ${DCMTK_DIR} CACHE PATH \"DCMTK install directory\")
     ")
+
+    set(mitk_optional_cache_args )
+    if(MITK_USE_Python)
+      list(APPEND mitk_optional_cache_args
+           -DMITK_USE_Python:BOOL=${MITK_USE_Python}
+           -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
+           -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
+           -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
+           -DPYTHON_INCLUDE_DIR2:PATH=${PYTHON_INCLUDE_DIR2}
+           -DMITK_USE_SYSTEM_PYTHON:BOOL=${MITK_USE_SYSTEM_PYTHON}
+          )
+    endif()
 
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
@@ -119,6 +138,7 @@ if(NOT DEFINED MITK_DIR)
         -DOpenIGTLink_DIR:PATH=${OpenIGTLink_DIR}
         -DEigen_DIR:PATH=${Eigen_DIR}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
+        ${mitk_optional_cache_args}
       CMAKE_CACHE_ARGS
         ${EP_COMMON_CACHE_ARGS}
       CMAKE_CACHE_DEFAULT_ARGS
