@@ -479,6 +479,58 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   message("NifTK gcc=${GCC_VERSION}")
 endif()
 
+# -----------------------------------------
+# Qt version related variables
+
+if(APPLE)
+  set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+else()
+  set(DESIRED_QT_VERSION 5 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+endif()
+
+env_option(MITK_USE_QT "Use the Qt Company's Qt library" ON)
+set(MITK_DESIRED_QT_VERSION ${DESIRED_QT_VERSION})
+
+if(MITK_USE_QT)
+  # find the package at the very beginning, so that QT4_FOUND is available
+  if(DESIRED_QT_VERSION MATCHES 4)
+    set(MITK_QT4_MINIMUM_VERSION 4.7)
+    set(MITK_QT4_COMPONENTS QtCore QtGui QtXml)
+    if(BUILD_IGI)
+      list(APPEND MITK_QT4_COMPONENTS QtNetwork)
+    endif()
+    find_package(Qt4 ${MITK_QT4_MINIMUM_VERSION} COMPONENTS ${MITK_QT4_COMPONENTS} REQUIRED)
+    set(MITK_USE_Qt4 TRUE)
+    set(MITK_USE_Qt5 FALSE)
+  endif()
+  if(DESIRED_QT_VERSION MATCHES 5)
+    set(MITK_QT5_MINIMUM_VERSION 5.0.0)
+    set(MITK_USE_Qt4 FALSE)
+    set(MITK_USE_Qt5 TRUE)
+    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" CACHE PATH "")
+    set(MITK_QT5_COMPONENTS Concurrent OpenGL PrintSupport Script Sql Svg Widgets WebKitWidgets Xml XmlPatterns UiTools Help)
+    find_package(Qt5 ${MITK_QT5_MINIMUM_VERSION} COMPONENTS ${MITK_QT5_COMPONENTS} REQUIRED)
+    if(Qt5_DIR)
+      get_filename_component(_Qt5_DIR "${Qt5_DIR}/../../../" ABSOLUTE)
+      list(FIND CMAKE_PREFIX_PATH "${_Qt5_DIR}" _result)
+      if(_result LESS 0)
+        set(CMAKE_PREFIX_PATH "${_Qt5_DIR};${CMAKE_PREFIX_PATH}" CACHE PATH "" FORCE)
+      endif()
+    endif()
+  endif()
+else()
+  set(MITK_USE_Qt4 FALSE)
+  set(MITK_USE_Qt5 FALSE)
+endif()
+
+if(QT_FOUND)
+  set(QT_USE_QTXML 1)
+  set(QT_USE_QTXMLPATTERNS 1)
+  set(QT_USE_PHONON 0)
+  include(${QT_USE_FILE})
+else()
+ message(FATAL "Qt is mandatory, but QT_FOUND is false.")
+endif()
 
 # ------------------------------------------------------------------------
 # Register external projects which can be build with the MITK superbuild
@@ -802,38 +854,6 @@ if (BUILD_MESHING)
     ${CMAKE_SOURCE_DIR}/Code/Libs/Meshing
   )
 endif (BUILD_MESHING)
-
-######################################################################
-# Find Qt. We need to check for Qt first, before we go ahead and do
-# the Superbuild, because VTK needs to know if we have Qt.
-######################################################################
-
-set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
-
-# We ALWAYS need Qt. This is because MITK always needs it.
-if(BUILD_IGI)
-  find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)
-else(BUILD_IGI)
-  find_package(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED)
-endif(BUILD_IGI)
-
-if(QT_FOUND)
-  set(QT_USE_QTXML 1)
-  set(QT_USE_QTXMLPATTERNS 1)
-  set(QT_USE_PHONON 0)
-  include(${QT_USE_FILE})
-  if(BUILD_SUPERBUILD)
-    set(VTK_QT_ARGS
-      -DVTK_QT_VERSION:STRING=${DESIRED_QT_VERSION}
-      -DVTK_USE_GUISUPPORT:BOOL=ON
-      -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
-      -DVTK_USE_QT:BOOL=ON
-      -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-    )
-  endif(BUILD_SUPERBUILD)
-else()
- message(FATAL "Qt is mandatory, but QT_FOUND is false.")
-endif()
  
 ######################################################################
 # Find CUDA: Required by the Nifty packages
