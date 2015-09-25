@@ -28,7 +28,7 @@ set(location "${NIFTK_EP_TARBALL_LOCATION}/InsightToolkit-${version}.tar.gz")
 niftkMacroDefineExternalProjectVariables(ITK ${version} ${location})
 set(proj_DEPENDENCIES GDCM)
 
-if(BUILD_IGI)
+if(MITK_USE_OpenCV)
   list(APPEND proj_DEPENDENCIES OpenCV)
 endif()
 
@@ -49,7 +49,7 @@ if(NOT DEFINED ITK_DIR)
        -DUSE_WRAP_ITK:BOOL=OFF
       )
 
-  if(BUILD_IGI)
+  if(MITK_USE_OpenCV)
     message("Building ITK with OpenCV_DIR: ${OpenCV_DIR}")
     list(APPEND additional_cmake_args
          -DModule_ITKVideoBridgeOpenCV:BOOL=ON

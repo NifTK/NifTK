@@ -120,7 +120,7 @@ if(MITK_USE_SimpleITK)
       # PythonDir needs to be fixed for the python interpreter by
       # changing dir delimiter for Windows
       if(MITK_USE_SYSTEM_PYTHON)
-        set(_install_dir ${ep_prefix})
+        set(_install_dir ${EP_BASE})
       else()
         set(_install_dir ${Python_DIR})
       endif()

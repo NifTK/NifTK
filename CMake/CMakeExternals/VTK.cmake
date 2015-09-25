@@ -70,8 +70,7 @@ if(NOT DEFINED VTK_DIR)
      list(APPEND proj_DEPENDENCIES Python)
      set(_vtk_install_python_dir -DVTK_INSTALL_PYTHON_MODULE_DIR:FILEPATH=${MITK_PYTHON_SITE_DIR})
     else()
-      # Note: I don't think MITK's install dir is correct when MITK_USE_SYSTEM_PYTHON=ON. Where would you put it?
-      set(_vtk_install_python_dir -DVTK_INSTALL_PYTHON_MODULE_DIR:PATH=${MITK_PYTHON_SITE_DIR})
+      set(_vtk_install_python_dir -DVTK_INSTALL_PYTHON_MODULE_DIR:PATH=${EP_BASE}/lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
     endif()
 
     list(APPEND additional_cmake_args
