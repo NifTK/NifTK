@@ -40,22 +40,22 @@ class uk_ac_ucl_cmic_dnddisplay_Activator :
 
 public:
 
+  uk_ac_ucl_cmic_dnddisplay_Activator();
+
   void start(ctkPluginContext* context);
   void stop(ctkPluginContext* context);
 
-  static ctkPluginContext* GetPluginContext();
+  static uk_ac_ucl_cmic_dnddisplay_Activator* GetInstance();
 
-  void ProcessCommandLineArguments();
+  ctkPluginContext* GetPluginContext();
 
 private:
 
-  mitk::DataStorage* GetDataStorage();
+  static uk_ac_ucl_cmic_dnddisplay_Activator* s_Instance;
 
-  void DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes);
+  ctkPluginContext* m_PluginContext;
 
-  static ctkPluginContext* s_PluginContext;
-
-}; // uk_ac_ucl_cmic_dnddisplay_Activator
+};
 
 }
 

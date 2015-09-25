@@ -170,6 +170,8 @@ protected:
 private:
 
   const QScopedPointer<QmitkMultiViewerEditorPrivate> d;
+
+  friend class QmitkMultiViewerEditorPrivate;
 };
 
 #endif
