@@ -38,6 +38,7 @@ if(NOT DEFINED VTK_DIR)
   else(WIN32)
     option(VTK_USE_SYSTEM_FREETYPE ON)
   endif(WIN32)
+  mark_as_advanced(VTK_USE_SYSTEM_FREETYPE)
 
   set(additional_cmake_args )
   if(MINGW)
@@ -64,16 +65,43 @@ if(NOT DEFINED VTK_DIR)
        -DVTK_DEBUG_LEAKS:BOOL=${MITK_VTK_DEBUG_LEAKS}
       )
 
+  if(MITK_USE_Python)
+    if(NOT MITK_USE_SYSTEM_PYTHON)
+     list(APPEND proj_DEPENDENCIES Python)
+     set(_vtk_install_python_dir -DVTK_INSTALL_PYTHON_MODULE_DIR:FILEPATH=${MITK_PYTHON_SITE_DIR})
+    else()
+      # Note: I don't think MITK's install dir is correct when MITK_USE_SYSTEM_PYTHON=ON. Where would you put it?
+      set(_vtk_install_python_dir -DVTK_INSTALL_PYTHON_MODULE_DIR:PATH=${MITK_PYTHON_SITE_DIR})
+    endif()
 
-  list(APPEND additional_cmake_args
-      -DVTK_QT_VERSION:STRING=${DESIRED_QT_VERSION}
-      -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-      -DModule_vtkGUISupportQt:BOOL=ON
-      -DModule_vtkGUISupportQtWebkit:BOOL=ON
-      -DModule_vtkGUISupportQtSQL:BOOL=ON
-      -DModule_vtkRenderingQt:BOOL=ON
-      -DVTK_Group_Qt:BOOL=ON
-  )
+    list(APPEND additional_cmake_args
+         -DVTK_WRAP_PYTHON:BOOL=ON
+         -DVTK_USE_TK:BOOL=OFF
+         -DVTK_WINDOWS_PYTHON_DEBUGGABLE:BOOL=OFF
+         -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
+         -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
+         -DPYTHON_INCLUDE_DIR2:PATH=${PYTHON_INCLUDE_DIR2}
+         -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
+         ${_vtk_install_python_dir}
+        )
+  else()
+    list(APPEND additional_cmake_args
+         -DVTK_WRAP_PYTHON:BOOL=OFF
+         -DVTK_WINDOWS_PYTHON_DEBUGGABLE:BOOL=OFF
+        )
+  endif()
+
+  if(MITK_USE_QT)
+    list(APPEND additional_cmake_args
+        -DVTK_QT_VERSION:STRING=${DESIRED_QT_VERSION}
+        -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+        -DModule_vtkGUISupportQt:BOOL=ON
+        -DModule_vtkGUISupportQtWebkit:BOOL=ON
+        -DModule_vtkGUISupportQtSQL:BOOL=ON
+        -DModule_vtkRenderingQt:BOOL=ON
+        -DVTK_Group_Qt:BOOL=ON
+    )
+  endif()
 
   if(APPLE)
     set(additional_cmake_args
@@ -112,7 +140,6 @@ if(NOT DEFINED VTK_DIR)
         -DVTK_MAKE_INSTANTIATORS:BOOL=ON
         -DVTK_REPORT_OPENGL_ERRORS:BOOL=OFF
         ${additional_cmake_args}
-        ${VTK_QT_ARGS}
     CMAKE_CACHE_ARGS
       ${EP_COMMON_CACHE_ARGS}
     CMAKE_CACHE_DEFAULT_ARGS
@@ -125,6 +152,9 @@ if(NOT DEFINED VTK_DIR)
   mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading VTK from ${VTK_DIR}")
+  if(MITK_USE_Python)
+    message("SuperBuild loading VTK Python from ${_vtk_install_python_dir}")
+  endif()
 
 else(NOT DEFINED VTK_DIR)
 
