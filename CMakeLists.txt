@@ -631,6 +631,18 @@ else()
   set(MITK_USE_VL OFF CACHE BOOL "" FORCE)
 endif()
 
+if (BUILD_PCL)
+  set(MITK_USE_PCL ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_PCL OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_RTK)
+  set(MITK_USE_RTK ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_RTK OFF CACHE BOOL "" FORCE)
+endif()
+
 ######################################################################
 # Python: Sanity check for supported Qt version. Only >= 5.3 is supported by CTK/PythonQt
 ######################################################################
