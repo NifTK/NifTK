@@ -105,8 +105,11 @@ endmacro()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/Code/Gui/MITK/Apps/Apps.cmake")
 set(BUILD_GUI OFF)
+mark_as_advanced(BUILD_GUI)
 set(BUILD_IGI OFF)
+mark_as_advanced(BUILD_IGI)
 set(BUILD_MIDAS OFF)
+mark_as_advanced(BUILD_MIDAS)
 
 # Check each GUI application.
 foreach(NIFTK_APP ${NIFTK_APPS})
