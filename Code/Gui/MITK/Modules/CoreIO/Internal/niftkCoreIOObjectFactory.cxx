@@ -118,7 +118,6 @@ void CoreIOObjectFactory::SetDefaultProperties(mitk::DataNode* node)
 void CoreIOObjectFactory::CreateFileExtensionsMap()
 {
   MITK_DEBUG << "Registering additional file extensions." << std::endl;
-  MITK_DEBUG << "Registering additional file extensions." << std::endl;
 }
 
 
