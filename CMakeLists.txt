@@ -1862,9 +1862,6 @@ endif()")
   endif()
 endforeach()
 
-
-
-
 # This generates a C++ header file with values that need compiling into code.
 configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
 
