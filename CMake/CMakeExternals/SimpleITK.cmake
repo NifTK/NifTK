@@ -74,6 +74,8 @@ if(MITK_USE_SimpleITK)
       set(_build_shared OFF)
     endif()
 
+message("Matt, ITK_DIR=${ITK_DIR}")
+
     ExternalProject_Add(${proj}
        LIST_SEPARATOR ^^
        PREFIX ${proj_CONFIG}
@@ -95,7 +97,7 @@ if(MITK_USE_SimpleITK)
          -DUSE_SYSTEM_ITK:BOOL=ON
          -DBUILD_EXAMPLES:BOOL=OFF
          -DGDCM_DIR:PATH=${GDCM_DIR}
-         -DITK_DIR:PATH=${ITK_DIR}
+         -DITK_DIR:PATH=${ITK_DIR}/lib/cmake/ITK-4.7/
          -DSWIG_DIR:PATH=${SWIG_DIR}
          -DSWIG_EXECUTABLE:FILEPATH=${SWIG_EXECUTABLE}
        CMAKE_CACHE_DEFAULT_ARGS
