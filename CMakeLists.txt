@@ -565,9 +565,9 @@ mitkFunctionAddExternalProject(NAME NiftyReg  OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftyRec  OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
 
+mitkFunctionAddExternalProject(NAME ZLIB      ON ADVANCED NO_PACKAGE NO_CACHE)
 mitkFunctionAddExternalProject(NAME PCRE      ON ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME SWIG      ON ADVANCED NO_PACKAGE DEPENDS PCRE)
-mitkFunctionAddExternalProject(NAME ZLIB      ON ADVANCED NO_PACKAGE NO_CACHE)
 mitkFunctionAddExternalProject(NAME Python    ON NO_PACKAGE DEPENDS ZLIB SWIG DOC "Use Python wrapping in NifTK")
 mitkFunctionAddExternalProject(NAME Numpy     ON ADVANCED NO_PACKAGE)
 
