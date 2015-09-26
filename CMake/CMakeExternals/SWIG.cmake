@@ -36,11 +36,11 @@ if(NOT DEFINED SWIG_DIR)
 
   # binary SWIG for windows
   if(WIN32)
-    set(swig_source_dir ${CMAKE_CURRENT_BINARY_DIR}/swigwin-${SWIG_TARGET_VERSION})
+    set(swig_source_dir ${CMAKE_CURRENT_BINARY_DIR}/swigwin-${version})
 
     # swig.exe available as pre-built binary on Windows:
     ExternalProject_Add(${proj}
-      URL ${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/swigwin-${SWIG_TARGET_VERSION}.zip
+      URL ${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/swigwin-${version}.zip
       URL_MD5 "3f18de4fc09ab9abb0d3be37c11fbc8f"
       CONFIGURE_COMMAND ""
       BUILD_COMMAND ""
@@ -78,8 +78,9 @@ if(NOT DEFINED SWIG_DIR)
       )
 
     ExternalProject_Get_Property(${proj} install_dir)
-    set(SWIG_DIR ${proj_INSTALL}/share/swig/${SWIG_TARGET_VERSION})
+    set(SWIG_DIR ${proj_INSTALL}/share/swig/${version})
     set(SWIG_EXECUTABLE ${proj_INSTALL}/bin/swig)
+    set(NifTK_PREFIX_PATH ${SWIG_DIR}^^${NifTK_PREFIX_PATH})
 
   endif()
 

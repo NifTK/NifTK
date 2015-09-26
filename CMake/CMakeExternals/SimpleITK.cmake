@@ -101,7 +101,7 @@ if(MITK_USE_SimpleITK)
        DEPENDS ${proj_DEPENDENCIES}
       )
 
-    set(SimpleITK_DIR ${proj_INSTALL})
+    set(SimpleITK_DIR ${proj_INSTALL}/lib/cmake/SimpleITK-0.8)
 
     if( MITK_USE_Python )
       set(_sitk_build_dir ${proj_BUILD})
@@ -146,6 +146,7 @@ if(MITK_USE_SimpleITK)
 
     mitkFunctionInstallExternalCMakeProject(${proj})
     message("SuperBuild loading SimpleITK from ${SimpleITK_DIR}")
+    set(NifTK_PREFIX_PATH ${SimpleITK_DIR}^^${NifTK_PREFIX_PATH})
 
     # Still need to install the SimpleITK Python wrappings
 
