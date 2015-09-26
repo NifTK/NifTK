@@ -23,19 +23,17 @@ if(MITK_USE_SimpleITK)
    message(FATAL_ERROR "SimpleITK_DIR variable is defined but corresponds to non-existing directory")
  endif()
 
-  set(proj SimpleITK)
+  set(version "0.8.1")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/SimpleITK-${version}.tar.gz")
+  niftkMacroDefineExternalProjectVariables(SimpleITK ${version} ${location})
+
   set(proj_DEPENDENCIES ITK GDCM SWIG)
+  if(MITK_USE_OpenCV)
+    list(APPEND proj_DEPENDENCIES OpenCV)
+  endif()
+
 
   if(NOT DEFINED SimpleITK_DIR)
-
-    set(version "0.8.1")
-    set(location "${NIFTK_EP_TARBALL_LOCATION}/SimpleITK-${version}.tar.gz")
-    niftkMacroDefineExternalProjectVariables(SimpleITK ${version} ${location})
-
-    set(proj_DEPENDENCIES ITK GDCM SWIG)
-    if(MITK_USE_OpenCV)
-      list(APPEND proj_DEPENDENCIES OpenCV)
-    endif()
 
     set(additional_cmake_args )
 

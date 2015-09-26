@@ -40,6 +40,26 @@ if(QT_FOUND)
   if(NOT DEFINED CTK_DIR)
 
     set(ctk_optional_cache_args )
+    if(MITK_USE_Python)
+      if(NOT MITK_USE_SYSTEM_PYTHON)
+        list(APPEND proj_DEPENDENCIES Python)
+      endif()
+      list(APPEND ctk_optional_cache_args
+           -DCTK_LIB_Scripting/Python/Widgets:BOOL=ON
+           -DCTK_ENABLE_Python_Wrapping:BOOL=ON
+           -DCTK_APP_ctkSimplePythonShell:BOOL=ON
+           -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
+           -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
+           -DPYTHON_INCLUDE_DIR2:PATH=${PYTHON_INCLUDE_DIR2}
+           -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
+      )
+    else()
+      list(APPEND ctk_optional_cache_args
+           -DCTK_LIB_Scripting/Python/Widgets:BOOL=OFF
+           -DCTK_ENABLE_Python_Wrapping:BOOL=OFF
+           -DCTK_APP_ctkSimplePythonShell:BOOL=OFF
+      )
+    endif()
 
     if(CTEST_USE_LAUNCHERS)
       list(APPEND ctk_optional_cache_args

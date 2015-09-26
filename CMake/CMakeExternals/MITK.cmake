@@ -36,12 +36,6 @@ if(BUILD_IGI)
     list(APPEND proj_DEPENDENCIES FLANN PCL)
   endif()
 endif(BUILD_IGI)
-if(MITK_USE_Python)
-  list(APPEND proj_DEPENDENCIES Python)
-endif()
-if(MITK_USE_Numpy)
-  list(APPEND proj_DEPENDENCIES Numpy)
-endif()
 
 # explicitly try to tame windows headers.
 if(WIN32)
@@ -99,7 +93,29 @@ if(NOT DEFINED MITK_DIR)
            -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
            -DPYTHON_INCLUDE_DIR2:PATH=${PYTHON_INCLUDE_DIR2}
            -DMITK_USE_SYSTEM_PYTHON:BOOL=${MITK_USE_SYSTEM_PYTHON}
+           -DPython_DIR:PATH=${Python_DIR}
           )
+      list(APPEND proj_DEPENDENCIES Python)
+    endif()
+    if(MITK_USE_Numpy)
+      list(APPEND proj_DEPENDENCIES Numpy)
+      list(APPEND mitk_optional_cache_args -DNumpy_DIR:PATH=${Numpy_DIR} -DMITK_USE_Numpy:BOOL=${MITK_USE_Numpy})
+    endif()
+    if(MITK_USE_SimpleITK)
+      list(APPEND proj_DEPENDENCIES SimpleITK)
+      list(APPEND mitk_optional_cache_args -DSimpleITK_DIR:PATH=${SimpleITK_DIR} -DMITK_USE_SimpleITK:BOOL=${MITK_USE_SimpleITK})
+    endif()
+    if(MITK_USE_SWIG)
+      list(APPEND proj_DEPENDENCIES SWIG)
+      list(APPEND mitk_optional_cache_args -DSWIG_DIR:PATH=${SWIG_DIR} -DMITK_USE_SWIG:BOOL=${MITK_USE_SWIG})
+    endif()
+    if(MITK_USE_PCRE)
+      list(APPEND proj_DEPENDENCIES PCRE)
+      list(APPEND mitk_optional_cache_args -DPCRE_DIR:PATH=${PCRE_DIR} -DMITK_USE_PCRE:BOOL=${MITK_USE_PCRE})
+    endif()
+    if(MITK_USE_ZLIB)
+      list(APPEND proj_DEPENDENCIES ZLIB)
+      list(APPEND mitk_optional_cache_args -DZLIB_DIR:PATH=${ZLIB_DIR} -DMITK_USE_ZLIB:BOOL=${MITK_USE_ZLIB})
     endif()
 
     ExternalProject_Add(${proj}

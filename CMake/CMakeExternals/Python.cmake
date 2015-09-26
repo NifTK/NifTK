@@ -22,14 +22,13 @@ if(MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON)
     message(FATAL_ERROR "Python_DIR variable is defined but corresponds to non-existing directory")
   endif()
 
+  set(proj Python)
+  set(version "47845c55")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/python-cmake-buildsystem-${version}.tar.gz")
+
+  niftkMacroDefineExternalProjectVariables(${proj} ${version} ${location})
+
   if(NOT DEFINED Python_DIR)
-
-    set(proj Python)
-    set(version "47845c55")
-    set(location "${NIFTK_EP_TARBALL_LOCATION}/python-cmake-buildsystem-${version}.tar.gz")
-
-    niftkMacroDefineExternalProjectVariables(${proj} ${version} ${location})
-
 
     set(_python_major_version 2)
     set(_python_minor_version 7)

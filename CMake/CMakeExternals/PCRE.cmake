@@ -22,7 +22,6 @@ endif()
 
 set(version "8.35")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/pcre-${version}.tar.gz")
-
 niftkMacroDefineExternalProjectVariables(PCRE ${version} ${location})
 set(proj_DEPENDENCIES)
 

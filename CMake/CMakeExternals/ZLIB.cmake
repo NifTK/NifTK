@@ -16,11 +16,12 @@
 # ZLIB
 #------------------------------------------------------------------
 if(MITK_USE_ZLIB)
-  if(NOT DEFINED ZLIB_DIR)
 
-    set(version "66a75305")
-    set(location "${NIFTK_EP_TARBALL_LOCATION}/zlib-${version}.tar.gz")
-    niftkMacroDefineExternalProjectVariables(ZLIB ${version} ${location})
+  set(version "66a75305")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/zlib-${version}.tar.gz")
+  niftkMacroDefineExternalProjectVariables(ZLIB ${version} ${location})
+
+  if(NOT DEFINED ZLIB_DIR)
 
     set(additional_cmake_args )
     if(CTEST_USE_LAUNCHERS)

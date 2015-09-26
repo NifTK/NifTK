@@ -22,12 +22,12 @@ if( MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON )
     message(FATAL_ERROR "Numpy_DIR variable is defined but corresponds to non-existing directory")
   endif()
 
-  if( NOT DEFINED Numpy_DIR )
+  set(version "1.9.2")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/numpy-${version}.tar.gz")
+  niftkMacroDefineExternalProjectVariables(Numpy ${version} ${location})
+  set(proj_DEPENDENCIES Python)
 
-    set(version "1.9.2")
-    set(location "${NIFTK_EP_TARBALL_LOCATION}/numpy-${version}.tar.gz")
-    niftkMacroDefineExternalProjectVariables(Numpy ${version} ${location})
-    set(proj_DEPENDENCIES Python)
+  if( NOT DEFINED Numpy_DIR )
 
     # setup build environment and disable fortran, blas and lapack
     set(_numpy_env
