@@ -12,7 +12,6 @@
 #
 #============================================================================*/
 
-
 #-----------------------------------------------------------------------------
 # MITK
 #-----------------------------------------------------------------------------
@@ -87,13 +86,13 @@ if(NOT DEFINED MITK_DIR)
     set(mitk_optional_cache_args )
     if(MITK_USE_Python)
       list(APPEND mitk_optional_cache_args
-           -DMITK_USE_Python:BOOL=${MITK_USE_Python}
            -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
            -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
            -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
            -DPYTHON_INCLUDE_DIR2:PATH=${PYTHON_INCLUDE_DIR2}
-           -DMITK_USE_SYSTEM_PYTHON:BOOL=${MITK_USE_SYSTEM_PYTHON}
            -DPython_DIR:PATH=${Python_DIR}
+           -DMITK_USE_SYSTEM_PYTHON:BOOL=${MITK_USE_SYSTEM_PYTHON}
+           -DMITK_USE_Python:BOOL=${MITK_USE_Python}
           )
       list(APPEND proj_DEPENDENCIES Python)
     endif()
@@ -139,8 +138,8 @@ if(NOT DEFINED MITK_DIR)
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
         -DOpenIGTLink_DIR:PATH=${OpenIGTLink_DIR}
         -DEigen_DIR:PATH=${Eigen_DIR}
-        -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
         ${mitk_optional_cache_args}
+        -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
       CMAKE_CACHE_ARGS
         ${EP_COMMON_CACHE_ARGS}
       CMAKE_CACHE_DEFAULT_ARGS
