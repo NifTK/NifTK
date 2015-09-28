@@ -87,6 +87,13 @@
     </boolean>
 
     <boolean>
+      <name>flgDoNotRegister</name>
+      <longflag>noreg</longflag>
+      <description>Do not register the images.</description>
+      <label>Turn off registration?</label>
+    </boolean>
+
+    <boolean>
       <name>flgDebug</name>
       <longflag>dbg</longflag>
       <description>Generate debug output (i.e. print the DICOM header).</description>
@@ -131,6 +138,28 @@
       <label>DCE series description</label>
       <default>t1_fl3d_tra_dynVIEWS_SPAIR_1x1x0.9_B1Med</default>
     </string>
+ 
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Other Parameters</label>
+    <description><![CDATA[Other Parameters]]></description>
+
+    <integer>
+      <name>minNumberOfSlices</name>
+      <longflag>minNumSlices</longflag>
+      <description>
+        The minimum number of slices in the MRI volumes.
+      </description>
+      <label>Minimum number of slices</label>
+      <default>10</default>
+      <constraints>
+        <minimum>0</minimum>
+        <maximum>9999</maximum>
+        <step>5</step>
+      </constraints>
+    </integer>
  
   </parameters>
 

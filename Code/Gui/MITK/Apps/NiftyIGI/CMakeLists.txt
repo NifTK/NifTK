@@ -26,6 +26,10 @@ set(_exclude_plugins
   org_mitk_gui_qt_volumevisualization
   org_mitk_gui_qt_segmentation
   org_mitk_gui_qt_moviemaker
+  org_mitk_gui_qt_imagecropper
+  org_mitk_gui_qt_measurement
+  org_mitk_gui_qt_basicimageprocessing
+  org_mitk_gui_qt_measurementtoolbox
 )
 
 ###########################################################
@@ -52,7 +56,24 @@ set(_include_plugins
   uk.ac.ucl.cmic.igisurfacereg
   uk.ac.ucl.cmic.igiundistort
   uk.ac.ucl.cmic.igirmserror
+  uk.ac.ucl.cmic.igipivotcalibration
+  uk.ac.ucl.cmic.igipointercalib
 )
+
+if(WIN32)
+  set(_include_plugins
+    ${_include_plugins}
+    uk.ac.ucl.cmic.igifootpedalhotkey
+  )
+endif()
+
+if(BUILD_VL)
+  set(_include_plugins
+    ${_include_plugins}
+    uk.ac.ucl.cmic.vlrenderer
+    uk.ac.ucl.cmic.igivleditor
+  )
+endif()
 
 NIFTK_CREATE_GUI_APPLICATION(
   NAME NiftyIGI

@@ -18,6 +18,8 @@
 #include <mitkTriangulate2DPointPairsTo3D.h>
 #include <niftkTriangulate2DPointPairsTo3DCLP.h>
 
+#include <boost/lexical_cast.hpp>
+
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
@@ -37,13 +39,49 @@ int main(int argc, char** argv)
   try
   {
     mitk::Triangulate2DPointPairsTo3D::Pointer triangulator = mitk::Triangulate2DPointPairsTo3D::New();
-    triangulator->Triangulate(
-                  inputPointPairs,
-                  intrinsicLeft,
-                  intrinsicRight,
-                  rightToLeftExtrinsics,
-                  outputPoints
-                  );
+    triangulator->SetInput2DPointPairsFileName(inputPointPairs);
+    triangulator->SetIntrinsicLeftFileName(intrinsicLeft);
+    triangulator->SetIntrinsicRightFileName(intrinsicRight);
+    triangulator->SetRightToLeftExtrinsics(rightToLeftExtrinsics);
+    triangulator->SetOutputFileName(outputPoints);
+    
+    if ( leftMask.length() != 0 ) 
+    {
+      triangulator->SetLeftMaskFileName(leftMask);
+    }
+
+    if ( rightMask.length() != 0 ) 
+    {
+      triangulator->SetRightMaskFileName(rightMask);
+    }
+    triangulator->SetTrackingMatrixFileName(trackerToWorld);
+    triangulator->SetHandeyeMatrixFileName(leftLensToTracker);
+
+    if ( outputMaskImagePrefix.length() != 0 )
+    {
+      triangulator->SetOutputMaskImagePrefix(outputMaskImagePrefix);
+    }
+
+    triangulator->SetUndistortBeforeTriangulation(undistort);
+
+    double minDistanceFromLens = - ( std::numeric_limits<double>::infinity() );
+    double maxDistanceFromLens =  std::numeric_limits<double>::infinity();
+
+    if ( minimumDistanceFromLens.length () != 0 )
+    {
+      minDistanceFromLens = boost::lexical_cast<double>(minimumDistanceFromLens);
+
+      MITK_INFO << "Culling points closer than " << minDistanceFromLens;
+    }
+    if ( maximumDistanceFromLens.length () != 0 )
+    {
+      maxDistanceFromLens = boost::lexical_cast<double>(maximumDistanceFromLens);
+      MITK_INFO << "Culling points further than " << maxDistanceFromLens;
+    }
+    triangulator->SetMinimumDistanceFromLens( minDistanceFromLens );
+    triangulator->SetMaximumDistanceFromLens( maxDistanceFromLens );
+
+    triangulator->Triangulate();
 
     returnStatus = EXIT_SUCCESS;
   }

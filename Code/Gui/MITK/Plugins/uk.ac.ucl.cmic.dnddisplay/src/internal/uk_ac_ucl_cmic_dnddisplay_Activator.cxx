@@ -13,23 +13,51 @@
 =============================================================================*/
 
 #include "uk_ac_ucl_cmic_dnddisplay_Activator.h"
+
+#include <berryPlatform.h>
+#include <berryPlatformUI.h>
+#include <berryIWorkbenchPage.h>
+
+#include <mitkLogMacros.h>
+#include <mitkDataStorage.h>
+#include <mitkIDataStorageReference.h>
+#include <mitkIDataStorageService.h>
+#include <QmitkMimeTypes.h>
+
+#include <niftkMultiViewerWidget.h>
 #include <QmitkDnDDisplayPreferencePage.h>
 #include <QmitkMultiViewerEditor.h>
 //#include <QmitkSingleViewerEditor.h>
+
+#include <QApplication>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
 #include <QtPlugin>
+
 
 namespace mitk
 {
 
-ctkPluginContext* uk_ac_ucl_cmic_dnddisplay_Activator::s_PluginContext(NULL);
+uk_ac_ucl_cmic_dnddisplay_Activator* uk_ac_ucl_cmic_dnddisplay_Activator::s_Instance = 0;
+
+//-----------------------------------------------------------------------------
+uk_ac_ucl_cmic_dnddisplay_Activator::uk_ac_ucl_cmic_dnddisplay_Activator()
+: m_PluginContext()
+{
+  assert(!s_Instance);
+  s_Instance = this;
+}
+
 
 //-----------------------------------------------------------------------------
 void uk_ac_ucl_cmic_dnddisplay_Activator::start(ctkPluginContext* context)
 {
+  m_PluginContext = context;
+
   BERRY_REGISTER_EXTENSION_CLASS(QmitkMultiViewerEditor, context);
 //  BERRY_REGISTER_EXTENSION_CLASS(QmitkSingleViewerEditor, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkDnDDisplayPreferencePage, context);
-  s_PluginContext = context;
 }
 
 
@@ -41,9 +69,16 @@ void uk_ac_ucl_cmic_dnddisplay_Activator::stop(ctkPluginContext* context)
 
 
 //-----------------------------------------------------------------------------
+uk_ac_ucl_cmic_dnddisplay_Activator* uk_ac_ucl_cmic_dnddisplay_Activator::GetInstance()
+{
+  return s_Instance;
+}
+
+
+//-----------------------------------------------------------------------------
 ctkPluginContext* uk_ac_ucl_cmic_dnddisplay_Activator::GetPluginContext()
 {
-  return s_PluginContext;
+  return m_PluginContext;
 }
 
 } // end namespace

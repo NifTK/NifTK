@@ -16,6 +16,7 @@
 #include <berryIWorkbenchWindow.h>
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
+#include <berryPlatform.h>
 #include "UndistortView.h"
 #include "UndistortViewPreferencesPage.h"
 #include "uk_ac_ucl_cmic_igiundistort_Activator.h"
@@ -25,7 +26,7 @@
 #include <QMessageBox>
 #include <QTableWidgetItem>
 #include <QFileDialog>
-#include <Undistortion.h>
+#include <niftkUndistortion.h>
 #include <boost/typeof/typeof.hpp>
 #include <QtConcurrentRun>
 #include <QFile>
@@ -709,9 +710,9 @@ void UndistortView::OnPreferencesChanged(const berry::IBerryPreferences*)
 //-----------------------------------------------------------------------------
 void UndistortView::RetrievePreferenceValues()
 {
-  berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(UndistortViewPreferencesPage::s_PrefsNodeName)).Cast<berry::IBerryPreferences>();
   assert(prefs);
 
-  m_LastFile = QString::fromStdString(prefs->Get(UndistortViewPreferencesPage::s_DefaultCalibrationFilePathPrefsName, ""));
+  m_LastFile = prefs->Get(UndistortViewPreferencesPage::s_DefaultCalibrationFilePathPrefsName, "");
 }

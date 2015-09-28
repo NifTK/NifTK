@@ -154,6 +154,14 @@
       <channel>input</channel>
     </directory>
 
+    <boolean>
+      <name>randomise</name>
+      <longflag>randomise</longflag>
+      <description>Use random seed to select frames.</description>
+      <label>Randomise seed</label>
+      <default>false</default>
+    </boolean>
+
   </parameters>
   
 </executable>

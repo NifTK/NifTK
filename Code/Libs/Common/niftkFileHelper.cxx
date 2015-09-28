@@ -48,16 +48,6 @@ namespace niftk
 */
 //boost::filesystem::path ConvertToFullPath(const std::string& pathName);
 
-
-/**
-* Creates a unique file name for a file located in the O/S temporary directory.
-* @param prefix file basename prefix
-* @param suffix file basename suffix
-* @return a unique file name
-*/
-//boost::filesystem::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix = "");
-
-
 //-----------------------------------------------------------------------------
 std::string GetFileSeparator()
 {
@@ -115,7 +105,7 @@ std::string Basename(const std::string& pathName)
 
 
 //-----------------------------------------------------------------------------
-fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix)
+std::string CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix)
 {
   fs::path tmpFileName;
   std::string tmpDirName, fileNameTemplate;
@@ -145,7 +135,7 @@ fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &
     tmpFileName = fs::path(p_namebuffer);
     delete[] p_namebuffer;
 
-    return tmpFileName;
+    return tmpFileName.string();
   }
 #else
   {
@@ -193,7 +183,7 @@ fs::path CreateUniqueTempFileName(const std::string &prefix, const std::string &
       throw niftk::IOException("Failed to create unique temp. file.");
     }
 
-    return tmpFileName;
+    return tmpFileName.string();
   }
 #endif
 }
@@ -476,6 +466,47 @@ std::vector<std::string> FindVideoData(const std::string& directory)
   return returnStrings;
 }
 
+//-----------------------------------------------------------------------------
+std::string FindVideoFile(const std::string& directory, const std::string& mask)
+{
+  std::vector <std::string> videoFiles = niftk::FindVideoData(directory);
+  if ( videoFiles.size() == 0 )
+  {
+    std::cout << "Failed to find any video files";
+    return "";
+  }
+  if ( videoFiles.size() > 1 )
+  {
+    if ( mask == "" )
+    {
+      std::cout << "Found multiple video files, no mask so using the first one, " << videoFiles[0];
+      return videoFiles[0];
+    }
+    else
+    {
+      std::cout << "Found multiple video files, seeing which one matches mask " << mask;
+    
+      unsigned int matches = 0;
+      for ( std::vector<std::string>::iterator it = videoFiles.begin (); it < videoFiles.end(); ++ it )
+      {
+        if ( mask == niftk::Basename ( *it) )
+        {
+          matches++;
+          if ( matches == 1 )
+          {
+            std::cout << ". Using " << *it;
+            return *it;
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    return videoFiles[0];
+  }
+  return "";
+}
 
 //-----------------------------------------------------------------------------
 std::vector<std::string> FindFilesWithGivenExtension(const std::string& fullDirectoryName, const std::string& extension)

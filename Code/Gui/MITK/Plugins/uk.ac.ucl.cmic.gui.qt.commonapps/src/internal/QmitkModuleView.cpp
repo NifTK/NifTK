@@ -26,7 +26,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <QSettings>
 
 QmitkModuleView::QmitkModuleView()
-  : tableView(0)
+  : tableView(nullptr)
 {
 }
 
@@ -37,13 +37,13 @@ void QmitkModuleView::SetFocus()
 
 void QmitkModuleView::CreateQtPartControl(QWidget *parent)
 {
-  QHBoxLayout* layout = new QHBoxLayout();
+  auto   layout = new QHBoxLayout();
   layout->setMargin(0);
   parent->setLayout(layout);
 
   tableView = new QTableView(parent);
-  QmitkModuleTableModel* tableModel = new QmitkModuleTableModel(tableView);
-  QSortFilterProxyModel* sortProxyModel = new QSortFilterProxyModel(tableView);
+  auto   tableModel = new QmitkModuleTableModel(tableView);
+  auto   sortProxyModel = new QSortFilterProxyModel(tableView);
   sortProxyModel->setSourceModel(tableModel);
   sortProxyModel->setDynamicSortFilter(true);
   tableView->setModel(sortProxyModel);
@@ -56,10 +56,15 @@ void QmitkModuleView::CreateQtPartControl(QWidget *parent)
   tableView->setSortingEnabled(true);
   tableView->sortByColumn(0, Qt::AscendingOrder);
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   // Fixed size for "Id" column
   tableView->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
   // Fixed size for "Version" column
   tableView->horizontalHeader()->setResizeMode(2, QHeaderView::ResizeToContents);
+#else
+  tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+  tableView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+#endif
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->horizontalHeader()->setCascadingSectionResizes(true);
 
@@ -70,12 +75,12 @@ void QmitkModuleView::CreateQtPartControl(QWidget *parent)
     berry::IMemento::Pointer tableHeaderState = viewState->GetChild("tableHeader");
     if (tableHeaderState)
     {
-      std::string key;
+      QString key;
       tableHeaderState->GetString("qsettings-key", key);
-      if (!key.empty())
+      if (!key.isEmpty())
       {
         QSettings settings;
-        QByteArray ba = settings.value(QString::fromStdString(key)).toByteArray();
+        QByteArray ba = settings.value(key).toByteArray();
         tableView->horizontalHeader()->restoreState(ba);
       }
     }
@@ -96,5 +101,5 @@ void QmitkModuleView::SaveState(berry::IMemento::Pointer memento)
   settings.setValue(key, ba);
 
   berry::IMemento::Pointer tableHeaderState = memento->CreateChild("tableHeader");
-  tableHeaderState->PutString("qsettings-key", key.toStdString());
+  tableHeaderState->PutString("qsettings-key", key);
 }

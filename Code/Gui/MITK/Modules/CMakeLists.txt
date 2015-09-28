@@ -12,55 +12,75 @@
 #
 #============================================================================*/
 
-set(MODULE_DIRS
-  niftkCore
-  niftkCoreGui
-  niftkDnDDisplay
-  niftkThumbnail
-)
-
-if(BUILD_MIDAS)
-
-  set(MODULE_DIRS
-    ${MODULE_DIRS}
-    niftkMIDAS
-    niftkMIDASGui
-  )
-
-endif()
+# empty first, more added below, depending on conditions.
+set(MODULE_DIRS )
 
 # will most likely be used by IGI only, but in itself not limited to that.
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
-
   set(MODULE_DIRS
     ${MODULE_DIRS}
-    niftkCUDA
+    CUDA
   )
+endif()
 
+set(MODULE_DIRS
+  ${MODULE_DIRS}
+  Core
+  CoreIO
+  CoreGui
+  DnDDisplay
+  Thumbnail
+)
+
+if(BUILD_MIDAS)
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    MIDAS
+    MIDASGui
+  )
+endif()
+
+if(BUILD_PCL)
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    PCL
+  )
 endif()
 
 if(BUILD_IGI)
-
   set(MODULE_DIRS
     ${MODULE_DIRS}
-    niftkOpenCV
-    niftkIGI
-    niftkIGIGui
+    OpenCVUtils
+    PointReg
+    ICPReg
+    OpenCV
+    IGIServices
+    PointRegService
+    ICPRegService
+    IGI
+    IGIGui
+    IGIDataSources
+    SurfRecon
   )
 
   if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
     set(MODULE_DIRS
       ${MODULE_DIRS}
-      niftkNVidia
-      niftkNVidiaGui
+      NVidia
     )
   endif()
 
   set(MODULE_DIRS
     ${MODULE_DIRS}
-    niftkIGIGuiManager
+    IGIDataSourcesManager
   )
+endif()
 
+if(BUILD_VL)
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    VL
+  )
 endif()
 
 foreach(MODULE_DIR ${MODULE_DIRS})

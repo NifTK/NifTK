@@ -12,13 +12,6 @@
 #
 #============================================================================*/
 
-macro(NIFTK_ADD_MODULE module_name)
-  include(${${PROJECT_NAME}_MODULES_CONF_DIR}/${module_name}Config.cmake)
-  list(APPEND HELPER_APP_INCLUDE_DIRECTORIES ${${module_name}_INCLUDE_DIRS})
-  list(APPEND HELPER_APP_LINK_DIRECTORIES ${${module_name}_LIBRARY_DIRS})
-  list(APPEND HELPER_APP_LIBRARIES ${${module_name}_PROVIDES})
-endmacro()
-
 set(HELPER_APP_INCLUDE_DIRECTORIES "")
 set(HELPER_APP_LINK_DIRECTORIES "")
 set(HELPER_APP_LIBRARIES "")
@@ -38,16 +31,21 @@ if(BUILD_IGI)
 
   list(APPEND HELPER_APPS_REQUIRED_MODULES
     niftkCore
+    niftkOpenCVUtils
     niftkOpenCV 
     niftkIGI
     niftkIGIGui
+    niftkICPReg
+    niftkSurfRecon
+    niftkPointReg
   )
 endif()
 
-# This sets up all the include and library folders using the above macro.
-foreach(MOD ${HELPER_APPS_REQUIRED_MODULES})
-  NIFTK_ADD_MODULE(${MOD})
-endforeach()
+if(BUILD_PCL)
+  list(APPEND HELPER_APPS_REQUIRED_MODULES
+    niftkPCL
+  )
+endif()
 
 set(HELPER_APPS
   # Add apps that DO NOT depend on BUILD_IGI here.
@@ -55,12 +53,11 @@ set(HELPER_APPS
 if(BUILD_IGI)
   set(HELPER_APPS
     ${HELPER_APPS}
-  )  
+  )
   if(BUILD_PCL)
     set(HELPER_APPS
       ${HELPER_APPS}
-      niftkPointCloudWrite
-    )    
+    )
   endif()
 endif()
 
@@ -69,37 +66,44 @@ endif()
 # niftkIGI but don't get pulled into the include path 
 # properly, so I've done them one by one 
 ##########################################################
-include (${MITK_DIR}/MITKConfig.cmake)
-include (${MITK_DIR}/modulesConf/CppMicroServicesConfig.cmake)
-include (${MITK_DIR}/modulesConf/mbilogConfig.cmake)
-include (${MITK_DIR}/modulesConf/MitkCoreConfig.cmake)
-include (${MITK_DIR}/modulesConf/MitkLegacyIOConfig.cmake)
-include (${MITK_DIR}/modulesConf/MitkTestingHelperConfig.cmake)
-include (${CppUnit_DIR}/CppUnitConfig.cmake)
-include (${tinyxml_DIR}/tinyxmlConfig.cmake)
+include(${MITK_DIR}/MITKConfig.cmake)
+include(${MITK_DIR}/Modules/CppMicroServices/CppMicroServicesConfig.cmake)
+include(${MITK_DIR}/Utilities/mbilog/mbilogConfig.cmake)
+include(${CppUnit_DIR}/CppUnitConfig.cmake)
+include(${tinyxml_DIR}/tinyxmlConfig.cmake)
 
-list(APPEND HELPER_APP_INCLUDE_DIRECTORIES  
+list(APPEND HELPER_APP_INCLUDE_DIRECTORIES
   ${MITK_INCLUDE_DIRS} 
   ${MitkCore_INCLUDE_DIRS}
   ${MitkLegacyIO_INCLUDE_DIRS}
   ${MitkExt_INCLUDE_DIRS}
-  ${MitkTestingHelper_INCLUDE_DIRS} 
-  ${CppMicroServices_INCLUDE_DIRS} 
+  ${MitkTestingHelper_INCLUDE_DIRS}
+  ${CppMicroServices_INCLUDE_DIRS}
   ${CppUnit_INCLUDE_DIRS}
-  ${mbilog_INCLUDE_DIRS} 
-  ${tinyxml_INCLUDE_DIRS}   
+  ${mbilog_INCLUDE_DIRS}
+  ${tinyxml_INCLUDE_DIRS}
   ${${PROJECT_NAME}_MODULES_CONF_DIR}
 )
 
-list(APPEND HELPER_APP_LINK_DIRECTORIES     
+list(APPEND HELPER_APP_LINK_DIRECTORIES
 )
 
 list(APPEND HELPER_APP_LIBRARIES
-  niftkcommon 
-  niftkOpenCV 
+  niftkcommon
+  niftkOpenCVUtils
+  niftkOpenCV
   niftkIGIGui
+  niftkPointReg
+  niftkSurfRecon
+  niftkICPReg
   MitkLegacyIO
 )
+
+if(BUILD_PCL)
+  list(APPEND HELPER_APP_LIBRARIES
+    niftkPCL
+  )
+endif()
 
 list(REMOVE_DUPLICATES HELPER_APP_INCLUDE_DIRECTORIES)
 list(REMOVE_DUPLICATES HELPER_APP_LINK_DIRECTORIES)
@@ -129,6 +133,7 @@ if(SlicerExecutionModel_FOUND)
       niftkCameraCalibration
       niftkCorrectVideoDistortion
       niftkProject3DPointsToStereoPair
+      niftkReviewVideoData
       niftkHandeyeCalibration
       niftkHandeyeCalibrationFromDirectory
       niftkHandeyeCalibrationUsingRegistration
@@ -137,6 +142,7 @@ if(SlicerExecutionModel_FOUND)
       niftkTwoTrackerAnalysis
       niftkProjectTrackedPointsOnStereoVideo
       niftkPickPointsOnStereoVideo
+      niftkMakeMaskImagesFromStereoVideo
       niftkSplitVideo
       niftkFindAndTriangulateCrossHair
       niftkVideoToImages
@@ -162,12 +168,14 @@ if(SlicerExecutionModel_FOUND)
       niftkBifurcationToPointSet
       niftkMakeLapUSProbeAprilTagsModel
       niftkMakeLapUSProbeSimulationData
+      niftkImageFeatureMatching
+      niftkVideoTestClient
     )
-    
+
     if(BUILD_PCL)
       set(SLICER_HELPER_APPS
         ${SLICER_HELPER_APPS}
-        FitPlaneToPointCloud
+        niftkFitPlaneToPointCloud
       )
     endif()
 
@@ -178,14 +186,31 @@ if(SlicerExecutionModel_FOUND)
       )
     endif()
 
-  endif()  
+  endif()
+
+  set(SLICER_HELPER_APP_LIBRARIES
+    ${HELPER_APP_LIBRARIES}
+    ${Boost_LIBRARIES}
+  )
+
+  if(BUILD_IGI)
+    list(APPEND SLICER_HELPER_APP_LIBRARIES
+      niftkVTK
+    )
+  endif()
 
   foreach(APP ${SLICER_HELPER_APPS})
     NIFTK_CREATE_COMMAND_LINE_APPLICATION(
       NAME ${APP}
       BUILD_SLICER
       INSTALL_SCRIPT
-      TARGET_LIBRARIES ${HELPER_APP_LIBRARIES}
+      TARGET_LIBRARIES ${SLICER_HELPER_APP_LIBRARIES}
     )
   endforeach()
+
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # Suppress warning because of a bug in the Boost gil library.
+    set_target_properties(niftkImageFeatureMatching PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
+  endif()
+
 endif()

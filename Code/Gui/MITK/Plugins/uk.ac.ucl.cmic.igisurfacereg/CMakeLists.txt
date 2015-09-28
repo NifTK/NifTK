@@ -14,10 +14,10 @@
 
 project(uk_ac_ucl_cmic_igisurfacereg)
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
+mitk_create_plugin(
   EXPORT_DIRECTIVE SURFACEREG_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS niftkIGIGui niftkCoreGui
+  MODULE_DEPENDS niftkIGIGui niftkICPReg
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

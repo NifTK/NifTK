@@ -12,76 +12,84 @@
 #
 #============================================================================*/
 
+if (NOT NiftyReg_FOUND)
 
-set(NIFTYREG_FOUND 0)
+  set(NiftyReg_DIR @NiftyReg_DIR@ CACHE PATH "Directory containing NiftyReg installation" FORCE)
 
-if(NOT NIFTYREG_DIR)
-  set(NIFTYREG_DIR ${NIFTK_LINK_PREFIX}/nifty_reg CACHE PATH "Directory containing NiftyReg installation")
-else(NOT NIFTYREG_DIR)
-  set(NIFTYREG_DIR @NIFTYREG_DIR@ CACHE PATH "Directory containing NiftyReg installation")
-endif(NOT NIFTYREG_DIR)
+  # disabled for now: niftyreg is never build with cuda enabled.
+  # so the gpu-related files will never be found.
+  # https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2764
+  if(FALSE AND CUDA_FOUND)
 
-# disabled for now: niftyreg is never build with cuda enabled.
-# so the gpu-related files will never be found.
-# https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2764
-if(FALSE AND CUDA_FOUND)
-
-  find_path(NIFTYREG_INCLUDE_DIR
-    NAME _reg_tools_gpu.h
-    PATHS ${NIFTYREG_DIR}/include
-    NO_DEFAULT_PATH
+    find_path(NiftyReg_INCLUDE_DIR
+      NAME _reg_tools_gpu.h
+      PATHS ${NiftyReg_DIR}/include
+      NO_DEFAULT_PATH
     )
 
-  find_library(NIFTYREG_TOOLS_LIBRARY
-    NAMES _reg_tools_gpu
-    PATHS ${NIFTYREG_DIR}/lib
-    NO_DEFAULT_PATH
+    find_library(NiftyReg_TOOLS_LIBRARY
+      NAMES _reg_tools_gpu _reg_tools_gpu${NiftyReg_DEBUG_POSTFIX}
+      PATHS ${NiftyReg_DIR}/lib
+      NO_DEFAULT_PATH
     )
 
-else()
+  else()
 
-  find_path(NIFTYREG_INCLUDE_DIR
-    NAME _reg_tools.h
-    PATHS ${NIFTYREG_DIR}/include
-    NO_DEFAULT_PATH
+    find_path(NiftyReg_INCLUDE_DIR
+      NAME _reg_tools.h
+      PATHS ${NiftyReg_DIR}/include
+      NO_DEFAULT_PATH
     )
 
-  find_library(NIFTYREG_TOOLS_LIBRARY
-    NAMES _reg_tools
-    PATHS ${NIFTYREG_DIR}/lib
-    NO_DEFAULT_PATH
+    find_library(NiftyReg_TOOLS_LIBRARY
+      NAMES _reg_tools _reg_tools${NiftyReg_DEBUG_POSTFIX}
+      PATHS ${NiftyReg_DIR}/lib
+      NO_DEFAULT_PATH
     )
+
+  endif()
+
+  if(NiftyReg_TOOLS_LIBRARY AND NiftyReg_INCLUDE_DIR)
+    set(NiftyReg_FOUND 1)
+
+    foreach (_library
+        _reg_KLdivergence
+        _reg_blockMatching
+        _reg_femTransformation
+        _reg_globalTransformation
+        _reg_localTransformation
+        _reg_maths
+        _reg_mutualinformation
+        _reg_resampling
+        _reg_ssd
+        _reg_tools
+        _reg_lncc
+        _reg_ReadWriteImage
+        reg_png
+        png
+        reg_nrrd
+        reg_NrrdIO
+        z
+      )
+
+      find_library(_library_with_postfix
+        NAMES ${_library} ${_library}${NiftyReg_DEBUG_POSTFIX}
+        PATHS ${NiftyReg_DIR}/lib
+        NO_DEFAULT_PATH
+      )
+
+      set(NiftyReg_LIBRARIES ${NiftyReg_LIBRARIES} ${_library_with_postfix}})
+
+    endforeach()
+
+    get_filename_component( NiftyReg_LIBRARY_DIR ${NiftyReg_TOOLS_LIBRARY} PATH )
+
+    message( "NiftyReg_INCLUDE_DIR: ${NiftyReg_INCLUDE_DIR}" )
+    message( "NiftyReg_LIBRARY_DIR: ${NiftyReg_LIBRARY_DIR}" )
+    message( "NiftyReg_LIBRARIES: ${NiftyReg_LIBRARIES}" )
+
+  else()
+    message( FATAL_ERROR "ERROR: NiftyReg not Found" )
+  endif()
 
 endif()
-
-if(NIFTYREG_TOOLS_LIBRARY AND NIFTYREG_INCLUDE_DIR)
-  set(NIFTYREG_FOUND 1)
-
-  set(NIFTYREG_LIBRARIES
-    _reg_KLdivergence
-    _reg_blockMatching
-    _reg_femTransformation
-    _reg_globalTransformation
-    _reg_localTransformation
-    _reg_maths
-    _reg_resampling
-    _reg_ssd
-    _reg_tools
-    _reg_lncc
-    _reg_ReadWriteImage
-    reg_png
-    png
-    reg_nrrd
-    reg_NrrdIO
-    z
-    )
-
-  get_filename_component( NIFTYREG_LIBRARY_DIR ${NIFTYREG_TOOLS_LIBRARY} PATH )
-
-  message( "NIFTYREG_INCLUDE_DIR: ${NIFTYREG_INCLUDE_DIR}" )
-  message( "NIFTYREG_LIBRARY_DIR: ${NIFTYREG_LIBRARY_DIR}" )
-  message( "NIFTYREG_LIBRARIES: ${NIFTYREG_LIBRARIES}" )
-
-else(NIFTYREG_TOOLS_LIBRARY AND NIFTYREG_INCLUDE_DIR)
-  message( FATAL_ERROR "ERROR: NiftyReg not Found" )
-endif(NIFTYREG_TOOLS_LIBRARY AND NIFTYREG_INCLUDE_DIR)

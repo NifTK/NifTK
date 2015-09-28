@@ -32,7 +32,7 @@ QmitkMIDASQCPerspective::QmitkMIDASQCPerspective(const QmitkMIDASQCPerspective& 
 //-----------------------------------------------------------------------------
 void QmitkMIDASQCPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
 {
-  std::string editorArea = layout->GetEditorArea();
+  QString editorArea = layout->GetEditorArea();
 
   layout->AddView("org.mitk.views.datamanager",
     berry::IPageLayout::LEFT, 0.12f, editorArea);

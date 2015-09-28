@@ -16,30 +16,27 @@ project(uk_ac_ucl_cmic_breastsegmentation)
 
 find_package(NiftySeg)
 
-if(NIFTYSEG_FOUND)
+if(NiftySeg_FOUND)
 
-  include_directories(${NIFTYSEG_INCLUDE_DIR})
+  include_directories(${NiftySeg_INCLUDE_DIR})
   add_definitions(-DUSE_NIFTYSEG)
   set(NIFTYSEG_NVCC_FLAGS "${NIFTYSEG_NVCC_FLAGS};-DUSE_NIFTYSEG")
 
-  MACRO_CREATE_MITK_CTK_PLUGIN(
+  mitk_create_plugin(
     EXPORT_DIRECTIVE BREASTSEGMENTATION_EXPORT
     EXPORTED_INCLUDE_SUFFIXES src
     MODULE_DEPENDS MitkQtWidgetsExt niftkCore niftkCoreGui
     )
 
-  target_link_libraries(${PROJECT_NAME}
-    niftkITK
-    ${NIFTYSEG_LIBRARIES}
-    )
+  target_link_libraries(${PROJECT_NAME} PRIVATE niftkITK ${NiftySeg_LIBRARIES})
 
   if (NIFTK_USE_COTIRE AND COMMAND cotire)
     cotire(uk_ac_ucl_cmic_breastsegmentation)
   endif()
 
-else(NIFTYSEG_FOUND)
+else()
 
   message("Didn't find NiftySeg so cannot build breast segmentation plugin")
 
-endif(NIFTYSEG_FOUND)
+endif()
 

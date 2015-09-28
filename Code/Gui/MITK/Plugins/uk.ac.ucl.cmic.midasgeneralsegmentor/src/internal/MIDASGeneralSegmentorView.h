@@ -308,6 +308,11 @@ protected:
   /// \see mitk::ILifecycleAwarePart::PartHidden
   virtual void Hidden();
 
+  /// \brief Registers the tools provided by this view.
+  /// Registers the draw, seed, poly and posn tools.
+  /// \param toolManager the tool manager where the tools should be registered
+  void RegisterTools(mitk::ToolManager::Pointer toolManager) override;
+
   /// \brief Called by framework, this method creates all the controls for this view.
   virtual void CreateQtPartControl(QWidget *parent);
 
@@ -336,7 +341,7 @@ protected:
 
   /// \brief Returns the name of the preferences node to look up.
   /// \see QmitkMIDASBaseSegmentationFunctionality::GetPreferencesNodeName
-  virtual std::string GetPreferencesNodeName() { return MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
+  virtual QString GetPreferencesNodeName() { return MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
 
   /// \brief This view registers with the mitk::DataStorage and listens for changing
   /// data, so this method is called when any node is changed, but only performs an update,

@@ -261,7 +261,7 @@ int main(int argc, char** argv)
 
   if (outputTrackingPointSet.size() > 0)
   {
-    mitk::IOUtil::SavePointSet(mitkPoints, outputTrackingPointSet);
+    mitk::IOUtil::Save(mitkPoints, outputTrackingPointSet);
     std::cout << "written tracking point set to = " << outputTrackingPointSet << std::endl;
   }
 

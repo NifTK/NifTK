@@ -31,8 +31,10 @@ QmitkBaseApplication::QmitkBaseApplication(const QmitkBaseApplication& other)
 
 
 //-----------------------------------------------------------------------------
-int QmitkBaseApplication::Start()
+QVariant QmitkBaseApplication::Start(berry::IApplicationContext* context)
 {
+  Q_UNUSED(context);
+
   berry::Display* display = berry::PlatformUI::CreateDisplay();
 
   int code = berry::PlatformUI::CreateAndRunWorkbench(display, this->GetWorkbenchAdvisor());

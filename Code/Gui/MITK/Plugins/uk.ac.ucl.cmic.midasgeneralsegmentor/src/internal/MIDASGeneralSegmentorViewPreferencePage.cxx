@@ -27,7 +27,7 @@
 
 #include <QmitkMIDASBaseSegmentationFunctionality.h>
 
-const std::string MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasgeneralsegmentor");
+const QString MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasgeneralsegmentor");
 
 //-----------------------------------------------------------------------------
 MIDASGeneralSegmentorViewPreferencePage::MIDASGeneralSegmentorViewPreferencePage()
@@ -65,9 +65,7 @@ void MIDASGeneralSegmentorViewPreferencePage::Init(berry::IWorkbench::Pointer )
 void MIDASGeneralSegmentorViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_MIDASGeneralSegmentorViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 
@@ -109,8 +107,8 @@ QWidget* MIDASGeneralSegmentorViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorViewPreferencePage::PerformOk()
 {
-  m_MIDASGeneralSegmentorViewPreferencesNode->Put(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet.toStdString());
-  m_MIDASGeneralSegmentorViewPreferencesNode->PutByteArray(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, m_DefaultColor);
+  m_MIDASGeneralSegmentorViewPreferencesNode->Put(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet);
+  m_MIDASGeneralSegmentorViewPreferencesNode->Put(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, m_DefaultColor);
 
   return true;
 }
@@ -126,8 +124,8 @@ void MIDASGeneralSegmentorViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorViewPreferencePage::Update()
 {
-  m_DefauleColorStyleSheet = QString::fromStdString(m_MIDASGeneralSegmentorViewPreferencesNode->Get(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, ""));
-  m_DefaultColor = m_MIDASGeneralSegmentorViewPreferencesNode->GetByteArray(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, "");
+  m_DefauleColorStyleSheet = m_MIDASGeneralSegmentorViewPreferencesNode->Get(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, "");
+  m_DefaultColor = m_MIDASGeneralSegmentorViewPreferencesNode->Get(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, "");
   if (m_DefauleColorStyleSheet=="")
   {
     m_DefauleColorStyleSheet = "background-color: rgb(0,255,0)";
@@ -162,7 +160,7 @@ void MIDASGeneralSegmentorViewPreferencePage::OnDefaultColourChanged()
     QStringList defColor;
     defColor << colour.name();
 
-    m_DefaultColor = defColor.replaceInStrings(";","\\;").join(";").toStdString();
+    m_DefaultColor = defColor.replaceInStrings(";","\\;").join(";");
   }
 }
 

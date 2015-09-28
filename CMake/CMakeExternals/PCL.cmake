@@ -56,12 +56,17 @@ if(BUILD_IGI AND BUILD_PCL)
         -DBoost_USE_STATIC_LIBS:BOOL=${Boost_USE_STATIC_LIBS}
         -DPCL_BUILD_WITH_BOOST_DYNAMIC_LINKING_WIN32:BOOL=NOT ${Boost_USE_STATIC_LIBS}
         -DBUILD_tools:BOOL=OFF
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
     set(PCL_DIR ${proj_INSTALL})
 
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading PCL from ${PCL_DIR}")
 

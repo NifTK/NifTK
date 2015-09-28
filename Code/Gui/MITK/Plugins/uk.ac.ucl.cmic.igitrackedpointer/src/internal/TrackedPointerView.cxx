@@ -133,7 +133,7 @@ void TrackedPointerView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-    m_TipToProbeFileName = prefs->Get(TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME, "").c_str();
+    m_TipToProbeFileName = prefs->Get(TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME, "").toStdString();
     m_TipToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_TipToProbeFileName);
 
     m_UpdateViewCoordinate = prefs->GetBool(TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointer::UPDATE_VIEW_COORDINATE_DEFAULT);
@@ -210,6 +210,10 @@ void TrackedPointerView::OnUpdate(const ctkEvent& event)
   mitk::DataNode::Pointer probeModel = m_Controls->m_ProbeSurfaceNode->GetSelectedNode();
   mitk::DataNode::Pointer probeToWorldTransform = m_Controls->m_ProbeToWorldNode->GetSelectedNode();
   const double *currentCoordinateInModelCoordinates = m_Controls->m_TipOriginSpinBoxes->coordinates();
+
+  // dont move our own output pointset
+  if (probeModel == GetDataStorage()->GetNamedNode(mitk::TrackedPointer::TRACKED_POINTER_POINTSET_NAME))
+    probeModel = mitk::DataNode::Pointer();
 
   if (   probeToWorldTransform.IsNotNull()
       && currentCoordinateInModelCoordinates != NULL)

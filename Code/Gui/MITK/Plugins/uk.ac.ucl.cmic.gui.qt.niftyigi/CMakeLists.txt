@@ -14,7 +14,7 @@
 
 project(uk_ac_ucl_cmic_gui_qt_niftyigi)
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
+mitk_create_plugin(
   EXPORT_DIRECTIVE CMIC_QT_NIFTYIGIAPP
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS niftkCoreGui niftkIGI

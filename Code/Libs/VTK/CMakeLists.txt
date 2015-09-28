@@ -24,6 +24,7 @@ add_library(niftkVTK ${niftkVTK_SRCS})
 
 target_link_libraries(niftkVTK
   ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
+  niftkcommon
   )
 
 if(BUILD_SHARED_LIBS)

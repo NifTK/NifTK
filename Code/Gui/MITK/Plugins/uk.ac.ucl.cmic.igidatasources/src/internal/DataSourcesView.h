@@ -19,6 +19,8 @@
 #include <QmitkIGIDataSourceManager.h>
 #include <berryIBerryPreferences.h>
 #include <ctkDictionary.h>
+#include <service/event/ctkEvent.h>
+
 
 /**
  * \class DataSourcesView
@@ -71,6 +73,9 @@ signals:
   void RecordingStarted(const ctkDictionary&);
 
 protected slots:
+  /** Send by footpedal/hotkey plugin. */
+  void OnRecordingShouldStart(const ctkEvent& event);
+  void OnRecordingShouldStop(const ctkEvent& event);
 
 protected:
 

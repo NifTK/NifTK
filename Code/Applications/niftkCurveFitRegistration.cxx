@@ -30,8 +30,6 @@
 #include <niftkConversionUtils.h>
 #include <niftkCommandLineParser.h>
 
-#include <boost/filesystem.hpp>
-
 
 using namespace std;
 

@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 
     // Here we start creating point data, and we load into this data structure.
     std::vector< std::pair<TimeStampType, cv::Point3d> > pointData;
-
+    std::vector<mitk::ProjectedPointPair> projectedPoints;
     // If we specify a video directory, we extract the points from the video.
     if (videoDirectory.length() != 0)
     {
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
       triangulator->SetVisualise(true);
       triangulator->Triangulate();
 
-      std::vector<mitk::ProjectedPointPair> projectedPoints = triangulator->GetScreenPoints();
+      projectedPoints = triangulator->GetScreenPoints();
       std::vector<mitk::WorldPoint> cameraPoints = triangulator->GetPointsInLeftLensCS();
       assert(projectedPoints.size() == cameraPoints.size());
 
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
 
     } else if (inputVideoData.length() > 0)
     {
-      mitk::LoadTimeStampedPoints(pointData, inputVideoData);
+      mitk::LoadTimeStampedPoints(pointData, projectedPoints, inputVideoData);
     }
 
     calibration->SetPointData(&pointData);

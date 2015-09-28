@@ -1,0 +1,18 @@
+/**
+\page uk_ac_ucl_cmic_riskvisualization Risk Visualization
+
+\image html icon.xpm "Icon of Risk Visualization"
+
+Available sections:
+  - \ref uk_ac_ucl_cmic_riskvisualizationOverview
+
+\section uk_ac_ucl_cmic_riskvisualizationOverview
+Describe the features of your awesome plugin here
+<ul>
+<li>Increases productivity
+<li>Creates beautiful images
+<li>Generates PhD thesis
+<li>Brings world peace
+</ul>
+
+*/

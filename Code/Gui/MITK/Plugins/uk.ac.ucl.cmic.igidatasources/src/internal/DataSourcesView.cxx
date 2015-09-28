@@ -18,6 +18,7 @@
 #include <ctkServiceReference.h>
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
+#include <service/event/ctkEventConstants.h>
 #include "DataSourcesViewActivator.h"
 #include <cassert>
 
@@ -57,6 +58,20 @@ DataSourcesView::~DataSourcesView()
 
 
 //-----------------------------------------------------------------------------
+void DataSourcesView::OnRecordingShouldStart(const ctkEvent& event)
+{
+  m_DataSourceManager->OnRecordStart();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataSourcesView::OnRecordingShouldStop(const ctkEvent& event)
+{
+  m_DataSourceManager->OnStop();
+}
+
+
+//-----------------------------------------------------------------------------
 std::string DataSourcesView::GetViewID() const
 {
   return VIEW_ID;
@@ -85,6 +100,13 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
     ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
     eventAdmin->publishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATE");
     eventAdmin->publishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
+
+    ctkDictionary properties;
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGISTARTRECORDING";
+    eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStart(ctkEvent)), properties);
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGISTOPRECORDING";
+    eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStop(ctkEvent)), properties);
+
   }
 }
 
@@ -102,25 +124,25 @@ void DataSourcesView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-    QString path = QString::fromStdString(prefs->Get("output directory prefix", ""));
+    QString path = prefs->Get("output directory prefix", "");
     if (path == "")
     {
       path = QmitkIGIDataSourceManager::GetDefaultPath();
     }
     QColor errorColour = QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR;
-    QString errorColourName = QString::fromStdString(prefs->GetByteArray("error colour", ""));
+    QString errorColourName = prefs->Get("error colour", "");
     if (errorColourName != "")
     {
       errorColour = QColor(errorColourName);
     }
     QColor warningColour = QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR;
-    QString warningColourName = QString::fromStdString(prefs->GetByteArray("warning colour", ""));
+    QString warningColourName = prefs->Get("warning colour", "");
     if (warningColourName != "")
     {
       warningColour = QColor(warningColourName);
     }
     QColor okColour = QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR;
-    QString okColourName = QString::fromStdString(prefs->GetByteArray("ok colour", ""));
+    QString okColourName = prefs->Get("ok colour", "");
     if (okColourName != "")
     {
       okColour = QColor(okColourName);

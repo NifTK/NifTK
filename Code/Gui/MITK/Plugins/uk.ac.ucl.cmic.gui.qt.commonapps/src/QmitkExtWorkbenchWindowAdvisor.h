@@ -41,18 +41,20 @@ public:
     QmitkExtWorkbenchWindowAdvisor(berry::WorkbenchAdvisor* wbAdvisor,
         berry::IWorkbenchWindowConfigurer::Pointer configurer);
 
-    berry::ActionBarAdvisor::Pointer CreateActionBarAdvisor(
-        berry::IActionBarConfigurer::Pointer configurer);
+    ~QmitkExtWorkbenchWindowAdvisor();
 
-    void* CreateEmptyWindowContents(void* parent);
+    berry::SmartPointer<berry::ActionBarAdvisor> CreateActionBarAdvisor(
+        berry::SmartPointer<berry::IActionBarConfigurer> configurer) override;
 
-    void PostWindowCreate();
+    QWidget* CreateEmptyWindowContents(QWidget* parent) override;
 
-    void PreWindowOpen();
+    void PostWindowCreate() override;
 
-    void PostWindowOpen();
+    void PreWindowOpen() override;
 
-    void PostWindowClose();
+    void PostWindowOpen() override;
+
+    void PostWindowClose() override;
 
     void ShowViewToolbar(bool show);
 
@@ -70,15 +72,19 @@ public:
 
     bool GetShowClosePerspectiveMenuItem();
 
+    void ShowMemoryIndicator(bool show);
+
+    bool GetShowMemoryIndicator();
+
     //TODO should be removed when product support is here
-    void SetProductName(const std::string& product);
-    void SetWindowIcon(const std::string& wndIcon);
+    void SetProductName(const QString& product);
+    void SetWindowIcon(const QString& wndIcon);
 
-    void SetPerspectiveExcludeList(std::vector<std::string> v);
-    std::vector<std::string> GetPerspectiveExcludeList();
+    void SetPerspectiveExcludeList(const QList<QString> &v);
+    QList<QString> GetPerspectiveExcludeList();
 
-    void SetViewExcludeList(std::vector<std::string> v);
-    std::vector<std::string> GetViewExcludeList();
+    void SetViewExcludeList(const QList<QString> &v);
+    QList<QString> GetViewExcludeList();
 
 protected slots:
 
@@ -96,7 +102,7 @@ private:
    */
   void HookTitleUpdateListeners(berry::IWorkbenchWindowConfigurer::Pointer configurer);
 
-  std::string ComputeTitle();
+  QString ComputeTitle();
 
   void RecomputeTitle();
 
@@ -109,25 +115,27 @@ private:
    */
   void UpdateTitle(bool editorHidden);
 
-  void PropertyChange(berry::Object::Pointer /*source*/, int propId);
+  void PropertyChange(const berry::Object::Pointer& /*source*/, int propId);
 
   static QString QT_SETTINGS_FILENAME;
 
-  berry::IPartListener::Pointer titlePartListener;
-  berry::IPerspectiveListener::Pointer titlePerspectiveListener;
-  berry::IPerspectiveListener::Pointer menuPerspectiveListener;
-  berry::IPartListener::Pointer imageNavigatorPartListener;
-  berry::IPropertyChangeListener::Pointer editorPropertyListener;
+  QScopedPointer<berry::IPartListener> titlePartListener;
+  QScopedPointer<berry::IPerspectiveListener> titlePerspectiveListener;
+  QScopedPointer<berry::IPerspectiveListener> menuPerspectiveListener;
+  QScopedPointer<berry::IPartListener> imageNavigatorPartListener;
+  QScopedPointer<berry::IPartListener> viewNavigatorPartListener;
+  QScopedPointer<berry::IPropertyChangeListener> editorPropertyListener;
   friend struct berry::PropertyChangeIntAdapter<QmitkExtWorkbenchWindowAdvisor>;
   friend class PartListenerForTitle;
   friend class PerspectiveListenerForTitle;
   friend class PerspectiveListenerForMenu;
   friend class PartListenerForImageNavigator;
+  friend class PartListenerForViewNavigator;
 
   berry::IEditorPart::WeakPtr lastActiveEditor;
   berry::IPerspectiveDescriptor::WeakPtr lastPerspective;
   berry::IWorkbenchPage::WeakPtr lastActivePage;
-  std::string lastEditorTitle;
+  QString lastEditorTitle;
   berry::IAdaptable* lastInput;
 
   berry::WorkbenchAdvisor* wbAdvisor;
@@ -138,20 +146,22 @@ private:
   bool showViewMenuItem;
   bool showNewWindowMenuItem;
   bool showClosePerspectiveMenuItem;
-  std::string productName;
-  std::string windowIcon;
+  bool viewNavigatorFound;
+  bool showMemoryIndicator;
+  QString productName;
+  QString windowIcon;
 
   // enables DnD on the editor area
-  berry::IDropTargetListener::Pointer dropTargetListener;
+  QScopedPointer<berry::IDropTargetListener> dropTargetListener;
 
   // stringlist for excluding perspectives from the perspective menu entry (e.g. Welcome Perspective)
-  std::vector<std::string> perspectiveExcludeList;
+  QList<QString> perspectiveExcludeList;
 
   // stringlist for excluding views from the menu entry
-  std::vector<std::string> viewExcludeList;
+  QList<QString> viewExcludeList;
 
   // maps perspective ids to QAction objects
-  std::map<std::string, QAction*> mapPerspIdToAction;
+  QHash<QString, QAction*> mapPerspIdToAction;
 
   // actions which will be enabled/disabled depending on the application state
   QList<QAction*> viewActions;
@@ -160,6 +170,7 @@ private:
   QAction* undoAction;
   QAction* redoAction;
   QAction* imageNavigatorAction;
+  QAction* viewNavigatorAction;
   QAction* resetPerspAction;
   QAction* closePerspAction;
   QAction* openDicomEditorAction;

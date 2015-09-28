@@ -102,6 +102,11 @@ protected slots:
 
 protected:
 
+  /// \brief Registers the tools provided by this view.
+  /// Registers the paintbrush tool.
+  /// \param toolManager the tool manager where the tools should be registered
+  void RegisterTools(mitk::ToolManager::Pointer toolManager) override;
+
   /// \brief Called by framework, this method creates all the controls for this view
   virtual void CreateQtPartControl(QWidget *parent);
 
@@ -136,7 +141,7 @@ protected:
   virtual void NodeRemoved(const mitk::DataNode* node);
 
   /// \brief Returns the name of the preferences node to look up.
-  virtual std::string GetPreferencesNodeName() { return MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
+  virtual QString GetPreferencesNodeName() { return MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
 
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);

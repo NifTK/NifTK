@@ -27,7 +27,6 @@
 #include <itkBreastMaskSegmForBreastDensity.h>
 #include <itkRescaleImageUsingHistogramPercentilesFilter.h>
 
-#include <boost/filesystem.hpp>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
@@ -71,6 +70,7 @@ struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_STRING, "omaxClosed", "filename", "Output the maximum closed image."},
   {OPT_STRING, "obgnd", "filename", "Output the background mask."},
   {OPT_STRING, "oelevation", "filename", "Output the skin elevation map."},
+  {OPT_STRING, "osknb", "filename", "Output the skin surface mask (no breasts)."},
   {OPT_STRING, "ochpts", "filename", "Output the chest surface points image."},
 
   {OPT_FLOAT,  "pecSpacing", "distance", "The control point spacing to use for the pectoral surface b-spline fit in mm [30]."},
@@ -146,6 +146,7 @@ enum {
   O_OUTPUT_IMAGE_MAX_CLOSED,
   O_OUTPUT_BACKGROUND,
   O_OUTPUT_ELEVATION,
+  O_OUTPUT_SKIN_SURFACE_NO_BREASTS,
   O_OUTPUT_CHEST_POINTS,
 
   O_PECTORAL_CONTROL_POINT_SPACING,
@@ -226,6 +227,7 @@ int main( int argc, char *argv[] )
   std::string fileOutputMaxClosedImage;
   std::string fileOutputBackground;
   std::string fileOutputSkinElevationMap;
+  std::string fileOutputSkinSurfaceNoBreasts;
   std::string fileOutputPectoralSurfaceMask;
   std::string fileOutputChestPoints;
   std::string fileOutputPectoral;
@@ -308,17 +310,18 @@ int main( int argc, char *argv[] )
   CommandLineOptions.GetArgument( O_OUTPUT_BIFS, fileOutputBIFs );
   CommandLineOptions.GetArgument( O_BIF_SIGMA, sigmaBIF );
 
-  CommandLineOptions.GetArgument( O_OUTPUT_SMOOTHED_STRUCTURAL, fileOutputSmoothedStructural );
-  CommandLineOptions.GetArgument( O_OUTPUT_SMOOTHED_FATSAT,     fileOutputSmoothedFatSat );
-  CommandLineOptions.GetArgument( O_OUTPUT_CLOSED_STRUCTURAL,   fileOutputClosedStructural );
-  CommandLineOptions.GetArgument( O_OUTPUT_HISTOGRAM,           fileOutputCombinedHistogram );
-  CommandLineOptions.GetArgument( O_OUTPUT_FIT,                 fileOutputRayleigh );
-  CommandLineOptions.GetArgument( O_OUTPUT_CDF,                 fileOutputFreqLessBgndCDF );
-  CommandLineOptions.GetArgument( O_OUTPUT_IMAGE_MAX,           fileOutputMaxImage );
-  CommandLineOptions.GetArgument( O_OUTPUT_IMAGE_MAX_CLOSED,    fileOutputMaxClosedImage );
-  CommandLineOptions.GetArgument( O_OUTPUT_BACKGROUND,          fileOutputBackground );
-  CommandLineOptions.GetArgument( O_OUTPUT_ELEVATION,           fileOutputSkinElevationMap );
-  CommandLineOptions.GetArgument( O_OUTPUT_CHEST_POINTS,        fileOutputChestPoints );
+  CommandLineOptions.GetArgument( O_OUTPUT_SMOOTHED_STRUCTURAL,     fileOutputSmoothedStructural );
+  CommandLineOptions.GetArgument( O_OUTPUT_SMOOTHED_FATSAT,         fileOutputSmoothedFatSat );
+  CommandLineOptions.GetArgument( O_OUTPUT_CLOSED_STRUCTURAL,       fileOutputClosedStructural );
+  CommandLineOptions.GetArgument( O_OUTPUT_HISTOGRAM,               fileOutputCombinedHistogram );
+  CommandLineOptions.GetArgument( O_OUTPUT_FIT,                     fileOutputRayleigh );
+  CommandLineOptions.GetArgument( O_OUTPUT_CDF,                     fileOutputFreqLessBgndCDF );
+  CommandLineOptions.GetArgument( O_OUTPUT_IMAGE_MAX,               fileOutputMaxImage );
+  CommandLineOptions.GetArgument( O_OUTPUT_IMAGE_MAX_CLOSED,        fileOutputMaxClosedImage );
+  CommandLineOptions.GetArgument( O_OUTPUT_BACKGROUND,              fileOutputBackground );
+  CommandLineOptions.GetArgument( O_OUTPUT_ELEVATION,               fileOutputSkinElevationMap );
+  CommandLineOptions.GetArgument( O_OUTPUT_SKIN_SURFACE_NO_BREASTS, fileOutputSkinSurfaceNoBreasts );
+  CommandLineOptions.GetArgument( O_OUTPUT_CHEST_POINTS,            fileOutputChestPoints );
 
   CommandLineOptions.GetArgument( O_PECTORAL_CONTROL_POINT_SPACING, pecControlPointSpacing );
   CommandLineOptions.GetArgument( O_OUTPUT_PECTORAL_MASK,           fileOutputPectoral );
@@ -409,6 +412,7 @@ int main( int argc, char *argv[] )
   breastMaskSegmentor->SetOutputImageMaxClosed( fileOutputMaxClosedImage );
   breastMaskSegmentor->SetOutputBackground( fileOutputBackground );
   breastMaskSegmentor->SetOutputSkinElevationMap( fileOutputSkinElevationMap );
+  breastMaskSegmentor->SetOutputSkinSurfaceNoBreasts( fileOutputSkinSurfaceNoBreasts );
   breastMaskSegmentor->SetOutputChestPoints( fileOutputChestPoints );
 
   breastMaskSegmentor->SetPectoralControlPointSpacing( pecControlPointSpacing );

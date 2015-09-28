@@ -15,9 +15,11 @@
 #include "QmitkCommonAppsApplicationPlugin.h"
 #include "QmitkCommonAppsApplicationPreferencePage.h"
 #include "QmitkNiftyViewApplicationPreferencePage.h"
-
 #include "internal/QmitkAppInstancesPreferencePage.h"
 #include "internal/QmitkModuleView.h"
+
+#include <berryPlatform.h>
+#include <berryIPreferencesService.h>
 
 #include <mitkCoreServices.h>
 #include <mitkDataNodeFactory.h>
@@ -38,8 +40,6 @@
 #include <mitkVtkResliceInterpolationProperty.h>
 
 #include <berryPlatformUI.h>
-
-#include <Poco/Util/OptionProcessor.h>
 
 #include <itkStatisticsImageFilter.h>
 #include <itkCommand.h>
@@ -182,14 +182,9 @@ void QmitkCommonAppsApplicationPlugin::start(ctkPluginContext* context)
     connect(qApp, SIGNAL(messageReceived(QByteArray)), this, SLOT(handleIPCMessage(QByteArray)));
   }
 
-  std::vector<std::string> args = berry::Platform::GetApplicationArgs();
-  QStringList qargs;
-  for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); ++it)
-  {
-    qargs << QString::fromStdString(*it);
-  }
+  QStringList args = berry::Platform::GetApplicationArgs();
   // This is a potentially long running operation.
-  LoadDataFromDisk(qargs, true);
+  LoadDataFromDisk(args, true);
 }
 
 
@@ -287,9 +282,7 @@ void QmitkCommonAppsApplicationPlugin::RegisterHelpSystem()
 void QmitkCommonAppsApplicationPlugin::BlankDepartmentalLogo()
 {
   // Blank the departmental logo for now.
-  berry::IPreferencesService::Pointer prefService =
-  berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   berry::IPreferences::Pointer logoPref = prefService->GetSystemPreferences()->Node("org.mitk.editors.stdmultiwidget");
   logoPref->Put("DepartmentLogo", "");
@@ -393,38 +386,35 @@ QmitkCommonAppsApplicationPlugin
 
 
 //-----------------------------------------------------------------------------
-berry::IPreferences* QmitkCommonAppsApplicationPlugin::GetPreferencesNode(
-    const std::string& preferencesNodeName)
+berry::IPreferences::Pointer QmitkCommonAppsApplicationPlugin::GetPreferencesNode(const QString& preferencesNodeName)
 {
   berry::IPreferences::Pointer result(NULL);
 
-  berry::IPreferencesService::Pointer prefService =
-  berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
-  if (prefService.IsNotNull())
+  if (prefService)
   {
     result = prefService->GetSystemPreferences()->Node(preferencesNodeName);
   }
 
-  return result.GetPointer();
+  return result;
 }
 
 //-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
-    const std::string& preferencesNodeName, mitk::DataNode *node)
+    const QString& preferencesNodeName, mitk::DataNode *node)
 {
   if (mitk::IsNodeAGreyScaleImage(node))
   {
     mitk::Image::ConstPointer image = dynamic_cast<mitk::Image*>(node->GetData());
-    berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
+    berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
 
-    if (prefNode != NULL && image.IsNotNull())
+    if (prefNode.IsNotNull() && image.IsNotNull())
     {
       int minRange = prefNode->GetDouble(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME, 0);
       int maxRange = prefNode->GetDouble(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME, 0);
       double percentageOfRange = prefNode->GetDouble(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE_NAME, 50);
-      std::string initialisationMethod = prefNode->Get(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_METHOD_NAME, QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_MIDAS);
+      QString initialisationMethod = prefNode->Get(QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_METHOD_NAME, QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_MIDAS);
 
       float minDataLimit(0);
       float maxDataLimit(0);
@@ -595,12 +585,12 @@ QmitkLookupTableProviderService* QmitkCommonAppsApplicationPlugin::GetLookupTabl
 
 
 //-----------------------------------------------------------------------------
-void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(const std::string& preferencesNodeName, mitk::DataNode *node)
+void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(const QString& preferencesNodeName, mitk::DataNode *node)
 {
   if (mitk::IsNodeAGreyScaleImage(node))
   {
-    berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
-    if (prefNode != NULL)
+    berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
+    if (prefNode.IsNotNull())
     {
       float lowestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_OPACITY, 1);
       float highestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
@@ -641,14 +631,14 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
 
 //-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::RegisterInterpolationProperty(
-    const std::string& preferencesNodeName, mitk::DataNode *node)
+    const QString& preferencesNodeName, mitk::DataNode *node)
 {
   if (mitk::IsNodeAGreyScaleImage(node))
   {
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
-    berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
+    berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
 
-    if (prefNode != NULL && image.IsNotNull())
+    if (prefNode.IsNotNull() && image.IsNotNull())
     {
 
       int imageResliceInterpolation =  prefNode->GetInt(QmitkCommonAppsApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 2);
@@ -685,14 +675,14 @@ void QmitkCommonAppsApplicationPlugin::RegisterInterpolationProperty(
 
 
 //-----------------------------------------------------------------------------
-void QmitkCommonAppsApplicationPlugin::RegisterBinaryImageProperties(const std::string& preferencesNodeName, mitk::DataNode *node)
+void QmitkCommonAppsApplicationPlugin::RegisterBinaryImageProperties(const QString& preferencesNodeName, mitk::DataNode *node)
 {
   if (mitk::IsNodeABinaryImage(node))
   {
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
-    berry::IPreferences* prefNode = this->GetPreferencesNode(preferencesNodeName);
+    berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
 
-    if (prefNode != NULL && image.IsNotNull())
+    if (prefNode.IsNotNull() && image.IsNotNull())
     {
       double defaultBinaryOpacity = prefNode->GetDouble(QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_NAME, QmitkCommonAppsApplicationPreferencePage::BINARY_OPACITY_VALUE);
       node->SetOpacity(defaultBinaryOpacity);
@@ -706,9 +696,7 @@ void QmitkCommonAppsApplicationPlugin::RegisterBinaryImageProperties(const std::
 void QmitkCommonAppsApplicationPlugin::SetFileOpenTriggersReinit(bool openEditor)
 {
   // Blank the departmental logo for now.
-  berry::IPreferencesService::Pointer prefService =
-  berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   berry::IPreferences::Pointer generalPrefs = prefService->GetSystemPreferences()->Node("/General");
   generalPrefs->PutBool("OpenEditor", openEditor);
@@ -1114,9 +1102,9 @@ void QmitkCommonAppsApplicationPlugin::startNewInstance(const QStringList &args,
 {
   QStringList newArgs(args);
 #ifdef Q_OS_UNIX
-  newArgs << QString("--") + QString::fromStdString(berry::Platform::ARG_NEWINSTANCE);
+  newArgs << QString("--") + berry::Platform::PROP_NEWINSTANCE;
 #else
-  newArgs << QString("/") + QString::fromStdString(berry::Platform::ARG_NEWINSTANCE);
+  newArgs << QString("/") + berry::Platform::PROP_NEWINSTANCE;
 #endif
   newArgs << files;
   QProcess::startDetached(qApp->applicationFilePath(), newArgs);
@@ -1145,9 +1133,7 @@ void QmitkCommonAppsApplicationPlugin::handleIPCMessage(const QByteArray& msg)
   mainWindow->activateWindow();
 
   // Get the preferences for the instantiation behavior
-  berry::IPreferencesService::Pointer prefService
-      = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node("/General");
   bool newInstanceAlways = prefs->GetBool("newInstance.always", false);
   bool newInstanceScene = prefs->GetBool("newInstance.scene", true);
@@ -1158,19 +1144,12 @@ void QmitkCommonAppsApplicationPlugin::handleIPCMessage(const QByteArray& msg)
   QStringList fileArgs;
   QStringList sceneArgs;
 
-  Poco::Util::OptionSet os;
-  berry::Platform::GetOptionSet(os);
-  Poco::Util::OptionProcessor processor(os);
-#if !defined(POCO_OS_FAMILY_UNIX)
-  processor.setUnixStyle(false);
-#endif
+  QStringList applicationArgs = berry::Platform::GetApplicationArgs();
   args.pop_front();
   QStringList::Iterator it = args.begin();
   while (it != args.end())
   {
-    std::string name;
-    std::string value;
-    if (processor.process(it->toStdString(), name, value))
+    if (it->startsWith("-"))
     {
       ++it;
     }

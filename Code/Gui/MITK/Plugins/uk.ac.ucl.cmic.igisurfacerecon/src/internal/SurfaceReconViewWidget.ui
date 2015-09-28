@@ -154,15 +154,22 @@ If you leave it empty a suitable name will be generated.</string>
                </widget>
               </item>
               <item>
-               <widget class="QRadioButton" name="GeneratePointCloudRadioBox">
+               <widget class="QRadioButton" name="m_GenerateMITKPointCloudRadioBox">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
                 <property name="text">
-                 <string>Generate point cloud</string>
+                 <string>Generate MITK point cloud</string>
                 </property>
                 <property name="checked">
                  <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="m_GeneratePCLPointCloudRadioBox">
+                <property name="text">
+                 <string>Generate PCL point cloud</string>
                 </property>
                </widget>
               </item>
@@ -467,7 +474,7 @@ White-space will not be trimmed!</string>
    </hints>
   </connection>
   <connection>
-   <sender>GeneratePointCloudRadioBox</sender>
+   <sender>m_GenerateMITKPointCloudRadioBox</sender>
    <signal>clicked(bool)</signal>
    <receiver>m_PointCloudOptionsWidget</receiver>
    <slot>setEnabled(bool)</slot>
@@ -495,6 +502,22 @@ White-space will not be trimmed!</string>
     <hint type="destinationlabel">
      <x>397</x>
      <y>921</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>m_GeneratePCLPointCloudRadioBox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>m_PointCloudOptionsWidget</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>464</x>
+     <y>521</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>464</x>
+     <y>618</y>
     </hint>
    </hints>
   </connection>

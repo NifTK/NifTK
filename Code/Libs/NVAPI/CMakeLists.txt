@@ -62,6 +62,12 @@ target_link_libraries(niftknvapi
   ${cudaencoderpath}/nvcuvid.lib
 )
 
+# unconditionally delay-load the ENcoder.
+# it has been dropped from newer driver versions, so might not be present on the user's machine.
+if(MSVC)
+  set_target_properties(niftknvapi PROPERTIES LINK_FLAGS "/DELAYLOAD:nvcuvenc.dll")
+endif()
+
 if(MSVC AND NIFTK_DELAYLOAD_CUDA)
   # all of the nvidia-driver/cuda dependencies should be delay-loaded
   #  so this library would at least load on a machine that doesnt have nv hardware

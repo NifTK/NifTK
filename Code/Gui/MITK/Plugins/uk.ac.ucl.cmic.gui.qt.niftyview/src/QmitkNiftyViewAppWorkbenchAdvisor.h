@@ -35,10 +35,10 @@ class CMIC_QT_NIFTYVIEWAPP QmitkNiftyViewAppWorkbenchAdvisor: public QmitkBaseAp
 public:
 
   /// \brief Returns uk.ac.ucl.cmic.gui.qt.niftyview.midasperspective which should match that in plugin.xml.
-  virtual std::string GetInitialWindowPerspectiveId();
+  virtual QString GetInitialWindowPerspectiveId();
 
   /// \brief Gets the resource name of the window icon.
-  virtual std::string GetWindowIconResourcePath() const;
+  virtual QString GetWindowIconResourcePath() const;
 
 protected:
 

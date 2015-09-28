@@ -124,6 +124,16 @@ MIDASGeneralSegmentorView::~MIDASGeneralSegmentorView()
 
 
 //-----------------------------------------------------------------------------
+void MIDASGeneralSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolManager)
+{
+  toolManager->RegisterTool("MIDASDrawTool");
+  toolManager->RegisterTool("MIDASSeedTool");
+  toolManager->RegisterTool("MIDASPolyTool");
+  toolManager->RegisterTool("MIDASPosnTool");
+}
+
+
+//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 {
   this->SetParent(parent);

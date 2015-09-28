@@ -31,23 +31,18 @@ int main(int argc, char** argv)
     return returnStatus;
   }
 
-  if ( calibrationInputDirectory.length() == 0 )
-  {
-    std::cout << calibrationInputDirectory.length() << std::endl;
-    commandLine.getOutput()->usage(commandLine);
-    return returnStatus;
-  }
 
   try
   {
     mitk::PickPointsOnStereoVideo::Pointer projector = mitk::PickPointsOnStereoVideo::New();
     projector->SetAllowableTimingError(maxTimingError * 1e6);
     projector->SetFrequency(frequency*2);
-    projector->SetOrderedPoints(orderedPoints);
+    projector->SetOrderedPoints( ! unOrderedPoints);
     projector->SetAskOverWrite(queryOverWrite);
     projector->SetWriteAnnotatedImages(saveAnnotatedImages);
+    projector->SetHalfImageWidth(halfImageWidth);
     
-    projector->Initialise(trackingInputDirectory,calibrationInputDirectory);
+    projector->Initialise(trackingInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
     matcher->Initialise(trackingInputDirectory);
     if ( videoLag != 0 ) 
@@ -67,11 +62,11 @@ int main(int argc, char** argv)
       MITK_ERROR << "Projector failed to initialise, halting.";
       return -1;
     }
-    matcher->SetFlipMatrices(FlipTracking);
+    bool flipTracking = false; 
+    matcher->SetFlipMatrices(flipTracking);
     matcher->SetWriteTimingErrors(WriteTimingErrors);
     projector->SetTrackerIndex(trackerIndex);
     projector->SetReferenceIndex(referenceIndex);
-    projector->SetMatcherCameraToTracker(matcher);
 
     projector->Project(matcher);
 

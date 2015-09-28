@@ -42,7 +42,7 @@ if(BUILD_IGI)
     string(SUBSTRING ${NiftyLinkVersion} 0 10 version)
 
   else ()
-    set(version "75b2f78ceb")
+    set(version "d733335df1")
   endif ()
 
   niftkMacroDefineExternalProjectVariables(NiftyLink ${version} ${location})
@@ -87,6 +87,10 @@ if(BUILD_IGI)
         ${EP_COMMON_ARGS}
         -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         ${NiftyLink_options}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
@@ -94,8 +98,9 @@ if(BUILD_IGI)
     set(NiftyLink_SOURCE_DIR ${proj_SOURCE})
     set(OpenIGTLink_DIR ${proj_BUILD}/OPENIGTLINK-build)
 
+#    set(NiftyLink_DIR ${proj_INSTALL})
 #    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
-
+#    mitkFunctionInstallExternalCMakeProject(${proj})
     message("SuperBuild loading NiftyLink from ${NiftyLink_DIR}")
     message("SuperBuild loading OpenIGTLink from ${OpenIGTLink_DIR}")
 

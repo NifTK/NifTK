@@ -25,7 +25,6 @@
 #include <itkImageFileWriter.h>
 #include <itkOrientImageFilter.h>
 
-#include <boost/filesystem.hpp>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 

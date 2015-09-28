@@ -28,7 +28,11 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
 
-#include <berryIWorkbenchWindow.h>
+#include <berrySmartPointer.h>
+
+namespace berry {
+struct IWorkbenchWindow;
+}
 
 class CMIC_QT_COMMONAPPS QmitkExtFileSaveProjectAction : public QAction
 {
@@ -36,7 +40,8 @@ class CMIC_QT_COMMONAPPS QmitkExtFileSaveProjectAction : public QAction
 
 public:
 
-  QmitkExtFileSaveProjectAction(berry::IWorkbenchWindow::Pointer window);
+  QmitkExtFileSaveProjectAction(berry::SmartPointer<berry::IWorkbenchWindow> window);
+  QmitkExtFileSaveProjectAction(berry::IWorkbenchWindow* window);
 
 protected slots:
 
@@ -44,7 +49,9 @@ protected slots:
 
 private:
 
-  berry::IWorkbenchWindow::Pointer m_Window;
+  void Init(berry::IWorkbenchWindow* window);
+
+  berry::IWorkbenchWindow* m_Window;
 };
 
 

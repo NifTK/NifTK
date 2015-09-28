@@ -134,7 +134,7 @@ int main(int argc, char** argv)
     exit (EXIT_FAILURE);
   }
 
-  mitk::IOUtil::SaveSurface (surface,output);
+  mitk::IOUtil::Save(surface,output);
   if ( Visualise )
   {
     vtkSmartPointer<vtkPolyData> vtkSurface = surface->GetVtkPolyData();

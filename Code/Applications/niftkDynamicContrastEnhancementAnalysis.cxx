@@ -27,12 +27,13 @@
 #include <itkDynamicContrastEnhancementAnalysisImageFilter.h>
 #include <itkRescaleImageUsingHistogramPercentilesFilter.h>
 
-#include <boost/filesystem.hpp>
-
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
   {OPT_SWITCH, "dbg", 0, "Output debugging information."},
   {OPT_SWITCH, "v", 0,   "Verbose output during execution."},
+
+  {OPT_INT, "minNumSlices", "nSlices", 
+   "The minimum number of slices in the DCE time series volumes [10]."},
 
   {OPT_STRING, "mask", "filename", "An optional mask image."},
 
@@ -55,6 +56,8 @@ enum {
   O_DEBUG = 0,
   O_VERBOSE,
 
+  O_MIN_NUMBER_OF_SLICES,
+
   O_MASK,
 
   O_OUTPUT_MAX,
@@ -76,6 +79,8 @@ struct arguments
 {
   bool flgVerbose;
   bool flgDebug;
+
+  int minNumberOfSlices;
 
   std::string fileMask; 
 
@@ -133,6 +138,11 @@ RescaleImage( typename itk::Image< PixelType, Dimension >::Pointer image )
 template <int Dimension, class PixelType> 
 int DoMain(arguments args)
 {  
+  bool flgSizeSet = false;
+  bool flgSizeIsDifferent;
+
+  unsigned int iImage;
+  unsigned int iDim;
   unsigned int iAcquired;
 
   typedef unsigned char MaskPixelType;
@@ -146,21 +156,75 @@ int DoMain(arguments args)
 
   typename DCEFilterType::Pointer filter = DCEFilterType::New();
 
+  itk::FixedArray< unsigned int, Dimension > size;
+  itk::FixedArray< unsigned int, Dimension > imSize;
+
+  itk::ImageIOBase::Pointer imageIO;
+
+  imSize.Fill( 0 );
 
 
   // Read the input images
   // ~~~~~~~~~~~~~~~~~~~~~
 
-  for (iAcquired=0; iAcquired<args.filenames.size(); iAcquired++)
+  iAcquired = 0;
+
+  for (iImage=0; iImage<args.filenames.size(); iImage++)
   {
+    flgSizeIsDifferent = false;
+
+    InitialiseImageIO( args.filenames[iImage], imageIO );
+
+    for ( iDim=0; iDim<Dimension; iDim++ )
+    {
+      size[ iDim ] = imageIO->GetDimensions(iDim);
+    }
+   
+    if ( size[ 2 ] < args.minNumberOfSlices )
+    {
+      std::cout << "Skipping input image: " 
+                << iImage << " " << args.filenames[iImage] 
+                << " ( size: " << size << " )" << std::endl;
+      continue;
+    }
+  
+    if ( ! flgSizeSet )
+    {
+      imSize = size;
+      flgSizeSet = true;
+
+      std::cout << "Including volumes with size: " << size << std::endl;
+    }
+    else {
+      for ( iDim=0; iDim<Dimension; iDim++ )
+      {
+        if ( imSize[ iDim ] != size[ iDim ] )
+        {
+          flgSizeIsDifferent = true;
+        }
+      }
+      
+    }
+   
+    if ( flgSizeIsDifferent )
+    {
+      std::cout << "Skipping input image: " 
+                << iImage << " " << args.filenames[iImage] 
+                << " ( size: " << size << " )" << std::endl;
+      continue;
+    }
+      
+
+
     if ( args.flgVerbose )
     {
-      std::cout << "Reading input image: " 
-                << iAcquired << " " << args.filenames[iAcquired] << std::endl;
+      std::cout << "Reading input image:  " 
+                << iAcquired << " " << args.filenames[iImage] 
+                << " ( size: " << size << " )" << std::endl;
     }
 
     typename InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
-    imageReader->SetFileName( args.filenames[iAcquired] );
+    imageReader->SetFileName( args.filenames[iImage] );
 
     try
     {
@@ -168,12 +232,14 @@ int DoMain(arguments args)
     }
     catch( itk::ExceptionObject & err ) 
     { 
-      std::cerr << "ERROR: Failed to read image " << args.filenames[iAcquired] << std::endl
+      std::cerr << "ERROR: Failed to read image " << args.filenames[iImage] << std::endl
                 << err << std::endl; 
       return EXIT_FAILURE;
     }                
 
     filter->SetInputImage( imageReader->GetOutput(), iAcquired, iAcquired );
+
+    iAcquired++;
   }  
 
 
@@ -395,6 +461,8 @@ int main( int argc, char *argv[] )
 
   CommandLineOptions.GetArgument( O_DEBUG, args.flgDebug );
   CommandLineOptions.GetArgument( O_VERBOSE, args.flgVerbose );
+    
+  CommandLineOptions.GetArgument( O_MIN_NUMBER_OF_SLICES, args.minNumberOfSlices );
     
   CommandLineOptions.GetArgument( O_MASK, args.fileMask );
 

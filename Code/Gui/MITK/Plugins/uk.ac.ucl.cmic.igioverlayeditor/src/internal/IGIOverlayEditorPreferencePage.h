@@ -61,37 +61,37 @@ public:
   /**
    * \brief Stores the name of the preference node that contains the stylesheet of the first background colour.
    */
-  static const std::string FIRST_BACKGROUND_STYLE_SHEET;
+  static const QString FIRST_BACKGROUND_STYLE_SHEET;
 
   /**
    * \brief Stores the name of the preference node that contains the stylesheet of the second background colour.
    */
-  static const std::string SECOND_BACKGROUND_STYLE_SHEET;
+  static const QString SECOND_BACKGROUND_STYLE_SHEET;
 
   /**
    * \brief Stores the name of the preference node that contains the first background colour.
    */
-  static const std::string FIRST_BACKGROUND_COLOUR;
+  static const QString FIRST_BACKGROUND_COLOUR;
 
   /**
    * \brief Stores the name of the preference node that contains the second background colour.
    */
-  static const std::string SECOND_BACKGROUND_COLOUR;
+  static const QString SECOND_BACKGROUND_COLOUR;
 
   /**
    * \brief Stores the name of the preference node containing the filename of the calibration (eg. hand-eye for a laparoscope).
    */
-  static const std::string CALIBRATION_FILE_NAME;
+  static const QString CALIBRATION_FILE_NAME;
 
   /**
    * \brief Stores the name of the preference node containing whether we are doing a camera tracking mode (for video), or the alternative is image tracking (e.g. for ultrasound).
    */
-  static const std::string CAMERA_TRACKING_MODE;
+  static const QString CAMERA_TRACKING_MODE;
 
   /**
    * \brief Stores the name of the preference node containing whether we are using clipping planes in Image Tracking mode.
    */  
-  static const std::string CLIP_TO_IMAGE_PLANE;
+  static const QString CLIP_TO_IMAGE_PLANE;
   
 public slots:
 
@@ -108,8 +108,8 @@ protected:
   QPushButton     *m_ColorButton1;
   QPushButton     *m_ColorButton2;
   ctkPathLineEdit *m_CalibrationFileName;
-  std::string      m_FirstColor;
-  std::string      m_SecondColor;
+  QString          m_FirstColor;
+  QString          m_SecondColor;
   QString          m_FirstColorStyleSheet;
   QString          m_SecondColorStyleSheet;
 

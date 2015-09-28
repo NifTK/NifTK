@@ -98,13 +98,13 @@
       <channel>output</channel>
     </file>
 
-    <file>
+    <boolean>
       <name>outputVideo</name>
       <longflag>outputVideo</longflag>
       <description>Write out video files</description>
       <label>Write out video files</label>
       <channel>output</channel>
-    </file>
+    </boolean>
 
     <file>
       <name>outputErrors</name>

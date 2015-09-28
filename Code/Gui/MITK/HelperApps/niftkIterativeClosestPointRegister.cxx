@@ -13,17 +13,16 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <boost/math/special_functions/fpclassify.hpp>
 #include <vtkTransform.h>
 #include <vtkSmartPointer.h>
 #include <vtkMinimalStandardRandomSequence.h>
-#include <mitkTestingMacros.h>
 #include <mitkPointSetReader.h>
+#include <mitkSurface.h>
 #include <mitkSTLFileReader.h>
 #include <mitkDataStorageUtils.h>
 
 #include <niftkVTKFunctions.h>
-#include <mitkSurfaceBasedRegistration.h>
+#include <niftkICPBasedRegistration.h>
 #include <niftkIterativeClosestPointRegisterCLP.h>
 
 int main(int argc, char** argv)
@@ -31,7 +30,7 @@ int main(int argc, char** argv)
   PARSE_ARGS;
  
 
-  mitk::SurfaceBasedRegistration::Pointer registerer = mitk::SurfaceBasedRegistration::New();
+  niftk::ICPBasedRegistration::Pointer registerer = niftk::ICPBasedRegistration::New();
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   //Read Fixed Points

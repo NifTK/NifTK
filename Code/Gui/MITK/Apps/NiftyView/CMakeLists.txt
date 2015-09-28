@@ -23,6 +23,7 @@ set(MY_APP_NAME NiftyView)
 ###########################################################
 set(_exclude_plugins
   org_mitk_gui_qt_extapplication
+  org_mitk_gui_qt_aicpregistration
 )
 
 ###########################################################
@@ -44,6 +45,14 @@ set(_include_plugins
   uk.ac.ucl.cmic.imagestatistics
   uk.ac.ucl.cmic.xnat
 )
+
+
+if(BUILD_VL)
+  set(_include_plugins
+    ${_include_plugins}
+    uk.ac.ucl.cmic.vlrenderer
+  )
+endif()
 
 NIFTK_CREATE_GUI_APPLICATION(
   NAME NiftyView

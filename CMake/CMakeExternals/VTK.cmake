@@ -22,12 +22,14 @@ if(DEFINED VTK_DIR AND NOT EXISTS ${VTK_DIR})
   message(FATAL_ERROR "VTK_DIR variable is defined but corresponds to non-existing directory \"${VTK_DIR}\".")
 endif()
 
-set(version "6.1.0+74f4888")
+set(version "6.2.0")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/VTK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(VTK ${version} ${location})
 
-set(VTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchVTK.cmake)
+if(MITK_USE_HDF5)
+  list(APPEND proj_DEPENDENCIES HDF5)
+endif()
 
 if(NOT DEFINED VTK_DIR)
 
@@ -80,6 +82,12 @@ if(NOT DEFINED VTK_DIR)
         )
   endif(APPLE)
 
+  if(CTEST_USE_LAUNCHERS)
+    list(APPEND additional_cmake_args
+      "-DCMAKE_PROJECT_${proj}_INCLUDE:FILEPATH=${CMAKE_ROOT}/Modules/CTestUseLaunchers.cmake"
+    )
+  endif()
+
   ExternalProject_Add(${proj}
     LIST_SEPARATOR ^^
     PREFIX ${proj_CONFIG}
@@ -88,7 +96,7 @@ if(NOT DEFINED VTK_DIR)
     INSTALL_DIR ${proj_INSTALL}
     URL ${proj_LOCATION}
     URL_MD5 ${proj_CHECKSUM}
-    PATCH_COMMAND ${VTK_PATCH_COMMAND}
+    PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/VTK-6.2.0.patch
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
         ${EP_COMMON_ARGS}
@@ -102,17 +110,19 @@ if(NOT DEFINED VTK_DIR)
         -DVTK_LEGACY_REMOVE:BOOL=ON
         -DModule_vtkTestingRendering:BOOL=ON
         -DVTK_MAKE_INSTANTIATORS:BOOL=ON
+        -DVTK_REPORT_OPENGL_ERRORS:BOOL=OFF
         ${additional_cmake_args}
         ${VTK_QT_ARGS}
+    CMAKE_CACHE_ARGS
+      ${EP_COMMON_CACHE_ARGS}
+    CMAKE_CACHE_DEFAULT_ARGS
+      ${EP_COMMON_CACHE_DEFAULT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  if(EP_ALWAYS_USE_INSTALL_DIR)
-    set(VTK_DIR ${proj_INSTALL})
-    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
-  else()
-    set(VTK_DIR ${proj_BUILD})
-  endif()
+  set(VTK_DIR ${proj_INSTALL})
+  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading VTK from ${VTK_DIR}")
 

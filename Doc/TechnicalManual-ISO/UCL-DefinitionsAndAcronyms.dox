@@ -1,0 +1,23 @@
+/**
+\page UCLDefinitionsAcronyms Definitions, Acronyms and Abbreviations
+
+<table>
+<tr><th>Term</th><th>Description</th></tr>
+<tr><td>shall</td><td>Wording used to indicate a requirement that must be fulfilled.</td></tr>
+<tr><td>should</td><td>Wording used to suggest a course of action that would be expected.
+It is never used to indicate a requirement that must be fulfilled.
+</td></tr>
+<tr><td>may</td><td>Wording used to suggest an optional course of action.
+It is never used to indicate a requirement that must be fulfilled.
+</td></tr>
+<tr><td>can</td><td>Wording used to indicate a possibility of, or ability to do something.
+It is never used to indicate a requirement that must be fulfilled.
+</td></tr>
+<tr><td>CT</td><td>Computed Tomography</td></tr>
+<tr><td>GUI</td><td>Graphical User Interface</td></tr>
+<tr><td>MR</td><td>Magnetic Resonance</td></tr>
+<tr><td>RAII</td><td>Resource Allocation Is Initialisation</td></tr>
+<tr><td>SVD</td><td>Singular Value Decomposition</td></tr>
+</table>
+
+*/

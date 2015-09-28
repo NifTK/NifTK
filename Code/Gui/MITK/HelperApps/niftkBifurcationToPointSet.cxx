@@ -21,7 +21,7 @@
 #include <mitkPointSet.h>
 #include <mitkIOUtil.h>
 
-#include <mitkBifurcationToPointSet.h>
+#include <mitkMakeGeometry.h>
 #include <niftkBifurcationToPointSetCLP.h>
 
 int main(int argc, char** argv)
@@ -42,13 +42,10 @@ int main(int argc, char** argv)
     reader->SetFileName(input.c_str());
     reader->Update();
 
-    mitk::PointSet::Pointer finalPointSet = mitk::PointSet::New();
-
     std::vector<vtkPolyData*> polyDatas;
     polyDatas.push_back(reader->GetOutput());
 
-    mitk::BifurcationToPointSet::Pointer converter = mitk::BifurcationToPointSet::New();
-    converter->Update(polyDatas, *finalPointSet);
+    mitk::PointSet::Pointer finalPointSet = MakePointSetOfBifurcations(polyDatas);
 
     if (!mitk::IOUtil::SavePointSet(finalPointSet, outputPointSet))
     {

@@ -16,6 +16,7 @@
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
 #include <berryIWorkbenchPage.h>
+#include <berryPlatform.h>
 #include <mitkDataStorage.h>
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
@@ -112,6 +113,7 @@ ThumbnailView::ThumbnailView()
 : m_FocusManagerObserverTag(-1)
 , m_ThumbnailWindow(0)
 , m_TrackOnlyMainWindows(true)
+, m_EditorLifeCycleListener(new EditorLifeCycleListener(this))
 {
   m_RenderingManager = mitk::RenderingManager::New();
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
@@ -122,7 +124,7 @@ ThumbnailView::ThumbnailView()
 //-----------------------------------------------------------------------------
 ThumbnailView::~ThumbnailView()
 {
-  this->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener);
+  this->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener.data());
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   if (focusManager != NULL)
@@ -172,8 +174,7 @@ void ThumbnailView::CreateQtPartControl(QWidget* parent)
     m_ThumbnailWindow->Activated();
     m_ThumbnailWindow->SetDisplayInteractionsEnabled(true);
 
-    m_EditorLifeCycleListener = new EditorLifeCycleListener(this);
-    this->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+    this->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener.data());
 
     mitk::IRenderWindowPart* selectedEditor = this->GetSelectedEditor();
     if (selectedEditor)
@@ -226,9 +227,7 @@ void ThumbnailView::OnPreferencesChanged(const berry::IBerryPreferences*)
 //-----------------------------------------------------------------------------
 void ThumbnailView::RetrievePreferenceValues()
 {
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   assert( prefService );
 
@@ -242,7 +241,7 @@ void ThumbnailView::RetrievePreferenceValues()
   int layer = prefs->GetInt(QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_LAYER, 99);
   double opacity = prefs->GetDouble(QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_OPACITY, 1);
 
-  QString boxColorName = QString::fromStdString (prefs->GetByteArray(QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_COLOUR, ""));
+  QString boxColorName = prefs->Get(QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_COLOUR, "");
   QColor boxColor(boxColorName);
 
   mitk::Color colour;
@@ -374,12 +373,9 @@ mitk::IRenderWindowPart* ThumbnailView::GetSelectedEditor()
   if (!renderWindowPart)
   {
     // No suitable active editor found, check visible editors
-    std::list<berry::IEditorReference::Pointer> editors = page->GetEditorReferences();
-    std::list<berry::IEditorReference::Pointer>::iterator editorsIt = editors.begin();
-    std::list<berry::IEditorReference::Pointer>::iterator editorsEnd = editors.end();
-    for ( ; editorsIt != editorsEnd; ++editorsIt)
+    foreach (berry::IEditorReference::Pointer editor, page->GetEditorReferences())
     {
-      berry::IWorkbenchPart::Pointer part = (*editorsIt)->GetPart(false);
+      berry::IWorkbenchPart::Pointer part = editor->GetPart(false);
       if (page->IsPartVisible(part))
       {
         renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part.GetPointer());

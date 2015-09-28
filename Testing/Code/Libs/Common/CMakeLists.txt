@@ -12,6 +12,10 @@
 #
 #============================================================================*/
 
+set(NIFTK_COMMON_TEST_INCLUDE_DIRS
+  ${ITK_INCLUDE_DIRS}
+  )
+
 set(NIFTK_COMMON_TEST_LINK_LIBRARIES
   niftkcommon
   ${ITK_LIBRARIES}
@@ -35,7 +39,12 @@ set(CommonUnitTests_SRCS
 )
 
 add_executable(niftkCommonUnitTests niftkCommonUnitTests.cxx ${CommonUnitTests_SRCS})
-target_link_libraries(niftkCommonUnitTests ${NIFTK_COMMON_TEST_LINK_LIBRARIES} )
+target_include_directories(niftkCommonUnitTests PRIVATE ${NIFTK_COMMON_TEST_INCLUDE_DIRS})
+target_link_libraries(niftkCommonUnitTests PRIVATE ${NIFTK_COMMON_TEST_LINK_LIBRARIES} )
+
+set(NIFTK_FILE_TEST_INCLUDE_DIRS
+  ${ITK_INCLUDE_DIRS}
+  )
 
 set(NIFTK_FILE_TEST_LINK_LIBRARIES
   niftkcommon
@@ -58,6 +67,8 @@ add_test(File-Helper-8 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHel
 add_test(File-Helper-9 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 9)
 add_test(File-Helper-10 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 10)
 add_test(File-Helper-11 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 11)
+add_test(File-Helper-12 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 12 ${INPUT_DATA}/LapTrackingAccuracy/2013-07-26-17-00-36-631)
+add_test(File-Helper-13 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 13 ${INPUT_DATA}/LapTrackingAccuracy/2013-07-26-17-00-36-631)
 add_test(FixedLengthFileReader ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFixedLengthFileReaderTest ${INPUT_DATA}/AprilTagUnitTest/idmat.4x4)
 
 set(FileUnitTests_SRCS
@@ -66,7 +77,8 @@ set(FileUnitTests_SRCS
 )
 
 add_executable(niftkFileUnitTests niftkFileUnitTests.cxx ${FileUnitTests_SRCS})
-target_link_libraries(niftkFileUnitTests ${NIFTK_FILE_TEST_LINK_LIBRARIES} )
+target_include_directories(niftkFileUnitTests PRIVATE ${NIFTK_FILE_TEST_INCLUDE_DIRS} )
+target_link_libraries(niftkFileUnitTests PRIVATE ${NIFTK_FILE_TEST_LINK_LIBRARIES} )
 
 #--------------------------------------------------------------------------------------
 # Unit tests for meshing module (only compiled if meshing is turned on)

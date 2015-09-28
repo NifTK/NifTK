@@ -35,7 +35,7 @@ class MIDASGeneralSegmentorViewPreferencePage : public QObject, public berry::IQ
 public:
 
   /// \brief Stores the name of the preferences node.
-  static const std::string PREFERENCES_NODE_NAME;
+  static const QString PREFERENCES_NODE_NAME;
 
   MIDASGeneralSegmentorViewPreferencePage();
   MIDASGeneralSegmentorViewPreferencePage(const MIDASGeneralSegmentorViewPreferencePage& other);
@@ -72,7 +72,7 @@ protected:
   QWidget        *m_MainControl;
   QPushButton    *m_DefaultColorPushButton;
   QString         m_DefauleColorStyleSheet;
-  std::string     m_DefaultColor;
+  QString     m_DefaultColor;
 
   bool m_Initializing;
 

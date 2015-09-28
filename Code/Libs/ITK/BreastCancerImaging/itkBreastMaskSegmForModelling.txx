@@ -178,7 +178,7 @@ BreastMaskSegmForModelling< ImageDimension, InputPixelType >
   std::cout << "Cropping segmented region " 
             << this->cropDistPosteriorToMidSternum 
             << "mm posterior to mid sternum location."
-            << std::cout;
+            << std::endl;
 
   typename InternalImageType::RegionType region;
   typename InternalImageType::SizeType size;

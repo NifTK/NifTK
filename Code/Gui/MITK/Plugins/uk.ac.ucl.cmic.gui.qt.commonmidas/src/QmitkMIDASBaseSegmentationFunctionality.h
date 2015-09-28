@@ -73,12 +73,12 @@ public:
   /**
    * \brief Stores the preference name of the default outline colour (defaults to pure green).
    */
-  static const std::string DEFAULT_COLOUR;
+  static const QString DEFAULT_COLOUR;
 
   /**
    * \brief Stores the preference name of the default outline colour style sheet (defaults to pure green).
    */
-  static const std::string DEFAULT_COLOUR_STYLE_SHEET;
+  static const QString DEFAULT_COLOUR_STYLE_SHEET;
 
   /**
    * \brief Creates from derived classes when the the user hits the "New segmentation", producing a dialog box,
@@ -133,6 +133,13 @@ protected:
    * \see mitk::ILifecycleAwarePart::PartHidden
    */
   virtual void Hidden();
+
+  /**
+   * @brief Registers the tools provided by this view.
+   * Subclasses should override it.
+   * @param toolManager the tool manager where the tools should be registered
+   */
+  virtual void RegisterTools(mitk::ToolManager::Pointer toolManager);
 
   /// \brief Gets a single binary image registered with the ToolManager (that tools can edit), or NULL if it can't be found or is not an image.
   mitk::Image* GetWorkingImageFromToolManager(int i);
@@ -228,7 +235,7 @@ protected:
   virtual void RetrievePreferenceValues();
 
   /// \brief Derived classes decide which preferences are actually read.
-  virtual std::string GetPreferencesNodeName() = 0;
+  virtual QString GetPreferencesNodeName() = 0;
 
   /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer m_SelectedNode;

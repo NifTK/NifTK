@@ -17,7 +17,15 @@
 
 #include <ctkPluginActivator.h>
 
+#include <vector>
+
+class QmitkRenderWindow;
+
 namespace mitk {
+
+class DataNode;
+class DataStorage;
+
 
 /**
  * \class uk_ac_ucl_cmic_dnddisplay_Activator
@@ -32,16 +40,22 @@ class uk_ac_ucl_cmic_dnddisplay_Activator :
 
 public:
 
+  uk_ac_ucl_cmic_dnddisplay_Activator();
+
   void start(ctkPluginContext* context);
   void stop(ctkPluginContext* context);
 
-  static ctkPluginContext* GetPluginContext();
+  static uk_ac_ucl_cmic_dnddisplay_Activator* GetInstance();
+
+  ctkPluginContext* GetPluginContext();
 
 private:
 
-  static ctkPluginContext* s_PluginContext;
+  static uk_ac_ucl_cmic_dnddisplay_Activator* s_Instance;
 
-}; // uk_ac_ucl_cmic_dnddisplay_Activator
+  ctkPluginContext* m_PluginContext;
+
+};
 
 }
 

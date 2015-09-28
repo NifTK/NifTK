@@ -44,14 +44,14 @@ void ReadXMLFile( std::string fileInputXML,
     std::cout << "Reading XML file: " << fileInputXML << std::endl;
     domReader->Update();
   }
-  catch( itk::ExceptionObject & err ) 
-  { 
-    std::cerr << "Failed to read XML file: " << err << std::endl; 
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "Failed to read XML file: " << err << std::endl;
     exit( EXIT_FAILURE );
-  }                
-  
+  }
+
   dom = domReader->GetOutput();
-}                
+}
 
 
 // -----------------------------------------------------------------------------------
@@ -64,31 +64,31 @@ std::string GetText( itk::DOMNode::ChildrenListType::iterator &itNode, std::stri
 
   itk::DOMNode::Pointer child = (*itNode)->GetChildByID( id );
 
-  if ( ! child ) 
+  if ( ! child )
   {
     std::cerr << "ERROR: Could not find child node: " << id << std::endl;
     exit( EXIT_FAILURE );
-  }                
+  }
 
   itk::DOMTextNode::Pointer textNode = child->GetTextChild();
 
-  if ( ! textNode ) 
+  if ( ! textNode )
   {
     std::cerr << "ERROR: Could not find text node: " << id << std::endl;
     exit( EXIT_FAILURE );
-  }                
+  }
 
   str = textNode->GetText();
-  
- 
-  if ( ! str.length() ) 
+
+
+  if ( ! str.length() )
   {
     std::cerr << "ERROR: Empty text value for: " << id << std::endl;
     exit( EXIT_FAILURE );
-  }                 
+  }
 
   return str;
-}                
+}
 
 
 // --------------------------------------------------------------------------
@@ -99,7 +99,7 @@ void WriteToCSVFile( std::ofstream *foutOutputDensityCSV )
 {
   //                                   123456789012345678901234567890
 
-  *foutOutputDensityCSV 
+  *foutOutputDensityCSV
     << std::right << std::setw(10) << "Patient id" << ", "
 
     << std::right << std::setw(17) << "Diagnostic ID"   << ", "
@@ -111,7 +111,7 @@ void WriteToCSVFile( std::ofstream *foutOutputDensityCSV )
     << std::right << std::setw(17) << "Pre-diagnostic/Control ID"   << ", "
     << std::right << std::setw(60) << "Pre-diagnostic/Control file" << ", "
     << std::right << std::setw(18) << "Pre-diag/Control threshold"  << ", "
-  
+
     << std::right << std::setw( 9) << "Tumour ID"         << ", "
     << std::right << std::setw(17) << "Tumour image ID"   << ", "
     << std::right << std::setw(17) << "Tumour center (x)" << ", "
@@ -135,9 +135,9 @@ void WriteToCSVFile( std::ofstream *foutOutputDensityCSV )
 int main(int argc, char** argv)
 {
   int result = EXIT_SUCCESS;
-    
+
   std::string dirOutputFullPath;
-    
+
   std::ofstream *foutOutputDensityCSV = 0;
 
   const unsigned int   InputDimension = 2;
@@ -179,7 +179,8 @@ int main(int argc, char** argv)
             << "Input breast edge points XML file: " << fileBreastEdgeXML << std::endl
             << "Input pectoralis XML file: " << filePectoralisLinePointXML << std::endl
             << "Region size in mm: " << regionSizeInMM << std::endl
-            << "Register? " << flgRegister << std::endl
+            << "Affine registration? " << flgRegisterAffine << std::endl
+            << "Non-rigid registration? " << flgRegisterNonRigid << std::endl
             << "Ouput directory: " << dirOutput << std::endl
             << "Output CSV file: " << fileOutputDensityCSV << std::endl
             << "Verbose? " << flgVerbose << std::endl
@@ -202,7 +203,7 @@ int main(int argc, char** argv)
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   if ( fileOutputDensityCSV.length() != 0 ) {
-    foutOutputDensityCSV 
+    foutOutputDensityCSV
       = new std::ofstream( fileOutputDensityCSV.c_str(), std::ios::binary );
 
     if ((! foutOutputDensityCSV) || foutOutputDensityCSV->bad() || foutOutputDensityCSV->fail()) {
@@ -210,7 +211,7 @@ int main(int argc, char** argv)
       return EXIT_FAILURE;
     }
   }
- 
+
   WriteToCSVFile( foutOutputDensityCSV );
 
 
@@ -228,8 +229,8 @@ int main(int argc, char** argv)
   // Iterate through the images
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  for ( iNode = 0; 
-        iNode < static_cast<NodeIdentifierType>( domImage->GetNumberOfChildren() ); 
+  for ( iNode = 0;
+        iNode < static_cast<NodeIdentifierType>( domImage->GetNumberOfChildren() );
         iNode++ )
   {
     node = domImage->GetChild( iNode );
@@ -241,12 +242,12 @@ int main(int argc, char** argv)
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
 
-    
+
     // Get the records for this image
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    for ( iNodeRecord = 0; 
-          iNodeRecord < static_cast<NodeIdentifierType>( node->GetNumberOfChildren() ); 
+    for ( iNodeRecord = 0;
+          iNodeRecord < static_cast<NodeIdentifierType>( node->GetNumberOfChildren() );
           iNodeRecord++ )
     {
       nodeRecord = node->GetChild( iNodeRecord );
@@ -310,7 +311,7 @@ int main(int argc, char** argv)
     }
 
     strPatientID = fs::path( strFilename ).branch_path().string();
-   
+
     std::cout << "    patient id:           " << strPatientID            << std::endl
               << "    image id:             " << strImageID              << std::endl
               << "    file_name:            " << strFilename             << std::endl
@@ -327,8 +328,8 @@ int main(int argc, char** argv)
 
     ROIMammoDensityType::Pointer patient = 0;
 
-    for ( itPatient = listOfPatients.begin(); 
-          itPatient != listOfPatients.end(); 
+    for ( itPatient = listOfPatients.begin();
+          itPatient != listOfPatients.end();
           itPatient++ )
     {
       if ( (*itPatient)->GetPatientID() == strPatientID )
@@ -339,7 +340,7 @@ int main(int argc, char** argv)
       };
     }
 
-    if ( ! flgFound ) 
+    if ( ! flgFound )
     {
       patient = ROIMammoDensityType::New();
 
@@ -349,7 +350,9 @@ int main(int argc, char** argv)
       patient->SetRegionSizeInMM( regionSizeInMM );
 
       if ( flgOverwrite ) patient->SetOverwriteOn();
-      if ( flgRegister )  patient->SetRegisterOn();
+
+      if ( flgRegisterAffine )   patient->SetRegisterOn();
+      if ( flgRegisterNonRigid ) patient->SetRegisterNonRigidOn();
 
       if ( flgVerbose )   patient->SetVerboseOn();
       if ( flgDebug )     patient->SetDebugOn();
@@ -374,7 +377,7 @@ int main(int argc, char** argv)
       patient->SetThresholdControl( atoi( strThreshold.c_str() ) );
     }
 
-    if ( ! flgFound ) 
+    if ( ! flgFound )
     {
       listOfPatients.push_back( patient );
     }
@@ -384,8 +387,8 @@ int main(int argc, char** argv)
   // Iterate through the tumours
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  for ( iNode = 0; 
-        iNode < static_cast<NodeIdentifierType>( domTumour->GetNumberOfChildren() ); 
+  for ( iNode = 0;
+        iNode < static_cast<NodeIdentifierType>( domTumour->GetNumberOfChildren() );
         iNode++ )
   {
     node = domTumour->GetChild( iNode );
@@ -396,11 +399,11 @@ int main(int argc, char** argv)
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
 
-    
+
     // Get the records for this tumour
 
-    for ( iNodeRecord = 0; 
-          iNodeRecord < static_cast<NodeIdentifierType>( node->GetNumberOfChildren() ); 
+    for ( iNodeRecord = 0;
+          iNodeRecord < static_cast<NodeIdentifierType>( node->GetNumberOfChildren() );
           iNodeRecord++ )
     {
       nodeRecord = node->GetChild( iNodeRecord );
@@ -458,9 +461,9 @@ int main(int argc, char** argv)
     bool flgFound = false;
 
     ROIMammoDensityType::Pointer patient = 0;
-    
-    for ( itPatient = listOfPatients.begin(); 
-          itPatient != listOfPatients.end(); 
+
+    for ( itPatient = listOfPatients.begin();
+          itPatient != listOfPatients.end();
           itPatient++ )
     {
       if ( (*itPatient)->GetIDDiagnosticImage() == strTumourImageID )
@@ -471,9 +474,9 @@ int main(int argc, char** argv)
       };
     }
 
-    if ( ! flgFound ) 
+    if ( ! flgFound )
     {
-      std::cerr << "ERROR: Failed to find a patient corresponding to image id: " 
+      std::cerr << "ERROR: Failed to find a patient corresponding to image id: "
                 << strTumourImageID << std::endl;
       exit( EXIT_FAILURE );
     }
@@ -488,7 +491,7 @@ int main(int argc, char** argv)
 
     patient->SetTumourDiameter( atof( strTumourDiameter.c_str() ) );
 
-    if ( ! flgFound ) 
+    if ( ! flgFound )
     {
       listOfPatients.push_back( patient );
     }
@@ -500,8 +503,8 @@ int main(int argc, char** argv)
 
   std::cout << std::endl;
 
-  for ( iNode = 0; 
-        iNode < static_cast<NodeIdentifierType>( domBreastEdge->GetNumberOfChildren() ); 
+  for ( iNode = 0;
+        iNode < static_cast<NodeIdentifierType>( domBreastEdge->GetNumberOfChildren() );
         iNode++ )
   {
     node = domBreastEdge->GetChild( iNode );
@@ -513,12 +516,12 @@ int main(int argc, char** argv)
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
 
-    
+
     // Get the records for this image
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    for ( iNodeRecord = 0; 
-          iNodeRecord < static_cast<NodeIdentifierType>( node->GetNumberOfChildren() ); 
+    for ( iNodeRecord = 0;
+          iNodeRecord < static_cast<NodeIdentifierType>( node->GetNumberOfChildren() );
           iNodeRecord++ )
     {
       nodeRecord = node->GetChild( iNodeRecord );
@@ -549,11 +552,11 @@ int main(int argc, char** argv)
         strBreastEdgeImageID = textNode->GetText();
       }
     }
-   
+
     std::cout << " breast edge id: "       << std::left << std::setw(6) << strBreastEdgeID
               << " x coord: "              << std::left << std::setw(6) << strXCoord
               << " y coord: "              << std::left << std::setw(6) << strYCoord
-              << " breast edge image id: " << std::left << std::setw(6) << strBreastEdgeImageID 
+              << " breast edge image id: " << std::left << std::setw(6) << strBreastEdgeImageID
               << std::endl;
 
     // Find a patient with this image ID
@@ -562,8 +565,8 @@ int main(int argc, char** argv)
 
     ROIMammoDensityType::Pointer patient = 0;
 
-    for ( itPatient = listOfPatients.begin(); 
-          itPatient != listOfPatients.end(); 
+    for ( itPatient = listOfPatients.begin();
+          itPatient != listOfPatients.end();
           itPatient++ )
     {
       if ( ( (*itPatient)->GetIDDiagnosticImage() == strBreastEdgeImageID ) ||
@@ -576,16 +579,16 @@ int main(int argc, char** argv)
       };
     }
 
-    if ( ! flgFound ) 
+    if ( ! flgFound )
     {
-      std::cerr << "ERROR: Failed to find a patient corresponding to image id: " 
+      std::cerr << "ERROR: Failed to find a patient corresponding to image id: "
                 << strBreastEdgeImageID << std::endl;
       exit( EXIT_FAILURE );
     }
 
     patient->PushBackBreastEdgeCoord( strBreastEdgeImageID,
-                                      atoi( strBreastEdgeID.c_str() ), 
-                                      atoi( strXCoord.c_str() ), 
+                                      atoi( strBreastEdgeID.c_str() ),
+                                      atoi( strXCoord.c_str() ),
                                       atoi( strYCoord.c_str() ) );
   }
 
@@ -593,8 +596,8 @@ int main(int argc, char** argv)
   // Iterate through the pectoral points
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  for ( iNode = 0; 
-        iNode < static_cast<NodeIdentifierType>( domPectoral->GetNumberOfChildren() ); 
+  for ( iNode = 0;
+        iNode < static_cast<NodeIdentifierType>( domPectoral->GetNumberOfChildren() );
         iNode++ )
   {
     node = domPectoral->GetChild( iNode );
@@ -606,12 +609,12 @@ int main(int argc, char** argv)
                 << " path: " << node->GetPath()
                 << " num: "  << node->GetNumberOfChildren() << std::endl;
 
-    
+
     // Get the records for this image
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    for ( iNodeRecord = 0; 
-          iNodeRecord < static_cast<NodeIdentifierType>( node->GetNumberOfChildren() ); 
+    for ( iNodeRecord = 0;
+          iNodeRecord < static_cast<NodeIdentifierType>( node->GetNumberOfChildren() );
           iNodeRecord++ )
     {
       nodeRecord = node->GetChild( iNodeRecord );
@@ -642,11 +645,11 @@ int main(int argc, char** argv)
         strPectoralImageID = textNode->GetText();
       }
     }
-   
+
     std::cout << " pectoral id: "          << std::left << std::setw(6) << strPectoralID
               << " x coord: "              << std::left << std::setw(6) << strXCoord
               << " y coord: "              << std::left << std::setw(6) << strYCoord
-              << " breast edge image id: " << std::left << std::setw(6) << strPectoralImageID 
+              << " breast edge image id: " << std::left << std::setw(6) << strPectoralImageID
               << std::endl;
 
     // Find a patient with this image ID
@@ -655,8 +658,8 @@ int main(int argc, char** argv)
 
     ROIMammoDensityType::Pointer patient = 0;
 
-    for ( itPatient = listOfPatients.begin(); 
-          itPatient != listOfPatients.end(); 
+    for ( itPatient = listOfPatients.begin();
+          itPatient != listOfPatients.end();
           itPatient++ )
     {
       if ( ( (*itPatient)->GetIDDiagnosticImage() == strPectoralImageID ) ||
@@ -669,17 +672,31 @@ int main(int argc, char** argv)
       };
     }
 
-    if ( ! flgFound ) 
+    if ( ! flgFound )
     {
-      std::cerr << "ERROR: Failed to find a patient corresponding to image id: " 
+      std::cerr << "ERROR: Failed to find a patient corresponding to image id: "
                 << strPectoralImageID << std::endl;
       exit( EXIT_FAILURE );
     }
 
     patient->PushBackPectoralCoord( strPectoralImageID,
-                                      atoi( strPectoralID.c_str() ), 
-                                      atoi( strXCoord.c_str() ), 
+                                      atoi( strPectoralID.c_str() ),
+                                      atoi( strXCoord.c_str() ),
                                       atoi( strYCoord.c_str() ) );
+  }
+
+
+  // Print out the patients
+  // ~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( flgDebug )
+  {
+    for ( itPatient = listOfPatients.begin();
+	  itPatient != listOfPatients.end();
+	  itPatient++ )
+    {
+      (*itPatient)->Print();
+    }
   }
 
 
@@ -690,10 +707,10 @@ int main(int argc, char** argv)
   float iFile = 0.;
   float nFiles = listOfPatients.size();
 
-  for ( itPatient = listOfPatients.begin(); 
-        itPatient != listOfPatients.end(); 
+  for ( itPatient = listOfPatients.begin();
+        itPatient != listOfPatients.end();
         itPatient++, iFile += 1. )
-  {  
+  {
     progress = iFile/nFiles;
     std::cout << "<filter-progress>" << std::endl
 	      << progress << std::endl
@@ -708,12 +725,18 @@ int main(int argc, char** argv)
 
     try
     {
-      (*itPatient)->Compute();
+      if ( ! (*itPatient)->Compute() )
+      {
+        std::cerr << "WARNING: Could not compute patient: " << iFile << std::endl;
+
+        (*itPatient)->UnloadImages();
+        continue;
+      }        
     }
 
     catch (itk::ExceptionObject &ex)
     {
-      std::cerr << "ERROR: Could not compute patient: " << iFile << std::endl 
+      std::cerr << "ERROR: Could not compute patient: " << iFile << std::endl
                 << ex << std::endl;
 
       (*itPatient)->UnloadImages();
@@ -727,9 +750,9 @@ int main(int argc, char** argv)
 
     (*itPatient)->Print( flgVerbose );
 
-    if ( foutOutputDensityCSV ) 
-    {   
-      (*itPatient)->WriteDataToCSVFile( foutOutputDensityCSV );  
+    if ( foutOutputDensityCSV )
+    {
+      (*itPatient)->WriteDataToCSVFile( foutOutputDensityCSV );
     }
 
     progress = (iFile + 0.75)/nFiles;
@@ -750,7 +773,7 @@ int main(int argc, char** argv)
   // Close the CSV file?
   // ~~~~~~~~~~~~~~~~~~~
 
-  if ( foutOutputDensityCSV ) 
+  if ( foutOutputDensityCSV )
   {
     foutOutputDensityCSV->close();
     delete foutOutputDensityCSV;

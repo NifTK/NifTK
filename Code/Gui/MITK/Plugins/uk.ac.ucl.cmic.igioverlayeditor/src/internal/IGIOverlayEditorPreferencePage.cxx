@@ -25,13 +25,13 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET("first background color style sheet");
-const std::string IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET("second background color style sheet");
-const std::string IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR("first background color");
-const std::string IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR("second background color");
-const std::string IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
-const std::string IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE("camera tracking mode");
-const std::string IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE("clip to imae plane");
+const QString IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET("first background color style sheet");
+const QString IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET("second background color style sheet");
+const QString IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR("first background color");
+const QString IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR("second background color");
+const QString IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
+const QString IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE("camera tracking mode");
+const QString IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE("clip to imae plane");
 
 //-----------------------------------------------------------------------------
 IGIOverlayEditorPreferencePage::IGIOverlayEditorPreferencePage()
@@ -54,9 +54,7 @@ void IGIOverlayEditorPreferencePage::Init(berry::IWorkbench::Pointer )
 //-----------------------------------------------------------------------------
 void IGIOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
 {
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_IGIOverlayEditorPreferencesNode = prefService->GetSystemPreferences()->Node(IGIOverlayEditor::EDITOR_ID);
 
@@ -141,11 +139,11 @@ QWidget* IGIOverlayEditorPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool IGIOverlayEditorPreferencePage::PerformOk()
 {
-  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET, m_FirstColorStyleSheet.toStdString());
-  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET, m_SecondColorStyleSheet.toStdString());
-  m_IGIOverlayEditorPreferencesNode->PutByteArray(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, m_FirstColor);
-  m_IGIOverlayEditorPreferencesNode->PutByteArray(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, m_SecondColor);
-  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, m_CalibrationFileName->currentPath().toStdString());
+  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET, m_FirstColorStyleSheet);
+  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET, m_SecondColorStyleSheet);
+  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, m_FirstColor);
+  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, m_SecondColor);
+  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, m_CalibrationFileName->currentPath());
   m_IGIOverlayEditorPreferencesNode->PutBool(IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE, m_CameraTrackingMode->isChecked());
   m_IGIOverlayEditorPreferencesNode->PutBool(IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, m_ClipToImagePlane->isChecked());
   return true;
@@ -162,10 +160,10 @@ void IGIOverlayEditorPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void IGIOverlayEditorPreferencePage::Update()
 {
-  m_FirstColorStyleSheet = QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET, ""));
-  m_SecondColorStyleSheet = QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET, ""));
-  m_FirstColor = m_IGIOverlayEditorPreferencesNode->GetByteArray(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, "");
-  m_SecondColor = m_IGIOverlayEditorPreferencesNode->GetByteArray(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, "");
+  m_FirstColorStyleSheet = m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET, "");
+  m_SecondColorStyleSheet = m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET, "");
+  m_FirstColor = m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, "");
+  m_SecondColor = m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, "");
   if (m_FirstColorStyleSheet=="")
   {
     m_FirstColorStyleSheet = "background-color:rgb(0,0,0)";
@@ -184,7 +182,7 @@ void IGIOverlayEditorPreferencePage::Update()
   }
   m_ColorButton1->setStyleSheet(m_FirstColorStyleSheet);
   m_ColorButton2->setStyleSheet(m_SecondColorStyleSheet);
-  m_CalibrationFileName->setCurrentPath(QString::fromStdString(m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "")));
+  m_CalibrationFileName->setCurrentPath(m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, ""));
 
   m_ClipToImagePlane->setChecked(m_IGIOverlayEditorPreferencesNode->GetBool(IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, true));
   bool isCameraTracking = m_IGIOverlayEditorPreferencesNode->GetBool(IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE, true);
@@ -211,7 +209,7 @@ void IGIOverlayEditorPreferencePage::FirstColorChanged()
   m_FirstColorStyleSheet = styleSheet;
   QStringList firstColor;
   firstColor << color.name();
-  m_FirstColor = firstColor.replaceInStrings(";","\\;").join(";").toStdString();
+  m_FirstColor = firstColor.replaceInStrings(";","\\;").join(";");
  }
 
 
@@ -233,7 +231,7 @@ void IGIOverlayEditorPreferencePage::SecondColorChanged()
   m_SecondColorStyleSheet = styleSheet;
   QStringList secondColor;
   secondColor << color.name();
-  m_SecondColor = secondColor.replaceInStrings(";","\\;").join(";").toStdString();
+  m_SecondColor = secondColor.replaceInStrings(";","\\;").join(";");
  }
 
 

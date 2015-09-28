@@ -79,7 +79,7 @@
 
 \include LICENSE_ArUco.txt
 
-\section LicenseEIGEN The Eigen License
+\section LicenseEigen The Eigen License
 
 \include LICENSE_Eigen.txt
 

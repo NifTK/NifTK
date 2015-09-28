@@ -120,6 +120,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_SingleWindowLayouts()
 , m_MIDASToolNodeNameFilter(0)
 , m_TimeGeometry(0)
+, m_EditorLifeCycleListener(new EditorLifeCycleListener(this))
 , m_RenderingManager(renderingManager)
 {
   this->SetupUi(parent);
@@ -247,8 +248,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
     m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
   }
 
-  m_EditorLifeCycleListener = new EditorLifeCycleListener(this);
-  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener.data());
 
   /// Note:
   /// Direct call to m_Viewer->FitToDisplay() does not work because the function
@@ -270,7 +270,7 @@ QmitkSideViewerWidget::~QmitkSideViewerWidget()
     m_MainRenderingManager = 0;
   }
 
-  m_ContainingView->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener);
+  m_ContainingView->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener.data());
 
   // Deregister focus observer.
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -855,12 +855,9 @@ mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
   if (!renderWindowPart)
   {
     // No suitable active editor found, check visible editors
-    std::list<berry::IEditorReference::Pointer> editors = page->GetEditorReferences();
-    std::list<berry::IEditorReference::Pointer>::iterator editorsIt = editors.begin();
-    std::list<berry::IEditorReference::Pointer>::iterator editorsEnd = editors.end();
-    for ( ; editorsIt != editorsEnd; ++editorsIt)
+    foreach (berry::IEditorReference::Pointer editor, page->GetEditorReferences())
     {
-      berry::IWorkbenchPart::Pointer part = (*editorsIt)->GetPart(false);
+      berry::IWorkbenchPart::Pointer part = editor->GetPart(false);
       if (page->IsPartVisible(part))
       {
         renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part.GetPointer());

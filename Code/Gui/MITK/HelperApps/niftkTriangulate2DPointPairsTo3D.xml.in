@@ -40,6 +40,35 @@
       <label>Right to left camera transformation</label>
       <channel>input</channel>
     </file>
+    <file fileExtensions=".txt">
+      <name>trackerToWorld</name>
+      <longflag>trackerToWorld</longflag>
+      <description>The tracking matrix</description>
+      <label>Tracking Matrix</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".txt">
+      <name>leftLensToTracker</name>
+      <longflag>leftLensToTracker</longflag>
+      <description>The transform from the left lens to the tracker marker (handeye)</description>
+      <label>Left Lens to tracker</label>
+      <channel>input</channel>
+    </file>
+    
+    <file fileExtensions=".png">
+      <name>leftMask</name>
+      <longflag>leftMask</longflag>
+      <description>Left Mask Image</description>
+      <label>Left Mask Image</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".png">
+      <name>rightMask</name>
+      <longflag>rightMask</longflag>
+      <description>Right Mask Image</description>
+      <label>Right Mask Image</label>
+      <channel>input</channel>
+    </file>
     <file fileExtensions=".mps">
       <name>outputPoints</name>
       <longflag>outputPoints</longflag>
@@ -48,5 +77,32 @@
       <default>output.mps</default>
       <channel>output</channel>
     </file>    
+    <directory>
+      <name>outputMaskImagePrefix</name>
+      <longflag>outputMaskImagePrefix</longflag>
+      <description>Optionally write out images showing effect of masking</description>
+      <label>Output mask image prefix</label>
+      <channel>output</channel>
+    </directory>
+    <boolean>
+      <name>undistort</name>
+      <longflag>undistort</longflag>
+      <description>If set will undistort after masking and before triangulation</description>
+      <label>Undistort points</label>
+      <default>0</default>
+    </boolean>
+    <string>
+      <name>minimumDistanceFromLens</name>
+      <longflag>minimumDistanceFromLens</longflag>
+      <description>Cull points closer to the lens than this</description>
+      <label>Minimum Distance from Lens</label>
+    </string>
+    <string>
+      <name>maximumDistanceFromLens</name>
+      <longflag>maximumDistanceFromLens</longflag>
+      <description>Cull points further from the lens than this</description>
+      <label>Maximum Distance from Lens</label>
+    </string>
+
   </parameters>
 </executable>

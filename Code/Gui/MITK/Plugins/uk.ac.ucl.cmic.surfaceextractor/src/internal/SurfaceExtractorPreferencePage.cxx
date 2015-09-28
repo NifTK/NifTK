@@ -48,15 +48,15 @@ public:
 };
 
 
-const std::string SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_NAME = "surface_extractor.gaussian_smooth";
+const QString SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_NAME = "surface_extractor.gaussian_smooth";
 const bool SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_DEFAULT = true;
-const std::string SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME = "surface_extractor.gaussian_standard_deviation";
+const QString SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME = "surface_extractor.gaussian_standard_deviation";
 const double SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_DEFAULT = 0.5;
-const std::string SurfaceExtractorPreferencePage::THRESHOLD_NAME = "surface_extractor.threshold";
+const QString SurfaceExtractorPreferencePage::THRESHOLD_NAME = "surface_extractor.threshold";
 const double SurfaceExtractorPreferencePage::THRESHOLD_DEFAULT = 100.0;
-const std::string SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME = "surface_extractor.target_reduction";
+const QString SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME = "surface_extractor.target_reduction";
 const double SurfaceExtractorPreferencePage::TARGET_REDUCTION_DEFAULT = 0.1;
-const std::string SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME = "surface_extractor.maximal_number_of_polygons";
+const QString SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME = "surface_extractor.maximal_number_of_polygons";
 const long SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_DEFAULT = 2000000;
 
 SurfaceExtractorPreferencePage::SurfaceExtractorPreferencePage()
@@ -66,9 +66,7 @@ SurfaceExtractorPreferencePage::SurfaceExtractorPreferencePage()
   Q_D(SurfaceExtractorPreferencePage);
   d->initializing = false;
 
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   d->preferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.SurfaceExtractor");
 }

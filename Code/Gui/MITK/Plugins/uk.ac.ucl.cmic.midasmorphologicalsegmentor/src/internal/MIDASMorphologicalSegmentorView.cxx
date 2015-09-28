@@ -86,6 +86,13 @@ void MIDASMorphologicalSegmentorView::ClosePart()
 
 
 //-----------------------------------------------------------------------------
+void MIDASMorphologicalSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolManager)
+{
+  toolManager->RegisterTool("MIDASPaintbrushTool");
+}
+
+
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
 {
   // Create the new segmentation, either using a previously selected one, or create a new volume.

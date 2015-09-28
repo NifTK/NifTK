@@ -14,6 +14,9 @@
 
 #include "itkNifTKImageIOFactory.h"
 #include <itkCreateObjectFunction.h>
+#include <itkPNGImageIOFactory.h>
+#include <itkVTKImageIOFactory.h>
+#include <itkTxtTransformIOFactory.h>
 #include "itkDRCAnalyzeImageIO.h"
 #include "itkNiftiImageIO3201.h"
 #include "itkINRImageIO.h"
@@ -68,22 +71,38 @@ NifTKImageIOFactory::GetDescription(void) const
 
 
 //-----------------------------------------------------------------------------
-struct RegisterNifTKImageIOFactory{
-  RegisterNifTKImageIOFactory()
-    : m_Factory( itk::NifTKImageIOFactory::New() )
+class RegisterImageIOFactories
+{
+
+  RegisterImageIOFactories()
+  : m_NifTKImageIOFactory( itk::NifTKImageIOFactory::New() )
+  , m_PNGImageIOFactory( itk::PNGImageIOFactory::New() )
+  , m_VTKImageIOFactory( itk::VTKImageIOFactory::New() )
+  , m_TxtTransformIOFactory( itk::TxtTransformIOFactory::New() )
   {
-    itk::ObjectFactoryBase::RegisterFactory(m_Factory, itk::ObjectFactoryBase::INSERT_AT_FRONT);
+    itk::ObjectFactoryBase::RegisterFactory(m_NifTKImageIOFactory, itk::ObjectFactoryBase::INSERT_AT_FRONT);
+    itk::ObjectFactoryBase::RegisterFactory(m_PNGImageIOFactory);
+    itk::ObjectFactoryBase::RegisterFactory(m_VTKImageIOFactory);
+    itk::ObjectFactoryBase::RegisterFactory(m_TxtTransformIOFactory);
   }
 
-  ~RegisterNifTKImageIOFactory()
+  ~RegisterImageIOFactories()
   {
-    itk::ObjectFactoryBase::UnRegisterFactory(m_Factory);
+    itk::ObjectFactoryBase::UnRegisterFactory(m_TxtTransformIOFactory);
+    itk::ObjectFactoryBase::UnRegisterFactory(m_VTKImageIOFactory);
+    itk::ObjectFactoryBase::UnRegisterFactory(m_PNGImageIOFactory);
+    itk::ObjectFactoryBase::UnRegisterFactory(m_NifTKImageIOFactory);
   }
 
-  itk::NifTKImageIOFactory::Pointer m_Factory;
+  itk::NifTKImageIOFactory::Pointer m_NifTKImageIOFactory;
+  itk::PNGImageIOFactory::Pointer m_PNGImageIOFactory;
+  itk::VTKImageIOFactory::Pointer m_VTKImageIOFactory;
+  itk::TxtTransformIOFactory::Pointer m_TxtTransformIOFactory;
+
+  static RegisterImageIOFactories s_RegisterImageIOFactories;
+
 };
 
 
 //-----------------------------------------------------------------------------
-static RegisterNifTKImageIOFactory registerNifTKImageIOFactory;
-
+RegisterImageIOFactories RegisterImageIOFactories::s_RegisterImageIOFactories;

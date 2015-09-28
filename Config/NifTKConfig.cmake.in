@@ -33,11 +33,38 @@
 # find_package etc.
 ###############################################################################
 
+if(CMAKE_VERSION VERSION_LESS @MITK_CMAKE_MINIMUM_REQUIRED_VERSION@)
+  message(FATAL_ERROR "NifTK requires at least CMake Version @NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION@")
+endif()
+
+# The NifTK version number
+set(NIFTK_VERSION_MAJOR "@NIFTK_VERSION_MAJOR@")
+set(NIFTK_VERSION_MINOR "@NIFTK_VERSION_MINOR@")
+set(NIFTK_VERSION_PATCH "@NIFTK_VERSION_PATCH@")
+set(NIFTK_VERSION_STRING "@NIFTK_VERSION_STRING@")
+
+#-----------------------------------------------------------------------------
+# C++ language standard
+#-----------------------------------------------------------------------------
+
+set(MITK_CXX_STANDARD @MITK_CXX_STANDARD@)
+
+#-----------------------------------------------------------------------------
+# Include required CMake scripts
+#-----------------------------------------------------------------------------
+
 # Standard CMake macros
 include(FeatureSummary)
 
 # Make all the NifTK CMake macros are available.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "@NIFTK_BINARY_DIR@/CMakeMacros")
+set(NIFTK_CMAKE_MODULE_PATH "@NIFTK_BINARY_DIR@/CMakeMacros")
+list(APPEND CMAKE_MODULE_PATH ${NIFTK_CMAKE_MODULE_PATH})
+
+# Standard CMake macros
+include(CMakeParseArguments)
+include(FeatureSummary)
+include(FindPackageHandleStandardArgs)
+include(GenerateExportHeader)
 
 # The list of 'include' commands should match those in NifTK/CMake folder.
 include(mitkMacroEmptyExternalProject)
@@ -73,10 +100,10 @@ set(NifTK_VERSION_NIFTYLINK "@NIFTK_VERSION_NiftyLink@")
 set(NifTK_VERSION_DATA "@NIFTK_VERSION_DATA@")
 set(NifTK_VERSION_RTK "@NIFTK_VERSION_RTK@")
 set(NifTK_VERSION_OPENCV "@NIFTK_VERSION_OpenCV@")
-set(NifTK_VERSION_NIFTYREG "@NIFTK_VERSION_NiftyReg@")
-set(NifTK_VERSION_NIFTYSEG "@NIFTK_VERSION_NiftySeg@")
-set(NifTK_VERSION_NIFTYSIM "@NIFTK_VERSION_NiftySim@")
-set(NifTK_VERSION_NIFTYREC "@NIFTK_VERSION_NiftyRec@")
+set(NifTK_VERSION_NiftyReg "@NIFTK_VERSION_NiftyReg@")
+set(NifTK_VERSION_NiftySeg "@NIFTK_VERSION_NiftySeg@")
+set(NifTK_VERSION_NiftySim "@NIFTK_VERSION_NiftySim@")
+set(NifTK_VERSION_NiftyRec "@NIFTK_VERSION_NiftyRec@")
 set(NifTK_VERSION_CGAL "@NIFTK_VERSION_CGAL@")
 set(NifTK_VERSION_ARUCO "@NIFTK_VERSION_ArUco@")
 set(NifTK_VERSION_SEM "@NIFTK_VERSION_SlicerExecutionModel@")
@@ -91,10 +118,10 @@ set(NifTK_VERSION_qRestAPI "@NIFTK_VERSION_qRestAPI@")
 set(NifTK_BUILD_COMMAND_LINE_PROGRAMS "@BUILD_COMMAND_LINE_PROGRAMS@")
 set(NifTK_BUILD_COMMAND_LINE_SCRIPTS "@BUILD_COMMAND_LINE_SCRIPTS@")
 set(NifTK_BUILD_CAMINO "@BUILD_CAMINO@")
-set(NifTK_BUILD_NIFTYREG "@BUILD_NIFTYREG@")
-set(NifTK_BUILD_NIFTYSEG "@BUILD_NIFTYSEG@")
-set(NifTK_BUILD_NIFTYSIM "@BUILD_NIFTYSIM@")
-set(NifTK_BUILD_NIFTYREC "@BUILD_NIFTYREC@")
+set(NifTK_BUILD_NiftyReg "@BUILD_NiftyReg@")
+set(NifTK_BUILD_NiftySeg "@BUILD_NiftySeg@")
+set(NifTK_BUILD_NiftySim "@BUILD_NiftySim@")
+set(NifTK_BUILD_NiftyRec "@BUILD_NiftyRec@")
 set(NifTK_BUILD_PCL "@BUILD_PCL@")
 set(NifTK_BUILD_RTK "@BUILD_RTK@")
 set(NifTK_BUILD_SHARED "@BUILD_SHARED_LIBS@")
@@ -125,7 +152,6 @@ if(APPLE)
 endif()
 set(NifTK_ADDITIONAL_C_FLAGS "@NIFTK_ADDITIONAL_C_FLAGS@")
 set(NifTK_ADDITIONAL_CXX_FLAGS "@NIFTK_ADDITIONAL_CXX_FLAGS@")
-set(NifTK_BUILD_ALL_APPS "@NIFTK_BUILD_ALL_APPS@")
 set(NifTK_USE_CUDA "@NIFTK_USE_CUDA@")
 set(NifTK_DELAYLOAD_CUDA "@NIFTK_DELAYLOAD_CUDA@")
 
@@ -145,9 +171,10 @@ set(NifTK_LICENSE_ITK  "@CMAKE_BINARY_DIR@/LICENSE_ITK.txt")
 set(NifTK_LICENSE_RTK  "@CMAKE_BINARY_DIR@/LICENSE_RTK.txt")
 set(NifTK_LICENSE_VTK  "@CMAKE_BINARY_DIR@/LICENSE_VTK.txt")
 set(NifTK_LICENSE_MITK  "@CMAKE_BINARY_DIR@/LICENSE_MITK.txt")
-set(NifTK_LICENSE_NIFTYREG  "@CMAKE_BINARY_DIR@/LICENSE_NiftyReg.txt")
-set(NifTK_LICENSE_NIFTYSEG  "@CMAKE_BINARY_DIR@/LICENSE_NiftySeg.txt")
-set(NifTK_LICENSE_NIFTYSIM  "@CMAKE_BINARY_DIR@/LICENSE_NiftySim.txt")
+set(NifTK_LICENSE_NiftyReg  "@CMAKE_BINARY_DIR@/LICENSE_NiftyReg.txt")
+set(NifTK_LICENSE_NiftyRec  "@CMAKE_BINARY_DIR@/LICENSE_NiftyRec.txt")
+set(NifTK_LICENSE_NiftySeg  "@CMAKE_BINARY_DIR@/LICENSE_NiftySeg.txt")
+set(NifTK_LICENSE_NiftySim  "@CMAKE_BINARY_DIR@/LICENSE_NiftySim.txt")
 set(NifTK_LICENSE_OPENCV  "@CMAKE_BINARY_DIR@/LICENSE_OpenCV.txt")
 set(NifTK_LICENSE_QT  "@CMAKE_BINARY_DIR@/LICENSE_Qt.txt")
 set(NifTK_LICENSE_EIGEN  "@CMAKE_BINARY_DIR@/LICENSE_Eigen.txt")
@@ -168,10 +195,10 @@ set(CTK_DIR "@CTK_DIR@")
 set(NiftyLink_DIR "@NiftyLink_DIR@")
 set(RTK_DIR "@RTK_DIR@")
 set(OpenCV_DIR "@OpenCV_DIR@")
-set(NIFTYREG_DIR "@NIFTYREG_DIR@")
-set(NIFTYSEG_DIR "@NIFTYSEG_DIR@")
-set(NIFTYSIM_DIR "@NIFTYSIM_DIR@")
-set(NIFTYREC_DIR "@NIFTYREC_DIR@")
+set(NiftyReg_DIR "@NiftyReg_DIR@")
+set(NiftySeg_DIR "@NiftySeg_DIR@")
+set(NiftySim_DIR "@NiftySim_DIR@")
+set(NiftyRec_DIR "@NiftyRec_DIR@")
 set(aruco_DIR "@aruco_DIR@")
 set(SlicerExecutionModel_DIR "@SlicerExecutionModel_DIR@")
 set(Eigen_DIR "@Eigen_DIR@")
@@ -203,6 +230,14 @@ set(NifTK_LIBRARIES
   niftkVTK
 )
 
+set(NifTK_BINARY_EXECUTABLE_DIR
+  @CMAKE_BINARY_DIR@/bin/@CMAKE_CFG_INTDIR@
+)
+
+set(NifTK_DOXYGEN_INPUT_DIR
+  @CMAKE_SOURCE_DIR@/Doc/TechnicalManual-ISO
+)
+
 find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)
 
 set(MITK_USE_EXT 1)
@@ -215,7 +250,27 @@ set(MITK_USE_OpenCV ${NifTK_BUILD_IGI})
 if(${NifTK_GENERATE_DOXYGEN_HELP})
   set(BLUEBERRY_USE_QT_HELP ON)
 endif()
+
+# Note:
+# We build NifTK with Boost but MITK without it. The next 'find_package(MITK REQUIRED)'
+# loads values from MITKConfig.cmake that overwrites some Boost related variables, e.g.
+# MITK_USE_Boost. This causes that if a module depends on the Boost package, the
+# MITK_CREATE_MODULE macro will think that the software is being built without Boost,
+# and it will not create the module because of the missing dependency.
+# As a workaround, here we save the values of these variables and restore them after
+# the find_package() call.
+
+set(_boost_root ${BOOST_ROOT})
+set(_mitk_use_boost ${MITK_USE_Boost})
+set(_mitk_use_system_boost ${MITK_USE_SYSTEM_Boost})
+set(_mitk_use_boost_libraries ${MITK_USE_Boost_LIBRARIES})
+
 find_package(MITK REQUIRED)
+
+set(BOOST_ROOT ${_boost_root})
+set(MITK_USE_Boost ${_mitk_use_boost})
+set(MITK_USE_SYSTEM_Boost ${_mitk_use_system_boost})
+set(MITK_USE_Boost_LIBRARIES ${_mitk_use_boost_libraries})
 
 # Stuff to describe the location of ${_module}Config.cmake files.
 # This enables the MITK/CMake module system to find libraries.

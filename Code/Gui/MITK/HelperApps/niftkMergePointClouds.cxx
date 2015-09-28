@@ -15,7 +15,7 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
-#include <PointClouds/mitkMergePointClouds.h>
+#include <mitkMergePointClouds.h>
 
 #include <niftkMergePointCloudsCLP.h>
 

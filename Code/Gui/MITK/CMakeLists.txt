@@ -30,20 +30,6 @@ endif()
 # Add 'Modules', i.e. shared libs
 ####################################################################################
 
-# This project's directory holding module config files
-set(${PROJECT_NAME}_MODULES_CONF_DIR "${PROJECT_BINARY_DIR}/${MODULES_CONF_DIRNAME}")
-
-# Append this projects's module config directory to the global list
-# (This is used to get include directories for the <module_name>Exports.h files right)
-list(APPEND MODULES_CONF_DIRS ${${PROJECT_NAME}_MODULES_CONF_DIR})
-
-# Clean the modulesConf directory. This ensures that modules are sorted
-# according to their dependencies in the Modules/CMakeLists.txt file
-file(GLOB _modules_conf_files ${${PROJECT_NAME}_MODULES_CONF_DIR}/*.cmake)
-if(_modules_conf_files)
-  file(REMOVE ${_modules_conf_files})
-endif()
-
 add_subdirectory(Modules)
 
 #####################################################################################
@@ -73,7 +59,7 @@ foreach(NIFTK_APP ${NIFTK_APPS})
   set(target_info_list ${target_info})
   list(GET target_info_list 1 option_name)
   list(GET target_info_list 0 app_name)
-  if(${option_name} OR NIFTK_BUILD_ALL_APPS)
+  if(${option_name})
     list(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/Apps/${NIFTK_APP}")
   endif()
 endforeach()
@@ -138,4 +124,3 @@ endif()
 ####################################################################################
 
 add_subdirectory(Apps)
-

@@ -69,7 +69,7 @@ public:
   QmitkMultiViewerEditor();
   ~QmitkMultiViewerEditor();
 
-  static const std::string EDITOR_ID;
+  static const QString EDITOR_ID;
 
   /// \brief Get hold of the internal niftkMultiViewerWidget.
   niftkMultiViewerWidget* GetMultiViewer();
@@ -170,6 +170,8 @@ protected:
 private:
 
   const QScopedPointer<QmitkMultiViewerEditorPrivate> d;
+
+  friend class QmitkMultiViewerEditorPrivate;
 };
 
 #endif

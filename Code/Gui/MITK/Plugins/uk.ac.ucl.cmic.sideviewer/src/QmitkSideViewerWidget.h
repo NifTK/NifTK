@@ -215,7 +215,7 @@ private:
   const mitk::TimeGeometry* m_TimeGeometry;
 
   /// \brief Listener to catch events when an editor becomes visible or gets destroyed.
-  berry::IPartListener::Pointer m_EditorLifeCycleListener;
+  QScopedPointer<berry::IPartListener> m_EditorLifeCycleListener;
 
   niftkSingleViewerWidget* m_Viewer;
   QWidget* m_ControlsWidget;
