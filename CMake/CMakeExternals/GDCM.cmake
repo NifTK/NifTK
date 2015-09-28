@@ -42,7 +42,12 @@ niftkMacroDefineExternalProjectVariables(GDCM ${version} ${location})
 
 if(NOT DEFINED GDCM_DIR)
 
-  set(GDCM_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchGDCM-20130814.cmake)
+  set(additional_args )
+  if(CTEST_USE_LAUNCHERS)
+    list(APPEND additional_args
+      "-DCMAKE_PROJECT_${proj}_INCLUDE:FILEPATH=${CMAKE_ROOT}/Modules/CTestUseLaunchers.cmake"
+    )
+  endif()
 
   ExternalProject_Add(${proj}
     LIST_SEPARATOR ^^
@@ -52,21 +57,23 @@ if(NOT DEFINED GDCM_DIR)
     INSTALL_DIR ${proj_INSTALL}
     URL ${proj_LOCATION}
     URL_MD5 ${proj_CHECKSUM}
-    PATCH_COMMAND ${GDCM_PATCH_COMMAND}
+    PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/GDCM-2.4.1.patch
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
+      ${additional_args}
       -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       -DGDCM_BUILD_SHARED_LIBS:BOOL=ON
+    CMAKE_CACHE_ARGS
+      ${EP_COMMON_CACHE_ARGS}
+    CMAKE_CACHE_DEFAULT_ARGS
+      ${EP_COMMON_CACHE_DEFAULT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  if(EP_ALWAYS_USE_INSTALL_DIR)
-    set(GDCM_DIR ${proj_INSTALL})
-    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
-  else()
-    set(GDCM_DIR ${proj_BUILD})
-  endif()
+  set(GDCM_DIR ${proj_INSTALL})
+  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+  mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading GDCM from ${GDCM_DIR}")
 

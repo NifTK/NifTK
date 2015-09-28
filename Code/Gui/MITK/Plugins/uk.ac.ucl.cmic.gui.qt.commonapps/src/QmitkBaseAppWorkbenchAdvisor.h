@@ -50,7 +50,7 @@ public:
    * \brief Derived classes should provide a default perspective id
    * corresponding to a valid perspective defined in their application.
    */
-  virtual std::string GetInitialWindowPerspectiveId() = 0;
+  virtual QString GetInitialWindowPerspectiveId() = 0;
 
   /**
    * Overriden from berry::WorkbenchAdvisor so that we can pop up a dialog box
@@ -65,7 +65,7 @@ protected:
    * \brief Derived classes should provide a window Icon resource path
    * corresponding to a valid icon file, described using a Qt resource location.
    */
-  virtual std::string GetWindowIconResourcePath() const = 0;
+  virtual QString GetWindowIconResourcePath() const = 0;
 
   /**
    * \brief Actually creates the derived WorkbenchWindowAdvisor.

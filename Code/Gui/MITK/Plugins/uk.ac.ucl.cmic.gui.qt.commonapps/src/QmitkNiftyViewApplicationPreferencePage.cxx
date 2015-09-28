@@ -28,14 +28,14 @@
 
 #include <limits>
 
-const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_METHOD_NAME("window/level initialisation method");
-const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_MIDAS("window/level initialisation by MIDAS convention");
-const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_LEVELWINDOW("window/level initialisation by window level widget");
-const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE("window/level initialisation by percentage of data range");
-const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE_NAME("window/level initialisation percentage");
-const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE("window/level initialisation by set data range");
-const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME("window/level initialisation lower bound");
-const std::string QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME("window/level initialisation upper bound");
+const QString QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_METHOD_NAME("window/level initialisation method");
+const QString QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_MIDAS("window/level initialisation by MIDAS convention");
+const QString QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_LEVELWINDOW("window/level initialisation by window level widget");
+const QString QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE("window/level initialisation by percentage of data range");
+const QString QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE_NAME("window/level initialisation percentage");
+const QString QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE("window/level initialisation by set data range");
+const QString QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME("window/level initialisation lower bound");
+const QString QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME("window/level initialisation upper bound");
 
 
 //-----------------------------------------------------------------------------
@@ -78,9 +78,7 @@ void QmitkNiftyViewApplicationPreferencePage::Init(berry::IWorkbench::Pointer )
 void QmitkNiftyViewApplicationPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_PreferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.gui.qt.niftyview");
 
@@ -142,7 +140,7 @@ QWidget* QmitkNiftyViewApplicationPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool QmitkNiftyViewApplicationPreferencePage::PerformOk()
 {
-  std::string method;
+  QString method;
 
   if (m_UseMidasInitialisationRadioButton->isChecked())
   {
@@ -179,7 +177,7 @@ void QmitkNiftyViewApplicationPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void QmitkNiftyViewApplicationPreferencePage::Update()
 {
-  std::string method = m_PreferencesNode->Get(IMAGE_INITIALISATION_METHOD_NAME, IMAGE_INITIALISATION_MIDAS);
+  QString method = m_PreferencesNode->Get(IMAGE_INITIALISATION_METHOD_NAME, IMAGE_INITIALISATION_MIDAS);
   if (method == IMAGE_INITIALISATION_LEVELWINDOW)
   {
     m_UseLevelWindowRadioButton->setChecked(true);

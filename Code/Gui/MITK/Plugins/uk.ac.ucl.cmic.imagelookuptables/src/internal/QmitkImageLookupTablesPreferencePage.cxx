@@ -22,7 +22,7 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string QmitkImageLookupTablesPreferencePage::PRECISION_NAME("precision");
+const QString QmitkImageLookupTablesPreferencePage::PRECISION_NAME("precision");
 
 //-----------------------------------------------------------------------------
 QmitkImageLookupTablesPreferencePage::QmitkImageLookupTablesPreferencePage()
@@ -61,9 +61,7 @@ void QmitkImageLookupTablesPreferencePage::Init(berry::IWorkbench::Pointer )
 void QmitkImageLookupTablesPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
-  berry::IPreferencesService::Pointer prefService 
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_ImageLookupTablesPreferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.imagelookuptables");
 

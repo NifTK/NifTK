@@ -12,14 +12,23 @@
 
 =============================================================================*/
 
-#include "../NifTKApplication.h"
+#include <mitkBaseApplication.h>
+
+#include <QVariant>
+
 /**
  * \file NiftyView.cxx
  * \brief Main entry point for NiftyView application.
  */
+
 int main(int argc, char** argv)
 {
-  return ApplicationMain(argc, argv, "NiftyView", "CMIC", "uk.ac.ucl.cmic.gui.qt.niftyview");
+  // Create a QApplication instance first
+  mitk::BaseApplication myApp(argc, argv);
+  myApp.setApplicationName("NiftyView");
+  myApp.setOrganizationName("CMIC");
+
+  myApp.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.gui.qt.niftyview");
+
+  return myApp.run();
 }
-
-

@@ -37,14 +37,14 @@ class XnatPluginPreferencePage : public QObject, public berry::IQtPreferencePage
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
-  static const std::string SERVER_NAME;
-  static const std::string SERVER_DEFAULT;
-  static const std::string USER_NAME;
-  static const std::string USER_DEFAULT;
-  static const std::string DOWNLOAD_DIRECTORY_NAME;
-  static const std::string DOWNLOAD_DIRECTORY_DEFAULT;
-  static const std::string WORK_DIRECTORY_NAME;
-  static const std::string WORK_DIRECTORY_DEFAULT;
+  static const QString SERVER_NAME;
+  static const QString SERVER_DEFAULT;
+  static const QString USER_NAME;
+  static const QString USER_DEFAULT;
+  static const QString DOWNLOAD_DIRECTORY_NAME;
+  static const QString DOWNLOAD_DIRECTORY_DEFAULT;
+  static const QString WORK_DIRECTORY_NAME;
+  static const QString WORK_DIRECTORY_DEFAULT;
 
   explicit XnatPluginPreferencePage();
   virtual ~XnatPluginPreferencePage();

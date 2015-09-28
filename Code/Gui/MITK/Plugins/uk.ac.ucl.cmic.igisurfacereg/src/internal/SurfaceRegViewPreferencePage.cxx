@@ -26,7 +26,7 @@
 #include <berryPlatform.h>
 #include <niftkICPBasedRegistration.h>
 
-const std::string SurfaceRegViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igisurfacereg");
+const QString SurfaceRegViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igisurfacereg");
 
 //-----------------------------------------------------------------------------
 SurfaceRegViewPreferencePage::SurfaceRegViewPreferencePage()
@@ -66,9 +66,7 @@ void SurfaceRegViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
 
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_SurfaceRegViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 

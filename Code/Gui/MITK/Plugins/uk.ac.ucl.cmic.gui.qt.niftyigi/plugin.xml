@@ -2,8 +2,8 @@
 <?eclipse version="3.0"?>
 <plugin>
 
-  <extension point="org.blueberry.osgi.applications">
-    <application id="uk.ac.ucl.cmic.gui.qt.niftyigi">
+  <extension id="uk.ac.ucl.cmic.gui.qt.niftyigi" point="org.blueberry.osgi.applications">
+    <application>
       <run class="QmitkNiftyIGIApplication"/>
     </application>
   </extension>

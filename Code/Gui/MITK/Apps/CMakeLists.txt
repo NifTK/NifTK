@@ -22,7 +22,7 @@ foreach(NIFTK_APP ${NIFTK_APPS})
   list(GET target_info_list 1 option_name)
   list(GET target_info_list 0 app_name)
 
-  if(${option_name} OR NIFTK_BUILD_ALL_APPS)
+  if(${option_name})
     add_subdirectory(${app_name})
   endif()
       

@@ -23,6 +23,7 @@ set(MY_APP_NAME NiftyView)
 ###########################################################
 set(_exclude_plugins
   org_mitk_gui_qt_extapplication
+  org_mitk_gui_qt_aicpregistration
 )
 
 ###########################################################

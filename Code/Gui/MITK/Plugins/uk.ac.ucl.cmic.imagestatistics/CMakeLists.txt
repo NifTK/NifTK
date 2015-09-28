@@ -14,15 +14,13 @@
 
 project(uk_ac_ucl_cmic_imagestatistics)
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
+mitk_create_plugin(
   EXPORT_DIRECTIVE IMAGESTATISTICS_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS MitkQtWidgetsExt
 )
 
-target_link_libraries(uk_ac_ucl_cmic_imagestatistics
-  niftkITK
-)
+target_link_libraries(uk_ac_ucl_cmic_imagestatistics PRIVATE niftkITK)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(uk_ac_ucl_cmic_imagestatistics)

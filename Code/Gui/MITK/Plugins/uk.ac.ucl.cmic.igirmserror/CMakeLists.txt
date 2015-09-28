@@ -14,7 +14,7 @@
 
 project(uk_ac_ucl_cmic_igirmserror)
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
+mitk_create_plugin(
   EXPORT_DIRECTIVE RMSERROR_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS niftkIGIGui

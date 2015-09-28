@@ -41,14 +41,14 @@ public:
   QmitkNiftyViewApplicationPreferencePage(const QmitkNiftyViewApplicationPreferencePage& other);
   ~QmitkNiftyViewApplicationPreferencePage();
 
-  static const std::string IMAGE_INITIALISATION_METHOD_NAME;
-  static const std::string IMAGE_INITIALISATION_MIDAS;
-  static const std::string IMAGE_INITIALISATION_LEVELWINDOW;
-  static const std::string IMAGE_INITIALISATION_PERCENTAGE;
-  static const std::string IMAGE_INITIALISATION_PERCENTAGE_NAME;
-  static const std::string IMAGE_INITIALISATION_RANGE;
-  static const std::string IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME;
-  static const std::string IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME;
+  static const QString IMAGE_INITIALISATION_METHOD_NAME;
+  static const QString IMAGE_INITIALISATION_MIDAS;
+  static const QString IMAGE_INITIALISATION_LEVELWINDOW;
+  static const QString IMAGE_INITIALISATION_PERCENTAGE;
+  static const QString IMAGE_INITIALISATION_PERCENTAGE_NAME;
+  static const QString IMAGE_INITIALISATION_RANGE;
+  static const QString IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME;
+  static const QString IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME;
 
   void Init(berry::IWorkbench::Pointer workbench);
 

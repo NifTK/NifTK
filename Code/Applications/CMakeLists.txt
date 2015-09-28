@@ -100,7 +100,6 @@ if(SlicerExecutionModel_FOUND)
     niftkLogInvertImage
     niftkMammogramFatSubtraction
     niftkMammogramMaskSegmentation
-    niftkMammographicTumourDistribution
     niftkMaskDICOMMammograms
     niftkMammogramPectoralisSegmentation
     niftkMultiply
@@ -108,7 +107,6 @@ if(SlicerExecutionModel_FOUND)
     niftkNegateImage
     niftkOtsuThresholdImage
     niftkPrintDICOMSeries
-    niftkRegionalMammographicDensity
     niftkRescaleImageUsingHistogramPercentiles
     niftkScalarConnectedComponentImageFilter
     niftkSegmentForegroundFromBackground
@@ -167,6 +165,8 @@ if(SlicerExecutionModel_FOUND)
         niftkBreastDCEandADC
         niftkBreastDensityFromMRIs
         niftkBreastDensityFromMRIsGivenMaskAndImage
+        niftkMammographicTumourDistribution
+        niftkRegionalMammographicDensity
         )
       list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK_AND_QT})
 

@@ -27,8 +27,8 @@
 
 
 //-----------------------------------------------------------------------------
-const char* UndistortViewPreferencesPage::s_PrefsNodeName                         = "/uk.ac.ucl.cmic.igiundistort";
-const char* UndistortViewPreferencesPage::s_DefaultCalibrationFilePathPrefsName   = "default calib file path";
+QString UndistortViewPreferencesPage::s_PrefsNodeName                         = "/uk.ac.ucl.cmic.igiundistort";
+QString UndistortViewPreferencesPage::s_DefaultCalibrationFilePathPrefsName   = "default calib file path";
 
 
 //-----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ void UndistortViewPreferencesPage::CreateQtControl(QWidget* parent)
   setupUi(parent);
   connect(m_DefaultFilePathBrowseButton, SIGNAL(clicked()), this, SLOT(OnDefaultPathBrowseButtonClicked()));
 
-  berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   m_UndistortPreferencesNode = prefService->GetSystemPreferences()->Node(s_PrefsNodeName);
 
   // read prefs and stuff it into controls
@@ -96,7 +96,7 @@ QWidget* UndistortViewPreferencesPage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool UndistortViewPreferencesPage::PerformOk()
 {
-  m_UndistortPreferencesNode->Put(s_DefaultCalibrationFilePathPrefsName, m_DefaultFilePathLineEdit->text().toStdString());
+  m_UndistortPreferencesNode->Put(s_DefaultCalibrationFilePathPrefsName, m_DefaultFilePathLineEdit->text());
 
   return true;
 }
@@ -112,6 +112,6 @@ void UndistortViewPreferencesPage::PerformCancel()
 //-----------------------------------------------------------------------------
 void UndistortViewPreferencesPage::Update()
 {
-  m_DefaultCalibrationFilePath = QString::fromStdString(m_UndistortPreferencesNode->Get(s_DefaultCalibrationFilePathPrefsName, ""));
+  m_DefaultCalibrationFilePath = m_UndistortPreferencesNode->Get(s_DefaultCalibrationFilePathPrefsName, "");
   m_DefaultFilePathLineEdit->setText(m_DefaultCalibrationFilePath);
 }

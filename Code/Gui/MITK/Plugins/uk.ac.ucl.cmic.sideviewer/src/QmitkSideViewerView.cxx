@@ -119,7 +119,7 @@ void QmitkSideViewerView::RetrievePreferenceValues()
 
 
 //-----------------------------------------------------------------------------
-std::string QmitkSideViewerView::GetPreferencesNodeName()
+QString QmitkSideViewerView::GetPreferencesNodeName()
 {
   return "/uk_ac_ucl_cmic_sideviewer";
 }
