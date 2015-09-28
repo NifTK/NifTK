@@ -675,7 +675,7 @@ bool ProjectPointsOnStereoVideo::TriangulateGoldStandardObjectList ( )
 {
   if ( (! m_ProjectOK ) || (m_MaxGoldStandardPointIndex == -1 && m_MaxGoldStandardLineIndex == -1) ) 
   {
-    MITK_ERROR << "Attempted to run CalculateTriangulateErrors, before running project(), no result.";
+    MITK_ERROR << "Attempted to run TriangulateGoldStandardObjectList, before running project(), no result.";
     return false;
   }
   //everything should already be clasified and sorted so all we need to to do is go through the vector looking for clear();
@@ -1423,7 +1423,25 @@ void ProjectPointsOnStereoVideo::ClassifyGoldStandardPoints ()
     {
       m_GoldStandardPoints.erase ( it );
     }
+    else 
+    {
+      if ( it->m_IsLine ) 
+      {
+        if ( it->m_Id > m_MaxGoldStandardLineIndex )
+        {
+          m_MaxGoldStandardLineIndex = it->m_Id ;
+        }
+      }
+      else
+      {
+        if ( it->m_Id > m_MaxGoldStandardPointIndex )
+        {
+          m_MaxGoldStandardPointIndex = it->m_Id ;
+        }
+      }
+    }
   }
+  //now go through the vector and reset m_MaxGSLineIndex and m_MaxGSPointIndex
   MITK_INFO << "Removed " << startsize - m_GoldStandardPoints.size() << " objects from gold standard vector, " <<  m_GoldStandardPoints.size() << " objects left.";
  
   m_GoldStandardPointsClassifiedOK = true;
