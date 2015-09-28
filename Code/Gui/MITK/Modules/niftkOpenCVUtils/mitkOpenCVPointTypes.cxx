@@ -607,28 +607,36 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
       assert ( m_PickedObjects[i].m_Points.size() <= 1 );
       for ( unsigned int j = 0 ; j < m_PickedObjects[i].m_Points.size() ; j ++ )
       {
-        cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
-        cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar);
-        cv::circle(image, point,5,m_PickedObjects[i].m_Scalar,1,1);
+        if ( mitk::IsNotNaNorInf ( m_PickedObjects[i].m_Points[j] ) ) 
+        {
+          cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
+          cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar);
+          cv::circle(image, point,5,m_PickedObjects[i].m_Scalar,1,1);
+        }
       }
     }
     else
     {
       if ( m_PickedObjects[i].m_Points.size() > 0 )
       {
+        bool lineStarted = false;
         for ( unsigned int j = 0 ; j < m_PickedObjects[i].m_Points.size() ; j ++ )
         {
-          if ( j == 0 )
+          if ( mitk::IsNotNaNorInf ( m_PickedObjects[i].m_Points[j] ) ) 
           {
-            cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
-            cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar);
-            cv::circle(image, point,5,m_PickedObjects[i].m_Scalar,1,1);
-          }
-          else
-          {
-            cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
-            cv::Point2i point2 = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j-1]);
-            cv::line(image,  point, point2, m_PickedObjects[i].m_Scalar);
+            if ( ! lineStarted )
+            {
+              cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
+              cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar);
+              cv::circle(image, point,5,m_PickedObjects[i].m_Scalar,1,1);
+              lineStarted = true;
+            }
+            else
+            {
+              cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
+              cv::Point2i point2 = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j-1]);
+              cv::line(image,  point, point2, m_PickedObjects[i].m_Scalar);
+            }
           }
         }
       }
@@ -988,7 +996,7 @@ cv::Point2i Point3dToPoint2i (const cv::Point3d& point)
   }
   else
   {
-    return cv::Point2i ( 0, 0 );
+    return cv::Point2i ( -1, -1 );
   }
 }
 } // end namespace
