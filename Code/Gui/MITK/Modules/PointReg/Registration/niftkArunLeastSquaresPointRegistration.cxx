@@ -64,8 +64,8 @@ double PointBasedRegistrationUsingSVD(const std::vector<cv::Point3d>& fixedPoint
 
 
 //-----------------------------------------------------------------------------
-double PointBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fixedPoints,
-                                      const mitk::PointSet::Pointer& movingPoints,
+double PointBasedRegistrationUsingSVD(const mitk::PointSet::Pointer fixedPoints,
+                                      const mitk::PointSet::Pointer movingPoints,
                                       vtkMatrix4x4& matrix)
 {
   if (fixedPoints.IsNull())

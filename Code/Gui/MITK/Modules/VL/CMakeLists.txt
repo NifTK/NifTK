@@ -53,7 +53,10 @@ MITK_CREATE_MODULE(
 
 target_link_libraries(niftkVL PRIVATE ${VL_LIBRARIES})
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
+# Note:
+# Cotire must be off on Linux because of a symbol name class in Xlib.h and qstyleoption.h
+# Cotire must be ON on Windows and Mac.
+if (COMMAND cotire AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   cotire(niftkVL)
 endif()
 

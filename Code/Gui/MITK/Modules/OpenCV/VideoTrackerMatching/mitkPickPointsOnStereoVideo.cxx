@@ -61,32 +61,7 @@ void PickPointsOnStereoVideo::Initialise(std::string directory)
 {
   m_InitOK = false;
   m_Directory = directory;
-  
-  if ( m_Capture == NULL ) 
-  {
-    std::vector <std::string> videoFiles = niftk::FindVideoData(m_Directory);
-    if ( videoFiles.size() == 0 ) 
-    {
-      MITK_ERROR << "Failed to find any video files";
-      m_InitOK = false;
-      return;
-    }
-    if ( videoFiles.size() > 1 ) 
-    {
-      MITK_WARN << "Found multiple video files, will only use " << videoFiles[0];
-    }
-    m_VideoIn = videoFiles[0];
-    try
-    {
-      m_Capture = mitk::InitialiseVideoCapture(m_VideoIn, (! m_HaltOnVideoReadFail )); 
-    }
-    catch (std::exception& e)
-    {
-      MITK_ERROR << "Caught exception " << e.what();
-      exit(1);
-    }
-  }
-
+  m_OutDirectory = m_Directory + niftk::GetFileSeparator() +  "PickedVideoPoints";  
   m_InitOK = true;
   return;
 
@@ -100,7 +75,36 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
     MITK_WARN << "Called project before initialise.";
     return;
   }
-    
+ 
+  if ( m_Capture == NULL ) 
+  {
+    m_VideoIn = niftk::FindVideoFile(m_Directory, niftk::Basename (niftk::Basename ( trackerMatcher->GetFrameMap() )));
+    if ( m_VideoIn == "" ) 
+    {
+      m_InitOK = false;
+      return;
+    }
+    try
+    {
+      m_Capture = mitk::InitialiseVideoCapture(m_VideoIn, (! m_HaltOnVideoReadFail )); 
+    }
+    catch (std::exception& e)
+    {
+      MITK_ERROR << "Caught exception " << e.what();
+      exit(1);
+    }
+    try 
+    {
+      niftk::CreateDirAndParents ( m_OutDirectory );
+    }
+    catch (std::exception& e)
+    {
+      MITK_ERROR << "Caught exception " << e.what();
+      exit(1);
+    }
+  }
+
+   
   m_ProjectOK = false;
 
   int framenumber = 0 ;
@@ -109,9 +113,10 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
   cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
      
   cv::Mat blankMat = cvCreateMat(10,100,CV_32FC3);
-  IplImage blankImage(blankMat);
-  cvShowImage("Left Channel" , &blankImage);
-  cvShowImage("Right Channel" , &blankImage);
+
+  cv::imshow("Left Channel", blankMat);
+  cv::imshow("Right Channel", blankMat);
+
   unsigned long long startTime;
   trackerMatcher->GetVideoFrame(0, &startTime);
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
@@ -127,7 +132,12 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
     {
       long long timingError;
       cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, NULL, m_ReferenceIndex).inv();
-
+      
+      double xScale = 1.0;
+      if ( m_HalfImageWidth )
+      {
+        xScale = 0.5;
+      }
       cv::Mat tempMat;
       cv::Mat leftVideoImage;
       m_Capture->read(tempMat);
@@ -166,9 +176,9 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
             }
           }
           
-          std::string leftOutName = boost::lexical_cast<std::string>(timeStamp) + "_leftPoints";
+          std::string leftOutName = m_OutDirectory + niftk::GetFileSeparator() + boost::lexical_cast<std::string>(timeStamp) + "_leftPoints";
           trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
-          std::string rightOutName = boost::lexical_cast<std::string>(timeStamp) + "_rightPoints";
+          std::string rightOutName = m_OutDirectory + niftk::GetFileSeparator() + boost::lexical_cast<std::string>(timeStamp) + "_rightPoints";
           bool overWriteLeft = true;
           bool overWriteRight = true;
           key = 0;
@@ -226,14 +236,18 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
 
           PickedPointList::Pointer leftPickedPoints = PickedPointList::New();
           PickedPointList::Pointer rightPickedPoints = PickedPointList::New();
-          leftPickedPoints->SetInLineMode (m_PickingLine);
-          leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
           leftPickedPoints->SetFrameNumber (framenumber);
           leftPickedPoints->SetChannel ("left");
-          rightPickedPoints->SetInLineMode (m_PickingLine);
-          rightPickedPoints->SetInOrderedMode ( m_OrderedPoints);
+          leftPickedPoints->SetTimeStamp(timeStamp);
+          leftPickedPoints->SetInLineMode (m_PickingLine);
+          leftPickedPoints->SetInOrderedMode (m_OrderedPoints);
+          leftPickedPoints->SetXScale ( 1.0 / xScale ); 
           rightPickedPoints->SetFrameNumber (framenumber + 1);
           rightPickedPoints->SetChannel ("right");
+          rightPickedPoints->SetTimeStamp(timeStamp);
+          rightPickedPoints->SetInLineMode (m_PickingLine);
+          rightPickedPoints->SetInOrderedMode ( m_OrderedPoints);
+          rightPickedPoints->SetXScale ( 1.0 / xScale ); 
 
           cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
           cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
@@ -288,8 +302,9 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                   }
                 }
                 
-                IplImage image(leftAnnotatedVideoImage);
-                cvShowImage("Left Channel" , &image);
+                cv::Mat limage;
+                cv::resize ( leftAnnotatedVideoImage, limage, cv::Size(0,0), xScale, 1.0, CV_INTER_CUBIC);
+                cv::imshow("Left Channel" , limage);
               }
 
               if ( overWriteRight )
@@ -310,13 +325,14 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                   }
                 }
                 
-                IplImage rimage(rightAnnotatedVideoImage);
-                cvShowImage("Right Channel" , &rimage);
+                cv::Mat rimage;
+                cv::resize ( rightAnnotatedVideoImage, rimage, cv::Size(0,0), xScale, 1.0, CV_INTER_CUBIC);
+                cv::imshow("Right Channel" ,rimage);
               }
             }
           }
-          cvShowImage("Left Channel" , &blankImage);
-          cvShowImage("Right Channel" , &blankImage);
+          cv::imshow("Left Channel", blankMat);
+          cv::imshow("Right Channel", blankMat);
         } 
       }
       else

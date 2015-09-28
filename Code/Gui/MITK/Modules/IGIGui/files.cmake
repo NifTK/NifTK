@@ -21,6 +21,7 @@ set(CPP_FILES
   Common/QmitkImageAndTransformSenderWidget.cxx
   Common/QmitkMatrixWidget.cxx
   Common/QmitkCalibratedModelRenderingPipeline.cxx
+  Common/QmitkVideoTestClient.cxx
   OverlayEditor/QmitkBitmapOverlay.cxx
   OverlayEditor/QmitkSingle3DView.cxx
   OverlayEditor/QmitkIGIOverlayEditor.cxx
@@ -34,6 +35,7 @@ set(MOC_H_FILES
   Common/QmitkImageAndTransformSenderWidget.h
   Common/QmitkMatrixWidget.h
   Common/QmitkCalibratedModelRenderingPipeline.h
+  Common/QmitkVideoTestClient.h
   OverlayEditor/QmitkSingle3DView.h
   OverlayEditor/QmitkIGIOverlayEditor.h
 )

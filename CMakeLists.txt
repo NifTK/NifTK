@@ -23,40 +23,12 @@ cmake_minimum_required(VERSION ${NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION})
 # See http://cmake.org/cmake/help/cmake-2-8-docs.html#section_Policies for details
 ##################################################################################
 
-set(project_policies
-#  CMP0001 # NEW: CMAKE_BACKWARDS_COMPATIBILITY should no longer be used.
-#  CMP0002 # NEW: Logical target names must be globally unique.
-#  CMP0003 # NEW: Libraries linked via full path no longer produce linker search paths.
-#  CMP0004 # NEW: Libraries linked may NOT have leading or trailing whitespace.
-#  CMP0005 # NEW: Preprocessor definition values are now escaped automatically.
-#  CMP0006 # NEW: Installing MACOSX_BUNDLE targets requires a BUNDLE DESTINATION.
-#  CMP0007 # NEW: List command no longer ignores empty elements.
-#  CMP0008 # NEW: Libraries linked by full-path must have a valid library file name.
-#  CMP0009 # NEW: FILE GLOB_RECURSE calls should not follow symlinks by default.
-#  CMP0010 # NEW: Bad variable reference syntax is an error.
-#  CMP0011 # NEW: Included scripts do automatic cmake_policy PUSH and POP.
-#  CMP0012 # NEW: if() recognizes numbers and boolean constants.
-#  CMP0013 # NEW: Duplicate binary directories are not allowed.
-#  CMP0014 # NEW: Input directories must have CMakeLists.txt
-  )
+set(project_policies )
 foreach(policy ${project_policies})
   if(POLICY ${policy})
     cmake_policy(SET ${policy} NEW)
   endif()
 endforeach()
-
-#if (POLICY CMP0048)
-  # Introduced in CMake 3.0.
-  # OLD: Leave VERSION variables untouched.
-#  cmake_policy(SET CMP0048 OLD)
-#endif ()
-
-#if (POLICY CMP0053)
-  # Introduced in CMake 3.1.
-  # OLD: Leave references and variable expansion as pre version 3.1.
-#  cmake_policy(SET CMP0053 OLD)
-#endif ()
-
 
 ###########################################################################
 # Precompiled headers
@@ -89,7 +61,7 @@ else()
   # Our version number. Edit this to generate a new version.
   # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
   # Also, Trac 1592, version number must change if CTK changes significantly.
-  project(NIFTK VERSION 15.05.0)
+  project(NIFTK VERSION 15.09.0)
 endif()
 
 ######################################################################
@@ -306,6 +278,11 @@ if (WIN32)
 endif()
 
 ######################################################################
+# Check if Doxygen is available for the GUI help pages.
+######################################################################
+find_package(Doxygen)
+
+######################################################################
 # Setup the path to load CMake macros, and extra CMake files.
 ######################################################################
 set(CMAKE_MODULE_PATH
@@ -514,20 +491,16 @@ endif()
 # users and set the 'MITK_USE_*' options accordingly.
 
 # -----------------------------------------
-# Optional external projects with no inter-dependencies
+# The following external projects must be ordered according to their inter-dependencies.
 
 set_property(GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS "")
-
 #mitkFunctionAddExternalProject(NAME Camino OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME Boost ON ADVANCED)
-
 mitkFunctionAddExternalProject(NAME Eigen ON ADVANCED)
-
 mitkFunctionAddExternalProject(NAME OpenCV ON ADVANCED)
 mitkFunctionAddExternalProject(NAME AprilTags OFF ADVANCED DEPENDS OpenCV Eigen)
 mitkFunctionAddExternalProject(NAME ArUco OFF ADVANCED DEPENDS OpenCV)
 mitkFunctionAddExternalProject(NAME FLANN OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME PCL OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME RTK OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME VL OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME CGAL OFF ADVANCED DEPENDS Boost)
@@ -538,10 +511,7 @@ mitkFunctionAddExternalProject(NAME NiftyReg OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftyRec OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
 
-# -----------------------------------------
-# The following external projects must be ordered according to their inter-dependencies
-
-# These are "hard" dependencies and always set to ON
+# These are "hard" dependencies and always set to ON.
 mitkFunctionAddExternalProject(NAME DCMTK ON ADVANCED)
 mitkFunctionAddExternalProject(NAME GDCM ON ADVANCED)
 mitkFunctionAddExternalProject(NAME ITK ON ADVANCED NO_CACHE DEPENDS GDCM)
@@ -549,6 +519,9 @@ mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON ADVANCED DEPENDS ITK
 mitkFunctionAddExternalProject(NAME VTK ON ADVANCED NO_CACHE)
 mitkFunctionAddExternalProject(NAME CTK ON ADVANCED DEPENDS QT ITK VTK DCMTK)
 mitkFunctionAddExternalProject(NAME MITK ON ADVANCED NO_CACHE DEPENDS ITK VTK GDCM DCMTK CTK Eigen)
+
+# Further optional dependencies.
+mitkFunctionAddExternalProject(NAME PCL OFF ADVANCED Boost Eigen FLANN VTK)
 
 # -----------------------------------------
 # Other MITK_USE_* options not related to external projects build via the NifTK superbuild
@@ -676,7 +649,11 @@ set(OPENCV_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for OpenCV
 mark_as_advanced(OPENCV_ADDITIONAL_CXX_FLAGS)
 set(OPENCV_WITH_CUDA OFF CACHE BOOL "Build OpenCV with CUDA support (takes a long time)")
 mark_as_advanced(OPENCV_WITH_CUDA)
-set(OPENCV_WITH_FFMPEG OFF CACHE BOOL "Build OpenCV with FFMPEG support")
+if(WIN32)
+  set(OPENCV_WITH_FFMPEG ON CACHE BOOL "Build OpenCV with FFMPEG support")
+else(WIN32)
+  set(OPENCV_WITH_FFMPEG OFF CACHE BOOL "Build OpenCV with FFMPEG support")
+endif(WIN32)
 mark_as_advanced(OPENCV_WITH_FFMPEG)
 set(OPENCV_WITH_NONFREE OFF CACHE BOOL "Build OpenCV with nonfree library")
 mark_as_advanced(OPENCV_WITH_NONFREE)
@@ -759,7 +736,7 @@ set(NIFTK_INCLUDE_DIRS_BUILD_TREE
 if (BUILD_MESHING)
   set(NIFTK_INCLUDE_DIRS_BUILD_TREE
     ${NIFTK_INCLUDE_DIRS_BUILD_TREE}
-    ${CMAKE_SOURCE_DIR}/Code/Libs/Common/Meshing
+    ${CMAKE_SOURCE_DIR}/Code/Libs/Meshing
   )
 endif (BUILD_MESHING)
 
@@ -806,6 +783,9 @@ if(NIFTK_USE_CUDA)
     add_definitions(-D_USE_CUDA)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-D_USE_CUDA")
     message("Found CUDA")
+    if(APPLE)
+      set(CMAKE_SHARED_LINKER_FLAGS "-F/Library/Frameworks ${CMAKE_SHARED_LINKER_FLAGS}")
+    endif()
   else(CUDA_FOUND)
     message("Didn't find CUDA")
   endif(CUDA_FOUND)
@@ -858,6 +838,14 @@ endif(BUILD_SUPERBUILD)
 message("CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 message("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 
+######################################################################
+# Add additional entries to the CMAKE_MODULE_PATH, now all externals
+# are already built.
+######################################################################
+set(CMAKE_MODULE_PATH
+    ${aruco_DIR}/lib/cmake
+    ${CMAKE_MODULE_PATH}
+   )
 
 ######################################################################
 # Configure CMake files before we need to use them in the FIND_XXX.
@@ -865,7 +853,10 @@ message("CMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}")
 # So, the variables NIFTK_BOOSTINSTALL etc.
 # should be passed in on cmake command line, or set up using ccmake.
 ######################################################################
-
+find_package(aruco)
+if(aruco_FOUND)
+  configure_file(${CMAKE_SOURCE_DIR}/CMake/FindArUco.cmake ${CMAKE_BINARY_DIR}/FindArUco.cmake @ONLY)
+endif()
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
@@ -888,7 +879,6 @@ file(GLOB package_depends_files ${CMAKE_SOURCE_DIR}/CMake/PackageDepends/*.cmake
 foreach(file_to_copy ${package_depends_files})
   file(COPY ${file_to_copy} DESTINATION ${CMAKE_BINARY_DIR}/CMakePackageDepends)
 endforeach()
-
 
 # Configure module naming conventions
 set(MITK_MODULE_NAME_REGEX_MATCH "^[A-Z].*$")
@@ -946,15 +936,6 @@ if(MITK_USE_DCMTK)
 #  endif()
   find_package(DCMTK REQUIRED MODULE)
 endif()
-
-######################################################################
-# Add additional entries to the CMAKE_MODULE_PATH, now all externals
-# are already built.
-######################################################################
-set(CMAKE_MODULE_PATH
-    ${aruco_DIR}/lib/cmake
-    ${CMAKE_MODULE_PATH}
-   )
 
 ######################################################################
 # Check each GUI application to set up MACOSX_BUNDLE_NAMES

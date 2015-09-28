@@ -16,7 +16,7 @@
 #include <numeric>
 #include <algorithm>
 #include <functional>
-#include <mitkMathsUtils.h>
+#include <niftkMathsUtils.h>
 #include <mitkExceptionMacro.h>
 #include <mitkOpenCVMaths.h>
 #include <opencv2/gpu/gpu.hpp>

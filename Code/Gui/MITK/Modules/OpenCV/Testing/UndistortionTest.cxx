@@ -16,7 +16,7 @@
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkProperties.h>
 #include <mitkPointSet.h>
-#include <CameraCalibration/Undistortion.h>
+#include <CameraCalibration/niftkUndistortion.h>
 #include <Conversion/ImageConversion.h>
 
 

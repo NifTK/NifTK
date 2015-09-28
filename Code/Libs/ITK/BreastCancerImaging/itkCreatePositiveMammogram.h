@@ -25,6 +25,7 @@
 #include <itkMinimumMaximumImageCalculator.h>
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkLogNonZeroIntensitiesImageFilter.h>
+#include <itkCastImageFilter.h>
 
 namespace itk
 {
@@ -219,10 +220,15 @@ bool ConvertMammogramFromRawToPresentation( typename TImage::Pointer &image,
   typedef itk::MetaDataDictionary DictionaryType;
   typedef itk::MetaDataObject< std::string > MetaDataStringType;
 
+  typedef itk::Image< float, TImage::ImageDimension > FloatImageType;
+
   typedef itk::MinimumMaximumImageCalculator< TImage > MinimumMaximumImageCalculatorType;
-  typedef itk::RescaleIntensityImageFilter< TImage, TImage > RescalerType;
-  typedef itk::InvertIntensityBetweenMaxAndMinImageFilter< TImage > InvertFilterType;
-  typedef itk::LogNonZeroIntensitiesImageFilter< TImage, TImage > LogFilterType;
+
+  typedef itk::CastImageFilter< TImage, FloatImageType > CastFilterType;
+  typedef itk::InvertIntensityBetweenMaxAndMinImageFilter< FloatImageType > InvertFilterType;
+  typedef itk::LogNonZeroIntensitiesImageFilter< FloatImageType, FloatImageType > LogFilterType;
+
+  typedef itk::RescaleIntensityImageFilter< FloatImageType, TImage > RescalerType;
 
   DictionaryType::ConstIterator tagItr;
   DictionaryType::ConstIterator tagEnd;
@@ -349,24 +355,30 @@ bool ConvertMammogramFromRawToPresentation( typename TImage::Pointer &image,
    
   // Convert the image to a "FOR PRESENTATION" version by calculating the logarithm and inverting 
 
+  typename CastFilterType::Pointer castFilter = CastFilterType::New();
+  castFilter->SetInput( image );
+  castFilter->UpdateLargestPossibleRegion();
+  typename FloatImageType::Pointer flImage = castFilter->GetOutput();
+
   if ( flgPreInvert ) 
   {
     typename InvertFilterType::Pointer invfilter = InvertFilterType::New();
-    invfilter->SetInput( image );
+    invfilter->SetInput( flImage );
     invfilter->UpdateLargestPossibleRegion();
-    image = invfilter->GetOutput();
+    flImage = invfilter->GetOutput();
+    flImage->DisconnectPipeline();
   }
 
   typename LogFilterType::Pointer logfilter = LogFilterType::New();
-  logfilter->SetInput(image);
+  logfilter->SetInput( flImage );
   logfilter->UpdateLargestPossibleRegion();
    
   typename InvertFilterType::Pointer invfilter = InvertFilterType::New();
   invfilter->SetInput(logfilter->GetOutput());
   invfilter->UpdateLargestPossibleRegion();
 
-  image = invfilter->GetOutput();
-  image->DisconnectPipeline();
+  flImage = invfilter->GetOutput();
+  flImage->DisconnectPipeline();
 
 
   // Rescale the image
@@ -381,7 +393,7 @@ bool ConvertMammogramFromRawToPresentation( typename TImage::Pointer &image,
   std::cout << "Image output range will be: " << intensityRescaler->GetOutputMinimum()
             << " to " << intensityRescaler->GetOutputMaximum() << std::endl;
 
-  intensityRescaler->SetInput( image );  
+  intensityRescaler->SetInput( flImage );  
 
   intensityRescaler->UpdateLargestPossibleRegion();
 

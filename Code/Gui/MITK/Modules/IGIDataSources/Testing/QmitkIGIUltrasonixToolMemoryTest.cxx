@@ -17,6 +17,7 @@
 #include <mitkDataStorage.h>
 #include <mitkStandaloneDataStorage.h>
 #include <NiftyLinkImageMessage.h>
+#include <NiftyLinkImageMessageHelpers.h>
 #include <QmitkIGINiftyLinkDataType.h>
 #include <QmitkIGIUltrasonixTool.h>
 #include <QImage>
@@ -50,12 +51,15 @@ int QmitkIGIUltrasonixToolMemoryTest(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
-  NiftyLinkImageMessage::Pointer msg;
-  msg = new NiftyLinkImageMessage();
-  msg->SetQImage(testImage);
+  niftk::NiftyLinkMessageContainer::Pointer msg = niftk::CreateImageMessage(
+          QString("TestDevice")
+        , QString("TestHost")
+        , 1234
+        , testImage
+        );
 
   QmitkIGINiftyLinkDataType::Pointer dataType = QmitkIGINiftyLinkDataType::New();
-  dataType->SetMessage(msg.data());
+  dataType->SetMessageContainer(msg);
 
   // It gets added to the buffer of the data source.
   mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();

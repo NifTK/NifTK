@@ -55,6 +55,8 @@ struct arguments
 
   std::string inputImage;
   std::string maskImage;
+
+  std::string outputPectoralMask;  
   std::string outputMask;  
   std::string outputImage;  
   std::string outputTemplate;  
@@ -128,6 +130,7 @@ int DoMain(arguments args)
     MammogramMaskSegmentationImageFilterType;
 
   typename MaskImageType::Pointer mask = 0;
+  typename MaskImageType::Pointer pecMask = 0;
 
 
   // Read the input image
@@ -255,9 +258,9 @@ int DoMain(arguments args)
     }                
 
     mask = maskFilter->GetOutput();
-
-    mask->DisconnectPipeline();
   }
+
+  mask->DisconnectPipeline();
 
 
   // Create the segmentation filter
@@ -284,8 +287,8 @@ int DoMain(arguments args)
     return EXIT_FAILURE;
   }                
 
-  mask = pecFilter->GetOutput( 0 );
-  mask->DisconnectPipeline();
+  pecMask = pecFilter->GetOutput( 0 );
+  pecMask->DisconnectPipeline();
 
 
   // Apply the mask to the image?
@@ -295,7 +298,7 @@ int DoMain(arguments args)
   {
 
     typename itk::ImageRegionConstIterator< MaskImageType > 
-      inputIterator( mask, mask->GetLargestPossibleRegion());
+      inputIterator( pecMask, pecMask->GetLargestPossibleRegion());
 
     typename itk::ImageRegionIterator< InputImageType > 
       outputIterator(image, image->GetLargestPossibleRegion());
@@ -330,11 +333,51 @@ int DoMain(arguments args)
   }
 
 
+  // Save the pectoral mask image?
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  if ( args.outputPectoralMask.length() )
+  {
+    typedef itk::ImageFileWriter< MaskImageType > MaskImageWriterType;
+
+    typename MaskImageWriterType::Pointer imageWriter = MaskImageWriterType::New();
+
+    imageWriter->SetFileName(args.outputPectoralMask);
+    imageWriter->SetInput( pecMask );
+  
+    try
+    {
+      imageWriter->Update(); 
+    }
+    catch( itk::ExceptionObject & err ) 
+    { 
+      std::cerr << "Failed: " << err << std::endl; 
+      return EXIT_FAILURE;
+    }       
+  }         
+
+
   // Save the mask image?
   // ~~~~~~~~~~~~~~~~~~~~
 
   if ( args.outputMask.length() )
   {
+    typename itk::ImageRegionIterator< MaskImageType > 
+      maskIterator( mask, mask->GetLargestPossibleRegion());
+
+    typename itk::ImageRegionConstIterator< MaskImageType > 
+      pecIterator( pecMask, pecMask->GetLargestPossibleRegion());
+       
+    for ( maskIterator.GoToBegin(), pecIterator.GoToBegin();
+          ! maskIterator.IsAtEnd();
+          ++maskIterator, ++pecIterator )
+    {
+      if ( pecIterator.Get() )
+      {
+        maskIterator.Set( 0 );
+      }
+    }
+
     typedef itk::ImageFileWriter< MaskImageType > MaskImageWriterType;
 
     typename MaskImageWriterType::Pointer imageWriter = MaskImageWriterType::New();

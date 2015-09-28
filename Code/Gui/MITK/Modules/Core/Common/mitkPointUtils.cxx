@@ -14,7 +14,7 @@
 
 #include "mitkPointUtils.h"
 #include <mitkCommon.h>
-#include <boost/math/special_functions/fpclassify.hpp>
+#include <cmath>
 
 //-----------------------------------------------------------------------------
 double mitk::CalculateStepSize(double *spacing)
@@ -156,6 +156,31 @@ void mitk::Normalise(mitk::Point3D& vector)
 
 
 //-----------------------------------------------------------------------------
+double mitk::FindLargestDistanceBetweenTwoPoints(const mitk::PointSet& input)
+{
+  double maxSquaredDistance = 0;
+
+  mitk::PointSet::PointsContainer* inputContainer = input.GetPointSet()->GetPoints();
+  mitk::PointSet::PointsConstIterator outerIt = inputContainer->Begin();
+  mitk::PointSet::PointsConstIterator innerIt = inputContainer->Begin();
+  mitk::PointSet::PointsConstIterator iterEnd = inputContainer->End();
+
+  for ( ; outerIt != iterEnd; ++outerIt)
+  {
+    for ( ; innerIt != iterEnd; ++innerIt)
+    {
+      double squaredDistance = mitk::GetSquaredDistanceBetweenPoints(outerIt->Value(), innerIt->Value());
+      if (squaredDistance > maxSquaredDistance)
+      {
+        maxSquaredDistance = squaredDistance;
+      }
+    }
+  }
+  return sqrt(maxSquaredDistance);
+}
+
+
+//-----------------------------------------------------------------------------
 int mitk::CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output)
 {
   output.Clear();
@@ -168,6 +193,28 @@ int mitk::CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output)
     output.InsertPoint(inputIt->Index(), inputIt->Value());
   }
   return output.GetSize();
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::ScalePointSets(const mitk::PointSet& input, mitk::PointSet& output, double scaleFactor)
+{
+  output.Clear();
+
+  mitk::PointSet::PointsContainer* inputContainer = input.GetPointSet()->GetPoints();
+  mitk::PointSet::PointsConstIterator inputIt = inputContainer->Begin();
+  mitk::PointSet::PointsConstIterator inputEnd = inputContainer->End();
+  mitk::PointSet::PointType point;
+
+  for ( ; inputIt != inputEnd; ++inputIt)
+  {
+    point = inputIt->Value();
+    point[0] *= scaleFactor;
+    point[1] *= scaleFactor;
+    point[2] *= scaleFactor;
+
+    output.InsertPoint(inputIt->Index(), point);
+  }
 }
 
 
@@ -355,7 +402,7 @@ int mitk::RemoveNaNPoints(
 //-----------------------------------------------------------------------------
 bool mitk::CheckForNaNPoint( const mitk::PointSet::PointType& point )
 {
-  if ( boost::math::isnan( point[0] ) || boost::math::isnan( point[1] ) || boost::math::isnan( point[2] ))
+  if ( std::isnan( point[0] ) || std::isnan( point[1] ) || std::isnan( point[2] ))
   {
     return true;
   }

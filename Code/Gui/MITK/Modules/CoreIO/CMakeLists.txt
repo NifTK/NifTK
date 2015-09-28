@@ -14,7 +14,7 @@
 
 MITK_CREATE_MODULE(
   INCLUDE_DIRS 
-  DEPENDS niftkCore
+  DEPENDS niftkCore MitkSceneSerializationBase
   AUTOLOAD_WITH niftkCore
 )
 

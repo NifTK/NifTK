@@ -229,7 +229,7 @@ void PointRegView::OnSaveToFileButtonPressed()
   QString fileName = QFileDialog::getSaveFileName( NULL,
                                                    tr("Save Transform As ..."),
                                                    QDir::currentPath(),
-                                                   "Matrix file (*.mat);;4x4 file (*.4x4);;Text file (*.txt);;All files (*.*)" );
+                                                   "4x4 file (*.4x4);;Matrix file (*.mat);;Text file (*.txt);;All files (*.*)" );
   if (fileName.size() > 0)
   {
     SaveMatrixToFile(*m_Matrix, fileName);

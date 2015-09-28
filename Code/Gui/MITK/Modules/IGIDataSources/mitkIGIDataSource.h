@@ -348,6 +348,11 @@ protected:
   bool               m_ShouldCallUpdate;
   bool               m_IsPlayingBack;
 
+  /**
+   * \brief Marked as protected so derived classes dont have to create one each time a message is received.
+   */
+  igtl::TimeStamp::Pointer m_TimeCreated;
+
 private:
 
   /**
@@ -385,9 +390,10 @@ private:
   };
 
   typedef std::set<mitk::IGIDataType::Pointer, TimeStampComparator>    BufferType;
-  BufferType              m_Buffer;
-  BufferType::iterator    m_BufferIterator;
-  BufferType::iterator    m_FrameRateBufferIterator;
+
+  BufferType                                      m_Buffer;
+  BufferType::iterator                            m_BufferIterator;
+  BufferType::iterator                            m_FrameRateBufferIterator;
 
   igtl::TimeStamp::Pointer                        m_RequestedTimeStamp;
   igtl::TimeStamp::Pointer                        m_ActualTimeStamp;

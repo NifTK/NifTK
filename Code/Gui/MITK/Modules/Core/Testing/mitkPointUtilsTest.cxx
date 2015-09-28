@@ -180,6 +180,60 @@ public:
     MITK_TEST_OUTPUT(<< "Finished TestNormalise...");
   }
 
+
+  //-----------------------------------------------------------------------------
+  static void TestFindLargestDistanceBetweenTwoPoints()
+  {
+    MITK_TEST_OUTPUT(<< "Starting TestFindLargestDistanceBetweenTwoPoints...");
+
+    mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
+
+    mitk::Point3D point;
+    point[0] = 0;
+    point[1] = 0;
+    point[2] = 0;
+    pointSet->InsertPoint(0, point);
+    point[0] = 1;
+    pointSet->InsertPoint(1, point);
+    point[1] = 2;
+    pointSet->InsertPoint(2, point);
+    point[2] = 3;
+    pointSet->InsertPoint(3, point);
+
+    double distance = mitk::FindLargestDistanceBetweenTwoPoints(*pointSet);
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(distance, 3.741657387, 0.001),".. Testing distance = 3.741657387, with tolerance 0.001, when it actually equals " << distance);
+
+    MITK_TEST_OUTPUT(<< "Finished TestFindLargestDistanceBetweenTwoPoints...");
+  }
+
+
+  //-----------------------------------------------------------------------------
+  static void TestScalePointSets()
+  {
+    MITK_TEST_OUTPUT(<< "Starting TestScalePointSets...");
+
+    mitk::PointSet::Pointer inputPointSet = mitk::PointSet::New();
+    mitk::PointSet::Pointer outputPointSet = mitk::PointSet::New();
+
+    mitk::Point3D point;
+    point[0] = 1;
+    point[1] = 1;
+    point[2] = 1;
+    inputPointSet->InsertPoint(0, point);
+
+    mitk::ScalePointSets(*inputPointSet, *outputPointSet, 1);
+    MITK_TEST_CONDITION_REQUIRED(!mitk::AreDifferent(inputPointSet->GetPoint(0), outputPointSet->GetPoint(0)),".. Testing that scale factor 1 does nothing. " );
+    mitk::ScalePointSets(*inputPointSet, *outputPointSet, 2);
+    double squaredDistance = mitk::GetSquaredDistanceBetweenPoints(inputPointSet->GetPoint(0), outputPointSet->GetPoint(0));
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(squaredDistance, 3, 0.001),".. Testing squared distance = 3, with tolerance 0.001, when it actually equals " << squaredDistance);
+    mitk::ScalePointSets(*inputPointSet, *outputPointSet, 3);
+    squaredDistance = mitk::GetSquaredDistanceBetweenPoints(inputPointSet->GetPoint(0), outputPointSet->GetPoint(0));
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(squaredDistance, 12, 0.001),".. Testing squared distance = 12, with tolerance 0.001, when it actually equals " << squaredDistance);
+
+    MITK_TEST_OUTPUT(<< "Finished TestScalePointSets...");
+  }
+
+
   //-----------------------------------------------------------------------------
   static void TestComputeNormalFromPoints()
   {
@@ -425,7 +479,9 @@ int mitkPointUtilsTest(int argc, char * argv[])
   mitkPointUtilsTestClass::TestRMS();
   mitkPointUtilsTestClass::TestRemoveNaNPoints();
   mitkPointUtilsTestClass::TestCheckForNaNPoint();
-  
+  mitkPointUtilsTestClass::TestFindLargestDistanceBetweenTwoPoints();
+  mitkPointUtilsTestClass::TestScalePointSets();
+
   MITK_TEST_END();
 }
 

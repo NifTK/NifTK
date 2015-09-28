@@ -17,8 +17,8 @@
 #include <numeric>
 #include <algorithm>
 #include <functional>
-#include <mitkMathsUtils.h>
 #include <mitkExceptionMacro.h>
+#include <niftkMathsUtils.h>
 #include <niftkVTKFunctions.h>
 
 namespace mitk {
@@ -144,9 +144,9 @@ bool DoSVDPointBasedRegistration(const std::vector<cv::Point3d>& fixedPoints,
   bool haveTriedToFixDeterminantIssue = false;
 
   if ( detX < 0
-       && (   IsCloseToZero(svd.w.at<double>(0,0))
-           || IsCloseToZero(svd.w.at<double>(1,1))
-           || IsCloseToZero(svd.w.at<double>(2,2))
+       && (   niftk::IsCloseToZero(svd.w.at<double>(0,0))
+           || niftk::IsCloseToZero(svd.w.at<double>(1,1))
+           || niftk::IsCloseToZero(svd.w.at<double>(2,2))
           )
      )
   {
@@ -1214,7 +1214,7 @@ std::pair < double, double >  RMSError (
     }
     for ( unsigned int frame = 0 ; frame < actual.size() ; frame += increment ) 
     {
-      if ( measured[frame].m_TimingError < abs (allowableTimingError) )
+      if ( measured[frame].m_TimingError < std::abs (allowableTimingError) )
       {
         if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf() ) || actual[frame].m_Points[index].LeftNaNOrInf() ) 
         {
@@ -1298,7 +1298,7 @@ mitk::ProjectedPointPair MeanError (
     }
     for ( unsigned int frame = 0 ; frame < actual.size() ; frame += increment ) 
     {
-      if ( measured[frame].m_TimingError < abs (allowableTimingError) )
+      if ( measured[frame].m_TimingError < std::abs (allowableTimingError) )
       {
         if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf()  || actual[frame].m_Points[index].LeftNaNOrInf() ) ) 
         {
@@ -1344,7 +1344,7 @@ mitk::ProjectedPointPair MeanError (
     {
       for ( unsigned int frame = 0 ; frame < actual.size() ; frame ++ ) 
       {
-        if ( measured[frame].m_TimingError < abs (allowableTimingError) )
+        if ( measured[frame].m_TimingError < std::abs (allowableTimingError) )
         {
           if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf() || actual[frame].m_Points[index].LeftNaNOrInf() ) ) 
           {
@@ -1447,6 +1447,38 @@ cv::Point2d FindNearestPoint ( const cv::Point2d& point,
     *minRatio =  0.0;
   }
   return  point - sortedMatches [0];
+}
+
+//-----------------------------------------------------------------------------
+mitk::PickedObject FindNearestPoint ( const mitk::PickedObject& point, const std::vector <mitk::PickedObject>& matchingPoints , 
+    double* minRatio )
+{
+  mitk::PickedObject nearestPoint;
+  double nearestDistance = std::numeric_limits<double>::infinity();
+  double nextNearestDistance = std::numeric_limits<double>::infinity();
+
+  for ( std::vector<mitk::PickedObject>::const_iterator it = matchingPoints.begin() ; it < matchingPoints.end() ; it++ )
+  {
+    double distance = point.DistanceTo(*it);
+    if ( distance < nextNearestDistance )
+    {
+      if ( distance < nearestDistance ) 
+      {
+        nextNearestDistance = nearestDistance;
+        nearestDistance = distance;
+        nearestPoint = *it;
+      }
+      else
+      {
+        nextNearestDistance = distance;
+      }
+    }
+  }
+  if ( minRatio != NULL )
+  {
+    *minRatio = nextNearestDistance / nearestDistance;
+  }
+  return nearestPoint;
 }
 
 //-----------------------------------------------------------------------------
@@ -2006,19 +2038,19 @@ double DistanceBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
 cv::Mat DirectionCosineToQuaternion(cv::Mat dc_Matrix)
 {
   cv::Mat q = cvCreateMat(4,1,CV_64FC1);
-  q.at<double>(0,0) = 0.5 * SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) -
+  q.at<double>(0,0) = 0.5 * niftk::SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) -
   dc_Matrix.at<double>(1,1) - dc_Matrix.at<double>(2,2) ) *
-  ModifiedSignum ( dc_Matrix.at<double>(1,2) - dc_Matrix.at<double>(2,1));
+  niftk::ModifiedSignum ( dc_Matrix.at<double>(1,2) - dc_Matrix.at<double>(2,1));
 
-  q.at<double>(1,0) = 0.5 * SafeSQRT ( 1 - dc_Matrix.at<double>(0,0) +
+  q.at<double>(1,0) = 0.5 * niftk::SafeSQRT ( 1 - dc_Matrix.at<double>(0,0) +
   dc_Matrix.at<double>(1,1) - dc_Matrix.at<double>(2,2) ) *
-  ModifiedSignum ( dc_Matrix.at<double>(2,0) - dc_Matrix.at<double>(0,2));
+  niftk::ModifiedSignum ( dc_Matrix.at<double>(2,0) - dc_Matrix.at<double>(0,2));
 
-  q.at<double>(2,0) = 0.5 * SafeSQRT ( 1 - dc_Matrix.at<double>(0,0) -
+  q.at<double>(2,0) = 0.5 * niftk::SafeSQRT ( 1 - dc_Matrix.at<double>(0,0) -
   dc_Matrix.at<double>(1,1) + dc_Matrix.at<double>(2,2) ) *
-  ModifiedSignum ( dc_Matrix.at<double>(0,1) - dc_Matrix.at<double>(1,0));
+  niftk::ModifiedSignum ( dc_Matrix.at<double>(0,1) - dc_Matrix.at<double>(1,0));
 
-  q.at<double>(3,0) = 0.5 * SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) +
+  q.at<double>(3,0) = 0.5 * niftk::SafeSQRT ( 1 + dc_Matrix.at<double>(0,0) +
   dc_Matrix.at<double>(1,1) + dc_Matrix.at<double>(2,2) );
 
   return q;
@@ -2247,6 +2279,20 @@ bool IsNaN ( const cv::Point2d& point)
 }
 
 //-----------------------------------------------------------------------------
+bool IsNaN ( const cv::Point3d& point)
+{
+  if ( ( boost::math::isnan ( point.x ))  || (boost::math::isnan (point.y)) || (boost::math::isnan (point.z)) )
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool IsNotNaNorInf ( const cv::Point2d& point)
 {
   bool ok = true;
@@ -2293,6 +2339,83 @@ double DistanceToLine ( const std::pair<cv::Point3d, cv::Point3d>& line, const c
 }
 
 //-----------------------------------------------------------------------------
+double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2 )
+{
+  return mitk::Norm ( p1 - p2 );
+}
+
+//-----------------------------------------------------------------------------
+double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const std::vector <cv::Point3d>& s2, 
+    unsigned int splineOrder )
+{
+  if ( ( s1.size() < 1) || (s2.size() < 2) )
+  {
+    MITK_WARN << "Called mitk::DistanceBetweenTwoSplines with insufficient points, returning inf.: " << s1.size() << ", " << s2.size();
+    return std::numeric_limits<double>::infinity();
+  }
+  if ( splineOrder == 1 )
+  {
+    double sumOfSquares = 0;
+    for ( std::vector<cv::Point3d>::const_iterator it_1 = s1.begin() ; it_1 < s1.end() ; it_1 ++ )
+    {
+      if ( mitk::IsNaN ( *it_1) )
+      {
+        return std::numeric_limits<double>::quiet_NaN();
+      }
+      double shortestDistance = std::numeric_limits<double>::infinity();
+      for ( std::vector<cv::Point3d>::const_iterator it_2 = s2.begin() + 1 ; it_2 < s2.end() ; it_2 ++ )
+      {
+        if ( mitk::IsNaN ( *it_2) )
+        {
+          return std::numeric_limits<double>::quiet_NaN();
+        }
+        double distance = mitk::DistanceToLineSegment ( std::pair < cv::Point3d, cv::Point3d >(*(it_2) , *(it_2-1)), *it_1 );
+        if ( distance < shortestDistance )
+        {
+          shortestDistance = distance;
+        }
+      }
+      sumOfSquares += shortestDistance * shortestDistance;
+    }
+    return sqrt( sumOfSquares / s1.size() );
+  }
+  else
+  {
+    MITK_WARN << "Called mitk::DistanceBetweenTwoSplines with invalid splineOrder, returning inf.: " << splineOrder;
+    return std::numeric_limits<double>::infinity();
+  }
+}
+
+//-----------------------------------------------------------------------------
+double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& x0 )
+{
+  //courtesy Wolfram Mathworld
+  cv::Point3d x1;
+  cv::Point3d x2; 
+
+  x1 = line.first;
+  x2 = line.second;
+
+  cv::Point3d d1 = x2-x0;
+  cv::Point3d d2 = x2-x1;
+  
+  double lambda = mitk::DotProduct ( d2, d1 ) /  mitk::DotProduct ( d2,d2 );
+  if ( lambda < 0 ) //were beyond x2
+  {
+    return mitk::Norm ( x2 - x0 );
+  }
+  if ( lambda > 1 ) //we're beyond x1
+  {
+    return mitk::Norm ( x1 - x0 );
+  }
+  //else we're on the line segment
+  
+  return mitk::Norm ( mitk::CrossProduct ( d2,d1 )) / (mitk::Norm(d2));
+
+}
+
+
+//-----------------------------------------------------------------------------
 double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, const cv::Point3d& Q0, const cv::Point3d& v , 
     cv::Point3d& midpoint)
 {
@@ -2322,7 +2445,7 @@ double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, const
   if ( boost::math::isnan(sc) || boost::math::isnan(tc) || boost::math::isinf(sc) || boost::math::isinf(tc) )
   {
     //lines are parallel
-    distance = sqrt(W0.x*W0.x + W0.y*W0.y + W0.z * W0.z);
+    distance = mitk::DistanceToLine ( std::pair<cv::Point3d, cv::Point3d> ( P0, P0 + u ), Q0 );
     midpoint.x = std::numeric_limits<double>::quiet_NaN();
     midpoint.y = std::numeric_limits<double>::quiet_NaN();
     midpoint.z = std::numeric_limits<double>::quiet_NaN();
@@ -2365,6 +2488,12 @@ cv::Point3d CrossProduct (const cv::Point3d& p1 , const cv::Point3d& p2)
   cp.y = p1.z * p2.x - p1.x * p2.z;
   cp.z = p1.x * p2.y - p1.y * p2.x;
   return cp;
+}
+
+//-----------------------------------------------------------------------------
+double DotProduct (const cv::Point3d& p1 , const cv::Point3d& p2)
+{
+  return p1.x * p2.x + p1.y * p2.y + p1.z * p2.z;
 }
 
 //-----------------------------------------------------------------------------
@@ -2411,6 +2540,29 @@ unsigned int RemoveOutliers ( std::vector <cv::Point3d>& points,
   unsigned int originalSize = points.size();
   points.erase ( std::remove_if ( points.begin(), points.end(), out_of_bounds (xLow, xHigh, yLow, yHigh, zLow, zHigh )), points.end() );
   return originalSize - points.size();
+}
+
+
+//-----------------------------------------------------------------------------
+void ExtractRigidBodyParameters(const vtkMatrix4x4& matrix, mitk::Point3D& outputRodriguesRotationParameters, mitk::Point3D& outputTranslationParameters)
+{
+  cv::Matx33d rotationMatrix;
+  cv::Matx31d rotationVector;
+
+  for (int r = 0; r < 3; r++)
+  {
+    for (int c = 0; c < 3; c++)
+    {
+      rotationMatrix(r,c) = matrix.GetElement(r, c);
+    }
+  }
+  cv::Rodrigues(rotationMatrix, rotationVector);
+
+  for (int i = 0; i < 3; i++)
+  {
+    outputRodriguesRotationParameters[i] = rotationVector(i, 0);
+    outputTranslationParameters[i] = matrix.GetElement(i, 3);
+  }
 }
 
 } // end namespace

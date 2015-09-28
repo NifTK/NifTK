@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "QmitkIGINiftyLinkDataSourceGui.h"
-#include <Common/NiftyLinkXMLBuilder.h>
+#include <NiftyLinkXMLBuilder.h>
 
 //-----------------------------------------------------------------------------
 QmitkIGINiftyLinkDataSourceGui::QmitkIGINiftyLinkDataSourceGui()
@@ -48,7 +48,7 @@ void QmitkIGINiftyLinkDataSourceGui::Initialize(QWidget *parent)
 
   if (source != NULL)
   {
-    ClientDescriptorXMLBuilder* config = source->GetClientDescriptor();
+    niftk::NiftyLinkClientDescriptor* config = source->GetClientDescriptor();
 
     // Derived classes should make sure they can cope with a null config.
     this->Initialize(parent, config);

@@ -23,7 +23,7 @@ if(QT_QTMULTIMEDIA_INCLUDE_DIR)
 endif()
 
 MITK_CREATE_MODULE(
-  DEPENDS niftkIGIGui niftkIGI niftkOpenCV
+  DEPENDS niftkIGIGui niftkOpenCV
   PACKAGE_DEPENDS ${_packages}
 )
 

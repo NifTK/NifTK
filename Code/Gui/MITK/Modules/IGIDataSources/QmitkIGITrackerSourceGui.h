@@ -51,7 +51,7 @@ protected:
   /**
    * \brief Initializes this widget, calling Ui_QmitkIGITrackerSourceGui::setupUi(parent).
    */
-  virtual void Initialize(QWidget *parent, ClientDescriptorXMLBuilder* config);
+  virtual void Initialize(QWidget *parent, niftk::NiftyLinkClientDescriptor* config);
 
 private slots:
 

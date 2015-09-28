@@ -133,6 +133,7 @@ if(SlicerExecutionModel_FOUND)
       niftkCameraCalibration
       niftkCorrectVideoDistortion
       niftkProject3DPointsToStereoPair
+      niftkReviewVideoData
       niftkHandeyeCalibration
       niftkHandeyeCalibrationFromDirectory
       niftkHandeyeCalibrationUsingRegistration
@@ -168,6 +169,7 @@ if(SlicerExecutionModel_FOUND)
       niftkMakeLapUSProbeAprilTagsModel
       niftkMakeLapUSProbeSimulationData
       niftkImageFeatureMatching
+      niftkVideoTestClient
     )
 
     if(BUILD_PCL)

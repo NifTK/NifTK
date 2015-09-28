@@ -13,5 +13,23 @@
 #============================================================================*/
 
 set(CPP_FILES
-  DataSources/mitkIGINVidiaDataType.cxx
+  mitkIGINVidiaDataType.cxx
+  QmitkIGINVidiaDataSource.cxx
+  QmitkIGINVidiaDataSourceGui.cxx
+  QmitkVideoPreviewWidget.cxx
+  QmitkIGINVidiaDataSourceImpl.cxx
+)
+
+set(MOC_H_FILES
+  QmitkIGINVidiaDataSource.h
+  QmitkIGINVidiaDataSourceGui.h
+  QmitkVideoPreviewWidget.h
+  QmitkIGINVidiaDataSourceImpl.h
+)
+
+set(UI_FILES
+  QmitkIGINVidiaDataSourceGui.ui
+)
+
+set(QRC_FILES
 )

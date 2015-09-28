@@ -46,7 +46,6 @@
       <description>The tracking matrix</description>
       <label>Tracking Matrix</label>
       <channel>input</channel>
-      <default>""</default>
     </file>
     <file fileExtensions=".txt">
       <name>leftLensToTracker</name>
@@ -54,7 +53,6 @@
       <description>The transform from the left lens to the tracker marker (handeye)</description>
       <label>Left Lens to tracker</label>
       <channel>input</channel>
-      <default>""</default>
     </file>
     
     <file fileExtensions=".png">

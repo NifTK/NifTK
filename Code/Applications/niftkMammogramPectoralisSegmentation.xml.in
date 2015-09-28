@@ -18,8 +18,8 @@
 
   <parameters>
 
-    <label>IO</label>
-    <description><![CDATA[Input/output parameters]]></description>
+    <label>Inputs</label>
+    <description><![CDATA[Input parameters]]></description>
 
     <image>
       <name>inputImage</name>
@@ -39,12 +39,27 @@
       <channel>input</channel>
     </image>
 
+  </parameters>
+
+  <parameters advanced="false">
+
+    <label>Outputs</label>
+    <description><![CDATA[Output parameters]]></description>
+
+    <image>
+      <name>outputPectoralMask</name>
+      <longflag>op</longflag>
+      <description>Output binary pectoral mask image</description>      
+      <label>Output pectoral mask</label>
+      <channel>output</channel>
+    </image>
+
     <image>
       <name>outputMask</name>
       <flag>n</flag>
       <longflag>om</longflag>
-      <description>Output binary pectoral mask image</description>      
-      <label>Output pectoral mask</label>
+      <description>Output binary mammogram mask image</description>      
+      <label>Output mask</label>
       <channel>output</channel>
     </image>
 

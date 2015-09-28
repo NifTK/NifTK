@@ -13,10 +13,9 @@
 =============================================================================*/
 #include "mitkTwoTrackerAnalysis.h"
 #include <mitkOpenCVMaths.h>
-#include <mitkMathsUtils.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkCameraCalibrationFacade.h>
-
+#include <niftkMathsUtils.h>
 #include <sstream>
 #include <fstream>
 #include <cstdlib>
@@ -223,8 +222,8 @@ bool TwoTrackerAnalysis::CheckRigidBody(cv::Mat w2ToW1 , bool CullOutliers)
       }
     }
   }
-  double meanError = mitk::Mean(distances);
-  double stdDev = mitk::StdDev(distances);
+  double meanError = niftk::Mean(distances);
+  double stdDev = niftk::StdDev(distances);
   MITK_INFO << "Mean Distance " << meanError ;
   MITK_INFO << "Standard Deviation " << stdDev ;
   if ( CullOutliers )

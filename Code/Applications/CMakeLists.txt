@@ -77,6 +77,7 @@ if(SlicerExecutionModel_FOUND)
     niftkAddBorderToImage
     niftkAffine
     niftkAnonymiseDICOMMammograms
+    niftkAnonymiseDICOMImages
     niftkApplyMaskToImage
     niftkBreastDensityCalculationGivenMRISegmentation
     niftkConvertImage
@@ -106,7 +107,6 @@ if(SlicerExecutionModel_FOUND)
     niftkNegateImage
     niftkOtsuThresholdImage
     niftkPrintDICOMSeries
-    niftkRegionalMammographicDensity
     niftkRescaleImageUsingHistogramPercentiles
     niftkScalarConnectedComponentImageFilter
     niftkSegmentForegroundFromBackground
@@ -165,6 +165,8 @@ if(SlicerExecutionModel_FOUND)
         niftkBreastDCEandADC
         niftkBreastDensityFromMRIs
         niftkBreastDensityFromMRIsGivenMaskAndImage
+        niftkMammographicTumourDistribution
+        niftkRegionalMammographicDensity
         )
       list(APPEND _all_command_line_apps ${APPS_DEPENDING_ON_SLICER_AND_APPLICATION_LINK_LIBRARIES_AND_VTK_AND_QT})
 
@@ -217,6 +219,7 @@ set(APPS_DEPENDING_ON_NIFTK_APPLICATION_LINK_LIBRARIES
   niftkConvertToMidasStr
   niftkConvertTransformToRIREFormat
   niftkCreateAffineTransform
+  niftkCreateAffineTransform2D
   niftkCreateMaskFromLabels
   niftkCreateTransformation
   niftkCTEAcosta2009Subsampling
@@ -371,7 +374,7 @@ endif(VTK_FOUND)
 ##############################################################
 # Other command line applications, that require CUDA.
 ##############################################################
-  
+
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
 
   ##############################################################

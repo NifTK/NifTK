@@ -14,7 +14,6 @@
 
 #include "mitkTrackedImage.h"
 #include <mitkCoordinateAxesData.h>
-#include <mitkMathsUtils.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <vtkImageData.h>

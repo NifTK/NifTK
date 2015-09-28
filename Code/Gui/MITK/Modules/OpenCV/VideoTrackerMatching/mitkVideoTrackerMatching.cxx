@@ -586,4 +586,10 @@ std::vector < mitk::WorldPointsWithTimingError > VideoTrackerMatching::ReadPoint
   return pointsInLensCS;
 }
 
+//---------------------------------------------------------------------------
+unsigned int VideoTrackerMatching::GetTrackingMatricesSize ()
+{
+  return m_TrackingMatrices.size();
+}
+
 } // namespace

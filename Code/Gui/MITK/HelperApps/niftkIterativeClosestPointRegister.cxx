@@ -17,11 +17,12 @@
 #include <vtkSmartPointer.h>
 #include <vtkMinimalStandardRandomSequence.h>
 #include <mitkPointSetReader.h>
+#include <mitkSurface.h>
 #include <mitkSTLFileReader.h>
 #include <mitkDataStorageUtils.h>
 
 #include <niftkVTKFunctions.h>
-#include <niftkSurfaceBasedRegistration.h>
+#include <niftkICPBasedRegistration.h>
 #include <niftkIterativeClosestPointRegisterCLP.h>
 
 int main(int argc, char** argv)
@@ -29,7 +30,7 @@ int main(int argc, char** argv)
   PARSE_ARGS;
  
 
-  niftk::SurfaceBasedRegistration::Pointer registerer = niftk::SurfaceBasedRegistration::New();
+  niftk::ICPBasedRegistration::Pointer registerer = niftk::ICPBasedRegistration::New();
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   //Read Fixed Points

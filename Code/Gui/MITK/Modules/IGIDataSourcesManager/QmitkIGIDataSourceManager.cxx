@@ -24,13 +24,13 @@
 #include <mitkFocusManager.h>
 #include <mitkDataStorage.h>
 #include <mitkIGIDataSource.h>
-#include <mitkMathsUtils.h>
 #include <QmitkIGINiftyLinkDataSource.h>
 #include <QmitkIGITrackerSource.h>
 #include <QmitkIGIUltrasonixTool.h>
 #include <QmitkIGIOpenCVDataSource.h>
 #include <QmitkIGIDataSourceGui.h>
 #include <QmitkRenderingManager.h>
+#include <niftkMathsUtils.h>
 
 #include <stdexcept>
 #include <vtkWindowToImageFilter.h>
@@ -89,7 +89,9 @@ QmitkIGIDataSourceManager::QmitkIGIDataSourceManager()
   m_PickLatestData = DEFAULT_PICK_LATEST_DATA;
 
   m_StatsTimerStart = igtl::TimeStamp::New();
+  m_StatsTimerStart->GetTime();
   m_StatsTimerEnd = igtl::TimeStamp::New();
+  m_StatsTimerEnd->GetTime();
 
   QmitkRenderingManager *renderingManager = dynamic_cast<QmitkRenderingManager*>(mitk::RenderingManager::GetInstance());
   if (renderingManager != NULL)
@@ -535,7 +537,7 @@ void QmitkIGIDataSourceManager::OnAddSource()
 
 
 //------------------------------------------------
-int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEnum& sourceType, int portNumber, NiftyLinkSocketObject* socket)
+int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEnum& sourceType, int portNumber, niftk::NiftyLinkTcpServer* server)
 {
   QmitkIGIDataSource::Pointer source = NULL;
 
@@ -544,11 +546,11 @@ int QmitkIGIDataSourceManager::AddSource(const mitk::IGIDataSource::SourceTypeEn
     QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = NULL;
     if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_TRACKER)
     {
-      niftyLinkSource = QmitkIGITrackerSource::New(m_DataStorage, socket);
+      niftyLinkSource = QmitkIGITrackerSource::New(m_DataStorage, server);
     }
     else if (sourceType == mitk::IGIDataSource::SOURCE_TYPE_IMAGER)
     {
-      niftyLinkSource = QmitkIGIUltrasonixTool::New(m_DataStorage, socket);
+      niftyLinkSource = QmitkIGIUltrasonixTool::New(m_DataStorage, server);
     }
     
     if (niftyLinkSource->ListenOnPort(portNumber))
@@ -790,7 +792,7 @@ void QmitkIGIDataSourceManager::InstantiateRelatedSources(const int& rowNumber)
       {
         QmitkIGINiftyLinkDataSource::Pointer niftyLinkSource = dynamic_cast< QmitkIGINiftyLinkDataSource*>(source.GetPointer());
 
-        int tempToolIdentifier = AddSource (sourceType, niftyLinkSource->GetPort(), niftyLinkSource->GetSocket());
+        int tempToolIdentifier = AddSource (sourceType, niftyLinkSource->GetPort(), niftyLinkSource->GetServer());
         int tempRowNumber = this->GetSourceNumberFromIdentifier(tempToolIdentifier);
 
         m_Sources[tempRowNumber]->SetType(displayType);
@@ -920,6 +922,7 @@ void QmitkIGIDataSourceManager::AdvancePlaybackTime()
 void QmitkIGIDataSourceManager::OnUpdateGui()
 {
   igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
+  timeNow->GetTime();
 
   // whether we are currently grabbing live data or playing back canned bits
   // depends solely on the state of the play-button.
@@ -938,7 +941,7 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
   }
   else
   {
-    m_CurrentTime = timeNow->GetTimeInNanoSeconds();
+    m_CurrentTime = timeNow->GetTimeStampInNanoseconds();
   }
 
   QString   rawTimeStampString = QString("%1").arg(m_CurrentTime);
@@ -1035,8 +1038,8 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
       activatedItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
     }
 
-    timeNow->Update();
-    igtlUint64 idEndDataSources = timeNow->GetTimeInNanoSeconds();
+    timeNow->GetTime();
+    igtlUint64 idEndDataSources = timeNow->GetTimeStampInNanoseconds();
 
     emit UpdateGuiFinishedDataSources(idNow);
 
@@ -1044,8 +1047,8 @@ void QmitkIGIDataSourceManager::OnUpdateGui()
     mitk::RenderingManager * renderer = mitk::RenderingManager::GetInstance();
     renderer->ForceImmediateUpdateAll();
 
-    timeNow->Update();
-    igtlUint64 idEndRendering = timeNow->GetTimeInNanoSeconds();
+    timeNow->GetTime();
+    igtlUint64 idEndRendering = timeNow->GetTimeStampInNanoseconds();
 
     double timeToFetch = (idEndDataSources - idNow)/static_cast<double>(1000000);
     double timeToRender = (idEndRendering - idEndDataSources)/static_cast<double>(1000000);
@@ -1140,12 +1143,13 @@ QString QmitkIGIDataSourceManager::GetDirectoryName()
   QString baseDirectory = m_DirectoryPrefix;
 
   igtl::TimeStamp::Pointer timeStamp = igtl::TimeStamp::New();
+  timeStamp->GetTime();
 
   igtlUint32 seconds;
   igtlUint32 nanoseconds;
   igtlUint64 millis;
 
-  timeStamp->GetTime(&seconds, &nanoseconds);
+  timeStamp->GetTimeStamp(&seconds, &nanoseconds);
   millis = (igtlUint64)seconds*1000 + nanoseconds/1000000;
 
   QDateTime dateTime;
@@ -1514,10 +1518,10 @@ void QmitkIGIDataSourceManager::PrintStatusMessage(const QString& message) const
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::OnComputeStats()
 {
-  m_StatsTimerEnd->Update();
+  m_StatsTimerEnd->GetTime();
   m_RequestedFrameRate = 1000 / m_GuiUpdateTimer->interval();
-  double meanRendering = mitk::Mean(m_ListRenderingTimes);
-  double meanFetch = mitk::Mean(m_ListDataFetchTimes);
+  double meanRendering = niftk::Mean(m_ListRenderingTimes);
+  double meanFetch = niftk::Mean(m_ListDataFetchTimes);
 
   QString output = QObject::tr("STATS: rate=%1 fps, forced=%2, requested=%3, fetch=%4 (msec), render=%5 (msec).").arg(m_RequestedFrameRate).arg(m_NumberOfTimesRenderingLoopCalled).arg(m_NumberOfTimesRenderingIsActuallyCalled).arg(meanFetch).arg(meanRendering);
   this->PrintStatusMessage(output);
@@ -1526,7 +1530,7 @@ void QmitkIGIDataSourceManager::OnComputeStats()
   for (i = m_MapLagTiming.begin(); i != m_MapLagTiming.end(); i++)
   {
     int rowNumber = (*i).first;
-    double mean = mitk::Mean(m_MapLagTiming[rowNumber]);
+    double mean = niftk::Mean(m_MapLagTiming[rowNumber]);
     QString lagMessage = QObject::tr("LAG: row=%1, time=%2 (msec)").arg(rowNumber).arg(mean*1000);
     this->PrintStatusMessage(lagMessage);
   }
@@ -1536,5 +1540,5 @@ void QmitkIGIDataSourceManager::OnComputeStats()
   m_ListRenderingTimes.clear();
   m_ListDataFetchTimes.clear();
   m_MapLagTiming.clear();
-  m_StatsTimerStart->Update();
+  m_StatsTimerStart->GetTime();
 }

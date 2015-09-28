@@ -70,7 +70,6 @@ private:
   QWidget        *m_MainControl;
   QSpinBox       *m_MaximumIterations;
   QSpinBox       *m_MaximumPoints;
-  QCheckBox      *m_TryDeformableRegistration;
   bool            m_Initializing;
 
   berry::IPreferences::Pointer m_SurfaceRegViewPreferencesNode;

@@ -14,7 +14,6 @@
 
 #include "QmitkIGITrackerSourceGui.h"
 #include "QmitkIGITrackerSource.h"
-#include <Common/NiftyLinkXMLBuilder.h>
 #include "QmitkIGIDataSourceMacro.h"
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
@@ -36,7 +35,7 @@ QmitkIGITrackerSourceGui::~QmitkIGITrackerSourceGui()
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGITrackerSourceGui::Initialize(QWidget* /* parent */, ClientDescriptorXMLBuilder* /*config*/)
+void QmitkIGITrackerSourceGui::Initialize(QWidget* /* parent */, niftk::NiftyLinkClientDescriptor* /*config*/)
 {
   setupUi(this);
   m_GroupBox->setCollapsed(true);

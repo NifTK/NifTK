@@ -66,6 +66,7 @@ AudioDataSource::AudioDataSource(mitk::DataStorage* storage)
 
   QAudioDeviceInfo  defaultDevice = QAudioDeviceInfo::defaultInputDevice();
   QAudioFormat      defaultFormat = defaultDevice.preferredFormat();
+
   // try not to do 8 bit, sounds like trash.
   defaultFormat.setSampleSize(16);
   if (!defaultDevice.isFormatSupported(defaultFormat))
@@ -275,11 +276,11 @@ void AudioDataSource::GrabData()
     std::size_t   bytesActuallyRead = m_InputStream->read(buffer, bytesToRead);
     if (bytesActuallyRead > 0)
     {
-      igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+      m_TimeCreated->GetTime();
 
       AudioDataType::Pointer wrapper = AudioDataType::New();
       wrapper->SetBlob(buffer, bytesActuallyRead);
-      wrapper->SetTimeStampInNanoSeconds(timeCreated->GetTimeInNanoSeconds());
+      wrapper->SetTimeStampInNanoSeconds(m_TimeCreated->GetTimeStampInNanoseconds());
       wrapper->SetDuration(this->m_TimeStampTolerance); // nanoseconds
 
       AddData(wrapper.GetPointer());
@@ -403,7 +404,7 @@ bool AudioDataSource::SaveData(mitk::IGIDataType* d, std::string& outputFileName
   assert(this->thread() == QThread::currentThread());
 
   // cannot record while playing back
-  assert(!GetIsPlayingBack());
+  assert(!m_IsPlayingBack);
 
   if (m_OutputFile == 0)
     return false;

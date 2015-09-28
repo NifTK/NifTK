@@ -82,7 +82,7 @@ if(MITK_USE_Boost)
       endif()
       set(_install_lib_dir "--libdir=<INSTALL_DIR>/bin")
       set(WIN32_CMAKE_SCRIPT ${proj_CONFIG}/MoveBoostLibsToLibDirForWindows.cmake)
-      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMakeExternals/MoveBoostLibsToLibDirForWindows.cmake.in ${WIN32_CMAKE_SCRIPT} @ONLY)
+      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeExternals/MoveBoostLibsToLibDirForWindows.cmake.in ${WIN32_CMAKE_SCRIPT} @ONLY)
       set(_windows_move_libs_cmd COMMAND ${CMAKE_COMMAND} -P ${WIN32_CMAKE_SCRIPT})
     else()
       set(_shell_extension .sh)
@@ -97,18 +97,26 @@ if(MITK_USE_Boost)
       else()
         message(FATAL_ERROR "Compiler '${CMAKE_CXX_COMPILER_ID}' not supported. Use GNU or Clang instead.")
       endif()
+      get_filename_component(_cxx_compiler_name "${CMAKE_CXX_COMPILER}" NAME)
       string(REGEX MATCH "^[0-9]+\\.[0-9]+" _compiler_version "${CMAKE_CXX_COMPILER_VERSION}")
-      set(_boost_toolset "${_boost_with_toolset}-${_compiler_version}")
+      if(_cxx_compiler_name MATCHES "${_compiler_version}")
+        set(_boost_toolset "${_boost_with_toolset}-${_compiler_version}")
+      endif()
     endif()
 
     if(_boost_toolset)
       set(_boost_toolset "--toolset=${_boost_toolset}")
     endif()
 
+    set(APPLE_CLANG_FLAGS)
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND "${CMAKE_OSX_DEPLOYMENT_TARGET}" STREQUAL "10.8" )
+      set(APPLE_CLANG_FLAGS toolset=clang cxxflags="-stdlib=libstdc++" linkflags="-stdlib=libstdc++")
+    endif()
+
     set (APPLE_SYSROOT_FLAG)
     if(APPLE)
       set(APPLE_CMAKE_SCRIPT ${proj_CONFIG}/ChangeBoostLibsInstallNameForMac.cmake)
-      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMakeExternals/ChangeBoostLibsInstallNameForMac.cmake.in ${APPLE_CMAKE_SCRIPT} @ONLY)
+      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeExternals/ChangeBoostLibsInstallNameForMac.cmake.in ${APPLE_CMAKE_SCRIPT} @ONLY)
       set(_macos_change_install_name_cmd COMMAND ${CMAKE_COMMAND} -P ${APPLE_CMAKE_SCRIPT})
 
       # Set OSX_SYSROOT
@@ -132,6 +140,7 @@ if(MITK_USE_Boost)
     endif()
 
     set(_build_cmd "<SOURCE_DIR>/b2"
+        ${APPLE_CLANG_FLAGS}
         ${APPLE_SYSROOT_FLAG}
         ${_boost_toolset}
         ${_boost_layout}
@@ -147,6 +156,7 @@ if(MITK_USE_Boost)
         ${_boost_address_model}
         threading=multi
         runtime-link=shared
+        --ignore-site-config
         -q
     )
 

@@ -16,14 +16,13 @@
 #include <QGridLayout>
 #include <mitkDataStorageUtils.h>
 #include <mitkCoordinateAxesData.h>
-#include <mitkTrackedImage.h>
 #include <mitkCameraIntrinsics.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkBaseGeometry.h>
 #include <vtkCamera.h>
 #include <vtkTransform.h>
 #include <niftkVTKFunctions.h>
-#include <Undistortion.h>
+#include <niftkUndistortion.h>
 
 //-----------------------------------------------------------------------------
 QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager)

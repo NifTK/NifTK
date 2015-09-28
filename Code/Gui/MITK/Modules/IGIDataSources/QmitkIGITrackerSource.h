@@ -36,7 +36,7 @@ class NIFTKIGIDATASOURCES_EXPORT QmitkIGITrackerSource : public QmitkIGINiftyLin
 public:
 
   mitkClassMacro(QmitkIGITrackerSource, QmitkIGINiftyLinkDataSource);
-  mitkNewMacro2Param(QmitkIGITrackerSource, mitk::DataStorage*, NiftyLinkSocketObject *);
+  mitkNewMacro2Param(QmitkIGITrackerSource, mitk::DataStorage*, niftk::NiftyLinkTcpServer*);
 
   /**
    * \brief Defined in base class, so we check that the data is in fact a NiftyLinkMessageType containing tracking data.
@@ -70,7 +70,7 @@ public:
 
 protected:
 
-  QmitkIGITrackerSource(mitk::DataStorage* storage, NiftyLinkSocketObject* socket); // Purposefully hidden.
+  QmitkIGITrackerSource(mitk::DataStorage* storage, niftk::NiftyLinkTcpServer *server); // Purposefully hidden.
   virtual ~QmitkIGITrackerSource(); // Purposefully hidden.
 
   QmitkIGITrackerSource(const QmitkIGITrackerSource&); // Purposefully not implemented.
@@ -86,7 +86,7 @@ protected slots:
   /**
    * \brief Main message handler routine for this tool, called by the signal from the socket.
    */
-  virtual void InterpretMessage(NiftyLinkMessage::Pointer msg);
+  virtual void InterpretMessage(int portNumber, niftk::NiftyLinkMessageContainer::Pointer msg);
 
 private:
 

@@ -1,0 +1,25 @@
+/**
+\page UCLRequirementsTraceability Requirements Traceability
+
+All traceable requirements are identified with a unique requirements identifier.
+The identifier has the following naming convention:
+
+\verbatim
+REQ-<Project Code>-<Document Type>-<Document ID>-<Number>-<Version>
+\endverbatim
+
+where
+
+<table>
+<tr><td>Project Code:</td><td>Four digit number allocated to the project with leading zeros to facilitate searching and sorting.</td></tr>
+<tr><td>Document Type:</td><td>The two or three letter code of the document. e.g. Component Specification Document (CSD)</td></tr>
+<tr><td>Document ID:</td><td>Four digit number allocated to the document with leading zeros to facilitate searching and sorting.</td></tr>
+<tr><td>Number:</td><td>A three digit number with leading zeros to facilitate searching and sorting.
+It is not necessary for numbers to be contiguous. If requirements are removed,
+existing requirements should maintain their numbers.</td></tr>
+<tr><td>Version:</td><td>A two digit number with leading zeros to facilitate search and sorting, incremented
+only for substantive change to a requirement. It is not incremented for clarifications or rewording.</td></tr>
+</table>
+
+*/
+

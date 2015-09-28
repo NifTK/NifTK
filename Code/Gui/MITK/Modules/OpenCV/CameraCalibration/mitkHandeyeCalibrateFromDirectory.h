@@ -58,6 +58,7 @@ public:
   itkSetMacro(WriteOutChessboards,bool);
   itkSetMacro(NoVideoSupport,bool);
   itkSetMacro(SwapVideoChannels, bool);
+  itkSetMacro(Randomise, bool);
 
   bool LoadExistingIntrinsicCalibrations (std::string directory);
   bool LoadExistingRightToLeft(const std::string& directory);
@@ -116,6 +117,7 @@ private:
   CvMat*                              m_TranslationVectorRightToLeft;
   bool                                m_OptimiseIntrinsics;
   bool                                m_OptimiseRightToLeft;
+  bool                                m_Randomise;
 }; // end class
 
 } // end namespace

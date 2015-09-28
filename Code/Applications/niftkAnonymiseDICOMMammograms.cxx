@@ -39,6 +39,7 @@
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
 #include <itkCreatePositiveMammogram.h>
+#include <itkFlipImageFilter.h>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -65,6 +66,8 @@ struct arguments
   bool flgAnonymiseImageLabel;
   bool flgRescaleIntensitiesToMaxRange;
   bool flgInvert;
+  bool flgFlipHorizontally;
+  bool flgFlipVertically;
   bool flgVerbose;
 
   float labelWidth;
@@ -500,17 +503,46 @@ int DoMain(arguments args, InputPixelType min, InputPixelType max)
   }
 
 
+  // Flip the image?
+
+  if ( args.flgFlipHorizontally || args.flgFlipVertically )
+  {
+    typename InputImageType::PointType inOrigin = image->GetOrigin();
+
+    typedef itk::FlipImageFilter<InputImageType> FlipImageFilterType;
+ 
+    typename FlipImageFilterType::Pointer flipFilter = FlipImageFilterType::New();
+
+    itk::FixedArray<bool, InputDimension> flipAxes;
+
+    flipAxes[0] = args.flgFlipHorizontally;
+    flipAxes[1] = args.flgFlipVertically;
+  
+    flipFilter->SetInput( image );
+    flipFilter->SetFlipAxes( flipAxes );
+
+    flipFilter->Update();
+
+    typename InputImageType::Pointer imFlipped = flipFilter->GetOutput();
+    
+    imFlipped->DisconnectPipeline();
+    imFlipped->SetOrigin( inOrigin );
+
+    image = static_cast< InputImageType* >( imFlipped );
+  }
+
+
   // Anonymise the DICOM header?
 
   if ( args.flgAnonymiseDICOMHeader )
   {
-    AnonymiseTag( args.flgDontAnonPatientsName,  			              dictionary, "0010|0010", "Anonymous"    ); // Patient's Name                               
-    AnonymiseTag( args.flgDontAnonPatientsBirthDate,			      dictionary, "0010|0030", "00000000"     ); // Patient's Birth Date                        
-    AnonymiseTag( args.flgDontAnonOtherPatientNames, 			      dictionary, "0010|1001", "None"         ); // Other Patient Names                         
-    AnonymiseTag( args.flgDontAnonPatientsBirthName, 			      dictionary, "0010|1005", "Anonymous"    ); // Patient's Birth Name                        
-    AnonymiseTag( args.flgDontAnonPatientsAddress, 			      dictionary, "0010|1040", "None"         ); // Patient's Address                           
-    AnonymiseTag( args.flgDontAnonPatientsMothersBirthName, 		      dictionary, "0010|1060", "Anonymous"    ); // Patient's Mother's Birth Name               
-    AnonymiseTag( args.flgDontAnonPatientsTelephoneNumbers, 		      dictionary, "0010|2154", "None"         ); // Patient's Telephone Numbers                 
+    AnonymiseTag( args.flgDontAnonPatientsName,  	    dictionary, "0010|0010", "Anonymous"    ); // Patient's Name                               
+    AnonymiseTag( args.flgDontAnonPatientsBirthDate,	    dictionary, "0010|0030", "00000000"     ); // Patient's Birth Date                        
+    AnonymiseTag( args.flgDontAnonOtherPatientNames, 	    dictionary, "0010|1001", "None"         ); // Other Patient Names                         
+    AnonymiseTag( args.flgDontAnonPatientsBirthName, 	    dictionary, "0010|1005", "Anonymous"    ); // Patient's Birth Name                        
+    AnonymiseTag( args.flgDontAnonPatientsAddress, 	    dictionary, "0010|1040", "None"         ); // Patient's Address                           
+    AnonymiseTag( args.flgDontAnonPatientsMothersBirthName, dictionary, "0010|1060", "Anonymous"    ); // Patient's Mother's Birth Name               
+    AnonymiseTag( args.flgDontAnonPatientsTelephoneNumbers, dictionary, "0010|2154", "None"         ); // Patient's Telephone Numbers                 
   }
       
 
@@ -631,6 +663,8 @@ int main( int argc, char *argv[] )
 
   args.flgRescaleIntensitiesToMaxRange = flgRescaleIntensitiesToMaxRange;
   args.flgInvert = flgInvert;
+  args.flgFlipHorizontally = flgFlipHorizontally;
+  args.flgFlipVertically   = flgFlipVertically;
 				   	                                                 
   args.labelWidth  = labelWidth;                         
   args.labelHeight = labelHeight;                        

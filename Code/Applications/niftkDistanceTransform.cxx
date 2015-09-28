@@ -23,6 +23,8 @@
 #include <itkBinaryCrossStructuringElement.h>
 #include <itkBinaryErodeImageFilter.h>
 #include <itkNegateImageFilter.h>
+#include <itkAbsImageFilter.h>
+
 
 /*!
  * \file niftkDistanceTransform.cxx
@@ -42,8 +44,11 @@ void Usage(char *exec)
     std::cout << "    -i <filename>        Input image " << std::endl;
     std::cout << "    -o <filename>        Output image" << std::endl << std::endl;
     std::cout << "*** [options]   ***" << std::endl << std::endl;
+    std::cout << "    -invert              If specified, will invert the input image prior to calculating distances. " << std::endl;
     std::cout << "    -internal            If specified, will calculate distances internal to the object. " << std::endl;
     std::cout << "                         Usefull if you have 1 object, and want to simulate a level set." << std::endl;
+    std::cout << "    -abs                 If specified, will calculate absolute distances, " << std::endl;
+    std::cout << "                         otherwise internal distances are negative." << std::endl;
   }
 
 struct arguments
@@ -51,6 +56,8 @@ struct arguments
   std::string inputImage;
   std::string outputImage;
   bool internal;
+  bool invert;
+  bool absolute;
 };
 
 template <int Dimension, class PixelType>
@@ -60,6 +67,7 @@ int DoMain(arguments args)
 
   typedef typename itk::ImageFileReader< InputImageType > InputImageReaderType;
   typedef typename itk::ImageFileWriter< InputImageType > OutputImageWriterType;
+  typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<InputImageType> InvertFilterType;
   typedef typename itk::DanielssonDistanceMapImageFilter<InputImageType, InputImageType> DistanceFilterType;
 
   try
@@ -70,9 +78,24 @@ int DoMain(arguments args)
     typename OutputImageWriterType::Pointer imageWriter = OutputImageWriterType::New();
 
     imageReader->SetFileName(args.inputImage);
+    imageReader->Update();
+
+    typename InputImageType::Pointer image = imageReader->GetOutput();
+    image->DisconnectPipeline();
+
     imageWriter->SetFileName(args.outputImage);
 
-    distanceFilter->SetInput(imageReader->GetOutput());
+    if ( args.invert )
+    {
+      typename InvertFilterType::Pointer invertInputImageFilter = InvertFilterType::New();
+
+      invertInputImageFilter->SetInput( image );
+      invertInputImageFilter->Update();
+      image = invertInputImageFilter->GetOutput();
+      image->DisconnectPipeline();
+    }
+
+    distanceFilter->SetInput( image );
     distanceFilter->SetSquaredDistance(false);
     distanceFilter->SetInputIsBinary(true);
     distanceFilter->SetUseImageSpacing(true);
@@ -89,14 +112,13 @@ int DoMain(arguments args)
       typedef typename itk::BinaryErodeImageFilter<InputImageType, InputImageType, StructuringElementType> ErodeImageFilterType;
       typename ErodeImageFilterType::Pointer erodeFilter = ErodeImageFilterType::New();
 
-      erodeFilter->SetInput(imageReader->GetOutput());
+      erodeFilter->SetInput( image );
       erodeFilter->SetKernel(element);
       erodeFilter->SetErodeValue(1);
       erodeFilter->SetBackgroundValue(0);
       erodeFilter->SetBoundaryToForeground(false);
       erodeFilter->Update();
 
-      typedef typename itk::InvertIntensityBetweenMaxAndMinImageFilter<InputImageType> InvertFilterType;
       typename InvertFilterType::Pointer invertInputImageFilter = InvertFilterType::New();
 
       invertInputImageFilter->SetInput(erodeFilter->GetOutput());
@@ -119,17 +141,34 @@ int DoMain(arguments args)
       addFilter->SetInput(0, distanceFilter->GetOutput());
       addFilter->SetInput(1, negateFilter->GetOutput());
 
-      imageWriter->SetInput(addFilter->GetOutput());
-      imageWriter->Update();
+      addFilter->Update();
 
+      image = addFilter->GetOutput();
     }
     else
     {
-      imageWriter->SetInput(distanceFilter->GetOutput());
-      imageWriter->Update();
+      image = distanceFilter->GetOutput();
     }
 
+    image->DisconnectPipeline();
+
+    if ( args.absolute )
+    {
+      typedef itk::AbsImageFilter< InputImageType, InputImageType > AbsImageFilterType;
+      typename AbsImageFilterType::Pointer absFilter = AbsImageFilterType::New();
+
+      absFilter->SetInput( image );
+      absFilter->Update();
+
+      image = absFilter->GetOutput();
+      image->DisconnectPipeline();
+    }
+
+
+    imageWriter->SetInput(image);
+    imageWriter->Update();
   }
+
   catch( itk::ExceptionObject & err )
   {
     std::cerr << "Failed: " << err << std::endl;
@@ -145,7 +184,9 @@ int main(int argc, char** argv)
 {
   // To pass around command line args
   struct arguments args;
+  args.invert = false;
   args.internal = false;
+  args.absolute = false;
   
 
   // Parse command line args
@@ -162,9 +203,17 @@ int main(int argc, char** argv)
       args.outputImage=argv[++i];
       std::cout << "Set -o=" << args.outputImage << std::endl;
     }
+    else if(strcmp(argv[i], "-invert") == 0){
+      args.invert=true;
+      std::cout << "Set -invert=" << niftk::ConvertToString(args.invert) << std::endl;
+    }
     else if(strcmp(argv[i], "-internal") == 0){
       args.internal=true;
       std::cout << "Set -internal=" << niftk::ConvertToString(args.internal) << std::endl;
+    }
+    else if(strcmp(argv[i], "-abs") == 0){
+      args.absolute=true;
+      std::cout << "Set -abs=" << niftk::ConvertToString(args.absolute) << std::endl;
     }
     else {
       std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;

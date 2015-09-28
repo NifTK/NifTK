@@ -52,12 +52,14 @@ if(BUILD_IGI)
     ${MODULE_DIRS}
     OpenCVUtils
     PointReg
+    ICPReg
     OpenCV
+    IGIServices
+    PointRegService
+    ICPRegService
     IGI
     IGIGui
     IGIDataSources
-    ICPReg
-    PointRegService
     SurfRecon
   )
 
@@ -65,7 +67,6 @@ if(BUILD_IGI)
     set(MODULE_DIRS
       ${MODULE_DIRS}
       NVidia
-      NVidiaGui
     )
   endif()
 

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>NiftyLink Video Client</title>
+  <description><![CDATA[Grabs video via OpenCV and sends via NiftyLink.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the operation]]></description>
+    <string>
+      <name>hostname</name>
+      <longflag>hostname</longflag>
+      <description>Host (DNS name or IP address) to send to.</description>
+      <label>Host</label>
+      <default>localhost</default>
+    </string>
+    <integer>
+      <name>port</name>
+      <longflag>port</longflag>
+      <description>Port number to send to.</description>
+      <label>Port</label>
+      <default>18944</default>
+    </integer>
+    <integer>
+      <name>seconds</name>
+      <longflag>seconds</longflag>
+      <description>Number of seconds to run for.</description>
+      <label>Duration (s)</label>
+      <default>100</default>
+    </integer>
+  </parameters>
+</executable>

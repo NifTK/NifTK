@@ -73,6 +73,7 @@ public:
   itkSetMacro ( AskOverWrite, bool);
   itkSetMacro ( HaltOnVideoReadFail, bool);
   itkSetMacro ( WriteAnnotatedImages, bool);
+  itkSetMacro ( HalfImageWidth, bool);
   itkSetMacro ( Frequency, unsigned int);
 
   itkGetMacro ( InitOK, bool);
@@ -90,6 +91,7 @@ protected:
 private:
   std::string                   m_VideoIn; //the video in file
   std::string                   m_Directory; //the directory containing the data
+  std::string                   m_OutDirectory; //the directory to save to
 
   int                           m_TrackerIndex; //the tracker index to use for frame matching
   int                           m_ReferenceIndex; //the reference index to use for frame matching, not used by default
@@ -101,6 +103,7 @@ private:
   bool                          m_AskOverWrite; //if true, we will ask if you want to overwrite existing results
   bool                          m_HaltOnVideoReadFail; //halt if video read fail
   bool                          m_WriteAnnotatedImages; //halt if video read fail
+  bool                          m_HalfImageWidth; //halves the image width used for point picking, useful for small screens
 
   unsigned int                  m_StartFrame; //you can exclude some frames at the start
   unsigned int                  m_EndFrame; // and at the end

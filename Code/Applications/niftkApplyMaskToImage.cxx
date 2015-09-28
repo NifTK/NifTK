@@ -96,6 +96,8 @@ int MaskImage( arguments &args )
   typename ImageType::Pointer inImage = 0;
   typename ImageType::Pointer maskImage = 0;
 
+  int iDim;
+
   float startCoord[4];
   float endCoord[4];
 
@@ -171,16 +173,24 @@ int MaskImage( arguments &args )
 		<< std::endl;
       return EXIT_FAILURE;
     }
-    
-    if ( maskImage->GetSpacing() != inImage->GetSpacing() )
+
+    typename ImageType::SpacingType imageSpacing = inImage->GetSpacing();
+    typename ImageType::SpacingType maskSpacing  = maskImage->GetSpacing();
+
+    for ( iDim=0; iDim<Dimension; iDim++ )
     {
-      std::cerr << std::endl 
-		<< "ERROR: Input image and mask must have the same resolution."
-		<< std::endl 
-		<< "Input resolution: " << inImage->GetSpacing() << std::endl 
-		<< "Mask  resolution: " << maskImage->GetSpacing() << std::endl 
-		<< std::endl;
-      return EXIT_FAILURE;
+      if ( fabs( maskSpacing[ iDim ] - imageSpacing[ iDim ] ) > 1.0e-6 )
+      {
+        std::cerr << std::endl 
+                  << "ERROR: Input image and mask must have the same resolution."
+                  << std::endl 
+                  << "Input resolution dimension [" << iDim << "]: " 
+                  << imageSpacing[ iDim ] << std::endl 
+                  << "Mask  resolution dimension [" << iDim << "]: " 
+                  << maskSpacing[ iDim ] << std::endl 
+                  << std::endl;
+        return EXIT_FAILURE;
+      }
     }
   }
 

@@ -28,7 +28,6 @@ IGIDataType::IGIDataType()
 , m_ShouldBeSaved(false)
 , m_FileName("")
 {
-  m_TimeStamp = igtl::TimeStamp::New();
 }
 
 //-----------------------------------------------------------------------------
@@ -40,14 +39,14 @@ IGIDataType::~IGIDataType()
 //-----------------------------------------------------------------------------
 igtlUint64 IGIDataType::GetTimeStampInNanoSeconds() const
 {
-  return m_TimeStamp->GetTimeInNanoSeconds();
+  return m_TimeStamp;
 }
 
 
 //-----------------------------------------------------------------------------
 void IGIDataType::SetTimeStampInNanoSeconds(const igtlUint64& time)
 {
-  m_TimeStamp->SetTimeInNanoSeconds(time);
+  m_TimeStamp = time;
 }
 
 } // end namespace

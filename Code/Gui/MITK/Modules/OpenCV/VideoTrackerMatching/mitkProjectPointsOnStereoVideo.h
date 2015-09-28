@@ -54,6 +54,13 @@ public:
    * and sets up the videotracker matcher
    */
   void Initialise (std::string directory, std::string calibrationParameterDirectory);
+ /** 
+   * \brief
+   * Set up the projector, finds the video file in the directory, and the tracking data, 
+   * and sets up the videotracker matcher, without any calibration information
+   */
+  void Initialise (std::string directory);
+  
   /**
    * \brief
    * performs the point projection
@@ -87,12 +94,14 @@ public:
      std::vector <double> * perturbation = NULL);
 
   void SetVisualise( bool) ;
-  void SetSaveVideo( bool state, std::string prefix = "" );
+  void SetSaveVideo( bool state );
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawLines, bool);
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( HaltOnVideoReadFail, bool);
+  itkSetMacro ( DontProject, bool);
+  itkSetMacro ( VisualiseTrackingStatus, bool);
   itkSetMacro ( AllowablePointMatchingRatio, double);
   itkSetMacro ( AllowableTimingError, long long);
   void SetLeftGoldStandardPoints ( std::vector <GoldStandardPoint> points );
@@ -155,8 +164,8 @@ private:
   std::string                   m_VideoIn; //the video in file
   std::string                   m_VideoOut; //video needs to be saved on the fly
   std::string                   m_Directory; //the directory containing the data
-  std::string                   m_VideoOutPrefix; //where to write out any video
-  std::string                   m_TriangulatedPointsOutName; //where to write the triangulated points out to
+  std::string                   m_OutDirectory; //where to write out any video
+  std::string                   m_TriangulatedPointsOutName; // where to write out triangulated points
   std::vector< mitk::WorldPoint >     
                                 m_WorldPoints;  //the world points to project, and their accompanying scalar values 
 
@@ -170,6 +179,8 @@ private:
   bool                          m_LeftGSFramesAreEven; // true if the left GS frame numbers are even
   bool                          m_RightGSFramesAreEven; // true if the right GS frame numbers are even
   bool                          m_HaltOnVideoReadFail; //stop processing if video read fails
+  bool                          m_DontProject; //don't project anything, useful for just reviewing video data
+  bool                          m_VisualiseTrackingStatus; //draw something on screen to indicate whether tracking was working got frame
   int                           m_RightGSFrameOffset; //0 if right and left gold standard points have the same frame number 
   int                           m_MaxGoldStandardIndex; //useful if we're just triangulating gold standard points
 
@@ -217,7 +228,7 @@ private:
   std::vector < cv::Point3d >   m_RightReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
   std::vector < cv::Point3d >   m_TriangulationErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
 
-  cv::VideoCapture*                  m_Capture;
+  cv::VideoCapture*             m_Capture;
   CvVideoWriter*                m_LeftWriter;
   CvVideoWriter*                m_RightWriter;
 
@@ -245,6 +256,10 @@ private:
    */
   cv::Point2d FindNearestScreenPoint ( GoldStandardPoint GSPoint, 
       bool left,  double* minRatio = NULL ,unsigned int * index = NULL );
+
+  /* \brief use this this find video data, used m_Directory and set m_VideoIn
+   */
+  void FindVideoData (mitk::VideoTrackerMatching::Pointer trackerMatcher);
   
 }; // end class
 

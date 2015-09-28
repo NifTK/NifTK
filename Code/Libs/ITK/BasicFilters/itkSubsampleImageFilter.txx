@@ -59,6 +59,24 @@ SubsampleImageFilter<TInputImage, TOutputImage>
 template <class TInputImage, class TOutputImage>
 void
 SubsampleImageFilter<TInputImage, TOutputImage>
+::SetSubsamplingFactors(double factor) 
+{
+  unsigned int i;
+
+  for (i = 0; i < ImageDimension; i++)
+    {
+      m_SubsamplingFactors[i] = factor;
+    }
+}
+
+
+/* ---------------------------------------------------------------------
+   SetSubsamplingFactors()
+   --------------------------------------------------------------------- */
+
+template <class TInputImage, class TOutputImage>
+void
+SubsampleImageFilter<TInputImage, TOutputImage>
 ::SetSubsamplingFactors(double data[]) 
 {
   unsigned int i;

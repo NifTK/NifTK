@@ -17,7 +17,7 @@ set(MODULE_TESTS
 )
 
 set(MODULE_CUSTOM_TESTS
-  niftkSurfaceBasedRegistrationTest.cxx
-  niftkSurfaceBasedRegistrationTestRealData.cxx
+  niftkICPBasedRegistrationTest.cxx
+  niftkICPBasedRegistrationTestRealData.cxx
 )
 

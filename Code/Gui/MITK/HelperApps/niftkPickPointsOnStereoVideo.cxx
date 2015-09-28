@@ -37,9 +37,10 @@ int main(int argc, char** argv)
     mitk::PickPointsOnStereoVideo::Pointer projector = mitk::PickPointsOnStereoVideo::New();
     projector->SetAllowableTimingError(maxTimingError * 1e6);
     projector->SetFrequency(frequency*2);
-    projector->SetOrderedPoints(orderedPoints);
+    projector->SetOrderedPoints( ! unOrderedPoints);
     projector->SetAskOverWrite(queryOverWrite);
     projector->SetWriteAnnotatedImages(saveAnnotatedImages);
+    projector->SetHalfImageWidth(halfImageWidth);
     
     projector->Initialise(trackingInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
@@ -61,7 +62,8 @@ int main(int argc, char** argv)
       MITK_ERROR << "Projector failed to initialise, halting.";
       return -1;
     }
-    matcher->SetFlipMatrices(FlipTracking);
+    bool flipTracking = false; 
+    matcher->SetFlipMatrices(flipTracking);
     matcher->SetWriteTimingErrors(WriteTimingErrors);
     projector->SetTrackerIndex(trackerIndex);
     projector->SetReferenceIndex(referenceIndex);

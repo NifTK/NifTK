@@ -17,8 +17,10 @@
 
 #include "niftkIGIExports.h"
 #include <mitkSurface.h>
+#include <mitkPointSet.h>
 #include <QString>
 #include <vtkMatrix4x4.h>
+
 /**
  * \brief For visualisation purposes, creates a representation of the laparoscope.
  * \param the rigid body filename to define the location of the tracking markers
@@ -108,4 +110,9 @@ NIFTKIGI_EXPORT mitk::Surface::Pointer MakeTransrectalUSProbe(std::string handey
  * \param the handeye calibration to define the tool origin
  */
 NIFTKIGI_EXPORT mitk::Surface::Pointer MakeMonitor();
+
+/**
+ * \brief Scans through polyDatas, which should contain poly-lines, and identifies the bifurcation points. */
+NIFTKIGI_EXPORT mitk::PointSet::Pointer MakePointSetOfBifurcations(const std::vector<vtkPolyData*> polyDatas);
+
 #endif

@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS CUDAManager CUDAImage
+  INCLUDE_DIRS CUDAManager CUDAImage Image CameraCalibration
   DEPENDS MitkCore
   PACKAGE_DEPENDS Qt4|QtCore Qt4|QtOpenGL
 )

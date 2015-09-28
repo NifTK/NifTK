@@ -65,6 +65,7 @@ public:
 
   /** Directly Set/Get the array of subsampling factors for each image dimension */
   void SetSubsamplingFactors(double data[]);
+  void SetSubsamplingFactors(double factor);
   void SetSubsamplingFactors(itk::Array< double > &sampling);
   itkGetVectorMacro(SubsamplingFactors, const double, TInputImage::ImageDimension);
 

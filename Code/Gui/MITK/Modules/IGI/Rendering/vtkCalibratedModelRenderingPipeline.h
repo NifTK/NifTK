@@ -28,7 +28,6 @@
 #include <vtkOpenGLMatrixDrivenCamera.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
-#include <vtkRenderWindowInteractor.h>
 #include <vtkPNGReader.h>
 #include <vtkPolyDataReader.h>
 #include <vtkPolyDataWriter.h>
@@ -42,6 +41,9 @@
 #include <vtkPNGWriter.h>
 #include <vtkBMPWriter.h>
 #include <vtkSetGet.h>
+#include <vtkPlaneSource.h>
+#include <vtkTexture.h>
+#include <vtkImageFlip.h>
 
 /**
  * \class vtkCalibratedModelRenderingPipeline
@@ -66,6 +68,8 @@ public:
    * @param textureFileName If not-empty, and if loadable, will be texture mapped onto the visualisationModel.
    * @param rightToLeftFileName If not-empty, and if loadable, will be added into camera matrices to simulate a right-hand camera. Default is left.
    * @param trackingModelFileName If not-empty, and if loadable, will also be rendered, where each surface point is combined with a sphere glyph.
+   * @param  ultrasoundCalibrationMatrixFileName If not-empty, and if loadable, and if ultrasoundImageFileName is also set, will also render the ultrasound image in place.
+   * @param  ultrasoundImageFileName If not-empty, and if loadable, and if ultrasoundCalibrationMatrixFileName is also set, will also render the ultrasound image in place.
    */
   vtkCalibratedModelRenderingPipeline(
     const std::string& name,
@@ -77,6 +81,8 @@ public:
     const std::string& rightToLeftFileName,
     const std::string& textureFileName,
     const std::string& trackingModelFileName,
+    const std::string& ultrasoundCalibrationMatrixFileName,
+    const std::string& ultrasoundImageFileName,
     const float& trackingGlyphRadius
     );
 
@@ -186,6 +192,7 @@ private:
   void operator=(const vtkCalibratedModelRenderingPipeline&);  // Purposefully not implemented.
 
   void UpdateCamera();
+  void UpdateUltrasoundPlanePosition();
   vtkSmartPointer<vtkMatrix4x4> GetTransform(const std::vector<float> &transform);
 
   std::string                                  m_Name;
@@ -221,6 +228,15 @@ private:
   vtkSmartPointer<vtkPolyDataMapper>           m_VisualisationModelMapper;
   vtkSmartPointer<vtkActor>                    m_VisualisationModelActor;
   vtkSmartPointer<vtkPolyDataWriter>           m_VisualisationModelWriter;
+
+  vtkSmartPointer<vtkMatrix4x4>                m_UltrasoundCalibrationMatrix;
+  vtkSmartPointer<vtkMatrix4x4>                m_UltrasoundTransformMatrix;
+  vtkSmartPointer<vtkPNGReader>                m_UltrasoundImageReader;
+  vtkSmartPointer<vtkImageFlip>                m_UltrasoundImageYAxisFlipper;
+  vtkSmartPointer<vtkPlaneSource>              m_UltrasoundImagePlane;
+  vtkSmartPointer<vtkTexture>                  m_UltrasoundImageTexture;
+  vtkSmartPointer<vtkPolyDataMapper>           m_UltrasoundImageMapper;
+  vtkSmartPointer<vtkActor>                    m_UltrasoundImageActor;
 
   vtkSmartPointer<vtkRenderer>                 m_Renderer;
   vtkSmartPointer<vtkRenderWindow>             m_RenderWin;

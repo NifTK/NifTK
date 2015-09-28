@@ -19,8 +19,8 @@
 #include <mitkFileIOUtils.h>
 #include <mitkDataStorageUtils.h>
 #include <igtlStringMessage.h>
-#include <NiftyLinkSocketObject.h>
-#include <Common/NiftyLinkXMLBuilder.h>
+#include <NiftyLinkUtils.h>
+#include <NiftyLinkXMLBuilder.h>
 
 #include <vtkCubeSource.h>
 #include <vtkSmartPointer.h>
@@ -59,12 +59,12 @@ mitk::Surface::Pointer LoadSurfaceFromSTLFile(const QString& surfaceFilename)
 //-----------------------------------------------------------------------------
 QString CreateTestDeviceDescriptor()
 {
-  TrackerClientDescriptor tcld;
+  niftk::NiftyLinkTrackerClientDescriptor tcld;
   tcld.SetDeviceName("NDI Polaris Vicra");
   tcld.SetDeviceType("Tracker");
   tcld.SetCommunicationType("Serial");
   tcld.SetPortName("Tracker not connected");
-  tcld.SetClientIP(GetLocalHostAddress());
+  tcld.SetClientIP(niftk::GetLocalHostAddress());
   tcld.SetClientPort(QString::number(3200));
   //tcld.AddTrackerTool("8700302.rom");
   tcld.AddTrackerTool("8700338.rom");

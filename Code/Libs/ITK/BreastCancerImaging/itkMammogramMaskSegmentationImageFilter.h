@@ -109,7 +109,9 @@ protected:
   MammogramMaskSegmentationImageFilter();
   virtual ~MammogramMaskSegmentationImageFilter();
   void PrintSelf(std::ostream& os, Indent indent) const;
-  
+
+  bool IsPixelSet( InputImagePointer &image, InputImageIndexType index, int dx, int dy );
+
   /** Single threaded execution */
   void GenerateData();
 

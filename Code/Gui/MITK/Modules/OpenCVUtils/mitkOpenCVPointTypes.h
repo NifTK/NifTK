@@ -170,19 +170,41 @@ private:
 };
 
 /**
- * \class contains a vector of 2D points.
+ * \class contains a vector of 3D points, an identifier and whether or not it's a line
  */
 class NIFTKOPENCVUTILS_EXPORT PickedObject
 {
   public:
       
-    int id;
-    bool isLine;
-    std::vector < cv::Point2i > points;
+    int m_Id;
+    bool m_IsLine;
+    std::vector < cv::Point3d > m_Points;
+    unsigned int m_FrameNumber;
+    unsigned long long m_TimeStamp;
+    std::string m_Channel;
 
     PickedObject();
+    PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp);
+    PickedObject(GoldStandardPoint gsp); //cast a gold standard point to a PickedObject
     ~PickedObject();
+    
+    /**
+     * \brief compare the header information (Id, IsLine, Channel, FrameNumber)
+     * and return true if they all match, except if m_Id in otherPickedObject is -1, which acts
+     * as a wildcard
+     */
+    bool HeadersMatch ( const PickedObject& otherPickedObject, const long long& allowableTimingError = 20e6) const; 
+
+    /**
+     * \brief Calculates a distance between two picked objects
+     * returns infinity if the headers don't match
+     */
+    double DistanceTo ( const PickedObject& otherPickedObject, const long long& allowableTimingError = 20e6) const;
+
 };
+
+std::istream& operator >> ( std::istream& is, PickedObject& po);
+std::ostream& operator << ( std::ostream& os, const PickedObject& po);
 
 /**
  * \class maintains a set a point vectors and ID's that 
@@ -203,6 +225,9 @@ public:
   bool GetIsModified();
   itkSetMacro (FrameNumber, unsigned int);
   itkSetMacro (Channel, std::string);
+  itkSetMacro (TimeStamp, unsigned long long);
+  itkSetMacro (XScale, double);
+  itkSetMacro (YScale, double);
 
   unsigned int AddPoint (const cv::Point2i& point);
   unsigned int RemoveLastPoint ();
@@ -220,11 +245,19 @@ private:
   bool m_InLineMode;
   bool m_InOrderedMode;
   bool m_IsModified;
+  double m_XScale; // When adding points, we can scale the x pixel location
+  double m_YScale; // When adding points, we can scale the y pixel location
+
+  unsigned long long m_TimeStamp;
   unsigned int m_FrameNumber;
   std::string m_Channel;
   std::vector < PickedObject > m_PickedObjects;
   int GetNextAvailableID ( bool ForLine );
 };
+/**
+ * \brief a function to cast a point3d to a point2i, checks that z is zero, throws an error is not
+ */
+cv::Point2i NIFTKOPENCVUTILS_EXPORT Point3dToPoint2i (const cv::Point3d& point);
 
 } // end namespace
 

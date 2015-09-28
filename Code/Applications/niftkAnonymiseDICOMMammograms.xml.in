@@ -79,8 +79,22 @@
     <boolean>
       <name>flgInvert</name>
       <longflag>invert</longflag>
-      <description>Manually override automatically working out if the image should be inverted on not and invert all images.</description>
-      <label>Invert all images</label>
+      <description>Manually override automatically working out if the image should be inverted on not and invert all image intensities.</description>
+      <label>Invert image intensities</label>
+    </boolean>
+
+    <boolean>
+      <name>flgFlipHorizontally</name>
+      <longflag>flipHorizontally</longflag>
+      <description>Flip all the images horizontally.</description>
+      <label>Flip horizontally</label>
+    </boolean>
+
+    <boolean>
+      <name>flgFlipVertically</name>
+      <longflag>flipVertically</longflag>
+      <description>Flip all the images vertically.</description>
+      <label>Flip vertically</label>
     </boolean>
 
     <boolean>

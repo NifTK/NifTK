@@ -59,31 +59,6 @@ void MakeMaskImagesFromStereoVideo::Initialise(std::string directory)
   m_InitOK = false;
   m_Directory = directory;
   
-  if ( m_Capture == NULL ) 
-  {
-    std::vector <std::string> videoFiles = niftk::FindVideoData(m_Directory);
-    if ( videoFiles.size() == 0 ) 
-    {
-      MITK_ERROR << "Failed to find any video files";
-      m_InitOK = false;
-      return;
-    }
-    if ( videoFiles.size() > 1 ) 
-    {
-      MITK_WARN << "Found multiple video files, will only use " << videoFiles[0];
-    }
-    m_VideoIn = videoFiles[0];
-    try
-    {
-      m_Capture = mitk::InitialiseVideoCapture(m_VideoIn, (! m_HaltOnVideoReadFail )); 
-    }
-    catch (std::exception& e)
-    {
-      MITK_ERROR << "Caught exception " << e.what();
-      exit(1);
-    }
-  }
-
   m_InitOK = true;
   return;
 
@@ -97,7 +72,26 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
     MITK_WARN << "Called project before initialise.";
     return;
   }
-    
+  
+  if ( m_Capture == NULL ) 
+  {
+    m_VideoIn = niftk::FindVideoFile(m_Directory, niftk::Basename (niftk::Basename ( trackerMatcher->GetFrameMap() )));
+    if ( m_VideoIn == "" ) 
+    {
+      m_InitOK = false;
+      return;
+    }
+    try
+    {
+      m_Capture = mitk::InitialiseVideoCapture(m_VideoIn, (! m_HaltOnVideoReadFail )); 
+    }
+    catch (std::exception& e)
+    {
+      MITK_ERROR << "Caught exception " << e.what();
+      exit(1);
+    }
+  }
+   
   m_ProjectOK = false;
 
   int framenumber = 0 ;
@@ -202,14 +196,16 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
 
           PickedPointList::Pointer leftPickedPoints = PickedPointList::New();
           PickedPointList::Pointer rightPickedPoints = PickedPointList::New();
-          leftPickedPoints->SetInLineMode (true);
-          leftPickedPoints->SetInOrderedMode (false);
           leftPickedPoints->SetFrameNumber (framenumber);
           leftPickedPoints->SetChannel ("left");
-          rightPickedPoints->SetInLineMode (true);
-          rightPickedPoints->SetInOrderedMode (false);
+          leftPickedPoints->SetTimeStamp(timeStamp);
+          leftPickedPoints->SetInLineMode (true);
+          leftPickedPoints->SetInOrderedMode (false);
           rightPickedPoints->SetFrameNumber (framenumber + 1);
           rightPickedPoints->SetChannel ("right");
+          rightPickedPoints->SetTimeStamp(timeStamp);
+          rightPickedPoints->SetInLineMode (true);
+          rightPickedPoints->SetInOrderedMode (false);
 
           cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
           cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();

@@ -24,6 +24,7 @@ mitk_create_plugin(
   MODULE_DEPENDS MitkQtWidgets niftkVL
   )
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
+# Cotire must be ON on Windows and Mac and must be OFF on Linux.
+if (COMMAND cotire AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   cotire(uk_ac_ucl_cmic_igivleditor)
 endif()

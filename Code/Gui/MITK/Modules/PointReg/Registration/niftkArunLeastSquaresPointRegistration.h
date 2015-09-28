@@ -54,8 +54,8 @@ double PointBasedRegistrationUsingSVD(const std::vector<cv::Point3d>& fixedPoint
 * must be in the right order, and corresponding.
 */
 extern "C++" NIFTKPOINTREG_EXPORT
-double PointBasedRegistrationUsingSVD(const mitk::PointSet::Pointer& fixedPoints,
-                                      const mitk::PointSet::Pointer& movingPoints,
+double PointBasedRegistrationUsingSVD(const mitk::PointSet::Pointer fixedPoints,
+                                      const mitk::PointSet::Pointer movingPoints,
                                       vtkMatrix4x4& matrix);
 } // end namespace
 
