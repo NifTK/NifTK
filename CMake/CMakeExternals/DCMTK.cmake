@@ -31,14 +31,17 @@ if(MITK_USE_DCMTK)
 
   niftkMacroDefineExternalProjectVariables(DCMTK ${version} ${location})
 
-  if(CMAKE_GENERATOR MATCHES Xcode)
-    set(DCMTK_PATCH_COMMAND ${CMAKE_COMMAND} -DTEMPLATE_FILE:FILEPATH=${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/EmptyFileForPatching.dummy -P ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals/PatchDCMTK-20121102.cmake)
-  endif()
-
   if(NOT DEFINED DCMTK_DIR)
     if(DCMTK_DICOM_ROOT_ID)
       set(DCMTK_CXX_FLAGS "${DCMTK_CXX_FLAGS} -DSITE_UID_ROOT=\\\"${DCMTK_DICOM_ROOT_ID}\\\"")
       set(DCMTK_C_FLAGS "${DCMTK_CXX_FLAGS} -DSITE_UID_ROOT=\\\"${DCMTK_DICOM_ROOT_ID}\\\"")
+    endif()
+
+    set(additional_args )
+    if(CTEST_USE_LAUNCHERS)
+      list(APPEND additional_args
+        "-DCMAKE_PROJECT_${proj}_INCLUDE:FILEPATH=${CMAKE_ROOT}/Modules/CTestUseLaunchers.cmake"
+      )
     endif()
 
     ExternalProject_Add(${proj}
@@ -49,16 +52,22 @@ if(MITK_USE_DCMTK)
       INSTALL_DIR ${proj_INSTALL}
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
-      PATCH_COMMAND ${DCMTK_PATCH_COMMAND}
+      # See http://bugs.mitk.org/show_bug.cgi?id=14513 except for the changes
+      # in dcmtkMacros.cmake which allow installing release and debug executables
+      # of dcmtk in the same install prefix.
+      # The other patches were originally for the Xcode generator, but we always
+      # apply them for consistency.
+      PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/DCMTK-3.6.1.patch
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
+        ${additional_args}
         -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         #-DDCMTK_OVERWRITE_WIN32_COMPILER_FLAGS:BOOL=OFF
         "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} ${DCMTK_CXX_FLAGS}"
         "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} ${DCMTK_C_FLAGS}"
-        -DDCMTK_INSTALL_BINDIR:STRING=bin/${CMAKE_CFG_INTDIR}
-        -DDCMTK_INSTALL_LIBDIR:STRING=lib/${CMAKE_CFG_INTDIR}
+        #-DDCMTK_INSTALL_BINDIR:STRING=bin/${CMAKE_CFG_INTDIR}
+        #-DDCMTK_INSTALL_LIBDIR:STRING=lib/${CMAKE_CFG_INTDIR}
         -DDCMTK_WITH_DOXYGEN:BOOL=OFF
         -DDCMTK_WITH_ZLIB:BOOL=OFF # see MITK bug #9894
         -DDCMTK_WITH_OPENSSL:BOOL=OFF # see MITK bug #9894
@@ -66,13 +75,19 @@ if(MITK_USE_DCMTK)
         -DDCMTK_WITH_TIFF:BOOL=OFF  # see MITK bug #9894
         -DDCMTK_WITH_XML:BOOL=OFF  # see MITK bug #9894
         -DDCMTK_WITH_ICONV:BOOL=OFF  # see MITK bug #9894
-        -DCMAKE_INSTALL_NAME_DIR:STRING=<INSTALL_DIR>/lib
+        -DHAVE_STRSTREAM:BOOL=1
+        -DHAVE_SSTREAM:BOOL=1
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
     set(DCMTK_DIR ${proj_INSTALL})
 
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading DCMTK from ${DCMTK_DIR}")
 

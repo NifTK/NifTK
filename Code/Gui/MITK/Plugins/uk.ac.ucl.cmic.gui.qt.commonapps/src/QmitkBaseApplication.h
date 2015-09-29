@@ -34,7 +34,7 @@ public:
   QmitkBaseApplication();
   QmitkBaseApplication(const QmitkBaseApplication& other);
 
-  int Start();
+  QVariant Start(berry::IApplicationContext* context);
   void Stop();
 
 protected:

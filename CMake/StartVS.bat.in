@@ -1,6 +1,7 @@
 @set CL=/D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
 @set LINK=/LARGEADDRESSAWARE
 
-PATH=@MITK_RUNTIME_PATH@;@ITK_DIR@/bin;@OpenCV_LIB_PATH@/../bin;@ITK_DIR@/../../../bin;@GDCM_DIR@/bin;@GDCM_LIBRARY_DIRS@/../bin;@CMAKE_RUNTIME_OUTPUT_DIRECTORY@\@VS_BUILD_TYPE@;@CMAKE_RUNTIME_OUTPUT_DIRECTORY@\plugins\@VS_BUILD_TYPE@;@Boost_LIBRARY_DIRS@;@NiftyLink_DIR@\bin\@VS_BUILD_TYPE@;@NiftyLink_DIR@\..\OPENIGTLINK-build\bin\@VS_BUILD_TYPE@;@aruco_DIR@\bin;@CTK_DIR@\qRestAPI-build\@VS_BUILD_TYPE@;@CTK_DIR@\CTK-build\bin\designer\@VS_BUILD_TYPE@;@PCL_BIN_PATH_FOR_BATCH_FILE@;@CGALGMP_BIN_PATH_FOR_BATCH_FILE@;@NIFTYSIM_BIN_PATH_FOR_BATCH_FILE@;@VL_ROOT@/bin;%PATH%
+PATH=@MITK_RUNTIME_PATH@;%PATH%
+PATH=@aruco_DIR@\bin;@BOOST_ROOT@\bin;@CTK_DIR@\CTK-build\bin\designer\@VS_BUILD_TYPE@;@DCMTK_DIR@\bin;@GDCM_DIR@\..\..\bin;@ITK_DIR@\..\..\..\bin;@MITK_DIR@\build\ep\lib;@MITK_DIR@\ep\bin;@MITK_DIR@\ep\plugins\designer;@MITK_DIR@\MITK-build\bin\MitkCore\@VS_BUILD_TYPE@;@CMAKE_RUNTIME_OUTPUT_DIRECTORY@\niftkCore\@VS_BUILD_TYPE@;@CMAKE_RUNTIME_OUTPUT_DIRECTORY@\niftkIGIServices\@VS_BUILD_TYPE@;@NiftyLink_DIR@\bin\@VS_BUILD_TYPE@;@NiftyLink_DIR@\..\OPENIGTLINK-build\bin\@VS_BUILD_TYPE@;@NiftySim_DIR@\lib;@OpenCV_LIB_PATH@;@OpenCV_LIB_PATH@\..\bin;@OpenCV_DIR@\3rdparty\lib\@VS_BUILD_TYPE@;@SlicerExecutionModel_DIR@\..\install\bin;@SlicerExecutionModel_DIR@\..\install\lib\ModuleDescriptionParser;@VTK_DIR@\..\..\..\bin;@VTK_DIR@\..\..\..\plugins\designer\;@VL_ROOT@\bin;%PATH%
 
 start "niftk" "@VS_SOLUTION_FILE@"

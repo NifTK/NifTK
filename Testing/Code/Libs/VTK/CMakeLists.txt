@@ -12,6 +12,10 @@
 #
 #============================================================================*/
 
+set(NIFTK_TEST_EXT_VTK_INCLUDE_DIRS
+  ${ITK_INCLUDE_DIRS}
+  )
+
 set(NIFTK_TEST_EXT_VTK_LINK_LIBRARIES
   ${ITK_LIBRARIES}
   vtkIOLegacy
@@ -33,7 +37,8 @@ set(VTKUnitTests_SRCS
 )
 
 add_executable(niftkVTKUnitTests niftkVTKUnitTests.cxx ${VTKUnitTests_SRCS})
-target_link_libraries(niftkVTKUnitTests ${NIFTK_TEST_EXT_VTK_LINK_LIBRARIES} )
+target_include_directories(niftkVTKUnitTests PRIVATE ${NIFTK_TEST_EXT_VTK_INCLUDE_DIRS} )
+target_link_libraries(niftkVTKUnitTests PRIVATE ${NIFTK_TEST_EXT_VTK_LINK_LIBRARIES} )
 
 set(VTK_UNIT_TESTS ${CXX_TEST_PATH}/niftkVTKUnitTests)
 
@@ -54,7 +59,8 @@ set(VTKIntegrationTests_SRCS
 )
 
 add_executable(niftkVTKIntegrationTests niftkVTKIntegrationTests.cxx ${VTKIntegrationTests_SRCS})
-target_link_libraries(niftkVTKIntegrationTests ${NIFTK_TEST_EXT_VTK_LINK_LIBRARIES} )
+target_include_directories(niftkVTKIntegrationTests PRIVATE ${NIFTK_TEST_EXT_VTK_INCLUDE_DIRS})
+target_link_libraries(niftkVTKIntegrationTests PRIVATE ${NIFTK_TEST_EXT_VTK_LINK_LIBRARIES})
 
 set(VTK_INTEGRATION_TESTS ${CXX_TEST_PATH}/niftkVTKIntegrationTests)
 

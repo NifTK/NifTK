@@ -16,13 +16,13 @@
 #include "QmitkNiftyViewWorkbenchWindowAdvisor.h"
 
 //-----------------------------------------------------------------------------
-std::string QmitkNiftyViewAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
+QString QmitkNiftyViewAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
 {
   return "uk.ac.ucl.cmic.gui.qt.niftyview.minimalperspective";
 }
 
 //-----------------------------------------------------------------------------
-std::string QmitkNiftyViewAppWorkbenchAdvisor::GetWindowIconResourcePath() const
+QString QmitkNiftyViewAppWorkbenchAdvisor::GetWindowIconResourcePath() const
 {
   return ":/QmitkNiftyViewApplication/icon_ucl.xpm";
 }

@@ -17,13 +17,13 @@
 #include <mitkNifTKIGIObjectFactory.h>
 
 //-----------------------------------------------------------------------------
-std::string QmitkNiftyIGIAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
+QString QmitkNiftyIGIAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
 {
   return "uk.ac.ucl.cmic.gui.qt.niftyigi.igiperspective";
 }
 
 //-----------------------------------------------------------------------------
-std::string QmitkNiftyIGIAppWorkbenchAdvisor::GetWindowIconResourcePath() const
+QString QmitkNiftyIGIAppWorkbenchAdvisor::GetWindowIconResourcePath() const
 {
   return ":/QmitkNiftyIGIApplication/icon_cmic.xpm";
 }

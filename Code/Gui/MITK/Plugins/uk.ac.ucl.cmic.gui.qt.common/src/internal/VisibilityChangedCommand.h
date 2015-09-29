@@ -28,7 +28,7 @@ class VisibilityChangeObserver;
 class VisibilityChangedCommand : public itk::Command
 {
 public:
-  mitkClassMacro(VisibilityChangedCommand, itk::Command);
+  mitkClassMacroItkParent(VisibilityChangedCommand, itk::Command);
   mitkNewMacro2Param(VisibilityChangedCommand, VisibilityChangeObserver*, const mitk::DataNode*);
 
   VisibilityChangedCommand(VisibilityChangeObserver* observer, const mitk::DataNode* node);

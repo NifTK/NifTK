@@ -634,11 +634,11 @@ mitk::ImageToSurfaceFilter::Pointer SurfaceExtractorView::createImageToSurfaceFi
 void SurfaceExtractorView::saveParameters()
 {
   Q_D(SurfaceExtractorView);
-  d->surfaceNode->SetBoolProperty(SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_NAME.c_str(), d->gaussianSmooth);
-  d->surfaceNode->SetFloatProperty(SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME.c_str(), d->gaussianStdDev);
-  d->surfaceNode->SetFloatProperty(SurfaceExtractorPreferencePage::THRESHOLD_NAME.c_str(), d->threshold);
-  d->surfaceNode->SetFloatProperty(SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME.c_str(), d->targetReduction);
-  d->surfaceNode->SetIntProperty(SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME.c_str(), d->maxNumberOfPolygons);
+  d->surfaceNode->SetBoolProperty(SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_NAME.toStdString().c_str(), d->gaussianSmooth);
+  d->surfaceNode->SetFloatProperty(SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME.toStdString().c_str(), d->gaussianStdDev);
+  d->surfaceNode->SetFloatProperty(SurfaceExtractorPreferencePage::THRESHOLD_NAME.toStdString().c_str(), d->threshold);
+  d->surfaceNode->SetFloatProperty(SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME.toStdString().c_str(), d->targetReduction);
+  d->surfaceNode->SetIntProperty(SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME.toStdString().c_str(), d->maxNumberOfPolygons);
 }
 
 void SurfaceExtractorView::loadParameters()
@@ -651,11 +651,11 @@ void SurfaceExtractorView::loadParameters()
   float targetReduction;
   int maxNumberOfPolygons;
 
-  d->surfaceNode->GetBoolProperty(SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_NAME.c_str(), gaussianSmooth);
-  d->surfaceNode->GetFloatProperty(SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME.c_str(), gaussianStdDev);
-  d->surfaceNode->GetFloatProperty(SurfaceExtractorPreferencePage::THRESHOLD_NAME.c_str(), threshold);
-  d->surfaceNode->GetFloatProperty(SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME.c_str(), targetReduction);
-  d->surfaceNode->GetIntProperty(SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME.c_str(), maxNumberOfPolygons);
+  d->surfaceNode->GetBoolProperty(SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_NAME.toStdString().c_str(), gaussianSmooth);
+  d->surfaceNode->GetFloatProperty(SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME.toStdString().c_str(), gaussianStdDev);
+  d->surfaceNode->GetFloatProperty(SurfaceExtractorPreferencePage::THRESHOLD_NAME.toStdString().c_str(), threshold);
+  d->surfaceNode->GetFloatProperty(SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME.toStdString().c_str(), targetReduction);
+  d->surfaceNode->GetIntProperty(SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME.toStdString().c_str(), maxNumberOfPolygons);
 
   d->gaussianSmooth = gaussianSmooth;
   d->gaussianStdDev = gaussianStdDev;

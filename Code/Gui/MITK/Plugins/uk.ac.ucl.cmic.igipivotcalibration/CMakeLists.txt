@@ -14,11 +14,11 @@
 
 project(uk_ac_ucl_cmic_igipivotcalibration)
 
-MACRO_CREATE_MITK_CTK_PLUGIN(
+mitk_create_plugin(
   EXPORT_DIRECTIVE PIVOTCALIBRATION_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS niftkIGIGui niftkCoreGui
-
+  PACKAGE_DEPENDS PUBLIC Boost
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

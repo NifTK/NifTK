@@ -17,9 +17,11 @@
 ###############################################################################
 
 macro(NIFTK_CREATE_GUI_APPLICATION)
-  MACRO_PARSE_ARGUMENTS(_APP
-                        "NAME;INCLUDE_PLUGINS;EXCLUDE_PLUGINS"
+
+  cmake_parse_arguments(_APP
                         ""
+                        "NAME"
+                        "INCLUDE_PLUGINS;EXCLUDE_PLUGINS"
                         ${ARGN}
                         )
 
@@ -98,7 +100,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     set(MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
   endif()
   
-  FunctionCreateBlueBerryApplication(
+  mitkFunctionCreateBlueBerryApplication(
     NAME ${MY_APP_NAME}
     SOURCES ${MY_APP_NAME}.cxx
     PLUGINS ${_total_plugins}
@@ -107,7 +109,11 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     ${_app_options}
   )
 
-  mitk_use_modules(TARGET ${MY_APP_NAME} MODULES niftkCore qtsingleapplication)
+  mitk_use_modules(
+    TARGET ${MY_APP_NAME}
+    MODULES niftkCore MitkAppUtil
+    PACKAGES Qt4|QtGui Qt5|Widgets
+  )
 
   #############################################################################
   # Restore this MACOSX_BUNDLE_NAMES variable. See long-winded note above.

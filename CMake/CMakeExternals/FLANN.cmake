@@ -45,6 +45,10 @@ if(BUILD_IGI AND BUILD_PCL)
         -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DBUILD_MATLAB_BINDINGS:BOOL=OFF
         -DBUILD_PYTHON_BINDINGS:BOOL=OFF
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
@@ -52,6 +56,7 @@ if(BUILD_IGI AND BUILD_PCL)
     set(FLANN_ROOT ${FLANN_DIR})
 
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading FLANN from ${FLANN_DIR}")
 

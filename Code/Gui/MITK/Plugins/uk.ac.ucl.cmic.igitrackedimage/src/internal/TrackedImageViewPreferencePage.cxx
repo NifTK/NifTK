@@ -27,14 +27,14 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string TrackedImageViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitrackedimage");
-const std::string TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
-const std::string TrackedImageViewPreferencePage::SCALE_FILE_NAME("scale file name");
-const std::string TrackedImageViewPreferencePage::EMTOWORLDCALIBRATION_FILE_NAME("Em to optical calibration file name");
-const std::string TrackedImageViewPreferencePage::FLIP_X_SCALING("flip x scaling");
-const std::string TrackedImageViewPreferencePage::FLIP_Y_SCALING("flip y scaling");
-const std::string TrackedImageViewPreferencePage::CLONE_IMAGE("Clone image");
-const std::string TrackedImageViewPreferencePage::SHOW_2D_WINDOW("show 2D window");
+const QString TrackedImageViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitrackedimage");
+const QString TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
+const QString TrackedImageViewPreferencePage::SCALE_FILE_NAME("scale file name");
+const QString TrackedImageViewPreferencePage::EMTOWORLDCALIBRATION_FILE_NAME("Em to optical calibration file name");
+const QString TrackedImageViewPreferencePage::FLIP_X_SCALING("flip x scaling");
+const QString TrackedImageViewPreferencePage::FLIP_Y_SCALING("flip y scaling");
+const QString TrackedImageViewPreferencePage::CLONE_IMAGE("Clone image");
+const QString TrackedImageViewPreferencePage::SHOW_2D_WINDOW("show 2D window");
 
 //-----------------------------------------------------------------------------
 TrackedImageViewPreferencePage::TrackedImageViewPreferencePage()
@@ -77,9 +77,7 @@ void TrackedImageViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
 
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_TrackedImageViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 
@@ -128,9 +126,9 @@ QWidget* TrackedImageViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool TrackedImageViewPreferencePage::PerformOk()
 {
-  m_TrackedImageViewPreferencesNode->Put(CALIBRATION_FILE_NAME, m_CalibrationFileName->currentPath().toStdString());
-  m_TrackedImageViewPreferencesNode->Put(SCALE_FILE_NAME, m_ScaleFileName->currentPath().toStdString());
-  m_TrackedImageViewPreferencesNode->Put(EMTOWORLDCALIBRATION_FILE_NAME, m_EmToWorldCalibrationFileName->currentPath().toStdString());
+  m_TrackedImageViewPreferencesNode->Put(CALIBRATION_FILE_NAME, m_CalibrationFileName->currentPath());
+  m_TrackedImageViewPreferencesNode->Put(SCALE_FILE_NAME, m_ScaleFileName->currentPath());
+  m_TrackedImageViewPreferencesNode->Put(EMTOWORLDCALIBRATION_FILE_NAME, m_EmToWorldCalibrationFileName->currentPath());
   m_TrackedImageViewPreferencesNode->PutBool(FLIP_X_SCALING, m_FlipXScaling->isChecked());
   m_TrackedImageViewPreferencesNode->PutBool(FLIP_Y_SCALING, m_FlipYScaling->isChecked());
   m_TrackedImageViewPreferencesNode->PutBool(CLONE_IMAGE, m_CloneImage->isChecked());
@@ -149,9 +147,9 @@ void TrackedImageViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void TrackedImageViewPreferencePage::Update()
 {
-  m_CalibrationFileName->setCurrentPath(QString(m_TrackedImageViewPreferencesNode->Get(CALIBRATION_FILE_NAME, "").c_str()));
-  m_ScaleFileName->setCurrentPath(QString(m_TrackedImageViewPreferencesNode->Get(SCALE_FILE_NAME, "").c_str()));
-  m_EmToWorldCalibrationFileName->setCurrentPath(QString(m_TrackedImageViewPreferencesNode->Get(EMTOWORLDCALIBRATION_FILE_NAME, "").c_str()));
+  m_CalibrationFileName->setCurrentPath(m_TrackedImageViewPreferencesNode->Get(CALIBRATION_FILE_NAME, ""));
+  m_ScaleFileName->setCurrentPath(m_TrackedImageViewPreferencesNode->Get(SCALE_FILE_NAME, ""));
+  m_EmToWorldCalibrationFileName->setCurrentPath(m_TrackedImageViewPreferencesNode->Get(EMTOWORLDCALIBRATION_FILE_NAME, ""));
   m_FlipXScaling->setChecked(m_TrackedImageViewPreferencesNode->GetBool(FLIP_X_SCALING, false));
   m_FlipYScaling->setChecked(m_TrackedImageViewPreferencesNode->GetBool(FLIP_Y_SCALING, false));
   m_CloneImage->setChecked(m_TrackedImageViewPreferencesNode->GetBool(CLONE_IMAGE, false));

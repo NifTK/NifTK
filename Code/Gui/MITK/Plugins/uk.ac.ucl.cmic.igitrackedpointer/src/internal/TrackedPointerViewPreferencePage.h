@@ -40,22 +40,22 @@ public:
   /**
    * \brief Stores the name of the preferences node.
    */
-  static const std::string PREFERENCES_NODE_NAME;
+  static const QString PREFERENCES_NODE_NAME;
 
   /**
    * \brief Stores the name of the preference node that contains the name of the calibration file.
    */
-  static const std::string CALIBRATION_FILE_NAME;
+  static const QString CALIBRATION_FILE_NAME;
 
   /**
    * \brief Stores the name of the preference node that stores the boolean of whether to update the ortho-view focus point.
    */
-  static const std::string UPDATE_VIEW_COORDINATE_NAME;
+  static const QString UPDATE_VIEW_COORDINATE_NAME;
 
   /**
    * \brief Stores the name of the preference node that stores how many samples to average over.
    */
-  static const std::string NUMBER_OF_SAMPLES_TO_AVERAGE;
+  static const QString NUMBER_OF_SAMPLES_TO_AVERAGE;
 
   TrackedPointerViewPreferencePage();
   TrackedPointerViewPreferencePage(const TrackedPointerViewPreferencePage& other);

@@ -38,17 +38,17 @@ public:
   /**
    * \brief Stores the name of the preferences node.
    */
-  static const std::string PREFERENCES_NODE_NAME;
+  static const QString PREFERENCES_NODE_NAME;
 
   /**
    * \brief Stores the name of the preference node that contains the value of the Use ICP preference.
    */
-  static const std::string USE_ICP_INITIALISATION;
+  static const QString USE_ICP_INITIALISATION;
 
   /**
    * \brief Stores the name of the preference node that contains whether we use point ID for matching points.
    */
-  static const std::string USE_POINT_ID_FOR_MATCHING;
+  static const QString USE_POINT_ID_FOR_MATCHING;
 
   PointRegViewPreferencePage();
   PointRegViewPreferencePage(const PointRegViewPreferencePage& other);

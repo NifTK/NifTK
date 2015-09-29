@@ -16,9 +16,8 @@
 #include <vtkTransform.h>
 #include <vtkSmartPointer.h>
 #include <vtkMinimalStandardRandomSequence.h>
-#include <mitkTestingMacros.h>
-#include <mitkSurface.h>
 #include <mitkPointSetReader.h>
+#include <mitkSurface.h>
 #include <mitkSTLFileReader.h>
 #include <mitkDataStorageUtils.h>
 

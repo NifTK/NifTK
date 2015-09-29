@@ -32,7 +32,7 @@ QmitkCommonAppsIGIPerspective::QmitkCommonAppsIGIPerspective(const QmitkCommonAp
 //-----------------------------------------------------------------------------
 void QmitkCommonAppsIGIPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
 {
-  std::string editorArea = layout->GetEditorArea();
+  QString editorArea = layout->GetEditorArea();
 
   layout->AddView("org.mitk.views.datamanager",
     berry::IPageLayout::LEFT, 0.2f, editorArea);

@@ -12,6 +12,10 @@
 #
 #============================================================================*/
 
+set(NIFTK_COMMON_TEST_INCLUDE_DIRS
+  ${ITK_INCLUDE_DIRS}
+  )
+
 set(NIFTK_COMMON_TEST_LINK_LIBRARIES
   niftkcommon
   ${ITK_LIBRARIES}
@@ -35,7 +39,12 @@ set(CommonUnitTests_SRCS
 )
 
 add_executable(niftkCommonUnitTests niftkCommonUnitTests.cxx ${CommonUnitTests_SRCS})
-target_link_libraries(niftkCommonUnitTests ${NIFTK_COMMON_TEST_LINK_LIBRARIES} )
+target_include_directories(niftkCommonUnitTests PRIVATE ${NIFTK_COMMON_TEST_INCLUDE_DIRS})
+target_link_libraries(niftkCommonUnitTests PRIVATE ${NIFTK_COMMON_TEST_LINK_LIBRARIES} )
+
+set(NIFTK_FILE_TEST_INCLUDE_DIRS
+  ${ITK_INCLUDE_DIRS}
+  )
 
 set(NIFTK_FILE_TEST_LINK_LIBRARIES
   niftkcommon
@@ -68,7 +77,8 @@ set(FileUnitTests_SRCS
 )
 
 add_executable(niftkFileUnitTests niftkFileUnitTests.cxx ${FileUnitTests_SRCS})
-target_link_libraries(niftkFileUnitTests ${NIFTK_FILE_TEST_LINK_LIBRARIES} )
+target_include_directories(niftkFileUnitTests PRIVATE ${NIFTK_FILE_TEST_INCLUDE_DIRS} )
+target_link_libraries(niftkFileUnitTests PRIVATE ${NIFTK_FILE_TEST_LINK_LIBRARIES} )
 
 #--------------------------------------------------------------------------------------
 # Unit tests for meshing module (only compiled if meshing is turned on)

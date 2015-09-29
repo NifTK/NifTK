@@ -27,10 +27,10 @@
 #include <berryPlatform.h>
 #include <mitkTrackedPointer.h>
 
-const std::string TrackedPointerViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitrackedpointer");
-const std::string TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
-const std::string TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME("update view coordinate");
-const std::string TrackedPointerViewPreferencePage::NUMBER_OF_SAMPLES_TO_AVERAGE("number of samples to average");
+const QString TrackedPointerViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitrackedpointer");
+const QString TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
+const QString TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME("update view coordinate");
+const QString TrackedPointerViewPreferencePage::NUMBER_OF_SAMPLES_TO_AVERAGE("number of samples to average");
 
 //-----------------------------------------------------------------------------
 TrackedPointerViewPreferencePage::TrackedPointerViewPreferencePage()
@@ -71,9 +71,7 @@ void TrackedPointerViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
 
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_TrackedPointerViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 
@@ -109,7 +107,7 @@ QWidget* TrackedPointerViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool TrackedPointerViewPreferencePage::PerformOk()
 {
-  m_TrackedPointerViewPreferencesNode->Put(CALIBRATION_FILE_NAME, m_CalibrationFileName->currentPath().toStdString());
+  m_TrackedPointerViewPreferencesNode->Put(CALIBRATION_FILE_NAME, m_CalibrationFileName->currentPath());
   m_TrackedPointerViewPreferencesNode->PutBool(UPDATE_VIEW_COORDINATE_NAME, m_UpdateViewCoordinate->isChecked());
   m_TrackedPointerViewPreferencesNode->PutInt(NUMBER_OF_SAMPLES_TO_AVERAGE, m_NumberOfSamplesToAverage->value());
   return true;
@@ -126,7 +124,7 @@ void TrackedPointerViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void TrackedPointerViewPreferencePage::Update()
 {
-  m_CalibrationFileName->setCurrentPath(QString(m_TrackedPointerViewPreferencesNode->Get(CALIBRATION_FILE_NAME, "").c_str()));
+  m_CalibrationFileName->setCurrentPath(m_TrackedPointerViewPreferencesNode->Get(CALIBRATION_FILE_NAME, ""));
   bool updateViewCoordinate = m_TrackedPointerViewPreferencesNode->GetBool(UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointer::UPDATE_VIEW_COORDINATE_DEFAULT);
   m_UpdateViewCoordinate->setChecked(updateViewCoordinate);
   m_NumberOfSamplesToAverage->setValue(m_TrackedPointerViewPreferencesNode->GetInt(NUMBER_OF_SAMPLES_TO_AVERAGE, 1));

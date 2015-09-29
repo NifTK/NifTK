@@ -32,7 +32,7 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string DataSourcesViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igidatasources");
+const QString DataSourcesViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igidatasources");
 
 //-----------------------------------------------------------------------------
 DataSourcesViewPreferencePage::DataSourcesViewPreferencePage()
@@ -96,9 +96,7 @@ void DataSourcesViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
 
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-      .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_DataSourcesViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 
@@ -188,16 +186,16 @@ QWidget* DataSourcesViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool DataSourcesViewPreferencePage::PerformOk()
 {
-  m_DataSourcesViewPreferencesNode->Put("error colour style sheet", m_ColorStyleSheet[0].toStdString());
-  m_DataSourcesViewPreferencesNode->PutByteArray("error colour", m_Color[0]);
-  m_DataSourcesViewPreferencesNode->Put("warning colour style sheet", m_ColorStyleSheet[1].toStdString());
-  m_DataSourcesViewPreferencesNode->PutByteArray("warning colour", m_Color[1]);
-  m_DataSourcesViewPreferencesNode->Put("ok colour style sheet", m_ColorStyleSheet[2].toStdString());
-  m_DataSourcesViewPreferencesNode->PutByteArray("ok colour", m_Color[2]);
+  m_DataSourcesViewPreferencesNode->Put("error colour style sheet", m_ColorStyleSheet[0]);
+  m_DataSourcesViewPreferencesNode->Put("error colour", m_Color[0]);
+  m_DataSourcesViewPreferencesNode->Put("warning colour style sheet", m_ColorStyleSheet[1]);
+  m_DataSourcesViewPreferencesNode->Put("warning colour", m_Color[1]);
+  m_DataSourcesViewPreferencesNode->Put("ok colour style sheet", m_ColorStyleSheet[2]);
+  m_DataSourcesViewPreferencesNode->Put("ok colour", m_Color[2]);
   m_DataSourcesViewPreferencesNode->PutInt("refresh rate", m_FramesPerSecondSpinBox->value());
   m_DataSourcesViewPreferencesNode->PutInt("clear data rate", m_ClearDataSpinBox->value());
   m_DataSourcesViewPreferencesNode->PutInt("timing tolerance", m_MilliSecondsTolerance->value());
-  m_DataSourcesViewPreferencesNode->Put("output directory prefix", m_DirectoryPrefix->directory().toStdString());
+  m_DataSourcesViewPreferencesNode->Put("output directory prefix", m_DirectoryPrefix->directory());
   m_DataSourcesViewPreferencesNode->PutBool("save on receive", m_SaveOnReceive->isChecked());
   m_DataSourcesViewPreferencesNode->PutBool("save in background", m_SaveInBackground->isChecked());
   m_DataSourcesViewPreferencesNode->PutBool("pick latest data", m_PickLatestData->isChecked());
@@ -215,8 +213,8 @@ void DataSourcesViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void DataSourcesViewPreferencePage::Update()
 {
-  m_ColorStyleSheet[0] = QString::fromStdString(m_DataSourcesViewPreferencesNode->Get("error colour style sheet", ""));
-  m_Color[0] = m_DataSourcesViewPreferencesNode->GetByteArray("error colour", "");
+  m_ColorStyleSheet[0] = m_DataSourcesViewPreferencesNode->Get("error colour style sheet", "");
+  m_Color[0] = m_DataSourcesViewPreferencesNode->Get("error colour", "");
 
   if (m_ColorStyleSheet[0]=="" || m_Color[0]=="")
   {
@@ -227,8 +225,8 @@ void DataSourcesViewPreferencePage::Update()
     m_ColorPushButton[0]->setStyleSheet(m_ColorStyleSheet[0]);
   }
 
-  m_ColorStyleSheet[1] = QString::fromStdString(m_DataSourcesViewPreferencesNode->Get("warning colour style sheet", ""));
-  m_Color[1] = m_DataSourcesViewPreferencesNode->GetByteArray("warning colour", "");
+  m_ColorStyleSheet[1] = m_DataSourcesViewPreferencesNode->Get("warning colour style sheet", "");
+  m_Color[1] = m_DataSourcesViewPreferencesNode->Get("warning colour", "");
 
   if (m_ColorStyleSheet[1]=="" || m_Color[1]=="")
   {
@@ -239,8 +237,8 @@ void DataSourcesViewPreferencePage::Update()
     m_ColorPushButton[1]->setStyleSheet(m_ColorStyleSheet[1]);
   }
 
-  m_ColorStyleSheet[2] = QString::fromStdString(m_DataSourcesViewPreferencesNode->Get("ok colour style sheet", ""));
-  m_Color[2] = m_DataSourcesViewPreferencesNode->GetByteArray("ok colour", "");
+  m_ColorStyleSheet[2] = m_DataSourcesViewPreferencesNode->Get("ok colour style sheet", "");
+  m_Color[2] = m_DataSourcesViewPreferencesNode->Get("ok colour", "");
 
   if (m_ColorStyleSheet[2]=="" || m_Color[2]=="")
   {
@@ -255,7 +253,7 @@ void DataSourcesViewPreferencePage::Update()
   m_ClearDataSpinBox->setValue(m_DataSourcesViewPreferencesNode->GetInt("clear data rate", QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE));
   m_MilliSecondsTolerance->setValue(m_DataSourcesViewPreferencesNode->GetInt("timing tolerance", QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE));
 
-  QString path = QString::fromStdString(m_DataSourcesViewPreferencesNode->Get("output directory prefix", ""));
+  QString path = m_DataSourcesViewPreferencesNode->Get("output directory prefix", "");
 
   if (path == "")
   {
@@ -312,7 +310,7 @@ void DataSourcesViewPreferencePage::OnColourChanged(int buttonIndex)
     QStringList defColor;
     defColor << colour.name();
 
-    m_Color[buttonIndex] = defColor.replaceInStrings(";","\\;").join(";").toStdString();
+    m_Color[buttonIndex] = defColor.replaceInStrings(";","\\;").join(";");
   }
 }
 
@@ -344,7 +342,7 @@ void DataSourcesViewPreferencePage::OnResetOKColour()
 //-----------------------------------------------------------------------------
 void DataSourcesViewPreferencePage::OnResetColour(int buttonIndex, QColor &colorValue)
 {
-  m_Color[buttonIndex] = (QString("%1").arg(colorValue.name())).toStdString();
+  m_Color[buttonIndex] = (QString("%1").arg(colorValue.name()));
   m_ColorStyleSheet[buttonIndex] = QString("background-color: rgb(%1,%2,%3)").arg(colorValue.red()).arg(colorValue.green()).arg(colorValue.blue());
   m_ColorPushButton[buttonIndex]->setStyleSheet(m_ColorStyleSheet[buttonIndex]);
 }

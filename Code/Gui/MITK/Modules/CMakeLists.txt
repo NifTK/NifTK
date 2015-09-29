@@ -19,68 +19,67 @@ set(MODULE_DIRS )
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
   set(MODULE_DIRS
     ${MODULE_DIRS}
-    niftkCUDA
+    CUDA
   )
 endif()
 
 set(MODULE_DIRS
   ${MODULE_DIRS}
-  niftkCore
-  niftkCoreIO
-  niftkCoreGui
-  niftkDnDDisplay
-  niftkThumbnail
+  Core
+  CoreIO
+  CoreGui
+  DnDDisplay
+  Thumbnail
 )
 
 if(BUILD_MIDAS)
   set(MODULE_DIRS
     ${MODULE_DIRS}
-    niftkMIDAS
-    niftkMIDASGui
+    MIDAS
+    MIDASGui
   )
 endif()
 
 if(BUILD_PCL)
   set(MODULE_DIRS
     ${MODULE_DIRS}
-    niftkPCL
+    PCL
   )
 endif()
 
 if(BUILD_IGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
-    niftkOpenCVUtils
-    niftkPointReg
-    niftkICPReg
-    niftkOpenCV
-    niftkIGIServices
-    niftkPointRegService
-    niftkICPRegService
-    niftkIGI
-    niftkIGIGui
-    niftkIGIDataSources
-    niftkSurfRecon
+    OpenCVUtils
+    PointReg
+    ICPReg
+    OpenCV
+    IGIServices
+    PointRegService
+    ICPRegService
+    IGI
+    IGIGui
+    IGIDataSources
+    SurfRecon
   )
 
   if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
     set(MODULE_DIRS
       ${MODULE_DIRS}
-      niftkNVidia
-      niftkNVidiaGui
+      NVidia
     )
   endif()
 
   set(MODULE_DIRS
     ${MODULE_DIRS}
-    niftkIGIDataSourcesManager
+    IGIDataSourcesManager
   )
 endif()
 
 if(BUILD_VL)
   set(MODULE_DIRS
     ${MODULE_DIRS}
-    niftkVL
+    VL
   )
 endif()
 

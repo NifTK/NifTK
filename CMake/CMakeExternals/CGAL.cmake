@@ -56,6 +56,10 @@ if(BUILD_MESHING)
         -DWITH_VTK:BOOL=ON
         -DVTK_DIR:PATH=${VTK_DIR}
         -DCMAKE_CXX_FLAGS:STRING=${CGAL_CXX_FLAGS}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
     )
 
@@ -63,6 +67,7 @@ if(BUILD_MESHING)
     link_directories("${proj_INSTALL}/lib")
 
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
   else()
 

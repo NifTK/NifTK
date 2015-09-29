@@ -43,6 +43,11 @@ if(BUILD_SHARED_LIBS)
   endif(WIN32)
 endif(BUILD_SHARED_LIBS)
 
+target_include_directories(niftkITK
+  PUBLIC
+    ${ITK_INCLUDE_DIRS}
+)
+
 target_link_libraries(niftkITK
   PUBLIC
     niftkcommon

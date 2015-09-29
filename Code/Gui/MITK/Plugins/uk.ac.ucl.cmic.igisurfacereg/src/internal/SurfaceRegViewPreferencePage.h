@@ -17,7 +17,6 @@
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
-#include <QString>
 
 class QWidget;
 class QCheckBox;
@@ -37,7 +36,7 @@ class SurfaceRegViewPreferencePage : public QObject, public berry::IQtPreference
 public:
 
   /// \brief Stores the name of the preferences node.
-  static const std::string PREFERENCES_NODE_NAME;
+  static const QString PREFERENCES_NODE_NAME;
 
   SurfaceRegViewPreferencePage();
   SurfaceRegViewPreferencePage(const SurfaceRegViewPreferencePage& other);
