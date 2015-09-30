@@ -60,6 +60,7 @@ if(BUILD_IGI)
     IGI
     IGIGui
     IGIDataSources
+    IGITrackers
     SurfRecon
   )
 
