@@ -37,6 +37,7 @@ fi
 
 masks=$(ls *leftMask.png)
 
+NIFTK_BIN="/home/thompson/work/build/NiftySLS-dbg/NifTK-build/bin/"
 for mask in $masks 
 do
 	timestamp=${mask%_leftMask.png*}
@@ -66,19 +67,42 @@ do
 	if [ $OK -eq 0 ]
 	then
 		echo Found everything I need for $mask
-		niftkImageFeatureMatching --left ${timestamp}_left.png --right ${timestamp}_right.png --output ${timestamp}_pointPairs.txt
+		
+		${NIFTK_BIN}niftkCorrectVideoDistortion --input ${timestamp}_left.png \
+			--intrinsicLeft ../scope_calibration/calib.left.intrinsic.xml \
+			--distortionLeft ../scope_calibration/calib.left.distortion.xml \
+			--output ${timestamp}_left_undistorted.png
 
-		niftkTriangulate2DPointPairsTo3D --inputPointPairs ${timestamp}_pointPairs.txt \
-			--intrinsicRight ../scope_calibration/calib.right.intrinsic.txt \
-			--intrinsicLeft ../scope_calibration/calib.left.intrinsic.txt \
+		${NIFTK_BIN}niftkCorrectVideoDistortion --input ${timestamp}_leftMask.png \
+			--intrinsicLeft ../scope_calibration/calib.left.intrinsic.xml \
+			--distortionLeft ../scope_calibration/calib.left.distortion.xml \
+			--output ${timestamp}_leftMask_undistorted.png
+
+		${NIFTK_BIN}niftkCorrectVideoDistortion --input ${timestamp}_right.png \
+			--intrinsicLeft ../scope_calibration/calib.right.intrinsic.xml \
+			--distortionLeft ../scope_calibration/calib.right.distortion.xml \
+			--output ${timestamp}_right_undistorted.png
+
+		${NIFTK_BIN}niftkCorrectVideoDistortion --input ${timestamp}_rightMask.png \
+			--intrinsicLeft ../scope_calibration/calib.right.intrinsic.xml \
+			--distortionLeft ../scope_calibration/calib.right.distortion.xml \
+			--output ${timestamp}_rightMask_undistorted.png
+
+		${NIFTK_BIN}niftkImageFeatureMatching --left ${timestamp}_left_undistorted.png \
+			--right ${timestamp}_right_undistorted.png \
+			--output ${timestamp}_pointPairs.txt
+
+		${NIFTK_BIN}niftkTriangulate2DPointPairsTo3D --inputPointPairs ${timestamp}_pointPairs.txt \
+			--intrinsicRight ../scope_calibration/calib.right.intrinsic.nodistortion.txt \
+			--intrinsicLeft ../scope_calibration/calib.left.intrinsic.nodistortion.txt \
 			--rightToLeftExtrinsics ../scope_calibration/calib.r2l.txt \
 			--outputPoints ${timestamp}_surface.mps \
-			--leftMask ${timestamp}_leftMask.png \
-			--rightMask ${timestamp}_rightMask.png \
+			--leftMask ${timestamp}_leftMask_undistorted.png \
+			--rightMask ${timestamp}_rightMask_undistorted.png \
 			--trackerToWorld ${timestamp}.match \
 			--leftLensToTracker ../scope_calibration/calib.left.handeye.txt \
 			--minimumDistanceFromLens 20 \
-			--maximumDistanceFromLens 150
+			--maximumDistanceFromLens 200
 	fi
 done
 
