@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkPolarisTracker.h"
+#include "niftkNDITracker.h"
 
 #include <mitkNavigationToolStorageDeserializer.h>
 #include <mitkNavigationToolStorageSerializer.h>
@@ -22,29 +22,35 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-PolarisTracker::PolarisTracker(mitk::DataStorage::Pointer dataStorage,
-                               mitk::SerialCommunication::PortNumber portNumber,
-                               std::string toolConfigFileName)
-: m_PreferredFramesPerSecond(60)
-, m_DataStorage(dataStorage)
+NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
+                       mitk::SerialCommunication::PortNumber portNumber,
+                       mitk::TrackingDeviceType deviceType,
+                       mitk::TrackingDeviceData deviceData,
+                       std::string toolConfigFileName)
+: m_DataStorage(dataStorage)
 , m_PortNumber(portNumber)
+, m_DeviceType(deviceType)
+, m_DeviceData(deviceData)
 , m_ToolConfigFileName(toolConfigFileName)
 , m_NavigationToolStorage(NULL)
+, m_TrackerDevice(NULL)
 , m_TrackingVolumeGenerator(NULL)
 , m_TrackingVolumeNode(NULL)
 {
-  if (dataStorage.IsNull())
+  if (m_DataStorage.IsNull())
   {
     mitkThrow() << "DataStorage is NULL";
   }
-  if (toolConfigFileName.size() == 0)
+  if (m_ToolConfigFileName.size() == 0)
   {
     mitkThrow() << "Empty file name for tracker tool configuration";
   }
 
   // Load configuration for tracker tools (e.g. pointer, laparoscope etc) from external file.
-  mitk::NavigationToolStorageDeserializer::Pointer deserializer = mitk::NavigationToolStorageDeserializer::New(dataStorage);
-  m_NavigationToolStorage = deserializer->Deserialize(toolConfigFileName);
+  mitk::NavigationToolStorageDeserializer::Pointer deserializer = mitk::NavigationToolStorageDeserializer::New(m_DataStorage);
+
+  // This will throw if it fails to read for example.
+  m_NavigationToolStorage = deserializer->Deserialize(m_ToolConfigFileName);
 
   if(m_NavigationToolStorage->isEmpty())
   {
@@ -58,22 +64,21 @@ PolarisTracker::PolarisTracker(mitk::DataStorage::Pointer dataStorage,
 
   // Setup tracker.
   m_TrackerDevice = mitk::NDITrackingDevice::New();
-  m_TrackerDevice->SetType(mitk::NDIPolaris);
-  m_TrackerDevice->SetDeviceName("Polaris Spectra");
-  m_TrackerDevice->SetPortNumber(portNumber);
+  m_TrackerDevice->SetType(m_DeviceType);
+  m_TrackerDevice->SetDeviceName(m_DeviceData.Model);
+  m_TrackerDevice->SetPortNumber(m_PortNumber);
 
   // The point of RAII is that the constructor has successfully acquired all
   // resources, so we should try connecting. The way to disconnect it to delete this object.
   this->OpenConnection();
 
   // Try loading a volume of interest. This is optional, but do it up-front.
-  mitk::TrackingDeviceData data = mitk::GetDeviceDataByName(mitk::DeviceDataPolarisSpectra.Model);
   m_TrackingVolumeGenerator = mitk::TrackingVolumeGenerator::New();
-  m_TrackingVolumeGenerator->SetTrackingDeviceData(data);
+  m_TrackingVolumeGenerator->SetTrackingDeviceData(m_DeviceData);
   m_TrackingVolumeGenerator->Update();
 
   m_TrackingVolumeNode = mitk::DataNode::New();
-  m_TrackingVolumeNode->SetName(data.Model);
+  m_TrackingVolumeNode->SetName(m_DeviceData.Model);
   m_TrackingVolumeNode->SetBoolProperty("Backface Culling",true);
   m_TrackingVolumeNode->SetBoolProperty("helper object", true);
   this->SetVisibilityOfTrackingVolume(true);
@@ -87,7 +92,7 @@ PolarisTracker::PolarisTracker(mitk::DataStorage::Pointer dataStorage,
 
 
 //-----------------------------------------------------------------------------
-PolarisTracker::~PolarisTracker()
+NDITracker::~NDITracker()
 {
   try
   {
@@ -97,13 +102,13 @@ PolarisTracker::~PolarisTracker()
   }
   catch (mitk::Exception& e)
   {
-    MITK_ERROR << "ERROR: Failed while destroying PolarisTracker:" << e;
+    MITK_ERROR << "ERROR: Failed while destroying NDITracker:" << e;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void PolarisTracker::OpenConnection()
+void NDITracker::OpenConnection()
 {
   // You should only call this from constructor.
   if (m_TrackerDevice->GetState() == mitk::TrackingDevice::Setup)
@@ -123,7 +128,7 @@ void PolarisTracker::OpenConnection()
 
 
 //-----------------------------------------------------------------------------
-void PolarisTracker::CloseConnection()
+void NDITracker::CloseConnection()
 {
   // You should only call this from destructor.
   if (m_TrackerDevice->GetState() == mitk::TrackingDevice::Ready)
@@ -143,7 +148,7 @@ void PolarisTracker::CloseConnection()
 
 
 //-----------------------------------------------------------------------------
-void PolarisTracker::StartTracking()
+void NDITracker::StartTracking()
 {
   if (m_TrackerDevice->GetState() == mitk::TrackingDevice::Tracking)
   {
@@ -161,7 +166,7 @@ void PolarisTracker::StartTracking()
 
 
 //-----------------------------------------------------------------------------
-void PolarisTracker::StopTracking()
+void NDITracker::StopTracking()
 {
   if (m_TrackerDevice->GetState() == mitk::TrackingDevice::Ready)
   {
@@ -179,9 +184,18 @@ void PolarisTracker::StopTracking()
 
 
 //-----------------------------------------------------------------------------
-void PolarisTracker::SetVisibilityOfTrackingVolume(bool isVisible)
+void NDITracker::SetVisibilityOfTrackingVolume(bool isVisible)
 {
   m_TrackingVolumeNode->SetBoolProperty("visible", isVisible);
+}
+
+
+//-----------------------------------------------------------------------------
+bool NDITracker::GetVisibilityOfTrackingVolume() const
+{
+  bool result = false;
+  m_TrackingVolumeNode->GetBoolProperty("visible", result);
+  return result;
 }
 
 } // end namespace

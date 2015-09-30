@@ -13,6 +13,12 @@
 #============================================================================*/
 
 set(CPP_FILES
-  niftkPolarisTracker.cxx
+  niftkNDITracker.cxx
+  niftkNDIBaseTracker.cxx
+  niftkSpectraTracker.cxx
+  niftkVicraTracker.cxx
+  niftkAuroraCubeTracker.cxx
+  niftkAuroraDomeTracker.cxx
+  niftkAuroraTableTopTracker.cxx
 )
 
