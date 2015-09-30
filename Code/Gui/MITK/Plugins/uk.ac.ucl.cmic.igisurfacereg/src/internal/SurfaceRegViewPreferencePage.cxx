@@ -27,6 +27,8 @@
 #include <niftkICPBasedRegistration.h>
 
 const QString SurfaceRegViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igisurfacereg");
+const QString SurfaceRegViewPreferencePage::MAXIMUM_NUMBER_OF_ITERATIONS("maximum iterations");
+const QString SurfaceRegViewPreferencePage::MAXIMUM_NUMBER_OF_POINTS("maximum number of points");
 
 //-----------------------------------------------------------------------------
 SurfaceRegViewPreferencePage::SurfaceRegViewPreferencePage()
@@ -101,8 +103,8 @@ QWidget* SurfaceRegViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool SurfaceRegViewPreferencePage::PerformOk()
 {
-  m_SurfaceRegViewPreferencesNode->PutInt("Maximum number of ICP iterations",m_MaximumIterations->value());
-  m_SurfaceRegViewPreferencesNode->PutInt("Maximum number of points to use in ICP",m_MaximumPoints->value());
+  m_SurfaceRegViewPreferencesNode->PutInt(SurfaceRegViewPreferencePage::MAXIMUM_NUMBER_OF_ITERATIONS, m_MaximumIterations->value());
+  m_SurfaceRegViewPreferencesNode->PutInt(SurfaceRegViewPreferencePage::MAXIMUM_NUMBER_OF_POINTS, m_MaximumPoints->value());
   return true;
 }
 
@@ -117,6 +119,8 @@ void SurfaceRegViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void SurfaceRegViewPreferencePage::Update()
 {
-  m_MaximumIterations->setValue(m_SurfaceRegViewPreferencesNode->GetInt("Maximum number of ICP iterations",niftk::ICPBasedRegistrationConstants::DEFAULT_MAX_ITERATIONS));
-  m_MaximumPoints->setValue(m_SurfaceRegViewPreferencesNode->GetInt("Maximum number of points to use in ICP",niftk::ICPBasedRegistrationConstants::DEFAULT_MAX_POINTS));
+  m_MaximumIterations->setValue(m_SurfaceRegViewPreferencesNode->GetInt(SurfaceRegViewPreferencePage::MAXIMUM_NUMBER_OF_ITERATIONS, 
+        niftk::ICPBasedRegistrationConstants::DEFAULT_MAX_ITERATIONS));
+  m_MaximumPoints->setValue(m_SurfaceRegViewPreferencesNode->GetInt(SurfaceRegViewPreferencePage::MAXIMUM_NUMBER_OF_POINTS,
+        niftk::ICPBasedRegistrationConstants::DEFAULT_MAX_POINTS));
 }

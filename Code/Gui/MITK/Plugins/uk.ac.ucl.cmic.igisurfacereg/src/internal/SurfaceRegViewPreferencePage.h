@@ -38,6 +38,16 @@ public:
   /// \brief Stores the name of the preferences node.
   static const QString PREFERENCES_NODE_NAME;
 
+  /**
+   * \brief Stores the name of the preference node that contains the maximum iterations preference
+   */
+  static const QString MAXIMUM_NUMBER_OF_ITERATIONS;
+
+  /**
+   * \brief Stored the name of the preference node that contains the maximum number of points to use
+   */
+  static const QString MAXIMUM_NUMBER_OF_POINTS;
+
   SurfaceRegViewPreferencePage();
   SurfaceRegViewPreferencePage(const SurfaceRegViewPreferencePage& other);
   ~SurfaceRegViewPreferencePage();

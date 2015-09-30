@@ -14,6 +14,7 @@
 
 // Qmitk
 #include "SurfaceRegView.h"
+#include "SurfaceRegViewPreferencePage.h"
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateOr.h>
 #include <mitkSurface.h>
@@ -256,7 +257,10 @@ void SurfaceRegView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-    //FIX ME
+    m_MaxIterations = prefs->GetInt(SurfaceRegViewPreferencePage::MAXIMUM_NUMBER_OF_ITERATIONS,
+        niftk::ICPBasedRegistrationConstants::DEFAULT_MAX_ITERATIONS );
+    m_MaxPoints = prefs->GetInt(SurfaceRegViewPreferencePage::MAXIMUM_NUMBER_OF_POINTS, 
+        niftk::ICPBasedRegistrationConstants::DEFAULT_MAX_POINTS);
   }
 }
 
@@ -296,6 +300,8 @@ void SurfaceRegView::OnCalculateButtonPressed()
     registration->SetCameraNode(m_Controls->m_CameraNodeComboBox->GetSelectedNode());
     registration->SetFlipNormals(m_Controls->m_FlipNormalsCheckBox->isChecked());
   }
+  registration->SetMaximumNumberOfLandmarkPointsToUse(m_MaxPoints);
+  registration->SetMaximumIterations(m_MaxIterations);
   registration->Update(fixednode, movingnode, *m_Matrix);
 
   for (int i = 0; i < 4; i++)
