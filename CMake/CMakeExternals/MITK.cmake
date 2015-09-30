@@ -21,7 +21,7 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-set(version "f15e10695c")
+set(version "d9221ad2ca")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
@@ -81,6 +81,7 @@ if(NOT DEFINED MITK_DIR)
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.help ON CACHE BOOL \"Build the Blueberry Qt help plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.compat ON CACHE BOOL \"Build the Blueberry compat plugin (Matt, what is this for?)\")
       set(DCMTK_DIR ${DCMTK_DIR} CACHE PATH \"DCMTK install directory\")
+      set(Python_DIR ${Python_DIR} CACHE PATH \"Python install directory \")
     ")
 
     set(mitk_optional_cache_args )
