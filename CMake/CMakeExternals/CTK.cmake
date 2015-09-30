@@ -61,6 +61,18 @@ if(QT_FOUND)
       )
     endif()
 
+    if(MITK_USE_DCMTK)
+      list(APPEND ctk_optional_cache_args
+           -DDCMTK_DIR:PATH=${DCMTK_DIR}
+          )
+      if(NOT MITK_USE_Python)
+        list(APPEND ctk_optional_cache_args
+            -DDCMTK_CMAKE_DEBUG_POSTFIX:STRING=d
+            )
+      endif()
+      list(APPEND proj_DEPENDENCIES DCMTK)
+    endif()
+
     if(CTEST_USE_LAUNCHERS)
       list(APPEND ctk_optional_cache_args
         "-DCMAKE_PROJECT_${proj}_INCLUDE:FILEPATH=${CMAKE_ROOT}/Modules/CTestUseLaunchers.cmake"
@@ -112,7 +124,6 @@ if(QT_FOUND)
         -DCTK_LIB_XNAT/Core:BOOL=ON
         -DCTK_LIB_XNAT/Widgets:BOOL=ON
         -DDCMTK_DIR:PATH=${DCMTK_DIR}
-        -DDCMTK_CMAKE_DEBUG_POSTFIX:STRING=d
         -DVTK_DIR:PATH=${VTK_DIR}
         -DITK_DIR:PATH=${ITK_DIR}
         -DDCMTK_URL:STRING=${NIFTK_EP_TARBALL_LOCATION}/CTK_DCMTK_085525e6.tar.gz
