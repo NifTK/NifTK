@@ -49,6 +49,12 @@ public:
   void Insert(const TimeStamp& timeStamp);
 
   /**
+   * \brief Removes a TimeStamp to the list. 
+   * \return false of timestamp not found in the list
+   */
+  bool Remove(const TimeStamp& timeStamp);
+
+  /**
    * \brief Returns the time stamp at a given frameNumber.
    */
   TimeStamp GetTimeStamp(std::vector<TimeStampsContainer::TimeStamp>::size_type frameNumber) const;

@@ -127,6 +127,10 @@ int mitkTimeStampsContainerTest(int argc, char * argv[])
   MITK_TEST_CONDITION (result == 1421408024289241000, "GetNearestTimeStamp() Middle of list, expecting result==1421408024289241000, and got:" << result);
   result = timeStamps.GetNearestTimeStamp(1421408026430455200 , &delta);
   MITK_TEST_CONDITION (result == 1421408024289241000, "GetNearestTimeStamp() Middle of list, expecting result==1421408024289241000, and got:" << result);
+  MITK_TEST_CONDITION ( timeStamps.Remove(1421408024289241000), "Testing Remove()" );
+  MITK_TEST_CONDITION ( timeStamps.GetSize() == 2 , "Removed middle value, new size = " <<  timeStamps.GetSize() );
+  result = timeStamps.GetNearestTimeStamp(1421408026430455200 , &delta);
+  MITK_TEST_CONDITION (result == 1421408023440156000, "GetNearestTimeStamp() Middle of shortened list, expecting result==1421408023440156000, and got:" << result);
 
   MITK_TEST_END();
 }

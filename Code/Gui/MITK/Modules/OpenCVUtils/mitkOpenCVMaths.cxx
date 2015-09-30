@@ -1450,16 +1450,17 @@ cv::Point2d FindNearestPoint ( const cv::Point2d& point,
 }
 
 //-----------------------------------------------------------------------------
-mitk::PickedObject FindNearestPoint ( const mitk::PickedObject& point, const std::vector <mitk::PickedObject>& matchingPoints , 
+mitk::PickedObject FindNearestPickedObject ( const mitk::PickedObject& point, const std::vector <mitk::PickedObject>& matchingPoints , 
     double* minRatio )
 {
   mitk::PickedObject nearestPoint;
   double nearestDistance = std::numeric_limits<double>::infinity();
   double nextNearestDistance = std::numeric_limits<double>::infinity();
 
-  for ( std::vector<mitk::PickedObject>::const_iterator it = matchingPoints.begin() ; it < matchingPoints.end() ; it++ )
+  for ( std::vector<mitk::PickedObject>::const_iterator it = matchingPoints.begin() ; it < matchingPoints.end() ; ++it )
   {
-    double distance = point.DistanceTo(*it);
+    cv::Point3d delta;
+    double distance = point.DistanceTo(*it, delta);
     if ( distance < nextNearestDistance )
     {
       if ( distance < nearestDistance ) 
@@ -2339,25 +2340,37 @@ double DistanceToLine ( const std::pair<cv::Point3d, cv::Point3d>& line, const c
 }
 
 //-----------------------------------------------------------------------------
-double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2 )
+double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2, cv::Point3d* delta )
 {
+  if ( delta != NULL )
+  {
+    *delta = p2 - p1;
+  }
   return mitk::Norm ( p1 - p2 );
 }
 
 //-----------------------------------------------------------------------------
 double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const std::vector <cv::Point3d>& s2, 
-    unsigned int splineOrder )
+    unsigned int splineOrder, cv::Point3d* delta )
 {
   if ( ( s1.size() < 1) || (s2.size() < 2) )
   {
     MITK_WARN << "Called mitk::DistanceBetweenTwoSplines with insufficient points, returning inf.: " << s1.size() << ", " << s2.size();
+    if ( delta != NULL )
+    {
+      *delta = cv::Point3d ( std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity());
+    }
     return std::numeric_limits<double>::infinity();
   }
+  std::vector < cv::Point3d > deltas ;
   if ( splineOrder == 1 )
   {
-    double sumOfSquares = 0;
+    double sum = 0;
     for ( std::vector<cv::Point3d>::const_iterator it_1 = s1.begin() ; it_1 < s1.end() ; it_1 ++ )
     {
+      deltas.push_back ( cv::Point3d ( std::numeric_limits<double>::infinity() , 
+            std::numeric_limits<double>::infinity() , 
+            std::numeric_limits<double>::infinity() )); 
       if ( mitk::IsNaN ( *it_1) )
       {
         return std::numeric_limits<double>::quiet_NaN();
@@ -2369,15 +2382,21 @@ double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const s
         {
           return std::numeric_limits<double>::quiet_NaN();
         }
-        double distance = mitk::DistanceToLineSegment ( std::pair < cv::Point3d, cv::Point3d >(*(it_2) , *(it_2-1)), *it_1 );
+        cv::Point3d signedDistance;
+        double distance = mitk::DistanceToLineSegment ( std::pair < cv::Point3d, cv::Point3d >(*(it_2) , *(it_2-1)), *it_1, &signedDistance );
         if ( distance < shortestDistance )
         {
           shortestDistance = distance;
+          deltas.back() = signedDistance;
         }
       }
-      sumOfSquares += shortestDistance * shortestDistance;
+      sum += shortestDistance;
     }
-    return sqrt( sumOfSquares / s1.size() );
+    if ( delta != NULL )
+    {
+      *delta = GetCentroid ( deltas );
+    }
+    return sum/s1.size();
   }
   else
   {
@@ -2387,7 +2406,7 @@ double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const s
 }
 
 //-----------------------------------------------------------------------------
-double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& x0 )
+double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& x0, cv::Point3d* delta )
 {
   //courtesy Wolfram Mathworld
   cv::Point3d x1;
@@ -2400,24 +2419,35 @@ double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, 
   cv::Point3d d2 = x2-x1;
   
   double lambda = mitk::DotProduct ( d2, d1 ) /  mitk::DotProduct ( d2,d2 );
-  if ( lambda < 0 ) //were beyond x2
+  if ( lambda < 0 ) //we're beyond x2
   {
+    if ( delta != NULL ) 
+    {
+      *delta = x0 - x2;
+    }
     return mitk::Norm ( x2 - x0 );
   }
   if ( lambda > 1 ) //we're beyond x1
   {
+    if ( delta != NULL ) 
+    {
+      *delta = x0 - x1;
+    }
     return mitk::Norm ( x1 - x0 );
   }
   //else we're on the line segment
   
+  if ( delta != NULL ) 
+  {
+    *delta = ( x2 - lambda * d2 ) - x0;
+  }
   return mitk::Norm ( mitk::CrossProduct ( d2,d1 )) / (mitk::Norm(d2));
 
 }
 
-
 //-----------------------------------------------------------------------------
 double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, const cv::Point3d& Q0, const cv::Point3d& v , 
-    cv::Point3d& midpoint)
+    cv::Point3d& midpoint )
 {
   // Method 1. Solve for shortest line joining two rays, then get midpoint.
   // Taken from: http://geomalgorithms.com/a07-_distance.html
@@ -2468,6 +2498,97 @@ double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, const
                
   return distance;
 }
+
+//-----------------------------------------------------------------------------
+double DistanceBetweenLineAndSegment( const cv::Point3d& P0, const cv::Point3d& u, const cv::Point3d& x0, const cv::Point3d& x1 , 
+    cv::Point3d& closestPointOnSecondLine )
+{
+
+  std::pair < cv::Point3d, cv::Point3d > pl = mitk::TwoPointsToPLambda ( std::pair < cv::Point3d, cv::Point3d > ( x0, x1 ) ); 
+  cv::Point3d Q0 = pl.first;
+  cv::Point3d v = pl.second;
+  // Method 1. Solve for shortest line joining two rays, then get midpoint.
+  // Taken from: http://geomalgorithms.com/a07-_distance.html
+  double sc, tc, a, b, c, d, e;
+  double distance;
+
+  cv::Point3d Psc;
+  cv::Point3d Qtc;
+  cv::Point3d W0;
+
+  // Difference of two origins
+
+  W0.x = P0.x - Q0.x;
+  W0.y = P0.y - Q0.y;
+  W0.z = P0.z - Q0.z;
+
+  a = u.x*u.x + u.y*u.y + u.z*u.z;
+  b = u.x*v.x + u.y*v.y + u.z*v.z;
+  c = v.x*v.x + v.y*v.y + v.z*v.z;
+  d = u.x*W0.x + u.y*W0.y + u.z*W0.z;
+  e = v.x*W0.x + v.y*W0.y + v.z*W0.z;
+  sc = (b*e - c*d) / (a*c - b*b);
+  tc = (a*e - b*d) / (a*c - b*b);
+
+  if ( boost::math::isnan(sc) || boost::math::isnan(tc) || boost::math::isinf(sc) || boost::math::isinf(tc) )
+  {
+    //lines are parallel
+    distance = mitk::DistanceToLine ( std::pair<cv::Point3d, cv::Point3d> ( P0, P0 + u ), Q0 );
+    closestPointOnSecondLine.x = std::numeric_limits<double>::quiet_NaN();
+    closestPointOnSecondLine.y = std::numeric_limits<double>::quiet_NaN();
+    closestPointOnSecondLine.z = std::numeric_limits<double>::quiet_NaN();
+    return distance;
+  }
+  Psc.x = P0.x + sc*u.x;
+  Psc.y = P0.y + sc*u.y;
+  Psc.z = P0.z + sc*u.z;
+  Qtc.x = Q0.x + tc*v.x;
+  Qtc.y = Q0.y + tc*v.y;
+  Qtc.z = Q0.z + tc*v.z;
+
+  bool QtcOnSegment = false;
+  if ( x0.x > x1.x ) 
+  {
+    if ( (Qtc.x < x0.x) && (Qtc.x > x1.x) )
+    {
+      QtcOnSegment = true;
+    }
+  }
+  else
+  {
+    if ( (Qtc.x > x0.x) && (Qtc.x < x1.x) )
+    {
+      QtcOnSegment = true;
+    }
+  }
+  
+  if ( QtcOnSegment )
+  {  
+    distance = sqrt((Psc.x - Qtc.x)*(Psc.x - Qtc.x)
+                        +(Psc.y - Qtc.y)*(Psc.y - Qtc.y)
+                        +(Psc.z - Qtc.z)*(Psc.z - Qtc.z));
+    closestPointOnSecondLine = Qtc;
+  }
+  else
+  {
+    std::pair < cv::Point3d, cv::Point3d > twoPointsOnLine1 = std::pair < cv::Point3d , cv::Point3d > ( P0, P0 + u );
+    double x0Distance = mitk::DistanceToLine ( twoPointsOnLine1, x0 );
+    double x1Distance = mitk::DistanceToLine ( twoPointsOnLine1, x1 );
+
+    if ( x0Distance < x1Distance )
+    {
+      distance = x0Distance;
+      closestPointOnSecondLine = x0;
+    }
+    else
+    {
+      distance = x1Distance;
+      closestPointOnSecondLine = x1;
+    }
+  }
+  return distance;
+}
+
 
 //-----------------------------------------------------------------------------
 std::pair < cv::Point3d , cv::Point3d > TwoPointsToPLambda ( const std::pair < cv::Point3d , cv::Point3d >& twoPointLine ) 
