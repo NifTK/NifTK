@@ -98,7 +98,7 @@ static void TestSimpleCases()
 {
   mitk::PointSet::Pointer   one = mitk::PointSet::New();
   {
-    float   p[3] = {static_cast<float>(std::rand()), static_cast<float>((std::rand()), -2.0};
+    float   p[3] = {static_cast<float>(std::rand()), static_cast<float>(std::rand()), -2.0};
     one->InsertPoint(3, mitk::PointSet::PointType(&p[0]));
   }
 
