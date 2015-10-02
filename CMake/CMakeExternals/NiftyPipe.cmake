@@ -18,8 +18,8 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-if(DEFINED NiftyPipe_ROOT AND NOT EXISTS ${NiftyPipe_ROOT})
-  message(FATAL_ERROR "NiftyPipe_ROOT variable is defined but corresponds to non-existing directory \"${NiftyPipe_ROOT}\".")
+if(DEFINED NiftyPipe_DIR AND NOT EXISTS ${NiftyPipe_DIR})
+  message(FATAL_ERROR "NiftyPipe_ROOT variable is defined but corresponds to non-existing directory \"${NiftyPipe_DIR}\".")
 endif()
 
 if(BUILD_NiftyPipe)
@@ -28,8 +28,9 @@ if(BUILD_NiftyPipe)
   set(location "git@cmiclab.cs.ucl.ac.uk:CMIC/NiftyPipe")
 
   niftkMacroDefineExternalProjectVariables(NiftyPipe ${version} ${location})
+  set(proj_DEPENDENCIES )
 
-  if(NOT DEFINED NiftyPipe_ROOT)
+  if(NOT DEFINED NiftyPipe_DIR)
 
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
@@ -41,17 +42,27 @@ if(BUILD_NiftyPipe)
       GIT_TAG ${proj_VERSION}
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
+        ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
+      DEPENDS ${proj_DEPENDENCIES}
       )
 
-    set(NiftyPipe_ROOT ${proj_INSTALL})
+    set(NiftyPipe_DIR ${proj_INSTALL})
 
-    message("SuperBuild loading NiftyPipe from ${NiftyPipe_ROOT}")
+    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
-  else(NOT DEFINED NiftyPipe_ROOT)
+    message("SuperBuild loading NiftyPipe from ${NiftyPipe_DIR}")
+
+  else()
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  endif(NOT DEFINED NiftyPipe_ROOT)
+  endif()
 
-endif(BUILD_NiftyPipe)
+endif()
