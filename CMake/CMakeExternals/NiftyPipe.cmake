@@ -22,7 +22,7 @@ if(DEFINED NiftyPipe_ROOT AND NOT EXISTS ${NiftyPipe_ROOT})
   message(FATAL_ERROR "NiftyPipe_ROOT variable is defined but corresponds to non-existing directory \"${NiftyPipe_ROOT}\".")
 endif()
 
-if(BUILD_NIFTYPIPE)
+if(BUILD_NiftyPipe)
   
   set(version "d00c0d7302")
   set(location "git@cmiclab.cs.ucl.ac.uk:CMIC/NiftyPipe")
@@ -54,4 +54,4 @@ if(BUILD_NIFTYPIPE)
 
   endif(NOT DEFINED NiftyPipe_ROOT)
 
-endif(BUILD_NIFTYPIPE)
+endif(BUILD_NiftyPipe)
