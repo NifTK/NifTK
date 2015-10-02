@@ -32,14 +32,11 @@ namespace mitk {
 // forward declaration
 class GoldStandardPoint;
 
-
 extern "C++" NIFTKOPENCVUTILS_EXPORT
 std::istream& operator>> (std::istream& is, const GoldStandardPoint& gsp );
 
-
 extern "C++" NIFTKOPENCVUTILS_EXPORT
 bool operator < ( const GoldStandardPoint &GSP1 , const GoldStandardPoint &GSP2);
-
 
 /**
 * \brief a call back function for dealing with PickedPointLists
@@ -182,10 +179,11 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
     unsigned int m_FrameNumber;
     unsigned long long m_TimeStamp;
     std::string m_Channel;
+    cv::Scalar m_Scalar;
 
     PickedObject();
-    PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp);
-    PickedObject(GoldStandardPoint gsp); //cast a gold standard point to a PickedObject
+    PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp, cv::Scalar scalar);
+    PickedObject(const GoldStandardPoint& gsp, const unsigned long long& timestamp); //cast a gold standard point to a PickedObject
     ~PickedObject();
     
     /**
@@ -198,13 +196,21 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
     /**
      * \brief Calculates a distance between two picked objects
      * returns infinity if the headers don't match
+     *
      */
-    double DistanceTo ( const PickedObject& otherPickedObject, const long long& allowableTimingError = 20e6) const;
+    double DistanceTo ( const PickedObject& otherPickedObject, cv::Point3d& deltas, const long long& allowableTimingError = 20e6) const;
+
+    /**
+     * \brief Copy the header information to a new instance
+     */
+    PickedObject CopyByHeader () const; 
 
 };
 
 std::istream& operator >> ( std::istream& is, PickedObject& po);
 std::ostream& operator << ( std::ostream& os, const PickedObject& po);
+
+extern "C++" NIFTKOPENCVUTILS_EXPORT bool operator < ( const PickedObject &PO1 , const PickedObject &PO2);
 
 /**
  * \class maintains a set a point vectors and ID's that 
@@ -224,15 +230,27 @@ public:
   void SetInOrderedMode ( const bool& mode);
   bool GetIsModified();
   itkSetMacro (FrameNumber, unsigned int);
+  itkGetConstMacro (FrameNumber, unsigned int);
   itkSetMacro (Channel, std::string);
+  itkGetMacro (Channel, std::string);
   itkSetMacro (TimeStamp, unsigned long long);
+  itkGetMacro (TimeStamp, unsigned long long);
   itkSetMacro (XScale, double);
   itkSetMacro (YScale, double);
+  std::vector <mitk::PickedObject> GetPickedObjects() const;
+  void SetPickedObjects ( const std::vector < mitk::PickedObject > & objects );
+  
+  unsigned int GetListSize() const;
+  unsigned int GetNumberOfPoints() const;
+  unsigned int GetNumberOfLines() const;
+  void ClearList();
 
   unsigned int AddPoint (const cv::Point2i& point);
+  unsigned int AddPoint (const cv::Point3d& point, cv::Scalar scalar);
   unsigned int RemoveLastPoint ();
   unsigned int SkipOrderedPoint ();
-  unsigned int EndLine();
+
+  mitk::PickedPointList::Pointer CopyByHeader();
 
 protected:
   PickedPointList();

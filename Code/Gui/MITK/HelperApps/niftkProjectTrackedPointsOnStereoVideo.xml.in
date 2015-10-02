@@ -34,6 +34,13 @@
       <label>Input 3D points</label>
       <channel>input</channel>
     </file>
+   
+    <directory>
+      <name>input3DDirectory</name>
+      <longflag>input3DDirectory</longflag>
+      <description>The 3D world points, stored as a directory of .mps files, names line_XX.mps and points.mps</description>
+      <label>The 3D world points directory</label>
+    </directory>    
     
     <file fileExtensions=".txt">
       <name>input3DWithScalars</name>
@@ -50,7 +57,15 @@
       <label>Input 2D points</label>
       <channel>input</channel>
     </file>
-
+   
+    <file>
+      <name>goldStandardObjects</name>
+      <longflag>goldStandardObjects</longflag>
+      <description>The measured points in all screens, as a picked object xml file</description>
+      <label>The measured points in all screens, as a picked object xml file</label>
+      <channel>input</channel>
+    </file>
+    
     <file>
       <name>leftGoldStandard</name>
       <longflag>leftGoldStandard</longflag>
@@ -75,13 +90,13 @@
       <channel>input</channel>
     </file>
    
-    <file>
+    <boolean>
       <name>output3D</name>
       <longflag>output3D</longflag>
       <description>Output 3D points</description>
       <label>Output 3D points</label>
       <channel>output</channel>
-    </file>
+    </boolean>
     
     <file>
       <name>output2D</name>
@@ -105,7 +120,31 @@
       <label>Write out video files</label>
       <channel>output</channel>
     </boolean>
+   
+    <boolean>
+      <name>annotateWithGS</name>
+      <longflag>annotateWithGS</longflag>
+      <description>Annotate the projections with gold standard selections</description>
+      <label>Annotate the projections with gold standard selections</label>
+      <channel>output</channel>
+    </boolean>
+  
+    <boolean>
+      <name>saveAnnotateWithGS</name>
+      <longflag>saveAnnotateWithGS</longflag>
+      <description>Save frames annotated with gold standard selections</description>
+      <label>Save frames annotated with gold standard selections</label>
+      <channel>output</channel>
+    </boolean>
 
+    <boolean>
+      <name>showTrackingStatus</name>
+      <longflag>showTrackingStatus</longflag>
+      <description>Show the status of attached trackers</description>
+      <label>Show the status of attached trackers</label>
+      <channel>output</channel>
+    </boolean>
+ 
     <file>
       <name>outputErrors</name>
       <longflag>outputErrors</longflag>

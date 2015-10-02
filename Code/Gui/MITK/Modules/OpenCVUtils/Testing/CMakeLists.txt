@@ -16,5 +16,5 @@ MITK_CREATE_MODULE_TESTS(LABELS niftkOpenCVUtils)
 
 mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES OpenCV)
 
-mitkAddCustomModuleTest(mitkOpenCVFileIOUtilsTests mitkOpenCVFileIOUtilsTests ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/2015.04.23-ultrasound_calibration/)
+mitkAddCustomModuleTest(mitkOpenCVFileIOUtilsTests mitkOpenCVFileIOUtilsTests ${NIFTK_DATA_DIR}/Input/UltrasoundPinCalibration/2015.04.23-ultrasound_calibration/ ${NIFTK_DATA_DIR}/Input/IGI/1421406497581585600_leftPoints.xml ${NIFTK_DATA_DIR}/Input/IGI/PickedPointLists)
 
