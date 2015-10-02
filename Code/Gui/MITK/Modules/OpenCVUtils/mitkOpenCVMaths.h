@@ -434,7 +434,7 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT cv::Point2d FindNearestPoint ( const cv::Po
  * \brief Searches through vector of 3D points and lines to find the one closest (by distance)
  * to the passed point. Returns an empty PickedPoint if no point found 
  */
-extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedObject FindNearestPoint ( const mitk::PickedObject& point,
+extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedObject FindNearestPickedObject ( const mitk::PickedObject& point,
     const std::vector < mitk::PickedObject >& matchingPoints , 
     double* minRatio = NULL );
 
@@ -443,7 +443,6 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedObject FindNearestPoint ( const
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT bool DistanceCompare ( const cv::Point2d& p1,
     const cv::Point2d& p2 );
-
 
 /**
  * \brief works out the rigid rotation correspondence between two sets of corresponding 
@@ -583,33 +582,48 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceToLine ( const std::pair<cv:
  * \brief calculates the distance between two points
  * \param point 1
  * \param point 2
+ * \param optional the signed distance vector between the two points
  */
-extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2 );
+extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2, cv::Point3d* delta = NULL );
 
 /**
- * \brief calculates the shortest distance between two splines.  
+ * \brief calculates the average shortest distance between two splines.  
  * \param control points for spline 1, each of which is used for a measurement
  * \param control points for spline 2, which form the line segments for the measurement
  * \param order the polynomial order of the spline (only 1 is implemented)
+ * \param optional the mean signed distance vector between the two points
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s0,
-    const std::vector <cv::Point3d>& s1, unsigned int splineOrder );
+    const std::vector <cv::Point3d>& s1, unsigned int splineOrder , cv::Point3d* delta = NULL );
 
 /**
  * \brief calculates the distance between a line segment and a point
  * \param the line defined by the two end points of the line segment
  * \param the point
+ * \param optional the signed distance vector between the two points
  */
-extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& point);
+extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, const cv::Point3d& point, cv::Point3d* delta = NULL);
 
 /**
  * \brief calculates the shortest distance between two lines  
  * \param line 1 define as x = P0 + lambda u
  * \param line 2 defined as x = Q0 + lambda v
  * \param holder to return the midpoint
+ * \param optionally return the closest point on the second line
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, 
     const cv::Point3d& Q0, const cv::Point3d& v , cv::Point3d& midpoint );
+
+/**
+ * \brief calculates the shortest distance between a line and a segment 
+ * the point must lie on the segment
+ * \param line 1 define as x = P0 + lambda u
+ * \param line 2 defined as the start and end points x0, x1
+ * \param holder for the closest point on the second line
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT double DistanceBetweenLineAndSegment ( const cv::Point3d& P0, const cv::Point3d& u, 
+    const cv::Point3d& x0, const cv::Point3d& x1 , cv::Point3d& closestPointOnSecondLine );
+
 
 /**
  * \brief converts a line defined by two points on the line to the same line defined by a single point and it's unit vector

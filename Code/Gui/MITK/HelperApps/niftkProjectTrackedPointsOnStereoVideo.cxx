@@ -14,12 +14,14 @@
 
 #include <cstdlib>
 #include <limits>
-#include <mitkPointSetReader.h>
 
 #include <mitkProjectPointsOnStereoVideo.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVPointTypes.h>
+#include <mitkOpenCVFileIOUtils.h>
+#include <mitkIOUtil.h>
 #include <niftkProjectTrackedPointsOnStereoVideoCLP.h>
+#include <boost/lexical_cast.hpp>
 
 #include <fstream>
 int main(int argc, char** argv)
@@ -43,8 +45,10 @@ int main(int argc, char** argv)
 
   if ( ( input2D.length() == 0 ) && 
        ( input3D.length() == 0 ) && 
+       ( input3DDirectory.length() == 0 ) &&
        ( input3DWithScalars.length() == 0 ) && 
-       ( leftGoldStandard.length() == 0 || rightGoldStandard.length() == 0 ) )
+       ( leftGoldStandard.length() == 0 || rightGoldStandard.length() == 0 ) &&
+       ( goldStandardObjects.length() == 0 ) )
   {
     std::cout << "no point input files defined " << std::endl;
     commandLine.getOutput()->usage(commandLine);
@@ -58,6 +62,13 @@ int main(int argc, char** argv)
     projector->SetAllowableTimingError(maxTimingError * 1e6);
     projector->SetProjectorScreenBuffer(projectorScreenBuffer);
     projector->SetClassifierScreenBuffer(classifierScreenBuffer);
+    projector->SetVisualiseTrackingStatus(showTrackingStatus);
+    if ( saveAnnotateWithGS )
+    {
+      annotateWithGS = true;
+    }
+    projector->SetAnnotateWithGoldStandards(annotateWithGS);
+    projector->SetWriteAnnotatedGoldStandards(saveAnnotateWithGS);
     
     if ( outputVideo ) 
     {
@@ -95,6 +106,10 @@ int main(int argc, char** argv)
     std::vector < mitk::WorldPoint > worldPoints;
     std::vector < mitk::WorldPoint > classifierWorldPoints;
     std::vector < mitk::WorldPoint > worldPointsWithScalars;
+    if ( input3DDirectory.length() != 0 )
+    {
+      projector->SetWorldPoints ( mitk::LoadPickedPointListFromDirectory ( input3DDirectory ));
+    }
     if ( input2D.length() != 0 ) 
     {
       std::ifstream fin(input2D.c_str());
@@ -114,11 +129,7 @@ int main(int argc, char** argv)
     if ( input3D.length() != 0 ) 
     {
       //try reading it as a mitk point set first
-      mitk::PointSetReader::Pointer reader = mitk::PointSetReader::New();
-      reader->SetFileName(input3D);
-      mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
-      reader->Update();
-      pointSet = reader->GetOutput();
+      mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( input3D ); 
       if ( pointSet->GetSize() == 0 ) 
       {
         //try reading a stream of points instead
@@ -184,7 +195,22 @@ int main(int argc, char** argv)
       projector->AppendWorldPoints(worldPointsWithScalars);
       fin.close();
     }
-    
+   
+    if ( goldStandardObjects.length() != 0 ) 
+    {
+      std::ifstream fin ( goldStandardObjects.c_str() );
+      if ( fin ) 
+      {
+        std::vector < mitk::PickedObject > pickedObjects;
+        mitk::LoadPickedObjects ( pickedObjects, fin );
+        projector->SetGoldStandardObjects (pickedObjects);
+        fin.close();
+      }
+      else
+      {
+        MITK_ERROR << "Failed to open " << goldStandardObjects << " for input";
+      }
+    }
     if ( leftGoldStandard.length() != 0 ) 
     {
       std::ifstream fin(leftGoldStandard.c_str());
@@ -198,7 +224,7 @@ int main(int argc, char** argv)
         }
       }
       fin.close();
-      projector->SetLeftGoldStandardPoints(leftGS);
+      projector->SetLeftGoldStandardPoints(leftGS, matcher);
     }
     if ( rightGoldStandard.length() != 0 ) 
     {
@@ -213,7 +239,7 @@ int main(int argc, char** argv)
         }
       }
       fin.close();
-      projector->SetRightGoldStandardPoints(rightGS);
+      projector->SetRightGoldStandardPoints(rightGS, matcher);
     }
 
     projector->Project(matcher);
@@ -241,29 +267,23 @@ int main(int argc, char** argv)
       }
       fout.close();
     }
-    if ( output3D.length() !=0 )
+    if ( output3D )
     {
-      std::ofstream fout (output3D.c_str());
-      std::vector <mitk::WorldPointsWithTimingError> leftLensPoints = 
+      std::vector <mitk::PickedPointList::Pointer> leftLensPoints = 
         projector->GetPointsInLeftLensCS();
-      fout << "#Frame Number " ;
-      for ( unsigned int i = 0 ; i < leftLensPoints[0].m_Points.size() ; i ++ ) 
-      {
-        fout << "P" << i << "[x,y,z]" << " ";
-      }
-      fout << std::endl;
       for ( unsigned int i  = 0 ; i < leftLensPoints.size() ; i ++ )
       {
-        fout << i << " ";
-        for ( unsigned int j = 0 ; j < leftLensPoints[i].m_Points.size() ; j ++ )
+        std::ofstream frameOut ( (boost::lexical_cast<std::string>(leftLensPoints[i]->GetFrameNumber()) + ".leftLensPoints").c_str() );
+        if ( frameOut )
         {
-          fout << leftLensPoints[i].m_Points[j].m_Point.x << " " <<  
-            leftLensPoints[i].m_Points[j].m_Point.y <<
-             " " << leftLensPoints[i].m_Points[j].m_Point.z << " " ;
+          leftLensPoints[i]->PutOut(frameOut);
         }
-        fout << std::endl;
+        else
+        {
+          MITK_ERROR << "Failed to open out put file " << boost::lexical_cast<std::string>(leftLensPoints[i]->GetFrameNumber()) + ".leftLensPoints"; 
+        }
+        frameOut.close();
       }
-      fout.close();
     }
     if ( outputMatrices.length() !=0 )
     {
@@ -287,14 +307,14 @@ int main(int argc, char** argv)
     {
       projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
       projector->CalculateProjectionErrors(outputErrors);
-      projector->CalculateTriangulationErrors(outputErrors, matcher);
+      projector->CalculateTriangulationErrors(outputErrors);
     }
     else
     {
       if ( outputTriangulatedPoints.length() != 0 )
       {
         projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
-        projector->CalculateTriangulationErrors(outputErrors, matcher);
+        projector->TriangulateGoldStandardPoints(outputTriangulatedPoints, matcher);
       }
     }
    

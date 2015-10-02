@@ -134,6 +134,46 @@ bool operator< (const  GoldStandardPoint &GSP1, const GoldStandardPoint &GSP2 )
   }
 }
 
+//-----------------------------------------------------------------------------
+bool operator< (const PickedObject &po1, const PickedObject &po2 )
+{
+  //by frame number first
+  if ( po1.m_FrameNumber == po2.m_FrameNumber )
+  {
+    //left before right
+    if ( po1.m_Channel == po2.m_Channel )
+    {
+      if ( po1.m_IsLine == po2.m_IsLine )
+      {
+        return po1.m_Id < po2.m_Id;
+      }
+      else
+      {
+        //points before lines
+        return ( ! po1.m_IsLine );
+      }
+    }
+    else
+    {
+      if ( po1.m_Channel == "left" )
+      {
+        assert ( po2.m_Channel == "right" );
+        return true;
+      }
+      else
+      {
+        assert ( (po1.m_Channel == "right")  && ( po2.m_Channel == "left") );
+        return false;
+      }
+    }
+  }
+  else
+  {
+    return po1.m_FrameNumber < po2.m_FrameNumber;
+  }
+}
+
+
 
 //-----------------------------------------------------------------------------
 WorldPoint::WorldPoint()
@@ -362,26 +402,30 @@ PickedObject::PickedObject()
 , m_FrameNumber(0)
 , m_TimeStamp(0)
 , m_Channel("")
+, m_Scalar (cv::Scalar(255,0,0))
 {
 }
 
 //-----------------------------------------------------------------------------
-PickedObject::PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp)
+PickedObject::PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp, 
+    cv::Scalar scalar)
 : m_Id (-1)
 , m_IsLine (false)
 , m_FrameNumber(framenumber)
 , m_TimeStamp(timestamp)
 , m_Channel(channel)
+, m_Scalar (scalar)
 {
 }
 
 //-----------------------------------------------------------------------------
-PickedObject::PickedObject(GoldStandardPoint gsp)
+PickedObject::PickedObject(const GoldStandardPoint& gsp, const unsigned long long & timestamp)
 : m_Id (gsp.m_Index)
 , m_IsLine (false)
 , m_FrameNumber(gsp.m_FrameNumber)
-, m_TimeStamp(0)
+, m_TimeStamp(timestamp)
 , m_Channel("")
+, m_Scalar (cv::Scalar(255,255,255))
 {
   m_Points.push_back(cv::Point3d ( gsp.m_Point.x, gsp.m_Point.y, 0.0 ));
 }
@@ -418,7 +462,22 @@ bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject, const lon
 }
 
 //-----------------------------------------------------------------------------
-double PickedObject::DistanceTo(const PickedObject& otherPickedObject , const long long& allowableTimingError) const
+PickedObject PickedObject::CopyByHeader() const
+{
+  PickedObject new_po;
+  new_po.m_TimeStamp = m_TimeStamp;
+  new_po.m_Channel = m_Channel;
+  new_po.m_IsLine = m_IsLine;
+  new_po.m_FrameNumber = m_FrameNumber;
+  new_po.m_Id = m_Id;
+  new_po.m_Scalar = m_Scalar;
+
+  return new_po;
+}
+
+
+//-----------------------------------------------------------------------------
+double PickedObject::DistanceTo(const PickedObject& otherPickedObject , cv::Point3d& deltas,  const long long& allowableTimingError) const
 {
   if ( ! otherPickedObject.HeadersMatch (*this) )
   {
@@ -427,11 +486,11 @@ double PickedObject::DistanceTo(const PickedObject& otherPickedObject , const lo
   if ( m_IsLine )
   {
     unsigned int splineOrder = 1;
-    return mitk::DistanceBetweenTwoSplines ( m_Points, otherPickedObject.m_Points , splineOrder );
+    return mitk::DistanceBetweenTwoSplines ( m_Points, otherPickedObject.m_Points, splineOrder , &deltas );
   }
   else
   {
-    return mitk::DistanceBetweenTwoPoints ( m_Points[0], otherPickedObject.m_Points[0] );
+    return mitk::DistanceBetweenTwoPoints ( m_Points[0], otherPickedObject.m_Points[0], &deltas );
   }
 }
 
@@ -450,9 +509,79 @@ PickedPointList::~PickedPointList()
 {}
 
 //-----------------------------------------------------------------------------
+PickedPointList::Pointer PickedPointList::CopyByHeader()
+{
+  mitk::PickedPointList::Pointer newPL = mitk::PickedPointList::New();
+   
+  newPL->m_InLineMode = m_InLineMode;
+  newPL->m_InOrderedMode = m_InOrderedMode;
+  newPL->m_IsModified = true;
+  newPL->m_XScale = m_XScale;
+  newPL->m_YScale = m_YScale;
+  
+  newPL->m_TimeStamp = m_TimeStamp;
+  newPL->m_FrameNumber = m_FrameNumber;
+  newPL->m_Channel = m_Channel;
+  return newPL;
+}
+
+
+//-----------------------------------------------------------------------------
 void PickedPointList::PutOut (std::ofstream& os )
 {
   mitk::SavePickedObjects ( m_PickedObjects, os );
+}
+
+//-----------------------------------------------------------------------------
+std::vector < mitk::PickedObject > PickedPointList::GetPickedObjects  () const 
+{
+  return m_PickedObjects;
+}
+
+//-----------------------------------------------------------------------------
+void PickedPointList::SetPickedObjects (const std::vector < mitk::PickedObject >& objects )
+{
+  m_PickedObjects = objects;
+}
+
+//-----------------------------------------------------------------------------
+unsigned int  PickedPointList::GetListSize () const
+{
+  return m_PickedObjects.size();
+}
+//-----------------------------------------------------------------------------
+unsigned int  PickedPointList::GetNumberOfPoints () const
+{
+  unsigned int count = 0;
+  for ( std::vector<mitk::PickedObject>::const_iterator it = m_PickedObjects.begin() ; it < m_PickedObjects.end() ; ++it )
+  {
+    if ( ! it->m_IsLine )
+    {
+      count ++ ;
+    }
+  }
+  return count;
+}
+//-----------------------------------------------------------------------------
+unsigned int  PickedPointList::GetNumberOfLines () const
+{
+  unsigned int count = 0;
+  for ( std::vector<mitk::PickedObject>::const_iterator it = m_PickedObjects.begin() ; it < m_PickedObjects.end() ; ++it )
+  {
+    if ( it->m_IsLine )
+    {
+      count ++ ;
+    }
+  }
+  return count;
+
+
+}
+
+//-----------------------------------------------------------------------------
+void PickedPointList::ClearList ()
+{
+  m_PickedObjects.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -474,28 +603,36 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
       assert ( m_PickedObjects[i].m_Points.size() <= 1 );
       for ( unsigned int j = 0 ; j < m_PickedObjects[i].m_Points.size() ; j ++ )
       {
-        cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
-        cv::putText(image,number,point,0,1.0,cv::Scalar(255,255,255));
-        cv::circle(image, point,5,cv::Scalar(255,255,255),1,1);
+        if ( mitk::IsNotNaNorInf ( m_PickedObjects[i].m_Points[j] ) ) 
+        {
+          cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
+          cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar);
+          cv::circle(image, point,5,m_PickedObjects[i].m_Scalar,1,1);
+        }
       }
     }
     else
     {
       if ( m_PickedObjects[i].m_Points.size() > 0 )
       {
+        bool lineStarted = false;
         for ( unsigned int j = 0 ; j < m_PickedObjects[i].m_Points.size() ; j ++ )
         {
-          if ( j == 0 )
+          if ( mitk::IsNotNaNorInf ( m_PickedObjects[i].m_Points[j] ) ) 
           {
-            cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
-            cv::putText(image,number,point,0,1.0,cv::Scalar(255,255,255));
-            cv::circle(image, point,5,cv::Scalar(255,255,255),1,1);
-          }
-          else
-          {
-            cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
-            cv::Point2i point2 = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j-1]);
-            cv::line(image,  point, point2, cv::Scalar(255,255,255));
+            if ( ! lineStarted )
+            {
+              cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
+              cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar);
+              cv::circle(image, point,5,m_PickedObjects[i].m_Scalar,1,1);
+              lineStarted = true;
+            }
+            else
+            {
+              cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
+              cv::Point2i point2 = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j-1]);
+              cv::line(image,  point, point2, m_PickedObjects[i].m_Scalar);
+            }
           }
         }
       }
@@ -591,7 +728,7 @@ void PickedPointList::SetInLineMode(const bool& mode)
   if ( m_InLineMode )
   {
     int pointID = -1;
-    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255, 255 ));
     pickedObject.m_IsLine = true;
 
     if ( m_InOrderedMode )
@@ -626,7 +763,7 @@ unsigned int PickedPointList::AddPoint(const cv::Point2i& point)
     else
     {
       int pointID=this->GetNextAvailableID(true);
-      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255,255,255 ));
       pickedObject.m_IsLine = true;
       pickedObject.m_Id = pointID;
       pickedObject.m_Points.push_back(myPoint);
@@ -640,7 +777,7 @@ unsigned int PickedPointList::AddPoint(const cv::Point2i& point)
     if ( m_InOrderedMode )
     {
       int pointID=this->GetNextAvailableID(false);
-      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255, 255 ));
       pickedObject.m_IsLine = false;
       pickedObject.m_Id = pointID;
       pickedObject.m_Points.push_back(myPoint);
@@ -650,7 +787,7 @@ unsigned int PickedPointList::AddPoint(const cv::Point2i& point)
     }
     else
     {
-      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255, 255 ));
       pickedObject.m_IsLine = false;
       pickedObject.m_Id = -1;
       pickedObject.m_Points.push_back(myPoint);
@@ -662,6 +799,62 @@ unsigned int PickedPointList::AddPoint(const cv::Point2i& point)
   m_IsModified=true;
   return m_PickedObjects.size();
 }
+
+//-----------------------------------------------------------------------------
+unsigned int PickedPointList::AddPoint(const cv::Point3d& point, cv::Scalar scalar)
+{
+  if ( m_InLineMode )
+  {
+    if ( m_PickedObjects.back().m_IsLine )
+    {
+      m_PickedObjects.back().m_Points.push_back(point);
+      m_PickedObjects.back().m_Scalar = scalar;
+
+      MITK_INFO << "Added a point to line " << m_PickedObjects.back().m_Id;
+    }
+    else
+    {
+      int pointID=this->GetNextAvailableID(true);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255, 255 ));
+      pickedObject.m_IsLine = true;
+      pickedObject.m_Id = pointID;
+      pickedObject.m_Scalar = scalar;
+      pickedObject.m_Points.push_back(point);
+
+      m_PickedObjects.push_back(pickedObject);
+      MITK_INFO << "Created new line at " << m_PickedObjects.back().m_Id;
+    }
+  }
+  else
+  {
+    if ( m_InOrderedMode )
+    {
+      int pointID=this->GetNextAvailableID(false);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255,255,255));
+      pickedObject.m_IsLine = false;
+      pickedObject.m_Id = pointID;
+      pickedObject.m_Scalar = scalar;
+      pickedObject.m_Points.push_back(point);
+
+      m_PickedObjects.push_back(pickedObject);
+      MITK_INFO << "Picked ordered point " << pointID << " , " <<  point;
+    }
+    else
+    {
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar (255,255,255 ));
+      pickedObject.m_IsLine = false;
+      pickedObject.m_Id = -1;
+      pickedObject.m_Scalar = scalar;
+      pickedObject.m_Points.push_back(point);
+      m_PickedObjects.push_back(pickedObject);
+
+      MITK_INFO << "Picked unordered point, " <<  point;
+    }
+  }
+  m_IsModified=true;
+  return m_PickedObjects.size();
+}
+
 
 //-----------------------------------------------------------------------------
 unsigned int PickedPointList::RemoveLastPoint()
@@ -726,7 +919,7 @@ unsigned int PickedPointList::SkipOrderedPoint()
     }
     else 
     {
-      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+      PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255 , 255 ));
       pickedObject.m_IsLine = true;
       pickedObject.m_Id = -1;
 
@@ -740,7 +933,7 @@ unsigned int PickedPointList::SkipOrderedPoint()
   if ( ! m_InLineMode )
   {
     int pointID=this->GetNextAvailableID(false);
-    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255, 255));
     pickedObject.m_IsLine = false;
     pickedObject.m_Id = pointID;
 
@@ -752,7 +945,7 @@ unsigned int PickedPointList::SkipOrderedPoint()
   {
     int pointID=this->GetNextAvailableID(true);
 
-    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp);
+    PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255,  255));
     pickedObject.m_IsLine = true;
     pickedObject.m_Id = pointID;
 
@@ -793,6 +986,13 @@ cv::Point2i Point3dToPoint2i (const cv::Point3d& point)
   {
     mitkThrow() << "Attempted to cast point3d to point2i with non zero z";
   }
-  return cv::Point2i ( boost::math::round(point.x), boost::math::round(point.y) );
+  if ( mitk::IsNotNaNorInf ( point ) ) 
+  {
+    return cv::Point2i ( boost::math::round(point.x), boost::math::round(point.y) );
+  }
+  else
+  {
+    return cv::Point2i ( -1, -1 );
+  }
 }
 } // end namespace

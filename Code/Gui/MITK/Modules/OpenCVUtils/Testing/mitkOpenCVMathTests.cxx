@@ -465,6 +465,10 @@ void DistanceBetweenLinesTest ()
   
   MITK_TEST_CONDITION ( ( distance - 1.0 )  < 1e-6, "Checking distance between two lines " << distance );
   MITK_TEST_CONDITION( mitk::NearlyEqual (midPoint,cv::Point3d(0.5,0.5,0.5),1e-6),"Checking midpoint " << midPoint);
+  
+  distance = mitk::DistanceBetweenLines(P0, u, Q0 , v , midPoint);
+  MITK_TEST_CONDITION ( ( distance - 1.0 )  < 1e-6, "Checking distance between two lines " << distance );
+  MITK_TEST_CONDITION( mitk::NearlyEqual (midPoint,cv::Point3d(0.5,0.5,0.5),1e-6),"Checking midpoint " << midPoint);
 
   //parallel  lines
   //a line through the origin and (1,1,0)
@@ -491,6 +495,57 @@ void DistanceBetweenLinesTest ()
 
   MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 0.5 * 0.5 + 0.5 * 0.5 )) )  < 1e-6, "Checking distance between two parallel lines 3 " << distance );
   MITK_TEST_CONDITION( ( ! mitk::IsNotNaNorInf (midPoint)), "Checking midpoint for parallel lines 3 " << midPoint);
+
+
+}
+
+void DistanceBetweenLineAndSegmentTest ()
+{
+  //a line through the origin and (1,1,0) 
+  cv::Point3d P0 (0,0,0);
+  cv::Point3d u (0.70711,0.70711,0);
+  //a line through (1,0,1) and (0,1,1)
+  cv::Point3d x0 (1,0,1);
+  cv::Point3d x1 (0,1,1);
+  cv::Point3d closestPointOnSecondLine;
+  
+  double distance = mitk::DistanceBetweenLineAndSegment(P0, u, x0, x1 , closestPointOnSecondLine);
+  MITK_TEST_CONDITION ( ( distance - 1.0 )  < 1e-6, "Checking distance between line and segment " << distance );
+  MITK_TEST_CONDITION( mitk::NearlyEqual (closestPointOnSecondLine,cv::Point3d(0.5,0.5,1.0),1e-6),"Checking closest point on second line " << closestPointOnSecondLine);
+
+  //parallel  lines
+  //a line through the origin and (1,1,0)
+  P0 = cv::Point3d (0,0,0);
+  u = cv::Point3d (0.70711,0.70711,0);
+  //a line through (1,0,0) and (2,1,0)
+  x0 = cv::Point3d(1,0,0);
+  x1 = cv::Point3d (2,1,0);
+  distance = mitk::DistanceBetweenLineAndSegment(P0, u, x0, x1 , closestPointOnSecondLine);
+
+  MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 0.5 * 0.5 + 0.5 * 0.5 ) ))  < 1e-6, "Checking distance between line and parallel segment " << distance );
+  MITK_TEST_CONDITION( ( ! mitk::IsNotNaNorInf (closestPointOnSecondLine)), "Checking closest point on parallel segment " << closestPointOnSecondLine);
+
+  x1 = cv::Point3d (0,-1,0);
+  distance = mitk::DistanceBetweenLineAndSegment(P0, u, x0, x1, closestPointOnSecondLine);
+
+  MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 0.5 * 0.5 + 0.5 * 0.5 )) )  < 1e-6, "Checking distance between line and parallel segment " << distance );
+  MITK_TEST_CONDITION( ( ! mitk::IsNotNaNorInf (closestPointOnSecondLine)), "Checking closest point on  parallel segment 2 " << closestPointOnSecondLine);
+
+  x0 = cv::Point3d(5,4,1);
+  x1 = cv::Point3d (4,5,1);
+
+  distance = mitk::DistanceBetweenLineAndSegment(P0, u, x0, x1, closestPointOnSecondLine);
+
+  MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 1.0 )) )  < 1e-6, "Checking distance between line and non parallel line 2 " << distance );
+  MITK_TEST_CONDITION( mitk::NearlyEqual (closestPointOnSecondLine,cv::Point3d(4.5,4.5,1.0),1e-6),"Checking closest point on second line " << closestPointOnSecondLine);
+
+  x0 = cv::Point3d(7,4,1);
+  x1 = cv::Point3d (6,5,1);
+
+  distance = mitk::DistanceBetweenLineAndSegment(P0, u, x0, x1, closestPointOnSecondLine);
+
+  MITK_TEST_CONDITION ( ( fabs (distance - sqrt ( 1.0 * 1.0 + 0.5 * 0.5 + 0.5 * 0.5 )) )  < 1e-6, "Checking distance between line and non parallel line 3 " << distance );
+  MITK_TEST_CONDITION( mitk::NearlyEqual (closestPointOnSecondLine,cv::Point3d(6.0,5.0,1.0),1e-6),"Checking closest point on second line " << closestPointOnSecondLine);
 
 
 }
@@ -572,25 +627,25 @@ void RemoveOutliersTest ()
 
 void FindNearestPointTest ()
 {
-  mitk::PickedObject p ( "left", 0, 0 );
+  mitk::PickedObject p ( "left", 0, 0 , cv::Scalar ( 255, 255 , 255 ));
   std::vector < mitk::PickedObject> classifierPoints;
-  mitk::PickedObject c1( "left", 0, 0 );
+  mitk::PickedObject c1( "left", 0, 0 , cv::Scalar ( 255, 255, 255 ));
   c1.m_Id = 0;
   c1.m_Points.push_back ( cv::Point3d ( 1.0, 0.0, 0.0 ));
   classifierPoints.push_back ( c1 );
-  mitk::PickedObject c2( "left", 0, 0 );
+  mitk::PickedObject c2( "left", 0, 0 , cv::Scalar ( 255, 255, 255 ));
   c2.m_Id = 1;
   c2.m_Points.push_back ( cv::Point3d ( 1.0, 1.0, 0.0 ));
   classifierPoints.push_back ( c2 );
-  mitk::PickedObject c3( "left", 0, 0 );
+  mitk::PickedObject c3( "left", 0, 0 , cv::Scalar ( 255, 255, 255 ));
   c3.m_Id = 2;
   c3.m_Points.push_back ( cv::Point3d ( 0.0, 1.0, 0.0 ));
   classifierPoints.push_back ( c3 );
-  mitk::PickedObject c4( "left", 0, 0 );
+  mitk::PickedObject c4( "left", 0, 0, cv::Scalar ( 255, 255 , 255 ) );
   c4.m_Id = 3;
   c4.m_Points.push_back ( cv::Point3d ( 0.0, 0.0, 0.0 ));
   classifierPoints.push_back ( c4 );
-  mitk::PickedObject c5( "left", 0, 0 );
+  mitk::PickedObject c5( "left", 0, 0 , cv::Scalar (255, 255, 255));
   c5.m_Id = 0;
   c5.m_IsLine = true;
   c5.m_Points.push_back ( cv::Point3d ( 0.0, 0.0, 0.0 ));
@@ -602,28 +657,28 @@ void FindNearestPointTest ()
 
   mitk::PickedObject matched;
   double minRatio = 0 ;
-  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  matched = mitk::FindNearestPickedObject ( p , classifierPoints, &minRatio );
 
   MITK_TEST_CONDITION ( matched.m_Id == 2 , "Testing matched to point 2, got , " << matched.m_Id );
   MITK_TEST_CONDITION ( ( fabs ( minRatio - 0.6708/0.5000)) < 1e-3  , "Testing min ratio is 1.342 , got  " << minRatio) ;
 
   p.m_Id = 3;
-  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  matched = mitk::FindNearestPickedObject ( p , classifierPoints, &minRatio );
   MITK_TEST_CONDITION ( matched.m_Id == 3 , "Testing matched to point 3 when point id set, got , " << matched.m_Id );
   MITK_TEST_CONDITION ( boost::math::isinf(minRatio), "Testing min ratio is infinite , got  " << minRatio) ;
 
   p.m_IsLine = true;
-  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  matched = mitk::FindNearestPickedObject ( p , classifierPoints, &minRatio );
   MITK_TEST_CONDITION ( matched.m_Id == -1 , "Testing matched to nothing (-1) when point id beyond end, got , " << matched.m_Id );
   MITK_TEST_CONDITION ( boost::math::isnan(minRatio), "Testing min ratio is NaN , got  " << minRatio) ;
 
   p.m_Id = -1;
-  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  matched = mitk::FindNearestPickedObject ( p , classifierPoints, &minRatio );
   MITK_TEST_CONDITION ( matched.m_Id == 0 , "Testing matched to line 0 when point id not set, got , " << matched.m_Id );
   MITK_TEST_CONDITION ( boost::math::isinf(minRatio), "Testing min ratio is inf , got  " << minRatio) ;
 
   classifierPoints.clear();
-  matched = mitk::FindNearestPoint ( p , classifierPoints, &minRatio );
+  matched = mitk::FindNearestPickedObject ( p , classifierPoints, &minRatio );
   MITK_TEST_CONDITION ( matched.m_Id == -1 , "Testing matched to nothing (-1) when classifier points in empty " << matched.m_Id );
   MITK_TEST_CONDITION ( boost::math::isnan(minRatio), "Testing min ratio is NaN , got  " << minRatio) ;
   
@@ -635,18 +690,24 @@ void DistanceBetweenTwoPointsTest()
   cv::Point3d p2 ( 1.1, 10.4, 3.6);
   cv::Point3d p3 ( 1.1, 10.4, std::numeric_limits<double>::quiet_NaN());
   cv::Point3d p4 ( 1.1, 10.4, std::numeric_limits<double>::infinity());
-
+  
+  cv::Point3d delta;
   double distance;
-  distance = mitk::DistanceBetweenTwoPoints ( p1, p2 );
+  distance = mitk::DistanceBetweenTwoPoints ( p1, p2, &delta );
   MITK_TEST_CONDITION ( fabs ( distance - 10.062 ) < 1e-3 , "Testing distance between points = 10.062, got : " << distance );
-  distance = mitk::DistanceBetweenTwoPoints ( p2, p1 );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( delta, cv::Point3d ( 2.2, -9.8, 0.6 ), 1e-6), "Testing delta, got : " << delta );
+  distance = mitk::DistanceBetweenTwoPoints ( p2, p1, &delta );
   MITK_TEST_CONDITION ( fabs ( distance - 10.062 ) < 1e-3 , "Testing distance between points = 10.062, got : " << distance );
-  distance = mitk::DistanceBetweenTwoPoints ( p1, p3 );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( delta, cv::Point3d ( -2.2, 9.8, -0.6 ), 1e-6) ,"Testing delta, got : " << delta );
+  distance = mitk::DistanceBetweenTwoPoints ( p1, p3, &delta );
   MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between points is not a number, got : " << distance );
-  distance = mitk::DistanceBetweenTwoPoints ( p2, p4 );
+  MITK_TEST_CONDITION ( ! mitk::NearlyEqual ( delta, cv::Point3d (  2.2, -9.8, std::numeric_limits<double>::quiet_NaN()  ), 1e-6), "Testing delta, got : " << delta );
+  distance = mitk::DistanceBetweenTwoPoints ( p2, p4, &delta );
   MITK_TEST_CONDITION ( boost::math::isinf( distance ), "Testing distance between points is infinite, got : " << distance );
-  distance = mitk::DistanceBetweenTwoPoints ( p4, p3 );
+  MITK_TEST_CONDITION ( ! mitk::NearlyEqual ( delta, cv::Point3d ( 0.0, 0.0, std::numeric_limits<double>::infinity() ), 1e-6), "Testing delta, got : " << delta );
+  distance = mitk::DistanceBetweenTwoPoints ( p4, p3, &delta );
   MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between points is not a number, got : " << distance );
+  MITK_TEST_CONDITION ( ! mitk::NearlyEqual ( delta, cv::Point3d ( 0.0, 0.0, std::numeric_limits<double>::quiet_NaN() ), 1e-6), "Testing delta, got : " << delta );
 }
 
 void DistanceBetweenTwoSplinesTest()
@@ -670,26 +731,33 @@ void DistanceBetweenTwoSplinesTest()
   spline2.push_back(p1);
   
   double distance;
-  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1 );
+  cv::Point3d delta;
+  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1, &delta );
   MITK_TEST_CONDITION ( fabs ( distance - 0.408 ) < 1e-3 , "Testing distance between splines = 0.408, got : " << distance );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( delta, cv::Point3d ( -0.333, 0.167, 0.167 ), 1e-3), "Testing delta, got : " << delta );
   spline2.push_back(p2);
-  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1 );
-  MITK_TEST_CONDITION ( fabs ( distance -  0.441 ) < 1e-3 , "Testing distance between splines = 0.441, got : " << distance );
-  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1 );
-  MITK_TEST_CONDITION ( fabs ( distance -  1.094 ) < 1e-3 , "Testing distance between splines = 1.094, got : " << distance );
+  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1, &delta );
+  MITK_TEST_CONDITION ( fabs ( distance -  0.440 ) < 1e-3 , "Testing distance between splines = 0.440, got : " << distance );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( delta, cv::Point3d ( -0.111, 0.139, -0.139 ), 1e-3), "Testing delta, got : " << delta );
+  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1, &delta);
+  MITK_TEST_CONDITION ( fabs ( distance -  0.980 ) < 1e-3 , "Testing distance0.139n splines = 0.980, got : " << distance );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( delta, cv::Point3d ( 0.091, 0.136, -0.197 ), 1e-3), "Testing delta, got : " << delta );
 
   spline1.push_back(l4);
-  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1 );
-  MITK_TEST_CONDITION ( fabs ( distance -  0.441 ) < 1e-3 , "Testing distance between splines = 0.441, got : " << distance );
-  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1 );
+  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1, &delta );
+  MITK_TEST_CONDITION ( fabs ( distance -  0.440 ) < 1e-3 , "Testing distance between splines = 0.440, got : " << distance );
+  MITK_TEST_CONDITION ( mitk::NearlyEqual ( delta, cv::Point3d ( -0.111, 0.139, -0.139 ), 1e-3), "Testing delta, got : " << delta );
+  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1, &delta );
   MITK_TEST_CONDITION ( boost::math::isinf( distance ), "Testing distance between splines is infinite, got : " << distance );
+  MITK_TEST_CONDITION ( !mitk::IsNotNaNorInf ( delta ), "Testing delta is inf, got : " << delta );
 
   spline1.push_back(l5);
-  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1 );
+  distance = mitk::DistanceBetweenTwoSplines ( spline2, spline1, 1, &delta );
   MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between splines is not a number, got : " << distance );
-  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1 );
+  MITK_TEST_CONDITION ( !mitk::IsNotNaNorInf ( delta ), "Testing delta is inf, got : " << delta );
+  distance = mitk::DistanceBetweenTwoSplines ( spline1, spline2, 1, &delta );
   MITK_TEST_CONDITION ( boost::math::isnan( distance ), "Testing distance between splines is not a number, got : " << distance );
-
+  MITK_TEST_CONDITION ( !mitk::IsNotNaNorInf ( delta ), "Testing delta is inf, got : " << delta );
 
 }
 
@@ -712,6 +780,7 @@ int mitkOpenCVMathTests(int argc, char * argv[])
   DotAndCrossProductTest();
   NormTest();
   DistanceBetweenLinesTest();
+  DistanceBetweenLineAndSegmentTest();
   TwoPointsToPLambdaTest ();
   RemoveOutliersTest();
   FindNearestPointTest();

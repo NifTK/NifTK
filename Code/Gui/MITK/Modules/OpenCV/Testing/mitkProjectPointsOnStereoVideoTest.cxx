@@ -18,7 +18,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/core_c.h>
 
-bool CheckTransformedPointVector (std::vector <mitk::WorldPointsWithTimingError> points)
+bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> points)
 {
   double Error = 0.0;
   //here are some points calculated indepenently
@@ -27,21 +27,79 @@ bool CheckTransformedPointVector (std::vector <mitk::WorldPointsWithTimingError>
   frame0000points.push_back(cv::Point3d(-14.1034  ,   1.5127 ,  132.9415 ));
   frame0000points.push_back(cv::Point3d(24.3209  ,   3.3657 ,  126.3173));
   frame0000points.push_back(cv::Point3d(26.4292 ,  -23.5841 ,  131.1581));
-  std::vector <cv::Point3d> frame1155points;
   
+  std::vector <cv::Point3d> frame1155points;
   frame1155points.push_back(cv::Point3d(-17.28927 ,  -26.38782 ,  128.45949));
   frame1155points.push_back(cv::Point3d( -18.88983  ,   0.32739 ,  124.57826));
   frame1155points.push_back(cv::Point3d(20.06107  ,   2.37748 ,  123.02983  ));
   frame1155points.push_back(cv::Point3d( 21.62069  , -24.75377 ,  126.98338));
+
+  if ( points[1155]->GetChannel() != "left_lens" )
+  {
+    MITK_ERROR << "Points in left lens returned with wrong channel name " << points[1155]->GetChannel();
+    return false;
+  }
+
+  if ( points[1155]->GetFrameNumber() != 1155 )
+  {
+    MITK_ERROR << "Points in left lens returned with wrong frame number " << points[1155]->GetFrameNumber();
+    return false;
+  }
+
+  if ( points[1155]->GetTimeStamp() != 1374854339638394200 ) //work this out, by default the matcher has no lag, so just check framemap for timestamp and find nearest in tracking director
+  {
+    MITK_ERROR << "Points in left lens returned with wrong time stamp " << points[1155]->GetTimeStamp();
+    return false;
+  }
+  std::vector < mitk::PickedObject > frame0Points = points[0]->GetPickedObjects();
+  std::vector < mitk::PickedObject > frame1155Points = points[1155]->GetPickedObjects();
+
+  if ( ( frame0Points.size() != 12 ) || frame1155Points.size() != 12 )
+  {
+    MITK_ERROR << "Points in left lens returned with wrong point vector size " << frame0Points.size() << " , " << frame1155Points.size();
+    return false;
+  }
+  
   for ( int i = 0 ; i < 4 ; i ++ ) 
   {
-    Error += fabs ( points[0].m_Points[i].m_Point.x - frame0000points[i].x);
-    Error += fabs ( points[0].m_Points[i].m_Point.y - frame0000points[i].y);
-    Error += fabs ( points[0].m_Points[i].m_Point.z - frame0000points[i].z);
+    Error += fabs ( frame0Points[i].m_Points[0].x - frame0000points[i].x);
+    Error += fabs ( frame0Points[i].m_Points[0].y - frame0000points[i].y);
+    Error += fabs ( frame0Points[i].m_Points[0].z - frame0000points[i].z);
 
-    Error += fabs ( points[1155].m_Points[i].m_Point.x - frame1155points[i].x);
-    Error += fabs ( points[1155].m_Points[i].m_Point.y - frame1155points[i].y);
-    Error += fabs ( points[1155].m_Points[i].m_Point.z - frame1155points[i].z);
+    Error += fabs ( frame1155Points[i].m_Points[0].x - frame1155points[i].x);
+    Error += fabs ( frame1155Points[i].m_Points[0].y - frame1155points[i].y);
+    Error += fabs ( frame1155Points[i].m_Points[0].z - frame1155points[i].z);
+
+    if ( ( frame0Points[i].m_TimeStamp != 1374854320028272600 ) || ( frame1155Points[i].m_TimeStamp != 1374854339638394200 ) )
+    {
+      MITK_ERROR << "Points in left lens returned with wrong timestamp for set  " << i << " : " << frame0Points[i].m_TimeStamp << " , " << frame1155Points[i].m_TimeStamp;
+      return false;
+    }
+
+    if ( ( frame0Points[i].m_FrameNumber != 0 ) || ( frame1155Points[i].m_FrameNumber != 1155 ) )
+    {
+      MITK_ERROR << "Points in left lens returned with wrong frame number for set  " << i << " : " << frame0Points[i].m_FrameNumber << " , " << frame1155Points[i].m_FrameNumber;
+      return false;
+    }
+
+
+    if ( ( frame0Points[i].m_Points.size() != 1 ) || ( frame1155Points[i].m_Points.size() != 1 ) )
+    {
+      MITK_ERROR << "Points in left lens returned with wrong point vector size for set  " << i << " : " << frame0Points[i].m_Points.size() << " , " << frame1155Points[i].m_Points.size();
+      return false;
+    }
+
+    if ( ( frame0Points[i].m_Channel != "left_lens" ) || ( frame1155Points[i].m_Channel != "left_lens" ) )
+    {
+      MITK_ERROR << "Points in left lens returned with wrong channel for set  " << i << " : " << frame0Points[i].m_Channel << " , " << frame1155Points[i].m_Channel;
+      return false;
+    }
+
+    if ( ( frame0Points[i].m_IsLine ) || ( frame1155Points[i].m_IsLine ) )
+    {
+      MITK_ERROR << "Points in left lens returned with wrong point type set for set  " << i << " : " << frame0Points[i].m_IsLine << " , " << frame1155Points[i].m_IsLine;
+      return false;
+    }
   }
 
   if ( Error < 2e-3 ) 
@@ -117,7 +175,7 @@ bool CheckReProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projecto
     Error += fabs ( Projector->GetRightReProjectionErrors()[i].z - rightErrors[i].z);
   }
 
-  if ( Error < 3e-2 ) 
+  if ( Error < 4e-2 ) 
   {
     return true;
   }
@@ -246,18 +304,18 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
 
   std::vector < mitk::GoldStandardPoint> leftGS;
   std::vector < mitk::GoldStandardPoint> rightGS;
-  leftGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(664.844, 69.984)));
-  leftGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(628.092, 279.283)));
-  leftGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(1264.44, 296.217)));
-  leftGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(1277.2, 79.8817)));
+  leftGS.push_back(mitk::GoldStandardPoint (1154,-1, cv::Point2d(664.844, 69.984)));
+  leftGS.push_back(mitk::GoldStandardPoint (1154,-1, cv::Point2d(628.092, 279.283)));
+  leftGS.push_back(mitk::GoldStandardPoint (1154,-1, cv::Point2d(1264.44, 296.217)));
+  leftGS.push_back(mitk::GoldStandardPoint (1154,-1, cv::Point2d(1277.2, 79.8817)));
   rightGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(753.793, 68.306)));
   rightGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(711.968, 279.424)));
   rightGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(1365.82, 296.783)));
   rightGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(1380.06, 75.8718)));
-  Projector->SetLeftGoldStandardPoints(leftGS);
-  Projector->SetRightGoldStandardPoints(rightGS);
+  Projector->SetLeftGoldStandardPoints(leftGS, matcher);
+  Projector->SetRightGoldStandardPoints(rightGS, matcher);
   Projector->CalculateProjectionErrors("");
-  Projector->CalculateTriangulationErrors("", matcher);
+  Projector->CalculateTriangulationErrors("");
 
   MITK_TEST_CONDITION(CheckProjectionErrors(Projector), "Testing projection Errors");
   MITK_TEST_CONDITION(CheckReProjectionErrors(Projector), "Testing re-projection Errors");
