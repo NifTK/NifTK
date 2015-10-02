@@ -154,7 +154,7 @@ option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
 option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
-option(BUILD_NIFTYPIPE "Build NiftyPipe: python pipelines." ON)
+option(BUILD_NiftyPipe "Build NiftyPipe: python pipelines." ON)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 # the console window is normally shown only for debug builds. but can be explicitly enabled.
 #if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -510,6 +510,7 @@ mitkFunctionAddExternalProject(NAME NiftySeg OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftyReg OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftyRec OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftyPipe ON ADVANCED)
 
 # These are "hard" dependencies and always set to ON.
 mitkFunctionAddExternalProject(NAME DCMTK ON ADVANCED)
@@ -568,6 +569,12 @@ if (BUILD_VL)
   set(MITK_USE_VL ON CACHE BOOL "" FORCE)
 else()
   set(MITK_USE_VL OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_NiftyPipe)
+  set(MITK_USE_NiftyPipe ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_NiftyPipe OFF CACHE BOOL "" FORCE)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -1638,7 +1645,7 @@ if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
 endif()
 
 # NiftyPipe
-if(BUILD_NIFTYPIPE AND NOT WIN32)
+if(BUILD_NiftyPipe AND NOT WIN32)
   file(GLOB niftypipe_bash_files      ${NiftyPipe_ROOT}/bin/*.sh)
   file(GLOB niftypipe_matlab_files    ${NiftyPipe_ROOT}/bin/*.m)
   file(GLOB niftypipe_python_programs ${NiftyPipe_ROOT}/python/perform_*.py)
