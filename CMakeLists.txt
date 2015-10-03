@@ -549,6 +549,13 @@ endif()
 
 set_property(GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS "")
 #mitkFunctionAddExternalProject(NAME Camino OFF ADVANCED)
+
+mitkFunctionAddExternalProject(NAME ZLIB      OFF ADVANCED NO_PACKAGE NO_CACHE)
+mitkFunctionAddExternalProject(NAME PCRE      OFF ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME SWIG      OFF ADVANCED NO_PACKAGE DEPENDS PCRE)
+mitkFunctionAddExternalProject(NAME Python    OFF          NO_PACKAGE DEPENDS ZLIB SWIG DOC "Use Python wrapping in NifTK")
+mitkFunctionAddExternalProject(NAME Numpy     OFF ADVANCED NO_PACKAGE)
+
 mitkFunctionAddExternalProject(NAME Boost     ON  ADVANCED)
 mitkFunctionAddExternalProject(NAME Eigen     ON  ADVANCED)
 mitkFunctionAddExternalProject(NAME OpenCV    OFF ADVANCED)
@@ -564,12 +571,6 @@ mitkFunctionAddExternalProject(NAME NiftySeg  OFF ADVANCED Eigen)
 mitkFunctionAddExternalProject(NAME NiftyReg  OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftyRec  OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
-
-mitkFunctionAddExternalProject(NAME ZLIB      OFF ADVANCED NO_PACKAGE NO_CACHE)
-mitkFunctionAddExternalProject(NAME PCRE      OFF ADVANCED NO_PACKAGE)
-mitkFunctionAddExternalProject(NAME SWIG      OFF ADVANCED NO_PACKAGE DEPENDS PCRE)
-mitkFunctionAddExternalProject(NAME Python    OFF          NO_PACKAGE DEPENDS ZLIB SWIG DOC "Use Python wrapping in NifTK")
-mitkFunctionAddExternalProject(NAME Numpy     OFF ADVANCED NO_PACKAGE)
 
 mitkFunctionAddExternalProject(NAME DCMTK     ON  ADVANCED)
 mitkFunctionAddExternalProject(NAME GDCM      ON  ADVANCED)
