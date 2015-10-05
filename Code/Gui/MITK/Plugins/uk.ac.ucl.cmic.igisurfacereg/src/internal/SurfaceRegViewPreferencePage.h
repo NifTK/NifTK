@@ -48,6 +48,16 @@ public:
    */
   static const QString MAXIMUM_NUMBER_OF_POINTS;
 
+  /**
+   * \brief Stored the name of the preference node that contains the maximum number of iterations to use in Trimmed Least Squares.
+   */
+  static const QString TLS_ITERATIONS;
+
+  /**
+   * \brief Stored the name of the preference node that contains the percentage to use in Trimmed Least Squares.
+   */
+  static const QString TLS_PERCENTAGE;
+
   SurfaceRegViewPreferencePage();
   SurfaceRegViewPreferencePage(const SurfaceRegViewPreferencePage& other);
   ~SurfaceRegViewPreferencePage();
@@ -80,6 +90,8 @@ private:
   QWidget        *m_MainControl;
   QSpinBox       *m_MaximumIterations;
   QSpinBox       *m_MaximumPoints;
+  QSpinBox       *m_TLSIterations;
+  QSpinBox       *m_TLSPercentage;
   bool            m_Initializing;
 
   berry::IPreferences::Pointer m_SurfaceRegViewPreferencesNode;
