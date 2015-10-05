@@ -280,7 +280,6 @@ private:
    */
   unsigned long int m_LevelWindowPropertyObserverTag;
 
-  std::string m_CachedFileNames;
 };
 
 #endif

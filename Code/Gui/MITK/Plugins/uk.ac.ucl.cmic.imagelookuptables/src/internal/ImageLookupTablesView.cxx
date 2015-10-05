@@ -189,35 +189,30 @@ void ImageLookupTablesView::RetrievePreferenceValues()
     this->BlockSignals(false);
   }
 
-  m_CachedFileNames = prefs->GetByteArray("LABEL_MAP_NAMES", "");
 }
 
 
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::LoadCachedLookupTables()
 {
-  if(m_CachedFileNames.empty())
-    return;
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
-  QString listString = QString::fromStdString(m_CachedFileNames);
+  berry::IBerryPreferences::Pointer prefs
+    = (prefService->GetSystemPreferences()->Node(VIEW_ID)).Cast<berry::IBerryPreferences>();
 
-  if (listString.isNull() || listString.isEmpty())
+  assert(prefs);
+  QString cachedFileNames = prefs->Get("LABEL_MAP_NAMES", "");
+
+  if (cachedFileNames.isNull() || cachedFileNames.isEmpty())
     return;
 
   QmitkLookupTableProviderService* lutService
     = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
 
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
-
-  berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(VIEW_ID))
-        .Cast<berry::IBerryPreferences>();
 
   prefs->PutBool("InBlockUpdate", true);
 
-  QStringList labelList = listString.split(",");
+  QStringList labelList = cachedFileNames.split(",");
   QStringList removedItems;
   int skippedItems = 0;
 
@@ -231,9 +226,7 @@ void ImageLookupTablesView::LoadCachedLookupTables()
       continue;
     }
     
-    std::string currLabelPath = prefs->GetByteArray(currLabelName.toStdString(), "");
-    QString filenameWithPath = QString::fromStdString(currLabelPath);
-
+    QString filenameWithPath = prefs->Get(currLabelName, "");
     QString lutName = this->LoadLookupTable(filenameWithPath);
 
     if (lutName.isEmpty())
@@ -244,10 +237,10 @@ void ImageLookupTablesView::LoadCachedLookupTables()
   {
     // Tidy up preferences: remove entries that don't exist
     for (int i = 0; i < removedItems.size(); i++)
-      prefs->Remove(removedItems.at(i).toStdString());
+      prefs->Remove(removedItems.at(i));
 
     // Update the list of profile names
-    prefs->PutByteArray("LABEL_MAP_NAMES", listString.toStdString());
+    prefs->Put("LABEL_MAP_NAMES", cachedFileNames);
   }
 
   // End of block update
@@ -769,10 +762,7 @@ void ImageLookupTablesView::OnLoadButtonPressed()
   if(index > -1)
     m_Controls->m_LookupTableComboBox->setCurrentIndex(index); 
 
-    berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
-
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   berry::IBerryPreferences::Pointer prefs
       = (prefService->GetSystemPreferences()->Node(VIEW_ID))
         .Cast<berry::IBerryPreferences>();
@@ -780,19 +770,20 @@ void ImageLookupTablesView::OnLoadButtonPressed()
   prefs->PutBool("InBlockUpdate", true);
 
   // save the file to the list of names if not present
+  QString cachedFileNames = prefs->Get("LABEL_MAP_NAMES", "");
 
   QString labelName = QFileInfo(filenameWithPath).baseName();
-  std::size_t found = m_CachedFileNames.find(labelName.toStdString());
-  if( found == std::string::npos )
+ 
+  if (!cachedFileNames.contains(labelName))
   {
-    m_CachedFileNames.append(",");
-    m_CachedFileNames.append(labelName.toStdString().c_str());
+    cachedFileNames.append(",");
+    cachedFileNames.append(labelName.toStdString().c_str());
 
-    prefs->PutByteArray("LABEL_MAP_NAMES", m_CachedFileNames);
+    prefs->Put("LABEL_MAP_NAMES", cachedFileNames);
   }
 
   // update the cached location of the file
-  prefs->PutByteArray(labelName.toStdString(), filenameWithPath.toStdString());
+  prefs->Put(labelName, filenameWithPath);
 
   prefs->PutBool("InBlockUpdate", false);
 }
@@ -860,31 +851,28 @@ void ImageLookupTablesView::OnSaveButtonPressed()
 
   lutService->ReplaceLookupTableContainer(newLUT, newLUT->GetDisplayName());
 
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(VIEW_ID))
-        .Cast<berry::IBerryPreferences>();
+      = (prefService->GetSystemPreferences()->Node(VIEW_ID)).Cast<berry::IBerryPreferences>();
 
   prefs->PutBool("InBlockUpdate", true);
 
-  // save the file to the list of names if not present
-  std::size_t found = m_CachedFileNames.find(labelName.toStdString());
-  if( found == std::string::npos )
-  {
-    m_CachedFileNames.append(",");
-    m_CachedFileNames.append(labelName.toStdString().c_str());
+  QString cachedFileNames;
+  prefs->Get("LABEL_MAP_NAMES", cachedFileNames);
 
-    prefs->PutByteArray("LABEL_MAP_NAMES", m_CachedFileNames);
+  // save the file to the list of names if not present
+  if (!cachedFileNames.contains(labelName))
+  {
+    cachedFileNames.append(",");
+    cachedFileNames.append(labelName.toStdString().c_str());
+
+    prefs->Put("LABEL_MAP_NAMES", cachedFileNames);
   }
 
   // update the cached location of the file
-  prefs->PutByteArray(labelName.toStdString(), fileNameAndPath.toStdString());
-
+  prefs->Put(labelName, fileNameAndPath);
   prefs->PutBool("InBlockUpdate", false);
-
 }
 
 
