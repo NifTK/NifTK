@@ -19,12 +19,12 @@
 
 # Sanity checks
 if(DEFINED NiftyPipe_DIR AND NOT EXISTS ${NiftyPipe_DIR})
-  message(FATAL_ERROR "NiftyPipe_ROOT variable is defined but corresponds to non-existing directory \"${NiftyPipe_DIR}\".")
+  message(FATAL_ERROR "NiftyPipe_DIR variable is defined but corresponds to non-existing directory \"${NiftyPipe_DIR}\".")
 endif()
 
 if(BUILD_NiftyPipe)
   
-  set(version "7f2a18e583")
+  set(version "a2303e2666")
   set(location "git@cmiclab.cs.ucl.ac.uk:CMIC/NiftyPipe")
 
   niftkMacroDefineExternalProjectVariables(NiftyPipe ${version} ${location})
@@ -51,8 +51,8 @@ if(BUILD_NiftyPipe)
         ${EP_COMMON_CACHE_DEFAULT_ARGS}
       DEPENDS ${proj_DEPENDENCIES}
       )
-
     set(NiftyPipe_DIR ${proj_INSTALL})
+    set(NiftyPipe_ROOT ${proj_INSTALL})
 
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
     mitkFunctionInstallExternalCMakeProject(${proj})
