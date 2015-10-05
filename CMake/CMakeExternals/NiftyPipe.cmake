@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_NiftyPipe)
   
-  set(version "d00c0d7302")
+  set(version "7f2a18e583")
   set(location "git@cmiclab.cs.ucl.ac.uk:CMIC/NiftyPipe")
 
   niftkMacroDefineExternalProjectVariables(NiftyPipe ${version} ${location})
