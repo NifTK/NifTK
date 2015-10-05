@@ -15,8 +15,6 @@
 #include "mitkLabeledLookupTablePropertySerializer.h"
 #include "mitkLabeledLookupTableProperty.h"
 
-#include <qstring.h>
-
 namespace mitk
 {
 
@@ -47,7 +45,7 @@ TiXmlElement* LabeledLookupTablePropertySerializer::Serialize()
     {
       TiXmlElement* grandChildNinife = new TiXmlElement("Label");
       double value = prop->GetLabels().at(index).first;
-      std::string name;// = prop->GetLabels().at(index).second.toStdString();
+      std::string name = prop->GetLabels().at(index).second.toStdString();
 
       grandChildNinife->SetDoubleAttribute("LabelValue",value);
       grandChildNinife->SetAttribute("LabelName",name);
@@ -85,8 +83,8 @@ BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(TiXmlEle
       if ( grandChild->QueryDoubleAttribute("LabelValue", &value) != TIXML_SUCCESS ) return NULL;
       if ( grandChild->QueryStringAttribute("LabelName", &labelName) != TIXML_SUCCESS ) return NULL;
 
-      //LabeledLookupTableProperty::LabelType newLabel;// = std::make_pair(int(value), QString::fromStdString(labelName));
-      //labels.push_back(newLabel);
+      LabeledLookupTableProperty::LabelType newLabel = std::make_pair(int(value), QString::fromStdString(labelName));
+      labels.push_back(newLabel);
       }
 
      labeledLUT->SetLabels(labels);
