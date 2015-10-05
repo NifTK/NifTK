@@ -63,8 +63,17 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
          <property name="toolTip">
-          <string extracomment="Save the current label map"/>
+          <string>Save a Labeled Lookup Table</string>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="whatsThis">
+          <string/>
          </property>
          <property name="text">
           <string/>
@@ -89,8 +98,17 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="mouseTracking">
+          <bool>false</bool>
+         </property>
          <property name="toolTip">
-          <string extracomment="Create a new label map"/>
+          <string>Create a New Labeled Lookup Table</string>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="whatsThis">
+          <string/>
          </property>
          <property name="text">
           <string/>
@@ -109,8 +127,17 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="mouseTracking">
+          <bool>true</bool>
+         </property>
          <property name="toolTip">
-          <string extracomment="Load a lookup table from file"/>
+          <string>Load a Lookup Table</string>
+         </property>
+         <property name="statusTip">
+          <string/>
+         </property>
+         <property name="whatsThis">
+          <string/>
          </property>
          <property name="text">
           <string/>
