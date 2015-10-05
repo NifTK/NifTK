@@ -456,6 +456,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
       -Daruco_DIR:PATH=${aruco_DIR}
       -Dapriltags_DIR:PATH=${apriltags_DIR}
+      -DNiftyPipe_ROOT:PATH=${NiftyPipe_ROOT}
     DEPENDS ${proj_DEPENDENCIES}
   )
 
