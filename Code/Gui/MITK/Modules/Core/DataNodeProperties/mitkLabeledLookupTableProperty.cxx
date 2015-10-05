@@ -14,6 +14,8 @@
 
 #include "mitkLabeledLookupTableProperty.h"
 
+#include <qstring.h>
+
 namespace mitk {
 
 //-----------------------------------------------------------------------------
