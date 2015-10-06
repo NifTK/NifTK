@@ -96,13 +96,13 @@ if(NOT DEFINED MITK_DIR)
            -DMITK_USE_Python:BOOL=${MITK_USE_Python}
           )
       list(APPEND proj_DEPENDENCIES Python)
+      foreach(dep ZLIB PCRE SWIG SimpleITK Numpy)
+        if(${MITK_USE_${dep}})
+          list(APPEND proj_DEPENDENCIES ${dep})
+          list(APPEND mitk_optional_cache_args -DMITK_USE_${dep}:BOOL=${MITK_USE_${dep}} -D${dep}_DIR:PATH=${${dep}_DIR} )
+        endif()
+      endforeach()
     endif()
-    foreach(dep ZLIB PCRE SWIG SimpleITK Numpy)
-      if(${MITK_USE_${dep}})
-        list(APPEND proj_DEPENDENCIES ${dep})
-        list(APPEND mitk_optional_cache_args -DMITK_USE_${dep}:BOOL=${MITK_USE_${dep}} -D${dep}_DIR:PATH=${${dep}_DIR} )
-      endif()
-    endforeach()
 
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
