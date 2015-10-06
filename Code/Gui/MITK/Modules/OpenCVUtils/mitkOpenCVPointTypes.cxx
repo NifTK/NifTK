@@ -479,8 +479,9 @@ PickedObject PickedObject::CopyByHeader() const
 //-----------------------------------------------------------------------------
 double PickedObject::DistanceTo(const PickedObject& otherPickedObject , cv::Point3d& deltas,  const long long& allowableTimingError) const
 {
-  if ( ! otherPickedObject.HeadersMatch (*this) )
+  if ( ( ! otherPickedObject.HeadersMatch (*this) ) || ( otherPickedObject.m_Points.size() < 1 ) || ( m_Points.size() < 1 ) )
   {
+    deltas = cv::Point3d (  std::numeric_limits<double>::infinity(),  std::numeric_limits<double>::infinity(),  std::numeric_limits<double>::infinity() );
     return std::numeric_limits<double>::infinity();
   }
   if ( m_IsLine )
@@ -855,6 +856,28 @@ unsigned int PickedPointList::AddPoint(const cv::Point3d& point, cv::Scalar scal
   return m_PickedObjects.size();
 }
 
+//-----------------------------------------------------------------------------
+void PickedPointList::AddDummyPointIfNotPresent ( const mitk::PickedObject& target )
+{
+  for ( std::vector < mitk::PickedObject >::iterator it = m_PickedObjects.begin() ;  it < m_PickedObjects.end() ; ++it )
+  {
+    if ( ( it->m_IsLine == target.m_IsLine ) && ( it->m_Id == target.m_Id ) )
+    {
+      return;
+    }
+  }
+  if ( target.m_IsLine )
+  {
+    MITK_INFO << "Adding dummy line with ID " << target.m_Id << " to picked object vector";
+  }
+  else
+  {
+    MITK_INFO << "Adding dummy point with ID " << target.m_Id << " to picked object vector";
+  }
+
+  mitk::PickedObject copy = target.CopyByHeader();
+  m_PickedObjects.push_back(copy);
+}
 
 //-----------------------------------------------------------------------------
 unsigned int PickedPointList::RemoveLastPoint()

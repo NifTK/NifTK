@@ -226,32 +226,12 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     m_WorldPoints = mitk::PickedPointList::New();
     m_WorldPoints->SetChannel("world");
   }
-  if ( static_cast<int>(m_WorldPoints->GetNumberOfPoints()) < m_MaxGoldStandardPointIndex + 1) 
+
+  //check there is a world point for every gold standar
+  for ( std::vector < mitk::PickedObject >::iterator it = m_GoldStandardPoints.begin() ; it < m_GoldStandardPoints.end() ; ++ it )
   {
-    MITK_INFO << "Filling world points with dummy points to enable triangulation";
-    cv::Point2i emptyWorldPoint;
-    m_WorldPoints->SetInOrderedMode(true);
-
-    for ( int i = m_WorldPoints->GetNumberOfPoints() ; i <= m_MaxGoldStandardPointIndex ; i ++ )
-    {
-      m_WorldPoints->AddPoint(emptyWorldPoint);
-    }
+    m_WorldPoints->AddDummyPointIfNotPresent ( *it );
   }
-  if ( static_cast<int>(m_WorldPoints->GetNumberOfLines()) < m_MaxGoldStandardLineIndex + 1 ) 
-  {
-    MITK_INFO << "Filling world points with dummy lines to enable triangulation";
-    cv::Point2i emptyWorldPoint;
-    m_WorldPoints->SetInLineMode(true);
-    m_WorldPoints->SetInOrderedMode(true);
-
-    for ( int i = m_WorldPoints->GetNumberOfLines() ; i <= m_MaxGoldStandardLineIndex ; i ++ )
-    {
-      m_WorldPoints->AddPoint(emptyWorldPoint);
-      m_WorldPoints->SkipOrderedPoint();
-    }
-    m_WorldPoints->SetInLineMode(false);
-  }
-
 
   if ( ! ( m_DontProject ) && ( m_WorldPoints->GetListSize() == 0) )
   {
