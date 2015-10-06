@@ -250,6 +250,12 @@ public:
   unsigned int RemoveLastPoint ();
   unsigned int SkipOrderedPoint ();
 
+  /**
+   * \brief checks the picked object vector to see if it contains a picked object of same type and ID as target
+   * if not it adds a dummy point to the vector
+   */
+  void AddDummyPointIfNotPresent ( const mitk::PickedObject& target );
+
   mitk::PickedPointList::Pointer CopyByHeader();
 
 protected:
