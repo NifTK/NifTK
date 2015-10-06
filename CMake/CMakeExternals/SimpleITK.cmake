@@ -101,7 +101,7 @@ if(MITK_USE_SimpleITK)
        DEPENDS ${proj_DEPENDENCIES}
       )
 
-    set(SimpleITK_DIR ${proj_INSTALL}/lib/cmake/SimpleITK-0.8)
+    set(SimpleITK_DIR ${proj_INSTALL})
 
     if( MITK_USE_Python )
       set(_sitk_build_dir ${proj_BUILD})
