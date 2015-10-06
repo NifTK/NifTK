@@ -30,6 +30,8 @@ namespace ICPBasedRegistrationConstants
 {
 static const int DEFAULT_MAX_ITERATIONS = 2000;
 static const int DEFAULT_MAX_POINTS = 8000;
+static const int DEFAULT_TLS_ITERATIONS = 0; // Zero means 'off'.
+static const int DEFAULT_TLS_PERCENTAGE = 50; // Should be (0-100].
 }
 
 /**
@@ -47,7 +49,8 @@ public:
   itkSetMacro(MaximumNumberOfLandmarkPointsToUse, int);
   itkSetMacro(CameraNode, mitk::DataNode::Pointer);
   itkSetMacro(FlipNormals, bool);
-
+  itkSetMacro(TLSIterations, unsigned int);
+  itkSetMacro(TLSPercentage, unsigned int);
 
   /**
   * \brief Runs ICP registration.
@@ -84,6 +87,8 @@ private:
 
   int                           m_MaximumIterations;
   int                           m_MaximumNumberOfLandmarkPointsToUse;
+  unsigned int                  m_TLSIterations;
+  unsigned int                  m_TLSPercentage;
   mitk::DataNode::Pointer       m_CameraNode;
   bool                          m_FlipNormals;
 

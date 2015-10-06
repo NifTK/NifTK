@@ -34,6 +34,8 @@ namespace niftk
 ICPBasedRegistration::ICPBasedRegistration()
 : m_MaximumIterations(ICPBasedRegistrationConstants::DEFAULT_MAX_ITERATIONS)
 , m_MaximumNumberOfLandmarkPointsToUse(ICPBasedRegistrationConstants::DEFAULT_MAX_POINTS)
+, m_TLSIterations(ICPBasedRegistrationConstants::DEFAULT_TLS_ITERATIONS)
+, m_TLSPercentage(ICPBasedRegistrationConstants::DEFAULT_TLS_PERCENTAGE)
 , m_CameraNode(NULL)
 , m_FlipNormals(false)
 {
@@ -68,6 +70,8 @@ double ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
     niftk::VTKIterativeClosestPoint *icp = new  niftk::VTKIterativeClosestPoint();
     icp->SetICPMaxLandmarks(m_MaximumNumberOfLandmarkPointsToUse);
     icp->SetICPMaxIterations(m_MaximumIterations);
+    icp->SetTLSIterations(m_TLSIterations);
+    icp->SetTLSPercentage(m_TLSPercentage);
     icp->SetSource(movingPoly);
     icp->SetTarget(fixedPoly);
 

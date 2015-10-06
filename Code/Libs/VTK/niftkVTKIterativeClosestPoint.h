@@ -92,7 +92,7 @@ public:
   void SetTLSIterations(unsigned int);
 
   /**
-   * \brief Set the TLS percentage [0 - 100], default 50.
+   * \brief Set the TLS percentage [1 - 100], default 50.
    */
   void SetTLSPercentage(unsigned int);
 

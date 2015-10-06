@@ -54,6 +54,20 @@ void ICPRegService::Configure(const us::ServiceProperties& properties)
     m_Registerer->SetMaximumIterations(maxIterations);
     MITK_INFO << "Configured ICPRegService[MaxIterations]=" << maxIterations;
   }
+
+  if (properties.find("TLSIterations") != properties.end())
+  {
+    int tlsIterations = us::any_cast<unsigned int>((*(properties.find("TLSIterations"))).second);
+    m_Registerer->SetTLSIterations(tlsIterations);
+    MITK_INFO << "Configured ICPRegService[TLSIterations]=" << tlsIterations;
+  }
+
+  if (properties.find("TLSPercentage") != properties.end())
+  {
+    int tlsPercentage = us::any_cast<unsigned int>((*(properties.find("TLSPercentage"))).second);
+    m_Registerer->SetTLSPercentage(tlsPercentage);
+    MITK_INFO << "Configured ICPRegService[TLSPercentage]=" << tlsPercentage;
+  }
 }
 
 
