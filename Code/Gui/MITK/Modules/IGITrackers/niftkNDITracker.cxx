@@ -68,9 +68,15 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   m_TrackerDevice->SetDeviceName(m_DeviceData.Model);
   m_TrackerDevice->SetPortNumber(m_PortNumber);
 
-  // The point of RAII is that the constructor has successfully acquired all
-  // resources, so we should try connecting. The way to disconnect it to delete this object.
-  this->OpenConnection();
+  m_TrackerSource = mitk::TrackingDeviceSource::New();
+  m_TrackerSource->SetTrackingDevice(m_TrackerDevice);
+
+  // Put a delay filter in for calibration.
+  m_DelayFilter = mitk::NavigationDataDelayFilter::New(0);
+  for (unsigned int i = 0; i < m_TrackerSource->GetNumberOfOutputs(); i++)
+  {
+    m_DelayFilter->SetInput(i, m_TrackerSource->GetOutput(i));
+  }
 
   // Try loading a volume of interest. This is optional, but do it up-front.
   m_TrackingVolumeGenerator = mitk::TrackingVolumeGenerator::New();
@@ -88,6 +94,10 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   m_TrackingVolumeNode->SetColor(red);
   m_TrackingVolumeNode->SetOpacity(0.25);
   m_DataStorage->Add(m_TrackingVolumeNode);
+
+  // The point of RAII is that the constructor has successfully acquired all
+  // resources, so we should try connecting. The way to disconnect it to delete this object.
+  this->OpenConnection();
 }
 
 
@@ -195,6 +205,52 @@ bool NDITracker::GetVisibilityOfTrackingVolume() const
 {
   bool result = false;
   m_TrackingVolumeNode->GetBoolProperty("visible", result);
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void NDITracker::SetDelayInMilliseconds(unsigned int delay)
+{
+  m_DelayFilter->SetDelay(delay);
+}
+
+
+//-----------------------------------------------------------------------------
+void NDITracker::Update()
+{
+  m_DelayFilter->Update();
+}
+
+
+//-----------------------------------------------------------------------------
+std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > NDITracker::GetTrackingData()
+{
+  m_DelayFilter->Update();
+
+  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result;
+
+  for(unsigned int i=0; i< m_DelayFilter->GetNumberOfIndexedOutputs(); i++)
+  {
+    mitk::NavigationData::Pointer currentTool = m_DelayFilter->GetOutput(i);
+    if(currentTool->IsDataValid())
+    {
+      std::string name = currentTool->GetName();
+      mitk::Matrix3D rotation = currentTool->GetRotationMatrix();
+      mitk::Point3D position = currentTool->GetPosition();
+      vtkSmartPointer<vtkMatrix4x4> transform = vtkSmartPointer<vtkMatrix4x4>::New();
+      transform->Identity();
+      for (int r = 0; r < 3; r++)
+      {
+        for (int c = 0; c < 3; c++)
+        {
+          transform->SetElement(r, c, rotation[r][c]);
+        }
+        transform->SetElement(r, 3, position[r]);
+      }
+      result.insert(std::pair<std::string, vtkSmartPointer<vtkMatrix4x4> >(name, transform));
+    }
+  }
   return result;
 }
 

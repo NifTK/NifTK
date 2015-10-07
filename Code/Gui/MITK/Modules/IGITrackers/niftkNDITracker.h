@@ -22,10 +22,13 @@
 #include <mitkCommon.h>
 #include <mitkDataStorage.h>
 #include <mitkNavigationToolStorage.h>
+#include <mitkTrackingDeviceSource.h>
+#include <mitkNavigationDataDelayFilter.h>
 #include <mitkNDITrackingDevice.h>
 #include <mitkSerialCommunication.h>
 #include <mitkTrackingVolumeGenerator.h>
 #include <mitkTrackingTypes.h>
+#include <map>
 
 namespace niftk
 {
@@ -45,6 +48,9 @@ public:
   void StopTracking();
   void SetVisibilityOfTrackingVolume(bool isVisible);
   bool GetVisibilityOfTrackingVolume() const;
+  void SetDelayInMilliseconds(unsigned int);
+  void Update();
+  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData();
 
 protected:
 
@@ -65,17 +71,19 @@ private:
   void CloseConnection();
 
   // Passed in via constructor.
-  mitk::DataStorage::Pointer             m_DataStorage;
-  mitk::SerialCommunication::PortNumber  m_PortNumber;
-  mitk::TrackingDeviceType               m_DeviceType;
-  mitk::TrackingDeviceData               m_DeviceData;
-  std::string                            m_ToolConfigFileName;
+  mitk::DataStorage::Pointer               m_DataStorage;
+  mitk::SerialCommunication::PortNumber    m_PortNumber;
+  mitk::TrackingDeviceType                 m_DeviceType;
+  mitk::TrackingDeviceData                 m_DeviceData;
+  std::string                              m_ToolConfigFileName;
 
   // Created during constructor.
-  mitk::NavigationToolStorage::Pointer   m_NavigationToolStorage;
-  mitk::NDITrackingDevice::Pointer       m_TrackerDevice;
-  mitk::TrackingVolumeGenerator::Pointer m_TrackingVolumeGenerator;
-  mitk::DataNode::Pointer                m_TrackingVolumeNode;
+  mitk::NavigationToolStorage::Pointer     m_NavigationToolStorage;
+  mitk::NDITrackingDevice::Pointer         m_TrackerDevice;
+  mitk::TrackingDeviceSource::Pointer      m_TrackerSource;
+  mitk::NavigationDataDelayFilter::Pointer m_DelayFilter;
+  mitk::TrackingVolumeGenerator::Pointer   m_TrackingVolumeGenerator;
+  mitk::DataNode::Pointer                  m_TrackingVolumeNode;
 
 }; // end class
 

@@ -60,4 +60,25 @@ bool NDIBaseTracker::GetVisibilityOfTrackingVolume() const
   return m_Tracker->GetVisibilityOfTrackingVolume();
 }
 
+
+//-----------------------------------------------------------------------------
+void NDIBaseTracker::SetDelayInMilliseconds(unsigned int delay)
+{
+  m_Tracker->SetDelayInMilliseconds(delay);
+}
+
+
+//-----------------------------------------------------------------------------
+void NDIBaseTracker::Update()
+{
+  m_Tracker->Update();
+}
+
+
+//-----------------------------------------------------------------------------
+std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > NDIBaseTracker::GetTrackingData()
+{
+  return m_Tracker->GetTrackingData();
+}
+
 } // end namespace

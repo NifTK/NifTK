@@ -17,6 +17,8 @@
 
 #include <niftkIGITrackersExports.h>
 #include "niftkNDITracker.h"
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 
 namespace niftk
 {
@@ -32,11 +34,15 @@ public:
   mitkClassMacroItkParent(NDIBaseTracker, itk::Object);
   itkNewMacro(NDIBaseTracker);
 
+  itkGetMacro(PreferredFramesPerSecond, int);
+
   void StartTracking();
   void StopTracking();
   void SetVisibilityOfTrackingVolume(bool isVisible);
   bool GetVisibilityOfTrackingVolume() const;
-  itkGetMacro(PreferredFramesPerSecond, int);
+  void SetDelayInMilliseconds(unsigned int);
+  void Update();
+  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData();
 
 protected:
 

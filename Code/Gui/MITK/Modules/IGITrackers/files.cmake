@@ -21,4 +21,3 @@ set(CPP_FILES
   niftkAuroraDomeTracker.cxx
   niftkAuroraTableTopTracker.cxx
 )
-

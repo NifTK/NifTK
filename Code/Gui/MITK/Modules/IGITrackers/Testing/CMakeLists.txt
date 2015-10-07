@@ -18,4 +18,7 @@ if(TARGET ${TESTDRIVER})
 
   mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES )
 
+mitkAddCustomModuleTest(NDIPolarisTest niftkNDIConnectionTest Polaris ${NIFTK_DATA_DIR}/Input/SmartLiverSurgeryPolaris.IGTToolStorage 4)
+mitkAddCustomModuleTest(NDIAuroraTest  niftkNDIConnectionTest Aurora  ${NIFTK_DATA_DIR}/Input/SmartLiverSurgeryAurora.IGTToolStorage 3)
+
 endif()
