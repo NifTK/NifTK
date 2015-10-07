@@ -992,19 +992,19 @@ QVariant QmitkCommonAppsApplicationPlugin::ParsePropertyValue(const QString& pro
       || propertyValue == QString("on")
       || propertyValue == QString("yes"))
   {
-    propertyTypedValue = QVariant(true);
+    propertyTypedValue.setValue(true);
   }
   else if (propertyValue == QString("false")
            || propertyValue == QString("off")
            || propertyValue == QString("no"))
   {
-    propertyTypedValue = QVariant(false);
+    propertyTypedValue.setValue(false);
   }
   else if (propertyValue.size() >= 2
            && ((propertyValue[0] == '\'' && propertyValue[propertyValue.size() - 1] == '\'')
                || (propertyValue[0] == '"' && propertyValue[propertyValue.size() - 1] == '"')))
   {
-    propertyTypedValue = QVariant(propertyValue.mid(1, propertyValue.size() - 2));
+    propertyTypedValue.setValue(propertyValue.mid(1, propertyValue.size() - 2));
   }
   else
   {
@@ -1012,14 +1012,14 @@ QVariant QmitkCommonAppsApplicationPlugin::ParsePropertyValue(const QString& pro
     int intValue = propertyValue.toInt(&ok);
     if (ok)
     {
-      propertyTypedValue = QVariant(intValue);
+      propertyTypedValue.setValue(intValue);
     }
     else
     {
       double doubleValue = propertyValue.toDouble(&ok);
       if (ok)
       {
-        propertyTypedValue = QVariant(doubleValue);
+        propertyTypedValue.setValue(doubleValue);
       }
       else
       {
@@ -1040,10 +1040,11 @@ QVariant QmitkCommonAppsApplicationPlugin::ParsePropertyValue(const QString& pro
               propertyTypedValue.setValue(range);
             }
           }
-          if (!ok)
-          {
-            propertyTypedValue = QVariant(propertyValue);
-          }
+        }
+
+        if (!ok)
+        {
+          propertyTypedValue.setValue(propertyValue);
         }
       }
     }
