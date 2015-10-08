@@ -509,18 +509,14 @@ mitkFunctionAddExternalProject(NAME NiftySeg OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftyReg OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftyRec OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
-
-# These are "hard" dependencies and always set to ON.
 mitkFunctionAddExternalProject(NAME DCMTK ON ADVANCED)
 mitkFunctionAddExternalProject(NAME GDCM ON ADVANCED)
 mitkFunctionAddExternalProject(NAME ITK ON ADVANCED NO_CACHE DEPENDS GDCM)
 mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON ADVANCED DEPENDS ITK)
 mitkFunctionAddExternalProject(NAME VTK ON ADVANCED NO_CACHE)
 mitkFunctionAddExternalProject(NAME CTK ON ADVANCED DEPENDS QT ITK VTK DCMTK)
-mitkFunctionAddExternalProject(NAME MITK ON ADVANCED NO_CACHE DEPENDS ITK VTK GDCM DCMTK CTK Eigen)
-
-# Further optional dependencies.
 mitkFunctionAddExternalProject(NAME PCL OFF ADVANCED Boost Eigen FLANN VTK)
+mitkFunctionAddExternalProject(NAME MITK ON ADVANCED NO_CACHE DEPENDS ITK VTK GDCM DCMTK CTK Eigen)
 
 # -----------------------------------------
 # Other MITK_USE_* options not related to external projects build via the NifTK superbuild
