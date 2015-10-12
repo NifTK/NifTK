@@ -77,14 +77,14 @@ struct QmitkSingleViewerEditorPartListener : public berry::IPartListener
 
 
   //-----------------------------------------------------------------------------
-  Events::Types GetPartEventTypes() const
+  Events::Types GetPartEventTypes() const override
   {
     return Events::CLOSED | Events::HIDDEN | Events::VISIBLE;
   }
 
 
   //-----------------------------------------------------------------------------
-  void PartClosed (berry::IWorkbenchPartReference::Pointer partRef)
+  void PartClosed(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
     if (partRef->GetId() == QmitkSingleViewerEditor::EDITOR_ID)
     {
@@ -100,7 +100,7 @@ struct QmitkSingleViewerEditorPartListener : public berry::IPartListener
 
 
   //-----------------------------------------------------------------------------
-  void PartHidden (berry::IWorkbenchPartReference::Pointer partRef)
+  void PartHidden(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
     if (partRef->GetId() == QmitkSingleViewerEditor::EDITOR_ID)
     {
@@ -116,7 +116,7 @@ struct QmitkSingleViewerEditorPartListener : public berry::IPartListener
 
 
   //-----------------------------------------------------------------------------
-  void PartVisible (berry::IWorkbenchPartReference::Pointer partRef)
+  void PartVisible(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
     if (partRef->GetId() == QmitkSingleViewerEditor::EDITOR_ID)
     {
