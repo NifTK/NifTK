@@ -55,12 +55,12 @@ public:
 
 private:
 
-  Events::Types GetPartEventTypes() const
+  Events::Types GetPartEventTypes() const override
   {
     return Events::VISIBLE;
   }
 
-  void PartVisible(berry::IWorkbenchPartReference::Pointer partRef)
+  void PartVisible(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
     berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
 
