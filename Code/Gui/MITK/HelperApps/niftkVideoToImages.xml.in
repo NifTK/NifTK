@@ -33,8 +33,8 @@
   </parameters>
   
   <parameters>
-    <label>Mandatory Parameters</label>
-    <description><![CDATA[Parameters that control the calibration]]></description>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Additional optional parameters]]></description>
    
     <boolean>
       <name>ignoreVideoReadFail</name>
@@ -45,13 +45,21 @@
     </boolean>
     
     <integer>
-	<name>framesToUse</name>
-	<longflag>framesToUse</longflag>
-	<description>If zero or greater, stop processing after n frames</description>
-	<label>If zero or greater, stop processing after n frames</label>
-	<default>10</default>
+      <name>framesToUse</name>
+      <longflag>framesToUse</longflag>
+      <description>If zero or greater, stop processing after n frames</description>
+      <label>If zero or greater, stop processing after n frames</label>
+      <default>10</default>
     </integer>
  
+    <file>
+      <name>timeStamps</name>
+      <longflag>timeStamps</longflag>
+      <description>A file of timestamps to pick.</description>
+      <label>Timestamps</label>
+      <channel>input</channel>
+    </file>
+
   </parameters>
   
 </executable>

@@ -21,6 +21,7 @@
 #include <mitkOpenCVFileIOUtils.h>
 #include <niftkFileHelper.h>
 #include <niftkVideoToImagesCLP.h>
+#include <set>
 
 int main(int argc, char** argv)
 {
@@ -29,6 +30,44 @@ int main(int argc, char** argv)
 
   try
   {
+
+    std::set<unsigned long long> setOfTimeStamps;
+
+    // Early exit if main input directory not specified.
+    if (videoInputDirectory.size() == 0)
+    {
+      commandLine.getOutput()->usage(commandLine);
+      return returnStatus;
+    }
+
+    // Error if input directory does not exist.
+    if (!niftk::DirectoryExists(videoInputDirectory))
+    {
+      mitkThrow() << "Directory:" << videoInputDirectory << ", doesn't exist!";
+    }
+
+    // If user specifies a list of timeStamps, we should load that.
+    if (timeStamps.size() > 0)
+    {
+      if (!niftk::FileExists(timeStamps))
+      {
+        mitkThrow() << "File:" << timeStamps << ", doesn't exist";
+      }
+      std::fstream fs;
+      fs.open(timeStamps, std::fstream::in);
+      if (!fs.is_open())
+      {
+        mitkThrow() << "Failed to open:" << timeStamps;
+      }
+      while(fs.good())
+      {
+        unsigned long long timeInNanoseconds;
+        fs >> timeInNanoseconds;
+        setOfTimeStamps.insert(timeInNanoseconds);
+      }
+      std::cout << "Read " << setOfTimeStamps.size() << " timestamps." << std::endl;
+    }
+
     std::vector <std::string> videoFiles = niftk::FindVideoData(videoInputDirectory);
     std::vector <std::string> frameMapFiles = mitk::FindVideoFrameMapFiles(videoInputDirectory);
 
@@ -66,7 +105,6 @@ int main(int argc, char** argv)
       return returnStatus;
     }
 
-
     std::ifstream* fin = new std::ifstream(frameMapFiles[0].c_str());
 
     if ( (! capture) || (!fin) )
@@ -94,9 +132,14 @@ int main(int argc, char** argv)
         MITK_ERROR << "Caught exception:" << e.what();
         break;
       }
-      frame.WriteToFile(outputPrefix);
-      
-      framecount ++;
+
+      if (setOfTimeStamps.size() == 0 // user did not specify timestamps
+          || setOfTimeStamps.find(frame.GetTimeStamp()) != setOfTimeStamps.end() // user specified timestamps, and it matches.
+          )
+      {
+        frame.WriteToFile(outputPrefix);
+        framecount ++;
+      }
     }
 
     returnStatus = EXIT_SUCCESS;
