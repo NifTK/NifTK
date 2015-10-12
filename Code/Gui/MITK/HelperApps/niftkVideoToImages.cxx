@@ -65,7 +65,7 @@ int main(int argc, char** argv)
         fs >> timeInNanoseconds;
         setOfTimeStamps.insert(timeInNanoseconds);
       }
-      std::cout << "Read " << setOfTimeStamps.size() << " timestamps." << std::endl;
+      MITK_INFO << "Read " << setOfTimeStamps.size() << " timestamps." << std::endl;
     }
 
     std::vector <std::string> videoFiles = niftk::FindVideoData(videoInputDirectory);
@@ -113,9 +113,10 @@ int main(int argc, char** argv)
       exit(1);
     }
     
-    unsigned int framecount = 0 ;
-    if ( framesToUse < 0 ) 
+    unsigned long framecount = 0 ;
+    if ( framesToUse < 0 || setOfTimeStamps.size() > 0)
     {
+      MITK_INFO << "Scanning whole file" << std::endl;
       framesToUse = std::numeric_limits<double>::infinity();
     }
 
@@ -125,7 +126,7 @@ int main(int argc, char** argv)
       try
       {
         frame = mitk::VideoFrame(capture, fin);
-        MITK_INFO << "Writing frame " << framecount;
+
       }
       catch (std::exception& e)
       {
@@ -133,13 +134,14 @@ int main(int argc, char** argv)
         break;
       }
 
-      if (setOfTimeStamps.size() == 0 // user did not specify timestamps
+      if (   setOfTimeStamps.size() == 0 // user did not specify timestamps
           || setOfTimeStamps.find(frame.GetTimeStamp()) != setOfTimeStamps.end() // user specified timestamps, and it matches.
           )
       {
+        MITK_INFO << "Writing frame " << framecount << ", timestamp=" << frame.GetTimeStamp() << std::endl;
         frame.WriteToFile(outputPrefix);
-        framecount ++;
       }
+      framecount ++;
     }
 
     returnStatus = EXIT_SUCCESS;
