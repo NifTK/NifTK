@@ -21,7 +21,7 @@
 //#include <opencv2/highgui/highgui.hpp>
 #include <highgui.h>
 #include <niftkFileHelper.h>
-
+#include <mitkFileIOUtils.h>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -58,7 +58,7 @@ void MakeMaskImagesFromStereoVideo::Initialise(std::string directory)
 {
   m_InitOK = false;
   m_Directory = directory;
-  
+  mitk::LoadTimeStampData(m_TimeStampsFile, m_TimeStampsSet);
   m_InitOK = true;
   return;
 
@@ -120,9 +120,10 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
       cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, NULL, m_ReferenceIndex).inv();
 
       cv::Mat tempMat;
-      cv::Mat leftVideoImage;
+
       m_Capture->read(tempMat);
-      leftVideoImage = tempMat.clone();
+      cv::Mat leftVideoImage = tempMat.clone();
+
       m_Capture->read(tempMat);
       cv::Mat rightVideoImage = tempMat.clone();
 
@@ -134,160 +135,168 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
         {
           unsigned long long timeStamp;
           trackerMatcher->GetVideoFrame(framenumber, &timeStamp);
-          MITK_INFO << "Picking contours on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ], c to make mask image, n for next frame, q to quit";
-          
-          std::string leftOutName = boost::lexical_cast<std::string>(timeStamp);
-          trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
-          std::string rightOutName = boost::lexical_cast<std::string>(timeStamp);
-          bool overWriteLeft = true;
-          bool overWriteRight = true;
-          key = 0;
-          if ( boost::filesystem::exists (leftOutName + "_leftContour.xml") )
+
+          if (m_TimeStampsSet.size() == 0
+              || (m_TimeStampsSet.size() != 0 && m_TimeStampsSet.find(timeStamp) != m_TimeStampsSet.end())
+              )
           {
-            if ( m_AskOverWrite )
+            MITK_INFO << "Picking contours on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ], c to make mask image, n for next frame, q to quit";
+
+            std::string leftOutName = boost::lexical_cast<std::string>(timeStamp);
+            trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
+            std::string rightOutName = boost::lexical_cast<std::string>(timeStamp);
+            bool overWriteLeft = true;
+            bool overWriteRight = true;
+            key = 0;
+            if ( boost::filesystem::exists (leftOutName + "_leftContour.xml") )
             {
-              MITK_INFO << leftOutName + "_leftContour.xml" << " exists, overwrite (y/n)";
-              key = 0;
-              while ( ! ( key == 'n' || key == 'y' ) )
+              if ( m_AskOverWrite )
               {
-                key = cvWaitKey(20);
+                MITK_INFO << leftOutName + "_leftContour.xml" << " exists, overwrite (y/n)";
+                key = 0;
+                while ( ! ( key == 'n' || key == 'y' ) )
+                {
+                  key = cvWaitKey(20);
+                }
+                if ( key == 'n' )
+                {
+                  overWriteLeft = false;
+                }
+                else
+                {
+                  overWriteLeft = true;
+                }
               }
-              if ( key == 'n' ) 
+              else
               {
+                MITK_INFO << leftOutName + "_leftContour.xml" << " exists, skipping.";
                 overWriteLeft = false;
               }
+            }
+
+            key = 0;
+            if ( boost::filesystem::exists (rightOutName + "_rightContour.xml") )
+            {
+              if ( m_AskOverWrite )
+              {
+                MITK_INFO << rightOutName  + "_rightContour.xml" << " exists, overwrite (y/n)";
+                while ( ! ( key == 'n' || key == 'y' ) )
+                {
+                  key = cv::waitKey(20);
+                }
+                if ( key == 'n' )
+                {
+                  overWriteRight = false;
+                }
+                else
+                {
+                  overWriteRight = true;
+                }
+              }
               else
               {
-                overWriteLeft = true;
-              }
-            }
-            else
-            {
-              MITK_INFO << leftOutName + "_leftContour.xml" << " exists, skipping.";
-              overWriteLeft = false;
-            }
-          }
-
-          key = 0;
-          if ( boost::filesystem::exists (rightOutName + "_rightContour.xml") )
-          {
-            if ( m_AskOverWrite ) 
-            {
-              MITK_INFO << rightOutName  + "_rightContour.xml" << " exists, overwrite (y/n)";
-              while ( ! ( key == 'n' || key == 'y' ) )
-              {
-                key = cv::waitKey(20);
-              }
-              if ( key == 'n' ) 
-              {
+                MITK_INFO << rightOutName + "_rightContour.xml" << " exists, skipping.";
                 overWriteRight = false;
               }
-              else
-              {
-                overWriteRight = true;
-              }
             }
-            else 
+
+            PickedPointList::Pointer leftPickedPoints = PickedPointList::New();
+            PickedPointList::Pointer rightPickedPoints = PickedPointList::New();
+            leftPickedPoints->SetFrameNumber (framenumber);
+            leftPickedPoints->SetChannel ("left");
+            leftPickedPoints->SetTimeStamp(timeStamp);
+            leftPickedPoints->SetInLineMode (true);
+            leftPickedPoints->SetInOrderedMode (false);
+            rightPickedPoints->SetFrameNumber (framenumber + 1);
+            rightPickedPoints->SetChannel ("right");
+            rightPickedPoints->SetTimeStamp(timeStamp);
+            rightPickedPoints->SetInLineMode (true);
+            rightPickedPoints->SetInOrderedMode (false);
+
+            cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
+            cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
+            cv::Mat leftMaskImage;
+            cv::Mat rightMaskImage;
+            bool showMasks = false;
+            key = 0;
+            if ( overWriteLeft  ||  overWriteRight  )
             {
-              MITK_INFO << rightOutName + "_rightContour.xml" << " exists, skipping.";
-              overWriteRight = false;
-            }
-          }
-
-          PickedPointList::Pointer leftPickedPoints = PickedPointList::New();
-          PickedPointList::Pointer rightPickedPoints = PickedPointList::New();
-          leftPickedPoints->SetFrameNumber (framenumber);
-          leftPickedPoints->SetChannel ("left");
-          leftPickedPoints->SetTimeStamp(timeStamp);
-          leftPickedPoints->SetInLineMode (true);
-          leftPickedPoints->SetInOrderedMode (false);
-          rightPickedPoints->SetFrameNumber (framenumber + 1);
-          rightPickedPoints->SetChannel ("right");
-          rightPickedPoints->SetTimeStamp(timeStamp);
-          rightPickedPoints->SetInLineMode (true);
-          rightPickedPoints->SetInOrderedMode (false);
-
-          cv::Mat leftAnnotatedVideoImage = leftVideoImage.clone();
-          cv::Mat rightAnnotatedVideoImage = rightVideoImage.clone();
-          cv::Mat leftMaskImage;
-          cv::Mat rightMaskImage;
-          bool showMasks = false;
-          key = 0;
-          if ( overWriteLeft  ||  overWriteRight  )
-          {
-            while ( key != 'n' && key != 'q' )
-            {
-              key = cv::waitKey(20);
-              if ( key == 'c' )
+              while ( key != 'n' && key != 'q' )
               {
-                if ( showMasks )
+                key = cv::waitKey(20);
+                if ( key == 'c' )
                 {
-                  MITK_INFO << "Exiting contour mode";
+                  if ( showMasks )
+                  {
+                    MITK_INFO << "Exiting contour mode";
+                  }
+                  else
+                  {
+                    MITK_INFO << "Attempting to make contour images";
+                    leftMaskImage = leftPickedPoints->CreateMaskImage ( leftAnnotatedVideoImage );
+                    rightMaskImage = rightPickedPoints->CreateMaskImage ( rightAnnotatedVideoImage );
+                    cv::imwrite(leftOutName + "_leftMask.png" ,leftMaskImage);
+                    cv::imwrite(rightOutName + "_rightMask.png" ,rightMaskImage);
+                    cv::imwrite(leftOutName + "_left.png" ,leftVideoImage);
+                    cv::imwrite(rightOutName + "_right.png" ,rightVideoImage);
+                  }
+                  showMasks = ! showMasks;
                 }
-                else
+                if ( overWriteLeft )
                 {
-                  MITK_INFO << "Attempting to make contour images";
-                  leftMaskImage = leftPickedPoints->CreateMaskImage ( leftAnnotatedVideoImage );
-                  rightMaskImage = rightPickedPoints->CreateMaskImage ( rightAnnotatedVideoImage );
-                  cv::imwrite(leftOutName + "_leftMask.png" ,leftMaskImage);
-                  cv::imwrite(rightOutName + "_rightMask.png" ,rightMaskImage);
-                  cv::imwrite(leftOutName + "_left.png" ,leftVideoImage);
-                  cv::imwrite(rightOutName + "_right.png" ,rightVideoImage);
-                }
-                showMasks = ! showMasks;
-              }
-              if ( overWriteLeft )
-              {
-                cvSetMouseCallback("Left Channel",PointPickingCallBackFunc, leftPickedPoints);
-                if ( leftPickedPoints->GetIsModified() )
-                {
-                  leftAnnotatedVideoImage = leftVideoImage.clone();
-                  leftPickedPoints->AnnotateImage(leftAnnotatedVideoImage);
+                  cvSetMouseCallback("Left Channel",PointPickingCallBackFunc, leftPickedPoints);
+                  if ( leftPickedPoints->GetIsModified() )
+                  {
+                    leftAnnotatedVideoImage = leftVideoImage.clone();
+                    leftPickedPoints->AnnotateImage(leftAnnotatedVideoImage);
 
-                  std::ofstream leftPointOut ((leftOutName+ "_leftContour.xml").c_str());
-                  leftPickedPoints->PutOut( leftPointOut );
-                  leftPointOut.close();
+                    std::ofstream leftPointOut ((leftOutName+ "_leftContour.xml").c_str());
+                    leftPickedPoints->PutOut( leftPointOut );
+                    leftPointOut.close();
+                  }
+                  if ( showMasks )
+                  {
+                    IplImage image(leftMaskImage);
+                    cvShowImage("Left Channel" , &image);
+                  }
+                  else
+                  {
+                    IplImage image(leftAnnotatedVideoImage);
+                    cvShowImage("Left Channel" , &image);
+                  }
                 }
-                if ( showMasks )
-                {
-                  IplImage image(leftMaskImage);
-                  cvShowImage("Left Channel" , &image);
-                }
-                else
-                {
-                  IplImage image(leftAnnotatedVideoImage);
-                  cvShowImage("Left Channel" , &image);
-                }
-              }
 
-              if ( overWriteRight )
-              {
-                cvSetMouseCallback("Right Channel",PointPickingCallBackFunc, rightPickedPoints);
-                if ( rightPickedPoints->GetIsModified() )
+                if ( overWriteRight )
                 {
-                  rightAnnotatedVideoImage = rightVideoImage.clone();
-                  rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage);
+                  cvSetMouseCallback("Right Channel",PointPickingCallBackFunc, rightPickedPoints);
+                  if ( rightPickedPoints->GetIsModified() )
+                  {
+                    rightAnnotatedVideoImage = rightVideoImage.clone();
+                    rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage);
 
-                  std::ofstream rightPointOut ((rightOutName + "_rightContour.xml").c_str());
-                  rightPickedPoints->PutOut (rightPointOut);
-                  rightPointOut.close();
-                }
-                if ( showMasks ) 
-                {
-                  IplImage rimage(rightMaskImage);
-                  cvShowImage("Right Channel" , &rimage);
-                }
-                else
-                {
-                  IplImage rimage(rightAnnotatedVideoImage);
-                  cvShowImage("Right Channel" , &rimage);
+                    std::ofstream rightPointOut ((rightOutName + "_rightContour.xml").c_str());
+                    rightPickedPoints->PutOut (rightPointOut);
+                    rightPointOut.close();
+                  }
+                  if ( showMasks )
+                  {
+                    IplImage rimage(rightMaskImage);
+                    cvShowImage("Right Channel" , &rimage);
+                  }
+                  else
+                  {
+                    IplImage rimage(rightAnnotatedVideoImage);
+                    cvShowImage("Right Channel" , &rimage);
+                  }
                 }
               }
             }
-          }
-          cvShowImage("Left Channel" , &blankImage);
-          cvShowImage("Right Channel" , &blankImage);
-        } 
+            cvShowImage("Left Channel" , &blankImage);
+            cvShowImage("Right Channel" , &blankImage);
+
+          } // end if timestamp was specified, and it matches.
+
+        } // end if (sampling every 150 frames or so).
       }
       else
       {

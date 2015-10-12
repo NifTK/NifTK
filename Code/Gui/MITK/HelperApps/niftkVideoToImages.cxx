@@ -30,9 +30,6 @@ int main(int argc, char** argv)
 
   try
   {
-
-    std::set<unsigned long long> setOfTimeStamps;
-
     // Early exit if main input directory not specified.
     if (videoInputDirectory.size() == 0)
     {
@@ -47,27 +44,10 @@ int main(int argc, char** argv)
     }
 
     // If user specifies a list of timeStamps, we should load that.
-    if (timeStamps.size() > 0)
-    {
-      if (!niftk::FileExists(timeStamps))
-      {
-        mitkThrow() << "File:" << timeStamps << ", doesn't exist";
-      }
-      std::fstream fs;
-      fs.open(timeStamps, std::fstream::in);
-      if (!fs.is_open())
-      {
-        mitkThrow() << "Failed to open:" << timeStamps;
-      }
-      while(fs.good())
-      {
-        unsigned long long timeInNanoseconds;
-        fs >> timeInNanoseconds;
-        setOfTimeStamps.insert(timeInNanoseconds);
-      }
-      MITK_INFO << "Read " << setOfTimeStamps.size() << " timestamps." << std::endl;
-    }
+    std::set<unsigned long long> setOfTimeStamps;
+    mitk::LoadTimeStampData(timeStamps, setOfTimeStamps);
 
+    // Now read video and frameMap.
     std::vector <std::string> videoFiles = niftk::FindVideoData(videoInputDirectory);
     std::vector <std::string> frameMapFiles = mitk::FindVideoFrameMapFiles(videoInputDirectory);
 
