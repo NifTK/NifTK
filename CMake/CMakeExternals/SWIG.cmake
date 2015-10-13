@@ -23,7 +23,7 @@ if(MITK_USE_SWIG)
 
   set(version "3.0.2")
   if (WIN32)
-    set(location "${NIFTK_EP_TARBALL_LOCATION}/swigwin-${version}")
+    set(location "${NIFTK_EP_TARBALL_LOCATION}/swigwin-${version}.zip")
   else()
     set(location "${NIFTK_EP_TARBALL_LOCATION}/swig-${version}.tar.gz")
   endif()
@@ -38,11 +38,15 @@ if(MITK_USE_SWIG)
 
     # binary SWIG for windows
     if(WIN32)
-      set(swig_source_dir ${CMAKE_CURRENT_BINARY_DIR}/swigwin-${version})
 
       # swig.exe available as pre-built binary on Windows:
       ExternalProject_Add(${proj}
-        URL ${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/swigwin-${version}.zip
+        LIST_SEPARATOR ^^
+        PREFIX ${proj_CONFIG}
+        SOURCE_DIR ${proj_SOURCE}
+        BINARY_DIR ${proj_BUILD}
+        INSTALL_DIR ${proj_INSTALL}
+        URL ${proj_LOCATION}
         URL_MD5 "3f18de4fc09ab9abb0d3be37c11fbc8f"
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
@@ -50,8 +54,9 @@ if(MITK_USE_SWIG)
         )
 
       ExternalProject_Get_Property(${proj} source_dir)
-      set(SWIG_DIR ${source_dir})
-      set(SWIG_EXECUTABLE ${source_dir}/swig.exe)
+      set(SWIG_DIR ${proj_SOURCE})
+      set(SWIG_EXECUTABLE ${proj_SOURCE}/swig.exe)
+	  set(NifTK_PREFIX_PATH ${SWIG_DIR}^^${NifTK_PREFIX_PATH})
 
     else()
 
