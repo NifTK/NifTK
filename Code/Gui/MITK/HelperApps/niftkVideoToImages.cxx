@@ -19,6 +19,7 @@
 
 #include <mitkOpenCVPointTypes.h>
 #include <mitkOpenCVFileIOUtils.h>
+#include <mitkFileIOUtils.h>
 #include <niftkFileHelper.h>
 #include <niftkVideoToImagesCLP.h>
 #include <set>
