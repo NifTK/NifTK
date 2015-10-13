@@ -555,7 +555,6 @@ mitkFunctionAddExternalProject(NAME PCRE      OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME SWIG      OFF ADVANCED NO_PACKAGE DEPENDS PCRE)
 mitkFunctionAddExternalProject(NAME Python    OFF          NO_PACKAGE DEPENDS ZLIB SWIG DOC "Use Python wrapping in NifTK")
 mitkFunctionAddExternalProject(NAME Numpy     OFF ADVANCED NO_PACKAGE DEPENDS Python)
-mitkFunctionAddExternalProject(NAME Cython    OFF ADVANCED NO_PACKAGE DEPENDS Python)
 
 mitkFunctionAddExternalProject(NAME Boost     ON  ADVANCED)
 mitkFunctionAddExternalProject(NAME Eigen     ON  ADVANCED)
