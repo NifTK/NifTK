@@ -105,6 +105,8 @@ private:
 
   int m_MaxIterations;
   int m_MaxPoints;
+  unsigned int m_TLSITerations;
+  unsigned int m_TLSPercentage;
 
   QFuture<float>           m_BackgroundProcess;
   QFutureWatcher<float>    m_BackgroundProcessWatcher;

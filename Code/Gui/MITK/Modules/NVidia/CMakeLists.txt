@@ -24,7 +24,7 @@ include_directories(${QT_QTOPENGL_INCLUDE_DIR})
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 
 # stuffing this into DEPENDS above doesnt work for some reason
-target_link_libraries(niftkNVidia
+target_link_libraries(niftkNVidia PRIVATE
   niftknvapi
   MitkOpenCVVideoSupport
   Winmm.lib
