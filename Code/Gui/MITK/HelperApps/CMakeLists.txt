@@ -146,6 +146,7 @@ if(SlicerExecutionModel_FOUND)
       niftkSplitVideo
       niftkFindAndTriangulateCrossHair
       niftkVideoToImages
+      niftkVideoToSurfaces
       niftkUltrasoundPinCalibrationClicker
       niftkUltrasoundPinCalibration
       niftkVideoHandEyeByCrossCalibration
