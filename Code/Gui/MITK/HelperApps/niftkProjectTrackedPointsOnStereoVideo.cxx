@@ -129,8 +129,16 @@ int main(int argc, char** argv)
     if ( input3D.length() != 0 ) 
     {
       //try reading it as a mitk point set first
-      mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( input3D ); 
-      if ( pointSet->GetSize() == 0 ) 
+      try
+      {
+        mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( input3D );
+        std::vector < cv::Point3d > worldPointsVector = mitk::PointSetToVector ( pointSet );
+        for ( unsigned int i = 0 ; i < worldPointsVector.size() ; i ++ )
+        {
+          worldPoints.push_back ( mitk::WorldPoint(worldPointsVector[i] ) );
+        }
+      }
+      catch (std::exception& e)
       {
         //try reading a stream of points instead
         std::ifstream fin(input3D.c_str());
@@ -142,14 +150,6 @@ int main(int argc, char** argv)
           worldPoints.push_back(mitk::WorldPoint(cv::Point3d(x,y,z)));
         }
         fin.close();
-      }
-      else
-      {
-        std::vector < cv::Point3d > worldPointsVector = mitk::PointSetToVector ( pointSet );
-        for ( unsigned int i = 0 ; i < worldPointsVector.size() ; i ++ ) 
-        {
-          worldPoints.push_back ( mitk::WorldPoint(worldPointsVector[i] ) );
-        }
       }
       projector->AppendWorldPoints(worldPoints);
     }
