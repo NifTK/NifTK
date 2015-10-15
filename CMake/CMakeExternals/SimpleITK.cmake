@@ -16,22 +16,21 @@
 # SimpleITK
 #-----------------------------------------------------------------------------
 
+# Sanity checks
+if(DEFINED SimpleITK_DIR AND NOT EXISTS ${SimpleITK_DIR})
+  message(FATAL_ERROR "SimpleITK_DIR variable is defined but corresponds to non-existing directory")
+endif()
+
+set(version "0.8.1")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/SimpleITK-${version}.tar.gz")
+niftkMacroDefineExternalProjectVariables(SimpleITK ${version} ${location})
+
 if(MITK_USE_SimpleITK)
-
- # Sanity checks
- if(DEFINED SimpleITK_DIR AND NOT EXISTS ${SimpleITK_DIR})
-   message(FATAL_ERROR "SimpleITK_DIR variable is defined but corresponds to non-existing directory")
- endif()
-
-  set(version "0.8.1")
-  set(location "${NIFTK_EP_TARBALL_LOCATION}/SimpleITK-${version}.tar.gz")
-  niftkMacroDefineExternalProjectVariables(SimpleITK ${version} ${location})
 
   set(proj_DEPENDENCIES ITK GDCM SWIG)
   if(MITK_USE_OpenCV)
     list(APPEND proj_DEPENDENCIES OpenCV)
   endif()
-
 
   if(NOT DEFINED SimpleITK_DIR)
 
@@ -48,6 +47,7 @@ if(MITK_USE_SimpleITK)
         )
 
     if(MITK_USE_Python)
+      list(APPEND proj_DEPENDENCIES Python)
       list(APPEND additional_cmake_args
            -DWRAP_PYTHON:BOOL=ON
            -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
@@ -55,9 +55,6 @@ if(MITK_USE_SimpleITK)
            -DPYTHON_INCLUDE_DIR2:PATH=${PYTHON_INCLUDE_DIR2}
            -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
           )
-      if(NOT MITK_USE_SYSTEM_PYTHON)
-        list(APPEND proj_DEPENDENCIES Python)
-      endif()
     endif()
 
     if(CTEST_USE_LAUNCHERS)
@@ -118,9 +115,9 @@ if(MITK_USE_SimpleITK)
       # PythonDir needs to be fixed for the python interpreter by
       # changing dir delimiter for Windows
       if(MITK_USE_SYSTEM_PYTHON)
-        set(_install_dir ${EP_BASE})
+        set(_install_dir ${EP_BASE}/lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
       else()
-        set(_install_dir ${Python_DIR})
+        set(_install_dir ${MITK_PYTHON_SITE_DIR})
       endif()
       if(WIN32)
         STRING(REPLACE "/" "\\\\" _install_dir ${_install_dir})
@@ -131,7 +128,7 @@ if(MITK_USE_SimpleITK)
 
       if( MITK_USE_SYSTEM_PYTHON )
         ExternalProject_Add_Step(${proj} sitk_python_install_step
-          COMMAND PYTHONUSERBASE=${_install_dir} ${PYTHON_EXECUTABLE} setup.py install --prefix=${_install_dir}
+          COMMAND PYTHONUSERBASE=${_install_dir} ${PYTHON_EXECUTABLE} setup.py install --user
           DEPENDEES install
           WORKING_DIRECTORY ${_sitk_build_dir}/Wrapping/PythonPackage
         )
@@ -152,6 +149,7 @@ if(MITK_USE_SimpleITK)
 
   else()
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+    message("SuperBuild receiving SimpleITK from ${SimpleITK_DIR}")
   endif()
 endif()
 

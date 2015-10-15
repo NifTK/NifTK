@@ -15,18 +15,18 @@
 #----------------------------------------------------------------------
 # Python
 #----------------------------------------------------------------------
+
+# Sanity checks
+if(DEFINED Python_DIR AND NOT EXISTS ${Python_DIR})
+  message(FATAL_ERROR "Python_DIR variable is defined but corresponds to non-existing directory")
+endif()
+
+set(proj Python)
+set(version "47845c55")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/python-cmake-buildsystem-${version}.tar.gz")
+niftkMacroDefineExternalProjectVariables(${proj} ${version} ${location})
+
 if(MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON)
-
-  # Sanity checks
-  if(DEFINED Python_DIR AND NOT EXISTS ${Python_DIR})
-    message(FATAL_ERROR "Python_DIR variable is defined but corresponds to non-existing directory")
-  endif()
-
-  set(proj Python)
-  set(version "47845c55")
-  set(location "${NIFTK_EP_TARBALL_LOCATION}/python-cmake-buildsystem-${version}.tar.gz")
-
-  niftkMacroDefineExternalProjectVariables(${proj} ${version} ${location})
 
   if(NOT DEFINED Python_DIR)
 
@@ -246,5 +246,9 @@ ${PYTHON_EXECUTABLE} -m compileall
     message("SuperBuild loading Python from ${Python_DIR}")
   else()
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+    message("SuperBuild receiving Python from ${Python_DIR}")
   endif()
+else()
+  mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+  message("SuperBuild assuming Python comes from system.")
 endif()

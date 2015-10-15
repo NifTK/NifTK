@@ -38,8 +38,8 @@ if(BUILD_IGI)
     )
 
     if(MITK_USE_Python)
+      list(APPEND proj_DEPENDENCIES Python Numpy)
       if(NOT MITK_USE_SYSTEM_PYTHON)
-        list(APPEND proj_DEPENDENCIES Python Numpy)
         # export python home
         set(ENV{PYTHONHOME} "${Python_DIR}")
         set(CV_PACKAGE_PATH -DPYTHON_PACKAGES_PATH:PATH=${MITK_PYTHON_SITE_DIR})

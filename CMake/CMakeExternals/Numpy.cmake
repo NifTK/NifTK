@@ -15,17 +15,18 @@
 #-----------------------------------------------------------------------------
 # Numpy
 #-----------------------------------------------------------------------------
+
+# Sanity checks
+if(DEFINED Numpy_DIR AND NOT EXISTS ${Numpy_DIR})
+  message(FATAL_ERROR "Numpy_DIR variable is defined but corresponds to non-existing directory")
+endif()
+
+set(version "1.9.2")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/numpy-${version}.tar.gz")
+niftkMacroDefineExternalProjectVariables(Numpy ${version} ${location})
+set(proj_DEPENDENCIES Python)
+
 if( MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON )
-
-  # Sanity checks
-  if(DEFINED Numpy_DIR AND NOT EXISTS ${Numpy_DIR})
-    message(FATAL_ERROR "Numpy_DIR variable is defined but corresponds to non-existing directory")
-  endif()
-
-  set(version "1.9.2")
-  set(location "${NIFTK_EP_TARBALL_LOCATION}/numpy-${version}.tar.gz")
-  niftkMacroDefineExternalProjectVariables(Numpy ${version} ${location})
-  set(proj_DEPENDENCIES Python)
 
   if( NOT DEFINED Numpy_DIR )
 
@@ -114,6 +115,10 @@ if( MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON )
 
   else()
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+    message("SuperBuild receiving Numpy, passed in from ${Numpy_DIR}")
   endif()
+else()
+  mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+  message("SuperBuild assuming Numpy comes from system.")
 endif()
 
