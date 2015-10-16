@@ -242,12 +242,42 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
         }
       }
     
-      std::vector < std::pair < cv::Point3d, double > > triangauledPoints = 
+      std::vector < std::pair < cv::Point3d, double > > triangulatedPoints = 
         mitk::TriangulatePointPairsUsingGeometry ( matchedPairs ,
             m_LeftIntrinsicMatrix, m_RightIntrinsicMatrix, 
             m_RightToLeftRotationMatrix, m_RightToLeftTranslationVector,
             m_TriagulationTolerance );
+   
+      std::vector <cv::Point3d> points;
+      double meanError = 0;
+      std::vector <unsigned int> histogram;
+      for ( unsigned int i = 0 ; i < m_HistogramMaximumDepth + 1 ; i ++ )
+      {
+        histogram.push_back(0);
+      }
       
+      for ( std::vector < std::pair <cv::Point3d, double> >::iterator it = triangulatedPoints.begin() ; it <  triangulatedPoints.end() ; ++it )
+      {
+        unsigned int bin = static_cast<unsigned int> ( floor ( it->first.z + 0.5 ) );
+        if ( bin > m_HistogramMaximumDepth ) 
+        {
+          bin = m_HistogramMaximumDepth;
+        }
+        histogram[bin]++;
+
+        points.push_back ( it->first );
+        errors.push_back ( it->second );
+        
+        meanError += it->second;
+      }
+      meanError /= static_cast<double>( triangulatedPoints.size();
+
+      cv::Point3d stddev;
+
+      cv::Point3d centroid = mitk::GetCentroid ( points, false, &stddev );
+   
+      this->AnnoateImage ( leftImage, dispariityImage, timingError, centroid.z, stddev.z,
+        triangulatedPoints.size(), histogram, meanError );
 
     }
   }
@@ -255,7 +285,7 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
 
 
 //-----------------------------------------------------------------------------
-cv::Mat VideoToSurface::AnnotateImage(mitk::VideoTrackerMatching::Pointer trackerMatcher, 
+/*cv::Mat VideoToSurface::AnnotateImage(mitk::VideoTrackerMatching::Pointer trackerMatcher, 
       {
         cv::Mat videoImage;
         m_Capture->read(videoImage);
@@ -399,6 +429,6 @@ cv::Mat VideoToSurface::AnnotateImage(mitk::VideoTrackerMatching::Pointer tracke
   }
   m_ProjectOK = true;
 
-}
+}*/
 
 } // end namespace

@@ -126,6 +126,9 @@ private:
   double   m_PatchOriginX;
   double   m_PatchOriginY;
 
+  //defaults for generating a reconstruction depth histogram
+  double   m_HistogramMaximumDepth;
+  
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
   cv::VideoCapture*             m_Capture;
@@ -146,7 +149,7 @@ private:
       const double& patchDepthMean,
       const double& patchDepthStdDev,
       const unsigned int& patchVectorSize,
-      const std::vector < double, unsigned int >& patchDepthHistogram,
+      const std::vector < unsigned int >& patchDepthHistogram,
       const double& meanTriangulationError )
   
 }; // end class
