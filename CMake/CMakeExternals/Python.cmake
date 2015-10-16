@@ -221,7 +221,7 @@ ${PYTHON_EXECUTABLE} -m compileall
       #ExternalProject_Get_Property(${proj} binary_dir)
       #set(PYTHON_EXECUTABLE "${binary_dir}/bin/python${CMAKE_EXECUTABLE_SUFFIX}")
     else()
-      set(Python_DIR "${proj_INSTALL}/lib/python${_python_major_version}.${_python_minor_version}")
+      set(Python_DIR "${proj_INSTALL}")
       set(PYTHON_EXECUTABLE "${Python_DIR}/bin/python${CMAKE_EXECUTABLE_SUFFIX}")
       set(PYTHON_INCLUDE_DIR "${Python_DIR}/include")
       set(PYTHON_INCLUDE_DIR2 "${PYTHON_INCLUDE_DIR}")
