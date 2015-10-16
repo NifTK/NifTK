@@ -147,7 +147,7 @@ if(MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON)
     # directly in the ep/lib folder
     set(_python_install_dir )
     if(WIN32)
-      set(_python_install_dir -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}/lib/python${_python_major_version}.${_python_minor_version})
+      set(_python_install_dir -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL})
     endif()
 
     # CMake build environment for python from:
