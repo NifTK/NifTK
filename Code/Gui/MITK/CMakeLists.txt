@@ -115,6 +115,7 @@ else()
   get_property(_additional_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
   foreach(_install_dir ${CMAKE_PREFIX_PATH})
     list(APPEND _additional_search_paths ${_install_dir}/lib)
+    list(APPEND _additional_search_paths ${_install_dir}/bin) # On Windows, DLLs go in bin.
   endforeach()
   set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths}) 
 endif()
