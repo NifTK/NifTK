@@ -59,6 +59,10 @@ void MakeMaskImagesFromStereoVideo::Initialise(std::string directory)
   m_InitOK = false;
   m_Directory = directory;
   mitk::LoadTimeStampData(m_TimeStampsFile, m_TimeStampsSet);
+  if (m_TimeStampsSet.size() > 0)
+  {
+    m_Frequency = 1;
+  }
   m_InitOK = true;
   return;
 
