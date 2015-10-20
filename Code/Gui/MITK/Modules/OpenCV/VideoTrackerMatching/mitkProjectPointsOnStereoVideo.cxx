@@ -695,7 +695,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
   {
     if ( this->TriangulateGoldStandardObjectList() ) 
     {
-       m_TriangulateOK == true;
+       m_TriangulateOK = true;
     }
     else
     {
@@ -758,7 +758,7 @@ void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (std::string outP
   {
     if ( this->TriangulateGoldStandardObjectList() ) 
     {
-       m_TriangulateOK == true;
+       m_TriangulateOK = true;
     }
     else
     {
@@ -1474,6 +1474,7 @@ std::vector <mitk::ProjectedPointPairsWithTimingError> ProjectPointsOnStereoVide
 {
    MITK_ERROR << "get projected points is  broke";
    assert (false);
+   return std::vector<mitk::ProjectedPointPairsWithTimingError>();
 }
 
 //-----------------------------------------------------------------------------
