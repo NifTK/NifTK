@@ -36,6 +36,7 @@ int main(int argc, char** argv)
     calibrator->SetTrackerIndex(trackerIndex);
     calibrator->SetAbsTrackerTimingError(MaxTimingError);
     calibrator->SetFramesToUse(FramesToUse);
+    calibrator->SetFramesToCheck(framesToCheck);
     calibrator->SetSortByDistance(sortByDistance);
     calibrator->SetFlipTracking(FlipTracking);
     calibrator->SetFlipExtrinsic(FlipExtrinsic);

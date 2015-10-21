@@ -48,6 +48,7 @@ public:
   void InitialiseTracking();
      
   itkSetMacro(FramesToUse, unsigned int);
+  itkSetMacro(FramesToCheck, unsigned int);
   itkSetMacro(TrackerIndex,int);
   itkSetMacro(AbsTrackerTimingError,long long);
 
@@ -56,6 +57,7 @@ public:
   
   itkSetMacro(PixelScaleFactor, mitk::Point2D);
   itkSetMacro(WriteOutChessboards,bool);
+  itkSetMacro(WriteOutCalibrationImages,bool);
   itkSetMacro(NoVideoSupport,bool);
   itkSetMacro(SwapVideoChannels, bool);
   itkSetMacro(Randomise, bool);
@@ -75,7 +77,7 @@ protected:
 
 private:
   unsigned int                        m_FramesToUse; //target frames to use actual number used will depend on number of good frames
-  int                                 m_BadFrameFactor; //how many extra frames to stick in buffer
+  unsigned int                        m_FramesToCheck;
   bool                                m_SaveProcessedVideoData;
 
   bool                                m_VideoInitialised;

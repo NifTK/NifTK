@@ -85,11 +85,19 @@
     <integer>
       <name>FramesToUse</name>
       <longflag>FramesToUse</longflag>
-      <description>The target number of randomly selected video frames to use</description>
-      <label>The target number of randomly selected video frames to use</label>
+      <description>The target number of randomly selected video frames to use.</description>
+      <label>The target number of randomly selected video frames to use.</label>
       <default>30</default>
     </integer>
-    
+
+    <integer>
+      <name>framesToCheck</name>
+      <longflag>framesToCheck</longflag>
+      <description>The target number of randomly selected video frames to check for chessboards.</description>
+      <label>The target number of randomly selected video frames to check.</label>
+      <default>60</default>
+    </integer>
+
     <integer>
       <name>NumberCornerWidth</name>
       <longflag>NumberCornerWidth</longflag>
