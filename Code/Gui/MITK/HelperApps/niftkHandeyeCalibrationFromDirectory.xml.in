@@ -17,14 +17,14 @@
       <name>trackingInputDirectory</name>
       <longflag>tracking</longflag>
       <description>The directory containing the corresponding tracking matrices and video.</description>
-      <label>Tracking Matrix Input directory.</label>
+      <label>Tracking Matrix Input Directory</label>
     </directory>    
    
     <directory>
       <name>outputDirectory</name>
       <longflag>outputDirectory</longflag>
-      <description>Output the calibration results</description>
-      <label>Output results</label>
+      <description>Output directory for calibration results.</description>
+      <label>Output Directory</label>
       <channel>output</channel>
     </directory>
     
@@ -35,98 +35,98 @@
     <description><![CDATA[Parameters that control the calibration]]></description>
     
     <boolean>
-      <name>FlipTracking</name>
-      <longflag>FlipTracking</longflag>
-      <description>Flip the tracking matrices (left hand coordinated to right handed or vice versa)</description>
-      <label>Flip the tracking matrices</label>
+      <name>flipTracking</name>
+      <longflag>flipTracking</longflag>
+      <description>Flip the tracking matrices (left hand coordinated to right handed or vice versa).</description>
+      <label>Flip Tracking</label>
       <default>0</default>
     </boolean>
    
     <boolean>
-      <name>FlipExtrinsic</name>
-      <longflag>FlipExtrinsic</longflag>
-      <description>Flip the Extrinsic matrices (left hand coordinated to right handed or vice versa)</description>
-      <label>Flip the Extrinisic matrices</label>
+      <name>flipExtrinsic</name>
+      <longflag>flipExtrinsic</longflag>
+      <description>Flip the Extrinsic matrices (left hand coordinated to right handed or vice versa).</description>
+      <label>Flip Extrinsics</label>
       <default>0</default>
     </boolean>
     
     <boolean>
-      <name>Visualise</name>
-      <longflag>Visualise</longflag>
-      <description>Visualise the results</description>
-      <label>Visualise the results</label>
+      <name>visualise</name>
+      <longflag>visualise</longflag>
+      <description>Visualise the results.</description>
+      <label>Visualise</label>
       <default>0</default>
     </boolean>
    
     <integer>
       <name>videoLag</name>
       <longflag>videoLag</longflag>
-      <description>The lag between tracking and video in milliseconds</description>
-      <label>The video lag</label>
+      <description>The lag between tracking and video in milliseconds.</description>
+      <label>Video Lag</label>
       <default>50</default>
     </integer>
    
     <integer>
-      <name>MaxTimingError</name>
-      <longflag>MaxTimingError</longflag>
-      <description>The maximum allowable timing error when choosing video and tracking pairs</description>
-      <label>The maxium allowable timing error when choosing video and tracking pairs</label>
+      <name>maxTimingError</name>
+      <longflag>maxTimingError</longflag>
+      <description>The maximum allowable timing error when choosing video and tracking pairs.</description>
+      <label>Max Timing Error</label>
       <default>40e6</default>
     </integer>
 
     <integer>
       <name>trackerIndex</name>
       <longflag>trackerIndex</longflag>
-      <description>The tracker index to use</description>
-      <label>The tracker index to use</label>
+      <description>The tracker index to use.</description>
+      <label>Tracker Index</label>
       <default>0</default>
     </integer>
 
     <integer>
-      <name>FramesToUse</name>
-      <longflag>FramesToUse</longflag>
+      <name>framesToUse</name>
+      <longflag>framesToUse</longflag>
       <description>The target number of randomly selected video frames to use.</description>
-      <label>The target number of randomly selected video frames to use.</label>
+      <label>Frames To Use</label>
       <default>30</default>
     </integer>
 
     <integer>
-      <name>framesToCheck</name>
-      <longflag>framesToCheck</longflag>
-      <description>The target number of randomly selected video frames to check for chessboards.</description>
-      <label>The target number of randomly selected video frames to check.</label>
-      <default>60</default>
+      <name>framesToUseFactor</name>
+      <longflag>framesToUseFactor</longflag>
+      <description>The multiplier for the number of frames to check for chessboards.</description>
+      <label>Multiplier</label>
+      <default>3</default>
     </integer>
 
     <integer>
-      <name>NumberCornerWidth</name>
-      <longflag>NumberCornerWidth</longflag>
-      <description>The number of internal chessboard corners along the width axis</description>
-      <label>The number of internal chessboard corners along the width axis</label>
+      <name>numberCornerWidth</name>
+      <longflag>numberCornerWidth</longflag>
+      <description>The number of internal chessboard corners along the width axis.</description>
+      <label>Corners across Width</label>
       <default>14</default>
     </integer>
     
     <integer>
-      <name>NumberCornerHeight</name>
-      <longflag>NumberCornerHeight</longflag>
-      <description>The number of internal chessboard corners along the height axis</description>
-      <label>The number of internal chessboard corners along the height axis</label>
+      <name>numberCornerHeight</name>
+      <longflag>numberCornerHeight</longflag>
+      <description>The number of internal chessboard corners along the height axis.</description>
+      <label>Corners across Height</label>
       <default>10</default>
     </integer>
 
     <float>
-      <name>squareSizeInmm</name>
-      <longflag>squareSizeInmm</longflag>
-      <description>The size in mm of each grid sqaure</description>
-      <label>The size in mm of each grid square</label>
+      <name>squareSizeInMM</name>
+      <longflag>squareSizeInMM</longflag>
+      <description>The size in mm of each grid sqaure.</description>
+      <label>Square Size (mm)</label>
       <default>3.0</default>
     </float>
 
     <boolean>
-      <name>DontSortByDistance</name>
-      <longflag>DontSortByDistance</longflag>
-      <description>Dont Sort the tracking matrices by distance when doing the handeye</description>
-      <label>Dont Sort the tracking matrices by distance when doing the handeye</label>
+      <name>dontSortByDistance</name>
+      <longflag>dontSortByDistance</longflag>
+      <description>Dont sort the tracking matrices by distance when doing the handeye.</description>
+      <label>Dont Sort By Distance</label>
       <default>0</default>
     </boolean>
    
@@ -142,7 +142,7 @@
       <name>swapVideoChannels</name>
       <longflag>swapVideoChannels</longflag>
       <description>Swap left and right video channel.</description>
-      <label>Swap video channels</label>
+      <label>Swap Video Channels</label>
       <default>false</default>
     </boolean>
 
@@ -150,7 +150,7 @@
       <name>existingIntrinsicsDirectory</name>
       <longflag>existingIntrinsicsDirectory</longflag>
       <description>For stereo calibration, use an existing intrinsic calibration.</description>
-      <label>Existing intrinsics directory</label>
+      <label>Existing Intrinsics Directory</label>
       <channel>input</channel>
     </directory>
 
@@ -158,7 +158,7 @@
       <name>existingRightToLeftDirectory</name>
       <longflag>existingRightToLeftDirectory</longflag>
       <description>For stereo calibration, use an existing right-to-left calibration.</description>
-      <label>Existing right-to-left directory</label>
+      <label>Existing right-to-left Directory</label>
       <channel>input</channel>
     </directory>
 
@@ -166,7 +166,7 @@
       <name>randomise</name>
       <longflag>randomise</longflag>
       <description>Use random seed to select frames.</description>
-      <label>Randomise seed</label>
+      <label>Randomise</label>
       <default>false</default>
     </boolean>
 

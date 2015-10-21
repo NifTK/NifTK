@@ -34,7 +34,7 @@ namespace mitk {
 //-----------------------------------------------------------------------------
 HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 : m_FramesToUse(30)
-, m_FramesToCheck(60)
+, m_FramesToUseFactor(3)
 , m_SaveProcessedVideoData(true)
 , m_VideoInitialised(false)
 , m_TrackingDataInitialised(false)
@@ -270,7 +270,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
 
   std::vector <int> leftFramesToCheck;
   std::vector <int> rightFramesToCheck;
-  while ( leftFramesToCheck.size() < m_FramesToCheck )
+  while ( leftFramesToCheck.size() < m_FramesToUse*m_FramesToUseFactor )
   {
     int frameToUse =  std::rand()%(numberOfFrames/2);
 

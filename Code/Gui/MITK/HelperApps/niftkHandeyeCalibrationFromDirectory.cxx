@@ -23,7 +23,7 @@ int main(int argc, char** argv)
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
-  bool sortByDistance = !DontSortByDistance;
+  bool sortByDistance = !dontSortByDistance;
   try
   {
     mitk::Point2D pixelScales;
@@ -34,18 +34,18 @@ int main(int argc, char** argv)
     calibrator->SetInputDirectory(trackingInputDirectory);
     calibrator->SetOutputDirectory(outputDirectory);
     calibrator->SetTrackerIndex(trackerIndex);
-    calibrator->SetAbsTrackerTimingError(MaxTimingError);
-    calibrator->SetFramesToUse(FramesToUse);
-    calibrator->SetFramesToCheck(framesToCheck);
+    calibrator->SetAbsTrackerTimingError(maxTimingError);
+    calibrator->SetFramesToUse(framesToUse);
+    calibrator->SetFramesToUseFactor(framesToUseFactor);
     calibrator->SetSortByDistance(sortByDistance);
-    calibrator->SetFlipTracking(FlipTracking);
-    calibrator->SetFlipExtrinsic(FlipExtrinsic);
+    calibrator->SetFlipTracking(flipTracking);
+    calibrator->SetFlipExtrinsic(flipExtrinsic);
     calibrator->SetSortByAngle(false);
     calibrator->SetPixelScaleFactor(pixelScales);
     calibrator->SetSwapVideoChannels(swapVideoChannels);
-    calibrator->SetNumberCornersWidth(NumberCornerWidth);
-    calibrator->SetNumberCornersHeight(NumberCornerHeight);
-    calibrator->SetSquareSizeInMillimetres(squareSizeInmm);
+    calibrator->SetNumberCornersWidth(numberCornerWidth);
+    calibrator->SetNumberCornersHeight(numberCornerHeight);
+    calibrator->SetSquareSizeInMillimetres(squareSizeInMM);
     calibrator->SetRandomise(randomise);
     calibrator->InitialiseOutputDirectory();
     calibrator->InitialiseTracking();

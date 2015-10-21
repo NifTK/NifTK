@@ -48,7 +48,7 @@ public:
   void InitialiseTracking();
      
   itkSetMacro(FramesToUse, unsigned int);
-  itkSetMacro(FramesToCheck, unsigned int);
+  itkSetMacro(FramesToUseFactor, unsigned int);
   itkSetMacro(TrackerIndex,int);
   itkSetMacro(AbsTrackerTimingError,long long);
 
@@ -77,7 +77,7 @@ protected:
 
 private:
   unsigned int                        m_FramesToUse; //target frames to use actual number used will depend on number of good frames
-  unsigned int                        m_FramesToCheck;
+  unsigned int                        m_FramesToUseFactor;
   bool                                m_SaveProcessedVideoData;
 
   bool                                m_VideoInitialised;
