@@ -703,7 +703,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
 
   // for spreadsheet/analysis purposes. A big ugly, but amenable to grepping through log files.
   MITK_INFO << "Calibration Summary:"
-            << numberOfGoodFrames << ", "
+            << m_FramesToUse << ", "
             << reprojectionError << ", "
             << CV_MAT_ELEM (*m_IntrinsicMatrixLeft, double, 0,0) << ", "
             << CV_MAT_ELEM (*m_IntrinsicMatrixLeft, double, 1,1) << ", "
