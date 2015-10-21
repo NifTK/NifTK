@@ -34,7 +34,7 @@ namespace mitk {
 //-----------------------------------------------------------------------------
 HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 : m_FramesToUse(40)
-, m_BadFrameFactor(2.0)
+, m_BadFrameFactor(10)
 , m_SaveProcessedVideoData(true)
 , m_VideoInitialised(false)
 , m_TrackingDataInitialised(false)
@@ -49,6 +49,7 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_DistortionCoefficientsLeft(cvCreateMat(1,4,CV_64FC1))
 , m_DistortionCoefficientsRight(cvCreateMat(1,4,CV_64FC1))
 , m_RotationMatrixRightToLeft(cvCreateMat(3,3,CV_64FC1))
+, m_RotationVectorRightToLeft(cvCreateMat(3,1,CV_64FC1))
 , m_TranslationVectorRightToLeft(cvCreateMat(3,1,CV_64FC1))
 , m_OptimiseIntrinsics(true)
 , m_OptimiseRightToLeft(true)
@@ -276,7 +277,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     //first check it's not already in array
     if ( (std::find(LeftFramesToUse.begin(), LeftFramesToUse.end(), FrameToUse * 2 ) == LeftFramesToUse.end()) ) 
     {
-      MITK_INFO << "Trying frame pair " << FrameToUse * 2 << "," << FrameToUse*2 +1;
+      MITK_INFO << "Checking tracking for frame pair " << FrameToUse * 2 << "," << FrameToUse*2 +1;
     
       long long int  LeftTimingError;
       long long int  RightTimingError;
@@ -300,9 +301,12 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     }
   }
 
+  MITK_INFO << "Got " << LeftFramesToUse.size() << " with accurate enough tracking.";
+
   //sort the vector in ascending order
   std::sort (LeftFramesToUse.begin(), LeftFramesToUse.end());
   std::sort (RightFramesToUse.begin(), RightFramesToUse.end());
+
   //now go through video and extract frames to use
   int FrameNumber = 0 ;
 
@@ -312,8 +316,11 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   std::vector<cv::Mat>  allRightObjectPoints;
 
   cv::Size imageSize;
+  int numberOfGoodFrames = 0;
+  std::vector <int> leftGoodFrames;
+  std::vector <int> rightGoodFrames;
 
-  while ( FrameNumber < numberOfFrames )
+  while ( FrameNumber < numberOfFrames && numberOfGoodFrames < m_FramesToUse)
   {
     cv::Mat TempFrame;
     cv::Mat LeftFrame;
@@ -365,6 +372,10 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
           allLeftObjectPoints.push_back(cv::Mat(*leftObjectCorners,true));
           allRightImagePoints.push_back(cv::Mat(*rightImageCorners,true));
           allRightObjectPoints.push_back(cv::Mat(*rightObjectCorners,true));
+          numberOfGoodFrames++;
+          leftGoodFrames.push_back(FrameNumber);
+          rightGoodFrames.push_back(FrameNumber);
+
           if ( m_WriteOutCalibrationImages )
           {
             std::string leftfilename = m_OutputDirectory + "/LeftFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".png";
@@ -412,6 +423,9 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     FrameNumber++;
     FrameNumber++;
   }
+  LeftFramesToUse = leftGoodFrames;
+  RightFramesToUse = rightGoodFrames;
+
   MITK_INFO << "There are " << LeftFramesToUse.size() << " good frames";
 
   cv::Mat leftImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),2,CV_64FC1);
@@ -520,7 +534,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   CvMat* outputFundamentalMatrix= cvCreateMat(3,3,CV_64FC1);
 
 
-  mitk::CalibrateStereoCameraParameters(
+  double reprojectionError = mitk::CalibrateStereoCameraParameters(
       leftObjectPoints,
       leftImagePoints,
       leftPointCounts,
@@ -640,6 +654,43 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   m_VideoInitialised = true;
 
   Calibrate ( m_OutputDirectory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex) , extrinsic); 
+
+  cv::Mat handEyeRotationMatrix(m_CameraToMarker, cv::Range(0, 2), cv::Range(0,2));
+  cv::Mat handEyeRotationVector(cvCreateMat(3,1,CV_64FC1));
+  cv::Rodrigues(handEyeRotationMatrix, handEyeRotationVector);
+
+  // for spreadsheet/analysis purposes. A big ugly, but amenable to grepping through log files.
+  MITK_INFO << "Calibration Summary:"
+            << numberOfGoodFrames << ", "
+            << reprojectionError << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixLeft, double, 0,0) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixLeft, double, 1,1) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixLeft, double, 0,2) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixLeft, double, 1,2) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsLeft, double, 0,0) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsLeft, double, 0,1) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsLeft, double, 0,2) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsLeft, double, 0,3) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixRight, double, 0,0) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixRight, double, 1,1) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixRight, double, 0,2) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixRight, double, 1,2) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsRight, double, 0,0) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsRight, double, 0,1) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsRight, double, 0,2) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsRight, double, 0,3) << ", "
+            << CV_MAT_ELEM (*m_RotationVectorRightToLeft, double, 0,0) << ", "
+            << CV_MAT_ELEM (*m_RotationVectorRightToLeft, double, 1,0) << ", "
+            << CV_MAT_ELEM (*m_RotationVectorRightToLeft, double, 2,0) << ", "
+            << CV_MAT_ELEM (*m_TranslationVectorRightToLeft, double, 0,0) << ", "
+            << CV_MAT_ELEM (*m_TranslationVectorRightToLeft, double, 1,0) << ", "
+            << CV_MAT_ELEM (*m_TranslationVectorRightToLeft, double, 2,0) << ", "
+            << handEyeRotationVector.at<double>(0, 0) << ", "
+            << handEyeRotationVector.at<double>(1, 0) << ", "
+            << handEyeRotationVector.at<double>(2, 0) << ", "
+            << m_CameraToMarker.at<double>(0,3) << ", "
+            << m_CameraToMarker.at<double>(1,3) << ", "
+            << m_CameraToMarker.at<double>(2,3);
 }
  
 } // end namespace

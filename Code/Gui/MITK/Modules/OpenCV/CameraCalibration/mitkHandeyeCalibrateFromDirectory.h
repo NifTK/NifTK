@@ -75,7 +75,7 @@ protected:
 
 private:
   unsigned int                        m_FramesToUse; //target frames to use actual number used will depend on number of good frames
-  float                               m_BadFrameFactor; //how many extra frames to stick in buffer
+  int                                 m_BadFrameFactor; //how many extra frames to stick in buffer
   bool                                m_SaveProcessedVideoData;
 
   bool                                m_VideoInitialised;
@@ -114,6 +114,7 @@ private:
   CvMat*                              m_DistortionCoefficientsLeft;
   CvMat*                              m_DistortionCoefficientsRight;
   CvMat*                              m_RotationMatrixRightToLeft;
+  CvMat*                              m_RotationVectorRightToLeft;
   CvMat*                              m_TranslationVectorRightToLeft;
   bool                                m_OptimiseIntrinsics;
   bool                                m_OptimiseRightToLeft;
