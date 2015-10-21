@@ -14,7 +14,5 @@
 
 set(CPP_FILES
   niftkSurfaceReconstruction.cxx
-  niftkSequentialCpuQds.cxx
-  niftkQDSCommon.cxx
 )
 

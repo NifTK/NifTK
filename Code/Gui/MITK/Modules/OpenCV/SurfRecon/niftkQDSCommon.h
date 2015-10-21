@@ -15,7 +15,7 @@
 #ifndef niftkQDSCommon_h
 #define niftkQDSCommon_h
 
-#include "niftkSurfReconExports.h"
+#include "niftkOpenCVExports.h"
 #include <boost/gil/gil_all.hpp>
 #include <opencv2/core/types_c.h>
 #include <opencv2/core/core.hpp>
@@ -49,11 +49,11 @@ namespace niftk
 *
 * @throws std::runtime_error if src and dst dimensions are different
 */
-void NIFTKSURFRECON_EXPORT BuildTextureDescriptor(
+void NIFTKOPENCV_EXPORT BuildTextureDescriptor(
     const boost::gil::gray8c_view_t src,
     const boost::gil::gray8_view_t dst);
 
-float NIFTKSURFRECON_EXPORT Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w,
+float NIFTKOPENCV_EXPORT Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w,
                                     boost::gil::gray8c_view_t img0,
                                     boost::gil::gray8c_view_t img1,
                                     boost::gil::gray32sc_view_t integral0,
@@ -64,7 +64,7 @@ float NIFTKSURFRECON_EXPORT Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w,
 /**
 * Base class for the (CPU-versions of) QDS stereo-matching.
 */
-class NIFTKSURFRECON_EXPORT QDSInterface
+class NIFTKOPENCV_EXPORT QDSInterface
 {
 public:
   virtual ~QDSInterface();

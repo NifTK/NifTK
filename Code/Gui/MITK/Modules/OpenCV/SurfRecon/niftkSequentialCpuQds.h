@@ -15,7 +15,7 @@
 #ifndef niftkSequentialCpuQds_h
 #define niftkSequentialCpuQds_h
 
-#include "niftkSurfReconExports.h"
+#include "niftkOpenCVExports.h"
 #include "niftkQDSCommon.h"
 #include <opencv2/core/types_c.h>
 // FIXME: typedefs.hpp should be enough! but there seem to be some issues...
@@ -23,8 +23,8 @@
 #include <boost/gil/gil_all.hpp>
 #include <vector>
 
-#ifndef NIFTKSURFRECON_EXPORT
-#define NIFTKSURFRECON_EXPORT
+#ifndef NIFTKOPENCV_EXPORT
+#define NIFTKOPENCV_EXPORT
 #endif
 
 namespace niftk 
@@ -48,7 +48,7 @@ struct PropagationParameters
 
 
 // FIXME: this is actually shared between all qds variants, so refactor this (later)
-struct NIFTKSURFRECON_EXPORT RefPoint
+struct NIFTKOPENCV_EXPORT RefPoint
 {
   unsigned short  x;
   unsigned short  y;
@@ -94,7 +94,7 @@ struct NIFTKSURFRECON_EXPORT RefPoint
 #pragma warning(disable: 4251)      //  class '...' needs to have dll-interface to be used by clients of class '...'
 #endif
 
-class NIFTKSURFRECON_EXPORT SequentialCpuQds : public QDSInterface
+class NIFTKOPENCV_EXPORT SequentialCpuQds : public QDSInterface
 {
 
 public:
