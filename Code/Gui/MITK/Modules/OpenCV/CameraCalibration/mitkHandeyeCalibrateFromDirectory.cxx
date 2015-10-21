@@ -40,7 +40,7 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_TrackingDataInitialised(false)
 , m_TrackerIndex(0)
 , m_AbsTrackerTimingError(20e6) // 20 milliseconds
-, m_WriteOutChessboards(true)
+, m_WriteOutChessboards(false)
 , m_WriteOutCalibrationImages(true)
 , m_NoVideoSupport(false)
 , m_SwapVideoChannels(false)
@@ -456,11 +456,11 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
       }
       if ( m_WriteOutChessboards )
       {
-        std::string leftFilename = m_OutputDirectory + "/LeftChessboard" + boost::lexical_cast<std::string>(leftFramesToUse[indexToUse]) + ".png";
+        std::string leftFilename = m_OutputDirectory + "/LeftChessboard" + boost::lexical_cast<std::string>(allLeftFrameNumbers[indexToUse]) + ".png";
         MITK_INFO << "Writing image to " << leftFilename;
         cv::imwrite( leftFilename, allLeftChessBoards[indexToUse] );
 
-        std::string rightFilename = m_OutputDirectory + "/RightChessboard" + boost::lexical_cast<std::string>(rightFramesToUse[indexToUse]) + ".png";
+        std::string rightFilename = m_OutputDirectory + "/RightChessboard" + boost::lexical_cast<std::string>(allRightFrameNumbers[indexToUse]) + ".png";
         MITK_INFO << "Writing image to " << rightFilename;
         cv::imwrite( rightFilename, allRightChessBoards[indexToUse] );
       }
