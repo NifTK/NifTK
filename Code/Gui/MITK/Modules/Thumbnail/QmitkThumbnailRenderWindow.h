@@ -24,8 +24,6 @@
 #include <mitkDataNodeVisibilityTracker.h>
 #include <mitkRenderingManager.h>
 
-#include <QColor>
-
 #include <QmitkRenderWindow.h>
 
 #include "mitkThumbnailInteractor.h"
@@ -49,7 +47,7 @@ class QmitkWheelEventEater;
  *
  * The data storage will be initialised from the rendering manager at the first activation.
  *
- * This class provides methods to set the bounding box colour, opacity, line thickness,
+ * This class provides methods to set the bounding box opacity, line thickness,
  * and rendering layer. These values would normally be set via preferences pages in the GUI.
  * The preferences part is done in the ThumbnailView, but this widget could potentially be placed
  * in any layout, as a small preview window of sorts.
@@ -89,15 +87,6 @@ public:
 
   /// \brief Deregisters listeners.
   void Deactivated();
-
-  /// \brief Gets the bounding box color, default is red.
-  QColor GetBoundingBoxColor() const;
-
-  /// \brief Sets the bounding box color.
-  void SetBoundingBoxColor(QColor &color);
-
-  /// \brief Sets the bounding box color.
-  void SetBoundingBoxColor(float r, float g, float b);
 
   /// \brief Sets the bounding box line thickness, default is 1 pixel, but on some displays (eg. various Linux) may appear wider due to anti-aliasing.
   int GetBoundingBoxLineThickness() const;

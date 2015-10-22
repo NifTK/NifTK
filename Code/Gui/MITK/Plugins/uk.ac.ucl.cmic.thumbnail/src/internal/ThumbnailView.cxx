@@ -241,24 +241,6 @@ void ThumbnailView::RetrievePreferenceValues()
   int layer = prefs->GetInt(QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_LAYER, 99);
   double opacity = prefs->GetDouble(QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_OPACITY, 1);
 
-  QString boxColorName = prefs->Get(QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_COLOUR, "");
-  QColor boxColor(boxColorName);
-
-  mitk::Color colour;
-  if (boxColorName=="") // default values
-  {
-    colour[0] = 1;
-    colour[1] = 0;
-    colour[2] = 0;
-  }
-  else
-  {
-    colour[0] = boxColor.red() / 255.0;
-    colour[1] = boxColor.green() / 255.0;
-    colour[2] = boxColor.blue() / 255.0;
-  }
-
-  m_ThumbnailWindow->SetBoundingBoxColor(colour[0], colour[1], colour[2]);
   m_ThumbnailWindow->SetBoundingBoxLineThickness(thickness);
   m_ThumbnailWindow->SetBoundingBoxOpacity(opacity);
   m_ThumbnailWindow->SetBoundingBoxLayer(layer);

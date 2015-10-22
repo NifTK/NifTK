@@ -73,7 +73,6 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent, mitk::Re
   m_BoundingBoxNode->SetBoolProperty("visible", false); // globally turn it off, then we only turn it on in thumbnail (this) window.
 
   m_BoundingBoxNode->SetBoolProperty("visible", false, m_Renderer);
-  this->SetBoundingBoxColor(255, 0, 0);
   this->SetBoundingBoxOpacity(1);
   this->SetBoundingBoxLineThickness(1);
   this->SetBoundingBoxLayer(99);// arbitrary, copied from segmentation functionality
@@ -396,19 +395,19 @@ void QmitkThumbnailRenderWindow::UpdateBoundingBox()
       mitk::SliceNavigationController::ViewDirection viewDirection = m_TrackedSliceNavigator->GetViewDirection();
       if (viewDirection == mitk::SliceNavigationController::Frontal)
       {
-        this->SetBoundingBoxColor(0, 0, 255);
+        m_BoundingBoxNode->SetColor(0, 0, 255);
       }
       else if (viewDirection == mitk::SliceNavigationController::Sagittal)
       {
-        this->SetBoundingBoxColor(0, 255, 0);
+        m_BoundingBoxNode->SetColor(0, 255, 0);
       }
       else if (viewDirection == mitk::SliceNavigationController::Axial)
       {
-        this->SetBoundingBoxColor(255, 0, 0);
+        m_BoundingBoxNode->SetColor(255, 0, 0);
       }
       else
       {
-        this->SetBoundingBoxColor(0, 255, 255);
+        m_BoundingBoxNode->SetColor(0, 255, 255);
       }
     }
 
@@ -623,31 +622,6 @@ void QmitkThumbnailRenderWindow::OnBoundingBoxZoomed(double scaleFactor)
   centreInPx[0] = displaySize[0] / 2;
   centreInPx[1] = displaySize[1] / 2;
   m_TrackedDisplayGeometry->Zoom(scaleFactor, centreInPx);
-}
-
-
-//-----------------------------------------------------------------------------
-QColor QmitkThumbnailRenderWindow::GetBoundingBoxColor() const
-{
-  float colour[3];
-  m_BoundingBoxNode->GetColor(colour);
-
-  QColor qtColour(static_cast<int>(colour[0] * 255), static_cast<int>(colour[1] * 255), static_cast<int>(colour[2] * 255));
-  return qtColour;
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::SetBoundingBoxColor(QColor &colour)
-{
-  m_BoundingBoxNode->SetColor(colour.redF(), colour.greenF(), colour.blueF());
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkThumbnailRenderWindow::SetBoundingBoxColor(float r, float g, float b)
-{
-  m_BoundingBoxNode->SetColor(r, g, b);
 }
 
 
