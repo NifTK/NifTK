@@ -65,11 +65,11 @@ public:
   virtual bool IsExclusiveFunctionality() const { return false; }
 
   /// \brief Returns the renderer being tracked if there is one, otherwise NULL.
-  const mitk::BaseRenderer* GetTrackedRenderer() const;
+  mitk::BaseRenderer* GetTrackedRenderer() const;
 
   /// \brief Instructs the contained thumbnail viewer widget to track the given renderer.
   /// Supposed to be called when the focus changes or a new editor becomes visible.
-  void SetTrackedRenderer(const mitk::BaseRenderer* renderer);
+  void SetTrackedRenderer(mitk::BaseRenderer* renderer);
 
 protected:
 

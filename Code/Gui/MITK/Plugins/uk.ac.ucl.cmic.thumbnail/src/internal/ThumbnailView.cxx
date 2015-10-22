@@ -285,7 +285,7 @@ void ThumbnailView::RetrievePreferenceValues()
       mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
       if (focusManager)
       {
-        mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
+        mitk::BaseRenderer::Pointer focusedRenderer = focusManager->GetFocused();
         if (focusedRenderer != m_ThumbnailWindow->GetRenderer()
             && focusedRenderer.IsNotNull()
             && focusedRenderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
@@ -307,7 +307,7 @@ void ThumbnailView::OnFocusChanged()
     return;
   }
 
-  mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
+  mitk::BaseRenderer::Pointer focusedRenderer = focusManager->GetFocused();
   if (focusedRenderer == m_ThumbnailWindow->GetRenderer()
       || focusedRenderer.IsNull()
       || focusedRenderer->GetMapperID() != mitk::BaseRenderer::Standard2D)
@@ -348,14 +348,14 @@ void ThumbnailView::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-const mitk::BaseRenderer* ThumbnailView::GetTrackedRenderer() const
+mitk::BaseRenderer* ThumbnailView::GetTrackedRenderer() const
 {
   return m_ThumbnailWindow->GetTrackedRenderer();
 }
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailView::SetTrackedRenderer(const mitk::BaseRenderer* renderer)
+void ThumbnailView::SetTrackedRenderer(mitk::BaseRenderer* renderer)
 {
   m_ThumbnailWindow->SetTrackedRenderer(renderer);
 }
