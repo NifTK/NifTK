@@ -19,15 +19,11 @@
 #include <QLabel>
 #include <QSpinBox>
 #include <QDoubleSpinBox>
-#include <QPushButton>
-#include <QColorDialog>
 #include <QCheckBox>
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_COLOUR("thumbnail view box colour");
-const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_COLOUR_STYLE_SHEET("thumbnail view box colour style sheet");
 const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_THICKNESS("thumbnail view box thickness");
 const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_OPACITY("thumbnail view box opacity");
 const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_LAYER("thumbnail view box layer");
@@ -109,26 +105,11 @@ void QmitkThumbnailViewPreferencePage::CreateQtControl(QWidget* parent)
   formLayout->addRow("line width", m_BoxThickness );
   formLayout->addRow("line opacity", m_BoxOpacity );
 
-  QPushButton* boxColorResetButton = new QPushButton;
-  boxColorResetButton->setText("reset");
-
-  m_BoxColorPushButton = new QPushButton;
-  m_BoxColorPushButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
-
-  QGridLayout* boxColorLayout = new QGridLayout;
-  boxColorLayout->setContentsMargins(4,4,4,4);
-  boxColorLayout->addWidget(m_BoxColorPushButton, 0, 0);
-  boxColorLayout->addWidget(boxColorResetButton, 0, 1);
-
-  formLayout->addRow("line colour", boxColorLayout);
   formLayout->addRow("rendering layer", m_BoxLayer );
   formLayout->addRow("track only windows of the main display", m_TrackOnlyMainWindows);
   formLayout->labelForField(m_TrackOnlyMainWindows)->setToolTip(trackOnlyMainWindowsToolTip);
 
   m_MainControl->setLayout(formLayout);
-
-  QObject::connect( m_BoxColorPushButton, SIGNAL( clicked() ), this, SLOT( OnBoxColourChanged() ) );
-  QObject::connect( boxColorResetButton, SIGNAL( clicked() ), this, SLOT( OnResetBoxColour() ) );
 
   this->Update();
 
@@ -146,8 +127,6 @@ QWidget* QmitkThumbnailViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool QmitkThumbnailViewPreferencePage::PerformOk()
 {
-  m_ThumbnailPreferencesNode->Put(THUMBNAIL_BOX_COLOUR_STYLE_SHEET, m_BoxColorStyleSheet);
-  m_ThumbnailPreferencesNode->Put(THUMBNAIL_BOX_COLOUR, m_BoxColor);
   m_ThumbnailPreferencesNode->PutDouble(THUMBNAIL_BOX_OPACITY, m_BoxOpacity->value());
   m_ThumbnailPreferencesNode->PutInt(THUMBNAIL_BOX_THICKNESS, m_BoxThickness->value());
   m_ThumbnailPreferencesNode->PutInt(THUMBNAIL_BOX_LAYER, m_BoxLayer->value());
@@ -166,56 +145,8 @@ void QmitkThumbnailViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void QmitkThumbnailViewPreferencePage::Update()
 {
-  m_BoxColorStyleSheet = m_ThumbnailPreferencesNode->Get(THUMBNAIL_BOX_COLOUR_STYLE_SHEET, "");
-  m_BoxColor = m_ThumbnailPreferencesNode->Get(THUMBNAIL_BOX_COLOUR, "");
-  if (m_BoxColorStyleSheet=="")
-  {
-    m_BoxColorStyleSheet = "background-color: rgb(255,0,0)";
-  }
-  if (m_BoxColor=="")
-  {
-    m_BoxColor = "#ff0000";
-  }
-  m_BoxColorPushButton->setStyleSheet(m_BoxColorStyleSheet);
-
   m_BoxThickness->setValue(m_ThumbnailPreferencesNode->GetInt(THUMBNAIL_BOX_THICKNESS, 1));
   m_BoxLayer->setValue(m_ThumbnailPreferencesNode->GetInt(THUMBNAIL_BOX_LAYER, 99));
   m_BoxOpacity->setValue(m_ThumbnailPreferencesNode->GetDouble(THUMBNAIL_BOX_OPACITY, 1));
   m_TrackOnlyMainWindows->setChecked(m_ThumbnailPreferencesNode->GetBool(THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS, true));
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkThumbnailViewPreferencePage::OnBoxColourChanged()
-{
-  QColor colour = QColorDialog::getColor();
-  if (colour.isValid())
-  {
-    m_BoxColorPushButton->setAutoFillBackground(true);
-
-    QString styleSheet = "background-color: rgb(";
-    styleSheet.append(QString::number(colour.red()));
-    styleSheet.append(",");
-    styleSheet.append(QString::number(colour.green()));
-    styleSheet.append(",");
-    styleSheet.append(QString::number(colour.blue()));
-    styleSheet.append(")");
-
-    m_BoxColorPushButton->setStyleSheet(styleSheet);
-    m_BoxColorStyleSheet = styleSheet;
-
-    QStringList boxColor;
-    boxColor << colour.name();
-
-    m_BoxColor = boxColor.replaceInStrings(";","\\;").join(";");
-  }
- }
-
-
-//-----------------------------------------------------------------------------
-void QmitkThumbnailViewPreferencePage::OnResetBoxColour()
-{
-  m_BoxColorStyleSheet = "background-color: rgb(255,0,0)";
-  m_BoxColor = "#ff0000";
-  m_BoxColorPushButton->setStyleSheet(m_BoxColorStyleSheet);
 }

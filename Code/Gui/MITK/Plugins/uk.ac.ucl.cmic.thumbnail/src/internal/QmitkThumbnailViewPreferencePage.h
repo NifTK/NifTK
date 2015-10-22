@@ -26,7 +26,7 @@ class QPushButton;
 
 /**
  * \class QmitkThumbnailViewPreferencePage
- * \brief Preferences page for the ThumbnailView plugin, enabling the user to set colour,
+ * \brief Preferences page for the ThumbnailView plugin, enabling the user to set
  * line thickness, opacity, layer, and whether to respond to mouse events.
  * \ingroup uk_ac_ucl_cmic_gui_thumbnail
  *
@@ -57,12 +57,6 @@ public:
   /// \see IPreferencePage::Update()
   virtual void Update();
 
-  /// \brief Stores the name of the preferences node that stores the box outline colour
-  static const QString THUMBNAIL_BOX_COLOUR;
-
-  /// \brief Stores the name of the preferences node that stores the box outline colour style sheet.
-  static const QString THUMBNAIL_BOX_COLOUR_STYLE_SHEET;
-
   /// \brief Stores the name of the preferences node that stores the box line thickness
   static const QString THUMBNAIL_BOX_THICKNESS;
 
@@ -75,20 +69,12 @@ public:
   /// \brief Stores the name of the preferences node that tells if only main windows should be tracked.
   static const QString THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS;
 
-protected slots:
-
-  void OnBoxColourChanged();
-  void OnResetBoxColour();
-
 protected:
 
   QWidget        *m_MainControl;
   QSpinBox       *m_BoxThickness;
   QDoubleSpinBox *m_BoxOpacity;
   QSpinBox       *m_BoxLayer;
-  QPushButton    *m_BoxColorPushButton;
-  QString         m_BoxColorStyleSheet;
-  QString         m_BoxColor;
   QCheckBox* m_TrackOnlyMainWindows;
 
   bool m_Initializing;
