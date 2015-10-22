@@ -120,9 +120,6 @@ public:
   /// \brief Gets the bounding box visibility.
   bool GetBoundingBoxVisible() const;
 
-  /// \brief Sets the bounding box visibility, default is true.
-  void SetBoundingBoxVisible(bool visible);
-
   /// \brief Gets whether to resond to mouse events, default is on.
   bool GetRespondToMouseEvents() const;
 
@@ -142,11 +139,11 @@ public:
   void NodeChangedProxy(const mitk::DataNode* node);
 
   /// \brief Returns the currently tracked
-  mitk::BaseRenderer::ConstPointer GetTrackedRenderer() const;
+  mitk::BaseRenderer::Pointer GetTrackedRenderer() const;
 
   /// \brief Makes the thumbnail render window track the given renderer.
   /// The renderer is supposed to come from the main display (aka. editor).
-  void SetTrackedRenderer(mitk::BaseRenderer::ConstPointer rendererToTrack);
+  void SetTrackedRenderer(mitk::BaseRenderer::Pointer rendererToTrack);
 
 protected:
 
@@ -157,18 +154,6 @@ protected:
   virtual void OnNodeChanged(const mitk::DataNode* node);
 
 private:
-
-  /// \brief Callback for when the world geometry changes.
-  void OnWorldGeometryChanged();
-
-  /// \brief Callback for when the display geometry of a window changes, where we only update the thumbnail bounding box.
-  void OnDisplayGeometryChanged();
-
-  /// \brief Callback for when the slice selector changes slice, where we change the world geometry to get the right slice.
-  void OnSliceChanged(const itk::EventObject & geometrySliceEvent);
-
-  /// \brief Callback for when the slice selector changes time step.
-  void OnTimeStepChanged(const itk::EventObject & geometrySliceEvent);
 
   /// \brief Callback for when the bounding box is panned through the interactor.
   void OnBoundingBoxPanned(const mitk::Vector2D& displacement);
@@ -185,30 +170,20 @@ private:
   /// \brief Updates the slice and time step on the SliceNavigationController.
   void UpdateSliceAndTimeStep();
 
+  /// \brief Called to add all observers to tracked objects.
+  void AddObserversToTrackedObjects();
+
   /// \brief Called to remove all observers from tracked objects.
   void RemoveObserversFromTrackedObjects();
 
-  /// \brief Used to add/remove the bounding box from data storage.
-  ///
-  /// If add=true will add the bounding box to data storage if it isn't already,
-  /// and if false will remove it if it isn't already removed.
-  /// If data storage is NULL, will silently do nothing.
-  void AddBoundingBoxToDataStorage(bool add);
+  /// \brief Adds the bounding box to the data storage.
+  void AddBoundingBoxToDataStorage();
+
+  /// \brief Removes the bounding box from the data storage.
+  void RemoveBoundingBoxFromDataStorage();
 
   /// \brief Converts 2D pixel point to 3D millimetre point using MITK methods.
   mitk::Point3D Get3DPoint(int x, int y);
-
-  /// \brief Used for when the tracked window world geometry changes
-  unsigned long m_TrackedWorldGeometryTag;
-
-  /// \brief Used for when the tracked window display geometry changes.
-  unsigned long m_TrackedDisplayGeometryTag;
-
-  /// \brief Used for when the tracked window changes slice.
-  unsigned long m_TrackedSliceSelectorTag;
-
-  /// \brief Used for when the tracked window changes time step.
-  unsigned long m_TrackedTimeStepSelectorTag;
 
   /// \brief We need to provide access to data storage to listen to Node events.
   mitk::DataStorage::Pointer m_DataStorage;
@@ -223,7 +198,7 @@ private:
   mitk::BaseRenderer::Pointer m_Renderer;
 
   /// \brief This is set to the currently tracked renderer. We don't construct or own it, so don't delete it.
-  mitk::BaseRenderer::ConstPointer m_TrackedRenderer;
+  mitk::BaseRenderer::Pointer m_TrackedRenderer;
 
   // This is set to the current world geometry.
   mitk::BaseGeometry::Pointer m_TrackedWorldGeometry;
@@ -241,6 +216,22 @@ private:
 
   /// \brief Keep track of this to register and unregister event listeners.
   mitk::SliceNavigationController::Pointer m_TrackedSliceNavigator;
+
+  /// \brief Used for when the tracked renderer changes
+  /// For example new world time geometry is set for the renderer.
+  unsigned long m_TrackedRendererTag;
+
+  /// \brief Used for when the tracked window world geometry changes
+  unsigned long m_TrackedWorldGeometryTag;
+
+  /// \brief Used for when the tracked window display geometry changes.
+  unsigned long m_TrackedDisplayGeometryTag;
+
+  /// \brief Used for when the tracked window changes slice.
+  unsigned long m_TrackedSliceSelectorTag;
+
+  /// \brief Used for when the tracked window changes time step.
+  unsigned long m_TrackedTimeStepSelectorTag;
 
   /// \brief Squash all mouse events.
   QmitkMouseEventEater* m_MouseEventEater;
