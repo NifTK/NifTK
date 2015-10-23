@@ -61,7 +61,7 @@ public:
    * \brief
    * performs the point projection
    */
-  void  Reconstruct(mitk::VideoTrackerMatching::Pointer matcher)
+  void  Reconstruct(mitk::VideoTrackerMatching::Pointer matcher);
   
   /**
    * \brief
@@ -150,7 +150,7 @@ private:
       const double& patchDepthStdDev,
       const unsigned int& patchVectorSize,
       const std::vector < unsigned int >& patchDepthHistogram,
-      const double& meanTriangulationError )
+      const double& meanTriangulationError );
   
 }; // end class
 

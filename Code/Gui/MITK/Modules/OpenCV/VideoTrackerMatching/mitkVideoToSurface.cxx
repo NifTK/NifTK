@@ -30,7 +30,7 @@ namespace mitk {
 
 //-----------------------------------------------------------------------------
 VideoToSurface::VideoToSurface()
-, m_SaveVideo(false)
+: m_SaveVideo(false)
 , m_VideoIn("")
 , m_VideoOut("")
 , m_Directory("")
@@ -168,8 +168,7 @@ void VideoToSurface::SetSaveVideo ( bool savevideo )
 }
 
 //-----------------------------------------------------------------------------
-void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatcher, 
-    std::vector<double>* perturbation)
+void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatcher)
 {
   if ( ! m_InitOK )
   {
@@ -197,13 +196,15 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
     }
     else
     {
-      CorrectDistortionInSingleImage ( m_LeftIntrinsicMatrix, m_LeftDistortionVector, 
-          leftImage );
-      CorrectDistortionInSingleImage ( m_RightIntrinsicMatrix, m_RightDistortionVector, 
-          rightImage );
+      IplImage  IplLeftImage = leftImage;
+      IplImage  IplRightImage = rightImage;
+      CvMat CvLeftIntrinsicMatrix = *m_LeftIntrinsicMatrix;
+      CvMat CvLeftDistortionVector = *m_LeftDistortionVector;
+      CorrectDistortionInSingleImage ( CvMat(*m_LeftIntrinsicMatrix), CvMat (*m_LeftDistortionVector), IplLeftImage);
+      CorrectDistortionInSingleImage ( CvMat(*m_RightIntrinsicMatrix),CvMat(*m_RightDistortionVector), IplRightImage);
 
       long long timingError;
-      cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, perturbation, m_ReferenceIndex).inv();
+      cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex).inv();
       
       unsigned long long matrixTimeStamp;
       unsigned long long absTimingError = static_cast<unsigned long long> ( abs(timingError));
@@ -221,7 +222,9 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
       cv::Mat leftPatch = this->GetPatch (leftImage);
       cv::Mat rightPatch = this->GetPatch (rightImage);
 
-      featureMatcher.Process ( leftPatch, rightPatch ) ;
+      IplImage IplLeftPatch = leftPatch;
+      IplImage IplRightPatch = rightPatch;
+      featureMatcher.Process ( &IplLeftPatch, &IplRightPatch ) ;
     
       cv::Mat disparityImage = featureMatcher.CreateDisparityImage();
       
@@ -244,9 +247,9 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
     
       std::vector < std::pair < cv::Point3d, double > > triangulatedPoints = 
         mitk::TriangulatePointPairsUsingGeometry ( matchedPairs ,
-            m_LeftIntrinsicMatrix, m_RightIntrinsicMatrix, 
-            m_RightToLeftRotationMatrix, m_RightToLeftTranslationVector,
-            m_TriagulationTolerance );
+            *m_LeftIntrinsicMatrix, *m_RightIntrinsicMatrix, 
+            *m_RightToLeftRotationMatrix, *m_RightToLeftTranslationVector,
+            m_TriangulationTolerance );
    
       std::vector <cv::Point3d> points;
       double meanError = 0;
@@ -266,17 +269,16 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
         histogram[bin]++;
 
         points.push_back ( it->first );
-        errors.push_back ( it->second );
         
         meanError += it->second;
       }
-      meanError /= static_cast<double>( triangulatedPoints.size();
+      meanError /= static_cast<double>( triangulatedPoints.size());
 
       cv::Point3d stddev;
 
       cv::Point3d centroid = mitk::GetCentroid ( points, false, &stddev );
    
-      this->AnnoateImage ( leftImage, dispariityImage, timingError, centroid.z, stddev.z,
+      this->AnnotateImage ( leftImage, disparityImage, timingError, centroid.z, stddev.z,
         triangulatedPoints.size(), histogram, meanError );
 
     }

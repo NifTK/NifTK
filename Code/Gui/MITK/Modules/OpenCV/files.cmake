@@ -31,7 +31,7 @@ set(CPP_FILES
   VideoTrackerMatching/mitkTwoTrackerMatching.cxx
   VideoTrackerMatching/mitkTrackerAnalysis.cxx
   VideoTrackerMatching/mitkTwoTrackerAnalysis.cxx
-# VideoTrackerMatching/mitkVideoToSurface.cxx
+  VideoTrackerMatching/mitkVideoToSurface.cxx
   CameraCalibration/mitkCameraCalibrationFacade.cxx
   CameraCalibration/mitkCameraCalibrationFromDirectory.cxx
   CameraCalibration/mitkStereoCameraCalibration.cxx
