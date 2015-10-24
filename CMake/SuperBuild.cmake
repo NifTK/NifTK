@@ -430,6 +430,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -Daruco_DIR:PATH=${aruco_DIR}
       -Dapriltags_DIR:PATH=${apriltags_DIR}
       -DPython_DIR:PATH=${Python_DIR}
+      -DPCL_DIR:PATH=${PCL_DIR}
     DEPENDS ${proj_DEPENDENCIES}
   )
 
