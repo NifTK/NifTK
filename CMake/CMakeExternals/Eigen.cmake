@@ -37,6 +37,10 @@ if(NOT DEFINED Eigen_DIR)
     INSTALL_DIR ${proj_INSTALL}
     URL ${proj_LOCATION}
     URL_MD5 ${proj_CHECKSUM}
+    #CONFIGURE_COMMAND ""
+    UPDATE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
@@ -49,10 +53,11 @@ if(NOT DEFINED Eigen_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  set(Eigen_DIR ${proj_INSTALL})
-  set(Eigen_INCLUDE_DIR ${Eigen_DIR}/include/eigen3)
+  set(Eigen_DIR ${proj_SOURCE})
+  set(Eigen_ROOT ${Eigen_DIR})
+  set(Eigen_INCLUDE_DIR ${Eigen_DIR})
 
-  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
+#  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
   mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading Eigen from ${Eigen_DIR}")
