@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_IGI AND BUILD_PCL)
 
-  set(version "c2203fa60a")
+  set(version "83c02003a2")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/PointCloudLibrary-pcl-${version}.tar.gz")
 
   niftkMacroDefineExternalProjectVariables(PCL ${version} ${location})
@@ -56,6 +56,7 @@ if(BUILD_IGI AND BUILD_PCL)
         -DBoost_USE_STATIC_LIBS:BOOL=${Boost_USE_STATIC_LIBS}
         -DPCL_BUILD_WITH_BOOST_DYNAMIC_LINKING_WIN32:BOOL=NOT ${Boost_USE_STATIC_LIBS}
         -DBUILD_tools:BOOL=OFF
+        -DBUILD_visualization:BOOL=OFF
       CMAKE_CACHE_ARGS
         ${EP_COMMON_CACHE_ARGS}
       CMAKE_CACHE_DEFAULT_ARGS
