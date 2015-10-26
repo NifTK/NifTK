@@ -28,16 +28,12 @@ set(location "${NIFTK_EP_TARBALL_LOCATION}/InsightToolkit-${version}.tar.gz")
 niftkMacroDefineExternalProjectVariables(ITK ${version} ${location})
 set(proj_DEPENDENCIES GDCM)
 
-if(MITK_USE_Python)
-  list(APPEND proj_DEPENDENCIES CableSwig)
+if(MITK_USE_OpenCV)
+  list(APPEND proj_DEPENDENCIES OpenCV)
 endif()
 
 if(MITK_USE_HDF5)
   list(APPEND proj_DEPENDENCIES HDF5)
-endif()
-
-if(BUILD_IGI)
-  list(APPEND proj_DEPENDENCIES OpenCV)
 endif()
 
 if(NOT DEFINED ITK_DIR)
@@ -49,34 +45,11 @@ if(NOT DEFINED ITK_DIR)
         -DCMAKE_USE_PTHREADS:BOOL=OFF)
   endif()
 
-  if(MITK_USE_Python)
+  list(APPEND additional_cmake_args
+       -DUSE_WRAP_ITK:BOOL=OFF
+      )
 
-    list(APPEND additional_cmake_args
-         -DITK_WRAPPING:BOOL=ON
-         -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
-         -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
-         -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
-         #-DPYTHON_LIBRARIES=${PYTHON_LIBRARY}
-         #-DPYTHON_DEBUG_LIBRARIES=${PYTHON_DEBUG_LIBRARIES}
-         -DCableSwig_DIR:PATH=${CableSwig_DIR}
-         #-DITK_WRAP_JAVA:BOOL=OFF
-         -DITK_WRAP_unsigned_char:BOOL=ON
-         #-DITK_WRAP_double:BOOL=ON
-         -DITK_WRAP_rgb_unsigned_char:BOOL=ON
-         #-DITK_WRAP_rgba_unsigned_char:BOOL=ON
-         -DITK_WRAP_signed_char:BOOL=ON
-         #-DWRAP_signed_long:BOOL=ON
-         -DITK_WRAP_signed_short:BOOL=ON
-         -DITK_WRAP_short:BOOL=ON
-         -DITK_WRAP_unsigned_long:BOOL=ON
-        )
-  else()
-    list(APPEND additional_cmake_args
-         -DUSE_WRAP_ITK:BOOL=OFF
-        )
-  endif()
-
-  if(BUILD_IGI)
+  if(MITK_USE_OpenCV)
     message("Building ITK with OpenCV_DIR: ${OpenCV_DIR}")
     list(APPEND additional_cmake_args
          -DModule_ITKVideoBridgeOpenCV:BOOL=ON

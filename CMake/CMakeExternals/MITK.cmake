@@ -12,7 +12,6 @@
 #
 #============================================================================*/
 
-
 #-----------------------------------------------------------------------------
 # MITK
 #-----------------------------------------------------------------------------
@@ -22,7 +21,7 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-set(version "f33196377a")
+set(version "6b93497489")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
@@ -77,11 +76,33 @@ if(NOT DEFINED MITK_DIR)
       set(MITK_BUILD_org.mitk.gui.qt.measurementtoolbox ON CACHE BOOL \"Build the MITK measurement toolbox, but we turn the statistics plugin off in the C++ code. \")
       set(MITK_BUILD_org.mitk.gui.qt.moviemaker ON CACHE BOOL \"Build the MITK Movie Maker plugin. \")
       set(MITK_BUILD_org.mitk.gui.qt.aicpregistration ON CACHE BOOL \"Build the MITK Anisotropic ICP plugin. \")
+      set(MITK_BUILD_org.mitk.gui.qt.python ${MITK_USE_Python} CACHE BOOL \"Build the MITK python plugin. \")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.log ON CACHE BOOL \"Build the Blueberry logging plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.ui.qt.help ON CACHE BOOL \"Build the Blueberry Qt help plugin\")
       set(BLUEBERRY_BUILD_org.blueberry.compat ON CACHE BOOL \"Build the Blueberry compat plugin (Matt, what is this for?)\")
       set(DCMTK_DIR ${DCMTK_DIR} CACHE PATH \"DCMTK install directory\")
+      set(Python_DIR ${Python_DIR} CACHE PATH \"Python install directory \")
     ")
+
+    set(mitk_optional_cache_args )
+    if(MITK_USE_Python)
+      list(APPEND mitk_optional_cache_args
+           -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
+           -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
+           -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
+           -DPYTHON_INCLUDE_DIR2:PATH=${PYTHON_INCLUDE_DIR2}
+           -DPython_DIR:PATH=${Python_DIR}
+           -DMITK_USE_SYSTEM_PYTHON:BOOL=${MITK_USE_SYSTEM_PYTHON}
+           -DMITK_USE_Python:BOOL=${MITK_USE_Python}
+          )
+      list(APPEND proj_DEPENDENCIES Python)
+      foreach(dep ZLIB PCRE SWIG SimpleITK Numpy)
+        if(${MITK_USE_${dep}})
+          list(APPEND proj_DEPENDENCIES ${dep})
+          list(APPEND mitk_optional_cache_args -DMITK_USE_${dep}:BOOL=${MITK_USE_${dep}} -D${dep}_DIR:PATH=${${dep}_DIR} )
+        endif()
+      endforeach()
+    endif()
 
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
@@ -118,6 +139,7 @@ if(NOT DEFINED MITK_DIR)
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
         -DOpenIGTLink_DIR:PATH=${OpenIGTLink_DIR}
         -DEigen_DIR:PATH=${Eigen_DIR}
+        ${mitk_optional_cache_args}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
       CMAKE_CACHE_ARGS
         ${EP_COMMON_CACHE_ARGS}
