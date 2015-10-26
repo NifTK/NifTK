@@ -45,11 +45,12 @@ if(BUILD_IGI AND BUILD_PCL)
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
         -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
+        -DCMAKE_DEBUG_POSTFIX:STRING=
         -DBOOST_ROOT:PATH=${BOOST_ROOT}
         -DBOOST_INCLUDEDIR:PATH=${BOOST_ROOT}/include
         -DBOOST_LIBRARYDIR:PATH=${BOOST_ROOT}/lib
         -DBoost_NO_SYSTEM_PATHS:BOOL=ON
-        -DEIGEN_ROOT:PATH=${Eigen_DIR}
+        -DEIGEN_ROOT:PATH=${Eigen_SOURCE_DIR}
         -DFLANN_ROOT:PATH=${FLANN_DIR}
         -DVTK_DIR:PATH=${VTK_DIR}
         # explicitly define this (with the default value) because pcl will try to use static libs otherwise
