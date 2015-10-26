@@ -497,10 +497,10 @@ void QmitkThumbnailRenderWindow::UpdateSliceAndTimeStep()
 //-----------------------------------------------------------------------------
 void QmitkThumbnailRenderWindow::UpdateWorldGeometry()
 {
-  if (m_TrackedRenderer)
+  if (m_TrackedRenderer && m_TrackedRenderer->GetWorldTimeGeometry())
   {
     // World geometry of thumbnail must be same (or larger) as world geometry of the tracked window.
-    m_Renderer->SetWorldTimeGeometry(const_cast<mitk::TimeGeometry*>(m_TrackedRenderer->GetWorldTimeGeometry()));
+    m_Renderer->SetWorldTimeGeometry(m_TrackedRenderer->GetWorldTimeGeometry());
 
     // Display geometry of widget must encompass whole of world geometry
     m_Renderer->GetDisplayGeometry()->Fit();
