@@ -485,7 +485,12 @@ endif()
 if(APPLE)
   set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
 else()
-  set(DESIRED_QT_VERSION 5 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+
+  # For now, we stick with Qt 4.
+
+  #set(DESIRED_QT_VERSION 5 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+  set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+
 endif()
 
 env_option(MITK_USE_QT "Use the Qt Company's Qt library" ON)
