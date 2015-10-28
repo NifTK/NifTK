@@ -95,7 +95,7 @@
       <longflag>framesToUseFactor</longflag>
       <description>The multiplier for the number of frames to check for chessboards.</description>
       <label>Multiplier</label>
-      <default>3</default>
+      <default>2</default>
     </integer>
 
     <integer>
@@ -167,6 +167,14 @@
       <longflag>randomise</longflag>
       <description>Use random seed to select frames.</description>
       <label>Randomise</label>
+      <default>false</default>
+    </boolean>
+
+    <boolean>
+      <name>stickToFramesToUse</name>
+      <longflag>stickToFramesToUse</longflag>
+      <description>If specified, will stick to the number of frames given by --framesToUse, otherwise we use all detected chessboards.</description>
+      <label>Strict #Frames</label>
       <default>false</default>
     </boolean>
 

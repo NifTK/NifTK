@@ -34,7 +34,8 @@ namespace mitk {
 //-----------------------------------------------------------------------------
 HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 : m_FramesToUse(30)
-, m_FramesToUseFactor(3)
+, m_FramesToUseFactor(2)
+, m_StickToFramesToUse(false)
 , m_SaveProcessedVideoData(true)
 , m_VideoInitialised(false)
 , m_TrackingDataInitialised(false)
@@ -409,13 +410,33 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     frameNumber++;
   }
 
-  MITK_INFO << "Got " << allLeftFrameNumbers.size() << " pairs of chessboards.";
-  if (allLeftFrameNumbers.size() < m_FramesToUse)
+  MITK_INFO << "Got " << allLeftFrameNumbers.size() << " pairs of valid chessboards.";
+
+  int indexToUse = 0;
+  int desiredNumberOfFrames = allLeftFrameNumbers.size();
+  if (m_StickToFramesToUse)
   {
-    mitkThrow() << "The number of chessboards (" << allLeftFrameNumbers.size() << ") is less than the number required (" << m_FramesToUse << ")";
+    desiredNumberOfFrames = m_FramesToUse;
+  }
+
+  // If there are not enough valid chessboards, we warn or throw.
+  if (allLeftFrameNumbers.size() < desiredNumberOfFrames)
+  {
+    std::ostringstream oss;
+    oss << "The number of chessboards (" << allLeftFrameNumbers.size() << ") is less than the number required (" << m_FramesToUse << ")";
+
+    if (m_StickToFramesToUse)
+    {
+      mitkThrow() << oss.str();
+    }
+    else
+    {
+      MITK_WARN << oss.str();
+    }
   }
 
   // Now randomly select from the list of available chessboards
+
   int numberOfChosenFrames = 0;
   std::set<int> setOfChosenIndexes;
   std::vector <int> leftFramesToUse;
@@ -425,9 +446,21 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   std::vector<cv::Mat> chosenRightImagePoints;
   std::vector<cv::Mat> chosenRightObjectPoints;
 
-  while (numberOfChosenFrames < m_FramesToUse)
+  // Iterate round accumulating frames.
+  while (numberOfChosenFrames < desiredNumberOfFrames)
   {
-    int indexToUse = std::rand() % allLeftFrameNumbers.size();
+    // If we have more frames than we need, and we MUST stick to the number specified, pick randomly.
+    if ((desiredNumberOfFrames < allLeftFrameNumbers.size())
+        && m_StickToFramesToUse)
+    {
+      indexToUse = std::rand() % allLeftFrameNumbers.size();
+    }
+    // Otherwise, use them all.
+    else
+    {
+      indexToUse = numberOfChosenFrames;
+    }
+
     if (setOfChosenIndexes.find(indexToUse) == setOfChosenIndexes.end())
     {
       setOfChosenIndexes.insert(indexToUse);
@@ -465,12 +498,6 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
         cv::imwrite( rightFilename, allRightChessBoards[indexToUse] );
       }
     }
-  }
-
-  MITK_INFO << "There are " << leftFramesToUse.size() << " chosen frames.";
-  if (leftFramesToUse.size() < m_FramesToUse)
-  {
-    mitkThrow() << "Chose " << leftFramesToUse.size() << ", instead of " << m_FramesToUse;
   }
 
   cv::Mat leftImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * leftFramesToUse.size(),2,CV_64FC1);
