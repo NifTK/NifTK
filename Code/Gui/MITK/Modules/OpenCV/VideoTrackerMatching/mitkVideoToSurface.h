@@ -73,6 +73,7 @@ public:
   void SetSaveVideo( bool state );
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
+  itkSetMacro ( EndFrame, unsigned int);
   itkSetMacro ( HaltOnVideoReadFail, bool);
   itkSetMacro ( VisualiseTrackingStatus, bool);
   itkSetMacro ( AllowableTimingError, long long);
