@@ -774,6 +774,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
 
     cv::Mat averageHandEye = mitk::AverageMatrices(handEyeMatrices);
     m_CameraToMarker = averageHandEye;
+    this->WriteHandEye();
   }
 
   cv::Mat handEyeRotationMatrix(m_CameraToMarker, cv::Range(0, 2), cv::Range(0,2));

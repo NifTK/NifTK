@@ -67,6 +67,8 @@ protected:
   HandeyeCalibrate(const HandeyeCalibrate&); // Purposefully not implemented.
   HandeyeCalibrate& operator=(const HandeyeCalibrate&); // Purposefully not implemented.
   
+  void WriteHandEye();
+
   bool  m_FlipTracking;
   bool  m_FlipExtrinsic;
   bool  m_SortByDistance;
