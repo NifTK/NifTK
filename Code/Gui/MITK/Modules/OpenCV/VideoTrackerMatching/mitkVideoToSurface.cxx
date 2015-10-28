@@ -281,156 +281,92 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
       this->AnnotateImage ( leftImage, disparityImage, timingError, centroid.z, stddev.z,
         triangulatedPoints.size(), histogram, meanError );
 
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-/*cv::Mat VideoToSurface::AnnotateImage(mitk::VideoTrackerMatching::Pointer trackerMatcher, 
+      if ( m_SaveVideo )
       {
-        cv::Mat videoImage;
-        m_Capture->read(videoImage);
-        if ( drawProjection )
+        if ( m_LeftWriter != NULL ) 
         {
-          m_ProjectedPointLists.back()->AnnotateImage(videoImage);
-        }  
-        if ( m_DrawAxes )
-        {
-          if ( framenumber % 2 == 0 )
-          {
-            cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Left,m_ScreenAxesPoints.m_Points[1].m_Left,cvScalar(255,0,0));
-            cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Left,m_ScreenAxesPoints.m_Points[2].m_Left,cvScalar(0,255,0));
-            cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Left,m_ScreenAxesPoints.m_Points[3].m_Left,cvScalar(0,0,255));         
-          }
-          else
-          {
-            cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Right,m_ScreenAxesPoints.m_Points[1].m_Right,cvScalar(255,0,0));
-            cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Right,m_ScreenAxesPoints.m_Points[2].m_Right,cvScalar(0,255,0));
-            cv::line(videoImage,m_ScreenAxesPoints.m_Points[0].m_Right,m_ScreenAxesPoints.m_Points[3].m_Right,cvScalar(0,0,255));         
-          }
-        }
-        if ( m_VisualiseTrackingStatus )
-        {
-          unsigned int howMany = trackerMatcher->GetTrackingMatricesSize();
-
-          for ( unsigned int i = 0 ; i < howMany ; i ++ ) 
-          {
-
-            long long timingError;
-            trackerMatcher->GetCameraTrackingMatrix(framenumber , &timingError , i);
-            cv::Point2d textLocation = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.03 ) , (i+1) *  m_VideoHeight * 0.07  );
-            cv::Point2d location = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) , (i) *  m_VideoHeight * 0.07 + m_VideoHeight * 0.02  );
-            cv::Point2d location1 = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) + ( m_VideoWidth * 0.025 ) , 
-              (i) *  m_VideoHeight * 0.07 + (m_VideoHeight * 0.06) + m_VideoHeight * 0.02);
-            if ( timingError < m_AllowableTimingError )
-            {
-              cv::rectangle ( videoImage, location, location1  , cvScalar (0,255,0), CV_FILLED);
-              cv::putText(videoImage , "T" + boost::lexical_cast<std::string>(i), textLocation ,0,1.0, cvScalar ( 255,255,255), 4.0);
-            }
-            else
-            {
-              cv::rectangle ( videoImage, location, location1  , cvScalar (0,0,255), CV_FILLED);
-              cv::putText(videoImage , "T" + boost::lexical_cast<std::string>(i), textLocation ,0,1.0, cvScalar ( 255,255,255), 4.0);
-            }
-          }
-        }
-        if ( m_AnnotateWithGoldStandards )
-        {
-          std::vector < mitk::PickedObject > goldStandardObjects;
-          for ( std::vector<mitk::PickedObject>::iterator it = m_GoldStandardPoints.begin()  ; it < m_GoldStandardPoints.end() ; ++it ) 
-          {
-            if ( it->m_FrameNumber == framenumber ) 
-            {
-              if ( framenumber%2 == 0 )
-              {
-                if ( it->m_Channel == "left" )
-                {
-                  goldStandardObjects.push_back(*it);
-                  goldStandardObjects.back().m_Scalar = cv::Scalar ( 0,255,255);
-                }
-              }
-              if ( framenumber%2 !=0 )
-              {
-                if ( it->m_Channel == "right" )
-                {
-                  goldStandardObjects.push_back(*it);
-                  goldStandardObjects.back().m_Scalar = cv::Scalar ( 0,255,255);
-                }
-              }
-            }
-          }
-          if ( goldStandardObjects.size() != 0 )
-          {
-            mitk::PickedPointList::Pointer goldStandardPointList = mitk::PickedPointList::New();
-            goldStandardPointList->SetPickedObjects(goldStandardObjects);
-            goldStandardPointList->AnnotateImage(videoImage);
-            if ( m_WriteAnnotatedGoldStandards ) 
-            {
-              std::string outname = boost::lexical_cast<std::string>(framenumber) + ".png";
-              cv::imwrite(outname,videoImage);
-            }
-
-          }
-        }
-
-        if ( m_SaveVideo )
-        {
-          if ( m_LeftWriter != NULL ) 
-          {
-            if ( framenumber%2 == 0 ) 
-            {
-              IplImage image(videoImage);
-              cvResize (&image, smallcorrectedimage,CV_INTER_LINEAR);
-              cvWriteFrame(m_LeftWriter,smallcorrectedimage);
-            }
-          }
-          if ( m_RightWriter != NULL ) 
-          {
-            if ( framenumber%2 != 0 ) 
-            {
-              IplImage image(videoImage);
-              cvResize (&image, smallcorrectedimage,CV_INTER_LINEAR);
-              cvWriteFrame(m_RightWriter,smallcorrectedimage);
-            }
-          }
-        }
-        if ( m_Visualise ) 
-        {
-          IplImage image(videoImage);
-          cvResize (&image, smallimage,CV_INTER_LINEAR);
-          if ( framenumber %2 == 0 ) 
-          {
-            cvShowImage("Left Channel" , smallimage);
-          }
-          else
-          {
-            cvShowImage("Right Channel" , smallimage);
-          }
-          key = cvWaitKey (20);
-          if ( key == 's' )
-          {
-            m_Visualise = false;
-          }
-          if ( key == 't' )
-          {
-            drawProjection = ! drawProjection;
-          }
+           IplImage image(leftImage);
+           cvWriteFrame(m_LeftWriter,&image);
         }
       }
-      framenumber ++;
     }
   }
   if ( m_LeftWriter != NULL )
   {
     cvReleaseVideoWriter(&m_LeftWriter);
   }
-  if ( m_RightWriter != NULL )
-  {
-    cvReleaseVideoWriter(&m_RightWriter);
-  }
-  m_ProjectOK = true;
+}
 
-}*/
+
+//-----------------------------------------------------------------------------
+void VideoToSurface::AnnotateImage(cv::Mat& image, const cv::Mat& patch, const long long& timingError,
+     const double& patchDepthMean,
+     const double& patchDepthStdDev,
+     const unsigned int& patchVectorSize,
+     const std::vector < unsigned int >& patchDepthHistogram,
+     const double& meanTriangulationError )
+{
+
+  cv::Point2d textLocation = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.03 ) , m_VideoHeight * 0.07  );
+  cv::Point2d location = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) , m_VideoHeight * 0.02  );
+  cv::Point2d location1 = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) + ( m_VideoWidth * 0.025 ) , 
+               (m_VideoHeight * 0.06) + m_VideoHeight * 0.02);
+  if ( timingError < m_AllowableTimingError )
+  {
+    cv::rectangle ( image, location, location1  , cvScalar (0,255,0), CV_FILLED);
+    cv::putText(image , "T" + boost::lexical_cast<std::string>(m_TrackerIndex), textLocation ,0,1.0, cvScalar ( 255,255,255), 4.0);
+  }
+  else
+  {
+    cv::rectangle ( image, location, location1  , cvScalar (0,0,255), CV_FILLED);
+    cv::putText(image , "T" + boost::lexical_cast<std::string>(m_TrackerIndex), textLocation ,0,1.0, cvScalar ( 255,255,255), 4.0);
+  }
+  
+  int patchChannels = patch.channels();
+  int imageChannels = image.channels();
+  int channels = patchChannels;
+  if ( imageChannels < patchChannels ) 
+  {
+    channels = imageChannels;
+  }
+  for ( unsigned int row = 0 ; row < m_PatchHeight ; ++row )
+  {
+    for ( unsigned int column = 0 ; column < m_PatchWidth ; ++ column )
+    {
+      const unsigned char *patchPointer  = patch.ptr<uchar>(column, row);
+      unsigned char *imagePointer = image.ptr<uchar>(column + m_PatchOriginX, row + m_PatchOriginY);
+      for ( unsigned int i = 0 ; i < channels ; ++i )
+      {
+        imagePointer[i]   = patchPointer[i];
+      }
+    }
+  }
+
+  //need to do more stuff here
+}
+
+//-----------------------------------------------------------------------------
+cv::Mat VideoToSurface::GetPatch ( const cv::Mat& image )
+{
+  unsigned int channels = image.channels();
+  unsigned int depth = image.depth();
+
+  cv::Mat patch ( m_PatchWidth, m_PatchHeight, depth, channels );
+
+  for ( unsigned int row = 0 ; row < m_PatchHeight ; ++row )
+  {
+    for ( unsigned int column = 0 ; column < m_PatchWidth ; ++ column )
+    {
+      unsigned char *patchPointer  = patch.ptr<uchar>(column, row);
+      const unsigned char *imagePointer = image.ptr<uchar>(column + m_PatchOriginX, row + m_PatchOriginY);
+      for ( unsigned int i = 0 ; i < channels ; ++i )
+      {
+        patchPointer[i]   = imagePointer[i];
+      }
+    }
+  }
+
+  return patch;
+}
 
 } // end namespace
