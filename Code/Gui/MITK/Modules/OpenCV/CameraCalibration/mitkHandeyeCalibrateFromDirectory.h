@@ -23,6 +23,7 @@
 #include <mitkCommon.h>
 #include <mitkPoint.h>
 #include <mitkVector.h>
+#include <vtkMatrix4x4.h>
 #include <cv.h>
 
 #include <mitkVideoTrackerMatching.h>
@@ -67,7 +68,8 @@ public:
   bool LoadExistingRightToLeft(const std::string& directory);
   void SetInputDirectory(const std::string& inputDir);
   virtual void SetOutputDirectory(const std::string& outputDir);
-  
+  void SetChessBoardToTracker(vtkMatrix4x4* matrix);
+
 protected:
 
   HandeyeCalibrateFromDirectory();
@@ -123,6 +125,8 @@ private:
   bool                                m_OptimiseIntrinsics;
   bool                                m_OptimiseRightToLeft;
   bool                                m_Randomise;
+  vtkMatrix4x4*                       m_ChessBoardToTracker;
+
 }; // end class
 
 } // end namespace

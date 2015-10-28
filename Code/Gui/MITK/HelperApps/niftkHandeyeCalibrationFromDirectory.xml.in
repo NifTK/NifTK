@@ -178,6 +178,14 @@
       <default>false</default>
     </boolean>
 
+    <file fileExtensions=".mps">
+      <name>chessboardPoints</name>
+      <longflag>chessboardPoints</longflag>
+      <description>Chessboard Points in Tracker Space</description>
+      <label>Chessboard PointSet</label>
+      <channel>input</channel>
+    </file>
+
   </parameters>
   
 </executable>

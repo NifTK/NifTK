@@ -16,6 +16,7 @@
 #include "mitkCameraCalibrationFacade.h"
 #include "mitkHandeyeCalibrate.h"
 #include <mitkOpenCVFileIOUtils.h>
+#include <mitkOpenCVMaths.h>
 #include <ios>
 #include <fstream>
 #include <iostream>
@@ -55,6 +56,7 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_OptimiseIntrinsics(true)
 , m_OptimiseRightToLeft(true)
 , m_Randomise(false)
+, m_ChessBoardToTracker(NULL)
 {
   m_PixelScaleFactor.Fill(1);
   cvSetIdentity(m_IntrinsicMatrixLeft);
@@ -75,6 +77,13 @@ HandeyeCalibrateFromDirectory::~HandeyeCalibrateFromDirectory()
   cvReleaseMat(&m_DistortionCoefficientsRight);
   cvReleaseMat(&m_RotationMatrixRightToLeft);
   cvReleaseMat(&m_TranslationVectorRightToLeft);
+}
+
+
+//-----------------------------------------------------------------------------
+void HandeyeCalibrateFromDirectory::SetChessBoardToTracker(vtkMatrix4x4* matrix)
+{
+  m_ChessBoardToTracker = matrix;
 }
 
 
@@ -722,7 +731,50 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   
   m_VideoInitialised = true;
 
-  Calibrate ( m_OutputDirectory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex) , extrinsic); 
+  // If user did not specify a chessboard to tracker registration, we do TSAIs method.
+  if (m_ChessBoardToTracker == NULL)
+  {
+    Calibrate ( m_OutputDirectory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex) , extrinsic);
+  }
+  else
+  {
+    // Otherwise, just do it using registration.
+    cv::Matx44d chessBoardToTracker;
+    mitk::CopyToOpenCVMatrix(*m_ChessBoardToTracker, chessBoardToTracker);
+    std::vector<cv::Mat> handEyeMatrices;
+
+    for ( unsigned int view = 0 ; view < leftFramesToUse.size() ; view ++ )
+    {
+      cv::Matx44d leftTrackingMatrix = m_Matcher->GetTrackerMatrix(leftFramesToUse[view], NULL, m_TrackerIndex );
+      cv::Matx44d leftTrackingMatrixInverted = leftTrackingMatrix.inv();
+
+      cv::Matx13d rotationVector;
+      cv::Matx33d rotationMatrix;
+      rotationVector(0,0) = CV_MAT_ELEM ( *outputRotationVectorsLeft , double  , view, 0);
+      rotationVector(0,1) = CV_MAT_ELEM ( *outputRotationVectorsLeft , double  , view, 1);
+      rotationVector(0,2) = CV_MAT_ELEM ( *outputRotationVectorsLeft , double  , view, 2);
+      cv::Rodrigues(rotationVector, rotationMatrix);
+
+      cv::Matx44d chessboardToCamera;
+      mitk::MakeIdentity(chessboardToCamera);
+      for (int r = 0; r < 3; r++)
+      {
+        for (int c = 0; c < 3; c++)
+        {
+          chessboardToCamera(r,c) = rotationMatrix(r,c);
+        }
+        chessboardToCamera(r, 3) = CV_MAT_ELEM ( *outputTranslationVectorsLeft , double  , view, r);
+      }
+      cv::Matx44d chessboardToCameraInverted = chessboardToCamera.inv();
+
+      cv::Matx44d handEye = leftTrackingMatrixInverted * (chessBoardToTracker * chessboardToCameraInverted);
+      cv::Mat he(handEye);
+      handEyeMatrices.push_back(he);
+    }
+
+    cv::Mat averageHandEye = mitk::AverageMatrices(handEyeMatrices);
+    m_CameraToMarker = averageHandEye;
+  }
 
   cv::Mat handEyeRotationMatrix(m_CameraToMarker, cv::Range(0, 2), cv::Range(0,2));
   cv::Mat handEyeRotationVector(cvCreateMat(3,1,CV_64FC1));
