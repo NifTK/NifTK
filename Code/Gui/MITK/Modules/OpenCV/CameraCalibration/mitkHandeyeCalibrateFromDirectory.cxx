@@ -445,7 +445,6 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   }
 
   // Now randomly select from the list of available chessboards
-
   int numberOfChosenFrames = 0;
   std::set<int> setOfChosenIndexes;
   std::vector <int> leftFramesToUse;
@@ -746,7 +745,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     for ( unsigned int view = 0 ; view < leftFramesToUse.size() ; view ++ )
     {
       cv::Matx44d leftTrackingMatrix = m_Matcher->GetTrackerMatrix(leftFramesToUse[view], NULL, m_TrackerIndex );
-      cv::Matx44d leftTrackingMatrixInverted = leftTrackingMatrix.inv();
+      cv::Matx44d leftTrackingMatrixInverted = leftTrackingMatrix.inv(cv::DECOMP_SVD);
 
       cv::Matx13d rotationVector;
       cv::Matx33d rotationMatrix;
@@ -765,7 +764,7 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
         }
         chessboardToCamera(r, 3) = CV_MAT_ELEM ( *outputTranslationVectorsLeft , double  , view, r);
       }
-      cv::Matx44d chessboardToCameraInverted = chessboardToCamera.inv();
+      cv::Matx44d chessboardToCameraInverted = chessboardToCamera.inv(cv::DECOMP_SVD);
 
       cv::Matx44d handEye = leftTrackingMatrixInverted * (chessBoardToTracker * chessboardToCameraInverted);
       cv::Mat he(handEye);

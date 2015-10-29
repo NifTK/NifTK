@@ -68,19 +68,20 @@ int main(int argc, char** argv)
       p[0] = 0;
       p[1] = 0;
       p[2] = 0;
-      chessboardPointsInModelCoordinates->InsertPoint(p);
+      chessboardPointsInModelCoordinates->InsertPoint(0, p);
 
       p[0] = (numberCornerWidth-1)*squareSizeInMM;
-      chessboardPointsInModelCoordinates->InsertPoint(p);
+      chessboardPointsInModelCoordinates->InsertPoint(1, p);
 
       p[1] = (numberCornerHeight-1)*squareSizeInMM;
-      chessboardPointsInModelCoordinates->InsertPoint(p);
+      chessboardPointsInModelCoordinates->InsertPoint(2, p);
 
       p[0] = 0;
-      chessboardPointsInModelCoordinates->InsertPoint(p);
+      chessboardPointsInModelCoordinates->InsertPoint(3, p);
 
       // Register model points to tracker coordinates
-      niftk::PointBasedRegistrationUsingSVD(chessboardPointsInTrackerCoordinates, chessboardPointsInModelCoordinates, *chessboardToTracker);
+      double fiducialRegistrationError = niftk::PointBasedRegistrationUsingSVD(chessboardPointsInTrackerCoordinates, chessboardPointsInModelCoordinates, *chessboardToTracker);
+      MITK_INFO << "Registered model to tracker with FRE=" << fiducialRegistrationError << std::endl;
 
       // If successful, pass to calibrator.
       calibrator->SetChessBoardToTracker(chessboardToTracker);
