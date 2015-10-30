@@ -53,6 +53,10 @@ VideoToSurface::VideoToSurface()
 , m_RightWriter(NULL)
 , m_AllowableTimingError (20e6) // 20 milliseconds 
 , m_StartFrame(0)
+, m_PatchHeight (270)
+, m_PatchWidth (480)
+, m_PatchOriginX (720)
+, m_PatchOriginY (135)
 , m_EndFrame(0)
 {
 }
@@ -145,10 +149,10 @@ void VideoToSurface::FindVideoData(mitk::VideoTrackerMatching::Pointer trackerMa
       MITK_ERROR << "Caught exception " << e.what();
     }
     
-    cv::Size S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
+    cv::Size S = cv::Size((int) m_VideoWidth, (int) m_VideoHeight );
     double fps = static_cast<double>(m_Capture->get(CV_CAP_PROP_FPS));
     double halfFPS = fps/2.0;
-    m_LeftWriter = cvCreateVideoWriter(std::string( m_OutDirectory + niftk::Basename(m_VideoIn) +  "_leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
+    m_LeftWriter = cvCreateVideoWriter(std::string( m_OutDirectory + niftk::Basename(m_VideoIn) +  "_leftchannel_reconstruction.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
   }
 
   return;
@@ -193,6 +197,10 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
       MITK_INFO << "Skipping frames " << framenumber << " and " << framenumber + 1;
       framenumber ++;
       framenumber ++;
+      if  ( framenumber > m_EndFrame ) 
+      {
+        framenumber = trackerMatcher->GetNumberOfFrames();
+      }
     }
     else
     {
@@ -289,6 +297,8 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
            cvWriteFrame(m_LeftWriter,&image);
         }
       }
+      framenumber ++;
+      framenumber ++;
     }
   }
   if ( m_LeftWriter != NULL )
@@ -333,8 +343,8 @@ void VideoToSurface::AnnotateImage(cv::Mat& image, const cv::Mat& patch, const l
   {
     for ( unsigned int column = 0 ; column < m_PatchWidth ; ++ column )
     {
-      const unsigned char *patchPointer  = patch.ptr<uchar>(column, row);
-      unsigned char *imagePointer = image.ptr<uchar>(column + m_PatchOriginX, row + m_PatchOriginY);
+      const unsigned char *patchPointer  = patch.ptr<uchar>(row, column);
+      unsigned char *imagePointer = image.ptr<uchar>(row + m_PatchOriginY , column + m_PatchOriginX);
       for ( unsigned int i = 0 ; i < channels ; ++i )
       {
         imagePointer[i]   = patchPointer[i];
@@ -351,17 +361,19 @@ cv::Mat VideoToSurface::GetPatch ( const cv::Mat& image )
   unsigned int channels = image.channels();
   unsigned int depth = image.depth();
 
-  cv::Mat patch ( m_PatchWidth, m_PatchHeight, depth, channels );
+ // cv::Mat patch ( m_PatchHeight, m_PatchWidth, depth, channels );
+  cv::Mat patch ( m_PatchHeight, m_PatchWidth, CV_8UC3 );
 
   for ( unsigned int row = 0 ; row < m_PatchHeight ; ++row )
   {
     for ( unsigned int column = 0 ; column < m_PatchWidth ; ++ column )
     {
-      unsigned char *patchPointer  = patch.ptr<uchar>(column, row);
-      const unsigned char *imagePointer = image.ptr<uchar>(column + m_PatchOriginX, row + m_PatchOriginY);
+      unsigned char *patchPointer  = patch.ptr<uchar>(row, column);
+      const unsigned char *imagePointer = image.ptr<uchar>(row + m_PatchOriginY , column + m_PatchOriginX );
       for ( unsigned int i = 0 ; i < channels ; ++i )
       {
-        patchPointer[i]   = imagePointer[i];
+        unsigned char value = imagePointer[i];
+        patchPointer[i] = value;
       }
     }
   }
