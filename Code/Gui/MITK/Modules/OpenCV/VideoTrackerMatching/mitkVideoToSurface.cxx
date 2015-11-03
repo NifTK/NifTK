@@ -57,6 +57,8 @@ VideoToSurface::VideoToSurface()
 , m_PatchWidth (480)
 , m_PatchOriginX (720)
 , m_PatchOriginY (135)
+, m_HistogramMaximumDepth(200)
+, m_TriangulationTolerance(5.0)
 , m_EndFrame(0)
 {
 }
@@ -353,6 +355,35 @@ void VideoToSurface::AnnotateImage(cv::Mat& image, const cv::Mat& patch, const l
   }
 
   //need to do more stuff here
+  //a histogram up the side of the image
+  double histogramXStart = 10;
+  double histogramXEnd = 100;
+  double histogramYStart = m_VideoHeight - 10;
+  double histogramYEnd = m_VideoHeight -  patchDepthHistogram.size() - 10;
+  
+  assert ( histogramYEnd > 0 );
+  unsigned int histMax = 0;
+
+  assert ( patchDepthHistogram.size() ==  ( m_HistogramMaximumDepth + 1 ) );
+  for ( unsigned int i = 0 ; i < m_HistogramMaximumDepth + 1 ; i ++ )
+  {
+    if ( patchDepthHistogram[i] > histMax )
+    {
+      histMax = patchDepthHistogram[i] ;
+    }
+  }
+  double histogramScaler = ( histogramXEnd - histogramXStart ) / static_cast<double>(histMax);
+
+  cv::rectangle ( image, cv::Point2d(histogramXStart,histogramYStart), cv::Point2d ( histogramXEnd, histogramYEnd ), cvScalar ( 255,255,255)  );
+ for ( unsigned int i = 0 ; i < m_HistogramMaximumDepth + 1 ; i ++ )
+ {
+   cv::line ( image, cv::Point2d ( histogramXStart, histogramYStart - i), cv::Point2d ( histogramXStart + ( histogramScaler * static_cast<double>(patchDepthHistogram[i])) , histogramYStart - i), cvScalar ( 255,255,255)); 
+ }
+ 
+ cv::rectangle ( image, cv::Point2d ( histogramXStart-5, histogramYStart - patchDepthMean - patchDepthStdDev), cv::Point2d ( histogramXEnd + 5 , histogramYStart - patchDepthMean + patchDepthStdDev), cvScalar ( 255,0 , 0 )); 
+
+
+  
 }
 
 //-----------------------------------------------------------------------------
