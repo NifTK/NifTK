@@ -2623,7 +2623,6 @@ double Norm (const cv::Point3d& p1)
   return sqrt ( p1.x * p1.x + p1.y * p1.y + p1.z*p1.z);
 }
 
-
 //-----------------------------------------------------------------------------
 class out_of_bounds
 {
@@ -2650,6 +2649,14 @@ public:
         || ( point.y < m_YLow ) || ( point.y > m_YHigh ) 
         || ( point.z < m_ZLow ) || ( point.z > m_ZHigh ) );
   }
+  
+  bool operator () ( const std::pair < cv::Point3d, double >& point ) const
+  {
+    return ( ( point.first.x < m_XLow ) || ( point.first.x > m_XHigh ) 
+        || ( point.first.y < m_YLow ) || ( point.first.y > m_YHigh ) 
+        || ( point.first.z < m_ZLow ) || ( point.first.z > m_ZHigh ) );
+  }
+
 };
 
 //-----------------------------------------------------------------------------
@@ -2662,6 +2669,18 @@ unsigned int RemoveOutliers ( std::vector <cv::Point3d>& points,
   points.erase ( std::remove_if ( points.begin(), points.end(), out_of_bounds (xLow, xHigh, yLow, yHigh, zLow, zHigh )), points.end() );
   return originalSize - points.size();
 }
+
+//-----------------------------------------------------------------------------
+unsigned int RemoveOutliers ( std::vector <std::pair < cv::Point3d, double > > & points, 
+    const double& xLow, const double& xHigh, 
+    const double& yLow, const double& yHigh, 
+    const double& zLow, const double& zHigh)
+{
+  unsigned int originalSize = points.size();
+  points.erase ( std::remove_if ( points.begin(), points.end(), out_of_bounds (xLow, xHigh, yLow, yHigh, zLow, zHigh )), points.end() );
+  return originalSize - points.size();
+}
+
 
 
 //-----------------------------------------------------------------------------

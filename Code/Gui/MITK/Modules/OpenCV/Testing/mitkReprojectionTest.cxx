@@ -343,7 +343,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
     pointPair.second.y = rightTrimmedScreenPoints.at<double>(i,1);
     inputTrimmedUndistortedPoints.push_back(pointPair);
   }
-  std::vector <cv::Point3d> leftCameraTriangulatedWorldPoints_m2 = 
+  std::vector <std::pair < cv::Point3d, double > > leftCameraTriangulatedWorldPoints_m2 = 
     mitk::TriangulatePointPairsUsingGeometry(
         inputUndistortedPoints, 
         leftCameraIntrinsic,
@@ -353,7 +353,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
         100.0 // don't know tolerance allowable yet.
         );
 
-   std::vector <cv::Point3d> leftCameraTriangulatedWorldPoints_trimmed_m2 = 
+   std::vector <std::pair < cv::Point3d, double > > leftCameraTriangulatedWorldPoints_trimmed_m2 = 
     mitk::TriangulatePointPairsUsingGeometry(
         inputTrimmedUndistortedPoints, 
         leftCameraIntrinsic,
@@ -370,8 +370,8 @@ int mitkReprojectionTest ( int argc, char * argv[] )
   //build a look up table
   cv::Point3d nanPoint = cv::Point3d(std::numeric_limits<double>::quiet_NaN(),
       std::numeric_limits<double>::quiet_NaN(),std::numeric_limits<double>::quiet_NaN());
-  leftCameraTriangulatedWorldPoints_m2.push_back(nanPoint);
-  leftCameraTriangulatedWorldPoints_trimmed_m2.push_back(nanPoint);
+  leftCameraTriangulatedWorldPoints_m2.push_back(std::pair < cv::Point3d, double > (nanPoint, std::numeric_limits<double>::infinity()));
+  leftCameraTriangulatedWorldPoints_trimmed_m2.push_back(std::pair < cv::Point3d, double > (nanPoint, std::numeric_limits<double>::infinity()));
 
   unsigned int leftCameraTriangulatedWorldPoints_Counter = 0;
   unsigned int leftTrimmedCameraTriangulatedWorldPoints_Counter = 0;
@@ -419,7 +419,7 @@ int mitkReprojectionTest ( int argc, char * argv[] )
         << CV_MAT_ELEM (*leftCameraTriangulatedWorldPoints_m1,double, row* 51 + col, 1) << ","
         << CV_MAT_ELEM (*leftCameraTriangulatedWorldPoints_m1,double, row* 51 + col, 2) << "] " 
         << leftCameraTriangulatedWorldPoints_m2[
-        leftCameraTriangulatedWorldPoints_LookUpVector[row*51 + col]]; 
+        leftCameraTriangulatedWorldPoints_LookUpVector[row*51 + col]].first; 
     }
   }
 
@@ -455,11 +455,11 @@ int mitkReprojectionTest ( int argc, char * argv[] )
       leftCameraWorldPoints.at<double>(i,1);
     double zError_m1 = CV_MAT_ELEM (*leftCameraTriangulatedWorldPoints_m1,double, i, 2) - 
       leftCameraWorldPoints.at<double>(i,2);
-    double xError_m2 = leftCameraTriangulatedWorldPoints_m2[leftCameraTriangulatedWorldPoints_LookUpVector[i]].x -  
+    double xError_m2 = leftCameraTriangulatedWorldPoints_m2[leftCameraTriangulatedWorldPoints_LookUpVector[i]].first.x -  
       leftCameraWorldPoints.at<double>(i,0);
-    double yError_m2 = leftCameraTriangulatedWorldPoints_m2[leftCameraTriangulatedWorldPoints_LookUpVector[i]].y -  
+    double yError_m2 = leftCameraTriangulatedWorldPoints_m2[leftCameraTriangulatedWorldPoints_LookUpVector[i]].first.y -  
       leftCameraWorldPoints.at<double>(i,1);
-    double zError_m2 = leftCameraTriangulatedWorldPoints_m2[leftCameraTriangulatedWorldPoints_LookUpVector[i]].z -  
+    double zError_m2 = leftCameraTriangulatedWorldPoints_m2[leftCameraTriangulatedWorldPoints_LookUpVector[i]].first.z -  
       leftCameraWorldPoints.at<double>(i,2);
     
     double error_m1 = (xError_m1 * xError_m1 + yError_m1 * yError_m1 + zError_m1 * zError_m1);
@@ -488,11 +488,11 @@ int mitkReprojectionTest ( int argc, char * argv[] )
       leftCameraWorldPoints.at<double>(i,1);
     double zError_trimmed_m1 = CV_MAT_ELEM (*leftCameraTriangulatedWorldPoints_trimmed_m1,double, i, 2) - 
       leftCameraWorldPoints.at<double>(i,2);
-    double xError_trimmed_m2 = leftCameraTriangulatedWorldPoints_trimmed_m2[leftTrimmedCameraTriangulatedWorldPoints_LookUpVector[i]].x -  
+    double xError_trimmed_m2 = leftCameraTriangulatedWorldPoints_trimmed_m2[leftTrimmedCameraTriangulatedWorldPoints_LookUpVector[i]].first.x -  
       leftCameraWorldPoints.at<double>(i,0);
-    double yError_trimmed_m2 = leftCameraTriangulatedWorldPoints_trimmed_m2[leftTrimmedCameraTriangulatedWorldPoints_LookUpVector[i]].y -  
+    double yError_trimmed_m2 = leftCameraTriangulatedWorldPoints_trimmed_m2[leftTrimmedCameraTriangulatedWorldPoints_LookUpVector[i]].first.y -  
       leftCameraWorldPoints.at<double>(i,1);
-    double zError_trimmed_m2 = leftCameraTriangulatedWorldPoints_trimmed_m2[leftTrimmedCameraTriangulatedWorldPoints_LookUpVector[i]].z -  
+    double zError_trimmed_m2 = leftCameraTriangulatedWorldPoints_trimmed_m2[leftTrimmedCameraTriangulatedWorldPoints_LookUpVector[i]].first.z -  
       leftCameraWorldPoints.at<double>(i,2);
     
     double error_trimmed_m1 = (xError_trimmed_m1 * xError_trimmed_m1 + yError_trimmed_m1 * yError_trimmed_m1 + zError_trimmed_m1 * zError_trimmed_m1);

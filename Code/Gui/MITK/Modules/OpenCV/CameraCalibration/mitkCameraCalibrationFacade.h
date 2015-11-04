@@ -539,6 +539,7 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2d& inputObse
 
 /**
  * \brief Triangulates a vector of un-distorted (i.e. already correction for distortion) 2D point pairs back into 3D.
+ * \return the points and their triangulation error as a paired vector
  *
  * Taken from: http://geomalgorithms.com/a07-_distance.html
  *
@@ -549,7 +550,7 @@ extern "C++" NIFTKOPENCV_EXPORT void UndistortPoint(const cv::Point2d& inputObse
  * \param preserveVectorSize if true will fill any output points outside tolerance with NaN, to
  * preserve correspondance between input and output vectors
  */
-extern "C++" NIFTKOPENCV_EXPORT std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
+extern "C++" NIFTKOPENCV_EXPORT std::vector< std::pair < cv::Point3d , double> > TriangulatePointPairsUsingGeometry(
   const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
   const cv::Mat& leftCameraIntrinsicParams,
   const cv::Mat& rightCameraIntrinsicParams,

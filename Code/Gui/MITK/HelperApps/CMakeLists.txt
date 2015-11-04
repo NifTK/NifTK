@@ -125,6 +125,7 @@ endforeach()
 if(SlicerExecutionModel_FOUND)
   set(SLICER_HELPER_APPS
     # Add Slicer apps that DO NOT depend on BUILD_IGI here.
+    niftkPointSetStatistics
   )
 
   if(BUILD_IGI)
@@ -146,6 +147,7 @@ if(SlicerExecutionModel_FOUND)
       niftkSplitVideo
       niftkFindAndTriangulateCrossHair
       niftkVideoToImages
+      niftkVideoToSurfaces
       niftkUltrasoundPinCalibrationClicker
       niftkUltrasoundPinCalibration
       niftkVideoHandEyeByCrossCalibration

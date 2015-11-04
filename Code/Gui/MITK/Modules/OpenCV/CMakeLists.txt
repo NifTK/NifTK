@@ -21,7 +21,7 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
 endif()
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS CameraCalibration VideoProcessing Registration demo VideoTrackerMatching UltrasoundCalibration PivotCalibration Features
+  INCLUDE_DIRS CameraCalibration VideoProcessing Registration demo VideoTrackerMatching UltrasoundCalibration PivotCalibration Features SurfRecon
   DEPENDS ${_depends}
   PACKAGE_DEPENDS OpenCV Boost|filesystem
 )
