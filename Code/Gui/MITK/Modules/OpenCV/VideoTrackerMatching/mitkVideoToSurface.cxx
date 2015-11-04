@@ -181,7 +181,9 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
     MITK_WARN << "Called project before initialise.";
     return;
   }
- 
+
+  ofstream out ( std::string( m_OutDirectory + niftk::Basename(m_VideoIn) +  "_reconstruction.txt" ) );
+  out << "# Framenumber TimingError PatchDepthMean PatchDepthStdDev PointsInPatch MeanTriangulationError" << std::endl;
   this->FindVideoData(trackerMatcher);
 
   int framenumber = 0 ;
@@ -299,6 +301,9 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
            cvWriteFrame(m_LeftWriter,&image);
         }
       }
+
+      out << framenumber << " " << timingError << " " <<  centroid.z << " " 
+        << stddev.z << " " << triangulatedPoints.size() << " " << meanError << std::endl;
       framenumber ++;
       framenumber ++;
       leftImage.release();
@@ -312,6 +317,7 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
   {
     cvReleaseVideoWriter(&m_LeftWriter);
   }
+  out.close();
 }
 
 
@@ -359,7 +365,6 @@ void VideoToSurface::AnnotateImage(cv::Mat& image, const cv::Mat& patch, const l
     }
   }
 
-  //need to do more stuff here
   //a histogram up the side of the image
   double histogramXStart = 10;
   double histogramXEnd = 100;
@@ -380,15 +385,18 @@ void VideoToSurface::AnnotateImage(cv::Mat& image, const cv::Mat& patch, const l
   double histogramScaler = ( histogramXEnd - histogramXStart ) / static_cast<double>(histMax);
 
   cv::rectangle ( image, cv::Point2d(histogramXStart,histogramYStart), cv::Point2d ( histogramXEnd, histogramYEnd ), cvScalar ( 255,255,255)  );
- for ( unsigned int i = 0 ; i < m_HistogramMaximumDepth + 1 ; i ++ )
- {
-   cv::line ( image, cv::Point2d ( histogramXStart, histogramYStart - i), cv::Point2d ( histogramXStart + ( histogramScaler * static_cast<double>(patchDepthHistogram[i])) , histogramYStart - i), cvScalar ( 255,255,255)); 
- }
+  for ( unsigned int i = 0 ; i < m_HistogramMaximumDepth + 1 ; i ++ )
+  {
+    cv::line ( image, cv::Point2d ( histogramXStart, histogramYStart - i), cv::Point2d ( histogramXStart + ( histogramScaler * static_cast<double>(patchDepthHistogram[i])) , histogramYStart - i), cvScalar ( 255,255,255)); 
+  }
  
- cv::rectangle ( image, cv::Point2d ( histogramXStart-5, histogramYStart - patchDepthMean - patchDepthStdDev), cv::Point2d ( histogramXEnd + 5 , histogramYStart - patchDepthMean + patchDepthStdDev), cvScalar ( 255,0 , 0 )); 
+  cv::rectangle ( image, cv::Point2d ( histogramXStart-5, histogramYStart - patchDepthMean - patchDepthStdDev), cv::Point2d ( histogramXEnd + 5 , histogramYStart - patchDepthMean + patchDepthStdDev), cvScalar ( 255,0 , 0 )); 
 
+  cv::Point2d errorTextLocation = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.08 ) , m_VideoHeight * 0.14  );
+  cv::Point2d depthTextLocation = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.08 ) , m_VideoHeight * 0.21  );
+  cv::putText(image , "Mean Error: " + boost::lexical_cast<std::string>(meanTriangulationError), errorTextLocation ,0,0.5, cvScalar ( 255,255,255), 1.0);
+  cv::putText(image , "Mean Depth: " + boost::lexical_cast<std::string>(patchDepthMean), depthTextLocation ,0,0.5, cvScalar ( 255,255,255), 1.0);
 
-  
 }
 
 //-----------------------------------------------------------------------------
