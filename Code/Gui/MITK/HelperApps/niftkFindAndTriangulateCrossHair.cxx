@@ -123,7 +123,8 @@ int main(int argc, char** argv)
         if (!screenPoints[i].LeftNaNOrInf() && !screenPoints[i].RightNaNOrInf())
         {
           fout << i << " 0 "; // Adding zero, to feed into niftkProjectTriangulatedPointsToStereoPair.
-          fout << screenPoints[i].m_Left.x << " " << screenPoints[i].m_Left.y << std::endl;
+          fout << screenPoints[i].m_Left.x << " " << screenPoints[i].m_Left.y;
+          fout << " " << std::endl; // adding space, as we need that reading back in
         }
       }
       fout.close();
@@ -136,7 +137,9 @@ int main(int argc, char** argv)
         if (!screenPoints[i].LeftNaNOrInf() && !screenPoints[i].RightNaNOrInf())
         {
           fout << i << " 0 "; // Adding zero, to feed into niftkProjectTriangulatedPointsToStereoPair.
-          fout << screenPoints[i].m_Right.x << " " << screenPoints[i].m_Right.y << std::endl;
+          fout << screenPoints[i].m_Right.x << " " << screenPoints[i].m_Right.y;
+          fout << " " << std::endl; // adding space, as we need that reading back in
+
         }
       }
       fout.close();
