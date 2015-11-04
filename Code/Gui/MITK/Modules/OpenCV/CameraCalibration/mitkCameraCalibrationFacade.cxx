@@ -1115,6 +1115,8 @@ void CorrectDistortionInSingleImage(
 
   cvInitUndistortMap(&intrinsicParams, &distortionCoefficients, mapX, mapY);
   UndistortImageUsingDistortionMap(*mapX, *mapY, image);
+  cvReleaseImage(&mapX);
+  cvReleaseImage(&mapY);
 }
 
 

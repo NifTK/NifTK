@@ -301,6 +301,11 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
       }
       framenumber ++;
       framenumber ++;
+      leftImage.release();
+      rightImage.release();
+      leftPatch.release();
+      rightPatch.release();
+      disparityImage.release();
     }
   }
   if ( m_LeftWriter != NULL )
