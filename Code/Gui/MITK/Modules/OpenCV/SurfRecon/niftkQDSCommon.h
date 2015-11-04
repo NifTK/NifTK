@@ -36,11 +36,41 @@ typedef scoped_channel_value<double, double_zero, double_one> bits64f;
 
 GIL_DEFINE_BASE_TYPEDEFS(64f,gray)
 
-}
-}
+} // end namespace boost
+} // end namespace gil
 
 namespace niftk
 {
+
+struct NIFTKOPENCV_EXPORT RefPoint
+{
+  unsigned short  x;
+  unsigned short  y;
+
+  RefPoint(unsigned short _x = -1, unsigned short _y = -1)
+    : x(_x), y(_y)
+  {
+  }
+
+  RefPoint& operator=(const RefPoint& p)
+  {
+    x = p.x;
+    y = p.y;
+    return *this;
+  }
+
+  // conversion operator! exists for convinience with refmaps
+  // FIXME: pixel assignment is done with a template parameter
+  //        so this conversion is not actually called automagically!
+  operator boost::gil::dev2n16_pixel_t() const
+  {
+    return boost::gil::dev2n16_pixel_t(x, y);
+  }
+
+  // compares coordinates, for use in priority_queue
+  bool operator<(const RefPoint& rhs) const;
+};
+
 
 /**
 * This is some kind of corner detector.

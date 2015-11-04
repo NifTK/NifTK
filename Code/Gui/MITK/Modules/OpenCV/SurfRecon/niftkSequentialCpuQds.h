@@ -47,37 +47,6 @@ struct PropagationParameters
 };
 
 
-// FIXME: this is actually shared between all qds variants, so refactor this (later)
-struct NIFTKOPENCV_EXPORT RefPoint
-{
-  unsigned short  x;
-  unsigned short  y;
-
-  RefPoint(unsigned short _x = -1, unsigned short _y = -1)
-    : x(_x), y(_y)
-  {
-  }
-
-  RefPoint& operator=(const RefPoint& p)
-  {
-    x = p.x;
-    y = p.y;
-    return *this;
-  }
-
-  // conversion operator! exists for convinience with refmaps
-  // FIXME: pixel assignment is done with a template parameter
-  //        so this conversion is not actually called automagically!
-  operator boost::gil::dev2n16_pixel_t() const
-  {
-    return boost::gil::dev2n16_pixel_t(x, y);
-  }
-
-  // compares coordinates, for use in priority_queue
-  bool operator<(const RefPoint& rhs) const;
-};
-
-
 #ifdef _MSC_VER
 // various bits rely on safely dll-exporting class members which may reference
 //  crt components (that may not be explicitly declared to be exported).

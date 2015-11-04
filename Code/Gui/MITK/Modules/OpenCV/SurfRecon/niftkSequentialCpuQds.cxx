@@ -18,6 +18,7 @@
 #include <boost/gil/gil_all.hpp>
 #include <opencv2/imgproc/imgproc_c.h>
 #include <opencv2/video/tracking.hpp>
+#include <opencv/highgui.h>
 #include <boost/typeof/typeof.hpp>
 #include <boost/static_assert.hpp>
 #include <stdexcept>
@@ -26,24 +27,13 @@
 #include <omp.h>
 #endif
 
+// helps with debugging: writes out some intermediate images
+#define DUMP_IMAGES
+
 BOOST_STATIC_ASSERT((sizeof(niftk::RefPoint) == sizeof(boost::gil::dev2n16_pixel_t)));
 
 namespace niftk 
 {
-
-//-----------------------------------------------------------------------------
-bool RefPoint::operator<(const RefPoint& rhs) const 
-{
-  if (x < rhs.x)
-    return true;
-  if (x > rhs.x)
-    return false;
-  if (y < rhs.y)
-    return true;
-  if (y > rhs.y)
-    return false;
-  return false;
-}
 
 
 // Used to store match candidates in the priority queue
@@ -118,12 +108,12 @@ SequentialCpuQds::SequentialCpuQds(int width, int height)
   // some defaults that seem to work
   m_PropagationParams.N = 2;
   m_PropagationParams.Ct = 0.6f;
-  m_PropagationParams.WinSizeX = 2;
-  m_PropagationParams.WinSizeY = 2;
+  m_PropagationParams.WinSizeX = 9;
+  m_PropagationParams.WinSizeY = 9;
   m_PropagationParams.Dg = 1;
   m_PropagationParams.Tt = 200;
-  m_PropagationParams.BorderX = 20;
-  m_PropagationParams.BorderY = 20;
+  m_PropagationParams.BorderX = std::max(m_PropagationParams.WinSizeX, m_PropagationParams.WinSizeY) + m_PropagationParams.N + m_PropagationParams.Dg + 3;
+  m_PropagationParams.BorderY = m_PropagationParams.BorderX;
 }
 
 
@@ -207,8 +197,8 @@ IplImage* SequentialCpuQds::CreateDisparityImage() const
 //-----------------------------------------------------------------------------
 void SequentialCpuQds::InitSparseFeatures()
 {
-  CvSize  templateSize = cvSize((m_LeftIpl.width / 36) | 0x1, (m_LeftIpl.width / 36) | 0x1);
-  double  minSeparationDistance = m_LeftIpl.width / 36;
+  CvSize  templateSize = cvSize((m_LeftIpl.width / 20) | 0x1, (m_LeftIpl.width / 20) | 0x1);
+  double  minSeparationDistance = m_LeftIpl.width / 20;
 
   m_SparseFeaturesLeft.resize(NUM_MAX_FEATURES);
 
@@ -224,7 +214,7 @@ void SequentialCpuQds::InitSparseFeatures()
   m_SparseFeaturesRight = m_SparseFeaturesLeft;
   for (unsigned int i = 0; i < m_SparseFeaturesRight.size(); ++i)
   {
-    m_SparseFeaturesRight[i].x -= m_LeftIpl.width / 12;
+    //m_SparseFeaturesRight[i].x -= m_LeftIpl.width / 12;
   }
 
   m_FeatureStatus.resize(m_SparseFeaturesLeft.size());
@@ -438,6 +428,15 @@ void SequentialCpuQds::Process(const IplImage* left, const IplImage* right)
   // build texture homogeneity reference maps.
   BuildTextureDescriptor(boost::gil::const_view(m_LeftImg),  boost::gil::view(m_LeftTexture));
   BuildTextureDescriptor(boost::gil::const_view(m_RightImg), boost::gil::view(m_RightTexture));
+
+#ifdef DUMP_IMAGES
+  {
+    IplImage  ipl;
+    cvInitImageHeader(&ipl, cvSize((int) m_LeftTexture.width(), (int) m_LeftTexture.height()), IPL_DEPTH_8U, 1, IPL_ORIGIN_TL, 4);
+    cvSetData(&ipl, (void*) &boost::gil::view(m_LeftTexture)(0, 0), (char*) &boost::gil::const_view(m_LeftTexture)(0, 1) - (char*) &boost::gil::const_view(m_LeftTexture)(0, 0));
+    cvSaveImage("sequentialqds-left-texture.png", &ipl);
+  }
+#endif
 
   // generate the integral images for fast variable window correlation calculations
   cvIntegral(&m_LeftIpl,  &m_LeftIntegralIpl,  &m_LeftSquaredIntegralIpl);
