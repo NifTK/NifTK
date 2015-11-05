@@ -72,6 +72,10 @@ if(BUILD_IGI)
       )
     endif()
 
+    set(ffmpeg_lookup_patch
+      COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/OpenCV-2.4.11-ffmpeg_lookup.patch
+    )
+
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
@@ -82,6 +86,7 @@ if(BUILD_IGI)
       URL_MD5 ${proj_CHECKSUM}
       # Related bug: http://bugs.mitk.org/show_bug.cgi?id=5912
       PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/OpenCV-2.4.11.patch
+                    ${ffmpeg_lookup_patch}
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
