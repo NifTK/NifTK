@@ -51,6 +51,7 @@ if(BUILD_IGI AND BUILD_PCL)
         -DBOOST_LIBRARYDIR:PATH=${BOOST_ROOT}/lib
         -DBoost_NO_SYSTEM_PATHS:BOOL=ON
         -DEIGEN_ROOT:PATH=${Eigen_SOURCE_DIR}
+        -DEIGEN_INCLUDE_DIR:PATH=${Eigen_SOURCE_DIR}
         -DFLANN_ROOT:PATH=${FLANN_DIR}
         -DVTK_DIR:PATH=${VTK_DIR}
         # explicitly define this (with the default value) because pcl will try to use static libs otherwise
