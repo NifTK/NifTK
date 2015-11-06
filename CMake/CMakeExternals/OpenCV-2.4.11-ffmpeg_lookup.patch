@@ -1,147 +1,154 @@
-198,212d197
-<     CHECK_MODULE(libavcodec HAVE_FFMPEG_CODEC)
-<     CHECK_MODULE(libavformat HAVE_FFMPEG_FORMAT)
-<     CHECK_MODULE(libavutil HAVE_FFMPEG_UTIL)
-<     CHECK_MODULE(libswscale HAVE_FFMPEG_SWSCALE)
-< 
-<     CHECK_INCLUDE_FILE(libavformat/avformat.h HAVE_GENTOO_FFMPEG)
-<     CHECK_INCLUDE_FILE(ffmpeg/avformat.h HAVE_FFMPEG_FFMPEG)
-<     if(NOT HAVE_GENTOO_FFMPEG AND NOT HAVE_FFMPEG_FFMPEG)
-<       if(EXISTS /usr/include/ffmpeg/libavformat/avformat.h OR HAVE_FFMPEG_SWSCALE)
-<         set(HAVE_GENTOO_FFMPEG TRUE)
-<       endif()
-<     endif()
-<     if(HAVE_FFMPEG_CODEC AND HAVE_FFMPEG_FORMAT AND HAVE_FFMPEG_UTIL AND HAVE_FFMPEG_SWSCALE)
-<       set(HAVE_FFMPEG TRUE)
-<     endif()
-214,221c199,210
-<     if(HAVE_FFMPEG)
-<       # Find the bzip2 library because it is required on some systems
-<       FIND_LIBRARY(BZIP2_LIBRARIES NAMES bz2 bzip2)
-<       if(NOT BZIP2_LIBRARIES)
-<         # Do an other trial
-<         FIND_FILE(BZIP2_LIBRARIES NAMES libbz2.so.1 PATHS /lib)
-<       endif()
-<     else()
----
->     ##################################################
->     # Start of NifTK change, finding ffmpeg from PATH.
->     ################################################## 
->     find_program(FFMPEG_COMMAND NAMES ffmpeg )
->     if(FFMPEG_COMMAND)
->       get_filename_component(ffmpeg_bin_dir "${FFMPEG_COMMAND}" PATH)
->       set(ffmpeg_lib_dir "${ffmpeg_bin_dir}/../lib")
->       set(ffmpeg_inc_dir "${ffmpeg_bin_dir}/../include")
->       find_library(FFMPEG_CODEC_LIB "avcodec" HINTS "${ffmpeg_lib_dir}" NO_DEFAULT_PATH)
->       find_library(FFMPEG_FORMAT_LIB "avformat" HINTS "${ffmpeg_lib_dir}" NO_DEFAULT_PATH)
->       find_library(FFMPEG_UTIL_LIB "avutil" HINTS "${ffmpeg_lib_dir}" NO_DEFAULT_PATH)
->       find_library(FFMPEG_SWSCALE_LIB "swscale" HINTS "${ffmpeg_lib_dir}" NO_DEFAULT_PATH)
-223,225c212,215
-<                 PATHS /usr/local /usr /opt
-<                 PATH_SUFFIXES include
-<                 DOC "The path to FFMPEG headers")
----
->                 PATHS "${ffmpeg_inc_dir}"
->                 DOC "The path to ffmpeg headers"
->                 NO_DEFAULT_PATH
->                )
-228,239c218,224
-<         set(FFMPEG_LIB_DIR "${FFMPEG_INCLUDE_DIR}/../lib" CACHE PATH "Full path of FFMPEG library directory")
-<         find_library(FFMPEG_CODEC_LIB "avcodec" HINTS "${FFMPEG_LIB_DIR}")
-<         find_library(FFMPEG_FORMAT_LIB "avformat" HINTS "${FFMPEG_LIB_DIR}")
-<         find_library(FFMPEG_UTIL_LIB "avutil" HINTS "${FFMPEG_LIB_DIR}")
-<         find_library(FFMPEG_SWSCALE_LIB "swscale" HINTS "${FFMPEG_LIB_DIR}")
-<         if(FFMPEG_CODEC_LIB AND FFMPEG_FORMAT_LIB AND
-<            FFMPEG_UTIL_LIB AND FFMPEG_SWSCALE_LIB)
-<           set(ALIASOF_libavcodec_VERSION "Unknown")
-<           set(ALIASOF_libavformat_VERSION "Unknown")
-<           set(ALIASOF_libavutil_VERSION "Unknown")
-<           set(ALIASOF_libswscale_VERSION "Unknown")
-<           set(HAVE_FFMPEG 1)
----
->       else()
->         find_path(FFMPEG_INCLUDE_DIR "ffmpeg/avformat.h"
->                   PATHS "${ffmpeg_inc_dir}"
->                   DOC "The path to ffmpeg headers"
->                  )
->         if(FFMPEG_INCLUDE_DIR)
->           set(HAVE_FFMPEG_FFMPEG)
-241,242c226,238
-<       endif(FFMPEG_INCLUDE_DIR)
-<       if(HAVE_FFMPEG)
----
->       endif()
->       if(FFMPEG_CODEC_LIB AND FFMPEG_FORMAT_LIB AND
->          FFMPEG_UTIL_LIB AND FFMPEG_SWSCALE_LIB AND
->          FFMPEG_INCLUDE_DIR)
->         set(ALIASOF_libavcodec_VERSION "Unknown")
->         set(ALIASOF_libavformat_VERSION "Unknown")
->         set(ALIASOF_libavutil_VERSION "Unknown")
->         set(ALIASOF_libswscale_VERSION "Unknown")
->         set(HAVE_FFMPEG 1)
->         set(HAVE_FFMPEG_CODEC 1)
->         set(HAVE_FFMPEG_FORMAT 1)
->         set(HAVE_FFMPEG_UTIL 1)
->         set(HAVE_FFMPEG_SWSCALE 1)
-247c243,301
-<       endif(HAVE_FFMPEG)
----
->       endif()
->     endif()
-> 
->     if(NOT HAVE_FFMPEG)
->     ################################################
->     # End of NifTK change, finding ffmpeg from PATH.
->     # After this point, the difference is indenting.
->     ################################################   
->       CHECK_MODULE(libavcodec HAVE_FFMPEG_CODEC)
->       CHECK_MODULE(libavformat HAVE_FFMPEG_FORMAT)
->       CHECK_MODULE(libavutil HAVE_FFMPEG_UTIL)
->       CHECK_MODULE(libswscale HAVE_FFMPEG_SWSCALE)
-> 
->       CHECK_INCLUDE_FILE(libavformat/avformat.h HAVE_GENTOO_FFMPEG)
->       CHECK_INCLUDE_FILE(ffmpeg/avformat.h HAVE_FFMPEG_FFMPEG)
->       if(NOT HAVE_GENTOO_FFMPEG AND NOT HAVE_FFMPEG_FFMPEG)
->         if(EXISTS /usr/include/ffmpeg/libavformat/avformat.h OR HAVE_FFMPEG_SWSCALE)
->           set(HAVE_GENTOO_FFMPEG TRUE)
->         endif()
->       endif()
->       if(HAVE_FFMPEG_CODEC AND HAVE_FFMPEG_FORMAT AND HAVE_FFMPEG_UTIL AND HAVE_FFMPEG_SWSCALE)
->         set(HAVE_FFMPEG TRUE)
->       endif()
-> 
->       if(HAVE_FFMPEG)
->         # Find the bzip2 library because it is required on some systems
->         FIND_LIBRARY(BZIP2_LIBRARIES NAMES bz2 bzip2)
->         if(NOT BZIP2_LIBRARIES)
->           # Do an other trial
->           FIND_FILE(BZIP2_LIBRARIES NAMES libbz2.so.1 PATHS /lib)
->         endif()
->       else()
->         find_path(FFMPEG_INCLUDE_DIR "libavformat/avformat.h"
->                   PATHS /usr/local /usr /opt
->                   PATH_SUFFIXES include
->                   DOC "The path to FFMPEG headers")
->         if(FFMPEG_INCLUDE_DIR)
->           set(HAVE_GENTOO_FFMPEG TRUE)
->           set(FFMPEG_LIB_DIR "${FFMPEG_INCLUDE_DIR}/../lib" CACHE PATH "Full path of FFMPEG library directory")
->           find_library(FFMPEG_CODEC_LIB "avcodec" HINTS "${FFMPEG_LIB_DIR}")
->           find_library(FFMPEG_FORMAT_LIB "avformat" HINTS "${FFMPEG_LIB_DIR}")
->           find_library(FFMPEG_UTIL_LIB "avutil" HINTS "${FFMPEG_LIB_DIR}")
->           find_library(FFMPEG_SWSCALE_LIB "swscale" HINTS "${FFMPEG_LIB_DIR}")
->           if(FFMPEG_CODEC_LIB AND FFMPEG_FORMAT_LIB AND
->              FFMPEG_UTIL_LIB AND FFMPEG_SWSCALE_LIB)
->             set(ALIASOF_libavcodec_VERSION "Unknown")
->             set(ALIASOF_libavformat_VERSION "Unknown")
->             set(ALIASOF_libavutil_VERSION "Unknown")
->             set(ALIASOF_libswscale_VERSION "Unknown")
->             set(HAVE_FFMPEG 1)
->           endif()
->         endif(FFMPEG_INCLUDE_DIR)
->         if(HAVE_FFMPEG)
->           set(HIGHGUI_LIBRARIES ${HIGHGUI_LIBRARIES}
->               ${FFMPEG_CODEC_LIB} ${FFMPEG_FORMAT_LIB}
->               ${FFMPEG_UTIL_LIB} ${FFMPEG_SWSCALE_LIB})
->           ocv_include_directories(${FFMPEG_INCLUDE_DIR})
->         endif(HAVE_FFMPEG)
->       endif()
+--- OpenCV-2.4.11/cmake/OpenCVFindLibsVideo.cmake	2015-02-25 12:10:31.000000000 +0000
++++ OpenCV-2.4.11.1/cmake/OpenCVFindLibsVideo.cmake	2015-11-05 08:25:50.000000000 +0000
+@@ -195,56 +195,110 @@
+   if(WIN32 AND NOT ARM)
+     include("${OpenCV_SOURCE_DIR}/3rdparty/ffmpeg/ffmpeg_version.cmake")
+   elseif(UNIX)
+-    CHECK_MODULE(libavcodec HAVE_FFMPEG_CODEC)
+-    CHECK_MODULE(libavformat HAVE_FFMPEG_FORMAT)
+-    CHECK_MODULE(libavutil HAVE_FFMPEG_UTIL)
+-    CHECK_MODULE(libswscale HAVE_FFMPEG_SWSCALE)
+-
+-    CHECK_INCLUDE_FILE(libavformat/avformat.h HAVE_GENTOO_FFMPEG)
+-    CHECK_INCLUDE_FILE(ffmpeg/avformat.h HAVE_FFMPEG_FFMPEG)
+-    if(NOT HAVE_GENTOO_FFMPEG AND NOT HAVE_FFMPEG_FFMPEG)
+-      if(EXISTS /usr/include/ffmpeg/libavformat/avformat.h OR HAVE_FFMPEG_SWSCALE)
+-        set(HAVE_GENTOO_FFMPEG TRUE)
+-      endif()
+-    endif()
+-    if(HAVE_FFMPEG_CODEC AND HAVE_FFMPEG_FORMAT AND HAVE_FFMPEG_UTIL AND HAVE_FFMPEG_SWSCALE)
+-      set(HAVE_FFMPEG TRUE)
+-    endif()
+ 
+-    if(HAVE_FFMPEG)
+-      # Find the bzip2 library because it is required on some systems
+-      FIND_LIBRARY(BZIP2_LIBRARIES NAMES bz2 bzip2)
+-      if(NOT BZIP2_LIBRARIES)
+-        # Do an other trial
+-        FIND_FILE(BZIP2_LIBRARIES NAMES libbz2.so.1 PATHS /lib)
+-      endif()
+-    else()
++    ##################################################
++    # Start of NifTK change, finding ffmpeg from PATH.
++    ################################################## 
++    find_program(FFMPEG_COMMAND NAMES ffmpeg )
++    if(FFMPEG_COMMAND)
++      get_filename_component(ffmpeg_bin_dir "${FFMPEG_COMMAND}" PATH)
++      set(ffmpeg_lib_dir "${ffmpeg_bin_dir}/../lib")
++      set(ffmpeg_inc_dir "${ffmpeg_bin_dir}/../include")
++      find_library(FFMPEG_CODEC_LIB "avcodec" HINTS "${ffmpeg_lib_dir}" NO_DEFAULT_PATH)
++      find_library(FFMPEG_FORMAT_LIB "avformat" HINTS "${ffmpeg_lib_dir}" NO_DEFAULT_PATH)
++      find_library(FFMPEG_UTIL_LIB "avutil" HINTS "${ffmpeg_lib_dir}" NO_DEFAULT_PATH)
++      find_library(FFMPEG_SWSCALE_LIB "swscale" HINTS "${ffmpeg_lib_dir}" NO_DEFAULT_PATH)
+       find_path(FFMPEG_INCLUDE_DIR "libavformat/avformat.h"
+-                PATHS /usr/local /usr /opt
+-                PATH_SUFFIXES include
+-                DOC "The path to FFMPEG headers")
++                PATHS "${ffmpeg_inc_dir}"
++                DOC "The path to ffmpeg headers"
++                NO_DEFAULT_PATH
++               )
+       if(FFMPEG_INCLUDE_DIR)
+         set(HAVE_GENTOO_FFMPEG TRUE)
+-        set(FFMPEG_LIB_DIR "${FFMPEG_INCLUDE_DIR}/../lib" CACHE PATH "Full path of FFMPEG library directory")
+-        find_library(FFMPEG_CODEC_LIB "avcodec" HINTS "${FFMPEG_LIB_DIR}")
+-        find_library(FFMPEG_FORMAT_LIB "avformat" HINTS "${FFMPEG_LIB_DIR}")
+-        find_library(FFMPEG_UTIL_LIB "avutil" HINTS "${FFMPEG_LIB_DIR}")
+-        find_library(FFMPEG_SWSCALE_LIB "swscale" HINTS "${FFMPEG_LIB_DIR}")
+-        if(FFMPEG_CODEC_LIB AND FFMPEG_FORMAT_LIB AND
+-           FFMPEG_UTIL_LIB AND FFMPEG_SWSCALE_LIB)
+-          set(ALIASOF_libavcodec_VERSION "Unknown")
+-          set(ALIASOF_libavformat_VERSION "Unknown")
+-          set(ALIASOF_libavutil_VERSION "Unknown")
+-          set(ALIASOF_libswscale_VERSION "Unknown")
+-          set(HAVE_FFMPEG 1)
++      else()
++        find_path(FFMPEG_INCLUDE_DIR "ffmpeg/avformat.h"
++                  PATHS "${ffmpeg_inc_dir}"
++                  DOC "The path to ffmpeg headers"
++                 )
++        if(FFMPEG_INCLUDE_DIR)
++          set(HAVE_FFMPEG_FFMPEG)
+         endif()
+-      endif(FFMPEG_INCLUDE_DIR)
+-      if(HAVE_FFMPEG)
++      endif()
++      if(FFMPEG_CODEC_LIB AND FFMPEG_FORMAT_LIB AND
++         FFMPEG_UTIL_LIB AND FFMPEG_SWSCALE_LIB AND
++         FFMPEG_INCLUDE_DIR)
++        set(ALIASOF_libavcodec_VERSION "Unknown")
++        set(ALIASOF_libavformat_VERSION "Unknown")
++        set(ALIASOF_libavutil_VERSION "Unknown")
++        set(ALIASOF_libswscale_VERSION "Unknown")
++        set(HAVE_FFMPEG 1)
++        set(HAVE_FFMPEG_CODEC 1)
++        set(HAVE_FFMPEG_FORMAT 1)
++        set(HAVE_FFMPEG_UTIL 1)
++        set(HAVE_FFMPEG_SWSCALE 1)
+         set(HIGHGUI_LIBRARIES ${HIGHGUI_LIBRARIES}
+             ${FFMPEG_CODEC_LIB} ${FFMPEG_FORMAT_LIB}
+             ${FFMPEG_UTIL_LIB} ${FFMPEG_SWSCALE_LIB})
+         ocv_include_directories(${FFMPEG_INCLUDE_DIR})
+-      endif(HAVE_FFMPEG)
++      endif()
++    endif()
++
++    if(NOT HAVE_FFMPEG)
++    ################################################
++    # End of NifTK change, finding ffmpeg from PATH.
++    # After this point, the difference is indenting.
++    ################################################   
++      CHECK_MODULE(libavcodec HAVE_FFMPEG_CODEC)
++      CHECK_MODULE(libavformat HAVE_FFMPEG_FORMAT)
++      CHECK_MODULE(libavutil HAVE_FFMPEG_UTIL)
++      CHECK_MODULE(libswscale HAVE_FFMPEG_SWSCALE)
++
++      CHECK_INCLUDE_FILE(libavformat/avformat.h HAVE_GENTOO_FFMPEG)
++      CHECK_INCLUDE_FILE(ffmpeg/avformat.h HAVE_FFMPEG_FFMPEG)
++      if(NOT HAVE_GENTOO_FFMPEG AND NOT HAVE_FFMPEG_FFMPEG)
++        if(EXISTS /usr/include/ffmpeg/libavformat/avformat.h OR HAVE_FFMPEG_SWSCALE)
++          set(HAVE_GENTOO_FFMPEG TRUE)
++        endif()
++      endif()
++      if(HAVE_FFMPEG_CODEC AND HAVE_FFMPEG_FORMAT AND HAVE_FFMPEG_UTIL AND HAVE_FFMPEG_SWSCALE)
++        set(HAVE_FFMPEG TRUE)
++      endif()
++
++      if(HAVE_FFMPEG)
++        # Find the bzip2 library because it is required on some systems
++        FIND_LIBRARY(BZIP2_LIBRARIES NAMES bz2 bzip2)
++        if(NOT BZIP2_LIBRARIES)
++          # Do an other trial
++          FIND_FILE(BZIP2_LIBRARIES NAMES libbz2.so.1 PATHS /lib)
++        endif()
++      else()
++        find_path(FFMPEG_INCLUDE_DIR "libavformat/avformat.h"
++                  PATHS /usr/local /usr /opt
++                  PATH_SUFFIXES include
++                  DOC "The path to FFMPEG headers")
++        if(FFMPEG_INCLUDE_DIR)
++          set(HAVE_GENTOO_FFMPEG TRUE)
++          set(FFMPEG_LIB_DIR "${FFMPEG_INCLUDE_DIR}/../lib" CACHE PATH "Full path of FFMPEG library directory")
++          find_library(FFMPEG_CODEC_LIB "avcodec" HINTS "${FFMPEG_LIB_DIR}")
++          find_library(FFMPEG_FORMAT_LIB "avformat" HINTS "${FFMPEG_LIB_DIR}")
++          find_library(FFMPEG_UTIL_LIB "avutil" HINTS "${FFMPEG_LIB_DIR}")
++          find_library(FFMPEG_SWSCALE_LIB "swscale" HINTS "${FFMPEG_LIB_DIR}")
++          if(FFMPEG_CODEC_LIB AND FFMPEG_FORMAT_LIB AND
++             FFMPEG_UTIL_LIB AND FFMPEG_SWSCALE_LIB)
++            set(ALIASOF_libavcodec_VERSION "Unknown")
++            set(ALIASOF_libavformat_VERSION "Unknown")
++            set(ALIASOF_libavutil_VERSION "Unknown")
++            set(ALIASOF_libswscale_VERSION "Unknown")
++            set(HAVE_FFMPEG 1)
++          endif()
++        endif(FFMPEG_INCLUDE_DIR)
++        if(HAVE_FFMPEG)
++          set(HIGHGUI_LIBRARIES ${HIGHGUI_LIBRARIES}
++              ${FFMPEG_CODEC_LIB} ${FFMPEG_FORMAT_LIB}
++              ${FFMPEG_UTIL_LIB} ${FFMPEG_SWSCALE_LIB})
++          ocv_include_directories(${FFMPEG_INCLUDE_DIR})
++        endif(HAVE_FFMPEG)
++      endif()
+     endif()
+   endif()
+ endif(WITH_FFMPEG)
