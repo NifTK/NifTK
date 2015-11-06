@@ -39,7 +39,6 @@ int main(int argc, char** argv)
     return returnStatus;
   }
 
-
   try
   {
     mitk::FindAndTriangulateCrossHair::Pointer finder = mitk::FindAndTriangulateCrossHair::New();
@@ -95,11 +94,13 @@ int main(int argc, char** argv)
       }
       fout.close();
     }
-    if ( outputLens.length() !=0 )
+
+    std::vector < mitk::WorldPoint >  leftLensPoints = finder->GetPointsInLeftLensCS();
+    std::vector < mitk::ProjectedPointPair > screenPoints = finder->GetScreenPoints();
+
+    if ( outputLens.length() != 0 )
     {
       std::ofstream fout (outputLens.c_str());
-      std::vector < mitk::WorldPoint >  leftLensPoints = finder->GetPointsInLeftLensCS();
-      std::vector < mitk::ProjectedPointPair > screenPoints = finder->GetScreenPoints();
       fout << "#Frame Number " ;
       fout << "PleftLens" << "[x,y,z]" << "PLeftScreen [x,y] , PRightScreen [x,y]";
       fout << std::endl;
@@ -114,7 +115,35 @@ int main(int argc, char** argv)
       }
       fout.close();
     }
+    if ( outputLeftImage.length() != 0 )
+    {
+      std::ofstream fout (outputLeftImage.c_str());
+      for ( unsigned int i  = 0 ; i < leftLensPoints.size() ; i += 2 )
+      {
+        if (!screenPoints[i].LeftNaNOrInf() && !screenPoints[i].RightNaNOrInf())
+        {
+          fout << i << " 0 "; // Adding zero, to feed into niftkProjectTriangulatedPointsToStereoPair.
+          fout << screenPoints[i].m_Left.x << " " << screenPoints[i].m_Left.y;
+          fout << " " << std::endl; // adding space, as we need that reading back in
+        }
+      }
+      fout.close();
+    }
+    if ( outputRightImage.length() != 0 )
+    {
+      std::ofstream fout (outputRightImage.c_str());
+      for ( unsigned int i  = 1 ; i < leftLensPoints.size() ; i += 2 )
+      {
+        if (!screenPoints[i].LeftNaNOrInf() && !screenPoints[i].RightNaNOrInf())
+        {
+          fout << i << " 0 "; // Adding zero, to feed into niftkProjectTriangulatedPointsToStereoPair.
+          fout << screenPoints[i].m_Right.x << " " << screenPoints[i].m_Right.y;
+          fout << " " << std::endl; // adding space, as we need that reading back in
 
+        }
+      }
+      fout.close();
+    }
 
     returnStatus = EXIT_SUCCESS;
   }
