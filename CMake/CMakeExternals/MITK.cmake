@@ -21,7 +21,7 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-set(version "5dfcc68fdf")
+set(version "4500dfe8c4")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
@@ -41,6 +41,16 @@ if(WIN32)
   set(MITK_ADDITIONAL_C_FLAGS ${MITK_ADDITIONAL_C_FLAGS} "-DNOMINMAX")
   set(MITK_ADDITIONAL_CXX_FLAGS ${MITK_ADDITIONAL_CXX_FLAGS} "-DNOMINMAX")
 endif(WIN32)
+
+
+if(NIFTK_Apps/NiftyView)
+  set(_mitk_whitelist "MITK-NiftyView")
+elseif(NIFTK_Apps/NiftyIGI)
+  set(_mitk_whitelist "MITK-NiftyIGI")
+else()
+  set(_mitk_whitelist "MITK-dummy")
+endif()
+
 
 if(NOT DEFINED MITK_DIR)
 
@@ -77,9 +87,9 @@ if(NOT DEFINED MITK_DIR)
       set(MITK_BUILD_org.mitk.gui.qt.moviemaker ON CACHE BOOL \"Build the MITK Movie Maker plugin. \")
       set(MITK_BUILD_org.mitk.gui.qt.aicpregistration ON CACHE BOOL \"Build the MITK Anisotropic ICP plugin. \")
       set(MITK_BUILD_org.mitk.gui.qt.python ${MITK_USE_Python} CACHE BOOL \"Build the MITK python plugin. \")
-      set(BLUEBERRY_BUILD_org.blueberry.ui.qt.log ON CACHE BOOL \"Build the Blueberry logging plugin\")
-      set(BLUEBERRY_BUILD_org.blueberry.ui.qt.help ON CACHE BOOL \"Build the Blueberry Qt help plugin\")
-      set(BLUEBERRY_BUILD_org.blueberry.compat ON CACHE BOOL \"Build the Blueberry compat plugin (Matt, what is this for?)\")
+      set(MITK_BUILD_org.blueberry.ui.qt ON CACHE BOOL \"Build the org.blueberry.ui.qt plugin\")
+      set(MITK_BUILD_org.blueberry.ui.qt.log ON CACHE BOOL \"Build the Blueberry logging plugin\")
+      set(MITK_BUILD_org.blueberry.ui.qt.help ON CACHE BOOL \"Build the Blueberry Qt help plugin\")
       set(DCMTK_DIR ${DCMTK_DIR} CACHE PATH \"DCMTK install directory\")
       set(Python_DIR ${Python_DIR} CACHE PATH \"Python install directory \")
     ")
@@ -141,6 +151,8 @@ if(NOT DEFINED MITK_DIR)
         -DEigen_DIR:PATH=${Eigen_DIR}
         ${mitk_optional_cache_args}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${MITK_INITIAL_CACHE_FILE}
+        -DMITK_WHITELIST:STRING=${_mitk_whitelist}\ \(external\)
+        -DMITK_WHITELISTS_EXTERNAL_PATH:STRING=${CMAKE_SOURCE_DIR}/CMake/Whitelists
       CMAKE_CACHE_ARGS
         ${EP_COMMON_CACHE_ARGS}
       CMAKE_CACHE_DEFAULT_ARGS
