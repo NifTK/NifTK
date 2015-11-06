@@ -605,6 +605,12 @@ else()
   set(MITK_USE_OpenCV OFF CACHE BOOL "" FORCE)
 endif()
 
+if (BUILD_PCL)
+  set(MITK_USE_PCL ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_PCL OFF CACHE BOOL  "" FORCE)
+endif()
+
 if (BUILD_NiftyReg)
   set(MITK_USE_NiftyReg ON CACHE BOOL "" FORCE)
 else()

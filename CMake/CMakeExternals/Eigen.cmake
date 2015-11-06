@@ -37,6 +37,9 @@ if(NOT DEFINED Eigen_DIR)
     INSTALL_DIR ${proj_INSTALL}
     URL ${proj_LOCATION}
     URL_MD5 ${proj_CHECKSUM}
+    #CONFIGURE_COMMAND ""
+    UPDATE_COMMAND ""
+    BUILD_COMMAND ""
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
@@ -49,13 +52,14 @@ if(NOT DEFINED Eigen_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
+  set(Eigen_SOURCE_DIR ${proj_SOURCE}) # PCL needs this because Eigen does not install some 3rd party code.
   set(Eigen_DIR ${proj_INSTALL})
-  set(Eigen_INCLUDE_DIR ${Eigen_DIR}/include/eigen3)
+  set(Eigen_INCLUDE_DIR ${Eigen_DIR}/include/eigen3) # AprilTags, NiftySeg, MITK and NifTK need this.
 
   set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
   mitkFunctionInstallExternalCMakeProject(${proj})
 
-  message("SuperBuild loading Eigen from ${Eigen_DIR}")
+  message("SuperBuild loading Eigen from ${Eigen_SOURCE_DIR} (PCL) or ${Eigen_DIR} (anything else).")
 
 else(NOT DEFINED Eigen_DIR)
 
