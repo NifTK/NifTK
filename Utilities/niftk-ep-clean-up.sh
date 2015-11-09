@@ -6,17 +6,25 @@
 #
 # Usage:
 #
-# No arguments required. Update the SRC_DIR and EP_DIR variables below.
+# niftk-ep-clean-up.sh <source directory> <external project directory>
 
+if [ $# -ne 2 ]
+then
+  echo "Usage:"
+  echo
+  echo "    niftk-ep-clean-up.sh <source directory> <external project directory>"
+  echo
+  exit 1
+fi
 
-SRC_DIR="/c/Program Files/gitlab-ci-runner/projects/project-1"
-EP_DIR="/c/EP"
+SRC_DIR="$1"
+EP_DIR="$2"
 
 cd "$SRC_DIR"
 branches=`git branch -r | grep -v " -> "`
 
 cd "$EP_DIR"
-EPs=$(ls -1d */*)
+EPs=$(ls -1d "*/*")
 
 for EP in $EPs
 do
