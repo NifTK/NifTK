@@ -149,6 +149,7 @@ option(BUILD_NiftyReg "Build NiftyReg." ON)
 option(BUILD_NiftyRec "Build NiftyRec." OFF)
 option(BUILD_NiftySim "Build NiftySim." ON)
 option(BUILD_NiftySeg "Build NiftySeg." ON)
+option(BUILD_Python "Build Python wrapping." OFF)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
 option(BUILD_RTK "Build RTK - Experimental." OFF)
 option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
@@ -558,7 +559,7 @@ set_property(GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS "")
 mitkFunctionAddExternalProject(NAME ZLIB      OFF ADVANCED NO_PACKAGE NO_CACHE)
 mitkFunctionAddExternalProject(NAME PCRE      OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME SWIG      OFF ADVANCED NO_PACKAGE DEPENDS PCRE)
-mitkFunctionAddExternalProject(NAME Python    OFF          NO_PACKAGE DEPENDS ZLIB SWIG DOC "Use Python wrapping in NifTK")
+mitkFunctionAddExternalProject(NAME Python    OFF ADVANCED NO_PACKAGE DEPENDS ZLIB SWIG DOC "Use Python wrapping in NifTK")
 mitkFunctionAddExternalProject(NAME Numpy     OFF ADVANCED NO_PACKAGE DEPENDS Python)
 
 mitkFunctionAddExternalProject(NAME Boost     ON  ADVANCED)
@@ -650,26 +651,26 @@ endif()
 ######################################################################
 # Python: Sanity check for supported Qt version. Only >= 5.3 is supported by CTK/PythonQt
 ######################################################################
-if(MITK_USE_Qt5 AND MITK_USE_Python)
+if(MITK_USE_Qt5 AND BUILD_Python)
   set(minimum_required_python_qt5_version "5.3.0")
   find_package(Qt5 COMPONENTS Core REQUIRED)
 
   if(${Qt5Core_VERSION_STRING} VERSION_LESS ${minimum_required_python_qt5_version})
     message(WARNING "Can't build MITK Python with Qt version < ${minimum_required_python_qt5_version}. Disabling Python support")
-    set(MITK_USE_Python OFF CACHE BOOL "Use python wrapping in MITK" FORCE)
+    set(BUILD_Python OFF)
   endif()
 endif()
 
 ######################################################################
-# Python: Only windows can't build python in debug mode
+# Python: Only Windows can't build Python in debug mode
 ######################################################################
-if(MITK_USE_Python AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" AND WIN32)
-  message(WARNING "Disabling Python support. Building MITK Python in debug mode on Windowsis not supported!")
-  set(MITK_USE_Python OFF CACHE BOOL "Use python wrapping in MITK" FORCE)
-  set(MITK_USE_Numpy OFF CACHE BOOL "Use Numpy" FORCE)
-  set(MITK_USE_SimpleITK OFF CACHE BOOL "Use SimpleITK" FORCE)
-elseif(MITK_USE_Python)
-  set(MITK_USE_ZLIB ON)
+if(BUILD_Python AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" AND WIN32)
+  message(WARNING "Disabling Python support. Building MITK Python in debug mode on Windows is not supported.")
+  set(BUILD_Python OFF)
+endif()
+
+if(BUILD_Python)
+  set(MITK_USE_Python ON CACHE BOOL "Use Python wrapping in MITK" FORCE)
   if(NOT MITK_USE_Numpy)
     message("> Forcing MITK_USE_Numpy to ON because of MITK_USE_Python")
     set(MITK_USE_Numpy ON CACHE BOOL "Use Numpy" FORCE)
@@ -691,14 +692,19 @@ elseif(MITK_USE_Python)
     set(MITK_USE_ZLIB ON CACHE BOOL "Use ZLIB" FORCE)
   endif()
 
-  option(MITK_USE_SYSTEM_PYTHON "Use the system python runtime" OFF)
+  option(MITK_USE_SYSTEM_PYTHON "Use the system Python runtime" OFF)
   if(MITK_USE_SYSTEM_PYTHON)
     find_package(PythonLibs REQUIRED)
     find_package(PythonInterp REQUIRED)
   endif()
-elseif(MITK_USE_Python AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" AND WIN32)
-  message(WARNING "Disabling Python support. Building MITK Python in debug mode on Windowsis not supported!")
-  set(MITK_USE_Python OFF CACHE BOOL "Use python wrapping in MITK" FORCE)
+
+else()
+  set(MITK_USE_Python OFF CACHE BOOL "Use Python wrapping in MITK" FORCE)
+  set(MITK_USE_Numpy OFF CACHE BOOL "Use Numpy" FORCE)
+  set(MITK_USE_SimpleITK OFF CACHE BOOL "Use SimpleITK" FORCE)
+  set(MITK_USE_SWIG OFF CACHE BOOL "Use SWIG" FORCE)
+  set(MITK_USE_PCRE OFF CACHE BOOL "Use PCRE" FORCE)
+  set(MITK_USE_ZLIB OFF CACHE BOOL "Use ZLIB" FORCE)
 endif()
 
 #-----------------------------------------------------------------------------
