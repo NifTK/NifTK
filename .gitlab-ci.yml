@@ -69,34 +69,37 @@ Windows:
 docs:
   script:
   - cd ../niftk-sb/NifTK-build
-
+  - ''
   - chmod a+rx bin/GenerateCommandLineDoxygen
   - bin/GenerateCommandLineDoxygen
-
+  - ''
   - chmod a+rx bin/GenerateTestingReports
   - bin/GenerateTestingReports
+  - ''
   - doxygen doxygen.config
-
+  - ''
   - NIFTK_VERSION=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
   - echo "${NIFTK_VERSION}"
-
   - cd Doxygen
   - rm -rf niftk-current-docs
   - mv ${NIFTK_VERSION}/html niftk-current-docs
   - find . -type f -exec chmod 644 {} \;
   - find . -type d -exec chmod 755 {} \;
   - tar cfj niftk-current-docs.tar.bz2 niftk-current-docs
+  - ''
   - echo "API reference documentation generated:"
   - echo `pwd`/niftk-current-docs.tar.bz2
-
-  - # Delete the previous tarball
+  - ''
+  - "# Delete the previous tarball"
   - ssh cmiclab rm -f /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/niftk-current-docs.tar.bz2
-
-  - # Upload the tarball
+  - ''
+  - "# Upload the tarball"
   - scp niftk-current-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/niftk-current-docs.tar.bz2
-
-  - # Extract the tarball and replace the old files
-  - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ; tar xvfj niftk-current-docs.tar.bz2 ; mv current tmp ; mv niftk-current-docs current ; rm -rf tmp"
+  - ''
+  - "# Extract the tarball and replace the old files"
+  - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ; tar
+    xvfj niftk-current-docs.tar.bz2 ; mv current tmp ; mv niftk-current-docs current
+    ; rm -rf tmp"
 
   type: deploy
 
