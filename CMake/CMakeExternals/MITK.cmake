@@ -218,9 +218,15 @@ if(NOT DEFINED MITK_DIR)
       )
     ")
 
+    # Note:
+    # The DCMTK_DIR variable should not really be set here. This is a workaround because
+    # the variable gets overwritten in MITKConfig.cmake from the DCMTK install directory
+    # to the directory that contains DCMTKConfig.cmake (.../share/dcmtk).
+
     set(mitk_initial_cache_file "${CMAKE_CURRENT_BINARY_DIR}/MITK-initial_cache.txt")
     file(WRITE "${mitk_initial_cache_file}" "
       set(MITK_BUILD_APP_Workbench OFF CACHE BOOL \"Build the MITK Workbench application. This should be OFF, as NifTK has it's own application NiftyView. \")
+      set(DCMTK_DIR ${DCMTK_DIR} CACHE PATH \"DCMTK install directory\")
       set(Python_DIR ${Python_DIR} CACHE PATH \"Python install directory \")
     ")
 
