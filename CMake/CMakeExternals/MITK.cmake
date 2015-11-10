@@ -93,8 +93,6 @@ if(NOT DEFINED MITK_DIR)
         Python                  # needed by org.mitk.gui.qt.python
       # Auto-load modules. No linking dependency, but they provide IO classes and mappers that we need.
         IOExt
-      #  IpPicSupportIO
-      #  VtkShaders
       )
 
       list(APPEND _enabled_plugins
@@ -164,8 +162,6 @@ if(NOT DEFINED MITK_DIR)
         IGTUI                   # needed by niftkIGIGui
       # Auto-load modules. No linking dependency, but they provide IO classes and mappers that we need.
         IOExt
-      #  IpPicSupportIO
-      #  VtkShaders
       )
 
       list(APPEND _enabled_plugins
@@ -192,7 +188,21 @@ if(NOT DEFINED MITK_DIR)
 
     endif()
 
-    if(MITK_USE_Python)
+    if(BUILD_VL)
+
+      list(APPEND _enabled_modules
+      # Modules with linking dependency from our code:
+        IGTBase                 # needed by IGT
+        OpenIGTLink             # needed by IGT
+        IGT                     # needed by CameraCalibration
+        OpenCVVideoSupport      # needed by niftkOpenCV
+        CameraCalibration       # needed by niftkOpenCV
+        OpenCL                  # needed by niftkVL
+      )
+
+    endif()
+
+    if(BUILD_Python)
 
       list(APPEND _enabled_modules
         Python                  # needed by org.mitk.gui.qt.python
