@@ -24,14 +24,20 @@ cd "$SRC_DIR"
 branches=`git branch -r | grep -v " -> "`
 
 cd "$EP_DIR"
-EPs=$(ls -1d "*/*")
+EPs=$(ls -1d */*)
 
 for EP in $EPs
 do
 
   ep_name=${EP%%/*}
   ep_version=${EP#*/}
-  echo -n "$ep_name/$ep_version: "
+  # Tab size 10 is good for most projects.
+  tabsize=10
+  if [[ ${#ep_name} -gt 10 ]]
+  then
+    tabsize=1
+  fi
+  echo -en "$ep_name\t$ep_version: " | expand -t$tabsize
 
   cd "$SRC_DIR"
 
