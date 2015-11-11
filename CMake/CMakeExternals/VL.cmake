@@ -31,6 +31,12 @@ if(BUILD_VL)
 
   if(NOT DEFINED VL_DIR)
 
+    # Note:
+    # The VL_ROOT variable has to be defined up here because the
+    # ChangeVLLibsInstallNameForMac.cmake.in script refers to it.
+
+    set(VL_ROOT ${proj_INSTALL})
+
     set(_test_options )
     if(APPLE)
       set(APPLE_CMAKE_SCRIPT ${proj_CONFIG}/ChangeVLLibsInstallNameForMac.cmake)
@@ -68,7 +74,6 @@ if(BUILD_VL)
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    set(VL_ROOT ${proj_INSTALL})
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
     mitkFunctionInstallExternalCMakeProject(${proj})
 
