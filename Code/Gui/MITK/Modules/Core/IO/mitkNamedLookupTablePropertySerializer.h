@@ -29,16 +29,17 @@ namespace mitk
 class NIFTKCORE_EXPORT NamedLookupTablePropertySerializer : public LookupTablePropertySerializer
 {
 
-  public:
-    mitkClassMacro( NamedLookupTablePropertySerializer, LookupTablePropertySerializer );
-    itkNewMacro(Self);
+public:
+  mitkClassMacro(NamedLookupTablePropertySerializer, LookupTablePropertySerializer);
+  itkNewMacro(Self);
 
-    virtual TiXmlElement* Serialize();
-    virtual BaseProperty::Pointer Deserialize(TiXmlElement*);
+  virtual TiXmlElement* Serialize();
+  virtual BaseProperty::Pointer Deserialize(TiXmlElement*);
 
-  protected:
-    NamedLookupTablePropertySerializer();
-    virtual ~NamedLookupTablePropertySerializer();
+protected:
+  NamedLookupTablePropertySerializer();
+  virtual ~NamedLookupTablePropertySerializer();
+
 };
 
 } // namespace

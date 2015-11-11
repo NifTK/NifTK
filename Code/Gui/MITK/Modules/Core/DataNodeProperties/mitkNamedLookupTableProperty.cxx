@@ -14,7 +14,8 @@
 
 #include "mitkNamedLookupTableProperty.h"
 
-namespace mitk {
+namespace mitk
+{
 
 //-----------------------------------------------------------------------------
 NamedLookupTableProperty::NamedLookupTableProperty()
@@ -79,8 +80,7 @@ bool NamedLookupTableProperty::IsEqual(const BaseProperty& property) const
 {
   return *(this->m_LookupTable) == *(static_cast<const Self&>(property).m_LookupTable)
       && this->m_Name == static_cast<const Self&>(property).m_Name
-      && this->m_IsScaled == static_cast<const Self&>(property).m_IsScaled
-      ;
+      && this->m_IsScaled == static_cast<const Self&>(property).m_IsScaled;
 }
 
 
@@ -90,8 +90,8 @@ bool NamedLookupTableProperty::Assign(const BaseProperty& property)
   this->m_LookupTable = static_cast<const Self&>(property).m_LookupTable;
   this->m_Name = static_cast<const Self&>(property).m_Name;
   this->m_IsScaled = static_cast<const Self&>(property).m_IsScaled;
-  return true;
 
+  return true;
 }
 
-} // namespace mitk
+} // end namespace

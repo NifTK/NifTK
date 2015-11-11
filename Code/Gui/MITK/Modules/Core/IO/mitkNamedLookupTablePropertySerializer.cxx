@@ -48,7 +48,9 @@ TiXmlElement* NamedLookupTablePropertySerializer::Serialize()
     return element;
   }
   else
+  {
     return NULL;
+  }
 }
 
 
@@ -56,31 +58,36 @@ TiXmlElement* NamedLookupTablePropertySerializer::Serialize()
 BaseProperty::Pointer NamedLookupTablePropertySerializer::Deserialize(TiXmlElement* element)
 {
   if (!element) 
+  {
     return NULL;
+  }
 
-  NamedLookupTableProperty::Pointer  namedLUT = NamedLookupTableProperty::New();
+  NamedLookupTableProperty::Pointer namedLUT = NamedLookupTableProperty::New();
 
   std::string name;
-  if( element->QueryStringAttribute("Name", &name) == TIXML_SUCCESS )
+  if (element->QueryStringAttribute("Name", &name) == TIXML_SUCCESS)
   {
     namedLUT->SetName(name);
   }
+
   bool scaled = false;
-  if( element->QueryBoolAttribute("IsScaled", &scaled) == TIXML_SUCCESS )
+  if (element->QueryBoolAttribute("IsScaled", &scaled) == TIXML_SUCCESS)
   {
     namedLUT->SetIsScaled(scaled);
   }
 
   TiXmlElement* child = element->FirstChildElement("LookupTable");
   BaseProperty::Pointer baseProp;
-  if( child )
+  if (child)
   {
     baseProp = this->Superclass::Deserialize(child);
   }
 
   LookupTableProperty* mitkLUTProp = dynamic_cast< LookupTableProperty*>(baseProp.GetPointer());
-  if(mitkLUTProp != NULL )
+  if (mitkLUTProp != NULL)
+  {
     namedLUT->SetLookupTable(mitkLUTProp->GetLookupTable());
+  }
 
   return namedLUT.GetPointer();
 }

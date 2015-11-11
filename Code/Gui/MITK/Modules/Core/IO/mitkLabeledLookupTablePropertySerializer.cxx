@@ -41,7 +41,7 @@ TiXmlElement* LabeledLookupTablePropertySerializer::Serialize()
     TiXmlElement* child = new TiXmlElement("LabelList");
     element->LinkEndChild(child);
 
-    for( int index = 0;index< prop->GetLabels().size();++index)
+    for (int index = 0; index< prop->GetLabels().size(); ++index)
     {
       TiXmlElement* grandChildNinife = new TiXmlElement("Label");
       double value = prop->GetLabels().at(index).first;
@@ -60,15 +60,19 @@ TiXmlElement* LabeledLookupTablePropertySerializer::Serialize()
     return element;
   }
   else
+  {
     return NULL;
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(TiXmlElement* element)
 {
-  if (!element) 
+  if (!element)
+  { 
     return NULL;
+  }
 
   LabeledLookupTableProperty::Pointer  labeledLUT = LabeledLookupTableProperty::New();
 
@@ -76,29 +80,35 @@ BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(TiXmlEle
   if (child)
   {
     LabeledLookupTableProperty::LabelListType labels;
-    for( TiXmlElement* grandChild = child->FirstChildElement("Label"); grandChild; grandChild = grandChild->NextSiblingElement("Label"))
+    for (TiXmlElement* grandChild = child->FirstChildElement("Label"); grandChild; grandChild = grandChild->NextSiblingElement("Label"))
     {
       double value;
       std::string labelName;
-      if ( grandChild->QueryDoubleAttribute("LabelValue", &value) != TIXML_SUCCESS ) return NULL;
-      if ( grandChild->QueryStringAttribute("LabelName", &labelName) != TIXML_SUCCESS ) return NULL;
+      if (grandChild->QueryDoubleAttribute("LabelValue", &value) != TIXML_SUCCESS) 
+      {
+        return NULL;
+      }
+      if (grandChild->QueryStringAttribute("LabelName", &labelName) != TIXML_SUCCESS) 
+      {
+        return NULL;
+      }
 
       LabeledLookupTableProperty::LabelType newLabel = std::make_pair(int(value), QString::fromStdString(labelName));
       labels.push_back(newLabel);
-      }
-
-     labeledLUT->SetLabels(labels);
     }
+
+    labeledLUT->SetLabels(labels);
+  }
 
   child = element->FirstChildElement("NamedLookupTable");
   BaseProperty::Pointer baseProp;
-  if( child )
+  if (child)
   {
     baseProp = this->Superclass::Deserialize(child);
   }
 
   NamedLookupTableProperty* namedLUTProp = dynamic_cast< NamedLookupTableProperty*>(baseProp.GetPointer());
-  if(namedLUTProp != NULL )
+  if (namedLUTProp != NULL)
   {
     labeledLUT->SetLookupTable(namedLUTProp->GetLookupTable());
     labeledLUT->SetIsScaled(namedLUTProp->GetIsScaled());

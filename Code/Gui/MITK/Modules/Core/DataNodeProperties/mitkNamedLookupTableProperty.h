@@ -18,7 +18,8 @@
 #include "niftkCoreExports.h"
 #include <mitkLookupTableProperty.h>
 
-namespace mitk {
+namespace mitk
+{
 
 /**
  * \class NamedLookupTableProperty

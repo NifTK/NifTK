@@ -19,17 +19,19 @@
 #include "mitkNamedLookupTableProperty.h"
 #include <QString.h>
 
-namespace mitk {
+namespace mitk
+{
 
 /**
  * \class LabeledLookupTableProperty
  * \brief Provides a property so that each value/color has an associated name.
  * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
  */
-class NIFTKCORE_EXPORT LabeledLookupTableProperty: public NamedLookupTableProperty
+class NIFTKCORE_EXPORT LabeledLookupTableProperty : public NamedLookupTableProperty
 {
 
 public:
+
   typedef std::pair<int, QString> LabelType;
   typedef std::vector<LabelType> LabelListType;
 
@@ -37,13 +39,13 @@ public:
   itkNewMacro(LabeledLookupTableProperty);
   mitkNewMacro3Param(LabeledLookupTableProperty, 
                      const std::string&, 
-					           const mitk::LookupTable::Pointer, 
-					           LabelListType);
+                     const mitk::LookupTable::Pointer, 
+                     LabelListType);
   mitkNewMacro4Param(LabeledLookupTableProperty, 
                      const std::string&, 
-					           const mitk::LookupTable::Pointer, 
-					           LabelListType, 
-					           bool);
+                     const mitk::LookupTable::Pointer, 
+                     LabelListType, 
+                     bool);
 
   /** Get/set list of labels*/
   inline LabelListType GetLabels() const {return m_Labels;};
@@ -56,11 +58,11 @@ protected:
   LabeledLookupTableProperty(const LabeledLookupTableProperty& other);
   LabeledLookupTableProperty(const std::string& name, 
                              const mitk::LookupTable::Pointer lut, 
-							               LabelListType labels);
+                             LabelListType labels);
   LabeledLookupTableProperty(const std::string& name, 
                              const mitk::LookupTable::Pointer lut, 
-							               LabelListType labels, 
-							               bool scale);
+                             LabelListType labels, 
+                             bool scale);
 
 private:
 
