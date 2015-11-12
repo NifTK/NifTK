@@ -65,6 +65,7 @@ public:
   void SetQFile(QFile &file){m_InputQFile = &file;};
 
 private: 
+
   /** \brief Parse the istream to determine the labels, colors. */
   bool ReadLabelMap(std::istream &);  
 
@@ -90,4 +91,4 @@ private:
 
 } // namespace mitk
 
-#endif // __mitkLabelMapReader_h
+#endif // __mitkLabelMapReaderService_h

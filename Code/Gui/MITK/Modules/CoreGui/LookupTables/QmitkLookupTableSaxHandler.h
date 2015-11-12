@@ -36,32 +36,33 @@ class QmitkLookupTableContainer;
  * This class is not thread safe, so you should load lookup tables
  * one at a time, in a single thread.
  */
-class NIFTKCOREGUI_EXPORT QmitkLookupTableSaxHandler : public QXmlDefaultHandler {
+class NIFTKCOREGUI_EXPORT QmitkLookupTableSaxHandler : public QXmlDefaultHandler 
+{
 
 public:
 
-	/** No-arg constructor. */
+  /** No-arg constructor. */
   QmitkLookupTableSaxHandler();
 
-	/** Returns the internal lookup table, you should not call this until the parsing has finished sucessfully. */
+  /** Returns the internal lookup table, you should not call this until the parsing has finished sucessfully. */
   QmitkLookupTableContainer* GetLookupTableContainer();
 
-	/** Methods that we must implement for the handler. */
-  bool startElement(const QString &namespaceURI,
-                    const QString &localName,
-                    const QString &qName,
-                    const QXmlAttributes &attributes);
+  /** Methods that we must implement for the handler. */
+  bool startElement(const QString& namespaceURI,
+                    const QString& localName,
+                    const QString& qName,
+                    const QXmlAttributes& attributes);
 
   /** Methods that we must implement for the handler. */
-  bool endElement(const QString &namespaceURI,
-                  const QString &localName,
-                  const QString &qName);
+  bool endElement(const QString& namespaceURI,
+                  const QString& localName,
+                  const QString& qName);
 
   /** Methods that we must implement for the handler. */
-  bool characters(const QString &str);
+  bool characters(const QString& str);
 
   /** Methods that we must implement for the handler. */
-  bool fatalError(const QXmlParseException &exception);
+  bool fatalError(const QXmlParseException& exception);
 
 private:
 

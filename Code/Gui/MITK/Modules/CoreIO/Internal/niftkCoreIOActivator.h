@@ -25,7 +25,8 @@
 #include <usModuleContext.h>
 #include <memory>
 
-namespace niftk {
+namespace niftk 
+{
 
 /**
 * @class CoreIOActivator
@@ -46,6 +47,8 @@ private:
   
   std::auto_ptr<niftk::PNMReaderService> m_PNMReaderService;
   std::auto_ptr<niftk::PNMWriterService> m_PNMWriterService;
+  std::auto_ptr<mitk::LabelMapWriterProviderService> m_LabelMapWriterProviderService;
+
 };
 
 } // end namespace

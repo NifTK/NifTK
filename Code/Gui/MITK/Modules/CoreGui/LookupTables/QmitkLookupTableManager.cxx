@@ -19,10 +19,16 @@
 #include <QXmlSimpleReader>
 #include <QCoreApplication>
 #include <QDir>
+#include <qfile.h>
 #include <map>
 #include <vtkLookupTable.h>
 #include <mitkLogMacros.h>
-#include <mitkLabelMapReader.h>
+#include <mitkFileReaderRegistry.h>
+#include <usGetModuleContext.h>
+#include <usModule.h>
+#include <usModuleRegistry.h>
+#include <mitkLabelMapReaderProviderService.h>
+
 
 //-----------------------------------------------------------------------------
 QmitkLookupTableManager::QmitkLookupTableManager()
@@ -30,86 +36,89 @@ QmitkLookupTableManager::QmitkLookupTableManager()
   typedef std::pair<int, const QmitkLookupTableContainer*> PairType;
   typedef std::map<int, const QmitkLookupTableContainer*> MapType;
 
-	MapType map;
+  MapType map;
 
-	// Read all lut files from the resource directory
+  // Read all lut files from the resource directory
   QDir fileDir(":");
   fileDir.makeAbsolute();
 
   QStringList lutFilter;
   lutFilter << "*.lut";
-	QStringList lutList = fileDir.entryList(lutFilter, QDir::Files);
+  QStringList lutList = fileDir.entryList(lutFilter, QDir::Files);
 
-	for (int i = 0; i < lutList.size(); i++)
-	{
+  for (int i = 0; i < lutList.size(); i++)
+  {
     QString fileName = fileDir.absoluteFilePath(lutList[i]);
     MITK_DEBUG << "QmitkLookupTableManager():Loading lut " << fileName.toLocal8Bit().constData();
 
     QFile file(fileName);
 
-	  QXmlInputSource inputSource(&file);
-	  QXmlSimpleReader reader;
+    QXmlInputSource inputSource(&file);
+    QXmlSimpleReader reader;
 
     QmitkLookupTableSaxHandler handler;
-	  reader.setContentHandler(&handler);
-	  reader.setErrorHandler(&handler);
+    reader.setContentHandler(&handler);
+    reader.setErrorHandler(&handler);
 
     QmitkLookupTableContainer *lut = NULL;
 
-	  if (reader.parse(inputSource))
-	  {
-	  	lut = handler.GetLookupTableContainer();
-	  }
-	  else
-	  {
+    if (reader.parse(inputSource))
+    {
+      lut = handler.GetLookupTableContainer();
+    }
+    else
+    {
       MITK_ERROR << "QmitkLookupTableManager():failed to parse XML file (" << fileName.toLocal8Bit().constData() \
-	  			<< ") so returning null";
-	  }
+      << ") so returning null";
+    }
 
-		if (lut != NULL)
-		{
+    if (lut != NULL)
+    {
       map.insert(PairType(lut->GetOrder(), const_cast<const QmitkLookupTableContainer*>(lut)));
-		}
-		else
-		{
+    }
+    else
+    {
       MITK_ERROR << "QmitkLookupTableManager():failed to load lookup table:" << fileName.toLocal8Bit().constData();
-		}
-	}
+    }
+  }
 
+  us::ServiceReference<mitk::LabelMapReaderProviderService> ref = us::GetModuleContext()->GetServiceReference<mitk::LabelMapReaderProviderService>();
+  mitk::LabelMapReaderProviderService* readerService = us::GetModuleContext()->GetService<mitk::LabelMapReaderProviderService>(ref);
+  
   QStringList txtFilter;
   txtFilter << "*.txt";
   QStringList labelMapList = fileDir.entryList(txtFilter, QDir::Files,QDir::SortFlag::Name);
 
   for (int i = 0; i < labelMapList.size(); i++)
-	{
+  {
     QString fileName = fileDir.filePath(labelMapList[i]);
     MITK_DEBUG << "QmitkLookupTableManager():Loading txt " << fileName.toLocal8Bit().constData();
     
-    QFile file(fileName);
+    QFile lutFile(fileName);
+
     
     // intialized label map reader
-    mitk::LabelMapReader reader;
-    reader.SetQFile(file);
-    reader.SetOrder(lutList.size()+i);
-    reader.Read();
-
-    QmitkLookupTableContainer *lut = reader.GetLookupTableContainer();
-
-		if (lut != NULL)
-		{
-      map.insert(PairType(lut->GetOrder(), const_cast<const QmitkLookupTableContainer*>(lut)));
-		}
-		else
-		{
+    mitk::LabeledLookupTableProperty::Pointer lutProp = readerService->ReadLabelMapFile(lutFile);
+    
+    QmitkLookupTableContainer *lut = 
+      new QmitkLookupTableContainer(lutProp->GetLookupTable()->GetVtkLookupTable(), lutProp->GetLabels());
+ 
+    if (lut != NULL)
+    {
+      lut->SetDisplayName(lutProp->GetName());
+      map.insert(PairType(lutList.size()+i, const_cast<const QmitkLookupTableContainer*>(lut)));
+    }
+    else
+    {
       MITK_ERROR << "QmitkLookupTableManager():failed to load lookup table:" << fileName.toLocal8Bit().constData();
-		}
-	}
+    }
+  }
 
-	MapType::iterator iter;
-	for (iter = map.begin(); iter != map.end(); iter++)
-	{
+  MapType::iterator iter;
+  for (iter = map.begin(); iter != map.end(); iter++)
+  {
     m_Containers.emplace((*iter).second->GetDisplayName().toStdString(), (*iter).second);
-	}
+  }
 
   MITK_DEBUG << "QmitkLookupTableManager():Constructed, with " << m_Containers.size() << " lookup tables";
 }
@@ -119,39 +128,39 @@ QmitkLookupTableManager::QmitkLookupTableManager()
 QmitkLookupTableManager::~QmitkLookupTableManager()
 {
   LookupTableMapType::iterator mapIter;
-  for (mapIter = m_Containers.begin(); mapIter !=m_Containers.cend();mapIter++)
-	{
-    if ((*mapIter).second!= NULL)
-	  {
-	    delete (*mapIter).second;
-	  }
-	}
-	m_Containers.clear();
+  for (mapIter = m_Containers.begin(); mapIter != m_Containers.cend(); mapIter++)
+  {
+    if ((*mapIter).second != NULL)
+    {
+      delete (*mapIter).second;
+    }
+  }
+  m_Containers.clear();
 }
 
 
 //-----------------------------------------------------------------------------
 unsigned int QmitkLookupTableManager::GetNumberOfLookupTables()
 {
-	return m_Containers.size();
+  return m_Containers.size();
 }
 
 
 //-----------------------------------------------------------------------------
-const QmitkLookupTableContainer* QmitkLookupTableManager::GetLookupTableContainer(QString& name)
+const QmitkLookupTableContainer* QmitkLookupTableManager::GetLookupTableContainer(const QString& name)
 {
   const QmitkLookupTableContainer* result = NULL;
 
-	if (this->CheckName(name))
-	{
+  if (this->CheckName(name))
+  {
     result = m_Containers.at(name.toStdString());
-	}
-	else
-	{
+  }
+  else
+  {
     MITK_ERROR << "GetLookupTableContainer(" << name.toStdString().c_str() << "):invalid name requested, returning NULL";
-	}
+  }
 
-	return result;
+  return result;
 }
 
 
@@ -160,10 +169,10 @@ std::vector<QString> QmitkLookupTableManager::GetTableNames()
 {
   std::vector<QString> names;
 
-  LookupTableMapType::iterator mapIter = m_Containers.begin();
-  for(;mapIter!=m_Containers.end();mapIter++)
+  LookupTableMapType::iterator mapIter;
+  for (mapIter = m_Containers.begin(); mapIter != m_Containers.end(); mapIter++)
   {
-    names.push_back( QString::fromStdString((*mapIter).first) );
+    names.push_back(QString::fromStdString((*mapIter).first));
   }
 
   return names;
@@ -171,19 +180,18 @@ std::vector<QString> QmitkLookupTableManager::GetTableNames()
 
 
 //-----------------------------------------------------------------------------
-bool QmitkLookupTableManager::CheckName(QString& name)
+bool QmitkLookupTableManager::CheckName(const QString& name)
 {
   LookupTableMapType::iterator mapIter = m_Containers.find(name.toStdString());
-
-  if(mapIter == m_Containers.end() )
-	{
-	  MITK_ERROR << "CheckName(" << name.toStdString().c_str() << ") requested, which does not exist.";
-		return false;
-	}
-	else
-	{
-		return true;
-	}
+  if (mapIter == m_Containers.end())
+  {
+    MITK_ERROR << "CheckName(" << name.toStdString().c_str() << ") requested, which does not exist.";
+    return false;
+  }
+  else
+  {
+    return true;
+  }
 }
 
 
@@ -195,11 +203,10 @@ void QmitkLookupTableManager::AddLookupTableContainer(QmitkLookupTableContainer 
 
 
 //-----------------------------------------------------------------------------
-void QmitkLookupTableManager::ReplaceLookupTableContainer(QmitkLookupTableContainer* container, QString& name)
+void QmitkLookupTableManager::ReplaceLookupTableContainer(QmitkLookupTableContainer* container, const QString& name)
 {
-  if(this->CheckName(name))
+  if (this->CheckName(name))
   {
     m_Containers.at(name.toStdString()) = container;
   }
-
 }

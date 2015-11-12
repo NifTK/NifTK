@@ -18,7 +18,6 @@
 namespace mitk
 {
 
-
 //-----------------------------------------------------------------------------
 LabeledLookupTablePropertySerializer::LabeledLookupTablePropertySerializer()
 {
@@ -41,7 +40,7 @@ TiXmlElement* LabeledLookupTablePropertySerializer::Serialize()
     TiXmlElement* child = new TiXmlElement("LabelList");
     element->LinkEndChild(child);
 
-    for (int index = 0; index< prop->GetLabels().size(); ++index)
+    for (int index = 0; index < prop->GetLabels().size(); ++index)
     {
       TiXmlElement* grandChildNinife = new TiXmlElement("Label");
       double value = prop->GetLabels().at(index).first;
@@ -53,7 +52,7 @@ TiXmlElement* LabeledLookupTablePropertySerializer::Serialize()
     }
 
     const NamedLookupTableProperty* baseProp = dynamic_cast< const NamedLookupTableProperty*>(m_Property.GetPointer());
-    this->SetProperty( baseProp);
+    this->SetProperty(baseProp);
     child = this->Superclass::Serialize();
 
     element->LinkEndChild(child);

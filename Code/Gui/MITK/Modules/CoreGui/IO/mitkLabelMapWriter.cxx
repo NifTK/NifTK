@@ -23,8 +23,6 @@
 
 #include <fstream>
 
-
-
 //-----------------------------------------------------------------------------
 mitk::LabelMapWriter::LabelMapWriter()
   : mitk::AbstractFileWriter("Label Map", CustomMimeType(niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_NAME() ), niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())

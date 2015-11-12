@@ -25,10 +25,11 @@
  * \brief Class to contain a vtkLookupTable and to store meta-data attributes
  * like display name, which order to display it in in GUI, etc.
  */
-class NIFTKCOREGUI_EXPORT QmitkLookupTableContainer {
+class NIFTKCOREGUI_EXPORT QmitkLookupTableContainer 
+{
 
 public:
-  
+
   typedef std::pair<int, QString> LabelType;
   typedef std::vector<LabelType> LabelListType; 
 
@@ -69,7 +70,6 @@ public:
   /** Get labels. */
  LabelListType GetLabels()const { return m_Labels; }
 
-protected:
 
 private:
 
@@ -95,4 +95,5 @@ private:
   LabelListType m_Labels;
 
 };
+
 #endif

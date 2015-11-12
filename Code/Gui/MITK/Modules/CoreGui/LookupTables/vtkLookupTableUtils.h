@@ -51,5 +51,5 @@
    */
   NIFTKCOREGUI_EXPORT vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double* newRange);
 
-  NIFTKCOREGUI_EXPORT vtkLookupTable* CreateEmptyLookupTable(QColor lowColor = QColor(0,0,0,0), QColor highColor = QColor(0,0,0,0));
+  NIFTKCOREGUI_EXPORT vtkLookupTable* CreateEmptyLookupTable(QColor lowColor = QColor(0, 0, 0, 0), QColor highColor = QColor(0, 0, 0, 0));
 #endif // vtkLookupTableUtils_h

@@ -33,7 +33,8 @@
 class QmitkLookupTableContainer;
 class vtkLookupTable;
 
-class NIFTKCOREGUI_EXPORT QmitkLookupTableManager {
+class NIFTKCOREGUI_EXPORT QmitkLookupTableManager 
+{
 
 public:
 
@@ -54,7 +55,7 @@ public:
    * Returns a pointer to the nth lookup table container in the list, or NULL
    * if index < 0, or index >= GetNumberOfLookupTables().
    */
-  const QmitkLookupTableContainer* GetLookupTableContainer(QString& name);
+  const QmitkLookupTableContainer* GetLookupTableContainer(const QString& name);
 
   /**
    * \brief Returns the list of names in the map.
@@ -69,10 +70,10 @@ public:
   /**
   * \brief Replace the LookupTableContainer with name with the given LookupTableContainer
   */
-  void ReplaceLookupTableContainer(QmitkLookupTableContainer* container, QString& name);
+  void ReplaceLookupTableContainer(QmitkLookupTableContainer* container, const QString& name);
 
   /** Checks that name exists within the containers map. */
-  bool CheckName(QString& name);
+  bool CheckName(const QString& name);
 
 private:
 
@@ -80,4 +81,5 @@ private:
   LookupTableMapType m_Containers;
 
 };
+
 #endif

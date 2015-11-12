@@ -41,7 +41,8 @@ class NIFTKCOREGUI_EXPORT LabelMapWriter : public AbstractFileWriter
 {
 
 public: 
-  typedef QmitkLookupTableContainer::LabelListType LabelListType;
+
+  typedef mitk::LabeledLookupTableProperty::LabelListType LabelListType;
 
   LabelMapWriter();
   LabelMapWriter(const LabelMapWriter & other);
@@ -60,7 +61,7 @@ public:
   inline void SetVtkLookupTable(vtkLookupTable* vtkLUT){ m_LookupTable = vtkLUT;}
 
 private: 
-  
+
   /** \brief Write labels, lookuptable to stream. */
   void WriteLabelMap(); 
 
