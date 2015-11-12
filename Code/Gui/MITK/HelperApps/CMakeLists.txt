@@ -210,9 +210,11 @@ if(SlicerExecutionModel_FOUND)
     )
   endforeach()
 
-  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    # Suppress warning because of a bug in the Boost gil library.
-    set_target_properties(niftkImageFeatureMatching PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
+  if(BUILD_IGI)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      # Suppress warning because of a bug in the Boost gil library.
+      set_target_properties(niftkImageFeatureMatching PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
+    endif()
   endif()
 
 endif()
