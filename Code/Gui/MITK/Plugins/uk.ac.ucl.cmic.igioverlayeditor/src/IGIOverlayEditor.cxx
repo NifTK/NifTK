@@ -78,13 +78,13 @@ struct IGIOverlayWidgetPartListener : public berry::IPartListener
   {}
 
   //---------------------------------------------------------------------------
-  Events::Types GetPartEventTypes() const
+  Events::Types GetPartEventTypes() const override
   {
     return Events::CLOSED | Events::HIDDEN | Events::VISIBLE;
   }
 
   //---------------------------------------------------------------------------
-  void PartClosed (berry::IWorkbenchPartReference::Pointer partRef)
+  void PartClosed(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
     if (partRef->GetId() == IGIOverlayEditor::EDITOR_ID)
     {
