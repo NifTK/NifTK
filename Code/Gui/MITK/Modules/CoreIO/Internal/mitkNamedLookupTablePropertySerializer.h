@@ -25,8 +25,8 @@ namespace mitk
 */
 class NamedLookupTablePropertySerializer : public LookupTablePropertySerializer
 {
-
 public:
+
   mitkClassMacro(NamedLookupTablePropertySerializer, LookupTablePropertySerializer);
   itkNewMacro(Self);
 
@@ -34,9 +34,9 @@ public:
   virtual BaseProperty::Pointer Deserialize(TiXmlElement*);
 
 protected:
+
   NamedLookupTablePropertySerializer();
   virtual ~NamedLookupTablePropertySerializer();
-
 };
 
 } // namespace

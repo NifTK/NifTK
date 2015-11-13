@@ -37,8 +37,8 @@ TiXmlElement* NamedLookupTablePropertySerializer::Serialize()
   if (const NamedLookupTableProperty* prop = dynamic_cast<const NamedLookupTableProperty*>(m_Property.GetPointer()))
   {
     TiXmlElement* element = new TiXmlElement("NamedLookupTable");
-    element->SetAttribute("Name", prop->GetName() );
-    element->SetAttribute("IsScaled", prop->GetIsScaled() );
+    element->SetAttribute("Name", prop->GetName());
+    element->SetAttribute("IsScaled", prop->GetIsScaled());
 
     const LookupTableProperty* baseProp = dynamic_cast< const LookupTableProperty*>(m_Property.GetPointer());
     this->SetProperty( baseProp);

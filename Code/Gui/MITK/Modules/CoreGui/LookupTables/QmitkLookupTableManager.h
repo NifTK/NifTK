@@ -65,12 +65,12 @@ public:
   /**
   * \brief Add the given LookupTableContainer to the set of containers
   */
-  void AddLookupTableContainer(QmitkLookupTableContainer* container);
+  void AddLookupTableContainer(const QmitkLookupTableContainer* container);
 
   /**
   * \brief Replace the LookupTableContainer with name with the given LookupTableContainer
   */
-  void ReplaceLookupTableContainer(QmitkLookupTableContainer* container, const QString& name);
+  void ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& name);
 
   /** Checks that name exists within the containers map. */
   bool CheckName(const QString& name);

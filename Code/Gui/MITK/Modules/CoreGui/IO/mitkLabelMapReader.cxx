@@ -29,7 +29,7 @@
 
 //-----------------------------------------------------------------------------
 mitk::LabelMapReader::LabelMapReader()
-  : mitk::AbstractFileReader(CustomMimeType( niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_NAME() ), niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION() )
+: mitk::AbstractFileReader(CustomMimeType(niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_NAME()), niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
 {
   m_ServiceReg = this->RegisterService();
 }
@@ -37,7 +37,7 @@ mitk::LabelMapReader::LabelMapReader()
 
 //-----------------------------------------------------------------------------
 mitk::LabelMapReader::LabelMapReader(const LabelMapReader &other)
-  :mitk::AbstractFileReader(other)
+: mitk::AbstractFileReader(other)
 {
 }
 
@@ -52,7 +52,6 @@ mitk::LabelMapReader * mitk::LabelMapReader::Clone() const
 //-----------------------------------------------------------------------------
 std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
 {
-
   // make sure the internal datatypes are empty
   m_Labels.clear();
   m_Colors.clear();
@@ -69,7 +68,7 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
 
     bool isLoaded = false;
     QString labelName;
-    if( infile.is_open() )
+    if (infile.is_open())
     {
       labelName = QString::fromStdString(fileName);
       isLoaded = this->ReadLabelMap(infile);
@@ -90,11 +89,11 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
       isLoaded = this->ReadLabelMap(sStream);
     }
 
-    if( isLoaded )
+    if (isLoaded)
     {
-      int startInd = labelName.lastIndexOf("/")+1;
+      int startInd = labelName.lastIndexOf("/") + 1;
       int endInd = labelName.lastIndexOf(".");
-      m_DisplayName = labelName.mid(startInd, endInd-startInd);
+      m_DisplayName = labelName.mid(startInd, endInd - startInd);
       setlocale(LC_ALL, currLocale.c_str());
       MITK_DEBUG << "NifTK label map read.";
     }
@@ -108,6 +107,7 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
   {
     throw;
   }
+  
   return result;
 }
 
@@ -124,12 +124,14 @@ bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
     //place the line from input into the raw string
     getline(file, line);
 
-    if( line.empty() || line.at(0) == '#' || line == "\r")
+    if (line.empty() || line.at(0) == '#' || line == "\r")
+    {
       continue;
+    }
 
     try
     {
-      int value,red,green,blue,alpha;
+      int value, red, green, blue, alpha;
       
       // find value
       size_t firstSpace = line.find_first_of(' ');
@@ -140,11 +142,11 @@ bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
       size_t firstLtr = line.find_first_not_of(' ', firstSpace);
       size_t lastLtr  = line.find_first_of(' ', firstLtr);
 
-      std::string nameInFile = line.substr(firstLtr, (lastLtr)-firstLtr);
+      std::string nameInFile = line.substr(firstLtr, (lastLtr) - firstLtr);
       QString name = QString::fromStdString(nameInFile);
 
       // if the name is just the special character set as empty
-      if(name.compare(QString('*'))==0)
+      if (name.compare(QString('*')) == 0)
         name.clear();
 
       name.replace('*',' '); // swapping the white space back in
@@ -153,7 +155,7 @@ bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
       std::string colorStr = line.substr(lastLtr, line.size() - lastLtr);
       sscanf(colorStr.c_str(), "%i %i %i %i", &red, &green, &blue, &alpha);
 
-      QmitkLookupTableContainer::LabelType label = std::make_pair(value,name);
+      QmitkLookupTableContainer::LabelType label = std::make_pair(value, name);
       m_Labels.push_back(label);
 
       QColor fileColor(red, green, blue, alpha);
@@ -174,22 +176,28 @@ bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
 //-----------------------------------------------------------------------------
 QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
 {
-  if(m_Colors.empty() || m_Labels.empty())
+  if (m_Colors.empty() || m_Labels.empty())
+  {
     return NULL;
-
+  }
+  
   MITK_DEBUG << "GetLookupTableContainer():labels.size()=" << m_Labels.size();
 
   // get the size of vtkLUT from the range of values
   int min = m_Labels.at(0).first;
   int max = min;
 
-  for(unsigned int i=1;i<m_Labels.size();i++)
+  for (unsigned int i = 1; i < m_Labels.size(); i++)
   {
     int val = m_Labels.at(i).first;
-    if(val<min)
+    if(val < min)
+    {
       min = val;
-    else if (val>max)
+    }
+    else if (val > max)
+    {
       max = val;
+    }
   }
 
   vtkSmartPointer<vtkLookupTable> lookupTable = vtkLookupTable::New();
@@ -207,15 +215,15 @@ QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
    * Number of table values: to map values above/below range to
    * the default color, define table value above/below label range.
    */
-  int numberOfValues = (max-min)+2;
+  int numberOfValues = (max - min) + 2;
   lookupTable->SetNumberOfTableValues( numberOfValues ); 
-  lookupTable->SetTableRange(min-1,max+1);
-  lookupTable->SetNanColor(0,0,0,0);
+  lookupTable->SetTableRange(min - 1, max + 1);
+  lookupTable->SetNanColor(0, 0, 0, 0);
 
   lookupTable->Build();
 
   // iterate and assign each color value
-  for( unsigned int i=0;i<m_Colors.size();i++)
+  for (unsigned int i = 0; i < m_Colors.size(); i++)
   {
     int value = m_Labels.at(i).first;
     int vtkInd = value - min + 1;
@@ -225,12 +233,11 @@ QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
     double b = m_Colors.at(i).blueF();
     double a = m_Colors.at(i).alphaF();
     
-    lookupTable->SetTableValue(vtkInd,r,g,b,a);
+    lookupTable->SetTableValue(vtkInd, r, g, b, a);
   }
 
-
   // place into container
-  QmitkLookupTableContainer *lookupTableContainer = new QmitkLookupTableContainer(lookupTable, m_Labels);
+  QmitkLookupTableContainer* lookupTableContainer = new QmitkLookupTableContainer(lookupTable, m_Labels);
   lookupTableContainer->SetDisplayName(m_DisplayName);
   lookupTableContainer->SetOrder(m_Order);
 

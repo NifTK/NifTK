@@ -68,12 +68,12 @@ struct QmitkLookupTableProviderService
   /**
    * \brief Add a new LookupTableContainer to the LookupTableManager.
    */
-  virtual void AddNewLookupTableContainer(QmitkLookupTableContainer* container) = 0;
+  virtual void AddNewLookupTableContainer(const QmitkLookupTableContainer* container) = 0;
 
   /**
    * \brief Replace the LookupTableContainer of the given name with another.
    */
-  virtual void ReplaceLookupTableContainer(QmitkLookupTableContainer* container, const QString& lookupTableName) = 0;
+  virtual void ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& lookupTableName) = 0;
 
   /**
    * \brief Returns the display names of  all table.

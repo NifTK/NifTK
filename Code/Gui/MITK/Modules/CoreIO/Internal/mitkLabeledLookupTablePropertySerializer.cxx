@@ -18,6 +18,7 @@
 namespace mitk
 {
 
+
 //-----------------------------------------------------------------------------
 LabeledLookupTablePropertySerializer::LabeledLookupTablePropertySerializer()
 {

@@ -71,7 +71,7 @@ bool LabeledLookupTableProperty::IsEqual(const BaseProperty& property) const
 
   if (sameLabels)
   {
-    for (unsigned int i=0; (i < m_Labels.size()) && (i < otherLabels.size()); i++)
+    for (unsigned int i = 0; (i < m_Labels.size()) && (i < otherLabels.size()); i++)
     {
       LabelType labelPair = m_Labels.at(i);
       LabelType otherPair = otherLabels.at(i);

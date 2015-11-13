@@ -27,7 +27,7 @@
 #include <usGetModuleContext.h>
 #include <usModule.h>
 #include <usModuleRegistry.h>
-#include <mitkLabelMapReaderProviderService.h>
+#include <mitkLabelMapReader.h>
 
 
 //-----------------------------------------------------------------------------
@@ -60,7 +60,7 @@ QmitkLookupTableManager::QmitkLookupTableManager()
     reader.setContentHandler(&handler);
     reader.setErrorHandler(&handler);
 
-    QmitkLookupTableContainer *lut = NULL;
+    const QmitkLookupTableContainer *lut = NULL;
 
     if (reader.parse(inputSource))
     {
@@ -74,7 +74,7 @@ QmitkLookupTableManager::QmitkLookupTableManager()
 
     if (lut != NULL)
     {
-      map.insert(PairType(lut->GetOrder(), const_cast<const QmitkLookupTableContainer*>(lut)));
+      map.insert(PairType(lut->GetOrder(), lut));
     }
     else
     {
@@ -82,9 +82,6 @@ QmitkLookupTableManager::QmitkLookupTableManager()
     }
   }
 
-  us::ServiceReference<mitk::LabelMapReaderProviderService> ref = us::GetModuleContext()->GetServiceReference<mitk::LabelMapReaderProviderService>();
-  mitk::LabelMapReaderProviderService* readerService = us::GetModuleContext()->GetService<mitk::LabelMapReaderProviderService>(ref);
-  
   QStringList txtFilter;
   txtFilter << "*.txt";
   QStringList labelMapList = fileDir.entryList(txtFilter, QDir::Files,QDir::SortFlag::Name);
@@ -96,17 +93,18 @@ QmitkLookupTableManager::QmitkLookupTableManager()
     
     QFile lutFile(fileName);
 
-    
     // intialized label map reader
-    mitk::LabeledLookupTableProperty::Pointer lutProp = readerService->ReadLabelMapFile(lutFile);
-    
-    QmitkLookupTableContainer *lut = 
-      new QmitkLookupTableContainer(lutProp->GetLookupTable()->GetVtkLookupTable(), lutProp->GetLabels());
+    mitk::LabelMapReader reader;
+
+    reader.SetQFile(lutFile);
+    reader.SetOrder(lutList.size() + i);
+    reader.Read();
+
+    const QmitkLookupTableContainer *lut = reader.GetLookupTableContainer();
  
     if (lut != NULL)
     {
-      lut->SetDisplayName(lutProp->GetName());
-      map.insert(PairType(lutList.size()+i, const_cast<const QmitkLookupTableContainer*>(lut)));
+      map.insert(PairType(lutList.size() + i, lut));
     }
     else
     {
@@ -135,6 +133,7 @@ QmitkLookupTableManager::~QmitkLookupTableManager()
       delete (*mapIter).second;
     }
   }
+  
   m_Containers.clear();
 }
 
@@ -196,14 +195,14 @@ bool QmitkLookupTableManager::CheckName(const QString& name)
 
 
 //-----------------------------------------------------------------------------
-void QmitkLookupTableManager::AddLookupTableContainer(QmitkLookupTableContainer *container)
+void QmitkLookupTableManager::AddLookupTableContainer(const QmitkLookupTableContainer *container)
 {
   m_Containers.emplace(container->GetDisplayName().toStdString(), container);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkLookupTableManager::ReplaceLookupTableContainer(QmitkLookupTableContainer* container, const QString& name)
+void QmitkLookupTableManager::ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& name)
 {
   if (this->CheckName(name))
   {

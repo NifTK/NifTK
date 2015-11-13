@@ -15,7 +15,7 @@
 set(CPP_FILES
   IO/mitkLabelMapReader.cxx
   IO/mitkLabelMapWriter.cxx
-  Internal/niftkCoreGuiIOMimeTypes.cxx
+  IO/niftkCoreGuiIOMimeTypes.cxx
   LookupTables/QmitkLookupTableContainer.cxx
   LookupTables/QmitkLookupTableSaxHandler.cxx
   LookupTables/QmitkLookupTableManager.cxx

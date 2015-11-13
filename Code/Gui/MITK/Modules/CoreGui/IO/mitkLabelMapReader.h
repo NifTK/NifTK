@@ -18,7 +18,7 @@
 
 #include <mitkAbstractFileReader.h>
 #include "niftkCoreGuiExports.h"
-#include "QmitkLookupTableContainer.h"
+#include "mitkLabeledLookupTableProperty.h"
 #include <qfile.h>
 #include <qcolor.h>
 
@@ -36,6 +36,7 @@ class NIFTKCOREGUI_EXPORT LabelMapReader : public AbstractFileReader
 {
 
 public: 
+
   LabelMapReader();
   LabelMapReader(const LabelMapReader & other);
   virtual LabelMapReader * Clone() const;
@@ -70,7 +71,7 @@ private:
   bool ReadLabelMap(std::istream &);  
 
   /** To temporarily store the labels (pixel value/name). */
-  QmitkLookupTableContainer::LabelListType m_Labels;
+  LabeledLookupTableProperty::LabelListType m_Labels;
 
   typedef std::vector<QColor> ColorListType;
   /** To temporarily store the list of colors. */

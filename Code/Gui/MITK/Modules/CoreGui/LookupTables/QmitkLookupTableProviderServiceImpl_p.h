@@ -66,12 +66,12 @@ public:
   /**
    * \see QmitkLookupTableProviderService::AddNewLookupTableContainer()
    */
-  virtual void AddNewLookupTableContainer(QmitkLookupTableContainer* container);
+  virtual void AddNewLookupTableContainer(const QmitkLookupTableContainer* container);
   
   /**
    * \see QmitkLookupTableProviderService::ReplaceLookupTableContainer()
    */
-  virtual void ReplaceLookupTableContainer(QmitkLookupTableContainer* container, const QString& lookupTableName);
+  virtual void ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& lookupTableName);
 
   /**
    * \see QmitkLookupTableProviderService::GetIsScaled

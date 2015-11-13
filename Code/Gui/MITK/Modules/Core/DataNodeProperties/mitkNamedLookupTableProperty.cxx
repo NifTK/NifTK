@@ -32,7 +32,6 @@ NamedLookupTableProperty::NamedLookupTableProperty(const NamedLookupTablePropert
 , m_Name(other.m_Name)
 , m_IsScaled(other.m_IsScaled)
 {
-
 }
 
 

@@ -28,7 +28,6 @@ namespace mitk
  */
 class NIFTKCORE_EXPORT NamedLookupTableProperty : public mitk::LookupTableProperty
 {
-
 public:
 
   mitkClassMacro(NamedLookupTableProperty, mitk::LookupTableProperty);

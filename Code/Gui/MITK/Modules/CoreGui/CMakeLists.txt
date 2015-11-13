@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS Events LookupTables IO Internal Rendering
+  INCLUDE_DIRS Events LookupTables IO Rendering
   DEPENDS MitkCore MitkQtWidgets MitkQtWidgetsExt niftkCore niftkCoreIO
   PACKAGE_DEPENDS Qt4|QtGui Qt4|QtOpenGL CTK|CTKWidgets
 )

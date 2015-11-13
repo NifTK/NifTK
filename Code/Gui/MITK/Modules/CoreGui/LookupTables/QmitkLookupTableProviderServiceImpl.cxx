@@ -119,9 +119,9 @@ vtkLookupTable* QmitkLookupTableProviderServiceImpl
     rgba[3] = lowestValueOpacity;
     vtkLUT->SetTableValue(0, rgba);
 
-    vtkLUT->GetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
+    vtkLUT->GetTableValue(vtkLUT->GetNumberOfColors() - 1, rgba);
     rgba[3] = highestValueOpacity;
-    vtkLUT->SetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
+    vtkLUT->SetTableValue(vtkLUT->GetNumberOfColors() - 1, rgba);
   }
   return vtkLUT;
 }
@@ -166,7 +166,7 @@ QmitkLookupTableProviderServiceImpl::CreateLookupTableProperty(const QString& lo
 
 
 //-----------------------------------------------------------------------------
-void QmitkLookupTableProviderServiceImpl::AddNewLookupTableContainer(QmitkLookupTableContainer* container) 
+void QmitkLookupTableProviderServiceImpl::AddNewLookupTableContainer(const QmitkLookupTableContainer* container) 
 {
   QmitkLookupTableManager* manager = this->GetManager();
   if (manager == NULL)
@@ -180,7 +180,7 @@ void QmitkLookupTableProviderServiceImpl::AddNewLookupTableContainer(QmitkLookup
 
 //-----------------------------------------------------------------------------
 void QmitkLookupTableProviderServiceImpl
-::ReplaceLookupTableContainer(QmitkLookupTableContainer* container, const QString& lookupTableName) 
+::ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& lookupTableName) 
 {
   QmitkLookupTableManager* manager = this->GetManager();
   if (manager == NULL)

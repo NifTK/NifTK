@@ -82,4 +82,5 @@ private:
   std::vector<QColor> m_List;
 
 };
+
 #endif

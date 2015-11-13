@@ -29,7 +29,6 @@ namespace mitk
  */
 class NIFTKCORE_EXPORT LabeledLookupTableProperty : public NamedLookupTableProperty
 {
-
 public:
 
   typedef std::pair<int, QString> LabelType;

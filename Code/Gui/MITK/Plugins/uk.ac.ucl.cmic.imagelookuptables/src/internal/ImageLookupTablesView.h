@@ -279,7 +279,6 @@ private:
    * \brief To store the observer ID on the LevelWindow property.
    */
   unsigned long int m_LevelWindowPropertyObserverTag;
-
 };
 
 #endif

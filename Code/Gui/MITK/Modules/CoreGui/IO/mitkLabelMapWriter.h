@@ -19,12 +19,11 @@
 
 #include <mitkAbstractFileWriter.h>
 #include "niftkCoreGuiExports.h"
-#include "QmitkLookupTableContainer.h"
+#include "mitkLabeledLookupTableProperty.h"
 
 
 
 namespace mitk 
-
 {
 
 
@@ -58,7 +57,7 @@ public:
   inline void SetLabels(LabelListType labels){m_Labels = labels;}
 
   /** \brief Set the vtkLookupTable to write to file. */
-  inline void SetVtkLookupTable(vtkLookupTable* vtkLUT){ m_LookupTable = vtkLUT;}
+  inline void SetVtkLookupTable(vtkLookupTable* vtkLUT){m_LookupTable = vtkLUT;}
 
 private: 
 

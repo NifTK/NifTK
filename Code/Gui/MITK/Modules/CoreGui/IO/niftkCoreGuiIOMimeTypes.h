@@ -18,14 +18,16 @@
 #include <mitkCustomMimeType.h>
 #include <string>
 
-namespace niftk {
+namespace niftk 
+{
 
 class CoreGuiIOMimeTypes
 {
+
 public:
 
   static std::vector<mitk::CustomMimeType*> Get();
-
+  
   static mitk::CustomMimeType LABELMAP_MIMETYPE();
   static std::string LABELMAP_MIMETYPE_NAME();
   static std::string LABELMAP_MIMETYPE_DESCRIPTION();

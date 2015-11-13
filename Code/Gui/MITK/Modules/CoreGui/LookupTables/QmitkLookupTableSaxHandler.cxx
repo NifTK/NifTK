@@ -61,7 +61,7 @@ bool QmitkLookupTableSaxHandler
     const QString& /* localName */,
     const QString& qName,
     const QXmlAttributes& attributes
-	)
+    )
 {
   if (qName == "lut")
   {
@@ -78,7 +78,7 @@ bool QmitkLookupTableSaxHandler
     if (!scaledStr.isEmpty() && isScaled == 0)
     {
       m_IsScaled = false;
-	} 
+    } 
   }
   else if (qName == "colour")
   {
@@ -123,7 +123,7 @@ bool QmitkLookupTableSaxHandler
     const QString & /* namespaceURI */,
     const QString & /* localName */,
     const QString &qName
-	)
+    )
 {
   return true;
 }

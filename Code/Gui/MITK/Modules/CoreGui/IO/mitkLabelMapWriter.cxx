@@ -25,7 +25,7 @@
 
 //-----------------------------------------------------------------------------
 mitk::LabelMapWriter::LabelMapWriter()
-  : mitk::AbstractFileWriter("Label Map", CustomMimeType(niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_NAME() ), niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
+: mitk::AbstractFileWriter("Label Map", CustomMimeType(niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_NAME() ), niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
 {
   RegisterService();
 }
@@ -33,8 +33,9 @@ mitk::LabelMapWriter::LabelMapWriter()
 
 //-----------------------------------------------------------------------------
 mitk::LabelMapWriter::LabelMapWriter(const mitk::LabelMapWriter & other)
-  :mitk::AbstractFileWriter(other)
-{}
+: mitk::AbstractFileWriter(other)
+{
+}
 
 
 //-----------------------------------------------------------------------------
@@ -51,17 +52,17 @@ void mitk::LabelMapWriter::Write()
   std::ostream* out;
   std::ofstream outStream;
 
-  if( this->GetOutputStream() )
+  if (this->GetOutputStream())
   {
     out = this->GetOutputStream();
   }
   else
   {
-    outStream.open( this->GetOutputLocation().c_str() );
+    outStream.open(this->GetOutputLocation().c_str());
     out = &outStream;
   }
 
-  if ( !out->good() )
+  if (!out->good())
   {
     MITK_ERROR << "Unable to write to stream.";
   }
@@ -94,32 +95,35 @@ void mitk::LabelMapWriter::Write()
 //-----------------------------------------------------------------------------
 void mitk::LabelMapWriter::WriteLabelMap()
 {
-  if(m_Labels.empty() || m_LookupTable == NULL)
+  if (m_Labels.empty() || m_LookupTable == NULL)
   {
     mitkThrow() << "Labels or LookupTable not set.";
   }
 
-  std::ofstream outfile( this->GetOutputLocation().c_str(), std::ofstream::binary);
+  std::ofstream outfile(this->GetOutputLocation().c_str(), std::ofstream::binary);
   
-  for( unsigned int i=0; i<m_Labels.size();i++ )
+  for (unsigned int i = 0; i < m_Labels.size(); i++)
   {
-    int value = m_Labels.at(i).first; 
-    
+    int value = m_Labels.at(i).first;  
     QString name = m_Labels.at(i).second;
 
     // in the slicer file format white space is used to denote space betweeen values, 
     // replacing all white spaces/empty strings with a character to ensure proper IO.
-    if( name.isEmpty() )
+    if (name.isEmpty())
+    {
       name = "*";
+    }
     else
+    {
       name.replace(" ", "*");
+    }
 
     vtkIdType index = m_LookupTable->GetIndex(value);
     double* rgba = m_LookupTable->GetTableValue(index);
-    int r = rgba[0]*255;
-    int g = rgba[1]*255;
-    int b = rgba[2]*255;
-    int a = rgba[3]*255;
+    int r = rgba[0] * 255;
+    int g = rgba[1] * 255;
+    int b = rgba[2] * 255;
+    int a = rgba[3] * 255;
 
     std::ostringstream  line;
     outfile << value << " " << name.toStdString() << " "<< r << " " << g << " " << b << " " << a << "\n";
