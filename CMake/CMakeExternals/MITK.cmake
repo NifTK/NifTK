@@ -90,7 +90,6 @@ if(NOT DEFINED MITK_DIR)
         ImageDenoising          # needed by org.mitk.gui.qt.basicimageprocessing
         SegmentationUI          # needed by org.mitk.gui.qt.segmentation
         DicomUI                 # needed by org.mitk.gui.qt.dicom
-        Python                  # needed by org.mitk.gui.qt.python
       # Auto-load modules. No linking dependency, but they provide IO classes and mappers that we need.
         IOExt
       )
@@ -124,7 +123,6 @@ if(NOT DEFINED MITK_DIR)
         org.mitk.gui.qt.measurementtoolbox
         org.mitk.gui.qt.moviemaker
         org.mitk.gui.qt.properties
-        org.mitk.gui.qt.python
       )
 
     endif()
