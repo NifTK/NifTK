@@ -62,10 +62,10 @@ if(NOT DEFINED MITK_DIR)
     set(_enabled_modules "")
     set(_enabled_plugins "")
 
-    if(NIFTK_Apps/NiftyView)
+    # Common requirements for GUI applications:
+    if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI)
 
       list(APPEND _enabled_modules
-      # Modules with linking dependency from our code:
         Core                    # needed by niftkCore
         SceneSerializationBase  # needed by niftkCoreIO
         LegacyGL                # needed by PlanarFigure and AlgorithmsExt
@@ -86,16 +86,10 @@ if(NOT DEFINED MITK_DIR)
         ContourModel            # needed by Segmentation
         Multilabel              # needed by Segmentation
         Segmentation            # needed by uk.ac.ucl.cmic.surfaceextractor
-        MapperExt               # needed by org.mitk.gui.qt.basicimageprocessing
-        ImageDenoising          # needed by org.mitk.gui.qt.basicimageprocessing
-        SegmentationUI          # needed by org.mitk.gui.qt.segmentation
-        DicomUI                 # needed by org.mitk.gui.qt.dicom
-      # Auto-load modules. No linking dependency, but they provide IO classes and mappers that we need.
-        IOExt
+        IOExt                   # autoloaded with MitkCore, registers IO microservices
       )
 
       list(APPEND _enabled_plugins
-      # Plugins with compile-time or run-time dependency from our code:
         org.blueberry.core.runtime      # needed by org.blueberry.core.commands
         org.blueberry.core.commands     # needed by org.blueberry.ui.qt
         org.blueberry.core.expressions  # needed by org.blueberry.ui.qt
@@ -107,12 +101,26 @@ if(NOT DEFINED MITK_DIR)
         org.mitk.gui.qt.common          # needed by org.mitk.gui.qt.datamanager
         org.mitk.gui.qt.ext             # needed by uk.ac.ucl.cmic.gui.qt.commonapps
         org.mitk.gui.qt.datamanager     # needed by NiftyView
-      # Plugins that we do not physically depend on but that we want to use:
         org.blueberry.ui.qt.help
         org.blueberry.ui.qt.log
         org.mitk.planarfigure
-        org.mitk.gui.qt.common.legacy           # needed by org.mitk.gui.qt.basicimageprocessing
         org.mitk.gui.qt.imagenavigator
+        org.mitk.gui.qt.properties
+      )
+    endif()
+
+    # Additionally required for NiftyView:
+    if(NIFTK_Apps/NiftyView)
+
+      list(APPEND _enabled_modules
+        MapperExt               # needed by org.mitk.gui.qt.basicimageprocessing
+        ImageDenoising          # needed by org.mitk.gui.qt.basicimageprocessing
+        SegmentationUI          # needed by org.mitk.gui.qt.segmentation
+        DicomUI                 # needed by org.mitk.gui.qt.dicom
+      )
+
+      list(APPEND _enabled_plugins
+        org.mitk.gui.qt.common.legacy           # needed by org.mitk.gui.qt.basicimageprocessing
         org.mitk.gui.qt.basicimageprocessing
         org.mitk.gui.qt.volumevisualization
         org.mitk.gui.qt.pointsetinteraction
@@ -122,35 +130,14 @@ if(NOT DEFINED MITK_DIR)
         org.mitk.gui.qt.dicom
         org.mitk.gui.qt.measurementtoolbox
         org.mitk.gui.qt.moviemaker
-        org.mitk.gui.qt.properties
       )
 
     endif()
 
+    # Additionally required for NiftyIGI:
     if(NIFTK_Apps/NiftyIGI)
 
       list(APPEND _enabled_modules
-      # Modules with linking dependency from our code:
-        Core                    # needed by niftkCore
-        SceneSerializationBase  # needed by niftkCoreIO
-        LegacyGL                # needed by PlanarFigure and AlgorithmsExt
-        PlanarFigure            # needed by QtWidgets
-        Overlays                # needed by QtWidgets
-        QtWidgets               # needed by niftkCoreGui
-        DataTypesExt            # needed by AlgorithmsExt
-        AlgorithmsExt           # needed by ImageExtraction
-        ImageExtraction         # needed by ImageStatistics
-        ImageStatistics         # needed by QtWidgetsExt
-        QtWidgetsExt            # needed by niftkCoreGui
-        SceneSerialization      # needed by org.mitk.gui.qt.ext
-        AppUtil                 # needed by org.mitk.gui.qt.ext
-        LegacyIO                # needed by uk.ac.ucl.cmic.xnat
-        LegacyAdaptors          # needed by Segmentation
-        SurfaceInterpolation    # needed by Segmentation
-        GraphAlgorithms         # needed by Segmentation
-        ContourModel            # needed by Segmentation
-        Multilabel              # needed by Segmentation
-        Segmentation            # needed by uk.ac.ucl.cmic.surfaceextractor
         IGTBase                 # needed by IGT
         OpenIGTLink             # needed by IGT
         IGT                     # needed by CameraCalibration
@@ -158,29 +145,9 @@ if(NOT DEFINED MITK_DIR)
         CameraCalibration       # needed by niftkOpenCV
         Persistence             # needed by IGTUI
         IGTUI                   # needed by niftkIGIGui
-      # Auto-load modules. No linking dependency, but they provide IO classes and mappers that we need.
-        IOExt
       )
 
       list(APPEND _enabled_plugins
-      # Plugins with compile-time or run-time dependency from our code:
-        org.blueberry.core.runtime      # needed by org.blueberry.core.commands
-        org.blueberry.core.commands     # needed by org.blueberry.ui.qt
-        org.blueberry.core.expressions  # needed by org.blueberry.ui.qt
-        org.blueberry.ui.qt             # needed by NiftyIGI
-        org.mitk.core.ext               # needed by org.mitk.gui.qt.ext
-        org.mitk.core.services          # needed by org.mitk.gui.common
-        org.mitk.gui.common             # needed by org.mitk.gui.qt.application
-        org.mitk.gui.qt.application     # needed by org.mitk.gui.qt.datamanager and org.mitk.gui.qt.ext
-        org.mitk.gui.qt.common          # needed by org.mitk.gui.qt.datamanager
-        org.mitk.gui.qt.ext             # needed by NiftyIGI
-        org.mitk.gui.qt.datamanager     # needed by NiftyIGI
-      # Plugins that we do not physically depend on but that we want to use:
-        org.blueberry.ui.qt.help
-        org.blueberry.ui.qt.log
-        org.mitk.planarfigure
-        org.mitk.gui.qt.imagenavigator
-        org.mitk.gui.qt.properties
         org.mitk.gui.qt.aicpregistration
       )
 
@@ -189,7 +156,6 @@ if(NOT DEFINED MITK_DIR)
     if(BUILD_VL)
 
       list(APPEND _enabled_modules
-      # Modules with linking dependency from our code:
         IGTBase                 # needed by IGT
         OpenIGTLink             # needed by IGT
         IGT                     # needed by CameraCalibration
