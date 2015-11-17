@@ -21,7 +21,7 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-set(version "4500dfe8c4")
+set(version "7a1865eb1b")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
@@ -203,7 +203,9 @@ if(NOT DEFINED MITK_DIR)
     if(BUILD_Python)
 
       list(APPEND _enabled_modules
-        Python                  # needed by org.mitk.gui.qt.python
+        Python                  # needed by PythonService and QtPython
+        PythonService           # autoloaded with Python
+        QtPython                # needed by org.mitk.gui.qt.python
       )
 
       list(APPEND _enabled_plugins
