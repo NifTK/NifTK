@@ -15,10 +15,7 @@
 #ifndef __mitkLabeledLookupTablePropertySerializer_h
 #define __mitkLabeledLookupTablePropertySerializer_h
 
-
-
-#include "niftkCoreExports.h"
-#include <mitkNamedLookupTablePropertySerializer.h>
+#include "mitkNamedLookupTablePropertySerializer.h"
 
 namespace mitk
 {
@@ -26,7 +23,7 @@ namespace mitk
 /**
   \brief Serializes LabeledLookupTableProperty
 */
-class NIFTKCORE_EXPORT LabeledLookupTablePropertySerializer : public NamedLookupTablePropertySerializer
+class LabeledLookupTablePropertySerializer : public NamedLookupTablePropertySerializer
 {
 
 public:

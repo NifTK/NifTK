@@ -24,4 +24,6 @@ set(CPP_FILES
   Internal/niftkCoreIOActivator.cxx
   Internal/niftkCoreIOObjectFactory.cxx
   Internal/mitkCoordinateAxesDataSerializer.cxx
+  Internal/mitkLabeledLookupTablePropertySerializer.cxx
+  Internal/mitkNamedLookupTablePropertySerializer.cxx
 )

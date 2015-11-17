@@ -39,8 +39,6 @@ set(CPP_FILES
   DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cxx
   DataNodeProperties/mitkNamedLookupTableProperty.cxx
   DataNodeProperties/mitkLabeledLookupTableProperty.cxx
-  IO/mitkNamedLookupTablePropertySerializer.cxx
-  IO/mitkLabeledLookupTablePropertySerializer.cxx
   IO/mitkFileIOUtils.cxx
   Interactions/mitkPointSetUpdate.cxx
 )
