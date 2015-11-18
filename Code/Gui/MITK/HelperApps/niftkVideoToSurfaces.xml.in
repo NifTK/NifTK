@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Converts video to surfaces</title>
+  <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file, processes video and outputs surfaces or information about the surfaces]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>videoAndTrackingDirectory</name>
+      <longflag>video</longflag>
+      <description>Directory containing video and tracking data.</description>
+      <label>Video and Tracking Directory</label>
+    </directory>    
+   
+    <directory>
+      <name>calibrationDirectory</name>
+      <longflag>calibration</longflag>
+      <description>Directory containing camera calibration data.</description>
+      <label>Calibration Directory</label>
+    </directory>    
+
+  </parameters>
+  
+  <parameters>
+
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the processing]]></description>
+
+    <boolean>
+      <name>outputSurfaces</name>
+      <longflag>outputSurfaces</longflag>
+      <description>Output surfaces as 3D points.</description>
+      <label>Output Surfaces</label>
+      <default>0</default>
+    </boolean>
+
+    <boolean>
+      <name>outputSurfacesAsText</name>
+      <longflag>outputSurfacesAsText</longflag>
+      <description>Output surfaces as 3D points, in flat text files</description>
+      <label>Output Surfaces as Text</label>
+      <default>0</default>
+    </boolean>
+
+    <boolean>
+      <name>outputInTrackerCoordinates</name>
+      <longflag>trackerCoordinates</longflag>
+      <description>Output 3D points in tracker space.</description>
+      <label>Coordinates in Tracker Space</label>
+      <default>0</default>
+    </boolean>
+
+    <integer>
+      <name>endFrame</name>
+      <longflag>endFrame</longflag>
+      <description>Stop processing video after n frames</description>
+      <label>End Frame</label>
+      <default>-1</default>
+    </integer>
+
+    <integer>
+      <name>trackerIndex</name>
+      <longflag>trackerIndex</longflag>
+      <description>Which tracker index to use</description>
+      <label>Tracker Index</label>
+      <default>0</default>
+    </integer>
+
+
+  </parameters>
+  
+</executable>

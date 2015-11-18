@@ -134,7 +134,7 @@ static void TestSimpleCases()
   mitk::PointSet::Pointer   xyplane = mitk::PointSet::New();
   for (int i = 0; i < 100; ++i)
   {
-    float   p[3] = {std::rand(), std::rand(), -2};
+    float   p[3] = {static_cast<float>(std::rand()), static_cast<float>(std::rand()), -2};
     xyplane->InsertPoint(i, mitk::PointSet::PointType(&p[0]));
   }
 
@@ -150,7 +150,7 @@ static void TestSimpleCases()
   mitk::PointSet::Pointer   yzplane = mitk::PointSet::New();
   for (int i = 0; i < 100; ++i)
   {
-    float   p[3] = {0, std::rand(), std::rand()};
+    float   p[3] = {0, static_cast<float>(std::rand()), static_cast<float>(std::rand())};
     yzplane->InsertPoint(i, mitk::PointSet::PointType(&p[0]));
   }
 

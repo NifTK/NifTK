@@ -33,13 +33,48 @@ if(BUILD_IGI)
 
     set(additional_cmake_args
       -DBUILD_opencv_java:BOOL=OFF
+      -DBUILD_opencv_ts:BOOL=OFF
+      -DBUILD_PERF_TESTS:BOOL=OFF
     )
+
+    if(MITK_USE_Python)
+      list(APPEND proj_DEPENDENCIES Python Numpy)
+      if(NOT MITK_USE_SYSTEM_PYTHON)
+        # export python home
+        set(ENV{PYTHONHOME} "${Python_DIR}")
+        set(CV_PACKAGE_PATH -DPYTHON_PACKAGES_PATH:PATH=${MITK_PYTHON_SITE_DIR})
+      else()
+        set(CV_PACKAGE_PATH -DPYTHON_PACKAGES_PATH:PATH=${EP_BASE}/lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages)
+      endif()
+
+      list(APPEND additional_cmake_args
+         -DBUILD_opencv_python:BOOL=ON
+         -DBUILD_NEW_PYTHON_SUPPORT:BOOL=ON
+         -DPYTHON_DEBUG_LIBRARY:FILEPATH=${PYTHON_DEBUG_LIBRARY}
+         -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
+         -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
+         -DPYTHON_INCLUDE_DIR2:PATH=${PYTHON_INCLUDE_DIR2}
+         -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
+         ${CV_PACKAGE_PATH}
+         #-DPYTHON_LIBRARIES=${PYTHON_LIBRARY}
+         #-DPYTHON_DEBUG_LIBRARIES=${PYTHON_DEBUG_LIBRARIES}
+          )
+    else()
+      list(APPEND additional_cmake_args
+         -DBUILD_opencv_python:BOOL=OFF
+         -DBUILD_NEW_PYTHON_SUPPORT:BOOL=OFF
+          )
+    endif()
 
     if(CTEST_USE_LAUNCHERS)
       list(APPEND additional_cmake_args
         "-DCMAKE_PROJECT_${proj}_INCLUDE:FILEPATH=${CMAKE_ROOT}/Modules/CTestUseLaunchers.cmake"
       )
     endif()
+
+    set(ffmpeg_lookup_patch
+      COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/OpenCV-2.4.11-ffmpeg_lookup.patch
+    )
 
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
@@ -51,6 +86,7 @@ if(BUILD_IGI)
       URL_MD5 ${proj_CHECKSUM}
       # Related bug: http://bugs.mitk.org/show_bug.cgi?id=5912
       PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/OpenCV-2.4.11.patch
+                    ${ffmpeg_lookup_patch}
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}

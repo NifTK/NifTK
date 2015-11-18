@@ -47,8 +47,8 @@
   </parameters>
   
   <parameters>
-    <label>Mandatory Parameters</label>
-    <description><![CDATA[Parameters that control the calibration]]></description>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Optional Parameters]]></description>
    
     <boolean>
       <name>ignoreVideoReadFail</name>
@@ -75,30 +75,45 @@
     </boolean>
    
     <integer>
-	<name>trackerIndex</name>
-	<longflag>trackerIndex</longflag>
-	<description>The tracker index to use</description>
-	<label>The tracker index to use</label>
-	<default>0</default>
-    </integer>
-    <integer>
-	<name>videoLag</name>
-	<longflag>videoLag</longflag>
-	<description>The lag between tracking and video in milliseconds</description>
-	<label>The video lag</label>
-	<default>0</default>
+      <name>trackerIndex</name>
+      <longflag>trackerIndex</longflag>
+      <description>The tracker index to use</description>
+      <label>The tracker index to use</label>
+      <default>0</default>
     </integer>
 
     <integer>
-	<name>framesToUse</name>
-	<longflag>framesToUse</longflag>
-	<description>If zero or greater, stop processing after n frames</description>
-	<label>If zero or greater, stop processing after n frames</label>
-	<default>-1</default>
+      <name>videoLag</name>
+      <longflag>videoLag</longflag>
+      <description>The lag between tracking and video in milliseconds</description>
+      <label>The video lag</label>
+      <default>0</default>
     </integer>
- 
 
-  
+    <integer>
+      <name>framesToUse</name>
+      <longflag>framesToUse</longflag>
+      <description>If zero or greater, stop processing after n frames</description>
+      <label>If zero or greater, stop processing after n frames</label>
+      <default>-1</default>
+    </integer>
+
+    <file>
+      <name>outputLeftImage</name>
+      <longflag>outputLeftImage</longflag>
+      <description>Output left image points.</description>
+      <label>Output Left</label>
+      <channel>output</channel>
+    </file>
+
+    <file>
+      <name>outputRightImage</name>
+      <longflag>outputRightImage</longflag>
+      <description>Output right image points.</description>
+      <label>Output Right</label>
+      <channel>output</channel>
+    </file>
+
   </parameters>
   
 </executable>

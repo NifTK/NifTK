@@ -23,6 +23,7 @@
 #include <mitkCommon.h>
 #include <mitkPoint.h>
 #include <mitkVector.h>
+#include <vtkMatrix4x4.h>
 #include <cv.h>
 
 #include <mitkVideoTrackerMatching.h>
@@ -48,6 +49,8 @@ public:
   void InitialiseTracking();
      
   itkSetMacro(FramesToUse, unsigned int);
+  itkSetMacro(FramesToUseFactor, unsigned int);
+  itkSetMacro(StickToFramesToUse, bool);
   itkSetMacro(TrackerIndex,int);
   itkSetMacro(AbsTrackerTimingError,long long);
 
@@ -56,6 +59,7 @@ public:
   
   itkSetMacro(PixelScaleFactor, mitk::Point2D);
   itkSetMacro(WriteOutChessboards,bool);
+  itkSetMacro(WriteOutCalibrationImages,bool);
   itkSetMacro(NoVideoSupport,bool);
   itkSetMacro(SwapVideoChannels, bool);
   itkSetMacro(Randomise, bool);
@@ -64,7 +68,8 @@ public:
   bool LoadExistingRightToLeft(const std::string& directory);
   void SetInputDirectory(const std::string& inputDir);
   virtual void SetOutputDirectory(const std::string& outputDir);
-  
+  void SetChessBoardToTracker(vtkMatrix4x4* matrix);
+
 protected:
 
   HandeyeCalibrateFromDirectory();
@@ -75,7 +80,8 @@ protected:
 
 private:
   unsigned int                        m_FramesToUse; //target frames to use actual number used will depend on number of good frames
-  float                               m_BadFrameFactor; //how many extra frames to stick in buffer
+  unsigned int                        m_FramesToUseFactor;
+  bool                                m_StickToFramesToUse;
   bool                                m_SaveProcessedVideoData;
 
   bool                                m_VideoInitialised;
@@ -114,10 +120,13 @@ private:
   CvMat*                              m_DistortionCoefficientsLeft;
   CvMat*                              m_DistortionCoefficientsRight;
   CvMat*                              m_RotationMatrixRightToLeft;
+  CvMat*                              m_RotationVectorRightToLeft;
   CvMat*                              m_TranslationVectorRightToLeft;
   bool                                m_OptimiseIntrinsics;
   bool                                m_OptimiseRightToLeft;
   bool                                m_Randomise;
+  vtkMatrix4x4*                       m_ChessBoardToTracker;
+
 }; // end class
 
 } // end namespace

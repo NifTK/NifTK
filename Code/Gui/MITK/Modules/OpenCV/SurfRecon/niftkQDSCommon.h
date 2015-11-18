@@ -15,7 +15,7 @@
 #ifndef niftkQDSCommon_h
 #define niftkQDSCommon_h
 
-#include "niftkSurfReconExports.h"
+#include "niftkOpenCVExports.h"
 #include <boost/gil/gil_all.hpp>
 #include <opencv2/core/types_c.h>
 #include <opencv2/core/core.hpp>
@@ -36,11 +36,41 @@ typedef scoped_channel_value<double, double_zero, double_one> bits64f;
 
 GIL_DEFINE_BASE_TYPEDEFS(64f,gray)
 
-}
-}
+} // end namespace boost
+} // end namespace gil
 
 namespace niftk
 {
+
+struct NIFTKOPENCV_EXPORT RefPoint
+{
+  unsigned short  x;
+  unsigned short  y;
+
+  RefPoint(unsigned short _x = -1, unsigned short _y = -1)
+    : x(_x), y(_y)
+  {
+  }
+
+  RefPoint& operator=(const RefPoint& p)
+  {
+    x = p.x;
+    y = p.y;
+    return *this;
+  }
+
+  // conversion operator! exists for convinience with refmaps
+  // FIXME: pixel assignment is done with a template parameter
+  //        so this conversion is not actually called automagically!
+  operator boost::gil::dev2n16_pixel_t() const
+  {
+    return boost::gil::dev2n16_pixel_t(x, y);
+  }
+
+  // compares coordinates, for use in priority_queue
+  bool operator<(const RefPoint& rhs) const;
+};
+
 
 /**
 * This is some kind of corner detector.
@@ -49,11 +79,11 @@ namespace niftk
 *
 * @throws std::runtime_error if src and dst dimensions are different
 */
-void NIFTKSURFRECON_EXPORT BuildTextureDescriptor(
+void NIFTKOPENCV_EXPORT BuildTextureDescriptor(
     const boost::gil::gray8c_view_t src,
     const boost::gil::gray8_view_t dst);
 
-float NIFTKSURFRECON_EXPORT Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w,
+float NIFTKOPENCV_EXPORT Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w,
                                     boost::gil::gray8c_view_t img0,
                                     boost::gil::gray8c_view_t img1,
                                     boost::gil::gray32sc_view_t integral0,
@@ -64,7 +94,7 @@ float NIFTKSURFRECON_EXPORT Zncc_C1(int p0x, int p0y, int p1x, int p1y, int w,
 /**
 * Base class for the (CPU-versions of) QDS stereo-matching.
 */
-class NIFTKSURFRECON_EXPORT QDSInterface
+class NIFTKOPENCV_EXPORT QDSInterface
 {
 public:
   virtual ~QDSInterface();

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>517</width>
-    <height>315</height>
+    <width>271</width>
+    <height>575</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -23,92 +23,469 @@
    <string>Form1</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>8</number>
+   </property>
    <property name="margin">
-    <number>9</number>
+    <number>8</number>
    </property>
    <item>
-    <widget class="QWidget" name="wgtControls" native="true">
-     <layout class="QGridLayout" name="gridLayout" columnstretch="0,0" columnminimumwidth="0,1">
-      <item row="0" column="0">
-       <widget class="QLabel" name="lblReferenceImageLabel">
-        <property name="text">
-         <string>Reference image:</string>
+    <layout class="QGridLayout" name="gridLayout_5">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lblReferenceImageLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Reference image:      </string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="lblReferenceImage">
+       <property name="text">
+        <string>No image selected.</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lbl_surfaceImageLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Surface:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="lblSurfaceImage">
+       <property name="text">
+        <string>No surface selected.</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_4">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lbl_threshold">
+       <property name="text">
+        <string>Threshold:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QDoubleSpinBox" name="spb_threshold">
+       <property name="maximum">
+        <double>9999.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>100.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>92</width>
+         <height>14</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QCheckBox" name="cbx_showAdvanced">
+       <property name="text">
+        <string>Advanced</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="Line" name="line_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QWidget" name="wgt_advancedControls" native="true">
+     <layout class="QGridLayout" name="gridLayout_7">
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>8</number>
+      </property>
+      <item row="5" column="2">
+       <spacer name="horizontalSpacer_5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="lblReferenceImage">
-        <property name="text">
-         <string>No image selected.</string>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>74</width>
+          <height>17</height>
+         </size>
         </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="lblTargetReduction">
-        <property name="text">
-         <string>Target reduction:</string>
-        </property>
-       </widget>
+       </spacer>
       </item>
       <item row="6" column="0">
-       <widget class="QLabel" name="lblMaxNumberOfPolygons">
+       <widget class="QLabel" name="label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
-         <string>Max. number of polygons:</string>
+         <string>No. of Poligons &lt; </string>
         </property>
        </widget>
       </item>
       <item row="6" column="1">
-       <widget class="QSpinBox" name="spbMaxNumberOfPolygons"/>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="lblGaussianSmooth">
-        <property name="text">
-         <string>Apply smoothing:</string>
+       <widget class="QSpinBox" name="spb_surfaceCleanThreshold">
+        <property name="maximum">
+         <number>999999</number>
+        </property>
+        <property name="value">
+         <number>1000</number>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="lblGaussianStdDev">
+      <item row="5" column="0" colspan="2">
+       <widget class="QCheckBox" name="cbx_cleanSurface">
         <property name="text">
-         <string>Standard deviation:</string>
+         <string>Small Object Removal</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QCheckBox" name="cbxGaussianSmooth">
-        <property name="text">
-         <string/>
+      <item row="6" column="2">
+       <spacer name="horizontalSpacer_6">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::MinimumExpanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>80</width>
+          <height>17</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="0" colspan="3">
+       <widget class="QGroupBox" name="gbx_inSmooth">
+        <property name="title">
+         <string>1. Input Smoothing</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <property name="margin">
+          <number>8</number>
+         </property>
+         <property name="spacing">
+          <number>8</number>
+         </property>
+         <item row="0" column="0" colspan="5">
+          <widget class="QComboBox" name="cmbx_inSmoothMethod">
+           <item>
+            <property name="text">
+             <string>None</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Median</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Gaussian</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="lbl_inSmoothRadius">
+           <property name="text">
+            <string>Radius:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="spb_inSmoothRadius">
+           <property name="singleStep">
+            <double>0.500000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.500000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QLabel" name="lbl_inSmoothIters">
+           <property name="text">
+            <string>   No. Iter.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="3">
+          <widget class="QSpinBox" name="spb_inSmoothIters">
+           <property name="value">
+            <number>1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="4">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </widget>
       </item>
-      <item row="4" column="1">
-       <widget class="QDoubleSpinBox" name="spbGaussianStdDev"/>
-      </item>
-      <item row="5" column="1">
-       <widget class="QDoubleSpinBox" name="spbTargetReduction"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="lblThreshold">
-        <property name="text">
-         <string>Threshold:</string>
+      <item row="1" column="0" colspan="3">
+       <widget class="QGroupBox" name="gbx_extractionMethod">
+        <property name="title">
+         <string>2. Extraction Method</string>
         </property>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <property name="margin">
+          <number>8</number>
+         </property>
+         <property name="spacing">
+          <number>8</number>
+         </property>
+         <item row="0" column="0" colspan="4">
+          <widget class="QComboBox" name="cmbx_extractionMethod">
+           <item>
+            <property name="text">
+             <string>Standard (VTK)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>CMC33</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Downsampling ratio:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="dsbx_samplingRatio">
+           <property name="minimum">
+            <double>0.120000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.125000000000000</double>
+           </property>
+           <property name="value">
+            <double>1.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QDoubleSpinBox" name="spbThreshold"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="lblSurfaceImageLabel">
-        <property name="text">
-         <string>Surface:</string>
+      <item row="3" column="0" colspan="3">
+       <widget class="QGroupBox" name="gbx_decimation">
+        <property name="title">
+         <string>4. Surface Decimation</string>
         </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <property name="margin">
+          <number>8</number>
+         </property>
+         <property name="spacing">
+          <number>8</number>
+         </property>
+         <item row="0" column="0" colspan="3">
+          <widget class="QComboBox" name="cmbx_decimationMethod">
+           <item>
+            <property name="text">
+             <string>None</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>DecimatePro</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Quadric-VTK</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="lbl_targetReduction">
+           <property name="text">
+            <string>Target reduction:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="spb_targetReduction">
+           <property name="minimum">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>0.900000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.100000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>58</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="lblSurfaceImage">
-        <property name="text">
-         <string>No surface selected.</string>
+      <item row="2" column="0" colspan="3">
+       <widget class="QGroupBox" name="gbx_surfaceSmoothing">
+        <property name="title">
+         <string>3. Surface Smoothing</string>
         </property>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <property name="margin">
+          <number>8</number>
+         </property>
+         <property name="spacing">
+          <number>8</number>
+         </property>
+         <item row="0" column="0" colspan="4">
+          <widget class="QComboBox" name="cmbx_surfaceSmoothMethod">
+           <item>
+            <property name="text">
+             <string>None</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Standard (VTK)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>WindowedSinc (VTK)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Taubin (Laplacian)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Taubin (CurvatureNormal)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Taubin (InverseEdgeLength)</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QSpinBox" name="spb_surfaceSmoothIters">
+           <property name="maximum">
+            <number>500</number>
+           </property>
+           <property name="value">
+            <number>10</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="3">
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>23</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="lbl_surfaceSmoothIters">
+           <property name="text">
+            <string>   No. Iter.</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
@@ -122,22 +499,18 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>52</height>
+       <height>0</height>
       </size>
      </property>
     </spacer>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <property name="spacing">
+      <number>8</number>
+     </property>
      <item>
-      <widget class="QPushButton" name="btnCreate">
-       <property name="text">
-        <string>New</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnApply">
+      <widget class="QPushButton" name="btn_apply">
        <property name="text">
         <string>Apply</string>
        </property>
@@ -149,12 +522,9 @@
  </widget>
  <layoutdefault spacing="0" margin="0"/>
  <tabstops>
-  <tabstop>cbxGaussianSmooth</tabstop>
-  <tabstop>spbGaussianStdDev</tabstop>
-  <tabstop>spbTargetReduction</tabstop>
-  <tabstop>spbMaxNumberOfPolygons</tabstop>
-  <tabstop>btnCreate</tabstop>
-  <tabstop>btnApply</tabstop>
+  <tabstop>spb_inSmoothRadius</tabstop>
+  <tabstop>spb_targetReduction</tabstop>
+  <tabstop>btn_apply</tabstop>
  </tabstops>
  <resources/>
  <connections/>

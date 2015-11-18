@@ -15,6 +15,7 @@
 #include "niftkQDSCommon.h"
 #include <boost/gil/gil_all.hpp>
 #include <boost/static_assert.hpp>
+#include <cassert>
 #include <stdexcept>
 
 #ifdef _OPENMP
@@ -24,6 +25,20 @@
 
 namespace niftk
 {
+
+//-----------------------------------------------------------------------------
+bool RefPoint::operator<(const RefPoint& rhs) const
+{
+  if (x < rhs.x)
+    return true;
+  if (x > rhs.x)
+    return false;
+  if (y < rhs.y)
+    return true;
+  if (y > rhs.y)
+    return false;
+  return false;
+}
 
 
 //-----------------------------------------------------------------------------
@@ -55,21 +70,14 @@ void BuildTextureDescriptor(const boost::gil::gray8c_view_t src, const boost::gi
       int c = std::abs(pixel - src(x, y - 1));
       int d = std::abs(pixel - src(x, y + 1));
 
-      // FIXME: dan had this as max(), but min() would make more sense?
+      // dan had this as max(), but min() would make more sense?
+      // pyramidal qds totally breaks with min().
       int val = std::max(a, std::max(b, std::max(c, d)));
+      //int val = std::min(a, std::min(b, std::min(c, d)));
 
-      // clamp
-      // FIXME: dont know when or if this happens!
-      if (val > 255)
-      {
-        assert(false);
-        val = 255;
-      }
-      if (val < 0)
-      {
-        assert(false);
-        val = 0;
-      }
+      // clamp?
+      assert(val >= 0);
+      assert(val <= 255);
 
       dst(x, y) = val;
     }

@@ -81,7 +81,7 @@ private:
 
   bool m_UndistortBeforeTriangulation; //optionally undistort point pairs before triangulation
   std::vector< std::pair<cv::Point2d, cv::Point2d> > m_PointPairs;
-  std::vector< cv::Point3d > m_PointsIn3D; 
+  std::vector< std::pair < cv::Point3d, double > > m_PointsIn3D; 
 
   unsigned int m_BlankValue; // the value used by the mask for blanking
   void ApplyMasks (); 

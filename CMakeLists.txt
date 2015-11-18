@@ -105,8 +105,11 @@ endmacro()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/Code/Gui/MITK/Apps/Apps.cmake")
 set(BUILD_GUI OFF)
+mark_as_advanced(BUILD_GUI)
 set(BUILD_IGI OFF)
+mark_as_advanced(BUILD_IGI)
 set(BUILD_MIDAS OFF)
+mark_as_advanced(BUILD_MIDAS)
 
 # Check each GUI application.
 foreach(NIFTK_APP ${NIFTK_APPS})
@@ -146,6 +149,7 @@ option(BUILD_NiftyReg "Build NiftyReg." ON)
 option(BUILD_NiftyRec "Build NiftyRec." OFF)
 option(BUILD_NiftySim "Build NiftySim." ON)
 option(BUILD_NiftySeg "Build NiftySeg." ON)
+option(BUILD_Python "Build Python wrapping." OFF)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
 option(BUILD_RTK "Build RTK - Experimental." OFF)
 option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
@@ -477,6 +481,63 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   message("NifTK gcc=${GCC_VERSION}")
 endif()
 
+# -----------------------------------------
+# Qt version related variables
+
+if(APPLE)
+  set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+else()
+
+  # For now, we stick with Qt 4.
+
+  #set(DESIRED_QT_VERSION 5 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+  set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+
+endif()
+
+env_option(MITK_USE_QT "Use the Qt Company's Qt library" ON)
+set(MITK_DESIRED_QT_VERSION ${DESIRED_QT_VERSION})
+
+if(MITK_USE_QT)
+  # find the package at the very beginning, so that QT4_FOUND is available
+  if(DESIRED_QT_VERSION MATCHES 4)
+    set(MITK_QT4_MINIMUM_VERSION 4.7)
+    set(MITK_QT4_COMPONENTS QtCore QtGui QtXml)
+    if(BUILD_IGI)
+      list(APPEND MITK_QT4_COMPONENTS QtNetwork)
+    endif()
+    find_package(Qt4 ${MITK_QT4_MINIMUM_VERSION} COMPONENTS ${MITK_QT4_COMPONENTS} REQUIRED)
+    set(MITK_USE_Qt4 TRUE)
+    set(MITK_USE_Qt5 FALSE)
+  endif()
+  if(DESIRED_QT_VERSION MATCHES 5)
+    set(MITK_QT5_MINIMUM_VERSION 5.0.0)
+    set(MITK_USE_Qt4 FALSE)
+    set(MITK_USE_Qt5 TRUE)
+    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" CACHE PATH "")
+    set(MITK_QT5_COMPONENTS Concurrent OpenGL PrintSupport Script Sql Svg Widgets WebKitWidgets Xml XmlPatterns UiTools Help)
+    find_package(Qt5 ${MITK_QT5_MINIMUM_VERSION} COMPONENTS ${MITK_QT5_COMPONENTS} REQUIRED)
+    if(Qt5_DIR)
+      get_filename_component(_Qt5_DIR "${Qt5_DIR}/../../../" ABSOLUTE)
+      list(FIND CMAKE_PREFIX_PATH "${_Qt5_DIR}" _result)
+      if(_result LESS 0)
+        set(CMAKE_PREFIX_PATH "${_Qt5_DIR};${CMAKE_PREFIX_PATH}" CACHE PATH "" FORCE)
+      endif()
+    endif()
+  endif()
+else()
+  set(MITK_USE_Qt4 FALSE)
+  set(MITK_USE_Qt5 FALSE)
+endif()
+
+if(QT_FOUND)
+  set(QT_USE_QTXML 1)
+  set(QT_USE_QTXMLPATTERNS 1)
+  set(QT_USE_PHONON 0)
+  include(${QT_USE_FILE})
+else()
+ message(FATAL "Qt is mandatory, but QT_FOUND is false.")
+endif()
 
 # ------------------------------------------------------------------------
 # Register external projects which can be build with the MITK superbuild
@@ -495,35 +556,41 @@ endif()
 
 set_property(GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS "")
 #mitkFunctionAddExternalProject(NAME Camino OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME Boost ON ADVANCED)
-mitkFunctionAddExternalProject(NAME Eigen ON ADVANCED)
-mitkFunctionAddExternalProject(NAME OpenCV ON ADVANCED)
+
+mitkFunctionAddExternalProject(NAME ZLIB      OFF ADVANCED NO_PACKAGE NO_CACHE)
+mitkFunctionAddExternalProject(NAME PCRE      OFF ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME SWIG      OFF ADVANCED NO_PACKAGE DEPENDS PCRE)
+mitkFunctionAddExternalProject(NAME Python    OFF ADVANCED NO_PACKAGE DEPENDS ZLIB SWIG DOC "Use Python wrapping in NifTK")
+mitkFunctionAddExternalProject(NAME Numpy     OFF ADVANCED NO_PACKAGE DEPENDS Python)
+
+mitkFunctionAddExternalProject(NAME Boost     ON  ADVANCED)
+mitkFunctionAddExternalProject(NAME Eigen     ON  ADVANCED)
+mitkFunctionAddExternalProject(NAME OpenCV    OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME AprilTags OFF ADVANCED DEPENDS OpenCV Eigen)
-mitkFunctionAddExternalProject(NAME ArUco OFF ADVANCED DEPENDS OpenCV)
-mitkFunctionAddExternalProject(NAME FLANN OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME RTK OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME VL OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME CGAL OFF ADVANCED DEPENDS Boost)
+mitkFunctionAddExternalProject(NAME ArUco     OFF ADVANCED DEPENDS OpenCV)
+mitkFunctionAddExternalProject(NAME FLANN     OFF ADVANCED)
+
+mitkFunctionAddExternalProject(NAME VL        OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME CGAL      OFF ADVANCED DEPENDS Boost)
 mitkFunctionAddExternalProject(NAME NiftyLink OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftySim OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftySeg OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftyReg OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftyRec OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftySim  OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftySeg  OFF ADVANCED Eigen)
+mitkFunctionAddExternalProject(NAME NiftyReg  OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftyRec  OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftyPipe ON ADVANCED)
 
-# These are "hard" dependencies and always set to ON.
-mitkFunctionAddExternalProject(NAME DCMTK ON ADVANCED)
-mitkFunctionAddExternalProject(NAME GDCM ON ADVANCED)
-mitkFunctionAddExternalProject(NAME ITK ON ADVANCED NO_CACHE DEPENDS GDCM)
+mitkFunctionAddExternalProject(NAME DCMTK     ON  ADVANCED)
+mitkFunctionAddExternalProject(NAME GDCM      ON  ADVANCED)
+mitkFunctionAddExternalProject(NAME ITK       ON  ADVANCED NO_CACHE DEPENDS GDCM)
+mitkFunctionAddExternalProject(NAME SimpleITK OFF ADVANCED DEPENDS ITK GDCM SWIG)
+mitkFunctionAddExternalProject(NAME VTK       ON  ADVANCED NO_CACHE)
+mitkFunctionAddExternalProject(NAME PCL       OFF ADVANCED DEPENDS Boost Eigen FLANN VTK)
+mitkFunctionAddExternalProject(NAME CTK       ON  ADVANCED DEPENDS QT ITK VTK DCMTK)
+mitkFunctionAddExternalProject(NAME MITK      ON  ADVANCED NO_CACHE DEPENDS ITK VTK GDCM DCMTK CTK Eigen)
+
 mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON ADVANCED DEPENDS ITK)
-mitkFunctionAddExternalProject(NAME VTK ON ADVANCED NO_CACHE)
-mitkFunctionAddExternalProject(NAME CTK ON ADVANCED DEPENDS QT ITK VTK DCMTK)
-mitkFunctionAddExternalProject(NAME MITK ON ADVANCED NO_CACHE DEPENDS ITK VTK GDCM DCMTK CTK Eigen)
-
-# Further optional dependencies.
-mitkFunctionAddExternalProject(NAME PCL OFF ADVANCED Boost Eigen FLANN VTK)
-
+mitkFunctionAddExternalProject(NAME RTK                  OFF ADVANCED DEPENDS ITK GDCM)
 # -----------------------------------------
 # Other MITK_USE_* options not related to external projects build via the NifTK superbuild
 
@@ -539,6 +606,12 @@ else()
   set(MITK_USE_ArUco OFF CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyLink OFF CACHE BOOL "" FORCE)
   set(MITK_USE_OpenCV OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_PCL)
+  set(MITK_USE_PCL ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_PCL OFF CACHE BOOL  "" FORCE)
 endif()
 
 if (BUILD_NiftyReg)
@@ -575,6 +648,77 @@ if (BUILD_NiftyPipe)
   set(MITK_USE_NiftyPipe ON CACHE BOOL "" FORCE)
 else()
   set(MITK_USE_NiftyPipe OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_PCL)
+  set(MITK_USE_PCL ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_PCL OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_RTK)
+  set(MITK_USE_RTK ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_RTK OFF CACHE BOOL "" FORCE)
+endif()
+
+######################################################################
+# Python: Sanity check for supported Qt version. Only >= 5.3 is supported by CTK/PythonQt
+######################################################################
+if(MITK_USE_Qt5 AND BUILD_Python)
+  set(minimum_required_python_qt5_version "5.3.0")
+  find_package(Qt5 COMPONENTS Core REQUIRED)
+
+  if(${Qt5Core_VERSION_STRING} VERSION_LESS ${minimum_required_python_qt5_version})
+    message(WARNING "Can't build MITK Python with Qt version < ${minimum_required_python_qt5_version}. Disabling Python support")
+    set(BUILD_Python OFF)
+  endif()
+endif()
+
+######################################################################
+# Python: Only Windows can't build Python in debug mode
+######################################################################
+if(BUILD_Python AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" AND WIN32)
+  message(WARNING "Disabling Python support. Building MITK Python in debug mode on Windows is not supported.")
+  set(BUILD_Python OFF)
+endif()
+
+if(BUILD_Python)
+  set(MITK_USE_Python ON CACHE BOOL "Use Python wrapping in MITK" FORCE)
+  if(NOT MITK_USE_Numpy)
+    message("> Forcing MITK_USE_Numpy to ON because of MITK_USE_Python")
+    set(MITK_USE_Numpy ON CACHE BOOL "Use Numpy" FORCE)
+  endif()
+  if(NOT MITK_USE_SimpleITK)
+    message("> Forcing MITK_USE_SimpleITK to ON because of MITK_USE_Python")
+    set(MITK_USE_SimpleITK ON CACHE BOOL "Use SimpleITK" FORCE)
+  endif()
+  if(NOT MITK_USE_SWIG)
+    message("> Forcing MITK_USE_SWIG to ON because of MITK_USE_Python")
+    set(MITK_USE_SWIG ON CACHE BOOL "Use SWIG" FORCE)
+  endif()
+  if(NOT MITK_USE_PCRE)
+    message("> Forcing MITK_USE_PCRE to ON because of MITK_USE_Python")
+    set(MITK_USE_PCRE ON CACHE BOOL "Use PCRE" FORCE)
+  endif()
+  if(NOT MITK_USE_ZLIB)
+    message("> Forcing MITK_USE_ZLIB to ON because of MITK_USE_Python")
+    set(MITK_USE_ZLIB ON CACHE BOOL "Use ZLIB" FORCE)
+  endif()
+
+  option(MITK_USE_SYSTEM_PYTHON "Use the system Python runtime" OFF)
+  if(MITK_USE_SYSTEM_PYTHON)
+    find_package(PythonLibs REQUIRED)
+    find_package(PythonInterp REQUIRED)
+  endif()
+
+else()
+  set(MITK_USE_Python OFF CACHE BOOL "Use Python wrapping in MITK" FORCE)
+  set(MITK_USE_Numpy OFF CACHE BOOL "Use Numpy" FORCE)
+  set(MITK_USE_SimpleITK OFF CACHE BOOL "Use SimpleITK" FORCE)
+  set(MITK_USE_SWIG OFF CACHE BOOL "Use SWIG" FORCE)
+  set(MITK_USE_PCRE OFF CACHE BOOL "Use PCRE" FORCE)
+  set(MITK_USE_ZLIB OFF CACHE BOOL "Use ZLIB" FORCE)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -746,38 +890,6 @@ if (BUILD_MESHING)
     ${CMAKE_SOURCE_DIR}/Code/Libs/Meshing
   )
 endif (BUILD_MESHING)
-
-######################################################################
-# Find Qt. We need to check for Qt first, before we go ahead and do
-# the Superbuild, because VTK needs to know if we have Qt.
-######################################################################
-
-set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
-
-# We ALWAYS need Qt. This is because MITK always needs it.
-if(BUILD_IGI)
-  find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)
-else(BUILD_IGI)
-  find_package(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED)
-endif(BUILD_IGI)
-
-if(QT_FOUND)
-  set(QT_USE_QTXML 1)
-  set(QT_USE_QTXMLPATTERNS 1)
-  set(QT_USE_PHONON 0)
-  include(${QT_USE_FILE})
-  if(BUILD_SUPERBUILD)
-    set(VTK_QT_ARGS
-      -DVTK_QT_VERSION:STRING=${DESIRED_QT_VERSION}
-      -DVTK_USE_GUISUPPORT:BOOL=ON
-      -DVTK_USE_QVTK_QTOPENGL:BOOL=OFF
-      -DVTK_USE_QT:BOOL=ON
-      -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-    )
-  endif(BUILD_SUPERBUILD)
-else()
- message(FATAL "Qt is mandatory, but QT_FOUND is false.")
-endif()
  
 ######################################################################
 # Find CUDA: Required by the Nifty packages
@@ -894,8 +1006,13 @@ set(MITK_MODULE_NAME_PREFIX "niftk")
 set(MITK_MODULE_NAME_DEFAULTS_TO_DIRECTORY_NAME 1)
 set(MITK_LEGACY_EXPORT_MACRO_NAME 0)
 
-# We need this later for a DCMTK workaround
-set(_dcmtk_dir_orig ${DCMTK_DIR})
+# Boost-cmake is a helper project that provides CMake files for Boost,
+# e.g. BoostConfig.cmake. We do not use Boost-cmake and do not provide
+# BoostConfig.cmake, therefore we have to disable Boost-cmake, explicitly.
+# Otherwise, if Boost is installed on the system with a valid
+# BoostConfig.cmake file then CMake will pick up Boost from there,
+# instead of where we installed it as an external project.
+set(Boost_NO_BOOST_CMAKE ON)
 
 # This property is populated at the top half of this file
 get_property(MITK_EXTERNAL_PROJECTS GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS)
@@ -911,7 +1028,7 @@ foreach(ep ${MITK_EXTERNAL_PROJECTS})
       # Otherwise, existing Find<proj>.cmake files could fail.
       # (e.g. in the case of GLEW and the FindGLEW.cmake file shipped
       # with CMake).
-      find_package(${_package} QUIET CONFIG)
+      find_package(${_package} QUIET CONFIG NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH)
       string(TOUPPER "${_package}" _package_uc)
       if(NOT (${_package}_FOUND OR ${_package_uc}_FOUND))
         find_package(${_package} REQUIRED)
@@ -928,21 +1045,6 @@ set(CMAKE_MODULE_PATH
   ${MITK_CMAKE_DIR}
   ${CMAKE_MODULE_PATH}
   )
-
-set(DCMTK_DIR ${_dcmtk_dir_orig})
-if(MITK_USE_DCMTK)
-  # Due to the preferred CONFIG mode in find_package calls above,
-  # the DCMTKConfig.cmake file is read, which does not provide useful
-  # package information. We explictly need MODULE mode to find DCMTK.
-#  if(${_dcmtk_dir_orig} MATCHES "${MITK_EXTERNAL_PROJECT_PREFIX}.*")
-#    # Help our FindDCMTK.cmake script find our super-build DCMTK
-#    set(DCMTK_DIR ${MITK_EXTERNAL_PROJECT_PREFIX})
-#  else()
-    # Use the original value
-    set(DCMTK_DIR ${_dcmtk_dir_orig})
-#  endif()
-  find_package(DCMTK REQUIRED MODULE)
-endif()
 
 ######################################################################
 # Check each GUI application to set up MACOSX_BUNDLE_NAMES
@@ -1879,9 +1981,6 @@ if(MITK_USE_${ep})
 endif()")
   endif()
 endforeach()
-
-
-
 
 # This generates a C++ header file with values that need compiling into code.
 configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)

@@ -17,7 +17,7 @@ project(uk_ac_ucl_cmic_surfaceextractor)
 mitk_create_plugin(
   EXPORT_DIRECTIVE SURFACEEXTRACTOR_EXPORTS
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS MitkQtWidgetsExt MitkSegmentation
+  MODULE_DEPENDS MitkQtWidgetsExt MitkSegmentation niftkCore
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

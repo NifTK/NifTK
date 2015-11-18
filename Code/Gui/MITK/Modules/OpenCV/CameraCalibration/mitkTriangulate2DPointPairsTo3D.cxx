@@ -171,18 +171,21 @@ bool Triangulate2DPointPairsTo3D::Triangulate()
   
     CullOnDistance ();
 
-    //put them in tracker coordinates
-    m_PointsIn3D = leftLensToTracker * m_PointsIn3D;
-    //put them in word coordinates
-    m_PointsIn3D = trackerToWorld * m_PointsIn3D;
+    for ( std::vector < std::pair < cv::Point3d, double > >::iterator it = m_PointsIn3D.begin() ; it < m_PointsIn3D.end() ; ++it )
+    {
+      //put them in tracker coordinates
+      it->first = leftLensToTracker * it->first;
+      //put them in word coordinates
+      it->first = trackerToWorld * it->first;
+    }
 
     mitk::PointSet::Pointer ps = mitk::PointSet::New();
     for (unsigned int i = 0; i < m_PointsIn3D.size(); i++)
     {
       mitk::Point3D p;
-      p[0] = m_PointsIn3D[i].x;
-      p[1] = m_PointsIn3D[i].y;
-      p[2] = m_PointsIn3D[i].z;
+      p[0] = m_PointsIn3D[i].first.x;
+      p[1] = m_PointsIn3D[i].first.y;
+      p[2] = m_PointsIn3D[i].first.z;
       ps->InsertPoint(i, p);
     }
 

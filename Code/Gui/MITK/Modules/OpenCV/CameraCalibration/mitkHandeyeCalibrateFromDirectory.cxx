@@ -16,6 +16,7 @@
 #include "mitkCameraCalibrationFacade.h"
 #include "mitkHandeyeCalibrate.h"
 #include <mitkOpenCVFileIOUtils.h>
+#include <mitkOpenCVMaths.h>
 #include <ios>
 #include <fstream>
 #include <iostream>
@@ -33,8 +34,9 @@ namespace mitk {
 
 //-----------------------------------------------------------------------------
 HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
-: m_FramesToUse(40)
-, m_BadFrameFactor(2.0)
+: m_FramesToUse(30)
+, m_FramesToUseFactor(2)
+, m_StickToFramesToUse(false)
 , m_SaveProcessedVideoData(true)
 , m_VideoInitialised(false)
 , m_TrackingDataInitialised(false)
@@ -49,10 +51,12 @@ HandeyeCalibrateFromDirectory::HandeyeCalibrateFromDirectory()
 , m_DistortionCoefficientsLeft(cvCreateMat(1,4,CV_64FC1))
 , m_DistortionCoefficientsRight(cvCreateMat(1,4,CV_64FC1))
 , m_RotationMatrixRightToLeft(cvCreateMat(3,3,CV_64FC1))
+, m_RotationVectorRightToLeft(cvCreateMat(3,1,CV_64FC1))
 , m_TranslationVectorRightToLeft(cvCreateMat(3,1,CV_64FC1))
 , m_OptimiseIntrinsics(true)
 , m_OptimiseRightToLeft(true)
 , m_Randomise(false)
+, m_ChessBoardToTracker(NULL)
 {
   m_PixelScaleFactor.Fill(1);
   cvSetIdentity(m_IntrinsicMatrixLeft);
@@ -73,6 +77,13 @@ HandeyeCalibrateFromDirectory::~HandeyeCalibrateFromDirectory()
   cvReleaseMat(&m_DistortionCoefficientsRight);
   cvReleaseMat(&m_RotationMatrixRightToLeft);
   cvReleaseMat(&m_TranslationVectorRightToLeft);
+}
+
+
+//-----------------------------------------------------------------------------
+void HandeyeCalibrateFromDirectory::SetChessBoardToTracker(vtkMatrix4x4* matrix)
+{
+  m_ChessBoardToTracker = matrix;
 }
 
 
@@ -240,7 +251,6 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     InitialiseTracking();
   }
 
-
   //get frame count doesn't work for 264 files, which are just 
   //raw data get the frame count from the framemap log
   int numberOfFrames = m_Matcher->GetNumberOfFrames();
@@ -268,95 +278,105 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     std::srand(0);
   }
 
-  std::vector <int> LeftFramesToUse;
-  std::vector <int> RightFramesToUse;
-  while ( LeftFramesToUse.size() < m_FramesToUse * m_BadFrameFactor )
+  std::vector <int> leftFramesToCheck;
+  std::vector <int> rightFramesToCheck;
+  while ( leftFramesToCheck.size() < m_FramesToUse*m_FramesToUseFactor )
   {
-    int FrameToUse =  std::rand()%(numberOfFrames/2);
+    int frameToUse =  std::rand()%(numberOfFrames/2);
+
     //first check it's not already in array
-    if ( (std::find(LeftFramesToUse.begin(), LeftFramesToUse.end(), FrameToUse * 2 ) == LeftFramesToUse.end()) ) 
+    if ( (std::find(leftFramesToCheck.begin(), leftFramesToCheck.end(), frameToUse * 2 ) == leftFramesToCheck.end()) )
     {
-      MITK_INFO << "Trying frame pair " << FrameToUse * 2 << "," << FrameToUse*2 +1;
+      MITK_INFO << "Checking tracking for frame pair " << frameToUse * 2 << "," << frameToUse*2 +1;
     
-      long long int  LeftTimingError;
-      long long int  RightTimingError;
-      cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 , 
-        &LeftTimingError, m_TrackerIndex );
-      cv::Mat RightTrackingMatrix = m_Matcher->GetTrackerMatrix(FrameToUse * 2 + 1 , 
-        &RightTimingError, m_TrackerIndex );
-      if ( std::abs(LeftTimingError) > m_AbsTrackerTimingError ||
-        std::abs(RightTimingError) > m_AbsTrackerTimingError ) 
+      long long int  leftTimingError;
+      long long int  rightTimingError;
+      cv::Mat leftTrackingMatrix = m_Matcher->GetTrackerMatrix(frameToUse * 2 ,
+        &leftTimingError, m_TrackerIndex );
+      cv::Mat rightTrackingMatrix = m_Matcher->GetTrackerMatrix(frameToUse * 2 + 1 ,
+        &rightTimingError, m_TrackerIndex );
+      if ( std::abs(leftTimingError) > m_AbsTrackerTimingError ||
+        std::abs(rightTimingError) > m_AbsTrackerTimingError )
       {
-        MITK_INFO << "Rejecting frame " << FrameToUse << "Due to high timing error: " <<
-          std::abs(LeftTimingError) << " > " <<  m_AbsTrackerTimingError;
+        MITK_INFO << "Rejecting frame " << frameToUse << "Due to high timing error: " <<
+          std::abs(leftTimingError) << " > " <<  m_AbsTrackerTimingError;
       }
       else
       {
         //timing error OK, now check if we can extract corners
-     
-        LeftFramesToUse.push_back (FrameToUse *2);
-        RightFramesToUse.push_back (FrameToUse * 2 + 1);
+        leftFramesToCheck.push_back (frameToUse *2);
+        rightFramesToCheck.push_back (frameToUse * 2 + 1);
       }
     }
   }
 
+  MITK_INFO << "Got " << leftFramesToCheck.size() << " with accurate enough tracking.";
+
   //sort the vector in ascending order
-  std::sort (LeftFramesToUse.begin(), LeftFramesToUse.end());
-  std::sort (RightFramesToUse.begin(), RightFramesToUse.end());
-  //now go through video and extract frames to use
-  int FrameNumber = 0 ;
+  std::sort (leftFramesToCheck.begin(), leftFramesToCheck.end());
+  std::sort (rightFramesToCheck.begin(), rightFramesToCheck.end());
+
+  //now go through video once and check if a chessboard can be found.
+  int frameNumber = 0 ;
+  cv::Size imageSize;
+  int numberOfGoodFrames = 0;
 
   std::vector<cv::Mat>  allLeftImagePoints;
   std::vector<cv::Mat>  allLeftObjectPoints;
   std::vector<cv::Mat>  allRightImagePoints;
   std::vector<cv::Mat>  allRightObjectPoints;
+  std::vector<cv::Mat>  allLeftFrames;
+  std::vector<cv::Mat>  allRightFrames;
+  std::vector<cv::Mat>  allLeftChessBoards;
+  std::vector<cv::Mat>  allRightChessBoards;
+  std::vector <int>     allLeftFrameNumbers;
+  std::vector <int>     allRightFrameNumbers;
 
-  cv::Size imageSize;
-
-  while ( FrameNumber < numberOfFrames )
+  while ( frameNumber < numberOfFrames)
   {
-    cv::Mat TempFrame;
-    cv::Mat LeftFrame;
-    cv::Mat RightFrame;
-    cv::Mat LeftFrame_orig;
-    cv::Mat RightFrame_orig;
-    *capture >> TempFrame;
-    if (!m_SwapVideoChannels)
-      LeftFrame = TempFrame.clone();
-    else
-      RightFrame = TempFrame.clone();
-    *capture >> TempFrame;
-    if (!m_SwapVideoChannels)
-      RightFrame = TempFrame.clone();
-    else
-      LeftFrame = TempFrame.clone();
+    cv::Mat tempFrame;
+    cv::Mat leftFrame;
+    cv::Mat leftFrameOrig;
+    cv::Mat rightFrame;
+    cv::Mat rightFrameOrig;
 
-    LeftFrame_orig = LeftFrame.clone();
-    RightFrame_orig = RightFrame.clone();
-    imageSize=RightFrame.size();
-    if ( (std::find(LeftFramesToUse.begin(), LeftFramesToUse.end(), FrameNumber) != LeftFramesToUse.end()) ) 
+    *capture >> tempFrame;
+    if (!m_SwapVideoChannels)
+      leftFrame = tempFrame.clone();
+    else
+      rightFrame = tempFrame.clone();
+    *capture >> tempFrame;
+    if (!m_SwapVideoChannels)
+      rightFrame = tempFrame.clone();
+    else
+      leftFrame = tempFrame.clone();
+
+    leftFrameOrig = leftFrame.clone();
+    rightFrameOrig = rightFrame.clone();
+
+    imageSize = rightFrame.size();
+
+    if ( (std::find(leftFramesToCheck.begin(), leftFramesToCheck.end(), frameNumber) != leftFramesToCheck.end()) )
     {
-      if ((std::find(RightFramesToUse.begin(),RightFramesToUse.end(),FrameNumber + 1) != RightFramesToUse.end()) )
+      if ((std::find(rightFramesToCheck.begin(), rightFramesToCheck.end(), frameNumber + 1) != rightFramesToCheck.end()) )
       { 
-
-        MITK_INFO << "Using frame pair " << FrameNumber << "," <<FrameNumber+1;
         std::vector <cv::Point2d>* leftImageCorners = new std::vector<cv::Point2d>;
         std::vector <cv::Point3d>* leftObjectCorners = new std::vector<cv::Point3d>;
-        bool LeftOK = mitk::ExtractChessBoardPoints (
-          LeftFrame, m_NumberCornersWidth,
+        bool leftOK = mitk::ExtractChessBoardPoints (
+          leftFrame, m_NumberCornersWidth,
           m_NumberCornersHeight, 
           true, m_SquareSizeInMillimetres, m_PixelScaleFactor,
           *leftImageCorners, *leftObjectCorners);
 
         std::vector <cv::Point2d>* rightImageCorners = new std::vector<cv::Point2d>;
         std::vector <cv::Point3d>* rightObjectCorners = new std::vector<cv::Point3d>;
-        bool RightOK = mitk::ExtractChessBoardPoints (
-          RightFrame, m_NumberCornersWidth,
+        bool rightOK = mitk::ExtractChessBoardPoints (
+          rightFrame, m_NumberCornersWidth,
           m_NumberCornersHeight, 
           true, m_SquareSizeInMillimetres, m_PixelScaleFactor,
           *rightImageCorners, *rightObjectCorners);
 
-        if ( LeftOK && RightOK )
+        if ( leftOK && rightOK )
         {
 
           MITK_INFO << "Frame " << capture->get(CV_CAP_PROP_POS_FRAMES)-2 << " got " << leftImageCorners->size() << " corners for both images";
@@ -365,37 +385,24 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
           allLeftObjectPoints.push_back(cv::Mat(*leftObjectCorners,true));
           allRightImagePoints.push_back(cv::Mat(*rightImageCorners,true));
           allRightObjectPoints.push_back(cv::Mat(*rightObjectCorners,true));
-          if ( m_WriteOutCalibrationImages )
-          {
-            std::string leftfilename = m_OutputDirectory + "/LeftFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".png";
-            MITK_INFO << "Writing image to " << leftfilename;
-            cv::imwrite( leftfilename, LeftFrame_orig );
-            
-            std::string rightfilename = m_OutputDirectory + "/RightFrame" + boost::lexical_cast<std::string>(allLeftImagePoints.size()) + ".png";
-            MITK_INFO << "Writing image to " << rightfilename;            
-            cv::imwrite( rightfilename, RightFrame_orig );
-          }
+          allLeftFrames.push_back(leftFrameOrig);
+          allRightFrames.push_back(rightFrameOrig);
+          allLeftChessBoards.push_back(leftFrame);
+          allRightChessBoards.push_back(rightFrame);
+          allLeftFrameNumbers.push_back(frameNumber);
+          allRightFrameNumbers.push_back(frameNumber + 1);
+          numberOfGoodFrames++;
         }
         else
         {
           MITK_INFO << "Frame " <<  capture->get(CV_CAP_PROP_POS_FRAMES)-2 << " failed corner extraction. Removing from good frame buffer [" << leftImageCorners->size() << "," << rightImageCorners->size() << "].";
-          std::vector<int>::iterator newEnd = std::remove(LeftFramesToUse.begin(), LeftFramesToUse.end(), FrameNumber);
-          LeftFramesToUse.erase(newEnd, LeftFramesToUse.end());
-          newEnd = std::remove(RightFramesToUse.begin(), RightFramesToUse.end(), FrameNumber+1);
-          RightFramesToUse.erase(newEnd, RightFramesToUse.end());
+
+          std::vector<int>::iterator newEnd = std::remove(leftFramesToCheck.begin(), leftFramesToCheck.end(), frameNumber);
+          leftFramesToCheck.erase(newEnd, leftFramesToCheck.end());
+          newEnd = std::remove(rightFramesToCheck.begin(), rightFramesToCheck.end(), frameNumber+1);
+          rightFramesToCheck.erase(newEnd, rightFramesToCheck.end());
         }
         
-        if ( m_WriteOutChessboards )
-        {
-          std::string leftfilename = m_OutputDirectory + "/LeftFrame" + boost::lexical_cast<std::string>(FrameNumber) + ".png";
-          MITK_INFO << "Writing image to " << leftfilename;
-          cv::imwrite( leftfilename, LeftFrame );
-          
-          std::string rightfilename = m_OutputDirectory + "/RightFrame" + boost::lexical_cast<std::string>(FrameNumber + 1) + ".png";
-          MITK_INFO << "Writing image to " << rightfilename;          
-          cv::imwrite( rightfilename, RightFrame );
-        }
-
         // buffer contents are copied and stuffed into allLeftImagePoints, etc.
         delete leftImageCorners;
         delete leftObjectCorners;
@@ -408,75 +415,160 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
         return;
       }
     }
-    
-    FrameNumber++;
-    FrameNumber++;
+    frameNumber++;
+    frameNumber++;
   }
-  MITK_INFO << "There are " << LeftFramesToUse.size() << " good frames";
 
-  cv::Mat leftImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),2,CV_64FC1);
-  cv::Mat leftObjectPoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),3,CV_64FC1);
-  cv::Mat rightImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),2,CV_64FC1);
-  cv::Mat rightObjectPoints (m_NumberCornersWidth * m_NumberCornersHeight * LeftFramesToUse.size(),3,CV_64FC1);
-  
-  cv::Mat leftPointCounts (LeftFramesToUse.size(),1,CV_32SC1);
-  cv::Mat rightPointCounts (LeftFramesToUse.size(),1,CV_32SC1);
+  MITK_INFO << "Got " << allLeftFrameNumbers.size() << " pairs of valid chessboards.";
 
-  if  (  allLeftImagePoints.size() !=  LeftFramesToUse.size() || 
-           allLeftObjectPoints.size() !=  LeftFramesToUse.size() || 
-           allRightImagePoints.size() !=  LeftFramesToUse.size() || 
-           allRightObjectPoints.size() !=  LeftFramesToUse.size() )
+  int indexToUse = 0;
+  int desiredNumberOfFrames = allLeftFrameNumbers.size();
+  if (m_StickToFramesToUse)
   {
-    MITK_ERROR << "Detected unequal matrix sizes";
-    return;
+    desiredNumberOfFrames = m_FramesToUse;
   }
-  for ( unsigned int i = 0 ; i < LeftFramesToUse.size() ; i ++  ) 
+
+  // If there are not enough valid chessboards, we warn or throw.
+  if (allLeftFrameNumbers.size() < desiredNumberOfFrames)
   {
-    unsigned int size1 = allLeftImagePoints[i].size().height;
-    //FIX ME
-    unsigned int size2 = allLeftObjectPoints[i].size().height;
-    unsigned int size3 = allRightImagePoints[i].size().height;
-    unsigned int size4 = allRightObjectPoints[i].size().height;
-  
-    if ( size1 != m_NumberCornersWidth * m_NumberCornersHeight ||
-          size2 != m_NumberCornersWidth * m_NumberCornersHeight ||
-          size3 != m_NumberCornersWidth * m_NumberCornersHeight ||
-          size4 != m_NumberCornersWidth * m_NumberCornersHeight)
+    std::ostringstream oss;
+    oss << "The number of chessboards (" << allLeftFrameNumbers.size() << ") is less than the number required (" << m_FramesToUse << ")";
+
+    if (m_StickToFramesToUse)
     {
-      MITK_ERROR << "Detected unequal matrix sizes";
-      return;
+      mitkThrow() << oss.str();
+    }
+    else
+    {
+      MITK_WARN << oss.str();
     }
   }
 
+  // Now randomly select from the list of available chessboards
+  int numberOfChosenFrames = 0;
+  std::set<int> setOfChosenIndexes;
+  std::vector <int> leftFramesToUse;
+  std::vector <int> rightFramesToUse;
+  std::vector<cv::Mat> chosenLeftImagePoints;
+  std::vector<cv::Mat> chosenLeftObjectPoints;
+  std::vector<cv::Mat> chosenRightImagePoints;
+  std::vector<cv::Mat> chosenRightObjectPoints;
 
-  for ( unsigned int i = 0 ; i < LeftFramesToUse.size() ; i++ )
+  // Iterate round accumulating frames.
+  while (numberOfChosenFrames < desiredNumberOfFrames)
+  {
+    // If we have more frames than we need, and we MUST stick to the number specified, pick randomly.
+    if ((desiredNumberOfFrames < allLeftFrameNumbers.size())
+        && m_StickToFramesToUse)
+    {
+      indexToUse = std::rand() % allLeftFrameNumbers.size();
+    }
+    // Otherwise, use them all.
+    else
+    {
+      indexToUse = numberOfChosenFrames;
+    }
+
+    if (setOfChosenIndexes.find(indexToUse) == setOfChosenIndexes.end())
+    {
+      setOfChosenIndexes.insert(indexToUse);
+      numberOfChosenFrames++;
+
+      MITK_INFO << "Selecting image " << numberOfChosenFrames << " as frame " << allLeftFrameNumbers[indexToUse] << ", " << allRightFrameNumbers[indexToUse];
+
+      // We have randomly selected from the list of available chessboards.
+      // So, copy to the buffers that will be required for calibration.
+      leftFramesToUse.push_back(allLeftFrameNumbers[indexToUse]);
+      rightFramesToUse.push_back(allRightFrameNumbers[indexToUse]);
+      chosenLeftImagePoints.push_back(allLeftImagePoints[indexToUse]);
+      chosenLeftObjectPoints.push_back(allLeftObjectPoints[indexToUse]);
+      chosenRightImagePoints.push_back(allRightImagePoints[indexToUse]);
+      chosenRightObjectPoints.push_back(allRightObjectPoints[indexToUse]);
+
+      if ( m_WriteOutCalibrationImages )
+      {
+        std::string leftFilename = m_OutputDirectory + "/LeftFrame" + boost::lexical_cast<std::string>(numberOfChosenFrames) + ".png";
+        MITK_INFO << "Writing image to " << leftFilename;
+        cv::imwrite( leftFilename, allLeftFrames[indexToUse] );
+
+        std::string rightFilename = m_OutputDirectory + "/RightFrame" + boost::lexical_cast<std::string>(numberOfChosenFrames) + ".png";
+        MITK_INFO << "Writing image to " << rightFilename;
+        cv::imwrite( rightFilename, allRightFrames[indexToUse] );
+      }
+      if ( m_WriteOutChessboards )
+      {
+        std::string leftFilename = m_OutputDirectory + "/LeftChessboard" + boost::lexical_cast<std::string>(allLeftFrameNumbers[indexToUse]) + ".png";
+        MITK_INFO << "Writing image to " << leftFilename;
+        cv::imwrite( leftFilename, allLeftChessBoards[indexToUse] );
+
+        std::string rightFilename = m_OutputDirectory + "/RightChessboard" + boost::lexical_cast<std::string>(allRightFrameNumbers[indexToUse]) + ".png";
+        MITK_INFO << "Writing image to " << rightFilename;
+        cv::imwrite( rightFilename, allRightChessBoards[indexToUse] );
+      }
+    }
+  }
+
+  cv::Mat leftImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * leftFramesToUse.size(),2,CV_64FC1);
+  cv::Mat leftObjectPoints (m_NumberCornersWidth * m_NumberCornersHeight * leftFramesToUse.size(),3,CV_64FC1);
+  cv::Mat rightImagePoints (m_NumberCornersWidth * m_NumberCornersHeight * leftFramesToUse.size(),2,CV_64FC1);
+  cv::Mat rightObjectPoints (m_NumberCornersWidth * m_NumberCornersHeight * leftFramesToUse.size(),3,CV_64FC1);
+  
+  cv::Mat leftPointCounts (leftFramesToUse.size(),1,CV_32SC1);
+  cv::Mat rightPointCounts (leftFramesToUse.size(),1,CV_32SC1);
+
+  if  (chosenLeftImagePoints.size()   !=  leftFramesToUse.size() ||
+       chosenLeftObjectPoints.size()  !=  leftFramesToUse.size() ||
+       chosenRightImagePoints.size()  !=  leftFramesToUse.size() ||
+       chosenRightObjectPoints.size() !=  leftFramesToUse.size() )
+  {
+    mitkThrow() << "Detected unequal matrix sizes";
+  }
+
+  for ( unsigned int i = 0 ; i < leftFramesToUse.size() ; i ++  )
+  {
+    unsigned int size1 = chosenLeftImagePoints[i].size().height;
+    //FIX ME
+    unsigned int size2 = chosenLeftObjectPoints[i].size().height;
+    unsigned int size3 = chosenRightImagePoints[i].size().height;
+    unsigned int size4 = chosenRightObjectPoints[i].size().height;
+  
+    if (size1 != m_NumberCornersWidth * m_NumberCornersHeight ||
+        size2 != m_NumberCornersWidth * m_NumberCornersHeight ||
+        size3 != m_NumberCornersWidth * m_NumberCornersHeight ||
+        size4 != m_NumberCornersWidth * m_NumberCornersHeight)
+    {
+      mitkThrow() << "Detected unequal matrix sizes";
+    }
+  }
+
+  for ( unsigned int i = 0 ; i < leftFramesToUse.size() ; i++ )
   {
     MITK_INFO << "Filling "  << i;
     for ( unsigned int j = 0 ; j < m_NumberCornersWidth * m_NumberCornersHeight ; j ++ ) 
     {
       leftImagePoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
-        allLeftImagePoints[i].at<double>(j,0);
+        chosenLeftImagePoints[i].at<double>(j,0);
       leftImagePoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
-        allLeftImagePoints[i].at<double>(j,1);
+        chosenLeftImagePoints[i].at<double>(j,1);
      
       leftObjectPoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
-        allLeftObjectPoints[i].at<double>(j,0);
+        chosenLeftObjectPoints[i].at<double>(j,0);
       leftObjectPoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
-        allLeftObjectPoints[i].at<double>(j,1);
+        chosenLeftObjectPoints[i].at<double>(j,1);
       leftObjectPoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,2) =
-        allLeftObjectPoints[i].at<double>(j,2);
+        chosenLeftObjectPoints[i].at<double>(j,2);
 
       rightImagePoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
-        allRightImagePoints[i].at<double>(j,0);
+        chosenRightImagePoints[i].at<double>(j,0);
       rightImagePoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
-        allRightImagePoints[i].at<double>(j,1);
+        chosenRightImagePoints[i].at<double>(j,1);
       
       rightObjectPoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,0) =
-        allRightObjectPoints[i].at<double>(j,0);
+        chosenRightObjectPoints[i].at<double>(j,0);
       rightObjectPoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,1) =
-        allRightObjectPoints[i].at<double>(j,1);
+        chosenRightObjectPoints[i].at<double>(j,1);
       rightObjectPoints.at<double>(i* m_NumberCornersWidth * m_NumberCornersHeight + j,2) =
-        allRightObjectPoints[i].at<double>(j,2);
+        chosenRightObjectPoints[i].at<double>(j,2);
 
     }
     leftPointCounts.at<int>(i,0) = m_NumberCornersWidth * m_NumberCornersHeight;
@@ -512,15 +604,14 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   }
 
   MITK_INFO << "Starting intrinisic calibration";
-  CvMat* outputRotationVectorsLeft = cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
-  CvMat* outputTranslationVectorsLeft= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
-  CvMat* outputRotationVectorsRight= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
-  CvMat* outputTranslationVectorsRight= cvCreateMat(LeftFramesToUse.size(),3,CV_64FC1);
+  CvMat* outputRotationVectorsLeft = cvCreateMat(leftFramesToUse.size(),3,CV_64FC1);
+  CvMat* outputTranslationVectorsLeft= cvCreateMat(leftFramesToUse.size(),3,CV_64FC1);
+  CvMat* outputRotationVectorsRight= cvCreateMat(leftFramesToUse.size(),3,CV_64FC1);
+  CvMat* outputTranslationVectorsRight= cvCreateMat(leftFramesToUse.size(),3,CV_64FC1);
   CvMat* outputEssentialMatrix = cvCreateMat(3,3,CV_64FC1);
   CvMat* outputFundamentalMatrix= cvCreateMat(3,3,CV_64FC1);
 
-
-  mitk::CalibrateStereoCameraParameters(
+  double reprojectionError = mitk::CalibrateStereoCameraParameters(
       leftObjectPoints,
       leftImagePoints,
       leftPointCounts,
@@ -606,7 +697,8 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
 
   std::string trackerDirectory = m_OutputDirectory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex);
   niftk::CreateDirAndParents(trackerDirectory);
-  for ( unsigned int view = 0 ; view < LeftFramesToUse.size() ; view ++ )
+
+  for ( unsigned int view = 0 ; view < leftFramesToUse.size() ; view ++ )
   {
     for ( int i = 0 ; i < 3 ; i ++ ) 
     {
@@ -618,11 +710,10 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
     }
     fs_ext << std::endl; 
 
-    cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(LeftFramesToUse[view] , 
-        NULL, m_TrackerIndex );
+    cv::Mat LeftTrackingMatrix = m_Matcher->GetTrackerMatrix(leftFramesToUse[view], NULL, m_TrackerIndex );
 
     std::string trackerFilename = trackerDirectory + "/" + boost::lexical_cast<std::string>(view) + ".txt";
-    MITK_INFO << "Saving matrix for frame " << LeftFramesToUse[view] << "to " << trackerFilename;    
+    MITK_INFO << "Saving matrix for frame " << leftFramesToUse[view] << "to " << trackerFilename;
     std::ofstream fs_tracker;
     fs_tracker.open(trackerFilename.c_str(), std::ios::out);
     for ( int row = 0 ; row < 4 ; row ++ ) 
@@ -639,7 +730,88 @@ void HandeyeCalibrateFromDirectory::LoadVideoData(std::string filename)
   
   m_VideoInitialised = true;
 
-  Calibrate ( m_OutputDirectory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex) , extrinsic); 
+  // If user did not specify a chessboard to tracker registration, we do TSAIs method.
+  if (m_ChessBoardToTracker == NULL)
+  {
+    Calibrate ( m_OutputDirectory + "/TrackerMatrices" + boost::lexical_cast<std::string>(m_TrackerIndex) , extrinsic);
+  }
+  else
+  {
+    // Otherwise, just do it using registration.
+    cv::Matx44d chessBoardToTracker;
+    mitk::CopyToOpenCVMatrix(*m_ChessBoardToTracker, chessBoardToTracker);
+    std::vector<cv::Mat> handEyeMatrices;
+
+    for ( unsigned int view = 0 ; view < leftFramesToUse.size() ; view ++ )
+    {
+      cv::Matx44d leftTrackingMatrix = m_Matcher->GetTrackerMatrix(leftFramesToUse[view], NULL, m_TrackerIndex );
+      cv::Matx44d leftTrackingMatrixInverted = leftTrackingMatrix.inv(cv::DECOMP_SVD);
+
+      cv::Matx13d rotationVector;
+      cv::Matx33d rotationMatrix;
+      rotationVector(0,0) = CV_MAT_ELEM ( *outputRotationVectorsLeft , double  , view, 0);
+      rotationVector(0,1) = CV_MAT_ELEM ( *outputRotationVectorsLeft , double  , view, 1);
+      rotationVector(0,2) = CV_MAT_ELEM ( *outputRotationVectorsLeft , double  , view, 2);
+      cv::Rodrigues(rotationVector, rotationMatrix);
+
+      cv::Matx44d chessboardToCamera;
+      mitk::MakeIdentity(chessboardToCamera);
+      for (int r = 0; r < 3; r++)
+      {
+        for (int c = 0; c < 3; c++)
+        {
+          chessboardToCamera(r,c) = rotationMatrix(r,c);
+        }
+        chessboardToCamera(r, 3) = CV_MAT_ELEM ( *outputTranslationVectorsLeft , double  , view, r);
+      }
+      cv::Matx44d chessboardToCameraInverted = chessboardToCamera.inv(cv::DECOMP_SVD);
+
+      cv::Matx44d handEye = leftTrackingMatrixInverted * (chessBoardToTracker * chessboardToCameraInverted);
+      cv::Mat he(handEye);
+      handEyeMatrices.push_back(he);
+    }
+
+    cv::Mat averageHandEye = mitk::AverageMatrices(handEyeMatrices);
+    m_CameraToMarker = averageHandEye;
+    this->WriteHandEye();
+  }
+
+  cv::Mat handEyeRotationMatrix(m_CameraToMarker, cv::Range(0, 2), cv::Range(0,2));
+  cv::Mat handEyeRotationVector(cvCreateMat(3,1,CV_64FC1));
+  cv::Rodrigues(handEyeRotationMatrix, handEyeRotationVector);
+
+  // for spreadsheet/analysis purposes. A big ugly, but amenable to grepping through log files.
+  MITK_INFO << "Calibration Summary:"
+            << m_FramesToUse << ", "
+            << reprojectionError << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixLeft, double, 0,0) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixLeft, double, 1,1) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixLeft, double, 0,2) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixLeft, double, 1,2) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsLeft, double, 0,0) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsLeft, double, 0,1) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsLeft, double, 0,2) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsLeft, double, 0,3) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixRight, double, 0,0) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixRight, double, 1,1) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixRight, double, 0,2) << ", "
+            << CV_MAT_ELEM (*m_IntrinsicMatrixRight, double, 1,2) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsRight, double, 0,0) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsRight, double, 0,1) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsRight, double, 0,2) << ", "
+            << CV_MAT_ELEM (*m_DistortionCoefficientsRight, double, 0,3) << ", "
+            << CV_MAT_ELEM (*m_RotationVectorRightToLeft, double, 0,0) << ", "
+            << CV_MAT_ELEM (*m_RotationVectorRightToLeft, double, 1,0) << ", "
+            << CV_MAT_ELEM (*m_RotationVectorRightToLeft, double, 2,0) << ", "
+            << CV_MAT_ELEM (*m_TranslationVectorRightToLeft, double, 0,0) << ", "
+            << CV_MAT_ELEM (*m_TranslationVectorRightToLeft, double, 1,0) << ", "
+            << CV_MAT_ELEM (*m_TranslationVectorRightToLeft, double, 2,0) << ", "
+            << handEyeRotationVector.at<double>(0, 0) << ", "
+            << handEyeRotationVector.at<double>(1, 0) << ", "
+            << handEyeRotationVector.at<double>(2, 0) << ", "
+            << m_CameraToMarker.at<double>(0,3) << ", "
+            << m_CameraToMarker.at<double>(1,3) << ", "
+            << m_CameraToMarker.at<double>(2,3);
 }
  
 } // end namespace

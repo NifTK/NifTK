@@ -15,7 +15,7 @@
 #ifndef niftkSequentialCpuQds_h
 #define niftkSequentialCpuQds_h
 
-#include "niftkSurfReconExports.h"
+#include "niftkOpenCVExports.h"
 #include "niftkQDSCommon.h"
 #include <opencv2/core/types_c.h>
 // FIXME: typedefs.hpp should be enough! but there seem to be some issues...
@@ -23,8 +23,8 @@
 #include <boost/gil/gil_all.hpp>
 #include <vector>
 
-#ifndef NIFTKSURFRECON_EXPORT
-#define NIFTKSURFRECON_EXPORT
+#ifndef NIFTKOPENCV_EXPORT
+#define NIFTKOPENCV_EXPORT
 #endif
 
 namespace niftk 
@@ -47,37 +47,6 @@ struct PropagationParameters
 };
 
 
-// FIXME: this is actually shared between all qds variants, so refactor this (later)
-struct NIFTKSURFRECON_EXPORT RefPoint
-{
-  unsigned short  x;
-  unsigned short  y;
-
-  RefPoint(unsigned short _x = -1, unsigned short _y = -1)
-    : x(_x), y(_y)
-  {
-  }
-
-  RefPoint& operator=(const RefPoint& p)
-  {
-    x = p.x;
-    y = p.y;
-    return *this;
-  }
-
-  // conversion operator! exists for convinience with refmaps
-  // FIXME: pixel assignment is done with a template parameter
-  //        so this conversion is not actually called automagically!
-  operator boost::gil::dev2n16_pixel_t() const
-  {
-    return boost::gil::dev2n16_pixel_t(x, y);
-  }
-
-  // compares coordinates, for use in priority_queue
-  bool operator<(const RefPoint& rhs) const;
-};
-
-
 #ifdef _MSC_VER
 // various bits rely on safely dll-exporting class members which may reference
 //  crt components (that may not be explicitly declared to be exported).
@@ -94,7 +63,7 @@ struct NIFTKSURFRECON_EXPORT RefPoint
 #pragma warning(disable: 4251)      //  class '...' needs to have dll-interface to be used by clients of class '...'
 #endif
 
-class NIFTKSURFRECON_EXPORT SequentialCpuQds : public QDSInterface
+class NIFTKOPENCV_EXPORT SequentialCpuQds : public QDSInterface
 {
 
 public:

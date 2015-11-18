@@ -69,15 +69,11 @@ protected slots:
 
 private slots:
 
-  void on_btnCreate_clicked();
-  void on_btnApply_clicked();
-  void on_cbxGaussianSmooth_toggled(bool checked);
-  void onValueChanged();
+  void OnApplyClicked();
+  void OnAdvancedFeaturesToggled(int state);
+  void OnExtractionMethodChanged(int which);
 
 private:
-
-  /// \brief Creation of the connections of widgets to slots.
-  void CreateConnections();
 
   /// \brief Retrieve's the pref values from preference service, and stored in member variables.
   void RetrievePreferenceValues();
@@ -85,13 +81,13 @@ private:
   /// \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
-  void selectReferenceNode(mitk::DataNode::Pointer node);
-  void selectSurfaceNode(mitk::DataNode::Pointer node);
-  void deselectNode();
+  void SelectReferenceNode(mitk::DataNode::Pointer node);
+  void SelectSurfaceNode(mitk::DataNode::Pointer node);
+  void DeselectNode();
 
-  void loadParameters();
-  void saveParameters();
-  void updateFields();
+  void LoadParameters();
+  void SaveParameters();
+  void UpdateFields();
 
   /// \brief Enables/Disables controls.
   void EnableControls(bool b);
@@ -102,11 +98,10 @@ private:
   /// \brief Returns the source node that this surface node belongs to.
   mitk::DataNode::Pointer findReferenceNodeOf(mitk::DataNode::Pointer surfaceNode);
 
-  void createSurfaceNode();
-  void updateSurfaceNode();
+  void CreateSurfaceNode();
+  void UpdateSurfaceNode();
 
-  mitk::ImageToSurfaceFilter::Pointer createImageToSurfaceFilter();
-
+private:
   /// \brief All the controls for the main view part.
   Ui::SurfaceExtractorViewControls* m_Controls;
 

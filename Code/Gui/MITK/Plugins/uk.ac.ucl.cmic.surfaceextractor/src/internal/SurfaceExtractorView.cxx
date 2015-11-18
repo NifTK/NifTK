@@ -41,6 +41,8 @@
 #include <mitkIDataStorageService.h>
 #include <mitkNodePredicateDataType.h>
 
+#include <mitkNifTKImageToSurfaceFilter.h>
+
 #include <QButtonGroup>
 #include <QSlider>
 #include <QApplication>
@@ -103,29 +105,38 @@ public:
   mitk::NodePredicateBase::Pointer has3dSurfaceImage;
   mitk::NodePredicateBase::Pointer has3dOr4dSurfaceImage;
 
-  mitk::DataNode::Pointer referenceNode;
-  mitk::DataStorage::SetOfObjects::ConstPointer surfaceNodes;
-  mitk::DataNode::Pointer surfaceNode;
+  mitk::DataNode::Pointer                       m_ReferenceNode;
+  mitk::DataStorage::SetOfObjects::ConstPointer m_SurfaceNodes;
+  mitk::DataNode::Pointer                       m_SurfaceNode;
+  mitk::ColorSequenceRainbow                    m_RainbowColor;
 
-  mitk::ColorSequenceRainbow rainbowColor;
+  bool   m_AlwaysCreateNewSurface;
+  bool   m_Dirty;
+  bool   m_IsVisible;
+  bool   m_IsActivated;
+  float  m_Threshold;
+  
+  mitk::NifTKImageToSurfaceFilter
+    ::SurfaceExtractionMethod    m_SurfaceExtractionType;
+  
+  mitk::NifTKImageToSurfaceFilter
+    ::InputSmoothingMethod       m_InputSmoothingType;
+  int                            m_InputSmoothingIterations;
+  float                          m_InputSmoothingRadius;
 
-  /// Threshold
-  double threshold;
+  mitk::NifTKImageToSurfaceFilter
+    ::SurfaceSmoothingMethod     m_SurfaceSmoothingType;
+  int                            m_SurfaceSmoothingIterations;
+  float                          m_SurfaceSmoothingParameter;
 
-  /// Gaussian smoothing
-  bool gaussianSmooth;
+  mitk::NifTKImageToSurfaceFilter
+    ::SurfaceDecimationMethod    m_SurfaceDecimationType;
+  double                         m_TargetReduction;
 
-  /// Gaussian standard deviation
-  double gaussianStdDev;
+  bool                           m_PerformSurfaceCleaning;
+  float                          m_SurfaceCleaningThreshold;
 
-  // Value for DecimatePro
-  float targetReduction;
-
-  // Maximum number of polygons
-  long maxNumberOfPolygons;
-
-  bool dirty;
-
+  double                         m_SamplingRatio;
 };
 
 SurfaceExtractorViewPrivate::SurfaceExtractorViewPrivate()
@@ -185,7 +196,6 @@ SurfaceExtractorViewPrivate::SurfaceExtractorViewPrivate()
   this->has3dLabelImage = has3dLabelImage;
   this->has3dOr4dLabelImage = has3dOr4dLabelImage;
   this->has3dOr4dSurfaceImage = hasSurfaceImage;
-  this->gaussianSmooth = true;
 }
 
 const std::string SurfaceExtractorView::VIEW_ID = "uk.ac.ucl.cmic.SurfaceExtractor";
@@ -195,6 +205,30 @@ SurfaceExtractorView::SurfaceExtractorView()
 , m_Parent(0)
 , d_ptr(new SurfaceExtractorViewPrivate())
 {
+  Q_D(SurfaceExtractorView);
+
+  d->m_AlwaysCreateNewSurface = false;
+  d->m_Dirty = false;
+  d->m_IsVisible = true;
+  d->m_IsActivated = false;
+  d->m_Threshold = 100;
+
+  d->m_SurfaceExtractionType = mitk::NifTKImageToSurfaceFilter::StandardExtractor;
+
+  d->m_InputSmoothingType = mitk::NifTKImageToSurfaceFilter::NoInputSmoothing;
+  d->m_InputSmoothingIterations = 1;
+  d->m_InputSmoothingRadius = 0.5;
+
+  d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::NoSurfaceSmoothing;
+  d->m_SurfaceSmoothingIterations = 10;
+  d->m_SurfaceSmoothingParameter = 0.5;
+
+  d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::NoDecimation;
+  d->m_TargetReduction = 0.1;
+
+  d->m_PerformSurfaceCleaning = true;
+  d->m_SurfaceCleaningThreshold = 1000;
+  d->m_SamplingRatio = 0.75;
 }
 
 SurfaceExtractorView::~SurfaceExtractorView()
@@ -208,7 +242,7 @@ SurfaceExtractorView::~SurfaceExtractorView()
 void SurfaceExtractorView::RetrievePreferenceValues()
 {
   Q_D(SurfaceExtractorView);
-
+/*
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
@@ -227,6 +261,7 @@ void SurfaceExtractorView::RetrievePreferenceValues()
     d->targetReduction = SurfaceExtractorPreferencePage::TARGET_REDUCTION_DEFAULT;
     d->maxNumberOfPolygons = SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_DEFAULT;
   }
+*/
 }
 
 void SurfaceExtractorView::CreateQtPartControl(QWidget *parent)
@@ -239,35 +274,16 @@ void SurfaceExtractorView::CreateQtPartControl(QWidget *parent)
     // Create UI.
     m_Controls = new Ui::SurfaceExtractorViewControls();
     m_Controls->setupUi(parent);
+    m_Controls->wgt_advancedControls->hide();
 
-    m_Controls->spbThreshold->setMinimum(std::numeric_limits<int>::min());
-    m_Controls->spbThreshold->setMaximum(std::numeric_limits<int>::max());
-    m_Controls->spbMaxNumberOfPolygons->setMinimum(1);
-    m_Controls->spbMaxNumberOfPolygons->setMaximum(std::numeric_limits<int>::max());
-    m_Controls->spbTargetReduction->setMinimum(0.0);
-    m_Controls->spbTargetReduction->setMaximum(1.0);
-    m_Controls->spbTargetReduction->setSingleStep(0.05);
-
-    int formRowHeight = m_Controls->spbThreshold->height();
-    m_Controls->lblReferenceImage->setFixedHeight(formRowHeight);
-    m_Controls->lblSurfaceImage->setFixedHeight(formRowHeight);
-    m_Controls->cbxGaussianSmooth->setFixedHeight(formRowHeight);
-
-    m_Controls->wgtControls->installEventFilter(this);
-
-    connect(m_Controls->spbThreshold, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged()));
-    connect(m_Controls->cbxGaussianSmooth, SIGNAL(stateChanged(int)), this, SLOT(onValueChanged()));
-    connect(m_Controls->spbGaussianStdDev, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged()));
-    connect(m_Controls->spbTargetReduction, SIGNAL(valueChanged(double)), this, SLOT(onValueChanged()));
-    connect(m_Controls->spbMaxNumberOfPolygons, SIGNAL(valueChanged(int)), this, SLOT(onValueChanged()));
+    connect(m_Controls->cbx_showAdvanced, SIGNAL(stateChanged(int )), this, SLOT(OnAdvancedFeaturesToggled(int )));
+    connect(m_Controls->cmbx_extractionMethod, SIGNAL(currentIndexChanged(int )), this, SLOT(OnExtractionMethodChanged(int )));
+    connect(m_Controls->btn_apply, SIGNAL(clicked( )), this, SLOT(OnApplyClicked()));
 
     // Retrieve and store preference values.
     RetrievePreferenceValues();
 
-    updateFields();
-
-    // Create connections after setting defaults, so you don't trigger stuff when setting defaults.
-    CreateConnections();
+    UpdateFields();
   }
 }
 
@@ -275,16 +291,6 @@ void SurfaceExtractorView::Activated()
 {
   berry::IWorkbenchPart::Pointer nullPart;
   OnSelectionChanged(nullPart, this->GetDataManagerSelection());
-}
-
-void SurfaceExtractorView::onValueChanged()
-{
-  Q_D(SurfaceExtractorView);
-  if (!d->dirty)
-  {
-    d->dirty = true;
-    m_Controls->btnApply->setEnabled(true);
-  }
 }
 
 bool SurfaceExtractorView::eventFilter(QObject *obj, QEvent *event)
@@ -295,13 +301,13 @@ bool SurfaceExtractorView::eventFilter(QObject *obj, QEvent *event)
     switch (keyEvent->key())
     {
     case Qt::Key_Return:
-      on_btnApply_clicked();
+      OnApplyClicked();
       return true;
     case Qt::Key_Escape:
-      updateFields();
+      UpdateFields();
       Q_D(SurfaceExtractorView);
-      mitk::Surface* surface = dynamic_cast<mitk::Surface*>(d->surfaceNode->GetData());
-      m_Controls->btnApply->setEnabled(surface->IsEmpty());
+      mitk::Surface* surface = dynamic_cast<mitk::Surface*>(d->m_SurfaceNode->GetData());
+      m_Controls->btn_apply->setEnabled(surface->IsEmpty());
       return true;
     }
   }
@@ -309,21 +315,10 @@ bool SurfaceExtractorView::eventFilter(QObject *obj, QEvent *event)
   return QObject::eventFilter(obj, event);
 }
 
-void SurfaceExtractorView::updateFields()
+void SurfaceExtractorView::UpdateFields()
 {
   Q_D(SurfaceExtractorView);
-  m_Controls->cbxGaussianSmooth->setChecked(d->gaussianSmooth);
-  m_Controls->spbGaussianStdDev->setValue(d->gaussianStdDev);
-  m_Controls->spbThreshold->setValue(d->threshold);
-  m_Controls->spbTargetReduction->setValue(d->targetReduction);
-  m_Controls->spbMaxNumberOfPolygons->setValue(d->maxNumberOfPolygons);
-}
 
-void SurfaceExtractorView::CreateConnections()
-{
-  connect(m_Controls->cbxGaussianSmooth, SIGNAL(toggled(bool)), this, SLOT(on_cbxGaussianSmooth_toggled(bool)));
-  connect(m_Controls->btnCreate, SIGNAL(clicked()), this, SLOT(on_btnCreate_clicked()));
-  connect(m_Controls->btnApply, SIGNAL(clicked()), this, SLOT(on_btnApply_clicked()));
 }
 
 void SurfaceExtractorView::SetFocus()
@@ -337,11 +332,27 @@ void SurfaceExtractorView::OnPreferencesChanged(const berry::IBerryPreferences*)
 
 void SurfaceExtractorView::EnableControls(bool b)
 {
-  m_Controls->cbxGaussianSmooth->setEnabled(b);
-  m_Controls->spbGaussianStdDev->setEnabled(b && m_Controls->cbxGaussianSmooth->isChecked());
-  m_Controls->spbThreshold->setEnabled(b);
-  m_Controls->spbTargetReduction->setEnabled(b);
-  m_Controls->spbMaxNumberOfPolygons->setEnabled(b);
+  m_Controls->cmbx_inSmoothMethod->setEnabled(b);
+  m_Controls->spb_inSmoothRadius->setEnabled(b);
+  m_Controls->spb_inSmoothIters->setEnabled(b);
+
+  m_Controls->cmbx_extractionMethod->setEnabled(b);
+  
+  m_Controls->cmbx_decimationMethod->setEnabled(b);
+  m_Controls->spb_targetReduction->setEnabled(b);
+  
+  m_Controls->cmbx_surfaceSmoothMethod->setEnabled(b);
+  m_Controls->spb_surfaceSmoothIters->setEnabled(b);
+
+  m_Controls->cbx_cleanSurface->setEnabled(b);
+  m_Controls->spb_surfaceCleanThreshold->setEnabled(b);
+
+  m_Controls->spb_threshold->setEnabled(b);
+  m_Controls->btn_apply->setEnabled(b);
+
+  m_Controls->dsbx_samplingRatio->setEnabled(b);
+
+  OnExtractionMethodChanged(m_Controls->cmbx_extractionMethod->currentIndex() && b);
 }
 
 void SurfaceExtractorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
@@ -351,68 +362,73 @@ void SurfaceExtractorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer par
   int numberOfSelectedNodes = nodes.size();
   if (numberOfSelectedNodes != 1)
   {
-    deselectNode();
+    DeselectNode();
     return;
   }
 
   mitk::DataNode::Pointer node = nodes[0];
   if (d->has3dOr4dImage->CheckNode(node))
   {
-    selectReferenceNode(node);
+    SelectReferenceNode(node);
   }
   else if (d->has3dOr4dSurfaceImage->CheckNode(node))
   {
-    selectSurfaceNode(node);
+    SelectSurfaceNode(node);
   }
   else
   {
-    deselectNode();
+    DeselectNode();
   }
 }
 
-void SurfaceExtractorView::selectReferenceNode(mitk::DataNode::Pointer node)
+void SurfaceExtractorView::SelectReferenceNode(mitk::DataNode::Pointer node)
 {
   Q_D(SurfaceExtractorView);
-  d->referenceNode = node;
-  d->surfaceNodes = findSurfaceNodesOf(node);
-  d->surfaceNode = 0;
+  d->m_ReferenceNode = node;
+  d->m_SurfaceNodes = findSurfaceNodesOf(node);
+  d->m_SurfaceNode = 0;
+
+  mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+  if (image == 0)
+  {
+    EnableControls(false);
+    return;
+  }
 
   m_Controls->lblReferenceImage->setText(QString::fromStdString(node->GetName()));
   m_Controls->lblSurfaceImage->setText("No surface selected.");
-  EnableControls(false);
-  m_Controls->btnCreate->setEnabled(true);
-  m_Controls->btnApply->setEnabled(false);
+  EnableControls(true);
 }
 
-void SurfaceExtractorView::selectSurfaceNode(mitk::DataNode::Pointer node)
+void SurfaceExtractorView::SelectSurfaceNode(mitk::DataNode::Pointer node)
 {
   Q_D(SurfaceExtractorView);
-  d->surfaceNode =  node;
-  d->referenceNode = findReferenceNodeOf(node);
-  d->surfaceNodes =  findSurfaceNodesOf(d->referenceNode);
+  d->m_SurfaceNode =  node;
+  d->m_ReferenceNode = findReferenceNodeOf(node);
+  d->m_SurfaceNodes =  findSurfaceNodesOf(d->m_ReferenceNode);
 
-  loadParameters();
-  updateFields();
+  LoadParameters();
+  UpdateFields();
 
-  m_Controls->lblReferenceImage->setText(QString::fromStdString(d->referenceNode->GetName()));
-  m_Controls->lblSurfaceImage->setText(QString::fromStdString(d->surfaceNode->GetName()));
+  m_Controls->lblReferenceImage->setText(QString::fromStdString(d->m_ReferenceNode->GetName()));
+  m_Controls->lblSurfaceImage->setText(QString::fromStdString(d->m_SurfaceNode->GetName()));
   EnableControls(true);
-  m_Controls->btnCreate->setEnabled(true);
-  mitk::Surface* surface = dynamic_cast<mitk::Surface*>(d->surfaceNode->GetData());
-  m_Controls->btnApply->setEnabled(surface->IsEmpty());
+
+  mitk::Surface* surface = dynamic_cast<mitk::Surface*>(d->m_SurfaceNode->GetData());
+  m_Controls->btn_apply->setEnabled(surface->IsEmpty());
 }
 
-void SurfaceExtractorView::deselectNode()
+void SurfaceExtractorView::DeselectNode()
 {
   Q_D(SurfaceExtractorView);
   m_Controls->lblReferenceImage->setText("No image selected.");
   m_Controls->lblSurfaceImage->setText("No surface selected.");
-  d->referenceNode = 0;
-  d->surfaceNode = 0;
-  d->surfaceNodes = 0;
+  d->m_ReferenceNode = 0;
+  d->m_SurfaceNode = 0;
+  d->m_SurfaceNodes = 0;
   EnableControls(false);
-  m_Controls->btnCreate->setEnabled(false);
-  m_Controls->btnApply->setEnabled(false);
+
+  m_Controls->btn_apply->setEnabled(false);
 }
 
 mitk::DataStorage::SetOfObjects::ConstPointer SurfaceExtractorView::findSurfaceNodesOf(mitk::DataNode::Pointer referenceNode)
@@ -430,7 +446,6 @@ mitk::DataStorage::SetOfObjects::ConstPointer SurfaceExtractorView::findSurfaceN
 
 mitk::DataNode::Pointer SurfaceExtractorView::findReferenceNodeOf(mitk::DataNode::Pointer surfaceNode)
 {
-  MITK_INFO << "SurfaceExtractorView::findReferenceNodeOf(mitk::DataNode::Pointer surfaceNode)";
   Q_D(SurfaceExtractorView);
   mitk::DataStorage::Pointer dataStorage = GetDataStorage();
   mitk::DataStorage::SetOfObjects::ConstPointer referenceNodes = dataStorage->GetSources(surfaceNode, d->has3dOr4dImage, true);
@@ -441,42 +456,123 @@ mitk::DataNode::Pointer SurfaceExtractorView::findReferenceNodeOf(mitk::DataNode
   return referenceNodes->GetElement(0);
 }
 
-void SurfaceExtractorView::on_btnCreate_clicked()
-{
-  createSurfaceNode();
-}
-
-void SurfaceExtractorView::on_btnApply_clicked()
+void SurfaceExtractorView::OnApplyClicked()
 {
   Q_D(SurfaceExtractorView);
-  d->gaussianSmooth = m_Controls->cbxGaussianSmooth->isChecked();
-  d->gaussianStdDev = m_Controls->spbGaussianStdDev->value();
-  d->threshold = m_Controls->spbThreshold->value();
-  d->targetReduction = m_Controls->spbTargetReduction->value();
-  d->maxNumberOfPolygons = m_Controls->spbMaxNumberOfPolygons->value();
-  updateSurfaceNode();
-}
+  d->m_Threshold = m_Controls->spb_threshold->value();
+  d->m_InputSmoothingIterations = m_Controls->spb_inSmoothIters->value();
+  d->m_InputSmoothingRadius = m_Controls->spb_inSmoothRadius->value();
+  d->m_SurfaceSmoothingIterations = m_Controls->spb_surfaceSmoothIters->value();
+  d->m_TargetReduction = m_Controls->spb_targetReduction->value();
 
-void SurfaceExtractorView::createSurfaceNode()
-{
-  Q_D(SurfaceExtractorView);
+  d->m_PerformSurfaceCleaning = m_Controls->cbx_cleanSurface->isChecked();
+  d->m_SurfaceCleaningThreshold = m_Controls->spb_surfaceCleanThreshold->value();
+  d->m_SamplingRatio = m_Controls->dsbx_samplingRatio->value();
 
-  if (d->referenceNode.IsNull())
+  int index = m_Controls->cmbx_inSmoothMethod->currentIndex();
+
+  switch (index)
   {
-    MITK_INFO << "SurfaceExtractorView::createSurfaceNode(): No reference image. The button should be disabled.";
+    case 0:
+      d->m_InputSmoothingType = mitk::NifTKImageToSurfaceFilter::NoInputSmoothing;
+      break;
+    case 1:
+      d->m_InputSmoothingType = mitk::NifTKImageToSurfaceFilter::MedianSmoothing;
+      break;
+    case 2:
+      d->m_InputSmoothingType = mitk::NifTKImageToSurfaceFilter::GaussianSmoothing;
+      break;
+  }
+
+  index = m_Controls->cmbx_extractionMethod->currentIndex();
+  switch (index)
+  {
+    case 0:
+      d->m_SurfaceExtractionType = mitk::NifTKImageToSurfaceFilter::StandardExtractor;
+      break;
+    case 1:
+      d->m_SurfaceExtractionType = mitk::NifTKImageToSurfaceFilter::EnhancedCPUExtractor;
+      break;
+    case 2:
+      d->m_SurfaceExtractionType = mitk::NifTKImageToSurfaceFilter::GPUExtractor;
+      break;
+  }
+
+  index = m_Controls->cmbx_decimationMethod->currentIndex();
+  switch (index)
+  {
+    case 0:
+      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::NoDecimation;
+      break;
+    case 1:
+      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::DecimatePro;
+      break;
+    case 2:
+      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::QuadricVTK;
+      break;
+    case 3:
+      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::Quadric;
+      break;
+    case 4:
+      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::QuadricTri;
+      break;
+    case 5:
+      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::Melax;
+      break;
+    case 6:
+      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::ShortestEdge;
+      break;
+  }
+  
+  index = m_Controls->cmbx_surfaceSmoothMethod->currentIndex();
+  switch (index)
+  {
+    case 0:
+      d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::NoSurfaceSmoothing;
+      break;
+    case 1:
+      d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::StandardVTKSmoothing;
+      break;
+    case 2:
+      d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::WindowedSincSmoothing;
+      break;
+    case 3:
+      d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::TaubinSmoothing;
+      break;
+    case 4:
+      d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::CurvatureNormalSmooth;
+      break;
+    case 5:
+      d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::InverseEdgeLengthSmooth;
+      break;
+  }
+
+  if (d->m_SurfaceNode.IsNull() || d->m_AlwaysCreateNewSurface)
+    CreateSurfaceNode();
+
+  UpdateSurfaceNode();
+}
+
+void SurfaceExtractorView::CreateSurfaceNode()
+{
+  Q_D(SurfaceExtractorView);
+
+  if (d->m_ReferenceNode.IsNull())
+  {
+    MITK_INFO << "SurfaceExtractorView::CreateSurfaceNode(): No reference image. The button should be disabled.";
     return;
   }
-  if (d->surfaceNodes.IsNull())
+  if (d->m_SurfaceNodes.IsNull())
   {
-    MITK_INFO << "SurfaceExtractorView::createSurfaceNode(): No surface nodes. The button should be disabled.";
+    MITK_INFO << "SurfaceExtractorView::CreateSurfaceNode(): No surface nodes. The button should be disabled.";
     return;
   }
 
   int maxSerial = 0;
-  int surfaceNodeNumber = d->surfaceNodes->Size();
+  int surfaceNodeNumber = d->m_SurfaceNodes->Size();
   for (int i = 0; i < surfaceNodeNumber; ++i)
   {
-    mitk::DataNode::Pointer currentSurfaceNode = d->surfaceNodes->GetElement(i);
+    mitk::DataNode::Pointer currentSurfaceNode = d->m_SurfaceNodes->GetElement(i);
     std::string currentSurfaceName = currentSurfaceNode->GetName();
     int serial = 0;
     int ret = std::sscanf(currentSurfaceName.c_str(), "Surface %d", &serial);
@@ -488,48 +584,47 @@ void SurfaceExtractorView::createSurfaceNode()
   std::ostringstream newSurfaceName;
   newSurfaceName << "Surface " << (maxSerial + 1);
 
-  d->surfaceNode = mitk::DataNode::New();
-  d->surfaceNode->SetName(newSurfaceName.str());
-  d->surfaceNode->SetColor(d->rainbowColor.GetNextColor() );
-  d->surfaceNode->SetBoolProperty("Surface", true);
-  d->surfaceNode->SetVisibility(true);
+  d->m_SurfaceNode = mitk::DataNode::New();
+  d->m_SurfaceNode->SetName(newSurfaceName.str());
+  d->m_SurfaceNode->SetColor(d->m_RainbowColor.GetNextColor() );
+  d->m_SurfaceNode->SetBoolProperty("Surface", true);
+  d->m_SurfaceNode->SetVisibility(true);
   mitk::Surface::Pointer surface = mitk::Surface::New();
   MITK_INFO << "create surface node - surface is empty: " << surface->IsEmpty();
-  d->surfaceNode->SetData(surface);
+  d->m_SurfaceNode->SetData(surface);
 
   RetrievePreferenceValues();
-  updateFields();
-  saveParameters();
+  UpdateFields();
+  SaveParameters();
 
-  GetDataStorage()->Add(d->surfaceNode, d->referenceNode);
-  d->surfaceNodes = findSurfaceNodesOf(d->referenceNode);
+  GetDataStorage()->Add(d->m_SurfaceNode, d->m_ReferenceNode);
+  d->m_SurfaceNodes = findSurfaceNodesOf(d->m_ReferenceNode);
 
-  d->referenceNode->SetSelected(false);
-  d->surfaceNode->SetSelected(true);
+  d->m_ReferenceNode->SetSelected(false);
+  d->m_SurfaceNode->SetSelected(true);
 
-  this->SetCurrentSelection(d->surfaceNode);
+  this->SetCurrentSelection(d->m_SurfaceNode);
 }
 
-void SurfaceExtractorView::updateSurfaceNode()
+void SurfaceExtractorView::UpdateSurfaceNode()
 {
   Q_D(SurfaceExtractorView);
 
-  MITK_INFO << "SurfaceExtractorView::updateSurfaceNode()";
-  if (d->referenceNode.IsNull())
+  if (d->m_ReferenceNode.IsNull())
   {
-    MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): No reference image. The button should be disabled.";
+    MITK_INFO << "SurfaceExtractorView::UpdateSurfaceNode(): No reference image. The button should be disabled.";
     return;
   }
 
-  if (d->surfaceNode.IsNull())
+  if (d->m_SurfaceNode.IsNull())
   {
-    MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): 12 no surface node is selected";
+    MITK_INFO << "SurfaceExtractorView::UpdateSurfaceNode(): 12 no surface node is selected";
     return;
   }
 
   QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 
-  mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(d->referenceNode->GetData());
+  mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(d->m_ReferenceNode->GetData());
 
   if (!referenceImage)
   {
@@ -537,134 +632,160 @@ void SurfaceExtractorView::updateSurfaceNode()
     return;
   }
 
-  mitk::ImageToSurfaceFilter::Pointer filter = createImageToSurfaceFilter();
-  if (filter.IsNull())
-  {
-    MITK_INFO << "SurfaceExtractorView::updateSurface(): No filter created.";
-    return;
-  }
 
-  filter->SetInput(referenceImage);
-  filter->SetThreshold(d->threshold); // if( Gauss ) --> TH manipulated for vtkMarchingCube
+  if (d->has3dOr4dLabelImage->CheckNode(d->m_ReferenceNode))
+  {
+    mitk::LabeledImageToSurfaceFilter::Pointer filter = mitk::LabeledImageToSurfaceFilter::New();
+    filter->SetGaussianStandardDeviation(d->m_InputSmoothingRadius);
+    if (d->m_InputSmoothingType == mitk::NifTKImageToSurfaceFilter::NoInputSmoothing)
+      filter->SetSmooth(false);
+    else
+      filter->SetSmooth(true);
+    
+    filter->SetInput(referenceImage);
+    //filter->SetThreshold(d->m_Threshold); // if( Gauss ) --> TH manipulated for vtkMarchingCube
+    filter->SetTargetReduction(d->m_TargetReduction);
   
-  filter->SetTargetReduction(d->targetReduction);
-  
-  // If the decimation value is non-zero we set the decimation type
-  // Setting NoDecimation disables the whole processing
-  if (d->targetReduction == 0)
-    filter->SetDecimate(mitk::ImageToSurfaceFilter::NoDecimation);
-  else
-    filter->SetDecimate(mitk::ImageToSurfaceFilter::DecimatePro);
+    // If the decimation value is non-zero we set the decimation type
+    // Setting NoDecimation disables the whole processing
+    if (d->m_SurfaceDecimationType == mitk::NifTKImageToSurfaceFilter::NoDecimation)
+      filter->SetDecimate(mitk::ImageToSurfaceFilter::NoDecimation);
+    else
+      filter->SetDecimate(mitk::ImageToSurfaceFilter::DecimatePro);
 
-  try
-  {
-    MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): 40";
-    filter->Update();
-    MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): 57";
-  }
-  catch (std::exception& exc)
-  {
-    MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): 58";
-  }
-  MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): 60";
-
-  long long numOfPolys = filter->GetOutput()->GetVtkPolyData()->GetNumberOfPolys();
-  if (numOfPolys > d->maxNumberOfPolygons)
-  {
-    QApplication::restoreOverrideCursor();
-    QString title = "CAUTION!!!";
-    QString text = QString("The number of polygons is greater than %1. "
-        "If you continue, the program might crash. "
-        "How do you want to go on?").arg(d->maxNumberOfPolygons);
-    QString button0Text = "Proceed anyway!";
-    QString button1Text = "Cancel immediately! (maybe you want to insert an other threshold)!";
-    if (QMessageBox::question(NULL, title, text, button0Text, button1Text, QString::null, 0 ,1) == 1)
+    try
     {
-      return;
+      filter->Update();
     }
-    QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
-  }
-  MITK_INFO << "SurfaceExtractorView::updateSurfaceNode(): 30";
+    catch (std::exception& exc)
+    {
+    }
 
-  d->surfaceNode->SetData(filter->GetOutput());
+    d->m_SurfaceNode->SetData(filter->GetOutput());
+  }
+  else
+  {
+    mitk::NifTKImageToSurfaceFilter::Pointer filter = mitk::NifTKImageToSurfaceFilter::New();
+    filter->SetInput(referenceImage);
+    filter->SetThreshold(d->m_Threshold);
+
+    filter->SetSurfaceDecimationType(d->m_SurfaceDecimationType);
+    filter->SetSurfaceExtractionType(d->m_SurfaceExtractionType);
+    filter->SetSurfaceSmoothingType(d->m_SurfaceSmoothingType);
+    filter->SetInputSmoothingType(d->m_InputSmoothingType);
+
+    if (d->m_InputSmoothingType == mitk::NifTKImageToSurfaceFilter::NoInputSmoothing)
+      filter->SetPerformInputSmoothing(false);
+    else
+      filter->SetPerformInputSmoothing(true);
+
+    if (d->m_SurfaceSmoothingType == mitk::NifTKImageToSurfaceFilter::NoSurfaceSmoothing)
+      filter->SetPerformSurfaceSmoothing(false);
+    else
+      filter->SetPerformSurfaceSmoothing(true);
+
+    if (d->m_SurfaceDecimationType == mitk::NifTKImageToSurfaceFilter::NoDecimation)
+      filter->SetPerformSurfaceDecimation(false);
+    else
+      filter->SetPerformSurfaceDecimation(true);
+
+    filter->SetPerformSurfaceCleaning(d->m_PerformSurfaceCleaning);
+    filter->SetSurfaceCleaningThreshold(d->m_SurfaceCleaningThreshold);
+    filter->SetInputSmoothingIterations(d->m_InputSmoothingIterations);
+    filter->SetInputSmoothingRadius(d->m_InputSmoothingRadius);
+    filter->SetSurfaceSmoothingIterations(d->m_SurfaceSmoothingIterations);
+    filter->SetSurfaceSmoothingRadius(d->m_SurfaceSmoothingParameter);
+    filter->SetTargetReduction(d->m_TargetReduction);
+    filter->SetSamplingRatio(d->m_SamplingRatio);
+
+    try
+    {
+      filter->Update();
+    }
+    catch (std::exception& exc)
+    {
+    }
+
+    d->m_SurfaceNode->SetData(filter->GetOutput());
+  }
 
   int layer = 0;
 
-  d->referenceNode->GetIntProperty("layer", layer);
-  d->surfaceNode->SetIntProperty("layer", layer + 1);
-  d->surfaceNode->SetProperty("Surface", mitk::BoolProperty::New(true));
-  saveParameters();
+  d->m_ReferenceNode->GetIntProperty("layer", layer);
+  d->m_SurfaceNode->SetIntProperty("layer", layer + 1);
+  d->m_SurfaceNode->SetProperty("Surface", mitk::BoolProperty::New(true));
+  SaveParameters();
 
   RequestRenderWindowUpdate();
 
-  d->dirty = false;
-  m_Controls->btnApply->setEnabled(false);
+  d->m_Dirty = false;
+  m_Controls->btn_apply->setEnabled(false);
 
   QApplication::restoreOverrideCursor();
 }
 
-mitk::ImageToSurfaceFilter::Pointer SurfaceExtractorView::createImageToSurfaceFilter()
+void SurfaceExtractorView::SaveParameters()
 {
   Q_D(SurfaceExtractorView);
 
-  if (d->has3dOr4dGrayScaleImage->CheckNode(d->referenceNode))
-  {
-    mitk::ManualSegmentationToSurfaceFilter::Pointer filter = mitk::ManualSegmentationToSurfaceFilter::New();
-    filter->SetUseGaussianImageSmooth(d->gaussianSmooth);
-    filter->SetSmooth(d->gaussianSmooth);
-    filter->SetGaussianStandardDeviation(d->gaussianStdDev);
-    mitk::ImageToSurfaceFilter::Pointer f = filter.GetPointer();
-    return f;
-  }
-  else if (d->has3dOr4dLabelImage->CheckNode(d->referenceNode))
-  {
-    mitk::LabeledImageToSurfaceFilter::Pointer filter = mitk::LabeledImageToSurfaceFilter::New();
-    filter->SetGaussianStandardDeviation(d->gaussianStdDev);
-    filter->SetSmooth(d->gaussianSmooth);
-    mitk::ImageToSurfaceFilter::Pointer f = filter.GetPointer();
-    return f;
-  }
-  else
-  {
-    MITK_INFO << "SurfaceExtractorView::createImageToSurfaceFilter() unknown image type";
-    return 0;
-  }
+/*
+  d->m_SurfaceNode->SetBoolProperty(SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_NAME.c_str(), d->gaussianSmooth);
+  d->m_SurfaceNode->SetFloatProperty(SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME.c_str(), d->gaussianStdDev);
+  d->m_SurfaceNode->SetFloatProperty(SurfaceExtractorPreferencePage::THRESHOLD_NAME.c_str(), d->threshold);
+  d->m_SurfaceNode->SetFloatProperty(SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME.c_str(), d->targetReduction);
+  d->m_SurfaceNode->SetIntProperty(SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME.c_str(), d->maxNumberOfPolygons);
+*/
 }
 
-void SurfaceExtractorView::saveParameters()
+void SurfaceExtractorView::LoadParameters()
 {
   Q_D(SurfaceExtractorView);
-  d->surfaceNode->SetBoolProperty(SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_NAME.toStdString().c_str(), d->gaussianSmooth);
-  d->surfaceNode->SetFloatProperty(SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME.toStdString().c_str(), d->gaussianStdDev);
-  d->surfaceNode->SetFloatProperty(SurfaceExtractorPreferencePage::THRESHOLD_NAME.toStdString().c_str(), d->threshold);
-  d->surfaceNode->SetFloatProperty(SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME.toStdString().c_str(), d->targetReduction);
-  d->surfaceNode->SetIntProperty(SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME.toStdString().c_str(), d->maxNumberOfPolygons);
-}
-
-void SurfaceExtractorView::loadParameters()
-{
-  Q_D(SurfaceExtractorView);
-
+/*
   bool gaussianSmooth;
   float gaussianStdDev;
   float threshold;
   float targetReduction;
   int maxNumberOfPolygons;
 
-  d->surfaceNode->GetBoolProperty(SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_NAME.toStdString().c_str(), gaussianSmooth);
-  d->surfaceNode->GetFloatProperty(SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME.toStdString().c_str(), gaussianStdDev);
-  d->surfaceNode->GetFloatProperty(SurfaceExtractorPreferencePage::THRESHOLD_NAME.toStdString().c_str(), threshold);
-  d->surfaceNode->GetFloatProperty(SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME.toStdString().c_str(), targetReduction);
-  d->surfaceNode->GetIntProperty(SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME.toStdString().c_str(), maxNumberOfPolygons);
+  d->m_SurfaceNode->GetBoolProperty(SurfaceExtractorPreferencePage::GAUSSIAN_SMOOTH_NAME.c_str(), gaussianSmooth);
+  d->m_SurfaceNode->GetFloatProperty(SurfaceExtractorPreferencePage::GAUSSIAN_STDDEV_NAME.c_str(), gaussianStdDev);
+  d->m_SurfaceNode->GetFloatProperty(SurfaceExtractorPreferencePage::THRESHOLD_NAME.c_str(), threshold);
+  d->m_SurfaceNode->GetFloatProperty(SurfaceExtractorPreferencePage::TARGET_REDUCTION_NAME.c_str(), targetReduction);
+  d->m_SurfaceNode->GetIntProperty(SurfaceExtractorPreferencePage::MAX_NUMBER_OF_POLYGONS_NAME.c_str(), maxNumberOfPolygons);
 
   d->gaussianSmooth = gaussianSmooth;
   d->gaussianStdDev = gaussianStdDev;
   d->threshold = threshold;
   d->targetReduction = targetReduction;
   d->maxNumberOfPolygons = maxNumberOfPolygons;
+*/
 }
 
-void SurfaceExtractorView::on_cbxGaussianSmooth_toggled(bool checked)
+void SurfaceExtractorView::OnAdvancedFeaturesToggled(int state)
 {
-  m_Controls->spbGaussianStdDev->setEnabled(checked);
+  if (state != 2)
+    m_Controls->wgt_advancedControls->setHidden(true);
+  else
+    m_Controls->wgt_advancedControls->setHidden(false);
+}
+
+void SurfaceExtractorView::OnExtractionMethodChanged(int which)
+{
+  if (which == 1) //the user is running CMC33
+  {
+    m_Controls->dsbx_samplingRatio->setEnabled(true);
+
+    m_Controls->cmbx_surfaceSmoothMethod->setItemData(3, 33, Qt::UserRole - 1);
+    m_Controls->cmbx_surfaceSmoothMethod->setItemData(4, 33, Qt::UserRole - 1);
+    m_Controls->cmbx_surfaceSmoothMethod->setItemData(5, 33, Qt::UserRole - 1);
+  }
+  else
+  {
+    m_Controls->dsbx_samplingRatio->setEnabled(false);
+
+    m_Controls->cmbx_surfaceSmoothMethod->setItemData(3, 0, Qt::UserRole - 1);
+    m_Controls->cmbx_surfaceSmoothMethod->setItemData(4, 0, Qt::UserRole - 1);
+    m_Controls->cmbx_surfaceSmoothMethod->setItemData(5, 0, Qt::UserRole - 1);
+  }
+
 }

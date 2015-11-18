@@ -80,6 +80,10 @@ void VTKIterativeClosestPoint::SetTLSPercentage(unsigned int percentage)
   {
     throw std::runtime_error("SetTLSPercentage: percentage must be <= 100.");
   }
+  if (percentage == 0)
+  {
+    throw std::runtime_error("SetTLSPercentage: percentage must be >= 1.");
+  }
   m_TLSPercentage = percentage;
 }
 

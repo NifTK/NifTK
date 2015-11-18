@@ -19,8 +19,10 @@
 
 #include <mitkOpenCVPointTypes.h>
 #include <mitkOpenCVFileIOUtils.h>
+#include <mitkFileIOUtils.h>
 #include <niftkFileHelper.h>
 #include <niftkVideoToImagesCLP.h>
+#include <set>
 
 int main(int argc, char** argv)
 {
@@ -29,6 +31,24 @@ int main(int argc, char** argv)
 
   try
   {
+    // Early exit if main input directory not specified.
+    if (videoInputDirectory.size() == 0)
+    {
+      commandLine.getOutput()->usage(commandLine);
+      return returnStatus;
+    }
+
+    // Error if input directory does not exist.
+    if (!niftk::DirectoryExists(videoInputDirectory))
+    {
+      mitkThrow() << "Directory:" << videoInputDirectory << ", doesn't exist!";
+    }
+
+    // If user specifies a list of timeStamps, we should load that.
+    std::set<unsigned long long> setOfTimeStamps;
+    mitk::LoadTimeStampData(timeStamps, setOfTimeStamps);
+
+    // Now read video and frameMap.
     std::vector <std::string> videoFiles = niftk::FindVideoData(videoInputDirectory);
     std::vector <std::string> frameMapFiles = mitk::FindVideoFrameMapFiles(videoInputDirectory);
 
@@ -66,7 +86,6 @@ int main(int argc, char** argv)
       return returnStatus;
     }
 
-
     std::ifstream* fin = new std::ifstream(frameMapFiles[0].c_str());
 
     if ( (! capture) || (!fin) )
@@ -75,9 +94,10 @@ int main(int argc, char** argv)
       exit(1);
     }
     
-    unsigned int framecount = 0 ;
-    if ( framesToUse < 0 ) 
+    unsigned long framecount = 0 ;
+    if ( framesToUse < 0 || setOfTimeStamps.size() > 0)
     {
+      MITK_INFO << "Scanning whole file" << std::endl;
       framesToUse = std::numeric_limits<double>::infinity();
     }
 
@@ -87,15 +107,21 @@ int main(int argc, char** argv)
       try
       {
         frame = mitk::VideoFrame(capture, fin);
-        MITK_INFO << "Writing frame " << framecount;
+
       }
       catch (std::exception& e)
       {
         MITK_ERROR << "Caught exception:" << e.what();
         break;
       }
-      frame.WriteToFile(outputPrefix);
-      
+
+      if (   setOfTimeStamps.size() == 0 // user did not specify timestamps
+          || setOfTimeStamps.find(frame.GetTimeStamp()) != setOfTimeStamps.end() // user specified timestamps, and it matches.
+          )
+      {
+        MITK_INFO << "Writing frame " << framecount << ", timestamp=" << frame.GetTimeStamp() << std::endl;
+        frame.WriteToFile(outputPrefix);
+      }
       framecount ++;
     }
 

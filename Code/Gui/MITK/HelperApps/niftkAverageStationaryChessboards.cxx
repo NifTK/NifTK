@@ -226,7 +226,7 @@ int main(int argc, char** argv)
     }
 
     // Triangulate
-    std::vector <cv::Point3d> pointsIn3D = mitk::TriangulatePointPairsUsingGeometry(
+    std::vector <std::pair < cv::Point3d, double > > pointsIn3D = mitk::TriangulatePointPairsUsingGeometry(
         pointPairs,
         leftIntrinsic,
         rightIntrinsic,
@@ -242,9 +242,9 @@ int main(int argc, char** argv)
       for (unsigned int i = 0; i < pointsIn3D.size(); i++)
       {
         mitk::Point3D point;
-        point[0] = pointsIn3D[i].x;
-        point[1] = pointsIn3D[i].y;
-        point[2] = pointsIn3D[i].z;
+        point[0] = pointsIn3D[i].first.x;
+        point[1] = pointsIn3D[i].first.y;
+        point[2] = pointsIn3D[i].first.z;
         pointSet->InsertPoint(i, point);
       }
       mitk::IOUtil::Save(pointSet, outputPoints);
