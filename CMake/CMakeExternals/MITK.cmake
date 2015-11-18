@@ -115,6 +115,7 @@ if(NOT DEFINED MITK_DIR)
         -DITK_DIR:PATH=${ITK_DIR}                              # FindITK expects ITK_DIR
         -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
         -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
+        -DDCMTK_ROOT:PATH=${DCMTK_ROOT}                        # DCMTK_ROOT is used in MITKConfig.cmake
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
         -DOpenIGTLink_DIR:PATH=${OpenIGTLink_DIR}
         -DEigen_DIR:PATH=${Eigen_DIR}
