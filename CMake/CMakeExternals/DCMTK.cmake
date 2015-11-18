@@ -85,6 +85,7 @@ if(MITK_USE_DCMTK)
     )
 
     set(DCMTK_DIR ${proj_INSTALL})
+    set(DCMTK_ROOT ${proj_INSTALL})
 
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
     mitkFunctionInstallExternalCMakeProject(${proj})
