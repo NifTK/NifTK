@@ -21,7 +21,7 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-set(version "f927d792f3")
+set(version "660fd5ed30")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
@@ -257,6 +257,7 @@ if(NOT DEFINED MITK_DIR)
         -DITK_DIR:PATH=${ITK_DIR}                              # FindITK expects ITK_DIR
         -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
         -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
+        -DDCMTK_ROOT:PATH=${DCMTK_ROOT}                        # DCMTK_ROOT is used in MITKConfig.cmake
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
         -DOpenIGTLink_DIR:PATH=${OpenIGTLink_DIR}
         -DEigen_INCLUDE_DIR:PATH=${Eigen_INCLUDE_DIR}
