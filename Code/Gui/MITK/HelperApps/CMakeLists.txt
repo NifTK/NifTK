@@ -20,15 +20,6 @@ set(HELPER_APPS_REQUIRED_MODULES
   # Add modules that DO NOT depend on BUILD_IGI here.
 )
 if(BUILD_IGI)
-
-  ##########################################################
-  # mjc: Temporary? I can't find a way round including this.
-  #      I suppose we could add it at the top level, but 
-  #      the point of having it as a PackageDepends is so 
-  #      that it is not at the top level.... hmmm.
-  ##########################################################
-  include(${PROJECT_SOURCE_DIR}/CMake/PackageDepends/MITK_NiftyLink_Config.cmake)
-
   list(APPEND HELPER_APPS_REQUIRED_MODULES
     niftkCore
     niftkOpenCVUtils
@@ -60,30 +51,6 @@ if(BUILD_IGI)
     )
   endif()
 endif()
-
-########################################################
-# st: Not very nice, the following are dependencies of
-# niftkIGI but don't get pulled into the include path 
-# properly, so I've done them one by one 
-##########################################################
-include(${MITK_DIR}/MITKConfig.cmake)
-include(${MITK_DIR}/Modules/CppMicroServices/CppMicroServicesConfig.cmake)
-include(${MITK_DIR}/Utilities/mbilog/mbilogConfig.cmake)
-include(${CppUnit_DIR}/CppUnitConfig.cmake)
-include(${tinyxml_DIR}/tinyxmlConfig.cmake)
-
-list(APPEND HELPER_APP_INCLUDE_DIRECTORIES
-  ${MITK_INCLUDE_DIRS} 
-  ${MitkCore_INCLUDE_DIRS}
-  ${MitkLegacyIO_INCLUDE_DIRS}
-  ${MitkExt_INCLUDE_DIRS}
-  ${MitkTestingHelper_INCLUDE_DIRS}
-  ${CppMicroServices_INCLUDE_DIRS}
-  ${CppUnit_INCLUDE_DIRS}
-  ${mbilog_INCLUDE_DIRS}
-  ${tinyxml_INCLUDE_DIRS}
-  ${${PROJECT_NAME}_MODULES_CONF_DIR}
-)
 
 list(APPEND HELPER_APP_LINK_DIRECTORIES
 )
