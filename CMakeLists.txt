@@ -1001,6 +1001,14 @@ set(MITK_LEGACY_EXPORT_MACRO_NAME 0)
 # We need this later for a DCMTK workaround
 set(_dcmtk_dir_orig ${DCMTK_DIR})
 
+# Boost-cmake is a helper project that provides CMake files for Boost,
+# e.g. BoostConfig.cmake. We do not use Boost-cmake and do not provide
+# BoostConfig.cmake, therefore we have to disable Boost-cmake, explicitly.
+# Otherwise, if Boost is installed on the system with a valid
+# BoostConfig.cmake file then CMake will pick up Boost from there,
+# instead of where we installed it as an external project.
+set(Boost_NO_BOOST_CMAKE ON)
+
 # This property is populated at the top half of this file
 get_property(MITK_EXTERNAL_PROJECTS GLOBAL PROPERTY MITK_EXTERNAL_PROJECTS)
 foreach(ep ${MITK_EXTERNAL_PROJECTS})
@@ -1015,7 +1023,7 @@ foreach(ep ${MITK_EXTERNAL_PROJECTS})
       # Otherwise, existing Find<proj>.cmake files could fail.
       # (e.g. in the case of GLEW and the FindGLEW.cmake file shipped
       # with CMake).
-      find_package(${_package} QUIET CONFIG)
+      find_package(${_package} QUIET CONFIG NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH)
       string(TOUPPER "${_package}" _package_uc)
       if(NOT (${_package}_FOUND OR ${_package_uc}_FOUND))
         find_package(${_package} REQUIRED)
