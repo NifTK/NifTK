@@ -1115,6 +1115,8 @@ void CorrectDistortionInSingleImage(
 
   cvInitUndistortMap(&intrinsicParams, &distortionCoefficients, mapX, mapY);
   UndistortImageUsingDistortionMap(*mapX, *mapY, image);
+  cvReleaseImage(&mapX);
+  cvReleaseImage(&mapY);
 }
 
 
@@ -1505,15 +1507,15 @@ cv::Point3d  TriangulatePointPairUsingGeometry(
   std::vector < std::pair<cv::Point2d, cv::Point2d> > inputUndistortedPoints;
   inputUndistortedPoints.push_back(inputUndistortedPoint);
 
-  std::vector <cv::Point3d> returnVector = TriangulatePointPairsUsingGeometry(
+  std::vector <std::pair < cv::Point3d, double > > returnVector = TriangulatePointPairsUsingGeometry(
       inputUndistortedPoints, leftCameraIntrinsicParams, rightCameraIntrinsicParams,
       rightToLeftRotationMatrix, rightToLeftTranslationVector, 100.0);
 
-  return returnVector[0];
+  return returnVector[0].first;
 }
 
 //-----------------------------------------------------------------------------
-std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
+std::vector< std::pair < cv::Point3d, double > > TriangulatePointPairsUsingGeometry(
     const std::vector< std::pair<cv::Point2d, cv::Point2d> >& inputUndistortedPoints,
     const cv::Mat& leftCameraIntrinsicParams,
     const cv::Mat& rightCameraIntrinsicParams,
@@ -1523,7 +1525,7 @@ std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
     const bool& preserveVectorSize
     )
 {
-  std::vector< cv::Point3d > outputPoints;
+  std::vector< std::pair < cv::Point3d, double > > outputPoints;
   int numberOfPoints = inputUndistortedPoints.size();
   cv::Mat K1       = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K2       = cv::Mat(3, 3, CV_64FC1);
@@ -1667,7 +1669,7 @@ std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
 
     if ( ( distance < twiceTolerance ) && ( mitk::IsNotNaNorInf ( midPoint )) )
     {
-      outputPoints.push_back(midPoint);
+      outputPoints.push_back(std::pair < cv::Point3d, double> (midPoint, distance));
     }
     else 
     {
@@ -1677,7 +1679,7 @@ std::vector< cv::Point3d > TriangulatePointPairsUsingGeometry(
         midPoint.y = std::numeric_limits<double>::quiet_NaN();
         midPoint.z = std::numeric_limits<double>::quiet_NaN();
 
-        outputPoints.push_back(midPoint);
+        outputPoints.push_back(std::pair < cv::Point3d, double > (midPoint, distance));
       }
     }
   }
@@ -1979,7 +1981,7 @@ std::vector < mitk::WorldPoint > Triangulate (
   }
 
   bool preserveVectorSize = true;
-  std::vector < cv::Point3d > worldPoints_p = mitk::TriangulatePointPairsUsingGeometry(
+  std::vector < std::pair < cv::Point3d, double > > worldPoints_p = mitk::TriangulatePointPairsUsingGeometry(
     inputUndistortedPoints,
     leftIntrinsicMatrix,
     rightIntrinsicMatrix,
@@ -1992,7 +1994,7 @@ std::vector < mitk::WorldPoint > Triangulate (
 
   for ( unsigned int i = 0 ; i < worldPoints_p.size() ; i ++ ) 
   {
-    worldPoints.push_back(mitk::WorldPoint(worldPoints_p[i]));
+    worldPoints.push_back(mitk::WorldPoint(worldPoints_p[i].first));
   }  
 
   return worldPoints;

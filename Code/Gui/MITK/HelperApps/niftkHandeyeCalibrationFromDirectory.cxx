@@ -17,13 +17,18 @@
 
 #include <mitkHandeyeCalibrateFromDirectory.h>
 #include <niftkHandeyeCalibrationFromDirectoryCLP.h>
+#include <niftkArunLeastSquaresPointRegistration.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
+#include <mitkPointSet.h>
+#include <mitkIOUtil.h>
 
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
-  bool sortByDistance = !DontSortByDistance;
+  bool sortByDistance = !dontSortByDistance;
   try
   {
     mitk::Point2D pixelScales;
@@ -34,21 +39,56 @@ int main(int argc, char** argv)
     calibrator->SetInputDirectory(trackingInputDirectory);
     calibrator->SetOutputDirectory(outputDirectory);
     calibrator->SetTrackerIndex(trackerIndex);
-    calibrator->SetAbsTrackerTimingError(MaxTimingError);
-    calibrator->SetFramesToUse(FramesToUse);
+    calibrator->SetAbsTrackerTimingError(maxTimingError);
+    calibrator->SetFramesToUse(framesToUse);
+    calibrator->SetFramesToUseFactor(framesToUseFactor);
+    calibrator->SetStickToFramesToUse(stickToFramesToUse);
     calibrator->SetSortByDistance(sortByDistance);
-    calibrator->SetFlipTracking(FlipTracking);
-    calibrator->SetFlipExtrinsic(FlipExtrinsic);
+    calibrator->SetFlipTracking(flipTracking);
+    calibrator->SetFlipExtrinsic(flipExtrinsic);
     calibrator->SetSortByAngle(false);
     calibrator->SetPixelScaleFactor(pixelScales);
     calibrator->SetSwapVideoChannels(swapVideoChannels);
-    calibrator->SetNumberCornersWidth(NumberCornerWidth);
-    calibrator->SetNumberCornersHeight(NumberCornerHeight);
-    calibrator->SetSquareSizeInMillimetres(squareSizeInmm);
+    calibrator->SetNumberCornersWidth(numberCornerWidth);
+    calibrator->SetNumberCornersHeight(numberCornerHeight);
+    calibrator->SetSquareSizeInMillimetres(squareSizeInMM);
     calibrator->SetRandomise(randomise);
+
+    // If the user specified a chessboard (in tracker coordinates), we do direct registration method.
+    // This is only really for testing purposes. ToDo: Put code somewhere more sensible.
+    vtkSmartPointer<vtkMatrix4x4> chessboardToTracker = vtkSmartPointer<vtkMatrix4x4>::New();
+    chessboardToTracker->Identity();
+    if (chessboardPoints.size() > 0)
+    {
+      mitk::PointSet::Pointer chessboardPointsInTrackerCoordinates = mitk::IOUtil::LoadPointSet(chessboardPoints);
+      mitk::PointSet::Pointer chessboardPointsInModelCoordinates = mitk::PointSet::New();
+
+      // Assume for now, we are doing 4 corners.
+      mitk::Point3D p;
+      p[0] = 0;
+      p[1] = 0;
+      p[2] = 0;
+      chessboardPointsInModelCoordinates->InsertPoint(0, p);
+
+      p[0] = (numberCornerWidth-1)*squareSizeInMM;
+      chessboardPointsInModelCoordinates->InsertPoint(1, p);
+
+      p[1] = (numberCornerHeight-1)*squareSizeInMM;
+      chessboardPointsInModelCoordinates->InsertPoint(2, p);
+
+      p[0] = 0;
+      chessboardPointsInModelCoordinates->InsertPoint(3, p);
+
+      // Register model points to tracker coordinates
+      double fiducialRegistrationError = niftk::PointBasedRegistrationUsingSVD(chessboardPointsInTrackerCoordinates, chessboardPointsInModelCoordinates, *chessboardToTracker);
+      MITK_INFO << "Registered model to tracker with FRE=" << fiducialRegistrationError << std::endl;
+
+      // If successful, pass to calibrator.
+      calibrator->SetChessBoardToTracker(chessboardToTracker);
+    }
+
     calibrator->InitialiseOutputDirectory();
     calibrator->InitialiseTracking();
-
 
     if ( existingIntrinsicsDirectory != "" )
     {

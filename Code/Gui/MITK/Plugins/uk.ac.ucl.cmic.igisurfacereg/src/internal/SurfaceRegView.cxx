@@ -261,6 +261,10 @@ void SurfaceRegView::RetrievePreferenceValues()
         niftk::ICPBasedRegistrationConstants::DEFAULT_MAX_ITERATIONS );
     m_MaxPoints = prefs->GetInt(SurfaceRegViewPreferencePage::MAXIMUM_NUMBER_OF_POINTS, 
         niftk::ICPBasedRegistrationConstants::DEFAULT_MAX_POINTS);
+    m_TLSITerations = prefs->GetInt(SurfaceRegViewPreferencePage::TLS_ITERATIONS,
+        niftk::ICPBasedRegistrationConstants::DEFAULT_TLS_ITERATIONS);
+    m_TLSPercentage = prefs->GetInt(SurfaceRegViewPreferencePage::TLS_PERCENTAGE,
+        niftk::ICPBasedRegistrationConstants::DEFAULT_TLS_PERCENTAGE);
   }
 }
 
@@ -302,6 +306,8 @@ void SurfaceRegView::OnCalculateButtonPressed()
   }
   registration->SetMaximumNumberOfLandmarkPointsToUse(m_MaxPoints);
   registration->SetMaximumIterations(m_MaxIterations);
+  registration->SetTLSIterations(m_TLSITerations);
+  registration->SetTLSPercentage(m_TLSPercentage);
   registration->Update(fixednode, movingnode, *m_Matrix);
 
   for (int i = 0; i < 4; i++)

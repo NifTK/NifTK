@@ -125,6 +125,7 @@ endforeach()
 if(SlicerExecutionModel_FOUND)
   set(SLICER_HELPER_APPS
     # Add Slicer apps that DO NOT depend on BUILD_IGI here.
+    niftkPointSetStatistics
   )
 
   if(BUILD_IGI)
@@ -146,6 +147,7 @@ if(SlicerExecutionModel_FOUND)
       niftkSplitVideo
       niftkFindAndTriangulateCrossHair
       niftkVideoToImages
+      niftkVideoToSurfaces
       niftkUltrasoundPinCalibrationClicker
       niftkUltrasoundPinCalibration
       niftkVideoHandEyeByCrossCalibration
@@ -208,9 +210,11 @@ if(SlicerExecutionModel_FOUND)
     )
   endforeach()
 
-  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    # Suppress warning because of a bug in the Boost gil library.
-    set_target_properties(niftkImageFeatureMatching PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
+  if(BUILD_IGI)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      # Suppress warning because of a bug in the Boost gil library.
+      set_target_properties(niftkImageFeatureMatching PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
+    endif()
   endif()
 
 endif()

@@ -31,15 +31,15 @@ int main(int argc, char** argv)
     return returnStatus;
   }
 
-
   try
   {
     mitk::MakeMaskImagesFromStereoVideo::Pointer projector = mitk::MakeMaskImagesFromStereoVideo::New();
     projector->SetAllowableTimingError(maxTimingError * 1e6);
     projector->SetFrequency(frequency*2);
     projector->SetAskOverWrite(queryOverWrite);
-    
+    projector->SetTimeStampsFile(timeStamps);
     projector->Initialise(trackingInputDirectory);
+
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
     matcher->Initialise(trackingInputDirectory);
     if ( videoLag != 0 ) 
@@ -60,9 +60,9 @@ int main(int argc, char** argv)
       return -1;
     }
     matcher->SetWriteTimingErrors(WriteTimingErrors);
+
     projector->SetTrackerIndex(trackerIndex);
     projector->SetReferenceIndex(referenceIndex);
-
     projector->Project(matcher);
 
     returnStatus = EXIT_SUCCESS;

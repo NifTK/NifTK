@@ -157,4 +157,30 @@ std::vector<mitk::PointSet::Pointer> LoadPointSetsFromDirectory(const std::strin
   return pointSets;
 }
 
+
+//-----------------------------------------------------------------------------
+void LoadTimeStampData(const std::string& fileName, std::set<unsigned long long>& outputTimeStamps)
+{
+  if (fileName.size() > 0)
+  {
+    if (!niftk::FileExists(fileName))
+    {
+      mitkThrow() << "File:" << fileName << ", doesn't exist";
+    }
+    std::fstream fs;
+    fs.open(fileName, std::fstream::in);
+    if (!fs.is_open())
+    {
+      mitkThrow() << "Failed to open:" << fileName;
+    }
+    while(fs.good())
+    {
+      unsigned long long timeInNanoseconds;
+      fs >> timeInNanoseconds;
+      outputTimeStamps.insert(timeInNanoseconds);
+    }
+    MITK_DEBUG << "Read " << outputTimeStamps.size() << " timestamps." << std::endl;
+  }
+}
+
 } // end namespace

@@ -270,7 +270,7 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
         left2right_translation.at<float>(0,1) = stereoRig->GetValue()[1][3];
         left2right_translation.at<float>(0,2) = stereoRig->GetValue()[2][3];
 
-        std::vector< cv::Point3d > outputOpenCVPoints;
+        std::vector< std::pair < cv::Point3d, double > > outputOpenCVPoints;
         std::vector< std::pair<cv::Point2d, cv::Point2d> > inputUndistortedPoints;
 #ifdef _USE_PCL
         std::vector<cv::Point3f>    pointcolours;
@@ -326,7 +326,7 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
         assert(outputOpenCVPoints.size() == inputUndistortedPoints.size());
         for (unsigned int i = 0; i < outputOpenCVPoints.size(); i++)
         {
-          p = outputOpenCVPoints[i];
+          p = outputOpenCVPoints[i].first;
           double depth = std::sqrt((p.x * p.x) + (p.y * p.y) + (p.z * p.z));
                                 // FIXME: extra check temporarily disabled
           if (depth >= minDepth)// && p.z > minDepth)

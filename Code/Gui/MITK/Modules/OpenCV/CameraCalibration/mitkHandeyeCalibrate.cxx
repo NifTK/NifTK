@@ -59,6 +59,32 @@ void HandeyeCalibrate::SetOutputDirectory(const std::string& outputDir)
 
 
 //-----------------------------------------------------------------------------
+void HandeyeCalibrate::WriteHandEye()
+{
+  std::string outputDirectory = m_OutputDirectory;
+  if (outputDirectory.length() != 0)
+  {
+    outputDirectory = outputDirectory.append("/");
+  }
+
+  std::ofstream handeyeStream;
+  handeyeStream.open((outputDirectory + "calib.left.handeye.txt").c_str());
+  if ( handeyeStream )
+  {
+    for ( int i = 0 ; i < 4 ; i ++ )
+    {
+      for ( int j = 0 ; j < 4 ; j ++ )
+      {
+        handeyeStream << m_CameraToMarker.at<double>(i,j) << " ";
+      }
+      handeyeStream << std::endl;
+    }
+  }
+  handeyeStream.close();
+}
+
+
+//-----------------------------------------------------------------------------
 std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileDirectory,
   const std::string& ExtrinsicFileDirectoryOrFile,
   const std::string GroundTruthSolution)
@@ -151,20 +177,8 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   std::cout << "Translational Residual = " << residuals [1] << std::endl;
   std::cout << "Output directory = " << outputDirectory << std::endl;
   
-  std::ofstream handeyeStream;
-  handeyeStream.open((outputDirectory + "calib.left.handeye.txt").c_str());
-  if ( handeyeStream ) 
-  {
-    for ( int i = 0 ; i < 4 ; i ++ ) 
-    {
-      for ( int j = 0 ; j < 4 ; j ++ )
-      {
-        handeyeStream << m_CameraToMarker.at<double>(i,j) << " ";
-      }
-      handeyeStream << std::endl;
-    }
-  }
-  handeyeStream.close();
+  this->WriteHandEye();
+
   if ( m_DoGridToWorld ) 
   {
     m_GridToWorld = gridToWorld;

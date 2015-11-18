@@ -23,6 +23,7 @@
 #include <cv.h>
 #include <highgui.h>
 #include "mitkVideoTrackerMatching.h"
+#include <set>
 
 namespace mitk {
 
@@ -65,6 +66,7 @@ public:
    */
   void  SetMatcherCameraToTracker(mitk::VideoTrackerMatching::Pointer matcher);
 
+  itkSetStringMacro ( TimeStampsFile);
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( AllowableTimingError, long long);
@@ -87,7 +89,8 @@ protected:
 private:
   std::string                   m_VideoIn; //the video in file
   std::string                   m_Directory; //the directory containing the data
-
+  std::string                   m_TimeStampsFile;
+  std::set<unsigned long long>  m_TimeStampsSet;
   int                           m_TrackerIndex; //the tracker index to use for frame matching
   int                           m_ReferenceIndex; //the reference index to use for frame matching, not used by default
  

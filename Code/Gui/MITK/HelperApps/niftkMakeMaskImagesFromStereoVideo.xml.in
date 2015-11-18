@@ -67,20 +67,28 @@
     </boolean>
 
     <integer>
-	<name>trackerIndex</name>
-	<longflag>trackerIndex</longflag>
-	<description>The tracker index to use</description>
-	<label>The tracker index to use</label>
-	<default>0</default>
+      <name>trackerIndex</name>
+      <longflag>trackerIndex</longflag>
+      <description>The tracker index to use</description>
+      <label>The tracker index to use</label>
+      <default>0</default>
     </integer>
 
     <integer>
-	<name>referenceIndex</name>
-	<longflag>referenceIndex</longflag>
-	<description>The reference index to use</description>
-	<label>The reference index to use</label>
-	<default>-1</default>
+      <name>referenceIndex</name>
+      <longflag>referenceIndex</longflag>
+      <description>The reference index to use</description>
+      <label>The reference index to use</label>
+      <default>-1</default>
     </integer>
+
+    <file>
+      <name>timeStamps</name>
+      <longflag>timeStamps</longflag>
+      <description>A file of timestamps to pick.</description>
+      <label>Timestamps</label>
+      <channel>input</channel>
+    </file>
 
   </parameters>
   

@@ -658,6 +658,14 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT unsigned int RemoveOutliers ( std::vector <
   const double& yLow, const double& yHigh,
   const double& zLow, const double& zHigh);
 
+/** 
+ * \brief Removes points outside the passed limits
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT unsigned int RemoveOutliers ( std::vector <std::pair < cv::Point3d, double > >& points,
+  const double& xLow, const double& xHigh,
+  const double& yLow, const double& yHigh,
+  const double& zLow, const double& zHigh);
+
 /**
  * \brief Decomposes a rigid body matrix into Rodrigues Rotations and Translations.
  */

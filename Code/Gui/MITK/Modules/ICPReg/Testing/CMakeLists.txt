@@ -18,7 +18,7 @@ mitk_use_modules(TARGET ${TESTDRIVER}
   MODULES niftkVTK
 )
 
-mitkAddCustomModuleTest(SLS-mitkSurfaceBasedRegistrationTest_pointset niftkSurfaceBasedRegistrationTest ${NIFTK_DATA_DIR}/Input/CylinderAxes_points.mps ${NIFTK_DATA_DIR}/Input/CylinderAxes.vtp)
-mitkAddCustomModuleTest(SLS-mitkSurfaceBasedRegistrationTest_surface niftkSurfaceBasedRegistrationTest ${NIFTK_DATA_DIR}/Input/CylinderAxes_points.vtk ${NIFTK_DATA_DIR}/Input/CylinderAxes.vtp)
-mitkAddCustomModuleTest(SLS-mitkSurfaceBasedRegistrationTest_realdata niftkSurfaceBasedRegistrationTestRealData ${NIFTK_DATA_DIR}/Input/stereo_matching_output.mps ${NIFTK_DATA_DIR}/Input/small_liver_phantom_to_points.vtk 20 200)
+mitkAddCustomModuleTest(SLS-mitkICPRegistrationTest_pointset niftkICPBasedRegistrationTest ${NIFTK_DATA_DIR}/Input/CylinderAxes_points.mps ${NIFTK_DATA_DIR}/Input/CylinderAxes.vtp)
+mitkAddCustomModuleTest(SLS-mitkICPRegistrationTest_surface niftkICPBasedRegistrationTest ${NIFTK_DATA_DIR}/Input/CylinderAxes_points.vtk ${NIFTK_DATA_DIR}/Input/CylinderAxes.vtp)
+mitkAddCustomModuleTest(SLS-mitkICPRegistrationTest_realdata niftkICPBasedRegistrationTestRealData ${NIFTK_DATA_DIR}/Input/stereo_matching_output.mps ${NIFTK_DATA_DIR}/Input/small_liver_phantom_to_points.vtk 20 200)
 

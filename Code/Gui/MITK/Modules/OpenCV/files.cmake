@@ -31,6 +31,7 @@ set(CPP_FILES
   VideoTrackerMatching/mitkTwoTrackerMatching.cxx
   VideoTrackerMatching/mitkTrackerAnalysis.cxx
   VideoTrackerMatching/mitkTwoTrackerAnalysis.cxx
+  VideoTrackerMatching/mitkVideoToSurface.cxx
   CameraCalibration/mitkCameraCalibrationFacade.cxx
   CameraCalibration/mitkCameraCalibrationFromDirectory.cxx
   CameraCalibration/mitkStereoCameraCalibration.cxx
@@ -49,6 +50,8 @@ set(CPP_FILES
   UltrasoundCalibration/mitkVideoHandEyeCalibration.cxx
   UltrasoundCalibration/mitkUltrasoundTransformAndImageMerger.cxx
   PivotCalibration/mitkPivotCalibration.cxx
+  SurfRecon/niftkSequentialCpuQds.cxx
+  SurfRecon/niftkQDSCommon.cxx
 )
 
 if(OPENCV_WITH_NONFREE)
