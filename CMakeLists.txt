@@ -998,9 +998,6 @@ set(MITK_MODULE_NAME_PREFIX "niftk")
 set(MITK_MODULE_NAME_DEFAULTS_TO_DIRECTORY_NAME 1)
 set(MITK_LEGACY_EXPORT_MACRO_NAME 0)
 
-# We need this later for a DCMTK workaround
-set(_dcmtk_dir_orig ${DCMTK_DIR})
-
 # Boost-cmake is a helper project that provides CMake files for Boost,
 # e.g. BoostConfig.cmake. We do not use Boost-cmake and do not provide
 # BoostConfig.cmake, therefore we have to disable Boost-cmake, explicitly.
@@ -1040,21 +1037,6 @@ set(CMAKE_MODULE_PATH
   ${MITK_CMAKE_DIR}
   ${CMAKE_MODULE_PATH}
   )
-
-set(DCMTK_DIR ${_dcmtk_dir_orig})
-if(MITK_USE_DCMTK)
-  # Due to the preferred CONFIG mode in find_package calls above,
-  # the DCMTKConfig.cmake file is read, which does not provide useful
-  # package information. We explictly need MODULE mode to find DCMTK.
-#  if(${_dcmtk_dir_orig} MATCHES "${MITK_EXTERNAL_PROJECT_PREFIX}.*")
-#    # Help our FindDCMTK.cmake script find our super-build DCMTK
-#    set(DCMTK_DIR ${MITK_EXTERNAL_PROJECT_PREFIX})
-#  else()
-    # Use the original value
-    set(DCMTK_DIR ${_dcmtk_dir_orig})
-#  endif()
-  find_package(DCMTK REQUIRED MODULE)
-endif()
 
 ######################################################################
 # Check each GUI application to set up MACOSX_BUNDLE_NAMES
