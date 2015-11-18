@@ -12,72 +12,45 @@
 #
 #============================================================================*/
 
-set(HELPER_APP_INCLUDE_DIRECTORIES "")
-set(HELPER_APP_LINK_DIRECTORIES "")
-set(HELPER_APP_LIBRARIES "")
-
-set(HELPER_APPS_REQUIRED_MODULES
-  # Add modules that DO NOT depend on BUILD_IGI here.
-)
-if(BUILD_IGI)
-  list(APPEND HELPER_APPS_REQUIRED_MODULES
-    niftkCore
-    niftkOpenCVUtils
-    niftkOpenCV 
-    niftkIGI
-    niftkIGIGui
-    niftkICPReg
-    niftkSurfRecon
-    niftkPointReg
-  )
-endif()
-
-if(BUILD_PCL)
-  list(APPEND HELPER_APPS_REQUIRED_MODULES
-    niftkPCL
-  )
-endif()
-
 set(HELPER_APPS
   # Add apps that DO NOT depend on BUILD_IGI here.
 )
+
 if(BUILD_IGI)
   set(HELPER_APPS
     ${HELPER_APPS}
   )
-  if(BUILD_PCL)
-    set(HELPER_APPS
-      ${HELPER_APPS}
-    )
-  endif()
 endif()
 
-list(APPEND HELPER_APP_LINK_DIRECTORIES
-)
+if(BUILD_PCL)
+  set(HELPER_APPS
+    ${HELPER_APPS}
+  )
+endif()
+
+set(HELPER_APP_LIBRARIES "")
 
 list(APPEND HELPER_APP_LIBRARIES
   niftkcommon
-  niftkOpenCVUtils
-  niftkOpenCV
-  niftkIGIGui
-  niftkPointReg
-  niftkSurfRecon
-  niftkICPReg
   MitkLegacyIO
 )
+
+if(BUILD_IGI)
+  list(APPEND HELPER_APP_LIBRARIES
+    niftkOpenCVUtils
+    niftkOpenCV
+    niftkIGIGui
+    niftkPointReg
+    niftkSurfRecon
+    niftkICPReg
+  )
+endif()
 
 if(BUILD_PCL)
   list(APPEND HELPER_APP_LIBRARIES
     niftkPCL
   )
 endif()
-
-list(REMOVE_DUPLICATES HELPER_APP_INCLUDE_DIRECTORIES)
-list(REMOVE_DUPLICATES HELPER_APP_LINK_DIRECTORIES)
-list(REMOVE_DUPLICATES HELPER_APP_LIBRARIES)
-
-include_directories(${HELPER_APP_INCLUDE_DIRECTORIES})
-link_directories(${HELPER_APP_LINK_DIRECTORIES})
 
 # Then foreach app, we just build against libraries (modules).
 foreach(APP ${HELPER_APPS})
