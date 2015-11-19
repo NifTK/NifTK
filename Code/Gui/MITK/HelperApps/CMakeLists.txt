@@ -133,6 +133,7 @@ if(SlicerExecutionModel_FOUND)
   set(SLICER_HELPER_APP_LIBRARIES
     ${HELPER_APP_LIBRARIES}
     ${Boost_LIBRARIES}
+    MitkSegmentation               # needed by niftkPointSetStatistics
   )
 
   if(BUILD_IGI)
