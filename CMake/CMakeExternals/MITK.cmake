@@ -63,7 +63,7 @@ if(NOT DEFINED MITK_DIR)
     set(_enabled_plugins "")
 
     # Common requirements for GUI applications:
-    if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI)
+    if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI OR NIFTK_Apps/NiftyMIDAS)
 
       list(APPEND _enabled_modules
         Core                    # needed by niftkCore
@@ -151,6 +151,19 @@ if(NOT DEFINED MITK_DIR)
         org.mitk.gui.qt.aicpregistration
       )
 
+    endif()
+
+    # Additionally required for NiftyMIDAS:
+    if(NIFTK_Apps/NiftyMIDAS)
+
+      list(APPEND _enabled_modules
+        SegmentationUI          # needed by niftkMIDASGui
+      )
+
+      list(APPEND _enabled_plugins
+        org.mitk.gui.qt.cmdlinemodules
+        org.mitk.gui.qt.measurementtoolbox
+      )
     endif()
 
     if(BUILD_VL)
