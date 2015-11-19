@@ -105,7 +105,6 @@ vtkLookupTable* QmitkLookupTableProviderServiceImpl
 
   vtkLookupTable *vtkLUT = vtkLookupTable::New();
   vtkLUT->DeepCopy(dynamic_cast<vtkScalarsToColors*>(const_cast<vtkLookupTable*>(lutContainer->GetLookupTable())));
-  vtkLUT->SetNanColor((const_cast<vtkLookupTable*>(lutContainer->GetLookupTable()))->GetNanColor()); // because the nan color is not automatically copied over
 
   if (vtkLUT->GetNumberOfColors() == 0)
   {

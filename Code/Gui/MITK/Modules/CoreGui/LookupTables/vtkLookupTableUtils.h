@@ -31,7 +31,6 @@
    * Basic label typedefs
    */
   typedef std::pair<int, std::string> LabelType;
-  
   typedef std::vector<LabelType> LabelsListType;  
   typedef std::vector< QColor> ColorListType;
   
@@ -49,7 +48,7 @@
    * \brief Resize the LookupTable while retaining all of the previously set values.
    * Newly added values are assigned the nan color.
    */
-  NIFTKCOREGUI_EXPORT vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double* newRange);
+  NIFTKCOREGUI_EXPORT vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double newMaximum);
 
   NIFTKCOREGUI_EXPORT vtkLookupTable* CreateEmptyLookupTable(QColor lowColor = QColor(0, 0, 0, 0), QColor highColor = QColor(0, 0, 0, 0));
 #endif // vtkLookupTableUtils_h

@@ -1004,6 +1004,7 @@ void ImageLookupTablesView::UpdateLabelMapTable()
   {
     // set value
     int value = labels.at(i).first;
+    int vtkInd = value - vtkLUT->GetRange()[0] + 1;
 
     QTableWidgetItem * newValueItem = new QTableWidgetItem();
     newValueItem->setText(QString::number(value));
@@ -1021,6 +1022,7 @@ void ImageLookupTablesView::UpdateLabelMapTable()
     
     double rgb[3];
     vtkLUT->GetColor(value, rgb);
+
     QColor currColor(255 * rgb[0], 255 * rgb[1], 255 * rgb[2]);
 
     btnColor->setStyleSheet(QString("background-color:rgb(%1,%2, %3)")
@@ -1074,18 +1076,19 @@ void ImageLookupTablesView::OnAddLabelButtonPressed()
   bool en = m_Controls->widget_LabelTable->blockSignals(true);
     
   // get the range
+
   double* range = oldLUT->GetRange();
   QString newName(" ");
 
   int newValue = range[1];
+
   QmitkLookupTableContainer::LabelType newLabel = std::make_pair(newValue,newName);
   labels.push_back(newLabel);
   labelProperty->SetLabels(labels);
 
   // increment the range by 1
-  range[1]= newValue + 1;
   vtkSmartPointer<vtkLookupTable> newLUT;
-  newLUT.TakeReference(ResizeLookupTable(oldLUT,range));
+  newLUT.TakeReference(ResizeLookupTable(oldLUT,newValue+1));
   labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
 
   UpdateLabelMapTable();

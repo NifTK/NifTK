@@ -22,6 +22,8 @@
 
 #include <vtkSmartPointer.h>
 #include <vtkLookupTable.h>
+#include <vtkIntArray.h>
+#include <vtkStringArray.h>
 
 #include <sstream>
 #include <iostream>
@@ -184,17 +186,12 @@ QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
   MITK_DEBUG << "GetLookupTableContainer():labels.size()=" << m_Labels.size();
 
   // get the size of vtkLUT from the range of values
-  int min = m_Labels.at(0).first;
-  int max = min;
+  int max = m_Labels.at(0).first;
 
   for (unsigned int i = 1; i < m_Labels.size(); i++)
   {
     int val = m_Labels.at(i).first;
-    if(val < min)
-    {
-      min = val;
-    }
-    else if (val > max)
+    if (val > max)
     {
       max = val;
     }
@@ -215,26 +212,35 @@ QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
    * Number of table values: to map values above/below range to
    * the default color, define table value above/below label range.
    */
-  int numberOfValues = (max - min) + 2;
-  lookupTable->SetNumberOfTableValues( numberOfValues ); 
-  lookupTable->SetTableRange(min - 1, max + 1);
+  int numberOfValues = max + 2;
+  lookupTable->SetNumberOfTableValues(numberOfValues); 
+  lookupTable->SetTableRange(0, max);
   lookupTable->SetNanColor(0, 0, 0, 0);
 
+  lookupTable->SetIndexedLookup(true);  
   lookupTable->Build();
+
+  vtkSmartPointer<vtkIntArray> annotationValueArray = vtkIntArray::New();
+  vtkSmartPointer<vtkStringArray> annotationNameArray = vtkStringArray::New();
 
   // iterate and assign each color value
   for (unsigned int i = 0; i < m_Colors.size(); i++)
   {
-    int value = m_Labels.at(i).first;
-    int vtkInd = value - min + 1;
-
+    int vtkInd = m_Labels.at(i).first;
+    std::string name = m_Labels.at(i).second.toStdString();
+    
     double r = m_Colors.at(i).redF();
     double g = m_Colors.at(i).greenF();
     double b = m_Colors.at(i).blueF();
     double a = m_Colors.at(i).alphaF();
     
     lookupTable->SetTableValue(vtkInd, r, g, b, a);
+
+    annotationValueArray->InsertValue(vtkInd, vtkInd);
+    annotationNameArray->InsertValue(vtkInd, name);
   }
+
+  lookupTable->SetAnnotations(annotationValueArray, annotationNameArray);
 
   // place into container
   QmitkLookupTableContainer* lookupTableContainer = new QmitkLookupTableContainer(lookupTable, m_Labels);
