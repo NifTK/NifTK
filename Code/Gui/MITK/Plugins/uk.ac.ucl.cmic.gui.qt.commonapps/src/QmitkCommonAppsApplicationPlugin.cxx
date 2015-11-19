@@ -584,6 +584,19 @@ void QmitkCommonAppsApplicationPlugin::RegisterInterpolationProperty(
       int imageResliceInterpolation =  prefNode->GetInt(QmitkCommonAppsApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 2);
       int imageTextureInterpolation =  prefNode->GetInt(QmitkCommonAppsApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION, 2);
 
+      mitk::BaseProperty::Pointer mitkLUT = node->GetProperty("LookupTable");
+      if (mitkLUT.IsNotNull())
+      {
+        mitk::LabeledLookupTableProperty::Pointer labelProperty 
+          = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+
+        if (labelProperty.IsNotNull() && labelProperty->GetIsScaled())
+        {
+          imageResliceInterpolation = prefNode->GetInt(QmitkCommonAppsApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
+          imageTextureInterpolation = prefNode->GetInt(QmitkCommonAppsApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
+        }
+      }
+
       if (imageTextureInterpolation == 0)
       {
         node->SetProperty("texture interpolation", mitk::BoolProperty::New(false));
