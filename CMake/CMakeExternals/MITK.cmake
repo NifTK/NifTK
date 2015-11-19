@@ -21,7 +21,7 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-set(version "f927d792f3")
+set(version "660fd5ed30")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
@@ -63,7 +63,7 @@ if(NOT DEFINED MITK_DIR)
     set(_enabled_plugins "")
 
     # Common requirements for GUI applications:
-    if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI)
+    if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI OR NIFTK_Apps/NiftyMIDAS)
 
       list(APPEND _enabled_modules
         Core                    # needed by niftkCore
@@ -151,6 +151,19 @@ if(NOT DEFINED MITK_DIR)
         org.mitk.gui.qt.aicpregistration
       )
 
+    endif()
+
+    # Additionally required for NiftyMIDAS:
+    if(NIFTK_Apps/NiftyMIDAS)
+
+      list(APPEND _enabled_modules
+        SegmentationUI          # needed by niftkMIDASGui
+      )
+
+      list(APPEND _enabled_plugins
+        org.mitk.gui.qt.cmdlinemodules
+        org.mitk.gui.qt.measurementtoolbox
+      )
     endif()
 
     if(BUILD_VL)
@@ -257,6 +270,7 @@ if(NOT DEFINED MITK_DIR)
         -DITK_DIR:PATH=${ITK_DIR}                              # FindITK expects ITK_DIR
         -DCTK_DIR:PATH=${CTK_DIR}                              # FindCTK expects CTK_DIR
         -DDCMTK_DIR:PATH=${DCMTK_DIR}                          # FindDCMTK expects DCMTK_DIR
+        -DDCMTK_ROOT:PATH=${DCMTK_ROOT}                        # DCMTK_ROOT is used in MITKConfig.cmake
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
         -DOpenIGTLink_DIR:PATH=${OpenIGTLink_DIR}
         -DEigen_INCLUDE_DIR:PATH=${Eigen_INCLUDE_DIR}
