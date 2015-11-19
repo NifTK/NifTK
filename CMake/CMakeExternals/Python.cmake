@@ -248,6 +248,7 @@ ${PYTHON_EXECUTABLE} -m compileall
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
     message("SuperBuild receiving Python from ${Python_DIR}")
   endif()
-else()
+elseif(MITK_USE_Python AND MITK_USE_SYSTEM_PYTHON)
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+  message("SuperBuild using system Python") 
 endif()
