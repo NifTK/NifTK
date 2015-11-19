@@ -500,7 +500,7 @@ void mitk::OclTriangleSorter::CopyAndUpdateIndices(cl_mem input, cl_mem output, 
 
   int workgroupSize = 128;
   size_t global_128[1] = {ToMultipleOf(size, workgroupSize)};
-  size_t local_128[1] = {workgroupSize};
+  size_t local_128[1] = {static_cast<size_t>(workgroupSize)};
 
   clStatus  = clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_mem), (const void*)&input);
   clStatus |= clSetKernelArg(m_ckCopyAndUpdateIndices, a++, sizeof(cl_mem), (const void*)&output);
@@ -524,7 +524,7 @@ bool mitk::OclTriangleSorter::CopyIndicesOnly(cl_mem input, cl_mem output, cl_ui
 
   int workgroupSize = 128;
   size_t global_128[1] = {ToMultipleOf(size, workgroupSize)};
-  size_t local_128[1] = {workgroupSize};
+  size_t local_128[1] = {static_cast<size_t>(workgroupSize)};
 
   clStatus  = clSetKernelArg(m_ckCopyIndicesOnly, a++, sizeof(cl_mem), (const void*)&input);
   if (clStatus)
@@ -567,7 +567,7 @@ void mitk::OclTriangleSorter::CopyIndicesWithDist(cl_mem input, cl_mem output, c
 
   int workgroupSize = 128;
   size_t global_128[1] = {ToMultipleOf(size, workgroupSize)};
-  size_t local_128[1] = {workgroupSize};
+  size_t local_128[1] = {static_cast<size_t>(workgroupSize)};
 
   clStatus  = clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_mem), (const void*)&input);
   clStatus |= clSetKernelArg(m_ckCopyIndicesWithDist, a++, sizeof(cl_mem), (const void*)&output);
@@ -668,7 +668,7 @@ bool mitk::OclTriangleSorter::ComputeTriangleDistances(
 
   int workgroupSize = 128;
   size_t global_128[1] = {ToMultipleOf(numOfTriangles, workgroupSize)};
-  size_t local_128[1] = {workgroupSize};
+  size_t local_128[1] = {static_cast<size_t>(workgroupSize)};
 
   clStatus  = clSetKernelArg(m_ckComputeTriangleDistances, a++, sizeof(cl_mem),  (const void*)&m_IndexBufferWithDist);
   if (clStatus)
@@ -815,7 +815,7 @@ void mitk::OclTriangleSorter::LaunchBitonicSort(cl_mem bfKeyVal, cl_uint _datase
       
       clStatus |= clSetKernelArg(m_BitonicSortKernels[kid], pId++, sizeof(unsigned int), (const void*)&_datasetSize);
 
-      size_t globalWs[1] = {nThreads};
+      size_t globalWs[1] = {static_cast<size_t>(nThreads)};
       size_t localWs[1] = {wg};
       clStatus |= clEnqueueNDRangeKernel(m_CommandQue, m_BitonicSortKernels[kid], 1, 0, globalWs, localWs, 0, NULL, NULL);
 
@@ -952,7 +952,7 @@ bool mitk::OclTriangleSorter::RadixLocal(cl_uint datasetSize, cl_mem data, cl_me
 
   unsigned int Ndiv = roundUpDiv(datasetSize, 4); // Each work item handle 4 entries
   size_t global_128[1] = {ToMultipleOf(Ndiv, workgroupSize)};
-  size_t local_128[1] = {workgroupSize};
+  size_t local_128[1] = {static_cast<size_t>(workgroupSize)};
 
   clStatus  = clSetKernelArg(m_ckRadixLocalSort, a++, sizeof(cl_mem), (const void*)&data);
   if (clStatus)
