@@ -119,6 +119,5 @@ if( MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON )
   endif()
 else()
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-  message("SuperBuild assuming Numpy comes from system.")
 endif()
 

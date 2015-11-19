@@ -250,5 +250,4 @@ ${PYTHON_EXECUTABLE} -m compileall
   endif()
 else()
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
-  message("SuperBuild assuming Python comes from system.")
 endif()
