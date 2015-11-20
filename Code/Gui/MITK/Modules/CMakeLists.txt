@@ -62,6 +62,7 @@ if(BUILD_IGI)
     IGIDataSources
     IGITrackers
     SurfRecon
+    OpenCVVideoDataSource
   )
 
   if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)

@@ -13,6 +13,8 @@
 #============================================================================*/
 
 set(CPP_FILES
+  DataType/niftkIGIDataType.cxx
+  DataType/niftkIGIFilePerFrameDataType.cxx
   mitkIGITestDataUtils.cxx
   mitkIGIDataType.cxx
   mitkIGIDataSource.cxx
