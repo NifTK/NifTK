@@ -65,6 +65,8 @@ if(NOT DEFINED MITK_DIR)
     # Common requirements for GUI applications:
     if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI)
 
+      set(_use_blueberry 1)
+
       list(APPEND _enabled_modules
         Core                    # needed by niftkCore
         SceneSerializationBase  # needed by niftkCoreIO
@@ -107,6 +109,11 @@ if(NOT DEFINED MITK_DIR)
         org.mitk.gui.qt.imagenavigator
         org.mitk.gui.qt.properties
       )
+
+    else()
+
+      set(_use_blueberry 0)
+
     endif()
 
     # Additionally required for NiftyView:
@@ -187,10 +194,10 @@ if(NOT DEFINED MITK_DIR)
     set(mitk_whitelist_name "MITK-whitelist")
     file(WRITE "${mitk_whitelists_dir}/${mitk_whitelist_name}.cmake" "
       set(enabled_modules
-        ${_enabled_modules}
+        \"${_enabled_modules}\"
       )
       set(enabled_plugins
-        ${_enabled_plugins}
+        \"${_enabled_plugins}\"
       )
     ")
 
@@ -243,7 +250,7 @@ if(NOT DEFINED MITK_DIR)
         -DMITK_BUILD_ALL_PLUGINS:BOOL=ON
         -DMITK_USE_QT:BOOL=${QT_FOUND}
         -DMITK_USE_CTK:BOOL=${QT_FOUND}
-        -DMITK_USE_BLUEBERRY:BOOL=${QT_FOUND}
+        -DMITK_USE_BLUEBERRY:BOOL=${_use_blueberry}
         -DMITK_USE_GDCMIO:BOOL=ON
         -DMITK_USE_DCMTK:BOOL=ON
         -DMITK_USE_Boost:BOOL=OFF
