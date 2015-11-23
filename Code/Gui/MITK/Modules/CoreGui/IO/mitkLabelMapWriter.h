@@ -54,7 +54,7 @@ public:
   virtual void Write();  
 
   /** \brief Set the labels to write to file. */
-  inline void SetLabels(LabelListType labels){m_Labels = labels;}
+  inline void SetLabels(const LabelListType& labels){m_Labels = labels;}
 
   /** \brief Set the vtkLookupTable to write to file. */
   inline void SetVtkLookupTable(vtkLookupTable* vtkLUT){m_LookupTable = vtkLUT;}

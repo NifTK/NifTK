@@ -37,7 +37,7 @@ public:
   QmitkLookupTableContainer(const vtkLookupTable* lut);
 
   /** Constructor that takes a lookup table and a set of labels*/
-  QmitkLookupTableContainer(const vtkLookupTable* lut, LabelListType labels);
+  QmitkLookupTableContainer(const vtkLookupTable* lut, const LabelListType& labels);
 
   /** Destructor. */
   virtual ~QmitkLookupTableContainer();
@@ -58,14 +58,14 @@ public:
   QString GetDisplayName() const { return m_DisplayName; }
 
   /** Set scaled property. */
-  void SetIsScaled(const bool s) { m_IsScaled = s; }
+  void SetIsScaled(bool s) { m_IsScaled = s; }
 
   /** Get scaled property. */
   bool GetIsScaled() const { return m_IsScaled; }
  
 
   /** Set labels. */
-  void SetLabels(LabelListType labels){ m_Labels = labels; }
+  void SetLabels(const LabelListType& labels){ m_Labels = labels; }
   
   /** Get labels. */
  LabelListType GetLabels()const { return m_Labels; }
@@ -82,14 +82,14 @@ private:
   /** This is it! */
   const vtkLookupTable* m_LookupTable;
 
-  /** Display name for display in GUI. */
-  QString m_DisplayName;
+  /** Store the order that it is to be displayed in GUI. */
+  int m_Order;
 
   /** What type of lookup table */
   bool m_IsScaled;
 
-  /** Store the order that it is to be displayed in GUI. */
-  int m_Order;
+  /** Display name for display in GUI. */
+  QString m_DisplayName;
 
   /** Labels for the entries in the vtkLUT (optional)*/
   LabelListType m_Labels;

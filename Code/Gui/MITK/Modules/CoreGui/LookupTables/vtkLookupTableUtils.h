@@ -33,12 +33,12 @@ namespace mitk
    */
   typedef std::pair<int, std::string> LabelType;
   typedef std::vector<LabelType> LabelsListType;  
-  typedef std::vector< QColor> ColorListType;
+  typedef std::vector<QColor> ColorListType;
   
   /**
    * \brief Replace the color in the LookupTable at the given index
    */
-  NIFTKCOREGUI_EXPORT vtkLookupTable* ChangeColor(vtkLookupTable* lut, int value, QColor newColor);
+  NIFTKCOREGUI_EXPORT vtkLookupTable* ChangeColor(vtkLookupTable* lut, int value, const QColor& newColor);
 
   /**
    * \brief Swap colors in the LookupTable at the given indices. 
@@ -51,7 +51,7 @@ namespace mitk
    */
   NIFTKCOREGUI_EXPORT vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double newMaximum);
 
-  NIFTKCOREGUI_EXPORT vtkLookupTable* CreateEmptyLookupTable(QColor lowColor = QColor(0, 0, 0, 0), QColor highColor = QColor(0, 0, 0, 0));
+  NIFTKCOREGUI_EXPORT vtkLookupTable* CreateEmptyLookupTable(const QColor& lowColor = QColor(0, 0, 0, 0), const QColor& highColor = QColor(0, 0, 0, 0));
   
 }
 

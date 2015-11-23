@@ -59,57 +59,50 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
   m_Colors.clear();
 
   std::vector<itk::SmartPointer<mitk::BaseData> > result;
-  try
+
+  const std::string& locale = "C";
+  const std::string& currLocale = setlocale( LC_ALL, NULL );
+  setlocale(LC_ALL, locale.c_str());
+
+  std::string fileName = this->GetInputLocation();
+  std::ifstream infile(fileName, std::ifstream::in);
+
+  bool isLoaded = false;
+  QString labelName;
+  if (infile.is_open())
   {
-    const std::string& locale = "C";
-    const std::string& currLocale = setlocale( LC_ALL, NULL );
-    setlocale(LC_ALL, locale.c_str());
-
-    std::string fileName = this->GetInputLocation();
-    std::ifstream infile(fileName, std::ifstream::in);
-
-    bool isLoaded = false;
-    QString labelName;
-    if (infile.is_open())
-    {
-      labelName = QString::fromStdString(fileName);
-      isLoaded = this->ReadLabelMap(infile);
-      infile.close();
-    }
-    else
-    {
-      m_InputQFile->open(QIODevice::ReadOnly);   
-      labelName = m_InputQFile->fileName();
-
-      // this is a dirty hack to get the resource file in the right format to read
-      QDataStream qstream(m_InputQFile);
-
-      std::string fileStr(m_InputQFile->readAll());
-      std::stringstream sStream; 
-      sStream << fileStr;
-
-      isLoaded = this->ReadLabelMap(sStream);
-    }
-
-    if (isLoaded)
-    {
-      int startInd = labelName.lastIndexOf("/") + 1;
-      int endInd = labelName.lastIndexOf(".");
-      m_DisplayName = labelName.mid(startInd, endInd - startInd);
-      setlocale(LC_ALL, currLocale.c_str());
-      MITK_DEBUG << "NifTK label map read.";
-    }
-    else
-    {
-      result.clear();
-      MITK_ERROR << "Unable to read NifTK label map!";
-    }
+    labelName = QString::fromStdString(fileName);
+    isLoaded = this->ReadLabelMap(infile);
+    infile.close();
   }
-  catch(...)
+  else
   {
-    throw;
+    m_InputQFile->open(QIODevice::ReadOnly);   
+    labelName = m_InputQFile->fileName();
+
+    // this is a dirty hack to get the resource file in the right format to read
+    QDataStream qstream(m_InputQFile);
+    std::string fileStr(m_InputQFile->readAll());
+    std::stringstream sStream; 
+    sStream << fileStr;
+
+    isLoaded = this->ReadLabelMap(sStream);
   }
-  
+
+  if (isLoaded)
+  {
+    int startInd = labelName.lastIndexOf("/") + 1;
+    int endInd = labelName.lastIndexOf(".");
+    m_DisplayName = labelName.mid(startInd, endInd - startInd);
+    setlocale(LC_ALL, currLocale.c_str());
+    MITK_DEBUG << "NifTK label map read.";
+  }
+  else
+  {
+    result.clear();
+    MITK_ERROR << "Unable to read NifTK label map!";
+  }
+
   return result;
 }
 
@@ -165,7 +158,7 @@ bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
 
       isLoaded = true;
     }
-    catch(...)
+    catch(const std::exception &)
     {
       std::cout <<"Unable to parse line " << line.c_str() << ". Skipping." << std::endl;
     }

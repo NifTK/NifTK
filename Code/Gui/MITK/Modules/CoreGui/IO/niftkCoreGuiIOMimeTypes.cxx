@@ -36,7 +36,7 @@ mitk::CustomMimeType CoreGuiIOMimeTypes::LABELMAP_MIMETYPE()
 {
   mitk::CustomMimeType mimeType(LABELMAP_MIMETYPE_NAME());
   std::string category = "LabelMap File";
-  mimeType.SetComment("EpiNav Label Map format");
+  mimeType.SetComment("Label Map format");
   mimeType.SetCategory(category);
   mimeType.AddExtension("lmap");
     
@@ -45,14 +45,13 @@ mitk::CustomMimeType CoreGuiIOMimeTypes::LABELMAP_MIMETYPE()
 
 std::string CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_NAME()
 {
-  // Have to pick one that becomes the default. xmlE is the least restrictive.
   static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".lmap";
   return name;
 }
 
 std::string CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION()
 {
-  static std::string description = "EpiNav label map that defines the mapping between color and pixel value.";
+  static std::string description = "Label map that defines the mapping between color and pixel value.";
   return description;
 }
 

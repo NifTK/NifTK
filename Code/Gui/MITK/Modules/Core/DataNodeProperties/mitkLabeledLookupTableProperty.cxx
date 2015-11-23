@@ -34,7 +34,11 @@ LabeledLookupTableProperty::LabeledLookupTableProperty(const LabeledLookupTableP
 
 
 //-----------------------------------------------------------------------------
-LabeledLookupTableProperty::LabeledLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut, LabelListType labels)
+LabeledLookupTableProperty::LabeledLookupTableProperty(
+  const std::string& name, 
+  const mitk::LookupTable::Pointer lut, 
+  const LabelListType& labels
+  )
 : Superclass(name, lut, false)
 {
   m_Labels = labels;
@@ -42,7 +46,12 @@ LabeledLookupTableProperty::LabeledLookupTableProperty(const std::string& name, 
 
 
 //-----------------------------------------------------------------------------
-LabeledLookupTableProperty::LabeledLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut,LabelListType labels, bool scale)
+LabeledLookupTableProperty::LabeledLookupTableProperty(
+  const std::string& name, 
+  const mitk::LookupTable::Pointer lut, 
+  const LabelListType& labels, 
+  bool scale
+  )
 : Superclass(name, lut, scale)
 {
   m_Labels = labels;

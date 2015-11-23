@@ -22,7 +22,7 @@ namespace mitk
 {
 	
 //-----------------------------------------------------------------------------
-vtkLookupTable* ChangeColor(vtkLookupTable* lut, int value, QColor newColor)
+vtkLookupTable* ChangeColor(vtkLookupTable* lut, int value, const QColor& newColor)
 {
   vtkLookupTable* newLUT = vtkLookupTable::New();
   newLUT->DeepCopy(lut);
@@ -129,7 +129,7 @@ vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double newMaximum)
   return newLUT;
 }
 
-vtkLookupTable* CreateEmptyLookupTable(QColor lowColor, QColor highColor)
+vtkLookupTable* CreateEmptyLookupTable(const QColor& lowColor, const QColor& highColor)
 {
   vtkLookupTable* lookupTable = vtkLookupTable::New();
   lookupTable->SetNumberOfColors(1);

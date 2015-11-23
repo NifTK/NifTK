@@ -39,16 +39,18 @@ public:
   mitkNewMacro3Param(LabeledLookupTableProperty, 
                      const std::string&, 
                      const mitk::LookupTable::Pointer, 
-                     LabelListType);
+                     const LabelListType&);
   mitkNewMacro4Param(LabeledLookupTableProperty, 
                      const std::string&, 
                      const mitk::LookupTable::Pointer, 
-                     LabelListType, 
+                     const LabelListType&, 
                      bool);
 
-  /** Get/set list of labels*/
-  inline LabelListType GetLabels() const {return m_Labels;};
-  inline void SetLabels(LabelListType labels){m_Labels = labels;};
+  /** Get list of labels*/
+  inline LabelListType GetLabels() const {return m_Labels;}
+
+  /** Set list of labels*/
+  inline void SetLabels(const LabelListType& labels){m_Labels = labels;}
 
 protected:
 
@@ -57,10 +59,10 @@ protected:
   LabeledLookupTableProperty(const LabeledLookupTableProperty& other);
   LabeledLookupTableProperty(const std::string& name, 
                              const mitk::LookupTable::Pointer lut, 
-                             LabelListType labels);
+                             const LabelListType& labels);
   LabeledLookupTableProperty(const std::string& name, 
                              const mitk::LookupTable::Pointer lut, 
-                             LabelListType labels, 
+                             const LabelListType& labels, 
                              bool scale);
 
 private:
