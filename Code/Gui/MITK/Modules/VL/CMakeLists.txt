@@ -51,7 +51,18 @@ MITK_CREATE_MODULE(
   PACKAGE_DEPENDS ${_packages}
 )
 
-target_link_libraries(niftkVL PRIVATE ${VL_LIBRARIES})
+target_link_libraries(niftkVL 
+  PRIVATE 
+    ${VL_LIBRARIES}
+)
+
+if(CUDA_FOUND AND NIFTK_USE_CUDA)
+  target_link_libraries(niftkVL
+    PRIVATE
+	  ${CUDA_CUDA_LIBRARY}
+	  ${CUDA_CUDART_LIBRARY}
+  )
+endif()
 
 # Note:
 # Cotire must be off on Linux because of a symbol name class in Xlib.h and qstyleoption.h
