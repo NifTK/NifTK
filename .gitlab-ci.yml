@@ -18,6 +18,7 @@ Linux build:
         -DBUILD_TESTING:BOOL=ON
         -DNIFTK_USE_CPPCHECK:BOOL=TRUE -DNIFTK_USE_KWSTYLE:BOOL=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        -DBUILD_VL:BOOL=ON
         ../NifTK
   - make -j 8
 
@@ -66,6 +67,7 @@ Mac build:
         -DBUILD_TESTING:BOOL=ON
         -DNIFTYLINK_CHECK_COVERAGE=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        -DBUILD_VL:BOOL=ON
         ../NifTK
   - make -j 8
 
