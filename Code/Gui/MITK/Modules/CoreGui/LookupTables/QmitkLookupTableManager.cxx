@@ -19,7 +19,7 @@
 #include <QXmlSimpleReader>
 #include <QCoreApplication>
 #include <QDir>
-#include <QFile.h>
+#include <QFile>
 #include <map>
 #include <vtkLookupTable.h>
 #include <mitkLogMacros.h>

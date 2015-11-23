@@ -17,7 +17,7 @@
 
 #include "niftkCoreExports.h"
 #include "mitkNamedLookupTableProperty.h"
-#include <QString.h>
+#include <QString>
 
 namespace mitk
 {

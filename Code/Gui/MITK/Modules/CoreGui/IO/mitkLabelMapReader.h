@@ -19,8 +19,8 @@
 #include <mitkAbstractFileReader.h>
 #include "niftkCoreGuiExports.h"
 #include "mitkLabeledLookupTableProperty.h"
-#include <QFile.h>
-#include <QColor.h>
+#include <QFile>
+#include <QColor>
 
 class QmitkLookupTableContainer;
 

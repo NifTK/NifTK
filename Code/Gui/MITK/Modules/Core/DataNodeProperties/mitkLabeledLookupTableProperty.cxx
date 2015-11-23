@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "mitkLabeledLookupTableProperty.h"
-#include <qstring.h>
+#include <QString>
 
 namespace mitk
 {

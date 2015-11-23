@@ -17,7 +17,7 @@
 
 #include "niftkCoreGuiExports.h"
 #include <vector>
-#include <QColor.h>
+#include <QColor>
 
 /**
  * \file vtkLookupTableUtils.h
