@@ -49,10 +49,7 @@ void IGIVLEditorPreferencePage::Init(berry::IWorkbench::Pointer )
 //-----------------------------------------------------------------------------
 void IGIVLEditorPreferencePage::CreateQtControl(QWidget* parent)
 {
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
-
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   m_IGIVLEditorPreferencesNode = prefService->GetSystemPreferences()->Node(IGIVLEditor::EDITOR_ID);
 
   m_MainControl = new QWidget(parent);
