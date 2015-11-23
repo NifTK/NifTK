@@ -222,7 +222,7 @@ if(NOT DEFINED MITK_DIR)
            -DPYTHON_INCLUDE_DIR2:PATH=${PYTHON_INCLUDE_DIR2}
            -DPython_DIR:PATH=${Python_DIR}
            -DMITK_USE_SYSTEM_PYTHON:BOOL=${MITK_USE_SYSTEM_PYTHON}
-           -DMITK_USE_Python:BOOL=${MITK_USE_Python}
+           -DMITK_USE_Python:BOOL=ON
           )
       list(APPEND proj_DEPENDENCIES Python)
       foreach(dep ZLIB PCRE SWIG SimpleITK Numpy)
@@ -230,6 +230,11 @@ if(NOT DEFINED MITK_DIR)
           list(APPEND proj_DEPENDENCIES ${dep})
           list(APPEND mitk_optional_cache_args -DMITK_USE_${dep}:BOOL=${MITK_USE_${dep}} -D${dep}_DIR:PATH=${${dep}_DIR} )
         endif()
+      endforeach()
+    else()
+      list(APPEND mitk_optional_cache_args -DMITK_USE_Python:BOOL=OFF)
+      foreach(dep ZLIB PCRE SWIG SimpleITK Numpy)
+        list(APPEND mitk_optional_cache_args -DMITK_USE_${dep}:BOOL=OFF)
       endforeach()
     endif()
 
