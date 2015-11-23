@@ -941,7 +941,7 @@ void ImageLookupTablesView::OnNewButtonPressed()
   QColor lowColor(0, 0, 0, lowestOpacity);
   QColor highColor(0, 0, 0, highestOpacity);
 
-  QmitkLookupTableContainer * newContainer = new QmitkLookupTableContainer(CreateEmptyLookupTable(lowColor, highColor));
+  QmitkLookupTableContainer * newContainer = new QmitkLookupTableContainer(mitk::CreateEmptyLookupTable(lowColor, highColor));
   newContainer->SetDisplayName(newLabelName);
   newContainer->SetIsScaled(false);
   newContainer->SetOrder(lutService->GetNumberOfLookupTables());
@@ -1088,7 +1088,7 @@ void ImageLookupTablesView::OnAddLabelButtonPressed()
 
   // increment the range by 1
   vtkSmartPointer<vtkLookupTable> newLUT;
-  newLUT.TakeReference(ResizeLookupTable(oldLUT,newValue+1));
+  newLUT.TakeReference(mitk::ResizeLookupTable(oldLUT,newValue+1));
   labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
 
   UpdateLabelMapTable();
@@ -1137,7 +1137,7 @@ void ImageLookupTablesView::OnRemoveLabelButtonPressed()
     {
       int value = labels.at(j).first;
       vtkSmartPointer<vtkLookupTable> newLUT;
-      newLUT.TakeReference(ChangeColor(lut, value, nanColor));
+      newLUT.TakeReference(mitk::ChangeColor(lut, value, nanColor));
       labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
     }
     
@@ -1300,7 +1300,7 @@ void ImageLookupTablesView::OnColorButtonPressed(int index)
   }
   
   vtkSmartPointer<vtkLookupTable> newLUT;
-  newLUT.TakeReference(ChangeColor(lut, value,newColor));
+  newLUT.TakeReference(mitk::ChangeColor(lut, value,newColor));
   labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
 
   QPushButton* btnColor = qobject_cast<QPushButton*>(m_Controls->widget_LabelTable->cellWidget(index, 0));
@@ -1396,7 +1396,7 @@ void ImageLookupTablesView::OnLabelMapTableCellChanged(int row, int column)
     int oldValue = labels.at(row).first;
     
     vtkSmartPointer<vtkLookupTable> newLUT;
-    newLUT.TakeReference(SwapColors(lut, oldValue, newValue));
+    newLUT.TakeReference(mitk::SwapColors(lut, oldValue, newValue));
     labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
 
     labels.at(row).first = newValue;

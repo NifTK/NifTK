@@ -26,7 +26,8 @@
  
   class vtkLookupTable;
   
-
+namespace mitk
+{
   /**
    * Basic label typedefs
    */
@@ -51,4 +52,7 @@
   NIFTKCOREGUI_EXPORT vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double newMaximum);
 
   NIFTKCOREGUI_EXPORT vtkLookupTable* CreateEmptyLookupTable(QColor lowColor = QColor(0, 0, 0, 0), QColor highColor = QColor(0, 0, 0, 0));
+  
+}
+
 #endif // vtkLookupTableUtils_h

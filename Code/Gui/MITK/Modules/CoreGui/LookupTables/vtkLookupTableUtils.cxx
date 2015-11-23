@@ -18,6 +18,9 @@
 #include <vtkIntArray.h>
 #include <vtkStringArray.h>
 
+namespace mitk
+{
+	
 //-----------------------------------------------------------------------------
 vtkLookupTable* ChangeColor(vtkLookupTable* lut, int value, QColor newColor)
 {
@@ -142,3 +145,5 @@ vtkLookupTable* CreateEmptyLookupTable(QColor lowColor, QColor highColor)
 
   return lookupTable;
 }
+
+} //namespace mitk
