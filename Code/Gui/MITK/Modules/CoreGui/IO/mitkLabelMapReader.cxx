@@ -81,12 +81,11 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
     labelName = m_InputQFile->fileName();
 
     // this is a dirty hack to get the resource file in the right format to read
-    QDataStream qstream(m_InputQFile);
     std::string fileStr(m_InputQFile->readAll());
     std::stringstream sStream; 
     sStream << fileStr;
-
     isLoaded = this->ReadLabelMap(sStream);
+    m_InputQFile->close();
   }
 
   if (isLoaded)
@@ -163,7 +162,8 @@ bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
       std::cout <<"Unable to parse line " << line.c_str() << ". Skipping." << std::endl;
     }
   }
-
+  
+  file.clear();
   return isLoaded;
 }
 
