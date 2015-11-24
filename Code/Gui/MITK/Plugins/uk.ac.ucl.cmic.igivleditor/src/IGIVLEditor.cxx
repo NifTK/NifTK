@@ -18,6 +18,7 @@
 #include <berryIWorkbenchPage.h>
 #include <berryIPreferencesService.h>
 #include <berryIPartListener.h>
+#include <berryPlatform.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
 #include <service/event/ctkEventConstants.h>
@@ -64,7 +65,7 @@ public:
   ~IGIVLEditorPrivate();
 
   QmitkIGIVLEditor* m_IGIVLEditor;
-  berry::IPartListener::Pointer m_PartListener;
+  QScopedPointer<berry::IPartListener> m_PartListener;
 };
 
 
@@ -156,7 +157,7 @@ IGIVLEditor::IGIVLEditor()
 //-----------------------------------------------------------------------------
 IGIVLEditor::~IGIVLEditor()
 {
-  this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener);
+  this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener.data());
 }
 
 
@@ -293,7 +294,7 @@ void IGIVLEditor::CreateQtPartControl(QWidget* parent)
     mitk::DataStorage::Pointer ds = this->GetDataStorage();
     d->m_IGIVLEditor->SetDataStorage(ds);
 
-    this->GetSite()->GetPage()->AddPartListener(d->m_PartListener);
+    this->GetSite()->GetPage()->AddPartListener(d->m_PartListener.data());
 
     QMetaObject::invokeMethod(this, "OnPreferencesChanged", Qt::QueuedConnection);
 
@@ -320,7 +321,7 @@ void IGIVLEditor::CreateQtPartControl(QWidget* parent)
 //-----------------------------------------------------------------------------
 void IGIVLEditor::OnPreferencesChanged()
 {
-  berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   berry::IBerryPreferences::Pointer   prefsNode   = prefService->GetSystemPreferences()->Node(EDITOR_ID).Cast<berry::IBerryPreferences>();
 
   this->OnPreferencesChanged(prefsNode.GetPointer());

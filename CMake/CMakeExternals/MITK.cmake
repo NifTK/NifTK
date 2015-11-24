@@ -31,9 +31,6 @@ if(QT_FOUND)
 endif(QT_FOUND)
 if(BUILD_IGI)
   list(APPEND proj_DEPENDENCIES OpenCV NiftyLink)
-  if(BUILD_PCL)
-    list(APPEND proj_DEPENDENCIES FLANN PCL)
-  endif()
 endif(BUILD_IGI)
 
 # explicitly try to tame windows headers.

@@ -65,8 +65,6 @@ if(BUILD_NiftySeg)
     set(NiftySeg_DIR ${proj_INSTALL})
 #    set(NiftySeg_INCLUDE_DIR "${NiftySeg_DIR}/include")
 #    set(NiftySeg_LIBRARY_DIR "${NiftySeg_DIR}/lib")
-
-    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
     mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading NiftySeg from ${NiftySeg_DIR}")
