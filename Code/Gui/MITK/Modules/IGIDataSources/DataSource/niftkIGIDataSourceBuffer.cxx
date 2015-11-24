@@ -219,23 +219,22 @@ niftk::IGIDataType::Pointer IGIDataSourceBuffer::GetItem(const niftk::IGIDataTyp
   }
 
   BufferType::iterator iter = m_Buffer.begin();
-  while(iter != m_Buffer.end() && (*iter)->GetTimeStampInNanoSeconds() <= effectiveTime)
+  while(iter != m_Buffer.end() && (*iter)->GetTimeStampInNanoSeconds() < effectiveTime)
   {
     iter++;
   }
 
-  // If we stopped because we hit the end of the buffer, then
-  // there is no data close enough. We could just return the last one,
-  // but Id rather be overcautious, and return nothing. The side
-  // effect of this, is that if the last item, was exactly equal
-  // to the requested time stamp, we wont retrieve it.
   if (iter == m_Buffer.end())
   {
     return result;
   }
 
-  // Backtrack one step, as we just went past the closest one.
-  iter--;
+  if ((*iter)->GetTimeStampInNanoSeconds() == effectiveTime)
+  {
+    return *iter;
+  }
+
+  iter--; // Backtrack one step, as we just went past the closest one.
   return *iter;
 }
 
