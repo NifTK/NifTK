@@ -34,12 +34,10 @@ namespace niftk
 * \brief Abstract base class for IGI DataSources, such as objects
 * that produce tracking data, video frames or ultrasound frames.
 *
-* Uses RAII pattern to register/de-register as MITK Micro-Service.
-*
-* \see niftk::IGIDataSourceServiceI
-*
 * Each source registers as a service when it is instantiated. You
 * must allow for multiple instances of each service.
+*
+* Uses RAII pattern to register/de-register as MITK Micro-Service.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
