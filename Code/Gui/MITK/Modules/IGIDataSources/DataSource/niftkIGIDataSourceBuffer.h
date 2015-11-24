@@ -58,6 +58,8 @@ public:
   /**
   * \brief Adds an item to the buffer, which if the calling object deletes
   * pointers, then the buffer is effectively the owner.
+  *
+  * This assumes the timestamp on the item is already correctly set.
   */
   void AddToBuffer(niftk::IGIDataType::Pointer item);
 

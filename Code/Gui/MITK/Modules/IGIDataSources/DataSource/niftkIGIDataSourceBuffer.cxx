@@ -48,6 +48,7 @@ void IGIDataSourceBuffer::AddToBuffer(niftk::IGIDataType::Pointer item)
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
+  m_Buffer.insert(item);
   this->UpdateFrameRate();
   this->Modified();
 }
