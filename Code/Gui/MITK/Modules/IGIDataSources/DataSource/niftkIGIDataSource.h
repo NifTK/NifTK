@@ -16,6 +16,7 @@
 #define niftkIGIDataSource_h
 
 #include "niftkIGIDataSourcesExports.h"
+#include "niftkIGIDataType.h"
 #include <niftkIGIDataSourceServiceI.h>
 
 #include <mitkCommon.h>
@@ -46,6 +47,11 @@ class NIFTKIGIDATASOURCES_EXPORT IGIDataSource : public itk::Object, public nift
 public:
 
   mitkClassMacroItkParent(IGIDataSource, itk::Object);
+
+  /**
+  * \brief A DataSource should be able to save its own data.
+  */
+  virtual void SaveItem(niftk::IGIDataType::Pointer item) = 0;
 
 protected:
 

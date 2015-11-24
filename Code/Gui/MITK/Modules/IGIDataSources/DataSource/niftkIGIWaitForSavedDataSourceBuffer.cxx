@@ -20,9 +20,14 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIWaitForSavedDataSourceBuffer::IGIWaitForSavedDataSourceBuffer(BufferType::size_type minSize)
+IGIWaitForSavedDataSourceBuffer::IGIWaitForSavedDataSourceBuffer(BufferType::size_type minSize, niftk::IGIDataSource*)
 : IGIDataSourceBuffer(minSize)
+, m_DataSource()
 {
+  if (m_DataSource == NULL)
+  {
+    mitkThrow() << "Invalid DataSource provided";
+  }
 }
 
 
@@ -65,6 +70,36 @@ void IGIWaitForSavedDataSourceBuffer::CleanBuffer()
     {
       m_Buffer.erase(startIter, endIter);
       this->Modified();
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIWaitForSavedDataSourceBuffer::SaveBuffer()
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  if (m_Buffer.size() > m_MinimumSize)
+  {
+    BufferType::size_type numberToSave =  m_Buffer.size() - m_MinimumSize;
+    BufferType::size_type counter = 0;
+
+    BufferType::iterator iter = m_Buffer.begin();
+
+    while(iter != m_Buffer.end()
+          && counter < numberToSave
+          )
+    {
+      niftk::IGIDataType::Pointer tmp = (*iter);
+      if (tmp->GetShouldBeSaved())
+      {
+        // This should throw exception if it fails.
+        m_DataSource->SaveItem(tmp);
+        tmp->SetIsSaved(true);
+      }
+      iter++;
+      counter++;
     }
   }
 }

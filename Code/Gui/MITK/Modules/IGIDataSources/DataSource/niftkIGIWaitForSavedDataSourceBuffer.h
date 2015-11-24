@@ -17,6 +17,7 @@
 
 #include "niftkIGIDataSourcesExports.h"
 #include "niftkIGIDataSourceBuffer.h"
+#include "niftkIGIDataSource.h"
 
 namespace niftk
 {
@@ -34,16 +35,22 @@ class NIFTKIGIDATASOURCES_EXPORT IGIWaitForSavedDataSourceBuffer : public IGIDat
 public:
 
   mitkClassMacroItkParent(IGIWaitForSavedDataSourceBuffer, IGIDataSourceBuffer);
-  mitkNewMacro1Param(IGIWaitForSavedDataSourceBuffer, BufferType::size_type);
+  mitkNewMacro2Param(IGIWaitForSavedDataSourceBuffer, BufferType::size_type, IGIDataSource*);
 
   /**
-  * \brief Clears down the buffer, opting not to delete if the frame has not yet been saved.
+  * \brief Clears down the buffer, opting not to delete an
+  * item if the item has not yet been saved.
   */
   virtual void CleanBuffer() override;
 
+  /**
+  * \brief Saves items in the buffer.
+  */
+  virtual void SaveBuffer();
+
 protected:
 
-  IGIWaitForSavedDataSourceBuffer(BufferType::size_type minSize); // Purposefully hidden.
+  IGIWaitForSavedDataSourceBuffer(BufferType::size_type minSize, niftk::IGIDataSource* source); // Purposefully hidden.
   virtual ~IGIWaitForSavedDataSourceBuffer(); // Purposefully hidden.
 
   IGIWaitForSavedDataSourceBuffer(const IGIWaitForSavedDataSourceBuffer&); // Purposefully not implemented.
@@ -51,6 +58,7 @@ protected:
 
 private:
 
+  niftk::IGIDataSource* m_DataSource;
 };
 
 } // end namespace
