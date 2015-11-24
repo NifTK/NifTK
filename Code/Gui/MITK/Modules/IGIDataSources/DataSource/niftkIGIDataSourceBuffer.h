@@ -23,7 +23,6 @@
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 #include <itkFastMutexLock.h>
-#include <igtlTimeStamp.h>
 #include <set>
 
 namespace niftk
@@ -79,7 +78,14 @@ public:
   */
   virtual void CleanBuffer();
 
+  /**
+  * \brief Returns the time stamp of the first item in the buffer.
+  */
   niftk::IGIDataType::IGITimeType GetFirstTimeStamp() const;
+
+  /**
+  * \brief Returns the time stamp of the last item in the buffer.
+  */
   niftk::IGIDataType::IGITimeType GetLastTimeStamp() const;
 
   /**
@@ -100,7 +106,6 @@ private:
   void UpdateFrameRate();
 
   itk::FastMutexLock::Pointer m_Mutex;
-  igtl::TimeStamp::Pointer    m_TimeCreated; // used to time-stamp each new item.
   BufferType                  m_Buffer;
   BufferType::size_type       m_MinimumSize;
   float                       m_FrameRate;

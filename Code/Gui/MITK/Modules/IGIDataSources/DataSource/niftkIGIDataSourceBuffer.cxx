@@ -31,12 +31,9 @@ bool IGIDataSourceBuffer::TimeStampComparator::operator()(const niftk::IGIDataTy
 //-----------------------------------------------------------------------------
 IGIDataSourceBuffer::IGIDataSourceBuffer(BufferType::size_type minSize)
 : m_Mutex(itk::FastMutexLock::New())
-, m_TimeCreated(NULL)
 , m_MinimumSize(minSize)
 , m_FrameRate(0)
 {
-  m_TimeCreated = igtl::TimeStamp::New();
-  m_TimeCreated->GetTime();
 }
 
 
@@ -60,6 +57,7 @@ void IGIDataSourceBuffer::AddToBuffer(niftk::IGIDataType::Pointer item)
 void IGIDataSourceBuffer::ClearBuffer()
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   m_Buffer.clear();
   this->Modified();
 }
@@ -68,6 +66,23 @@ void IGIDataSourceBuffer::ClearBuffer()
 //-----------------------------------------------------------------------------
 void IGIDataSourceBuffer::CleanBuffer()
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  if (m_Buffer.size() > m_MinimumSize)
+  {
+    BufferType::size_type numberToDelete =  m_Buffer.size() - m_MinimumSize;
+    BufferType::size_type counter = 0;
+
+    BufferType::iterator startIter = m_Buffer.begin();
+    BufferType::iterator endIter = m_Buffer.begin();
+
+    while(endIter != m_Buffer.end() && counter < numberToDelete)
+    {
+      endIter++;
+      counter++;
+    }
+    m_Buffer.erase(startIter, endIter);
+  }
   this->Modified();
 }
 
@@ -76,6 +91,7 @@ void IGIDataSourceBuffer::CleanBuffer()
 IGIDataSourceBuffer::BufferType::size_type IGIDataSourceBuffer::GetBufferSize() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   return m_Buffer.size();
 }
 
@@ -150,6 +166,7 @@ void IGIDataSourceBuffer::UpdateFrameRate()
 float IGIDataSourceBuffer::GetFrameRate() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   return m_FrameRate;
 }
 
