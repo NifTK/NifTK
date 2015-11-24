@@ -25,6 +25,8 @@ namespace niftk
 * \class IGIFilePerFrameDataType
 * \brief Abstract base class for IGI Data, such as objects
 * containing tracking data, video frames or ultrasound frames.
+*
+* Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
 class NIFTKIGIDATASOURCES_EXPORT IGIFilePerFrameDataType : public niftk::IGIDataType
 {
