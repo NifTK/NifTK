@@ -99,7 +99,7 @@ void IGIDataSourceBuffer::CleanBuffer()
       counter++;
     }
 
-    if (numberToDelete > 1 && startIter != endIter)
+    if (counter > 1 && startIter != endIter)
     {
       m_Buffer.erase(startIter, endIter);
       this->Modified();

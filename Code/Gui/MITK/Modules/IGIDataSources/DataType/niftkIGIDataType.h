@@ -51,6 +51,15 @@ public:
   itkSetMacro(FrameId, IGIIndexType);
   itkGetMacro(FrameId, IGIIndexType);
 
+  itkSetMacro(IsSaved, bool);
+  itkGetMacro(IsSaved, bool);
+
+  itkSetMacro(ShouldBeSaved, bool);
+  itkGetMacro(ShouldBeSaved, bool);
+
+  itkSetMacro(FileName, std::string);
+  itkGetMacro(FileName, std::string);
+
   /**
   * \brief This object can contain any data, and derived classes should override this.
   */
@@ -69,6 +78,9 @@ private:
   IGITimeType  m_TimeStamp;
   IGITimeType  m_Duration;
   IGIIndexType m_FrameId;
+  bool         m_IsSaved;
+  bool         m_ShouldBeSaved;
+  std::string  m_FileName;
 };
 
 } // end namespace

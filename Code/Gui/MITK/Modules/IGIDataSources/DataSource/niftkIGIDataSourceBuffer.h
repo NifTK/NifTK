@@ -117,14 +117,15 @@ protected:
   IGIDataSourceBuffer(const IGIDataSourceBuffer&); // Purposefully not implemented.
   IGIDataSourceBuffer& operator=(const IGIDataSourceBuffer&); // Purposefully not implemented.
 
-private:
-
-  void UpdateFrameRate();
-
   itk::FastMutexLock::Pointer     m_Mutex;
   BufferType                      m_Buffer;
   BufferType::iterator            m_BufferIterator;
   BufferType::size_type           m_MinimumSize;
+
+private:
+
+  void UpdateFrameRate();
+
   float                           m_FrameRate;
   niftk::IGIDataType::IGITimeType m_Lag;
 

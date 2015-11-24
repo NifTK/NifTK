@@ -14,9 +14,9 @@
 
 set(CPP_FILES
   DataType/niftkIGIDataType.cxx
-  DataType/niftkIGIFilePerFrameDataType.cxx
   DataSource/niftkIGIDataSource.cxx
   DataSource/niftkIGIDataSourceBuffer.cxx
+  DataSource/niftkIGIWaitForSavedDataSourceBuffer.cxx
   mitkIGITestDataUtils.cxx
   mitkIGIDataType.cxx
   mitkIGIDataSource.cxx

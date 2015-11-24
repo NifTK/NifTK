@@ -22,6 +22,9 @@ IGIDataType::IGIDataType()
 : m_TimeStamp(0)
 , m_Duration(0)
 , m_FrameId(0)
+, m_IsSaved(false)
+, m_ShouldBeSaved(false)
+, m_FileName("")
 {
 }
 
