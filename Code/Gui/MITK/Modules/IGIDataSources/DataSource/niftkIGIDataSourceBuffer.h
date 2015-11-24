@@ -51,11 +51,6 @@ public:
   mitkNewMacro1Param(IGIDataSourceBuffer, BufferType::size_type);
 
   /**
-  * \brief Returns the number of items in the buffer.
-  */
-  BufferType::size_type GetBufferSize() const;
-
-  /**
   * \brief Adds an item to the buffer, which if the calling object deletes
   * pointers, then the buffer is effectively the owner.
   *
@@ -81,6 +76,16 @@ public:
   virtual void CleanBuffer();
 
   /**
+  * \brief Sets the lag in milliseconds.
+  */
+  void SetLagInMilliseconds(unsigned int milliseconds);
+
+  /**
+  * \brief Returns the number of items in the buffer.
+  */
+  BufferType::size_type GetBufferSize() const;
+
+  /**
   * \brief Returns the time stamp of the first item in the buffer.
   */
   niftk::IGIDataType::IGITimeType GetFirstTimeStamp() const;
@@ -95,6 +100,15 @@ public:
   */
   float GetFrameRate() const;
 
+  /**
+  * \brief Gets the item from the buffer most closely before the specified time.
+  *
+  * If there are no items in the buffer, will return null.
+  * If the lag is specified, will ofset backwards in time and retrieve that item.
+  * If that item is not available, will also return NULL.
+  */
+  niftk::IGIDataType::Pointer GetItem(const niftk::IGIDataType::IGITimeType& time) const;
+
 protected:
 
   IGIDataSourceBuffer(BufferType::size_type minSize); // Purposefully hidden.
@@ -107,10 +121,13 @@ private:
 
   void UpdateFrameRate();
 
-  itk::FastMutexLock::Pointer m_Mutex;
-  BufferType                  m_Buffer;
-  BufferType::size_type       m_MinimumSize;
-  float                       m_FrameRate;
+  itk::FastMutexLock::Pointer     m_Mutex;
+  BufferType                      m_Buffer;
+  BufferType::iterator            m_BufferIterator;
+  BufferType::size_type           m_MinimumSize;
+  float                           m_FrameRate;
+  niftk::IGIDataType::IGITimeType m_Lag;
+
 };
 
 } // end namespace

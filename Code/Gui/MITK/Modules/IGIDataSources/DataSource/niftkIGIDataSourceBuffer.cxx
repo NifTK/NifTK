@@ -33,13 +33,29 @@ IGIDataSourceBuffer::IGIDataSourceBuffer(BufferType::size_type minSize)
 : m_Mutex(itk::FastMutexLock::New())
 , m_MinimumSize(minSize)
 , m_FrameRate(0)
+, m_Lag(0)
 {
+  if (minSize == 0)
+  {
+    mitkThrow() << "Buffer size should be a number > 0";
+  }
+  m_BufferIterator = m_Buffer.begin();
 }
 
 
 //-----------------------------------------------------------------------------
 IGIDataSourceBuffer::~IGIDataSourceBuffer()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceBuffer::SetLagInMilliseconds(unsigned int milliseconds)
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  m_Lag = milliseconds * 1000000; // nanoseconds.
+  this->Modified();
 }
 
 
@@ -82,9 +98,13 @@ void IGIDataSourceBuffer::CleanBuffer()
       endIter++;
       counter++;
     }
-    m_Buffer.erase(startIter, endIter);
+
+    if (numberToDelete > 1 && startIter != endIter)
+    {
+      m_Buffer.erase(startIter, endIter);
+      this->Modified();
+    }
   }
-  this->Modified();
 }
 
 
@@ -128,7 +148,7 @@ niftk::IGIDataType::IGITimeType IGIDataSourceBuffer::GetLastTimeStamp() const
 //-----------------------------------------------------------------------------
 void IGIDataSourceBuffer::UpdateFrameRate()
 {
-  if (m_Buffer.size() > 2)
+  if (m_Buffer.size() > 1)
   {
     niftk::IGIDataType::IGITimeType  firstTimeStamp = 0;
     niftk::IGIDataType::IGIIndexType firstFrameId = 0;
@@ -169,6 +189,54 @@ float IGIDataSourceBuffer::GetFrameRate() const
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   return m_FrameRate;
+}
+
+
+//-----------------------------------------------------------------------------
+niftk::IGIDataType::Pointer IGIDataSourceBuffer::GetItem(const niftk::IGIDataType::IGITimeType& time) const
+{
+  if (time < m_Lag)
+  {
+    mitkThrow() << "The requested time " << time << " is obviously too small, suggesting a programming bug." << std::endl;
+  }
+
+  niftk::IGIDataType::Pointer result = NULL;
+
+  if (m_Buffer.size() < 2)
+  {
+    return result;
+  }
+
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  niftk::IGIDataType::IGITimeType effectiveTime = time - m_Lag; // normally lag is zero.
+
+  // If first item in buffer is later than requested time,
+  // we don't have any data early enough, so abandon.
+  if ((*(m_Buffer.begin()))->GetTimeStampInNanoSeconds() > effectiveTime)
+  {
+    return result;
+  }
+
+  BufferType::iterator iter = m_Buffer.begin();
+  while(iter != m_Buffer.end() && (*iter)->GetTimeStampInNanoSeconds() <= effectiveTime)
+  {
+    iter++;
+  }
+
+  // If we stopped because we hit the end of the buffer, then
+  // there is no data close enough. We could just return the last one,
+  // but Id rather be overcautious, and return nothing. The side
+  // effect of this, is that if the last item, was exactly equal
+  // to the requested time stamp, we wont retrieve it.
+  if (iter == m_Buffer.end())
+  {
+    return result;
+  }
+
+  // Backtrack one step, as we just went past the closest one.
+  iter--;
+  return *iter;
 }
 
 } // end namespace
