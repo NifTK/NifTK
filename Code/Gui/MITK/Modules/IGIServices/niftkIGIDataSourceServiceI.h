@@ -34,11 +34,11 @@ class NIFTKIGISERVICES_EXPORT IGIDataSourceServiceI
 
 public:
 
-  virtual void StartCapture() = 0;
-  virtual void StopCapture() = 0;
+  virtual void StartCapturing() = 0;
+  virtual void StopCapturing() = 0;
   virtual void StartRecording() = 0;
   virtual void StopRecording() = 0;
-  virtual void SetLagInNanoSeconds(const unsigned long long& nanoseconds) = 0;
+  virtual void SetLagInMilliseconds(const unsigned long long& milliseconds) = 0;
   virtual void SetRecordingLocation(const std::string& pathName) = 0;
 
 protected:

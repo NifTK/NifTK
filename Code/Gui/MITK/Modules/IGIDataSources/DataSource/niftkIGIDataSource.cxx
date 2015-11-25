@@ -15,6 +15,7 @@
 #include "niftkIGIDataSource.h"
 
 #include <mitkUIDGenerator.h>
+#include <mitkExceptionMacro.h>
 #include <usModuleContext.h>
 #include <usGetModuleContext.h>
 
@@ -22,8 +23,20 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIDataSource::IGIDataSource(const std::string& microServiceDeviceName)
+IGIDataSource::IGIDataSource(const std::string& microServiceDeviceName, mitk::DataStorage::Pointer dataStorage)
+: m_DataStorage(dataStorage)
+, m_MicroServiceDeviceName(microServiceDeviceName)
 {
+
+  if (m_DataStorage.IsNull())
+  {
+    mitkThrow() << "mitk::DataStorage is NULL!";
+  }
+
+  if (m_MicroServiceDeviceName.size() == 0)
+  {
+    mitkThrow() << "Device name is empty!";
+  }
 
   // Register as MicroService.
   mitk::UIDGenerator uidGen = mitk::UIDGenerator ("uk.ac.ucl.cmic.IGIDataSource.id_", 16);
@@ -38,6 +51,8 @@ IGIDataSource::IGIDataSource(const std::string& microServiceDeviceName)
 
   us::ModuleContext* context = us::GetModuleContext();
   m_MicroServiceRegistration = context->RegisterService(this, props);
+
+  this->Modified();
 }
 
 
@@ -49,6 +64,21 @@ IGIDataSource::~IGIDataSource()
     m_MicroServiceRegistration.Unregister();
   }
   m_MicroServiceRegistration = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::SetRecordingLocation(const std::string& pathName)
+{
+  m_RecordingLocation = pathName;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+std::string IGIDataSource::GetDeviceName()
+{
+  return m_MicroServiceDeviceName;
 }
 
 } // end namespace

@@ -15,12 +15,20 @@
 #define niftkOpenCVVideoDataSourceService_h
 
 #include "niftkOpenCVVideoDataSourceServiceExports.h"
-#include <string>
+#include <niftkIGIDataSource.h>
+#include <niftkIGIWaitForSavedDataSourceBuffer.h>
+#include <niftkIGIDataSourceBackgroundSaveThread.h>
+#include <niftkIGIDataSourceBackgroundDeleteThread.h>
+#include <niftkIGIDataSourceGrabbingThread.h>
+#include <niftkIGISaveableDataSourceI.h>
+#include <niftkIGILocalDataSourceI.h>
 #include <mitkOpenCVVideoSource.h>
 
 #include <QObject>
 #include <QSet>
 #include <QMutex>
+
+#include <string>
 
 namespace niftk
 {
@@ -32,29 +40,57 @@ namespace niftk
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
 class NIFTKOPENCVVIDEODATASOURCESERVICE_EXPORT OpenCVVideoDataSourceService
+    : public IGIDataSource
+    , public IGISaveableDataSourceI
+    , public IGILocalDataSourceI
 {
 
 public:
 
-  virtual void StartCapture();
-  virtual void StopCapture();
-  virtual void StartRecording();
-  virtual void StopRecording();
-  virtual void SetLagInNanoSeconds(const unsigned long long& nanoseconds);
-  virtual void SetRecordingLocation(const std::string& pathName);
+  mitkClassMacroItkParent(OpenCVVideoDataSourceService, IGIDataSource);
+  mitkNewMacro1Param(OpenCVVideoDataSourceService, mitk::DataStorage::Pointer);
+
+  virtual void StartCapturing() override;
+  virtual void StopCapturing() override;
+  virtual void StartRecording() override;
+  virtual void StopRecording() override;
+  virtual void SetLagInMilliseconds(const unsigned long long& milliseconds) override;
+  virtual void SaveItem(niftk::IGIDataType::Pointer item) override;
+
+  /**
+  * \see niftk::IGISaveableDataSourceI::SaveBuffer()
+  */
+  virtual void SaveBuffer() override;
+
+  /**
+  * \see niftk::IGIDataSource::ClearBuffer()
+  */
+  virtual void ClearBuffer() override;
+
+  /**
+  * \see niftk::IGILocalDataSourceI::GrabData()
+  */
+  virtual void GrabData() override;
 
 protected:
-  OpenCVVideoDataSourceService();
+  OpenCVVideoDataSourceService(mitk::DataStorage::Pointer dataStorage);
   virtual ~OpenCVVideoDataSourceService();
 
 private:
   OpenCVVideoDataSourceService(const OpenCVVideoDataSourceService&); // deliberately not implemented
   OpenCVVideoDataSourceService& operator=(const OpenCVVideoDataSourceService&); // deliberately not implemented
 
-  mitk::OpenCVVideoSource::Pointer  m_VideoSource;
-  int                               m_ChannelNumber;
-  static QMutex                     s_Lock;
-  static QSet<int>                  s_SourcesInUse;
+  static int GetNextChannelNumber();
+
+  mitk::OpenCVVideoSource::Pointer                m_VideoSource;
+  int                                             m_ChannelNumber;
+  static QMutex                                   s_Lock;
+  static QSet<int>                                s_SourcesInUse;
+  niftk::IGIWaitForSavedDataSourceBuffer::Pointer m_Buffer;
+  niftk::IGIDataSourceBackgroundSaveThread*       m_BackgroundSaveThread;
+  niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
+  niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;
+  bool                                            m_IsRecording;
 
 }; // end class
 

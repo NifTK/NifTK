@@ -52,7 +52,7 @@ void IGITimerBasedThread::ForciblyStop()
   // If that failed, try to forcible terminate.
   if (!isFinished)
   {
-    qDebug() << "Forcibly terminating a IGITimerBasedThread";
+    qDebug() << "Forcibly terminating an IGITimerBasedThread";
     this->terminate();
   }
 }

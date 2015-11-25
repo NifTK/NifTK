@@ -22,6 +22,7 @@ set(CPP_FILES
   Threads/niftkIGITimerBasedThread.cxx
   Threads/niftkIGIDataSourceGrabbingThread.cxx
   Threads/niftkIGIDataSourceBackgroundSaveThread.cxx
+  Threads/niftkIGIDataSourceBackgroundDeleteThread.cxx
   mitkIGITestDataUtils.cxx
   mitkIGIDataType.cxx
   mitkIGIDataSource.cxx
