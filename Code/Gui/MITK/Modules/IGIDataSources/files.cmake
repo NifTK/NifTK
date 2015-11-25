@@ -13,10 +13,15 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Interfaces/niftkIGILocalDataSourceI.cxx
+  Interfaces/niftkIGISaveableDataSourceI.cxx
   DataType/niftkIGIDataType.cxx
   DataSource/niftkIGIDataSource.cxx
   DataSource/niftkIGIDataSourceBuffer.cxx
   DataSource/niftkIGIWaitForSavedDataSourceBuffer.cxx
+  Threads/niftkIGITimerBasedThread.cxx
+  Threads/niftkIGIDataSourceGrabbingThread.cxx
+  Threads/niftkIGIDataSourceBackgroundSaveThread.cxx
   mitkIGITestDataUtils.cxx
   mitkIGIDataType.cxx
   mitkIGIDataSource.cxx
@@ -42,6 +47,7 @@ set(CPP_FILES
 )
 
 set(MOC_H_FILES
+  Threads/niftkIGITimerBasedThread.h
   TrackerControlsWidget.h
   QmitkIGITimerBasedThread.h
 #  QmitkFiducialRegistrationWidgetDialog.h
