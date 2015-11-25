@@ -16,11 +16,9 @@
 
 #include "niftkOpenCVVideoDataSourceServiceExports.h"
 #include <niftkIGIDataSource.h>
-#include <niftkIGIWaitForSavedDataSourceBuffer.h>
-#include <niftkIGIDataSourceBackgroundSaveThread.h>
+#include <niftkIGIDataSourceBuffer.h>
 #include <niftkIGIDataSourceBackgroundDeleteThread.h>
 #include <niftkIGIDataSourceGrabbingThread.h>
-#include <niftkIGISaveableDataSourceI.h>
 #include <niftkIGILocalDataSourceI.h>
 
 #include <mitkOpenCVVideoSource.h>
@@ -43,7 +41,6 @@ namespace niftk
 */
 class NIFTKOPENCVVIDEODATASOURCESERVICE_EXPORT OpenCVVideoDataSourceService
     : public IGIDataSource
-    , public IGISaveableDataSourceI
     , public IGILocalDataSourceI
     , public QObject
 {
@@ -65,14 +62,9 @@ public:
   virtual void SaveItem(niftk::IGIDataType::Pointer item) override;
 
   /**
-  * \see niftk::IGISaveableDataSourceI::SaveBuffer()
+  * \see niftk::IGIDataSource::CleanBuffer()
   */
-  virtual void SaveBuffer() override;
-
-  /**
-  * \see niftk::IGIDataSource::ClearBuffer()
-  */
-  virtual void ClearBuffer() override;
+  virtual void CleanBuffer() override;
 
   /**
   * \see niftk::IGILocalDataSourceI::GrabData()
@@ -93,8 +85,7 @@ private:
   int                                             m_ChannelNumber;
   static QMutex                                   s_Lock;
   static QSet<int>                                s_SourcesInUse;
-  niftk::IGIWaitForSavedDataSourceBuffer::Pointer m_Buffer;
-  niftk::IGIDataSourceBackgroundSaveThread*       m_BackgroundSaveThread;
+  niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
   niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
   niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;
   bool                                            m_IsRecording;

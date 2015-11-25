@@ -66,7 +66,7 @@ public:
   *
   * If no items are in the buffer, this does nothing.
   */
-  void ClearBuffer();
+  void DestroyBuffer();
 
   /**
   * \brief Clears down the buffer, leaving behind a minimum

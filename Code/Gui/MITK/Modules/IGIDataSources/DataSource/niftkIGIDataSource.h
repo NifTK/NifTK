@@ -59,7 +59,7 @@ public:
   /**
   * \brief An IGIDataSource can manage its own buffers internally.
   */
-  virtual void ClearBuffer() = 0;
+  virtual void CleanBuffer() = 0;
 
   itkGetStringMacro(MicroServiceDeviceName);
 
@@ -90,6 +90,7 @@ protected:
    */
   mitk::DataNode::Pointer GetDataNode(const std::string& name=std::string(), const bool& addToDataStorage=true);
   mitk::DataStorage::Pointer GetDataStorage() const;
+  std::string GetPreferredSlash() const;
 
   igtl::TimeStamp::Pointer          m_TimeCreated; // Expensive to recreate, so available to sub-classes.
 

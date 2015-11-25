@@ -18,6 +18,7 @@
 #include <mitkExceptionMacro.h>
 #include <usModuleContext.h>
 #include <usGetModuleContext.h>
+#include <boost/filesystem.hpp>
 
 namespace niftk
 {
@@ -122,6 +123,14 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name, cons
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
+std::string IGIDataSource::GetPreferredSlash() const
+{
+  boost::filesystem::path slash("/");
+  std::string preferredSlash = slash.make_preferred().string();
+  return preferredSlash;
+}
 
 } // end namespace
 

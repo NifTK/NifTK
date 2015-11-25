@@ -43,13 +43,12 @@ int OpenCVVideoDataSourceService::GetNextChannelNumber()
 OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Pointer dataStorage)
 : IGIDataSource((QString("OpenCVVideoDataSourceService-") + QString::number(GetNextChannelNumber())).toStdString(), dataStorage)
 , m_Buffer(NULL)
-, m_BackgroundSaveThread(NULL)
 , m_BackgroundDeleteThread(NULL)
 , m_DataGrabbingThread(NULL)
 , m_IsRecording(false)
 {
   this->SetStatus("Initialising");
-  m_Buffer = niftk::IGIWaitForSavedDataSourceBuffer::New(50, this); // 25 fps, so 50 frames of data = 2 seconds of buffer.
+  m_Buffer = niftk::IGIDataSourceBuffer::New(50); // 25 fps, so 50 frames of data = 2 seconds of buffer.
 
   QString deviceName = QString::fromStdString(this->GetMicroServiceDeviceName());
   m_ChannelNumber = (deviceName.remove(0, 29)).toInt();
@@ -59,16 +58,8 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Po
   this->StartCapturing();
   m_VideoSource->FetchFrame(); // to try and force at least one update before timer kicks in.
 
-  m_BackgroundSaveThread = new niftk::IGIDataSourceBackgroundSaveThread(NULL, this);
-  m_BackgroundSaveThread->SetInterval(1000); // try saving images every second.
-  m_BackgroundSaveThread->start();
-  if (!m_BackgroundSaveThread->isRunning())
-  {
-    mitkThrow() << "Failed to start background saving thread";
-  }
-
   m_BackgroundDeleteThread = new niftk::IGIDataSourceBackgroundDeleteThread(NULL, this);
-  m_BackgroundDeleteThread->SetInterval(2000); // try saving images every 2 seconds.
+  m_BackgroundDeleteThread->SetInterval(2000); // try deleting images every 2 seconds.
   m_BackgroundDeleteThread->start();
   if (!m_BackgroundDeleteThread->isRunning())
   {
@@ -76,13 +67,14 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Po
   }
 
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
-  m_DataGrabbingThread->SetInterval(40);
+  m_DataGrabbingThread->SetInterval(40); // in effect, if we are saving .jpg, we get less.
   m_DataGrabbingThread->start();
   if (!m_DataGrabbingThread->isRunning())
   {
     mitkThrow() << "Failed to start data grabbing thread";
   }
 
+  this->SetTimeStampTolerance(40000000);
   this->SetStatus("Initialised");
   this->Modified();
 }
@@ -95,9 +87,6 @@ OpenCVVideoDataSourceService::~OpenCVVideoDataSourceService()
   s_Lock.lock();
   s_SourcesInUse.remove(m_ChannelNumber);
   s_Lock.unlock();
-
-  m_BackgroundSaveThread->ForciblyStop();
-  delete m_BackgroundSaveThread;
 
   m_BackgroundDeleteThread->ForciblyStop();
   delete m_BackgroundDeleteThread;
@@ -162,7 +151,13 @@ void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
     mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
   }
 
-  QString directoryPath = QString::fromStdString("/tmp/matt");
+  std::string pathName = this->GetRecordingLocation();
+
+  QString directoryPath = QString::fromStdString(pathName)
+      + QDir::separator()
+      + tr("%1").arg(m_ChannelNumber)
+      ;
+
   QDir directory(directoryPath);
   if (directory.mkpath(directoryPath))
   {
@@ -181,22 +176,9 @@ void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 
 
 //-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::SaveBuffer()
+void OpenCVVideoDataSourceService::CleanBuffer()
 {
-  if(m_IsRecording)
-  {
-    MITK_INFO << this->GetMicroServiceDeviceName() << ": Saving";
-    m_Buffer->SaveBuffer();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::ClearBuffer()
-{
-  MITK_INFO << this->GetMicroServiceDeviceName() << ": Clearing(" << m_Buffer->GetBufferSize() << ")";
-  m_Buffer->ClearBuffer();
-  MITK_INFO << this->GetMicroServiceDeviceName() << ": Cleared(" << m_Buffer->GetBufferSize() << ")";
+  m_Buffer->CleanBuffer();
 }
 
 
@@ -225,11 +207,17 @@ void OpenCVVideoDataSourceService::GrabData()
   wrapper->CloneImage(img);
   wrapper->SetTimeStampInNanoSeconds(m_TimeCreated->GetTimeStampInNanoseconds());
   wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+  wrapper->SetShouldBeSaved(m_IsRecording);
+  wrapper->SetIsSaved(false);
 
   m_Buffer->AddToBuffer(wrapper.GetPointer());
-  this->SetStatus("Grabbing");
 
-  MITK_INFO << this->GetMicroServiceDeviceName() << ": Grabbing";
+  if (m_IsRecording)
+  {
+    this->SaveItem(wrapper.GetPointer());
+  }
+
+  this->SetStatus("Grabbing");
 }
 
 } // end namespace

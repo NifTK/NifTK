@@ -71,7 +71,7 @@ void IGIDataSourceBuffer::AddToBuffer(niftk::IGIDataType::Pointer item)
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSourceBuffer::ClearBuffer()
+void IGIDataSourceBuffer::DestroyBuffer()
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 

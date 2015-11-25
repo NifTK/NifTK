@@ -37,8 +37,9 @@ OpenCVVideoDataSourceFactory::~OpenCVVideoDataSourceFactory()
 //-----------------------------------------------------------------------------
 IGIDataSourceServiceI* OpenCVVideoDataSourceFactory::Create(mitk::DataStorage::Pointer dataStorage)
 {
-  IGIDataSourceServiceI* serviceInstance = OpenCVVideoDataSourceService::New(dataStorage);
-  return serviceInstance;
+  niftk::OpenCVVideoDataSourceService::Pointer serviceInstance = OpenCVVideoDataSourceService::New(dataStorage);
+  serviceInstance->Register();
+  return serviceInstance.GetPointer();
 }
 
 } // end namespace

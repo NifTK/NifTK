@@ -34,7 +34,7 @@ IGIDataSourceBackgroundDeleteThread::~IGIDataSourceBackgroundDeleteThread()
 //-----------------------------------------------------------------------------
 void IGIDataSourceBackgroundDeleteThread::OnTimeoutImpl()
 {
-  m_Source->ClearBuffer();
+  m_Source->CleanBuffer();
 }
 
 } // end namespace
