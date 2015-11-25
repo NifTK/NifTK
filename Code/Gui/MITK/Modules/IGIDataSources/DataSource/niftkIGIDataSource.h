@@ -80,16 +80,28 @@ protected:
   IGIDataSource(const IGIDataSource&); // Purposefully not implemented.
   IGIDataSource& operator=(const IGIDataSource&); // Purposefully not implemented.
 
-  igtl::TimeStamp::Pointer      m_TimeCreated; // Expensive to recreate.
+  /**
+   * \brief Derived classes request a node for a given name. If the node does
+   * not exist, it will be created with some default properties.
+   * \param name if supplied the node will be assigned that name,
+   * and if empty, the node will be given the name this->GetMicroServiceDeviceName().
+   * \param addToDataStorage if true, will be added to data storage,
+   * if false, the caller can determine when to do it.
+   */
+  mitk::DataNode::Pointer GetDataNode(const std::string& name=std::string(), const bool& addToDataStorage=true);
+  mitk::DataStorage::Pointer GetDataStorage() const;
+
+  igtl::TimeStamp::Pointer          m_TimeCreated; // Expensive to recreate, so available to sub-classes.
 
 private:
 
-  mitk::DataStorage::Pointer      m_DataStorage;
-  std::string                     m_MicroServiceDeviceName;
-  us::ServiceRegistration<Self>   m_MicroServiceRegistration;
-  std::string                     m_RecordingLocation;
-  std::string                     m_Status;
-  niftk::IGIDataType::IGITimeType m_TimeStampTolerance;
+  mitk::DataStorage::Pointer        m_DataStorage;
+  std::set<mitk::DataNode::Pointer> m_DataNodes;
+  std::string                       m_MicroServiceDeviceName;
+  us::ServiceRegistration<Self>     m_MicroServiceRegistration;
+  std::string                       m_RecordingLocation;
+  std::string                       m_Status;
+  niftk::IGIDataType::IGITimeType   m_TimeStampTolerance;
 
 };
 

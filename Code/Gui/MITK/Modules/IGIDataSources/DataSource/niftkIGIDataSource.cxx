@@ -67,7 +67,61 @@ IGIDataSource::~IGIDataSource()
     m_MicroServiceRegistration.Unregister();
   }
   m_MicroServiceRegistration = 0;
+
+  if (m_DataStorage.IsNotNull())
+  {
+    std::set<mitk::DataNode::Pointer>::iterator iter;
+    for (iter = m_DataNodes.begin(); iter != m_DataNodes.end(); iter++)
+    {
+      m_DataStorage->Remove(*iter);
+    }
+  }
 }
+
+
+//-----------------------------------------------------------------------------
+mitk::DataStorage::Pointer IGIDataSource::GetDataStorage() const
+{
+  return m_DataStorage;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name, const bool& addToDataStorage)
+{
+  if (m_DataStorage.IsNull())
+  {
+    mitkThrow() << "DataStorage is NULL!";
+  }
+
+  // If name is not specified, use the data source name itself.
+  std::string nodeName = name;
+  if (nodeName.size() == 0)
+  {
+    nodeName = this->GetMicroServiceDeviceName();
+  }
+
+  // Try and get existing node.
+  mitk::DataNode::Pointer result = m_DataStorage->GetNamedNode(nodeName.c_str());
+
+  // If that fails, make one with the right properties.
+  if (result.IsNull())
+  {
+    result = mitk::DataNode::New();
+    result->SetVisibility(true);
+    result->SetOpacity(1);
+    result->SetName(nodeName);
+
+    if (addToDataStorage)
+    {
+      m_DataStorage->Add(result);
+    }
+    m_DataNodes.insert(result);
+  }
+
+  return result;
+}
+
 
 } // end namespace
 
