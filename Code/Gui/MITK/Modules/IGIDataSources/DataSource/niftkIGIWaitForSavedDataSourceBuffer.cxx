@@ -20,9 +20,9 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIWaitForSavedDataSourceBuffer::IGIWaitForSavedDataSourceBuffer(BufferType::size_type minSize, niftk::IGIDataSource*)
+IGIWaitForSavedDataSourceBuffer::IGIWaitForSavedDataSourceBuffer(BufferType::size_type minSize, niftk::IGIDataSource* dataSource)
 : IGIDataSourceBuffer(minSize)
-, m_DataSource()
+, m_DataSource(dataSource)
 {
   if (m_DataSource == NULL)
   {

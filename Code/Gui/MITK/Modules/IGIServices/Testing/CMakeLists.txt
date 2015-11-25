@@ -12,7 +12,12 @@
 #
 #============================================================================*/
 
+set(QT_USE_QTTEST 1)
+include(${QT_USE_FILE})
+
 MITK_CREATE_MODULE_TESTS(LABELS niftkIGIServices)
+
+mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES Qt4|QtTest)
 
 mitkAddCustomModuleTest(REQ-2001-CSD-0001-008-01 niftkPointRegServiceRAIITest )
 mitkAddCustomModuleTest(REQ-2001-CSD-0002-001-01 niftkICPRegServiceRAIITest ${NIFTK_DATA_DIR}/Input/stereo_matching_output.mps ${NIFTK_DATA_DIR}/Input/small_liver_phantom_to_points.vtk 20 200)

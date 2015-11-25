@@ -45,11 +45,12 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Po
 , m_Buffer(NULL)
 , m_BackgroundSaveThread(NULL)
 , m_BackgroundDeleteThread(NULL)
+, m_DataGrabbingThread(NULL)
 , m_IsRecording(false)
 {
   this->SetStatus("Initialising");
-
   m_Buffer = niftk::IGIWaitForSavedDataSourceBuffer::New(50, this); // 25 fps, so 50 frames of data = 2 seconds of buffer.
+
 
   QString deviceName = QString::fromStdString(this->GetMicroServiceDeviceName());
   m_ChannelNumber = (deviceName.remove(0, 29)).toInt();

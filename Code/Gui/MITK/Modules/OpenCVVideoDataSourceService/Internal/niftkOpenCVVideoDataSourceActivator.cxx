@@ -37,6 +37,7 @@ void OpenCVVideoDataSourceActivator::Load(us::ModuleContext* context)
 {
   m_Factory.reset(new OpenCVVideoDataSourceFactory);
   us::ServiceProperties props;
+  props["Name"] = std::string("OpenCVVideoDataSourceFactory");
   context->RegisterService<IGIDataSourceFactoryServiceI>(m_Factory.get(), props);
 }
 

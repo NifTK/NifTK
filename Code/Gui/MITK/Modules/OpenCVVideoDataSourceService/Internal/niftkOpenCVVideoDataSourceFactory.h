@@ -15,7 +15,6 @@
 #ifndef niftkOpenCVVideoDataSourceFactory_h
 #define niftkOpenCVVideoDataSourceFactory_h
 
-#include "niftkOpenCVVideoDataSourceServiceExports.h"
 #include <niftkIGIDataSourceFactoryServiceI.h>
 
 namespace niftk
@@ -25,7 +24,7 @@ namespace niftk
 * \class OpenCVVideoDataSourceFactory
 * \brief Factory class to create OpenCVVideoDataSources.
  */
-class NIFTKOPENCVVIDEODATASOURCESERVICE_EXPORT OpenCVVideoDataSourceFactory : public IGIDataSourceFactoryServiceI
+class OpenCVVideoDataSourceFactory : public IGIDataSourceFactoryServiceI
 {
 
 public:
