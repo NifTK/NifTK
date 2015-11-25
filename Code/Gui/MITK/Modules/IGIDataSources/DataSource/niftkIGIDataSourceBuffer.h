@@ -50,6 +50,9 @@ public:
   mitkClassMacroItkParent(IGIDataSourceBuffer, itk::Object);
   mitkNewMacro1Param(IGIDataSourceBuffer, BufferType::size_type);
 
+  itkSetStringMacro(Name);
+  itkGetStringMacro(Name);
+
   /**
   * \brief Adds an item to the buffer, which if the calling object deletes
   * pointers, then the buffer is effectively the owner.
@@ -121,6 +124,7 @@ protected:
   BufferType                      m_Buffer;
   BufferType::iterator            m_BufferIterator;
   BufferType::size_type           m_MinimumSize;
+  std::string                     m_Name;
 
 private:
 
