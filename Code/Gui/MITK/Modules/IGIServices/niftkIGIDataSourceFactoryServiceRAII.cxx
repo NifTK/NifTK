@@ -39,6 +39,11 @@ IGIDataSourceFactoryServiceRAII::IGIDataSourceFactoryServiceRAII(const std::stri
     mitkThrow() << "Unable to get us::ServiceReference in IGIDataSourceFactoryServiceRAII(" << factoryName << ").";
   }
 
+  if (m_Refs.size() > 1)
+  {
+    mitkThrow() << "There should only be 1 us::ServiceReference for IGIDataSourceFactoryServiceRAII(" << factoryName << "), but i found " << m_Refs.size();
+  }
+
   m_Service = m_ModuleContext->GetService<niftk::IGIDataSourceFactoryServiceI>(m_Refs.front());
 
   if (m_Service == NULL)
