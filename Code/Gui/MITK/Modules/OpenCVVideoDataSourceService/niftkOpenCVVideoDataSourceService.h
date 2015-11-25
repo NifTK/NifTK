@@ -94,6 +94,7 @@ private:
   niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
   niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;
   bool                                            m_IsRecording;
+
 }; // end class
 
 } // end namespace

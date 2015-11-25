@@ -15,5 +15,7 @@
 set(CPP_FILES
   niftkOpenCVVideoDataSourceService.cxx
   niftkOpenCVVideoDataType.cxx
+  niftkOpenCVVideoDataSourceFactory.cxx
+  niftkOpenCVVideoDataSourceActivator.cxx
 )
 
