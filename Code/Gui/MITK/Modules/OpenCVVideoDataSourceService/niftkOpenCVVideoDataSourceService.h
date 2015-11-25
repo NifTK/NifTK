@@ -22,11 +22,13 @@
 #include <niftkIGIDataSourceGrabbingThread.h>
 #include <niftkIGISaveableDataSourceI.h>
 #include <niftkIGILocalDataSourceI.h>
+
 #include <mitkOpenCVVideoSource.h>
 
 #include <QObject>
 #include <QSet>
 #include <QMutex>
+#include <QObject>
 
 #include <string>
 
@@ -43,6 +45,7 @@ class NIFTKOPENCVVIDEODATASOURCESERVICE_EXPORT OpenCVVideoDataSourceService
     : public IGIDataSource
     , public IGISaveableDataSourceI
     , public IGILocalDataSourceI
+    , public QObject
 {
 
 public:
@@ -91,7 +94,6 @@ private:
   niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
   niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;
   bool                                            m_IsRecording;
-
 }; // end class
 
 } // end namespace

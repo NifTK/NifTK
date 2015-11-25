@@ -16,13 +16,14 @@
 #define niftkIGIDataSource_h
 
 #include "niftkIGIDataSourcesExports.h"
-#include "niftkIGIDataType.h"
+#include <niftkIGIDataType.h>
 #include <niftkIGIDataSourceServiceI.h>
 
 #include <mitkCommon.h>
 #include <itkVersion.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
+#include <igtlTimeStamp.h>
 
 #include <mitkDataStorage.h>
 #include <mitkServiceInterface.h>
@@ -60,15 +61,16 @@ public:
   */
   virtual void ClearBuffer() = 0;
 
-  /**
-  * \brief Gets the device name, set during construction, and never changed.
-  */
-  std::string GetDeviceName();
+  itkGetStringMacro(MicroServiceDeviceName);
 
-  /**
-  * \see niftk::IGIDataSourceServiceI::SetRecordingLocation()
-  */
-  virtual void SetRecordingLocation(const std::string& pathName) override;
+  itkSetStringMacro(Status);
+  itkGetStringMacro(Status);
+
+  itkSetStringMacro(RecordingLocation);
+  itkGetStringMacro(RecordingLocation);
+
+  itkSetMacro(TimeStampTolerance, niftk::IGIDataType::IGITimeType);
+  itkGetMacro(TimeStampTolerance, niftk::IGIDataType::IGITimeType);
 
 protected:
 
@@ -78,12 +80,17 @@ protected:
   IGIDataSource(const IGIDataSource&); // Purposefully not implemented.
   IGIDataSource& operator=(const IGIDataSource&); // Purposefully not implemented.
 
+  igtl::TimeStamp::Pointer      m_TimeCreated; // Expensive to recreate.
+
 private:
 
-  mitk::DataStorage::Pointer    m_DataStorage;
-  std::string                   m_MicroServiceDeviceName;
-  us::ServiceRegistration<Self> m_MicroServiceRegistration;
-  std::string                   m_RecordingLocation;
+  mitk::DataStorage::Pointer      m_DataStorage;
+  std::string                     m_MicroServiceDeviceName;
+  us::ServiceRegistration<Self>   m_MicroServiceRegistration;
+  std::string                     m_RecordingLocation;
+  std::string                     m_Status;
+  niftk::IGIDataType::IGITimeType m_TimeStampTolerance;
+
 };
 
 } // end namespace
