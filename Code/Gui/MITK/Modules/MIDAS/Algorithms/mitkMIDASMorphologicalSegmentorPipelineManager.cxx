@@ -480,24 +480,43 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
 
     if (!m_Pipelines[segmentationImage])
     {
+      /// Note:
+      ///
+      /// We have to set the IgnoreLock option on the read accessors here, so that the
+      /// paintbrush tool can apply its write lock on the same images. Here, we keep
+      /// smart pointers to these images throughout the life of the pipeline. Releasing
+      /// the smart pointers would result in releasing the read lock (and therefore no
+      /// conflict with the paintbrush tool) but it would also mean that we need to
+      /// connect the pipeline over and over again and the would need to recalculate
+      /// the result even if the input images have not changed. (The whole pipeline
+      /// approach would become senseless.)
+      ///
+      /// As we are bypassing the locking mechanism, we must ensure it by the GUI logic
+      /// that the paintbrush interactor and the pipeline update cannot happen at the
+      /// same time.
+
       ImageToItkType::Pointer mitkToItk;
 
       mitkToItk = ImageToItkType::New();
+      mitkToItk->SetOptions(mitk::ImageAccessorBase::IgnoreLock);
       mitkToItk->SetInput(erosionsAdditions);
       mitkToItk->Update();
       workingImages[mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS] = mitkToItk->GetOutput();
 
       mitkToItk = ImageToItkType::New();
+      mitkToItk->SetOptions(mitk::ImageAccessorBase::IgnoreLock);
       mitkToItk->SetInput(erosionsSubtractions);
       mitkToItk->Update();
       workingImages[mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS] = mitkToItk->GetOutput();
 
       mitkToItk = ImageToItkType::New();
+      mitkToItk->SetOptions(mitk::ImageAccessorBase::IgnoreLock);
       mitkToItk->SetInput(dilationsAdditions);
       mitkToItk->Update();
       workingImages[mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS] = mitkToItk->GetOutput();
 
       mitkToItk = ImageToItkType::New();
+      mitkToItk->SetOptions(mitk::ImageAccessorBase::IgnoreLock);
       mitkToItk->SetInput(dilationsSubtractions);
       mitkToItk->Update();
       workingImages[mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS] = mitkToItk->GetOutput();
