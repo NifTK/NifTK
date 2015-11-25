@@ -84,9 +84,13 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Po
 OpenCVVideoDataSourceService::~OpenCVVideoDataSourceService()
 {
   this->StopCapturing();
+
   s_Lock.lock();
   s_SourcesInUse.remove(m_ChannelNumber);
   s_Lock.unlock();
+
+  m_DataGrabbingThread->ForciblyStop();
+  delete m_DataGrabbingThread;
 
   m_BackgroundDeleteThread->ForciblyStop();
   delete m_BackgroundDeleteThread;
@@ -212,6 +216,9 @@ void OpenCVVideoDataSourceService::GrabData()
 
   m_Buffer->AddToBuffer(wrapper.GetPointer());
 
+  // Save synchronously.
+  // This has the side effect that if saving is too slow,
+  // the QTimers just won't keep up, and start missing pulses.
   if (m_IsRecording)
   {
     this->SaveItem(wrapper.GetPointer());
