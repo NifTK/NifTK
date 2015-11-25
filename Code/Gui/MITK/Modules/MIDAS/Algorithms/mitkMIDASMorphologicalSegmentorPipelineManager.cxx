@@ -487,12 +487,12 @@ void MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
       /// smart pointers to these images throughout the life of the pipeline. Releasing
       /// the smart pointers would result in releasing the read lock (and therefore no
       /// conflict with the paintbrush tool) but it would also mean that we need to
-      /// connect the pipeline over and over again and the would need to recalculate
-      /// the result even if the input images have not changed. (The whole pipeline
+      /// re-connect the pipeline over and over again and we would need to re-execute
+      /// filters even if their input images have not changed. (The whole pipeline
       /// approach would become senseless.)
       ///
       /// As we are bypassing the locking mechanism, we must ensure it by the GUI logic
-      /// that the paintbrush interactor and the pipeline update cannot happen at the
+      /// that the paintbrush interactor and the pipeline update are not working at the
       /// same time.
 
       ImageToItkType::Pointer mitkToItk;
