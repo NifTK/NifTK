@@ -37,8 +37,5 @@ int niftkOpenCVDataSourceTest(int argc, char* argv[])
   service->SetRecordingLocation("/tmp/matt");
   service->StartRecording();
 
-  char c;
-  std::cin >> c;
-
   return EXIT_SUCCESS;
 }
