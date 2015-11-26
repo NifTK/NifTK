@@ -16,7 +16,7 @@
 #define QmitkIGIDataSourceManager_h
 
 #include "niftkIGIDataSourcesManagerExports.h"
-#include "ui_QmitkIGIDataSourceManager.h"
+#include "ui_niftkIGIDataSourceManager.h"
 #include <itkObject.h>
 #include <QWidget>
 #include <QList>
@@ -47,7 +47,7 @@ class QmitkIGIDataSourceGui;
  * This widget acts like a widget factory, setting up sources, instantiating
  * the appropriate GUI, and loading it into the grid layout owned by this widget.
  */
-class NIFTKIGIDATASOURCESMANAGER_EXPORT QmitkIGIDataSourceManager : public QWidget, public Ui_QmitkIGIDataSourceManager, public itk::Object
+class NIFTKIGIDATASOURCESMANAGER_EXPORT QmitkIGIDataSourceManager : public QWidget, public Ui_IGIDataSourceManager, public itk::Object
 {
 
   Q_OBJECT

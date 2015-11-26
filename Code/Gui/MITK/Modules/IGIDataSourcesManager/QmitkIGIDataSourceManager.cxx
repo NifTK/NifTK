@@ -366,7 +366,7 @@ void QmitkIGIDataSourceManager::SetPickLatestData(const bool& pickLatest)
 //-----------------------------------------------------------------------------
 void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
 {
-  Ui_QmitkIGIDataSourceManager::setupUi(parent);
+  Ui_IGIDataSourceManager::setupUi(parent);
 
   m_PlayPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/play.png"));
   m_RecordPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/record.png"));

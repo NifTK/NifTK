@@ -25,7 +25,7 @@ set(MOC_H_FILES
 )
 
 set(UI_FILES
-  QmitkIGIDataSourceManager.ui
+  niftkIGIDataSourceManager.ui
 )
 
 set(QRC_FILES
