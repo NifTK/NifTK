@@ -39,13 +39,39 @@ public:
 
   virtual IGIDataSourceServiceI* Create(mitk::DataStorage::Pointer dataStorage) = 0;
 
-  virtual std::string GetNameOfFactory() const;
+  /**
+  * \brief Returns the name of the data source, as perceived by the user in the GUI.
+  */
+  virtual std::string GetDisplayName() const;
+
+  /**
+  * \brief Each data source saves data in a folder of a given name.
+  */
+  virtual std::string GetSaveLocationPrefix() const;
+
+  /**
+  * \brief Returns the name of the class that should be instantiated.
+  */
   virtual std::string GetNameOfService() const;
+
+  /**
+  * \brief Returns the name of the GUI class that should be instantiated.
+  */
   virtual std::string GetNameOfGui() const;
+
+  /**
+  * \brief Returns true if we need a GUI at startup to configure it.
+  */
+  virtual bool GetNeedGuiAtStartup() const;
 
 protected:
 
-  IGIDataSourceFactoryServiceI(std::string factory, std::string service, std::string gui);
+  IGIDataSourceFactoryServiceI(std::string displayName,
+                               std::string savePrefix,
+                               std::string service,
+                               std::string gui,
+                               bool needGuiAtStartup);
+
   virtual ~IGIDataSourceFactoryServiceI();
 
 private:
@@ -53,9 +79,11 @@ private:
   IGIDataSourceFactoryServiceI(const IGIDataSourceFactoryServiceI&); // deliberately not implemented
   IGIDataSourceFactoryServiceI& operator=(const IGIDataSourceFactoryServiceI&); // deliberately not implemented
 
-  std::string m_NameOfFactory;
+  std::string m_DisplayName;
+  std::string m_SavePrefix;
   std::string m_NameOfService;
   std::string m_NameOfGui;
+  bool        m_NeedGuiAtStartup;
 };
 
 } // end namespace

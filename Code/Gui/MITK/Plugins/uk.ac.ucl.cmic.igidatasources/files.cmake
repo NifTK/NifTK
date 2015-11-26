@@ -17,18 +17,18 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  DataSourcesViewActivator.cxx
-  DataSourcesView.cxx
-  DataSourcesViewPreferencePage.cxx
+  niftkDataSourcesViewActivator.cxx
+  niftkDataSourcesView.cxx
+  niftkDataSourcesViewPreferencePage.cxx
 )
 
 set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/internal/DataSourcesViewActivator.h
-  src/internal/DataSourcesView.h
-  src/internal/DataSourcesViewPreferencePage.h
+  src/internal/niftkDataSourcesViewActivator.h
+  src/internal/niftkDataSourcesView.h
+  src/internal/niftkDataSourcesViewPreferencePage.h
 )
 
 # list of resource files which can be used by the plug-in
@@ -43,7 +43,7 @@ set(CACHED_RESOURCE_FILES
 # list of Qt .qrc files which contain additional resources
 # specific to this plugin
 set(QRC_FILES
-  resources/DataSourcesView.qrc
+  resources/niftkDataSourcesView.qrc
 )
 
 set(CPP_FILES )

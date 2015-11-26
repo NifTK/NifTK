@@ -17,7 +17,8 @@
 
 #include <ctkPluginActivator.h>
 
-namespace mitk {
+namespace niftk
+{
 
 class DataSourcesViewActivator :
   public QObject, public ctkPluginActivator
@@ -41,4 +42,4 @@ private:
 
 } // end namespace
 
-#endif // DataSourcesViewActivator_h
+#endif

@@ -12,12 +12,13 @@
 
 =============================================================================*/
 
-#include "DataSourcesViewActivator.h"
+#include "niftkDataSourcesViewActivator.h"
+#include "niftkDataSourcesView.h"
+#include "niftkDataSourcesViewPreferencePage.h"
 #include <QtPlugin>
-#include "DataSourcesView.h"
-#include "DataSourcesViewPreferencePage.h"
 
-namespace mitk {
+namespace niftk
+{
 
 ctkPluginContext* DataSourcesViewActivator::m_PluginContext = 0;
 
@@ -47,5 +48,5 @@ ctkPluginContext* DataSourcesViewActivator::getContext()
 } // end namespace
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igidatasources, mitk::DataSourcesViewActivator)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igidatasources, niftk::DataSourcesViewActivator)
 #endif

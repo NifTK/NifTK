@@ -12,15 +12,17 @@
 
 =============================================================================*/
 
-// Qmitk
-#include "DataSourcesView.h"
+#include "niftkDataSourcesView.h"
+#include "niftkDataSourcesViewActivator.h"
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
 #include <service/event/ctkEventConstants.h>
-#include "DataSourcesViewActivator.h"
 #include <cassert>
+
+namespace niftk
+{
 
 const std::string DataSourcesView::VIEW_ID = "uk.ac.ucl.cmic.igidatasources";
 
@@ -33,7 +35,7 @@ DataSourcesView::DataSourcesView()
 //-----------------------------------------------------------------------------
 DataSourcesView::~DataSourcesView()
 {
-  ctkPluginContext* context = mitk::DataSourcesViewActivator::getContext();
+  ctkPluginContext* context = niftk::DataSourcesViewActivator::getContext();
   if (context)
   {
     ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
@@ -48,9 +50,8 @@ DataSourcesView::~DataSourcesView()
     }
   }
 
-
   bool ok = false;
-  ok = QObject::disconnect(m_DataSourceManager, SIGNAL(UpdateGuiFinishedDataSources(igtlUint64)), this, SLOT(OnUpdateGuiEnd(igtlUint64)));
+  ok = QObject::disconnect(m_DataSourceManager, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType)));
   assert(ok);
   ok = QObject::disconnect(m_DataSourceManager, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)));
   assert(ok);
@@ -60,14 +61,21 @@ DataSourcesView::~DataSourcesView()
 //-----------------------------------------------------------------------------
 void DataSourcesView::OnRecordingShouldStart(const ctkEvent& event)
 {
-  m_DataSourceManager->OnRecordStart();
+  m_DataSourceManager->StartRecording();
 }
 
 
 //-----------------------------------------------------------------------------
 void DataSourcesView::OnRecordingShouldStop(const ctkEvent& event)
 {
-  m_DataSourceManager->OnStop();
+  m_DataSourceManager->StopRecording();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataSourcesView::OnPreferencesChanged(const berry::IBerryPreferences*)
+{
+  this->RetrievePreferenceValues();
 }
 
 
@@ -79,21 +87,27 @@ std::string DataSourcesView::GetViewID() const
 
 
 //-----------------------------------------------------------------------------
+void DataSourcesView::SetFocus()
+{
+  m_DataSourceManager->setFocus();
+}
+
+
+//-----------------------------------------------------------------------------
 void DataSourcesView::CreateQtPartControl( QWidget *parent )
 {
-  m_DataSourceManager = QmitkIGIDataSourceManager::New();
+  m_DataSourceManager = IGIDataSourceManager::New(this->GetDataStorage());
   m_DataSourceManager->setupUi(parent);
-  m_DataSourceManager->SetDataStorage(this->GetDataStorage());
 
   this->RetrievePreferenceValues();
 
   bool ok = false;
-  ok = QObject::connect(m_DataSourceManager, SIGNAL(UpdateGuiFinishedDataSources(igtlUint64)), this, SLOT(OnUpdateGuiEnd(igtlUint64)));
+  ok = QObject::connect(m_DataSourceManager, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType)));
   assert(ok);
   ok = QObject::connect(m_DataSourceManager, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)), Qt::QueuedConnection);
   assert(ok);
 
-  ctkPluginContext* context = mitk::DataSourcesViewActivator::getContext();
+  ctkPluginContext* context = niftk::DataSourcesViewActivator::getContext();
   ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
   if (ref)
   {
@@ -106,15 +120,7 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
     eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStart(ctkEvent)), properties);
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGISTOPRECORDING";
     eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStop(ctkEvent)), properties);
-
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void DataSourcesView::SetFocus()
-{
-  m_DataSourceManager->setFocus();
 }
 
 
@@ -127,75 +133,25 @@ void DataSourcesView::RetrievePreferenceValues()
     QString path = prefs->Get("output directory prefix", "");
     if (path == "")
     {
-      path = QmitkIGIDataSourceManager::GetDefaultPath();
-    }
-    QColor errorColour = QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR;
-    QString errorColourName = prefs->Get("error colour", "");
-    if (errorColourName != "")
-    {
-      errorColour = QColor(errorColourName);
-    }
-    QColor warningColour = QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR;
-    QString warningColourName = prefs->Get("warning colour", "");
-    if (warningColourName != "")
-    {
-      warningColour = QColor(warningColourName);
-    }
-    QColor okColour = QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR;
-    QString okColourName = prefs->Get("ok colour", "");
-    if (okColourName != "")
-    {
-      okColour = QColor(okColourName);
+      path = niftk::IGIDataSourceManager::GetDefaultPath();
     }
 
-    int refreshRate = prefs->GetInt("refresh rate", QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE);
-    int clearRate = prefs->GetInt("clear data rate", QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE);
-    int timingTolerance = prefs->GetInt("timing tolerance", QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE);
-    bool saveOnReceipt = prefs->GetBool("save on receive", QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT);
-    bool saveInBackground = prefs->GetBool("save in background", QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND);
-    bool pickLatestData = prefs->GetBool("pick latest data", QmitkIGIDataSourceManager::DEFAULT_PICK_LATEST_DATA);
+    int refreshRate = prefs->GetInt("refresh rate", niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE);
 
     m_DataSourceManager->SetDirectoryPrefix(path);
     m_DataSourceManager->SetFramesPerSecond(refreshRate);
-    m_DataSourceManager->SetErrorColour(errorColour);
-    m_DataSourceManager->SetWarningColour(warningColour);
-    m_DataSourceManager->SetOKColour(okColour);
-    m_DataSourceManager->SetClearDataRate(clearRate);
-    m_DataSourceManager->SetTimingTolerance(timingTolerance);
-    m_DataSourceManager->SetSaveOnReceipt(saveOnReceipt);
-    m_DataSourceManager->SetSaveInBackground(saveInBackground);
-    m_DataSourceManager->SetPickLatestData(pickLatestData);
   }
   else
   {
-    QString defaultPath = QmitkIGIDataSourceManager::GetDefaultPath();
-    QColor defaultErrorColor = QmitkIGIDataSourceManager::DEFAULT_ERROR_COLOUR;
-    QColor defaultWarningColor = QmitkIGIDataSourceManager::DEFAULT_WARNING_COLOUR;
-    QColor defaultOKColor = QmitkIGIDataSourceManager::DEFAULT_OK_COLOUR;
-
+    QString defaultPath = niftk::IGIDataSourceManager::GetDefaultPath();
     m_DataSourceManager->SetDirectoryPrefix(defaultPath);
-    m_DataSourceManager->SetFramesPerSecond(QmitkIGIDataSourceManager::DEFAULT_FRAME_RATE);
-    m_DataSourceManager->SetErrorColour(defaultErrorColor);
-    m_DataSourceManager->SetWarningColour(defaultWarningColor);
-    m_DataSourceManager->SetOKColour(defaultOKColor);
-    m_DataSourceManager->SetClearDataRate(QmitkIGIDataSourceManager::DEFAULT_CLEAR_RATE);
-    m_DataSourceManager->SetTimingTolerance(QmitkIGIDataSourceManager::DEFAULT_TIMING_TOLERANCE);
-    m_DataSourceManager->SetSaveOnReceipt(QmitkIGIDataSourceManager::DEFAULT_SAVE_ON_RECEIPT);
-    m_DataSourceManager->SetSaveInBackground(QmitkIGIDataSourceManager::DEFAULT_SAVE_IN_BACKGROUND);
-    m_DataSourceManager->SetPickLatestData(QmitkIGIDataSourceManager::DEFAULT_PICK_LATEST_DATA);
+    m_DataSourceManager->SetFramesPerSecond(niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void DataSourcesView::OnPreferencesChanged(const berry::IBerryPreferences*)
-{
-  this->RetrievePreferenceValues();
-}
-
-
-//-----------------------------------------------------------------------------
-void DataSourcesView::OnUpdateGuiEnd(igtlUint64 timeStamp)
+void DataSourcesView::OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType timeStamp)
 {
   ctkDictionary properties;
   properties["timeStamp"] = timeStamp;
@@ -210,3 +166,5 @@ void DataSourcesView::OnRecordingStarted(QString baseDirectory)
   properties["directory"] = baseDirectory;
   emit RecordingStarted(properties);
 }
+
+} // end namespace
