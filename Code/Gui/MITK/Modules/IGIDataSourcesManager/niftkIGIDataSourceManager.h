@@ -37,10 +37,13 @@ namespace niftk
  * \class IGIDataSourceManager
  * \brief Class to manage a list of IGIDataSources (trackers, ultra-sound machines, video etc).
  *
- * This widget acts like a widget factory, setting up sources, instantiating
- * the appropriate GUI, and loading it into the grid layout owned by this widget.
+ * This widget acts like a widget factory, creating sources, connecting
+ * the appropriate GUI, and managing the recording and playback process.
  */
-class NIFTKIGIDATASOURCESMANAGER_EXPORT IGIDataSourceManager : public QWidget, public Ui_IGIDataSourceManager, public itk::Object
+class NIFTKIGIDATASOURCESMANAGER_EXPORT IGIDataSourceManager :
+    public QWidget,
+    public Ui_IGIDataSourceManager,
+    public itk::Object
 {
 
   Q_OBJECT
