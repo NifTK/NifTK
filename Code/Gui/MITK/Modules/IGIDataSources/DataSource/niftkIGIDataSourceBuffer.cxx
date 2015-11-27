@@ -122,7 +122,7 @@ niftk::IGIDataType::IGITimeType IGIDataSourceBuffer::GetFirstTimeStamp() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
-  if (m_Buffer.size())
+  if (m_Buffer.size() == 0)
   {
     mitkThrow() << "Empty Buffer, so can't get first time stamp";
   }
@@ -136,7 +136,7 @@ niftk::IGIDataType::IGITimeType IGIDataSourceBuffer::GetLastTimeStamp() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
-  if (m_Buffer.size())
+  if (m_Buffer.size() == 0)
   {
     mitkThrow() << "Empty Buffer, so can't get first last stamp";
   }
@@ -224,12 +224,7 @@ niftk::IGIDataType::Pointer IGIDataSourceBuffer::GetItem(const niftk::IGIDataTyp
     iter++;
   }
 
-  if (iter == m_Buffer.end())
-  {
-    return result;
-  }
-
-  if ((*iter)->GetTimeStampInNanoSeconds() == effectiveTime)
+  if (iter != m_Buffer.end() && (*iter)->GetTimeStampInNanoSeconds() == effectiveTime)
   {
     return *iter;
   }
