@@ -279,7 +279,15 @@ void IGIDataSourceManager::AddSource(QString name, QList<QMap<QString, QVariant>
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::RemoveSource(int rowIndex)
 {
+  bool updateTimerWasOn = this->IsUpdateTimerOn();
+  this->StopUpdateTimer();
+
   m_Sources.removeAt(rowIndex);
+
+  if (m_Sources.size() > 0 && updateTimerWasOn)
+  {
+    this->StartUpdateTimer();
+  }
 }
 
 
