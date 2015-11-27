@@ -15,8 +15,6 @@
 set(CPP_FILES
   niftkIGIDataSourceManager.cxx
   QmitkIGIDataSourceManager.cxx
-  QmitkIGIDataSourceManagerClearDownThread.cxx
-  QmitkIGIDataSourceManagerGuiUpdateThread.cxx
 )
 
 set(MOC_H_FILES

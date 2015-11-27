@@ -82,6 +82,11 @@ public:
   */
   void SetFramesPerSecond(const int& framesPerSecond);
 
+  /**
+  * \brief Called by niftk::IGIDataSourceManagerGuiUpdateThread to update the Gui.
+  */
+  void OnUpdateGui();
+
 signals:
 
   /**

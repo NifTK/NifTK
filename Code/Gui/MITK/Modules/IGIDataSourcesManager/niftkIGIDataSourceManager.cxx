@@ -55,6 +55,46 @@ IGIDataSourceManager::~IGIDataSourceManager()
 
 
 //-----------------------------------------------------------------------------
+QString IGIDataSourceManager::GetDefaultPath()
+{
+  QString path;
+  QDir directory;
+
+  // if the user has configured a per-machine default location for igi data.
+  // if that path exist we use it as a default (prefs from uk_ac_ucl_cmic_igidatasources will override it if necessary).
+  QProcessEnvironment   myEnv = QProcessEnvironment::systemEnvironment();
+  path = myEnv.value(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE, "");
+  directory.setPath(path);
+
+  if (!directory.exists())
+  {
+    path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = QDir::currentPath();
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = "";
+  }
+  return path;
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManager::setupUi(QWidget* parent)
 {
   Ui_IGIDataSourceManager::setupUi(parent);
@@ -139,46 +179,6 @@ void IGIDataSourceManager::OnAddSource()
 
 
 //-----------------------------------------------------------------------------
-QString IGIDataSourceManager::GetDefaultPath()
-{
-  QString path;
-  QDir directory;
-
-  // if the user has configured a per-machine default location for igi data.
-  // if that path exist we use it as a default (prefs from uk_ac_ucl_cmic_igidatasources will override it if necessary).
-  QProcessEnvironment   myEnv = QProcessEnvironment::systemEnvironment();
-  path = myEnv.value(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE, "");
-  directory.setPath(path);
-
-  if (!directory.exists())
-  {
-    path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-    path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-    path = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-    path = QDir::currentPath();
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-    path = "";
-  }
-  return path;
-}
-
-
-//-----------------------------------------------------------------------------
 void IGIDataSourceManager::StartRecording()
 {
 
@@ -201,6 +201,13 @@ void IGIDataSourceManager::SetDirectoryPrefix(const QString& directoryPrefix)
 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetFramesPerSecond(const int& framesPerSecond)
+{
+
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::OnUpdateGui()
 {
 
 }

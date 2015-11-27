@@ -54,9 +54,6 @@ class NIFTKIGIDATASOURCESMANAGER_EXPORT QmitkIGIDataSourceManager : public QWidg
 
 public:
 
-  friend class QmitkIGIDataSourceManagerClearDownThread;
-  friend class QmitkIGIDataSourceManagerGuiUpdateThread;
-
   mitkClassMacroItkParent(QmitkIGIDataSourceManager, itk::Object);
   itkNewMacro(QmitkIGIDataSourceManager);
 
