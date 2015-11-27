@@ -48,7 +48,9 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Po
 , m_IsRecording(false)
 {
   this->SetStatus("Initialising");
-  m_Buffer = niftk::IGIDataSourceBuffer::New(50); // 25 fps, so 50 frames of data = 2 seconds of buffer.
+
+  int defaultFramesPerSecond = 25;
+  m_Buffer = niftk::IGIDataSourceBuffer::New(defaultFramesPerSecond * 2);
 
   QString deviceName = QString::fromStdString(this->GetMicroServiceDeviceName());
   m_ChannelNumber = (deviceName.remove(0, 29)).toInt();
@@ -56,7 +58,19 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Po
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_VideoSource->SetVideoCameraInput(m_ChannelNumber);
   this->StartCapturing();
-  m_VideoSource->FetchFrame(); // to try and force at least one update before timer kicks in.
+
+  // Check we can actually grab, as MITK class doesn't throw exceptions on creation.
+  m_VideoSource->FetchFrame();
+  const IplImage* img = m_VideoSource->GetCurrentFrame();
+  if (img == NULL)
+  {
+    s_Lock.lock();
+    s_SourcesInUse.remove(m_ChannelNumber);
+    s_Lock.unlock();
+
+    mitkThrow() << "Failed to create " << this->GetMicroServiceDeviceName()
+                << ", please check log file!";
+  }
 
   m_BackgroundDeleteThread = new niftk::IGIDataSourceBackgroundDeleteThread(NULL, this);
   m_BackgroundDeleteThread->SetInterval(2000); // try deleting images every 2 seconds.
@@ -66,15 +80,20 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Po
     mitkThrow() << "Failed to start background deleting thread";
   }
 
+  // Set the interval based on desired number of frames per second.
+  // So, 25 fps = 40 milliseconds.
+  // But if system slows down (eg. saving images), then Qt drops clock ticks
+  // so you will get less than 25 fps.
+  int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
+  this->SetTimeStampTolerance(intervalInMilliseconds * 1000000); // conver to nanoseconds
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
-  m_DataGrabbingThread->SetInterval(40); // in effect, if we are saving .jpg, we get less.
+  m_DataGrabbingThread->SetInterval(intervalInMilliseconds);
   m_DataGrabbingThread->start();
   if (!m_DataGrabbingThread->isRunning())
   {
     mitkThrow() << "Failed to start data grabbing thread";
   }
 
-  this->SetTimeStampTolerance(40000000);
   this->SetStatus("Initialised");
   this->Modified();
 }
@@ -171,6 +190,7 @@ void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
     {
       mitkThrow() << "Failed to save OpenCVVideoDataType in cvSaveImage!";
     }
+    data->SetIsSaved(true);
   }
   else
   {
@@ -198,7 +218,6 @@ void OpenCVVideoDataSourceService::GrabData()
   // Grab a video image.
   m_VideoSource->FetchFrame();
   const IplImage* img = m_VideoSource->GetCurrentFrame();
-
   if (img == NULL)
   {
     mitkThrow() << "Failed to get a valid video frame!";

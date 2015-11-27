@@ -28,6 +28,7 @@
 #include <itkVersion.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
+#include <igtlTimeStamp.h>
 
 #include <QWidget>
 #include <QMap>
@@ -144,6 +145,7 @@ private:
   QTimer                                                          *m_GuiUpdateTimer;
   int                                                              m_FrameRate;
   QString                                                          m_DirectoryPrefix;
+  igtl::TimeStamp::Pointer                                         m_TimeStampGenerator;
 
 }; // end class;
 

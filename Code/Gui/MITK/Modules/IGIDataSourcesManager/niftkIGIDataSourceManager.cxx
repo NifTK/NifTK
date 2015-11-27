@@ -15,11 +15,7 @@
 #include "niftkIGIDataSourceManager.h"
 
 #include <usGetModuleContext.h>
-
 #include <mitkExceptionMacro.h>
-
-#include <igtlTimeStamp.h>
-
 #include <QDesktopServices>
 #include <QProcessEnvironment>
 #include <QMessageBox>
@@ -44,6 +40,8 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
     mitkThrow() << "Data Storage is NULL!";
   }
   m_DirectoryPrefix = this->GetDefaultPath();
+  m_TimeStampGenerator = igtl::TimeStamp::New();
+  m_TimeStampGenerator->GetTime();
 }
 
 
@@ -189,72 +187,84 @@ void IGIDataSourceManager::setupUi(QWidget* parent)
 void IGIDataSourceManager::OnAddSource()
 {
   QString name = m_SourceSelectComboBox->currentText();
-  if (!m_NameToFactoriesMap.contains(name))
-  {
-    mitkThrow() << "Cannot find a factory for " << name.toStdString();
-  }
 
-  niftk::IGIDataSourceFactoryServiceI *factory = m_NameToFactoriesMap[name];
-  if (factory == NULL)
+  try
   {
-    mitkThrow() << "Failed to retrieve factory for " << name.toStdString();
-  }
 
-  // First create data source.
-  niftk::IGIDataSourceI::Pointer source = factory->Create(m_DataStorage);
-  if (source.IsNull())
-  {
-    mitkThrow() << "Failed to create data source for " << name.toStdString();
-  }
-  m_Sources.push_back(source);
-
-  if (factory->GetNeedGuiAtStartup())
-  {
-    // Catch All Exceptions.
-    try
+    if (!m_NameToFactoriesMap.contains(name))
     {
-    } catch (mitk::Exception& e)
-    {
-      QMessageBox::critical(this, QString("Creating ") + name,
-        QString("Unknown ERROR:") + QString(e.GetDescription()),
-        QMessageBox::Ok);
-      return;
+      mitkThrow() << "Cannot find a factory for " << name.toStdString();
     }
-  }
 
-  bool shouldUpdate = true;
-  QVector<QString> fields;
-  fields.push_back("status");
-  fields.push_back("0");    // rate
-  fields.push_back("0");    // lag
-  fields.push_back("type");
-  fields.push_back("device");
-  fields.push_back("description");
+    niftk::IGIDataSourceFactoryServiceI *factory = m_NameToFactoriesMap[name];
+    if (factory == NULL)
+    {
+      mitkThrow() << "Failed to retrieve factory for " << name.toStdString();
+    }
 
-  // Create new row in table.
-  // Previously: You got 1 row per tracker tool.
-  //             So 1 spectra could have 3 rows in total.
-  // Now:        Its strictly 1 row per data source.
-  int newRowNumber = m_TableWidget->rowCount();
-  m_TableWidget->insertRow(newRowNumber);
-  for (unsigned int i = 0; i < fields.size(); i++)
+    // All our code should throw mitk::Exception.
+    niftk::IGIDataSourceI::Pointer source = factory->Create(m_DataStorage);
+
+    // Double check that we actually got a valid source,
+    // as people may write services that fail, do not throw,
+    // and yet still return NULL.
+    if (source.IsNull())
+    {
+      mitkThrow() << "Factory created a NULL source for " << name.toStdString();
+    }
+
+    // Only some sources will need a GUI to configure.
+    if (factory->GetNeedGuiAtStartup())
+    {
+
+    }
+
+    // So, GUI was either not necessary, or it was successful (no exceptions).
+    // So, now we are confident that we have a valid source.
+    m_Sources.push_back(source);
+
+    bool shouldUpdate = true;
+    QVector<QString> fields;
+    fields.push_back("status");
+    fields.push_back("0");    // rate
+    fields.push_back("0");    // lag
+    fields.push_back("type");
+    fields.push_back("device");
+    fields.push_back("description");
+
+    // Create new row in table.
+    // Previously: You got 1 row per tracker tool.
+    //             So 1 spectra could have 3 rows in total.
+    // Now:        Its strictly 1 row per data source.
+    int newRowNumber = m_TableWidget->rowCount();
+    m_TableWidget->insertRow(newRowNumber);
+    for (unsigned int i = 0; i < fields.size(); i++)
+    {
+      QTableWidgetItem *item = new QTableWidgetItem(fields[i]);
+      item->setTextAlignment(Qt::AlignCenter);
+      item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      m_TableWidget->setItem(newRowNumber, i + 1, item);
+    }
+    QTableWidgetItem* freezeItem = new QTableWidgetItem(" ");
+    freezeItem->setTextAlignment(Qt::AlignCenter);
+    freezeItem->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+    freezeItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
+    m_TableWidget->setItem(newRowNumber, 0, freezeItem);
+
+    // Launch timers
+    if (!m_GuiUpdateTimer->isActive())
+    {
+      m_GuiUpdateTimer->start();
+    }
+
+  } catch (mitk::Exception& e)
   {
-    QTableWidgetItem *item = new QTableWidgetItem(fields[i]);
-    item->setTextAlignment(Qt::AlignCenter);
-    item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    m_TableWidget->setItem(newRowNumber, i + 1, item);
-  }
-  QTableWidgetItem* freezeItem = new QTableWidgetItem(" ");
-  freezeItem->setTextAlignment(Qt::AlignCenter);
-  freezeItem->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-  freezeItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
-  m_TableWidget->setItem(newRowNumber, 0, freezeItem);
+    QMessageBox::critical(this, QString("Creating ") + name,
+      QString("ERROR:") + QString(e.GetDescription()),
+      QMessageBox::Ok);
+    return;
 
-  // Launch timers
-  if (!m_GuiUpdateTimer->isActive())
-  {
-    m_GuiUpdateTimer->start();
-  }
+  } // end try
 }
 
 
@@ -297,12 +307,10 @@ void IGIDataSourceManager::OnRemoveSource()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::OnUpdateGui()
 {
-  igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
-  timeNow->GetTime();
-
+  m_TimeStampGenerator->GetTime();
   for (int i = 0; i < m_Sources.size(); i++)
   {
-    //m_Sources[i]->Update(timeNow->GetTimeStampInNanoseconds());
+    //m_Sources[i]->Update(m_TimeStampGenerator->GetTimeStampInNanoseconds());
   }
 }
 
