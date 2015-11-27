@@ -41,7 +41,7 @@ int OpenCVVideoDataSourceService::GetNextChannelNumber()
 
 //-----------------------------------------------------------------------------
 OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Pointer dataStorage)
-: IGIDataSource((QString("OpenCVVideoDataSourceService-") + QString::number(GetNextChannelNumber())).toStdString(), dataStorage)
+: IGIDataSource((QString("OpenCV-") + QString::number(GetNextChannelNumber())).toStdString(), dataStorage)
 , m_Buffer(NULL)
 , m_BackgroundDeleteThread(NULL)
 , m_DataGrabbingThread(NULL)
@@ -174,13 +174,7 @@ void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
     mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
   }
 
-  std::string pathName = this->GetRecordingLocation();
-
-  QString directoryPath = QString::fromStdString(pathName)
-      + QDir::separator()
-      + tr("%1").arg(m_ChannelNumber)
-      ;
-
+  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
   QDir directory(directoryPath);
   if (directory.mkpath(directoryPath))
   {
@@ -244,6 +238,17 @@ void OpenCVVideoDataSourceService::GrabData()
   }
 
   this->SetStatus("Grabbing");
+}
+
+
+//-----------------------------------------------------------------------------
+std::string OpenCVVideoDataSourceService::GetSaveDirectoryName()
+{
+  return this->GetRecordingLocation()
+      + this->GetPreferredSlash()
+      + this->GetMicroServiceDeviceName()
+      + "_" + (tr("%1").arg(m_ChannelNumber)).toStdString()
+      ;
 }
 
 

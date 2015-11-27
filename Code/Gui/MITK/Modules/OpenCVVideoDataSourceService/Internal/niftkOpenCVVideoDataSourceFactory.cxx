@@ -21,7 +21,6 @@ namespace niftk
 //-----------------------------------------------------------------------------
 OpenCVVideoDataSourceFactory::OpenCVVideoDataSourceFactory()
 : IGIDataSourceFactoryServiceI("OpenCV Frame Grabber",
-                               "OpenCV",
                                "OpenCVVideoDataSourceService",
                                "OpenCVVideoDataSourceServiceGui",
                                false

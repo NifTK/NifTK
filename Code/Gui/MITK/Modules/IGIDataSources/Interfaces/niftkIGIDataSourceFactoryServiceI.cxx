@@ -19,13 +19,11 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 IGIDataSourceFactoryServiceI::IGIDataSourceFactoryServiceI(std::string displayName,
-                                                           std::string savePrefix,
                                                            std::string service,
                                                            std::string gui,
                                                            bool needGuiAtStartup
                                                            )
 : m_DisplayName(displayName)
-, m_SavePrefix(savePrefix)
 , m_NameOfService(service)
 , m_NameOfGui(gui)
 , m_NeedGuiAtStartup(needGuiAtStartup)
@@ -43,13 +41,6 @@ IGIDataSourceFactoryServiceI::~IGIDataSourceFactoryServiceI()
 std::string IGIDataSourceFactoryServiceI::GetDisplayName() const
 {
   return m_DisplayName;
-}
-
-
-//-----------------------------------------------------------------------------
-std::string IGIDataSourceFactoryServiceI::GetSaveLocationPrefix() const
-{
-  return m_SavePrefix;
 }
 
 

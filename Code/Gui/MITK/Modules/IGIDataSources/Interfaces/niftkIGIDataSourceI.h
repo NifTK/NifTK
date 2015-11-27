@@ -47,6 +47,7 @@ public:
   virtual void StopRecording() = 0;
   virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& time) = 0;
   virtual void SetRecordingLocation(const std::string& pathName) = 0;
+  virtual std::string GetSaveDirectoryName() = 0;
   virtual void Update(const niftk::IGIDataType::IGITimeType& time) = 0;
 
 protected:

@@ -45,11 +45,6 @@ public:
   virtual std::string GetDisplayName() const;
 
   /**
-  * \brief Each data source saves data in a folder of a given name.
-  */
-  virtual std::string GetSaveLocationPrefix() const;
-
-  /**
   * \brief Returns the name of the class that should be instantiated.
   */
   virtual std::string GetNameOfService() const;
@@ -67,7 +62,6 @@ public:
 protected:
 
   IGIDataSourceFactoryServiceI(std::string displayName,
-                               std::string savePrefix,
                                std::string service,
                                std::string gui,
                                bool needGuiAtStartup);
@@ -80,7 +74,6 @@ private:
   IGIDataSourceFactoryServiceI& operator=(const IGIDataSourceFactoryServiceI&); // deliberately not implemented
 
   std::string m_DisplayName;
-  std::string m_SavePrefix;
   std::string m_NameOfService;
   std::string m_NameOfGui;
   bool        m_NeedGuiAtStartup;

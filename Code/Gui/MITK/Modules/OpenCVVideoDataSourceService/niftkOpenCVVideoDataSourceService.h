@@ -56,6 +56,7 @@ public:
   virtual void StopRecording() override;
   virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& milliseconds) override;
   virtual void Update(const niftk::IGIDataType::IGITimeType& time) override;
+  virtual std::string GetSaveDirectoryName() override;
 
   /**
   * \see niftk::IGIDataSource::SaveItem()
@@ -73,10 +74,12 @@ public:
   virtual void GrabData() override;
 
 protected:
+
   OpenCVVideoDataSourceService(mitk::DataStorage::Pointer dataStorage);
   virtual ~OpenCVVideoDataSourceService();
 
 private:
+
   OpenCVVideoDataSourceService(const OpenCVVideoDataSourceService&); // deliberately not implemented
   OpenCVVideoDataSourceService& operator=(const OpenCVVideoDataSourceService&); // deliberately not implemented
 

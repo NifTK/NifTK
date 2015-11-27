@@ -21,6 +21,8 @@
 #include <QMessageBox>
 #include <QTableWidgetItem>
 #include <QVector>
+#include <QDateTime>
+#include <QTextStream>
 
 namespace niftk
 {
@@ -62,51 +64,17 @@ IGIDataSourceManager::~IGIDataSourceManager()
     assert(ok);
     ok = QObject::disconnect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
     assert(ok);
+    ok = QObject::disconnect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
+    assert(ok);
+    ok = QObject::disconnect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnStop()) );
+    assert(ok);
+    ok = QObject::disconnect(m_PlayPushButton, SIGNAL(clicked()), this, SLOT(OnPlayStart()));
+    assert(ok);
     ok = QObject::disconnect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
     assert(ok);
     ok = QObject::disconnect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
     assert(ok);
   }
-}
-
-
-//-----------------------------------------------------------------------------
-QString IGIDataSourceManager::GetDefaultPath()
-{
-  QString path;
-  QDir directory;
-
-  // if the user has configured a per-machine default location for igi data.
-  // if that path exist we use it as a default (prefs from uk_ac_ucl_cmic_igidatasources will override it if necessary).
-  QProcessEnvironment   myEnv = QProcessEnvironment::systemEnvironment();
-  path = myEnv.value(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE, "");
-  directory.setPath(path);
-
-  if (!directory.exists())
-  {
-    path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-    path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-    path = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-    path = QDir::currentPath();
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-    path = "";
-  }
-  return path;
 }
 
 
@@ -175,11 +143,81 @@ void IGIDataSourceManager::setupUi(QWidget* parent)
   assert(ok);
   ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
   assert(ok);
+  ok = QObject::connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
+  assert(ok);
+  ok = QObject::connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnStop()) );
+  assert(ok);
+  ok = QObject::connect(m_PlayPushButton, SIGNAL(clicked()), this, SLOT(OnPlayStart()));
+  assert(ok);
   ok = QObject::connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
   assert(ok);
   ok = QObject::connect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
   assert(ok);
   m_SetupGuiHasBeenCalled = true;
+}
+
+
+//-----------------------------------------------------------------------------
+QString IGIDataSourceManager::GetDefaultPath()
+{
+  QString path;
+  QDir directory;
+
+  // if the user has configured a per-machine default location for igi data.
+  // if that path exist we use it as a default (prefs from uk_ac_ucl_cmic_igidatasources will override it if necessary).
+  QProcessEnvironment   myEnv = QProcessEnvironment::systemEnvironment();
+  path = myEnv.value(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE, "");
+  directory.setPath(path);
+
+  if (!directory.exists())
+  {
+    path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = QDir::currentPath();
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = "";
+  }
+  return path;
+}
+
+
+//-----------------------------------------------------------------------------
+QString IGIDataSourceManager::GetDirectoryName()
+{
+  QString baseDirectory = m_DirectoryPrefix;
+
+  m_TimeStampGenerator->GetTime();
+
+  igtlUint32 seconds;
+  igtlUint32 nanoseconds;
+  igtlUint64 millis;
+
+  m_TimeStampGenerator->GetTimeStamp(&seconds, &nanoseconds);
+  millis = (igtlUint64)seconds*1000 + nanoseconds/1000000;
+
+  QDateTime dateTime;
+  dateTime.setMSecsSinceEpoch(millis);
+
+  QString formattedTime = dateTime.toString("yyyy.MM.dd_hh-mm-ss-zzz");
+  QString directoryName = baseDirectory + QDir::separator() + formattedTime;
+
+  return directoryName;
 }
 
 
@@ -318,9 +356,89 @@ void IGIDataSourceManager::OnUpdateGui()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StartRecording()
 {
-  for (int i = 0; i < m_Sources.size(); i++)
+  this->OnRecordStart();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::OnRecordStart()
+{
+  if (!m_RecordPushButton->isEnabled())
   {
-    m_Sources[i]->StartRecording();
+    // shortcut in case we are already recording.
+    return;
+  }
+
+  m_RecordPushButton->setEnabled(false);
+  m_StopPushButton->setEnabled(true);
+  assert(!m_PlayPushButton->isChecked());
+  m_PlayPushButton->setEnabled(false);
+
+  QString directoryName = this->GetDirectoryName();
+  QDir directory(directoryName);
+  QDir().mkpath(directoryName);
+
+  m_DirectoryChooser->setCurrentPath(directory.absolutePath());
+
+  foreach ( niftk::IGIDataSourceI::Pointer source, m_Sources )
+  {
+    source->SetRecordingLocation(directory.absolutePath().toStdString());
+    source->StartRecording();
+  }
+
+  // Tell interested parties (e.g. other plugins) that recording has started.
+  // We do this before dumping the descriptor because that might pop up a message box,
+  // which would stall delivering this signal.
+  emit RecordingStarted(directory.absolutePath());
+
+  // dump our descriptor file
+  QFile   descfile(directory.absolutePath() + QDir::separator() + "descriptor.cfg");
+  bool openok = descfile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
+  if (openok)
+  {
+    QTextStream   descstream(&descfile);
+    descstream.setCodec("UTF-8");
+    descstream <<
+      "# this file is encoded as utf-8.\n"
+      "# lines starting with hash are comments and ignored.\n"
+      "   # all lines are white-space trimmed.   \n"
+      "   # empty lines are ignored too.\n"
+      "\n"
+      "# the format is:\n"
+      "#   key = value\n"
+      "# both key and value are white-space trimmed.\n"
+      "# key is the directory which you want to associate with a data source class.\n"
+      "# value is the name of the data source class.\n"
+      "# there is no escaping! so neither key nor value can contain the equal sign!\n"
+      "#\n"
+      "# known data source classes are:\n"
+      "#  QmitkIGINVidiaDataSource\n"
+      "#  QmitkIGIUltrasonixTool\n"
+      "#  QmitkIGIOpenCVDataSource\n"
+      "#  QmitkIGITrackerSource\n"
+      "#  AudioDataSource\n"
+      "# however, not all might be compiled in.\n";
+
+    foreach ( niftk::IGIDataSourceI::Pointer source, m_Sources )
+    {
+      // This should be a relative path!
+      // Relative to the descriptor file or directoryName (equivalent).
+      QString datasourcedir = QString::fromStdString(source->GetSaveDirectoryName());
+
+      // Despite this being relativeFilePath() it works perfectly fine for directories too.
+      datasourcedir = directory.relativeFilePath(datasourcedir);
+      descstream << datasourcedir << " = " << QString::fromStdString(source->GetNameOfClass()) << "\n";
+    }
+
+    descstream.flush();
+  }
+  else
+  {
+    QMessageBox msgbox;
+    msgbox.setText("Error creating descriptor file.");
+    msgbox.setInformativeText("Cannot open " + descfile.fileName() + " for writing. Data source playback will be borked later on; you will need to create a descriptor by hand.");
+    msgbox.setIcon(QMessageBox::Warning);
+    msgbox.exec();
   }
 }
 
@@ -328,10 +446,41 @@ void IGIDataSourceManager::StartRecording()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StopRecording()
 {
+  this->OnStop();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::OnStop()
+{
   for (int i = 0; i < m_Sources.size(); i++)
   {
     m_Sources[i]->StopRecording();
   }
+
+  if (m_PlayPushButton->isChecked())
+  {
+    // we are playing back, so simulate a user click to stop.
+    m_PlayPushButton->click();
+  }
+  else
+  {
+    foreach ( niftk::IGIDataSourceI::Pointer source, m_Sources )
+    {
+      source->StopRecording();
+    }
+
+    m_RecordPushButton->setEnabled(true);
+    m_StopPushButton->setEnabled(false);
+    m_PlayPushButton->setEnabled(true);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::OnPlayStart()
+{
+  MITK_INFO << "OnPlayStart";
 }
 
 

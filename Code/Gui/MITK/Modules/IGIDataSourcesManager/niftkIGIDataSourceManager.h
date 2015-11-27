@@ -68,22 +68,22 @@ public:
   void setupUi(QWidget* parent);
 
   /**
-  * \brief Called from GUI to start the recording process.
+  * \brief Called from the Plugin (e.g. event bus events) to start the recording process.
   */
   void StartRecording();
 
   /**
-  * \brief Called from the GUI to stop the recording process.
+  * \brief Called from the Plugin (e.g. event bus events) to stop the recording process.
   */
   void StopRecording();
 
   /**
-  * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
+  * \brief Called from the Plugin when the surgical guidance plugin preferences are modified.
   */
   void SetDirectoryPrefix(const QString& directoryPrefix);
 
   /**
-  * \brief Called from the GUI when the surgical guidance plugin preferences are modified.
+  * \brief Called from the Plugin when the surgical guidance plugin preferences are modified.
   */
   void SetFramesPerSecond(const int& framesPerSecond);
 
@@ -125,6 +125,21 @@ private slots:
   void OnRemoveSource();
 
   /**
+   * \brief Callback to start recording data.
+   */
+  void OnRecordStart();
+
+  /**
+   * \brief Callback to stop recording/playback data.
+   */
+  void OnStop();
+
+  /**
+   * \brief Callback to start playback data->
+   */
+  void OnPlayStart();
+
+  /**
   * \brief Callback to indicate that a cell has been double clicked, to launch that sources' GUI.
   */
   void OnCellDoubleClicked(int row, int column);
@@ -135,6 +150,11 @@ private slots:
   void OnFreezeTableHeaderClicked(int section);
 
 private:
+
+  /**
+   * \brief Gets a suitable directory name from a prefix determined by preferences, and a date-time stamp.
+   */
+  QString GetDirectoryName();
 
   mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.
   us::ModuleContext*                                               m_ModuleContext;
