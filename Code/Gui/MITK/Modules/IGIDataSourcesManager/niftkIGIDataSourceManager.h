@@ -122,6 +122,11 @@ public:
   */
   void StopRecording();
 
+  /**
+  * \brief Freezes the data sources (i.e. does not do update), but does not affect the saving of data.
+  */
+  void FreezeDataSources();
+
 signals:
 
   /**

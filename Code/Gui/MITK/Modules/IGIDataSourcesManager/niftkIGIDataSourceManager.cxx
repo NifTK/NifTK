@@ -321,6 +321,13 @@ void IGIDataSourceManager::StopRecording()
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSourceManager::FreezeDataSources()
+{
+
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManager::OnUpdateGui()
 {
   m_TimeStampGenerator->GetTime();

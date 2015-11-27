@@ -287,7 +287,10 @@ void IGIDataSourceManagerWidget::OnCellDoubleClicked(int row, int column)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnFreezeTableHeaderClicked(int section)
 {
-  MITK_INFO << "OnFreezeTableHeaderClicked";
+  if (section == 0)
+  {
+    m_Manager->FreezeDataSources();
+  }
 }
 
 } // end namespace
