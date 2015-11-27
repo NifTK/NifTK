@@ -53,6 +53,8 @@ void Usage(char *exec)
     std::cout << "                              5 - generate increasing voxel number as intensity value" << std::endl;
     std::cout << "                              6 - make calibration chessboard" << std::endl;
     std::cout << "                              7 - make calibration chessboard with distant corner points" << std::endl;
+    std::cout << "                              8 - make stripes of different values" << std::endl;
+
     std::cout << "  " << std::endl;
     std::cout << "*** [options]   ***" << std::endl << std::endl;
     std::cout << "    -dir a b c d e f g h i    Direction matrix" << std::endl;
@@ -84,6 +86,10 @@ void Usage(char *exec)
     std::cout << "  7" << std::endl;
     std::cout << "      -xs <int>    9            x-size of chessboard" << std::endl;
     std::cout << "      -ys <int>    6            y-size of chessboard" << std::endl;
+    
+    std::cout << "  8" << std::endl;
+    std::cout << "      -ns <int>    4           number of stripes" << std::endl;
+    std::cout << "      -fv <int>    255         foreground value" << std::endl;
   }
 
 /**
@@ -100,6 +106,7 @@ int main(int argc, char** argv)
   int nx=128;
   int ny=128;
   int nz=128;
+  int ns=4;
   int backgroundValue=0;
   int foregroundValue=1;
   double xdim=1.0;
@@ -152,6 +159,14 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
       }
       std::cout << "Set -nz=" << niftk::ConvertToString(nz) << std::endl;
+    }
+    else if(strcmp(argv[i], "-ns") == 0){
+      ns=atoi(argv[++i]);
+      if (ns <= 0){
+        std::cerr << "Error: ns must be an integer value above 0" << std::endl;
+        return EXIT_FAILURE;
+      }
+      std::cout << "Set -ns=" << niftk::ConvertToString(ns) << std::endl;
     }
     else if(strcmp(argv[i], "-bv") == 0){
       backgroundValue=atoi(argv[++i]);
@@ -228,7 +243,7 @@ int main(int argc, char** argv)
     }
   }
 
-  if (mode < 0 || mode > 7)
+  if (mode < 0 || mode > 8)
   {
     std::cerr << "Invalid mode" << std::endl;
     return EXIT_FAILURE;
@@ -463,6 +478,8 @@ int main(int argc, char** argv)
           }
       }
 
+    if( mode == 7)
+    {
     // For mode 7, we blank (set to white=255) everything except
     // the 2x2 square at each corner, and the specified size of chessboard in the middle.
     float middleX = (nx-1)/2.0;
@@ -505,7 +522,32 @@ int main(int argc, char** argv)
               }
           }
       }
+    }
+  }
+  if( mode == 8)
+  {
+    int stripeSize = ceil(nx/ns);
+    int valueStep = ( (foregroundValue+1)-backgroundValue )/ns -1;
+    for(int stripe = 0; stripe < ns; stripe++)
+    {
+      int value = stripe*valueStep + backgroundValue;
+      std::cout <<"value " << value << std::endl;
+      for (int x = 0; x < stripeSize; x++)
+      {
+        for (int y = 0; y < ny; y++)
+          {
+            for (int z = 0; z < nz; z++)
+              {
+                index[0] = x +stripe*stripeSize;
+                index[1] = y;
+                index[2] = z;
 
+
+                testImage->SetPixel(index, value);
+              }
+          }
+      }
+    }
   }
 
   if (mode != 6 && mode != 7)
@@ -540,6 +582,7 @@ int main(int argc, char** argv)
     imageWriter->SetInput(filter->GetOutput());
     imageWriter->Update();
   }
+
 
   return 0;
 }

@@ -16,7 +16,8 @@
 #include "niftkCoreIOMimeTypes.h"
 #include <mitkCoordinateAxesData.h>
 
-namespace niftk {
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 CoordinateAxesDataWriterService::CoordinateAxesDataWriterService()

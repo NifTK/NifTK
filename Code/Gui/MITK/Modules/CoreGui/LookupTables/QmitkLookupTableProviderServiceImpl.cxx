@@ -20,6 +20,7 @@
 #include <mitkExceptionMacro.h>
 #include <mitkLookupTable.h>
 
+
 //-----------------------------------------------------------------------------
 QmitkLookupTableProviderServiceImpl::QmitkLookupTableProviderServiceImpl()
 {
@@ -52,21 +53,54 @@ unsigned int QmitkLookupTableProviderServiceImpl::GetNumberOfLookupTables()
 
 
 //-----------------------------------------------------------------------------
-std::string QmitkLookupTableProviderServiceImpl::GetName(unsigned int lookupTableIndex)
+bool QmitkLookupTableProviderServiceImpl::CheckName(const QString& name)
 {
-  return this->GetManager()->GetName(lookupTableIndex).toStdString();
+  return this->GetManager()->CheckName(name);
 }
 
 
 //-----------------------------------------------------------------------------
-vtkLookupTable* QmitkLookupTableProviderServiceImpl::CreateLookupTable(unsigned int lookupTableIndex,
-                                                                       float lowestValueOpacity,
-                                                                       float highestValueOpacity)
+std::vector<QString>QmitkLookupTableProviderServiceImpl::GetTableNames()
 {
-  const QmitkLookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableIndex);
+  return this->GetManager()->GetTableNames();
+}
+
+
+//-----------------------------------------------------------------------------
+bool QmitkLookupTableProviderServiceImpl::GetIsScaled(const QString& lookupTableName)
+{
+  const QmitkLookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableName);
   if (lutContainer == NULL)
   {
-    mitkThrow() << "Lookup table index " << lookupTableIndex << " is invalid." << std::endl;
+    mitkThrow() << "Lookup table name " << lookupTableName.toStdString().c_str() << " is invalid." << std::endl;
+  }
+
+  return lutContainer->GetIsScaled();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::LabeledLookupTableProperty::LabelListType
+QmitkLookupTableProviderServiceImpl::GetLabels(const QString& lookupTableName)
+{
+  const QmitkLookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableName);
+  if (lutContainer == NULL)
+  {
+    mitkThrow() << "Lookup table name " << lookupTableName.toStdString().c_str() << " is invalid." << std::endl;
+  }
+
+  return lutContainer->GetLabels();
+}
+
+
+//-----------------------------------------------------------------------------
+vtkLookupTable* QmitkLookupTableProviderServiceImpl
+::CreateLookupTable(const QString& lookupTableName, float lowestValueOpacity, float highestValueOpacity)
+{
+  const QmitkLookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableName);
+  if (lutContainer == NULL)
+  {
+    mitkThrow() << "Lookup table name " << lookupTableName.toStdString().c_str() << " is invalid." << std::endl;
   }
 
   vtkLookupTable *vtkLUT = vtkLookupTable::New();
@@ -74,42 +108,84 @@ vtkLookupTable* QmitkLookupTableProviderServiceImpl::CreateLookupTable(unsigned 
 
   if (vtkLUT->GetNumberOfColors() == 0)
   {
-    mitkThrow() << "Lookup table index " << lookupTableIndex << " has no colours." << std::endl;
+    mitkThrow() << "Lookup table " << lookupTableName.toStdString().c_str() << " has no colours." << std::endl;
   }
 
-  double rgba[4];
-  vtkLUT->GetTableValue(0, rgba);
-  rgba[3] = lowestValueOpacity;
-  vtkLUT->SetTableValue(0, rgba);
+  if (lutContainer->GetIsScaled())
+  {
+    double rgba[4];
+    vtkLUT->GetTableValue(0, rgba);
+    rgba[3] = lowestValueOpacity;
+    vtkLUT->SetTableValue(0, rgba);
 
-  vtkLUT->GetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
-  rgba[3] = highestValueOpacity;
-  vtkLUT->SetTableValue(vtkLUT->GetNumberOfColors()-1, rgba);
-
+    vtkLUT->GetTableValue(vtkLUT->GetNumberOfColors() - 1, rgba);
+    rgba[3] = highestValueOpacity;
+    vtkLUT->SetTableValue(vtkLUT->GetNumberOfColors() - 1, rgba);
+  }
   return vtkLUT;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::NamedLookupTableProperty::Pointer QmitkLookupTableProviderServiceImpl::CreateLookupTableProperty(
-    unsigned int lookupTableIndex,
-    float lowestValueOpacity,
-    float highestValueOpacity)
+mitk::NamedLookupTableProperty::Pointer 
+QmitkLookupTableProviderServiceImpl
+::CreateLookupTableProperty(const QString& lookupTableName, float lowestValueOpacity, float highestValueOpacity)
 {
-  if (lookupTableIndex >= this->GetNumberOfLookupTables())
-  {
-    mitkThrow() << "Lookup table index " << lookupTableIndex << " is out of range." << std::endl;
-  }
-
-  vtkLookupTable *vtkLUT = this->CreateLookupTable(lookupTableIndex, lowestValueOpacity, highestValueOpacity);
+  vtkLookupTable *vtkLUT = this->CreateLookupTable(lookupTableName, lowestValueOpacity, highestValueOpacity);
 
   mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
   mitkLUT->SetVtkLookupTable(vtkLUT);
 
   mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = mitk::NamedLookupTableProperty::New();
   mitkLUTProperty->SetLookupTable(mitkLUT);
-  mitkLUTProperty->SetName(this->GetName(lookupTableIndex));
+  mitkLUTProperty->SetName(lookupTableName.toStdString());
+  mitkLUTProperty->SetIsScaled(this->GetIsScaled(lookupTableName));
 
   return mitkLUTProperty;
 }
 
+
+//-----------------------------------------------------------------------------
+mitk::LabeledLookupTableProperty::Pointer 
+QmitkLookupTableProviderServiceImpl::CreateLookupTableProperty(const QString& lookupTableName)
+{
+  vtkLookupTable *vtkLUT = this->CreateLookupTable(lookupTableName, 0, 0);
+
+  mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
+  mitkLUT->SetVtkLookupTable(vtkLUT);
+
+  mitk::LabeledLookupTableProperty::Pointer mitkLUTProperty = mitk::LabeledLookupTableProperty::New();
+  mitkLUTProperty->SetLookupTable(mitkLUT);
+  mitkLUTProperty->SetName(lookupTableName.toStdString());
+  mitkLUTProperty->SetIsScaled(this->GetIsScaled(lookupTableName));
+  mitkLUTProperty->SetLabels(this->GetLabels(lookupTableName));
+
+  return mitkLUTProperty;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkLookupTableProviderServiceImpl::AddNewLookupTableContainer(const QmitkLookupTableContainer* container) 
+{
+  QmitkLookupTableManager* manager = this->GetManager();
+  if (manager == NULL)
+  {
+    return;
+  }
+  
+  manager->AddLookupTableContainer(container);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkLookupTableProviderServiceImpl
+::ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& lookupTableName) 
+{
+  QmitkLookupTableManager* manager = this->GetManager();
+  if (manager == NULL)
+  {
+    return;
+  }
+  
+  manager->ReplaceLookupTableContainer(container, container->GetDisplayName());
+}

@@ -25,6 +25,7 @@
 class QWidget;
 class QSlider;
 class QmitkLookupTableManager;
+class vtkLookupTable;
 
 /**
  * \class ImageLookupTablesView
@@ -113,6 +114,51 @@ protected slots:
    */
   void OnResetButtonPressed();
 
+  /**
+   * \brief Called when the load button is pressed which will display a dialog allowing the user to load a lookup table
+   */
+  void OnLoadButtonPressed();
+
+  /**
+   * \brief Called when the save button is pressed which will display a dialog allowing the user to save the current lookup table
+   */
+  void OnSaveButtonPressed();
+
+  /**
+   * \brief Called when the create new lookup table is pressed which will create an unscaled lookup table that is empty
+   */
+  void OnNewButtonPressed();
+
+  /**
+   * \brief Add a label to the current label map
+   */
+  void OnAddLabelButtonPressed();
+
+  /**
+   * \brief Remove the selected labels to the current label map
+   */
+  void OnRemoveLabelButtonPressed();
+
+  /**
+   * \brief Move the selected labels up one place in the list
+   */
+  void OnMoveLabelUpButtonPressed();
+
+  /**
+   * \brief Move the selected labels down one place in the list
+   */
+  void OnMoveLabelDownButtonPressed();
+
+  /**
+   * \brief Change color of pressed label color
+   */
+  void OnColorButtonPressed(int);
+
+  /**
+   * \brief Change name or value of selected cell
+   */
+  void OnLabelMapTableCellChanged(int, int);
+
 private:
 
   /**
@@ -157,9 +203,42 @@ private:
   void EnableControls(bool b);
 
   /**
-   * \brief Retrieve's the pref values from preference service, and stores in member variables.
+   * \brief Enable/Disable controls related to scaling.
+   */
+  void EnableScaleControls(bool b);
+;
+
+  /**
+   * \brief Shows/hides controls related to a label map
+   */
+  void EnableLabelControls(bool b);
+
+
+  /**
+   * \brief Updates the label map table
+   */
+  void UpdateLabelMapTable();
+
+
+  /**
+   * \brief Updates the list of lookuptables
+   */
+  void UpdateLookupTableComboBox();
+
+  /**
+   * \brief Retrieves the pref values from preference service, and stores in member variables.
    */
   void RetrievePreferenceValues();
+
+  /**
+   * \brief Attempts to load all lookuptables cached in the berry service.
+   */
+  void LoadCachedLookupTables();
+
+  /**
+   * \brief Attempts to load LookupTable from given file, returning display name of LookupTable if successful. 
+   */
+  QString LoadLookupTable(QString& fileName);
 
   /**
    * \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
@@ -170,11 +249,6 @@ private:
    * \brief All the controls for the main view part.
    */
   Ui::ImageLookupTablesViewControls* m_Controls;
-
-  /**
-   * \brief We contain a LookupTableManager containing vtkLookupTables loaded from the resource system.
-   */
-  QmitkLookupTableManager *m_LookupTableManager;
 
   /**
    * \brief Tracks the currently selected node.
@@ -205,17 +279,6 @@ private:
    * \brief To store the observer ID on the LevelWindow property.
    */
   unsigned long int m_LevelWindowPropertyObserverTag;
-
-  /**
-   * \brief To store the observer ID on the "Image Rendering.Lowest Value Is Opaque" property.
-   */
-  unsigned long int m_LowestIsOpaquePropertyObserverTag;
-
-  /**
-   * \brief To store the observer ID on the "Image Rendering.Highest Value Is Opaque" property.
-   */
-  unsigned long int m_HighestIsOpaquePropertyObserverTag;
-
 };
 
 #endif

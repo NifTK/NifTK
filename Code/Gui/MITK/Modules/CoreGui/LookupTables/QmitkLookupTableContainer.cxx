@@ -16,20 +16,41 @@
 
 //-----------------------------------------------------------------------------
 QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut)
+: m_Order(-1)
+, m_IsScaled(true)
+, m_DisplayName("None")
 {
-	m_LookupTable = lut;
-	m_DisplayName = QString("");
-	m_Order = 0;
+  vtkLookupTable *newTable = vtkLookupTable::New();
+  newTable->DeepCopy(const_cast<vtkLookupTable*>(lut));
+  newTable->SetNanColor(const_cast<vtkLookupTable*>(lut)->GetNanColor());
+
+  m_LookupTable = const_cast<vtkLookupTable const*>(newTable);
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut, const LabelListType& labels)
+{
+  vtkLookupTable *newTable = vtkLookupTable::New();
+  newTable->DeepCopy(const_cast<vtkLookupTable*>(lut));
+  newTable->SetNanColor(const_cast<vtkLookupTable*>(lut)->GetNanColor());
+
+  m_LookupTable = const_cast<vtkLookupTable const*>(newTable);
+
+  m_DisplayName = QString("");
+  m_Order = 0;
+  m_IsScaled = false;
+  m_Labels = labels;
 }
 
 
 //-----------------------------------------------------------------------------
 QmitkLookupTableContainer::~QmitkLookupTableContainer()
 {
-	if (m_LookupTable != NULL)
-	{
-		vtkLookupTable *nonConst = const_cast<vtkLookupTable*>(m_LookupTable);
-		nonConst->Delete();
-		nonConst = NULL;
-	}
+  if (m_LookupTable != NULL)
+  {
+    vtkLookupTable *nonConst = const_cast<vtkLookupTable*>(m_LookupTable);
+    nonConst->Delete();
+    nonConst = NULL;
+  }
 }

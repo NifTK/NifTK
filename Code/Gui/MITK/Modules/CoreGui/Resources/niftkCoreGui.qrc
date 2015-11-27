@@ -28,5 +28,8 @@
     <file>sea.lut</file>
     <file>yellow.lut</file>
     <file>inverse_grey.lut</file>
+    <file>Test.txt</file>
+    <file>BrainAnatomyLabels.txt</file>
+    <file>FreeSurferColorLUT20060522.txt</file>
   </qresource>
 </RCC>
