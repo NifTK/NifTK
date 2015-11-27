@@ -13,17 +13,19 @@
 #============================================================================*/
 
 set(CPP_FILES
+  niftkIGIDataSourceManagerWidget.cxx
   niftkIGIDataSourceManager.cxx
   QmitkIGIDataSourceManager.cxx
 )
 
 set(MOC_H_FILES
+  niftkIGIDataSourceManagerWidget.h
   niftkIGIDataSourceManager.h
   QmitkIGIDataSourceManager.h
 )
 
 set(UI_FILES
-  niftkIGIDataSourceManager.ui
+  niftkIGIDataSourceManagerWidget.ui
 )
 
 set(QRC_FILES

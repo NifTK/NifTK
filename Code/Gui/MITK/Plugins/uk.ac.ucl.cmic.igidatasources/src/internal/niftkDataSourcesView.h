@@ -17,7 +17,7 @@
 
 #include <QmitkBaseView.h>
 #include <niftkIGIDataType.h>
-#include <niftkIGIDataSourceManager.h>
+#include <niftkIGIDataSourceManagerWidget.h>
 #include <berryIBerryPreferences.h>
 #include <ctkDictionary.h>
 #include <service/event/ctkEvent.h>
@@ -109,7 +109,7 @@ private:
   */
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
-  niftk::IGIDataSourceManager::Pointer  m_DataSourceManager;
+  niftk::IGIDataSourceManagerWidget* m_DataSourceManagerWidget;
 };
 
 } // end namespace

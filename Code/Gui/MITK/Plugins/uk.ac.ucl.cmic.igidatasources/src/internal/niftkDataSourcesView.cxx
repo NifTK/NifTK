@@ -28,6 +28,7 @@ const std::string DataSourcesView::VIEW_ID = "uk.ac.ucl.cmic.igidatasources";
 
 //-----------------------------------------------------------------------------
 DataSourcesView::DataSourcesView()
+: m_DataSourceManagerWidget(NULL)
 {
 }
 
@@ -51,9 +52,9 @@ DataSourcesView::~DataSourcesView()
   }
 
   bool ok = false;
-  ok = QObject::disconnect(m_DataSourceManager, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType)));
+  ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType)));
   assert(ok);
-  ok = QObject::disconnect(m_DataSourceManager, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)));
+  ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)));
   assert(ok);
 }
 
@@ -61,14 +62,16 @@ DataSourcesView::~DataSourcesView()
 //-----------------------------------------------------------------------------
 void DataSourcesView::OnRecordingShouldStart(const ctkEvent& event)
 {
-  m_DataSourceManager->StartRecording();
+  // Comming from CTK event bus.
+  m_DataSourceManagerWidget->StartRecording();
 }
 
 
 //-----------------------------------------------------------------------------
 void DataSourcesView::OnRecordingShouldStop(const ctkEvent& event)
 {
-  m_DataSourceManager->StopRecording();
+  // Comming from CTK event bus.
+  m_DataSourceManagerWidget->StopRecording();
 }
 
 
@@ -89,22 +92,21 @@ std::string DataSourcesView::GetViewID() const
 //-----------------------------------------------------------------------------
 void DataSourcesView::SetFocus()
 {
-  m_DataSourceManager->setFocus();
+  m_DataSourceManagerWidget->setFocus();
 }
 
 
 //-----------------------------------------------------------------------------
 void DataSourcesView::CreateQtPartControl( QWidget *parent )
 {
-  m_DataSourceManager = IGIDataSourceManager::New(this->GetDataStorage());
-  m_DataSourceManager->setupUi(parent);
+  m_DataSourceManagerWidget = new IGIDataSourceManagerWidget(this->GetDataStorage(), parent);
 
   this->RetrievePreferenceValues();
 
   bool ok = false;
-  ok = QObject::connect(m_DataSourceManager, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType)));
+  ok = QObject::connect(m_DataSourceManagerWidget, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType)));
   assert(ok);
-  ok = QObject::connect(m_DataSourceManager, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)), Qt::QueuedConnection);
+  ok = QObject::connect(m_DataSourceManagerWidget, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)), Qt::QueuedConnection);
   assert(ok);
 
   ctkPluginContext* context = niftk::DataSourcesViewActivator::getContext();
@@ -138,14 +140,14 @@ void DataSourcesView::RetrievePreferenceValues()
 
     int refreshRate = prefs->GetInt("refresh rate", niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE);
 
-    m_DataSourceManager->SetDirectoryPrefix(path);
-    m_DataSourceManager->SetFramesPerSecond(refreshRate);
+    m_DataSourceManagerWidget->SetDirectoryPrefix(path);
+    m_DataSourceManagerWidget->SetFramesPerSecond(refreshRate);
   }
   else
   {
     QString defaultPath = niftk::IGIDataSourceManager::GetDefaultPath();
-    m_DataSourceManager->SetDirectoryPrefix(defaultPath);
-    m_DataSourceManager->SetFramesPerSecond(niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE);
+    m_DataSourceManagerWidget->SetDirectoryPrefix(defaultPath);
+    m_DataSourceManagerWidget->SetFramesPerSecond(niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE);
   }
 }
 
