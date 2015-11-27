@@ -29,6 +29,7 @@
 
 #include <QWidget>
 #include <QMap>
+#include <QTimer>
 
 namespace niftk
 {
@@ -82,11 +83,6 @@ public:
   */
   void SetFramesPerSecond(const int& framesPerSecond);
 
-  /**
-  * \brief Called by niftk::IGIDataSourceManagerGuiUpdateThread to update the Gui.
-  */
-  void OnUpdateGui();
-
 signals:
 
   /**
@@ -110,9 +106,19 @@ protected:
 private slots:
 
   /**
+  * \brief Updates the whole rendered scene, based on the available sources.
+  */
+  void OnUpdateGui();
+
+  /**
   * \brief Adds a data source to the table.
   */
   void OnAddSource();
+
+  /**
+  * \brief Removes a data source from the table, and completely destroys it.
+  */
+  void OnRemoveSource();
 
 private:
 
@@ -121,6 +127,9 @@ private:
   std::vector<us::ServiceReference<IGIDataSourceFactoryServiceI> > m_Refs;
   QMap<QString, niftk::IGIDataSourceFactoryServiceI*>              m_NameToFactoriesMap;
   bool                                                             m_SetupGuiHasBeenCalled;
+  QTimer                                                          *m_GuiUpdateTimer;
+  int                                                              m_FrameRate;
+  QString                                                          m_DirectoryPrefix;
 
 }; // end class;
 

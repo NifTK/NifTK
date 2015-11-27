@@ -34,11 +34,14 @@ const char* IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIAB
 IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage)
 : m_DataStorage(dataStorage)
 , m_SetupGuiHasBeenCalled(false)
+, m_GuiUpdateTimer(NULL)
+, m_FrameRate(DEFAULT_FRAME_RATE)
 {
   if (m_DataStorage.IsNull())
   {
     mitkThrow() << "Data Storage is NULL!";
   }
+  m_DirectoryPrefix = this->GetDefaultPath();
 }
 
 
@@ -47,8 +50,17 @@ IGIDataSourceManager::~IGIDataSourceManager()
 {
   if (m_SetupGuiHasBeenCalled)
   {
+    if (m_GuiUpdateTimer != NULL)
+    {
+      m_GuiUpdateTimer->stop();
+    }
+
     bool ok = false;
     ok = QObject::disconnect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
+    assert(ok);
+    ok = QObject::disconnect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+    assert(ok);
+    ok = QObject::disconnect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
     assert(ok);
   }
 }
@@ -133,8 +145,15 @@ void IGIDataSourceManager::setupUi(QWidget* parent)
     mitkThrow() << "Found " << m_Refs.size() << " and " << m_NameToFactoriesMap.size() << " uniquely named IGIDataSourceFactoryServices. These numbers should match.";
   }
 
+  m_GuiUpdateTimer = new QTimer(this);
+  m_GuiUpdateTimer->setInterval(1000/(int)(DEFAULT_FRAME_RATE));
+
   bool ok = false;
   ok = QObject::connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
+  assert(ok);
+  ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+  assert(ok);
+  ok = QObject::connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
   assert(ok);
 
   m_SetupGuiHasBeenCalled = true;
@@ -175,6 +194,50 @@ void IGIDataSourceManager::OnAddSource()
         QMessageBox::Ok);
     }
   }
+
+  // Launch timers
+  if (!m_GuiUpdateTimer->isActive())
+  {
+    m_GuiUpdateTimer->start();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::OnRemoveSource()
+{
+  if (m_TableWidget->rowCount() == 0)
+  {
+    return;
+  }
+
+  // Stop the timers to make sure they don't trigger.
+  bool guiTimerWasOn = m_GuiUpdateTimer->isActive();
+  m_GuiUpdateTimer->stop();
+
+  // Get a valid row number, or delete the last item in the table.
+  int rowIndex = m_TableWidget->currentRow();
+  if (rowIndex < 0)
+  {
+    rowIndex = m_TableWidget->rowCount() - 1;
+  }
+
+  // Given we stopped the timers to make sure they don't trigger, we need
+  // to restart them, if indeed they were on.
+  if (m_TableWidget->rowCount() > 0)
+  {
+    if (guiTimerWasOn)
+    {
+      m_GuiUpdateTimer->start();
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::OnUpdateGui()
+{
+
 }
 
 
@@ -195,21 +258,23 @@ void IGIDataSourceManager::StopRecording()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetDirectoryPrefix(const QString& directoryPrefix)
 {
-
+  m_DirectoryPrefix = directoryPrefix;
+  this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetFramesPerSecond(const int& framesPerSecond)
 {
+  if (m_GuiUpdateTimer != NULL)
+  {
+    int milliseconds = 1000 / framesPerSecond;
+    m_GuiUpdateTimer->setInterval(milliseconds);
+  }
 
+  m_FrameRate = framesPerSecond;
+  this->Modified();
 }
 
-
-//-----------------------------------------------------------------------------
-void IGIDataSourceManager::OnUpdateGui()
-{
-
-}
 
 } // end namespace
