@@ -14,8 +14,6 @@
 
 #include "niftkIGIDataSourceManager.h"
 
-#include <niftkIGIDataSourceServiceI.h>
-
 #include <usGetModuleContext.h>
 
 #include <mitkExceptionMacro.h>
@@ -176,11 +174,12 @@ void IGIDataSourceManager::OnAddSource()
   }
 
   // First create data source.
-  niftk::IGIDataSourceServiceI *source = factory->Create(m_DataStorage);
-  if (source == NULL)
+  niftk::IGIDataSourceI::Pointer source = factory->Create(m_DataStorage);
+  if (source.IsNull())
   {
     mitkThrow() << "Failed to create data source for " << name.toStdString();
   }
+  m_Sources.push_back(source);
 
   if (factory->GetNeedGuiAtStartup())
   {

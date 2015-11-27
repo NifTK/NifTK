@@ -18,7 +18,9 @@
 #include "niftkIGIDataSourcesManagerExports.h"
 #include "ui_niftkIGIDataSourceManager.h"
 #include <niftkIGIDataSourceFactoryServiceI.h>
+#include <niftkIGIDataSourceI.h>
 #include <niftkIGIDataType.h>
+
 #include <usServiceReference.h>
 #include <usModuleContext.h>
 #include <mitkDataStorage.h>
@@ -30,6 +32,8 @@
 #include <QWidget>
 #include <QMap>
 #include <QTimer>
+
+#include <list>
 
 namespace niftk
 {
@@ -125,6 +129,7 @@ private:
   mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.
   us::ModuleContext*                                               m_ModuleContext;
   std::vector<us::ServiceReference<IGIDataSourceFactoryServiceI> > m_Refs;
+  std::list<niftk::IGIDataSourceI::Pointer>                        m_Sources;
   QMap<QString, niftk::IGIDataSourceFactoryServiceI*>              m_NameToFactoriesMap;
   bool                                                             m_SetupGuiHasBeenCalled;
   QTimer                                                          *m_GuiUpdateTimer;

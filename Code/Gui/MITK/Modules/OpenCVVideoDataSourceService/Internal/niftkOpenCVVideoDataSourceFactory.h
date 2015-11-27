@@ -32,7 +32,7 @@ public:
   OpenCVVideoDataSourceFactory();
   virtual ~OpenCVVideoDataSourceFactory();
 
-  virtual IGIDataSourceServiceI* Create(mitk::DataStorage::Pointer dataStorage) override;
+  virtual IGIDataSourceI::Pointer Create(mitk::DataStorage::Pointer dataStorage) override;
 
 };
 

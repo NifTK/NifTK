@@ -17,7 +17,7 @@
 
 #include <niftkIGIServicesExports.h>
 #include "niftkIGIDataSourceFactoryServiceI.h"
-#include <niftkIGIDataSourceServiceI.h>
+#include "niftkIGIDataSourceI.h"
 
 #include <usServiceReference.h>
 #include <usModuleContext.h>
@@ -49,7 +49,7 @@ public:
   /**
   * \brief Can be used to create instances of the requested IGIDataSourceServiceI.
   */
-  IGIDataSourceServiceI* Create(mitk::DataStorage::Pointer dataStorage);
+  IGIDataSourceI::Pointer Create(mitk::DataStorage::Pointer dataStorage);
 
 private:
   IGIDataSourceFactoryServiceRAII(const IGIDataSourceFactoryServiceRAII&); // deliberately not implemented

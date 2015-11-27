@@ -16,7 +16,7 @@
 #define niftkIGIDataSourceFactoryServiceI_h
 
 #include <niftkIGIServicesExports.h>
-#include "niftkIGIDataSourceServiceI.h"
+#include <niftkIGIDataSourceI.h>
 
 #include <mitkServiceInterface.h>
 #include <mitkDataStorage.h>
@@ -37,7 +37,7 @@ class NIFTKIGISERVICES_EXPORT IGIDataSourceFactoryServiceI
 
 public:
 
-  virtual IGIDataSourceServiceI* Create(mitk::DataStorage::Pointer dataStorage) = 0;
+  virtual IGIDataSourceI::Pointer Create(mitk::DataStorage::Pointer dataStorage) = 0;
 
   /**
   * \brief Returns the name of the data source, as perceived by the user in the GUI.

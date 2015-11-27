@@ -61,7 +61,7 @@ IGIDataSourceFactoryServiceRAII::~IGIDataSourceFactoryServiceRAII()
 
 
 //-----------------------------------------------------------------------------
-IGIDataSourceServiceI* IGIDataSourceFactoryServiceRAII::Create(mitk::DataStorage::Pointer dataStorage)
+IGIDataSourceI::Pointer IGIDataSourceFactoryServiceRAII::Create(mitk::DataStorage::Pointer dataStorage)
 {
   return m_Service->Create(dataStorage);
 }

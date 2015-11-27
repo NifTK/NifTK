@@ -13,8 +13,11 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Interfaces/niftkIGIDataSourceI.cxx
   Interfaces/niftkIGILocalDataSourceI.cxx
   Interfaces/niftkIGISaveableDataSourceI.cxx
+  Interfaces/niftkIGIDataSourceFactoryServiceI.cxx
+  Interfaces/niftkIGIDataSourceFactoryServiceRAII.cxx
   DataType/niftkIGIDataType.cxx
   DataSource/niftkIGIDataSource.cxx
   DataSource/niftkIGIDataSourceBuffer.cxx

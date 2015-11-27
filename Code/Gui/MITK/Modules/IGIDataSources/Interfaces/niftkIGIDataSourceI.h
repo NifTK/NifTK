@@ -12,27 +12,33 @@
 
 =============================================================================*/
 
-#ifndef niftkIGIDataSourceServiceI_h
-#define niftkIGIDataSourceServiceI_h
+#ifndef niftkIGIDataSourceI_h
+#define niftkIGIDataSourceI_h
 
-#include <niftkIGIServicesExports.h>
-#include <mitkServiceInterface.h>
+#include "niftkIGIDataSourcesExports.h"
+
+#include <mitkCommon.h>
+#include <itkVersion.h>
+#include <itkObject.h>
+#include <itkObjectFactoryBase.h>
 
 namespace niftk
 {
 
 /**
-* \class IGIDataSourceServiceI
-* \brief Interface for a IGI Data Source (e.g. video feed, ultrasound feed, tracker feed).
+* \class IGIDataSourceI
+* \brief Interface for an IGI Data Source (e.g. video feed, ultrasound feed, tracker feed).
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 *
 * Note: Implementors of this interface must be thread-safe.
 */
-class NIFTKIGISERVICES_EXPORT IGIDataSourceServiceI
+class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceI : public itk::Object
 {
 
 public:
+
+  mitkClassMacroItkParent(IGIDataSourceI, itk::Object);
 
   virtual void StartCapturing() = 0;
   virtual void StopCapturing() = 0;
@@ -42,16 +48,16 @@ public:
   virtual void SetRecordingLocation(const std::string& pathName) = 0;
 
 protected:
-  IGIDataSourceServiceI();
-  virtual ~IGIDataSourceServiceI();
+
+  IGIDataSourceI();
+  virtual ~IGIDataSourceI();
 
 private:
-  IGIDataSourceServiceI(const IGIDataSourceServiceI&); // deliberately not implemented
-  IGIDataSourceServiceI& operator=(const IGIDataSourceServiceI&); // deliberately not implemented
+
+  IGIDataSourceI(const IGIDataSourceI&); // deliberately not implemented
+  IGIDataSourceI& operator=(const IGIDataSourceI&); // deliberately not implemented
 };
 
 } // end namespace
-
-MITK_DECLARE_SERVICE_INTERFACE(niftk::IGIDataSourceServiceI, "uk.ac.ucl.cmic.IGIDataSourceServiceI");
 
 #endif

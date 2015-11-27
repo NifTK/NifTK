@@ -14,7 +14,6 @@
 
 # tests with no extra command line parameter
 set(MODULE_TESTS
-  niftkOpenCVDataSourceTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS

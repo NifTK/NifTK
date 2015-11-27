@@ -17,6 +17,7 @@ set(MODULE_TESTS
   mitkIGIDataSourceTest.cxx
   QmitkIGINiftyLinkDataSourceMemoryTest.cxx
   QmitkIGITrackerSourceTransformTest.cxx
+  niftkOpenCVDataSourceTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS

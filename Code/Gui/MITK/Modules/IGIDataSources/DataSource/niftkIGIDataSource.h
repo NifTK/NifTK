@@ -17,12 +17,8 @@
 
 #include "niftkIGIDataSourcesExports.h"
 #include <niftkIGIDataType.h>
-#include <niftkIGIDataSourceServiceI.h>
+#include <niftkIGIDataSourceI.h>
 
-#include <mitkCommon.h>
-#include <itkVersion.h>
-#include <itkObject.h>
-#include <itkObjectFactoryBase.h>
 #include <igtlTimeStamp.h>
 
 #include <mitkDataStorage.h>
@@ -45,11 +41,11 @@ namespace niftk
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class NIFTKIGIDATASOURCES_EXPORT IGIDataSource : public itk::Object, public niftk::IGIDataSourceServiceI
+class NIFTKIGIDATASOURCES_EXPORT IGIDataSource : public niftk::IGIDataSourceI
 {
 public:
 
-  mitkClassMacroItkParent(IGIDataSource, itk::Object);
+  mitkClassMacroItkParent(IGIDataSource, niftk::IGIDataSourceI);
 
   /**
   * \brief An IGIDataSource should be able to save an instance of its own data.

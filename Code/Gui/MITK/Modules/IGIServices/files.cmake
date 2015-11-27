@@ -14,11 +14,8 @@
 
 set(CPP_FILES
   niftkPointRegServiceI.cxx
-  niftkSurfaceRegServiceI.cxx
   niftkPointRegServiceRAII.cxx
+  niftkSurfaceRegServiceI.cxx
   niftkICPRegServiceRAII.cxx
-  niftkIGIDataSourceServiceI.cxx
-  niftkIGIDataSourceFactoryServiceI.cxx
-  niftkIGIDataSourceFactoryServiceRAII.cxx
 )
 

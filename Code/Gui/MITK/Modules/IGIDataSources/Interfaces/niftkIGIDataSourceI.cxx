@@ -12,19 +12,19 @@
 
 =============================================================================*/
 
-#include "niftkIGIDataSourceServiceI.h"
+#include "niftkIGIDataSourceI.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIDataSourceServiceI::IGIDataSourceServiceI()
+IGIDataSourceI::IGIDataSourceI()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-IGIDataSourceServiceI::~IGIDataSourceServiceI()
+IGIDataSourceI::~IGIDataSourceI()
 {
 }
 
