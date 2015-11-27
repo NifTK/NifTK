@@ -18,9 +18,13 @@
 
 #include <mitkExceptionMacro.h>
 
+#include <igtlTimeStamp.h>
+
 #include <QDesktopServices>
 #include <QProcessEnvironment>
 #include <QMessageBox>
+#include <QTableWidgetItem>
+#include <QVector>
 
 namespace niftk
 {
@@ -56,9 +60,13 @@ IGIDataSourceManager::~IGIDataSourceManager()
     bool ok = false;
     ok = QObject::disconnect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
     assert(ok);
+    ok = QObject::disconnect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
+    assert(ok);
     ok = QObject::disconnect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
     assert(ok);
-    ok = QObject::disconnect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
+    ok = QObject::disconnect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
+    assert(ok);
+    ok = QObject::disconnect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
     assert(ok);
   }
 }
@@ -109,14 +117,6 @@ void IGIDataSourceManager::setupUi(QWidget* parent)
 {
   Ui_IGIDataSourceManager::setupUi(parent);
 
-  m_PlayPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/play.png"));
-  m_RecordPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/record.png"));
-  m_StopPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/stop.png"));
-
-  m_PlayPushButton->setEnabled(true);
-  m_RecordPushButton->setEnabled(true);
-  m_StopPushButton->setEnabled(false);
-
   // Lookup All Available IGIDataSourceFactoryServices.
   m_ModuleContext = us::GetModuleContext();
   if (m_ModuleContext == NULL)
@@ -142,18 +142,45 @@ void IGIDataSourceManager::setupUi(QWidget* parent)
   {
     mitkThrow() << "Found " << m_Refs.size() << " and " << m_NameToFactoriesMap.size() << " uniquely named IGIDataSourceFactoryServices. These numbers should match.";
   }
+  m_SourceSelectComboBox->setCurrentIndex(0);
+
+  m_PlayPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/play.png"));
+  m_RecordPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/record.png"));
+  m_StopPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/stop.png"));
+
+  m_PlayPushButton->setEnabled(true);
+  m_RecordPushButton->setEnabled(true);
+  m_StopPushButton->setEnabled(false);
+
+  m_Frame->setContentsMargins(0, 0, 0, 0);
+
+  m_DirectoryChooser->setFilters(ctkPathLineEdit::Dirs);
+  m_DirectoryChooser->setOptions(ctkPathLineEdit::ShowDirsOnly);
 
   m_GuiUpdateTimer = new QTimer(this);
   m_GuiUpdateTimer->setInterval(1000/(int)(DEFAULT_FRAME_RATE));
 
+  m_ToolManagerPlaybackGroupBox->setCollapsed(true);
+  m_ToolManagerConsoleGroupBox->setCollapsed(true);
+  m_ToolManagerConsole->setMaximumHeight(100);
+  m_TableWidget->setMaximumHeight(200);
+  m_TableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+
+  // the active column has a fixed, minimal size. note that this line relies
+  // on the table having columns already! the ui file has them added.
+  m_TableWidget->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+
   bool ok = false;
   ok = QObject::connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
   assert(ok);
-  ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
-  assert(ok);
   ok = QObject::connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
   assert(ok);
-
+  ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+  assert(ok);
+  ok = QObject::connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
+  assert(ok);
+  ok = QObject::connect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
+  assert(ok);
   m_SetupGuiHasBeenCalled = true;
 }
 
@@ -191,8 +218,37 @@ void IGIDataSourceManager::OnAddSource()
       QMessageBox::critical(this, QString("Creating ") + name,
         QString("Unknown ERROR:") + QString(e.GetDescription()),
         QMessageBox::Ok);
+      return;
     }
   }
+
+  bool shouldUpdate = true;
+  QVector<QString> fields;
+  fields.push_back("status");
+  fields.push_back("0");    // rate
+  fields.push_back("0");    // lag
+  fields.push_back("type");
+  fields.push_back("device");
+  fields.push_back("description");
+
+  // Create new row in table.
+  // Previously: You got 1 row per tracker tool.
+  //             So 1 spectra could have 3 rows in total.
+  // Now:        Its strictly 1 row per data source.
+  int newRowNumber = m_TableWidget->rowCount();
+  m_TableWidget->insertRow(newRowNumber);
+  for (unsigned int i = 0; i < fields.size(); i++)
+  {
+    QTableWidgetItem *item = new QTableWidgetItem(fields[i]);
+    item->setTextAlignment(Qt::AlignCenter);
+    item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    m_TableWidget->setItem(newRowNumber, i + 1, item);
+  }
+  QTableWidgetItem* freezeItem = new QTableWidgetItem(" ");
+  freezeItem->setTextAlignment(Qt::AlignCenter);
+  freezeItem->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+  freezeItem->setCheckState(shouldUpdate ? Qt::Checked : Qt::Unchecked);
+  m_TableWidget->setItem(newRowNumber, 0, freezeItem);
 
   // Launch timers
   if (!m_GuiUpdateTimer->isActive())
@@ -221,6 +277,11 @@ void IGIDataSourceManager::OnRemoveSource()
     rowIndex = m_TableWidget->rowCount() - 1;
   }
 
+  // Now erase data source, and corresponding table row.
+  m_Sources.removeAt(rowIndex);
+  m_TableWidget->removeRow(rowIndex);
+  m_TableWidget->update();
+
   // Given we stopped the timers to make sure they don't trigger, we need
   // to restart them, if indeed they were on.
   if (m_TableWidget->rowCount() > 0)
@@ -236,21 +297,33 @@ void IGIDataSourceManager::OnRemoveSource()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::OnUpdateGui()
 {
+  igtl::TimeStamp::Pointer timeNow = igtl::TimeStamp::New();
+  timeNow->GetTime();
 
+  for (int i = 0; i < m_Sources.size(); i++)
+  {
+    //m_Sources[i]->Update(timeNow->GetTimeStampInNanoseconds());
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StartRecording()
 {
-
+  for (int i = 0; i < m_Sources.size(); i++)
+  {
+    m_Sources[i]->StartRecording();
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StopRecording()
 {
-
+  for (int i = 0; i < m_Sources.size(); i++)
+  {
+    m_Sources[i]->StopRecording();
+  }
 }
 
 
@@ -267,7 +340,7 @@ void IGIDataSourceManager::SetFramesPerSecond(const int& framesPerSecond)
 {
   if (m_GuiUpdateTimer != NULL)
   {
-    int milliseconds = 1000 / framesPerSecond;
+    int milliseconds = 1000 / framesPerSecond; // Rounding error, but Qt is only very approximate anyway.
     m_GuiUpdateTimer->setInterval(milliseconds);
   }
 
@@ -275,5 +348,18 @@ void IGIDataSourceManager::SetFramesPerSecond(const int& framesPerSecond)
   this->Modified();
 }
 
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::OnCellDoubleClicked(int row, int column)
+{
+  MITK_INFO << "OnCellDoubleClicked";
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::OnFreezeTableHeaderClicked(int section)
+{
+  MITK_INFO << "OnFreezeTableHeaderClicked";
+}
 
 } // end namespace

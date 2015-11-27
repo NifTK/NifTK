@@ -16,6 +16,7 @@
 #define niftkIGIDataSourceI_h
 
 #include "niftkIGIDataSourcesExports.h"
+#include <niftkIGIDataType.h>
 
 #include <mitkCommon.h>
 #include <itkVersion.h>
@@ -44,8 +45,9 @@ public:
   virtual void StopCapturing() = 0;
   virtual void StartRecording() = 0;
   virtual void StopRecording() = 0;
-  virtual void SetLagInMilliseconds(const unsigned long long& milliseconds) = 0;
+  virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& time) = 0;
   virtual void SetRecordingLocation(const std::string& pathName) = 0;
+  virtual void Update(const niftk::IGIDataType::IGITimeType& time) = 0;
 
 protected:
 

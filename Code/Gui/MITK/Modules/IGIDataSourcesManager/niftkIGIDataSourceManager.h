@@ -32,8 +32,7 @@
 #include <QWidget>
 #include <QMap>
 #include <QTimer>
-
-#include <list>
+#include <QList>
 
 namespace niftk
 {
@@ -124,12 +123,22 @@ private slots:
   */
   void OnRemoveSource();
 
+  /**
+  * \brief Callback to indicate that a cell has been double clicked, to launch that sources' GUI.
+  */
+  void OnCellDoubleClicked(int row, int column);
+
+  /**
+  * \brief Used to freeze data source updates.
+  */
+  void OnFreezeTableHeaderClicked(int section);
+
 private:
 
   mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.
   us::ModuleContext*                                               m_ModuleContext;
   std::vector<us::ServiceReference<IGIDataSourceFactoryServiceI> > m_Refs;
-  std::list<niftk::IGIDataSourceI::Pointer>                        m_Sources;
+  QList<niftk::IGIDataSourceI::Pointer>                            m_Sources;
   QMap<QString, niftk::IGIDataSourceFactoryServiceI*>              m_NameToFactoriesMap;
   bool                                                             m_SetupGuiHasBeenCalled;
   QTimer                                                          *m_GuiUpdateTimer;

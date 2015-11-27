@@ -54,7 +54,8 @@ public:
   virtual void StopCapturing() override;
   virtual void StartRecording() override;
   virtual void StopRecording() override;
-  virtual void SetLagInMilliseconds(const unsigned long long& milliseconds) override;
+  virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& milliseconds) override;
+  virtual void Update(const niftk::IGIDataType::IGITimeType& time) override;
 
   /**
   * \see niftk::IGIDataSource::SaveItem()

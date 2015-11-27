@@ -227,4 +227,11 @@ void OpenCVVideoDataSourceService::GrabData()
   this->SetStatus("Grabbing");
 }
 
+
+//-----------------------------------------------------------------------------
+void OpenCVVideoDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
+{
+  MITK_INFO << "OpenCVVideoDataSourceService::Update";
+}
+
 } // end namespace
