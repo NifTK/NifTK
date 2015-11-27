@@ -372,9 +372,11 @@ void VideoTrackerMatching::SetCameraToTracker (cv::Mat matrix, int trackerIndex)
 
 
 //---------------------------------------------------------------------------
-cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
+cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex,
+    int ReferenceIndex )
 {
   cv::Mat returnMat = cv::Mat(4,4,CV_64FC1);
+  cv::Mat referenceMat = cv::Mat(4,4,CV_64FC1);
   
   if ( !m_Ready ) 
   {
@@ -395,9 +397,22 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
   }
 
   returnMat=m_TrackingMatrices[TrackerIndex].m_TrackingMatrices[FrameNumber];
+  if ( ReferenceIndex != -1 )
+  {
+    referenceMat=m_TrackingMatrices[ReferenceIndex].m_TrackingMatrices[FrameNumber];
+    returnMat = referenceMat.inv() * returnMat; 
+  }
   if ( TimingError != NULL ) 
   {
     *TimingError = m_TrackingMatrices[TrackerIndex].m_TimingErrors[FrameNumber];
+    if ( ReferenceIndex != -1 )
+    {
+      long long refTimingError = m_TrackingMatrices[ReferenceIndex].m_TimingErrors[FrameNumber];
+      if ( abs ( refTimingError ) > abs ( *TimingError ) )
+      {
+        *TimingError = refTimingError;
+      }
+    }
   }
   
   if ( m_FlipMatrices )

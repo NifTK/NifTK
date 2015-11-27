@@ -44,7 +44,8 @@ public:
   /**
    * \brief Return the tracking matrix for a given video frame number.
    */
-  cv::Mat GetTrackerMatrix ( unsigned int FrameNumber, long long * TimingError = NULL, unsigned int TrackerIndex = 0 );
+  cv::Mat GetTrackerMatrix ( unsigned int FrameNumber, long long * TimingError = NULL, unsigned int TrackerIndex = 0, 
+      int ReferenceIndex = -1);
 
   /**
    * \brief Return the tracking matrix multiplied by the camera to tracker matrix for a given video frame number.
