@@ -16,6 +16,7 @@
 
 #include <usGetModuleContext.h>
 #include <mitkExceptionMacro.h>
+#include <mitkRenderingManager.h>
 #include <QDesktopServices>
 #include <QProcessEnvironment>
 #include <QVector>
@@ -337,6 +338,10 @@ void IGIDataSourceManager::OnUpdateGui()
   }
 
   emit UpdateGuiFinishedDataSources();
+
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+
+  emit UpdateGuiFinishedRendering();
 
   this->Modified();
 }

@@ -130,9 +130,15 @@ public:
 signals:
 
   /**
-  * \brief Emmitted when the manager has asked each data source to update, and they have all updated.
+  * \brief Emmitted when this manager has asked each data source to update, and they have all updated.
   */
   void UpdateGuiFinishedDataSources();
+
+  /**
+  * \brief Emmitted when this manager has called for rendering to be updated, but
+  * currently, this request is queued.
+  */
+  void UpdateGuiFinishedRendering();
 
 protected:
 
