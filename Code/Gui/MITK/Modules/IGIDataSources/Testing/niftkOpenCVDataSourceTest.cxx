@@ -16,7 +16,7 @@
 #include <mitkTestingMacros.h>
 #include <mitkStandaloneDataStorage.h>
 #include <niftkIGIDataSourceFactoryServiceRAII.h>
-#include <niftkIGIDataSourceServiceI.h>
+#include <niftkIGIDataSourceI.h>
 #include <QApplication>
 
 /**
@@ -33,9 +33,9 @@ int niftkOpenCVDataSourceTest(int argc, char* argv[])
 
   mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
   niftk::IGIDataSourceFactoryServiceRAII factory("OpenCVVideoDataSourceFactory");
-  niftk::IGIDataSourceServiceI* service = factory.Create(dataStorage.GetPointer());
-  service->SetRecordingLocation("/tmp/matt");
-  service->StartRecording();
+  niftk::IGIDataSourceI* source = factory.Create(dataStorage.GetPointer());
+  source->SetRecordingLocation("/tmp/matt");
+  source->StartRecording();
 
   return EXIT_SUCCESS;
 }
