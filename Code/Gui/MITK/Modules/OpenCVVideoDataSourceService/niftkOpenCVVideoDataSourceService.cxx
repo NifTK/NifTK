@@ -92,7 +92,7 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Po
   // However: If system slows down (eg. saving images), then Qt will
   // drop clock ticks, so in effect, you will get less than this.
   int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
-  this->SetTimeStampTolerance(intervalInMilliseconds * 1000000); // convert to nanoseconds
+
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
   m_DataGrabbingThread->SetInterval(intervalInMilliseconds);
   m_DataGrabbingThread->start();
@@ -101,6 +101,8 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Po
     mitkThrow() << "Failed to start data grabbing thread";
   }
 
+  this->SetTimeStampTolerance(intervalInMilliseconds*1000000);
+  this->SetShouldUpdate(true);
   this->SetStatus("Initialised");
   this->Modified();
 }
@@ -379,6 +381,7 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
   IGIDataItemInfo info;
   info.m_Name = this->GetName();
   info.m_Status = this->GetStatus();
+  info.m_ShouldUpdate = this->GetShouldUpdate();
   info.m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
   info.m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
   info.m_FramesPerSecond = m_Buffer->GetFrameRate();

@@ -327,6 +327,27 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
       item1->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
       m_TableWidget->setItem(r, 1, item1);
 
+      if (!firstItemOnly.m_ShouldUpdate)
+      {
+        QPixmap pix(22, 22);
+        pix.fill(QColor(Qt::blue)); // suspended
+        item1->setIcon(pix);
+      }
+      else
+      {
+        if(firstItemOnly.m_IsLate)
+        {
+          QPixmap pix(22, 22);
+          pix.fill(QColor(Qt::red)); // late
+          item1->setIcon(pix);
+        }
+        else
+        {
+          QPixmap pix(22, 22);
+          pix.fill(QColor(Qt::green)); // ok.
+          item1->setIcon(pix);
+        }
+      }
       QTableWidgetItem *item2 = new QTableWidgetItem(QString::number(firstItemOnly.m_FramesPerSecond));
       item2->setTextAlignment(Qt::AlignCenter);
       item2->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);

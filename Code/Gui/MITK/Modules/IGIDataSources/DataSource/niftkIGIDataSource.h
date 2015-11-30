@@ -67,9 +67,15 @@ public:
    */
   virtual std::string GetStatus() const override;
 
+  /**
+  * \see IGIDataSourceI::GetShouldUpdate()
+  */
+  virtual bool GetShouldUpdate() const override;
+
   itkGetStringMacro(MicroServiceDeviceName);
 
   itkSetStringMacro(Status);
+  itkSetMacro(ShouldUpdate, bool);
 
   itkSetStringMacro(RecordingLocation);
   itkGetStringMacro(RecordingLocation);
@@ -122,8 +128,8 @@ private:
   us::ServiceRegistration<Self>     m_MicroServiceRegistration;
   std::string                       m_RecordingLocation;
   std::string                       m_Status;
+  bool                              m_ShouldUpdate;
   niftk::IGIDataType::IGITimeType   m_TimeStampTolerance; // nanoseconds.
-
 };
 
 } // end namespace

@@ -42,6 +42,7 @@ struct NIFTKIGIDATASOURCES_EXPORT IGIDataItemInfo
   {
     m_Name = "Unknown";
     m_Status = "Unknown";
+    m_ShouldUpdate = false;
     m_IsLate = false;
     m_LagInMilliseconds = 0;
     m_FramesPerSecond = 0;
@@ -50,6 +51,7 @@ struct NIFTKIGIDATASOURCES_EXPORT IGIDataItemInfo
 
   std::string  m_Name;
   std::string  m_Status;
+  bool         m_ShouldUpdate;
   bool         m_IsLate;
   unsigned int m_LagInMilliseconds;
   float        m_FramesPerSecond;
@@ -78,8 +80,10 @@ public:
   virtual void StopRecording() = 0;
   virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& time) = 0;
   virtual void SetRecordingLocation(const std::string& pathName) = 0;
+  virtual void SetShouldUpdate(bool shouldUpdate) = 0;
   virtual std::string GetName() const = 0;
   virtual std::string GetStatus() const = 0;
+  virtual bool GetShouldUpdate() const = 0;
   virtual std::string GetSaveDirectoryName() = 0;
   virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) = 0;
 

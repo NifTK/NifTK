@@ -28,6 +28,9 @@ IGIDataSource::IGIDataSource(const std::string& microServiceDeviceName,
                              mitk::DataStorage::Pointer dataStorage)
 : m_DataStorage(dataStorage)
 , m_MicroServiceDeviceName(microServiceDeviceName)
+, m_Status("UNKNOWN")
+, m_ShouldUpdate(false)
+, m_TimeStampTolerance(0)
 {
 
   if (m_DataStorage.IsNull())
@@ -99,6 +102,13 @@ std::string IGIDataSource::GetName() const
 std::string IGIDataSource::GetStatus() const
 {
   return m_Status;
+}
+
+
+//-----------------------------------------------------------------------------
+bool IGIDataSource::GetShouldUpdate() const
+{
+  return m_ShouldUpdate;
 }
 
 
