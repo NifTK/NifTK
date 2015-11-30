@@ -62,13 +62,6 @@ bool NDIBaseTracker::GetVisibilityOfTrackingVolume() const
 
 
 //-----------------------------------------------------------------------------
-void NDIBaseTracker::SetDelayInMilliseconds(unsigned int delay)
-{
-  m_Tracker->SetDelayInMilliseconds(delay);
-}
-
-
-//-----------------------------------------------------------------------------
 void NDIBaseTracker::Update()
 {
   m_Tracker->Update();

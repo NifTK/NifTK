@@ -63,17 +63,12 @@ public:
   bool GetVisibilityOfTrackingVolume() const;
 
   /**
-  * \brief Calibrate the time lag, and set it here, in milliseconds.
-  */
-  void SetDelayInMilliseconds(unsigned int);
-
-  /**
   * \brief Updates the pipeline, meaning, it retrieves the tracking data from the device.
   */
   void Update();
 
   /**
-  * \brief Retrives the current tracking data, taking into account any calibrated lag.
+  * \brief Retrives the current tracking data.
   */
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData();
 

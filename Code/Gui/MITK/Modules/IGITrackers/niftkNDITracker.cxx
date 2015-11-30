@@ -71,13 +71,6 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   m_TrackerSource = mitk::TrackingDeviceSource::New();
   m_TrackerSource->SetTrackingDevice(m_TrackerDevice);
 
-  // Put a delay filter in for calibration.
-  m_DelayFilter = mitk::NavigationDataDelayFilter::New(0);
-  for (unsigned int i = 0; i < m_TrackerSource->GetNumberOfOutputs(); i++)
-  {
-    m_DelayFilter->SetInput(i, m_TrackerSource->GetOutput(i));
-  }
-
   // Try loading a volume of interest. This is optional, but do it up-front.
   m_TrackingVolumeGenerator = mitk::TrackingVolumeGenerator::New();
   m_TrackingVolumeGenerator->SetTrackingDeviceData(m_DeviceData);
@@ -210,29 +203,22 @@ bool NDITracker::GetVisibilityOfTrackingVolume() const
 
 
 //-----------------------------------------------------------------------------
-void NDITracker::SetDelayInMilliseconds(unsigned int delay)
-{
-  m_DelayFilter->SetDelay(delay);
-}
-
-
-//-----------------------------------------------------------------------------
 void NDITracker::Update()
 {
-  m_DelayFilter->Update();
+  m_TrackerSource->Update();
 }
 
 
 //-----------------------------------------------------------------------------
 std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > NDITracker::GetTrackingData()
 {
-  m_DelayFilter->Update();
+  m_TrackerSource->Update();
 
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result;
 
-  for(unsigned int i=0; i< m_DelayFilter->GetNumberOfIndexedOutputs(); i++)
+  for(unsigned int i=0; i< m_TrackerSource->GetNumberOfIndexedOutputs(); i++)
   {
-    mitk::NavigationData::Pointer currentTool = m_DelayFilter->GetOutput(i);
+    mitk::NavigationData::Pointer currentTool = m_TrackerSource->GetOutput(i);
     if(currentTool->IsDataValid())
     {
       std::string name = currentTool->GetName();

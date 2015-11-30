@@ -23,7 +23,6 @@
 #include <mitkDataStorage.h>
 #include <mitkNavigationToolStorage.h>
 #include <mitkTrackingDeviceSource.h>
-#include <mitkNavigationDataDelayFilter.h>
 #include <mitkNDITrackingDevice.h>
 #include <mitkSerialCommunication.h>
 #include <mitkTrackingVolumeGenerator.h>
@@ -48,7 +47,6 @@ public:
   void StopTracking();
   void SetVisibilityOfTrackingVolume(bool isVisible);
   bool GetVisibilityOfTrackingVolume() const;
-  void SetDelayInMilliseconds(unsigned int);
   void Update();
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData();
 
@@ -81,7 +79,6 @@ private:
   mitk::NavigationToolStorage::Pointer     m_NavigationToolStorage;
   mitk::NDITrackingDevice::Pointer         m_TrackerDevice;
   mitk::TrackingDeviceSource::Pointer      m_TrackerSource;
-  mitk::NavigationDataDelayFilter::Pointer m_DelayFilter;
   mitk::TrackingVolumeGenerator::Pointer   m_TrackingVolumeGenerator;
   mitk::DataNode::Pointer                  m_TrackingVolumeNode;
 
