@@ -122,6 +122,14 @@ bool IGIDataSource::GetShouldUpdate() const
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSource::SetShouldUpdate(bool shouldUpdate)
+{
+  m_ShouldUpdate = shouldUpdate;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
 mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name, const bool& addToDataStorage)
 {
   if (m_DataStorage.IsNull())

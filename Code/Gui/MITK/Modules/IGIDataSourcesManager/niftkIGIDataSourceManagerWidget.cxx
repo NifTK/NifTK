@@ -289,7 +289,11 @@ void IGIDataSourceManagerWidget::OnFreezeTableHeaderClicked(int section)
 {
   if (section == 0)
   {
-    m_Manager->FreezeDataSources();
+    // We only ever freeze them. User manually unchecks checkbox to re-activate.
+    for (int i = 0; i < m_TableWidget->rowCount(); ++i)
+    {
+      m_TableWidget->item(i, 0)->setCheckState(Qt::Unchecked);
+    }
   }
 }
 
@@ -321,6 +325,9 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
     if (infoForOneRow.size() > 0)
     {
       IGIDataItemInfo firstItemOnly = infoForOneRow[0];
+
+      bool  shouldUpdate = m_TableWidget->item(r, 0)->checkState() == Qt::Checked;
+      m_Manager->FreezeDataSource(r, !shouldUpdate);
 
       QTableWidgetItem *item1 = new QTableWidgetItem(QString::fromStdString(firstItemOnly.m_Status));
       item1->setTextAlignment(Qt::AlignCenter);

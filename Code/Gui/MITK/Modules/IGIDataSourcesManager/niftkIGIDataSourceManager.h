@@ -125,7 +125,12 @@ public:
   /**
   * \brief Freezes the data sources (i.e. does not do update), but does not affect the saving of data.
   */
-  void FreezeDataSources();
+  void FreezeAllDataSources(bool isFrozen);
+
+  /**
+  * \brief Freezes individual data sources (i.e. does not do update), but does not affect the saving of data.
+  */
+  void FreezeDataSource(unsigned int i, bool isFrozen);
 
 signals:
 

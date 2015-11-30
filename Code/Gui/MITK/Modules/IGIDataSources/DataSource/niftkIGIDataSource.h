@@ -72,10 +72,14 @@ public:
   */
   virtual bool GetShouldUpdate() const override;
 
+  /**
+  * \see IGIDataSourceI::SetShouldUpdate()
+  */
+  virtual void SetShouldUpdate(bool shouldUpdate);
+
   itkGetStringMacro(MicroServiceDeviceName);
 
   itkSetStringMacro(Status);
-  itkSetMacro(ShouldUpdate, bool);
 
   itkSetStringMacro(RecordingLocation);
   itkGetStringMacro(RecordingLocation);
@@ -91,6 +95,8 @@ protected:
   IGIDataSource(const IGIDataSource&); // Purposefully not implemented.
   IGIDataSource& operator=(const IGIDataSource&); // Purposefully not implemented.
 
+  std::string GetPreferredSlash() const;
+
   /**
    * \brief Derived classes request a node for a given name. If the node does
    * not exist, it will be created with some default properties.
@@ -100,8 +106,6 @@ protected:
    * if false, the caller can determine when to do it.
    */
   mitk::DataNode::Pointer GetDataNode(const std::string& name=std::string(), const bool& addToDataStorage=true);
-
-  std::string GetPreferredSlash() const;
 
   /**
   * \brief Returns true if the delay between requested and actual is

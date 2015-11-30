@@ -322,9 +322,26 @@ void IGIDataSourceManager::StopRecording()
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSourceManager::FreezeDataSources()
+void IGIDataSourceManager::FreezeAllDataSources(bool isFrozen)
 {
+  for (int i = 0; i < m_Sources.size(); i++)
+  {
+    this->FreezeDataSource(i, isFrozen);
+  }
+  this->Modified();
+}
 
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::FreezeDataSource(unsigned int i, bool isFrozen)
+{
+  if (i >= m_Sources.size())
+  {
+    mitkThrow() << "Index out of bounds, size=" << m_Sources.size() << ", i=" << i;
+  }
+
+  m_Sources[i]->SetShouldUpdate(!isFrozen);
+  this->Modified();
 }
 
 
@@ -336,8 +353,8 @@ void IGIDataSourceManager::OnUpdateGui()
 
   for (int i = 0; i < m_Sources.size(); i++)
   {
-    std::vector<IGIDataItemInfo> dataItemInfos = m_Sources[i]->Update(m_TimeStampGenerator->GetTimeStampInNanoseconds());
     QList<IGIDataItemInfo> qListDataItemInfos;
+    std::vector<IGIDataItemInfo> dataItemInfos = m_Sources[i]->Update(m_TimeStampGenerator->GetTimeStampInNanoseconds());
     for (int j = 0; j < dataItemInfos.size(); j++)
     {
       qListDataItemInfos.push_back(dataItemInfos[i]);

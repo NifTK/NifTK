@@ -266,12 +266,6 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
 {
   std::vector<IGIDataItemInfo> infos;
 
-  if (m_Buffer->GetBufferSize() == 0)
-  {
-    MITK_WARN << "OpenCVVideoDataSourceService::Update(), buffer is empty!";
-    return infos;
-  }
-
   if(m_Buffer->GetFirstTimeStamp() > time)
   {
     MITK_WARN << "OpenCVVideoDataSourceService::Update(), requested time is before buffer time!";
@@ -282,6 +276,27 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
   if (dataType.IsNull())
   {
     MITK_WARN << "Failed to find data for time " << time << ", size=" << m_Buffer->GetBufferSize() << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
+    return infos;
+  }
+
+  // Create default return status.
+  IGIDataItemInfo info;
+  info.m_Name = this->GetName();
+  info.m_Status = this->GetStatus();
+  info.m_ShouldUpdate = this->GetShouldUpdate();
+  info.m_FramesPerSecond = m_Buffer->GetFrameRate();
+  info.m_Description = "Local OpenCV video source";
+  infos.push_back(info);
+
+  // If we are not actually updating data, bail out.
+  if (!this->GetShouldUpdate())
+  {
+    return infos;
+  }
+
+  if (m_Buffer->GetBufferSize() == 0)
+  {
+    MITK_WARN << "OpenCVVideoDataSourceService::Update(), buffer is empty!";
     return infos;
   }
 
@@ -375,15 +390,8 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
   cvReleaseImage(&rgbaOpenCVImage);
 
   // Return info describing object.
-  IGIDataItemInfo info;
-  info.m_Name = this->GetName();
-  info.m_Status = this->GetStatus();
-  info.m_ShouldUpdate = this->GetShouldUpdate();
-  info.m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
-  info.m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
-  info.m_FramesPerSecond = m_Buffer->GetFrameRate();
-  info.m_Description = "Local OpenCV video source";
-  infos.push_back(info);
+  infos[0].m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
+  infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
   return infos;
 }
 
