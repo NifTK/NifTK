@@ -132,6 +132,11 @@ public:
   */
   void FreezeDataSource(unsigned int i, bool isFrozen);
 
+  /**
+  * \brief Stops all sources playing back.
+  */
+  void StopPlayback();
+
 signals:
 
   /**

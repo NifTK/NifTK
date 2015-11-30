@@ -346,6 +346,18 @@ void IGIDataSourceManager::FreezeDataSource(unsigned int i, bool isFrozen)
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSourceManager::StopPlayback()
+{
+  for (int i = 0; i < m_Sources.size(); i++)
+  {
+    m_Sources[i]->StopPlayback();
+  }
+  this->Modified();
+
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManager::OnUpdateGui()
 {
   m_TimeStampGenerator->GetTime();

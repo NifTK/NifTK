@@ -131,7 +131,165 @@ void IGIDataSourceManagerWidget::StopRecording()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnPlayStart()
 {
-  MITK_INFO << "OnPlayStart";
+  if (m_PlayPushButton->isChecked())
+  {
+    QString playbackpath = m_DirectoryChooser->currentPath();
+
+    // playback button should only be enabled if there's a path in m_DirectoryChooser.
+    if (playbackpath.isEmpty())
+    {
+      m_PlayPushButton->setChecked(false);
+    }
+    else
+    {
+      try
+      {
+/*
+        // data sources participating in igi data playback.
+        // key = fully qualified path for that data source.
+        QMap<std::string, IGIDataSourceI::Pointer> goodSources;
+
+        // union of the time range encompassing everything recorded in that session.
+        IGIDataType::IGITimeType overallStartTime = std::numeric_limits<IGIDataType::IGITimeType>::max();
+        IGIDataType::IGITimeType overallEndTime   = std::numeric_limits<IGIDataType::IGITimeType>::min();
+
+        QMap<QString, QString>  dir2classmap = ParseDataSourceDescriptor(playbackpath + QDir::separator() + "descriptor.cfg");
+
+        // for each existing data source (that the user added before), check whether it can playback
+        // that particular directory mentioned in the descriptor.
+        foreach (QmitkIGIDataSource::Pointer source, m_Sources)
+        {
+          // find a suitable directory
+          for (QMap<QString, QString>::iterator dir2classmapIterator = dir2classmap.begin();
+               dir2classmapIterator != dir2classmap.end();
+               ++dir2classmapIterator)
+          {
+            if (source->GetNameOfClass() == dir2classmapIterator.value().toStdString())
+            {
+              igtlUint64  startTime = -1;
+              igtlUint64  endTime   = -1;
+              std::string dataSourceDir = (playbackpath + QDir::separator() + dir2classmapIterator.key()).toStdString();
+              bool cando = source->ProbeRecordedData(dataSourceDir, &startTime, &endTime);
+              if (cando)
+              {
+                overallStartTime = std::min(overallStartTime, startTime);
+                overallEndTime   = std::max(overallEndTime, endTime);
+
+                goodSources.insert(dataSourceDir, source);
+
+                // we found a directory <-> source combination that can work.
+                // so drop it off the list dir2classmap.
+                dir2classmap.erase(dir2classmapIterator);
+                // try the next source that exist already.
+                break;
+              }
+              else
+              {
+                // no special else here (only diagnostic). if this data source cannot playback that particular directory,
+                // even though the descriptor says it can, the data source may still be able to play another directory
+                // coming later in the list.
+                MITK_WARN << "Data source " << source->GetNameOfClass() << " mentioned in descriptor for " << dir2classmapIterator.key().toStdString() << " but failed probing.";
+              }
+            }
+          }
+        }
+
+        // if there are more user-added data sources than listed in the descriptor
+        // then simply leave them be. at first, i thought it might make sense to freeze-frame
+        // these. but now this feels wrong.
+
+        if (overallEndTime >= overallStartTime)
+        {
+          // sanity check: if we have a timestamp range than at least one source should be ok.
+          assert(!goodSources.empty());
+          for (QMap<std::string, QmitkIGIDataSource::Pointer>::iterator source = goodSources.begin(); source != goodSources.end(); ++source)
+          {
+            source.value()->ClearBuffer();
+            source.value()->StartPlayback(source.key(), overallStartTime, overallEndTime);
+          }
+
+          m_PlaybackSliderBase = overallStartTime;
+          m_PlaybackSliderFactor = (overallEndTime - overallStartTime) / (std::numeric_limits<int>::max() / 4);
+          // if the time range is very short then dont upscale for the slider
+          m_PlaybackSliderFactor = std::max(m_PlaybackSliderFactor, (igtlUint64) 1);
+
+          double  sliderMax = (overallEndTime - overallStartTime) / m_PlaybackSliderFactor;
+          assert(sliderMax < std::numeric_limits<int>::max());
+
+          m_PlaybackSlider->setMinimum(0);
+          m_PlaybackSlider->setMaximum((int) sliderMax);
+
+          // set slider step values, so user can click or mouse-wheel the slider to advance time.
+          // on windows-qt, single-step corresponds to a single mouse-wheel event.
+          // quite often doing one mouse-wheel step, corresponds to 3 lines (events), but this is configurable
+          // (in control panel somewhere, but we ignore that here, single step is whatever the user's machine says).
+          igtlUint64  tenthASecondInNanoseconds = 100000000;
+          igtlUint64  tenthASecondStep = tenthASecondInNanoseconds / m_PlaybackSliderFactor;
+          tenthASecondStep = std::max(tenthASecondStep, (igtlUint64) 1);
+          assert(tenthASecondStep < std::numeric_limits<int>::max());
+          m_PlaybackSlider->setSingleStep((int) tenthASecondStep);
+          // on windows-qt, a page-step is when clicking on the slider track.
+          igtlUint64  oneSecondInNanoseconds = 1000000000;
+          igtlUint64  oneSecondStep = oneSecondInNanoseconds / m_PlaybackSliderFactor;
+          oneSecondStep = std::max(oneSecondStep, tenthASecondStep + 1);
+          assert(oneSecondStep < std::numeric_limits<int>::max());
+          m_PlaybackSlider->setPageStep((int) oneSecondStep);
+
+          // pop open the controls
+          m_ToolManagerPlaybackGroupBox->setCollapsed(false);
+          // can stop playback with stop button (in addition to unchecking the playbutton)
+          m_StopPushButton->setEnabled(true);
+          // for now, cannot start recording directly from playback mode.
+          // could be possible: leave this enabled and simply stop all playback when user clicks on record.
+          m_RecordPushButton->setEnabled(false);
+
+          m_TimeStampEdit->setReadOnly(false);
+          m_PlaybackSlider->setEnabled(true);
+          m_PlaybackSlider->setValue(0);
+        }
+        else
+        {
+          m_PlayPushButton->setChecked(false);
+        }
+*/
+      }
+      catch (const mitk::Exception& e)
+      {
+        MITK_ERROR << "Caught exception while trying to initialise data playback: " << e.GetDescription();
+
+        try
+        {
+          // try stopping playback if we had it started already on some sources.
+          m_Manager->StopPlayback();
+        }
+        catch (mitk::Exception& e)
+        {
+          // Swallow, as we have a messge box anyhow.
+          MITK_ERROR << "Caught exception while trying to stop data source playback during an exception handler." << std::endl << e.GetDescription();
+        }
+
+        QMessageBox msgbox;
+        msgbox.setText("Data playback initialisation failed.");
+        msgbox.setInformativeText("Playback cannot continue and will stop. Have a look at the detailed message and try to fix it. Good luck.");
+        msgbox.setDetailedText(QString::fromStdString(e.what()));
+        msgbox.setIcon(QMessageBox::Critical);
+        msgbox.exec();
+
+        // Switch off playback. hopefully, user will fix the error
+        // and can then try to click on playback again.
+        m_PlayPushButton->setChecked(false);
+      }
+    }
+  }
+  else
+  {
+    m_Manager->StopPlayback();
+    m_StopPushButton->setEnabled(false);
+    m_RecordPushButton->setEnabled(true);
+    m_TimeStampEdit->setReadOnly(true);
+    m_PlaybackSlider->setEnabled(false);
+    m_PlaybackSlider->setValue(0);
+  }
 }
 
 
