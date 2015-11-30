@@ -228,12 +228,9 @@ void OpenCVVideoDataSourceService::GrabData()
     mitkThrow() << "Failed to get a valid video frame!";
   }
 
-  // Now process the data.
-  m_TimeCreated->GetTime();
-
   niftk::OpenCVVideoDataType::Pointer wrapper = niftk::OpenCVVideoDataType::New();
   wrapper->CloneImage(img);
-  wrapper->SetTimeStampInNanoSeconds(m_TimeCreated->GetTimeStampInNanoseconds());
+  wrapper->SetTimeStampInNanoSeconds(this->GetTimeStampInNanoseconds());
   wrapper->SetFrameId(m_FrameId++);
   wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
   wrapper->SetShouldBeSaved(m_IsRecording);

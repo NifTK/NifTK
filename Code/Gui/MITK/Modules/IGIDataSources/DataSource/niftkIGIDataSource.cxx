@@ -27,6 +27,7 @@ namespace niftk
 IGIDataSource::IGIDataSource(const std::string& microServiceDeviceName,
                              mitk::DataStorage::Pointer dataStorage)
 : m_DataStorage(dataStorage)
+, m_TimeCreated(NULL)
 , m_MicroServiceDeviceName(microServiceDeviceName)
 , m_Status("UNKNOWN")
 , m_ShouldUpdate(false)
@@ -88,6 +89,14 @@ IGIDataSource::~IGIDataSource()
 mitk::DataStorage::Pointer IGIDataSource::GetDataStorage() const
 {
   return m_DataStorage;
+}
+
+
+//-----------------------------------------------------------------------------
+niftk::IGIDataType::IGITimeType IGIDataSource::GetTimeStampInNanoseconds()
+{
+  m_TimeCreated->GetTime();
+  return m_TimeCreated->GetTimeStampInNanoseconds();
 }
 
 

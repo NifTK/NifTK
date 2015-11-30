@@ -100,7 +100,7 @@ protected:
    * if false, the caller can determine when to do it.
    */
   mitk::DataNode::Pointer GetDataNode(const std::string& name=std::string(), const bool& addToDataStorage=true);
-  mitk::DataStorage::Pointer GetDataStorage() const;
+
   std::string GetPreferredSlash() const;
 
   /**
@@ -118,11 +118,20 @@ protected:
                                     const niftk::IGIDataType::IGITimeType& actual
                                    ) const;
 
-  igtl::TimeStamp::Pointer          m_TimeCreated; // Expensive to recreate, so available to sub-classes.
+  /**
+  * \brief Returns the pointer to the internal data storage.
+  */
+  mitk::DataStorage::Pointer GetDataStorage() const;
+
+  /**
+  * \brief Queries the igtl::TimeStamp to get an up-to-date timestamp.
+  */
+  niftk::IGIDataType::IGITimeType GetTimeStampInNanoseconds();
 
 private:
 
   mitk::DataStorage::Pointer        m_DataStorage;
+  igtl::TimeStamp::Pointer          m_TimeCreated;
   std::set<mitk::DataNode::Pointer> m_DataNodes;
   std::string                       m_MicroServiceDeviceName;
   us::ServiceRegistration<Self>     m_MicroServiceRegistration;
