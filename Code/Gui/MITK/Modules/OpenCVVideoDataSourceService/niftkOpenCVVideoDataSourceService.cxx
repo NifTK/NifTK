@@ -52,7 +52,6 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Po
 , m_Buffer(NULL)
 , m_BackgroundDeleteThread(NULL)
 , m_DataGrabbingThread(NULL)
-, m_IsRecording(false)
 {
   this->SetStatus("Initialising");
 
@@ -148,18 +147,36 @@ void OpenCVVideoDataSourceService::StopCapturing()
 
 
 //-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::StartRecording()
+bool OpenCVVideoDataSourceService::ProbeRecordedData(const std::string& path,
+                                                     niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+                                                     niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {
-  m_IsRecording = true;
-  this->Modified();
-}
+  // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.
+  niftk::IGIDataType::IGITimeType  firstTimeStampFound = 0;
+  niftk::IGIDataType::IGITimeType  lastTimeStampFound  = 0;
 
+  // needs to match what SaveData() does below
+  QDir directory(QString::fromStdString(path));
+  if (directory.exists())
+  {
+    std::set<niftk::IGIDataType::IGITimeType> timestamps = ProbeTimeStampFiles(directory, QString(".jpg"));
+    if (!timestamps.empty())
+    {
+      firstTimeStampFound = *timestamps.begin();
+      lastTimeStampFound  = *(--(timestamps.end()));
+    }
+  }
 
-//-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::StopRecording()
-{
-  m_IsRecording = false;
-  this->Modified();
+  if (firstTimeStampInStore)
+  {
+    *firstTimeStampInStore = firstTimeStampFound;
+  }
+  if (lastTimeStampInStore)
+  {
+    *lastTimeStampInStore = lastTimeStampFound;
+  }
+
+  return firstTimeStampFound != 0;
 }
 
 
@@ -167,6 +184,24 @@ void OpenCVVideoDataSourceService::StopRecording()
 void OpenCVVideoDataSourceService::SetLagInMilliseconds(const unsigned long long& milliseconds)
 {
   m_Buffer->SetLagInMilliseconds(milliseconds);
+}
+
+
+//-----------------------------------------------------------------------------
+void OpenCVVideoDataSourceService::CleanBuffer()
+{
+  m_Buffer->CleanBuffer();
+}
+
+
+//-----------------------------------------------------------------------------
+std::string OpenCVVideoDataSourceService::GetSaveDirectoryName()
+{
+  return this->GetRecordingLocation()
+      + this->GetPreferredSlash().toStdString()
+      + this->GetMicroServiceDeviceName()
+      + "_" + (tr("%1").arg(m_ChannelNumber)).toStdString()
+      ;
 }
 
 
@@ -205,15 +240,13 @@ void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 
 
 //-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::CleanBuffer()
-{
-  m_Buffer->CleanBuffer();
-}
-
-
-//-----------------------------------------------------------------------------
 void OpenCVVideoDataSourceService::GrabData()
 {
+  if (this->GetIsPlayingBack())
+  {
+    return;
+  }
+
   // Somehow this can become null, probably a race condition during destruction.
   if (m_VideoSource.IsNull())
   {
@@ -233,7 +266,7 @@ void OpenCVVideoDataSourceService::GrabData()
   wrapper->SetTimeStampInNanoSeconds(this->GetTimeStampInNanoseconds());
   wrapper->SetFrameId(m_FrameId++);
   wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-  wrapper->SetShouldBeSaved(m_IsRecording);
+  wrapper->SetShouldBeSaved(this->GetIsRecording());
   wrapper->SetIsSaved(false);
 
   m_Buffer->AddToBuffer(wrapper.GetPointer());
@@ -241,23 +274,12 @@ void OpenCVVideoDataSourceService::GrabData()
   // Save synchronously.
   // This has the side effect that if saving is too slow,
   // the QTimers just won't keep up, and start missing pulses.
-  if (m_IsRecording)
+  if (this->GetIsRecording())
   {
     this->SaveItem(wrapper.GetPointer());
   }
 
   this->SetStatus("Grabbing");
-}
-
-
-//-----------------------------------------------------------------------------
-std::string OpenCVVideoDataSourceService::GetSaveDirectoryName()
-{
-  return this->GetRecordingLocation()
-      + this->GetPreferredSlash()
-      + this->GetMicroServiceDeviceName()
-      + "_" + (tr("%1").arg(m_ChannelNumber)).toStdString()
-      ;
 }
 
 

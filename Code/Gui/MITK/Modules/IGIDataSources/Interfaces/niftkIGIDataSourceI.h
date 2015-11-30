@@ -76,16 +76,33 @@ public:
 
   virtual void StartCapturing() = 0;
   virtual void StopCapturing() = 0;
+  virtual void StartPlayback() = 0;
+  virtual void StopPlayback() = 0;
   virtual void StartRecording() = 0;
   virtual void StopRecording() = 0;
   virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& time) = 0;
   virtual void SetRecordingLocation(const std::string& pathName) = 0;
   virtual void SetShouldUpdate(bool shouldUpdate) = 0;
+  virtual bool GetShouldUpdate() const = 0;
   virtual std::string GetName() const = 0;
   virtual std::string GetStatus() const = 0;
-  virtual bool GetShouldUpdate() const = 0;
   virtual std::string GetSaveDirectoryName() = 0;
   virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) = 0;
+
+  /**
+   * Checks whether the previously recorded data is readable, and returns the time-range for it.
+   * Default implementation returns false, i.e. is not capable of playback.
+   *
+   * @param path points to the data source specific directory, e.g. "/blabla/2014-01-28-11-51-04-909/Polaris Spectra_4/"
+   * @param firstTimeStampInStore earliest suitable data item. Not optional!
+   * @param lastTimeStampInStore last suitable data item. Not optional!
+   * @return true if there is suitable data to playback in path.
+   *
+   * @throw should not throw! Return false instead.
+   */
+  virtual bool ProbeRecordedData(const std::string& path,
+                                 niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+                                 niftk::IGIDataType::IGITimeType* lastTimeStampInStore) = 0;
 
 protected:
 

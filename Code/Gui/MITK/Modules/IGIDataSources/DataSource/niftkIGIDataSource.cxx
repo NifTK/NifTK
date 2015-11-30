@@ -18,7 +18,6 @@
 #include <mitkExceptionMacro.h>
 #include <usModuleContext.h>
 #include <usGetModuleContext.h>
-#include <boost/filesystem.hpp>
 
 namespace niftk
 {
@@ -31,6 +30,8 @@ IGIDataSource::IGIDataSource(const std::string& microServiceDeviceName,
 , m_MicroServiceDeviceName(microServiceDeviceName)
 , m_Status("UNKNOWN")
 , m_ShouldUpdate(false)
+, m_IsRecording(false)
+, m_IsPlayingBack(false)
 , m_TimeStampTolerance(0)
 {
 
@@ -82,6 +83,38 @@ IGIDataSource::~IGIDataSource()
       m_DataStorage->Remove(*iter);
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StartRecording()
+{
+  this->SetIsRecording(true);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StopRecording()
+{
+  this->SetIsRecording(false);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StartPlayback()
+{
+  this->SetIsPlayingBack(true);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StopPlayback()
+{
+  this->SetIsPlayingBack(false);
+  this->Modified();
 }
 
 
@@ -167,11 +200,9 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name, cons
 
 
 //-----------------------------------------------------------------------------
-std::string IGIDataSource::GetPreferredSlash() const
+QString IGIDataSource::GetPreferredSlash()
 {
-  boost::filesystem::path slash("/");
-  std::string preferredSlash = slash.make_preferred().string();
-  return preferredSlash;
+  return QString(QDir::separator());
 }
 
 
@@ -199,6 +230,43 @@ unsigned int IGIDataSource::GetLagInMilliseconds(const niftk::IGIDataType::IGITi
   }
   return (requested - actual)/1000000;
 }
+
+
+//-----------------------------------------------------------------------------
+std::set<igtlUint64> IGIDataSource::ProbeTimeStampFiles(QDir path, const QString& suffix)
+{
+  static_assert(std::numeric_limits<qulonglong>::max() >= std::numeric_limits<niftk::IGIDataType::IGITimeType>::max(), "mismatched data types");
+
+  std::set<igtlUint64>  result;
+
+  QStringList filters;
+  filters << QString("*" + suffix);
+  path.setNameFilters(filters);
+  path.setFilter(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot);
+
+  QStringList files = path.entryList();
+  if (!files.empty())
+  {
+    foreach (QString file, files)
+    {
+      if (file.endsWith(suffix))
+      {
+        // in the future, maybe add prefix parsing too.
+        QString  middle = file.mid(0, file.size() - suffix.size());
+
+        bool  ok = false;
+        qulonglong value = middle.toULongLong(&ok);
+        if (ok)
+        {
+          result.insert(value);
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
 
 } // end namespace
 

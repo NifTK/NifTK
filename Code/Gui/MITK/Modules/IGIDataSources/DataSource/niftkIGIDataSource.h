@@ -25,6 +25,9 @@
 #include <mitkServiceInterface.h>
 #include <usServiceRegistration.h>
 
+#include <QDir>
+#include <QString>
+
 namespace niftk
 {
 
@@ -77,15 +80,45 @@ public:
   */
   virtual void SetShouldUpdate(bool shouldUpdate);
 
-  itkGetStringMacro(MicroServiceDeviceName);
+  /**
+  * \see IGIDataSourceI::StartPlayback()
+  */
+  virtual void StartPlayback();
 
-  itkSetStringMacro(Status);
+  /**
+  * \see IGIDataSourceI::StopPlayback()
+  */
+  virtual void StopPlayback();
+
+  /**
+  * \see IGIDataSourceI::StartRecording()
+  */
+  virtual void StartRecording();
+
+  /**
+  * \see IGIDataSourceI::StopRecording()
+  */
+  virtual void StopRecording();
 
   itkSetStringMacro(RecordingLocation);
   itkGetStringMacro(RecordingLocation);
 
+  itkGetConstMacro(IsRecording, bool);
+  itkGetConstMacro(IsPlayingBack, bool);
+
   itkSetMacro(TimeStampTolerance, niftk::IGIDataType::IGITimeType);
   itkGetConstMacro(TimeStampTolerance, niftk::IGIDataType::IGITimeType);
+
+  /**
+   * \brief Scans the directory for individual files that match a timestamp pattern.
+   * \param suffix for example ".jpg" or "-ultrasoundImage.nii".
+   */
+  static std::set<igtlUint64> ProbeTimeStampFiles(QDir path, const QString& suffix);
+
+  /**
+  * \brief Returns the platform specific directory separator.
+  */
+  static QString GetPreferredSlash();
 
 protected:
 
@@ -94,8 +127,6 @@ protected:
 
   IGIDataSource(const IGIDataSource&); // Purposefully not implemented.
   IGIDataSource& operator=(const IGIDataSource&); // Purposefully not implemented.
-
-  std::string GetPreferredSlash() const;
 
   /**
    * \brief Derived classes request a node for a given name. If the node does
@@ -128,9 +159,15 @@ protected:
   mitk::DataStorage::Pointer GetDataStorage() const;
 
   /**
-  * \brief Queries the igtl::TimeStamp to get an up-to-date timestamp.
+  * \brief Queries the internal igtl::TimeStamp to get an up-to-date timestamp.
   */
   niftk::IGIDataType::IGITimeType GetTimeStampInNanoseconds();
+
+  itkSetMacro(IsRecording, bool);
+  itkSetMacro(IsPlayingBack, bool);
+
+  itkSetStringMacro(Status);
+  itkGetStringMacro(MicroServiceDeviceName);
 
 private:
 
@@ -142,6 +179,8 @@ private:
   std::string                       m_RecordingLocation;
   std::string                       m_Status;
   bool                              m_ShouldUpdate;
+  bool                              m_IsRecording;
+  bool                              m_IsPlayingBack;
   niftk::IGIDataType::IGITimeType   m_TimeStampTolerance; // nanoseconds.
 };
 

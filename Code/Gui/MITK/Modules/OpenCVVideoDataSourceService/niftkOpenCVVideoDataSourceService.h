@@ -51,37 +51,34 @@ public:
   mitkNewMacro1Param(OpenCVVideoDataSourceService, mitk::DataStorage::Pointer);
 
   /**
-  * \see IGIDataSource::StartCapturing()
+  * \see IGIDataSourceI::StartCapturing()
   */
   virtual void StartCapturing() override;
 
   /**
-  * \see IGIDataSource::StopCapturing()
+  * \see IGIDataSourceI::StopCapturing()
   */
   virtual void StopCapturing() override;
 
   /**
-  * \see IGIDataSource::StartRecording()
+  * \see IGIDataSourceI::ProbeRecordedData()
   */
-  virtual void StartRecording() override;
+  bool ProbeRecordedData(const std::string& path,
+                                  niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+                                  niftk::IGIDataType::IGITimeType* lastTimeStampInStore);
 
   /**
-  * \see IGIDataSource::StopRecording()
-  */
-  virtual void StopRecording() override;
-
-  /**
-  * \see IGIDataSource::SetLagInMilliseconds()
+  * \see IGIDataSourceI::SetLagInMilliseconds()
   */
   virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& milliseconds) override;
 
   /**
-  * \see IGIDataSource::GetSaveDirectoryName()
+  * \see IGIDataSourceI::GetSaveDirectoryName()
   */
   virtual std::string GetSaveDirectoryName() override;
 
   /**
-  * \see IGIDataSource::Update()
+  * \see IGIDataSourceI::Update()
   */
   virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
 
@@ -120,7 +117,6 @@ private:
   niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
   niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
   niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;
-  bool                                            m_IsRecording;
 
 }; // end class
 
