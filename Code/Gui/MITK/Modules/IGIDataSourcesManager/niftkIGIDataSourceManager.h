@@ -132,13 +132,14 @@ signals:
   /**
   * \brief Emmitted when this manager has asked each data source to update, and they have all updated.
   */
-  void UpdateGuiFinishedDataSources();
+  void UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >);
 
   /**
-  * \brief Emmitted when this manager has called for rendering to be updated, but
-  * currently, this request is queued.
+  * \brief Emmitted when this manager has called for rendering to be updated, and that call has completed.
+  *
+  * (This doesn't mean that the rendering has actually happened. That depends on the mitk::RenderingManager).
   */
-  void UpdateGuiFinishedRendering();
+  void UpdateFinishedRendering();
 
 protected:
 

@@ -74,6 +74,8 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   assert(ok);
   ok = QObject::connect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
   assert(ok);
+  ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)), this, SLOT(OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)));
+  assert(ok);
 }
 
 
@@ -215,8 +217,6 @@ void IGIDataSourceManagerWidget::OnAddSource()
     fields.push_back("status");
     fields.push_back("0");    // rate
     fields.push_back("0");    // lag
-    fields.push_back("type");
-    fields.push_back("device");
     fields.push_back("description");
 
     // Create new row in table.
@@ -291,6 +291,59 @@ void IGIDataSourceManagerWidget::OnFreezeTableHeaderClicked(int section)
   {
     m_Manager->FreezeDataSources();
   }
+}
+
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> > infos)
+{
+  // This can happen as the update thread runs independently of the main UI thread.
+  if (infos.size() == 0)
+  {
+    return;
+  }
+
+  // This can happen as the update thread runs independently of the main UI thread.
+  if (m_TableWidget->rowCount() != infos.size())
+  {
+    return;
+  }
+
+  for (unsigned int r = 0; r < m_TableWidget->rowCount(); r++)
+  {
+    QList<IGIDataItemInfo> infoForOneRow = infos[r];
+
+    // This can happen if a source has not received data yet.
+    // e.g. a tracker is initialised (present in the GUI table),
+    // but has not yet received any tracking data, at the point
+    // the update thread ends up here.
+    if (infoForOneRow.size() > 0)
+    {
+      IGIDataItemInfo firstItemOnly = infoForOneRow[0];
+
+      QTableWidgetItem *item1 = new QTableWidgetItem(QString::fromStdString(firstItemOnly.m_Status));
+      item1->setTextAlignment(Qt::AlignCenter);
+      item1->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      m_TableWidget->setItem(r, 1, item1);
+
+      QTableWidgetItem *item2 = new QTableWidgetItem(QString::number(firstItemOnly.m_FramesPerSecond));
+      item2->setTextAlignment(Qt::AlignCenter);
+      item2->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      m_TableWidget->setItem(r, 2, item2);
+
+      QTableWidgetItem *item3 = new QTableWidgetItem(QString::number(firstItemOnly.m_LagInMilliseconds));
+      item3->setTextAlignment(Qt::AlignCenter);
+      item3->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      m_TableWidget->setItem(r, 3, item3);
+
+      QTableWidgetItem *item4 = new QTableWidgetItem(QString::fromStdString(firstItemOnly.m_Name) + ":" + QString::fromStdString(firstItemOnly.m_Description));
+      item4->setTextAlignment(Qt::AlignCenter);
+      item4->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      m_TableWidget->setItem(r, 4, item4);
+    }
+  }
+  m_TableWidget->update();
 }
 
 } // end namespace

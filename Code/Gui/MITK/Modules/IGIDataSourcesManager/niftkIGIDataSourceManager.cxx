@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkIGIDataSourceManager.h"
-
+#include <niftkIGIDataSourceI.h>
 #include <usGetModuleContext.h>
 #include <mitkExceptionMacro.h>
 #include <mitkRenderingManager.h>
@@ -332,16 +332,24 @@ void IGIDataSourceManager::FreezeDataSources()
 void IGIDataSourceManager::OnUpdateGui()
 {
   m_TimeStampGenerator->GetTime();
+  QList< QList<IGIDataItemInfo> > dataSourceInfos;
+
   for (int i = 0; i < m_Sources.size(); i++)
   {
-    m_Sources[i]->Update(m_TimeStampGenerator->GetTimeStampInNanoseconds());
+    std::vector<IGIDataItemInfo> dataItemInfos = m_Sources[i]->Update(m_TimeStampGenerator->GetTimeStampInNanoseconds());
+    QList<IGIDataItemInfo> qListDataItemInfos;
+    for (int j = 0; j < dataItemInfos.size(); j++)
+    {
+      qListDataItemInfos.push_back(dataItemInfos[i]);
+    }
+    dataSourceInfos.push_back(qListDataItemInfos);
   }
 
-  emit UpdateGuiFinishedDataSources();
+  emit UpdateFinishedDataSources(dataSourceInfos);
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 
-  emit UpdateGuiFinishedRendering();
+  emit UpdateFinishedRendering();
 
   this->Modified();
 }

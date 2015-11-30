@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1071</width>
-    <height>1338</height>
+    <height>801</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -241,7 +241,16 @@ just Data Storage will not receive updates.</string>
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item>
@@ -271,7 +280,7 @@ just Data Storage will not receive updates.</string>
          <bool>false</bool>
         </property>
         <property name="columnCount">
-         <number>7</number>
+         <number>5</number>
         </property>
         <attribute name="verticalHeaderVisible">
          <bool>false</bool>
@@ -302,16 +311,6 @@ Click to freeze all sources.</string>
         </column>
         <column>
          <property name="text">
-          <string>Type</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Device</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
           <string>Description</string>
          </property>
         </column>
@@ -335,7 +334,16 @@ Click to freeze all sources.</string>
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item>
@@ -366,7 +374,16 @@ Click to freeze all sources.</string>
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <item>

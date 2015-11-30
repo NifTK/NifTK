@@ -13,7 +13,8 @@
 =============================================================================*/
 
 #include "niftkOpenCVVideoDataSourceService.h"
-#include "niftkOpenCVVideoDataType.h"
+#include <niftkOpenCVVideoDataType.h>
+#include <niftkIGIDataSourceI.h>
 #include <ImageConversion.h>
 #include <mitkExceptionMacro.h>
 #include <mitkImage.h>
@@ -27,6 +28,7 @@ namespace niftk
 //-----------------------------------------------------------------------------
 QMutex    OpenCVVideoDataSourceService::s_Lock(QMutex::Recursive);
 QSet<int> OpenCVVideoDataSourceService::s_SourcesInUse;
+
 
 //-----------------------------------------------------------------------------
 int OpenCVVideoDataSourceService::GetNextChannelNumber()
@@ -46,6 +48,7 @@ int OpenCVVideoDataSourceService::GetNextChannelNumber()
 //-----------------------------------------------------------------------------
 OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Pointer dataStorage)
 : IGIDataSource((QString("OpenCV-") + QString::number(GetNextChannelNumber())).toStdString(), dataStorage)
+, m_FrameId(0)
 , m_Buffer(NULL)
 , m_BackgroundDeleteThread(NULL)
 , m_DataGrabbingThread(NULL)
@@ -86,10 +89,10 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Po
 
   // Set the interval based on desired number of frames per second.
   // So, 25 fps = 40 milliseconds.
-  // But if system slows down (eg. saving images), then Qt drops clock ticks
-  // so you will get less than 25 fps.
+  // However: If system slows down (eg. saving images), then Qt will
+  // drop clock ticks, so in effect, you will get less than this.
   int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
-  this->SetTimeStampTolerance(intervalInMilliseconds * 1000000); // conver to nanoseconds
+  this->SetTimeStampTolerance(intervalInMilliseconds * 1000000); // convert to nanoseconds
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
   m_DataGrabbingThread->SetInterval(intervalInMilliseconds);
   m_DataGrabbingThread->start();
@@ -229,6 +232,7 @@ void OpenCVVideoDataSourceService::GrabData()
   niftk::OpenCVVideoDataType::Pointer wrapper = niftk::OpenCVVideoDataType::New();
   wrapper->CloneImage(img);
   wrapper->SetTimeStampInNanoSeconds(m_TimeCreated->GetTimeStampInNanoseconds());
+  wrapper->SetFrameId(m_FrameId++);
   wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
   wrapper->SetShouldBeSaved(m_IsRecording);
   wrapper->SetIsSaved(false);
@@ -259,25 +263,27 @@ std::string OpenCVVideoDataSourceService::GetSaveDirectoryName()
 
 
 //-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
+std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
 {
+  std::vector<IGIDataItemInfo> infos;
+
   if (m_Buffer->GetBufferSize() == 0)
   {
     MITK_WARN << "OpenCVVideoDataSourceService::Update(), buffer is empty!";
-    return;
+    return infos;
   }
 
   if(m_Buffer->GetFirstTimeStamp() > time)
   {
     MITK_WARN << "OpenCVVideoDataSourceService::Update(), requested time is before buffer time!";
-    return;
+    return infos;
   }
 
   niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(m_Buffer->GetItem(time).GetPointer());
   if (dataType.IsNull())
   {
     MITK_WARN << "Failed to find data for time " << time << ", size=" << m_Buffer->GetBufferSize() << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
-    return;
+    return infos;
   }
 
   mitk::DataNode::Pointer node = this->GetDataNode(this->GetMicroServiceDeviceName());
@@ -368,6 +374,17 @@ void OpenCVVideoDataSourceService::Update(const niftk::IGIDataType::IGITimeType&
 
   // Tidy up
   cvReleaseImage(&rgbaOpenCVImage);
+
+  // Return info describing object.
+  IGIDataItemInfo info;
+  info.m_Name = this->GetName();
+  info.m_Status = this->GetStatus();
+  info.m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
+  info.m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
+  info.m_FramesPerSecond = m_Buffer->GetFrameRate();
+  info.m_Description = "Local OpenCV video source";
+  infos.push_back(info);
+  return infos;
 }
 
 } // end namespace

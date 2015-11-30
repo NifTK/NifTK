@@ -57,16 +57,25 @@ public:
   */
   virtual void CleanBuffer() = 0;
 
+  /**
+  * \see IGIDataSourceI::GetName()
+  */
+  virtual std::string GetName() const override;
+
+  /**
+  * \see IGIDataSourceI::GetStatus()
+   */
+  virtual std::string GetStatus() const override;
+
   itkGetStringMacro(MicroServiceDeviceName);
 
   itkSetStringMacro(Status);
-  itkGetStringMacro(Status);
 
   itkSetStringMacro(RecordingLocation);
   itkGetStringMacro(RecordingLocation);
 
   itkSetMacro(TimeStampTolerance, niftk::IGIDataType::IGITimeType);
-  itkGetMacro(TimeStampTolerance, niftk::IGIDataType::IGITimeType);
+  itkGetConstMacro(TimeStampTolerance, niftk::IGIDataType::IGITimeType);
 
 protected:
 
@@ -88,6 +97,21 @@ protected:
   mitk::DataStorage::Pointer GetDataStorage() const;
   std::string GetPreferredSlash() const;
 
+  /**
+  * \brief Returns true if the delay between requested and actual is
+  * greater than the TimeStampTolerance, and false otherwise.
+  */
+  bool IsLate(const niftk::IGIDataType::IGITimeType& requested,
+              const niftk::IGIDataType::IGITimeType& actual
+              ) const;
+
+  /**
+  * \brief Simply checks the difference in time, and converts to milliseconds.
+  */
+  unsigned int GetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& requested,
+                                    const niftk::IGIDataType::IGITimeType& actual
+                                   ) const;
+
   igtl::TimeStamp::Pointer          m_TimeCreated; // Expensive to recreate, so available to sub-classes.
 
 private:
@@ -98,7 +122,7 @@ private:
   us::ServiceRegistration<Self>     m_MicroServiceRegistration;
   std::string                       m_RecordingLocation;
   std::string                       m_Status;
-  niftk::IGIDataType::IGITimeType   m_TimeStampTolerance;
+  niftk::IGIDataType::IGITimeType   m_TimeStampTolerance; // nanoseconds.
 
 };
 

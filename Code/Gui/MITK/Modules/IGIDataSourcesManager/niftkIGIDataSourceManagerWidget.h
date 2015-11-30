@@ -119,6 +119,11 @@ private slots:
   */
   void OnFreezeTableHeaderClicked(int section);
 
+  /**
+  * \brief Used to update the data sources table.
+  */
+  void OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >);
+
 private:
 
   IGIDataSourceManager::Pointer m_Manager;

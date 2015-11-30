@@ -80,6 +80,8 @@ public:
 
   /**
   * \brief Sets the lag in milliseconds.
+  *
+  * This simply stores the value of parameter 'milliseconds'.
   */
   void SetLagInMilliseconds(unsigned int milliseconds);
 

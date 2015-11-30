@@ -35,7 +35,7 @@ namespace niftk
 
 /**
 * \class OpenCVVideoDataSourceService
-* \brief Provides a video feed, as an IGIDataSourceServiceI.
+* \brief Provides an OpenCV video feed, as an IGIDataSourceServiceI.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
@@ -50,13 +50,40 @@ public:
   mitkClassMacroItkParent(OpenCVVideoDataSourceService, IGIDataSource);
   mitkNewMacro1Param(OpenCVVideoDataSourceService, mitk::DataStorage::Pointer);
 
+  /**
+  * \see IGIDataSource::StartCapturing()
+  */
   virtual void StartCapturing() override;
+
+  /**
+  * \see IGIDataSource::StopCapturing()
+  */
   virtual void StopCapturing() override;
+
+  /**
+  * \see IGIDataSource::StartRecording()
+  */
   virtual void StartRecording() override;
+
+  /**
+  * \see IGIDataSource::StopRecording()
+  */
   virtual void StopRecording() override;
+
+  /**
+  * \see IGIDataSource::SetLagInMilliseconds()
+  */
   virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& milliseconds) override;
-  virtual void Update(const niftk::IGIDataType::IGITimeType& time) override;
+
+  /**
+  * \see IGIDataSource::GetSaveDirectoryName()
+  */
   virtual std::string GetSaveDirectoryName() override;
+
+  /**
+  * \see IGIDataSource::Update()
+  */
+  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
 
   /**
   * \see niftk::IGIDataSource::SaveItem()
@@ -89,6 +116,7 @@ private:
   int                                             m_ChannelNumber;
   static QMutex                                   s_Lock;
   static QSet<int>                                s_SourcesInUse;
+  niftk::IGIDataType::IGIIndexType                m_FrameId;
   niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
   niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
   niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;

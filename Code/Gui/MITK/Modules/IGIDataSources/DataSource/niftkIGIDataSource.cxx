@@ -24,7 +24,8 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIDataSource::IGIDataSource(const std::string& microServiceDeviceName, mitk::DataStorage::Pointer dataStorage)
+IGIDataSource::IGIDataSource(const std::string& microServiceDeviceName,
+                             mitk::DataStorage::Pointer dataStorage)
 : m_DataStorage(dataStorage)
 , m_MicroServiceDeviceName(microServiceDeviceName)
 {
@@ -88,6 +89,20 @@ mitk::DataStorage::Pointer IGIDataSource::GetDataStorage() const
 
 
 //-----------------------------------------------------------------------------
+std::string IGIDataSource::GetName() const
+{
+  return this->GetMicroServiceDeviceName();
+}
+
+
+//-----------------------------------------------------------------------------
+std::string IGIDataSource::GetStatus() const
+{
+  return m_Status;
+}
+
+
+//-----------------------------------------------------------------------------
 mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name, const bool& addToDataStorage)
 {
   if (m_DataStorage.IsNull())
@@ -130,6 +145,32 @@ std::string IGIDataSource::GetPreferredSlash() const
   boost::filesystem::path slash("/");
   std::string preferredSlash = slash.make_preferred().string();
   return preferredSlash;
+}
+
+
+//-----------------------------------------------------------------------------
+bool IGIDataSource::IsLate(const niftk::IGIDataType::IGITimeType& requested,
+                           const niftk::IGIDataType::IGITimeType& actual
+                          ) const
+{
+  if (actual > requested)
+  {
+    mitkThrow() << "Retrieved data has a timestamp that is ahead of the requested one, which should never happen";
+  }
+  return ((requested - actual) > this->GetTimeStampTolerance());
+}
+
+
+//-----------------------------------------------------------------------------
+unsigned int IGIDataSource::GetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& requested,
+                                                 const niftk::IGIDataType::IGITimeType& actual
+                                                ) const
+{
+  if (actual > requested)
+  {
+    mitkThrow() << "Retrieved data has a timestamp that is ahead of the requested one, which should never happen";
+  }
+  return (requested - actual)/1000000;
 }
 
 } // end namespace

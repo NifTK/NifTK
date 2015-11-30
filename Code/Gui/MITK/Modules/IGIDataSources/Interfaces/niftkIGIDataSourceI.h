@@ -27,6 +27,37 @@ namespace niftk
 {
 
 /**
+* \class IGIDataItemInfo
+* \brief Info class to describe current state, so that GUI can display status.
+*
+* This is per item. One Source (e.g. tracker), may return data from many tools (items).
+* So, each tool is considered an item. So the data source should return one
+* of these IGIDataSourceInfo for each tool. Other sources such as a video
+* source or framegrabber will probably only return one of these. But in
+* principle it could be any number from each source.
+*/
+struct NIFTKIGIDATASOURCES_EXPORT IGIDataItemInfo
+{
+  IGIDataItemInfo()
+  {
+    m_Name = "Unknown";
+    m_Status = "Unknown";
+    m_IsLate = false;
+    m_LagInMilliseconds = 0;
+    m_FramesPerSecond = 0;
+    m_Description = "Unknown";
+  }
+
+  std::string  m_Name;
+  std::string  m_Status;
+  bool         m_IsLate;
+  unsigned int m_LagInMilliseconds;
+  float        m_FramesPerSecond;
+  std::string  m_Description;
+};
+
+
+/**
 * \class IGIDataSourceI
 * \brief Interface for an IGI Data Source (e.g. video feed, ultrasound feed, tracker feed).
 *
@@ -47,8 +78,10 @@ public:
   virtual void StopRecording() = 0;
   virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& time) = 0;
   virtual void SetRecordingLocation(const std::string& pathName) = 0;
+  virtual std::string GetName() const = 0;
+  virtual std::string GetStatus() const = 0;
   virtual std::string GetSaveDirectoryName() = 0;
-  virtual void Update(const niftk::IGIDataType::IGITimeType& time) = 0;
+  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) = 0;
 
 protected:
 
