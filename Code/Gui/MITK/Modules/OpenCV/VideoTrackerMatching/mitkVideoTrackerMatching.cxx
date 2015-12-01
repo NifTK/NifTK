@@ -529,7 +529,7 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
         m_CameraToTracker[indexnumber].at<double>(row,2) >>
         m_CameraToTracker[indexnumber].at<double>(row,3);
 
-      if ( linestream.good() )
+      if ( ! linestream.fail() )
       {
         row++;
         if ( row == 4 ) 
