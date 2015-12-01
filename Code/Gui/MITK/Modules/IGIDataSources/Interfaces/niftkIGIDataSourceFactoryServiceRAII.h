@@ -37,12 +37,12 @@ class NIFTKIGISERVICES_EXPORT IGIDataSourceFactoryServiceRAII
 public:
 
   /**
-  * \brief Obtains service or throws mitk::Exception.
+  * \brief Obtains factory service or throws mitk::Exception.
   */
   IGIDataSourceFactoryServiceRAII(const std::string& factoryName);
 
   /**
-  * \brief Releases service.
+  * \brief Releases factory service.
   */
   virtual ~IGIDataSourceFactoryServiceRAII();
 

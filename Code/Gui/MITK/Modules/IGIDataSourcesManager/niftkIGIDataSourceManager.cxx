@@ -41,7 +41,7 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
     mitkThrow() << "Data Storage is NULL!";
   }
 
-  this->RetrieveAllDataSources();
+  this->RetrieveAllDataSourceFactories();
   m_DirectoryPrefix = this->GetDefaultPath();
 
   m_TimeStampGenerator = igtl::TimeStamp::New();
@@ -204,27 +204,19 @@ void IGIDataSourceManager::WriteDescriptorFile(QString absolutePath)
       "# the format is:\n"
       "#   key = value\n"
       "# both key and value are white-space trimmed.\n"
-      "# key is the directory which you want to associate with a data source class.\n"
-      "# value is the name of the data source class.\n"
-      "# there is no escaping! so neither key nor value can contain the equal sign!\n"
-      "#\n"
-      "# known data source classes are:\n"
-      "#  QmitkIGINVidiaDataSource\n"
-      "#  QmitkIGIUltrasonixTool\n"
-      "#  QmitkIGIOpenCVDataSource\n"
-      "#  QmitkIGITrackerSource\n"
-      "#  AudioDataSource\n"
-      "# however, not all might be compiled in.\n";
+      "# key is the directory which you want to associate with a data source.\n"
+      "# value is the name of the data source.\n"
+      "# there is no escaping! so neither key nor value can contain the equal sign!\n";
 
     foreach ( niftk::IGIDataSourceI::Pointer source, m_Sources )
     {
       // This should be a relative path!
       // Relative to the descriptor file or directoryName (equivalent).
-      QString datasourcedir = QString::fromStdString(source->GetSaveDirectoryName());
+      QString datasourcedir = QString::fromStdString(source->GetName());
 
       // Despite this being relativeFilePath() it works perfectly fine for directories too.
       datasourcedir = directory.relativeFilePath(datasourcedir);
-      descstream << datasourcedir << " = " << QString::fromStdString(source->GetNameOfClass()) << "\n";
+      descstream << datasourcedir << " = " << QString::fromStdString(source->GetFactoryName()) << "\n";
     }
 
     descstream.flush();
@@ -233,6 +225,90 @@ void IGIDataSourceManager::WriteDescriptorFile(QString absolutePath)
   {
     mitkThrow() << "Cannot open " << descfile.fileName().toStdString() << " for writing.";
   }
+}
+
+
+
+//-----------------------------------------------------------------------------
+QMap<QString, QString> IGIDataSourceManager::ParseDataSourceDescriptor(const QString& filepath)
+{
+  QFile descfile(filepath);
+  if (!descfile.exists())
+  {
+    mitkThrow() << "Descriptor file does not exist: " << filepath.toStdString();
+  }
+
+  bool openedok = descfile.open(QIODevice::ReadOnly | QIODevice::Text);
+  if (!openedok)
+  {
+    mitkThrow() << "Cannot open descriptor file: " << filepath.toStdString();
+  }
+
+  QTextStream   descstream(&descfile);
+  descstream.setCodec("UTF-8");
+
+  QMap<QString, QString>      map;
+
+  // used for error diagnostic
+  int   lineNumber = 0;
+
+  while (!descstream.atEnd())
+  {
+    QString   line = descstream.readLine().trimmed();
+    ++lineNumber;
+
+    if (line.isEmpty())
+      continue;
+    if (line.startsWith('#'))
+      continue;
+
+    // parse string by hand. my regexp skills are too rusty to come up
+    // with something that can deal with all the path names we had so far.
+    QStringList items = line.split('=');
+
+    if (items.size() != 2)
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": parsing failed";
+      mitkThrow() << errormsg.str();
+    }
+
+    QString   directoryKey   = items[0].trimmed();
+    QString   classnameValue = items[1].trimmed();
+
+    if (directoryKey.isEmpty())
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": directory key is empty?";
+      mitkThrow() << errormsg.str();
+    }
+    if (classnameValue.isEmpty())
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": class name value is empty?";
+      mitkThrow() << errormsg.str();
+    }
+
+    if (map.contains(directoryKey))
+    {
+      std::ostringstream  errormsg;
+      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": directory key already seen; specified it twice?";
+      mitkThrow() << errormsg.str();
+    }
+
+    map.insert(directoryKey, classnameValue);
+  }
+
+  return map;
+}
+
+
+//-----------------------------------------------------------------------------
+bool IGIDataSourceManager::ProbeRecordedData(const QString& folder,
+                                             niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+                                             niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
+{
+  return true;
 }
 
 
@@ -293,6 +369,21 @@ void IGIDataSourceManager::RemoveSource(int rowIndex)
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSourceManager::RemoveAllSources()
+{
+  bool updateTimerWasOn = this->IsUpdateTimerOn();
+  this->StopUpdateTimer();
+
+  while(m_Sources.size() > 0)
+  {
+    m_Sources.removeFirst();
+  }
+
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManager::StartRecording(QString absolutePath)
 {
   QString directoryName = absolutePath;
@@ -346,6 +437,73 @@ void IGIDataSourceManager::FreezeDataSource(unsigned int i, bool isFrozen)
 
 
 //-----------------------------------------------------------------------------
+bool IGIDataSourceManager::InitializePlayback(const QString& descriptorPath,
+                                              IGIDataType::IGITimeType& overallStartTime,
+                                              IGIDataType::IGITimeType& overallEndTime)
+{
+  bool isReadyToStart = false;
+
+  QMap<QString, QString>  dir2SourceNameMap = this->ParseDataSourceDescriptor(descriptorPath);
+
+  // Creates a source for each item in the list.
+  for (QMap<QString, QString>::iterator dir2SourceNameMapIterator = dir2SourceNameMap.begin();
+       dir2SourceNameMapIterator != dir2SourceNameMap.end();
+       ++dir2SourceNameMapIterator)
+  {
+
+  }
+  /*
+  // data sources participating in igi data playback.
+  // key = fully qualified path for that data source.
+  QMap<std::string, IGIDataSourceI::Pointer> goodSources;
+
+
+
+  // for each existing data source (that the user added before), check whether it can playback
+  // that particular directory mentioned in the descriptor.
+  foreach (QmitkIGIDataSource::Pointer source, m_Sources)
+  {
+    // find a suitable directory
+    for (QMap<QString, QString>::iterator dir2classmapIterator = dir2classmap.begin();
+         dir2classmapIterator != dir2classmap.end();
+         ++dir2classmapIterator)
+    {
+      if (source->GetNameOfClass() == dir2classmapIterator.value().toStdString())
+      {
+        igtlUint64  startTime = -1;
+        igtlUint64  endTime   = -1;
+        std::string dataSourceDir = (playbackpath + QDir::separator() + dir2classmapIterator.key()).toStdString();
+        bool cando = source->ProbeRecordedData(dataSourceDir, &startTime, &endTime);
+        if (cando)
+        {
+          overallStartTime = std::min(overallStartTime, startTime);
+          overallEndTime   = std::max(overallEndTime, endTime);
+
+          goodSources.insert(dataSourceDir, source);
+
+          // we found a directory <-> source combination that can work.
+          // so drop it off the list dir2classmap.
+          dir2classmap.erase(dir2classmapIterator);
+          // try the next source that exist already.
+          break;
+        }
+        else
+        {
+          // no special else here (only diagnostic). if this data source cannot playback that particular directory,
+          // even though the descriptor says it can, the data source may still be able to play another directory
+          // coming later in the list.
+          MITK_WARN << "Data source " << source->GetNameOfClass() << " mentioned in descriptor for " << dir2classmapIterator.key().toStdString() << " but failed probing.";
+        }
+      }
+    }
+  }
+
+*/
+  return isReadyToStart;
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManager::StopPlayback()
 {
   for (int i = 0; i < m_Sources.size(); i++)
@@ -385,7 +543,7 @@ void IGIDataSourceManager::OnUpdateGui()
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSourceManager::RetrieveAllDataSources()
+void IGIDataSourceManager::RetrieveAllDataSourceFactories()
 {
   // Lookup All Available IGIDataSourceFactoryServices.
   m_ModuleContext = us::GetModuleContext();
@@ -404,7 +562,7 @@ void IGIDataSourceManager::RetrieveAllDataSources()
   for (int i = 0; i < m_Refs.size(); i++)
   {
     niftk::IGIDataSourceFactoryServiceI *factory = m_ModuleContext->GetService<niftk::IGIDataSourceFactoryServiceI>(m_Refs[i]);
-    QString name = QString::fromStdString(factory->GetDisplayName());
+    QString name = QString::fromStdString(factory->GetName());
     m_NameToFactoriesMap.insert(name, factory);
   }
   if (m_Refs.size() != m_NameToFactoriesMap.size())

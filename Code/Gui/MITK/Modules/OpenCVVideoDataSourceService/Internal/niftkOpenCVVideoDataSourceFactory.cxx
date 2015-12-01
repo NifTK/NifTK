@@ -22,8 +22,9 @@ namespace niftk
 OpenCVVideoDataSourceFactory::OpenCVVideoDataSourceFactory()
 : IGIDataSourceFactoryServiceI("OpenCV Frame Grabber",
                                "OpenCVVideoDataSourceService",
-                               "OpenCVVideoDataSourceServiceGui",
-                               false
+                               false,
+                               "", // don't need a startup GUI, nothing to configure
+                               ""  // don't need an observation GUI, no parameters to tweak
                                )
 {
 }
@@ -36,10 +37,37 @@ OpenCVVideoDataSourceFactory::~OpenCVVideoDataSourceFactory()
 
 
 //-----------------------------------------------------------------------------
-IGIDataSourceI::Pointer OpenCVVideoDataSourceFactory::Create(mitk::DataStorage::Pointer dataStorage)
+IGIDataSourceI::Pointer OpenCVVideoDataSourceFactory::Create(
+    mitk::DataStorage::Pointer dataStorage)
 {
-  niftk::OpenCVVideoDataSourceService::Pointer serviceInstance = OpenCVVideoDataSourceService::New(dataStorage);
+  niftk::OpenCVVideoDataSourceService::Pointer serviceInstance
+      = OpenCVVideoDataSourceService::New(this->GetName(), // factory name
+                                          dataStorage);
+
   return serviceInstance.GetPointer();
+}
+
+
+//-----------------------------------------------------------------------------
+IGIDataSourceI::Pointer OpenCVVideoDataSourceFactory::Create(
+    const std::string& name,
+    mitk::DataStorage::Pointer dataStorage)
+{
+  niftk::OpenCVVideoDataSourceService::Pointer serviceInstance
+      = OpenCVVideoDataSourceService::New(name,
+                                          this->GetName(), // factory name
+                                          dataStorage);
+
+  return serviceInstance.GetPointer();
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<std::string> OpenCVVideoDataSourceFactory::GetLegacyClassNames() const
+{
+  std::vector<std::string> names;
+  names.push_back("QmitkIGIOpenCVDataSource");
+  return names;
 }
 
 } // end namespace

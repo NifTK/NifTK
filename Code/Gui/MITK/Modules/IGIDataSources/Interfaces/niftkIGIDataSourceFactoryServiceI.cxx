@@ -18,15 +18,17 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIDataSourceFactoryServiceI::IGIDataSourceFactoryServiceI(std::string displayName,
+IGIDataSourceFactoryServiceI::IGIDataSourceFactoryServiceI(std::string name,
                                                            std::string service,
-                                                           std::string gui,
-                                                           bool needGuiAtStartup
+                                                           bool needGuiAtStartup,
+                                                           std::string startupGui,
+                                                           std::string observationGui
                                                            )
-: m_DisplayName(displayName)
+: m_Name(name)
 , m_NameOfService(service)
-, m_NameOfGui(gui)
 , m_NeedGuiAtStartup(needGuiAtStartup)
+, m_NameOfStartupGui(startupGui)
+, m_NameOfObservationGui(observationGui)
 {
 }
 
@@ -38,9 +40,9 @@ IGIDataSourceFactoryServiceI::~IGIDataSourceFactoryServiceI()
 
 
 //-----------------------------------------------------------------------------
-std::string IGIDataSourceFactoryServiceI::GetDisplayName() const
+std::string IGIDataSourceFactoryServiceI::GetName() const
 {
-  return m_DisplayName;
+  return m_Name;
 }
 
 
@@ -52,9 +54,9 @@ std::string IGIDataSourceFactoryServiceI::GetNameOfService() const
 
 
 //-----------------------------------------------------------------------------
-std::string IGIDataSourceFactoryServiceI::GetNameOfGui() const
+std::string IGIDataSourceFactoryServiceI::GetNameOfStartupGui() const
 {
-  return m_NameOfGui;
+  return m_NameOfStartupGui;
 }
 
 
@@ -62,6 +64,13 @@ std::string IGIDataSourceFactoryServiceI::GetNameOfGui() const
 bool IGIDataSourceFactoryServiceI::GetNeedGuiAtStartup() const
 {
   return m_NeedGuiAtStartup;
+}
+
+
+//-----------------------------------------------------------------------------
+std::string IGIDataSourceFactoryServiceI::GetNameOfObservationGui() const
+{
+  return m_NameOfObservationGui;
 }
 
 } // end namespace

@@ -23,6 +23,8 @@ namespace niftk
 * \brief Abstract base class for local data sources.
 *
 * (Ones that grab data themselves, as opposed to receive via OpenIGTLink)
+*
+* Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
 class NIFTKIGIDATASOURCES_EXPORT IGILocalDataSourceI
 {

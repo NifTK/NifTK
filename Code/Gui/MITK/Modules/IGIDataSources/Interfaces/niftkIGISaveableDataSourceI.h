@@ -21,6 +21,8 @@ namespace niftk
 
 /**
 * \brief Abstract base class for data sources that can save their own buffer.
+*
+* Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
 class NIFTKIGIDATASOURCES_EXPORT IGISaveableDataSourceI
 {

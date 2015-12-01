@@ -144,73 +144,21 @@ void IGIDataSourceManagerWidget::OnPlayStart()
     {
       try
       {
-/*
-        // data sources participating in igi data playback.
-        // key = fully qualified path for that data source.
-        QMap<std::string, IGIDataSourceI::Pointer> goodSources;
 
-        // union of the time range encompassing everything recorded in that session.
+        // Union of the time range encompassing everything recorded in that session.
         IGIDataType::IGITimeType overallStartTime = std::numeric_limits<IGIDataType::IGITimeType>::max();
         IGIDataType::IGITimeType overallEndTime   = std::numeric_limits<IGIDataType::IGITimeType>::min();
 
-        QMap<QString, QString>  dir2classmap = ParseDataSourceDescriptor(playbackpath + QDir::separator() + "descriptor.cfg");
-
-        // for each existing data source (that the user added before), check whether it can playback
-        // that particular directory mentioned in the descriptor.
-        foreach (QmitkIGIDataSource::Pointer source, m_Sources)
+        bool isReadyToStart = m_Manager->InitializePlayback(playbackpath + QDir::separator() + "descriptor.cfg",
+                                                            overallStartTime,
+                                                            overallEndTime);
+        if (isReadyToStart)
         {
-          // find a suitable directory
-          for (QMap<QString, QString>::iterator dir2classmapIterator = dir2classmap.begin();
-               dir2classmapIterator != dir2classmap.end();
-               ++dir2classmapIterator)
-          {
-            if (source->GetNameOfClass() == dir2classmapIterator.value().toStdString())
-            {
-              igtlUint64  startTime = -1;
-              igtlUint64  endTime   = -1;
-              std::string dataSourceDir = (playbackpath + QDir::separator() + dir2classmapIterator.key()).toStdString();
-              bool cando = source->ProbeRecordedData(dataSourceDir, &startTime, &endTime);
-              if (cando)
-              {
-                overallStartTime = std::min(overallStartTime, startTime);
-                overallEndTime   = std::max(overallEndTime, endTime);
-
-                goodSources.insert(dataSourceDir, source);
-
-                // we found a directory <-> source combination that can work.
-                // so drop it off the list dir2classmap.
-                dir2classmap.erase(dir2classmapIterator);
-                // try the next source that exist already.
-                break;
-              }
-              else
-              {
-                // no special else here (only diagnostic). if this data source cannot playback that particular directory,
-                // even though the descriptor says it can, the data source may still be able to play another directory
-                // coming later in the list.
-                MITK_WARN << "Data source " << source->GetNameOfClass() << " mentioned in descriptor for " << dir2classmapIterator.key().toStdString() << " but failed probing.";
-              }
-            }
-          }
-        }
-
-        // if there are more user-added data sources than listed in the descriptor
-        // then simply leave them be. at first, i thought it might make sense to freeze-frame
-        // these. but now this feels wrong.
-
-        if (overallEndTime >= overallStartTime)
-        {
-          // sanity check: if we have a timestamp range than at least one source should be ok.
-          assert(!goodSources.empty());
-          for (QMap<std::string, QmitkIGIDataSource::Pointer>::iterator source = goodSources.begin(); source != goodSources.end(); ++source)
-          {
-            source.value()->ClearBuffer();
-            source.value()->StartPlayback(source.key(), overallStartTime, overallEndTime);
-          }
 
           m_PlaybackSliderBase = overallStartTime;
           m_PlaybackSliderFactor = (overallEndTime - overallStartTime) / (std::numeric_limits<int>::max() / 4);
-          // if the time range is very short then dont upscale for the slider
+
+          // If the time range is very short then dont upscale for the slider
           m_PlaybackSliderFactor = std::max(m_PlaybackSliderFactor, (igtlUint64) 1);
 
           double  sliderMax = (overallEndTime - overallStartTime) / m_PlaybackSliderFactor;
@@ -219,27 +167,31 @@ void IGIDataSourceManagerWidget::OnPlayStart()
           m_PlaybackSlider->setMinimum(0);
           m_PlaybackSlider->setMaximum((int) sliderMax);
 
-          // set slider step values, so user can click or mouse-wheel the slider to advance time.
+          // Set slider step values, so user can click or mouse-wheel the slider to advance time.
           // on windows-qt, single-step corresponds to a single mouse-wheel event.
           // quite often doing one mouse-wheel step, corresponds to 3 lines (events), but this is configurable
           // (in control panel somewhere, but we ignore that here, single step is whatever the user's machine says).
-          igtlUint64  tenthASecondInNanoseconds = 100000000;
-          igtlUint64  tenthASecondStep = tenthASecondInNanoseconds / m_PlaybackSliderFactor;
+
+          IGIDataType::IGITimeType tenthASecondInNanoseconds = 100000000;
+          IGIDataType::IGITimeType tenthASecondStep = tenthASecondInNanoseconds / m_PlaybackSliderFactor;
           tenthASecondStep = std::max(tenthASecondStep, (igtlUint64) 1);
           assert(tenthASecondStep < std::numeric_limits<int>::max());
           m_PlaybackSlider->setSingleStep((int) tenthASecondStep);
-          // on windows-qt, a page-step is when clicking on the slider track.
-          igtlUint64  oneSecondInNanoseconds = 1000000000;
-          igtlUint64  oneSecondStep = oneSecondInNanoseconds / m_PlaybackSliderFactor;
+
+          // On windows-qt, a page-step is when clicking on the slider track.
+          igtlUint64 oneSecondInNanoseconds = 1000000000;
+          igtlUint64 oneSecondStep = oneSecondInNanoseconds / m_PlaybackSliderFactor;
           oneSecondStep = std::max(oneSecondStep, tenthASecondStep + 1);
           assert(oneSecondStep < std::numeric_limits<int>::max());
           m_PlaybackSlider->setPageStep((int) oneSecondStep);
 
-          // pop open the controls
+          // Pop open the controls
           m_ToolManagerPlaybackGroupBox->setCollapsed(false);
-          // can stop playback with stop button (in addition to unchecking the playbutton)
+
+          // Can stop playback with stop button (in addition to unchecking the playbutton)
           m_StopPushButton->setEnabled(true);
-          // for now, cannot start recording directly from playback mode.
+
+          // For now, cannot start recording directly from playback mode.
           // could be possible: leave this enabled and simply stop all playback when user clicks on record.
           m_RecordPushButton->setEnabled(false);
 
@@ -251,7 +203,6 @@ void IGIDataSourceManagerWidget::OnPlayStart()
         {
           m_PlayPushButton->setChecked(false);
         }
-*/
       }
       catch (const mitk::Exception& e)
       {

@@ -66,6 +66,11 @@ public:
   virtual std::string GetName() const override;
 
   /**
+  * \see IGIDataSourceI::GetFactoryName()
+  */
+  virtual std::string GetFactoryName() const override;
+
+  /**
   * \see IGIDataSourceI::GetStatus()
    */
   virtual std::string GetStatus() const override;
@@ -78,27 +83,27 @@ public:
   /**
   * \see IGIDataSourceI::SetShouldUpdate()
   */
-  virtual void SetShouldUpdate(bool shouldUpdate);
+  virtual void SetShouldUpdate(bool shouldUpdate) override;
 
   /**
   * \see IGIDataSourceI::StartPlayback()
   */
-  virtual void StartPlayback();
+  virtual void StartPlayback() override;
 
   /**
   * \see IGIDataSourceI::StopPlayback()
   */
-  virtual void StopPlayback();
+  virtual void StopPlayback() override;
 
   /**
   * \see IGIDataSourceI::StartRecording()
   */
-  virtual void StartRecording();
+  virtual void StartRecording() override;
 
   /**
   * \see IGIDataSourceI::StopRecording()
   */
-  virtual void StopRecording();
+  virtual void StopRecording() override;
 
   itkSetStringMacro(RecordingLocation);
   itkGetStringMacro(RecordingLocation);
@@ -122,7 +127,9 @@ public:
 
 protected:
 
-  IGIDataSource(const std::string& microServiceDeviceName, mitk::DataStorage::Pointer dataStorage); // Purposefully hidden.
+  IGIDataSource(const std::string& name,
+                const std::string& factoryName,
+                mitk::DataStorage::Pointer dataStorage); // Purposefully hidden.
   virtual ~IGIDataSource(); // Purposefully hidden.
 
   IGIDataSource(const IGIDataSource&); // Purposefully not implemented.
@@ -167,14 +174,14 @@ protected:
   itkSetMacro(IsPlayingBack, bool);
 
   itkSetStringMacro(Status);
-  itkGetStringMacro(MicroServiceDeviceName);
 
 private:
 
   mitk::DataStorage::Pointer        m_DataStorage;
+  std::string                       m_Name;
+  std::string                       m_FactoryName;
   igtl::TimeStamp::Pointer          m_TimeCreated;
   std::set<mitk::DataNode::Pointer> m_DataNodes;
-  std::string                       m_MicroServiceDeviceName;
   us::ServiceRegistration<Self>     m_MicroServiceRegistration;
   std::string                       m_RecordingLocation;
   std::string                       m_Status;

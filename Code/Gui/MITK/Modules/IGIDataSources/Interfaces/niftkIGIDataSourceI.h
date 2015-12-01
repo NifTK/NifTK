@@ -35,6 +35,8 @@ namespace niftk
 * of these IGIDataSourceInfo for each tool. Other sources such as a video
 * source or framegrabber will probably only return one of these. But in
 * principle it could be any number from each source.
+*
+* Note: Deliberately not using Qt datatypes, so that an implementing class does not have to.
 */
 struct NIFTKIGIDATASOURCES_EXPORT IGIDataItemInfo
 {
@@ -66,6 +68,8 @@ struct NIFTKIGIDATASOURCES_EXPORT IGIDataItemInfo
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 *
 * Note: Implementors of this interface must be thread-safe.
+*
+* Note: Deliberately not using Qt datatypes, so that an implementing class does not have to.
 */
 class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceI : public itk::Object
 {
@@ -74,6 +78,9 @@ public:
 
   mitkClassMacroItkParent(IGIDataSourceI, itk::Object);
 
+  virtual std::string GetName() const = 0;
+  virtual std::string GetFactoryName() const = 0;
+  virtual std::string GetStatus() const = 0;
   virtual void StartCapturing() = 0;
   virtual void StopCapturing() = 0;
   virtual void StartPlayback() = 0;
@@ -82,11 +89,9 @@ public:
   virtual void StopRecording() = 0;
   virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& time) = 0;
   virtual void SetRecordingLocation(const std::string& pathName) = 0;
+  virtual std::string GetRecordingDirectoryName() = 0;
   virtual void SetShouldUpdate(bool shouldUpdate) = 0;
   virtual bool GetShouldUpdate() const = 0;
-  virtual std::string GetName() const = 0;
-  virtual std::string GetStatus() const = 0;
-  virtual std::string GetSaveDirectoryName() = 0;
   virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) = 0;
 
   /**
@@ -100,7 +105,7 @@ public:
    *
    * @throw should not throw! Return false instead.
    */
-  virtual bool ProbeRecordedData(const std::string& path,
+  virtual bool ProbeRecordedData(const std::string& pathName,
                                  niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                  niftk::IGIDataType::IGITimeType* lastTimeStampInStore) = 0;
 

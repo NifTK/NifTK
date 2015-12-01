@@ -46,6 +46,8 @@ namespace niftk
  * This class should not contain Widget related stuff, so we can instantiate it directly
  * in any class, or a command line app or something without a GUI. It can still
  * derive from QObject, so that we have the benefit of signals and slots.
+ *
+ * Note: All errors should be thrown as mitk::Exception or sub-class thereof.
  */
 class NIFTKIGIDATASOURCESMANAGER_EXPORT IGIDataSourceManager :
     public QObject,
@@ -77,33 +79,42 @@ public:
   QString GetDirectoryName();
 
   /**
-  * \brief Retrieves the name of all the available data sources
-  * (retrieved during the constructor).
-  */
-  QList<QString> GetAllSources() const;
-
-  /**
   * \brief Sets the base directory into which all recording sessions will be saved.
   */
   void SetDirectoryPrefix(const QString& directoryPrefix);
 
   /**
-  * \brief Sets the update rate, effectively the number of frames per second of rendering.
+  * \brief Sets the update rate, effectively the number of frames per second.
   */
   void SetFramesPerSecond(const int& framesPerSecond);
 
   /**
-  * \brief Writes the descriptor file for a recording session.
-  */
-  void WriteDescriptorFile(QString absolutePath);
-
-  /**
   * \brief When creating sources, some will need configuring (e.g. port number).
+  * So, given the display name of a data source (string in combo-box in GUI),
+  * will return true if the manager can create a GUI for you to configure the service.
   */
   bool NeedsStartupGui(QString name);
 
   /**
-  * \brief Adds a source, using the display name of a factory, and configures it with these properties.
+  * \brief Writes the descriptor file for a recording session.
+  *
+  * This descriptor is then used to reconstruct the right number
+  * of data sources when you playback.
+  */
+  void WriteDescriptorFile(QString absolutePath);
+
+  /**
+  * \brief Retrieves the name of all the available data sources.
+  *
+  * The returned list is the display name, as shown in the GUI,
+  * e.g. "OpenCV Frame Grabber", and these strings are
+  * created in each data sources factory class.
+  */
+  QList<QString> GetAllSources() const;
+
+  /**
+  * \brief Adds a source, using the display name of a factory,
+  * and configures it with the provided properties.
   */
   void AddSource(QString name, QList<QMap<QString, QVariant> >& properties);
 
@@ -111,6 +122,11 @@ public:
   * \brief Removes a source at a given rowIndex.
   */
   void RemoveSource(int rowIndex);
+
+  /**
+  * \brief Removes all sources.
+  */
+  void RemoveAllSources();
 
   /**
   * \brief Starts a new recording session, writing to the folder given by the absolutePath.
@@ -123,14 +139,31 @@ public:
   void StopRecording();
 
   /**
-  * \brief Freezes the data sources (i.e. does not do update), but does not affect the saving of data.
+  * \brief Freezes the data sources (i.e. does not do update).
+  *
+  * Does not affect the saving of data. The data source can
+  * continue to grab data, and save it, as it feels like.
   */
   void FreezeAllDataSources(bool isFrozen);
 
   /**
-  * \brief Freezes individual data sources (i.e. does not do update), but does not affect the saving of data.
+  * \brief Freezes individual data sources (i.e. does not do update).
+  *
+  * Does not affect the saving of data. The data source can
+  * continue to grab data, and save it, as it feels like.
   */
   void FreezeDataSource(unsigned int i, bool isFrozen);
+
+  /**
+  * \brief Sets the manager ready for playback, by deleting all sources,
+  * and creating new ones to match the sources mentioned in the desriptor.
+  * \param descriptorPath path to a descriptor to parse.
+  * \param startTime returns the minimum of start times of all available data sources.
+  * \param endTime returns the maximum of end times of all available data sources.
+  */
+  bool InitializePlayback(const QString& descriptorPath,
+                          IGIDataType::IGITimeType& startTime,
+                          IGIDataType::IGITimeType& endTime);
 
   /**
   * \brief Stops all sources playing back.
@@ -169,9 +202,27 @@ private slots:
 private:
 
   /**
-  * \brief Inspects the module registry to populate the list of all data source factories.
+  * \brief Inspects the module registry to retrieve the list of all data source factories.
   */
-  void RetrieveAllDataSources();
+  void RetrieveAllDataSourceFactories();
+
+  /**
+   * Tries to parse the data source descriptor for directory-to-classname mappings.
+   * @param filepath full qualified path to descriptor.cfg, e.g. "/home/jo/projectwork/2014-01-28-11-51-04-909/descriptor.cfg"
+   * @returns a map with key = directory, value = classname
+   * @throws std::exception if something goes wrong.
+   * @warning This method does not check whether any class name is valid, i.e. whether that class has been compiled in!
+   */
+  QMap<QString, QString> ParseDataSourceDescriptor(const QString& filepath);
+
+  /**
+  * \brief Searches through data sources to find one that will handle the given folder.
+  * \return true if a folder can be handled and false otherwise.
+  */
+  bool ProbeRecordedData(const QString& folder,
+                         niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+                         niftk::IGIDataType::IGITimeType* lastTimeStampInStore);
+
 
   mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.
   us::ModuleContext*                                               m_ModuleContext;

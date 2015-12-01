@@ -23,11 +23,13 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIDataSource::IGIDataSource(const std::string& microServiceDeviceName,
+IGIDataSource::IGIDataSource(const std::string& name,
+                             const std::string& factoryName,
                              mitk::DataStorage::Pointer dataStorage)
 : m_DataStorage(dataStorage)
+, m_Name(name)
+, m_FactoryName(factoryName)
 , m_TimeCreated(NULL)
-, m_MicroServiceDeviceName(microServiceDeviceName)
 , m_Status("UNKNOWN")
 , m_ShouldUpdate(false)
 , m_IsRecording(false)
@@ -40,9 +42,14 @@ IGIDataSource::IGIDataSource(const std::string& microServiceDeviceName,
     mitkThrow() << "mitk::DataStorage is NULL!";
   }
 
-  if (m_MicroServiceDeviceName.size() == 0)
+  if (m_Name.size() == 0)
   {
     mitkThrow() << "Device name is empty!";
+  }
+
+  if (m_FactoryName.size() == 0)
+  {
+    mitkThrow() << "Factory name is empty!";
   }
 
   m_TimeCreated = igtl::TimeStamp::New();
@@ -57,7 +64,7 @@ IGIDataSource::IGIDataSource(const std::string& microServiceDeviceName,
 
   us::ServiceProperties props;
   props[ keyId ] = uidGen.GetUID();
-  props[ keyDeviceName ] = microServiceDeviceName;
+  props[ keyDeviceName ] = name;
 
   us::ModuleContext* context = us::GetModuleContext();
   m_MicroServiceRegistration = context->RegisterService(this, props);
@@ -136,7 +143,14 @@ niftk::IGIDataType::IGITimeType IGIDataSource::GetTimeStampInNanoseconds()
 //-----------------------------------------------------------------------------
 std::string IGIDataSource::GetName() const
 {
-  return this->GetMicroServiceDeviceName();
+  return m_Name;
+}
+
+
+//-----------------------------------------------------------------------------
+std::string IGIDataSource::GetFactoryName() const
+{
+  return m_FactoryName;
 }
 
 
@@ -174,7 +188,7 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name, cons
   std::string nodeName = name;
   if (nodeName.size() == 0)
   {
-    nodeName = this->GetMicroServiceDeviceName();
+    nodeName = this->GetName();
   }
 
   // Try and get existing node.

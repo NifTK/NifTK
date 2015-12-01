@@ -46,19 +46,43 @@ int OpenCVVideoDataSourceService::GetNextChannelNumber()
 
 
 //-----------------------------------------------------------------------------
-OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Pointer dataStorage)
-: IGIDataSource((QString("OpenCV-") + QString::number(GetNextChannelNumber())).toStdString(), dataStorage)
+OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
+    std::string name, std::string factoryName, mitk::DataStorage::Pointer dataStorage)
+: IGIDataSource(name, factoryName, dataStorage)
 , m_FrameId(0)
 , m_Buffer(NULL)
 , m_BackgroundDeleteThread(NULL)
 , m_DataGrabbingThread(NULL)
+{
+  this->Init();
+}
+
+
+//-----------------------------------------------------------------------------
+OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
+    std::string factoryName,
+    mitk::DataStorage::Pointer dataStorage)
+: IGIDataSource((QString("OpenCV-") + QString::number(GetNextChannelNumber())).toStdString(),
+                factoryName,
+                dataStorage)
+, m_FrameId(0)
+, m_Buffer(NULL)
+, m_BackgroundDeleteThread(NULL)
+, m_DataGrabbingThread(NULL)
+{
+  this->Init();
+}
+
+
+//-----------------------------------------------------------------------------
+void OpenCVVideoDataSourceService::Init()
 {
   this->SetStatus("Initialising");
 
   int defaultFramesPerSecond = 25;
   m_Buffer = niftk::IGIDataSourceBuffer::New(defaultFramesPerSecond * 2);
 
-  QString deviceName = QString::fromStdString(this->GetMicroServiceDeviceName());
+  QString deviceName = QString::fromStdString(this->GetName());
   m_ChannelNumber = (deviceName.remove(0, 29)).toInt();
 
   m_VideoSource = mitk::OpenCVVideoSource::New();
@@ -74,7 +98,7 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(mitk::DataStorage::Po
     s_SourcesInUse.remove(m_ChannelNumber);
     s_Lock.unlock();
 
-    mitkThrow() << "Failed to create " << this->GetMicroServiceDeviceName()
+    mitkThrow() << "Failed to create " << this->GetName()
                 << ", please check log file!";
   }
 
@@ -195,11 +219,11 @@ void OpenCVVideoDataSourceService::CleanBuffer()
 
 
 //-----------------------------------------------------------------------------
-std::string OpenCVVideoDataSourceService::GetSaveDirectoryName()
+std::string OpenCVVideoDataSourceService::GetRecordingDirectoryName()
 {
   return this->GetRecordingLocation()
       + this->GetPreferredSlash().toStdString()
-      + this->GetMicroServiceDeviceName()
+      + this->GetName()
       + "_" + (tr("%1").arg(m_ChannelNumber)).toStdString()
       ;
 }
@@ -220,7 +244,7 @@ void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
     mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
   }
 
-  QString directoryPath = QString::fromStdString(this->GetSaveDirectoryName());
+  QString directoryPath = QString::fromStdString(this->GetRecordingDirectoryName());
   QDir directory(directoryPath);
   if (directory.mkpath(directoryPath))
   {
@@ -322,10 +346,10 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
     return infos;
   }
 
-  mitk::DataNode::Pointer node = this->GetDataNode(this->GetMicroServiceDeviceName());
+  mitk::DataNode::Pointer node = this->GetDataNode(this->GetName());
   if (node.IsNull())
   {
-    mitkThrow() << "Can't find mitk::DataNode with name " << this->GetMicroServiceDeviceName() << std::endl;
+    mitkThrow() << "Can't find mitk::DataNode with name " << this->GetName() << std::endl;
   }
 
   // Get Image from the dataType;

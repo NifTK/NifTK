@@ -26,7 +26,6 @@
 #include <QObject>
 #include <QSet>
 #include <QMutex>
-#include <QObject>
 
 #include <string>
 
@@ -48,7 +47,8 @@ class NIFTKOPENCVVIDEODATASOURCESERVICE_EXPORT OpenCVVideoDataSourceService
 public:
 
   mitkClassMacroItkParent(OpenCVVideoDataSourceService, IGIDataSource);
-  mitkNewMacro1Param(OpenCVVideoDataSourceService, mitk::DataStorage::Pointer);
+  mitkNewMacro2Param(OpenCVVideoDataSourceService, std::string, mitk::DataStorage::Pointer);
+  mitkNewMacro3Param(OpenCVVideoDataSourceService, std::string, std::string, mitk::DataStorage::Pointer);
 
   /**
   * \see IGIDataSourceI::StartCapturing()
@@ -64,8 +64,8 @@ public:
   * \see IGIDataSourceI::ProbeRecordedData()
   */
   bool ProbeRecordedData(const std::string& path,
-                                  niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                  niftk::IGIDataType::IGITimeType* lastTimeStampInStore);
+                         niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+                         niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
 
   /**
   * \see IGIDataSourceI::SetLagInMilliseconds()
@@ -75,7 +75,7 @@ public:
   /**
   * \see IGIDataSourceI::GetSaveDirectoryName()
   */
-  virtual std::string GetSaveDirectoryName() override;
+  virtual std::string GetRecordingDirectoryName() override;
 
   /**
   * \see IGIDataSourceI::Update()
@@ -99,7 +99,11 @@ public:
 
 protected:
 
-  OpenCVVideoDataSourceService(mitk::DataStorage::Pointer dataStorage);
+  OpenCVVideoDataSourceService(std::string name,
+                               std::string factoryName,
+                               mitk::DataStorage::Pointer dataStorage);
+  OpenCVVideoDataSourceService(std::string factoryName,
+                               mitk::DataStorage::Pointer dataStorage);
   virtual ~OpenCVVideoDataSourceService();
 
 private:
@@ -108,6 +112,8 @@ private:
   OpenCVVideoDataSourceService& operator=(const OpenCVVideoDataSourceService&); // deliberately not implemented
 
   static int GetNextChannelNumber();
+
+  void Init();
 
   mitk::OpenCVVideoSource::Pointer                m_VideoSource;
   int                                             m_ChannelNumber;
