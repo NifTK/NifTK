@@ -319,7 +319,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       long long timingError;
       cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, perturbation, m_ReferenceIndex).inv();
       unsigned long long matrixTimeStamp;
-      unsigned long long absTimingError = static_cast<unsigned long long> ( abs(timingError));
+      unsigned long long absTimingError = static_cast<unsigned long long> ( std::abs(timingError));
       if ( timingError < 0 ) 
       {
         matrixTimeStamp = trackerMatcher->GetVideoFrameTimeStamp(framenumber) + absTimingError;
@@ -494,7 +494,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     cvReleaseVideoWriter(&m_RightWriter);
   }
 
-  if ( tracks_out != NULL )
+  if ( tracks_out.is_open() )
   {
     tracks_out.close();
   }
@@ -1182,7 +1182,7 @@ bool ProjectPointsOnStereoVideo::FindNearestScreenPoint ( mitk::PickedObject& GS
   assert ( GSPickedObject.m_FrameNumber ==  m_ProjectedPointLists[GSPickedObject.m_FrameNumber]->GetFrameNumber() );
   //let's check the timing errors while we're here
   long long timingError = static_cast<long long> ( GSPickedObject.m_TimeStamp ) -  static_cast <long long> (m_ProjectedPointLists[GSPickedObject.m_FrameNumber]->GetTimeStamp() ) ;
-  if ( abs ( timingError ) > m_AllowableTimingError ) 
+  if ( std::abs ( timingError ) > m_AllowableTimingError ) 
  
   {
     MITK_WARN << "Rejecting gold standard points at frame " << GSPickedObject.m_FrameNumber << " due to high timing error = " << timingError;
