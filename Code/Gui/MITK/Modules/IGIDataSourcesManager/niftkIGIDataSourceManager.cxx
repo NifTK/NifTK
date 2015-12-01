@@ -564,6 +564,14 @@ void IGIDataSourceManager::RetrieveAllDataSourceFactories()
     niftk::IGIDataSourceFactoryServiceI *factory = m_ModuleContext->GetService<niftk::IGIDataSourceFactoryServiceI>(m_Refs[i]);
     QString name = QString::fromStdString(factory->GetName());
     m_NameToFactoriesMap.insert(name, factory);
+
+    // Legacy compatibility.
+    // Ask each factory what other aliases it wants to map to itself.
+    std::vector<std::string> aliases = factory->GetLegacyClassNames();
+    for (int j = 0; j < aliases.size(); j++)
+    {
+      m_NameToFactoriesMap.insert(QString::fromStdString(aliases[i]), factory);
+    }
   }
   if (m_Refs.size() != m_NameToFactoriesMap.size())
   {
