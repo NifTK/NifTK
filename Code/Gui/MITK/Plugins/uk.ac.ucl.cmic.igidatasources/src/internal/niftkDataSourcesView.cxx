@@ -29,6 +29,7 @@ const std::string DataSourcesView::VIEW_ID = "uk.ac.ucl.cmic.igidatasources";
 //-----------------------------------------------------------------------------
 DataSourcesView::DataSourcesView()
 : m_DataSourceManagerWidget(NULL)
+, m_SetupWasCalled(false)
 {
 }
 
@@ -36,26 +37,29 @@ DataSourcesView::DataSourcesView()
 //-----------------------------------------------------------------------------
 DataSourcesView::~DataSourcesView()
 {
-  ctkPluginContext* context = niftk::DataSourcesViewActivator::getContext();
-  if (context)
+  if (m_SetupWasCalled)
   {
-    ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
-    if (ref)
+    ctkPluginContext* context = niftk::DataSourcesViewActivator::getContext();
+    if (context)
     {
-      ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
-      if (eventAdmin)
+      ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
+      if (ref)
       {
-        eventAdmin->unpublishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATE");
-        eventAdmin->unpublishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
+        ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
+        if (eventAdmin)
+        {
+          eventAdmin->unpublishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATE");
+          eventAdmin->unpublishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
+        }
       }
     }
-  }
 
-  bool ok = false;
-  ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType)));
-  assert(ok);
-  ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)));
-  assert(ok);
+    bool ok = false;
+    ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType)));
+    assert(ok);
+    ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)));
+    assert(ok);
+  }
 }
 
 
@@ -123,6 +127,8 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGISTOPRECORDING";
     eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStop(ctkEvent)), properties);
   }
+
+  m_SetupWasCalled = true;
 }
 
 

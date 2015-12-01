@@ -110,6 +110,7 @@ private:
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
   niftk::IGIDataSourceManagerWidget* m_DataSourceManagerWidget;
+  bool                               m_SetupWasCalled;
 };
 
 } // end namespace

@@ -155,13 +155,18 @@ public:
   void FreezeDataSource(unsigned int i, bool isFrozen);
 
   /**
-  * \brief Sets the manager ready for playback, by deleting all sources,
-  * and creating new ones to match the sources mentioned in the desriptor.
+  * \brief Sets the manager ready for playback.
+  *
   * \param descriptorPath path to a descriptor to parse.
   * \param startTime returns the minimum of start times of all available data sources.
   * \param endTime returns the maximum of end times of all available data sources.
+  *
+  * Here, the user must have created the right data sources. The reason is
+  * that each data-source might need configuring each time you set up
+  * the system.  e.g. An Aurora tracker might be connected to a specific COM port.
+  * These configurations might be different between record and playback.
   */
-  bool InitializePlayback(const QString& descriptorPath,
+  void InitializePlayback(const QString& descriptorPath,
                           IGIDataType::IGITimeType& startTime,
                           IGIDataType::IGITimeType& endTime);
 
@@ -214,15 +219,6 @@ private:
    * @warning This method does not check whether any class name is valid, i.e. whether that class has been compiled in!
    */
   QMap<QString, QString> ParseDataSourceDescriptor(const QString& filepath);
-
-  /**
-  * \brief Searches through data sources to find one that will handle the given folder.
-  * \return true if a folder can be handled and false otherwise.
-  */
-  bool ProbeRecordedData(const QString& folder,
-                         niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                         niftk::IGIDataType::IGITimeType* lastTimeStampInStore);
-
 
   mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.
   us::ModuleContext*                                               m_ModuleContext;

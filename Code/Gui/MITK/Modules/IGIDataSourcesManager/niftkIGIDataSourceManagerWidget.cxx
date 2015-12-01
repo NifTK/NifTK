@@ -144,65 +144,57 @@ void IGIDataSourceManagerWidget::OnPlayStart()
     {
       try
       {
-
         // Union of the time range encompassing everything recorded in that session.
         IGIDataType::IGITimeType overallStartTime = std::numeric_limits<IGIDataType::IGITimeType>::max();
         IGIDataType::IGITimeType overallEndTime   = std::numeric_limits<IGIDataType::IGITimeType>::min();
 
-        bool isReadyToStart = m_Manager->InitializePlayback(playbackpath + QDir::separator() + "descriptor.cfg",
-                                                            overallStartTime,
-                                                            overallEndTime);
-        if (isReadyToStart)
-        {
+        m_Manager->SetDirectoryPrefix(playbackpath);
+        m_Manager->InitializePlayback(playbackpath + QDir::separator() + "descriptor.cfg",
+                                      overallStartTime,
+                                      overallEndTime);
+        m_PlaybackSliderBase = overallStartTime;
+        m_PlaybackSliderFactor = (overallEndTime - overallStartTime) / (std::numeric_limits<int>::max() / 4);
 
-          m_PlaybackSliderBase = overallStartTime;
-          m_PlaybackSliderFactor = (overallEndTime - overallStartTime) / (std::numeric_limits<int>::max() / 4);
+        // If the time range is very short then dont upscale for the slider
+        m_PlaybackSliderFactor = std::max(m_PlaybackSliderFactor, (igtlUint64) 1);
 
-          // If the time range is very short then dont upscale for the slider
-          m_PlaybackSliderFactor = std::max(m_PlaybackSliderFactor, (igtlUint64) 1);
+        double  sliderMax = (overallEndTime - overallStartTime) / m_PlaybackSliderFactor;
+        assert(sliderMax < std::numeric_limits<int>::max());
 
-          double  sliderMax = (overallEndTime - overallStartTime) / m_PlaybackSliderFactor;
-          assert(sliderMax < std::numeric_limits<int>::max());
+        m_PlaybackSlider->setMinimum(0);
+        m_PlaybackSlider->setMaximum((int) sliderMax);
 
-          m_PlaybackSlider->setMinimum(0);
-          m_PlaybackSlider->setMaximum((int) sliderMax);
+        // Set slider step values, so user can click or mouse-wheel the slider to advance time.
+        // on windows-qt, single-step corresponds to a single mouse-wheel event.
+        // quite often doing one mouse-wheel step, corresponds to 3 lines (events), but this is configurable
+        // (in control panel somewhere, but we ignore that here, single step is whatever the user's machine says).
 
-          // Set slider step values, so user can click or mouse-wheel the slider to advance time.
-          // on windows-qt, single-step corresponds to a single mouse-wheel event.
-          // quite often doing one mouse-wheel step, corresponds to 3 lines (events), but this is configurable
-          // (in control panel somewhere, but we ignore that here, single step is whatever the user's machine says).
+        IGIDataType::IGITimeType tenthASecondInNanoseconds = 100000000;
+        IGIDataType::IGITimeType tenthASecondStep = tenthASecondInNanoseconds / m_PlaybackSliderFactor;
+        tenthASecondStep = std::max(tenthASecondStep, (igtlUint64) 1);
+        assert(tenthASecondStep < std::numeric_limits<int>::max());
+        m_PlaybackSlider->setSingleStep((int) tenthASecondStep);
 
-          IGIDataType::IGITimeType tenthASecondInNanoseconds = 100000000;
-          IGIDataType::IGITimeType tenthASecondStep = tenthASecondInNanoseconds / m_PlaybackSliderFactor;
-          tenthASecondStep = std::max(tenthASecondStep, (igtlUint64) 1);
-          assert(tenthASecondStep < std::numeric_limits<int>::max());
-          m_PlaybackSlider->setSingleStep((int) tenthASecondStep);
+        // On windows-qt, a page-step is when clicking on the slider track.
+        igtlUint64 oneSecondInNanoseconds = 1000000000;
+        igtlUint64 oneSecondStep = oneSecondInNanoseconds / m_PlaybackSliderFactor;
+        oneSecondStep = std::max(oneSecondStep, tenthASecondStep + 1);
+        assert(oneSecondStep < std::numeric_limits<int>::max());
+        m_PlaybackSlider->setPageStep((int) oneSecondStep);
 
-          // On windows-qt, a page-step is when clicking on the slider track.
-          igtlUint64 oneSecondInNanoseconds = 1000000000;
-          igtlUint64 oneSecondStep = oneSecondInNanoseconds / m_PlaybackSliderFactor;
-          oneSecondStep = std::max(oneSecondStep, tenthASecondStep + 1);
-          assert(oneSecondStep < std::numeric_limits<int>::max());
-          m_PlaybackSlider->setPageStep((int) oneSecondStep);
+        // Pop open the controls
+        m_ToolManagerPlaybackGroupBox->setCollapsed(false);
 
-          // Pop open the controls
-          m_ToolManagerPlaybackGroupBox->setCollapsed(false);
+        // Can stop playback with stop button (in addition to unchecking the playbutton)
+        m_StopPushButton->setEnabled(true);
 
-          // Can stop playback with stop button (in addition to unchecking the playbutton)
-          m_StopPushButton->setEnabled(true);
+        // For now, cannot start recording directly from playback mode.
+        // could be possible: leave this enabled and simply stop all playback when user clicks on record.
+        m_RecordPushButton->setEnabled(false);
 
-          // For now, cannot start recording directly from playback mode.
-          // could be possible: leave this enabled and simply stop all playback when user clicks on record.
-          m_RecordPushButton->setEnabled(false);
-
-          m_TimeStampEdit->setReadOnly(false);
-          m_PlaybackSlider->setEnabled(true);
-          m_PlaybackSlider->setValue(0);
-        }
-        else
-        {
-          m_PlayPushButton->setChecked(false);
-        }
+        m_TimeStampEdit->setReadOnly(false);
+        m_PlaybackSlider->setEnabled(true);
+        m_PlaybackSlider->setValue(0);
       }
       catch (const mitk::Exception& e)
       {

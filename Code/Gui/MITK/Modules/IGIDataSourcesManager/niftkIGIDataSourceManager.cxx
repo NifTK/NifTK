@@ -304,15 +304,6 @@ QMap<QString, QString> IGIDataSourceManager::ParseDataSourceDescriptor(const QSt
 
 
 //-----------------------------------------------------------------------------
-bool IGIDataSourceManager::ProbeRecordedData(const QString& folder,
-                                             niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                             niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
-{
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
 bool IGIDataSourceManager::NeedsStartupGui(QString name)
 {
   return false;
@@ -437,69 +428,60 @@ void IGIDataSourceManager::FreezeDataSource(unsigned int i, bool isFrozen)
 
 
 //-----------------------------------------------------------------------------
-bool IGIDataSourceManager::InitializePlayback(const QString& descriptorPath,
+void IGIDataSourceManager::InitializePlayback(const QString& descriptorPath,
                                               IGIDataType::IGITimeType& overallStartTime,
                                               IGIDataType::IGITimeType& overallEndTime)
 {
-  bool isReadyToStart = false;
+  // This will retrieve key:value.
+  // Key is the name at the time of recording, value is (a) The factory name, (b) The legacy class name.
+  QMap<QString, QString>  dir2NameMap = this->ParseDataSourceDescriptor(descriptorPath);
 
-  QMap<QString, QString>  dir2SourceNameMap = this->ParseDataSourceDescriptor(descriptorPath);
-
-  // Creates a source for each item in the list.
-  for (QMap<QString, QString>::iterator dir2SourceNameMapIterator = dir2SourceNameMap.begin();
-       dir2SourceNameMapIterator != dir2SourceNameMap.end();
-       ++dir2SourceNameMapIterator)
+  // Check we have a valid data source for each item.
+  // Additional sources are simply ignored.
+  QList<niftk::IGIDataSourceI::Pointer> copyOfSources = m_Sources;
+  for (QMap<QString, QString>::iterator iter = dir2NameMap.begin();
+       iter != dir2NameMap.end();
+       ++iter)
   {
+    QString nameOfSource = iter.key();
+    QString nameOfFactory = iter.value();
 
-  }
-  /*
-  // data sources participating in igi data playback.
-  // key = fully qualified path for that data source.
-  QMap<std::string, IGIDataSourceI::Pointer> goodSources;
-
-
-
-  // for each existing data source (that the user added before), check whether it can playback
-  // that particular directory mentioned in the descriptor.
-  foreach (QmitkIGIDataSource::Pointer source, m_Sources)
-  {
-    // find a suitable directory
-    for (QMap<QString, QString>::iterator dir2classmapIterator = dir2classmap.begin();
-         dir2classmapIterator != dir2classmap.end();
-         ++dir2classmapIterator)
+    if (!m_NameToFactoriesMap.contains(nameOfFactory))
     {
-      if (source->GetNameOfClass() == dir2classmapIterator.value().toStdString())
+      MITK_WARN << "Playback: ignoring source=" << nameOfSource.toStdString() << ", factory=" << nameOfFactory.toStdString();
+      continue;
+    }
+
+    // Ask each remaining source if it can handle it.
+    for (int sourceNumber = 0; sourceNumber < copyOfSources.size(); sourceNumber++)
+    {
+      IGIDataType::IGITimeType startTime;
+      IGIDataType::IGITimeType endTime;
+
+      bool canDo = m_Sources[sourceNumber]->ProbeRecordedData(
+            (m_DirectoryPrefix + QDir::separator() + nameOfSource).toStdString(),
+            &startTime,
+            &endTime);
+
+      if (canDo)
       {
-        igtlUint64  startTime = -1;
-        igtlUint64  endTime   = -1;
-        std::string dataSourceDir = (playbackpath + QDir::separator() + dir2classmapIterator.key()).toStdString();
-        bool cando = source->ProbeRecordedData(dataSourceDir, &startTime, &endTime);
-        if (cando)
-        {
-          overallStartTime = std::min(overallStartTime, startTime);
-          overallEndTime   = std::max(overallEndTime, endTime);
-
-          goodSources.insert(dataSourceDir, source);
-
-          // we found a directory <-> source combination that can work.
-          // so drop it off the list dir2classmap.
-          dir2classmap.erase(dir2classmapIterator);
-          // try the next source that exist already.
-          break;
-        }
-        else
-        {
-          // no special else here (only diagnostic). if this data source cannot playback that particular directory,
-          // even though the descriptor says it can, the data source may still be able to play another directory
-          // coming later in the list.
-          MITK_WARN << "Data source " << source->GetNameOfClass() << " mentioned in descriptor for " << dir2classmapIterator.key().toStdString() << " but failed probing.";
-        }
+        overallStartTime = std::min(overallStartTime, startTime);
+        overallEndTime   = std::max(overallEndTime, endTime);
+        m_Sources.removeAt(sourceNumber);
+        dir2NameMap.erase(iter);
       }
     }
   }
 
-*/
-  return isReadyToStart;
+  if (dir2NameMap.size() > 0)
+  {
+    for (QMap<QString, QString>::iterator iter = dir2NameMap.begin();
+         iter != dir2NameMap.end();
+         ++iter)
+    {
+      MITK_WARN << "Playback: Failed to handle " << iter.key().toStdString() << ":" << iter.value().toStdString();
+    }
+  }
 }
 
 
@@ -572,10 +554,6 @@ void IGIDataSourceManager::RetrieveAllDataSourceFactories()
     {
       m_NameToFactoriesMap.insert(QString::fromStdString(aliases[i]), factory);
     }
-  }
-  if (m_Refs.size() != m_NameToFactoriesMap.size())
-  {
-    mitkThrow() << "Found " << m_Refs.size() << " and " << m_NameToFactoriesMap.size() << " uniquely named IGIDataSourceFactoryServices. These numbers should match.";
   }
 }
 
