@@ -58,8 +58,8 @@ screenshots from a Mac.
         them off.
       </li>
       <li>
-        Visual Studio 2012 and Visual Studio 2013 are supported. Make sure that you have
-        at least the "Professional" version, otherwise you won't have OpenMP support.
+        Visual Studio 2012 and Visual Studio 2013 are supported. For Visual Studio 2012 
+		you must have at least the "Professional" version, otherwise you won't have OpenMP support.
       </li>
     </ul>
   </li>
@@ -169,34 +169,17 @@ git clone git://code.qt.io/qt/qt.git
 
 On Windows follow the instructions below to build Qt:
 
-Instead of compiling Qt yourself, ready-to-use patched source and binaries can be downloaded from
-
-\verbatim
-https://bitbucket.org/bruelltuete/qt-niftk
-\endverbatim
-
-Binaries are available for 
-<a href="http://cmic.cs.ucl.ac.uk/platform/dependencies/Qt-4.8.x-x64-vc11+src_selfextracting-7z.exe">VS2012 64-bit</a>, 
-<a href="http://cmic.cs.ucl.ac.uk/platform/dependencies/Qt-4.8.x-x64-vc10+src_selfextracting-7z.exe">VS2010 64-bit</a> and 
-<a href="http://cmic.cs.ucl.ac.uk/platform/dependencies/Qt-4.8.x-x86-vc10+src_selfextracting-7z.exe">VS2010 32-bit</a>.
-
 First of all, on Windows only the Visual Studio builds are currently supported (no mingw or msys),
-so you'll need to have Microsoft Visual Studio installed (2010 or 2012 Professional (or better)
-version is recommended). Note that if you use Microsoft Visual Studio 2010, you must have its
-Service Pack 1 installed to avoid major build issues, similarly for Visual Studio 2012 please
-install Update4.
+so you'll need to have Microsoft Visual Studio installed (2012 Professional (or better) and 2013 Community (or better)
+version is recommended). Note that if you use Microsoft Visual Studio 2012 please install Update4.
 
-You might also want to have the Qt integration pack installed for VS: <a href="http://qt-project.org/downloads#qt-other">
+You might also want to have the Qt integration pack installed for VS: <a href="http://download.qt.io/official_releases/vsaddin/qt-vs-addin-1.1.11-opensource.exe">
 Qt VS Integration</a>
 
 On 64bit Windows (or if you are an adventurous Win32 user) you have to build Qt from source. 
 
-The first step is to obtain the source: The latest source code is available
-<a href="http://qt-project.org/downloads#qt-lib">here</a> as a zip (261 MB) or a tar.gz (223 MB).
-Or clone Qt from the git repository: git clone git://gitorious.org/qt/qt.git.
-
-Uncompress the files into a build directory of your choice (e. g. "C:\Qt\4.8.6-build"), and create
-a directory where you want Qt installed (e.g. "C:\Qt\4.8.6").
+Uncompress the downloaded files obtained in the previous section into a build directory of your choice (e. g. "C:\Qt\4.8.7-build"), and create
+a directory where you want Qt installed (e.g. "C:\Qt\4.8.7").
 
 Note: The install path must not contain any spaces or Windows specific file system characters.
 
@@ -214,7 +197,7 @@ Windows specific file system characters (e.g. c:\OpenSSL-Win64\).
 If you need symbols (to be able to debug a crashed release-build, for example, or to performance-profile
 your code), you'll need to hack mkspec: You need to edit
 \verbatim
-qtsrc/mkspecs/win32-msvc2010/qmake.conf
+qtsrc/mkspecs/win32-msvc2012/qmake.conf
 \endverbatim
 Add to QMAKE_CFLAGS_RELEASE the -Zi flag, and to QMAKE_LFLAGS_RELEASE the /debug flag. For example:
 \verbatim
@@ -224,14 +207,6 @@ QMAKE_CFLAGS_RELEASE = -O2 -MD -Zi
 QMAKE_LFLAGS_RELEASE = /INCREMENTAL:NO /DEBUG /OPT:REF
 ...
 \endverbatim
-
-The current version of Qt (4.8.6 - from git repo) doesn't build with VS2012 due to header file within
-the "webkit" module. To fix this issue please replace
-\verbatim
-qt-src-folder\src\3rdparty\webkit\Source\JavaScriptCore\wtf\HashSet.h
-\endverbatim
-
-with the HashSet.h file that is available within the zip file containing Qt sources (see link above).</br>
 
 The compilation is done from the Visual Studio command prompt. On 64bit Windows make sure that you use
 the "Visual Studio x64 Win64 Command Prompt"!
@@ -245,15 +220,15 @@ where XXXX is the Visual Studio version you'd like to use.
 
 The next step is to configure Qt for the build:
 \verbatim
-cd /D C:\Qt\4.8.6-build
-configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -nomake examples -nomake tests -debug-and-release -shared -mp -script -openssl -opensource -confirm-license -platform win32-msvc2012 -prefix c:\Qt\4.8.6 -I c:\OpenSSL-Win64\include -L c:\OpenSSL-Win64\lib
+cd /D C:\Qt\4.8.7-build
+configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -nomake examples -nomake tests -debug-and-release -shared -mp -script -openssl -opensource -confirm-license -platform win32-msvc2012 -prefix c:\Qt\4.8.7 -I c:\OpenSSL-Win64\include -L c:\OpenSSL-Win64\lib
 \endverbatim
 
 The last four parameters have to be adjusted. Set "-platform win32-msvcXXXX" to match the desired Visual
-Studio version (e.g. -platform win32-msvc2010 or -platform win32-msvc2012). Note when you use x64 command
+Studio version (e.g. -platform win32-msvc2013 or -platform win32-msvc2012). Note when you use x64 command
 prompt Qt is compiled to x64, despite the "win32" parameter setting.
 
-Also, you'll need to specify the installation prefix to specify where to install Qt (e.g. "c:\Qt\4.8.6").
+Also, you'll need to specify the installation prefix to specify where to install Qt (e.g. "c:\Qt\4.8.7").
 
 The -I and -L parameters are to specify additional include paths and library paths, respectively. Please
 edit these to point to your installation of OpenSSL, so qmake can find them.
@@ -277,7 +252,7 @@ This will remove all the temporary files used during build-time.
 
 The last step is to add the bin directory to your system path. For newer versions of Windows, PATH can
 be extended through the Control Panel|System|Advanced|Environment variables menu. Look for 'PATH' and
-add "c:\Qt\4.8.6\bin;" to the FRONT of the path string.
+add "c:\Qt\4.8.7\bin;" to the FRONT of the path string.
 
 You'll have to log off / log on for the changes to make effect.
 
@@ -334,7 +309,7 @@ You also need an up-to-date git client.
     'yum install git' (RedHat based systems) or 'apt-get install git' (Debian based systems).
   </li>
   <li>
-    On Mac git available if you installed the XCode Command Line Developer Tools.
+    On Mac git available if you installed the Xcode Command Line Developer Tools.
   </li>
 </ul>
 
@@ -545,12 +520,7 @@ uninstalled, etc).
   </li>
   <li>
     On Windows, we only recommend and regularly test Windows 64 bit. While the build
-    is known to work on 32bit Windows 7 and XP, it is less frequently tested.
-  </li>
-  <li>
-    On Windows, sometimes building the dependencies can be tricky. Open the Visual
-    Studio project file at the Superbuild level, and build the CLEAN, Boost, GDCM,
-    VTK, ITK, CTK, MITK one at a time, in that order.
+    is known to work on 32bit Windows 7, it is less frequently tested.
   </li>
   <li>
     On Windows, the multi-threaded Visual Studio builds are found to be unreliable.
