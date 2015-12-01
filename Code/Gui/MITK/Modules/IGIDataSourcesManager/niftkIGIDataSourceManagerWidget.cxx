@@ -152,6 +152,7 @@ void IGIDataSourceManagerWidget::OnPlayStart()
         m_Manager->InitializePlayback(playbackpath + QDir::separator() + "descriptor.cfg",
                                       overallStartTime,
                                       overallEndTime);
+
         m_PlaybackSliderBase = overallStartTime;
         m_PlaybackSliderFactor = (overallEndTime - overallStartTime) / (std::numeric_limits<int>::max() / 4);
 
@@ -213,8 +214,7 @@ void IGIDataSourceManagerWidget::OnPlayStart()
 
         QMessageBox msgbox;
         msgbox.setText("Data playback initialisation failed.");
-        msgbox.setInformativeText("Playback cannot continue and will stop. Have a look at the detailed message and try to fix it. Good luck.");
-        msgbox.setDetailedText(QString::fromStdString(e.what()));
+        msgbox.setInformativeText(e.GetDescription());
         msgbox.setIcon(QMessageBox::Critical);
         msgbox.exec();
 

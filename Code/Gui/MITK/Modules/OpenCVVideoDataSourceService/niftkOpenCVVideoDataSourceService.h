@@ -61,13 +61,6 @@ public:
   virtual void StopCapturing() override;
 
   /**
-  * \see IGIDataSourceI::ProbeRecordedData()
-  */
-  bool ProbeRecordedData(const std::string& path,
-                         niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                         niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
-
-  /**
   * \see IGIDataSourceI::SetLagInMilliseconds()
   */
   virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& milliseconds) override;
@@ -96,6 +89,13 @@ public:
   * \see niftk::IGILocalDataSourceI::GrabData()
   */
   virtual void GrabData() override;
+
+  /**
+  * \see IGIDataSourceI::ProbeRecordedData()
+  */
+  bool ProbeRecordedData(const std::string& path,
+                         niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+                         niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
 
 protected:
 

@@ -166,6 +166,10 @@ QList<QString> IGIDataSourceManager::GetAllSources() const
 void IGIDataSourceManager::SetDirectoryPrefix(const QString& directoryPrefix)
 {
   m_DirectoryPrefix = directoryPrefix;
+  for (int i = 0; i < m_Sources.size(); i++)
+  {
+    m_Sources[i]->SetRecordingLocation(m_DirectoryPrefix.toStdString());
+  }
   this->Modified();
 }
 
@@ -381,10 +385,10 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
   QDir directory(directoryName);
   QDir().mkpath(directoryName);
 
-  foreach (niftk::IGIDataSourceI::Pointer source, m_Sources )
+  for (int i = 0; i < m_Sources.size(); i++)
   {
-    source->SetRecordingLocation(directory.absolutePath().toStdString());
-    source->StartRecording();
+    m_Sources[i]->SetRecordingLocation(directory.absolutePath().toStdString());
+    m_Sources[i]->StartRecording();
   }
 
   this->Modified();
@@ -432,34 +436,34 @@ void IGIDataSourceManager::InitializePlayback(const QString& descriptorPath,
                                               IGIDataType::IGITimeType& overallStartTime,
                                               IGIDataType::IGITimeType& overallEndTime)
 {
+  if (m_Sources.size() == 0)
+  {
+    mitkThrow() << "Please create sources first.";
+  }
+
   // This will retrieve key:value.
-  // Key is the name at the time of recording, value is (a) The factory name, (b) The legacy class name.
+  // Key is the name at the time of recording, value is (a) The factory name or (b) The legacy class name.
   QMap<QString, QString>  dir2NameMap = this->ParseDataSourceDescriptor(descriptorPath);
 
-  // Check we have a valid data source for each item.
-  // Additional sources are simply ignored.
-  QList<niftk::IGIDataSourceI::Pointer> copyOfSources = m_Sources;
-  for (QMap<QString, QString>::iterator iter = dir2NameMap.begin();
-       iter != dir2NameMap.end();
-       ++iter)
+  for (int sourceNumber = 0; sourceNumber < m_Sources.size(); sourceNumber++)
   {
-    QString nameOfSource = iter.key();
-    QString nameOfFactory = iter.value();
-
-    if (!m_NameToFactoriesMap.contains(nameOfFactory))
+    for (QMap<QString, QString>::iterator iter = dir2NameMap.begin();
+         iter != dir2NameMap.end();
+         ++iter)
     {
-      MITK_WARN << "Playback: ignoring source=" << nameOfSource.toStdString() << ", factory=" << nameOfFactory.toStdString();
-      continue;
-    }
+      QString nameOfSource = iter.key();
+      QString nameOfFactory = iter.value();
 
-    // Ask each remaining source if it can handle it.
-    for (int sourceNumber = 0; sourceNumber < copyOfSources.size(); sourceNumber++)
-    {
+      if (!m_NameToFactoriesMap.contains(nameOfFactory))
+      {
+        mitkThrow() << "Cannot play source=" << nameOfSource.toStdString() << ", using factory=" << nameOfFactory.toStdString() << ".";
+      }
+
       IGIDataType::IGITimeType startTime;
       IGIDataType::IGITimeType endTime;
 
       bool canDo = m_Sources[sourceNumber]->ProbeRecordedData(
-            (m_DirectoryPrefix + QDir::separator() + nameOfSource).toStdString(),
+            m_Sources[sourceNumber]->GetRecordingDirectoryName(),
             &startTime,
             &endTime);
 
@@ -467,20 +471,22 @@ void IGIDataSourceManager::InitializePlayback(const QString& descriptorPath,
       {
         overallStartTime = std::min(overallStartTime, startTime);
         overallEndTime   = std::max(overallEndTime, endTime);
-        m_Sources.removeAt(sourceNumber);
         dir2NameMap.erase(iter);
+        break;
       }
-    }
-  }
+    } // end for each name in map
+  } // end for each source
 
+  // dir2NameMap should be empty if we found a source for each previously recorded item.
   if (dir2NameMap.size() > 0)
   {
     for (QMap<QString, QString>::iterator iter = dir2NameMap.begin();
          iter != dir2NameMap.end();
          ++iter)
     {
-      MITK_WARN << "Playback: Failed to handle " << iter.key().toStdString() << ":" << iter.value().toStdString();
+      MITK_ERROR << "Failed to handle " << iter.key().toStdString() << ":" << iter.value().toStdString();
     }
+    mitkThrow() << "Failed to replay all data sources. Please check log file.";
   }
 }
 
