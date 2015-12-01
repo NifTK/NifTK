@@ -84,6 +84,12 @@ public:
   void SetDirectoryPrefix(const QString& directoryPrefix);
 
   /**
+  * \brief Sets the base directory of a specific folder to play back,
+  * and sets all the data sources accordingly to match.
+  */
+  void SetPlaybackPrefix(const QString& directoryPrefix);
+
+  /**
   * \brief Sets the update rate, effectively the number of frames per second.
   */
   void SetFramesPerSecond(const int& framesPerSecond);
@@ -228,6 +234,7 @@ private:
   QTimer                                                          *m_GuiUpdateTimer;
   int                                                              m_FrameRate;
   QString                                                          m_DirectoryPrefix;
+  QString                                                          m_PlaybackPrefix;
   igtl::TimeStamp::Pointer                                         m_TimeStampGenerator;
 
 }; // end class;

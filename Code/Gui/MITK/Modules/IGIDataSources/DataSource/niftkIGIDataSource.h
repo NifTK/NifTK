@@ -118,7 +118,7 @@ public:
    * \brief Scans the directory for individual files that match a timestamp pattern.
    * \param suffix for example ".jpg" or "-ultrasoundImage.nii".
    */
-  static std::set<igtlUint64> ProbeTimeStampFiles(QDir path, const QString& suffix);
+  static std::set<niftk::IGIDataType::IGITimeType> ProbeTimeStampFiles(QDir path, const QString& suffix);
 
   /**
   * \brief Returns the platform specific directory separator.

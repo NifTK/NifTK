@@ -148,7 +148,7 @@ void IGIDataSourceManagerWidget::OnPlayStart()
         IGIDataType::IGITimeType overallStartTime = std::numeric_limits<IGIDataType::IGITimeType>::max();
         IGIDataType::IGITimeType overallEndTime   = std::numeric_limits<IGIDataType::IGITimeType>::min();
 
-        m_Manager->SetDirectoryPrefix(playbackpath);
+        m_Manager->SetPlaybackPrefix(playbackpath);
         m_Manager->InitializePlayback(playbackpath + QDir::separator() + "descriptor.cfg",
                                       overallStartTime,
                                       overallEndTime);
@@ -252,7 +252,6 @@ void IGIDataSourceManagerWidget::OnRecordStart()
 
   QString directoryName = m_Manager->GetDirectoryName();
   QDir directory(directoryName);
-
   m_DirectoryChooser->setCurrentPath(directory.absolutePath());
   m_Manager->StartRecording(directory.absolutePath());
 

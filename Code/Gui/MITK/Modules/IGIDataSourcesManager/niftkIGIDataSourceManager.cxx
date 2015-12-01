@@ -166,9 +166,17 @@ QList<QString> IGIDataSourceManager::GetAllSources() const
 void IGIDataSourceManager::SetDirectoryPrefix(const QString& directoryPrefix)
 {
   m_DirectoryPrefix = directoryPrefix;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::SetPlaybackPrefix(const QString& directoryPrefix)
+{
+  m_PlaybackPrefix = directoryPrefix;
   for (int i = 0; i < m_Sources.size(); i++)
   {
-    m_Sources[i]->SetRecordingLocation(m_DirectoryPrefix.toStdString());
+    m_Sources[i]->SetRecordingLocation(m_PlaybackPrefix.toStdString());
   }
   this->Modified();
 }

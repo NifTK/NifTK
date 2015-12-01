@@ -247,7 +247,7 @@ unsigned int IGIDataSource::GetLagInMilliseconds(const niftk::IGIDataType::IGITi
 
 
 //-----------------------------------------------------------------------------
-std::set<igtlUint64> IGIDataSource::ProbeTimeStampFiles(QDir path, const QString& suffix)
+std::set<niftk::IGIDataType::IGITimeType> IGIDataSource::ProbeTimeStampFiles(QDir path, const QString& suffix)
 {
   static_assert(std::numeric_limits<qulonglong>::max() >= std::numeric_limits<niftk::IGIDataType::IGITimeType>::max(), "mismatched data types");
 
