@@ -29,10 +29,10 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
 : m_Manager(niftk::IGIDataSourceManager::New(dataStorage))
 {
   Ui_IGIDataSourceManager::setupUi(parent);
-  QList<QString> namesOfSources = m_Manager->GetAllSources();
-  foreach (QString source, namesOfSources)
+  QList<QString> namesOfFactories = m_Manager->GetAllFactoryNames();
+  foreach (QString factory, namesOfFactories)
   {
-    m_SourceSelectComboBox->addItem(source);
+    m_SourceSelectComboBox->addItem(factory);
   }
   m_SourceSelectComboBox->setCurrentIndex(0);
 
@@ -59,6 +59,9 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   // on the table having columns already! the ui file has them added.
   m_TableWidget->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
 
+  m_PlaybackUpdateTimer = new QTimer(this);
+  m_PlaybackUpdateTimer->setInterval(1000/(int)(niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE));
+
   bool ok = false;
   ok = QObject::connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
   assert(ok);
@@ -76,12 +79,21 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)), this, SLOT(OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)));
   assert(ok);
+  ok = QObject::connect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
+  assert(ok);
+  ok = QObject::connect(m_PlaybackUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+  assert(ok);
 }
 
 
 //-----------------------------------------------------------------------------
 IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
 {
+  if (m_PlaybackUpdateTimer != NULL)
+  {
+    m_PlaybackUpdateTimer->stop();
+  }
+
   bool ok = false;
   ok = QObject::disconnect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
   assert(ok);
@@ -96,6 +108,10 @@ IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
   ok = QObject::disconnect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
   assert(ok);
   ok = QObject::disconnect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
+  assert(ok);
+  ok = QObject::disconnect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
+  assert(ok);
+  ok = QObject::disconnect(m_PlaybackUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
   assert(ok);
 }
 
@@ -144,14 +160,13 @@ void IGIDataSourceManagerWidget::OnPlayStart()
     {
       try
       {
-        // Union of the time range encompassing everything recorded in that session.
         IGIDataType::IGITimeType overallStartTime = std::numeric_limits<IGIDataType::IGITimeType>::max();
         IGIDataType::IGITimeType overallEndTime   = std::numeric_limits<IGIDataType::IGITimeType>::min();
 
-        m_Manager->SetPlaybackPrefix(playbackpath);
-        m_Manager->InitializePlayback(playbackpath + QDir::separator() + "descriptor.cfg",
-                                      overallStartTime,
-                                      overallEndTime);
+        m_Manager->StartPlayback(playbackpath,
+                                 playbackpath + QDir::separator() + "descriptor.cfg",
+                                 overallStartTime,
+                                 overallEndTime);
 
         m_PlaybackSliderBase = overallStartTime;
         m_PlaybackSliderFactor = (overallEndTime - overallStartTime) / (std::numeric_limits<int>::max() / 4);
@@ -472,6 +487,63 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
     }
   }
   m_TableWidget->update();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::OnTimestampEditFinished()
+{
+  IGIDataType::IGITimeType maxSliderTime  = m_PlaybackSliderBase + ((IGIDataType::IGITimeType) m_PlaybackSlider->maximum() * m_PlaybackSliderFactor);
+
+  // try to parse as single number, a timestamp in nano seconds.
+  bool  ok = false;
+  qulonglong possibleTimeStamp = m_TimeStampEdit->text().toULongLong(&ok);
+  if (ok)
+  {
+    // check that it's in our current playback range
+    ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
+
+    // the last/highest timestamp we can playback
+    ok &= (maxSliderTime >= possibleTimeStamp);
+  }
+
+  if (!ok)
+  {
+    QDateTime parsed = QDateTime::fromString(m_TimeStampEdit->text(), "yyyy/MM/dd hh:mm:ss.zzz");
+    if (parsed.isValid())
+    {
+      possibleTimeStamp = parsed.toMSecsSinceEpoch() * 1000000;
+
+      ok = true;
+      ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
+      ok &= (maxSliderTime >= possibleTimeStamp);
+    }
+  }
+
+  if (ok)
+  {
+    m_PlaybackSlider->setValue((possibleTimeStamp - m_PlaybackSliderBase) / m_PlaybackSliderFactor);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::OnUpdatePlayback()
+{
+  int                       sliderValue = m_PlaybackSlider->value();
+  IGIDataType::IGITimeType  sliderTime  = m_PlaybackSliderBase + ((igtlUint64) sliderValue * m_PlaybackSliderFactor);
+
+  IGIDataType::IGITimeType  advanceBy     = 1000000000 / m_Manager->GetFramesPerSecond();
+  IGIDataType::IGITimeType  newSliderTime = sliderTime + advanceBy;
+
+  IGIDataType::IGITimeType  newSliderValue = (newSliderTime - m_PlaybackSliderBase) / m_PlaybackSliderFactor;
+
+  // make sure there is some progress, in case of bad rounding issues (e.g. the sequence is very long).
+  newSliderValue = std::max(newSliderValue, (igtlUint64) sliderValue + 1);
+  assert(newSliderValue < std::numeric_limits<int>::max());
+
+  m_PlaybackSlider->setValue((int) newSliderValue);
+  m_Manager->SetPlaybackTime(newSliderTime);
 }
 
 } // end namespace

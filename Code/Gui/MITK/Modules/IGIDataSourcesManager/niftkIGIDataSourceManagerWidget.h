@@ -56,12 +56,12 @@ public:
   void SetFramesPerSecond(const int& framesPerSecond);
 
   /**
-  * \brief Called from the Plugin (e.g. event bus events) to start the recording process.
+  * \brief Called from the Plugin (e.g. event bus foot-switch events) to start the recording process.
   */
   void StartRecording();
 
   /**
-  * \brief Called from the Plugin (e.g. event bus events) to stop the recording process.
+  * \brief Called from the Plugin (e.g. event bus foot-switch events) to stop the recording process.
   */
   void StopRecording();
 
@@ -121,21 +121,28 @@ private slots:
   void OnFreezeTableHeaderClicked(int section);
 
   /**
-  * \brief Used to update the data sources table.
+  * \brief Called from niftk::IGIDataSourceManager, and used to update the data sources table.
   */
   void OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >);
 
+  /**
+  * \brief Called from Playback GUI to advance time.
+  */
+  void OnTimestampEditFinished();
+
+private slots:
+
+  void OnUpdatePlayback();
+
 private:
 
-  IGIDataSourceManager::Pointer   m_Manager;
-
-  // Either real wallclock time or slider-determined playback time
-  niftk::IGIDataType::IGITimeType m_CurrentTime;
+  IGIDataSourceManager::Pointer m_Manager;
 
   // Slider position is relative to this base value.
   // Slider can only represent int values, but we need all 64 bit.
-  niftk::IGIDataType::IGITimeType m_PlaybackSliderBase;
-  niftk::IGIDataType::IGITimeType m_PlaybackSliderFactor;
+  IGIDataType::IGITimeType      m_PlaybackSliderBase;
+  IGIDataType::IGITimeType      m_PlaybackSliderFactor;
+  QTimer                       *m_PlaybackUpdateTimer;
 
 }; // end class;
 

@@ -65,6 +65,7 @@ public:
   static const char*  DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
 
   bool IsUpdateTimerOn() const;
+  bool IsPlayingBack() const;
   void StopUpdateTimer();
   void StartUpdateTimer();
 
@@ -80,19 +81,19 @@ public:
 
   /**
   * \brief Sets the base directory into which all recording sessions will be saved.
+  *
+  * This is normally set via a GUI preference, so remains unchanged as each
+  * recording session is recorded into a new sub-directory within this directory.
   */
   void SetDirectoryPrefix(const QString& directoryPrefix);
 
   /**
-  * \brief Sets the base directory of a specific folder to play back,
-  * and sets all the data sources accordingly to match.
-  */
-  void SetPlaybackPrefix(const QString& directoryPrefix);
-
-  /**
-  * \brief Sets the update rate, effectively the number of frames per second.
+  * \brief Sets the update rate, effectively the number of times
+  * per second the internal timer ticks, and the number of times
+  * the mitk::RenderingManager is asked to update.
   */
   void SetFramesPerSecond(const int& framesPerSecond);
+  int GetFramesPerSecond() const;
 
   /**
   * \brief When creating sources, some will need configuring (e.g. port number).
@@ -110,13 +111,13 @@ public:
   void WriteDescriptorFile(QString absolutePath);
 
   /**
-  * \brief Retrieves the name of all the available data sources.
+  * \brief Retrieves the name of all the available data source factory names.
   *
   * The returned list is the display name, as shown in the GUI,
   * e.g. "OpenCV Frame Grabber", and these strings are
   * created in each data sources factory class.
   */
-  QList<QString> GetAllSources() const;
+  QList<QString> GetAllFactoryNames() const;
 
   /**
   * \brief Adds a source, using the display name of a factory,
@@ -163,6 +164,7 @@ public:
   /**
   * \brief Sets the manager ready for playback.
   *
+  * \param directoryPrefix path to the root folder of the recording session
   * \param descriptorPath path to a descriptor to parse.
   * \param startTime returns the minimum of start times of all available data sources.
   * \param endTime returns the maximum of end times of all available data sources.
@@ -172,14 +174,21 @@ public:
   * the system.  e.g. An Aurora tracker might be connected to a specific COM port.
   * These configurations might be different between record and playback.
   */
-  void InitializePlayback(const QString& descriptorPath,
-                          IGIDataType::IGITimeType& startTime,
-                          IGIDataType::IGITimeType& endTime);
+  void StartPlayback(const QString& directoryPrefix,
+                     const QString& descriptorPath,
+                     IGIDataType::IGITimeType& startTime,
+                     IGIDataType::IGITimeType& endTime);
 
   /**
   * \brief Stops all sources playing back.
   */
   void StopPlayback();
+
+  /**
+  * \brief Sets the current time of the manager to time,
+  * and the next available update pulse will trigger a refresh.
+  */
+  void SetPlaybackTime(const IGIDataType::IGITimeType& time);
 
 signals:
 
@@ -226,6 +235,11 @@ private:
    */
   QMap<QString, QString> ParseDataSourceDescriptor(const QString& filepath);
 
+  /**
+  * \brief Used to switch the manager between playback and live mode.
+  */
+  void SetIsPlayingBack(bool isPlayingBack);
+
   mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.
   us::ModuleContext*                                               m_ModuleContext;
   std::vector<us::ServiceReference<IGIDataSourceFactoryServiceI> > m_Refs;
@@ -236,6 +250,8 @@ private:
   QString                                                          m_DirectoryPrefix;
   QString                                                          m_PlaybackPrefix;
   igtl::TimeStamp::Pointer                                         m_TimeStampGenerator;
+  bool                                                             m_IsPlayingBack;
+  niftk::IGIDataType::IGITimeType                                  m_CurrentTime;
 
 }; // end class;
 

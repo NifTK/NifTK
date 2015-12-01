@@ -35,6 +35,8 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
 : m_DataStorage(dataStorage)
 , m_GuiUpdateTimer(NULL)
 , m_FrameRate(DEFAULT_FRAME_RATE)
+, m_IsPlayingBack(false)
+, m_CurrentTime(0)
 {
   if (m_DataStorage.IsNull())
   {
@@ -46,6 +48,7 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
 
   m_TimeStampGenerator = igtl::TimeStamp::New();
   m_TimeStampGenerator->GetTime();
+  m_CurrentTime = m_TimeStampGenerator->GetTimeStampInNanoseconds();
 
   m_GuiUpdateTimer = new QTimer(this);
   m_GuiUpdateTimer->setInterval(1000/(int)(DEFAULT_FRAME_RATE));
@@ -88,6 +91,13 @@ void IGIDataSourceManager::StartUpdateTimer()
 {
   m_GuiUpdateTimer->start();
   this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+bool IGIDataSourceManager::IsPlayingBack() const
+{
+  return m_IsPlayingBack;
 }
 
 
@@ -156,7 +166,7 @@ QString IGIDataSourceManager::GetDirectoryName()
 
 
 //-----------------------------------------------------------------------------
-QList<QString> IGIDataSourceManager::GetAllSources() const
+QList<QString> IGIDataSourceManager::GetAllFactoryNames() const
 {
   return m_NameToFactoriesMap.keys();
 }
@@ -166,18 +176,6 @@ QList<QString> IGIDataSourceManager::GetAllSources() const
 void IGIDataSourceManager::SetDirectoryPrefix(const QString& directoryPrefix)
 {
   m_DirectoryPrefix = directoryPrefix;
-  this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIDataSourceManager::SetPlaybackPrefix(const QString& directoryPrefix)
-{
-  m_PlaybackPrefix = directoryPrefix;
-  for (int i = 0; i < m_Sources.size(); i++)
-  {
-    m_Sources[i]->SetRecordingLocation(m_PlaybackPrefix.toStdString());
-  }
   this->Modified();
 }
 
@@ -193,6 +191,13 @@ void IGIDataSourceManager::SetFramesPerSecond(const int& framesPerSecond)
 
   m_FrameRate = framesPerSecond;
   this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+int IGIDataSourceManager::GetFramesPerSecond() const
+{
+  return m_FrameRate;
 }
 
 
@@ -440,9 +445,10 @@ void IGIDataSourceManager::FreezeDataSource(unsigned int i, bool isFrozen)
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSourceManager::InitializePlayback(const QString& descriptorPath,
-                                              IGIDataType::IGITimeType& overallStartTime,
-                                              IGIDataType::IGITimeType& overallEndTime)
+void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
+                                         const QString& descriptorPath,
+                                         IGIDataType::IGITimeType& overallStartTime,
+                                         IGIDataType::IGITimeType& overallEndTime)
 {
   if (m_Sources.size() == 0)
   {
@@ -496,6 +502,14 @@ void IGIDataSourceManager::InitializePlayback(const QString& descriptorPath,
     }
     mitkThrow() << "Failed to replay all data sources. Please check log file.";
   }
+
+  m_PlaybackPrefix = directoryPrefix;
+  for (int i = 0; i < m_Sources.size(); i++)
+  {
+    m_Sources[i]->SetRecordingLocation(m_PlaybackPrefix.toStdString());
+  }
+  this->SetIsPlayingBack(true);
+  this->Modified();
 }
 
 
@@ -506,21 +520,48 @@ void IGIDataSourceManager::StopPlayback()
   {
     m_Sources[i]->StopPlayback();
   }
+  this->SetIsPlayingBack(false);
   this->Modified();
 
 }
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSourceManager::SetPlaybackTime(const IGIDataType::IGITimeType& time)
+{
+  m_CurrentTime = time;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::SetIsPlayingBack(bool isPlayingBack)
+{
+  m_IsPlayingBack = isPlayingBack;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManager::OnUpdateGui()
 {
-  m_TimeStampGenerator->GetTime();
-  QList< QList<IGIDataItemInfo> > dataSourceInfos;
+  niftk::IGIDataType::IGITimeType currentTime = 0;
 
+  // m_CurrentTime is accessed by GUI thread, and Timer thread.
+  {
+    if (!m_IsPlayingBack)
+    {
+      m_TimeStampGenerator->GetTime();
+      m_CurrentTime = m_TimeStampGenerator->GetTimeStampInNanoseconds();
+    }
+    currentTime = m_CurrentTime;
+  }
+
+  QList< QList<IGIDataItemInfo> > dataSourceInfos;
   for (int i = 0; i < m_Sources.size(); i++)
   {
     QList<IGIDataItemInfo> qListDataItemInfos;
-    std::vector<IGIDataItemInfo> dataItemInfos = m_Sources[i]->Update(m_TimeStampGenerator->GetTimeStampInNanoseconds());
+    std::vector<IGIDataItemInfo> dataItemInfos = m_Sources[i]->Update(currentTime);
     for (int j = 0; j < dataItemInfos.size(); j++)
     {
       qListDataItemInfos.push_back(dataItemInfos[i]);
