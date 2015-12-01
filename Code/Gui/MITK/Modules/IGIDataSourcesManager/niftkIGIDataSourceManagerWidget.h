@@ -95,7 +95,7 @@ private slots:
   void OnRecordStart();
 
   /**
-   * \brief Callback to stop recording/playback data.
+   * \brief Callback to stop recording/playing data.
    */
   void OnStop();
 
@@ -111,7 +111,7 @@ private slots:
 
   /**
   * \brief Callback to indicate that a cell has been
-  * double clicked, to launch that sources' configuration GUI.
+  * double clicked, to launch that sources' GUI.
   */
   void OnCellDoubleClicked(int row, int column);
 
@@ -128,21 +128,16 @@ private slots:
   /**
   * \brief Called from Playback GUI to advance time.
   */
-  void OnTimestampEditFinished();
+  void OnPlaybackTimestampEditFinished();
 
-private slots:
-
-  void OnUpdatePlayback();
+  /**
+  * \brief Callback from niftk::IGIDataSourceManager to set the value on the slider.
+  */
+  void OnPlaybackTimeAdvanced(int newSliderValue);
 
 private:
 
   IGIDataSourceManager::Pointer m_Manager;
-
-  // Slider position is relative to this base value.
-  // Slider can only represent int values, but we need all 64 bit.
-  IGIDataType::IGITimeType      m_PlaybackSliderBase;
-  IGIDataType::IGITimeType      m_PlaybackSliderFactor;
-  QTimer                       *m_PlaybackUpdateTimer;
 
 }; // end class;
 

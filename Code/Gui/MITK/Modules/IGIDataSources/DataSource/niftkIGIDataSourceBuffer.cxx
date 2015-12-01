@@ -60,6 +60,30 @@ void IGIDataSourceBuffer::SetLagInMilliseconds(unsigned int milliseconds)
 
 
 //-----------------------------------------------------------------------------
+bool IGIDataSourceBuffer::Contains(const niftk::IGIDataType::IGITimeType& time) const
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  bool containsIt = false;
+  if (m_Buffer.size() == 0)
+  {
+    return containsIt;
+  }
+  BufferType::iterator iter = m_Buffer.begin();
+  while(iter != m_Buffer.end())
+  {
+    if ((*iter)->GetTimeStampInNanoSeconds() == time)
+    {
+      containsIt = true;
+      break;
+    }
+    iter++;
+  }
+  return containsIt;
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceBuffer::AddToBuffer(niftk::IGIDataType::Pointer item)
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
@@ -150,6 +174,8 @@ void IGIDataSourceBuffer::UpdateFrameRate()
 {
   if (m_Buffer.size() > 1)
   {
+    itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
     niftk::IGIDataType::IGITimeType  firstTimeStamp = 0;
     niftk::IGIDataType::IGIIndexType firstFrameId = 0;
     niftk::IGIDataType::IGITimeType  lastTimeStamp = 0;

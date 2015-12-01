@@ -61,12 +61,28 @@ public:
   virtual void StopCapturing() override;
 
   /**
+  * \see  IGIDataSourceI::StartPlayback()
+  */
+  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
+                             niftk::IGIDataType::IGITimeType lastTimeStamp) override;
+
+  /**
+  * \see IGIDataSourceI::PlaybackData()
+  */
+  void PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp) override;
+
+  /**
+  * \see IGIDataSourceI::StopPlayback()
+  */
+  virtual void StopPlayback() override;
+
+  /**
   * \see IGIDataSourceI::SetLagInMilliseconds()
   */
   virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& milliseconds) override;
 
   /**
-  * \see IGIDataSourceI::GetSaveDirectoryName()
+  * \see IGIDataSourceI::GetRecordingDirectoryName()
   */
   virtual std::string GetRecordingDirectoryName() override;
 
@@ -112,7 +128,6 @@ private:
   OpenCVVideoDataSourceService& operator=(const OpenCVVideoDataSourceService&); // deliberately not implemented
 
   static int GetNextChannelNumber();
-
   void Init();
 
   mitk::OpenCVVideoSource::Pointer                m_VideoSource;
@@ -123,6 +138,7 @@ private:
   niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
   niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
   niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;
+  std::set<niftk::IGIDataType::IGITimeType>       m_PlaybackIndex;
 
 }; // end class
 

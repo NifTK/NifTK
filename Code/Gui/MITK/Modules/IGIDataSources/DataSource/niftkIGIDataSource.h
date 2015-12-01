@@ -88,7 +88,8 @@ public:
   /**
   * \see IGIDataSourceI::StartPlayback()
   */
-  virtual void StartPlayback() override;
+  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
+                             niftk::IGIDataType::IGITimeType lastTimeStamp) override;
 
   /**
   * \see IGIDataSourceI::StopPlayback()

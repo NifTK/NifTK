@@ -37,6 +37,10 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
 , m_FrameRate(DEFAULT_FRAME_RATE)
 , m_IsPlayingBack(false)
 , m_CurrentTime(0)
+, m_PlaybackSliderValue(0)
+, m_PlaybackSliderMaxValue(0)
+, m_PlaybackSliderBase(0)
+, m_PlaybackSliderFactor(0)
 {
   if (m_DataStorage.IsNull())
   {
@@ -169,6 +173,40 @@ QString IGIDataSourceManager::GetDirectoryName()
 QList<QString> IGIDataSourceManager::GetAllFactoryNames() const
 {
   return m_NameToFactoriesMap.keys();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::RetrieveAllDataSourceFactories()
+{
+  // Lookup All Available IGIDataSourceFactoryServices.
+  m_ModuleContext = us::GetModuleContext();
+  if (m_ModuleContext == NULL)
+  {
+    mitkThrow() << "Unable to get us::ModuleContext!";
+  }
+
+  m_Refs = m_ModuleContext->GetServiceReferences<IGIDataSourceFactoryServiceI>();
+  if (m_Refs.size() == 0)
+  {
+    mitkThrow() << "Unable to get us::ServiceReferences for IGIDataSourceFactoryServices!";
+  }
+
+  // Iterate through all available factories to populate the combo box.
+  for (int i = 0; i < m_Refs.size(); i++)
+  {
+    niftk::IGIDataSourceFactoryServiceI *factory = m_ModuleContext->GetService<niftk::IGIDataSourceFactoryServiceI>(m_Refs[i]);
+    QString name = QString::fromStdString(factory->GetName());
+    m_NameToFactoriesMap.insert(name, factory);
+
+    // Legacy compatibility.
+    // Ask each factory what other aliases it wants to map to itself.
+    std::vector<std::string> aliases = factory->GetLegacyClassNames();
+    for (int j = 0; j < aliases.size(); j++)
+    {
+      m_NameToFactoriesMap.insert(QString::fromStdString(aliases[i]), factory);
+    }
+  }
 }
 
 
@@ -448,17 +486,23 @@ void IGIDataSourceManager::FreezeDataSource(unsigned int i, bool isFrozen)
 void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
                                          const QString& descriptorPath,
                                          IGIDataType::IGITimeType& overallStartTime,
-                                         IGIDataType::IGITimeType& overallEndTime)
+                                         IGIDataType::IGITimeType& overallEndTime,
+                                         int& sliderMax,
+                                         int& sliderSingleStep,
+                                         int& sliderPageStep,
+                                         int& sliderValue
+                                         )
 {
   if (m_Sources.size() == 0)
   {
     mitkThrow() << "Please create sources first.";
   }
 
+  QList<niftk::IGIDataSourceI::Pointer> goodSources;
+
   // This will retrieve key:value.
   // Key is the name at the time of recording, value is (a) The factory name or (b) The legacy class name.
   QMap<QString, QString>  dir2NameMap = this->ParseDataSourceDescriptor(descriptorPath);
-
   for (int sourceNumber = 0; sourceNumber < m_Sources.size(); sourceNumber++)
   {
     for (QMap<QString, QString>::iterator iter = dir2NameMap.begin();
@@ -476,6 +520,7 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
       IGIDataType::IGITimeType startTime;
       IGIDataType::IGITimeType endTime;
 
+      m_Sources[sourceNumber]->SetRecordingLocation(directoryPrefix.toStdString());
       bool canDo = m_Sources[sourceNumber]->ProbeRecordedData(
             m_Sources[sourceNumber]->GetRecordingDirectoryName(),
             &startTime,
@@ -486,6 +531,7 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
         overallStartTime = std::min(overallStartTime, startTime);
         overallEndTime   = std::max(overallEndTime, endTime);
         dir2NameMap.erase(iter);
+        goodSources.push_back(m_Sources[sourceNumber]);
         break;
       }
     } // end for each name in map
@@ -503,11 +549,52 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
     mitkThrow() << "Failed to replay all data sources. Please check log file.";
   }
 
+  if (goodSources.size() == 0)
+  {
+    mitkThrow() << "Failed to assign any data to the playback sources";
+  }
+
   m_PlaybackPrefix = directoryPrefix;
   for (int i = 0; i < m_Sources.size(); i++)
   {
     m_Sources[i]->SetRecordingLocation(m_PlaybackPrefix.toStdString());
   }
+  for (int i = 0; i < goodSources.size(); i++)
+  {
+    goodSources[i]->StartPlayback(overallStartTime, overallEndTime);
+  }
+  m_PlaybackSliderBase = overallStartTime;
+  m_PlaybackSliderFactor = (overallEndTime - overallStartTime) / (std::numeric_limits<int>::max() / 4);
+
+  // If the time range is very short then dont upscale for the slider
+  m_PlaybackSliderFactor = std::max(m_PlaybackSliderFactor, (igtlUint64) 1);
+
+  double  sliderMaxDouble = (overallEndTime - overallStartTime) / m_PlaybackSliderFactor;
+  assert(sliderMaxDouble < std::numeric_limits<int>::max());
+  sliderMax = static_cast<int>(sliderMaxDouble);
+
+  // Set slider step values, so user can click or mouse-wheel the slider to advance time.
+  // on windows-qt, single-step corresponds to a single mouse-wheel event.
+  // quite often doing one mouse-wheel step, corresponds to 3 lines (events), but this is configurable
+  // (in control panel somewhere, but we ignore that here, single step is whatever the user's machine says).
+
+  IGIDataType::IGITimeType tenthASecondInNanoseconds = 100000000;
+  IGIDataType::IGITimeType tenthASecondStep = tenthASecondInNanoseconds / m_PlaybackSliderFactor;
+  tenthASecondStep = std::max(tenthASecondStep, (igtlUint64) 1);
+  assert(tenthASecondStep < std::numeric_limits<int>::max());
+  sliderSingleStep = static_cast<int>(tenthASecondStep);
+
+  // On windows-qt, a page-step is when clicking on the slider track.
+  igtlUint64 oneSecondInNanoseconds = 1000000000;
+  igtlUint64 oneSecondStep = oneSecondInNanoseconds / m_PlaybackSliderFactor;
+  oneSecondStep = std::max(oneSecondStep, tenthASecondStep + 1);
+  assert(oneSecondStep < std::numeric_limits<int>::max());
+  sliderPageStep = static_cast<int>(oneSecondStep);
+
+  // Set slider value to start.
+  sliderValue = 0;
+  m_PlaybackSliderValue = sliderValue;
+  m_PlaybackSliderMaxValue = sliderMax;
   this->SetIsPlayingBack(true);
   this->Modified();
 }
@@ -523,6 +610,45 @@ void IGIDataSourceManager::StopPlayback()
   this->SetIsPlayingBack(false);
   this->Modified();
 
+}
+
+
+//-----------------------------------------------------------------------------
+int IGIDataSourceManager::ComputePlaybackTimeSliderValue(QString textEditField, int sliderMax)
+{
+  IGIDataType::IGITimeType maxSliderTime  = m_PlaybackSliderBase + ((IGIDataType::IGITimeType) sliderMax * m_PlaybackSliderFactor);
+
+  // Try to parse as single number, a timestamp in nano seconds.
+  bool  ok = false;
+  qulonglong possibleTimeStamp = textEditField.toULongLong(&ok);
+  if (ok)
+  {
+    // check that it's in our current playback range
+    ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
+
+    // the last/highest timestamp we can playback
+    ok &= (maxSliderTime >= possibleTimeStamp);
+  }
+
+  if (!ok)
+  {
+    QDateTime parsed = QDateTime::fromString(textEditField, "yyyy/MM/dd hh:mm:ss.zzz");
+    if (parsed.isValid())
+    {
+      possibleTimeStamp = parsed.toMSecsSinceEpoch() * 1000000;
+
+      ok = true;
+      ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
+      ok &= (maxSliderTime >= possibleTimeStamp);
+    }
+  }
+
+  int result = -1;
+  if (ok)
+  {
+    result = (possibleTimeStamp - m_PlaybackSliderBase) / m_PlaybackSliderFactor;
+  }
+  return result;
 }
 
 
@@ -543,19 +669,41 @@ void IGIDataSourceManager::SetIsPlayingBack(bool isPlayingBack)
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSourceManager::AdvancePlaybackTimer()
+{
+  int                       sliderValue = m_PlaybackSliderValue;
+  IGIDataType::IGITimeType  sliderTime  = m_PlaybackSliderBase + ((IGIDataType::IGITimeType) sliderValue * m_PlaybackSliderFactor);
+  IGIDataType::IGITimeType  advanceBy     = 1000000000 / m_FrameRate;
+  IGIDataType::IGITimeType  newSliderTime = sliderTime + advanceBy;
+  IGIDataType::IGITimeType  newSliderValue = (newSliderTime - m_PlaybackSliderBase) / m_PlaybackSliderFactor;
+
+  // make sure there is some progress, in case of bad rounding issues (e.g. the sequence is very long).
+  newSliderValue = std::max(newSliderValue, (igtlUint64) sliderValue + 1);
+  assert(newSliderValue < std::numeric_limits<int>::max());
+
+  if (newSliderValue < m_PlaybackSliderMaxValue)
+  {
+    m_PlaybackSliderValue = newSliderValue;
+    this->SetPlaybackTime(newSliderTime);
+    emit PlaybackTimerAdvanced(newSliderValue);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManager::OnUpdateGui()
 {
-  niftk::IGIDataType::IGITimeType currentTime = 0;
-
-  // m_CurrentTime is accessed by GUI thread, and Timer thread.
+  if (m_IsPlayingBack)
   {
-    if (!m_IsPlayingBack)
-    {
-      m_TimeStampGenerator->GetTime();
-      m_CurrentTime = m_TimeStampGenerator->GetTimeStampInNanoseconds();
-    }
-    currentTime = m_CurrentTime;
+    this->AdvancePlaybackTimer();
   }
+  else
+  {
+    m_TimeStampGenerator->GetTime();
+    m_CurrentTime = m_TimeStampGenerator->GetTimeStampInNanoseconds();
+  }
+
+  niftk::IGIDataType::IGITimeType currentTime = m_CurrentTime;
 
   QList< QList<IGIDataItemInfo> > dataSourceInfos;
   for (int i = 0; i < m_Sources.size(); i++)
@@ -576,40 +724,6 @@ void IGIDataSourceManager::OnUpdateGui()
   emit UpdateFinishedRendering();
 
   this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIDataSourceManager::RetrieveAllDataSourceFactories()
-{
-  // Lookup All Available IGIDataSourceFactoryServices.
-  m_ModuleContext = us::GetModuleContext();
-  if (m_ModuleContext == NULL)
-  {
-    mitkThrow() << "Unable to get us::ModuleContext!";
-  }
-
-  m_Refs = m_ModuleContext->GetServiceReferences<IGIDataSourceFactoryServiceI>();
-  if (m_Refs.size() == 0)
-  {
-    mitkThrow() << "Unable to get us::ServiceReferences for IGIDataSourceFactoryServices!";
-  }
-
-  // Iterate through all available factories to populate the combo box.
-  for (int i = 0; i < m_Refs.size(); i++)
-  {
-    niftk::IGIDataSourceFactoryServiceI *factory = m_ModuleContext->GetService<niftk::IGIDataSourceFactoryServiceI>(m_Refs[i]);
-    QString name = QString::fromStdString(factory->GetName());
-    m_NameToFactoriesMap.insert(name, factory);
-
-    // Legacy compatibility.
-    // Ask each factory what other aliases it wants to map to itself.
-    std::vector<std::string> aliases = factory->GetLegacyClassNames();
-    for (int j = 0; j < aliases.size(); j++)
-    {
-      m_NameToFactoriesMap.insert(QString::fromStdString(aliases[i]), factory);
-    }
-  }
 }
 
 } // end namespace

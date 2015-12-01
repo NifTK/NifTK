@@ -94,53 +94,6 @@ IGIDataSource::~IGIDataSource()
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSource::StartRecording()
-{
-  this->SetIsRecording(true);
-  this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIDataSource::StopRecording()
-{
-  this->SetIsRecording(false);
-  this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIDataSource::StartPlayback()
-{
-  this->SetIsPlayingBack(true);
-  this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIDataSource::StopPlayback()
-{
-  this->SetIsPlayingBack(false);
-  this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataStorage::Pointer IGIDataSource::GetDataStorage() const
-{
-  return m_DataStorage;
-}
-
-
-//-----------------------------------------------------------------------------
-niftk::IGIDataType::IGITimeType IGIDataSource::GetTimeStampInNanoseconds()
-{
-  m_TimeCreated->GetTime();
-  return m_TimeCreated->GetTimeStampInNanoseconds();
-}
-
-
-//-----------------------------------------------------------------------------
 std::string IGIDataSource::GetName() const
 {
   return m_Name;
@@ -173,6 +126,54 @@ void IGIDataSource::SetShouldUpdate(bool shouldUpdate)
 {
   m_ShouldUpdate = shouldUpdate;
   this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StartRecording()
+{
+  this->SetIsRecording(true);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StopRecording()
+{
+  this->SetIsRecording(false);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
+                                  niftk::IGIDataType::IGITimeType lastTimeStamp)
+{
+  this->SetIsPlayingBack(true);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::StopPlayback()
+{
+  this->SetIsPlayingBack(false);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataStorage::Pointer IGIDataSource::GetDataStorage() const
+{
+  return m_DataStorage;
+}
+
+
+//-----------------------------------------------------------------------------
+niftk::IGIDataType::IGITimeType IGIDataSource::GetTimeStampInNanoseconds()
+{
+  m_TimeCreated->GetTime();
+  return m_TimeCreated->GetTimeStampInNanoseconds();
 }
 
 
@@ -214,13 +215,6 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name, cons
 
 
 //-----------------------------------------------------------------------------
-QString IGIDataSource::GetPreferredSlash()
-{
-  return QString(QDir::separator());
-}
-
-
-//-----------------------------------------------------------------------------
 bool IGIDataSource::IsLate(const niftk::IGIDataType::IGITimeType& requested,
                            const niftk::IGIDataType::IGITimeType& actual
                           ) const
@@ -243,6 +237,13 @@ unsigned int IGIDataSource::GetLagInMilliseconds(const niftk::IGIDataType::IGITi
     mitkThrow() << "Retrieved data has a timestamp that is ahead of the requested one, which should never happen";
   }
   return (requested - actual)/1000000;
+}
+
+
+//-----------------------------------------------------------------------------
+QString IGIDataSource::GetPreferredSlash()
+{
+  return QString(QDir::separator());
 }
 
 

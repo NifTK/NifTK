@@ -64,8 +64,8 @@ public:
   static const int    DEFAULT_FRAME_RATE;
   static const char*  DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
 
-  bool IsUpdateTimerOn() const;
   bool IsPlayingBack() const;
+  bool IsUpdateTimerOn() const;
   void StopUpdateTimer();
   void StartUpdateTimer();
 
@@ -177,7 +177,14 @@ public:
   void StartPlayback(const QString& directoryPrefix,
                      const QString& descriptorPath,
                      IGIDataType::IGITimeType& startTime,
-                     IGIDataType::IGITimeType& endTime);
+                     IGIDataType::IGITimeType& endTime,
+                     int& sliderMax,
+                     int& sliderSingleStep,
+                     int& sliderPageStep,
+                     int& sliderValue
+                     );
+
+  int ComputePlaybackTimeSliderValue(QString textEditField, int sliderMax);
 
   /**
   * \brief Stops all sources playing back.
@@ -203,6 +210,12 @@ signals:
   * (This doesn't mean that the rendering has actually happened. That depends on the mitk::RenderingManager).
   */
   void UpdateFinishedRendering();
+
+  /**
+  * \brief When playing back, this class calculates the next time step,
+  * and broadcasts what the corresponding slider value should be.
+  */
+  void PlaybackTimerAdvanced(int sliderValue);
 
 protected:
 
@@ -240,6 +253,8 @@ private:
   */
   void SetIsPlayingBack(bool isPlayingBack);
 
+  void AdvancePlaybackTimer();
+
   mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.
   us::ModuleContext*                                               m_ModuleContext;
   std::vector<us::ServiceReference<IGIDataSourceFactoryServiceI> > m_Refs;
@@ -253,6 +268,12 @@ private:
   bool                                                             m_IsPlayingBack;
   niftk::IGIDataType::IGITimeType                                  m_CurrentTime;
 
+  // Slider position is relative to this base value.
+  // Slider can only represent int values, but we need all 64 bit.
+  int                                                              m_PlaybackSliderValue;
+  int                                                              m_PlaybackSliderMaxValue;
+  niftk::IGIDataType::IGITimeType                                  m_PlaybackSliderBase;
+  niftk::IGIDataType::IGITimeType                                  m_PlaybackSliderFactor;
 }; // end class;
 
 } // end namespace

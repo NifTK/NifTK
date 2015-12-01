@@ -59,9 +59,6 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   // on the table having columns already! the ui file has them added.
   m_TableWidget->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
 
-  m_PlaybackUpdateTimer = new QTimer(this);
-  m_PlaybackUpdateTimer->setInterval(1000/(int)(niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE));
-
   bool ok = false;
   ok = QObject::connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
   assert(ok);
@@ -77,11 +74,11 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   assert(ok);
   ok = QObject::connect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
   assert(ok);
+  ok = QObject::connect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnPlaybackTimestampEditFinished()));
+  assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)), this, SLOT(OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)));
   assert(ok);
-  ok = QObject::connect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
-  assert(ok);
-  ok = QObject::connect(m_PlaybackUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+  ok = QObject::connect(m_Manager, SIGNAL(PlaybackTimerAdvanced(int)), this, SLOT(OnPlaybackTimeAdvanced(int)));
   assert(ok);
 }
 
@@ -89,11 +86,6 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
 //-----------------------------------------------------------------------------
 IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
 {
-  if (m_PlaybackUpdateTimer != NULL)
-  {
-    m_PlaybackUpdateTimer->stop();
-  }
-
   bool ok = false;
   ok = QObject::disconnect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
   assert(ok);
@@ -109,9 +101,11 @@ IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
   assert(ok);
   ok = QObject::disconnect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
   assert(ok);
-  ok = QObject::disconnect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnTimestampEditFinished()));
+  ok = QObject::disconnect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnPlaybackTimestampEditFinished()));
   assert(ok);
-  ok = QObject::disconnect(m_PlaybackUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+  ok = QObject::disconnect(m_Manager, SIGNAL(UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)), this, SLOT(OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)));
+  assert(ok);
+  ok = QObject::disconnect(m_Manager, SIGNAL(PlaybackTimerAdvanced(int)), this, SLOT(OnPlaybackTimeAdvanced(int)));
   assert(ok);
 }
 
@@ -162,43 +156,26 @@ void IGIDataSourceManagerWidget::OnPlayStart()
       {
         IGIDataType::IGITimeType overallStartTime = std::numeric_limits<IGIDataType::IGITimeType>::max();
         IGIDataType::IGITimeType overallEndTime   = std::numeric_limits<IGIDataType::IGITimeType>::min();
+        int sliderMaximum = 0;
+        int sliderSingleStep = 0;
+        int sliderPageStep = 0;
+        int sliderValue = 0;
 
         m_Manager->StartPlayback(playbackpath,
                                  playbackpath + QDir::separator() + "descriptor.cfg",
                                  overallStartTime,
-                                 overallEndTime);
+                                 overallEndTime,
+                                 sliderMaximum,
+                                 sliderSingleStep,
+                                 sliderPageStep,
+                                 sliderValue
+                                 );
 
-        m_PlaybackSliderBase = overallStartTime;
-        m_PlaybackSliderFactor = (overallEndTime - overallStartTime) / (std::numeric_limits<int>::max() / 4);
+        m_PlaybackSlider->setMinimum(sliderValue);
+        m_PlaybackSlider->setMaximum(sliderMaximum);
+        m_PlaybackSlider->setSingleStep(sliderSingleStep);
+        m_PlaybackSlider->setPageStep(sliderPageStep);
 
-        // If the time range is very short then dont upscale for the slider
-        m_PlaybackSliderFactor = std::max(m_PlaybackSliderFactor, (igtlUint64) 1);
-
-        double  sliderMax = (overallEndTime - overallStartTime) / m_PlaybackSliderFactor;
-        assert(sliderMax < std::numeric_limits<int>::max());
-
-        m_PlaybackSlider->setMinimum(0);
-        m_PlaybackSlider->setMaximum((int) sliderMax);
-
-        // Set slider step values, so user can click or mouse-wheel the slider to advance time.
-        // on windows-qt, single-step corresponds to a single mouse-wheel event.
-        // quite often doing one mouse-wheel step, corresponds to 3 lines (events), but this is configurable
-        // (in control panel somewhere, but we ignore that here, single step is whatever the user's machine says).
-
-        IGIDataType::IGITimeType tenthASecondInNanoseconds = 100000000;
-        IGIDataType::IGITimeType tenthASecondStep = tenthASecondInNanoseconds / m_PlaybackSliderFactor;
-        tenthASecondStep = std::max(tenthASecondStep, (igtlUint64) 1);
-        assert(tenthASecondStep < std::numeric_limits<int>::max());
-        m_PlaybackSlider->setSingleStep((int) tenthASecondStep);
-
-        // On windows-qt, a page-step is when clicking on the slider track.
-        igtlUint64 oneSecondInNanoseconds = 1000000000;
-        igtlUint64 oneSecondStep = oneSecondInNanoseconds / m_PlaybackSliderFactor;
-        oneSecondStep = std::max(oneSecondStep, tenthASecondStep + 1);
-        assert(oneSecondStep < std::numeric_limits<int>::max());
-        m_PlaybackSlider->setPageStep((int) oneSecondStep);
-
-        // Pop open the controls
         m_ToolManagerPlaybackGroupBox->setCollapsed(false);
 
         // Can stop playback with stop button (in addition to unchecking the playbutton)
@@ -413,17 +390,16 @@ void IGIDataSourceManagerWidget::OnFreezeTableHeaderClicked(int section)
 }
 
 
-
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> > infos)
 {
-  // This can happen as the update thread runs independently of the main UI thread.
+  // This can happen if this gets called before a data source is added.
   if (infos.size() == 0)
   {
     return;
   }
 
-  // This can happen as the update thread runs independently of the main UI thread.
+  // This can happen if this gets called before a data source is added.
   if (m_TableWidget->rowCount() != infos.size())
   {
     return;
@@ -491,59 +467,27 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSourceManagerWidget::OnTimestampEditFinished()
+void IGIDataSourceManagerWidget::OnPlaybackTimestampEditFinished()
 {
-  IGIDataType::IGITimeType maxSliderTime  = m_PlaybackSliderBase + ((IGIDataType::IGITimeType) m_PlaybackSlider->maximum() * m_PlaybackSliderFactor);
-
-  // try to parse as single number, a timestamp in nano seconds.
-  bool  ok = false;
-  qulonglong possibleTimeStamp = m_TimeStampEdit->text().toULongLong(&ok);
-  if (ok)
+  int result = m_Manager->ComputePlaybackTimeSliderValue(m_TimeStampEdit->text(), m_PlaybackSlider->maximum());
+  if (result != -1)
   {
-    // check that it's in our current playback range
-    ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
-
-    // the last/highest timestamp we can playback
-    ok &= (maxSliderTime >= possibleTimeStamp);
-  }
-
-  if (!ok)
-  {
-    QDateTime parsed = QDateTime::fromString(m_TimeStampEdit->text(), "yyyy/MM/dd hh:mm:ss.zzz");
-    if (parsed.isValid())
-    {
-      possibleTimeStamp = parsed.toMSecsSinceEpoch() * 1000000;
-
-      ok = true;
-      ok &= (m_PlaybackSliderBase <= possibleTimeStamp);
-      ok &= (maxSliderTime >= possibleTimeStamp);
-    }
-  }
-
-  if (ok)
-  {
-    m_PlaybackSlider->setValue((possibleTimeStamp - m_PlaybackSliderBase) / m_PlaybackSliderFactor);
+    m_PlaybackSlider->blockSignals(true);
+    m_PlaybackSlider->setValue(result);
+    m_PlaybackSlider->blockSignals(false);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSourceManagerWidget::OnUpdatePlayback()
+void IGIDataSourceManagerWidget::OnPlaybackTimeAdvanced(int newSliderValue)
 {
-  int                       sliderValue = m_PlaybackSlider->value();
-  IGIDataType::IGITimeType  sliderTime  = m_PlaybackSliderBase + ((igtlUint64) sliderValue * m_PlaybackSliderFactor);
-
-  IGIDataType::IGITimeType  advanceBy     = 1000000000 / m_Manager->GetFramesPerSecond();
-  IGIDataType::IGITimeType  newSliderTime = sliderTime + advanceBy;
-
-  IGIDataType::IGITimeType  newSliderValue = (newSliderTime - m_PlaybackSliderBase) / m_PlaybackSliderFactor;
-
-  // make sure there is some progress, in case of bad rounding issues (e.g. the sequence is very long).
-  newSliderValue = std::max(newSliderValue, (igtlUint64) sliderValue + 1);
-  assert(newSliderValue < std::numeric_limits<int>::max());
-
-  m_PlaybackSlider->setValue((int) newSliderValue);
-  m_Manager->SetPlaybackTime(newSliderTime);
+  if (newSliderValue != -1)
+  {
+    m_PlaybackSlider->blockSignals(true);
+    m_PlaybackSlider->setValue(newSliderValue);
+    m_PlaybackSlider->blockSignals(false);
+  }
 }
 
 } // end namespace

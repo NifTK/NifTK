@@ -54,6 +54,12 @@ public:
   itkGetStringMacro(Name);
 
   /**
+  * \brief Returns true if the buffer already contains a
+  * data item with an exactly matching timestamp, false otherwise.
+  */
+  bool Contains(const niftk::IGIDataType::IGITimeType& time) const;
+
+  /**
   * \brief Adds an item to the buffer, which if the calling object deletes
   * pointers, then the buffer is effectively the owner.
   *

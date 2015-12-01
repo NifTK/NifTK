@@ -171,6 +171,110 @@ void OpenCVVideoDataSourceService::StopCapturing()
 
 
 //-----------------------------------------------------------------------------
+void OpenCVVideoDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
+                                                 niftk::IGIDataType::IGITimeType lastTimeStamp)
+{
+  IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
+
+  m_Buffer->DestroyBuffer();
+
+  QDir directory(QString::fromStdString(this->GetRecordingDirectoryName()));
+  if (directory.exists())
+  {
+    m_PlaybackIndex = ProbeTimeStampFiles(directory, QString(".jpg"));
+  }
+  else
+  {
+    assert(false);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void OpenCVVideoDataSourceService::StopPlayback()
+{
+  m_PlaybackIndex.clear();
+  m_Buffer->DestroyBuffer();
+
+  IGIDataSource::StopPlayback();
+}
+
+
+//-----------------------------------------------------------------------------
+void OpenCVVideoDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
+{
+  assert(this->GetIsPlayingBack());
+  assert(m_PlaybackIndex.size() > 0); // Should have failed probing if no data.
+
+  // this will find us the timestamp right after the requested one
+  std::set<niftk::IGIDataType::IGITimeType>::const_iterator i = m_PlaybackIndex.upper_bound(requestedTimeStamp);
+  if (i != m_PlaybackIndex.begin())
+  {
+    --i;
+  }
+  if (i != m_PlaybackIndex.end())
+  {
+    if (!m_Buffer->Contains(*i))
+    {
+      std::ostringstream  filename;
+      filename << this->GetRecordingDirectoryName() << '/' << (*i) << ".jpg";
+
+      IplImage* img = cvLoadImage(filename.str().c_str());
+      if (img)
+      {
+        niftk::OpenCVVideoDataType::Pointer wrapper = niftk::OpenCVVideoDataType::New();
+        wrapper->CloneImage(img);
+        wrapper->SetTimeStampInNanoSeconds(*i);
+        wrapper->SetFrameId(m_FrameId++);
+        wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+        wrapper->SetShouldBeSaved(false);
+        wrapper->SetIsSaved(false);
+
+        m_Buffer->AddToBuffer(wrapper.GetPointer());
+
+        cvReleaseImage(&img);
+      }
+    }
+    this->SetStatus("Playing back");
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
+{
+  niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(data.GetPointer());
+  if (dataType.IsNull())
+  {
+    mitkThrow() << "Failed to save OpenCVVideoDataType as the data received was NULL!";
+  }
+
+  const IplImage* imageFrame = dataType->GetImage();
+  if (imageFrame == NULL)
+  {
+    mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
+  }
+
+  QString directoryPath = QString::fromStdString(this->GetRecordingDirectoryName());
+  QDir directory(directoryPath);
+  if (directory.mkpath(directoryPath))
+  {
+    QString fileName =  directoryPath + QDir::separator() + tr("%1.jpg").arg(data->GetTimeStampInNanoSeconds());
+    bool success = cvSaveImage(fileName.toStdString().c_str(), imageFrame);
+    if (!success)
+    {
+      mitkThrow() << "Failed to save OpenCVVideoDataType in cvSaveImage!";
+    }
+    data->SetIsSaved(true);
+  }
+  else
+  {
+    mitkThrow() << "Failed to save OpenCVVideoDataType as could not create " << directoryPath.toStdString();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool OpenCVVideoDataSourceService::ProbeRecordedData(const std::string& path,
                                                      niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                                      niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
@@ -183,11 +287,11 @@ bool OpenCVVideoDataSourceService::ProbeRecordedData(const std::string& path,
   QDir directory(QString::fromStdString(path));
   if (directory.exists())
   {
-    std::set<niftk::IGIDataType::IGITimeType> timestamps = ProbeTimeStampFiles(directory, QString(".jpg"));
-    if (!timestamps.empty())
+    std::set<niftk::IGIDataType::IGITimeType> timeStamps = ProbeTimeStampFiles(directory, QString(".jpg"));
+    if (!timeStamps.empty())
     {
-      firstTimeStampFound = *timestamps.begin();
-      lastTimeStampFound  = *(--(timestamps.end()));
+      firstTimeStampFound = *timeStamps.begin();
+      lastTimeStampFound  = *(--(timeStamps.end()));
     }
   }
 
@@ -230,40 +334,6 @@ std::string OpenCVVideoDataSourceService::GetRecordingDirectoryName()
 
 
 //-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
-{
-  niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(data.GetPointer());
-  if (dataType.IsNull())
-  {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as the data received was NULL!";
-  }
-
-  const IplImage* imageFrame = dataType->GetImage();
-  if (imageFrame == NULL)
-  {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
-  }
-
-  QString directoryPath = QString::fromStdString(this->GetRecordingDirectoryName());
-  QDir directory(directoryPath);
-  if (directory.mkpath(directoryPath))
-  {
-    QString fileName =  directoryPath + QDir::separator() + tr("%1.jpg").arg(data->GetTimeStampInNanoSeconds());
-    bool success = cvSaveImage(fileName.toStdString().c_str(), imageFrame);
-    if (!success)
-    {
-      mitkThrow() << "Failed to save OpenCVVideoDataType in cvSaveImage!";
-    }
-    data->SetIsSaved(true);
-  }
-  else
-  {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as could not create " << directoryPath.toStdString();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void OpenCVVideoDataSourceService::GrabData()
 {
   if (this->GetIsPlayingBack())
@@ -302,7 +372,6 @@ void OpenCVVideoDataSourceService::GrabData()
   {
     this->SaveItem(wrapper.GetPointer());
   }
-
   this->SetStatus("Grabbing");
 }
 
@@ -312,16 +381,29 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
 {
   std::vector<IGIDataItemInfo> infos;
 
+  if (this->GetIsPlayingBack())
+  {
+    this->PlaybackData(time);
+  }
+
+  if (m_Buffer->GetBufferSize() == 0)
+  {
+    return infos;
+  }
+
   if(m_Buffer->GetFirstTimeStamp() > time)
   {
-    MITK_WARN << "OpenCVVideoDataSourceService::Update(), requested time is before buffer time!";
+    MITK_DEBUG << "OpenCVVideoDataSourceService::Update(), requested time is before buffer time! "
+               << " Buffer size=" << m_Buffer->GetBufferSize()
+               << ", time=" << time
+               << ", firstTime=" << m_Buffer->GetFirstTimeStamp();
     return infos;
   }
 
   niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(m_Buffer->GetItem(time).GetPointer());
   if (dataType.IsNull())
   {
-    MITK_WARN << "Failed to find data for time " << time << ", size=" << m_Buffer->GetBufferSize() << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
+    MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffer->GetBufferSize() << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
     return infos;
   }
 

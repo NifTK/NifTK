@@ -83,7 +83,8 @@ public:
   virtual std::string GetStatus() const = 0;
   virtual void StartCapturing() = 0;
   virtual void StopCapturing() = 0;
-  virtual void StartPlayback() = 0;
+  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp, niftk::IGIDataType::IGITimeType lastTimeStamp) = 0;
+  virtual void PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp) = 0;
   virtual void StopPlayback() = 0;
   virtual void StartRecording() = 0;
   virtual void StopRecording() = 0;
