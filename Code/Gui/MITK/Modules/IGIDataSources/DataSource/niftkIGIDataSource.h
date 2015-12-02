@@ -38,7 +38,7 @@ namespace niftk
 *
 * Each source registers as a service when it is instantiated. You
 * MUST allow for multiple instances of each service. Each service
-* should have a different name, and random Id.
+* should have a different name, and unique Id.
 *
 * Uses RAII pattern to register/de-register as MITK Micro-Service.
 *
