@@ -187,7 +187,7 @@ void IGIDataSourceManagerWidget::OnPlayStart()
 
         m_TimeStampEdit->setReadOnly(false);
         m_PlaybackSlider->setEnabled(true);
-        m_PlaybackSlider->setValue(0);
+        m_PlaybackSlider->setValue(sliderValue);
       }
       catch (const mitk::Exception& e)
       {

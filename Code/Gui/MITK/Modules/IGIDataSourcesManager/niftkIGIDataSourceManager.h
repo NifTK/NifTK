@@ -65,6 +65,8 @@ public:
   static const char*  DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
 
   bool IsPlayingBack() const;
+  bool IsPlayingBackAutomatically() const;
+
   bool IsUpdateTimerOn() const;
   void StopUpdateTimer();
   void StartUpdateTimer();
@@ -93,14 +95,11 @@ public:
   * the mitk::RenderingManager is asked to update.
   */
   void SetFramesPerSecond(const int& framesPerSecond);
-  int GetFramesPerSecond() const;
 
   /**
-  * \brief When creating sources, some will need configuring (e.g. port number).
-  * So, given the display name of a data source (string in combo-box in GUI),
-  * will return true if the manager can create a GUI for you to configure the service.
+  * \brief Returns the frame rate.
   */
-  bool NeedsStartupGui(QString name);
+  int GetFramesPerSecond() const;
 
   /**
   * \brief Writes the descriptor file for a recording session.
@@ -118,6 +117,13 @@ public:
   * created in each data sources factory class.
   */
   QList<QString> GetAllFactoryNames() const;
+
+  /**
+  * \brief When creating sources, some will need configuring (e.g. port number).
+  * So, given the display name of a data source (string in combo-box in GUI),
+  * will return true if the manager can create a GUI for you to configure the service.
+  */
+  bool NeedsStartupGui(QString name);
 
   /**
   * \brief Adds a source, using the display name of a factory,
@@ -184,6 +190,10 @@ public:
                      int& sliderValue
                      );
 
+  /**
+  * \brief Takes a string time field, and the max slider value,
+  * and computes the corresponding slider value.
+  */
   int ComputePlaybackTimeSliderValue(QString textEditField, int sliderMax);
 
   /**
@@ -228,7 +238,8 @@ protected:
 private slots:
 
   /**
-  * \brief Updates the whole rendered scene, based on the available sources.
+  * \brief Triggered by QTimer, updates the whole rendered scene,
+  * based on all the available sources.
   */
   void OnUpdateGui();
 
@@ -240,12 +251,12 @@ private:
   void RetrieveAllDataSourceFactories();
 
   /**
-   * Tries to parse the data source descriptor for directory-to-classname mappings.
-   * @param filepath full qualified path to descriptor.cfg, e.g. "/home/jo/projectwork/2014-01-28-11-51-04-909/descriptor.cfg"
-   * @returns a map with key = directory, value = classname
-   * @throws std::exception if something goes wrong.
-   * @warning This method does not check whether any class name is valid, i.e. whether that class has been compiled in!
-   */
+  * Tries to parse the data source descriptor for directory-to-classname mappings.
+  * \param filepath full qualified path to descriptor.cfg, e.g. "/home/jo/projectwork/2014-01-28-11-51-04-909/descriptor.cfg"
+  * \returns a map with key = directory, value = classname
+  * \throws std::exception if something goes wrong.
+  * \warning This method does not check whether any class name is valid, i.e. whether that class has been compiled in!
+  */
   QMap<QString, QString> ParseDataSourceDescriptor(const QString& filepath);
 
   /**
@@ -253,6 +264,9 @@ private:
   */
   void SetIsPlayingBack(bool isPlayingBack);
 
+  /**
+  * \brief Internal method to step forward in time, if playing back.
+  */
   void AdvancePlaybackTimer();
 
   mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.
@@ -266,14 +280,17 @@ private:
   QString                                                          m_PlaybackPrefix;
   igtl::TimeStamp::Pointer                                         m_TimeStampGenerator;
   bool                                                             m_IsPlayingBack;
+  bool                                                             m_IsPlayingBackAutomatically;
   niftk::IGIDataType::IGITimeType                                  m_CurrentTime;
+
+  int                                                              m_PlaybackSliderValue;
+  int                                                              m_PlaybackSliderMaxValue;
 
   // Slider position is relative to this base value.
   // Slider can only represent int values, but we need all 64 bit.
-  int                                                              m_PlaybackSliderValue;
-  int                                                              m_PlaybackSliderMaxValue;
   niftk::IGIDataType::IGITimeType                                  m_PlaybackSliderBase;
   niftk::IGIDataType::IGITimeType                                  m_PlaybackSliderFactor;
+
 }; // end class;
 
 } // end namespace

@@ -36,6 +36,7 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
 , m_GuiUpdateTimer(NULL)
 , m_FrameRate(DEFAULT_FRAME_RATE)
 , m_IsPlayingBack(false)
+, m_IsPlayingBackAutomatically(false)
 , m_CurrentTime(0)
 , m_PlaybackSliderValue(0)
 , m_PlaybackSliderMaxValue(0)
@@ -102,6 +103,13 @@ void IGIDataSourceManager::StartUpdateTimer()
 bool IGIDataSourceManager::IsPlayingBack() const
 {
   return m_IsPlayingBack;
+}
+
+
+//-----------------------------------------------------------------------------
+bool IGIDataSourceManager::IsPlayingBackAutomatically() const
+{
+  return m_IsPlayingBackAutomatically;
 }
 
 
