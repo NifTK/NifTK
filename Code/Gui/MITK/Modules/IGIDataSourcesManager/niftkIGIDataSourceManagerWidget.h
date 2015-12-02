@@ -161,6 +161,11 @@ private slots:
   */
   void OnSliderReleased();
 
+  /**
+  * \brief Called from niftk::IGIDataSourceManager to display status updates.
+  */
+  void OnBroadcastStatusString(QString);
+
 private:
 
   IGIDataSourceManager::Pointer m_Manager;

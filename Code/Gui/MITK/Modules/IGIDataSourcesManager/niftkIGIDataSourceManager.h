@@ -238,6 +238,11 @@ signals:
   */
   void TimerUpdated(QString rawTimeStamp, QString humanReadableTimeStamp);
 
+  /**
+  * \brief This manager will broadcast status messages to anyone listening.
+  */
+  void BroadcastStatusString(QString);
+
 protected:
 
   IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage);

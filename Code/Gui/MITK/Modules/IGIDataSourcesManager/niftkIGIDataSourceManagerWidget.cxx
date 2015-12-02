@@ -90,6 +90,8 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   assert(ok);
   ok = QObject::connect(m_PlaybackSlider, SIGNAL(sliderReleased()), this, SLOT(OnSliderReleased()));
   assert(ok);
+  ok = QObject::connect(m_Manager, SIGNAL(BroadcastStatusString(QString)), this, SLOT(OnBroadcastStatusString(QString)));
+  assert(ok);
 }
 
 
@@ -127,7 +129,8 @@ IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
   assert(ok);
   ok = QObject::disconnect(m_PlaybackSlider, SIGNAL(sliderReleased()), this, SLOT(OnSliderReleased()));
   assert(ok);
-
+  ok = QObject::disconnect(m_Manager, SIGNAL(BroadcastStatusString(QString)), this, SLOT(OnBroadcastStatusString(QString)));
+  assert(ok);
 }
 
 
@@ -561,6 +564,13 @@ void IGIDataSourceManagerWidget::OnSliderReleased()
 {
   IGIDataType::IGITimeType time = m_Manager->ComputeTimeFromSlider(m_PlaybackSlider->value());
   m_Manager->SetPlaybackTime(time);
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::OnBroadcastStatusString(QString text)
+{
+  m_ToolManagerConsole->appendPlainText(text);
 }
 
 } // end namespace
