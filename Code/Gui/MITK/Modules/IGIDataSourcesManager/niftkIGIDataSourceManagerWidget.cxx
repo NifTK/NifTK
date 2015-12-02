@@ -209,11 +209,6 @@ void IGIDataSourceManagerWidget::OnPlayStart()
         m_TimeStampEdit->setReadOnly(false);
         m_PlaybackSlider->setEnabled(true);
         m_PlaybackSlider->setValue(sliderValue);
-
-        MITK_INFO << "Matt, on init, sliderMax=" << sliderMaximum;
-        MITK_INFO << "Matt, on init, sliderMin=" << sliderValue;
-        MITK_INFO << "Matt, on init, sliderVal=" << sliderValue;
-
       }
       catch (const mitk::Exception& e)
       {

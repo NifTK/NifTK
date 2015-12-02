@@ -89,6 +89,7 @@ void IGIDataSourceBuffer::AddToBuffer(niftk::IGIDataType::Pointer item)
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   m_Buffer.insert(item);
+
   this->UpdateFrameRate();
   this->Modified();
 }
@@ -184,27 +185,25 @@ void IGIDataSourceBuffer::UpdateFrameRate()
     niftk::IGIDataType::IGIIndexType numberOfFrames = 0;
 
     firstTimeStamp = (*m_Buffer.begin())->GetTimeStampInNanoSeconds();
-    firstFrameId = (*m_Buffer.begin())->GetFrameId(); // assumed to be sequentially increasing
 
     BufferType::iterator iter = m_Buffer.end();
     iter--;
 
     lastTimeStamp = (*iter)->GetTimeStampInNanoSeconds();
-    lastFrameId = (*iter)->GetFrameId(); // assumed to be sequentially increasing
 
     if (lastTimeStamp < firstTimeStamp)
     {
       mitkThrow() << "Timestamps are not increasing.";
     }
-    if (lastFrameId < firstFrameId)
-    {
-      mitkThrow() << "FrameIds are not increasing.";
-    }
 
     timeDifference = lastTimeStamp - firstTimeStamp;
-    numberOfFrames = lastFrameId - firstFrameId;
+    numberOfFrames = this->GetBufferSize();
 
     m_FrameRate = (double)1.0 / ((double)timeDifference/(double)(numberOfFrames * 1000000000.0));
+  }
+  else
+  {
+    m_FrameRate = 0;
   }
 }
 

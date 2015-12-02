@@ -627,16 +627,7 @@ void IGIDataSourceManager::StopPlayback()
 //-----------------------------------------------------------------------------
 IGIDataType::IGITimeType IGIDataSourceManager::ComputeTimeFromSlider(int sliderValue) const
 {  
-  IGIDataType::IGITimeType result = m_PlaybackSliderBase + ((static_cast<double>(sliderValue) / static_cast<double>(m_PlaybackSliderMaxValue)) * m_PlaybackSliderMaxValue);
-
-  MITK_INFO << "Matt, sliderValue=" << sliderValue;
-  MITK_INFO << "Matt, sliderMax=" << m_PlaybackSliderMaxValue;
-  MITK_INFO << "Matt, m_PlaybackSliderBase=" << m_PlaybackSliderBase;
-  MITK_INFO << "Matt, m_PlaybackSliderFactor=" << m_PlaybackSliderFactor;
-  MITK_INFO << "Matt, result=" << result;
-  MITK_INFO << "Matt, divide=" << (static_cast<double>(sliderValue) / static_cast<double>(m_PlaybackSliderMaxValue));
-  MITK_INFO << "Matt, multiply=" << (static_cast<double>(sliderValue) / static_cast<double>(m_PlaybackSliderMaxValue))* m_PlaybackSliderFactor;
-
+  IGIDataType::IGITimeType result = m_PlaybackSliderBase + ((static_cast<double>(sliderValue) / static_cast<double>(m_PlaybackSliderMaxValue)) * m_PlaybackSliderMaxValue * m_PlaybackSliderFactor);
   return result;
 }
 
@@ -684,6 +675,7 @@ int IGIDataSourceManager::ComputePlaybackTimeSliderValue(QString textEditField) 
 void IGIDataSourceManager::SetPlaybackTime(const IGIDataType::IGITimeType& time)
 {
   m_CurrentTime = time;
+  m_PlaybackSliderValue = (time - m_PlaybackSliderBase) / m_PlaybackSliderFactor;
   this->Modified();
 }
 
@@ -742,10 +734,6 @@ void IGIDataSourceManager::OnUpdateGui()
     m_CurrentTime = m_TimeStampGenerator->GetTimeStampInNanoseconds();
   }
 
-  QString   rawTimeStampString = QString("%1").arg(m_CurrentTime);
-  QString   humanReadableTimeStamp = QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yyyy/MM/dd hh:mm:ss.zzz");
-  emit TimerUpdated(rawTimeStampString, humanReadableTimeStamp);
-
   niftk::IGIDataType::IGITimeType currentTime = m_CurrentTime;
 
   QList< QList<IGIDataItemInfo> > dataSourceInfos;
@@ -765,6 +753,11 @@ void IGIDataSourceManager::OnUpdateGui()
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 
   emit UpdateFinishedRendering();
+
+  QString   rawTimeStampString = QString("%1").arg(m_CurrentTime);
+  QString   humanReadableTimeStamp = QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yyyy/MM/dd hh:mm:ss.zzz");
+
+  emit TimerUpdated(rawTimeStampString, humanReadableTimeStamp);
 
   this->Modified();
 }
