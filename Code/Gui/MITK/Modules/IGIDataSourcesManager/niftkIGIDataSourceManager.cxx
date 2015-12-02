@@ -220,7 +220,7 @@ void IGIDataSourceManager::RetrieveAllDataSourceFactories()
     std::vector<std::string> aliases = factory->GetLegacyClassNames();
     for (int j = 0; j < aliases.size(); j++)
     {
-      m_NameToFactoriesMap.insert(QString::fromStdString(aliases[i]), factory);
+      m_LegacyNameToFactoriesMap.insert(QString::fromStdString(aliases[i]), factory);
     }
   }
 }
@@ -384,12 +384,20 @@ bool IGIDataSourceManager::NeedsStartupGui(QString name)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::AddSource(QString name, QList<QMap<QString, QVariant> >& properties)
 {
-  if (!m_NameToFactoriesMap.contains(name))
+  niftk::IGIDataSourceFactoryServiceI *factory = NULL;
+
+  if (m_NameToFactoriesMap.contains(name))
+  {
+    factory = m_NameToFactoriesMap[name];
+  }
+  else if (m_LegacyNameToFactoriesMap.contains(name))
+  {
+    factory = m_LegacyNameToFactoriesMap[name];
+  }
+  else
   {
     mitkThrow() << "Cannot find a factory for " << name.toStdString();
   }
-
-  niftk::IGIDataSourceFactoryServiceI *factory = m_NameToFactoriesMap[name];
   if (factory == NULL)
   {
     mitkThrow() << "Failed to retrieve factory for " << name.toStdString();
@@ -528,7 +536,9 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
       QString nameOfSource = iter.key();
       QString nameOfFactory = iter.value();
 
-      if (!m_NameToFactoriesMap.contains(nameOfFactory))
+      if (!m_NameToFactoriesMap.contains(nameOfFactory)
+          && !m_LegacyNameToFactoriesMap.contains(nameOfFactory)
+          )
       {
         mitkThrow() << "Cannot play source=" << nameOfSource.toStdString() << ", using factory=" << nameOfFactory.toStdString() << ".";
       }
