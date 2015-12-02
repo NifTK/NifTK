@@ -22,7 +22,7 @@
 QmitkLookupTableSaxHandler::QmitkLookupTableSaxHandler()
 : m_IsPreMultiplied(false)
 , m_Order(-1)
-, m_IsScaled(false)
+, m_IsScaled(true)
 , m_DisplayName("None")
 {
   m_List.clear();
