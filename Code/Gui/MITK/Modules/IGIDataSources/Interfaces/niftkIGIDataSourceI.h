@@ -30,10 +30,10 @@ namespace niftk
 * \class IGIDataItemInfo
 * \brief Info class to describe current state, so that GUI can display status.
 *
-* This is per item. One Source (e.g. tracker), may return data from many tools (items).
+* This is per item. One Source (e.g. tracker), may return data from many items (eg. tools).
 * So, each tool is considered an item. So the data source should return one
 * of these IGIDataSourceInfo for each tool. Other sources such as a video
-* source or framegrabber will probably only return one of these. But in
+* source or framegrabber will probably only return one of these per frame. But in
 * principle it could be any number from each source.
 *
 * Note: Deliberately not using Qt datatypes, so that an implementing class does not have to.
@@ -66,8 +66,6 @@ struct NIFTKIGIDATASOURCES_EXPORT IGIDataItemInfo
 * \brief Interface for an IGI Data Source (e.g. video feed, ultrasound feed, tracker feed).
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
-*
-* Note: Implementors of this interface must be thread-safe.
 *
 * Note: Deliberately not using Qt datatypes, so that an implementing class does not have to.
 */

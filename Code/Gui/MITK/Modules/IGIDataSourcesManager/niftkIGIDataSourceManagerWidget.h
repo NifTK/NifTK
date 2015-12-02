@@ -121,7 +121,8 @@ private slots:
   void OnFreezeTableHeaderClicked(int section);
 
   /**
-  * \brief Called from niftk::IGIDataSourceManager, and used to update the data sources table.
+  * \brief Called from niftk::IGIDataSourceManager,
+  * and used to update the data sources table.
   */
   void OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >);
 

@@ -179,17 +179,17 @@ protected:
 private:
 
   mitk::DataStorage::Pointer        m_DataStorage;
-  std::string                       m_Name;
-  std::string                       m_FactoryName;
-  igtl::TimeStamp::Pointer          m_TimeCreated;
   std::set<mitk::DataNode::Pointer> m_DataNodes;
   us::ServiceRegistration<Self>     m_MicroServiceRegistration;
-  std::string                       m_RecordingLocation;
+  std::string                       m_Name;
+  std::string                       m_FactoryName;
   std::string                       m_Status;
+  std::string                       m_RecordingLocation;
+  igtl::TimeStamp::Pointer          m_TimeCreated;
+  niftk::IGIDataType::IGITimeType   m_TimeStampTolerance; // nanoseconds.
   bool                              m_ShouldUpdate;
   bool                              m_IsRecording;
   bool                              m_IsPlayingBack;
-  niftk::IGIDataType::IGITimeType   m_TimeStampTolerance; // nanoseconds.
 };
 
 } // end namespace

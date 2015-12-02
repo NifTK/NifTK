@@ -24,7 +24,7 @@ namespace niftk
 
 /**
 * \class IGIWaitForSavedDataSourceBuffer
-* \brief Manages a buffer of niftkIGIDataType.
+* \brief Manages a buffer of niftk::IGIDataType.
 *
 * Note: This class MUST be thread-safe.
 *

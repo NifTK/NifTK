@@ -422,12 +422,6 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
     return infos;
   }
 
-  if (m_Buffer->GetBufferSize() == 0)
-  {
-    MITK_WARN << "OpenCVVideoDataSourceService::Update(), buffer is empty!";
-    return infos;
-  }
-
   mitk::DataNode::Pointer node = this->GetDataNode(this->GetName());
   if (node.IsNull())
   {
@@ -514,10 +508,8 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
   imageInNode->GetVtkImageData()->Modified();
   node->Modified();
 
-  // Tidy up
   cvReleaseImage(&rgbaOpenCVImage);
 
-  // Return info describing object.
   infos[0].m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
   infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
   return infos;

@@ -24,7 +24,7 @@ namespace niftk
 
 /**
  * \class OpenCVVideoDataType
- * \brief Class to represent video frame data from OpenCV, to integrate within the niftkIGI framework.
+ * \brief Class to represent video frame data from OpenCV.
  */
 class NIFTKOPENCVVIDEODATASOURCESERVICE_EXPORT OpenCVVideoDataType : public IGIDataType
 {

@@ -30,7 +30,7 @@ namespace niftk
 
 /**
 * \class IGIDataSourceBuffer
-* \brief Manages a buffer of niftkIGIDataType.
+* \brief Manages a buffer of niftk::IGIDataType.
 *
 * Note: This class MUST be thread-safe.
 *
@@ -98,11 +98,13 @@ public:
 
   /**
   * \brief Returns the time stamp of the first item in the buffer.
+  * \throw mitk::Exception if the buffer is empty.
   */
   niftk::IGIDataType::IGITimeType GetFirstTimeStamp() const;
 
   /**
   * \brief Returns the time stamp of the last item in the buffer.
+  * \throw mitk::Exception if the buffer is empty.
   */
   niftk::IGIDataType::IGITimeType GetLastTimeStamp() const;
 
@@ -114,7 +116,7 @@ public:
   /**
   * \brief Gets the item from the buffer most closely before the specified time.
   *
-  * If there are no items in the buffer, will return null.
+  * If there are no items in the buffer, will return NULL.
   * If the lag is specified, will ofset backwards in time and retrieve that item.
   * If that item is not available, will also return NULL.
   */

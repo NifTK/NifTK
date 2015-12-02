@@ -29,12 +29,12 @@ IGIDataSource::IGIDataSource(const std::string& name,
 : m_DataStorage(dataStorage)
 , m_Name(name)
 , m_FactoryName(factoryName)
-, m_TimeCreated(NULL)
 , m_Status("UNKNOWN")
+, m_TimeCreated(NULL)
+, m_TimeStampTolerance(0)
 , m_ShouldUpdate(false)
 , m_IsRecording(false)
 , m_IsPlayingBack(false)
-, m_TimeStampTolerance(0)
 {
 
   if (m_DataStorage.IsNull())
@@ -115,6 +115,13 @@ std::string IGIDataSource::GetStatus() const
 
 
 //-----------------------------------------------------------------------------
+mitk::DataStorage::Pointer IGIDataSource::GetDataStorage() const
+{
+  return m_DataStorage;
+}
+
+
+//-----------------------------------------------------------------------------
 bool IGIDataSource::GetShouldUpdate() const
 {
   return m_ShouldUpdate;
@@ -159,13 +166,6 @@ void IGIDataSource::StopPlayback()
 {
   this->SetIsPlayingBack(false);
   this->Modified();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataStorage::Pointer IGIDataSource::GetDataStorage() const
-{
-  return m_DataStorage;
 }
 
 
