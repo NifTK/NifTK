@@ -20,7 +20,7 @@
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
 #include <vtkWindowToImageFilter.h>
-#include <vtkJPEGWriter.h>
+#include <vtkPNGWriter.h>
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
 #include <QDesktopServices>
@@ -754,29 +754,29 @@ void IGIDataSourceManager::GrabScreen()
   }
 
   QDir directory(m_ScreenGrabDir);
-  if (directory.mkpath(m_ScreenGrabDir))
+  if (!directory.mkpath(m_ScreenGrabDir))
   {
-    QString fileName = m_ScreenGrabDir + QDir::separator() + tr("screen-%1.jpg").arg(m_CurrentTime);
+    mitkThrow() << "Failed to make directory " << m_ScreenGrabDir.toStdString();
+  }
 
-    mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-    if (focusManager != NULL)
+  QString fileName = m_ScreenGrabDir + QDir::separator() + tr("screen-%1.png").arg(m_CurrentTime);
+
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  if (focusManager != NULL)
+  {
+    mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
+    if (focusedRenderer.IsNotNull())
     {
-      mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
-      if (focusedRenderer.IsNotNull())
+      vtkRenderer *renderer = focusedRenderer->GetVtkRenderer();
+      if (renderer != NULL)
       {
-        vtkRenderer *renderer = focusedRenderer->GetVtkRenderer();
-        if (renderer != NULL)
-        {
-          vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
-          windowToImageFilter->SetInput(renderer->GetRenderWindow());
+        vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
+        windowToImageFilter->SetInput(renderer->GetRenderWindow());
 
-          vtkSmartPointer<vtkJPEGWriter> writer = vtkSmartPointer<vtkJPEGWriter>::New();
-          writer->SetQuality(100);
-          writer->ProgressiveOff();
-          writer->SetInputDataObject(windowToImageFilter->GetOutput());
-          writer->SetFileName(fileName.toLatin1());
-          writer->Write();
-        }
+        vtkSmartPointer<vtkPNGWriter> writer = vtkSmartPointer<vtkPNGWriter>::New();
+        writer->SetFileName(fileName.toLatin1());
+        writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+        writer->Write();
       }
     }
   }
