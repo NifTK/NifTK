@@ -75,6 +75,7 @@ if(SlicerExecutionModel_FOUND)
       niftkCorrectVideoDistortion
       niftkProject3DPointsToStereoPair
       niftkReviewVideoData
+      niftkGetTrackerStats
       niftkHandeyeCalibration
       niftkHandeyeCalibrationFromDirectory
       niftkHandeyeCalibrationUsingRegistration

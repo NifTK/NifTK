@@ -183,7 +183,7 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
   }
 
   ofstream out ( std::string( m_OutDirectory + niftk::Basename(m_VideoIn) +  "_reconstruction.txt" ) );
-  out << "# Framenumber TimingError PatchDepthMean PatchDepthStdDev PointsInPatch MeanTriangulationError" << std::endl;
+  out << "# Framenumber TimeStamp TimingError PatchDepthMean PatchDepthStdDev PointsInPatch MeanTriangulationError" << std::endl;
   this->FindVideoData(trackerMatcher);
 
   int framenumber = 0 ;
@@ -302,7 +302,7 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
         }
       }
 
-      out << framenumber << " " << timingError << " " <<  centroid.z << " " 
+      out << framenumber << " " << trackerMatcher->GetVideoFrameTimeStamp(framenumber) << " " << timingError << " " <<  centroid.z << " " 
         << stddev.z << " " << triangulatedPoints.size() << " " << meanError << std::endl;
       framenumber ++;
       framenumber ++;
