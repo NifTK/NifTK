@@ -71,31 +71,6 @@ std::vector<std::string> FindTrackingMatrixDirectories(const std::string& direct
   return directories;
 }
 
-
-//---------------------------------------------------------------------------
-mitk::TimeStampsContainer FindTrackingTimeStamps(std::string directory)
-{
-  boost::filesystem::directory_iterator endItr;
-  boost::regex timeStampFilter ( "([0-9]{19})(.txt)");
-  TimeStampsContainer returnStamps;
-  
-  for ( boost::filesystem::directory_iterator it(directory);it != endItr ; ++it)
-  {
-    if ( boost::filesystem::is_regular_file (it->status()) )
-    {
-      boost::cmatch what;
-      std::string stringThing = it->path().filename().string();
-      if ( boost::regex_match( stringThing.c_str(), what, timeStampFilter) )
-      {
-        returnStamps.Insert(boost::lexical_cast<unsigned long long>(it->path().filename().stem().string().c_str()));
-      }
-    }
-  }
-  returnStamps.Sort();
-  return returnStamps;
-}
-
-
 //---------------------------------------------------------------------------
 std::vector<std::string> FindVideoFrameMapFiles(const std::string directory)
 {
