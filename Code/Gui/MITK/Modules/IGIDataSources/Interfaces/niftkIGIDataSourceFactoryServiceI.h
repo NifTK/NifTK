@@ -41,11 +41,8 @@ public:
 
   virtual IGIDataSourceI::Pointer Create(mitk::DataStorage::Pointer dataStorage) = 0;
 
-  virtual IGIDataSourceI::Pointer Create(const std::string& name,
-                                         mitk::DataStorage::Pointer dataStorage) = 0;
-
   /**
-  * \brief Returns the name of the data source, as perceived by the user in the GUI.
+  * \brief Returns the name of the data source factory, as perceived by the user in the GUI.
   */
   virtual std::string GetName() const;
 
@@ -60,28 +57,15 @@ public:
   virtual std::string GetNameOfService() const;
 
   /**
-  * \brief Returns true if we need a GUI at startup to configure it.
-  */
-  virtual bool GetNeedGuiAtStartup() const;
-
-  /**
   * \brief Returns the name of the GUI class that should be instantiated at startup.
   */
   virtual std::string GetNameOfStartupGui() const;
-
-  /**
-  * \brief Returns the name of the GUI class that should be instantiated
-  * to observe the service while it is running.
-  */
-  virtual std::string GetNameOfObservationGui() const;
 
 protected:
 
   IGIDataSourceFactoryServiceI(std::string name,
                                std::string service,
-                               bool needGuiAtStartup,
-                               std::string startupGui,
-                               std::string observationGui
+                               std::string startupGui
                                );
 
   virtual ~IGIDataSourceFactoryServiceI();
@@ -96,8 +80,6 @@ private:
   std::string m_Name; // i.e. name the factory is known as.
   std::string m_NameOfService;
   std::string m_NameOfStartupGui;
-  std::string m_NameOfObservationGui;
-  bool        m_NeedGuiAtStartup;
 };
 
 } // end namespace

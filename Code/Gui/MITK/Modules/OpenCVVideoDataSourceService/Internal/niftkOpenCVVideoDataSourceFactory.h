@@ -38,12 +38,6 @@ public:
   virtual IGIDataSourceI::Pointer Create(mitk::DataStorage::Pointer dataStorage) override;
 
   /**
-  * \see IGIDataSourceFactoryServiceI::Create()
-  */
-  virtual IGIDataSourceI::Pointer Create(const std::string& name,
-                                         mitk::DataStorage::Pointer dataStorage) override;
-
-  /**
   * \brief Returns "QmitkIGIOpenCVDataSource"
   */
   virtual std::vector<std::string> GetLegacyClassNames() const override;

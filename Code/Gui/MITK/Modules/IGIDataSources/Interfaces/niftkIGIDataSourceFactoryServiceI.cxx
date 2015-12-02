@@ -20,15 +20,11 @@ namespace niftk
 //-----------------------------------------------------------------------------
 IGIDataSourceFactoryServiceI::IGIDataSourceFactoryServiceI(std::string name,
                                                            std::string service,
-                                                           bool needGuiAtStartup,
-                                                           std::string startupGui,
-                                                           std::string observationGui
+                                                           std::string startupGui
                                                            )
 : m_Name(name)
 , m_NameOfService(service)
-, m_NeedGuiAtStartup(needGuiAtStartup)
 , m_NameOfStartupGui(startupGui)
-, m_NameOfObservationGui(observationGui)
 {
 }
 
@@ -57,20 +53,6 @@ std::string IGIDataSourceFactoryServiceI::GetNameOfService() const
 std::string IGIDataSourceFactoryServiceI::GetNameOfStartupGui() const
 {
   return m_NameOfStartupGui;
-}
-
-
-//-----------------------------------------------------------------------------
-bool IGIDataSourceFactoryServiceI::GetNeedGuiAtStartup() const
-{
-  return m_NeedGuiAtStartup;
-}
-
-
-//-----------------------------------------------------------------------------
-std::string IGIDataSourceFactoryServiceI::GetNameOfObservationGui() const
-{
-  return m_NameOfObservationGui;
 }
 
 } // end namespace

@@ -22,9 +22,7 @@ namespace niftk
 OpenCVVideoDataSourceFactory::OpenCVVideoDataSourceFactory()
 : IGIDataSourceFactoryServiceI("OpenCV Frame Grabber",
                                "OpenCVVideoDataSourceService",
-                               false,
-                               "", // don't need a startup GUI, nothing to configure
-                               ""  // don't need an observation GUI, no parameters to tweak
+                               "" // don't need a startup GUI, nothing to configure
                                )
 {
 }
@@ -42,20 +40,6 @@ IGIDataSourceI::Pointer OpenCVVideoDataSourceFactory::Create(
 {
   niftk::OpenCVVideoDataSourceService::Pointer serviceInstance
       = OpenCVVideoDataSourceService::New(this->GetName(), // factory name
-                                          dataStorage);
-
-  return serviceInstance.GetPointer();
-}
-
-
-//-----------------------------------------------------------------------------
-IGIDataSourceI::Pointer OpenCVVideoDataSourceFactory::Create(
-    const std::string& name,
-    mitk::DataStorage::Pointer dataStorage)
-{
-  niftk::OpenCVVideoDataSourceService::Pointer serviceInstance
-      = OpenCVVideoDataSourceService::New(name,
-                                          this->GetName(), // factory name
                                           dataStorage);
 
   return serviceInstance.GetPointer();
