@@ -17,6 +17,12 @@
 #include <usGetModuleContext.h>
 #include <mitkExceptionMacro.h>
 #include <mitkRenderingManager.h>
+#include <mitkFocusManager.h>
+#include <mitkGlobalInteraction.h>
+#include <vtkWindowToImageFilter.h>
+#include <vtkJPEGWriter.h>
+#include <vtkSmartPointer.h>
+#include <vtkRenderer.h>
 #include <QDesktopServices>
 #include <QProcessEnvironment>
 #include <QVector>
@@ -42,6 +48,8 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
 , m_PlaybackSliderMaxValue(0)
 , m_PlaybackSliderBase(0)
 , m_PlaybackSliderFactor(0)
+, m_IsGrabbingScreen(false)
+, m_ScreenGrabDir("")
 {
   if (m_DataStorage.IsNull())
   {
@@ -719,6 +727,53 @@ void IGIDataSourceManager::AdvancePlaybackTimer()
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSourceManager::SetIsGrabbingScreen(QString directoryName, bool isGrabbing)
+{
+  m_IsGrabbingScreen = isGrabbing;
+  m_ScreenGrabDir = directoryName;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::GrabScreen()
+{
+  if (!m_IsGrabbingScreen || m_ScreenGrabDir.size() == 0)
+  {
+    return;
+  }
+
+  QDir directory(m_ScreenGrabDir);
+  if (directory.mkpath(m_ScreenGrabDir))
+  {
+    QString fileName = m_ScreenGrabDir + QDir::separator() + tr("screen-%1.jpg").arg(m_CurrentTime);
+
+    mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+    if (focusManager != NULL)
+    {
+      mitk::BaseRenderer::ConstPointer focusedRenderer = focusManager->GetFocused();
+      if (focusedRenderer.IsNotNull())
+      {
+        vtkRenderer *renderer = focusedRenderer->GetVtkRenderer();
+        if (renderer != NULL)
+        {
+          vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
+          windowToImageFilter->SetInput(renderer->GetRenderWindow());
+
+          vtkSmartPointer<vtkJPEGWriter> writer = vtkSmartPointer<vtkJPEGWriter>::New();
+          writer->SetQuality(100);
+          writer->ProgressiveOff();
+          writer->SetInputDataObject(windowToImageFilter->GetOutput());
+          writer->SetFileName(fileName.toLatin1());
+          writer->Write();
+        }
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManager::OnUpdateGui()
 {
   if (m_IsPlayingBack)
@@ -753,6 +808,8 @@ void IGIDataSourceManager::OnUpdateGui()
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 
   emit UpdateFinishedRendering();
+
+  this->GrabScreen();
 
   QString   rawTimeStampString = QString("%1").arg(m_CurrentTime);
   QString   humanReadableTimeStamp = QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yyyy/MM/dd hh:mm:ss.zzz");

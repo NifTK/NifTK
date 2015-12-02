@@ -213,6 +213,11 @@ public:
   */
   void SetPlaybackTime(const IGIDataType::IGITimeType& time);
 
+  /**
+  * \brief Requests the manager to grab the screen.
+  */
+  void SetIsGrabbingScreen(QString directoryName, bool isGrabbing);
+
 signals:
 
   /**
@@ -286,6 +291,8 @@ private:
   */
   void SetIsPlayingBack(bool isPlayingBack);
 
+  void GrabScreen();
+
   mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.
   us::ModuleContext*                                               m_ModuleContext;
   std::vector<us::ServiceReference<IGIDataSourceFactoryServiceI> > m_Refs;
@@ -307,6 +314,9 @@ private:
   // Slider can only represent int values, but we need all 64 bit.
   niftk::IGIDataType::IGITimeType                                  m_PlaybackSliderBase;
   niftk::IGIDataType::IGITimeType                                  m_PlaybackSliderFactor;
+
+  bool                                                             m_IsGrabbingScreen;
+  QString                                                          m_ScreenGrabDir;
 
 }; // end class;
 

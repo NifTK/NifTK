@@ -44,8 +44,6 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   m_RecordPushButton->setEnabled(true);
   m_StopPushButton->setEnabled(false);
 
-  m_Frame->setContentsMargins(0, 0, 0, 0);
-
   m_DirectoryChooser->setFilters(ctkPathLineEdit::Dirs);
   m_DirectoryChooser->setOptions(ctkPathLineEdit::ShowDirsOnly);
 
@@ -91,6 +89,8 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   ok = QObject::connect(m_PlaybackSlider, SIGNAL(sliderReleased()), this, SLOT(OnSliderReleased()));
   assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(BroadcastStatusString(QString)), this, SLOT(OnBroadcastStatusString(QString)));
+  assert(ok);
+  ok = QObject::connect(m_GrabScreenCheckbox, SIGNAL(clicked(bool)), this, SLOT(OnGrabScreen(bool)));
   assert(ok);
 }
 
@@ -571,6 +571,19 @@ void IGIDataSourceManagerWidget::OnSliderReleased()
 void IGIDataSourceManagerWidget::OnBroadcastStatusString(QString text)
 {
   m_ToolManagerConsole->appendPlainText(text);
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::OnGrabScreen(bool isChecked)
+{
+  QString directoryName = this->m_DirectoryChooser->currentPath();
+  if (directoryName.length() == 0)
+  {
+    directoryName = m_Manager->GetDirectoryName();
+    this->m_DirectoryChooser->setCurrentPath(directoryName);
+  }
+  m_Manager->SetIsGrabbingScreen(directoryName, isChecked);
 }
 
 } // end namespace
