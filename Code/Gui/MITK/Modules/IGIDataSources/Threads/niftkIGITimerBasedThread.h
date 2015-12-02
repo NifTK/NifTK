@@ -25,9 +25,9 @@ namespace niftk
 /**
 * \class IGITimerBasedThread
 * \brief Base class for threads that are simply triggered off of a QTimer.
-* \see IGILocalDataSourceGrabbingThread
-* \see IGIDataSourceManagerClearDownThread
-* \see IGIDataSourceManagerGuiUpdateThread
+* \see IGIDataSourceBackgroundDeleteThread
+* \see IGIDataSourceBackgroundSaveThread
+* \see IGIDataSourceGrabbingThread
 */
 class NIFTKIGIDATASOURCES_EXPORT IGITimerBasedThread : public QThread
 {

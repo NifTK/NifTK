@@ -37,6 +37,8 @@ namespace niftk
 * principle it could be any number from each source.
 *
 * Note: Deliberately not using Qt datatypes, so that an implementing class does not have to.
+*
+* The first implementing class was niftk::OpenCVVideoDataSourceService().
 */
 struct NIFTKIGIDATASOURCES_EXPORT IGIDataItemInfo
 {

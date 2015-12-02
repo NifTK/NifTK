@@ -24,7 +24,7 @@ namespace niftk
 
 /**
 * \class IGIDataSourceBackgroundDeleteThread
-* \brief Thread class, based on IGITimerBasedThread to simply call "ClearBuffer".
+* \brief Thread class, based on IGITimerBasedThread to simply call "CleanBuffer".
 */
 class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceBackgroundDeleteThread : public IGITimerBasedThread
 {
