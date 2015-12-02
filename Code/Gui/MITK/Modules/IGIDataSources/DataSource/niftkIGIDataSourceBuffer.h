@@ -15,14 +15,16 @@
 #ifndef niftkIGIDataSourceBuffer_h
 #define niftkIGIDataSourceBuffer_h
 
-#include "niftkIGIDataSourcesExports.h"
-#include "niftkIGIDataType.h"
+#include <niftkIGIDataSourcesExports.h>
+#include <niftkIGIDataType.h>
 
 #include <mitkCommon.h>
+
 #include <itkVersion.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 #include <itkFastMutexLock.h>
+
 #include <set>
 
 namespace niftk

@@ -15,7 +15,7 @@
 #ifndef niftkIGIDataSource_h
 #define niftkIGIDataSource_h
 
-#include "niftkIGIDataSourcesExports.h"
+#include <niftkIGIDataSourcesExports.h>
 #include <niftkIGIDataType.h>
 #include <niftkIGIDataSourceI.h>
 

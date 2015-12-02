@@ -16,7 +16,7 @@
 #define niftkIGIDataSourceManagerWidget_h
 
 #include "niftkIGIDataSourcesManagerExports.h"
-#include "ui_niftkIGIDataSourceManager.h"
+#include "ui_niftkIGIDataSourceManagerWidget.h"
 #include "niftkIGIDataSourceManager.h"
 
 #include <mitkDataStorage.h>
@@ -35,7 +35,7 @@ namespace niftk
  */
 class NIFTKIGIDATASOURCESMANAGER_EXPORT IGIDataSourceManagerWidget :
     public QWidget,
-    public Ui_IGIDataSourceManager
+    public Ui_IGIDataSourceManagerWidget
 {
 
   Q_OBJECT
@@ -140,6 +140,26 @@ private slots:
   * \brief Callback from niftk::IGIDataSourceManager to set timestamps on the GUI.
   */
   void OnTimerUpdated(QString rawString, QString humanReadableString);
+
+  /**
+  * \brief Callback from GUI to set whether we are automatically playing or not.
+  */
+  void OnPlayingPushButtonClicked(bool isChecked);
+
+  /**
+  * \brief Callback from GUI to move to the last frame in playback sequence.
+  */
+  void OnEndPushButtonClicked(bool isChecked);
+
+  /**
+  * \brief Callback from GUI to move to the first frame in playback sequence.
+  */
+  void OnStartPushButtonClicked(bool isChecked);
+
+  /**
+  * \brief Callback from GUI to indicate when the timer has been moved.
+  */
+  void OnSliderReleased();
 
 private:
 

@@ -193,15 +193,19 @@ public:
                      );
 
   /**
-  * \brief Takes a string time field, and the max slider value,
-  * and computes the corresponding slider value.
-  */
-  int ComputePlaybackTimeSliderValue(QString textEditField, int sliderMax);
-
-  /**
   * \brief Stops all sources playing back.
   */
   void StopPlayback();
+
+  /**
+  * \brief Takes a string time field and computes the corresponding slider value.
+  */
+  int ComputePlaybackTimeSliderValue(QString textEditField) const;
+
+  /**
+  * \brief If the user moves the time slider, we calculate a corresponding time.
+  */
+  IGIDataType::IGITimeType ComputeTimeFromSlider(int sliderValue) const;
 
   /**
   * \brief Sets the current time of the manager to time,
@@ -271,6 +275,10 @@ private:
   */
   void AdvancePlaybackTimer();
 
+  /**
+  * \brief Internal method to simply set the m_IsPlayingBack field,
+  * which should be called from StartPlayback() and StopPlayback().
+  */
   void SetIsPlayingBack(bool isPlayingBack);
 
   mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.

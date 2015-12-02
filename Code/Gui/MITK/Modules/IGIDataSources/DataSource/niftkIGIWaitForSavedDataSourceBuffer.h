@@ -15,7 +15,7 @@
 #ifndef niftkIGIWaitForSavedDataSourceBuffer_h
 #define niftkIGIWaitForSavedDataSourceBuffer_h
 
-#include "niftkIGIDataSourcesExports.h"
+#include <niftkIGIDataSourcesExports.h>
 #include "niftkIGIDataSourceBuffer.h"
 #include "niftkIGIDataSource.h"
 

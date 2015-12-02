@@ -21,6 +21,7 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include <QDir>
+#include <QMutexLocker>
 
 namespace niftk
 {
@@ -49,6 +50,7 @@ int OpenCVVideoDataSourceService::GetNextChannelNumber()
 OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
     std::string name, std::string factoryName, mitk::DataStorage::Pointer dataStorage)
 : IGIDataSource(name, factoryName, dataStorage)
+, m_Lock(QMutex::Recursive)
 , m_FrameId(0)
 , m_Buffer(NULL)
 , m_BackgroundDeleteThread(NULL)
@@ -171,9 +173,38 @@ void OpenCVVideoDataSourceService::StopCapturing()
 
 
 //-----------------------------------------------------------------------------
+void OpenCVVideoDataSourceService::SetLagInMilliseconds(const unsigned long long& milliseconds)
+{
+  // Buffer itself should be threadsafe.
+  m_Buffer->SetLagInMilliseconds(milliseconds);
+}
+
+
+//-----------------------------------------------------------------------------
+void OpenCVVideoDataSourceService::CleanBuffer()
+{
+  // Buffer itself should be threadsafe.
+  m_Buffer->CleanBuffer();
+}
+
+
+//-----------------------------------------------------------------------------
+std::string OpenCVVideoDataSourceService::GetRecordingDirectoryName()
+{
+  return this->GetRecordingLocation()
+      + this->GetPreferredSlash().toStdString()
+      + this->GetName()
+      + "_" + (tr("%1").arg(m_ChannelNumber)).toStdString()
+      ;
+}
+
+
+//-----------------------------------------------------------------------------
 void OpenCVVideoDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
                                                  niftk::IGIDataType::IGITimeType lastTimeStamp)
 {
+  QMutexLocker locker(&m_Lock);
+
   IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
 
   m_Buffer->DestroyBuffer();
@@ -193,6 +224,8 @@ void OpenCVVideoDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType
 //-----------------------------------------------------------------------------
 void OpenCVVideoDataSourceService::StopPlayback()
 {
+  QMutexLocker locker(&m_Lock);
+
   m_PlaybackIndex.clear();
   m_Buffer->DestroyBuffer();
 
@@ -230,46 +263,13 @@ void OpenCVVideoDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
         wrapper->SetShouldBeSaved(false);
         wrapper->SetIsSaved(false);
 
+        // Buffer itself should be threadsafe, so I'm not locking anything here.
         m_Buffer->AddToBuffer(wrapper.GetPointer());
 
         cvReleaseImage(&img);
       }
     }
     this->SetStatus("Playing back");
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
-{
-  niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(data.GetPointer());
-  if (dataType.IsNull())
-  {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as the data received was NULL!";
-  }
-
-  const IplImage* imageFrame = dataType->GetImage();
-  if (imageFrame == NULL)
-  {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
-  }
-
-  QString directoryPath = QString::fromStdString(this->GetRecordingDirectoryName());
-  QDir directory(directoryPath);
-  if (directory.mkpath(directoryPath))
-  {
-    QString fileName =  directoryPath + QDir::separator() + tr("%1.jpg").arg(data->GetTimeStampInNanoSeconds());
-    bool success = cvSaveImage(fileName.toStdString().c_str(), imageFrame);
-    if (!success)
-    {
-      mitkThrow() << "Failed to save OpenCVVideoDataType in cvSaveImage!";
-    }
-    data->SetIsSaved(true);
-  }
-  else
-  {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as could not create " << directoryPath.toStdString();
   }
 }
 
@@ -309,36 +309,15 @@ bool OpenCVVideoDataSourceService::ProbeRecordedData(const std::string& path,
 
 
 //-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::SetLagInMilliseconds(const unsigned long long& milliseconds)
-{
-  m_Buffer->SetLagInMilliseconds(milliseconds);
-}
-
-
-//-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::CleanBuffer()
-{
-  m_Buffer->CleanBuffer();
-}
-
-
-//-----------------------------------------------------------------------------
-std::string OpenCVVideoDataSourceService::GetRecordingDirectoryName()
-{
-  return this->GetRecordingLocation()
-      + this->GetPreferredSlash().toStdString()
-      + this->GetName()
-      + "_" + (tr("%1").arg(m_ChannelNumber)).toStdString()
-      ;
-}
-
-
-//-----------------------------------------------------------------------------
 void OpenCVVideoDataSourceService::GrabData()
 {
-  if (this->GetIsPlayingBack())
   {
-    return;
+    QMutexLocker locker(&m_Lock);
+
+    if (this->GetIsPlayingBack())
+    {
+      return;
+    }
   }
 
   // Somehow this can become null, probably a race condition during destruction.
@@ -377,10 +356,46 @@ void OpenCVVideoDataSourceService::GrabData()
 
 
 //-----------------------------------------------------------------------------
+void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
+{
+  niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(data.GetPointer());
+  if (dataType.IsNull())
+  {
+    mitkThrow() << "Failed to save OpenCVVideoDataType as the data received was NULL!";
+  }
+
+  const IplImage* imageFrame = dataType->GetImage();
+  if (imageFrame == NULL)
+  {
+    mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
+  }
+
+  QString directoryPath = QString::fromStdString(this->GetRecordingDirectoryName());
+  QDir directory(directoryPath);
+  if (directory.mkpath(directoryPath))
+  {
+    QString fileName =  directoryPath + QDir::separator() + tr("%1.jpg").arg(data->GetTimeStampInNanoSeconds());
+    bool success = cvSaveImage(fileName.toStdString().c_str(), imageFrame);
+    if (!success)
+    {
+      mitkThrow() << "Failed to save OpenCVVideoDataType in cvSaveImage!";
+    }
+    data->SetIsSaved(true);
+  }
+  else
+  {
+    mitkThrow() << "Failed to save OpenCVVideoDataType as could not create " << directoryPath.toStdString();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
 {
   std::vector<IGIDataItemInfo> infos;
 
+  // This loads playback-data into the buffers, so must
+  // come before the check for empty buffer.
   if (this->GetIsPlayingBack())
   {
     this->PlaybackData(time);

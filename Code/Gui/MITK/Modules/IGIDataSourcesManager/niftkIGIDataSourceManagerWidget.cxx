@@ -28,7 +28,7 @@ namespace niftk
 IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointer dataStorage, QWidget *parent)
 : m_Manager(niftk::IGIDataSourceManager::New(dataStorage))
 {
-  Ui_IGIDataSourceManager::setupUi(parent);
+  Ui_IGIDataSourceManagerWidget::setupUi(parent);
   QList<QString> namesOfFactories = m_Manager->GetAllFactoryNames();
   foreach (QString factory, namesOfFactories)
   {
@@ -82,7 +82,14 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(TimerUpdated(QString, QString)), this, SLOT(OnTimerUpdated(QString, QString)));
   assert(ok);
-
+  ok = QObject::connect(m_PlayingPushButton, SIGNAL(clicked(bool)), this, SLOT(OnPlayingPushButtonClicked(bool)));
+  assert(ok);
+  ok = QObject::connect(m_EndPushButton, SIGNAL(clicked(bool)), this, SLOT(OnEndPushButtonClicked(bool)));
+  assert(ok);
+  ok = QObject::connect(m_StartPushButton, SIGNAL(clicked(bool)), this, SLOT(OnStartPushButtonClicked(bool)));
+  assert(ok);
+  ok = QObject::connect(m_PlaybackSlider, SIGNAL(sliderReleased()), this, SLOT(OnSliderReleased()));
+  assert(ok);
 }
 
 
@@ -112,6 +119,15 @@ IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
   assert(ok);
   ok = QObject::disconnect(m_Manager, SIGNAL(TimerUpdated(QString, QString)), this, SLOT(OnTimerUpdated(QString, QString)));
   assert(ok);
+  ok = QObject::disconnect(m_PlayingPushButton, SIGNAL(clicked(bool)), this, SLOT(OnPlayingPushButtonClicked(bool)));
+  assert(ok);
+  ok = QObject::disconnect(m_EndPushButton, SIGNAL(clicked(bool)), this, SLOT(OnEndPushButtonClicked(bool)));
+  assert(ok);
+  ok = QObject::disconnect(m_StartPushButton, SIGNAL(clicked(bool)), this, SLOT(OnStartPushButtonClicked(bool)));
+  assert(ok);
+  ok = QObject::disconnect(m_PlaybackSlider, SIGNAL(sliderReleased()), this, SLOT(OnSliderReleased()));
+  assert(ok);
+
 }
 
 
@@ -193,6 +209,11 @@ void IGIDataSourceManagerWidget::OnPlayStart()
         m_TimeStampEdit->setReadOnly(false);
         m_PlaybackSlider->setEnabled(true);
         m_PlaybackSlider->setValue(sliderValue);
+
+        MITK_INFO << "Matt, on init, sliderMax=" << sliderMaximum;
+        MITK_INFO << "Matt, on init, sliderMin=" << sliderValue;
+        MITK_INFO << "Matt, on init, sliderVal=" << sliderValue;
+
       }
       catch (const mitk::Exception& e)
       {
@@ -474,7 +495,7 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnPlaybackTimestampEditFinished()
 {
-  int result = m_Manager->ComputePlaybackTimeSliderValue(m_TimeStampEdit->text(), m_PlaybackSlider->maximum());
+  int result = m_Manager->ComputePlaybackTimeSliderValue(m_TimeStampEdit->text());
   if (result != -1)
   {
     m_PlaybackSlider->blockSignals(true);
@@ -502,6 +523,7 @@ void IGIDataSourceManagerWidget::OnTimerUpdated(QString rawString, QString human
   // Only update text if user is not editing
   if (!m_TimeStampEdit->hasFocus())
   {
+    m_TimeStampEdit->blockSignals(true);
     // Avoid flickering the text field. it makes copy-n-paste impossible
     // during playback mode because it resets the selection every few milliseconds.
     if (m_TimeStampEdit->text() != humanReadableString)
@@ -512,7 +534,39 @@ void IGIDataSourceManagerWidget::OnTimerUpdated(QString rawString, QString human
     {
       m_TimeStampEdit->setToolTip(rawString);
     }
+    m_TimeStampEdit->blockSignals(false);
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::OnPlayingPushButtonClicked(bool isChecked)
+{
+  m_Manager->SetIsPlayingBackAutomatically(isChecked);
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::OnEndPushButtonClicked(bool /*isChecked*/)
+{
+  m_PlaybackSlider->setValue(m_PlaybackSlider->maximum());
+  this->OnSliderReleased();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::OnStartPushButtonClicked(bool /*isChecked*/)
+{
+  m_PlaybackSlider->setValue(m_PlaybackSlider->minimum());
+  this->OnSliderReleased();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::OnSliderReleased()
+{
+  IGIDataType::IGITimeType time = m_Manager->ComputeTimeFromSlider(m_PlaybackSlider->value());
+  m_Manager->SetPlaybackTime(time);
 }
 
 } // end namespace

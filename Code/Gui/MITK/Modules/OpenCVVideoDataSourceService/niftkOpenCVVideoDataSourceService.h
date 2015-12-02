@@ -130,10 +130,12 @@ private:
   static int GetNextChannelNumber();
   void Init();
 
-  mitk::OpenCVVideoSource::Pointer                m_VideoSource;
-  int                                             m_ChannelNumber;
   static QMutex                                   s_Lock;
   static QSet<int>                                s_SourcesInUse;
+
+  QMutex                                          m_Lock;
+  mitk::OpenCVVideoSource::Pointer                m_VideoSource;
+  int                                             m_ChannelNumber;
   niftk::IGIDataType::IGIIndexType                m_FrameId;
   niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
   niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;

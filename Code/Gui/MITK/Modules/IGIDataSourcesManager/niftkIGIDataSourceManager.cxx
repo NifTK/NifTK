@@ -599,10 +599,13 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
   assert(oneSecondStep < std::numeric_limits<int>::max());
   sliderPageStep = static_cast<int>(oneSecondStep);
 
-  // Set slider value to start.
   sliderValue = 0;
   m_PlaybackSliderValue = sliderValue;
   m_PlaybackSliderMaxValue = sliderMax;
+
+  IGIDataType::IGITimeType currentTime = this->ComputeTimeFromSlider(sliderValue);
+  this->SetPlaybackTime(currentTime);
+
   this->SetIsPlayingBack(true);
   this->Modified();
 }
@@ -622,9 +625,26 @@ void IGIDataSourceManager::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
-int IGIDataSourceManager::ComputePlaybackTimeSliderValue(QString textEditField, int sliderMax)
+IGIDataType::IGITimeType IGIDataSourceManager::ComputeTimeFromSlider(int sliderValue) const
+{  
+  IGIDataType::IGITimeType result = m_PlaybackSliderBase + ((static_cast<double>(sliderValue) / static_cast<double>(m_PlaybackSliderMaxValue)) * m_PlaybackSliderMaxValue);
+
+  MITK_INFO << "Matt, sliderValue=" << sliderValue;
+  MITK_INFO << "Matt, sliderMax=" << m_PlaybackSliderMaxValue;
+  MITK_INFO << "Matt, m_PlaybackSliderBase=" << m_PlaybackSliderBase;
+  MITK_INFO << "Matt, m_PlaybackSliderFactor=" << m_PlaybackSliderFactor;
+  MITK_INFO << "Matt, result=" << result;
+  MITK_INFO << "Matt, divide=" << (static_cast<double>(sliderValue) / static_cast<double>(m_PlaybackSliderMaxValue));
+  MITK_INFO << "Matt, multiply=" << (static_cast<double>(sliderValue) / static_cast<double>(m_PlaybackSliderMaxValue))* m_PlaybackSliderFactor;
+
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+int IGIDataSourceManager::ComputePlaybackTimeSliderValue(QString textEditField) const
 {
-  IGIDataType::IGITimeType maxSliderTime  = m_PlaybackSliderBase + ((IGIDataType::IGITimeType) sliderMax * m_PlaybackSliderFactor);
+  IGIDataType::IGITimeType maxSliderTime  = m_PlaybackSliderBase + ((IGIDataType::IGITimeType) m_PlaybackSliderMaxValue * m_PlaybackSliderFactor);
 
   // Try to parse as single number, a timestamp in nano seconds.
   bool  ok = false;

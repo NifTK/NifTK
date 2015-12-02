@@ -226,14 +226,14 @@ niftk::IGIDataType::Pointer IGIDataSourceBuffer::GetItem(const niftk::IGIDataTyp
     mitkThrow() << "The requested time " << time << " is obviously too small, suggesting a programming bug." << std::endl;
   }
 
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
   niftk::IGIDataType::Pointer result = NULL;
 
-  if (m_Buffer.size() < 2)
+  if (m_Buffer.size() == 0)
   {
     return result;
   }
-
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   niftk::IGIDataType::IGITimeType effectiveTime = time - m_Lag; // normally lag is zero.
 
@@ -242,6 +242,13 @@ niftk::IGIDataType::Pointer IGIDataSourceBuffer::GetItem(const niftk::IGIDataTyp
   if ((*(m_Buffer.begin()))->GetTimeStampInNanoSeconds() > effectiveTime)
   {
     return result;
+  }
+
+  // If first item in buffer is exactly equal to request time, just return
+  // it without searching the buffer. This occurs during playback.
+  if ((*(m_Buffer.begin()))->GetTimeStampInNanoSeconds() == effectiveTime)
+  {
+    return *(m_Buffer.begin());
   }
 
   BufferType::iterator iter = m_Buffer.begin();
