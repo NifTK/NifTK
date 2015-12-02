@@ -135,6 +135,11 @@ private slots:
   */
   void OnPlaybackTimeAdvanced(int newSliderValue);
 
+  /**
+  * \brief Callback from niftk::IGIDataSourceManager to set timestamps on the GUI.
+  */
+  void OnTimerUpdated(QString rawString, QString humanReadableString);
+
 private:
 
   IGIDataSourceManager::Pointer m_Manager;

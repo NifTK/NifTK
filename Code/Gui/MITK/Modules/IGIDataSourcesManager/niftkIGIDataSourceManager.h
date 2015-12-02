@@ -65,6 +65,8 @@ public:
   static const char*  DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
 
   bool IsPlayingBack() const;
+
+  void SetIsPlayingBackAutomatically(bool isPlayingBackAutomatically);
   bool IsPlayingBackAutomatically() const;
 
   bool IsUpdateTimerOn() const;
@@ -227,6 +229,11 @@ signals:
   */
   void PlaybackTimerAdvanced(int sliderValue);
 
+  /**
+  * \brief Manager emits the time, to update the GUI.
+  */
+  void TimerUpdated(QString rawTimeStamp, QString humanReadableTimeStamp);
+
 protected:
 
   IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage);
@@ -260,14 +267,11 @@ private:
   QMap<QString, QString> ParseDataSourceDescriptor(const QString& filepath);
 
   /**
-  * \brief Used to switch the manager between playback and live mode.
-  */
-  void SetIsPlayingBack(bool isPlayingBack);
-
-  /**
   * \brief Internal method to step forward in time, if playing back.
   */
   void AdvancePlaybackTimer();
+
+  void SetIsPlayingBack(bool isPlayingBack);
 
   mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.
   us::ModuleContext*                                               m_ModuleContext;

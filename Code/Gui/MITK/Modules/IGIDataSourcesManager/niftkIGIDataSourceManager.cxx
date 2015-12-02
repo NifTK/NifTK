@@ -677,6 +677,14 @@ void IGIDataSourceManager::SetIsPlayingBack(bool isPlayingBack)
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSourceManager::SetIsPlayingBackAutomatically(bool isPlayingBackAutomatically)
+{
+  m_IsPlayingBackAutomatically = isPlayingBackAutomatically;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManager::AdvancePlaybackTimer()
 {
   int                       sliderValue = m_PlaybackSliderValue;
@@ -692,7 +700,7 @@ void IGIDataSourceManager::AdvancePlaybackTimer()
   if (newSliderValue < m_PlaybackSliderMaxValue)
   {
     m_PlaybackSliderValue = newSliderValue;
-    this->SetPlaybackTime(newSliderTime);
+    m_CurrentTime = newSliderTime;
     emit PlaybackTimerAdvanced(newSliderValue);
   }
 }
@@ -703,13 +711,20 @@ void IGIDataSourceManager::OnUpdateGui()
 {
   if (m_IsPlayingBack)
   {
-    this->AdvancePlaybackTimer();
+    if (m_IsPlayingBackAutomatically)
+    {
+      this->AdvancePlaybackTimer();
+    }
   }
   else
   {
     m_TimeStampGenerator->GetTime();
     m_CurrentTime = m_TimeStampGenerator->GetTimeStampInNanoseconds();
   }
+
+  QString   rawTimeStampString = QString("%1").arg(m_CurrentTime);
+  QString   humanReadableTimeStamp = QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yyyy/MM/dd hh:mm:ss.zzz");
+  emit TimerUpdated(rawTimeStampString, humanReadableTimeStamp);
 
   niftk::IGIDataType::IGITimeType currentTime = m_CurrentTime;
 

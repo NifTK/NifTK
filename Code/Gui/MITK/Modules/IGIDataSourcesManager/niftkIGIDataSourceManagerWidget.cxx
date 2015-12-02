@@ -80,6 +80,9 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(PlaybackTimerAdvanced(int)), this, SLOT(OnPlaybackTimeAdvanced(int)));
   assert(ok);
+  ok = QObject::connect(m_Manager, SIGNAL(TimerUpdated(QString, QString)), this, SLOT(OnTimerUpdated(QString, QString)));
+  assert(ok);
+
 }
 
 
@@ -106,6 +109,8 @@ IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
   ok = QObject::disconnect(m_Manager, SIGNAL(UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)), this, SLOT(OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)));
   assert(ok);
   ok = QObject::disconnect(m_Manager, SIGNAL(PlaybackTimerAdvanced(int)), this, SLOT(OnPlaybackTimeAdvanced(int)));
+  assert(ok);
+  ok = QObject::disconnect(m_Manager, SIGNAL(TimerUpdated(QString, QString)), this, SLOT(OnTimerUpdated(QString, QString)));
   assert(ok);
 }
 
@@ -487,6 +492,26 @@ void IGIDataSourceManagerWidget::OnPlaybackTimeAdvanced(int newSliderValue)
     m_PlaybackSlider->blockSignals(true);
     m_PlaybackSlider->setValue(newSliderValue);
     m_PlaybackSlider->blockSignals(false);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::OnTimerUpdated(QString rawString, QString humanReadableString)
+{
+  // Only update text if user is not editing
+  if (!m_TimeStampEdit->hasFocus())
+  {
+    // Avoid flickering the text field. it makes copy-n-paste impossible
+    // during playback mode because it resets the selection every few milliseconds.
+    if (m_TimeStampEdit->text() != humanReadableString)
+    {
+      m_TimeStampEdit->setText(humanReadableString);
+    }
+    if (m_TimeStampEdit->toolTip() != rawString)
+    {
+      m_TimeStampEdit->setToolTip(rawString);
+    }
   }
 }
 
