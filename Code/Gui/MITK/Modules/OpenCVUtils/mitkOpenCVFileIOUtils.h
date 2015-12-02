@@ -37,11 +37,6 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT bool CheckIfDirectoryContainsTrackingMatric
 extern "C++" NIFTKOPENCVUTILS_EXPORT std::vector<std::string> FindTrackingMatrixDirectories(const std::string& directory);
 
 /**
- * \brief Returns an mitk::TimeStampsContainer containing all the timestamps of tracking matrices.
- */
-extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::TimeStampsContainer FindTrackingTimeStamps(std::string directory);
-
-/**
  * \brief Recursively hunts for all files that look like they are a video frame map file, (.+)(framemap.log).
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT std::vector<std::string> FindVideoFrameMapFiles(const std::string directory);
