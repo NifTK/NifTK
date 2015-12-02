@@ -493,9 +493,8 @@ void IGIDataSourceManagerWidget::OnPlaybackTimestampEditFinished()
   int result = m_Manager->ComputePlaybackTimeSliderValue(m_TimeStampEdit->text());
   if (result != -1)
   {
-    m_PlaybackSlider->blockSignals(true);
     m_PlaybackSlider->setValue(result);
-    m_PlaybackSlider->blockSignals(false);
+    this->OnSliderReleased();
   }
 }
 
