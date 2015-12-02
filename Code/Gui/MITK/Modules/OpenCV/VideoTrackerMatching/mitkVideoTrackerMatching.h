@@ -21,8 +21,8 @@
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
-#include "mitkTrackingMatrices.h"
 #include "mitkTimeStampsContainer.h"
+#include "mitkTrackingAndTimeStampsContainer.h"
 
 namespace mitk
 {
@@ -132,7 +132,6 @@ protected:
   VideoTrackerMatching& operator=(const VideoTrackerMatching&); // Purposefully not implemented.
   
   std::vector<unsigned int>             m_FrameNumbers;
-  std::vector<TimeStampsContainer> m_TimeStampsContainer;
   TimeStampsContainer              m_VideoTimeStamps;
   bool                                  m_Ready;
   bool                                  m_FlipMatrices;
@@ -151,19 +150,17 @@ protected:
   
 private:
   
-  std::vector<TrackingMatrices>     m_TrackingMatrices; 
-  std::vector<std::string>          m_TrackingMatrixDirectories;
-  std::string                       m_FrameMap;
+  std::vector<mitk::TrackingAndTimeStampsContainer>     m_TrackingMatricesAndTimeStamps;
+  std::vector<std::string>                              m_TrackingMatrixDirectories;
+  std::string                                           m_FrameMap;
 
-  std::vector<std::string>          FindFrameMaps();
-  void                              FindTrackingMatrixDirectories();
-  void                              ProcessFrameMapFile();
-  bool                              CheckTimingErrorStats();
-  bool                              m_HaltOnFrameSkip;
-  std::vector<cv::Mat>              m_CameraToTracker;
+  void                                                  ProcessFrameMapFile();
+  bool                                                  CheckTimingErrorStats();
+  bool                                                  m_HaltOnFrameSkip;
+  std::vector<cv::Mat>                                  m_CameraToTracker;
 
-  std::vector <unsigned long long> m_VideoLag; //the delay between the tracking and video data
-  std::vector <bool>               m_VideoLeadsTracking; //if the video lag is negative, set this to true
+  std::vector <unsigned long long>                      m_VideoLag; //the delay between the tracking and video data
+  std::vector <bool>                                    m_VideoLeadsTracking; //if the video lag is negative, set this to true
 
 };
 

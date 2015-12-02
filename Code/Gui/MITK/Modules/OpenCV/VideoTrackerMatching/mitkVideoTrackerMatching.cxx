@@ -43,8 +43,8 @@ VideoTrackerMatching::~VideoTrackerMatching ()
 void VideoTrackerMatching::Initialise(std::string directory)
 {
   m_Directory = directory;
-  std::vector<std::string> FrameMaps = FindFrameMaps();
-  
+  std::vector<std::string> FrameMaps = mitk::FindVideoFrameMapFiles(m_Directory);
+
   if ( FrameMaps.size() != 1 ) 
   {
     MITK_ERROR << "Found " << FrameMaps.size() << " framemap.log files, VideoTrackerMatching failed to initialise.";
@@ -54,7 +54,7 @@ void VideoTrackerMatching::Initialise(std::string directory)
   else
   {
     MITK_INFO << "Found " << FrameMaps[0];
-    FindTrackingMatrixDirectories();
+    m_TrackingMatrixDirectories = mitk::FindTrackingMatrixDirectories(m_Directory);
     if ( m_TrackingMatrixDirectories.size() == 0 ) 
     {
       MITK_ERROR << "Found no tracking directories, VideoTrackerMatching failed to initiliase.";
@@ -65,9 +65,10 @@ void VideoTrackerMatching::Initialise(std::string directory)
     {
       for ( unsigned int i = 0 ; i < m_TrackingMatrixDirectories.size() ; i ++ ) 
       {
-        TimeStampsContainer tempTimeStamps = mitk::FindTrackingTimeStamps(m_TrackingMatrixDirectories[i]);
+        TrackingAndTimeStampsContainer tempTimeStamps = mitk::TrackingAndTimeStampsContainer();
+        tempTimeStamps.LoadFromDirectory(m_TrackingMatrixDirectories[i]);
         MITK_INFO << "Found " << tempTimeStamps.GetSize() << " time stamped tracking files in " << m_TrackingMatrixDirectories[i];
-        m_TimeStampsContainer.push_back(tempTimeStamps);
+        m_TrackingMatricesAndTimeStamps.push_back(tempTimeStamps);
         m_VideoLag.push_back(0);
         m_VideoLeadsTracking.push_back(false);
         cv::Mat tempCameraToTracker = cv::Mat(4,4,CV_64F);
@@ -86,7 +87,6 @@ void VideoTrackerMatching::Initialise(std::string directory)
           }
         }
         m_CameraToTracker.push_back(tempCameraToTracker);
-
       }
     }
   }
@@ -104,28 +104,6 @@ void VideoTrackerMatching::Initialise(std::string directory)
   }
   return;
 }
-
-
-//---------------------------------------------------------------------------
-std::vector<std::string> VideoTrackerMatching::FindFrameMaps()
-{
-  return mitk::FindVideoFrameMapFiles(m_Directory);
-}
-
-
-//---------------------------------------------------------------------------
-void VideoTrackerMatching::FindTrackingMatrixDirectories()
-{
-  m_TrackingMatrixDirectories = mitk::FindTrackingMatrixDirectories(m_Directory);
-  
-  for (unsigned int i = 0; i < m_TrackingMatrixDirectories.size(); i++)
-  {
-    //need to init tracking matrix vector
-    TrackingMatrices tempMatrices; 
-    m_TrackingMatrices.push_back(tempMatrices);
-  }
-}
-
 
 //---------------------------------------------------------------------------
 void VideoTrackerMatching::ProcessFrameMapFile ()
