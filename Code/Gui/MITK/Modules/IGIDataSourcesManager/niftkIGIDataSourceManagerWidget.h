@@ -111,7 +111,7 @@ private slots:
 
   /**
   * \brief Callback to indicate that a cell has been
-  * double clicked, to launch that sources' GUI.
+  * double clicked, to launch that sources' configuration GUI.
   */
   void OnCellDoubleClicked(int row, int column);
 
