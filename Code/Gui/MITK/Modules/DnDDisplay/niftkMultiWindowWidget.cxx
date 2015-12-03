@@ -151,6 +151,10 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   m_PlaneNode1->SetVisibility(false);
   m_PlaneNode2->SetVisibility(false);
   m_PlaneNode3->SetVisibility(false);
+  m_PlaneNode1->SetIntProperty("Crosshair.Gap Size", 8, 0);
+  m_PlaneNode2->SetIntProperty("Crosshair.Gap Size", 8, 0);
+  m_PlaneNode3->SetIntProperty("Crosshair.Gap Size", 8, 0);
+
   this->SetCursorVisible(false);
   this->SetWidgetPlanesLocked(true);
   this->SetWidgetPlanesRotationLocked(true);
