@@ -71,6 +71,8 @@ void VideoTrackerMatching::Initialise(std::string directory)
         m_TrackingMatricesAndTimeStamps.push_back(tempTimeStamps);
         m_VideoLag.push_back(0);
         m_VideoLeadsTracking.push_back(false);
+        std::vector < long long > emptyErrors;
+        m_TimingErrors.push_back(emptyErrors);
         cv::Mat tempCameraToTracker = cv::Mat(4,4,CV_64F);
         for ( int i = 0 ; i < 4 ; i ++ ) 
         {
@@ -124,10 +126,9 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
   cv::Mat trackingMatrix ( 4, 4, CV_64FC1 );
 
   m_FrameNumbers.clear();
-  for ( unsigned int i = 0 ; i < m_TimeStampsContainer.size() ; i ++ )
+  for ( unsigned int i = 0 ; i < m_TrackingMatricesAndTimeStamps.size() ; i ++ )
   {
-    m_TrackingMatrices[i].m_TimingErrors.clear();
-    m_TrackingMatrices[i].m_TrackingMatrices.clear();
+    m_TimingErrors[i].clear();
   }
   unsigned int badMatrices = 0;
   while ( getline(fin,line) )
@@ -141,54 +142,21 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
         m_FrameNumbers.push_back(frameNumber);
         m_VideoTimeStamps.Insert(timeStamp);
         
-        for ( unsigned int i = 0 ; i < m_TimeStampsContainer.size() ; i ++ )
+        for ( unsigned int i = 0 ; i < m_TrackingMatricesAndTimeStamps.size() ; i ++ )
         {
           long long timingError;
-          unsigned long long TargetTimeStamp; 
           if ( m_VideoLeadsTracking[i] )
           {
-            TargetTimeStamp = m_TimeStampsContainer[i].GetNearestTimeStamp(
+            m_TrackingMatricesAndTimeStamps[i].GetNearestTimeStamp(
                 timeStamp + m_VideoLag[i], &timingError);
           }
           else
           {
-            TargetTimeStamp = m_TimeStampsContainer[i].GetNearestTimeStamp(
+            m_TrackingMatricesAndTimeStamps[i].GetNearestTimeStamp(
                 timeStamp - m_VideoLag[i], &timingError);
           }
           
-
-          std::string MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
-          boost::filesystem::path MatrixFileNameFull (m_TrackingMatrixDirectories[i]);
-          MatrixFileNameFull /= MatrixFileName;
-
-          while ( ! mitk::ReadTrackerMatrix(MatrixFileNameFull.string(), trackingMatrix)  )
-          {
-            MITK_ERROR << "failed to read matrix " << MatrixFileNameFull.string() << " removing from timestamp vector";
-            m_TimeStampsContainer[i].Remove(TargetTimeStamp);
-            if ( m_VideoLeadsTracking[i] )
-            {
-              TargetTimeStamp = m_TimeStampsContainer[i].GetNearestTimeStamp(
-                timeStamp + m_VideoLag[i], &timingError);
-            }
-            else
-            {
-              TargetTimeStamp = m_TimeStampsContainer[i].GetNearestTimeStamp(
-                timeStamp - m_VideoLag[i], &timingError);
-            }
-          
-            MatrixFileName = boost::lexical_cast<std::string>(TargetTimeStamp) + ".txt";
-            MatrixFileNameFull = boost::filesystem::path (m_TrackingMatrixDirectories[i]);
-            MatrixFileNameFull /= MatrixFileName;
-            badMatrices ++;
-          }
-          
-          m_TrackingMatrices[i].m_TimingErrors.push_back(timingError);
-
-          // This is because because OpenCV overrides the copy constructor.
-          cv::Mat tmpMatrix ( 4, 4, CV_64FC1 );
-          trackingMatrix.copyTo(tmpMatrix);
-
-          m_TrackingMatrices[i].m_TrackingMatrices.push_back(tmpMatrix);
+          m_TimingErrors[i].push_back(timingError);
         }
 
         if ( frameNumber != linenumber++ )
@@ -199,7 +167,6 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
             MITK_ERROR << "Halt on frame skip true, so halting, check data";
             exit(1);
           }
-
         }
       }
       else
@@ -255,25 +222,17 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
 {
   bool ok = true;
   //check sizes
-  if ( m_TrackingMatrices.size() != m_TrackingMatrixDirectories.size() )
+  if ( m_TrackingMatricesAndTimeStamps.size() != m_TrackingMatrixDirectories.size() )
   {
-    MITK_ERROR << "Wrong number of tracking matrix dirtectories " << m_TrackingMatrices.size() 
+    MITK_ERROR << "Wrong number of tracking matrix dirtectories " << m_TrackingMatricesAndTimeStamps.size() 
       << " != " <<  m_TrackingMatrixDirectories.size();
     ok=false;
   }
-  for ( unsigned int i = 0 ; i < m_TrackingMatrices.size() ; i ++ ) 
+  for ( unsigned int i = 0 ; i < m_TrackingMatricesAndTimeStamps.size() ; i ++ ) 
   {
-    if ( m_TrackingMatrices[i].m_TrackingMatrices.size() != 
-        m_TrackingMatrices[i].m_TimingErrors.size() )
+    if ( m_TimingErros[i].size() != m_FrameNumbers.size() )
     {
-      MITK_ERROR << "Wrong number of tracking matrices " << i << ": " << m_TrackingMatrices[i].m_TrackingMatrices.size() 
-        << " != " <<  m_TrackingMatrices[i].m_TimingErrors.size();
-      ok = false;
-    }
-    if ( m_TrackingMatrices[i].m_TrackingMatrices.size() != 
-        m_FrameNumbers.size() )
-    {
-      MITK_ERROR << "Wrong number of frame numbers " << i << ": " << m_TrackingMatrices[i].m_TrackingMatrices.size() 
+      MITK_ERROR << "Wrong number of frame numbers " << i << ": " << m_TimingErrors[i].size()
         << " != " <<  m_FrameNumbers.size();
       ok = false;
     }

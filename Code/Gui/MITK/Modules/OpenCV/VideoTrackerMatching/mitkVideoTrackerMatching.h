@@ -151,6 +151,7 @@ protected:
 private:
   
   std::vector<mitk::TrackingAndTimeStampsContainer>     m_TrackingMatricesAndTimeStamps;
+  std::vector< std::vector<long long> >                 m_TimingErrors; //for each frame a set of timing errors
   std::vector<std::string>                              m_TrackingMatrixDirectories;
   std::string                                           m_FrameMap;
 
