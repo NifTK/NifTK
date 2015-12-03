@@ -23,6 +23,10 @@
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 
+#include <QMap>
+#include <QString>
+#include <QVariant>
+
 namespace niftk
 {
 
@@ -35,8 +39,6 @@ namespace niftk
 * of these IGIDataSourceInfo for each tool. Other sources such as a video
 * source or framegrabber will probably only return one of these per frame. But in
 * principle it could be any number from each source.
-*
-* Note: Deliberately not using Qt datatypes, so that an implementing class does not have to.
 *
 * The first implementing class was niftk::OpenCVVideoDataSourceService().
 */
@@ -218,6 +220,9 @@ public:
   virtual bool ProbeRecordedData(const std::string& pathName,
                                  niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                  niftk::IGIDataType::IGITimeType* lastTimeStampInStore) = 0;
+
+  virtual void SetProperties(QMap<QString, QVariant>& properties) = 0;
+  virtual QMap<QString, QVariant> GetProperties() const = 0;
 
 protected:
 

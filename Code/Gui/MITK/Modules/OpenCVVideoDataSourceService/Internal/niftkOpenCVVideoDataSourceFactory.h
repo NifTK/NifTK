@@ -33,9 +33,22 @@ public:
   virtual ~OpenCVVideoDataSourceFactory();
 
   /**
-  * \see IGIDataSourceFactoryServiceI::Create()
+  * \see IGIDataSourceFactoryServiceI::CreateService()
   */
-  virtual IGIDataSourceI::Pointer Create(mitk::DataStorage::Pointer dataStorage) override;
+  virtual IGIDataSourceI::Pointer CreateService(mitk::DataStorage::Pointer dataStorage,
+                                                const QMap<QString, QVariant>& properties) const override;
+
+  /**
+  * \see IGIDataSourceFactoryServiceI::CreateInitialisationDialog()
+  */
+  virtual IGIInitialisationDialog* CreateInitialisationDialog(QWidget *parent) const override;
+
+  /**
+  * \see IGIDataSourceFactoryServiceI::CreateConfigurationDialog()
+  */
+  virtual IGIConfigurationDialog* CreateConfigurationDialog(QWidget *parent,
+                                                            niftk::IGIDataSourceI::Pointer service
+                                                            ) const override;
 
   /**
   * \brief Returns "QmitkIGIOpenCVDataSource"

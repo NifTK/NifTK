@@ -14,6 +14,8 @@
 
 #include "niftkOpenCVVideoDataSourceFactory.h"
 #include "niftkOpenCVVideoDataSourceService.h"
+#include <niftkIPPortDialog.h>
+#include <niftkLagDialog.h>
 
 namespace niftk
 {
@@ -21,9 +23,8 @@ namespace niftk
 //-----------------------------------------------------------------------------
 OpenCVVideoDataSourceFactory::OpenCVVideoDataSourceFactory()
 : IGIDataSourceFactoryServiceI("OpenCV Frame Grabber",
-                               "OpenCVVideoDataSourceService",
-                               "", // Don't need a startup GUI, nothing to configure at startup.
-                               ""  // Don't need a configuration GUI, no parameters to tweak during runtime.
+                               true, // don't need to configure at startup
+                               false // don't need to configure when running
                                )
 {
 }
@@ -36,14 +37,30 @@ OpenCVVideoDataSourceFactory::~OpenCVVideoDataSourceFactory()
 
 
 //-----------------------------------------------------------------------------
-IGIDataSourceI::Pointer OpenCVVideoDataSourceFactory::Create(
-    mitk::DataStorage::Pointer dataStorage)
+IGIDataSourceI::Pointer OpenCVVideoDataSourceFactory::CreateService(
+    mitk::DataStorage::Pointer dataStorage,
+    const QMap<QString, QVariant>& properties) const
 {
   niftk::OpenCVVideoDataSourceService::Pointer serviceInstance
-      = OpenCVVideoDataSourceService::New(this->GetName(), // factory name
-                                          dataStorage);
+      = OpenCVVideoDataSourceService::New(this->GetName(), dataStorage);
 
   return serviceInstance.GetPointer();
+}
+
+
+//-----------------------------------------------------------------------------
+IGIInitialisationDialog* OpenCVVideoDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
+{
+  return new niftk::IPPortDialog(parent);
+}
+
+
+//-----------------------------------------------------------------------------
+IGIConfigurationDialog* OpenCVVideoDataSourceFactory::CreateConfigurationDialog(QWidget *parent,
+                                                                                niftk::IGIDataSourceI::Pointer service
+                                                                                ) const
+{
+  return new niftk::LagDialog(parent, service);
 }
 
 

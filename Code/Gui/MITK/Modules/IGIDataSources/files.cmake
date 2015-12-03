@@ -26,6 +26,11 @@ set(CPP_FILES
   Threads/niftkIGIDataSourceGrabbingThread.cxx
   Threads/niftkIGIDataSourceBackgroundSaveThread.cxx
   Threads/niftkIGIDataSourceBackgroundDeleteThread.cxx
+  Dialogs/niftkIGIInitialisationDialog.cxx
+  Dialogs/niftkIGIConfigurationDialog.cxx
+  Dialogs/niftkUSBPortDialog.cxx
+  Dialogs/niftkIPPortDialog.cxx
+  Dialogs/niftkLagDialog.cxx
   mitkIGITestDataUtils.cxx
   mitkIGIDataType.cxx
   mitkIGIDataSource.cxx
@@ -52,6 +57,11 @@ set(CPP_FILES
 
 set(MOC_H_FILES
   Threads/niftkIGITimerBasedThread.h
+  Dialogs/niftkIGIInitialisationDialog.h
+  Dialogs/niftkIGIConfigurationDialog.h
+  Dialogs/niftkUSBPortDialog.h
+  Dialogs/niftkIPPortDialog.h
+  Dialogs/niftkLagDialog.h
   TrackerControlsWidget.h
   QmitkIGITimerBasedThread.h
 #  QmitkFiducialRegistrationWidgetDialog.h
@@ -69,6 +79,9 @@ set(MOC_H_FILES
 )
 
 set(UI_FILES
+  Dialogs/niftkUSBPortDialog.ui
+  Dialogs/niftkIPPortDialog.ui
+  Dialogs/niftkLagDialog.ui
   TrackerControlsWidget.ui
 #  QmitkFiducialRegistrationWidgetDialog.ui
   QmitkIGITrackerSourceGui.ui

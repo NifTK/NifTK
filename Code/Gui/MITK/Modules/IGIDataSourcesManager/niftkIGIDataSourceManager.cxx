@@ -377,12 +377,14 @@ QMap<QString, QString> IGIDataSourceManager::ParseDataSourceDescriptor(const QSt
 //-----------------------------------------------------------------------------
 bool IGIDataSourceManager::NeedsStartupGui(QString name)
 {
-  return false;
+  niftk::IGIDataSourceFactoryServiceI *factory = this->GetFactory(name);
+  bool result = factory->HasInitialiseGui();
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSourceManager::AddSource(QString name, QList<QMap<QString, QVariant> >& properties)
+niftk::IGIDataSourceFactoryServiceI* IGIDataSourceManager::GetFactory(QString name)
 {
   niftk::IGIDataSourceFactoryServiceI *factory = NULL;
 
@@ -402,9 +404,16 @@ void IGIDataSourceManager::AddSource(QString name, QList<QMap<QString, QVariant>
   {
     mitkThrow() << "Failed to retrieve factory for " << name.toStdString();
   }
+  return factory;
+}
 
-  // All our code should throw mitk::Exception.
-  niftk::IGIDataSourceI::Pointer source = factory->Create(m_DataStorage);
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::AddSource(QString name, QMap<QString, QVariant>& properties)
+{
+  // Remember: All our code should throw mitk::Exception.
+  niftk::IGIDataSourceFactoryServiceI *factory = this->GetFactory(name);
+  niftk::IGIDataSourceI::Pointer source = factory->CreateService(m_DataStorage, properties);
 
   // Double check that we actually got a valid source,
   // as people may write services that fail, do not throw,

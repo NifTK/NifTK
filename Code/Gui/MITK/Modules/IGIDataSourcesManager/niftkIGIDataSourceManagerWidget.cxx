@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkIGIDataSourceManagerWidget.h"
-
+#include <niftkIGIConfigurationDialog.h>
 #include <QMessageBox>
 #include <QTableWidgetItem>
 #include <QVector>
@@ -317,13 +317,23 @@ void IGIDataSourceManagerWidget::OnAddSource()
 
   try
   {
-    QList<QMap<QString, QVariant> > properties;
+    QMap<QString, QVariant> properties;
 
     bool needsGui = m_Manager->NeedsStartupGui(name);
     if (needsGui)
     {
       // Launch startup GUI.
       // Populate parameters when GUI is OK'd.
+      niftk::IGIDataSourceFactoryServiceI* factory = m_Manager->GetFactory(name);
+      niftk::IGIInitialisationDialog *dialog = factory->CreateInitialisationDialog(this);
+      int returnValue = dialog->exec(); // modal.
+
+      if (returnValue == QDialog::Rejected)
+      {
+        return;
+      }
+      properties = dialog->GetProperties();
+      delete dialog;
     }
 
     m_Manager->AddSource(name, properties);

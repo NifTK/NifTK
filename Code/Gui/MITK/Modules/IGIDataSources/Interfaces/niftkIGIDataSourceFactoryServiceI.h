@@ -17,9 +17,15 @@
 
 #include <niftkIGIServicesExports.h>
 #include <niftkIGIDataSourceI.h>
+#include <niftkIGIConfigurationDialog.h>
+#include <niftkIGIInitialisationDialog.h>
 
 #include <mitkServiceInterface.h>
 #include <mitkDataStorage.h>
+
+#include <QWidget>
+#include <QMap>
+#include <QString>
 
 namespace niftk
 {
@@ -29,17 +35,26 @@ namespace niftk
 * \brief Interface for a factory to create niftk::IGIDataSourceServiceI.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
-*
-* Note: Implementors of this interface must be thread-safe.
-*
-* Note: Deliberately not using Qt datatypes, so that an implementing class does not have to.
 */
 class NIFTKIGISERVICES_EXPORT IGIDataSourceFactoryServiceI
 {
 
 public:
 
-  virtual IGIDataSourceI::Pointer Create(mitk::DataStorage::Pointer dataStorage) = 0;
+  /**
+  * \brief Creates the actual data source service.
+  */
+  virtual IGIDataSourceI::Pointer CreateService(mitk::DataStorage::Pointer dataStorage, const QMap<QString, QVariant>& properties) const = 0;
+
+  /**
+  * \brief Creates the dialog box used to initialise the service.
+  */
+  virtual IGIInitialisationDialog* CreateInitialisationDialog(QWidget *parent) const = 0;
+
+  /**
+  * \brief Creates the dialog box used to configure the service while its running.
+  */
+  virtual IGIConfigurationDialog* CreateConfigurationDialog(QWidget *parent, niftk::IGIDataSourceI::Pointer) const = 0;
 
   /**
   * \brief Returns the name of the data source factory, as perceived by the user in the GUI.
@@ -51,33 +66,14 @@ public:
   */
   virtual std::vector<std::string> GetLegacyClassNames() const = 0;
 
-  /**
-  * \brief Returns the name of the service class that should be instantiated.
-  */
-  virtual std::string GetNameOfService() const;
-
-  /**
-  * \brief Returns the name of the GUI class that should be instantiated at startup.
-  *
-  * (i.e. parameters like port numbers, needed on creation).
-  */
-  virtual std::string GetNameOfStartupGui() const;
-
-  /**
-  * \brief Returns the name of the GUI class that should be instantiated at startup.
-  *
-  * (i.e. options that can be configured on the fly during runtime).
-  */
-  virtual std::string GetNameOfConfigurationGui() const;
+  bool HasInitialiseGui() const;
+  bool HasConfigurationGui() const;
 
 protected:
 
   IGIDataSourceFactoryServiceI(std::string name,
-                               std::string service,
-                               std::string startupGui,
-                               std::string nameOfConfigurationGui
-                               );
-
+                               bool hasInitialiseGui,
+                               bool hasConfigurationGui);
   virtual ~IGIDataSourceFactoryServiceI();
 
 private:
@@ -85,12 +81,9 @@ private:
   IGIDataSourceFactoryServiceI(const IGIDataSourceFactoryServiceI&); // deliberately not implemented
   IGIDataSourceFactoryServiceI& operator=(const IGIDataSourceFactoryServiceI&); // deliberately not implemented
 
-  // These should be immutable after construction.
-  // Do not provide Setters.
-  std::string m_Name; // i.e. name the factory is known as.
-  std::string m_NameOfService;
-  std::string m_NameOfStartupGui;
-  std::string m_NameOfConfigurationGui;
+  std::string m_Name;
+  bool        m_HasInitialiseGui;
+  bool        m_HasConfigurationGui;
 };
 
 } // end namespace

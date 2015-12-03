@@ -131,7 +131,7 @@ public:
   * \brief Adds a source, using the display name of a factory,
   * and configures it with the provided properties.
   */
-  void AddSource(QString name, QList<QMap<QString, QVariant> >& properties);
+  void AddSource(QString name, QMap<QString, QVariant>& properties);
 
   /**
   * \brief Removes a source at a given rowIndex.
@@ -218,6 +218,11 @@ public:
   */
   void SetIsGrabbingScreen(QString directoryName, bool isGrabbing);
 
+  /**
+  * \brief Retrieves a factory given the display name.
+  */
+  niftk::IGIDataSourceFactoryServiceI* GetFactory(QString name);
+
 signals:
 
   /**
@@ -291,6 +296,9 @@ private:
   */
   void SetIsPlayingBack(bool isPlayingBack);
 
+  /**
+  * \brief A bit of a hack to grab the currently focussed screen, and save as .png.
+  */
   void GrabScreen();
 
   mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.

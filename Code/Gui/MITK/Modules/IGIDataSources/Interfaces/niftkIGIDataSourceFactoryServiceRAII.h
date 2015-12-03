@@ -49,7 +49,8 @@ public:
   /**
   * \brief Can be used to create instances of the requested IGIDataSourceServiceI.
   */
-  IGIDataSourceI::Pointer Create(mitk::DataStorage::Pointer dataStorage);
+  IGIDataSourceI::Pointer CreateService(mitk::DataStorage::Pointer dataStorage,
+                                        const QMap<QString, QVariant>& properties);
 
 private:
   IGIDataSourceFactoryServiceRAII(const IGIDataSourceFactoryServiceRAII&); // deliberately not implemented

@@ -61,9 +61,10 @@ IGIDataSourceFactoryServiceRAII::~IGIDataSourceFactoryServiceRAII()
 
 
 //-----------------------------------------------------------------------------
-IGIDataSourceI::Pointer IGIDataSourceFactoryServiceRAII::Create(mitk::DataStorage::Pointer dataStorage)
+IGIDataSourceI::Pointer IGIDataSourceFactoryServiceRAII::CreateService(mitk::DataStorage::Pointer dataStorage,
+                                                                       const QMap<QString, QVariant>& properties)
 {
-  return m_Service->Create(dataStorage);
+  return m_Service->CreateService(dataStorage, properties);
 }
 
 } // end namespace

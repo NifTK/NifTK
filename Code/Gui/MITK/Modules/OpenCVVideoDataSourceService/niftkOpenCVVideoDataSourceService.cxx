@@ -48,36 +48,16 @@ int OpenCVVideoDataSourceService::GetNextChannelNumber()
 
 //-----------------------------------------------------------------------------
 OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
-    std::string name, std::string factoryName, mitk::DataStorage::Pointer dataStorage)
+    std::string name,
+    std::string factoryName,
+    QMap<QString, QVariant> properties,
+    mitk::DataStorage::Pointer dataStorage)
 : IGIDataSource(name, factoryName, dataStorage)
 , m_Lock(QMutex::Recursive)
 , m_FrameId(0)
 , m_Buffer(NULL)
 , m_BackgroundDeleteThread(NULL)
 , m_DataGrabbingThread(NULL)
-{
-  this->Init();
-}
-
-
-//-----------------------------------------------------------------------------
-OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
-    std::string factoryName,
-    mitk::DataStorage::Pointer dataStorage)
-: IGIDataSource((QString("OpenCV-") + QString::number(GetNextChannelNumber())).toStdString(),
-                factoryName,
-                dataStorage)
-, m_FrameId(0)
-, m_Buffer(NULL)
-, m_BackgroundDeleteThread(NULL)
-, m_DataGrabbingThread(NULL)
-{
-  this->Init();
-}
-
-
-//-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::Init()
 {
   this->SetStatus("Initialising");
 
@@ -128,6 +108,7 @@ void OpenCVVideoDataSourceService::Init()
 
   this->SetTimeStampTolerance(intervalInMilliseconds*1000000);
   this->SetShouldUpdate(true);
+  this->SetProperties(properties);
   this->SetStatus("Initialised");
   this->Modified();
 }
@@ -147,6 +128,25 @@ OpenCVVideoDataSourceService::~OpenCVVideoDataSourceService()
 
   m_BackgroundDeleteThread->ForciblyStop();
   delete m_BackgroundDeleteThread;
+}
+
+
+//-----------------------------------------------------------------------------
+void OpenCVVideoDataSourceService::SetProperties(QMap<QString, QVariant>& properties)
+{
+  if (properties.contains("lag"))
+  {
+    int milliseconds = (properties.value("lag")).Int();
+    m_Buffer->SetLagInMilliseconds(milliseconds);
+    MITK_INFO << "OpenCVVideoDataSourceService: Set lag to " << milliseconds << " ms.";
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+QMap<QString, QVariant> OpenCVVideoDataSourceService::GetProperties() const
+{
+
 }
 
 
