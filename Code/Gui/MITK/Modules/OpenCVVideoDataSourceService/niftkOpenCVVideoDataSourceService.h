@@ -47,7 +47,7 @@ class NIFTKOPENCVVIDEODATASOURCESERVICE_EXPORT OpenCVVideoDataSourceService
 public:
 
   mitkClassMacroItkParent(OpenCVVideoDataSourceService, IGIDataSource);
-  mitkNewMacro4Param(OpenCVVideoDataSourceService, std::string, std::string, QMap<QString, QVariant>&, mitk::DataStorage::Pointer);
+  mitkNewMacro3Param(OpenCVVideoDataSourceService, std::string, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
 
   /**
   * \see IGIDataSourceI::StartCapturing()
@@ -115,19 +115,19 @@ public:
   /**
   * \brief IGIDataSourceI::SetProperties()
   */
-  virtual void SetProperties(QMap<QString, QVariant>& properties) override;
+  virtual void SetProperties(const IGIDataSourceProperties& properties) override;
 
   /**
   * \brief IGIDataSourceI::GetProperties()
   */
-  virtual QMap<QString, QVariant> GetProperties() const override;
+  virtual IGIDataSourceProperties GetProperties() const override;
 
 protected:
 
-  OpenCVVideoDataSourceService(std::string name,
-                               std::string factoryName,
-                               QMap<QString, QVariant>& properties,
-                               mitk::DataStorage::Pointer dataStorage);
+  OpenCVVideoDataSourceService(std::string factoryName,
+                               const IGIDataSourceProperties& properties,
+                               mitk::DataStorage::Pointer dataStorage
+                               );
   virtual ~OpenCVVideoDataSourceService();
 
 private:

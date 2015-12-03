@@ -384,6 +384,29 @@ bool IGIDataSourceManager::NeedsStartupGui(QString name)
 
 
 //-----------------------------------------------------------------------------
+niftk::IGIDataSourceFactoryServiceI* IGIDataSourceManager::GetFactory(int rowNumber)
+{
+  niftk::IGIDataSourceI* source = this->GetSource(rowNumber);
+  return this->GetFactory(QString::fromStdString(source->GetFactoryName()));
+}
+
+
+//-----------------------------------------------------------------------------
+niftk::IGIDataSourceI::Pointer IGIDataSourceManager::GetSource(int rowNumber)
+{
+  if (rowNumber < 0)
+  {
+    mitkThrow() << "Row number should be >= 0";
+  }
+  if (rowNumber >= m_Sources.size())
+  {
+    mitkThrow() << "Row number is greater than the number of sources";
+  }
+  return m_Sources[rowNumber];
+}
+
+
+//-----------------------------------------------------------------------------
 niftk::IGIDataSourceFactoryServiceI* IGIDataSourceManager::GetFactory(QString name)
 {
   niftk::IGIDataSourceFactoryServiceI *factory = NULL;

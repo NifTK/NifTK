@@ -223,6 +223,17 @@ public:
   */
   niftk::IGIDataSourceFactoryServiceI* GetFactory(QString name);
 
+  /**
+  * \brief Returns the factory given the row number in the GUI
+  * which should correspond to the order of the source in this manager.
+  */
+  niftk::IGIDataSourceFactoryServiceI* GetFactory(int rowNumber);
+
+  /**
+  * \brief Returns the actual source.
+  */
+  niftk::IGIDataSourceI::Pointer GetSource(int rowNumber);
+
 signals:
 
   /**

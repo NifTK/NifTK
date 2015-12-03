@@ -88,10 +88,13 @@ public:
 
   /**
   * \brief Sets the lag in milliseconds.
-  *
-  * This simply stores the value of parameter 'milliseconds'.
   */
   void SetLagInMilliseconds(unsigned int milliseconds);
+
+  /**
+  * \brief Retrieves the lag value in milliseconds.
+  */
+  unsigned int GetLagInMilliseconds() const;
 
   /**
   * \brief Returns the number of items in the buffer.
@@ -143,7 +146,7 @@ private:
   void UpdateFrameRate();
 
   float                           m_FrameRate;
-  niftk::IGIDataType::IGITimeType m_Lag;
+  niftk::IGIDataType::IGITimeType m_Lag; // stored in nanoseconds.
 
 };
 

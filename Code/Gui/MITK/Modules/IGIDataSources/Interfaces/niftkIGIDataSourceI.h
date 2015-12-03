@@ -30,6 +30,8 @@
 namespace niftk
 {
 
+typedef QMap<QString, QVariant> IGIDataSourceProperties;
+
 /**
 * \class IGIDataItemInfo
 * \brief Info class to describe current state, so that GUI can display status.
@@ -221,8 +223,8 @@ public:
                                  niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                  niftk::IGIDataType::IGITimeType* lastTimeStampInStore) = 0;
 
-  virtual void SetProperties(QMap<QString, QVariant>& properties) = 0;
-  virtual QMap<QString, QVariant> GetProperties() const = 0;
+  virtual void SetProperties(const IGIDataSourceProperties& properties) = 0;
+  virtual IGIDataSourceProperties GetProperties() const = 0;
 
 protected:
 

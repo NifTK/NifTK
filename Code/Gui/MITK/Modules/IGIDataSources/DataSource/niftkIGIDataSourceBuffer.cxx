@@ -60,6 +60,13 @@ void IGIDataSourceBuffer::SetLagInMilliseconds(unsigned int milliseconds)
 
 
 //-----------------------------------------------------------------------------
+unsigned int IGIDataSourceBuffer::GetLagInMilliseconds() const
+{
+  return m_Lag / 1000000; // its stored in nanoseconds.
+}
+
+
+//-----------------------------------------------------------------------------
 bool IGIDataSourceBuffer::Contains(const niftk::IGIDataType::IGITimeType& time) const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);

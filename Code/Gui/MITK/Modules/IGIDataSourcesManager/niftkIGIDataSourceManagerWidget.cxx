@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkIGIDataSourceManagerWidget.h"
+#include <niftkIGIInitialisationDialog.h>
 #include <niftkIGIConfigurationDialog.h>
 #include <QMessageBox>
 #include <QTableWidgetItem>
@@ -406,7 +407,23 @@ void IGIDataSourceManagerWidget::OnRemoveSource()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnCellDoubleClicked(int row, int column)
 {
-  MITK_INFO << "OnCellDoubleClicked";
+  niftk::IGIDataSourceFactoryServiceI* factory = m_Manager->GetFactory(row);
+  if (factory->HasConfigurationGui())
+  {
+    niftk::IGIDataSourceI::Pointer source = m_Manager->GetSource(row);
+    niftk::IGIConfigurationDialog *dialog = factory->CreateConfigurationDialog(this, source);
+    int returnValue = dialog->exec(); // modal.
+
+    if (returnValue == QDialog::Rejected)
+    {
+      return;
+    }
+    else
+    {
+      // if user hit "OK", properties are applied to source.
+    }
+    delete dialog;
+  }
 }
 
 

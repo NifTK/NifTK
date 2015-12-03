@@ -16,7 +16,7 @@
 #define niftkIGIDataSourceFactoryServiceI_h
 
 #include <niftkIGIServicesExports.h>
-#include <niftkIGIDataSourceI.h>
+#include "niftkIGIDataSourceI.h"
 #include <niftkIGIConfigurationDialog.h>
 #include <niftkIGIInitialisationDialog.h>
 
@@ -24,8 +24,6 @@
 #include <mitkDataStorage.h>
 
 #include <QWidget>
-#include <QMap>
-#include <QString>
 
 namespace niftk
 {
@@ -44,7 +42,8 @@ public:
   /**
   * \brief Creates the actual data source service.
   */
-  virtual IGIDataSourceI::Pointer CreateService(mitk::DataStorage::Pointer dataStorage, const QMap<QString, QVariant>& properties) const = 0;
+  virtual IGIDataSourceI::Pointer CreateService(mitk::DataStorage::Pointer dataStorage,
+                                                const IGIDataSourceProperties& properties) const = 0;
 
   /**
   * \brief Creates the dialog box used to initialise the service.
@@ -54,7 +53,8 @@ public:
   /**
   * \brief Creates the dialog box used to configure the service while its running.
   */
-  virtual IGIConfigurationDialog* CreateConfigurationDialog(QWidget *parent, niftk::IGIDataSourceI::Pointer) const = 0;
+  virtual IGIConfigurationDialog* CreateConfigurationDialog(QWidget *parent,
+                                                            niftk::IGIDataSourceI::Pointer) const = 0;
 
   /**
   * \brief Returns the name of the data source factory, as perceived by the user in the GUI.

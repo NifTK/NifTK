@@ -36,7 +36,7 @@ public:
   * \see IGIDataSourceFactoryServiceI::CreateService()
   */
   virtual IGIDataSourceI::Pointer CreateService(mitk::DataStorage::Pointer dataStorage,
-                                                const QMap<QString, QVariant>& properties) const override;
+                                                const IGIDataSourceProperties& properties) const override;
 
   /**
   * \see IGIDataSourceFactoryServiceI::CreateInitialisationDialog()

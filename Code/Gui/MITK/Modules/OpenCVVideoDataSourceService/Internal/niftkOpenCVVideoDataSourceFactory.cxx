@@ -13,8 +13,7 @@
 =============================================================================*/
 
 #include "niftkOpenCVVideoDataSourceFactory.h"
-#include "niftkOpenCVVideoDataSourceService.h"
-#include <niftkIPPortDialog.h>
+#include <niftkOpenCVVideoDataSourceService.h>
 #include <niftkLagDialog.h>
 
 namespace niftk
@@ -23,8 +22,8 @@ namespace niftk
 //-----------------------------------------------------------------------------
 OpenCVVideoDataSourceFactory::OpenCVVideoDataSourceFactory()
 : IGIDataSourceFactoryServiceI("OpenCV Frame Grabber",
-                               true, // don't need to configure at startup
-                               false // don't need to configure when running
+                               false, // don't need to configure at startup
+                               true   // can configure lag while running
                                )
 {
 }
@@ -39,10 +38,13 @@ OpenCVVideoDataSourceFactory::~OpenCVVideoDataSourceFactory()
 //-----------------------------------------------------------------------------
 IGIDataSourceI::Pointer OpenCVVideoDataSourceFactory::CreateService(
     mitk::DataStorage::Pointer dataStorage,
-    const QMap<QString, QVariant>& properties) const
+    const IGIDataSourceProperties& properties) const
 {
   niftk::OpenCVVideoDataSourceService::Pointer serviceInstance
-      = OpenCVVideoDataSourceService::New(this->GetName(), dataStorage);
+      = OpenCVVideoDataSourceService::New(this->GetName(), // factory name
+                                          properties,      // configure at startup
+                                          dataStorage
+                                          );
 
   return serviceInstance.GetPointer();
 }
@@ -51,7 +53,8 @@ IGIDataSourceI::Pointer OpenCVVideoDataSourceFactory::CreateService(
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* OpenCVVideoDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  return new niftk::IPPortDialog(parent);
+  mitkThrow() << "OpenCVVideoDataSourceService does not need a configuration dialog.";
+  return NULL;
 }
 
 

@@ -167,7 +167,7 @@ private slots:
   void OnBroadcastStatusString(QString);
 
   /**
-  * \brief Triggers the manager to grad the screen.
+  * \brief Triggers the manager to grab the screen.
   */
   void OnGrabScreen(bool isChecked);
 
@@ -176,7 +176,7 @@ private:
   IGIDataSourceManager::Pointer m_Manager;
 
   /**
-  * \brief Basic way to grab screenshots.
+  * \brief Very basic way to grab screenshots.
   */
   void GrabScreen();
 

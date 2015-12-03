@@ -48,11 +48,12 @@ int OpenCVVideoDataSourceService::GetNextChannelNumber()
 
 //-----------------------------------------------------------------------------
 OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
-    std::string name,
     std::string factoryName,
-    QMap<QString, QVariant> properties,
+    const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: IGIDataSource(name, factoryName, dataStorage)
+: IGIDataSource((QString("OpenCV-") + QString::number(GetNextChannelNumber())).toStdString(),
+                factoryName,
+                dataStorage)
 , m_Lock(QMutex::Recursive)
 , m_FrameId(0)
 , m_Buffer(NULL)
@@ -132,11 +133,11 @@ OpenCVVideoDataSourceService::~OpenCVVideoDataSourceService()
 
 
 //-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::SetProperties(QMap<QString, QVariant>& properties)
+void OpenCVVideoDataSourceService::SetProperties(const IGIDataSourceProperties& properties)
 {
   if (properties.contains("lag"))
   {
-    int milliseconds = (properties.value("lag")).Int();
+    int milliseconds = (properties.value("lag")).toInt();
     m_Buffer->SetLagInMilliseconds(milliseconds);
     MITK_INFO << "OpenCVVideoDataSourceService: Set lag to " << milliseconds << " ms.";
   }
@@ -144,9 +145,12 @@ void OpenCVVideoDataSourceService::SetProperties(QMap<QString, QVariant>& proper
 
 
 //-----------------------------------------------------------------------------
-QMap<QString, QVariant> OpenCVVideoDataSourceService::GetProperties() const
+IGIDataSourceProperties OpenCVVideoDataSourceService::GetProperties() const
 {
-
+  IGIDataSourceProperties props;
+  props.insert("lag", m_Buffer->GetLagInMilliseconds());
+  MITK_INFO << "OpenCVVideoDataSourceService: Retrieved current value of lag as " << m_Buffer->GetLagInMilliseconds();
+  return props;
 }
 
 
