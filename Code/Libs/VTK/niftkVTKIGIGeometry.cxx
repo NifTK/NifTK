@@ -731,7 +731,7 @@ std::vector<std::vector <float > > VTKIGIGeometry::ReadRigidBodyDefinitionFile(s
   {
     std::stringstream linestream(line);
     linestream >> counter >> position[0] >> position[1] >> position[2] >> views;
-    if ( linestream.good() )
+    if ( !linestream.fail() )
     {
       returnVector.push_back(position);
       if ( counter != returnVector.size() )
