@@ -58,14 +58,24 @@ public:
 
   /**
   * \brief Returns the name of the GUI class that should be instantiated at startup.
+  *
+  * (i.e. parameters like port numbers, needed on creation).
   */
   virtual std::string GetNameOfStartupGui() const;
+
+  /**
+  * \brief Returns the name of the GUI class that should be instantiated at startup.
+  *
+  * (i.e. options that can be configured on the fly during runtime).
+  */
+  virtual std::string GetNameOfConfigurationGui() const;
 
 protected:
 
   IGIDataSourceFactoryServiceI(std::string name,
                                std::string service,
-                               std::string startupGui
+                               std::string startupGui,
+                               std::string nameOfConfigurationGui
                                );
 
   virtual ~IGIDataSourceFactoryServiceI();
@@ -80,6 +90,7 @@ private:
   std::string m_Name; // i.e. name the factory is known as.
   std::string m_NameOfService;
   std::string m_NameOfStartupGui;
+  std::string m_NameOfConfigurationGui;
 };
 
 } // end namespace

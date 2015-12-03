@@ -22,7 +22,8 @@ namespace niftk
 OpenCVVideoDataSourceFactory::OpenCVVideoDataSourceFactory()
 : IGIDataSourceFactoryServiceI("OpenCV Frame Grabber",
                                "OpenCVVideoDataSourceService",
-                               "" // don't need a startup GUI, nothing to configure
+                               "", // Don't need a startup GUI, nothing to configure at startup.
+                               ""  // Don't need a configuration GUI, no parameters to tweak during runtime.
                                )
 {
 }
