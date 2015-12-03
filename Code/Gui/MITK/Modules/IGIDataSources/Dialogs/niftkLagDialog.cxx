@@ -15,7 +15,6 @@
 #include "niftkLagDialog.h"
 
 #include <cassert>
-#include <iostream>
 
 namespace niftk
 {
@@ -26,7 +25,7 @@ LagDialog::LagDialog(QWidget *parent, niftk::IGIDataSourceI::Pointer service)
 {
   setupUi(this);
 
-  QMap<QString, QVariant> props = m_Service->GetProperties();
+  IGIDataSourceProperties props = m_Service->GetProperties();
   if (props.contains("lag"))
   {
     m_LagSpinBox->setValue(props.value("lag").toInt());
@@ -51,7 +50,6 @@ void LagDialog::OnOKClicked()
 {
   QMap<QString, QVariant> props;
   props.insert("lag", QVariant::fromValue(m_LagSpinBox->value()));
-
   m_Service->SetProperties(props);
 }
 

@@ -22,21 +22,37 @@ USBPortDialog::USBPortDialog(QWidget *parent)
   : IGIInitialisationDialog(parent)
 {
   setupUi(this);
+  m_PortName->addItem("COM1");
+  m_PortName->addItem("COM2");
+  m_PortName->addItem("COM3");
+  m_PortName->addItem("COM4");
+  m_PortName->addItem("COM5");
+  m_PortName->addItem("COM6");
+  m_PortName->addItem("COM7");
+  m_PortName->addItem("COM8");
+  m_PortName->addItem("COM9");
+
+  bool ok = false;
+  ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
+  assert(ok);
 }
 
 
 //-----------------------------------------------------------------------------
 USBPortDialog::~USBPortDialog()
 {
-
+  bool ok = false;
+  ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
+  assert(ok);
 }
 
 
 //-----------------------------------------------------------------------------
-QMap<QString, QVariant> USBPortDialog::GetProperties() const
+void USBPortDialog::OnOKClicked()
 {
-  QMap<QString, QVariant> empty;
-  return empty;
+  IGIDataSourceProperties props;
+  props.insert("port", QVariant::fromValue(m_PortName->currentText()));
+  m_Properties = props;
 }
 
 } // end namespace

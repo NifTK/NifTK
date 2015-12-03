@@ -18,7 +18,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIDataSourceFactoryServiceI::IGIDataSourceFactoryServiceI(std::string name,
+IGIDataSourceFactoryServiceI::IGIDataSourceFactoryServiceI(QString name,
                                                            bool hasInitialiseGui,
                                                            bool hasConfigurationGui
                                                            )
@@ -36,7 +36,7 @@ IGIDataSourceFactoryServiceI::~IGIDataSourceFactoryServiceI()
 
 
 //-----------------------------------------------------------------------------
-std::string IGIDataSourceFactoryServiceI::GetName() const
+QString IGIDataSourceFactoryServiceI::GetName() const
 {
   return m_Name;
 }

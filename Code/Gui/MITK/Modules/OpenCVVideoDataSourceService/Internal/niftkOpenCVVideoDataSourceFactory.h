@@ -53,7 +53,7 @@ public:
   /**
   * \brief Returns "QmitkIGIOpenCVDataSource"
   */
-  virtual std::vector<std::string> GetLegacyClassNames() const override;
+  virtual QList<QString> GetLegacyClassNames() const override;
 };
 
 } // end namespace

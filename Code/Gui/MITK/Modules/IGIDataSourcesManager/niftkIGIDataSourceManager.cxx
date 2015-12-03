@@ -212,15 +212,15 @@ void IGIDataSourceManager::RetrieveAllDataSourceFactories()
   for (int i = 0; i < m_Refs.size(); i++)
   {
     niftk::IGIDataSourceFactoryServiceI *factory = m_ModuleContext->GetService<niftk::IGIDataSourceFactoryServiceI>(m_Refs[i]);
-    QString name = QString::fromStdString(factory->GetName());
+    QString name = factory->GetName();
     m_NameToFactoriesMap.insert(name, factory);
 
     // Legacy compatibility.
     // Ask each factory what other aliases it wants to map to itself.
-    std::vector<std::string> aliases = factory->GetLegacyClassNames();
+    QList<QString> aliases = factory->GetLegacyClassNames();
     for (int j = 0; j < aliases.size(); j++)
     {
-      m_LegacyNameToFactoriesMap.insert(QString::fromStdString(aliases[i]), factory);
+      m_LegacyNameToFactoriesMap.insert(aliases[i], factory);
     }
   }
 }
@@ -283,11 +283,11 @@ void IGIDataSourceManager::WriteDescriptorFile(QString absolutePath)
     {
       // This should be a relative path!
       // Relative to the descriptor file or directoryName (equivalent).
-      QString datasourcedir = QString::fromStdString(source->GetName());
+      QString datasourcedir = source->GetName();
 
       // Despite this being relativeFilePath() it works perfectly fine for directories too.
       datasourcedir = directory.relativeFilePath(datasourcedir);
-      descstream << datasourcedir << " = " << QString::fromStdString(source->GetFactoryName()) << "\n";
+      descstream << datasourcedir << " = " << source->GetFactoryName() << "\n";
     }
 
     descstream.flush();
@@ -387,7 +387,7 @@ bool IGIDataSourceManager::NeedsStartupGui(QString name)
 niftk::IGIDataSourceFactoryServiceI* IGIDataSourceManager::GetFactory(int rowNumber)
 {
   niftk::IGIDataSourceI* source = this->GetSource(rowNumber);
-  return this->GetFactory(QString::fromStdString(source->GetFactoryName()));
+  return this->GetFactory(source->GetFactoryName());
 }
 
 
@@ -494,7 +494,7 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
 
   for (int i = 0; i < m_Sources.size(); i++)
   {
-    m_Sources[i]->SetRecordingLocation(directory.absolutePath().toStdString());
+    m_Sources[i]->SetRecordingLocation(directory.absolutePath());
     m_Sources[i]->StartRecording();
   }
 
@@ -578,7 +578,7 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
       IGIDataType::IGITimeType startTime;
       IGIDataType::IGITimeType endTime;
 
-      m_Sources[sourceNumber]->SetRecordingLocation(directoryPrefix.toStdString());
+      m_Sources[sourceNumber]->SetRecordingLocation(directoryPrefix);
       bool canDo = m_Sources[sourceNumber]->ProbeRecordedData(
             m_Sources[sourceNumber]->GetRecordingDirectoryName(),
             &startTime,
@@ -615,7 +615,7 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
   m_PlaybackPrefix = directoryPrefix;
   for (int i = 0; i < m_Sources.size(); i++)
   {
-    m_Sources[i]->SetRecordingLocation(m_PlaybackPrefix.toStdString());
+    m_Sources[i]->SetRecordingLocation(m_PlaybackPrefix);
   }
   for (int i = 0; i < goodSources.size(); i++)
   {

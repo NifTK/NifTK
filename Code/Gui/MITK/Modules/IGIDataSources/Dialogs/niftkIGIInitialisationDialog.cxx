@@ -33,7 +33,7 @@ IGIInitialisationDialog::~IGIInitialisationDialog()
 
 
 //-----------------------------------------------------------------------------
-QMap<QString, QVariant> IGIInitialisationDialog::GetProperties() const
+IGIDataSourceProperties IGIInitialisationDialog::GetProperties() const
 {
   return m_Properties;
 }

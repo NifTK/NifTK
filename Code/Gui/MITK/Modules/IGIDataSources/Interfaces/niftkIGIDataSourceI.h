@@ -57,13 +57,13 @@ struct NIFTKIGIDATASOURCES_EXPORT IGIDataItemInfo
     m_Description = "Unknown";
   }
 
-  std::string  m_Name;
-  std::string  m_Status;
+  QString      m_Name;
+  QString      m_Status;
   bool         m_ShouldUpdate;
   bool         m_IsLate;
   unsigned int m_LagInMilliseconds;
   float        m_FramesPerSecond;
-  std::string  m_Description;
+  QString      m_Description;
 };
 
 
@@ -72,8 +72,6 @@ struct NIFTKIGIDATASOURCES_EXPORT IGIDataItemInfo
 * \brief Interface for an IGI Data Source (e.g. video feed, ultrasound feed, tracker feed).
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
-*
-* Note: Deliberately not using Qt datatypes, so that an implementing class does not have to.
 */
 class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceI : public itk::Object
 {
@@ -88,7 +86,7 @@ public:
   * Implementing classes should have this value set at construction,
   * and it should be immutable throughout the lifetime of the object.
   */
-  virtual std::string GetName() const = 0;
+  virtual QString GetName() const = 0;
 
   /**
   * \brief Returns the name of the factory that created it. The name
@@ -96,7 +94,7 @@ public:
   * implementing classes should have this value set at construction,
   * and it should be immutable throughout the lifetime of the object.
   */
-  virtual std::string GetFactoryName() const = 0;
+  virtual QString GetFactoryName() const = 0;
 
   /**
   * \brief Returns a status string.
@@ -105,7 +103,7 @@ public:
   * that best describes its current status. This is currently not
   * something specific like an enum, but may have to change in future.
   */
-  virtual std::string GetStatus() const = 0;
+  virtual QString GetStatus() const = 0;
 
   /**
   * \brief Starts the capture/grabbing process.
@@ -153,12 +151,12 @@ public:
   /**
   * \brief Set the root directory of the recording session.
   */
-  virtual void SetRecordingLocation(const std::string& pathName) = 0;
+  virtual void SetRecordingLocation(const QString& pathName) = 0;
 
   /**
   * \brief Retrieves the full directory where this source is saving to.
   */
-  virtual std::string GetRecordingDirectoryName() = 0;
+  virtual QString GetRecordingDirectoryName() = 0;
 
   /**
   * \brief Start recording.
@@ -219,7 +217,7 @@ public:
    * \return true if there is suitable data to playback in path.
    * \throw should not throw! Return false instead.
    */
-  virtual bool ProbeRecordedData(const std::string& pathName,
+  virtual bool ProbeRecordedData(const QString& pathName,
                                  niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                  niftk::IGIDataType::IGITimeType* lastTimeStampInStore) = 0;
 

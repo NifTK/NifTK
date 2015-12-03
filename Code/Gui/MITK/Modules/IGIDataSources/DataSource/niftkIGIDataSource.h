@@ -63,17 +63,17 @@ public:
   /**
   * \see IGIDataSourceI::GetName()
   */
-  virtual std::string GetName() const override;
+  virtual QString GetName() const override;
 
   /**
   * \see IGIDataSourceI::GetFactoryName()
   */
-  virtual std::string GetFactoryName() const override;
+  virtual QString GetFactoryName() const override;
 
   /**
   * \see IGIDataSourceI::GetStatus()
    */
-  virtual std::string GetStatus() const override;
+  virtual QString GetStatus() const override;
 
   /**
   * \see IGIDataSourceI::GetShouldUpdate()
@@ -106,8 +106,8 @@ public:
   */
   virtual void StopRecording() override;
 
-  itkSetStringMacro(RecordingLocation);
-  itkGetStringMacro(RecordingLocation);
+  QString GetRecordingLocation() const;
+  virtual void SetRecordingLocation(const QString& pathName) override;
 
   itkGetConstMacro(IsRecording, bool);
   itkGetConstMacro(IsPlayingBack, bool);
@@ -144,7 +144,7 @@ protected:
    * \param addToDataStorage if true, will be added to data storage,
    * if false, the caller can determine when to do it.
    */
-  mitk::DataNode::Pointer GetDataNode(const std::string& name=std::string(), const bool& addToDataStorage=true);
+  mitk::DataNode::Pointer GetDataNode(const QString& name=QString(), const bool& addToDataStorage=true);
 
   /**
   * \brief Returns true if the delay between requested and actual is
@@ -181,10 +181,10 @@ private:
   mitk::DataStorage::Pointer        m_DataStorage;
   std::set<mitk::DataNode::Pointer> m_DataNodes;
   us::ServiceRegistration<Self>     m_MicroServiceRegistration;
-  std::string                       m_Name;
-  std::string                       m_FactoryName;
-  std::string                       m_Status;
-  std::string                       m_RecordingLocation;
+  QString                           m_Name;
+  QString                           m_FactoryName;
+  QString                           m_Status;
+  QString                           m_RecordingLocation;
   igtl::TimeStamp::Pointer          m_TimeCreated;
   niftk::IGIDataType::IGITimeType   m_TimeStampTolerance; // nanoseconds.
   bool                              m_ShouldUpdate;

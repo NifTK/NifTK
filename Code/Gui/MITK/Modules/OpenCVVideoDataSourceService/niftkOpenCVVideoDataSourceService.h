@@ -26,8 +26,7 @@
 #include <QObject>
 #include <QSet>
 #include <QMutex>
-
-#include <string>
+#include <QString>
 
 namespace niftk
 {
@@ -47,7 +46,7 @@ class NIFTKOPENCVVIDEODATASOURCESERVICE_EXPORT OpenCVVideoDataSourceService
 public:
 
   mitkClassMacroItkParent(OpenCVVideoDataSourceService, IGIDataSource);
-  mitkNewMacro3Param(OpenCVVideoDataSourceService, std::string, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
+  mitkNewMacro3Param(OpenCVVideoDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
 
   /**
   * \see IGIDataSourceI::StartCapturing()
@@ -83,7 +82,7 @@ public:
   /**
   * \see IGIDataSourceI::GetRecordingDirectoryName()
   */
-  virtual std::string GetRecordingDirectoryName() override;
+  virtual QString GetRecordingDirectoryName() override;
 
   /**
   * \see IGIDataSourceI::Update()
@@ -108,7 +107,7 @@ public:
   /**
   * \see IGIDataSourceI::ProbeRecordedData()
   */
-  bool ProbeRecordedData(const std::string& path,
+  bool ProbeRecordedData(const QString& path,
                          niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                          niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
 
@@ -124,7 +123,7 @@ public:
 
 protected:
 
-  OpenCVVideoDataSourceService(std::string factoryName,
+  OpenCVVideoDataSourceService(QString factoryName,
                                const IGIDataSourceProperties& properties,
                                mitk::DataStorage::Pointer dataStorage
                                );

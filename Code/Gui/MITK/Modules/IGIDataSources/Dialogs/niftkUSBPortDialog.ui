@@ -26,12 +26,12 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="m_PortNumber"/>
+        <widget class="QComboBox" name="m_PortName"/>
        </item>
       </layout>
      </item>
      <item>
-      <widget class="QDialogButtonBox" name="buttonBox">
+      <widget class="QDialogButtonBox" name="m_DialogButtons">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -47,7 +47,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>m_DialogButtons</sender>
    <signal>accepted()</signal>
    <receiver>niftkUSBPortDialog</receiver>
    <slot>accept()</slot>
@@ -63,7 +63,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>m_DialogButtons</sender>
    <signal>rejected()</signal>
    <receiver>niftkUSBPortDialog</receiver>
    <slot>reject()</slot>

@@ -48,11 +48,11 @@ int OpenCVVideoDataSourceService::GetNextChannelNumber()
 
 //-----------------------------------------------------------------------------
 OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
-    std::string factoryName,
+    QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
 : IGIDataSource((QString("OpenCV-") + QString::number(GetNextChannelNumber())).toStdString(),
-                factoryName,
+                factoryName.toStdString(),
                 dataStorage)
 , m_Lock(QMutex::Recursive)
 , m_FrameId(0)
@@ -65,7 +65,7 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
   int defaultFramesPerSecond = 25;
   m_Buffer = niftk::IGIDataSourceBuffer::New(defaultFramesPerSecond * 2);
 
-  QString deviceName = QString::fromStdString(this->GetName());
+  QString deviceName = this->GetName();
   m_ChannelNumber = (deviceName.remove(0, 29)).toInt();
 
   m_VideoSource = mitk::OpenCVVideoSource::New();
@@ -81,7 +81,7 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
     s_SourcesInUse.remove(m_ChannelNumber);
     s_Lock.unlock();
 
-    mitkThrow() << "Failed to create " << this->GetName()
+    mitkThrow() << "Failed to create " << this->GetName().toStdString()
                 << ", please check log file!";
   }
 
@@ -193,12 +193,12 @@ void OpenCVVideoDataSourceService::CleanBuffer()
 
 
 //-----------------------------------------------------------------------------
-std::string OpenCVVideoDataSourceService::GetRecordingDirectoryName()
+QString OpenCVVideoDataSourceService::GetRecordingDirectoryName()
 {
   return this->GetRecordingLocation()
-      + this->GetPreferredSlash().toStdString()
+      + this->GetPreferredSlash()
       + this->GetName()
-      + "_" + (tr("%1").arg(m_ChannelNumber)).toStdString()
+      + "_" + (tr("%1").arg(m_ChannelNumber))
       ;
 }
 
@@ -213,7 +213,7 @@ void OpenCVVideoDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType
 
   m_Buffer->DestroyBuffer();
 
-  QDir directory(QString::fromStdString(this->GetRecordingDirectoryName()));
+  QDir directory(this->GetRecordingDirectoryName());
   if (directory.exists())
   {
     m_PlaybackIndex = ProbeTimeStampFiles(directory, QString(".jpg"));
@@ -254,7 +254,7 @@ void OpenCVVideoDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
     if (!m_Buffer->Contains(*i))
     {
       std::ostringstream  filename;
-      filename << this->GetRecordingDirectoryName() << '/' << (*i) << ".jpg";
+      filename << this->GetRecordingDirectoryName().toStdString() << '/' << (*i) << ".jpg";
 
       IplImage* img = cvLoadImage(filename.str().c_str());
       if (img)
@@ -279,7 +279,7 @@ void OpenCVVideoDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
 
 
 //-----------------------------------------------------------------------------
-bool OpenCVVideoDataSourceService::ProbeRecordedData(const std::string& path,
+bool OpenCVVideoDataSourceService::ProbeRecordedData(const QString& path,
                                                      niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                                      niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {
@@ -288,7 +288,7 @@ bool OpenCVVideoDataSourceService::ProbeRecordedData(const std::string& path,
   niftk::IGIDataType::IGITimeType  lastTimeStampFound  = 0;
 
   // needs to match what SaveData() does below
-  QDir directory(QString::fromStdString(path));
+  QDir directory(path);
   if (directory.exists())
   {
     std::set<niftk::IGIDataType::IGITimeType> timeStamps = ProbeTimeStampFiles(directory, QString(".jpg"));
@@ -374,7 +374,7 @@ void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
     mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
   }
 
-  QString directoryPath = QString::fromStdString(this->GetRecordingDirectoryName());
+  QString directoryPath = this->GetRecordingDirectoryName();
   QDir directory(directoryPath);
   if (directory.mkpath(directoryPath))
   {
@@ -444,7 +444,7 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
   mitk::DataNode::Pointer node = this->GetDataNode(this->GetName());
   if (node.IsNull())
   {
-    mitkThrow() << "Can't find mitk::DataNode with name " << this->GetName() << std::endl;
+    mitkThrow() << "Can't find mitk::DataNode with name " << this->GetName().toStdString() << std::endl;
   }
 
   // Get Image from the dataType;

@@ -27,8 +27,8 @@ IGIDataSource::IGIDataSource(const std::string& name,
                              const std::string& factoryName,
                              mitk::DataStorage::Pointer dataStorage)
 : m_DataStorage(dataStorage)
-, m_Name(name)
-, m_FactoryName(factoryName)
+, m_Name(QString::fromStdString(name))
+, m_FactoryName(QString::fromStdString(factoryName))
 , m_Status("UNKNOWN")
 , m_TimeCreated(NULL)
 , m_TimeStampTolerance(0)
@@ -94,21 +94,21 @@ IGIDataSource::~IGIDataSource()
 
 
 //-----------------------------------------------------------------------------
-std::string IGIDataSource::GetName() const
+QString IGIDataSource::GetName() const
 {
   return m_Name;
 }
 
 
 //-----------------------------------------------------------------------------
-std::string IGIDataSource::GetFactoryName() const
+QString IGIDataSource::GetFactoryName() const
 {
   return m_FactoryName;
 }
 
 
 //-----------------------------------------------------------------------------
-std::string IGIDataSource::GetStatus() const
+QString IGIDataSource::GetStatus() const
 {
   return m_Status;
 }
@@ -132,6 +132,21 @@ bool IGIDataSource::GetShouldUpdate() const
 void IGIDataSource::SetShouldUpdate(bool shouldUpdate)
 {
   m_ShouldUpdate = shouldUpdate;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+QString IGIDataSource::GetRecordingLocation() const
+{
+  return m_RecordingLocation;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::SetRecordingLocation(const QString& pathName)
+{
+  m_RecordingLocation = pathName;
   this->Modified();
 }
 
@@ -178,7 +193,7 @@ niftk::IGIDataType::IGITimeType IGIDataSource::GetTimeStampInNanoseconds()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name, const bool& addToDataStorage)
+mitk::DataNode::Pointer IGIDataSource::GetDataNode(const QString& name, const bool& addToDataStorage)
 {
   if (m_DataStorage.IsNull())
   {
@@ -186,10 +201,10 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const std::string& name, cons
   }
 
   // If name is not specified, use the data source name itself.
-  std::string nodeName = name;
+  std::string nodeName = name.toStdString();
   if (nodeName.size() == 0)
   {
-    nodeName = this->GetName();
+    nodeName = this->GetName().toStdString();
   }
 
   // Try and get existing node.

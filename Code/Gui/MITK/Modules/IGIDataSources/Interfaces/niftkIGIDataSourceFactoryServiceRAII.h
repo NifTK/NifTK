@@ -39,7 +39,7 @@ public:
   /**
   * \brief Obtains factory service or throws mitk::Exception.
   */
-  IGIDataSourceFactoryServiceRAII(const std::string& factoryName);
+  IGIDataSourceFactoryServiceRAII(const QString& factoryName);
 
   /**
   * \brief Releases factory service.

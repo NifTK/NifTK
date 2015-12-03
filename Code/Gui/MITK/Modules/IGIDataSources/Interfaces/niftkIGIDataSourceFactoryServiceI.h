@@ -24,6 +24,7 @@
 #include <mitkDataStorage.h>
 
 #include <QWidget>
+#include <QList>
 
 namespace niftk
 {
@@ -59,19 +60,19 @@ public:
   /**
   * \brief Returns the name of the data source factory, as perceived by the user in the GUI.
   */
-  virtual std::string GetName() const;
+  virtual QString GetName() const;
 
   /**
   * \brief Returns class names that this source was known as historically.
   */
-  virtual std::vector<std::string> GetLegacyClassNames() const = 0;
+  virtual QList<QString> GetLegacyClassNames() const = 0;
 
   bool HasInitialiseGui() const;
   bool HasConfigurationGui() const;
 
 protected:
 
-  IGIDataSourceFactoryServiceI(std::string name,
+  IGIDataSourceFactoryServiceI(QString name,
                                bool hasInitialiseGui,
                                bool hasConfigurationGui);
   virtual ~IGIDataSourceFactoryServiceI();
@@ -81,9 +82,9 @@ private:
   IGIDataSourceFactoryServiceI(const IGIDataSourceFactoryServiceI&); // deliberately not implemented
   IGIDataSourceFactoryServiceI& operator=(const IGIDataSourceFactoryServiceI&); // deliberately not implemented
 
-  std::string m_Name;
-  bool        m_HasInitialiseGui;
-  bool        m_HasConfigurationGui;
+  QString m_Name;
+  bool    m_HasInitialiseGui;
+  bool    m_HasConfigurationGui;
 };
 
 } // end namespace

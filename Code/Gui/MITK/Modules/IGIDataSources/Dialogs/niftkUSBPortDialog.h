@@ -33,10 +33,9 @@ public:
   USBPortDialog(QWidget *parent);
   ~USBPortDialog();
 
-  /**
-  * \see IGIInitialisationDialog::GetProperties()
-  */
-  virtual QMap<QString, QVariant> GetProperties() const override;
+private slots:
+
+  void OnOKClicked();
 };
 
 } // end namespace

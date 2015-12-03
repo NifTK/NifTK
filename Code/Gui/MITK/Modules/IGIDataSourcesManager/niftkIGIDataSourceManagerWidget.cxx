@@ -471,7 +471,7 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
       bool  shouldUpdate = m_TableWidget->item(r, 0)->checkState() == Qt::Checked;
       m_Manager->FreezeDataSource(r, !shouldUpdate);
 
-      QTableWidgetItem *item1 = new QTableWidgetItem(QString::fromStdString(firstItemOnly.m_Status));
+      QTableWidgetItem *item1 = new QTableWidgetItem(firstItemOnly.m_Status);
       item1->setTextAlignment(Qt::AlignCenter);
       item1->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
       m_TableWidget->setItem(r, 1, item1);
@@ -507,7 +507,7 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
       item3->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
       m_TableWidget->setItem(r, 3, item3);
 
-      QTableWidgetItem *item4 = new QTableWidgetItem(QString::fromStdString(firstItemOnly.m_Name) + ":" + QString::fromStdString(firstItemOnly.m_Description));
+      QTableWidgetItem *item4 = new QTableWidgetItem(firstItemOnly.m_Name + ":" + firstItemOnly.m_Description);
       item4->setTextAlignment(Qt::AlignCenter);
       item4->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
       m_TableWidget->setItem(r, 4, item4);

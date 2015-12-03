@@ -15,7 +15,6 @@
 #include "niftkIPPortDialog.h"
 
 #include <cassert>
-#include <iostream>
 
 namespace niftk
 {
@@ -44,7 +43,7 @@ IPPortDialog::~IPPortDialog()
 //-----------------------------------------------------------------------------
 void IPPortDialog::OnOKClicked()
 {
-  QMap<QString, QVariant> props;
+  IGIDataSourceProperties props;
   props.insert("port", QVariant::fromValue(m_PortNumber->value()));
   m_Properties = props;
 }

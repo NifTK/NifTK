@@ -16,10 +16,9 @@
 #define niftkIGIInitialisationDialog_h
 
 #include <niftkIGIDataSourcesExports.h>
+#include <niftkIGIDataSourceI.h>
 
-#include <QMap>
-#include <QVariant>
-#include <QString>
+#include <QWidget>
 #include <QDialog>
 
 namespace niftk
@@ -40,11 +39,11 @@ public:
   IGIInitialisationDialog(QWidget *parent);
   ~IGIInitialisationDialog();
 
-  virtual QMap<QString, QVariant> GetProperties() const;
+  virtual IGIDataSourceProperties GetProperties() const;
 
 protected:
 
-  QMap<QString, QVariant> m_Properties;
+  IGIDataSourceProperties m_Properties;
 };
 
 } // end namespace

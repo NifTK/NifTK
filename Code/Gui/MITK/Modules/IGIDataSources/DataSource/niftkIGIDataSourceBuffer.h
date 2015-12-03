@@ -26,6 +26,7 @@
 #include <itkFastMutexLock.h>
 
 #include <set>
+#include <QString>
 
 namespace niftk
 {
@@ -52,8 +53,8 @@ public:
   mitkClassMacroItkParent(IGIDataSourceBuffer, itk::Object);
   mitkNewMacro1Param(IGIDataSourceBuffer, BufferType::size_type);
 
-  itkSetStringMacro(Name);
-  itkGetStringMacro(Name);
+  QString GetName() const;
+  void SetName(QString name);
 
   /**
   * \brief Returns true if the buffer already contains a
@@ -139,7 +140,7 @@ protected:
   BufferType                      m_Buffer;
   BufferType::iterator            m_BufferIterator;
   BufferType::size_type           m_MinimumSize;
-  std::string                     m_Name;
+  QString                         m_Name;
 
 private:
 

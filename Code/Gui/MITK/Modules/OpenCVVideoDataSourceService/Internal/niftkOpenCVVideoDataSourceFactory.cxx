@@ -68,9 +68,9 @@ IGIConfigurationDialog* OpenCVVideoDataSourceFactory::CreateConfigurationDialog(
 
 
 //-----------------------------------------------------------------------------
-std::vector<std::string> OpenCVVideoDataSourceFactory::GetLegacyClassNames() const
+QList<QString> OpenCVVideoDataSourceFactory::GetLegacyClassNames() const
 {
-  std::vector<std::string> names;
+  QList<QString> names;
   names.push_back("QmitkIGIOpenCVDataSource");
   return names;
 }

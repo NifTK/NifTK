@@ -50,6 +50,21 @@ IGIDataSourceBuffer::~IGIDataSourceBuffer()
 
 
 //-----------------------------------------------------------------------------
+QString IGIDataSourceBuffer::GetName() const
+{
+  return m_Name;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceBuffer::SetName(QString name)
+{
+  m_Name = name;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceBuffer::SetLagInMilliseconds(unsigned int milliseconds)
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
