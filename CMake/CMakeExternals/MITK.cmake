@@ -71,14 +71,15 @@ if(NOT DEFINED MITK_DIR)
         PlanarFigure            # needed by QtWidgets
         Overlays                # needed by QtWidgets
         QtWidgets               # needed by niftkCoreGui
-        DataTypesExt            # needed by AlgorithmsExt
+        DataTypesExt            # needed by AlgorithmsExt, IOExt
+        MapperExt               # needed by IOExt
         AlgorithmsExt           # needed by ImageExtraction
         ImageExtraction         # needed by ImageStatistics
         ImageStatistics         # needed by QtWidgetsExt
         QtWidgetsExt            # needed by niftkCoreGui
-        SceneSerialization      # needed by org.mitk.gui.qt.ext
+        SceneSerialization      # needed by IOExt, org.mitk.gui.qt.ext
         AppUtil                 # needed by org.mitk.gui.qt.ext
-        LegacyIO                # needed by uk.ac.ucl.cmic.xnat
+        LegacyIO                # needed by IOExt, uk.ac.ucl.cmic.xnat
         LegacyAdaptors          # needed by Segmentation
         SurfaceInterpolation    # needed by Segmentation
         GraphAlgorithms         # needed by Segmentation
@@ -117,7 +118,6 @@ if(NOT DEFINED MITK_DIR)
     if(NIFTK_Apps/NiftyView)
 
       list(APPEND _enabled_modules
-        MapperExt               # needed by org.mitk.gui.qt.basicimageprocessing
         ImageDenoising          # needed by org.mitk.gui.qt.basicimageprocessing
         SegmentationUI          # needed by org.mitk.gui.qt.segmentation
         DicomUI                 # needed by org.mitk.gui.qt.dicom
