@@ -55,7 +55,7 @@ GoldStandardPoint::GoldStandardPoint( std::istream &is)
     std::stringstream linestream(line);
     double parse[4];
     linestream >> parse[0] >> parse[1] >> parse[2] >> parse[3];
-    if ( linestream.good() )
+    if ( !linestream.fail() )
     {
       m_FrameNumber = static_cast<unsigned int> (parse[0]);
       m_Index = static_cast<int>(parse[1]);
@@ -67,7 +67,7 @@ GoldStandardPoint::GoldStandardPoint( std::istream &is)
     {
       std::stringstream linestream2(line);
       linestream2 >> parse[0] >> parse[1] >> parse[2];
-      if ( linestream2.good() )
+      if ( !linestream2.fail() )
       {
         m_FrameNumber = static_cast<unsigned int> (parse[0]);
         m_Point.x = parse[1];
@@ -95,7 +95,7 @@ std::istream& operator>> (std::istream &is, GoldStandardPoint &GSP )
   {
     std::stringstream linestream(line);
     linestream >> GSP.m_FrameNumber >> GSP.m_Index >> GSP.m_Point.x >> GSP.m_Point.y;
-    if ( linestream.good() )
+    if ( !linestream.fail() )
     {
       return is;
     }
@@ -103,7 +103,7 @@ std::istream& operator>> (std::istream &is, GoldStandardPoint &GSP )
     {
       std::stringstream linestream2(line);
       linestream2 >> GSP.m_FrameNumber >> GSP.m_Point.x >> GSP.m_Point.y;
-      if ( linestream2.good() )
+      if ( !linestream2.fail() )
       {
         GSP.m_Index = -1;
       }

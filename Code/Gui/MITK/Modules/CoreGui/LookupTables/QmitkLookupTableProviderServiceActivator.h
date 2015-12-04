@@ -16,6 +16,8 @@
 #define QmitkLookupTableProviderServiceActivator_h
 
 #include "QmitkLookupTableProviderServiceImpl_p.h"
+#include "mitkLabelMapReader.h"
+#include "mitkLabelMapWriter.h"
 
 #include <usModuleActivator.h>
 #include <usModuleContext.h>
@@ -29,6 +31,8 @@ class US_ABI_LOCAL QmitkLookupTableProviderServiceActivator : public us::ModuleA
 
 public:
 
+  QmitkLookupTableProviderServiceActivator();
+
   /** \brief Load module context */
   void Load(us::ModuleContext *context);
 
@@ -38,6 +42,9 @@ public:
 private:
 
   std::auto_ptr<QmitkLookupTableProviderService> m_ServiceImpl;
+  
+  std::auto_ptr<mitk::LabelMapReader> m_LabelMapReaderService;
+  std::auto_ptr<mitk::LabelMapWriter> m_LabelMapWriterService;
 };
 
 #endif

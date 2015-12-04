@@ -18,9 +18,12 @@
 
 #include <iostream>
 #include <itkTestMain.h>
+#include "itkNifTKImageIOFactory.h"
 
 void RegisterTests()
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   REGISTER_TEST(LaplacianSolverImageFilterTest);
   REGISTER_TEST(ScalarImageToNormalizedGradientVectorImageFilterTest);
   REGISTER_TEST(StreamlinesFilterTest);

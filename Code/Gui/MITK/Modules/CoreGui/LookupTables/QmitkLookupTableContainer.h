@@ -25,12 +25,19 @@
  * \brief Class to contain a vtkLookupTable and to store meta-data attributes
  * like display name, which order to display it in in GUI, etc.
  */
-class NIFTKCOREGUI_EXPORT QmitkLookupTableContainer {
+class NIFTKCOREGUI_EXPORT QmitkLookupTableContainer 
+{
 
 public:
 
+  typedef std::pair<int, QString> LabelType;
+  typedef std::vector<LabelType> LabelListType; 
+
   /** Constructor that takes a lookup table. */
   QmitkLookupTableContainer(const vtkLookupTable* lut);
+
+  /** Constructor that takes a lookup table and a set of labels*/
+  QmitkLookupTableContainer(const vtkLookupTable* lut, const LabelListType& labels);
 
   /** Destructor. */
   virtual ~QmitkLookupTableContainer();
@@ -50,7 +57,19 @@ public:
   /** Get the display name. */
   QString GetDisplayName() const { return m_DisplayName; }
 
-protected:
+  /** Set scaled property. */
+  void SetIsScaled(bool s) { m_IsScaled = s; }
+
+  /** Get scaled property. */
+  bool GetIsScaled() const { return m_IsScaled; }
+ 
+
+  /** Set labels. */
+  void SetLabels(const LabelListType& labels){ m_Labels = labels; }
+  
+  /** Get labels. */
+ LabelListType GetLabels()const { return m_Labels; }
+
 
 private:
 
@@ -63,10 +82,18 @@ private:
   /** This is it! */
   const vtkLookupTable* m_LookupTable;
 
+  /** Store the order that it is to be displayed in GUI. */
+  int m_Order;
+
+  /** What type of lookup table */
+  bool m_IsScaled;
+
   /** Display name for display in GUI. */
   QString m_DisplayName;
 
-  /** Store the order that it is to be displayed in GUI. */
-  int m_Order;
+  /** Labels for the entries in the vtkLUT (optional)*/
+  LabelListType m_Labels;
+
 };
+
 #endif

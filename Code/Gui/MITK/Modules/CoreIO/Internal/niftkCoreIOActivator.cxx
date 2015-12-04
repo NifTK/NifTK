@@ -14,10 +14,10 @@
 
 #include "niftkCoreIOActivator.h"
 #include "niftkCoreIOMimeTypes.h"
-
 #include <usModuleContext.h>
 
-namespace niftk {
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 CoreIOActivator::CoreIOActivator()
@@ -52,7 +52,7 @@ void CoreIOActivator::Load(us::ModuleContext* context)
 
 
 //-----------------------------------------------------------------------------
-void CoreIOActivator::Unload(us::ModuleContext* )
+void CoreIOActivator::Unload(us::ModuleContext*)
 {
   m_CoordinateAxesDataReaderService.reset(NULL);
   m_CoordinateAxesDataWriterService.reset(NULL);

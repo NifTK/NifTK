@@ -18,7 +18,8 @@
 #include <mitkCoreObjectFactory.h>
 #include <mitkAbstractFileIO.h>
 
-namespace niftk {
+namespace niftk 
+{
 
 /**
 * \class CoreIOObjectFactory

@@ -54,8 +54,6 @@ if(BUILD_NiftyReg)
     )
 
     set(NiftyReg_DIR ${proj_INSTALL})
-
-    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
     mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading NiftyReg from ${NiftyReg_DIR}")

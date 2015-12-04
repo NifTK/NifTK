@@ -17,6 +17,7 @@
 
 #include "QmitkLookupTableProviderService.h"
 #include <mitkNamedLookupTableProperty.h>
+#include <mitkLabeledLookupTableProperty.h>
 #include <memory>
 
 class QmitkLookupTableManager;
@@ -25,7 +26,8 @@ class QmitkLookupTableManager;
  * \class QmitkLookupTableProviderServiceImpl
  * \brief Service implementation of QmitkLookupTableProviderService.
  */
-class QmitkLookupTableProviderServiceImpl : public QmitkLookupTableProviderService {
+class QmitkLookupTableProviderServiceImpl : public QmitkLookupTableProviderService 
+{
 
 public:
 
@@ -38,27 +40,60 @@ public:
   virtual unsigned int GetNumberOfLookupTables();
 
   /**
+   * \see QmitkLookupTableProviderService::CheckName()
+   */
+  virtual bool CheckName(const QString& name);
+
+  /**
    * \see QmitkLookupTableProviderService::CreateLookupTable()
    */
-  virtual vtkLookupTable* CreateLookupTable(unsigned int lookupTableIndex,
+  virtual vtkLookupTable* CreateLookupTable(const QString& lookupTableName,
                                             float lowestValueOpacity,
                                             float highestValueOpacity);
 
   /**
    * \see QmitkLookupTableProviderService::CreateLookupTableProperty()
    */
-  virtual mitk::NamedLookupTableProperty::Pointer CreateLookupTableProperty(unsigned int lookupTableIndex,
+  virtual mitk::NamedLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName,
                                                                             float lowestValueOpacity,
                                                                             float highestValueOpacity);
+  
+  /**
+   * \see QmitkLookupTableProviderService::CreateLookupTableProperty()
+   */
+  virtual mitk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName);
 
   /**
-   * \see QmitkLookupTableProviderService::GetName
+   * \see QmitkLookupTableProviderService::AddNewLookupTableContainer()
    */
-  std::string GetName(unsigned int lookupTableIndex);
+  virtual void AddNewLookupTableContainer(const QmitkLookupTableContainer* container);
+  
+  /**
+   * \see QmitkLookupTableProviderService::ReplaceLookupTableContainer()
+   */
+  virtual void ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& lookupTableName);
+
+  /**
+   * \see QmitkLookupTableProviderService::GetIsScaled
+   */
+  virtual bool GetIsScaled(const QString& lookupTableName);
+
+  /**
+   * \see QmitkLookupTableProviderService::GetTableNames
+   */
+  virtual std::vector<QString> GetTableNames();
+
+
+  /**
+   * \see Returns labels for the given table, if they exist.
+   */
+  mitk::LabeledLookupTableProperty::LabelListType GetLabels(const QString& lookupTableName);
 
 private:
+
   QmitkLookupTableManager* GetManager();
   std::auto_ptr<QmitkLookupTableManager> m_Manager;
+  
 };
 
 #endif

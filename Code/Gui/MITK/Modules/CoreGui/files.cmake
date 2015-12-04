@@ -13,11 +13,15 @@
 #============================================================================*/
 
 set(CPP_FILES
+  IO/mitkLabelMapReader.cxx
+  IO/mitkLabelMapWriter.cxx
+  IO/niftkCoreGuiIOMimeTypes.cxx
   LookupTables/QmitkLookupTableContainer.cxx
   LookupTables/QmitkLookupTableSaxHandler.cxx
   LookupTables/QmitkLookupTableManager.cxx
   LookupTables/QmitkLookupTableProviderServiceImpl.cxx
   LookupTables/QmitkLookupTableProviderServiceActivator.cxx
+  LookupTables/vtkLookupTableUtils.cxx
   QmitkDataStorageCheckableComboBox.cxx
   QmitkHelpAboutDialog.cxx
   QmitkCmicLogo.cxx

@@ -24,12 +24,18 @@ endif()
 
 if(BUILD_VL)
 
-  set(version "19b0375cbe")
+  set(version "d4927b74e2")
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary.git")
 
   niftkMacroDefineExternalProjectVariables(VL ${version} ${location})
 
   if(NOT DEFINED VL_DIR)
+
+    # Note:
+    # The VL_ROOT variable has to be defined up here because the
+    # ChangeVLLibsInstallNameForMac.cmake.in script refers to it.
+
+    set(VL_ROOT ${proj_INSTALL})
 
     set(_test_options )
     if(APPLE)
@@ -37,8 +43,8 @@ if(BUILD_VL)
       configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeExternals/ChangeVLLibsInstallNameForMac.cmake.in ${APPLE_CMAKE_SCRIPT} @ONLY)
       set(APPLE_TEST_COMMAND ${CMAKE_COMMAND} -P ${APPLE_CMAKE_SCRIPT})
       set(_test_options
-        "TEST_AFTER_INSTALL 1
-         TEST_COMMAND ${APPLE_TEST_COMMAND}"
+        TEST_AFTER_INSTALL 1
+        TEST_COMMAND ${APPLE_TEST_COMMAND}
       )
     endif()
 
@@ -68,7 +74,6 @@ if(BUILD_VL)
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    set(VL_ROOT ${proj_INSTALL})
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
     mitkFunctionInstallExternalCMakeProject(${proj})
 

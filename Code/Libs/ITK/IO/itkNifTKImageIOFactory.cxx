@@ -51,23 +51,34 @@ NifTKImageIOFactory::NifTKImageIOFactory()
     itk::CreateObjectFunction<INRImageIO>::New());
 }
 
+
 NifTKImageIOFactory::~NifTKImageIOFactory()
 {
 }
 
+
 const char*
-NifTKImageIOFactory::GetITKSourceVersion(void) const
+NifTKImageIOFactory::GetITKSourceVersion() const
 {
   return ITK_SOURCE_VERSION;
 }
 
+
 const char*
-NifTKImageIOFactory::GetDescription(void) const
+NifTKImageIOFactory::GetDescription() const
 {
   return "NifTK ImageIO Factory. Supports DRC Analyze, NIfTI (reads Analyze) and INR image formats.";
 }
 
-} // end namespace itk
+
+void
+NifTKImageIOFactory::Initialize()
+{
+  /// Dumb function. Calling this function ensures that the static instance of RegisterImageIOFactories
+  /// is created and the ITK image IOs are actually registered.
+}
+
+}
 
 
 //-----------------------------------------------------------------------------

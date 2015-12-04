@@ -17,8 +17,12 @@
 
 #include <itkTestMain.h>
 
+#include "itkNifTKImageIOFactory.h"
+
 void RegisterTests()
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   REGISTER_TEST(itkBinaryIntersectWithPaddingImageFilterTest);
   REGISTER_TEST(itkBinaryUnionWithPaddingImageFilterTest);
   REGISTER_TEST(itkMultipleDilateErodeImageFilterTest);

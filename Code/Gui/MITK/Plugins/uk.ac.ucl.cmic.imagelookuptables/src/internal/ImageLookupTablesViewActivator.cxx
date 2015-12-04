@@ -18,7 +18,8 @@
 
 #include "QmitkImageLookupTablesPreferencePage.h"
 
-namespace mitk {
+namespace mitk 
+{
 
 ImageLookupTablesViewActivator* ImageLookupTablesViewActivator::s_Inst = 0;
 
@@ -70,9 +71,9 @@ ctkPluginContext* ImageLookupTablesViewActivator::GetPluginContext() const
 QmitkLookupTableProviderService* ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService()
 {
   ctkPluginContext* context = ImageLookupTablesViewActivator::GetDefault()->GetPluginContext();
-
   ctkServiceReference serviceRef = context->getServiceReference<QmitkLookupTableProviderService>();
-  QmitkLookupTableProviderService* lutService =context->getService<QmitkLookupTableProviderService>(serviceRef);
+  QmitkLookupTableProviderService* lutService = context->getService<QmitkLookupTableProviderService>(serviceRef);
+  
   if (lutService == NULL)
   {
     mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
