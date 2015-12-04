@@ -22,12 +22,14 @@
 #include <itkShapeBasedAveragingImageFilter.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include "itkNifTKImageIOFactory.h"
 
 /**
  * Basic tests for ShapeBasedAveragingImageFilter
  */
 int ShapeBasedAveragingImageFilterTest(int argc, char * argv[])
 {
+  itk::NifTKImageIOFactory::Initialize();
 
   // Declare the types of the images
   const unsigned int Dimension = 2;

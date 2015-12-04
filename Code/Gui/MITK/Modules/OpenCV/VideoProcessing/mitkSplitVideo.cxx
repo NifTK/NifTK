@@ -100,13 +100,13 @@ bool SplitVideo::Split(
   unsigned int videoFrameNumber = 0;
   unsigned int videoOutFrameNumber = 0;
 
-  while ( getline(fin,line) && ( frameNumber <= endFrame ) )
+  while ( std::getline(fin,line) && ( frameNumber <= endFrame ) )
   {
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
       linestream >> frameNumber >> sequenceNumber >> channel >> timeStamp;
-      if ( linestream.good() ) 
+      if ( !linestream.fail() ) 
       {
         cv::Mat videoImage = cvQueryFrame ( capturer );
 

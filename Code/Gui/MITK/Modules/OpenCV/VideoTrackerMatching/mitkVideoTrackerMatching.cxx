@@ -152,13 +152,13 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
     m_TrackingMatrices[i].m_TrackingMatrices.clear();
   }
   unsigned int badMatrices = 0;
-  while ( getline(fin,line) )
+  while ( std::getline(fin,line) )
   {
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
       linestream >> frameNumber >> sequenceNumber >> channel >> timeStamp;
-       if ( linestream.good() )
+      if ( !linestream.fail() )
       {
         m_FrameNumbers.push_back(frameNumber);
         m_VideoTimeStamps.Insert(timeStamp);
@@ -519,7 +519,7 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
   unsigned int indexnumber = 0;
 
   int row = 0 ;
-  while ( getline(fin,line) )
+  while ( std::getline(fin,line) )
   {
     if ( line[0] != '#' )
     {
@@ -529,7 +529,7 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
         m_CameraToTracker[indexnumber].at<double>(row,2) >>
         m_CameraToTracker[indexnumber].at<double>(row,3);
 
-      if ( ! linestream.fail() )
+      if ( !linestream.fail() )
       {
         row++;
         if ( row == 4 ) 
@@ -593,7 +593,7 @@ std::vector < mitk::WorldPointsWithTimingError > VideoTrackerMatching::ReadPoint
 
         linestream >> frameNumber >> xstring >> ystring >> zstring
          >> lxstring >> lystring >> rxstring >> rystring;
-        if ( linestream.good() )
+        if ( !linestream.fail() )
         {
           framePointsInLensCS.m_Points.push_back(
               mitk::WorldPoint (cv::Point3d(

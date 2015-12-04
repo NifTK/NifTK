@@ -86,7 +86,7 @@ int VTK4PointsReader::RequestData(vtkInformation*,
   double x[3];
   double weight;
   std::string line;
-  while ( getline(fin,line) )
+  while ( std::getline(fin,line) )
   {
     if ( line[0] != '#' )
     {
@@ -99,7 +99,7 @@ int VTK4PointsReader::RequestData(vtkInformation*,
       {
         linestream >> x[0] >> x[1] >> x[2];
       }
-      if ( linestream.good() )
+      if ( !linestream.fail() )
       {
         bool ok=true;
         for ( int i = 0 ; i < 3 ; i++)
