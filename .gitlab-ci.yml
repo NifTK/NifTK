@@ -117,9 +117,10 @@ Windows test:
 
   script:
   - hostname
-  - pwd
-  - cd NifTK-build
-  - ctest -S CTestContinuous.cmake -V
+  - whoami
+  - cd
+  - rem cd NifTK-build
+  - rem ctest -S CTestContinuous.cmake -V
 
   tags:
   - windows
