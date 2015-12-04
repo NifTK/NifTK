@@ -28,6 +28,4 @@ add_subdirectory( RegistrationToolbox )
 add_subdirectory( CorticalThickness )
 add_subdirectory( BasicFilters )
 add_subdirectory( BoundaryShiftIntegral )
-
-## Disabled because MIDAS segmentation code is currently maintained in the NiftyMIDAS fork.
-#add_subdirectory( Segmentation )
+add_subdirectory( Segmentation )
