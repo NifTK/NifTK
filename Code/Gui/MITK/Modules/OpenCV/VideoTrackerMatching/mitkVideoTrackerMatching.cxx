@@ -31,6 +31,7 @@ VideoTrackerMatching::VideoTrackerMatching ()
 , m_FlipMatrices(false)
 , m_WriteTimingErrors(false)
 , m_HaltOnFrameSkip(true)
+, m_InterpolateMatrices(false)
 {}
 
 
@@ -230,7 +231,7 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
   }
   for ( unsigned int i = 0 ; i < m_TrackingMatricesAndTimeStamps.size() ; i ++ ) 
   {
-    if ( m_TimingErros[i].size() != m_FrameNumbers.size() )
+    if ( m_TimingErrors[i].size() != m_FrameNumbers.size() )
     {
       MITK_ERROR << "Wrong number of frame numbers " << i << ": " << m_TimingErrors[i].size()
         << " != " <<  m_FrameNumbers.size();
@@ -238,7 +239,7 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
     }
   }
 
-  for ( unsigned int i = 0 ; i < m_TrackingMatrices.size() ; i++ )
+  for ( unsigned int i = 0 ; i < m_TrackingMatricesAndTimeStamps.size() ; i++ )
   {
     std::ofstream fout;
     if ( m_WriteTimingErrors )
@@ -257,24 +258,24 @@ bool VideoTrackerMatching::CheckTimingErrorStats()
     
     double mean = 0 ; 
     double absmean = 0 ; 
-    long long minimum = m_TrackingMatrices[i].m_TimingErrors[0];
-    long long maximum = m_TrackingMatrices[i].m_TimingErrors[0];
+    long long minimum = m_TimingErrors[i][0];
+    long long maximum = m_TimingErrors[i][0];
 
-    for (unsigned int j = 0 ; j < m_TrackingMatrices[i].m_TimingErrors.size() ; j ++ ) 
+    for (unsigned int j = 0 ; j < m_TimingErrors[i].size() ; j ++ ) 
     {
-      mean += static_cast<double>(m_TrackingMatrices[i].m_TimingErrors[j]);
-      absmean += fabs(static_cast<double>(m_TrackingMatrices[i].m_TimingErrors[j]));
-      minimum = m_TrackingMatrices[i].m_TimingErrors[j] < minimum ? m_TrackingMatrices[i].m_TimingErrors[j] : minimum;
-      maximum = m_TrackingMatrices[i].m_TimingErrors[j] > maximum ? m_TrackingMatrices[i].m_TimingErrors[j] : maximum;
+      mean += static_cast<double>(m_TimingErrors[i][j]);
+      absmean += fabs(static_cast<double>(m_TimingErrors[i][j]));
+      minimum = m_TimingErrors[i][j] < minimum ? m_TimingErrors[i][j] : minimum;
+      maximum = m_TimingErrors[i][j] > maximum ? m_TimingErrors[i][j] : maximum;
       if ( fout ) 
       {
-        fout << static_cast<double>(m_TrackingMatrices[i].m_TimingErrors[j]) << std::endl;
+        fout << static_cast<double>(m_TimingErrors[i][j]) << std::endl;
       }
     }
-    mean /= m_TrackingMatrices[i].m_TimingErrors.size();
-    absmean /= m_TrackingMatrices[i].m_TimingErrors.size();
+    mean /= m_TimingErrors[i].size();
+    absmean /= m_TimingErrors[i].size();
     
-    MITK_INFO << "There are " << m_TrackingMatrices[i].m_TimingErrors.size() << " matched frames in data set " << i;
+    MITK_INFO << "There are " << m_TimingErrors[i].size() << " matched frames in data set " << i;
     MITK_INFO << "Average timing error for set " << i << " = " << mean * 1e-6 << "ms";
     MITK_INFO << "Average absolute timing error for set " << i << " = " << absmean * 1e-6 << "ms";
     MITK_INFO << "Maximum timing error for set " << i << " = " << maximum * 1e-6 << "ms";
@@ -321,35 +322,74 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
     return returnMat;
   }
 
-  if ( TrackerIndex >= m_TrackingMatrices.size () )
+  if ( TrackerIndex >= m_TrackingMatricesAndTimeStamps.size () )
   {
     MITK_WARN << "Attempted to get tracking matrix with invalid TrackerIndex";
     return returnMat;
   }
 
-  if ( FrameNumber >= m_TrackingMatrices[TrackerIndex].m_TrackingMatrices.size() )
+  if ( FrameNumber >= m_VideoTimeStamps.GetSize() )
   {
     MITK_WARN << "Attempted to get tracking matrix with invalid frame index";
     return returnMat;
   }
 
-  returnMat=m_TrackingMatrices[TrackerIndex].m_TrackingMatrices[FrameNumber];
+  mitk::TimeStampsContainer::TimeStamp targetTimeStamp = m_VideoTimeStamps.GetTimeStamp(FrameNumber); 
+  if ( m_VideoLeadsTracking[TrackerIndex] )
+  {
+    targetTimeStamp += m_VideoLag[TrackerIndex];
+  }
+  else
+  {
+    targetTimeStamp -= m_VideoLag[TrackerIndex];
+  }
+         
+  //now we need to get nearest tracker matrix, either by interpolation or not.
+  mitk::TimeStampsContainer::TimeStamp timingError;
+  bool inBounds;
+  
+  if ( ! m_InterpolateMatrices )
+  {
+    returnMat=cv::Mat(m_TrackingMatricesAndTimeStamps[TrackerIndex].GetNearestMatrix(targetTimeStamp, timingError, inBounds));
+  }
+  else
+  {
+    returnMat=cv::Mat(m_TrackingMatricesAndTimeStamps[TrackerIndex].InterpolateMatrix(targetTimeStamp, timingError, inBounds));
+  }
+
   if ( ReferenceIndex != -1 )
   {
-    referenceMat=m_TrackingMatrices[ReferenceIndex].m_TrackingMatrices[FrameNumber];
+    mitk::TimeStampsContainer::TimeStamp refTimingError;
+    bool refInBounds;
+    
+    mitk::TimeStampsContainer::TimeStamp refTargetTimeStamp = m_VideoTimeStamps.GetTimeStamp(FrameNumber); 
+    if ( m_VideoLeadsTracking[ReferenceIndex] )
+    {
+      refTargetTimeStamp += m_VideoLag[ReferenceIndex];
+    }
+    else
+    {
+      refTargetTimeStamp -= m_VideoLag[ReferenceIndex];
+    }
+  
+    if ( ! m_InterpolateMatrices )
+    {
+      referenceMat=cv::Mat(m_TrackingMatricesAndTimeStamps[ReferenceIndex].GetNearestMatrix(refTargetTimeStamp, refTimingError, refInBounds));
+    }
+    else
+    {
+      referenceMat=cv::Mat(m_TrackingMatricesAndTimeStamps[ReferenceIndex].InterpolateMatrix(refTargetTimeStamp, refTimingError, refInBounds));
+    }
     returnMat = referenceMat.inv() * returnMat; 
+    if ( abs ( refTimingError ) > abs ( timingError ) )
+    {
+      timingError = refTimingError;
+    }
   }
+
   if ( TimingError != NULL ) 
   {
-    *TimingError = m_TrackingMatrices[TrackerIndex].m_TimingErrors[FrameNumber];
-    if ( ReferenceIndex != -1 )
-    {
-      long long refTimingError = m_TrackingMatrices[ReferenceIndex].m_TimingErrors[FrameNumber];
-      if ( abs ( refTimingError ) > abs ( *TimingError ) )
-      {
-        *TimingError = refTimingError;
-      }
-    }
+    *TimingError = timingError;
   }
   
   if ( m_FlipMatrices )

@@ -132,10 +132,11 @@ protected:
   VideoTrackerMatching& operator=(const VideoTrackerMatching&); // Purposefully not implemented.
   
   std::vector<unsigned int>             m_FrameNumbers;
-  TimeStampsContainer              m_VideoTimeStamps;
+  TimeStampsContainer                   m_VideoTimeStamps;
   bool                                  m_Ready;
   bool                                  m_FlipMatrices;
   bool                                  m_WriteTimingErrors;
+  bool                                  m_InterpolateMatrices;
   std::string                           m_Directory;
 
   /**
