@@ -25,7 +25,8 @@
 #include <usModuleContext.h>
 #include <memory>
 
-namespace niftk {
+namespace niftk 
+{
 
 /**
 * @class CoreIOActivator

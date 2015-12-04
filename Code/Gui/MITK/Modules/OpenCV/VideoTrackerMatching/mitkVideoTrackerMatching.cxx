@@ -152,13 +152,13 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
     m_TrackingMatrices[i].m_TrackingMatrices.clear();
   }
   unsigned int badMatrices = 0;
-  while ( getline(fin,line) )
+  while ( std::getline(fin,line) )
   {
     if ( line[0] != '#' )
     {
       std::stringstream linestream(line);
       linestream >> frameNumber >> sequenceNumber >> channel >> timeStamp;
-       if ( linestream.good() )
+      if ( !linestream.fail() )
       {
         m_FrameNumbers.push_back(frameNumber);
         m_VideoTimeStamps.Insert(timeStamp);
@@ -372,9 +372,11 @@ void VideoTrackerMatching::SetCameraToTracker (cv::Mat matrix, int trackerIndex)
 
 
 //---------------------------------------------------------------------------
-cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex  )
+cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long long * TimingError  ,unsigned int TrackerIndex,
+    int ReferenceIndex )
 {
   cv::Mat returnMat = cv::Mat(4,4,CV_64FC1);
+  cv::Mat referenceMat = cv::Mat(4,4,CV_64FC1);
   
   if ( !m_Ready ) 
   {
@@ -395,9 +397,22 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
   }
 
   returnMat=m_TrackingMatrices[TrackerIndex].m_TrackingMatrices[FrameNumber];
+  if ( ReferenceIndex != -1 )
+  {
+    referenceMat=m_TrackingMatrices[ReferenceIndex].m_TrackingMatrices[FrameNumber];
+    returnMat = referenceMat.inv() * returnMat; 
+  }
   if ( TimingError != NULL ) 
   {
     *TimingError = m_TrackingMatrices[TrackerIndex].m_TimingErrors[FrameNumber];
+    if ( ReferenceIndex != -1 )
+    {
+      long long refTimingError = m_TrackingMatrices[ReferenceIndex].m_TimingErrors[FrameNumber];
+      if ( abs ( refTimingError ) > abs ( *TimingError ) )
+      {
+        *TimingError = refTimingError;
+      }
+    }
   }
   
   if ( m_FlipMatrices )
@@ -504,7 +519,7 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
   unsigned int indexnumber = 0;
 
   int row = 0 ;
-  while ( getline(fin,line) )
+  while ( std::getline(fin,line) )
   {
     if ( line[0] != '#' )
     {
@@ -514,7 +529,7 @@ void VideoTrackerMatching::SetCameraToTrackers(std::string filename)
         m_CameraToTracker[indexnumber].at<double>(row,2) >>
         m_CameraToTracker[indexnumber].at<double>(row,3);
 
-      if ( linestream.good() )
+      if ( !linestream.fail() )
       {
         row++;
         if ( row == 4 ) 
@@ -578,7 +593,7 @@ std::vector < mitk::WorldPointsWithTimingError > VideoTrackerMatching::ReadPoint
 
         linestream >> frameNumber >> xstring >> ystring >> zstring
          >> lxstring >> lystring >> rxstring >> rystring;
-        if ( linestream.good() )
+        if ( !linestream.fail() )
         {
           framePointsInLensCS.m_Points.push_back(
               mitk::WorldPoint (cv::Point3d(

@@ -15,12 +15,15 @@
 
 \section ImageLookupTablesIntroduction Introduction
 
-The Image Lookup Tables view provides the ability to assign a different colour map to each image.
+The Image Lookup Tables View provides the ability to assign a different colour map to each image.
 Each image will have range of intensity values, for example ranging from some minimum value such as 0
 to a maximum value such as 4096.  These image intensity values must be converted to the colour values 
-seen on the screen.  
+seen on the screen. 
 
-Consider the diagram in Figure 1. A lookup table may have 256 colours, that are listed in order,
+Colour values can be assigned by (a) computing a scaled lookup table within an image intensity range or (b)
+assigning a labeled lookup table so that each image intensity value has an assigned color.
+
+For the scaled lookup table consider the diagram in Figure 1. A lookup table may have 256 colours, that are listed in order,
 starting at 0 and continuing up to 255.  If we select a minimum image intensity value such as 100,
 then all image intensities less than or equal to 100 will be mapped to the first index in the lookup table
 at index 0.  If the first value is black, then all image intensities less than or equal to 100 will 
@@ -32,47 +35,52 @@ in the colour map between 0 and 255 in a linear fashion.
 
 \image html Diagram1.png "Figure 1. Intensity values are mapped to indexes within the lookup table."
  
-The Image Lookup Tables view provides a range of pre-set "lookup tables" or "colour maps"
-to enable different colour schemes to be applied. For example, there are colour maps suitable for
-MR images (grey), PET images (NIH), images of the determinant of a Jacobian of a transformation (MIDAS overlay)
-and ones derived from popular image processing packages, such as Image J's Fire lookup table, and MATLAB's hot,
-cool, spring, summer, autumn, winter.
+For the labeled lookup table, each unique image intensity value will have an assigned color. Any intensity values not 
+listed in the lookup table will be assigned a background color.
 
-\image html ExampleLookupTables.png "Figure 2. Lookup tables include greyscale, ImageJ Fire and the NIH Pet colour map."
+The Image Lookup Tables view provides a range of pre-set "lookup tables" to enable different colour schemes 
+to be applied. For example, there are colour maps suitable for MR images (grey), PET images (NIH), images of 
+the determinant of a Jacobian of a transformation (MIDAS overlay) and ones derived from popular image processing 
+packages, such as Image J's Fire lookup table, Freesurfer's brain anatomy, NiftkSeg brain anatomy, and MATLAB's hot,
+ cool, spring, summer, autumn, winter.
+
+\image html ExampleLookupTables.png "Figure 2. Lookup tables include greyscale, ImageJ Fire, NIH Pet colour map, and Brain Anatomy Labels."
 
 \section ImageLookupTablesUsage Usage
 
-\subsection ImageLookupTablesUsageSelecting Selecting a Lookup Table
+The main graphical user interface (GUI) view is shown in Figure 3. There are two tab views, "Scaled Lookup Tables" and 
+"Labeled Lookup Tables".
 
 \image html ScreenshotMainView.jpg "Figure 3. The main GUI view."
 
-The main graphical user interface (GUI) view is shown in Figure 3.
-By default, a grey colour map is used, mapping intensity values from black to white.
+
+\subsection ImageLookupTablesUsageSelecting Selecting a Lookup Table
+
+By default, a Scaled grey colour map is used, mapping intensity values from black to white.
 
 An image can be selected in the DataManager view, by left single-clicking on the name.
 Once an image is selected, the GUI controls of the Image Lookup Tables view are set to
-reflect the properties on the selected image.
+reflect the properties of the selected image.
 
-\subsection ImageLookupTablesUsageRange Selecting the Colour Range.
+\subsection ImageLookupTablesUsageCreating Creating a New LookupTable
 
-The colours can be adjusted via the min, max, level and window sliders or spin boxes.
-The min and max are related to the window and level by
+A new Labeled Lookup Table can be created by selecting the create file button. 
+By default this will create an empty Labeled lookup table, which can be edited by the user as described in Section . 
 
-<ul>
-  <li> level = (min + max) / 2
-  <li> window = max - min
-</ul>
+\subsection ImageLookupTablesUsageLoading Loading a LookupTable
 
-The term "level" is equivalent to "brightness" and "window" is equivalent to "contrast".
+A lookup table can be loaded from file by selecting the folder icon. Scaled lookup tables must be in the .lut file format. 
+Labeled lookup tables must be in a .txt file that follows the 3D Slicer specifications described here:
 
-\subsection ImageLookupTablesUsageMinMax Setting the Minimum and Maximum Limits
+\verbatim
+http://www.slicer.org/slicerWiki/index.php/Slicer3:LUTs_and_Ontologies#Lookup_tables
+\endverbatim
 
-When an image is first loaded the minimum and maximum values of the data are calculated, and normally these are
-the range of data that the user is interested in viewing. For this reason, the minimum and maximum
-image intensity value of the data is also the minimum and maximum range of the sliders. However, there may be
-cases where it is necessary to specify these limits manually.  These limits can be set manually
-using the data limits min and max boxes. The reset button will then revert back to the minimum
-and maximum image data values.
+
+\subsection ImageLookupTablesUsageSaving Saving a LookupTable
+
+A Label Lookup Table that has been edited by the user can be saved using the save icon. 
+The user will be prompted for a file name and location to save the lookup table to.
 
 \subsection ImageLookupTablesUsagePreferences Application Level Preferences
 
@@ -111,6 +119,63 @@ of the image intensity data is calculated. Then there are three types of initial
 
 In addition, there is a preference registered under Image Lookup Tables to set the precision of the spin boxes. This is useful
 if for example the images are floating point images, and the user needs fine control.
+
+
+\section ScaledLookupTablesUsage Scaled Lookup Table View
+
+\subsection ScaledLookupTablesUsageRange Selecting the Colour Range.
+
+The Scaled Lookup Table tab can be seen in Figure 3.
+The colours can be adjusted via the min, max, level and window sliders or spin boxes.
+The min and max are related to the window and level by
+
+<ul>
+  <li> level = (min + max) / 2
+  <li> window = max - min
+</ul>
+
+The term "level" is equivalent to "brightness" and "window" is equivalent to "contrast".
+
+\subsection ScaledLookupTablesUsageMinMax Setting the Minimum and Maximum Limits
+
+When an image is first loaded the minimum and maximum values of the data are calculated, and normally these are
+the range of data that the user is interested in viewing. For this reason, the minimum and maximum
+image intensity value of the data is also the minimum and maximum range of the sliders. However, there may be
+cases where it is necessary to specify these limits manually.  These limits can be set manually
+using the data limits min and max boxes. The reset button will then revert back to the minimum
+and maximum image data values.
+
+
+\section LabeledLookupTablesUsage Labeled Lookup Table View
+
+\image html ScreenshotLabeledView.jpg Figure 7. The Labeled Lookup Table tab GUI view.
+
+The Labeled Lookup Table view can be seen in Figure 7. 
+Each row in the table corresponds to a label. 
+Each label has a color, a value, and a name. 
+
+\subsection LabeledLookupTablesUsageLabelEdit Editing Label Values
+To edit the color of an existing label the color button can be click on to display a color selection window.
+Select the correct color the color and press "Okay" to set the label color.
+
+A name can be edited by double clicking on the name to change.  
+The new name is entered by typing the desired name.
+To finish editingpress the "Enter" or "Return" key. 
+
+Similarly a value can be edited by double clicking on the value to change.
+However, no two values can be identical so a warning window will appear when attempting to set a two value to a equivalent. 
+In this case the edited value will revert to the previous value. 
+
+
+\subsection LabeledLookupTablesUsageEdit Editing Labeled Lookup Tables
+
+To add a new label press the Plus Button. 
+By default the new label will be assigned the color black, a value of one larger than the highest value in the Labeled 
+Lookup Table, and a empty name.
+
+To remove an exist label, select the label to remove and press the Minus Button.
+
+The Up Arrow Button and Down Arrow Button allow the user to move labels up and down in the table list.
 
 \section ImageLookupTablesUsageReferences References
 

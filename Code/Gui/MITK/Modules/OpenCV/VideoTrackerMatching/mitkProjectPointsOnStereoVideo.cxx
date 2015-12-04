@@ -47,6 +47,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_VisualiseTrackingStatus(false)
 , m_AnnotateWithGoldStandards(false)
 , m_WriteAnnotatedGoldStandards(false)
+, m_WriteTrackingPositionData(false)
 , m_LeftGSFramesAreEven(true)
 , m_RightGSFramesAreEven(true)
 , m_MaxGoldStandardPointIndex(-1)
@@ -249,6 +250,28 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   bool drawProjection = true;
   IplImage *smallimage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int) m_VideoHeight/2.0), 8,3);
   IplImage *smallcorrectedimage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int)m_VideoHeight), 8,3);
+
+  std::vector < cv::Point3d > lastFrameTrackerOrigin;
+  std::vector < cv::Point3d > lastFrameCameraOrigin;
+  std::vector < unsigned long long > lastFrameTimeStamp;
+
+  std::ofstream tracks_out;
+  if ( m_WriteTrackingPositionData )
+  {
+    tracks_out.open(std::string (m_OutDirectory + "Tracking_Statistics.txt").c_str());
+    unsigned int howMany = trackerMatcher->GetTrackingMatricesSize();
+    tracks_out <<  "# framenumber timestamp ";
+    for ( unsigned int i = 0 ; i < howMany ; ++ i )
+    {
+      lastFrameTrackerOrigin.push_back(cv::Point3d(0.0,0.0,0.0));
+      lastFrameCameraOrigin.push_back(cv::Point3d(0.0,0.0,0.0));
+      lastFrameTimeStamp.push_back(0);
+
+      tracks_out << i << "_TimingError " << i << "_tracker_X " << i << "_tracker_Y " << i << "_tracker_Z " << i << "_tracker_Speed "  ;
+      tracks_out << i << "_camera_X " << i << "_camera_Y " << i << "_camera_Z " << i << "_camera_Speed "  ;
+    }
+    tracks_out << std::endl;
+  }
   while ( framenumber < trackerMatcher->GetNumberOfFrames() && key != 'q')
   {
     if ( ( m_StartFrame < m_EndFrame ) && ( framenumber < m_StartFrame || framenumber > m_EndFrame ) )
@@ -263,14 +286,40 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     }
     else
     {
+      if ( m_WriteTrackingPositionData )
+      {
+        unsigned int howMany = trackerMatcher->GetTrackingMatricesSize();
+        unsigned long long timeStamp = trackerMatcher->GetVideoFrameTimeStamp(framenumber);
+        if ( timeStamp != lastFrameTimeStamp[0] )
+        {
+          tracks_out <<  framenumber << " " <<  timeStamp << " " ;
+          for ( unsigned int i = 0 ; i < howMany ; ++ i )
+          {
+            long long timingError;
+            cv::Mat trackerToWorld = trackerMatcher->GetTrackerMatrix(framenumber, &timingError, i, m_ReferenceIndex);
+            cv::Mat cameraToWorld = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, i, perturbation, m_ReferenceIndex);
+            cv::Point3d origin (0.0,0.0,0.0);
+            cv::Point3d trackerOrigin = trackerToWorld * origin;
+            cv::Point3d cameraOrigin = cameraToWorld * origin;
+            double trackerSpeed = ( mitk::Norm  (trackerOrigin - lastFrameTrackerOrigin[i]) ) / ( timeStamp - lastFrameTimeStamp[i] ) * 1e9; //mm per second
+            double cameraSpeed = ( mitk::Norm  (cameraOrigin - lastFrameCameraOrigin[i]) ) / ( timeStamp - lastFrameTimeStamp[i] ) * 1e9; //mm per second
+            tracks_out << timingError << " " << trackerOrigin.x << " " << trackerOrigin.y << " " << trackerOrigin.z << " " << trackerSpeed  ;
+            tracks_out << " " << cameraOrigin.x << " " << cameraOrigin.y << " " << cameraOrigin.z << " " << cameraSpeed  ;
+            lastFrameTrackerOrigin[i] = trackerOrigin;
+            lastFrameCameraOrigin[i] = cameraOrigin;
+            lastFrameTimeStamp[i] = timeStamp;
+          }
+          tracks_out << std::endl;
+        }
+      }
+
       //put the world points into the coordinates of the left hand camera.
       //worldtotracker * trackertocamera
       //in general the tracker matrices are trackertoworld
       long long timingError;
       cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex, perturbation, m_ReferenceIndex).inv();
-      
       unsigned long long matrixTimeStamp;
-      unsigned long long absTimingError = static_cast<unsigned long long> ( abs(timingError));
+      unsigned long long absTimingError = static_cast<unsigned long long> ( std::abs(timingError));
       if ( timingError < 0 ) 
       {
         matrixTimeStamp = trackerMatcher->GetVideoFrameTimeStamp(framenumber) + absTimingError;
@@ -443,6 +492,11 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   if ( m_RightWriter != NULL )
   {
     cvReleaseVideoWriter(&m_RightWriter);
+  }
+
+  if ( tracks_out.is_open() )
+  {
+    tracks_out.close();
   }
   m_ProjectOK = true;
 
@@ -1128,7 +1182,7 @@ bool ProjectPointsOnStereoVideo::FindNearestScreenPoint ( mitk::PickedObject& GS
   assert ( GSPickedObject.m_FrameNumber ==  m_ProjectedPointLists[GSPickedObject.m_FrameNumber]->GetFrameNumber() );
   //let's check the timing errors while we're here
   long long timingError = static_cast<long long> ( GSPickedObject.m_TimeStamp ) -  static_cast <long long> (m_ProjectedPointLists[GSPickedObject.m_FrameNumber]->GetTimeStamp() ) ;
-  if ( abs ( timingError ) > m_AllowableTimingError ) 
+  if ( std::abs ( timingError ) > m_AllowableTimingError ) 
  
   {
     MITK_WARN << "Rejecting gold standard points at frame " << GSPickedObject.m_FrameNumber << " due to high timing error = " << timingError;

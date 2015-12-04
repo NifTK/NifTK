@@ -103,6 +103,7 @@ public:
   itkSetMacro ( VisualiseTrackingStatus, bool);
   itkSetMacro ( AnnotateWithGoldStandards, bool );
   itkSetMacro ( WriteAnnotatedGoldStandards, bool );
+  itkSetMacro ( WriteTrackingPositionData, bool );
   itkSetMacro ( AllowablePointMatchingRatio, double);
   itkSetMacro ( AllowableTimingError, long long);
   void SetLeftGoldStandardPoints ( std::vector <GoldStandardPoint> points , mitk::VideoTrackerMatching::Pointer matcher );
@@ -193,6 +194,7 @@ private:
   bool                          m_VisualiseTrackingStatus; //draw something on screen to indicate whether tracking was working got frame
   bool                          m_AnnotateWithGoldStandards; //Annotate images with the gold standard picked points
   bool                          m_WriteAnnotatedGoldStandards; //Save the annotated gold standard images as png
+  bool                          m_WriteTrackingPositionData; //Write Out a data file describing the motion of the tracked objects for each frame
   int                           m_RightGSFrameOffset; //0 if right and left gold standard points have the same frame number 
   int                           m_MaxGoldStandardPointIndex; //useful if we're just triangulating gold standard points
   int                           m_MaxGoldStandardLineIndex; //useful if we're just triangulating gold standard points

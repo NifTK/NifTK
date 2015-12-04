@@ -33,7 +33,6 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
 
   # ... and here we are specifying additional link time dependencies.
   set(_link_libraries
-    niftkCore
     qtsingleapplication
   )
 
@@ -111,7 +110,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
 
   mitk_use_modules(
     TARGET ${MY_APP_NAME}
-    MODULES niftkCore MitkAppUtil
+    MODULES MitkAppUtil
     PACKAGES Qt4|QtGui Qt5|Widgets
   )
 

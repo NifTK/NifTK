@@ -31,9 +31,6 @@ if(QT_FOUND)
 endif(QT_FOUND)
 if(BUILD_IGI)
   list(APPEND proj_DEPENDENCIES OpenCV NiftyLink)
-  if(BUILD_PCL)
-    list(APPEND proj_DEPENDENCIES FLANN PCL)
-  endif()
 endif(BUILD_IGI)
 
 # explicitly try to tame windows headers.
@@ -65,6 +62,8 @@ if(NOT DEFINED MITK_DIR)
     # Common requirements for GUI applications:
     if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI OR NIFTK_Apps/NiftyMIDAS)
 
+      set(_use_blueberry 1)
+
       list(APPEND _enabled_modules
         Core                    # needed by niftkCore
         SceneSerializationBase  # needed by niftkCoreIO
@@ -72,14 +71,15 @@ if(NOT DEFINED MITK_DIR)
         PlanarFigure            # needed by QtWidgets
         Overlays                # needed by QtWidgets
         QtWidgets               # needed by niftkCoreGui
-        DataTypesExt            # needed by AlgorithmsExt
+        DataTypesExt            # needed by AlgorithmsExt, IOExt
+        MapperExt               # needed by IOExt
         AlgorithmsExt           # needed by ImageExtraction
         ImageExtraction         # needed by ImageStatistics
         ImageStatistics         # needed by QtWidgetsExt
         QtWidgetsExt            # needed by niftkCoreGui
-        SceneSerialization      # needed by org.mitk.gui.qt.ext
+        SceneSerialization      # needed by IOExt, org.mitk.gui.qt.ext
         AppUtil                 # needed by org.mitk.gui.qt.ext
-        LegacyIO                # needed by uk.ac.ucl.cmic.xnat
+        LegacyIO                # needed by IOExt, uk.ac.ucl.cmic.xnat
         LegacyAdaptors          # needed by Segmentation
         SurfaceInterpolation    # needed by Segmentation
         GraphAlgorithms         # needed by Segmentation
@@ -107,13 +107,17 @@ if(NOT DEFINED MITK_DIR)
         org.mitk.gui.qt.imagenavigator
         org.mitk.gui.qt.properties
       )
+
+    else()
+
+      set(_use_blueberry 0)
+
     endif()
 
     # Additionally required for NiftyView:
     if(NIFTK_Apps/NiftyView)
 
       list(APPEND _enabled_modules
-        MapperExt               # needed by org.mitk.gui.qt.basicimageprocessing
         ImageDenoising          # needed by org.mitk.gui.qt.basicimageprocessing
         SegmentationUI          # needed by org.mitk.gui.qt.segmentation
         DicomUI                 # needed by org.mitk.gui.qt.dicom
@@ -200,10 +204,10 @@ if(NOT DEFINED MITK_DIR)
     set(mitk_whitelist_name "MITK-whitelist")
     file(WRITE "${mitk_whitelists_dir}/${mitk_whitelist_name}.cmake" "
       set(enabled_modules
-        ${_enabled_modules}
+        \"${_enabled_modules}\"
       )
       set(enabled_plugins
-        ${_enabled_plugins}
+        \"${_enabled_plugins}\"
       )
     ")
 
@@ -228,7 +232,7 @@ if(NOT DEFINED MITK_DIR)
            -DPYTHON_INCLUDE_DIR2:PATH=${PYTHON_INCLUDE_DIR2}
            -DPython_DIR:PATH=${Python_DIR}
            -DMITK_USE_SYSTEM_PYTHON:BOOL=${MITK_USE_SYSTEM_PYTHON}
-           -DMITK_USE_Python:BOOL=${MITK_USE_Python}
+           -DMITK_USE_Python:BOOL=ON
           )
       list(APPEND proj_DEPENDENCIES Python)
       foreach(dep ZLIB PCRE SWIG SimpleITK Numpy)
@@ -236,6 +240,11 @@ if(NOT DEFINED MITK_DIR)
           list(APPEND proj_DEPENDENCIES ${dep})
           list(APPEND mitk_optional_cache_args -DMITK_USE_${dep}:BOOL=${MITK_USE_${dep}} -D${dep}_DIR:PATH=${${dep}_DIR} )
         endif()
+      endforeach()
+    else()
+      list(APPEND mitk_optional_cache_args -DMITK_USE_Python:BOOL=OFF)
+      foreach(dep ZLIB PCRE SWIG SimpleITK Numpy)
+        list(APPEND mitk_optional_cache_args -DMITK_USE_${dep}:BOOL=OFF)
       endforeach()
     endif()
 
@@ -256,7 +265,7 @@ if(NOT DEFINED MITK_DIR)
         -DMITK_BUILD_ALL_PLUGINS:BOOL=ON
         -DMITK_USE_QT:BOOL=${QT_FOUND}
         -DMITK_USE_CTK:BOOL=${QT_FOUND}
-        -DMITK_USE_BLUEBERRY:BOOL=${QT_FOUND}
+        -DMITK_USE_BLUEBERRY:BOOL=${_use_blueberry}
         -DMITK_USE_GDCMIO:BOOL=ON
         -DMITK_USE_DCMTK:BOOL=ON
         -DMITK_USE_Boost:BOOL=OFF

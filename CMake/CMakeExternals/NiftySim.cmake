@@ -103,8 +103,6 @@ if(BUILD_NiftySim)
     set(NiftySim_DIR ${proj_INSTALL})
 #    set(NiftySim_INCLUDE_DIR "${NiftySim_DIR}/include")
 #    set(NiftySim_LIBRARY_DIR "${NiftySim_DIR}/lib")
-
-    set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
     mitkFunctionInstallExternalCMakeProject(${proj})
 
     message("SuperBuild loading NiftySim from ${NiftySim_DIR}")

@@ -345,9 +345,9 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
 {
   Ui_QmitkIGIDataSourceManager::setupUi(parent);
 
-  m_PlayPushButton->setIcon(QIcon(":/niftkIGIGuiManagerResources/play.png"));
-  m_RecordPushButton->setIcon(QIcon(":/niftkIGIGuiManagerResources/record.png"));
-  m_StopPushButton->setIcon(QIcon(":/niftkIGIGuiManagerResources/stop.png"));
+  m_PlayPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/play.png"));
+  m_RecordPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/record.png"));
+  m_StopPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/stop.png"));
 
   m_PlayPushButton->setEnabled(true);
   m_RecordPushButton->setEnabled(true);

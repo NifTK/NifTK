@@ -459,6 +459,7 @@ void QmitkIGITrackerSource::StartPlayback(const std::string& path, igtlUint64 fi
       assert(tooldir.exists());
 
       m_PlaybackIndex[tool.toStdString()] = ProbeTimeStampFiles(tooldir, QString(".txt"));
+      m_Description = tool.toStdString();
     }
 
     // the tracker data source can have multiple associated sources that represent
@@ -537,11 +538,11 @@ void QmitkIGITrackerSource::PlaybackData(igtlUint64 requestedTimeStamp)
         }
 
         niftk::NiftyLinkMessageContainer::Pointer msgContainer =
-            niftk::CreateTrackingDataMessage(  QString("Playback")
-                                             , QString::fromStdString(t->first)
-                                             , QString("localhost")
-                                             , 1234
-                                             , matrix
+            niftk::CreateTrackingDataMessage(  QString("Playback")              //device name
+                                             , QString::fromStdString(t->first) //tool name
+                                             , QString("localhost")             //hostname
+                                             , 1234                             //portnumber
+                                             , matrix                           //matrix
                                              );
 
         QmitkIGINiftyLinkDataType::Pointer dataType = QmitkIGINiftyLinkDataType::New();

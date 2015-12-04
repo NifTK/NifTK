@@ -552,14 +552,16 @@ void QmitkCommonAppsApplicationPlugin::OnLookupTablePropertyChanged(const itk::O
         float highestOpacity = 1;
         bool gotHighest = node->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
 
-        int lookupTableIndex = 0;
-        bool gotIndex = node->GetIntProperty("LookupTableIndex", lookupTableIndex);
+        std::string defaultName = "grey";
+        bool gotIndex = node->GetStringProperty("LookupTableName", defaultName);
+
+        QString lutName = QString::fromStdString(defaultName);
 
         if (gotLowest && gotHighest && gotIndex)
         {
           // Get LUT from Micro Service.
           QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
-          mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lookupTableIndex, lowestOpacity, highestOpacity);
+          mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
           node->SetProperty("LookupTable", mitkLUTProperty);
         }
       }
@@ -594,15 +596,22 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
     {
       float lowestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::LOWEST_VALUE_OPACITY, 1);
       float highestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
-      unsigned int defaultIndex = 0;
 
-      // Get LUT from Micro Service.
-      QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
-      mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultIndex, lowestOpacity, highestOpacity);
+      mitk::BaseProperty::Pointer lutProp = node->GetProperty("LookupTable");
+      const mitk::NamedLookupTableProperty* prop = dynamic_cast<const mitk::NamedLookupTableProperty*>(lutProp.GetPointer());
+      if(prop == NULL )
+      {
+        QString defaultName = "grey";
 
-      node->ReplaceProperty("LookupTable", mitkLUTProperty);
-      node->SetIntProperty("LookupTableIndex", defaultIndex);
-      node->SetProperty("Image Rendering.Mode", mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR));
+        // Get LUT from Micro Service.
+        QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
+        mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultName, lowestOpacity, highestOpacity);
+
+        node->ReplaceProperty("LookupTable", mitkLUTProperty);
+        node->SetStringProperty("LookupTableName", defaultName.toStdString().c_str());
+        node->SetProperty("Image Rendering.Mode", mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR));
+      }
+
       node->SetProperty("Image Rendering.Lowest Value Opacity", mitk::FloatProperty::New(lowestOpacity));
       node->SetProperty("Image Rendering.Highest Value Opacity", mitk::FloatProperty::New(highestOpacity));
 
@@ -643,6 +652,19 @@ void QmitkCommonAppsApplicationPlugin::RegisterInterpolationProperty(
 
       int imageResliceInterpolation =  prefNode->GetInt(QmitkCommonAppsApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 2);
       int imageTextureInterpolation =  prefNode->GetInt(QmitkCommonAppsApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION, 2);
+
+      mitk::BaseProperty::Pointer mitkLUT = node->GetProperty("LookupTable");
+      if (mitkLUT.IsNotNull())
+      {
+        mitk::LabeledLookupTableProperty::Pointer labelProperty 
+          = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+
+        if (labelProperty.IsNotNull() && labelProperty->GetIsScaled())
+        {
+          imageResliceInterpolation = prefNode->GetInt(QmitkCommonAppsApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
+          imageTextureInterpolation = prefNode->GetInt(QmitkCommonAppsApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
+        }
+      }
 
       if (imageTextureInterpolation == 0)
       {

@@ -50,6 +50,16 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(NifTKImageIOFactory, ObjectFactoryBase)
 
+  /// This function registers the ITK image IO factories.
+  /// Registered factories are:
+  ///
+  ///   \li itk::NifTKImageIOFactory
+  ///   \li itk::PNGImageIOFactory
+  ///   \li itk::VTKImageIOFactory
+  ///   \li itk::TxtTransformIOFactory
+
+  static void Initialize();
+
 protected:
   NifTKImageIOFactory();
   virtual ~NifTKImageIOFactory();
@@ -59,8 +69,7 @@ private:
   void operator=(const Self&); //purposely not implemented
 
 };
-  
-  
+
 } // end namespace itk
 
 #endif

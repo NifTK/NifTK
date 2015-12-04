@@ -16,6 +16,7 @@
 #define QmitkLookupTableManager_h
 
 #include <niftkCoreGuiExports.h>
+#include <unordered_map>
 #include <vector>
 #include <QString>
 
@@ -33,9 +34,12 @@
 class QmitkLookupTableContainer;
 class vtkLookupTable;
 
-class NIFTKCOREGUI_EXPORT QmitkLookupTableManager {
+class NIFTKCOREGUI_EXPORT QmitkLookupTableManager 
+{
 
 public:
+
+  typedef std::unordered_map<std::string, const QmitkLookupTableContainer*> LookupTableMapType;
 
   /** No-arg constructor. */
   QmitkLookupTableManager();
@@ -52,20 +56,31 @@ public:
    * Returns a pointer to the nth lookup table container in the list, or NULL
    * if index < 0, or index >= GetNumberOfLookupTables().
    */
-  const QmitkLookupTableContainer* GetLookupTableContainer(const unsigned int& n);
+  const QmitkLookupTableContainer* GetLookupTableContainer(const QString& name);
 
   /**
-   * \brief Returns the display name.
+   * \brief Returns the list of names in the map.
    */
-  QString GetName(const unsigned int& n);
+  std::vector<QString> GetTableNames();  
+  
+  /**
+  * \brief Add the given LookupTableContainer to the set of containers
+  */
+  void AddLookupTableContainer(const QmitkLookupTableContainer* container);
+
+  /**
+  * \brief Replace the LookupTableContainer with name with the given LookupTableContainer
+  */
+  void ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& name);
+
+  /** Checks that name exists within the containers map. */
+  bool CheckName(const QString& name);
 
 private:
 
   /** A list of lookup table containers that we have loaded. */
-  std::vector<const QmitkLookupTableContainer*> m_List;
-
-  /** Checks that the index is within range. */
-  bool CheckIndex(const unsigned int& n);
+  LookupTableMapType m_Containers;
 
 };
+
 #endif

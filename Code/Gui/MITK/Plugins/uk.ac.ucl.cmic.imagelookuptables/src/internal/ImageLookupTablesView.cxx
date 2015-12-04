@@ -14,19 +14,31 @@
 
 #include "ImageLookupTablesView.h"
 #include "ImageLookupTablesViewActivator.h"
+
 #include <QButtonGroup>
 #include <QSlider>
 #include <QDebug>
+#include <qfiledialog.h>
+#include <qsignalmapper.h>
+#include <qinputdialog.h>
+#include <qcolordialog.h>
+#include <qmessagebox.h>
+#include <QXmlSimpleReader>
+#include <QmitkLookupTableSaxHandler.h>
+
 #include <itkImage.h>
 #include <itkCommand.h>
 #include <itkStatisticsImageFilter.h>
 #include <itkEventObject.h>
 #include <vtkLookupTable.h>
+
 #include <mitkImage.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkLookupTable.h>
 #include <mitkLookupTableProperty.h>
 #include <mitkNamedLookupTableProperty.h>
+#include <mitkLabeledLookupTableProperty.h>
+
 #include <mitkRenderingManager.h>
 #include <mitkRenderingModeProperty.h>
 #include <mitkDataStorageUtils.h>
@@ -34,7 +46,11 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 #include <berryIPreferencesService.h>
+
+#include "mitkLabelMapWriter.h"
+#include "mitkLabelMapReader.h"
 #include "QmitkImageLookupTablesPreferencePage.h"
+#include "vtkLookupTableUtils.h"
 #include <QmitkLookupTableManager.h>
 #include <QmitkLookupTableContainer.h>
 #include <QmitkLookupTableProviderService.h>
@@ -44,6 +60,8 @@
 #include <mitkNodePredicateProperty.h>
 #include <mitkNodePredicateAnd.h>
 #include <mitkNodePredicateNot.h>
+#include <mitkVtkResliceInterpolationProperty.h>
+
 #include <usModule.h>
 #include <usModuleRegistry.h>
 #include <usModuleContext.h>
@@ -54,17 +72,13 @@ const QString ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables
 //-----------------------------------------------------------------------------
 ImageLookupTablesView::ImageLookupTablesView()
 : m_Controls(0)
-, m_LookupTableManager(0)
 , m_CurrentNode(0)
 , m_CurrentImage(0)
 , m_Precision(2)
 , m_InUpdate(false)
 , m_ThresholdForIntegerBehaviour(50)
 , m_LevelWindowPropertyObserverTag(0)
-, m_LowestIsOpaquePropertyObserverTag(0)
-, m_HighestIsOpaquePropertyObserverTag(0)
 {
-  m_LookupTableManager = new QmitkLookupTableManager();
 }
 
 
@@ -86,11 +100,6 @@ ImageLookupTablesView::~ImageLookupTablesView()
   {
     delete m_Controls;
   }
-
-  if (m_LookupTableManager != NULL)
-  {
-    delete m_LookupTableManager;
-  }
 }
 
 
@@ -103,24 +112,19 @@ void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
     m_Controls = new Ui::ImageLookupTablesViewControls();
     m_Controls->setupUi(parent);
 
-    // Set defaults on controls
-    this->EnableControls(false);
-
     // Decide which group boxes are open/closed.
     m_Controls->m_RangeGroupBox->setCollapsed(false);
     m_Controls->m_LimitsGroupBox->setCollapsed(true);
-
-    // Populate combo box with lookup table names.
-    for (unsigned int i = 0; i < m_LookupTableManager->GetNumberOfLookupTables(); i++)
-    {
-      const QmitkLookupTableContainer *container = m_LookupTableManager->GetLookupTableContainer(i);
-      m_Controls->m_LookupTableComboBox->insertItem(container->GetOrder(), container->GetDisplayName());
-    }
+    
+    this->EnableScaleControls(false);
+    this->EnableLabelControls(false);
 
     /// This is probably superfluous because the AbstractView::AfterCreateQtPartControl() calls
     /// OnPreferencesChanged that calls RetrievePreferenceValues. It would need testing.
     this->RetrievePreferenceValues();
-
+    this->LoadCachedLookupTables();
+    
+    this->UpdateLookupTableComboBox();
     this->CreateConnections();
   }
 }
@@ -137,6 +141,15 @@ void ImageLookupTablesView::CreateConnections()
   this->connect(m_Controls->m_MaxLimitDoubleSpinBox, SIGNAL(editingFinished()), SLOT(OnRangeChanged()));
   this->connect(m_Controls->m_LookupTableComboBox, SIGNAL(currentIndexChanged(int)), SLOT(OnLookupTableComboBoxChanged(int)));
   this->connect(m_Controls->m_ResetButton, SIGNAL(pressed()), this, SLOT(OnResetButtonPressed()));
+  this->connect(m_Controls->m_SaveButton, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
+  this->connect(m_Controls->m_LoadButton, SIGNAL(pressed()), this, SLOT(OnLoadButtonPressed()));
+  this->connect(m_Controls->m_NewButton, SIGNAL(pressed()), this, SLOT(OnNewButtonPressed()));
+
+  this->connect(m_Controls->m_AddLabelButton, SIGNAL(pressed()), this, SLOT(OnAddLabelButtonPressed()));
+  this->connect(m_Controls->m_RemoveLabelButton, SIGNAL(pressed()), this, SLOT(OnRemoveLabelButtonPressed()));
+  this->connect(m_Controls->m_MoveLabelUpButton, SIGNAL(pressed()), this, SLOT(OnMoveLabelUpButtonPressed()));
+  this->connect(m_Controls->m_MoveLabelDownButton, SIGNAL(pressed()), this, SLOT(OnMoveLabelDownButtonPressed()));
+  this->connect(m_Controls->widget_LabelTable, SIGNAL(cellChanged(int,int)), this, SLOT(OnLabelMapTableCellChanged(int, int)));
 }
 
 
@@ -151,11 +164,10 @@ void ImageLookupTablesView::OnPreferencesChanged(const berry::IBerryPreferences*
 void ImageLookupTablesView::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
   berry::IBerryPreferences::Pointer prefs
       = (prefService->GetSystemPreferences()->Node(VIEW_ID))
         .Cast<berry::IBerryPreferences>();
-  assert( prefs );
+  assert(prefs);
 
   m_Precision = prefs->GetInt(QmitkImageLookupTablesPreferencePage::PRECISION_NAME, 2);
 
@@ -179,6 +191,68 @@ void ImageLookupTablesView::RetrievePreferenceValues()
 
 
 //-----------------------------------------------------------------------------
+void ImageLookupTablesView::LoadCachedLookupTables()
+{
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
+  berry::IBerryPreferences::Pointer prefs
+    = (prefService->GetSystemPreferences()->Node(VIEW_ID)).Cast<berry::IBerryPreferences>();
+  assert(prefs);
+  
+  QString cachedFileNames = prefs->Get("LABEL_MAP_NAMES", "");
+  if (cachedFileNames.isNull() || cachedFileNames.isEmpty())
+  {
+    return;
+  }
+
+  QmitkLookupTableProviderService* lutService
+    = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+  if (lutService == NULL)
+  {
+    mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
+  }
+
+  prefs->PutBool("InBlockUpdate", true);
+
+  QStringList labelList = cachedFileNames.split(",");
+  QStringList removedItems;
+  int skippedItems = 0;
+
+  for (int i = 0; i < labelList.count(); i++)
+  {
+    QString currLabelName = labelList.at(i);
+
+    if (currLabelName.isNull() || currLabelName.isEmpty() || currLabelName == QString(" "))
+    {
+      skippedItems++;
+      continue;
+    }
+    
+    QString filenameWithPath = prefs->Get(currLabelName, "");
+    QString lutName = this->LoadLookupTable(filenameWithPath);
+    if (lutName.isEmpty())
+    {
+      removedItems.append(currLabelName);
+    }
+  }
+
+  if (removedItems.size() > 0 || skippedItems > 0)
+  {
+    // Tidy up preferences: remove entries that don't exist
+    for (int i = 0; i < removedItems.size(); i++)
+    {
+      prefs->Remove(removedItems.at(i));
+    }
+
+    // Update the list of profile names
+    prefs->Put("LABEL_MAP_NAMES", cachedFileNames);
+  }
+
+  // End of block update
+  prefs->PutBool("InBlockUpdate", false);
+}
+
+
+//-----------------------------------------------------------------------------
 void ImageLookupTablesView::SetFocus()
 {
 }
@@ -188,6 +262,14 @@ void ImageLookupTablesView::SetFocus()
 void ImageLookupTablesView::EnableControls(bool b)
 {
   m_Controls->m_LookupTableComboBox->setEnabled(b);
+  m_Controls->m_LoadButton->setEnabled(b);
+  m_Controls->m_NewButton->setEnabled(b);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::EnableScaleControls(bool b)
+{
   m_Controls->m_MinSlider->setEnabled(b);
   m_Controls->m_MaxSlider->setEnabled(b);
   m_Controls->m_WindowSlider->setEnabled(b);
@@ -195,6 +277,28 @@ void ImageLookupTablesView::EnableControls(bool b)
   m_Controls->m_MinLimitDoubleSpinBox->setEnabled(b);
   m_Controls->m_MaxLimitDoubleSpinBox->setEnabled(b);
   m_Controls->m_ResetButton->setEnabled(b);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::EnableLabelControls(bool b)
+{
+  m_Controls->m_SaveButton->setEnabled(b);
+  m_Controls->m_AddLabelButton->setEnabled(b);
+  m_Controls->m_RemoveLabelButton->setEnabled(b);
+  m_Controls->m_MoveLabelUpButton->setEnabled(b);
+  m_Controls->m_MoveLabelDownButton->setEnabled(b);
+  m_Controls->widget_LabelTable->setEnabled(b);
+
+  if (b)
+  {
+    this->UpdateLabelMapTable();
+  }
+  else
+  {
+    m_Controls->widget_LabelTable->clearContents();
+    m_Controls->widget_LabelTable->setRowCount(0);
+  }
 }
 
 
@@ -215,12 +319,9 @@ void ImageLookupTablesView::BlockSignals(bool b)
 void ImageLookupTablesView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*source*/,
                                              const QList<mitk::DataNode::Pointer>& nodes )
 {
-
   bool isValid = this->IsSelectionValid(nodes);
 
-  if (!isValid
-      || (nodes[0].IsNotNull() && nodes[0] != m_CurrentNode)
-     )
+  if (!isValid || (nodes[0].IsNotNull() && nodes[0] != m_CurrentNode))
   {
     this->Unregister();
   }
@@ -245,9 +346,9 @@ bool ImageLookupTablesView::IsSelectionValid(const QList<mitk::DataNode::Pointer
   }
 
   // All nodes must be non null, non-helper images.
-  foreach( mitk::DataNode::Pointer node, nodes )
+  foreach (mitk::DataNode::Pointer node, nodes)
   {
-    if(node.IsNull())
+    if (node.IsNull())
     {
       isValid = false;
     }
@@ -304,7 +405,9 @@ void ImageLookupTablesView::Register(const mitk::DataNode::Pointer node)
 
     itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer command
       = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
+
     command->SetCallbackFunction(this, &ImageLookupTablesView::OnPropertyChanged);
+
     mitk::BaseProperty::Pointer property = node->GetProperty("levelwindow");
     m_LevelWindowPropertyObserverTag = property->AddObserver(itk::ModifiedEvent(), command);
   }
@@ -323,6 +426,7 @@ void ImageLookupTablesView::Unregister()
   }
 }
 
+
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::DifferentImageSelected()
 {
@@ -336,16 +440,22 @@ void ImageLookupTablesView::DifferentImageSelected()
 
   float minDataLimit(0);
   float maxDataLimit(0);
-  int lookupTableIndex(0);
+  std::string lookupTableName("");
 
   m_CurrentNode->GetFloatProperty("image data min", minDataLimit);
   m_CurrentNode->GetFloatProperty("image data max", maxDataLimit);
-  bool lookupTableIndexFound = m_CurrentNode->GetIntProperty("LookupTableIndex", lookupTableIndex);
+  bool lookupTableNameFound = m_CurrentNode->GetStringProperty("LookupTableName", lookupTableName);
 
   m_Controls->m_MinLimitDoubleSpinBox->setValue(minDataLimit);
   m_Controls->m_MaxLimitDoubleSpinBox->setValue(maxDataLimit);
 
-  if (lookupTableIndexFound)
+  signed int lookupTableIndex = -1;
+  if (lookupTableNameFound)
+  {
+    lookupTableIndex = m_Controls->m_LookupTableComboBox->findText(QString::fromStdString(lookupTableName));
+  }
+  
+  if (lookupTableIndex > -1)
   {
     m_Controls->m_LookupTableComboBox->setCurrentIndex(lookupTableIndex);
   }
@@ -355,6 +465,49 @@ void ImageLookupTablesView::DifferentImageSelected()
   }
 
   this->BlockSignals(false);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::UpdateLookupTableComboBox()
+{
+  bool en = m_Controls->m_LookupTableComboBox->blockSignals(true);
+  int currentIndex = m_Controls->m_LookupTableComboBox->currentIndex();
+
+  // create a lookup table
+  QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+  if (lutService == NULL)
+  {
+    mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
+  }
+
+  m_Controls->m_LookupTableComboBox->clear();
+  m_Controls->m_LookupTableComboBox->addItem(" --- Scaled Lookup Tables --- ");
+
+  std::vector<QString> names = lutService->GetTableNames();
+  
+  //// Populate combo box with lookup table names.
+  for (unsigned int i = 0; i < names.size(); i++)
+  {
+    if ( lutService->GetIsScaled(names.at(i)) )
+    {
+      m_Controls->m_LookupTableComboBox->addItem(names.at(i));
+    }
+  }
+
+  m_Controls->m_LookupTableComboBox->addItem(" ");
+  m_Controls->m_LookupTableComboBox->addItem(" --- Labeled Lookup Tables --- ");
+
+  for (unsigned int i = 0; i < names.size(); i++)
+  {
+    if ( !lutService->GetIsScaled(names.at(i)) )
+    {
+      m_Controls->m_LookupTableComboBox->addItem(names.at(i));
+    }
+  }
+
+  m_Controls->m_LookupTableComboBox->setCurrentIndex(currentIndex);
+  m_Controls->m_LookupTableComboBox->blockSignals(en);
 }
 
 
@@ -509,26 +662,59 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 {
   if (m_CurrentNode.IsNotNull())
   {
-    QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+  QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
     if (lutService == NULL)
     {
       mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
     }
 
-    float lowestOpacity = 1;
-    m_CurrentNode->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
+    QString lutName = m_Controls->m_LookupTableComboBox->itemText(comboBoxIndex);
 
-    float highestOpacity = 1;
-    m_CurrentNode->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
+    if( !lutService->CheckName(lutName) )
+    {
+      return;
+    }
 
-    // Get LUT from Micro Service.
-    mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(comboBoxIndex, lowestOpacity, highestOpacity);
+    m_CurrentNode->SetStringProperty("LookupTableName", lutName.toStdString().c_str());
+    bool isScaled = lutService->GetIsScaled(lutName);
 
-    // and give to the node property.
-    mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
-    m_CurrentNode->SetProperty("Image Rendering.Mode", renderProp);
-    m_CurrentNode->SetProperty("LookupTable", mitkLUTProperty);
-    m_CurrentNode->SetIntProperty("LookupTableIndex", comboBoxIndex);
+    if (isScaled)
+    {
+      float lowestOpacity = 1;
+      m_CurrentNode->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
+
+      float highestOpacity = 1;
+      m_CurrentNode->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
+
+      // Get LUT from Micro Service.
+      mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
+      m_CurrentNode->ReplaceProperty("LookupTable", mitkLUTProperty);
+
+      mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
+      m_CurrentNode->ReplaceProperty("Image Rendering.Mode", renderProp);
+
+      mitk::VtkResliceInterpolationProperty::Pointer resliceProp = mitk::VtkResliceInterpolationProperty::New(VTK_CUBIC_INTERPOLATION);
+      m_CurrentNode->ReplaceProperty("reslice interpolation", resliceProp);
+
+      m_CurrentNode->ReplaceProperty("texture interpolation", mitk::BoolProperty::New( true ));
+    }
+    else
+    {
+      // Get LUT from Micro Service.
+      mitk::LabeledLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName);
+      m_CurrentNode->ReplaceProperty("LookupTable", mitkLUTProperty);
+
+      mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_COLOR);
+      m_CurrentNode->ReplaceProperty("Image Rendering.Mode", renderProp);
+      
+      mitk::VtkResliceInterpolationProperty::Pointer resliceProp = mitk::VtkResliceInterpolationProperty::New(VTK_RESLICE_NEAREST);
+      m_CurrentNode->ReplaceProperty("reslice interpolation", resliceProp);
+
+      m_CurrentNode->ReplaceProperty("texture interpolation", mitk::BoolProperty::New( false ));
+    }
+
+    this->EnableScaleControls(isScaled);
+    this->EnableLabelControls(!isScaled);
 
     // Force redraw.
     m_CurrentNode->Update();
@@ -538,11 +724,9 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 }
 
 
-
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnResetButtonPressed()
 {
-
   mitk::LevelWindow levelWindow;
   m_CurrentNode->GetLevelWindow(levelWindow);
 
@@ -567,3 +751,720 @@ void ImageLookupTablesView::OnResetButtonPressed()
 }
 
 
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnLoadButtonPressed()
+{
+  if (m_CurrentNode.IsNull())
+  {
+    return;
+  }
+
+   // load a label
+  QString filenameWithPath = QFileDialog::getOpenFileName(0, tr("Open File"), "", tr("Text files (*.txt);;XML files (*.xml);;LUT files (*.lut)"));
+
+  if (filenameWithPath.isEmpty())
+  {
+    return;
+  }
+
+  QString lutName = this->LoadLookupTable(filenameWithPath);
+
+  if (lutName.isEmpty()) 
+  {
+    return;
+  }
+
+  this->UpdateLookupTableComboBox();
+
+  // try to set the loaded reader as the selected container
+  int index = m_Controls->m_LookupTableComboBox->findText(lutName);
+
+  if (index > -1)
+  {
+    m_Controls->m_LookupTableComboBox->setCurrentIndex(index); 
+  }
+  
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
+  berry::IBerryPreferences::Pointer prefs
+      = (prefService->GetSystemPreferences()->Node(VIEW_ID))
+        .Cast<berry::IBerryPreferences>();
+
+  prefs->PutBool("InBlockUpdate", true);
+
+  // save the file to the list of names if not present
+  QString cachedFileNames = prefs->Get("LABEL_MAP_NAMES", "");
+  QString labelName = QFileInfo(filenameWithPath).baseName();
+ 
+  if (!cachedFileNames.contains(labelName))
+  {
+    cachedFileNames.append(",");
+    cachedFileNames.append(labelName.toStdString().c_str());
+
+    prefs->Put("LABEL_MAP_NAMES", cachedFileNames);
+  }
+
+  // update the cached location of the file
+  prefs->Put(labelName, filenameWithPath);
+
+  prefs->PutBool("InBlockUpdate", false);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnSaveButtonPressed()
+{
+  if (m_CurrentNode.IsNull())
+  {
+    return;
+  }
+
+  // get the labeledlookuptable property
+  mitk::BaseProperty::Pointer mitkLUT = m_CurrentNode->GetProperty("LookupTable");
+  if (mitkLUT.IsNull())
+  {
+    MITK_ERROR << "No lookup table assigned to " << m_CurrentNode->GetName();
+    return;
+  }
+
+  mitk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+
+  if (labelProperty.IsNull())
+  {
+    MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
+    return;
+  }
+
+  QString lutName = m_Controls->m_LookupTableComboBox->currentText();
+
+  if (lutName.isNull() || lutName.isEmpty())
+  {
+    lutName = QString("lookupTable.txt");
+  }
+  else if (!lutName.contains(".txt"))
+  {
+    lutName.append(".txt");
+  }
+
+  QFileInfo finfo(lutName);
+  QString fileNameAndPath = QFileDialog::getSaveFileName(0, tr("Save File"), finfo.fileName(), tr("Text files (*.txt)"));
+
+  if (fileNameAndPath.isEmpty())
+  {
+    return;
+  }
+
+  mitk::LabelMapWriter writer;
+  writer.SetOutputLocation(fileNameAndPath.toStdString());
+  writer.SetLabels(labelProperty->GetLabels());
+  writer.SetVtkLookupTable(labelProperty->GetLookupTable()->GetVtkLookupTable());
+  writer.Write();   
+
+  QmitkLookupTableContainer* newLUT 
+    = new QmitkLookupTableContainer(labelProperty->GetLookupTable()->GetVtkLookupTable(),labelProperty->GetLabels());
+
+   newLUT->SetDisplayName(labelProperty->GetName());
+
+  int index = fileNameAndPath.lastIndexOf("/")+1;
+  QString labelName = fileNameAndPath.mid(index);
+  index = labelName.lastIndexOf(".");
+  labelName.truncate(index);
+
+  int comboBoxIndex = -1;
+  newLUT->SetOrder(comboBoxIndex);
+  m_CurrentNode->GetIntProperty("LookupTableIndex", comboBoxIndex);
+
+  QmitkLookupTableProviderService* lutService 
+    = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+
+  if (lutService == NULL)
+  {
+    mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
+  }
+
+  lutService->ReplaceLookupTableContainer(newLUT, newLUT->GetDisplayName());
+
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
+
+  berry::IBerryPreferences::Pointer prefs
+      = (prefService->GetSystemPreferences()->Node(VIEW_ID)).Cast<berry::IBerryPreferences>();
+
+  prefs->PutBool("InBlockUpdate", true);
+
+  QString cachedFileNames;
+  prefs->Get("LABEL_MAP_NAMES", cachedFileNames);
+
+  // save the file to the list of names if not present
+  if (!cachedFileNames.contains(labelName))
+  {
+    cachedFileNames.append(",");
+    cachedFileNames.append(labelName.toStdString().c_str());
+
+    prefs->Put("LABEL_MAP_NAMES", cachedFileNames);
+  }
+
+  // update the cached location of the file
+  prefs->Put(labelName, fileNameAndPath);
+  prefs->PutBool("InBlockUpdate", false);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnNewButtonPressed()
+{
+  // create an empty LookupTable
+  if (m_CurrentNode.IsNull())
+  {
+    return;
+  }
+
+  QString newLabelName = QInputDialog::getText(0, tr("Create New Label"),
+                                         tr("New label name:"), QLineEdit::Normal );
+
+  if (newLabelName.isEmpty())
+  {
+    return;
+  }
+
+  QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+  if (lutService == NULL)
+  {
+    mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
+  }
+
+  float lowestOpacity = 1;
+  m_CurrentNode->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
+
+  float highestOpacity = 1;
+  m_CurrentNode->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
+
+  QColor lowColor(0, 0, 0, lowestOpacity);
+  QColor highColor(0, 0, 0, highestOpacity);
+
+  QmitkLookupTableContainer * newContainer = new QmitkLookupTableContainer(mitk::CreateEmptyLookupTable(lowColor, highColor));
+  newContainer->SetDisplayName(newLabelName);
+  newContainer->SetIsScaled(false);
+  newContainer->SetOrder(lutService->GetNumberOfLookupTables());
+
+  lutService->AddNewLookupTableContainer(newContainer);
+
+  this->UpdateLookupTableComboBox();
+
+  // try to set the loaded reader as the selected container
+  int index = m_Controls->m_LookupTableComboBox->findText(newLabelName);
+  if (index > -1)
+  {
+    m_Controls->m_LookupTableComboBox->setCurrentIndex(index); 
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::UpdateLabelMapTable()
+{
+  if (m_CurrentNode.IsNull())
+  {
+    return;
+  }
+
+  bool en = m_Controls->widget_LabelTable->blockSignals(true);
+
+  // initialize labels widget to empty
+  m_Controls->widget_LabelTable->clearContents();
+  m_Controls->widget_LabelTable->setRowCount(0);
+
+  // get the labeledlookuptable property
+  mitk::BaseProperty::Pointer mitkLUT = m_CurrentNode->GetProperty("LookupTable");
+  if (mitkLUT.IsNull())
+  {
+    MITK_ERROR << "No lookup table assigned to " << m_CurrentNode->GetName();
+    m_Controls->widget_LabelTable->blockSignals(en);
+    return;
+  }
+
+  mitk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+
+  if (labelProperty.IsNull())
+  {
+    MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
+    m_Controls->widget_LabelTable->blockSignals(en);
+    return;
+  }
+
+  // get labels and LUT
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  vtkSmartPointer<vtkLookupTable> vtkLUT = labelProperty->GetLookupTable()->GetVtkLookupTable();
+
+  m_Controls->widget_LabelTable->setRowCount(labels.size());
+
+  QSignalMapper* colorMapper = new QSignalMapper(this);
+
+  for (unsigned int i = 0; i < labels.size(); i++)
+  {
+    // set value
+    int value = labels.at(i).first;
+    int vtkInd = value - vtkLUT->GetRange()[0] + 1;
+
+    QTableWidgetItem * newValueItem = new QTableWidgetItem();
+    newValueItem->setText(QString::number(value));
+    m_Controls->widget_LabelTable->setItem(i, 1, newValueItem);
+
+    // set name
+    QTableWidgetItem * newNameItem = new QTableWidgetItem();
+    newNameItem->setText(labels.at(i).second);
+    m_Controls->widget_LabelTable->setItem(i, 2, newNameItem);
+
+    // set color 
+    QPushButton* btnColor = new QPushButton;
+    btnColor->setFixedWidth(35);
+    btnColor->setAutoFillBackground(true);
+    
+    double rgb[3];
+    vtkLUT->GetColor(value, rgb);
+
+    QColor currColor(255 * rgb[0], 255 * rgb[1], 255 * rgb[2]);
+
+    btnColor->setStyleSheet(QString("background-color:rgb(%1,%2, %3)")
+                              .arg(currColor.red())
+                              .arg(currColor.green())
+                              .arg(currColor.blue())
+                              );
+    m_Controls->widget_LabelTable->setCellWidget(i, 0, btnColor);
+
+    connect(btnColor, SIGNAL(clicked()), colorMapper, SLOT(map()));
+    colorMapper->setMapping(btnColor, i);
+  }
+
+  connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(OnColorButtonPressed(int)));
+  m_Controls->widget_LabelTable->blockSignals(en);
+
+  // Force redraw.
+  m_CurrentNode->Update();
+  m_CurrentNode->Modified();
+  this->RequestRenderWindowUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnAddLabelButtonPressed()
+{
+  if (m_CurrentNode.IsNull())
+  {
+    return;
+  }
+
+  // get the labeledlookuptable property
+  mitk::BaseProperty::Pointer mitkLUT = m_CurrentNode->GetProperty("LookupTable");
+  if (mitkLUT.IsNull())
+  {
+    MITK_ERROR << "No lookup table assigned to " << m_CurrentNode->GetName();
+    return;
+  }
+
+  mitk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+  if (labelProperty.IsNull())
+  {
+    MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
+    return;
+  }
+
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  vtkSmartPointer<vtkLookupTable> oldLUT = labelProperty->GetLookupTable()->GetVtkLookupTable();
+
+  bool en = m_Controls->widget_LabelTable->blockSignals(true);
+    
+  // get the range
+
+  double* range = oldLUT->GetRange();
+  QString newName(" ");
+
+  int newValue = range[1];
+
+  QmitkLookupTableContainer::LabelType newLabel = std::make_pair(newValue,newName);
+  labels.push_back(newLabel);
+  labelProperty->SetLabels(labels);
+
+  // increment the range by 1
+  vtkSmartPointer<vtkLookupTable> newLUT;
+  newLUT.TakeReference(mitk::ResizeLookupTable(oldLUT,newValue+1));
+  labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
+
+  UpdateLabelMapTable();
+  
+  m_Controls->widget_LabelTable->blockSignals(en);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnRemoveLabelButtonPressed()
+{
+  if (m_CurrentNode.IsNull())
+  {
+    return;
+  }
+
+  // get the labeledlookuptable property
+  mitk::BaseProperty::Pointer mitkLUT = m_CurrentNode->GetProperty("LookupTable");
+  if (mitkLUT.IsNull())
+  {
+    MITK_ERROR << "No lookup table assigned to " << m_CurrentNode->GetName();
+    return;
+  }
+
+  mitk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+  if (labelProperty.IsNull())
+  {
+    MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
+    return;
+  }
+
+  bool en = m_Controls->widget_LabelTable->blockSignals(true);
+
+  QList<QTableWidgetSelectionRange> selectedItems = m_Controls->widget_LabelTable->selectedRanges();
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  vtkSmartPointer<vtkLookupTable> lut = labelProperty->GetLookupTable()->GetVtkLookupTable();
+
+  QColor nanColor(lut->GetNanColor()[0], lut->GetNanColor()[1], lut->GetNanColor()[2], lut->GetNanColor()[3]);
+  for (unsigned int i = 0; i < selectedItems.size(); i++)
+  {
+    int bottom = selectedItems.at(i).bottomRow()+1;
+    int top = selectedItems.at(i).topRow();
+
+    for (unsigned int j = top; j < bottom; j++)
+    {
+      int value = labels.at(j).first;
+      vtkSmartPointer<vtkLookupTable> newLUT;
+      newLUT.TakeReference(mitk::ChangeColor(lut, value, nanColor));
+      labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
+    }
+    
+    labels.erase(labels.begin() + top, labels.begin() + bottom);
+  }
+
+  labelProperty->SetLabels(labels);
+  UpdateLabelMapTable();
+  
+  m_Controls->widget_LabelTable->blockSignals(en);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnMoveLabelUpButtonPressed()
+{
+  if (m_CurrentNode.IsNull())
+  {
+    return;
+  }
+
+  // get the labeledlookuptable property
+  mitk::BaseProperty::Pointer mitkLUT = m_CurrentNode->GetProperty("LookupTable");
+  if (mitkLUT.IsNull())
+  {
+    MITK_ERROR << "No lookup table assigned to " << m_CurrentNode->GetName();
+    return;
+  }
+
+  mitk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+  if (labelProperty.IsNull())
+  {
+    MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
+    return;
+  }
+
+  bool en = m_Controls->widget_LabelTable->blockSignals(true);
+
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  QList<QTableWidgetSelectionRange> selectedItems = m_Controls->widget_LabelTable->selectedRanges();
+
+  for (unsigned int i = 0; i < selectedItems.size(); i++)
+  {
+    int bottom = selectedItems.at(i).bottomRow()+1;
+    int top = selectedItems.at(i).topRow();
+
+    if (top == 0)
+    {
+      continue;
+    }
+
+    for (unsigned int j = top; j < bottom; j++)
+    {
+      std::iter_swap(labels.begin() + j - 1,labels.begin() + j);
+    }
+  }
+
+  labelProperty->SetLabels(labels);
+  UpdateLabelMapTable();
+
+  m_Controls->widget_LabelTable->blockSignals(en);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnMoveLabelDownButtonPressed()
+{
+  if (m_CurrentNode.IsNull())
+  {
+    return;
+  }
+
+  // get the labeledlookuptable property
+  mitk::BaseProperty::Pointer mitkLUT = m_CurrentNode->GetProperty("LookupTable");
+  if (mitkLUT.IsNull())
+  {
+    MITK_ERROR << "No lookup table assigned to " << m_CurrentNode->GetName();
+    return;
+  }
+
+  mitk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+  if (labelProperty.IsNull())
+  {
+    MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
+    return;
+  }
+
+  bool en = m_Controls->widget_LabelTable->blockSignals(true);
+
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  QList<QTableWidgetSelectionRange> selectedItems = m_Controls->widget_LabelTable->selectedRanges();
+
+  for (unsigned int i = 0; i < selectedItems.size(); i++)
+  {
+    int bottom = selectedItems.at(i).bottomRow() + 1;
+    int top = selectedItems.at(i).topRow();
+
+    if (bottom == labels.size())
+    {
+      continue;
+    }
+
+    for (unsigned int j = bottom; j > top; j--)
+    {
+      std::iter_swap(labels.begin()+ j - 1, labels.begin() + j);
+    }
+  }
+
+  labelProperty->SetLabels(labels);
+  UpdateLabelMapTable();
+
+  m_Controls->widget_LabelTable->blockSignals(en);
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnColorButtonPressed(int index)
+{
+  if (m_CurrentNode.IsNull())
+  {
+    return;
+  }
+  
+  // get the labeledlookuptable property
+  mitk::BaseProperty::Pointer mitkLUT = m_CurrentNode->GetProperty("LookupTable");
+  if (mitkLUT.IsNull())
+  {
+    MITK_ERROR << "No lookup table assigned to " << m_CurrentNode->GetName();
+    return;
+  }
+
+  mitk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+
+  if (labelProperty.IsNull())
+  {
+    MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
+    return;
+  }
+
+  bool en = m_Controls->widget_LabelTable->blockSignals(true);
+  
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  vtkSmartPointer<vtkLookupTable> lut = labelProperty->GetLookupTable()->GetVtkLookupTable();
+
+  int value = labels.at(index).first;
+     
+  double rgb[3];
+  lut->GetColor(value, rgb);
+
+  QColor initialColor(255 * rgb[0], 255 * rgb[1], 255 * rgb[2]);
+  QColor newColor = QColorDialog::getColor(initialColor);
+
+  if (newColor.spec() == 0)
+  {  
+    m_Controls->widget_LabelTable->blockSignals(en);
+    return; 
+  }
+  
+  vtkSmartPointer<vtkLookupTable> newLUT;
+  newLUT.TakeReference(mitk::ChangeColor(lut, value,newColor));
+  labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
+
+  QPushButton* btnColor = qobject_cast<QPushButton*>(m_Controls->widget_LabelTable->cellWidget(index, 0));
+  if (btnColor != 0)
+  {
+    btnColor->setStyleSheet(QString("background-color:rgb(%1,%2, %3)")
+                              .arg(newColor.red())
+                              .arg(newColor.green())
+                              .arg(newColor.blue())
+                              );
+  }
+  
+  m_Controls->widget_LabelTable->blockSignals(en);
+
+  // Force redraw.
+  m_CurrentNode->Update();
+  m_CurrentNode->Modified();
+  this->RequestRenderWindowUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+void ImageLookupTablesView::OnLabelMapTableCellChanged(int row, int column)
+{
+  if (column == 0)
+  {
+    return;
+  }
+  
+  if (m_CurrentNode.IsNull())
+  {
+    return;
+  }
+  
+  // get the labeledlookuptable property
+  mitk::BaseProperty::Pointer mitkLUT = m_CurrentNode->GetProperty("LookupTable");
+  if (mitkLUT.IsNull())
+  {
+    MITK_ERROR << "No lookup table assigned to " << m_CurrentNode->GetName();
+    return;
+  }
+
+  mitk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+
+  if (labelProperty.IsNull())
+  {
+    MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
+    return;
+  }
+
+  
+  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  vtkSmartPointer<vtkLookupTable> lut = labelProperty->GetLookupTable()->GetVtkLookupTable();
+
+  if (column == 1)
+  {
+    QTableWidgetItem* item = m_Controls->widget_LabelTable->item(row,column);
+    std::string valStr = item->text().toStdString();
+    
+    std::string::iterator valItr;
+    for (valItr = valStr.begin(); valItr != valStr.end(); valItr++)
+    {
+      if (!isdigit(*valItr))
+      {
+        QMessageBox::warning(NULL, "Label Map Editor", QString("Value must be a number. Resetting to old value."));
+
+        QString value = QString::number(labels.at(row).first);
+        item->setText(value);
+        return;
+      }
+    }
+
+    int newValue = atoi(valStr.c_str());
+
+    for (unsigned int i = 0; i < labels.size(); i++)
+    {
+      if (i == row)
+      {
+        continue;
+      }
+
+      if (labels.at(i).first == newValue)
+      {
+        QMessageBox::warning(NULL, "Label Map Editor", QString("Value is not unique. Resetting to old value."));
+
+        QString oldValueStr = QString::number(labels.at(row).first);
+        item->setText(oldValueStr);
+        return;
+      }
+    }
+
+    int oldValue = labels.at(row).first;
+    
+    vtkSmartPointer<vtkLookupTable> newLUT;
+    newLUT.TakeReference(mitk::SwapColors(lut, oldValue, newValue));
+    labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
+
+    labels.at(row).first = newValue;
+  }
+  else if (column == 2)
+  {
+    QTableWidgetItem* item = m_Controls->widget_LabelTable->item(row,column);
+    labels.at(row).second = item->text();
+  } // change the name
+
+  labelProperty->SetLabels(labels);
+  UpdateLabelMapTable();
+}
+
+
+//-----------------------------------------------------------------------------
+QString ImageLookupTablesView::LoadLookupTable(QString& fileName)
+{
+  QString lutName;
+
+  QFileInfo finfo(fileName);
+  if (!finfo.exists())
+  {
+    return lutName;
+  }
+  
+  // create a lookup table
+  QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService(); 
+  QmitkLookupTableContainer * loadedContainer;
+
+  if (fileName.contains(".lut"))
+  {
+    QFile file(fileName);
+    QXmlInputSource inputSource(&file);
+
+    QXmlSimpleReader reader;
+    QmitkLookupTableSaxHandler handler;
+    reader.setContentHandler(&handler);
+    reader.setErrorHandler(&handler);
+
+    if (reader.parse(inputSource))
+    {
+      loadedContainer = handler.GetLookupTableContainer();
+    }
+    else
+    {
+      MITK_ERROR << "QmitkLookupTableManager():failed to parse XML file (" << fileName.toLocal8Bit().constData() \
+        << ") so returning null";
+    }
+  }
+  else
+  {
+    // intialized label map reader
+    mitk::LabelMapReader reader;
+
+    reader.SetInput(fileName.toStdString());
+    reader.SetOrder(lutService->GetNumberOfLookupTables());
+    reader.Read();
+
+    loadedContainer = reader.GetLookupTableContainer();
+    loadedContainer->SetDisplayName(loadedContainer->GetDisplayName());
+  }
+
+  if (loadedContainer != NULL )
+  {
+    lutService->AddNewLookupTableContainer(loadedContainer);
+    lutName = loadedContainer->GetDisplayName();
+  }
+
+  return lutName;
+}
