@@ -88,6 +88,14 @@ public:
   cv::Matx44d InterpolateMatrix(const TimeStampsContainer::TimeStamp& timeStamp,
       TimeStampsContainer::TimeStamp& minError, bool& inBounds);
 
+  /**
+   * \brief Extracts a matrix for the given time-stamp, by using the nearest time stamp
+   * \param the desired time stamp and a holder to return the timing error.
+   * \param and a bool which will be true if the timestamp is within the high and low bounds
+   */
+  cv::Matx44d GetNearestMatrix(const TimeStampsContainer::TimeStamp& timeStamp,
+      TimeStampsContainer::TimeStamp& error, bool& inBounds);
+
 private:
 
   mitk::TimeStampsContainer  m_TimeStamps;

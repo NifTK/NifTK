@@ -181,7 +181,6 @@ TimeStampsContainer::TimeStamp TrackingAndTimeStampsContainer::GetNearestTimeSta
   return m_TimeStamps.GetNearestTimeStamp(timeStamp, delta);
 }
 
-
 //-----------------------------------------------------------------------------
 cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsContainer::TimeStamp& timeStamp, TimeStampsContainer::TimeStamp& minError, bool& inBounds)
 {
@@ -233,5 +232,57 @@ cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsCo
     }
   }
 }
+
+//-----------------------------------------------------------------------------
+cv::Matx44d TrackingAndTimeStampsContainer::GetNearestMatrix(const TimeStampsContainer::TimeStamp& timeStamp, TimeStampsContainer::TimeStamp& error, bool& inBounds)
+{
+  TimeStampsContainer::TimeStamp before;
+  TimeStampsContainer::TimeStamp after;
+  double proportion = 0;
+  inBounds=false;
+    
+  std::vector<TimeStampsContainer::TimeStamp>::size_type indexBefore;
+  std::vector<TimeStampsContainer::TimeStamp>::size_type indexAfter;
+
+  if ( m_TrackingMatrices.size() == 0 )
+  {
+    mitkThrow() << "TrackingAndTimeStampsContainer::GetNearestMatrix There are no tracking matrices set";
+  }
+
+  if (m_TimeStamps.GetBoundingTimeStamps(timeStamp, before, after, proportion))
+  {
+    inBounds = true;
+    indexBefore = this->GetFrameNumber(before);
+    indexAfter = this->GetFrameNumber(after);
+
+    if ( proportion > 0.5 )
+    {
+      error = after - timeStamp;
+      return m_TrackingMatrices[indexAfter];
+    }
+    else
+    {
+      error = timeStamp - before;
+      return m_TrackingMatrices[indexBefore];
+    }
+  }
+  else
+  {
+    inBounds=false;
+    if ( before == 0 ) 
+    {
+      error = after - timeStamp;
+      indexAfter = this->GetFrameNumber(after);
+      return m_TrackingMatrices[indexAfter];
+    }
+    else
+    {
+      error = timeStamp - before;
+      indexBefore = this->GetFrameNumber(before);
+      return m_TrackingMatrices[indexBefore];
+    }
+  }
+}
+
 
 } // end namespace
