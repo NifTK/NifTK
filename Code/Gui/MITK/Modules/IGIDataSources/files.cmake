@@ -19,6 +19,7 @@ set(CPP_FILES
   Interfaces/niftkIGIDataSourceFactoryServiceI.cxx
   Interfaces/niftkIGIDataSourceFactoryServiceRAII.cxx
   DataType/niftkIGIDataType.cxx
+  DataType/niftkIGITrackerDataType.cxx
   DataSource/niftkIGIDataSource.cxx
   DataSource/niftkIGIDataSourceBuffer.cxx
   DataSource/niftkIGIWaitForSavedDataSourceBuffer.cxx
@@ -28,7 +29,7 @@ set(CPP_FILES
   Threads/niftkIGIDataSourceBackgroundDeleteThread.cxx
   Dialogs/niftkIGIInitialisationDialog.cxx
   Dialogs/niftkIGIConfigurationDialog.cxx
-  Dialogs/niftkUSBPortDialog.cxx
+  Dialogs/niftkMITKTrackerDialog.cxx
   Dialogs/niftkIPPortDialog.cxx
   Dialogs/niftkLagDialog.cxx
   mitkIGITestDataUtils.cxx
@@ -59,7 +60,7 @@ set(MOC_H_FILES
   Threads/niftkIGITimerBasedThread.h
   Dialogs/niftkIGIInitialisationDialog.h
   Dialogs/niftkIGIConfigurationDialog.h
-  Dialogs/niftkUSBPortDialog.h
+  Dialogs/niftkMITKTrackerDialog.h
   Dialogs/niftkIPPortDialog.h
   Dialogs/niftkLagDialog.h
   TrackerControlsWidget.h
@@ -79,7 +80,7 @@ set(MOC_H_FILES
 )
 
 set(UI_FILES
-  Dialogs/niftkUSBPortDialog.ui
+  Dialogs/niftkMITKTrackerDialog.ui
   Dialogs/niftkIPPortDialog.ui
   Dialogs/niftkLagDialog.ui
   TrackerControlsWidget.ui

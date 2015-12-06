@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#include "niftkUSBPortDialog.h"
+#include "niftkMITKTrackerDialog.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-USBPortDialog::USBPortDialog(QWidget *parent)
+MITKTrackerDialog::MITKTrackerDialog(QWidget *parent)
   : IGIInitialisationDialog(parent)
 {
   setupUi(this);
@@ -31,6 +31,10 @@ USBPortDialog::USBPortDialog(QWidget *parent)
   m_PortName->addItem("COM7");
   m_PortName->addItem("COM8");
   m_PortName->addItem("COM9");
+  m_PortName->addItem("COM10");
+  m_PortName->addItem("COM11");
+  m_PortName->addItem("COM12");
+  m_PortName->addItem("COM13");
 
   bool ok = false;
   ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
@@ -39,7 +43,7 @@ USBPortDialog::USBPortDialog(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-USBPortDialog::~USBPortDialog()
+MITKTrackerDialog::~MITKTrackerDialog()
 {
   bool ok = false;
   ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
@@ -48,10 +52,13 @@ USBPortDialog::~USBPortDialog()
 
 
 //-----------------------------------------------------------------------------
-void USBPortDialog::OnOKClicked()
+void MITKTrackerDialog::OnOKClicked()
 {
+  int currentSelection = m_PortName->currentIndex() + 1;
+
   IGIDataSourceProperties props;
-  props.insert("port", QVariant::fromValue(m_PortName->currentText()));
+  props.insert("port", QVariant::fromValue(currentSelection));
+  props.insert("file", QVariant::fromValue(m_FileOpen->currentPath()));
   m_Properties = props;
 }
 

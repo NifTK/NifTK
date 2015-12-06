@@ -12,24 +12,38 @@
 
 =============================================================================*/
 
-#include "niftkAuroraTableTopTracker.h"
+#include "niftkIGITrackerDataType.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-AuroraTableTopTracker::AuroraTableTopTracker(mitk::DataStorage::Pointer dataStorage,
-                                             mitk::SerialCommunication::PortNumber portNumber,
-                                             std::string toolConfigFileName)
-: NDITracker(dataStorage, portNumber, mitk::NDIAurora, mitk::DeviceDataAuroraTabletop, toolConfigFileName, 40)
+IGITrackerDataType::IGITrackerDataType()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-AuroraTableTopTracker::~AuroraTableTopTracker()
+IGITrackerDataType::~IGITrackerDataType()
 {
-  // Smart pointer deletes tracker.
+}
+
+
+//-----------------------------------------------------------------------------
+void IGITrackerDataType::SetTrackingData(vtkSmartPointer<vtkMatrix4x4> data)
+{
+  m_TrackingData->DeepCopy(data);
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkMatrix4x4> IGITrackerDataType::GetTrackingData() const
+{
+  vtkSmartPointer<vtkMatrix4x4> tmp = vtkSmartPointer<vtkMatrix4x4>::New();
+  tmp->DeepCopy(m_TrackingData);
+  return tmp;
 }
 
 } // end namespace
+

@@ -12,44 +12,41 @@
 
 =============================================================================*/
 
-#include "niftkOpenCVVideoDataType.h"
+#include "niftkMITKTrackerDataSourceActivator.h"
+#include <niftkIGIDataSourceFactoryServiceI.h>
+#include <usServiceProperties.h>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-OpenCVVideoDataType::OpenCVVideoDataType()
-: m_Image(NULL)
+MITKTrackerDataSourceActivator::MITKTrackerDataSourceActivator()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-OpenCVVideoDataType::~OpenCVVideoDataType()
+MITKTrackerDataSourceActivator::~MITKTrackerDataSourceActivator()
 {
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
 }
 
 
 //-----------------------------------------------------------------------------
-void OpenCVVideoDataType::CloneImage(const IplImage *image)
+void MITKTrackerDataSourceActivator::Load(us::ModuleContext* context)
 {
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
-  m_Image = cvCloneImage(image);
+  m_AuroraCubeFactory.reset(new MITKAuroraCubeDataSourceFactory);
+  us::ServiceProperties props;
+  props["Name"] = std::string("MITKAuroraCubeDataSourceFactory");
+  context->RegisterService<IGIDataSourceFactoryServiceI>(m_AuroraCubeFactory.get(), props);
 }
 
 
 //-----------------------------------------------------------------------------
-const IplImage* OpenCVVideoDataType::GetImage()
+void MITKTrackerDataSourceActivator::Unload(us::ModuleContext*)
 {
-  return m_Image;
+  // NOTE: The services are automatically unregistered
 }
 
 } // end namespace
 
+US_EXPORT_MODULE_ACTIVATOR(niftk::MITKTrackerDataSourceActivator)

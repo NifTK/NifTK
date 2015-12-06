@@ -18,15 +18,16 @@
 #include <niftkAuroraDomeTracker.h>
 
 /**
- *  \brief Tests Tests connection to NDI Aurora tracker.
+ *  \brief Tests connection to NDI trackers.
  *
  * All errors should be thrown as exceptions.
  */
 int niftkNDIConnectionTest(int argc , char* argv[])
 {
   // always start with this!
-  MITK_TEST_BEGIN("niftkNDIAuroraConnectionTest")
+  MITK_TEST_BEGIN("niftkNDIConnectionTest")
   MITK_TEST_CONDITION_REQUIRED(argc == 4,"Testing invocation.")
+
   typedef std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > TrackingData;
 
   std::string trackerType = argv[1];

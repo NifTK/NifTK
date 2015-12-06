@@ -21,9 +21,8 @@ namespace niftk
 AuroraDomeTracker::AuroraDomeTracker(mitk::DataStorage::Pointer dataStorage,
                                      mitk::SerialCommunication::PortNumber portNumber,
                                      std::string toolConfigFileName)
+: NDITracker(dataStorage, portNumber, mitk::NDIAurora, mitk::DeviceDataAuroraPlanarDome, toolConfigFileName, 40)
 {
-  this->m_PreferredFramesPerSecond = 40;
-  this->m_Tracker = niftk::NDITracker::New(dataStorage, portNumber, mitk::NDIAurora, mitk::DeviceDataAuroraPlanarDome, toolConfigFileName);
 }
 
 

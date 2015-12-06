@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkOpenCVVideoDataSourceService.h"
-#include <niftkOpenCVVideoDataType.h>
+#include "niftkOpenCVVideoDataType.h"
 #include <niftkIGIDataSourceI.h>
 #include <ImageConversion.h>
 #include <mitkExceptionMacro.h>
@@ -139,7 +139,9 @@ void OpenCVVideoDataSourceService::SetProperties(const IGIDataSourceProperties& 
   {
     int milliseconds = (properties.value("lag")).toInt();
     m_Buffer->SetLagInMilliseconds(milliseconds);
-    MITK_INFO << "OpenCVVideoDataSourceService: Set lag to " << milliseconds << " ms.";
+
+    MITK_INFO << "OpenCVVideoDataSourceService(" << this->GetName().toStdString()
+              << "): Set lag to " << milliseconds << " ms.";
   }
 }
 
@@ -149,7 +151,10 @@ IGIDataSourceProperties OpenCVVideoDataSourceService::GetProperties() const
 {
   IGIDataSourceProperties props;
   props.insert("lag", m_Buffer->GetLagInMilliseconds());
-  MITK_INFO << "OpenCVVideoDataSourceService: Retrieved current value of lag as " << m_Buffer->GetLagInMilliseconds();
+
+  MITK_INFO << "OpenCVVideoDataSourceService(:" << this->GetName().toStdString()
+            << "):Retrieved current value of lag as " << m_Buffer->GetLagInMilliseconds();
+
   return props;
 }
 

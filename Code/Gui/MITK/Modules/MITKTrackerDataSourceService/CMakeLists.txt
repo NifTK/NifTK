@@ -12,10 +12,13 @@
 #
 #============================================================================*/
 
-set(CPP_FILES
-  Internal/niftkOpenCVVideoDataSourceFactory.cxx
-  Internal/niftkOpenCVVideoDataSourceActivator.cxx
-  Internal/niftkOpenCVVideoDataSourceService.cxx
-  Internal/niftkOpenCVVideoDataType.cxx
+
+MITK_CREATE_MODULE(
+  DEPENDS niftkIGIDataSources niftkIGITrackers
+  AUTOLOAD_WITH niftkIGIServices
 )
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkMITKTrackerDataSourceService)
+endif()
 

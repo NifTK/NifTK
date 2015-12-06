@@ -12,26 +12,26 @@
 
 =============================================================================*/
 
-#ifndef niftkUSBPortDialog_h
-#define niftkUSBPortDialog_h
+#ifndef niftkMITKTrackerDialog_h
+#define niftkMITKTrackerDialog_h
 
 #include <niftkIGIDataSourcesExports.h>
 #include "niftkIGIInitialisationDialog.h"
-#include <ui_niftkUSBPortDialog.h>
+#include <ui_niftkMITKTrackerDialog.h>
 
 namespace niftk
 {
 
-class NIFTKIGIDATASOURCES_EXPORT USBPortDialog : public IGIInitialisationDialog,
-                                                 public Ui_niftkUSBPortDialog
+class NIFTKIGIDATASOURCES_EXPORT MITKTrackerDialog : public IGIInitialisationDialog,
+                                                 public Ui_niftkMITKTrackerDialog
 
 {
   Q_OBJECT
 
 public:
 
-  USBPortDialog(QWidget *parent);
-  ~USBPortDialog();
+  MITKTrackerDialog(QWidget *parent);
+  ~MITKTrackerDialog();
 
 private slots:
 

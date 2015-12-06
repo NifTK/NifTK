@@ -26,12 +26,15 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
                        mitk::SerialCommunication::PortNumber portNumber,
                        mitk::TrackingDeviceType deviceType,
                        mitk::TrackingDeviceData deviceData,
-                       std::string toolConfigFileName)
+                       std::string toolConfigFileName,
+                       int preferredFramesPerSecond
+                       )
 : m_DataStorage(dataStorage)
 , m_PortNumber(portNumber)
 , m_DeviceType(deviceType)
 , m_DeviceData(deviceData)
 , m_ToolConfigFileName(toolConfigFileName)
+, m_PreferredFramesPerSecond(preferredFramesPerSecond)
 , m_NavigationToolStorage(NULL)
 , m_TrackerDevice(NULL)
 , m_TrackingVolumeGenerator(NULL)

@@ -41,13 +41,44 @@ class NIFTKIGITRACKERS_EXPORT NDITracker : public itk::Object
 public:
 
   mitkClassMacroItkParent(NDITracker, itk::Object);
-  mitkNewMacro5Param(NDITracker, mitk::DataStorage::Pointer, mitk::SerialCommunication::PortNumber, mitk::TrackingDeviceType, mitk::TrackingDeviceData, std::string);
+//  mitkNewMacro5Param(NDITracker, mitk::DataStorage::Pointer, mitk::SerialCommunication::PortNumber, mitk::TrackingDeviceType, mitk::TrackingDeviceData, std::string);
 
+  itkGetMacro(PreferredFramesPerSecond, int);
+
+  /**
+  * \brief Starts the tracking.
+  *
+  * Note that the constructor should have already connected.
+  */
   void StartTracking();
+
+  /**
+  * \brief Stops tracking.
+  *
+  * Note that you can start/stop, but the device should always be connected.
+  */
   void StopTracking();
+
+  /**
+  * \brief Set the tracking volume visible or invisible.
+  *
+  * Each tracker loads a tracking volume for visualisation purposes.
+  */
   void SetVisibilityOfTrackingVolume(bool isVisible);
+
+  /**
+  * \brief Get the visibility flag for the tracking volume.
+  */
   bool GetVisibilityOfTrackingVolume() const;
+
+  /**
+  * \brief Updates the pipeline, meaning, it retrieves the tracking data from the device.
+  */
   void Update();
+
+  /**
+  * \brief Retrives the current tracking data.
+  */
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData();
 
 protected:
@@ -56,7 +87,8 @@ protected:
              mitk::SerialCommunication::PortNumber portNumber,
              mitk::TrackingDeviceType deviceType,
              mitk::TrackingDeviceData deviceData,
-             std::string toolConfigFileName); // Purposefully hidden.
+             std::string toolConfigFileName,
+             int preferredFramesPerSecond); // Purposefully hidden.
 
   virtual ~NDITracker(); // Purposefully hidden.
 
@@ -74,6 +106,7 @@ private:
   mitk::TrackingDeviceType                 m_DeviceType;
   mitk::TrackingDeviceData                 m_DeviceData;
   std::string                              m_ToolConfigFileName;
+  int                                      m_PreferredFramesPerSecond;
 
   // Created during constructor.
   mitk::NavigationToolStorage::Pointer     m_NavigationToolStorage;

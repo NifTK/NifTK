@@ -11,17 +11,15 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-#ifndef niftkOpenCVVideoDataSourceService_h
-#define niftkOpenCVVideoDataSourceService_h
+#ifndef niftkMITKTrackerDataSourceService_h
+#define niftkMITKTrackerDataSourceService_h
 
-#include "niftkOpenCVVideoDataSourceServiceExports.h"
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceBuffer.h>
 #include <niftkIGIDataSourceBackgroundDeleteThread.h>
 #include <niftkIGIDataSourceGrabbingThread.h>
 #include <niftkIGILocalDataSourceI.h>
-
-#include <mitkOpenCVVideoSource.h>
+#include <niftkNDITracker.h>
 
 #include <QObject>
 #include <QSet>
@@ -32,12 +30,16 @@ namespace niftk
 {
 
 /**
-* \class OpenCVVideoDataSourceService
-* \brief Provides an OpenCV video feed, as an IGIDataSourceServiceI.
+* \class MITKTrackerDataSourceService
+* \brief Provides a local MITK implementation of a tracker interface,
+* as an IGIDataSourceServiceI. The other class niftk::NDITracker provides
+* the main tracking mechanism, utilising MITK to speak to the serial port
+* and grab data etc. This class therefore is to coordinate threads, buffers, etc.
+* and to function as a MicroService.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class NIFTKOPENCVVIDEODATASOURCESERVICE_EXPORT OpenCVVideoDataSourceService
+class MITKTrackerDataSourceService
     : public IGIDataSource
     , public IGILocalDataSourceI
     , public QObject
@@ -45,8 +47,8 @@ class NIFTKOPENCVVIDEODATASOURCESERVICE_EXPORT OpenCVVideoDataSourceService
 
 public:
 
-  mitkClassMacroItkParent(OpenCVVideoDataSourceService, IGIDataSource);
-  mitkNewMacro3Param(OpenCVVideoDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
+  mitkClassMacroItkParent(MITKTrackerDataSourceService, IGIDataSource);
+  mitkNewMacro5Param(MITKTrackerDataSourceService, QString, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer, niftk::NDITracker::Pointer);
 
   /**
   * \see IGIDataSourceI::StartCapturing()
@@ -73,11 +75,6 @@ public:
   * \see IGIDataSourceI::StopPlayback()
   */
   virtual void StopPlayback() override;
-
-  /**
-  * \see IGIDataSourceI::SetLagInMilliseconds()
-  */
-  virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& milliseconds) override;
 
   /**
   * \see IGIDataSourceI::GetRecordingDirectoryName()
@@ -123,30 +120,37 @@ public:
 
 protected:
 
-  OpenCVVideoDataSourceService(QString factoryName,
+  MITKTrackerDataSourceService(QString name,
+                               QString factoryName,
                                const IGIDataSourceProperties& properties,
-                               mitk::DataStorage::Pointer dataStorage
-                               );
-  virtual ~OpenCVVideoDataSourceService();
+                               mitk::DataStorage::Pointer dataStorage,
+                               niftk::NDITracker::Pointer tracker
+                              );
+  virtual ~MITKTrackerDataSourceService();
 
 private:
 
-  OpenCVVideoDataSourceService(const OpenCVVideoDataSourceService&); // deliberately not implemented
-  OpenCVVideoDataSourceService& operator=(const OpenCVVideoDataSourceService&); // deliberately not implemented
+  MITKTrackerDataSourceService(const MITKTrackerDataSourceService&); // deliberately not implemented
+  MITKTrackerDataSourceService& operator=(const MITKTrackerDataSourceService&); // deliberately not implemented
 
-  static int GetNextChannelNumber();
+  static int GetNextTrackerNumber();
 
-  static QMutex                                   s_Lock;
-  static QSet<int>                                s_SourcesInUse;
+  static QMutex                                             s_Lock;
+  static QSet<int>                                          s_SourcesInUse;
 
-  QMutex                                          m_Lock;
-  mitk::OpenCVVideoSource::Pointer                m_VideoSource;
-  int                                             m_ChannelNumber;
-  niftk::IGIDataType::IGIIndexType                m_FrameId;
-  niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
-  niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
-  niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;
-  std::set<niftk::IGIDataType::IGITimeType>       m_PlaybackIndex;
+  QMutex                                                    m_Lock;
+  int                                                       m_TrackerNumber;
+  niftk::IGIDataType::IGIIndexType                          m_FrameId;
+  niftk::IGIDataSourceBackgroundDeleteThread*               m_BackgroundDeleteThread;
+  niftk::IGIDataSourceGrabbingThread*                       m_DataGrabbingThread;
+  int                                                       m_Lag = 0;
+  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > m_PlaybackIndex;
+
+  // The main tracker.
+  niftk::NDITracker::Pointer                                m_Tracker;
+
+  // In contrast say to the OpenCV source, we store multiple buffers, keyed by tool name.
+  QMap<QString, niftk::IGIDataSourceBuffer::Pointer>        m_Buffers;
 
 }; // end class
 

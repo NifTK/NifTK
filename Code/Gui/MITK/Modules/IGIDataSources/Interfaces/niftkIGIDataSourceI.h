@@ -177,16 +177,6 @@ public:
   virtual void StopRecording() = 0;
 
   /**
-  * \brief Set the amount of lag in milliseconds.
-  *
-  * For example, if a video data source, takes 200ms to output the data
-  * and you immediately timestamp it then the timestamp does not correspond
-  * to the actual real life timing. So, if we set an amount of lag, then
-  * when we retrieve data, we can offset the timestamp to compensate for this.
-  */
-  virtual void SetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& time) = 0;
-
-  /**
   * \brief Sets a flag to say that this data source should/should not
   * update the data storage. This enables us to freeze the views while
   * the data source itself can continue grabbing and hence continue recording.

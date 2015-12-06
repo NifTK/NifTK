@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkOpenCVVideoDataSourceFactory.h"
-#include <niftkOpenCVVideoDataSourceService.h>
+#include "niftkOpenCVVideoDataSourceService.h"
 #include <niftkLagDialog.h>
 
 namespace niftk

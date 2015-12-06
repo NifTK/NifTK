@@ -13,9 +13,9 @@
 #============================================================================*/
 
 set(CPP_FILES
-  Internal/niftkOpenCVVideoDataSourceFactory.cxx
-  Internal/niftkOpenCVVideoDataSourceActivator.cxx
-  Internal/niftkOpenCVVideoDataSourceService.cxx
-  Internal/niftkOpenCVVideoDataType.cxx
+  Internal/niftkMITKTrackerDataSourceActivator.cxx
+  Internal/niftkMITKTrackerDataSourceFactory.cxx
+  Internal/niftkMITKAuroraCubeDataSourceFactory.cxx
+  Internal/niftkMITKTrackerDataSourceService.cxx
 )
 
