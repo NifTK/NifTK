@@ -873,6 +873,7 @@ set(NIFTK_INCLUDE_DIRS_BUILD_TREE
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASIrregularVolumeEditor
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/VesselToolbox
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITKVTK/IO
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITKIO
   ${CMAKE_SOURCE_DIR}/Testing/Code/
   ${CMAKE_SOURCE_DIR}/Testing/Code/Libs/ITK/RegistrationToolbox
 )
