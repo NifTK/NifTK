@@ -774,7 +774,7 @@ void mitk::MIDASDrawTool::ExecuteOperation(Operation* operation)
 //-----------------------------------------------------------------------------
 void mitk::MIDASDrawTool::Activated()
 {
-  mitk::MIDASTool::Activated();
+  Superclass::Activated();
   CursorSizeChanged.Send(m_CursorSize);
 }
 

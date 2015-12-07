@@ -197,12 +197,12 @@ void mitk::MIDASTool::Activated()
                                                     us::GetModuleContext()->GetService<InteractionEventObserver>(*it));
     if (displayInteractor)
     {
-      if (displayInteractor->GetNameOfClass() == "DnDDisplayInteractor")
+      if (std::strcmp(displayInteractor->GetNameOfClass(), "DnDDisplayInteractor") == 0)
       {
         // remember the original configuration
         m_DisplayInteractorConfigs.insert(std::make_pair(*it, displayInteractor->GetEventConfig()));
         // here the alternative configuration is loaded
-        displayInteractor->SetEventConfig("DisplayConfigMIDASTool.xml", us::GetModuleContext()->GetModule());
+        displayInteractor->SetEventConfig("DnDDisplayConfigMIDASTool.xml", us::GetModuleContext()->GetModule());
       }
     }
   }
@@ -227,7 +227,7 @@ void mitk::MIDASTool::Deactivated()
                                                us::GetModuleContext()->GetService<mitk::InteractionEventObserver>(it->first));
       if (displayInteractor)
       {
-        if (displayInteractor->GetNameOfClass() == "DnDDisplayInteractor")
+        if (std::strcmp(displayInteractor->GetNameOfClass(), "DnDDisplayInteractor") == 0)
         {
           // here the regular configuration is loaded again
           displayInteractor->SetEventConfig(it->second);

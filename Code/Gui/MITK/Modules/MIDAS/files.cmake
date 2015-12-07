@@ -42,6 +42,8 @@ set(CPP_FILES
 set(RESOURCE_FILES
   Interactions/DisplayConfigMIDASTool.xml
   Interactions/DisplayConfigMIDASPaintbrushTool.xml
+  Interactions/DnDDisplayConfigMIDASTool.xml
+  Interactions/DnDDisplayConfigMIDASPaintbrushTool.xml
   Interactions/MIDASDrawTool.xml
   Interactions/MIDASDrawToolConfig.xml
   Interactions/MIDASPolyTool.xml
