@@ -37,7 +37,7 @@ int niftkNDIConnectionTest(int argc , char* argv[])
   mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
 
   // Uses RAII pattern, so once constructed, it must be valid.
-  niftk::NDIBaseTracker::Pointer tracker = NULL;
+  niftk::NDITracker::Pointer tracker = NULL;
 
   if (trackerType == "Polaris")
   {

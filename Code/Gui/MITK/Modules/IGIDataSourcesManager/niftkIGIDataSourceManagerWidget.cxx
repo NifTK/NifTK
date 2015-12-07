@@ -21,6 +21,7 @@
 #include <QDateTime>
 #include <QTextStream>
 #include <QList>
+#include <QPainter>
 
 namespace niftk
 {
@@ -466,48 +467,59 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
     // the update thread ends up here.
     if (infoForOneRow.size() > 0)
     {
-      IGIDataItemInfo firstItemOnly = infoForOneRow[0];
-
       bool  shouldUpdate = m_TableWidget->item(r, 0)->checkState() == Qt::Checked;
       m_Manager->FreezeDataSource(r, !shouldUpdate);
+
+      QImage iconAsImage(22*infoForOneRow.size(), 22, QImage::Format_ARGB32);
+      QString framesPerSecondString;
+      QString lagInMillisecondsString;
+
+      for (int i = 0; i < infoForOneRow.size(); i++)
+      {
+        QImage pix(22, 22, QImage::Format_ARGB32);
+        if (!infoForOneRow[i].m_ShouldUpdate)
+        {
+          pix.fill(QColor(Qt::blue)); // suspended
+        }
+        else
+        {
+          if(infoForOneRow[i].m_IsLate)
+          {
+            pix.fill(QColor(Qt::red)); // late
+          }
+          else
+          {
+            pix.fill(QColor(Qt::green)); // ok.
+          }
+        }
+        QPoint destPos = QPoint(i*22, 0);
+        QPainter painter(&iconAsImage);
+        painter.drawImage(destPos, pix);
+        painter.end();
+
+        framesPerSecondString.append(QString::number(infoForOneRow[i].m_FramesPerSecond) + QString(":"));
+        lagInMillisecondsString.append(QString::number(infoForOneRow[i].m_LagInMilliseconds) + QString(":"));
+      }
+
+      IGIDataItemInfo firstItemOnly = infoForOneRow[0];
 
       QTableWidgetItem *item1 = new QTableWidgetItem(firstItemOnly.m_Status);
       item1->setTextAlignment(Qt::AlignCenter);
       item1->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+      item1->setIcon(QPixmap::fromImage(iconAsImage));
       m_TableWidget->setItem(r, 1, item1);
 
-      if (!firstItemOnly.m_ShouldUpdate)
-      {
-        QPixmap pix(22, 22);
-        pix.fill(QColor(Qt::blue)); // suspended
-        item1->setIcon(pix);
-      }
-      else
-      {
-        if(firstItemOnly.m_IsLate)
-        {
-          QPixmap pix(22, 22);
-          pix.fill(QColor(Qt::red)); // late
-          item1->setIcon(pix);
-        }
-        else
-        {
-          QPixmap pix(22, 22);
-          pix.fill(QColor(Qt::green)); // ok.
-          item1->setIcon(pix);
-        }
-      }
-      QTableWidgetItem *item2 = new QTableWidgetItem(QString::number(firstItemOnly.m_FramesPerSecond));
+      QTableWidgetItem *item2 = new QTableWidgetItem(framesPerSecondString);
       item2->setTextAlignment(Qt::AlignCenter);
       item2->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
       m_TableWidget->setItem(r, 2, item2);
 
-      QTableWidgetItem *item3 = new QTableWidgetItem(QString::number(firstItemOnly.m_LagInMilliseconds));
+      QTableWidgetItem *item3 = new QTableWidgetItem(lagInMillisecondsString);
       item3->setTextAlignment(Qt::AlignCenter);
       item3->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
       m_TableWidget->setItem(r, 3, item3);
 
-      QTableWidgetItem *item4 = new QTableWidgetItem(firstItemOnly.m_Name + ":" + firstItemOnly.m_Description);
+      QTableWidgetItem *item4 = new QTableWidgetItem(firstItemOnly.m_Description);
       item4->setTextAlignment(Qt::AlignCenter);
       item4->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
       m_TableWidget->setItem(r, 4, item4);
