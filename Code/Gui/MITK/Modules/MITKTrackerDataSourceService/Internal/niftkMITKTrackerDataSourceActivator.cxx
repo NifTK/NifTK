@@ -43,7 +43,6 @@ void MITKTrackerDataSourceActivator::Load(us::ModuleContext* context)
   us::ServiceProperties polarisVicraProps;
   polarisVicraProps["Name"] = std::string("MITKPolarisVicraDataSourceFactory");
   context->RegisterService<IGIDataSourceFactoryServiceI>(m_PolarisVicraFactory.get(), polarisVicraProps);
-
 }
 
 

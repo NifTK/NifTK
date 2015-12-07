@@ -14,6 +14,7 @@
 
 #include "niftkMITKTrackerDataSourceService.h"
 #include <niftkIGITrackerDataType.h>
+#include <mitkCoordinateAxesData.h>
 #include <mitkFileIOUtils.h>
 #include <mitkExceptionMacro.h>
 #include <QDir>
@@ -507,19 +508,64 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
     return infos;
   }
 
-  /*
-  if(m_Buffer->GetFirstTimeStamp() > time)
+  if (!this->GetShouldUpdate())
   {
-    MITK_DEBUG << "MITKTrackerDataSourceService::Update(), requested time is before buffer time! "
-               << " Buffer size=" << m_Buffer->GetBufferSize()
-               << ", time=" << time
-               << ", firstTime=" << m_Buffer->GetFirstTimeStamp();
     return infos;
   }
 
-  infos[0].m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
-  infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
-*/
+  QMap<QString, niftk::IGIDataSourceBuffer::Pointer>::iterator iter;
+  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
+  {
+    QString bufferName = iter.key();
+
+    if (m_Buffers[bufferName]->GetBufferSize() == 0)
+    {
+      continue;
+    }
+
+    if(m_Buffers[bufferName]->GetFirstTimeStamp() > time)
+    {
+      continue;
+    }
+
+    niftk::IGITrackerDataType::Pointer dataType = static_cast<niftk::IGITrackerDataType*>(m_Buffers[bufferName]->GetItem(time).GetPointer());
+    if (dataType.IsNull())
+    {
+      MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffers[bufferName]->GetBufferSize() << ", last=" << m_Buffers[bufferName]->GetLastTimeStamp() << std::endl;
+      continue;
+    }
+
+    mitk::DataNode::Pointer node = this->GetDataNode(bufferName);
+    if (node.IsNull())
+    {
+      mitkThrow() << "Can't find mitk::DataNode with name " << bufferName.toStdString();
+    }
+
+    mitk::CoordinateAxesData::Pointer coords = static_cast<mitk::CoordinateAxesData*>(node->GetData());
+    if (coords.IsNull())
+    {
+      mitkThrow() << "DataNode with name " << bufferName.toStdString() << " contains the wrong data type!";
+    }
+
+    vtkSmartPointer<vtkMatrix4x4> matrix = dataType->GetTrackingData();
+    coords->SetVtkMatrix(*matrix);
+
+    // We tell the node that it is modified so the next rendering event
+    // will redraw it. Triggering this does not in itself guarantee a re-rendering.
+    coords->Modified();
+    node->Modified();
+
+    IGIDataItemInfo info;
+    info.m_Name = this->GetName();
+    info.m_Status = this->GetStatus();
+    info.m_ShouldUpdate = this->GetShouldUpdate();
+    info.m_FramesPerSecond = m_Buffers[bufferName]->GetFrameRate();
+    info.m_Description = "MITK based tracker.";
+    info.m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
+    info.m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
+    infos.push_back(info);
+  }
+
   return infos;
 }
 
