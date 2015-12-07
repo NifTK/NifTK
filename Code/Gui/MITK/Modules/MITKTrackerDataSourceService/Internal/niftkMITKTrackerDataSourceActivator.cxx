@@ -35,9 +35,15 @@ MITKTrackerDataSourceActivator::~MITKTrackerDataSourceActivator()
 void MITKTrackerDataSourceActivator::Load(us::ModuleContext* context)
 {
   m_AuroraCubeFactory.reset(new MITKAuroraCubeDataSourceFactory);
-  us::ServiceProperties props;
-  props["Name"] = std::string("MITKAuroraCubeDataSourceFactory");
-  context->RegisterService<IGIDataSourceFactoryServiceI>(m_AuroraCubeFactory.get(), props);
+  us::ServiceProperties auroraCubeProps;
+  auroraCubeProps["Name"] = std::string("MITKAuroraCubeDataSourceFactory");
+  context->RegisterService<IGIDataSourceFactoryServiceI>(m_AuroraCubeFactory.get(), auroraCubeProps);
+
+  m_PolarisVicraFactory.reset(new MITKPolarisVicraDataSourceFactory);
+  us::ServiceProperties polarisVicraProps;
+  polarisVicraProps["Name"] = std::string("MITKPolarisVicraDataSourceFactory");
+  context->RegisterService<IGIDataSourceFactoryServiceI>(m_PolarisVicraFactory.get(), polarisVicraProps);
+
 }
 
 
