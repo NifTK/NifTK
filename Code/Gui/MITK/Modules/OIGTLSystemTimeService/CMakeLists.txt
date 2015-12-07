@@ -12,12 +12,18 @@
 #
 #============================================================================*/
 
-set(CPP_FILES
-  niftkPointRegServiceI.cxx
-  niftkPointRegServiceRAII.cxx
-  niftkSurfaceRegServiceI.cxx
-  niftkICPRegServiceRAII.cxx
-  niftkSystemTimeServiceI.cxx
-  niftkSystemTimeServiceRAII.cxx
+##############################################################################
+# Note: As a 'Service Only' Module, this module should only depend on
+# niftkIGIServices. It should not be necessary to add ant other modules.
+##############################################################################
+
+MITK_CREATE_MODULE(
+  DEPENDS niftkIGIServices 
+  AUTOLOAD_WITH niftkIGIServices
+  PACKAGE_DEPENDS NiftyLink 
 )
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkOIGTLSystemTimeService)
+endif()
 

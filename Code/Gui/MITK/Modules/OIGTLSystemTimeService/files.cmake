@@ -12,12 +12,12 @@
 #
 #============================================================================*/
 
-set(CPP_FILES
-  niftkPointRegServiceI.cxx
-  niftkPointRegServiceRAII.cxx
-  niftkSurfaceRegServiceI.cxx
-  niftkICPRegServiceRAII.cxx
-  niftkSystemTimeServiceI.cxx
-  niftkSystemTimeServiceRAII.cxx
+set(H_FILES
+  Internal/niftkOIGTLSystemTimeServiceActivator.h
+  Internal/niftkOIGTLSystemTimeService.h
 )
 
+set(CPP_FILES
+  Internal/niftkOIGTLSystemTimeServiceActivator.cxx
+  Internal/niftkOIGTLSystemTimeService.cxx
+)
