@@ -34,8 +34,6 @@
 #include <usModule.h>
 #include <usModuleRegistry.h>
 
-#include <Interactions/mitkDnDDisplayInteractor.h>
-
 const std::string mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME = "MIDAS_EDITS_EROSIONS_ADDITIONS";
 const std::string mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_EROSIONS_SUBTRACTIONS";
 const std::string mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME = "MIDAS_EDITS_DILATIONS_ADDITIONS";
@@ -112,14 +110,17 @@ void mitk::MIDASPaintbrushTool::Activated()
   std::vector<us::ServiceReference<InteractionEventObserver> > listEventObserver = us::GetModuleContext()->GetServiceReferences<InteractionEventObserver>();
   for (std::vector<us::ServiceReference<InteractionEventObserver> >::iterator it = listEventObserver.begin(); it != listEventObserver.end(); ++it)
   {
-    DnDDisplayInteractor* displayInteractor = dynamic_cast<DnDDisplayInteractor*>(
+    mitk::DisplayInteractor* displayInteractor = dynamic_cast<mitk::DisplayInteractor*>(
                                                     us::GetModuleContext()->GetService<InteractionEventObserver>(*it));
-    if (displayInteractor != NULL)
+    if (displayInteractor)
     {
-      // remember the original configuration
-      m_DisplayInteractorConfigs.insert(std::make_pair(*it, displayInteractor->GetEventConfig()));
-      // here the alternative configuration is loaded
-      displayInteractor->SetEventConfig("DisplayConfigMIDASPaintbrushTool.xml", us::GetModuleContext()->GetModule());
+      if (displayInteractor->GetNameOfClass() == "DnDDisplayInteractor")
+      {
+        // remember the original configuration
+        m_DisplayInteractorConfigs.insert(std::make_pair(*it, displayInteractor->GetEventConfig()));
+        // here the alternative configuration is loaded
+        displayInteractor->SetEventConfig("DisplayConfigMIDASPaintbrushTool.xml", us::GetModuleContext()->GetModule());
+      }
     }
   }
 }
@@ -135,12 +136,15 @@ void mitk::MIDASPaintbrushTool::Deactivated()
   {
     if (it->first)
     {
-      DnDDisplayInteractor* displayInteractor = static_cast<DnDDisplayInteractor*>(
+      mitk::DisplayInteractor* displayInteractor = static_cast<mitk::DisplayInteractor*>(
                                                us::GetModuleContext()->GetService<mitk::InteractionEventObserver>(it->first));
-      if (displayInteractor != NULL)
+      if (displayInteractor)
       {
-        // here the regular configuration is loaded again
-        displayInteractor->SetEventConfig(it->second);
+        if (displayInteractor->GetNameOfClass() == "DnDDisplayInteractor")
+        {
+          // here the regular configuration is loaded again
+          displayInteractor->SetEventConfig(it->second);
+        }
       }
     }
   }
