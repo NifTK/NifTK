@@ -64,6 +64,7 @@ if(BUILD_IGI)
     SurfRecon
     OpenCVVideoDataSourceService
     MITKTrackerDataSourceService
+    OIGTLSystemTimeService
   )
 
   if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
