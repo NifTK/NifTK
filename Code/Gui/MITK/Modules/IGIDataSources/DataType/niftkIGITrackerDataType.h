@@ -41,6 +41,9 @@ public:
   void SetTrackingData(vtkSmartPointer<vtkMatrix4x4> data);
   vtkSmartPointer<vtkMatrix4x4> GetTrackingData() const;
 
+  itkSetStringMacro(ToolName);
+  itkGetStringMacro(ToolName);
+
 protected:
 
   IGITrackerDataType(); // Purposefully hidden.
@@ -51,6 +54,7 @@ protected:
 
 private:
 
+  std::string                   m_ToolName;
   vtkSmartPointer<vtkMatrix4x4> m_TrackingData;
 };
 

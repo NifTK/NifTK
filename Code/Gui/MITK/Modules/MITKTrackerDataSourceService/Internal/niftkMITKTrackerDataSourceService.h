@@ -134,6 +134,7 @@ private:
   MITKTrackerDataSourceService& operator=(const MITKTrackerDataSourceService&); // deliberately not implemented
 
   static int GetNextTrackerNumber();
+  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > GetPlaybackIndex(QString directory);
 
   static QMutex                                             s_Lock;
   static QSet<int>                                          s_SourcesInUse;

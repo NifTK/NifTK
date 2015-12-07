@@ -14,6 +14,7 @@
 
 #include "niftkMITKTrackerDataSourceService.h"
 #include <niftkIGITrackerDataType.h>
+#include <mitkFileIOUtils.h>
 #include <mitkExceptionMacro.h>
 #include <QDir>
 #include <QMutexLocker>
@@ -74,6 +75,17 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
   QString deviceName = this->GetName();
   m_TrackerNumber = (deviceName.remove(0, name.length() + 1)).toInt();
 
+  // Set the interval based on desired number of frames per second.
+  // eg. 25 fps = 40 milliseconds.
+  // However: If system slows down (eg. saving images), then Qt will
+  // drop clock ticks, so in effect, you will get less than this.
+  int defaultFramesPerSecond = m_Tracker->GetPreferredFramesPerSecond();
+  int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
+
+  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.1);
+  this->SetProperties(properties);
+  this->SetShouldUpdate(true);
+
   m_BackgroundDeleteThread = new niftk::IGIDataSourceBackgroundDeleteThread(NULL, this);
   m_BackgroundDeleteThread->SetInterval(1000); // try deleting data every 1 second.
   m_BackgroundDeleteThread->start();
@@ -81,13 +93,6 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
   {
     mitkThrow() << "Failed to start background deleting thread";
   }
-
-  // Set the interval based on desired number of frames per second.
-  // eg. 25 fps = 40 milliseconds.
-  // However: If system slows down (eg. saving images), then Qt will
-  // drop clock ticks, so in effect, you will get less than this.
-  int defaultFramesPerSecond = m_Tracker->GetPreferredFramesPerSecond();
-  int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
 
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
   m_DataGrabbingThread->SetInterval(intervalInMilliseconds);
@@ -97,9 +102,6 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
     mitkThrow() << "Failed to start data grabbing thread";
   }
 
-  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.1);
-  this->SetProperties(properties);
-  this->SetShouldUpdate(true);
   this->SetStatus("Initialised");
   this->Modified();
 }
@@ -127,7 +129,9 @@ void MITKTrackerDataSourceService::SetProperties(const IGIDataSourceProperties& 
 {
   // In contrast say, to the OpenCV source, we don't set the lag
   // directly on the buffer because, there may be no buffers present
-  // at the time this method is called.
+  // at the time this method is called. For example, you could
+  // have created a tracker, and no tracked objects are placed within
+  // the field of view, thereby no tracking matrices would be generated.
   if (properties.contains("lag"))
   {
     int milliseconds = (properties.value("lag")).toInt();
@@ -186,22 +190,17 @@ QString MITKTrackerDataSourceService::GetRecordingDirectoryName()
   return this->GetRecordingLocation()
       + this->GetPreferredSlash()
       + this->GetName()
-      + "_"
       ;
 }
 
 
 //-----------------------------------------------------------------------------
-void MITKTrackerDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                                                 niftk::IGIDataType::IGITimeType lastTimeStamp)
+QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >  MITKTrackerDataSourceService::GetPlaybackIndex(QString directory)
 {
-  QMutexLocker locker(&m_Lock);
 
-  IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
+  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > result;
 
-  m_Buffers.clear();
-
-  QDir recordingDir(this->GetRecordingDirectoryName());
+  QDir recordingDir(directory);
   if (recordingDir.exists())
   {
     // then directories with tool names
@@ -218,24 +217,38 @@ void MITKTrackerDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType
         std::set<niftk::IGIDataType::IGITimeType> timeStamps = ProbeTimeStampFiles(tooldir, QString(".txt"));
         if (!timeStamps.empty())
         {
-          m_PlaybackIndex.insert(tool, timeStamps);
+          result.insert(tool, timeStamps);
         }
       }
     }
     else
     {
       MITK_WARN << "There are no tool sub-folders in " << recordingDir.absolutePath().toStdString() << ", so can't playback tracking data!";
-      return;
+      return result;
     }
   }
   else
   {
     mitkThrow() << this->GetName().toStdString() << ": Recording directory, " << recordingDir.absolutePath().toStdString() << ", does not exist!";
   }
-  if (m_PlaybackIndex.size())
+  if (result.isEmpty())
   {
     mitkThrow() << "No tracking data extracted from directory " << recordingDir.absolutePath().toStdString();
   }
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void MITKTrackerDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
+                                                 niftk::IGIDataType::IGITimeType lastTimeStamp)
+{
+  QMutexLocker locker(&m_Lock);
+
+  IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
+
+  m_Buffers.clear();
+  m_PlaybackIndex = this->GetPlaybackIndex(this->GetRecordingDirectoryName());
 }
 
 
@@ -327,23 +340,36 @@ bool MITKTrackerDataSourceService::ProbeRecordedData(const QString& path,
                                                      niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {
 
-  // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.
-  niftk::IGIDataType::IGITimeType  firstTimeStampFound = 0;
-  niftk::IGIDataType::IGITimeType  lastTimeStampFound  = 0;
+  niftk::IGIDataType::IGITimeType  firstTimeStampFound = std::numeric_limits<niftk::IGIDataType::IGITimeType>::max();
+  niftk::IGIDataType::IGITimeType  lastTimeStampFound  = std::numeric_limits<niftk::IGIDataType::IGITimeType>::min();
 
-/*
-  // needs to match what SaveData() does below
-  QDir directory(path);
-  if (directory.exists())
+  // Note, that each tool may have different min and max, so we want the
+  // most minimum and most maximum of all the sub directories.
+
+  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > result = this->GetPlaybackIndex(path);
+  if (result.isEmpty())
   {
-    std::set<niftk::IGIDataType::IGITimeType> timeStamps = ProbeTimeStampFiles(directory, QString(".jpg"));
-    if (!timeStamps.empty())
-    {
-      firstTimeStampFound = *timeStamps.begin();
-      lastTimeStampFound  = *(--(timeStamps.end()));
-    }
+    return false;
   }
 
+  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator iter;
+  for (iter = result.begin(); iter != result.end(); iter++)
+  {
+    if (!iter.value().empty())
+    {
+      niftk::IGIDataType::IGITimeType first = *((*iter).begin());
+      if (first < firstTimeStampFound)
+      {
+        firstTimeStampFound = first;
+      }
+
+      niftk::IGIDataType::IGITimeType last = *(--((*iter).end()));
+      if (last > lastTimeStampFound)
+      {
+        lastTimeStampFound = last;
+      }
+    }
+  }
   if (firstTimeStampInStore)
   {
     *firstTimeStampInStore = firstTimeStampFound;
@@ -352,15 +378,13 @@ bool MITKTrackerDataSourceService::ProbeRecordedData(const QString& path,
   {
     *lastTimeStampInStore = lastTimeStampFound;
   }
-*/
-  return firstTimeStampFound != 0; 
+  return firstTimeStampFound != std::numeric_limits<niftk::IGIDataType::IGITimeType>::max();
 }
 
 
 //-----------------------------------------------------------------------------
 void MITKTrackerDataSourceService::GrabData()
 {
-/*
   {
     QMutexLocker locker(&m_Lock);
 
@@ -369,76 +393,98 @@ void MITKTrackerDataSourceService::GrabData()
       return;
     }
   }
-
-  // Somehow this can become null, probably a race condition during destruction.
-  if (m_VideoSource.IsNull())
+  if (m_Tracker.IsNull())
   {
-    mitkThrow() << "Video source is null. This should not happen! It's most likely a race-condition.";
+    mitkThrow() << "Tracker is null. This should not happen! It's a programming bug.";
   }
 
-  // Grab a video image.
-  m_VideoSource->FetchFrame();
-  const IplImage* img = m_VideoSource->GetCurrentFrame();
-  if (img == NULL)
+  m_Tracker->Update();
+  niftk::IGIDataType::IGITimeType timeCreated = this->GetTimeStampInNanoseconds();
+
+  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result = m_Tracker->GetTrackingData();
+
+  if (!result.empty())
   {
-    mitkThrow() << "Failed to get a valid video frame!";
+    std::map<std::string, vtkSmartPointer<vtkMatrix4x4> >::iterator iter;
+    for (iter = result.begin(); iter != result.end(); iter++)
+    {
+      std::string toolName = (*iter).first;
+      QString toolNameAsQString = QString::fromStdString(toolName);
+
+      niftk::IGITrackerDataType::Pointer wrapper = niftk::IGITrackerDataType::New();
+      wrapper->SetToolName(toolName);
+      wrapper->SetTrackingData((*iter).second);
+      wrapper->SetTimeStampInNanoSeconds(timeCreated);
+      wrapper->SetFrameId(m_FrameId++);
+      wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+      wrapper->SetShouldBeSaved(this->GetIsRecording());
+      wrapper->SetIsSaved(false);
+
+      if (!m_Buffers.contains(toolNameAsQString))
+      {
+        niftk::IGIDataSourceBuffer::Pointer newBuffer = niftk::IGIDataSourceBuffer::New(m_Tracker->GetPreferredFramesPerSecond() * 2);
+        m_Buffers.insert(toolNameAsQString, newBuffer);
+      }
+
+      m_Buffers[toolNameAsQString]->AddToBuffer(wrapper.GetPointer());
+
+      // Save synchronously.
+      // This has the side effect that if saving is too slow,
+      // the QTimers just won't keep up, and start missing pulses.
+      if (this->GetIsRecording())
+      {
+        this->SaveItem(wrapper.GetPointer());
+      }
+    }
+    this->SetStatus("Grabbing");
   }
-
-  niftk::OpenCVVideoDataType::Pointer wrapper = niftk::OpenCVVideoDataType::New();
-  wrapper->CloneImage(img);
-  wrapper->SetTimeStampInNanoSeconds(this->GetTimeStampInNanoseconds());
-  wrapper->SetFrameId(m_FrameId++);
-  wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-  wrapper->SetShouldBeSaved(this->GetIsRecording());
-  wrapper->SetIsSaved(false);
-
-  m_Buffer->AddToBuffer(wrapper.GetPointer());
-
-  // Save synchronously.
-  // This has the side effect that if saving is too slow,
-  // the QTimers just won't keep up, and start missing pulses.
-  if (this->GetIsRecording())
+  else
   {
-    this->SaveItem(wrapper.GetPointer());
+    this->SetStatus("No data!");
   }
-*/
-  this->SetStatus("Grabbing");
 }
 
 
 //-----------------------------------------------------------------------------
 void MITKTrackerDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 {
-/*
-  niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(data.GetPointer());
+
+  niftk::IGITrackerDataType::Pointer dataType = static_cast<niftk::IGITrackerDataType*>(data.GetPointer());
   if (dataType.IsNull())
   {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as the data received was NULL!";
+    mitkThrow() << "Failed to save IGITrackerDataType as the data received was the wrong type!";
   }
 
-  const IplImage* imageFrame = dataType->GetImage();
-  if (imageFrame == NULL)
+  vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  matrix = dataType->GetTrackingData();
+
+  if (matrix == NULL)
   {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
+    mitkThrow() << "Failed to save IGITrackerDataType as the tracking matrix was NULL!";
   }
 
   QString directoryPath = this->GetRecordingDirectoryName();
-  QDir directory(directoryPath);
-  if (directory.mkpath(directoryPath))
+  QString toolPath = directoryPath
+      + this->GetPreferredSlash()
+      + QString::fromStdString(dataType->GetToolName())
+      + this->GetPreferredSlash();
+
+  QDir directory(toolPath);
+  if (directory.mkpath(toolPath))
   {
-    QString fileName =  directoryPath + QDir::separator() + tr("%1.jpg").arg(data->GetTimeStampInNanoSeconds());
-    bool success = cvSaveImage(fileName.toStdString().c_str(), imageFrame);
+    QString fileName =  directoryPath + QDir::separator() + tr("%1.txt").arg(data->GetTimeStampInNanoSeconds());
+
+    bool success = mitk::SaveVtkMatrix4x4ToFile(fileName.toStdString(), *matrix);
     if (!success)
     {
-      mitkThrow() << "Failed to save OpenCVVideoDataType in cvSaveImage!";
+      mitkThrow() << "Failed to save IGITrackerDataType to " << fileName.toStdString();
     }
     data->SetIsSaved(true);
   }
   else
   {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as could not create " << directoryPath.toStdString();
+    mitkThrow() << "Failed to save IGITrackerDataType as could not create " << directoryPath.toStdString();
   }
-*/
 }
 
 
@@ -446,7 +492,7 @@ void MITKTrackerDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
 {
   std::vector<IGIDataItemInfo> infos;
-/*
+
   // This loads playback-data into the buffers, so must
   // come before the check for empty buffer.
   if (this->GetIsPlayingBack())
@@ -454,11 +500,14 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
     this->PlaybackData(time);
   }
 
-  if (m_Buffer->GetBufferSize() == 0)
+  // Early exit if no buffers, which means that
+  // the tracker is created, but has not seen anything to track yet.
+  if (m_Buffers.isEmpty())
   {
     return infos;
   }
 
+  /*
   if(m_Buffer->GetFirstTimeStamp() > time)
   {
     MITK_DEBUG << "MITKTrackerDataSourceService::Update(), requested time is before buffer time! "

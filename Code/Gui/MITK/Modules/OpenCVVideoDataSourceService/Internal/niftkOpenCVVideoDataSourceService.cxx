@@ -85,6 +85,16 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
                 << ", please check log file!";
   }
 
+  // Set the interval based on desired number of frames per second.
+  // So, 25 fps = 40 milliseconds.
+  // However: If system slows down (eg. saving images), then Qt will
+  // drop clock ticks, so in effect, you will get less than this.
+  int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
+
+  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.5);
+  this->SetShouldUpdate(true);
+  this->SetProperties(properties);
+
   m_BackgroundDeleteThread = new niftk::IGIDataSourceBackgroundDeleteThread(NULL, this);
   m_BackgroundDeleteThread->SetInterval(2000); // try deleting images every 2 seconds.
   m_BackgroundDeleteThread->start();
@@ -92,12 +102,6 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
   {
     mitkThrow() << "Failed to start background deleting thread";
   }
-
-  // Set the interval based on desired number of frames per second.
-  // So, 25 fps = 40 milliseconds.
-  // However: If system slows down (eg. saving images), then Qt will
-  // drop clock ticks, so in effect, you will get less than this.
-  int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
 
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
   m_DataGrabbingThread->SetInterval(intervalInMilliseconds);
@@ -107,9 +111,6 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
     mitkThrow() << "Failed to start data grabbing thread";
   }
 
-  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.5);
-  this->SetShouldUpdate(true);
-  this->SetProperties(properties);
   this->SetStatus("Initialised");
   this->Modified();
 }
@@ -362,7 +363,7 @@ void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
   niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(data.GetPointer());
   if (dataType.IsNull())
   {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as the data received was NULL!";
+    mitkThrow() << "Failed to save OpenCVVideoDataType as the data received was the wrong type!";
   }
 
   const IplImage* imageFrame = dataType->GetImage();
