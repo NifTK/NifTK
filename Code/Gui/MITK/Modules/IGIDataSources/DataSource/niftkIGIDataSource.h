@@ -17,9 +17,9 @@
 
 #include <niftkIGIDataSourcesExports.h>
 #include <niftkIGIDataType.h>
+#include <niftkSystemTimeServiceRAII.h>
 #include <niftkIGIDataSourceI.h>
-
-#include <igtlTimeStamp.h>
+#include <niftkSystemTimeServiceI.h>
 
 #include <mitkDataStorage.h>
 #include <mitkServiceInterface.h>
@@ -178,6 +178,7 @@ protected:
 
 private:
 
+  niftk::SystemTimeServiceRAII     *m_SystemTimeService;
   mitk::DataStorage::Pointer        m_DataStorage;
   std::set<mitk::DataNode::Pointer> m_DataNodes;
   us::ServiceRegistration<Self>     m_MicroServiceRegistration;
@@ -185,7 +186,6 @@ private:
   QString                           m_FactoryName;
   QString                           m_Status;
   QString                           m_RecordingLocation;
-  igtl::TimeStamp::Pointer          m_TimeCreated;
   niftk::IGIDataType::IGITimeType   m_TimeStampTolerance; // nanoseconds.
   bool                              m_ShouldUpdate;
   bool                              m_IsRecording;

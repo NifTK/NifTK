@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkIGIDataSource.h"
+#include <niftkSystemTimeServiceRAII.h>
 
 #include <mitkUIDGenerator.h>
 #include <mitkExceptionMacro.h>
@@ -26,11 +27,11 @@ namespace niftk
 IGIDataSource::IGIDataSource(const std::string& name,
                              const std::string& factoryName,
                              mitk::DataStorage::Pointer dataStorage)
-: m_DataStorage(dataStorage)
+: m_SystemTimeService(NULL)
+, m_DataStorage(dataStorage)
 , m_Name(QString::fromStdString(name))
 , m_FactoryName(QString::fromStdString(factoryName))
 , m_Status("UNKNOWN")
-, m_TimeCreated(NULL)
 , m_TimeStampTolerance(0)
 , m_ShouldUpdate(false)
 , m_IsRecording(false)
@@ -52,8 +53,9 @@ IGIDataSource::IGIDataSource(const std::string& name,
     mitkThrow() << "Factory name is empty!";
   }
 
-  m_TimeCreated = igtl::TimeStamp::New();
-  m_TimeCreated->GetTime();
+  // Get system time service for timestamping.
+  // We could retrieve this each time we want to know the time?
+  m_SystemTimeService = new SystemTimeServiceRAII();
 
   // Register as MicroService.
   mitk::UIDGenerator uidGen = mitk::UIDGenerator ("uk.ac.ucl.cmic.IGIDataSource.id_", 16);
@@ -89,6 +91,11 @@ IGIDataSource::~IGIDataSource()
     {
       m_DataStorage->Remove(*iter);
     }
+  }
+
+  if (m_SystemTimeService != NULL)
+  {
+    delete m_SystemTimeService;
   }
 }
 
@@ -187,8 +194,7 @@ void IGIDataSource::StopPlayback()
 //-----------------------------------------------------------------------------
 niftk::IGIDataType::IGITimeType IGIDataSource::GetTimeStampInNanoseconds()
 {
-  m_TimeCreated->GetTime();
-  return m_TimeCreated->GetTimeStampInNanoseconds();
+  return m_SystemTimeService->GetSystemTimeInNanoseconds();
 }
 
 
@@ -267,7 +273,7 @@ std::set<niftk::IGIDataType::IGITimeType> IGIDataSource::ProbeTimeStampFiles(QDi
 {
   static_assert(std::numeric_limits<qulonglong>::max() >= std::numeric_limits<niftk::IGIDataType::IGITimeType>::max(), "mismatched data types");
 
-  std::set<igtlUint64>  result;
+  std::set<niftk::IGIDataType::IGITimeType>  result;
 
   QStringList filters;
   filters << QString("*" + suffix);

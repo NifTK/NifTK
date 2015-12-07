@@ -16,7 +16,7 @@
 #define niftkIGIDataType_h
 
 #include "niftkIGIDataSourcesExports.h"
-
+#include <niftkSystemTimeServiceI.h>
 #include <mitkCommon.h>
 #include <itkVersion.h>
 #include <itkObject.h>
@@ -36,8 +36,8 @@ class NIFTKIGIDATASOURCES_EXPORT IGIDataType : public itk::Object
 {
 public:
 
-  typedef unsigned long long IGITimeType;
-  typedef unsigned long int  IGIIndexType;
+  typedef SystemTimeServiceI::TimeType IGITimeType;
+  typedef unsigned long int IGIIndexType;
 
   mitkClassMacroItkParent(IGIDataType, itk::Object);
   itkNewMacro(IGIDataType);
