@@ -13,28 +13,30 @@
 =============================================================================*/
 
 #include "mitkMIDASPaintbrushTool.h"
-#include "mitkMIDASPaintbrushTool.xpm"
+
 #include <vtkImageData.h>
-#include <mitkDataStorageUtils.h>
-#include <mitkVector.h>
-#include <mitkToolManager.h>
+
 #include <mitkBaseRenderer.h>
+#include <mitkDataStorageUtils.h>
+#include <mitkDisplayInteractor.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkInstantiateAccessFunctions.h>
 #include <mitkITKImageImport.h>
-#include <mitkRenderingManager.h>
-#include <mitkUndoController.h>
 #include <mitkITKRegionParametersDataNodeProperty.h>
+#include <mitkPointUtils.h>
+#include <mitkRenderingManager.h>
+#include <mitkToolManager.h>
+#include <mitkUndoController.h>
+#include <mitkVector.h>
+
+#include "mitkMIDASPaintbrushTool.xpm"
 #include "mitkMIDASPaintbrushToolOpEditImage.h"
 #include "mitkMIDASPaintbrushToolEventInterface.h"
-#include <mitkPointUtils.h>
 
 // MicroServices
 #include <usGetModuleContext.h>
 #include <usModule.h>
 #include <usModuleRegistry.h>
-
-#include <Interactions/mitkDnDDisplayInteractor.h>
 
 const std::string mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME = "MIDAS_EDITS_EROSIONS_ADDITIONS";
 const std::string mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_EROSIONS_SUBTRACTIONS";
@@ -103,7 +105,8 @@ const char** mitk::MIDASPaintbrushTool::GetXPM() const
 
 void mitk::MIDASPaintbrushTool::Activated()
 {
-  mitk::Tool::Activated();
+  Superclass::Activated();
+
   CursorSizeChanged.Send(m_CursorSize);
 
   // As a legacy solution the display interaction of the new interaction framework is disabled here  to avoid conflicts with tools
@@ -112,22 +115,23 @@ void mitk::MIDASPaintbrushTool::Activated()
   std::vector<us::ServiceReference<InteractionEventObserver> > listEventObserver = us::GetModuleContext()->GetServiceReferences<InteractionEventObserver>();
   for (std::vector<us::ServiceReference<InteractionEventObserver> >::iterator it = listEventObserver.begin(); it != listEventObserver.end(); ++it)
   {
-    DnDDisplayInteractor* displayInteractor = dynamic_cast<DnDDisplayInteractor*>(
+    mitk::DisplayInteractor* displayInteractor = dynamic_cast<mitk::DisplayInteractor*>(
                                                     us::GetModuleContext()->GetService<InteractionEventObserver>(*it));
-    if (displayInteractor != NULL)
+    if (displayInteractor)
     {
-      // remember the original configuration
-      m_DisplayInteractorConfigs.insert(std::make_pair(*it, displayInteractor->GetEventConfig()));
-      // here the alternative configuration is loaded
-      displayInteractor->SetEventConfig("DisplayConfigMIDASPaintbrushTool.xml", us::GetModuleContext()->GetModule());
+      if (std::strcmp(displayInteractor->GetNameOfClass(), "DnDDisplayInteractor") == 0)
+      {
+        // remember the original configuration
+        m_DisplayInteractorConfigs.insert(std::make_pair(*it, displayInteractor->GetEventConfig()));
+        // here the alternative configuration is loaded
+        displayInteractor->SetEventConfig("DnDDisplayConfigMIDASPaintbrushTool.xml", us::GetModuleContext()->GetModule());
+      }
     }
   }
 }
 
 void mitk::MIDASPaintbrushTool::Deactivated()
 {
-  mitk::Tool::Deactivated();
-
   // Re-enabling InteractionEventObservers that have been previously disabled for legacy handling of Tools
   // in new interaction framework
   for (std::map<us::ServiceReferenceU, mitk::EventConfig>::iterator it = m_DisplayInteractorConfigs.begin();
@@ -135,16 +139,21 @@ void mitk::MIDASPaintbrushTool::Deactivated()
   {
     if (it->first)
     {
-      DnDDisplayInteractor* displayInteractor = static_cast<DnDDisplayInteractor*>(
+      mitk::DisplayInteractor* displayInteractor = static_cast<mitk::DisplayInteractor*>(
                                                us::GetModuleContext()->GetService<mitk::InteractionEventObserver>(it->first));
-      if (displayInteractor != NULL)
+      if (displayInteractor)
       {
-        // here the regular configuration is loaded again
-        displayInteractor->SetEventConfig(it->second);
+        if (std::strcmp(displayInteractor->GetNameOfClass(), "DnDDisplayInteractor") == 0)
+        {
+          // here the regular configuration is loaded again
+          displayInteractor->SetEventConfig(it->second);
+        }
       }
     }
   }
   m_DisplayInteractorConfigs.clear();
+
+  mitk::Tool::Deactivated();
 }
 
 bool mitk::MIDASPaintbrushTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)

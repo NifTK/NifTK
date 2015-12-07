@@ -150,7 +150,7 @@ void mitk::MIDASPolyTool::ClearData()
 
 void mitk::MIDASPolyTool::Activated()
 {
-  MIDASTool::Activated();
+  Superclass::Activated();
 
   DataNode* segmentationNode = m_ToolManager->GetWorkingData(SEGMENTATION);
   if (!segmentationNode) return;
@@ -181,8 +181,6 @@ void mitk::MIDASPolyTool::Activated()
 
 void mitk::MIDASPolyTool::Deactivated()
 {
-  MIDASTool::Deactivated();
-
   mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
 
   if (feedbackContour != NULL && feedbackContour->GetNumberOfVertices() > 0)
@@ -202,6 +200,8 @@ void mitk::MIDASPolyTool::Deactivated()
   this->SetPreviousContourVisible(false);
   this->SetPolyLinePointSetVisible(false);
   this->RenderAllWindows();
+
+  Superclass::Deactivated();
 }
 
 void mitk::MIDASPolyTool::SetPreviousContourVisible(bool visible)
