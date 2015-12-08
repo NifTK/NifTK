@@ -15,6 +15,7 @@
 
 MITK_CREATE_MODULE(
   DEPENDS niftkIGIDataSources niftkIGITrackers
+  PACKAGE_DEPENDS NiftyLink
   AUTOLOAD_WITH niftkIGIServices
 )
 
