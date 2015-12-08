@@ -86,6 +86,11 @@ public:
   itkSetMacro (HaltOnFrameSkip, bool);
   
   /**
+   * \brief Set a flag to determine whether we interpolate matrices or just use nearest neighbour
+   */
+  itkSetMacro (InterpolateMatrices, bool);
+
+  /**
    * \brief Set a flag to determine what to do if a skipped frame is found, by default we halt
    */
   itkGetMacro (FrameMap, std::string);
