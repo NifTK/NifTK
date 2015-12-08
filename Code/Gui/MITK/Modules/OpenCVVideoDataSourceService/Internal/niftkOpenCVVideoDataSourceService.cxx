@@ -27,31 +27,14 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-QMutex    OpenCVVideoDataSourceService::s_Lock(QMutex::Recursive);
-QSet<int> OpenCVVideoDataSourceService::s_SourcesInUse;
-
-
-//-----------------------------------------------------------------------------
-int OpenCVVideoDataSourceService::GetNextChannelNumber()
-{
-  s_Lock.lock();
-  unsigned int sourceCounter = 0;
-  while(s_SourcesInUse.contains(sourceCounter))
-  {
-    sourceCounter++;
-  }
-  s_SourcesInUse.insert(sourceCounter);
-  s_Lock.unlock();
-  return sourceCounter;
-}
-
+niftk::IGIDataSourceLocker OpenCVVideoDataSourceService::s_Lock;
 
 //-----------------------------------------------------------------------------
 OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: IGIDataSource((QString("OpenCV-") + QString::number(GetNextChannelNumber())).toStdString(),
+: IGIDataSource((QString("OpenCV-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
                 factoryName.toStdString(),
                 dataStorage)
 , m_Lock(QMutex::Recursive)
@@ -77,10 +60,7 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
   const IplImage* img = m_VideoSource->GetCurrentFrame();
   if (img == NULL)
   {
-    s_Lock.lock();
-    s_SourcesInUse.remove(m_ChannelNumber);
-    s_Lock.unlock();
-
+    s_Lock.RemoveSource(m_ChannelNumber);
     mitkThrow() << "Failed to create " << this->GetName().toStdString()
                 << ", please check log file!";
   }
@@ -121,9 +101,7 @@ OpenCVVideoDataSourceService::~OpenCVVideoDataSourceService()
 {
   this->StopCapturing();
 
-  s_Lock.lock();
-  s_SourcesInUse.remove(m_ChannelNumber);
-  s_Lock.unlock();
+  s_Lock.RemoveSource(m_ChannelNumber);
 
   m_DataGrabbingThread->ForciblyStop();
   delete m_DataGrabbingThread;

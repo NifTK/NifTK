@@ -15,6 +15,7 @@
 #define niftkOpenCVVideoDataSourceService_h
 
 #include <niftkIGIDataSource.h>
+#include <niftkIGIDataSourceLocker.h>
 #include <niftkIGIDataSourceBuffer.h>
 #include <niftkIGIDataSourceBackgroundDeleteThread.h>
 #include <niftkIGIDataSourceGrabbingThread.h>
@@ -128,11 +129,7 @@ private:
   OpenCVVideoDataSourceService(const OpenCVVideoDataSourceService&); // deliberately not implemented
   OpenCVVideoDataSourceService& operator=(const OpenCVVideoDataSourceService&); // deliberately not implemented
 
-  static int GetNextChannelNumber();
-
-  static QMutex                                   s_Lock;
-  static QSet<int>                                s_SourcesInUse;
-
+  static niftk::IGIDataSourceLocker               s_Lock;
   QMutex                                          m_Lock;
   mitk::OpenCVVideoSource::Pointer                m_VideoSource;
   int                                             m_ChannelNumber;

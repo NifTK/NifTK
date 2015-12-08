@@ -24,24 +24,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-QMutex    MITKTrackerDataSourceService::s_Lock(QMutex::Recursive);
-QSet<int> MITKTrackerDataSourceService::s_SourcesInUse;
-
-
-//-----------------------------------------------------------------------------
-int MITKTrackerDataSourceService::GetNextTrackerNumber()
-{
-  s_Lock.lock();
-  unsigned int sourceCounter = 0;
-  while(s_SourcesInUse.contains(sourceCounter))
-  {
-    sourceCounter++;
-  }
-  s_SourcesInUse.insert(sourceCounter);
-  s_Lock.unlock();
-  return sourceCounter;
-}
-
+niftk::IGIDataSourceLocker MITKTrackerDataSourceService::s_Lock;
 
 //-----------------------------------------------------------------------------
 MITKTrackerDataSourceService::MITKTrackerDataSourceService(
@@ -51,7 +34,7 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
     mitk::DataStorage::Pointer dataStorage,
     niftk::NDITracker::Pointer tracker
     )
-: IGIDataSource((name + QString("-") + QString::number(GetNextTrackerNumber())).toStdString(),
+: IGIDataSource((name + QString("-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
                 factoryName.toStdString(),
                 dataStorage)
 , m_Lock(QMutex::Recursive)
@@ -113,9 +96,7 @@ MITKTrackerDataSourceService::~MITKTrackerDataSourceService()
 {
   this->StopCapturing();
 
-  s_Lock.lock();
-  s_SourcesInUse.remove(m_TrackerNumber);
-  s_Lock.unlock();
+  s_Lock.RemoveSource(m_TrackerNumber);
 
   m_DataGrabbingThread->ForciblyStop();
   delete m_DataGrabbingThread;

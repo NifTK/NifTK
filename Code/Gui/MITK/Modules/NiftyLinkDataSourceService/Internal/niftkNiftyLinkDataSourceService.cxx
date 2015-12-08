@@ -20,24 +20,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-QMutex    NiftyLinkDataSourceService::s_Lock(QMutex::Recursive);
-QSet<int> NiftyLinkDataSourceService::s_SourcesInUse;
-
-
-//-----------------------------------------------------------------------------
-int NiftyLinkDataSourceService::GetNextTrackerNumber()
-{
-  s_Lock.lock();
-  unsigned int sourceCounter = 0;
-  while(s_SourcesInUse.contains(sourceCounter))
-  {
-    sourceCounter++;
-  }
-  s_SourcesInUse.insert(sourceCounter);
-  s_Lock.unlock();
-  return sourceCounter;
-}
-
+niftk::IGIDataSourceLocker NiftyLinkDataSourceService::s_Lock;
 
 //-----------------------------------------------------------------------------
 NiftyLinkDataSourceService::NiftyLinkDataSourceService(
@@ -46,7 +29,7 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage
     )
-: IGIDataSource((name + QString("-") + QString::number(GetNextTrackerNumber())).toStdString(),
+: IGIDataSource((name + QString("-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
                 factoryName.toStdString(),
                 dataStorage)
 , m_Lock(QMutex::Recursive)
@@ -104,9 +87,7 @@ NiftyLinkDataSourceService::~NiftyLinkDataSourceService()
   /*
   this->StopCapturing();
 
-  s_Lock.lock();
-  s_SourcesInUse.remove(m_TrackerNumber);
-  s_Lock.unlock();
+  s_Lock.RemoveSource(m_SourceNumber);
 
   m_DataGrabbingThread->ForciblyStop();
   delete m_DataGrabbingThread;

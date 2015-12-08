@@ -20,6 +20,7 @@ set(CPP_FILES
   Interfaces/niftkIGIDataSourceFactoryServiceRAII.cxx
   DataType/niftkIGIDataType.cxx
   DataSource/niftkIGIDataSource.cxx
+  DataSource/niftkIGIDataSourceLocker.cxx
   DataSource/niftkIGIDataSourceBuffer.cxx
   DataSource/niftkIGIWaitForSavedDataSourceBuffer.cxx
   Threads/niftkIGITimerBasedThread.cxx

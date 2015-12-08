@@ -15,6 +15,7 @@
 #define niftkNiftyLinkDataSourceService_h
 
 #include <niftkIGIDataSource.h>
+#include <niftkIGIDataSourceLocker.h>
 #include <niftkIGIDataSourceBuffer.h>
 #include <niftkIGIDataSourceBackgroundDeleteThread.h>
 #include <niftkIGIDataSourceGrabbingThread.h>
@@ -126,12 +127,9 @@ private:
   NiftyLinkDataSourceService(const NiftyLinkDataSourceService&); // deliberately not implemented
   NiftyLinkDataSourceService& operator=(const NiftyLinkDataSourceService&); // deliberately not implemented
 
-  static int GetNextTrackerNumber();
   QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > GetPlaybackIndex(QString directory);
 
-  static QMutex                                             s_Lock;
-  static QSet<int>                                          s_SourcesInUse;
-
+  static niftk::IGIDataSourceLocker                         s_Lock;
   QMutex                                                    m_Lock;
   int                                                       m_SourceNumber;
   niftk::IGIDataType::IGIIndexType                          m_FrameId;
