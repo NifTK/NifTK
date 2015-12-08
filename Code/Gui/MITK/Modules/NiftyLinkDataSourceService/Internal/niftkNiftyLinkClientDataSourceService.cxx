@@ -91,35 +91,36 @@ NiftyLinkClientDataSourceService::~NiftyLinkClientDataSourceService()
 //-----------------------------------------------------------------------------
 void NiftyLinkClientDataSourceService::OnConnected(QString hostName, int portNumber)
 {
-  this->SetStatus("Connected");
+  MITK_INFO << "Client OnConnected:" << hostName.toStdString() << ":" << portNumber;
 }
 
 
 //-----------------------------------------------------------------------------
 void NiftyLinkClientDataSourceService::OnDisconnected(QString hostName, int portNumber)
 {
-  this->SetStatus("Disconnected");
+  MITK_INFO << "Client OnDisconnected:" << hostName.toStdString() << ":" << portNumber;
 }
 
 
 //-----------------------------------------------------------------------------
 void NiftyLinkClientDataSourceService::OnSocketError(QString hostName, int portNumber, QAbstractSocket::SocketError errorCode, QString errorString)
 {
-  this->SetStatus("Socket Error");
+  MITK_INFO << "Client OnSocketError:" << hostName.toStdString() << ":" << portNumber << ", " << errorString.toStdString();
+
 }
 
 
 //-----------------------------------------------------------------------------
 void NiftyLinkClientDataSourceService::OnClientError(QString hostName, int portNumber, QString errorString)
 {
-  this->SetStatus("Client Error");
+  MITK_INFO << "Client OnClientError:" << hostName.toStdString() << ":" << portNumber;
 }
 
 
 //-----------------------------------------------------------------------------
 void NiftyLinkClientDataSourceService::OnMessageReceived(NiftyLinkMessageContainer::Pointer message)
 {
-  MITK_INFO << "Client, message received";
+  MITK_INFO << "Client, OnMessageReceived";
 }
 
 
