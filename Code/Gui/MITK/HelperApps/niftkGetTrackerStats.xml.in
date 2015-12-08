@@ -48,7 +48,14 @@
   <parameters>
     <label>Mandatory Parameters</label>
     <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <boolean>
+      <name>dontInterpolate</name>
+	<longflag>dontInterpolate</longflag>
+	<description>Don't interpolate the tracking matrices between time stampe</description>
+	<label>Don't interpolate matrices</label>
+    </boolean>
 
-  </parameters>
+</parameters>
   
 </executable>
