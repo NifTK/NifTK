@@ -38,6 +38,8 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
 , m_DataGrabbingThread(NULL)
 , m_Lag(0)
 {
+  qRegisterMetaType<niftk::NiftyLinkMessageContainer::Pointer>("niftk::NiftyLinkMessageContainer::Pointer");
+
 /*
   this->SetStatus("Initialising");
 

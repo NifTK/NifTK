@@ -20,11 +20,13 @@
 #include <niftkIGIDataSourceBackgroundDeleteThread.h>
 #include <niftkIGIDataSourceGrabbingThread.h>
 #include <niftkIGILocalDataSourceI.h>
+#include <NiftyLinkMessageContainer.h>
 
 #include <QObject>
 #include <QSet>
 #include <QMutex>
 #include <QString>
+#include <QAbstractSocket>
 
 namespace niftk
 {
@@ -41,10 +43,12 @@ namespace niftk
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
 class NiftyLinkDataSourceService
-    : public IGIDataSource
+    : public QObject
+    , public IGIDataSource
     , public IGILocalDataSourceI
-    , public QObject
 {
+
+  Q_OBJECT
 
 public:
 
@@ -128,7 +132,6 @@ protected:
   virtual ~NiftyLinkDataSourceService();
 
 private:
-
   NiftyLinkDataSourceService(const NiftyLinkDataSourceService&); // deliberately not implemented
   NiftyLinkDataSourceService& operator=(const NiftyLinkDataSourceService&); // deliberately not implemented
 

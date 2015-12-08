@@ -16,11 +16,14 @@
 
 #include "niftkNiftyLinkDataSourceService.h"
 #include <niftkIGIDataSourceLocker.h>
+#include <NiftyLinkTcpServer.h>
 
 namespace niftk
 {
 
 class NiftyLinkServerDataSourceService : public NiftyLinkDataSourceService {
+
+  Q_OBJECT
 
 public:
 
@@ -35,6 +38,13 @@ protected:
                                   );
   virtual ~NiftyLinkServerDataSourceService();
 
+private slots:
+
+  void OnClientConnected(int portNumber);
+  void OnClientDisconnected(int portNumber);
+  void OnSocketError(int portNumber, QAbstractSocket::SocketError errorCode, QString errorString);
+  void OnMessageReceived(int portNumber, niftk::NiftyLinkMessageContainer::Pointer message);
+
 private:
 
   NiftyLinkServerDataSourceService(const NiftyLinkServerDataSourceService&); // deliberately not implemented
@@ -42,6 +52,8 @@ private:
 
   static niftk::IGIDataSourceLocker               s_Lock;
   int                                             m_ServerNumber;
+  niftk::NiftyLinkTcpServer                      *m_Server;
+
 };
 
 } // end namespace

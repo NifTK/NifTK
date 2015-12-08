@@ -22,3 +22,8 @@ set(CPP_FILES
   Internal/niftkNiftyLinkServerDataSourceService.cxx
 )
 
+set(MOC_H_FILES
+  Internal/niftkNiftyLinkDataSourceService.h
+  Internal/niftkNiftyLinkClientDataSourceService.h
+  Internal/niftkNiftyLinkServerDataSourceService.h
+)
