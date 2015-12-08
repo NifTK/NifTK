@@ -31,6 +31,7 @@ set(CPP_FILES
   Dialogs/niftkIGIConfigurationDialog.cxx
   Dialogs/niftkMITKTrackerDialog.cxx
   Dialogs/niftkIPPortDialog.cxx
+  Dialogs/niftkIPHostPortDialog.cxx
   Dialogs/niftkLagDialog.cxx
   mitkIGITestDataUtils.cxx
   mitkIGIDataType.cxx
@@ -62,6 +63,7 @@ set(MOC_H_FILES
   Dialogs/niftkIGIConfigurationDialog.h
   Dialogs/niftkMITKTrackerDialog.h
   Dialogs/niftkIPPortDialog.h
+  Dialogs/niftkIPHostPortDialog.h
   Dialogs/niftkLagDialog.h
   TrackerControlsWidget.h
   QmitkIGITimerBasedThread.h
@@ -82,6 +84,7 @@ set(MOC_H_FILES
 set(UI_FILES
   Dialogs/niftkMITKTrackerDialog.ui
   Dialogs/niftkIPPortDialog.ui
+  Dialogs/niftkIPHostPortDialog.ui
   Dialogs/niftkLagDialog.ui
   TrackerControlsWidget.ui
 #  QmitkFiducialRegistrationWidgetDialog.ui

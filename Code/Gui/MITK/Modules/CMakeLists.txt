@@ -62,9 +62,10 @@ if(BUILD_IGI)
     IGIDataSources
     IGITrackers
     SurfRecon
+    OIGTLSystemTimeService
     OpenCVVideoDataSourceService
     MITKTrackerDataSourceService
-    OIGTLSystemTimeService
+    NiftyLinkDataSourceService
   )
 
   if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
