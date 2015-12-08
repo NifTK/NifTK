@@ -157,7 +157,7 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
                 timeStamp - m_VideoLag[i], &timingError);
           }
           
-          m_TimingErrors[i].push_back(timingError);
+          m_TimingErrors[i].push_back(-timingError);
         }
 
         if ( frameNumber != linenumber++ )
@@ -389,7 +389,7 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
 
   if ( TimingError != NULL ) 
   {
-    *TimingError = timingError;
+    *TimingError = -timingError;
   }
   
   if ( m_FlipMatrices )
