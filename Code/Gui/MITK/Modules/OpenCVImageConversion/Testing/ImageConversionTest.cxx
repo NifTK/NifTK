@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "../Conversion/ImageConversion.h"
+#include "niftkImageConversion.h"
 #include <mitkTestingMacros.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkImageReadAccessor.h>

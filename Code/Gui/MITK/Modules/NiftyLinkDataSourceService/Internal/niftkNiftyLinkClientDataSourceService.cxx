@@ -27,7 +27,7 @@ NiftyLinkClientDataSourceService::NiftyLinkClientDataSourceService(
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage
     )
-: NiftyLinkDataSourceService((QString("NLClient-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
+: NiftyLinkDataSourceService(QString("NLClient-") + QString::number(s_Lock.GetNextSourceNumber()),
                              factoryName, properties, dataStorage)
 {
   QString deviceName = this->GetName();
@@ -41,7 +41,7 @@ NiftyLinkClientDataSourceService::~NiftyLinkClientDataSourceService()
 {
   this->StopCapturing();
 
-  s_Lock.RemoveSource(m_ServerNumber);
+  s_Lock.RemoveSource(m_ClientNumber);
 }
 
 } // end namespace

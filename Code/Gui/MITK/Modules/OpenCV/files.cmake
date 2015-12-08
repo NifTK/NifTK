@@ -13,7 +13,6 @@
 #============================================================================*/
 
 set(CPP_FILES
-  Conversion/ImageConversion.cxx
   VideoProcessing/mitkBaseVideoProcessor.cxx
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx
   VideoProcessing/mitkStereoVideoProcessorTemplateMethod.cxx

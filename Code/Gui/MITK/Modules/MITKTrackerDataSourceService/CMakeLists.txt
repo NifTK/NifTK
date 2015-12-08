@@ -14,7 +14,8 @@
 
 
 MITK_CREATE_MODULE(
-  DEPENDS niftkIGIDataSources niftkIGITrackers
+  DEPENDS niftkCore niftkIGIDataSources niftkIGITrackers
+  PACKAGE_DEPENDS CTK|CTKWidgets
   AUTOLOAD_WITH niftkIGIServices
 )
 

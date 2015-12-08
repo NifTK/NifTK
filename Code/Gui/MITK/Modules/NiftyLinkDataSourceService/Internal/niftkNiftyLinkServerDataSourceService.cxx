@@ -27,7 +27,7 @@ NiftyLinkServerDataSourceService::NiftyLinkServerDataSourceService(
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage
     )
-: NiftyLinkDataSourceService((QString("NLServer-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
+: NiftyLinkDataSourceService(QString("NLServer-") + QString::number(s_Lock.GetNextSourceNumber()),
                              factoryName, properties, dataStorage)
 {
   QString deviceName = this->GetName();

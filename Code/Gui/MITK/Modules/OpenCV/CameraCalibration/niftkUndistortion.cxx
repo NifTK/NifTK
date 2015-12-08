@@ -13,11 +13,11 @@
 =============================================================================*/
 
 #include "niftkUndistortion.h"
+#include <niftkImageConversion.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include <mitkProperties.h>
-#include <Conversion/ImageConversion.h>
 #include <stdexcept>
 
 #ifdef _USE_CUDA
@@ -508,7 +508,7 @@ void Undistortion::PrepareOutput(mitk::Image::Pointer& outputImage)
   {
     // this is pretty disgusting stuff
     IplImage* temp = cvCreateImage(cvSize(m_Image->GetDimension(0), m_Image->GetDimension(1)), m_Image->GetPixelType().GetBitsPerComponent(), m_Image->GetPixelType().GetNumberOfComponents());
-    outputImage = CreateMitkImage(temp);
+    outputImage = niftk::CreateMitkImage(temp);
     cvReleaseImage(&temp);
   }
 

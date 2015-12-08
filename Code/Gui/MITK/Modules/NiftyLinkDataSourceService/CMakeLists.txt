@@ -14,8 +14,8 @@
 
 
 MITK_CREATE_MODULE(
-  DEPENDS niftkIGIDataSources niftkIGITrackers
-  PACKAGE_DEPENDS NiftyLink
+  DEPENDS niftkIGIDataSources
+  PACKAGE_DEPENDS Qt4|QtCore NiftyLink
   AUTOLOAD_WITH niftkIGIServices
 )
 

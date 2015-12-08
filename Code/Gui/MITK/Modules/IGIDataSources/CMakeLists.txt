@@ -12,20 +12,10 @@
 #
 #============================================================================*/
 
-set(_packages Qt4|QtGui Qt5|Gui QVTK NiftyLink Boost|filesystem)
-
-# optional audio data source depends on qt-multimedia, which may not be available.
-if(QT_QTMULTIMEDIA_INCLUDE_DIR)
-  set(_packages
-    ${_packages}
-    Qt4|QtMultimedia Qt5|Multimedia
-  )
-endif()
-
 MITK_CREATE_MODULE(
   INCLUDE_DIRS DataSource DataType Threads Interfaces Dialogs Conversion
-  DEPENDS niftkIGIGui niftkOpenCV
-  PACKAGE_DEPENDS ${_packages}
+  DEPENDS niftkIGIServices
+  PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui CTK|CTKWidgets
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

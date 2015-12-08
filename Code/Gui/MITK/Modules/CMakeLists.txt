@@ -51,6 +51,7 @@ if(BUILD_IGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
     OpenCVUtils
+    OpenCVImageConversion
     PointReg
     ICPReg
     OpenCV
@@ -58,8 +59,8 @@ if(BUILD_IGI)
     IGIServices
     IGI
     IGIGui
-    IGIDataSources
     IGITrackers
+    IGIDataSources
 
     # Notice how the IGIDataSourcesManager does NOT know about
     # Each data source. The interface is defined in IGIDataSources

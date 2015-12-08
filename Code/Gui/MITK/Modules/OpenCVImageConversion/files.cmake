@@ -12,14 +12,7 @@
 #
 #============================================================================*/
 
-# tests with no extra command line parameter
-set(MODULE_TESTS
-#  mitkIGIDataSourceTest.cxx
-#  QmitkIGINiftyLinkDataSourceMemoryTest.cxx
-#  QmitkIGITrackerSourceTransformTest.cxx
-  niftkOpenCVDataSourceTest.cxx
+set(CPP_FILES
+  niftkImageConversion.cxx
 )
 
-set(MODULE_CUSTOM_TESTS
-#  QmitkIGIUltrasonixToolMemoryTest.cxx
-)

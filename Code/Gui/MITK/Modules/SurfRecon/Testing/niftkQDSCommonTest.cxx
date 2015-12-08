@@ -17,9 +17,6 @@
 #include <opencv2/core/types_c.h>
 #include <opencv2/imgproc/imgproc_c.h>
 
-// FIXME: how do i pull in non-test-driver code?
-//#include "ImageTestHelper.cxx"
-
 
 //-----------------------------------------------------------------------------
 template <typename P>

@@ -12,17 +12,14 @@
 
 =============================================================================*/
 
-#include "ImageConversion.h"
-//#include <mitkITKImageImport.txx>
+#include "niftkImageConversion.h"
 #include <mitkImageReadAccessor.h>
 #include <mitkImageCast.h>
 #include <itkImportImageFilter.h>
 #include <itkRGBPixel.h>
 
-
 namespace niftk
 {
-
 
 typedef itk::RGBPixel<unsigned char>                UCRGBPixelType;
 typedef itk::RGBAPixel<unsigned char>               UCRGBAPixelType;
@@ -137,12 +134,15 @@ mitk::Image::Pointer CreateMitkImage(const IplImage* image)
   return 0;
 }
 
+
 //-----------------------------------------------------------------------------
 mitk::Image::Pointer CreateMitkImage(const cv::Mat* image)
 {
   IplImage* IplImg = new IplImage(*image);
   return CreateMitkImage (IplImg);
 }
+
+
 //-----------------------------------------------------------------------------
 cv::Mat MitkImageToOpenCVMat ( const mitk::Image::Pointer image )
 {

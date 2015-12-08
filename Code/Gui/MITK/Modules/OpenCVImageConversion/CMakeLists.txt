@@ -12,14 +12,15 @@
 #
 #============================================================================*/
 
-# tests with no extra command line parameter
-set(MODULE_TESTS
-#  mitkIGIDataSourceTest.cxx
-#  QmitkIGINiftyLinkDataSourceMemoryTest.cxx
-#  QmitkIGITrackerSourceTransformTest.cxx
-  niftkOpenCVDataSourceTest.cxx
+MITK_CREATE_MODULE(
+  DEPENDS MitkCore niftkOpenCVUtils
+  PACKAGE_DEPENDS OpenCV 
 )
 
-set(MODULE_CUSTOM_TESTS
-#  QmitkIGIUltrasonixToolMemoryTest.cxx
-)
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkOpenCVImageConversion)
+endif()
+
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()

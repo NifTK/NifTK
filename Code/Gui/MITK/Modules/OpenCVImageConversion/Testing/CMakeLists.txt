@@ -12,14 +12,13 @@
 #
 #============================================================================*/
 
-# tests with no extra command line parameter
-set(MODULE_TESTS
-#  mitkIGIDataSourceTest.cxx
-#  QmitkIGINiftyLinkDataSourceMemoryTest.cxx
-#  QmitkIGITrackerSourceTransformTest.cxx
-  niftkOpenCVDataSourceTest.cxx
-)
+MITK_CREATE_MODULE_TESTS()
 
-set(MODULE_CUSTOM_TESTS
-#  QmitkIGIUltrasonixToolMemoryTest.cxx
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # Suppress warning because of a bug in the Boost gil library.
+  set_target_properties(${TESTDRIVER} PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
+endif()
+
+mitk_use_modules(TARGET ${TESTDRIVER}
+  PACKAGES OpenCV
 )
