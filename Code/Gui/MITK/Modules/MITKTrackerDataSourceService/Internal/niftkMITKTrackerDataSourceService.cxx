@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkMITKTrackerDataSourceService.h"
-#include <niftkIGITrackerDataType.h>
+#include "niftkIGITrackerDataType.h"
 #include <mitkCoordinateAxesData.h>
 #include <mitkFileIOUtils.h>
 #include <mitkExceptionMacro.h>

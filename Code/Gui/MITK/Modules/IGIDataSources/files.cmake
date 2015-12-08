@@ -19,7 +19,6 @@ set(CPP_FILES
   Interfaces/niftkIGIDataSourceFactoryServiceI.cxx
   Interfaces/niftkIGIDataSourceFactoryServiceRAII.cxx
   DataType/niftkIGIDataType.cxx
-  DataType/niftkIGITrackerDataType.cxx
   DataSource/niftkIGIDataSource.cxx
   DataSource/niftkIGIDataSourceBuffer.cxx
   DataSource/niftkIGIWaitForSavedDataSourceBuffer.cxx

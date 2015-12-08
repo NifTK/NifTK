@@ -18,5 +18,6 @@ set(CPP_FILES
   Internal/niftkMITKAuroraCubeDataSourceFactory.cxx
   Internal/niftkMITKPolarisVicraDataSourceFactory.cxx
   Internal/niftkMITKTrackerDataSourceService.cxx
+  Internal/niftkIGITrackerDataType.cxx
 )
 

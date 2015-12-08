@@ -13,6 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Internal/niftkNiftyLinkDataType.cxx
   Internal/niftkNiftyLinkDataSourceActivator.cxx
   Internal/niftkNiftyLinkClientDataSourceFactory.cxx
   Internal/niftkNiftyLinkServerDataSourceFactory.cxx
