@@ -11,8 +11,8 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-#ifndef niftkNiftyLinkDataSourceService_h
-#define niftkNiftyLinkDataSourceService_h
+#ifndef niftkOpenCVVideoDataSourceService_h
+#define niftkOpenCVVideoDataSourceService_h
 
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
@@ -20,6 +20,8 @@
 #include <niftkIGIDataSourceBackgroundDeleteThread.h>
 #include <niftkIGIDataSourceGrabbingThread.h>
 #include <niftkIGILocalDataSourceI.h>
+
+#include <mitkOpenCVVideoSource.h>
 
 #include <QObject>
 #include <QSet>
@@ -30,17 +32,12 @@ namespace niftk
 {
 
 /**
-* \class NiftyLinkDataSourceService
-* \brief Abstract base class for both NiftyLink Client and Server sources.
-*
-* In contrast say to niftk::OpenCVVideoDataSourceService, or
-* niftk::MITKTrackerDataSourceService which directly grab data in
-* a specific data grabbing thread, here, data comes via a socket.
-* So, the NiftyLink client and server classes are already threaded.
+* \class OpenCVVideoDataSourceService
+* \brief Provides an OpenCV video feed, as an IGIDataSourceServiceI.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class NiftyLinkDataSourceService
+class OpenCVVideoDataSourceService
     : public IGIDataSource
     , public IGILocalDataSourceI
     , public QObject
@@ -48,7 +45,8 @@ class NiftyLinkDataSourceService
 
 public:
 
-  mitkClassMacroItkParent(NiftyLinkDataSourceService, IGIDataSource);
+  mitkClassMacroItkParent(OpenCVVideoDataSourceService, IGIDataSource);
+  mitkNewMacro3Param(OpenCVVideoDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
 
   /**
   * \see IGIDataSourceI::StartCapturing()
@@ -120,31 +118,26 @@ public:
 
 protected:
 
-  NiftyLinkDataSourceService(QString name,
-                             QString factoryName,
-                             const IGIDataSourceProperties& properties,
-                             mitk::DataStorage::Pointer dataStorage
-                             );
-  virtual ~NiftyLinkDataSourceService();
+  OpenCVVideoDataSourceService(QString factoryName,
+                               const IGIDataSourceProperties& properties,
+                               mitk::DataStorage::Pointer dataStorage
+                               );
+  virtual ~OpenCVVideoDataSourceService();
 
 private:
 
-  NiftyLinkDataSourceService(const NiftyLinkDataSourceService&); // deliberately not implemented
-  NiftyLinkDataSourceService& operator=(const NiftyLinkDataSourceService&); // deliberately not implemented
+  OpenCVVideoDataSourceService(const OpenCVVideoDataSourceService&); // deliberately not implemented
+  OpenCVVideoDataSourceService& operator=(const OpenCVVideoDataSourceService&); // deliberately not implemented
 
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > GetPlaybackIndex(QString directory);
-
-  static niftk::IGIDataSourceLocker                         s_Lock;
-  QMutex                                                    m_Lock;
-  int                                                       m_SourceNumber;
-  niftk::IGIDataType::IGIIndexType                          m_FrameId;
-  niftk::IGIDataSourceBackgroundDeleteThread*               m_BackgroundDeleteThread;
-  niftk::IGIDataSourceGrabbingThread*                       m_DataGrabbingThread;
-  int                                                       m_Lag = 0;
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > m_PlaybackIndex;
-
-  // In contrast say to the OpenCV source, we store multiple buffers, keyed by tool name.
-  QMap<QString, niftk::IGIDataSourceBuffer::Pointer>        m_Buffers;
+  static niftk::IGIDataSourceLocker               s_Lock;
+  QMutex                                          m_Lock;
+  mitk::OpenCVVideoSource::Pointer                m_VideoSource;
+  int                                             m_ChannelNumber;
+  niftk::IGIDataType::IGIIndexType                m_FrameId;
+  niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
+  niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
+  niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;
+  std::set<niftk::IGIDataType::IGITimeType>       m_PlaybackIndex;
 
 }; // end class
 

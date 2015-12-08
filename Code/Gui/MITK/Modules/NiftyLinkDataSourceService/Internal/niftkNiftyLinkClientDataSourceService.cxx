@@ -18,13 +18,20 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
+niftk::IGIDataSourceLocker NiftyLinkClientDataSourceService::s_Lock;
+
+
+//-----------------------------------------------------------------------------
 NiftyLinkClientDataSourceService::NiftyLinkClientDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage
     )
-: NiftyLinkDataSourceService(QString("Matt, fixme"), factoryName, properties, dataStorage)
+: NiftyLinkDataSourceService((QString("NLClient-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
+                             factoryName, properties, dataStorage)
 {
+  QString deviceName = this->GetName();
+  m_ClientNumber = (deviceName.remove(0, 9)).toInt(); // Should match string NLClient- above
 
 }
 
@@ -32,7 +39,9 @@ NiftyLinkClientDataSourceService::NiftyLinkClientDataSourceService(
 //-----------------------------------------------------------------------------
 NiftyLinkClientDataSourceService::~NiftyLinkClientDataSourceService()
 {
+  this->StopCapturing();
 
+  s_Lock.RemoveSource(m_ServerNumber);
 }
 
 } // end namespace

@@ -54,19 +54,34 @@ if(BUILD_IGI)
     PointReg
     ICPReg
     OpenCV
+    SurfRecon
     IGIServices
-    PointRegService
-    ICPRegService
     IGI
     IGIGui
     IGIDataSources
     IGITrackers
-    SurfRecon
+
+    # Notice how the IGIDataSourcesManager does NOT know about
+    # Each data source. The interface is defined in IGIDataSources
+    # but all the implementations are defined after IGIDataSourcesManager.
+    IGIDataSourcesManager
+
+    # Micro Services should be last as nothing should depend on them.
+    # Furthermore, none of the classes should be exported. All should be internal.
+    PointRegService
+    ICPRegService
     OIGTLSystemTimeService
     OpenCVVideoDataSourceService
     MITKTrackerDataSourceService
     NiftyLinkDataSourceService
   )
+
+  if(Ultrasonix_FOUND)
+    set(MODULE_DIRS
+      ${MODULE_DIRS}
+      UltrasonixDataSourceService
+    )
+  endif()
 
   if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
     set(MODULE_DIRS
@@ -75,10 +90,6 @@ if(BUILD_IGI)
     )
   endif()
 
-  set(MODULE_DIRS
-    ${MODULE_DIRS}
-    IGIDataSourcesManager
-  )
 endif()
 
 if(BUILD_VL)

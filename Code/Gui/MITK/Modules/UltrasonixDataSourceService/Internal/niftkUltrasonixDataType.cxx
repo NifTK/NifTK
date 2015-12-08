@@ -12,35 +12,44 @@
 
 =============================================================================*/
 
-#include "niftkNiftyLinkServerDataSourceService.h"
+#include "niftkOpenCVVideoDataType.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataSourceLocker NiftyLinkServerDataSourceService::s_Lock;
-
-
-//-----------------------------------------------------------------------------
-NiftyLinkServerDataSourceService::NiftyLinkServerDataSourceService(
-    QString factoryName,
-    const IGIDataSourceProperties& properties,
-    mitk::DataStorage::Pointer dataStorage
-    )
-: NiftyLinkDataSourceService((QString("NLServer-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
-                             factoryName, properties, dataStorage)
+OpenCVVideoDataType::OpenCVVideoDataType()
+: m_Image(NULL)
 {
-  QString deviceName = this->GetName();
-  m_ServerNumber = (deviceName.remove(0, 9)).toInt(); // Should match string NLServer- above
 }
 
 
 //-----------------------------------------------------------------------------
-NiftyLinkServerDataSourceService::~NiftyLinkServerDataSourceService()
+OpenCVVideoDataType::~OpenCVVideoDataType()
 {
-  this->StopCapturing();
+  if (m_Image != NULL)
+  {
+    cvReleaseImage(&m_Image);
+  }
+}
 
-  s_Lock.RemoveSource(m_ServerNumber);
+
+//-----------------------------------------------------------------------------
+void OpenCVVideoDataType::CloneImage(const IplImage *image)
+{
+  if (m_Image != NULL)
+  {
+    cvReleaseImage(&m_Image);
+  }
+  m_Image = cvCloneImage(image);
+}
+
+
+//-----------------------------------------------------------------------------
+const IplImage* OpenCVVideoDataType::GetImage()
+{
+  return m_Image;
 }
 
 } // end namespace
+

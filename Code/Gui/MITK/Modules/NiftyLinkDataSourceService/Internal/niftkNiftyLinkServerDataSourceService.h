@@ -15,6 +15,7 @@
 #define niftkNiftyLinkServerDataSourceService_h
 
 #include "niftkNiftyLinkDataSourceService.h"
+#include <niftkIGIDataSourceLocker.h>
 
 namespace niftk
 {
@@ -39,6 +40,8 @@ private:
   NiftyLinkServerDataSourceService(const NiftyLinkServerDataSourceService&); // deliberately not implemented
   NiftyLinkServerDataSourceService& operator=(const NiftyLinkServerDataSourceService&); // deliberately not implemented
 
+  static niftk::IGIDataSourceLocker               s_Lock;
+  int                                             m_ServerNumber;
 };
 
 } // end namespace
