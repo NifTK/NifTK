@@ -16,7 +16,7 @@
 #define TrackerControlsWidget_h
 
 #include <QWidget>
-#include "niftkIGIDataSourcesExports.h"
+#include "niftkIGIGuiExports.h"
 #include "ui_TrackerControlsWidget.h"
 
 /**
@@ -24,7 +24,7 @@
  * \brief Implements some basic functionality for stopping/starting a generic tracker.
  */
 
-class NIFTKIGIDATASOURCES_EXPORT TrackerControlsWidget : public QWidget, public Ui_TrackerControlsWidget
+class NIFTKIGIGUI_EXPORT TrackerControlsWidget : public QWidget, public Ui_TrackerControlsWidget
 {
   Q_OBJECT
 

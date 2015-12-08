@@ -25,6 +25,7 @@ set(CPP_FILES
   OverlayEditor/QmitkBitmapOverlay.cxx
   OverlayEditor/QmitkSingle3DView.cxx
   OverlayEditor/QmitkIGIOverlayEditor.cxx
+  DataSources/TrackerControlsWidget.cxx
 )
 
 set(MOC_H_FILES
@@ -38,6 +39,7 @@ set(MOC_H_FILES
   Common/QmitkVideoTestClient.h
   OverlayEditor/QmitkSingle3DView.h
   OverlayEditor/QmitkIGIOverlayEditor.h
+  DataSources/TrackerControlsWidget.h
 )
 
 set(UI_FILES
@@ -47,6 +49,7 @@ set(UI_FILES
   Common/QmitkImageAndTransformSenderWidget.ui
   Common/QmitkMatrixWidget.ui
   OverlayEditor/QmitkIGIOverlayEditor.ui
+  DataSources/TrackerControlsWidget.ui
 )
 
 set(QRC_FILES
