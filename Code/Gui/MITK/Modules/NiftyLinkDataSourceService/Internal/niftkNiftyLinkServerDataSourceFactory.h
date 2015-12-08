@@ -55,8 +55,10 @@ public:
                                                             ) const override;
 
   /**
-  * \brief A server service can function as a replacement
-  * for the previous "network tracker", or "network ultrasonix scanner" sources.
+  * \brief Returns the empty list as there is no legacy equivalent.
+  *
+  * To replay the data from the legacy "network tracker", or "network ultrasonix"
+  * data sources, you should use the MITK local trackers that can read .txt files.
   */
   virtual QList<QString> GetLegacyClassNames() const override;
 

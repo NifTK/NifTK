@@ -56,8 +56,6 @@ IGIConfigurationDialog* NiftyLinkServerDataSourceFactory::CreateConfigurationDia
 QList<QString> NiftyLinkServerDataSourceFactory::GetLegacyClassNames() const
 {
   QList<QString> names;
-  names.push_back("QmitkIGITrackerSource");
-  names.push_back("QmitkIGIUltrasonixTool");
   return names;
 }
 
