@@ -16,8 +16,8 @@
 #define QmitkIGIUltrasonixTool_h
 
 #include "niftkIGIDataSourcesExports.h"
-#include "QmitkQImageToMitkImageFilter.h"
 #include "QmitkIGINiftyLinkDataSource.h"
+#include <niftkQImageToMitkImageFilter.h>
 #include <mitkImage.h>
 #include <mitkDataNode.h>
 #include <set>

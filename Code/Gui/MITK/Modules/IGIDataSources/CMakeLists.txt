@@ -23,7 +23,7 @@ if(QT_QTMULTIMEDIA_INCLUDE_DIR)
 endif()
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS DataSource DataType Threads Interfaces Dialogs
+  INCLUDE_DIRS DataSource DataType Threads Interfaces Dialogs Conversion
   DEPENDS niftkIGIGui niftkOpenCV
   PACKAGE_DEPENDS ${_packages}
 )

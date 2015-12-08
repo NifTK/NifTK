@@ -33,10 +33,10 @@ set(CPP_FILES
   Dialogs/niftkIPPortDialog.cxx
   Dialogs/niftkIPHostPortDialog.cxx
   Dialogs/niftkLagDialog.cxx
+  Conversion/niftkQImageToMitkImageFilter.cxx
   mitkIGIDataType.cxx
   mitkIGIDataSource.cxx
   mitkIGIOpenCVDataType.cxx
-  QmitkQImageToMitkImageFilter.cxx
   QmitkIGITimerBasedThread.cxx
 #  QmitkFiducialRegistrationWidgetDialog.cxx
   QmitkIGINiftyLinkDataType.cxx

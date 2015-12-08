@@ -12,14 +12,17 @@
 
 =============================================================================*/
 
-#include "QmitkQImageToMitkImageFilter.h"
+#include "niftkQImageToMitkImageFilter.h"
 
 #include <itkImportImageFilter.h>
 #include <itkRGBToLuminanceImageFilter.h>
 #include <mitkITKImageImport.txx>
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-QmitkQImageToMitkImageFilter::QmitkQImageToMitkImageFilter()
+QImageToMitkImageFilter::QImageToMitkImageFilter()
 : m_QImage(0), m_Image(0), m_GeomImage(0)
 {
 	m_GeomImage = mitk::Image::New();
@@ -27,13 +30,13 @@ QmitkQImageToMitkImageFilter::QmitkQImageToMitkImageFilter()
 
 
 //-----------------------------------------------------------------------------
-QmitkQImageToMitkImageFilter::~QmitkQImageToMitkImageFilter()
+QImageToMitkImageFilter::~QImageToMitkImageFilter()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkQImageToMitkImageFilter::SetQImage(const QImage* image)
+void QImageToMitkImageFilter::SetQImage(const QImage* image)
 {
   this->m_QImage = image;
   this->Modified();
@@ -41,21 +44,21 @@ void QmitkQImageToMitkImageFilter::SetQImage(const QImage* image)
 
 
 //-----------------------------------------------------------------------------
-mitk::ImageSource::DataObjectPointer QmitkQImageToMitkImageFilter::MakeOutput( unsigned int idx )
+mitk::ImageSource::DataObjectPointer QImageToMitkImageFilter::MakeOutput( unsigned int idx )
 {
   return Superclass::MakeOutput(idx);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::ImageSource::OutputImageType* QmitkQImageToMitkImageFilter::GetOutput()
+mitk::ImageSource::OutputImageType* QImageToMitkImageFilter::GetOutput()
 {
   return m_Image;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkQImageToMitkImageFilter::GenerateData()
+void QImageToMitkImageFilter::GenerateData()
 {
   if(m_QImage == 0)
   {
@@ -82,7 +85,7 @@ void QmitkQImageToMitkImageFilter::GenerateData()
 
 //-----------------------------------------------------------------------------
 template <typename TPixel, unsigned int VImageDimension>
-mitk::Image::Pointer QmitkQImageToMitkImageFilter::ConvertQImageToMitkImage( const QImage* input, 
+mitk::Image::Pointer QImageToMitkImageFilter::ConvertQImageToMitkImage( const QImage* input,
 		const mitk::Image::Pointer GeomImage)
 {
 
@@ -146,7 +149,7 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::ConvertQImageToMitkImage( con
 
 //-----------------------------------------------------------------------------
 template <typename TPixel, unsigned int VImageDimension>
-mitk::Image::Pointer QmitkQImageToMitkImageFilter::Convert8BitQImageToMitkImage( const QImage* input, const mitk::Image::Pointer GeomImage)
+mitk::Image::Pointer QImageToMitkImageFilter::Convert8BitQImageToMitkImage( const QImage* input, const mitk::Image::Pointer GeomImage)
 {
 
   typedef itk::Image< TPixel, VImageDimension > ItkImage;
@@ -213,8 +216,10 @@ mitk::Image::Pointer QmitkQImageToMitkImageFilter::Convert8BitQImageToMitkImage(
 
 
 //-----------------------------------------------------------------------------
-void QmitkQImageToMitkImageFilter::SetGeometryImage( mitk::Image::Pointer GeomImage)
+void QImageToMitkImageFilter::SetGeometryImage( mitk::Image::Pointer GeomImage)
 {
   this->m_GeomImage = GeomImage;
   this->Modified();
 }
+
+} // end namespace

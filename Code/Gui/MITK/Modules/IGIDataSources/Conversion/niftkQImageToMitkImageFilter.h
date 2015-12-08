@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkQImageToMitkImageFilter_h
-#define QmitkQImageToMitkImageFilter_h
+#ifndef niftkQImageToMitkImageFilter_h
+#define niftkQImageToMitkImageFilter_h
 
 #include <mitkCommon.h>
 #include <mitkImageSource.h>
@@ -25,12 +25,15 @@
 
 #include "niftkIGIDataSourcesExports.h"
 
+namespace niftk
+{
+
 /**
- * \class QmitkQImageToMitkImageFilter
+ * \class QImageToMitkImageFilter
  * \brief A basic interface to produce a 2D Mitk image from a 2D QImage.
- * Currently only supports a QImage with format
+ * Currently only supports a QImage with format.
  */
-class NIFTKIGIDATASOURCES_EXPORT QmitkQImageToMitkImageFilter : public mitk::ImageSource
+class NIFTKIGIDATASOURCES_EXPORT QImageToMitkImageFilter : public mitk::ImageSource
 {
   public:
     typedef itk::RGBPixel< unsigned char > UCRGBPixelType;
@@ -43,32 +46,32 @@ class NIFTKIGIDATASOURCES_EXPORT QmitkQImageToMitkImageFilter : public mitk::Ima
     typedef itk::RGBAPixel< float > FloatRGBAPixelType;
     typedef itk::RGBAPixel< double > DoubleRGBAPixelType;
 
-    mitkClassMacro(QmitkQImageToMitkImageFilter, mitk::ImageSource);
-    itkNewMacro(QmitkQImageToMitkImageFilter);
+    mitkClassMacro(QImageToMitkImageFilter, mitk::ImageSource);
+    itkNewMacro(QImageToMitkImageFilter);
 
     void SetQImage(const QImage* image);
     itkGetMacro(QImage, const QImage*);
 
     OutputImageType* GetOutput();
 
-		/**
-		 * \brief If set the image geometry will be copied from Geometry Image
-		 */
-		void SetGeometryImage ( mitk::Image::Pointer GeomImage);
+    /**
+     * \brief If set the image geometry will be copied from Geometry Image
+     */
+    void SetGeometryImage ( mitk::Image::Pointer GeomImage);
 
 protected:
 
-    QmitkQImageToMitkImageFilter(); // purposely hidden
-    virtual ~QmitkQImageToMitkImageFilter();
+    QImageToMitkImageFilter(); // purposely hidden
+    virtual ~QImageToMitkImageFilter();
 
     virtual DataObjectPointer MakeOutput(unsigned int idx);
-
-    virtual void GenerateData();
+    virtual void GenerateData() override;
 
 protected:
+
     const QImage* m_QImage;
     mitk::Image::Pointer m_Image;
-		mitk::Image::Pointer m_GeomImage;
+    mitk::Image::Pointer m_GeomImage;
 
 private:
 
@@ -77,5 +80,7 @@ private:
     template <typename TPixel, unsigned int VImageDimension>
     static mitk::Image::Pointer Convert8BitQImageToMitkImage( const QImage* input, const mitk::Image::Pointer GeomImage);
 };
+
+} // end namespace
 
 #endif
