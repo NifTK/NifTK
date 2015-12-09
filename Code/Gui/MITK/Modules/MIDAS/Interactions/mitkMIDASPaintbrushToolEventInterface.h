@@ -49,7 +49,7 @@ protected:
   MIDASPaintbrushToolEventInterface();
   ~MIDASPaintbrushToolEventInterface();
 private:
-  MIDASPaintbrushTool* m_MIDASPaintBrushTool;
+  MIDASPaintbrushTool* m_MIDASPaintbrushTool;
 };
 
 } // end namespace

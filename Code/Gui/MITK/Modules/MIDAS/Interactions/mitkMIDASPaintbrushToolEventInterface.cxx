@@ -19,7 +19,7 @@ namespace mitk
 {
 
 MIDASPaintbrushToolEventInterface::MIDASPaintbrushToolEventInterface()
-: m_MIDASPaintBrushTool(NULL)
+: m_MIDASPaintbrushTool(NULL)
 {
 }
 
@@ -29,12 +29,12 @@ MIDASPaintbrushToolEventInterface::~MIDASPaintbrushToolEventInterface()
 
 void MIDASPaintbrushToolEventInterface::SetMIDASPaintbrushTool( MIDASPaintbrushTool* paintbrushTool )
 {
-  m_MIDASPaintBrushTool = paintbrushTool;
+  m_MIDASPaintbrushTool = paintbrushTool;
 }
 
 void MIDASPaintbrushToolEventInterface::ExecuteOperation(mitk::Operation* op)
 {
-  m_MIDASPaintBrushTool->ExecuteOperation(op);
+  m_MIDASPaintbrushTool->ExecuteOperation(op);
 }
 
 } // end namespace

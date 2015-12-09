@@ -284,7 +284,7 @@ bool MIDASMorphologicalSegmentorPipelineManager::IsNodeASegmentationImage(const 
     mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, false);
     if (parent.IsNotNull())
     {
-      // Should also have at least 4 children (see mitk::MIDASPaintBrushTool)
+      // Should also have at least 4 children (see mitk::MIDASPaintbrushTool)
       mitk::DataStorage::SetOfObjects::Pointer children = mitk::FindDerivedImages(this->GetDataStorage(), node, true);
       for (std::size_t i = 0; i < children->size(); ++i)
       {
