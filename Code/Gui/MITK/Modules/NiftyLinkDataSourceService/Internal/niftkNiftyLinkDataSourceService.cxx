@@ -35,7 +35,6 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
 , m_Lock(QMutex::Recursive)
 , m_FrameId(0)
 , m_BackgroundDeleteThread(NULL)
-, m_DataGrabbingThread(NULL)
 , m_Lag(0)
 {
   qRegisterMetaType<niftk::NiftyLinkMessageContainer::Pointer>("niftk::NiftyLinkMessageContainer::Pointer");
@@ -43,8 +42,11 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
   QString deviceName = this->GetName();
   m_SourceNumber = (deviceName.remove(0, name.length() + 1)).toInt();
 
-/*
   this->SetStatus("Initialising");
+  this->StartCapturing();
+
+/*
+
 
   // Trigger an update, just in case it crashes.
   // Its best to bail out during constructor.
@@ -475,8 +477,18 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
 
   // Early exit if no buffers, which means that
   // the tracker is created, but has not seen anything to track yet.
+
   if (m_Buffers.isEmpty())
   {
+    IGIDataItemInfo info;
+    info.m_Name = this->GetName();
+    info.m_Status = this->GetStatus();
+    info.m_ShouldUpdate = this->GetShouldUpdate();
+    info.m_FramesPerSecond = 0;
+    info.m_Description = "Network Tracker";
+    info.m_IsLate = false;
+    info.m_LagInMilliseconds = 0;
+    infos.push_back(info);
     return infos;
   }
 
@@ -484,6 +496,8 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
   {
     return infos;
   }
+
+
 /*
   QMap<QString, niftk::IGIDataSourceBuffer::Pointer>::iterator iter;
   for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)

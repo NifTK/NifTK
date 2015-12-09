@@ -840,7 +840,7 @@ void IGIDataSourceManager::OnUpdateGui()
     std::vector<IGIDataItemInfo> dataItemInfos = m_Sources[i]->Update(currentTime);
     for (int j = 0; j < dataItemInfos.size(); j++)
     {
-      qListDataItemInfos.push_back(dataItemInfos[i]);
+      qListDataItemInfos.push_back(dataItemInfos[j]);
     }
     dataSourceInfos.push_back(qListDataItemInfos);
   }

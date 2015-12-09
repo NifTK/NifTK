@@ -497,8 +497,13 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
         painter.drawImage(destPos, pix);
         painter.end();
 
-        framesPerSecondString.append(QString::number(infoForOneRow[i].m_FramesPerSecond) + QString(":"));
-        lagInMillisecondsString.append(QString::number(infoForOneRow[i].m_LagInMilliseconds) + QString(":"));
+        framesPerSecondString.append(QString::number(infoForOneRow[i].m_FramesPerSecond));
+        lagInMillisecondsString.append(QString::number(infoForOneRow[i].m_LagInMilliseconds));
+        if (i+1 != infoForOneRow.size())
+        {
+          framesPerSecondString.append(QString(":"));
+          lagInMillisecondsString.append(QString(":"));
+        }
       }
 
       IGIDataItemInfo firstItemOnly = infoForOneRow[0];
