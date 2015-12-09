@@ -21,8 +21,8 @@
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
-#include "mitkTrackingMatrices.h"
 #include "mitkTimeStampsContainer.h"
+#include "mitkTrackingAndTimeStampsContainer.h"
 
 namespace mitk
 {
@@ -86,6 +86,11 @@ public:
   itkSetMacro (HaltOnFrameSkip, bool);
   
   /**
+   * \brief Set a flag to determine whether we interpolate matrices or just use nearest neighbour
+   */
+  itkSetMacro (InterpolateMatrices, bool);
+
+  /**
    * \brief Set a flag to determine what to do if a skipped frame is found, by default we halt
    */
   itkGetMacro (FrameMap, std::string);
@@ -132,11 +137,11 @@ protected:
   VideoTrackerMatching& operator=(const VideoTrackerMatching&); // Purposefully not implemented.
   
   std::vector<unsigned int>             m_FrameNumbers;
-  std::vector<TimeStampsContainer> m_TimeStampsContainer;
-  TimeStampsContainer              m_VideoTimeStamps;
+  TimeStampsContainer                   m_VideoTimeStamps;
   bool                                  m_Ready;
   bool                                  m_FlipMatrices;
   bool                                  m_WriteTimingErrors;
+  bool                                  m_InterpolateMatrices;
   std::string                           m_Directory;
 
   /**
@@ -151,19 +156,18 @@ protected:
   
 private:
   
-  std::vector<TrackingMatrices>     m_TrackingMatrices; 
-  std::vector<std::string>          m_TrackingMatrixDirectories;
-  std::string                       m_FrameMap;
+  std::vector<mitk::TrackingAndTimeStampsContainer>     m_TrackingMatricesAndTimeStamps;
+  std::vector< std::vector<long long> >                 m_TimingErrors; //for each frame a set of timing errors
+  std::vector<std::string>                              m_TrackingMatrixDirectories;
+  std::string                                           m_FrameMap;
 
-  std::vector<std::string>          FindFrameMaps();
-  void                              FindTrackingMatrixDirectories();
-  void                              ProcessFrameMapFile();
-  bool                              CheckTimingErrorStats();
-  bool                              m_HaltOnFrameSkip;
-  std::vector<cv::Mat>              m_CameraToTracker;
+  void                                                  ProcessFrameMapFile();
+  bool                                                  CheckTimingErrorStats();
+  bool                                                  m_HaltOnFrameSkip;
+  std::vector<cv::Mat>                                  m_CameraToTracker;
 
-  std::vector <unsigned long long> m_VideoLag; //the delay between the tracking and video data
-  std::vector <bool>               m_VideoLeadsTracking; //if the video lag is negative, set this to true
+  std::vector <unsigned long long>                      m_VideoLag; //the delay between the tracking and video data
+  std::vector <bool>                                    m_VideoLeadsTracking; //if the video lag is negative, set this to true
 
 };
 

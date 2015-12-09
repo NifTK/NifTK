@@ -76,7 +76,7 @@ int mitkTrackingAndTimeStampsContainerTest(int argc, char * argv[])
   //lets test the iterate matrices function
   mitk::TimeStampsContainer::TimeStamp first = 10;
   mitk::TimeStampsContainer::TimeStamp second = 20;
-  mitk::TimeStampsContainer::TimeStamp timingError;
+  long long timingError;
   cv::Matx44d firstMatrix;
   cv::Matx44d secondMatrix;
 
@@ -110,12 +110,12 @@ int mitkTrackingAndTimeStampsContainerTest(int argc, char * argv[])
 
   interpolatedMatrix = trackingAndTimeStamps.InterpolateMatrix(16,timingError, inBounds);
   MITK_TEST_CONDITION ( 
-      ( CompareMatrices(interpolatedMatrix, MakeMatrix(52,26)) && ( timingError == 4 ) && inBounds ) , 
+      ( CompareMatrices(interpolatedMatrix, MakeMatrix(52,26)) && ( timingError == -4 ) && inBounds ) , 
       "InterpolateMatrix(16): More than halfway : " << timingError );
   
   interpolatedMatrix = trackingAndTimeStamps.InterpolateMatrix(16,timingError, inBounds);
   MITK_TEST_CONDITION ( 
-      ( CompareMatrices(interpolatedMatrix, MakeMatrix(52,26)) && ( timingError == 4 ) && inBounds ) , 
+      ( CompareMatrices(interpolatedMatrix, MakeMatrix(52,26)) && ( timingError == -4 ) && inBounds ) , 
       "InterpolateMatrix(16): More than halfway : " << timingError );
   interpolatedMatrix = trackingAndTimeStamps.InterpolateMatrix(22,timingError, inBounds);
   MITK_TEST_CONDITION ( 
@@ -124,8 +124,46 @@ int mitkTrackingAndTimeStampsContainerTest(int argc, char * argv[])
   
   interpolatedMatrix = trackingAndTimeStamps.InterpolateMatrix(2,timingError, inBounds);
   MITK_TEST_CONDITION ( 
-      ( CompareMatrices(interpolatedMatrix, firstMatrix) && ( timingError == 8 ) && (!inBounds) ) , 
+      ( CompareMatrices(interpolatedMatrix, firstMatrix) && ( timingError == -8 ) && (!inBounds) ) , 
       "InterpolateMatrix(2): before start : " << timingError );
+
+  interpolatedMatrix = trackingAndTimeStamps.GetNearestMatrix(10,timingError, inBounds);
+  MITK_TEST_CONDITION ( 
+      ( CompareMatrices(interpolatedMatrix, firstMatrix) && ( timingError == 0 ) && inBounds ) , 
+      "GetNearestMatrix(10): No interpolation needed at start");
+  interpolatedMatrix = trackingAndTimeStamps.GetNearestMatrix(20,timingError, inBounds);
+  MITK_TEST_CONDITION ( 
+      ( CompareMatrices(interpolatedMatrix, secondMatrix) && ( timingError == 0 ) && inBounds ) , 
+      "GetNearestMatrix(20): No interpolation needed at end");
+  interpolatedMatrix = trackingAndTimeStamps.GetNearestMatrix(15,timingError, inBounds);
+  MITK_TEST_CONDITION ( 
+      ( CompareMatrices(interpolatedMatrix, firstMatrix) && ( timingError == 5 ) && inBounds ) , 
+      "GetNearestMatrix(15): Halfway : " << timingError );
+
+  interpolatedMatrix = trackingAndTimeStamps.GetNearestMatrix(12,timingError, inBounds);
+  MITK_TEST_CONDITION ( 
+      ( CompareMatrices(interpolatedMatrix, firstMatrix) && ( timingError == 2 ) && inBounds ) , 
+      "GetNearestMatrix(12): Less than halfway : " << timingError );
+
+  interpolatedMatrix = trackingAndTimeStamps.GetNearestMatrix(16,timingError, inBounds);
+  MITK_TEST_CONDITION ( 
+      ( CompareMatrices(interpolatedMatrix, secondMatrix) && ( timingError == -4 ) && inBounds ) , 
+      "GetNearestMatrix(16): More than halfway : " << timingError );
+  
+  interpolatedMatrix = trackingAndTimeStamps.GetNearestMatrix(16,timingError, inBounds);
+  MITK_TEST_CONDITION ( 
+      ( CompareMatrices(interpolatedMatrix, secondMatrix) && ( timingError == -4 ) && inBounds ) , 
+      "GetNearestMatrix(16): More than halfway : " << timingError );
+  interpolatedMatrix = trackingAndTimeStamps.GetNearestMatrix(22,timingError, inBounds);
+  MITK_TEST_CONDITION ( 
+      ( CompareMatrices(interpolatedMatrix, secondMatrix) && ( timingError == 2 ) && (!inBounds) ) , 
+      "GetNearestMatrix(22): Past end : " << timingError );
+  
+  interpolatedMatrix = trackingAndTimeStamps.GetNearestMatrix(2,timingError, inBounds);
+  MITK_TEST_CONDITION ( 
+      ( CompareMatrices(interpolatedMatrix, firstMatrix) && ( timingError == -8 ) && (!inBounds) ) , 
+      "GetNearestMatrix(2): before start : " << timingError );
+
   MITK_TEST_END();
 }
 

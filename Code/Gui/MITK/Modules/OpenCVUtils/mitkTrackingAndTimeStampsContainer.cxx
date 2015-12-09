@@ -181,9 +181,8 @@ TimeStampsContainer::TimeStamp TrackingAndTimeStampsContainer::GetNearestTimeSta
   return m_TimeStamps.GetNearestTimeStamp(timeStamp, delta);
 }
 
-
 //-----------------------------------------------------------------------------
-cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsContainer::TimeStamp& timeStamp, TimeStampsContainer::TimeStamp& minError, bool& inBounds)
+cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsContainer::TimeStamp& timeStamp, long long& minError, bool& inBounds)
 {
   TimeStampsContainer::TimeStamp before;
   TimeStampsContainer::TimeStamp after;
@@ -207,7 +206,7 @@ cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsCo
     mitk::InterpolateTransformationMatrix(m_TrackingMatrices[indexBefore], m_TrackingMatrices[indexAfter], proportion, interpolatedMatrix);
     if ( proportion > 0.5 )
     {
-      minError = after - timeStamp;
+      minError = timeStamp - after;
     }
     else
     {
@@ -221,7 +220,7 @@ cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsCo
     inBounds=false;
     if ( before == 0 ) 
     {
-      minError = after - timeStamp;
+      minError = timeStamp - after;
       indexAfter = this->GetFrameNumber(after);
       return m_TrackingMatrices[indexAfter];
     }
@@ -233,5 +232,57 @@ cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsCo
     }
   }
 }
+
+//-----------------------------------------------------------------------------
+cv::Matx44d TrackingAndTimeStampsContainer::GetNearestMatrix(const TimeStampsContainer::TimeStamp& timeStamp, long long& error, bool& inBounds)
+{
+  TimeStampsContainer::TimeStamp before;
+  TimeStampsContainer::TimeStamp after;
+  double proportion = 0;
+  inBounds=false;
+    
+  std::vector<TimeStampsContainer::TimeStamp>::size_type indexBefore;
+  std::vector<TimeStampsContainer::TimeStamp>::size_type indexAfter;
+
+  if ( m_TrackingMatrices.size() == 0 )
+  {
+    mitkThrow() << "TrackingAndTimeStampsContainer::GetNearestMatrix There are no tracking matrices set";
+  }
+
+  if (m_TimeStamps.GetBoundingTimeStamps(timeStamp, before, after, proportion))
+  {
+    inBounds = true;
+    indexBefore = this->GetFrameNumber(before);
+    indexAfter = this->GetFrameNumber(after);
+
+    if ( proportion > 0.5 )
+    {
+      error = timeStamp - after;
+      return m_TrackingMatrices[indexAfter];
+    }
+    else
+    {
+      error = timeStamp - before;
+      return m_TrackingMatrices[indexBefore];
+    }
+  }
+  else
+  {
+    inBounds=false;
+    if ( before == 0 ) 
+    {
+      error = timeStamp - after;
+      indexAfter = this->GetFrameNumber(after);
+      return m_TrackingMatrices[indexAfter];
+    }
+    else
+    {
+      error = timeStamp - before;
+      indexBefore = this->GetFrameNumber(before);
+      return m_TrackingMatrices[indexBefore];
+    }
+  }
+}
+
 
 } // end namespace

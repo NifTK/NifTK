@@ -200,7 +200,7 @@ void UltrasoundTransformAndImageMerger::Merge(const std::string& inputMatrixDire
   boost::cmatch what;
   std::string timeStampAsString;
   unsigned long long timeStamp;
-  unsigned long long timingError;
+  long long timingError;
   bool inBounds;
   unsigned long long timeStampFirstFrame = 0;
   double timeStampInSeconds = 0;
