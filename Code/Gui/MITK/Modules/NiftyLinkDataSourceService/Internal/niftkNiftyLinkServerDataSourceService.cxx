@@ -109,6 +109,7 @@ void NiftyLinkServerDataSourceService::OnSocketError(int portNumber, QAbstractSo
 void NiftyLinkServerDataSourceService::OnMessageReceived(int portNumber, niftk::NiftyLinkMessageContainer::Pointer message)
 {
   MITK_INFO << "Server OnMessageReceived:" << portNumber;
+  this->MessageReceived(message);
 }
 
 } // end namespace

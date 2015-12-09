@@ -18,7 +18,6 @@
 #include <niftkIGIDataSourceLocker.h>
 #include <niftkIGIDataSourceBuffer.h>
 #include <niftkIGIDataSourceBackgroundDeleteThread.h>
-#include <niftkIGIDataSourceGrabbingThread.h>
 #include <niftkIGILocalDataSourceI.h>
 #include <NiftyLinkMessageContainer.h>
 
@@ -131,6 +130,8 @@ protected:
                              );
   virtual ~NiftyLinkDataSourceService();
 
+  void MessageReceived(niftk::NiftyLinkMessageContainer::Pointer message);
+
 private:
   NiftyLinkDataSourceService(const NiftyLinkDataSourceService&); // deliberately not implemented
   NiftyLinkDataSourceService& operator=(const NiftyLinkDataSourceService&); // deliberately not implemented
@@ -142,7 +143,6 @@ private:
   int                                                       m_SourceNumber;
   niftk::IGIDataType::IGIIndexType                          m_FrameId;
   niftk::IGIDataSourceBackgroundDeleteThread*               m_BackgroundDeleteThread;
-  niftk::IGIDataSourceGrabbingThread*                       m_DataGrabbingThread;
   int                                                       m_Lag = 0;
   QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > m_PlaybackIndex;
 

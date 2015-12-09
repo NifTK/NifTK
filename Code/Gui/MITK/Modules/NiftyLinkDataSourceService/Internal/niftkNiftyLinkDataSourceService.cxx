@@ -40,6 +40,9 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
 {
   qRegisterMetaType<niftk::NiftyLinkMessageContainer::Pointer>("niftk::NiftyLinkMessageContainer::Pointer");
 
+  QString deviceName = this->GetName();
+  m_SourceNumber = (deviceName.remove(0, name.length() + 1)).toInt();
+
 /*
   this->SetStatus("Initialising");
 
@@ -48,8 +51,6 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
   m_Tracker->StartTracking();
   m_Tracker->Update();
 
-  QString deviceName = this->GetName();
-  m_TrackerNumber = (deviceName.remove(0, name.length() + 1)).toInt();
 
   // Set the interval based on desired number of frames per second.
   // eg. 25 fps = 40 milliseconds.
@@ -538,6 +539,13 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
   }
 */
   return infos;
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyLinkDataSourceService::MessageReceived(niftk::NiftyLinkMessageContainer::Pointer message)
+{
+  // this method is the equivalent of the "GrabData" method.
 }
 
 } // end namespace

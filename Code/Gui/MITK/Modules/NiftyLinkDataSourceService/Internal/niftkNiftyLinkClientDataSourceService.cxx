@@ -121,6 +121,7 @@ void NiftyLinkClientDataSourceService::OnClientError(QString hostName, int portN
 void NiftyLinkClientDataSourceService::OnMessageReceived(NiftyLinkMessageContainer::Pointer message)
 {
   MITK_INFO << "Client, OnMessageReceived";
+  this->MessageReceived(message);
 }
 
 

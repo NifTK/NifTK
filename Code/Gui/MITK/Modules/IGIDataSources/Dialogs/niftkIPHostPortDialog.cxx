@@ -24,6 +24,7 @@ IPHostPortDialog::IPHostPortDialog(QWidget *parent)
 :IGIInitialisationDialog(parent)
 {
   setupUi(this);
+  m_HostName->setText("localhost");
 
   bool ok = false;
   ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
