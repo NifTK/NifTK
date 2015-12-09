@@ -182,7 +182,7 @@ TimeStampsContainer::TimeStamp TrackingAndTimeStampsContainer::GetNearestTimeSta
 }
 
 //-----------------------------------------------------------------------------
-cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsContainer::TimeStamp& timeStamp, TimeStampsContainer::TimeStamp& minError, bool& inBounds)
+cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsContainer::TimeStamp& timeStamp, long long& minError, bool& inBounds)
 {
   TimeStampsContainer::TimeStamp before;
   TimeStampsContainer::TimeStamp after;
@@ -206,7 +206,7 @@ cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsCo
     mitk::InterpolateTransformationMatrix(m_TrackingMatrices[indexBefore], m_TrackingMatrices[indexAfter], proportion, interpolatedMatrix);
     if ( proportion > 0.5 )
     {
-      minError = after - timeStamp;
+      minError = timeStamp - after;
     }
     else
     {
@@ -220,7 +220,7 @@ cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsCo
     inBounds=false;
     if ( before == 0 ) 
     {
-      minError = after - timeStamp;
+      minError = timeStamp - after;
       indexAfter = this->GetFrameNumber(after);
       return m_TrackingMatrices[indexAfter];
     }
@@ -234,7 +234,7 @@ cv::Matx44d TrackingAndTimeStampsContainer::InterpolateMatrix(const TimeStampsCo
 }
 
 //-----------------------------------------------------------------------------
-cv::Matx44d TrackingAndTimeStampsContainer::GetNearestMatrix(const TimeStampsContainer::TimeStamp& timeStamp, TimeStampsContainer::TimeStamp& error, bool& inBounds)
+cv::Matx44d TrackingAndTimeStampsContainer::GetNearestMatrix(const TimeStampsContainer::TimeStamp& timeStamp, long long& error, bool& inBounds)
 {
   TimeStampsContainer::TimeStamp before;
   TimeStampsContainer::TimeStamp after;
@@ -257,7 +257,7 @@ cv::Matx44d TrackingAndTimeStampsContainer::GetNearestMatrix(const TimeStampsCon
 
     if ( proportion > 0.5 )
     {
-      error = after - timeStamp;
+      error = timeStamp - after;
       return m_TrackingMatrices[indexAfter];
     }
     else
@@ -271,7 +271,7 @@ cv::Matx44d TrackingAndTimeStampsContainer::GetNearestMatrix(const TimeStampsCon
     inBounds=false;
     if ( before == 0 ) 
     {
-      error = after - timeStamp;
+      error = timeStamp - after;
       indexAfter = this->GetFrameNumber(after);
       return m_TrackingMatrices[indexAfter];
     }
