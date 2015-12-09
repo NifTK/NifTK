@@ -157,7 +157,7 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
                 timeStamp - m_VideoLag[i], &timingError);
           }
           
-          m_TimingErrors[i].push_back(-timingError);
+          m_TimingErrors[i].push_back(timingError);
         }
 
         if ( frameNumber != linenumber++ )
@@ -345,7 +345,7 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
   }
          
   //now we need to get nearest tracker matrix, either by interpolation or not.
-  mitk::TimeStampsContainer::TimeStamp timingError;
+  long long timingError;
   bool inBounds;
   
   if ( ! m_InterpolateMatrices )
@@ -359,7 +359,7 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
 
   if ( ReferenceIndex != -1 )
   {
-    mitk::TimeStampsContainer::TimeStamp refTimingError;
+    long long refTimingError;
     bool refInBounds;
     
     mitk::TimeStampsContainer::TimeStamp refTargetTimeStamp = m_VideoTimeStamps.GetTimeStamp(FrameNumber); 
@@ -381,7 +381,7 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
       referenceMat=cv::Mat(m_TrackingMatricesAndTimeStamps[ReferenceIndex].InterpolateMatrix(refTargetTimeStamp, refTimingError, refInBounds));
     }
     returnMat = referenceMat.inv() * returnMat; 
-    if ( abs ( refTimingError ) > abs ( timingError ) )
+    if ( std::abs ( refTimingError ) > std::abs ( timingError ) )
     {
       timingError = refTimingError;
     }
@@ -389,7 +389,7 @@ cv::Mat VideoTrackerMatching::GetTrackerMatrix ( unsigned int FrameNumber , long
 
   if ( TimingError != NULL ) 
   {
-    *TimingError = -timingError;
+    *TimingError = timingError;
   }
   
   if ( m_FlipMatrices )

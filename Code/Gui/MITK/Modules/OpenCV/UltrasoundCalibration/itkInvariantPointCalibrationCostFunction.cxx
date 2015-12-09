@@ -381,7 +381,7 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
   long long lagInNanoSeconds = static_cast<long long>(lag*1000000000);
 
   TimeStampType timeStamp = 0;
-  TimeStampType timingError = 0;
+  long long timingError = 0;
   bool inBounds;
   
   unsigned int valuesDropped = 0;
@@ -405,9 +405,8 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
     pointInWorld = (trackingTransformation * similarityTransformation) * point;
     residual = translationTransformation * pointInWorld;
  
-    if ( timingError < m_AllowableTimingError ) 
+    if ( std::abs(timingError) < m_AllowableTimingError ) 
     {
-      
       value[i*3 + 0] = residual(0, 0);
       value[i*3 + 1] = residual(1, 0);
       value[i*3 + 2] = residual(2, 0);
