@@ -36,16 +36,20 @@ NifTKImageIOFactory::NifTKImageIOFactory()
   /// logic as registering them to mitk::FileReaderRegistry in mitk::NifTKCoreObjectFactory
   /// in the niftkCore module.
 
-  bool useDRCAnalyze = niftk::BooleanEnvironmentVariableIsOn("NIFTK_DRC_ANALYZE");
+  std::string useDRCAnalyze = niftk::GetEnvironmentVariable("NIFTK_DRC_ANALYZE");
 
-  if (useDRCAnalyze)
+  this->RegisterOverride("itkImageIOBase", "itkNiftiImageIO3201", "Nifti Image IO 3201", 1,
+    itk::CreateObjectFunction<NiftiImageIO3201>::New());
+
+  if (useDRCAnalyze == "ON"
+      || useDRCAnalyze == "1"
+      || useDRCAnalyze == "TRUE"
+      || useDRCAnalyze == "YES"
+      || useDRCAnalyze == "PREFERRED")
   {
     this->RegisterOverride("itkImageIOBase", "itkDRCAnalyzeImageIO", "DRC Analyze Image IO", 1,
        itk::CreateObjectFunction<DRCAnalyzeImageIO>::New());
   }
-
-  this->RegisterOverride("itkImageIOBase", "itkNiftiImageIO3201", "Nifti Image IO 3201", 1,
-    itk::CreateObjectFunction<NiftiImageIO3201>::New());
 
   this->RegisterOverride("itkImageIOBase", "itkINRImageIO", "INR Image IO", 1,
     itk::CreateObjectFunction<INRImageIO>::New());
