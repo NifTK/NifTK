@@ -42,6 +42,8 @@ bool NiftyLinkDataType::IsFastToSave()
     mitkThrow() << "Message is Null";
   }
 
+  // Currently assuming, just TDATA and IMAGE.
+
   if (static_cast<igtl::ImageMessage*>(m_Message->GetMessage().GetPointer()) != NULL)
   {
     isFast = false;

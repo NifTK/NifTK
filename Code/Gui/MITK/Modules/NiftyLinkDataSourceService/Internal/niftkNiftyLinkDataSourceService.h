@@ -42,6 +42,12 @@ namespace niftk
 * a specific data grabbing thread, here, data comes via a socket.
 * So, the NiftyLink client and server classes are already threaded.
 *
+* Also, this class is the common base class of NiftyLinkClientDataSourceService
+* and NiftyLinkServerDataSourceService. So, in both cases, there should only be
+* 1 connection. So, either this NiftyLinkClientDataSourceService connects to
+* 1 external server (e.g. PLUSServer), or 1 external client connects to
+* NiftyLinkServerDataSourceService.
+*
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
 class NiftyLinkDataSourceService
@@ -155,9 +161,7 @@ private:
   int                                                            m_Lag = 0;
   QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >      m_PlaybackIndex;
 
-  // In contrast say to the OpenCV source, we store multiple buffers, keyed by originator (host:port).
-  // This also means that each originator, could send multiple message types.
-  // Not sure if this is a good idea.
+  // In contrast say to the OpenCV source, we store multiple buffers, key is device name.
   QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer> m_Buffers;
 
   // Make sure this is only used from the MessageReceived thread.

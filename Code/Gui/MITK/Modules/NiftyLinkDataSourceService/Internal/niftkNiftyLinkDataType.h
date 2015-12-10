@@ -38,6 +38,9 @@ public:
   niftk::NiftyLinkMessageContainer::Pointer GetMessageContainer() const { return m_Message; }
   void SetMessageContainer(niftk::NiftyLinkMessageContainer::Pointer message) { m_Message = message; this->Modified(); }
 
+  /**
+  * \brief Meaning, can we save to disk in under 40 ms?
+  */
   bool IsFastToSave();
 
 protected:

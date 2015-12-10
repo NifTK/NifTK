@@ -91,36 +91,52 @@ NiftyLinkClientDataSourceService::~NiftyLinkClientDataSourceService()
 //-----------------------------------------------------------------------------
 void NiftyLinkClientDataSourceService::OnConnected(QString hostName, int portNumber)
 {
-  MITK_INFO << "Client OnConnected:" << hostName.toStdString() << ":" << portNumber;
+  this->SetStatus("Connected");
+  QString message = QString("Connected to ")
+                    + hostName
+                    + QString(":")
+                    + QString::number(portNumber);
+  MITK_INFO << message.toStdString();
 }
 
 
 //-----------------------------------------------------------------------------
 void NiftyLinkClientDataSourceService::OnDisconnected(QString hostName, int portNumber)
 {
-  MITK_INFO << "Client OnDisconnected:" << hostName.toStdString() << ":" << portNumber;
+  this->SetStatus("Disconnected");
+  QString message = QString("Dropped from ")
+                    + hostName
+                    + QString(":")
+                    + QString::number(portNumber);
+  MITK_INFO << message.toStdString();
 }
 
 
 //-----------------------------------------------------------------------------
 void NiftyLinkClientDataSourceService::OnSocketError(QString hostName, int portNumber, QAbstractSocket::SocketError errorCode, QString errorString)
 {
-  MITK_INFO << "Client OnSocketError:" << hostName.toStdString() << ":" << portNumber << ", " << errorString.toStdString();
-
+  this->SetStatus("Socket Error");
+  QString message = hostName
+                    + ":" + QString::number(portNumber)
+                    + ", " + errorString;
+  MITK_INFO << message.toStdString();
 }
 
 
 //-----------------------------------------------------------------------------
 void NiftyLinkClientDataSourceService::OnClientError(QString hostName, int portNumber, QString errorString)
 {
-  MITK_INFO << "Client OnClientError:" << hostName.toStdString() << ":" << portNumber;
+  this->SetStatus("Client Error");
+  QString message = hostName
+                    + ":" + QString::number(portNumber)
+                    + ", " + errorString;
+  MITK_INFO << message.toStdString();
 }
 
 
 //-----------------------------------------------------------------------------
 void NiftyLinkClientDataSourceService::OnMessageReceived(NiftyLinkMessageContainer::Pointer message)
 {
-  MITK_INFO << "Client, OnMessageReceived";
   this->MessageReceived(message);
 }
 
