@@ -16,16 +16,15 @@ set(scripts)
 
 if(NOT WIN32)
   set(scripts
-    matchTimeStamps.sh
-    parsePickedXMLPoints.sh
-    reconstructMaskedImages.sh
+    matchTimeStamps
+    parsePickedXMLPoints
+    reconstructMaskedImages
     ${scripts}
   )
 endif()
 
 foreach(script ${scripts})
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${script}.in ${SLICER_EXECUTABLE_OUTPUTPATH}/${script} @ONLY )
-  NIFTK_INSTALL_CLI_SCRIPT(PROGRAMS ${SLICER_EXECUTABLE_OUTPUTPATH}/${script})
+  NIFTK_CREATE_COMMAND_LINE_SCRIPT(NAME ${script} EXTENSION sh )
 endforeach()
 
 

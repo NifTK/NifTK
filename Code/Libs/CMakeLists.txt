@@ -18,6 +18,7 @@ find_package(ITK)
 if(ITK_FOUND)
   include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
   add_subdirectory(ITK)
+  add_subdirectory(ITKIO)
 endif(ITK_FOUND)
 
 if(VTK_FOUND)

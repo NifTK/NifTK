@@ -20,7 +20,6 @@
 #include <itkImage.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkImageFileWriter.h>
-#include <itkNiftiImageIO3201.h>
 
 // ITK
 #include "itkITKImageToNiftiImage.h"
