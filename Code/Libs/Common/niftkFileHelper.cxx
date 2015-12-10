@@ -322,7 +322,7 @@ bool FilenameMatches(
 //-----------------------------------------------------------------------------
 std::string GetImagesDirectory()
 {
-  return ConcatenatePath(GetNIFTKHome(), "images");
+  return ConcatenatePath(GetNifTKHome(), "images");
 }
 
 

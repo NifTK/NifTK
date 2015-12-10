@@ -44,7 +44,7 @@
 
 #include <fstream>
 #include <itkImageIOBase.h>
-#include <itkAnalyzeDbh_p.h>
+#include "itkAnalyzeDbh_p.h"
 
 namespace itk
 {

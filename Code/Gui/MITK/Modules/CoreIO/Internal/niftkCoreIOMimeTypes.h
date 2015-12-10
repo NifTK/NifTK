@@ -54,6 +54,16 @@ public:
   static std::string PPM_MIMETYPE_NAME();
   static std::string PPM_MIMETYPE_DESCRIPTION();
 
+  // Analyze
+  static mitk::CustomMimeType ANALYZE_MIMETYPE();
+  static std::string ANALYZE_MIMETYPE_NAME();
+  static std::string ANALYZE_MIMETYPE_DESCRIPTION();
+
+  // Nifti
+  static mitk::CustomMimeType NIFTI_MIMETYPE();
+  static std::string NIFTI_MIMETYPE_NAME();
+  static std::string NIFTI_MIMETYPE_DESCRIPTION();
+
   // Inria
   static mitk::CustomMimeType INRIA_MIMETYPE();
   static std::string INRIA_MIMETYPE_NAME();

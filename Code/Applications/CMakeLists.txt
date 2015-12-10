@@ -22,6 +22,7 @@ include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
 set(NIFTK_APPLICATION_LINK_LIBRARIES
   niftkcommon
   niftkITK
+  niftkITKIO
   ${ITK_LIBRARIES}
   ${Boost_LIBRARIES}
 )

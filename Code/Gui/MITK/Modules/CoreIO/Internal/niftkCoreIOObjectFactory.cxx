@@ -31,8 +31,8 @@
 #include "niftkCoreIOMimeTypes.h"
 #include <niftkEnvironmentHelper.h>
 #include <itkDRCAnalyzeImageIO.h>
-#include <itkINRImageIO.h>
 #include <itkNiftiImageIO3201.h>
+#include <itkINRImageIO.h>
 
 namespace niftk
 {
@@ -55,19 +55,34 @@ CoreIOObjectFactory::CoreIOObjectFactory()
     /// TODO
     /// ITK readers and writers should be registered from itk::NifTKImageIOFactory.
 
-    bool useDRCAnalyze = niftk::BooleanEnvironmentVariableIsOn("NIFTK_DRC_ANALYZE");
+    std::string useDRCAnalyze = niftk::GetEnvVar("NIFTK_DRC_ANALYZE");
 
-    if (useDRCAnalyze)
+    if (useDRCAnalyze == "ON"
+        || useDRCAnalyze == "PREFERRED"
+        || useDRCAnalyze == "OPTIONAL"
+        || useDRCAnalyze.empty())
     {
+      int rank = useDRCAnalyze == "PREFERRED";
+
       itk::DRCAnalyzeImageIO::Pointer itkDrcAnalyzeIO = itk::DRCAnalyzeImageIO::New();
-      mitk::ItkImageIO* drcAnalyzeIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(),
-                                                            itkDrcAnalyzeIO.GetPointer(), 2);
+      mitk::ItkImageIO* drcAnalyzeIO = new mitk::ItkImageIO(niftk::CoreIOMimeTypes::ANALYZE_MIMETYPE(), itkDrcAnalyzeIO.GetPointer(), rank);
       m_FileIOs.push_back(drcAnalyzeIO);
     }
 
+    if (useDRCAnalyze == "OFF"
+        || useDRCAnalyze == "PREFERRED"
+        || useDRCAnalyze == "OPTIONAL"
+        || useDRCAnalyze.empty())
+    {
+      int rank = useDRCAnalyze == "OPTIONAL" || useDRCAnalyze.empty();
+
+      itk::NiftiImageIO3201::Pointer itkNiftiIO = itk::NiftiImageIO3201::New();
+      mitk::ItkImageIO* niftiIO = new mitk::ItkImageIO(niftk::CoreIOMimeTypes::ANALYZE_MIMETYPE(), itkNiftiIO.GetPointer(), rank);
+      m_FileIOs.push_back(niftiIO);
+    }
+
     itk::NiftiImageIO3201::Pointer itkNiftiIO = itk::NiftiImageIO3201::New();
-    mitk::ItkImageIO* niftiIO = new mitk::ItkImageIO(mitk::IOMimeTypes::NIFTI_MIMETYPE(),
-                                                     itkNiftiIO.GetPointer(), 1);
+    mitk::ItkImageIO* niftiIO = new mitk::ItkImageIO(niftk::CoreIOMimeTypes::NIFTI_MIMETYPE(), itkNiftiIO.GetPointer(), 0);
     m_FileIOs.push_back(niftiIO);
 
     itk::INRImageIO::Pointer itkINRImageIO = itk::INRImageIO::New();

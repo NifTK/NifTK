@@ -19,7 +19,7 @@ MITK_CREATE_MODULE(
   AUTOLOAD_WITH niftkCore
 )
 
-target_link_libraries(niftkCoreIO PRIVATE niftkITK)
+target_link_libraries(niftkCoreIO PRIVATE niftkITKIO)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkCoreIO)

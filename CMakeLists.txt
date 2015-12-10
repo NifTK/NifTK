@@ -61,7 +61,7 @@ else()
   # Our version number. Edit this to generate a new version.
   # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
   # Also, Trac 1592, version number must change if CTK changes significantly.
-  project(NIFTK VERSION 15.09.0)
+  project(NIFTK VERSION 15.12.0)
 endif()
 
 ######################################################################
@@ -573,10 +573,10 @@ mitkFunctionAddExternalProject(NAME FLANN     OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME VL        OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME CGAL      OFF ADVANCED DEPENDS Boost)
 mitkFunctionAddExternalProject(NAME NiftyLink OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftySim  OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftySeg  OFF ADVANCED Eigen)
-mitkFunctionAddExternalProject(NAME NiftyReg  OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftyRec  OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftySim  OFF ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME NiftySeg  OFF ADVANCED NO_PACKAGE DEPENDS Eigen)
+mitkFunctionAddExternalProject(NAME NiftyReg  OFF ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME NiftyRec  OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftyPipe ON ADVANCED)
 
@@ -881,6 +881,7 @@ set(NIFTK_INCLUDE_DIRS_BUILD_TREE
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASIrregularVolumeEditor
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/VesselToolbox
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITKVTK/IO
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITKIO
   ${CMAKE_SOURCE_DIR}/Testing/Code/
   ${CMAKE_SOURCE_DIR}/Testing/Code/Libs/ITK/RegistrationToolbox
 )

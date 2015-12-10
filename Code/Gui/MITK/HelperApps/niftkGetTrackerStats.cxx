@@ -45,6 +45,10 @@ int main(int argc, char** argv)
     
     projector->Initialise(trackingInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
+    if ( ! dontInterpolate )
+    {
+      matcher->SetInterpolateMatrices(true);
+    }
     matcher->Initialise(trackingInputDirectory);
     if ( handeyes.length() !=0 )
     {
