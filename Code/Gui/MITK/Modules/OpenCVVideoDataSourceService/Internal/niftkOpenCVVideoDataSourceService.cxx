@@ -241,7 +241,6 @@ void OpenCVVideoDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
         wrapper->SetFrameId(m_FrameId++);
         wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
         wrapper->SetShouldBeSaved(false);
-        wrapper->SetIsSaved(false);
 
         // Buffer itself should be threadsafe, so I'm not locking anything here.
         m_Buffer->AddToBuffer(wrapper.GetPointer());
@@ -320,9 +319,6 @@ void OpenCVVideoDataSourceService::GrabData()
   wrapper->SetFrameId(m_FrameId++);
   wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
   wrapper->SetShouldBeSaved(this->GetIsRecording());
-  wrapper->SetIsSaved(false);
-
-  m_Buffer->AddToBuffer(wrapper.GetPointer());
 
   // Save synchronously.
   // This has the side effect that if saving is too slow,
@@ -331,6 +327,13 @@ void OpenCVVideoDataSourceService::GrabData()
   {
     this->SaveItem(wrapper.GetPointer());
   }
+
+  // Putting this after the save, as we don't want to
+  // add to the buffer in this grabbing thread, then the
+  // m_BackgroundDeleteThread deletes the object while
+  // we are trying to save the data.
+  m_Buffer->AddToBuffer(wrapper.GetPointer());
+
   this->SetStatus("Grabbing");
 }
 

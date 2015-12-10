@@ -302,7 +302,6 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
           wrapper->SetFrameId(m_FrameId++);
           wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
           wrapper->SetShouldBeSaved(false);
-          wrapper->SetIsSaved(false);
 
           // Buffer itself should be threadsafe, so I'm not locking anything here.
           m_Buffers[bufferName]->AddToBuffer(wrapper.GetPointer());
@@ -400,15 +399,12 @@ void MITKTrackerDataSourceService::GrabData()
       wrapper->SetFrameId(m_FrameId++);
       wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
       wrapper->SetShouldBeSaved(this->GetIsRecording());
-      wrapper->SetIsSaved(false);
 
       if (!m_Buffers.contains(toolNameAsQString))
       {
         niftk::IGIDataSourceBuffer::Pointer newBuffer = niftk::IGIDataSourceBuffer::New(m_Tracker->GetPreferredFramesPerSecond() * 2);
         m_Buffers.insert(toolNameAsQString, newBuffer);
       }
-
-      m_Buffers[toolNameAsQString]->AddToBuffer(wrapper.GetPointer());
 
       // Save synchronously.
       // This has the side effect that if saving is too slow,
@@ -417,6 +413,12 @@ void MITKTrackerDataSourceService::GrabData()
       {
         this->SaveItem(wrapper.GetPointer());
       }
+
+      // Putting this after the save, as we don't want to
+      // add to the buffer in this grabbing thread, then the
+      // m_BackgroundDeleteThread deletes the object while
+      // we are trying to save the data.
+      m_Buffers[toolNameAsQString]->AddToBuffer(wrapper.GetPointer());
     }
     this->SetStatus("Grabbing");
   }

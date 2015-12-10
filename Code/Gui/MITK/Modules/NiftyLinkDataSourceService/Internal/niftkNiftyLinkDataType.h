@@ -33,10 +33,12 @@ public:
   mitkClassMacro(NiftyLinkDataType, IGIDataType);
   itkNewMacro(NiftyLinkDataType);
 
-  virtual void* GetData() const { return m_Message.data(); }
+  virtual void* GetData() const override { return m_Message.data(); }
 
   niftk::NiftyLinkMessageContainer::Pointer GetMessageContainer() const { return m_Message; }
   void SetMessageContainer(niftk::NiftyLinkMessageContainer::Pointer message) { m_Message = message; this->Modified(); }
+
+  bool IsFastToSave();
 
 protected:
 

@@ -13,6 +13,11 @@
 =============================================================================*/
 
 #include "niftkNiftyLinkDataSourceService.h"
+#include "niftkNiftyLinkDataType.h"
+
+#include <igtlTrackingDataMessage.h>
+#include <igtlImageMessage.h>
+
 #include <QDir>
 #include <QMutexLocker>
 
@@ -42,28 +47,21 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
   QString deviceName = this->GetName();
   m_SourceNumber = (deviceName.remove(0, name.length() + 1)).toInt();
 
+  m_MessageReceivedTimeStamp = igtl::TimeStamp::New();
+  m_MessageReceivedTimeStamp->GetTime();
+
   this->SetStatus("Initialising");
-  this->StartCapturing();
 
-/*
-
-
-  // Trigger an update, just in case it crashes.
-  // Its best to bail out during constructor.
-  m_Tracker->StartTracking();
-  m_Tracker->Update();
-
-
-  // Set the interval based on desired number of frames per second.
-  // eg. 25 fps = 40 milliseconds.
-  // However: If system slows down (eg. saving images), then Qt will
-  // drop clock ticks, so in effect, you will get less than this.
-  int defaultFramesPerSecond = m_Tracker->GetPreferredFramesPerSecond();
-  int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
-
-  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.1);
+  // In contrast with other sources, like a frame grabber, where you
+  // know the expected frame rate, a network source could be anything.
+  // Lets assume for now:
+  //   Vicra = 20 fps, Spectra, Aurora = faster.
+  //   Ultrasonix = 20 fpas, or faster.
+  // So, 20 fps = 50 ms.
+  this->SetTimeStampTolerance(50*1000000);
   this->SetProperties(properties);
   this->SetShouldUpdate(true);
+  this->StartCapturing();
 
   m_BackgroundDeleteThread = new niftk::IGIDataSourceBackgroundDeleteThread(NULL, this);
   m_BackgroundDeleteThread->SetInterval(1000); // try deleting data every 1 second.
@@ -73,14 +71,14 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
     mitkThrow() << "Failed to start background deleting thread";
   }
 
-  m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
-  m_DataGrabbingThread->SetInterval(intervalInMilliseconds);
-  m_DataGrabbingThread->start();
-  if (!m_DataGrabbingThread->isRunning())
+  m_BackgroundSaveThread = new niftk::IGIDataSourceBackgroundSaveThread(NULL, this);
+  m_BackgroundSaveThread->SetInterval(500); // try deleting data every 0.5 second.
+  m_BackgroundSaveThread->start();
+  if (!m_BackgroundSaveThread->isRunning())
   {
-    mitkThrow() << "Failed to start data grabbing thread";
+    mitkThrow() << "Failed to start background save thread";
   }
-*/
+
   this->SetStatus("Initialised");
   this->Modified();
 }
@@ -89,17 +87,15 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
 //-----------------------------------------------------------------------------
 NiftyLinkDataSourceService::~NiftyLinkDataSourceService()
 {
-  /*
   this->StopCapturing();
 
   s_Lock.RemoveSource(m_SourceNumber);
 
-  m_DataGrabbingThread->ForciblyStop();
-  delete m_DataGrabbingThread;
-
   m_BackgroundDeleteThread->ForciblyStop();
   delete m_BackgroundDeleteThread;
-  */
+
+  m_BackgroundSaveThread->ForciblyStop();
+  delete m_BackgroundSaveThread;
 }
 
 
@@ -110,7 +106,7 @@ void NiftyLinkDataSourceService::SetProperties(const IGIDataSourceProperties& pr
   // directly on the buffer because, there may be no buffers present
   // at the time this method is called. For example, you could
   // have created a tracker, and no tracked objects are placed within
-  // the field of view, thereby no tracking matrices would be generated.
+  // the field of view, thereby no tracking matrices would have been generated.
   if (properties.contains("lag"))
   {
     int milliseconds = (properties.value("lag")).toInt();
@@ -152,11 +148,23 @@ void NiftyLinkDataSourceService::StopCapturing()
 //-----------------------------------------------------------------------------
 void NiftyLinkDataSourceService::CleanBuffer()
 {
-  // Buffer itself should be threadsafe. Clean all buffers.
-  QMap<QString, niftk::IGIDataSourceBuffer::Pointer>::iterator iter;
+  // Buffers should be threadsafe. Clean all buffers.
+  QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>::iterator iter;
   for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
   {
     (*iter)->CleanBuffer();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyLinkDataSourceService::SaveBuffer()
+{
+  // Buffers should be threadsafe. Save all buffers.
+  QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>::iterator iter;
+  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
+  {
+    (*iter)->SaveBuffer();
   }
 }
 
@@ -360,68 +368,19 @@ bool NiftyLinkDataSourceService::ProbeRecordedData(const QString& path,
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::GrabData()
-{
-  {
-    QMutexLocker locker(&m_Lock);
-
-    if (this->GetIsPlayingBack())
-    {
-      return;
-    }
-  }
-
-/*
-  niftk::IGIDataType::IGITimeType timeCreated = this->GetTimeStampInNanoseconds();
-
-  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result = m_Tracker->GetTrackingData();
-
-  if (!result.empty())
-  {
-    std::map<std::string, vtkSmartPointer<vtkMatrix4x4> >::iterator iter;
-    for (iter = result.begin(); iter != result.end(); iter++)
-    {
-      std::string toolName = (*iter).first;
-      QString toolNameAsQString = QString::fromStdString(toolName);
-
-      niftk::IGITrackerDataType::Pointer wrapper = niftk::IGITrackerDataType::New();
-      wrapper->SetToolName(toolName);
-      wrapper->SetTrackingData((*iter).second);
-      wrapper->SetTimeStampInNanoSeconds(timeCreated);
-      wrapper->SetFrameId(m_FrameId++);
-      wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-      wrapper->SetShouldBeSaved(this->GetIsRecording());
-      wrapper->SetIsSaved(false);
-
-      if (!m_Buffers.contains(toolNameAsQString))
-      {
-        niftk::IGIDataSourceBuffer::Pointer newBuffer = niftk::IGIDataSourceBuffer::New(m_Tracker->GetPreferredFramesPerSecond() * 2);
-        m_Buffers.insert(toolNameAsQString, newBuffer);
-      }
-
-      m_Buffers[toolNameAsQString]->AddToBuffer(wrapper.GetPointer());
-
-      // Save synchronously.
-      // This has the side effect that if saving is too slow,
-      // the QTimers just won't keep up, and start missing pulses.
-      if (this->GetIsRecording())
-      {
-        this->SaveItem(wrapper.GetPointer());
-      }
-    }
-    this->SetStatus("Grabbing");
-  }
-  else
-  {
-    this->SetStatus("No data!");
-  }
-  */
-}
-
-
-//-----------------------------------------------------------------------------
 void NiftyLinkDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 {
+  niftk::NiftyLinkDataType::Pointer niftyLinkType = static_cast<niftk::NiftyLinkDataType*>(data.GetPointer());
+  if (niftyLinkType.IsNull())
+  {
+    mitkThrow() << this->GetName().toStdString() << ":Received null data?!?";
+  }
+
+  if (niftyLinkType->GetIsSaved())
+  {
+    return;
+  }
+
 /*
   niftk::IGITrackerDataType::Pointer dataType = static_cast<niftk::IGITrackerDataType*>(data.GetPointer());
   if (dataType.IsNull())
@@ -492,14 +451,14 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
     return infos;
   }
 
+  // i.e. we are frozen. No update.
   if (!this->GetShouldUpdate())
   {
     return infos;
   }
 
-
-/*
-  QMap<QString, niftk::IGIDataSourceBuffer::Pointer>::iterator iter;
+  // Process each buffer in turn? Use OpenMP to parallelise, as each source might have lots to do.
+  QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>::iterator iter;
   for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
   {
     QString bufferName = iter.key();
@@ -514,32 +473,31 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
       continue;
     }
 
-    niftk::IGITrackerDataType::Pointer dataType = static_cast<niftk::IGITrackerDataType*>(m_Buffers[bufferName]->GetItem(time).GetPointer());
+    niftk::NiftyLinkDataType::Pointer dataType = static_cast<niftk::NiftyLinkDataType*>(m_Buffers[bufferName]->GetItem(time).GetPointer());
     if (dataType.IsNull())
     {
       MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffers[bufferName]->GetBufferSize() << ", last=" << m_Buffers[bufferName]->GetLastTimeStamp() << std::endl;
       continue;
     }
 
+    niftk::NiftyLinkMessageContainer::Pointer msgContainer = dataType->GetMessageContainer();
+    if (msgContainer.data() == NULL)
+    {
+      mitkThrow() << this->GetName().toStdString() << ":NiftyLinkDataType does not contain a NiftyLinkMessageContainer";
+    }
+
+    igtl::MessageBase::Pointer igtlMessage = msgContainer->GetMessage();
+    if (igtlMessage.IsNull())
+    {
+      mitkThrow() << this->GetName().toStdString() << ":NiftyLinkMessageContainer contains a NULL igtl message";
+    }
+
     mitk::DataNode::Pointer node = this->GetDataNode(bufferName);
     if (node.IsNull())
     {
-      mitkThrow() << "Can't find mitk::DataNode with name " << bufferName.toStdString();
+      mitkThrow() << this->GetName().toStdString() << ":Can't find mitk::DataNode with name " << bufferName.toStdString();
     }
 
-    mitk::CoordinateAxesData::Pointer coords = static_cast<mitk::CoordinateAxesData*>(node->GetData());
-    if (coords.IsNull())
-    {
-      mitkThrow() << "DataNode with name " << bufferName.toStdString() << " contains the wrong data type!";
-    }
-
-    vtkSmartPointer<vtkMatrix4x4> matrix = dataType->GetTrackingData();
-    coords->SetVtkMatrix(*matrix);
-
-    // We tell the node that it is modified so the next rendering event
-    // will redraw it. Triggering this does not in itself guarantee a re-rendering.
-    coords->Modified();
-    node->Modified();
 
     IGIDataItemInfo info;
     info.m_Name = this->GetName();
@@ -551,7 +509,6 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
     info.m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
     infos.push_back(info);
   }
-*/
   return infos;
 }
 
@@ -559,7 +516,91 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
 //-----------------------------------------------------------------------------
 void NiftyLinkDataSourceService::MessageReceived(niftk::NiftyLinkMessageContainer::Pointer message)
 {
-  // this method is the equivalent of the "GrabData" method.
+  if (message.data() == NULL)
+  {
+    mitkThrow() << "Null message received, surely a programming bug?!?";
+  }
+
+  bool isRecording = false;
+  {
+    QMutexLocker locker(&m_Lock);
+    if (this->GetIsPlayingBack())
+    {
+      return;
+    }
+    isRecording = this->GetIsRecording();
+  }
+
+  igtl::MessageBase::Pointer igtlMessage = message->GetMessage();
+  if (igtlMessage.IsNull())
+  {
+    MITK_WARN << this->GetName().toStdString() << ":NiftyLinkMessageContainer contains a NULL igtl message.";
+    return;
+  }
+
+  // Try to get the best time stamp available.
+  // Remember: network clients could be rather unreliable, or have incorrectly synched clock.
+  niftk::IGIDataType::IGITimeType localTime = this->GetTimeStampInNanoseconds();
+  message->GetTimeCreated(m_MessageReceivedTimeStamp);
+  niftk::IGIDataType::IGITimeType timeCreated = m_MessageReceivedTimeStamp->GetTimeStampInNanoseconds();
+  niftk::IGIDataType::IGITimeType timeToUse = 0;
+  if (timeCreated > localTime  // if remote end is ahead, clock must be wrong.
+      || timeCreated == 0      // if not specified, time data is useless.
+      || timeCreated == std::numeric_limits<niftk::IGIDataType::IGITimeType>::min()
+      || timeCreated == std::numeric_limits<niftk::IGIDataType::IGITimeType>::max()
+      )
+  {
+    timeToUse = localTime;
+  }
+  else
+  {
+    timeToUse = timeCreated;
+  }
+
+  QString host = message->GetSenderHostName();
+  QString port = QString::number(message->GetSenderPortNumber());
+  QString originator = host + QString(":") + port;
+
+  niftk::NiftyLinkDataType::Pointer wrapper = niftk::NiftyLinkDataType::New();
+  wrapper->SetMessageContainer(message);
+  wrapper->SetTimeStampInNanoSeconds(timeToUse);
+  wrapper->SetFrameId(m_FrameId++);
+  wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+  wrapper->SetShouldBeSaved(isRecording);
+  wrapper->SetIsSaved(false);
+
+  if (!m_Buffers.contains(originator))
+  {
+    // So buffer requires a back-ground delete thread.
+    niftk::IGIWaitForSavedDataSourceBuffer::Pointer newBuffer
+        = niftk::IGIWaitForSavedDataSourceBuffer::New(100, this);
+
+    m_Buffers.insert(originator, newBuffer);
+  }
+
+  if (isRecording)
+  {
+    // Save synchronously, within this thread (triggered from Network).
+    if (wrapper->IsFastToSave())
+    {
+      this->SaveItem(wrapper.GetPointer());
+      wrapper->SetIsSaved(true); // clear down happens in another thread.
+    }
+    else
+    {
+      // Save asynchronously, from background thread.
+      wrapper->SetIsSaved(false);
+    }
+  }
+
+  // So, one source (given by host:port), could send messages of multiple types.
+  // So the buffer is per-source, not per message type.
+  // Also, I'm adding this last, so that the isSaved field is true at the point
+  // the item enters the buffer. This means the background delete thread and background
+  // save thread won't know about it until it enters the buffer here.
+  m_Buffers[originator]->AddToBuffer(wrapper.GetPointer());
+
+  this->SetStatus("Grabbing");
 }
 
 } // end namespace
