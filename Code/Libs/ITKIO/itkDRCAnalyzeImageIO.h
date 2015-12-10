@@ -16,7 +16,7 @@
 #define itkDRCAnalyzeImageIO_h
 
 #include <NifTKConfigure.h>
-#include <niftkITKWin32ExportHeader.h>
+#include "niftkITKIOWin32ExportHeader.h"
 
 #include "itkAnalyzeImageIO3160_p.h"
 
@@ -28,7 +28,7 @@ namespace itk {
  * which is incorrectly flipped. If you call this->SetDRCMode(true) (also default), it will do DRC specific
  * functionality, and if you call SetDRCMode(false), it will revert to standard ITK functionality.
  */
-class NIFTKITK_WINEXPORT ITK_EXPORT DRCAnalyzeImageIO: public AnalyzeImageIO3160 {
+class NIFTKITKIO_WINEXPORT ITK_EXPORT DRCAnalyzeImageIO: public AnalyzeImageIO3160 {
 
 public:
 

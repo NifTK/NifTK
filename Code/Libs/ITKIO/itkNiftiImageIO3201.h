@@ -45,7 +45,7 @@
 #include <fstream>
 #include <itkImageIOBase.h>
 #include <nifti1_io.h>
-#include <niftkITKWin32ExportHeader.h>
+#include "niftkITKIOWin32ExportHeader.h"
 
 namespace itk
 {
@@ -58,7 +58,7 @@ namespace itk
  *
  * \ingroup IOFilters
  */
-class NIFTKITK_WINEXPORT ITK_EXPORT NiftiImageIO3201 : public ImageIOBase
+class NIFTKITKIO_WINEXPORT ITK_EXPORT NiftiImageIO3201 : public ImageIOBase
 {
 public:
   /** Standard class typedefs. */

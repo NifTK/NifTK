@@ -357,7 +357,7 @@ password <your CMICLab password>
 \endverbatim
 
 For authentication through ssh you need to <a href="https://cmiclab.cs.ucl.ac.uk/help/ssh/README">
-add your ssh public key to your account on CMICLab<a>.
+add your ssh public key to your account on CMICLab</a>.
 
 \section BuildInstructionsCMake 8. Configuring NifTK
 
