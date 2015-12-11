@@ -540,10 +540,7 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
 
     IGIDataItemInfo info;
     info.m_Name = this->GetName();
-    info.m_Status = this->GetStatus();
-    info.m_ShouldUpdate = this->GetShouldUpdate();
     info.m_FramesPerSecond = m_Buffers[bufferName]->GetFrameRate();
-    info.m_Description = "MITK based tracker.";
     info.m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
     info.m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
     infos.push_back(info);

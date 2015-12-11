@@ -477,7 +477,7 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
       for (int i = 0; i < infoForOneRow.size(); i++)
       {
         QImage pix(22, 22, QImage::Format_ARGB32);
-        if (!infoForOneRow[i].m_ShouldUpdate)
+        if (m_Manager->IsFrozen(i))
         {
           pix.fill(QColor(Qt::blue)); // suspended
         }
@@ -507,8 +507,9 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
       }
 
       IGIDataItemInfo firstItemOnly = infoForOneRow[0];
+      niftk::IGIDataSourceI::Pointer source = m_Manager->GetSource(r);
 
-      QTableWidgetItem *item1 = new QTableWidgetItem(firstItemOnly.m_Status);
+      QTableWidgetItem *item1 = new QTableWidgetItem(source->GetStatus());
       item1->setTextAlignment(Qt::AlignCenter);
       item1->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
       item1->setIcon(QPixmap::fromImage(iconAsImage));
@@ -524,7 +525,7 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
       item3->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
       m_TableWidget->setItem(r, 3, item3);
 
-      QTableWidgetItem *item4 = new QTableWidgetItem(firstItemOnly.m_Description);
+      QTableWidgetItem *item4 = new QTableWidgetItem(source->GetDescription());
       item4->setTextAlignment(Qt::AlignCenter);
       item4->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
       m_TableWidget->setItem(r, 4, item4);

@@ -19,7 +19,7 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 niftk::IGIDataSourceLocker NiftyLinkServerDataSourceService::s_Lock;
-
+QSet<int> NiftyLinkServerDataSourceService::s_PortsInUse;
 
 //-----------------------------------------------------------------------------
 NiftyLinkServerDataSourceService::NiftyLinkServerDataSourceService(
@@ -37,6 +37,10 @@ NiftyLinkServerDataSourceService::NiftyLinkServerDataSourceService(
   }
   portNumber = (properties.value("port")).toInt();
 
+  if (s_PortsInUse.contains(portNumber))
+  {
+    mitkThrow() << "Port " << portNumber << " is already in use!";
+  }
   m_Server = new NiftyLinkTcpServer();
 
   // Register to slots before we start to use it, otherwise you miss error messages.
@@ -56,6 +60,7 @@ NiftyLinkServerDataSourceService::NiftyLinkServerDataSourceService(
     mitkThrow() << "Failed to start NiftyLinkTcpServer on port " << portNumber
                 << ", due to " << m_Server->errorString().toStdString();
   }
+  s_PortsInUse.insert(portNumber);
 
   QString deviceName = this->GetName();
   m_ServerNumber = (deviceName.remove(0, 9)).toInt(); // Should match string NLServer- above

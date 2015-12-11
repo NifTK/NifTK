@@ -14,8 +14,8 @@
 
 
 MITK_CREATE_MODULE(
-  DEPENDS niftkIGIDataSources niftkCore
-  PACKAGE_DEPENDS Qt4|QtCore NiftyLink
+  DEPENDS MitkCore niftkCore niftkIGIDataSources niftkOpenCVImageConversion
+  PACKAGE_DEPENDS Qt4|QtCore NiftyLink OpenCV
   AUTOLOAD_WITH niftkIGIServices
 )
 

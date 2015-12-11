@@ -76,6 +76,11 @@ public:
   virtual QString GetStatus() const override;
 
   /**
+  * \see IGIDataSourceI::GetDescription()
+  */
+  QString GetDescription() const override;
+
+  /**
   * \see IGIDataSourceI::GetShouldUpdate()
   */
   virtual bool GetShouldUpdate() const override;
@@ -174,7 +179,8 @@ protected:
   itkSetMacro(IsRecording, bool);
   itkSetMacro(IsPlayingBack, bool);
 
-  itkSetStringMacro(Status);
+  void SetStatus(const QString& status);
+  void SetDescription(const QString& description);
 
 private:
 
@@ -185,6 +191,7 @@ private:
   QString                           m_Name;
   QString                           m_FactoryName;
   QString                           m_Status;
+  QString                           m_Description;
   QString                           m_RecordingLocation;
   niftk::IGIDataType::IGITimeType   m_TimeStampTolerance; // nanoseconds.
   bool                              m_ShouldUpdate;

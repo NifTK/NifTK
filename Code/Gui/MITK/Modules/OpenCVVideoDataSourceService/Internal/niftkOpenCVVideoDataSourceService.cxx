@@ -408,10 +408,7 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
   // Create default return status.
   IGIDataItemInfo info;
   info.m_Name = this->GetName();
-  info.m_Status = this->GetStatus();
-  info.m_ShouldUpdate = this->GetShouldUpdate();
   info.m_FramesPerSecond = m_Buffer->GetFrameRate();
-  info.m_Description = "Local OpenCV video source";
   infos.push_back(info);
 
   // If we are not actually updating data, bail out.

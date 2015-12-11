@@ -22,6 +22,9 @@
 #include <niftkIGISaveableDataSourceI.h>
 #include <NiftyLinkMessageContainer.h>
 
+#include <igtlTrackingDataMessage.h>
+#include <igtlImageMessage.h>
+#include <igtlStringMessage.h>
 #include <igtlTimeStamp.h>
 
 #include <QObject>
@@ -122,6 +125,10 @@ public:
 
   /**
   * \brief IGIDataSourceI::SetProperties()
+  *
+  * Also note, that if you set the lag here, it will be applied to all data-sources.
+  * So, if you have 1 source eg. PLUS Server, sending tracking and imaging, the remote
+  * source needs to ensure that the different types of data have been synchronised in time.
   */
   virtual void SetProperties(const IGIDataSourceProperties& properties) override;
 
@@ -151,6 +158,20 @@ private:
   NiftyLinkDataSourceService& operator=(const NiftyLinkDataSourceService&); // deliberately not implemented
 
   QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > GetPlaybackIndex(QString directory);
+
+  std::vector<IGIDataItemInfo> HandleTrackingData(QString bufferName,
+                                                  niftk::IGIDataType::IGITimeType timeRequested,
+                                                  niftk::IGIDataType::IGITimeType actualTime,
+                                                  igtl::TrackingDataMessage::Pointer);
+
+  std::vector<IGIDataItemInfo> HandleImage(QString bufferName,
+                                           niftk::IGIDataType::IGITimeType timeRequested,
+                                           niftk::IGIDataType::IGITimeType actualTime,
+                                           igtl::ImageMessage::Pointer);
+
+  std::vector<IGIDataItemInfo> HandleString(igtl::StringMessage::Pointer);
+
+  void AddAll(const std::vector<IGIDataItemInfo>& a, std::vector<IGIDataItemInfo>& b);
 
   static niftk::IGIDataSourceLocker                              s_Lock;
   QMutex                                                         m_Lock;

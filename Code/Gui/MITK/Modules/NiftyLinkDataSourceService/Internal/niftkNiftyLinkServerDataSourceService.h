@@ -18,6 +18,9 @@
 #include <niftkIGIDataSourceLocker.h>
 #include <NiftyLinkTcpServer.h>
 
+#include <QSet>
+#include <QString>
+
 namespace niftk
 {
 
@@ -51,6 +54,7 @@ private:
   NiftyLinkServerDataSourceService& operator=(const NiftyLinkServerDataSourceService&); // deliberately not implemented
 
   static niftk::IGIDataSourceLocker               s_Lock;
+  static QSet<int>                                s_PortsInUse;
   int                                             m_ServerNumber;
   niftk::NiftyLinkTcpServer                      *m_Server;
 

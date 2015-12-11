@@ -49,21 +49,15 @@ struct NIFTKIGIDATASOURCES_EXPORT IGIDataItemInfo
   IGIDataItemInfo()
   {
     m_Name = "Unknown";
-    m_Status = "Unknown";
-    m_ShouldUpdate = false;
     m_IsLate = false;
     m_LagInMilliseconds = 0;
     m_FramesPerSecond = 0;
-    m_Description = "Unknown";
   }
 
   QString      m_Name;
-  QString      m_Status;
-  bool         m_ShouldUpdate;
   bool         m_IsLate;
   unsigned int m_LagInMilliseconds;
   float        m_FramesPerSecond;
-  QString      m_Description;
 };
 
 
@@ -106,6 +100,11 @@ public:
   virtual QString GetStatus() const = 0;
 
   /**
+  * \brief Returns a free-text string describing the source.
+  */
+  virtual QString GetDescription() const = 0;
+
+  /**
   * \brief Starts the capture/grabbing process.
   *
   * It is envisaged that all implementing classes implement RAII,
@@ -135,18 +134,18 @@ public:
   virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp, niftk::IGIDataType::IGITimeType lastTimeStamp) = 0;
 
   /**
+  * \brief Stops the playback process, so after this call, implementing data sources
+  * should be grabbing live data again.
+  */
+  virtual void StopPlayback() = 0;
+
+  /**
   * \brief Request that the data source loads data corresponding to the given timestamp.
   *
   * This is expected to just load data into internal buffers. It should then be
   * up to the Update() method to update data storage.
   */
   virtual void PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp) = 0;
-
-  /**
-  * \brief Stops the playback process, so after this call, implementing data sources
-  * should be grabbing live data again.
-  */
-  virtual void StopPlayback() = 0;
 
   /**
   * \brief Set the root directory of the recording session.

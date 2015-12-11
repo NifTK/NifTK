@@ -38,7 +38,7 @@ public:
   * \see IGIDataSourceFactoryServiceI::CreateService()
   */
   virtual IGIDataSourceI::Pointer CreateService(mitk::DataStorage::Pointer dataStorage,
-    const IGIDataSourceProperties& properties) const = 0;
+    const IGIDataSourceProperties& properties) const override = 0;
 
   /**
   * \see IGIDataSourceFactoryServiceI::CreateInitialisationDialog()

@@ -14,17 +14,20 @@
 
 #include "niftkNiftyLinkDataSourceService.h"
 #include "niftkNiftyLinkDataType.h"
+#include <niftkImageConversion.h>
+#include <NiftyLinkImageMessageHelpers.h>
 
 #include <mitkCoordinateAxesData.h>
-
-#include <igtlTrackingDataMessage.h>
-#include <igtlImageMessage.h>
-#include <igtlStringMessage.h>
+#include <mitkAffineTransformDataNodeProperty.h>
+#include <mitkImage.h>
+#include <mitkImageWriteAccessor.h>
 
 #include <vtkSmartPointer.h>
 
 #include <QDir>
 #include <QMutexLocker>
+
+#include <cv.h>
 
 namespace niftk
 {
@@ -77,7 +80,7 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
   }
 
   m_BackgroundSaveThread = new niftk::IGIDataSourceBackgroundSaveThread(NULL, this);
-  m_BackgroundSaveThread->SetInterval(500); // try deleting data every 0.5 second.
+  m_BackgroundSaveThread->SetInterval(500); // try saving data every 0.5 second.
   m_BackgroundSaveThread->start();
   if (!m_BackgroundSaveThread->isRunning())
   {
@@ -166,6 +169,9 @@ void NiftyLinkDataSourceService::CleanBuffer()
 void NiftyLinkDataSourceService::SaveBuffer()
 {
   // Buffers should be threadsafe. Save all buffers.
+  // This is called by a separate save thread, which, for each
+  // item, does a callback onto this object, thereby ending
+  // up calling SaveItem from the save thread.
   QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>::iterator iter;
   for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
   {
@@ -446,9 +452,6 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
   {
     IGIDataItemInfo info;
     info.m_Name = this->GetName();
-    info.m_Status = this->GetStatus();
-    info.m_ShouldUpdate = this->GetShouldUpdate();
-    info.m_Description = "Network Source";
     info.m_FramesPerSecond = 0;
     info.m_IsLate = false;
     info.m_LagInMilliseconds = 0;
@@ -499,65 +502,225 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
     igtl::StringMessage::Pointer stringMessage = dynamic_cast<igtl::StringMessage*>(igtlMessage.GetPointer());
     if (stringMessage.IsNotNull())
     {
-      MITK_INFO << this->GetName().toStdString() << ":Received " << stringMessage->GetString();
-      return infos;
+      std::vector<IGIDataItemInfo> tmp = this->HandleString(stringMessage);
+      this->AddAll(tmp, infos);
     }
 
     igtl::TrackingDataMessage::Pointer trackingMessage = dynamic_cast<igtl::TrackingDataMessage*>(igtlMessage.GetPointer());
     if (trackingMessage.IsNotNull())
     {
-      igtl::TrackingDataElement::Pointer tdata = igtl::TrackingDataElement::New();
-      igtl::Matrix4x4 mat;
-      QString toolName;
-      vtkSmartPointer<vtkMatrix4x4> vtkMat = vtkSmartPointer<vtkMatrix4x4>::New();
-
-      for (int i = 0; i < trackingMessage->GetNumberOfTrackingDataElements(); i++)
-      {
-        trackingMessage->GetTrackingDataElement(i, tdata);
-        tdata->GetMatrix(mat);
-        toolName = QString::fromStdString(tdata->GetName());
-
-        mitk::DataNode::Pointer node = this->GetDataNode(toolName);
-        if (node.IsNull())
-        {
-          mitkThrow() << this->GetName().toStdString() << ":Can't find mitk::DataNode with name " << toolName.toStdString();
-        }
-
-        mitk::CoordinateAxesData::Pointer coord = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
-        if (coord.IsNull())
-        {
-          coord = mitk::CoordinateAxesData::New();
-          node->SetData(coord);
-        }
-
-        for (int r = 0; r < 4; r++)
-        {
-          for (int c = 0; c < 4; c++)
-          {
-            vtkMat->SetElement(r, c, mat[r][c]);
-          }
-        }
-        coord->SetVtkMatrix(*vtkMat);
-      }
-
-      IGIDataItemInfo info;
-      info.m_Name = toolName;
-      info.m_Status = this->GetStatus();
-      info.m_ShouldUpdate = this->GetShouldUpdate();
-      info.m_FramesPerSecond = m_Buffers[bufferName]->GetFrameRate();
-      info.m_Description = "Network Source";
-      info.m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
-      info.m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
-      infos.push_back(info);
-    } // end if its a tracking message
+      std::vector<IGIDataItemInfo> tmp = this->HandleTrackingData(bufferName, time, dataType->GetTimeStampInNanoSeconds(), trackingMessage);
+      this->AddAll(tmp, infos);
+    }
 
     igtl::ImageMessage::Pointer imgMsg = dynamic_cast<igtl::ImageMessage*>(igtlMessage.GetPointer());
     if (imgMsg.IsNotNull())
     {
+      std::vector<IGIDataItemInfo> tmp = this->HandleImage(bufferName, time, dataType->GetTimeStampInNanoSeconds(), imgMsg);
+      this->AddAll(tmp, infos);
+    }
+  }
+  return infos;
+}
 
+
+//-----------------------------------------------------------------------------
+void NiftyLinkDataSourceService::AddAll(const std::vector<IGIDataItemInfo>& a, std::vector<IGIDataItemInfo>& b)
+{
+  for (int i = 0; i < a.size(); i++)
+  {
+    b.push_back(a[i]);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::HandleTrackingData(QString bufferName,
+                                                                            niftk::IGIDataType::IGITimeType timeRequested,
+                                                                            niftk::IGIDataType::IGITimeType actualTime,
+                                                                            igtl::TrackingDataMessage::Pointer trackingMessage)
+{
+  std::vector<IGIDataItemInfo> infos;
+
+  igtl::TrackingDataElement::Pointer tdata = igtl::TrackingDataElement::New();
+  igtl::Matrix4x4 mat;
+  QString toolName;
+  vtkSmartPointer<vtkMatrix4x4> vtkMat = vtkSmartPointer<vtkMatrix4x4>::New();
+
+  for (int i = 0; i < trackingMessage->GetNumberOfTrackingDataElements(); i++)
+  {
+    trackingMessage->GetTrackingDataElement(i, tdata);
+    tdata->GetMatrix(mat);
+
+    for (int r = 0; r < 4; r++)
+    {
+      for (int c = 0; c < 4; c++)
+      {
+        vtkMat->SetElement(r, c, mat[r][c]);
+      }
     }
 
+    toolName = QString::fromStdString(tdata->GetName());
+    mitk::DataNode::Pointer node = this->GetDataNode(toolName); // this should create if none exists.
+    if (node.IsNull())
+    {
+      mitkThrow() << this->GetName().toStdString() << ":Can't find mitk::DataNode with name " << toolName.toStdString();
+    }
+
+    mitk::CoordinateAxesData::Pointer coord = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+    if (coord.IsNull())
+    {
+      coord = mitk::CoordinateAxesData::New();
+
+      // We remove and add to trigger the NodeAdded event,
+      // which is not emmitted if the node was added with no data.
+      this->GetDataStorage()->Remove(node);
+      node->SetData(coord);
+      this->GetDataStorage()->Add(node);
+    }
+    coord->SetVtkMatrix(*vtkMat);
+
+    mitk::AffineTransformDataNodeProperty::Pointer affTransProp = mitk::AffineTransformDataNodeProperty::New();
+    affTransProp->SetTransform(*vtkMat);
+
+    std::string propertyName = "niftk." + toolName.toStdString();
+    node->SetProperty(propertyName.c_str(), affTransProp);
+    node->Modified();
+
+    IGIDataItemInfo info;
+    info.m_Name = toolName;
+    info.m_FramesPerSecond = m_Buffers[bufferName]->GetFrameRate();
+    info.m_IsLate = this->IsLate(timeRequested, actualTime);
+    info.m_LagInMilliseconds = this->GetLagInMilliseconds(timeRequested, actualTime);
+    infos.push_back(info);
+
+  } // end for each tracking data element.
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::HandleImage(QString bufferName,
+                                                                     niftk::IGIDataType::IGITimeType timeRequested,
+                                                                     niftk::IGIDataType::IGITimeType actualTime,
+                                                                     igtl::ImageMessage::Pointer imgMsg)
+{
+
+  QImage qImage;
+  niftk::GetQImage(imgMsg, qImage);
+
+  // Slow. Not necessary?
+/*
+  if (m_FlipHorizontally || m_FlipVertically)
+  {
+    qImage = qImage.mirrored(m_FlipHorizontally, m_FlipVertically);
   }
+*/
+
+  // wrap the qimage in an opencv image
+  IplImage  ocvimg;
+  int nchannels = 0;
+  switch (qImage.format())
+  {
+    // this corresponds to BGRA channel order.
+    // we are flipping to RGBA below.
+    case QImage::Format_ARGB32:
+      nchannels = 4;
+      break;
+    case QImage::Format_Indexed8:
+      // we totally ignore the (missing?) colour table here.
+      nchannels = 1;
+      break;
+
+    default:
+      MITK_ERROR << "NiftyLinkDataSourceService received an unsupported image format";
+  }
+  cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, nchannels);
+  cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
+  // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
+  // so should be fine to do this here...
+  if (ocvimg.nChannels == 4)
+  {
+    cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
+    // mark layout as rgba instead of the opencv-default bgr
+    std::memcpy(&ocvimg.channelSeq[0], "RGBA", 4);
+  }
+
+  mitk::DataNode::Pointer node = this->GetDataNode(bufferName); // this should create if none exists.
+  if (node.IsNull())
+  {
+    mitkThrow() << this->GetName().toStdString() << ":Can't find mitk::DataNode with name " << bufferName.toStdString();
+  }
+
+  mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+  if (!imageInNode.IsNull())
+  {
+    // check size of image that is already attached to data node!
+    bool haswrongsize = false;
+    haswrongsize |= imageInNode->GetDimension(0) != qImage.width();
+    haswrongsize |= imageInNode->GetDimension(1) != qImage.height();
+    haswrongsize |= imageInNode->GetDimension(2) != 1;
+    // check image type as well.
+    haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent() != ocvimg.depth;
+    haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents() != ocvimg.nChannels;
+
+    if (haswrongsize)
+    {
+      imageInNode = mitk::Image::Pointer();
+    }
+  }
+
+  if (imageInNode.IsNull())
+  {
+    mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&ocvimg);
+    // cycle the node listeners. mitk wont fire listeners properly, in cases where data is missing.
+    this->GetDataStorage()->Remove(node);
+    node->SetData(convertedImage);
+    this->GetDataStorage()->Add(node);
+  }
+  else
+  {
+    mitk::ImageWriteAccessor writeAccess(imageInNode);
+    void* vPointer = writeAccess.GetData();
+
+    // the mitk image is tightly packed
+    // but the opencv image might not
+    const unsigned int numberOfBytesPerLine = ocvimg.width * ocvimg.nChannels;
+    if (numberOfBytesPerLine == static_cast<unsigned int>(ocvimg.widthStep))
+    {
+      std::memcpy(vPointer, ocvimg.imageData, numberOfBytesPerLine * ocvimg.height);
+    }
+    else
+    {
+      // if that is not true then something is seriously borked
+      assert(ocvimg.widthStep >= numberOfBytesPerLine);
+
+      // "slow" path: copy line by line
+      for (int y = 0; y < ocvimg.height; ++y)
+      {
+        // widthStep is in bytes while width is in pixels
+        std::memcpy(&(((char*) vPointer)[y * numberOfBytesPerLine]), &(ocvimg.imageData[y * ocvimg.widthStep]), numberOfBytesPerLine);
+      }
+    }
+  }
+  node->Modified();
+
+  std::vector<IGIDataItemInfo> infos;
+  IGIDataItemInfo info;
+  info.m_Name = this->GetName();
+  info.m_FramesPerSecond = m_Buffers[bufferName]->GetFrameRate();
+  info.m_IsLate = this->IsLate(timeRequested, actualTime);
+  info.m_LagInMilliseconds = this->GetLagInMilliseconds(timeRequested, actualTime);
+  infos.push_back(info);
+  return infos;
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::HandleString(igtl::StringMessage::Pointer stringMessage)
+{
+  MITK_INFO << this->GetName().toStdString() << ":Received " << stringMessage->GetString();
+
+  std::vector<IGIDataItemInfo> infos;
   return infos;
 }
 

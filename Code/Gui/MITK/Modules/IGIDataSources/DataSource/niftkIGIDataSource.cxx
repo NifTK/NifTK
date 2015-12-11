@@ -32,6 +32,7 @@ IGIDataSource::IGIDataSource(const std::string& name,
 , m_Name(QString::fromStdString(name))
 , m_FactoryName(QString::fromStdString(factoryName))
 , m_Status("UNKNOWN")
+, m_Description("UNKNOWN")
 , m_TimeStampTolerance(0)
 , m_ShouldUpdate(false)
 , m_IsRecording(false)
@@ -118,6 +119,29 @@ QString IGIDataSource::GetFactoryName() const
 QString IGIDataSource::GetStatus() const
 {
   return m_Status;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::SetStatus(const QString& status)
+{
+  m_Status = status;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+QString IGIDataSource::GetDescription() const
+{
+  return m_Description;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::SetDescription(const QString& description)
+{
+  m_Description = description;
+  this->Modified();
 }
 
 

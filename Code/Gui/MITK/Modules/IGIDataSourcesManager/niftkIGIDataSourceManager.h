@@ -170,6 +170,11 @@ public:
   void FreezeDataSource(unsigned int i, bool isFrozen);
 
   /**
+  * \brief Returns true if data source i is frozen and false otherwise.
+  */
+  bool IsFrozen(unsigned int i) const;
+
+  /**
   * \brief Sets the manager ready for playback.
   *
   * \param directoryPrefix path to the root folder of the recording session

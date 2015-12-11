@@ -515,6 +515,17 @@ void IGIDataSourceManager::StopRecording()
 
 
 //-----------------------------------------------------------------------------
+bool IGIDataSourceManager::IsFrozen(unsigned int i) const
+{
+  if (i >= m_Sources.size())
+  {
+    mitkThrow() << "Index out of bounds, size=" << m_Sources.size() << ", i=" << i;
+  }
+  return m_Sources[i]->GetShouldUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManager::FreezeAllDataSources(bool isFrozen)
 {
   for (int i = 0; i < m_Sources.size(); i++)
