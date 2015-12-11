@@ -521,7 +521,7 @@ bool IGIDataSourceManager::IsFrozen(unsigned int i) const
   {
     mitkThrow() << "Index out of bounds, size=" << m_Sources.size() << ", i=" << i;
   }
-  return m_Sources[i]->GetShouldUpdate();
+  return !m_Sources[i]->GetShouldUpdate();
 }
 
 

@@ -87,6 +87,7 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
     mitkThrow() << "Failed to start background save thread";
   }
 
+  this->SetDescription("Network trackers via OpenIGTLink.");
   this->SetStatus("Initialised");
   this->Modified();
 }

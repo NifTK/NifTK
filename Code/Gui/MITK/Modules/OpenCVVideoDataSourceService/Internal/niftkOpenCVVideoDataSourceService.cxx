@@ -91,6 +91,7 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
     mitkThrow() << "Failed to start data grabbing thread";
   }
 
+  this->SetDescription("Local video source, (via OpenCV), e.g. web-cam.");
   this->SetStatus("Initialised");
   this->Modified();
 }

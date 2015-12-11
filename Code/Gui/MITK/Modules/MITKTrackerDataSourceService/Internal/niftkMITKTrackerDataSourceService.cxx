@@ -86,6 +86,7 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
     mitkThrow() << "Failed to start data grabbing thread";
   }
 
+  this->SetDescription("Local trackers, provided by MITK.");
   this->SetStatus("Initialised");
   this->Modified();
 }
