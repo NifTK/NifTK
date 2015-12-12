@@ -220,7 +220,7 @@ void IGIDataSourceManager::RetrieveAllDataSourceFactories()
     QList<QString> aliases = factory->GetLegacyClassNames();
     for (int j = 0; j < aliases.size(); j++)
     {
-      m_LegacyNameToFactoriesMap.insert(aliases[i], factory);
+      m_LegacyNameToFactoriesMap.insert(aliases[j], factory);
     }
   }
 }

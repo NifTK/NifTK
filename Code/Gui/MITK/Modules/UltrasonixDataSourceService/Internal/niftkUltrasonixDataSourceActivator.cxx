@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include "niftkOpenCVVideoDataSourceActivator.h"
-#include "niftkOpenCVVideoDataSourceFactory.h"
+#include "niftkUltrasonixDataSourceActivator.h"
+#include "niftkUltrasonixDataSourceFactory.h"
 #include <niftkIGIDataSourceFactoryServiceI.h>
 #include <usServiceProperties.h>
 
@@ -21,33 +21,33 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-OpenCVVideoDataSourceActivator::OpenCVVideoDataSourceActivator()
+UltrasonixDataSourceActivator::UltrasonixDataSourceActivator()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-OpenCVVideoDataSourceActivator::~OpenCVVideoDataSourceActivator()
+UltrasonixDataSourceActivator::~UltrasonixDataSourceActivator()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceActivator::Load(us::ModuleContext* context)
+void UltrasonixDataSourceActivator::Load(us::ModuleContext* context)
 {
-  m_Factory.reset(new OpenCVVideoDataSourceFactory);
+  m_Factory.reset(new UltrasonixDataSourceFactory);
   us::ServiceProperties props;
-  props["Name"] = std::string("OpenCVVideoDataSourceFactory");
+  props["Name"] = std::string("UltrasonixDataSourceFactory");
   context->RegisterService<IGIDataSourceFactoryServiceI>(m_Factory.get(), props);
 }
 
 
 //-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceActivator::Unload(us::ModuleContext*)
+void UltrasonixDataSourceActivator::Unload(us::ModuleContext*)
 {
   // NOTE: The services are automatically unregistered
 }
 
 } // end namespace
 
-US_EXPORT_MODULE_ACTIVATOR(niftk::OpenCVVideoDataSourceActivator)
+US_EXPORT_MODULE_ACTIVATOR(niftk::UltrasonixDataSourceActivator)

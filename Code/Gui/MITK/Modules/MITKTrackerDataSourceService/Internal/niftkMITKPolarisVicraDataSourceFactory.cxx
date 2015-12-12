@@ -21,7 +21,7 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 MITKPolarisVicraDataSourceFactory::MITKPolarisVicraDataSourceFactory()
-: MITKTrackerDataSourceFactory("Vicra")
+: MITKTrackerDataSourceFactory("NDI Vicra")
 {
 }
 

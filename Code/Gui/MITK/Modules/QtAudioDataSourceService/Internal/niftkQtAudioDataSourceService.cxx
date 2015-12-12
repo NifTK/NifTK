@@ -12,14 +12,10 @@
 
 =============================================================================*/
 
-#include "niftkUltrasonixDataSourceService.h"
-#include "niftkUltrasonixDataType.h"
+#include "niftkQtAudioDataSourceService.h"
+#include "niftkQtAudioDataType.h"
 #include <niftkIGIDataSourceI.h>
-#include <niftkImageConversion.h>
 #include <mitkExceptionMacro.h>
-#include <mitkImage.h>
-#include <mitkImageReadAccessor.h>
-#include <mitkImageWriteAccessor.h>
 #include <QDir>
 #include <QMutexLocker>
 
@@ -27,29 +23,25 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataSourceLocker UltrasonixDataSourceService::s_Lock;
+niftk::IGIDataSourceLocker QtAudioDataSourceService::s_Lock;
 
 //-----------------------------------------------------------------------------
-UltrasonixDataSourceService::UltrasonixDataSourceService(
+QtAudioDataSourceService::QtAudioDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: IGIDataSource((QString("Ultrasonix-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
+: IGIDataSource((QString("QtAudio-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
                 factoryName.toStdString(),
                 dataStorage)
 , m_Lock(QMutex::Recursive)
 , m_FrameId(0)
-, m_Buffer(NULL)
-, m_BackgroundDeleteThread(NULL)
-, m_DataGrabbingThread(NULL)
 {
   this->SetStatus("Initialising");
 
   int defaultFramesPerSecond = 25;
-  m_Buffer = niftk::IGIDataSourceBuffer::New(defaultFramesPerSecond * 2);
 
   QString deviceName = this->GetName();
-  m_ChannelNumber = (deviceName.remove(0, 11)).toInt(); // Should match string OpenCV- above
+  m_ChannelNumber = (deviceName.remove(0, 8)).toInt(); // Should match string QtAudio- above
 
   this->StartCapturing();
 
@@ -62,94 +54,53 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
   this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.5);
   this->SetShouldUpdate(true);
   this->SetProperties(properties);
-
-  m_BackgroundDeleteThread = new niftk::IGIDataSourceBackgroundDeleteThread(NULL, this);
-  m_BackgroundDeleteThread->SetInterval(2000); // try deleting images every 2 seconds.
-  m_BackgroundDeleteThread->start();
-  if (!m_BackgroundDeleteThread->isRunning())
-  {
-    mitkThrow() << "Failed to start background deleting thread";
-  }
-
-  m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
-  m_DataGrabbingThread->SetInterval(intervalInMilliseconds);
-  m_DataGrabbingThread->start();
-  if (!m_DataGrabbingThread->isRunning())
-  {
-    mitkThrow() << "Failed to start data grabbing thread";
-  }
-
   this->SetStatus("Initialised");
   this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
-UltrasonixDataSourceService::~UltrasonixDataSourceService()
+QtAudioDataSourceService::~QtAudioDataSourceService()
 {
   this->StopCapturing();
-
   s_Lock.RemoveSource(m_ChannelNumber);
-
-  m_DataGrabbingThread->ForciblyStop();
-  delete m_DataGrabbingThread;
-
-  m_BackgroundDeleteThread->ForciblyStop();
-  delete m_BackgroundDeleteThread;
 }
 
 
 //-----------------------------------------------------------------------------
-void UltrasonixDataSourceService::SetProperties(const IGIDataSourceProperties& properties)
+void QtAudioDataSourceService::SetProperties(const IGIDataSourceProperties& properties)
 {
-  if (properties.contains("lag"))
-  {
-    int milliseconds = (properties.value("lag")).toInt();
-    m_Buffer->SetLagInMilliseconds(milliseconds);
-
-    MITK_INFO << "UltrasonixDataSourceService(" << this->GetName().toStdString()
-              << "): Set lag to " << milliseconds << " ms.";
-  }
 }
 
 
 //-----------------------------------------------------------------------------
-IGIDataSourceProperties UltrasonixDataSourceService::GetProperties() const
+IGIDataSourceProperties QtAudioDataSourceService::GetProperties() const
 {
-  IGIDataSourceProperties props;
-  props.insert("lag", m_Buffer->GetLagInMilliseconds());
-
-  MITK_INFO << "UltrasonixDataSourceService(:" << this->GetName().toStdString()
-            << "):Retrieved current value of lag as " << m_Buffer->GetLagInMilliseconds();
-
-  return props;
 }
 
 
 //-----------------------------------------------------------------------------
-void UltrasonixDataSourceService::StartCapturing()
+void QtAudioDataSourceService::StartCapturing()
 {
   this->SetStatus("Capturing");
 }
 
 
 //-----------------------------------------------------------------------------
-void UltrasonixDataSourceService::StopCapturing()
+void QtAudioDataSourceService::StopCapturing()
 {
   this->SetStatus("Stopped");
 }
 
 
 //-----------------------------------------------------------------------------
-void UltrasonixDataSourceService::CleanBuffer()
+void QtAudioDataSourceService::CleanBuffer()
 {
-  // Buffer itself should be threadsafe.
-  m_Buffer->CleanBuffer();
 }
 
 
 //-----------------------------------------------------------------------------
-QString UltrasonixDataSourceService::GetRecordingDirectoryName()
+QString QtAudioDataSourceService::GetRecordingDirectoryName()
 {
   return this->GetRecordingLocation()
       + this->GetPreferredSlash()
@@ -160,14 +111,12 @@ QString UltrasonixDataSourceService::GetRecordingDirectoryName()
 
 
 //-----------------------------------------------------------------------------
-void UltrasonixDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
+void QtAudioDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
                                                  niftk::IGIDataType::IGITimeType lastTimeStamp)
 {
   QMutexLocker locker(&m_Lock);
 
   IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
-
-  m_Buffer->DestroyBuffer();
 
   QDir directory(this->GetRecordingDirectoryName());
   if (directory.exists())
@@ -182,19 +131,18 @@ void UltrasonixDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType 
 
 
 //-----------------------------------------------------------------------------
-void UltrasonixDataSourceService::StopPlayback()
+void QtAudioDataSourceService::StopPlayback()
 {
   QMutexLocker locker(&m_Lock);
 
   m_PlaybackIndex.clear();
-  m_Buffer->DestroyBuffer();
 
   IGIDataSource::StopPlayback();
 }
 
 
 //-----------------------------------------------------------------------------
-void UltrasonixDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
+void QtAudioDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
 {
 /*
   assert(this->GetIsPlayingBack());
@@ -237,7 +185,7 @@ void UltrasonixDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType r
 
 
 //-----------------------------------------------------------------------------
-bool UltrasonixDataSourceService::ProbeRecordedData(const QString& path,
+bool QtAudioDataSourceService::ProbeRecordedData(const QString& path,
                                                      niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                                      niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {
@@ -272,7 +220,7 @@ bool UltrasonixDataSourceService::ProbeRecordedData(const QString& path,
 
 
 //-----------------------------------------------------------------------------
-void UltrasonixDataSourceService::GrabData()
+void QtAudioDataSourceService::GrabData()
 {
   {
     QMutexLocker locker(&m_Lock);
@@ -322,7 +270,7 @@ void UltrasonixDataSourceService::GrabData()
 
 
 //-----------------------------------------------------------------------------
-void UltrasonixDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
+void QtAudioDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 {
   /*
   niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(data.GetPointer());
@@ -358,7 +306,7 @@ void UltrasonixDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> UltrasonixDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
+std::vector<IGIDataItemInfo> QtAudioDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
 {
   std::vector<IGIDataItemInfo> infos;
 
@@ -368,7 +316,7 @@ std::vector<IGIDataItemInfo> UltrasonixDataSourceService::Update(const niftk::IG
   {
     this->PlaybackData(time);
   }
-
+/*
   if (m_Buffer->GetBufferSize() == 0)
   {
     return infos;
@@ -376,124 +324,19 @@ std::vector<IGIDataItemInfo> UltrasonixDataSourceService::Update(const niftk::IG
 
   if(m_Buffer->GetFirstTimeStamp() > time)
   {
-    MITK_DEBUG << "UltrasonixDataSourceService::Update(), requested time is before buffer time! "
+    MITK_DEBUG << "QtAudioDataSourceService::Update(), requested time is before buffer time! "
                << " Buffer size=" << m_Buffer->GetBufferSize()
                << ", time=" << time
                << ", firstTime=" << m_Buffer->GetFirstTimeStamp();
     return infos;
   }
-
+*/
   // Create default return status.
   IGIDataItemInfo info;
   info.m_Name = this->GetName();
-  info.m_FramesPerSecond = m_Buffer->GetFrameRate();
+//  info.m_FramesPerSecond = m_Buffer->GetFrameRate();
   infos.push_back(info);
 
-  /*
-  niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(m_Buffer->GetItem(time).GetPointer());
-  if (dataType.IsNull())
-  {
-    MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffer->GetBufferSize() << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
-    return infos;
-  }
-
-
-  // If we are not actually updating data, bail out.
-  if (!this->GetShouldUpdate())
-  {
-    return infos;
-  }
-
-  mitk::DataNode::Pointer node = this->GetDataNode(this->GetName());
-  if (node.IsNull())
-  {
-    mitkThrow() << "Can't find mitk::DataNode with name " << this->GetName().toStdString() << std::endl;
-  }
-
-  // Get Image from the dataType;
-  const IplImage* img = dataType->GetImage();
-  if (img == NULL)
-  {
-    this->SetStatus("Failed");
-    mitkThrow() << "Failed to extract OpenCV image from buffer!";
-  }
-
-  // OpenCV's cannonical channel layout is bgr (instead of rgb),
-  // while everything usually else expects rgb...
-  IplImage* rgbaOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, 4);
-  cvCvtColor( img, rgbaOpenCVImage,  CV_BGR2RGBA );
-
-  // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
-  // we should make sure we got the layout right. (opencv itself does not use this in any way.)
-  std::memcpy(&rgbaOpenCVImage->channelSeq[0], "RGBA", 4);
-
-  // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
-  mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(rgbaOpenCVImage);
-
-#ifdef XXX_USE_CUDA
-  // a compatibility stop-gap to interface with new renderer and cuda bits.
-  {
-    CUDAManager*    cm = CUDAManager::GetInstance();
-    if (cm != 0)
-    {
-      cudaStream_t    mystream = cm->GetStream("QmitkIGIOpenCVDataSource::Update");
-      WriteAccessor   wa       = cm->RequestOutputImage(rgbaOpenCVImage->width, rgbaOpenCVImage->height, 4);
-
-      assert(rgbaOpenCVImage->widthStep >= (rgbaOpenCVImage->width * 4));
-      cudaMemcpy2DAsync(wa.m_DevicePointer, wa.m_BytePitch, rgbaOpenCVImage->imageData, rgbaOpenCVImage->widthStep, rgbaOpenCVImage->width * 4, rgbaOpenCVImage->height, cudaMemcpyHostToDevice, mystream);
-      // no error handling...
-
-      LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
-
-      CUDAImageProperty::Pointer    lwciprop = CUDAImageProperty::New();
-      lwciprop->Set(lwci);
-
-      convertedImage->SetProperty("CUDAImageProperty", lwciprop);
-    }
-  }
-#endif
-
-  mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-  if (imageInNode.IsNull())
-  {
-    // We remove and add to trigger the NodeAdded event,
-    // which is not emmitted if the node was added with no data.
-    this->GetDataStorage()->Remove(node);
-    node->SetData(convertedImage);
-    this->GetDataStorage()->Add(node);
-
-    imageInNode = convertedImage;
-  }
-  else
-  {
-    try
-    {
-      mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
-      const void* cPointer = readAccess.GetData();
-
-      mitk::ImageWriteAccessor writeAccess(imageInNode);
-      void* vPointer = writeAccess.GetData();
-
-      memcpy(vPointer, cPointer, img->width * img->height * 4);
-    }
-    catch(mitk::Exception& e)
-    {
-      MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
-    }
-#ifdef _USE_CUDA
-    imageInNode->SetProperty("CUDAImageProperty", convertedImage->GetProperty("CUDAImageProperty"));
-#endif
-  }
-  */
-  // We tell the node that it is modified so the next rendering event
-  // will redraw it. Triggering this does not in itself guarantee a re-rendering.
-  //imageInNode->GetVtkImageData()->Modified();
-  //node->Modified();
-
-  //cvReleaseImage(&rgbaOpenCVImage);
-
-  //infos[0].m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
-  //infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
   return infos;
 }
 

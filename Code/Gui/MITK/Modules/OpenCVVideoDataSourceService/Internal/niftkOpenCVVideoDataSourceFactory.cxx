@@ -53,7 +53,7 @@ IGIDataSourceI::Pointer OpenCVVideoDataSourceFactory::CreateService(
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* OpenCVVideoDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  mitkThrow() << "OpenCVVideoDataSourceService does not need a configuration dialog.";
+  mitkThrow() << "OpenCVVideoDataSourceService does not provide an initialisation dialog.";
   return NULL;
 }
 

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkOpenCVVideoDataType_h
-#define niftkOpenCVVideoDataType_h
+#ifndef niftkUltrasonixDataType_h
+#define niftkUltrasonixDataType_h
 
 #include <niftkIGIDataType.h>
 #include <cv.h>
@@ -22,15 +22,15 @@ namespace niftk
 {
 
 /**
- * \class OpenCVVideoDataType
- * \brief Class to represent video frame data from OpenCV.
+ * \class UltrasonixDataType
+ * \brief Class to represent ultrasound frame data from Ultrasonix.
  */
-class OpenCVVideoDataType : public IGIDataType
+class UltrasonixDataType : public IGIDataType
 {
 public:
 
-  mitkClassMacro(OpenCVVideoDataType, IGIDataType);
-  itkNewMacro(OpenCVVideoDataType);
+  mitkClassMacro(UltrasonixDataType, IGIDataType);
+  itkNewMacro(UltrasonixDataType);
 
   /**
   * \brief Used for loading in an image.
@@ -44,11 +44,11 @@ public:
 
 protected:
 
-  OpenCVVideoDataType(); // Purposefully hidden.
-  virtual ~OpenCVVideoDataType(); // Purposefully hidden.
+  UltrasonixDataType(); // Purposefully hidden.
+  virtual ~UltrasonixDataType(); // Purposefully hidden.
 
-  OpenCVVideoDataType(const OpenCVVideoDataType&); // Purposefully not implemented.
-  OpenCVVideoDataType& operator=(const OpenCVVideoDataType&); // Purposefully not implemented.
+  UltrasonixDataType(const UltrasonixDataType&); // Purposefully not implemented.
+  UltrasonixDataType& operator=(const UltrasonixDataType&); // Purposefully not implemented.
 
 private:
 

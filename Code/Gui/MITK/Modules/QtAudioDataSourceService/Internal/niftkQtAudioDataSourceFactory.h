@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkUltrasonixDataSourceFactory_h
-#define niftkUltrasonixDataSourceFactory_h
+#ifndef niftkQtAudioDataSourceFactory_h
+#define niftkQtAudioDataSourceFactory_h
 
 #include <niftkIGIDataSourceFactoryServiceI.h>
 
@@ -21,16 +21,16 @@ namespace niftk
 {
 
 /**
-* \class UltrasonixDataSourceFactory
-* \brief Factory class to create UltrasonixDataSources.
+* \class QtAudioDataSourceFactory
+* \brief Factory class to create QtAudioDataSources.
  */
-class UltrasonixDataSourceFactory : public IGIDataSourceFactoryServiceI
+class QtAudioDataSourceFactory : public IGIDataSourceFactoryServiceI
 {
 
 public:
 
-  UltrasonixDataSourceFactory();
-  virtual ~UltrasonixDataSourceFactory();
+  QtAudioDataSourceFactory();
+  virtual ~QtAudioDataSourceFactory();
 
   /**
   * \see IGIDataSourceFactoryServiceI::CreateService()
@@ -40,18 +40,20 @@ public:
 
   /**
   * \see IGIDataSourceFactoryServiceI::CreateInitialisationDialog()
+  * \throw Always throws mitk::Exception as this source does not have one.
   */
   virtual IGIInitialisationDialog* CreateInitialisationDialog(QWidget *parent) const override;
 
   /**
   * \see IGIDataSourceFactoryServiceI::CreateConfigurationDialog()
+  * \throw Always throws mitk::Exception as this source does not have one.
   */
   virtual IGIConfigurationDialog* CreateConfigurationDialog(QWidget *parent,
                                                             niftk::IGIDataSourceI::Pointer service
                                                             ) const override;
 
   /**
-  * \brief Returns empty list.
+  * \brief Empty list, as we have never really used this one before this architecture upgrade.
   */
   virtual QList<QString> GetLegacyClassNames() const override;
 };

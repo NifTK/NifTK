@@ -21,7 +21,7 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 MITKAuroraCubeDataSourceFactory::MITKAuroraCubeDataSourceFactory()
-: MITKTrackerDataSourceFactory("Aurora (Cube)")
+: MITKTrackerDataSourceFactory("NDI Aurora (Cube)")
 {
 }
 

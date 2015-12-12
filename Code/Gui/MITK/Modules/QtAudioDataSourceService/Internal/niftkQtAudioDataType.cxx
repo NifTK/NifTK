@@ -12,43 +12,20 @@
 
 =============================================================================*/
 
-#include "niftkUltrasonixDataType.h"
+#include "niftkQtAudioDataType.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-UltrasonixDataType::UltrasonixDataType()
-: m_Image(NULL)
+QtAudioDataType::QtAudioDataType()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-UltrasonixDataType::~UltrasonixDataType()
+QtAudioDataType::~QtAudioDataType()
 {
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void UltrasonixDataType::CloneImage(const IplImage *image)
-{
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
-  m_Image = cvCloneImage(image);
-}
-
-
-//-----------------------------------------------------------------------------
-const IplImage* UltrasonixDataType::GetImage()
-{
-  return m_Image;
 }
 
 } // end namespace

@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef niftkUltrasonixDataSourceActivator_h
-#define niftkUltrasonixDataSourceActivator_h
+#ifndef niftkQtAudioDataSourceActivator_h
+#define niftkQtAudioDataSourceActivator_h
 
-#include "niftkUltrasonixDataSourceFactory.h"
+#include "niftkQtAudioDataSourceFactory.h"
 #include <usModuleActivator.h>
 #include <usModuleContext.h>
 #include <memory>
@@ -24,25 +24,25 @@ namespace niftk
 {
 
 /**
-* \class UltrasonixDataSourceActivator
-* \brief Activator to register the UltrasonixDataSourceFactory.
+* \class QtAudioDataSourceActivator
+* \brief Activator to register the QtAudioDataSourceFactory.
 */
-class UltrasonixDataSourceActivator : public us::ModuleActivator
+class QtAudioDataSourceActivator : public us::ModuleActivator
 {
 public:
 
-  UltrasonixDataSourceActivator();
-  ~UltrasonixDataSourceActivator();
+  QtAudioDataSourceActivator();
+  ~QtAudioDataSourceActivator();
 
   void Load(us::ModuleContext* context);
   void Unload(us::ModuleContext*);
 
 private:
 
-  UltrasonixDataSourceActivator(const UltrasonixDataSourceActivator&); // deliberately not implemented
-  UltrasonixDataSourceActivator& operator=(const UltrasonixDataSourceActivator&); // deliberately not implemented
+  QtAudioDataSourceActivator(const QtAudioDataSourceActivator&); // deliberately not implemented
+  QtAudioDataSourceActivator& operator=(const QtAudioDataSourceActivator&); // deliberately not implemented
 
-  std::auto_ptr<niftk::UltrasonixDataSourceFactory> m_Factory;
+  std::auto_ptr<niftk::QtAudioDataSourceFactory> m_Factory;
 };
 
 } // end namespace

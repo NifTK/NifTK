@@ -14,6 +14,7 @@
 #ifndef niftkNiftyLinkDataSourceService_h
 #define niftkNiftyLinkDataSourceService_h
 
+#include "niftkNiftyLinkDataType.h"
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
 #include <niftkIGIWaitForSavedDataSourceBuffer.h>
@@ -159,17 +160,19 @@ private:
 
   QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > GetPlaybackIndex(QString directory);
 
-  std::vector<IGIDataItemInfo> HandleTrackingData(QString bufferName,
-                                                  niftk::IGIDataType::IGITimeType timeRequested,
-                                                  niftk::IGIDataType::IGITimeType actualTime,
-                                                  igtl::TrackingDataMessage::Pointer);
+  std::vector<IGIDataItemInfo> ReceiveTrackingData(QString bufferName,
+                                                   niftk::IGIDataType::IGITimeType timeRequested,
+                                                   niftk::IGIDataType::IGITimeType actualTime,
+                                                   igtl::TrackingDataMessage::Pointer);
+  void SaveTrackingData(niftk::NiftyLinkDataType::Pointer, igtl::TrackingDataMessage::Pointer);
 
-  std::vector<IGIDataItemInfo> HandleImage(QString bufferName,
-                                           niftk::IGIDataType::IGITimeType timeRequested,
-                                           niftk::IGIDataType::IGITimeType actualTime,
-                                           igtl::ImageMessage::Pointer);
+  std::vector<IGIDataItemInfo> ReceiveImage(QString bufferName,
+                                            niftk::IGIDataType::IGITimeType timeRequested,
+                                            niftk::IGIDataType::IGITimeType actualTime,
+                                            igtl::ImageMessage::Pointer);
+  void SaveImage(niftk::NiftyLinkDataType::Pointer, igtl::ImageMessage::Pointer);
 
-  std::vector<IGIDataItemInfo> HandleString(igtl::StringMessage::Pointer);
+  std::vector<IGIDataItemInfo> ReceiveString(igtl::StringMessage::Pointer);
 
   void AddAll(const std::vector<IGIDataItemInfo>& a, std::vector<IGIDataItemInfo>& b);
 

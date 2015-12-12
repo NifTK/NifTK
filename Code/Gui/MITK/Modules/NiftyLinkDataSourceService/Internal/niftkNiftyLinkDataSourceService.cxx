@@ -13,9 +13,10 @@
 =============================================================================*/
 
 #include "niftkNiftyLinkDataSourceService.h"
-#include "niftkNiftyLinkDataType.h"
 #include <niftkImageConversion.h>
 #include <NiftyLinkImageMessageHelpers.h>
+
+#include <itkNiftiImageIO.h>
 
 #include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
@@ -385,7 +386,7 @@ void NiftyLinkDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
   niftk::NiftyLinkDataType::Pointer niftyLinkType = dynamic_cast<niftk::NiftyLinkDataType*>(data.GetPointer());
   if (niftyLinkType.IsNull())
   {
-    mitkThrow() << this->GetName().toStdString() << ":Received null data?!?";
+    mitkThrow() << this->GetName().toStdString() << ": Received null data?!?";
   }
 
   if (niftyLinkType->GetIsSaved())
@@ -393,44 +394,133 @@ void NiftyLinkDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
     return;
   }
 
-/*
-  niftk::IGITrackerDataType::Pointer dataType = static_cast<niftk::IGITrackerDataType*>(data.GetPointer());
-  if (dataType.IsNull())
+  igtl::MessageBase::Pointer igtlMessage = dynamic_cast<igtl::MessageBase*>(niftyLinkType.GetPointer());
+  if (igtlMessage.IsNull())
   {
-    mitkThrow() << "Failed to save IGITrackerDataType as the data received was the wrong type!";
+    mitkThrow() << this->GetName().toStdString() << ": Data does not contain OpenIGTLink message?!?";
   }
 
-  vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  matrix = dataType->GetTrackingData();
-
-  if (matrix == NULL)
+  igtl::TrackingDataMessage::Pointer igtlTrackingData = dynamic_cast<igtl::TrackingDataMessage*>(igtlMessage.GetPointer());
+  if (igtlTrackingData.IsNotNull())
   {
-    mitkThrow() << "Failed to save IGITrackerDataType as the tracking matrix was NULL!";
+    this->SaveTrackingData(niftyLinkType, igtlTrackingData);
+    return;
+  }
+
+  igtl::ImageMessage::Pointer igtlImageMessage = dynamic_cast<igtl::ImageMessage*>(igtlMessage.GetPointer());
+  if (igtlImageMessage.IsNotNull())
+  {
+    this->SaveImage(niftyLinkType, igtlImageMessage);
+    return;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dataType,
+                                           igtl::ImageMessage::Pointer imageMessage)
+{
+  if (imageMessage.IsNull())
+  {
+    mitkThrow() << this->GetName().toStdString() << ": Saving a NULL image?!?";
   }
 
   QString directoryPath = this->GetRecordingDirectoryName();
-  QString toolPath = directoryPath
-      + this->GetPreferredSlash()
-      + QString::fromStdString(dataType->GetToolName())
-      + this->GetPreferredSlash();
-
-  QDir directory(toolPath);
-  if (directory.mkpath(toolPath))
+  QDir directory(directoryPath);
+  if (directory.mkpath(directoryPath))
   {
-    QString fileName =  directoryPath + QDir::separator() + tr("%1.txt").arg(data->GetTimeStampInNanoSeconds());
+    QString fileName = directoryPath + QDir::separator() + tr("%1.motor_position.txt").arg(dataType->GetTimeStampInNanoSeconds());
 
-    bool success = mitk::SaveVtkMatrix4x4ToFile(fileName.toStdString(), *matrix);
-    if (!success)
+    igtl::Matrix4x4 matrix;
+    imageMessage->GetMatrix(matrix);
+
+    QFile matrixFile(fileName);
+    matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
+
+    QTextStream matout(&matrixFile);
+    matout.setRealNumberPrecision(10);
+    matout.setRealNumberNotation(QTextStream::FixedNotation);
+
+    for ( int row = 0 ; row < 4 ; row ++ )
     {
-      mitkThrow() << "Failed to save IGITrackerDataType to " << fileName.toStdString();
+      for ( int col = 0 ; col < 4 ; col ++ )
+      {
+        matout << matrix[row][col];
+        if ( col < 3 )
+        {
+          matout << " " ;
+        }
+      }
+      if ( row < 3 )
+      {
+        matout << "\n";
+      }
     }
-    data->SetIsSaved(true);
-  }
+    matrixFile.close();
+
+    fileName = directoryPath + QDir::separator() + tr("%1-ultrasoundImage.nii").arg(dataType->GetTimeStampInNanoSeconds());
+
+    QImage qImage;
+    niftk::GetQImage(imageMessage, qImage);
+
+    // there shouldnt be any sharing, but make sure we own the buffer exclusively.
+    qImage.detach();
+
+    // go straight via itk, skipping all the mitk stuff.
+    itk::NiftiImageIO::Pointer  io = itk::NiftiImageIO::New();
+    io->SetFileName(fileName.toStdString());
+    io->SetNumberOfDimensions(2);
+    io->SetDimensions(0, qImage.width());
+    io->SetDimensions(1, qImage.height());
+    io->SetComponentType(itk::ImageIOBase::UCHAR);
+    // FIXME: SetSpacing(unsigned int i, double spacing)
+    // FIXME: SetDirection(unsigned int i, std::vector< double > & direction)
+
+    switch (qImage.format())
+    {
+      case QImage::Format_ARGB32:
+      {
+        // temporary opencv image, just for swapping bgr to rgb
+        IplImage  ocvimg;
+        cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, 4);
+        cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
+        // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
+        // so should be fine to do this here...
+        cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
+
+        io->SetPixelType(itk::ImageIOBase::RGBA);
+        io->SetNumberOfComponents(4);
+        break;
+      }
+
+      case QImage::Format_Indexed8:
+        io->SetPixelType(itk::ImageIOBase::SCALAR);
+        io->SetNumberOfComponents(1);
+        break;
+
+      default:
+        MITK_ERROR << "Trying to save ultrasound image with unsupported pixel type.";
+        // all the smartpointer goodness should take care of cleaning up.
+        return;
+    }
+
+    // i wonder how itk knows the buffer layout from just the few parameters up there.
+    // this is all a bit fishy...
+    io->Write(qImage.bits());
+
+  } // end if directory to write to ok
   else
   {
-    mitkThrow() << "Failed to save IGITrackerDataType as could not create " << directoryPath.toStdString();
+    mitkThrow() << "Failed to write to " << directoryPath.toStdString();
   }
-*/
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyLinkDataSourceService::SaveTrackingData(niftk::NiftyLinkDataType::Pointer dataType,
+                                                  igtl::TrackingDataMessage::Pointer trackingMessage)
+{
+
 }
 
 
@@ -469,22 +559,22 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
   QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>::iterator iter;
   for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
   {
-    QString bufferName = iter.key();
+    QString deviceName = iter.key();
 
-    if (m_Buffers[bufferName]->GetBufferSize() == 0)
+    if (m_Buffers[deviceName]->GetBufferSize() == 0)
     {
       continue;
     }
 
-    if(m_Buffers[bufferName]->GetFirstTimeStamp() > time)
+    if(m_Buffers[deviceName]->GetFirstTimeStamp() > time)
     {
       continue;
     }
 
-    niftk::NiftyLinkDataType::Pointer dataType = dynamic_cast<niftk::NiftyLinkDataType*>(m_Buffers[bufferName]->GetItem(time).GetPointer());
+    niftk::NiftyLinkDataType::Pointer dataType = dynamic_cast<niftk::NiftyLinkDataType*>(m_Buffers[deviceName]->GetItem(time).GetPointer());
     if (dataType.IsNull())
     {
-      MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffers[bufferName]->GetBufferSize() << ", last=" << m_Buffers[bufferName]->GetLastTimeStamp() << std::endl;
+      MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffers[deviceName]->GetBufferSize() << ", last=" << m_Buffers[deviceName]->GetLastTimeStamp() << std::endl;
       continue;
     }
 
@@ -503,21 +593,21 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
     igtl::StringMessage::Pointer stringMessage = dynamic_cast<igtl::StringMessage*>(igtlMessage.GetPointer());
     if (stringMessage.IsNotNull())
     {
-      std::vector<IGIDataItemInfo> tmp = this->HandleString(stringMessage);
+      std::vector<IGIDataItemInfo> tmp = this->ReceiveString(stringMessage);
       this->AddAll(tmp, infos);
     }
 
     igtl::TrackingDataMessage::Pointer trackingMessage = dynamic_cast<igtl::TrackingDataMessage*>(igtlMessage.GetPointer());
     if (trackingMessage.IsNotNull())
     {
-      std::vector<IGIDataItemInfo> tmp = this->HandleTrackingData(bufferName, time, dataType->GetTimeStampInNanoSeconds(), trackingMessage);
+      std::vector<IGIDataItemInfo> tmp = this->ReceiveTrackingData(deviceName, time, dataType->GetTimeStampInNanoSeconds(), trackingMessage);
       this->AddAll(tmp, infos);
     }
 
     igtl::ImageMessage::Pointer imgMsg = dynamic_cast<igtl::ImageMessage*>(igtlMessage.GetPointer());
     if (imgMsg.IsNotNull())
     {
-      std::vector<IGIDataItemInfo> tmp = this->HandleImage(bufferName, time, dataType->GetTimeStampInNanoSeconds(), imgMsg);
+      std::vector<IGIDataItemInfo> tmp = this->ReceiveImage(deviceName, time, dataType->GetTimeStampInNanoSeconds(), imgMsg);
       this->AddAll(tmp, infos);
     }
   }
@@ -536,10 +626,10 @@ void NiftyLinkDataSourceService::AddAll(const std::vector<IGIDataItemInfo>& a, s
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::HandleTrackingData(QString bufferName,
-                                                                            niftk::IGIDataType::IGITimeType timeRequested,
-                                                                            niftk::IGIDataType::IGITimeType actualTime,
-                                                                            igtl::TrackingDataMessage::Pointer trackingMessage)
+std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveTrackingData(QString deviceName,
+                                                                             niftk::IGIDataType::IGITimeType timeRequested,
+                                                                             niftk::IGIDataType::IGITimeType actualTime,
+                                                                             igtl::TrackingDataMessage::Pointer trackingMessage)
 {
   std::vector<IGIDataItemInfo> infos;
 
@@ -590,7 +680,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::HandleTrackingData(QStr
 
     IGIDataItemInfo info;
     info.m_Name = toolName;
-    info.m_FramesPerSecond = m_Buffers[bufferName]->GetFrameRate();
+    info.m_FramesPerSecond = m_Buffers[deviceName]->GetFrameRate();
     info.m_IsLate = this->IsLate(timeRequested, actualTime);
     info.m_LagInMilliseconds = this->GetLagInMilliseconds(timeRequested, actualTime);
     infos.push_back(info);
@@ -600,10 +690,10 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::HandleTrackingData(QStr
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::HandleImage(QString bufferName,
-                                                                     niftk::IGIDataType::IGITimeType timeRequested,
-                                                                     niftk::IGIDataType::IGITimeType actualTime,
-                                                                     igtl::ImageMessage::Pointer imgMsg)
+std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString deviceName,
+                                                                      niftk::IGIDataType::IGITimeType timeRequested,
+                                                                      niftk::IGIDataType::IGITimeType actualTime,
+                                                                      igtl::ImageMessage::Pointer imgMsg)
 {
 
   QImage qImage;
@@ -646,10 +736,10 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::HandleImage(QString buf
     std::memcpy(&ocvimg.channelSeq[0], "RGBA", 4);
   }
 
-  mitk::DataNode::Pointer node = this->GetDataNode(bufferName); // this should create if none exists.
+  mitk::DataNode::Pointer node = this->GetDataNode(deviceName); // this should create if none exists.
   if (node.IsNull())
   {
-    mitkThrow() << this->GetName().toStdString() << ":Can't find mitk::DataNode with name " << bufferName.toStdString();
+    mitkThrow() << this->GetName().toStdString() << ":Can't find mitk::DataNode with name " << deviceName.toStdString();
   }
 
   mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
@@ -707,8 +797,8 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::HandleImage(QString buf
 
   std::vector<IGIDataItemInfo> infos;
   IGIDataItemInfo info;
-  info.m_Name = this->GetName();
-  info.m_FramesPerSecond = m_Buffers[bufferName]->GetFrameRate();
+  info.m_Name = deviceName;
+  info.m_FramesPerSecond = m_Buffers[deviceName]->GetFrameRate();
   info.m_IsLate = this->IsLate(timeRequested, actualTime);
   info.m_LagInMilliseconds = this->GetLagInMilliseconds(timeRequested, actualTime);
   infos.push_back(info);
@@ -717,7 +807,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::HandleImage(QString buf
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::HandleString(igtl::StringMessage::Pointer stringMessage)
+std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveString(igtl::StringMessage::Pointer stringMessage)
 {
   MITK_INFO << this->GetName().toStdString() << ":Received " << stringMessage->GetString();
 
@@ -786,7 +876,7 @@ void NiftyLinkDataSourceService::MessageReceived(niftk::NiftyLinkMessageContaine
   {
     // So buffer requires a back-ground delete thread.
     niftk::IGIWaitForSavedDataSourceBuffer::Pointer newBuffer
-        = niftk::IGIWaitForSavedDataSourceBuffer::New(100, this);
+        = niftk::IGIWaitForSavedDataSourceBuffer::New(120, this);
 
     m_Buffers.insert(originator, newBuffer);
   }

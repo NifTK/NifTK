@@ -12,44 +12,42 @@
 
 =============================================================================*/
 
-#include "niftkUltrasonixDataType.h"
+#include "niftkQtAudioDataSourceActivator.h"
+#include "niftkQtAudioDataSourceFactory.h"
+#include <niftkIGIDataSourceFactoryServiceI.h>
+#include <usServiceProperties.h>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-UltrasonixDataType::UltrasonixDataType()
-: m_Image(NULL)
+QtAudioDataSourceActivator::QtAudioDataSourceActivator()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-UltrasonixDataType::~UltrasonixDataType()
+QtAudioDataSourceActivator::~QtAudioDataSourceActivator()
 {
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
 }
 
 
 //-----------------------------------------------------------------------------
-void UltrasonixDataType::CloneImage(const IplImage *image)
+void QtAudioDataSourceActivator::Load(us::ModuleContext* context)
 {
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
-  m_Image = cvCloneImage(image);
+  m_Factory.reset(new QtAudioDataSourceFactory);
+  us::ServiceProperties props;
+  props["Name"] = std::string("QtAudioDataSourceFactory");
+  context->RegisterService<IGIDataSourceFactoryServiceI>(m_Factory.get(), props);
 }
 
 
 //-----------------------------------------------------------------------------
-const IplImage* UltrasonixDataType::GetImage()
+void QtAudioDataSourceActivator::Unload(us::ModuleContext*)
 {
-  return m_Image;
+  // NOTE: The services are automatically unregistered
 }
 
 } // end namespace
 
+US_EXPORT_MODULE_ACTIVATOR(niftk::QtAudioDataSourceActivator)

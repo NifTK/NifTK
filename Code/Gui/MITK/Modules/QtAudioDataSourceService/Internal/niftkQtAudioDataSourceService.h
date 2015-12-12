@@ -11,8 +11,8 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-#ifndef niftkUltrasonixDataSourceService_h
-#define niftkUltrasonixDataSourceService_h
+#ifndef niftkQtAudioDataSourceService_h
+#define niftkQtAudioDataSourceService_h
 
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
@@ -30,12 +30,12 @@ namespace niftk
 {
 
 /**
-* \class UltrasonixDataSourceService
-* \brief Provides a feed of images from Ultrasonix MDP, as an IGIDataSourceServiceI.
+* \class QtAudioDataSourceService
+* \brief Provides a feed of images from QtAudio MDP, as an IGIDataSourceServiceI.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class UltrasonixDataSourceService
+class QtAudioDataSourceService
     : public IGIDataSource
     , public IGILocalDataSourceI
     , public QObject
@@ -43,8 +43,8 @@ class UltrasonixDataSourceService
 
 public:
 
-  mitkClassMacroItkParent(UltrasonixDataSourceService, IGIDataSource);
-  mitkNewMacro3Param(UltrasonixDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
+  mitkClassMacroItkParent(QtAudioDataSourceService, IGIDataSource);
+  mitkNewMacro3Param(QtAudioDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
 
   /**
   * \see IGIDataSourceI::StartCapturing()
@@ -116,24 +116,21 @@ public:
 
 protected:
 
-  UltrasonixDataSourceService(QString factoryName,
+  QtAudioDataSourceService(QString factoryName,
                                const IGIDataSourceProperties& properties,
                                mitk::DataStorage::Pointer dataStorage
                                );
-  virtual ~UltrasonixDataSourceService();
+  virtual ~QtAudioDataSourceService();
 
 private:
 
-  UltrasonixDataSourceService(const UltrasonixDataSourceService&); // deliberately not implemented
-  UltrasonixDataSourceService& operator=(const UltrasonixDataSourceService&); // deliberately not implemented
+  QtAudioDataSourceService(const QtAudioDataSourceService&); // deliberately not implemented
+  QtAudioDataSourceService& operator=(const QtAudioDataSourceService&); // deliberately not implemented
 
   static niftk::IGIDataSourceLocker               s_Lock;
   QMutex                                          m_Lock;
   int                                             m_ChannelNumber;
   niftk::IGIDataType::IGIIndexType                m_FrameId;
-  niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
-  niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
-  niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;
   std::set<niftk::IGIDataType::IGITimeType>       m_PlaybackIndex;
 
 }; // end class

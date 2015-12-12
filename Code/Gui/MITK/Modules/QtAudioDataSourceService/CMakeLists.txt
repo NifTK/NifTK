@@ -14,12 +14,12 @@
 
 
 MITK_CREATE_MODULE(
-  DEPENDS niftkIGIDataSources niftkOpenCVImageConversion
-  PACKAGE_DEPENDS Qt4|QtCore OpenCV
+  DEPENDS niftkIGIDataSources 
+  PACKAGE_DEPENDS Qt4|QtCore Qt4|QtMultimedia
   AUTOLOAD_WITH niftkIGIServices
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkUltrasonixDataSourceService)
+  cotire(niftkQtAudioDataSourceService)
 endif()
 

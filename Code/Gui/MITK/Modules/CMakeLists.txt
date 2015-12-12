@@ -77,10 +77,17 @@ if(BUILD_IGI)
     NiftyLinkDataSourceService
   )
 
-  if(Ultrasonix_FOUND)
+  #if(Ultrasonix_FOUND)
     set(MODULE_DIRS
       ${MODULE_DIRS}
       UltrasonixDataSourceService
+    )
+  #endif()
+
+ if(QT_QTMULTIMEDIA_INCLUDE_DIR)
+    set(MODULE_DIRS
+      ${MODULE_DIRS}
+      QtAudioDataSourceService
     )
   endif()
 

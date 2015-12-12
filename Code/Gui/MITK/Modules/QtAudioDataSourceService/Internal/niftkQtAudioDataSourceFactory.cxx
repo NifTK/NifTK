@@ -12,37 +12,35 @@
 
 =============================================================================*/
 
-#include "niftkUltrasonixDataSourceFactory.h"
-#include "niftkUltrasonixDataSourceService.h"
-#include <niftkLagDialog.h>
-#include <niftkIPHostPortDialog.h>
+#include "niftkQtAudioDataSourceFactory.h"
+#include "niftkQtAudioDataSourceService.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-UltrasonixDataSourceFactory::UltrasonixDataSourceFactory()
-: IGIDataSourceFactoryServiceI("Ulterius",
-                               true,  // configure host and port at startup
-                               true   // can configure lag while running
+QtAudioDataSourceFactory::QtAudioDataSourceFactory()
+: IGIDataSourceFactoryServiceI("Audio",
+                               false,  // configure host and port at startup
+                               false   // can configure lag while running
                                )
 {
 }
 
 
 //-----------------------------------------------------------------------------
-UltrasonixDataSourceFactory::~UltrasonixDataSourceFactory()
+QtAudioDataSourceFactory::~QtAudioDataSourceFactory()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-IGIDataSourceI::Pointer UltrasonixDataSourceFactory::CreateService(
+IGIDataSourceI::Pointer QtAudioDataSourceFactory::CreateService(
     mitk::DataStorage::Pointer dataStorage,
     const IGIDataSourceProperties& properties) const
 {
-  niftk::UltrasonixDataSourceService::Pointer serviceInstance
-      = UltrasonixDataSourceService::New(this->GetName(), // factory name
+  niftk::QtAudioDataSourceService::Pointer serviceInstance
+      = QtAudioDataSourceService::New(this->GetName(), // factory name
                                           properties,      // configure at startup
                                           dataStorage
                                           );
@@ -52,23 +50,25 @@ IGIDataSourceI::Pointer UltrasonixDataSourceFactory::CreateService(
 
 
 //-----------------------------------------------------------------------------
-IGIInitialisationDialog* UltrasonixDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
+IGIInitialisationDialog* QtAudioDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  return new niftk::IPHostPortDialog(parent);
+  mitkThrow() << "QtAudioDataSourceFactory does not provide an initialisation dialog.";
+  return NULL;
 }
 
 
 //-----------------------------------------------------------------------------
-IGIConfigurationDialog* UltrasonixDataSourceFactory::CreateConfigurationDialog(QWidget *parent,
+IGIConfigurationDialog* QtAudioDataSourceFactory::CreateConfigurationDialog(QWidget *parent,
                                                                                 niftk::IGIDataSourceI::Pointer service
                                                                                 ) const
 {
-  return new niftk::LagDialog(parent, service);
+  mitkThrow() << "QtAudioDataSourceFactory does not provide a configuration dialog.";
+  return NULL;
 }
 
 
 //-----------------------------------------------------------------------------
-QList<QString> UltrasonixDataSourceFactory::GetLegacyClassNames() const
+QList<QString> QtAudioDataSourceFactory::GetLegacyClassNames() const
 {
   QList<QString> names;
   return names;
