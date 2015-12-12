@@ -36,6 +36,8 @@ QtAudioDataSourceService::QtAudioDataSourceService(
 , m_Lock(QMutex::Recursive)
 , m_FrameId(0)
 {
+  mitkThrow() << "Not implemented yet. Volunteers .... please step forward!";
+
   this->SetStatus("Initialising");
 
   int defaultFramesPerSecond = 25;

@@ -43,6 +43,8 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
 , m_BackgroundDeleteThread(NULL)
 , m_DataGrabbingThread(NULL)
 {
+  mitkThrow() << "Not implemented yet. Volunteers .... please step forward!";
+
   this->SetStatus("Initialising");
 
   int defaultFramesPerSecond = 25;
