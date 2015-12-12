@@ -14,6 +14,7 @@
 
 #include "niftkQtAudioDataSourceFactory.h"
 #include "niftkQtAudioDataSourceService.h"
+#include "niftkQtAudioDataDialog.h"
 
 namespace niftk
 {
@@ -21,8 +22,8 @@ namespace niftk
 //-----------------------------------------------------------------------------
 QtAudioDataSourceFactory::QtAudioDataSourceFactory()
 : IGIDataSourceFactoryServiceI("Audio",
-                               false,  // configure host and port at startup
-                               false   // can configure lag while running
+                               true,  // configure audio source at startup
+                               false  // cannot configure lag while running
                                )
 {
 }
@@ -52,8 +53,7 @@ IGIDataSourceI::Pointer QtAudioDataSourceFactory::CreateService(
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* QtAudioDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  mitkThrow() << "QtAudioDataSourceFactory does not provide an initialisation dialog.";
-  return NULL;
+  return new QtAudioDataDialog(parent);
 }
 
 

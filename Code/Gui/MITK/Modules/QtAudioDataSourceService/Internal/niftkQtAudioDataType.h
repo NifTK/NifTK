@@ -22,7 +22,7 @@ namespace niftk
 
 /**
  * \class QtAudioDataType
- * \brief Class to represent ultrasound frame data from QtAudio.
+ * \brief Class to represent audio data from QtAudio.
  */
 class QtAudioDataType : public IGIDataType
 {
@@ -30,6 +30,9 @@ public:
 
   mitkClassMacro(QtAudioDataType, IGIDataType);
   itkNewMacro(QtAudioDataType);
+
+  void SetBlob(const char* blob, std::size_t length);
+  std::pair<const char*, std::size_t> GetBlob() const;
 
 protected:
 
@@ -40,7 +43,8 @@ protected:
   QtAudioDataType& operator=(const QtAudioDataType&); // Purposefully not implemented.
 
 private:
-
+  const char*   m_AudioBlob;
+  std::size_t   m_Length;
 };
 
 } // end namespace

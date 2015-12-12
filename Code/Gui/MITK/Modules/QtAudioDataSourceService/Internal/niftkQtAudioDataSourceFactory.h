@@ -40,7 +40,6 @@ public:
 
   /**
   * \see IGIDataSourceFactoryServiceI::CreateInitialisationDialog()
-  * \throw Always throws mitk::Exception as this source does not have one.
   */
   virtual IGIInitialisationDialog* CreateInitialisationDialog(QWidget *parent) const override;
 

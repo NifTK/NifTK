@@ -13,9 +13,20 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Internal/niftkQtAudioDataDialog.cxx
   Internal/niftkQtAudioDataSourceFactory.cxx
   Internal/niftkQtAudioDataSourceActivator.cxx
   Internal/niftkQtAudioDataSourceService.cxx
   Internal/niftkQtAudioDataType.cxx
 )
 
+set(MOC_H_FILES
+  Internal/niftkQtAudioDataDialog.h
+)
+
+set(UI_FILES
+  Internal/niftkQtAudioDataDialog.ui
+)
+
+set(QRC_FILES
+)

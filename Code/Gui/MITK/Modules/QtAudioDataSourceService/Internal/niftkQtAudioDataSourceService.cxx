@@ -18,6 +18,9 @@
 #include <mitkExceptionMacro.h>
 #include <QDir>
 #include <QMutexLocker>
+#include <QAudioFormat>
+
+Q_DECLARE_METATYPE(QAudioFormat);
 
 namespace niftk
 {
