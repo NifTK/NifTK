@@ -70,7 +70,6 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
   this->SetTimeStampTolerance(50*1000000);
   this->SetProperties(properties);
   this->SetShouldUpdate(true);
-  this->StartCapturing();
 
   m_BackgroundDeleteThread = new niftk::IGIDataSourceBackgroundDeleteThread(NULL, this);
   m_BackgroundDeleteThread->SetInterval(1000); // try deleting data every 1 second.
@@ -97,8 +96,6 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
 //-----------------------------------------------------------------------------
 NiftyLinkDataSourceService::~NiftyLinkDataSourceService()
 {
-  this->StopCapturing();
-
   s_Lock.RemoveSource(m_SourceNumber);
 
   m_BackgroundDeleteThread->ForciblyStop();
@@ -138,20 +135,6 @@ IGIDataSourceProperties NiftyLinkDataSourceService::GetProperties() const
             << "): Retrieved current value of lag as " << m_Lag << " ms.";
 
   return props;
-}
-
-
-//-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::StartCapturing()
-{
-  this->SetStatus("Capturing");
-}
-
-
-//-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::StopCapturing()
-{
-  this->SetStatus("Stopped");
 }
 
 

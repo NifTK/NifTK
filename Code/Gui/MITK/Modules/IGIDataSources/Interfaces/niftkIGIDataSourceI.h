@@ -105,26 +105,6 @@ public:
   virtual QString GetDescription() const = 0;
 
   /**
-  * \brief Starts the capture/grabbing process.
-  *
-  * It is envisaged that all implementing classes implement RAII,
-  * so that all implementors start capturing data immediately once
-  * they are constructed. So, a constructor would typically call this.
-  *
-  * However, in this interface we provide StartCapturing() and
-  * StopCapturing() to implement a pause functionality.
-  * Derived classes however could chose to ignore this if it was
-  * more appropriate.
-  */
-  virtual void StartCapturing() = 0;
-
-  /**
-  * \brief Stops the capture/grabbing process.
-  * \see StartCapturing()
-  */
-  virtual void StopCapturing() = 0;
-
-  /**
   * \brief Starts the playback process, implementors are meant to do
   * all initialisation in this method, so that after the successful return
   * of this method, the data source is fully ready to play back.

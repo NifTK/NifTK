@@ -308,20 +308,6 @@ IGIDataSourceProperties QtAudioDataSourceService::GetProperties() const
 
 
 //-----------------------------------------------------------------------------
-void QtAudioDataSourceService::StartCapturing()
-{
-  this->SetStatus("Capturing");
-}
-
-
-//-----------------------------------------------------------------------------
-void QtAudioDataSourceService::StopCapturing()
-{
-  this->SetStatus("Stopped");
-}
-
-
-//-----------------------------------------------------------------------------
 QString QtAudioDataSourceService::GetRecordingDirectoryName()
 {
   return this->GetRecordingLocation()

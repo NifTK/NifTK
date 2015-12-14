@@ -70,8 +70,6 @@ NiftyLinkServerDataSourceService::NiftyLinkServerDataSourceService(
 //-----------------------------------------------------------------------------
 NiftyLinkServerDataSourceService::~NiftyLinkServerDataSourceService()
 {
-  this->StopCapturing();
-
   bool ok = false;
   ok = QObject::disconnect(m_Server, SIGNAL(ClientConnected(int)), this, SLOT(OnClientConnected(int)));
   assert(ok);

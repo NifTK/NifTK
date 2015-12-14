@@ -53,16 +53,6 @@ public:
   mitkNewMacro3Param(OpenCVVideoDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
 
   /**
-  * \see IGIDataSourceI::StartCapturing()
-  */
-  virtual void StartCapturing() override;
-
-  /**
-  * \see IGIDataSourceI::StopCapturing()
-  */
-  virtual void StopCapturing() override;
-
-  /**
   * \see  IGIDataSourceI::StartPlayback()
   */
   virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,

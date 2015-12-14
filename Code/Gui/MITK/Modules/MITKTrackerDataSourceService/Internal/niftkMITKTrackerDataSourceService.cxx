@@ -95,7 +95,7 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
 //-----------------------------------------------------------------------------
 MITKTrackerDataSourceService::~MITKTrackerDataSourceService()
 {
-  this->StopCapturing();
+  m_Tracker->StopTracking();
 
   s_Lock.RemoveSource(m_TrackerNumber);
 
@@ -136,22 +136,6 @@ IGIDataSourceProperties MITKTrackerDataSourceService::GetProperties() const
             << "): Retrieved current value of lag as " << m_Lag << " ms.";
 
   return props;
-}
-
-
-//-----------------------------------------------------------------------------
-void MITKTrackerDataSourceService::StartCapturing()
-{
-  m_Tracker->StartTracking();
-  this->SetStatus("Capturing");
-}
-
-
-//-----------------------------------------------------------------------------
-void MITKTrackerDataSourceService::StopCapturing()
-{
-  m_Tracker->StopTracking();
-  this->SetStatus("Stopped");
 }
 
 

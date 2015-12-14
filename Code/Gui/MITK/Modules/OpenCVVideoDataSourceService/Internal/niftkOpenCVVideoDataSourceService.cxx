@@ -53,7 +53,10 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
 
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_VideoSource->SetVideoCameraInput(m_ChannelNumber);
-  this->StartCapturing();
+  if (!m_VideoSource->IsCapturingEnabled())
+  {
+    m_VideoSource->StartCapturing();
+  }
 
   // Check we can actually grab, as MITK class doesn't throw exceptions on creation.
   m_VideoSource->FetchFrame();
@@ -100,7 +103,10 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
 //-----------------------------------------------------------------------------
 OpenCVVideoDataSourceService::~OpenCVVideoDataSourceService()
 {
-  this->StopCapturing();
+  if (m_VideoSource->IsCapturingEnabled())
+  {
+    m_VideoSource->StopCapturing();
+  }
 
   s_Lock.RemoveSource(m_ChannelNumber);
 
@@ -136,28 +142,6 @@ IGIDataSourceProperties OpenCVVideoDataSourceService::GetProperties() const
             << "):Retrieved current value of lag as " << m_Buffer->GetLagInMilliseconds();
 
   return props;
-}
-
-
-//-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::StartCapturing()
-{
-  if (!m_VideoSource->IsCapturingEnabled())
-  {
-    m_VideoSource->StartCapturing();
-    this->SetStatus("Capturing");
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void OpenCVVideoDataSourceService::StopCapturing()
-{
-  if (m_VideoSource->IsCapturingEnabled())
-  {
-    m_VideoSource->StopCapturing();
-    this->SetStatus("Stopped");
-  }
 }
 
 

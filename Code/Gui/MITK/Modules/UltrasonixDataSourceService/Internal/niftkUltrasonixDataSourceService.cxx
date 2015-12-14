@@ -53,8 +53,6 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
   QString deviceName = this->GetName();
   m_ChannelNumber = (deviceName.remove(0, 11)).toInt(); // Should match string OpenCV- above
 
-  this->StartCapturing();
-
   // Set the interval based on desired number of frames per second.
   // So, 25 fps = 40 milliseconds.
   // However: If system slows down (eg. saving images), then Qt will
@@ -89,8 +87,6 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
 //-----------------------------------------------------------------------------
 UltrasonixDataSourceService::~UltrasonixDataSourceService()
 {
-  this->StopCapturing();
-
   s_Lock.RemoveSource(m_ChannelNumber);
 
   m_DataGrabbingThread->ForciblyStop();
@@ -125,20 +121,6 @@ IGIDataSourceProperties UltrasonixDataSourceService::GetProperties() const
             << "):Retrieved current value of lag as " << m_Buffer->GetLagInMilliseconds();
 
   return props;
-}
-
-
-//-----------------------------------------------------------------------------
-void UltrasonixDataSourceService::StartCapturing()
-{
-  this->SetStatus("Capturing");
-}
-
-
-//-----------------------------------------------------------------------------
-void UltrasonixDataSourceService::StopCapturing()
-{
-  this->SetStatus("Stopped");
 }
 
 

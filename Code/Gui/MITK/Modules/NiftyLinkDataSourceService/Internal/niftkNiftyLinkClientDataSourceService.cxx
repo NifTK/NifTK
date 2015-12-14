@@ -70,8 +70,6 @@ NiftyLinkClientDataSourceService::NiftyLinkClientDataSourceService(
 //-----------------------------------------------------------------------------
 NiftyLinkClientDataSourceService::~NiftyLinkClientDataSourceService()
 {
-  this->StopCapturing();
-
   bool ok = false;
   ok = QObject::disconnect(m_Client, SIGNAL(Connected(QString, int)), this, SLOT(OnConnected(QString, int)));
   assert(ok);
@@ -83,6 +81,8 @@ NiftyLinkClientDataSourceService::~NiftyLinkClientDataSourceService()
   assert(ok);
   ok = QObject::disconnect(m_Client, SIGNAL(MessageReceived(niftk::NiftyLinkMessageContainer::Pointer)), this, SLOT(OnMessageReceived(niftk::NiftyLinkMessageContainer::Pointer)));
   assert(ok);
+
+  delete m_Client;
 
   s_Lock.RemoveSource(m_ClientNumber);
 }
