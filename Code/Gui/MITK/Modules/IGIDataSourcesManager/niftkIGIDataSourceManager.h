@@ -64,13 +64,37 @@ public:
   static const int    DEFAULT_FRAME_RATE;
   static const char*  DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
 
+  /**
+  * \brief Returns true if the manager is currently playing back, and false otherwise.
+  */
   bool IsPlayingBack() const;
 
-  void SetIsPlayingBackAutomatically(bool isPlayingBackAutomatically);
+  /**
+  * \brief Returns true if the manager is playing back automatically, and false otherwise.
+  */
   bool IsPlayingBackAutomatically() const;
 
+  /**
+  * \brief Returns true if the update timer is on, and false otherwise.
+  */
   bool IsUpdateTimerOn() const;
+
+  /**
+  * \brief Sets a flag, then the internal clock triggering will also advance the
+  * playback time such that the manager will automatically creep forward through time.
+  */
+  void SetIsPlayingBackAutomatically(bool isPlayingBackAutomatically);
+
+  /**
+  * \brief Stops the internal timer.
+  */
   void StopUpdateTimer();
+
+  /**
+  * \brief Starts the internal timer.
+  *
+  * If there are no sources, this does nothing.
+  */
   void StartUpdateTimer();
 
   /**
@@ -135,11 +159,18 @@ public:
 
   /**
   * \brief Removes a source at a given rowIndex.
+  *
+  * This will stop the timer, and if, after removing the specified source
+  * there are still sources to continue updating, will restart the timer.
   */
   void RemoveSource(int rowIndex);
 
   /**
   * \brief Removes all sources.
+  *
+  * This stops the timer, and removes all sources, after which
+  * there is no point restarting the timer, so a side effect
+  * is that the timer should be off.
   */
   void RemoveAllSources();
 
@@ -219,7 +250,7 @@ public:
   void SetPlaybackTime(const IGIDataType::IGITimeType& time);
 
   /**
-  * \brief Requests the manager to grab the screen.
+  * \brief Requests the manager to grab the currently focussed screen.
   */
   void SetIsGrabbingScreen(QString directoryName, bool isGrabbing);
 

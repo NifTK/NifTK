@@ -102,8 +102,11 @@ void IGIDataSourceManager::StopUpdateTimer()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StartUpdateTimer()
 {
-  m_GuiUpdateTimer->start();
-  this->Modified();
+  if (m_Sources.size() > 0)
+  {
+    m_GuiUpdateTimer->start();
+    this->Modified();
+  }
 }
 
 
