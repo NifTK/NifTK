@@ -110,13 +110,6 @@ QtAudioDataSourceService::~QtAudioDataSourceService()
 
   if (m_InputDevice != 0)
   {
-    if (m_InputStream != 0)
-    {
-      ok = QObject::disconnect(m_InputStream, SIGNAL(readyRead()), this, SLOT(OnReadyRead()));
-      assert(ok);
-      // we do not own m_InputStream!
-      m_InputStream = 0;
-    }
     m_InputDevice->stop();
 
     ok = QObject::disconnect(m_InputDevice, SIGNAL(stateChanged(QAudio::State)), this, SLOT(OnStateChanged(QAudio::State)));
