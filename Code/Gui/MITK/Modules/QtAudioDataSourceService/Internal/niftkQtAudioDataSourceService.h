@@ -16,9 +16,6 @@
 
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
-#include <niftkIGIDataSourceBuffer.h>
-#include <niftkIGIDataSourceBackgroundDeleteThread.h>
-#include <niftkIGIDataSourceGrabbingThread.h>
 #include <niftkIGILocalDataSourceI.h>
 
 #include <QObject>

@@ -21,6 +21,7 @@
 #include <QAudioFormat>
 #include <QAudioDeviceInfo>
 #include <QAudioInput>
+#include <QThread>
 
 Q_DECLARE_METATYPE(QAudioFormat);
 
@@ -89,10 +90,6 @@ QtAudioDataSourceService::QtAudioDataSourceService(
   ok = QObject::connect(m_InputDevice, SIGNAL(stateChanged(QAudio::State)), this, SLOT(OnStateChanged(QAudio::State)));
   assert(ok);
 
-  m_InputStream = m_InputDevice->start();
-  ok = QObject::connect(m_InputStream, SIGNAL(readyRead()), this, SLOT(OnReadyRead()));
-  assert(ok);
-
   m_DeviceInfo  = audioDeviceInfo;
   m_Inputformat = audioDeviceFormat;
 
@@ -140,19 +137,26 @@ void QtAudioDataSourceService::OnStateChanged(QAudio::State state)
   switch (state)
   {
     case QAudio::ActiveState:
+      this->SetStatus("Active");
+      break;
     case QAudio::IdleState:
-      this->SetStatus("Grabbing");
+      this->SetStatus("Idle");
       break;
     case QAudio::SuspendedState:
+      this->SetStatus("Suspended");
+      break;
     case QAudio::StoppedState:
+      this->SetStatus("Stopped");
+      break;
     default:
       if (m_InputDevice->error() != QAudio::NoError)
       {
         this->SetStatus("Error");
+        MITK_INFO << "QtAudioDataSourceService::OnStateChanged(Error):" << m_InputDevice->error();
       }
       else
       {
-        SetStatus("Stopped");
+        SetStatus("OK");
       }
       break;
   }
@@ -175,6 +179,12 @@ void QtAudioDataSourceService::OnReadyRead()
     mitkThrow() << "Invalid audio device!";
   }
 
+  // sanity check: should only be called while recording
+  if (!this->GetIsRecording())
+  {
+    mitkThrow() << "Audio recording only";
+  }
+
   // beware: m_InputStream->bytesAvailable() always returns zero!
   std::size_t bytesToRead = m_InputDevice->bytesReady();
   if (bytesToRead > 0)
@@ -184,38 +194,21 @@ void QtAudioDataSourceService::OnReadyRead()
 
     if (bytesActuallyRead > 0)
     {
-      if (this->GetIsRecording())
+      // if writing the current blob to the file would make it too big (signed 32 bit overflow!),
+      // then start a new segment.
+      // this can happen quite easily: 32 bit samples, 2 channels, 96kHz --> 46 minutes!
+      if ((m_OutputFile->size() + bytesActuallyRead) > std::numeric_limits<int>::max())
       {
-        // cannot record while playing back
-        assert(!this->GetIsPlayingBack());
-
-        // if writing the current blob to the file would make it too big (signed 32 bit overflow!),
-        // then start a new segment.
-        // this can happen quite easily: 32 bit samples, 2 channels, 96kHz --> 46 minutes!
-        if ((m_OutputFile->size() + bytesActuallyRead) > std::numeric_limits<int>::max())
-        {
-          FinishWAVFile();
-          ++m_SegmentCounter;
-          StartWAVFile();
-        }
-
-        std::size_t actuallyWritten = m_OutputFile->write(buffer, bytesActuallyRead);
-        assert(actuallyWritten == bytesActuallyRead);
+        FinishWAVFile();
+        ++m_SegmentCounter;
+        StartWAVFile();
       }
-      else
-      {
-        this->SetStatus("Grabbing");
-      }
-    }
-    else
-    {
-      this->SetStatus("Receiving");
+
+      std::size_t actuallyWritten = m_OutputFile->write(buffer, bytesActuallyRead);
+      assert(actuallyWritten == bytesActuallyRead);
+
     }
     delete buffer;
-  }
-  else
-  {
-    this->SetStatus("Idling");
   }
 }
 
@@ -359,6 +352,13 @@ void QtAudioDataSourceService::StartRecording()
   // each recording session starts counting its own segments.
   m_SegmentCounter = 1;
 
+  m_InputDevice->setBufferSize(1024*1024*500); // 5Mb
+  m_InputStream = m_InputDevice->start();
+
+  bool ok = false;
+  ok = QObject::connect(m_InputStream, SIGNAL(readyRead()), this, SLOT(OnReadyRead()));
+  assert(ok);
+
   StartWAVFile();
 }
 
@@ -368,12 +368,18 @@ void QtAudioDataSourceService::StopRecording()
 {
   assert(m_OutputFile != 0);
 
-  IGIDataSource::StopRecording();
-
   FinishWAVFile();
+
+  bool ok = false;
+  ok = QObject::disconnect(m_InputStream, SIGNAL(readyRead()), this, SLOT(OnReadyRead()));
+  assert(ok);
+
+  m_InputDevice->stop();
 
   // reset to invalid
   m_SegmentCounter = 0;
+
+  IGIDataSource::StopRecording();
 }
 
 
