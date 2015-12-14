@@ -12,14 +12,17 @@
 #
 #============================================================================*/
 
+find_package(NiftyLink)
+if (NiftyLink_FOUND)
 
-MITK_CREATE_MODULE(
-  DEPENDS MitkCore niftkCore niftkIGIDataSources niftkOpenCVImageConversion
-  PACKAGE_DEPENDS Qt4|QtCore NiftyLink OpenCV
-  AUTOLOAD_WITH niftkIGIServices
-)
+  MITK_CREATE_MODULE(
+    DEPENDS MitkCore niftkCore niftkIGIDataSources niftkOpenCVImageConversion
+    PACKAGE_DEPENDS Qt4|QtCore NiftyLink OpenCV
+    AUTOLOAD_WITH niftkIGIServices
+  )
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkMITKTrackerDataSourceService)
+  if (NIFTK_USE_COTIRE AND COMMAND cotire)
+    cotire(niftkMITKTrackerDataSourceService)
+  endif()
+
 endif()
-

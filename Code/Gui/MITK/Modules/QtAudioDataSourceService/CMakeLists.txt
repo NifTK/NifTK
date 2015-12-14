@@ -12,14 +12,16 @@
 #
 #============================================================================*/
 
+if (QT_QTMULTIMEDIA_INCLUDE_DIR)
 
-MITK_CREATE_MODULE(
-  DEPENDS niftkIGIDataSources 
-  PACKAGE_DEPENDS Qt4|QtCore Qt4|QtMultimedia
-  AUTOLOAD_WITH niftkIGIServices
-)
+  MITK_CREATE_MODULE(
+    DEPENDS niftkIGIDataSources
+    PACKAGE_DEPENDS Qt4|QtCore Qt4|QtMultimedia
+    AUTOLOAD_WITH niftkIGIServices
+  )
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkQtAudioDataSourceService)
+  if (NIFTK_USE_COTIRE AND COMMAND cotire)
+    cotire(niftkQtAudioDataSourceService)
+  endif()
+
 endif()
-

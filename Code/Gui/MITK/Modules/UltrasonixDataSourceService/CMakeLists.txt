@@ -12,14 +12,16 @@
 #
 #============================================================================*/
 
+if (Ultrasonix_FOUND)
 
-MITK_CREATE_MODULE(
-  DEPENDS niftkIGIDataSources niftkOpenCVImageConversion
-  PACKAGE_DEPENDS Qt4|QtCore OpenCV
-  AUTOLOAD_WITH niftkIGIServices
-)
+  MITK_CREATE_MODULE(
+    DEPENDS niftkIGIDataSources niftkOpenCVImageConversion
+    PACKAGE_DEPENDS Qt4|QtCore OpenCV
+    AUTOLOAD_WITH niftkIGIServices
+  )
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkUltrasonixDataSourceService)
+  if (NIFTK_USE_COTIRE AND COMMAND cotire)
+    cotire(niftkUltrasonixDataSourceService)
+  endif()
+
 endif()
-

@@ -63,8 +63,8 @@ if(BUILD_IGI)
     IGIDataSources
 
     # Notice how the IGIDataSourcesManager does NOT know about
-    # Each data source. The interface is defined in IGIDataSources
-    # but all the implementations are defined after IGIDataSourcesManager.
+    # Each data source. The interface is defined in IGIDataSources (above)
+    # but all the implementations are defined after IGIDataSourcesManager (below).
     IGIDataSourcesManager
 
     # Micro Services should be last as nothing should depend on them.
@@ -73,23 +73,11 @@ if(BUILD_IGI)
     ICPRegService
     OIGTLSystemTimeService
     OpenCVVideoDataSourceService
+    QtAudioDataSourceService
+    UltrasonixDataSourceService
     MITKTrackerDataSourceService
     NiftyLinkDataSourceService
   )
-
-  #if(Ultrasonix_FOUND)
-    set(MODULE_DIRS
-      ${MODULE_DIRS}
-      UltrasonixDataSourceService
-    )
-  #endif()
-
- if(QT_QTMULTIMEDIA_INCLUDE_DIR)
-    set(MODULE_DIRS
-      ${MODULE_DIRS}
-      QtAudioDataSourceService
-    )
-  endif()
 
   if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
     set(MODULE_DIRS
