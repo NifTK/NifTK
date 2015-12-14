@@ -16,7 +16,10 @@
 #define niftkMITKTrackerDataSourceActivator_h
 
 #include "niftkMITKAuroraCubeDataSourceFactory.h"
+#include "niftkMITKAuroraDomeDataSourceFactory.h"
+#include "niftkMITKAuroraTableTopDataSourceFactory.h"
 #include "niftkMITKPolarisVicraDataSourceFactory.h"
+#include "niftkMITKPolarisSpectraDataSourceFactory.h"
 #include <usModuleActivator.h>
 #include <usModuleContext.h>
 #include <memory>
@@ -43,8 +46,11 @@ private:
   MITKTrackerDataSourceActivator(const MITKTrackerDataSourceActivator&); // deliberately not implemented
   MITKTrackerDataSourceActivator& operator=(const MITKTrackerDataSourceActivator&); // deliberately not implemented
 
-  std::auto_ptr<niftk::MITKAuroraCubeDataSourceFactory> m_AuroraCubeFactory;
-  std::auto_ptr<niftk::MITKPolarisVicraDataSourceFactory> m_PolarisVicraFactory;
+  std::auto_ptr<niftk::MITKAuroraCubeDataSourceFactory>     m_AuroraCubeFactory;
+  std::auto_ptr<niftk::MITKAuroraDomeDataSourceFactory>     m_AuroraDomeFactory;
+  std::auto_ptr<niftk::MITKAuroraTableTopDataSourceFactory> m_AuroraTableTopFactory;
+  std::auto_ptr<niftk::MITKPolarisVicraDataSourceFactory>   m_PolarisVicraFactory;
+  std::auto_ptr<niftk::MITKPolarisSpectraDataSourceFactory> m_PolarisSpectraFactory;
 };
 
 } // end namespace

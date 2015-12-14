@@ -39,10 +39,25 @@ void MITKTrackerDataSourceActivator::Load(us::ModuleContext* context)
   auroraCubeProps["Name"] = std::string("MITKAuroraCubeDataSourceFactory");
   context->RegisterService<IGIDataSourceFactoryServiceI>(m_AuroraCubeFactory.get(), auroraCubeProps);
 
+  m_AuroraDomeFactory.reset(new MITKAuroraDomeDataSourceFactory);
+  us::ServiceProperties auroraDomeProps;
+  auroraDomeProps["Name"] = std::string("MITKAuroraDomeDataSourceFactory");
+  context->RegisterService<IGIDataSourceFactoryServiceI>(m_AuroraDomeFactory.get(), auroraDomeProps);
+
+  m_AuroraTableTopFactory.reset(new MITKAuroraTableTopDataSourceFactory);
+  us::ServiceProperties auroraTableTopProps;
+  auroraTableTopProps["Name"] = std::string("MITKAuroraTableTopDataSourceFactory");
+  context->RegisterService<IGIDataSourceFactoryServiceI>(m_AuroraTableTopFactory.get(), auroraTableTopProps);
+
   m_PolarisVicraFactory.reset(new MITKPolarisVicraDataSourceFactory);
   us::ServiceProperties polarisVicraProps;
   polarisVicraProps["Name"] = std::string("MITKPolarisVicraDataSourceFactory");
   context->RegisterService<IGIDataSourceFactoryServiceI>(m_PolarisVicraFactory.get(), polarisVicraProps);
+
+  m_PolarisSpectraFactory.reset(new MITKPolarisSpectraDataSourceFactory);
+  us::ServiceProperties polarisSpectraProps;
+  polarisSpectraProps["Name"] = std::string("MITKPolarisSpectraDataSourceFactory");
+  context->RegisterService<IGIDataSourceFactoryServiceI>(m_PolarisSpectraFactory.get(), polarisSpectraProps);
 }
 
 
