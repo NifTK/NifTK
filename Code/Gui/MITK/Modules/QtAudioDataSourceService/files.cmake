@@ -22,6 +22,7 @@ set(CPP_FILES
 
 set(MOC_H_FILES
   Internal/niftkQtAudioDataDialog.h
+  Internal/niftkQtAudioDataSourceService.h
 )
 
 set(UI_FILES

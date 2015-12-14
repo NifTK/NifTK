@@ -17,9 +17,11 @@
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
 #include <niftkIGIDataSourceBuffer.h>
-#include <niftkIGIDataSourceBackgroundDeleteThread.h>
-#include <niftkIGIDataSourceGrabbingThread.h>
 #include <niftkIGILocalDataSourceI.h>
+#include <niftkIGIDataSourceGrabbingThread.h>
+#include <niftkIGICleanableDataSourceI.h>
+#include <niftkIGIDataSourceBackgroundDeleteThread.h>
+#include <niftkIGIBufferedSaveableDataSourceI.h>
 
 #include <mitkOpenCVVideoSource.h>
 
@@ -38,9 +40,11 @@ namespace niftk
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
 class OpenCVVideoDataSourceService
-    : public IGIDataSource
+    : public QObject
+    , public IGIDataSource
     , public IGILocalDataSourceI
-    , public QObject
+    , public IGICleanableDataSourceI
+    , public IGIBufferedSaveableDataSourceI
 {
 
 public:

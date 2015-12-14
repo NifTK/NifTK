@@ -18,9 +18,11 @@
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
 #include <niftkIGIWaitForSavedDataSourceBuffer.h>
+#include <niftkIGICleanableDataSourceI.h>
 #include <niftkIGIDataSourceBackgroundDeleteThread.h>
-#include <niftkIGIDataSourceBackgroundSaveThread.h>
+#include <niftkIGIBufferedSaveableDataSourceI.h>
 #include <niftkIGISaveableDataSourceI.h>
+#include <niftkIGIDataSourceBackgroundSaveThread.h>
 #include <NiftyLinkMessageContainer.h>
 
 #include <igtlTrackingDataMessage.h>
@@ -58,6 +60,8 @@ class NiftyLinkDataSourceService
     : public QObject
     , public IGIDataSource
     , public IGISaveableDataSourceI
+    , public IGIBufferedSaveableDataSourceI
+    , public IGICleanableDataSourceI
 {
 
   Q_OBJECT

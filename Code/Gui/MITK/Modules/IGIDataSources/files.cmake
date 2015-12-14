@@ -16,6 +16,8 @@ set(CPP_FILES
   Interfaces/niftkIGIDataSourceI.cxx
   Interfaces/niftkIGILocalDataSourceI.cxx
   Interfaces/niftkIGISaveableDataSourceI.cxx
+  Interfaces/niftkIGICleanableDataSourceI.cxx
+  Interfaces/niftkIGIBufferedSaveableDataSourceI.cxx
   Interfaces/niftkIGIDataSourceFactoryServiceI.cxx
   Interfaces/niftkIGIDataSourceFactoryServiceRAII.cxx
   DataType/niftkIGIDataType.cxx

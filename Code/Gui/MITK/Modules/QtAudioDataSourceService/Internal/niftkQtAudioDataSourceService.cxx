@@ -19,6 +19,8 @@
 #include <QDir>
 #include <QMutexLocker>
 #include <QAudioFormat>
+#include <QAudioDeviceInfo>
+#include <QAudioInput>
 
 Q_DECLARE_METATYPE(QAudioFormat);
 
@@ -38,27 +40,64 @@ QtAudioDataSourceService::QtAudioDataSourceService(
                 dataStorage)
 , m_Lock(QMutex::Recursive)
 , m_FrameId(0)
+, m_InputDevice(NULL)
+, m_InputStream(NULL)
+, m_OutputFile(NULL)
 {
-  mitkThrow() << "Not implemented yet. Volunteers .... please step forward!";
+  if(!properties.contains("name"))
+  {
+    mitkThrow() << "Audio device name not specified!";
+  }
+  QString audioDeviceName = (properties.value("name")).toString();
+
+  if (!properties.contains("format"))
+  {
+    mitkThrow() << "Audio format not specified!";
+  }
+  QAudioFormat audioDeviceFormat = properties.value("format").value<QAudioFormat>();
+
+  if (!properties.contains("formatString"))
+  {
+    mitkThrow() << "Format string not specified!";
+  }
+  QString formatString = properties.value("formatString").toString();
+
+  QString foundName;
+  QAudioDeviceInfo audioDeviceInfo;
+
+  QList<QAudioDeviceInfo> allDevices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+  foreach(QAudioDeviceInfo d, allDevices)
+  {
+    if (d.deviceName() ==  audioDeviceName)
+    {
+      foundName = d.deviceName();
+      audioDeviceInfo = d;
+    }
+  }
+  if (foundName.isEmpty())
+  {
+    mitkThrow() << "Audio format not supported!";
+  }
 
   this->SetStatus("Initialising");
 
-  int defaultFramesPerSecond = 25;
-
   QString deviceName = this->GetName();
-  m_ChannelNumber = (deviceName.remove(0, 8)).toInt(); // Should match string QtAudio- above
+  m_SourceNumber = (deviceName.remove(0, 8)).toInt(); // Should match string QtAudio- above
 
-  this->StartCapturing();
+  m_InputDevice = new QAudioInput(audioDeviceInfo, audioDeviceFormat);
+  bool ok = false;
+  ok = QObject::connect(m_InputDevice, SIGNAL(stateChanged(QAudio::State)), this, SLOT(OnStateChanged(QAudio::State)));
+  assert(ok);
 
-  // Set the interval based on desired number of frames per second.
-  // So, 25 fps = 40 milliseconds.
-  // However: If system slows down (eg. saving images), then Qt will
-  // drop clock ticks, so in effect, you will get less than this.
-  int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
+  m_InputStream = m_InputDevice->start();
+  ok = QObject::connect(m_InputStream, SIGNAL(readyRead()), this, SLOT(OnReadyRead()));
+  assert(ok);
 
-  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.5);
-  this->SetShouldUpdate(true);
-  this->SetProperties(properties);
+  m_DeviceInfo  = audioDeviceInfo;
+  m_Inputformat = audioDeviceFormat;
+
+  this->SetTimeStampTolerance(40*1000000);
+  this->SetDescription(formatString);
   this->SetStatus("Initialised");
   this->Modified();
 }
@@ -67,20 +106,204 @@ QtAudioDataSourceService::QtAudioDataSourceService(
 //-----------------------------------------------------------------------------
 QtAudioDataSourceService::~QtAudioDataSourceService()
 {
-  this->StopCapturing();
-  s_Lock.RemoveSource(m_ChannelNumber);
+  // sanity check: dont expect any background thread.
+  assert(this->thread() == QThread::currentThread());
+
+  bool    ok = false;
+
+  if (m_InputDevice != 0)
+  {
+    if (m_InputStream != 0)
+    {
+      ok = QObject::disconnect(m_InputStream, SIGNAL(readyRead()), this, SLOT(OnReadyRead()));
+      assert(ok);
+      // we do not own m_InputStream!
+      m_InputStream = 0;
+    }
+    m_InputDevice->stop();
+
+    ok = QObject::disconnect(m_InputDevice, SIGNAL(stateChanged(QAudio::State)), this, SLOT(OnStateChanged(QAudio::State)));
+    assert(ok);
+
+    delete m_InputDevice;
+    m_InputDevice = 0;
+  }
+
+  s_Lock.RemoveSource(m_SourceNumber);
+  delete m_OutputFile;
+}
+
+
+//-----------------------------------------------------------------------------
+void QtAudioDataSourceService::OnStateChanged(QAudio::State state)
+{
+  switch (state)
+  {
+    case QAudio::ActiveState:
+    case QAudio::IdleState:
+      this->SetStatus("Grabbing");
+      break;
+    case QAudio::SuspendedState:
+    case QAudio::StoppedState:
+    default:
+      if (m_InputDevice->error() != QAudio::NoError)
+      {
+        this->SetStatus("Error");
+      }
+      else
+      {
+        SetStatus("Stopped");
+      }
+      break;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QtAudioDataSourceService::OnReadyRead()
+{
+  // sanity check: dont expect any background thread.
+  assert(this->thread() == QThread::currentThread());
+
+  // sanity check
+  if (m_InputStream == 0)
+  {
+    mitkThrow() << "Invalid output stream!";
+  }
+  if (m_InputDevice == 0)
+  {
+    mitkThrow() << "Invalid audio device!";
+  }
+
+  // beware: m_InputStream->bytesAvailable() always returns zero!
+  std::size_t bytesToRead = m_InputDevice->bytesReady();
+  if (bytesToRead > 0)
+  {
+    char*         buffer            = new char[bytesToRead];
+    std::size_t   bytesActuallyRead = m_InputStream->read(buffer, bytesToRead);
+
+    if (bytesActuallyRead > 0)
+    {
+      if (this->GetIsRecording())
+      {
+        // cannot record while playing back
+        assert(!this->GetIsPlayingBack());
+
+        // if writing the current blob to the file would make it too big (signed 32 bit overflow!),
+        // then start a new segment.
+        // this can happen quite easily: 32 bit samples, 2 channels, 96kHz --> 46 minutes!
+        if ((m_OutputFile->size() + bytesActuallyRead) > std::numeric_limits<int>::max())
+        {
+          FinishWAVFile();
+          ++m_SegmentCounter;
+          StartWAVFile();
+        }
+
+        std::size_t actuallyWritten = m_OutputFile->write(buffer, bytesActuallyRead);
+        assert(actuallyWritten == bytesActuallyRead);
+      }
+      else
+      {
+        this->SetStatus("Grabbing");
+      }
+    }
+    else
+    {
+      this->SetStatus("Receiving");
+    }
+    delete buffer;
+  }
+  else
+  {
+    this->SetStatus("Idling");
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QtAudioDataSourceService::StartWAVFile()
+{
+  QString directoryPath = this->GetRecordingDirectoryName();
+
+  QDir directory(directoryPath);
+  if (directory.mkpath(directoryPath))
+  {
+    assert(m_SegmentCounter > 0);
+    m_OutputFile = new QFile(directory.absoluteFilePath(QString("%1.wav").arg(m_SegmentCounter)));
+
+    // it's an error to overwrite a file!
+    // first, each segment should have a unique number.
+    // second, each datasource recording session goes into its own directory.
+    bool ok = !m_OutputFile->exists();
+    if (ok)
+    {
+      ok = m_OutputFile->open(QIODevice::WriteOnly);
+      if (ok)
+      {
+        // basic wave header
+        // https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
+        char   wavheader[44];
+        std::memset(&wavheader[0], 0, sizeof(wavheader));
+        wavheader[0] = 'R'; wavheader[1] = 'I'; wavheader[2] = 'F'; wavheader[3] = 'F';
+        // followed by file size minus 8
+        wavheader[8] = 'W'; wavheader[9] = 'A'; wavheader[10] = 'V'; wavheader[11] = 'E';
+        wavheader[12] = 'f'; wavheader[13] = 'm'; wavheader[14] = 't'; wavheader[15] = ' ';
+        *((unsigned int*  ) &wavheader[16]) = 16;   // fixed size fmt chunk
+        *((unsigned short*) &wavheader[20]) = 1;   // pcm
+        *((unsigned short*) &wavheader[22]) = m_InputDevice->format().channels();
+        *((unsigned int*  ) &wavheader[24]) = m_InputDevice->format().sampleRate();
+        *((unsigned int*  ) &wavheader[28]) = m_InputDevice->format().sampleRate() * m_InputDevice->format().channels() * m_InputDevice->format().sampleSize() / 8;
+        *((unsigned short*) &wavheader[32]) = m_InputDevice->format().channels() * m_InputDevice->format().sampleSize() / 8;
+        *((unsigned short*) &wavheader[34]) = m_InputDevice->format().sampleSize();
+        wavheader[36] = 'd'; wavheader[37] = 'a'; wavheader[38] = 't'; wavheader[39] = 'a';
+        // followed by data size (filesize minus 44)
+
+        std::size_t actuallyWritten = m_OutputFile->write(&wavheader[0], sizeof(wavheader));
+        assert(actuallyWritten == sizeof(wavheader));
+        // and after that raw data.
+      }
+    }
+
+    if (!ok)
+    {
+      m_InputDevice->stop();
+      this->SetStatus("Error: cannot open output file");
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QtAudioDataSourceService::FinishWAVFile()
+{
+  // fill in the missing chunk sizes
+  unsigned int riffsize = m_OutputFile->size() - 8;
+  m_OutputFile->seek(4);
+  m_OutputFile->write((const char*) &riffsize, sizeof(riffsize));
+
+  unsigned int datasize = m_OutputFile->size() - 44;
+  m_OutputFile->seek(40);
+  m_OutputFile->write((const char*) &datasize, sizeof(datasize));
+
+  m_OutputFile->flush();
+  delete m_OutputFile;
+  m_OutputFile = 0;
 }
 
 
 //-----------------------------------------------------------------------------
 void QtAudioDataSourceService::SetProperties(const IGIDataSourceProperties& properties)
 {
+  MITK_INFO << "QtAudioDataSourceService::SetProperties(), nothing to do";
 }
 
 
 //-----------------------------------------------------------------------------
 IGIDataSourceProperties QtAudioDataSourceService::GetProperties() const
 {
+  MITK_INFO << "QtAudioDataSourceService::GetProperties(), nothing to return";
+  IGIDataSourceProperties props;
+  return props;
 }
 
 
@@ -99,93 +322,35 @@ void QtAudioDataSourceService::StopCapturing()
 
 
 //-----------------------------------------------------------------------------
-void QtAudioDataSourceService::CleanBuffer()
-{
-}
-
-
-//-----------------------------------------------------------------------------
 QString QtAudioDataSourceService::GetRecordingDirectoryName()
 {
   return this->GetRecordingLocation()
       + this->GetPreferredSlash()
       + this->GetName()
-      + "_" + (tr("%1").arg(m_ChannelNumber))
+      + "_" + (tr("%1").arg(m_SourceNumber))
       ;
 }
 
 
 //-----------------------------------------------------------------------------
 void QtAudioDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                                                 niftk::IGIDataType::IGITimeType lastTimeStamp)
+                                             niftk::IGIDataType::IGITimeType lastTimeStamp)
 {
-  QMutexLocker locker(&m_Lock);
-
-  IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
-
-  QDir directory(this->GetRecordingDirectoryName());
-  if (directory.exists())
-  {
-    m_PlaybackIndex = ProbeTimeStampFiles(directory, QString(".png"));
-  }
-  else
-  {
-    assert(false);
-  }
+  mitkThrow() << "QtAudioDataSourceService::StartPlayback(), Not implemented yet!";
 }
 
 
 //-----------------------------------------------------------------------------
 void QtAudioDataSourceService::StopPlayback()
 {
-  QMutexLocker locker(&m_Lock);
-
-  m_PlaybackIndex.clear();
-
-  IGIDataSource::StopPlayback();
+  mitkThrow() << "QtAudioDataSourceService::StopPlayback(), Not implemented yet!";
 }
 
 
 //-----------------------------------------------------------------------------
 void QtAudioDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
 {
-/*
-  assert(this->GetIsPlayingBack());
-  assert(m_PlaybackIndex.size() > 0); // Should have failed probing if no data.
-
-  // this will find us the timestamp right after the requested one
-  std::set<niftk::IGIDataType::IGITimeType>::const_iterator i = m_PlaybackIndex.upper_bound(requestedTimeStamp);
-  if (i != m_PlaybackIndex.begin())
-  {
-    --i;
-  }
-  if (i != m_PlaybackIndex.end())
-  {
-    if (!m_Buffer->Contains(*i))
-    {
-      std::ostringstream  filename;
-      filename << this->GetRecordingDirectoryName().toStdString() << '/' << (*i) << ".jpg";
-
-      IplImage* img = cvLoadImage(filename.str().c_str());
-      if (img)
-      {
-        niftk::OpenCVVideoDataType::Pointer wrapper = niftk::OpenCVVideoDataType::New();
-        wrapper->CloneImage(img);
-        wrapper->SetTimeStampInNanoSeconds(*i);
-        wrapper->SetFrameId(m_FrameId++);
-        wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-        wrapper->SetShouldBeSaved(false);
-        wrapper->SetIsSaved(false);
-
-        // Buffer itself should be threadsafe, so I'm not locking anything here.
-        m_Buffer->AddToBuffer(wrapper.GetPointer());
-
-        cvReleaseImage(&img);
-      }
-    }
-    this->SetStatus("Playing back");
-  }
-  */
+  mitkThrow() << "QtAudioDataSourceService::PlaybackData(), Not implemented yet!";
 }
 
 
@@ -193,120 +358,36 @@ void QtAudioDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requ
 bool QtAudioDataSourceService::ProbeRecordedData(const QString& path,
                                                      niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                                      niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
-{
-  // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.
-  niftk::IGIDataType::IGITimeType  firstTimeStampFound = 0;
-  niftk::IGIDataType::IGITimeType  lastTimeStampFound  = 0;
-
-  /*
-  // needs to match what SaveData() does below
-  QDir directory(path);
-  if (directory.exists())
-  {
-    std::set<niftk::IGIDataType::IGITimeType> timeStamps = ProbeTimeStampFiles(directory, QString(".jpg"));
-    if (!timeStamps.empty())
-    {
-      firstTimeStampFound = *timeStamps.begin();
-      lastTimeStampFound  = *(--(timeStamps.end()));
-    }
-  }
-
-  if (firstTimeStampInStore)
-  {
-    *firstTimeStampInStore = firstTimeStampFound;
-  }
-  if (lastTimeStampInStore)
-  {
-    *lastTimeStampInStore = lastTimeStampFound;
-  }
-  */
-  return firstTimeStampFound != 0;
+{  
+  return false;
 }
 
 
 //-----------------------------------------------------------------------------
-void QtAudioDataSourceService::GrabData()
+void QtAudioDataSourceService::StartRecording()
 {
-  {
-    QMutexLocker locker(&m_Lock);
+  assert(m_OutputFile == 0);
 
-    if (this->GetIsPlayingBack())
-    {
-      return;
-    }
-  }
+  IGIDataSource::StartRecording();
 
-  /*
-  // Somehow this can become null, probably a race condition during destruction.
-  if (m_VideoSource.IsNull())
-  {
-    mitkThrow() << "Video source is null. This should not happen! It's most likely a race-condition.";
-  }
+  // each recording session starts counting its own segments.
+  m_SegmentCounter = 1;
 
-  // Grab a video image.
-  m_VideoSource->FetchFrame();
-  const IplImage* img = m_VideoSource->GetCurrentFrame();
-  if (img == NULL)
-  {
-    mitkThrow() << "Failed to get a valid video frame!";
-  }
-
-  niftk::OpenCVVideoDataType::Pointer wrapper = niftk::OpenCVVideoDataType::New();
-  wrapper->CloneImage(img);
-  wrapper->SetTimeStampInNanoSeconds(this->GetTimeStampInNanoseconds());
-  wrapper->SetFrameId(m_FrameId++);
-  wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-  wrapper->SetShouldBeSaved(this->GetIsRecording());
-  wrapper->SetIsSaved(false);
-
-  */
-
-  //m_Buffer->AddToBuffer(wrapper.GetPointer());
-
-  // Save synchronously.
-  // This has the side effect that if saving is too slow,
-  // the QTimers just won't keep up, and start missing pulses.
-  if (this->GetIsRecording())
-  {
-    //this->SaveItem(wrapper.GetPointer());
-  }
-  this->SetStatus("Grabbing");
+  StartWAVFile();
 }
 
 
 //-----------------------------------------------------------------------------
-void QtAudioDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
+void QtAudioDataSourceService::StopRecording()
 {
-  /*
-  niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(data.GetPointer());
-  if (dataType.IsNull())
-  {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as the data received was the wrong type!";
-  }
+  assert(m_OutputFile != 0);
 
-  const IplImage* imageFrame = dataType->GetImage();
-  if (imageFrame == NULL)
-  {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
-  }
+  IGIDataSource::StopRecording();
 
-  QString directoryPath = this->GetRecordingDirectoryName();
-  QDir directory(directoryPath);
-  if (directory.mkpath(directoryPath))
-  {
-    QString fileName =  directoryPath + QDir::separator() + tr("%1.jpg").arg(data->GetTimeStampInNanoSeconds());
-    bool success = cvSaveImage(fileName.toStdString().c_str(), imageFrame);
-    if (!success)
-    {
-      mitkThrow() << "Failed to save OpenCVVideoDataType in cvSaveImage!";
-    }
-    data->SetIsSaved(true);
-  }
-  else
-  {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as could not create " << directoryPath.toStdString();
-  }
-  */
+  FinishWAVFile();
+
+  // reset to invalid
+  m_SegmentCounter = 0;
 }
 
 
@@ -314,34 +395,12 @@ void QtAudioDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 std::vector<IGIDataItemInfo> QtAudioDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
 {
   std::vector<IGIDataItemInfo> infos;
-
-  // This loads playback-data into the buffers, so must
-  // come before the check for empty buffer.
-  if (this->GetIsPlayingBack())
-  {
-    this->PlaybackData(time);
-  }
-/*
-  if (m_Buffer->GetBufferSize() == 0)
-  {
-    return infos;
-  }
-
-  if(m_Buffer->GetFirstTimeStamp() > time)
-  {
-    MITK_DEBUG << "QtAudioDataSourceService::Update(), requested time is before buffer time! "
-               << " Buffer size=" << m_Buffer->GetBufferSize()
-               << ", time=" << time
-               << ", firstTime=" << m_Buffer->GetFirstTimeStamp();
-    return infos;
-  }
-*/
-  // Create default return status.
   IGIDataItemInfo info;
   info.m_Name = this->GetName();
-//  info.m_FramesPerSecond = m_Buffer->GetFrameRate();
+  info.m_IsLate = false;
+  info.m_LagInMilliseconds = 0;
+  info.m_FramesPerSecond = 0;
   infos.push_back(info);
-
   return infos;
 }
 

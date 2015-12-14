@@ -51,16 +51,6 @@ public:
   mitkClassMacroItkParent(IGIDataSource, niftk::IGIDataSourceI);
 
   /**
-  * \brief An IGIDataSource should be able to save an instance of its own data.
-  */
-  virtual void SaveItem(niftk::IGIDataType::Pointer item) = 0;
-
-  /**
-  * \brief An IGIDataSource can manage its own buffers internally.
-  */
-  virtual void CleanBuffer() = 0;
-
-  /**
   * \see IGIDataSourceI::GetName()
   */
   virtual QString GetName() const override;

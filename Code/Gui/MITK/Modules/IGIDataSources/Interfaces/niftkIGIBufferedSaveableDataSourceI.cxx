@@ -12,31 +12,22 @@
 
 =============================================================================*/
 
-#include "niftkIGIDataSourceBackgroundDeleteThread.h"
+#include "niftkIGIBufferedSaveableDataSourceI.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIDataSourceBackgroundDeleteThread::IGIDataSourceBackgroundDeleteThread(
-    QObject *parent,
-    IGICleanableDataSourceI *source)
-: IGITimerBasedThread(parent)
-, m_Source(source)
+IGIBufferedSaveableDataSourceI::IGIBufferedSaveableDataSourceI()
 {
+
 }
 
 
 //-----------------------------------------------------------------------------
-IGIDataSourceBackgroundDeleteThread::~IGIDataSourceBackgroundDeleteThread()
+IGIBufferedSaveableDataSourceI::~IGIBufferedSaveableDataSourceI()
 {
-}
 
-
-//-----------------------------------------------------------------------------
-void IGIDataSourceBackgroundDeleteThread::OnTimeoutImpl()
-{
-  m_Source->CleanBuffer();
 }
 
 } // end namespace

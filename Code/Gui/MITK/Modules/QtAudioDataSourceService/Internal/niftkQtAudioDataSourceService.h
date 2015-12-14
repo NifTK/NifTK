@@ -25,6 +25,12 @@
 #include <QSet>
 #include <QMutex>
 #include <QString>
+#include <QAudioInput>
+
+// forward-decl
+class QAudioDeviceInfo;
+class QAudioFormat;
+class QFile;
 
 namespace niftk
 {
@@ -36,10 +42,11 @@ namespace niftk
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
 class QtAudioDataSourceService
-    : public IGIDataSource
-    , public IGILocalDataSourceI
-    , public QObject
+    : public QObject
+    , public IGIDataSource
 {
+
+  Q_OBJECT
 
 public:
 
@@ -83,26 +90,21 @@ public:
   virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
 
   /**
-  * \see niftk::IGIDataSource::SaveItem()
-  */
-  virtual void SaveItem(niftk::IGIDataType::Pointer item) override;
-
-  /**
-  * \see niftk::IGIDataSource::CleanBuffer()
-  */
-  virtual void CleanBuffer() override;
-
-  /**
-  * \see niftk::IGILocalDataSourceI::GrabData()
-  */
-  virtual void GrabData() override;
-
-  /**
   * \see IGIDataSourceI::ProbeRecordedData()
   */
   bool ProbeRecordedData(const QString& path,
                          niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                          niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
+
+  /**
+  * \see IGIDataSourceI::StartRecording()
+  */
+  virtual void StartRecording() override;
+
+  /**
+  * \see IGIDataSourceI::StopRecording()
+  */
+  virtual void StopRecording() override;
 
   /**
   * \brief IGIDataSourceI::SetProperties()
@@ -122,16 +124,30 @@ protected:
                                );
   virtual ~QtAudioDataSourceService();
 
+private slots:
+
+  void OnStateChanged(QAudio::State state);
+  void OnReadyRead();
+
 private:
 
   QtAudioDataSourceService(const QtAudioDataSourceService&); // deliberately not implemented
   QtAudioDataSourceService& operator=(const QtAudioDataSourceService&); // deliberately not implemented
 
+  void StartWAVFile();
+  void FinishWAVFile();
+
   static niftk::IGIDataSourceLocker               s_Lock;
   QMutex                                          m_Lock;
-  int                                             m_ChannelNumber;
+  int                                             m_SourceNumber;
   niftk::IGIDataType::IGIIndexType                m_FrameId;
-  std::set<niftk::IGIDataType::IGITimeType>       m_PlaybackIndex;
+
+  QAudioInput*                                    m_InputDevice;
+  QIODevice*                                      m_InputStream;      // we do not own this one!
+  QFile*                                          m_OutputFile;
+  QAudioDeviceInfo                                m_DeviceInfo;
+  QAudioFormat                                    m_Inputformat;
+  int                                             m_SegmentCounter;
 
 }; // end class
 

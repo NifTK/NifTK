@@ -17,7 +17,7 @@
 
 #include "niftkIGIDataSourcesExports.h"
 #include "niftkIGITimerBasedThread.h"
-#include "niftkIGIDataSource.h"
+#include <niftkIGICleanableDataSourceI.h>
 
 namespace niftk
 {
@@ -29,7 +29,7 @@ namespace niftk
 class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceBackgroundDeleteThread : public IGITimerBasedThread
 {
 public:
-  IGIDataSourceBackgroundDeleteThread(QObject *parent, IGIDataSource *source);
+  IGIDataSourceBackgroundDeleteThread(QObject *parent, IGICleanableDataSourceI *source);
   ~IGIDataSourceBackgroundDeleteThread();
 
   /**
@@ -38,7 +38,7 @@ public:
   virtual void OnTimeoutImpl();
 
 private:
-  IGIDataSource *m_Source;
+  IGICleanableDataSourceI *m_Source;
 };
 
 } // end namespace
