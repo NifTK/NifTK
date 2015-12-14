@@ -190,7 +190,14 @@ public:
                                  niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                  niftk::IGIDataType::IGITimeType* lastTimeStampInStore) = 0;
 
+  /**
+  * \brief Allows you to set properties, but the implementor is free to ignore them.
+  */
   virtual void SetProperties(const IGIDataSourceProperties& properties) = 0;
+
+  /**
+  * \brief Retrieve any properties from the data source.
+  */
   virtual IGIDataSourceProperties GetProperties() const = 0;
 
 protected:
