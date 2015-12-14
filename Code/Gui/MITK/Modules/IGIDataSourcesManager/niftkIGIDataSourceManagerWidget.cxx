@@ -78,6 +78,8 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)), this, SLOT(OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)));
   assert(ok);
+  ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedRendering()), this, SIGNAL(UpdateFinishedRendering()));
+  assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(PlaybackTimerAdvanced(int)), this, SLOT(OnPlaybackTimeAdvanced(int)));
   assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(TimerUpdated(QString, QString)), this, SLOT(OnTimerUpdated(QString, QString)));

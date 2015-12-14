@@ -77,6 +77,11 @@ signals:
   */
   void UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType);
 
+  /**
+  * \brief Passed through from niftk::IGIDataSourceManager::UpdateFinishedRendering()
+  */
+  void UpdateFinishedRendering();
+
 protected:
 
   IGIDataSourceManagerWidget(const IGIDataSourceManagerWidget&); // Purposefully not implemented.
