@@ -77,15 +77,8 @@ if(BUILD_IGI)
     UltrasonixDataSourceService
     MITKTrackerDataSourceService
     NiftyLinkDataSourceService
+    NVidiaSDIDataSourceService
   )
-
-  if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
-    set(MODULE_DIRS
-      ${MODULE_DIRS}
-      NVidia
-    )
-  endif()
-
 endif()
 
 if(BUILD_VL)
