@@ -34,7 +34,7 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: IGIDataSource((QString("Ultrasonix-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
+: IGIDataSource((QString("UltrasonixNetworked-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
                 factoryName.toStdString(),
                 dataStorage)
 , m_Lock(QMutex::Recursive)
@@ -51,7 +51,7 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
   m_Buffer = niftk::IGIDataSourceBuffer::New(defaultFramesPerSecond * 2);
 
   QString deviceName = this->GetName();
-  m_ChannelNumber = (deviceName.remove(0, 11)).toInt(); // Should match string OpenCV- above
+  m_ChannelNumber = (deviceName.remove(0, 20)).toInt(); // Should match string UltrasonixNetworked- above
 
   // Set the interval based on desired number of frames per second.
   // So, 25 fps = 40 milliseconds.

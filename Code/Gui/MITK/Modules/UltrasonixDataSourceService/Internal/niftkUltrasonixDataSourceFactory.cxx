@@ -22,7 +22,7 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 UltrasonixDataSourceFactory::UltrasonixDataSourceFactory()
-: IGIDataSourceFactoryServiceI("Ultrasonix",
+: IGIDataSourceFactoryServiceI("Ultrasonix (Networked)",
                                true,  // configure host and port at startup
                                true   // can configure lag while running
                                )
