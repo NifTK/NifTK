@@ -463,7 +463,7 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
   {
     QList<IGIDataItemInfo> infoForOneRow = infos[r];
 
-    // This can happen if a source has not received data yet.
+    // The info itself can be empty if a source has not received data yet.
     // e.g. a tracker is initialised (present in the GUI table),
     // but has not yet received any tracking data, at the point
     // the update thread ends up here.
@@ -473,13 +473,15 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
       m_Manager->FreezeDataSource(r, !shouldUpdate);
 
       QImage iconAsImage(22*infoForOneRow.size(), 22, QImage::Format_ARGB32);
+      m_TableWidget->setIconSize(iconAsImage.size());
+
       QString framesPerSecondString;
       QString lagInMillisecondsString;
 
       for (int i = 0; i < infoForOneRow.size(); i++)
       {
         QImage pix(22, 22, QImage::Format_ARGB32);
-        if (m_Manager->IsFrozen(i))
+        if (m_Manager->IsFrozen(r))
         {
           pix.fill(QColor(Qt::blue)); // suspended
         }
@@ -499,8 +501,8 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
         painter.drawImage(destPos, pix);
         painter.end();
 
-        framesPerSecondString.append(QString::number(infoForOneRow[i].m_FramesPerSecond));
-        lagInMillisecondsString.append(QString::number(infoForOneRow[i].m_LagInMilliseconds));
+        framesPerSecondString.append(QString::number(static_cast<int>(infoForOneRow[i].m_FramesPerSecond)));
+        lagInMillisecondsString.append(QString::number(static_cast<int>(infoForOneRow[i].m_LagInMilliseconds)));
         if (i+1 != infoForOneRow.size())
         {
           framesPerSecondString.append(QString(":"));
@@ -508,13 +510,12 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDat
         }
       }
 
-      IGIDataItemInfo firstItemOnly = infoForOneRow[0];
       niftk::IGIDataSourceI::Pointer source = m_Manager->GetSource(r);
 
       QTableWidgetItem *item1 = new QTableWidgetItem(source->GetStatus());
       item1->setTextAlignment(Qt::AlignCenter);
       item1->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-      item1->setIcon(QPixmap::fromImage(iconAsImage));
+      item1->setIcon(QIcon(QPixmap::fromImage(iconAsImage)));
       m_TableWidget->setItem(r, 1, item1);
 
       QTableWidgetItem *item2 = new QTableWidgetItem(framesPerSecondString);
