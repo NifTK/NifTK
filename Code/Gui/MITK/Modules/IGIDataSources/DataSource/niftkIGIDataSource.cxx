@@ -284,49 +284,5 @@ unsigned int IGIDataSource::GetLagInMilliseconds(const niftk::IGIDataType::IGITi
   return (requested - actual)/1000000;
 }
 
-
-//-----------------------------------------------------------------------------
-QString IGIDataSource::GetPreferredSlash()
-{
-  return QString(QDir::separator());
-}
-
-
-//-----------------------------------------------------------------------------
-std::set<niftk::IGIDataType::IGITimeType> IGIDataSource::ProbeTimeStampFiles(QDir path, const QString& suffix)
-{
-  static_assert(std::numeric_limits<qulonglong>::max() >= std::numeric_limits<niftk::IGIDataType::IGITimeType>::max(), "mismatched data types");
-
-  std::set<niftk::IGIDataType::IGITimeType>  result;
-
-  QStringList filters;
-  filters << QString("*" + suffix);
-  path.setNameFilters(filters);
-  path.setFilter(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot);
-
-  QStringList files = path.entryList();
-  if (!files.empty())
-  {
-    foreach (QString file, files)
-    {
-      if (file.endsWith(suffix))
-      {
-        // in the future, maybe add prefix parsing too.
-        QString  middle = file.mid(0, file.size() - suffix.size());
-
-        bool  ok = false;
-        qulonglong value = middle.toULongLong(&ok);
-        if (ok)
-        {
-          result.insert(value);
-        }
-      }
-    }
-  }
-
-  return result;
-}
-
-
 } // end namespace
 

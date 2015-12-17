@@ -15,6 +15,7 @@
 #include "niftkOpenCVVideoDataSourceService.h"
 #include "niftkOpenCVVideoDataType.h"
 #include <niftkIGIDataSourceI.h>
+#include <niftkIGIDataSourceUtils.h>
 #include <niftkImageConversion.h>
 #include <mitkExceptionMacro.h>
 #include <mitkImage.h>
@@ -157,7 +158,7 @@ void OpenCVVideoDataSourceService::CleanBuffer()
 QString OpenCVVideoDataSourceService::GetRecordingDirectoryName()
 {
   return this->GetRecordingLocation()
-      + this->GetPreferredSlash()
+      + niftk::GetPreferredSlash()
       + this->GetName()
       + "_" + (tr("%1").arg(m_ChannelNumber))
       ;
@@ -177,7 +178,7 @@ void OpenCVVideoDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType
   QDir directory(this->GetRecordingDirectoryName());
   if (directory.exists())
   {
-    m_PlaybackIndex = ProbeTimeStampFiles(directory, QString(".jpg"));
+    m_PlaybackIndex = niftk::ProbeTimeStampFiles(directory, QString(".jpg"));
   }
   else
   {

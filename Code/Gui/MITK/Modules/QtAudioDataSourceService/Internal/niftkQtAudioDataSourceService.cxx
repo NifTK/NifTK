@@ -14,6 +14,7 @@
 
 #include "niftkQtAudioDataSourceService.h"
 #include "niftkQtAudioDataType.h"
+#include <niftkIGIDataSourceUtils.h>
 #include <niftkIGIDataSourceI.h>
 #include <mitkExceptionMacro.h>
 #include <QDir>
@@ -297,7 +298,7 @@ IGIDataSourceProperties QtAudioDataSourceService::GetProperties() const
 QString QtAudioDataSourceService::GetRecordingDirectoryName()
 {
   return this->GetRecordingLocation()
-      + this->GetPreferredSlash()
+      + niftk::GetPreferredSlash()
       + this->GetName()
       + "_" + (tr("%1").arg(m_SourceNumber))
       ;

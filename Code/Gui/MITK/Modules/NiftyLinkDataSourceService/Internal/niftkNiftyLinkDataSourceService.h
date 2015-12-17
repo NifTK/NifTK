@@ -183,7 +183,7 @@ private:
   QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer> m_Buffers;
 
   // Make sure this is only used from the MessageReceived thread.
-  igtl::TimeStamp::Pointer                                       m_MessageReceivedTimeStamp;
+  igtl::TimeStamp::Pointer                                       m_MessageCreatedTimeStamp;
 
 }; // end class
 

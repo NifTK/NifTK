@@ -14,6 +14,7 @@
 
 #include "niftkNiftyLinkDataSourceService.h"
 #include <niftkImageConversion.h>
+#include <niftkIGIDataSourceUtils.h>
 #include <NiftyLinkImageMessageHelpers.h>
 
 #include <itkNiftiImageIO.h>
@@ -56,8 +57,8 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
   QString deviceName = this->GetName();
   m_SourceNumber = (deviceName.remove(0, name.length() + 1)).toInt();
 
-  m_MessageReceivedTimeStamp = igtl::TimeStamp::New();
-  m_MessageReceivedTimeStamp->GetTime();
+  m_MessageCreatedTimeStamp = igtl::TimeStamp::New();
+  m_MessageCreatedTimeStamp->GetTime();
 
   this->SetStatus("Initialising");
 
@@ -87,7 +88,7 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
     mitkThrow() << "Failed to start background save thread";
   }
 
-  this->SetDescription("Network trackers via OpenIGTLink.");
+  this->SetDescription("Network sources via OpenIGTLink.");
   this->SetStatus("Initialised");
   this->Modified();
 }
@@ -169,7 +170,7 @@ void NiftyLinkDataSourceService::SaveBuffer()
 QString NiftyLinkDataSourceService::GetRecordingDirectoryName()
 {
   return this->GetRecordingLocation()
-      + this->GetPreferredSlash()
+      + niftk::GetPreferredSlash()
       + this->GetName()
       ;
 }
@@ -178,45 +179,19 @@ QString NiftyLinkDataSourceService::GetRecordingDirectoryName()
 //-----------------------------------------------------------------------------
 QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >  NiftyLinkDataSourceService::GetPlaybackIndex(QString directory)
 {
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > result;
-/*
-  QDir recordingDir(directory);
-  if (recordingDir.exists())
-  {
-    // then directories with tool names
-    recordingDir.setFilter(QDir::Dirs | QDir::Readable | QDir::NoDotAndDotDot);
+  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > result
+      = niftk::GetPlaybackIndex(directory, QString(".*"));
 
-    QStringList toolNames = recordingDir.entryList();
-    if (!toolNames.isEmpty())
-    {
-      foreach (QString tool, toolNames)
-      {
-        QDir  tooldir(recordingDir.path() + QDir::separator() + tool);
-        assert(tooldir.exists());
-
-        std::set<niftk::IGIDataType::IGITimeType> timeStamps = ProbeTimeStampFiles(tooldir, QString(".txt"));
-        if (!timeStamps.empty())
-        {
-          result.insert(tool, timeStamps);
-        }
-      }
-    }
-    else
-    {
-      MITK_WARN << "There are no tool sub-folders in " << recordingDir.absolutePath().toStdString() << ", so can't playback tracking data!";
-      return result;
-    }
-  }
-  else
-  {
-    mitkThrow() << this->GetName().toStdString() << ": Recording directory, " << recordingDir.absolutePath().toStdString() << ", does not exist!";
-  }
-  if (result.isEmpty())
-  {
-    mitkThrow() << "No tracking data extracted from directory " << recordingDir.absolutePath().toStdString();
-  }
-*/
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+bool NiftyLinkDataSourceService::ProbeRecordedData(const QString& path,
+                                                     niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+                                                     niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
+{
+  return niftk::ProbeRecordedData(path, QString(".*"), firstTimeStampInStore, lastTimeStampInStore);
 }
 
 
@@ -312,54 +287,6 @@ void NiftyLinkDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
   } // end: foreach buffer
 */
   this->SetStatus("Playing back");
-}
-
-
-//-----------------------------------------------------------------------------
-bool NiftyLinkDataSourceService::ProbeRecordedData(const QString& path,
-                                                     niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                                     niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
-{
-  niftk::IGIDataType::IGITimeType  firstTimeStampFound = std::numeric_limits<niftk::IGIDataType::IGITimeType>::max();
-  niftk::IGIDataType::IGITimeType  lastTimeStampFound  = std::numeric_limits<niftk::IGIDataType::IGITimeType>::min();
-/*
-  // Note, that each tool may have different min and max, so we want the
-  // most minimum and most maximum of all the sub directories.
-
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > result = this->GetPlaybackIndex(path);
-  if (result.isEmpty())
-  {
-    return false;
-  }
-
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator iter;
-  for (iter = result.begin(); iter != result.end(); iter++)
-  {
-    if (!iter.value().empty())
-    {
-      niftk::IGIDataType::IGITimeType first = *((*iter).begin());
-      if (first < firstTimeStampFound)
-      {
-        firstTimeStampFound = first;
-      }
-
-      niftk::IGIDataType::IGITimeType last = *(--((*iter).end()));
-      if (last > lastTimeStampFound)
-      {
-        lastTimeStampFound = last;
-      }
-    }
-  }
-  if (firstTimeStampInStore)
-  {
-    *firstTimeStampInStore = firstTimeStampFound;
-  }
-  if (lastTimeStampInStore)
-  {
-    *lastTimeStampInStore = lastTimeStampFound;
-  }
-*/
-  return firstTimeStampFound != std::numeric_limits<niftk::IGIDataType::IGITimeType>::max();
 }
 
 
@@ -494,7 +421,7 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
   } // end if directory to write to ok
   else
   {
-    mitkThrow() << "Failed to write to " << directoryPath.toStdString();
+    mitkThrow() << "Failed to create directory:" << directoryPath.toStdString();
   }
 }
 
@@ -503,7 +430,53 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
 void NiftyLinkDataSourceService::SaveTrackingData(niftk::NiftyLinkDataType::Pointer dataType,
                                                   igtl::TrackingDataMessage::Pointer trackingMessage)
 {
+  if (trackingMessage.IsNull())
+  {
+    mitkThrow() << this->GetName().toStdString() << ": Saving a NULL tracking message?!?";
+  }
 
+  QString directoryPath = this->GetRecordingDirectoryName();
+
+  for (int i = 0; i < trackingMessage->GetNumberOfTrackingDataElements(); i++)
+  {
+    igtl::TrackingDataElement::Pointer elem = igtl::TrackingDataElement::New();
+    trackingMessage->GetTrackingDataElement(i, elem);
+
+    QString toolPath = directoryPath + QDir::separator() + QString::fromStdString(elem->GetName());
+    QDir directory(toolPath);
+    if (directory.mkpath(toolPath))
+    {
+      QString fileName = toolPath + QDir::separator() + tr("%1.txt").arg(dataType->GetTimeStampInNanoSeconds());
+
+      float matrix[4][4];
+      elem->GetMatrix(matrix);
+
+      QFile matrixFile(fileName);
+      matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
+
+      if (!matrixFile.error())
+      {
+        QTextStream matout(&matrixFile);
+        matout.setRealNumberPrecision(10);
+        matout.setRealNumberNotation(QTextStream::FixedNotation);
+
+        matout << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2] << " " << matrix[0][3]  << "\n";
+        matout << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2] << " " << matrix[1][3]  << "\n";
+        matout << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2] << " " << matrix[2][3]  << "\n";
+        matout << matrix[3][0] << " " << matrix[3][1] << " " << matrix[3][2] << " " << matrix[3][3]  << "\n";
+
+        matrixFile.close();
+      }
+      else
+      {
+        mitkThrow() << "Failed to write matrix to file:" << fileName.toStdString();
+      }
+    }
+    else
+    {
+      mitkThrow() << "Failed to create directory:" << toolPath.toStdString();
+    }
+  }
 }
 
 
@@ -830,8 +803,8 @@ void NiftyLinkDataSourceService::MessageReceived(niftk::NiftyLinkMessageContaine
   // Remember: network clients could be rather
   // unreliable, or have incorrectly synched clock.
   niftk::IGIDataType::IGITimeType localTime = this->GetTimeStampInNanoseconds();
-  message->GetTimeCreated(m_MessageReceivedTimeStamp);
-  niftk::IGIDataType::IGITimeType timeCreated = m_MessageReceivedTimeStamp->GetTimeStampInNanoseconds();
+  message->GetTimeCreated(m_MessageCreatedTimeStamp);
+  niftk::IGIDataType::IGITimeType timeCreated = m_MessageCreatedTimeStamp->GetTimeStampInNanoseconds();
   niftk::IGIDataType::IGITimeType timeToUse = 0;
   if (timeCreated > localTime  // if remote end is ahead, clock must be wrong.
       || timeCreated == 0      // if not specified, time data is useless.
@@ -860,7 +833,7 @@ void NiftyLinkDataSourceService::MessageReceived(niftk::NiftyLinkMessageContaine
     // So buffer requires a back-ground delete thread.
     niftk::IGIWaitForSavedDataSourceBuffer::Pointer newBuffer
         = niftk::IGIWaitForSavedDataSourceBuffer::New(120, this);
-
+    newBuffer->SetLagInMilliseconds(m_Lag);
     m_Buffers.insert(originator, newBuffer);
   }
 

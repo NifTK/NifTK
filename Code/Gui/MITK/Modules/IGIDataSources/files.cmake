@@ -36,6 +36,7 @@ set(CPP_FILES
   Dialogs/niftkIPHostPortDialog.cxx
   Dialogs/niftkLagDialog.cxx
   Conversion/niftkQImageToMitkImageFilter.cxx
+  Utils/niftkIGIDataSourceUtils.cxx
 #  mitkIGIDataType.cxx
 #  mitkIGIDataSource.cxx
 #  mitkIGIOpenCVDataType.cxx

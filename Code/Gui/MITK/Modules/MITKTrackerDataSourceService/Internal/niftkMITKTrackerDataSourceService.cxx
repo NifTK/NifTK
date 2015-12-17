@@ -14,6 +14,7 @@
 
 #include "niftkMITKTrackerDataSourceService.h"
 #include "niftkIGITrackerDataType.h"
+#include <niftkIGIDataSourceUtils.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkFileIOUtils.h>
 #include <mitkExceptionMacro.h>
@@ -155,7 +156,7 @@ void MITKTrackerDataSourceService::CleanBuffer()
 QString MITKTrackerDataSourceService::GetRecordingDirectoryName()
 {
   return this->GetRecordingLocation()
-      + this->GetPreferredSlash()
+      + niftk::GetPreferredSlash()
       + this->GetName()
       ;
 }
@@ -164,45 +165,19 @@ QString MITKTrackerDataSourceService::GetRecordingDirectoryName()
 //-----------------------------------------------------------------------------
 QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >  MITKTrackerDataSourceService::GetPlaybackIndex(QString directory)
 {
+  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > result
+      = niftk::GetPlaybackIndex(directory, QString(".txt"));
 
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > result;
-
-  QDir recordingDir(directory);
-  if (recordingDir.exists())
-  {
-    // then directories with tool names
-    recordingDir.setFilter(QDir::Dirs | QDir::Readable | QDir::NoDotAndDotDot);
-
-    QStringList toolNames = recordingDir.entryList();
-    if (!toolNames.isEmpty())
-    {
-      foreach (QString tool, toolNames)
-      {
-        QDir  tooldir(recordingDir.path() + QDir::separator() + tool);
-        assert(tooldir.exists());
-
-        std::set<niftk::IGIDataType::IGITimeType> timeStamps = ProbeTimeStampFiles(tooldir, QString(".txt"));
-        if (!timeStamps.empty())
-        {
-          result.insert(tool, timeStamps);
-        }
-      }
-    }
-    else
-    {
-      MITK_WARN << "There are no tool sub-folders in " << recordingDir.absolutePath().toStdString() << ", so can't playback tracking data!";
-      return result;
-    }
-  }
-  else
-  {
-    mitkThrow() << this->GetName().toStdString() << ": Recording directory, " << recordingDir.absolutePath().toStdString() << ", does not exist!";
-  }
-  if (result.isEmpty())
-  {
-    mitkThrow() << "No tracking data extracted from directory " << recordingDir.absolutePath().toStdString();
-  }
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+bool MITKTrackerDataSourceService::ProbeRecordedData(const QString& path,
+                                                     niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+                                                     niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
+{
+  return niftk::ProbeRecordedData(path, QString(".txt"), firstTimeStampInStore, lastTimeStampInStore);
 }
 
 
@@ -259,9 +234,9 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
       {
         std::ostringstream  filename;
         filename << this->GetRecordingDirectoryName().toStdString()
-                 << this->GetPreferredSlash().toStdString()
+                 << niftk::GetPreferredSlash().toStdString()
                  << bufferName.toStdString()
-                 << this->GetPreferredSlash().toStdString()
+                 << niftk::GetPreferredSlash().toStdString()
                  << (*i)
                  << ".txt";
 
@@ -297,54 +272,6 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
   } // end: foreach buffer
 
   this->SetStatus("Playing back");
-}
-
-
-//-----------------------------------------------------------------------------
-bool MITKTrackerDataSourceService::ProbeRecordedData(const QString& path,
-                                                     niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                                     niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
-{
-
-  niftk::IGIDataType::IGITimeType  firstTimeStampFound = std::numeric_limits<niftk::IGIDataType::IGITimeType>::max();
-  niftk::IGIDataType::IGITimeType  lastTimeStampFound  = std::numeric_limits<niftk::IGIDataType::IGITimeType>::min();
-
-  // Note, that each tool may have different min and max, so we want the
-  // most minimum and most maximum of all the sub directories.
-
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > result = this->GetPlaybackIndex(path);
-  if (result.isEmpty())
-  {
-    return false;
-  }
-
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator iter;
-  for (iter = result.begin(); iter != result.end(); iter++)
-  {
-    if (!iter.value().empty())
-    {
-      niftk::IGIDataType::IGITimeType first = *((*iter).begin());
-      if (first < firstTimeStampFound)
-      {
-        firstTimeStampFound = first;
-      }
-
-      niftk::IGIDataType::IGITimeType last = *(--((*iter).end()));
-      if (last > lastTimeStampFound)
-      {
-        lastTimeStampFound = last;
-      }
-    }
-  }
-  if (firstTimeStampInStore)
-  {
-    *firstTimeStampInStore = firstTimeStampFound;
-  }
-  if (lastTimeStampInStore)
-  {
-    *lastTimeStampInStore = lastTimeStampFound;
-  }
-  return firstTimeStampFound != std::numeric_limits<niftk::IGIDataType::IGITimeType>::max();
 }
 
 
@@ -388,6 +315,7 @@ void MITKTrackerDataSourceService::GrabData()
       if (!m_Buffers.contains(toolNameAsQString))
       {
         niftk::IGIDataSourceBuffer::Pointer newBuffer = niftk::IGIDataSourceBuffer::New(m_Tracker->GetPreferredFramesPerSecond() * 2);
+        newBuffer->SetLagInMilliseconds(m_Lag);
         m_Buffers.insert(toolNameAsQString, newBuffer);
       }
 
@@ -434,9 +362,9 @@ void MITKTrackerDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 
   QString directoryPath = this->GetRecordingDirectoryName();
   QString toolPath = directoryPath
-      + this->GetPreferredSlash()
+      + niftk::GetPreferredSlash()
       + QString::fromStdString(dataType->GetToolName())
-      + this->GetPreferredSlash();
+      + niftk::GetPreferredSlash();
 
   QDir directory(toolPath);
   if (directory.mkpath(toolPath))

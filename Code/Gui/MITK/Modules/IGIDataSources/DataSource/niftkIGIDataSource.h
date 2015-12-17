@@ -110,17 +110,6 @@ public:
   itkSetMacro(TimeStampTolerance, niftk::IGIDataType::IGITimeType);
   itkGetConstMacro(TimeStampTolerance, niftk::IGIDataType::IGITimeType);
 
-  /**
-   * \brief Scans the directory for individual files that match a timestamp pattern.
-   * \param suffix for example ".jpg" or "-ultrasoundImage.nii".
-   */
-  static std::set<niftk::IGIDataType::IGITimeType> ProbeTimeStampFiles(QDir path, const QString& suffix);
-
-  /**
-  * \brief Returns the platform specific directory separator.
-  */
-  static QString GetPreferredSlash();
-
 protected:
 
   IGIDataSource(const std::string& name,
