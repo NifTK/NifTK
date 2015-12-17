@@ -178,7 +178,9 @@ void OpenCVVideoDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType
   QDir directory(this->GetRecordingDirectoryName());
   if (directory.exists())
   {
-    m_PlaybackIndex = niftk::ProbeTimeStampFiles(directory, QString(".jpg"));
+    std::set<niftk::IGIDataType::IGITimeType> timeStamps;
+    niftk::ProbeTimeStampFiles(directory, QString(".jpg"), timeStamps);
+    m_PlaybackIndex = timeStamps;
   }
   else
   {
@@ -252,7 +254,8 @@ bool OpenCVVideoDataSourceService::ProbeRecordedData(const QString& path,
   QDir directory(path);
   if (directory.exists())
   {
-    std::set<niftk::IGIDataType::IGITimeType> timeStamps = ProbeTimeStampFiles(directory, QString(".jpg"));
+    std::set<niftk::IGIDataType::IGITimeType> timeStamps;
+    niftk::ProbeTimeStampFiles(directory, QString(".jpg"), timeStamps);
     if (!timeStamps.empty())
     {
       firstTimeStampFound = *timeStamps.begin();

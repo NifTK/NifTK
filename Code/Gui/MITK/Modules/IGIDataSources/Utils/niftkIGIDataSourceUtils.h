@@ -21,6 +21,7 @@
 #include <QDir>
 #include <QString>
 #include <QMap>
+#include <QHash>
 
 /**
  * \file mitkIGIDataSourceUtils.h
@@ -28,14 +29,6 @@
  */
 namespace niftk
 {
-
-/**
-* \brief Scans the directory for individual files that match a timestamp pattern.
-* \param suffix for example ".jpg" or "-ultrasoundImage.nii".
-*/
-NIFTKIGIDATASOURCES_EXPORT
-std::set<niftk::IGIDataType::IGITimeType> ProbeTimeStampFiles(QDir path, const QString& suffix);
-
 /**
 * \brief Returns the platform specific directory separator.
 */
@@ -43,11 +36,30 @@ NIFTKIGIDATASOURCES_EXPORT
 QString GetPreferredSlash();
 
 /**
+* \brief Scans the directory for individual files that match a timestamp pattern.
+* \param suffix for example ".jpg" or "-ultrasoundImage.nii".
+*/
+NIFTKIGIDATASOURCES_EXPORT
+void ProbeTimeStampFiles(QDir path,
+                         const QString& suffix,
+                         std::set<niftk::IGIDataType::IGITimeType>& timeStamps,
+                         QHash<niftk::IGIDataType::IGITimeType, QString>& timeStampToFileName);
+
+void ProbeTimeStampFiles(QDir path,
+                         const QString& suffix,
+                         std::set<niftk::IGIDataType::IGITimeType>& timeStamps
+                         );
+
+/**
 * \brief Returns the list of timestamps, by source name.
 */
 NIFTKIGIDATASOURCES_EXPORT
-QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > GetPlaybackIndex(
-    const QString& directory, const QString& fileExtension);
+void GetPlaybackIndex(
+    const QString& directory,
+    const QString& fileExtension,
+    QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >& bufferToTimeStamp,
+    QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> >& bufferToTimeStampToFileNames
+    );
 
 /**
 * \brief Returns the minimum and maximum timestamped of all files under the specified

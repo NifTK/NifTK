@@ -152,38 +152,39 @@ private:
   NiftyLinkDataSourceService(const NiftyLinkDataSourceService&); // deliberately not implemented
   NiftyLinkDataSourceService& operator=(const NiftyLinkDataSourceService&); // deliberately not implemented
 
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > GetPlaybackIndex(QString directory);
-
   std::vector<IGIDataItemInfo> ReceiveTrackingData(QString bufferName,
                                                    niftk::IGIDataType::IGITimeType timeRequested,
                                                    niftk::IGIDataType::IGITimeType actualTime,
                                                    igtl::TrackingDataMessage*);
+
   void SaveTrackingData(niftk::NiftyLinkDataType::Pointer, igtl::TrackingDataMessage*);
 
   std::vector<IGIDataItemInfo> ReceiveImage(QString bufferName,
                                             niftk::IGIDataType::IGITimeType timeRequested,
                                             niftk::IGIDataType::IGITimeType actualTime,
                                             igtl::ImageMessage*);
+
   void SaveImage(niftk::NiftyLinkDataType::Pointer, igtl::ImageMessage*);
 
   std::vector<IGIDataItemInfo> ReceiveString(igtl::StringMessage*);
 
   void AddAll(const std::vector<IGIDataItemInfo>& a, std::vector<IGIDataItemInfo>& b);
 
-  static niftk::IGIDataSourceLocker                              s_Lock;
-  QMutex                                                         m_Lock;
-  int                                                            m_SourceNumber;
-  niftk::IGIDataType::IGIIndexType                               m_FrameId;
-  niftk::IGIDataSourceBackgroundDeleteThread*                    m_BackgroundDeleteThread;
-  niftk::IGIDataSourceBackgroundSaveThread*                      m_BackgroundSaveThread;
-  int                                                            m_Lag = 0;
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >      m_PlaybackIndex;
+  QMutex                                                              m_Lock;
+  niftk::IGIDataType::IGIIndexType                                    m_FrameId;
+  niftk::IGIDataSourceBackgroundDeleteThread*                         m_BackgroundDeleteThread;
+  niftk::IGIDataSourceBackgroundSaveThread*                           m_BackgroundSaveThread;
+  int                                                                 m_Lag = 0;
+
+  // In contrast say to the OpenCV source, we store multiple playback indexes, key is device name.
+  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >           m_PlaybackIndex;
+  QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> > m_PlaybackFiles;
 
   // In contrast say to the OpenCV source, we store multiple buffers, key is device name.
-  QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer> m_Buffers;
+  QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>      m_Buffers;
 
   // Make sure this is only used from the MessageReceived thread.
-  igtl::TimeStamp::Pointer                                       m_MessageCreatedTimeStamp;
+  igtl::TimeStamp::Pointer                                            m_MessageCreatedTimeStamp;
 
 }; // end class
 

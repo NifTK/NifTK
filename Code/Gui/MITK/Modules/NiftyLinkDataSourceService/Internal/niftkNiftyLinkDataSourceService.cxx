@@ -35,16 +35,13 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataSourceLocker NiftyLinkDataSourceService::s_Lock;
-
-//-----------------------------------------------------------------------------
 NiftyLinkDataSourceService::NiftyLinkDataSourceService(
     QString name,
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage
     )
-: IGIDataSource((name + QString("-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
+: IGIDataSource(name.toStdString(),
                 factoryName.toStdString(),
                 dataStorage)
 , m_Lock(QMutex::Recursive)
@@ -53,9 +50,6 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
 , m_Lag(0)
 {
   qRegisterMetaType<niftk::NiftyLinkMessageContainer::Pointer>("niftk::NiftyLinkMessageContainer::Pointer");
-
-  QString deviceName = this->GetName();
-  m_SourceNumber = (deviceName.remove(0, name.length() + 1)).toInt();
 
   m_MessageCreatedTimeStamp = igtl::TimeStamp::New();
   m_MessageCreatedTimeStamp->GetTime();
@@ -97,8 +91,6 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
 //-----------------------------------------------------------------------------
 NiftyLinkDataSourceService::~NiftyLinkDataSourceService()
 {
-  s_Lock.RemoveSource(m_SourceNumber);
-
   m_BackgroundDeleteThread->ForciblyStop();
   delete m_BackgroundDeleteThread;
 
@@ -142,6 +134,8 @@ IGIDataSourceProperties NiftyLinkDataSourceService::GetProperties() const
 //-----------------------------------------------------------------------------
 void NiftyLinkDataSourceService::CleanBuffer()
 {
+  QMutexLocker locker(&m_Lock);
+
   // Buffers should be threadsafe. Clean all buffers.
   QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>::iterator iter;
   for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
@@ -154,6 +148,8 @@ void NiftyLinkDataSourceService::CleanBuffer()
 //-----------------------------------------------------------------------------
 void NiftyLinkDataSourceService::SaveBuffer()
 {
+  QMutexLocker locker(&m_Lock);
+
   // Buffers should be threadsafe. Save all buffers.
   // This is called by a separate save thread, which, for each
   // item, does a callback onto this object, thereby ending
@@ -169,20 +165,7 @@ void NiftyLinkDataSourceService::SaveBuffer()
 //-----------------------------------------------------------------------------
 QString NiftyLinkDataSourceService::GetRecordingDirectoryName()
 {
-  return this->GetRecordingLocation()
-      + niftk::GetPreferredSlash()
-      + this->GetName()
-      ;
-}
-
-
-//-----------------------------------------------------------------------------
-QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >  NiftyLinkDataSourceService::GetPlaybackIndex(QString directory)
-{
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > result
-      = niftk::GetPlaybackIndex(directory, QString(".*"));
-
-  return result;
+  return this->GetRecordingLocation() + niftk::GetPreferredSlash() + this->GetName();
 }
 
 
@@ -191,7 +174,7 @@ bool NiftyLinkDataSourceService::ProbeRecordedData(const QString& path,
                                                      niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                                      niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {
-  return niftk::ProbeRecordedData(path, QString(".*"), firstTimeStampInStore, lastTimeStampInStore);
+  return niftk::ProbeRecordedData(path, QString(""), firstTimeStampInStore, lastTimeStampInStore);
 }
 
 
@@ -204,7 +187,7 @@ void NiftyLinkDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType f
   IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
 
   m_Buffers.clear();
-  m_PlaybackIndex = this->GetPlaybackIndex(this->GetRecordingDirectoryName());
+  niftk::GetPlaybackIndex(this->GetRecordingDirectoryName(), QString(""), m_PlaybackIndex, m_PlaybackFiles);
 }
 
 
@@ -225,67 +208,44 @@ void NiftyLinkDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
 {
   assert(this->GetIsPlayingBack());
   assert(m_PlaybackIndex.size() > 0); // Should have failed probing if no data.
-/*
+
   // This will find us the timestamp right after the requested one.
   // Remember we have multiple buffers!
-  QMap<QString, niftk::IGIDataSourceBuffer::Pointer>::iterator iter;
-  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
+  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator iter;
+  for (iter = m_PlaybackIndex.begin(); iter != m_PlaybackIndex.end(); iter++)
   {
     QString bufferName = iter.key();
-    if (!m_PlaybackIndex.contains(bufferName))
-    {
-      mitkThrow() << "Invalid buffer name found " << bufferName.toStdString();
-    }
 
-    std::set<niftk::IGIDataType::IGITimeType>::const_iterator i = m_PlaybackIndex[bufferName].upper_bound(requestedTimeStamp);
-    if (i != m_PlaybackIndex[bufferName].begin())
+    std::set<niftk::IGIDataType::IGITimeType>::const_iterator iter = m_PlaybackIndex[bufferName].upper_bound(requestedTimeStamp);
+    if (iter != m_PlaybackIndex[bufferName].begin())
     {
-      --i;
+      --iter;
     }
-    if (i != m_PlaybackIndex[bufferName].end())
+    if (iter != m_PlaybackIndex[bufferName].end())
     {
-      if (!m_Buffers[bufferName]->Contains(*i))
+      if (!m_Buffers.contains(bufferName))
       {
-        std::ostringstream  filename;
-        filename << this->GetRecordingDirectoryName().toStdString()
-                 << this->GetPreferredSlash().toStdString()
-                 << bufferName.toStdString()
-                 << this->GetPreferredSlash().toStdString()
-                 << (*i)
-                 << ".txt";
+        // So buffer requires a back-ground delete thread.
+        niftk::IGIWaitForSavedDataSourceBuffer::Pointer newBuffer
+            = niftk::IGIWaitForSavedDataSourceBuffer::New(120, this);
+        newBuffer->SetLagInMilliseconds(m_Lag);
+        m_Buffers.insert(bufferName, newBuffer);
+      }
 
-        std::ifstream   file(filename.str().c_str());
-        if (file)
+      QStringList listOfRelevantFiles = m_PlaybackFiles[bufferName].value(*iter);
+      if (!listOfRelevantFiles.isEmpty())
+      {
+        for (int i = 0; i < listOfRelevantFiles.size(); i++)
         {
-          vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
-          matrix->Identity();
-
-          for (int r = 0; r < 4; ++r)
+          if (!m_Buffers[bufferName]->Contains(*iter))
           {
-            for (int c = 0; c < 4; ++c)
-            {
-              double tmp;
-              file >> tmp;
-              matrix->SetElement(r,c,tmp);
-            }
+            // Buffer is per device, so all items for same buffer, should be same message type.
           }
+        }
+      }
+    }
+  }
 
-          niftk::IGITrackerDataType::Pointer wrapper = niftk::IGITrackerDataType::New();
-          wrapper->SetTimeStampInNanoSeconds(*i);
-          wrapper->SetTrackingData(matrix);
-          wrapper->SetFrameId(m_FrameId++);
-          wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-          wrapper->SetShouldBeSaved(false);
-          wrapper->SetIsSaved(false);
-
-          // Buffer itself should be threadsafe, so I'm not locking anything here.
-          m_Buffers[bufferName]->AddToBuffer(wrapper.GetPointer());
-
-        } // end if file open
-      } // end if item not already in buffer
-    } // end: if we found a valid item to playback
-  } // end: foreach buffer
-*/
   this->SetStatus("Playing back");
 }
 
@@ -304,21 +264,27 @@ void NiftyLinkDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
     return;
   }
 
-  igtl::MessageBase::Pointer igtlMessage = dynamic_cast<igtl::MessageBase*>(niftyLinkType.GetPointer());
-  if (igtlMessage.IsNull())
+  niftk::NiftyLinkMessageContainer::Pointer msgContainer = niftyLinkType->GetMessageContainer();
+  if (msgContainer.data() == NULL)
   {
-    mitkThrow() << this->GetName().toStdString() << ": Data does not contain OpenIGTLink message?!?";
+    mitkThrow() << this->GetName().toStdString() << ":NiftyLinkDataType does not contain a NiftyLinkMessageContainer";
   }
 
-  igtl::TrackingDataMessage::Pointer igtlTrackingData = dynamic_cast<igtl::TrackingDataMessage*>(igtlMessage.GetPointer());
-  if (igtlTrackingData.IsNotNull())
+  igtl::MessageBase::Pointer igtlMessage = msgContainer->GetMessage();
+  if (igtlMessage.IsNull())
+  {
+    mitkThrow() << this->GetName().toStdString() << ":NiftyLinkMessageContainer contains a NULL igtl message";
+  }
+
+  igtl::TrackingDataMessage* igtlTrackingData = dynamic_cast<igtl::TrackingDataMessage*>(igtlMessage.GetPointer());
+  if (igtlTrackingData != NULL)
   {
     this->SaveTrackingData(niftyLinkType, igtlTrackingData);
     return;
   }
 
-  igtl::ImageMessage::Pointer igtlImageMessage = dynamic_cast<igtl::ImageMessage*>(igtlMessage.GetPointer());
-  if (igtlImageMessage.IsNotNull())
+  igtl::ImageMessage* igtlImageMessage = dynamic_cast<igtl::ImageMessage*>(igtlMessage.GetPointer());
+  if (igtlImageMessage != NULL)
   {
     this->SaveImage(niftyLinkType, igtlImageMessage);
     return;
@@ -336,88 +302,103 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
   }
 
   QString directoryPath = this->GetRecordingDirectoryName();
-  QDir directory(directoryPath);
-  if (directory.mkpath(directoryPath))
+
+  QString deviceName = QString::fromStdString(imageMessage->GetDeviceName());
+
+  QString outputPath = directoryPath
+      + QDir::separator()
+      + deviceName;
+
+  QDir directory(outputPath);
+  if (directory.mkpath(outputPath))
   {
-    QString fileName = directoryPath + QDir::separator() + tr("%1.motor_position.txt").arg(dataType->GetTimeStampInNanoSeconds());
+    int i, j, k;
+    imageMessage->GetDimensions(i, j, k);
 
-    igtl::Matrix4x4 matrix;
-    imageMessage->GetMatrix(matrix);
-
-    QFile matrixFile(fileName);
-    matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
-
-    QTextStream matout(&matrixFile);
-    matout.setRealNumberPrecision(10);
-    matout.setRealNumberNotation(QTextStream::FixedNotation);
-
-    for ( int row = 0 ; row < 4 ; row ++ )
+    if (k == 1)
     {
-      for ( int col = 0 ; col < 4 ; col ++ )
+      QString fileName = outputPath + QDir::separator() + tr("%1.txt").arg(dataType->GetTimeStampInNanoSeconds());
+
+      igtl::Matrix4x4 matrix;
+      imageMessage->GetMatrix(matrix);
+
+      QFile matrixFile(fileName);
+      matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
+
+      QTextStream matout(&matrixFile);
+      matout.setRealNumberPrecision(10);
+      matout.setRealNumberNotation(QTextStream::FixedNotation);
+
+      for ( int row = 0 ; row < 4 ; row ++ )
       {
-        matout << matrix[row][col];
-        if ( col < 3 )
+        for ( int col = 0 ; col < 4 ; col ++ )
         {
-          matout << " " ;
+          matout << matrix[row][col];
+          if ( col < 3 )
+          {
+            matout << " " ;
+          }
+        }
+        if ( row < 3 )
+        {
+          matout << "\n";
         }
       }
-      if ( row < 3 )
+      matrixFile.close();
+
+      fileName = outputPath + QDir::separator() + tr("%1.nii").arg(dataType->GetTimeStampInNanoSeconds());
+
+      QImage qImage;
+      niftk::GetQImage(imageMessage, qImage);
+
+      // there shouldnt be any sharing, but make sure we own the buffer exclusively.
+      qImage.detach();
+
+      // go straight via itk, skipping all the mitk stuff.
+      itk::NiftiImageIO::Pointer  io = itk::NiftiImageIO::New();
+      io->SetFileName(fileName.toStdString());
+      io->SetNumberOfDimensions(2);
+      io->SetDimensions(0, qImage.width());
+      io->SetDimensions(1, qImage.height());
+      io->SetComponentType(itk::ImageIOBase::UCHAR);
+      // FIXME: SetSpacing(unsigned int i, double spacing)
+      // FIXME: SetDirection(unsigned int i, std::vector< double > & direction)
+
+      switch (qImage.format())
       {
-        matout << "\n";
+        case QImage::Format_ARGB32:
+        {
+          // temporary opencv image, just for swapping bgr to rgb
+          IplImage  ocvimg;
+          cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, 4);
+          cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
+          // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
+          // so should be fine to do this here...
+          cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
+
+          io->SetPixelType(itk::ImageIOBase::RGBA);
+          io->SetNumberOfComponents(4);
+          break;
+        }
+
+        case QImage::Format_Indexed8:
+          io->SetPixelType(itk::ImageIOBase::SCALAR);
+          io->SetNumberOfComponents(1);
+          break;
+
+        default:
+          MITK_ERROR << "Trying to save images with unsupported pixel type.";
+          // all the smartpointer goodness should take care of cleaning up.
       }
+
+      // i wonder how itk knows the buffer layout from just the few parameters up there.
+      // this is all a bit fishy...
+      io->Write(qImage.bits());
     }
-    matrixFile.close();
-
-    fileName = directoryPath + QDir::separator() + tr("%1-ultrasoundImage.nii").arg(dataType->GetTimeStampInNanoSeconds());
-
-    QImage qImage;
-    niftk::GetQImage(imageMessage, qImage);
-
-    // there shouldnt be any sharing, but make sure we own the buffer exclusively.
-    qImage.detach();
-
-    // go straight via itk, skipping all the mitk stuff.
-    itk::NiftiImageIO::Pointer  io = itk::NiftiImageIO::New();
-    io->SetFileName(fileName.toStdString());
-    io->SetNumberOfDimensions(2);
-    io->SetDimensions(0, qImage.width());
-    io->SetDimensions(1, qImage.height());
-    io->SetComponentType(itk::ImageIOBase::UCHAR);
-    // FIXME: SetSpacing(unsigned int i, double spacing)
-    // FIXME: SetDirection(unsigned int i, std::vector< double > & direction)
-
-    switch (qImage.format())
+    else
     {
-      case QImage::Format_ARGB32:
-      {
-        // temporary opencv image, just for swapping bgr to rgb
-        IplImage  ocvimg;
-        cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, 4);
-        cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
-        // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
-        // so should be fine to do this here...
-        cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
-
-        io->SetPixelType(itk::ImageIOBase::RGBA);
-        io->SetNumberOfComponents(4);
-        break;
-      }
-
-      case QImage::Format_Indexed8:
-        io->SetPixelType(itk::ImageIOBase::SCALAR);
-        io->SetNumberOfComponents(1);
-        break;
-
-      default:
-        MITK_ERROR << "Trying to save ultrasound image with unsupported pixel type.";
-        // all the smartpointer goodness should take care of cleaning up.
-        return;
+      mitkThrow() << "Unsupported z dimension " << k;
     }
-
-    // i wonder how itk knows the buffer layout from just the few parameters up there.
-    // this is all a bit fishy...
-    io->Write(qImage.bits());
-
   } // end if directory to write to ok
   else
   {
@@ -442,7 +423,14 @@ void NiftyLinkDataSourceService::SaveTrackingData(niftk::NiftyLinkDataType::Poin
     igtl::TrackingDataElement::Pointer elem = igtl::TrackingDataElement::New();
     trackingMessage->GetTrackingDataElement(i, elem);
 
-    QString toolPath = directoryPath + QDir::separator() + QString::fromStdString(elem->GetName());
+    QString deviceName = QString::fromStdString(trackingMessage->GetDeviceName());
+
+    QString toolPath = directoryPath
+        + QDir::separator()
+        + deviceName
+        + QDir::separator()
+        + QString::fromStdString(elem->GetName());
+
     QDir directory(toolPath);
     if (directory.mkpath(toolPath))
     {

@@ -165,10 +165,11 @@ QString MITKTrackerDataSourceService::GetRecordingDirectoryName()
 //-----------------------------------------------------------------------------
 QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >  MITKTrackerDataSourceService::GetPlaybackIndex(QString directory)
 {
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > result
-      = niftk::GetPlaybackIndex(directory, QString(".txt"));
+  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > bufferToTimeStamp;
+  QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> > bufferToTimeStampToFileNames;
 
-  return result;
+  niftk::GetPlaybackIndex(directory, QString(".txt"), bufferToTimeStamp, bufferToTimeStampToFileNames);
+  return bufferToTimeStamp;
 }
 
 
