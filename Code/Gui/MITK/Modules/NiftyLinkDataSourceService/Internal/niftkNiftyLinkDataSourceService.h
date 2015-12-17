@@ -157,16 +157,16 @@ private:
   std::vector<IGIDataItemInfo> ReceiveTrackingData(QString bufferName,
                                                    niftk::IGIDataType::IGITimeType timeRequested,
                                                    niftk::IGIDataType::IGITimeType actualTime,
-                                                   igtl::TrackingDataMessage::Pointer);
-  void SaveTrackingData(niftk::NiftyLinkDataType::Pointer, igtl::TrackingDataMessage::Pointer);
+                                                   igtl::TrackingDataMessage*);
+  void SaveTrackingData(niftk::NiftyLinkDataType::Pointer, igtl::TrackingDataMessage*);
 
   std::vector<IGIDataItemInfo> ReceiveImage(QString bufferName,
                                             niftk::IGIDataType::IGITimeType timeRequested,
                                             niftk::IGIDataType::IGITimeType actualTime,
-                                            igtl::ImageMessage::Pointer);
-  void SaveImage(niftk::NiftyLinkDataType::Pointer, igtl::ImageMessage::Pointer);
+                                            igtl::ImageMessage*);
+  void SaveImage(niftk::NiftyLinkDataType::Pointer, igtl::ImageMessage*);
 
-  std::vector<IGIDataItemInfo> ReceiveString(igtl::StringMessage::Pointer);
+  std::vector<IGIDataItemInfo> ReceiveString(igtl::StringMessage*);
 
   void AddAll(const std::vector<IGIDataItemInfo>& a, std::vector<IGIDataItemInfo>& b);
 

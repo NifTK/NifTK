@@ -328,9 +328,9 @@ void NiftyLinkDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 
 //-----------------------------------------------------------------------------
 void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dataType,
-                                           igtl::ImageMessage::Pointer imageMessage)
+                                           igtl::ImageMessage* imageMessage)
 {
-  if (imageMessage.IsNull())
+  if (imageMessage == NULL)
   {
     mitkThrow() << this->GetName().toStdString() << ": Saving a NULL image?!?";
   }
@@ -428,9 +428,9 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
 
 //-----------------------------------------------------------------------------
 void NiftyLinkDataSourceService::SaveTrackingData(niftk::NiftyLinkDataType::Pointer dataType,
-                                                  igtl::TrackingDataMessage::Pointer trackingMessage)
+                                                  igtl::TrackingDataMessage* trackingMessage)
 {
-  if (trackingMessage.IsNull())
+  if (trackingMessage == NULL)
   {
     mitkThrow() << this->GetName().toStdString() << ": Saving a NULL tracking message?!?";
   }
@@ -546,22 +546,22 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
       mitkThrow() << this->GetName().toStdString() << ":NiftyLinkMessageContainer contains a NULL igtl message";
     }
 
-    igtl::StringMessage::Pointer stringMessage = dynamic_cast<igtl::StringMessage*>(igtlMessage.GetPointer());
-    if (stringMessage.IsNotNull())
+    igtl::StringMessage* stringMessage = dynamic_cast<igtl::StringMessage*>(igtlMessage.GetPointer());
+    if (stringMessage != NULL)
     {
-      std::vector<IGIDataItemInfo> tmp = this->ReceiveString(stringMessage);
-      this->AddAll(tmp, infos);
+      this->ReceiveString(stringMessage);
+      //this->AddAll(tmp, infos); // don't need this, as we just write to log file.
     }
 
-    igtl::TrackingDataMessage::Pointer trackingMessage = dynamic_cast<igtl::TrackingDataMessage*>(igtlMessage.GetPointer());
-    if (trackingMessage.IsNotNull())
+    igtl::TrackingDataMessage* trackingMessage = dynamic_cast<igtl::TrackingDataMessage*>(igtlMessage.GetPointer());
+    if (trackingMessage != NULL)
     {
       std::vector<IGIDataItemInfo> tmp = this->ReceiveTrackingData(deviceName, time, dataType->GetTimeStampInNanoSeconds(), trackingMessage);
       this->AddAll(tmp, infos);
     }
 
-    igtl::ImageMessage::Pointer imgMsg = dynamic_cast<igtl::ImageMessage*>(igtlMessage.GetPointer());
-    if (imgMsg.IsNotNull())
+    igtl::ImageMessage* imgMsg = dynamic_cast<igtl::ImageMessage*>(igtlMessage.GetPointer());
+    if (imgMsg != NULL)
     {
       std::vector<IGIDataItemInfo> tmp = this->ReceiveImage(deviceName, time, dataType->GetTimeStampInNanoSeconds(), imgMsg);
       this->AddAll(tmp, infos);
@@ -585,19 +585,35 @@ void NiftyLinkDataSourceService::AddAll(const std::vector<IGIDataItemInfo>& a, s
 std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveTrackingData(QString deviceName,
                                                                              niftk::IGIDataType::IGITimeType timeRequested,
                                                                              niftk::IGIDataType::IGITimeType actualTime,
-                                                                             igtl::TrackingDataMessage::Pointer trackingMessage)
+                                                                             igtl::TrackingDataMessage* trackingMessage)
 {
   std::vector<IGIDataItemInfo> infos;
 
-  igtl::TrackingDataElement::Pointer tdata = igtl::TrackingDataElement::New();
-  igtl::Matrix4x4 mat;
+  // Client's may send junk, so do we throw an exception?
+  // I've opted this time to just ignore bad data.
+  // So, if any message has missing name, we abandon.
+  // Check this first, before continueing or updating anything.
   QString toolName;
+  igtl::TrackingDataElement::Pointer tdata = igtl::TrackingDataElement::New();
+  for (int i = 0; i < trackingMessage->GetNumberOfTrackingDataElements(); i++)
+  {
+    trackingMessage->GetTrackingDataElement(i, tdata);
+    toolName = QString::fromStdString(tdata->GetName());
+    if (toolName.isEmpty())
+    {
+      MITK_ERROR << "Received empty tool name from device " << trackingMessage->GetDeviceName();
+      return infos;
+    }
+  }
+
+  igtl::Matrix4x4 mat;
   vtkSmartPointer<vtkMatrix4x4> vtkMat = vtkSmartPointer<vtkMatrix4x4>::New();
 
   for (int i = 0; i < trackingMessage->GetNumberOfTrackingDataElements(); i++)
   {
     trackingMessage->GetTrackingDataElement(i, tdata);
     tdata->GetMatrix(mat);
+    toolName = QString::fromStdString(tdata->GetName());
 
     for (int r = 0; r < 4; r++)
     {
@@ -607,7 +623,6 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveTrackingData(QSt
       }
     }
 
-    toolName = QString::fromStdString(tdata->GetName());
     mitk::DataNode::Pointer node = this->GetDataNode(toolName); // this should create if none exists.
     if (node.IsNull())
     {
@@ -642,6 +657,8 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveTrackingData(QSt
     infos.push_back(info);
 
   } // end for each tracking data element.
+
+  return infos;
 }
 
 
@@ -649,7 +666,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveTrackingData(QSt
 std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString deviceName,
                                                                       niftk::IGIDataType::IGITimeType timeRequested,
                                                                       niftk::IGIDataType::IGITimeType actualTime,
-                                                                      igtl::ImageMessage::Pointer imgMsg)
+                                                                      igtl::ImageMessage* imgMsg)
 {
 
   QImage qImage;
@@ -763,10 +780,11 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveString(igtl::StringMessage::Pointer stringMessage)
+std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveString(igtl::StringMessage* stringMessage)
 {
   MITK_INFO << this->GetName().toStdString() << ":Received " << stringMessage->GetString();
 
+  // Return empty list, as API requires it.
   std::vector<IGIDataItemInfo> infos;
   return infos;
 }
@@ -796,6 +814,12 @@ void NiftyLinkDataSourceService::MessageReceived(niftk::NiftyLinkMessageContaine
   if (igtlMessage.IsNull())
   {
     MITK_WARN << this->GetName().toStdString() << ":NiftyLinkMessageContainer contains a NULL igtl message.";
+    return;
+  }
+
+  if (QString::fromStdString(igtlMessage->GetDeviceName()).isEmpty())
+  {
+    MITK_WARN << this->GetName().toStdString() << ":NiftyLinkMessageContainer contains messages without a device name";
     return;
   }
 
