@@ -56,7 +56,7 @@ void ProbeTimeStampFiles(QDir path,
   {
     foreach (QString file, files)
     {
-      if (file.length() > 19 + suffix.length())
+      if (file.length() >= 19 + suffix.length())
       {
         QString  middle = file.mid(0, 19);
 
