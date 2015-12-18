@@ -19,6 +19,7 @@
 #include <mitkExceptionMacro.h>
 #include <usModuleContext.h>
 #include <usGetModuleContext.h>
+#include <cassert>
 
 namespace niftk
 {

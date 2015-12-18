@@ -15,7 +15,7 @@
 #ifndef niftkIGIDataSourceFactoryServiceI_h
 #define niftkIGIDataSourceFactoryServiceI_h
 
-#include <niftkIGIServicesExports.h>
+#include "niftkIGIDataSourcesExports.h"
 #include "niftkIGIDataSourceI.h"
 #include <niftkIGIConfigurationDialog.h>
 #include <niftkIGIInitialisationDialog.h>
@@ -35,7 +35,7 @@ namespace niftk
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class NIFTKIGISERVICES_EXPORT IGIDataSourceFactoryServiceI
+class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceFactoryServiceI
 {
 
 public:
