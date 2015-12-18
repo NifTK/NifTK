@@ -15,6 +15,7 @@
 #include "niftkUltrasonixDataSourceService.h"
 #include "niftkUltrasonixDataType.h"
 #include <niftkIGIDataSourceI.h>
+#include <niftkIGIDataSourceUtils.h>
 #include <niftkImageConversion.h>
 #include <mitkExceptionMacro.h>
 #include <mitkImage.h>
@@ -136,7 +137,7 @@ void UltrasonixDataSourceService::CleanBuffer()
 QString UltrasonixDataSourceService::GetRecordingDirectoryName()
 {
   return this->GetRecordingLocation()
-      + this->GetPreferredSlash()
+      + niftk::GetPreferredSlash()
       + this->GetName()
       + "_" + (tr("%1").arg(m_ChannelNumber))
       ;
@@ -156,7 +157,9 @@ void UltrasonixDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType 
   QDir directory(this->GetRecordingDirectoryName());
   if (directory.exists())
   {
-    m_PlaybackIndex = ProbeTimeStampFiles(directory, QString(".png"));
+    std::set<niftk::IGIDataType::IGITimeType> timeStamps;
+    niftk::ProbeTimeStampFiles(directory, QString(".png"), timeStamps);
+    m_PlaybackIndex = timeStamps;
   }
   else
   {
@@ -180,43 +183,6 @@ void UltrasonixDataSourceService::StopPlayback()
 //-----------------------------------------------------------------------------
 void UltrasonixDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
 {
-/*
-  assert(this->GetIsPlayingBack());
-  assert(m_PlaybackIndex.size() > 0); // Should have failed probing if no data.
-
-  // this will find us the timestamp right after the requested one
-  std::set<niftk::IGIDataType::IGITimeType>::const_iterator i = m_PlaybackIndex.upper_bound(requestedTimeStamp);
-  if (i != m_PlaybackIndex.begin())
-  {
-    --i;
-  }
-  if (i != m_PlaybackIndex.end())
-  {
-    if (!m_Buffer->Contains(*i))
-    {
-      std::ostringstream  filename;
-      filename << this->GetRecordingDirectoryName().toStdString() << '/' << (*i) << ".jpg";
-
-      IplImage* img = cvLoadImage(filename.str().c_str());
-      if (img)
-      {
-        niftk::OpenCVVideoDataType::Pointer wrapper = niftk::OpenCVVideoDataType::New();
-        wrapper->CloneImage(img);
-        wrapper->SetTimeStampInNanoSeconds(*i);
-        wrapper->SetFrameId(m_FrameId++);
-        wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-        wrapper->SetShouldBeSaved(false);
-        wrapper->SetIsSaved(false);
-
-        // Buffer itself should be threadsafe, so I'm not locking anything here.
-        m_Buffer->AddToBuffer(wrapper.GetPointer());
-
-        cvReleaseImage(&img);
-      }
-    }
-    this->SetStatus("Playing back");
-  }
-  */
 }
 
 
@@ -229,28 +195,6 @@ bool UltrasonixDataSourceService::ProbeRecordedData(const QString& path,
   niftk::IGIDataType::IGITimeType  firstTimeStampFound = 0;
   niftk::IGIDataType::IGITimeType  lastTimeStampFound  = 0;
 
-  /*
-  // needs to match what SaveData() does below
-  QDir directory(path);
-  if (directory.exists())
-  {
-    std::set<niftk::IGIDataType::IGITimeType> timeStamps = ProbeTimeStampFiles(directory, QString(".jpg"));
-    if (!timeStamps.empty())
-    {
-      firstTimeStampFound = *timeStamps.begin();
-      lastTimeStampFound  = *(--(timeStamps.end()));
-    }
-  }
-
-  if (firstTimeStampInStore)
-  {
-    *firstTimeStampInStore = firstTimeStampFound;
-  }
-  if (lastTimeStampInStore)
-  {
-    *lastTimeStampInStore = lastTimeStampFound;
-  }
-  */
   return firstTimeStampFound != 0;
 }
 
@@ -267,33 +211,6 @@ void UltrasonixDataSourceService::GrabData()
     }
   }
 
-  /*
-  // Somehow this can become null, probably a race condition during destruction.
-  if (m_VideoSource.IsNull())
-  {
-    mitkThrow() << "Video source is null. This should not happen! It's most likely a race-condition.";
-  }
-
-  // Grab a video image.
-  m_VideoSource->FetchFrame();
-  const IplImage* img = m_VideoSource->GetCurrentFrame();
-  if (img == NULL)
-  {
-    mitkThrow() << "Failed to get a valid video frame!";
-  }
-
-  niftk::OpenCVVideoDataType::Pointer wrapper = niftk::OpenCVVideoDataType::New();
-  wrapper->CloneImage(img);
-  wrapper->SetTimeStampInNanoSeconds(this->GetTimeStampInNanoseconds());
-  wrapper->SetFrameId(m_FrameId++);
-  wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-  wrapper->SetShouldBeSaved(this->GetIsRecording());
-  wrapper->SetIsSaved(false);
-
-  */
-
-  //m_Buffer->AddToBuffer(wrapper.GetPointer());
-
   // Save synchronously.
   // This has the side effect that if saving is too slow,
   // the QTimers just won't keep up, and start missing pulses.
@@ -308,36 +225,6 @@ void UltrasonixDataSourceService::GrabData()
 //-----------------------------------------------------------------------------
 void UltrasonixDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 {
-  /*
-  niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(data.GetPointer());
-  if (dataType.IsNull())
-  {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as the data received was the wrong type!";
-  }
-
-  const IplImage* imageFrame = dataType->GetImage();
-  if (imageFrame == NULL)
-  {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
-  }
-
-  QString directoryPath = this->GetRecordingDirectoryName();
-  QDir directory(directoryPath);
-  if (directory.mkpath(directoryPath))
-  {
-    QString fileName =  directoryPath + QDir::separator() + tr("%1.jpg").arg(data->GetTimeStampInNanoSeconds());
-    bool success = cvSaveImage(fileName.toStdString().c_str(), imageFrame);
-    if (!success)
-    {
-      mitkThrow() << "Failed to save OpenCVVideoDataType in cvSaveImage!";
-    }
-    data->SetIsSaved(true);
-  }
-  else
-  {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as could not create " << directoryPath.toStdString();
-  }
-  */
 }
 
 
@@ -370,114 +257,10 @@ std::vector<IGIDataItemInfo> UltrasonixDataSourceService::Update(const niftk::IG
   // Create default return status.
   IGIDataItemInfo info;
   info.m_Name = this->GetName();
+  info.m_IsLate = false;
   info.m_FramesPerSecond = m_Buffer->GetFrameRate();
+  info.m_LagInMilliseconds = 0;
   infos.push_back(info);
-
-  /*
-  niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(m_Buffer->GetItem(time).GetPointer());
-  if (dataType.IsNull())
-  {
-    MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffer->GetBufferSize() << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
-    return infos;
-  }
-
-
-  // If we are not actually updating data, bail out.
-  if (!this->GetShouldUpdate())
-  {
-    return infos;
-  }
-
-  mitk::DataNode::Pointer node = this->GetDataNode(this->GetName());
-  if (node.IsNull())
-  {
-    mitkThrow() << "Can't find mitk::DataNode with name " << this->GetName().toStdString() << std::endl;
-  }
-
-  // Get Image from the dataType;
-  const IplImage* img = dataType->GetImage();
-  if (img == NULL)
-  {
-    this->SetStatus("Failed");
-    mitkThrow() << "Failed to extract OpenCV image from buffer!";
-  }
-
-  // OpenCV's cannonical channel layout is bgr (instead of rgb),
-  // while everything usually else expects rgb...
-  IplImage* rgbaOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, 4);
-  cvCvtColor( img, rgbaOpenCVImage,  CV_BGR2RGBA );
-
-  // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
-  // we should make sure we got the layout right. (opencv itself does not use this in any way.)
-  std::memcpy(&rgbaOpenCVImage->channelSeq[0], "RGBA", 4);
-
-  // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
-  mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(rgbaOpenCVImage);
-
-#ifdef XXX_USE_CUDA
-  // a compatibility stop-gap to interface with new renderer and cuda bits.
-  {
-    CUDAManager*    cm = CUDAManager::GetInstance();
-    if (cm != 0)
-    {
-      cudaStream_t    mystream = cm->GetStream("QmitkIGIOpenCVDataSource::Update");
-      WriteAccessor   wa       = cm->RequestOutputImage(rgbaOpenCVImage->width, rgbaOpenCVImage->height, 4);
-
-      assert(rgbaOpenCVImage->widthStep >= (rgbaOpenCVImage->width * 4));
-      cudaMemcpy2DAsync(wa.m_DevicePointer, wa.m_BytePitch, rgbaOpenCVImage->imageData, rgbaOpenCVImage->widthStep, rgbaOpenCVImage->width * 4, rgbaOpenCVImage->height, cudaMemcpyHostToDevice, mystream);
-      // no error handling...
-
-      LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
-
-      CUDAImageProperty::Pointer    lwciprop = CUDAImageProperty::New();
-      lwciprop->Set(lwci);
-
-      convertedImage->SetProperty("CUDAImageProperty", lwciprop);
-    }
-  }
-#endif
-
-  mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-  if (imageInNode.IsNull())
-  {
-    // We remove and add to trigger the NodeAdded event,
-    // which is not emmitted if the node was added with no data.
-    this->GetDataStorage()->Remove(node);
-    node->SetData(convertedImage);
-    this->GetDataStorage()->Add(node);
-
-    imageInNode = convertedImage;
-  }
-  else
-  {
-    try
-    {
-      mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
-      const void* cPointer = readAccess.GetData();
-
-      mitk::ImageWriteAccessor writeAccess(imageInNode);
-      void* vPointer = writeAccess.GetData();
-
-      memcpy(vPointer, cPointer, img->width * img->height * 4);
-    }
-    catch(mitk::Exception& e)
-    {
-      MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
-    }
-#ifdef _USE_CUDA
-    imageInNode->SetProperty("CUDAImageProperty", convertedImage->GetProperty("CUDAImageProperty"));
-#endif
-  }
-  */
-  // We tell the node that it is modified so the next rendering event
-  // will redraw it. Triggering this does not in itself guarantee a re-rendering.
-  //imageInNode->GetVtkImageData()->Modified();
-  //node->Modified();
-
-  //cvReleaseImage(&rgbaOpenCVImage);
-
-  //infos[0].m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
-  //infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
   return infos;
 }
 

@@ -14,10 +14,8 @@
 
 if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
 
-  find_package(CUDA REQUIRED)
-
   MITK_CREATE_MODULE(
-    DEPENDS niftkIGIDataSources niftkIGIGui MitkOpenCVVideoSupport
+    DEPENDS niftkIGIDataSources
     PACKAGE_DEPENDS Qt4|QtCore
     AUTOLOAD_WITH niftkIGIServices
   )

@@ -20,6 +20,8 @@
 #include <niftkIGIDataSourceBackgroundDeleteThread.h>
 #include <niftkIGIDataSourceGrabbingThread.h>
 #include <niftkIGILocalDataSourceI.h>
+#include <niftkIGICleanableDataSourceI.h>
+#include <niftkIGIBufferedSaveableDataSourceI.h>
 
 #include <QObject>
 #include <QSet>
@@ -36,9 +38,11 @@ namespace niftk
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
 class UltrasonixDataSourceService
-    : public IGIDataSource
+    : public QObject
+    , public IGIDataSource
     , public IGILocalDataSourceI
-    , public QObject
+    , public IGICleanableDataSourceI
+    , public IGIBufferedSaveableDataSourceI
 {
 
 public:

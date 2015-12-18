@@ -16,12 +16,6 @@
 
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
-#include <niftkIGIDataSourceBuffer.h>
-#include <niftkIGILocalDataSourceI.h>
-#include <niftkIGIDataSourceGrabbingThread.h>
-#include <niftkIGICleanableDataSourceI.h>
-#include <niftkIGIDataSourceBackgroundDeleteThread.h>
-#include <niftkIGIBufferedSaveableDataSourceI.h>
 
 #include <QObject>
 #include <QSet>
@@ -39,10 +33,7 @@ namespace niftk
 */
 class NVidiaSDIDataSourceService
     : public QObject
-    , public IGIDataSource
-    , public IGILocalDataSourceI
-    , public IGICleanableDataSourceI
-    , public IGIBufferedSaveableDataSourceI
+    , public IGIDataSource    
 {
 
 public:
@@ -75,21 +66,6 @@ public:
   * \see IGIDataSourceI::Update()
   */
   virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
-
-  /**
-  * \see niftk::IGIDataSource::SaveItem()
-  */
-  virtual void SaveItem(niftk::IGIDataType::Pointer item) override;
-
-  /**
-  * \see niftk::IGIDataSource::CleanBuffer()
-  */
-  virtual void CleanBuffer() override;
-
-  /**
-  * \see niftk::IGILocalDataSourceI::GrabData()
-  */
-  virtual void GrabData() override;
 
   /**
   * \see IGIDataSourceI::ProbeRecordedData()
@@ -125,10 +101,6 @@ private:
   QMutex                                          m_Lock;
   int                                             m_ChannelNumber;
   niftk::IGIDataType::IGIIndexType                m_FrameId;
-  niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
-  niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
-  niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;
-  std::set<niftk::IGIDataType::IGITimeType>       m_PlaybackIndex;
 
 }; // end class
 
