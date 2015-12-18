@@ -182,7 +182,7 @@ private:
   niftk::IGIDataType::IGIIndexType                                    m_FrameId;
   niftk::IGIDataSourceBackgroundDeleteThread*                         m_BackgroundDeleteThread;
   niftk::IGIDataSourceBackgroundSaveThread*                           m_BackgroundSaveThread;
-  int                                                                 m_Lag = 0;
+  int                                                                 m_Lag;
 
   // In contrast say to the OpenCV source, we store multiple playback indexes, key is device name.
   QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >           m_PlaybackIndex;

@@ -45,6 +45,7 @@ void ProbeTimeStampFiles(QDir path,
                          std::set<niftk::IGIDataType::IGITimeType>& timeStamps,
                          QHash<niftk::IGIDataType::IGITimeType, QString>& timeStampToFileName);
 
+NIFTKIGIDATASOURCES_EXPORT
 void ProbeTimeStampFiles(QDir path,
                          const QString& suffix,
                          std::set<niftk::IGIDataType::IGITimeType>& timeStamps

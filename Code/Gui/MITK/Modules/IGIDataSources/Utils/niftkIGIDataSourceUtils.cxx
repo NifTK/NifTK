@@ -41,7 +41,7 @@ void ProbeTimeStampFiles(QDir path,
                          std::set<niftk::IGIDataType::IGITimeType>& timeStamps,
                          QHash<niftk::IGIDataType::IGITimeType, QString>& timeStampToFileName)
 {
-  static_assert(std::numeric_limits<qulonglong>::max() >= std::numeric_limits<niftk::IGIDataType::IGITimeType>::max(), "mismatched data types");
+  assert(std::numeric_limits<qulonglong>::max() >= std::numeric_limits<niftk::IGIDataType::IGITimeType>::max());
 
   if (!suffix.isEmpty())
   {

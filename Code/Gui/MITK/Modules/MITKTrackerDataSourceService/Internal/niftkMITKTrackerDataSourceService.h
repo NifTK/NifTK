@@ -137,7 +137,7 @@ private:
   niftk::IGIDataType::IGIIndexType                          m_FrameId;
   niftk::IGIDataSourceBackgroundDeleteThread*               m_BackgroundDeleteThread;
   niftk::IGIDataSourceGrabbingThread*                       m_DataGrabbingThread;
-  int                                                       m_Lag = 0;
+  int                                                       m_Lag;
   QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > m_PlaybackIndex;
 
   // The main tracker.
