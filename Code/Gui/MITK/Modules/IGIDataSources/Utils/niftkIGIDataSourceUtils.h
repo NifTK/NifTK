@@ -29,6 +29,7 @@
  */
 namespace niftk
 {
+
 /**
 * \brief Returns the platform specific directory separator.
 */
@@ -36,7 +37,7 @@ NIFTKIGIDATASOURCES_EXPORT
 QString GetPreferredSlash();
 
 /**
-* \brief Scans the directory for individual files that match a timestamp pattern.
+* \brief Scans the path for individual files that match a timestamp pattern and suffix.
 * \param suffix for example ".jpg" or "-ultrasoundImage.nii".
 */
 NIFTKIGIDATASOURCES_EXPORT
@@ -45,6 +46,10 @@ void ProbeTimeStampFiles(QDir path,
                          std::set<niftk::IGIDataType::IGITimeType>& timeStamps,
                          QHash<niftk::IGIDataType::IGITimeType, QString>& timeStampToFileName);
 
+/**
+* \brief Scans the path for individual files that match a timestamp pattern and suffix.
+* \param suffix for example ".jpg" or "-ultrasoundImage.nii".
+*/
 NIFTKIGIDATASOURCES_EXPORT
 void ProbeTimeStampFiles(QDir path,
                          const QString& suffix,
