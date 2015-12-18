@@ -23,6 +23,7 @@
 #include <mitkImage.h>
 #include <mitkImageWriteAccessor.h>
 
+#include <mitkIOUtil.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 
@@ -303,18 +304,118 @@ void NiftyLinkDataSourceService::LoadString(const niftk::IGIDataType::IGITimeTyp
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames)
+void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataType::IGITimeType& time, QStringList& listOfFileNames)
 {
   if (listOfFileNames.isEmpty())
   {
     return;
   }
 
+  igtl::ImageMessage::Pointer msg = igtl::ImageMessage::New();
+  msg->SetDeviceName("");
+
   QStringList::iterator iter = listOfFileNames.begin();
   while (iter != listOfFileNames.end())
   {
-    if ((*iter).endsWith(QString(".4x4")))
+    if ((*iter).endsWith(QString(".nii"))
+        || (*iter).endsWith(QString(".nii.gz"))
+        )
     {
+      // Outside of try block, so it propagates upwards.
+      QString deviceName = this->GetDirectoryNamePart(*iter, 1);
+      if (QString(msg->GetDeviceName()).size() > 0
+          && QString(msg->GetDeviceName()) != deviceName)
+      {
+        mitkThrow() << "Inconsistent device name:" << msg->GetDeviceName() << " and " << deviceName.toStdString();
+      }
+      msg->SetDeviceName(deviceName.toStdString().c_str());
+
+      try
+      {
+        // If this loads, we have a valid 2D/3D/4D image.
+        // Im trying to use the generic MITK mechanism, so we benefit from our Fixed NifTI reader.
+        mitk::Image::Pointer image = mitk::Image::New();
+        image = mitk::IOUtil::LoadImage((*iter).toStdString());
+
+        // Now we load into igtl::Image.
+        int dimensionality = image->GetDimension();
+        if (dimensionality != 3)
+        {
+          mitkThrow() << "Invalid image dimension " << dimensionality;
+        }
+        unsigned int* numberOfVoxels = image->GetDimensions();
+        msg->SetDimensions(numberOfVoxels[0], numberOfVoxels[1], numberOfVoxels[2]);
+        size_t sizeOfBuffer = numberOfVoxels[0] * numberOfVoxels[1] * numberOfVoxels[2];
+
+        mitk::PixelType pixelType = image->GetPixelType();
+        if (pixelType.GetPixelType() != itk::ImageIOBase::SCALAR)
+        {
+          mitkThrow() << "Can only handle Scalar data!";
+        }
+        switch(pixelType.GetComponentType())
+        {
+          case itk::ImageIOBase::UCHAR:
+            msg->SetNumComponents(1);
+            msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
+            sizeOfBuffer *= 1;
+          break;
+
+          case itk::ImageIOBase::RGBA:
+            msg->SetNumComponents(4);
+            msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
+            sizeOfBuffer *= 4;
+          break;
+
+        default:
+          mitkThrow() << "Unsupported component type";
+        }
+
+        msg->AllocateScalars();
+        memcpy(msg->GetScalarPointer(), image->GetData(), sizeOfBuffer);
+
+        igtl::Matrix4x4 mat;
+        igtl::IdentityMatrix(mat);
+
+        for (int i = 0; i < 3; i++)
+        {
+          mitk::Vector3D axisVector = image->GetGeometry()->GetAxisVector(i);
+          mat[0][i] = axisVector[0];
+          mat[1][i] = axisVector[1];
+          mat[2][i] = axisVector[2];
+        }
+        msg->SetMatrix(mat);
+        mitk::Point3D origin = image->GetGeometry()->GetOrigin();
+        msg->SetOrigin(origin[0], origin[1], origin[2]);
+
+        mitk::Vector3D spacing = image->GetGeometry()->GetSpacing();
+        msg->SetSpacing(spacing[0], spacing[1], spacing[2]);
+
+        // Now wrap it up, nice and warm for the winter.
+        niftk::NiftyLinkMessageContainer::Pointer container = (NiftyLinkMessageContainer::Pointer(new NiftyLinkMessageContainer()));
+        container->SetMessage(msg.GetPointer());
+        container->SetOwnerName("playback");
+        container->SetSenderHostName("localhost");
+
+        niftk::NiftyLinkDataType::Pointer wrapper = niftk::NiftyLinkDataType::New();
+        wrapper->SetMessageContainer(container);
+        wrapper->SetFrameId(m_FrameId++);
+        wrapper->SetTimeStampInNanoSeconds(time);
+        wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+        wrapper->SetShouldBeSaved(false);
+
+        // Buffer itself should be threadsafe, so I'm not locking anything here.
+        m_Buffers[QString(msg->GetDeviceName())]->AddToBuffer(wrapper.GetPointer());
+      }
+      catch (mitk::Exception& e)
+      {
+        // Report error to log, but essentially, just move on.
+        // Developers need to investigate and fix.
+
+        MITK_ERROR << "Failed to load image: " << (*iter).toStdString()
+                   << ", due to catching mitk::Exception: " << e.GetDescription()
+                   << ", from:" << e.GetFile()
+                   << "::" << e.GetLine() << std::endl;
+      }
       iter = listOfFileNames.erase(iter);  // this advances the iterator.
     }
     else
@@ -322,12 +423,11 @@ void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataType::IGITimeType
       iter++;
     }
   }
-
 }
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::LoadTrackingData(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames)
+void NiftyLinkDataSourceService::LoadTrackingData(const niftk::IGIDataType::IGITimeType& time, QStringList& listOfFileNames)
 {
   if (listOfFileNames.isEmpty())
   {
@@ -378,21 +478,21 @@ void NiftyLinkDataSourceService::LoadTrackingData(const niftk::IGIDataType::IGIT
     }
   }
 
-  // Buffer itself should be threadsafe, so I'm not locking anything here.
   if (msg->GetNumberOfTrackingDataElements() > 0)
   {
     niftk::NiftyLinkMessageContainer::Pointer container = (NiftyLinkMessageContainer::Pointer(new NiftyLinkMessageContainer()));
     container->SetMessage(msg.GetPointer());
-    container->SetOwnerName("localhost");
+    container->SetOwnerName("playback");
     container->SetSenderHostName("localhost");
 
     niftk::NiftyLinkDataType::Pointer wrapper = niftk::NiftyLinkDataType::New();
     wrapper->SetFrameId(m_FrameId++);
-    wrapper->SetTimeStampInNanoSeconds(actualTime);
+    wrapper->SetTimeStampInNanoSeconds(time);
     wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
     wrapper->SetShouldBeSaved(false);
     wrapper->SetMessageContainer(container);
 
+    // Buffer itself should be threadsafe, so I'm not locking anything here.
     m_Buffers[QString(msg->GetDeviceName())]->AddToBuffer(wrapper.GetPointer());
   }
 }
