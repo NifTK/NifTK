@@ -17,14 +17,16 @@
 #include <niftkIGIDataSourceUtils.h>
 #include <NiftyLinkImageMessageHelpers.h>
 
-#include <itkNiftiImageIO.h>
-
+#include <mitkFileIOUtils.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkAffineTransformDataNodeProperty.h>
 #include <mitkImage.h>
 #include <mitkImageWriteAccessor.h>
 
 #include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
+
+#include <itkNiftiImageIO.h>
 
 #include <QDir>
 #include <QMutexLocker>
@@ -232,21 +234,167 @@ void NiftyLinkDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
         m_Buffers.insert(bufferName, newBuffer);
       }
 
-      QStringList listOfRelevantFiles = m_PlaybackFiles[bufferName].value(*iter);
+      niftk::IGIDataType::IGITimeType requestedTime = *iter;
+
+      QStringList listOfRelevantFiles = m_PlaybackFiles[bufferName].value(requestedTime);
       if (!listOfRelevantFiles.isEmpty())
       {
-        for (int i = 0; i < listOfRelevantFiles.size(); i++)
+        if (!m_Buffers[bufferName]->Contains(requestedTime))
         {
-          if (!m_Buffers[bufferName]->Contains(*iter))
+          // Apart from String messages, we would only expect 1 message type from each device.
+
+          this->LoadString(requestedTime, listOfRelevantFiles);       // Removes processed filenames as a side effect.
+          this->LoadTrackingData(requestedTime, listOfRelevantFiles); // Removes processed filenames as a side effect.
+          this->LoadImage(requestedTime, listOfRelevantFiles);        // Removes processed filenames as a side effect.
+
+          // listOfRelevantFiles should be empty at this point.
+          // However, there may be junk on disk that we are picking up.
+          // So, print out a filename, so at least developers may notice.
+          if (!listOfRelevantFiles.isEmpty())
           {
-            // Buffer is per device, so all items for same buffer, should be same message type.
+            for (int i = 0; i < listOfRelevantFiles.size(); i++)
+            {
+              MITK_INFO << "NiftyLinkDataSourceService::PlaybackData: Ignoring " << listOfRelevantFiles[i].toStdString();
+            }
           }
         }
       }
     }
   }
-
   this->SetStatus("Playing back");
+}
+
+
+//-----------------------------------------------------------------------------
+QString NiftyLinkDataSourceService::GetDirectoryNamePart(const QString& fullPathName, int indexFromEnd)
+{
+  QStringList directoryParts = fullPathName.split(niftk::GetPreferredSlash(), QString::SkipEmptyParts);
+  if (directoryParts.size() < 3)
+  {
+    mitkThrow() << "Failed to extract device and tool name from file name:" << fullPathName.toStdString();
+  }
+  QString result = directoryParts[directoryParts.size() - 1 - indexFromEnd];
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyLinkDataSourceService::LoadString(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames)
+{
+  if (listOfFileNames.isEmpty())
+  {
+    return;
+  }
+
+  QStringList::iterator iter = listOfFileNames.begin();
+  while (iter != listOfFileNames.end())
+  {
+    if ((*iter).endsWith(QString(".txt")))
+    {
+      MITK_INFO << "Received, but not playing back text message:" << (*iter).toStdString();
+      iter = listOfFileNames.erase(iter);  // this advances the iterator.
+    }
+    else
+    {
+      iter++;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames)
+{
+  if (listOfFileNames.isEmpty())
+  {
+    return;
+  }
+
+  QStringList::iterator iter = listOfFileNames.begin();
+  while (iter != listOfFileNames.end())
+  {
+    if ((*iter).endsWith(QString(".4x4")))
+    {
+      iter = listOfFileNames.erase(iter);  // this advances the iterator.
+    }
+    else
+    {
+      iter++;
+    }
+  }
+
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyLinkDataSourceService::LoadTrackingData(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames)
+{
+  if (listOfFileNames.isEmpty())
+  {
+    return;
+  }
+
+  igtl::TrackingDataMessage::Pointer msg = igtl::TrackingDataMessage::New();
+  msg->SetDeviceName("");
+
+  QStringList::iterator iter = listOfFileNames.begin();
+  while (iter != listOfFileNames.end())
+  {
+    if ((*iter).endsWith(QString(".4x4")))
+    {
+      vtkSmartPointer<vtkMatrix4x4> vtkMat = mitk::LoadVtkMatrix4x4FromFile((*iter).toStdString());
+
+      igtl::Matrix4x4 mat;
+      for (int r = 0; r < 4; r++)
+      {
+        for (int c = 0; c < 4; c++)
+        {
+          mat[r][c] = vtkMat->GetElement(r,c);
+        }
+      }
+
+      QString deviceName = this->GetDirectoryNamePart(*iter, 2);
+      QString toolName = this->GetDirectoryNamePart(*iter, 1);   // the zero'th part should be file name.
+
+      if (QString(msg->GetDeviceName()).size() > 0
+          && QString(msg->GetDeviceName()) != deviceName)
+      {
+        mitkThrow() << "Inconsistent device name:" << msg->GetDeviceName() << " and " << deviceName.toStdString();
+      }
+
+      igtl::TrackingDataElement::Pointer elem = igtl::TrackingDataElement::New();
+      elem->SetName(toolName.toStdString().c_str());
+      elem->SetType(igtl::TrackingDataElement::TYPE_6D);
+      elem->SetMatrix(mat);
+
+      msg->AddTrackingDataElement(elem);
+      msg->SetDeviceName(deviceName.toStdString().c_str());
+
+      iter = listOfFileNames.erase(iter); // this advances the iterator.
+    }
+    else
+    {
+      iter++;
+    }
+  }
+
+  // Buffer itself should be threadsafe, so I'm not locking anything here.
+  if (msg->GetNumberOfTrackingDataElements() > 0)
+  {
+    niftk::NiftyLinkMessageContainer::Pointer container = (NiftyLinkMessageContainer::Pointer(new NiftyLinkMessageContainer()));
+    container->SetMessage(msg.GetPointer());
+    container->SetOwnerName("localhost");
+    container->SetSenderHostName("localhost");
+
+    niftk::NiftyLinkDataType::Pointer wrapper = niftk::NiftyLinkDataType::New();
+    wrapper->SetFrameId(m_FrameId++);
+    wrapper->SetTimeStampInNanoSeconds(actualTime);
+    wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+    wrapper->SetShouldBeSaved(false);
+    wrapper->SetMessageContainer(container);
+
+    m_Buffers[QString(msg->GetDeviceName())]->AddToBuffer(wrapper.GetPointer());
+  }
 }
 
 
@@ -301,9 +449,9 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
     mitkThrow() << this->GetName().toStdString() << ": Saving a NULL image?!?";
   }
 
-  QString directoryPath = this->GetRecordingDirectoryName();
-
   QString deviceName = QString::fromStdString(imageMessage->GetDeviceName());
+
+  QString directoryPath = this->GetRecordingDirectoryName();
 
   QString outputPath = directoryPath
       + QDir::separator()
@@ -312,57 +460,56 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
   QDir directory(outputPath);
   if (directory.mkpath(outputPath))
   {
-    int i, j, k;
-    imageMessage->GetDimensions(i, j, k);
+    int nx, ny, nz;
+    imageMessage->GetDimensions(nx, ny, nz);
 
-    if (k == 1)
+    float sx, sy, sz;
+    imageMessage->GetSpacing(sx, sy, sz);
+
+    // Transformation matrices can be saved with the image.
+    // So, we need an image format the preserves this.
+    // I don't want to save a matrix as a separate file.
+    // If the remote end wants to send additional info such
+    // as a motor position, then this is meta data, and should
+    // be saved separately, such as via a string message.
+    igtl::Matrix4x4 matrix;
+    imageMessage->GetMatrix(matrix);
+
+    std::vector<double> directions[3];
+    for (int i = 0; i < 3; i++)
     {
-      QString fileName = outputPath + QDir::separator() + tr("%1.txt").arg(dataType->GetTimeStampInNanoSeconds());
+      directions[i].push_back(matrix[0][i]);
+      directions[i].push_back(matrix[1][i]);
+      directions[i].push_back(matrix[2][i]);
+    }
 
-      igtl::Matrix4x4 matrix;
-      imageMessage->GetMatrix(matrix);
+    QString fileName = outputPath + QDir::separator() + tr("%1.nii").arg(dataType->GetTimeStampInNanoSeconds());
 
-      QFile matrixFile(fileName);
-      matrixFile.open(QIODevice::WriteOnly | QIODevice::Text);
+    itk::NiftiImageIO::Pointer  io = itk::NiftiImageIO::New();
+    io->SetFileName(fileName.toStdString());
+    io->SetNumberOfDimensions(3); // i.e. we always save a 3D image, even if its only 1 slice.
+    io->SetDimensions(0, nx);
+    io->SetDimensions(1, ny);
+    io->SetDimensions(2, nz);
+    io->SetSpacing(0, sx);
+    io->SetSpacing(1, sy);
+    io->SetSpacing(2, sz);
+    io->SetDirection(0, directions[0]);
+    io->SetDirection(1, directions[1]);
+    io->SetDirection(2, directions[2]);
 
-      QTextStream matout(&matrixFile);
-      matout.setRealNumberPrecision(10);
-      matout.setRealNumberNotation(QTextStream::FixedNotation);
+    if (nz == 0)
+    {
+      io->SetDimensions(2, 1); // just in case a 2D image comes through with nz = 0;
+    }
 
-      for ( int row = 0 ; row < 4 ; row ++ )
-      {
-        for ( int col = 0 ; col < 4 ; col ++ )
-        {
-          matout << matrix[row][col];
-          if ( col < 3 )
-          {
-            matout << " " ;
-          }
-        }
-        if ( row < 3 )
-        {
-          matout << "\n";
-        }
-      }
-      matrixFile.close();
-
-      fileName = outputPath + QDir::separator() + tr("%1.nii").arg(dataType->GetTimeStampInNanoSeconds());
-
+    if (nz == 1)
+    {
       QImage qImage;
       niftk::GetQImage(imageMessage, qImage);
-
-      // there shouldnt be any sharing, but make sure we own the buffer exclusively.
       qImage.detach();
 
-      // go straight via itk, skipping all the mitk stuff.
-      itk::NiftiImageIO::Pointer  io = itk::NiftiImageIO::New();
-      io->SetFileName(fileName.toStdString());
-      io->SetNumberOfDimensions(2);
-      io->SetDimensions(0, qImage.width());
-      io->SetDimensions(1, qImage.height());
       io->SetComponentType(itk::ImageIOBase::UCHAR);
-      // FIXME: SetSpacing(unsigned int i, double spacing)
-      // FIXME: SetDirection(unsigned int i, std::vector< double > & direction)
 
       switch (qImage.format())
       {
@@ -394,11 +541,13 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
       // i wonder how itk knows the buffer layout from just the few parameters up there.
       // this is all a bit fishy...
       io->Write(qImage.bits());
+
     }
     else
     {
-      mitkThrow() << "Unsupported z dimension " << k;
+      mitkThrow() << "3D images not yet supported, please implement me!";
     }
+
   } // end if directory to write to ok
   else
   {
@@ -434,7 +583,7 @@ void NiftyLinkDataSourceService::SaveTrackingData(niftk::NiftyLinkDataType::Poin
     QDir directory(toolPath);
     if (directory.mkpath(toolPath))
     {
-      QString fileName = toolPath + QDir::separator() + tr("%1.txt").arg(dataType->GetTimeStampInNanoSeconds());
+      QString fileName = toolPath + QDir::separator() + tr("%1.4x4").arg(dataType->GetTimeStampInNanoSeconds());
 
       float matrix[4][4];
       elem->GetMatrix(matrix);
@@ -657,6 +806,23 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
                                                                       igtl::ImageMessage* imgMsg)
 {
 
+  std::vector<IGIDataItemInfo> infos;
+  IGIDataItemInfo info;
+  info.m_Name = deviceName;
+  info.m_FramesPerSecond = 0;
+  info.m_IsLate = false;
+  info.m_LagInMilliseconds = 0;
+  infos.push_back(info);
+
+  int nx, ny, nz;
+  imgMsg->GetDimensions(nx, ny, nz);
+
+  if (nz > 1)
+  {
+    MITK_WARN << "Received 3D image message, which has never been implemented. Please volunteer";
+    return infos;
+  }
+
   QImage qImage;
   niftk::GetQImage(imgMsg, qImage);
 
@@ -708,9 +874,9 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
   {
     // check size of image that is already attached to data node!
     bool haswrongsize = false;
-    haswrongsize |= imageInNode->GetDimension(0) != qImage.width();
-    haswrongsize |= imageInNode->GetDimension(1) != qImage.height();
-    haswrongsize |= imageInNode->GetDimension(2) != 1;
+    haswrongsize |= imageInNode->GetDimension(0) != nx;
+    haswrongsize |= imageInNode->GetDimension(1) != ny;
+    haswrongsize |= imageInNode->GetDimension(2) != nz;
     // check image type as well.
     haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent() != ocvimg.depth;
     haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents() != ocvimg.nChannels;
@@ -754,15 +920,12 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
       }
     }
   }
+
   node->Modified();
 
-  std::vector<IGIDataItemInfo> infos;
-  IGIDataItemInfo info;
-  info.m_Name = deviceName;
-  info.m_FramesPerSecond = m_Buffers[deviceName]->GetFrameRate();
-  info.m_IsLate = this->IsLate(timeRequested, actualTime);
-  info.m_LagInMilliseconds = this->GetLagInMilliseconds(timeRequested, actualTime);
-  infos.push_back(info);
+  infos[0].m_FramesPerSecond = m_Buffers[deviceName]->GetFrameRate();
+  infos[0].m_IsLate = this->IsLate(timeRequested, actualTime);
+  infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(timeRequested, actualTime);
   return infos;
 }
 

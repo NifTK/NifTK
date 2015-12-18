@@ -46,13 +46,17 @@ namespace niftk
 * In contrast say to niftk::OpenCVVideoDataSourceService, or
 * niftk::MITKTrackerDataSourceService which directly grab data in
 * a specific data grabbing thread, here, data comes via a socket.
-* So, the NiftyLink client and server classes are already threaded.
+* NiftyLink client and server classes are already threaded, so messages
+* simply appear via a Qt signal. This class therefore registers to this
+* signal to receive new messages.
 *
-* Also, this class is the common base class of NiftyLinkClientDataSourceService
+* This class is the common base class of NiftyLinkClientDataSourceService
 * and NiftyLinkServerDataSourceService. So, in both cases, there should only be
-* 1 connection. So, either this NiftyLinkClientDataSourceService connects to
+* 1 connection. So, either NiftyLinkClientDataSourceService connects to
 * 1 external server (e.g. PLUSServer), or 1 external client connects to
-* NiftyLinkServerDataSourceService.
+* NiftyLinkServerDataSourceService. If you run this class as a
+* NiftyLinkServerDataSourceService, and multiple clients try to connect,
+* then each client should be setting a unique device name on their messages.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
@@ -158,6 +162,7 @@ private:
                                                    igtl::TrackingDataMessage*);
 
   void SaveTrackingData(niftk::NiftyLinkDataType::Pointer, igtl::TrackingDataMessage*);
+  void LoadTrackingData(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames);
 
   std::vector<IGIDataItemInfo> ReceiveImage(QString bufferName,
                                             niftk::IGIDataType::IGITimeType timeRequested,
@@ -165,10 +170,13 @@ private:
                                             igtl::ImageMessage*);
 
   void SaveImage(niftk::NiftyLinkDataType::Pointer, igtl::ImageMessage*);
+  void LoadImage(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames);
 
   std::vector<IGIDataItemInfo> ReceiveString(igtl::StringMessage*);
+  void LoadString(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames);
 
   void AddAll(const std::vector<IGIDataItemInfo>& a, std::vector<IGIDataItemInfo>& b);
+  QString GetDirectoryNamePart(const QString& fullPathName, int indexFromEnd);
 
   QMutex                                                              m_Lock;
   niftk::IGIDataType::IGIIndexType                                    m_FrameId;
