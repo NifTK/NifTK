@@ -1722,7 +1722,7 @@ if(BUILD_NiftySim AND NiftySim_FOUND)
   MITK_INSTALL(PROGRAMS ${_NiftySim_LIB_FILES})
 
   file(GLOB _NiftySim_BIN_FILES ${NiftySim_DIR}/bin/*)
-  MITK_INSTALL(PROGRAMS ${_NIFTY_SIM_BIN_FILES})
+  MITK_INSTALL(PROGRAMS ${_NiftySim_BIN_FILES})
 endif()
 
 # Camino
