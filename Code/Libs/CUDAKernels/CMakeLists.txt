@@ -30,6 +30,11 @@ include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels/Common)
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 
+if(APPLE)
+  set(_tmp_cmake_cxx_flags ${CMAKE_CXX_FLAGS})
+  string(REPLACE "-std=c++11" "" CMAKE_CXX_FLAGS ${_tmp_cmake_cxx_flags})
+endif()
+
 # FIXME: figure out what minimum sm-version we need!
 # cmake is a real pain. it's impossible to get the quoting right for these options.
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--ptxas-options=-v;--generate-code arch=compute_30,code=sm_30;-lineinfo) #,code=\"sm_30,compute_30\"")
