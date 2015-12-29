@@ -42,6 +42,7 @@
 #include "itkTestingComparisonImageFilter.h"
 #include "itkImageRegion.h"
 #include "itksys/SystemTools.hxx"
+#include <itkTextOutput.h>
 
 #define ITK_TEST_DIMENSION_MAX 6
 
@@ -77,6 +78,8 @@ void PrintAvailableTests()
 
 int main(int ac, char* av[] )
 {
+  itk::OutputWindow::SetInstance(itk::TextOutput::New());
+
   double intensityTolerance  = 2.0;
   unsigned int numberOfPixelsTolerance = 0;
   unsigned int radiusTolerance = 0;
