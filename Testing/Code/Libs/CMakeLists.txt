@@ -18,7 +18,9 @@ include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
 add_subdirectory(Common)
 add_subdirectory(ITK)
 
+find_package(VTK REQUIRED)
 if(VTK_FOUND)
+  include(${VTK_USE_FILE})
   add_subdirectory(VTK)
 endif(VTK_FOUND)
 

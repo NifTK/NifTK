@@ -1172,15 +1172,6 @@ if (WIN32)
 endif()
 
 ######################################################################
-# Find VTK.
-######################################################################
-find_package(VTK REQUIRED)
-if(VTK_FOUND)
-  message("Found VTK")
-  include(${VTK_USE_FILE})
-endif(VTK_FOUND)
-
-######################################################################
 # Find GDCM. ITK is built with GDCM, so GDCM is effectively mandatory.
 ######################################################################
 find_package(GDCM PATHS ${GDCM_DIR} REQUIRED)
