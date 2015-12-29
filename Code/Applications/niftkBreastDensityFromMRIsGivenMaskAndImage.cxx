@@ -50,6 +50,7 @@
 #include <itkImageFileReader.h>
 #include <itkImageSeriesReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkWriteImage.h>
 #include <itkReadImage.h>
 #include <itkConversionUtils.h>
@@ -63,7 +64,6 @@
 #include <itkBinaryShapeBasedSuperSamplingFilter.h>
 #include <itkIsImageBinary.h>
 #include <itkRescaleIntensityImageFilter.h>
-
 
 //#define LINK_TO_SEG_EM
 
@@ -1034,6 +1034,8 @@ void NaiveParenchymaSegmentation( InputParameters &args,
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   bool flgVeryFirstRow = true;
 
   float progress = 0.;

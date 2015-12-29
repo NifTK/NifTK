@@ -24,6 +24,7 @@
 
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkImageRegionIterator.h>
 #include <itkImageMomentsCalculator.h>
@@ -346,6 +347,7 @@ int DoMain(arguments args)
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
 
   // Parse the command line arguments
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

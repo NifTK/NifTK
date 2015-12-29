@@ -17,6 +17,7 @@
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkExtractImageFilter.h>
 
 #include <niftkExtract2DSliceFrom3DImageCLP.h>
@@ -86,6 +87,8 @@ int DoMain(arguments args)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // To parse the command line args.
   PARSE_ARGS;
 

@@ -17,6 +17,7 @@
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkNegateImageFilter.h>
 #include <itkCastImageFilter.h>
 
@@ -85,6 +86,8 @@ int DoMain(Arguments args)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // To pass around command line args
   PARSE_ARGS;
 

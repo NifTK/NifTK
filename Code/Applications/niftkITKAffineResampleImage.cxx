@@ -22,6 +22,7 @@
 
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkUnaryFunctorImageFilter.h>
 #include <itkResampleImageFilter.h>
 #include <itkUnaryFunctorImageFilter.h>
@@ -291,6 +292,8 @@ int DoMain(arguments args)
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   struct arguments args;
 
   niftk::CommandLineParser CommandLineOptions( argc, argv, clArgList, true );

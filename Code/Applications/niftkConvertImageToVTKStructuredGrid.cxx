@@ -16,8 +16,10 @@
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkImageRegionIteratorWithIndex.h>
+
 #include <vtkStructuredGrid.h>
 #include <vtkStructuredGridWriter.h>
 #include <vtkPoints.h>
@@ -207,6 +209,8 @@ int DoMain(arguments args)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // To pass around command line args
   struct arguments args;
   

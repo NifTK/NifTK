@@ -18,7 +18,7 @@
 
 #include <iostream>
 #include <itkTestMain.h>
-#include "itkNifTKImageIOFactory.h"
+#include <itkNifTKImageIOFactory.h>
 
 void RegisterTests()
 {

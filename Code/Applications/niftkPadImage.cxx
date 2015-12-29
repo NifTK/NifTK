@@ -19,6 +19,7 @@
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkConstantPadImageFilter.h>
 #include <itkRegionOfInterestImageFilter.h>
 
@@ -125,6 +126,8 @@ int DoMain(arguments args)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   if (argc < 7) 
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cout);

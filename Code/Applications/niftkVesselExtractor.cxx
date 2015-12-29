@@ -21,6 +21,7 @@ See LICENSE.txt in the top level directory for details.
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageDuplicator.h>
 #include <itkBinaryDilateImageFilter.h>
 #include <itkBinaryBallStructuringElement.h>
@@ -259,6 +260,7 @@ struct arguments
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
 
     arguments args;
 

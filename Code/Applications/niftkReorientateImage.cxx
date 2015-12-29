@@ -23,6 +23,7 @@
 #include <itkConversionUtils.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkOrientImageFilter.h>
 
 
@@ -287,6 +288,8 @@ int ReorientateImage( arguments &args )
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   arguments args;
   
   // Create the command line parser, passing the

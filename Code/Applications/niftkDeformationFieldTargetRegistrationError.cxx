@@ -18,6 +18,7 @@
 
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkAddImageFilter.h>
 #include <itkSubtractImageFilter.h>
 #include <itkRescaleIntensityImageFilter.h>
@@ -66,6 +67,8 @@ enum {
 
 int main( int argc, char ** argv )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // Default filenames
   char *in1Name = NULL;
   char *in2Name = NULL;

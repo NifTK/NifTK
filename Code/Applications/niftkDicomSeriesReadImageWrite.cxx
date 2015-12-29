@@ -19,6 +19,7 @@
 #include <itkGDCMSeriesFileNames.h>
 #include <itkImageSeriesReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 
 #include <vector>
 
@@ -224,6 +225,8 @@ bool WriteSeriesAsVolume( bool flgVerbose,
 
 int main( int argc, char* argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   char fileOutput[512];
 
 

@@ -19,6 +19,7 @@
 #include <itkMultiScaleHessianBasedMeasureImageFilter.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkImage.h>
 
@@ -64,6 +65,8 @@ enum {
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   bool flgDark = false;
   bool flgSuppress = false;
 

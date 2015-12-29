@@ -19,6 +19,7 @@
 #include <itkImageRegistrationFilter.h>
 #include <itkTransformFileWriter.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
@@ -51,6 +52,8 @@ enum {
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
   std::string inputFilename1;
   std::string inputFilename2;

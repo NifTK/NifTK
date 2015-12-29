@@ -20,6 +20,7 @@
 #endif
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkIntensityNormalisationCalculator.h>
 #include <itkBoundaryShiftIntegralCalculator.h>
 #include <itkDoubleWindowBoundaryShiftIntegralCalculator.h>
@@ -531,6 +532,8 @@ double getVolume(char *image) {
  */
 int main(int argc, char* argv[])
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   if (argc < 21)
   {
 #ifndef OPEN_SOURCE_BSI
