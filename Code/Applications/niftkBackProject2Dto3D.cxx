@@ -16,6 +16,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkTransformFactory.h>
 #include <itkTransformFileReader.h>
 #include <itkTransformFileWriter.h>
@@ -68,6 +69,8 @@ void Usage(char *exec)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   typedef float IntensityType;
   typedef itk::BackwardImageProjector2Dto3D< IntensityType > BackwardProjectorType;
 

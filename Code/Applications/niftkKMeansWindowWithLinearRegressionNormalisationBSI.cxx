@@ -18,6 +18,7 @@
 #endif
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkIntensityNormalisationCalculator.h>
 #include <itkBoundaryShiftIntegralCalculator.h>
 #include <itkSimpleKMeansClusteringImageFilter.h>
@@ -544,6 +545,8 @@ void flipOrder(SimpleKMeansClusteringImageFilterType::ParametersType &in,int num
 
 int main(int argc, char* argv[])
 {
+  itk::NifTKImageIOFactory::Initialize();
+
     if (argc < 10)
     {
         std::cerr << std::endl;

@@ -20,6 +20,7 @@
 #include <niftkConversionUtils.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkConnectedComponentImageFilter.h>
 #include <itkImageRegionIterator.h>
 #include <itkImageRegionConstIterator.h>
@@ -58,6 +59,8 @@ void StartUsage(char *name)
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   const unsigned int Dimension = 3;
   typedef short InputPixelType;
   typedef short OutputPixelType;

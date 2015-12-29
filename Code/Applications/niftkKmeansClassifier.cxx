@@ -19,10 +19,13 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
+#include <itkNifTKImageIOFactory.h>
 #include "itkSimpleKMeansClusteringImageFilter.h"
 
 int main( int argc, char * argv [] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   if( argc < 5 )
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cerr);

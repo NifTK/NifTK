@@ -21,6 +21,7 @@
 #include <vtkPolyDataReader.h>
 #include <vtkPolyDataWriter.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkNearestNeighborInterpolateImageFunction.h>
 #include <itkPoint.h>
 
@@ -65,6 +66,8 @@ struct arguments
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // To pass around command line args
   struct arguments args;
   args.radius = 0;

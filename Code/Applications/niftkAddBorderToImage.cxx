@@ -29,6 +29,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkNumericTraits.h>
 #include <itkImageRegionIteratorWithIndex.h>
 
@@ -213,6 +214,8 @@ int AddBorderToImage( arguments &args )
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   unsigned int i;
   arguments args;
   

@@ -22,6 +22,7 @@
 #include <itkSampleImageFilter.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImage.h>
 
 
@@ -255,6 +256,8 @@ int DoMain(arguments &args)
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // To pass around command line args
   arguments args;
 

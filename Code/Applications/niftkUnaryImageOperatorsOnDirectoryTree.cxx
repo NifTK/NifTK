@@ -30,6 +30,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
 
@@ -398,6 +399,8 @@ int DoMain( arguments args,
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   float progress = 0.;
   float iFile = 0.;
   float nFiles;

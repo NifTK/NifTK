@@ -20,6 +20,7 @@
 
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkExtractImageFilter.h>
 
 #include <boost/filesystem.hpp>
@@ -217,6 +218,8 @@ int DoMain(arguments args)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   struct arguments args;
 
   niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);

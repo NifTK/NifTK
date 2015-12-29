@@ -16,6 +16,7 @@
 #include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageRegionConstIterator.h>
 
 /*!
@@ -48,6 +49,8 @@ void Usage(char *exec)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   const   unsigned int Dimension = 3;
   typedef float        PixelType;
 

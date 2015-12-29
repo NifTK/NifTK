@@ -18,10 +18,10 @@
 
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
 #include <itkGDCMImageIO.h>
-
 
 #include <niftkConvertImageToDICOMCLP.h>
 
@@ -194,6 +194,8 @@ int DoMain(arguments args)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // To pass around command line args
   PARSE_ARGS;
 

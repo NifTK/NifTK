@@ -21,8 +21,8 @@
 
 #include <itkImage.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkScalarImageToHistogramGenerator.h>
-
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
@@ -55,6 +55,8 @@ enum {
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   bool flgVerbose = 0;
   int nbins = 64;
 

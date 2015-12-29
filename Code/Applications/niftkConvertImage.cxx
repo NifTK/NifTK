@@ -19,6 +19,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageIOFactory.h>
 #include <itkImageIOBase.h>
 #include <itkGiplImageIO.h>
@@ -83,6 +84,8 @@ template <class TPixel, const int inputDimension, const int outputDimension> boo
 
 int main(int argc, char **argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // Map to associate the input strings with the enum values
   static std::map<std::string, itk::ImageIOBase::IOComponentType> mapOutputTypes;
 
