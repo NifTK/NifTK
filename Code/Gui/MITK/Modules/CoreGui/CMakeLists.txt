@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(
   INCLUDE_DIRS Events LookupTables IO Rendering
   DEPENDS MitkCore MitkQtWidgets MitkQtWidgetsExt niftkCore
-  PACKAGE_DEPENDS Qt4|QtGui Qt4|QtOpenGL CTK|CTKWidgets
+  PACKAGE_DEPENDS Qt4|QtGui Qt4|QtOpenGL Qt5|Gui Qt5|OpenGL CTK|CTKWidgets
 )
 
 target_link_libraries(niftkCoreGui PRIVATE niftkITK niftkVTK)

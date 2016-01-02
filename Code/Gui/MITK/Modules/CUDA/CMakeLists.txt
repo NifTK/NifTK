@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(
   INCLUDE_DIRS CUDAManager CUDAImage Image CameraCalibration
   DEPENDS MitkCore
-  PACKAGE_DEPENDS Qt4|QtCore Qt4|QtOpenGL
+  PACKAGE_DEPENDS Qt4|QtCore Qt4|QtOpenGL Qt5|Core Qt5|OpenGL
 )
 
 include_directories(
