@@ -24,7 +24,7 @@ if(DEFINED CTK_DIR AND NOT EXISTS ${CTK_DIR})
   message(FATAL_ERROR "CTK_DIR variable is defined but corresponds to non-existing directory \"${CTK_DIR}\"")
 endif()
 
-if(QT_FOUND)
+if(MITK_USE_Qt4 OR MITK_USE_Qt5)
 
   # Note: If the CTK version changes, then you either clear the plugin cache
   # or change the deploy path by changing the patch level.
@@ -148,4 +148,4 @@ if(QT_FOUND)
 
   endif()
 
-endif(QT_FOUND)
+endif()

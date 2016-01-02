@@ -165,7 +165,7 @@ if(SlicerExecutionModel_FOUND)
       )
     endforeach()
 
-    if(QT_FOUND)
+    if(MITK_USE_Qt4)
 
       #-------------------------------------------------------------
       # Add new programs to this list.
@@ -188,7 +188,7 @@ if(SlicerExecutionModel_FOUND)
           )
       endforeach()
 
-    endif(QT_FOUND)
+    endif()
 
   endif(VTK_FOUND)
 
@@ -359,7 +359,7 @@ endif()
 ##############################################################
 
 if(VTK_FOUND)
-  if(QT_FOUND)
+  if(MITK_USE_Qt4)
 
     ##############################################################
     # Add new programs to this list.
@@ -377,7 +377,7 @@ if(VTK_FOUND)
       )
     endforeach()
 
-  endif(QT_FOUND)
+  endif()
 endif(VTK_FOUND)
 
 ##############################################################
