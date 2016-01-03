@@ -14,7 +14,11 @@
 
 #include "QmitkIGIDataSourceManager.h"
 #include <QMessageBox>
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
 #include <QDesktopServices>
+#else
+#include <QStandardPaths>
+#endif
 #include <QDateTime>
 #include <QFile>
 #include <QTextStream>
@@ -197,6 +201,7 @@ void QmitkIGIDataSourceManager::DeleteCurrentGuiWidget()
 QString QmitkIGIDataSourceManager::GetDefaultPath()
 {
   QString path;
+  QStringList paths;
   QDir directory;
 
   // if the user has configured a per-machine default location for igi data.
@@ -207,18 +212,35 @@ QString QmitkIGIDataSourceManager::GetDefaultPath()
 
   if (!directory.exists())
   {
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
     path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+#else
+    paths = QStandardPaths::standardLocations(QStandardPaths::DesktopLocation);
+    assert(paths.size() == 1);
+    path = paths[0];
+#endif
     directory.setPath(path);
   }
   if (!directory.exists())
   {
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
     path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
+#else
+    paths = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation);
+    assert(paths.size() == 1);
+    path = paths[0];
+#endif
     directory.setPath(path);
   }
   if (!directory.exists())
   {
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
     path = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
-    directory.setPath(path);
+#else
+    paths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
+    assert(paths.size() == 1);
+    path = paths[0];
+#endif
   }
   if (!directory.exists())
   {
@@ -229,6 +251,7 @@ QString QmitkIGIDataSourceManager::GetDefaultPath()
   {
     path = "";
   }
+
   return path;
 }
 
@@ -390,8 +413,11 @@ void QmitkIGIDataSourceManager::setupUi(QWidget* parent)
   m_TableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
   // the active column has a fixed, minimal size. note that this line relies on the table having
   // columns already! the ui file has them added.
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
   m_TableWidget->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
-
+#else
+  m_TableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+#endif
   bool    ok = false;
   ok = QObject::connect(m_SourceSelectComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged(int)));
   assert(ok);
