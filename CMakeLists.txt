@@ -501,7 +501,7 @@ if(MITK_USE_QT)
   # find the package at the very beginning, so that QT4_FOUND is available
   if(DESIRED_QT_VERSION MATCHES 4)
     set(MITK_QT4_MINIMUM_VERSION 4.7)
-    set(MITK_QT4_COMPONENTS QtCore QtGui QtXml)
+    set(MITK_QT4_COMPONENTS QtCore QtGui QtXml QtScript)
     if(BUILD_IGI)
       list(APPEND MITK_QT4_COMPONENTS QtNetwork)
     endif()
