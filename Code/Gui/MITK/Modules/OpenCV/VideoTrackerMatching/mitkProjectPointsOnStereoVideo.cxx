@@ -1138,7 +1138,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
   //on the plane. Let's check that this remains fairly small
   if ( fabs (reprojectionError.z ) < m_ReprojectionErrorZLimit )
   {
-    if ( GSPoint.m_Channel != "left" )
+    if ( GSPoint.m_Channel == "left" )
     {
       m_LeftReProjectionErrors.push_back (reprojectionError);
     }
