@@ -36,4 +36,6 @@ void uk_ac_ucl_cmic_mitksegmentation_Activator::stop(ctkPluginContext* context)
 
 }
 
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_mitksegmentation, mitk::uk_ac_ucl_cmic_mitksegmentation_Activator)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_mitksegmentation, mitk::uk_ac_ucl_cmic_mitksegmentation_Activator)
+#endif
