@@ -17,6 +17,7 @@
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkRegionOfInterestImageFilter.h>
 
 #include <itkImage.h>
@@ -124,6 +125,8 @@ int ExtractRegion(arguments args)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // To pass around command line args
   struct arguments args;
   

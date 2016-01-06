@@ -362,7 +362,7 @@ NiftiImageIO3201::NiftiImageIO3201():
   m_RescaleSlope(1.0),
   m_RescaleIntercept(0.0),
   m_OnDiskComponentType(UNKNOWNCOMPONENTTYPE),
-  m_LegacyAnalyze75Mode(false)
+  m_LegacyAnalyze75Mode(true)
 {
   this->SetNumberOfDimensions(3);
   nifti_set_debug_level(0); // suppress error messages

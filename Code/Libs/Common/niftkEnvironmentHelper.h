@@ -33,13 +33,12 @@ NIFTKCOMMON_WINEXPORT std::string GetHomeDirectory();
 
 NIFTKCOMMON_WINEXPORT std::string GetWorkingDirectory();
 
-NIFTKCOMMON_WINEXPORT std::string GetNIFTKHome();
+NIFTKCOMMON_WINEXPORT std::string GetNifTKHome();
 
-NIFTKCOMMON_WINEXPORT std::string GetEnvironmentVariable(const std::string& variableName);
-
-NIFTKCOMMON_WINEXPORT bool BooleanEnvironmentVariableIsOn(const std::string& variableName);
-
-NIFTKCOMMON_WINEXPORT bool BooleanEnvironmentVariableIsOff(const std::string& variableName);
+// Note:
+// Calling this function 'GetEnvironmentVariable' would cause linker error on Windows
+// with VS2013, likely because of a kernel function with the same name.
+NIFTKCOMMON_WINEXPORT std::string GetEnvVar(const std::string& variableName);
 
 } // end namespace
 

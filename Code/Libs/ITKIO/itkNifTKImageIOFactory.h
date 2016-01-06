@@ -20,7 +20,7 @@
 #endif
 
 #include <NifTKConfigure.h>
-#include <niftkITKWin32ExportHeader.h>
+#include "niftkITKIOWin32ExportHeader.h"
 
 #include <itkObjectFactoryBase.h>
 #include <itkImageIOBase.h>
@@ -31,7 +31,7 @@ namespace itk
  * \class NifTKImageIOFactory
  * \brief Creates instances of NifTK specific image IO objects.
  */
-class NIFTKITK_WINEXPORT ITK_EXPORT NifTKImageIOFactory : public ObjectFactoryBase
+class NIFTKITKIO_WINEXPORT ITK_EXPORT NifTKImageIOFactory : public ObjectFactoryBase
 {
 public:  
   /** Standard class typedefs. */

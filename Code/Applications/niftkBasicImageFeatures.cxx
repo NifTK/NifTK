@@ -24,6 +24,7 @@
 #include <itkBasicImageFeaturesImageFilter.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkImage.h>
 #include <itkUnaryFunctorImageFilter.h>
@@ -207,6 +208,8 @@ std::string AddSuffix( std::string filename, std::string suffix )
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   bool flgVerbose;
   bool flgDebug;
 

@@ -15,6 +15,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkNiftiImageIO.h>
 #include <itkVector.h>
 #include <itkExceptionObject.h>
@@ -71,6 +72,8 @@ namespace bfs = boost::filesystem;
  */
 int main(int argc, char ** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
 	const bfs::path cwd = bfs::initial_path();
 
 

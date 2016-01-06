@@ -26,7 +26,7 @@
 #include <itkBreastMaskSegmForModelling.h>
 #include <itkBreastMaskSegmForBreastDensity.h>
 #include <itkRescaleImageUsingHistogramPercentilesFilter.h>
-
+#include <itkNifTKImageIOFactory.h>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
 
@@ -186,6 +186,8 @@ enum {
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   bool flgVerbose = 0;
   bool flgSmooth = 0;
   bool flgLeft = 0;

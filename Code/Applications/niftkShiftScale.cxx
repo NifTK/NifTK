@@ -16,6 +16,7 @@
 #include <niftkConversionUtils.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkShiftScaleImageFilter.h>
 
 /*!
@@ -44,6 +45,7 @@ void Usage(char *exec)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
 
   const   unsigned int Dimension = 3;
   typedef short        PixelType;

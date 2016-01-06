@@ -22,6 +22,7 @@
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkWriteImage.h>
 
 #include <itkDynamicContrastEnhancementAnalysisImageFilter.h>
@@ -444,6 +445,8 @@ int DoMain(arguments args)
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   char *fileInput = 0;	// A mandatory character string argument
   char **filesIn = 0;
 

@@ -17,6 +17,7 @@
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageRegionConstIterator.h>
 
 #include <set>
@@ -390,6 +391,8 @@ int DoMain(arguments args)
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // To pass around command line args
   struct arguments args;
   args.firstArgumentAfterOptions = std::numeric_limits<int>::min();  

@@ -20,7 +20,7 @@
 #endif
 
 #include <NifTKConfigure.h>
-#include <niftkITKWin32ExportHeader.h>
+#include "niftkITKIOWin32ExportHeader.h"
 
 #include <itkImageIOBase.h>
 #include <itkByteSwapper.h>
@@ -32,7 +32,7 @@ namespace itk
  * \class INRImageIO
  * \brief ITK IO class to load INRIA image format.
  */
-class NIFTKITK_WINEXPORT ITK_EXPORT INRImageIO : public ImageIOBase
+class NIFTKITKIO_WINEXPORT ITK_EXPORT INRImageIO : public ImageIOBase
 {
 public:
   /** Standard class typedefs. */

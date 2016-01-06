@@ -132,7 +132,7 @@ void QmitkBaseWorkbenchWindowAdvisor::OpenEditor(const QString& editorName)
 //-----------------------------------------------------------------------------
 void QmitkBaseWorkbenchWindowAdvisor::OpenEditorIfEnvironmentVariableIsON(const std::string& envVariable, const QString& editorName)
 {
-  if (niftk::BooleanEnvironmentVariableIsOn(envVariable))
+  if (niftk::GetEnvVar(envVariable) == "ON")
   {
     this->OpenEditor(editorName);
   }

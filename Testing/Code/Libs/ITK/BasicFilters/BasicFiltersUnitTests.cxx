@@ -18,9 +18,12 @@
 
 #include <iostream>
 #include <itkTestMain.h>
+#include <itkNifTKImageIOFactory.h>
 
 void RegisterTests()
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   REGISTER_TEST(BoundaryValueRescaleIntensityImageFilterTest);
   REGISTER_TEST(SetOutputVectorToCurrentPositionFilterTest);
   REGISTER_TEST(VectorMagnitudeImageFilterTest);

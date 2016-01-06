@@ -12,6 +12,7 @@
 #include "itkIndex.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
+#include <itkNifTKImageIOFactory.h>
 #include "itkImageRegionIterator.h"
 #include "itkMinimumMaximumImageCalculator.h"
 #include "itkRescaleIntensityImageFilter.h"
@@ -44,6 +45,8 @@ enum {
 
 int main( int argc, char * argv[] )
 {
+
+  itk::NifTKImageIOFactory::Initialize();
 
   std::string fileOutput;
  

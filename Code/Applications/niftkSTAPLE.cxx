@@ -15,6 +15,7 @@
 #include <itkLogHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkSTAPLEImageFilter.h>
 
 /*!
@@ -40,6 +41,8 @@
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   const unsigned int Dimension = 3;
   typedef short PixelType;
   

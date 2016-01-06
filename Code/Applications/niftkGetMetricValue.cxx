@@ -17,6 +17,7 @@
 #include <itkImageRegionConstIterator.h>
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 
 /* ********************************************************************** */
 
@@ -42,6 +43,8 @@ void Usage(char *exec)
 
 int main(int argc, char **argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
 	if(argc<3){
 		Usage(argv[0]);
 		return EXIT_FAILURE;

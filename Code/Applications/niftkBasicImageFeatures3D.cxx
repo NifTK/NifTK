@@ -26,6 +26,7 @@
 #include <itkBasicImageFeaturesImageFilter.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkImage.h>
 #include <itkUnaryFunctorImageFilter.h>
@@ -246,6 +247,8 @@ void sliceCallBack(itk::Object* object, const itk::EventObject &, void*)
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   bool flgSingleThreaded;
   bool flgOrientate;
   bool flgResampleImages;

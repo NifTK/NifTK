@@ -16,6 +16,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkBinaryThresholdImageFilter.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkLogHelper.h>
@@ -51,6 +52,8 @@ void Usage(char *name)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   const unsigned int Dimension = 3;
   typedef        int PixelType;
   

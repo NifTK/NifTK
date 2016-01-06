@@ -21,26 +21,26 @@ namespace niftk
 //-----------------------------------------------------------------------------
 std::string GetHomeDirectory()
 {
-  return GetEnvironmentVariable(USERS_HOME);
+  return GetEnvVar(USERS_HOME);
 }
 
 
 //-----------------------------------------------------------------------------
 std::string GetWorkingDirectory()
 {
-  return GetEnvironmentVariable(WORKING_DIR);
+  return GetEnvVar(WORKING_DIR);
 }
 
 
 //-----------------------------------------------------------------------------
-std::string GetNIFTKHome()
+std::string GetNifTKHome()
 {
-  return GetEnvironmentVariable(NIFTK_DIR);
+  return GetEnvVar(NIFTK_DIR);
 }
 
 
 //-----------------------------------------------------------------------------
-std::string GetEnvironmentVariable(const std::string& variableName)
+std::string GetEnvVar(const std::string& variableName)
 {
   const char* input = variableName.c_str();
   const char* result = getenv(input);
@@ -52,44 +52,6 @@ std::string GetEnvironmentVariable(const std::string& variableName)
   {
     return std::string();
   }
-}
-
-
-//-----------------------------------------------------------------------------
-bool BooleanEnvironmentVariableIsOn(const std::string& variableName)
-{
-  bool result = false;
-
-  std::string value = GetEnvironmentVariable(variableName);
-  if (value == "1"
-      || value == "ON"
-      || value == "TRUE"
-      || value == "YES"
-      )
-  {
-    result = true;
-  }
-
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-bool BooleanEnvironmentVariableIsOff(const std::string& variableName)
-{
-  bool result = false;
-
-  std::string value = GetEnvironmentVariable(variableName);
-  if (value == "0"
-      || value == "OFF"
-      || value == "FALSE"
-      || value == "NO"
-      )
-  {
-    result = true;
-  }
-
-  return result;
 }
 
 } // end namespace

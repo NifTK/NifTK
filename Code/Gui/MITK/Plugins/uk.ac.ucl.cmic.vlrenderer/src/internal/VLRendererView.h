@@ -17,6 +17,7 @@
 #define VLRendererView_h
 
 #include "ui_VLRendererViewControls.h"
+#include <vlGraphics/OpenGL.hpp>
 
 #include <berryQtViewPart.h>
 #include <berryIBerryPreferences.h>
@@ -28,12 +29,7 @@
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 
-
-// VL includes
-#include <vlCore/VisualizationLibrary.hpp>      // FIXME: should go away!
-
 #include <Rendering/VLQt4Widget.h>
-
 
 /**
  * \class VLRendererView

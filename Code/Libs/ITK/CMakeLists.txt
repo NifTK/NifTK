@@ -17,18 +17,13 @@ set(niftkITK_SRCS
   Common/itkCommandLineHelper.cxx
   Common/itkFilenameUtils.cxx
   Common/itkLogHelper.cxx
+  Common/itkUCLMacro.cxx
   RegistrationToolbox/Optimizers/itkUCLSimplexOptimizer.cxx
   RegistrationToolbox/Optimizers/itkUCLRegularStepGradientDescentOptimizer.cxx
   RegistrationToolbox/Optimizers/itkUCLRegularStepOptimizer.cxx
   RegistrationToolbox/Optimizers/itkUCLPowellOptimizer.cxx
   RegistrationToolbox/Commands/itkIterationUpdateCommand.cxx
   RegistrationToolbox/Commands/itkVnlIterationUpdateCommand.cxx
-  IO/itkINRImageIO.cxx
-  IO/itkAnalyzeDbh.cxx
-  IO/itkAnalyzeImageIO3160.cxx
-  IO/itkDRCAnalyzeImageIO.cxx
-  IO/itkNifTKImageIOFactory.cxx
-  IO/itkNiftiImageIO3201.cxx
   2D3DToolbox/Commands/itkReconstructionUpdateCommand.cxx
   2D3DToolbox/Commands/itkReconstructionAndRegistrationUpdateCommand.cxx
   2D3DToolbox/Commands/itkSimultaneousReconAndRegnUpdateCommand.cxx

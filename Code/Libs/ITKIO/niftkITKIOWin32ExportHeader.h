@@ -12,19 +12,21 @@
 
 =============================================================================*/
 
-#if defined(_MSC_VER)
-#pragma warning ( disable : 4786 )
+#ifndef niftkITKIOWin32ExportHeader_h
+#define niftkITKIOWin32ExportHeader_h
+
+#include <NifTKConfigure.h>
+
+#if (defined(_WIN32) || defined(WIN32)) && !defined(NIFTK_STATIC) 
+  #ifdef NIFTKITKIO_WINDOWS_EXPORT
+    #define NIFTKITKIO_WINEXPORT __declspec(dllexport)
+  #else
+    #define NIFTKITKIO_WINEXPORT __declspec(dllimport)
+  #endif  /* NIFTKITKIO_WINEXPORT */
+#else
+/* linux/mac needs nothing */
+  #define NIFTKITKIO_WINEXPORT 
 #endif
 
-#include <iostream>
-#include <itkTestMain.h>
-#include <itkNifTKImageIOFactory.h>
 
-void RegisterTests()
-{
-  itk::NifTKImageIOFactory::Initialize();
-
-  REGISTER_TEST(CheckImageDimensionalityTest);
-  REGISTER_TEST(ReceptorMemberCommandTest);
-  REGISTER_TEST(MIDASOrientationTest);
-}
+#endif  //__NIFTKITKWIN32EXPORTHEADER_H

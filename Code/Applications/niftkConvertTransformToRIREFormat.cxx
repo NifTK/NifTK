@@ -16,6 +16,7 @@
 #include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageRegistrationFactory.h>
 #include <itkPoint.h>
 #include <itkEulerAffineTransform.h>
@@ -64,6 +65,8 @@ std::string padString(std::string input, int desiredLength)
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   const   unsigned int Dimension = 3;
   typedef short        PixelType;
 

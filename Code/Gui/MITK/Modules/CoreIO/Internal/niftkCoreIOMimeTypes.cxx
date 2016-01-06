@@ -25,6 +25,8 @@ std::vector<mitk::CustomMimeType*> CoreIOMimeTypes::Get()
 
   // order matters here (descending rank for mime types)
   mimeTypes.push_back(TRANSFORM4X4_MIMETYPE().Clone());
+  mimeTypes.push_back(ANALYZE_MIMETYPE().Clone());
+  mimeTypes.push_back(NIFTI_MIMETYPE().Clone());
   mimeTypes.push_back(INRIA_MIMETYPE().Clone());
   mimeTypes.push_back(PNM_MIMETYPE().Clone());
 
@@ -57,6 +59,65 @@ std::string CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_NAME()
 std::string CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_DESCRIPTION()
 {
   static std::string description = "4x4 Transforms";
+  return description;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::CustomMimeType CoreIOMimeTypes::ANALYZE_MIMETYPE()
+{
+  mitk::CustomMimeType mimeType(ANALYZE_MIMETYPE_NAME());
+  mimeType.AddExtension("hdr");
+  mimeType.AddExtension("hdr.gz");
+  mimeType.AddExtension("img");
+  mimeType.AddExtension("img.gz");
+  mimeType.SetCategory("Images");
+  mimeType.SetComment("Analyze");
+  return mimeType;
+}
+
+
+//-----------------------------------------------------------------------------
+std::string CoreIOMimeTypes::ANALYZE_MIMETYPE_NAME()
+{
+  static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".image.analyze";
+  return name;
+}
+
+
+//-----------------------------------------------------------------------------
+std::string CoreIOMimeTypes::ANALYZE_MIMETYPE_DESCRIPTION()
+{
+  static std::string description = "Image in Analyze format";
+  return description;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::CustomMimeType CoreIOMimeTypes::NIFTI_MIMETYPE()
+{
+  mitk::CustomMimeType mimeType(NIFTI_MIMETYPE_NAME());
+  mimeType.AddExtension("nii");
+  mimeType.AddExtension("nii.gz");
+  mimeType.AddExtension("nia");
+  mimeType.SetCategory("Images");
+  mimeType.SetComment("Nifti");
+  return mimeType;
+}
+
+
+//-----------------------------------------------------------------------------
+std::string CoreIOMimeTypes::NIFTI_MIMETYPE_NAME()
+{
+  static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".image.nifti";
+  return name;
+}
+
+
+//-----------------------------------------------------------------------------
+std::string CoreIOMimeTypes::NIFTI_MIMETYPE_DESCRIPTION()
+{
+  static std::string description = "Image in NIfTI format";
   return description;
 }
 

@@ -572,10 +572,10 @@ mitkFunctionAddExternalProject(NAME FLANN     OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME VL        OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME CGAL      OFF ADVANCED DEPENDS Boost)
 mitkFunctionAddExternalProject(NAME NiftyLink OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftySim  OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftySeg  OFF ADVANCED Eigen)
-mitkFunctionAddExternalProject(NAME NiftyReg  OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftyRec  OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME NiftySim  OFF ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME NiftySeg  OFF ADVANCED NO_PACKAGE DEPENDS Eigen)
+mitkFunctionAddExternalProject(NAME NiftyReg  OFF ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME NiftyRec  OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
 
 mitkFunctionAddExternalProject(NAME DCMTK     ON  ADVANCED)
@@ -873,6 +873,7 @@ set(NIFTK_INCLUDE_DIRS_BUILD_TREE
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASIrregularVolumeEditor
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/VesselToolbox
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITKVTK/IO
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITKIO
   ${CMAKE_SOURCE_DIR}/Testing/Code/
   ${CMAKE_SOURCE_DIR}/Testing/Code/Libs/ITK/RegistrationToolbox
 )
@@ -1169,15 +1170,6 @@ if (WIN32)
 
   endif()
 endif()
-
-######################################################################
-# Find VTK.
-######################################################################
-find_package(VTK REQUIRED)
-if(VTK_FOUND)
-  message("Found VTK")
-  include(${VTK_USE_FILE})
-endif(VTK_FOUND)
 
 ######################################################################
 # Find GDCM. ITK is built with GDCM, so GDCM is effectively mandatory.
@@ -1721,7 +1713,7 @@ if(BUILD_NiftySim AND NiftySim_FOUND)
   MITK_INSTALL(PROGRAMS ${_NiftySim_LIB_FILES})
 
   file(GLOB _NiftySim_BIN_FILES ${NiftySim_DIR}/bin/*)
-  MITK_INSTALL(PROGRAMS ${_NIFTY_SIM_BIN_FILES})
+  MITK_INSTALL(PROGRAMS ${_NiftySim_BIN_FILES})
 endif()
 
 # Camino

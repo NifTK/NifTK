@@ -12,6 +12,14 @@
 #
 #============================================================================*/
 
+######################################################################
+# Find VTK.
+######################################################################
+find_package(VTK REQUIRED)
+if(VTK_FOUND)
+  include(${VTK_USE_FILE})
+endif(VTK_FOUND)
+
 ###############################################################
 # Setup variables describing the library requirements.
 ###############################################################
@@ -22,6 +30,7 @@ include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
 set(NIFTK_APPLICATION_LINK_LIBRARIES
   niftkcommon
   niftkITK
+  niftkITKIO
   ${ITK_LIBRARIES}
   ${Boost_LIBRARIES}
 )
