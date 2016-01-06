@@ -86,7 +86,8 @@ Mac build:
   - make -j 8
 
   only:
-  - branches
+#  - branches
+  - never
 
   tags:
   - mac
@@ -104,7 +105,8 @@ Mac test:
   - ctest -S CTestContinuous.cmake -V
 
   only:
-  - branches
+#  - branches
+  - never
 
   tags:
   - mac
@@ -121,7 +123,8 @@ Windows build:
   - "@exit /b %errorlevel%"
 
   only:
-  - branches
+#  - branches
+  - never
 
   tags:
   - windows
@@ -139,7 +142,8 @@ Windows test:
   - rem ctest -S CTestContinuous.cmake -V
 
   only:
-  - branches
+#  - branches
+  - never
 
   tags:
   - windows
@@ -167,16 +171,17 @@ Deploy current docs:
   - mv ${NIFTK_VERSION}/html niftk-current-docs
   - find . -type f -exec chmod 644 {} \;
   - find . -type d -exec chmod 755 {} \;
-  - tar cfj niftk-current-docs.tar.bz2 niftk-current-docs
+  - documentation_file="niftk-current-docs.tar.bz2"
+  - tar cfj ${documentation_file} niftk-current-docs
   - echo "API reference documentation generated:"
-  - echo `pwd`/niftk-current-docs.tar.bz2
+  - echo `pwd`/${documentation_file}
   - "# Delete the previous tarball"
-  - ssh cmiclab rm -f /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/niftk-current-docs.tar.bz2
+  - ssh cmiclab rm -f /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/${documentation_file}
   - "# Upload the tarball"
-  - scp niftk-current-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/niftk-current-docs.tar.bz2
+  - scp ${documentation_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
   - "# Extract the tarball and replace the old files"
   - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
-        tar xvfj niftk-current-docs.tar.bz2 ;
+        tar xvfj ${documentation_file} ;
         mv current tmp ;
         mv niftk-current-docs current ;
         rm -rf tmp"
@@ -250,19 +255,24 @@ Deploy release docs:
   - mv ${NIFTK_VERSION}/html niftk-${NIFTK_VERSION}-docs
   - find . -type f -exec chmod 644 {} \;
   - find . -type d -exec chmod 755 {} \;
-  - tar cfj niftk-${NIFTK_VERSION}-docs.tar.bz2 niftk-${NIFTK_VERSION}-docs
+  - documentation_file="niftk-${NIFTK_VERSION}-docs.tar.bz2"
+  - tar cfj ${documentation_file} niftk-${NIFTK_VERSION}-docs
   - echo "API reference documentation generated:"
-  - echo `pwd`/niftk-${NIFTK_VERSION}-docs.tar.bz2
+  - echo `pwd`/${documentation_file}
   - "# Delete the previous tarball"
-  - ssh cmiclab rm -f /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/niftk-${NIFTK_VERSION}-docs.tar.bz2
+  - ssh cmiclab rm -f /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/${documentation_file}
   - "# Upload the tarball"
-  - scp niftk-${NIFTK_VERSION}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
+  - scp ${documentation_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
   - "# Extract the tarball and replace the old files"
   - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
-        tar xvfj niftk-${NIFTK_VERSION}-docs.tar.bz2 ;
+        tar xvfj ${documentation_file} ;
         mv ${NIFTK_VERSION} tmp ;
         mv niftk-${NIFTK_VERSION}-docs ${NIFTK_VERSION} ;
         rm -rf tmp"
+
+  artifacts:
+    paths:
+      - ${documentation_file}
 
   only:
   - tags
@@ -281,8 +291,14 @@ Deploy Linux installer:
   - NIFTK_VERSION=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
   - echo "${NIFTK_VERSION}"
   - make package
+  - installer_file="niftk-${VERSION}-linux-centos-7-x64.tar.gz"
+  - mv niftk-${NIFTK_VERSION}.tar.gz ${installer_file}
   - "# Upload the tarball"
-  - scp niftk-${NIFTK_VERSION}.tar.gz cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/niftk-${VERSION}-linux-centos-7-x64.tar.gz
+  - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+
+  artifacts:
+    paths:
+      - ${installer_file}
 
   only:
   - tags
