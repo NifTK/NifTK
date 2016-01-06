@@ -208,7 +208,6 @@ Linux release build:
   - src_dir=`pwd`
   - cd ..
   - root_dir=`pwd`
-  - ep_dir="/home/gitlab-runner/src/niftk-ep"
   - sb_dir="${root_dir}/niftk-sb"
   - pb_dir="${sb_dir}/NifTK-build"
   - hostname
@@ -217,10 +216,7 @@ Linux release build:
   - rm -rf ${sb_dir}
   - mkdir ${sb_dir}
   - cd ${sb_dir}
-  - cmake -DEP_BASE:PATH=${ep_dir}
-        -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
-        -DEP_DIRECTORY_PER_VERSION:BOOL=ON
-        -DBUILD_TESTING:BOOL=OFF
+  - cmake -DBUILD_TESTING:BOOL=OFF
         -DNIFTK_USE_CPPCHECK:BOOL=OFF
         -DNIFTK_USE_KWSTYLE:BOOL=OFF
         -DBUILD_Python:BOOL=ON
