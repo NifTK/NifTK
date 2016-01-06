@@ -96,10 +96,17 @@ public:
   cv::Matx44d GetNearestMatrix(const TimeStampsContainer::TimeStamp& timeStamp,
       long long& error, bool& inBounds);
 
+  /**
+   * \brief If true will throw an error when matrix read fails;
+   */
+  void SetStopOnMatrixReadError ( const bool& value );
+
 private:
 
   mitk::TimeStampsContainer  m_TimeStamps;
   std::vector<cv::Matx44d>   m_TrackingMatrices;
+  bool                       m_HaltOnMatrixReadError;
+
 };
 
 } // end namespace
