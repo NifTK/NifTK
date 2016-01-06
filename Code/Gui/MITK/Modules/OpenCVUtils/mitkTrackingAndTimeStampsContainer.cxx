@@ -86,9 +86,9 @@ int TrackingAndTimeStampsContainer::LoadFromDirectory(const std::string& dirName
         }
         else
         {
-          std::ostringstream errorMessage;
-          errorMessage << "Failed to load matrix from file:" << fileNames[i] << std::endl;
-          mitkThrow() << errorMessage.str();
+          //std::ostringstream errorMessage;
+          MITK_WARN << "Failed to load matrix from file:" << fileNames[i] << std::endl;
+          //mitkThrow() << errorMessage.str();
         }
       }
       else
