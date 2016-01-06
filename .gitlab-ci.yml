@@ -44,6 +44,10 @@ Linux test:
   stage: test
 
   script:
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/niftk-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
   - hostname
   - whoami
   - pwd
@@ -98,6 +102,11 @@ Mac test:
   stage: test
 
   script:
+  - src_dir=`pwd`
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/niftk-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
   - hostname
   - whoami
   - pwd
@@ -158,6 +167,11 @@ Deploy current docs:
   stage: deploy
 
   script:
+  - src_dir=`pwd`
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/niftk-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
   - cd ${pb_dir}
   - chmod a+rx bin/GenerateCommandLineDoxygen
   - bin/GenerateCommandLineDoxygen
@@ -238,6 +252,11 @@ Deploy release docs:
   stage: deploy
 
   script:
+  - src_dir=`pwd`
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/niftk-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
   - cd ${pb_dir}
   - chmod a+rx bin/GenerateCommandLineDoxygen
   - bin/GenerateCommandLineDoxygen
@@ -282,6 +301,11 @@ Deploy Linux installer:
   stage: deploy
 
   script:
+  - src_dir=`pwd`
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/niftk-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
   - HOSTNAME=`hostname`
   - cd ${pb_dir}
   - NIFTK_VERSION=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
