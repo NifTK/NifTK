@@ -32,4 +32,6 @@ void NiftyRegPluginActivator::stop(ctkPluginContext* context)
 
 }
 
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_niftyreg, mitk::NiftyRegPluginActivator)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_niftyreg, mitk::NiftyRegPluginActivator)
+#endif

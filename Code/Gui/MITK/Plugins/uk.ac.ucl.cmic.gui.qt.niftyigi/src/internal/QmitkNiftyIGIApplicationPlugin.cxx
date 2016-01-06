@@ -67,4 +67,6 @@ void QmitkNiftyIGIApplicationPlugin::NodeAdded(const mitk::DataNode *constNode)
 
 
 //-----------------------------------------------------------------------------
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_niftyigi, QmitkNiftyIGIApplicationPlugin)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_niftyigi, QmitkNiftyIGIApplicationPlugin)
+#endif

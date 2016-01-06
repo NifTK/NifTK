@@ -22,7 +22,6 @@
 #include <QTableWidget>
 #include <QGridLayout>
 #include <QPalette>
-#include <QColorGroup>
 #include <QDebug>
 #include <QInputDialog>
 
