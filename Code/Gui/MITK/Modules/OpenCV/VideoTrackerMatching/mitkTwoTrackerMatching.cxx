@@ -93,13 +93,17 @@ void TwoTrackerMatching::Initialise(std::string directory1, std::string director
   m_Directory1 = directory1;
   m_Directory2 = directory2;
   
-  m_TimeStampsContainer1.LoadFromDirectory(m_Directory1);
+  bool haltOnMatrixReadFail = false;
+  int badMatrixFiles;
+  badMatrixFiles = m_TimeStampsContainer1.LoadFromDirectory(m_Directory1, haltOnMatrixReadFail);
   this->ConvertMatrices(m_TimeStampsContainer1, m_TrackingMatrices11);
-  MITK_INFO << "Found " << m_TimeStampsContainer1.GetSize() << " time stamped tracking files in " << m_Directory1;
+  MITK_INFO << "Found " << m_TimeStampsContainer1.GetSize() + badMatrixFiles  << " time stamped tracking files in " << m_Directory1;
+  MITK_INFO << "With " << badMatrixFiles  << " bad matrix files in " << m_Directory1;
   
-  m_TimeStampsContainer2.LoadFromDirectory(m_Directory2);
+  badMatrixFiles = m_TimeStampsContainer2.LoadFromDirectory(m_Directory2, haltOnMatrixReadFail);
   this->ConvertMatrices(m_TimeStampsContainer2, m_TrackingMatrices22);
-  MITK_INFO << "Found " << m_TimeStampsContainer2.GetSize() << " time stamped tracking files in " << m_Directory2;
+  MITK_INFO << "Found " << m_TimeStampsContainer2.GetSize() + badMatrixFiles << " time stamped tracking files in " << m_Directory2;
+  MITK_INFO << "With " << badMatrixFiles  << " bad matrix files in " << m_Directory2;
 
   // Now match em up. Do it both ways
   this->CreateLookUps ();

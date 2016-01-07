@@ -52,7 +52,8 @@ void UltrasoundTransformAndImageMerger::Merge(const std::string& inputMatrixDire
   mitk::MakeIdentity(identityMatrix);
 
   mitk::TrackingAndTimeStampsContainer trackingTimeStamps;
-  trackingTimeStamps.LoadFromDirectory(inputMatrixDirectory);
+  bool haltOnMatrixReadFailure = true;
+  int badMatrixFiles = trackingTimeStamps.LoadFromDirectory(inputMatrixDirectory, haltOnMatrixReadFailure);
 
   std::vector<std::string> imageFiles = niftk::GetFilesInDirectory(inputImageDirectory);
   std::sort(imageFiles.begin(), imageFiles.end());
