@@ -266,7 +266,6 @@ Deploy release docs:
   - NIFTK_VERSION=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
   - echo "${NIFTK_VERSION}"
   - cd Doxygen
-  - rm -rf niftk-current-docs
   - mv ${NIFTK_VERSION}/html niftk-${NIFTK_VERSION}-docs
   - find . -type f -exec chmod 644 {} \;
   - find . -type d -exec chmod 755 {} \;
@@ -280,14 +279,13 @@ Deploy release docs:
   - scp ${documentation_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
   - "# Extract the tarball and replace the old files"
   - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
-        tar xvfj ${documentation_file} ;
-        mv ${NIFTK_VERSION} tmp ;
-        mv niftk-${NIFTK_VERSION}-docs ${NIFTK_VERSION} ;
-        rm -rf tmp"
+        tar xfj ${documentation_file} ;
+        rm -rf ${NIFTK_VERSION} ;
+        mv niftk-${NIFTK_VERSION}-docs ${NIFTK_VERSION}"
 
   artifacts:
     paths:
-      - ${documentation_file}
+      - ${pb_dir}/Doxygen/${documentation_file}
 
   only:
   - tags
@@ -318,7 +316,7 @@ Deploy Linux installer:
 
   artifacts:
     paths:
-      - ${installer_file}
+      - ${pb_dir}/${installer_file}
 
   only:
   - tags
