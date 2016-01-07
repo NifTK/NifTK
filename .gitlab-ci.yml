@@ -2,7 +2,7 @@
 # Jobs for continuous testing
 ##########################################
 
-# Linux CI build for every commit
+
 Linux build:
 
   stage: build
@@ -36,7 +36,7 @@ Linux build:
   - branches
 
   tags:
-  - linux
+  - linux, continuous
 
 
 Linux test:
@@ -58,7 +58,7 @@ Linux test:
   - branches
 
   tags:
-  - linux
+  - linux, continuous
 
 
 Mac build:
@@ -94,7 +94,7 @@ Mac build:
   - never
 
   tags:
-  - mac
+  - mac, continuous
 
 
 Mac test:
@@ -118,7 +118,7 @@ Mac test:
   - never
 
   tags:
-  - mac
+  - mac, continuous
 
 
 Windows build:
@@ -136,7 +136,7 @@ Windows build:
   - never
 
   tags:
-  - windows
+  - windows, continuous
 
 
 Windows test:
@@ -155,12 +155,13 @@ Windows test:
   - never
 
   tags:
-  - windows
+  - windows, continuous
 
 
 ##########################################
 # Deploy development documentation pages
 ##########################################
+
 
 Deploy current docs:
 
@@ -205,15 +206,16 @@ Deploy current docs:
   - dev
 
   tags:
-  - linux
+  - linux, continuous
 
 
 ##########################################
 # Jobs for deploying tagged releases
 ##########################################
 
+
 # Linux build for tagged versions.
-# Without testing and with Python.
+# Full clean build with all the external projects, without testing and with Python.
 Linux release build:
 
   stage: build
@@ -243,7 +245,7 @@ Linux release build:
   - tags
 
   tags:
-  - linux
+  - linux, release
 
 
 # Generating documentation pages for tagged releases
@@ -291,7 +293,7 @@ Deploy release docs:
   - tags
 
   tags:
-  - linux
+  - linux, release
 
 
 Deploy Linux installer:
@@ -322,4 +324,4 @@ Deploy Linux installer:
   - tags
 
   tags:
-  - linux
+  - linux, release
