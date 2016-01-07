@@ -40,8 +40,9 @@ public:
 
   /**
    * \brief Loads tracking data from directory.
+   * \return The number of matrix files that failed on read
    */
-  int LoadFromDirectory(const std::string& dirName);
+  int LoadFromDirectory(const std::string& dirName, const bool& haltOnMatrixReadFail);
 
   /**
    * \brief Saves tracking data to directory.
@@ -95,11 +96,6 @@ public:
    */
   cv::Matx44d GetNearestMatrix(const TimeStampsContainer::TimeStamp& timeStamp,
       long long& error, bool& inBounds);
-
-  /**
-   * \brief If true will throw an error when matrix read fails;
-   */
-  void SetStopOnMatrixReadError ( const bool& value );
 
 private:
 

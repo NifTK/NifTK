@@ -35,7 +35,7 @@ void TrackingAndTimeStampsContainer::Clear()
 
 
 //-----------------------------------------------------------------------------
-int TrackingAndTimeStampsContainer::LoadFromDirectory(const std::string& dirName)
+int TrackingAndTimeStampsContainer::LoadFromDirectory(const std::string& dirName, const bool& haltOnMatrixReadFail)
 {
   int loadFailures = 0;
 
@@ -86,7 +86,7 @@ int TrackingAndTimeStampsContainer::LoadFromDirectory(const std::string& dirName
         }
         else
         {
-          if ( m_HaltOnMatrixReadError )
+          if ( haltOnMatrixReadFail )
           {
             std::ostringstream errorMessage;
             mitkThrow() << errorMessage.str();
@@ -290,12 +290,5 @@ cv::Matx44d TrackingAndTimeStampsContainer::GetNearestMatrix(const TimeStampsCon
     }
   }
 }
-
-//-----------------------------------------------------------------------------
-void TrackingAndTimeStampsContainer::SetStopOnMatrixReadError(const bool& value)
-{
-  m_HaltOnMatrixReadError = value;
-}
-
 
 } // end namespace

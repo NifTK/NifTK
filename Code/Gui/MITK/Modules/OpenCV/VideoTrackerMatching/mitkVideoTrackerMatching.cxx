@@ -67,8 +67,8 @@ void VideoTrackerMatching::Initialise(std::string directory)
       for ( unsigned int i = 0 ; i < m_TrackingMatrixDirectories.size() ; i ++ ) 
       {
         TrackingAndTimeStampsContainer tempTimeStamps = mitk::TrackingAndTimeStampsContainer();
-        tempTimeStamps.SetStopOnMatrixReadError(false);
-        int matrixLoadFailures = tempTimeStamps.LoadFromDirectory(m_TrackingMatrixDirectories[i]);
+        bool stopOnMatrixReadError = false;
+        int matrixLoadFailures = tempTimeStamps.LoadFromDirectory(m_TrackingMatrixDirectories[i], stopOnMatrixReadError);
         MITK_INFO << "Found " << tempTimeStamps.GetSize() + matrixLoadFailures << " time stamped tracking files in " << m_TrackingMatrixDirectories[i];
         MITK_INFO << "Got " << matrixLoadFailures << " bad matrix files ";
         m_TrackingMatricesAndTimeStamps.push_back(tempTimeStamps);
