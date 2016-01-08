@@ -1062,7 +1062,7 @@ void MIDASGeneralSegmentorView::OnOKButtonClicked()
   this->RemoveWorkingData();
   this->UpdateSegmentationImageVisibility(true);
   this->EnableSegmentationWidgets(false);
-  this->SetReferenceImageSelected();
+  this->SetCurrentSelection(workingData);
 
   this->RequestRenderWindowUpdate();
   mitk::UndoController::GetCurrentUndoModel()->Clear();

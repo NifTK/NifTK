@@ -99,12 +99,9 @@ void mitk::MIDASSeedTool::Activated()
 {
   Superclass::Activated();
 
-  mitk::PointSet* pointSet = NULL;
-  mitk::DataNode* pointSetNode = NULL;
+  mitk::DataNode* pointSetNode = this->GetPointSetNode();
 
-  this->FindPointSet(pointSet, pointSetNode);
-
-  if (pointSet != NULL && pointSetNode != NULL)
+  if (pointSetNode)
   {
     if (m_PointSetInteractor.IsNull())
     {
@@ -133,34 +130,26 @@ void mitk::MIDASSeedTool::Activated()
 //-----------------------------------------------------------------------------
 void mitk::MIDASSeedTool::Deactivated()
 {
-  mitk::PointSet* pointSet = NULL;
-  mitk::DataNode* pointSetNode = NULL;
-
-  this->FindPointSet(pointSet, pointSetNode);
-
-  if (pointSet != NULL && pointSetNode != NULL)
+  if (m_PointSetInteractor.IsNotNull())
   {
-    if (m_PointSetInteractor.IsNotNull())
+    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_PointSetInteractor);
+
+    /// Note:
+    /// The interactor is disabled after it is destructed, therefore we have to make sure
+    /// that we remove every reference to it. The data node also has a reference to it,
+    /// therefore we have to decouple them here.
+    /// If we do not do this, the interactor stays active and will keep processing the events.
+//    m_PointSetInteractor->SetDataNode(0);
+
+    std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
+    std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+    std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+    for ( ; it != itEnd; ++it)
     {
-      mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_PointSetInteractor);
-
-      /// Note:
-      /// The interactor is disabled after it is destructed, therefore we have to make sure
-      /// that we remove every reference to it. The data node also has a reference to it,
-      /// therefore we have to decouple them here.
-      /// If we do not do this, the interactor stays active and will keep processing the events.
-//      m_PointSetInteractor->SetDataNode(0);
-
-      std::vector<mitk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
-      std::vector<mitk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-      std::vector<mitk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
-      for ( ; it != itEnd; ++it)
-      {
-        m_PointSetInteractor->RemoveEventFilter(*it);
-      }
-
-      m_PointSetInteractor = NULL;
+      m_PointSetInteractor->RemoveEventFilter(*it);
     }
+
+    m_PointSetInteractor = NULL;
   }
 
   Superclass::Deactivated();

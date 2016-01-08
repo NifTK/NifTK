@@ -13,10 +13,13 @@
 =============================================================================*/
 
 #include "mitkMIDASTool.h"
-#include <mitkToolManager.h>
-#include <mitkGlobalInteraction.h>
-#include <mitkDisplayInteractor.h>
+
 #include <itkCommand.h>
+
+#include <mitkDisplayInteractor.h>
+#include <mitkGlobalInteraction.h>
+#include <mitkPointSet.h>
+#include <mitkToolManager.h>
 
 // MicroServices
 #include <usGetModuleContext.h>
@@ -150,14 +153,40 @@ void mitk::MIDASTool::Activated()
 {
   Superclass::Activated();
 
-  mitk::PointSet* pointSet = NULL;
-  mitk::DataNode* pointSetNode = NULL;
+  mitk::DataNode* pointSetNode = nullptr;
+  mitk::PointSet* pointSet = nullptr;
 
-  this->FindPointSet(pointSet, pointSetNode);
+  // Get the current segmented volume
+  mitk::DataNode::Pointer segmentationNode = m_ToolManager->GetWorkingData(SEGMENTATION);
+
+  // Get reference to point set (Seeds). Here we look at derived nodes, that are called SEED_POINT_SET_NAME
+  if (segmentationNode.IsNotNull())
+  {
+    // Find children of the segmented image that are point sets and called POINT_SET_NAME.
+    mitk::TNodePredicateDataType<mitk::PointSet>::Pointer isPointSet = mitk::TNodePredicateDataType<mitk::PointSet>::New();
+    mitk::DataStorage::SetOfObjects::ConstPointer possibleChildren = m_ToolManager->GetDataStorage()->GetDerivations( segmentationNode, isPointSet );
+
+    if (possibleChildren->size() > 0)
+    {
+      for(unsigned int i = 0; i < possibleChildren->size(); ++i)
+      {
+        if ((*possibleChildren)[i]->GetName() == SEEDS_NAME)
+        {
+          pointSetNode = (*possibleChildren)[i];
+          pointSet = dynamic_cast<mitk::PointSet*>((*possibleChildren)[i]->GetData());
+          break;
+        }
+      }
+    } // end if children point sets exist
+  } // end if working data exists
+
 
   // Additionally create an interactor to add points to the point set.
-  if (pointSet != NULL && pointSetNode != NULL)
+  if (pointSetNode && pointSet)
   {
+    m_PointSetNode = pointSetNode;
+    m_PointSet = pointSet;
+
     if (m_AddToPointSetInteractor.IsNull())
     {
       m_AddToPointSetInteractor = mitk::MIDASPointSetInteractor::New("MIDASToolPointSetInteractor", pointSetNode);
@@ -174,17 +203,17 @@ void mitk::MIDASTool::Activated()
         m_AddToPointSetInteractor->InstallEventFilter(*it);
       }
 
-//      m_AddToPointSetInteractor->SetDataNode(pointSetNode);
+//      m_AddToPointSetInteractor->SetDataNode(m_PointSetNode);
 
       mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AddToPointSetInteractor );
     }
+
+    m_LastSeenNumberOfSeeds = m_PointSet->GetSize();
 
     itk::SimpleMemberCommand<mitk::MIDASTool>::Pointer onSeedsModifiedCommand =
       itk::SimpleMemberCommand<mitk::MIDASTool>::New();
     onSeedsModifiedCommand->SetCallbackFunction( this, &mitk::MIDASTool::OnSeedsModified );
     m_SeedsChangedTag = pointSet->AddObserver(itk::ModifiedEvent(), onSeedsModifiedCommand);
-
-    m_LastSeenNumberOfSeeds = pointSet->GetSize();
   }
 
   // As a legacy solution the display interaction of the new interaction framework is disabled here  to avoid conflicts with tools
@@ -238,14 +267,11 @@ void mitk::MIDASTool::Deactivated()
 
   m_DisplayInteractorConfigs.clear();
 
-  mitk::PointSet* pointSet = NULL;
-  mitk::DataNode* pointSetNode = NULL;
-
-  this->FindPointSet(pointSet, pointSetNode);
-
-  if (pointSet != NULL)
+  if (m_PointSet.IsNotNull())
   {
-    pointSet->RemoveObserver(m_SeedsChangedTag);
+    m_PointSetNode = nullptr;
+    m_PointSet->RemoveObserver(m_SeedsChangedTag);
+    m_PointSet = nullptr;
 
     if (m_AddToPointSetInteractor.IsNotNull())
     {
@@ -307,35 +333,6 @@ void mitk::MIDASTool::RenderAllWindows()
 
 
 //-----------------------------------------------------------------------------
-void mitk::MIDASTool::FindPointSet(mitk::PointSet*& pointSet, mitk::DataNode*& pointSetNode)
-{
-  // Get the current segmented volume
-  mitk::DataNode::Pointer segmentationNode = m_ToolManager->GetWorkingData(SEGMENTATION);
-
-  // Get reference to point set (Seeds). Here we look at derived nodes, that are called SEED_POINT_SET_NAME
-  if (segmentationNode.IsNotNull())
-  {
-    // Find children of the segmented image that are point sets and called POINT_SET_NAME.
-    mitk::TNodePredicateDataType<mitk::PointSet>::Pointer isPointSet = mitk::TNodePredicateDataType<mitk::PointSet>::New();
-    mitk::DataStorage::SetOfObjects::ConstPointer possibleChildren = m_ToolManager->GetDataStorage()->GetDerivations( segmentationNode, isPointSet );
-
-    if (possibleChildren->size() > 0)
-    {
-      for(unsigned int i = 0; i < possibleChildren->size(); ++i)
-      {
-        if ((*possibleChildren)[i]->GetName() == SEEDS_NAME)
-        {
-          pointSetNode = (*possibleChildren)[i];
-          pointSet = dynamic_cast<mitk::PointSet*>((*possibleChildren)[i]->GetData());
-          break;
-        }
-      }
-    } // end if children point sets exist
-  } // end if working data exists
-}
-
-
-//-----------------------------------------------------------------------------
 void mitk::MIDASTool::UpdateWorkingDataNodeBoolProperty(int dataIndex, const std::string& name, bool value)
 {
   assert(m_ToolManager);
@@ -348,24 +345,31 @@ void mitk::MIDASTool::UpdateWorkingDataNodeBoolProperty(int dataIndex, const std
 
 
 //-----------------------------------------------------------------------------
+mitk::DataNode::Pointer mitk::MIDASTool::GetPointSetNode() const
+{
+  return m_PointSetNode;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::PointSet::Pointer mitk::MIDASTool::GetPointSet() const
+{
+  return m_PointSet;
+}
+
+
+//-----------------------------------------------------------------------------
 void mitk::MIDASTool::OnSeedsModified()
 {
-  if (m_IsActivated)
+  if (m_PointSet.IsNotNull())
   {
-    mitk::PointSet* pointSet = NULL;
-    mitk::DataNode* pointSetNode = NULL;
-    this->FindPointSet(pointSet, pointSetNode);
-
-    if (pointSet != NULL)
+    if (m_PointSet->GetSize() != m_LastSeenNumberOfSeeds)
     {
-      if (pointSet->GetSize() != m_LastSeenNumberOfSeeds)
-      {
-        m_LastSeenNumberOfSeeds = pointSet->GetSize();
+      m_LastSeenNumberOfSeeds = m_PointSet->GetSize();
 
-        if (!m_BlockNumberOfSeedsSignal)
-        {
-          NumberOfSeedsHasChanged.Send(pointSet->GetSize());
-        }
+      if (!m_BlockNumberOfSeedsSignal)
+      {
+        NumberOfSeedsHasChanged.Send(m_LastSeenNumberOfSeeds);
       }
     }
   }

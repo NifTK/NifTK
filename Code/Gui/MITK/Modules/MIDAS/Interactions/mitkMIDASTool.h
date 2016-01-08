@@ -18,8 +18,8 @@
 #include "niftkMIDASExports.h"
 #include "mitkMIDASStateMachine.h"
 #include <mitkFeedbackContourTool.h>
-#include <mitkPointSet.h>
 #include <mitkDataNode.h>
+#include <mitkPointSet.h>
 #include <mitkPositionEvent.h>
 #include <mitkMessage.h>
 
@@ -158,11 +158,16 @@ protected:
   /// \brief Makes all windows re-render
   virtual void RenderAllWindows();
 
-  /// \brief Can be called by derived classes to try and set the point set
-  virtual void FindPointSet(mitk::PointSet*& pointSet, mitk::DataNode*& pointSetNode);
-
   /// \brief Helper method to update a boolean property on a given working data node.
   virtual void UpdateWorkingDataNodeBoolProperty(int dataIndex, const std::string& name, bool value);
+
+protected:
+
+  /// \brief The node that contains the point set that is the working data of the seed tool.
+  mitk::DataNode::Pointer GetPointSetNode() const;
+
+  /// \brief The point set that is the working data of the seed tool.
+  mitk::PointSet::Pointer GetPointSet() const;
 
 private:
 
@@ -172,6 +177,12 @@ private:
   /// \brief This is the interactor just to add points. All MIDAS tools can add seeds. Only the SeedTool can move/remove them.
   mitk::MIDASPointSetInteractor::Pointer m_AddToPointSetInteractor;
 //  mitk::MIDASPointSetDataInteractor::Pointer m_AddToPointSetInteractor;
+
+  /// \brief The node that contains the point set that is the working data of the seed tool.
+  mitk::DataNode::Pointer m_PointSetNode;
+
+  /// \brief The point set that is the working data of the seed tool.
+  mitk::PointSet::Pointer m_PointSet;
 
   /// \brief Used to track when the number of seeds changes.
   int m_LastSeenNumberOfSeeds;
