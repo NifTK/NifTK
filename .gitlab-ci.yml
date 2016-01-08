@@ -273,7 +273,7 @@ Deploy release docs:
 
   artifacts:
     paths:
-      - ${pb_dir}/Doxygen/${documentation_file}
+      - ${pb_dir}/niftk-${version}-docs.tar.bz2
 
   only:
   - tags
