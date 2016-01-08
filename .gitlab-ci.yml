@@ -3,7 +3,7 @@
 ##########################################
 
 
-Linux build:
+Linux continuous build:
 
   stage: build
 
@@ -39,7 +39,7 @@ Linux build:
   - linux, continuous
 
 
-Linux test:
+Linux continuous test:
 
   stage: test
 
@@ -61,7 +61,7 @@ Linux test:
   - linux, continuous
 
 
-Mac build:
+Mac continuous build:
 
   stage: build
 
@@ -97,7 +97,7 @@ Mac build:
   - mac, continuous
 
 
-Mac test:
+Mac continuous test:
 
   stage: test
 
@@ -121,7 +121,7 @@ Mac test:
   - mac, continuous
 
 
-Windows build:
+Windows continuous build:
 
   stage: build
 
@@ -139,7 +139,7 @@ Windows build:
   - windows, continuous
 
 
-Windows test:
+Windows continuous test:
 
   stage: test
 
@@ -163,7 +163,7 @@ Windows test:
 ##########################################
 
 
-Deploy current docs:
+Continuous docs:
 
   stage: deploy
 
@@ -180,6 +180,7 @@ Deploy current docs:
   - chmod a+rx bin/GenerateTestingReports
   - bin/GenerateTestingReports
   - doxygen doxygen.config
+  - cd Doxygen
   - find html -type f -exec chmod 644 {} \;
   - find html -type d -exec chmod 755 {} \;
   - mv html niftk-${version}-docs
@@ -243,7 +244,7 @@ Linux release build:
 
 
 # Generating documentation pages for tagged releases
-Deploy release docs:
+Release docs:
 
   stage: deploy
 
@@ -257,9 +258,8 @@ Deploy release docs:
   - cd ${pb_dir}
   - chmod a+rx bin/GenerateCommandLineDoxygen
   - bin/GenerateCommandLineDoxygen
-  - chmod a+rx bin/GenerateTestingReports
-  - bin/GenerateTestingReports
   - doxygen doxygen.config
+  - cd Doxygen
   - find html -type f -exec chmod 644 {} \;
   - find html -type d -exec chmod 755 {} \;
   - mv html niftk-${version}-docs
@@ -282,7 +282,7 @@ Deploy release docs:
   - linux, release
 
 
-Deploy Linux installer:
+Linux release installer:
 
   stage: deploy
 
@@ -294,9 +294,10 @@ Deploy Linux installer:
   - sb_dir="${root_dir}/NifTK-sb"
   - pb_dir="${sb_dir}/NifTK-build"
   - cd ${pb_dir}
+  - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
   - make package
   - installer_file="niftk-${version}-linux-centos-7-x64.tar.gz"
-  - mv niftk-${version}.tar.gz ${installer_file}
+  - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
   - "# Upload the tarball"
   - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
 
