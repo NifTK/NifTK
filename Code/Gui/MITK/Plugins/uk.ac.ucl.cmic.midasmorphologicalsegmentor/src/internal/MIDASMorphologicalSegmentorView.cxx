@@ -65,6 +65,12 @@ MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView(
 //-----------------------------------------------------------------------------
 MIDASMorphologicalSegmentorView::~MIDASMorphologicalSegmentorView()
 {
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  int paintbrushToolId = toolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>();
+  mitk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<mitk::MIDASPaintbrushTool*>(toolManager->GetToolById(paintbrushToolId));
+  assert(paintbrushTool);
+
+  paintbrushTool->SegmentationEdited.RemoveListener(mitk::MessageDelegate1<MIDASMorphologicalSegmentorView, int>(this, &MIDASMorphologicalSegmentorView::OnSegmentationEdited));
 }
 
 
@@ -89,6 +95,12 @@ void MIDASMorphologicalSegmentorView::ClosePart()
 void MIDASMorphologicalSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolManager)
 {
   toolManager->RegisterTool("MIDASPaintbrushTool");
+
+  int paintbrushToolId = toolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>();
+  mitk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<mitk::MIDASPaintbrushTool*>(toolManager->GetToolById(paintbrushToolId));
+  assert(paintbrushTool);
+
+  paintbrushTool->SegmentationEdited.AddListener(mitk::MessageDelegate1<MIDASMorphologicalSegmentorView, int>(this, &MIDASMorphologicalSegmentorView::OnSegmentationEdited));
 }
 
 
@@ -638,9 +650,20 @@ void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::NodeChanged(const mitk::DataNode* node)
+void MIDASMorphologicalSegmentorView::OnSegmentationEdited(int imageIndex)
 {
-  m_PipelineManager->NodeChanged(node);
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  if (toolManager)
+  {
+    mitk::DataNode* node = toolManager->GetWorkingData(imageIndex);
+    assert(node);
+    mitk::ITKRegionParametersDataNodeProperty::Pointer prop =
+        dynamic_cast<mitk::ITKRegionParametersDataNodeProperty*>(node->GetProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
+    if (prop.IsNotNull() && prop->HasVolume())
+    {
+      m_PipelineManager->UpdateSegmentation();
+    }
+  }
 }
 
 
