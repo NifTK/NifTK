@@ -463,6 +463,14 @@ bool mitk::MIDASPaintbrushTool::StopAddingAddition(mitk::StateMachineAction* act
 {
   int dataIndex = this->GetDataIndex(true);
   this->SetInvalidRegion(dataIndex);
+  // The data is not actually modified here. We fire this event so that the pipeline is
+  // updated once again after the interaction has finished. This is needed because during
+  // the interaction the pipeline updates only the current slice, not the whole image,
+  // because that would be too slow. When the interaction is finished (mouse button released)
+  // we rerun last step of the pipeline. The pipeline decides whether it should update the
+  // entire image or just the current slice, based on if there is a valid region set. (See
+  // the SetInvalidRegion() call above.)
+  this->SegmentationEdited.Send(dataIndex);
   return true;
 }
 
@@ -483,6 +491,7 @@ bool mitk::MIDASPaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* 
 {
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
+  this->SegmentationEdited.Send(dataIndex);
   return true;
 }
 
@@ -503,6 +512,7 @@ bool mitk::MIDASPaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction
 {
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
+  this->SegmentationEdited.Send(dataIndex);
   return true;
 }
 
@@ -550,7 +560,6 @@ void mitk::MIDASPaintbrushTool::ExecuteOperation(Operation* operation)
       unsigned char valueToWrite = op->GetValueToWrite();
       ProcessorType::Pointer processor = op->GetProcessor();
       mitk::Image::Pointer imageToEdit = op->GetImageToEdit();
-      mitk::DataNode::Pointer nodeToEdit = op->GetNodeToEdit();
       bool redo = op->IsRedo();
 
       typedef mitk::ImageToItk< ImageType > ImageToItkType;
@@ -558,15 +567,12 @@ void mitk::MIDASPaintbrushTool::ExecuteOperation(Operation* operation)
       imageToEditToItk->SetInput(imageToEdit);
       imageToEditToItk->Update();
 
-      RunITKProcessor<mitk::Tool::DefaultSegmentationDataType, 3>(imageToEditToItk->GetOutput(), processor, redo, valueToWrite);
+      this->RunITKProcessor<mitk::Tool::DefaultSegmentationDataType, 3>(imageToEditToItk->GetOutput(), processor, redo, valueToWrite);
 
       imageToEditToItk = 0;
-
-      imageToEdit->Modified();
-
       imageToEdit = NULL;
 
-      nodeToEdit->Modified();
+      this->SegmentationEdited.Send(op->GetImageNumber());
 
       if (m_LastEventSender)
       {

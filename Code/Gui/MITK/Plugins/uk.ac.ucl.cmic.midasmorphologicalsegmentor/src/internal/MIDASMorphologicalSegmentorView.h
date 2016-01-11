@@ -19,8 +19,6 @@
 
 #include <mitkImage.h>
 
-#include <MorphologicalSegmentorPipeline.h>
-#include <MorphologicalSegmentorPipelineInterface.h>
 #include <MorphologicalSegmentorPipelineParams.h>
 #include "MIDASMorphologicalSegmentorViewPreferencePage.h"
 #include "MIDASMorphologicalSegmentorViewControlsImpl.h"
@@ -134,9 +132,6 @@ protected:
   /// \brief Method to enable this and derived classes to turn widgets off/on
   virtual void EnableSegmentationWidgets(bool b);
 
-  /// \brief Called when a node changed.
-  virtual void NodeChanged(const mitk::DataNode* node);
-
   /// \brief Called when a node is removed.
   virtual void NodeRemoved(const mitk::DataNode* node);
 
@@ -161,6 +156,10 @@ private:
 
   /// \brief Sets the morphological controls by the current property values stored on the segmentation node.
   void SetControlsFromSegmentationNodeProps();
+
+  /// \brief Called when the segmentation is manually edited via the paintbrush tool.
+  /// \param imageIndex tells which image has been modified: erosion addition / subtraction or dilation addition / subtraction.
+  virtual void OnSegmentationEdited(int imageIndex);
 
   /// \brief Used to put the base class widgets, and these widgets above in a common layout.
   QGridLayout *m_Layout;

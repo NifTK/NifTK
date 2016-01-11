@@ -202,41 +202,6 @@ void MIDASMorphologicalSegmentorPipelineManager::OnTabChanged(int tabIndex)
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorPipelineManager::NodeChanged(const mitk::DataNode* node)
-{
-  int stage = -1;
-
-  if (node == m_ToolManager->GetWorkingData(mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS)
-      || node == m_ToolManager->GetWorkingData(mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS))
-  {
-    stage = MorphologicalSegmentorPipelineInterface::EROSION;
-  }
-  else if (node == m_ToolManager->GetWorkingData(mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS)
-      || node == m_ToolManager->GetWorkingData(mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS))
-  {
-    stage = MorphologicalSegmentorPipelineInterface::DILATION;
-  }
-
-  if (stage == MorphologicalSegmentorPipelineInterface::EROSION || stage == MorphologicalSegmentorPipelineInterface::DILATION)
-  {
-    mitk::ITKRegionParametersDataNodeProperty::Pointer prop =
-        dynamic_cast<mitk::ITKRegionParametersDataNodeProperty*>(node->GetProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
-    if (prop.IsNotNull() && prop->HasVolume())
-    {
-      /// Note:
-      /// The node can change for several reason, e.g. when its "selected" or "visible"
-      /// property changes. We are not interested about the property changes, but only
-      /// whether the data has changed.
-      if (node->GetData()->GetMTime() > this->GetSegmentationImage()->GetMTime())
-      {
-        this->UpdateSegmentation();
-      }
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorPipelineManager::GetPipelineParamsFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const
 {
   mitk::DataNode::Pointer segmentationNode = this->GetSegmentationNode();

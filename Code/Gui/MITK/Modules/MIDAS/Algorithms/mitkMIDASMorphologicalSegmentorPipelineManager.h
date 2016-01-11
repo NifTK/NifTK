@@ -106,9 +106,6 @@ public:
   /// \param stage the new stage where we stepped to
   void OnTabChanged(int tabIndex);
 
-  /// \brief Called when a node changed.
-  void NodeChanged(const mitk::DataNode* node);
-
   /// \brief Returns true if the segmentation node can be found which implicitly means we are "in progress".
   bool HasSegmentationNode() const;
 

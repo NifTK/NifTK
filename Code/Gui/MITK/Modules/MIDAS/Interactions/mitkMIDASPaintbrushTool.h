@@ -136,6 +136,9 @@ public:
   virtual bool KeepRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
   virtual bool StopRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
+  /** Message sent when the user modified the segmentation using this tool */
+  Message1<int> SegmentationEdited;
+
 protected:
 
   MIDASPaintbrushTool();          // purposely hidden
