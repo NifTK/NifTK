@@ -1,100 +1,125 @@
-Linux build:
+##########################################
+# Jobs for continuous testing
+##########################################
+
+
+Linux continuous build:
 
   stage: build
 
   script:
   - src_dir=`pwd`
-  - ep_dir="/home/gitlab-runner/src/niftk-ep"
+  - cd ..
+  - root_dir=`pwd`
+  - ep_dir="${root_dir}/NifTK-ep"
+  - sb_dir="${root_dir}/NifTK-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
   - /home/gitlab-runner/bin/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
   - hostname
   - whoami
   - pwd
-  - cd ..
-  - rm -rf niftk-sb
-  - mkdir niftk-sb
-  - cd niftk-sb
+  - rm -rf ${sb_dir}
+  - mkdir ${sb_dir}
+  - cd ${sb_dir}
   - cmake -DEP_BASE:PATH=${ep_dir}
-        -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=FALSE -DEP_DIRECTORY_PER_VERSION:BOOL=TRUE
+        -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
+        -DEP_DIRECTORY_PER_VERSION:BOOL=ON
         -DBUILD_TESTING:BOOL=ON
-        -DNIFTK_USE_CPPCHECK:BOOL=TRUE -DNIFTK_USE_KWSTYLE:BOOL=ON
-        -DNIFTK_Apps/NiftyView:BOOL=ON -DNIFTK_Apps/NiftyIGI:BOOL=ON
-        ../NifTK
+        -DNIFTK_USE_CPPCHECK:BOOL=ON
+        -DNIFTK_USE_KWSTYLE:BOOL=ON
+        -DNIFTK_Apps/NiftyView:BOOL=ON
+        -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        ${src_dir}
   - make -j 8
 
-  except:
-  - tags
+  only:
+  - branches
 
   tags:
-  - linux
+  - linux, continuous
 
 
-Linux test:
+Linux continuous test:
 
   stage: test
 
   script:
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/NifTK-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
   - hostname
   - whoami
   - pwd
-  - cd ../niftk-sb/NifTK-build
+  - cd ${pb_dir}
   - ctest -S CTestContinuous.cmake -V
 
-  except:
-  - tags
+  only:
+  - branches
 
   tags:
-  - linux
+  - linux, continuous
 
 
-Mac build:
+Mac continuous build:
 
   stage: build
 
   script:
   - src_dir=`pwd`
-  - ep_dir="/Users/gitlab-runner/src/niftk-ep"
+  - cd ..
+  - root_dir=`pwd`
+  - ep_dir="${root_dir}/NifTK-ep"
+  - sb_dir="${root_dir}/NifTK-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
   - /Users/gitlab-runner/bin/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
   - hostname
   - whoami
   - pwd
-  - cd ..
-  - rm -rf niftk-sb
-  - mkdir niftk-sb
-  - cd niftk-sb
+  - rm -rf ${sb_dir}
+  - mkdir ${sb_dir}
+  - cd ${sb_dir}
   - cmake -DEP_BASE:PATH=${ep_dir}
-        -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=FALSE -DEP_DIRECTORY_PER_VERSION:BOOL=TRUE
+        -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
+        -DEP_DIRECTORY_PER_VERSION:BOOL=ON
         -DBUILD_TESTING:BOOL=ON
         -DNIFTYLINK_CHECK_COVERAGE=ON
-        -DNIFTK_Apps/NiftyView:BOOL=ON -DNIFTK_Apps/NiftyIGI:BOOL=ON
-        ../NifTK
+        -DNIFTK_Apps/NiftyView:BOOL=ON
+        -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        ${src_dir}
   - make -j 8
 
-  except:
-  - tags
+  only:
+  - branches
 
   tags:
-  - mac
+  - mac, continuous
 
 
-Mac test:
+Mac continuous test:
 
   stage: test
 
   script:
+  - src_dir=`pwd`
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/NifTK-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
   - hostname
   - whoami
   - pwd
-  - cd ../niftk-sb/NifTK-build
+  - cd ${pb_dir}
   - ctest -S CTestContinuous.cmake -V
 
-  except:
-  - tags
+  only:
+  - branches
 
   tags:
-  - mac
+  - mac, continuous
 
 
-Windows build:
+Windows continuous build:
 
   stage: build
 
@@ -104,14 +129,14 @@ Windows build:
   - '"C:\CB\slowrunner.exe" -v -2 -e "c:\CB\NifTKContinuousBuild.bat"'
   - "@exit /b %errorlevel%"
 
-  except:
-  - tags
+  only:
+  - branches
 
   tags:
-  - windows
+  - windows, continuous
 
 
-Windows test:
+Windows continuous test:
 
   stage: test
 
@@ -122,46 +147,214 @@ Windows test:
   - rem cd NifTK-build
   - rem ctest -S CTestContinuous.cmake -V
 
+  only:
+  - branches
+
   tags:
-  - windows
-
-  except:
-  - tags
+  - windows, continuous
 
 
-Docs:
+##########################################
+# Deploy development documentation pages
+##########################################
+
+
+Continuous docs:
 
   stage: deploy
 
   script:
-  - cd ../niftk-sb/NifTK-build
+  - version=`git describe`
+  - src_dir=`pwd`
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/NifTK-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
+  - cd ${pb_dir}
   - chmod a+rx bin/GenerateCommandLineDoxygen
   - bin/GenerateCommandLineDoxygen
   - chmod a+rx bin/GenerateTestingReports
   - bin/GenerateTestingReports
   - doxygen doxygen.config
-  - NIFTK_VERSION=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
-  - echo "${NIFTK_VERSION}"
   - cd Doxygen
-  - rm -rf niftk-current-docs
-  - mv ${NIFTK_VERSION}/html niftk-current-docs
-  - find . -type f -exec chmod 644 {} \;
-  - find . -type d -exec chmod 755 {} \;
-  - tar cfj niftk-current-docs.tar.bz2 niftk-current-docs
+  - find html -type f -exec chmod 644 {} \;
+  - find html -type d -exec chmod 755 {} \;
+  - mv html niftk-${version}-docs
+  - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
   - echo "API reference documentation generated:"
-  - echo `pwd`/niftk-current-docs.tar.bz2
-  - "# Delete the previous tarball"
-  - ssh cmiclab rm -f /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/niftk-current-docs.tar.bz2
   - "# Upload the tarball"
-  - scp niftk-current-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/niftk-current-docs.tar.bz2
+  - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
   - "# Extract the tarball and replace the old files"
-  - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ; tar
-    xvfj niftk-current-docs.tar.bz2 ; mv current tmp ; mv niftk-current-docs current
-    ; rm -rf tmp"
+  - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
+        rm -rf `readlink -f niftk-current-docs.tar.bz2` `readlink -f current` ;
+        rm niftk-current-docs current ;
+        tar xvfj niftk-${version}-docs.tar.bz2 ;
+        ln -s niftk-${version}-docs.tar.bz2 niftk-current-docs.tar.bz2 ;
+        ln -s niftk-${version}-docs current"
 
   only:
   - master
   - dev
 
   tags:
-  - linux
+  - linux, continuous
+
+
+##########################################
+# Jobs for deploying tagged releases
+##########################################
+
+
+# Linux build for tagged versions.
+# Full clean build with all the external projects, without testing and with Python.
+Linux release build:
+
+  stage: build
+
+  script:
+  - src_dir=`pwd`
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/NifTK-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
+  - hostname
+  - whoami
+  - pwd
+  - rm -rf ${sb_dir}
+  - mkdir ${sb_dir}
+  - cd ${sb_dir}
+  - cmake -DBUILD_TESTING:BOOL=OFF
+        -DNIFTK_USE_CPPCHECK:BOOL=OFF
+        -DNIFTK_USE_KWSTYLE:BOOL=OFF
+        -DBUILD_Python:BOOL=ON
+        -DNIFTK_Apps/NiftyView:BOOL=ON
+        -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        ${src_dir}
+  - make -j 8
+
+  only:
+  - tags
+
+  tags:
+  - linux, release
+
+
+# Mac build for tagged versions.
+# Full clean build with all the external projects, without testing and with Python.
+Mac release build:
+
+  stage: build
+
+  script:
+  - src_dir=`pwd`
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/NifTK-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
+  - hostname
+  - whoami
+  - pwd
+  - rm -rf ${sb_dir}
+  - mkdir ${sb_dir}
+  - cd ${sb_dir}
+  - cmake -DBUILD_TESTING:BOOL=OFF
+        -DNIFTK_USE_CPPCHECK:BOOL=OFF
+        -DNIFTK_USE_KWSTYLE:BOOL=OFF
+        -DBUILD_Python:BOOL=ON
+        -DNIFTK_Apps/NiftyView:BOOL=ON
+        -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        ${src_dir}
+  - make -j 8
+
+  only:
+  - tags
+
+  tags:
+  - mac, release
+
+
+# Generating documentation pages for tagged releases
+Release docs:
+
+  stage: deploy
+
+  script:
+  - version=`git describe`
+  - src_dir=`pwd`
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/NifTK-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
+  - cd ${pb_dir}
+  - chmod a+rx bin/GenerateCommandLineDoxygen
+  - bin/GenerateCommandLineDoxygen
+  - doxygen doxygen.config
+  - cd Doxygen
+  - find html -type f -exec chmod 644 {} \;
+  - find html -type d -exec chmod 755 {} \;
+  - mv html niftk-${version}-docs
+  - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
+  - echo "API reference documentation generated:"
+  - "# Upload the tarball"
+  - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
+  - "# Extract the tarball and replace the old files"
+  - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
+        tar xvfj niftk-${version}-docs.tar.bz2"
+
+  only:
+  - tags
+
+  tags:
+  - linux, release
+
+
+Linux release installer:
+
+  stage: deploy
+
+  script:
+  - version=`git describe`
+  - src_dir=`pwd`
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/NifTK-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
+  - cd ${pb_dir}
+  - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
+  - make package
+  - installer_file="niftk-${version}-linux-centos-7-x64.tar.gz"
+  - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
+  - "# Upload the tarball"
+  - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+
+  only:
+  - tags
+
+  tags:
+  - linux, release
+
+
+Mac release installer:
+
+  stage: deploy
+
+  script:
+  - version=`git describe`
+  - src_dir=`pwd`
+  - cd ..
+  - root_dir=`pwd`
+  - sb_dir="${root_dir}/NifTK-sb"
+  - pb_dir="${sb_dir}/NifTK-build"
+  - cd ${pb_dir}
+  - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
+  - make package
+  - installer_file="niftk-${version}-mac-10.10.dmg"
+  - mv niftk-${niftk_version_string}.dmg ${installer_file}
+  - "# Upload the installer image"
+  - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+
+  only:
+  - tags
+
+  tags:
+  - linux, release
