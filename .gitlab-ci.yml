@@ -348,9 +348,9 @@ Mac release installer:
   - cd ${pb_dir}
   - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
   - make package
-  - installer_file="niftk-${version}-mac-10.10.tar.gz"
-  - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
-  - "# Upload the tarball"
+  - installer_file="niftk-${version}-mac-10.10.dmg"
+  - mv niftk-${niftk_version_string}.dmg ${installer_file}
+  - "# Upload the installer image"
   - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
 
   only:
