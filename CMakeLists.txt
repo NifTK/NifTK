@@ -1180,15 +1180,6 @@ if (WIN32)
 endif()
 
 ######################################################################
-# Find VTK.
-######################################################################
-find_package(VTK REQUIRED)
-if(VTK_FOUND)
-  message("Found VTK")
-  include(${VTK_USE_FILE})
-endif(VTK_FOUND)
-
-######################################################################
 # Find GDCM. ITK is built with GDCM, so GDCM is effectively mandatory.
 ######################################################################
 find_package(GDCM PATHS ${GDCM_DIR} REQUIRED)
@@ -1732,7 +1723,7 @@ if(BUILD_NiftySim AND NiftySim_FOUND)
   MITK_INSTALL(PROGRAMS ${_NiftySim_LIB_FILES})
 
   file(GLOB _NiftySim_BIN_FILES ${NiftySim_DIR}/bin/*)
-  MITK_INSTALL(PROGRAMS ${_NIFTY_SIM_BIN_FILES})
+  MITK_INSTALL(PROGRAMS ${_NiftySim_BIN_FILES})
 endif()
 
 # Camino

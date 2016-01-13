@@ -66,7 +66,8 @@ int main(int argc, char** argv)
     calibration->SetVerbose(verbose);
 
     mitk::TrackingAndTimeStampsContainer trackingData;
-    trackingData.LoadFromDirectory(matrixDirectory);
+    bool haltOnMatrixReadFail = true;
+    int badMatrices = trackingData.LoadFromDirectory(matrixDirectory, haltOnMatrixReadFail);
     if (trackingData.GetSize() == 0)
     {
       mitkThrow() << "Failed to tracking data from " << matrixDirectory << std::endl;

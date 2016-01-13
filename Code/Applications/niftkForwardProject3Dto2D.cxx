@@ -17,6 +17,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkEulerAffineTransform.h>
 #include <itkTransformFactory.h>
 #include <itkTransformFileReader.h>
@@ -62,6 +63,8 @@ void Usage(char *exec)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   bool flgSingleThreadedExecution = false; // Perform single threaded execution
 
   std::string fileInputImage3D;

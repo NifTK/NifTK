@@ -21,6 +21,7 @@
 #include <itkTransform2D3D.h>
 #include <itkImageRegistrationFactory.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkPerspectiveProjectionTransform.h>
 #include <itkTransformFactory.h>
 
@@ -67,6 +68,8 @@ enum {
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   std::string fileGlobalAffine3D;
   std::string fileDeformationDOF3D;
   std::string fileDisplacementField3D;

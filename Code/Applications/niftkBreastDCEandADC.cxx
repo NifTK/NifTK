@@ -48,6 +48,7 @@
 #include <itkImageFileReader.h>
 #include <itkImageSeriesReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageRegionIterator.h>
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
@@ -63,7 +64,6 @@
 #include <itkBreastMaskSegmForBreastDensity.h>
 #include <itkITKImageToNiftiImage.h>
 #include <itkRescaleImageUsingHistogramPercentilesFilter.h>
-
 
 //#define LINK_TO_SEG_EM
 
@@ -818,6 +818,8 @@ std::string SplitStringIntoCommandAndArguments( std::string inString,
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   bool flgVeryFirstRow = true;
 
   float progress = 0.;

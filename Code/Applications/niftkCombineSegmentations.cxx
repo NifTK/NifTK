@@ -23,6 +23,7 @@
 #include <itkUCLLabelVotingImageFilter.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkBinaryThresholdImageFilter.h>
 #include <itkThresholdImageFilter.h>
 
@@ -245,6 +246,8 @@ void computeVOTE(std::string outputFilename, const std::vector<std::string>& inp
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   std::string algorithm; 
   std::string algorithmParameters; 
   PixelType foregroundValue; 

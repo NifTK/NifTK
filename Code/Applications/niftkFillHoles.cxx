@@ -17,6 +17,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkNeighborhoodConnectedImageFilter.h>
 #include <itkBinaryThresholdImageFilter.h>
 #include <itkVotingBinaryIterativeHoleFillingImageFilter.h>
@@ -60,6 +61,8 @@ enum {
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
   std::string inputFilename;
   std::string outputFilename;

@@ -16,6 +16,7 @@
 #include <niftkCommandLineParser.h>
 
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
 #include <itkGDCMImageIO.h>
@@ -153,6 +154,8 @@ std::string GetTagValue( std::string tagID, DictionaryType &dictionary )
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   std::string fileInputDICOMFile;
   std::string fileOutputFilestem;
 

@@ -17,6 +17,7 @@
 
 #include <itkImageSeriesReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 
 #include <vector>
 
@@ -60,6 +61,8 @@ enum {
 
 int main( int argc, char* argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   char *fileInput = 0;	// A mandatory character string argument
   char **filesIn = 0;
 

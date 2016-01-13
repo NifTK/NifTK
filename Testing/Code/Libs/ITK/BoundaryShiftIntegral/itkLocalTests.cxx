@@ -16,8 +16,7 @@
 // and all it expects is that you have a function called RegisterTests
 
 #include <itkTestMain.h>
-
-#include "itkNifTKImageIOFactory.h"
+#include <itkNifTKImageIOFactory.h>
 
 void RegisterTests()
 {

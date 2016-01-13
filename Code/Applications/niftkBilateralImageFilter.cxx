@@ -22,6 +22,8 @@
 #include <itkBilateralImageFilter.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
+
 /*!
  * \file niftkBilateralImageFilter.cxx
  * \page niftkBilateralImageFilter
@@ -47,6 +49,8 @@ void StartUsage(char *name)
 
 int main(int argc, char* argv[])
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   std::string inputImageName; 
   std::string outputImageName; 
   double domainSigma = 0.0; 

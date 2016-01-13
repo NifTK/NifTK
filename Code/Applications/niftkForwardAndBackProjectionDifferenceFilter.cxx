@@ -17,6 +17,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkForwardAndBackProjectionDifferenceFilter.h>
 
 /*!
@@ -47,6 +48,8 @@ void Usage(char *exec)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   std::string fileInputProjectionVolume;
   std::string fileInputCurrentEstimate;
   std::string fileOutputDifference;

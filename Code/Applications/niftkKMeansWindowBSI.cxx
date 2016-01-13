@@ -18,6 +18,7 @@
 #include <itkLogHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkIntensityNormalisationCalculator.h>
 #include <itkBoundaryShiftIntegralCalculator.h>
 #include <itkSimpleKMeansClusteringImageFilter.h>
@@ -43,6 +44,8 @@
 
 int main(int argc, char* argv[])
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   if (argc < 14)
   {
     niftk::itkLogHelper::PrintCommandLineHeader(std::cerr);

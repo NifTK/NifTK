@@ -22,6 +22,7 @@
 #include <itkDOMReader.h>
 
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkThinPlateSplineScatteredDataPointSetToImageFilter.h>
 
 #include <niftkThinPlateSplineScatteredDataPointSetToImageCLP.h>
@@ -331,6 +332,8 @@ int DoMain(arguments args)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   unsigned int i;
 
   int result;

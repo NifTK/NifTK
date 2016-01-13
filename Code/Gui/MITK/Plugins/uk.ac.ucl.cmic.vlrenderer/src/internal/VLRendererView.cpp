@@ -18,6 +18,7 @@
 #include <berryIWorkbenchWindow.h>
 
 // Qmitk
+#include <vlGraphics/OpenGL.hpp>
 #include "VLRendererView.h"
 #include "VLRendererPluginActivator.h"
 

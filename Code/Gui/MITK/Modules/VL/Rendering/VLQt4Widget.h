@@ -18,8 +18,6 @@
 
 #include <niftkVLExports.h>
 
-#include <vlQt4/link_config.hpp>
-#include <vlCore/VisualizationLibrary.hpp>
 #include <vlGraphics/OpenGLContext.hpp>
 #include <vlGraphics/Light.hpp>
 #include <vlGraphics/Camera.hpp>
@@ -30,6 +28,7 @@
 #include <vlGraphics/Uniform.hpp>
 #include <vlGraphics/BlitFramebuffer.hpp>
 #include <vlGraphics/Texture.hpp>
+#include <vlCore/VisualizationLibrary.hpp>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWidget>
 #include <QtCore/QTimer>

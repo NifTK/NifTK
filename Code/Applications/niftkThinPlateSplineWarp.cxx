@@ -23,6 +23,7 @@
 
 #include <itkImageFileWriter.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImage.h>
 #include <itkResampleImageFilter.h>
 #include <itkThinPlateSplineKernelTransform.h>
@@ -594,6 +595,8 @@ int DoMain(arguments args)
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   unsigned int i;
 
   int result;

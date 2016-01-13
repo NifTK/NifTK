@@ -18,6 +18,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkCheckForThreeLevelsFilter.h>
 #include <itkLaplacianSolverImageFilter.h>
 #include <itkScalarImageToNormalizedGradientVectorImageFilter.h>
@@ -189,6 +190,8 @@ int DoMain(arguments args)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // To pass around command line args
   struct arguments args;
 

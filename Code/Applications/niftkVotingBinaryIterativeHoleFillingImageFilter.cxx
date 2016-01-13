@@ -17,6 +17,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkVotingBinaryIterativeHoleFillingImageFilter.h>
 
 #include <niftkVotingBinaryIterativeHoleFillingImageFilterCLP.h>
@@ -140,6 +141,8 @@ bool RunHoleFillingFilter(Arguments args)
 
 int main(int argc, char **argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   int result;
 
 

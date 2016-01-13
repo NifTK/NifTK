@@ -23,6 +23,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkNumericTraits.h>
 #include <itkImageDuplicator.h>
 #include <itkImageRegionIteratorWithIndex.h>
@@ -243,6 +244,8 @@ int CreateMaskImage( arguments &args )
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   arguments args;
   
 

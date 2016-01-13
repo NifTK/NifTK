@@ -12,19 +12,18 @@
 
 =============================================================================*/
 
-#if defined(_MSC_VER)
-#pragma warning ( disable : 4786 )
-#endif
+#include "itkUCLMacro.h"
 
-#include <iostream>
-#include <itkTestMain.h>
-#include <itkNifTKImageIOFactory.h>
+#include <itkTextOutput.h>
 
-void RegisterTests()
+namespace niftk
 {
-  itk::NifTKImageIOFactory::Initialize();
 
-  REGISTER_TEST(CheckImageDimensionalityTest);
-  REGISTER_TEST(ReceptorMemberCommandTest);
-  REGISTER_TEST(MIDASOrientationTest);
+KeepTextOutputInShell::KeepTextOutputInShell()
+{
+  itk::OutputWindow::SetInstance(itk::TextOutput::New());
+}
+
+KeepTextOutputInShell KeepTextOutputInShell::s_KeepTextOutputInShell;
+
 }

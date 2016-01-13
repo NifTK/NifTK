@@ -12,6 +12,10 @@
 #
 #============================================================================*/
 
+if(CUDA_FOUND AND NIFTK_USE_CUDA)
+  add_subdirectory(CUDAKernels)
+endif()
+
 add_subdirectory(Common)
 
 find_package(ITK)
@@ -21,13 +25,11 @@ if(ITK_FOUND)
   add_subdirectory(ITKIO)
 endif(ITK_FOUND)
 
+find_package(VTK REQUIRED)
 if(VTK_FOUND)
+  include(${VTK_USE_FILE})
   add_subdirectory(VTK)
 endif(VTK_FOUND)
-
-if(CUDA_FOUND AND NIFTK_USE_CUDA)
-  add_subdirectory(CUDAKernels)
-endif()
 
 if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
   add_subdirectory(NVAPI)

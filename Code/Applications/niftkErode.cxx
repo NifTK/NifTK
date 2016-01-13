@@ -19,6 +19,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkBinaryCrossStructuringElement.h>
 #include <itkBinaryErodeImageFilter.h>
 
@@ -120,6 +121,8 @@ int DoMain( arguments &args )
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   arguments args;
 
 

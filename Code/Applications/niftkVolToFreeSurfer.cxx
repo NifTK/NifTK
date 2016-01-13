@@ -16,6 +16,7 @@
 #include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkDiscreteGaussianImageFilter.h>
 #include <itkDivideImageFilter.h>
 #include <itkLinearInterpolateImageFunction.h>
@@ -58,6 +59,7 @@ void Usage(char *exec)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
 
   const   unsigned int Dimension = 3;
   typedef float        PixelType;

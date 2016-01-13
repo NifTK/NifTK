@@ -16,6 +16,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageRegistrationFactory.h>
 #include <itkImageRegistrationFilter.h>
 #include <itkImageRegistrationFactory.h>
@@ -41,6 +42,8 @@
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   const unsigned int Dimension = 3;
   typedef short PixelType;
   typedef itk::Image< PixelType, Dimension >  InputImageType; 

@@ -12,6 +12,7 @@
 
 =============================================================================*/
 
+#include <vlGraphics/OpenGL.hpp>
 #include "VLRendererPluginActivator.h"
 #include <QtPlugin>
 #include "VLRendererView.h"
