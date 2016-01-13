@@ -18,7 +18,6 @@ set(SRC_CPP_FILES
 set(INTERNAL_CPP_FILES
   MIDASGeneralSegmentorViewActivator.cxx
   MIDASGeneralSegmentorViewPreferencePage.cxx
-  MIDASGeneralSegmentorViewHelper.cxx
   MIDASGeneralSegmentorViewControlsWidget.cxx
   MIDASGeneralSegmentorViewEventInterface.cxx
   MIDASGeneralSegmentorView.cxx

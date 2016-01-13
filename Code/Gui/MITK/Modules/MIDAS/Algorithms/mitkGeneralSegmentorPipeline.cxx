@@ -12,11 +12,28 @@
 
 =============================================================================*/
 
-#include "MIDASGeneralSegmentorViewHelper.h"
+#include "mitkGeneralSegmentorPipeline.h"
+
 
 //-----------------------------------------------------------------------------
-void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *points)
+mitk::GeneralSegmentorPipelineInterface::GeneralSegmentorPipelineInterface()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::GeneralSegmentorPipelineInterface::~GeneralSegmentorPipelineInterface()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::GeneralSegmentorPipelineInterface::ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, itk::PointSet<float, 3> *points)
+{
+  typedef itk::PointSet<float, 3>      PointSetType;
+  typedef PointSetType::Pointer        PointSetPointer;
+  typedef PointSetType::PointType      PointSetPointType;
+
   unsigned long numberOfPoints = points->GetNumberOfPoints();
   PointSetType::PointsContainer* pointsContainer = points->GetPoints();
 
@@ -37,7 +54,8 @@ void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *po
 
 
 //-----------------------------------------------------------------------------
-void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContours, ParametricPathVectorType& itkContours, const mitk::Vector3D& spacingInWorldCoordinateOrder)
+void mitk::GeneralSegmentorPipelineInterface::ConvertMITKContoursAndAppendToITKContours(
+    mitk::ContourModelSet *mitkContours, std::vector<ParametricPathType::Pointer>& itkContours, const mitk::Vector3D& spacingInWorldCoordinateOrder)
 {
   mitk::ContourModelSet::ContourModelSetIterator mitkContoursIt = mitkContours->Begin();
   mitk::ContourModelSet::ContourModelSetIterator mitkContoursEnd = mitkContours->End();

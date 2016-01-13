@@ -97,13 +97,13 @@ each left or middle click operation, the MIDAS PolyTool signals to MIDASGeneralS
 \section ArchitectureMIDASGeneralEditorRegionGrowing Intensity Thresholding (Region Growing)
 
 The intensity based thresholding is performed using a simple region growing pipeline implemented in 
-MIDASGeneralSegmentorViewPipeline.
+mitk::GeneralSegmentorPipeline.
 
 \li Extract the relevant slice from the mitk::ToolManager's ReferenceData 0 using ITK's itk::ExtractImageFilter.
 \li Take the contours from mitk::ToolManager's WorkingData 2, and the mitk::MIDASPolyTool feedback contour, and render them into an image.
 \li Perform conditional region growing adding pixels if the grey value is within range, and up to and including a contour using itk::MIDASRegionGrowingImageFilter.
 
-This MIDASGeneralSegmentorViewPipeline is also used in 3D for Propagate Up/Down functionality, and also used to work out
+This mitk::GeneralSegmentorPipeline is also used in 3D for Propagate Up/Down functionality, and also used to work out
 whether there are un-enclosed seeds. This can be performed by region growing without intensity limits, and checking if the
 edge of the image was hit.
 

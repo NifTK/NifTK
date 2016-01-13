@@ -12,15 +12,18 @@
 
 =============================================================================*/
 
-#ifndef _MIDASGENERALSEGMENTORVIEWPIPELINE_TXX_INCLUDED
-#define _MIDASGENERALSEGMENTORVIEWPIPELINE_TXX_INCLUDED
+#ifndef __mitkGeneralSegmentorPipeline_txx
+#define __mitkGeneralSegmentorPipeline_txx
 
-#include "MIDASGeneralSegmentorViewHelper.h"
 #include <itkImage.h>
 #include <itkImageFileWriter.h>
 #include <itkImageRegionIterator.h>
 
 #include <mitkMIDASOrientationUtils.h>
+
+
+namespace mitk
+{
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
@@ -31,7 +34,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_AxisNumber = -1;
   m_LowerThreshold = 0;
   m_UpperThreshold = 0;
-  m_AllSeeds = PointSetType::New();
+  m_AllSeeds = itk::PointSet<float, 3>::New();
   m_UseOutput = true;
   m_EraseFullSlice = false;
   m_OutputImage = NULL;
@@ -501,5 +504,6 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_RegionGrowingFilter->SetManualContourImage(NULL);
 }
 
-#endif
+}
 
+#endif
