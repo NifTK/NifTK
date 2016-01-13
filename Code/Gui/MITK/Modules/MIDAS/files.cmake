@@ -15,7 +15,7 @@
 set(CPP_FILES
   DataManagement/mitkMIDASDataNodeNameStringFilter.cxx
   Algorithms/mitkMIDASMorphologicalSegmentorPipelineManager.cxx
-  Algorithms/MIDASGeneralSegmentorViewHelper.cxx
+  Algorithms/mitkGeneralSegmentorPipeline.cxx
   Interactions/mitkMIDASTool.cxx
   Interactions/mitkMIDASContourToolEventInterface.cxx
   Interactions/mitkMIDASContourToolOpAccumulateContour.cxx

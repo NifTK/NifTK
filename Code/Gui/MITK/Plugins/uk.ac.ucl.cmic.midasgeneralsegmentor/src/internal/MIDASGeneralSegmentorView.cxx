@@ -51,8 +51,7 @@
 #include <QmitkRenderWindow.h>
 
 #include "MIDASGeneralSegmentorViewCommands.h"
-#include <MIDASGeneralSegmentorViewHelper.h>
-#include <MIDASGeneralSegmentorViewPipeline.h>
+#include <mitkGeneralSegmentorPipeline.h>
 #include <mitkMIDASTool.h>
 #include <mitkMIDASPosnTool.h>
 #include <mitkMIDASSeedTool.h>
@@ -3899,7 +3898,7 @@ MIDASGeneralSegmentorView
 
   // Convert MITK seeds to ITK seeds.
   mitk::GeneralSegmentorPipelineInterface::PointSetType::Pointer itkSeeds = mitk::GeneralSegmentorPipelineInterface::PointSetType::New();
-  ConvertMITKSeedsAndAppendToITKSeeds(&seeds, itkSeeds);
+  mitk::GeneralSegmentorPipelineInterface::ConvertMITKSeedsAndAppendToITKSeeds(&seeds, itkSeeds);
 
   // This mask is used to control the propagation in the region growing filter.
   typename GreyScaleImageType::IndexType propagationMask;

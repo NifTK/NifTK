@@ -12,10 +12,9 @@
 
 =============================================================================*/
 
-#ifndef _MIDASGENERALSEGMENTORVIEWPIPELINE_TXX_INCLUDED
-#define _MIDASGENERALSEGMENTORVIEWPIPELINE_TXX_INCLUDED
+#ifndef __mitkGeneralSegmentorPipeline_txx
+#define __mitkGeneralSegmentorPipeline_txx
 
-#include "MIDASGeneralSegmentorViewHelper.h"
 #include <itkImage.h>
 #include <itkImageFileWriter.h>
 #include <itkImageRegionIterator.h>
@@ -508,4 +507,3 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 }
 
 #endif
-

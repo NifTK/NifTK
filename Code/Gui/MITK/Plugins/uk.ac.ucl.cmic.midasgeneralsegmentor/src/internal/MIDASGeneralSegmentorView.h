@@ -35,15 +35,16 @@
 #include <mitkSliceNavigationController.h>
 
 #include <QmitkMIDASBaseSegmentationFunctionality.h>
-#include <itkMIDASRegionGrowingImageFilter.h>
+
+#include <mitkGeneralSegmentorPipeline.h>
 #include <mitkMIDASContourTool.h>
 #include <mitkMIDASDrawTool.h>
 #include <mitkMIDASPolyTool.h>
 #include <mitkMIDASToolKeyPressStateMachine.h>
 #include <mitkMIDASToolKeyPressResponder.h>
+
 #include "MIDASGeneralSegmentorViewControlsWidget.h"
 #include "MIDASGeneralSegmentorViewCommands.h"
-#include "MIDASGeneralSegmentorViewPipeline.h"
 #include "MIDASGeneralSegmentorViewPreferencePage.h"
 #include "MIDASGeneralSegmentorViewEventInterface.h"
 

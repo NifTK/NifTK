@@ -12,11 +12,23 @@
 
 =============================================================================*/
 
-#include "MIDASGeneralSegmentorViewHelper.h"
+#include "mitkGeneralSegmentorPipeline.h"
 
 
 //-----------------------------------------------------------------------------
-void mitk::ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, itk::PointSet<float, 3> *points)
+mitk::GeneralSegmentorPipelineInterface::GeneralSegmentorPipelineInterface()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::GeneralSegmentorPipelineInterface::~GeneralSegmentorPipelineInterface()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void mitk::GeneralSegmentorPipelineInterface::ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, itk::PointSet<float, 3> *points)
 {
   typedef itk::PointSet<float, 3>      PointSetType;
   typedef PointSetType::Pointer        PointSetPointer;
@@ -42,7 +54,8 @@ void mitk::ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, itk::Point
 
 
 //-----------------------------------------------------------------------------
-void mitk::ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContours, mitk::ParametricPathVectorType& itkContours, const mitk::Vector3D& spacingInWorldCoordinateOrder)
+void mitk::GeneralSegmentorPipelineInterface::ConvertMITKContoursAndAppendToITKContours(
+    mitk::ContourModelSet *mitkContours, std::vector<ParametricPathType::Pointer>& itkContours, const mitk::Vector3D& spacingInWorldCoordinateOrder)
 {
   mitk::ContourModelSet::ContourModelSetIterator mitkContoursIt = mitkContours->Begin();
   mitk::ContourModelSet::ContourModelSetIterator mitkContoursEnd = mitkContours->End();
@@ -50,8 +63,8 @@ void mitk::ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitk
   {
     mitk::ContourModel::Pointer mitkContour = *mitkContoursIt;
 
-    mitk::ParametricPathType::Pointer itkContour = mitk::ParametricPathType::New();
-    mitk::ParametricPathType::ContinuousIndexType idx;
+    ParametricPathType::Pointer itkContour = ParametricPathType::New();
+    ParametricPathType::ContinuousIndexType idx;
 
     mitk::ContourModel::VertexIterator mitkContourIt = mitkContour->Begin();
     mitk::ContourModel::VertexIterator mitkContourEnd = mitkContour->End();
