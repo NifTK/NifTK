@@ -14,9 +14,14 @@
 
 #include "MIDASGeneralSegmentorViewHelper.h"
 
+
 //-----------------------------------------------------------------------------
-void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *points)
+void mitk::ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, itk::PointSet<float, 3> *points)
 {
+  typedef itk::PointSet<float, 3>      PointSetType;
+  typedef PointSetType::Pointer        PointSetPointer;
+  typedef PointSetType::PointType      PointSetPointType;
+
   unsigned long numberOfPoints = points->GetNumberOfPoints();
   PointSetType::PointsContainer* pointsContainer = points->GetPoints();
 
@@ -37,7 +42,7 @@ void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *po
 
 
 //-----------------------------------------------------------------------------
-void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContours, ParametricPathVectorType& itkContours, const mitk::Vector3D& spacingInWorldCoordinateOrder)
+void mitk::ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContours, mitk::ParametricPathVectorType& itkContours, const mitk::Vector3D& spacingInWorldCoordinateOrder)
 {
   mitk::ContourModelSet::ContourModelSetIterator mitkContoursIt = mitkContours->Begin();
   mitk::ContourModelSet::ContourModelSetIterator mitkContoursEnd = mitkContours->End();
@@ -45,8 +50,8 @@ void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet *mitkContou
   {
     mitk::ContourModel::Pointer mitkContour = *mitkContoursIt;
 
-    ParametricPathType::Pointer itkContour = ParametricPathType::New();
-    ParametricPathType::ContinuousIndexType idx;
+    mitk::ParametricPathType::Pointer itkContour = mitk::ParametricPathType::New();
+    mitk::ParametricPathType::ContinuousIndexType idx;
 
     mitk::ContourModel::VertexIterator mitkContourIt = mitkContour->Begin();
     mitk::ContourModel::VertexIterator mitkContourEnd = mitkContour->End();

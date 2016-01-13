@@ -51,7 +51,8 @@
 #include <QmitkRenderWindow.h>
 
 #include "MIDASGeneralSegmentorViewCommands.h"
-#include "MIDASGeneralSegmentorViewHelper.h"
+#include <MIDASGeneralSegmentorViewHelper.h>
+#include <MIDASGeneralSegmentorViewPipeline.h>
 #include <mitkMIDASTool.h>
 #include <mitkMIDASPosnTool.h>
 #include <mitkMIDASSeedTool.h>
@@ -3736,25 +3737,25 @@ MIDASGeneralSegmentorView
   std::stringstream key;
   key << typeid(TPixel).name() << VImageDimension;
 
-  GeneralSegmentorPipeline<TPixel, VImageDimension>* pipeline = NULL;
-  GeneralSegmentorPipelineInterface* myPipeline = NULL;
+  mitk::GeneralSegmentorPipeline<TPixel, VImageDimension>* pipeline = NULL;
+  mitk::GeneralSegmentorPipelineInterface* myPipeline = NULL;
 
-  std::map<std::string, GeneralSegmentorPipelineInterface*>::iterator iter;
+  std::map<std::string, mitk::GeneralSegmentorPipelineInterface*>::iterator iter;
   iter = m_TypeToPipelineMap.find(key.str());
 
   if (iter == m_TypeToPipelineMap.end())
   {
-    pipeline = new GeneralSegmentorPipeline<TPixel, VImageDimension>();
+    pipeline = new mitk::GeneralSegmentorPipeline<TPixel, VImageDimension>();
     myPipeline = pipeline;
     m_TypeToPipelineMap.insert(StringAndPipelineInterfacePair(key.str(), myPipeline));
   }
   else
   {
     myPipeline = iter->second;
-    pipeline = static_cast<GeneralSegmentorPipeline<TPixel, VImageDimension>*>(myPipeline);
+    pipeline = static_cast<mitk::GeneralSegmentorPipeline<TPixel, VImageDimension>*>(myPipeline);
   }
 
-  GeneralSegmentorPipelineParams params;
+  mitk::GeneralSegmentorPipelineParams params;
   params.m_SliceNumber = sliceNumber;
   params.m_AxisNumber = axisNumber;
   params.m_LowerThreshold = lowerThreshold;
@@ -3895,10 +3896,9 @@ MIDASGeneralSegmentorView
 {
   typedef typename itk::Image<TPixel, VImageDimension> GreyScaleImageType;
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
-  typedef typename itk::MIDASRegionGrowingImageFilter<GreyScaleImageType, BinaryImageType, PointSetType> RegionGrowingFilterType;
 
   // Convert MITK seeds to ITK seeds.
-  PointSetPointer itkSeeds = PointSetType::New();
+  mitk::GeneralSegmentorPipelineInterface::PointSetType::Pointer itkSeeds = mitk::GeneralSegmentorPipelineInterface::PointSetType::New();
   ConvertMITKSeedsAndAppendToITKSeeds(&seeds, itkSeeds);
 
   // This mask is used to control the propagation in the region growing filter.
@@ -3925,7 +3925,8 @@ MIDASGeneralSegmentorView
   region.SetIndex(regionIndex);
 
   // Perform 3D region growing.
-  typename RegionGrowingFilterType::Pointer regionGrowingFilter = RegionGrowingFilterType::New();
+  typename mitk::GeneralSegmentorPipeline<TPixel, VImageDimension>::MIDASRegionGrowingFilterType::Pointer regionGrowingFilter =
+      mitk::GeneralSegmentorPipeline<TPixel, VImageDimension>::MIDASRegionGrowingFilterType::New();
   regionGrowingFilter->SetInput(itkImage);
   regionGrowingFilter->SetRegionOfInterest(region);
   regionGrowingFilter->SetUseRegionOfInterest(true);
@@ -4666,7 +4667,7 @@ void MIDASGeneralSegmentorView
   mitk::PointSet::Pointer seedsForThisSlice = mitk::PointSet::New();
   Self::ITKFilterSeedsToCurrentSlice(itkImage, seeds, axis, slice, *(seedsForThisSlice.GetPointer()));
 
-  GeneralSegmentorPipelineParams params;
+  mitk::GeneralSegmentorPipelineParams params;
   params.m_SliceNumber = slice;
   params.m_AxisNumber = axis;
   params.m_Seeds = seedsForThisSlice;
@@ -4686,7 +4687,7 @@ void MIDASGeneralSegmentorView
     params.m_UpperThreshold = std::numeric_limits<TPixel>::max();
   }
 
-  GeneralSegmentorPipeline<TPixel, VImageDimension> pipeline = GeneralSegmentorPipeline<TPixel, VImageDimension>();
+  mitk::GeneralSegmentorPipeline<TPixel, VImageDimension> pipeline;
   pipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
   pipeline.SetParam(itkImage, workingImageToItk->GetOutput(), params);
   pipeline.Update(params);
@@ -4745,7 +4746,7 @@ void MIDASGeneralSegmentorView
 
   mitk::MIDASContourTool::CopyContourSet(segmentationContours, outputCopyOfInputContours, true);
 
-  GeneralSegmentorPipelineParams params;
+  mitk::GeneralSegmentorPipelineParams params;
   params.m_SliceNumber = slice;
   params.m_AxisNumber = axis;
   params.m_Seeds = &seeds;
@@ -4765,7 +4766,7 @@ void MIDASGeneralSegmentorView
     params.m_UpperThreshold = std::numeric_limits<TPixel>::max();
   }
 
-  GeneralSegmentorPipeline<TPixel, VImageDimension> localPipeline = GeneralSegmentorPipeline<TPixel, VImageDimension>();
+  mitk::GeneralSegmentorPipeline<TPixel, VImageDimension> localPipeline;
   localPipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
   localPipeline.SetParam(itkImage, workingImageToItk->GetOutput(), params);
   localPipeline.Update(params);
@@ -4912,10 +4913,10 @@ MIDASGeneralSegmentorView
   std::stringstream key;
   key << typeid(TPixel).name() << VImageDimension;
 
-  std::map<std::string, GeneralSegmentorPipelineInterface*>::iterator iter;
+  std::map<std::string, mitk::GeneralSegmentorPipelineInterface*>::iterator iter;
   iter = m_TypeToPipelineMap.find(key.str());
 
-  GeneralSegmentorPipeline<TPixel, VImageDimension> *pipeline = dynamic_cast<GeneralSegmentorPipeline<TPixel, VImageDimension>*>(iter->second);
+  mitk::GeneralSegmentorPipeline<TPixel, VImageDimension> *pipeline = dynamic_cast<mitk::GeneralSegmentorPipeline<TPixel, VImageDimension>*>(iter->second);
   if (pipeline != NULL)
   {
     delete pipeline;

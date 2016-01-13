@@ -15,6 +15,8 @@
 #ifndef MIDASGeneralSegmentorViewPipeline_h
 #define MIDASGeneralSegmentorViewPipeline_h
 
+#include "niftkMIDASExports.h"
+
 #include <itkIndex.h>
 #include <itkContinuousIndex.h>
 #include <itkImage.h>
@@ -24,14 +26,22 @@
 #include <itkMIDASRegionGrowingImageFilter.h>
 #include "MIDASGeneralSegmentorViewHelper.h"
 
+namespace mitk
+{
+
 /**
  * \class GeneralSegmentorPipelineInterface
  * \brief Abstract interface to plug the ITK pipeline into MITK framework.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
-class GeneralSegmentorPipelineInterface
+class NIFTKMIDAS_EXPORT GeneralSegmentorPipelineInterface
 {
 public:
+  typedef itk::PointSet<float, 3>      PointSetType;
+  typedef PointSetType::Pointer        PointSetPointer;
+  typedef PointSetType::PointType      PointSetPointType;
+
+
   GeneralSegmentorPipelineInterface() {}
   virtual ~GeneralSegmentorPipelineInterface() {}
 
@@ -48,7 +58,7 @@ public:
  * growing, providing the blue outline images seen within the GUI.
  */
 template<typename TPixel, unsigned int VImageDimension>
-class GeneralSegmentorPipeline : public GeneralSegmentorPipelineInterface
+class NIFTKMIDAS_EXPORT GeneralSegmentorPipeline : public GeneralSegmentorPipelineInterface
 {
 public:
 
@@ -71,7 +81,7 @@ public:
   typedef typename CastGreySliceToSegmentationSliceFilterType::Pointer     CastGreySliceToSegmentationSliceFilterPointer;
   typedef itk::MIDASRegionGrowingImageFilter<GreyScaleImageType,
                                              SegmentationImageType,
-                                             PointSetType>                 MIDASRegionGrowingFilterType;
+                                             itk::PointSet<float, 3> >     MIDASRegionGrowingFilterType;
   typedef typename MIDASRegionGrowingFilterType::Pointer                   MIDASRegionGrowingFilterPointer;
 
   // Methods
@@ -121,9 +131,10 @@ public:
   SegmentationImageType*                         m_OutputImage;
 };
 
+}
+
 #ifndef ITK_MANUAL_INSTANTIATION
 #include "MIDASGeneralSegmentorViewPipeline.txx"
 #endif
 
 #endif // _MIDASGENERALSEGMENTORVIEWPIPELINE_H_INCLUDED
-

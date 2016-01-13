@@ -44,7 +44,6 @@
 #include "MIDASGeneralSegmentorViewControlsWidget.h"
 #include "MIDASGeneralSegmentorViewCommands.h"
 #include "MIDASGeneralSegmentorViewPipeline.h"
-#include "MIDASGeneralSegmentorViewHelper.h"
 #include "MIDASGeneralSegmentorViewPreferencePage.h"
 #include "MIDASGeneralSegmentorViewEventInterface.h"
 
@@ -865,8 +864,8 @@ private:
 
   /// \brief We hold a Map, containing a key comprised of the "typename TPixel, unsigned int VImageDimension"
   /// as a key, and the object containing the whole pipeline for single slice 2D region growing.
-  typedef std::pair<std::string, GeneralSegmentorPipelineInterface*> StringAndPipelineInterfacePair;
-  std::map<std::string, GeneralSegmentorPipelineInterface*> m_TypeToPipelineMap;
+  typedef std::pair<std::string, mitk::GeneralSegmentorPipelineInterface*> StringAndPipelineInterfacePair;
+  std::map<std::string, mitk::GeneralSegmentorPipelineInterface*> m_TypeToPipelineMap;
 
   /// \brief All the controls for the main view part.
   MIDASGeneralSegmentorViewControlsWidget* m_GeneralControls;

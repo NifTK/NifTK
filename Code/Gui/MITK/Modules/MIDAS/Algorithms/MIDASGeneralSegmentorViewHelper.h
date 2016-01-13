@@ -15,11 +15,15 @@
 #ifndef MIDASGeneralSegmentorViewHelper_h
 #define MIDASGeneralSegmentorViewHelper_h
 
+#include "niftkMIDASExports.h"
+
 #include <itkPointSet.h>
 #include <itkPolyLineParametricPath.h>
 #include <mitkPointSet.h>
 #include <mitkContourModelSet.h>
 
+namespace mitk
+{
 
 /// \brief This file contains functions that convert between ITK and MITK contour representations.
 ///
@@ -120,21 +124,16 @@
 
 
 /** Typedefs that we use for this plugin. */
-typedef itk::PointSet<float, 3>      PointSetType;
-typedef PointSetType::Pointer        PointSetPointer;
-typedef PointSetType::PointType      PointSetPointType;
-typedef itk::PolyLineParametricPath<3>     ParametricPathType;
-typedef ParametricPathType::Pointer        ParametricPathPointer;
-typedef std::vector<ParametricPathPointer> ParametricPathVectorType;
-typedef ParametricPathType::VertexListType ParametricPathVertexListType;
-typedef ParametricPathType::VertexType     ParametricPathVertexType;
+//typedef itk::PointSet<float, 3>      PointSetType;
+//typedef PointSetType::Pointer        PointSetPointer;
+//typedef PointSetType::PointType      PointSetPointType;
 
 /**
  * \class GeneralSegmentorPipelineParams
  * \brief A simple parameters object to pass all parameters to the ITK based region growing pipeline.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
-struct GeneralSegmentorPipelineParams
+struct NIFTKMIDAS_EXPORT GeneralSegmentorPipelineParams
 {
   bool m_EraseFullSlice;
   int m_SliceNumber;
@@ -149,7 +148,14 @@ struct GeneralSegmentorPipelineParams
 };
 
 /** Converts Points from MITK to ITK. */
-void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *points);
+void NIFTKMIDAS_EXPORT ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, itk::PointSet<float, 3> *points);
+
+
+typedef itk::PolyLineParametricPath<3>     ParametricPathType;
+typedef ParametricPathType::Pointer        ParametricPathPointer;
+typedef std::vector<ParametricPathPointer> ParametricPathVectorType;
+typedef ParametricPathType::VertexListType ParametricPathVertexListType;
+typedef ParametricPathType::VertexType     ParametricPathVertexType;
 
 /// \brief Converts MITK contours from to ITK contours and appends them to a list.
 ///
@@ -191,5 +197,7 @@ void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, PointSetType *po
 /// You can translate between the two coordinate systems with the utility functions in mitkMIDASOrientationUtils.h.
 ///
 void ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet* mitkContours, ParametricPathVectorType& itkContours, const mitk::Vector3D& spacing);
+
+}
 
 #endif
