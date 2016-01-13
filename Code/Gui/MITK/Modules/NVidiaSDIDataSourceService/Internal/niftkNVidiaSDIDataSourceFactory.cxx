@@ -14,6 +14,7 @@
 
 #include "niftkNVidiaSDIDataSourceFactory.h"
 #include "niftkNVidiaSDIDataSourceService.h"
+#include "niftkNVidiaSDIInitDialog.h"
 #include <niftkLagDialog.h>
 
 namespace niftk
@@ -22,8 +23,8 @@ namespace niftk
 //-----------------------------------------------------------------------------
 NVidiaSDIDataSourceFactory::NVidiaSDIDataSourceFactory()
 : IGIDataSourceFactoryServiceI("NVIDIA SDI",
-                               false, // don't need to configure at startup
-                               true   // can configure while running
+                               true,  // configure the type at startup
+                               true   // can configure lag while running
                                )
 {
 }
@@ -53,8 +54,7 @@ IGIDataSourceI::Pointer NVidiaSDIDataSourceFactory::CreateService(
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* NVidiaSDIDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  mitkThrow() << "NVidiaSDIDataSourceFactory does not provide an initialisation dialog.";
-  return NULL;
+  return new niftk::NVidiaSDIInitDialog(parent);
 }
 
 
