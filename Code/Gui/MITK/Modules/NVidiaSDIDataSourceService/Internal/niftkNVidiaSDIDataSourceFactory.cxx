@@ -15,7 +15,7 @@
 #include "niftkNVidiaSDIDataSourceFactory.h"
 #include "niftkNVidiaSDIDataSourceService.h"
 #include "niftkNVidiaSDIInitDialog.h"
-#include <niftkLagDialog.h>
+#include "niftkNVidiaSDIConfigDialog.h"
 
 namespace niftk
 {
@@ -63,7 +63,7 @@ IGIConfigurationDialog* NVidiaSDIDataSourceFactory::CreateConfigurationDialog(QW
                                                                                 niftk::IGIDataSourceI::Pointer service
                                                                                 ) const
 {
-  return new niftk::LagDialog(parent, service);
+  return new niftk::NVidiaSDIConfigDialog(parent, service);
 }
 
 

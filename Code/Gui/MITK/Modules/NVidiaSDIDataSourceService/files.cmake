@@ -14,6 +14,7 @@
 
 set(CPP_FILES
   Internal/niftkNVidiaSDIInitDialog.cxx
+  Internal/niftkNVidiaSDIConfigDialog.cxx
   Internal/niftkNVidiaSDIDataSourceFactory.cxx
   Internal/niftkNVidiaSDIDataSourceActivator.cxx
   Internal/niftkNVidiaSDIDataSourceService.cxx
@@ -22,10 +23,12 @@ set(CPP_FILES
 
 set(MOC_H_FILES
   Internal/niftkNVidiaSDIInitDialog.h
+  Internal/niftkNVidiaSDIConfigDialog.h
 )
 
 set(UI_FILES
   Internal/niftkNVidiaSDIInitDialog.ui
+  Internal/niftkNVidiaSDIConfigDialog.ui
 )
 
 set(QRC_FILES
