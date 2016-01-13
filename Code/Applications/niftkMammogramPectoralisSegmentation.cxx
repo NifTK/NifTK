@@ -22,6 +22,7 @@
 
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
@@ -432,6 +433,7 @@ int DoMain(arguments args)
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
 
   // Parse the command line arguments
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

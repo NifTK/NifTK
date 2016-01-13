@@ -17,6 +17,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkSubtract2DImageFromVolumeSliceFilter.h>
 
 /*!
@@ -46,6 +47,8 @@ void Usage(char *exec)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   std::string fileInputImage3D;
   std::string fileInputImage2D;
   std::string fileOutputImage3D;

@@ -40,8 +40,9 @@ public:
 
   /**
    * \brief Loads tracking data from directory.
+   * \return The number of matrix files that failed on read
    */
-  int LoadFromDirectory(const std::string& dirName);
+  int LoadFromDirectory(const std::string& dirName, const bool& haltOnMatrixReadFail);
 
   /**
    * \brief Saves tracking data to directory.
@@ -100,6 +101,8 @@ private:
 
   mitk::TimeStampsContainer  m_TimeStamps;
   std::vector<cv::Matx44d>   m_TrackingMatrices;
+  bool                       m_HaltOnMatrixReadError;
+
 };
 
 } // end namespace

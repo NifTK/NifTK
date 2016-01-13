@@ -15,6 +15,7 @@
 #include <itkLogHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 
 /*!
  * \file niftkShiftProb.cxx
@@ -45,6 +46,7 @@ void Usage(char *exec)
 
 int main(int argc, char* argv[])
 {
+  itk::NifTKImageIOFactory::Initialize();
   
   // Parse command line args
   for(int i=1; i < argc; i++)

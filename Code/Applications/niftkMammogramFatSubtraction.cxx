@@ -22,6 +22,7 @@
 
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkCastImageFilter.h>
 #include <itkMaskImageFilter.h>
 #include <itkMinimumMaximumImageCalculator.h>
@@ -759,6 +760,7 @@ int DoMain(arguments args)
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
 
   // Parse the command line arguments
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

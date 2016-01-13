@@ -35,9 +35,9 @@ void TrackingAndTimeStampsContainer::Clear()
 
 
 //-----------------------------------------------------------------------------
-int TrackingAndTimeStampsContainer::LoadFromDirectory(const std::string& dirName)
+int TrackingAndTimeStampsContainer::LoadFromDirectory(const std::string& dirName, const bool& haltOnMatrixReadFail)
 {
-  int numberLoaded = 0;
+  int loadFailures = 0;
 
   if (!CheckIfDirectoryContainsTrackingMatrices(dirName))
   {
@@ -86,9 +86,16 @@ int TrackingAndTimeStampsContainer::LoadFromDirectory(const std::string& dirName
         }
         else
         {
-          std::ostringstream errorMessage;
-          errorMessage << "Failed to load matrix from file:" << fileNames[i] << std::endl;
-          mitkThrow() << errorMessage.str();
+          if ( haltOnMatrixReadFail )
+          {
+            std::ostringstream errorMessage;
+            mitkThrow() << errorMessage.str();
+          }
+          else
+          {
+            ++loadFailures;
+            MITK_WARN << "Failed to load matrix from file:" << fileNames[i] << std::endl;
+          }
         }
       }
       else
@@ -105,7 +112,7 @@ int TrackingAndTimeStampsContainer::LoadFromDirectory(const std::string& dirName
       mitkThrow() << errorMessage.str();
     }
   }
-  return numberLoaded;
+  return loadFailures;
 }
 
 //-----------------------------------------------------------------------------
@@ -283,6 +290,5 @@ cv::Matx44d TrackingAndTimeStampsContainer::GetNearestMatrix(const TimeStampsCon
     }
   }
 }
-
 
 } // end namespace

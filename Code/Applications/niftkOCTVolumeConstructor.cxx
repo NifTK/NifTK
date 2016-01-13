@@ -16,6 +16,7 @@
 #include <itkDOMNodeXMLReader.h>
 #include <itkImageFileWriter.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkDOMNode.h>
 #include <itkMacro.h>
 #include <itkTileImageFilter.h>
@@ -148,6 +149,8 @@ void closeProgress(std::string img, std::string status)
 
 int main( int argc, char* argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   std::string inputxml = "";
   std::string imgFolder = "";
 

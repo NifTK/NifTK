@@ -17,6 +17,7 @@ set(niftkITK_SRCS
   Common/itkCommandLineHelper.cxx
   Common/itkFilenameUtils.cxx
   Common/itkLogHelper.cxx
+  Common/itkUCLMacro.cxx
   RegistrationToolbox/Optimizers/itkUCLSimplexOptimizer.cxx
   RegistrationToolbox/Optimizers/itkUCLRegularStepGradientDescentOptimizer.cxx
   RegistrationToolbox/Optimizers/itkUCLRegularStepOptimizer.cxx

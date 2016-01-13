@@ -22,13 +22,13 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkJoinImageFilter.h>
 #include <itkImageToHistogramFilter.h>
 #include <itkUnaryFunctorImageFilter.h>
 #include <itkNormalizeImageFilter.h>
 #include <itkCastImageFilter.h>
 #include <itkHistogramToEntropyImageFilter.h>
-
 
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
@@ -65,6 +65,8 @@ enum {
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   int nbins1 = 64;
   int nbins2 = 64;
 

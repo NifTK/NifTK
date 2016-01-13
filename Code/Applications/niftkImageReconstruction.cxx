@@ -18,6 +18,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 
 #include <itkTransformFileWriter.h>
 #include <itkTransformFactory.h>
@@ -175,6 +176,8 @@ const char *nameOptimizer[5] = {
 
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   bool flgDebug = false;
 
   bool flgFirstAngleSet = false; // Has the user set the first angle

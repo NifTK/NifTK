@@ -23,6 +23,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 
 #include <itkImageRegistrationFactory.h>
 #include <itkImageRegistrationFilter.h>
@@ -97,6 +98,8 @@ enum {
 
 int main(int argc, char** argv)
 {
+
+  itk::NifTKImageIOFactory::Initialize();
 
   bool debug(false);                    // Output debugging information
 

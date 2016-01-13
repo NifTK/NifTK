@@ -51,6 +51,7 @@
 #include <itkImageFileReader.h>
 #include <itkImageSeriesReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageRegionIterator.h>
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
@@ -1813,6 +1814,8 @@ bool ReadFileCSV( InputParameters &args,
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   bool flgVeryFirstRowT1w = true;
   bool flgVeryFirstRowT2w = true;
 

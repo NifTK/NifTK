@@ -67,8 +67,10 @@ void VideoTrackerMatching::Initialise(std::string directory)
       for ( unsigned int i = 0 ; i < m_TrackingMatrixDirectories.size() ; i ++ ) 
       {
         TrackingAndTimeStampsContainer tempTimeStamps = mitk::TrackingAndTimeStampsContainer();
-        tempTimeStamps.LoadFromDirectory(m_TrackingMatrixDirectories[i]);
-        MITK_INFO << "Found " << tempTimeStamps.GetSize() << " time stamped tracking files in " << m_TrackingMatrixDirectories[i];
+        bool stopOnMatrixReadError = false;
+        int matrixLoadFailures = tempTimeStamps.LoadFromDirectory(m_TrackingMatrixDirectories[i], stopOnMatrixReadError);
+        MITK_INFO << "Found " << tempTimeStamps.GetSize() + matrixLoadFailures << " time stamped tracking files in " << m_TrackingMatrixDirectories[i];
+        MITK_INFO << "Got " << matrixLoadFailures << " bad matrix files ";
         m_TrackingMatricesAndTimeStamps.push_back(tempTimeStamps);
         m_VideoLag.push_back(0);
         m_VideoLeadsTracking.push_back(false);
@@ -131,7 +133,6 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
   {
     m_TimingErrors[i].clear();
   }
-  unsigned int badMatrices = 0;
   while ( std::getline(fin,line) )
   {
     if ( line[0] != '#' )
@@ -178,7 +179,6 @@ void VideoTrackerMatching::ProcessFrameMapFile ()
   }
     
   MITK_INFO << "Read " << linenumber << " lines from " << m_FrameMap;
-  MITK_INFO << "Got " << badMatrices << " bad matrix files ";
 }
 
 

@@ -23,6 +23,7 @@
 #include <itkTwinThresholdBoundaryFilter.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <algorithm>
 
 /*!
@@ -200,6 +201,8 @@ int DoMain(arguments args)
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // To pass around command line args
   struct arguments args;
 

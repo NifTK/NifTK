@@ -33,6 +33,7 @@
 #include <itkMetaDataObject.h>
 #include <itkGDCMImageIO.h>
 #include <itkGDCMSeriesFileNames.h>
+#include <itkNifTKImageIOFactory.h>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -101,6 +102,8 @@ void PrintTag( std::fstream *fout,
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   std::fstream *fout = 0;
 
   typedef signed short    PixelType;

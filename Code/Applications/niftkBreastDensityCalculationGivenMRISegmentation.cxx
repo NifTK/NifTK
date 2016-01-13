@@ -22,6 +22,7 @@
 
 #include <itkImage.h>
 #include <itkImageFileReader.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkImageRegionConstIterator.h>
 
@@ -48,6 +49,8 @@
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // Define the dimension of the images
   const unsigned int ImageDimension = 3;
   

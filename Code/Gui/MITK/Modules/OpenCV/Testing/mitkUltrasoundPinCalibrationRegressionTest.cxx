@@ -87,7 +87,8 @@ public:
     calibration->SetVerbose(false);
 
     mitk::TrackingAndTimeStampsContainer trackingData;
-    trackingData.LoadFromDirectory(directoryOfMatrices);
+    bool haltOnMatrixReadFail = true;
+    int badMatrixFiles = trackingData.LoadFromDirectory(directoryOfMatrices, haltOnMatrixReadFail);
     if (trackingData.GetSize() == 0)
     {
       mitkThrow() << "Failed to tracking data from " << directoryOfMatrices << std::endl;

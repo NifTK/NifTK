@@ -22,7 +22,7 @@
 #include <itkBinaryShapeBasedSuperSamplingFilter.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
-
+#include <itkNifTKImageIOFactory.h>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_SWITCH, "dbg", 0, "Output debugging information."},
@@ -271,6 +271,8 @@ int DoMain(arguments &args)
 
 int main( int argc, char *argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   int result;
  
   // Validate command line args

@@ -19,6 +19,7 @@
 #include <itkGDCMSeriesFileNames.h>
 #include <itkImageSeriesReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkMetaDataDictionary.h>
 #include <itkMetaDataObject.h>
 #include <itkOrientImageFilter.h>
@@ -861,6 +862,8 @@ bool WriteSeriesAsVolume( std::fstream &fout,
 
 int main( int argc, char* argv[] )
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   std::string fileOutput;
   std::string tagModalityValue;
 

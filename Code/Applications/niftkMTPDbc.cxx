@@ -17,6 +17,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkLogImageFilter.h>
 #include <itkSubtractImageFilter.h>
@@ -93,6 +94,8 @@ enum {
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   int startArg = 1; 
   int inputRadius = 5; 
   float bsplineControlPointSpacing = 0.f;

@@ -18,6 +18,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkNifTKImageIOFactory.h>
 #include <itkImageRegistrationFactory.h>
 #include <itkImageRegistrationFilter.h>
 #include <itkGradientDescentOptimizer.h>
@@ -559,6 +560,8 @@ const char *BooleanToString( bool flag )
  */
 int main(int argc, char** argv)
 {
+  itk::NifTKImageIOFactory::Initialize();
+
   // To pass around command line args
   PARSE_ARGS;
 
