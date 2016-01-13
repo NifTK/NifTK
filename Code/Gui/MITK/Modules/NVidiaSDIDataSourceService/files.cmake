@@ -17,6 +17,7 @@ set(CPP_FILES
   Internal/niftkNVidiaSDIConfigDialog.cxx
   Internal/niftkNVidiaSDIDataSourceFactory.cxx
   Internal/niftkNVidiaSDIDataSourceActivator.cxx
+  Internal/niftkNVidiaSDIDataSourceImpl.cxx
   Internal/niftkNVidiaSDIDataSourceService.cxx
   Internal/niftkNVidiaSDIDataType.cxx
 )

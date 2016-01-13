@@ -15,7 +15,7 @@
 if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
 
   MITK_CREATE_MODULE(
-    DEPENDS niftkIGIDataSources
+    DEPENDS niftkIGIDataSources niftkIGIGui
     PACKAGE_DEPENDS Qt4|QtCore
     AUTOLOAD_WITH niftkIGIServices
   )

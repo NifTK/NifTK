@@ -41,6 +41,15 @@ public:
   mitkClassMacroItkParent(NVidiaSDIDataSourceService, IGIDataSource);
   mitkNewMacro3Param(NVidiaSDIDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
 
+    // This should match libvideo/SDIInput::InterlacedBehaviour
+  enum InterlacedBehaviour
+  {
+    DO_NOTHING_SPECIAL    = 0,
+    DROP_ONE_FIELD        = 1,
+    STACK_FIELDS          = 2, /** No longer supported! */
+    SPLIT_LINE_INTERLEAVED_STEREO = 3
+  };
+
   /**
   * \see  IGIDataSourceI::StartPlayback()
   */
