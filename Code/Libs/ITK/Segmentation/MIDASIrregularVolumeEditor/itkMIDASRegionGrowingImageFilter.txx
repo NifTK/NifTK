@@ -176,11 +176,15 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
         return;
       }
     }
-    else // if (manualContourCurrentPixel != m_ManualContourImageNonBorderValue)
+    else
     {
-      if (manualContourNextPixel == m_ManualContourImageNonBorderValue
-          || !isFullyConnected
-          || this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx))
+      if (!isFullyConnected)
+      {
+        return;
+      }
+
+      if (manualContourNextPixel == m_ManualContourImageBorderValue
+          && this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx))
       {
         return;
       }
