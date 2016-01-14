@@ -25,6 +25,7 @@ set(CPP_FILES
 set(MOC_H_FILES
   Internal/niftkNVidiaSDIInitDialog.h
   Internal/niftkNVidiaSDIConfigDialog.h
+  Internal/niftkNVidiaSDIDataSourceImpl.h
 )
 
 set(UI_FILES

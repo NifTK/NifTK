@@ -37,8 +37,9 @@ const int   IGIDataSourceManager::DEFAULT_FRAME_RATE = 20;
 const char* IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE = "NIFTK_IGIDATASOURCES_DEFAULTRECORDINGDESTINATION";
 
 //-----------------------------------------------------------------------------
-IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage)
-: m_DataStorage(dataStorage)
+IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage, QObject* parent)
+: QObject(parent)
+, m_DataStorage(dataStorage)
 , m_GuiUpdateTimer(NULL)
 , m_FrameRate(DEFAULT_FRAME_RATE)
 , m_IsPlayingBack(false)
@@ -69,8 +70,6 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
   bool ok = false;
   ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
   assert(ok);
-
-  this->Modified();
 }
 
 
@@ -95,7 +94,6 @@ bool IGIDataSourceManager::IsUpdateTimerOn() const
 void IGIDataSourceManager::StopUpdateTimer()
 {
   m_GuiUpdateTimer->stop();
-  this->Modified();
 }
 
 
@@ -105,7 +103,6 @@ void IGIDataSourceManager::StartUpdateTimer()
   if (m_Sources.size() > 0)
   {
     m_GuiUpdateTimer->start();
-    this->Modified();
   }
 }
 
@@ -233,7 +230,6 @@ void IGIDataSourceManager::RetrieveAllDataSourceFactories()
 void IGIDataSourceManager::SetDirectoryPrefix(const QString& directoryPrefix)
 {
   m_DirectoryPrefix = directoryPrefix;
-  this->Modified();
 }
 
 
@@ -247,7 +243,6 @@ void IGIDataSourceManager::SetFramesPerSecond(const int& framesPerSecond)
   }
 
   m_FrameRate = framesPerSecond;
-  this->Modified();
 }
 
 
@@ -483,8 +478,6 @@ void IGIDataSourceManager::RemoveAllSources()
   {
     m_Sources.removeFirst();
   }
-
-  this->Modified();
 }
 
 
@@ -500,8 +493,6 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
     m_Sources[i]->SetRecordingLocation(directory.absolutePath());
     m_Sources[i]->StartRecording();
   }
-
-  this->Modified();
 }
 
 
@@ -512,8 +503,6 @@ void IGIDataSourceManager::StopRecording()
   {
     m_Sources[i]->StopRecording();
   }
-
-  this->Modified();
 }
 
 
@@ -535,7 +524,6 @@ void IGIDataSourceManager::FreezeAllDataSources(bool isFrozen)
   {
     this->FreezeDataSource(i, isFrozen);
   }
-  this->Modified();
 }
 
 
@@ -548,7 +536,6 @@ void IGIDataSourceManager::FreezeDataSource(unsigned int i, bool isFrozen)
   }
 
   m_Sources[i]->SetShouldUpdate(!isFrozen);
-  this->Modified();
 }
 
 
@@ -671,7 +658,6 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
   this->SetPlaybackTime(currentTime);
 
   this->SetIsPlayingBack(true);
-  this->Modified();
 }
 
 
@@ -683,8 +669,6 @@ void IGIDataSourceManager::StopPlayback()
     m_Sources[i]->StopPlayback();
   }
   this->SetIsPlayingBack(false);
-  this->Modified();
-
 }
 
 
@@ -740,7 +724,6 @@ void IGIDataSourceManager::SetPlaybackTime(const IGIDataType::IGITimeType& time)
 {
   m_CurrentTime = time;
   m_PlaybackSliderValue = (time - m_PlaybackSliderBase) / m_PlaybackSliderFactor;
-  this->Modified();
 }
 
 
@@ -748,7 +731,6 @@ void IGIDataSourceManager::SetPlaybackTime(const IGIDataType::IGITimeType& time)
 void IGIDataSourceManager::SetIsPlayingBack(bool isPlayingBack)
 {
   m_IsPlayingBack = isPlayingBack;
-  this->Modified();
 }
 
 
@@ -756,7 +738,6 @@ void IGIDataSourceManager::SetIsPlayingBack(bool isPlayingBack)
 void IGIDataSourceManager::SetIsPlayingBackAutomatically(bool isPlayingBackAutomatically)
 {
   m_IsPlayingBackAutomatically = isPlayingBackAutomatically;
-  this->Modified();
 }
 
 
@@ -787,7 +768,6 @@ void IGIDataSourceManager::SetIsGrabbingScreen(QString directoryName, bool isGra
 {
   m_IsGrabbingScreen = isGrabbing;
   m_ScreenGrabDir = directoryName;
-  this->Modified();
 }
 
 
@@ -871,8 +851,6 @@ void IGIDataSourceManager::OnUpdateGui()
   QString   humanReadableTimeStamp = QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yyyy/MM/dd hh:mm:ss.zzz");
 
   emit TimerUpdated(rawTimeStampString, humanReadableTimeStamp);
-
-  this->Modified();
 }
 
 } // end namespace

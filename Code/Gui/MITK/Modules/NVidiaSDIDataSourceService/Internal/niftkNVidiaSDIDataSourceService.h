@@ -21,9 +21,13 @@
 #include <QSet>
 #include <QMutex>
 #include <QString>
+#include <opencv2/core/types_c.h>
 
 namespace niftk
 {
+
+// some forward decls to avoid header pollution
+class NVidiaSDIDataSourceImpl;
 
 /**
 * \class NVidiaSDIDataSourceService
@@ -106,10 +110,62 @@ private:
   NVidiaSDIDataSourceService(const NVidiaSDIDataSourceService&); // deliberately not implemented
   NVidiaSDIDataSourceService& operator=(const NVidiaSDIDataSourceService&); // deliberately not implemented
 
+  /** For pattern required by base class */
   static niftk::IGIDataSourceLocker               s_Lock;
   QMutex                                          m_Lock;
   int                                             m_ChannelNumber;
   niftk::IGIDataType::IGIIndexType                m_FrameId;
+
+  /** From here down, importing Johannes's QmitkIGINVidiaDataSource */
+
+  // holds internals to prevent header pollution
+  NVidiaSDIDataSourceImpl*                  m_Pimpl;
+  unsigned int                              m_MostRecentSequenceNumber;
+  unsigned int                              m_MipmapLevel;
+  
+  // used to correlate clock, frame numbers and other events
+  std::ofstream                             m_FrameMapLogFile;
+
+  // used to detect whether record has stopped or not.
+  // there's no notification when the user clicked stop-record.
+  bool                                      m_WasSavingMessagesPreviously;
+
+  // because the sdi thread is running separately to the data-source-interface
+  // we can end up in a situation where sdi bits get recreated with new sequence numbers
+  // but these parts here still expect the old sdi instance.
+  unsigned int                              m_ExpectedCookie;
+  static const char*                        s_NODE_NAME;
+
+  // Nested private type
+  struct PlaybackPerFrameInfo
+  {
+    unsigned int m_SequenceNumber;
+    // we have max 4 channels via sdi.
+    unsigned int m_frameNumber[4];
+    PlaybackPerFrameInfo();
+  };
+  std::map<niftk::IGIDataType::IGITimeType, 
+    PlaybackPerFrameInfo>                   m_PlaybackIndex;
+
+  // used to prevent replaying the same thing over and over again.
+  // because decompression in its current implementation is quite heavy-weight,
+  // the repeated calls to PlaybackData() and similarly Update() slow down the machine
+  // quite significantly.
+  niftk::IGIDataType::IGITimeType           m_MostRecentlyPlayedbackTimeStamp;
+  niftk::IGIDataType::IGITimeType           m_MostRecentlyUpdatedTimeStamp;
+  std::pair<IplImage*, int>                 m_CachedUpdate;
+
+private:
+
+  void StartCapturing();
+  void StopCapturing();
+
+  bool InitWithRecordedData(
+    std::map<niftk::IGIDataType::IGITimeType, PlaybackPerFrameInfo>& index, 
+    const std::string& path, 
+    niftk::IGIDataType::IGITimeType* firstTimeStampInStore, 
+    niftk::IGIDataType::IGITimeType* lastTimeStampInStore, 
+    bool forReal);
 
 }; // end class
 

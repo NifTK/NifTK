@@ -21,6 +21,7 @@
 
 #include <mitkDataStorage.h>
 #include <QWidget>
+#include <QMutex>
 
 namespace niftk
 {
@@ -178,7 +179,8 @@ private slots:
 
 private:
 
-  IGIDataSourceManager::Pointer m_Manager;
+  QMutex                m_Lock;
+  IGIDataSourceManager* m_Manager;
 
   /**
   * \brief Very basic way to grab screenshots.

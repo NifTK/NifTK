@@ -49,20 +49,18 @@ namespace niftk
  *
  * Note: All errors should be thrown as mitk::Exception or sub-class thereof.
  */
-class NIFTKIGIDATASOURCESMANAGER_EXPORT IGIDataSourceManager :
-    public QObject,
-    public itk::Object
+class NIFTKIGIDATASOURCESMANAGER_EXPORT IGIDataSourceManager : public QObject
 {
 
   Q_OBJECT
 
 public:
 
-  mitkClassMacroItkParent(IGIDataSourceManager, itk::Object);
-  mitkNewMacro1Param(IGIDataSourceManager, mitk::DataStorage::Pointer);
-
   static const int    DEFAULT_FRAME_RATE;
   static const char*  DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
+
+  IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage, QObject* parent);
+  virtual ~IGIDataSourceManager();
 
   /**
   * \brief Returns true if the manager is currently playing back, and false otherwise.
@@ -301,9 +299,6 @@ signals:
   void BroadcastStatusString(QString);
 
 protected:
-
-  IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage);
-  virtual ~IGIDataSourceManager();
 
   IGIDataSourceManager(const IGIDataSourceManager&); // Purposefully not implemented.
   IGIDataSourceManager& operator=(const IGIDataSourceManager&); // Purposefully not implemented.

@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkNVidiaSDIInitDialog.h"
+#include "niftkNVidiaSDIConfigDialog.h"
 
 #include <cassert>
 
@@ -20,8 +20,8 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-NVidiaSDIInitDialog::NVidiaSDIInitDialog(QWidget *parent)
-:IGIInitialisationDialog(parent)
+NVidiaSDIConfigDialog::NVidiaSDIConfigDialog(QWidget *parent, niftk::IGIDataSourceI::Pointer service)
+:IGIConfigurationDialog(parent, service)
 {
   setupUi(this);
 
@@ -32,7 +32,7 @@ NVidiaSDIInitDialog::NVidiaSDIInitDialog(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-NVidiaSDIInitDialog::~NVidiaSDIInitDialog()
+NVidiaSDIConfigDialog::~NVidiaSDIConfigDialog()
 {
   bool ok = false;
   ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
@@ -41,11 +41,8 @@ NVidiaSDIInitDialog::~NVidiaSDIInitDialog()
 
 
 //-----------------------------------------------------------------------------
-void NVidiaSDIInitDialog::OnOKClicked()
+void NVidiaSDIConfigDialog::OnOKClicked()
 {
-  IGIDataSourceProperties props;
-  props.insert("mode", QVariant::fromValue(FieldModeComboBox->currentIndex()));
-  m_Properties = props;
 }
 
 } // end namespace
