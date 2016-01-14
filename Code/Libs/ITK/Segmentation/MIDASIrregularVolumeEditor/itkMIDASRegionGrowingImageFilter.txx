@@ -27,7 +27,6 @@ MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 , m_SegmentationContourImageBorderValue(1)
 , m_SegmentationContourImageOutsideValue(2)
 , m_ManualContourImageBorderValue(1)
-, m_ManualContourImageNonBorderValue(0)
 , m_EraseFullSlice(false)
 , m_UsePropMaskMode(false)
 {
@@ -168,26 +167,12 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
     OutputPixelType manualContourCurrentPixel = manualContourImage->GetPixel(currentImgIdx);
     OutputPixelType manualContourNextPixel = manualContourImage->GetPixel(nextImgIdx);
 
-    if (manualContourCurrentPixel == m_ManualContourImageNonBorderValue)
+    if (manualContourCurrentPixel == m_ManualContourImageBorderValue
+        && (!isFullyConnected
+            || (manualContourNextPixel == m_ManualContourImageBorderValue
+                && this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx))))
     {
-      if (manualContourNextPixel != m_ManualContourImageNonBorderValue
-          && !isFullyConnected)
-      {
-        return;
-      }
-    }
-    else
-    {
-      if (!isFullyConnected)
-      {
-        return;
-      }
-
-      if (manualContourNextPixel == m_ManualContourImageBorderValue
-          && this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx))
-      {
-        return;
-      }
+      return;
     }
   }
 

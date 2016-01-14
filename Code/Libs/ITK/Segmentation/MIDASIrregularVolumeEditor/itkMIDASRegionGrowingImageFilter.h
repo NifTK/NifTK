@@ -122,9 +122,6 @@ public:
   itkSetMacro(ManualContourImageBorderValue, OutputPixelType);
   itkGetConstMacro(ManualContourImageBorderValue, OutputPixelType);
 
-  itkSetMacro(ManualContourImageNonBorderValue, OutputPixelType);
-  itkGetConstMacro(ManualContourImageNonBorderValue, OutputPixelType);
-
   /**
    * \brief Within MIDAS, if region growing covers the whole slice, the output
    * is zero, not the whole slice.
@@ -200,6 +197,9 @@ public:
    * lines may be unclosed (eg. a line, and not a circle), there is no concept of
    * "inside" or "outside" the line.  The only thing we can render is "border"
    * or "not-border".
+   *
+   * The lines are represented by a two voxel wide stripe of "border" values, one
+   * voxel on both sides of the lines all along them.
    */
   itkSetObjectMacro(ManualContourImage, OutputImageType);
 
