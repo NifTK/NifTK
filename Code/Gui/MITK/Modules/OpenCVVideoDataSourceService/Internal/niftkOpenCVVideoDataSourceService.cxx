@@ -398,6 +398,8 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
   IGIDataItemInfo info;
   info.m_Name = this->GetName();
   info.m_FramesPerSecond = m_Buffer->GetFrameRate();
+  info.m_IsLate = false;
+  info.m_LagInMilliseconds = 0;
   infos.push_back(info);
 
   // If we are not actually updating data, bail out.

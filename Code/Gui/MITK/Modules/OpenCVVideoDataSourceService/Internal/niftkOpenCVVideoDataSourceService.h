@@ -79,11 +79,6 @@ public:
   virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
 
   /**
-  * \see niftk::IGIDataSource::SaveItem()
-  */
-  virtual void SaveItem(niftk::IGIDataType::Pointer item) override;
-
-  /**
   * \see niftk::IGIDataSource::CleanBuffer()
   */
   virtual void CleanBuffer() override;
@@ -122,6 +117,8 @@ private:
 
   OpenCVVideoDataSourceService(const OpenCVVideoDataSourceService&); // deliberately not implemented
   OpenCVVideoDataSourceService& operator=(const OpenCVVideoDataSourceService&); // deliberately not implemented
+
+  void SaveItem(niftk::IGIDataType::Pointer item);
 
   static niftk::IGIDataSourceLocker               s_Lock;
   QMutex                                          m_Lock;
