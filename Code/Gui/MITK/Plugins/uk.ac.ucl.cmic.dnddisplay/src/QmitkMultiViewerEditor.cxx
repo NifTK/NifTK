@@ -183,11 +183,6 @@ bool QmitkMultiViewerEditorPrivate::AreCommandLineArgumentsProcessed()
 //-----------------------------------------------------------------------------
 void QmitkMultiViewerEditorPrivate::ProcessCommandLineArguments()
 {
-  if (QmitkMultiViewerEditorPrivate::AreCommandLineArgumentsProcessed())
-  {
-    return;
-  }
-
   QStringList args = berry::Platform::GetApplicationArgs();
 
   for (QStringList::const_iterator it = args.begin(); it != args.end(); ++it)
@@ -839,10 +834,27 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
     this->OnPreferencesChanged(prefs.GetPointer());
   }
 
-  if (!d->AreCommandLineArgumentsProcessed())
+  /// The command line arguments should be processed after the widget has been created
+  /// and it becomes visible. This is crucial for the 'FitWindow' function to work correctly,
+  /// since it needs to know the actual size of the window. Also, the multi window widget
+  /// checks at many places if the render windows are visible and it skips calculations and
+  /// updates for not visible windows.
+  /// Here we are in the function that creates the widget, that means, the widget will have
+  /// been created right after this function returns. So that we do not need to deal with
+  /// event filters and such, we delay the call to process the command line arguments by
+  /// one millisecond. This leaves time for this function to return, and the arguments will
+  /// be processed as soon as possible.
+  if (!QmitkMultiViewerEditorPrivate::AreCommandLineArgumentsProcessed())
   {
-    d->ProcessCommandLineArguments();
+    QTimer::singleShot(1, this, SLOT(ProcessCommandLineArguments()));
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMultiViewerEditor::ProcessCommandLineArguments()
+{
+  d->ProcessCommandLineArguments();
 }
 
 
