@@ -375,6 +375,13 @@ std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGI
 {
   std::vector<IGIDataItemInfo> infos;
 
+  IGIDataItemInfo info;
+  info.m_Name = this->GetName();
+  info.m_FramesPerSecond = m_Buffer->GetFrameRate();
+  info.m_IsLate = true;
+  info.m_LagInMilliseconds = 0;
+  infos.push_back(info);
+
   // This loads playback-data into the buffers, so must
   // come before the check for empty buffer.
   if (this->GetIsPlayingBack())
@@ -402,13 +409,6 @@ std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGI
     MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffer->GetBufferSize() << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
     return infos;
   }
-
-  IGIDataItemInfo info;
-  info.m_Name = this->GetName();
-  info.m_FramesPerSecond = m_Buffer->GetFrameRate();
-  info.m_IsLate = false;
-  info.m_LagInMilliseconds = 0;
-  infos.push_back(info);
 
   // If we are not actually updating data, bail out.
   if (!this->GetShouldUpdate())
