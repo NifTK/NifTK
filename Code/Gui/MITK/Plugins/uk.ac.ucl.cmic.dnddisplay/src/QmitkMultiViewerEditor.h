@@ -167,6 +167,10 @@ protected:
   /// \brief Creates the main Qt GUI element parts.
   virtual void CreateQtPartControl(QWidget* parent);
 
+private slots:
+
+  void ProcessCommandLineArguments();
+
 private:
 
   const QScopedPointer<QmitkMultiViewerEditorPrivate> d;
