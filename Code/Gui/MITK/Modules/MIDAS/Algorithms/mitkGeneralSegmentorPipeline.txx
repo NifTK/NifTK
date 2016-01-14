@@ -90,7 +90,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_AllSeeds->GetPoints()->Initialize();
     m_SegmentationContours.clear();
     m_ManualContours.clear();
-    
+
     // 3. Convert seeds / contours.
     mitk::Vector3D spacingInWorldCoordinateOrder;
     mitk::GetSpacingInWorldCoordinateOrder(m_ExtractBinaryRegionOfInterestFilter->GetInput(), spacingInWorldCoordinateOrder);
@@ -107,11 +107,11 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_ExtractBinaryRegionOfInterestFilter->SetExtractionRegion(region3D);
     m_ExtractBinaryRegionOfInterestFilter->UpdateLargestPossibleRegion();   
     typename SegmentationImageType::Pointer segmentationImage = m_ExtractBinaryRegionOfInterestFilter->GetOutput();
-        
+
     m_CastToSegmentationContourFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
     m_CastToSegmentationContourFilter->UpdateLargestPossibleRegion();
     typename SegmentationImageType::Pointer segmentationContourImage = m_CastToSegmentationContourFilter->GetOutput();
-    
+
     m_CastToManualContourFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
     m_CastToManualContourFilter->UpdateLargestPossibleRegion();
     typename SegmentationImageType::Pointer manualContourImage = m_CastToManualContourFilter->GetOutput();
@@ -126,7 +126,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     unsigned char segImageOutside = 2;
     unsigned char manualImageNonBorder = 0;
     unsigned char manualImageBorder = 1;
-        
+
     // 6. Blank the contour images.
     segmentationContourImage->FillBuffer(segImageInside);
     manualContourImage->FillBuffer(manualImageNonBorder);
@@ -425,11 +425,10 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_RegionGrowingFilter->SetSegmentationContourImageBorderValue(segImageBorder);
     m_RegionGrowingFilter->SetSegmentationContourImageOutsideValue(segImageOutside);
     m_RegionGrowingFilter->SetManualContourImage(manualContourImage);
-    m_RegionGrowingFilter->SetManualContourImageNonBorderValue(manualImageNonBorder);
     m_RegionGrowingFilter->SetManualContourImageBorderValue(manualImageBorder);
     m_RegionGrowingFilter->SetManualContours(&m_ManualContours);
     m_RegionGrowingFilter->UpdateLargestPossibleRegion();
-    
+
 //    ++counter;
 //    std::ostringstream fileName3;
 //    fileName3 << "/home/espakm/Desktop/16856/tmp/regionGrowing-" << counter << ".nii.gz";
@@ -447,7 +446,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
       {
         outputIter.Set(regionGrowingIter.Get());
       }
-    }  
+    }
   }
   catch( itk::ExceptionObject & err )
   {
