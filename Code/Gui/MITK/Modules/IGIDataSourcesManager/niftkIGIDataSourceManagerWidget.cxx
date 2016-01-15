@@ -49,6 +49,7 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
 
   m_DirectoryChooser->setFilters(ctkPathLineEdit::Dirs);
   m_DirectoryChooser->setOptions(ctkPathLineEdit::ShowDirsOnly);
+  m_DirectoryChooser->setEnabled(true);
 
   m_ToolManagerPlaybackGroupBox->setCollapsed(true);
   m_ToolManagerConsoleGroupBox->setCollapsed(true);
@@ -233,10 +234,14 @@ void IGIDataSourceManagerWidget::OnPlayStart()
         // For now, cannot start recording directly from playback mode.
         // could be possible: leave this enabled and simply stop all playback when user clicks on record.
         m_RecordPushButton->setEnabled(false);
-
         m_TimeStampEdit->setReadOnly(false);
         m_PlaybackSlider->setEnabled(true);
         m_PlaybackSlider->setValue(sliderValue);
+
+        // Stop the user editing the path.
+        // In order to start editing the path, you must stop playing back.
+        m_DirectoryChooser->setEnabled(false);
+        m_PlayPushButton->setEnabled(false);
       }
       catch (const mitk::Exception& e)
       {
@@ -296,6 +301,7 @@ void IGIDataSourceManagerWidget::OnRecordStart()
   QString directoryName = m_Manager->GetDirectoryName();
   QDir directory(directoryName);
   m_DirectoryChooser->setCurrentPath(directory.absolutePath());
+  m_DirectoryChooser->setEnabled(false);
   m_Manager->StartRecording(directory.absolutePath());
 
   // Tell interested parties (e.g. other plugins) that recording has started.
@@ -325,17 +331,19 @@ void IGIDataSourceManagerWidget::OnStop()
 
   if (m_PlayPushButton->isChecked())
   {
-    // we are playing back, so simulate a user click to stop.
-    m_PlayPushButton->click();
+    m_Manager->SetIsPlayingBackAutomatically(false);
+    m_Manager->StopPlayback();
+    m_PlayPushButton->setChecked(false);
   }
   else
   {
     m_Manager->StopRecording();
-
-    m_RecordPushButton->setEnabled(true);
-    m_StopPushButton->setEnabled(false);
-    m_PlayPushButton->setEnabled(true);
+    m_RecordPushButton->setChecked(false);
   }
+  m_RecordPushButton->setEnabled(true);
+  m_StopPushButton->setEnabled(false);
+  m_PlayPushButton->setEnabled(true);
+  m_DirectoryChooser->setEnabled(true);
 }
 
 
