@@ -52,11 +52,6 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
 
   this->SetStatus("Initialising");
 
-  // Trigger an update, just in case it crashes.
-  // Its best to bail out during constructor.
-  m_Tracker->StartTracking();
-  m_Tracker->Update();
-
   QString deviceName = this->GetName();
   m_TrackerNumber = (deviceName.remove(0, name.length() + 1)).toInt();
 

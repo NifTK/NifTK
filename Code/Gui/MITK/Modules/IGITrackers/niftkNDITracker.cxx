@@ -68,7 +68,6 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   // Setup tracker.
   m_TrackerDevice = mitk::NDITrackingDevice::New();
   m_TrackerDevice->SetType(m_DeviceType);
-  m_TrackerDevice->SetDeviceName(m_DeviceData.Model);
   m_TrackerDevice->SetPortNumber(m_PortNumber);
 
   m_TrackerSource = mitk::TrackingDeviceSource::New();
@@ -94,6 +93,7 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   // The point of RAII is that the constructor has successfully acquired all
   // resources, so we should try connecting. The way to disconnect it to delete this object.
   this->OpenConnection();
+  this->StartTracking();
 }
 
 
@@ -119,12 +119,12 @@ void NDITracker::OpenConnection()
   // You should only call this from constructor.
   if (m_TrackerDevice->GetState() == mitk::TrackingDevice::Setup)
   {
-    m_TrackerDevice->OpenConnection();
+    m_TrackerSource->Connect();
     if (m_TrackerDevice->GetState() != mitk::TrackingDevice::Ready)
     {
       mitkThrow() << "Failed to connect to tracker";
     }
-    MITK_INFO << "Opened connection to polaris on port " << m_PortNumber;
+    MITK_INFO << "Opened connection to tracker on port " << m_PortNumber;
   }
   else
   {
@@ -139,12 +139,12 @@ void NDITracker::CloseConnection()
   // You should only call this from destructor.
   if (m_TrackerDevice->GetState() == mitk::TrackingDevice::Ready)
   {
-    m_TrackerDevice->CloseConnection();
+    m_TrackerSource->Disconnect();
     if (m_TrackerDevice->GetState() != mitk::TrackingDevice::Setup)
     {
       mitkThrow() << "Failed to disconnect from tracker";
     }
-    MITK_INFO << "Closed connection to polaris on port " << m_PortNumber;
+    MITK_INFO << "Closed connection to tracker on port " << m_PortNumber;
   }
   else
   {
@@ -161,13 +161,13 @@ void NDITracker::StartTracking()
     return;
   }
 
-  m_TrackerDevice->StartTracking();
+  m_TrackerSource->StartTracking();
 
   if (m_TrackerDevice->GetState() != mitk::TrackingDevice::Tracking)
   {
     mitkThrow() << "Failed to start tracking";
   }
-  MITK_INFO << "Started polaris tracking for " << m_TrackerDevice->GetToolCount() << " tools.";
+  MITK_INFO << "Started tracking for " << m_TrackerDevice->GetToolCount() << " tools.";
 }
 
 
@@ -179,13 +179,13 @@ void NDITracker::StopTracking()
     return;
   }
 
-  m_TrackerDevice->StopTracking();
+  m_TrackerSource->StopTracking();
 
   if (m_TrackerDevice->GetState() != mitk::TrackingDevice::Ready)
   {
     mitkThrow() << "Failed to stop tracking";
   }
-  MITK_INFO << "Stopped polaris tracking for " << m_TrackerDevice->GetToolCount() << " tools.";
+  MITK_INFO << "Stopped tracking for " << m_TrackerDevice->GetToolCount() << " tools.";
 }
 
 
@@ -216,7 +216,6 @@ void NDITracker::Update()
 std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > NDITracker::GetTrackingData()
 {
   m_TrackerSource->Update();
-
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result;
 
   for(unsigned int i=0; i< m_TrackerSource->GetNumberOfIndexedOutputs(); i++)
