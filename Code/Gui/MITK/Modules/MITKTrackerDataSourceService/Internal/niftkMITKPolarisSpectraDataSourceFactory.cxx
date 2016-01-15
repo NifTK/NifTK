@@ -14,7 +14,7 @@
 
 #include "niftkMITKPolarisSpectraDataSourceFactory.h"
 #include "niftkMITKTrackerDataSourceService.h"
-#include <niftkVicraTracker.h>
+#include <niftkSpectraTracker.h>
 
 namespace niftk
 {
@@ -44,7 +44,7 @@ IGIDataSourceI::Pointer MITKPolarisSpectraDataSourceFactory::CreateService(
 
   this->ExtractProperties(properties, portNumber, fileName);
 
-  niftk::VicraTracker::Pointer tracker = niftk::VicraTracker::New(
+  niftk::SpectraTracker::Pointer tracker = niftk::SpectraTracker::New(
         dataStorage, portNumber, fileName
         );
 
