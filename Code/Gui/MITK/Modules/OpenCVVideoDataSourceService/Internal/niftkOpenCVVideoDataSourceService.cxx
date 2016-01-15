@@ -75,7 +75,7 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
   // drop clock ticks, so in effect, you will get less than this.
   int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
 
-  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.5);
+  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.5 /* fudge factor*/);
   this->SetShouldUpdate(true);
   this->SetProperties(properties);
 
@@ -314,6 +314,11 @@ void OpenCVVideoDataSourceService::GrabData()
   if (this->GetIsRecording())
   {
     this->SaveItem(wrapper.GetPointer());
+    this->SetStatus("Saving");
+  }
+  else
+  {
+    this->SetStatus("Grabbing");
   }
 
   // Putting this after the save, as we don't want to
@@ -321,8 +326,6 @@ void OpenCVVideoDataSourceService::GrabData()
   // m_BackgroundDeleteThread deletes the object while
   // we are trying to save the data.
   m_Buffer->AddToBuffer(wrapper.GetPointer());
-
-  this->SetStatus("Grabbing");
 }
 
 
@@ -366,6 +369,7 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
   std::vector<IGIDataItemInfo> infos;
 
   // Create default return status.
+  // So, we always return at least 1 row.
   IGIDataItemInfo info;
   info.m_Name = this->GetName();
   info.m_FramesPerSecond = m_Buffer->GetFrameRate();
@@ -417,7 +421,7 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
   const IplImage* img = dataType->GetImage();
   if (img == NULL)
   {
-    this->SetStatus("Failed");
+    this->SetStatus("Failed Update");
     mitkThrow() << "Failed to extract OpenCV image from buffer!";
   }
 

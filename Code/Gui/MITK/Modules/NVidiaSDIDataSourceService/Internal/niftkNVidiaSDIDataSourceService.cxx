@@ -111,6 +111,7 @@ NVidiaSDIDataSourceService::NVidiaSDIDataSourceService(
     {
       mitkThrow() << "Failed to start data grabbing thread";
     }
+    this->SetDescription("NVIDIA SDI");
     this->SetStatus("Initialised");
     this->Modified();
   }
@@ -254,7 +255,7 @@ void NVidiaSDIDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
 
       m_MostRecentSequenceNumber = 1;
       m_Buffer->AddToBuffer(wrapper.GetPointer());
-      this->SetStatus("Playing");
+      this->SetStatus("Playing back");
 
       m_MostRecentlyPlayedbackTimeStamp = requestedTimeStamp;
     }
@@ -345,10 +346,7 @@ void NVidiaSDIDataSourceService::GrabData()
         {
           this->SaveItem(wrapper.GetPointer());
         }
-
         m_Buffer->AddToBuffer(wrapper.GetPointer());
-
-        this->SetStatus("Grabbing");
       }
     }
   }
@@ -606,7 +604,6 @@ std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGI
   else
   {
     // this is not an error. there are simply stale IGINVidiaDataType in flight.
-    this->SetStatus("...");
   }
 
   infos[0].m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
