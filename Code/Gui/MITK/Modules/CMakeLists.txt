@@ -78,7 +78,6 @@ if(BUILD_IGI)
     MITKTrackerDataSourceService
     NiftyLinkDataSourceService
     NVidiaSDIDataSourceService
-    NVidia
   )
 endif()
 
