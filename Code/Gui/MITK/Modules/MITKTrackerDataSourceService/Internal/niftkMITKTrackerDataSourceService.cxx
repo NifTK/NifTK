@@ -82,7 +82,7 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
     mitkThrow() << "Failed to start data grabbing thread";
   }
 
-  this->SetDescription("Local trackers, provided by MITK.");
+  this->SetDescription("MITK Trackers");
   this->SetStatus("Initialised");
   this->Modified();
 }
@@ -265,9 +265,10 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
         } // end if file open
       } // end if item not already in buffer
     } // end: if we found a valid item to playback
-  } // end: foreach buffer
 
-  this->SetStatus("Playing back");
+    this->SetStatus("Playing back");
+
+  } // end: foreach buffer
 }
 
 
@@ -291,7 +292,6 @@ void MITKTrackerDataSourceService::GrabData()
   niftk::IGIDataType::IGITimeType timeCreated = this->GetTimeStampInNanoseconds();
 
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result = m_Tracker->GetTrackingData();
-
   if (!result.empty())
   {
     std::map<std::string, vtkSmartPointer<vtkMatrix4x4> >::iterator iter;
@@ -321,6 +321,11 @@ void MITKTrackerDataSourceService::GrabData()
       if (this->GetIsRecording())
       {
         this->SaveItem(wrapper.GetPointer());
+        this->SetStatus("Saving");
+      }
+      else
+      {
+        this->SetStatus("Grabbing");
       }
 
       // Putting this after the save, as we don't want to
@@ -329,7 +334,6 @@ void MITKTrackerDataSourceService::GrabData()
       // we are trying to save the data.
       m_Buffers[toolNameAsQString]->AddToBuffer(wrapper.GetPointer());
     }
-    this->SetStatus("Grabbing");
   }
   else
   {
