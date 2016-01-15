@@ -172,7 +172,6 @@ QString NVidiaSDIDataSourceService::GetRecordingDirectoryName()
   return this->GetRecordingLocation()
       + niftk::GetPreferredSlash()
       + this->GetName()
-      + "_" + (tr("%1").arg(m_ChannelNumber))
       ;
 }
 

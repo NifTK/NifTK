@@ -71,6 +71,7 @@ IGIConfigurationDialog* NVidiaSDIDataSourceFactory::CreateConfigurationDialog(QW
 QList<QString> NVidiaSDIDataSourceFactory::GetLegacyClassNames() const
 {
   QList<QString> names;
+  names.push_back("QmitkIGINVidiaDataSource");
   return names;
 }
 

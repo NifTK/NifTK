@@ -569,21 +569,21 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
       QString nameOfSource = iter.key();
       QString nameOfFactory = iter.value();
 
+      IGIDataType::IGITimeType startTime;
+      IGIDataType::IGITimeType endTime;
+      bool canDo = false;
+
       if (!m_NameToFactoriesMap.contains(nameOfFactory)
-          && !m_LegacyNameToFactoriesMap.contains(nameOfFactory)
-          )
+        && !m_LegacyNameToFactoriesMap.contains(nameOfFactory))
       {
         mitkThrow() << "Cannot play source=" << nameOfSource.toStdString() << ", using factory=" << nameOfFactory.toStdString() << ".";
       }
 
-      IGIDataType::IGITimeType startTime;
-      IGIDataType::IGITimeType endTime;
-
       m_Sources[sourceNumber]->SetRecordingLocation(directoryPrefix);
-      bool canDo = m_Sources[sourceNumber]->ProbeRecordedData(
-            m_Sources[sourceNumber]->GetRecordingDirectoryName(),
-            &startTime,
-            &endTime);
+      canDo = m_Sources[sourceNumber]->ProbeRecordedData(
+                directoryPrefix + QDir::separator() + nameOfSource,
+                &startTime,
+                &endTime);
 
       if (canDo)
       {
