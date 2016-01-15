@@ -44,9 +44,5 @@ if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
     #cotire(niftkNVidiaSDIDataSourceService)
   endif()
 
-  if (BUILD_TESTING)
-    add_subdirectory(Testing)
-  endif()
-
 endif()
 

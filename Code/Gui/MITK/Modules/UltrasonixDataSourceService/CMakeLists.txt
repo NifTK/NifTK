@@ -12,13 +12,18 @@
 #
 #============================================================================*/
 
-if (Ultrasonix_FOUND)
+find_package(UltrasonixUlterius)
+
+if (UltrasonixUlterius_FOUND)
 
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources niftkOpenCVImageConversion
     PACKAGE_DEPENDS Qt4|QtCore OpenCV
     AUTOLOAD_WITH niftkIGIServices
   )
+
+  include_directories(${Ultrasonix_ULTERIUS_INCLUDE_DIR})
+  target_link_libraries(niftkUltrasonixDataSourceService PRIVATE ${Ultrasonix_ULTERIUS_LIBRARY})
 
   if (NIFTK_USE_COTIRE AND COMMAND cotire)
     cotire(niftkUltrasonixDataSourceService)
