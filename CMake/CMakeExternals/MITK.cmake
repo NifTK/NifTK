@@ -87,12 +87,6 @@ if(NOT DEFINED MITK_DIR)
         IOExt                   # autoloaded with MitkCore, registers IO microservices
       )
 
-      if(MITK_USE_Qt4)
-        list(APPEND _enabled_modules
-          AppUtil
-        )
-      endif()
-
       if(MITK_USE_BLUEBERRY)
 
         list(APPEND _enabled_plugins
