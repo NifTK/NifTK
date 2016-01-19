@@ -833,116 +833,124 @@ bool NVidiaSDIDataSourceService::InitWithRecordedData(
   niftk::IGIDataType::IGITimeType firstTimeStampFound = 0;
   niftk::IGIDataType::IGITimeType lastTimeStampFound  = 0;
 
-  QDir directory(QString::fromStdString(path));
-  if (directory.exists())
+  try
   {
-    QStringList filters;
-    filters << QString("capture-*.264");
-    directory.setNameFilters(filters);
-    directory.setFilter(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot);
-
-    QStringList nalfiles = directory.entryList();
-    // currently, we are only writing a single huge file.
-    if (nalfiles.size() > 1)
+    QDir directory(QString::fromStdString(path));
+    if (directory.exists())
     {
-      MITK_ERROR << "NVidiaSDIDataSourceService: Warning: found more than one NAL file, will use " + nalfiles[0].toStdString() + " only!" << std::endl;
-    }
-    if (nalfiles.size() >= 1)
-    {
-      QString     basename = nalfiles[0].split(".264")[0];
-      std::string nalfilename = (directory.path() + QDir::separator() + basename + ".264").toStdString();
-
-      // try to open video file.
-      // it will throw if something goes wrong.
-      m_Pimpl->TryPlayback(nalfilename);
-
-      // now we need to correlate frame numbers with timestamps
-      index.clear();
-      std::string     framemapfilename = (directory.path() + QDir::separator() + basename + ".framemap.log").toStdString();
-      std::ifstream   framemapfile(framemapfilename.c_str());
-      if (framemapfile.good())
+      QStringList filters;
+      filters << QString("capture-*.264");
+      directory.setNameFilters(filters);
+      directory.setFilter(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot);
+    
+      QStringList nalfiles = directory.entryList();
+      // currently, we are only writing a single huge file.
+      if (nalfiles.size() > 1)
       {
-        std::string   commentline;
-        std::getline(framemapfile, commentline);
-        if (commentline[0] != '#')
+        MITK_ERROR << "NVidiaSDIDataSourceService: Warning: found more than one NAL file, will use " + nalfiles[0].toStdString() + " only!" << std::endl;
+      }
+      if (nalfiles.size() >= 1)
+      {
+        QString     basename = nalfiles[0].split(".264")[0];
+        std::string nalfilename = (directory.path() + QDir::separator() + basename + ".264").toStdString();
+
+        // try to open video file.
+        // it will throw if something goes wrong.
+        m_Pimpl->TryPlayback(nalfilename);
+
+        // now we need to correlate frame numbers with timestamps
+        index.clear();
+        std::string     framemapfilename = (directory.path() + QDir::separator() + basename + ".framemap.log").toStdString();
+        std::ifstream   framemapfile(framemapfilename.c_str());
+        if (framemapfile.good())
         {
-          mitkThrow() << "Frame map has been tampered with";
-        }
-
-        unsigned int                    framenumber     = -1;
-        unsigned int                    sequencenumber  = -1;
-        unsigned int                    channelnumber   = -1;
-        niftk::IGIDataType::IGITimeType timestamp       = -1;
-
-        while (framemapfile.good())
-        {
-          framemapfile >> framenumber;
-          framemapfile >> sequencenumber;
-          framemapfile >> channelnumber;
-          framemapfile >> timestamp;
-
-          if (timestamp == -1)
+          std::string   commentline;
+          std::getline(framemapfile, commentline);
+          if (commentline[0] != '#')
           {
-            break;
+            mitkThrow() << "Frame map has been tampered with";
           }
 
-          // remember: the frame number stored in the framemap was intended to be used with ffmpeg.
-          // but ffmpeg starts counting at 1 instead of zero.
-          // so we need to substract one to get the framenumber for the decompressor.
-          // WARNING: actually no! all pig data was recorded with zero-based index.
-          //framenumber -= 1;
+          unsigned int                    framenumber     = -1;
+          unsigned int                    sequencenumber  = -1;
+          unsigned int                    channelnumber   = -1;
+          niftk::IGIDataType::IGITimeType timestamp       = -1;
 
-          assert(channelnumber < 4);
-          index[timestamp].m_SequenceNumber = sequencenumber;
-          index[timestamp].m_frameNumber[channelnumber] = framenumber;
-        }
+          while (framemapfile.good())
+          {
+            framemapfile >> framenumber;
+            framemapfile >> sequencenumber;
+            framemapfile >> channelnumber;
+            framemapfile >> timestamp;
 
-        if (!index.empty())
-        {
-          firstTimeStampFound = index.begin()->first;
-          lastTimeStampFound  = (--(index.end()))->first;
-        }
-
-        int   fieldmode = -1;
-        std::string     fieldmodefilename = (directory.path() + QDir::separator() + basename + ".fieldmode").toStdString();
-        std::ifstream   fieldmodefile(fieldmodefilename.c_str());
-        if (fieldmodefile.good())
-        {
-          fieldmodefile >> fieldmode;
-        }
-        fieldmodefile.close();
-        switch (fieldmode)
-        {
-          default:
-            MITK_ERROR << "Warning: unknown field mode for file " << basename.toStdString() << std::endl;
-            fieldmode = STACK_FIELDS;
-          case SPLIT_LINE_INTERLEAVED_STEREO:
-            // STACK_FIELDS used to be the default for previous pig recordings. but it has been deprecated since.
-            // we still set this on pimpl, so that Update() will do the right thing of implicitly converting it to DROP_ONE_FIELD.
-          case STACK_FIELDS:
-          case DROP_ONE_FIELD:
-          case DO_NOTHING_SPECIAL:
-            if (forReal)
+            if (timestamp == -1)
             {
-              m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) fieldmode);
+              break;
             }
-            break;
+
+            // remember: the frame number stored in the framemap was intended to be used with ffmpeg.
+            // but ffmpeg starts counting at 1 instead of zero.
+            // so we need to substract one to get the framenumber for the decompressor.
+            // WARNING: actually no! all pig data was recorded with zero-based index.
+            //framenumber -= 1;
+
+            assert(channelnumber < 4);
+            index[timestamp].m_SequenceNumber = sequencenumber;
+            index[timestamp].m_frameNumber[channelnumber] = framenumber;
+          }
+
+          if (!index.empty())
+          {
+            firstTimeStampFound = index.begin()->first;
+            lastTimeStampFound  = (--(index.end()))->first;
+          }
+
+          int   fieldmode = -1;
+          std::string     fieldmodefilename = (directory.path() + QDir::separator() + basename + ".fieldmode").toStdString();
+          std::ifstream   fieldmodefile(fieldmodefilename.c_str());
+          if (fieldmodefile.good())
+          {
+            fieldmodefile >> fieldmode;
+          }
+          fieldmodefile.close();
+          switch (fieldmode)
+          {
+            default:
+              MITK_ERROR << "Warning: unknown field mode for file " << basename.toStdString() << std::endl;
+              fieldmode = STACK_FIELDS;
+            case SPLIT_LINE_INTERLEAVED_STEREO:
+              // STACK_FIELDS used to be the default for previous pig recordings. but it has been deprecated since.
+              // we still set this on pimpl, so that Update() will do the right thing of implicitly converting it to DROP_ONE_FIELD.
+            case STACK_FIELDS:
+            case DROP_ONE_FIELD:
+            case DO_NOTHING_SPECIAL:
+              if (forReal)
+              {
+                m_Pimpl->SetFieldMode((video::SDIInput::InterlacedBehaviour) fieldmode);
+              }
+              break;
+          }
         }
-      }
-      else
-      {
-        mitkThrow() << "Frame map not readable";
+        else
+        {
+          mitkThrow() << "Frame map not readable";
+        }
       }
     }
-  }
 
-  if (firstTimeStampInStore)
-  {
-    *firstTimeStampInStore = firstTimeStampFound;
+    if (firstTimeStampInStore)
+    {
+      *firstTimeStampInStore = firstTimeStampFound;
+    }
+    if (lastTimeStampInStore)
+    {
+      *lastTimeStampInStore = lastTimeStampFound;
+    }
+
   }
-  if (lastTimeStampInStore)
+  catch (std::exception& e)
   {
-    *lastTimeStampInStore = lastTimeStampFound;
+    mitkThrow() << "InitWithRecordedData caught low-level exception, please check log file:" << e.what() << std::endl;
   }
 
   return firstTimeStampFound != 0;
