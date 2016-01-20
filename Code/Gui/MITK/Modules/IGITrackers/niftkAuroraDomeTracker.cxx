@@ -21,7 +21,7 @@ namespace niftk
 AuroraDomeTracker::AuroraDomeTracker(mitk::DataStorage::Pointer dataStorage,
                                      mitk::SerialCommunication::PortNumber portNumber,
                                      std::string toolConfigFileName)
-: NDITracker(dataStorage, portNumber, mitk::NDIAurora, mitk::DeviceDataAuroraPlanarDome, toolConfigFileName, 40)
+: NDITracker(dataStorage, portNumber, mitk::DeviceDataAuroraPlanarDome, toolConfigFileName, 40)
 {
 }
 
@@ -29,7 +29,6 @@ AuroraDomeTracker::AuroraDomeTracker(mitk::DataStorage::Pointer dataStorage,
 //-----------------------------------------------------------------------------
 AuroraDomeTracker::~AuroraDomeTracker()
 {
-  // Smart pointer deletes tracker.
 }
 
 } // end namespace

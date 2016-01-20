@@ -288,7 +288,6 @@ void MITKTrackerDataSourceService::GrabData()
     mitkThrow() << "Tracker is null. This should not happen! It's a programming bug.";
   }
 
-  m_Tracker->Update();
   niftk::IGIDataType::IGITimeType timeCreated = this->GetTimeStampInNanoseconds();
 
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result = m_Tracker->GetTrackingData();

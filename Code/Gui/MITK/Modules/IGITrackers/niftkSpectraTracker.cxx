@@ -21,7 +21,7 @@ namespace niftk
 SpectraTracker::SpectraTracker(mitk::DataStorage::Pointer dataStorage,
                                mitk::SerialCommunication::PortNumber portNumber,
                                std::string toolConfigFileName)
-: NDITracker(dataStorage, portNumber, mitk::NDIPolaris, mitk::DeviceDataPolarisSpectra, toolConfigFileName, 60)
+: NDITracker(dataStorage, portNumber, mitk::DeviceDataPolarisSpectra, toolConfigFileName, 60)
 {
 }
 
@@ -29,7 +29,6 @@ SpectraTracker::SpectraTracker(mitk::DataStorage::Pointer dataStorage,
 //-----------------------------------------------------------------------------
 SpectraTracker::~SpectraTracker()
 {
-  // Smart pointer deletes tracker.
 }
 
 } // end namespace

@@ -16,7 +16,9 @@
 
 #include <mitkNavigationToolStorageDeserializer.h>
 #include <mitkNavigationToolStorageSerializer.h>
+#include <mitkTrackingDeviceSourceConfigurator.h>
 #include <mitkException.h>
+#include <mitkRenderingManager.h>
 
 namespace niftk
 {
@@ -24,14 +26,12 @@ namespace niftk
 //-----------------------------------------------------------------------------
 NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
                        mitk::SerialCommunication::PortNumber portNumber,
-                       mitk::TrackingDeviceType deviceType,
                        mitk::TrackingDeviceData deviceData,
                        std::string toolConfigFileName,
                        int preferredFramesPerSecond
                        )
 : m_DataStorage(dataStorage)
 , m_PortNumber(portNumber)
-, m_DeviceType(deviceType)
 , m_DeviceData(deviceData)
 , m_ToolConfigFileName(toolConfigFileName)
 , m_PreferredFramesPerSecond(preferredFramesPerSecond)
@@ -51,10 +51,7 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
 
   // Load configuration for tracker tools (e.g. pointer, laparoscope etc) from external file.
   mitk::NavigationToolStorageDeserializer::Pointer deserializer = mitk::NavigationToolStorageDeserializer::New(m_DataStorage);
-
-  // This will throw if it fails to read for example.
   m_NavigationToolStorage = deserializer->Deserialize(m_ToolConfigFileName);
-
   if(m_NavigationToolStorage->isEmpty())
   {
     std::string errorMessage = std::string("Failed to load tracker tool configuration:") + deserializer->GetErrorMessage();
@@ -67,11 +64,30 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
 
   // Setup tracker.
   m_TrackerDevice = mitk::NDITrackingDevice::New();
-  m_TrackerDevice->SetType(m_DeviceType);
+  m_TrackerDevice->SetData(m_DeviceData);
   m_TrackerDevice->SetPortNumber(m_PortNumber);
 
-  m_TrackerSource = mitk::TrackingDeviceSource::New();
-  m_TrackerSource->SetTrackingDevice(m_TrackerDevice);
+  // Setup source.
+  mitk::TrackingDeviceSourceConfigurator::Pointer myTrackingDeviceSourceFactory
+      = mitk::TrackingDeviceSourceConfigurator::New(m_NavigationToolStorage, m_TrackerDevice.GetPointer());
+  m_TrackerSource = myTrackingDeviceSourceFactory->CreateTrackingDeviceSource();
+  if (m_TrackerSource.IsNull())
+  {
+    mitkThrow() << "Could not create Tracker Source due to:" << myTrackingDeviceSourceFactory->GetErrorMessage();
+  }
+
+  // Setup tools.
+  // The tools are maybe reordered after initialization,
+  // e.g. in case of auto-detected tools of NDI Aurora
+  mitk::NavigationToolStorage::Pointer toolsInNewOrder
+      = myTrackingDeviceSourceFactory->GetUpdatedNavigationToolStorage();
+  if ((toolsInNewOrder.IsNotNull()) && (toolsInNewOrder->GetToolCount() > 0))
+  {
+    for(int i = 0; i < toolsInNewOrder->GetToolCount(); i++ )
+    {
+      m_NavigationToolStorage->AssignToolNumber(toolsInNewOrder->GetTool(i)->GetIdentifier(),i);
+    }
+  }
 
   // Try loading a volume of interest. This is optional, but do it up-front.
   m_TrackingVolumeGenerator = mitk::TrackingVolumeGenerator::New();
@@ -80,15 +96,18 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
 
   m_TrackingVolumeNode = mitk::DataNode::New();
   m_TrackingVolumeNode->SetName(m_DeviceData.Model);
+  m_TrackingVolumeNode->SetData(m_TrackingVolumeGenerator->GetOutput());
   m_TrackingVolumeNode->SetBoolProperty("Backface Culling",true);
   m_TrackingVolumeNode->SetBoolProperty("helper object", true);
-  this->SetVisibilityOfTrackingVolume(true);
 
   mitk::Color red;
   red.SetRed(1);
   m_TrackingVolumeNode->SetColor(red);
   m_TrackingVolumeNode->SetOpacity(0.25);
+  this->SetVisibilityOfTrackingVolume(true);
+
   m_DataStorage->Add(m_TrackingVolumeNode);
+  mitk::RenderingManager::GetInstance()->InitializeViews();
 
   // The point of RAII is that the constructor has successfully acquired all
   // resources, so we should try connecting. The way to disconnect it to delete this object.
@@ -105,6 +124,7 @@ NDITracker::~NDITracker()
     // One should not throw exceptions from a destructor.
     this->StopTracking();
     this->CloseConnection();
+    m_DataStorage->Remove(m_TrackingVolumeNode);
   }
   catch (mitk::Exception& e)
   {
@@ -202,13 +222,6 @@ bool NDITracker::GetVisibilityOfTrackingVolume() const
   bool result = false;
   m_TrackingVolumeNode->GetBoolProperty("visible", result);
   return result;
-}
-
-
-//-----------------------------------------------------------------------------
-void NDITracker::Update()
-{
-  m_TrackerSource->Update();
 }
 
 

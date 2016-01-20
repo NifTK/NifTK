@@ -41,8 +41,6 @@ class NIFTKIGITRACKERS_EXPORT NDITracker : public itk::Object
 public:
 
   mitkClassMacroItkParent(NDITracker, itk::Object);
-//  mitkNewMacro5Param(NDITracker, mitk::DataStorage::Pointer, mitk::SerialCommunication::PortNumber, mitk::TrackingDeviceType, mitk::TrackingDeviceData, std::string);
-
   itkGetMacro(PreferredFramesPerSecond, int);
 
   /**
@@ -72,11 +70,6 @@ public:
   bool GetVisibilityOfTrackingVolume() const;
 
   /**
-  * \brief Updates the pipeline, meaning, it retrieves the tracking data from the device.
-  */
-  void Update();
-
-  /**
   * \brief Retrives the current tracking data.
   */
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData();
@@ -85,7 +78,6 @@ protected:
 
   NDITracker(mitk::DataStorage::Pointer dataStorage,
              mitk::SerialCommunication::PortNumber portNumber,
-             mitk::TrackingDeviceType deviceType,
              mitk::TrackingDeviceData deviceData,
              std::string toolConfigFileName,
              int preferredFramesPerSecond); // Purposefully hidden.
@@ -103,7 +95,6 @@ private:
   // Passed in via constructor.
   mitk::DataStorage::Pointer               m_DataStorage;
   mitk::SerialCommunication::PortNumber    m_PortNumber;
-  mitk::TrackingDeviceType                 m_DeviceType;
   mitk::TrackingDeviceData                 m_DeviceData;
   std::string                              m_ToolConfigFileName;
   int                                      m_PreferredFramesPerSecond;

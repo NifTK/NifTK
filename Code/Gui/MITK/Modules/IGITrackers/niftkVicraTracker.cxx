@@ -21,7 +21,7 @@ namespace niftk
 VicraTracker::VicraTracker(mitk::DataStorage::Pointer dataStorage,
                            mitk::SerialCommunication::PortNumber portNumber,
                            std::string toolConfigFileName)
-: NDITracker(dataStorage, portNumber, mitk::NDIPolaris, mitk::DeviceDataPolarisVicra, toolConfigFileName, 20)
+: NDITracker(dataStorage, portNumber, mitk::DeviceDataPolarisVicra, toolConfigFileName, 20)
 {
 }
 
@@ -29,7 +29,6 @@ VicraTracker::VicraTracker(mitk::DataStorage::Pointer dataStorage,
 //-----------------------------------------------------------------------------
 VicraTracker::~VicraTracker()
 {
-  // Smart pointer deletes tracker.
 }
 
 } // end namespace

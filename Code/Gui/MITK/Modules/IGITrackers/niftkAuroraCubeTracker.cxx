@@ -21,7 +21,7 @@ namespace niftk
 AuroraCubeTracker::AuroraCubeTracker(mitk::DataStorage::Pointer dataStorage,
                                      mitk::SerialCommunication::PortNumber portNumber,
                                      std::string toolConfigFileName)
-: NDITracker(dataStorage, portNumber, mitk::NDIAurora, mitk::DeviceDataAuroraPlanarCube, toolConfigFileName, 40)
+: NDITracker(dataStorage, portNumber, mitk::DeviceDataAuroraPlanarCube, toolConfigFileName, 40)
 {
 }
 
@@ -29,7 +29,6 @@ AuroraCubeTracker::AuroraCubeTracker(mitk::DataStorage::Pointer dataStorage,
 //-----------------------------------------------------------------------------
 AuroraCubeTracker::~AuroraCubeTracker()
 {
-  // Smart pointer deletes tracker.
 }
 
 } // end namespace

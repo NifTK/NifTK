@@ -21,7 +21,7 @@ namespace niftk
 AuroraTableTopTracker::AuroraTableTopTracker(mitk::DataStorage::Pointer dataStorage,
                                              mitk::SerialCommunication::PortNumber portNumber,
                                              std::string toolConfigFileName)
-: NDITracker(dataStorage, portNumber, mitk::NDIAurora, mitk::DeviceDataAuroraTabletop, toolConfigFileName, 40)
+: NDITracker(dataStorage, portNumber, mitk::DeviceDataAuroraTabletop, toolConfigFileName, 40)
 {
 }
 
@@ -29,7 +29,6 @@ AuroraTableTopTracker::AuroraTableTopTracker(mitk::DataStorage::Pointer dataStor
 //-----------------------------------------------------------------------------
 AuroraTableTopTracker::~AuroraTableTopTracker()
 {
-  // Smart pointer deletes tracker.
 }
 
 } // end namespace
