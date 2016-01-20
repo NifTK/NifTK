@@ -197,7 +197,7 @@ void niftkMultiViewerWidgetTestClass::dropNodes(QWidget* window, const std::vect
       ts << ",";
     }
   }
-  mimeData->setData("application/x-mitk-datanodes", QByteArray(dataNodeAddresses.toAscii()));
+  mimeData->setData("application/x-mitk-datanodes", QByteArray(dataNodeAddresses.toLatin1()));
   mimeData2->setData(QmitkMimeTypes::DataNodePtrs, byteArray);
 //  QStringList types;
 //  types << "application/x-mitk-datanodes";
