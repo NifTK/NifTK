@@ -17,7 +17,7 @@ include(${QT_USE_FILE})
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkDnDDisplay)
 
-mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES Qt4|QtTest)
+mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES Qt4|QtTest Qt5|Test)
 
 # Trac 3146
 mitkAddCustomModuleTest(DnDDisplay-SingleViewerWidgetTest niftkSingleViewerWidgetTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)
