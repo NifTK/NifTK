@@ -99,7 +99,6 @@ if(NOT DEFINED MITK_DIR)
           org.mitk.gui.common             # needed by org.mitk.gui.qt.application
           org.mitk.gui.qt.application     # needed by org.mitk.gui.qt.datamanager and org.mitk.gui.qt.ext
           org.mitk.gui.qt.common          # needed by org.mitk.gui.qt.datamanager
-          org.mitk.gui.qt.ext             # needed by uk.ac.ucl.cmic.gui.qt.commonapps
           org.mitk.gui.qt.datamanager     # needed by NiftyView
           org.blueberry.ui.qt.help
           org.blueberry.ui.qt.log
@@ -123,6 +122,7 @@ if(NOT DEFINED MITK_DIR)
 
         list(APPEND _enabled_plugins
           org.mitk.gui.qt.common.legacy           # needed by org.mitk.gui.qt.basicimageprocessing
+          org.mitk.gui.qt.ext             # needed by uk.ac.ucl.cmic.gui.qt.commonapps
           org.mitk.gui.qt.basicimageprocessing
           org.mitk.gui.qt.volumevisualization
           org.mitk.gui.qt.pointsetinteraction
@@ -153,6 +153,7 @@ if(NOT DEFINED MITK_DIR)
       if(MITK_USE_BLUEBERRY)
 
         list(APPEND _enabled_plugins
+          org.mitk.gui.qt.ext             # needed by uk.ac.ucl.cmic.gui.qt.commonapps
           org.mitk.gui.qt.aicpregistration
         )
       endif()
