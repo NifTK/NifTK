@@ -16,7 +16,11 @@
 #include <QFileDialog>
 #include <QString>
 #include <QMessageBox>
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
 #include <QDesktopServices>
+#else
+#include <QStandardPaths>
+#endif
 #include <mitkFileIOUtils.h>
 
 //-----------------------------------------------------------------------------
@@ -79,7 +83,11 @@ void QmitkMatrixWidget::OnLoadButtonPressed()
 {
   QString fileName = QFileDialog::getOpenFileName(this,
                        tr("Load Matrix"),
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
                        QDesktopServices::storageLocation(QDesktopServices::HomeLocation),
+#else
+                       QStandardPaths::standardLocations(QStandardPaths::HomeLocation)[0],
+#endif
                        tr("Matrix Files (*.txt *.mat *.4x4)")
                      );
 

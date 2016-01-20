@@ -56,4 +56,6 @@ ctkPluginContext* VLRendererPluginActivator::GetPluginContext() const
 
 }
 
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_vlrenderer, mitk::VLRendererPluginActivator)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_vlrenderer, mitk::VLRendererPluginActivator)
+#endif

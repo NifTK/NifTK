@@ -29,7 +29,6 @@ endif()
 ####################################################################################
 # Add 'Modules', i.e. shared libs
 ####################################################################################
-
 add_subdirectory(Modules)
 
 #####################################################################################
@@ -47,47 +46,51 @@ endmacro()
 # Create all CTK plugins.
 ####################################################################################
 
-# Don't put this in niftkMacroCreateGuiApplication, because at
-# THIS point specifically, it only contains MITK plugins.
-ctkFunctionGetAllPluginTargets(all_mitk_ctk_plugins)
+if(MITK_USE_BLUEBERRY)
 
-# Get infos about application directories and build options
-include("${CMAKE_CURRENT_SOURCE_DIR}/Apps/Apps.cmake")
-set(_apps_fullpath )
-foreach(NIFTK_APP ${NIFTK_APPS})
-  string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
-  set(target_info_list ${target_info})
-  list(GET target_info_list 1 option_name)
-  list(GET target_info_list 0 app_name)
-  if(${option_name})
-    list(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/Apps/${NIFTK_APP}")
+  # Don't put this in niftkMacroCreateGuiApplication, because at
+  # THIS point specifically, the list of plugins only contains MITK plugins.
+  ctkFunctionGetAllPluginTargets(all_mitk_ctk_plugins)
+
+  # Get infos about application directories and build options
+  include("${CMAKE_CURRENT_SOURCE_DIR}/Apps/Apps.cmake")
+  set(_apps_fullpath )
+  foreach(NIFTK_APP ${NIFTK_APPS})
+    string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+    set(target_info_list ${target_info})
+    list(GET target_info_list 1 option_name)
+    list(GET target_info_list 0 app_name)
+    if(${option_name})
+      list(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/Apps/${NIFTK_APP}")
+    endif()
+  endforeach()
+
+  # This is to get a list of plugins to pass to ctkMacroSetupPlugins
+  include(${CMAKE_CURRENT_SOURCE_DIR}/Plugins/Plugins.cmake)
+
+  # These are required, because people turn BUILD_IGI/BUILD_MIDAS off
+  # and expect all the corresponding plugins to do the same.
+  niftkMacroForcePluginCacheValue(${IGI_PLUGINS} ${BUILD_IGI})
+  niftkMacroForcePluginCacheValue(${MIDAS_PLUGINS} ${BUILD_MIDAS})
+
+  ctkMacroSetupPlugins(${PROJECT_PLUGINS}
+                       APPS ${_apps_fullpath} 
+                       BUILD_OPTION_PREFIX ${PROJECT_NAME}_
+                       BUILD_ALL ${${PROJECT_NAME}_BUILD_ALL_PLUGINS})
+
+  set(NIFTK_PLUGIN_USE_FILE "${CMAKE_BINARY_DIR}/NifTKPluginUseFile.cmake")
+  if(${PROJECT_NAME}_PLUGIN_LIBRARIES)
+    ctkFunctionGeneratePluginUseFile(${NIFTK_PLUGIN_USE_FILE})
+  else()
+    file(REMOVE ${NIFTK_PLUGIN_USE_FILE})
+    set(NIFTK_PLUGIN_USE_FILE )
   endif()
-endforeach()
 
-# This is to get a list of plugins to pass to ctkMacroSetupPlugins
-include(${CMAKE_CURRENT_SOURCE_DIR}/Plugins/Plugins.cmake)
+  ctkFunctionGetAllPluginTargets(all_niftk_ctk_plugins)
+  GetMyTargetLibraries("${all_niftk_ctk_plugins}" all_niftk_plugins)
+  set_property(GLOBAL PROPERTY NIFTK_EXPORTED_PLUGINS ${all_niftk_plugins})
 
-# These are required, because people turn BUILD_IGI/BUILD_MIDAS off
-# and expect all the corresponding plugins to do the same.
-niftkMacroForcePluginCacheValue(${IGI_PLUGINS} ${BUILD_IGI})
-niftkMacroForcePluginCacheValue(${MIDAS_PLUGINS} ${BUILD_MIDAS})
-
-ctkMacroSetupPlugins(${PROJECT_PLUGINS}
-                     APPS ${_apps_fullpath} 
-                     BUILD_OPTION_PREFIX ${PROJECT_NAME}_
-                     BUILD_ALL ${${PROJECT_NAME}_BUILD_ALL_PLUGINS})
-
-set(NIFTK_PLUGIN_USE_FILE "${CMAKE_BINARY_DIR}/NifTKPluginUseFile.cmake")
-if(${PROJECT_NAME}_PLUGIN_LIBRARIES)
-  ctkFunctionGeneratePluginUseFile(${NIFTK_PLUGIN_USE_FILE})
-else()
-  file(REMOVE ${NIFTK_PLUGIN_USE_FILE})
-  set(NIFTK_PLUGIN_USE_FILE )
-endif()
-
-ctkFunctionGetAllPluginTargets(all_niftk_ctk_plugins)
-GetMyTargetLibraries("${all_niftk_ctk_plugins}" all_niftk_plugins)
-set_property(GLOBAL PROPERTY NIFTK_EXPORTED_PLUGINS ${all_niftk_plugins})
+endif(MITK_USE_BLUEBERRY)
 
 ####################################################################################
 # Add subdirectories. 
@@ -124,4 +127,6 @@ endif()
 # End of aforementioned Temporary Work Around.
 ####################################################################################
 
-add_subdirectory(Apps)
+if(MITK_USE_BLUEBERRY)
+  add_subdirectory(Apps)
+endif()

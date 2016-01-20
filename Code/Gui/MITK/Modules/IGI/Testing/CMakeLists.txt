@@ -14,5 +14,7 @@
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkIGI)
 
+mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES Qt4|QtCore Qt5|Core)
+
 mitkAddCustomModuleTest(mitkIGI-Make-Geometry-Test mitkIGIMakeGeometryTest ${NIFTK_DATA_DIR}/Input/IGI/)
 

@@ -25,7 +25,10 @@
 class QmitkNiftyIGIApplicationPlugin : public QmitkCommonAppsApplicationPlugin
 {
   Q_OBJECT
-  
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  Q_PLUGIN_METADATA(IID "uk_ac_ucl_cmic_gui_qt_niftyigi")
+#endif
+
 public:
 
   QmitkNiftyIGIApplicationPlugin();
