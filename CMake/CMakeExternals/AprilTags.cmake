@@ -18,8 +18,8 @@
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-if(DEFINED apriltags_DIR AND NOT EXISTS ${apriltags_DIR})
-  message(FATAL_ERROR "apriltags_DIR variable is defined but corresponds to non-existing directory \"${apriltags_DIR}\".")
+if(DEFINED AprilTags_DIR AND NOT EXISTS ${AprilTags_DIR})
+  message(FATAL_ERROR "AprilTags_DIR variable is defined but corresponds to non-existing directory \"${AprilTags_DIR}\".")
 endif()
 
 if(BUILD_IGI)
@@ -30,7 +30,7 @@ if(BUILD_IGI)
   niftkMacroDefineExternalProjectVariables(AprilTags ${version} ${location})
   set(proj_DEPENDENCIES OpenCV Eigen)
 
-  if(NOT DEFINED apriltags_DIR)
+  if(NOT DEFINED AprilTags_DIR)
 
     if(UNIX)
       set(APRILTAGS_CXX_FLAGS "-fPIC")
@@ -62,17 +62,17 @@ if(BUILD_IGI)
       DEPENDS ${proj_DEPENDENCIES}
     )
 
-    set(apriltags_DIR ${proj_INSTALL})
+    set(AprilTags_DIR ${proj_INSTALL})
 
     set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
     mitkFunctionInstallExternalCMakeProject(${proj})
 
-    message("SuperBuild loading AprilTags from ${apriltags_DIR}")
+    message("SuperBuild loading AprilTags from ${AprilTags_DIR}")
 
-  else(NOT DEFINED apriltags_DIR)
+  else(NOT DEFINED AprilTags_DIR)
 
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-  endif(NOT DEFINED apriltags_DIR)
+  endif(NOT DEFINED AprilTags_DIR)
 
 endif()
