@@ -21,7 +21,7 @@ The following third party libraries are used:
 <ul>
 <li>Boost: @Boost_VERSION@ </li>
 <li>GDCM: @GDCM_VERSION@ </li>
-<li>Qt: @QT_VERSION_MAJOR@.@QT_VERSION_MINOR@.@QT_VERSION_PATCH@ </li>
+<li>Qt: @NIFTK_VERSION_QT@ </li>
 <li>VTK: @VTK_VERSION@ </li>
 <li>ITK: @NIFTK_ITK_VERSION_IN_SUPERBUILD@ </li>
 <li>CTK: @CTK_REVISION_ID@ </li>

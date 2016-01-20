@@ -14,8 +14,6 @@
 
 project(uk_ac_ucl_cmic_xnat)
 
-find_package(Qt4 4.6.2 COMPONENTS QtScript REQUIRED)
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/internal)
 
 mitk_create_plugin(

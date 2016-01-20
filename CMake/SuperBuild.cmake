@@ -462,7 +462,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DNiftySeg_DEBUG_POSTFIX:STRING=d
       -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
       -Daruco_DIR:PATH=${aruco_DIR}
-      -Dapriltags_DIR:PATH=${apriltags_DIR}
+      -DAprilTags_DIR:PATH=${AprilTags_DIR}
       -DNiftyPipe_ROOT:PATH=${NiftyPipe_ROOT}
       -DPython_DIR:PATH=${Python_DIR}
       -DPCL_DIR:PATH=${PCL_DIR}

@@ -34,6 +34,13 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
   # ... and here we are specifying additional link time dependencies.
   set(_link_libraries
     qtsingleapplication
+
+    # If you remove this, the app will compile and run.
+    # However, we need niftkCore to be loaded, and hence niftkCoreIO
+    # to be Auto-Loaded before the main application launches
+    # the Blueberry Application Framework. Without this line,
+    # we don't get all the I/O readers/writers/serializers loaded in time.
+    niftkCore
   )
 
   set(_app_options)

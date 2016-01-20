@@ -11,9 +11,9 @@
 #  See LICENSE.txt in the top level directory for details.
 #
 #============================================================================*/
-find_package(apriltags REQUIRED)
-if(apriltags_FOUND)
-  list(APPEND ALL_INCLUDE_DIRECTORIES ${apriltags_INCLUDE_DIR})
+find_package(AprilTags REQUIRED)
+if(AprilTags_FOUND)
+  list(APPEND ALL_INCLUDE_DIRECTORIES ${AprilTags_INCLUDE_DIR})
   list(APPEND ALL_LIBRARIES ${APRILTAGS_LIB})
-  link_directories(${apriltags_LIBRARY_DIR})
+  link_directories(${AprilTags_LIBRARY_DIR})
 endif()

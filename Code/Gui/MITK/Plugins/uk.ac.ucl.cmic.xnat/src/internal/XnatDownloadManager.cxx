@@ -507,7 +507,7 @@ void XnatDownloadManager::ExtractFile(QString zipFileName, QString directory)
   mz_zip_archive zipArchive;
   std::memset(&zipArchive, 0, sizeof(zipArchive));
 
-  if (!mz_zip_reader_init_file(&zipArchive, zipFileName.toAscii().data(), 0))
+  if (!mz_zip_reader_init_file(&zipArchive, zipFileName.toLatin1().data(), 0))
   {
     throw QString("Cannot open the zip archive.");
   }
@@ -533,7 +533,7 @@ void XnatDownloadManager::ExtractFile(QString zipFileName, QString directory)
       {
         extractedFileDir.mkpath(".");
       }
-      if (!mz_zip_reader_extract_to_file(&zipArchive, i, extractedFile.absoluteFilePath().toAscii().data(), 0))
+      if (!mz_zip_reader_extract_to_file(&zipArchive, i, extractedFile.absoluteFilePath().toLatin1().data(), 0))
       {
         mz_zip_reader_end(&zipArchive);
         throw QString("Cannot extract the zip archive. Disk full?");

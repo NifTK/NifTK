@@ -42,7 +42,7 @@ if(BUILD_IGI)
     string(SUBSTRING ${NiftyLinkVersion} 0 10 version)
 
   else ()
-    set(version "d733335df1")
+    set(version "b8d0a3637f")
   endif ()
 
   niftkMacroDefineExternalProjectVariables(NiftyLink ${version} ${location})

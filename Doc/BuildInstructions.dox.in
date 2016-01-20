@@ -59,7 +59,7 @@ screenshots from a Mac.
       </li>
       <li>
         Visual Studio 2012 and Visual Studio 2013 are supported. For Visual Studio 2012 
-		you must have at least the "Professional" version, otherwise you won't have OpenMP support.
+        you must have at least the "Professional" version, otherwise you won't have OpenMP support.
       </li>
     </ul>
   </li>
@@ -139,23 +139,36 @@ the bin folder to your system PATH (e.g. "c:\Program Files\CMake_3.3.2\bin" or "
 
 \section BuildInstructionsDownloadQt 3. Installing Qt
 
-Required version is Qt 4.8.7. Qt 5 is not supported. The source code and for certain platforms
-pre-compiled binaries of Qt 4.8.7 are available here:
+We recommend to compile Qt from sources. Supported Qt versions are Qt 4.8-5.4. From Qt 4.8 you need
+the latest release (4.8.7). Qt 5.5 is not supported. The source code is available here:
 
 \verbatim
-https://download.qt.io/official_releases/qt/4.8/4.8.7/
+https://download.qt.io/official_releases/qt
 \endverbatim
 
-The sources can also be obtained from the Qt git repository using this command:
+On Linux and Mac, you need the 'tar.gz' version (e.g. qt-everywhere-opensource-src-5.4.2.tar.gz),
+on Windows you need the 'zip' (e.g. qt-everywhere-opensource-src-5.4.2.zip).
+
+The sources can also be obtained from the Qt git repository using this command for Qt 4:
 
 \verbatim
 git clone git://code.qt.io/qt/qt.git
 \endverbatim
 
+or these commands for Qt 5:
+
+\verbatim
+git clone git://code.qt.io/qt/qt5.git
+cd qt5
+git checkout 5.4
+perl init-repository
+\endverbatim
+
 <ul>
   <li>
     If you intend to simply build and develop you can install a pre-compiled Qt
-    version if there is one available for you platform (Windows 32bit and Mac OS X).
+    version if there is one available for you platform (Qt 4.8 binaries are only
+    available for Windows 32bit and Mac OS X).
   </li>
   <li>
     If you also want to package up standalone binary packages for distribution you must
@@ -259,7 +272,8 @@ You'll have to log off / log on for the changes to make effect.
 
 \section BuildInstructionsDownloadQtLinux 3.2 Compile Qt on Linux
 
-Use the following commands to extract the Qt tarball and to compile and install Qt:
+
+Use the following commands to extract the Qt tarball and to compile and install Qt 4.8.7:
 
 \verbatim
 tar xvfz qt-everywhere-opensource-src-4.8.7.tar.gz
@@ -269,17 +283,38 @@ make
 sudo make install
 \endverbatim
 
-Then set your PATH variable to contain the /opt/qt-4.8.7/bin directory where the
-binaries where just installed.
+With Qt 5.4.2 (in general 5.X.X) you can use the following commands:
+
+\verbatim
+tar xvfz qt-everywhere-opensource-src-5.4.2.tar.gz
+cd qt-everywhere-opensource-src-5.4.2
+./configure -prefix /opt/qt-5.4.2 --opensource -confirm-license -release -shared -openssl -nomake examples -nomake tests -no-gtkstyle
+make
+sudo make install
+\endverbatim
+
+Then set your PATH variable to contain the /opt/qt-4.8.7/bin (or /opt/qt-5.4.2/bin ) directory where the
+binaries were just installed.
 
 
 \section BuildInstructionsDownloadQtMac 3.3 Compiling Qt on Mac
 
-Use the following commands to extract the Qt tarball and to compile and install Qt:
+Use the following commands to extract the Qt tarball and to compile and install Qt 4.8.7:
+
 \verbatim
 tar xvfz qt-everywhere-opensource-src-4.8.7.tar.gz
 cd qt-everywhere-opensource-src-4.8.7
 ./configure -prefix /opt/qt-4.8.7 -opensource -confirm-license -release -shared -script -openssl -no-phonon -no-phonon-backend -nomake examples -nomake demos -nomake tests
+make
+sudo make install
+\endverbatim
+
+With Qt 5.4.2 (in general 5.X.X) you can use the following commands:
+
+\verbatim
+tar xvfz qt-everywhere-opensource-src-5.4.2.tar.gz
+cd qt-everywhere-opensource-src-5.4.2
+./configure -prefix /opt/qt-5.4.2 --opensource -confirm-license -release -shared -openssl -nomake examples -nomake tests
 make
 sudo make install
 \endverbatim
@@ -293,6 +328,11 @@ You can specify this with the '-sysroot' option:
 ./configure -prefix /opt/qt-4.8.7 -sysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk -opensource -confirm-license -release -shared -script -openssl -no-phonon -no-phonon-backend -nomake examples -nomake demos -nomake tests
 \endverbatim
 
+Similary, with Qt 5.4.2 you would use:
+
+\verbatim
+./configure -prefix /opt/qt-5.4.2 -sysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk --opensource -confirm-license -release -shared -openssl -nomake examples -nomake tests
+\endverbatim
 
 \section BuildInstructionsVersioning 4. Version Control
 

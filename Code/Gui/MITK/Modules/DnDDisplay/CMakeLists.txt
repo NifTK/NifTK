@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(
   INCLUDE_DIRS Events Dialogs LookupTables
   DEPENDS MitkCore MitkQtWidgets niftkITK niftkCore
-  PACKAGE_DEPENDS Qt4|QtCore CTK|CTKWidgets
+  PACKAGE_DEPENDS Qt4|QtCore Qt5|Core CTK|CTKWidgets
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
