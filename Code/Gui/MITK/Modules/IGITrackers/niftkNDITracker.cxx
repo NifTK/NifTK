@@ -16,7 +16,6 @@
 
 #include <mitkNavigationToolStorageDeserializer.h>
 #include <mitkNavigationToolStorageSerializer.h>
-#include <mitkTrackingDeviceSourceConfigurator.h>
 #include <mitkException.h>
 #include <mitkRenderingManager.h>
 
@@ -67,27 +66,11 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   m_TrackerDevice->SetData(m_DeviceData);
   m_TrackerDevice->SetPortNumber(m_PortNumber);
 
-  // Setup source.
-  mitk::TrackingDeviceSourceConfigurator::Pointer myTrackingDeviceSourceFactory
-      = mitk::TrackingDeviceSourceConfigurator::New(m_NavigationToolStorage, m_TrackerDevice.GetPointer());
-  m_TrackerSource = myTrackingDeviceSourceFactory->CreateTrackingDeviceSource();
-  if (m_TrackerSource.IsNull())
-  {
-    mitkThrow() << "Could not create Tracker Source due to:" << myTrackingDeviceSourceFactory->GetErrorMessage();
-  }
+  MITK_INFO << "Initialising tracker with " << m_TrackerDevice->GetToolCount() << " tools.";
 
-  // Setup tools.
-  // The tools are maybe reordered after initialization,
-  // e.g. in case of auto-detected tools of NDI Aurora
-  mitk::NavigationToolStorage::Pointer toolsInNewOrder
-      = myTrackingDeviceSourceFactory->GetUpdatedNavigationToolStorage();
-  if ((toolsInNewOrder.IsNotNull()) && (toolsInNewOrder->GetToolCount() > 0))
-  {
-    for(int i = 0; i < toolsInNewOrder->GetToolCount(); i++ )
-    {
-      m_NavigationToolStorage->AssignToolNumber(toolsInNewOrder->GetTool(i)->GetIdentifier(),i);
-    }
-  }
+  // Create source
+  m_TrackerSource = mitk::TrackingDeviceSource::New();
+  m_TrackerSource->SetTrackingDevice(m_TrackerDevice);
 
   // Try loading a volume of interest. This is optional, but do it up-front.
   m_TrackingVolumeGenerator = mitk::TrackingVolumeGenerator::New();
@@ -231,10 +214,10 @@ std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > NDITracker::GetTrackingDat
   m_TrackerSource->Update();
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result;
 
-  for(unsigned int i=0; i< m_TrackerSource->GetNumberOfIndexedOutputs(); i++)
+  for(unsigned int i=0; i< m_TrackerDevice->GetToolCount(); i++)
   {
     mitk::NavigationData::Pointer currentTool = m_TrackerSource->GetOutput(i);
-    if(currentTool->IsDataValid())
+    if(currentTool.IsNotNull() && currentTool->IsDataValid())
     {
       std::string name = currentTool->GetName();
       mitk::Matrix3D rotation = currentTool->GetRotationMatrix();
