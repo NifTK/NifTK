@@ -629,7 +629,11 @@ void niftkSingleViewerWidgetTestClass::init()
   d->Viewer->resize(1024, 1024);
   d->Viewer->show();
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   QTest::qWaitForWindowShown(d->Viewer);
+#else
+  QVERIFY(QTest::qWaitForWindowExposed(d->Viewer));
+#endif
 
   std::vector<mitk::DataNode*> nodes(1);
   nodes[0] = d->ImageNode;
