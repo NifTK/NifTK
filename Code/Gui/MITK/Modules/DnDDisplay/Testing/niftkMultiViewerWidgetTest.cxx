@@ -220,7 +220,11 @@ void niftkMultiViewerWidgetTestClass::testViewer()
 {
   Q_D(niftkMultiViewerWidgetTestClass);
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   QTest::qWaitForWindowShown(d->MultiViewer);
+#else
+  QVERIFY(QTest::qWaitForWindowExposed(d->MultiViewer));
+#endif
 
   /// Remove the comment signs while you are doing interactive testing.
   if (d->InteractiveMode)

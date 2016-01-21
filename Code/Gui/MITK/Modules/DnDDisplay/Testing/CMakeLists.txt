@@ -12,8 +12,10 @@
 #
 #============================================================================*/
 
-set(QT_USE_QTTEST 1)
-include(${QT_USE_FILE})
+if(QT4_FOUND)
+  set(QT_USE_QTTEST 1)
+  include(${QT_USE_FILE})
+endif()
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkDnDDisplay)
 
