@@ -430,41 +430,44 @@ void ImageLookupTablesView::Unregister()
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::DifferentImageSelected()
 {
-  this->BlockSignals(true);
-
-  m_CurrentImage = dynamic_cast<mitk::Image*>(m_CurrentNode->GetData());
-
-  // As the NiftyView application level plugin provides a mitk::LevelWindow, it MUST be present.
-  mitk::LevelWindow levelWindow;
-  m_CurrentNode->GetLevelWindow(levelWindow);
-
-  float minDataLimit(0);
-  float maxDataLimit(0);
-  std::string lookupTableName("");
-
-  m_CurrentNode->GetFloatProperty("image data min", minDataLimit);
-  m_CurrentNode->GetFloatProperty("image data max", maxDataLimit);
-  bool lookupTableNameFound = m_CurrentNode->GetStringProperty("LookupTableName", lookupTableName);
-
-  m_Controls->m_MinLimitDoubleSpinBox->setValue(minDataLimit);
-  m_Controls->m_MaxLimitDoubleSpinBox->setValue(maxDataLimit);
-
-  signed int lookupTableIndex = -1;
-  if (lookupTableNameFound)
+  if (m_CurrentNode.IsNotNull())
   {
-    lookupTableIndex = m_Controls->m_LookupTableComboBox->findText(QString::fromStdString(lookupTableName));
-  }
-  
-  if (lookupTableIndex > -1)
-  {
-    m_Controls->m_LookupTableComboBox->setCurrentIndex(lookupTableIndex);
-  }
-  else
-  {
-    m_Controls->m_LookupTableComboBox->setCurrentIndex(0);
-  }
+    this->BlockSignals(true);
 
-  this->BlockSignals(false);
+    m_CurrentImage = dynamic_cast<mitk::Image*>(m_CurrentNode->GetData());
+
+    // As the NiftyView application level plugin provides a mitk::LevelWindow, it MUST be present.
+    mitk::LevelWindow levelWindow;
+    m_CurrentNode->GetLevelWindow(levelWindow);
+
+    float minDataLimit(0);
+    float maxDataLimit(0);
+    std::string lookupTableName("");
+
+    m_CurrentNode->GetFloatProperty("image data min", minDataLimit);
+    m_CurrentNode->GetFloatProperty("image data max", maxDataLimit);
+    bool lookupTableNameFound = m_CurrentNode->GetStringProperty("LookupTableName", lookupTableName);
+
+    m_Controls->m_MinLimitDoubleSpinBox->setValue(minDataLimit);
+    m_Controls->m_MaxLimitDoubleSpinBox->setValue(maxDataLimit);
+
+    signed int lookupTableIndex = -1;
+    if (lookupTableNameFound)
+    {
+      lookupTableIndex = m_Controls->m_LookupTableComboBox->findText(QString::fromStdString(lookupTableName));
+    }
+
+    if (lookupTableIndex > -1)
+    {
+      m_Controls->m_LookupTableComboBox->setCurrentIndex(lookupTableIndex);
+    }
+    else
+    {
+      m_Controls->m_LookupTableComboBox->setCurrentIndex(0);
+    }
+
+    this->BlockSignals(false);
+  }
 }
 
 
@@ -514,56 +517,59 @@ void ImageLookupTablesView::UpdateLookupTableComboBox()
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnRangeChanged()
 {
-  this->BlockSignals(true);
-
-  mitk::LevelWindow levelWindow;
-  m_CurrentNode->GetLevelWindow(levelWindow);
-
-  levelWindow.SetRangeMinMax(m_Controls->m_MinLimitDoubleSpinBox->value(), m_Controls->m_MaxLimitDoubleSpinBox->value());
-
-  double rangeMin = levelWindow.GetRangeMin();
-  double rangeMax = levelWindow.GetRangeMax();
-  double range = levelWindow.GetRange();
-
-  // Trac 1680 - don't forget, MIDAS generally deals with integer images
-  // so the user requirements are such that they must be able to change
-  // intensity ranges in steps of 1. If however, we are using float images
-  // we will need to be able to change intensity values in much smaller stepps.
-  double singleStep;
-  double pageStep;
-
-  if (fabs(rangeMin - rangeMax) > m_ThresholdForIntegerBehaviour)
+  if (m_CurrentNode.IsNotNull())
   {
-    // i.e. we have a large enough range to use integer page step and single step.
-    singleStep = 1;
-    pageStep = 10;
-  }
-  else
-  {
-    // i.e. in this case, use fractions.
-    singleStep = range / 100.0;
-    pageStep = range / 10.0;
-  }
+    this->BlockSignals(true);
 
-  m_Controls->m_MinSlider->setMinimum(rangeMin);
-  m_Controls->m_MinSlider->setMaximum(rangeMax);
-  m_Controls->m_MaxSlider->setMinimum(rangeMin);
-  m_Controls->m_MaxSlider->setMaximum(rangeMax);
-  m_Controls->m_MinSlider->setSingleStep(singleStep);
-  m_Controls->m_MinSlider->setTickInterval(singleStep);
-  m_Controls->m_MinSlider->setPageStep(pageStep);
-  m_Controls->m_MaxSlider->setSingleStep(singleStep);
-  m_Controls->m_MaxSlider->setTickInterval(singleStep);
-  m_Controls->m_MaxSlider->setPageStep(pageStep);
-  m_Controls->m_WindowSlider->setMinimum(0);
-  m_Controls->m_WindowSlider->setMaximum(range);
-  m_Controls->m_WindowSlider->setSingleStep(singleStep);
-  m_Controls->m_LevelSlider->setMinimum(rangeMin);
-  m_Controls->m_LevelSlider->setMaximum(rangeMax);
-  m_Controls->m_LevelSlider->setSingleStep(singleStep);
+    mitk::LevelWindow levelWindow;
+    m_CurrentNode->GetLevelWindow(levelWindow);
 
-  this->BlockSignals(false);
-  this->RequestRenderWindowUpdate();
+    levelWindow.SetRangeMinMax(m_Controls->m_MinLimitDoubleSpinBox->value(), m_Controls->m_MaxLimitDoubleSpinBox->value());
+
+    double rangeMin = levelWindow.GetRangeMin();
+    double rangeMax = levelWindow.GetRangeMax();
+    double range = levelWindow.GetRange();
+
+    // Trac 1680 - don't forget, MIDAS generally deals with integer images
+    // so the user requirements are such that they must be able to change
+    // intensity ranges in steps of 1. If however, we are using float images
+    // we will need to be able to change intensity values in much smaller stepps.
+    double singleStep;
+    double pageStep;
+
+    if (fabs(rangeMin - rangeMax) > m_ThresholdForIntegerBehaviour)
+    {
+      // i.e. we have a large enough range to use integer page step and single step.
+      singleStep = 1;
+      pageStep = 10;
+    }
+    else
+    {
+      // i.e. in this case, use fractions.
+      singleStep = range / 100.0;
+      pageStep = range / 10.0;
+    }
+
+    m_Controls->m_MinSlider->setMinimum(rangeMin);
+    m_Controls->m_MinSlider->setMaximum(rangeMax);
+    m_Controls->m_MaxSlider->setMinimum(rangeMin);
+    m_Controls->m_MaxSlider->setMaximum(rangeMax);
+    m_Controls->m_MinSlider->setSingleStep(singleStep);
+    m_Controls->m_MinSlider->setTickInterval(singleStep);
+    m_Controls->m_MinSlider->setPageStep(pageStep);
+    m_Controls->m_MaxSlider->setSingleStep(singleStep);
+    m_Controls->m_MaxSlider->setTickInterval(singleStep);
+    m_Controls->m_MaxSlider->setPageStep(pageStep);
+    m_Controls->m_WindowSlider->setMinimum(0);
+    m_Controls->m_WindowSlider->setMaximum(range);
+    m_Controls->m_WindowSlider->setSingleStep(singleStep);
+    m_Controls->m_LevelSlider->setMinimum(rangeMin);
+    m_Controls->m_LevelSlider->setMaximum(rangeMax);
+    m_Controls->m_LevelSlider->setSingleStep(singleStep);
+
+    this->BlockSignals(false);
+    this->RequestRenderWindowUpdate();
+  }
 }
 
 
@@ -584,64 +590,73 @@ void ImageLookupTablesView::OnPropertyChanged()
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::UpdateGuiFromLevelWindow()
 {
-  this->BlockSignals(true);
+  if (m_CurrentNode.IsNotNull())
+  {
+    this->BlockSignals(true);
 
-  mitk::LevelWindow levelWindow;
-  m_CurrentNode->GetLevelWindow(levelWindow);
+    mitk::LevelWindow levelWindow;
+    m_CurrentNode->GetLevelWindow(levelWindow);
 
-  double min = levelWindow.GetLowerWindowBound();
-  double max = levelWindow.GetUpperWindowBound();
-  double level = levelWindow.GetLevel();
-  double window = levelWindow.GetWindow();
+    double min = levelWindow.GetLowerWindowBound();
+    double max = levelWindow.GetUpperWindowBound();
+    double level = levelWindow.GetLevel();
+    double window = levelWindow.GetWindow();
 
-  m_Controls->m_MinSlider->setValue(min);
-  m_Controls->m_MaxSlider->setValue(max);
-  m_Controls->m_LevelSlider->setValue(level);
-  m_Controls->m_WindowSlider->setValue(window);
+    m_Controls->m_MinSlider->setValue(min);
+    m_Controls->m_MaxSlider->setValue(max);
+    m_Controls->m_LevelSlider->setValue(level);
+    m_Controls->m_WindowSlider->setValue(window);
 
-  this->BlockSignals(false);
+    this->BlockSignals(false);
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnWindowBoundsChanged()
 {
-  // Get the current values
-  mitk::LevelWindow levelWindow;
-  m_CurrentNode->GetLevelWindow(levelWindow);
+  if (m_CurrentNode.IsNotNull())
+  {
+    // Get the current values
+    mitk::LevelWindow levelWindow;
+    m_CurrentNode->GetLevelWindow(levelWindow);
 
-  // Note: This method is called when one of the sliders has been moved
-  // So, it's purpose is to update the other sliders to match.
+    // Note: This method is called when one of the sliders has been moved
+    // So, it's purpose is to update the other sliders to match.
 
-  // Update them from controls
-  double min = m_Controls->m_MinSlider->value();
-  double max = m_Controls->m_MaxSlider->value();
+    // Update them from controls
+    double min = m_Controls->m_MinSlider->value();
+    double max = m_Controls->m_MaxSlider->value();
 
-  levelWindow.SetWindowBounds(min, max);
-  m_CurrentNode->SetLevelWindow(levelWindow);
+    levelWindow.SetWindowBounds(min, max);
+    m_CurrentNode->SetLevelWindow(levelWindow);
 
-  this->RequestRenderWindowUpdate();
+    this->RequestRenderWindowUpdate();
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnLevelWindowChanged()
 {
-  // Get the current values
-  mitk::LevelWindow levelWindow;
-  m_CurrentNode->GetLevelWindow(levelWindow);
+  if (m_CurrentNode.IsNotNull())
+  {
+    // Get the current values
+    mitk::LevelWindow levelWindow;
+    m_CurrentNode->GetLevelWindow(levelWindow);
 
-  // Note: This method is called when one of the sliders has been moved
-  // So, it's purpose is to update the other sliders to match.
+    // Note: This method is called when one of the sliders has been moved
+    // So, it's purpose is to update the other sliders to match.
 
-  // Update them from controls
-  double window = m_Controls->m_WindowSlider->value();
-  double level = m_Controls->m_LevelSlider->value();
+    // Update them from controls
+    double window = m_Controls->m_WindowSlider->value();
+    double level = m_Controls->m_LevelSlider->value();
 
-  levelWindow.SetLevelWindow(level, window);
-  m_CurrentNode->SetLevelWindow(levelWindow);
+    levelWindow.SetLevelWindow(level, window);
+    m_CurrentNode->SetLevelWindow(levelWindow);
 
-  this->RequestRenderWindowUpdate();
+    this->RequestRenderWindowUpdate();
+  }
 }
 
 
@@ -662,7 +677,7 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 {
   if (m_CurrentNode.IsNotNull())
   {
-  QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
+    QmitkLookupTableProviderService* lutService = mitk::ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService();
     if (lutService == NULL)
     {
       mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
@@ -727,26 +742,29 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnResetButtonPressed()
 {
-  mitk::LevelWindow levelWindow;
-  m_CurrentNode->GetLevelWindow(levelWindow);
-
-  float rangeMin(0);
-  float rangeMax(0);
-
-  if (m_CurrentNode->GetFloatProperty("image data min", rangeMin)
-      && m_CurrentNode->GetFloatProperty("image data max", rangeMax))
+  if (m_CurrentNode.IsNotNull())
   {
-    levelWindow.SetRangeMinMax(rangeMin, rangeMax);
-    levelWindow.SetWindowBounds(rangeMin, rangeMax);
+    mitk::LevelWindow levelWindow;
+    m_CurrentNode->GetLevelWindow(levelWindow);
 
-    m_Controls->m_MinLimitDoubleSpinBox->setValue(rangeMin);
-    m_Controls->m_MaxLimitDoubleSpinBox->setValue(rangeMax);
+    float rangeMin(0);
+    float rangeMax(0);
 
-    m_CurrentNode->SetLevelWindow(levelWindow);
-    m_CurrentNode->Modified();
+    if (m_CurrentNode->GetFloatProperty("image data min", rangeMin)
+        && m_CurrentNode->GetFloatProperty("image data max", rangeMax))
+    {
+      levelWindow.SetRangeMinMax(rangeMin, rangeMax);
+      levelWindow.SetWindowBounds(rangeMin, rangeMax);
 
-    this->UpdateGuiFromLevelWindow();
-    this->RequestRenderWindowUpdate();
+      m_Controls->m_MinLimitDoubleSpinBox->setValue(rangeMin);
+      m_Controls->m_MaxLimitDoubleSpinBox->setValue(rangeMax);
+
+      m_CurrentNode->SetLevelWindow(levelWindow);
+      m_CurrentNode->Modified();
+
+      this->UpdateGuiFromLevelWindow();
+      this->RequestRenderWindowUpdate();
+    }
   }
 }
 
