@@ -158,7 +158,6 @@ option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
 option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
-option(BUILD_NiftyPipe "Build NiftyPipe: python pipelines." ON)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 # the console window is normally shown only for debug builds. but can be explicitly enabled.
 #if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -577,7 +576,6 @@ mitkFunctionAddExternalProject(NAME NiftySeg  OFF ADVANCED NO_PACKAGE DEPENDS Ei
 mitkFunctionAddExternalProject(NAME NiftyReg  OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME NiftyRec  OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftyPipe ON ADVANCED)
 
 mitkFunctionAddExternalProject(NAME DCMTK     ON  ADVANCED)
 mitkFunctionAddExternalProject(NAME GDCM      ON  ADVANCED)
@@ -641,12 +639,6 @@ if (BUILD_VL)
   set(MITK_USE_VL ON CACHE BOOL "" FORCE)
 else()
   set(MITK_USE_VL OFF CACHE BOOL "" FORCE)
-endif()
-
-if (BUILD_NiftyPipe)
-  set(MITK_USE_NiftyPipe ON CACHE BOOL "" FORCE)
-else()
-  set(MITK_USE_NiftyPipe OFF CACHE BOOL "" FORCE)
 endif()
 
 if (BUILD_PCL)
@@ -1607,7 +1599,6 @@ configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt ${CMAKE_BINARY_DIR}/LICEN
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/Eigen.txt ${CMAKE_BINARY_DIR}/LICENSE_Eigen.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/FLANN.txt ${CMAKE_BINARY_DIR}/LICENSE_FLANN.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/PCL.txt ${CMAKE_BINARY_DIR}/LICENSE_PCL.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyPipe.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftyPipe.txt)
 if(BUILD_IGI)
   configure_file(${NiftyLink_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/NiftyLink.txt @ONLY)
   configure_file(${NiftyLink_OIGT_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/OpenIGTLink.txt @ONLY)
@@ -1645,7 +1636,6 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/AprilTags.txt DESTINATION ${NI
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Eigen.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/FLANN.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/PCL.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyPipe.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 if(BUILD_IGI)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/NiftyLink.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/OpenIGTLink.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
@@ -1737,23 +1727,6 @@ if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
       )
   install(FILES ${CAMINO_MAN_FILES} DESTINATION man/man1/ PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
   install(FILES ${CAMINO_BIN_FILES} DESTINATION bin PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-endif()
-
-# NiftyPipe
-if(BUILD_NiftyPipe AND NOT WIN32)
-  file(GLOB niftypipe_bash_files      ${NiftyPipe_ROOT}/bin/*.sh)
-  file(GLOB niftypipe_matlab_files    ${NiftyPipe_ROOT}/bin/*.m)
-  file(GLOB niftypipe_python_programs ${NiftyPipe_ROOT}/python/perform_*.py)
-  
-  install(FILES    ${niftypipe_matlab_files}    DESTINATION bin)
-  install(PROGRAMS ${niftypipe_bash_files}      DESTINATION bin)
-  install(PROGRAMS ${niftypipe_python_programs} DESTINATION python)
-
-  install(
-    DIRECTORY ${NiftyPipe_ROOT}/python/niftk
-    DESTINATION python 
-    USE_SOURCE_PERMISSIONS
-  )
 endif()
 
 
