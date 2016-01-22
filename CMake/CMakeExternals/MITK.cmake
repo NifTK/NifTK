@@ -21,14 +21,14 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-set(version "2ab8cbde1f")
+set(version "6e76f4c5e2")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
 set(proj_DEPENDENCIES ITK VTK GDCM DCMTK Eigen)
-if(QT_FOUND)
+if(MITK_USE_QT)
   list(APPEND proj_DEPENDENCIES CTK)
-endif(QT_FOUND)
+endif()
 if(BUILD_IGI)
   list(APPEND proj_DEPENDENCIES OpenCV NiftyLink)
 endif(BUILD_IGI)
@@ -62,8 +62,6 @@ if(NOT DEFINED MITK_DIR)
     # Common requirements for GUI applications:
     if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI)
 
-      set(_use_blueberry 1)
-
       list(APPEND _enabled_modules
         Core                    # needed by niftkCore
         SceneSerializationBase  # needed by niftkCoreIO
@@ -89,30 +87,28 @@ if(NOT DEFINED MITK_DIR)
         IOExt                   # autoloaded with MitkCore, registers IO microservices
       )
 
-      list(APPEND _enabled_plugins
-        org.blueberry.core.runtime      # needed by org.blueberry.core.commands
-        org.blueberry.core.commands     # needed by org.blueberry.ui.qt
-        org.blueberry.core.expressions  # needed by org.blueberry.ui.qt
-        org.blueberry.ui.qt             # needed by NiftyView
-        org.mitk.core.ext               # needed by org.mitk.gui.qt.ext
-        org.mitk.core.services          # needed by org.mitk.gui.common
-        org.mitk.gui.common             # needed by org.mitk.gui.qt.application
-        org.mitk.gui.qt.application     # needed by org.mitk.gui.qt.datamanager and org.mitk.gui.qt.ext
-        org.mitk.gui.qt.common          # needed by org.mitk.gui.qt.datamanager
-        org.mitk.gui.qt.ext             # needed by uk.ac.ucl.cmic.gui.qt.commonapps
-        org.mitk.gui.qt.datamanager     # needed by NiftyView
-        org.blueberry.ui.qt.help
-        org.blueberry.ui.qt.log
-        org.mitk.planarfigure
-        org.mitk.gui.qt.imagenavigator
-        org.mitk.gui.qt.properties
-      )
+      if(MITK_USE_BLUEBERRY)
 
-    else()
-
-      set(_use_blueberry 0)
-
-    endif()
+        list(APPEND _enabled_plugins
+          org.blueberry.core.runtime      # needed by org.blueberry.core.commands
+          org.blueberry.core.commands     # needed by org.blueberry.ui.qt
+          org.blueberry.core.expressions  # needed by org.blueberry.ui.qt
+          org.blueberry.ui.qt             # needed by NiftyView
+          org.mitk.core.ext               # needed by org.mitk.gui.qt.ext
+          org.mitk.core.services          # needed by org.mitk.gui.common
+          org.mitk.gui.common             # needed by org.mitk.gui.qt.application
+          org.mitk.gui.qt.application     # needed by org.mitk.gui.qt.datamanager and org.mitk.gui.qt.ext
+          org.mitk.gui.qt.common          # needed by org.mitk.gui.qt.datamanager
+          org.mitk.gui.qt.ext             # needed by uk.ac.ucl.cmic.gui.qt.commonapps
+          org.mitk.gui.qt.datamanager     # needed by NiftyView
+          org.blueberry.ui.qt.help
+          org.blueberry.ui.qt.log
+          org.mitk.planarfigure
+          org.mitk.gui.qt.imagenavigator
+          org.mitk.gui.qt.properties
+        )
+      endif()
+    endif() 
 
     # Additionally required for NiftyView:
     if(NIFTK_Apps/NiftyView)
@@ -123,18 +119,21 @@ if(NOT DEFINED MITK_DIR)
         DicomUI                 # needed by org.mitk.gui.qt.dicom
       )
 
-      list(APPEND _enabled_plugins
-        org.mitk.gui.qt.common.legacy           # needed by org.mitk.gui.qt.basicimageprocessing
-        org.mitk.gui.qt.basicimageprocessing
-        org.mitk.gui.qt.volumevisualization
-        org.mitk.gui.qt.pointsetinteraction
-        org.mitk.gui.qt.stdmultiwidgeteditor
-        org.mitk.gui.qt.segmentation
-        org.mitk.gui.qt.cmdlinemodules
-        org.mitk.gui.qt.dicom
-        org.mitk.gui.qt.measurementtoolbox
-        org.mitk.gui.qt.moviemaker
-      )
+      if(MITK_USE_BLUEBERRY)
+
+        list(APPEND _enabled_plugins
+          org.mitk.gui.qt.common.legacy           # needed by org.mitk.gui.qt.basicimageprocessing
+          org.mitk.gui.qt.basicimageprocessing
+          org.mitk.gui.qt.volumevisualization
+          org.mitk.gui.qt.pointsetinteraction
+          org.mitk.gui.qt.stdmultiwidgeteditor
+          org.mitk.gui.qt.segmentation
+          org.mitk.gui.qt.cmdlinemodules
+          org.mitk.gui.qt.dicom
+          org.mitk.gui.qt.measurementtoolbox
+          org.mitk.gui.qt.moviemaker
+        )
+      endif()
 
     endif()
 
@@ -151,9 +150,12 @@ if(NOT DEFINED MITK_DIR)
         IGTUI                   # needed by niftkIGIGui
       )
 
-      list(APPEND _enabled_plugins
-        org.mitk.gui.qt.aicpregistration
-      )
+      if(MITK_USE_BLUEBERRY)
+
+        list(APPEND _enabled_plugins
+          org.mitk.gui.qt.aicpregistration
+        )
+      endif()
 
     endif()
 
@@ -235,6 +237,11 @@ if(NOT DEFINED MITK_DIR)
       endforeach()
     endif()
 
+    set(_mitk_use_qt 0)
+    if(MITK_USE_Qt4 OR MITK_USE_Qt5)
+      set(_mitk_use_qt 1)
+    endif()
+
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
@@ -250,9 +257,9 @@ if(NOT DEFINED MITK_DIR)
         ${EP_COMMON_ARGS}
         -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DMITK_BUILD_ALL_PLUGINS:BOOL=ON
-        -DMITK_USE_QT:BOOL=${QT_FOUND}
-        -DMITK_USE_CTK:BOOL=${QT_FOUND}
-        -DMITK_USE_BLUEBERRY:BOOL=${_use_blueberry}
+        -DMITK_USE_QT:BOOL=${_mitk_use_qt}
+        -DMITK_USE_CTK:BOOL=${_mitk_use_qt}
+        -DMITK_USE_BLUEBERRY:BOOL=${MITK_USE_BLUEBERRY}
         -DMITK_USE_GDCMIO:BOOL=ON
         -DMITK_USE_DCMTK:BOOL=ON
         -DMITK_USE_Boost:BOOL=OFF

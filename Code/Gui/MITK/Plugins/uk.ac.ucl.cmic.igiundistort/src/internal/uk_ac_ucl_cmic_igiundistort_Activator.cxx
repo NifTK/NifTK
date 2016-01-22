@@ -52,4 +52,6 @@ ctkPluginContext* uk_ac_ucl_cmic_igiundistort_Activator::getContext()
 
 }
 
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igiundistort, mitk::uk_ac_ucl_cmic_igiundistort_Activator)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igiundistort, mitk::uk_ac_ucl_cmic_igiundistort_Activator)
+#endif

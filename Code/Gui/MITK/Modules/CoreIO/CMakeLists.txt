@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(
   INCLUDE_DIRS 
   DEPENDS niftkCore MitkSceneSerializationBase
-  PACKAGE_DEPENDS Qt4|QtCore
+  PACKAGE_DEPENDS Qt4|QtCore Qt5|Core
   AUTOLOAD_WITH niftkCore
 )
 

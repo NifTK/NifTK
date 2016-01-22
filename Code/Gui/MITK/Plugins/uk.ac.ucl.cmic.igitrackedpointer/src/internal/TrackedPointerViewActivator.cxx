@@ -46,4 +46,6 @@ ctkPluginContext* TrackedPointerViewActivator::getContext()
 
 } // end namespace
 
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igitrackedpointer, mitk::TrackedPointerViewActivator)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igitrackedpointer, mitk::TrackedPointerViewActivator)
+#endif

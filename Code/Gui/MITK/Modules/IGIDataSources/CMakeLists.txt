@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-set(_packages Qt4|QtGui QVTK NiftyLink Boost|filesystem)
+set(_packages Qt4|QtGui Qt5|Gui QVTK NiftyLink Boost|filesystem)
 
 # optional audio data source depends on qt-multimedia, which may not be available.
 if(QT_QTMULTIMEDIA_INCLUDE_DIR)

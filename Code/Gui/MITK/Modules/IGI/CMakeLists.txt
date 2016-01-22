@@ -15,6 +15,7 @@
 MITK_CREATE_MODULE(
   INCLUDE_DIRS TrackedImage TrackedPointer  Utils Rendering
   DEPENDS niftkCore niftkOpenCV niftkOpenCVUtils niftkIGIServices
+  PACKAGE_DEPENDS Qt4|QtCore Qt5|Core
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
