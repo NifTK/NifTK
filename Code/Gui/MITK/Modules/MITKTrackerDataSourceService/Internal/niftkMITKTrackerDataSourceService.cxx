@@ -423,7 +423,7 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
       continue;
     }
 
-    niftk::IGITrackerDataType::Pointer dataType = static_cast<niftk::IGITrackerDataType*>(m_Buffers[bufferName]->GetItem(time).GetPointer());
+    niftk::IGITrackerDataType::Pointer dataType = dynamic_cast<niftk::IGITrackerDataType*>(m_Buffers[bufferName]->GetItem(time).GetPointer());
     if (dataType.IsNull())
     {
       MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffers[bufferName]->GetBufferSize() << ", last=" << m_Buffers[bufferName]->GetLastTimeStamp() << std::endl;
@@ -433,13 +433,15 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
     mitk::DataNode::Pointer node = this->GetDataNode(bufferName);
     if (node.IsNull())
     {
+      // The above call to GetDataNode should always retrieve one, or create it.
       mitkThrow() << "Can't find mitk::DataNode with name " << bufferName.toStdString();
     }
 
-    mitk::CoordinateAxesData::Pointer coords = static_cast<mitk::CoordinateAxesData*>(node->GetData());
+    mitk::CoordinateAxesData::Pointer coords = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
     if (coords.IsNull())
     {
-      mitkThrow() << "DataNode with name " << bufferName.toStdString() << " contains the wrong data type!";
+      coords = mitk::CoordinateAxesData::New();
+      node->SetData(coords);
     }
 
     vtkSmartPointer<vtkMatrix4x4> matrix = dataType->GetTrackingData();

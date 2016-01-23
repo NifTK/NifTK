@@ -20,6 +20,8 @@ namespace niftk
 //-----------------------------------------------------------------------------
 IGITrackerDataType::IGITrackerDataType()
 {
+  m_TrackingData = vtkSmartPointer<vtkMatrix4x4>::New();
+  m_TrackingData->Identity();
 }
 
 

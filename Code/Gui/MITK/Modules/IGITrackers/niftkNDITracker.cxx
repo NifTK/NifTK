@@ -66,7 +66,8 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   m_TrackerDevice->SetData(m_DeviceData);
   m_TrackerDevice->SetPortNumber(m_PortNumber);
 
-  MITK_INFO << "Initialising tracker with " << m_TrackerDevice->GetToolCount() << " tools.";
+  m_TrackerDevice->OpenConnection();
+  m_TrackerDevice->StartTracking();
 
   // Create source
   m_TrackerSource = mitk::TrackingDeviceSource::New();
@@ -91,11 +92,6 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
 
   m_DataStorage->Add(m_TrackingVolumeNode);
   mitk::RenderingManager::GetInstance()->InitializeViews();
-
-  // The point of RAII is that the constructor has successfully acquired all
-  // resources, so we should try connecting. The way to disconnect it to delete this object.
-  this->OpenConnection();
-  this->StartTracking();
 }
 
 
@@ -122,7 +118,7 @@ void NDITracker::OpenConnection()
   // You should only call this from constructor.
   if (m_TrackerDevice->GetState() == mitk::TrackingDevice::Setup)
   {
-    m_TrackerSource->Connect();
+    m_TrackerDevice->OpenConnection();
     if (m_TrackerDevice->GetState() != mitk::TrackingDevice::Ready)
     {
       mitkThrow() << "Failed to connect to tracker";
@@ -142,7 +138,7 @@ void NDITracker::CloseConnection()
   // You should only call this from destructor.
   if (m_TrackerDevice->GetState() == mitk::TrackingDevice::Ready)
   {
-    m_TrackerSource->Disconnect();
+    m_TrackerDevice->CloseConnection();
     if (m_TrackerDevice->GetState() != mitk::TrackingDevice::Setup)
     {
       mitkThrow() << "Failed to disconnect from tracker";
@@ -164,7 +160,7 @@ void NDITracker::StartTracking()
     return;
   }
 
-  m_TrackerSource->StartTracking();
+  m_TrackerDevice->StartTracking();
 
   if (m_TrackerDevice->GetState() != mitk::TrackingDevice::Tracking)
   {
@@ -182,7 +178,7 @@ void NDITracker::StopTracking()
     return;
   }
 
-  m_TrackerSource->StopTracking();
+  m_TrackerDevice->StopTracking();
 
   if (m_TrackerDevice->GetState() != mitk::TrackingDevice::Ready)
   {
@@ -211,10 +207,10 @@ bool NDITracker::GetVisibilityOfTrackingVolume() const
 //-----------------------------------------------------------------------------
 std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > NDITracker::GetTrackingData()
 {
-  m_TrackerSource->Update();
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result;
 
-  for(unsigned int i=0; i< m_TrackerDevice->GetToolCount(); i++)
+  m_TrackerSource->Update();
+  for(unsigned int i=0; i< m_TrackerSource->GetNumberOfOutputs(); i++)
   {
     mitk::NavigationData::Pointer currentTool = m_TrackerSource->GetOutput(i);
     if(currentTool.IsNotNull() && currentTool->IsDataValid())
