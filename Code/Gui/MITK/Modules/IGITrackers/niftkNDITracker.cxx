@@ -65,8 +65,17 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   m_TrackerDevice->SetData(m_DeviceData);
   m_TrackerDevice->SetPortNumber(m_PortNumber);
 
-  m_TrackerDevice->OpenConnection();
-  m_TrackerDevice->StartTracking();
+  try
+  {
+    m_TrackerDevice->OpenConnection();
+    m_TrackerDevice->StartTracking();
+  }
+  catch(const mitk::Exception& e)
+  {
+    // If we don't connect, we should still try to create tracker.
+    // This means that this class can still be used for playback.
+    MITK_WARN << "Caught exception during construction, but carrying on regardless:" << e;
+  }
 
   // Create source
   m_TrackerSource = mitk::TrackingDeviceSource::New();
@@ -101,12 +110,12 @@ NDITracker::~NDITracker()
     // One should not throw exceptions from a destructor.
     this->StopTracking();
     this->CloseConnection();
-    m_DataStorage->Remove(m_TrackingVolumeNode);
   }
-  catch (mitk::Exception& e)
+  catch (const mitk::Exception& e)
   {
-    MITK_ERROR << "ERROR: Failed while destroying NDITracker:" << e;
+    MITK_WARN << "Caught exception during destruction, but carrying on regardless:" << e;
   }
+  m_DataStorage->Remove(m_TrackingVolumeNode);
 }
 
 
@@ -187,6 +196,13 @@ void NDITracker::StopTracking()
 
 
 //-----------------------------------------------------------------------------
+bool NDITracker::IsTracking() const
+{
+  return m_TrackerDevice->GetState() == mitk::TrackingDevice::Tracking;
+}
+
+
+//-----------------------------------------------------------------------------
 void NDITracker::SetVisibilityOfTrackingVolume(bool isVisible)
 {
   m_TrackingVolumeNode->SetBoolProperty("visible", isVisible);
@@ -206,6 +222,13 @@ bool NDITracker::GetVisibilityOfTrackingVolume() const
 std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > NDITracker::GetTrackingData()
 {
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result;
+
+  // So, if not tracking (e.g didn't connect to tracker),
+  // we can still play-back, so we should not fail to return.
+  if (m_TrackerDevice->GetState() != mitk::TrackingDevice::Tracking)
+  {
+    return result;
+  }
 
   m_TrackerSource->Update();
   for(unsigned int i=0; i< m_TrackerSource->GetNumberOfOutputs(); i++)

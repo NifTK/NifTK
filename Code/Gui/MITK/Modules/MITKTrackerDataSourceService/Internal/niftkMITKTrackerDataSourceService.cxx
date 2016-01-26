@@ -82,8 +82,16 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
     mitkThrow() << "Failed to start data grabbing thread";
   }
 
-  this->SetDescription("MITK Trackers");
-  this->SetStatus("Initialised");
+  this->SetDescription("MITK Tracker:" + this->GetName());
+
+  if (m_Tracker->IsTracking())
+  {
+    this->SetStatus("Initialised");
+  }
+  else
+  {
+    this->SetStatus("Failed to Track");
+  }
   this->Modified();
 }
 
@@ -91,15 +99,13 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
 //-----------------------------------------------------------------------------
 MITKTrackerDataSourceService::~MITKTrackerDataSourceService()
 {
-  m_Tracker->StopTracking();
-
-  s_Lock.RemoveSource(m_TrackerNumber);
-
   m_DataGrabbingThread->ForciblyStop();
   delete m_DataGrabbingThread;
 
   m_BackgroundDeleteThread->ForciblyStop();
   delete m_BackgroundDeleteThread;
+
+  s_Lock.RemoveSource(m_TrackerNumber);
 }
 
 
@@ -328,10 +334,6 @@ void MITKTrackerDataSourceService::GrabData()
       // we are trying to save the data.
       m_Buffers[toolNameAsQString]->AddToBuffer(wrapper.GetPointer());
     }
-  }
-  else
-  {
-    this->SetStatus("No data!");
   }
 }
 

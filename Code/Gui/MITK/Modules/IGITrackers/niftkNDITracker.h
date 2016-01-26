@@ -58,6 +58,11 @@ public:
   void StopTracking();
 
   /**
+  * \brief Returns true if the device is tracking, false otherwise.
+   */
+  bool IsTracking() const;
+
+  /**
   * \brief Set the tracking volume visible or invisible.
   *
   * Each tracker loads a tracking volume for visualisation purposes.
