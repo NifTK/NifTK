@@ -62,7 +62,7 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
   int defaultFramesPerSecond = m_Tracker->GetPreferredFramesPerSecond();
   int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
 
-  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.1);
+  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.5);
   this->SetProperties(properties);
   this->SetShouldUpdate(true);
 
@@ -138,6 +138,8 @@ IGIDataSourceProperties MITKTrackerDataSourceService::GetProperties() const
 //-----------------------------------------------------------------------------
 void MITKTrackerDataSourceService::CleanBuffer()
 {
+  QMutexLocker locker(&m_Lock);
+
   // Buffer itself should be threadsafe. Clean all buffers.
   QMap<QString, niftk::IGIDataSourceBuffer::Pointer>::iterator iter;
   for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
@@ -210,14 +212,10 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
 
   // This will find us the timestamp right after the requested one.
   // Remember we have multiple buffers!
-  QMap<QString, niftk::IGIDataSourceBuffer::Pointer>::iterator iter;
-  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
+  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator playbackIter;
+  for(playbackIter = m_PlaybackIndex.begin(); playbackIter != m_PlaybackIndex.end(); playbackIter++) // for each detected buffer
   {
-    QString bufferName = iter.key();
-    if (!m_PlaybackIndex.contains(bufferName))
-    {
-      mitkThrow() << "Invalid buffer name found " << bufferName.toStdString();
-    }
+    QString bufferName = playbackIter.key();
 
     std::set<niftk::IGIDataType::IGITimeType>::const_iterator i = m_PlaybackIndex[bufferName].upper_bound(requestedTimeStamp);
     if (i != m_PlaybackIndex[bufferName].begin())
@@ -226,6 +224,13 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
     }
     if (i != m_PlaybackIndex[bufferName].end())
     {
+      if (!m_Buffers.contains(bufferName))
+      {
+        niftk::IGIDataSourceBuffer::Pointer newBuffer = niftk::IGIDataSourceBuffer::New(m_Tracker->GetPreferredFramesPerSecond() * 2);
+        newBuffer->SetLagInMilliseconds(m_Lag);
+        m_Buffers.insert(bufferName, newBuffer);
+      }
+
       if (!m_Buffers[bufferName]->Contains(*i))
       {
         std::ostringstream  filename;
@@ -268,7 +273,7 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
 
     this->SetStatus("Playing back");
 
-  } // end: foreach buffer
+  } // end: for each buffer in playback index
 }
 
 
@@ -368,7 +373,7 @@ void MITKTrackerDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
   QDir directory(toolPath);
   if (directory.mkpath(toolPath))
   {
-    QString fileName =  directoryPath + QDir::separator() + tr("%1.txt").arg(data->GetTimeStampInNanoSeconds());
+    QString fileName =  toolPath + QDir::separator() + tr("%1.txt").arg(data->GetTimeStampInNanoSeconds());
 
     bool success = mitk::SaveVtkMatrix4x4ToFile(fileName.toStdString(), *matrix);
     if (!success)

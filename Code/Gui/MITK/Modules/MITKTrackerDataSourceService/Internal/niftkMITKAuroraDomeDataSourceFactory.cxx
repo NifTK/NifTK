@@ -49,7 +49,7 @@ IGIDataSourceI::Pointer MITKAuroraDomeDataSourceFactory::CreateService(
         );
 
   niftk::MITKTrackerDataSourceService::Pointer serviceInstance
-      = MITKTrackerDataSourceService::New(QString("AuroraDome-"), // data source name
+      = MITKTrackerDataSourceService::New(QString("AuroraDome"), // data source name
                                           this->GetName(),        // factory name
                                           properties,             // configure at startup
                                           dataStorage,

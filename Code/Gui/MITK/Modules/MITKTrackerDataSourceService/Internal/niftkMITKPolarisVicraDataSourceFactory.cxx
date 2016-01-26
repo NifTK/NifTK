@@ -49,7 +49,7 @@ IGIDataSourceI::Pointer MITKPolarisVicraDataSourceFactory::CreateService(
         );
 
   niftk::MITKTrackerDataSourceService::Pointer serviceInstance
-      = MITKTrackerDataSourceService::New(QString("PolarisVicra-"), // data source name
+      = MITKTrackerDataSourceService::New(QString("PolarisVicra"), // data source name
                                           this->GetName(),          // factory name
                                           properties,               // configure at startup
                                           dataStorage,
