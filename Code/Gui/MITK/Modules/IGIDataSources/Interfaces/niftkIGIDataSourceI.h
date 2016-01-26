@@ -133,9 +133,18 @@ public:
   virtual void SetRecordingLocation(const QString& pathName) = 0;
 
   /**
-  * \brief Retrieves the full directory where this source is saving to.
+  * \brief Get the root directory of the recording session.
   */
-  virtual QString GetRecordingDirectoryName() = 0;
+  virtual QString GetRecordingLocation() const = 0;
+
+  /**
+  * \brief The source name is the first level directory name
+  * within the root recording location.
+  *
+  * This is so we can load data from legacy data source names for playback.
+  */
+  virtual void SetPlaybackSourceName(const QString& sourceName) = 0;
+  virtual QString GetPlaybackSourceName() const = 0;
 
   /**
   * \brief Start recording.
@@ -180,14 +189,14 @@ public:
   /**
    * Checks whether the previously recorded data is readable, and returns the time-range for it.
    *
-   * \param pathName points to the data source specific directory, e.g. "/blabla/2014-01-28-11-51-04-909/Polaris Spectra_4/"
    * \param firstTimeStampInStore earliest suitable data item. Not optional!
    * \param lastTimeStampInStore last suitable data item. Not optional!
-   * \return true if there is suitable data to playback in path.
+   * \return true if there is suitable data to playback
    * \throw should not throw! Return false instead.
+   * \see SetRecordingLocation
+   * \see SetPlaybackSourceName
    */
-  virtual bool ProbeRecordedData(const QString& pathName,
-                                 niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+  virtual bool ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                  niftk::IGIDataType::IGITimeType* lastTimeStampInStore) = 0;
 
   /**

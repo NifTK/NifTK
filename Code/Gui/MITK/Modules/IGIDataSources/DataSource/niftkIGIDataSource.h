@@ -101,8 +101,11 @@ public:
   */
   virtual void StopRecording() override;
 
-  QString GetRecordingLocation() const;
   virtual void SetRecordingLocation(const QString& pathName) override;
+  virtual QString GetRecordingLocation() const override;
+  virtual void SetPlaybackSourceName(const QString& sourceName) override;
+  virtual QString GetPlaybackSourceName() const override;
+  QString GetPlaybackLocation() const;
 
   itkGetConstMacro(IsRecording, bool);
   itkGetConstMacro(IsPlayingBack, bool);
@@ -172,6 +175,7 @@ private:
   QString                           m_Status;
   QString                           m_Description;
   QString                           m_RecordingLocation;
+  QString                           m_PlaybackSourceName;
   niftk::IGIDataType::IGITimeType   m_TimeStampTolerance; // nanoseconds.
   bool                              m_ShouldUpdate;
   bool                              m_IsRecording;

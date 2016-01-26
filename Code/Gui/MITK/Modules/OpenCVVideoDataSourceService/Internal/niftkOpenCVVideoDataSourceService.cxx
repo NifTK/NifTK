@@ -155,16 +155,6 @@ void OpenCVVideoDataSourceService::CleanBuffer()
 
 
 //-----------------------------------------------------------------------------
-QString OpenCVVideoDataSourceService::GetRecordingDirectoryName()
-{
-  return this->GetRecordingLocation()
-      + niftk::GetPreferredSlash()
-      + this->GetName()
-      ;
-}
-
-
-//-----------------------------------------------------------------------------
 void OpenCVVideoDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
                                                  niftk::IGIDataType::IGITimeType lastTimeStamp)
 {
@@ -174,7 +164,7 @@ void OpenCVVideoDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType
 
   m_Buffer->DestroyBuffer();
 
-  QDir directory(this->GetRecordingDirectoryName());
+  QDir directory(this->GetPlaybackLocation());
   if (directory.exists())
   {
     std::set<niftk::IGIDataType::IGITimeType> timeStamps;
@@ -217,7 +207,7 @@ void OpenCVVideoDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
     if (!m_Buffer->Contains(*i))
     {
       std::ostringstream  filename;
-      filename << this->GetRecordingDirectoryName().toStdString() << '/' << (*i) << ".jpg";
+      filename << this->GetPlaybackLocation().toStdString() << '/' << (*i) << ".jpg";
 
       IplImage* img = cvLoadImage(filename.str().c_str());
       if (img)
@@ -241,16 +231,14 @@ void OpenCVVideoDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
 
 
 //-----------------------------------------------------------------------------
-bool OpenCVVideoDataSourceService::ProbeRecordedData(const QString& path,
-                                                     niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+bool OpenCVVideoDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                                      niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {
   // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.
   niftk::IGIDataType::IGITimeType  firstTimeStampFound = 0;
   niftk::IGIDataType::IGITimeType  lastTimeStampFound  = 0;
 
-  // needs to match what SaveData() does below
-  QDir directory(path);
+  QDir directory(this->GetPlaybackLocation());
   if (directory.exists())
   {
     std::set<niftk::IGIDataType::IGITimeType> timeStamps;
@@ -344,7 +332,10 @@ void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
     mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
   }
 
-  QString directoryPath = this->GetRecordingDirectoryName();
+  QString directoryPath = this->GetRecordingLocation()
+      + QDir::separator()
+      + this->GetName();
+
   QDir directory(directoryPath);
   if (directory.mkpath(directoryPath))
   {

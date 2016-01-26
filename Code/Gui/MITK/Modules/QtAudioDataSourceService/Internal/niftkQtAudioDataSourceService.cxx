@@ -210,7 +210,9 @@ void QtAudioDataSourceService::OnReadyRead()
 //-----------------------------------------------------------------------------
 void QtAudioDataSourceService::StartWAVFile()
 {
-  QString directoryPath = this->GetRecordingDirectoryName();
+  QString directoryPath = this->GetRecordingLocation()
+      + QDir::separator()
+      + this->GetName();
 
   QDir directory(directoryPath);
   if (directory.mkpath(directoryPath))
@@ -295,17 +297,6 @@ IGIDataSourceProperties QtAudioDataSourceService::GetProperties() const
 
 
 //-----------------------------------------------------------------------------
-QString QtAudioDataSourceService::GetRecordingDirectoryName()
-{
-  return this->GetRecordingLocation()
-      + niftk::GetPreferredSlash()
-      + this->GetName()
-      + "_" + (tr("%1").arg(m_SourceNumber))
-      ;
-}
-
-
-//-----------------------------------------------------------------------------
 void QtAudioDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
                                              niftk::IGIDataType::IGITimeType lastTimeStamp)
 {
@@ -328,9 +319,8 @@ void QtAudioDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requ
 
 
 //-----------------------------------------------------------------------------
-bool QtAudioDataSourceService::ProbeRecordedData(const QString& path,
-                                                     niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                                     niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
+bool QtAudioDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+                                                 niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {  
   return false;
 }
