@@ -17,7 +17,6 @@
 #include <mitkNavigationToolStorageDeserializer.h>
 #include <mitkNavigationToolStorageSerializer.h>
 #include <mitkException.h>
-#include <mitkRenderingManager.h>
 
 namespace niftk
 {
@@ -91,7 +90,6 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   this->SetVisibilityOfTrackingVolume(true);
 
   m_DataStorage->Add(m_TrackingVolumeNode);
-  mitk::RenderingManager::GetInstance()->InitializeViews();
 }
 
 

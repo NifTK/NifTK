@@ -20,6 +20,9 @@
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
 #include <vtkWindowToImageFilter.h>
+#include <mitkNodePredicateNot.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkTimeGeometry.h>
 #include <vtkPNGWriter.h>
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
@@ -430,6 +433,25 @@ niftk::IGIDataSourceFactoryServiceI* IGIDataSourceManager::GetFactory(QString na
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSourceManager::GlobalReInit()
+{
+  if (m_DataStorage.IsNull())
+  {
+    mitkThrow() << "Datasource is NULL" << std::endl;
+  }
+
+  mitk::NodePredicateNot::Pointer pred
+    = mitk::NodePredicateNot::New(mitk::NodePredicateProperty::New("includeInBoundingBox"
+    , mitk::BoolProperty::New(false)));
+
+  mitk::DataStorage::SetOfObjects::ConstPointer rs = m_DataStorage->GetSubset(pred);
+  mitk::TimeGeometry::Pointer bounds = m_DataStorage->ComputeBoundingGeometry3D(rs, "visible");
+
+  mitk::RenderingManager::GetInstance()->InitializeViews(bounds);
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManager::AddSource(QString name, QMap<QString, QVariant>& properties)
 {
   // Remember: All our code should throw mitk::Exception.
@@ -445,6 +467,7 @@ void IGIDataSourceManager::AddSource(QString name, QMap<QString, QVariant>& prop
   }
 
   m_Sources.push_back(source);
+  this->GlobalReInit();
 
   if (!m_GuiUpdateTimer->isActive())
   {

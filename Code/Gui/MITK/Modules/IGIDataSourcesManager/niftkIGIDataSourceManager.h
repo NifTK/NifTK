@@ -268,6 +268,11 @@ public:
   */
   niftk::IGIDataSourceI::Pointer GetSource(int rowNumber);
 
+  /**
+   * \brief Performs a global re-init.
+   */
+  void GlobalReInit();
+
 signals:
 
   /**
