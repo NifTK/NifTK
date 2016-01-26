@@ -90,11 +90,6 @@ public:
   virtual void StopPlayback() override;
 
   /**
-  * \see IGIDataSourceI::GetRecordingDirectoryName()
-  */
-  virtual QString GetRecordingDirectoryName() override;
-
-  /**
   * \see IGIDataSourceI::Update()
   */
   virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
@@ -102,8 +97,7 @@ public:
   /**
   * \see IGIDataSourceI::ProbeRecordedData()
   */
-  bool ProbeRecordedData(const QString& path,
-                         niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+  bool ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                          niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
 
   /**

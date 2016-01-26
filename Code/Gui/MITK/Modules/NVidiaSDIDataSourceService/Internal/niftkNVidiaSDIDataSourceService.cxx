@@ -168,16 +168,6 @@ IGIDataSourceProperties NVidiaSDIDataSourceService::GetProperties() const
 
 
 //-----------------------------------------------------------------------------
-QString NVidiaSDIDataSourceService::GetRecordingDirectoryName()
-{
-  return this->GetRecordingLocation()
-      + niftk::GetPreferredSlash()
-      + this->GetName()
-      ;
-}
-
-
-//-----------------------------------------------------------------------------
 void NVidiaSDIDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
                                                niftk::IGIDataType::IGITimeType lastTimeStamp)
 {
@@ -191,7 +181,7 @@ void NVidiaSDIDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType f
   m_MostRecentlyUpdatedTimeStamp = 0;
 
   int   streamcount = 0;
-  QString recordingDir = this->GetRecordingDirectoryName();
+  QString recordingDir = this->GetPlaybackLocation();
   QDir directory(recordingDir);
   if (directory.exists())
   {
@@ -264,8 +254,7 @@ void NVidiaSDIDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
 
 
 //-----------------------------------------------------------------------------
-bool NVidiaSDIDataSourceService::ProbeRecordedData(const QString& path,
-                                                   niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+bool NVidiaSDIDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                                    niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {
   // nothing we can do if we dont have suitable decoder bits
@@ -278,6 +267,8 @@ bool NVidiaSDIDataSourceService::ProbeRecordedData(const QString& path,
   try
   {
     std::map<niftk::IGIDataType::IGITimeType, PlaybackPerFrameInfo> index;
+
+    QString path = this->GetPlaybackLocation();
     ok = InitWithRecordedData(index, path.toStdString(), firstTimeStampInStore, lastTimeStampInStore, false);
   }
   catch (const std::exception& e)
@@ -637,7 +628,7 @@ void NVidiaSDIDataSourceService::SaveItem(niftk::IGIDataType::Pointer item)
     // we used to have utc here but all the other data sources use local time too.
     GetLocalTime(&now);
 
-    QString directoryPath = this->GetRecordingDirectoryName();
+    QString directoryPath = this->GetRecordingLocation() + QDir::separator() + this->GetName();
     QDir directory(directoryPath);
     if (directory.mkpath(directoryPath))
     {
