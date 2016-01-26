@@ -25,6 +25,12 @@ NVidiaSDIConfigDialog::NVidiaSDIConfigDialog(QWidget *parent, niftk::IGIDataSour
 {
   setupUi(this);
 
+  IGIDataSourceProperties props = m_Service->GetProperties();
+  if (props.contains("lag"))
+  {
+    m_LagSpinBox->setValue(props.value("lag").toInt());
+  }
+
   bool ok = false;
   ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
@@ -43,6 +49,9 @@ NVidiaSDIConfigDialog::~NVidiaSDIConfigDialog()
 //-----------------------------------------------------------------------------
 void NVidiaSDIConfigDialog::OnOKClicked()
 {
+  QMap<QString, QVariant> props;
+  props.insert("lag", QVariant::fromValue(m_LagSpinBox->value()));
+  m_Service->SetProperties(props);
 }
 
 } // end namespace

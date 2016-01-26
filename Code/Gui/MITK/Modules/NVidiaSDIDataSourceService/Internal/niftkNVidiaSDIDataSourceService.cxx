@@ -156,6 +156,14 @@ NVidiaSDIDataSourceService::~NVidiaSDIDataSourceService()
 //-----------------------------------------------------------------------------
 void NVidiaSDIDataSourceService::SetProperties(const IGIDataSourceProperties& properties)
 {
+  if (properties.contains("lag"))
+  {
+    int milliseconds = (properties.value("lag")).toInt();
+    m_Buffer->SetLagInMilliseconds(milliseconds);
+
+    MITK_INFO << "NVidiaSDIDataSourceService(" << this->GetName().toStdString()
+              << "): Set lag to " << milliseconds << " ms.";
+  }
 }
 
 
@@ -163,6 +171,11 @@ void NVidiaSDIDataSourceService::SetProperties(const IGIDataSourceProperties& pr
 IGIDataSourceProperties NVidiaSDIDataSourceService::GetProperties() const
 {
   IGIDataSourceProperties props;
+  props.insert("lag", m_Buffer->GetLagInMilliseconds());
+
+  MITK_INFO << "NVidiaSDIDataSourceService(:" << this->GetName().toStdString()
+            << "):Retrieved current value of lag as " << m_Buffer->GetLagInMilliseconds();
+
   return props;
 }
 
