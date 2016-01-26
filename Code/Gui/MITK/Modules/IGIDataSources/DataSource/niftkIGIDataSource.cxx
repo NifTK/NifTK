@@ -34,6 +34,8 @@ IGIDataSource::IGIDataSource(const std::string& name,
 , m_FactoryName(QString::fromStdString(factoryName))
 , m_Status("UNKNOWN")
 , m_Description("UNKNOWN")
+, m_RecordingLocation("")
+, m_PlaybackSourceName("")
 , m_TimeStampTolerance(0)
 , m_ShouldUpdate(false)
 , m_IsRecording(false)
@@ -180,6 +182,30 @@ void IGIDataSource::SetRecordingLocation(const QString& pathName)
 {
   m_RecordingLocation = pathName;
   this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSource::SetPlaybackSourceName(const QString& sourceName)
+{
+  m_PlaybackSourceName = sourceName;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+QString IGIDataSource::GetPlaybackSourceName() const
+{
+  return m_PlaybackSourceName;
+}
+
+
+//-----------------------------------------------------------------------------
+QString IGIDataSource::GetPlaybackLocation() const
+{
+  return this->GetRecordingLocation()
+         + QDir::separator()
+         + this->GetPlaybackSourceName();
 }
 
 

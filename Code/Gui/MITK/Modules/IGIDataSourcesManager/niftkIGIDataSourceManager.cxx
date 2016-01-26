@@ -603,10 +603,8 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
       }
 
       m_Sources[sourceNumber]->SetRecordingLocation(directoryPrefix);
-      canDo = m_Sources[sourceNumber]->ProbeRecordedData(
-                directoryPrefix + QDir::separator() + nameOfSource,
-                &startTime,
-                &endTime);
+      m_Sources[sourceNumber]->SetPlaybackSourceName(nameOfSource);
+      canDo = m_Sources[sourceNumber]->ProbeRecordedData(&startTime, &endTime);
 
       if (canDo)
       {
