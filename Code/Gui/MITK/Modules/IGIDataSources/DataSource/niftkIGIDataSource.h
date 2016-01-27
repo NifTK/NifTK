@@ -101,11 +101,35 @@ public:
   */
   virtual void StopRecording() override;
 
+  /**
+  * \see IGIDataSourceI::SetRecordingLocation()
+  */
   virtual void SetRecordingLocation(const QString& pathName) override;
+
+  /**
+  * \see IGIDataSourceI::GetRecordingLocation()
+  */
   virtual QString GetRecordingLocation() const override;
+
+  /**
+  * \see IGIDataSourceI::SetPlaybackSourceName()
+  */
   virtual void SetPlaybackSourceName(const QString& sourceName) override;
+
+  /**
+  * \see IGIDataSourceI::GetPlaybackSourceName()
+  */
   virtual QString GetPlaybackSourceName() const override;
-  QString GetPlaybackLocation() const;
+
+  /**
+  * \brief Returns this->GetRecordingLocation() slash this->GetPlaybackSourceName().
+  */
+  QString GetPlaybackDirectory() const;
+
+  /**
+  * \brief Returns this->GetRecordingLocation() slash this->GetName().
+  */
+  QString GetRecordingDirectory() const;
 
   itkGetConstMacro(IsRecording, bool);
   itkGetConstMacro(IsPlayingBack, bool);

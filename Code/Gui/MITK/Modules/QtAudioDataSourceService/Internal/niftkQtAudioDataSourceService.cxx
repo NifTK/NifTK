@@ -210,10 +210,7 @@ void QtAudioDataSourceService::OnReadyRead()
 //-----------------------------------------------------------------------------
 void QtAudioDataSourceService::StartWAVFile()
 {
-  QString directoryPath = this->GetRecordingLocation()
-      + QDir::separator()
-      + this->GetName();
-
+  QString directoryPath = this->GetRecordingDirectory();
   QDir directory(directoryPath);
   if (directory.mkpath(directoryPath))
   {

@@ -169,7 +169,7 @@ void NiftyLinkDataSourceService::SaveBuffer()
 bool NiftyLinkDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                                    niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {
-  QString path = this->GetPlaybackLocation();
+  QString path = this->GetPlaybackDirectory();
   return niftk::ProbeRecordedData(path, QString(""), firstTimeStampInStore, lastTimeStampInStore);
 }
 
@@ -184,7 +184,7 @@ void NiftyLinkDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType f
 
   m_Buffers.clear();
 
-  QString path = this->GetPlaybackLocation();
+  QString path = this->GetPlaybackDirectory();
   niftk::GetPlaybackIndex(path, QString(""), m_PlaybackIndex, m_PlaybackFiles);
 }
 
@@ -546,7 +546,7 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
 
   QString deviceName = QString::fromStdString(imageMessage->GetDeviceName());
 
-  QString directoryPath = this->GetRecordingLocation();
+  QString directoryPath = this->GetRecordingDirectory();
 
   QString outputPath = directoryPath
       + QDir::separator()
@@ -660,7 +660,7 @@ void NiftyLinkDataSourceService::SaveTrackingData(niftk::NiftyLinkDataType::Poin
     mitkThrow() << this->GetName().toStdString() << ": Saving a NULL tracking message?!?";
   }
 
-  QString directoryPath = this->GetRecordingLocation();
+  QString directoryPath = this->GetRecordingDirectory();
 
   for (int i = 0; i < trackingMessage->GetNumberOfTrackingDataElements(); i++)
   {

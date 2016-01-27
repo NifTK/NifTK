@@ -201,11 +201,20 @@ QString IGIDataSource::GetPlaybackSourceName() const
 
 
 //-----------------------------------------------------------------------------
-QString IGIDataSource::GetPlaybackLocation() const
+QString IGIDataSource::GetPlaybackDirectory() const
 {
   return this->GetRecordingLocation()
          + QDir::separator()
          + this->GetPlaybackSourceName();
+}
+
+
+//-----------------------------------------------------------------------------
+QString IGIDataSource::GetRecordingDirectory() const
+{
+  return this->GetRecordingLocation()
+      + QDir::separator()
+      + this->GetName();
 }
 
 

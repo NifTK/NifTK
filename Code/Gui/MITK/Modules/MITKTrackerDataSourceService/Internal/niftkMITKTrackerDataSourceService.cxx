@@ -170,7 +170,7 @@ QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >  MITKTrackerDataSource
 bool MITKTrackerDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                                      niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {
-  QString path = this->GetPlaybackLocation();
+  QString path = this->GetPlaybackDirectory();
   return niftk::ProbeRecordedData(path, QString(".txt"), firstTimeStampInStore, lastTimeStampInStore);
 }
 
@@ -184,7 +184,7 @@ void MITKTrackerDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType
   IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
 
   m_Buffers.clear();
-  m_PlaybackIndex = this->GetPlaybackIndex(this->GetPlaybackLocation());
+  m_PlaybackIndex = this->GetPlaybackIndex(this->GetPlaybackDirectory());
 }
 
 
@@ -230,7 +230,7 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
       if (!m_Buffers[bufferName]->Contains(*i))
       {
         std::ostringstream  filename;
-        filename << this->GetPlaybackLocation().toStdString()
+        filename << this->GetPlaybackDirectory().toStdString()
                  << niftk::GetPreferredSlash().toStdString()
                  << bufferName.toStdString()
                  << niftk::GetPreferredSlash().toStdString()
@@ -356,10 +356,7 @@ void MITKTrackerDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
     mitkThrow() << "Failed to save IGITrackerDataType as the tracking matrix was NULL!";
   }
 
-  QString directoryPath = this->GetRecordingLocation()
-      + niftk::GetPreferredSlash()
-      + this->GetName()
-      ;
+  QString directoryPath = this->GetRecordingDirectory();
 
   QString toolPath = directoryPath
       + niftk::GetPreferredSlash()

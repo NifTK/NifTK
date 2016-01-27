@@ -139,9 +139,11 @@ public:
 
   /**
   * \brief The source name is the first level directory name
-  * within the root recording location.
+  * within the root recording location. This normally corresponds
+  * to a device name, like OpenCV-0 for the OpenCV Video Source.
   *
-  * This is so we can load data from legacy data source names for playback.
+  * When we playback, we call this setter with whatever is
+  * currently in the folder, thereby allowing us to use legacy sources.
   */
   virtual void SetPlaybackSourceName(const QString& sourceName) = 0;
   virtual QString GetPlaybackSourceName() const = 0;

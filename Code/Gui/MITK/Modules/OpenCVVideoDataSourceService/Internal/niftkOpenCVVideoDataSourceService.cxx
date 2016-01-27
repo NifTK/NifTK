@@ -164,7 +164,7 @@ void OpenCVVideoDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType
 
   m_Buffer->DestroyBuffer();
 
-  QDir directory(this->GetPlaybackLocation());
+  QDir directory(this->GetPlaybackDirectory());
   if (directory.exists())
   {
     std::set<niftk::IGIDataType::IGITimeType> timeStamps;
@@ -207,7 +207,7 @@ void OpenCVVideoDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
     if (!m_Buffer->Contains(*i))
     {
       std::ostringstream  filename;
-      filename << this->GetPlaybackLocation().toStdString() << '/' << (*i) << ".jpg";
+      filename << this->GetPlaybackDirectory().toStdString() << '/' << (*i) << ".jpg";
 
       IplImage* img = cvLoadImage(filename.str().c_str());
       if (img)
@@ -238,7 +238,7 @@ bool OpenCVVideoDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITime
   niftk::IGIDataType::IGITimeType  firstTimeStampFound = 0;
   niftk::IGIDataType::IGITimeType  lastTimeStampFound  = 0;
 
-  QDir directory(this->GetPlaybackLocation());
+  QDir directory(this->GetPlaybackDirectory());
   if (directory.exists())
   {
     std::set<niftk::IGIDataType::IGITimeType> timeStamps;
@@ -332,10 +332,7 @@ void OpenCVVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
     mitkThrow() << "Failed to save OpenCVVideoDataType as the image frame was NULL!";
   }
 
-  QString directoryPath = this->GetRecordingLocation()
-      + QDir::separator()
-      + this->GetName();
-
+  QString directoryPath = this->GetRecordingDirectory();
   QDir directory(directoryPath);
   if (directory.mkpath(directoryPath))
   {
