@@ -29,6 +29,8 @@ set(_exclude_plugins
   org_mitk_gui_qt_segmentation
   org_mitk_gui_qt_measurementtoolbox
   org_mitk_gui_qt_moviemaker
+  org_mitk_gui_qt_aicpregistration
+  org_mitk_gui_qt_igttracking
 )
 
 ###########################################################
