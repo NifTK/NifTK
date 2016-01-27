@@ -31,6 +31,7 @@
 
 #include <QDir>
 #include <QMutexLocker>
+#include <QFileInfo.h>
 
 #include <cv.h>
 
@@ -239,7 +240,6 @@ void NiftyLinkDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
         {
           // Apart from String messages, we would only expect 1 message type from each device.
 
-          this->LoadString(requestedTime, listOfRelevantFiles);       // Removes processed filenames as a side effect.
           this->LoadTrackingData(requestedTime, listOfRelevantFiles); // Removes processed filenames as a side effect.
           this->LoadImage(requestedTime, listOfRelevantFiles);        // Removes processed filenames as a side effect.
 
@@ -264,37 +264,15 @@ void NiftyLinkDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
 //-----------------------------------------------------------------------------
 QString NiftyLinkDataSourceService::GetDirectoryNamePart(const QString& fullPathName, int indexFromEnd)
 {
-  QStringList directoryParts = fullPathName.split(niftk::GetPreferredSlash(), QString::SkipEmptyParts);
+  QFileInfo fileInfo(fullPathName);
+  QString fileNameWithForwardSlash = QDir::fromNativeSeparators(fileInfo.absoluteFilePath());
+  QStringList directoryParts = fileInfo.absoluteFilePath().split("/", QString::SkipEmptyParts);
   if (directoryParts.size() < 3)
   {
     mitkThrow() << "Failed to extract device and tool name from file name:" << fullPathName.toStdString();
   }
   QString result = directoryParts[directoryParts.size() - 1 - indexFromEnd];
   return result;
-}
-
-
-//-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::LoadString(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames)
-{
-  if (listOfFileNames.isEmpty())
-  {
-    return;
-  }
-
-  QStringList::iterator iter = listOfFileNames.begin();
-  while (iter != listOfFileNames.end())
-  {
-    if ((*iter).endsWith(QString(".txt")))
-    {
-      MITK_INFO << "Received, but not playing back text message:" << (*iter).toStdString();
-      iter = listOfFileNames.erase(iter);  // this advances the iterator.
-    }
-    else
-    {
-      iter++;
-    }
-  }
 }
 
 
@@ -435,7 +413,7 @@ void NiftyLinkDataSourceService::LoadTrackingData(const niftk::IGIDataType::IGIT
   QStringList::iterator iter = listOfFileNames.begin();
   while (iter != listOfFileNames.end())
   {
-    if ((*iter).endsWith(QString(".4x4")))
+    if ((*iter).endsWith(QString(".txt")))
     {
       vtkSmartPointer<vtkMatrix4x4> vtkMat = mitk::LoadVtkMatrix4x4FromFile((*iter).toStdString());
 
@@ -678,7 +656,7 @@ void NiftyLinkDataSourceService::SaveTrackingData(niftk::NiftyLinkDataType::Poin
     QDir directory(toolPath);
     if (directory.mkpath(toolPath))
     {
-      QString fileName = toolPath + QDir::separator() + tr("%1.4x4").arg(dataType->GetTimeStampInNanoSeconds());
+      QString fileName = toolPath + QDir::separator() + tr("%1.txt").arg(dataType->GetTimeStampInNanoSeconds());
 
       float matrix[4][4];
       elem->GetMatrix(matrix);

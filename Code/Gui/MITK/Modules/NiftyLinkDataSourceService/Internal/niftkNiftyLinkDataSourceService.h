@@ -154,7 +154,6 @@ private:
                                                    niftk::IGIDataType::IGITimeType timeRequested,
                                                    niftk::IGIDataType::IGITimeType actualTime,
                                                    igtl::TrackingDataMessage*);
-
   void SaveTrackingData(niftk::NiftyLinkDataType::Pointer, igtl::TrackingDataMessage*);
   void LoadTrackingData(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames);
 
@@ -162,12 +161,10 @@ private:
                                             niftk::IGIDataType::IGITimeType timeRequested,
                                             niftk::IGIDataType::IGITimeType actualTime,
                                             igtl::ImageMessage*);
-
   void SaveImage(niftk::NiftyLinkDataType::Pointer, igtl::ImageMessage*);
   void LoadImage(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames);
 
   std::vector<IGIDataItemInfo> ReceiveString(igtl::StringMessage*);
-  void LoadString(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames);
 
   void AddAll(const std::vector<IGIDataItemInfo>& a, std::vector<IGIDataItemInfo>& b);
   QString GetDirectoryNamePart(const QString& fullPathName, int indexFromEnd);
