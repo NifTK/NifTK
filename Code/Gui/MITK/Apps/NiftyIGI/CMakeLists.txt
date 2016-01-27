@@ -58,6 +58,7 @@ set(_include_plugins
   uk.ac.ucl.cmic.igirmserror
   uk.ac.ucl.cmic.igipivotcalibration
   uk.ac.ucl.cmic.igipointercalib
+  uk.ac.ucl.cmic.igipointsetcropper
 )
 
 if(WIN32)
