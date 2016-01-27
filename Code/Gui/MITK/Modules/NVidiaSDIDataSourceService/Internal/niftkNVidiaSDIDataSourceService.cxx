@@ -194,7 +194,7 @@ void NVidiaSDIDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType f
   m_MostRecentlyUpdatedTimeStamp = 0;
 
   int   streamcount = 0;
-  QString recordingDir = this->GetPlaybackLocation();
+  QString recordingDir = this->GetPlaybackDirectory();
   QDir directory(recordingDir);
   if (directory.exists())
   {
@@ -281,7 +281,7 @@ bool NVidiaSDIDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeTy
   {
     std::map<niftk::IGIDataType::IGITimeType, PlaybackPerFrameInfo> index;
 
-    QString path = this->GetPlaybackLocation();
+    QString path = this->GetPlaybackDirectory();
     ok = InitWithRecordedData(index, path.toStdString(), firstTimeStampInStore, lastTimeStampInStore, false);
   }
   catch (const std::exception& e)
