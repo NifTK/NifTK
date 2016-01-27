@@ -31,7 +31,7 @@
 
 #include <QDir>
 #include <QMutexLocker>
-#include <QFileInfo.h>
+#include <QFileInfo>
 
 #include <cv.h>
 
