@@ -14,7 +14,7 @@
 
 #include "niftkMITKTrackerDataSourceFactory.h"
 #include "niftkMITKTrackerDataSourceService.h"
-#include <niftkMITKTrackerDialog.h>
+#include "niftkMITKTrackerDialog.h"
 #include <niftkLagDialog.h>
 
 namespace niftk

@@ -13,6 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Internal/niftkMITKTrackerDialog.cxx
   Internal/niftkMITKTrackerDataSourceActivator.cxx
   Internal/niftkMITKTrackerDataSourceFactory.cxx
   Internal/niftkMITKAuroraCubeDataSourceFactory.cxx
@@ -22,5 +23,16 @@ set(CPP_FILES
   Internal/niftkMITKPolarisSpectraDataSourceFactory.cxx
   Internal/niftkMITKTrackerDataSourceService.cxx
   Internal/niftkIGITrackerDataType.cxx
+)
+
+set(MOC_H_FILES
+  Internal/niftkMITKTrackerDialog.h
+)
+
+set(UI_FILES
+  Internal/niftkMITKTrackerDialog.ui
+)
+
+set(QRC_FILES
 )
 

@@ -15,15 +15,14 @@
 #ifndef niftkMITKTrackerDialog_h
 #define niftkMITKTrackerDialog_h
 
-#include <niftkIGIDataSourcesExports.h>
 #include "niftkIGIInitialisationDialog.h"
 #include <ui_niftkMITKTrackerDialog.h>
 
 namespace niftk
 {
 
-class NIFTKIGIDATASOURCES_EXPORT MITKTrackerDialog : public IGIInitialisationDialog,
-                                                     public Ui_niftkMITKTrackerDialog
+class MITKTrackerDialog : public IGIInitialisationDialog,
+                          public Ui_niftkMITKTrackerDialog
 
 {
   Q_OBJECT

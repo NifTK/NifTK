@@ -31,7 +31,6 @@ set(CPP_FILES
   Threads/niftkIGIDataSourceBackgroundDeleteThread.cxx
   Dialogs/niftkIGIInitialisationDialog.cxx
   Dialogs/niftkIGIConfigurationDialog.cxx
-  Dialogs/niftkMITKTrackerDialog.cxx
   Dialogs/niftkIPPortDialog.cxx
   Dialogs/niftkIPHostPortDialog.cxx
   Dialogs/niftkLagDialog.cxx
@@ -43,14 +42,12 @@ set(MOC_H_FILES
   Threads/niftkIGITimerBasedThread.h
   Dialogs/niftkIGIInitialisationDialog.h
   Dialogs/niftkIGIConfigurationDialog.h
-  Dialogs/niftkMITKTrackerDialog.h
   Dialogs/niftkIPPortDialog.h
   Dialogs/niftkIPHostPortDialog.h
   Dialogs/niftkLagDialog.h
 )
 
 set(UI_FILES
-  Dialogs/niftkMITKTrackerDialog.ui
   Dialogs/niftkIPPortDialog.ui
   Dialogs/niftkIPHostPortDialog.ui
   Dialogs/niftkLagDialog.ui
