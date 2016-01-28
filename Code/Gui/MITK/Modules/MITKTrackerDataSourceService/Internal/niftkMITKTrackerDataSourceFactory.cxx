@@ -39,7 +39,7 @@ MITKTrackerDataSourceFactory::~MITKTrackerDataSourceFactory()
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* MITKTrackerDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  return new niftk::MITKTrackerDialog(parent);
+  return new niftk::MITKTrackerDialog(parent, this->GetName());
 }
 
 

@@ -23,19 +23,22 @@ namespace niftk
 {
 
 class NIFTKIGIDATASOURCES_EXPORT MITKTrackerDialog : public IGIInitialisationDialog,
-                                                 public Ui_niftkMITKTrackerDialog
+                                                     public Ui_niftkMITKTrackerDialog
 
 {
   Q_OBJECT
 
 public:
 
-  MITKTrackerDialog(QWidget *parent);
+  MITKTrackerDialog(QWidget *parent, QString trackerName);
   ~MITKTrackerDialog();
 
 private slots:
 
   void OnOKClicked();
+
+private:
+  QString m_TrackerName;
 };
 
 } // end namespace
