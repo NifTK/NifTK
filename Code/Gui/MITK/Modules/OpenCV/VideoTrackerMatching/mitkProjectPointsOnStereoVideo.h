@@ -95,6 +95,7 @@ public:
 
   void SetVisualise( bool) ;
   void SetSaveVideo( bool state );
+  itkSetMacro ( CorrectVideoAspectRatioByHalvingWidth, bool );
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawAxes, bool);
@@ -104,6 +105,7 @@ public:
   itkSetMacro ( AnnotateWithGoldStandards, bool );
   itkSetMacro ( WriteAnnotatedGoldStandards, bool );
   itkSetMacro ( WriteTrackingPositionData, bool );
+  itkSetMacro ( WriteTrackingMatrixFilesPerFrame, bool);
   itkSetMacro ( AllowablePointMatchingRatio, double);
   itkSetMacro ( AllowableTimingError, long long);
   void SetLeftGoldStandardPoints ( std::vector <GoldStandardPoint> points , mitk::VideoTrackerMatching::Pointer matcher );
@@ -171,6 +173,7 @@ protected:
 private:
   bool                          m_Visualise; //if true the project function attempts to open a couple of windows to show projection in real time
   bool                          m_SaveVideo; //if true the project function will buffer frames into a object to write out.
+  bool                          m_CorrectVideoAspectRatioByHalvingWidth; //most of our video is very wide, if true this halves the width of he save video file
   std::string                   m_VideoIn; //the video in file
   std::string                   m_VideoOut; //video needs to be saved on the fly
   std::string                   m_Directory; //the directory containing the data
@@ -195,6 +198,7 @@ private:
   bool                          m_AnnotateWithGoldStandards; //Annotate images with the gold standard picked points
   bool                          m_WriteAnnotatedGoldStandards; //Save the annotated gold standard images as png
   bool                          m_WriteTrackingPositionData; //Write Out a data file describing the motion of the tracked objects for each frame
+  bool                          m_WriteTrackingMatrixFilesPerFrame; //Write Out tracking matrix files for each video frame
   int                           m_RightGSFrameOffset; //0 if right and left gold standard points have the same frame number 
   int                           m_MaxGoldStandardPointIndex; //useful if we're just triangulating gold standard points
   int                           m_MaxGoldStandardLineIndex; //useful if we're just triangulating gold standard points
