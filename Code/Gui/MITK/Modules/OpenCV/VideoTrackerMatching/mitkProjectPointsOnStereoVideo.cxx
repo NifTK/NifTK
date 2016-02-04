@@ -178,8 +178,8 @@ void ProjectPointsOnStereoVideo::FindVideoData(mitk::VideoTrackerMatching::Point
       cv::Size S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
       double fps = static_cast<double>(m_Capture->get(CV_CAP_PROP_FPS));
       double halfFPS = fps/2.0;
-      m_LeftWriter =cvCreateVideoWriter(std::string( m_OutDirectory + niftk::Basename(m_VideoIn) +  "_leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
-      m_RightWriter =cvCreateVideoWriter(std::string(m_OutDirectory + niftk::Basename(m_VideoIn) + "_rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
+      m_LeftWriter =cvCreateVideoWriter(std::string( m_OutDirectory + niftk::GetFileSeparator() + niftk::Basename(m_VideoIn) +  "_leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
+      m_RightWriter =cvCreateVideoWriter(std::string(m_OutDirectory + niftk::GetFileSeparator() + niftk::Basename(m_VideoIn) + "_rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
     }
   }
   return;
@@ -333,8 +333,9 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
                 if ( framenumber % 2 == 0 )
                 {
                   std::ofstream trackingMatrixOut;
-                  trackingMatrixOut.open(std::string ("Tracker_" + \
-                      boost::lexical_cast<std::string>(i) + "frame_" + boost::lexical_cast<std::string>(framenumber/2) + "_Tracking_Matrix.4x4").c_str());
+                  trackingMatrixOut.open(std::string (m_OutDirectory + niftk::GetFileSeparator() + "Tracker_" + \
+                      boost::lexical_cast<std::string>(i) + "_Frame_" + boost::lexical_cast<std::string>(framenumber/2) \
+                      + "_Tracking_Matrix.4x4").c_str());
                   trackingMatrixOut << trackerToWorld;
                   trackingMatrixOut << "#Timing Error = " << timingError;
                   trackingMatrixOut.close();
@@ -343,8 +344,9 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
               else
               {
                 std::ofstream trackingMatrixOut;
-                trackingMatrixOut.open(std::string (m_OutDirectory + "tracker_" + \
-                    boost::lexical_cast<std::string>(i) + boost::lexical_cast<std::string>(framenumber) + "_Tracking_Matrix.4x4").c_str());
+                trackingMatrixOut.open(std::string (m_OutDirectory + niftk::GetFileSeparator() + "Tracker_" + \
+                  boost::lexical_cast<std::string>(i) + "_Frame_" + boost::lexical_cast<std::string>(framenumber) \
+                  + "_Tracking_Matrix.4x4").c_str());
                 trackingMatrixOut << trackerToWorld;
                 trackingMatrixOut << "#Timing Error = " << timingError;
                 trackingMatrixOut.close();
