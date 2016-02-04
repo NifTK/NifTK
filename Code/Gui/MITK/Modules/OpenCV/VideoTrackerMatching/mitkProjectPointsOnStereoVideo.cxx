@@ -302,9 +302,9 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       {
         unsigned int howMany = trackerMatcher->GetTrackingMatricesSize();
         unsigned long long timeStamp = trackerMatcher->GetVideoFrameTimeStamp(framenumber);
-        if ( timeStamp != lastFrameTimeStamp[0] )
+        if ( m_WriteTrackingMatrixFilesPerFrame || (timeStamp != lastFrameTimeStamp[0]) )
         {
-          if ( m_WriteTrackingPositionData )
+          if ( m_WriteTrackingPositionData && (timeStamp != lastFrameTimeStamp[0]) )
           {
             tracks_out <<  framenumber << " " <<  timeStamp << " " ;
           }
@@ -312,7 +312,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           {
             long long timingError;
             cv::Mat trackerToWorld = trackerMatcher->GetTrackerMatrix(framenumber, &timingError, i, m_ReferenceIndex);
-            if ( m_WriteTrackingPositionData )
+            if ( m_WriteTrackingPositionData && (timeStamp != lastFrameTimeStamp[0]) )
             {  
               cv::Mat cameraToWorld = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, i, perturbation, m_ReferenceIndex);
               cv::Point3d origin (0.0,0.0,0.0);
@@ -352,7 +352,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             }
 
           }
-          if ( m_WriteTrackingPositionData )
+          if ( m_WriteTrackingPositionData && (timeStamp != lastFrameTimeStamp[0]) )
           {  
             tracks_out << std::endl;
           }
