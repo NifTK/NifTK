@@ -337,7 +337,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
                       boost::lexical_cast<std::string>(i) + "_Frame_" + boost::lexical_cast<std::string>(framenumber/2) \
                       + "_Tracking_Matrix.4x4").c_str());
                   trackingMatrixOut << trackerToWorld;
-                  trackingMatrixOut << "#Timing Error = " << timingError;
+                  trackingMatrixOut << std::endl << "#Timing Error = " << timingError;
                   trackingMatrixOut.close();
                 }
               }
@@ -348,7 +348,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
                   boost::lexical_cast<std::string>(i) + "_Frame_" + boost::lexical_cast<std::string>(framenumber) \
                   + "_Tracking_Matrix.4x4").c_str());
                 trackingMatrixOut << trackerToWorld;
-                trackingMatrixOut << "#Timing Error = " << timingError;
+                trackingMatrixOut << std::endl << "#Timing Error = " << timingError;
                 trackingMatrixOut.close();
               }
             }
