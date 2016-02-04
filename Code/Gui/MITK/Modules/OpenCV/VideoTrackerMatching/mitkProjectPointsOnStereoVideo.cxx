@@ -175,7 +175,15 @@ void ProjectPointsOnStereoVideo::FindVideoData(mitk::VideoTrackerMatching::Point
 
     if ( m_SaveVideo )
     {
-      cv::Size S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
+      cv::Size S;
+      if (  m_CorrectVideoAspectRatioByHalvingWidth )
+      {  
+        S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
+      }
+      else
+      {
+        S = cv::Size((int) m_VideoWidth, (int) m_VideoHeight );
+      }
       double fps = static_cast<double>(m_Capture->get(CV_CAP_PROP_FPS));
       double halfFPS = fps/2.0;
       m_LeftWriter =cvCreateVideoWriter(std::string( m_OutDirectory + niftk::GetFileSeparator() + niftk::Basename(m_VideoIn) +  "_leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
@@ -493,8 +501,15 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             if ( framenumber%2 == 0 ) 
             {
               IplImage image(videoImage);
-              cvResize (&image, videoOutImage,CV_INTER_LINEAR);
-              cvWriteFrame(m_LeftWriter,videoOutImage);
+              if ( m_CorrectVideoAspectRatioByHalvingWidth )
+              {
+                cvResize (&image, videoOutImage,CV_INTER_LINEAR);
+                cvWriteFrame(m_LeftWriter,videoOutImage);
+              }
+              else
+              {
+                cvWriteFrame(m_LeftWriter,&image);
+              }
             }
           }
           if ( m_RightWriter != NULL ) 
@@ -502,8 +517,15 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             if ( framenumber%2 != 0 ) 
             {
               IplImage image(videoImage);
-              cvResize (&image, videoOutImage,CV_INTER_LINEAR);
-              cvWriteFrame(m_RightWriter,videoOutImage);
+              if ( m_CorrectVideoAspectRatioByHalvingWidth )
+              {
+                cvResize (&image, videoOutImage,CV_INTER_LINEAR);
+                cvWriteFrame(m_RightWriter,videoOutImage);
+              }
+              else
+              {
+                cvWriteFrame(m_RightWriter,&image);
+              }
             }
           }
         }
