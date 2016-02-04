@@ -333,8 +333,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
                 if ( framenumber % 2 == 0 )
                 {
                   std::ofstream trackingMatrixOut;
-                  trackingMatrixOut.open(std::string (m_OutDirectory + "tracker_" + \
-                      boost::lexical_cast<std::string>(i) + boost::lexical_cast<std::string>(framenumber/2) + "_Tracking_Matrix.4x4").c_str());
+                  trackingMatrixOut.open(std::string ("Tracker_" + \
+                      boost::lexical_cast<std::string>(i) + "frame_" + boost::lexical_cast<std::string>(framenumber/2) + "_Tracking_Matrix.4x4").c_str());
                   trackingMatrixOut << trackerToWorld;
                   trackingMatrixOut << "#Timing Error = " << timingError;
                   trackingMatrixOut.close();
