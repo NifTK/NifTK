@@ -50,6 +50,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_WriteAnnotatedGoldStandards(false)
 , m_WriteTrackingPositionData(false)
 , m_WriteTrackingMatrixFilesPerFrame(false)
+, m_CorrectTrackingMatrixFileNamesForSequentialChannelSplitVideo (true) 
 , m_LeftGSFramesAreEven(true)
 , m_RightGSFramesAreEven(true)
 , m_MaxGoldStandardPointIndex(-1)
@@ -327,12 +328,27 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             }
             if ( m_WriteTrackingMatrixFilesPerFrame )
             {
-              std::ofstream trackingMatrixOut;
-              trackingMatrixOut.open(std::string (m_OutDirectory + "tracker_" + \
+              if ( m_CorrectTrackingMatrixFileNamesForSequentialChannelSplitVideo )
+              {
+                if ( framenumber % 2 == 0 )
+                {
+                  std::ofstream trackingMatrixOut;
+                  trackingMatrixOut.open(std::string (m_OutDirectory + "tracker_" + \
+                      boost::lexical_cast<std::string>(i) + boost::lexical_cast<std::string>(framenumber/2) + "_Tracking_Matrix.4x4").c_str());
+                  trackingMatrixOut << trackerToWorld;
+                  trackingMatrixOut << "#Timing Error = " << timingError;
+                  trackingMatrixOut.close();
+                }
+              }
+              else
+              {
+                std::ofstream trackingMatrixOut;
+                trackingMatrixOut.open(std::string (m_OutDirectory + "tracker_" + \
                     boost::lexical_cast<std::string>(i) + boost::lexical_cast<std::string>(framenumber) + "_Tracking_Matrix.4x4").c_str());
-              trackingMatrixOut << trackerToWorld;
-              trackingMatrixOut << "#Timing Error = " << timingError;
-              trackingMatrixOut.close();
+                trackingMatrixOut << trackerToWorld;
+                trackingMatrixOut << "#Timing Error = " << timingError;
+                trackingMatrixOut.close();
+              }
             }
 
           }

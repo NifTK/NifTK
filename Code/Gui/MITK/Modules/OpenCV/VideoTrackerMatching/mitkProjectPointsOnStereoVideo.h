@@ -199,6 +199,7 @@ private:
   bool                          m_WriteAnnotatedGoldStandards; //Save the annotated gold standard images as png
   bool                          m_WriteTrackingPositionData; //Write Out a data file describing the motion of the tracked objects for each frame
   bool                          m_WriteTrackingMatrixFilesPerFrame; //Write Out tracking matrix files for each video frame
+  bool                          m_CorrectTrackingMatrixFileNamesForSequentialChannelSplitVideo; //when writing out tracking matrices we halve the frame nuber and only write out every second frame.
   int                           m_RightGSFrameOffset; //0 if right and left gold standard points have the same frame number 
   int                           m_MaxGoldStandardPointIndex; //useful if we're just triangulating gold standard points
   int                           m_MaxGoldStandardLineIndex; //useful if we're just triangulating gold standard points
