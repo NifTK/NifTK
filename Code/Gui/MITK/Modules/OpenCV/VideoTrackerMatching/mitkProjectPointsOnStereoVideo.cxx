@@ -31,6 +31,7 @@ namespace mitk {
 ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 : m_Visualise(false)
 , m_SaveVideo(false)
+, m_CorrectVideoAspectRatioByHalvingWidth (true)
 , m_VideoIn("")
 , m_VideoOut("")
 , m_Directory("")
@@ -48,6 +49,8 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_AnnotateWithGoldStandards(false)
 , m_WriteAnnotatedGoldStandards(false)
 , m_WriteTrackingPositionData(false)
+, m_WriteTrackingMatrixFilesPerFrame(false)
+, m_CorrectTrackingMatrixFileNamesForSequentialChannelSplitVideo (true) 
 , m_LeftGSFramesAreEven(true)
 , m_RightGSFramesAreEven(true)
 , m_MaxGoldStandardPointIndex(-1)
@@ -172,11 +175,19 @@ void ProjectPointsOnStereoVideo::FindVideoData(mitk::VideoTrackerMatching::Point
 
     if ( m_SaveVideo )
     {
-      cv::Size S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
+      cv::Size S;
+      if (  m_CorrectVideoAspectRatioByHalvingWidth )
+      {  
+        S = cv::Size((int) m_VideoWidth/2.0, (int) m_VideoHeight );
+      }
+      else
+      {
+        S = cv::Size((int) m_VideoWidth, (int) m_VideoHeight );
+      }
       double fps = static_cast<double>(m_Capture->get(CV_CAP_PROP_FPS));
       double halfFPS = fps/2.0;
-      m_LeftWriter =cvCreateVideoWriter(std::string( m_OutDirectory + niftk::Basename(m_VideoIn) +  "_leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
-      m_RightWriter =cvCreateVideoWriter(std::string(m_OutDirectory + niftk::Basename(m_VideoIn) + "_rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
+      m_LeftWriter =cvCreateVideoWriter(std::string( m_OutDirectory + niftk::GetFileSeparator() + niftk::Basename(m_VideoIn) +  "_leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
+      m_RightWriter =cvCreateVideoWriter(std::string(m_OutDirectory + niftk::GetFileSeparator() + niftk::Basename(m_VideoIn) + "_rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
     }
   }
   return;
@@ -249,7 +260,16 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   int key = 0;
   bool drawProjection = true;
   IplImage *smallimage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int) m_VideoHeight/2.0), 8,3);
-  IplImage *smallcorrectedimage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int)m_VideoHeight), 8,3);
+  IplImage *videoOutImage;
+
+  if ( m_CorrectVideoAspectRatioByHalvingWidth )
+  {
+    videoOutImage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int)m_VideoHeight), 8,3);
+  }
+  else
+  {
+    videoOutImage = cvCreateImage (cvSize((int)m_VideoWidth, (int)m_VideoHeight), 8,3);
+  }
 
   std::vector < cv::Point3d > lastFrameTrackerOrigin;
   std::vector < cv::Point3d > lastFrameCameraOrigin;
@@ -286,30 +306,66 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     }
     else
     {
-      if ( m_WriteTrackingPositionData )
+      if ( m_WriteTrackingPositionData || m_WriteTrackingMatrixFilesPerFrame )
       {
         unsigned int howMany = trackerMatcher->GetTrackingMatricesSize();
         unsigned long long timeStamp = trackerMatcher->GetVideoFrameTimeStamp(framenumber);
-        if ( timeStamp != lastFrameTimeStamp[0] )
+        if ( m_WriteTrackingMatrixFilesPerFrame || (timeStamp != lastFrameTimeStamp[0]) )
         {
-          tracks_out <<  framenumber << " " <<  timeStamp << " " ;
+          if ( m_WriteTrackingPositionData && (timeStamp != lastFrameTimeStamp[0]) )
+          {
+            tracks_out <<  framenumber << " " <<  timeStamp << " " ;
+          }
           for ( unsigned int i = 0 ; i < howMany ; ++ i )
           {
             long long timingError;
             cv::Mat trackerToWorld = trackerMatcher->GetTrackerMatrix(framenumber, &timingError, i, m_ReferenceIndex);
-            cv::Mat cameraToWorld = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, i, perturbation, m_ReferenceIndex);
-            cv::Point3d origin (0.0,0.0,0.0);
-            cv::Point3d trackerOrigin = trackerToWorld * origin;
-            cv::Point3d cameraOrigin = cameraToWorld * origin;
-            double trackerSpeed = ( mitk::Norm  (trackerOrigin - lastFrameTrackerOrigin[i]) ) / ( timeStamp - lastFrameTimeStamp[i] ) * 1e9; //mm per second
-            double cameraSpeed = ( mitk::Norm  (cameraOrigin - lastFrameCameraOrigin[i]) ) / ( timeStamp - lastFrameTimeStamp[i] ) * 1e9; //mm per second
-            tracks_out << timingError << " " << trackerOrigin.x << " " << trackerOrigin.y << " " << trackerOrigin.z << " " << trackerSpeed  ;
-            tracks_out << " " << cameraOrigin.x << " " << cameraOrigin.y << " " << cameraOrigin.z << " " << cameraSpeed  ;
-            lastFrameTrackerOrigin[i] = trackerOrigin;
-            lastFrameCameraOrigin[i] = cameraOrigin;
-            lastFrameTimeStamp[i] = timeStamp;
+            if ( m_WriteTrackingPositionData && (timeStamp != lastFrameTimeStamp[0]) )
+            {  
+              cv::Mat cameraToWorld = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, i, perturbation, m_ReferenceIndex);
+              cv::Point3d origin (0.0,0.0,0.0);
+              cv::Point3d trackerOrigin = trackerToWorld * origin;
+              cv::Point3d cameraOrigin = cameraToWorld * origin;
+              double trackerSpeed = ( mitk::Norm  (trackerOrigin - lastFrameTrackerOrigin[i]) ) / ( timeStamp - lastFrameTimeStamp[i] ) * 1e9; //mm per second
+              double cameraSpeed = ( mitk::Norm  (cameraOrigin - lastFrameCameraOrigin[i]) ) / ( timeStamp - lastFrameTimeStamp[i] ) * 1e9; //mm per second
+              tracks_out << timingError << " " << trackerOrigin.x << " " << trackerOrigin.y << " " << trackerOrigin.z << " " << trackerSpeed  ;
+              tracks_out << " " << cameraOrigin.x << " " << cameraOrigin.y << " " << cameraOrigin.z << " " << cameraSpeed  ;
+              lastFrameTrackerOrigin[i] = trackerOrigin;
+              lastFrameCameraOrigin[i] = cameraOrigin;
+              lastFrameTimeStamp[i] = timeStamp;
+            }
+            if ( m_WriteTrackingMatrixFilesPerFrame )
+            {
+              if ( m_CorrectTrackingMatrixFileNamesForSequentialChannelSplitVideo )
+              {
+                if ( framenumber % 2 == 0 )
+                {
+                  std::ofstream trackingMatrixOut;
+                  trackingMatrixOut.open(std::string (m_OutDirectory + niftk::GetFileSeparator() + "Tracker_" + \
+                      boost::lexical_cast<std::string>(i) + "_Frame_" + boost::lexical_cast<std::string>(framenumber/2) \
+                      + "_Tracking_Matrix.4x4").c_str());
+                  trackingMatrixOut << trackerToWorld;
+                  trackingMatrixOut << std::endl << "#Timing Error = " << timingError;
+                  trackingMatrixOut.close();
+                }
+              }
+              else
+              {
+                std::ofstream trackingMatrixOut;
+                trackingMatrixOut.open(std::string (m_OutDirectory + niftk::GetFileSeparator() + "Tracker_" + \
+                  boost::lexical_cast<std::string>(i) + "_Frame_" + boost::lexical_cast<std::string>(framenumber) \
+                  + "_Tracking_Matrix.4x4").c_str());
+                trackingMatrixOut << trackerToWorld;
+                trackingMatrixOut << std::endl << "#Timing Error = " << timingError;
+                trackingMatrixOut.close();
+              }
+            }
+
           }
-          tracks_out << std::endl;
+          if ( m_WriteTrackingPositionData && (timeStamp != lastFrameTimeStamp[0]) )
+          {  
+            tracks_out << std::endl;
+          }
         }
       }
 
@@ -445,8 +501,15 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             if ( framenumber%2 == 0 ) 
             {
               IplImage image(videoImage);
-              cvResize (&image, smallcorrectedimage,CV_INTER_LINEAR);
-              cvWriteFrame(m_LeftWriter,smallcorrectedimage);
+              if ( m_CorrectVideoAspectRatioByHalvingWidth )
+              {
+                cvResize (&image, videoOutImage,CV_INTER_LINEAR);
+                cvWriteFrame(m_LeftWriter,videoOutImage);
+              }
+              else
+              {
+                cvWriteFrame(m_LeftWriter,&image);
+              }
             }
           }
           if ( m_RightWriter != NULL ) 
@@ -454,8 +517,15 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             if ( framenumber%2 != 0 ) 
             {
               IplImage image(videoImage);
-              cvResize (&image, smallcorrectedimage,CV_INTER_LINEAR);
-              cvWriteFrame(m_RightWriter,smallcorrectedimage);
+              if ( m_CorrectVideoAspectRatioByHalvingWidth )
+              {
+                cvResize (&image, videoOutImage,CV_INTER_LINEAR);
+                cvWriteFrame(m_RightWriter,videoOutImage);
+              }
+              else
+              {
+                cvWriteFrame(m_RightWriter,&image);
+              }
             }
           }
         }

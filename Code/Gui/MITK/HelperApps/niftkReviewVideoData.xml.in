@@ -57,6 +57,22 @@
       <label>Write the timing errors out to file</label>
       <default>0</default>
     </boolean>
+
+    <boolean>
+      <name>dontCorrectAspectRatio</name>
+      <longflag>dontCorrectAspectRatio</longflag>
+      <description>dont correct the aspect ratio when writing out avi</description>
+      <label>dont correct the aspect ration when writing our avi</label>
+      <default>0</default>
+    </boolean>
+
+    <boolean>
+      <name>writeTrackingMatricesPerFrame</name>
+      <longflag>writeTrackingMatricesPerFrame</longflag>
+      <description>write out tracking matrices for each frame of the video file</description>
+      <label>write out treacking matrices for each frame of the video file</label>
+      <default>0</default>
+    </boolean>
  
     <boolean>
       <name>noVisualise</name>
