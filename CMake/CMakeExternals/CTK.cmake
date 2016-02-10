@@ -34,6 +34,9 @@ if(MITK_USE_Qt4 OR MITK_USE_Qt5)
   set(qRestAPI_version "5f3a03b15d")
   set(qRestAPI_location "${NIFTK_EP_TARBALL_LOCATION}/commontk-qRestAPI-${qRestAPI_version}.tar.gz")
 
+  set(PythonQt_version "127d894950")
+  set(PythonQt_location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-PythonQt-${PythonQt_version}.tar.gz")
+
   niftkMacroDefineExternalProjectVariables(CTK ${version} ${location})
   set(proj_DEPENDENCIES VTK ITK DCMTK)
 
@@ -128,6 +131,7 @@ if(MITK_USE_Qt4 OR MITK_USE_Qt5)
         -DITK_DIR:PATH=${ITK_DIR}
         -DDCMTK_URL:STRING=${NIFTK_EP_TARBALL_LOCATION}/CTK_DCMTK_085525e6.tar.gz
         -DqRestAPI_URL:STRING=${qRestAPI_location}
+        -DPythonQt_URL:STRING=${PythonQt_location}
       CMAKE_CACHE_ARGS
         ${EP_COMMON_CACHE_ARGS}
       CMAKE_CACHE_DEFAULT_ARGS
