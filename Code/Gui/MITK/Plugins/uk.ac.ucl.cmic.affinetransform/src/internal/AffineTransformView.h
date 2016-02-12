@@ -72,6 +72,9 @@ class AffineTransformView : public QmitkBaseView
     /** \brief Slot for all changes to transformation parameters. */
     void OnParameterChanged();
 
+    /** \brief Slot for all changes to transformation display. */
+    void OnTransformDisplayChanged(int, int);
+
     /** \brief Slot for reset button that resets the parameter controls, and updates node geometry accordingly. */
     void OnResetTransformPushed();
 
@@ -125,8 +128,11 @@ class AffineTransformView : public QmitkBaseView
 
   private:
 
-    /** Enables or Disables all the controls. */
+    /** Enables or Disables all the non-interactive controls. */
     void SetControlsEnabled(bool isEnabled);
+
+    /** Enables or Disables all the interactive controls. */
+    void SetInteractiveControlsEnabled(bool isEnabled);
 
     /** Sets the controls to the values given in the specific parameters property. */
     void SetUIValues(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
@@ -169,24 +175,23 @@ class AffineTransformView : public QmitkBaseView
 private:
     Ui::AffineTransformWidget             * m_Controls;
     double                                  m_CentreOfRotation[3];
-    //mitk::DataNode::Pointer                 msp_DataOwnerNode;
+    mitk::DataNode::Pointer                 m_DataOwnerNode;
     mitk::AffineTransformer::Pointer        m_AffineTransformer;
 
 
     //************************************************************************************************************************
-    bool                                    m_inInteractiveMode;
-    bool                                    m_rotationMode;
-    bool                                    m_legendAdded;
+    bool                                    m_InInteractiveMode;
+    bool                                    m_RotationMode;
+    bool                                    m_LegendAdded;
     QWidget                               * m_ParentWidget;
-    //mitk::WeakPointer<mitk::Image>          m_currentImage;
-    mitk::WeakPointer<mitk::BaseData>       m_currentDataObject;
-    mitk::BoundingObject::Pointer           m_boundingObject;
-    mitk::DataNode::Pointer                 m_boundingObjectNode;
+    mitk::WeakPointer<mitk::BaseData>       m_CurrentDataObject;
+    mitk::BoundingObject::Pointer           m_BoundingObject;
+    mitk::DataNode::Pointer                 m_BoundingObjectNode;
     AffineTransformInteractor3D::Pointer    m_AffineInteractor3D;
     //mitk::AffineInteractor3D::Pointer       m_AffineInteractor;
-    vtkLegendScaleActor                   * m_legendActor;
-    vtkAxesActor                          * m_axesActor;
-    CustomVTKAxesActor                    * m_customAxesActor;
+    vtkLegendScaleActor                   * m_LegendActor;
+    vtkAxesActor                          * m_AxesActor;
+    CustomVTKAxesActor                    * m_CustomAxesActor;
     //************************************************************************************************************************
 };
 

@@ -31,6 +31,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkStateMachineFactory.h>
 #include <mitkStateTransitionOperation.h>
 #include <mitkRenderingManager.h>
+#include <mitkRenderingManagerFactory.h>
 #include <mitkRotationOperation.h>
 
 #include <vtkCamera.h>
@@ -325,7 +326,9 @@ bool AffineTransformInteractor3D::OnAcSelectPickedObject(mitk::Action * action, 
 {
   // Color object red
   m_DataNode->SetColor( 1.0, 0.0, 0.0 );
-  stateEvent->GetEvent()->GetSender()->GetRenderingManager()->RequestUpdateAll();
+  
+  mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
+  renderManager->RequestUpdateAll();
 
   return true;
 }
@@ -334,7 +337,9 @@ bool AffineTransformInteractor3D::OnAcDeselectPickedObject(mitk::Action * action
 {
   // Color object white
   m_DataNode->SetColor( 1.0, 1.0, 1.0 );
-  stateEvent->GetEvent()->GetSender()->GetRenderingManager()->RequestUpdateAll();
+  
+  mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
+  renderManager->RequestUpdateAll();
 
   return true;
 }
