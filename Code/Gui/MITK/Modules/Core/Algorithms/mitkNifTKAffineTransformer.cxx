@@ -229,15 +229,19 @@ namespace mitk
 
 //-----------------------------------------------------------------------------
 AffineTransformer::AffineTransformer()
-  : m_CurrDispTransfProp(0),
-    m_DataStorage(0),
-    m_CurrentDataNode(0),
-    m_RotateAroundCenter(false)
+: m_CurrDispTransfProp(0)
+, m_DataStorage(0)
+, m_CurrentDataNode(0)
+, m_TransformMatrix(NULL)
+, m_RotateAroundCenter(false)
 {
   memset(&m_Translation, 0, sizeof(double)*3);
   memset(&m_Rotation, 0, sizeof(double)*3);
   memset(&m_Scaling, 0, sizeof(double)*3);
   memset(&m_Scaling, 0, sizeof(double)*3);
+
+  m_TransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  m_TransformMatrix->Identity();
 }
 
 //-----------------------------------------------------------------------------
@@ -279,13 +283,7 @@ vtkSmartPointer<vtkMatrix4x4> AffineTransformer::GetTransformMatrixFromNode(std:
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkMatrix4x4> AffineTransformer::GetCurrentTransformMatrix() const
 {
-  vtkSmartPointer<vtkMatrix4x4> transform = vtkSmartPointer<vtkMatrix4x4>::New();
-  transform->Identity();
-
-  if (m_CurrDispTransfProp.IsNotNull())
-    transform = this->ComputeTransformFromParameters();
-
-  return transform;
+  return m_TransformMatrix;
 }
 
 //-----------------------------------------------------------------------------
@@ -337,7 +335,7 @@ void AffineTransformer::UpdateTransformationGeometry()
     vtkSmartPointer<vtkMatrix4x4> invertedTransformPreLoaded = vtkSmartPointer<vtkMatrix4x4>::New();
     vtkMatrix4x4::Invert(transformPreLoaded, invertedTransformPreLoaded);
 
-    vtkSmartPointer<vtkMatrix4x4> newTransformAccordingToParameters = this->ComputeTransformFromParameters();
+    vtkSmartPointer<vtkMatrix4x4> newTransformAccordingToParameters = m_TransformMatrix;
 
     vtkSmartPointer<vtkMatrix4x4> invertedTransforms = vtkSmartPointer<vtkMatrix4x4>::New();
     vtkSmartPointer<vtkMatrix4x4> transformsBeforeAffine = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -359,7 +357,7 @@ void AffineTransformer::UpdateTransformationGeometry()
 }
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkMatrix4x4> AffineTransformer::ComputeTransformFromParameters(void) const
+void AffineTransformer::ComputeTransformFromParameters(void)
 {
   vtkSmartPointer<vtkMatrix4x4> sp_inc, sp_tmp, sp_swap;
   double incVals[4][4], partInc[4][4], result[4][4];
@@ -442,14 +440,10 @@ vtkSmartPointer<vtkMatrix4x4> AffineTransformer::ComputeTransformFromParameters(
     for (cInd = 0; cInd < 3; cInd++) incVals[cInd][3] += m_CentreOfRotation[cInd];
   }
 
-  sp_inc = vtkSmartPointer<vtkMatrix4x4>::New();
-  std::copy(&incVals[0][0], &incVals[0][0] + 4*4, &sp_inc->Element[0][0]);
-
-  return sp_inc;
+  std::copy(&incVals[0][0], &incVals[0][0] + 4*4, &m_TransformMatrix->Element[0][0]);
 }
 
 //-----------------------------------------------------------------------------
-/** \brief Slot for all changes to transformation parameters. */
 void AffineTransformer::OnParametersChanged(mitk::AffineTransformParametersDataNodeProperty::Pointer paramsProperty)
 {
   mitk::AffineTransformParametersDataNodeProperty::ParametersType params = paramsProperty->GetAffineTransformParameters();
@@ -488,6 +482,14 @@ void AffineTransformer::OnParametersChanged(mitk::AffineTransformParametersDataN
   m_CurrDispTransfProp = paramsProperty;
 
   this->UpdateTransformationGeometry();
+  this->ComputeTransformFromParameters();
+}
+
+
+//-----------------------------------------------------------------------------
+void AffineTransformer::OnTransformChanged(vtkSmartPointer<vtkMatrix4x4> transform)
+{
+  m_TransformMatrix->DeepCopy(transform);
 }
 
 //-----------------------------------------------------------------------------
@@ -570,17 +572,22 @@ void AffineTransformer::OnApplyTransform()
   vtkSmartPointer<vtkMatrix4x4> totalInverted = vtkSmartPointer<vtkMatrix4x4>::New();
   vtkMatrix4x4::Invert(total, totalInverted);
   m_CurrentDataNode->GetData()->GetGeometry()->Compose( totalInverted );
+  MITK_INFO << " totalInverted "; totalInverted->Print(std::cout);
+
 
   vtkSmartPointer<vtkMatrix4x4> initial = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(INITIAL_TRANSFORM_KEY.c_str(), *(m_CurrentDataNode.GetPointer()));
   m_CurrentDataNode->GetData()->GetGeometry()->Compose( initial );
 
+
+  MITK_INFO << " initial "; initial->Print(std::cout);
   // Update the geometry according to current GUI parameters, which represent the "current" transformation.
-  vtkSmartPointer<vtkMatrix4x4> sp_transformFromParams = this->ComputeTransformFromParameters();
+  vtkSmartPointer<vtkMatrix4x4> sp_transformFromParams = m_TransformMatrix;
   vtkSmartPointer<vtkMatrix4x4> sp_transformPreLoaded = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(PRELOADED_TRANSFORM_KEY.c_str(), *(m_CurrentDataNode.GetPointer()));
   vtkSmartPointer<vtkMatrix4x4> sp_combinedTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   vtkMatrix4x4::Multiply4x4(sp_transformFromParams, sp_transformPreLoaded, sp_combinedTransform);
 
   m_CurrentDataNode->GetData()->GetGeometry()->Compose(sp_combinedTransform);
+    MITK_INFO << " sp_transformFromParams "; sp_transformFromParams->Print(std::cout);
 
   vtkSmartPointer<vtkMatrix4x4> identity = vtkSmartPointer<vtkMatrix4x4>::New();
   identity->Identity();
@@ -750,7 +757,8 @@ void AffineTransformer::ApplyResampleToCurrentNode()
   mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(m_CurrentDataNode->GetData());
   assert(image);
 
-  vtkSmartPointer<vtkMatrix4x4> sp_transformFromParams = this->ComputeTransformFromParameters();
+  this->ComputeTransformFromParameters();
+  vtkSmartPointer<vtkMatrix4x4> sp_transformFromParams = m_TransformMatrix;
   vtkSmartPointer<vtkMatrix4x4> sp_transformPreLoaded = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(PRELOADED_TRANSFORM_KEY.c_str(), *(m_CurrentDataNode.GetPointer()));
   vtkSmartPointer<vtkMatrix4x4> sp_combinedTransform = vtkSmartPointer<vtkMatrix4x4>::New();
   vtkMatrix4x4::Multiply4x4(sp_transformFromParams, sp_transformPreLoaded, sp_combinedTransform);

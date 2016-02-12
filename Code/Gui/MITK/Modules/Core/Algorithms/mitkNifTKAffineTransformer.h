@@ -40,7 +40,7 @@ namespace mitk {
  * 2. The "Incremental" transformation = Firstly, the dataNode->GetData()->GetGeometry() can only be composed with.
  *                                       So, we always have to calculate, for any change, the delta to be composed onto the existing transformation.
  *
- * 3. The "Pre-Loaded" transformation  = A transformation loaded from file.
+ * 3. The "Pre-Loaded" transformation  = A transformation loaded from file or the transformation last applied to the object.
  *                                       Loading a transformation from file also resets the GUI parameters.
  *                                       So, if you then add a rotation of 10 degrees about X axis, it is performed AFTER the transformation loaded from file.
  *
@@ -108,8 +108,11 @@ public:
   /// \brief Called when a node changed.
   void OnNodeChanged(mitk::DataNode::Pointer node);
 
-  /** \brief Slot for all changes to transformation parameters. */
+  /** \brief For all changes to transformation parameters. */
   void OnParametersChanged(mitk::AffineTransformParametersDataNodeProperty::Pointer paramsProperty);
+
+  /** \brief For all changes to transformation matrix directly. */
+  void OnTransformChanged(vtkSmartPointer<vtkMatrix4x4> transform);
 
   /** \brief Slot for saving transform to disk. */
   void OnSaveTransform(std::string filename);
@@ -118,7 +121,7 @@ public:
   void OnLoadTransform(std::string filename);
 
   /** \brief Slot for updating the direction cosines with the current transformation. */
-  void OnApplyTransform(); //BIG TODO
+  void OnApplyTransform(); 
 
   /** \brief Slot for resampling the current image. */
   void OnResampleTransform();
@@ -152,7 +155,7 @@ protected:
   AffineTransformer& operator=(const AffineTransformer&); // Purposefully not implemented.
 
   /// \brief Computes a new linear transform (as 4x4 transform matrix) from the parameters set through the UI.
-  virtual vtkSmartPointer<vtkMatrix4x4> ComputeTransformFromParameters(void) const;
+  virtual void ComputeTransformFromParameters(void);
 
   /// \brief Updates the transform on the current node, and it's children.
   void UpdateTransformationGeometry();
@@ -166,6 +169,8 @@ private:
 
   /// \brief Pointer to the current data node
   mitk::DataNode::Pointer    m_CurrentDataNode;
+
+  vtkSmartPointer<vtkMatrix4x4> m_TransformMatrix;
 
   /// \brief Flag to set rotation around center
   bool                       m_RotateAroundCenter;
