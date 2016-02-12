@@ -585,7 +585,7 @@ void AffineTransformer::OnApplyTransform()
   vtkSmartPointer<vtkMatrix4x4> identity = vtkSmartPointer<vtkMatrix4x4>::New();
   identity->Identity();
   mitk::AffineTransformDataNodeProperty::StoreTransformInNode(INCREMENTAL_TRANSFORM_KEY, *(identity.GetPointer()), *(m_CurrentDataNode.GetPointer()));
-  mitk::AffineTransformDataNodeProperty::StoreTransformInNode(PRELOADED_TRANSFORM_KEY, *(identity.GetPointer()), *(m_CurrentDataNode.GetPointer()));
+  mitk::AffineTransformDataNodeProperty::StoreTransformInNode(PRELOADED_TRANSFORM_KEY, *(sp_combinedTransform.GetPointer()), *(m_CurrentDataNode.GetPointer()));
   mitk::AffineTransformDataNodeProperty::StoreTransformInNode(DISPLAYED_TRANSFORM_KEY, *(identity.GetPointer()), *(m_CurrentDataNode.GetPointer()));
 }
 
