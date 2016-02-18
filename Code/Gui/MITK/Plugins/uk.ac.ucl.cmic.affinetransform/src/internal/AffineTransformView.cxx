@@ -665,9 +665,9 @@ void AffineTransformView::OnTransformDisplayChanged(int, int)
   for (int rInd = 0; rInd < 4; rInd++) for (int cInd = 0; cInd < 4; cInd++)
   {
     QTableWidgetItem * blah = m_Controls->affineTransformDisplay->itemAt(rInd, cInd);
-    newTransform->SetElement(rInd, cInd,     m_Controls->affineTransformDisplay->item(rInd,cInd)->text().toDouble());
+    newTransform->SetElement(rInd, cInd, m_Controls->affineTransformDisplay->item(rInd,cInd)->text().toDouble());
   }
-  m_AffineTransformer->OnTransformChanged(newTransform);
+  //m_AffineTransformer->OnTransformChanged(newTransform);
 }
 
 //-----------------------------------------------------------------------------
@@ -995,7 +995,7 @@ void AffineTransformView::OnTransformReady()
 		m_Controls->affineTransformDisplay->setItem(rInd, cInd, new QTableWidgetItem(QString::number(currentMat->Element[rInd][cInd])));
 
   m_Controls->affineTransformDisplay->blockSignals(isBlocked);
-  m_AffineTransformer->OnTransformChanged(currentMat);
+  //m_AffineTransformer->OnTransformChanged(currentMat);
 }
 
 bool AffineTransformView::DisplayLegends(bool legendsON)

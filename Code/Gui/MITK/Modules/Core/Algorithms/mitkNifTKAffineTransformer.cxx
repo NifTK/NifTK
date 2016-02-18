@@ -361,7 +361,7 @@ void AffineTransformer::UpdateTransformationGeometry()
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkMatrix4x4> AffineTransformer::ComputeTransformFromParameters(void) const
 {
-  vtkSmartPointer<vtkMatrix4x4> sp_inc, sp_tmp, sp_swap;
+  vtkSmartPointer<vtkMatrix4x4> sp_inc;
   double incVals[4][4], partInc[4][4], result[4][4];
   int cInd;
 
@@ -524,38 +524,90 @@ void AffineTransformer::OnLoadTransform(std::string fileName)
     return;
 
   itk::TransformFileReader::Pointer sp_transformIO;
+  vtkSmartPointer<vtkMatrix4x4> transformFromFile;
 
-  try
+  // determine if ITK or NiftyReg format
+  bool isInsight = false;
+
+  std::ifstream transFile;
+  transFile.open(fileName.c_str());
+
+  if (transFile.is_open())
   {
-    sp_transformIO = itk::TransformFileReader::New();
-    sp_transformIO->SetFileName(fileName.c_str());
-    sp_transformIO->Update();
+    std::string firstLine;
+    std::getline(transFile,firstLine);
 
-    if (sp_transformIO->GetTransformList()->size() == 0)
-    {
-      MITK_ERROR << "ITK didn't find any transforms in " << fileName << endl;
-      return;
-    }
-
-    vtkSmartPointer<vtkMatrix4x4> transformFromFile = _ConvertFromITKTransform<3> (*sp_transformIO->GetTransformList()->front());
-    MITK_DEBUG << "Reading of transform from file: success";
-
-    this->ApplyLoadedTransformToNode(transformFromFile, m_CurrentDataNode);
-
-    mitk::DataStorage::SetOfObjects::ConstPointer children = this->GetDataStorage()->GetDerivations(m_CurrentDataNode);
-
-    for (unsigned int i = 0; i < children->Size(); i++)
-    {
-      this->ApplyLoadedTransformToNode(transformFromFile, children->GetElement(i));
-    }
-
-    MITK_DEBUG << "Applied transform from file: success";
-
+   isInsight = firstLine.find("Insight Transform File") != std::string::npos;
+   transFile.close();
   }
-  catch (itk::ExceptionObject &r_itkEx)
+  else
   {
-    MITK_ERROR << "Transform " << fileName << " is incompatible with image.\n" << "Caught ITK exception:\n" << r_itkEx.what() << std::endl;
+    MITK_INFO << "Uable to open file " << fileName.c_str();
+    return;
   }
+
+  // use itk
+  if (isInsight)
+  {
+    try
+    {
+      sp_transformIO = itk::TransformFileReader::New();
+      sp_transformIO->SetFileName(fileName.c_str());
+      sp_transformIO->Update();
+
+      if (sp_transformIO->GetTransformList()->size() == 0)
+      {
+        MITK_ERROR << "ITK didn't find any transforms in " << fileName << endl;
+        return;
+      }
+      
+      transformFromFile = _ConvertFromITKTransform<3> (*sp_transformIO->GetTransformList()->front());
+      MITK_DEBUG << "Reading of transform from file: success";
+    }
+    catch (itk::ExceptionObject &r_itkEx)
+    {
+      MITK_ERROR << "Transform " << fileName << " is incompatible with image.\n" << "Caught ITK exception:\n" << r_itkEx.what() << std::endl;
+    }
+  }
+  else
+  {
+    // format taket from reg_tool_ReadAffineFile
+    transformFromFile = vtkSmartPointer<vtkMatrix4x4>::New();
+    std::ifstream affineFile;
+    affineFile.open(fileName);
+
+    if (affineFile.is_open())
+    {
+      int i = 0;
+      float value0, value1, value2, value3;
+
+      while (!affineFile.eof())
+      {
+        affineFile >> value0 >> value1 >> value2 >> value3;
+        transformFromFile->SetElement(i, 0, value0);
+        transformFromFile->SetElement(i, 1, value1);
+        transformFromFile->SetElement(i, 2, value2);
+        transformFromFile->SetElement(i, 3, value3);
+
+        i++;
+        if (i > 3) 
+        {
+          break;
+        }
+      }
+    }
+  }
+
+  this->ApplyLoadedTransformToNode(transformFromFile, m_CurrentDataNode);
+
+  mitk::DataStorage::SetOfObjects::ConstPointer children = this->GetDataStorage()->GetDerivations(m_CurrentDataNode);
+
+  for (unsigned int i = 0; i < children->Size(); i++)
+  {
+    this->ApplyLoadedTransformToNode(transformFromFile, children->GetElement(i));
+  }
+ 
+  MITK_DEBUG << "Applied transform from file: success";
 }
 
 //-----------------------------------------------------------------------------
