@@ -68,18 +68,39 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   m_TrackerDevice->SetType(m_DeviceData.Line);
   m_TrackerDevice->SetPortNumber(m_PortNumber);
   
-  mitk::TrackingDeviceSourceConfigurator::Pointer myConfigurator = mitk::TrackingDeviceSourceConfigurator::New(m_NavigationToolStorage, m_TrackerDevice.GetPointer());
-  m_TrackerSource = myConfigurator->CreateTrackingDeviceSource();
-  try
+  // To Do. This should not be necessary. Trackers should be configured in the same way?
+  // I'm tempted to believe the 'else' block is correct. Something is wrong with Aurora.
+  if (deviceData.Line = mitk::NDIAurora)
   {
-    m_TrackerDevice->OpenConnection();
-    m_TrackerDevice->StartTracking();
+    try
+    {
+      m_TrackerDevice->OpenConnection();
+      m_TrackerDevice->StartTracking();
+    }
+    catch(const mitk::Exception& e)
+    {
+      // If we don't connect, we should still try to create tracker.
+      // This means that this class can still be used for playback.
+      MITK_WARN << "Caught exception during construction, but carrying on regardless:" << e;
+    }
+    m_TrackerSource = mitk::TrackingDeviceSource::New();
+    m_TrackerSource->SetTrackingDevice(m_TrackerDevice);
   }
-  catch(const mitk::Exception& e)
+  else
   {
-    // If we don't connect, we should still try to create tracker.
-    // This means that this class can still be used for playback.
-    MITK_WARN << "Caught exception during construction, but carrying on regardless:" << e;
+    mitk::TrackingDeviceSourceConfigurator::Pointer myConfigurator = mitk::TrackingDeviceSourceConfigurator::New(m_NavigationToolStorage, m_TrackerDevice.GetPointer());
+    m_TrackerSource = myConfigurator->CreateTrackingDeviceSource();
+    try
+    {
+      m_TrackerDevice->OpenConnection();
+      m_TrackerDevice->StartTracking();
+    }
+    catch(const mitk::Exception& e)
+    {
+      // If we don't connect, we should still try to create tracker.
+      // This means that this class can still be used for playback.
+      MITK_WARN << "Caught exception during construction, but carrying on regardless:" << e;
+    }
   }
 
   // Try loading a volume of interest. This is optional, but do it up-front.
