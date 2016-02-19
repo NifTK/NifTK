@@ -72,9 +72,6 @@ class AffineTransformView : public QmitkBaseView
     /** \brief Slot for all changes to transformation parameters. */
     void OnParameterChanged();
 
-    /** \brief Slot for all changes to transformation display. */
-    void OnTransformDisplayChanged(int, int);
-
     /** \brief Slot for reset button that resets the parameter controls, and updates node geometry accordingly. */
     void OnResetTransformPushed();
 

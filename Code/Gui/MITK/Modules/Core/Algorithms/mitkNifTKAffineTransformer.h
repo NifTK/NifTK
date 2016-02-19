@@ -143,8 +143,6 @@ public:
   /** \brief Applies a re-sampling to the current node. */
   void ApplyResampleToCurrentNode();
 
-  //void OnTransformChanged(const vtkSmartPointer<vtkMatrix4x4> transformFromUI);
-
 protected:
 
   AffineTransformer();
