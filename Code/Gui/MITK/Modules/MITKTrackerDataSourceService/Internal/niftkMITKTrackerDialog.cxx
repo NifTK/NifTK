@@ -113,6 +113,7 @@ void MITKTrackerDialog::OnOKClicked()
     settings.beginGroup(QString::fromStdString(id));
     settings.setValue("port", m_PortName->currentText());
     settings.setValue("file", m_FileOpen->currentPath());
+    settings.endGroup();
   }
 }
 
