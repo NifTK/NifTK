@@ -43,7 +43,7 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
   assert(ok);
 
   std::string id = "uk.ac.ucl.cmic.niftkMITKTrackerDataSourceService.MITKTrackerDialog";
-  if (this->GetPeristenceService())
+  if (false && this->GetPeristenceService()) // Does not load first time, does not load on Windows - MITK bug?
   {
     std::string portName;
     std::string fileName;
@@ -101,7 +101,7 @@ void MITKTrackerDialog::OnOKClicked()
   m_Properties = props;
 
   std::string id = "uk.ac.ucl.cmic.niftkMITKTrackerDataSourceService.MITKTrackerDialog";
-  if (this->GetPeristenceService())
+  if (false && this->GetPeristenceService()) // Does not load first time, does not load on Windows - MITK bug?
   {
     mitk::PropertyList::Pointer propList = this->GetPeristenceService()->GetPropertyList(id);
     propList->Set("port", m_PortName->currentText().toStdString());
