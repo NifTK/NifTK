@@ -351,6 +351,7 @@ void IGIDataSourceManagerWidget::OnStop()
 void IGIDataSourceManagerWidget::OnAddSource()
 {
   QMutexLocker locker(&m_Lock);
+  m_Manager->StopUpdateTimer();
 
   QString name = m_SourceSelectComboBox->currentText();
 
@@ -409,6 +410,7 @@ void IGIDataSourceManagerWidget::OnAddSource()
       QString("ERROR:") + QString(e.GetDescription()),
       QMessageBox::Ok);
   }
+  m_Manager->StartUpdateTimer();
 }
 
 
