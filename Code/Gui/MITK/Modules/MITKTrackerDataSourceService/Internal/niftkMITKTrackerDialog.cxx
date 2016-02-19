@@ -13,24 +13,10 @@
 =============================================================================*/
 
 #include "niftkMITKTrackerDialog.h"
-#include <mitkIPersistenceService.h>
+#include <QSettings>
 
 namespace niftk
 {
-
-struct MITKTrackerDialogPersistenceClass
-{
-  MITKTrackerDialogPersistenceClass(QString name)
-    : m_Id(name.toStdString())
-    , m_Filename("")
-    , m_PortName("")
-  {}
-
-  std::string m_Id;
-  std::string m_Filename;
-  std::string m_PortName;
-  PERSISTENCE_CREATE2(MITKTrackerDialogPersistenceClass, m_Id, m_Filename, m_PortName)
-};
 
 //-----------------------------------------------------------------------------
 MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
@@ -52,19 +38,46 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
   m_PortName->addItem("COM12");
   m_PortName->addItem("COM13");
 
-  MITKTrackerDialogPersistenceClass previouslySaved(m_TrackerName);
-  previouslySaved.Load();
-
-  int position = m_PortName->findText(QString::fromStdString(previouslySaved.m_PortName));
-  if (position != -1)
-  {
-    m_PortName->setCurrentIndex(position);
-  }
-  m_FileOpen->setCurrentPath(QString::fromStdString(previouslySaved.m_Filename));
-
   bool ok = false;
   ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
+
+  std::string id = "uk.ac.ucl.cmic.niftkMITKTrackerDataSourceService.MITKTrackerDialog";
+  if (this->GetPeristenceService())
+  {
+    std::string portName;
+    std::string fileName;
+    mitk::PropertyList::Pointer propList = this->GetPeristenceService()->GetPropertyList(id);
+    if (propList.IsNull())
+    {
+      MITK_ERROR << "Property list for (" << id << ") is not available!";
+      return;
+    }
+
+    propList->Get("port", portName);
+    propList->Get("file", fileName);
+
+    int position = m_PortName->findText(QString::fromStdString(portName));
+    if (position != -1)
+    {
+      m_PortName->setCurrentIndex(position);
+    }
+    m_FileOpen->setCurrentPath(QString::fromStdString(fileName));
+  }
+  else
+  {
+    QSettings settings;
+    settings.beginGroup(QString::fromStdString(id));
+
+    int position = m_PortName->findText(settings.value("port", "").toString());
+    if (position != -1)
+    {
+      m_PortName->setCurrentIndex(position);
+    }
+    m_FileOpen->setCurrentPath(settings.value("file", "").toString());
+
+    settings.endGroup();
+  }
 }
 
 
@@ -87,10 +100,21 @@ void MITKTrackerDialog::OnOKClicked()
   props.insert("file", QVariant::fromValue(m_FileOpen->currentPath()));
   m_Properties = props;
 
-  MITKTrackerDialogPersistenceClass stuffToSave(m_TrackerName);
-  stuffToSave.m_Filename = m_FileOpen->currentPath().toStdString();
-  stuffToSave.m_PortName = m_PortName->currentText().toStdString();
-  stuffToSave.Save();
+  std::string id = "uk.ac.ucl.cmic.niftkMITKTrackerDataSourceService.MITKTrackerDialog";
+  if (this->GetPeristenceService())
+  {
+    mitk::PropertyList::Pointer propList = this->GetPeristenceService()->GetPropertyList(id);
+    propList->Set("port", m_PortName->currentText().toStdString());
+    propList->Set("file", m_FileOpen->currentPath().toStdString());
+  }
+  else
+  {
+    QSettings settings;
+    settings.beginGroup(QString::fromStdString(id));
+    settings.setValue("port", m_PortName->currentText());
+    settings.setValue("file", m_FileOpen->currentPath());
+  }
 }
 
 } // end namespace
+

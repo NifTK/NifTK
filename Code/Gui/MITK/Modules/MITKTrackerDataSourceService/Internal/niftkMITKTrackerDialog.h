@@ -18,6 +18,8 @@
 #include "niftkIGIInitialisationDialog.h"
 #include <ui_niftkMITKTrackerDialog.h>
 
+#include <mitkIPersistenceService.h>
+
 namespace niftk
 {
 
@@ -38,6 +40,7 @@ private slots:
 
 private:
   QString m_TrackerName;
+  PERSISTENCE_GET_SERVICE_METHOD_MACRO;
 };
 
 } // end namespace
