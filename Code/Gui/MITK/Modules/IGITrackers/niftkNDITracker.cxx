@@ -17,6 +17,7 @@
 #include <mitkNavigationToolStorageDeserializer.h>
 #include <mitkNavigationToolStorageSerializer.h>
 #include <mitkException.h>
+#include <mitkTrackingDeviceSourceConfigurator.h>
 
 namespace niftk
 {
@@ -61,10 +62,14 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   }
 
   // Setup tracker.
+
   m_TrackerDevice = mitk::NDITrackingDevice::New();
   m_TrackerDevice->SetData(m_DeviceData);
+  m_TrackerDevice->SetType(m_DeviceData.Line);
   m_TrackerDevice->SetPortNumber(m_PortNumber);
-
+  
+  mitk::TrackingDeviceSourceConfigurator::Pointer myConfigurator = mitk::TrackingDeviceSourceConfigurator::New(m_NavigationToolStorage, m_TrackerDevice.GetPointer());
+  m_TrackerSource = myConfigurator->CreateTrackingDeviceSource();
   try
   {
     m_TrackerDevice->OpenConnection();
@@ -76,10 +81,6 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
     // This means that this class can still be used for playback.
     MITK_WARN << "Caught exception during construction, but carrying on regardless:" << e;
   }
-
-  // Create source
-  m_TrackerSource = mitk::TrackingDeviceSource::New();
-  m_TrackerSource->SetTrackingDevice(m_TrackerDevice);
 
   // Try loading a volume of interest. This is optional, but do it up-front.
   m_TrackingVolumeGenerator = mitk::TrackingVolumeGenerator::New();
@@ -234,22 +235,25 @@ std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > NDITracker::GetTrackingDat
   for(unsigned int i=0; i< m_TrackerSource->GetNumberOfOutputs(); i++)
   {
     mitk::NavigationData::Pointer currentTool = m_TrackerSource->GetOutput(i);
-    if(currentTool.IsNotNull() && currentTool->IsDataValid())
+    if(currentTool.IsNotNull())
     {
-      std::string name = currentTool->GetName();
-      mitk::Matrix3D rotation = currentTool->GetRotationMatrix();
-      mitk::Point3D position = currentTool->GetPosition();
-      vtkSmartPointer<vtkMatrix4x4> transform = vtkSmartPointer<vtkMatrix4x4>::New();
-      transform->Identity();
-      for (int r = 0; r < 3; r++)
+      if (currentTool->IsDataValid())
       {
-        for (int c = 0; c < 3; c++)
+        std::string name = currentTool->GetName();
+        mitk::Matrix3D rotation = currentTool->GetRotationMatrix();
+        mitk::Point3D position = currentTool->GetPosition();
+        vtkSmartPointer<vtkMatrix4x4> transform = vtkSmartPointer<vtkMatrix4x4>::New();
+        transform->Identity();
+        for (int r = 0; r < 3; r++)
         {
-          transform->SetElement(r, c, rotation[r][c]);
+          for (int c = 0; c < 3; c++)
+          {
+            transform->SetElement(r, c, rotation[r][c]);
+          }
+          transform->SetElement(r, 3, position[r]);
         }
-        transform->SetElement(r, 3, position[r]);
+        result.insert(std::pair<std::string, vtkSmartPointer<vtkMatrix4x4> >(name, transform));
       }
-      result.insert(std::pair<std::string, vtkSmartPointer<vtkMatrix4x4> >(name, transform));
     }
   }
   return result;

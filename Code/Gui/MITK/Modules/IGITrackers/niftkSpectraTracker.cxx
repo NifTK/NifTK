@@ -21,7 +21,7 @@ namespace niftk
 SpectraTracker::SpectraTracker(mitk::DataStorage::Pointer dataStorage,
                                mitk::SerialCommunication::PortNumber portNumber,
                                std::string toolConfigFileName)
-: NDITracker(dataStorage, portNumber, mitk::DeviceDataPolarisSpectra, toolConfigFileName, 60)
+: NDITracker(dataStorage, portNumber, mitk::DeviceDataPolarisSpectra, toolConfigFileName, 20)
 {
 }
 
