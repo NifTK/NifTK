@@ -34,7 +34,7 @@ if(MITK_USE_Qt4 OR MITK_USE_Qt5)
   set(qRestAPI_version "5f3a03b15d")
   set(qRestAPI_location "${NIFTK_EP_TARBALL_LOCATION}/commontk-qRestAPI-${qRestAPI_version}.tar.gz")
 
-  set(PythonQt_version "127d894950")
+  set(PythonQt_version "0b3cd63675")
   set(PythonQt_location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-PythonQt-${PythonQt_version}.tar.gz")
 
   niftkMacroDefineExternalProjectVariables(CTK ${version} ${location})
