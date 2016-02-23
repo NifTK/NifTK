@@ -262,19 +262,27 @@ int main( int argc, char *argv[] )
 {
   itk::NifTKImageIOFactory::Initialize();
 
-    arguments args;
+  PARSE_ARGS;
 
+  struct arguments args;
+  args.inputImageName = inputImageName.c_str();
+  args.outputImageName = outputImageName.c_str();
+  args.brainImageName = brainImageName.c_str();
+  args.max = max;
+  args.min = min;
+  args.mod = mode;
+  args.alphaone = alphaone;
+  args.alphatwo = alphatwo;
+  args.isCT = isCT;
+  args.isTOF = isTOF && !isCT;
+  args.doIntensity = doIntensity;
+  args.isBin = isBin;
 
-//    // Validate command line args
-//    // ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    PARSE_ARGS;
-
-    if ( args.inputImageName.length() == 0 || args.outputImageName.length() == 0 )
-    {
-      commandLine.getOutput()->usage(commandLine);
-      return EXIT_FAILURE;
-    }
+  if ( args.inputImageName.length() == 0 || args.outputImageName.length() == 0 )
+  {
+    commandLine.getOutput()->usage(commandLine);
+    return EXIT_FAILURE;
+  }
 
   //Check for the extension
   std::size_t found_nii = args.outputImageName.rfind(".nii");
