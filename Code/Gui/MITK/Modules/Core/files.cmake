@@ -40,6 +40,7 @@ set(CPP_FILES
   DataManagement/mitkBasicVertex.cpp
   Rendering/mitkCoordinateAxesVtkMapper3D.cxx
   Rendering/mitkFastPointSetVtkMapper3D.cxx
+  Rendering/niftkCustomVTKAxesActor.cxx
   Rendering/vtkOpenGLMatrixDrivenCamera.cxx
   DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cxx
   DataNodeProperties/mitkAffineTransformDataNodeProperty.cxx

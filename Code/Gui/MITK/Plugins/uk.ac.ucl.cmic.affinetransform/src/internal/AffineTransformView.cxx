@@ -895,7 +895,7 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
     m_BoundingObjectNode->SetProperty("layer", mitk::IntProperty::New(99)); // arbitrary, copied from segmentation functionality
     m_BoundingObjectNode->SetProperty("helper object", mitk::BoolProperty::New(true));
 
-    m_AffineDataInteractor3D = mitk::AffineTransformDataInteractor3D::New();
+    m_AffineDataInteractor3D = niftk::AffineTransformDataInteractor3D::New();
     m_AffineDataInteractor3D->LoadStateMachine("AffineTransformSM.xml");
     m_AffineDataInteractor3D->SetEventConfig("AffineTransformConfig.xml");
     m_AffineDataInteractor3D->SetDataNode(node);
@@ -1123,7 +1123,7 @@ bool AffineTransformView::DisplayLegends(bool legendsON)
       m_AxesActor->SetPosition(0.0, 0.0, 0.0);
       m_AxesActor->SetOrigin(0.0, 0.0, 0.0);
 
-      m_CustomAxesActor = new mitk::CustomVTKAxesActor();
+      m_CustomAxesActor = new niftk::CustomVTKAxesActor();
       m_CustomAxesActor->SetShaftTypeToCylinder();
       m_CustomAxesActor->SetXAxisLabelText("X");
       m_CustomAxesActor->SetYAxisLabelText("Y");

@@ -24,15 +24,12 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <vtkInteractorObserver.h>
 #include <vtkCamera.h>
-//#include <vtkPoints.h>
 #include <vtkPointData.h>
-#include <vtkTextProperty.h>
-//#include <vtkDataArray.h>
 
 #include <QDebug>
 
 
-void mitk::AffineTransformDataInteractor3D::ConnectActionsAndFunctions()
+void niftk::AffineTransformDataInteractor3D::ConnectActionsAndFunctions()
 {
   CONNECT_CONDITION("checkObject", CheckObject);
   CONNECT_FUNCTION("selectObject", SelectObject);
@@ -44,7 +41,7 @@ void mitk::AffineTransformDataInteractor3D::ConnectActionsAndFunctions()
 
 //how precise must the user pick the point
 //default value
-mitk::AffineTransformDataInteractor3D
+niftk::AffineTransformDataInteractor3D
 ::AffineTransformDataInteractor3D()
 : m_Precision(6.5)
 , m_InteractionMode(INTERACTION_MODE_TRANSLATION)
@@ -67,31 +64,31 @@ mitk::AffineTransformDataInteractor3D
   m_AxesFixed = false;
 }
 
-mitk::AffineTransformDataInteractor3D::~AffineTransformDataInteractor3D()
+niftk::AffineTransformDataInteractor3D::~AffineTransformDataInteractor3D()
 {
 }
 
-void mitk::AffineTransformDataInteractor3D::SetInteractionMode(unsigned int interactionMode)
+void niftk::AffineTransformDataInteractor3D::SetInteractionMode(unsigned int interactionMode)
 {
   m_InteractionMode = interactionMode;
 }
 
-void mitk::AffineTransformDataInteractor3D::SetInteractionModeToTranslation()
+void niftk::AffineTransformDataInteractor3D::SetInteractionModeToTranslation()
 {
   m_InteractionMode = INTERACTION_MODE_TRANSLATION;
 }
 
-void mitk::AffineTransformDataInteractor3D::SetInteractionModeToRotation()
+void niftk::AffineTransformDataInteractor3D::SetInteractionModeToRotation()
 {
   m_InteractionMode = INTERACTION_MODE_ROTATION;
 }
 
-unsigned int mitk::AffineTransformDataInteractor3D::GetInteractionMode() const
+unsigned int niftk::AffineTransformDataInteractor3D::GetInteractionMode() const
 {
   return m_InteractionMode;
 }
 
-void mitk::AffineTransformDataInteractor3D::SetPrecision(mitk::ScalarType precision)
+void niftk::AffineTransformDataInteractor3D::SetPrecision(mitk::ScalarType precision)
 {
   m_Precision = precision;
 }
@@ -145,7 +142,7 @@ void mitk::AffineTransformDataInteractor3D::SetPrecision(mitk::ScalarType precis
 //*/
 //}
 
-bool mitk::AffineTransformDataInteractor3D::ColorizeSurface(vtkPolyData *polyData, const mitk::Point3D & /*pickedPoint*/, double scalar)
+bool niftk::AffineTransformDataInteractor3D::ColorizeSurface(vtkPolyData *polyData, const mitk::Point3D & /*pickedPoint*/, double scalar)
 {
   if ( polyData == NULL )
   {
@@ -212,7 +209,7 @@ bool mitk::AffineTransformDataInteractor3D::ColorizeSurface(vtkPolyData *polyDat
 //  return true;
 }
 
-bool mitk::AffineTransformDataInteractor3D::UpdateCurrentRendererPointers(const mitk::InteractionEvent * interactionEvent)
+bool niftk::AffineTransformDataInteractor3D::UpdateCurrentRendererPointers(const mitk::InteractionEvent * interactionEvent)
 {
   // Get Event and extract renderer
   if (interactionEvent == NULL)
@@ -245,7 +242,7 @@ bool mitk::AffineTransformDataInteractor3D::UpdateCurrentRendererPointers(const 
 }
 
 
-bool mitk::AffineTransformDataInteractor3D::CheckObject(const InteractionEvent *interactionEvent)
+bool niftk::AffineTransformDataInteractor3D::CheckObject(const mitk::InteractionEvent *interactionEvent)
 {
   
   if (!UpdateCurrentRendererPointers(interactionEvent) || this->GetDataNode()->GetData() == NULL)
@@ -292,7 +289,7 @@ bool mitk::AffineTransformDataInteractor3D::CheckObject(const InteractionEvent *
   return true;
 }
 
-bool mitk::AffineTransformDataInteractor3D::SelectObject(StateMachineAction* action, InteractionEvent* interactionEvent)
+bool niftk::AffineTransformDataInteractor3D::SelectObject(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   // Color object red
   this->GetDataNode()->SetColor( 1.0, 0.0, 0.0 );
@@ -303,7 +300,7 @@ bool mitk::AffineTransformDataInteractor3D::SelectObject(StateMachineAction* act
   return true;
 }
 
-bool mitk::AffineTransformDataInteractor3D::DeselectObject(StateMachineAction* action, InteractionEvent* interactionEvent)
+bool niftk::AffineTransformDataInteractor3D::DeselectObject(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   // Color object white
   this->GetDataNode()->SetColor( 1.0, 1.0, 1.0 );
@@ -314,7 +311,7 @@ bool mitk::AffineTransformDataInteractor3D::DeselectObject(StateMachineAction* a
   return true;
 }
 
-bool mitk::AffineTransformDataInteractor3D::InitMove(StateMachineAction* action, InteractionEvent* interactionEvent)
+bool niftk::AffineTransformDataInteractor3D::InitMove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   if (!UpdateCurrentRendererPointers(interactionEvent) || this->GetDataNode()->GetData() == NULL)
     return false;
@@ -354,7 +351,7 @@ bool mitk::AffineTransformDataInteractor3D::InitMove(StateMachineAction* action,
   return true;
 }
 
-bool mitk::AffineTransformDataInteractor3D::Move(StateMachineAction* action, InteractionEvent* interactionEvent)
+bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   if (!UpdateCurrentRendererPointers(interactionEvent) || this->GetDataNode()->GetData() == NULL)
     return false;
@@ -483,7 +480,7 @@ bool mitk::AffineTransformDataInteractor3D::Move(StateMachineAction* action, Int
   return true;
 }
 
-bool mitk::AffineTransformDataInteractor3D::AcceptMove(StateMachineAction* action, InteractionEvent* interactionEvent)
+bool niftk::AffineTransformDataInteractor3D::AcceptMove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   mitk::StateEvent * newStateEvent = NULL;
 
@@ -499,7 +496,7 @@ bool mitk::AffineTransformDataInteractor3D::AcceptMove(StateMachineAction* actio
   return true;
 }
 
- void mitk::AffineTransformDataInteractor3D::SetAxesFixed(bool on, int which)
+ void niftk::AffineTransformDataInteractor3D::SetAxesFixed(bool on, int which)
  {
    if (on == true)
    {
@@ -532,41 +529,3 @@ bool mitk::AffineTransformDataInteractor3D::AcceptMove(StateMachineAction* actio
      m_AxesFixed = false;
    }
  }
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-//                                         CUSTOM VTK AXES ACTOR
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-mitk::CustomVTKAxesActor::CustomVTKAxesActor() 
-  : vtkAxesActor() 
-{
-  //default: 0.25
-  m_AxesLabelWidth = 0.1; 
-  this->XAxisLabel->SetWidth(0.1);
-  this->YAxisLabel->SetWidth(0.1);
-  this->ZAxisLabel->SetWidth(0.1);
-
-  //default: 0.1
-  m_AxesLabelHeight = 0.04;
-  this->XAxisLabel->SetHeight(0.05);
-  this->YAxisLabel->SetHeight(0.05);
-  this->ZAxisLabel->SetHeight(0.05);
-
-  vtkTextProperty* tprop = this->XAxisLabel->GetCaptionTextProperty();
-  tprop->ItalicOff();
-  tprop->BoldOff();
-  tprop->ShadowOn();
-  this->XAxisLabel->SetCaptionTextProperty(tprop);
-
-  tprop = this->YAxisLabel->GetCaptionTextProperty();
-  tprop->ItalicOff();
-  tprop->BoldOff();
-  tprop->ShadowOn();
-  this->YAxisLabel->SetCaptionTextProperty(tprop);
-
-  tprop = this->ZAxisLabel->GetCaptionTextProperty();
-  tprop->ItalicOff();
-  tprop->BoldOff();
-  tprop->ShadowOn();
-  this->ZAxisLabel->SetCaptionTextProperty(tprop);
-}

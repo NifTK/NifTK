@@ -18,6 +18,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef AffineTransformDataInteractor3D_h
 #define AffineTransformDataInteractor3D_h
 
+#include "niftkCoreExports.h"
+
 #include <mitkDataInteractor.h>
 #include <mitkBaseRenderer.h>
 //
@@ -27,11 +29,10 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkRenderWindowInteractor.h>
 #include <vtkLegendScaleActor.h>
 #include <vtkAxesActor.h>
-#include <vtkCaptionActor2D.h>
 
 #include <QApplication>
 
-namespace mitk
+namespace niftk
 {
 
 /**
@@ -41,7 +42,7 @@ namespace mitk
   *
   * \ingroup Interaction
   */
-class AffineTransformDataInteractor3D : public QObject, public mitk::DataInteractor
+class NIFTKCORE_EXPORT AffineTransformDataInteractor3D : public QObject, public mitk::DataInteractor
 {
   Q_OBJECT
 
@@ -97,12 +98,12 @@ protected:
   bool GetCurrentRenderer(const mitk::InteractionEvent * interactionEvent, vtkRenderWindowInteractor * renderWindowInteractor,  mitk::BaseRenderer * renderer);
   bool UpdateCurrentRendererPointers(const mitk::InteractionEvent * interactionEvent);
 
-  bool CheckObject(const InteractionEvent *interactionEvent);
-  bool SelectObject(StateMachineAction* action, InteractionEvent* interactionEvent);
-  bool DeselectObject(StateMachineAction* action, InteractionEvent* interactionEvent);
-  bool InitMove(StateMachineAction* action, InteractionEvent* interactionEvent);
-  bool Move(StateMachineAction* action, InteractionEvent* interactionEvent);
-  bool AcceptMove(StateMachineAction* action, InteractionEvent* interactionEvent);
+  bool CheckObject(const mitk::InteractionEvent *interactionEvent);
+  bool SelectObject(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+  bool DeselectObject(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+  bool InitMove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+  bool Move(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+  bool AcceptMove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
 private:
 
@@ -135,21 +136,6 @@ private:
   vtkAxesActor              * m_AxesActor;
   mitk::DataNode            * m_BoundingObjectNode;
 };
-
- class CustomVTKAxesActor : public vtkAxesActor
- {
- public:
-   inline void SetAxisLabelWidth(double w) {this->XAxisLabel->SetWidth(w); this->YAxisLabel->SetWidth(w); this->ZAxisLabel->SetWidth(w); }
-   inline double GetAxisLabelWidth() { return m_AxesLabelWidth;}
-   inline void SetAxisLabelHeight(double h) {this->XAxisLabel->SetHeight(h); this->YAxisLabel->SetHeight(h); this->ZAxisLabel->SetHeight(h);}
-   inline double GetAxisLabelHeight() {return m_AxesLabelHeight;}
-
-   CustomVTKAxesActor();
-
- private:
-   double m_AxesLabelWidth;
-   double m_AxesLabelHeight;
- };
 
  }
 
