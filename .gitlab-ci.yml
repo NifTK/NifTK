@@ -171,6 +171,7 @@ Continuous docs:
   - sb_dir="${root_dir}/NifTK-sb"
   - pb_dir="${sb_dir}/NifTK-build"
   - cd ${pb_dir}
+  - rm -rf Doxygen/html
   - chmod a+rx bin/GenerateCommandLineDoxygen
   - bin/GenerateCommandLineDoxygen
   - chmod a+rx bin/GenerateTestingReports
@@ -179,6 +180,7 @@ Continuous docs:
   - cd Doxygen
   - find html -type f -exec chmod 644 {} \;
   - find html -type d -exec chmod 755 {} \;
+  - rm -rf niftk-${version}-docs
   - mv html niftk-${version}-docs
   - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
   - echo "API reference documentation generated:"
@@ -188,7 +190,7 @@ Continuous docs:
   - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
         rm -rf `readlink -f niftk-current-docs.tar.bz2` `readlink -f current` ;
         rm niftk-current-docs current ;
-        tar xvfj niftk-${version}-docs.tar.bz2 ;
+        tar xfj niftk-${version}-docs.tar.bz2 ;
         ln -s niftk-${version}-docs.tar.bz2 niftk-current-docs.tar.bz2 ;
         ln -s niftk-${version}-docs current"
 
@@ -286,12 +288,14 @@ Release docs:
   - sb_dir="${root_dir}/NifTK-sb"
   - pb_dir="${sb_dir}/NifTK-build"
   - cd ${pb_dir}
+  - rm -rf Doxygen/html
   - chmod a+rx bin/GenerateCommandLineDoxygen
   - bin/GenerateCommandLineDoxygen
   - doxygen doxygen.config
   - cd Doxygen
   - find html -type f -exec chmod 644 {} \;
   - find html -type d -exec chmod 755 {} \;
+  - rm -rf niftk-${version}-docs
   - mv html niftk-${version}-docs
   - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
   - echo "API reference documentation generated:"
@@ -299,7 +303,7 @@ Release docs:
   - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
   - "# Extract the tarball and replace the old files"
   - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
-        tar xvfj niftk-${version}-docs.tar.bz2"
+        tar xfj niftk-${version}-docs.tar.bz2"
 
   only:
   - tags
