@@ -38,7 +38,7 @@
 #include <mitkNifTKAffineTransformer.h>
 
 #include "ui_AffineTransformViewControls.h"
-#include "AffineTransformInteractor3D.h"
+#include "AffineTransformDataInteractor3D.h"
 
 
 
@@ -184,11 +184,10 @@ private:
     mitk::WeakPointer<mitk::BaseData>       m_CurrentDataObject;
     mitk::BoundingObject::Pointer           m_BoundingObject;
     mitk::DataNode::Pointer                 m_BoundingObjectNode;
-    AffineTransformInteractor3D::Pointer    m_AffineInteractor3D;
-    //mitk::AffineInteractor3D::Pointer       m_AffineInteractor;
+    mitk::AffineTransformDataInteractor3D::Pointer  m_AffineDataInteractor3D;
     vtkLegendScaleActor                   * m_LegendActor;
     vtkAxesActor                          * m_AxesActor;
-    CustomVTKAxesActor                    * m_CustomAxesActor;
+    mitk::CustomVTKAxesActor              * m_CustomAxesActor;
     //************************************************************************************************************************
 };
 

@@ -14,7 +14,7 @@
 
 MITK_CREATE_MODULE(
   INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
-  DEPENDS MitkCore
+  DEPENDS MitkCore MitkDataTypesExt
   PACKAGE_DEPENDS  ITK|ITKIOTransformBase VTK|vtkRenderingVolumeOpenGL Boost|boost_system Qt4|QtCore Qt5|Core
 )
 

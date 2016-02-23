@@ -48,5 +48,14 @@ set(CPP_FILES
   DataNodeProperties/mitkLabeledLookupTableProperty.cxx
   IO/mitkFileIOUtils.cxx
   Interactions/mitkPointSetUpdate.cxx
+  Interactions/AffineTransformDataInteractor3D.cxx
 )
 
+set(MOC_H_FILES
+  Interactions/AffineTransformDataInteractor3D.h
+)
+
+set(RESOURCE_FILES
+  Interactions/AffineTransformConfig.xml
+  Interactions/AffineTransformSM.xml
+)

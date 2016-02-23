@@ -41,6 +41,8 @@ set(CACHED_RESOURCE_FILES
   plugin.xml
 )
 
+
+
 # list of Qt .qrc files which contain additional resources
 # specific to this plugin
 set(QRC_FILES

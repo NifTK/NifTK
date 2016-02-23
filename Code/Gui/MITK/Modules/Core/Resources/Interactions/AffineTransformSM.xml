@@ -1,0 +1,7 @@
+<statemachine>
+  <state name="start" startstate="true">
+    <transition event_class="MouseMoveEvent" event_variant="CheckObjectSelected" target="CheckObject">
+	  <action name="checkObject"/>
+	</transition>
+  </state>
+</statemachine>
