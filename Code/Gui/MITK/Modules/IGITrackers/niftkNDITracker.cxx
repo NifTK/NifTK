@@ -70,7 +70,7 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   
   // To Do. This should not be necessary. Trackers should be configured in the same way?
   // I'm tempted to believe the 'else' block is correct. Something is wrong with Aurora.
-  if (deviceData.Line = mitk::NDIAurora)
+  if (deviceData.Line == mitk::NDIAurora)
   {
     try
     {
