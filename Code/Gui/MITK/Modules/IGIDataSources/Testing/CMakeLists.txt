@@ -18,5 +18,5 @@ MITK_CREATE_MODULE_TESTS(LABELS niftkIGIDataSources)
 #mitkAddCustomModuleTest(QmitkIGIUltrasonixToolMemoryTest-colour QmitkIGIUltrasonixToolMemoryTest ${NIFTK_DATA_DIR}/Baseline/mitkCoordinateAxesDataRenderingTestBaseline.png)
 
 mitk_use_modules(TARGET ${TESTDRIVER}
-  PACKAGES Qt4|QtCore
+  PACKAGES Qt4|QtCore Qt5|Core 
 )
