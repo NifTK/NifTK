@@ -16,7 +16,7 @@ if(MITK_USE_OpenCV)
 
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources niftkOpenCVImageConversion MitkOpenCVVideoSupport
-    PACKAGE_DEPENDS Qt4|QtCore OpenCV
+    PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets OpenCV
     AUTOLOAD_WITH niftkIGIServices
   )
 
