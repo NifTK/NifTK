@@ -59,7 +59,11 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
 
   // the active column has a fixed, minimal size. note that this line relies
   // on the table having columns already! the ui file has them added.
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
   m_TableWidget->horizontalHeader()->setResizeMode(0, QHeaderView::ResizeToContents);
+#else
+  m_TableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+#endif
 
   bool ok = false;
   ok = QObject::connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
