@@ -56,6 +56,8 @@
 #include <mitkCylinder.h>
 #include <mitkCone.h>
 #include <mitkCuboid.h>
+#include <usModuleRegistry.h>
+#include <usGetModuleContext.h>
 
 // NIFTK
 #include "AffineTransformView.h"
@@ -76,24 +78,6 @@ AffineTransformView::AffineTransformView()
   m_InInteractiveMode = false;
   m_LegendAdded = false;
   m_RotationMode = false;
-
-  //QFile xmlDesc;
-  //xmlDesc.setFileName(":/AffineTransform/AffineTransformInteractorSM.xml");
-  //if (xmlDesc.exists() && xmlDesc.open(QIODevice::ReadOnly))
-  //{
-  //  // Make a text stream on the doco  
-  //  QTextStream textStream(&xmlDesc);
-
-  //  // Read all the contents
-  //  QString qContents = textStream.readAll();
-  //
-  //  // Load StateMachine patterns
-  //  mitk::GlobalInteraction* globalInteractor =  mitk::GlobalInteraction::GetInstance();
-  //  if (globalInteractor->GetStateMachineFactory()->LoadBehaviorString(qContents.toStdString()))
-  //  {
-  //    qDebug() <<"Loaded the state-machine correctly!";
-  //  }
-  //}
 
   // Instantiate affine transformer
   m_AffineTransformer = mitk::AffineTransformer::New();
@@ -896,15 +880,17 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
     m_BoundingObjectNode->SetProperty("helper object", mitk::BoolProperty::New(true));
 
     m_AffineDataInteractor3D = niftk::AffineTransformDataInteractor3D::New();
-    m_AffineDataInteractor3D->LoadStateMachine("AffineTransformSM.xml");
-    m_AffineDataInteractor3D->SetEventConfig("AffineTransformConfig.xml");
+    
+    us::Module* niftkCore = us::ModuleRegistry::GetModule("niftkCore");
+    m_AffineDataInteractor3D->LoadStateMachine("AffineTransformSM.xml", niftkCore);
+    m_AffineDataInteractor3D->SetEventConfig("AffineTransformConfig.xml", niftkCore);
+
     m_AffineDataInteractor3D->SetDataNode(node);
-
-    connect(m_AffineDataInteractor3D, SIGNAL(transformReady()), this, SLOT(OnTransformReady()));
     m_AffineDataInteractor3D->SetBoundingObjectNode(m_BoundingObjectNode);
-
     m_AffineDataInteractor3D->SetPrecision(3);
-          
+         
+    connect(m_AffineDataInteractor3D, SIGNAL(transformReady()), this, SLOT(OnTransformReady()));
+
     if (m_RotationMode)
     {
       m_AffineDataInteractor3D->SetInteractionModeToRotation();
@@ -949,9 +935,7 @@ void AffineTransformView::AddBoundingObjectToNode(mitk::DataNode::Pointer node, 
     {
       m_BoundingObject->FitGeometry(m_CurrentDataObject->GetGeometry());
     }
-
     m_AffineDataInteractor3D->SetDataNode(node);
-    //mitk::GlobalInteraction::GetInstance()->AddInteractor(m_AffineInteractor3D);
   }
 
   m_BoundingObjectNode->SetVisibility(true);
@@ -1066,7 +1050,8 @@ void AffineTransformView::OnAxisChanged(bool on)
 void AffineTransformView::OnTransformReady()
 {
   mitk::BaseGeometry* geom = m_DataOwnerNode->GetData()->GetGeometry();
-  // need to get and store the initial matrix to  decompose correctly
+  // need to get and store the initial matrix to  decompose correctly 
+  // this does not get decomposed or passed down to the affine transformer!
   vtkMatrix4x4 * currentMat = geom->GetVtkTransform()->GetMatrix();
 
   bool isBlocked = m_Controls->affineTransformDisplay->blockSignals(true);
@@ -1077,86 +1062,86 @@ void AffineTransformView::OnTransformReady()
   m_Controls->affineTransformDisplay->blockSignals(isBlocked);
 }
 
-bool AffineTransformView::DisplayLegends(bool legendsON)
-{
-  QmitkRenderWindow *qRenderWindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("3d");
-  vtkRenderWindow *renderWindow = NULL;
-
-  if (qRenderWindow != NULL)
-  {
-    renderWindow = qRenderWindow->GetVtkRenderWindow();
-  }
-
-  vtkRenderWindowInteractor *renderWindowInteractor = NULL;
-  if (renderWindow != NULL)
-  {
-    renderWindowInteractor = renderWindow->GetInteractor();
-  }
-
-  vtkRenderer *currentVtkRenderer = NULL;
-  if (renderWindowInteractor != NULL)
-  {
-    currentVtkRenderer = renderWindowInteractor->GetInteractorStyle()->GetCurrentRenderer();
-  }
-
-  if (currentVtkRenderer == NULL)
-  {
-    return false;
-  }
-
-  if (legendsON)
-  {
-    if (!m_LegendAdded)
-    {
-      m_LegendActor = vtkLegendScaleActor::New();
-      currentVtkRenderer->AddActor(m_LegendActor);
-
-      m_AxesActor = vtkAxesActor::New();
-      m_AxesActor->SetShaftTypeToCylinder();
-      m_AxesActor->SetXAxisLabelText( "X" );
-      m_AxesActor->SetYAxisLabelText( "Y" );
-      m_AxesActor->SetZAxisLabelText( "Z" );
-      m_AxesActor->SetTotalLength(200, 200, 200);
-      m_AxesActor->AxisLabelsOn();
-      m_AxesActor->SetCylinderRadius(0.02);
-      m_AxesActor->SetConeRadius(0.2);
-      m_AxesActor->SetPosition(0.0, 0.0, 0.0);
-      m_AxesActor->SetOrigin(0.0, 0.0, 0.0);
-
-      m_CustomAxesActor = new niftk::CustomVTKAxesActor();
-      m_CustomAxesActor->SetShaftTypeToCylinder();
-      m_CustomAxesActor->SetXAxisLabelText("X");
-      m_CustomAxesActor->SetYAxisLabelText("Y");
-      m_CustomAxesActor->SetZAxisLabelText("Z");
-      m_CustomAxesActor->SetTotalLength(150, 150, 150);
-      m_CustomAxesActor->AxisLabelsOn();
-      m_CustomAxesActor->SetCylinderRadius(0.02);
-      m_CustomAxesActor->SetConeRadius(0.2);
-      m_CustomAxesActor->SetPosition(0.0, 0.0, 0.0);
-      m_CustomAxesActor->SetOrigin(0.0, 0.0, 0.0);
-        
-      currentVtkRenderer->AddActor(m_CustomAxesActor);
-
-      m_LegendAdded = true;
-    }
-  }
-  else
-  {
-    if (m_LegendActor != NULL)
-    {
-      currentVtkRenderer->RemoveActor(m_LegendActor);
-      m_LegendActor->Delete();
-      m_LegendActor = NULL;
-    }
-    if (m_AxesActor != NULL)
-    {
-      currentVtkRenderer->RemoveActor(m_AxesActor);
-      m_AxesActor->Delete();
-      m_AxesActor = NULL;
-    }
-
-    m_LegendAdded = false;
-  }
-
-  return true;
-}
+//bool AffineTransformView::DisplayLegends(bool legendsON)
+//{
+//  QmitkRenderWindow *qRenderWindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("3d");
+//  vtkRenderWindow *renderWindow = NULL;
+//
+//  if (qRenderWindow != NULL)
+//  {
+//    renderWindow = qRenderWindow->GetVtkRenderWindow();
+//  }
+//
+//  vtkRenderWindowInteractor *renderWindowInteractor = NULL;
+//  if (renderWindow != NULL)
+//  {
+//    renderWindowInteractor = renderWindow->GetInteractor();
+//  }
+//
+//  vtkRenderer *currentVtkRenderer = NULL;
+//  if (renderWindowInteractor != NULL)
+//  {
+//    currentVtkRenderer = renderWindowInteractor->GetInteractorStyle()->GetCurrentRenderer();
+//  }
+//
+//  if (currentVtkRenderer == NULL)
+//  {
+//    return false;
+//  }
+//
+//  if (legendsON)
+//  {
+//    if (!m_LegendAdded)
+//    {
+//      m_LegendActor = vtkLegendScaleActor::New();
+//      currentVtkRenderer->AddActor(m_LegendActor);
+//
+//      m_AxesActor = vtkAxesActor::New();
+//      m_AxesActor->SetShaftTypeToCylinder();
+//      m_AxesActor->SetXAxisLabelText( "X" );
+//      m_AxesActor->SetYAxisLabelText( "Y" );
+//      m_AxesActor->SetZAxisLabelText( "Z" );
+//      m_AxesActor->SetTotalLength(200, 200, 200);
+//      m_AxesActor->AxisLabelsOn();
+//      m_AxesActor->SetCylinderRadius(0.02);
+//      m_AxesActor->SetConeRadius(0.2);
+//      m_AxesActor->SetPosition(0.0, 0.0, 0.0);
+//      m_AxesActor->SetOrigin(0.0, 0.0, 0.0);
+//
+//      m_CustomAxesActor = new niftk::CustomVTKAxesActor();
+//      m_CustomAxesActor->SetShaftTypeToCylinder();
+//      m_CustomAxesActor->SetXAxisLabelText("X");
+//      m_CustomAxesActor->SetYAxisLabelText("Y");
+//      m_CustomAxesActor->SetZAxisLabelText("Z");
+//      m_CustomAxesActor->SetTotalLength(150, 150, 150);
+//      m_CustomAxesActor->AxisLabelsOn();
+//      m_CustomAxesActor->SetCylinderRadius(0.02);
+//      m_CustomAxesActor->SetConeRadius(0.2);
+//      m_CustomAxesActor->SetPosition(0.0, 0.0, 0.0);
+//      m_CustomAxesActor->SetOrigin(0.0, 0.0, 0.0);
+//        
+//      currentVtkRenderer->AddActor(m_CustomAxesActor);
+//
+//      m_LegendAdded = true;
+//    }
+//  }
+//  else
+//  {
+//    if (m_LegendActor != NULL)
+//    {
+//      currentVtkRenderer->RemoveActor(m_LegendActor);
+//      m_LegendActor->Delete();
+//      m_LegendActor = NULL;
+//    }
+//    if (m_AxesActor != NULL)
+//    {
+//      currentVtkRenderer->RemoveActor(m_AxesActor);
+//      m_AxesActor->Delete();
+//      m_AxesActor = NULL;
+//    }
+//
+//    m_LegendAdded = false;
+//  }
+//
+//  return true;
+//}

@@ -41,8 +41,6 @@
 #include "ui_AffineTransformViewControls.h"
 #include "AffineTransformDataInteractor3D.h"
 
-
-
 /**
  * \class AffineTransformView
  * \brief Affine transform UI plugin, provides controls to rotate, translate,
@@ -166,7 +164,7 @@ class AffineTransformView : public QmitkBaseView
 
     virtual void RemoveBoundingObjectFromNode();
 
-    bool DisplayLegends(bool legendsON);
+    //bool DisplayLegends(bool legendsON);
     //************************************************************************************************************************
 
 

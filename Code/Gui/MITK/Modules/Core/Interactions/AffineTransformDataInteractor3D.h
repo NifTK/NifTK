@@ -127,8 +127,9 @@ private:
   mitk::Vector3D             m_ObjectNormal;
   
   mitk::BaseRenderer        * m_CurrentRenderer;
+  /*
   vtkRenderWindow           * m_CurrentRenderWindow;
-  vtkRenderWindowInteractor * m_CurrentRenderWindowInteractor;
+  vtkRenderWindowInteractor * m_CurrentRenderWindowInteractor;*/
   vtkRenderer               * m_CurrentVtkRenderer;
   vtkCamera                 * m_CurrentCamera;
   

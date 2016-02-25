@@ -21,6 +21,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkBoundingObject.h>
 #include <mitkInteractionEvent.h>
 #include <mitkInteractionConst.h>
+#include <mitkInteractionPositionEvent.h>
 
 #include <vtkInteractorObserver.h>
 #include <vtkCamera.h>
@@ -31,12 +32,12 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 void niftk::AffineTransformDataInteractor3D::ConnectActionsAndFunctions()
 {
-  CONNECT_CONDITION("checkObject", CheckObject);
+  CONNECT_CONDITION("overObject", CheckObject);
   CONNECT_FUNCTION("selectObject", SelectObject);
   CONNECT_FUNCTION("deselectObject", DeselectObject);
   CONNECT_FUNCTION("initMove", InitMove);
-  CONNECT_FUNCTION("acceptMove", Move);
-  CONNECT_FUNCTION("acceptMove", AcceptMove);
+  CONNECT_FUNCTION("move", Move);
+  CONNECT_FUNCTION("accept", AcceptMove);
 }
 
 //how precise must the user pick the point
@@ -53,9 +54,9 @@ niftk::AffineTransformDataInteractor3D
   m_ObjectNormal[1] = 0.0;
   m_ObjectNormal[2] = 1.0;
 
-  m_CurrentRenderer = NULL;
+  m_CurrentRenderer = NULL;/*
   m_CurrentRenderWindow = NULL;
-  m_CurrentRenderWindowInteractor = NULL;
+  m_CurrentRenderWindowInteractor = NULL;*/
   m_CurrentVtkRenderer = NULL;
   m_CurrentCamera = NULL;
   m_BoundingObjectNode = NULL;
@@ -218,24 +219,20 @@ bool niftk::AffineTransformDataInteractor3D::UpdateCurrentRendererPointers(const
   m_CurrentRenderer = interactionEvent->GetSender();
   if (m_CurrentRenderer != NULL )
   {
-    m_CurrentRenderWindow = m_CurrentRenderer->GetRenderWindow();
-    if (m_CurrentRenderWindow != NULL )
+    m_CurrentVtkRenderer = m_CurrentRenderer->GetVtkRenderer();
+    if (m_CurrentVtkRenderer != NULL)
     {
-      m_CurrentRenderWindowInteractor = m_CurrentRenderWindow->GetInteractor();
-      if (m_CurrentRenderWindowInteractor != NULL )
-      {
-        m_CurrentVtkRenderer = m_CurrentRenderWindowInteractor->GetInteractorStyle()->GetCurrentRenderer();
-        if (m_CurrentVtkRenderer != NULL)
-        {
-          m_CurrentCamera = m_CurrentVtkRenderer->GetActiveCamera();
-        }
-        else return false;
-      }
-      else return false;
+      m_CurrentCamera = m_CurrentVtkRenderer->GetActiveCamera();
     }
-    else return false;
+    else
+    {
+      return false;
+    }
   }
-  else return false;
+  else
+  {
+    return false;
+  }
 
   //All went fine
   return true;
@@ -245,25 +242,23 @@ bool niftk::AffineTransformDataInteractor3D::UpdateCurrentRendererPointers(const
 bool niftk::AffineTransformDataInteractor3D::CheckObject(const mitk::InteractionEvent *interactionEvent)
 {
   
-  if (!UpdateCurrentRendererPointers(interactionEvent) || this->GetDataNode()->GetData() == NULL)
+  if (!UpdateCurrentRendererPointers(interactionEvent) || 
+    this->GetDataNode()->GetData() == NULL || this->m_BoundingObjectNode == NULL)
   {
     return false;
   }
 
-  // Re-enable VTK interactor (may have been disabled previously)
-  if (m_CurrentRenderWindowInteractor != NULL)
-    m_CurrentRenderWindowInteractor->Enable();
-
   // Check if we have a DisplayPositionEvent
-  const mitk::DisplayPositionEvent *dpe = dynamic_cast< const mitk::DisplayPositionEvent * >(interactionEvent);     
-  if (dpe == NULL)
+  const mitk::InteractionPositionEvent* pe = dynamic_cast<const mitk::InteractionPositionEvent*>(interactionEvent);
+  if (pe == NULL)
   {
+    MITK_INFO << "no display position";
     //Could not resolve current display position: go back to start state
     return false;
   }
-
-  m_CurrentlyPickedWorldPoint = dpe->GetWorldPosition();
-  m_CurrentlyPickedDisplayPoint = dpe->GetDisplayPosition();
+  
+  m_CurrentlyPickedWorldPoint = pe->GetPositionInWorld();
+  m_CurrentlyPickedDisplayPoint = pe->GetPointerPositionOnScreen();
   
   // Get the timestep to also support 3D+t
   int timeStep = 0;
@@ -271,11 +266,11 @@ bool niftk::AffineTransformDataInteractor3D::CheckObject(const mitk::Interaction
   
   if (m_CurrentRenderer != NULL)
   {
-    timeStep = m_CurrentRenderer->GetTimeStep(this->GetDataNode()->GetData());
+    timeStep = m_CurrentRenderer->GetTimeStep(m_BoundingObjectNode->GetData());
     timeInMS = m_CurrentRenderer->GetTime();
   }
 
-  mitk::BaseGeometry* geometry = this->GetDataNode()->GetData()->GetUpdatedTimeGeometry()->GetGeometryForTimeStep(timeStep);
+  mitk::BaseGeometry* geometry = m_BoundingObjectNode->GetData()->GetUpdatedTimeGeometry()->GetGeometryForTimeStep(timeStep);
 
   if (geometry->IsInside(m_CurrentlyPickedWorldPoint))
   {
@@ -292,7 +287,7 @@ bool niftk::AffineTransformDataInteractor3D::CheckObject(const mitk::Interaction
 bool niftk::AffineTransformDataInteractor3D::SelectObject(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   // Color object red
-  this->GetDataNode()->SetColor( 1.0, 0.0, 0.0 );
+  this->GetDataNode()->SetColor(1.0, 0.0, 0.0);
   
   mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
   renderManager->RequestUpdateAll();
@@ -303,7 +298,7 @@ bool niftk::AffineTransformDataInteractor3D::SelectObject(mitk::StateMachineActi
 bool niftk::AffineTransformDataInteractor3D::DeselectObject(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   // Color object white
-  this->GetDataNode()->SetColor( 1.0, 1.0, 1.0 );
+  this->GetDataNode()->SetColor(1.0, 1.0, 1.0);
   
   mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
   renderManager->RequestUpdateAll();
@@ -316,14 +311,12 @@ bool niftk::AffineTransformDataInteractor3D::InitMove(mitk::StateMachineAction* 
   if (!UpdateCurrentRendererPointers(interactionEvent) || this->GetDataNode()->GetData() == NULL)
     return false;
 
-  // Disable VTK interactor (may have been enabled previously)
-  if (m_CurrentRenderWindowInteractor != NULL)
-    m_CurrentRenderWindowInteractor->Disable();
-
-  // Check if we have a DisplayPositionEvent
-  const mitk::DisplayPositionEvent *dpe = dynamic_cast< const mitk::DisplayPositionEvent * >( interactionEvent);     
-  if (dpe == NULL)
+  // Check if we have a InteractionPositionEvent
+  const mitk::InteractionPositionEvent* pe = dynamic_cast<const mitk::InteractionPositionEvent*>(interactionEvent);
+  if (pe == NULL)
+  {
     return false;
+  }
 
   m_InitialPickedWorldPoint = m_CurrentlyPickedWorldPoint;
   m_InitialPickedDisplayPoint = m_CurrentlyPickedDisplayPoint;
@@ -356,14 +349,15 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
   if (!UpdateCurrentRendererPointers(interactionEvent) || this->GetDataNode()->GetData() == NULL)
     return false;
 
-  // Check if we have a DisplayPositionEvent
-  const mitk::DisplayPositionEvent *dpe = dynamic_cast< const mitk::DisplayPositionEvent * >(interactionEvent);     
-  
-  if (dpe == NULL)
+  // Check if we have a InteractionPositionEvent
+  const mitk::InteractionPositionEvent* pe = dynamic_cast<const mitk::InteractionPositionEvent*>(interactionEvent);
+  if (pe == NULL)
+  {
     return false;
+  }
 
-  m_CurrentlyPickedWorldPoint   = dpe->GetWorldPosition();
-  m_CurrentlyPickedDisplayPoint = dpe->GetDisplayPosition();
+  m_CurrentlyPickedWorldPoint   = pe->GetPositionInWorld();
+  m_CurrentlyPickedDisplayPoint = pe->GetPointerPositionOnScreen();
 
   mitk::Vector3D interactionMove;
 
@@ -451,7 +445,6 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
 
       // Reset current Geometry3D to original state (pre-interaction) and
       // apply rotation
-
       mitk::RotationOperation op(mitk::OpROTATE, rotationCenter, rotationAxis, rotationAngle );
       mitk::BaseGeometry::Pointer newGeometry = dynamic_cast<mitk::BaseGeometry*>(this->GetDataNode()->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
 

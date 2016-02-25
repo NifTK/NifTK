@@ -1,5 +1,5 @@
 <config>
-   <event_variant class="MouseMoveEvent" name="CheckObjectSelected">
+   <event_variant class="MouseMoveEvent" name="CheckOverObject">
   </event_variant>
   <event_variant class="MousePressEvent" name="SelectObject">
     <attribute name="EventButton" value="LeftMouseButton"/>
@@ -9,6 +9,7 @@
   </event_variant>
   <event_variant class="MouseMoveEvent" name="MoveObject">
     <attribute name="ButtonState" value="LeftMouseButton"/>
+    <attribute name="Modifiers" value="alt"/>
   </event_variant> 
   <event_variant class="MouseWheelEvent" name="ScrollObject">
     <attribute name="ButtonState" value="LeftMouseButton"/>

@@ -1,7 +1,44 @@
 <statemachine>
   <state name="start" startstate="true">
-    <transition event_class="MouseMoveEvent" event_variant="CheckObjectSelected" target="CheckObject">
-	  <action name="checkObject"/>
+    <transition event_class="MouseMoveEvent" event_variant="CheckOverObject" target="ObjectSelected">
+      <condition name="overObject" inverted="false"/>
+	  <action name="selectObject"/>
+	</transition>
+  </state>  
+  <state name="ObjectSelected">
+    <transition event_class="MousePressEvent" event_variant="SelectObject" target="ObjectInteraction">
+      <condition name="overObject" inverted="false"/>
+	  <action name="initMove"/>
+	</transition>
+    <transition event_class="MouseMoveEvent" event_variant="CheckOverObject" target="start">
+      <condition name="overObject" inverted="true"/>
+ 	  <action name="deselectObject"/>
+	</transition>
+    <transition event_class="MouseWheelEvent" event_variant="Scroll" target="ObjectSelected">
+      <condition name="overObject"/>
+	  <action name="modify"/>
 	</transition>
   </state>
+  <state name="ObjectInteraction">
+    <transition event_class="MouseMoveEvent" event_variant="MoveObject" target="ObjectInteraction">	  
+	  <action name="move"/>
+	</transition>
+	<transition event_class="MouseReleaseEvent" event_variant="EndMoveObject" target="StoreTransformation">
+	  <action name="accept"/>
+	</transition>
+    <transition event_class="MouseMoveEvent" event_variant="CheckOverObject" target="StoreTransformation">
+	  <action name="accept"/>
+	</transition>
+    <transition event_class="MouseWheelEvent" event_variant="ScrollObject" target="ObjectInteraction">
+      <action name="modify"/>
+	  <action name="move"/>
+	</transition>
+  </state>
+  <state name="StoreTransformation">
+  	<transition event_class="MouseMoveEvent" event_variant="CheckOverObject" target="start">
+	</transition>
+    <transition event_class="MouseWheelEvent" event_variant="Scroll" target="StoreTransformation">
+      <condition name="modify"/>
+	</transition>
+  </state>  
 </statemachine>
