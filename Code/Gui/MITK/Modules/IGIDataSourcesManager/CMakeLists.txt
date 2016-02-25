@@ -14,7 +14,7 @@
 
 MITK_CREATE_MODULE(
   DEPENDS niftkIGIDataSources
-  PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui NiftyLink|OpenIGTLink CTK
+  PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui NiftyLink|OpenIGTLink CTK|CTKWidgets
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
