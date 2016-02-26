@@ -185,7 +185,6 @@ private:
     mitk::DataNode::Pointer                 m_BoundingObjectNode;
     niftk::AffineTransformDataInteractor3D::Pointer  m_AffineDataInteractor3D;
     vtkLegendScaleActor                   * m_LegendActor;
-    vtkAxesActor                          * m_AxesActor;
     niftk::CustomVTKAxesActor             * m_CustomAxesActor;
     //************************************************************************************************************************
 };

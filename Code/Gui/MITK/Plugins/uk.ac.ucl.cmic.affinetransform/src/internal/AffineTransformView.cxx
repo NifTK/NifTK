@@ -1095,18 +1095,6 @@ bool AffineTransformView::DisplayLegends(bool legendsON)
       m_LegendActor = vtkLegendScaleActor::New();
       currentVtkRenderer->AddActor(m_LegendActor);
 
-      m_AxesActor = vtkAxesActor::New();
-      m_AxesActor->SetShaftTypeToCylinder();
-      m_AxesActor->SetXAxisLabelText( "X" );
-      m_AxesActor->SetYAxisLabelText( "Y" );
-      m_AxesActor->SetZAxisLabelText( "Z" );
-      m_AxesActor->SetTotalLength(200, 200, 200);
-      m_AxesActor->AxisLabelsOn();
-      m_AxesActor->SetCylinderRadius(0.02);
-      m_AxesActor->SetConeRadius(0.2);
-      m_AxesActor->SetPosition(0.0, 0.0, 0.0);
-      m_AxesActor->SetOrigin(0.0, 0.0, 0.0);
-
       m_CustomAxesActor = new niftk::CustomVTKAxesActor();
       m_CustomAxesActor->SetShaftTypeToCylinder();
       m_CustomAxesActor->SetXAxisLabelText("X");
@@ -1132,13 +1120,12 @@ bool AffineTransformView::DisplayLegends(bool legendsON)
       m_LegendActor->Delete();
       m_LegendActor = NULL;
     }
-    if (m_AxesActor != NULL)
+    if (m_CustomAxesActor != NULL)
     {
-      currentVtkRenderer->RemoveActor(m_AxesActor);
-      m_AxesActor->Delete();
-      m_AxesActor = NULL;
+      currentVtkRenderer->RemoveActor(m_CustomAxesActor);
+      m_CustomAxesActor->Delete();
+      m_CustomAxesActor = NULL;
     }
-
     m_LegendAdded = false;
   }
 
