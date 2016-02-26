@@ -903,6 +903,7 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
     fitBoundingObject = true;
   }
 
+
   if (m_BoundingObject.IsNull())
   {
     return;
@@ -939,6 +940,8 @@ void AffineTransformView::AddBoundingObjectToNode(mitk::DataNode::Pointer node, 
   }
 
   m_BoundingObjectNode->SetVisibility(true);
+  DisplayLegends(true);
+
 }
 
 void AffineTransformView::RemoveBoundingObjectFromNode()
@@ -951,6 +954,8 @@ void AffineTransformView::RemoveBoundingObjectFromNode()
       m_AffineDataInteractor3D->SetDataNode(NULL);
     }
   }
+
+  DisplayLegends(false);
 }
 
 void AffineTransformView::OnInteractiveModeToggled(bool on)
@@ -1062,86 +1067,80 @@ void AffineTransformView::OnTransformReady()
   m_Controls->affineTransformDisplay->blockSignals(isBlocked);
 }
 
-//bool AffineTransformView::DisplayLegends(bool legendsON)
-//{
-//  QmitkRenderWindow *qRenderWindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("3d");
-//  vtkRenderWindow *renderWindow = NULL;
-//
-//  if (qRenderWindow != NULL)
-//  {
-//    renderWindow = qRenderWindow->GetVtkRenderWindow();
-//  }
-//
-//  vtkRenderWindowInteractor *renderWindowInteractor = NULL;
-//  if (renderWindow != NULL)
-//  {
-//    renderWindowInteractor = renderWindow->GetInteractor();
-//  }
-//
-//  vtkRenderer *currentVtkRenderer = NULL;
-//  if (renderWindowInteractor != NULL)
-//  {
-//    currentVtkRenderer = renderWindowInteractor->GetInteractorStyle()->GetCurrentRenderer();
-//  }
-//
-//  if (currentVtkRenderer == NULL)
-//  {
-//    return false;
-//  }
-//
-//  if (legendsON)
-//  {
-//    if (!m_LegendAdded)
-//    {
-//      m_LegendActor = vtkLegendScaleActor::New();
-//      currentVtkRenderer->AddActor(m_LegendActor);
-//
-//      m_AxesActor = vtkAxesActor::New();
-//      m_AxesActor->SetShaftTypeToCylinder();
-//      m_AxesActor->SetXAxisLabelText( "X" );
-//      m_AxesActor->SetYAxisLabelText( "Y" );
-//      m_AxesActor->SetZAxisLabelText( "Z" );
-//      m_AxesActor->SetTotalLength(200, 200, 200);
-//      m_AxesActor->AxisLabelsOn();
-//      m_AxesActor->SetCylinderRadius(0.02);
-//      m_AxesActor->SetConeRadius(0.2);
-//      m_AxesActor->SetPosition(0.0, 0.0, 0.0);
-//      m_AxesActor->SetOrigin(0.0, 0.0, 0.0);
-//
-//      m_CustomAxesActor = new niftk::CustomVTKAxesActor();
-//      m_CustomAxesActor->SetShaftTypeToCylinder();
-//      m_CustomAxesActor->SetXAxisLabelText("X");
-//      m_CustomAxesActor->SetYAxisLabelText("Y");
-//      m_CustomAxesActor->SetZAxisLabelText("Z");
-//      m_CustomAxesActor->SetTotalLength(150, 150, 150);
-//      m_CustomAxesActor->AxisLabelsOn();
-//      m_CustomAxesActor->SetCylinderRadius(0.02);
-//      m_CustomAxesActor->SetConeRadius(0.2);
-//      m_CustomAxesActor->SetPosition(0.0, 0.0, 0.0);
-//      m_CustomAxesActor->SetOrigin(0.0, 0.0, 0.0);
-//        
-//      currentVtkRenderer->AddActor(m_CustomAxesActor);
-//
-//      m_LegendAdded = true;
-//    }
-//  }
-//  else
-//  {
-//    if (m_LegendActor != NULL)
-//    {
-//      currentVtkRenderer->RemoveActor(m_LegendActor);
-//      m_LegendActor->Delete();
-//      m_LegendActor = NULL;
-//    }
-//    if (m_AxesActor != NULL)
-//    {
-//      currentVtkRenderer->RemoveActor(m_AxesActor);
-//      m_AxesActor->Delete();
-//      m_AxesActor = NULL;
-//    }
-//
-//    m_LegendAdded = false;
-//  }
-//
-//  return true;
-//}
+bool AffineTransformView::DisplayLegends(bool legendsON)
+{
+  QmitkRenderWindow *qRenderWindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("3d");
+
+  mitk::VtkPropRenderer* renderProp = NULL;
+  if (qRenderWindow != NULL)
+  {
+    renderProp = qRenderWindow->GetRenderer();
+  }
+
+  vtkRenderer *currentVtkRenderer = NULL;
+  if (renderProp != NULL)
+  {
+    currentVtkRenderer = renderProp->GetVtkRenderer();
+  }
+   
+  if (currentVtkRenderer == NULL)
+  {
+    return false;
+  }
+
+  if (legendsON)
+  {
+    if (!m_LegendAdded)
+    {
+      m_LegendActor = vtkLegendScaleActor::New();
+      currentVtkRenderer->AddActor(m_LegendActor);
+
+      m_AxesActor = vtkAxesActor::New();
+      m_AxesActor->SetShaftTypeToCylinder();
+      m_AxesActor->SetXAxisLabelText( "X" );
+      m_AxesActor->SetYAxisLabelText( "Y" );
+      m_AxesActor->SetZAxisLabelText( "Z" );
+      m_AxesActor->SetTotalLength(200, 200, 200);
+      m_AxesActor->AxisLabelsOn();
+      m_AxesActor->SetCylinderRadius(0.02);
+      m_AxesActor->SetConeRadius(0.2);
+      m_AxesActor->SetPosition(0.0, 0.0, 0.0);
+      m_AxesActor->SetOrigin(0.0, 0.0, 0.0);
+
+      m_CustomAxesActor = new niftk::CustomVTKAxesActor();
+      m_CustomAxesActor->SetShaftTypeToCylinder();
+      m_CustomAxesActor->SetXAxisLabelText("X");
+      m_CustomAxesActor->SetYAxisLabelText("Y");
+      m_CustomAxesActor->SetZAxisLabelText("Z");
+      m_CustomAxesActor->SetTotalLength(150, 150, 150);
+      m_CustomAxesActor->AxisLabelsOn();
+      m_CustomAxesActor->SetCylinderRadius(0.02);
+      m_CustomAxesActor->SetConeRadius(0.2);
+      m_CustomAxesActor->SetPosition(0.0, 0.0, 0.0);
+      m_CustomAxesActor->SetOrigin(0.0, 0.0, 0.0);
+        
+      currentVtkRenderer->AddActor(m_CustomAxesActor);
+
+      m_LegendAdded = true;
+    }
+  }
+  else
+  {
+    if (m_LegendActor != NULL)
+    {
+      currentVtkRenderer->RemoveActor(m_LegendActor);
+      m_LegendActor->Delete();
+      m_LegendActor = NULL;
+    }
+    if (m_AxesActor != NULL)
+    {
+      currentVtkRenderer->RemoveActor(m_AxesActor);
+      m_AxesActor->Delete();
+      m_AxesActor = NULL;
+    }
+
+    m_LegendAdded = false;
+  }
+
+  return true;
+}

@@ -164,7 +164,7 @@ class AffineTransformView : public QmitkBaseView
 
     virtual void RemoveBoundingObjectFromNode();
 
-    //bool DisplayLegends(bool legendsON);
+    bool DisplayLegends(bool legendsON);
     //************************************************************************************************************************
 
 
