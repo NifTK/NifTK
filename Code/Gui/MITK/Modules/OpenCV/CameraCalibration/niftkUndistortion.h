@@ -168,6 +168,27 @@ protected:
   bool             m_RecomputeCache;
 };
 
+class NIFTKOPENCV_EXPORT UndistortionWorker
+{
+public:
+
+  struct WorkItem
+  {
+    niftk::Undistortion*    m_Proc;
+    mitk::Image::Pointer    m_InputImage;
+    mitk::Image::Pointer    m_OutputImage;
+    std::string             m_OutputNodeName;
+    std::string             m_InputNodeName;
+  };
+
+  std::vector<WorkItem>     m_Queue;
+
+  void Run();
+
+};
+
+
+
 
 } // namespace
 

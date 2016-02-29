@@ -603,5 +603,26 @@ void Undistortion::Run(const mitk::Image::Pointer& outputImage)
   //outputImage->Modified();
 }
 
-
+//-----------------------------------------------------------------------------
+void UndistortionWorker::Run()
+{
+  if ( ! m_Queue.empty())
+  {
+    for (std::size_t i = 0; i < m_Queue.size(); ++i)
+    {
+      try
+      {
+        m_Queue[i].m_Proc->Run(m_Queue[i].m_OutputImage);
+      }
+      catch (const std::exception& e)
+      {
+        MITK_ERROR << "Caught exception while undistorting: " << e.what();
+      }
+      catch (...)
+      {
+        MITK_ERROR << "Caught unknown exception while undistorting!";
+      }
+    }
+  }
+}
 } // namespace

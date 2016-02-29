@@ -176,6 +176,7 @@ Continuous docs:
   - sb_dir="${root_dir}/NiftyMIDAS-sb"
   - pb_dir="${sb_dir}/NifTK-build"
   - cd ${pb_dir}
+  - rm -rf Doxygen/html
   - chmod a+rx bin/GenerateCommandLineDoxygen
   - bin/GenerateCommandLineDoxygen
   - chmod a+rx bin/GenerateTestingReports
@@ -184,6 +185,7 @@ Continuous docs:
   - cd Doxygen
   - find html -type f -exec chmod 644 {} \;
   - find html -type d -exec chmod 755 {} \;
+  - rm -rf niftymidas-${version}-docs
   - mv html niftymidas-${version}-docs
   - tar cfj niftymidas-${version}-docs.tar.bz2 niftymidas-${version}-docs
   - echo "API reference documentation generated:"
@@ -193,7 +195,7 @@ Continuous docs:
   - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NiftyMIDAS/docs ;
         rm -rf `readlink -f niftymidas-current-docs.tar.bz2` `readlink -f current` ;
         rm niftymidas-current-docs current ;
-        tar xvfj niftymidas-${version}-docs.tar.bz2 ;
+        tar xfj niftymidas-${version}-docs.tar.bz2 ;
         ln -s niftymidas-${version}-docs.tar.bz2 niftymidas-current-docs.tar.bz2 ;
         ln -s niftymidas-${version}-docs current"
 
@@ -289,12 +291,14 @@ Release docs:
   - sb_dir="${root_dir}/NiftyMIDAS-sb"
   - pb_dir="${sb_dir}/NifTK-build"
   - cd ${pb_dir}
+  - rm -rf Doxygen/html
   - chmod a+rx bin/GenerateCommandLineDoxygen
   - bin/GenerateCommandLineDoxygen
   - doxygen doxygen.config
   - cd Doxygen
   - find html -type f -exec chmod 644 {} \;
   - find html -type d -exec chmod 755 {} \;
+  - rm -rf niftymidas-${version}-docs
   - mv html niftymidas-${version}-docs
   - tar cfj niftymidas-${version}-docs.tar.bz2 niftymidas-${version}-docs
   - echo "API reference documentation generated:"
@@ -302,7 +306,7 @@ Release docs:
   - scp niftymidas-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NiftyMIDAS/docs/
   - "# Extract the tarball and replace the old files"
   - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NiftyMIDAS/docs ;
-        tar xvfj niftymidas-${version}-docs.tar.bz2"
+        tar xfj niftymidas-${version}-docs.tar.bz2"
 
   only:
   - tags
@@ -360,4 +364,4 @@ Mac release installer:
   - tags
 
   tags:
-  - linux, release
+  - mac, release

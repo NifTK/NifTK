@@ -46,6 +46,14 @@ int main(int argc, char** argv)
     {
       projector->SetSaveVideo(true);
     }
+    if ( writeTrackingMatricesPerFrame )
+    {
+      projector->SetWriteTrackingMatrixFilesPerFrame(true);
+    }
+    if ( dontCorrectAspectRatio )
+    {
+      projector->SetCorrectVideoAspectRatioByHalvingWidth(false);
+    }
     projector->Initialise(trackingInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();
     matcher->Initialise(trackingInputDirectory);

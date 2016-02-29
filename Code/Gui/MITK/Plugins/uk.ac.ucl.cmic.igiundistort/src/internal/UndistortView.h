@@ -19,20 +19,13 @@
 #include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_UndistortViewControls.h"
+#include <niftkUndistortion.h>
 #include <map>
 #include <string>
 #include <QFuture>
 #include <QFutureWatcher>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkImage.h>
-
-
-// forward-decl
-namespace niftk
-{
-class Undistortion;
-}
-
 
 class UndistortView : public QmitkBaseView, public Ui::UndistortViewControls
 {
@@ -57,8 +50,6 @@ public:
 
 protected:
   void UpdateNodeTable();
-
-  void RunBackgroundProcessing();
 
   void WriteCurrentConfig(const QString& directory) const;
 
@@ -95,16 +86,7 @@ private:
   std::map<mitk::Image::Pointer, niftk::Undistortion*>   m_UndistortionMap;
   std::map<std::string, mitk::CameraIntrinsicsProperty::Pointer>    m_ParamFileCache;
 
-
-  struct WorkItem
-  {
-    niftk::Undistortion*    m_Proc;
-    mitk::Image::Pointer    m_InputImage;
-    mitk::Image::Pointer    m_OutputImage;
-    std::string             m_OutputNodeName;
-    std::string             m_InputNodeName;
-  };
-  std::vector<WorkItem>                         m_BackgroundQueue;
+  niftk::UndistortionWorker                              m_BackgroundWorker;
 
   QFuture<void>                                 m_BackgroundProcess;
   QFutureWatcher<void>                          m_BackgroundProcessWatcher;

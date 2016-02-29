@@ -126,6 +126,13 @@ endif()
 ####################################################################################
 # End of aforementioned Temporary Work Around.
 ####################################################################################
+if (Python_DIR)
+  get_property(_additional_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+  list(APPEND _additional_search_paths ${Python_DIR}/lib)
+  list(APPEND _additional_search_paths ${Python_DIR}/bin) # On Windows, DLLs go in bin.
+  set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths})
+endif()
+
 
 if(MITK_USE_BLUEBERRY)
   add_subdirectory(Apps)
