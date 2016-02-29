@@ -68,3 +68,7 @@ endif()
 
 
 MITK_INSTALL(TARGETS niftkCUDAKernels)
+
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()

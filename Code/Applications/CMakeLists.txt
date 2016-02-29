@@ -411,3 +411,7 @@ if(NOT BUILD_GUI)
     NIFTK_FIXUP_COMMAND_LINE_APPLICATIONS(APPS ${_all_command_line_apps})
   endif()
 endif()
+
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()

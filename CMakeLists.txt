@@ -870,11 +870,11 @@ set(NIFTK_INCLUDE_DIRS_BUILD_TREE
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASMorphologicalEditor
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASIrregularVolumeEditor
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Testing
+  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Testing/RegistrationToolBox
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/VesselToolbox
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITKVTK/IO
   ${CMAKE_SOURCE_DIR}/Code/Libs/ITKIO
-  ${CMAKE_SOURCE_DIR}/Testing/Code/
-  ${CMAKE_SOURCE_DIR}/Testing/Code/Libs/ITK/RegistrationToolbox
 )
 if (BUILD_MESHING)
   set(NIFTK_INCLUDE_DIRS_BUILD_TREE
@@ -1739,10 +1739,6 @@ add_subdirectory(Code)
 if(BUILD_UTILITIES)
   add_subdirectory(Utilities)
 endif(BUILD_UTILITIES)
-
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif(BUILD_TESTING)
 
 if(BUILD_PROTOTYPE)
   add_subdirectory(Prototype)
