@@ -14,6 +14,7 @@
 
 #include "XnatPluginPreferencePage.h"
 
+#include <QDir>
 #include <QWidget>
 
 #include <berryIPreferencesService.h>
@@ -28,7 +29,7 @@ const QString XnatPluginPreferencePage::USER_DEFAULT("guest");
 const QString XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_NAME("Download directory");
 const QString XnatPluginPreferencePage::DOWNLOAD_DIRECTORY_DEFAULT(".");
 const QString XnatPluginPreferencePage::WORK_DIRECTORY_NAME("Work directory");
-const QString XnatPluginPreferencePage::WORK_DIRECTORY_DEFAULT(".");
+const QString XnatPluginPreferencePage::WORK_DIRECTORY_DEFAULT(QDir::tempPath());
 
 XnatPluginPreferencePage::XnatPluginPreferencePage()
 : m_Initializing(false)

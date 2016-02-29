@@ -189,7 +189,15 @@ version is recommended). Note that if you use Microsoft Visual Studio 2012 pleas
 You might also want to have the Qt integration pack installed for VS: <a href="http://download.qt.io/official_releases/vsaddin/qt-vs-addin-1.1.11-opensource.exe">
 Qt VS Integration</a>
 
-On 64bit Windows (or if you are an adventurous Win32 user) you have to build Qt from source. 
+\subsection BuildInstructionsQt5_4Windows 3.1.1 Compiling Qt 5.4.2 on Windows
+
+Download the Qt 5.4.2 binaries with open_gl located here http://download.qt.io/archive/qt/5.4/5.4.2/qt-opensource-windows-x86-msvc2013_64_opengl-5.4.2.exe.
+Binaries for 64-bit version of Qt 5.4.2 with Visual Studio 2012 are not available.
+ 
+
+\subsection BuildInstructionsQt4_8Windows 3.1.2 Compiling Qt 4.8.7 on Windows
+ 
+If you the 64-bit version of Qt 4.8.7 (or if you are an adventurous Win32 user) you have to build Qt from source. 
 
 Uncompress the downloaded files obtained in the previous section into a build directory of your choice (e. g. "C:\Qt\4.8.7-build"), and create
 a directory where you want Qt installed (e.g. "C:\Qt\4.8.7").

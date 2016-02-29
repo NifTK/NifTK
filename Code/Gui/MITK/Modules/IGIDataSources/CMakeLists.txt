@@ -18,7 +18,7 @@ set(_packages Qt4|QtGui Qt5|Gui QVTK NiftyLink Boost|filesystem)
 if(QT_QTMULTIMEDIA_INCLUDE_DIR)
   set(_packages
     ${_packages}
-    Qt4|QtMultimedia
+    Qt4|QtMultimedia Qt5|Multimedia
   )
 endif()
 

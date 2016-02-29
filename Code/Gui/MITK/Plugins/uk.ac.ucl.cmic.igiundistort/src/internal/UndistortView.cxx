@@ -26,7 +26,6 @@
 #include <QMessageBox>
 #include <QTableWidgetItem>
 #include <QFileDialog>
-#include <niftkUndistortion.h>
 #include <boost/typeof/typeof.hpp>
 #include <QtConcurrentRun>
 #include <QFile>
@@ -98,7 +97,7 @@ UndistortView::~UndistortView()
   m_BackgroundProcessWatcher.waitForFinished();
   // m_BackgroundQueue is cleared in the finished-signal-handler
   // which we just disconnected above.
-  m_BackgroundQueue.clear();
+  m_BackgroundWorker.m_Queue.clear();
 
   for (std::map<mitk::Image::Pointer, niftk::Undistortion*>::iterator i = m_UndistortionMap.begin(); i != m_UndistortionMap.end(); ++i)
   {
@@ -339,7 +338,7 @@ void UndistortView::OnGoButtonClick()
   //if (m_BackgroundProcess.isRunning())
   // race condition: if we check whether background process is running then we could
   // end up in a situation where background is finished but future-watcher hasn't signaled us yet.
-  if (!m_BackgroundQueue.empty())
+  if (!m_BackgroundWorker.m_Queue.empty())
   {
     return;
   }
@@ -465,14 +464,14 @@ void UndistortView::OnGoButtonClick()
                 // check that output image is correct size.
                 ci->second->PrepareOutput(outputImage);
 
-                WorkItem    wi;
+                niftk::UndistortionWorker::WorkItem    wi;
                 wi.m_InputImage = inputImage;
                 wi.m_OutputImage = outputImage;
                 wi.m_OutputNodeName = outputitem->text().toStdString();
                 wi.m_InputNodeName = nodename;
                 wi.m_Proc = ci->second;
 
-                m_BackgroundQueue.push_back(wi);
+                m_BackgroundWorker.m_Queue.push_back(wi);
               }
               catch (const std::exception& e)
               {
@@ -497,35 +496,12 @@ void UndistortView::OnGoButtonClick()
     }
   }
 
-  if (!m_BackgroundQueue.empty())
+  if (!m_BackgroundWorker.m_Queue.empty())
   {
-    m_BackgroundProcess = QtConcurrent::run(this, &UndistortView::RunBackgroundProcessing);
+    m_BackgroundProcess = QtConcurrent::run(m_BackgroundWorker, &niftk::UndistortionWorker::Run);
     m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
   }
 }
-
-
-//-----------------------------------------------------------------------------
-void UndistortView::RunBackgroundProcessing()
-{
-  assert(!m_BackgroundQueue.empty());
-  for (std::size_t i = 0; i < m_BackgroundQueue.size(); ++i)
-  {
-    try
-    {
-      m_BackgroundQueue[i].m_Proc->Run(m_BackgroundQueue[i].m_OutputImage);
-    }
-    catch (const std::exception& e)
-    {
-      MITK_ERROR << "Caught exception while undistorting: " << e.what();
-    }
-    catch (...)
-    {
-      MITK_ERROR << "Caught unknown exception while undistorting!";
-    }
-  }
-}
-
 
 //-----------------------------------------------------------------------------
 void UndistortView::OnBackgroundProcessFinished()
@@ -533,22 +509,22 @@ void UndistortView::OnBackgroundProcessFinished()
   mitk::DataStorage::Pointer storage = GetDataStorage();
   assert(storage.IsNotNull());
 
-  for (std::size_t i = 0; i < m_BackgroundQueue.size(); ++i)
+  for (std::size_t i = 0; i < m_BackgroundWorker.m_Queue.size(); ++i)
   {
     bool  nodeIsNew = false;
-    mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(m_BackgroundQueue[i].m_OutputNodeName);
+    mitk::DataNode::Pointer   outputNode = storage->GetNamedNode(m_BackgroundWorker.m_Queue[i].m_OutputNodeName);
     if (outputNode.IsNull())
     {
       nodeIsNew = true;
       outputNode = mitk::DataNode::New();
-      outputNode->SetName(m_BackgroundQueue[i].m_OutputNodeName);
+      outputNode->SetName(m_BackgroundWorker.m_Queue[i].m_OutputNodeName);
     }
 
-    outputNode->SetData(m_BackgroundQueue[i].m_OutputImage);
+    outputNode->SetData(m_BackgroundWorker.m_Queue[i].m_OutputImage);
 
     if (nodeIsNew)
     {
-      mitk::DataNode::Pointer   inputNode = storage->GetNamedNode(m_BackgroundQueue[i].m_InputNodeName);
+      mitk::DataNode::Pointer   inputNode = storage->GetNamedNode(m_BackgroundWorker.m_Queue[i].m_InputNodeName);
       // workaround for bug in mitk.
       // see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/3269
       if (false)//if (inputNode.IsNotNull())
@@ -562,12 +538,12 @@ void UndistortView::OnBackgroundProcessFinished()
     }
 
     // we'll have props on the image only, so copy them to node too.
-    outputNode->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName,  m_BackgroundQueue[i].m_OutputImage->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName));
-    outputNode->SetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName, m_BackgroundQueue[i].m_OutputImage->GetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName));
+    outputNode->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName,  m_BackgroundWorker.m_Queue[i].m_OutputImage->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName));
+    outputNode->SetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName, m_BackgroundWorker.m_Queue[i].m_OutputImage->GetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName));
     outputNode->Modified();
   }
 
-  m_BackgroundQueue.clear();
+  m_BackgroundWorker.m_Queue.clear();
 }
 
 
