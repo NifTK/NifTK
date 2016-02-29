@@ -229,7 +229,7 @@ public:
  * growing, providing the blue outline images seen within the GUI.
  */
 template<typename TPixel, unsigned int VImageDimension>
-class NIFTKMIDAS_EXPORT GeneralSegmentorPipeline : public GeneralSegmentorPipelineInterface
+class GeneralSegmentorPipeline : public GeneralSegmentorPipelineInterface
 {
 public:
 
