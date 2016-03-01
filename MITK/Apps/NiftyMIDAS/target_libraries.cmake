@@ -5,6 +5,6 @@
 set(target_libraries
   org_blueberry_ui_qt
   org_mitk_gui_qt_datamanager
-  uk_ac_ucl_cmic_gui_qt_commonapps
-  uk_ac_ucl_cmic_gui_qt_niftymidas
+  uk_ac_ucl_cmic_commonapps
+  uk_ac_ucl_cmic_niftymidas
 )

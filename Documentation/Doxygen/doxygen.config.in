@@ -323,9 +323,9 @@ EXAMPLE_PATTERNS      =
 IMAGE_PATH            = @CMAKE_SOURCE_DIR@/Documentation/Images \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/it.unito.cim.intensityprofile/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.affinetransform/documentation/UserManual \
-                        @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.gui.qt.niftyview/documentation/UserManual \
-                        @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.gui.qt.niftyigi/documentation/UserManual \
-                        @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.gui.qt.niftymidas/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.niftyview/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.niftyigi/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.niftymidas/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igidatasources/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igioverlayeditor/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igipointreg/documentation/UserManual \
@@ -351,7 +351,7 @@ IMAGE_PATH            = @CMAKE_SOURCE_DIR@/Documentation/Images \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.xnat/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Documentation/TechnicalManual/TestingProcedures/it.unito.cim.intensityprofile \
                         @CMAKE_SOURCE_DIR@/Documentation/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.affinetransform \
-                        @CMAKE_SOURCE_DIR@/Documentation/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.gui.qt.niftyview \
+                        @CMAKE_SOURCE_DIR@/Documentation/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.niftyview \
                         @CMAKE_SOURCE_DIR@/Documentation/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.imagelookuptables \
                         @CMAKE_SOURCE_DIR@/Documentation/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.imagestatistics \
                         @CMAKE_SOURCE_DIR@/Documentation/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.dnddisplay \

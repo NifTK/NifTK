@@ -99,7 +99,7 @@ if(NOT DEFINED MITK_DIR)
           org.mitk.gui.common             # needed by org.mitk.gui.qt.application
           org.mitk.gui.qt.application     # needed by org.mitk.gui.qt.datamanager and org.mitk.gui.qt.ext
           org.mitk.gui.qt.common          # needed by org.mitk.gui.qt.datamanager
-          org.mitk.gui.qt.ext             # needed by uk.ac.ucl.cmic.gui.qt.commonapps
+          org.mitk.gui.qt.ext             # needed by uk.ac.ucl.cmic.commonapps
           org.mitk.gui.qt.datamanager     # needed by NiftyView
           org.blueberry.ui.qt.help
           org.blueberry.ui.qt.log

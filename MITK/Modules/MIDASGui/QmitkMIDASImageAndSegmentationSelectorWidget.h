@@ -22,7 +22,7 @@
 /**
  * \class QmitkMIDASImageAndSegmentationSelectorWidget
  * \brief Implements the widget to select a reference image, and create a new segmentation.
- * \ingroup uk_ac_ucl_cmic_gui_qt_common
+ * \ingroup uk_ac_ucl_cmic_common
  */
 class NIFTKMIDASGUI_EXPORT QmitkMIDASImageAndSegmentationSelectorWidget : public QWidget, public Ui::QmitkMIDASImageAndSegmentationSelector {
 

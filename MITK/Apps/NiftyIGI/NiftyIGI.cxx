@@ -28,7 +28,7 @@ int main(int argc, char** argv)
   myApp.setApplicationName("NiftyIGI");
   myApp.setOrganizationName("CMIC");
 
-  myApp.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.gui.qt.niftyigi");
+  myApp.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.niftyigi");
 
   return myApp.run();
 }

@@ -33,7 +33,7 @@ class QmitkSideViewerWidget;
  * \class QmitkSideViewerView
  * \brief Base view component for MIDAS Segmentation widgets.
  *
- * \ingroup uk_ac_ucl_cmic_gui_qt_common
+ * \ingroup uk_ac_ucl_cmic_common
  *
  * \sa QmitkBaseView
  */

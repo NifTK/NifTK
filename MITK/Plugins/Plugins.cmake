@@ -28,8 +28,8 @@
 #
 # If you then subsequently change to derive from QmitkBaseView
 # from the NifTK project, and declare a dependency in
-# manifest_headers.cmake on uk.ac.ucl.cmic.gui.qt.common
-# then your plugin must occur AFTER uk.ac.ucl.cmic.gui.qt.common.
+# manifest_headers.cmake on uk.ac.ucl.cmic.common
+# then your plugin must occur AFTER uk.ac.ucl.cmic.common.
 #
 # This is difficult to spot, as quite typically, during development
 # then will be multiple build, config, build, config cycles
@@ -42,8 +42,8 @@
 set(PROJECT_PLUGINS
 
 # These are 'Application' plugins, and so are 'View' independent.
-  Plugins/uk.ac.ucl.cmic.gui.qt.commonapps:ON
-  Plugins/uk.ac.ucl.cmic.gui.qt.niftyview:ON
+  Plugins/uk.ac.ucl.cmic.commonapps:ON
+  Plugins/uk.ac.ucl.cmic.niftyview:ON
 
 # These are 'View' plugins, and just depend on MITK.
   Plugins/uk.ac.ucl.cmic.snapshot:ON
@@ -51,7 +51,7 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.xnat:ON
 
 # This 'common' plugin is our preferred base class for things that can't just derive from MITK.
-  Plugins/uk.ac.ucl.cmic.gui.qt.common:ON
+  Plugins/uk.ac.ucl.cmic.common:ON
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
@@ -69,8 +69,8 @@ endif()
 # ---------------------------------------------------------------------------------------------------
 
 set(MIDAS_PLUGINS
-  Plugins/uk.ac.ucl.cmic.gui.qt.commonmidas:ON
-  Plugins/uk.ac.ucl.cmic.gui.qt.niftymidas:ON
+  Plugins/uk.ac.ucl.cmic.commonmidas:ON
+  Plugins/uk.ac.ucl.cmic.niftymidas:ON
   Plugins/uk.ac.ucl.cmic.sideviewer:ON
   Plugins/uk.ac.ucl.cmic.thumbnail:ON
   Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
@@ -90,7 +90,7 @@ endif(BUILD_MIDAS)
 # ---------------------------------------------------------------------------------------------------
 
 set(IGI_PLUGINS
-  Plugins/uk.ac.ucl.cmic.gui.qt.niftyigi:ON
+  Plugins/uk.ac.ucl.cmic.niftyigi:ON
   Plugins/uk.ac.ucl.cmic.igioverlayeditor:ON
   Plugins/uk.ac.ucl.cmic.igidatasources:ON
   Plugins/uk.ac.ucl.cmic.igisurfacerecon:ON

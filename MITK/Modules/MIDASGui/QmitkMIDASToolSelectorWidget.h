@@ -26,7 +26,7 @@
  * This widget provides SetEnabled() and GetEnabled(), which simplify the idea
  * of enabling/disabling the toolbox.
  *
- * \ingroup uk_ac_ucl_cmic_gui_qt_common
+ * \ingroup uk_ac_ucl_cmic_common
  */
 class NIFTKMIDASGUI_EXPORT QmitkMIDASToolSelectorWidget : public QWidget, public Ui::QmitkMIDASToolSelector {
 

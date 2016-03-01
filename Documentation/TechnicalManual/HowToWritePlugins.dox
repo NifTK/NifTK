@@ -107,7 +107,7 @@ which immediately reveals that the plugin is dependent on CTK and QmitkExt, and 
 niftkMitkExt and niftkQmitkExt which are MITK based modules within this project.
 In addition, the top level manifest_headers.cmake we see
 \code
-set(Require-Plugin uk.ac.ucl.cmic.gui.qt.common )
+set(Require-Plugin uk.ac.ucl.cmic.common )
 \endcode
 Each plugin can define plugins that it depends on at both compile time and run time. So the above 
 line is used when generating the plugin, and in this case will set up correct include paths 

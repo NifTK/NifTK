@@ -35,9 +35,9 @@ set(_exclude_plugins
 # set of Editors and Views/Plugins.
 ###########################################################
 set(_include_plugins
-  uk.ac.ucl.cmic.gui.qt.commonapps
-  uk.ac.ucl.cmic.gui.qt.niftyview
-  uk.ac.ucl.cmic.gui.qt.common
+  uk.ac.ucl.cmic.commonapps
+  uk.ac.ucl.cmic.niftyview
+  uk.ac.ucl.cmic.common
   uk.ac.ucl.cmic.imagelookuptables
   uk.ac.ucl.cmic.affinetransform
   uk.ac.ucl.cmic.surfaceextractor

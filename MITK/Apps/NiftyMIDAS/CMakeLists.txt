@@ -40,10 +40,10 @@ set(_exclude_plugins
 # set of Editors and Views/Plugins.
 ###########################################################
 set(_include_plugins
-  uk.ac.ucl.cmic.gui.qt.commonapps
-  uk.ac.ucl.cmic.gui.qt.commonmidas
-  uk.ac.ucl.cmic.gui.qt.niftymidas
-  uk.ac.ucl.cmic.gui.qt.common
+  uk.ac.ucl.cmic.commonapps
+  uk.ac.ucl.cmic.commonmidas
+  uk.ac.ucl.cmic.niftymidas
+  uk.ac.ucl.cmic.common
   uk.ac.ucl.cmic.imagelookuptables
   uk.ac.ucl.cmic.snapshot
   uk.ac.ucl.cmic.imagestatistics
