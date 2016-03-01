@@ -1744,6 +1744,10 @@ if(BUILD_PROTOTYPE)
   add_subdirectory(Prototype)
 endif(BUILD_PROTOTYPE)
 
+if(BUILD_COMMAND_LINE_SCRIPTS)
+  add_subdirectory(Scripts)
+endif()
+
 ######################################################################
 # Packaging code.
 ######################################################################
