@@ -54,6 +54,10 @@ niftkMultiViewerWidgetTestClass::niftkMultiViewerWidgetTestClass()
 : QObject()
 , d_ptr(new niftkMultiViewerWidgetTestClassPrivate())
 {
+  Q_D(niftkMultiViewerWidgetTestClass);
+
+  d->MultiViewer = nullptr;
+  d->InteractiveMode = false;
 }
 
 
