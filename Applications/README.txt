@@ -2,7 +2,7 @@ Introduction
 ------------
 This folder contains C++ executables, each one containing a "main" entry point.
 They are currently all command line programs as the main NiftyView GUI lives
-in Code/Gui/MITK.
+in MITK/Apps.
 
 Command Line Programs
 ---------------------

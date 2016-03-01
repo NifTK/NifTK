@@ -9,22 +9,14 @@ and the dependencies between third party libraries.
 
 The top level directory structure contains
 
-\li Code - The main project code base.
+\li Applications - Command line applications not depending on MITK.
 \li Config - Various files that are generated into the build, or to setup the environment at runtime.
 \li CMake - Contains CMake code to build all external projects, find external packages and set up ctest and cpack.
 \li Doc - Contains the User Manual and Technical Manual, generated using Doxygen.
-\li Prototype - Contains prototype code, that is not ready to be published as open source, or not yet published in research papers (i.e. confidential).
-\li Testing - Contains unit tests, test input data, and test baseline data (data to check against).
+\li Libraries - Libraries needed by applications in NifTK.
+\li MITK - Graphical and command line applications using the MITK framework.
+\li Scripts - Various Python, Bash and MatLab scripts.
 \li Utilities - Various utility scripts.
-
-Under the Testing directory, the Code subdirectory should match the top-level Code subdirectory.
-
-The most important folder is the Code folder which contains:
-
-\li Applications - Command line applications.
-\li Gui - The <a href="http://www.mitk.org">MITK</a> based GUI.
-\li Libs - C++ libraries, used in both the command line applications and the GUI. 
-\li Scripts - Various Unix scripts.
 
 It has become customary within the field of medical imaging research to write small, self contained
 programs, typically as command line applications. These command line applications demonstrate loose-coupling,

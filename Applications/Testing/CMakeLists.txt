@@ -19,7 +19,7 @@ add_test(niftkAdd-Test2D ${EXECUTABLE_OUTPUT_PATH}/niftkTestCompareImage -i ${TE
 set_property(TEST niftkAdd-Test2D APPEND PROPERTY DEPENDS niftkAdd-Run2D)
 
 # Additional image checks can be added to niftkTestCompareImage to make it more useful.
-# Additional ctest tests should be added below, eventually covering all the applications in NifTK/Code/Applications.
+# Additional ctest tests should be added below, eventually covering all the applications in NifTK/Applications.
 
 # niftkReorientateImage
 

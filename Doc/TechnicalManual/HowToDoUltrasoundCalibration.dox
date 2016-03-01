@@ -119,7 +119,7 @@ You must:
 <li>Concatenate all point data into a single file e.g. points.txt
 <li>The ordering of matrices in matrices.txt and points in points.txt must correspond.
 <li>These files should have at least 50 samples of data. i.e. matched 50 matrices, and 50 corresponding single points.
-<li>In MATLAB, addpath NifTK/Code/Matlab/UltrasoundPinCalibration
+<li>In MATLAB, addpath NifTK/Scripts/UltrasoundPinCalibration
 <li>The calibration routine is: niftkUltrasoundPinCalibrationFromFile.m
 </ol>
 

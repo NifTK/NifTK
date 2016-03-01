@@ -15,17 +15,17 @@ has been implemented within NiftyView using
 
 \li An MITK plugin:
 \verbatim
-NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic/midasmorphologicalsegmentor
+NifTK/MITK/Plugins/uk.ac.ucl.cmic/midasmorphologicalsegmentor
 \endverbatim
 \li Qt widgets, signals and slots.
 \li An abstract interface defining an ITK pipeline.
 \li ITK classes in: 
 \verbatim
-NifTK/Code/Libs/ITK/Segmentation
+NifTK/Libraries/ITK/Segmentation
 \endverbatim
 \li Unit tests for ITK classes in:
 \verbatim
-NifTK/Testing/Code/Libs/ITK/Segmentation
+NifTK/Libraries/ITK/Testing/Segmentation
 \endverbatim
 
 \section ArchitectureMIDASMorphEditorDescription Class Overview

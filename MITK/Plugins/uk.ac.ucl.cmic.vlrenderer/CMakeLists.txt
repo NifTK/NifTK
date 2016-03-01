@@ -33,7 +33,7 @@ mitk_create_plugin(
 
 # not nice...
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
-  include_directories(${CUDA_TOOLKIT_INCLUDE} ${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels)
+  include_directories(${CUDA_TOOLKIT_INCLUDE} ${CMAKE_SOURCE_DIR}/Libraries/CUDAKernels)
   target_link_libraries(uk_ac_ucl_cmic_vlrenderer PRIVATE ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY} niftkCUDAKernels)
 endif()
 target_link_libraries(uk_ac_ucl_cmic_vlrenderer PRIVATE ${VL_LIBRARIES})

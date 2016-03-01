@@ -16,7 +16,8 @@
 set (CTEST_EXTRA_COVERAGE_GLOB ${CTEST_EXTRA_COVERAGE_GLOB})
 foreach (E IN ITEMS .c .cxx .h .txx)
   list (APPEND CTEST_EXTRA_COVERAGE_GLOB
-    "Code/*/*${E}"
+    "Libraries/*/*${E}"
+    "MITK/*/*${E}"
 )
 endforeach ()
 
@@ -36,11 +37,11 @@ set(CTEST_CUSTOM_COVERAGE_EXCLUDE
   "${EP_BASE}/[^/]*/[0-9a-f]*/src/.*"
 
   # Trac 2223: Remove these from coverage
-  ".*/Testing/Code/.*"             # As we want to measure the coverage of real code, not tests.
+  ".*/Testing/.*"             # As we want to measure the coverage of real code, not tests.
   ".*/NVAPI/glew/.*"               # As Third Party Lib
-  ".*/Code/Applications/.*"        # As finished apps, not specific classes
-  ".*/Code/Gui/MITK/Apps/.*"       # As finished apps, not specific classes
-  ".*/Code/Gui/MITK/HelperApps/.*" # As finished apps, not specific classes 
+  ".*/Applications/.*"        # As finished apps, not specific classes
+  ".*/MITK/Apps/.*"       # As finished apps, not specific classes
+  ".*/MITK/HelperApps/.*" # As finished apps, not specific classes 
   )
 
 # The following tests should not be run under valgrind

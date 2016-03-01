@@ -32,12 +32,12 @@ using bash or python scripting.
 
 \li Write a script and place it in:
 \verbatim
-NifTK/Code/Scripts
+NifTK/Scripts
 \endverbatim
 under a suitably named folder. 
 \li If you create a new folder, add the new folder name to
 \verbatim
-NifTK/Code/Scripts/CMakeLists.txt
+NifTK/Scripts/CMakeLists.txt
 \endverbatim
 \li If you create a new folder, add a new CMakeLists.txt into the new folder to build the new scripts into 
 the released software. Look in the existing folders for suitable examples. 
@@ -62,22 +62,18 @@ images of arbitrary datatypes.
 
 \li Write a new filter and place it in
 \verbatim
-NifTK/Code/Libs/ITK
+NifTK/Libraries/ITK
 \endverbatim
 under a suitably named folder.
 \li Most ITK code is templated, and so does not need compiling into a library. If you added code that does need compiling, 
 you will need to add it into the list niftkITK_SRCS in
 \verbatim
-NifTK/Code/Libs/ITK/CMakeLists.txt
+NifTK/Libraries/ITK/CMakeLists.txt
 \endverbatim
-\li Write unit tests under a similarly named folder in
-\verbatim
-NifTK/Testing/Code/Libs/ITK
-\endverbatim
-Notice how the directory structure under the Testing folder is the same as under the Code folder.
+\li Write unit tests under the Testing subfolder.
 \li Write a command line application and place it in
 \verbatim
-NifTK/Code/Applications
+NifTK/Applications
 \endverbatim
 
 Don't forget to write effective command line argument parsing and also documentation in the top of your 
@@ -90,20 +86,13 @@ and for NifTK is growing all the time.
 
 \li Place any ITK/VTK or general algorithm logic in a C++ library under
 \verbatim
-NifTK/Code/Libs
+NifTK/Libraries
 \endverbatim
 \li If your algorithm or piece of functionality that you are testing depends heavily on MITK, then most of the logic should go under
 \verbatim
-NifTK/Code/Gui/MITK/Modules
+NifTK/MITK/Modules
 \endverbatim
-\li Unit tests can be placed under
-\verbatim
-NifTK/Testing/Code/Libs
-\endverbatim
-or
-\verbatim
-NifTK/Code/Gui/MITK/Modules
-\endverbatim
+\li Unit tests can be placed under the 'Testing' subdirectory of the individual libraries modules.
 
 Building the GUI will often require some iteration, as different users discover different usability features and suggestions. 
 You should follow the more detailed instructions \link HowToWritePlugins here\endlink, and work collaboratively to achieve 

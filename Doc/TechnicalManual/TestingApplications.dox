@@ -1,6 +1,6 @@
 /**
 
-\page TestingApplications Testing - NifTK/Code/Applications
+\page TestingApplications Testing - NifTK/Applications
 
 \section TestingApplicationsIntroduction Introduction
 
@@ -9,14 +9,14 @@ is to actually test the end user application. An ordinary ctest unit test, using
 ctest method such as can be found in:
 
 \verbatim
-NifTK/Testing/Code/Libs/ITK/BasicFilters/BasicFiltersUnitTests
+NifTK/Libraries/ITK/Testing/BasicFilters/BasicFiltersUnitTests/
 \endverbatim
 
 registers a test file eg. <code>ExtractEdgeImageTest.cxx</code> with the test harness 
 <code>BasicFiltersUnitTests</code> and so is useful for testing individual filters,
 or each class individually, which is the purpose of unit tests. However, an application in the 
 \verbatim
-NifTK/Code/Applications
+NifTK/Applications
 \endverbatim
 folder may string together many filters. Rather than miss these application programs out from 
 any automated testing, the method below can be used to exercise the code directly. This may also 
@@ -96,7 +96,7 @@ ADD_TEST(niftkAdd-Test2D ${EXECUTABLE_OUTPUT_PATH}/niftkTestCompareImage -i ${TE
 
 These exact commands can be seen in:
 \verbatim
-NifTK/Testing/Code/Applications/CMakeLists.txt
+NifTK/Applications/Testing/CMakeLists.txt
 \endverbatim
 
 with the results appearing on the nightly dashboard.

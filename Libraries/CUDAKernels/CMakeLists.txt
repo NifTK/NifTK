@@ -25,8 +25,8 @@ set(niftkCUDAKernels_SRCS
 # so instead drop off all the not needed stuff and start clean.
 # http://www.cmake.org/Bug/print_bug_page.php?bug_id=12198
 set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "" )
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels/Common)
+include_directories(${CMAKE_SOURCE_DIR}/Libraries/CUDAKernels)
+include_directories(${CMAKE_SOURCE_DIR}/Libraries/CUDAKernels/Common)
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 

@@ -14,8 +14,8 @@
 #
 #============================================================================*/
 
-APP_SOURCE_DIR=@CMAKE_SOURCE_DIR@/Code/Applications
-HELPER_APP_SOURCE_DIR=@CMAKE_SOURCE_DIR@/Code/Gui/MITK/HelperApps
+APP_SOURCE_DIR=@CMAKE_SOURCE_DIR@/Applications
+HELPER_APP_SOURCE_DIR=@CMAKE_SOURCE_DIR@/MITK/HelperApps
 BINARY_DIR=@EXECUTABLE_OUTPUT_PATH@
 DOXYGEN_DIR=@CMAKE_BINARY_DIR@/Doxygen/CommandLine/
 SUMMARY_FILE_APPS=${DOXYGEN_DIR}/CommandLineApplications.dox

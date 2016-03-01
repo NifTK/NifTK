@@ -18,8 +18,8 @@ MITK_CREATE_MODULE(
   DEPENDS niftkIGIDataSources niftkIGIGui
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/glew)
+include_directories(${CMAKE_SOURCE_DIR}/Libraries/NVAPI/video)
+include_directories(${CMAKE_SOURCE_DIR}/Libraries/NVAPI/glew)
 include_directories(${QT_QTOPENGL_INCLUDE_DIR})
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 

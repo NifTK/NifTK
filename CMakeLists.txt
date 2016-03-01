@@ -103,7 +103,7 @@ endmacro()
 # The user cannot be expected to know the component parts of apps.
 ######################################################################
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/Code/Gui/MITK/Apps/Apps.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/MITK/Apps/Apps.cmake")
 set(BUILD_GUI OFF)
 mark_as_advanced(BUILD_GUI)
 set(BUILD_IGI OFF)
@@ -142,8 +142,8 @@ endforeach()
 # build. So, look in CMake/Superbuild.cmake to see where they are
 # passed to the main build of NifTK when doing the Superbuild.
 ######################################################################
-option(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Code/Applications." ON)
-option(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts." ON)
+option(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Applications." ON)
+option(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Scripts." ON)
 option(BUILD_CAMINO "Build Camino." OFF)
 option(BUILD_NiftyReg "Build NiftyReg." ON)
 option(BUILD_NiftyRec "Build NiftyRec." OFF)
@@ -836,50 +836,49 @@ endif(BUILD_ITKFFTW)
 set(NIFTK_INCLUDE_DIRS_BUILD_TREE
   ${CMAKE_BINARY_DIR}
   ${CMAKE_BINARY_DIR}/Config
-  ${CMAKE_BINARY_DIR}/Code
-  ${CMAKE_SOURCE_DIR}/Code/Libs/Common
-  ${CMAKE_SOURCE_DIR}/Code/Libs/Common/Exceptions
-  ${CMAKE_SOURCE_DIR}/Code/Libs/MIDAS
-  ${CMAKE_SOURCE_DIR}/Code/Libs/VTK
-  ${CMAKE_SOURCE_DIR}/Code/Libs/VTK/Common
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Common
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BasicFilters
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/IO
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Numerics
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Pipelines
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BoundaryShiftIntegral
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BreastCancerImaging
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/CorticalThickness
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Metrics
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Methods
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Transforms
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Optimizers
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Commands
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Construction
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Constraints
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Filters
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Methods
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Optimizers
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Projection
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Metrics
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Commands
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/xRay
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Transforms
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASMorphologicalEditor
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASIrregularVolumeEditor
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Testing
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Testing/RegistrationToolBox
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/VesselToolbox
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITKVTK/IO
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITKIO
+  ${CMAKE_SOURCE_DIR}/Libraries/Common
+  ${CMAKE_SOURCE_DIR}/Libraries/Common/Exceptions
+  ${CMAKE_SOURCE_DIR}/Libraries/MIDAS
+  ${CMAKE_SOURCE_DIR}/Libraries/VTK
+  ${CMAKE_SOURCE_DIR}/Libraries/VTK/Common
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Common
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/BasicFilters
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/IO
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Numerics
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Pipelines
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/BoundaryShiftIntegral
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/BreastCancerImaging
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/CorticalThickness
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Metrics
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Methods
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Transforms
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Optimizers
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Commands
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Construction
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Constraints
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Filters
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/Methods
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/Optimizers
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/Projection
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/Metrics
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/Commands
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/xRay
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/Transforms
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Segmentation
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Segmentation/MIDASMorphologicalEditor
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Segmentation/MIDASIrregularVolumeEditor
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Testing
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Testing/RegistrationToolBox
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/VesselToolbox
+  ${CMAKE_SOURCE_DIR}/Libraries/ITKVTK/IO
+  ${CMAKE_SOURCE_DIR}/Libraries/ITKIO
 )
 if (BUILD_MESHING)
   set(NIFTK_INCLUDE_DIRS_BUILD_TREE
     ${NIFTK_INCLUDE_DIRS_BUILD_TREE}
-    ${CMAKE_SOURCE_DIR}/Code/Libs/Meshing
+    ${CMAKE_SOURCE_DIR}/Libraries/Meshing
   )
 endif (BUILD_MESHING)
  
@@ -1046,7 +1045,7 @@ set(CMAKE_MODULE_PATH
 if(APPLE)
 
   set(MACOSX_BUNDLE_NAMES)
-  include("${CMAKE_CURRENT_SOURCE_DIR}/Code/Gui/MITK/Apps/Apps.cmake")
+  include("${CMAKE_CURRENT_SOURCE_DIR}/MITK/Apps/Apps.cmake")
 
   foreach(NIFTK_APP ${NIFTK_APPS})
 
@@ -1734,7 +1733,12 @@ endif()
 ######################################################################
 
 add_subdirectory(Doc)
-add_subdirectory(Code)
+
+add_subdirectory(Libraries)
+
+if(BUILD_COMMAND_LINE_PROGRAMS)
+  add_subdirectory(Applications)
+endif()
 
 if(BUILD_UTILITIES)
   add_subdirectory(Utilities)
@@ -1746,6 +1750,10 @@ endif(BUILD_PROTOTYPE)
 
 if(BUILD_COMMAND_LINE_SCRIPTS)
   add_subdirectory(Scripts)
+endif()
+
+if(BUILD_GUI AND MITK_FOUND)
+  add_subdirectory(MITK)
 endif()
 
 ######################################################################
@@ -1949,7 +1957,7 @@ endforeach()
 configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
 
 # This generates a C++ header file for GUI apps only.
-configure_file(${CMAKE_SOURCE_DIR}/Code/Gui/MITK/Apps/NifTKApplication.h ${CMAKE_BINARY_DIR}/NifTKApplication.h)
+configure_file(${CMAKE_SOURCE_DIR}/MITK/Apps/NifTKApplication.h ${CMAKE_BINARY_DIR}/NifTKApplication.h)
 
 # The next two generate CMake code to enable external projects to correctly use NifTK.
 configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake @ONLY)

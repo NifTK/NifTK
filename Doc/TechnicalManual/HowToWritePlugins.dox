@@ -15,7 +15,7 @@
 
 All GUI plugins are contained in the folder 
 \verbatim
-NifTK/Code/Gui/MITK/Plugins
+NifTK/MITK/Plugins
 \endverbatim
 and the file Plugins.cmake controls which ones are on/off by default. In order to turn them on/off in a 
 development environment, you must re-run CMake from the build folder, change the plugin's ON/OFF flag, 
@@ -35,7 +35,7 @@ From the NifTK-build sub-folder (i.e. not the top-level "Super Build" folder) a 
 with a single command such as the following example for a plugin called "Affine Transform".
 
 \code
-../MITK-build/MITK-build/bin/MITKPluginGenerator -o ../../NifTK/Code/Gui/MITK/Plugins -l ~/build/NifTK/Doc/TemplateCPlusPlus.txt  -v "CMIC, Centre For Medical Image Computing, UCL." -vc AffineTransformView -vn "Affine Transform" -ps uk.ac.ucl.cmic.affinetransform -pn "Affine Transform"
+../MITK-build/MITK-build/bin/MITKPluginGenerator -o ../../NifTK/MITK/Plugins -l ~/build/NifTK/Doc/TemplateCPlusPlus.txt  -v "CMIC, Centre For Medical Image Computing, UCL." -vc AffineTransformView -vn "Affine Transform" -ps uk.ac.ucl.cmic.affinetransform -pn "Affine Transform"
 \endcode
 
 In the above code, the -o options outputs the generated code directly to the NifTK source tree. The newly created
@@ -44,7 +44,7 @@ copyright headers.
 
 You can then add the name of the plugin into 
 \verbatim
-NifTK/Code/Gui/MITK/Plugins/Plugins.cmake
+NifTK/MITK/Plugins/Plugins.cmake
 \endverbatim
  
 and build. Please manually checking the following:
@@ -96,7 +96,7 @@ Affine Transform plugin.
 
 For each plugin, the plugin's top-level CMakeLists.txt shows the library dependencies. For example in
 \verbatim
-NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor
+NifTK/MITK/Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor
 \endverbatim
 we see
 \code
@@ -128,7 +128,7 @@ There are two ways to generate a Qt GUI component for each plugin.
 
 Lets look at the Snapshot plugin for a simple example of how to build a GUI, with code found here:
 \verbatim
-NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.snapshot/src/internal
+NifTK/MITK/Plugins/uk.ac.ucl.cmic.snapshot/src/internal
 \endverbatim
 
 The steps required for this are:
@@ -158,7 +158,7 @@ void SnapshotView::CreateQtPartControl( QWidget *parent )
 so, you should aim to do similarly.
 \li Add the files to CMakeLists, so refer to
 \verbatim
-NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.snapshot/CMakeLists.txt
+NifTK/MITK/Plugins/uk.ac.ucl.cmic.snapshot/CMakeLists.txt
 \endverbatim
 \li and compile.
 
@@ -176,13 +176,13 @@ The following guidelines may help.
 
 \li General purpose widgets can be placed in 
 \verbatim
-NifTK/Code/Libs/Qt
+NifTK/Libraries/QtWidgets
 \endverbatim
 Notice that the TARGET_LINK_LIBRARIES only depends on default Qt libraries. So, widgets here, know NOTHING 
 about the application they will be used for.
 \li Under 
 \verbatim
-NifTK/Code/Gui/MITK/Modules
+NifTK/MITK/Modules
 \endverbatim
 we have Modules called niftkMitkExt and niftkQmitkExt. These folder names simply refer to the fact that they are
 NifTK specifc extensions to the MITK libraries called MitkExt and QmitkExt. Qt widgets can be placed in niftkQmitkExt
@@ -220,7 +220,7 @@ mitk::DataStorage::Pointer dataStorage = service->GetDefaultDataStorage()->GetDa
 of that plugin. For example, the MIDAS Morphological Editor has a preference page MIDASMorphologicalSegmentorViewPreferencePage
 defined in
 \verbatim
-NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor/src/MIDASMorphologicalSegmentorViewPreferencePage.h/.cxx.
+NifTK/MITK/Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor/src/MIDASMorphologicalSegmentorViewPreferencePage.h/.cxx.
 \endverbatim
 and this page is added to files.cmake to compile it, plugin.xml to run it at run-time and registered with the framework in 
 MIDASMorphologicalSegmentorViewActivator.
@@ -232,7 +232,7 @@ see how ThumbnailView implements ThumbnailView::OnPreferencesChanged to update i
 The GUI is constructed from all the plugins. So, each plugin must provide its own documentation page, written using Doxygen.
 For example look in:
 \verbatim
-NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.imagelookuptables/documentation/UserManual
+NifTK/MITK/Plugins/uk.ac.ucl.cmic.imagelookuptables/documentation/UserManual
 \endverbatim
 The Doxygen manual is <a href="http://www.stack.nl/~dimitri/doxygen/">here</a>.
 
@@ -243,10 +243,10 @@ as possible, all the functionality is provided in libraries/modules and the plug
 all together. So the initial focus should be on unit testing each class outside of a plugin.
 
 For example
-\li All ITK code should be placed under NifTK/Code/Libs/ITK and hence unit tested under NifTK/Testing/Code/Libs/ITK
+\li All ITK code should be placed under NifTK/Libraries/ITK and hence unit tested under NifTK/Libraries/ITK/Testing
 \li Similarly for VTK
-\li MITK based code should be placed under NifTK/Code/Gui/MITK/Modules/niftkMitkExt and unit tested under
-NifTK/Code/Gui/MITK/Modules/niftkMitkExt/Testing using mitkITKRegionParametersDataNodeProperty as an example.
+\li MITK based code should be placed under NifTK/MITK/Modules/niftkMitkExt and unit tested under
+NifTK/MITK/Modules/niftkMitkExt/Testing using mitkITKRegionParametersDataNodeProperty as an example.
 
 Further examples are available throughout ITK, VTK and MITK. CTK has a Qt testing framework. It may be possible to leverage
 that, or provide good widgets back to CTK so they are unit tested as part of that project.

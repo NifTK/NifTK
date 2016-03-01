@@ -70,7 +70,7 @@ as to which type of files they support. This is usually implemented using code l
 The full code for this example can be seen in \ref niftkAdd.cxx. In this example, it is possible to peek at the image dimensions 
 using utility methods in the NifTK file
 \verbatim
-NifTK/Code/Libs/ITK/Common/itkCommandLineHelper.cxx
+NifTK/Libraries/ITK/Common/itkCommandLineHelper.cxx
 \endverbatim
 and in ITK's itk::ImageIOBase. Given the image dimensions and pixel type the right template function can be instantiated.
 The consequence of this per-program coding is that each command line program could potentially implement this 
@@ -183,7 +183,7 @@ The mitk::ItkImageFileReader can essentially use any ITK class it likes to load 
 Within NiftyView we do not want to use the standard ITK Analyze reader and Nifti reader, so we replace them with our own
 under
 \verbatim
-NifTK/Code/Gui/MITK/Modules/niftkMitkExt/IO
+NifTK/MITK/Modules/niftkMitkExt/IO
 \endverbatim
 We have itk::AnalyzeImageIO3160 and itk::DRCAnalyzeImageIO3160. The naming convention here is that itk::AnalyzeImageIO3160
 is directly copied from the ITK project version 3.16.0. The itk::DRCAnalyzeImageIO3160 is a subclass of itk::AnalyzeImageIO3160
@@ -320,11 +320,11 @@ Code/IO/itkGDCMSeriesFileNames.h
 
 Within MITK, all file based DICOM import is also performed using GDCM, and the files of interest are:
 \verbatim
-Core/Code/Algorithms/mitkCoreObjectFactory.cxx
-Core/Code/Algorithms/mitkCoreObjectFactoryBase.cxx
-Core/Code/IO/mitkDicomSeriesReader.cxx
-Core/Code/IO/mitkDicomSeriesReader.h
-Core/Code/IO/mitkDicomSeriesReader.txx
+Modules/Core/src/mitkCoreObjectFactory.cxx
+Modules/Core/src/mitkCoreObjectFactoryBase.cxx
+Modules/Core/src/IO/mitkDicomSeriesReader.cxx
+Modules/Core/include/mitkDicomSeriesReader.h
+Modules/Core/include/mitkDicomSeriesReader.txx
 \endverbatim
 We can see in the object factories that file name extensions are registered, but the DicomSeriesReader is not instantiated
 there. The DicomSeriesReader is used within mitk::DataNodeFactory to load an image into an MITK image, but all the logic

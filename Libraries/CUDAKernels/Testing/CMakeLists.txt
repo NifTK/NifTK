@@ -35,8 +35,8 @@ if(BUILD_IGI)
   )
 endif()
 
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels/Example)
+include_directories(${CMAKE_SOURCE_DIR}/Libraries/CUDAKernels)
+include_directories(${CMAKE_SOURCE_DIR}/Libraries/CUDAKernels/Example)
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 
 add_executable(niftkCUDAKernelsTests niftkCUDAKernelsTests.cxx ${CUDAKernelsTests_SRCS})

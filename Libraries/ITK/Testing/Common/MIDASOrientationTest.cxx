@@ -26,7 +26,7 @@
  * Note: Only passes when NIFTK_DRC_ANALYZE env var is ON.
  *
  * As of 4121, NifTK file readers were moved out of the
- * Code/Gui/MITK area, and into niftkITK library. Then,
+ * MITK/Modules area, and into niftkITK library. Then,
  * there are two mechanisms to load them. In MITK there is
  * a Service Registry based approach: see niftkCore/IO,
  * mitkNifTKCoreObjectFactory and unit tests for that module.

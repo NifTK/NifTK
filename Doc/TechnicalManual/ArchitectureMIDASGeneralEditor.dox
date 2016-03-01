@@ -15,18 +15,18 @@ The MIDAS Irregular Volume editor</a> has been implemented within NiftyView usin
 
 \li An MITK plugin:
 \verbatim
-NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic/midasgeneralsegmentor
+NifTK/MITK/Plugins/uk.ac.ucl.cmic/midasgeneralsegmentor
 \endverbatim
 \li Qt widgets, signals and slots.
 \li Use of the <a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation Framework</a> for the Seed, Draw and Poly tools.
 \li Use of MITK ITK accessor macros for calling from MITK code to ITK code.
 \li ITK classes in: 
 \verbatim
-NifTK/Code/Libs/ITK/Segmentation
+NifTK/Libraries/ITK/Segmentation
 \endverbatim
 \li Unit tests for ITK classes in:
 \verbatim
-NifTK/Testing/Code/Libs/ITK/Segmentation
+NifTK/Libraries/ITK/Testing/Segmentation
 \endverbatim
 
 At first glance the MIDAS Irregular Volume Editor may appear to be little more than an intensity based

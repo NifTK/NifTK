@@ -34,8 +34,8 @@ set(niftknvapi_SRCS
 # http://www.cmake.org/Bug/print_bug_page.php?bug_id=12198
 set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "" )
 
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
-include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/glew)
+include_directories(${CMAKE_SOURCE_DIR}/Libraries/NVAPI/video)
+include_directories(${CMAKE_SOURCE_DIR}/Libraries/NVAPI/glew)
 include_directories(${NVAPI_INCLUDE_DIR})
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CUDA_TOOLKIT_INCLUDE})

@@ -20,7 +20,7 @@ MITK_CREATE_MODULE(
 
 include_directories(
   ${CUDA_TOOLKIT_INCLUDE}
-  ${CMAKE_SOURCE_DIR}/Code/Libs/CUDAKernels
+  ${CMAKE_SOURCE_DIR}/Libraries/CUDAKernels
 )
 
 target_link_libraries(niftkCUDA

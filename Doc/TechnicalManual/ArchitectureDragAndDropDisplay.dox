@@ -24,7 +24,7 @@ MITK/Plugins/org.mitk.gui.qt.stdmultiwidgeteditor/src/QmitkStdMultiWidgetEditor.
 
 In addition, NiftyView has an additional editor, based on the previous MIDAS functionality called QmitkMIDASStdMultiViewEditor.
 \verbatim
-NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midaseditor/src/QmitkMIDASMultiViewEditor.h
+NifTK/MITK/Plugins/uk.ac.ucl.cmic.midaseditor/src/QmitkMIDASMultiViewEditor.h
 \endverbatim
 The user manual, and the GUI help files provides information on how to use this editor. This page will now describe the
 technical implementation.
