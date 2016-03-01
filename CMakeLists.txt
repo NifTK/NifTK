@@ -835,7 +835,6 @@ endif(BUILD_ITKFFTW)
 ########################################################################
 set(NIFTK_INCLUDE_DIRS_BUILD_TREE
   ${CMAKE_BINARY_DIR}
-  ${CMAKE_BINARY_DIR}/Config
   ${CMAKE_SOURCE_DIR}/Libraries/Common
   ${CMAKE_SOURCE_DIR}/Libraries/Common/Exceptions
   ${CMAKE_SOURCE_DIR}/Libraries/MIDAS
@@ -1954,10 +1953,10 @@ endif()")
 endforeach()
 
 # This generates a C++ header file with values that need compiling into code.
-configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
+configure_file(${CMAKE_SOURCE_DIR}/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
 
 # The next two generate CMake code to enable external projects to correctly use NifTK.
-configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake @ONLY)
 write_basic_config_version_file(${CMAKE_CURRENT_BINARY_DIR}/NifTKConfigVersion.cmake VERSION "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" COMPATIBILITY AnyNewerVersion)
 
 ######################################################################
