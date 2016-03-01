@@ -12,7 +12,7 @@ The top level directory structure contains
 \li Applications - Command line applications not depending on MITK.
 \li Config - Various files that are generated into the build, or to setup the environment at runtime.
 \li CMake - Contains CMake code to build all external projects, find external packages and set up ctest and cpack.
-\li Doc - Contains the User Manual and Technical Manual, generated using Doxygen.
+\li Documentation - Contains the User Manual and Technical Manual, generated using Doxygen.
 \li Libraries - Libraries needed by applications in NifTK.
 \li MITK - Graphical and command line applications using the MITK framework.
 \li Scripts - Various Python, Bash and MatLab scripts.

@@ -235,7 +235,7 @@ set(NifTK_BINARY_EXECUTABLE_DIR
 )
 
 set(NifTK_DOXYGEN_INPUT_DIR
-  @CMAKE_SOURCE_DIR@/Doc/TechnicalManual-ISO
+  @CMAKE_SOURCE_DIR@/Documentation/TechnicalManual-ISO
 )
 
 find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)

@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-# Example test, documented in NifTK/Doc/TechnicalManual/TestingApplications.dox
+# Example test, documented in NifTK/Documentation/TechnicalManual/TestingApplications.dox
 
 add_test(niftkAdd-Run2D ${EXECUTABLE_OUTPUT_PATH}/niftkAdd -i ${INPUT_DATA}/cte_circle_gm.png -j ${INPUT_DATA}/cte_circle_wm.png -o ${TEMP}/niftkAdd-2D-output.png)
 add_test(niftkAdd-Test2D ${EXECUTABLE_OUTPUT_PATH}/niftkTestCompareImage -i ${TEMP}/niftkAdd-2D-output.png -j ${BASELINE}/niftkAdd-2D-output.png -intensity )

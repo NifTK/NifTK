@@ -35,7 +35,7 @@ From the NifTK-build sub-folder (i.e. not the top-level "Super Build" folder) a 
 with a single command such as the following example for a plugin called "Affine Transform".
 
 \code
-../MITK-build/MITK-build/bin/MITKPluginGenerator -o ../../NifTK/MITK/Plugins -l ~/build/NifTK/Doc/TemplateCPlusPlus.txt  -v "CMIC, Centre For Medical Image Computing, UCL." -vc AffineTransformView -vn "Affine Transform" -ps uk.ac.ucl.cmic.affinetransform -pn "Affine Transform"
+../MITK-build/MITK-build/bin/MITKPluginGenerator -o ../../NifTK/MITK/Plugins -l ~/build/NifTK/Documentation/TemplateCPlusPlus.txt  -v "CMIC, Centre For Medical Image Computing, UCL." -vc AffineTransformView -vn "Affine Transform" -ps uk.ac.ucl.cmic.affinetransform -pn "Affine Transform"
 \endcode
 
 In the above code, the -o options outputs the generated code directly to the NifTK source tree. The newly created
