@@ -12,9 +12,6 @@
 #
 #============================================================================*/
 
-#set(ITK_NO_IO_FACTORY_REGISTER_MANAGER 0)
-#include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
-
 # From gcc 4.6 on, shared libaries are linked with the '--as-needed' option by default.
 # This means that if a binary does not use an exported symbol from a library then that
 # library will not be linked to the binary. This will cause that the static variables

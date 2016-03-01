@@ -12,9 +12,6 @@
 #
 #============================================================================*/
 
-#set(ITK_NO_IO_FACTORY_REGISTER_MANAGER 0)
-#include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
-
 set(niftkITK_SRCS
   Common/itkConversionUtils.cxx
   Common/itkCommandLineHelper.cxx
