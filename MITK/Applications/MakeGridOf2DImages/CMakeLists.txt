@@ -13,7 +13,7 @@
 #============================================================================*/
 
 NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-  NAME MakeGridOf2DImages
+  NAME niftkMakeGridOf2DImages
   BUILD_SLICER
   INSTALL_SCRIPT
   TARGET_LIBRARIES

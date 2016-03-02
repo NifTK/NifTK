@@ -13,7 +13,7 @@
 #============================================================================*/
 
 NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-  NAME Triangulate2DPointPairsTo3D
+  NAME niftkTriangulate2DPointPairsTo3D
   BUILD_SLICER
   INSTALL_SCRIPT
   TARGET_LIBRARIES

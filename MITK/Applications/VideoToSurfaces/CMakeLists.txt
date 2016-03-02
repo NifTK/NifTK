@@ -13,7 +13,7 @@
 #============================================================================*/
 
 NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-  NAME VideoToSurfaces
+  NAME niftkVideoToSurfaces
   BUILD_SLICER
   INSTALL_SCRIPT
   TARGET_LIBRARIES
