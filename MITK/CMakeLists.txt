@@ -95,11 +95,11 @@ endif(MITK_USE_BLUEBERRY)
 ####################################################################################
 # Add subdirectories. 
 #   Apps contains full MITK apps using MITK application framework BlueBerry.
-#   HelperApps contains independent stuff like utilities, command line apps etc.
+#   Applications contains independent stuff like utilities, command line apps etc.
 ####################################################################################
 
 if(BUILD_COMMAND_LINE_PROGRAMS)
-  add_subdirectory(HelperApps)
+  add_subdirectory(Applications)
 endif()
 
 
