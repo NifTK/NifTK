@@ -12,151 +12,62 @@
 #
 #============================================================================*/
 
-set(HELPER_APPS
-  # Add apps that DO NOT depend on BUILD_IGI here.
-)
-
-if(BUILD_IGI)
-  set(HELPER_APPS
-    ${HELPER_APPS}
-  )
-endif()
-
-if(BUILD_PCL)
-  set(HELPER_APPS
-    ${HELPER_APPS}
-  )
-endif()
-
-set(HELPER_APP_LIBRARIES "")
-
-list(APPEND HELPER_APP_LIBRARIES
-  niftkcommon
-  MitkLegacyIO
-)
-
-if(BUILD_IGI)
-  list(APPEND HELPER_APP_LIBRARIES
-    niftkOpenCVUtils
-    niftkOpenCV
-    niftkIGIGui
-    niftkPointReg
-    niftkSurfRecon
-    niftkICPReg
-  )
-endif()
-
-if(BUILD_PCL)
-  list(APPEND HELPER_APP_LIBRARIES
-    niftkPCL
-  )
-endif()
-
-# Then foreach app, we just build against libraries (modules).
-foreach(APP ${HELPER_APPS})
-  NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-    NAME ${APP}
-    BUILD_CLI
-    TARGET_LIBRARIES ${HELPER_APP_LIBRARIES}
-  )
-endforeach()
-
-# Repeat the same process for slicer apps.
 if(SlicerExecutionModel_FOUND)
-  set(SLICER_HELPER_APPS
-    # Add Slicer apps that DO NOT depend on BUILD_IGI here.
-    niftkPointSetStatistics
-  )
+
+  add_subdirectory(PointSetStatistics)
 
   if(BUILD_IGI)
-    set(SLICER_HELPER_APPS
-      ${SLICER_HELPER_APPS}
-      niftkCameraCalibration
-      niftkCorrectVideoDistortion
-      niftkProject3DPointsToStereoPair
-      niftkReviewVideoData
-      niftkGetTrackerStats
-      niftkHandeyeCalibration
-      niftkHandeyeCalibrationFromDirectory
-      niftkHandeyeCalibrationUsingRegistration
-      niftkGetMatchedTrackingMatrix
-      niftkLaparoscopeTrackingAccuracy
-      niftkTwoTrackerAnalysis
-      niftkProjectTrackedPointsOnStereoVideo
-      niftkPickPointsOnStereoVideo
-      niftkMakeMaskImagesFromStereoVideo
-      niftkSplitVideo
-      niftkFindAndTriangulateCrossHair
-      niftkVideoToImages
-      niftkVideoToSurfaces
-      niftkUltrasoundPinCalibrationClicker
-      niftkUltrasoundPinCalibration
-      niftkVideoHandEyeByCrossCalibration
-      #niftkUltrasoundPointerCalibration
-      #niftkUltrasoundPinCalibrationEvaluation
-      niftkUltrasoundTransformAndImageMerger
-      niftkTriangulate2DPointPairsTo3D
-      niftkPivotCalibration
-      niftkIGIMakeGeometry
-      niftkMakeGridOf2DImages
-      niftkIterativeClosestPointRegister
-      niftkPointSetRegister
-      niftkPointSetTransform
-      # this one does not depend on pcl!
-      niftkMergePointClouds
-      niftkAverageTrackingMatrices
-      niftkAverageStationaryChessboards
-      niftkEvaluateIntrinsicParametersOnNumberOfFrames
-      niftkMakeChessBoardPointSet
-      niftkBifurcationToPointSet
-      niftkMakeLapUSProbeAprilTagsModel
-      niftkMakeLapUSProbeSimulationData
-      niftkImageFeatureMatching
-      niftkVideoTestClient
-    )
+    add_subdirectory(AverageStationaryChessboards)
+    add_subdirectory(AverageTrackingMatrices)
+    add_subdirectory(BifurcationToPointSet)
+    add_subdirectory(CameraCalibration)
+    add_subdirectory(CorrectVideoDistortion)
+    add_subdirectory(EvaluateIntrinsicParametersOnNumberOfFrames)
+    add_subdirectory(FindAndTriangulateCrossHair)
+    add_subdirectory(GetMatchedTrackingMatrix)
+    add_subdirectory(GetTrackerStats)
+    add_subdirectory(HandeyeCalibration)
+    add_subdirectory(HandeyeCalibrationFromDirectory)
+    add_subdirectory(HandeyeCalibrationUsingRegistration)
+    add_subdirectory(IGIMakeGeometry)
+    add_subdirectory(ImageFeatureMatching)
+    add_subdirectory(IterativeClosestPointRegister)
+    add_subdirectory(LaparoscopeTrackingAccuracy)
+    add_subdirectory(MakeChessBoardPointSet)
+    add_subdirectory(MakeGridOf2DImages)
+    add_subdirectory(MakeLapUSProbeAprilTagsModel)
+    add_subdirectory(MakeLapUSProbeSimulationData)
+    add_subdirectory(MakeMaskImagesFromStereoVideo)
+    # this one does not depend on PCL!
+    add_subdirectory(MergePointClouds)
+    add_subdirectory(PickPointsOnStereoVideo)
+    add_subdirectory(PivotCalibration)
+    add_subdirectory(PointSetRegister)
+    add_subdirectory(PointSetTransform)
+    add_subdirectory(Project3DPointsToStereoPair)
+    add_subdirectory(ProjectTrackedPointsOnStereoVideo)
+    add_subdirectory(ReviewVideoData)
+    add_subdirectory(SplitVideo)
+    add_subdirectory(Triangulate2DPointPairsTo3D)
+    add_subdirectory(TwoTrackerAnalysis)
+    add_subdirectory(UltrasoundPinCalibration)
+    add_subdirectory(UltrasoundPinCalibrationClicker)
+    #add_subdirectory(UltrasoundPinCalibrationEvaluation)
+    #add_subdirectory(UltrasoundPointerCalibration)
+    add_subdirectory(UltrasoundTransformAndImageMerger)
+    add_subdirectory(VideoHandEyeByCrossCalibration)
+    add_subdirectory(VideoTestClient)
+    add_subdirectory(VideoToImages)
+    add_subdirectory(VideoToSurfaces)
 
     if(BUILD_PCL)
-      set(SLICER_HELPER_APPS
-        ${SLICER_HELPER_APPS}
-        niftkFitPlaneToPointCloud
-      )
+      add_subdirectory(FitPlaneToPointCloud)
     endif()
 
     if(OPENCV_WITH_NONFREE)
-      set(SLICER_HELPER_APPS
-        ${SLICER_HELPER_APPS}
-        niftkSURF
-      )
+      add_subdirectory(SURF)
     endif()
 
-  endif()
-
-  set(SLICER_HELPER_APP_LIBRARIES
-    ${HELPER_APP_LIBRARIES}
-    ${Boost_LIBRARIES}
-    MitkSegmentation               # needed by niftkPointSetStatistics
-  )
-
-  if(BUILD_IGI)
-    list(APPEND SLICER_HELPER_APP_LIBRARIES
-      niftkVTK
-    )
-  endif()
-
-  foreach(APP ${SLICER_HELPER_APPS})
-    NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-      NAME ${APP}
-      BUILD_SLICER
-      INSTALL_SCRIPT
-      TARGET_LIBRARIES ${SLICER_HELPER_APP_LIBRARIES}
-    )
-  endforeach()
-
-  if(BUILD_IGI)
-    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-      # Suppress warning because of a bug in the Boost gil library.
-      set_target_properties(niftkImageFeatureMatching PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
-    endif()
   endif()
 
 endif()
