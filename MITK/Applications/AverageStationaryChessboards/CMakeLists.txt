@@ -17,14 +17,6 @@ NIFTK_CREATE_COMMAND_LINE_APPLICATION(
   BUILD_SLICER
   INSTALL_SCRIPT
   TARGET_LIBRARIES
-    niftkcommon
-    MitkLegacyIO
-    ${Boost_LIBRARIES}
-    MitkSegmentation
+    niftkOpenCV
     niftkOpenCVUtils
-    niftkIGIGui
-    niftkPointReg
-    niftkSurfRecon
-    niftkICPReg
-    niftkVTK
 )
