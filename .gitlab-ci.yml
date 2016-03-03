@@ -103,9 +103,7 @@ Windows continuous build:
   stage: build
 
   script:
-  - "@echo off"
-  - '"C:\CB\slowrunner.exe" -v -2 -e "c:\CB\NifTKContinuousBuild.bat"'
-  - "@exit /b %errorlevel%"
+  - /c/CB/slowrunner.exe -v -2 -e "c:\CB\NifTKContinuousBuild.bat"
 
   only:
   - branches
@@ -119,11 +117,8 @@ Windows continuous test:
   stage: test
 
   script:
-  - hostname
-  - whoami
-  - cd
-  - rem cd NifTK-build
-  - rem ctest -S CTestContinuous.cmake -V
+  - cd ${pb_dir}
+  - ctest -S CTestContinuous.cmake -V
 
   only:
   - branches
