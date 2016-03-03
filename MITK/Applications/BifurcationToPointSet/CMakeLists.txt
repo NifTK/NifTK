@@ -19,12 +19,6 @@ NIFTK_CREATE_COMMAND_LINE_APPLICATION(
   TARGET_LIBRARIES
     niftkcommon
     MitkLegacyIO
-    ${Boost_LIBRARIES}
-    MitkSegmentation
-    niftkOpenCVUtils
-    niftkIGIGui
-    niftkPointReg
-    niftkSurfRecon
-    niftkICPReg
+    niftkIGI
     niftkVTK
 )
