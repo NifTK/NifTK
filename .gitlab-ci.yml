@@ -14,6 +14,11 @@ before_script:
   - hostname
   - whoami
   - pwd
+  - echo $src_dir
+  - echo $ep_dir
+  - echo $git_hash
+  - echo $sb_dir
+  - echo $pb_dir
 
 ##########################################
 # Jobs for continuous testing
@@ -302,25 +307,10 @@ Mac release installer:
 # Jobs for cleaning up
 ##########################################
 
-Linux clean up:
+Clean up:
 
   stage: cleanup
 
   script:
   - rm -rf ${sb_dir}
   - ${HOME}/bin/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  tags:
-  - linux
-
-
-Mac clean up:
-
-  stage: cleanup
-
-  script:
-  - rm -rf ${sb_dir}
-  - ${HOME}/bin/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  tags:
-  - mac
