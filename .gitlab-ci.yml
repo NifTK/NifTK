@@ -8,8 +8,8 @@ stages:
 before_script:
   - export src_dir=${CI_PROJECT_DIR}
   - export ep_dir="${CI_PROJECT_DIR}-ep"
-  - export git_hash=${CI_BUILD_REF:0:6}
-  - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}"
+  - export git_hash=${CI_BUILD_REF:0:5}
+  - export sb_dir="${CI_PROJECT_DIR}-${git_hash}"
   - export pb_dir="${sb_dir}/NifTK-build"
   - hostname
   - whoami
