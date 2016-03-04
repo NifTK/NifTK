@@ -29,7 +29,8 @@ Linux continuous build:
   stage: build
 
   script:
-  - mkdir ${sb_dir}
+  - mkdir -p ${sb_dir}
+  - mkdir -p ${ep_dir}
   - cd ${sb_dir}
   - cmake -DEP_BASE:PATH=${ep_dir}
         -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
@@ -69,7 +70,8 @@ Mac continuous build:
   stage: build
 
   script:
-  - mkdir ${sb_dir}
+  - mkdir -p ${sb_dir}
+  - mkdir -p ${ep_dir}
   - cd ${sb_dir}
   - cmake -DEP_BASE:PATH=${ep_dir}
         -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
@@ -108,6 +110,9 @@ Windows continuous build:
   stage: build
 
   script:
+  - mkdir -p ${sb_dir}
+  - mkdir -p ${ep_dir}
+  - cd ${sb_dir}
   - /c/CB/slowrunner.exe -v -2 -e "c:\CB\NifTKContinuousBuild.bat"
 
   only:
@@ -123,7 +128,7 @@ Windows continuous test:
 
   script:
   - cd ${pb_dir}
-  - ctest -S CTestContinuous.cmake -V
+#  - ctest -E CTE-Stream -S CTestContinuous.cmake -V
 
   only:
   - branches
