@@ -312,7 +312,7 @@ Mac release installer:
 # Jobs for cleaning up
 ##########################################
 
-Clean up:
+Linux clean up:
 
   stage: cleanup
 
@@ -321,3 +321,32 @@ Clean up:
   - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
 
   when: always
+
+  tags:
+  - linux
+
+Mac clean up:
+
+  stage: cleanup
+
+  script:
+  - rm -rf ${sb_dir}
+  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+
+  when: always
+
+  tags:
+  - mac
+
+Windows clean up:
+
+  stage: cleanup
+
+  script:
+  - rm -rf ${sb_dir}
+  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+
+  when: always
+
+  tags:
+  - windows
