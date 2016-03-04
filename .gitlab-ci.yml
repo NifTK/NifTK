@@ -318,6 +318,6 @@ Clean up:
 
   script:
   - rm -rf ${sb_dir}
-  - ${HOME}/bin/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
 
   when: always
