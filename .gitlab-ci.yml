@@ -343,7 +343,7 @@ Windows clean up:
   stage: cleanup
 
   script:
-  - rm -rf ${sb_dir}
+#  - rm -rf ${sb_dir}
   - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
 
   when: always
