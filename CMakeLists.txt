@@ -234,7 +234,7 @@ set(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_
 set(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
 
 # Further variables for the external project names and locations are defined
-# in the external project CMake files under CMake/CMakeExternals.
+# in the external project CMake files under CMake/ExternalProjects.
 
 set(NIFTK_EP_TARBALL_LOCATION "http://cmic.cs.ucl.ac.uk/platform/dependencies")
 
@@ -291,7 +291,7 @@ find_package(Doxygen)
 set(CMAKE_MODULE_PATH
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/CMake
-    ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals
+    ${CMAKE_SOURCE_DIR}/CMake/ExternalProjects
     ${CMAKE_SOURCE_DIR}/CMake/cuda
     ${CMAKE_MODULE_PATH}
    )
@@ -540,7 +540,7 @@ endif()
 # ------------------------------------------------------------------------
 # Register external projects which can be build with the MITK superbuild
 # system. Each mitkFunctionAddExternalProject() call registers an external
-# project for which a CMakeExternals/<project>.cmake file must exist. The
+# project for which a ExternalProjects/<project>.cmake file must exist. The
 # call also creates a MITK_USE_<project> variable (appearing in the CMake
 # UI if the NO_CACHE option is *not* given).
 #

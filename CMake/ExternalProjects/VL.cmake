@@ -40,7 +40,7 @@ if(BUILD_VL)
     set(_test_options )
     if(APPLE)
       set(APPLE_CMAKE_SCRIPT ${proj_CONFIG}/ChangeVLLibsInstallNameForMac.cmake)
-      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeExternals/ChangeVLLibsInstallNameForMac.cmake.in ${APPLE_CMAKE_SCRIPT} @ONLY)
+      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/ExternalProjects/ChangeVLLibsInstallNameForMac.cmake.in ${APPLE_CMAKE_SCRIPT} @ONLY)
       set(APPLE_TEST_COMMAND ${CMAKE_COMMAND} -P ${APPLE_CMAKE_SCRIPT})
       set(_test_options
         TEST_AFTER_INSTALL 1

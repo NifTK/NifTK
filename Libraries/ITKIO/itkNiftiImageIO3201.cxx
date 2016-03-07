@@ -3,8 +3,8 @@
  * the version of ITK used within NifTK at the time of writing. The
  * version 3.20.1 actually signified a patched version of ITK, and
  * the patched tar file and patch can be seen in:
- *   NifTK/CMake/CMakeExternals/ITK.cmake and
- *   NifTK/CMake/CMakeExternals/PatchITK-3.20.cmake
+ *   NifTK/CMake/ExternalProjects/ITK.cmake and
+ *   NifTK/CMake/ExternalProjects/PatchITK-3.20.cmake
  * However, none of this patching affects the Nifti reader, so the base
  * version of the Nifti reader used for this class is the same as in 3.20.0.
  *

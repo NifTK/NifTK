@@ -248,7 +248,7 @@ if(BUILD_IGI)
 endif(BUILD_IGI)
 
 foreach(p ${external_projects})
-  include("CMake/CMakeExternals/${p}.cmake")
+  include("CMake/ExternalProjects/${p}.cmake")
 
   list(APPEND NIFTK_APP_OPTIONS -DNIFTK_VERSION_${p}:STRING=${${p}_VERSION})
   list(APPEND NIFTK_APP_OPTIONS -DNIFTK_LOCATION_${p}:STRING=${${p}_LOCATION})
