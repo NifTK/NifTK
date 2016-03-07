@@ -51,7 +51,7 @@ if(MITK_USE_BLUEBERRY)
   ctkFunctionGetAllPluginTargets(all_mitk_ctk_plugins)
 
   # Get infos about application directories and build options
-  include("${CMAKE_CURRENT_SOURCE_DIR}/Apps/Apps.cmake")
+  include("${CMAKE_CURRENT_SOURCE_DIR}/Applications/Apps.cmake")
   set(_apps_fullpath )
   foreach(NIFTK_APP ${NIFTK_APPS})
     string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
@@ -59,7 +59,7 @@ if(MITK_USE_BLUEBERRY)
     list(GET target_info_list 1 option_name)
     list(GET target_info_list 0 app_name)
     if(${option_name})
-      list(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/Apps/${NIFTK_APP}")
+      list(APPEND _apps_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/Applications/${NIFTK_APP}")
     endif()
   endforeach()
 
@@ -89,17 +89,6 @@ if(MITK_USE_BLUEBERRY)
   set_property(GLOBAL PROPERTY NIFTK_EXPORTED_PLUGINS ${all_niftk_plugins})
 
 endif(MITK_USE_BLUEBERRY)
-
-####################################################################################
-# Add subdirectories. 
-#   Apps contains full MITK apps using MITK application framework BlueBerry.
-#   Applications contains independent stuff like utilities, command line apps etc.
-####################################################################################
-
-if(BUILD_COMMAND_LINE_PROGRAMS)
-  add_subdirectory(Applications)
-endif()
-
 
 ####################################################################################
 # Temporary Work Around. See issue 4082.
@@ -132,6 +121,10 @@ if (Python_DIR)
 endif()
 
 
-if(MITK_USE_BLUEBERRY)
-  add_subdirectory(Apps)
-endif()
+####################################################################################
+# Add Applications subdirectory.
+#   Applications contains full MITK apps using MITK application framework BlueBerry,
+#   as well independent stuff like utilities, command line apps etc.
+####################################################################################
+
+add_subdirectory(Applications)

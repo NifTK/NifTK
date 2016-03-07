@@ -103,7 +103,7 @@ endmacro()
 # The user cannot be expected to know the component parts of apps.
 ######################################################################
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/MITK/Apps/Apps.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/MITK/Applications/Apps.cmake")
 set(BUILD_GUI OFF)
 mark_as_advanced(BUILD_GUI)
 set(BUILD_IGI OFF)
@@ -1044,7 +1044,7 @@ set(CMAKE_MODULE_PATH
 if(APPLE)
 
   set(MACOSX_BUNDLE_NAMES)
-  include("${CMAKE_CURRENT_SOURCE_DIR}/MITK/Apps/Apps.cmake")
+  include("${CMAKE_CURRENT_SOURCE_DIR}/MITK/Applications/Apps.cmake")
 
   foreach(NIFTK_APP ${NIFTK_APPS})
 
