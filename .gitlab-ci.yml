@@ -322,6 +322,9 @@ Linux continuous clean up:
 
   when: always
 
+  only:
+  - branches
+
   tags:
   - linux, continuous
 
@@ -334,6 +337,9 @@ Linux release clean up:
   - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
 
   when: always
+
+  only:
+  - tags
 
   tags:
   - linux, release
@@ -348,6 +354,9 @@ Mac continuous clean up:
 
   when: always
 
+  only:
+  - branches
+
   tags:
   - mac, continuous
 
@@ -361,6 +370,9 @@ Mac release clean up:
 
   when: always
 
+  only:
+  - tags
+
   tags:
   - mac, release
 
@@ -369,24 +381,30 @@ Windows continuous clean up:
   stage: cleanup
 
   script:
-#  - rm -rf ${sb_dir}
+  - rm -rf ${sb_dir}
   - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
 
   when: always
+
+  only:
+  - branches
 
   tags:
   - windows, continuous
 
-Windows release clean up:
-
-  stage: cleanup
-
-  script:
+#Windows release clean up:
+#
+#  stage: cleanup
+#
+#  script:
 #  - rm -rf ${sb_dir}
-  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
-
-  tags:
-  - windows, release
+#  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+#
+#  when: always
+#
+#  only:
+#  - tags
+#
+#  tags:
+#  - windows, release
 
