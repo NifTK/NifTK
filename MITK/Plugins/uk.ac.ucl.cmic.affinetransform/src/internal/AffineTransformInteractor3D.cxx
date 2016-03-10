@@ -1,19 +1,16 @@
-/*===================================================================
+/*=============================================================================
 
-The Medical Imaging Interaction Toolkit (MITK)
+  NifTK: A software platform for medical image computing.
 
-Copyright (c) German Cancer Research Center, 
-Division of Medical and Biological Informatics.
-All rights reserved.
+  Copyright (c) University College London (UCL). All rights reserved.
 
-This software is distributed WITHOUT ANY WARRANTY; without 
-even the implied warranty of MERCHANTABILITY or FITNESS FOR 
-A PARTICULAR PURPOSE.
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
 
-See LICENSE.txt or http://www.mitk.org for details.
+  See LICENSE.txt in the top level directory for details.
 
-===================================================================*/
-
+=============================================================================*/
 
 #include "AffineTransformInteractor3D.h"
 
@@ -31,7 +28,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkStateMachineFactory.h>
 #include <mitkStateTransitionOperation.h>
 #include <mitkRenderingManager.h>
-#include <mitkRenderingManagerFactory.h>
 #include <mitkRotationOperation.h>
 
 #include <vtkCamera.h>
@@ -326,9 +322,7 @@ bool AffineTransformInteractor3D::OnAcSelectPickedObject(mitk::Action * action, 
 {
   // Color object red
   m_DataNode->SetColor( 1.0, 0.0, 0.0 );
-  
-  mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
-  renderManager->RequestUpdateAll();
+  stateEvent->GetEvent()->GetSender()->GetRenderingManager()->RequestUpdateAll();
 
   return true;
 }
@@ -337,9 +331,7 @@ bool AffineTransformInteractor3D::OnAcDeselectPickedObject(mitk::Action * action
 {
   // Color object white
   m_DataNode->SetColor( 1.0, 1.0, 1.0 );
-  
-  mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
-  renderManager->RequestUpdateAll();
+  stateEvent->GetEvent()->GetSender()->GetRenderingManager()->RequestUpdateAll();
 
   return true;
 }
