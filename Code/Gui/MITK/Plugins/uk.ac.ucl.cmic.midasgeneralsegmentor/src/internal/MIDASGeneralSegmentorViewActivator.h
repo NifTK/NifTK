@@ -17,7 +17,8 @@
 
 #include <ctkPluginActivator.h>
 
-namespace mitk {
+namespace niftk
+{
 
 /**
  * \class MIDASGeneralSegmentorViewActivator
@@ -38,7 +39,7 @@ public:
   void start(ctkPluginContext* context);
   void stop(ctkPluginContext* context);
 
-}; // MIDASGeneralSegmentorViewActivator
+};
 
 }
 

@@ -133,9 +133,9 @@ namespace itk
       {
         outputMaskImageIter.Set(inputMaskImageIter.Get()); // i.e. don't do the erosion
       }
-    } // end for each voxel
-  } // end DoFilter function
+    }
+  }
   
-}//end namespace itk
+}
 
 #endif

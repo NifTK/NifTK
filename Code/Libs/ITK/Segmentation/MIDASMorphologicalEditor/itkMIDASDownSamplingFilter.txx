@@ -244,8 +244,6 @@ namespace itk
     outputImagePtr->SetRegions(outputImageRegion);    
   }
 
-
-}//end namespace itk
-
+}
 
 #endif

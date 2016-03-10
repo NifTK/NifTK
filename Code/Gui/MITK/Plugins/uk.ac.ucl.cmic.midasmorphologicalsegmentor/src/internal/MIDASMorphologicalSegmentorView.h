@@ -15,14 +15,14 @@
 #ifndef MIDASMorphologicalSegmentorView_h
 #define MIDASMorphologicalSegmentorView_h
 
-#include <QmitkMIDASBaseSegmentationFunctionality.h>
+#include <niftkMIDASBaseSegmentationFunctionality.h>
 
 #include <mitkImage.h>
 
 #include <MorphologicalSegmentorPipelineParams.h>
 #include "MIDASMorphologicalSegmentorViewPreferencePage.h"
 #include "MIDASMorphologicalSegmentorViewControlsImpl.h"
-#include <mitkMIDASMorphologicalSegmentorPipelineManager.h>
+#include <niftkMIDASMorphologicalSegmentorPipelineManager.h>
 
 
 /**
@@ -37,13 +37,13 @@
  *
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  *
- * \sa QmitkMIDASBaseSegmentationFunctionality
+ * \sa niftkMIDASBaseSegmentationFunctionality
  * \sa MIDASMorphologicalSegmentorPipelineManager
  * \sa MorphologicalSegmentorPipeline
  * \sa MorphologicalSegmentorPipelineInterface
  * \sa MorphologicalSegmentorPipelineParams
  */
-class MIDASMorphologicalSegmentorView : public QmitkMIDASBaseSegmentationFunctionality
+class MIDASMorphologicalSegmentorView : public niftkMIDASBaseSegmentationFunctionality
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
@@ -171,7 +171,7 @@ private:
   MIDASMorphologicalSegmentorViewControlsImpl* m_MorphologicalControls;
 
   /// \brief As much "business logic" as possible is delegated to this class so we can unit test it, without a GUI.
-  mitk::MIDASMorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
+  niftk::MIDASMorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
 
   /// \brief Keep local variable to update after the tab has changed.
   int m_TabIndex;

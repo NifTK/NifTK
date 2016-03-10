@@ -66,4 +66,4 @@ MIDASImageUpdateClearRegionProcessor<TPixel, VImageDimension>
   
 }
 
-} // end namespace
+}

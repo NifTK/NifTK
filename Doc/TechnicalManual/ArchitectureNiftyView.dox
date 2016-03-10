@@ -57,7 +57,7 @@ It should be considered as the Model part in a <a href="http://en.wikipedia.org/
 
 MITK provides various windows called "Editors" that enable a certain view of the data.  Each of these editors
 is provided as a class within a CTK plugin. The main editor is the QmitkStdMultiWidgetEditor which provides the
-default orthogonal image viewer component.  NiftyView has added an additional editor the QmitkMIDASMultiViewEditor 
+default orthogonal image viewer component.  NiftyView has added an additional editor the niftkMIDASMultiViewEditor 
 which provides a viewer that acts more like the MIDAS application with drag and drop functionality, and multiple panes. 
 So several Editors are providing different views of the data and can be considered the View part of the  
 <a href="http://en.wikipedia.org/wiki/ModelÐviewÐcontroller">Model-View-Controller</a> pattern. However, in addition

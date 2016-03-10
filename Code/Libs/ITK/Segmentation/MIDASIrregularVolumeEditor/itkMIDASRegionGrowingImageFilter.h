@@ -282,6 +282,6 @@ private:
 #include "itkMIDASRegionGrowingImageFilter.txx"
 #endif
 
-} // end namespace
+}
 
 #endif

@@ -199,6 +199,6 @@ MIDASMaskByRegionImageFilter<TInputImage, TOutputImage>
   }
 }
 
-} // end namespace
+}
 
 #endif

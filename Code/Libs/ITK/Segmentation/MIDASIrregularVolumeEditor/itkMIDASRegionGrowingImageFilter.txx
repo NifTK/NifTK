@@ -342,7 +342,7 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
       /*
        * This mode iterates in a 8 (2D), or 26 (3D) connected neighbourhood, and is
        * used for the MIDAS region growing algorithm, where you grow up to and
-       * including the lines drawn by the mitkMIDASDrawTool and mitkMIDASPolyTool.
+       * including the lines drawn by the niftkMIDASDrawTool and niftkMIDASPolyTool.
        */
 
       neighborhoodRegionStartingIndex = currImgIndex;

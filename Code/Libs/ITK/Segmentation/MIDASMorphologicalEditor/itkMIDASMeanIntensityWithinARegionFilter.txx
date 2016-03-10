@@ -190,7 +190,6 @@ namespace itk
     return m_Counter;   
   }
 
-}//end namespace itk
-
+}
 
 #endif

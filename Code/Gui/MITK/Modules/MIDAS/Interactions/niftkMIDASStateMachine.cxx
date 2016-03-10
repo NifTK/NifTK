@@ -1,0 +1,142 @@
+/*=============================================================================
+
+  NifTK: A software platform for medical image computing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
+
+#include "niftkMIDASStateMachine.h"
+
+#include <mitkToolManager.h>
+#include <mitkGlobalInteraction.h>
+#include <itkCommand.h>
+
+// MicroServices
+#include <usGetModuleContext.h>
+#include <usModule.h>
+#include <usModuleRegistry.h>
+
+#include "niftkMIDASEventFilter.h"
+
+//-----------------------------------------------------------------------------
+niftk::MIDASStateMachine::MIDASStateMachine()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+niftk::MIDASStateMachine::~MIDASStateMachine()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+float niftk::MIDASStateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+{
+  if (this->IsFiltered(stateEvent))
+  {
+    return 0.0;
+  }
+
+  return this->CanHandle(stateEvent);
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftk::MIDASStateMachine::CanHandleEvent(mitk::InteractionEvent* event)
+{
+  if (this->IsFiltered(event))
+  {
+    return false;
+  }
+
+  return this->CanHandle(event);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::MIDASStateMachine::InstallEventFilter(niftk::MIDASEventFilter* eventFilter)
+{
+  std::vector<MIDASEventFilter*>::iterator it =
+      std::find(m_EventFilters.begin(), m_EventFilters.end(), eventFilter);
+
+  if (it == m_EventFilters.end())
+  {
+    m_EventFilters.push_back(eventFilter);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::MIDASStateMachine::RemoveEventFilter(niftk::MIDASEventFilter* eventFilter)
+{
+  std::vector<MIDASEventFilter*>::iterator it =
+      std::find(m_EventFilters.begin(), m_EventFilters.end(), eventFilter);
+
+  if (it != m_EventFilters.end())
+  {
+    m_EventFilters.erase(it);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<niftk::MIDASEventFilter*> niftk::MIDASStateMachine::GetEventFilters() const
+{
+  return m_EventFilters;
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftk::MIDASStateMachine::IsFiltered(const mitk::StateEvent* stateEvent) const
+{
+  /// Sanity check.
+  if (!stateEvent || !stateEvent->GetEvent()->GetSender())
+  {
+    return true;
+  }
+
+  std::vector<MIDASEventFilter*>::const_iterator it = m_EventFilters.begin();
+  std::vector<MIDASEventFilter*>::const_iterator itEnd = m_EventFilters.end();
+
+  for ( ; it != itEnd; ++it)
+  {
+    if ((*it)->EventFilter(stateEvent))
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftk::MIDASStateMachine::IsFiltered(mitk::InteractionEvent* event)
+{
+  /// Sanity check.
+  if (!event || !event->GetSender())
+  {
+    return true;
+  }
+
+  std::vector<MIDASEventFilter*>::const_iterator it = m_EventFilters.begin();
+  std::vector<MIDASEventFilter*>::const_iterator itEnd = m_EventFilters.end();
+
+  for ( ; it != itEnd; ++it)
+  {
+    if ((*it)->EventFilter(event))
+    {
+      return true;
+    }
+  }
+
+  return false;
+}

@@ -90,12 +90,12 @@ private:
   ImagePointer m_BeforeImage;
   ImagePointer m_AfterImage;
 
-}; // end class
+};
 
-} // end namespace
+}
 
 #ifndef ITK_MANUAL_INSTANTIATION
 #include "itkMIDASImageUpdateRegionProcessor.txx"
 #endif
 
-#endif // ITKMIDASIMAGEUPDATEREGIONPROCESSOR_H
+#endif

@@ -28,22 +28,22 @@
 #include <mitkPlane.h>
 #include <mitkUndoController.h>
 
-#include <mitkMIDASImageUtils.h>
-#include <mitkMIDASOrientationUtils.h>
+#include <niftkMIDASImageUtils.h>
+#include <niftkMIDASOrientationUtils.h>
 
 #include <itkConversionUtils.h>
 #include <mitkITKRegionParametersDataNodeProperty.h>
-#include <mitkMIDASTool.h>
-#include <mitkMIDASPaintbrushTool.h>
+#include <niftkMIDASTool.h>
+#include <niftkMIDASPaintbrushTool.h>
 
-#include <mitkMIDASOrientationUtils.h>
+#include <niftkMIDASOrientationUtils.h>
 
 
 const std::string MIDASMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
 
 //-----------------------------------------------------------------------------
 MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView()
-: QmitkMIDASBaseSegmentationFunctionality()
+: niftkMIDASBaseSegmentationFunctionality()
 , m_Layout(NULL)
 , m_ContainerForControlsWidget(NULL)
 , m_MorphologicalControls(NULL)
@@ -66,8 +66,8 @@ MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView(
 MIDASMorphologicalSegmentorView::~MIDASMorphologicalSegmentorView()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
-  int paintbrushToolId = toolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>();
-  mitk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<mitk::MIDASPaintbrushTool*>(toolManager->GetToolById(paintbrushToolId));
+  int paintbrushToolId = toolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>();
+  niftk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>(toolManager->GetToolById(paintbrushToolId));
   assert(paintbrushTool);
 
   paintbrushTool->SegmentationEdited.RemoveListener(mitk::MessageDelegate1<MIDASMorphologicalSegmentorView, int>(this, &MIDASMorphologicalSegmentorView::OnSegmentationEdited));
@@ -96,8 +96,8 @@ void MIDASMorphologicalSegmentorView::RegisterTools(mitk::ToolManager::Pointer t
 {
   toolManager->RegisterTool("MIDASPaintbrushTool");
 
-  int paintbrushToolId = toolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>();
-  mitk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<mitk::MIDASPaintbrushTool*>(toolManager->GetToolById(paintbrushToolId));
+  int paintbrushToolId = toolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>();
+  niftk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>(toolManager->GetToolById(paintbrushToolId));
   assert(paintbrushTool);
 
   paintbrushTool->SegmentationEdited.AddListener(mitk::MessageDelegate1<MIDASMorphologicalSegmentorView, int>(this, &MIDASMorphologicalSegmentorView::OnSegmentationEdited));
@@ -120,7 +120,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
     mitk::ToolManager* toolManager = this->GetToolManager();
     assert(toolManager);
 
-    int paintbrushToolId = toolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>();
+    int paintbrushToolId = toolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>();
 
     mitk::Tool* paintbrushTool = toolManager->GetToolById(paintbrushToolId);
     assert(paintbrushTool);
@@ -150,7 +150,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
     this->WaitCursorOn();
 
     // Mark the newSegmentation as "unfinished".
-    newSegmentation->SetBoolProperty(mitk::MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), false);
+    newSegmentation->SetBoolProperty(niftk::MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), false);
 
     try
     {
@@ -168,42 +168,42 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
       mitk::ITKRegionParametersDataNodeProperty::Pointer erodeAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       erodeAddEditingProp->SetSize(1,1,1);
       erodeAddEditingProp->SetValid(false);
-      mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode(image, mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME, col->GetColor());
+      mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode(image, niftk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME, col->GetColor());
       erodeAddNode->SetBoolProperty("helper object", true);
       erodeAddNode->SetBoolProperty("visible", false);
       erodeAddNode->SetColor(segCol);
       erodeAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
-      erodeAddNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeAddEditingProp);
+      erodeAddNode->AddProperty(niftk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeAddEditingProp);
 
       mitk::ITKRegionParametersDataNodeProperty::Pointer erodeSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       erodeSubtractEditingProp->SetSize(1,1,1);
       erodeSubtractEditingProp->SetValid(false);
-      mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME, col->GetColor());
+      mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, niftk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME, col->GetColor());
       erodeSubtractNode->SetBoolProperty("helper object", true);
       erodeSubtractNode->SetBoolProperty("visible", false);
       erodeSubtractNode->SetColor(col->GetColor());
       erodeSubtractNode->SetProperty("binaryimage.selectedcolor", col);
-      erodeSubtractNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeSubtractEditingProp);
+      erodeSubtractNode->AddProperty(niftk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeSubtractEditingProp);
 
       mitk::ITKRegionParametersDataNodeProperty::Pointer dilateAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       dilateAddEditingProp->SetSize(1,1,1);
       dilateAddEditingProp->SetValid(false);
-      mitk::DataNode::Pointer dilateAddNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME, col->GetColor());
+      mitk::DataNode::Pointer dilateAddNode = paintbrushTool->CreateEmptySegmentationNode( image, niftk::MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME, col->GetColor());
       dilateAddNode->SetBoolProperty("helper object", true);
       dilateAddNode->SetBoolProperty("visible", false);
       dilateAddNode->SetColor(segCol);
       dilateAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
-      dilateAddNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateAddEditingProp);
+      dilateAddNode->AddProperty(niftk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateAddEditingProp);
 
       mitk::ITKRegionParametersDataNodeProperty::Pointer dilateSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       dilateSubtractEditingProp->SetSize(1,1,1);
       dilateSubtractEditingProp->SetValid(false);
-      mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME, col->GetColor());
+      mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, niftk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME, col->GetColor());
       dilateSubtractNode->SetBoolProperty("helper object", true);
       dilateSubtractNode->SetBoolProperty("visible", false);
       dilateSubtractNode->SetColor(col->GetColor());
       dilateSubtractNode->SetProperty("binaryimage.selectedcolor", col);
-      dilateSubtractNode->AddProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateSubtractEditingProp);
+      dilateSubtractNode->AddProperty(niftk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateSubtractEditingProp);
 
       this->ApplyDisplayOptions(erodeAddNode);
       this->ApplyDisplayOptions(erodeSubtractNode);
@@ -227,7 +227,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
       // This must match the order in:
       //
       // 1. MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
-      // 2. mitkMIDASPaintbrushTool.
+      // 2. niftkMIDASPaintbrushTool.
       // and unit tests etc. Probably best to search for
       // MORPH_EDITS_EROSIONS_SUBTRACTIONS
       // MORPH_EDITS_EROSIONS_ADDITIONS
@@ -235,10 +235,10 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
       // MORPH_EDITS_DILATIONS_ADDITIONS
 
       mitk::ToolManager::DataVectorType workingData(4);
-      workingData[mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
-      workingData[mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
-      workingData[mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;
-      workingData[mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS] = dilateSubtractNode;
+      workingData[niftk::MIDASPaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
+      workingData[niftk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
+      workingData[niftk::MIDASPaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;
+      workingData[niftk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS] = dilateSubtractNode;
 
       toolManager->SetWorkingData(workingData);
 
@@ -278,13 +278,13 @@ mitk::DataNode::Pointer MIDASMorphologicalSegmentorView::CreateAxialCutOffPlaneN
 {
   mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
-  int axialAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
-  int sagittalAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_SAGITTAL);
-  int coronalAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_CORONAL);
+  int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
+  int sagittalAxis = niftk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_SAGITTAL);
+  int coronalAxis = niftk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_CORONAL);
 
-  int axialUpDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
-  int sagittalUpDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_SAGITTAL);
-  int coronalUpDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_CORONAL);
+  int axialUpDirection = niftk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
+  int sagittalUpDirection = niftk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_SAGITTAL);
+  int coronalUpDirection = niftk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_CORONAL);
 
   /// The centre of the plane is the same as the centre of the image, but it is shifted
   /// along the axial axis to a position determined by axialSliceNumber.
@@ -338,8 +338,8 @@ void MIDASMorphologicalSegmentorView::OnThresholdingValuesChanged(double lowerTh
   mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceImageNode->GetData());
   mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
-  int axialAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
-  int axialUpDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
+  int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
+  int axialUpDirection = niftk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
 
   mitk::Plane* axialCutOffPlane = this->GetDataStorage()->GetNamedDerivedObject<mitk::Plane>("Axial cut-off plane", segmentationNode);
 
@@ -387,10 +387,10 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
       m_ToolSelector->SetEnabled(true);
 
       mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-      mitk::MIDASPaintbrushTool::Pointer paintbrushTool = dynamic_cast<mitk::MIDASPaintbrushTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<mitk::MIDASPaintbrushTool>()));
+      niftk::MIDASPaintbrushTool::Pointer paintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>()));
 
-      mitk::DataNode::Pointer erodeSubtractNode = this->GetToolManager()->GetWorkingData(mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS);
-      mitk::DataNode::Pointer dilateSubtractNode = this->GetToolManager()->GetWorkingData(mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS);
+      mitk::DataNode::Pointer erodeSubtractNode = this->GetToolManager()->GetWorkingData(niftk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS);
+      mitk::DataNode::Pointer dilateSubtractNode = this->GetToolManager()->GetWorkingData(niftk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS);
 
       if (tabIndex == 1)
       {
@@ -491,7 +491,7 @@ void MIDASMorphologicalSegmentorView::OnRestartButtonClicked()
 
       mitk::Plane* axialCutOffPlane = this->GetDataStorage()->GetNamedDerivedObject<mitk::Plane>("Axial cut-off plane", segmentationNode);
 
-      int axialAxis = mitk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
+      int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
 
       // The centre of the plane is the same as the centre of the image, but it is shifted
       // along the axial axis to a position determined by axialSliceNumber.
@@ -542,7 +542,7 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
     m_Layout->setContentsMargins(6, 6, 6, 0);
     m_Layout->setSpacing(3);
 
-    QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
+    niftkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
 
     m_ContainerForControlsWidget = new QWidget(parent);
     m_ContainerForControlsWidget->setContentsMargins(0, 0, 0, 0);
@@ -561,7 +561,7 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
 
     m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
 
-    m_PipelineManager = mitk::MIDASMorphologicalSegmentorPipelineManager::New();
+    m_PipelineManager = niftk::MIDASMorphologicalSegmentorPipelineManager::New();
     m_PipelineManager->SetDataStorage(this->GetDataStorage());
     m_PipelineManager->SetToolManager(this->GetToolManager());
 
@@ -579,7 +579,7 @@ void MIDASMorphologicalSegmentorView::SetFocus()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::CreateConnections()
 {
-  QmitkMIDASBaseSegmentationFunctionality::CreateConnections();
+  niftkMIDASBaseSegmentationFunctionality::CreateConnections();
 
   if (m_MorphologicalControls != NULL)
   {
@@ -658,7 +658,7 @@ void MIDASMorphologicalSegmentorView::OnSegmentationEdited(int imageIndex)
     mitk::DataNode* node = toolManager->GetWorkingData(imageIndex);
     assert(node);
     mitk::ITKRegionParametersDataNodeProperty::Pointer prop =
-        dynamic_cast<mitk::ITKRegionParametersDataNodeProperty*>(node->GetProperty(mitk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
+        dynamic_cast<mitk::ITKRegionParametersDataNodeProperty*>(node->GetProperty(niftk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
     if (prop.IsNotNull() && prop->HasVolume())
     {
       m_PipelineManager->UpdateSegmentation();
@@ -692,7 +692,7 @@ void MIDASMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedN
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
-  QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(part, nodes);
+  niftkMIDASBaseSegmentationFunctionality::OnSelectionChanged(part, nodes);
 
   bool enableWidgets = false;
 
@@ -707,7 +707,7 @@ void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::
     }
 
     bool isAlreadyFinished = true;
-    bool foundAlreadyFinishedProperty = nodes[0]->GetBoolProperty(mitk::MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), isAlreadyFinished);
+    bool foundAlreadyFinishedProperty = nodes[0]->GetBoolProperty(niftk::MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), isAlreadyFinished);
 
     if (foundAlreadyFinishedProperty && !isAlreadyFinished)
     {
@@ -733,7 +733,7 @@ void MIDASMorphologicalSegmentorView::SetControlsFromReferenceImage()
   {
     int axialAxis = this->GetReferenceImageAxialAxis();
     int numberOfAxialSlices = referenceImage->GetDimension(axialAxis);
-    int upDirection = mitk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
+    int upDirection = niftk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
 
     m_MorphologicalControls->SetControlsByReferenceImage(
         referenceImage->GetStatistics()->GetScalarValueMin(),
@@ -767,10 +767,10 @@ void MIDASMorphologicalSegmentorView::onVisibilityChanged(const mitk::DataNode* 
     bool segmentationNodeVisibility;
     if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
     {
-      workingData[mitk::MIDASPaintbrushTool::EROSIONS_ADDITIONS]->SetVisibility(false);
-      workingData[mitk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS]->SetVisibility(m_MorphologicalControls->m_TabWidget->currentIndex() == 1);
-      workingData[mitk::MIDASPaintbrushTool::DILATIONS_ADDITIONS]->SetVisibility(false);
-      workingData[mitk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS]->SetVisibility(m_MorphologicalControls->m_TabWidget->currentIndex() == 2);
+      workingData[niftk::MIDASPaintbrushTool::EROSIONS_ADDITIONS]->SetVisibility(false);
+      workingData[niftk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS]->SetVisibility(m_MorphologicalControls->m_TabWidget->currentIndex() == 1);
+      workingData[niftk::MIDASPaintbrushTool::DILATIONS_ADDITIONS]->SetVisibility(false);
+      workingData[niftk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS]->SetVisibility(m_MorphologicalControls->m_TabWidget->currentIndex() == 2);
       axialCutOffPlaneNode->SetVisibility(true);
     }
     else

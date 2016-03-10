@@ -34,14 +34,14 @@
 #include <mitkOperation.h>
 #include <mitkSliceNavigationController.h>
 
-#include <QmitkMIDASBaseSegmentationFunctionality.h>
+#include <niftkMIDASBaseSegmentationFunctionality.h>
 
-#include <mitkGeneralSegmentorPipeline.h>
-#include <mitkMIDASContourTool.h>
-#include <mitkMIDASDrawTool.h>
-#include <mitkMIDASPolyTool.h>
-#include <mitkMIDASToolKeyPressStateMachine.h>
-#include <mitkMIDASToolKeyPressResponder.h>
+#include <niftkGeneralSegmentorPipeline.h>
+#include <niftkMIDASContourTool.h>
+#include <niftkMIDASDrawTool.h>
+#include <niftkMIDASPolyTool.h>
+#include <niftkMIDASToolKeyPressStateMachine.h>
+#include <niftkMIDASToolKeyPressResponder.h>
 
 #include "MIDASGeneralSegmentorViewControlsWidget.h"
 #include "MIDASGeneralSegmentorViewCommands.h"
@@ -116,7 +116,7 @@ class QGridLayout;
  *
  * The threshold "apply" button is only enabled when the threshold check-box is enabled,
  * and disabled otherwise. The current segmentation, draw tool contours and poly tool contours
- * (eg. WorkingData items 2 and 3, plus temporary data in the mitk::MIDASPolyTool) all limit the
+ * (eg. WorkingData items 2 and 3, plus temporary data in the niftk::MIDASPolyTool) all limit the
  * region growing.
  *
  * When we hit "apply":
@@ -142,11 +142,11 @@ class QGridLayout;
  * 3. If the user elects to overwrite the new slice, we simply copy all seeds and all image data to the new slice.
  * </pre>
  *
- * \sa QmitkMIDASBaseSegmentationFunctionality
+ * \sa niftkMIDASBaseSegmentationFunctionality
  * \sa MIDASMorphologicalSegmentorView
  */
-class MIDASGeneralSegmentorView : public QmitkMIDASBaseSegmentationFunctionality,
-                                  public mitk::MIDASToolKeyPressResponder,
+class MIDASGeneralSegmentorView : public niftkMIDASBaseSegmentationFunctionality,
+                                  public niftk::MIDASToolKeyPressResponder,
                                   public mitk::OperationActor
 {
 
@@ -192,22 +192,22 @@ public:
   /// \brief Returns the VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor".
   virtual std::string GetViewID() const;
 
-  /// \brief \see mitk::MIDASToolKeyPressResponder::SelectSeedTool()
+  /// \brief \see niftk::MIDASToolKeyPressResponder::SelectSeedTool()
   virtual bool SelectSeedTool();
 
-  /// \brief \see mitk::MIDASToolKeyPressResponder::SelectDrawTool()
+  /// \brief \see niftk::MIDASToolKeyPressResponder::SelectDrawTool()
   virtual bool SelectDrawTool();
 
-  /// \brief \see mitk::MIDASToolKeyPressResponder::UnselectTools()
+  /// \brief \see niftk::MIDASToolKeyPressResponder::UnselectTools()
   virtual bool UnselectTools();
 
-  /// \brief \see mitk::MIDASToolKeyPressResponder::SelectPolyTool()
+  /// \brief \see niftk::MIDASToolKeyPressResponder::SelectPolyTool()
   virtual bool SelectPolyTool();
 
-  /// \brief \see mitk::MIDASToolKeyPressResponder::SelectViewMode()
+  /// \brief \see niftk::MIDASToolKeyPressResponder::SelectViewMode()
   virtual bool SelectViewMode();
 
-  /// \brief \see mitk::MIDASToolKeyPressResponder::CleanSlice()
+  /// \brief \see niftk::MIDASToolKeyPressResponder::CleanSlice()
   virtual bool CleanSlice();
 
   /// \brief If the user hits the close icon, it is equivalent to a Cancel,
@@ -323,7 +323,7 @@ protected:
   /// \brief Creates the Qt connections of widgets in this class to the slots in this class.
   virtual void CreateConnections();
 
-  /// \see QmitkMIDASBaseSegmentation::EnableSegmentationWidgets
+  /// \see niftkMIDASBaseSegmentation::EnableSegmentationWidgets
   virtual void EnableSegmentationWidgets(bool checked);
 
   /// \brief For Irregular Volume Editing, a Segmentation image should have a grey
@@ -340,7 +340,7 @@ protected:
   virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
 
   /// \brief Returns the name of the preferences node to look up.
-  /// \see QmitkMIDASBaseSegmentationFunctionality::GetPreferencesNodeName
+  /// \see niftkMIDASBaseSegmentationFunctionality::GetPreferencesNodeName
   virtual QString GetPreferencesNodeName() { return MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
 
   /// \brief This view registers with the mitk::DataStorage and listens for changing
@@ -858,15 +858,15 @@ private:
    *************************************************************/
 
   /// \brief This class hooks into the Global Interaction system to respond to Key press events.
-  mitk::MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
+  niftk::MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
 
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
   MIDASGeneralSegmentorViewEventInterface::Pointer m_Interface;
 
   /// \brief We hold a Map, containing a key comprised of the "typename TPixel, unsigned int VImageDimension"
   /// as a key, and the object containing the whole pipeline for single slice 2D region growing.
-  typedef std::pair<std::string, mitk::GeneralSegmentorPipelineInterface*> StringAndPipelineInterfacePair;
-  std::map<std::string, mitk::GeneralSegmentorPipelineInterface*> m_TypeToPipelineMap;
+  typedef std::pair<std::string, niftk::GeneralSegmentorPipelineInterface*> StringAndPipelineInterfacePair;
+  std::map<std::string, niftk::GeneralSegmentorPipelineInterface*> m_TypeToPipelineMap;
 
   /// \brief All the controls for the main view part.
   MIDASGeneralSegmentorViewControlsWidget* m_GeneralControls;
@@ -874,7 +874,7 @@ private:
   /// \brief Used to put the base class widgets, and these widgets above in a common layout.
   QGridLayout *m_Layout;
 
-  /// \brief Container for the main Widgets. Also \see QmitkMIDASBaseSegmentationFunctionality
+  /// \brief Container for the main Widgets. Also \see niftkMIDASBaseSegmentationFunctionality
   QWidget *m_ContainerForControlsWidget;
 
   /// \brief Keep track of this to SliceNavigationController register and unregister event listeners.
