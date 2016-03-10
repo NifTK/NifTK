@@ -58,10 +58,10 @@ public:
 
     // Get the "As Acquired" orientation.
     const mitk::DataNode::Pointer node = (*allImages)[0];
-    bool isImage = mitk::IsImage(node);
+    bool isImage = niftk::IsImage(node);
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(isImage, true),".. Testing IsImage=true");
 
-    MIDASOrientation orientation = mitk::GetAsAcquiredOrientation(MIDASOrientation(defaultOrientation), dynamic_cast<mitk::Image*>(node->GetData()));
+    MIDASOrientation orientation = niftk::GetAsAcquiredOrientation(MIDASOrientation(defaultOrientation), dynamic_cast<mitk::Image*>(node->GetData()));
     MITK_TEST_OUTPUT(<< "MIDASOrientation default=" << defaultOrientation);
     MITK_TEST_OUTPUT(<< "MIDASOrientation output=" << orientation);
     MITK_TEST_OUTPUT(<< "MIDASOrientation expected=" << expectedOrientation);

@@ -61,11 +61,11 @@ public:
     const mitk::DataNode::Pointer outputNode = (*allImages)[1];
     mitk::Image::Pointer outputImage = dynamic_cast<mitk::Image*>(outputNode->GetData());
 
-    mitk::FillImage(outputImage, 0);
-    mitk::CopyIntensityData(inputImage, outputImage);
+    niftk::FillImage(outputImage, 0);
+    niftk::CopyIntensityData(inputImage, outputImage);
 
     bool isEqual = false;
-    isEqual = mitk::ImagesHaveEqualIntensities(inputImage, outputImage);
+    isEqual = niftk::ImagesHaveEqualIntensities(inputImage, outputImage);
     MITK_TEST_CONDITION_REQUIRED(isEqual, ".. Testing data copied");
   }
 };

@@ -62,12 +62,12 @@ public:
     mitk::Image::ConstPointer image1 = dynamic_cast<const mitk::Image*>(node1->GetData());
     mitk::Image::ConstPointer image2 = dynamic_cast<const mitk::Image*>(node2->GetData());
 
-    bool result = mitk::ImagesHaveEqualIntensities(image1, image2);
+    bool result = niftk::ImagesHaveEqualIntensities(image1, image2);
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(result, true),".. Testing 2 images equal intensities.");
 
     if (mode > 0)
     {
-      result = mitk::ImagesHaveSameSpatialExtent(image1, image2);
+      result = niftk::ImagesHaveSameSpatialExtent(image1, image2);
       MITK_TEST_CONDITION_REQUIRED(mitk::Equal(result, true),".. Testing 2 images same spatial extent.");
     }
     MITK_TEST_OUTPUT(<< "Finished TestEquality...");
