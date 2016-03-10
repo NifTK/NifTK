@@ -15,10 +15,16 @@
   <EndOfFileNewLine>true</EndOfFileNewLine>
   <Tabs>true</Tabs>
   <Spaces>0</Spaces>
-  <Indent>SPACE,2,true,true</Indent>
+  <!--Indent>
+    <type>SPACE</type>
+    <size>2</size>
+    <noHeader>true</noHeader>
+    <allowBlockLine>true</allowBlockLine>
+  </Indent-->
   <Header>
     <location>@CMAKE_SOURCE_DIR@/Utilities/KWStyle/NifTKHeader.h</location>
     <checkSpacesEndOfLine>true</checkSpacesEndOfLine>
+    <cvsFormat>false</cvsFormat>
   </Header>
   <Typedefs>[A-Z],false</Typedefs>
   <IfNDefDefine>[NameOfClass]_[Extension]</IfNDefDefine>
@@ -42,7 +48,7 @@
     <spaceAfter>1</spaceAfter>
   </Operator>
   <Struct>
-  <regex>[a-z]<regex>
+    <regex>[a-z]<regex>
   </Struct>
   <StatementPerLine>
     <maxNumber>1</maxNumber>
@@ -56,8 +62,8 @@
     <regex>[A-Z]</regex>
     <length>100</length>
   </MemberFunctions>
-  <Functions>
+  <!--Functions>
     <regex>[A-Z]</regex>
     <length>100</length>
-  </Functions>
+  </Functions-->
 </Description>

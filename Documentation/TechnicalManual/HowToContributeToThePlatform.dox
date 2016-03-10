@@ -1,0 +1,100 @@
+/**
+
+\page HowToContributeToThePlatform How To - Contribute to The Platform
+
+There are several ways to contribute. These are listed below in increasing order of complexity.
+
+\li \ref ContributingUseThePlatform
+\li \ref ContributingWriteAScript
+\li \ref ContributingWriteAnITKFilter
+\li \ref ContributingWriteAGUIPlugin
+
+\section ContributingUseThePlatform Use the platform and provide feedback
+
+The first suggestion is to simply use NifTK and especially NiftyView. The NifTK project has daily, weekly and monthly builds.
+The monthly builds are for general use, and so it is important to make sure these work well. Other builds are for 
+development and testing purposes. In addition to nightly unit testing, the only way to make sure NiftyView is genuinely useful
+is to have lots of users feedback, so this is one of the most important things people can do.
+
+\li <b>Daily</b>: Work with the development team to test a known issue. When code has been checked in, verify it by testing it the next day.
+\li <b>Weekly</b>: The development team works throughout the week, trying to make sure things are stable by Friday. So you
+can help by picking up last weeks weekly build on a Monday to test up and coming new functionality, and provide early feedback.
+\li <b>Monthly</b>: Each month, new functionality will be delivered. A month is also a reasonable time to build and test a plugin. So if
+you want new functionality in NiftyView, you can help out by sitting down with the development team at the start of the
+month and helping design and implement the plugin over the course of the month.
+
+The location of these pre-built packages is listed on the wiki.
+
+\section ContributingWriteAScript Combine algorithms together in a pipeline
+
+NifTK has many \link UserManualCommandLineApplicationsGenerated command line applications\endlink. These can be connected together 
+using bash or python scripting. 
+
+\li Write a script and place it in:
+\verbatim
+NifTK/Scripts
+\endverbatim
+under a suitably named folder. 
+\li If you create a new folder, add the new folder name to
+\verbatim
+NifTK/Scripts/CMakeLists.txt
+\endverbatim
+\li If you create a new folder, add a new CMakeLists.txt into the new folder to build the new scripts into 
+the released software. Look in the existing folders for suitable examples. 
+
+We currently have scripts for registration, 
+segmentation, TBSS, FreeSurfer, Voxel Based Cortical Thickness Estimation and so on. Speak to Matt, or Kelvin for examples to 
+suit your needs.
+
+The NiftyView 2012 roadmap includes the integration of the Slicer Execution Model to enable command line applications 
+and scripts to be run from within NiftyView. This will enable quicker integration of command line programs into the
+GUI. So the combination of scripted pipelines and command line applications running ITK filters is a simple and effective
+entry point to NifTK development.
+
+\section ContributingWriteAnITKFilter Write a new world changing algorithm as an ITK filter
+
+Writing an ITK filter is easy if you know C++. Please refer to the ITK Software Guide for an introduction.
+In addition, the UCL MSc module Information Processing in Medical Imaging 
+course has a workshop on writing ITK filters, and ITK itself and the NifTK toolit have many real examples. You can simply 
+integrate your new medical image processing algorithm by writing a command line program and calling ITK filters directly. 
+The use of ITK provides a standard architecture for things like multi-threaded processing, and coping with n-dimensional 
+images of arbitrary datatypes.
+
+\li Write a new filter and place it in
+\verbatim
+NifTK/Libraries/ITK
+\endverbatim
+under a suitably named folder.
+\li Most ITK code is templated, and so does not need compiling into a library. If you added code that does need compiling, 
+you will need to add it into the list niftkITK_SRCS in
+\verbatim
+NifTK/Libraries/ITK/CMakeLists.txt
+\endverbatim
+\li Write unit tests under the Testing subfolder.
+\li Write a command line application and place it in
+\verbatim
+NifTK/Applications
+\endverbatim
+
+Don't forget to write effective command line argument parsing and also documentation in the top of your 
+application file. Look in \ref niftkAdd for an example.
+
+\section ContributingWriteAGUIPlugin Develop a new GUI plugin
+
+Writing a GUI plugin is still quite easy and the number of examples and documentation at <a href="http://www.mitk.org">MITK</a>
+and for NifTK is growing all the time. 
+
+\li Place any ITK/VTK or general algorithm logic in a C++ library under
+\verbatim
+NifTK/Libraries
+\endverbatim
+\li If your algorithm or piece of functionality that you are testing depends heavily on MITK, then most of the logic should go under
+\verbatim
+NifTK/MITK/Modules
+\endverbatim
+\li Unit tests can be placed under the 'Testing' subdirectory of the individual libraries modules.
+
+Building the GUI will often require some iteration, as different users discover different usability features and suggestions. 
+You should follow the more detailed instructions \link HowToWritePlugins here\endlink, and work collaboratively to achieve 
+an effective plugin.
+*/
