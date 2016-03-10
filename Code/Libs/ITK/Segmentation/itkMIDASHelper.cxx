@@ -108,4 +108,4 @@ std::string GetMajorAxisFromPatientRelativeDirectionCosine(double x,double y,dou
   return axis;
 }
 
-} // end namespace
+}

@@ -110,12 +110,12 @@ private:
   /** Calculates the region, either side of the sliceNumber, given the currentOrientation. returning each slice to process as a separate region of interest. */
   std::vector<RegionType> GetRegionAsSlices(ImageType* image, Orientation currentOrientation, int sliceNumber, bool doSingleSlice, bool doPlus);
 
-}; // end class
+};
 
-} // end namespace
+}
 
 #ifndef ITK_MANUAL_INSTANTIATION
 #include "itkMIDASRegionOfInterestCalculator.txx"
 #endif
 
-#endif // ITKMIDASREGIONOFINTERESTCALCULATOR_H
+#endif

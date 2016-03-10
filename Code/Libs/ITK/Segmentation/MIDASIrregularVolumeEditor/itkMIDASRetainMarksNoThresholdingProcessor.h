@@ -88,10 +88,10 @@ private:
   void operator=(const Self&); //purposely not implemented
 };
 
-} // end namespace
+}
 
 #ifndef ITK_MANUAL_INSTANTIATION
 #include "itkMIDASRetainMarksNoThresholdingProcessor.txx"
 #endif
 
-#endif // ITKMIDASRETAINMARKSNOTHRESHOLDINGPROCESSOR_H
+#endif

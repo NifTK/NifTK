@@ -95,10 +95,10 @@ private:
   DataListType m_After;
 };
 
-} // end namespace
+}
 
 #ifndef ITK_MANUAL_INSTANTIATION
 #include "itkMIDASImageUpdatePixelWiseSingleValueProcessor.txx"
 #endif
 
-#endif // ITKMIDASIMAGEUPDATEPIXELWISESINGLEVALUEPROCESSOR_H
+#endif
