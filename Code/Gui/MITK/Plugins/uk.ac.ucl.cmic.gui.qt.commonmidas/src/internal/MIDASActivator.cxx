@@ -15,9 +15,10 @@
 #include "MIDASActivator.h"
 #include <QtPlugin>
 #include <mitkGlobalInteraction.h>
-#include <mitkMIDASTool.h>
+#include <niftkMIDASTool.h>
 
-namespace mitk {
+namespace niftk
+{
 
 ctkPluginContext* MIDASActivator::s_PluginContext(NULL);
 
@@ -26,7 +27,7 @@ void MIDASActivator::start(ctkPluginContext* context)
 {
   s_PluginContext = context;
 
-  mitk::MIDASTool::LoadBehaviourStrings();
+  niftk::MIDASTool::LoadBehaviourStrings();
 }
 
 
@@ -43,9 +44,9 @@ ctkPluginContext* MIDASActivator::GetPluginContext()
   return s_PluginContext;
 }
 
-} // end namespace
+}
 
 //-----------------------------------------------------------------------------
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_commonmidas, mitk::MIDASActivator)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_gui_qt_commonmidas, niftk::MIDASActivator)
 #endif

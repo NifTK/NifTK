@@ -16,7 +16,7 @@
 #define QmitkMIDASDrawToolGUI_h
 
 #include <niftkMIDASGuiExports.h>
-#include <mitkMIDASDrawTool.h>
+#include <niftkMIDASDrawTool.h>
 #include <QmitkToolGUI.h>
 
 class QFrame;
@@ -25,7 +25,7 @@ class ctkSliderWidget;
 
 /**
  * \class QmitkMIDASDrawToolGUI
- * \brief GUI component for the mitk::MIDASDrawTool, providing a single slider to control the radius in
+ * \brief GUI component for the niftk::MIDASDrawTool, providing a single slider to control the radius in
  * millimetres of the "erase" function.
  *
  * Notice how this class can have a reference to the mitk::Tool it is controlling, and registers with the
@@ -66,7 +66,7 @@ protected:
   ctkSliderWidget* m_Slider;
   QFrame* m_Frame;
 
-  mitk::MIDASDrawTool::Pointer m_DrawTool;
+  niftk::MIDASDrawTool::Pointer m_DrawTool;
 };
 
 #endif

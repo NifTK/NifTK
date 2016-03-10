@@ -30,13 +30,13 @@
 #include <QmitkBaseView.h>
 #include <QmitkMIDASImageAndSegmentationSelectorWidget.h>
 #include <QmitkMIDASToolSelectorWidget.h>
-#include <mitkMIDASOrientationUtils.h>
+#include <niftkMIDASOrientationUtils.h>
 
 // Miscellaneous.
 #include <mitkToolManager.h>
 #include <itkImage.h>
 
-#include <mitkMIDASEventFilter.h>
+#include <niftkMIDASEventFilter.h>
 
 class QmitkRenderWindow;
 
@@ -51,7 +51,7 @@ class QmitkRenderWindow;
  * \sa MIDASGeneralSegmentorView
  * \sa MITKSegmentationView
  */
-class CMIC_QT_COMMONMIDAS QmitkMIDASBaseSegmentationFunctionality : public QmitkBaseView, public mitk::MIDASEventFilter
+class CMIC_QT_COMMONMIDAS QmitkMIDASBaseSegmentationFunctionality : public QmitkBaseView, public niftk::MIDASEventFilter
 {
 
   Q_OBJECT

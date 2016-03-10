@@ -13,31 +13,31 @@
 #============================================================================*/
 
 set(CPP_FILES
-  DataManagement/mitkMIDASDataNodeNameStringFilter.cxx
-  Algorithms/mitkMIDASMorphologicalSegmentorPipelineManager.cxx
-  Algorithms/mitkGeneralSegmentorPipeline.cxx
-  Interactions/mitkMIDASTool.cxx
-  Interactions/mitkMIDASContourToolEventInterface.cxx
-  Interactions/mitkMIDASContourToolOpAccumulateContour.cxx
-  Interactions/mitkMIDASContourTool.cxx
-  Interactions/mitkMIDASDrawToolEventInterface.cxx
-  Interactions/mitkMIDASDrawToolOpEraseContour.cxx
-  Interactions/mitkMIDASDrawTool.cxx
-  Interactions/mitkMIDASEventFilter.cxx
-  Interactions/mitkMIDASPointSetInteractor.cxx
-  Interactions/mitkMIDASPointSetDataInteractor.cxx
-  Interactions/mitkMIDASPolyToolEventInterface.cxx
-  Interactions/mitkMIDASPolyToolOpAddToFeedbackContour.cxx
-  Interactions/mitkMIDASPolyToolOpUpdateFeedbackContour.cxx
-  Interactions/mitkMIDASPolyTool.cxx
-  Interactions/mitkMIDASSeedTool.cxx
-  Interactions/mitkMIDASPosnTool.cxx
-  Interactions/mitkMIDASPaintbrushToolEventInterface.cxx
-  Interactions/mitkMIDASPaintbrushToolOpEditImage.cxx
-  Interactions/mitkMIDASPaintbrushTool.cxx
-  Interactions/mitkMIDASRendererFilter.cxx
-  Interactions/mitkMIDASStateMachine.cxx
-  Interactions/mitkMIDASToolKeyPressStateMachine.cxx
+  DataManagement/niftkMIDASDataNodeNameStringFilter.cxx
+  Algorithms/niftkMIDASMorphologicalSegmentorPipelineManager.cxx
+  Algorithms/niftkGeneralSegmentorPipeline.cxx
+  Interactions/niftkMIDASTool.cxx
+  Interactions/niftkMIDASContourToolEventInterface.cxx
+  Interactions/niftkMIDASContourToolOpAccumulateContour.cxx
+  Interactions/niftkMIDASContourTool.cxx
+  Interactions/niftkMIDASDrawToolEventInterface.cxx
+  Interactions/niftkMIDASDrawToolOpEraseContour.cxx
+  Interactions/niftkMIDASDrawTool.cxx
+  Interactions/niftkMIDASEventFilter.cxx
+  Interactions/niftkMIDASPointSetInteractor.cxx
+  Interactions/niftkMIDASPointSetDataInteractor.cxx
+  Interactions/niftkMIDASPolyToolEventInterface.cxx
+  Interactions/niftkMIDASPolyToolOpAddToFeedbackContour.cxx
+  Interactions/niftkMIDASPolyToolOpUpdateFeedbackContour.cxx
+  Interactions/niftkMIDASPolyTool.cxx
+  Interactions/niftkMIDASSeedTool.cxx
+  Interactions/niftkMIDASPosnTool.cxx
+  Interactions/niftkMIDASPaintbrushToolEventInterface.cxx
+  Interactions/niftkMIDASPaintbrushToolOpEditImage.cxx
+  Interactions/niftkMIDASPaintbrushTool.cxx
+  Interactions/niftkMIDASRendererFilter.cxx
+  Interactions/niftkMIDASStateMachine.cxx
+  Interactions/niftkMIDASToolKeyPressStateMachine.cxx
 )
 
 set(RESOURCE_FILES

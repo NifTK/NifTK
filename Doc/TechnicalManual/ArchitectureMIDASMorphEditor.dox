@@ -97,7 +97,7 @@ single working data. In our case, the working data are 4 intermediate image that
 ITK pipeline. 
 
 Furthermore, the <a href="http://docs.mitk.org/nightly-qt4/InteractionPage.html">MITK undo/redo framework</a> 
-is used so that the mitk::MIDASPaintbrushTool can undo and redo the edits.
+is used so that the niftk::MIDASPaintbrushTool can undo and redo the edits.
 
 \section ArchitectureMIDASMorphEditorConclusion Conclusion
 

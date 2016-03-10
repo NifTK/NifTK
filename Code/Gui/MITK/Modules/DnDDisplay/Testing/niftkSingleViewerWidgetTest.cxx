@@ -29,7 +29,7 @@
 #include <QmitkMimeTypes.h>
 #include <QmitkRegisterClasses.h>
 
-#include <mitkMIDASOrientationUtils.h>
+#include <niftkMIDASOrientationUtils.h>
 #include <mitkNifTKCoreObjectFactory.h>
 #include <niftkSingleViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
@@ -576,8 +576,8 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
   d->Image = dynamic_cast<mitk::Image*>(d->ImageNode->GetData());
 
   d->WorldOrigin = Self::GetWorldOrigin(d->Image->GetGeometry());
-  mitk::GetExtentsInVxInWorldCoordinateOrder(d->Image, d->WorldExtents);
-  mitk::GetSpacingInWorldCoordinateOrder(d->Image, d->WorldSpacings);
+  niftk::GetExtentsInVxInWorldCoordinateOrder(d->Image, d->WorldExtents);
+  niftk::GetSpacingInWorldCoordinateOrder(d->Image, d->WorldSpacings);
 
 //  MITK_INFO << "Image origin: " << d->Image->GetGeometry()->GetOrigin();
 //  MITK_INFO << "World origin: " << d->WorldOrigin;

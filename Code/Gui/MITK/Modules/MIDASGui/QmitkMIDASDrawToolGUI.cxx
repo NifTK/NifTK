@@ -71,7 +71,7 @@ void QmitkMIDASDrawToolGUI::OnNewToolAssociated(mitk::Tool* tool)
     m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<QmitkMIDASDrawToolGUI, double>(this, &QmitkMIDASDrawToolGUI::OnCursorSizeChanged);
   }
 
-  m_DrawTool = dynamic_cast<mitk::MIDASDrawTool*>(tool);
+  m_DrawTool = dynamic_cast<niftk::MIDASDrawTool*>(tool);
 
   if (m_DrawTool.IsNotNull())
   {

@@ -37,11 +37,11 @@
 
 #include <NifTKConfigure.h>
 #include <QmitkMIDASNewSegmentationDialog.h>
-#include <mitkMIDASTool.h>
-#include <mitkMIDASDrawTool.h>
-#include <mitkMIDASPolyTool.h>
-#include <mitkMIDASSeedTool.h>
-#include <mitkMIDASOrientationUtils.h>
+#include <niftkMIDASTool.h>
+#include <niftkMIDASDrawTool.h>
+#include <niftkMIDASPolyTool.h>
+#include <niftkMIDASSeedTool.h>
+#include <niftkMIDASOrientationUtils.h>
 
 const QString QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR("midas editor default colour");
 const QString QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
@@ -71,7 +71,7 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
   for ( ; it != tools.end(); ++it)
   {
     mitk::Tool* tool = const_cast<mitk::Tool*>(it->GetPointer());
-    if (mitk::MIDASStateMachine* midasSM = dynamic_cast<mitk::MIDASStateMachine*>(tool))
+    if (niftk::MIDASStateMachine* midasSM = dynamic_cast<niftk::MIDASStateMachine*>(tool))
     {
       midasSM->RemoveEventFilter(this);
     }
@@ -198,7 +198,7 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     for ( ; it != tools.end(); ++it)
     {
       mitk::Tool* tool = const_cast<mitk::Tool*>(it->GetPointer());
-      if (mitk::MIDASStateMachine* midasSM = dynamic_cast<mitk::MIDASStateMachine*>(tool))
+      if (niftk::MIDASStateMachine* midasSM = dynamic_cast<niftk::MIDASStateMachine*>(tool))
       {
         midasSM->InstallEventFilter(this);
       }
@@ -654,7 +654,7 @@ int QmitkMIDASBaseSegmentationFunctionality::GetAxisFromReferenceImage(const MID
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
   if (referenceImage.IsNotNull())
   {
-    axis = mitk::GetThroughPlaneAxis(referenceImage, orientation);
+    axis = niftk::GetThroughPlaneAxis(referenceImage, orientation);
   }
   return axis;
 }
@@ -689,7 +689,7 @@ int QmitkMIDASBaseSegmentationFunctionality::GetViewAxis()
   MIDASOrientation orientation = this->GetOrientationAsEnum();
   if (referenceImage.IsNotNull() && orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    axisNumber = mitk::GetThroughPlaneAxis(referenceImage, orientation);
+    axisNumber = niftk::GetThroughPlaneAxis(referenceImage, orientation);
   }
   return axisNumber;
 }
@@ -703,7 +703,7 @@ int QmitkMIDASBaseSegmentationFunctionality::GetUpDirection()
   MIDASOrientation orientation = this->GetOrientationAsEnum();
   if (referenceImage.IsNotNull() && orientation != MIDAS_ORIENTATION_UNKNOWN)
   {
-    upDirection = mitk::GetUpDirection(referenceImage, orientation);
+    upDirection = niftk::GetUpDirection(referenceImage, orientation);
   }
   return upDirection;
 }

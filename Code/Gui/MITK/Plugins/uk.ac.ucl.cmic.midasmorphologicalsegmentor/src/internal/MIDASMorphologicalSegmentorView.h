@@ -22,7 +22,7 @@
 #include <MorphologicalSegmentorPipelineParams.h>
 #include "MIDASMorphologicalSegmentorViewPreferencePage.h"
 #include "MIDASMorphologicalSegmentorViewControlsImpl.h"
-#include <mitkMIDASMorphologicalSegmentorPipelineManager.h>
+#include <niftkMIDASMorphologicalSegmentorPipelineManager.h>
 
 
 /**
@@ -171,7 +171,7 @@ private:
   MIDASMorphologicalSegmentorViewControlsImpl* m_MorphologicalControls;
 
   /// \brief As much "business logic" as possible is delegated to this class so we can unit test it, without a GUI.
-  mitk::MIDASMorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
+  niftk::MIDASMorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
 
   /// \brief Keep local variable to update after the tab has changed.
   int m_TabIndex;

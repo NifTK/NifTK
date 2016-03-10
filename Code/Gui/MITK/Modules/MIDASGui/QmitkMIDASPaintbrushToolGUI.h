@@ -17,7 +17,7 @@
 
 #include <niftkMIDASGuiExports.h>
 #include <QmitkToolGUI.h>
-#include <mitkMIDASPaintbrushTool.h>
+#include <niftkMIDASPaintbrushTool.h>
 
 class QSlider;
 class QLabel;
@@ -25,7 +25,7 @@ class QFrame;
 
 /**
  * \class QmitkMIDASPaintbrushToolGUI
- * \brief GUI component for the mitk::MIDASPaintbrushTool, providing the number of pixels in radius for
+ * \brief GUI component for the niftk::MIDASPaintbrushTool, providing the number of pixels in radius for
  * the cursor.
  *
  * Notice how this class can have a reference to the mitk::Tool it is controlling, and registers with the
@@ -67,7 +67,7 @@ protected:
   QLabel* m_SizeLabel;
   QFrame* m_Frame;
 
-  mitk::MIDASPaintbrushTool::Pointer m_PaintbrushTool;
+  niftk::MIDASPaintbrushTool::Pointer m_PaintbrushTool;
 };
 
 #endif

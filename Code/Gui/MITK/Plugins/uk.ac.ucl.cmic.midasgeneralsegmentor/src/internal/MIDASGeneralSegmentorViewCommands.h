@@ -319,6 +319,6 @@ private:
   ProcessorPointer m_Processor;
 };
 
-} // end namespace
+}
 
 #endif

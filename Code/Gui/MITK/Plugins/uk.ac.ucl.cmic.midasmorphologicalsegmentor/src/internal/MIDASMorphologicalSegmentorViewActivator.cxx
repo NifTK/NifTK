@@ -17,7 +17,8 @@
 #include <QtPlugin>
 #include "MIDASMorphologicalSegmentorViewPreferencePage.h"
 
-namespace mitk {
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewActivator::start(ctkPluginContext* context)
@@ -37,5 +38,5 @@ void MIDASMorphologicalSegmentorViewActivator::stop(ctkPluginContext* context)
 
 //-----------------------------------------------------------------------------
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_midasmorphologicalsegmentor, mitk::MIDASMorphologicalSegmentorViewActivator)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_midasmorphologicalsegmentor, niftk::MIDASMorphologicalSegmentorViewActivator)
 #endif

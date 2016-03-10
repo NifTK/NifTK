@@ -17,7 +17,8 @@
 
 #include <ctkPluginActivator.h>
 
-namespace mitk {
+namespace niftk
+{
 
 class MIDASActivator :
   public QObject, public ctkPluginActivator
@@ -39,8 +40,8 @@ private:
 
   static ctkPluginContext* s_PluginContext;
 
-}; // MIDASActivator
+};
 
-} // end namespace
+}
 
 #endif

@@ -72,7 +72,7 @@ void QmitkMIDASPaintbrushToolGUI::OnNewToolAssociated(mitk::Tool* tool)
     m_PaintbrushTool->CursorSizeChanged -= mitk::MessageDelegate1<QmitkMIDASPaintbrushToolGUI, int>( this, &QmitkMIDASPaintbrushToolGUI::OnCursorSizeChanged );
   }
 
-  m_PaintbrushTool = dynamic_cast<mitk::MIDASPaintbrushTool*>( tool );
+  m_PaintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>( tool );
 
   if (m_PaintbrushTool.IsNotNull())
   {
