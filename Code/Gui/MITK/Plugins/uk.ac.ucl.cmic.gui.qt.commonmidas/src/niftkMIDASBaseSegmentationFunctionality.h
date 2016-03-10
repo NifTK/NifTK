@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASBaseSegmentationFunctionality_h
-#define QmitkMIDASBaseSegmentationFunctionality_h
+#ifndef niftkMIDASBaseSegmentationFunctionality_h
+#define niftkMIDASBaseSegmentationFunctionality_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>
 
@@ -28,8 +28,8 @@
 
 // Qmitk for Qt/MITK stuff.
 #include <QmitkBaseView.h>
-#include <QmitkMIDASImageAndSegmentationSelectorWidget.h>
-#include <QmitkMIDASToolSelectorWidget.h>
+#include <niftkMIDASImageAndSegmentationSelectorWidget.h>
+#include <niftkMIDASToolSelectorWidget.h>
 #include <niftkMIDASOrientationUtils.h>
 
 // Miscellaneous.
@@ -41,7 +41,7 @@
 class QmitkRenderWindow;
 
 /**
- * \class QmitkMIDASBaseSegmentationFunctionality
+ * \class niftkMIDASBaseSegmentationFunctionality
  * \brief Base view component for MIDAS Segmentation widgets.
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
@@ -51,16 +51,16 @@ class QmitkRenderWindow;
  * \sa MIDASGeneralSegmentorView
  * \sa MITKSegmentationView
  */
-class CMIC_QT_COMMONMIDAS QmitkMIDASBaseSegmentationFunctionality : public QmitkBaseView, public niftk::MIDASEventFilter
+class CMIC_QT_COMMONMIDAS niftkMIDASBaseSegmentationFunctionality : public QmitkBaseView, public niftk::MIDASEventFilter
 {
 
   Q_OBJECT
 
 public:
 
-  QmitkMIDASBaseSegmentationFunctionality();
-  QmitkMIDASBaseSegmentationFunctionality(const QmitkMIDASBaseSegmentationFunctionality& other);
-  virtual ~QmitkMIDASBaseSegmentationFunctionality();
+  niftkMIDASBaseSegmentationFunctionality();
+  niftkMIDASBaseSegmentationFunctionality(const niftkMIDASBaseSegmentationFunctionality& other);
+  virtual ~niftkMIDASBaseSegmentationFunctionality();
 
   /// \brief Returns true if the event should be filtered, i.e. not processed,
   /// otherwise false.
@@ -108,7 +108,7 @@ signals:
 protected slots:
 
   /**
-   * \brief Called from QmitkMIDASToolSelectorWidget when a tool changes.... where we may need to enable or disable the editors from moving/changing position, zoom, etc.
+   * \brief Called from niftkMIDASToolSelectorWidget when a tool changes.... where we may need to enable or disable the editors from moving/changing position, zoom, etc.
    */
   virtual void OnToolSelected(int);
 
@@ -244,10 +244,10 @@ protected:
   mitk::Image::Pointer m_SelectedImage;
 
   /// \brief Common widget, enabling selection of Image and Segmentation, that might be replaced once we have a database.
-  QmitkMIDASImageAndSegmentationSelectorWidget *m_ImageAndSegmentationSelector;
+  niftkMIDASImageAndSegmentationSelectorWidget *m_ImageAndSegmentationSelector;
 
   /// \brief Common widget, enabling selection of a segmentation tool.
-  QmitkMIDASToolSelectorWidget *m_ToolSelector;
+  niftkMIDASToolSelectorWidget *m_ToolSelector;
 
   /// \brief Container for Selector Widget.
   QWidget *m_ContainerForSelectorWidget;

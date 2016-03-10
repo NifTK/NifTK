@@ -12,17 +12,17 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASSegmentationPerspective.h"
+#include "niftkMIDASQCPerspective.h"
 #include <berryIViewLayout.h>
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSegmentationPerspective::QmitkMIDASSegmentationPerspective()
+niftkMIDASQCPerspective::niftkMIDASQCPerspective()
 {
 }
  
 
 //-----------------------------------------------------------------------------
-QmitkMIDASSegmentationPerspective::QmitkMIDASSegmentationPerspective(const QmitkMIDASSegmentationPerspective& other)
+niftkMIDASQCPerspective::niftkMIDASQCPerspective(const niftkMIDASQCPerspective& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -30,12 +30,12 @@ QmitkMIDASSegmentationPerspective::QmitkMIDASSegmentationPerspective(const Qmitk
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASSegmentationPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
+void niftkMIDASQCPerspective::CreateInitialLayout(berry::IPageLayout::Pointer layout)
 {
   QString editorArea = layout->GetEditorArea();
 
   layout->AddView("org.mitk.views.datamanager",
-    berry::IPageLayout::LEFT, 0.20f, editorArea);
+    berry::IPageLayout::LEFT, 0.12f, editorArea);
 
   berry::IViewLayout::Pointer lo = layout->GetViewLayout("org.mitk.views.datamanager");
   lo->SetCloseable(false);
@@ -45,15 +45,4 @@ void QmitkMIDASSegmentationPerspective::CreateInitialLayout(berry::IPageLayout::
 
   layout->AddView("uk.ac.ucl.cmic.imagelookuptables",
     berry::IPageLayout::BOTTOM, 0.33f, "uk.ac.ucl.cmic.thumbnail");
-
-  layout->AddView("uk.ac.ucl.cmic.imagestatistics",
-    berry::IPageLayout::BOTTOM, 0.50f, "uk.ac.ucl.cmic.imagelookuptables");
-
-  layout->AddView("uk.ac.ucl.cmic.sideviewer",
-    berry::IPageLayout::RIGHT, 0.70f, editorArea);
-
-  berry::IFolderLayout::Pointer segmentationViewsFolder =
-      layout->CreateFolder("uk.ac.ucl.cmic.segmentationviews", berry::IPageLayout::BOTTOM, 0.50f, "uk.ac.ucl.cmic.sideviewer");
-  segmentationViewsFolder->AddView("uk.ac.ucl.cmic.midasmorphologicalsegmentor");
-  segmentationViewsFolder->AddView("uk.ac.ucl.cmic.midasgeneralsegmentor");
 }

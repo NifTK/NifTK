@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASNewSegmentationDialog_h
-#define QmitkMIDASNewSegmentationDialog_h
+#ifndef niftkMIDASNewSegmentationDialog_h
+#define niftkMIDASNewSegmentationDialog_h
 
 #include <niftkMIDASGuiExports.h>
 
@@ -22,21 +22,21 @@
 #include <QmitkNewSegmentationDialog.h>
 
 /**
- * \class QmitkMIDASNewSegmentationDialog
- * \brief Derives from QmitkNewSegmentationDialog, to simply set the default colour to pure green.
- * \sa QmitkNewSegmentationDialog
+ * \class niftkMIDASNewSegmentationDialog
+ * \brief Derives from niftkNewSegmentationDialog, to simply set the default colour to pure green.
+ * \sa niftkNewSegmentationDialog
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASNewSegmentationDialog : public QmitkNewSegmentationDialog
+class NIFTKMIDASGUI_EXPORT niftkMIDASNewSegmentationDialog : public QmitkNewSegmentationDialog
 {
   Q_OBJECT
 
 public:
 
   /// \brief Constructor, which sets the default button colour to that given by defaultColor.
-  QmitkMIDASNewSegmentationDialog(const QColor& defaultColor, QWidget* parent = 0);
+  niftkMIDASNewSegmentationDialog(const QColor& defaultColor, QWidget* parent = 0);
 
-  /// \brief Destructs the QmitkMIDASNewSegmentationDialog object.
-  virtual ~QmitkMIDASNewSegmentationDialog();
+  /// \brief Destructs the niftkMIDASNewSegmentationDialog object.
+  virtual ~niftkMIDASNewSegmentationDialog();
 
 };
 #endif

@@ -85,7 +85,7 @@ const mitk::OperationType MIDASGeneralSegmentorView::OP_PROPAGATE = 9320417;
 
 //-----------------------------------------------------------------------------
 MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
-: QmitkMIDASBaseSegmentationFunctionality()
+: niftkMIDASBaseSegmentationFunctionality()
 , m_ToolKeyPressStateMachine(NULL)
 , m_GeneralControls(NULL)
 , m_Layout(NULL)
@@ -144,7 +144,7 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_Layout->setContentsMargins(6, 6, 6, 0);
     m_Layout->setSpacing(3);
 
-    QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
+    niftkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
 
     m_ContainerForControlsWidget = new QWidget(parent);
     m_ContainerForControlsWidget->setContentsMargins(0, 0, 0, 0);
@@ -179,7 +179,7 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::CreateConnections()
 {
-  QmitkMIDASBaseSegmentationFunctionality::CreateConnections();
+  niftkMIDASBaseSegmentationFunctionality::CreateConnections();
 
   if ( m_GeneralControls )
   {
@@ -228,7 +228,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::Visible()
 {
-  QmitkMIDASBaseSegmentationFunctionality::Visible();
+  niftkMIDASBaseSegmentationFunctionality::Visible();
 
   /// TODO
 //  mitk::GlobalInteraction::GetInstance()->AddListener( m_ToolKeyPressStateMachine );
@@ -249,7 +249,7 @@ void MIDASGeneralSegmentorView::Visible()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::Hidden()
 {
-  QmitkMIDASBaseSegmentationFunctionality::Hidden();
+  niftkMIDASBaseSegmentationFunctionality::Hidden();
 
   if (m_SliceNavigationController.IsNotNull())
   {

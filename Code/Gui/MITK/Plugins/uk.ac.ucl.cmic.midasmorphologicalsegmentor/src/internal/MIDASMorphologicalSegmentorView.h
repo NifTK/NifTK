@@ -15,7 +15,7 @@
 #ifndef MIDASMorphologicalSegmentorView_h
 #define MIDASMorphologicalSegmentorView_h
 
-#include <QmitkMIDASBaseSegmentationFunctionality.h>
+#include <niftkMIDASBaseSegmentationFunctionality.h>
 
 #include <mitkImage.h>
 
@@ -37,13 +37,13 @@
  *
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  *
- * \sa QmitkMIDASBaseSegmentationFunctionality
+ * \sa niftkMIDASBaseSegmentationFunctionality
  * \sa MIDASMorphologicalSegmentorPipelineManager
  * \sa MorphologicalSegmentorPipeline
  * \sa MorphologicalSegmentorPipelineInterface
  * \sa MorphologicalSegmentorPipelineParams
  */
-class MIDASMorphologicalSegmentorView : public QmitkMIDASBaseSegmentationFunctionality
+class MIDASMorphologicalSegmentorView : public niftkMIDASBaseSegmentationFunctionality
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)

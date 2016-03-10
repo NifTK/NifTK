@@ -21,7 +21,7 @@ set(SRC_CPP_FILES
   QmitkNiftyViewApplicationPreferencePage.cxx
   QmitkCommonAppsMinimalPerspective.cxx
   QmitkCommonAppsIGIPerspective.cxx
-  QmitkMIDASSegmentationPerspective.cxx
+  niftkMIDASSegmentationPerspective.cxx
 
   QmitkExtActionBarAdvisor.cpp
   QmitkExtWorkbenchWindowAdvisor.cpp
@@ -47,7 +47,7 @@ set(MOC_H_FILES
   src/QmitkNiftyViewApplicationPreferencePage.h
   src/QmitkCommonAppsMinimalPerspective.h
   src/QmitkCommonAppsIGIPerspective.h
-  src/QmitkMIDASSegmentationPerspective.h
+  src/niftkMIDASSegmentationPerspective.h
 
   src/QmitkExtFileSaveProjectAction.h
   src/QmitkExtWorkbenchWindowAdvisor.h

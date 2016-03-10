@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASDrawToolGUI.h"
+#include "niftkMIDASDrawToolGUI.h"
 
 #include <ctkSliderWidget.h>
 
@@ -21,11 +21,11 @@
 #include <QPainter>
 
 
-MITK_TOOL_GUI_MACRO(NIFTKMIDASGUI_EXPORT, QmitkMIDASDrawToolGUI, "")
+MITK_TOOL_GUI_MACRO(NIFTKMIDASGUI_EXPORT, niftkMIDASDrawToolGUI, "")
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASDrawToolGUI::QmitkMIDASDrawToolGUI()
+niftkMIDASDrawToolGUI::niftkMIDASDrawToolGUI()
 :QmitkToolGUI()
 , m_Slider(NULL)
 , m_Frame(NULL)
@@ -54,21 +54,21 @@ QmitkMIDASDrawToolGUI::QmitkMIDASDrawToolGUI()
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASDrawToolGUI::~QmitkMIDASDrawToolGUI()
+niftkMIDASDrawToolGUI::~niftkMIDASDrawToolGUI()
 {
   if (m_DrawTool.IsNotNull())
   {
-    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<QmitkMIDASDrawToolGUI, double>(this, &QmitkMIDASDrawToolGUI::OnCursorSizeChanged);
+    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<niftkMIDASDrawToolGUI, double>(this, &niftkMIDASDrawToolGUI::OnCursorSizeChanged);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASDrawToolGUI::OnNewToolAssociated(mitk::Tool* tool)
+void niftkMIDASDrawToolGUI::OnNewToolAssociated(mitk::Tool* tool)
 {
   if (m_DrawTool.IsNotNull())
   {
-    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<QmitkMIDASDrawToolGUI, double>(this, &QmitkMIDASDrawToolGUI::OnCursorSizeChanged);
+    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<niftkMIDASDrawToolGUI, double>(this, &niftkMIDASDrawToolGUI::OnCursorSizeChanged);
   }
 
   m_DrawTool = dynamic_cast<niftk::MIDASDrawTool*>(tool);
@@ -76,13 +76,13 @@ void QmitkMIDASDrawToolGUI::OnNewToolAssociated(mitk::Tool* tool)
   if (m_DrawTool.IsNotNull())
   {
     this->OnCursorSizeChanged(m_DrawTool->GetCursorSize());
-    m_DrawTool->CursorSizeChanged += mitk::MessageDelegate1<QmitkMIDASDrawToolGUI, double>(this, &QmitkMIDASDrawToolGUI::OnCursorSizeChanged);
+    m_DrawTool->CursorSizeChanged += mitk::MessageDelegate1<niftkMIDASDrawToolGUI, double>(this, &niftkMIDASDrawToolGUI::OnCursorSizeChanged);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASDrawToolGUI::OnSliderValueChanged(double value)
+void niftkMIDASDrawToolGUI::OnSliderValueChanged(double value)
 {
   if (m_DrawTool.IsNotNull())
   {
@@ -92,7 +92,7 @@ void QmitkMIDASDrawToolGUI::OnSliderValueChanged(double value)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASDrawToolGUI::OnCursorSizeChanged(double cursorSize)
+void niftkMIDASDrawToolGUI::OnCursorSizeChanged(double cursorSize)
 {
   m_Slider->setValue(cursorSize);
 }

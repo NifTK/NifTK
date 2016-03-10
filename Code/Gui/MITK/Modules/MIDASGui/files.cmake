@@ -13,22 +13,22 @@
 #============================================================================*/
 
 set(CPP_FILES
-  Dialogs/QmitkMIDASNewSegmentationDialog.cxx
-  QmitkMIDASToolSelectorWidget.cxx
-  QmitkMIDASImageAndSegmentationSelectorWidget.cxx
-  QmitkMIDASDrawToolGUI.cxx
-  QmitkMIDASPaintbrushToolGUI.cxx
+  Dialogs/niftkMIDASNewSegmentationDialog.cxx
+  niftkMIDASToolSelectorWidget.cxx
+  niftkMIDASImageAndSegmentationSelectorWidget.cxx
+  niftkMIDASDrawToolGUI.cxx
+  niftkMIDASPaintbrushToolGUI.cxx
 )
 
 set(MOC_H_FILES 
-  Dialogs/QmitkMIDASNewSegmentationDialog.h
-  QmitkMIDASToolSelectorWidget.h
-  QmitkMIDASImageAndSegmentationSelectorWidget.h
-  QmitkMIDASDrawToolGUI.h
-  QmitkMIDASPaintbrushToolGUI.h
+  Dialogs/niftkMIDASNewSegmentationDialog.h
+  niftkMIDASToolSelectorWidget.h
+  niftkMIDASImageAndSegmentationSelectorWidget.h
+  niftkMIDASDrawToolGUI.h
+  niftkMIDASPaintbrushToolGUI.h
 )
 
 set(UI_FILES
-  Resources/UI/QmitkMIDASImageAndSegmentationSelector.ui
-  Resources/UI/QmitkMIDASToolSelector.ui
+  Resources/UI/niftkMIDASImageAndSegmentationSelector.ui
+  Resources/UI/niftkMIDASToolSelector.ui
 )

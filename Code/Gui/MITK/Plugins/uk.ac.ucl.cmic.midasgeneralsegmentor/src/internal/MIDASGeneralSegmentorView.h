@@ -34,7 +34,7 @@
 #include <mitkOperation.h>
 #include <mitkSliceNavigationController.h>
 
-#include <QmitkMIDASBaseSegmentationFunctionality.h>
+#include <niftkMIDASBaseSegmentationFunctionality.h>
 
 #include <niftkGeneralSegmentorPipeline.h>
 #include <niftkMIDASContourTool.h>
@@ -142,10 +142,10 @@ class QGridLayout;
  * 3. If the user elects to overwrite the new slice, we simply copy all seeds and all image data to the new slice.
  * </pre>
  *
- * \sa QmitkMIDASBaseSegmentationFunctionality
+ * \sa niftkMIDASBaseSegmentationFunctionality
  * \sa MIDASMorphologicalSegmentorView
  */
-class MIDASGeneralSegmentorView : public QmitkMIDASBaseSegmentationFunctionality,
+class MIDASGeneralSegmentorView : public niftkMIDASBaseSegmentationFunctionality,
                                   public niftk::MIDASToolKeyPressResponder,
                                   public mitk::OperationActor
 {
@@ -323,7 +323,7 @@ protected:
   /// \brief Creates the Qt connections of widgets in this class to the slots in this class.
   virtual void CreateConnections();
 
-  /// \see QmitkMIDASBaseSegmentation::EnableSegmentationWidgets
+  /// \see niftkMIDASBaseSegmentation::EnableSegmentationWidgets
   virtual void EnableSegmentationWidgets(bool checked);
 
   /// \brief For Irregular Volume Editing, a Segmentation image should have a grey
@@ -340,7 +340,7 @@ protected:
   virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
 
   /// \brief Returns the name of the preferences node to look up.
-  /// \see QmitkMIDASBaseSegmentationFunctionality::GetPreferencesNodeName
+  /// \see niftkMIDASBaseSegmentationFunctionality::GetPreferencesNodeName
   virtual QString GetPreferencesNodeName() { return MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
 
   /// \brief This view registers with the mitk::DataStorage and listens for changing
@@ -874,7 +874,7 @@ private:
   /// \brief Used to put the base class widgets, and these widgets above in a common layout.
   QGridLayout *m_Layout;
 
-  /// \brief Container for the main Widgets. Also \see QmitkMIDASBaseSegmentationFunctionality
+  /// \brief Container for the main Widgets. Also \see niftkMIDASBaseSegmentationFunctionality
   QWidget *m_ContainerForControlsWidget;
 
   /// \brief Keep track of this to SliceNavigationController register and unregister event listeners.

@@ -12,7 +12,7 @@
     <perspective
       id="uk.ac.ucl.cmic.gui.qt.niftymidas.segmentation_perspective"
       name="MIDAS Segmentation"
-      class="QmitkMIDASSegmentationPerspective"
+      class="niftkMIDASSegmentationPerspective"
       icon="resources/icon_ion.xpm">
     </perspective>
   </extension>
@@ -21,7 +21,7 @@
     <perspective
       id="uk.ac.ucl.cmic.gui.qt.niftymidas.qc_perspective"
       name="MIDAS QC"
-      class="QmitkMIDASQCPerspective"
+      class="niftkMIDASQCPerspective"
       icon="resources/icon_ion.xpm">
     </perspective>
   </extension>

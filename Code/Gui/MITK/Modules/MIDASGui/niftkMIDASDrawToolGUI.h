@@ -12,21 +12,21 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASPaintbrushToolGUI_h
-#define QmitkMIDASPaintbrushToolGUI_h
+#ifndef niftkMIDASDrawToolGUI_h
+#define niftkMIDASDrawToolGUI_h
 
 #include <niftkMIDASGuiExports.h>
+#include <niftkMIDASDrawTool.h>
 #include <QmitkToolGUI.h>
-#include <niftkMIDASPaintbrushTool.h>
 
-class QSlider;
-class QLabel;
 class QFrame;
 
+class ctkSliderWidget;
+
 /**
- * \class QmitkMIDASPaintbrushToolGUI
- * \brief GUI component for the niftk::MIDASPaintbrushTool, providing the number of pixels in radius for
- * the cursor.
+ * \class niftkMIDASDrawToolGUI
+ * \brief GUI component for the niftk::MIDASDrawTool, providing a single slider to control the radius in
+ * millimetres of the "erase" function.
  *
  * Notice how this class can have a reference to the mitk::Tool it is controlling, and registers with the
  * mitk::Tool in the OnNewToolAssociated method, and de-registers with the mitk::Tool in the destructor.
@@ -34,17 +34,17 @@ class QFrame;
  * The reverse is not true. Any mitk::Tool must not know that it has a GUI, and hence the reason they
  * are in a different library / Module.
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASPaintbrushToolGUI : public QmitkToolGUI
+class NIFTKMIDASGUI_EXPORT niftkMIDASDrawToolGUI : public QmitkToolGUI
 {
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(QmitkMIDASPaintbrushToolGUI, QmitkToolGUI);
-  itkNewMacro(QmitkMIDASPaintbrushToolGUI);
+  mitkClassMacro(niftkMIDASDrawToolGUI, QmitkToolGUI);
+  itkNewMacro(niftkMIDASDrawToolGUI);
 
   /// \brief Method to set or initialise the size of the cursor (radius of influence).
-  void OnCursorSizeChanged(int current);
+  void OnCursorSizeChanged(double cursorSize);
 
 signals:
 
@@ -56,18 +56,17 @@ protected slots:
   void OnNewToolAssociated(mitk::Tool*);
 
   /// \brief Qt slot called when the user moves the slider.
-  void OnSliderValueChanged(int value);
+  void OnSliderValueChanged(double value);
 
 protected:
 
-  QmitkMIDASPaintbrushToolGUI();
-  virtual ~QmitkMIDASPaintbrushToolGUI();
+  niftkMIDASDrawToolGUI();
+  virtual ~niftkMIDASDrawToolGUI();
 
-  QSlider* m_Slider;
-  QLabel* m_SizeLabel;
+  ctkSliderWidget* m_Slider;
   QFrame* m_Frame;
 
-  niftk::MIDASPaintbrushTool::Pointer m_PaintbrushTool;
+  niftk::MIDASDrawTool::Pointer m_DrawTool;
 };
 
 #endif

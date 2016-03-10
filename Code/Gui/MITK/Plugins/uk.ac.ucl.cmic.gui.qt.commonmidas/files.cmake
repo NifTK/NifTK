@@ -13,7 +13,7 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  QmitkMIDASBaseSegmentationFunctionality.cxx
+  niftkMIDASBaseSegmentationFunctionality.cxx
 )
 
 set(INTERNAL_CPP_FILES
@@ -25,7 +25,7 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/internal/MIDASActivator.h
-  src/QmitkMIDASBaseSegmentationFunctionality.h
+  src/niftkMIDASBaseSegmentationFunctionality.h
 )
 
 set(CACHED_RESOURCE_FILES

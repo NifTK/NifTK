@@ -53,7 +53,7 @@ namespace niftk
   * 4.) Derives from mitk::OperationActor, so this tool supports undo/redo.
   * </pre>
   *
-  * This class is a MITK tool with a GUI defined in QmitkMIDASPaintbrushToolGUI, and instantiated
+  * This class is a MITK tool with a GUI defined in niftkMIDASPaintbrushToolGUI, and instantiated
   * using the object factory described in Maleike et. al. doi:10.1016/j.cmpb.2009.04.004.
   *
   * To effectively use this tool, you need a 3 button mouse.

@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASNewSegmentationDialog.h"
+#include "niftkMIDASNewSegmentationDialog.h"
 
 #include <QPushButton>
 #include <QString>
 
 //-----------------------------------------------------------------------------
-QmitkMIDASNewSegmentationDialog::QmitkMIDASNewSegmentationDialog(const QColor& defaultColor, QWidget* parent)
+niftkMIDASNewSegmentationDialog::niftkMIDASNewSegmentationDialog(const QColor& defaultColor, QWidget* parent)
 : QmitkNewSegmentationDialog(parent)
 {
   QString styleSheet = "background-color: rgb(";
@@ -38,6 +38,6 @@ QmitkMIDASNewSegmentationDialog::QmitkMIDASNewSegmentationDialog(const QColor& d
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASNewSegmentationDialog::~QmitkMIDASNewSegmentationDialog()
+niftkMIDASNewSegmentationDialog::~niftkMIDASNewSegmentationDialog()
 {
 }

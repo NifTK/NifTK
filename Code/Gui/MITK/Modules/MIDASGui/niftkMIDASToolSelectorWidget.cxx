@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASToolSelectorWidget.h"
+#include "niftkMIDASToolSelectorWidget.h"
 #include <mitkToolManagerProvider.h>
 
 //-----------------------------------------------------------------------------
-QmitkMIDASToolSelectorWidget::QmitkMIDASToolSelectorWidget(QWidget *parent)
+niftkMIDASToolSelectorWidget::niftkMIDASToolSelectorWidget(QWidget *parent)
 {
   this->setupUi(parent);
 
@@ -40,26 +40,26 @@ QmitkMIDASToolSelectorWidget::QmitkMIDASToolSelectorWidget(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASToolSelectorWidget::~QmitkMIDASToolSelectorWidget()
+niftkMIDASToolSelectorWidget::~niftkMIDASToolSelectorWidget()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager* QmitkMIDASToolSelectorWidget::GetToolManager() const
+mitk::ToolManager* niftkMIDASToolSelectorWidget::GetToolManager() const
 {
   return m_ManualToolSelectionBox->GetToolManager();
 }
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASToolSelectorWidget::SetToolManager(mitk::ToolManager& toolManager) // no NULL pointer allowed here, a manager is required
+void niftkMIDASToolSelectorWidget::SetToolManager(mitk::ToolManager& toolManager) // no NULL pointer allowed here, a manager is required
 {
   m_ManualToolSelectionBox->SetToolManager(toolManager);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASToolSelectorWidget::SetEnabled(bool enabled)
+void niftkMIDASToolSelectorWidget::SetEnabled(bool enabled)
 {
   this->setEnabled(enabled);
   m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
@@ -77,21 +77,21 @@ void QmitkMIDASToolSelectorWidget::SetEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASToolSelectorWidget::GetEnabled() const
+bool niftkMIDASToolSelectorWidget::GetEnabled() const
 {
   return this->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASToolSelectorWidget::GetActiveToolID()
+int niftkMIDASToolSelectorWidget::GetActiveToolID()
 {
   return m_ManualToolSelectionBox->GetToolManager()->GetActiveToolID();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASToolSelectorWidget::OnToolSelected(int toolId)
+void niftkMIDASToolSelectorWidget::OnToolSelected(int toolId)
 {
   emit ToolSelected(toolId);
 }

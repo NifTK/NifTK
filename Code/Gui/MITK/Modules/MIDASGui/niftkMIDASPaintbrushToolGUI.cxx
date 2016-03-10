@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASPaintbrushToolGUI.h"
+#include "niftkMIDASPaintbrushToolGUI.h"
 
 #include <qlabel.h>
 #include <qslider.h>
@@ -20,11 +20,11 @@
 #include <qlayout.h>
 #include <qpainter.h>
 
-MITK_TOOL_GUI_MACRO(NIFTKMIDASGUI_EXPORT, QmitkMIDASPaintbrushToolGUI, "")
+MITK_TOOL_GUI_MACRO(NIFTKMIDASGUI_EXPORT, niftkMIDASPaintbrushToolGUI, "")
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASPaintbrushToolGUI::QmitkMIDASPaintbrushToolGUI()
+niftkMIDASPaintbrushToolGUI::niftkMIDASPaintbrushToolGUI()
 :QmitkToolGUI()
 , m_Slider(NULL)
 , m_SizeLabel(NULL)
@@ -55,34 +55,34 @@ QmitkMIDASPaintbrushToolGUI::QmitkMIDASPaintbrushToolGUI()
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASPaintbrushToolGUI::~QmitkMIDASPaintbrushToolGUI()
+niftkMIDASPaintbrushToolGUI::~niftkMIDASPaintbrushToolGUI()
 {
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->CursorSizeChanged -= mitk::MessageDelegate1<QmitkMIDASPaintbrushToolGUI, int>( this, &QmitkMIDASPaintbrushToolGUI::OnCursorSizeChanged );
+    m_PaintbrushTool->CursorSizeChanged -= mitk::MessageDelegate1<niftkMIDASPaintbrushToolGUI, int>( this, &niftkMIDASPaintbrushToolGUI::OnCursorSizeChanged );
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASPaintbrushToolGUI::OnNewToolAssociated(mitk::Tool* tool)
+void niftkMIDASPaintbrushToolGUI::OnNewToolAssociated(mitk::Tool* tool)
 {
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->CursorSizeChanged -= mitk::MessageDelegate1<QmitkMIDASPaintbrushToolGUI, int>( this, &QmitkMIDASPaintbrushToolGUI::OnCursorSizeChanged );
+    m_PaintbrushTool->CursorSizeChanged -= mitk::MessageDelegate1<niftkMIDASPaintbrushToolGUI, int>( this, &niftkMIDASPaintbrushToolGUI::OnCursorSizeChanged );
   }
 
   m_PaintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>( tool );
 
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->CursorSizeChanged += mitk::MessageDelegate1<QmitkMIDASPaintbrushToolGUI, int>( this, &QmitkMIDASPaintbrushToolGUI::OnCursorSizeChanged );
+    m_PaintbrushTool->CursorSizeChanged += mitk::MessageDelegate1<niftkMIDASPaintbrushToolGUI, int>( this, &niftkMIDASPaintbrushToolGUI::OnCursorSizeChanged );
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASPaintbrushToolGUI::OnSliderValueChanged(int value)
+void niftkMIDASPaintbrushToolGUI::OnSliderValueChanged(int value)
 {
   if (m_PaintbrushTool.IsNotNull())
   {
@@ -93,7 +93,7 @@ void QmitkMIDASPaintbrushToolGUI::OnSliderValueChanged(int value)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASPaintbrushToolGUI::OnCursorSizeChanged(int current)
+void niftkMIDASPaintbrushToolGUI::OnCursorSizeChanged(int current)
 {
   m_Slider->setValue(current);
 }

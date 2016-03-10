@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASToolSelectorWidget_h
-#define QmitkMIDASToolSelectorWidget_h
+#ifndef niftkMIDASToolSelectorWidget_h
+#define niftkMIDASToolSelectorWidget_h
 
 #include <niftkMIDASGuiExports.h>
 #include <QWidget>
-#include "ui_QmitkMIDASToolSelector.h"
+#include "ui_niftkMIDASToolSelector.h"
 
 /**
- * \class QmitkMIDASToolSelectorWidget
+ * \class niftkMIDASToolSelectorWidget
  * \brief Implements a widget containing the QmitkToolGUIArea and QmitkToolSelectionBox.
  *
  * This widget provides SetEnabled() and GetEnabled(), which simplify the idea
@@ -28,7 +28,7 @@
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
-class NIFTKMIDASGUI_EXPORT QmitkMIDASToolSelectorWidget : public QWidget, public Ui::QmitkMIDASToolSelector {
+class NIFTKMIDASGUI_EXPORT niftkMIDASToolSelectorWidget : public QWidget, public Ui::niftkMIDASToolSelector {
 
   Q_OBJECT
 
@@ -37,12 +37,12 @@ public:
   /**
    * \brief Constructor.
    */
-  QmitkMIDASToolSelectorWidget(QWidget *parent = 0);
+  niftkMIDASToolSelectorWidget(QWidget *parent = 0);
 
   /**
    * \brief Destructor.
    */
-  ~QmitkMIDASToolSelectorWidget();
+  ~niftkMIDASToolSelectorWidget();
 
   /**
    * \brief Set the widget to be enabled / disabled.
@@ -84,8 +84,8 @@ protected:
 
 private:
 
-  QmitkMIDASToolSelectorWidget(const QmitkMIDASToolSelectorWidget&);  // Purposefully not implemented.
-  void operator=(const QmitkMIDASToolSelectorWidget&);  // Purposefully not implemented.
+  niftkMIDASToolSelectorWidget(const niftkMIDASToolSelectorWidget&);  // Purposefully not implemented.
+  void operator=(const niftkMIDASToolSelectorWidget&);  // Purposefully not implemented.
 
 };
 

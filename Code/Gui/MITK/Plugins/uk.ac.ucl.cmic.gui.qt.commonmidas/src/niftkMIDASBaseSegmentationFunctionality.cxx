@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "QmitkMIDASBaseSegmentationFunctionality.h"
+#include "niftkMIDASBaseSegmentationFunctionality.h"
 
 #include <berryPlatform.h>
 
@@ -36,19 +36,19 @@
 #include <QmitkRenderWindow.h>
 
 #include <NifTKConfigure.h>
-#include <QmitkMIDASNewSegmentationDialog.h>
+#include <niftkMIDASNewSegmentationDialog.h>
 #include <niftkMIDASTool.h>
 #include <niftkMIDASDrawTool.h>
 #include <niftkMIDASPolyTool.h>
 #include <niftkMIDASSeedTool.h>
 #include <niftkMIDASOrientationUtils.h>
 
-const QString QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR("midas editor default colour");
-const QString QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
+const QString niftkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR("midas editor default colour");
+const QString niftkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality()
+niftkMIDASBaseSegmentationFunctionality::niftkMIDASBaseSegmentationFunctionality()
 : m_SelectedNode(NULL)
 , m_SelectedImage(NULL)
 , m_ImageAndSegmentationSelector(NULL)
@@ -64,7 +64,7 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionality()
+niftkMIDASBaseSegmentationFunctionality::~niftkMIDASBaseSegmentationFunctionality()
 {
   mitk::ToolManager::ToolVectorTypeConst tools = this->GetToolManager()->GetTools();
   mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();
@@ -90,7 +90,7 @@ QmitkMIDASBaseSegmentationFunctionality::~QmitkMIDASBaseSegmentationFunctionalit
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent* stateEvent) const
+bool niftkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent* stateEvent) const
 {
   // If we have a render window part (aka. editor or display)...
   if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
@@ -113,7 +113,7 @@ bool QmitkMIDASBaseSegmentationFunctionality::EventFilter(const mitk::StateEvent
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASBaseSegmentationFunctionality::EventFilter(mitk::InteractionEvent* event) const
+bool niftkMIDASBaseSegmentationFunctionality::EventFilter(mitk::InteractionEvent* event) const
 {
   // If we have a render window part (aka. editor or display)...
   if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
@@ -136,7 +136,7 @@ bool QmitkMIDASBaseSegmentationFunctionality::EventFilter(mitk::InteractionEvent
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::Activated()
+void niftkMIDASBaseSegmentationFunctionality::Activated()
 {
   QmitkBaseView::Activated();
 
@@ -146,29 +146,29 @@ void QmitkMIDASBaseSegmentationFunctionality::Activated()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::Deactivated()
+void niftkMIDASBaseSegmentationFunctionality::Deactivated()
 {
   QmitkBaseView::Deactivated();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::Visible()
+void niftkMIDASBaseSegmentationFunctionality::Visible()
 {
   QmitkBaseView::Visible();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::Hidden()
+void niftkMIDASBaseSegmentationFunctionality::Hidden()
 {
   QmitkBaseView::Hidden();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality(
-    const QmitkMIDASBaseSegmentationFunctionality& other)
+niftkMIDASBaseSegmentationFunctionality::niftkMIDASBaseSegmentationFunctionality(
+    const niftkMIDASBaseSegmentationFunctionality& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -176,14 +176,14 @@ QmitkMIDASBaseSegmentationFunctionality::QmitkMIDASBaseSegmentationFunctionality
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::RegisterTools(mitk::ToolManager::Pointer toolManager)
+void niftkMIDASBaseSegmentationFunctionality::RegisterTools(mitk::ToolManager::Pointer toolManager)
 {
   Q_UNUSED(toolManager);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *parent)
+void niftkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *parent)
 {
   if (!m_ImageAndSegmentationSelector)
   {
@@ -208,7 +208,7 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     // Set up the Image and Segmentation Selector.
     // Subclasses add it to their layouts, at the appropriate point.
     m_ContainerForSelectorWidget = new QWidget(parent);
-    m_ImageAndSegmentationSelector = new QmitkMIDASImageAndSegmentationSelectorWidget(m_ContainerForSelectorWidget);
+    m_ImageAndSegmentationSelector = new niftkMIDASImageAndSegmentationSelectorWidget(m_ContainerForSelectorWidget);
     m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
     m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
     m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->show();
@@ -218,7 +218,7 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
     // Set up the Tool Selector.
     // Subclasses add it to their layouts, at the appropriate point.
     m_ContainerForToolWidget = new QWidget(parent);
-    m_ToolSelector = new QmitkMIDASToolSelectorWidget(m_ContainerForToolWidget);
+    m_ToolSelector = new niftkMIDASToolSelectorWidget(m_ContainerForToolWidget);
     m_ToolSelector->SetToolManager(*toolManager.GetPointer());
     m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(true);
     m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
@@ -232,14 +232,14 @@ void QmitkMIDASBaseSegmentationFunctionality::CreateQtPartControl(QWidget *paren
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager* QmitkMIDASBaseSegmentationFunctionality::GetToolManager()
+mitk::ToolManager* niftkMIDASBaseSegmentationFunctionality::GetToolManager()
 {
   return m_ToolSelector->GetToolManager();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
+void niftkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 {
   if (toolID != -1)
   {
@@ -267,7 +267,7 @@ void QmitkMIDASBaseSegmentationFunctionality::OnToolSelected(int toolID)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkbenchPart::Pointer /*part*/, const QList<mitk::DataNode::Pointer> &nodes)
+void niftkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkbenchPart::Pointer /*part*/, const QList<mitk::DataNode::Pointer> &nodes)
 {
   // By default, assume we are not going to enable the controls.
   bool valid = false;
@@ -340,7 +340,7 @@ void QmitkMIDASBaseSegmentationFunctionality::OnSelectionChanged(berry::IWorkben
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* QmitkMIDASBaseSegmentationFunctionality::GetWorkingImageFromToolManager(int i)
+mitk::Image* niftkMIDASBaseSegmentationFunctionality::GetWorkingImageFromToolManager(int i)
 {
   mitk::Image* result = NULL;
 
@@ -363,7 +363,7 @@ mitk::Image* QmitkMIDASBaseSegmentationFunctionality::GetWorkingImageFromToolMan
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromToolManager()
+mitk::DataNode* niftkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromToolManager()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -373,7 +373,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromToo
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageFromToolManager()
+mitk::Image* niftkMIDASBaseSegmentationFunctionality::GetReferenceImageFromToolManager()
 {
   mitk::Image* result = NULL;
 
@@ -391,7 +391,7 @@ mitk::Image* QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageFromToolM
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer node)
+mitk::DataNode* niftkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   mitk::DataNode* result = mitk::FindFirstParentImage(this->GetDataStorage(), node, false );
   return result;
@@ -399,7 +399,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetReferenceNodeFromSeg
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType QmitkMIDASBaseSegmentationFunctionality::GetWorkingData()
+mitk::ToolManager::DataVectorType niftkMIDASBaseSegmentationFunctionality::GetWorkingData()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -409,7 +409,7 @@ mitk::ToolManager::DataVectorType QmitkMIDASBaseSegmentationFunctionality::GetWo
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* QmitkMIDASBaseSegmentationFunctionality::GetReferenceImage()
+mitk::Image* niftkMIDASBaseSegmentationFunctionality::GetReferenceImage()
 {
   mitk::Image* result = this->GetReferenceImageFromToolManager();
   return result;
@@ -417,26 +417,26 @@ mitk::Image* QmitkMIDASBaseSegmentationFunctionality::GetReferenceImage()
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASBaseSegmentationFunctionality::IsNodeAReferenceImage(const mitk::DataNode::Pointer node)
+bool niftkMIDASBaseSegmentationFunctionality::IsNodeAReferenceImage(const mitk::DataNode::Pointer node)
 {
   return mitk::IsNodeAGreyScaleImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASBaseSegmentationFunctionality::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
+bool niftkMIDASBaseSegmentationFunctionality::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
 {
   return mitk::IsNodeABinaryImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMIDASBaseSegmentationFunctionality::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
+bool niftkMIDASBaseSegmentationFunctionality::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
 {
   return mitk::IsNodeABinaryImage(node);
 }
 
-mitk::ToolManager::DataVectorType QmitkMIDASBaseSegmentationFunctionality::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
+mitk::ToolManager::DataVectorType niftkMIDASBaseSegmentationFunctionality::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   // This default implementation just says Segmentation node == Working node, which subclasses could override.
 
@@ -447,7 +447,7 @@ mitk::ToolManager::DataVectorType QmitkMIDASBaseSegmentationFunctionality::GetWo
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
+mitk::DataNode* niftkMIDASBaseSegmentationFunctionality::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
 {
   // This default implementation just says Segmentation node == Working node, which subclasses could override.
 
@@ -457,7 +457,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::GetSegmentationNodeFrom
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::CreateNewSegmentation(QColor &defaultColor)
+mitk::DataNode* niftkMIDASBaseSegmentationFunctionality::CreateNewSegmentation(QColor &defaultColor)
 {
   mitk::DataNode::Pointer emptySegmentation = NULL;
 
@@ -474,7 +474,7 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::CreateNewSegmentation(Q
     {
       if (referenceImage->GetDimension() > 2)
       {
-        QmitkMIDASNewSegmentationDialog* dialog = new QmitkMIDASNewSegmentationDialog(defaultColor, this->GetParent() ); // needs a QWidget as parent, "this" is not QWidget
+        niftkMIDASNewSegmentationDialog* dialog = new niftkMIDASNewSegmentationDialog(defaultColor, this->GetParent() ); // needs a QWidget as parent, "this" is not QWidget
         int dialogReturnValue = dialog->exec();
         if ( dialogReturnValue == QDialog::Rejected ) return NULL; // user clicked cancel or pressed Esc or something similar
 
@@ -516,20 +516,20 @@ mitk::DataNode* QmitkMIDASBaseSegmentationFunctionality::CreateNewSegmentation(Q
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::CreateConnections()
+void niftkMIDASBaseSegmentationFunctionality::CreateConnections()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkMIDASBaseSegmentationFunctionality::GetFocusedRenderer()
+mitk::BaseRenderer* niftkMIDASBaseSegmentationFunctionality::GetFocusedRenderer()
 {
   return QmitkBaseView::GetFocusedRenderer();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::SetEnableManualToolSelectionBox(bool enabled)
+void niftkMIDASBaseSegmentationFunctionality::SetEnableManualToolSelectionBox(bool enabled)
 {
   m_ToolSelector->m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
   m_ToolSelector->m_ManualToolGUIContainer->setEnabled(enabled);
@@ -537,7 +537,7 @@ void QmitkMIDASBaseSegmentationFunctionality::SetEnableManualToolSelectionBox(bo
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::ApplyDisplayOptions(mitk::DataNode* node)
+void niftkMIDASBaseSegmentationFunctionality::ApplyDisplayOptions(mitk::DataNode* node)
 {
   if (!node) return;
 
@@ -555,7 +555,7 @@ void QmitkMIDASBaseSegmentationFunctionality::ApplyDisplayOptions(mitk::DataNode
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes)
+void niftkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -597,7 +597,7 @@ void QmitkMIDASBaseSegmentationFunctionality::SetToolManagerSelection(const mitk
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASBaseSegmentationFunctionality::GetSliceNumberFromSliceNavigationControllerAndReferenceImage()
+int niftkMIDASBaseSegmentationFunctionality::GetSliceNumberFromSliceNavigationControllerAndReferenceImage()
 {
   int sliceNumber = -1;
 
@@ -622,7 +622,7 @@ int QmitkMIDASBaseSegmentationFunctionality::GetSliceNumberFromSliceNavigationCo
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation QmitkMIDASBaseSegmentationFunctionality::GetOrientationAsEnum()
+MIDASOrientation niftkMIDASBaseSegmentationFunctionality::GetOrientationAsEnum()
 {
   MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
   const mitk::SliceNavigationController* sliceNavigationController = this->GetSliceNavigationController();
@@ -648,7 +648,7 @@ MIDASOrientation QmitkMIDASBaseSegmentationFunctionality::GetOrientationAsEnum()
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASBaseSegmentationFunctionality::GetAxisFromReferenceImage(const MIDASOrientation& orientation)
+int niftkMIDASBaseSegmentationFunctionality::GetAxisFromReferenceImage(const MIDASOrientation& orientation)
 {
   int axis = -1;
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
@@ -661,28 +661,28 @@ int QmitkMIDASBaseSegmentationFunctionality::GetAxisFromReferenceImage(const MID
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageAxialAxis()
+int niftkMIDASBaseSegmentationFunctionality::GetReferenceImageAxialAxis()
 {
   return this->GetAxisFromReferenceImage(MIDAS_ORIENTATION_AXIAL);
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageCoronalAxis()
+int niftkMIDASBaseSegmentationFunctionality::GetReferenceImageCoronalAxis()
 {
   return this->GetAxisFromReferenceImage(MIDAS_ORIENTATION_CORONAL);
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASBaseSegmentationFunctionality::GetReferenceImageSagittalAxis()
+int niftkMIDASBaseSegmentationFunctionality::GetReferenceImageSagittalAxis()
 {
   return this->GetAxisFromReferenceImage(MIDAS_ORIENTATION_SAGITTAL);
 }
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASBaseSegmentationFunctionality::GetViewAxis()
+int niftkMIDASBaseSegmentationFunctionality::GetViewAxis()
 {
   int axisNumber = -1;
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
@@ -696,7 +696,7 @@ int QmitkMIDASBaseSegmentationFunctionality::GetViewAxis()
 
 
 //-----------------------------------------------------------------------------
-int QmitkMIDASBaseSegmentationFunctionality::GetUpDirection()
+int niftkMIDASBaseSegmentationFunctionality::GetUpDirection()
 {
   int upDirection = 0;
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
@@ -710,7 +710,7 @@ int QmitkMIDASBaseSegmentationFunctionality::GetUpDirection()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::SetReferenceImageSelected()
+void niftkMIDASBaseSegmentationFunctionality::SetReferenceImageSelected()
 {
   mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
   if (referenceImageNode.IsNotNull())
@@ -721,14 +721,14 @@ void QmitkMIDASBaseSegmentationFunctionality::SetReferenceImageSelected()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::OnPreferencesChanged(const berry::IBerryPreferences*)
+void niftkMIDASBaseSegmentationFunctionality::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMIDASBaseSegmentationFunctionality::RetrievePreferenceValues()
+void niftkMIDASBaseSegmentationFunctionality::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
@@ -740,7 +740,7 @@ void QmitkMIDASBaseSegmentationFunctionality::RetrievePreferenceValues()
 
   assert( prefs );
 
-  QString defaultColorName = prefs->Get(QmitkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, "");
+  QString defaultColorName = prefs->Get(niftkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, "");
   m_DefaultSegmentationColor = QColor(defaultColorName);
   if (defaultColorName == "") // default values
   {

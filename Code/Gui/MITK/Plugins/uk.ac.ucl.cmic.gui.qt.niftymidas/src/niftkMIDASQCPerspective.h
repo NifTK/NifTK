@@ -12,29 +12,27 @@
 
 =============================================================================*/
 
-#ifndef QmitkMIDASSegmentationPerspective_h
-#define QmitkMIDASSegmentationPerspective_h
+#ifndef niftkMIDASQCPerspective_h
+#define niftkMIDASQCPerspective_h
 
-#include <uk_ac_ucl_cmic_gui_qt_commonapps_Export.h>
+#include <uk_ac_ucl_cmic_gui_qt_niftymidas_Export.h>
 #include <berryIPerspectiveFactory.h>
 
 /**
- * \class QmitkMIDASSegmentationPerspective
- * \brief Perspective to arrange widgets as would be suitable for MIDAS applications,
- * where the standard view has up to 5x5 independent windows.
- * \ingroup uk_ac_ucl_cmic_gui_qt_commonapps_internal
+ * \class QmitkQCPerspective
+ * \brief Perspective for doing scan quality control (QC).
  *
  * Note: We have to load at least one view component, to get an editor created.
  */
-class CMIC_QT_COMMONAPPS QmitkMIDASSegmentationPerspective : public QObject, public berry::IPerspectiveFactory
+class CMIC_QT_NIFTYMIDASAPP niftkMIDASQCPerspective : public QObject, public berry::IPerspectiveFactory
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPerspectiveFactory)
   
 public:
 
-  QmitkMIDASSegmentationPerspective();
-  QmitkMIDASSegmentationPerspective(const QmitkMIDASSegmentationPerspective& other);
+  niftkMIDASQCPerspective();
+  niftkMIDASQCPerspective(const niftkMIDASQCPerspective& other);
   
   void CreateInitialLayout(berry::IPageLayout::Pointer layout);
 
