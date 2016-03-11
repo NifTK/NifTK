@@ -44,7 +44,7 @@ do
   ep_needed_by=""
   for branch in $branches
   do
-    ep_version_on_branch=`git log -n 1 --pretty=format:%h $branch -- CMake/CMakeExternals/$ep_name.cmake | cut -c -5`
+    ep_version_on_branch=`git log -n 1 --pretty=format:%h $branch -- CMake/ExternalProjects/$ep_name.cmake | cut -c -5`
     if [ "$ep_version" == "$ep_version_on_branch" ]
     then
       ep_needed_by=$branch

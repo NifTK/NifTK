@@ -103,7 +103,7 @@ endmacro()
 # The user cannot be expected to know the component parts of apps.
 ######################################################################
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/Code/Gui/MITK/Apps/Apps.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/MITK/Applications/Apps.cmake")
 set(BUILD_GUI OFF)
 mark_as_advanced(BUILD_GUI)
 set(BUILD_IGI OFF)
@@ -142,8 +142,8 @@ endforeach()
 # build. So, look in CMake/Superbuild.cmake to see where they are
 # passed to the main build of NifTK when doing the Superbuild.
 ######################################################################
-option(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Code/Applications." ON)
-option(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Code/Scripts." ON)
+option(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications in NifTK/Applications." ON)
+option(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in NifTK/Scripts." ON)
 option(BUILD_CAMINO "Build Camino." OFF)
 option(BUILD_NiftyReg "Build NiftyReg." ON)
 option(BUILD_NiftyRec "Build NiftyRec." OFF)
@@ -234,7 +234,7 @@ set(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_
 set(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
 
 # Further variables for the external project names and locations are defined
-# in the external project CMake files under CMake/CMakeExternals.
+# in the external project CMake files under CMake/ExternalProjects.
 
 set(NIFTK_EP_TARBALL_LOCATION "http://cmic.cs.ucl.ac.uk/platform/dependencies")
 
@@ -291,7 +291,7 @@ find_package(Doxygen)
 set(CMAKE_MODULE_PATH
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/CMake
-    ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals
+    ${CMAKE_SOURCE_DIR}/CMake/ExternalProjects
     ${CMAKE_SOURCE_DIR}/CMake/cuda
     ${CMAKE_MODULE_PATH}
    )
@@ -540,7 +540,7 @@ endif()
 # ------------------------------------------------------------------------
 # Register external projects which can be build with the MITK superbuild
 # system. Each mitkFunctionAddExternalProject() call registers an external
-# project for which a CMakeExternals/<project>.cmake file must exist. The
+# project for which a ExternalProjects/<project>.cmake file must exist. The
 # call also creates a MITK_USE_<project> variable (appearing in the CMake
 # UI if the NO_CACHE option is *not* given).
 #
@@ -742,7 +742,7 @@ include(${CMAKE_ROOT}/Modules/Dart.cmake)
 mark_as_advanced(TCL_TCLSH DART_ROOT)
 enable_testing()
 if(BUILD_TESTING)
-  configure_file(${CMAKE_SOURCE_DIR}/Doc/Images/NifTKLogo.gif
+  configure_file(${CMAKE_SOURCE_DIR}/Documentation/Images/NifTKLogo.gif
                  ${CMAKE_BINARY_DIR}/Testing/HTML/TestingResults/Icons/Logo.gif
                  COPYONLY IMMEDIATE)
   set(BUILDNAME "${BUILDNAME}" CACHE STRING "Name of build on the dashboard")
@@ -835,51 +835,49 @@ endif(BUILD_ITKFFTW)
 ########################################################################
 set(NIFTK_INCLUDE_DIRS_BUILD_TREE
   ${CMAKE_BINARY_DIR}
-  ${CMAKE_BINARY_DIR}/Config
-  ${CMAKE_BINARY_DIR}/Code
-  ${CMAKE_SOURCE_DIR}/Code/Libs/Common
-  ${CMAKE_SOURCE_DIR}/Code/Libs/Common/Exceptions
-  ${CMAKE_SOURCE_DIR}/Code/Libs/MIDAS
-  ${CMAKE_SOURCE_DIR}/Code/Libs/VTK
-  ${CMAKE_SOURCE_DIR}/Code/Libs/VTK/Common
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Common
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BasicFilters
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/IO
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Numerics
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Pipelines
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BoundaryShiftIntegral
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/BreastCancerImaging
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/CorticalThickness
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Metrics
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Methods
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Transforms
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Optimizers
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Commands
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Construction
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Constraints
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/RegistrationToolbox/Filters
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Methods
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Optimizers
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Projection
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Metrics
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Commands
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/xRay
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/2D3DToolbox/Transforms
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASMorphologicalEditor
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/Segmentation/MIDASIrregularVolumeEditor
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITK/VesselToolbox
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITKVTK/IO
-  ${CMAKE_SOURCE_DIR}/Code/Libs/ITKIO
-  ${CMAKE_SOURCE_DIR}/Testing/Code/
-  ${CMAKE_SOURCE_DIR}/Testing/Code/Libs/ITK/RegistrationToolbox
+  ${CMAKE_SOURCE_DIR}/Libraries/Common
+  ${CMAKE_SOURCE_DIR}/Libraries/Common/Exceptions
+  ${CMAKE_SOURCE_DIR}/Libraries/MIDAS
+  ${CMAKE_SOURCE_DIR}/Libraries/VTK
+  ${CMAKE_SOURCE_DIR}/Libraries/VTK/Common
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Common
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/BasicFilters
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/IO
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Numerics
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Pipelines
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/BoundaryShiftIntegral
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/BreastCancerImaging
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/CorticalThickness
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Metrics
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Methods
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Transforms
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Optimizers
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Commands
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Construction
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Constraints
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/RegistrationToolbox/Filters
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/Methods
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/Optimizers
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/Projection
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/Metrics
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/Commands
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/xRay
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/2D3DToolbox/Transforms
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Segmentation
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Segmentation/MIDASMorphologicalEditor
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Segmentation/MIDASIrregularVolumeEditor
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Testing
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/Testing/RegistrationToolBox
+  ${CMAKE_SOURCE_DIR}/Libraries/ITK/VesselToolbox
+  ${CMAKE_SOURCE_DIR}/Libraries/ITKVTK/IO
+  ${CMAKE_SOURCE_DIR}/Libraries/ITKIO
 )
 if (BUILD_MESHING)
   set(NIFTK_INCLUDE_DIRS_BUILD_TREE
     ${NIFTK_INCLUDE_DIRS_BUILD_TREE}
-    ${CMAKE_SOURCE_DIR}/Code/Libs/Meshing
+    ${CMAKE_SOURCE_DIR}/Libraries/Meshing
   )
 endif (BUILD_MESHING)
  
@@ -1046,7 +1044,7 @@ set(CMAKE_MODULE_PATH
 if(APPLE)
 
   set(MACOSX_BUNDLE_NAMES)
-  include("${CMAKE_CURRENT_SOURCE_DIR}/Code/Gui/MITK/Apps/Apps.cmake")
+  include("${CMAKE_CURRENT_SOURCE_DIR}/MITK/Applications/Apps.cmake")
 
   foreach(NIFTK_APP ${NIFTK_APPS})
 
@@ -1573,32 +1571,32 @@ configure_file(${CMAKE_SOURCE_DIR}/INSTALLATION.txt ${CMAKE_BINARY_DIR}/INSTALLA
 configure_file(${CMAKE_SOURCE_DIR}/LICENSE.txt ${CMAKE_BINARY_DIR}/LICENSE.txt @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/README.txt ${CMAKE_BINARY_DIR}/README.txt @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CONTRIBUTORS.txt ${CMAKE_BINARY_DIR}/CONTRIBUTORS.txt @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/Config/SetupDependencies.sh.in ${CMAKE_BINARY_DIR}/SetupDependencies.sh @ONLY )
-configure_file(${CMAKE_SOURCE_DIR}/Config/SetupDependencies.csh.in ${CMAKE_BINARY_DIR}/SetupDependencies.csh @ONLY )
-configure_file(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.sh.in ${CMAKE_BINARY_DIR}/SetupNifTK.sh @ONLY )
-configure_file(${CMAKE_SOURCE_DIR}/Config/SetupNifTK.csh.in ${CMAKE_BINARY_DIR}/SetupNifTK.csh @ONLY )
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Doxygen/niftkdoxygen.pl.in ${CMAKE_BINARY_DIR}/niftkdoxygen.pl)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Doxygen/doxygen.config.in ${CMAKE_BINARY_DIR}/doxygen.config)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/License.dox.in ${CMAKE_BINARY_DIR}/Doxygen/License.dox)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/ArUco.txt ${CMAKE_BINARY_DIR}/LICENSE_ArUco.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/AprilTags.txt ${CMAKE_BINARY_DIR}/LICENSE_AprilTags.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/Boost.txt ${CMAKE_BINARY_DIR}/LICENSE_Boost.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/CTK.txt ${CMAKE_BINARY_DIR}/LICENSE_CTK.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/DCMTK.txt ${CMAKE_BINARY_DIR}/LICENSE_DCMTK.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/GDCM.txt ${CMAKE_BINARY_DIR}/LICENSE_GDCM.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt ${CMAKE_BINARY_DIR}/LICENSE_ITK.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/RTK.txt ${CMAKE_BINARY_DIR}/LICENSE_RTK.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/VL.txt ${CMAKE_BINARY_DIR}/LICENSE_VL.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt ${CMAKE_BINARY_DIR}/LICENSE_VTK.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt ${CMAKE_BINARY_DIR}/LICENSE_MITK.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyReg.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftyReg.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySeg.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftySeg.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySim.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftySim.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/OpenCV.txt ${CMAKE_BINARY_DIR}/LICENSE_OpenCV.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt ${CMAKE_BINARY_DIR}/LICENSE_Qt.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/Eigen.txt ${CMAKE_BINARY_DIR}/LICENSE_Eigen.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/FLANN.txt ${CMAKE_BINARY_DIR}/LICENSE_FLANN.txt)
-configure_file(${CMAKE_SOURCE_DIR}/Doc/Licenses/PCL.txt ${CMAKE_BINARY_DIR}/LICENSE_PCL.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Utilities/SetupDependencies.sh.in ${CMAKE_BINARY_DIR}/SetupDependencies.sh @ONLY )
+configure_file(${CMAKE_SOURCE_DIR}/Utilities/SetupDependencies.csh.in ${CMAKE_BINARY_DIR}/SetupDependencies.csh @ONLY )
+configure_file(${CMAKE_SOURCE_DIR}/Utilities/SetupNifTK.sh.in ${CMAKE_BINARY_DIR}/SetupNifTK.sh @ONLY )
+configure_file(${CMAKE_SOURCE_DIR}/Utilities/SetupNifTK.csh.in ${CMAKE_BINARY_DIR}/SetupNifTK.csh @ONLY )
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Doxygen/niftkdoxygen.pl.in ${CMAKE_BINARY_DIR}/niftkdoxygen.pl)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Doxygen/doxygen.config.in ${CMAKE_BINARY_DIR}/doxygen.config)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/License.dox.in ${CMAKE_BINARY_DIR}/Doxygen/License.dox)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/ArUco.txt ${CMAKE_BINARY_DIR}/LICENSE_ArUco.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/AprilTags.txt ${CMAKE_BINARY_DIR}/LICENSE_AprilTags.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/Boost.txt ${CMAKE_BINARY_DIR}/LICENSE_Boost.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/CTK.txt ${CMAKE_BINARY_DIR}/LICENSE_CTK.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/DCMTK.txt ${CMAKE_BINARY_DIR}/LICENSE_DCMTK.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/GDCM.txt ${CMAKE_BINARY_DIR}/LICENSE_GDCM.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/ITK.txt ${CMAKE_BINARY_DIR}/LICENSE_ITK.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/RTK.txt ${CMAKE_BINARY_DIR}/LICENSE_RTK.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/VL.txt ${CMAKE_BINARY_DIR}/LICENSE_VL.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/VTK.txt ${CMAKE_BINARY_DIR}/LICENSE_VTK.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/MITK.txt ${CMAKE_BINARY_DIR}/LICENSE_MITK.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/NiftyReg.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftyReg.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/NiftySeg.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftySeg.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/NiftySim.txt ${CMAKE_BINARY_DIR}/LICENSE_NiftySim.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/OpenCV.txt ${CMAKE_BINARY_DIR}/LICENSE_OpenCV.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/Qt.txt ${CMAKE_BINARY_DIR}/LICENSE_Qt.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/Eigen.txt ${CMAKE_BINARY_DIR}/LICENSE_Eigen.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/FLANN.txt ${CMAKE_BINARY_DIR}/LICENSE_FLANN.txt)
+configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/PCL.txt ${CMAKE_BINARY_DIR}/LICENSE_PCL.txt)
 if(BUILD_IGI)
   configure_file(${NiftyLink_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/NiftyLink.txt @ONLY)
   configure_file(${NiftyLink_OIGT_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/OpenIGTLink.txt @ONLY)
@@ -1616,26 +1614,26 @@ set(NIFTK_VTK_LIBS_WITH_QT vtkViewsQt vtkRenderingQt vtkGUISupportQt vtkGUISuppo
 # Install commands for things like README, licenses etc.
 ######################################################################
 
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Boost.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/ITK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/RTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VL.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/VTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Qt.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/MITK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/CTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyReg.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftyRec.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySeg.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/NiftySim.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/DCMTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/OpenCV.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/SlicerExecutionModel.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/ArUco.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/AprilTags.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/Eigen.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/FLANN.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Doc/Licenses/PCL.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/Boost.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/ITK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/RTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/VL.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/VTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/Qt.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/MITK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/CTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/NiftyReg.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/NiftyRec.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/NiftySeg.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/NiftySim.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/DCMTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/OpenCV.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/SlicerExecutionModel.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/ArUco.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/AprilTags.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/Eigen.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/FLANN.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/PCL.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 if(BUILD_IGI)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/NiftyLink.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/OpenIGTLink.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
@@ -1733,20 +1731,29 @@ endif()
 # Decide what subdirectories we are building, and go and build them.
 ######################################################################
 
-add_subdirectory(Doc)
-add_subdirectory(Code)
+add_subdirectory(Documentation)
+
+add_subdirectory(Libraries)
+
+if(BUILD_COMMAND_LINE_PROGRAMS)
+  add_subdirectory(Applications)
+endif()
 
 if(BUILD_UTILITIES)
   add_subdirectory(Utilities)
 endif(BUILD_UTILITIES)
 
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif(BUILD_TESTING)
-
 if(BUILD_PROTOTYPE)
   add_subdirectory(Prototype)
 endif(BUILD_PROTOTYPE)
+
+if(BUILD_COMMAND_LINE_SCRIPTS)
+  add_subdirectory(Scripts)
+endif()
+
+if(BUILD_GUI AND MITK_FOUND)
+  add_subdirectory(MITK)
+endif()
 
 ######################################################################
 # Packaging code.
@@ -1946,13 +1953,10 @@ endif()")
 endforeach()
 
 # This generates a C++ header file with values that need compiling into code.
-configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
-
-# This generates a C++ header file for GUI apps only.
-configure_file(${CMAKE_SOURCE_DIR}/Code/Gui/MITK/Apps/NifTKApplication.h ${CMAKE_BINARY_DIR}/NifTKApplication.h)
+configure_file(${CMAKE_SOURCE_DIR}/NifTKConfigure.h.in ${CMAKE_BINARY_DIR}/NifTKConfigure.h)
 
 # The next two generate CMake code to enable external projects to correctly use NifTK.
-configure_file(${CMAKE_SOURCE_DIR}/Config/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/NifTKConfig.cmake.in ${CMAKE_BINARY_DIR}/NifTKConfig.cmake @ONLY)
 write_basic_config_version_file(${CMAKE_CURRENT_BINARY_DIR}/NifTKConfigVersion.cmake VERSION "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" COMPATIBILITY AnyNewerVersion)
 
 ######################################################################
