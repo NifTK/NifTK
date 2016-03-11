@@ -68,9 +68,10 @@ public:
   typedef ParametricPathType::VertexListType ParametricPathVertexListType;
   typedef ParametricPathType::VertexType     ParametricPathVertexType;
 
+  virtual ~GeneralSegmentorPipelineInterface();
+
 protected:
   GeneralSegmentorPipelineInterface();
-  virtual ~GeneralSegmentorPipelineInterface();
 
 public:
   virtual void Update(GeneralSegmentorPipelineParams& params) = 0;
@@ -255,9 +256,12 @@ public:
                                              itk::PointSet<float, 3> >     MIDASRegionGrowingFilterType;
   typedef typename MIDASRegionGrowingFilterType::Pointer                   MIDASRegionGrowingFilterPointer;
 
-  // Methods
   GeneralSegmentorPipeline();
+
+  virtual ~GeneralSegmentorPipeline();
+
   void SetParam(GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams &params);
+
   void Update(GeneralSegmentorPipelineParams &params);
 
   /// \brief Disconnects the pipeline so that reference counts go to zero for the input image.

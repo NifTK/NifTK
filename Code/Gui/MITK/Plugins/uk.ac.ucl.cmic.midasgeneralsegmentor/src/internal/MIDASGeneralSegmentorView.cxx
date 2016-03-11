@@ -15,50 +15,51 @@
 #include "MIDASGeneralSegmentorView.h"
 
 #include <QButtonGroup>
-#include <QMessageBox>
 #include <QGridLayout>
+#include <QMessageBox>
 
-#include <mitkProperties.h>
-#include <mitkStringProperty.h>
-#include <mitkColorProperty.h>
-#include <mitkDataNodeObject.h>
-#include <mitkProperties.h>
-#include <mitkIRenderingManager.h>
-#include <mitkRenderingManager.h>
-#include <mitkSegTool2D.h>
-#include <mitkVtkResliceInterpolationProperty.h>
-#include <mitkPointSet.h>
-#include <mitkPointUtils.h>
-#include <mitkGlobalInteraction.h>
-#include <mitkTool.h>
-#include <mitkPointSet.h>
-#include <mitkImageAccessByItk.h>
-#include <mitkSlicedGeometry3D.h>
-#include <mitkITKImageImport.h>
-#include <mitkPlaneGeometry.h>
-#include <mitkOperationEvent.h>
-#include <mitkUndoController.h>
-#include <mitkDataStorageUtils.h>
-#include <mitkImageStatisticsHolder.h>
-#include <mitkContourModelSet.h>
-#include <mitkFocusManager.h>
-#include <mitkSegmentationObjectFactory.h>
-#include <mitkSurface.h>
 #include <itkCommand.h>
 #include <itkContinuousIndex.h>
 #include <itkImageFileWriter.h>
 
+#include <mitkColorProperty.h>
+#include <mitkContourModelSet.h>
+#include <mitkDataNodeObject.h>
+#include <mitkDataStorageUtils.h>
+#include <mitkFocusManager.h>
+#include <mitkGlobalInteraction.h>
+#include <mitkImageAccessByItk.h>
+#include <mitkImageStatisticsHolder.h>
+#include <mitkIRenderingManager.h>
+#include <mitkITKImageImport.h>
+#include <mitkOperationEvent.h>
+#include <mitkPlaneGeometry.h>
+#include <mitkPointSet.h>
+#include <mitkPointUtils.h>
+#include <mitkProperties.h>
+#include <mitkRenderingManager.h>
+#include <mitkSegmentationObjectFactory.h>
+#include <mitkSegTool2D.h>
+#include <mitkSlicedGeometry3D.h>
+#include <mitkStringProperty.h>
+#include <mitkSurface.h>
+#include <mitkTool.h>
+#include <mitkUndoController.h>
+#include <mitkVtkResliceInterpolationProperty.h>
+
 #include <QmitkRenderWindow.h>
 
-#include "MIDASGeneralSegmentorViewCommands.h"
 #include <niftkGeneralSegmentorPipeline.h>
-#include <niftkMIDASTool.h>
+#include <niftkGeneralSegmentorPipelineCache.h>
+#include <niftkMIDASDrawTool.h>
+#include <niftkMIDASImageUtils.h>
+#include <niftkMIDASOrientationUtils.h>
+#include <niftkMIDASPolyTool.h>
 #include <niftkMIDASPosnTool.h>
 #include <niftkMIDASSeedTool.h>
-#include <niftkMIDASPolyTool.h>
-#include <niftkMIDASDrawTool.h>
-#include <niftkMIDASOrientationUtils.h>
-#include <niftkMIDASImageUtils.h>
+#include <niftkMIDASTool.h>
+
+#include "MIDASGeneralSegmentorViewCommands.h"
 
 /*
 #include <sys/time.h>
@@ -3733,26 +3734,8 @@ MIDASGeneralSegmentorView
   workingImageToItk->SetInput(&workingImage);
   workingImageToItk->Update();
 
-  std::stringstream key;
-  key << typeid(TPixel).name() << VImageDimension;
-
-  niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>* pipeline = NULL;
-  niftk::GeneralSegmentorPipelineInterface* myPipeline = NULL;
-
-  std::map<std::string, niftk::GeneralSegmentorPipelineInterface*>::iterator iter;
-  iter = m_TypeToPipelineMap.find(key.str());
-
-  if (iter == m_TypeToPipelineMap.end())
-  {
-    pipeline = new niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>();
-    myPipeline = pipeline;
-    m_TypeToPipelineMap.insert(StringAndPipelineInterfacePair(key.str(), myPipeline));
-  }
-  else
-  {
-    myPipeline = iter->second;
-    pipeline = static_cast<niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>*>(myPipeline);
-  }
+  niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>* pipeline =
+      niftk::GeneralSegmentorPipelineCache::Instance()->GetPipeline<TPixel, VImageDimension>();
 
   niftk::GeneralSegmentorPipelineParams params;
   params.m_SliceNumber = sliceNumber;
@@ -4908,19 +4891,7 @@ void
 MIDASGeneralSegmentorView
 ::ITKDestroyPipeline(itk::Image<TPixel, VImageDimension>* itkImage)
 {
-  std::stringstream key;
-  key << typeid(TPixel).name() << VImageDimension;
-
-  std::map<std::string, niftk::GeneralSegmentorPipelineInterface*>::iterator iter;
-  iter = m_TypeToPipelineMap.find(key.str());
-
-  niftk::GeneralSegmentorPipeline<TPixel, VImageDimension> *pipeline = dynamic_cast<niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>*>(iter->second);
-  if (pipeline != NULL)
-  {
-    delete pipeline;
-  };
-
-  m_TypeToPipelineMap.clear();
+  niftk::GeneralSegmentorPipelineCache::Instance()->DestroyPipeline<TPixel, VImageDimension>();
 }
 
 

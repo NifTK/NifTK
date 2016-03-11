@@ -608,7 +608,7 @@ private:
   /// \brief Called from UpdateRegionGrowing(), updates the interactive ITK
   /// single 2D slice region growing pipeline.
   template<typename TPixel, unsigned int VImageDimension>
-  void ITKUpdateRegionGrowing(
+  static void ITKUpdateRegionGrowing(
       itk::Image<TPixel, VImageDimension> *itkImage,
       bool skipUpdate,
       mitk::Image &workingImage,
@@ -834,7 +834,7 @@ private:
   /// \param itkImage pass in the reference image (grey scale image being segmented), just as
   /// a dummy parameter, as it is called via the MITK ImageAccess macros.
   template<typename TPixel, unsigned int VImageDimension>
-  void ITKDestroyPipeline(
+  static void ITKDestroyPipeline(
       itk::Image<TPixel, VImageDimension>* itkImage
       );
 
@@ -862,11 +862,6 @@ private:
 
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
   MIDASGeneralSegmentorViewEventInterface::Pointer m_Interface;
-
-  /// \brief We hold a Map, containing a key comprised of the "typename TPixel, unsigned int VImageDimension"
-  /// as a key, and the object containing the whole pipeline for single slice 2D region growing.
-  typedef std::pair<std::string, niftk::GeneralSegmentorPipelineInterface*> StringAndPipelineInterfacePair;
-  std::map<std::string, niftk::GeneralSegmentorPipelineInterface*> m_TypeToPipelineMap;
 
   /// \brief All the controls for the main view part.
   MIDASGeneralSegmentorViewControlsWidget* m_GeneralControls;

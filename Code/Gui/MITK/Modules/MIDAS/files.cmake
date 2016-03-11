@@ -16,6 +16,7 @@ set(CPP_FILES
   DataManagement/niftkMIDASDataNodeNameStringFilter.cxx
   Algorithms/niftkMIDASMorphologicalSegmentorPipelineManager.cxx
   Algorithms/niftkGeneralSegmentorPipeline.cxx
+  Algorithms/niftkGeneralSegmentorPipelineCache.cxx
   Interactions/niftkMIDASTool.cxx
   Interactions/niftkMIDASContourToolEventInterface.cxx
   Interactions/niftkMIDASContourToolOpAccumulateContour.cxx

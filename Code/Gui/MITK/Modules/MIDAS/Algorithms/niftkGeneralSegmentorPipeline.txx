@@ -50,6 +50,14 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
+GeneralSegmentorPipeline<TPixel, VImageDimension>
+::~GeneralSegmentorPipeline()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 void
 GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::SetParam(GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams& p)
