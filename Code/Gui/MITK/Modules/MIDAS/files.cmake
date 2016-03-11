@@ -12,6 +12,11 @@
 #
 #============================================================================*/
 
+set(H_FILES
+  Algorithms/niftkGeneralSegmentorUtils.h
+  Algorithms/niftkGeneralSegmentorUtils.txx
+)
+
 set(CPP_FILES
   DataManagement/niftkMIDASDataNodeNameStringFilter.cxx
   Algorithms/niftkMIDASMorphologicalSegmentorPipelineManager.cxx
