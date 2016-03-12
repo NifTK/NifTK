@@ -434,16 +434,6 @@ private:
   /// focused window, unless overrideToOn=true whereby both renderer specific properties are removed to revert to the global one.
   void UpdateSegmentationImageVisibility(bool overrideToGlobal);
 
-  /// \brief Used to generate a contour outline round a binary segmentation image, and refreshes the outputSurface.
-  ///
-  /// Called for generating the "See Prior", "See Next" and also the outline contour of the current segmentation.
-  static void GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
-      int axisNumber,
-      int sliceNumber,
-      int projectedSliceNumber,
-      mitk::ContourModelSet::Pointer outputContourSet
-      );
-
   /// \brief Clears both images of the working data.
   void ClearWorkingData();
 

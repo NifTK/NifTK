@@ -33,6 +33,17 @@ class OpPropagate;
 class OpWipe;
 
 
+/// \brief Used to generate a contour outline round a binary segmentation image, and refreshes the outputSurface.
+///
+/// Called for generating the "See Prior", "See Next" and also the outline contour of the current segmentation.
+void GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
+    int axisNumber,
+    int sliceNumber,
+    int projectedSliceNumber,
+    mitk::ContourModelSet::Pointer outputContourSet
+    );
+
+
 /// \brief Fills the itkImage region with the fillValue.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKFillRegion(

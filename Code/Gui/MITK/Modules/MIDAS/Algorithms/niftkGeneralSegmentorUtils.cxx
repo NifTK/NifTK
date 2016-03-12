@@ -13,3 +13,33 @@
 =============================================================================*/
 
 #include "niftkGeneralSegmentorUtils.h"
+
+#include <mitkImageAccessByItk.h>
+
+//-----------------------------------------------------------------------------
+void niftk::GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
+    int axisNumber,
+    int sliceNumber,
+    int projectedSliceNumber,
+    mitk::ContourModelSet::Pointer outputContourSet
+    )
+{
+  try
+  {
+    AccessFixedTypeByItk_n(image,
+        niftk::ITKGenerateOutlineFromBinaryImage,
+        (unsigned char),
+        (3),
+        (axisNumber,
+         sliceNumber,
+         projectedSliceNumber,
+         outputContourSet
+        )
+      );
+  }
+  catch(const mitk::AccessByItkException& e)
+  {
+    MITK_ERROR << "Failed in niftk::ITKGenerateOutlineFromBinaryImage due to:" << e.what();
+    outputContourSet->Clear();
+  }
+}

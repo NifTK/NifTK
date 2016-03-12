@@ -834,34 +834,6 @@ void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideT
 */
 }
 
-//-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
-    int axisNumber,
-    int sliceNumber,
-    int projectedSliceNumber,
-    mitk::ContourModelSet::Pointer outputContourSet
-    )
-{
-  try
-  {
-    AccessFixedTypeByItk_n(image,
-        niftk::ITKGenerateOutlineFromBinaryImage,
-        (unsigned char),
-        (3),
-        (axisNumber,
-         sliceNumber,
-         projectedSliceNumber,
-         outputContourSet
-        )
-      );
-  }
-  catch(const mitk::AccessByItkException& e)
-  {
-    MITK_ERROR << "Failed in niftk::ITKGenerateOutlineFromBinaryImage due to:" << e.what();
-    outputContourSet->Clear();
-  }
-}
-
 
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::FilterSeedsToCurrentSlice(
@@ -1463,7 +1435,7 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
   {
     if (sliceNumber >= 0 && axisNumber >= 0)
     {
-      Self::GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
+      niftk::GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
 
       if (contourSet->GetSize() > 0)
       {
@@ -1622,7 +1594,7 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
   if (m_GeneralControls->m_SeePriorCheckBox->isChecked())
   {
     mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[niftk::MIDASTool::PRIOR_CONTOURS]->GetData());
-    Self::GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber-1, sliceNumber, contourSet);
+    niftk::GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber-1, sliceNumber, contourSet);
 
     if (contourSet->GetSize() > 0)
     {
@@ -1638,7 +1610,7 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
   if (m_GeneralControls->m_SeeNextCheckBox->isChecked())
   {
     mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[niftk::MIDASTool::NEXT_CONTOURS]->GetData());
-    Self::GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber+1, sliceNumber, contourSet);
+    niftk::GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber+1, sliceNumber, contourSet);
 
     if (contourSet->GetSize() > 0)
     {
