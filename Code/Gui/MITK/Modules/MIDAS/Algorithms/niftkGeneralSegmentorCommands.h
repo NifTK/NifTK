@@ -28,6 +28,15 @@
 namespace niftk
 {
 
+// Operation constants, used in Undo/Redo framework
+const mitk::OperationType OP_CHANGE_SLICE = 9320411;
+const mitk::OperationType OP_PROPAGATE_SEEDS = 9320412;
+const mitk::OperationType OP_RETAIN_MARKS = 9320413;
+const mitk::OperationType OP_THRESHOLD_APPLY = 9320414;
+const mitk::OperationType OP_CLEAN = 9320415;
+const mitk::OperationType OP_WIPE = 9320416;
+const mitk::OperationType OP_PROPAGATE = 9320417;
+
 //-----------------------------------------------------------------------------
 
 /**

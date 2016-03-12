@@ -376,15 +376,6 @@ private:
   /// \brief Restores the initial state of the segmentation after the Restart button was pressed.
   void RestoreInitialSegmentation();
 
-  // Operation constants, used in Undo/Redo framework
-  static const mitk::OperationType OP_CHANGE_SLICE;
-  static const mitk::OperationType OP_PROPAGATE_SEEDS;
-  static const mitk::OperationType OP_PROPAGATE;
-  static const mitk::OperationType OP_THRESHOLD_APPLY;
-  static const mitk::OperationType OP_WIPE;
-  static const mitk::OperationType OP_CLEAN;
-  static const mitk::OperationType OP_RETAIN_MARKS;
-
   /// \brief Utility method to check that we have initialised all the working data such as contours, region growing images etc.
   bool HasInitialisedWorkingData();
 
