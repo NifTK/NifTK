@@ -55,11 +55,6 @@ public:
   bool GetEnabled() const;
 
   /**
-   * \brief Retrieves the current tool ID.
-   */
-  int GetActiveToolID();
-
-  /**
    * \brief Retrieves the tool manager using the micro services API.
    */
   mitk::ToolManager* GetToolManager() const;

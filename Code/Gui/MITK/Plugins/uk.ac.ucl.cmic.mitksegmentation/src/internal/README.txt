@@ -10,7 +10,7 @@ the reason for this is that our typical users did not want the interpolation mod
 
 In addition the following changes have been made.
 
-1. MITKSegmentation derives from niftkMIDASBaseSegmentationFunctionality instead of QmitkFunctionality.
+1. MITKSegmentation derives from niftkBaseSegmentationView instead of QmitkBaseView.
    This provides a different response to selection events, and makes it consistent across all our segmentation plugins.
    For all our segmentation plugins, you select the grey scale image and are given the "Create New" option.
    Thereafter, you select the binary image you want to segment.

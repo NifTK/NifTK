@@ -43,7 +43,7 @@ const std::string MIDASMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.mid
 
 //-----------------------------------------------------------------------------
 MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView()
-: niftkMIDASBaseSegmentationFunctionality()
+: niftkBaseSegmentationView()
 , m_Layout(NULL)
 , m_ContainerForControlsWidget(NULL)
 , m_MorphologicalControls(NULL)
@@ -542,7 +542,7 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
     m_Layout->setContentsMargins(6, 6, 6, 0);
     m_Layout->setSpacing(3);
 
-    niftkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
+    niftkBaseSegmentationView::CreateQtPartControl(parent);
 
     m_ContainerForControlsWidget = new QWidget(parent);
     m_ContainerForControlsWidget->setContentsMargins(0, 0, 0, 0);
@@ -579,7 +579,7 @@ void MIDASMorphologicalSegmentorView::SetFocus()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::CreateConnections()
 {
-  niftkMIDASBaseSegmentationFunctionality::CreateConnections();
+  niftkBaseSegmentationView::CreateConnections();
 
   if (m_MorphologicalControls != NULL)
   {
@@ -692,7 +692,7 @@ void MIDASMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedN
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
-  niftkMIDASBaseSegmentationFunctionality::OnSelectionChanged(part, nodes);
+  niftkBaseSegmentationView::OnSelectionChanged(part, nodes);
 
   bool enableWidgets = false;
 

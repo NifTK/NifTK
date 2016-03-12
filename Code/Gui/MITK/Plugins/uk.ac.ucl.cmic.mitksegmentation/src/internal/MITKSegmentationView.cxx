@@ -39,7 +39,7 @@
 const std::string MITKSegmentationView::VIEW_ID = "uk.ac.ucl.cmic.mitksegmentation";
 
 MITKSegmentationView::MITKSegmentationView()
-: niftkMIDASBaseSegmentationFunctionality()
+: niftkBaseSegmentationView()
 , m_Controls(NULL)
 , m_Layout(NULL)
 , m_ContainerForControlsWidget(NULL)
@@ -94,7 +94,7 @@ void MITKSegmentationView::CreateQtPartControl( QWidget *parent )
     m_Controls = new Ui::MITKSegmentationViewControls();
     m_Controls->setupUi(m_ContainerForControlsWidget);
 
-    niftkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
+    niftkBaseSegmentationView::CreateQtPartControl(parent);
 
     m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
     m_Layout->addWidget(m_ContainerForToolWidget, 1, 0);
@@ -160,7 +160,7 @@ void MITKSegmentationView::CreateQtPartControl( QWidget *parent )
 
 void MITKSegmentationView::CreateConnections()
 {
-  niftkMIDASBaseSegmentationFunctionality::CreateConnections();
+  niftkBaseSegmentationView::CreateConnections();
 
   if ( m_Controls )
   {
@@ -251,7 +251,7 @@ void MITKSegmentationView::OnCreateNewSegmentationButtonPressed()
 
 void MITKSegmentationView::RetrievePreferenceValues()
 {
-  niftkMIDASBaseSegmentationFunctionality::RetrievePreferenceValues();
+  niftkBaseSegmentationView::RetrievePreferenceValues();
 
   berry::IPreferencesService::Pointer prefService
       = berry::Platform::GetServiceRegistry()

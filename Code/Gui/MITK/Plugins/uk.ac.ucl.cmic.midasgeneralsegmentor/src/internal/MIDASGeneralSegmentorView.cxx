@@ -79,7 +79,7 @@ const std::string MIDASGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgene
 
 //-----------------------------------------------------------------------------
 MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
-: niftkMIDASBaseSegmentationFunctionality()
+: niftkBaseSegmentationView()
 , m_ToolKeyPressStateMachine(NULL)
 , m_GeneralControls(NULL)
 , m_Layout(NULL)
@@ -138,7 +138,7 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_Layout->setContentsMargins(6, 6, 6, 0);
     m_Layout->setSpacing(3);
 
-    niftkMIDASBaseSegmentationFunctionality::CreateQtPartControl(parent);
+    niftkBaseSegmentationView::CreateQtPartControl(parent);
 
     m_ContainerForControlsWidget = new QWidget(parent);
     m_ContainerForControlsWidget->setContentsMargins(0, 0, 0, 0);
@@ -173,7 +173,7 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::CreateConnections()
 {
-  niftkMIDASBaseSegmentationFunctionality::CreateConnections();
+  niftkBaseSegmentationView::CreateConnections();
 
   if ( m_GeneralControls )
   {
@@ -222,7 +222,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::Visible()
 {
-  niftkMIDASBaseSegmentationFunctionality::Visible();
+  niftkBaseSegmentationView::Visible();
 
   /// TODO
 //  mitk::GlobalInteraction::GetInstance()->AddListener( m_ToolKeyPressStateMachine );
@@ -243,7 +243,7 @@ void MIDASGeneralSegmentorView::Visible()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::Hidden()
 {
-  niftkMIDASBaseSegmentationFunctionality::Hidden();
+  niftkBaseSegmentationView::Hidden();
 
   if (m_SliceNavigationController.IsNotNull())
   {
@@ -783,59 +783,6 @@ bool MIDASGeneralSegmentorView::HasInitialisedWorkingData()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::UpdateSegmentationImageVisibility(bool overrideToGlobal)
-{
-  if (!this->HasInitialisedWorkingData())
-  {
-    return;
-  }
-
-  /*
-   * Work in progress.
-   *
-   * I'm removing this because:
-   *   If we are using the MIDAS editor, then we have renderer specific visibility flags.
-   *   If we are using the MITK editor, then we only bother with global flags.
-   *   So, at this stage, test with an orange outline, leaving the current segmentation as a
-   *   green outline and don't mess around with the visibility.
-   */
-
-/*
- * This bit is wrong, as it does not set the visibility to "true" at any point.
- * So, successive clicks on different windows means eventually, the contours
- * are invisible in all windows.
- *
-  mitk::DataNode::Pointer segmentationNode = nodes[0];
-
-  if (this->GetPreviouslyFocusedRenderer() != NULL)
-  {
-    mitk::PropertyList* list = segmentationNode->GetPropertyList(this->GetPreviouslyFocusedRenderer());
-    if (list != NULL)
-    {
-      list->DeleteProperty("visible");
-    }
-  }
-
-  if (this->GetFocusedRenderer() != NULL)
-  {
-    if (overrideToGlobal)
-    {
-      mitk::PropertyList* list = segmentationNode->GetPropertyList(GetFocusedRenderer());
-      if (list != NULL)
-      {
-        list->DeleteProperty("visible");
-      }
-    }
-    else
-    {
-      segmentationNode->SetVisibility(false, this->GetFocusedRenderer());
-    }
-  }
-*/
-}
-
-
-//-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::FilterSeedsToCurrentSlice(
     mitk::PointSet& inputPoints,
     int& axisNumber,
@@ -1026,7 +973,6 @@ void MIDASGeneralSegmentorView::OnOKButtonClicked()
 
   this->DestroyPipeline();
   this->RemoveWorkingData();
-  this->UpdateSegmentationImageVisibility(true);
   this->EnableSegmentationWidgets(false);
   this->SetCurrentSelection(workingData);
 
@@ -1398,7 +1344,6 @@ void MIDASGeneralSegmentorView::OnFocusChanged()
       m_SliceNavigationController->SendSlice();
     }
 
-    this->UpdateSegmentationImageVisibility(false);
     this->UpdatePriorAndNext();
     this->OnThresholdingCheckBoxToggled(m_GeneralControls->m_ThresholdingCheckBox->isChecked());
     this->RequestRenderWindowUpdate();
@@ -3108,6 +3053,7 @@ void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
         int toSlice = op->GetToSlice();
         itk::Orientation orientation = op->GetOrientation();
 
+        typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> BinaryImage3DType;
         typedef mitk::ImageToItk< BinaryImage3DType > SegmentationImageToItkType;
         SegmentationImageToItkType::Pointer targetImageToItk = SegmentationImageToItkType::New();
         targetImageToItk->SetInput(segmentationImage);

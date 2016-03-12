@@ -25,7 +25,7 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-#include <niftkMIDASBaseSegmentationFunctionality.h>
+#include <niftkBaseSegmentationView.h>
 
 const QString MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasmorphologicalsegmentor");
 
@@ -108,8 +108,8 @@ QWidget* MIDASMorphologicalSegmentorViewPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool MIDASMorphologicalSegmentorViewPreferencePage::PerformOk()
 {
-  m_MIDASMorphologicalSegmentorViewPreferencesNode->Put(niftkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet);
-  m_MIDASMorphologicalSegmentorViewPreferencesNode->Put(niftkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, m_DefaultColor);
+  m_MIDASMorphologicalSegmentorViewPreferencesNode->Put(niftkBaseSegmentationView::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet);
+  m_MIDASMorphologicalSegmentorViewPreferencesNode->Put(niftkBaseSegmentationView::DEFAULT_COLOUR, m_DefaultColor);
 
   return true;
 }
@@ -124,8 +124,8 @@ void MIDASMorphologicalSegmentorViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorViewPreferencePage::Update()
 {
-  m_DefauleColorStyleSheet = m_MIDASMorphologicalSegmentorViewPreferencesNode->Get(niftkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, "");
-  m_DefaultColor = m_MIDASMorphologicalSegmentorViewPreferencesNode->GetByteArray(niftkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, "");
+  m_DefauleColorStyleSheet = m_MIDASMorphologicalSegmentorViewPreferencesNode->Get(niftkBaseSegmentationView::DEFAULT_COLOUR_STYLE_SHEET, "");
+  m_DefaultColor = m_MIDASMorphologicalSegmentorViewPreferencesNode->GetByteArray(niftkBaseSegmentationView::DEFAULT_COLOUR, "");
   if (m_DefauleColorStyleSheet=="")
   {
     m_DefauleColorStyleSheet = "background-color: rgb(0,255,0)";

@@ -34,7 +34,7 @@
 #include <mitkOperation.h>
 #include <mitkSliceNavigationController.h>
 
-#include <niftkMIDASBaseSegmentationFunctionality.h>
+#include <niftkBaseSegmentationView.h>
 
 #include <niftkGeneralSegmentorPipeline.h>
 #include <niftkMIDASContourTool.h>
@@ -142,39 +142,16 @@ class QGridLayout;
  * 3. If the user elects to overwrite the new slice, we simply copy all seeds and all image data to the new slice.
  * </pre>
  *
- * \sa niftkMIDASBaseSegmentationFunctionality
+ * \sa niftkBaseSegmentationView
  * \sa MIDASMorphologicalSegmentorView
  */
-class MIDASGeneralSegmentorView : public niftkMIDASBaseSegmentationFunctionality,
+class MIDASGeneralSegmentorView : public niftkBaseSegmentationView,
                                   public niftk::MIDASToolKeyPressResponder,
                                   public mitk::OperationActor
 {
-
-  // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
-  typedef MIDASGeneralSegmentorView Self;
-
 public:
-
-  // A lot of the processing in this class is done with ITK,
-  // and a lot of it is only relevant with unsigned char, and for 3D.
-  typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> BinaryImage3DType;
-  typedef BinaryImage3DType::RegionType                          Region3DType;
-  typedef BinaryImage3DType::SizeType                            Size3DType;
-  typedef BinaryImage3DType::IndexType                           Index3DType;
-  typedef BinaryImage3DType::PointType                           Point3DType;
-  typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 2> BinaryImage2DType;
-  typedef BinaryImage2DType::RegionType                          Region2DType;
-  typedef BinaryImage2DType::SizeType                            Size2DType;
-  typedef BinaryImage2DType::IndexType                           Index2DType;
-  typedef BinaryImage2DType::PointType                           Point2DType;
-  typedef itk::ContinuousIndex<double, 2>                        ContinuousIndex2DType;
-  typedef itk::ExtractImageFilter<BinaryImage3DType,
-                                              BinaryImage2DType> ExtractSliceFilterType;
-  typedef itk::OrthogonalContourExtractor2DImageFilter
-                                 <BinaryImage2DType>             ExtractContoursFilterType;
-  typedef itk::PolyLineParametricPath<2>                         PathType;
 
   /// \brief Constructor.
   MIDASGeneralSegmentorView();
@@ -193,29 +170,29 @@ public:
   virtual std::string GetViewID() const;
 
   /// \brief \see niftk::MIDASToolKeyPressResponder::SelectSeedTool()
-  virtual bool SelectSeedTool();
+  virtual bool SelectSeedTool() override;
 
   /// \brief \see niftk::MIDASToolKeyPressResponder::SelectDrawTool()
-  virtual bool SelectDrawTool();
+  virtual bool SelectDrawTool() override;
 
   /// \brief \see niftk::MIDASToolKeyPressResponder::UnselectTools()
-  virtual bool UnselectTools();
+  virtual bool UnselectTools() override;
 
   /// \brief \see niftk::MIDASToolKeyPressResponder::SelectPolyTool()
-  virtual bool SelectPolyTool();
+  virtual bool SelectPolyTool() override;
 
   /// \brief \see niftk::MIDASToolKeyPressResponder::SelectViewMode()
-  virtual bool SelectViewMode();
+  virtual bool SelectViewMode() override;
 
   /// \brief \see niftk::MIDASToolKeyPressResponder::CleanSlice()
-  virtual bool CleanSlice();
+  virtual bool CleanSlice() override;
 
   /// \brief If the user hits the close icon, it is equivalent to a Cancel,
   /// and the segmentation is destroyed without warning.
   virtual void ClosePart();
 
   /// \brief Method to enable this class to interact with the Undo/Redo framework.
-  virtual void ExecuteOperation(mitk::Operation* operation);
+  virtual void ExecuteOperation(mitk::Operation* operation) override;
 
 protected slots:
  
@@ -303,10 +280,10 @@ protected slots:
 protected:
 
   /// \see mitk::ILifecycleAwarePart::PartVisible
-  virtual void Visible();
+  virtual void Visible() override;
 
   /// \see mitk::ILifecycleAwarePart::PartHidden
-  virtual void Hidden();
+  virtual void Hidden() override;
 
   /// \brief Registers the tools provided by this view.
   /// Registers the draw, seed, poly and posn tools.
@@ -314,45 +291,45 @@ protected:
   void RegisterTools(mitk::ToolManager::Pointer toolManager) override;
 
   /// \brief Called by framework, this method creates all the controls for this view.
-  virtual void CreateQtPartControl(QWidget *parent);
+  virtual void CreateQtPartControl(QWidget *parent) override;
 
   /// \brief Called by framework, this method can set the focus on a specific widget,
   /// but we currently do nothing.
-  virtual void SetFocus();
+  virtual void SetFocus() override;
 
   /// \brief Creates the Qt connections of widgets in this class to the slots in this class.
-  virtual void CreateConnections();
+  virtual void CreateConnections() override;
 
   /// \see niftkMIDASBaseSegmentation::EnableSegmentationWidgets
-  virtual void EnableSegmentationWidgets(bool checked);
+  virtual void EnableSegmentationWidgets(bool checked) override;
 
   /// \brief For Irregular Volume Editing, a Segmentation image should have a grey
   /// scale parent, and several children as described in the class introduction.
-  virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node);
+  virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) override;
 
   /// \brief We return true if the segmentation can be "re-started", i.e. you switch between binary images
   /// in the DataManager, and if the binary image has the correct hidden child nodes, then
   /// this returns true, indicating that it's a valid "in-progress" segmentation.
-  virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node);
+  virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
 
   /// \brief Assumes input is a valid segmentation node, then searches for the derived
   /// children of the node, looking for the seeds and contours  as described in the class introduction.
-  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
+  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) override;
 
   /// \brief Returns the name of the preferences node to look up.
-  /// \see niftkMIDASBaseSegmentationFunctionality::GetPreferencesNodeName
-  virtual QString GetPreferencesNodeName() { return MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
+  /// \see niftkBaseSegmentationView::GetPreferencesNodeName
+  virtual QString GetPreferencesNodeName() override { return MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
 
   /// \brief This view registers with the mitk::DataStorage and listens for changing
   /// data, so this method is called when any node is changed, but only performs an update,
   /// if the nodes changed are those registered with the ToolManager as WorkingData,
   /// see class introduction.
-  virtual void NodeChanged(const mitk::DataNode* node);
+  virtual void NodeChanged(const mitk::DataNode* node) override;
 
   /// \brief This view registers with the mitk::DataStorage and listens for removing
   /// data, so this method cancels the operation and frees the resources if the
   /// segmentation node is removed.
-  virtual void NodeRemoved(const mitk::DataNode* node);
+  virtual void NodeRemoved(const mitk::DataNode* node) override;
 
   /// \brief Called from the slice navigation controller to indicate a different slice,
   /// which in MIDAS terms means automatically accepting the currently segmented slice
@@ -362,7 +339,7 @@ protected:
   /// \brief Called from the registered Poly tool and Draw tool to indicate that contours have changed.
   virtual void OnContoursChanged();
 
-  void onVisibilityChanged(const mitk::DataNode* node);
+  void onVisibilityChanged(const mitk::DataNode* node) override;
 
 private:
   /// \brief Called when the view is closed or the segmentation node is removed from the data
@@ -382,7 +359,7 @@ private:
   /// \brief Callback for when the window focus changes, where we update this view
   /// to be listening to the right window, and make sure ITK pipelines know we have
   /// changed orientation.
-  void OnFocusChanged();
+  void OnFocusChanged() override;
 
   /// \brief Used to create an image used for the region growing, see class intro.
   mitk::DataNode::Pointer CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode,  float r, float g, float b, std::string name, bool visible, int layer);
@@ -421,18 +398,13 @@ private:
   void UpdateRegionGrowing(bool isVisible, int sliceNumber, double lowerThreshold, double upperThreshold, bool skipUpdate);
 
   /// \brief Retrieves the lower and upper threshold from widgets and calls UpdateRegionGrowing.
-  void UpdateRegionGrowing(bool updateRendering=true);
+  void UpdateRegionGrowing(bool updateRendering = true);
 
   /// \brief Takes the current slice, and updates the prior (WorkingData[4]) and next (WorkingData[5]) contour sets.
-  void UpdatePriorAndNext(bool updateRendering=true);
+  void UpdatePriorAndNext(bool updateRendering = true);
 
   /// \brief Takes the current slice, and refreshes the current slice contour set (WorkingData[2]).
   void UpdateCurrentSliceContours(bool updateRendering=true);
-
-  /// \brief Takes the currently focused window, and makes sure the segmented volume
-  /// is not visible in the currently focused window and takes the global visibility value in the previously
-  /// focused window, unless overrideToOn=true whereby both renderer specific properties are removed to revert to the global one.
-  void UpdateSegmentationImageVisibility(bool overrideToGlobal);
 
   /// \brief Clears both images of the working data.
   void ClearWorkingData();
@@ -480,7 +452,7 @@ private:
   /// \brief Used to put the base class widgets, and these widgets above in a common layout.
   QGridLayout *m_Layout;
 
-  /// \brief Container for the main Widgets. Also \see niftkMIDASBaseSegmentationFunctionality
+  /// \brief Container for the main Widgets. Also \see niftkBaseSegmentationView
   QWidget *m_ContainerForControlsWidget;
 
   /// \brief Keep track of this to SliceNavigationController register and unregister event listeners.

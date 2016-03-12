@@ -40,7 +40,7 @@ namespace niftk
  * by P. A. Freeborough, N. C. Fox and R. I. Kitney, published in
  * Computer Methods and Programs in Biomedicine 53 (1997) 15-25.
  *
- * \sa niftkMIDASBaseSegmentationFunctionality
+ * \sa niftkBaseSegmentationView
  * \sa MIDASMorphologicalSegmentorView
  * \sa MorphologicalSegmentorPipeline
  * \sa MorphologicalSegmentorPipelineInterface

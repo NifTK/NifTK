@@ -67,7 +67,7 @@ void niftkMIDASToolSelectorWidget::SetEnabled(bool enabled)
 
   if (!enabled)
   {
-    int activeToolID = this->GetActiveToolID();
+    int activeToolID = m_ManualToolSelectionBox->GetToolManager()->GetActiveToolID();
     if (activeToolID != -1)
     {
       m_ManualToolSelectionBox->GetToolManager()->ActivateTool(-1);
@@ -80,13 +80,6 @@ void niftkMIDASToolSelectorWidget::SetEnabled(bool enabled)
 bool niftkMIDASToolSelectorWidget::GetEnabled() const
 {
   return this->isEnabled();
-}
-
-
-//-----------------------------------------------------------------------------
-int niftkMIDASToolSelectorWidget::GetActiveToolID()
-{
-  return m_ManualToolSelectionBox->GetToolManager()->GetActiveToolID();
 }
 
 

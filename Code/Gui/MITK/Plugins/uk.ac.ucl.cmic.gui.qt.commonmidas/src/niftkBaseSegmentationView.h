@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASBaseSegmentationFunctionality_h
-#define niftkMIDASBaseSegmentationFunctionality_h
+#ifndef __niftkBaseSegmentationView_h
+#define __niftkBaseSegmentationView_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>
 
@@ -41,7 +41,7 @@
 class QmitkRenderWindow;
 
 /**
- * \class niftkMIDASBaseSegmentationFunctionality
+ * \class niftkBaseSegmentationView
  * \brief Base view component for MIDAS Segmentation widgets.
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
@@ -51,16 +51,16 @@ class QmitkRenderWindow;
  * \sa MIDASGeneralSegmentorView
  * \sa MITKSegmentationView
  */
-class CMIC_QT_COMMONMIDAS niftkMIDASBaseSegmentationFunctionality : public QmitkBaseView, public niftk::MIDASEventFilter
+class CMIC_QT_COMMONMIDAS niftkBaseSegmentationView : public QmitkBaseView, public niftk::MIDASEventFilter
 {
 
   Q_OBJECT
 
 public:
 
-  niftkMIDASBaseSegmentationFunctionality();
-  niftkMIDASBaseSegmentationFunctionality(const niftkMIDASBaseSegmentationFunctionality& other);
-  virtual ~niftkMIDASBaseSegmentationFunctionality();
+  niftkBaseSegmentationView();
+  niftkBaseSegmentationView(const niftkBaseSegmentationView& other);
+  virtual ~niftkBaseSegmentationView();
 
   /// \brief Returns true if the event should be filtered, i.e. not processed,
   /// otherwise false.
@@ -118,21 +118,6 @@ protected:
    * \see mitk::ILifecycleAwarePart::PartActivated
    */
   virtual void Activated();
-
-  /**
-   * \see mitk::ILifecycleAwarePart::PartDectivated
-   */
-  virtual void Deactivated();
-
-  /**
-   * \see mitk::ILifecycleAwarePart::PartVisible
-   */
-  virtual void Visible();
-
-  /**
-   * \see mitk::ILifecycleAwarePart::PartHidden
-   */
-  virtual void Hidden();
 
   /**
    * @brief Registers the tools provided by this view.
@@ -208,7 +193,7 @@ protected:
   virtual mitk::ToolManager::DataVectorType GetWorkingData();
 
   /// \brief Method to enable derived classes to turn widgets off/on, with default do nothing implementation.
-  virtual void EnableSegmentationWidgets(bool b) {}
+  virtual void EnableSegmentationWidgets(bool b) = 0;
 
   /// \brief Turns the tool selection box on/off
   virtual void SetEnableManualToolSelectionBox(bool enabled);
@@ -266,17 +251,6 @@ private:
   /// \brief Stores the visibility state of the cursor in the main display before activating a tool.
   bool m_MainWindowCursorVisibleWithToolsOff;
 
-  /// \brief Stores the visibility state of the cursor in the viewer of this plugin before activating a tool.
-  bool m_OwnCursorIsVisibleWithToolsOff;
-
-  /// \brief For Event Admin, we store a reference to the CTK plugin context
-  ctkPluginContext* m_Context;
-
-  /// \brief For Event Admin, we store a reference to the CTK event admin service
-  ctkServiceReference m_EventAdminRef;
-
-  /// \brief For Event Admin, we store a pointer to the actual CTK event admin implementation.
-  ctkEventAdmin* m_EventAdmin;
-
 };
+
 #endif

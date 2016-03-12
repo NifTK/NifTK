@@ -30,7 +30,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-#include <niftkMIDASBaseSegmentationFunctionality.h>
+#include <niftkBaseSegmentationView.h>
 
 QmitkSegmentationPreferencePage::QmitkSegmentationPreferencePage()
 : m_MainControl(0)
@@ -142,8 +142,8 @@ bool QmitkSegmentationPreferencePage::PerformOk()
   m_SegmentationPreferencesNode->PutDouble("smoothing value", m_SmoothingSpinBox->value());
   m_SegmentationPreferencesNode->PutDouble("decimation rate", m_DecimationSpinBox->value());
   m_SegmentationPreferencesNode->PutDouble("closing ratio", m_ClosingSpinBox->value());
-  m_SegmentationPreferencesNode->Put(niftkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet.toStdString());
-  m_SegmentationPreferencesNode->PutByteArray(niftkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, m_DefaultColor);
+  m_SegmentationPreferencesNode->Put(niftkBaseSegmentationView::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet.toStdString());
+  m_SegmentationPreferencesNode->PutByteArray(niftkBaseSegmentationView::DEFAULT_COLOUR, m_DefaultColor);
 
   return true;
 }
@@ -182,8 +182,8 @@ void QmitkSegmentationPreferencePage::Update()
   m_DecimationSpinBox->setValue(m_SegmentationPreferencesNode->GetDouble("decimation rate", 0.5));
   m_ClosingSpinBox->setValue(m_SegmentationPreferencesNode->GetDouble("closing ratio", 0.0));
 
-  m_DefauleColorStyleSheet = QString::fromStdString(m_SegmentationPreferencesNode->Get(niftkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR_STYLE_SHEET, ""));
-  m_DefaultColor = m_SegmentationPreferencesNode->GetByteArray(niftkMIDASBaseSegmentationFunctionality::DEFAULT_COLOUR, "");
+  m_DefauleColorStyleSheet = QString::fromStdString(m_SegmentationPreferencesNode->Get(niftkBaseSegmentationView::DEFAULT_COLOUR_STYLE_SHEET, ""));
+  m_DefaultColor = m_SegmentationPreferencesNode->GetByteArray(niftkBaseSegmentationView::DEFAULT_COLOUR, "");
   if (m_DefauleColorStyleSheet=="")
   {
     m_DefauleColorStyleSheet = "background-color: rgb(0,255,0)";
