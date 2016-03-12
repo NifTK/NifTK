@@ -12,12 +12,19 @@
 
 =============================================================================*/
 
-#ifndef __niftkGeneralSegmentorUtils_txx
-#define __niftkGeneralSegmentorUtils_txx
+#include "niftkGeneralSegmentorCommands.h"
+
+#include <itkConnectedComponentImageFilter.h>
+#include <itkOrthogonalContourExtractor2DImageFilter.h>
+
+#include <mitkImageToItk.h>
+
+#include <mitkPointUtils.h>
+#include "niftkGeneralSegmentorPipeline.h"
+#include "niftkGeneralSegmentorPipelineCache.h"
+#include <niftkMIDASContourTool.h>
 
 /**************************************************************
- * Start of ITK stuff.
- *
  * Notes: All code below this should never set the Modified
  * flag. The ITK layer, just does basic iterating, basic
  * low level image processing. It knows nothing of node
@@ -407,8 +414,9 @@ void niftk::ITKUpdateRegionGrowing(
   workingImageToItk->SetInput(&workingImage);
   workingImageToItk->Update();
 
+  niftk::GeneralSegmentorPipelineCache* pipelineCache = niftk::GeneralSegmentorPipelineCache::Instance();
   niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>* pipeline =
-      niftk::GeneralSegmentorPipelineCache::Instance()->GetPipeline<TPixel, VImageDimension>();
+      pipelineCache->GetPipeline<TPixel, VImageDimension>();
 
   niftk::GeneralSegmentorPipelineParams params;
   params.m_SliceNumber = sliceNumber;
@@ -550,7 +558,7 @@ void niftk::ITKPropagateUpOrDown(
 
   // Convert MITK seeds to ITK seeds.
   niftk::GeneralSegmentorPipelineInterface::PointSetType::Pointer itkSeeds = niftk::GeneralSegmentorPipelineInterface::PointSetType::New();
-  niftk::GeneralSegmentorPipelineInterface::ConvertMITKSeedsAndAppendToITKSeeds(&seeds, itkSeeds);
+  niftk::ConvertMITKSeedsAndAppendToITKSeeds(&seeds, itkSeeds);
 
   // This mask is used to control the propagation in the region growing filter.
   typename GreyScaleImageType::IndexType propagationMask;
@@ -622,7 +630,7 @@ void niftk::ITKPropagateToSegmentationImage(
     itk::Image<TGreyScalePixel, VImageDimension>* referenceGreyScaleImage,
     mitk::Image* segmentedImage,
     mitk::Image* regionGrowingImage,
-    mitk::OpPropagate *op)
+    niftk::OpPropagate *op)
 {
   typedef typename itk::Image<TGreyScalePixel, VImageDimension> GreyScaleImageType;
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
@@ -636,7 +644,7 @@ void niftk::ITKPropagateToSegmentationImage(
   regionGrowingImageToItk->SetInput(regionGrowingImage);
   regionGrowingImageToItk->Update();
 
-  mitk::OpPropagate::ProcessorPointer processor = op->GetProcessor();
+  niftk::OpPropagate::ProcessorPointer processor = op->GetProcessor();
   std::vector<int> region = op->GetRegion();
   bool redo = op->IsRedo();
 
@@ -1186,13 +1194,13 @@ template<typename TPixel, unsigned int VImageDimension>
 void niftk::ITKDoWipe(
     itk::Image<TPixel, VImageDimension> *itkImage,
     mitk::PointSet* currentSeeds,
-    mitk::OpWipe *op
+    niftk::OpWipe *op
     )
 {
   // Assuming we are only called for the unsigned char, current segmentation image.
   typedef typename itk::Image<TPixel, VImageDimension> BinaryImageType;
 
-  mitk::OpWipe::ProcessorPointer processor = op->GetProcessor();
+  niftk::OpWipe::ProcessorPointer processor = op->GetProcessor();
   std::vector<int> region = op->GetRegion();
   bool redo = op->IsRedo();
 
@@ -1573,5 +1581,3 @@ void niftk::ITKInitialiseSeedsForVolume(
       seeds
       );
 }
-
-#endif

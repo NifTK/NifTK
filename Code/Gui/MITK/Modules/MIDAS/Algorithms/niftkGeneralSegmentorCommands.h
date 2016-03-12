@@ -12,19 +12,20 @@
 
 =============================================================================*/
 
-#ifndef MIDASGeneralSegmentorViewCommands_h
-#define MIDASGeneralSegmentorViewCommands_h
+#ifndef __GeneralSegmentorCommands_h
+#define __GeneralSegmentorCommands_h
 
-#include <mitkOperation.h>
-#include <mitkDataNode.h>
-#include <mitkTool.h>
-#include <mitkPointSet.h>
 #include <mitkContourModelSet.h>
+#include <mitkDataNode.h>
+#include <mitkOperation.h>
+#include <mitkPointSet.h>
+#include <mitkTool.h>
+
 #include <itkMIDASImageUpdateClearRegionProcessor.h>
 #include <itkMIDASImageUpdatePasteRegionProcessor.h>
 #include <itkMIDASRetainMarksNoThresholdingProcessor.h>
 
-namespace mitk
+namespace niftk
 {
 
 //-----------------------------------------------------------------------------
@@ -38,17 +39,11 @@ class OpGeneralSegmentorBaseCommand: public mitk::Operation
 {
 public:
 
-  OpGeneralSegmentorBaseCommand(
-      mitk::OperationType type,
-      bool redo
-      )
-  : mitk::Operation(type)
-  , m_Redo(redo)
-  { }
+  OpGeneralSegmentorBaseCommand(mitk::OperationType type, bool redo);
 
-  ~OpGeneralSegmentorBaseCommand()
-  { }
-  bool IsRedo() const { return m_Redo; }
+  ~OpGeneralSegmentorBaseCommand();
+
+  bool IsRedo() const;
 
 protected:
   bool m_Redo;
@@ -56,9 +51,8 @@ protected:
 
 
 //-----------------------------------------------------------------------------
-
 /**
- * \class OpGeneralSegmentorBaseCommand
+ * \class OpChangeSliceCommand
  * \brief Command class for changing slice.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
@@ -72,17 +66,16 @@ public:
       int afterSlice,
       mitk::Point3D beforePoint,
       mitk::Point3D afterPoint
-      )
-  : mitk::OpGeneralSegmentorBaseCommand(type, redo)
-  , m_BeforeSlice(beforeSlice)
-  , m_AfterSlice(afterSlice)
-  , m_BeforePoint(beforePoint)
-  , m_AfterPoint(afterPoint)
-  { }
-  int GetBeforeSlice() const { return m_BeforeSlice; }
-  int GetAfterSlice() const { return m_AfterSlice; }
-  mitk::Point3D GetBeforePoint() const { return m_BeforePoint; }
-  mitk::Point3D GetAfterPoint() const { return m_AfterPoint; }
+      );
+
+  int GetBeforeSlice() const;
+
+  int GetAfterSlice() const;
+
+  mitk::Point3D GetBeforePoint() const;
+
+  mitk::Point3D GetAfterPoint() const;
+
 protected:
   int m_BeforeSlice;
   int m_AfterSlice;
@@ -92,7 +85,6 @@ protected:
 
 
 //-----------------------------------------------------------------------------
-
 /**
  * \class OpPropagateSeeds
  * \brief Command class to store data for propagating seeds from one slice to the next.
@@ -108,18 +100,16 @@ public:
       int sliceNumber,
       int axisNumber,
       mitk::PointSet::Pointer seeds
-      )
-  : mitk::OpGeneralSegmentorBaseCommand(type, redo)
-  , m_SliceNumber(sliceNumber)
-  , m_AxisNumber(axisNumber)
-  , m_Seeds(seeds)
-  {
-  }
-  ~OpPropagateSeeds()
-  { }
-  int GetSliceNumber() const { return m_SliceNumber; }
-  int GetAxisNumber() const { return m_AxisNumber; }
-  mitk::PointSet::Pointer GetSeeds() const { return m_Seeds; }
+      );
+
+  ~OpPropagateSeeds();
+
+  int GetSliceNumber() const;
+
+  int GetAxisNumber() const;
+
+  mitk::PointSet::Pointer GetSeeds() const;
+
 private:
   int m_SliceNumber;
   int m_AxisNumber;
@@ -128,7 +118,6 @@ private:
 
 
 //-----------------------------------------------------------------------------
-
 /**
  * \class OpRetainMarks
  * \brief Command class to store data to copy one slice to the next.
@@ -149,24 +138,21 @@ public:
       itk::Orientation orientation,
       std::vector<int> &region,
       ProcessorPointer processor
-      )
-  : mitk::OpGeneralSegmentorBaseCommand(type, redo)
-  , m_FromSlice(fromSlice)
-  , m_ToSlice(toSlice)
-  , m_AxisNumber(axisNumber)
-  , m_Orientation(orientation)
-  , m_Region(region)
-  , m_Processor(processor)
-  {
-  }
-  ~OpRetainMarks()
-  { }
-  int GetFromSlice() const { return m_FromSlice; }
-  int GetToSlice() const { return m_ToSlice; }
-  int GetAxisNumber() const { return m_AxisNumber; }
-  itk::Orientation GetOrientation() const { return m_Orientation; }
-  std::vector<int> GetRegion() const { return m_Region; }
-  ProcessorPointer GetProcessor() const { return m_Processor; }
+      );
+
+  ~OpRetainMarks();
+
+  int GetFromSlice() const;
+
+  int GetToSlice() const;
+
+  int GetAxisNumber() const;
+
+  itk::Orientation GetOrientation() const;
+
+  std::vector<int> GetRegion() const;
+
+  ProcessorPointer GetProcessor() const;
 
 private:
   int m_FromSlice;
@@ -179,7 +165,6 @@ private:
 
 
 //-----------------------------------------------------------------------------
-
 /**
  * \class OpPropagate
  * \brief Class to hold data to do propagate up/down/3D.
@@ -197,16 +182,14 @@ public:
       bool redo,
       std::vector<int> &region,
       ProcessorPointer processor
-      )
-  : mitk::OpGeneralSegmentorBaseCommand(type, redo)
-  , m_Region(region)
-  , m_Processor(processor)
-  { }
+      );
 
-  ~OpPropagate()
-  { }
-  std::vector<int> GetRegion() const { return m_Region; }
-  ProcessorPointer GetProcessor() const { return m_Processor; }
+  ~OpPropagate();
+
+  std::vector<int> GetRegion() const;
+
+  ProcessorPointer GetProcessor() const;
+
 private:
   std::vector<int> m_Region;
   ProcessorPointer m_Processor;
@@ -214,9 +197,8 @@ private:
 
 
 //-----------------------------------------------------------------------------
-
 /**
- * \class OpApplyThreshold
+ * \class OpThresholdApply
  * \brief Class to hold data to apply the threshold region into the segmented image.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
@@ -233,21 +215,18 @@ public:
       std::vector<int> &region,
       ProcessorPointer processor,
       bool thresholdFlag
-      )
-  : mitk::OpPropagate(type, redo, region, processor)
-  , m_ThresholdFlag(thresholdFlag)
-  { }
+      );
 
-  ~OpThresholdApply()
-  { }
-  bool GetThresholdFlag() const { return m_ThresholdFlag; }
+  ~OpThresholdApply();
+
+  bool GetThresholdFlag() const;
+
 private:
   bool m_ThresholdFlag;
 };
 
 
 //-----------------------------------------------------------------------------
-
 /**
  * \class OpClean
  * \brief Class to hold data for the MIDAS "clean" command, which filters the current contour set.
@@ -260,20 +239,18 @@ public:
       mitk::OperationType type,
       bool redo,
       mitk::ContourModelSet::Pointer contourSet
-      )
-  : mitk::OpGeneralSegmentorBaseCommand(type, redo)
-  , m_ContourSet(contourSet)
-  {
-  }
-  ~OpClean() {}
-  mitk::ContourModelSet::Pointer GetContourSet() const { return m_ContourSet; }
+      );
+
+  ~OpClean();
+
+  mitk::ContourModelSet::Pointer GetContourSet() const;
+
 private:
   mitk::ContourModelSet::Pointer m_ContourSet;
 };
 
 
 //-----------------------------------------------------------------------------
-
 /**
  * \class OpWipe
  * \brief Class to hold data to pass back to MIDASGeneralSegmentorView to Undo/Redo the Wipe commands.
@@ -294,22 +271,19 @@ public:
       std::vector<int> &region,
       mitk::PointSet::Pointer seeds,
       ProcessorPointer processor
-      )
-  : mitk::OpGeneralSegmentorBaseCommand(type, redo)
-  , m_SliceNumber(sliceNumber)
-  , m_AxisNumber(axisNumber)
-  , m_Region(region)
-  , m_Seeds(seeds)
-  , m_Processor(processor)
-  {
-  }
-  ~OpWipe()
-  { }
-  int GetSliceNumber() const { return m_SliceNumber; }
-  int GetAxisNumber() const { return m_AxisNumber; }
-  std::vector<int> GetRegion() const { return m_Region; }
-  mitk::PointSet::Pointer GetSeeds() const { return m_Seeds; }
-  ProcessorPointer GetProcessor() const { return m_Processor; }
+      );
+
+  ~OpWipe();
+
+  int GetSliceNumber() const;
+
+  int GetAxisNumber() const;
+
+  std::vector<int> GetRegion() const;
+
+  mitk::PointSet::Pointer GetSeeds() const;
+
+  ProcessorPointer GetProcessor() const;
 
 private:
   int m_SliceNumber;

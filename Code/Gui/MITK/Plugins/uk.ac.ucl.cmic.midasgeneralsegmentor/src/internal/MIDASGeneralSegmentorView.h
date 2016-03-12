@@ -44,7 +44,7 @@
 #include <niftkMIDASToolKeyPressResponder.h>
 
 #include "MIDASGeneralSegmentorViewControlsWidget.h"
-#include "MIDASGeneralSegmentorViewCommands.h"
+#include <niftkGeneralSegmentorCommands.h>
 #include "MIDASGeneralSegmentorViewPreferencePage.h"
 #include "MIDASGeneralSegmentorViewEventInterface.h"
 

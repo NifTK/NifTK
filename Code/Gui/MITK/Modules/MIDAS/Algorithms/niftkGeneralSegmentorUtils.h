@@ -15,8 +15,23 @@
 #ifndef __niftkGeneralSegmentorUtils_h
 #define __niftkGeneralSegmentorUtils_h
 
+#include "niftkMIDASExports.h"
+
+#include <itkImage.h>
+#include <itkPolyLineParametricPath.h>
+
+#include <mitkContourModelSet.h>
+#include <mitkDataNode.h>
+#include <mitkImage.h>
+#include <mitkPointSet.h>
+
+
 namespace niftk
 {
+
+class OpPropagate;
+class OpWipe;
+
 
 /// \brief Fills the itkImage region with the fillValue.
 template<typename TPixel, unsigned int VImageDimension>
@@ -194,7 +209,7 @@ void ITKPropagateToSegmentationImage(
     itk::Image<TGreyScalePixel, VImageDimension>* referenceGreyScaleImage,
     mitk::Image* segmentedImage,
     mitk::Image* regionGrowingImage,
-    mitk::OpPropagate *op);
+    niftk::OpPropagate *op);
 
 /// \brief Called to extract a contour set from a binary image, as might be used
 /// for "See Prior", "See Next", or the outlining a binary segmentation.
@@ -279,7 +294,7 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKDoWipe(
     itk::Image<TPixel, VImageDimension> *itkImage,
     mitk::PointSet* currentSeeds,
-    mitk::OpWipe *op
+    niftk::OpWipe *op
     );
 
 /// \brief Returns true if the image has non-zero edge pixels, and false otherwise.

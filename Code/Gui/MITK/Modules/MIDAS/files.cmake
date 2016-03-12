@@ -13,6 +13,7 @@
 #============================================================================*/
 
 set(H_FILES
+  Algorithms/niftkGeneralSegmentorCommands.h
   Algorithms/niftkGeneralSegmentorUtils.h
   Algorithms/niftkGeneralSegmentorUtils.txx
 )
@@ -20,8 +21,10 @@ set(H_FILES
 set(CPP_FILES
   DataManagement/niftkMIDASDataNodeNameStringFilter.cxx
   Algorithms/niftkMIDASMorphologicalSegmentorPipelineManager.cxx
+  Algorithms/niftkGeneralSegmentorCommands.cxx
   Algorithms/niftkGeneralSegmentorPipeline.cxx
   Algorithms/niftkGeneralSegmentorPipelineCache.cxx
+  Algorithms/niftkGeneralSegmentorUtils.cxx
   Interactions/niftkMIDASTool.cxx
   Interactions/niftkMIDASContourToolEventInterface.cxx
   Interactions/niftkMIDASContourToolOpAccumulateContour.cxx
