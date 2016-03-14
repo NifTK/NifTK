@@ -51,6 +51,7 @@ endif()
 if(BUILD_IGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
+    NDICAPI 
     OpenCVUtils
     OpenCVImageConversion
     PointReg
