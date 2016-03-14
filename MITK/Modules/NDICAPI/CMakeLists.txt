@@ -13,7 +13,8 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS ndicapi 
+  INCLUDE_DIRS ndicapi
+  NO_INIT # Not an MITK MicroServices module 
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

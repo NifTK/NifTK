@@ -14,6 +14,7 @@
 
 MITK_CREATE_MODULE(
   PACKAGE_DEPENDS Qt4|QtCore Qt5|Core
+  NO_INIT # Not an MITK MicroServices module
 )
 
 if(WIN32)
