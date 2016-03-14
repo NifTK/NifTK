@@ -19,9 +19,9 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 VicraTracker::VicraTracker(mitk::DataStorage::Pointer dataStorage,
-                           mitk::SerialCommunication::PortNumber portNumber,
+                           std::string portName,
                            std::string toolConfigFileName)
-: NDITracker(dataStorage, portNumber, mitk::DeviceDataPolarisVicra, toolConfigFileName, 20)
+: NDITracker(dataStorage, portName, mitk::DeviceDataPolarisVicra, toolConfigFileName, 20)
 {
 }
 

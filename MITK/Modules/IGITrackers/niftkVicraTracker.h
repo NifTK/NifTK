@@ -30,12 +30,12 @@ class NIFTKIGITRACKERS_EXPORT VicraTracker : public niftk::NDITracker
 public:
 
   mitkClassMacroItkParent(VicraTracker, niftk::NDITracker);
-  mitkNewMacro3Param(VicraTracker, mitk::DataStorage::Pointer, mitk::SerialCommunication::PortNumber, std::string);
+  mitkNewMacro3Param(VicraTracker, mitk::DataStorage::Pointer, std::string, std::string);
 
 protected:
 
   VicraTracker(mitk::DataStorage::Pointer dataStorage,
-               mitk::SerialCommunication::PortNumber portNumber,
+               std::string portName,
                std::string toolConfigFileName); // Purposefully hidden.
 
   virtual ~VicraTracker(); // Purposefully hidden.

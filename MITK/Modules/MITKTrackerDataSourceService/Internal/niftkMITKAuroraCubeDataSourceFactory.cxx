@@ -39,13 +39,13 @@ IGIDataSourceI::Pointer MITKAuroraCubeDataSourceFactory::CreateService(
     const IGIDataSourceProperties& properties) const
 {
 
-  mitk::SerialCommunication::PortNumber portNumber;
+  std::string portName;
   std::string fileName;
 
-  this->ExtractProperties(properties, portNumber, fileName);
+  this->ExtractProperties(properties, portName, fileName);
 
   niftk::AuroraCubeTracker::Pointer tracker = niftk::AuroraCubeTracker::New(
-        dataStorage, portNumber, fileName
+        dataStorage, portName, fileName
         );
 
   niftk::MITKTrackerDataSourceService::Pointer serviceInstance

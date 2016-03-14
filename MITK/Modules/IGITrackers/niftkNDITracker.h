@@ -24,7 +24,6 @@
 #include <mitkNavigationToolStorage.h>
 #include <mitkTrackingDeviceSource.h>
 #include <mitkNDITrackingDevice.h>
-#include <mitkSerialCommunication.h>
 #include <mitkTrackingVolumeGenerator.h>
 #include <mitkTrackingTypes.h>
 #include <map>
@@ -82,7 +81,7 @@ public:
 protected:
 
   NDITracker(mitk::DataStorage::Pointer dataStorage,
-             mitk::SerialCommunication::PortNumber portNumber,
+             std::string portName,
              mitk::TrackingDeviceData deviceData,
              std::string toolConfigFileName,
              int preferredFramesPerSecond); // Purposefully hidden.
@@ -99,7 +98,7 @@ private:
 
   // Passed in via constructor.
   mitk::DataStorage::Pointer               m_DataStorage;
-  mitk::SerialCommunication::PortNumber    m_PortNumber;
+  std::string                              m_PortName;
   mitk::TrackingDeviceData                 m_DeviceData;
   std::string                              m_ToolConfigFileName;
   int                                      m_PreferredFramesPerSecond;

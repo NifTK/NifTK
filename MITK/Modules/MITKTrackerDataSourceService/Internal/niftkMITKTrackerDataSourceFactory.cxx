@@ -62,16 +62,19 @@ QList<QString> MITKTrackerDataSourceFactory::GetLegacyClassNames() const
 
 //-----------------------------------------------------------------------------
 void MITKTrackerDataSourceFactory::ExtractProperties(const IGIDataSourceProperties& properties,
-    mitk::SerialCommunication::PortNumber& outputPortNumber,
+    std::string& outputPortName,
     std::string& outputFileName) const
 {
-  int portNumber = 0;
   if(!properties.contains("port"))
   {
-    mitkThrow() << "Port number not specified!";
+    mitkThrow() << "Port name not specified!";
   }
-  portNumber = (properties.value("port")).toInt();
-  outputPortNumber = static_cast<mitk::SerialCommunication::PortNumber>(portNumber);
+  std::string portName = (properties.value("port")).toString().toStdString();
+  if (portName.size() == 0)
+  {
+    mitkThrow() << "Empty port name specified!";
+  }
+  outputPortName = portName;
 
   if(!properties.contains("file"))
   {

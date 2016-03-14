@@ -30,12 +30,12 @@ class NIFTKIGITRACKERS_EXPORT AuroraDomeTracker : public niftk::NDITracker
 public:
 
   mitkClassMacroItkParent(AuroraDomeTracker, niftk::NDITracker);
-  mitkNewMacro3Param(AuroraDomeTracker, mitk::DataStorage::Pointer, mitk::SerialCommunication::PortNumber, std::string);
+  mitkNewMacro3Param(AuroraDomeTracker, mitk::DataStorage::Pointer, std::string, std::string);
 
 protected:
 
   AuroraDomeTracker(mitk::DataStorage::Pointer dataStorage,
-                    mitk::SerialCommunication::PortNumber portNumber,
+                    std::string portName,
                     std::string toolConfigFileName); // Purposefully hidden.
 
   virtual ~AuroraDomeTracker(); // Purposefully hidden.

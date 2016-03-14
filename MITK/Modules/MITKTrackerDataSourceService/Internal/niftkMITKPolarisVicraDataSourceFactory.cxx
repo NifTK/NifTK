@@ -39,13 +39,13 @@ IGIDataSourceI::Pointer MITKPolarisVicraDataSourceFactory::CreateService(
     const IGIDataSourceProperties& properties) const
 {
 
-  mitk::SerialCommunication::PortNumber portNumber;
+  std::string portName;
   std::string fileName;
 
-  this->ExtractProperties(properties, portNumber, fileName);
+  this->ExtractProperties(properties, portName, fileName);
 
   niftk::VicraTracker::Pointer tracker = niftk::VicraTracker::New(
-        dataStorage, portNumber, fileName
+        dataStorage, portName, fileName
         );
 
   niftk::MITKTrackerDataSourceService::Pointer serviceInstance

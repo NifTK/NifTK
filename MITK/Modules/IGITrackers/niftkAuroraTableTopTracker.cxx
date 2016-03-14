@@ -19,9 +19,9 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 AuroraTableTopTracker::AuroraTableTopTracker(mitk::DataStorage::Pointer dataStorage,
-                                             mitk::SerialCommunication::PortNumber portNumber,
+                                             std::string portName,
                                              std::string toolConfigFileName)
-: NDITracker(dataStorage, portNumber, mitk::DeviceDataAuroraTabletop, toolConfigFileName, 40)
+: NDITracker(dataStorage, portName, mitk::DeviceDataAuroraTabletop, toolConfigFileName, 40)
 {
 }
 

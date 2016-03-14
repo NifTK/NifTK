@@ -30,12 +30,12 @@ class NIFTKIGITRACKERS_EXPORT SpectraTracker : public niftk::NDITracker
 public:
 
   mitkClassMacroItkParent(SpectraTracker, niftk::NDITracker);
-  mitkNewMacro3Param(SpectraTracker, mitk::DataStorage::Pointer, mitk::SerialCommunication::PortNumber, std::string);
+  mitkNewMacro3Param(SpectraTracker, mitk::DataStorage::Pointer, std::string, std::string);
 
 protected:
 
   SpectraTracker(mitk::DataStorage::Pointer dataStorage,
-                 mitk::SerialCommunication::PortNumber portNumber,
+                 std::string portName,
                  std::string toolConfigFileName); // Purposefully hidden.
 
   virtual ~SpectraTracker(); // Purposefully hidden.

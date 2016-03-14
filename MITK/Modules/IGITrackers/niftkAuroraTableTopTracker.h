@@ -30,12 +30,12 @@ class NIFTKIGITRACKERS_EXPORT AuroraTableTopTracker : public niftk::NDITracker
 public:
 
   mitkClassMacroItkParent(AuroraTableTopTracker, niftk::NDITracker);
-  mitkNewMacro3Param(AuroraTableTopTracker, mitk::DataStorage::Pointer, mitk::SerialCommunication::PortNumber, std::string);
+  mitkNewMacro3Param(AuroraTableTopTracker, mitk::DataStorage::Pointer, std::string, std::string);
 
 protected:
 
   AuroraTableTopTracker(mitk::DataStorage::Pointer dataStorage,
-                 mitk::SerialCommunication::PortNumber portNumber,
+                 std::string portName,
                  std::string toolConfigFileName); // Purposefully hidden.
 
   virtual ~AuroraTableTopTracker(); // Purposefully hidden.

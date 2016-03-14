@@ -24,13 +24,13 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
-                       mitk::SerialCommunication::PortNumber portNumber,
+                       std::string portName,
                        mitk::TrackingDeviceData deviceData,
                        std::string toolConfigFileName,
                        int preferredFramesPerSecond
                        )
 : m_DataStorage(dataStorage)
-, m_PortNumber(portNumber)
+, m_PortName(portName)
 , m_DeviceData(deviceData)
 , m_ToolConfigFileName(toolConfigFileName)
 , m_PreferredFramesPerSecond(preferredFramesPerSecond)
@@ -66,7 +66,7 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
   m_TrackerDevice = mitk::NDITrackingDevice::New();
   m_TrackerDevice->SetData(m_DeviceData);
   m_TrackerDevice->SetType(m_DeviceData.Line);
-  m_TrackerDevice->SetPortNumber(m_PortNumber);
+  m_TrackerDevice->SetDeviceName(m_PortName);
   
   // To Do. This should not be necessary. Trackers should be configured in the same way?
   // I'm tempted to believe the 'else' block is correct. Something is wrong with Aurora.
@@ -152,7 +152,7 @@ void NDITracker::OpenConnection()
     {
       mitkThrow() << "Failed to connect to tracker";
     }
-    MITK_INFO << "Opened connection to tracker on port " << m_PortNumber;
+    MITK_INFO << "Opened connection to tracker on port " << m_PortName;
   }
   else
   {
@@ -172,7 +172,7 @@ void NDITracker::CloseConnection()
     {
       mitkThrow() << "Failed to disconnect from tracker";
     }
-    MITK_INFO << "Closed connection to tracker on port " << m_PortNumber;
+    MITK_INFO << "Closed connection to tracker on port " << m_PortName;
   }
   else
   {

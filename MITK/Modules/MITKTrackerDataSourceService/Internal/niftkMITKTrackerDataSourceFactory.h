@@ -65,7 +65,7 @@ public:
   * \brief Extracts some parameters, needed to construct niftk::NDITrackers.
   */
   void ExtractProperties(const IGIDataSourceProperties& properties,
-      mitk::SerialCommunication::PortNumber& outputPortNumber,
+      std::string& outputPortName,
       std::string& outputFileName) const;
 
 };
