@@ -30,6 +30,7 @@ set(MODULE_DIRS
   CoreGui
   DnDDisplay
   Thumbnail
+  SerialPort
 )
 
 if(BUILD_MIDAS)
