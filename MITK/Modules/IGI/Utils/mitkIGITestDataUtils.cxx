@@ -16,7 +16,6 @@
 #include <mitkCone.h>
 #include <mitkSurface.h>
 #include <vtkConeSource.h>
-#include <QFile>
 
 namespace mitk
 {

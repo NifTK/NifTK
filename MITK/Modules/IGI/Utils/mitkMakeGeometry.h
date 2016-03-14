@@ -18,7 +18,6 @@
 #include "niftkIGIExports.h"
 #include <mitkSurface.h>
 #include <mitkPointSet.h>
-#include <QString>
 #include <vtkMatrix4x4.h>
 
 /**
