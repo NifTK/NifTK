@@ -15,7 +15,6 @@
 MITK_CREATE_MODULE(
   PACKAGE_DEPENDS Qt4|QtCore Qt5|Core
   NO_INIT      # Not an MITK MicroServices module
-  FORCE_STATIC # As it doesn't use the MITK exports 'standard'.
 )
 
 if(WIN32)
@@ -26,8 +25,8 @@ if(BUILD_SHARED_LIBS)
   add_definitions(-DQEXTSERIALPORT_BUILD_SHARED)
 endif()
 
-if(NOT WIN32)
-  set_target_properties( niftkSerialPort PROPERTIES COMPILE_FLAGS "-fPIC")
+if(BUILD_SHARED_LIBS)
+  add_definitions(-DQEXTSERIALPORT_BUILD_SHARED)
 endif()
 
 if(APPLE)
