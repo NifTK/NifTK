@@ -15,6 +15,7 @@
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
+#include <niftkNDICAPITracker.h>
 #include <mitkTestingMacros.h>
 #include <iostream>
 
@@ -26,6 +27,14 @@ int niftkNDICAPITest(int argc, char * argv[])
 {
   // Always start with this, with name of function.
   MITK_TEST_BEGIN("niftkNDICAPITest");
+
+  niftk::NDICAPITracker tracker;
+
+  if (tracker.Probe() != niftk::NDICAPITracker::PLUS_SUCCESS)
+  {
+    std::cerr << "Failed to probe" << std::endl;
+    return EXIT_FAILURE;
+  }
 
   // Always end with this.
   MITK_TEST_END();

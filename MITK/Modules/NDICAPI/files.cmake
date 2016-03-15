@@ -17,4 +17,5 @@ set(CPP_FILES
   ndicapi/ndicapi_math.c
   ndicapi/ndicapi_serial.c
   ndicapi/ndicapi_thread.c
+  niftkNDICAPITracker.cxx
 )
