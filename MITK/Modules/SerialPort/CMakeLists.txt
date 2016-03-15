@@ -18,9 +18,10 @@ MITK_CREATE_MODULE(
 
 if(WIN32)
   target_link_libraries(niftkSerialPort Setupapi)
-  if(BUILD_SHARED_LIBS)
-    add_definitions(-DQEXTSERIALPORT_BUILD_SHARED)
-  endif()
+endif()
+
+if(BUILD_SHARED_LIBS)
+  add_definitions(-DQEXTSERIALPORT_BUILD_SHARED)
 endif()
 
 if(APPLE)
