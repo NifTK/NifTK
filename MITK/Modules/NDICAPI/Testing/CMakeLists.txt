@@ -12,21 +12,5 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE(
-  INCLUDE_DIRS ndicapi
-  NO_INIT # Not an MITK MicroServices module 
-  FORCE_STATIC
-)
-
-if(NOT WIN32)
-  set_target_properties( niftkNDICAPI PROPERTIES COMPILE_FLAGS "-fPIC")
-endif()
-
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkNDICAPI)
-endif()
-
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif()
+MITK_CREATE_MODULE_TESTS(LABELS niftkNDICAPI)
 
