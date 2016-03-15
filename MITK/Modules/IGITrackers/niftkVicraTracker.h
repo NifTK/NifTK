@@ -16,7 +16,7 @@
 #define niftkVicraTracker_h
 
 #include <niftkIGITrackersExports.h>
-#include "niftkNDITracker.h"
+#include "niftkMITKNDITracker.h"
 
 namespace niftk
 {
@@ -25,11 +25,11 @@ namespace niftk
  * \class VicraTracker
  * \brief RAII object to connect to Polaris Vicra tracker.
  */
-class NIFTKIGITRACKERS_EXPORT VicraTracker : public niftk::NDITracker
+class NIFTKIGITRACKERS_EXPORT VicraTracker : public niftk::MITKNDITracker
 {
 public:
 
-  mitkClassMacroItkParent(VicraTracker, niftk::NDITracker);
+  mitkClassMacroItkParent(VicraTracker, niftk::MITKNDITracker);
   mitkNewMacro3Param(VicraTracker, mitk::DataStorage::Pointer, std::string, std::string);
 
 protected:

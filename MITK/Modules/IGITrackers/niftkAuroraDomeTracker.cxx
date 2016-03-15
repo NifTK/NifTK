@@ -21,7 +21,7 @@ namespace niftk
 AuroraDomeTracker::AuroraDomeTracker(mitk::DataStorage::Pointer dataStorage,
                                      std::string portName,
                                      std::string toolConfigFileName)
-: NDITracker(dataStorage, portName, mitk::DeviceDataAuroraPlanarDome, toolConfigFileName, 40)
+: MITKNDITracker(dataStorage, portName, mitk::DeviceDataAuroraPlanarDome, toolConfigFileName, 40)
 {
 }
 

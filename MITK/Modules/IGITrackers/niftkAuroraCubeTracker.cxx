@@ -21,7 +21,7 @@ namespace niftk
 AuroraCubeTracker::AuroraCubeTracker(mitk::DataStorage::Pointer dataStorage,
                                      std::string portName,
                                      std::string toolConfigFileName)
-: NDITracker(dataStorage, portName, mitk::DeviceDataAuroraPlanarCube, toolConfigFileName, 40)
+: MITKNDITracker(dataStorage, portName, mitk::DeviceDataAuroraPlanarCube, toolConfigFileName, 40)
 {
 }
 

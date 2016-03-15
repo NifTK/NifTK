@@ -14,6 +14,8 @@
 
 set(CPP_FILES
   niftkNDITracker.cxx
+  niftkMITKNDITracker.cxx
+  niftkPLUSNDITracker.cxx
   niftkSpectraTracker.cxx
   niftkVicraTracker.cxx
   niftkAuroraCubeTracker.cxx

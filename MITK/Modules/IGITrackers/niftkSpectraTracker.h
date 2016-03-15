@@ -16,7 +16,7 @@
 #define niftkSpectraTracker_h
 
 #include <niftkIGITrackersExports.h>
-#include "niftkNDITracker.h"
+#include "niftkMITKNDITracker.h"
 
 namespace niftk
 {
@@ -25,11 +25,11 @@ namespace niftk
  * \class SpectraTracker
  * \brief RAII object to connect to Polaris Spectra tracker.
  */
-class NIFTKIGITRACKERS_EXPORT SpectraTracker : public niftk::NDITracker
+class NIFTKIGITRACKERS_EXPORT SpectraTracker : public niftk::MITKNDITracker
 {
 public:
 
-  mitkClassMacroItkParent(SpectraTracker, niftk::NDITracker);
+  mitkClassMacroItkParent(SpectraTracker, niftk::MITKNDITracker);
   mitkNewMacro3Param(SpectraTracker, mitk::DataStorage::Pointer, std::string, std::string);
 
 protected:

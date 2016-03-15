@@ -83,15 +83,7 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
   }
 
   this->SetDescription("MITK Tracker:" + this->GetName());
-
-  if (m_Tracker->IsTracking())
-  {
-    this->SetStatus("Initialised");
-  }
-  else
-  {
-    this->SetStatus("Failed to Track");
-  }
+  this->SetStatus("Initialised");
   this->Modified();
 }
 

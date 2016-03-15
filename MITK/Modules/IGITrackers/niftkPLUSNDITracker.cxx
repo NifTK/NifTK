@@ -12,22 +12,25 @@
 
 =============================================================================*/
 
-#include "niftkVicraTracker.h"
+#include "niftkPLUSNDITracker.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-VicraTracker::VicraTracker(mitk::DataStorage::Pointer dataStorage,
-                           std::string portName,
-                           std::string toolConfigFileName)
-: MITKNDITracker(dataStorage, portName, mitk::DeviceDataPolarisVicra, toolConfigFileName, 20)
+PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
+                               std::string portName,
+                               mitk::TrackingDeviceData deviceData,
+                               std::string toolConfigFileName,
+                               int preferredFramesPerSecond
+                               )
+: NDITracker(dataStorage, portName, deviceData, toolConfigFileName, preferredFramesPerSecond)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-VicraTracker::~VicraTracker()
+PLUSNDITracker::~PLUSNDITracker()
 {
 }
 

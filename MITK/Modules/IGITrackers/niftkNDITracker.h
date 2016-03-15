@@ -16,16 +16,12 @@
 #define niftkNDITracker_h
 
 #include <niftkIGITrackersExports.h>
-#include <niftkNDITracker.h>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
 #include <mitkDataStorage.h>
 #include <mitkNavigationToolStorage.h>
-#include <mitkTrackingDeviceSource.h>
-#include <mitkNDITrackingDevice.h>
 #include <mitkTrackingVolumeGenerator.h>
-#include <mitkTrackingTypes.h>
 #include <map>
 
 namespace niftk
@@ -33,7 +29,7 @@ namespace niftk
 
 /**
  * \class NDITracker
- * \brief RAII Helper object to wrap classes and standardise access to our NDI trackers.
+ * \brief Base class for NifTK interfaces to NDI trackers.
  */
 class NIFTKIGITRACKERS_EXPORT NDITracker : public itk::Object
 {
@@ -43,23 +39,9 @@ public:
   itkGetMacro(PreferredFramesPerSecond, int);
 
   /**
-  * \brief Starts the tracking.
-  *
-  * Note that the constructor should have already connected.
+  * \brief Retrives the current tracking data.
   */
-  void StartTracking();
-
-  /**
-  * \brief Stops tracking.
-  *
-  * Note that you can start/stop, but the device should always be connected.
-  */
-  void StopTracking();
-
-  /**
-  * \brief Returns true if the device is tracking, false otherwise.
-   */
-  bool IsTracking() const;
+  virtual std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData() = 0;
 
   /**
   * \brief Set the tracking volume visible or invisible.
@@ -72,11 +54,6 @@ public:
   * \brief Get the visibility flag for the tracking volume.
   */
   bool GetVisibilityOfTrackingVolume() const;
-
-  /**
-  * \brief Retrives the current tracking data.
-  */
-  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData();
 
 protected:
 
@@ -91,11 +68,6 @@ protected:
   NDITracker(const NDITracker&); // Purposefully not implemented.
   NDITracker& operator=(const NDITracker&); // Purposefully not implemented.
 
-private:
-
-  void OpenConnection();
-  void CloseConnection();
-
   // Passed in via constructor.
   mitk::DataStorage::Pointer               m_DataStorage;
   std::string                              m_PortName;
@@ -105,8 +77,6 @@ private:
 
   // Created during constructor.
   mitk::NavigationToolStorage::Pointer     m_NavigationToolStorage;
-  mitk::NDITrackingDevice::Pointer         m_TrackerDevice;
-  mitk::TrackingDeviceSource::Pointer      m_TrackerSource;
   mitk::TrackingVolumeGenerator::Pointer   m_TrackingVolumeGenerator;
   mitk::DataNode::Pointer                  m_TrackingVolumeNode;
 

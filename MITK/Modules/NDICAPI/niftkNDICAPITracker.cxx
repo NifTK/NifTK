@@ -263,7 +263,7 @@ POSSIBILITY OF SUCH DAMAGES.
 #include <sstream>
 #include <iostream>
 
-/*
+/* NifTK commented out:
 #include "PlusConfigure.h"
 #include "vtkCharArray.h"
 #include "vtkMath.h"

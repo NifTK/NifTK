@@ -263,7 +263,6 @@ POSSIBILITY OF SUCH DAMAGES.
 #include <string>
 #include <map>
 
-#include <QMutexLocker>
 #include <QMutex>
 
 struct ndicapi;
@@ -276,12 +275,6 @@ namespace niftk {
 /*!
   \class NDICAPITracker
   \brief Interface class for Northern Digital's tracking devices
-
-Start of Notes from NifTK:
-
-End of Notes from NifTK:
-
-Start of Notes from PLUS:
 
   The NDICAPITracker class provides an  interface to the AURORA and POLARIS
   (Northern Digital Inc., Waterloo, Canada) using the new "combined API" and
@@ -323,9 +316,6 @@ Start of Notes from PLUS:
   and by the number of characters sent per data record.  If tools
   are marked as 'missing' then the number of characters that
   are sent will be reduced.
-
-End of Notes from PLUS:
-
 */
 class NIFTKNDICAPI_EXPORT NDICAPITracker
 {
@@ -401,10 +391,12 @@ public:
   
   /*! Read NDI tracker configuration from xml data */
   // NifTK commented out: virtual PlusStatus ReadConfiguration(vtkXMLDataElement* config);
+  // (because PLUS reads config from an .xml file).
 
   /*! Read NDI tracker configuration from xml data */
   // NifTK commented out: virtual PlusStatus WriteConfiguration(vtkXMLDataElement* config);
-  
+  // (because PLUS reads config from an .xml file).
+
   /*! Set the specified tool LED to the specified state */
   PlusStatus SetToolLED(const char* portName, int led, LedState state);
 
@@ -496,6 +488,7 @@ protected:
 
   /*! Parse and log available volume list response */
   // NifTK commented out: void LogVolumeList(const char* ndiVolumeListCommandReply, int selectedVolume, vtkPlusLogger::LogLevelType logLevel);
+  // (just so I can use std::cerr/std::cout logging, which is basic... )
   void LogVolumeList(const char* ndiVolumeListCommandReply, int selectedVolume);
 
   /*! Index of the last frame number. This is used for providing a frame number when the tracker doesn't return any transform */
