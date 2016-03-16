@@ -31,8 +31,12 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
   QStringList portPaths = getAvailableSerialPortPaths();
   for (int i = 0; i < ports.count(); i++)
   {
+#if QT_VERSION >= 0x050200 // Because currentData() was introduced in Qt 5.2, see OnOKClicked()
     // List using shorter port name, but actual value is full path
     m_PortName->addItem(ports.at(i), QVariant::fromValue(portPaths.at(i)));
+#else
+    m_PortName->addItem(portPaths.at(i));
+#endif
   }
 
   bool ok = false;
@@ -91,7 +95,11 @@ MITKTrackerDialog::~MITKTrackerDialog()
 void MITKTrackerDialog::OnOKClicked()
 {
   IGIDataSourceProperties props;
+#if QT_VERSION >= 0x050200 // Because currentData() was introduced in Qt 5.2
   props.insert("port", QVariant::fromValue(m_PortName->currentData().toString()));
+#else
+  props.insert("port", QVariant::fromValue(m_PortName->currentText()));
+#endif
   props.insert("file", QVariant::fromValue(m_FileOpen->currentPath()));
   m_Properties = props;
 
@@ -99,14 +107,22 @@ void MITKTrackerDialog::OnOKClicked()
   if (false && this->GetPeristenceService()) // Does not load first time, does not load on Windows - MITK bug?
   {
     mitk::PropertyList::Pointer propList = this->GetPeristenceService()->GetPropertyList(id);
+#if QT_VERSION >= 0x050200 // Because currentData() was introduced in Qt 5.2
     propList->Set("port", m_PortName->currentData().toString().toStdString());
+#else
+    propList->Set("port", m_PortName->currentText().toStdString());
+#endif
     propList->Set("file", m_FileOpen->currentPath().toStdString());
   }
   else
   {
     QSettings settings;
     settings.beginGroup(QString::fromStdString(id));
+#if QT_VERSION >= 0x050200 // Because currentData() was introduced in Qt 5.2
     settings.setValue("port", m_PortName->currentData().toString());
+#else
+    settings.setValue("port", m_PortName->currentText());
+#endif
     settings.setValue("file", m_FileOpen->currentPath());
     settings.endGroup();
   }
