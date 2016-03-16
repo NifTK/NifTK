@@ -17,7 +17,7 @@ MITK_CREATE_MODULE(
 )
 
 if(WIN32)
-  target_link_libraries(niftkSerialPort Setupapi)
+  target_link_libraries(niftkSerialPort PRIVATE Setupapi)
 endif()
 
 if(BUILD_SHARED_LIBS)
