@@ -71,5 +71,9 @@ private:
 /// \brief This function enumerates the available serial ports based on QextSerialPort implementation
 QStringList QEXTSERIALPORT_EXPORT getAvailableSerialPorts(void);
 
+/// \brief This function enumerates the full paths of all available serial ports based on
+/// QextSerialPort implementation
+/// \sa getAvailableSerialPorts(void)
+QStringList QEXTSERIALPORT_EXPORT getAvailableSerialPortPaths(void);
 
 #endif /*_QEXTSERIALENUMERATOR_H_*/

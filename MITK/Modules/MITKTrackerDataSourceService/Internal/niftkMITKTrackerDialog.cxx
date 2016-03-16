@@ -28,9 +28,11 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
 
   // Enumerate the available ports, so they have a natural name rather than "COM1", "COM2".
   QStringList ports = getAvailableSerialPorts();
+  QStringList portPaths = getAvailableSerialPortPaths();
   for (int i = 0; i < ports.count(); i++)
   {
-    m_PortName->addItem(ports.at(i));
+    // List using shorter port name, but actual value is full path
+    m_PortName->addItem(ports.at(i), QVariant::fromValue(portPaths.at(i)));
   }
 
   bool ok = false;
@@ -88,10 +90,8 @@ MITKTrackerDialog::~MITKTrackerDialog()
 //-----------------------------------------------------------------------------
 void MITKTrackerDialog::OnOKClicked()
 {
-  int currentSelection = m_PortName->currentIndex() + 1;
-
   IGIDataSourceProperties props;
-  props.insert("port", QVariant::fromValue(currentSelection));
+  props.insert("port", QVariant::fromValue(m_PortName->currentData().toString()));
   props.insert("file", QVariant::fromValue(m_FileOpen->currentPath()));
   m_Properties = props;
 
@@ -99,14 +99,14 @@ void MITKTrackerDialog::OnOKClicked()
   if (false && this->GetPeristenceService()) // Does not load first time, does not load on Windows - MITK bug?
   {
     mitk::PropertyList::Pointer propList = this->GetPeristenceService()->GetPropertyList(id);
-    propList->Set("port", m_PortName->currentText().toStdString());
+    propList->Set("port", m_PortName->currentData().toString().toStdString());
     propList->Set("file", m_FileOpen->currentPath().toStdString());
   }
   else
   {
     QSettings settings;
     settings.beginGroup(QString::fromStdString(id));
-    settings.setValue("port", m_PortName->currentText());
+    settings.setValue("port", m_PortName->currentData().toString());
     settings.setValue("file", m_FileOpen->currentPath());
     settings.endGroup();
   }
