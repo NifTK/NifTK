@@ -15,6 +15,7 @@
 #include "niftkMITKTrackerDialog.h"
 #include <QSettings>
 #include <qextserialenumerator.h>
+#include <qdebug>
 
 namespace niftk
 {
@@ -31,11 +32,10 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
   QStringList portPaths = getAvailableSerialPortPaths();
   for (int i = 0; i < ports.count(); i++)
   {
-#if QT_VERSION >= 0x050200 // Because currentData() was introduced in Qt 5.2, see OnOKClicked()
-    // List using shorter port name, but actual value is full path
-    m_PortName->addItem(ports.at(i), QVariant::fromValue(portPaths.at(i)));
+#ifdef _WIN32
+    m_PortName->addItem(ports.at(i), QVariant::fromValue(ports.at(i).right(1)));
 #else
-    m_PortName->addItem(portPaths.at(i));
+    m_PortName->addItem(ports.at(i), QVariant::fromValue(portPaths.at(i)));
 #endif
   }
 
@@ -58,7 +58,7 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
     propList->Get("port", portName);
     propList->Get("file", fileName);
 
-    int position = m_PortName->findText(QString::fromStdString(portName));
+    int position = m_PortName->findData(QVariant(QString::fromStdString(portName)));
     if (position != -1)
     {
       m_PortName->setCurrentIndex(position);
@@ -70,7 +70,7 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
     QSettings settings;
     settings.beginGroup(QString::fromStdString(id));
 
-    int position = m_PortName->findText(settings.value("port", "").toString());
+    int position = m_PortName->findData(QVariant(settings.value("port", "")));
     if (position != -1)
     {
       m_PortName->setCurrentIndex(position);
@@ -98,7 +98,7 @@ void MITKTrackerDialog::OnOKClicked()
 #if QT_VERSION >= 0x050200 // Because currentData() was introduced in Qt 5.2
   props.insert("port", QVariant::fromValue(m_PortName->currentData().toString()));
 #else
-  props.insert("port", QVariant::fromValue(m_PortName->currentText()));
+  props.insert("port", QVariant::fromValue(m_PortName->itemData(m_PortName->currentIndex())));
 #endif
   props.insert("file", QVariant::fromValue(m_FileOpen->currentPath()));
   m_Properties = props;
@@ -121,7 +121,7 @@ void MITKTrackerDialog::OnOKClicked()
 #if QT_VERSION >= 0x050200 // Because currentData() was introduced in Qt 5.2
     settings.setValue("port", m_PortName->currentData().toString());
 #else
-    settings.setValue("port", m_PortName->currentText());
+    settings.setValue("port", m_PortName->itemData(m_PortName->currentIndex()));
 #endif
     settings.setValue("file", m_FileOpen->currentPath());
     settings.endGroup();
