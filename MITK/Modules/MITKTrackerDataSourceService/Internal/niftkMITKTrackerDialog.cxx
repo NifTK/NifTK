@@ -15,7 +15,6 @@
 #include "niftkMITKTrackerDialog.h"
 #include <QSettings>
 #include <qextserialenumerator.h>
-#include <qdebug>
 
 namespace niftk
 {
@@ -95,11 +94,7 @@ MITKTrackerDialog::~MITKTrackerDialog()
 void MITKTrackerDialog::OnOKClicked()
 {
   IGIDataSourceProperties props;
-#if QT_VERSION >= 0x050200 // Because currentData() was introduced in Qt 5.2
-  props.insert("port", QVariant::fromValue(m_PortName->currentData().toString()));
-#else
   props.insert("port", QVariant::fromValue(m_PortName->itemData(m_PortName->currentIndex())));
-#endif
   props.insert("file", QVariant::fromValue(m_FileOpen->currentPath()));
   m_Properties = props;
 
@@ -107,22 +102,14 @@ void MITKTrackerDialog::OnOKClicked()
   if (false && this->GetPeristenceService()) // Does not load first time, does not load on Windows - MITK bug?
   {
     mitk::PropertyList::Pointer propList = this->GetPeristenceService()->GetPropertyList(id);
-#if QT_VERSION >= 0x050200 // Because currentData() was introduced in Qt 5.2
-    propList->Set("port", m_PortName->currentData().toString().toStdString());
-#else
-    propList->Set("port", m_PortName->currentText().toStdString());
-#endif
+    propList->Set("port", m_PortName->itemData(m_PortName->currentIndex()).toString().toStdString());
     propList->Set("file", m_FileOpen->currentPath().toStdString());
   }
   else
   {
     QSettings settings;
     settings.beginGroup(QString::fromStdString(id));
-#if QT_VERSION >= 0x050200 // Because currentData() was introduced in Qt 5.2
-    settings.setValue("port", m_PortName->currentData().toString());
-#else
-    settings.setValue("port", m_PortName->itemData(m_PortName->currentIndex()));
-#endif
+    settings.setValue("port", m_PortName->itemData(m_PortName->currentIndex()).toString());
     settings.setValue("file", m_FileOpen->currentPath());
     settings.endGroup();
   }
