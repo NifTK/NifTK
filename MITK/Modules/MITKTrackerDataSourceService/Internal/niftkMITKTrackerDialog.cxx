@@ -28,9 +28,14 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
 
   // Enumerate the available ports, so they have a natural name rather than "COM1", "COM2".
   QStringList ports = getAvailableSerialPorts();
+  QStringList portPaths = getAvailableSerialPortPaths();
   for (int i = 0; i < ports.count(); i++)
   {
-    m_PortName->addItem(ports.at(i));
+#ifdef _WIN32
+    m_PortName->addItem(ports.at(i), QVariant::fromValue(ports.at(i).right(1)));
+#else
+    m_PortName->addItem(ports.at(i), QVariant::fromValue(portPaths.at(i)));
+#endif
   }
 
   bool ok = false;
@@ -52,7 +57,7 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
     propList->Get("port", portName);
     propList->Get("file", fileName);
 
-    int position = m_PortName->findText(QString::fromStdString(portName));
+    int position = m_PortName->findData(QVariant(QString::fromStdString(portName)));
     if (position != -1)
     {
       m_PortName->setCurrentIndex(position);
@@ -64,7 +69,7 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
     QSettings settings;
     settings.beginGroup(QString::fromStdString(id));
 
-    int position = m_PortName->findText(settings.value("port", "").toString());
+    int position = m_PortName->findData(QVariant(settings.value("port", "")));
     if (position != -1)
     {
       m_PortName->setCurrentIndex(position);
@@ -88,10 +93,8 @@ MITKTrackerDialog::~MITKTrackerDialog()
 //-----------------------------------------------------------------------------
 void MITKTrackerDialog::OnOKClicked()
 {
-  int currentSelection = m_PortName->currentIndex() + 1;
-
   IGIDataSourceProperties props;
-  props.insert("port", QVariant::fromValue(currentSelection));
+  props.insert("port", QVariant::fromValue(m_PortName->itemData(m_PortName->currentIndex())));
   props.insert("file", QVariant::fromValue(m_FileOpen->currentPath()));
   m_Properties = props;
 
@@ -99,14 +102,14 @@ void MITKTrackerDialog::OnOKClicked()
   if (false && this->GetPeristenceService()) // Does not load first time, does not load on Windows - MITK bug?
   {
     mitk::PropertyList::Pointer propList = this->GetPeristenceService()->GetPropertyList(id);
-    propList->Set("port", m_PortName->currentText().toStdString());
+    propList->Set("port", m_PortName->itemData(m_PortName->currentIndex()).toString().toStdString());
     propList->Set("file", m_FileOpen->currentPath().toStdString());
   }
   else
   {
     QSettings settings;
     settings.beginGroup(QString::fromStdString(id));
-    settings.setValue("port", m_PortName->currentText());
+    settings.setValue("port", m_PortName->itemData(m_PortName->currentIndex()).toString());
     settings.setValue("file", m_FileOpen->currentPath());
     settings.endGroup();
   }
