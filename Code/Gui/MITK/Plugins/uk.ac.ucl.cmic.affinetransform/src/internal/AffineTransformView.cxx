@@ -80,7 +80,7 @@ AffineTransformView::AffineTransformView()
   m_RotationMode = false;
 
   // Instantiate affine transformer
-  m_AffineTransformer = mitk::AffineTransformer::New();
+  m_AffineTransformer = niftk::AffineTransformer::New();
 
   // Pass the data storage pointer to it
   if (m_AffineTransformer.IsNotNull())
@@ -187,38 +187,6 @@ void AffineTransformView::CreateQtPartControl(QWidget *parent)
 //-----------------------------------------------------------------------------
 void AffineTransformView::SetControlsEnabled(bool isEnabled)
 {
-  m_Controls->rotationSpinBoxX->setEnabled(isEnabled);
-  m_Controls->rotationSpinBoxY->setEnabled(isEnabled);
-  m_Controls->rotationSpinBoxZ->setEnabled(isEnabled);
-  
-  m_Controls->rotationSliderX->setEnabled(isEnabled);
-  m_Controls->rotationSliderY->setEnabled(isEnabled);
-  m_Controls->rotationSliderZ->setEnabled(isEnabled);
-
-  m_Controls->shearingSpinBoxXY->setEnabled(isEnabled);
-  m_Controls->shearingSpinBoxXZ->setEnabled(isEnabled);
-  m_Controls->shearingSpinBoxYZ->setEnabled(isEnabled);
-
-  m_Controls->shearingSliderXY->setEnabled(isEnabled);
-  m_Controls->shearingSliderXZ->setEnabled(isEnabled);
-  m_Controls->shearingSliderYZ->setEnabled(isEnabled);
-
-  m_Controls->translationSpinBoxX->setEnabled(isEnabled);
-  m_Controls->translationSpinBoxY->setEnabled(isEnabled);
-  m_Controls->translationSpinBoxZ->setEnabled(isEnabled);
-
-  m_Controls->translationSliderX->setEnabled(isEnabled);
-  m_Controls->translationSliderY->setEnabled(isEnabled);
-  m_Controls->translationSliderZ->setEnabled(isEnabled);
-
-  m_Controls->scalingSpinBoxX->setEnabled(isEnabled);
-  m_Controls->scalingSpinBoxY->setEnabled(isEnabled);
-  m_Controls->scalingSpinBoxZ->setEnabled(isEnabled);
-
-  m_Controls->scalingSliderX->setEnabled(isEnabled);
-  m_Controls->scalingSliderY->setEnabled(isEnabled);
-  m_Controls->scalingSliderZ->setEnabled(isEnabled);
-
   m_Controls->centreRotationRadioButton->setEnabled(isEnabled);
   m_Controls->resampleButton->setEnabled(isEnabled);
   m_Controls->saveButton->setEnabled(isEnabled);
@@ -228,8 +196,48 @@ void AffineTransformView::SetControlsEnabled(bool isEnabled)
   m_Controls->applyButton->setEnabled(isEnabled);
 
   m_Controls->checkBox_Interactive->setEnabled(isEnabled);
+
+  SetSliderControlsEnabled(isEnabled);
 }
 
+void AffineTransformView::SetSliderControlsEnabled(bool isEnabled)
+{
+  m_Controls->rotationGroupBox->setEnabled(isEnabled);
+  m_Controls->rotationSpinBoxX->setEnabled(isEnabled);
+  m_Controls->rotationSpinBoxY->setEnabled(isEnabled);
+  m_Controls->rotationSpinBoxZ->setEnabled(isEnabled);
+  
+  m_Controls->rotationSliderX->setEnabled(isEnabled);
+  m_Controls->rotationSliderY->setEnabled(isEnabled);
+  m_Controls->rotationSliderZ->setEnabled(isEnabled);
+
+  m_Controls->shearGroupBox->setEnabled(isEnabled);
+  m_Controls->shearingSpinBoxXY->setEnabled(isEnabled);
+  m_Controls->shearingSpinBoxXZ->setEnabled(isEnabled);
+  m_Controls->shearingSpinBoxYZ->setEnabled(isEnabled);
+
+  m_Controls->shearingSliderXY->setEnabled(isEnabled);
+  m_Controls->shearingSliderXZ->setEnabled(isEnabled);
+  m_Controls->shearingSliderYZ->setEnabled(isEnabled);
+
+  m_Controls->translationGroupBox->setEnabled(isEnabled);
+  m_Controls->translationSpinBoxX->setEnabled(isEnabled);
+  m_Controls->translationSpinBoxY->setEnabled(isEnabled);
+  m_Controls->translationSpinBoxZ->setEnabled(isEnabled);
+
+  m_Controls->translationSliderX->setEnabled(isEnabled);
+  m_Controls->translationSliderY->setEnabled(isEnabled);
+  m_Controls->translationSliderZ->setEnabled(isEnabled);
+
+  m_Controls->scalingGroupBox->setEnabled(isEnabled);
+  m_Controls->scalingSpinBoxX->setEnabled(isEnabled);
+  m_Controls->scalingSpinBoxY->setEnabled(isEnabled);
+  m_Controls->scalingSpinBoxZ->setEnabled(isEnabled);
+
+  m_Controls->scalingSliderX->setEnabled(isEnabled);
+  m_Controls->scalingSliderY->setEnabled(isEnabled);
+  m_Controls->scalingSliderZ->setEnabled(isEnabled);
+}
 
 void AffineTransformView::SetInteractiveControlsEnabled(bool isEnabled)
 {
@@ -660,6 +668,19 @@ void AffineTransformView::GetValuesFromUI(mitk::AffineTransformParametersDataNod
 }
 
 //-----------------------------------------------------------------------------
+void AffineTransformView::GetValuesFromDisplay(vtkSmartPointer<vtkMatrix4x4> transform)
+{
+  for (int rInd = 0; rInd < 4; rInd++)
+  {
+    for (int cInd = 0; cInd < 4; cInd++)
+    { 
+      double val = m_Controls->affineTransformDisplay->item(rInd, cInd)->text().toDouble();
+      transform->SetElement(rInd, cInd, val);
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
 void AffineTransformView::UpdateTransformDisplay() 
 {
   // This method gets a 4x4 matrix corresponding to the current transform, given by the current values
@@ -794,7 +815,16 @@ void AffineTransformView::OnResampleTransformPushed()
 void AffineTransformView::OnApplyTransformPushed()
 {
   // Apply the transformation onto the current image
-  m_AffineTransformer->OnApplyTransform();
+  if (m_InInteractiveMode)
+  {
+    vtkSmartPointer<vtkMatrix4x4> transform = vtkSmartPointer<vtkMatrix4x4>::New();
+    GetValuesFromDisplay(transform);
+    m_AffineTransformer->ApplyTransformToNode(transform, m_DataOwnerNode);
+  }
+  else
+  {
+    m_AffineTransformer->OnApplyTransform();
+  }
 
   // Then reset the parameters.
   ResetUIValues();
@@ -887,7 +917,6 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
 
     m_AffineDataInteractor3D->SetDataNode(node);
     m_AffineDataInteractor3D->SetBoundingObjectNode(m_BoundingObjectNode);
-    m_AffineDataInteractor3D->SetPrecision(3);
          
     connect(m_AffineDataInteractor3D, SIGNAL(transformReady()), this, SLOT(OnTransformReady()));
 
@@ -961,6 +990,8 @@ void AffineTransformView::RemoveBoundingObjectFromNode()
 void AffineTransformView::OnInteractiveModeToggled(bool on)
 {
   SetInteractiveControlsEnabled(on);
+  SetSliderControlsEnabled(!on);
+
   m_InInteractiveMode = on;
 
   if (on)
@@ -1054,11 +1085,10 @@ void AffineTransformView::OnAxisChanged(bool on)
 
 void AffineTransformView::OnTransformReady()
 {
-  mitk::BaseGeometry* geom = m_DataOwnerNode->GetData()->GetGeometry();
   // need to get and store the initial matrix to  decompose correctly 
   // this does not get decomposed or passed down to the affine transformer!
-  vtkMatrix4x4 * currentMat = geom->GetVtkTransform()->GetMatrix();
-
+  vtkMatrix4x4 * currentMat = m_AffineDataInteractor3D->GetUpdatedGeometry();
+  
   bool isBlocked = m_Controls->affineTransformDisplay->blockSignals(true);
 
   for (int rInd = 0; rInd < 4; rInd++) for (int cInd = 0; cInd < 4; cInd++)

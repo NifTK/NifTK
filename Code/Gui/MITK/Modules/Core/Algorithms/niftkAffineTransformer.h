@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitkNifTKAffineTransformer_h
-#define mitkNifTKAffineTransformer_h
+#ifndef niftkAffineTransformer_h
+#define niftkAffineTransformer_h
 
 #include <itkObject.h>
 #include <mitkBaseData.h>
@@ -26,7 +26,8 @@
 
 #include "niftkCoreExports.h"
 
-namespace mitk {
+namespace niftk
+{
 
 /**
  * \brief Class to contain all the ITK/MITK logic for the Affine Transformation Plugin,
@@ -138,7 +139,7 @@ public:
   void UpdateTransformProperty(std::string name, vtkSmartPointer<vtkMatrix4x4> transform, mitk::DataNode::Pointer node);
 
   /** The transform loaded from file is applied to the current node, and all its children, and it resets the GUI parameters to Identity, and hence the DISPLAY_TRANSFORM and DISPLAY_PARAMETERS to Identity.*/
-  void ApplyLoadedTransformToNode(const vtkSmartPointer<vtkMatrix4x4> transformFromFile, mitk::DataNode::Pointer node);
+  void ApplyTransformToNode(const vtkSmartPointer<vtkMatrix4x4> transformFromFile, mitk::DataNode::Pointer node);
 
   /** \brief Applies a re-sampling to the current node. */
   void ApplyResampleToCurrentNode();

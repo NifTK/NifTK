@@ -35,11 +35,11 @@
 #include <mitkWeakPointer.h>
 #include <mitkBoundingObject.h>
 
-#include <mitkNifTKAffineTransformer.h>
+#include <niftkAffineTransformer.h>
 #include <niftkCustomVTKAxesActor.h>
 
 #include "ui_AffineTransformViewControls.h"
-#include "AffineTransformDataInteractor3D.h"
+#include "niftkAffineTransformDataInteractor3D.h"
 
 /**
  * \class AffineTransformView
@@ -130,6 +130,8 @@ class AffineTransformView : public QmitkBaseView
     /** Enables or Disables all the interactive controls. */
     void SetInteractiveControlsEnabled(bool isEnabled);
 
+    void SetSliderControlsEnabled(bool isEnabled);
+
     /** Sets the controls to the values given in the specific parameters property. */
     void SetUIValues(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
 
@@ -138,6 +140,9 @@ class AffineTransformView : public QmitkBaseView
 
     /** Gets the values from the controls and stores them on the specified parametersProperty. */
     void GetValuesFromUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
+
+    /** Gets the values from the displayed matrix and stores them in a vtkMatrix. */
+    void GetValuesFromDisplay(vtkSmartPointer<vtkMatrix4x4> transform);
 
     /**
     * \brief Updates the displayed transform with the values from the spin-box controls.
@@ -172,7 +177,7 @@ private:
     Ui::AffineTransformWidget             * m_Controls;
     double                                  m_CentreOfRotation[3];
     mitk::DataNode::Pointer                 m_DataOwnerNode;
-    mitk::AffineTransformer::Pointer        m_AffineTransformer;
+    niftk::AffineTransformer::Pointer        m_AffineTransformer;
 
 
     //************************************************************************************************************************

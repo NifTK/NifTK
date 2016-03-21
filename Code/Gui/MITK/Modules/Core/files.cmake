@@ -18,7 +18,7 @@ set(H_FILES
 
 set(CPP_FILES
   Algorithms/mitkNifTKCoreObjectFactory.cxx
-  Algorithms/mitkNifTKAffineTransformer.cxx
+  Algorithms/niftkAffineTransformer.cxx
   Algorithms/mitkNifTKCMC33.cpp
   Algorithms/mitkNifTKImageToSurfaceFilter.cpp
   Algorithms/mitkNifTKMeshSmoother.cpp
@@ -49,11 +49,11 @@ set(CPP_FILES
   DataNodeProperties/mitkLabeledLookupTableProperty.cxx
   IO/mitkFileIOUtils.cxx
   Interactions/mitkPointSetUpdate.cxx
-  Interactions/AffineTransformDataInteractor3D.cxx
+  Interactions/niftkAffineTransformDataInteractor3D.cxx
 )
 
 set(MOC_H_FILES
-  Interactions/AffineTransformDataInteractor3D.h
+  Interactions/niftkAffineTransformDataInteractor3D.h
 )
 
 set(RESOURCE_FILES
