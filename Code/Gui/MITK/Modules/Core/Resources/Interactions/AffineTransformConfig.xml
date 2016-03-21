@@ -5,16 +5,19 @@
     <attribute name="EventButton" value="LeftMouseButton"/>
     <attribute name="Modifiers" value="alt"/>
   </event_variant>
-  <event_variant class="MouseWheelEvent" name="Scroll">
-  </event_variant>
   <event_variant class="MouseMoveEvent" name="MoveObject">
     <attribute name="ButtonState" value="LeftMouseButton"/>
     <attribute name="Modifiers" value="alt"/>
   </event_variant> 
   <event_variant class="MouseWheelEvent" name="ScrollObject">
     <attribute name="ButtonState" value="LeftMouseButton"/>
+    <attribute name="Modifiers" value="alt"/>
+  </event_variant>
+  <event_variant class="MouseReleaseEvent" name="EndMoveObjectAlt">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+    <attribute name="Modifiers" value="alt"/>
   </event_variant>
   <event_variant class="MouseReleaseEvent" name="EndMoveObject">
-    <attribute name="ButtonState" value="LeftMouseButton"/>
+    <attribute name="EventButton" value="LeftMouseButton"/>
   </event_variant>
 </config>
