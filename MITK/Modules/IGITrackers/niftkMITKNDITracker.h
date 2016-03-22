@@ -36,7 +36,7 @@ public:
   /**
   * \brief Retrives the current tracking data.
   */
-  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData();
+  virtual std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData();
 
 protected:
 
@@ -60,8 +60,8 @@ protected:
 private:
 
   // Created during constructor.
-  mitk::NDITrackingDevice::Pointer         m_TrackerDevice;
-  mitk::TrackingDeviceSource::Pointer      m_TrackerSource;
+  mitk::NDITrackingDevice::Pointer    m_TrackerDevice;
+  mitk::TrackingDeviceSource::Pointer m_TrackerSource;
 
 }; // end class
 

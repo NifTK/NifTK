@@ -34,4 +34,11 @@ PLUSNDITracker::~PLUSNDITracker()
 {
 }
 
+
+//-----------------------------------------------------------------------------
+std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > PLUSNDITracker::GetTrackingData()
+{
+
+}
+
 } // end namespace

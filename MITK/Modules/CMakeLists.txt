@@ -30,7 +30,6 @@ set(MODULE_DIRS
   CoreGui
   DnDDisplay
   Thumbnail
-  SerialPort
 )
 
 if(BUILD_MIDAS)
@@ -51,6 +50,7 @@ endif()
 if(BUILD_IGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
+    SerialPort
     NDICAPI 
     OpenCVUtils
     OpenCVImageConversion

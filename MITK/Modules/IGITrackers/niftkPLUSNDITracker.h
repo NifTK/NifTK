@@ -17,6 +17,7 @@
 
 #include "niftkNDITracker.h"
 #include <niftkIGITrackersExports.h>
+#include <niftkNDICAPITracker.h>
 
 namespace niftk {
 
@@ -29,6 +30,11 @@ class NIFTKIGITRACKERS_EXPORT PLUSNDITracker : public niftk::NDITracker
 public:
 
   mitkClassMacroItkParent(PLUSNDITracker, niftk::NDITracker);
+
+  /**
+  * \brief Retrives the current tracking data.
+  */
+  virtual std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData();
 
 protected:
 
@@ -44,6 +50,7 @@ protected:
   PLUSNDITracker& operator=(const PLUSNDITracker&); // Purposefully not implemented.
 
 private:
+  niftk::NDICAPITracker m_Tracker;
 
 }; // end class
 
