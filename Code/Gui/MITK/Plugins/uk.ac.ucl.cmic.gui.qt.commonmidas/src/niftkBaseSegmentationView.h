@@ -39,6 +39,7 @@
 #include <niftkMIDASEventFilter.h>
 
 class QmitkRenderWindow;
+class niftkBaseSegmentationViewControls;
 
 /**
  * \class niftkBaseSegmentationView
@@ -228,20 +229,10 @@ protected:
   /// \brief Keeps track of the last selected image, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::Image::Pointer m_SelectedImage;
 
-  /// \brief Common widget, enabling selection of Image and Segmentation, that might be replaced once we have a database.
-  niftkMIDASImageAndSegmentationSelectorWidget *m_ImageAndSegmentationSelector;
-
-  /// \brief Common widget, enabling selection of a segmentation tool.
-  niftkMIDASToolSelectorWidget *m_ToolSelector;
-
-  /// \brief Container for Selector Widget.
-  QWidget *m_ContainerForSelectorWidget;
-
-  /// \brief Container for Tool Widget.
-  QWidget *m_ContainerForToolWidget;
-
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   QColor m_DefaultSegmentationColor;
+
+  niftkBaseSegmentationViewControls* m_BaseSegmentationViewControls;
 
 private:
 

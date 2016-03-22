@@ -43,18 +43,19 @@
 #include <niftkMIDASSeedTool.h>
 #include <niftkMIDASOrientationUtils.h>
 
+#include "niftkBaseSegmentationViewControls.h"
+
 const QString niftkBaseSegmentationView::DEFAULT_COLOUR("midas editor default colour");
 const QString niftkBaseSegmentationView::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
 
 
 //-----------------------------------------------------------------------------
 niftkBaseSegmentationView::niftkBaseSegmentationView()
-: m_SelectedNode(NULL)
-, m_SelectedImage(NULL)
-, m_ImageAndSegmentationSelector(NULL)
-, m_ToolSelector(NULL)
-, m_ActiveToolID(-1)
-, m_MainWindowCursorVisibleWithToolsOff(true)
+  : m_SelectedNode(nullptr),
+    m_SelectedImage(nullptr),
+    m_ActiveToolID(-1),
+    m_MainWindowCursorVisibleWithToolsOff(true),
+    m_BaseSegmentationViewControls(nullptr)
 {
   m_SelectedNode = NULL;
 }
@@ -74,15 +75,7 @@ niftkBaseSegmentationView::~niftkBaseSegmentationView()
     }
   }
 
-  if (m_ImageAndSegmentationSelector != NULL)
-  {
-    delete m_ImageAndSegmentationSelector;
-  }
-
-  if (m_ToolSelector != NULL)
-  {
-    delete m_ToolSelector;
-  }
+  delete m_BaseSegmentationViewControls;
 }
 
 
@@ -160,56 +153,38 @@ void niftkBaseSegmentationView::RegisterTools(mitk::ToolManager::Pointer toolMan
 //-----------------------------------------------------------------------------
 void niftkBaseSegmentationView::CreateQtPartControl(QWidget *parent)
 {
-  if (!m_ImageAndSegmentationSelector)
+  assert(!m_BaseSegmentationViewControls);
+
+  // Create an own tool manager and connect it to the data storage straight away.
+  mitk::ToolManager::Pointer toolManager = mitk::ToolManager::New(this->GetDataStorage());
+
+  this->RegisterTools(toolManager);
+
+  mitk::ToolManager::ToolVectorTypeConst tools = toolManager->GetTools();
+  mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();
+  for ( ; it != tools.end(); ++it)
   {
-
-    // Create an own tool manager and connect it to the data storage straight away.
-    mitk::ToolManager::Pointer toolManager = mitk::ToolManager::New(this->GetDataStorage());
-
-    this->RegisterTools(toolManager);
-
-    mitk::ToolManager::ToolVectorTypeConst tools = toolManager->GetTools();
-    mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();
-    for ( ; it != tools.end(); ++it)
+    mitk::Tool* tool = const_cast<mitk::Tool*>(it->GetPointer());
+    if (niftk::MIDASStateMachine* midasSM = dynamic_cast<niftk::MIDASStateMachine*>(tool))
     {
-      mitk::Tool* tool = const_cast<mitk::Tool*>(it->GetPointer());
-      if (niftk::MIDASStateMachine* midasSM = dynamic_cast<niftk::MIDASStateMachine*>(tool))
-      {
-        midasSM->InstallEventFilter(this);
-      }
+      midasSM->InstallEventFilter(this);
     }
-
-
-    // Set up the Image and Segmentation Selector.
-    // Subclasses add it to their layouts, at the appropriate point.
-    m_ContainerForSelectorWidget = new QWidget(parent);
-    m_ImageAndSegmentationSelector = new niftkMIDASImageAndSegmentationSelectorWidget(m_ContainerForSelectorWidget);
-    m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-    m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
-    m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->show();
-    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
-    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->show();
-
-    // Set up the Tool Selector.
-    // Subclasses add it to their layouts, at the appropriate point.
-    m_ContainerForToolWidget = new QWidget(parent);
-    m_ToolSelector = new niftkMIDASToolSelectorWidget(m_ContainerForToolWidget);
-    m_ToolSelector->SetToolManager(*toolManager.GetPointer());
-    m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(true);
-    m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
-    m_ToolSelector->m_ManualToolSelectionBox->SetToolGUIArea(m_ToolSelector->m_ManualToolGUIContainer);
-    m_ToolSelector->m_ManualToolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::EnabledWithWorkingData);
-
-    // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
-    this->RetrievePreferenceValues();
   }
+
+  // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
+  this->RetrievePreferenceValues();
+
+  m_BaseSegmentationViewControls = new niftkBaseSegmentationViewControls();
+  m_BaseSegmentationViewControls->CreateQtPartControl(parent);
+
+  m_BaseSegmentationViewControls->m_ToolSelector->SetToolManager(*toolManager);
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::ToolManager* niftkBaseSegmentationView::GetToolManager()
 {
-  return m_ToolSelector->GetToolManager();
+  return m_BaseSegmentationViewControls->GetToolManager();
 }
 
 
@@ -293,16 +268,16 @@ void niftkBaseSegmentationView::OnSelectionChanged(berry::IWorkbenchPart::Pointe
     }
 
     // If we have worked out the reference data, then set the combo box.
-    m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(true);
+    m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(true);
     if (referenceData.IsNotNull())
     {
-      m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText(tr("<font color='black'>%1</font>").arg(referenceData->GetName().c_str()));
+      m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText(tr("<font color='black'>%1</font>").arg(referenceData->GetName().c_str()));
     }
     else
     {
-      m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+      m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
     }
-    m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(false);
+    m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->blockSignals(false);
 
     // Tell the tool manager the images for reference and working purposes.
     this->SetToolManagerSelection(referenceData, workingDataNodes);
@@ -310,7 +285,7 @@ void niftkBaseSegmentationView::OnSelectionChanged(berry::IWorkbenchPart::Pointe
   }
 
   // Adjust widgets according to whether we have a valid selection.
-  this->EnableSegmentationWidgets(valid);
+  m_BaseSegmentationViewControls->EnableSegmentationWidgets(valid);
 }
 
 
@@ -506,8 +481,8 @@ mitk::BaseRenderer* niftkBaseSegmentationView::GetFocusedRenderer()
 //-----------------------------------------------------------------------------
 void niftkBaseSegmentationView::SetEnableManualToolSelectionBox(bool enabled)
 {
-  m_ToolSelector->m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
-  m_ToolSelector->m_ManualToolGUIContainer->setEnabled(enabled);
+  m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
+  m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolGUIContainer->setEnabled(enabled);
 }
 
 
@@ -550,8 +525,8 @@ void niftkBaseSegmentationView::SetToolManagerSelection(const mitk::DataNode* re
   {
     if (workingDataNodes.size() == 0)
     {
-      m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(true);
-      m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+      m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(true);
+      m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
     }
     else
     {
@@ -559,14 +534,14 @@ void niftkBaseSegmentationView::SetToolManagerSelection(const mitk::DataNode* re
       mitk::DataNode::Pointer segmentationImage = this->GetSegmentationNodeFromWorkingData(node);
       assert(segmentationImage);
 
-      m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-      m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText(tr("<font color='black'>%1</font>").arg(segmentationImage->GetName().c_str()));
+      m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
+      m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText(tr("<font color='black'>%1</font>").arg(segmentationImage->GetName().c_str()));
     }
   }
   else
   {
-    m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-    m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+    m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
+    m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
   }
 }
 

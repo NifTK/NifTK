@@ -62,6 +62,8 @@
 
 #include <niftkGeneralSegmentorCommands.h>
 
+#include <niftkBaseSegmentationViewControls.h>
+
 /*
 #include <sys/time.h>
 double timespecDiff(struct timespec *timeA_p, struct timespec *timeB_p)
@@ -146,8 +148,8 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget(m_ContainerForControlsWidget);
     m_GeneralControls->setContentsMargins(0, 0, 0, 0);
 
-    m_Layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
-    m_Layout->addWidget(m_ContainerForToolWidget, 1, 0);
+    m_Layout->addWidget(m_BaseSegmentationViewControls->m_ContainerForSelectorWidget, 0, 0);
+    m_Layout->addWidget(m_BaseSegmentationViewControls->m_ContainerForToolWidget, 1, 0);
     m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
 
     m_Layout->setRowStretch(0, 0);
@@ -157,10 +159,10 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
     m_GeneralControls->SetThresholdingCheckboxEnabled(false);
     m_GeneralControls->SetThresholdingWidgetsEnabled(false);
 
-    m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly");
-    m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
-    m_ToolSelector->m_ManualToolSelectionBox->SetShowNames(true);
-    m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(false);
+    m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly");
+    m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
+    m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetShowNames(true);
+    m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(false);
 
 //    m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
     m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New(this);
@@ -177,7 +179,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
 
   if ( m_GeneralControls )
   {
-    this->connect(m_ToolSelector, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+    this->connect(m_BaseSegmentationViewControls->m_ToolSelector, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
     this->connect(m_GeneralControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnCleanButtonClicked()));
     this->connect(m_GeneralControls->m_WipeButton, SIGNAL(clicked()), SLOT(OnWipeButtonClicked()));
     this->connect(m_GeneralControls->m_WipePlusButton, SIGNAL(clicked()), SLOT(OnWipePlusButtonClicked()));
@@ -195,7 +197,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
     this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
     this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(minimumValueChanged(double)), SLOT(OnThresholdValueChanged()));
     this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(maximumValueChanged(double)), SLOT(OnThresholdValueChanged()));
-    this->connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnCreateNewSegmentationButtonClicked()) );
+    this->connect(m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnCreateNewSegmentationButtonClicked()) );
 
     /// Transfer the focus back to the main window if any button is pressed.
     /// This is needed so that the key interactions (like 'a'/'z' for changing slice) keep working.
@@ -214,7 +216,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
     this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
-    this->connect(m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
   }
 }
 
@@ -1147,7 +1149,7 @@ bool MIDASGeneralSegmentorView::SelectSeedTool()
   /// We should not do anything with the tools until they are registered to the
   /// tool manager.
 
-  if (m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
+  if (m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1169,7 +1171,7 @@ bool MIDASGeneralSegmentorView::SelectSeedTool()
 bool MIDASGeneralSegmentorView::SelectDrawTool()
 {
   /// Note: see comment in SelectSeedTool().
-  if (m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
+  if (m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1191,7 +1193,7 @@ bool MIDASGeneralSegmentorView::SelectDrawTool()
 bool MIDASGeneralSegmentorView::SelectPolyTool()
 {
   /// Note: see comment in SelectSeedTool().
-  if (m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
+  if (m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1212,7 +1214,7 @@ bool MIDASGeneralSegmentorView::SelectPolyTool()
 //-----------------------------------------------------------------------------
 bool MIDASGeneralSegmentorView::UnselectTools()
 {
-  if (m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
+  if (m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
 
@@ -1232,7 +1234,7 @@ bool MIDASGeneralSegmentorView::UnselectTools()
 bool MIDASGeneralSegmentorView::SelectViewMode()
 {
   /// Note: see comment in SelectSeedTool().
-  if (m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
+  if (m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
   {
     if (!this->HasInitialisedWorkingData())
     {
@@ -1474,7 +1476,7 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const bool& thresho
 bool MIDASGeneralSegmentorView::CleanSlice()
 {
   /// Note: see comment in SelectSeedTool().
-  if (m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
+  if (m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->isEnabled())
   {
     this->OnCleanButtonClicked();
     return true;
