@@ -384,7 +384,7 @@ void niftkMorphologicalSegmentationView::OnTabChanged(int tabIndex)
   {
     if (tabIndex == 1 || tabIndex == 2)
     {
-      m_BaseSegmentationViewControls->m_ToolSelector->SetEnabled(true);
+      m_BaseSegmentationViewControls->m_ToolSelectorWidget->SetEnabled(true);
 
       mitk::ToolManager::Pointer toolManager = this->GetToolManager();
       niftk::MIDASPaintbrushTool::Pointer paintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>()));
@@ -433,7 +433,7 @@ void niftkMorphologicalSegmentationView::OnTabChanged(int tabIndex)
     }
     else
     {
-      m_BaseSegmentationViewControls->m_ToolSelector->SetEnabled(false);
+      m_BaseSegmentationViewControls->m_ToolSelectorWidget->SetEnabled(false);
       this->OnToolSelected(-1); // make sure we de-activate tools.
     }
 
@@ -557,7 +557,7 @@ void niftkMorphologicalSegmentationView::CreateQtPartControl(QWidget* parent)
   layout->setRowStretch(1, 1);
   layout->setRowStretch(2, 0);
 
-  m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
+  m_BaseSegmentationViewControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
 
   m_PipelineManager = niftk::MorphologicalSegmentationPipelineManager::New();
   m_PipelineManager->SetDataStorage(this->GetDataStorage());
@@ -581,7 +581,7 @@ void niftkMorphologicalSegmentationView::CreateConnections()
   if (m_MorphologicalControls != NULL)
   {
     this->connect(m_BaseSegmentationViewControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(released()), SLOT(OnCreateNewSegmentationButtonPressed()) );
-    this->connect(m_BaseSegmentationViewControls->m_ToolSelector, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+    this->connect(m_BaseSegmentationViewControls->m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
     this->connect(m_MorphologicalControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
     this->connect(m_MorphologicalControls, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
     this->connect(m_MorphologicalControls, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
@@ -635,11 +635,11 @@ void niftkMorphologicalSegmentationView::EnableSegmentationWidgets(bool enabled)
   int tabIndex = m_MorphologicalControls->GetTabIndex();
   if (enabled && (tabIndex == 1 || tabIndex == 2))
   {
-    m_BaseSegmentationViewControls->m_ToolSelector->SetEnabled(true);
+    m_BaseSegmentationViewControls->m_ToolSelectorWidget->SetEnabled(true);
   }
   else
   {
-    m_BaseSegmentationViewControls->m_ToolSelector->SetEnabled(false);
+    m_BaseSegmentationViewControls->m_ToolSelectorWidget->SetEnabled(false);
   }
 
   m_MorphologicalControls->SetEnabled(enabled);

@@ -29,7 +29,7 @@
 // Qmitk for Qt/MITK stuff.
 #include <QmitkBaseView.h>
 #include <niftkSegmentationSelectorWidget.h>
-#include <niftkMIDASToolSelectorWidget.h>
+#include <niftkToolSelectorWidget.h>
 #include <niftkMIDASOrientationUtils.h>
 
 // Miscellaneous.
@@ -82,7 +82,7 @@ public:
   niftkSegmentationSelectorWidget *m_SegmentationSelectorWidget;
 
   /// \brief Common widget, enabling selection of a segmentation tool.
-  niftkMIDASToolSelectorWidget *m_ToolSelector;
+  niftkToolSelectorWidget *m_ToolSelectorWidget;
 
   /// \brief Container for Selector Widget.
   QWidget *m_ContainerForSelectorWidget;

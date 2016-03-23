@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#include "niftkMIDASToolSelectorWidget.h"
+#include "niftkToolSelectorWidget.h"
 #include <mitkToolManagerProvider.h>
 
 //-----------------------------------------------------------------------------
-niftkMIDASToolSelectorWidget::niftkMIDASToolSelectorWidget(QWidget *parent)
+niftkToolSelectorWidget::niftkToolSelectorWidget(QWidget *parent)
 {
   this->setupUi(parent);
 
@@ -40,26 +40,26 @@ niftkMIDASToolSelectorWidget::niftkMIDASToolSelectorWidget(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-niftkMIDASToolSelectorWidget::~niftkMIDASToolSelectorWidget()
+niftkToolSelectorWidget::~niftkToolSelectorWidget()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager* niftkMIDASToolSelectorWidget::GetToolManager() const
+mitk::ToolManager* niftkToolSelectorWidget::GetToolManager() const
 {
   return m_ManualToolSelectionBox->GetToolManager();
 }
 
 //-----------------------------------------------------------------------------
-void niftkMIDASToolSelectorWidget::SetToolManager(mitk::ToolManager* toolManager)
+void niftkToolSelectorWidget::SetToolManager(mitk::ToolManager* toolManager)
 {
   m_ManualToolSelectionBox->SetToolManager(*toolManager);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMIDASToolSelectorWidget::SetEnabled(bool enabled)
+void niftkToolSelectorWidget::SetEnabled(bool enabled)
 {
   this->setEnabled(enabled);
   m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
@@ -77,14 +77,14 @@ void niftkMIDASToolSelectorWidget::SetEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMIDASToolSelectorWidget::GetEnabled() const
+bool niftkToolSelectorWidget::GetEnabled() const
 {
   return this->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMIDASToolSelectorWidget::OnToolSelected(int toolId)
+void niftkToolSelectorWidget::OnToolSelected(int toolId)
 {
   emit ToolSelected(toolId);
 }

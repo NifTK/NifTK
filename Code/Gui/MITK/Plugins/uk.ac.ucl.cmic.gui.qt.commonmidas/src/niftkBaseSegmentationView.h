@@ -29,7 +29,7 @@
 // Qmitk for Qt/MITK stuff.
 #include <QmitkBaseView.h>
 #include <niftkSegmentationSelectorWidget.h>
-#include <niftkMIDASToolSelectorWidget.h>
+#include <niftkToolSelectorWidget.h>
 #include <niftkMIDASOrientationUtils.h>
 
 // Miscellaneous.
@@ -109,7 +109,7 @@ signals:
 protected slots:
 
   /**
-   * \brief Called from niftkMIDASToolSelectorWidget when a tool changes.... where we may need to enable or disable the editors from moving/changing position, zoom, etc.
+   * \brief Called from niftkToolSelectorWidget when a tool changes.... where we may need to enable or disable the editors from moving/changing position, zoom, etc.
    */
   virtual void OnToolSelected(int);
 
