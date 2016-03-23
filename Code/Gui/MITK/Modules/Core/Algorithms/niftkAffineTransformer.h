@@ -105,6 +105,9 @@ public:
   /// \brief Computes and returns the transformation matrix based on the current set of parameters
   vtkSmartPointer<vtkMatrix4x4> GetCurrentTransformMatrix() const;
 
+  ///  \brief Reset the transform to initial state
+  void ResetTransform();
+
   //-----------------------------------------------------------------------------
   /// \brief Called when a node changed.
   void OnNodeChanged(mitk::DataNode::Pointer node);
@@ -119,10 +122,11 @@ public:
   void OnLoadTransform(std::string filename);
 
   /** \brief Slot for updating the direction cosines with the current transformation. */
-  void OnApplyTransform(); //BIG TODO
+  void OnApplyTransform();
 
   /** \brief Slot for resampling the current image. */
   void OnResampleTransform();
+
 
     /** Called by _InitialiseNodeProperties to initialise (to Identity) a specified transform property on a node. */
   void InitialiseTransformProperty(std::string name, mitk::DataNode::Pointer node);

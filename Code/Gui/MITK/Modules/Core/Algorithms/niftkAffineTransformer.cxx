@@ -335,6 +335,34 @@ void AffineTransformer::OnNodeChanged(mitk::DataNode::Pointer node)
 }
 
 //-----------------------------------------------------------------------------
+void AffineTransformer::ResetTransform()
+{
+
+  if (m_CurrentDataNode.IsNull())
+  {
+    return;
+  }
+
+  // Reset the geometry.
+  vtkSmartPointer<vtkMatrix4x4> total = m_CurrentDataNode->GetData()->GetGeometry()->GetVtkTransform()->GetMatrix();
+  vtkSmartPointer<vtkMatrix4x4> totalInverted = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkMatrix4x4::Invert(total, totalInverted);
+  m_CurrentDataNode->GetData()->GetGeometry()->Compose(totalInverted);
+
+
+  // compose initial and preloaded transforms
+  vtkSmartPointer<vtkMatrix4x4> initial 
+    = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(INITIAL_TRANSFORM_KEY.c_str(), *(m_CurrentDataNode.GetPointer()));
+  m_CurrentDataNode->GetData()->GetGeometry()->Compose(initial);
+
+  // Update the geometry according to current GUI parameters, which represent the "current" transformation.
+  vtkSmartPointer<vtkMatrix4x4> preloaded 
+    = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(PRELOADED_TRANSFORM_KEY.c_str(), *(m_CurrentDataNode.GetPointer()));
+  m_CurrentDataNode->GetData()->GetGeometry()->Compose(preloaded);
+}
+
+
+//-----------------------------------------------------------------------------
 void AffineTransformer::UpdateTransformationGeometry()
 {
   /**************************************************************
@@ -765,7 +793,7 @@ void AffineTransformer::InitialiseNodeProperties(mitk::DataNode::Pointer node)
   }
 
   mitk::BaseData *data = node->GetData();
-  if ( data == NULL )
+  if (data == NULL)
   {
     MITK_ERROR << "No data object present!";
   }
@@ -807,25 +835,31 @@ void AffineTransformer::ApplyTransformToNode(const vtkSmartPointer<vtkMatrix4x4>
   /**************************************************************
   * This is the main method to apply a transformation from file.
   **************************************************************/
-  vtkSmartPointer<vtkMatrix4x4> incrementalTransformation
-    = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(INCREMENTAL_TRANSFORM_KEY.c_str(), *(node.GetPointer()));
-  vtkSmartPointer<vtkMatrix4x4> invertedIncrementalTransformation = vtkSmartPointer<vtkMatrix4x4>::New();
-  vtkMatrix4x4::Invert(incrementalTransformation, invertedIncrementalTransformation);
-  node->GetData()->GetGeometry()->Compose( invertedIncrementalTransformation );
+
+  // Reset the geometry
+  vtkSmartPointer<vtkMatrix4x4> total = m_CurrentDataNode->GetData()->GetGeometry()->GetVtkTransform()->GetMatrix();
+  vtkSmartPointer<vtkMatrix4x4> totalInverted = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkMatrix4x4::Invert(total, totalInverted);
+  m_CurrentDataNode->GetData()->GetGeometry()->Compose(totalInverted);
+
+  vtkSmartPointer<vtkMatrix4x4> initialTransformation
+    = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(INITIAL_TRANSFORM_KEY.c_str(), *(node.GetPointer()));
+  node->GetData()->GetGeometry()->Compose(initialTransformation);
 
   mitk::AffineTransformDataNodeProperty::Pointer transformFromFileProperty = mitk::AffineTransformDataNodeProperty::New();
   transformFromFileProperty->SetTransform(*(transformFromFile.GetPointer()));
-  node->ReplaceProperty(PRELOADED_TRANSFORM_KEY.c_str(), transformFromFileProperty);
   node->GetData()->GetGeometry()->Compose(transformFromFile);
 
   mitk::AffineTransformDataNodeProperty::Pointer affineTransformIdentity = mitk::AffineTransformDataNodeProperty::New();
   affineTransformIdentity->Identity();
-  node->ReplaceProperty(DISPLAYED_TRANSFORM_KEY.c_str(), affineTransformIdentity);
 
   mitk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersIdentity 
     = mitk::AffineTransformParametersDataNodeProperty::New();
   affineTransformParametersIdentity->Identity();
   node->ReplaceProperty(DISPLAYED_PARAMETERS_KEY.c_str(), affineTransformParametersIdentity);
+
+  mitk::AffineTransformDataNodeProperty::StoreTransformInNode(PRELOADED_TRANSFORM_KEY, transformFromFileProperty->GetTransform(), *(node.GetPointer()));
+  mitk::AffineTransformDataNodeProperty::StoreTransformInNode(DISPLAYED_TRANSFORM_KEY, affineTransformIdentity->GetTransform(), *(node.GetPointer()));
 }
 
 //-----------------------------------------------------------------------------
