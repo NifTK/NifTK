@@ -156,11 +156,11 @@ void niftkBaseSegmentationView::CreateQtPartControl(QWidget *parent)
   assert(!m_BaseSegmentationViewControls);
 
   // Create an own tool manager and connect it to the data storage straight away.
-  mitk::ToolManager::Pointer toolManager = mitk::ToolManager::New(this->GetDataStorage());
+  m_ToolManager = mitk::ToolManager::New(this->GetDataStorage());
 
-  this->RegisterTools(toolManager);
+  this->RegisterTools(m_ToolManager);
 
-  mitk::ToolManager::ToolVectorTypeConst tools = toolManager->GetTools();
+  mitk::ToolManager::ToolVectorTypeConst tools = m_ToolManager->GetTools();
   mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();
   for ( ; it != tools.end(); ++it)
   {
@@ -177,14 +177,14 @@ void niftkBaseSegmentationView::CreateQtPartControl(QWidget *parent)
   m_BaseSegmentationViewControls = new niftkBaseSegmentationViewControls();
   m_BaseSegmentationViewControls->CreateQtPartControl(parent);
 
-  m_BaseSegmentationViewControls->m_ToolSelector->SetToolManager(*toolManager);
+  m_BaseSegmentationViewControls->SetToolManager(m_ToolManager);
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::ToolManager* niftkBaseSegmentationView::GetToolManager()
 {
-  return m_BaseSegmentationViewControls->GetToolManager();
+  return m_ToolManager;
 }
 
 
@@ -481,8 +481,7 @@ mitk::BaseRenderer* niftkBaseSegmentationView::GetFocusedRenderer()
 //-----------------------------------------------------------------------------
 void niftkBaseSegmentationView::SetEnableManualToolSelectionBox(bool enabled)
 {
-  m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
-  m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolGUIContainer->setEnabled(enabled);
+  m_BaseSegmentationViewControls->SetEnableManualToolSelectionBox(enabled);
 }
 
 

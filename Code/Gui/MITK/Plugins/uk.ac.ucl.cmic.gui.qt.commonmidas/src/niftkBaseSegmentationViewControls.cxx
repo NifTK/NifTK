@@ -95,13 +95,6 @@ void niftkBaseSegmentationViewControls::CreateQtPartControl(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager* niftkBaseSegmentationViewControls::GetToolManager()
-{
-  return m_ToolSelector->GetToolManager();
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkBaseSegmentationViewControls::CreateConnections()
 {
 }
@@ -118,4 +111,18 @@ void niftkBaseSegmentationViewControls::SetEnableManualToolSelectionBox(bool ena
 {
   m_ToolSelector->m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
   m_ToolSelector->m_ManualToolGUIContainer->setEnabled(enabled);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentationViewControls::SetToolManager(mitk::ToolManager* toolManager)
+{
+  m_ToolSelector->SetToolManager(toolManager);
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::ToolManager* niftkBaseSegmentationViewControls::GetToolManager() const
+{
+  return m_ToolSelector->GetToolManager();
 }

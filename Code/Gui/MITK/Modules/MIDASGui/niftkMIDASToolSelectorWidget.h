@@ -59,7 +59,10 @@ public:
    */
   mitk::ToolManager* GetToolManager() const;
 
-  void SetToolManager(mitk::ToolManager& toolManager); // no NULL pointer allowed here, a manager is required
+  /// \brief SetToolManager
+  /// nullptr is not allowed, a valid manager is required.
+  /// \param toolManager
+  void SetToolManager(mitk::ToolManager* toolManager);
 
 signals:
 

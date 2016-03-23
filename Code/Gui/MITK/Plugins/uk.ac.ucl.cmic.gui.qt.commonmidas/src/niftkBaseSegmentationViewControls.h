@@ -70,14 +70,17 @@ public:
   /// \brief Turns the tool selection box on/off
   virtual void SetEnableManualToolSelectionBox(bool enabled);
 
-  /// \brief Returns the tool manager associated with this object (derived classes provide ones in different ways).
-  virtual mitk::ToolManager* GetToolManager();
-
   /// \brief Creates the GUI parts.
   virtual void CreateQtPartControl(QWidget *parent);
 
   /// \brief Creates the Qt connections.
   virtual void CreateConnections();
+
+  /// \brief Sets the tool manager of the tool selection box.
+  void SetToolManager(mitk::ToolManager* toolManager);
+
+  /// \brief Gets the tool manager of the tool selection box.
+  mitk::ToolManager* GetToolManager() const;
 
   /// \brief Common widget, enabling selection of Image and Segmentation, that might be replaced once we have a database.
   niftkMIDASImageAndSegmentationSelectorWidget *m_ImageAndSegmentationSelector;

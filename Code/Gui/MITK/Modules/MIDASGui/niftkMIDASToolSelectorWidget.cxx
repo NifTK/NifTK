@@ -52,9 +52,9 @@ mitk::ToolManager* niftkMIDASToolSelectorWidget::GetToolManager() const
 }
 
 //-----------------------------------------------------------------------------
-void niftkMIDASToolSelectorWidget::SetToolManager(mitk::ToolManager& toolManager) // no NULL pointer allowed here, a manager is required
+void niftkMIDASToolSelectorWidget::SetToolManager(mitk::ToolManager* toolManager)
 {
-  m_ManualToolSelectionBox->SetToolManager(toolManager);
+  m_ManualToolSelectionBox->SetToolManager(*toolManager);
 }
 
 
