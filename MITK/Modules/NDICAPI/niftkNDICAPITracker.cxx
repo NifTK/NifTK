@@ -655,7 +655,14 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
     unsigned long ndiFrameIndex = ndiGetTXFrame(this->Device, portHandle);
 
     const unsigned long ndiPortStatusValidFlags = NDI_TOOL_IN_PORT | NDI_INITIALIZED | NDI_ENABLED;
-    if ((ndiPortStatus & ndiPortStatusValidFlags) == ndiPortStatusValidFlags) 
+    if ((ndiPortStatus & ndiPortStatusValidFlags) != ndiPortStatusValidFlags
+       || ndiToolAbsent
+       || ndiPortStatus & NDI_OUT_OF_VOLUME
+       ) 
+    {
+      // missing. Log it?
+    }
+    else
     {
       double transformMatrix[16] = {1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1};
       ndiTransformToMatrixd(ndiTransform,transformMatrix);

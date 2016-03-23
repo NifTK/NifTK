@@ -53,6 +53,7 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
       niftk::NDICAPITracker::NdiToolDescriptor>(tool->GetToolName(), descriptor));
   }
 
+  m_Tracker.SetBaudRate(115200);
 #ifdef _WIN32
   m_Tracker.SetSerialPort(std::stoi(portName));
 #else
@@ -108,10 +109,15 @@ std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > PLUSNDITracker::GetTrackin
   for (iter = tmpMatrices.begin(); iter != tmpMatrices.end(); ++iter)
   {
     vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
-    for (int i = 0; i < 16; i++)
+    for (int r = 0; r < 4; r++)
     {
-      matrix->SetElement(i/4, i%4, (*iter).second[i]);
+      for (int c = 0; c < 4; c++)
+      {
+        matrix->SetElement(r, c, (*iter).second[r*4 + c]);
+      }
     }
+    matrix->Transpose(); // Matrix comes out with bottom row containing the translation!
+
     result.insert(std::pair<std::string, vtkSmartPointer<vtkMatrix4x4> >((*iter).first, matrix));
   }
 
