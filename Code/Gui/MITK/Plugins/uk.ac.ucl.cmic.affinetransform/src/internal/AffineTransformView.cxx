@@ -581,6 +581,7 @@ void AffineTransformView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part
   // Set the current node pointer into the transformer class
   m_AffineTransformer->OnNodeChanged(nodes[0]);
   m_DataOwnerNode = nodes[0];
+  m_AffineTransformer->InitialiseNodeProperties(m_DataOwnerNode);
 
   // Update the controls on the UI based on the datanode's properties
   SetUIValues(m_AffineTransformer->GetCurrentTransformParameters());
@@ -855,6 +856,7 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
     return;
   }
 
+
   if (this->GetDataStorage()->GetNamedDerivedNode("BoundingObject", node))
   {
     m_BoundingObject->FitGeometry(m_CurrentDataObject->GetGeometry());
@@ -865,7 +867,7 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
     return;
   }
 
-  bool fitBoundingObject = false;
+  bool fitBoundingObject = true;
       
   if (m_BoundingObject.IsNull())
   {
@@ -965,6 +967,7 @@ void AffineTransformView::AddBoundingObjectToNode(mitk::DataNode::Pointer node, 
     {
       m_BoundingObject->FitGeometry(m_CurrentDataObject->GetGeometry());
     }
+
     m_AffineDataInteractor3D->SetDataNode(node);
   }
 
@@ -1010,6 +1013,12 @@ void AffineTransformView::OnInteractiveModeToggled(bool on)
   else
   {
     RemoveBoundingObjectFromNode();
+    ResetUIValues();
+    
+    m_AffineTransformer->ResetTransform();
+
+    mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
+    renderManager->RequestUpdateAll();
   }
 }
 
@@ -1091,8 +1100,13 @@ void AffineTransformView::OnTransformReady()
   
   bool isBlocked = m_Controls->affineTransformDisplay->blockSignals(true);
 
-  for (int rInd = 0; rInd < 4; rInd++) for (int cInd = 0; cInd < 4; cInd++)
-		m_Controls->affineTransformDisplay->setItem(rInd, cInd, new QTableWidgetItem(QString::number(currentMat->Element[rInd][cInd])));
+  for (int rInd = 0; rInd < 4; rInd++)
+  {
+    for (int cInd = 0; cInd < 4; cInd++)
+    {
+  		m_Controls->affineTransformDisplay->setItem(rInd, cInd, new QTableWidgetItem(QString::number(currentMat->Element[rInd][cInd])));
+    }
+  }
 
   m_Controls->affineTransformDisplay->blockSignals(isBlocked);
 }
