@@ -22,7 +22,7 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 NiftyLinkClientDataSourceFactory::NiftyLinkClientDataSourceFactory()
-: IGIDataSourceFactoryServiceI("Network Client",
+: IGIDataSourceFactoryServiceI("OpenIGTLink Client",
                                true, // can configure hostname, port number
                                true  // can configure lag while running
                                )

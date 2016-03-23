@@ -22,7 +22,7 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 NiftyLinkServerDataSourceFactory::NiftyLinkServerDataSourceFactory()
-: IGIDataSourceFactoryServiceI("Network Server",
+: IGIDataSourceFactoryServiceI("OpenIGTLink Server",
                                true, // can configure port number
                                true  // can configure lag while running
                                )
