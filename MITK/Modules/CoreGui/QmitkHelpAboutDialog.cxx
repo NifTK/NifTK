@@ -193,6 +193,15 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<tr><td><a href=\"http://people.csail.mit.edu/kaess/apriltags/\">April Tags</a></td><td>%1</td><td><a href=\"http://opensource.org/licenses/LGPL-2.1\">LGPL v2.1</a></td><td><a href=\"%2\">from here</a></td></tr>"
       ).arg(aprilTagsVersion).arg(aprilTagsLocation);
 
+    QString openCVVersion(NIFTK_VERSION_OPENCV);
+    QString openCVLocation(NIFTK_LOCATION_OPENCV);
+    QString openCVText = QObject::tr(
+      "<tr><td><a href=\"http://opencv.org/\">OpenCV</a></td><td>%1</td><td><a href=\"https://github.com/Itseez/opencv/blob/master/doc/license.txt\">BSD</a></td><td><a href=\"%2\">from here</a></td></tr>"
+      ).arg(openCVVersion).arg(openCVLocation);
+    
+  #endif
+
+  #ifdef BUILD_PCL
     QString flannVersion(NIFTK_VERSION_FLANN);
     QString flannLocation(NIFTK_LOCATION_FLANN);
     QString flannText = QObject::tr(
@@ -204,13 +213,6 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
     QString pclText = QObject::tr(
       "<tr><td><a href=\"http://pointclouds.org/\">PCL</a></td><td>%1</td><td><a href=\"https://github.com/PointCloudLibrary/pcl/blob/master/LICENSE.txt\">BSD</a></td><td><a href=\"%2\">from here</a></td></tr>"
       ).arg(pclVersion).arg(pclLocation);
-
-    QString openCVVersion(NIFTK_VERSION_OPENCV);
-    QString openCVLocation(NIFTK_LOCATION_OPENCV);
-    QString openCVText = QObject::tr(
-      "<tr><td><a href=\"http://opencv.org/\">OpenCV</a></td><td>%1</td><td><a href=\"https://github.com/Itseez/opencv/blob/master/doc/license.txt\">BSD</a></td><td><a href=\"%2\">from here</a></td></tr>"
-      ).arg(openCVVersion).arg(openCVLocation);
-    
   #endif
 
   QString versionsEnd = QObject::tr(
@@ -247,9 +249,11 @@ void QmitkHelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       .append(arucoText)
       .append(eigenText)
       .append(aprilTagsText)
+      .append(openCVText)
+#endif
+#ifdef BUILD_PCL
       .append(flannText)
       .append(pclText)
-      .append(openCVText)
 #endif
       .append(versionsEnd)
       ;

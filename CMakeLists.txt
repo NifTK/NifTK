@@ -642,12 +642,6 @@ else()
   set(MITK_USE_VL OFF CACHE BOOL "" FORCE)
 endif()
 
-if (BUILD_PCL)
-  set(MITK_USE_PCL ON CACHE BOOL "" FORCE)
-else()
-  set(MITK_USE_PCL OFF CACHE BOOL "" FORCE)
-endif()
-
 if (BUILD_RTK)
   set(MITK_USE_RTK ON CACHE BOOL "" FORCE)
 else()
@@ -1065,6 +1059,9 @@ endif()
 
 if(BUILD_IGI)
   add_definitions(-DBUILD_IGI)
+endif()
+if(BUILD_PCL)
+  add_definitions(-DBUILD_PCL)
 endif()
 
 ######################################################################
