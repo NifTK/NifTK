@@ -22,5 +22,5 @@ MITK_CREATE_MODULE_TESTS(LABELS niftkMIDAS)
 #             such as the thumbnail viewer, and the segmentation views.
 #mitkAddCustomModuleTest(MIDAS-mitkSegmentationNodeAddedVisibilityTest niftkMIDASSegmentationNodeAddedVisibilityTest ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii)
 
-# Trac 1695 - Main Unit Test for the Whole MIDAS Morphological Segmentor Pipeline
-mitkAddCustomModuleTest(MIDAS-niftkMIDASMorphologicalSegmentorPipelineManagerTest niftkMIDASMorphologicalSegmentorPipelineManagerTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)
+# Trac 1695 - Main Unit Test for the Whole MIDAS Morphological Segmentation Pipeline
+mitkAddCustomModuleTest(MIDAS-niftMorphologicalSegmentationPipelineManagerTest niftkMIDASMorphologicalSegmentationPipelineManagerTest ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img)

@@ -12,21 +12,21 @@
 
 =============================================================================*/
 
-#ifndef MIDASMorphologicalSegmentorView_h
-#define MIDASMorphologicalSegmentorView_h
+#ifndef niftkMorphologicalSegmentationView_h
+#define niftkMorphologicalSegmentationView_h
 
 #include <niftkBaseSegmentationView.h>
 
 #include <mitkImage.h>
 
 #include <MorphologicalSegmentorPipelineParams.h>
-#include "MIDASMorphologicalSegmentorViewPreferencePage.h"
-#include "MIDASMorphologicalSegmentorViewControlsImpl.h"
-#include <niftkMIDASMorphologicalSegmentorPipelineManager.h>
+#include "niftkMorphologicalSegmentationViewPreferencePage.h"
+#include "niftkMorphologicalSegmentationViewControls.h"
+#include <niftkMorphologicalSegmentationPipelineManager.h>
 
 
 /**
- * \class MIDASMorphologicalSegmentorView
+ * \class niftkMorphologicalSegmentationView
  * \brief Provides the plugin component for the MIDAS brain segmentation functionality, originally developed at the Dementia Research Centre UCL.
  *
  * This plugin implements the paper:
@@ -38,12 +38,12 @@
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  *
  * \sa niftkBaseSegmentationView
- * \sa MIDASMorphologicalSegmentorPipelineManager
+ * \sa niftkMorphologicalSegmentationPipelineManager
  * \sa MorphologicalSegmentorPipeline
  * \sa MorphologicalSegmentorPipelineInterface
  * \sa MorphologicalSegmentorPipelineParams
  */
-class MIDASMorphologicalSegmentorView : public niftkBaseSegmentationView
+class niftkMorphologicalSegmentationView : public niftkBaseSegmentationView
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
@@ -52,13 +52,13 @@ class MIDASMorphologicalSegmentorView : public niftkBaseSegmentationView
 public:
 
   /// \brief Constructor, but most GUI construction is done in CreateQtPartControl().
-  MIDASMorphologicalSegmentorView();
+  niftkMorphologicalSegmentationView();
 
   /// \brief Copy constructor which deliberately throws a runtime exception, as no-one should call it.
-  MIDASMorphologicalSegmentorView(const MIDASMorphologicalSegmentorView& other);
+  niftkMorphologicalSegmentationView(const niftkMorphologicalSegmentationView& other);
 
   /// \brief Destructor.
-  virtual ~MIDASMorphologicalSegmentorView();
+  virtual ~niftkMorphologicalSegmentationView();
 
   /// \brief Each View for a plugin has its own globally unique ID.
   static const std::string VIEW_ID;
@@ -74,28 +74,28 @@ protected slots:
   /// \brief Called when the user hits the button "New segmentation", which creates the necessary reference data.
   void OnCreateNewSegmentationButtonPressed();
 
-  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when thresholding sliders or spin boxes changed.
+  /// \brief Called from niftkMorphologicalSegmentationViewControls when thresholding sliders or spin boxes changed.
   void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);
 
-  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when erosion sliders or spin boxes changed.
+  /// \brief Called from niftkMorphologicalSegmentationViewControls when erosion sliders or spin boxes changed.
   void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
 
-  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when dilation sliders or spin boxes changed.
+  /// \brief Called from niftkMorphologicalSegmentationViewControls when dilation sliders or spin boxes changed.
   void OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
 
-  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when re-thresholding widgets changed.
+  /// \brief Called from niftkMorphologicalSegmentationViewControls when re-thresholding widgets changed.
   void OnRethresholdingValuesChanged(int boxSize);
 
-  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when a tab changes.
+  /// \brief Called from niftkMorphologicalSegmentationViewControls when a tab changes.
   void OnTabChanged(int i);
 
-  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when OK button is clicked, which should finalise / finish and accept the segmentation.
+  /// \brief Called from niftkMorphologicalSegmentationViewControls when OK button is clicked, which should finalise / finish and accept the segmentation.
   void OnOKButtonClicked();
 
-  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when Restart button is clicked, which means "back to start", like a "reset" button.
+  /// \brief Called from niftkMorphologicalSegmentationViewControls when Restart button is clicked, which means "back to start", like a "reset" button.
   void OnRestartButtonClicked();
 
-  /// \brief Called from MIDASMorphologicalSegmentorViewControlsImpl when cancel button is clicked, which should mean "throw away" / "abandon" current segmentation.
+  /// \brief Called from niftkMorphologicalSegmentationViewControls when cancel button is clicked, which should mean "throw away" / "abandon" current segmentation.
   void OnCancelButtonClicked();
 
 protected:
@@ -168,10 +168,10 @@ private:
   QWidget *m_ContainerForControlsWidget;
 
   /// \brief All the controls for the main Morphological Editor view part.
-  MIDASMorphologicalSegmentorViewControlsImpl* m_MorphologicalControls;
+  niftkMorphologicalSegmentationViewControls* m_MorphologicalControls;
 
   /// \brief As much "business logic" as possible is delegated to this class so we can unit test it, without a GUI.
-  niftk::MIDASMorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
+  niftk::MorphologicalSegmentationPipelineManager::Pointer m_PipelineManager;
 
   /// \brief Keep local variable to update after the tab has changed.
   int m_TabIndex;

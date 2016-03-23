@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "MIDASMorphologicalSegmentorView.h"
+#include "niftkMorphologicalSegmentationView.h"
 
 #include <QMessageBox>
 
@@ -41,10 +41,10 @@
 #include <niftkBaseSegmentationViewControls.h>
 
 
-const std::string MIDASMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
+const std::string niftkMorphologicalSegmentationView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
 
 //-----------------------------------------------------------------------------
-MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView()
+niftkMorphologicalSegmentationView::niftkMorphologicalSegmentationView()
 : niftkBaseSegmentationView()
 , m_Layout(NULL)
 , m_ContainerForControlsWidget(NULL)
@@ -56,8 +56,8 @@ MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView()
 
 
 //-----------------------------------------------------------------------------
-MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView(
-    const MIDASMorphologicalSegmentorView& other)
+niftkMorphologicalSegmentationView::niftkMorphologicalSegmentationView(
+    const niftkMorphologicalSegmentationView& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -65,26 +65,26 @@ MIDASMorphologicalSegmentorView::MIDASMorphologicalSegmentorView(
 
 
 //-----------------------------------------------------------------------------
-MIDASMorphologicalSegmentorView::~MIDASMorphologicalSegmentorView()
+niftkMorphologicalSegmentationView::~niftkMorphologicalSegmentationView()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   int paintbrushToolId = toolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>();
   niftk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>(toolManager->GetToolById(paintbrushToolId));
   assert(paintbrushTool);
 
-  paintbrushTool->SegmentationEdited.RemoveListener(mitk::MessageDelegate1<MIDASMorphologicalSegmentorView, int>(this, &MIDASMorphologicalSegmentorView::OnSegmentationEdited));
+  paintbrushTool->SegmentationEdited.RemoveListener(mitk::MessageDelegate1<niftkMorphologicalSegmentationView, int>(this, &niftkMorphologicalSegmentationView::OnSegmentationEdited));
 }
 
 
 //-----------------------------------------------------------------------------
-std::string MIDASMorphologicalSegmentorView::GetViewID() const
+std::string niftkMorphologicalSegmentationView::GetViewID() const
 {
   return VIEW_ID;
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::ClosePart()
+void niftkMorphologicalSegmentationView::ClosePart()
 {
   if (m_PipelineManager->HasSegmentationNode())
   {
@@ -94,7 +94,7 @@ void MIDASMorphologicalSegmentorView::ClosePart()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolManager)
+void niftkMorphologicalSegmentationView::RegisterTools(mitk::ToolManager::Pointer toolManager)
 {
   toolManager->RegisterTool("MIDASPaintbrushTool");
 
@@ -102,12 +102,12 @@ void MIDASMorphologicalSegmentorView::RegisterTools(mitk::ToolManager::Pointer t
   niftk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>(toolManager->GetToolById(paintbrushToolId));
   assert(paintbrushTool);
 
-  paintbrushTool->SegmentationEdited.AddListener(mitk::MessageDelegate1<MIDASMorphologicalSegmentorView, int>(this, &MIDASMorphologicalSegmentorView::OnSegmentationEdited));
+  paintbrushTool->SegmentationEdited.AddListener(mitk::MessageDelegate1<niftkMorphologicalSegmentationView, int>(this, &niftkMorphologicalSegmentationView::OnSegmentationEdited));
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
+void niftkMorphologicalSegmentationView::OnCreateNewSegmentationButtonPressed()
 {
   // Create the new segmentation, either using a previously selected one, or create a new volume.
   mitk::DataNode::Pointer newSegmentation = NULL;
@@ -152,7 +152,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
     this->WaitCursorOn();
 
     // Mark the newSegmentation as "unfinished".
-    newSegmentation->SetBoolProperty(niftk::MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), false);
+    newSegmentation->SetBoolProperty(niftk::MorphologicalSegmentationPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), false);
 
     try
     {
@@ -228,7 +228,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
       //
       // This must match the order in:
       //
-      // 1. MIDASMorphologicalSegmentorPipelineManager::UpdateSegmentation()
+      // 1. niftkMorphologicalSegmentationPipelineManager::UpdateSegmentation()
       // 2. niftkMIDASPaintbrushTool.
       // and unit tests etc. Probably best to search for
       // MORPH_EDITS_EROSIONS_SUBTRACTIONS
@@ -276,7 +276,7 @@ void MIDASMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer MIDASMorphologicalSegmentorView::CreateAxialCutOffPlaneNode(const mitk::Image* referenceImage)
+mitk::DataNode::Pointer niftkMorphologicalSegmentationView::CreateAxialCutOffPlaneNode(const mitk::Image* referenceImage)
 {
   mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
@@ -331,7 +331,7 @@ mitk::DataNode::Pointer MIDASMorphologicalSegmentorView::CreateAxialCutOffPlaneN
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber)
+void niftkMorphologicalSegmentationView::OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber)
 {
   m_PipelineManager->OnThresholdingValuesChanged(lowerThreshold, upperThreshold, axialSliceNumber);
 
@@ -355,7 +355,7 @@ void MIDASMorphologicalSegmentorView::OnThresholdingValuesChanged(double lowerTh
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnErosionsValuesChanged(double upperThreshold, int numberOfErosions)
+void niftkMorphologicalSegmentationView::OnErosionsValuesChanged(double upperThreshold, int numberOfErosions)
 {
   m_PipelineManager->OnErosionsValuesChanged(upperThreshold, numberOfErosions);
   this->RequestRenderWindowUpdate();
@@ -363,7 +363,7 @@ void MIDASMorphologicalSegmentorView::OnErosionsValuesChanged(double upperThresh
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations)
+void niftkMorphologicalSegmentationView::OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations)
 {
   m_PipelineManager->OnDilationsValuesChanged(lowerPercentage, upperPercentage, numberOfDilations);
   this->RequestRenderWindowUpdate();
@@ -371,7 +371,7 @@ void MIDASMorphologicalSegmentorView::OnDilationsValuesChanged(double lowerPerce
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnRethresholdingValuesChanged(int boxSize)
+void niftkMorphologicalSegmentationView::OnRethresholdingValuesChanged(int boxSize)
 {
   m_PipelineManager->OnRethresholdingValuesChanged(boxSize);
   this->RequestRenderWindowUpdate();
@@ -379,7 +379,7 @@ void MIDASMorphologicalSegmentorView::OnRethresholdingValuesChanged(int boxSize)
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
+void niftkMorphologicalSegmentationView::OnTabChanged(int tabIndex)
 {
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
@@ -449,7 +449,7 @@ void MIDASMorphologicalSegmentorView::OnTabChanged(int tabIndex)
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
+void niftkMorphologicalSegmentationView::OnOKButtonClicked()
 {
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
@@ -473,7 +473,7 @@ void MIDASMorphologicalSegmentorView::OnOKButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnRestartButtonClicked()
+void niftkMorphologicalSegmentationView::OnRestartButtonClicked()
 {
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
@@ -511,7 +511,7 @@ void MIDASMorphologicalSegmentorView::OnRestartButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
+void niftkMorphologicalSegmentationView::OnCancelButtonClicked()
 {
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
@@ -534,7 +534,7 @@ void MIDASMorphologicalSegmentorView::OnCancelButtonClicked()
 }
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
+void niftkMorphologicalSegmentationView::CreateQtPartControl(QWidget* parent)
 {
   this->SetParent(parent);
 
@@ -549,7 +549,7 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
     m_ContainerForControlsWidget = new QWidget(parent);
     m_ContainerForControlsWidget->setContentsMargins(0, 0, 0, 0);
 
-    m_MorphologicalControls = new MIDASMorphologicalSegmentorViewControlsImpl();
+    m_MorphologicalControls = new niftkMorphologicalSegmentationViewControls();
     m_MorphologicalControls->setupUi(m_ContainerForControlsWidget);
     m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
 
@@ -563,7 +563,7 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
 
     m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
 
-    m_PipelineManager = niftk::MIDASMorphologicalSegmentorPipelineManager::New();
+    m_PipelineManager = niftk::MorphologicalSegmentationPipelineManager::New();
     m_PipelineManager->SetDataStorage(this->GetDataStorage());
     m_PipelineManager->SetToolManager(this->GetToolManager());
 
@@ -573,13 +573,13 @@ void MIDASMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::SetFocus()
+void niftkMorphologicalSegmentationView::SetFocus()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::CreateConnections()
+void niftkMorphologicalSegmentationView::CreateConnections()
 {
   niftkBaseSegmentationView::CreateConnections();
 
@@ -600,42 +600,42 @@ void MIDASMorphologicalSegmentorView::CreateConnections()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASMorphologicalSegmentorView::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
+bool niftkMorphologicalSegmentationView::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
 {
   return m_PipelineManager->IsNodeASegmentationImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASMorphologicalSegmentorView::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
+bool niftkMorphologicalSegmentationView::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
 {
   return m_PipelineManager->IsNodeAWorkingImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASMorphologicalSegmentorView::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
+bool niftkMorphologicalSegmentationView::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
 {
   return m_PipelineManager->CanStartSegmentationForBinaryNode(node);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType MIDASMorphologicalSegmentorView::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
+mitk::ToolManager::DataVectorType niftkMorphologicalSegmentationView::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   return m_PipelineManager->GetWorkingDataFromSegmentationNode(node);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* MIDASMorphologicalSegmentorView::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
+mitk::DataNode* niftkMorphologicalSegmentationView::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
 {
   return m_PipelineManager->GetSegmentationNodeFromWorkingData(node);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool enabled)
+void niftkMorphologicalSegmentationView::EnableSegmentationWidgets(bool enabled)
 {
   int tabIndex = m_MorphologicalControls->GetTabIndex();
   if (enabled && (tabIndex == 1 || tabIndex == 2))
@@ -652,7 +652,7 @@ void MIDASMorphologicalSegmentorView::EnableSegmentationWidgets(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnSegmentationEdited(int imageIndex)
+void niftkMorphologicalSegmentationView::OnSegmentationEdited(int imageIndex)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   if (toolManager)
@@ -670,7 +670,7 @@ void MIDASMorphologicalSegmentorView::OnSegmentationEdited(int imageIndex)
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
+void niftkMorphologicalSegmentationView::NodeRemoved(const mitk::DataNode* removedNode)
 {
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull() && segmentationNode.GetPointer() == removedNode)
@@ -692,14 +692,14 @@ void MIDASMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedN
 
 
 //-----------------------------------------------------------------------------
-QString MIDASMorphologicalSegmentorView::GetPreferencesNodeName()
+QString niftkMorphologicalSegmentationView::GetPreferencesNodeName()
 {
-  return MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME;
+  return niftkMorphologicalSegmentationViewPreferencePage::PREFERENCES_NODE_NAME;
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
+void niftkMorphologicalSegmentationView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
   niftkBaseSegmentationView::OnSelectionChanged(part, nodes);
 
@@ -716,7 +716,7 @@ void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::
     }
 
     bool isAlreadyFinished = true;
-    bool foundAlreadyFinishedProperty = nodes[0]->GetBoolProperty(niftk::MIDASMorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), isAlreadyFinished);
+    bool foundAlreadyFinishedProperty = nodes[0]->GetBoolProperty(niftk::MorphologicalSegmentationPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), isAlreadyFinished);
 
     if (foundAlreadyFinishedProperty && !isAlreadyFinished)
     {
@@ -728,14 +728,14 @@ void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::SetSegmentationNodePropsFromReferenceImage()
+void niftkMorphologicalSegmentationView::SetSegmentationNodePropsFromReferenceImage()
 {
   m_PipelineManager->SetSegmentationNodePropsFromReferenceImage();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::SetControlsFromReferenceImage()
+void niftkMorphologicalSegmentationView::SetControlsFromReferenceImage()
 {
   mitk::Image::ConstPointer referenceImage = m_PipelineManager->GetReferenceImage();
   if (referenceImage.IsNotNull())
@@ -754,7 +754,7 @@ void MIDASMorphologicalSegmentorView::SetControlsFromReferenceImage()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::SetControlsFromSegmentationNodeProps()
+void niftkMorphologicalSegmentationView::SetControlsFromSegmentationNodeProps()
 {
   MorphologicalSegmentorPipelineParams params;
   m_PipelineManager->GetPipelineParamsFromSegmentationNode(params);
@@ -764,7 +764,7 @@ void MIDASMorphologicalSegmentorView::SetControlsFromSegmentationNodeProps()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
+void niftkMorphologicalSegmentationView::onVisibilityChanged(const mitk::DataNode* node)
 {
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
 

@@ -32,7 +32,7 @@ namespace niftk
 
 /**
  * \brief Class to contain all the ITK/MITK logic for the MIDAS Morphological Segmentor
- * pipeline, to separate from MIDASMorphologicalSegmentorView to make unit testing easier.
+ * pipeline, to separate from MorphologicalSegmentationView to make unit testing easier.
  *
  * This pipeline implements the paper:
  *
@@ -41,12 +41,12 @@ namespace niftk
  * Computer Methods and Programs in Biomedicine 53 (1997) 15-25.
  *
  * \sa niftkBaseSegmentationView
- * \sa MIDASMorphologicalSegmentorView
+ * \sa MorphologicalSegmentationView
  * \sa MorphologicalSegmentorPipeline
  * \sa MorphologicalSegmentorPipelineInterface
  * \sa MorphologicalSegmentorPipelineParams
  */
-class NIFTKMIDAS_EXPORT MIDASMorphologicalSegmentorPipelineManager : public itk::LightObject
+class NIFTKMIDAS_EXPORT MorphologicalSegmentationPipelineManager : public itk::LightObject
 {
 
 public:
@@ -58,8 +58,8 @@ public:
   static const std::string SEGMENTATION_OF_LAST_STAGE_NAME;
 
 
-  mitkClassMacroItkParent(MIDASMorphologicalSegmentorPipelineManager, itk::Object);
-  itkNewMacro(MIDASMorphologicalSegmentorPipelineManager);
+  mitkClassMacroItkParent(MorphologicalSegmentationPipelineManager, itk::Object);
+  itkNewMacro(MorphologicalSegmentationPipelineManager);
 
   /// \brief Sets the mitk::DataStorage on this object.
   void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
@@ -159,11 +159,11 @@ public:
 
 protected:
 
-  MIDASMorphologicalSegmentorPipelineManager();
-  virtual ~MIDASMorphologicalSegmentorPipelineManager();
+  MorphologicalSegmentationPipelineManager();
+  virtual ~MorphologicalSegmentationPipelineManager();
 
-  MIDASMorphologicalSegmentorPipelineManager(const MIDASMorphologicalSegmentorPipelineManager&); // Purposefully not implemented.
-  MIDASMorphologicalSegmentorPipelineManager& operator=(const MIDASMorphologicalSegmentorPipelineManager&); // Purposefully not implemented.
+  MorphologicalSegmentationPipelineManager(const MorphologicalSegmentationPipelineManager&); // Purposefully not implemented.
+  MorphologicalSegmentationPipelineManager& operator=(const MorphologicalSegmentationPipelineManager&); // Purposefully not implemented.
 
 private:
 

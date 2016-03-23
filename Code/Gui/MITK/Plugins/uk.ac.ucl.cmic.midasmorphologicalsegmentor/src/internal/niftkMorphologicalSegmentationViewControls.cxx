@@ -15,27 +15,27 @@
 #ifndef MIDASMORPHOLOGICALSEGMENTORCONTROLSIMPL_CPP
 #define MIDASMORPHOLOGICALSEGMENTORCONTROLSIMPL_CPP
 
-#include "MIDASMorphologicalSegmentorViewControlsImpl.h"
+#include "niftkMorphologicalSegmentationViewControls.h"
 
 #include <cmath>
 
 //-----------------------------------------------------------------------------
-MIDASMorphologicalSegmentorViewControlsImpl::MIDASMorphologicalSegmentorViewControlsImpl()
+niftkMorphologicalSegmentationViewControls::niftkMorphologicalSegmentationViewControls()
 {
   this->setupUi(this);
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASMorphologicalSegmentorViewControlsImpl::~MIDASMorphologicalSegmentorViewControlsImpl()
+niftkMorphologicalSegmentationViewControls::~niftkMorphologicalSegmentationViewControls()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
+void niftkMorphologicalSegmentationViewControls::setupUi(QWidget* parent)
 {
-  Ui_MIDASMorphologicalSegmentorViewControls::setupUi(parent);
+  Ui_niftkMorphologicalSegmentationViewControls::setupUi(parent);
 
   m_ThresholdingLowerThresholdSlider->layout()->setSpacing(2);
   m_ThresholdingLowerThresholdSlider->setSpinBoxAlignment(Qt::AlignRight);
@@ -128,7 +128,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::setupUi(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::SetEnabled(bool enabled)
+void niftkMorphologicalSegmentationViewControls::SetEnabled(bool enabled)
 {
   int tabIndex = enabled ? this->GetTabIndex() : -1;
 
@@ -146,7 +146,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection)
+void niftkMorphologicalSegmentationViewControls::SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection)
 {
   bool wasBlocked = this->blockSignals(true);
 
@@ -204,7 +204,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByReferenceImage(do
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByPipelineParams(MorphologicalSegmentorPipelineParams& params)
+void niftkMorphologicalSegmentationViewControls::SetControlsByPipelineParams(MorphologicalSegmentorPipelineParams& params)
 {
   bool wasBlocked = this->blockSignals(true);
 
@@ -228,14 +228,14 @@ void MIDASMorphologicalSegmentorViewControlsImpl::SetControlsByPipelineParams(Mo
 
 
 //-----------------------------------------------------------------------------
-int MIDASMorphologicalSegmentorViewControlsImpl::GetTabIndex()
+int niftkMorphologicalSegmentationViewControls::GetTabIndex()
 {
   return m_TabWidget->currentIndex();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::EmitThresholdingValues()
+void niftkMorphologicalSegmentationViewControls::EmitThresholdingValues()
 {
   emit ThresholdingValuesChanged(
          m_ThresholdingLowerThresholdSlider->value(),
@@ -246,7 +246,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EmitThresholdingValues()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::EmitErosionValues()
+void niftkMorphologicalSegmentationViewControls::EmitErosionValues()
 {
   emit ErosionsValuesChanged(
          m_ErosionsUpperThresholdSlider->value(),
@@ -256,7 +256,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EmitErosionValues()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::EmitDilationValues()
+void niftkMorphologicalSegmentationViewControls::EmitDilationValues()
 {
   emit DilationsValuesChanged(
          m_DilationsLowerThresholdSlider->value(),
@@ -267,7 +267,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EmitDilationValues()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::EmitRethresholdingValues()
+void niftkMorphologicalSegmentationViewControls::EmitRethresholdingValues()
 {
   emit RethresholdingValuesChanged(
          static_cast<int>(m_RethresholdingBoxSizeSlider->value())
@@ -276,7 +276,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::EmitRethresholdingValues()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnThresholdLowerValueChanged()
+void niftkMorphologicalSegmentationViewControls::OnThresholdLowerValueChanged()
 {
   double lowerValue = m_ThresholdingLowerThresholdSlider->value();
   double upperValue = m_ThresholdingUpperThresholdSlider->value();
@@ -291,7 +291,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnThresholdLowerValueChanged()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnThresholdUpperValueChanged()
+void niftkMorphologicalSegmentationViewControls::OnThresholdUpperValueChanged()
 {
   double lowerValue = m_ThresholdingLowerThresholdSlider->value();
   double upperValue = m_ThresholdingUpperThresholdSlider->value();
@@ -306,14 +306,14 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnThresholdUpperValueChanged()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnAxialCutOffSliderChanged()
+void niftkMorphologicalSegmentationViewControls::OnAxialCutOffSliderChanged()
 {
   this->EmitThresholdingValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnBackButtonClicked()
+void niftkMorphologicalSegmentationViewControls::OnBackButtonClicked()
 {
   int tabIndex = this->GetTabIndex();
 
@@ -327,7 +327,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnBackButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnNextButtonClicked()
+void niftkMorphologicalSegmentationViewControls::OnNextButtonClicked()
 {
   int tabIndex = this->GetTabIndex();
 
@@ -359,21 +359,21 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnNextButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnErosionsIterationsChanged()
+void niftkMorphologicalSegmentationViewControls::OnErosionsIterationsChanged()
 {
   this->EmitErosionValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnErosionsUpperThresholdChanged()
+void niftkMorphologicalSegmentationViewControls::OnErosionsUpperThresholdChanged()
 {
   this->EmitErosionValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnDilationsLowerThresholdChanged()
+void niftkMorphologicalSegmentationViewControls::OnDilationsLowerThresholdChanged()
 {
   double lowerValue = m_DilationsLowerThresholdSlider->value();
   double upperValue = m_DilationsUpperThresholdSlider->value();
@@ -388,7 +388,7 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnDilationsLowerThresholdChang
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnDilationsUpperThresholdChanged()
+void niftkMorphologicalSegmentationViewControls::OnDilationsUpperThresholdChanged()
 {
   double lowerValue = m_DilationsLowerThresholdSlider->value();
   double upperValue = m_DilationsUpperThresholdSlider->value();
@@ -403,21 +403,21 @@ void MIDASMorphologicalSegmentorViewControlsImpl::OnDilationsUpperThresholdChang
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnDilationsIterationsChanged()
+void niftkMorphologicalSegmentationViewControls::OnDilationsIterationsChanged()
 {
   this->EmitDilationValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnRethresholdingSliderChanged()
+void niftkMorphologicalSegmentationViewControls::OnRethresholdingSliderChanged()
 {
   this->EmitRethresholdingValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASMorphologicalSegmentorViewControlsImpl::OnRestartButtonClicked()
+void niftkMorphologicalSegmentationViewControls::OnRestartButtonClicked()
 {
   m_TabWidget->setCurrentIndex(0);
   this->SetEnabled(true);

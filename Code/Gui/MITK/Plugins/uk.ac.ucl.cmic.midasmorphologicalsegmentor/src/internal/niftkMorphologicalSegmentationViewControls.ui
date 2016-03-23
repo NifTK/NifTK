@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MIDASMorphologicalSegmentorViewControls</class>
- <widget class="QWidget" name="MIDASMorphologicalSegmentorViewControls">
+ <class>niftkMorphologicalSegmentationViewControls</class>
+ <widget class="QWidget" name="niftkMorphologicalSegmentationViewControls">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>329</width>
-    <height>120</height>
+    <width>414</width>
+    <height>131</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,13 +38,13 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="m_ThresholdingTab">
       <attribute name="title">
        <string>Thresholding</string>
       </attribute>
-      <layout class="QGridLayout" name="m_ThresholdingGridLayout" rowstretch="0,0,0,0" columnstretch="0,1">
+      <layout class="QGridLayout" name="m_ThresholdingGridLayout" rowstretch="0,0,0" columnstretch="0,1">
        <property name="leftMargin">
         <number>3</number>
        </property>
@@ -60,29 +60,58 @@
        <property name="spacing">
         <number>3</number>
        </property>
-       <item row="3" column="0">
-        <widget class="QLabel" name="m_ThresholdingAxialCutoffLabel">
+       <item row="2" column="0">
+        <widget class="QLabel" name="m_ThresholdingAxialCutOffLabel">
          <property name="text">
           <string>Axial cut-off:</string>
          </property>
+         <property name="buddy">
+          <cstring>m_ThresholdingAxialCutOffSlider</cstring>
+         </property>
         </widget>
        </item>
-       <item row="3" column="1">
-        <widget class="ctkSliderWidget" name="m_ThresholdingAxialCutoffSlider" native="true">
+       <item row="2" column="1">
+        <widget class="ctkSliderWidget" name="m_ThresholdingAxialCutOffSlider" native="true">
          <property name="focusPolicy">
           <enum>Qt::WheelFocus</enum>
          </property>
         </widget>
        </item>
-       <item row="1" column="0" colspan="2">
-        <widget class="QLabel" name="m_ThresholdingThresholdsLabel">
+       <item row="0" column="0">
+        <widget class="QLabel" name="m_ThresholdingLowerThresholdLabel">
          <property name="text">
-          <string>Thresholds:</string>
+          <string>Lower thresh.:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_ThresholdingUpperThresholdSlider</cstring>
          </property>
         </widget>
        </item>
-       <item row="2" column="0" colspan="2">
-        <widget class="ctkRangeWidget" name="m_ThresholdingThresholdsSlider" native="true">
+       <item row="1" column="1">
+        <widget class="ctkSliderWidget" name="m_ThresholdingUpperThresholdSlider" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::WheelFocus</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="m_ThresholdingUpperThresholdLabel">
+         <property name="text">
+          <string>Upper thresh.:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_ThresholdingUpperThresholdSlider</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="ctkSliderWidget" name="m_ThresholdingLowerThresholdSlider" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -116,24 +145,30 @@
        <property name="spacing">
         <number>3</number>
        </property>
-       <item row="2" column="0">
-        <widget class="QLabel" name="m_ErosionsNumerOfErosionsLabel">
-         <property name="text">
-          <string>Erosions:</string>
+       <item row="2" column="1">
+        <widget class="ctkSliderWidget" name="m_ErosionsIterationsSlider" native="true">
+         <property name="focusPolicy">
+          <enum>Qt::WheelFocus</enum>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="ctkSliderWidget" name="m_ErosionsNumberOfErosionsSlider" native="true">
-         <property name="focusPolicy">
-          <enum>Qt::WheelFocus</enum>
+       <item row="2" column="0">
+        <widget class="QLabel" name="m_ErosionsNumerOfErosionsLabel">
+         <property name="text">
+          <string>Iterations:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_ErosionsIterationsSlider</cstring>
          </property>
         </widget>
        </item>
        <item row="0" column="0">
         <widget class="QLabel" name="m_ErosionsUpperThresholdLabel">
          <property name="text">
-          <string>Upper thr.:</string>
+          <string>Upper thresh.:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_ErosionsUpperThresholdSlider</cstring>
          </property>
         </widget>
        </item>
@@ -173,21 +208,34 @@
         <number>3</number>
        </property>
        <item row="2" column="0">
-        <widget class="QLabel" name="m_DilationsNumberOfDilationsLabel">
+        <widget class="QLabel" name="m_DilationsIterationsLabel">
          <property name="text">
-          <string>Dilations:</string>
+          <string>Iterations:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_DilationsIterationsSlider</cstring>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="ctkSliderWidget" name="m_DilationsNumberOfDilationsSlider" native="true">
+        <widget class="ctkSliderWidget" name="m_DilationsIterationsSlider" native="true">
          <property name="focusPolicy">
           <enum>Qt::WheelFocus</enum>
          </property>
         </widget>
        </item>
-       <item row="1" column="0" colspan="2">
-        <widget class="ctkRangeWidget" name="m_DilationsThresholdsSlider" native="true">
+       <item row="0" column="0">
+        <widget class="QLabel" name="m_DilationsLowerThresholdLabel">
+         <property name="text">
+          <string>Lower thresh.:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_DilationsUpperThresholdSlider</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="ctkSliderWidget" name="m_DilationsUpperThresholdSlider" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -199,10 +247,26 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0" colspan="2">
-        <widget class="QLabel" name="m_DilationsThresholdsLabel">
+       <item row="1" column="0">
+        <widget class="QLabel" name="m_DilationsUpperThresholdLabel">
          <property name="text">
-          <string>Thresholds (%):</string>
+          <string>Upper thresh.:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_DilationsUpperThresholdSlider</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="ctkSliderWidget" name="m_DilationsLowerThresholdSlider" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::WheelFocus</enum>
          </property>
         </widget>
        </item>
@@ -212,7 +276,7 @@
       <attribute name="title">
        <string>Rethresholding</string>
       </attribute>
-      <layout class="QGridLayout" name="m_RethresholdingGridLayout" columnstretch="0,1">
+      <layout class="QGridLayout" name="m_RethresholdingGridLayout" columnstretch="0,0">
        <property name="leftMargin">
         <number>3</number>
        </property>
@@ -228,7 +292,17 @@
        <property name="spacing">
         <number>3</number>
        </property>
-       <item row="0" column="1">
+       <item row="0" column="0" colspan="2">
+        <widget class="QLabel" name="m_RethresholdingLabel">
+         <property name="text">
+          <string>Box size:</string>
+         </property>
+         <property name="buddy">
+          <cstring>m_RethresholdingBoxSizeSlider</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
         <widget class="ctkSliderWidget" name="m_RethresholdingBoxSizeSlider" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -238,13 +312,6 @@
          </property>
          <property name="focusPolicy">
           <enum>Qt::WheelFocus</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="m_RethresholdingLabel">
-         <property name="text">
-          <string>Box size:</string>
          </property>
         </widget>
        </item>
@@ -356,26 +423,7 @@
    <header location="global">ctkSliderWidget.h</header>
    <container>1</container>
   </customwidget>
-  <customwidget>
-   <class>ctkRangeWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">ctkRangeWidget.h</header>
-   <container>1</container>
-  </customwidget>
  </customwidgets>
- <tabstops>
-  <tabstop>m_ThresholdingThresholdsSlider</tabstop>
-  <tabstop>m_ThresholdingAxialCutoffSlider</tabstop>
-  <tabstop>m_ErosionsUpperThresholdSlider</tabstop>
-  <tabstop>m_ErosionsNumberOfErosionsSlider</tabstop>
-  <tabstop>m_DilationsThresholdsSlider</tabstop>
-  <tabstop>m_DilationsNumberOfDilationsSlider</tabstop>
-  <tabstop>m_RethresholdingBoxSizeSlider</tabstop>
-  <tabstop>m_NextButton</tabstop>
-  <tabstop>m_BackButton</tabstop>
-  <tabstop>m_RestartButton</tabstop>
-  <tabstop>m_TabWidget</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>
