@@ -62,7 +62,7 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
   int defaultFramesPerSecond = m_Tracker->GetPreferredFramesPerSecond();
   int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
 
-  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*2);
+  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*5);
   this->SetProperties(properties);
   this->SetShouldUpdate(true);
 
