@@ -692,6 +692,13 @@ void MIDASMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedN
 
 
 //-----------------------------------------------------------------------------
+QString MIDASMorphologicalSegmentorView::GetPreferencesNodeName()
+{
+  return MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME;
+}
+
+
+//-----------------------------------------------------------------------------
 void MIDASMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
   niftkBaseSegmentationView::OnSelectionChanged(part, nodes);

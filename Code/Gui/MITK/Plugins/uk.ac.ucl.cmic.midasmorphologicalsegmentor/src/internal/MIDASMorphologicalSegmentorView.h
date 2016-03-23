@@ -106,42 +106,42 @@ protected:
   void RegisterTools(mitk::ToolManager::Pointer toolManager) override;
 
   /// \brief Called by framework, this method creates all the controls for this view
-  virtual void CreateQtPartControl(QWidget *parent);
+  virtual void CreateQtPartControl(QWidget *parent) override;
 
   /// \brief Called by framework, sets the focus on a specific widget, but currently does nothing.
-  virtual void SetFocus();
+  virtual void SetFocus() override;
 
   /// \brief Connects the Qt signals from the GUI components to the methods in this class.
-  virtual void CreateConnections();
+  virtual void CreateConnections() override;
 
   /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME.
-  virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node);
+  virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) override;
 
   /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME, and have a binary image parent.
-  virtual bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node);
+  virtual bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node) override;
 
   /// \brief For any binary image, we return true if the property midas.morph.stage is present, and false otherwise.
-  virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node);
+  virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
 
   /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME. Returns empty list if both not found.
-  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
+  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) override;
 
   /// \brief Assumes input is a valid working node, then searches for a binary parent node, returns NULL if not found.
-  virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node);
+  virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node) override;
 
   /// \brief Method to enable this and derived classes to turn widgets off/on
-  virtual void EnableSegmentationWidgets(bool b);
+  virtual void EnableSegmentationWidgets(bool enabled) override;
 
   /// \brief Called when a node is removed.
-  virtual void NodeRemoved(const mitk::DataNode* node);
+  virtual void NodeRemoved(const mitk::DataNode* node) override;
 
   /// \brief Returns the name of the preferences node to look up.
-  virtual QString GetPreferencesNodeName() { return MIDASMorphologicalSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
+  virtual QString GetPreferencesNodeName() override;
 
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
-  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
+  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes) override;
 
-  void onVisibilityChanged(const mitk::DataNode* node);
+  void onVisibilityChanged(const mitk::DataNode* node) override;
 
 private:
 
