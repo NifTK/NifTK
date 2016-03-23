@@ -260,6 +260,7 @@ POSSIBILITY OF SUCH DAMAGES.
 #define niftkNDICAPITracker_h
 
 #include "niftkNDICAPIExports.h"
+#include <cstring>
 #include <string>
 #include <map>
 #include <vector>
