@@ -39,7 +39,7 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
 
     mitk::NavigationTool::Pointer tool = m_NavigationToolStorage->GetTool(i);
     std::string sromFileName = tool->GetCalibrationFile();
-    if (sromFileName.empty()) // its an aurora tool
+    if (sromFileName.empty() && sromFileName == "none") // its an aurora tool
     {
     }
     else // its a spectra wireless tool. Wired not supported.
@@ -54,11 +54,7 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
   }
 
   m_Tracker.SetBaudRate(115200);
-#ifdef _WIN32
-  m_Tracker.SetSerialPort(std::stoi(portName));
-#else
-  mitkThrow() << "Not implemented yet";
-#endif
+  m_Tracker.SetSerialPort(std::stoi(m_PortName));
 
   if (m_Tracker.InternalConnect() != niftk::NDICAPITracker::PLUS_SUCCESS)
   {
