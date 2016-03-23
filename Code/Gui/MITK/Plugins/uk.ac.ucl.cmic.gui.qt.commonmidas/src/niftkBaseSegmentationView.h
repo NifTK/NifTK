@@ -28,7 +28,7 @@
 
 // Qmitk for Qt/MITK stuff.
 #include <QmitkBaseView.h>
-#include <niftkMIDASImageAndSegmentationSelectorWidget.h>
+#include <niftkSegmentationSelectorWidget.h>
 #include <niftkMIDASToolSelectorWidget.h>
 #include <niftkMIDASOrientationUtils.h>
 

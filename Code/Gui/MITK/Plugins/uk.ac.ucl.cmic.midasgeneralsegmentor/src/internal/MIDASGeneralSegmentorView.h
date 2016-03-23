@@ -449,12 +449,6 @@ private:
   /// \brief All the controls for the main view part.
   MIDASGeneralSegmentorViewControlsWidget* m_GeneralControls;
 
-  /// \brief Used to put the base class widgets, and these widgets above in a common layout.
-  QGridLayout *m_Layout;
-
-  /// \brief Container for the main Widgets. Also \see niftkBaseSegmentationView
-  QWidget *m_ContainerForControlsWidget;
-
   /// \brief Keep track of this to SliceNavigationController register and unregister event listeners.
   mitk::SliceNavigationController::Pointer m_SliceNavigationController;
 

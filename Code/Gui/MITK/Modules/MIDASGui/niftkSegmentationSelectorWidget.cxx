@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef __niftkMIDASImageAndSegmentationSelectorWidget_cpp
-#define __niftkMIDASImageAndSegmentationSelectorWidget_cpp
+#ifndef __niftkSegmentationSelectorWidget_cpp
+#define __niftkSegmentationSelectorWidget_cpp
 
-#include "niftkMIDASImageAndSegmentationSelectorWidget.h"
+#include "niftkSegmentationSelectorWidget.h"
 
 
 //-----------------------------------------------------------------------------
-niftkMIDASImageAndSegmentationSelectorWidget::niftkMIDASImageAndSegmentationSelectorWidget(QWidget *parent)
+niftkSegmentationSelectorWidget::niftkSegmentationSelectorWidget(QWidget *parent)
 : QWidget(parent)
 {
   this->setupUi(parent);
@@ -27,7 +27,7 @@ niftkMIDASImageAndSegmentationSelectorWidget::niftkMIDASImageAndSegmentationSele
 
 
 //-----------------------------------------------------------------------------
-niftkMIDASImageAndSegmentationSelectorWidget::~niftkMIDASImageAndSegmentationSelectorWidget()
+niftkSegmentationSelectorWidget::~niftkSegmentationSelectorWidget()
 {
 }
 

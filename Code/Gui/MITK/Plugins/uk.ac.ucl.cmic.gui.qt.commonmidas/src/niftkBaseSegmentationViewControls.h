@@ -28,7 +28,7 @@
 
 // Qmitk for Qt/MITK stuff.
 #include <QmitkBaseView.h>
-#include <niftkMIDASImageAndSegmentationSelectorWidget.h>
+#include <niftkSegmentationSelectorWidget.h>
 #include <niftkMIDASToolSelectorWidget.h>
 #include <niftkMIDASOrientationUtils.h>
 
@@ -79,7 +79,7 @@ public:
   mitk::ToolManager* GetToolManager() const;
 
   /// \brief Common widget, enabling selection of Image and Segmentation, that might be replaced once we have a database.
-  niftkMIDASImageAndSegmentationSelectorWidget *m_ImageAndSegmentationSelector;
+  niftkSegmentationSelectorWidget *m_SegmentationSelectorWidget;
 
   /// \brief Common widget, enabling selection of a segmentation tool.
   niftkMIDASToolSelectorWidget *m_ToolSelector;

@@ -161,12 +161,6 @@ private:
   /// \param imageIndex tells which image has been modified: erosion addition / subtraction or dilation addition / subtraction.
   virtual void OnSegmentationEdited(int imageIndex);
 
-  /// \brief Used to put the base class widgets, and these widgets above in a common layout.
-  QGridLayout *m_Layout;
-
-  /// \brief Container for the Morphological Controls Widgets (see this class).
-  QWidget *m_ContainerForControlsWidget;
-
   /// \brief All the controls for the main Morphological Editor view part.
   niftkMorphologicalSegmentationViewControls* m_MorphologicalControls;
 

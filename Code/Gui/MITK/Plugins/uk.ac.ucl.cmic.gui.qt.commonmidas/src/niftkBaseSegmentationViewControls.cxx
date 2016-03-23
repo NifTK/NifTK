@@ -45,7 +45,7 @@
 
 //-----------------------------------------------------------------------------
 niftkBaseSegmentationViewControls::niftkBaseSegmentationViewControls(QWidget* parent)
-  : m_ImageAndSegmentationSelector(nullptr),
+  : m_SegmentationSelectorWidget(nullptr),
     m_ToolSelector(nullptr),
     m_ContainerForSelectorWidget(nullptr),
     m_ContainerForToolWidget(nullptr)
@@ -53,12 +53,12 @@ niftkBaseSegmentationViewControls::niftkBaseSegmentationViewControls(QWidget* pa
   // Set up the Image and Segmentation Selector.
   // Subclasses add it to their layouts, at the appropriate point.
   m_ContainerForSelectorWidget = new QWidget(parent);
-  m_ImageAndSegmentationSelector = new niftkMIDASImageAndSegmentationSelectorWidget(m_ContainerForSelectorWidget);
-  m_ImageAndSegmentationSelector->m_NewSegmentationButton->setEnabled(false);
-  m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
-  m_ImageAndSegmentationSelector->m_ReferenceImageNameLabel->show();
-  m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
-  m_ImageAndSegmentationSelector->m_SegmentationImageNameLabel->show();
+  m_SegmentationSelectorWidget = new niftkSegmentationSelectorWidget(m_ContainerForSelectorWidget);
+  m_SegmentationSelectorWidget->m_NewSegmentationButton->setEnabled(false);
+  m_SegmentationSelectorWidget->m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+  m_SegmentationSelectorWidget->m_ReferenceImageNameLabel->show();
+  m_SegmentationSelectorWidget->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+  m_SegmentationSelectorWidget->m_SegmentationImageNameLabel->show();
 
   // Set up the Tool Selector.
   // Subclasses add it to their layouts, at the appropriate point.
@@ -74,9 +74,9 @@ niftkBaseSegmentationViewControls::niftkBaseSegmentationViewControls(QWidget* pa
 //-----------------------------------------------------------------------------
 niftkBaseSegmentationViewControls::~niftkBaseSegmentationViewControls()
 {
-  if (m_ImageAndSegmentationSelector != NULL)
+  if (m_SegmentationSelectorWidget != NULL)
   {
-    delete m_ImageAndSegmentationSelector;
+    delete m_SegmentationSelectorWidget;
   }
 
   if (m_ToolSelector != NULL)

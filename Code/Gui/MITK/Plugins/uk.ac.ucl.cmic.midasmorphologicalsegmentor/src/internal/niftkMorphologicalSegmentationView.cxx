@@ -46,8 +46,6 @@ const std::string niftkMorphologicalSegmentationView::VIEW_ID = "uk.ac.ucl.cmic.
 //-----------------------------------------------------------------------------
 niftkMorphologicalSegmentationView::niftkMorphologicalSegmentationView()
 : niftkBaseSegmentationView()
-, m_Layout(NULL)
-, m_ContainerForControlsWidget(NULL)
 , m_MorphologicalControls(NULL)
 , m_PipelineManager(NULL)
 , m_TabIndex(-1)
@@ -536,39 +534,36 @@ void niftkMorphologicalSegmentationView::OnCancelButtonClicked()
 //-----------------------------------------------------------------------------
 void niftkMorphologicalSegmentationView::CreateQtPartControl(QWidget* parent)
 {
-  this->SetParent(parent);
+  assert(!m_MorphologicalControls);
 
-  if (!m_MorphologicalControls)
-  {
-    m_Layout = new QGridLayout(parent);
-    m_Layout->setContentsMargins(6, 6, 6, 0);
-    m_Layout->setSpacing(3);
+  niftkBaseSegmentationView::CreateQtPartControl(parent);
 
-    niftkBaseSegmentationView::CreateQtPartControl(parent);
+  QGridLayout* layout = new QGridLayout(parent);
+  layout->setContentsMargins(6, 6, 6, 0);
+  layout->setSpacing(3);
 
-    m_ContainerForControlsWidget = new QWidget(parent);
-    m_ContainerForControlsWidget->setContentsMargins(0, 0, 0, 0);
+  QWidget* containerForControlsWidget = new QWidget(parent);
+  containerForControlsWidget->setContentsMargins(0, 0, 0, 0);
 
-    m_MorphologicalControls = new niftkMorphologicalSegmentationViewControls();
-    m_MorphologicalControls->setupUi(m_ContainerForControlsWidget);
-    m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
+  m_MorphologicalControls = new niftkMorphologicalSegmentationViewControls();
+  m_MorphologicalControls->setupUi(containerForControlsWidget);
+  m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
 
-    m_Layout->addWidget(m_BaseSegmentationViewControls->m_ContainerForSelectorWidget, 0, 0);
-    m_Layout->addWidget(m_BaseSegmentationViewControls->m_ContainerForToolWidget, 1, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
+  layout->addWidget(m_BaseSegmentationViewControls->m_ContainerForSelectorWidget, 0, 0);
+  layout->addWidget(m_BaseSegmentationViewControls->m_ContainerForToolWidget, 1, 0);
+  layout->addWidget(containerForControlsWidget, 2, 0);
 
-    m_Layout->setRowStretch(0, 0);
-    m_Layout->setRowStretch(1, 1);
-    m_Layout->setRowStretch(2, 0);
+  layout->setRowStretch(0, 0);
+  layout->setRowStretch(1, 1);
+  layout->setRowStretch(2, 0);
 
-    m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
+  m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
 
-    m_PipelineManager = niftk::MorphologicalSegmentationPipelineManager::New();
-    m_PipelineManager->SetDataStorage(this->GetDataStorage());
-    m_PipelineManager->SetToolManager(this->GetToolManager());
+  m_PipelineManager = niftk::MorphologicalSegmentationPipelineManager::New();
+  m_PipelineManager->SetDataStorage(this->GetDataStorage());
+  m_PipelineManager->SetToolManager(this->GetToolManager());
 
-    this->CreateConnections();
-  }
+  this->CreateConnections();
 }
 
 
@@ -585,7 +580,7 @@ void niftkMorphologicalSegmentationView::CreateConnections()
 
   if (m_MorphologicalControls != NULL)
   {
-    this->connect(m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(released()), SLOT(OnCreateNewSegmentationButtonPressed()) );
+    this->connect(m_BaseSegmentationViewControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(released()), SLOT(OnCreateNewSegmentationButtonPressed()) );
     this->connect(m_BaseSegmentationViewControls->m_ToolSelector, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
     this->connect(m_MorphologicalControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
     this->connect(m_MorphologicalControls, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));

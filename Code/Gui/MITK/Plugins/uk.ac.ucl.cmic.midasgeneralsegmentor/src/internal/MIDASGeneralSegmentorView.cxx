@@ -84,8 +84,6 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 : niftkBaseSegmentationView()
 , m_ToolKeyPressStateMachine(NULL)
 , m_GeneralControls(NULL)
-, m_Layout(NULL)
-, m_ContainerForControlsWidget(NULL)
 , m_SliceNavigationController(NULL)
 , m_SliceNavigationControllerObserverTag(0)
 , m_FocusManagerObserverTag(0)
@@ -132,43 +130,40 @@ void MIDASGeneralSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolMan
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 {
-  this->SetParent(parent);
+  assert(!m_GeneralControls);
 
-  if (!m_GeneralControls)
-  {
-    m_Layout = new QGridLayout(parent);
-    m_Layout->setContentsMargins(6, 6, 6, 0);
-    m_Layout->setSpacing(3);
+  niftkBaseSegmentationView::CreateQtPartControl(parent);
 
-    niftkBaseSegmentationView::CreateQtPartControl(parent);
+  QGridLayout* layout = new QGridLayout(parent);
+  layout->setContentsMargins(6, 6, 6, 0);
+  layout->setSpacing(3);
 
-    m_ContainerForControlsWidget = new QWidget(parent);
-    m_ContainerForControlsWidget->setContentsMargins(0, 0, 0, 0);
+  QWidget* containerForControlsWidget = new QWidget(parent);
+  containerForControlsWidget->setContentsMargins(0, 0, 0, 0);
 
-    m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget(m_ContainerForControlsWidget);
-    m_GeneralControls->setContentsMargins(0, 0, 0, 0);
+  m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget(containerForControlsWidget);
+  m_GeneralControls->setContentsMargins(0, 0, 0, 0);
 
-    m_Layout->addWidget(m_BaseSegmentationViewControls->m_ContainerForSelectorWidget, 0, 0);
-    m_Layout->addWidget(m_BaseSegmentationViewControls->m_ContainerForToolWidget, 1, 0);
-    m_Layout->addWidget(m_ContainerForControlsWidget, 2, 0);
+  layout->addWidget(m_BaseSegmentationViewControls->m_ContainerForSelectorWidget, 0, 0);
+  layout->addWidget(m_BaseSegmentationViewControls->m_ContainerForToolWidget, 1, 0);
+  layout->addWidget(containerForControlsWidget, 2, 0);
 
-    m_Layout->setRowStretch(0, 0);
-    m_Layout->setRowStretch(1, 1);
-    m_Layout->setRowStretch(2, 0);
+  layout->setRowStretch(0, 0);
+  layout->setRowStretch(1, 1);
+  layout->setRowStretch(2, 0);
 
-    m_GeneralControls->SetThresholdingCheckboxEnabled(false);
-    m_GeneralControls->SetThresholdingWidgetsEnabled(false);
+  m_GeneralControls->SetThresholdingCheckboxEnabled(false);
+  m_GeneralControls->SetThresholdingWidgetsEnabled(false);
 
-    m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly");
-    m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
-    m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetShowNames(true);
-    m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(false);
+  m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly");
+  m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
+  m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetShowNames(true);
+  m_BaseSegmentationViewControls->m_ToolSelector->m_ManualToolSelectionBox->SetGenerateAccelerators(false);
 
 //    m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
-    m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New(this);
+  m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New(this);
 
-    this->CreateConnections();
-  }
+  this->CreateConnections();
 }
 
 
@@ -197,7 +192,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
     this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
     this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(minimumValueChanged(double)), SLOT(OnThresholdValueChanged()));
     this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(maximumValueChanged(double)), SLOT(OnThresholdValueChanged()));
-    this->connect(m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnCreateNewSegmentationButtonClicked()) );
+    this->connect(m_BaseSegmentationViewControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnCreateNewSegmentationButtonClicked()) );
 
     /// Transfer the focus back to the main window if any button is pressed.
     /// This is needed so that the key interactions (like 'a'/'z' for changing slice) keep working.
@@ -216,7 +211,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
     this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
     this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
-    this->connect(m_BaseSegmentationViewControls->m_ImageAndSegmentationSelector->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+    this->connect(m_BaseSegmentationViewControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
   }
 }
 

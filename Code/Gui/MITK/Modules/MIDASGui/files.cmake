@@ -15,7 +15,7 @@
 set(CPP_FILES
   Dialogs/niftkMIDASNewSegmentationDialog.cxx
   niftkMIDASToolSelectorWidget.cxx
-  niftkMIDASImageAndSegmentationSelectorWidget.cxx
+  niftkSegmentationSelectorWidget.cxx
   niftkMIDASDrawToolGUI.cxx
   niftkMIDASPaintbrushToolGUI.cxx
 )
@@ -23,12 +23,12 @@ set(CPP_FILES
 set(MOC_H_FILES 
   Dialogs/niftkMIDASNewSegmentationDialog.h
   niftkMIDASToolSelectorWidget.h
-  niftkMIDASImageAndSegmentationSelectorWidget.h
+  niftkSegmentationSelectorWidget.h
   niftkMIDASDrawToolGUI.h
   niftkMIDASPaintbrushToolGUI.h
 )
 
 set(UI_FILES
-  Resources/UI/niftkMIDASImageAndSegmentationSelector.ui
-  Resources/UI/niftkMIDASToolSelector.ui
+  niftkSegmentationSelectorWidget.ui
+  niftkMIDASToolSelector.ui
 )

@@ -12,36 +12,36 @@
 
 =============================================================================*/
 
-#ifndef __niftkMIDASImageAndSegmentationSelectorWidget_h
-#define __niftkMIDASImageAndSegmentationSelectorWidget_h
+#ifndef __niftkSegmentationSelectorWidget_h
+#define __niftkSegmentationSelectorWidget_h
 
 #include <niftkMIDASGuiExports.h>
 #include <QWidget>
 #include "ui_niftkMIDASImageAndSegmentationSelector.h"
 
 /**
- * \class niftkMIDASImageAndSegmentationSelectorWidget
+ * \class niftkSegmentationSelectorWidget
  * \brief Implements the widget to select a reference image, and create a new segmentation.
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
-class NIFTKMIDASGUI_EXPORT niftkMIDASImageAndSegmentationSelectorWidget : public QWidget, public Ui::niftkMIDASImageAndSegmentationSelector {
+class NIFTKMIDASGUI_EXPORT niftkSegmentationSelectorWidget : public QWidget, public Ui::niftkMIDASImageAndSegmentationSelector {
 
   Q_OBJECT
 
 public:
 
   /** Constructor. */
-  niftkMIDASImageAndSegmentationSelectorWidget(QWidget *parent = 0);
+  niftkSegmentationSelectorWidget(QWidget *parent = 0);
 
   /** Destructor. */
-  virtual ~niftkMIDASImageAndSegmentationSelectorWidget();
+  virtual ~niftkSegmentationSelectorWidget();
 
 protected:
 
 private:
 
-  niftkMIDASImageAndSegmentationSelectorWidget(const niftkMIDASImageAndSegmentationSelectorWidget&);  // Purposefully not implemented.
-  void operator=(const niftkMIDASImageAndSegmentationSelectorWidget&);  // Purposefully not implemented.
+  niftkSegmentationSelectorWidget(const niftkSegmentationSelectorWidget&);  // Purposefully not implemented.
+  void operator=(const niftkSegmentationSelectorWidget&);  // Purposefully not implemented.
 
 };
 
