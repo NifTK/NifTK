@@ -16,12 +16,9 @@
 
 //-----------------------------------------------------------------------------
 MIDASGeneralSegmentorViewControlsWidget::MIDASGeneralSegmentorViewControlsWidget(QWidget *parent)
-: QWidget(parent)
+: niftkBaseSegmentationViewControls(parent)
 {
-  if (parent)
-  {
-    this->setupUi(parent);
-  }
+  this->setupUi(parent);
 }
 
 

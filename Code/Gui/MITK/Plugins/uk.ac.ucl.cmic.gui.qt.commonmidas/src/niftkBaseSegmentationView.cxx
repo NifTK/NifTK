@@ -76,6 +76,7 @@ niftkBaseSegmentationView::~niftkBaseSegmentationView()
   }
 
   delete m_BaseSegmentationViewControls;
+  m_BaseSegmentationViewControls = nullptr;
 }
 
 
@@ -176,9 +177,9 @@ void niftkBaseSegmentationView::CreateQtPartControl(QWidget *parent)
   // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
   this->RetrievePreferenceValues();
 
-  m_BaseSegmentationViewControls = new niftkBaseSegmentationViewControls(parent);
+//  m_BaseSegmentationViewControls = new niftkBaseSegmentationViewControls(parent);
 
-  m_BaseSegmentationViewControls->SetToolManager(m_ToolManager);
+//  m_BaseSegmentationViewControls->SetToolManager(m_ToolManager);
 }
 
 

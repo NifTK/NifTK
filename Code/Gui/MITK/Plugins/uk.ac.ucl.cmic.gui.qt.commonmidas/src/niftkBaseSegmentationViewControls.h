@@ -51,7 +51,7 @@ class QmitkRenderWindow;
  * \sa MIDASGeneralSegmentorView
  * \sa MITKSegmentationView
  */
-class CMIC_QT_COMMONMIDAS niftkBaseSegmentationViewControls : public QObject
+class CMIC_QT_COMMONMIDAS niftkBaseSegmentationViewControls : public QWidget
 {
 
   Q_OBJECT

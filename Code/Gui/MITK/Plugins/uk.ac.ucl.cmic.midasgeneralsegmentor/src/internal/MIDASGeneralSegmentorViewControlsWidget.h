@@ -17,13 +17,17 @@
 
 #include <QWidget>
 #include "ui_MIDASGeneralSegmentorViewControls.h"
+#include <niftkBaseSegmentationViewControls.h>
 
 /**
  * \class MIDASGeneralSegmentorViewControlsWidget
  * \brief Implements the Qt/Widget specific functionality pertaining to the MIDAS General Segmentor View.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
-class MIDASGeneralSegmentorViewControlsWidget : public QWidget, public Ui::MIDASGeneralSegmentorViewControls {
+class MIDASGeneralSegmentorViewControlsWidget
+  : public niftkBaseSegmentationViewControls,
+    public Ui::MIDASGeneralSegmentorViewControls
+{
 
   Q_OBJECT
 

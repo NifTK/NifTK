@@ -20,9 +20,10 @@
 #include <cmath>
 
 //-----------------------------------------------------------------------------
-niftkMorphologicalSegmentationViewControls::niftkMorphologicalSegmentationViewControls()
+niftkMorphologicalSegmentationViewControls::niftkMorphologicalSegmentationViewControls(QWidget* parent)
+  : niftkBaseSegmentationViewControls(parent)
 {
-  this->setupUi(this);
+  this->setupUi(parent);
 }
 
 
