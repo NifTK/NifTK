@@ -262,8 +262,7 @@ POSSIBILITY OF SUCH DAMAGES.
 #include "niftkNDICAPIExports.h"
 #include <string>
 #include <map>
-
-#include <QMutex>
+#include <vector>
 
 struct ndicapi;
 
@@ -388,7 +387,8 @@ public:
     to the tools.  This should only be used within vtkTracker.cxx.
   */
   PlusStatus InternalUpdate();
-  
+  std::map<std::string, std::vector<double> > GetTrackerMatrices();
+
   /*! Read NDI tracker configuration from xml data */
   // NifTK commented out: virtual PlusStatus ReadConfiguration(vtkXMLDataElement* config);
   // (because PLUS reads config from an .xml file).
@@ -400,7 +400,8 @@ public:
   /*! Set the specified tool LED to the specified state */
   PlusStatus SetToolLED(const char* portName, int led, LedState state);
 
-protected:
+// NifTK commented out: protected:
+public:
 
   struct NdiToolDescriptor
   {
@@ -516,7 +517,7 @@ private:
   NDICAPITracker(const NDICAPITracker&); /* Purposefully not implemented. */
   void operator=(const NDICAPITracker&); /* Purposefully not implemented. */
 
-  QMutex Mutex;
+  std::map<std::string, std::vector<double> > m_TrackerMatrices;
 };
 
 } // end namespace

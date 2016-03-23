@@ -36,10 +36,13 @@ MITKNDITracker::MITKNDITracker(mitk::DataStorage::Pointer dataStorage,
   m_TrackerDevice = mitk::NDITrackingDevice::New();
   m_TrackerDevice->SetData(m_DeviceData);
   m_TrackerDevice->SetType(m_DeviceData.Line);
+#ifdef _WIN32
+  m_TrackerDevice->SetPortNumber(static_cast<mitk::SerialCommunication::PortNumber>(std::stoi(m_PortName)));
+#else
   m_TrackerDevice->SetDeviceName(m_PortName);
-  
+#endif
+
   // To Do. This should not be necessary. Trackers should be configured in the same way?
-  // I'm tempted to believe the 'else' block is correct. Something is wrong with Aurora.
   if (deviceData.Line == mitk::NDIAurora)
   {
     try
@@ -58,10 +61,11 @@ MITKNDITracker::MITKNDITracker(mitk::DataStorage::Pointer dataStorage,
   }
   else
   {
-    mitk::TrackingDeviceSourceConfigurator::Pointer myConfigurator = mitk::TrackingDeviceSourceConfigurator::New(m_NavigationToolStorage, m_TrackerDevice.GetPointer());
-    m_TrackerSource = myConfigurator->CreateTrackingDeviceSource();
     try
     {
+      mitk::TrackingDeviceSourceConfigurator::Pointer myConfigurator = mitk::TrackingDeviceSourceConfigurator::New(m_NavigationToolStorage, m_TrackerDevice.GetPointer());
+      m_TrackerSource = myConfigurator->CreateTrackingDeviceSource();
+
       m_TrackerDevice->OpenConnection();
       m_TrackerDevice->StartTracking();
     }

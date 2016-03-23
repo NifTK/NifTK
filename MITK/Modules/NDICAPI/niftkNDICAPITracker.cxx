@@ -402,7 +402,6 @@ char *NDICAPITracker::Command(const char *command)
 
   if (this->Device)
   {
-    QMutexLocker lock(&Mutex);
     strncpy(this->CommandReply, ndiCommand(this->Device, command), VTK_NDI_REPLY_LEN-1);
     this->CommandReply[VTK_NDI_REPLY_LEN-1] = '\0';
   }
@@ -412,7 +411,6 @@ char *NDICAPITracker::Command(const char *command)
     this->Device = ndiOpen(devicename);
     if (this->Device == 0) 
     {
-      QMutexLocker lock(&Mutex);
       std::cerr << ndiErrorString(NDI_OPEN_ERROR) << std::endl;
     }
     else
@@ -443,7 +441,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalConnect()
   case 921600: baud = NDI_921600; break;
   case 1228739: baud = NDI_1228739; break;
   default:
-    QMutexLocker lock(&Mutex);
     std::cerr << "Illegal baud rate: " << this->BaudRate << ". Valid values: 9600, 14400, 19200, 38400, 5760, 115200, 921600, 1228739" << std::endl;
     return PLUS_FAIL;
   }
@@ -452,7 +449,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalConnect()
   this->Device = ndiOpen(devicename);
   if (this->Device == 0) 
   {
-    QMutexLocker lock(&Mutex);
     std::cerr << "Failed to open port: " << (devicename == NULL ? "unknown" : devicename) << " - " << ndiErrorString(NDI_OPEN_ERROR) << std::endl;
     return PLUS_FAIL;
   }
@@ -475,7 +471,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalConnect()
     errnum = ndiGetError(this->Device);
     if (errnum) 
     {
-      QMutexLocker lock(&Mutex);
       std::cerr << ndiErrorString(errnum) << std::endl;
       ndiClose(this->Device);
       this->Device = 0;
@@ -489,7 +484,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalConnect()
   errnum = ndiGetError(this->Device);
   if (errnum) 
   {
-    QMutexLocker lock(&Mutex);
     std::cerr << ndiErrorString(errnum) << std::endl;
     ndiClose(this->Device);
     this->Device = 0;
@@ -502,7 +496,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalConnect()
     errnum = ndiGetError(this->Device);
     if (errnum) 
     {
-      QMutexLocker lock(&Mutex);
       std::cerr << "Failed to set measurement volume "<< this->MeasurementVolumeNumber << ": " << ndiErrorString(errnum) << std::endl;
 
       const unsigned char MODE_GET_VOLUMES_LIST = 0x03; // list of volumes available
@@ -537,7 +530,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalConnect()
 
   if (this->EnableToolPorts()!=PLUS_SUCCESS)
   {
-    QMutexLocker lock(&Mutex);
     std::cerr << "Failed to enable tool ports" << std::endl;
     return PLUS_FAIL;
   }
@@ -560,7 +552,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalDisconnect()
   int errnum = ndiGetError(this->Device);
   if (errnum) 
   {
-    QMutexLocker lock(&Mutex);
     std::cerr << ndiErrorString(errnum) << std::endl;
   }
   ndiClose(this->Device);
@@ -582,7 +573,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalStartRecording()
   int errnum = ndiGetError(this->Device);
   if (errnum) 
   {
-    QMutexLocker lock(&Mutex);
     std::cerr << "Failed TSTART: " << ndiErrorString(errnum) << std::endl;
     ndiClose(this->Device);
     this->Device = 0;
@@ -606,7 +596,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalStopRecording()
   int errnum = ndiGetError(this->Device);
   if (errnum) 
   {
-    QMutexLocker lock(&Mutex);
     std::cerr << ndiErrorString(errnum) << std::endl;
   }
   this->IsDeviceTracking = 0;
@@ -617,9 +606,10 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalStopRecording()
 //----------------------------------------------------------------------------
 NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
 {  
+  m_TrackerMatrices.clear();
+
   if (!this->IsDeviceTracking)
   {
-    QMutexLocker lock(&Mutex);
     std::cerr << "called Update() when NDI was not tracking" << std::endl;
     return PLUS_FAIL;
   }
@@ -633,12 +623,10 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
   {
     if (errnum == NDI_BAD_CRC || errnum == NDI_TIMEOUT) // common errors
     {
-      QMutexLocker lock(&Mutex);
       std::cerr << ndiErrorString(errnum) << std::endl;
     }
     else
     {
-      QMutexLocker lock(&Mutex);
       std::cerr << ndiErrorString(errnum) << std::endl;
     }
     return PLUS_FAIL;
@@ -647,7 +635,41 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
   // default to incrementing frame count by one (in case a frame index cannot be retrieved from the tracker for a specific tool)
   this->LastFrameNumber++;
   int defaultToolFrameNumber = this->LastFrameNumber;
-/*
+
+  // Try to extract matrix for each tool we are tracking.
+  NdiToolDescriptorsType::iterator ndiToolDescriptorIt;
+  for (ndiToolDescriptorIt = NdiToolDescriptors.begin();
+       ndiToolDescriptorIt != NdiToolDescriptors.end();
+       ++ndiToolDescriptorIt)
+  {
+    int portHandle = ndiToolDescriptorIt->second.PortHandle;
+    if (portHandle <= 0)
+    {
+      std::cerr << "Port handle is invalid for tool " << ndiToolDescriptorIt->first << std::endl;
+      continue;
+    }
+
+    double ndiTransform[8]={1,0,0,0,0,0,0,0};
+    int ndiToolAbsent = ndiGetTXTransform(this->Device, portHandle, ndiTransform);
+    int ndiPortStatus = ndiGetTXPortStatus(this->Device, portHandle);
+    unsigned long ndiFrameIndex = ndiGetTXFrame(this->Device, portHandle);
+
+    const unsigned long ndiPortStatusValidFlags = NDI_TOOL_IN_PORT | NDI_INITIALIZED | NDI_ENABLED;
+    if ((ndiPortStatus & ndiPortStatusValidFlags) == ndiPortStatusValidFlags) 
+    {
+      double transformMatrix[16] = {1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1};
+      ndiTransformToMatrixd(ndiTransform,transformMatrix);
+
+      std::vector<double> transformMatrixAsSTLVector(16);
+      for (int i = 0; i < 16; i++)
+      {
+        transformMatrixAsSTLVector[i] = transformMatrix[i];
+      }
+      m_TrackerMatrices.insert(std::pair<std::string, std::vector<double> >(ndiToolDescriptorIt->first, transformMatrixAsSTLVector));
+    }
+  }
+
+/* NifTK commented out, as this is PLUS specific.
   const double toolTimestamp = vtkAccurateTimer::GetSystemTime(); // unfiltered timestamp
   vtkSmartPointer<vtkMatrix4x4> toolToTrackerTransform=vtkSmartPointer<vtkMatrix4x4>::New();
   for (DataSourceContainerConstIterator it = this->GetToolIteratorBegin(); it != this->GetToolIteratorEnd(); ++it)
@@ -717,17 +739,26 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
     // send the matrix and status to the tool's vtkPlusDataBuffer
     this->ToolTimeStampedUpdate(toolSourceId.c_str(), toolToTrackerTransform, toolFlags, toolFrameNumber, toolTimestamp);
   }
+*/
 
   // Update tool connections if a wired tool is plugged in
   if (ndiGetTXSystemStatus(this->Device) & NDI_PORT_OCCUPIED)
   { 
-    LOG_WARNING("A wired tool has been plugged into tracker "<<(this->GetDeviceId()?this->GetDeviceId():"(unknown NDI tracker"));
+    std::cerr << "A wired tool has been plugged into tracker " << std::endl; // NifTK commented out: (this->GetDeviceId()?this->GetDeviceId():"(unknown NDI tracker"));
     // Make the newly connected tools available
     this->EnableToolPorts();
   }
-*/
+
   return PLUS_SUCCESS;
 }
+
+
+//----------------------------------------------------------------------------
+std::map<std::string, std::vector<double> > NDICAPITracker::GetTrackerMatrices()
+{
+  return m_TrackerMatrices;
+}
+
 
 //----------------------------------------------------------------------------
 NDICAPITracker::PlusStatus NDICAPITracker::ReadSromFromFile(NdiToolDescriptor& toolDescriptor, const char *filename)
@@ -735,7 +766,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::ReadSromFromFile(NdiToolDescriptor& t
   FILE *file = fopen(filename,"rb");
   if (file == NULL)
   {
-    QMutexLocker lock(&Mutex);
     std::cerr << "couldn't find srom file " << filename << std::endl;
     return PLUS_FAIL;
   }
@@ -763,7 +793,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
     int errnum = ndiGetError(this->Device);
     if (errnum)
     { 
-      QMutexLocker lock(&Mutex);
       std::cerr << ndiErrorString(errnum) << std::endl;
       status=PLUS_FAIL;
     }    
@@ -780,7 +809,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
       int errnum = ndiGetError(this->Device);
       if (errnum)
       { 
-        QMutexLocker lock(&Mutex);
         std::cerr << ndiErrorString(errnum) << std::endl;
         status=PLUS_FAIL;
       }
@@ -796,13 +824,11 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
 	{  
       if (this->UpdatePortHandle(toolDescriptorIt->second)!=PLUS_SUCCESS)
       {
-        QMutexLocker lock(&Mutex);
         std::cerr << "Failed to determine NDI port handle for tool " << toolDescriptorIt->first << std::endl;
         return PLUS_FAIL;
       }
       if (this->SendSromToTracker(toolDescriptorIt->second)!=PLUS_SUCCESS)
       {
-        QMutexLocker lock(&Mutex);
         std::cerr << "Failed send SROM to NDI tool " << toolDescriptorIt->first << std::endl;
         return PLUS_FAIL;
       }
@@ -824,7 +850,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
         errnum = ndiGetError(this->Device);
         if (errnum)
         { 
-          QMutexLocker lock(&Mutex);
           std::cerr << ndiErrorString(errnum) << std::endl;
           status=PLUS_FAIL;
         }
@@ -857,7 +882,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
       int errnum = ndiGetError(this->Device);
       if (errnum)
       {
-        QMutexLocker lock(&Mutex);
         std::cerr << ndiErrorString(errnum) << std::endl;
         status=PLUS_FAIL;
       }
@@ -873,13 +897,11 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
     {
       if (this->UpdatePortHandle(toolDescriptorIt->second)!=PLUS_SUCCESS)
       {
-        QMutexLocker lock(&Mutex);
         std::cerr << "Failed to determine NDI port handle for tool "<<toolDescriptorIt->first << std::endl;
         return PLUS_FAIL;
       }
       if (this->SendSromToTracker(toolDescriptorIt->second)!=PLUS_SUCCESS)
       {
-        QMutexLocker lock(&Mutex);
         std::cerr << "Failed send SROM to NDI tool "<<toolDescriptorIt->first << std::endl;
         return PLUS_FAIL;
       }
@@ -889,23 +911,21 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
   // Update tool info
 
   ndiCommand(this->Device,"PHSR:00");
-/*
+
   for (NdiToolDescriptorsType::iterator toolDescriptorIt=this->NdiToolDescriptors.begin(); toolDescriptorIt!=this->NdiToolDescriptors.end(); ++toolDescriptorIt)
   {
-    vtkPlusDataSource* trackerTool = NULL;
-    if ( this->GetTool(toolDescriptorIt->first, trackerTool) != PLUS_SUCCESS )
-    {
-      QMutexLocker lock(&Mutex);
-      std::cerr << "Failed to get NDI tool: " << toolDescriptorIt->first << std::endl;
-      status=PLUS_FAIL;
-      continue; 
-    }
+    // NifTK commented out: vtkPlusDataSource* trackerTool = NULL;
+    // NifTK commented out: if ( this->GetTool(toolDescriptorIt->first, trackerTool) != PLUS_SUCCESS )
+    // NifTK commented out: {
+    // NifTK commented out:   std::cerr << "Failed to get NDI tool: " << toolDescriptorIt->first << std::endl;
+    // NifTK commented out:   status=PLUS_FAIL;
+    // NifTK commented out:   continue; 
+    // NifTK commented out: }
 
     ndiCommand(this->Device,"PHINF:%02X0025",toolDescriptorIt->second.PortHandle);
     int errnum = ndiGetError(this->Device);
     if (errnum)
     { 
-      QMutexLocker lock(&Mutex);
       std::cerr << ndiErrorString(errnum) << std::endl;
       status=PLUS_FAIL;
       continue;
@@ -916,34 +936,43 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
     ndiGetPHINFToolInfo(this->Device, identity);
     identity[31] = '\0';
     std::string serialNumber(&identity[23]);
-    PlusCommon::Trim(serialNumber);
-    trackerTool->SetCustomProperty("SerialNumber", serialNumber);
+    // NifTK commented out:PlusCommon::Trim(serialNumber);
+    // NifTK commented out:trackerTool->SetCustomProperty("SerialNumber", serialNumber);
     identity[23] = '\0';
     std::string toolRevision(&identity[20]);
-    PlusCommon::Trim(toolRevision);
-    trackerTool->SetCustomProperty("Revision", toolRevision);
+    // NifTK commented out:PlusCommon::Trim(toolRevision);
+    // NifTK commented out:trackerTool->SetCustomProperty("Revision", toolRevision);
     identity[20] = '\0';
     std::string toolManufacturer(&identity[8]);
-    PlusCommon::Trim(toolManufacturer);
-    trackerTool->SetCustomProperty("Manufacturer", toolManufacturer);
+    // NifTK commented out:PlusCommon::Trim(toolManufacturer);
+    // NifTK commented out:trackerTool->SetCustomProperty("Manufacturer", toolManufacturer);
     identity[8] = '\0';
-    trackerTool->SetCustomProperty("NdiIdentity",PlusCommon::Trim(&identity[0]));
+    // NifTK commented out:trackerTool->SetCustomProperty("NdiIdentity",PlusCommon::Trim(&identity[0]));
     char partNumber[24];
     ndiGetPHINFPartNumber(this->Device, partNumber);
     partNumber[20] = '\0';
     std::string toolPartNumber(&partNumber[0]);
-    PlusCommon::Trim(toolPartNumber);
-    trackerTool->SetCustomProperty("PartNumber", toolPartNumber);
+    // NifTK commented out:PlusCommon::Trim(toolPartNumber);
+    // NifTK commented out:trackerTool->SetCustomProperty("PartNumber", toolPartNumber);
     int status = ndiGetPHINFPortStatus(this->Device);
+
+    {
+      std::cout << "Initialising:" << std::endl;
+      std::cout << "  SerialNumber:" << serialNumber << std::endl;
+      std::cout << "  Revision    :" << toolRevision << std::endl;
+      std::cout << "  Manufacturer:" << toolManufacturer << std::endl;
+      std::cout << "  NdiIdentity :" << identity << std::endl;
+      std::cout << "  PartNumber  :" << partNumber << std::endl;
+    }
 
     toolDescriptorIt->second.PortEnabled = ((status & NDI_ENABLED) != 0);
     if (!toolDescriptorIt->second.PortEnabled)
     {
-      LOG_ERROR("Failed to enable NDI tool "<<toolDescriptorIt->first);
+      std::cerr << "Failed to enable NDI tool " << toolDescriptorIt->first << std::endl;
       status=PLUS_FAIL;
     }
   }
-*/
+
   // re-start the tracking
   if (this->IsDeviceTracking)
   {
@@ -951,7 +980,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
     int errnum = ndiGetError(this->Device);
     if (errnum)
     { 
-      QMutexLocker lock(&Mutex);
       std::cerr << "Failed TSTART: " << ndiErrorString(errnum) << std::endl;
       status=PLUS_FAIL;
     }
@@ -971,7 +999,6 @@ void NDICAPITracker::DisableToolPorts()
     int errnum = ndiGetError(this->Device);
     if (errnum)
     { 
-      QMutexLocker lock(&Mutex);
       std::cerr << ndiErrorString(errnum) << std::endl;
     }    
   }
@@ -986,7 +1013,6 @@ void NDICAPITracker::DisableToolPorts()
     int errnum = ndiGetError(this->Device);
     if (errnum)
     { 
-      QMutexLocker lock(&Mutex);
       std::cerr << ndiErrorString(errnum) << std::endl;
     }    
   }
@@ -1004,7 +1030,6 @@ void NDICAPITracker::DisableToolPorts()
     int errnum = ndiGetError(this->Device);
     if (errnum)
     { 
-      QMutexLocker lock(&Mutex);
       std::cerr << ndiErrorString(errnum) << std::endl;
     }
   }
@@ -1015,7 +1040,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::Beep(int n)
 {
   // NifTK commented out: if (this->Recording)
   // NifTK commented out: {
-  // NifTK commented out:   QMutexLocker lock(&Mutex);
   // NifTK commented out:   std::cerr << "NDICAPITracker::Beep failed: not connected to the device" << std::endl;
   // NifTK commented out:   return PLUS_FAIL;
   // NifTK commented out: }
@@ -1044,21 +1068,18 @@ NDICAPITracker::PlusStatus  NDICAPITracker::SetToolLED(const char* sourceId, int
 {
   // NifTK commented out: if (!this->Recording)
   // NifTK commented out: {
-  // NifTK commented out:   QMutexLocker lock(&Mutex);
   // NifTK commented out:   std::cerr << "NDICAPITracker::InternalSetToolLED failed: not recording" << std::endl;
   // NifTK commented out:   return PLUS_FAIL;
   // NifTK commented out: }
   NdiToolDescriptorsType::iterator ndiToolDescriptorIt = this->NdiToolDescriptors.find(sourceId);
   if (ndiToolDescriptorIt==this->NdiToolDescriptors.end())
   {
-    QMutexLocker lock(&Mutex);
     std::cerr << "InternalSetToolLED failed: Tool descriptor is not found for tool " << sourceId << std::endl;
     return PLUS_FAIL;
   }
   int portHandle=ndiToolDescriptorIt->second.PortHandle;
   if (portHandle <= 0)
   {
-    QMutexLocker lock(&Mutex);
     std::cerr << "NDICAPITracker::InternalSetToolLED failed: invalid port handle" << std::endl;
     return PLUS_FAIL;
   }
@@ -1070,7 +1091,6 @@ NDICAPITracker::PlusStatus  NDICAPITracker::SetToolLED(const char* sourceId, int
   case TR_LED_ON: plstate = NDI_SOLID; break;
   case TR_LED_FLASH: plstate = NDI_FLASH; break;
   default:
-    QMutexLocker lock(&Mutex);
     std::cerr << "NDICAPITracker::InternalSetToolLED failed: unsupported LED state: "<<state << std::endl;
     return PLUS_FAIL;
   }
@@ -1117,7 +1137,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::UpdatePortHandle(NdiToolDescriptor& t
     }
     if (ndiToolIndex == ntools)
     {
-      QMutexLocker lock(&Mutex);
       std::cerr << "Active NDI tool not found in port " << toolDescriptor.WiredPortNumber <<". Make sure the tool is plugged in." << std::endl;
       return PLUS_FAIL;
     }    
@@ -1132,7 +1151,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::UpdatePortHandle(NdiToolDescriptor& t
   int errnum = ndiGetError(this->Device);
   if (errnum)
   {
-    QMutexLocker lock(&Mutex);
     std::cerr << ndiErrorString(errnum) << std::endl;
     return PLUS_FAIL;
   }
@@ -1144,8 +1162,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::UpdatePortHandle(NdiToolDescriptor& t
 //----------------------------------------------------------------------------
 NDICAPITracker::PlusStatus NDICAPITracker::SendSromToTracker(const NdiToolDescriptor& toolDescriptor)
 {
-  QMutexLocker lock(&Mutex);
-
   if (toolDescriptor.VirtualSROM == NULL)
   {
     // nothing to load
@@ -1282,8 +1298,6 @@ NDICAPITracker::PlusStatus NDICAPITracker::ClearVirtualSromInTracker(NdiToolDesc
 //----------------------------------------------------------------------------
 void NDICAPITracker::LogVolumeList(const char* ndiVolumeListCommandReply, int selectedVolume)
 {
-  QMutexLocker lock(&Mutex);
-
   unsigned long numberOfVolumes = ndiHexToUnsignedLong(ndiVolumeListCommandReply, 1);
   if (selectedVolume==0)
   {
