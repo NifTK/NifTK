@@ -788,7 +788,7 @@ void AffineTransformView::OnLoadTransformPushed()
 void AffineTransformView::OnSaveTransformPushed() 
 {
   QString fileName;
-  fileName = QFileDialog::getSaveFileName(NULL, tr("Destination for transform"), QString(), tr("ITK affine transform file (*.tfm *.txt);;Any file (*)"));
+  fileName = QFileDialog::getSaveFileName(NULL, tr("Destination for transform"), QString(), tr("ITK affine transform file (*.tfm);;NifTK affine transform file (*.txt)"));
   if (fileName.length() > 0) 
   {
     m_AffineTransformer->OnSaveTransform(fileName.toStdString());

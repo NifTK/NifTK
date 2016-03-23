@@ -549,22 +549,50 @@ void AffineTransformer::OnSaveTransform(std::string fileName)
     return;
   }
 
-  itk::TransformFileWriter::Pointer sp_writer;
-  sp_writer = itk::TransformFileWriter::New();
-  sp_writer->SetFileName(fileName.c_str());
+  vtkSmartPointer<vtkMatrix4x4> transform
+    = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(DISPLAYED_TRANSFORM_KEY.c_str(), *(m_CurrentDataNode.GetPointer()));
 
-  try
+  if (fileName.find(".tfm") != std::string::npos)
   {
-    vtkSmartPointer<vtkMatrix4x4> transform
-      = mitk::AffineTransformDataNodeProperty::LoadTransformFromNode(DISPLAYED_TRANSFORM_KEY.c_str(), *(m_CurrentDataNode.GetPointer()));
-    sp_writer->SetInput(_ConvertToITKTransform<3, false>(*transform));
-    sp_writer->Update();
+    itk::TransformFileWriter::Pointer sp_writer;
+    sp_writer = itk::TransformFileWriter::New();
+    sp_writer->SetFileName(fileName.c_str());
 
-    MITK_DEBUG << "Writing of current transform to file: success";
+    try
+    {
+
+      sp_writer->SetInput(_ConvertToITKTransform<3, false>(*transform));
+      sp_writer->Update();
+
+      MITK_DEBUG << "Writing of current transform to file: success";
+    }
+    catch (itk::ExceptionObject &r_ex)
+    {
+      MITK_ERROR << "Caught ITK exception:\n" << r_ex.what() << endl;
+    }
   }
-  catch (itk::ExceptionObject &r_ex)
+  else if (fileName.find(".txt") != std::string::npos)
   {
-    MITK_ERROR << "Caught ITK exception:\n" << r_ex.what() << endl;
+    // taken from reg_tool_WriteAffineFile
+    FILE *affineFile;
+    affineFile = fopen(fileName.c_str(), "w");
+
+    if (affineFile == NULL)
+    {
+      MITK_ERROR << "Unable to open file " << fileName.c_str() << ".";
+      return;
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+       fprintf(affineFile, "%.7f %.7f %.7f %.7f\n", transform->GetElement(i, 0),  transform->GetElement(i, 1),  transform->GetElement(i, 2), transform->GetElement(i, 3));
+    }
+
+    fclose(affineFile);
+  }
+  else
+  {
+    MITK_ERROR << "Unable to determine file type.";
   }
 }
 
@@ -625,7 +653,7 @@ void AffineTransformer::OnLoadTransform(std::string fileName)
   }
   else
   {
-    // format taket from reg_tool_ReadAffineFile
+    // format take from reg_tool_ReadAffineFile
     transformFromFile = vtkSmartPointer<vtkMatrix4x4>::New();
     std::ifstream affineFile;
     affineFile.open(fileName);
