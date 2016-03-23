@@ -15,7 +15,7 @@
 #ifndef niftkAuroraTableTopTracker_h
 #define niftkAuroraTableTopTracker_h
 
-#include <niftkIGITrackersExports.h>
+#include <niftkNDITrackersExports.h>
 #include "niftkMITKNDITracker.h"
 
 namespace niftk
@@ -25,7 +25,7 @@ namespace niftk
  * \class AuroraTableTopTracker
  * \brief RAII object to connect to Aurora Table Top tracker.
  */
-class NIFTKIGITRACKERS_EXPORT AuroraTableTopTracker : public niftk::MITKNDITracker
+class NIFTKNDITRACKERS_EXPORT AuroraTableTopTracker : public niftk::MITKNDITracker
 {
 public:
 

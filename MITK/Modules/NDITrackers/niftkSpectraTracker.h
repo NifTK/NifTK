@@ -15,7 +15,7 @@
 #ifndef niftkSpectraTracker_h
 #define niftkSpectraTracker_h
 
-#include <niftkIGITrackersExports.h>
+#include <niftkNDITrackersExports.h>
 #include "niftkPLUSNDITracker.h"
 
 namespace niftk
@@ -25,7 +25,7 @@ namespace niftk
  * \class SpectraTracker
  * \brief RAII object to connect to Polaris Spectra tracker.
  */
-class NIFTKIGITRACKERS_EXPORT SpectraTracker : public niftk::PLUSNDITracker
+class NIFTKNDITRACKERS_EXPORT SpectraTracker : public niftk::PLUSNDITracker
 {
 public:
 

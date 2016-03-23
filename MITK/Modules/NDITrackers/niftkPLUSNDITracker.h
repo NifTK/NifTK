@@ -16,7 +16,7 @@
 #define niftkPLUSNDITracker_h
 
 #include "niftkNDITracker.h"
-#include <niftkIGITrackersExports.h>
+#include <niftkNDITrackersExports.h>
 #include <niftkNDICAPITracker.h>
 
 namespace niftk {
@@ -25,7 +25,7 @@ namespace niftk {
 * \class PLUSNDITracker
 * \brief RAII wrapper for PLUS/Atami interface to NDI trackers.
 */
-class NIFTKIGITRACKERS_EXPORT PLUSNDITracker : public niftk::NDITracker
+class NIFTKNDITRACKERS_EXPORT PLUSNDITracker : public niftk::NDITracker
 {
 public:
 

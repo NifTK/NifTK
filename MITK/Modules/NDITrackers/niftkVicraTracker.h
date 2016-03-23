@@ -15,7 +15,7 @@
 #ifndef niftkVicraTracker_h
 #define niftkVicraTracker_h
 
-#include <niftkIGITrackersExports.h>
+#include <niftkNDITrackersExports.h>
 #include "niftkPLUSNDITracker.h"
 
 namespace niftk
@@ -25,7 +25,7 @@ namespace niftk
  * \class VicraTracker
  * \brief RAII object to connect to Polaris Vicra tracker.
  */
-class NIFTKIGITRACKERS_EXPORT VicraTracker : public niftk::PLUSNDITracker
+class NIFTKNDITRACKERS_EXPORT VicraTracker : public niftk::PLUSNDITracker
 {
 public:
 

@@ -17,7 +17,7 @@ MITK_CREATE_MODULE(
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkIGITrackers)
+  cotire(niftkNDITrackers)
 endif()
 
 if(BUILD_TESTING)

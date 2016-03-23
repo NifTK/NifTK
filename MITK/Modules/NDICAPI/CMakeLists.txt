@@ -13,7 +13,6 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  PACKAGE_DEPENDS Qt4|QtCore Qt5|Core
   INCLUDE_DIRS ndicapi
   NO_INIT      # Not an MITK MicroServices module
 )

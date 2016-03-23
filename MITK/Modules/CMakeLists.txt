@@ -61,7 +61,7 @@ if(BUILD_IGI)
     IGIServices
     IGI
     IGIGui
-    IGITrackers
+    NDITrackers
     IGIDataSources
 
     # Notice how the IGIDataSourcesManager does NOT know about
@@ -77,7 +77,7 @@ if(BUILD_IGI)
     OpenCVVideoDataSourceService
     QtAudioDataSourceService
     UltrasonixDataSourceService
-    MITKTrackerDataSourceService
+    NDITrackerDataSourceService
     NiftyLinkDataSourceService
     NVidiaSDIDataSourceService
   )

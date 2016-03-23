@@ -16,7 +16,7 @@
 #define niftkMITKNDITracker_h
 
 #include "niftkNDITracker.h"
-#include <niftkIGITrackersExports.h>
+#include <niftkNDITrackersExports.h>
 #include <mitkTrackingDeviceSource.h>
 #include <mitkNDITrackingDevice.h>
 
@@ -27,7 +27,7 @@ namespace niftk
  * \class MITKNDITracker
  * \brief RAII wrapper for MITK interface to NDI trackers.
  */
-class NIFTKIGITRACKERS_EXPORT MITKNDITracker : public niftk::NDITracker
+class NIFTKNDITRACKERS_EXPORT MITKNDITracker : public niftk::NDITracker
 {
 public:
 

@@ -15,8 +15,8 @@
 #ifndef niftkAuroraCubeTracker_h
 #define niftkAuroraCubeTracker_h
 
-#include <niftkIGITrackersExports.h>
-#include "niftkMItkNDITracker.h"
+#include <niftkNDITrackersExports.h>
+#include "niftkMITKNDITracker.h"
 
 namespace niftk
 {
@@ -25,7 +25,7 @@ namespace niftk
  * \class AuroraCubeTracker
  * \brief RAII object to connect to Aurora Cube tracker.
  */
-class NIFTKIGITRACKERS_EXPORT AuroraCubeTracker : public niftk::MITKNDITracker
+class NIFTKNDITRACKERS_EXPORT AuroraCubeTracker : public niftk::MITKNDITracker
 {
 public:
 

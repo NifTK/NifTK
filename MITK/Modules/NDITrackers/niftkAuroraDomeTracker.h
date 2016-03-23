@@ -15,7 +15,7 @@
 #ifndef niftkAuroraDomeTracker_h
 #define niftkAuroraDomeTracker_h
 
-#include <niftkIGITrackersExports.h>
+#include <niftkNDITrackersExports.h>
 #include "niftkMITKNDITracker.h"
 
 namespace niftk
@@ -25,7 +25,7 @@ namespace niftk
  * \class AuroraDomeTracker
  * \brief RAII object to connect to Aurora Dome tracker.
  */
-class NIFTKIGITRACKERS_EXPORT AuroraDomeTracker : public niftk::MITKNDITracker
+class NIFTKNDITRACKERS_EXPORT AuroraDomeTracker : public niftk::MITKNDITracker
 {
 public:
 

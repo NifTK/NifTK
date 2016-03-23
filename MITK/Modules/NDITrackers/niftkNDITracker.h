@@ -15,7 +15,7 @@
 #ifndef niftkNDITracker_h
 #define niftkNDITracker_h
 
-#include <niftkIGITrackersExports.h>
+#include <niftkNDITrackersExports.h>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkCommon.h>
@@ -40,7 +40,7 @@ namespace niftk
  * This thing just grabs the latest tracking matrices each time
  * you you call GetTrackingData().
  */
-class NIFTKIGITRACKERS_EXPORT NDITracker : public itk::Object
+class NIFTKNDITRACKERS_EXPORT NDITracker : public itk::Object
 {
 public:
 
