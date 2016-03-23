@@ -112,7 +112,7 @@ private:
   
   mitk::BaseGeometry::Pointer  m_UpdatedGeometry;
 
-  mitk::Vector3D             m_ObjectNormal;
+  mitk::Vector3D               m_ObjectNormal;
   
   mitk::BaseRenderer        * m_CurrentRenderer;
   vtkRenderer               * m_CurrentVtkRenderer;

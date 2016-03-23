@@ -25,9 +25,6 @@
     <transition event_class="MouseReleaseEvent" event_variant="EndMoveObjectAlt" target="StoreTransformation">
       <action name="accept"/>
     </transition>
-    <transition event_class="MouseWheelEvent" event_variant="ScrollObject" target="ObjectInteraction">
-      <action name="move"/>
-    </transition>
   </state>
   <state name="StoreTransformation">
     <transition event_class="MouseMoveEvent" event_variant="CheckOverObject" target="start">

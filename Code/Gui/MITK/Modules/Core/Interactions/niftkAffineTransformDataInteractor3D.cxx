@@ -38,6 +38,7 @@ niftk::AffineTransformDataInteractor3D
 , m_InitialPickedDisplayPoint(mitk::Point2D())
 , m_CurrentlyPickedDisplayPoint(mitk::Point2D())
 , m_OriginalGeometry(mitk::Geometry3D::New())
+, m_UpdatedGeometry(mitk::Geometry3D::New())
 , m_CurrentRenderer(NULL)
 , m_CurrentVtkRenderer(NULL)
 , m_CurrentCamera(NULL)
@@ -87,12 +88,15 @@ bool niftk::AffineTransformDataInteractor3D::UpdateCurrentRendererPointers(const
 {
   // Get Event and extract renderer
   if (interactionEvent == NULL)
+  {
     return false;
+  }
 
   m_CurrentRenderer = interactionEvent->GetSender();
   if (m_CurrentRenderer != NULL )
   {
     m_CurrentVtkRenderer = m_CurrentRenderer->GetVtkRenderer();
+
     if (m_CurrentVtkRenderer != NULL)
     {
       m_CurrentCamera = m_CurrentVtkRenderer->GetActiveCamera();
@@ -213,7 +217,7 @@ bool niftk::AffineTransformDataInteractor3D::InitMove(mitk::StateMachineAction* 
   }
 
   // Make deep copy of current Geometry3D of the plane
-  this->GetDataNode()->GetData()->UpdateOutputInformation(); // make sure that the Geometry is up-to-date
+  this->GetDataNode()->GetData()->UpdateOutputInformation();
   m_OriginalGeometry = dynamic_cast<mitk::BaseGeometry*>(this->GetDataNode()->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
 
   return true;
@@ -222,7 +226,9 @@ bool niftk::AffineTransformDataInteractor3D::InitMove(mitk::StateMachineAction* 
 bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   if (!UpdateCurrentRendererPointers(interactionEvent) || this->GetDataNode()->GetData() == NULL)
+  {
     return false;
+  }
 
   // Check if we have a InteractionPositionEvent
   const mitk::InteractionPositionEvent* pe = dynamic_cast<const mitk::InteractionPositionEvent*>(interactionEvent);
@@ -244,6 +250,7 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
       0.0, //m_InitialInteractionPickedPoint[2],
       m_CurrentlyPickedPointWorld);
   }
+
   interactionMove[0] = m_CurrentlyPickedPointWorld[0] - m_InitialPickedPointWorld[0];
   interactionMove[1] = m_CurrentlyPickedPointWorld[1] - m_InitialPickedPointWorld[1];
   interactionMove[2] = m_CurrentlyPickedPointWorld[2] - m_InitialPickedPointWorld[2];
@@ -254,7 +261,7 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
   if (m_CurrentRenderer != NULL)
     timeStep = m_CurrentRenderer->GetTimeStep(this->GetDataNode()->GetData());
 
-  if ( m_InteractionMode == INTERACTION_MODE_TRANSLATION )
+  if (m_InteractionMode == INTERACTION_MODE_TRANSLATION)
   {
     mitk::Point3D origin = m_OriginalGeometry->GetOrigin();
 
@@ -262,9 +269,14 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
     this->GetDataNode()->GetData()->GetGeometry( timeStep )->IndexToWorld(m_ObjectNormal, transformedObjectNormal);
 
     if (m_AxesFixed == true)
-      this->GetDataNode()->GetData()->GetGeometry( timeStep )->SetOrigin(origin + transformedObjectNormal * (interactionMove * transformedObjectNormal) );
+    {
+      this->GetDataNode()->GetData()->GetGeometry(timeStep)->SetOrigin(
+        origin + transformedObjectNormal * (interactionMove * transformedObjectNormal));
+    }
     else
-      this->GetDataNode()->GetData()->GetGeometry( timeStep )->SetOrigin(origin + interactionMove);
+    {
+      this->GetDataNode()->GetData()->GetGeometry(timeStep)->SetOrigin(origin + interactionMove);
+    }
   }
   else if (m_InteractionMode == INTERACTION_MODE_ROTATION)
   {
@@ -306,21 +318,17 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
         (m_CurrentlyPickedDisplayPoint[1] - m_InitialPickedDisplayPoint[1]) *
         (m_CurrentlyPickedDisplayPoint[1] - m_InitialPickedDisplayPoint[1]);
 
-      double rotationAngle = 360.0 * sqrt(l2/(size[0]*size[0]+size[1]*size[1]));
-
-      //qDebug() <<"RotAngle: " <<rotationAngle;
+      double rotationAngle = 360.0 * sqrt(l2 / (size[0] * size[0] + size[1] * size[1]));
 
       // Use center of data bounding box as center of rotation
-      //m_OriginalGeometry = m_DataNode->GetData()->GetGeometry(timeStep)->Clone().GetPointer();
       mitk::Point3D rotationCenter;
       rotationCenter = m_OriginalGeometry->GetCenter();
-
-      //qDebug() <<"RotCenter: " <<rotationCenter[0] <<rotationCenter[1] <<rotationCenter[2];
 
       // Reset current Geometry3D to original state (pre-interaction) and
       // apply rotation
       mitk::RotationOperation op(mitk::OpROTATE, rotationCenter, rotationAxis, rotationAngle);
-      mitk::BaseGeometry::Pointer newGeometry = dynamic_cast<mitk::BaseGeometry*>(this->GetDataNode()->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
+      mitk::BaseGeometry::Pointer newGeometry 
+        = dynamic_cast<mitk::BaseGeometry*>(this->GetDataNode()->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
 
       if (newGeometry.IsNotNull())
       {
@@ -342,6 +350,7 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
   {
    static_cast<mitk::BoundingObject *>(m_BoundingObjectNode->GetData())->FitGeometry(this->GetDataNode()->GetData()->GetGeometry());
   }
+
   interactionEvent->GetSender()->GetRenderingManager()->RequestUpdateAll();
  
   return true;
@@ -361,14 +370,19 @@ bool niftk::AffineTransformDataInteractor3D::AcceptMove(mitk::StateMachineAction
   if (m_CurrentRenderer != NULL)
     timeStep = m_CurrentRenderer->GetTimeStep(this->GetDataNode()->GetData());
 
-  m_UpdatedGeometry = dynamic_cast<mitk::BaseGeometry*>(this->GetDataNode()->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
-  
+  // rest and compose transform in the correct order
+  m_UpdatedGeometry->Initialize();
   
   vtkSmartPointer<vtkMatrix4x4> originalTransformation = m_OriginalGeometry->GetVtkMatrix();
-   vtkSmartPointer<vtkMatrix4x4> invertedOriginalTransformation = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkSmartPointer<vtkMatrix4x4> invertedOriginalTransformation = vtkSmartPointer<vtkMatrix4x4>::New();
   vtkMatrix4x4::Invert(originalTransformation, invertedOriginalTransformation); 
 
+
   m_UpdatedGeometry->Compose(invertedOriginalTransformation);
+
+  mitk::BaseGeometry::Pointer nodeGeometry =
+    dynamic_cast<mitk::BaseGeometry*>(this->GetDataNode()->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
+  m_UpdatedGeometry->Compose(nodeGeometry->GetVtkMatrix());
 
   emit transformReady();
   return true;
