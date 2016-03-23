@@ -44,35 +44,12 @@
 #include <niftkMIDASOrientationUtils.h>
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentationViewControls::niftkBaseSegmentationViewControls()
+niftkBaseSegmentationViewControls::niftkBaseSegmentationViewControls(QWidget* parent)
   : m_ImageAndSegmentationSelector(nullptr),
     m_ToolSelector(nullptr),
     m_ContainerForSelectorWidget(nullptr),
     m_ContainerForToolWidget(nullptr)
 {
-}
-
-
-//-----------------------------------------------------------------------------
-niftkBaseSegmentationViewControls::~niftkBaseSegmentationViewControls()
-{
-  if (m_ImageAndSegmentationSelector != NULL)
-  {
-    delete m_ImageAndSegmentationSelector;
-  }
-
-  if (m_ToolSelector != NULL)
-  {
-    delete m_ToolSelector;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentationViewControls::CreateQtPartControl(QWidget *parent)
-{
-  assert(!m_ImageAndSegmentationSelector);
-
   // Set up the Image and Segmentation Selector.
   // Subclasses add it to their layouts, at the appropriate point.
   m_ContainerForSelectorWidget = new QWidget(parent);
@@ -91,6 +68,21 @@ void niftkBaseSegmentationViewControls::CreateQtPartControl(QWidget *parent)
   m_ToolSelector->m_ManualToolSelectionBox->SetLayoutColumns(3);
   m_ToolSelector->m_ManualToolSelectionBox->SetToolGUIArea(m_ToolSelector->m_ManualToolGUIContainer);
   m_ToolSelector->m_ManualToolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::EnabledWithWorkingData);
+}
+
+
+//-----------------------------------------------------------------------------
+niftkBaseSegmentationViewControls::~niftkBaseSegmentationViewControls()
+{
+  if (m_ImageAndSegmentationSelector != NULL)
+  {
+    delete m_ImageAndSegmentationSelector;
+  }
+
+  if (m_ToolSelector != NULL)
+  {
+    delete m_ToolSelector;
+  }
 }
 
 

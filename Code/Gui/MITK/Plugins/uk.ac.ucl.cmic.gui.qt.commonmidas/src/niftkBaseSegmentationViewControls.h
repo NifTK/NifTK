@@ -58,8 +58,7 @@ class CMIC_QT_COMMONMIDAS niftkBaseSegmentationViewControls : public QObject
 
 public:
 
-  niftkBaseSegmentationViewControls();
-  niftkBaseSegmentationViewControls(const niftkBaseSegmentationViewControls& other);
+  niftkBaseSegmentationViewControls(QWidget* parent);
   virtual ~niftkBaseSegmentationViewControls();
 
 public:
@@ -69,9 +68,6 @@ public:
 
   /// \brief Turns the tool selection box on/off
   virtual void SetEnableManualToolSelectionBox(bool enabled);
-
-  /// \brief Creates the GUI parts.
-  virtual void CreateQtPartControl(QWidget *parent);
 
   /// \brief Creates the Qt connections.
   virtual void CreateConnections();
