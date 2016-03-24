@@ -111,6 +111,7 @@ NVidiaSDIDataSourceService::NVidiaSDIDataSourceService(
     {
       mitkThrow() << "Failed to start data grabbing thread";
     }
+    this->SetShouldUpdate(true);
     this->SetDescription("NVIDIA SDI");
     this->SetStatus("Initialised");
     this->Modified();
