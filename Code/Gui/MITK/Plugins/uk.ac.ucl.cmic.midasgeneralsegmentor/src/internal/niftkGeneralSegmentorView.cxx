@@ -62,7 +62,7 @@
 
 #include <niftkGeneralSegmentorCommands.h>
 
-#include <niftkGeneralSegmentorWidget.h>
+#include <niftkGeneralSegmentorControls.h>
 
 /*
 #include <sys/time.h>
@@ -83,7 +83,7 @@ const std::string niftkGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgene
 niftkGeneralSegmentorView::niftkGeneralSegmentorView()
 : niftkBaseSegmentorView()
 , m_ToolKeyPressStateMachine(NULL)
-, m_GeneralControls(NULL)
+, m_GeneralSegmentorControls(NULL)
 , m_SliceNavigationController(NULL)
 , m_SliceNavigationControllerObserverTag(0)
 , m_FocusManagerObserverTag(0)
@@ -110,7 +110,7 @@ niftkGeneralSegmentorView::niftkGeneralSegmentorView(
 //-----------------------------------------------------------------------------
 niftkGeneralSegmentorView::~niftkGeneralSegmentorView()
 {
-  if (m_GeneralControls)
+  if (m_GeneralSegmentorControls)
   {
 //    delete m_GeneralControls;
   }
@@ -138,10 +138,10 @@ void niftkGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorWidget* niftkGeneralSegmentorView::CreateSegmentorWidget(QWidget *parent)
+niftkBaseSegmentorControls* niftkGeneralSegmentorView::CreateSegmentorControls(QWidget *parent)
 {
-  m_GeneralControls = new niftkGeneralSegmentorWidget(parent);
-  return m_GeneralControls;
+  m_GeneralSegmentorControls = new niftkGeneralSegmentorControls(parent);
+  return m_GeneralSegmentorControls;
 }
 
 
@@ -150,44 +150,44 @@ void niftkGeneralSegmentorView::CreateConnections()
 {
   niftkBaseSegmentorView::CreateConnections();
 
-  this->connect(m_GeneralControls->m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
-  this->connect(m_GeneralControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnCleanButtonClicked()));
-  this->connect(m_GeneralControls->m_WipeButton, SIGNAL(clicked()), SLOT(OnWipeButtonClicked()));
-  this->connect(m_GeneralControls->m_WipePlusButton, SIGNAL(clicked()), SLOT(OnWipePlusButtonClicked()));
-  this->connect(m_GeneralControls->m_WipeMinusButton, SIGNAL(clicked()), SLOT(OnWipeMinusButtonClicked()));
-  this->connect(m_GeneralControls->m_PropUpButton, SIGNAL(clicked()), SLOT(OnPropagateUpButtonClicked()));
-  this->connect(m_GeneralControls->m_PropDownButton, SIGNAL(clicked()), SLOT(OnPropagateDownButtonClicked()));
-  this->connect(m_GeneralControls->m_Prop3DButton, SIGNAL(clicked()), SLOT(OnPropagate3DButtonClicked()));
-  this->connect(m_GeneralControls->m_OKButton, SIGNAL(clicked()), SLOT(OnOKButtonClicked()));
-  this->connect(m_GeneralControls->m_CancelButton, SIGNAL(clicked()), SLOT(OnCancelButtonClicked()));
-  this->connect(m_GeneralControls->m_RestartButton, SIGNAL(clicked()), SLOT(OnRestartButtonClicked()));
-  this->connect(m_GeneralControls->m_ResetButton, SIGNAL(clicked()), SLOT(OnResetButtonClicked()));
-  this->connect(m_GeneralControls->m_ThresholdApplyButton, SIGNAL(clicked()), SLOT(OnThresholdApplyButtonClicked()));
-  this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
-  this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
-  this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
-  this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(minimumValueChanged(double)), SLOT(OnThresholdValueChanged()));
-  this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(maximumValueChanged(double)), SLOT(OnThresholdValueChanged()));
-  this->connect(m_GeneralControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnCreateNewSegmentationButtonClicked()) );
+  this->connect(m_GeneralSegmentorControls->m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+  this->connect(m_GeneralSegmentorControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnCleanButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_WipeButton, SIGNAL(clicked()), SLOT(OnWipeButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_WipePlusButton, SIGNAL(clicked()), SLOT(OnWipePlusButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_WipeMinusButton, SIGNAL(clicked()), SLOT(OnWipeMinusButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_PropUpButton, SIGNAL(clicked()), SLOT(OnPropagateUpButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_PropDownButton, SIGNAL(clicked()), SLOT(OnPropagateDownButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_Prop3DButton, SIGNAL(clicked()), SLOT(OnPropagate3DButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_OKButton, SIGNAL(clicked()), SLOT(OnOKButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_CancelButton, SIGNAL(clicked()), SLOT(OnCancelButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_RestartButton, SIGNAL(clicked()), SLOT(OnRestartButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_ResetButton, SIGNAL(clicked()), SLOT(OnResetButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_ThresholdApplyButton, SIGNAL(clicked()), SLOT(OnThresholdApplyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
+  this->connect(m_GeneralSegmentorControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
+  this->connect(m_GeneralSegmentorControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
+  this->connect(m_GeneralSegmentorControls->m_ThresholdsSlider, SIGNAL(minimumValueChanged(double)), SLOT(OnThresholdValueChanged()));
+  this->connect(m_GeneralSegmentorControls->m_ThresholdsSlider, SIGNAL(maximumValueChanged(double)), SLOT(OnThresholdValueChanged()));
+  this->connect(m_GeneralSegmentorControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnCreateNewSegmentationButtonClicked()) );
 
   /// Transfer the focus back to the main window if any button is pressed.
   /// This is needed so that the key interactions (like 'a'/'z' for changing slice) keep working.
-  this->connect(m_GeneralControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_WipeButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_WipePlusButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_WipeMinusButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_PropUpButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_PropDownButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_Prop3DButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_OKButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_CancelButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_RestartButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_ResetButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_ThresholdApplyButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_WipeButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_WipePlusButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_WipeMinusButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_PropUpButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_PropDownButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_Prop3DButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_OKButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_CancelButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_RestartButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_ResetButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_ThresholdApplyButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
 }
 
 
@@ -573,10 +573,10 @@ void niftkGeneralSegmentorView::OnCreateNewSegmentationButtonClicked()
     this->StoreInitialSegmentation();
 
     // Setup GUI.
-    m_GeneralControls->SetAllWidgetsEnabled(true);
-    m_GeneralControls->SetThresholdingWidgetsEnabled(false);
-    m_GeneralControls->SetThresholdingCheckboxEnabled(true);
-    m_GeneralControls->m_ThresholdingCheckBox->setChecked(false);
+    m_GeneralSegmentorControls->SetAllWidgetsEnabled(true);
+    m_GeneralSegmentorControls->SetThresholdingWidgetsEnabled(false);
+    m_GeneralSegmentorControls->SetThresholdingCheckboxEnabled(true);
+    m_GeneralSegmentorControls->m_ThresholdingCheckBox->setChecked(false);
 
     this->FocusOnCurrentWindow();
     this->OnFocusChanged();
@@ -628,15 +628,15 @@ void niftkGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
       workingData[niftk::MIDASTool::SEEDS]->SetVisibility(true);
       workingData[niftk::MIDASTool::CONTOURS]->SetVisibility(true);
       workingData[niftk::MIDASTool::DRAW_CONTOURS]->SetVisibility(true);
-      if (m_GeneralControls->m_SeePriorCheckBox->isChecked())
+      if (m_GeneralSegmentorControls->m_SeePriorCheckBox->isChecked())
       {
         workingData[niftk::MIDASTool::PRIOR_CONTOURS]->SetVisibility(true);
       }
-      if (m_GeneralControls->m_SeeNextCheckBox->isChecked())
+      if (m_GeneralSegmentorControls->m_SeeNextCheckBox->isChecked())
       {
         workingData[niftk::MIDASTool::NEXT_CONTOURS]->SetVisibility(true);
       }
-      if (m_GeneralControls->m_ThresholdingCheckBox->isChecked())
+      if (m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked())
       {
         workingData[niftk::MIDASTool::REGION_GROWING]->SetVisibility(true);
       }
@@ -671,9 +671,9 @@ void niftkGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::EnableSegmentationWidgets(bool enabled)
 {
-  m_GeneralControls->SetAllWidgetsEnabled(enabled);
-  bool thresholdingIsOn = m_GeneralControls->m_ThresholdingCheckBox->isChecked();
-  m_GeneralControls->SetThresholdingWidgetsEnabled(thresholdingIsOn);
+  m_GeneralSegmentorControls->SetAllWidgetsEnabled(enabled);
+  bool thresholdingIsOn = m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked();
+  m_GeneralSegmentorControls->SetThresholdingWidgetsEnabled(thresholdingIsOn);
 }
 
 
@@ -685,7 +685,7 @@ void niftkGeneralSegmentorView::RecalculateMinAndMaxOfImage()
   {
     double min = referenceImage->GetStatistics()->GetScalarValueMinNoRecompute();
     double max = referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute();
-    m_GeneralControls->SetLowerAndUpperIntensityRanges(min, max);
+    m_GeneralSegmentorControls->SetLowerAndUpperIntensityRanges(min, max);
   }
 }
 
@@ -709,7 +709,7 @@ void niftkGeneralSegmentorView::RecalculateMinAndMaxOfSeedValues()
       try
       {
         AccessFixedDimensionByItk_n(referenceImage, niftk::ITKRecalculateMinAndMaxOfSeedValues, 3, (*(seeds.GetPointer()), axisNumber, sliceNumber, min, max));
-        m_GeneralControls->SetSeedMinAndMaxValues(min, max);
+        m_GeneralSegmentorControls->SetSeedMinAndMaxValues(min, max);
       }
       catch(const mitk::AccessByItkException& e)
       {
@@ -1119,7 +1119,7 @@ bool niftkGeneralSegmentorView::SelectSeedTool()
   /// We should not do anything with the tools until they are registered to the
   /// tool manager.
 
-  if (m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
+  if (m_GeneralSegmentorControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1141,7 +1141,7 @@ bool niftkGeneralSegmentorView::SelectSeedTool()
 bool niftkGeneralSegmentorView::SelectDrawTool()
 {
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
+  if (m_GeneralSegmentorControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1163,7 +1163,7 @@ bool niftkGeneralSegmentorView::SelectDrawTool()
 bool niftkGeneralSegmentorView::SelectPolyTool()
 {
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
+  if (m_GeneralSegmentorControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1184,7 +1184,7 @@ bool niftkGeneralSegmentorView::SelectPolyTool()
 //-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorView::UnselectTools()
 {
-  if (m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
+  if (m_GeneralSegmentorControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
 
@@ -1204,7 +1204,7 @@ bool niftkGeneralSegmentorView::UnselectTools()
 bool niftkGeneralSegmentorView::SelectViewMode()
 {
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
+  if (m_GeneralSegmentorControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
   {
     if (!this->HasInitialisedWorkingData())
     {
@@ -1317,7 +1317,7 @@ void niftkGeneralSegmentorView::OnFocusChanged()
     }
 
     this->UpdatePriorAndNext();
-    this->OnThresholdingCheckBoxToggled(m_GeneralControls->m_ThresholdingCheckBox->isChecked());
+    this->OnThresholdingCheckBoxToggled(m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked());
     this->RequestRenderWindowUpdate();
   }
 }
@@ -1407,8 +1407,8 @@ bool niftkGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, i
   mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[niftk::MIDASTool::CONTOURS]->GetData());
   mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[niftk::MIDASTool::DRAW_CONTOURS]->GetData());
 
-  double lowerThreshold = m_GeneralControls->m_ThresholdsSlider->minimumValue();
-  double upperThreshold = m_GeneralControls->m_ThresholdsSlider->maximumValue();
+  double lowerThreshold = m_GeneralSegmentorControls->m_ThresholdsSlider->minimumValue();
+  double upperThreshold = m_GeneralSegmentorControls->m_ThresholdsSlider->maximumValue();
 
   int axisNumber = this->GetViewAxis();
 
@@ -1446,7 +1446,7 @@ bool niftkGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, i
 bool niftkGeneralSegmentorView::CleanSlice()
 {
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
+  if (m_GeneralSegmentorControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
   {
     this->OnCleanButtonClicked();
     return true;
@@ -1508,7 +1508,7 @@ void niftkGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
   mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
   mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(0);
 
-  if (m_GeneralControls->m_SeePriorCheckBox->isChecked())
+  if (m_GeneralSegmentorControls->m_SeePriorCheckBox->isChecked())
   {
     mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[niftk::MIDASTool::PRIOR_CONTOURS]->GetData());
     niftk::GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber-1, sliceNumber, contourSet);
@@ -1524,7 +1524,7 @@ void niftkGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
     }
   }
 
-  if (m_GeneralControls->m_SeeNextCheckBox->isChecked())
+  if (m_GeneralSegmentorControls->m_SeeNextCheckBox->isChecked())
   {
     mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[niftk::MIDASTool::NEXT_CONTOURS]->GetData());
     niftk::GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber+1, sliceNumber, contourSet);
@@ -1548,14 +1548,14 @@ void niftkGeneralSegmentorView::OnThresholdingCheckBoxToggled(bool checked)
   if (!this->HasInitialisedWorkingData())
   {
     // So, if there is NO working data, we leave the widgets disabled regardless.
-    m_GeneralControls->SetThresholdingWidgetsEnabled(false);
+    m_GeneralSegmentorControls->SetThresholdingWidgetsEnabled(false);
     return;
   }
 
   this->RecalculateMinAndMaxOfImage();
   this->RecalculateMinAndMaxOfSeedValues();
 
-  m_GeneralControls->SetThresholdingWidgetsEnabled(checked);
+  m_GeneralSegmentorControls->SetThresholdingWidgetsEnabled(checked);
 
   if (checked)
   {
@@ -1579,10 +1579,10 @@ void niftkGeneralSegmentorView::OnThresholdValueChanged()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::UpdateRegionGrowing(bool updateRendering)
 {
-  bool isVisible = m_GeneralControls->m_ThresholdingCheckBox->isChecked();
+  bool isVisible = m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked();
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  double lowerThreshold = m_GeneralControls->m_ThresholdsSlider->minimumValue();
-  double upperThreshold = m_GeneralControls->m_ThresholdsSlider->maximumValue();
+  double lowerThreshold = m_GeneralSegmentorControls->m_ThresholdsSlider->minimumValue();
+  double upperThreshold = m_GeneralSegmentorControls->m_ThresholdsSlider->maximumValue();
   bool skipUpdate = !isVisible;
 
   if (isVisible)
@@ -1766,7 +1766,7 @@ bool niftkGeneralSegmentorView::DoThresholdApply(
               )
             );
 
-          bool currentCheckboxStatus = m_GeneralControls->m_ThresholdingCheckBox->isChecked();
+          bool currentCheckboxStatus = m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked();
 
           if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>())
           {
@@ -1919,11 +1919,11 @@ void niftkGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
               )
             );
 
-          if (m_GeneralControls->m_RetainMarksCheckBox->isChecked())
+          if (m_GeneralSegmentorControls->m_RetainMarksCheckBox->isChecked())
           {
             int returnValue(QMessageBox::NoButton);
 
-            if (!m_GeneralControls->m_ThresholdingCheckBox->isChecked())
+            if (!m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked())
             {
               AccessFixedDimensionByItk_n(segmentationImage,
                   niftk::ITKSliceIsEmpty, 3,
@@ -1977,7 +1977,7 @@ void niftkGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                 )
               );
 
-            if (m_GeneralControls->m_ThresholdingCheckBox->isChecked())
+            if (m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked())
             {
               QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(beforeSliceNumber).arg(afterSliceNumber);
               niftk::OpThresholdApply::ProcessorPointer processor = niftk::OpThresholdApply::ProcessorType::New();
@@ -2016,11 +2016,11 @@ void niftkGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
                 )
               );
 
-            if (m_GeneralControls->m_ThresholdingCheckBox->isChecked())
+            if (m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked())
             {
               niftk::OpThresholdApply::ProcessorPointer processor = niftk::OpThresholdApply::ProcessorType::New();
-              niftk::OpThresholdApply *doApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, true, outputRegion, processor, m_GeneralControls->m_ThresholdingCheckBox->isChecked());
-              niftk::OpThresholdApply *undoApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, false, outputRegion, processor, m_GeneralControls->m_ThresholdingCheckBox->isChecked());
+              niftk::OpThresholdApply *doApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, true, outputRegion, processor, m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked());
+              niftk::OpThresholdApply *undoApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, false, outputRegion, processor, m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked());
               mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent( m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
               mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
               this->ExecuteOperation(doApplyOp);
@@ -2125,7 +2125,7 @@ void niftkGeneralSegmentorView::OnCleanButtonClicked()
     return;
   }
 
-  bool thresholdCheckBox = m_GeneralControls->m_ThresholdingCheckBox->isChecked();
+  bool thresholdCheckBox = m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked();
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
 
   if (!thresholdCheckBox)
@@ -2187,8 +2187,8 @@ void niftkGeneralSegmentorView::OnCleanButtonClicked()
       mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
       assert(regionGrowingImage);
 
-      double lowerThreshold = m_GeneralControls->m_ThresholdsSlider->minimumValue();
-      double upperThreshold = m_GeneralControls->m_ThresholdsSlider->maximumValue();
+      double lowerThreshold = m_GeneralSegmentorControls->m_ThresholdsSlider->minimumValue();
+      double upperThreshold = m_GeneralSegmentorControls->m_ThresholdsSlider->maximumValue();
       int axisNumber = this->GetViewAxis();
 
       mitk::ContourModelSet::Pointer copyOfInputContourSet = mitk::ContourModelSet::New();
@@ -2321,7 +2321,7 @@ void niftkGeneralSegmentorView::OnCleanButtonClicked()
                sliceNumber,
                lowerThreshold,
                upperThreshold,
-               m_GeneralControls->m_ThresholdingCheckBox->isChecked(),
+               m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked(),
                *(copyOfInputContourSet.GetPointer()),
                *(outputContourSet.GetPointer())
               )
@@ -2340,12 +2340,12 @@ void niftkGeneralSegmentorView::OnCleanButtonClicked()
           // Then we update the region growing to get up-to-date contours.
           this->UpdateRegionGrowing();
 
-          if (!m_GeneralControls->m_ThresholdingCheckBox->isChecked())
+          if (!m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked())
           {
             // Then we "apply" this region growing.
             niftk::OpThresholdApply::ProcessorPointer processor = niftk::OpThresholdApply::ProcessorType::New();
-            niftk::OpThresholdApply *doApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, true, outputRegion, processor, m_GeneralControls->m_ThresholdingCheckBox->isChecked());
-            niftk::OpThresholdApply *undoApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, false, outputRegion, processor, m_GeneralControls->m_ThresholdingCheckBox->isChecked());
+            niftk::OpThresholdApply *doApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, true, outputRegion, processor, m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked());
+            niftk::OpThresholdApply *undoApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, false, outputRegion, processor, m_GeneralSegmentorControls->m_ThresholdingCheckBox->isChecked());
             mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent( m_Interface, doApplyOp, undoApplyOp, "Clean: Calculate new image");
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
             this->ExecuteOperation(doApplyOp);
@@ -2718,8 +2718,8 @@ void niftkGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
       niftk::MIDASDrawTool *drawTool = static_cast<niftk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>()));
       assert(drawTool);
 
-      double lowerThreshold = m_GeneralControls->m_ThresholdsSlider->minimumValue();
-      double upperThreshold = m_GeneralControls->m_ThresholdsSlider->maximumValue();
+      double lowerThreshold = m_GeneralSegmentorControls->m_ThresholdsSlider->minimumValue();
+      double upperThreshold = m_GeneralSegmentorControls->m_ThresholdsSlider->maximumValue();
       int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
       int axisNumber = this->GetViewAxis();
       int direction = this->GetUpDirection();
@@ -3077,10 +3077,10 @@ void niftkGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
               )
             );
 
-        m_GeneralControls->m_ThresholdingCheckBox->blockSignals(true);
-        m_GeneralControls->m_ThresholdingCheckBox->setChecked(op->GetThresholdFlag());
-        m_GeneralControls->m_ThresholdingCheckBox->blockSignals(false);
-        m_GeneralControls->SetThresholdingWidgetsEnabled(op->GetThresholdFlag());
+        m_GeneralSegmentorControls->m_ThresholdingCheckBox->blockSignals(true);
+        m_GeneralSegmentorControls->m_ThresholdingCheckBox->setChecked(op->GetThresholdFlag());
+        m_GeneralSegmentorControls->m_ThresholdingCheckBox->blockSignals(false);
+        m_GeneralSegmentorControls->SetThresholdingWidgetsEnabled(op->GetThresholdFlag());
 
         segmentationImage->Modified();
         segmentationNode->Modified();

@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __niftkMorphologicalSegmentorWidget_h
-#define __niftkMorphologicalSegmentorWidget_h
+#ifndef __niftkMorphologicalSegmentorControls_h
+#define __niftkMorphologicalSegmentorControls_h
 
 #include "ui_niftkMorphologicalSegmentorWidget.h"
-#include "niftkBaseSegmentorWidget.h"
+#include "niftkBaseSegmentorControls.h"
 
 #include <MorphologicalSegmentorPipelineParams.h>
 
@@ -25,12 +25,12 @@
 class QAbstractButton;
 
 /**
- * \class niftkMorphologicalSegmentorWidget
+ * \class niftkMorphologicalSegmentorControls
  * \brief Implements a few Qt specific things that are of no interest to the MITK view class.
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  */
-class NIFTKMIDASGUI_EXPORT niftkMorphologicalSegmentorWidget
-  : public niftkBaseSegmentorWidget,
+class NIFTKMIDASGUI_EXPORT niftkMorphologicalSegmentorControls
+  : public niftkBaseSegmentorControls,
     public Ui_niftkMorphologicalSegmentorWidget
 {
   Q_OBJECT
@@ -38,10 +38,10 @@ class NIFTKMIDASGUI_EXPORT niftkMorphologicalSegmentorWidget
 public:
 
   /// \brief Constructor.
-  niftkMorphologicalSegmentorWidget(QWidget* parent = nullptr);
+  niftkMorphologicalSegmentorControls(QWidget* parent = nullptr);
 
   /// \brief Destructor.
-  virtual ~niftkMorphologicalSegmentorWidget();
+  virtual ~niftkMorphologicalSegmentorControls();
 
   /// \brief Creates the GUI, initialising everything to off.
   void setupUi(QWidget* parent);

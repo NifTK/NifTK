@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "niftkGeneralSegmentorWidget.h"
+#include "niftkGeneralSegmentorControls.h"
 
 #include <niftkToolSelectorWidget.h>
 
 
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorWidget::niftkGeneralSegmentorWidget(QWidget *parent)
-: niftkBaseSegmentorWidget(parent)
+niftkGeneralSegmentorControls::niftkGeneralSegmentorControls(QWidget *parent)
+: niftkBaseSegmentorControls(parent)
 {
   QGridLayout* layout = new QGridLayout(parent);
   layout->setContentsMargins(6, 6, 6, 0);
@@ -29,8 +29,6 @@ niftkGeneralSegmentorWidget::niftkGeneralSegmentorWidget(QWidget *parent)
   containerForControlsWidget->setContentsMargins(0, 0, 0, 0);
 
   this->setupUi(containerForControlsWidget);
-
-  this->setContentsMargins(0, 0, 0, 0);
 
   layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
   layout->addWidget(m_ContainerForToolWidget, 1, 0);
@@ -51,13 +49,13 @@ niftkGeneralSegmentorWidget::niftkGeneralSegmentorWidget(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorWidget::~niftkGeneralSegmentorWidget()
+niftkGeneralSegmentorControls::~niftkGeneralSegmentorControls()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorWidget::setupUi(QWidget* parent)
+void niftkGeneralSegmentorControls::setupUi(QWidget* parent)
 {
   Ui_niftkGeneralSegmentorWidget::setupUi(parent);
 
@@ -68,14 +66,14 @@ void niftkGeneralSegmentorWidget::setupUi(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorWidget::SetThresholdingCheckboxEnabled(bool enabled)
+void niftkGeneralSegmentorControls::SetThresholdingCheckboxEnabled(bool enabled)
 {
   m_ThresholdingCheckBox->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorWidget::SetThresholdingWidgetsEnabled(bool enabled)
+void niftkGeneralSegmentorControls::SetThresholdingWidgetsEnabled(bool enabled)
 {
   m_ThresholdingGroupBox->setEnabled(enabled);
 //  m_ThresholdingGroupBox->setVisible(enabled);
@@ -95,7 +93,7 @@ void niftkGeneralSegmentorWidget::SetThresholdingWidgetsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorWidget::SetOKCancelResetWidgetsEnabled(bool enabled)
+void niftkGeneralSegmentorControls::SetOKCancelResetWidgetsEnabled(bool enabled)
 {
   m_OKButton->setEnabled(enabled);
   m_CancelButton->setEnabled(enabled);
@@ -105,7 +103,7 @@ void niftkGeneralSegmentorWidget::SetOKCancelResetWidgetsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorWidget::SetAllWidgetsEnabled(bool enabled)
+void niftkGeneralSegmentorControls::SetAllWidgetsEnabled(bool enabled)
 {
   this->SetThresholdingCheckboxEnabled(enabled);
   this->SetThresholdingWidgetsEnabled(enabled);
@@ -121,7 +119,7 @@ void niftkGeneralSegmentorWidget::SetAllWidgetsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorWidget::SetLowerAndUpperIntensityRanges(double lower, double upper)
+void niftkGeneralSegmentorControls::SetLowerAndUpperIntensityRanges(double lower, double upper)
 {
   m_ThresholdsSlider->setMinimum(lower);
   m_ThresholdsSlider->setMaximum(upper);
@@ -129,7 +127,7 @@ void niftkGeneralSegmentorWidget::SetLowerAndUpperIntensityRanges(double lower, 
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorWidget::SetSeedMinAndMaxValues(double min, double max)
+void niftkGeneralSegmentorControls::SetSeedMinAndMaxValues(double min, double max)
 {
   QString minText;
   QString maxText;

@@ -12,12 +12,12 @@
 
 =============================================================================*/
 
-#ifndef __niftkBaseSegmentorWidget_h
-#define __niftkBaseSegmentorWidget_h
+#ifndef __niftkBaseSegmentorControls_h
+#define __niftkBaseSegmentorControls_h
 
 #include <niftkMIDASGuiExports.h>
 
-#include <QWidget>
+#include <QObject>
 
 namespace mitk
 {
@@ -28,22 +28,22 @@ class niftkSegmentationSelectorWidget;
 class niftkToolSelectorWidget;
 
 /**
- * \class niftkBaseSegmentorWidget
- * \brief Base class for widgets of MIDAS segmentator views.
+ * \class niftkBaseSegmentorControls
+ * \brief Base class for GUI controls on MIDAS segmentor views.
  *
- * \sa niftkMorphologicalSegmentorWidget
- * \sa niftkGeneralSegmentorWidget
+ * \sa niftkMorphologicalSegmentorControls
+ * \sa niftkGeneralSegmentorControls
  * \sa MITKSegmentationView
  */
-class NIFTKMIDASGUI_EXPORT niftkBaseSegmentorWidget : public QWidget
+class NIFTKMIDASGUI_EXPORT niftkBaseSegmentorControls : public QObject
 {
 
   Q_OBJECT
 
 public:
 
-  niftkBaseSegmentorWidget(QWidget* parent);
-  virtual ~niftkBaseSegmentorWidget();
+  niftkBaseSegmentorControls(QWidget* parent);
+  virtual ~niftkBaseSegmentorControls();
 
 public:
 
