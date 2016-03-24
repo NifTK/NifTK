@@ -18,17 +18,14 @@ set(SRC_CPP_FILES
 set(INTERNAL_CPP_FILES
   niftkMorphologicalSegmentationViewActivator.cxx
   niftkMorphologicalSegmentationViewPreferencePage.cxx
-  niftkMorphologicalSegmentationViewControls.cxx
   niftkMorphologicalSegmentationView.cxx
 )
 
 set(UI_FILES
-  src/internal/niftkMorphologicalSegmentationViewControls.ui
 )
 
 set(MOC_H_FILES
   src/internal/niftkMorphologicalSegmentationViewActivator.h
-  src/internal/niftkMorphologicalSegmentationViewControls.h
   src/internal/niftkMorphologicalSegmentationView.h
   src/internal/niftkMorphologicalSegmentationViewPreferencePage.h
 )

@@ -15,30 +15,17 @@
 #ifndef __niftkBaseSegmentationViewControls_h
 #define __niftkBaseSegmentationViewControls_h
 
-#include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>
+#include <niftkMIDASGuiExports.h>
 
-// CTK for event handling.
-#include <service/event/ctkEventHandler.h>
-#include <service/event/ctkEventAdmin.h>
+#include <QWidget>
 
-// Berry stuff for application framework.
-#include <berryIPreferences.h>
-#include <berryIPreferencesService.h>
-#include <berryIBerryPreferences.h>
+namespace mitk
+{
+class ToolManager;
+}
 
-// Qmitk for Qt/MITK stuff.
-#include <QmitkBaseView.h>
-#include <niftkSegmentationSelectorWidget.h>
-#include <niftkToolSelectorWidget.h>
-#include <niftkMIDASOrientationUtils.h>
-
-// Miscellaneous.
-#include <mitkToolManager.h>
-#include <itkImage.h>
-
-#include <niftkMIDASEventFilter.h>
-
-class QmitkRenderWindow;
+class niftkSegmentationSelectorWidget;
+class niftkToolSelectorWidget;
 
 /**
  * \class niftkBaseSegmentationView
@@ -51,7 +38,7 @@ class QmitkRenderWindow;
  * \sa MIDASGeneralSegmentorView
  * \sa MITKSegmentationView
  */
-class CMIC_QT_COMMONMIDAS niftkBaseSegmentationViewControls : public QWidget
+class NIFTKMIDASGUI_EXPORT niftkBaseSegmentationViewControls : public QWidget
 {
 
   Q_OBJECT

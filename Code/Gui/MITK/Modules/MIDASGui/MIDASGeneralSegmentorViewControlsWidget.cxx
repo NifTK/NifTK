@@ -14,6 +14,9 @@
 
 #include "MIDASGeneralSegmentorViewControlsWidget.h"
 
+#include <niftkToolSelectorWidget.h>
+
+
 //-----------------------------------------------------------------------------
 MIDASGeneralSegmentorViewControlsWidget::MIDASGeneralSegmentorViewControlsWidget(QWidget *parent)
 : niftkBaseSegmentationViewControls(parent)

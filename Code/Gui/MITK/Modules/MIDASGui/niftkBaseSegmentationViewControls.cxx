@@ -14,34 +14,11 @@
 
 #include "niftkBaseSegmentationViewControls.h"
 
-#include <berryPlatform.h>
-
-#include <QMessageBox>
-#include "internal/MIDASActivator.h"
-#include <mitkILinkedRenderWindowPart.h>
-#include <mitkImageAccessByItk.h>
-#include <mitkDataNodeObject.h>
-#include <mitkProperties.h>
-#include <mitkColorProperty.h>
-#include <mitkRenderingManager.h>
-#include <mitkBaseRenderer.h>
-#include <mitkSegTool2D.h>
-#include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkToolManager.h>
-#include <mitkGlobalInteraction.h>
-#include <mitkStateMachine.h>
-#include <mitkDataStorageUtils.h>
-#include <mitkColorProperty.h>
-#include <mitkProperties.h>
-#include <QmitkRenderWindow.h>
 
-#include <NifTKConfigure.h>
-#include <niftkMIDASNewSegmentationDialog.h>
-#include <niftkMIDASTool.h>
-#include <niftkMIDASDrawTool.h>
-#include <niftkMIDASPolyTool.h>
-#include <niftkMIDASSeedTool.h>
-#include <niftkMIDASOrientationUtils.h>
+#include <niftkSegmentationSelectorWidget.h>
+#include <niftkToolSelectorWidget.h>
+
 
 //-----------------------------------------------------------------------------
 niftkBaseSegmentationViewControls::niftkBaseSegmentationViewControls(QWidget* parent)

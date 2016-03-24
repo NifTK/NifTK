@@ -36,14 +36,13 @@
 #include <QmitkRenderWindow.h>
 
 #include <NifTKConfigure.h>
+#include <niftkBaseSegmentationViewControls.h>
 #include <niftkMIDASNewSegmentationDialog.h>
 #include <niftkMIDASTool.h>
 #include <niftkMIDASDrawTool.h>
 #include <niftkMIDASPolyTool.h>
 #include <niftkMIDASSeedTool.h>
 #include <niftkMIDASOrientationUtils.h>
-
-#include "niftkBaseSegmentationViewControls.h"
 
 const QString niftkBaseSegmentationView::DEFAULT_COLOUR("midas editor default colour");
 const QString niftkBaseSegmentationView::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");

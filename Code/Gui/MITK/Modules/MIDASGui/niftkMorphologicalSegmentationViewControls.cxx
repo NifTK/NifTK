@@ -17,7 +17,8 @@
 
 #include "niftkMorphologicalSegmentationViewControls.h"
 
-#include <cmath>
+#include <niftkToolSelectorWidget.h>
+
 
 //-----------------------------------------------------------------------------
 niftkMorphologicalSegmentationViewControls::niftkMorphologicalSegmentationViewControls(QWidget* parent)

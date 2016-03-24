@@ -16,8 +16,11 @@
 #define __niftkMorphologicalSegmentationViewControls_h_
 
 #include "ui_niftkMorphologicalSegmentationViewControls.h"
+#include "niftkBaseSegmentationViewControls.h"
+
 #include <MorphologicalSegmentorPipelineParams.h>
-#include <niftkBaseSegmentationViewControls.h>
+
+#include <niftkMIDASGuiExports.h>
 
 class QAbstractButton;
 
@@ -26,7 +29,7 @@ class QAbstractButton;
  * \brief Implements a few Qt specific things that are of no interest to the MITK view class.
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  */
-class niftkMorphologicalSegmentationViewControls
+class NIFTKMIDASGUI_EXPORT niftkMorphologicalSegmentationViewControls
   : public niftkBaseSegmentationViewControls,
     public Ui_niftkMorphologicalSegmentationViewControls
 {

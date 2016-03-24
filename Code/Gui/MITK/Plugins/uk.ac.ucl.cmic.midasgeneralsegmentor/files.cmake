@@ -18,18 +18,15 @@ set(SRC_CPP_FILES
 set(INTERNAL_CPP_FILES
   MIDASGeneralSegmentorViewActivator.cxx
   MIDASGeneralSegmentorViewPreferencePage.cxx
-  MIDASGeneralSegmentorViewControlsWidget.cxx
   MIDASGeneralSegmentorViewEventInterface.cxx
   MIDASGeneralSegmentorView.cxx
 )
 
 set(UI_FILES
-  src/internal/MIDASGeneralSegmentorViewControls.ui
 )
 
 set(MOC_H_FILES
   src/internal/MIDASGeneralSegmentorViewActivator.h
-  src/internal/MIDASGeneralSegmentorViewControlsWidget.h
   src/internal/MIDASGeneralSegmentorView.h
   src/internal/MIDASGeneralSegmentorViewPreferencePage.h
 )

@@ -14,7 +14,6 @@
 
 set(SRC_CPP_FILES
   niftkBaseSegmentationView.cxx
-  niftkBaseSegmentationViewControls.cxx
 )
 
 set(INTERNAL_CPP_FILES
@@ -27,7 +26,6 @@ set(UI_FILES
 set(MOC_H_FILES
   src/internal/MIDASActivator.h
   src/niftkBaseSegmentationView.h
-  src/niftkBaseSegmentationViewControls.h
 )
 
 set(CACHED_RESOURCE_FILES
