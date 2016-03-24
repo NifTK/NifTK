@@ -23,7 +23,9 @@ cmake_minimum_required(VERSION ${NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION})
 # See http://cmake.org/cmake/help/cmake-2-8-docs.html#section_Policies for details
 ##################################################################################
 
-set(project_policies )
+set(project_policies
+  CMP0063 # Honor visibility properties for all target types.
+)
 foreach(policy ${project_policies})
   if(POLICY ${policy})
     cmake_policy(SET ${policy} NEW)
