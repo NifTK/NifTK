@@ -16,22 +16,22 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  niftkMorphologicalSegmentationViewActivator.cxx
-  niftkMorphologicalSegmentationViewPreferencePage.cxx
-  niftkMorphologicalSegmentationView.cxx
+  niftkMorphologicalSegmentorActivator.cxx
+  niftkMorphologicalSegmentorPreferencePage.cxx
+  niftkMorphologicalSegmentorView.cxx
 )
 
 set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/internal/niftkMorphologicalSegmentationViewActivator.h
-  src/internal/niftkMorphologicalSegmentationView.h
-  src/internal/niftkMorphologicalSegmentationViewPreferencePage.h
+  src/internal/niftkMorphologicalSegmentorActivator.h
+  src/internal/niftkMorphologicalSegmentorPreferencePage.h
+  src/internal/niftkMorphologicalSegmentorView.h
 )
 
 set(CACHED_RESOURCE_FILES
-  resources/niftkMorphologicalSegmentation.png
+  resources/niftkMorphologicalSegmentor.png
   plugin.xml
 # list of resource files which can be used by the plug-in
 # system without loading the plug-ins shared library,
@@ -40,8 +40,6 @@ set(CACHED_RESOURCE_FILES
 )
 
 set(QRC_FILES
-# uncomment the following line if you want to use Qt resources
-#  resources/niftkMorphologicalSegmentationView.qrc
 )
 
 set(CPP_FILES 

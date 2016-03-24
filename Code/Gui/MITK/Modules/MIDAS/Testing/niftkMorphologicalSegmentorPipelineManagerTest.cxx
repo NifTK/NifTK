@@ -37,12 +37,12 @@
 #include <niftkMIDASTool.h>
 #include <niftkMIDASPaintbrushTool.h>
 #include <mitkNifTKCoreObjectFactory.h>
-#include <niftkMorphologicalSegmentationPipelineManager.h>
+#include <niftkMorphologicalSegmentorPipelineManager.h>
 
 /**
- * \brief Test class for niftkMorphologicalSegmentationPipelineManagerTest.
+ * \brief Test class for niftkMorphologicalSegmentorPipelineManagerTest.
  */
-class niftkMorphologicalSegmentationPipelineManagerTestClass
+class niftkMorphologicalSegmentorPipelineManagerTestClass
 {
 
 public:
@@ -51,7 +51,7 @@ public:
   mitk::ToolManager::Pointer m_ToolManager;
   mitk::RenderWindow::Pointer m_RenderWindow;
   mitk::RenderingManager::Pointer m_RenderingManager;
-  niftk::MorphologicalSegmentationPipelineManager::Pointer m_PipelineManager;
+  niftk::MorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
 
   //-----------------------------------------------------------------------------
   void Setup(char* argv[])
@@ -63,7 +63,7 @@ public:
     m_DataStorage = mitk::StandaloneDataStorage::New();
     m_ToolManager = mitk::ToolManager::New(m_DataStorage);
 
-    m_PipelineManager = niftk::MorphologicalSegmentationPipelineManager::New();
+    m_PipelineManager = niftk::MorphologicalSegmentorPipelineManager::New();
     m_PipelineManager->SetDataStorage(m_DataStorage);
     m_PipelineManager->SetToolManager(m_ToolManager);
 
@@ -96,14 +96,14 @@ public:
 /**
  * Basic test harness for niftkMIDASMorphologicalSegmentorPipelineManager.
  */
-int niftkMorphologicalSegmentationPipelineManagerTest(int argc, char * argv[])
+int niftkMorphologicalSegmentorPipelineManagerTest(int argc, char * argv[])
 {
   // always start with this!
-  MITK_TEST_BEGIN("niftkMorphologicalSegmentationPipelineManagerTest");
+  MITK_TEST_BEGIN("niftkMorphologicalSegmentorPipelineManagerTest");
 
   // We are testing specifically with image ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img.
 
-  niftkMorphologicalSegmentationPipelineManagerTestClass *testClass = new niftkMorphologicalSegmentationPipelineManagerTestClass();
+  niftkMorphologicalSegmentorPipelineManagerTestClass *testClass = new niftkMorphologicalSegmentorPipelineManagerTestClass();
   testClass->Setup(argv);
   testClass->TestAll();
   delete testClass;

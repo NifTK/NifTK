@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "MIDASGeneralSegmentorView.h"
+#include "niftkGeneralSegmentorView.h"
 
 #include <QButtonGroup>
 #include <QGridLayout>
@@ -73,14 +73,14 @@ double timespecDiff(struct timespec *timeA_p, struct timespec *timeB_p)
 }
 */
 
-const std::string MIDASGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
+const std::string niftkGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
 
 /**************************************************************
  * Start of Constructing/Destructing the View stuff.
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
+niftkGeneralSegmentorView::niftkGeneralSegmentorView()
 : niftkBaseSegmentorView()
 , m_ToolKeyPressStateMachine(NULL)
 , m_GeneralControls(NULL)
@@ -93,14 +93,14 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
 , m_PreviousSliceNumber(0)
 , m_IsRestarting(false)
 {
-  m_Interface = MIDASGeneralSegmentorViewEventInterface::New();
-  m_Interface->SetMIDASGeneralSegmentorView(this);
+  m_Interface = niftkGeneralSegmentorEventInterface::New();
+  m_Interface->SetGeneralSegmentorView(this);
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASGeneralSegmentorView::MIDASGeneralSegmentorView(
-    const MIDASGeneralSegmentorView& other)
+niftkGeneralSegmentorView::niftkGeneralSegmentorView(
+    const niftkGeneralSegmentorView& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -108,7 +108,7 @@ MIDASGeneralSegmentorView::MIDASGeneralSegmentorView(
 
 
 //-----------------------------------------------------------------------------
-MIDASGeneralSegmentorView::~MIDASGeneralSegmentorView()
+niftkGeneralSegmentorView::~niftkGeneralSegmentorView()
 {
   if (m_GeneralControls)
   {
@@ -118,7 +118,7 @@ MIDASGeneralSegmentorView::~MIDASGeneralSegmentorView()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolManager)
+void niftkGeneralSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolManager)
 {
   toolManager->RegisterTool("MIDASDrawTool");
   toolManager->RegisterTool("MIDASSeedTool");
@@ -128,7 +128,7 @@ void MIDASGeneralSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolMan
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
+void niftkGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 {
   niftkBaseSegmentorView::CreateQtPartControl(parent);
 
@@ -138,7 +138,7 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorWidget* MIDASGeneralSegmentorView::CreateSegmentorWidget(QWidget *parent)
+niftkBaseSegmentorWidget* niftkGeneralSegmentorView::CreateSegmentorWidget(QWidget *parent)
 {
   m_GeneralControls = new niftkGeneralSegmentorWidget(parent);
   return m_GeneralControls;
@@ -146,7 +146,7 @@ niftkBaseSegmentorWidget* MIDASGeneralSegmentorView::CreateSegmentorWidget(QWidg
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::CreateConnections()
+void niftkGeneralSegmentorView::CreateConnections()
 {
   niftkBaseSegmentorView::CreateConnections();
 
@@ -192,7 +192,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::Visible()
+void niftkGeneralSegmentorView::Visible()
 {
   niftkBaseSegmentorView::Visible();
 
@@ -204,16 +204,16 @@ void MIDASGeneralSegmentorView::Visible()
   assert(toolManager);
 
   niftk::MIDASPolyTool* midasPolyTool = dynamic_cast<niftk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>()));
-  midasPolyTool->ContoursHaveChanged += mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
+  midasPolyTool->ContoursHaveChanged += mitk::MessageDelegate<niftkGeneralSegmentorView>( this, &niftkGeneralSegmentorView::OnContoursChanged );
 
   niftk::MIDASDrawTool* midasDrawTool = dynamic_cast<niftk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>()));
-  midasDrawTool->ContoursHaveChanged += mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
+  midasDrawTool->ContoursHaveChanged += mitk::MessageDelegate<niftkGeneralSegmentorView>( this, &niftkGeneralSegmentorView::OnContoursChanged );
 
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::Hidden()
+void niftkGeneralSegmentorView::Hidden()
 {
   niftkBaseSegmentorView::Hidden();
 
@@ -229,10 +229,10 @@ void MIDASGeneralSegmentorView::Hidden()
   assert(toolManager);
 
   niftk::MIDASPolyTool* midasPolyTool = dynamic_cast<niftk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>()));
-  midasPolyTool->ContoursHaveChanged -= mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
+  midasPolyTool->ContoursHaveChanged -= mitk::MessageDelegate<niftkGeneralSegmentorView>( this, &niftkGeneralSegmentorView::OnContoursChanged );
 
   niftk::MIDASDrawTool* midasDrawTool = dynamic_cast<niftk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>()));
-  midasDrawTool->ContoursHaveChanged -= mitk::MessageDelegate<MIDASGeneralSegmentorView>( this, &MIDASGeneralSegmentorView::OnContoursChanged );
+  midasDrawTool->ContoursHaveChanged -= mitk::MessageDelegate<niftkGeneralSegmentorView>( this, &niftkGeneralSegmentorView::OnContoursChanged );
 
 }
 
@@ -245,14 +245,14 @@ void MIDASGeneralSegmentorView::Hidden()
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-std::string MIDASGeneralSegmentorView::GetViewID() const
+std::string niftkGeneralSegmentorView::GetViewID() const
 {
   return VIEW_ID;
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::SetFocus()
+void niftkGeneralSegmentorView::SetFocus()
 {
   // it seems best not to force the focus, and just leave the
   // focus with whatever the user pressed ... i.e. let Qt handle it.
@@ -260,7 +260,7 @@ void MIDASGeneralSegmentorView::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
+bool niftkGeneralSegmentorView::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
 {
   bool canRestart = false;
 
@@ -281,7 +281,7 @@ bool MIDASGeneralSegmentorView::CanStartSegmentationForBinaryNode(const mitk::Da
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
+bool niftkGeneralSegmentorView::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
 {
   assert(node);
   bool result = false;
@@ -317,7 +317,7 @@ bool MIDASGeneralSegmentorView::IsNodeASegmentationImage(const mitk::DataNode::P
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType MIDASGeneralSegmentorView::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
+mitk::ToolManager::DataVectorType niftkGeneralSegmentorView::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   assert(node);
   mitk::ToolManager::DataVectorType result;
@@ -372,7 +372,7 @@ mitk::ToolManager::DataVectorType MIDASGeneralSegmentorView::GetWorkingDataFromS
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
+mitk::DataNode::Pointer niftkGeneralSegmentorView::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
 {
   mitk::ContourModelSet::Pointer contourSet = mitk::ContourModelSet::New();
 
@@ -392,7 +392,7 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateContourSet(mitk::DataNo
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
+mitk::DataNode::Pointer niftkGeneralSegmentorView::CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
 {
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
@@ -416,7 +416,7 @@ mitk::DataNode::Pointer MIDASGeneralSegmentorView::CreateHelperImage(mitk::Image
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonClicked()
+void niftkGeneralSegmentorView::OnCreateNewSegmentationButtonClicked()
 {
   // Create the new segmentation, either using a previously selected one, or create a new volume.
   mitk::DataNode::Pointer newSegmentation = NULL;
@@ -594,7 +594,7 @@ void MIDASGeneralSegmentorView::OnCreateNewSegmentationButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::StoreInitialSegmentation()
+void niftkGeneralSegmentorView::StoreInitialSegmentation()
 {
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
@@ -612,7 +612,7 @@ void MIDASGeneralSegmentorView::StoreInitialSegmentation()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
+void niftkGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -669,7 +669,7 @@ void MIDASGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::EnableSegmentationWidgets(bool enabled)
+void niftkGeneralSegmentorView::EnableSegmentationWidgets(bool enabled)
 {
   m_GeneralControls->SetAllWidgetsEnabled(enabled);
   bool thresholdingIsOn = m_GeneralControls->m_ThresholdingCheckBox->isChecked();
@@ -678,7 +678,7 @@ void MIDASGeneralSegmentorView::EnableSegmentationWidgets(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::RecalculateMinAndMaxOfImage()
+void niftkGeneralSegmentorView::RecalculateMinAndMaxOfImage()
 {
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
   if (referenceImage.IsNotNull())
@@ -691,7 +691,7 @@ void MIDASGeneralSegmentorView::RecalculateMinAndMaxOfImage()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::RecalculateMinAndMaxOfSeedValues()
+void niftkGeneralSegmentorView::RecalculateMinAndMaxOfSeedValues()
 {
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
   mitk::PointSet::Pointer seeds = this->GetSeeds();
@@ -721,7 +721,7 @@ void MIDASGeneralSegmentorView::RecalculateMinAndMaxOfSeedValues()
 
 
 //-----------------------------------------------------------------------------
-mitk::PointSet* MIDASGeneralSegmentorView::GetSeeds()
+mitk::PointSet* niftkGeneralSegmentorView::GetSeeds()
 {
 
   mitk::PointSet* result = NULL;
@@ -740,7 +740,7 @@ mitk::PointSet* MIDASGeneralSegmentorView::GetSeeds()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::HasInitialisedWorkingData()
+bool niftkGeneralSegmentorView::HasInitialisedWorkingData()
 {
   bool result = false;
 
@@ -755,7 +755,7 @@ bool MIDASGeneralSegmentorView::HasInitialisedWorkingData()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::FilterSeedsToCurrentSlice(
+void niftkGeneralSegmentorView::FilterSeedsToCurrentSlice(
     mitk::PointSet& inputPoints,
     int& axisNumber,
     int& sliceNumber,
@@ -790,7 +790,7 @@ void MIDASGeneralSegmentorView::FilterSeedsToCurrentSlice(
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::FilterSeedsToEnclosedSeedsOnCurrentSlice(
+void niftkGeneralSegmentorView::FilterSeedsToEnclosedSeedsOnCurrentSlice(
     mitk::PointSet& inputPoints,
     bool& thresholdOn,
     int& sliceNumber,
@@ -832,7 +832,7 @@ void MIDASGeneralSegmentorView::FilterSeedsToEnclosedSeedsOnCurrentSlice(
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::DestroyPipeline()
+void niftkGeneralSegmentorView::DestroyPipeline()
 {
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
   if (referenceImage.IsNotNull())
@@ -852,7 +852,7 @@ void MIDASGeneralSegmentorView::DestroyPipeline()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::RemoveWorkingData()
+void niftkGeneralSegmentorView::RemoveWorkingData()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -879,7 +879,7 @@ void MIDASGeneralSegmentorView::RemoveWorkingData()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::RestoreInitialSegmentation()
+void niftkGeneralSegmentorView::RestoreInitialSegmentation()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -927,7 +927,7 @@ void MIDASGeneralSegmentorView::RestoreInitialSegmentation()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnOKButtonClicked()
+void niftkGeneralSegmentorView::OnOKButtonClicked()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -954,7 +954,7 @@ void MIDASGeneralSegmentorView::OnOKButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnResetButtonClicked()
+void niftkGeneralSegmentorView::OnResetButtonClicked()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -978,21 +978,21 @@ void MIDASGeneralSegmentorView::OnResetButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnCancelButtonClicked()
+void niftkGeneralSegmentorView::OnCancelButtonClicked()
 {
   this->DiscardSegmentation();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::ClosePart()
+void niftkGeneralSegmentorView::ClosePart()
 {
   this->DiscardSegmentation();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::DiscardSegmentation()
+void niftkGeneralSegmentorView::DiscardSegmentation()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1021,7 +1021,7 @@ void MIDASGeneralSegmentorView::DiscardSegmentation()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnRestartButtonClicked()
+void niftkGeneralSegmentorView::OnRestartButtonClicked()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1045,7 +1045,7 @@ void MIDASGeneralSegmentorView::OnRestartButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::ClearWorkingData()
+void niftkGeneralSegmentorView::ClearWorkingData()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1089,7 +1089,7 @@ void MIDASGeneralSegmentorView::ClearWorkingData()
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::ToggleTool(int toolId)
+void niftkGeneralSegmentorView::ToggleTool(int toolId)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   int activeToolId = toolManager->GetActiveToolID();
@@ -1106,7 +1106,7 @@ void MIDASGeneralSegmentorView::ToggleTool(int toolId)
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::SelectSeedTool()
+bool niftkGeneralSegmentorView::SelectSeedTool()
 {
   /// Note:
   /// If the tool selection box is disabled then the tools are not registered to
@@ -1138,7 +1138,7 @@ bool MIDASGeneralSegmentorView::SelectSeedTool()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::SelectDrawTool()
+bool niftkGeneralSegmentorView::SelectDrawTool()
 {
   /// Note: see comment in SelectSeedTool().
   if (m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
@@ -1160,7 +1160,7 @@ bool MIDASGeneralSegmentorView::SelectDrawTool()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::SelectPolyTool()
+bool niftkGeneralSegmentorView::SelectPolyTool()
 {
   /// Note: see comment in SelectSeedTool().
   if (m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
@@ -1182,7 +1182,7 @@ bool MIDASGeneralSegmentorView::SelectPolyTool()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::UnselectTools()
+bool niftkGeneralSegmentorView::UnselectTools()
 {
   if (m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
   {
@@ -1201,7 +1201,7 @@ bool MIDASGeneralSegmentorView::UnselectTools()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::SelectViewMode()
+bool niftkGeneralSegmentorView::SelectViewMode()
 {
   /// Note: see comment in SelectSeedTool().
   if (m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
@@ -1239,7 +1239,7 @@ bool MIDASGeneralSegmentorView::SelectViewMode()
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::InitialiseSeedsForWholeVolume()
+void niftkGeneralSegmentorView::InitialiseSeedsForWholeVolume()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1281,7 +1281,7 @@ void MIDASGeneralSegmentorView::InitialiseSeedsForWholeVolume()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnFocusChanged()
+void niftkGeneralSegmentorView::OnFocusChanged()
 {
   QmitkBaseView::OnFocusChanged();
 
@@ -1299,10 +1299,10 @@ void MIDASGeneralSegmentorView::OnFocusChanged()
 
     if (m_SliceNavigationController.IsNotNull())
     {
-      itk::ReceptorMemberCommand<MIDASGeneralSegmentorView>::Pointer onSliceChangedCommand =
-        itk::ReceptorMemberCommand<MIDASGeneralSegmentorView>::New();
+      itk::ReceptorMemberCommand<niftkGeneralSegmentorView>::Pointer onSliceChangedCommand =
+        itk::ReceptorMemberCommand<niftkGeneralSegmentorView>::New();
 
-      onSliceChangedCommand->SetCallbackFunction( this, &MIDASGeneralSegmentorView::OnSliceChanged );
+      onSliceChangedCommand->SetCallbackFunction( this, &niftkGeneralSegmentorView::OnSliceChanged );
 
 
       m_PreviousSliceNumber = -1;
@@ -1324,7 +1324,7 @@ void MIDASGeneralSegmentorView::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
+void niftkGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1369,7 +1369,7 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber)
+bool niftkGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber)
 {
   mitk::PointSet* seeds = this->GetSeeds();
   assert(seeds);
@@ -1379,7 +1379,7 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, i
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber, mitk::PointSet& seeds)
+bool niftkGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber, mitk::PointSet& seeds)
 {
   bool sliceDoesHaveUnenclosedSeeds = false;
 
@@ -1443,7 +1443,7 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, i
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::CleanSlice()
+bool niftkGeneralSegmentorView::CleanSlice()
 {
   /// Note: see comment in SelectSeedTool().
   if (m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
@@ -1457,7 +1457,7 @@ bool MIDASGeneralSegmentorView::CleanSlice()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnSeePriorCheckBoxToggled(bool checked)
+void niftkGeneralSegmentorView::OnSeePriorCheckBoxToggled(bool checked)
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1476,7 +1476,7 @@ void MIDASGeneralSegmentorView::OnSeePriorCheckBoxToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnSeeNextCheckBoxToggled(bool checked)
+void niftkGeneralSegmentorView::OnSeeNextCheckBoxToggled(bool checked)
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1495,7 +1495,7 @@ void MIDASGeneralSegmentorView::OnSeeNextCheckBoxToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
+void niftkGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1543,7 +1543,7 @@ void MIDASGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnThresholdingCheckBoxToggled(bool checked)
+void niftkGeneralSegmentorView::OnThresholdingCheckBoxToggled(bool checked)
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1570,14 +1570,14 @@ void MIDASGeneralSegmentorView::OnThresholdingCheckBoxToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnThresholdValueChanged()
+void niftkGeneralSegmentorView::OnThresholdValueChanged()
 {
   this->UpdateRegionGrowing();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::UpdateRegionGrowing(bool updateRendering)
+void niftkGeneralSegmentorView::UpdateRegionGrowing(bool updateRendering)
 {
   bool isVisible = m_GeneralControls->m_ThresholdingCheckBox->isChecked();
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
@@ -1598,7 +1598,7 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(bool updateRendering)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::UpdateRegionGrowing(
+void niftkGeneralSegmentorView::UpdateRegionGrowing(
     bool isVisible,
     int sliceNumber,
     double lowerThreshold,
@@ -1695,7 +1695,7 @@ void MIDASGeneralSegmentorView::UpdateRegionGrowing(
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnThresholdApplyButtonClicked()
+void niftkGeneralSegmentorView::OnThresholdApplyButtonClicked()
 {
   int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
   this->DoThresholdApply(sliceNumber, sliceNumber, true, false, false);
@@ -1703,7 +1703,7 @@ void MIDASGeneralSegmentorView::OnThresholdApplyButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::DoThresholdApply(
+bool niftkGeneralSegmentorView::DoThresholdApply(
     int oldSliceNumber,
     int newSliceNumber,
     bool optimiseSeeds,
@@ -1825,7 +1825,7 @@ bool MIDASGeneralSegmentorView::DoThresholdApply(
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnSliceChanged(const itk::EventObject & geometrySliceEvent)
+void niftkGeneralSegmentorView::OnSliceChanged(const itk::EventObject & geometrySliceEvent)
 {
   mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
   if (renderWindowPart != NULL &&  !m_IsChangingSlice)
@@ -1851,7 +1851,7 @@ void MIDASGeneralSegmentorView::OnSliceChanged(const itk::EventObject & geometry
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int afterSliceNumber)
+void niftkGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int afterSliceNumber)
 {
   if (  !this->HasInitialisedWorkingData()
       || m_IsUpdating
@@ -2118,7 +2118,7 @@ void MIDASGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnCleanButtonClicked()
+void niftkGeneralSegmentorView::OnCleanButtonClicked()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -2390,14 +2390,14 @@ void MIDASGeneralSegmentorView::OnCleanButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnWipeButtonClicked()
+void niftkGeneralSegmentorView::OnWipeButtonClicked()
 {
   this->DoWipe(0);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnWipePlusButtonClicked()
+void niftkGeneralSegmentorView::OnWipePlusButtonClicked()
 {
 
   MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
@@ -2435,7 +2435,7 @@ void MIDASGeneralSegmentorView::OnWipePlusButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnWipeMinusButtonClicked()
+void niftkGeneralSegmentorView::OnWipeMinusButtonClicked()
 {
   MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
 
@@ -2472,7 +2472,7 @@ void MIDASGeneralSegmentorView::OnWipeMinusButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::DoWipe(int direction)
+bool niftkGeneralSegmentorView::DoWipe(int direction)
 {
   bool wipeWasPerformed = false;
 
@@ -2600,28 +2600,28 @@ bool MIDASGeneralSegmentorView::DoWipe(int direction)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnPropagate3DButtonClicked()
+void niftkGeneralSegmentorView::OnPropagate3DButtonClicked()
 {
   this->DoPropagate(false, true);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnPropagateUpButtonClicked()
+void niftkGeneralSegmentorView::OnPropagateUpButtonClicked()
 {
   this->DoPropagate(true, false);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnPropagateDownButtonClicked()
+void niftkGeneralSegmentorView::OnPropagateDownButtonClicked()
 {
   this->DoPropagate(false, false);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
+void niftkGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -2810,7 +2810,7 @@ void MIDASGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnAnyButtonClicked()
+void niftkGeneralSegmentorView::OnAnyButtonClicked()
 {
   /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
   /// (like 'a' and 'z' for changing slice) keep on working.
@@ -2822,7 +2822,7 @@ void MIDASGeneralSegmentorView::OnAnyButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
+void niftkGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
 {
   if (   m_IsDeleting
       || m_IsUpdating
@@ -2884,7 +2884,7 @@ void MIDASGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
+void niftkGeneralSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -2901,7 +2901,7 @@ void MIDASGeneralSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorView::OnContoursChanged()
+void niftkGeneralSegmentorView::OnContoursChanged()
 {
   this->UpdateRegionGrowing();
 }
@@ -2930,7 +2930,7 @@ void MIDASGeneralSegmentorView::OnContoursChanged()
  * should also be the ones deciding when we update the display.
  ******************************************************************/
 
-void MIDASGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
+void niftkGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
 {
   if (!this->HasInitialisedWorkingData())
   {

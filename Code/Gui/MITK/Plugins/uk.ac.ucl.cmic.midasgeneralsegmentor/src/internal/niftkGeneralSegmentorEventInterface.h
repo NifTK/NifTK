@@ -12,25 +12,25 @@
 
 =============================================================================*/
 
-#ifndef MIDASGeneralSegmentorViewEventInterface_h
-#define MIDASGeneralSegmentorViewEventInterface_h
+#ifndef __niftkGeneralSegmentorEventInterface_h
+#define __niftkGeneralSegmentorEventInterface_h
 
 #include <itkObject.h>
 #include <itkSmartPointer.h>
 #include <itkObjectFactory.h>
 #include <mitkOperationActor.h>
 
-class MIDASGeneralSegmentorView;
+class niftkGeneralSegmentorView;
 
 /**
- * \class MIDASGeneralSegmentorViewEventInterface
- * \brief Interface class, simply to callback onto MIDASGeneralSegmentorView class for Undo/Redo purposes.
+ * \class niftkGeneralSegmentorEventInterface
+ * \brief Interface class, simply to callback onto niftkGeneralSegmentorView class for Undo/Redo purposes.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
-class MIDASGeneralSegmentorViewEventInterface: public itk::Object, public mitk::OperationActor
+class niftkGeneralSegmentorEventInterface: public itk::Object, public mitk::OperationActor
 {
 public:
-  typedef MIDASGeneralSegmentorViewEventInterface       Self;
+  typedef niftkGeneralSegmentorEventInterface       Self;
   typedef itk::SmartPointer<const Self>                 ConstPointer;
   typedef itk::SmartPointer<Self>                       Pointer;
 
@@ -38,16 +38,16 @@ public:
   itkNewMacro(Self);
 
   /// \brief Sets the view to callback on to.
-  void SetMIDASGeneralSegmentorView( MIDASGeneralSegmentorView* view );
+  void SetGeneralSegmentorView( niftkGeneralSegmentorView* view );
 
   /// \brief Main execution function.
   virtual void  ExecuteOperation(mitk::Operation* op);
 
 protected:
-  MIDASGeneralSegmentorViewEventInterface();
-  ~MIDASGeneralSegmentorViewEventInterface();
+  niftkGeneralSegmentorEventInterface();
+  ~niftkGeneralSegmentorEventInterface();
 private:
-  MIDASGeneralSegmentorView* m_View;
+  niftkGeneralSegmentorView* m_View;
 };
 
 #endif

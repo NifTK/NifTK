@@ -12,31 +12,31 @@
 
 =============================================================================*/
 
-#include "niftkMorphologicalSegmentationViewActivator.h"
-#include "niftkMorphologicalSegmentationView.h"
-#include <QtPlugin>
-#include "niftkMorphologicalSegmentationViewPreferencePage.h"
-
-namespace niftk
-{
+#include "niftkGeneralSegmentorEventInterface.h"
+#include "niftkGeneralSegmentorView.h"
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentationViewActivator::start(ctkPluginContext* context)
+niftkGeneralSegmentorEventInterface::niftkGeneralSegmentorEventInterface()
+: m_View(NULL)
 {
-  BERRY_REGISTER_EXTENSION_CLASS(niftkMorphologicalSegmentationView, context);
-  BERRY_REGISTER_EXTENSION_CLASS(niftkMorphologicalSegmentationViewPreferencePage, context);
 }
 
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentationViewActivator::stop(ctkPluginContext* context)
+niftkGeneralSegmentorEventInterface::~niftkGeneralSegmentorEventInterface()
 {
-  Q_UNUSED(context)
 }
 
-}
 
 //-----------------------------------------------------------------------------
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_midasmorphologicalsegmentor, niftk::MorphologicalSegmentationViewActivator)
-#endif
+void niftkGeneralSegmentorEventInterface::SetGeneralSegmentorView( niftkGeneralSegmentorView* view )
+{
+  m_View = view;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkGeneralSegmentorEventInterface::ExecuteOperation(mitk::Operation* op)
+{
+  m_View->ExecuteOperation(op);
+}

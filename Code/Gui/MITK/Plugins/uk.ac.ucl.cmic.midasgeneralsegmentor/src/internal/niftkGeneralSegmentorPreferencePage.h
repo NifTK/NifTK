@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MIDASGeneralSegmentorViewPreferencePage_h
-#define MIDASGeneralSegmentorViewPreferencePage_h
+#ifndef __niftkGeneralSegmentorPreferencePage_h
+#define __niftkGeneralSegmentorPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
@@ -22,12 +22,12 @@ class QWidget;
 class QPushButton;
 
 /**
- * \class MIDASGeneralSegmentorViewPreferencePage
+ * \class niftkGeneralSegmentorPreferencePage
  * \brief Preferences page for this plugin, enabling the choice of the default colour of the segmentation.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor
  *
  */
-class MIDASGeneralSegmentorViewPreferencePage : public QObject, public berry::IQtPreferencePage
+class niftkGeneralSegmentorPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
@@ -37,9 +37,9 @@ public:
   /// \brief Stores the name of the preferences node.
   static const QString PREFERENCES_NODE_NAME;
 
-  MIDASGeneralSegmentorViewPreferencePage();
-  MIDASGeneralSegmentorViewPreferencePage(const MIDASGeneralSegmentorViewPreferencePage& other);
-  ~MIDASGeneralSegmentorViewPreferencePage();
+  niftkGeneralSegmentorPreferencePage();
+  niftkGeneralSegmentorPreferencePage(const niftkGeneralSegmentorPreferencePage& other);
+  ~niftkGeneralSegmentorPreferencePage();
 
   void Init(berry::IWorkbench::Pointer workbench);
 
@@ -69,14 +69,14 @@ protected slots:
 
 protected:
 
-  QWidget        *m_MainControl;
-  QPushButton    *m_DefaultColorPushButton;
-  QString         m_DefauleColorStyleSheet;
-  QString     m_DefaultColor;
+  QWidget* m_MainControl;
+  QPushButton* m_DefaultColorPushButton;
+  QString m_DefauleColorStyleSheet;
+  QString m_DefaultColor;
 
   bool m_Initializing;
 
-  berry::IPreferences::Pointer m_MIDASGeneralSegmentorViewPreferencesNode;
+  berry::IPreferences::Pointer m_GeneralSegmentorPreferencesNode;
 };
 
 #endif

@@ -12,10 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MIDASGeneralSegmentorView_h
-#define MIDASGeneralSegmentorView_h
-
-#include "ui_MIDASGeneralSegmentorViewControls.h"
+#ifndef niftkGeneralSegmentorView_h
+#define niftkGeneralSegmentorView_h
 
 #include <QString>
 #include <itkImage.h>
@@ -44,8 +42,8 @@
 #include <niftkMIDASToolKeyPressResponder.h>
 
 #include <niftkGeneralSegmentorCommands.h>
-#include "MIDASGeneralSegmentorViewPreferencePage.h"
-#include "MIDASGeneralSegmentorViewEventInterface.h"
+#include "niftkGeneralSegmentorPreferencePage.h"
+#include "niftkGeneralSegmentorEventInterface.h"
 
 class QButtonGroup;
 class QGridLayout;
@@ -53,7 +51,7 @@ class QGridLayout;
 class niftkGeneralSegmentorWidget;
 
 /**
- * \class MIDASGeneralSegmentorView
+ * \class niftkGeneralSegmentorView
  * \brief Provides the MIDAS general purpose, Irregular Volume Editor functionality originally developed
  * at the Dementia Research Centre UCL (http://dementia.ion.ucl.ac.uk/).
  *
@@ -146,7 +144,7 @@ class niftkGeneralSegmentorWidget;
  * \sa niftkBaseSegmentorView
  * \sa MIDASMorphologicalSegmentorView
  */
-class MIDASGeneralSegmentorView : public niftkBaseSegmentorView,
+class niftkGeneralSegmentorView : public niftkBaseSegmentorView,
                                   public niftk::MIDASToolKeyPressResponder,
                                   public mitk::OperationActor
 {
@@ -155,13 +153,13 @@ class MIDASGeneralSegmentorView : public niftkBaseSegmentorView,
 public:
 
   /// \brief Constructor.
-  MIDASGeneralSegmentorView();
+  niftkGeneralSegmentorView();
 
   /// \brief Copy constructor which deliberately throws a runtime exception, as no-one should call it.
-  MIDASGeneralSegmentorView(const MIDASGeneralSegmentorView& other);
+  niftkGeneralSegmentorView(const niftkGeneralSegmentorView& other);
 
   /// \brief Destructor.
-  virtual ~MIDASGeneralSegmentorView();
+  virtual ~niftkGeneralSegmentorView();
 
   /// \brief Each View for a plugin has its own globally unique ID, this one is
   /// "uk.ac.ucl.cmic.midasgeneralsegmentor" and the .cxx file and plugin.xml should match.
@@ -267,11 +265,11 @@ protected slots:
   void OnAnyButtonClicked();
 
   /// \brief Qt slot called when the "threshold" checkbox is checked, and toggles
-  /// the thresholding widget section on and calls MIDASGeneralSegmentorView::UpdateRegionGrowing.
+  /// the thresholding widget section on and calls niftkGeneralSegmentorView::UpdateRegionGrowing.
   void OnThresholdingCheckBoxToggled(bool checked);
 
   /// \brief Qt slot called when the lower or upper threshold slider is moved, calls
-  /// MIDASGeneralSegmentorView::UpdateRegionGrowing as thresholds have changed.
+  /// niftkGeneralSegmentorView::UpdateRegionGrowing as thresholds have changed.
   void OnThresholdValueChanged();
 
   /// \brief Qt slot called to effect a change of slice, which means accepting
@@ -322,7 +320,7 @@ protected:
 
   /// \brief Returns the name of the preferences node to look up.
   /// \see niftkBaseSegmentorView::GetPreferencesNodeName
-  virtual QString GetPreferencesNodeName() override { return MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
+  virtual QString GetPreferencesNodeName() override { return niftkGeneralSegmentorPreferencePage::PREFERENCES_NODE_NAME; }
 
   /// \brief This view registers with the mitk::DataStorage and listens for changing
   /// data, so this method is called when any node is changed, but only performs an update,
@@ -448,7 +446,7 @@ private:
   niftk::MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
 
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
-  MIDASGeneralSegmentorViewEventInterface::Pointer m_Interface;
+  niftkGeneralSegmentorEventInterface::Pointer m_Interface;
 
   /// \brief All the controls for the main view part.
   niftkGeneralSegmentorWidget* m_GeneralControls;

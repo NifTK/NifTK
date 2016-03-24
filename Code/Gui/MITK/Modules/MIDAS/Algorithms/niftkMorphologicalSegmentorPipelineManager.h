@@ -46,7 +46,7 @@ namespace niftk
  * \sa MorphologicalSegmentorPipelineInterface
  * \sa MorphologicalSegmentorPipelineParams
  */
-class NIFTKMIDAS_EXPORT MorphologicalSegmentationPipelineManager : public itk::LightObject
+class NIFTKMIDAS_EXPORT MorphologicalSegmentorPipelineManager : public itk::LightObject
 {
 
 public:
@@ -58,8 +58,8 @@ public:
   static const std::string SEGMENTATION_OF_LAST_STAGE_NAME;
 
 
-  mitkClassMacroItkParent(MorphologicalSegmentationPipelineManager, itk::Object);
-  itkNewMacro(MorphologicalSegmentationPipelineManager);
+  mitkClassMacroItkParent(MorphologicalSegmentorPipelineManager, itk::Object);
+  itkNewMacro(MorphologicalSegmentorPipelineManager);
 
   /// \brief Sets the mitk::DataStorage on this object.
   void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
@@ -159,11 +159,11 @@ public:
 
 protected:
 
-  MorphologicalSegmentationPipelineManager();
-  virtual ~MorphologicalSegmentationPipelineManager();
+  MorphologicalSegmentorPipelineManager();
+  virtual ~MorphologicalSegmentorPipelineManager();
 
-  MorphologicalSegmentationPipelineManager(const MorphologicalSegmentationPipelineManager&); // Purposefully not implemented.
-  MorphologicalSegmentationPipelineManager& operator=(const MorphologicalSegmentationPipelineManager&); // Purposefully not implemented.
+  MorphologicalSegmentorPipelineManager(const MorphologicalSegmentorPipelineManager&); // Purposefully not implemented.
+  MorphologicalSegmentorPipelineManager& operator=(const MorphologicalSegmentorPipelineManager&); // Purposefully not implemented.
 
 private:
 

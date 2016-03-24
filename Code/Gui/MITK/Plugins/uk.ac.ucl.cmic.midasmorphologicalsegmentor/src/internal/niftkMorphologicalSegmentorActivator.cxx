@@ -12,27 +12,24 @@
 
 =============================================================================*/
 
-#include "MIDASGeneralSegmentorViewActivator.h"
-#include "MIDASGeneralSegmentorView.h"
+#include "niftkMorphologicalSegmentorActivator.h"
+#include "niftkMorphologicalSegmentorView.h"
 #include <QtPlugin>
-#include "MIDASGeneralSegmentorViewPreferencePage.h"
-
-#include <niftkMIDASTool.h>
+#include "niftkMorphologicalSegmentorPreferencePage.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewActivator::start(ctkPluginContext* context)
+void MorphologicalSegmentorActivator::start(ctkPluginContext* context)
 {
-  BERRY_REGISTER_EXTENSION_CLASS(MIDASGeneralSegmentorView, context);
-  BERRY_REGISTER_EXTENSION_CLASS(MIDASGeneralSegmentorViewPreferencePage, context);
-
-  niftk::MIDASTool::LoadBehaviourStrings();
+  BERRY_REGISTER_EXTENSION_CLASS(niftkMorphologicalSegmentorView, context);
+  BERRY_REGISTER_EXTENSION_CLASS(niftkMorphologicalSegmentorPreferencePage, context);
 }
 
+
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewActivator::stop(ctkPluginContext* context)
+void MorphologicalSegmentorActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
 }
@@ -41,5 +38,5 @@ void MIDASGeneralSegmentorViewActivator::stop(ctkPluginContext* context)
 
 //-----------------------------------------------------------------------------
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_midasgeneralsegmentor, niftk::MIDASGeneralSegmentorViewActivator)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_midasmorphologicalsegmentor, niftk::MorphologicalSegmentorActivator)
 #endif

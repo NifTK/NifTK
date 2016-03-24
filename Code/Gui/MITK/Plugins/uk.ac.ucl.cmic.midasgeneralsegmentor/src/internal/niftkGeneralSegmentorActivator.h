@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef MIDASGeneralSegmentorViewActivator_h
-#define MIDASGeneralSegmentorViewActivator_h
+#ifndef __niftkGeneralSegmentorActivator_h
+#define __niftkGeneralSegmentorActivator_h
 
 #include <ctkPluginActivator.h>
 
@@ -21,11 +21,11 @@ namespace niftk
 {
 
 /**
- * \class MIDASGeneralSegmentorViewActivator
- * \brief CTK Plugin Activator class for MIDASGeneralSegmentorView.
+ * \class niftk::GeneralSegmentorActivator
+ * \brief CTK Plugin Activator class for niftkGeneralSegmentorView.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
-class MIDASGeneralSegmentorViewActivator :
+class GeneralSegmentorActivator :
   public QObject, public ctkPluginActivator
 {
   Q_OBJECT

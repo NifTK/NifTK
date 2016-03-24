@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkMorphologicalSegmentationViewActivator_h
-#define __niftkMorphologicalSegmentationViewActivator_h
+#ifndef __niftkMorphologicalSegmentatorActivator_h
+#define __niftkMorphologicalSegmentatorActivator_h
 
 #include <ctkPluginActivator.h>
 
@@ -21,11 +21,11 @@ namespace niftk
 {
 
 /**
- * \class niftkMorphologicalSegmentationViewActivator
- * \brief CTK Plugin Activator class for niftkMorphologicalSegmentationView.
+ * \class niftkMorphologicalSegmentorActivator
+ * \brief CTK Plugin Activator class for niftkMorphologicalSegmentatorView.
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  */
-class MorphologicalSegmentationViewActivator :
+class MorphologicalSegmentorActivator :
   public QObject, public ctkPluginActivator
 {
   Q_OBJECT

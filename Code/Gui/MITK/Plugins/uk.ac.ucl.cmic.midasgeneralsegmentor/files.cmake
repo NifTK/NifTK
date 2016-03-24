@@ -16,23 +16,23 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  MIDASGeneralSegmentorViewActivator.cxx
-  MIDASGeneralSegmentorViewPreferencePage.cxx
-  MIDASGeneralSegmentorViewEventInterface.cxx
-  MIDASGeneralSegmentorView.cxx
+  niftkGeneralSegmentorActivator.cxx
+  niftkGeneralSegmentorEventInterface.cxx
+  niftkGeneralSegmentorPreferencePage.cxx
+  niftkGeneralSegmentorView.cxx
 )
 
 set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/internal/MIDASGeneralSegmentorViewActivator.h
-  src/internal/MIDASGeneralSegmentorView.h
-  src/internal/MIDASGeneralSegmentorViewPreferencePage.h
+  src/internal/niftkGeneralSegmentorActivator.h
+  src/internal/niftkGeneralSegmentorPreferencePage.h
+  src/internal/niftkGeneralSegmentorView.h
 )
 
 set(CACHED_RESOURCE_FILES
-  resources/MIDASGeneralSegmentor.png
+  resources/niftkGeneralSegmentor.png
   plugin.xml
 # list of resource files which can be used by the plug-in
 # system without loading the plug-ins shared library,
@@ -41,8 +41,6 @@ set(CACHED_RESOURCE_FILES
 )
 
 set(QRC_FILES
-# uncomment the following line if you want to use Qt resources
-#  resources/MIDASGeneralSegmentorView.qrc
 )
 
 set(CPP_FILES 
@@ -50,8 +48,8 @@ set(CPP_FILES
 
 foreach(file ${INTERNAL_CPP_FILES})
   set(CPP_FILES ${CPP_FILES} src/internal/${file})
-endforeach(file ${INTERNAL_CPP_FILES})
+endforeach()
 
 foreach(file ${SRC_CPP_FILES})
   set(CPP_FILES ${CPP_FILES} src/${file})
-endforeach(file ${SRC_CPP_FILES})
+endforeach()

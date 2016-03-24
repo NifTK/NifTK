@@ -16,12 +16,12 @@ set(H_FILES
   Algorithms/niftkGeneralSegmentorCommands.h
   Algorithms/niftkGeneralSegmentorUtils.h
   Algorithms/niftkGeneralSegmentorUtils.txx
-  Algorithms/niftkMorphologicalSegmentationPipelineManager.h
+  Algorithms/niftkMorphologicalSegmentorPipelineManager.h
 )
 
 set(CPP_FILES
   DataManagement/niftkMIDASDataNodeNameStringFilter.cxx
-  Algorithms/niftkMorphologicalSegmentationPipelineManager.cxx
+  Algorithms/niftkMorphologicalSegmentorPipelineManager.cxx
   Algorithms/niftkGeneralSegmentorCommands.cxx
   Algorithms/niftkGeneralSegmentorPipeline.cxx
   Algorithms/niftkGeneralSegmentorPipelineCache.cxx

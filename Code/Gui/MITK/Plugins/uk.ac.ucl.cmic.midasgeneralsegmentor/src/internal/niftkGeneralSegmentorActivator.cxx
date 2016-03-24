@@ -12,31 +12,34 @@
 
 =============================================================================*/
 
-#include "MIDASGeneralSegmentorViewEventInterface.h"
-#include "MIDASGeneralSegmentorView.h"
+#include "niftkGeneralSegmentorActivator.h"
+#include "niftkGeneralSegmentorView.h"
+#include <QtPlugin>
+#include "niftkGeneralSegmentorPreferencePage.h"
+
+#include <niftkMIDASTool.h>
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-MIDASGeneralSegmentorViewEventInterface::MIDASGeneralSegmentorViewEventInterface()
-: m_View(NULL)
+void GeneralSegmentorActivator::start(ctkPluginContext* context)
 {
-}
+  BERRY_REGISTER_EXTENSION_CLASS(niftkGeneralSegmentorView, context);
+  BERRY_REGISTER_EXTENSION_CLASS(niftkGeneralSegmentorPreferencePage, context);
 
+  niftk::MIDASTool::LoadBehaviourStrings();
+}
 
 //-----------------------------------------------------------------------------
-MIDASGeneralSegmentorViewEventInterface::~MIDASGeneralSegmentorViewEventInterface()
+void GeneralSegmentorActivator::stop(ctkPluginContext* context)
 {
+  Q_UNUSED(context)
 }
 
+}
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewEventInterface::SetMIDASGeneralSegmentorView( MIDASGeneralSegmentorView* view )
-{
-  m_View = view;
-}
-
-
-//-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewEventInterface::ExecuteOperation(mitk::Operation* op)
-{
-  m_View->ExecuteOperation(op);
-}
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_midasgeneralsegmentor, niftk::GeneralSegmentorActivator)
+#endif
