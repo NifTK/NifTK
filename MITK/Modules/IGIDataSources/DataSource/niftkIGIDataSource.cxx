@@ -91,7 +91,7 @@ IGIDataSource::~IGIDataSource()
   if (m_DataStorage.IsNotNull())
   {
     std::set<mitk::DataNode::Pointer>::iterator iter;
-    for (iter = m_DataNodes.begin(); iter != m_DataNodes.end(); iter++)
+    for (iter = m_DataNodes.begin(); iter != m_DataNodes.end(); ++iter)
     {
       m_DataStorage->Remove(*iter);
     }
@@ -321,4 +321,3 @@ unsigned int IGIDataSource::GetLagInMilliseconds(const niftk::IGIDataType::IGITi
 }
 
 } // end namespace
-

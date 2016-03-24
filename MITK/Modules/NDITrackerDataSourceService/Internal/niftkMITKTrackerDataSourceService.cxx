@@ -140,7 +140,7 @@ void MITKTrackerDataSourceService::CleanBuffer()
 
   // Buffer itself should be threadsafe. Clean all buffers.
   QMap<QString, niftk::IGIDataSourceBuffer::Pointer>::iterator iter;
-  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
+  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); ++iter)
   {
     (*iter)->CleanBuffer();
   }
@@ -148,7 +148,8 @@ void MITKTrackerDataSourceService::CleanBuffer()
 
 
 //-----------------------------------------------------------------------------
-QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >  MITKTrackerDataSourceService::GetPlaybackIndex(QString directory)
+QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >
+MITKTrackerDataSourceService::GetPlaybackIndex(QString directory)
 {
   QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > bufferToTimeStamp;
   QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> > bufferToTimeStampToFileNames;
@@ -201,11 +202,13 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
   // This will find us the timestamp right after the requested one.
   // Remember we have multiple buffers!
   QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator playbackIter;
-  for(playbackIter = m_PlaybackIndex.begin(); playbackIter != m_PlaybackIndex.end(); playbackIter++) // for each detected buffer
+  for(playbackIter = m_PlaybackIndex.begin(); playbackIter != m_PlaybackIndex.end(); ++playbackIter)
   {
     QString bufferName = playbackIter.key();
 
-    std::set<niftk::IGIDataType::IGITimeType>::const_iterator i = m_PlaybackIndex[bufferName].upper_bound(requestedTimeStamp);
+    std::set<niftk::IGIDataType::IGITimeType>::const_iterator i =
+      m_PlaybackIndex[bufferName].upper_bound(requestedTimeStamp);
+
     if (i != m_PlaybackIndex[bufferName].begin())
     {
       --i;
@@ -214,7 +217,9 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
     {
       if (!m_Buffers.contains(bufferName))
       {
-        niftk::IGIDataSourceBuffer::Pointer newBuffer = niftk::IGIDataSourceBuffer::New(m_Tracker->GetPreferredFramesPerSecond() * 2);
+        niftk::IGIDataSourceBuffer::Pointer newBuffer =
+          niftk::IGIDataSourceBuffer::New(m_Tracker->GetPreferredFramesPerSecond() * 2);
+
         newBuffer->SetLagInMilliseconds(m_Lag);
         m_Buffers.insert(bufferName, newBuffer);
       }
@@ -287,7 +292,7 @@ void MITKTrackerDataSourceService::GrabData()
   if (!result.empty())
   {
     std::map<std::string, vtkSmartPointer<vtkMatrix4x4> >::iterator iter;
-    for (iter = result.begin(); iter != result.end(); iter++)
+    for (iter = result.begin(); iter != result.end(); ++iter)
     {
       std::string toolName = (*iter).first;
       QString toolNameAsQString = QString::fromStdString(toolName);
@@ -302,7 +307,9 @@ void MITKTrackerDataSourceService::GrabData()
 
       if (!m_Buffers.contains(toolNameAsQString))
       {
-        niftk::IGIDataSourceBuffer::Pointer newBuffer = niftk::IGIDataSourceBuffer::New(m_Tracker->GetPreferredFramesPerSecond() * 2);
+        niftk::IGIDataSourceBuffer::Pointer newBuffer =
+          niftk::IGIDataSourceBuffer::New(m_Tracker->GetPreferredFramesPerSecond() * 2);
+
         newBuffer->SetLagInMilliseconds(m_Lag);
         m_Buffers.insert(toolNameAsQString, newBuffer);
       }
@@ -340,9 +347,7 @@ void MITKTrackerDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
     mitkThrow() << "Failed to save IGITrackerDataType as the data received was the wrong type!";
   }
 
-  vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  matrix = dataType->GetTrackingData();
-
+  vtkSmartPointer<vtkMatrix4x4> matrix = dataType->GetTrackingData();
   if (matrix == NULL)
   {
     mitkThrow() << "Failed to save IGITrackerDataType as the tracking matrix was NULL!";
@@ -399,7 +404,7 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
   }
 
   QMap<QString, niftk::IGIDataSourceBuffer::Pointer>::iterator iter;
-  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
+  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); ++iter)
   {
     QString bufferName = iter.key();
 
@@ -413,10 +418,14 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
       continue;
     }
 
-    niftk::IGITrackerDataType::Pointer dataType = dynamic_cast<niftk::IGITrackerDataType*>(m_Buffers[bufferName]->GetItem(time).GetPointer());
+    niftk::IGITrackerDataType::Pointer dataType =
+      dynamic_cast<niftk::IGITrackerDataType*>(m_Buffers[bufferName]->GetItem(time).GetPointer());
+
     if (dataType.IsNull())
     {
-      MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffers[bufferName]->GetBufferSize() << ", last=" << m_Buffers[bufferName]->GetLastTimeStamp() << std::endl;
+      MITK_DEBUG << "Failed to find data for time " << time
+                 << ", size=" << m_Buffers[bufferName]->GetBufferSize()
+                 << ", last=" << m_Buffers[bufferName]->GetLastTimeStamp() << std::endl;
       continue;
     }
 

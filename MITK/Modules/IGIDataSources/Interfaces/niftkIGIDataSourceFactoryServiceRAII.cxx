@@ -43,14 +43,16 @@ IGIDataSourceFactoryServiceRAII::IGIDataSourceFactoryServiceRAII(const QString &
 
   if (m_Refs.size() > 1)
   {
-    mitkThrow() << "There should only be 1 us::ServiceReference for IGIDataSourceFactoryServiceRAII(" << fname << "), but i found " << m_Refs.size();
+    mitkThrow() << "There should only be 1 us::ServiceReference for IGIDataSourceFactoryServiceRAII("
+                << fname << "), but i found " << m_Refs.size();
   }
 
   m_Service = m_ModuleContext->GetService<niftk::IGIDataSourceFactoryServiceI>(m_Refs.front());
 
   if (m_Service == NULL)
   {
-    mitkThrow() << "Unable to get niftk::IGIDataSourceFactoryServiceI in IGIDataSourceFactoryServiceRAII(" << fname << ").";
+    mitkThrow() << "Unable to get niftk::IGIDataSourceFactoryServiceI in IGIDataSourceFactoryServiceRAII("
+                << fname << ").";
   }
 }
 

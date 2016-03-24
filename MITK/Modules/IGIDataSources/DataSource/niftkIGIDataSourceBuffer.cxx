@@ -20,7 +20,8 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-bool IGIDataSourceBuffer::TimeStampComparator::operator()(const niftk::IGIDataType::Pointer& a, const niftk::IGIDataType::Pointer& b)
+bool IGIDataSourceBuffer::TimeStampComparator::operator()
+  (const niftk::IGIDataType::Pointer& a, const niftk::IGIDataType::Pointer& b)
 {
   assert(a.IsNotNull());
   assert(b.IsNotNull());
@@ -99,7 +100,7 @@ bool IGIDataSourceBuffer::Contains(const niftk::IGIDataType::IGITimeType& time) 
       containsIt = true;
       break;
     }
-    iter++;
+    ++iter;
   }
   return containsIt;
 }
@@ -142,8 +143,8 @@ void IGIDataSourceBuffer::CleanBuffer()
 
     while(endIter != m_Buffer.end() && counter < numberToDelete)
     {
-      endIter++;
-      counter++;
+      ++endIter;
+      ++counter;
     }
 
     if (counter > 1 && startIter != endIter)
@@ -209,7 +210,7 @@ void IGIDataSourceBuffer::UpdateFrameRate()
     firstTimeStamp = (*m_Buffer.begin())->GetTimeStampInNanoSeconds();
 
     BufferType::iterator iter = m_Buffer.end();
-    iter--;
+    --iter;
 
     lastTimeStamp = (*iter)->GetTimeStampInNanoSeconds();
 
@@ -244,7 +245,8 @@ niftk::IGIDataType::Pointer IGIDataSourceBuffer::GetItem(const niftk::IGIDataTyp
 {
   if (time < m_Lag)
   {
-    mitkThrow() << "The requested time " << time << " is obviously too small, suggesting a programming bug." << std::endl;
+    mitkThrow() << "The requested time " << time
+                << " is obviously too small, suggesting a programming bug." << std::endl;
   }
 
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
@@ -275,7 +277,7 @@ niftk::IGIDataType::Pointer IGIDataSourceBuffer::GetItem(const niftk::IGIDataTyp
   BufferType::iterator iter = m_Buffer.begin();
   while(iter != m_Buffer.end() && (*iter)->GetTimeStampInNanoSeconds() < effectiveTime)
   {
-    iter++;
+    ++iter;
   }
 
   if (iter != m_Buffer.end() && (*iter)->GetTimeStampInNanoSeconds() == effectiveTime)
@@ -283,9 +285,8 @@ niftk::IGIDataType::Pointer IGIDataSourceBuffer::GetItem(const niftk::IGIDataTyp
     return *iter;
   }
 
-  iter--; // Backtrack one step, as we just went past the closest one.
+  --iter; // Backtrack one step, as we just went past the closest one.
   return *iter;
 }
 
 } // end namespace
-

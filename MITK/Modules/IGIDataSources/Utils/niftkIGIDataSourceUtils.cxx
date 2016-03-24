@@ -110,7 +110,11 @@ void GetPlaybackIndex(const QString& directory,
         {
           QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > subBufferToTimeStamp;
           QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> > subBufferToTimeStampToFileNames;
-          GetPlaybackIndex(bufferLevelDir.absolutePath(), fileExtension, subBufferToTimeStamp, subBufferToTimeStampToFileNames);
+
+          GetPlaybackIndex(bufferLevelDir.absolutePath(),
+                           fileExtension,
+                           subBufferToTimeStamp,
+                           subBufferToTimeStampToFileNames);
 
           if (!subBufferToTimeStamp.isEmpty())
           {
@@ -119,19 +123,21 @@ void GetPlaybackIndex(const QString& directory,
 
             // Iterate through all timestamps, and combine.
             QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator iter;
-            for (iter = subBufferToTimeStamp.begin(); iter != subBufferToTimeStamp.end(); iter++)
+            for (iter = subBufferToTimeStamp.begin(); iter != subBufferToTimeStamp.end(); ++iter)
             {
               combinedSet.insert(iter.value().begin(), iter.value().end());
             }
 
             // Iterate through all timestamps, combining filenames.
             std::set<niftk::IGIDataType::IGITimeType>::iterator iter2;
-            for (iter2 = combinedSet.begin(); iter2 != combinedSet.end(); iter2++)
+            for (iter2 = combinedSet.begin(); iter2 != combinedSet.end(); ++iter2)
             {
               QStringList tmp;
 
               QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> >::iterator iter3;
-              for (iter3 = subBufferToTimeStampToFileNames.begin(); iter3 != subBufferToTimeStampToFileNames.end(); iter3++)
+              for (iter3 = subBufferToTimeStampToFileNames.begin();
+                   iter3 != subBufferToTimeStampToFileNames.end();
+                   ++iter3)
               {
                 if (iter3.value().contains(*iter2))
                 {
@@ -156,7 +162,7 @@ void GetPlaybackIndex(const QString& directory,
 
           // Convert single file name to stringlist
           QHash<niftk::IGIDataType::IGITimeType, QString>::iterator iter;
-          for (iter = timeStampsToFileName.begin(); iter != timeStampsToFileName.end(); iter++)
+          for (iter = timeStampsToFileName.begin(); iter != timeStampsToFileName.end(); ++iter)
           {
             QStringList list;
             list << iter.value();
@@ -169,7 +175,8 @@ void GetPlaybackIndex(const QString& directory,
     }
     else
     {
-      MITK_WARN << "There are no sub-folders in " << recordingDir.absolutePath().toStdString() << ", so can't playback data!";
+      MITK_WARN << "There are no sub-folders in " << recordingDir.absolutePath().toStdString()
+                << ", so can't playback data!";
     }
   }
   else
@@ -205,7 +212,7 @@ bool ProbeRecordedData(const QString& path,
   }
 
   QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator iter;
-  for (iter = bufferToTimeStamp.begin(); iter != bufferToTimeStamp.end(); iter++)
+  for (iter = bufferToTimeStamp.begin(); iter != bufferToTimeStamp.end(); ++iter)
   {
     if (!iter.value().empty())
     {
@@ -234,4 +241,3 @@ bool ProbeRecordedData(const QString& path,
 }
 
 } // end namespace
-

@@ -69,16 +69,16 @@ protected:
 
 protected:
 
-    const QImage* m_QImage;
+    const QImage*        m_QImage;
     mitk::Image::Pointer m_Image;
     mitk::Image::Pointer m_GeomImage;
 
 private:
 
     template <typename TPixel, unsigned int VImageDimension>
-    static mitk::Image::Pointer ConvertQImageToMitkImage( const QImage* input, const mitk::Image::Pointer GeomImage);
+    static mitk::Image::Pointer ConvertQImageToMitkImage(const QImage* input, const mitk::Image::Pointer GeomImage);
     template <typename TPixel, unsigned int VImageDimension>
-    static mitk::Image::Pointer Convert8BitQImageToMitkImage( const QImage* input, const mitk::Image::Pointer GeomImage);
+    static mitk::Image::Pointer Convert8BitQImageToMitkImage(const QImage* input, const mitk::Image::Pointer GeomImage);
 };
 
 } // end namespace

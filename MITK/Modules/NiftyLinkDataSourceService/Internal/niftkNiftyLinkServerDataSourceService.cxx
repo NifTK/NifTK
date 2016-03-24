@@ -44,14 +44,19 @@ NiftyLinkServerDataSourceService::NiftyLinkServerDataSourceService(
   m_Server = new NiftyLinkTcpServer();
 
   // Register to slots before we start to use it, otherwise you miss error messages.
-  bool ok = false;
-  ok = QObject::connect(m_Server, SIGNAL(ClientConnected(int)), this, SLOT(OnClientConnected(int)));
+  bool ok = QObject::connect(m_Server, SIGNAL(ClientConnected(int)),
+                             this, SLOT(OnClientConnected(int)));
   assert(ok);
-  ok = QObject::connect(m_Server, SIGNAL(ClientDisconnected(int)), this, SLOT(OnClientDisconnected(int)));
+  ok = QObject::connect(m_Server, SIGNAL(ClientDisconnected(int)),
+                        this, SLOT(OnClientDisconnected(int)));
   assert(ok);
-  ok = QObject::connect(m_Server, SIGNAL(SocketError(int, QAbstractSocket::SocketError, QString)), this, SLOT(OnSocketError(int, QAbstractSocket::SocketError, QString)));
+  ok = QObject::connect(m_Server, SIGNAL(SocketError(int, QAbstractSocket::SocketError, QString)),
+                        this, SLOT(OnSocketError(int, QAbstractSocket::SocketError, QString)));
   assert(ok);
-  ok = QObject::connect(m_Server, SIGNAL(MessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)), this, SLOT(OnMessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)), Qt::DirectConnection);
+  ok = QObject::connect(m_Server,
+                        SIGNAL(MessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)),
+                        this,
+                        SLOT(OnMessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)), Qt::DirectConnection);
   assert(ok);
 
   m_Server->listen(QHostAddress::LocalHost, portNumber);
@@ -70,14 +75,19 @@ NiftyLinkServerDataSourceService::NiftyLinkServerDataSourceService(
 //-----------------------------------------------------------------------------
 NiftyLinkServerDataSourceService::~NiftyLinkServerDataSourceService()
 {
-  bool ok = false;
-  ok = QObject::disconnect(m_Server, SIGNAL(ClientConnected(int)), this, SLOT(OnClientConnected(int)));
+  bool ok = QObject::disconnect(m_Server, SIGNAL(ClientConnected(int)),
+                                this, SLOT(OnClientConnected(int)));
   assert(ok);
-  ok = QObject::disconnect(m_Server, SIGNAL(ClientDisconnected(int)), this, SLOT(OnClientDisconnected(int)));
+  ok = QObject::disconnect(m_Server, SIGNAL(ClientDisconnected(int)),
+                           this, SLOT(OnClientDisconnected(int)));
   assert(ok);
-  ok = QObject::disconnect(m_Server, SIGNAL(SocketError(int, QAbstractSocket::SocketError, QString)), this, SLOT(OnSocketError(int, QAbstractSocket::SocketError, QString)));
+  ok = QObject::disconnect(m_Server, SIGNAL(SocketError(int, QAbstractSocket::SocketError, QString)),
+                           this, SLOT(OnSocketError(int, QAbstractSocket::SocketError, QString)));
   assert(ok);
-  ok = QObject::disconnect(m_Server, SIGNAL(MessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)), this, SLOT(OnMessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)));
+  ok = QObject::disconnect(m_Server,
+                           SIGNAL(MessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)),
+                           this,
+                           SLOT(OnMessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)));
   assert(ok);
 
   m_Server->Shutdown();
@@ -108,7 +118,10 @@ void NiftyLinkServerDataSourceService::OnClientDisconnected(int portNumber)
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkServerDataSourceService::OnSocketError(int portNumber, QAbstractSocket::SocketError errorCode, QString errorString)
+void NiftyLinkServerDataSourceService::OnSocketError(
+    int portNumber,
+    QAbstractSocket::SocketError errorCode,
+    QString errorString)
 {
   this->SetStatus("Socket Error");
   QString message = QString::number(portNumber)
@@ -118,7 +131,9 @@ void NiftyLinkServerDataSourceService::OnSocketError(int portNumber, QAbstractSo
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkServerDataSourceService::OnMessageReceived(int portNumber, niftk::NiftyLinkMessageContainer::Pointer message)
+void NiftyLinkServerDataSourceService::OnMessageReceived(
+    int portNumber,
+    niftk::NiftyLinkMessageContainer::Pointer message)
 {
   this->MessageReceived(message);
 }

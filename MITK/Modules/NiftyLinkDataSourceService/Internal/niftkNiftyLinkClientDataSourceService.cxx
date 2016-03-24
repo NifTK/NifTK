@@ -48,16 +48,20 @@ NiftyLinkClientDataSourceService::NiftyLinkClientDataSourceService(
 
   m_Client = new NiftyLinkTcpClient();
 
-  bool ok = false;
-  ok = QObject::connect(m_Client, SIGNAL(Connected(QString, int)), this, SLOT(OnConnected(QString, int)));
+  bool ok = QObject::connect(m_Client, SIGNAL(Connected(QString, int)),
+                             this, SLOT(OnConnected(QString, int)));
   assert(ok);
-  ok = QObject::connect(m_Client, SIGNAL(Disconnected(QString, int)), this, SLOT(OnDisconnected(QString, int)));
+  ok = QObject::connect(m_Client, SIGNAL(Disconnected(QString, int)),
+                        this, SLOT(OnDisconnected(QString, int)));
   assert(ok);
-  ok = QObject::connect(m_Client, SIGNAL(SocketError(QString, int, QAbstractSocket::SocketError, QString)), this, SLOT(OnSocketError(QString, int, QAbstractSocket::SocketError, QString)));
+  ok = QObject::connect(m_Client, SIGNAL(SocketError(QString, int, QAbstractSocket::SocketError, QString)),
+                        this, SLOT(OnSocketError(QString, int, QAbstractSocket::SocketError, QString)));
   assert(ok);
-  ok = QObject::connect(m_Client, SIGNAL(ClientError(QString, int, QString)), this, SLOT(OnClientError(QString, int, QString)));
+  ok = QObject::connect(m_Client, SIGNAL(ClientError(QString, int, QString)),
+                        this, SLOT(OnClientError(QString, int, QString)));
   assert(ok);
-  ok = QObject::connect(m_Client, SIGNAL(MessageReceived(NiftyLinkMessageContainer::Pointer)), this, SLOT(OnMessageReceived(NiftyLinkMessageContainer::Pointer)), Qt::DirectConnection);
+  ok = QObject::connect(m_Client, SIGNAL(MessageReceived(NiftyLinkMessageContainer::Pointer)),
+                        this, SLOT(OnMessageReceived(NiftyLinkMessageContainer::Pointer)), Qt::DirectConnection);
   assert(ok);
 
   m_Client->ConnectToHost(hostName, portNumber);
@@ -70,16 +74,20 @@ NiftyLinkClientDataSourceService::NiftyLinkClientDataSourceService(
 //-----------------------------------------------------------------------------
 NiftyLinkClientDataSourceService::~NiftyLinkClientDataSourceService()
 {
-  bool ok = false;
-  ok = QObject::disconnect(m_Client, SIGNAL(Connected(QString, int)), this, SLOT(OnConnected(QString, int)));
+  bool ok = QObject::disconnect(m_Client, SIGNAL(Connected(QString, int)),
+                                this, SLOT(OnConnected(QString, int)));
   assert(ok);
-  ok = QObject::disconnect(m_Client, SIGNAL(Disconnected(QString, int)), this, SLOT(OnDisconnected(QString, int)));
+  ok = QObject::disconnect(m_Client, SIGNAL(Disconnected(QString, int)),
+                           this, SLOT(OnDisconnected(QString, int)));
   assert(ok);
-  ok = QObject::disconnect(m_Client, SIGNAL(SocketError(QString, int, QAbstractSocket::SocketError, QString)), this, SLOT(OnSocketError(QString, int, QAbstractSocket::SocketError, QString)));
+  ok = QObject::disconnect(m_Client, SIGNAL(SocketError(QString, int, QAbstractSocket::SocketError, QString)),
+                           this, SLOT(OnSocketError(QString, int, QAbstractSocket::SocketError, QString)));
   assert(ok);
-  ok = QObject::disconnect(m_Client, SIGNAL(ClientError(QString, int, QString)), this, SLOT(OnClientError(QString, int, QString)));
+  ok = QObject::disconnect(m_Client, SIGNAL(ClientError(QString, int, QString)),
+                           this, SLOT(OnClientError(QString, int, QString)));
   assert(ok);
-  ok = QObject::disconnect(m_Client, SIGNAL(MessageReceived(niftk::NiftyLinkMessageContainer::Pointer)), this, SLOT(OnMessageReceived(niftk::NiftyLinkMessageContainer::Pointer)));
+  ok = QObject::disconnect(m_Client, SIGNAL(MessageReceived(niftk::NiftyLinkMessageContainer::Pointer)),
+                           this, SLOT(OnMessageReceived(niftk::NiftyLinkMessageContainer::Pointer)));
   assert(ok);
 
   delete m_Client;
@@ -113,7 +121,8 @@ void NiftyLinkClientDataSourceService::OnDisconnected(QString hostName, int port
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkClientDataSourceService::OnSocketError(QString hostName, int portNumber, QAbstractSocket::SocketError errorCode, QString errorString)
+void NiftyLinkClientDataSourceService::OnSocketError(QString hostName, int portNumber,
+                                                     QAbstractSocket::SocketError errorCode, QString errorString)
 {
   this->SetStatus("Socket Error");
   QString message = hostName

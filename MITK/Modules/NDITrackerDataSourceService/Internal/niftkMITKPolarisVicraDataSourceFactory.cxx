@@ -32,7 +32,6 @@ MITKPolarisVicraDataSourceFactory::~MITKPolarisVicraDataSourceFactory()
 }
 
 
-
 //-----------------------------------------------------------------------------
 IGIDataSourceI::Pointer MITKPolarisVicraDataSourceFactory::CreateService(
     mitk::DataStorage::Pointer dataStorage,

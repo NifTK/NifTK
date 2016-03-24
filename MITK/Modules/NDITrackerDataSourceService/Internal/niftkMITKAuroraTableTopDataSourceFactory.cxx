@@ -32,7 +32,6 @@ MITKAuroraTableTopDataSourceFactory::~MITKAuroraTableTopDataSourceFactory()
 }
 
 
-
 //-----------------------------------------------------------------------------
 IGIDataSourceI::Pointer MITKAuroraTableTopDataSourceFactory::CreateService(
     mitk::DataStorage::Pointer dataStorage,

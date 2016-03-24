@@ -32,7 +32,6 @@ MITKAuroraDomeDataSourceFactory::~MITKAuroraDomeDataSourceFactory()
 }
 
 
-
 //-----------------------------------------------------------------------------
 IGIDataSourceI::Pointer MITKAuroraDomeDataSourceFactory::CreateService(
     mitk::DataStorage::Pointer dataStorage,

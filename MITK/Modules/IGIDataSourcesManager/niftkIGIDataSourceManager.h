@@ -325,7 +325,8 @@ private:
 
   /**
   * Tries to parse the data source descriptor for directory-to-classname mappings.
-  * \param filepath full qualified path to descriptor.cfg, e.g. "/home/jo/projectwork/2014-01-28-11-51-04-909/descriptor.cfg"
+  * \param filepath full qualified path to descriptor.cfg,
+  * e.g. "/home/jo/projectwork/2014-01-28-11-51-04-909/descriptor.cfg"
   * \returns a map with key = directory, value = classname
   * \throws std::exception if something goes wrong.
   * \warning This method does not check whether any class name is valid, i.e. whether that class has been compiled in!
@@ -348,7 +349,7 @@ private:
   */
   void GrabScreen();
 
-  mitk::DataStorage::Pointer                                       m_DataStorage; // populated in constructor, so always valid.
+  mitk::DataStorage::Pointer                                       m_DataStorage;
   us::ModuleContext*                                               m_ModuleContext;
   std::vector<us::ServiceReference<IGIDataSourceFactoryServiceI> > m_Refs;
   QList<niftk::IGIDataSourceI::Pointer>                            m_Sources;

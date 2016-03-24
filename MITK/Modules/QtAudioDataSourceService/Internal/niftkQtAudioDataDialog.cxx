@@ -43,8 +43,8 @@ QtAudioDataDialog::QtAudioDataDialog(QWidget *parent)
   m_DeviceComboBox->setCurrentIndex(m_DeviceComboBox->findText(defaultDevice.deviceName()));
   this->Update();
 
-  bool ok = false;
-  ok = QObject::connect(m_DeviceComboBox, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(OnCurrentDeviceIndexChanged()));
+  bool ok = QObject::connect(m_DeviceComboBox, SIGNAL(currentIndexChanged(const QString&)),
+                             this, SLOT(OnCurrentDeviceIndexChanged()));
   assert(ok);
   ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
@@ -54,10 +54,11 @@ QtAudioDataDialog::QtAudioDataDialog(QWidget *parent)
 //-----------------------------------------------------------------------------
 QtAudioDataDialog::~QtAudioDataDialog()
 {
-  bool ok = false;
-  ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
+  bool ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()),
+                                this, SLOT(OnOKClicked()));
   assert(ok);
-  ok = QObject::disconnect(m_DeviceComboBox, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(OnCurrentDeviceIndexChanged()));
+  ok = QObject::disconnect(m_DeviceComboBox, SIGNAL(currentIndexChanged(const QString&)),
+                           this, SLOT(OnCurrentDeviceIndexChanged()));
   assert(ok);
 }
 
@@ -110,7 +111,12 @@ void QtAudioDataDialog::Update()
 
               if (d.isFormatSupported(f))
               {
-                QString text = QString("%1 channels @ %2 Hz, %3 bit, %4").arg(f.channels()).arg(f.sampleRate()).arg(f.sampleSize()).arg(f.codec());
+                QString text = QString("%1 channels @ %2 Hz, %3 bit, %4")
+                    .arg(f.channels())
+                    .arg(f.sampleRate())
+                    .arg(f.sampleSize())
+                    .arg(f.codec());
+
                 m_FormatComboBox->addItem(text, QVariant::fromValue(f));
               }
             }

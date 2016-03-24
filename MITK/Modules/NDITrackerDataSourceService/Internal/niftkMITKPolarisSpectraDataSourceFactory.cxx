@@ -32,7 +32,6 @@ MITKPolarisSpectraDataSourceFactory::~MITKPolarisSpectraDataSourceFactory()
 }
 
 
-
 //-----------------------------------------------------------------------------
 IGIDataSourceI::Pointer MITKPolarisSpectraDataSourceFactory::CreateService(
     mitk::DataStorage::Pointer dataStorage,

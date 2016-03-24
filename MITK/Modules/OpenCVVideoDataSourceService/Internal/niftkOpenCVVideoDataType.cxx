@@ -52,4 +52,3 @@ const IplImage* OpenCVVideoDataType::GetImage()
 }
 
 } // end namespace
-

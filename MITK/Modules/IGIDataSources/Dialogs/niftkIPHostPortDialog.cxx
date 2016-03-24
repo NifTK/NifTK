@@ -26,8 +26,7 @@ IPHostPortDialog::IPHostPortDialog(QWidget *parent)
   setupUi(this);
   m_HostName->setText("localhost");
 
-  bool ok = false;
-  ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
+  bool ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
 }
 
@@ -35,8 +34,7 @@ IPHostPortDialog::IPHostPortDialog(QWidget *parent)
 //-----------------------------------------------------------------------------
 IPHostPortDialog::~IPHostPortDialog()
 {
-  bool ok = false;
-  ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
+  bool ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
 }
 

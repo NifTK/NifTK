@@ -48,4 +48,3 @@ vtkSmartPointer<vtkMatrix4x4> IGITrackerDataType::GetTrackingData() const
 }
 
 } // end namespace
-

@@ -30,8 +30,7 @@ LagDialog::LagDialog(QWidget *parent, niftk::IGIDataSourceI::Pointer service)
   {
     m_LagSpinBox->setValue(props.value("lag").toInt());
   }
-  bool ok = false;
-  ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
+  bool ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
 }
 
@@ -39,8 +38,7 @@ LagDialog::LagDialog(QWidget *parent, niftk::IGIDataSourceI::Pointer service)
 //-----------------------------------------------------------------------------
 LagDialog::~LagDialog()
 {
-  bool ok = false;
-  ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
+  bool ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
 }
 

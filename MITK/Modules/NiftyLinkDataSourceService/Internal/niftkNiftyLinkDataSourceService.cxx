@@ -142,7 +142,7 @@ void NiftyLinkDataSourceService::CleanBuffer()
 
   // Buffers should be threadsafe. Clean all buffers.
   QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>::iterator iter;
-  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
+  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); ++iter)
   {
     (*iter)->CleanBuffer();
   }
@@ -159,7 +159,7 @@ void NiftyLinkDataSourceService::SaveBuffer()
   // item, does a callback onto this object, thereby ending
   // up calling SaveItem from the save thread.
   QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>::iterator iter;
-  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
+  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); ++iter)
   {
     (*iter)->SaveBuffer();
   }
@@ -211,11 +211,13 @@ void NiftyLinkDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
   // This will find us the timestamp right after the requested one.
   // Remember we have multiple buffers!
   QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator iter;
-  for (iter = m_PlaybackIndex.begin(); iter != m_PlaybackIndex.end(); iter++)
+  for (iter = m_PlaybackIndex.begin(); iter != m_PlaybackIndex.end(); ++iter)
   {
     QString bufferName = iter.key();
 
-    std::set<niftk::IGIDataType::IGITimeType>::const_iterator iter = m_PlaybackIndex[bufferName].upper_bound(requestedTimeStamp);
+    std::set<niftk::IGIDataType::IGITimeType>::const_iterator iter =
+      m_PlaybackIndex[bufferName].upper_bound(requestedTimeStamp);
+
     if (iter != m_PlaybackIndex[bufferName].begin())
     {
       --iter;
@@ -250,7 +252,8 @@ void NiftyLinkDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
           {
             for (int i = 0; i < listOfRelevantFiles.size(); i++)
             {
-              MITK_INFO << "NiftyLinkDataSourceService::PlaybackData: Ignoring " << listOfRelevantFiles[i].toStdString();
+              MITK_INFO << "NiftyLinkDataSourceService::PlaybackData: Ignoring "
+                        << listOfRelevantFiles[i].toStdString();
             }
           }
         }
@@ -307,8 +310,7 @@ void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataType::IGITimeType
       {
         // If this loads, we have a valid 2D/3D/4D image.
         // Im trying to use the generic MITK mechanism, so we benefit from our Fixed NifTI reader.
-        mitk::Image::Pointer image = mitk::Image::New();
-        image = mitk::IOUtil::LoadImage((*iter).toStdString());
+        mitk::Image::Pointer image = mitk::IOUtil::LoadImage((*iter).toStdString());
 
         // Now we load into igtl::Image.
         int dimensionality = image->GetDimension();
@@ -364,7 +366,9 @@ void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataType::IGITimeType
         msg->SetSpacing(spacing[0], spacing[1], spacing[2]);
 
         // Now wrap it up, nice and warm for the winter.
-        niftk::NiftyLinkMessageContainer::Pointer container = (NiftyLinkMessageContainer::Pointer(new NiftyLinkMessageContainer()));
+        niftk::NiftyLinkMessageContainer::Pointer container =
+          (NiftyLinkMessageContainer::Pointer(new NiftyLinkMessageContainer()));
+
         container->SetMessage(msg.GetPointer());
         container->SetOwnerName("playback");
         container->SetSenderHostName("localhost");
@@ -393,14 +397,15 @@ void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataType::IGITimeType
     }
     else
     {
-      iter++;
+      ++iter;
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::LoadTrackingData(const niftk::IGIDataType::IGITimeType& time, QStringList& listOfFileNames)
+void NiftyLinkDataSourceService::LoadTrackingData(
+    const niftk::IGIDataType::IGITimeType& time, QStringList& listOfFileNames)
 {
   if (listOfFileNames.isEmpty())
   {
@@ -447,13 +452,15 @@ void NiftyLinkDataSourceService::LoadTrackingData(const niftk::IGIDataType::IGIT
     }
     else
     {
-      iter++;
+      ++iter;
     }
   }
 
   if (msg->GetNumberOfTrackingDataElements() > 0)
   {
-    niftk::NiftyLinkMessageContainer::Pointer container = (NiftyLinkMessageContainer::Pointer(new NiftyLinkMessageContainer()));
+    niftk::NiftyLinkMessageContainer::Pointer container =
+      (NiftyLinkMessageContainer::Pointer(new NiftyLinkMessageContainer()));
+
     container->SetMessage(msg.GetPointer());
     container->SetOwnerName("playback");
     container->SetSenderHostName("localhost");
@@ -533,10 +540,14 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
   QDir directory(outputPath);
   if (directory.mkpath(outputPath))
   {
-    int nx, ny, nz;
+    int nx;
+    int ny;
+    int nz;
     imageMessage->GetDimensions(nx, ny, nz);
 
-    float sx, sy, sz;
+    float sx;
+    float sy;
+    float sz;
     imageMessage->GetSpacing(sx, sy, sz);
 
     // Transformation matrices can be saved with the image.
@@ -723,7 +734,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
   }
 
   QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>::iterator iter;
-  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); iter++)
+  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); ++iter)
   {
     QString deviceName = iter.key();
 
@@ -737,10 +748,14 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
       continue;
     }
 
-    niftk::NiftyLinkDataType::Pointer dataType = dynamic_cast<niftk::NiftyLinkDataType*>(m_Buffers[deviceName]->GetItem(time).GetPointer());
+    niftk::NiftyLinkDataType::Pointer dataType =
+      dynamic_cast<niftk::NiftyLinkDataType*>(m_Buffers[deviceName]->GetItem(time).GetPointer());
+
     if (dataType.IsNull())
     {
-      MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffers[deviceName]->GetBufferSize() << ", last=" << m_Buffers[deviceName]->GetLastTimeStamp() << std::endl;
+      MITK_DEBUG << "Failed to find data for time " << time
+                 << ", size=" << m_Buffers[deviceName]->GetBufferSize()
+                 << ", last=" << m_Buffers[deviceName]->GetLastTimeStamp() << std::endl;
       continue;
     }
 
@@ -766,14 +781,16 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
     igtl::TrackingDataMessage* trackingMessage = dynamic_cast<igtl::TrackingDataMessage*>(igtlMessage.GetPointer());
     if (trackingMessage != NULL)
     {
-      std::vector<IGIDataItemInfo> tmp = this->ReceiveTrackingData(deviceName, time, dataType->GetTimeStampInNanoSeconds(), trackingMessage);
+      std::vector<IGIDataItemInfo> tmp =
+          this->ReceiveTrackingData(deviceName, time, dataType->GetTimeStampInNanoSeconds(), trackingMessage);
       this->AddAll(tmp, infos);
     }
 
     igtl::ImageMessage* imgMsg = dynamic_cast<igtl::ImageMessage*>(igtlMessage.GetPointer());
     if (imgMsg != NULL)
     {
-      std::vector<IGIDataItemInfo> tmp = this->ReceiveImage(deviceName, time, dataType->GetTimeStampInNanoSeconds(), imgMsg);
+      std::vector<IGIDataItemInfo> tmp =
+          this->ReceiveImage(deviceName, time, dataType->GetTimeStampInNanoSeconds(), imgMsg);
       this->AddAll(tmp, infos);
     }
   }
@@ -792,10 +809,12 @@ void NiftyLinkDataSourceService::AddAll(const std::vector<IGIDataItemInfo>& a, s
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveTrackingData(QString deviceName,
-                                                                             niftk::IGIDataType::IGITimeType timeRequested,
-                                                                             niftk::IGIDataType::IGITimeType actualTime,
-                                                                             igtl::TrackingDataMessage* trackingMessage)
+std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveTrackingData(
+    QString deviceName,
+    niftk::IGIDataType::IGITimeType timeRequested,
+    niftk::IGIDataType::IGITimeType actualTime,
+    igtl::TrackingDataMessage* trackingMessage
+    )
 {
   std::vector<IGIDataItemInfo> infos;
 
@@ -887,7 +906,9 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
   info.m_LagInMilliseconds = 0;
   infos.push_back(info);
 
-  int nx, ny, nz;
+  int nx;
+  int ny;
+  int nz;
   imgMsg->GetDimensions(nx, ny, nz);
 
   if (nz > 1)
@@ -989,7 +1010,8 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
       for (int y = 0; y < ocvimg.height; ++y)
       {
         // widthStep is in bytes while width is in pixels
-        std::memcpy(&(((char*) vPointer)[y * numberOfBytesPerLine]), &(ocvimg.imageData[y * ocvimg.widthStep]), numberOfBytesPerLine);
+        std::memcpy(&(((char*) vPointer)[y * numberOfBytesPerLine]),
+            &(ocvimg.imageData[y * ocvimg.widthStep]), numberOfBytesPerLine);
       }
     }
   }

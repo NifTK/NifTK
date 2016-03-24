@@ -52,4 +52,3 @@ const IplImage* UltrasonixDataType::GetImage()
 }
 
 } // end namespace
-

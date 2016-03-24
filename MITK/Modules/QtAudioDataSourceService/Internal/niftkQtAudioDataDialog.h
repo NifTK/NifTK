@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkIPPortDialog_h
-#define niftkIPPortDialog_h
+#ifndef niftkQtAudioDataDialog_h
+#define niftkQtAudioDataDialog_h
 
 #include "niftkIGIInitialisationDialog.h"
 #include <ui_niftkQtAudioDataDialog.h>

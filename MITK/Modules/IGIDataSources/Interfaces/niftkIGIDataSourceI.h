@@ -111,7 +111,8 @@ public:
   * \param firstTimeStamp specifies the minimum time of the recording session.
   * \param lastTimeStamp specifies the maximum time of the recording session.
   */
-  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp, niftk::IGIDataType::IGITimeType lastTimeStamp) = 0;
+  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
+                             niftk::IGIDataType::IGITimeType lastTimeStamp) = 0;
 
   /**
   * \brief Stops the playback process, so after this call, implementing data sources

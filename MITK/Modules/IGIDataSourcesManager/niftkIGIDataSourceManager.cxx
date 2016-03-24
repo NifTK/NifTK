@@ -41,7 +41,8 @@ namespace niftk
 {
 
 const int   IGIDataSourceManager::DEFAULT_FRAME_RATE = 20;
-const char* IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE = "NIFTK_IGIDATASOURCES_DEFAULTRECORDINGDESTINATION";
+const char* IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE
+  = "NIFTK_IGIDATASOURCES_DEFAULTRECORDINGDESTINATION";
 
 //-----------------------------------------------------------------------------
 IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage, QObject* parent)
@@ -74,8 +75,7 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
   m_GuiUpdateTimer = new QTimer(this);
   m_GuiUpdateTimer->setInterval(1000/(int)(DEFAULT_FRAME_RATE));
 
-  bool ok = false;
-  ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+  bool ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
   assert(ok);
 }
 
@@ -242,7 +242,9 @@ void IGIDataSourceManager::RetrieveAllDataSourceFactories()
   // Iterate through all available factories to populate the combo box.
   for (int i = 0; i < m_Refs.size(); i++)
   {
-    niftk::IGIDataSourceFactoryServiceI *factory = m_ModuleContext->GetService<niftk::IGIDataSourceFactoryServiceI>(m_Refs[i]);
+    niftk::IGIDataSourceFactoryServiceI *factory =
+      m_ModuleContext->GetService<niftk::IGIDataSourceFactoryServiceI>(m_Refs[i]);
+
     QString name = factory->GetName();
     m_NameToFactoriesMap.insert(name, factory);
 
@@ -328,7 +330,6 @@ void IGIDataSourceManager::WriteDescriptorFile(QString absolutePath)
 }
 
 
-
 //-----------------------------------------------------------------------------
 QMap<QString, QString> IGIDataSourceManager::ParseDataSourceDescriptor(const QString& filepath)
 {
@@ -378,22 +379,22 @@ QMap<QString, QString> IGIDataSourceManager::ParseDataSourceDescriptor(const QSt
 
     if (directoryKey.isEmpty())
     {
-      std::ostringstream  errormsg;
-      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": directory key is empty?";
-      mitkThrow() << errormsg.str();
+      std::ostringstream  errorMsg;
+      errorMsg << "Syntax error in descriptor file at line " << lineNumber << ": directory key is empty?";
+      mitkThrow() << errorMsg.str();
     }
     if (classnameValue.isEmpty())
     {
-      std::ostringstream  errormsg;
-      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": class name value is empty?";
-      mitkThrow() << errormsg.str();
+      std::ostringstream  errorMsg;
+      errorMsg << "Syntax error in descriptor file at line " << lineNumber << ": class name value is empty?";
+      mitkThrow() << errorMsg.str();
     }
-
     if (map.contains(directoryKey))
     {
-      std::ostringstream  errormsg;
-      errormsg << "Syntax error in descriptor file at line " << lineNumber << ": directory key already seen; specified it twice?";
-      mitkThrow() << errormsg.str();
+      std::ostringstream  errorMsg;
+      errorMsg << "Syntax error in descriptor file at line ";
+      errorMsg << lineNumber << ": directory key already seen; specified it twice?";
+      mitkThrow() << errorMsg.str();
     }
 
     map.insert(directoryKey, classnameValue);
@@ -522,8 +523,10 @@ void IGIDataSourceManager::RemoveSource(int rowIndex)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::RemoveAllSources()
 {
-  bool updateTimerWasOn = this->IsUpdateTimerOn();
-  this->StopUpdateTimer();
+  if (this->IsUpdateTimerOn())
+  {
+    this->StopUpdateTimer();
+  }
 
   while(m_Sources.size() > 0)
   {
@@ -627,7 +630,8 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
       if (!m_NameToFactoriesMap.contains(nameOfFactory)
         && !m_LegacyNameToFactoriesMap.contains(nameOfFactory))
       {
-        mitkThrow() << "Cannot play source=" << nameOfSource.toStdString() << ", using factory=" << nameOfFactory.toStdString() << ".";
+        mitkThrow() << "Cannot play source=" << nameOfSource.toStdString()
+                    << ", using factory=" << nameOfFactory.toStdString() << ".";
       }
 
       m_Sources[sourceNumber]->SetRecordingLocation(directoryPrefix);
@@ -723,8 +727,11 @@ void IGIDataSourceManager::StopPlayback()
 
 //-----------------------------------------------------------------------------
 IGIDataType::IGITimeType IGIDataSourceManager::ComputeTimeFromSlider(int sliderValue) const
-{  
-  IGIDataType::IGITimeType result = m_PlaybackSliderBase + ((static_cast<double>(sliderValue) / static_cast<double>(m_PlaybackSliderMaxValue)) * m_PlaybackSliderMaxValue * m_PlaybackSliderFactor);
+{
+  IGIDataType::IGITimeType result = m_PlaybackSliderBase
+      + ((static_cast<double>(sliderValue) / static_cast<double>(m_PlaybackSliderMaxValue))
+         * m_PlaybackSliderMaxValue * m_PlaybackSliderFactor);
+
   return result;
 }
 
@@ -732,7 +739,8 @@ IGIDataType::IGITimeType IGIDataSourceManager::ComputeTimeFromSlider(int sliderV
 //-----------------------------------------------------------------------------
 int IGIDataSourceManager::ComputePlaybackTimeSliderValue(QString textEditField) const
 {
-  IGIDataType::IGITimeType maxSliderTime  = m_PlaybackSliderBase + ((IGIDataType::IGITimeType) m_PlaybackSliderMaxValue * m_PlaybackSliderFactor);
+  IGIDataType::IGITimeType maxSliderTime  = m_PlaybackSliderBase
+      + ((IGIDataType::IGITimeType) m_PlaybackSliderMaxValue * m_PlaybackSliderFactor);
 
   // Try to parse as single number, a timestamp in nano seconds.
   bool  ok = false;
@@ -793,11 +801,14 @@ void IGIDataSourceManager::SetIsPlayingBackAutomatically(bool isPlayingBackAutom
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::AdvancePlaybackTimer()
 {
-  int                       sliderValue = m_PlaybackSliderValue;
-  IGIDataType::IGITimeType  sliderTime  = m_PlaybackSliderBase + ((IGIDataType::IGITimeType) sliderValue * m_PlaybackSliderFactor);
-  IGIDataType::IGITimeType  advanceBy     = 1000000000 / m_FrameRate;
-  IGIDataType::IGITimeType  newSliderTime = sliderTime + advanceBy;
-  IGIDataType::IGITimeType  newSliderValue = (newSliderTime - m_PlaybackSliderBase) / m_PlaybackSliderFactor;
+  int                       sliderValue    = m_PlaybackSliderValue;
+  IGIDataType::IGITimeType  sliderTime     = m_PlaybackSliderBase
+                                             + ((IGIDataType::IGITimeType) sliderValue
+                                                * m_PlaybackSliderFactor);
+  IGIDataType::IGITimeType  advanceBy      = 1000000000 / m_FrameRate;
+  IGIDataType::IGITimeType  newSliderTime  = sliderTime + advanceBy;
+  IGIDataType::IGITimeType  newSliderValue = (newSliderTime - m_PlaybackSliderBase)
+                                             / m_PlaybackSliderFactor;
 
   // make sure there is some progress, in case of bad rounding issues (e.g. the sequence is very long).
   newSliderValue = std::max(newSliderValue, (igtlUint64) sliderValue + 1);
@@ -896,8 +907,11 @@ void IGIDataSourceManager::OnUpdateGui()
 
   this->GrabScreen();
 
-  QString   rawTimeStampString = QString("%1").arg(m_CurrentTime);
-  QString   humanReadableTimeStamp = QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000).toString("yyyy/MM/dd hh:mm:ss.zzz");
+  QString rawTimeStampString = QString("%1").arg(m_CurrentTime);
+
+  QString humanReadableTimeStamp =
+    QDateTime::fromMSecsSinceEpoch(m_CurrentTime / 1000000)
+      .toString("yyyy/MM/dd hh:mm:ss.zzz");
 
   emit TimerUpdated(rawTimeStampString, humanReadableTimeStamp);
 }

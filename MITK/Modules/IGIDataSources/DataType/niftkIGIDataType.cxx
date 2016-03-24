@@ -49,4 +49,3 @@ void IGIDataType::SetTimeStampInNanoSeconds(const IGIDataType::IGITimeType& time
 }
 
 } // end namespace
-

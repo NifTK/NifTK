@@ -41,8 +41,7 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
 #endif
   }
 
-  bool ok = false;
-  ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
+  bool ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
 
   std::string id = "uk.ac.ucl.cmic.niftkMITKTrackerDataSourceService.MITKTrackerDialog";
@@ -87,8 +86,7 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
 //-----------------------------------------------------------------------------
 MITKTrackerDialog::~MITKTrackerDialog()
 {
-  bool ok = false;
-  ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
+  bool ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
 }
 
@@ -119,4 +117,3 @@ void MITKTrackerDialog::OnOKClicked()
 }
 
 } // end namespace
-

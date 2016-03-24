@@ -65,42 +65,59 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   m_TableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 #endif
 
-  bool ok = false;
-  ok = QObject::connect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
+  bool ok = QObject::connect(m_AddSourcePushButton, SIGNAL(clicked()),
+                             this, SLOT(OnAddSource()) );
   assert(ok);
-  ok = QObject::connect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
+  ok = QObject::connect(m_RemoveSourcePushButton, SIGNAL(clicked()),
+                        this, SLOT(OnRemoveSource()) );
   assert(ok);
-  ok = QObject::connect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
+  ok = QObject::connect(m_RecordPushButton, SIGNAL(clicked()),
+                        this, SLOT(OnRecordStart()) );
   assert(ok);
-  ok = QObject::connect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnStop()) );
+  ok = QObject::connect(m_StopPushButton, SIGNAL(clicked()),
+                        this, SLOT(OnStop()) );
   assert(ok);
-  ok = QObject::connect(m_PlayPushButton, SIGNAL(clicked()), this, SLOT(OnPlayStart()));
+  ok = QObject::connect(m_PlayPushButton, SIGNAL(clicked()),
+                        this, SLOT(OnPlayStart()));
   assert(ok);
-  ok = QObject::connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
+  ok = QObject::connect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)),
+                        this, SLOT(OnCellDoubleClicked(int, int)) );
   assert(ok);
-  ok = QObject::connect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
+  ok = QObject::connect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)),
+                        this, SLOT(OnFreezeTableHeaderClicked(int)));
   assert(ok);
-  ok = QObject::connect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnPlaybackTimestampEditFinished()));
+  ok = QObject::connect(m_TimeStampEdit, SIGNAL(editingFinished()),
+                        this, SLOT(OnPlaybackTimestampEditFinished()));
   assert(ok);
-  ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)), this, SLOT(OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)));
+  ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)),
+                        this, SLOT(OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)));
   assert(ok);
-  ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedRendering()), this, SIGNAL(UpdateFinishedRendering()));
+  ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedRendering()),
+                        this, SIGNAL(UpdateFinishedRendering()));
   assert(ok);
-  ok = QObject::connect(m_Manager, SIGNAL(PlaybackTimerAdvanced(int)), this, SLOT(OnPlaybackTimeAdvanced(int)));
+  ok = QObject::connect(m_Manager, SIGNAL(PlaybackTimerAdvanced(int)),
+                        this, SLOT(OnPlaybackTimeAdvanced(int)));
   assert(ok);
-  ok = QObject::connect(m_Manager, SIGNAL(TimerUpdated(QString, QString)), this, SLOT(OnTimerUpdated(QString, QString)));
+  ok = QObject::connect(m_Manager, SIGNAL(TimerUpdated(QString, QString)),
+                        this, SLOT(OnTimerUpdated(QString, QString)));
   assert(ok);
-  ok = QObject::connect(m_PlayingPushButton, SIGNAL(clicked(bool)), this, SLOT(OnPlayingPushButtonClicked(bool)));
+  ok = QObject::connect(m_PlayingPushButton, SIGNAL(clicked(bool)),
+                        this, SLOT(OnPlayingPushButtonClicked(bool)));
   assert(ok);
-  ok = QObject::connect(m_EndPushButton, SIGNAL(clicked(bool)), this, SLOT(OnEndPushButtonClicked(bool)));
+  ok = QObject::connect(m_EndPushButton, SIGNAL(clicked(bool)),
+                        this, SLOT(OnEndPushButtonClicked(bool)));
   assert(ok);
-  ok = QObject::connect(m_StartPushButton, SIGNAL(clicked(bool)), this, SLOT(OnStartPushButtonClicked(bool)));
+  ok = QObject::connect(m_StartPushButton, SIGNAL(clicked(bool)),
+                        this, SLOT(OnStartPushButtonClicked(bool)));
   assert(ok);
-  ok = QObject::connect(m_PlaybackSlider, SIGNAL(sliderReleased()), this, SLOT(OnSliderReleased()));
+  ok = QObject::connect(m_PlaybackSlider, SIGNAL(sliderReleased()),
+                        this, SLOT(OnSliderReleased()));
   assert(ok);
-  ok = QObject::connect(m_Manager, SIGNAL(BroadcastStatusString(QString)), this, SLOT(OnBroadcastStatusString(QString)));
+  ok = QObject::connect(m_Manager, SIGNAL(BroadcastStatusString(QString)),
+                        this, SLOT(OnBroadcastStatusString(QString)));
   assert(ok);
-  ok = QObject::connect(m_GrabScreenCheckbox, SIGNAL(clicked(bool)), this, SLOT(OnGrabScreen(bool)));
+  ok = QObject::connect(m_GrabScreenCheckbox, SIGNAL(clicked(bool)),
+                        this, SLOT(OnGrabScreen(bool)));
   assert(ok);
 }
 
@@ -120,38 +137,53 @@ IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
     m_Manager->StopPlayback();
   }
 
-  bool ok = false;
-  ok = QObject::disconnect(m_AddSourcePushButton, SIGNAL(clicked()), this, SLOT(OnAddSource()) );
+  bool ok = QObject::disconnect(m_AddSourcePushButton, SIGNAL(clicked()),
+                                this, SLOT(OnAddSource()) );
   assert(ok);
-  ok = QObject::disconnect(m_RemoveSourcePushButton, SIGNAL(clicked()), this, SLOT(OnRemoveSource()) );
+  ok = QObject::disconnect(m_RemoveSourcePushButton, SIGNAL(clicked()),
+                           this, SLOT(OnRemoveSource()) );
   assert(ok);
-  ok = QObject::disconnect(m_RecordPushButton, SIGNAL(clicked()), this, SLOT(OnRecordStart()) );
+  ok = QObject::disconnect(m_RecordPushButton, SIGNAL(clicked()),
+                           this, SLOT(OnRecordStart()) );
   assert(ok);
-  ok = QObject::disconnect(m_StopPushButton, SIGNAL(clicked()), this, SLOT(OnStop()) );
+  ok = QObject::disconnect(m_StopPushButton, SIGNAL(clicked()),
+                           this, SLOT(OnStop()) );
   assert(ok);
-  ok = QObject::disconnect(m_PlayPushButton, SIGNAL(clicked()), this, SLOT(OnPlayStart()));
+  ok = QObject::disconnect(m_PlayPushButton, SIGNAL(clicked()),
+                           this, SLOT(OnPlayStart()));
   assert(ok);
-  ok = QObject::disconnect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(OnCellDoubleClicked(int, int)) );
+  ok = QObject::disconnect(m_TableWidget, SIGNAL(cellDoubleClicked(int, int)),
+                           this, SLOT(OnCellDoubleClicked(int, int)) );
   assert(ok);
-  ok = QObject::disconnect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)), this, SLOT(OnFreezeTableHeaderClicked(int)));
+  ok = QObject::disconnect(m_TableWidget->horizontalHeader(), SIGNAL(sectionClicked(int)),
+                           this, SLOT(OnFreezeTableHeaderClicked(int)));
   assert(ok);
-  ok = QObject::disconnect(m_TimeStampEdit, SIGNAL(editingFinished()), this, SLOT(OnPlaybackTimestampEditFinished()));
+  ok = QObject::disconnect(m_TimeStampEdit, SIGNAL(editingFinished()),
+                           this, SLOT(OnPlaybackTimestampEditFinished()));
   assert(ok);
-  ok = QObject::disconnect(m_Manager, SIGNAL(UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)), this, SLOT(OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)));
+  ok = QObject::disconnect(m_Manager, SIGNAL(UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)),
+                           this, SLOT(OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)));
   assert(ok);
-  ok = QObject::disconnect(m_Manager, SIGNAL(PlaybackTimerAdvanced(int)), this, SLOT(OnPlaybackTimeAdvanced(int)));
+  ok = QObject::disconnect(m_Manager, SIGNAL(PlaybackTimerAdvanced(int)),
+                           this, SLOT(OnPlaybackTimeAdvanced(int)));
   assert(ok);
-  ok = QObject::disconnect(m_Manager, SIGNAL(TimerUpdated(QString, QString)), this, SLOT(OnTimerUpdated(QString, QString)));
+  ok = QObject::disconnect(m_Manager, SIGNAL(TimerUpdated(QString, QString)),
+                           this, SLOT(OnTimerUpdated(QString, QString)));
   assert(ok);
-  ok = QObject::disconnect(m_PlayingPushButton, SIGNAL(clicked(bool)), this, SLOT(OnPlayingPushButtonClicked(bool)));
+  ok = QObject::disconnect(m_PlayingPushButton, SIGNAL(clicked(bool)),
+                           this, SLOT(OnPlayingPushButtonClicked(bool)));
   assert(ok);
-  ok = QObject::disconnect(m_EndPushButton, SIGNAL(clicked(bool)), this, SLOT(OnEndPushButtonClicked(bool)));
+  ok = QObject::disconnect(m_EndPushButton, SIGNAL(clicked(bool)),
+                           this, SLOT(OnEndPushButtonClicked(bool)));
   assert(ok);
-  ok = QObject::disconnect(m_StartPushButton, SIGNAL(clicked(bool)), this, SLOT(OnStartPushButtonClicked(bool)));
+  ok = QObject::disconnect(m_StartPushButton, SIGNAL(clicked(bool)),
+                           this, SLOT(OnStartPushButtonClicked(bool)));
   assert(ok);
-  ok = QObject::disconnect(m_PlaybackSlider, SIGNAL(sliderReleased()), this, SLOT(OnSliderReleased()));
+  ok = QObject::disconnect(m_PlaybackSlider, SIGNAL(sliderReleased()),
+                           this, SLOT(OnSliderReleased()));
   assert(ok);
-  ok = QObject::disconnect(m_Manager, SIGNAL(BroadcastStatusString(QString)), this, SLOT(OnBroadcastStatusString(QString)));
+  ok = QObject::disconnect(m_Manager, SIGNAL(BroadcastStatusString(QString)),
+                           this, SLOT(OnBroadcastStatusString(QString)));
   assert(ok);
 
   // Let Qt clean up m_Manager
@@ -259,7 +291,8 @@ void IGIDataSourceManagerWidget::OnPlayStart()
         catch (mitk::Exception& e)
         {
           // Swallow, as we have a messge box anyhow.
-          MITK_ERROR << "Caught exception while trying to stop data source playback during an exception handler." << std::endl << e.GetDescription();
+          MITK_ERROR << "Caught exception while trying to stop data source playback during an exception handler."
+                     << std::endl << e.GetDescription();
         }
 
         QMessageBox msgbox;

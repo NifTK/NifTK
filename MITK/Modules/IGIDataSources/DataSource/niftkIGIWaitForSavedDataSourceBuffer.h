@@ -52,7 +52,10 @@ public:
 
 protected:
 
-  IGIWaitForSavedDataSourceBuffer(BufferType::size_type minSize, niftk::IGIBufferedSaveableDataSourceI* source); // Purposefully hidden.
+  IGIWaitForSavedDataSourceBuffer(
+      BufferType::size_type minSize,
+      niftk::IGIBufferedSaveableDataSourceI* source); // Purposefully hidden.
+
   virtual ~IGIWaitForSavedDataSourceBuffer(); // Purposefully hidden.
 
   IGIWaitForSavedDataSourceBuffer(const IGIWaitForSavedDataSourceBuffer&); // Purposefully not implemented.

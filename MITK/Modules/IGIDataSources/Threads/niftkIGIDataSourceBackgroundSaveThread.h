@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef IGIDataSourceBackgroundSaveThread_h
-#define IGIDataSourceBackgroundSaveThread_h
+#ifndef niftkIGIDataSourceBackgroundSaveThread_h
+#define niftkIGIDataSourceBackgroundSaveThread_h
 
 #include "niftkIGIDataSourcesExports.h"
 #include "niftkIGITimerBasedThread.h"

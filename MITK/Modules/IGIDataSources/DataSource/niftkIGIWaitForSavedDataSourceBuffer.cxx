@@ -64,8 +64,8 @@ void IGIWaitForSavedDataSourceBuffer::CleanBuffer()
           break;
         }
       }
-      endIter++;
-      counter++;
+      ++endIter;
+      ++counter;
     }
 
     if (counter > 1 && startIter != endIter)
@@ -100,8 +100,8 @@ void IGIWaitForSavedDataSourceBuffer::SaveBuffer()
         m_DataSource->SaveItem(tmp);
         tmp->SetIsSaved(true);
       }
-      iter++;
-      counter++;
+      ++iter;
+      ++counter;
     }
   }
 }

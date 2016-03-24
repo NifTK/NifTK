@@ -25,8 +25,7 @@ IPPortDialog::IPPortDialog(QWidget *parent)
 {
   setupUi(this);
 
-  bool ok = false;
-  ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
+  bool ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
 }
 
@@ -34,8 +33,7 @@ IPPortDialog::IPPortDialog(QWidget *parent)
 //-----------------------------------------------------------------------------
 IPPortDialog::~IPPortDialog()
 {
-  bool ok = false;
-  ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
+  bool ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
 }
 

@@ -28,7 +28,8 @@ class NiftyLinkClientDataSourceService : public NiftyLinkDataSourceService {
 public:
 
   mitkClassMacroItkParent(NiftyLinkClientDataSourceService, NiftyLinkDataSourceService);
-  mitkNewMacro3Param(NiftyLinkClientDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
+  mitkNewMacro3Param(NiftyLinkClientDataSourceService, QString,
+                     const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
 
 protected:
 

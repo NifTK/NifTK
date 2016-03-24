@@ -47,7 +47,4 @@ std::pair<const char*, std::size_t> QtAudioDataType::GetBlob() const
   return std::make_pair(m_AudioBlob, m_Length);
 }
 
-
-
 } // end namespace
-

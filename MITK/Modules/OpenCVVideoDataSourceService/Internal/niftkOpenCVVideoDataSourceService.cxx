@@ -194,7 +194,7 @@ void OpenCVVideoDataSourceService::StopPlayback()
 void OpenCVVideoDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
 {
   assert(this->GetIsPlayingBack());
-  assert(m_PlaybackIndex.size() > 0); // Should have failed probing if no data.
+  assert(!m_PlaybackIndex.empty()); // Should have failed probing if no data.
 
   // this will find us the timestamp right after the requested one
   std::set<niftk::IGIDataType::IGITimeType>::const_iterator i = m_PlaybackIndex.upper_bound(requestedTimeStamp);
@@ -386,10 +386,14 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
     return infos;
   }
 
-  niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(m_Buffer->GetItem(time).GetPointer());
+  niftk::OpenCVVideoDataType::Pointer dataType =
+    static_cast<niftk::OpenCVVideoDataType*>(m_Buffer->GetItem(time).GetPointer());
+
   if (dataType.IsNull())
   {
-    MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffer->GetBufferSize() << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
+    MITK_DEBUG << "Failed to find data for time " << time
+               << ", size=" << m_Buffer->GetBufferSize()
+               << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
     return infos;
   }
 
@@ -402,7 +406,8 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
   mitk::DataNode::Pointer node = this->GetDataNode(this->GetName());
   if (node.IsNull())
   {
-    mitkThrow() << "Can't find mitk::DataNode with name " << this->GetName().toStdString() << std::endl;
+    mitkThrow() << "Can't find mitk::DataNode with name "
+                << this->GetName().toStdString() << std::endl;
   }
 
   // Get Image from the dataType;
@@ -412,83 +417,93 @@ std::vector<IGIDataItemInfo> OpenCVVideoDataSourceService::Update(const niftk::I
     this->SetStatus("Failed Update");
     mitkThrow() << "Failed to extract OpenCV image from buffer!";
   }
-
-  // OpenCV's cannonical channel layout is bgr (instead of rgb),
-  // while everything usually else expects rgb...
-  IplImage* rgbaOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, 4);
-  cvCvtColor( img, rgbaOpenCVImage,  CV_BGR2RGBA );
-
-  // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
-  // we should make sure we got the layout right. (opencv itself does not use this in any way.)
-  std::memcpy(&rgbaOpenCVImage->channelSeq[0], "RGBA", 4);
-
-  // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
-  mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(rgbaOpenCVImage);
-
-#ifdef XXX_USE_CUDA
-  // a compatibility stop-gap to interface with new renderer and cuda bits.
-  {
-    CUDAManager*    cm = CUDAManager::GetInstance();
-    if (cm != 0)
-    {
-      cudaStream_t    mystream = cm->GetStream("QmitkIGIOpenCVDataSource::Update");
-      WriteAccessor   wa       = cm->RequestOutputImage(rgbaOpenCVImage->width, rgbaOpenCVImage->height, 4);
-
-      assert(rgbaOpenCVImage->widthStep >= (rgbaOpenCVImage->width * 4));
-      cudaMemcpy2DAsync(wa.m_DevicePointer, wa.m_BytePitch, rgbaOpenCVImage->imageData, rgbaOpenCVImage->widthStep, rgbaOpenCVImage->width * 4, rgbaOpenCVImage->height, cudaMemcpyHostToDevice, mystream);
-      // no error handling...
-
-      LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
-
-      CUDAImageProperty::Pointer    lwciprop = CUDAImageProperty::New();
-      lwciprop->Set(lwci);
-
-      convertedImage->SetProperty("CUDAImageProperty", lwciprop);
-    }
-  }
-#endif
-
-  mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-  if (imageInNode.IsNull())
-  {
-    // We remove and add to trigger the NodeAdded event,
-    // which is not emmitted if the node was added with no data.
-    this->GetDataStorage()->Remove(node);
-    node->SetData(convertedImage);
-    this->GetDataStorage()->Add(node);
-
-    imageInNode = convertedImage;
-  }
   else
   {
-    try
-    {
-      mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
-      const void* cPointer = readAccess.GetData();
+    // OpenCV's cannonical channel layout is bgr (instead of rgb),
+    // while everything usually else expects rgb...
+    IplImage* rgbaOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, 4);
+    cvCvtColor( img, rgbaOpenCVImage,  CV_BGR2RGBA );
 
-      mitk::ImageWriteAccessor writeAccess(imageInNode);
-      void* vPointer = writeAccess.GetData();
+    // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
+    // we should make sure we got the layout right. (opencv itself does not use this in any way.)
+    std::memcpy(&rgbaOpenCVImage->channelSeq[0], "RGBA", 4);
 
-      memcpy(vPointer, cPointer, img->width * img->height * 4);
-    }
-    catch(mitk::Exception& e)
+    // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
+    mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(rgbaOpenCVImage);
+
+  #ifdef XXX_USE_CUDA
+    // a compatibility stop-gap to interface with new renderer and cuda bits.
     {
-      MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+      CUDAManager*    cm = CUDAManager::GetInstance();
+      if (cm != 0)
+      {
+        cudaStream_t    mystream = cm->GetStream("QmitkIGIOpenCVDataSource::Update");
+        WriteAccessor   wa       = cm->RequestOutputImage(rgbaOpenCVImage->width, rgbaOpenCVImage->height, 4);
+
+        assert(rgbaOpenCVImage->widthStep >= (rgbaOpenCVImage->width * 4));
+        cudaMemcpy2DAsync(wa.m_DevicePointer,
+                          wa.m_BytePitch,
+                          rgbaOpenCVImage->imageData,
+                          rgbaOpenCVImage->widthStep,
+                          rgbaOpenCVImage->width * 4,
+                          rgbaOpenCVImage->height,
+                          cudaMemcpyHostToDevice,
+                          mystream);
+        // no error handling...
+
+        LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
+
+        CUDAImageProperty::Pointer    lwciprop = CUDAImageProperty::New();
+        lwciprop->Set(lwci);
+
+        convertedImage->SetProperty("CUDAImageProperty", lwciprop);
+      }
     }
-#ifdef _USE_CUDA
-    imageInNode->SetProperty("CUDAImageProperty", convertedImage->GetProperty("CUDAImageProperty"));
-#endif
+  #endif
+
+    mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+    if (imageInNode.IsNull())
+    {
+      // We remove and add to trigger the NodeAdded event,
+      // which is not emmitted if the node was added with no data.
+      this->GetDataStorage()->Remove(node);
+      node->SetData(convertedImage);
+      this->GetDataStorage()->Add(node);
+
+      imageInNode = convertedImage;
+    }
+    else
+    {
+      try
+      {
+        mitk::ImageReadAccessor readAccess(convertedImage, convertedImage->GetVolumeData(0));
+        const void* cPointer = readAccess.GetData();
+
+        mitk::ImageWriteAccessor writeAccess(imageInNode);
+        void* vPointer = writeAccess.GetData();
+
+        memcpy(vPointer, cPointer, img->width * img->height * 4);
+      }
+      catch(mitk::Exception& e)
+      {
+        MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+      }
+  #ifdef _USE_CUDA
+      imageInNode->SetProperty("CUDAImageProperty", convertedImage->GetProperty("CUDAImageProperty"));
+  #endif
+    }
+
+    // We tell the node that it is modified so the next rendering event
+    // will redraw it. Triggering this does not in itself guarantee a re-rendering.
+    imageInNode->GetVtkImageData()->Modified();
+    node->Modified();
+
+    cvReleaseImage(&rgbaOpenCVImage);
+
+    infos[0].m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
+    infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
+
   }
-
-  // We tell the node that it is modified so the next rendering event
-  // will redraw it. Triggering this does not in itself guarantee a re-rendering.
-  imageInNode->GetVtkImageData()->Modified();
-  node->Modified();
-
-  cvReleaseImage(&rgbaOpenCVImage);
-
-  infos[0].m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
-  infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
   return infos;
 }
 

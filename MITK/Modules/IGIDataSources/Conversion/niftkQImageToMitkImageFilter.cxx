@@ -25,7 +25,7 @@ namespace niftk
 QImageToMitkImageFilter::QImageToMitkImageFilter()
 : m_QImage(0), m_Image(0), m_GeomImage(0)
 {
-	m_GeomImage = mitk::Image::New();
+  m_GeomImage = mitk::Image::New();
 }
 
 
@@ -72,13 +72,13 @@ void QImageToMitkImageFilter::GenerateData()
   }
   else
   {
-		if ( m_QImage->format() == QImage::Format_Indexed8 )
+    if ( m_QImage->format() == QImage::Format_Indexed8 )
       m_Image = Convert8BitQImageToMitkImage < unsigned char, 3>(m_QImage, m_GeomImage);
-		else
-		{
-			QImage tmpImage = m_QImage->convertToFormat(QImage::Format_RGB888);
+    else
+    {
+      QImage tmpImage = m_QImage->convertToFormat(QImage::Format_RGB888);
       m_Image = ConvertQImageToMitkImage< UCRGBPixelType, 3>( m_QImage, m_GeomImage );
-		}
+    }
   }
 }
 
@@ -86,21 +86,19 @@ void QImageToMitkImageFilter::GenerateData()
 //-----------------------------------------------------------------------------
 template <typename TPixel, unsigned int VImageDimension>
 mitk::Image::Pointer QImageToMitkImageFilter::ConvertQImageToMitkImage( const QImage* input,
-		const mitk::Image::Pointer GeomImage)
+  const mitk::Image::Pointer GeomImage)
 {
 
   typedef itk::Image< TPixel, VImageDimension > ItkImage;
   typedef itk::Image <unsigned char, VImageDimension> OutputItkImage;
   typedef itk::ImportImageFilter< TPixel, VImageDimension >  ImportFilterType;
 
-  mitk::Image::Pointer mitkImage = mitk::Image::New();
-
   typename ImportFilterType::Pointer importFilter = ImportFilterType::New();
   typename ImportFilterType::SizeType  size;
 
   size[0]  = input->width();
   size[1]  = input->height();
-	size[2]  = 1;
+  size[2]  = 1;
 
   typename ImportFilterType::IndexType start;
   start.Fill( 0 );
@@ -114,7 +112,7 @@ mitk::Image::Pointer QImageToMitkImageFilter::ConvertQImageToMitkImage( const QI
   double origin[ VImageDimension ];
   origin[0] = 0.0;    // X coordinate
   origin[1] = 0.0;    // Y coordinate
-	origin[2] = 0.0;    // Z coordinate
+  origin[2] = 0.0;    // Z coordinate
 
   importFilter->SetOrigin( origin );
 
@@ -134,29 +132,32 @@ mitk::Image::Pointer QImageToMitkImageFilter::ConvertQImageToMitkImage( const QI
   importFilter->SetImportPointer( localBuffer, numberOfPixels, false);
   importFilter->Update();
 
+  typename itk::RGBToLuminanceImageFilter<ItkImage, OutputItkImage>::Pointer converter =
+      itk::RGBToLuminanceImageFilter<ItkImage, OutputItkImage>::New();
 
-  typename itk::RGBToLuminanceImageFilter<ItkImage, OutputItkImage>::Pointer converter = itk::RGBToLuminanceImageFilter<ItkImage, OutputItkImage>::New();
   converter->SetInput(importFilter->GetOutput());
   converter->Update();
 
   typename OutputItkImage::Pointer output = converter->GetOutput();
   output->DisconnectPipeline();
 
-  mitkImage = mitk::GrabItkImageMemory( output, NULL, dynamic_cast<mitk::BaseGeometry*>(GeomImage->GetTimeGeometry()->Clone().GetPointer()) );
+  mitk::Image::Pointer mitkImage =
+    mitk::GrabItkImageMemory( output, NULL,
+      dynamic_cast<mitk::BaseGeometry*>(GeomImage->GetTimeGeometry()->Clone().GetPointer()) );
+
   return mitkImage;
 }
 
 
 //-----------------------------------------------------------------------------
 template <typename TPixel, unsigned int VImageDimension>
-mitk::Image::Pointer QImageToMitkImageFilter::Convert8BitQImageToMitkImage( const QImage* input, const mitk::Image::Pointer GeomImage)
+mitk::Image::Pointer QImageToMitkImageFilter::Convert8BitQImageToMitkImage(
+    const QImage* input, const mitk::Image::Pointer GeomImage)
 {
 
   typedef itk::Image< TPixel, VImageDimension > ItkImage;
   typedef itk::Image <unsigned char, VImageDimension> OutputItkImage;
   typedef itk::ImportImageFilter< TPixel, VImageDimension >  ImportFilterType;
-
-  mitk::Image::Pointer mitkImage = mitk::Image::New();
 
   typename ImportFilterType::Pointer importFilter = ImportFilterType::New();
   typename ImportFilterType::SizeType  size;
@@ -210,7 +211,10 @@ mitk::Image::Pointer QImageToMitkImageFilter::Convert8BitQImageToMitkImage( cons
   typename OutputItkImage::Pointer output = importFilter->GetOutput();
   output->DisconnectPipeline();
 
-  mitkImage = mitk::GrabItkImageMemory( output, NULL, dynamic_cast<mitk::BaseGeometry*>(GeomImage->GetTimeGeometry()->Clone().GetPointer()) );
+  mitk::Image::Pointer mitkImage =
+    mitk::GrabItkImageMemory( output, NULL,
+      dynamic_cast<mitk::BaseGeometry*>(GeomImage->GetTimeGeometry()->Clone().GetPointer()) );
+
   return mitkImage;
 }
 

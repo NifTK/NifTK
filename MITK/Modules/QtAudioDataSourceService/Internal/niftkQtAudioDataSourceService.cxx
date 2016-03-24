@@ -70,7 +70,7 @@ QtAudioDataSourceService::QtAudioDataSourceService(
   QList<QAudioDeviceInfo> allDevices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
   foreach(QAudioDeviceInfo d, allDevices)
   {
-    if (d.deviceName() ==  audioDeviceName)
+    if (d.deviceName() == audioDeviceName)
     {
       foundName = d.deviceName();
       audioDeviceInfo = d;
@@ -87,8 +87,8 @@ QtAudioDataSourceService::QtAudioDataSourceService(
   m_SourceNumber = (deviceName.remove(0, 8)).toInt(); // Should match string QtAudio- above
 
   m_InputDevice = new QAudioInput(audioDeviceInfo, audioDeviceFormat);
-  bool ok = false;
-  ok = QObject::connect(m_InputDevice, SIGNAL(stateChanged(QAudio::State)), this, SLOT(OnStateChanged(QAudio::State)));
+  bool ok = QObject::connect(m_InputDevice, SIGNAL(stateChanged(QAudio::State)),
+                             this, SLOT(OnStateChanged(QAudio::State)));
   assert(ok);
 
   m_DeviceInfo  = audioDeviceInfo;
@@ -107,13 +107,12 @@ QtAudioDataSourceService::~QtAudioDataSourceService()
   // sanity check: dont expect any background thread.
   assert(this->thread() == QThread::currentThread());
 
-  bool    ok = false;
-
   if (m_InputDevice != 0)
   {
     m_InputDevice->stop();
 
-    ok = QObject::disconnect(m_InputDevice, SIGNAL(stateChanged(QAudio::State)), this, SLOT(OnStateChanged(QAudio::State)));
+    bool ok = QObject::disconnect(m_InputDevice, SIGNAL(stateChanged(QAudio::State)),
+                                  this, SLOT(OnStateChanged(QAudio::State)));
     assert(ok);
 
     delete m_InputDevice;
@@ -202,7 +201,7 @@ void QtAudioDataSourceService::OnReadyRead()
       assert(actuallyWritten == bytesActuallyRead);
 
     }
-    delete buffer;
+    delete [] buffer;
   }
 }
 
@@ -230,18 +229,32 @@ void QtAudioDataSourceService::StartWAVFile()
         // https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
         char   wavheader[44];
         std::memset(&wavheader[0], 0, sizeof(wavheader));
-        wavheader[0] = 'R'; wavheader[1] = 'I'; wavheader[2] = 'F'; wavheader[3] = 'F';
+        wavheader[0] = 'R';
+        wavheader[1] = 'I';
+        wavheader[2] = 'F';
+        wavheader[3] = 'F';
         // followed by file size minus 8
-        wavheader[8] = 'W'; wavheader[9] = 'A'; wavheader[10] = 'V'; wavheader[11] = 'E';
-        wavheader[12] = 'f'; wavheader[13] = 'm'; wavheader[14] = 't'; wavheader[15] = ' ';
+        wavheader[8] = 'W';
+        wavheader[9] = 'A';
+        wavheader[10] = 'V';
+        wavheader[11] = 'E';
+        wavheader[12] = 'f';
+        wavheader[13] = 'm';
+        wavheader[14] = 't';
+        wavheader[15] = ' ';
         *((unsigned int*  ) &wavheader[16]) = 16;   // fixed size fmt chunk
         *((unsigned short*) &wavheader[20]) = 1;   // pcm
         *((unsigned short*) &wavheader[22]) = m_InputDevice->format().channels();
         *((unsigned int*  ) &wavheader[24]) = m_InputDevice->format().sampleRate();
-        *((unsigned int*  ) &wavheader[28]) = m_InputDevice->format().sampleRate() * m_InputDevice->format().channels() * m_InputDevice->format().sampleSize() / 8;
-        *((unsigned short*) &wavheader[32]) = m_InputDevice->format().channels() * m_InputDevice->format().sampleSize() / 8;
+        *((unsigned int*  ) &wavheader[28]) = m_InputDevice->format().sampleRate()
+            * m_InputDevice->format().channels() * m_InputDevice->format().sampleSize() / 8;
+        *((unsigned short*) &wavheader[32]) = m_InputDevice->format().channels()
+            * m_InputDevice->format().sampleSize() / 8;
         *((unsigned short*) &wavheader[34]) = m_InputDevice->format().sampleSize();
-        wavheader[36] = 'd'; wavheader[37] = 'a'; wavheader[38] = 't'; wavheader[39] = 'a';
+        wavheader[36] = 'd';
+        wavheader[37] = 'a';
+        wavheader[38] = 't';
+        wavheader[39] = 'a';
         // followed by data size (filesize minus 44)
 
         std::size_t actuallyWritten = m_OutputFile->write(&wavheader[0], sizeof(wavheader));
@@ -318,7 +331,7 @@ void QtAudioDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requ
 //-----------------------------------------------------------------------------
 bool QtAudioDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                                  niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
-{  
+{
   return false;
 }
 
@@ -336,8 +349,7 @@ void QtAudioDataSourceService::StartRecording()
   m_InputDevice->setBufferSize(1024*1024*500); // 5Mb
   m_InputStream = m_InputDevice->start();
 
-  bool ok = false;
-  ok = QObject::connect(m_InputStream, SIGNAL(readyRead()), this, SLOT(OnReadyRead()));
+  bool ok = QObject::connect(m_InputStream, SIGNAL(readyRead()), this, SLOT(OnReadyRead()));
   assert(ok);
 
   StartWAVFile();
@@ -351,8 +363,7 @@ void QtAudioDataSourceService::StopRecording()
 
   FinishWAVFile();
 
-  bool ok = false;
-  ok = QObject::disconnect(m_InputStream, SIGNAL(readyRead()), this, SLOT(OnReadyRead()));
+  bool ok = QObject::disconnect(m_InputStream, SIGNAL(readyRead()), this, SLOT(OnReadyRead()));
   assert(ok);
 
   m_InputDevice->stop();
