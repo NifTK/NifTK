@@ -15,7 +15,7 @@
 if(SlicerExecutionModel_FOUND)
 
   NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-    NAME niftkExtracellularVolumeFractionFromContrastEnhancedCT
+    NAME niftkEVFFCECT
     BUILD_SLICER
     INSTALL_SCRIPT
     TARGET_LIBRARIES

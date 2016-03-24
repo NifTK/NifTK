@@ -96,7 +96,7 @@ set(_applications
   ElasticBodySplineWarp
   Erode
   ExportDICOMTagsToCSVFile
-  ExtracellularVolumeFractionFromContrastEnhancedCT
+  EVFFCECT
   Extract2DSliceFrom3DImage
   ExtractCurvatures
   ExtractRegion

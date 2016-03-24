@@ -18,7 +18,7 @@
 
 #include <niftkConversionUtils.h>
 
-#include <niftkExtracellularVolumeFractionFromContrastEnhancedCTCLP.h>
+#include <niftkEVFFCECTCLP.h>
 
 #include <itkImage.h>
 #include <itkImageFileReader.h>
