@@ -420,10 +420,10 @@ private:
   void ToggleTool(int toolId);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(const bool& thresholdOn, const int& sliceNumber);
+  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(const bool& thresholdOn, const int& sliceNumber, mitk::PointSet& seeds);
+  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber, mitk::PointSet& seeds);
 
   /// \brief Filters seeds to current slice
   void FilterSeedsToCurrentSlice(

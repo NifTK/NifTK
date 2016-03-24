@@ -1374,7 +1374,7 @@ void MIDASGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const bool& thresholdOn, const int& sliceNumber)
+bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber)
 {
   mitk::PointSet* seeds = this->GetSeeds();
   assert(seeds);
@@ -1384,7 +1384,7 @@ bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const bool& thresho
 
 
 //-----------------------------------------------------------------------------
-bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(const bool& thresholdOn, const int& sliceNumber, mitk::PointSet& seeds)
+bool MIDASGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber, mitk::PointSet& seeds)
 {
   bool sliceDoesHaveUnenclosedSeeds = false;
 
