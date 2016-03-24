@@ -202,6 +202,11 @@ protected:
   /// \brief Creates the GUI parts.
   virtual void CreateQtPartControl(QWidget *parent);
 
+  /// \brief Creates the segmentor widget that holds the GUI components of the view.
+  /// This function is called from CreateQtPartControl. Derived classes should provide their implementation
+  /// that returns a widget that derives from niftkBaseSegmentorWidget.
+  virtual niftkBaseSegmentorWidget* CreateSegmentorWidget(QWidget* parent) = 0;
+
   /// \brief Creates the QT connections.
   virtual void CreateConnections();
 

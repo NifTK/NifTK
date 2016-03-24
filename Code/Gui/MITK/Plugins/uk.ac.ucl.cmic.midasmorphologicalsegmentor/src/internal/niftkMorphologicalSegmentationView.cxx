@@ -38,7 +38,6 @@
 
 #include <niftkMIDASOrientationUtils.h>
 
-#include <niftkBaseSegmentorWidget.h>
 #include <niftkMorphologicalSegmentorWidget.h>
 
 
@@ -535,20 +534,19 @@ void niftkMorphologicalSegmentationView::OnCancelButtonClicked()
 //-----------------------------------------------------------------------------
 void niftkMorphologicalSegmentationView::CreateQtPartControl(QWidget* parent)
 {
-  assert(!m_MorphologicalControls);
-
   niftkBaseSegmentationView::CreateQtPartControl(parent);
-
-  m_MorphologicalControls = new niftkMorphologicalSegmentorWidget(parent);
-  m_BaseSegmentationViewControls = m_MorphologicalControls;
-
-  m_MorphologicalControls->SetToolManager(this->GetToolManager());
 
   m_PipelineManager = niftk::MorphologicalSegmentationPipelineManager::New();
   m_PipelineManager->SetDataStorage(this->GetDataStorage());
   m_PipelineManager->SetToolManager(this->GetToolManager());
+}
 
-  this->CreateConnections();
+
+//-----------------------------------------------------------------------------
+niftkBaseSegmentorWidget* niftkMorphologicalSegmentationView::CreateSegmentorWidget(QWidget *parent)
+{
+  m_MorphologicalControls = new niftkMorphologicalSegmentorWidget(parent);
+  return m_MorphologicalControls;
 }
 
 
@@ -563,19 +561,16 @@ void niftkMorphologicalSegmentationView::CreateConnections()
 {
   niftkBaseSegmentationView::CreateConnections();
 
-  if (m_MorphologicalControls != NULL)
-  {
-    this->connect(m_MorphologicalControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(released()), SLOT(OnCreateNewSegmentationButtonPressed()) );
-    this->connect(m_MorphologicalControls->m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
-    this->connect(m_MorphologicalControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
-    this->connect(m_MorphologicalControls, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
-    this->connect(m_MorphologicalControls, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
-    this->connect(m_MorphologicalControls, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
-    this->connect(m_MorphologicalControls, SIGNAL(TabChanged(int)), SLOT(OnTabChanged(int)));
-    this->connect(m_MorphologicalControls, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
-//    this->connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
-    this->connect(m_MorphologicalControls, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
-  }
+  this->connect(m_MorphologicalControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(released()), SLOT(OnCreateNewSegmentationButtonPressed()) );
+  this->connect(m_MorphologicalControls->m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+  this->connect(m_MorphologicalControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
+  this->connect(m_MorphologicalControls, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
+  this->connect(m_MorphologicalControls, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
+  this->connect(m_MorphologicalControls, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
+  this->connect(m_MorphologicalControls, SIGNAL(TabChanged(int)), SLOT(OnTabChanged(int)));
+  this->connect(m_MorphologicalControls, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
+//  this->connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
+  this->connect(m_MorphologicalControls, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
 }
 
 

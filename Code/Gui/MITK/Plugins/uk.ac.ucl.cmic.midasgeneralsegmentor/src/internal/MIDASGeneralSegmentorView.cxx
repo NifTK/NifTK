@@ -62,7 +62,6 @@
 
 #include <niftkGeneralSegmentorCommands.h>
 
-#include <niftkBaseSegmentorWidget.h>
 #include <niftkGeneralSegmentorWidget.h>
 
 /*
@@ -131,19 +130,18 @@ void MIDASGeneralSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolMan
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 {
-  assert(!m_GeneralControls);
-
   niftkBaseSegmentationView::CreateQtPartControl(parent);
-
-  m_GeneralControls = new niftkGeneralSegmentorWidget(parent);
-  m_BaseSegmentationViewControls = m_GeneralControls;
-
-  m_GeneralControls->SetToolManager(this->GetToolManager());
 
 //    m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
   m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New(this);
+}
 
-  this->CreateConnections();
+
+//-----------------------------------------------------------------------------
+niftkBaseSegmentorWidget* MIDASGeneralSegmentorView::CreateSegmentorWidget(QWidget *parent)
+{
+  m_GeneralControls = new niftkGeneralSegmentorWidget(parent);
+  return m_GeneralControls;
 }
 
 
@@ -152,47 +150,44 @@ void MIDASGeneralSegmentorView::CreateConnections()
 {
   niftkBaseSegmentationView::CreateConnections();
 
-  if ( m_GeneralControls )
-  {
-    this->connect(m_GeneralControls->m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
-    this->connect(m_GeneralControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnCleanButtonClicked()));
-    this->connect(m_GeneralControls->m_WipeButton, SIGNAL(clicked()), SLOT(OnWipeButtonClicked()));
-    this->connect(m_GeneralControls->m_WipePlusButton, SIGNAL(clicked()), SLOT(OnWipePlusButtonClicked()));
-    this->connect(m_GeneralControls->m_WipeMinusButton, SIGNAL(clicked()), SLOT(OnWipeMinusButtonClicked()));
-    this->connect(m_GeneralControls->m_PropUpButton, SIGNAL(clicked()), SLOT(OnPropagateUpButtonClicked()));
-    this->connect(m_GeneralControls->m_PropDownButton, SIGNAL(clicked()), SLOT(OnPropagateDownButtonClicked()));
-    this->connect(m_GeneralControls->m_Prop3DButton, SIGNAL(clicked()), SLOT(OnPropagate3DButtonClicked()));
-    this->connect(m_GeneralControls->m_OKButton, SIGNAL(clicked()), SLOT(OnOKButtonClicked()));
-    this->connect(m_GeneralControls->m_CancelButton, SIGNAL(clicked()), SLOT(OnCancelButtonClicked()));
-    this->connect(m_GeneralControls->m_RestartButton, SIGNAL(clicked()), SLOT(OnRestartButtonClicked()));
-    this->connect(m_GeneralControls->m_ResetButton, SIGNAL(clicked()), SLOT(OnResetButtonClicked()));
-    this->connect(m_GeneralControls->m_ThresholdApplyButton, SIGNAL(clicked()), SLOT(OnThresholdApplyButtonClicked()));
-    this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
-    this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
-    this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
-    this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(minimumValueChanged(double)), SLOT(OnThresholdValueChanged()));
-    this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(maximumValueChanged(double)), SLOT(OnThresholdValueChanged()));
-    this->connect(m_GeneralControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnCreateNewSegmentationButtonClicked()) );
+  this->connect(m_GeneralControls->m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+  this->connect(m_GeneralControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnCleanButtonClicked()));
+  this->connect(m_GeneralControls->m_WipeButton, SIGNAL(clicked()), SLOT(OnWipeButtonClicked()));
+  this->connect(m_GeneralControls->m_WipePlusButton, SIGNAL(clicked()), SLOT(OnWipePlusButtonClicked()));
+  this->connect(m_GeneralControls->m_WipeMinusButton, SIGNAL(clicked()), SLOT(OnWipeMinusButtonClicked()));
+  this->connect(m_GeneralControls->m_PropUpButton, SIGNAL(clicked()), SLOT(OnPropagateUpButtonClicked()));
+  this->connect(m_GeneralControls->m_PropDownButton, SIGNAL(clicked()), SLOT(OnPropagateDownButtonClicked()));
+  this->connect(m_GeneralControls->m_Prop3DButton, SIGNAL(clicked()), SLOT(OnPropagate3DButtonClicked()));
+  this->connect(m_GeneralControls->m_OKButton, SIGNAL(clicked()), SLOT(OnOKButtonClicked()));
+  this->connect(m_GeneralControls->m_CancelButton, SIGNAL(clicked()), SLOT(OnCancelButtonClicked()));
+  this->connect(m_GeneralControls->m_RestartButton, SIGNAL(clicked()), SLOT(OnRestartButtonClicked()));
+  this->connect(m_GeneralControls->m_ResetButton, SIGNAL(clicked()), SLOT(OnResetButtonClicked()));
+  this->connect(m_GeneralControls->m_ThresholdApplyButton, SIGNAL(clicked()), SLOT(OnThresholdApplyButtonClicked()));
+  this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
+  this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
+  this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
+  this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(minimumValueChanged(double)), SLOT(OnThresholdValueChanged()));
+  this->connect(m_GeneralControls->m_ThresholdsSlider, SIGNAL(maximumValueChanged(double)), SLOT(OnThresholdValueChanged()));
+  this->connect(m_GeneralControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnCreateNewSegmentationButtonClicked()) );
 
-    /// Transfer the focus back to the main window if any button is pressed.
-    /// This is needed so that the key interactions (like 'a'/'z' for changing slice) keep working.
-    this->connect(m_GeneralControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_WipeButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_WipePlusButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_WipeMinusButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_PropUpButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_PropDownButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_Prop3DButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_OKButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_CancelButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_RestartButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_ResetButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_ThresholdApplyButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
-    this->connect(m_GeneralControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
-  }
+  /// Transfer the focus back to the main window if any button is pressed.
+  /// This is needed so that the key interactions (like 'a'/'z' for changing slice) keep working.
+  this->connect(m_GeneralControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_WipeButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_WipePlusButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_WipeMinusButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_PropUpButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_PropDownButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_Prop3DButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_OKButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_CancelButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_RestartButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_ResetButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_ThresholdApplyButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
 }
 
 

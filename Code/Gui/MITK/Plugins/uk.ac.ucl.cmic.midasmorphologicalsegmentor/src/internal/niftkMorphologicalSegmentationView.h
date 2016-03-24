@@ -108,6 +108,9 @@ protected:
   /// \brief Called by framework, this method creates all the controls for this view
   virtual void CreateQtPartControl(QWidget *parent) override;
 
+  /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
+  virtual niftkBaseSegmentorWidget* CreateSegmentorWidget(QWidget* parent) override;
+
   /// \brief Called by framework, sets the focus on a specific widget, but currently does nothing.
   virtual void SetFocus() override;
 

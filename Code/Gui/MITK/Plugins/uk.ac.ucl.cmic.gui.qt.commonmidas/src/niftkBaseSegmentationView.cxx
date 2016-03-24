@@ -153,8 +153,6 @@ void niftkBaseSegmentationView::RegisterTools(mitk::ToolManager::Pointer toolMan
 //-----------------------------------------------------------------------------
 void niftkBaseSegmentationView::CreateQtPartControl(QWidget *parent)
 {
-  assert(!m_BaseSegmentationViewControls);
-
   this->SetParent(parent);
 
   // Create an own tool manager and connect it to the data storage straight away.
@@ -176,9 +174,11 @@ void niftkBaseSegmentationView::CreateQtPartControl(QWidget *parent)
   // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
   this->RetrievePreferenceValues();
 
-//  m_BaseSegmentationViewControls = new niftkBaseSegmentationViewControls(parent);
+  m_BaseSegmentationViewControls = this->CreateSegmentorWidget(parent);
 
-//  m_BaseSegmentationViewControls->SetToolManager(m_ToolManager);
+  m_BaseSegmentationViewControls->SetToolManager(m_ToolManager);
+
+  this->CreateConnections();
 }
 
 
