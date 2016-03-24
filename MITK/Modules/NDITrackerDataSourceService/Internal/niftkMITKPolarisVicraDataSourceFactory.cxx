@@ -43,10 +43,6 @@ IGIDataSourceI::Pointer MITKPolarisVicraDataSourceFactory::CreateService(
 
   this->ExtractProperties(properties, portName, fileName);
 
-#ifdef __APPLE__
-  portName = ConvertPortNameToPortIndex(portName);
-#endif
-
   niftk::VicraTracker::Pointer tracker = niftk::VicraTracker::New(
         dataStorage, portName, fileName
         );

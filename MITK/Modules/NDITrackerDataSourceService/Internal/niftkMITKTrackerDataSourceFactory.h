@@ -67,12 +67,6 @@ public:
   void ExtractProperties(const IGIDataSourceProperties& properties,
       std::string& outputPortName,
       std::string& outputFileName) const;
-
-  /**
-  * \brief converts the name=/dev/cu.bluetooth (or similar), to an index in the list of enumerated ports.
-  */
-  std::string ConvertPortNameToPortIndex(const std::string& name) const;
-
 };
 
 } // end namespace

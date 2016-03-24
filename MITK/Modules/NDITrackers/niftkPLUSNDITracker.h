@@ -38,11 +38,19 @@ public:
 
 protected:
 
+  /**
+  * \brief converts the name=/dev/cu.bluetooth (or similar), to an index in the list of enumerated ports.
+  */
+  std::string ConvertPortNameToPortIndex(const std::string& name) const;
+
   PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
-                 std::string portName,
+                 std::string portName, // this should ALWAYS be an int.
+                                       // but we store it as a string to pass to base class.
                  mitk::TrackingDeviceData deviceData,
                  std::string toolConfigFileName,
-                 int preferredFramesPerSecond); // Purposefully hidden.
+                 int preferredFramesPerSecond,
+                 int measurementVolumeNumber
+                 ); // Purposefully hidden.
 
   virtual ~PLUSNDITracker(); // Purposefully hidden.
 

@@ -37,8 +37,11 @@ MITKNDITracker::MITKNDITracker(mitk::DataStorage::Pointer dataStorage,
   m_TrackerDevice->SetData(m_DeviceData);
   m_TrackerDevice->SetType(m_DeviceData.Line);
 #ifdef _WIN32
+  // So for windows, the m_PortName should be a string containing just the number. e.g. for COM1, m_PortName=1.
+  // This can then be converted to an int, and static_cast'ed to the right enum.
   m_TrackerDevice->SetPortNumber(static_cast<mitk::SerialCommunication::PortNumber>(std::stoi(m_PortName)));
 #else
+  // For Linux and Mac, this should be the full /dev/tty (Linux), /dev/cu.usb (Mac).
   m_TrackerDevice->SetDeviceName(m_PortName);
 #endif
 

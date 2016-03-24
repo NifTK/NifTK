@@ -43,10 +43,6 @@ IGIDataSourceI::Pointer MITKPolarisSpectraDataSourceFactory::CreateService(
 
   this->ExtractProperties(properties, portName, fileName);
 
-#ifdef __APPLE__
-  portName = ConvertPortNameToPortIndex(portName);
-#endif
-
   niftk::SpectraTracker::Pointer tracker = niftk::SpectraTracker::New(
         dataStorage, portName, fileName
         );

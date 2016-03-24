@@ -16,7 +16,6 @@
 #include "niftkMITKTrackerDataSourceService.h"
 #include "niftkMITKTrackerDialog.h"
 #include <niftkLagDialog.h>
-#include <qextserialenumerator.h>
 
 namespace niftk
 {
@@ -87,20 +86,6 @@ void MITKTrackerDataSourceFactory::ExtractProperties(const IGIDataSourceProperti
     mitkThrow() << "Empty configuration file name specified!";
   }
   outputFileName = fileName;
-}
-
-
-//-----------------------------------------------------------------------------
-std::string MITKTrackerDataSourceFactory::ConvertPortNameToPortIndex(const std::string& name) const
-{
-  std::string result = name;
-  QStringList ports = getAvailableSerialPorts();
-  int indexOfPort = ports.indexOf(QString::fromStdString(name));
-  if (indexOfPort != -1)
-  {
-    result = QString::number(indexOfPort + 1).toStdString();
-  }
-  return result;
 }
 
 } // end namespace

@@ -16,7 +16,7 @@
 #define niftkAuroraDomeTracker_h
 
 #include <niftkNDITrackersExports.h>
-#include "niftkMITKNDITracker.h"
+#include "niftkPLUSNDITracker.h"
 
 namespace niftk
 {
@@ -25,11 +25,11 @@ namespace niftk
  * \class AuroraDomeTracker
  * \brief RAII object to connect to Aurora Dome tracker.
  */
-class NIFTKNDITRACKERS_EXPORT AuroraDomeTracker : public niftk::MITKNDITracker
+class NIFTKNDITRACKERS_EXPORT AuroraDomeTracker : public niftk::PLUSNDITracker
 {
 public:
 
-  mitkClassMacroItkParent(AuroraDomeTracker, niftk::MITKNDITracker);
+  mitkClassMacroItkParent(AuroraDomeTracker, niftk::PLUSNDITracker);
   mitkNewMacro3Param(AuroraDomeTracker, mitk::DataStorage::Pointer, std::string, std::string);
 
 protected:

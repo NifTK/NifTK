@@ -14,6 +14,7 @@
 
 #include "niftkPLUSNDITracker.h"
 #include <mitkExceptionMacro.h>
+#include <qextserialenumerator.h>
 
 namespace niftk
 {
@@ -23,7 +24,8 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
                                std::string portName,
                                mitk::TrackingDeviceData deviceData,
                                std::string toolConfigFileName,
-                               int preferredFramesPerSecond
+                               int preferredFramesPerSecond,
+                               int measurementVolumeNumber
                                )
 : NDITracker(dataStorage, portName, deviceData, toolConfigFileName, preferredFramesPerSecond)
 {
@@ -39,8 +41,9 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
 
     mitk::NavigationTool::Pointer tool = m_NavigationToolStorage->GetTool(i);
     std::string sromFileName = tool->GetCalibrationFile();
-    if (sromFileName.empty() && sromFileName == "none") // its an aurora tool
+    if (sromFileName.empty() || sromFileName == "none") // its an aurora tool
     {
+      descriptor.WiredPortNumber = i; // This means, you have to have ports plugged in, in order.
     }
     else // its a spectra wireless tool. Wired not supported.
     {
@@ -53,8 +56,18 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
       niftk::NDICAPITracker::NdiToolDescriptor>(tool->GetToolName(), descriptor));
   }
 
+  std::string pName = m_PortName;
+#ifdef __APPLE__
+  pName = ConvertPortNameToPortIndex(pName);
+#elif _WIN32
+  // On windows, m_PortName is the COM port number.
+#else
+  // What do we do on Linux?
+#endif
+
   m_Tracker.SetBaudRate(115200);
-  m_Tracker.SetSerialPort(std::stoi(m_PortName));
+  m_Tracker.SetSerialPort(std::stoi(pName));
+  m_Tracker.SetMeasurementVolumeNumber(measurementVolumeNumber);
 
   if (m_Tracker.InternalConnect() != niftk::NDICAPITracker::PLUS_SUCCESS)
   {
@@ -117,6 +130,20 @@ std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > PLUSNDITracker::GetTrackin
     result.insert(std::pair<std::string, vtkSmartPointer<vtkMatrix4x4> >((*iter).first, matrix));
   }
 
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+std::string PLUSNDITracker::ConvertPortNameToPortIndex(const std::string& name) const
+{
+  std::string result = name;
+  QStringList ports = getAvailableSerialPorts();
+  int indexOfPort = ports.indexOf(QString::fromStdString(name));
+  if (indexOfPort != -1)
+  {
+    result = QString::number(indexOfPort + 1).toStdString();
+  }
   return result;
 }
 

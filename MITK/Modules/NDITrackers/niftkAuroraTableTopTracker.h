@@ -16,7 +16,7 @@
 #define niftkAuroraTableTopTracker_h
 
 #include <niftkNDITrackersExports.h>
-#include "niftkMITKNDITracker.h"
+#include "niftkPLUSNDITracker.h"
 
 namespace niftk
 {
@@ -25,11 +25,11 @@ namespace niftk
  * \class AuroraTableTopTracker
  * \brief RAII object to connect to Aurora Table Top tracker.
  */
-class NIFTKNDITRACKERS_EXPORT AuroraTableTopTracker : public niftk::MITKNDITracker
+class NIFTKNDITRACKERS_EXPORT AuroraTableTopTracker : public niftk::PLUSNDITracker
 {
 public:
 
-  mitkClassMacroItkParent(AuroraTableTopTracker, niftk::MITKNDITracker);
+  mitkClassMacroItkParent(AuroraTableTopTracker, niftk::PLUSNDITracker);
   mitkNewMacro3Param(AuroraTableTopTracker, mitk::DataStorage::Pointer, std::string, std::string);
 
 protected:

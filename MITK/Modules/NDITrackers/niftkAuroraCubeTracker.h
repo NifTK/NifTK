@@ -16,7 +16,7 @@
 #define niftkAuroraCubeTracker_h
 
 #include <niftkNDITrackersExports.h>
-#include "niftkMITKNDITracker.h"
+#include "niftkPLUSNDITracker.h"
 
 namespace niftk
 {
@@ -25,11 +25,11 @@ namespace niftk
  * \class AuroraCubeTracker
  * \brief RAII object to connect to Aurora Cube tracker.
  */
-class NIFTKNDITRACKERS_EXPORT AuroraCubeTracker : public niftk::MITKNDITracker
+class NIFTKNDITRACKERS_EXPORT AuroraCubeTracker : public niftk::PLUSNDITracker
 {
 public:
 
-  mitkClassMacroItkParent(AuroraCubeTracker, niftk::MITKNDITracker);
+  mitkClassMacroItkParent(AuroraCubeTracker, niftk::PLUSNDITracker);
   mitkNewMacro3Param(AuroraCubeTracker, mitk::DataStorage::Pointer, std::string, std::string);
 
 protected:
