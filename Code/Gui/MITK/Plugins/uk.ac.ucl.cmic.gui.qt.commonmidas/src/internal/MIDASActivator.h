@@ -20,8 +20,7 @@
 namespace niftk
 {
 
-class MIDASActivator :
-  public QObject, public ctkPluginActivator
+class MIDASActivator : public QObject, public ctkPluginActivator
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
@@ -32,13 +31,8 @@ class MIDASActivator :
 public:
 
   void start(ctkPluginContext* context);
+
   void stop(ctkPluginContext* context);
-
-  static ctkPluginContext* GetPluginContext();
-
-private:
-
-  static ctkPluginContext* s_PluginContext;
 
 };
 

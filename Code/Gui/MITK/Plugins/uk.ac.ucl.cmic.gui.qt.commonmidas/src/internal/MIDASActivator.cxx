@@ -13,37 +13,20 @@
 =============================================================================*/
 
 #include "MIDASActivator.h"
+
 #include <QtPlugin>
-#include <mitkGlobalInteraction.h>
-#include <niftkMIDASTool.h>
-
-namespace niftk
-{
-
-ctkPluginContext* MIDASActivator::s_PluginContext(NULL);
 
 //-----------------------------------------------------------------------------
-void MIDASActivator::start(ctkPluginContext* context)
-{
-  s_PluginContext = context;
-
-  niftk::MIDASTool::LoadBehaviourStrings();
-}
-
-
-//-----------------------------------------------------------------------------
-void MIDASActivator::stop(ctkPluginContext* context)
+void niftk::MIDASActivator::start(ctkPluginContext* context)
 {
   Q_UNUSED(context)
 }
 
 
 //-----------------------------------------------------------------------------
-ctkPluginContext* MIDASActivator::GetPluginContext()
+void niftk::MIDASActivator::stop(ctkPluginContext* context)
 {
-  return s_PluginContext;
-}
-
+  Q_UNUSED(context)
 }
 
 //-----------------------------------------------------------------------------
