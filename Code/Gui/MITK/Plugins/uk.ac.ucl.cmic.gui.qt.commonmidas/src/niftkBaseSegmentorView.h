@@ -88,7 +88,7 @@ public:
    * \param defaultColor The default colour to pass to the new segmentation dialog box.
    * \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancells the dialog box.
    */
-  virtual mitk::DataNode* CreateNewSegmentation(QColor &defaultColor);
+  virtual mitk::DataNode* CreateNewSegmentation(const QColor& defaultColor);
 
   /**
    * \brief Returns the currently focused renderer.
@@ -228,6 +228,16 @@ protected:
   /// \brief Derived classes decide which preferences are actually read.
   virtual QString GetPreferencesNodeName() = 0;
 
+  /// \brief Returns the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
+  mitk::DataNode::Pointer GetSelectedNode() const;
+
+  /// \brief Default colour to be displayed in the new segmentation dialog box.
+  const QColor& GetDefaultSegmentationColor() const;
+
+private:
+
+  niftkBaseSegmentorControls* m_BaseSegmentorControls;
+
   /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer m_SelectedNode;
 
@@ -236,10 +246,6 @@ protected:
 
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   QColor m_DefaultSegmentationColor;
-
-  niftkBaseSegmentorControls* m_BaseSegmentorControls;
-
-private:
 
   /// \brief The ID of the currently active tool or -1 if no tool is active.
   int m_ActiveToolID;

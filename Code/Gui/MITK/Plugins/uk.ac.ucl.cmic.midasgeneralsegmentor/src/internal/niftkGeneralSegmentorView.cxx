@@ -429,17 +429,19 @@ void niftkGeneralSegmentorView::OnCreateNewSegmentationButtonClicked()
     mitk::ToolManager::Pointer toolManager = this->GetToolManager();
     assert(toolManager);
 
-    if (mitk::IsNodeABinaryImage(m_SelectedNode)
-        && this->CanStartSegmentationForBinaryNode(m_SelectedNode)
-        && !this->IsNodeASegmentationImage(m_SelectedNode)
+    mitk::DataNode::Pointer selectedNode = this->GetSelectedNode();
+
+    if (mitk::IsNodeABinaryImage(selectedNode)
+        && this->CanStartSegmentationForBinaryNode(selectedNode)
+        && !this->IsNodeASegmentationImage(selectedNode)
         )
     {
-      newSegmentation =  m_SelectedNode;
+      newSegmentation =  selectedNode;
       isRestarting = true;
     }
     else
     {
-      newSegmentation = this->CreateNewSegmentation(m_DefaultSegmentationColor);
+      newSegmentation = this->CreateNewSegmentation(this->GetDefaultSegmentationColor());
 
       // The above method returns NULL if the user exited the colour selection dialog box.
       if (newSegmentation.IsNull())

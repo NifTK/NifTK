@@ -407,7 +407,7 @@ mitk::DataNode* niftkBaseSegmentorView::GetSegmentationNodeFromWorkingData(const
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* niftkBaseSegmentorView::CreateNewSegmentation(QColor &defaultColor)
+mitk::DataNode* niftkBaseSegmentorView::CreateNewSegmentation(const QColor& defaultColor)
 {
   mitk::DataNode::Pointer emptySegmentation = NULL;
 
@@ -695,4 +695,18 @@ void niftkBaseSegmentorView::RetrievePreferenceValues()
   {
     m_DefaultSegmentationColor = QColor(0, 255, 0);
   }
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNode::Pointer niftkBaseSegmentorView::GetSelectedNode() const
+{
+  return m_SelectedNode;
+}
+
+
+//-----------------------------------------------------------------------------
+const QColor& niftkBaseSegmentorView::GetDefaultSegmentationColor() const
+{
+  return m_DefaultSegmentationColor;
 }
