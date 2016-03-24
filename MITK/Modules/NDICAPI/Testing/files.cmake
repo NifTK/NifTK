@@ -14,7 +14,7 @@
 
 # tests with no extra command line parameter
 set(MODULE_TESTS
-  niftkNDICAPITest.cxx
+#  niftkNDICAPITest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
