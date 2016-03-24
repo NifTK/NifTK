@@ -57,12 +57,10 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
   }
 
   std::string pName = m_PortName;
-#ifdef __APPLE__
-  pName = ConvertPortNameToPortIndex(pName);
-#elif _WIN32
+#ifdef _WIN32
   // On windows, m_PortName is the COM port number.
 #else
-  // What do we do on Linux?
+  pName = ConvertPortNameToPortIndex(pName);
 #endif
 
   m_Tracker.SetBaudRate(115200);
