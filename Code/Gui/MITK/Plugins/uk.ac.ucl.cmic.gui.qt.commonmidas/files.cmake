@@ -30,9 +30,7 @@ set(CACHED_RESOURCE_FILES
   plugin.xml
 )
 
-# todo: add some qt style sheet resources
 set(QRC_FILES
-  resources/CommonMIDASResources.qrc
 )
 
 set(CPP_FILES )
