@@ -15,7 +15,7 @@
 #ifndef MITKSegmentationView_h
 #define MITKSegmentationView_h
 
-#include <niftkBaseSegmentationView.h>
+#include <niftkBaseSegmentorView.h>
 #include "ui_MITKSegmentationViewControls.h"
 #include <berryIPreferences.h>
 #include <berryIPreferencesService.h>
@@ -24,10 +24,10 @@
 /*!
  * \class MITKSegmentationView
  * \brief A cut down version of the MITK Segmentation plugin
- * \sa niftkBaseSegmentationView
+ * \sa niftkBaseSegmentorView
  * \ingroup uk_ac_ucl_cmic_mitksegmentation_internal
 */
-class MITKSegmentationView : public niftkBaseSegmentationView
+class MITKSegmentationView : public niftkBaseSegmentorView
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -74,7 +74,7 @@ protected:
   /// \brief Method to enable derived classes to turn all widgets off/on to signify
   /// when the view is considered enabled/disabled.
   ///
-  /// \see niftkMIDASBaseSegmentation::EnableSegmentationWidgets
+  /// \see niftkMIDASBaseSegmentor::EnableSegmentationWidgets
   virtual void EnableSegmentationWidgets(bool b);
 
   /// \brief For MITK Editing, a Segmentation image should be binary and have a grey scale parent.
@@ -86,7 +86,7 @@ protected:
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node);
 
   /// \brief Returns the name of the preferences node to look up.
-  /// \see niftkBaseSegmentationView::GetPreferencesNodeName
+  /// \see niftkBaseSegmentorView::GetPreferencesNodeName
   virtual QString GetPreferencesNodeName() { return "/uk.ac.ucl.cmic.mitksegmentation"; }
 
 private:
@@ -97,7 +97,7 @@ private:
   /// \brief Used to put the base class widgets, and these widgets above in a common layout.
   QGridLayout *m_Layout;
 
-  /// \brief Container for the Morphological Controls Widgets. \see niftkBaseSegmentationView
+  /// \brief Container for the Morphological Controls Widgets. \see niftkBaseSegmentorView
   QWidget *m_ContainerForControlsWidget;
 
   /// \brief When a binary volume is created, this flag decides if it is an outline (the default), or an overlay.

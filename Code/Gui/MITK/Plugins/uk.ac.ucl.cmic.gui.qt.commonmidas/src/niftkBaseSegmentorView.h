@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkBaseSegmentationView_h
-#define __niftkBaseSegmentationView_h
+#ifndef __niftkBaseSegmentorView_h
+#define __niftkBaseSegmentorView_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>
 
@@ -42,7 +42,7 @@ class QmitkRenderWindow;
 class niftkBaseSegmentorWidget;
 
 /**
- * \class niftkBaseSegmentationView
+ * \class niftkBaseSegmentorView
  * \brief Base view component for MIDAS Segmentation widgets.
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
@@ -52,16 +52,16 @@ class niftkBaseSegmentorWidget;
  * \sa MIDASGeneralSegmentorView
  * \sa MITKSegmentationView
  */
-class CMIC_QT_COMMONMIDAS niftkBaseSegmentationView : public QmitkBaseView, public niftk::MIDASEventFilter
+class CMIC_QT_COMMONMIDAS niftkBaseSegmentorView : public QmitkBaseView, public niftk::MIDASEventFilter
 {
 
   Q_OBJECT
 
 public:
 
-  niftkBaseSegmentationView();
-  niftkBaseSegmentationView(const niftkBaseSegmentationView& other);
-  virtual ~niftkBaseSegmentationView();
+  niftkBaseSegmentorView();
+  niftkBaseSegmentorView(const niftkBaseSegmentorView& other);
+  virtual ~niftkBaseSegmentorView();
 
   /// \brief Returns true if the event should be filtered, i.e. not processed,
   /// otherwise false.

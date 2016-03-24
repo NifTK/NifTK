@@ -81,7 +81,7 @@ const std::string MIDASGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgene
 
 //-----------------------------------------------------------------------------
 MIDASGeneralSegmentorView::MIDASGeneralSegmentorView()
-: niftkBaseSegmentationView()
+: niftkBaseSegmentorView()
 , m_ToolKeyPressStateMachine(NULL)
 , m_GeneralControls(NULL)
 , m_SliceNavigationController(NULL)
@@ -130,7 +130,7 @@ void MIDASGeneralSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolMan
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 {
-  niftkBaseSegmentationView::CreateQtPartControl(parent);
+  niftkBaseSegmentorView::CreateQtPartControl(parent);
 
 //    m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
   m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New(this);
@@ -148,7 +148,7 @@ niftkBaseSegmentorWidget* MIDASGeneralSegmentorView::CreateSegmentorWidget(QWidg
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::CreateConnections()
 {
-  niftkBaseSegmentationView::CreateConnections();
+  niftkBaseSegmentorView::CreateConnections();
 
   this->connect(m_GeneralControls->m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
   this->connect(m_GeneralControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnCleanButtonClicked()));
@@ -194,7 +194,7 @@ void MIDASGeneralSegmentorView::CreateConnections()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::Visible()
 {
-  niftkBaseSegmentationView::Visible();
+  niftkBaseSegmentorView::Visible();
 
   /// TODO
 //  mitk::GlobalInteraction::GetInstance()->AddListener( m_ToolKeyPressStateMachine );
@@ -215,7 +215,7 @@ void MIDASGeneralSegmentorView::Visible()
 //-----------------------------------------------------------------------------
 void MIDASGeneralSegmentorView::Hidden()
 {
-  niftkBaseSegmentationView::Hidden();
+  niftkBaseSegmentorView::Hidden();
 
   if (m_SliceNavigationController.IsNotNull())
   {

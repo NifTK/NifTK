@@ -45,7 +45,7 @@ const std::string niftkMorphologicalSegmentationView::VIEW_ID = "uk.ac.ucl.cmic.
 
 //-----------------------------------------------------------------------------
 niftkMorphologicalSegmentationView::niftkMorphologicalSegmentationView()
-: niftkBaseSegmentationView()
+: niftkBaseSegmentorView()
 , m_MorphologicalControls(NULL)
 , m_PipelineManager(NULL)
 , m_TabIndex(-1)
@@ -534,7 +534,7 @@ void niftkMorphologicalSegmentationView::OnCancelButtonClicked()
 //-----------------------------------------------------------------------------
 void niftkMorphologicalSegmentationView::CreateQtPartControl(QWidget* parent)
 {
-  niftkBaseSegmentationView::CreateQtPartControl(parent);
+  niftkBaseSegmentorView::CreateQtPartControl(parent);
 
   m_PipelineManager = niftk::MorphologicalSegmentationPipelineManager::New();
   m_PipelineManager->SetDataStorage(this->GetDataStorage());
@@ -559,7 +559,7 @@ void niftkMorphologicalSegmentationView::SetFocus()
 //-----------------------------------------------------------------------------
 void niftkMorphologicalSegmentationView::CreateConnections()
 {
-  niftkBaseSegmentationView::CreateConnections();
+  niftkBaseSegmentorView::CreateConnections();
 
   this->connect(m_MorphologicalControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(released()), SLOT(OnCreateNewSegmentationButtonPressed()) );
   this->connect(m_MorphologicalControls->m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
@@ -676,7 +676,7 @@ QString niftkMorphologicalSegmentationView::GetPreferencesNodeName()
 //-----------------------------------------------------------------------------
 void niftkMorphologicalSegmentationView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
 {
-  niftkBaseSegmentationView::OnSelectionChanged(part, nodes);
+  niftkBaseSegmentorView::OnSelectionChanged(part, nodes);
 
   bool enableWidgets = false;
 

@@ -15,7 +15,7 @@
 #ifndef niftkMorphologicalSegmentationView_h
 #define niftkMorphologicalSegmentationView_h
 
-#include <niftkBaseSegmentationView.h>
+#include <niftkBaseSegmentorView.h>
 
 #include <mitkImage.h>
 
@@ -37,13 +37,13 @@ class niftkMorphologicalSegmentorWidget;
  *
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  *
- * \sa niftkBaseSegmentationView
+ * \sa niftkBaseSegmentorView
  * \sa niftkMorphologicalSegmentationPipelineManager
  * \sa MorphologicalSegmentorPipeline
  * \sa MorphologicalSegmentorPipelineInterface
  * \sa MorphologicalSegmentorPipelineParams
  */
-class niftkMorphologicalSegmentationView : public niftkBaseSegmentationView
+class niftkMorphologicalSegmentationView : public niftkBaseSegmentorView
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)

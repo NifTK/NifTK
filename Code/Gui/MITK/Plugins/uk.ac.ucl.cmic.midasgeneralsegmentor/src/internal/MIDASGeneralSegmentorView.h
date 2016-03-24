@@ -34,7 +34,7 @@
 #include <mitkOperation.h>
 #include <mitkSliceNavigationController.h>
 
-#include <niftkBaseSegmentationView.h>
+#include <niftkBaseSegmentorView.h>
 
 #include <niftkGeneralSegmentorPipeline.h>
 #include <niftkMIDASContourTool.h>
@@ -143,10 +143,10 @@ class niftkGeneralSegmentorWidget;
  * 3. If the user elects to overwrite the new slice, we simply copy all seeds and all image data to the new slice.
  * </pre>
  *
- * \sa niftkBaseSegmentationView
+ * \sa niftkBaseSegmentorView
  * \sa MIDASMorphologicalSegmentorView
  */
-class MIDASGeneralSegmentorView : public niftkBaseSegmentationView,
+class MIDASGeneralSegmentorView : public niftkBaseSegmentorView,
                                   public niftk::MIDASToolKeyPressResponder,
                                   public mitk::OperationActor
 {
@@ -304,7 +304,7 @@ protected:
   /// \brief Creates the Qt connections of widgets in this class to the slots in this class.
   virtual void CreateConnections() override;
 
-  /// \see niftkMIDASBaseSegmentation::EnableSegmentationWidgets
+  /// \see niftkBaseSegmentorView::EnableSegmentationWidgets
   virtual void EnableSegmentationWidgets(bool checked) override;
 
   /// \brief For Irregular Volume Editing, a Segmentation image should have a grey
@@ -321,7 +321,7 @@ protected:
   virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) override;
 
   /// \brief Returns the name of the preferences node to look up.
-  /// \see niftkBaseSegmentationView::GetPreferencesNodeName
+  /// \see niftkBaseSegmentorView::GetPreferencesNodeName
   virtual QString GetPreferencesNodeName() override { return MIDASGeneralSegmentorViewPreferencePage::PREFERENCES_NODE_NAME; }
 
   /// \brief This view registers with the mitk::DataStorage and listens for changing
