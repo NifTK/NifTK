@@ -134,35 +134,10 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 
   niftkBaseSegmentationView::CreateQtPartControl(parent);
 
-  QGridLayout* layout = new QGridLayout(parent);
-  layout->setContentsMargins(6, 6, 6, 0);
-  layout->setSpacing(3);
-
-  QWidget* containerForControlsWidget = new QWidget(parent);
-  containerForControlsWidget->setContentsMargins(0, 0, 0, 0);
-
-  m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget(containerForControlsWidget);
-
+  m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget(parent);
   m_BaseSegmentationViewControls = m_GeneralControls;
+
   m_GeneralControls->SetToolManager(this->GetToolManager());
-
-  m_GeneralControls->setContentsMargins(0, 0, 0, 0);
-
-  layout->addWidget(m_GeneralControls->m_ContainerForSelectorWidget, 0, 0);
-  layout->addWidget(m_GeneralControls->m_ContainerForToolWidget, 1, 0);
-  layout->addWidget(containerForControlsWidget, 2, 0);
-
-  layout->setRowStretch(0, 0);
-  layout->setRowStretch(1, 1);
-  layout->setRowStretch(2, 0);
-
-  m_GeneralControls->SetThresholdingCheckboxEnabled(false);
-  m_GeneralControls->SetThresholdingWidgetsEnabled(false);
-
-  m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly");
-  m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->SetLayoutColumns(3);
-  m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->SetShowNames(true);
-  m_GeneralControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->SetGenerateAccelerators(false);
 
 //    m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
   m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New(this);

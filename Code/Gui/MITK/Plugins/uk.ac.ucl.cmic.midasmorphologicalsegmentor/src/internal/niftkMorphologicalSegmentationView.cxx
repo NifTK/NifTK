@@ -538,29 +538,10 @@ void niftkMorphologicalSegmentationView::CreateQtPartControl(QWidget* parent)
 
   niftkBaseSegmentationView::CreateQtPartControl(parent);
 
-  QGridLayout* layout = new QGridLayout(parent);
-  layout->setContentsMargins(6, 6, 6, 0);
-  layout->setSpacing(3);
-
-  QWidget* containerForControlsWidget = new QWidget(parent);
-  containerForControlsWidget->setContentsMargins(0, 0, 0, 0);
-
-  m_MorphologicalControls = new niftkMorphologicalSegmentationViewControls(containerForControlsWidget);
-
+  m_MorphologicalControls = new niftkMorphologicalSegmentationViewControls(parent);
   m_BaseSegmentationViewControls = m_MorphologicalControls;
+
   m_MorphologicalControls->SetToolManager(this->GetToolManager());
-
-  m_MorphologicalControls->m_TabWidget->setCurrentIndex(0);
-
-  layout->addWidget(m_MorphologicalControls->m_ContainerForSelectorWidget, 0, 0);
-  layout->addWidget(m_MorphologicalControls->m_ContainerForToolWidget, 1, 0);
-  layout->addWidget(containerForControlsWidget, 2, 0);
-
-  layout->setRowStretch(0, 0);
-  layout->setRowStretch(1, 1);
-  layout->setRowStretch(2, 0);
-
-  m_MorphologicalControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
 
   m_PipelineManager = niftk::MorphologicalSegmentationPipelineManager::New();
   m_PipelineManager->SetDataStorage(this->GetDataStorage());

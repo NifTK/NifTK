@@ -23,7 +23,26 @@
 niftkMorphologicalSegmentationViewControls::niftkMorphologicalSegmentationViewControls(QWidget* parent)
   : niftkBaseSegmentationViewControls(parent)
 {
-  this->setupUi(parent);
+  QGridLayout* layout = new QGridLayout(parent);
+  layout->setContentsMargins(6, 6, 6, 0);
+  layout->setSpacing(3);
+
+  QWidget* containerForControlsWidget = new QWidget(parent);
+  containerForControlsWidget->setContentsMargins(0, 0, 0, 0);
+
+  this->setupUi(containerForControlsWidget);
+
+  layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
+  layout->addWidget(m_ContainerForToolWidget, 1, 0);
+  layout->addWidget(containerForControlsWidget, 2, 0);
+
+  layout->setRowStretch(0, 0);
+  layout->setRowStretch(1, 1);
+  layout->setRowStretch(2, 0);
+
+  m_TabWidget->setCurrentIndex(0);
+
+  m_ToolSelectorWidget->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
 }
 
 
