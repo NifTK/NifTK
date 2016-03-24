@@ -38,11 +38,6 @@ public:
 
 protected:
 
-  /**
-  * \brief converts the name=/dev/cu.bluetooth (or similar), to an index in the list of enumerated ports.
-  */
-  std::string ConvertPortNameToPortIndex(const std::string& name) const;
-
   PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
                  std::string portName, // this should ALWAYS be an int.
                                        // but we store it as a string to pass to base class.
@@ -56,6 +51,11 @@ protected:
 
   PLUSNDITracker(const PLUSNDITracker&); // Purposefully not implemented.
   PLUSNDITracker& operator=(const PLUSNDITracker&); // Purposefully not implemented.
+
+  /**
+  * \brief converts the name=/dev/cu.bluetooth (or similar), to an index in the list of enumerated ports.
+  */
+  std::string ConvertPortNameToPortIndex(const std::string& name) const;
 
 private:
   niftk::NDICAPITracker m_Tracker;
