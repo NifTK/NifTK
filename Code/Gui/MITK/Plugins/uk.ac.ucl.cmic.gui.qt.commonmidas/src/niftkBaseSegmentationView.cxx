@@ -17,7 +17,6 @@
 #include <berryPlatform.h>
 
 #include <QMessageBox>
-#include "internal/MIDASActivator.h"
 #include <mitkILinkedRenderWindowPart.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkDataNodeObject.h>
