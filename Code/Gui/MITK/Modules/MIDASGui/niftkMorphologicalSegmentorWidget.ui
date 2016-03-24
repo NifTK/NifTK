@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>niftkMorphologicalSegmentationViewControls</class>
- <widget class="QWidget" name="niftkMorphologicalSegmentationViewControls">
+ <class>niftkMorphologicalSegmentorWidget</class>
+ <widget class="QWidget" name="niftkMorphologicalSegmentorWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Midas Morphological Segmentor</string>
+   <string>MIDAS Morphological Segmentor</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">

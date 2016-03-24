@@ -21,9 +21,9 @@
 
 #include <MorphologicalSegmentorPipelineParams.h>
 #include "niftkMorphologicalSegmentationViewPreferencePage.h"
-#include "niftkMorphologicalSegmentationViewControls.h"
 #include <niftkMorphologicalSegmentationPipelineManager.h>
 
+class niftkMorphologicalSegmentorWidget;
 
 /**
  * \class niftkMorphologicalSegmentationView
@@ -162,7 +162,7 @@ private:
   virtual void OnSegmentationEdited(int imageIndex);
 
   /// \brief All the controls for the main Morphological Editor view part.
-  niftkMorphologicalSegmentationViewControls* m_MorphologicalControls;
+  niftkMorphologicalSegmentorWidget* m_MorphologicalControls;
 
   /// \brief As much "business logic" as possible is delegated to this class so we can unit test it, without a GUI.
   niftk::MorphologicalSegmentationPipelineManager::Pointer m_PipelineManager;

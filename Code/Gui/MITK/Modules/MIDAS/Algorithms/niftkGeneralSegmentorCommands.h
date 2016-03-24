@@ -41,8 +41,7 @@ const mitk::OperationType OP_PROPAGATE = 9320417;
 
 /**
  * \class OpGeneralSegmentorBaseCommand
- * \brief Base class for MIDAS GeneralSegmentorView commands.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
+ * \brief Base class for MIDAS General Segmentor commands.
  */
 class OpGeneralSegmentorBaseCommand: public mitk::Operation
 {
@@ -63,7 +62,6 @@ protected:
 /**
  * \class OpChangeSliceCommand
  * \brief Command class for changing slice.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
 class OpChangeSliceCommand : public OpGeneralSegmentorBaseCommand
 {
@@ -97,7 +95,6 @@ protected:
 /**
  * \class OpPropagateSeeds
  * \brief Command class to store data for propagating seeds from one slice to the next.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
 class OpPropagateSeeds: public OpGeneralSegmentorBaseCommand
 {
@@ -130,7 +127,6 @@ private:
 /**
  * \class OpRetainMarks
  * \brief Command class to store data to copy one slice to the next.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
 class OpRetainMarks: public OpGeneralSegmentorBaseCommand
 {
@@ -177,7 +173,6 @@ private:
 /**
  * \class OpPropagate
  * \brief Class to hold data to do propagate up/down/3D.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
 class OpPropagate: public OpGeneralSegmentorBaseCommand
 {
@@ -209,7 +204,6 @@ private:
 /**
  * \class OpThresholdApply
  * \brief Class to hold data to apply the threshold region into the segmented image.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
 class OpThresholdApply: public OpPropagate
 {
@@ -239,7 +233,6 @@ private:
 /**
  * \class OpClean
  * \brief Class to hold data for the MIDAS "clean" command, which filters the current contour set.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
 class OpClean : public OpGeneralSegmentorBaseCommand
 {
@@ -264,7 +257,6 @@ private:
  * \class OpWipe
  * \brief Class to hold data to pass back to MIDASGeneralSegmentorView to Undo/Redo the Wipe commands.
  * \see MIDASGeneralSegmentorView::DoWipe
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
 class OpWipe: public OpGeneralSegmentorBaseCommand
 {

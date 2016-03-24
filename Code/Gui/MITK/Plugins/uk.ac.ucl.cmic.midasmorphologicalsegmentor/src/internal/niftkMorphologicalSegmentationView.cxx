@@ -38,7 +38,8 @@
 
 #include <niftkMIDASOrientationUtils.h>
 
-#include <niftkBaseSegmentationViewControls.h>
+#include <niftkBaseSegmentorWidget.h>
+#include <niftkMorphologicalSegmentorWidget.h>
 
 
 const std::string niftkMorphologicalSegmentationView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
@@ -538,7 +539,7 @@ void niftkMorphologicalSegmentationView::CreateQtPartControl(QWidget* parent)
 
   niftkBaseSegmentationView::CreateQtPartControl(parent);
 
-  m_MorphologicalControls = new niftkMorphologicalSegmentationViewControls(parent);
+  m_MorphologicalControls = new niftkMorphologicalSegmentorWidget(parent);
   m_BaseSegmentationViewControls = m_MorphologicalControls;
 
   m_MorphologicalControls->SetToolManager(this->GetToolManager());

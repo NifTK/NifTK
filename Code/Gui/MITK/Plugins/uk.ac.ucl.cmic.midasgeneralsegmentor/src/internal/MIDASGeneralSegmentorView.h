@@ -43,13 +43,14 @@
 #include <niftkMIDASToolKeyPressStateMachine.h>
 #include <niftkMIDASToolKeyPressResponder.h>
 
-#include "MIDASGeneralSegmentorViewControlsWidget.h"
 #include <niftkGeneralSegmentorCommands.h>
 #include "MIDASGeneralSegmentorViewPreferencePage.h"
 #include "MIDASGeneralSegmentorViewEventInterface.h"
 
 class QButtonGroup;
 class QGridLayout;
+
+class niftkGeneralSegmentorWidget;
 
 /**
  * \class MIDASGeneralSegmentorView
@@ -447,7 +448,7 @@ private:
   MIDASGeneralSegmentorViewEventInterface::Pointer m_Interface;
 
   /// \brief All the controls for the main view part.
-  MIDASGeneralSegmentorViewControlsWidget* m_GeneralControls;
+  niftkGeneralSegmentorWidget* m_GeneralControls;
 
   /// \brief Keep track of this to SliceNavigationController register and unregister event listeners.
   mitk::SliceNavigationController::Pointer m_SliceNavigationController;

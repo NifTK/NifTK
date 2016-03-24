@@ -14,29 +14,29 @@
 
 set(CPP_FILES
   Dialogs/niftkMIDASNewSegmentationDialog.cxx
-  niftkBaseSegmentationViewControls.cxx
+  niftkBaseSegmentorWidget.cxx
+  niftkGeneralSegmentorWidget.cxx
+  niftkMorphologicalSegmentorWidget.cxx
   niftkSegmentationSelectorWidget.cxx
   niftkToolSelectorWidget.cxx
   niftkMIDASDrawToolGUI.cxx
   niftkMIDASPaintbrushToolGUI.cxx
-  MIDASGeneralSegmentorViewControlsWidget.cxx
-  niftkMorphologicalSegmentationViewControls.cxx
 )
 
 set(MOC_H_FILES 
   Dialogs/niftkMIDASNewSegmentationDialog.h
-  niftkBaseSegmentationViewControls.h
+  niftkBaseSegmentorWidget.h
+  niftkGeneralSegmentorWidget.h
+  niftkMorphologicalSegmentorWidget.h
   niftkSegmentationSelectorWidget.h
   niftkToolSelectorWidget.h
   niftkMIDASDrawToolGUI.h
   niftkMIDASPaintbrushToolGUI.h
-  MIDASGeneralSegmentorViewControlsWidget.h
-  niftkMorphologicalSegmentationViewControls.h
 )
 
 set(UI_FILES
+  niftkGeneralSegmentorWidget.ui
+  niftkMorphologicalSegmentorWidget.ui
   niftkSegmentationSelectorWidget.ui
   niftkToolSelectorWidget.ui
-  MIDASGeneralSegmentorViewControls.ui
-  niftkMorphologicalSegmentationViewControls.ui
 )

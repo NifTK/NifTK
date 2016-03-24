@@ -62,7 +62,8 @@
 
 #include <niftkGeneralSegmentorCommands.h>
 
-#include <niftkBaseSegmentationViewControls.h>
+#include <niftkBaseSegmentorWidget.h>
+#include <niftkGeneralSegmentorWidget.h>
 
 /*
 #include <sys/time.h>
@@ -134,7 +135,7 @@ void MIDASGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 
   niftkBaseSegmentationView::CreateQtPartControl(parent);
 
-  m_GeneralControls = new MIDASGeneralSegmentorViewControlsWidget(parent);
+  m_GeneralControls = new niftkGeneralSegmentorWidget(parent);
   m_BaseSegmentationViewControls = m_GeneralControls;
 
   m_GeneralControls->SetToolManager(this->GetToolManager());

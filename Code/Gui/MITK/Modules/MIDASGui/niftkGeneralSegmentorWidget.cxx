@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "MIDASGeneralSegmentorViewControlsWidget.h"
+#include "niftkGeneralSegmentorWidget.h"
 
 #include <niftkToolSelectorWidget.h>
 
 
 //-----------------------------------------------------------------------------
-MIDASGeneralSegmentorViewControlsWidget::MIDASGeneralSegmentorViewControlsWidget(QWidget *parent)
-: niftkBaseSegmentationViewControls(parent)
+niftkGeneralSegmentorWidget::niftkGeneralSegmentorWidget(QWidget *parent)
+: niftkBaseSegmentorWidget(parent)
 {
   QGridLayout* layout = new QGridLayout(parent);
   layout->setContentsMargins(6, 6, 6, 0);
@@ -51,15 +51,15 @@ MIDASGeneralSegmentorViewControlsWidget::MIDASGeneralSegmentorViewControlsWidget
 
 
 //-----------------------------------------------------------------------------
-MIDASGeneralSegmentorViewControlsWidget::~MIDASGeneralSegmentorViewControlsWidget()
+niftkGeneralSegmentorWidget::~niftkGeneralSegmentorWidget()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
+void niftkGeneralSegmentorWidget::setupUi(QWidget* parent)
 {
-  Ui_MIDASGeneralSegmentorViewControls::setupUi(parent);
+  Ui_niftkGeneralSegmentorWidget::setupUi(parent);
 
   m_ThresholdsSlider->layout()->setSpacing(2);
 
@@ -68,14 +68,14 @@ void MIDASGeneralSegmentorViewControlsWidget::setupUi(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetThresholdingCheckboxEnabled(bool enabled)
+void niftkGeneralSegmentorWidget::SetThresholdingCheckboxEnabled(bool enabled)
 {
   m_ThresholdingCheckBox->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetThresholdingWidgetsEnabled(bool enabled)
+void niftkGeneralSegmentorWidget::SetThresholdingWidgetsEnabled(bool enabled)
 {
   m_ThresholdingGroupBox->setEnabled(enabled);
 //  m_ThresholdingGroupBox->setVisible(enabled);
@@ -95,7 +95,7 @@ void MIDASGeneralSegmentorViewControlsWidget::SetThresholdingWidgetsEnabled(bool
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetOKCancelResetWidgetsEnabled(bool enabled)
+void niftkGeneralSegmentorWidget::SetOKCancelResetWidgetsEnabled(bool enabled)
 {
   m_OKButton->setEnabled(enabled);
   m_CancelButton->setEnabled(enabled);
@@ -105,7 +105,7 @@ void MIDASGeneralSegmentorViewControlsWidget::SetOKCancelResetWidgetsEnabled(boo
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetAllWidgetsEnabled(bool enabled)
+void niftkGeneralSegmentorWidget::SetAllWidgetsEnabled(bool enabled)
 {
   this->SetThresholdingCheckboxEnabled(enabled);
   this->SetThresholdingWidgetsEnabled(enabled);
@@ -121,7 +121,7 @@ void MIDASGeneralSegmentorViewControlsWidget::SetAllWidgetsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetLowerAndUpperIntensityRanges(double lower, double upper)
+void niftkGeneralSegmentorWidget::SetLowerAndUpperIntensityRanges(double lower, double upper)
 {
   m_ThresholdsSlider->setMinimum(lower);
   m_ThresholdsSlider->setMaximum(upper);
@@ -129,7 +129,7 @@ void MIDASGeneralSegmentorViewControlsWidget::SetLowerAndUpperIntensityRanges(do
 
 
 //-----------------------------------------------------------------------------
-void MIDASGeneralSegmentorViewControlsWidget::SetSeedMinAndMaxValues(double min, double max)
+void niftkGeneralSegmentorWidget::SetSeedMinAndMaxValues(double min, double max)
 {
   QString minText;
   QString maxText;

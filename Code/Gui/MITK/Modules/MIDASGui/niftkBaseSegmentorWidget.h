@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkBaseSegmentationViewControls_h
-#define __niftkBaseSegmentationViewControls_h
+#ifndef __niftkBaseSegmentorWidget_h
+#define __niftkBaseSegmentorWidget_h
 
 #include <niftkMIDASGuiExports.h>
 
@@ -28,25 +28,22 @@ class niftkSegmentationSelectorWidget;
 class niftkToolSelectorWidget;
 
 /**
- * \class niftkBaseSegmentationView
- * \brief Base view component for MIDAS Segmentation widgets.
+ * \class niftkBaseSegmentorWidget
+ * \brief Base class for widgets of MIDAS segmentator views.
  *
- * \ingroup uk_ac_ucl_cmic_gui_qt_common
- *
- * \sa QmitkBaseView
- * \sa MIDASMorphologicalSegmentorView
- * \sa MIDASGeneralSegmentorView
+ * \sa niftkMorphologicalSegmentorWidget
+ * \sa niftkGeneralSegmentorWidget
  * \sa MITKSegmentationView
  */
-class NIFTKMIDASGUI_EXPORT niftkBaseSegmentationViewControls : public QWidget
+class NIFTKMIDASGUI_EXPORT niftkBaseSegmentorWidget : public QWidget
 {
 
   Q_OBJECT
 
 public:
 
-  niftkBaseSegmentationViewControls(QWidget* parent);
-  virtual ~niftkBaseSegmentationViewControls();
+  niftkBaseSegmentorWidget(QWidget* parent);
+  virtual ~niftkBaseSegmentorWidget();
 
 public:
 

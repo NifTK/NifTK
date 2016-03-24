@@ -12,23 +12,22 @@
 
 =============================================================================*/
 
-#ifndef MIDASGeneralSegmentorViewControlsWidget_h
-#define MIDASGeneralSegmentorViewControlsWidget_h
+#ifndef __niftkGeneralSegmentorWidget_h
+#define __niftkGeneralSegmentorWidget_h
 
 #include <QWidget>
-#include "ui_MIDASGeneralSegmentorViewControls.h"
-#include <niftkBaseSegmentationViewControls.h>
+#include "ui_niftkGeneralSegmentorWidget.h"
+#include <niftkBaseSegmentorWidget.h>
 
 #include <niftkMIDASGuiExports.h>
 
 /**
- * \class MIDASGeneralSegmentorViewControlsWidget
+ * \class niftkGeneralSegmentorWidget
  * \brief Implements the Qt/Widget specific functionality pertaining to the MIDAS General Segmentor View.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
-class NIFTKMIDASGUI_EXPORT MIDASGeneralSegmentorViewControlsWidget
-  : public niftkBaseSegmentationViewControls,
-    public Ui::MIDASGeneralSegmentorViewControls
+class NIFTKMIDASGUI_EXPORT niftkGeneralSegmentorWidget
+  : public niftkBaseSegmentorWidget,
+    public Ui::niftkGeneralSegmentorWidget
 {
 
   Q_OBJECT
@@ -36,10 +35,10 @@ class NIFTKMIDASGUI_EXPORT MIDASGeneralSegmentorViewControlsWidget
 public:
 
   /// \brief Constructor.
-  MIDASGeneralSegmentorViewControlsWidget(QWidget *parent = 0);
+  niftkGeneralSegmentorWidget(QWidget *parent = 0);
 
   /// \brief Destructor.
-  ~MIDASGeneralSegmentorViewControlsWidget();
+  ~niftkGeneralSegmentorWidget();
 
   /// \brief Creates the GUI.
   void setupUi(QWidget*);
@@ -66,8 +65,8 @@ protected:
 
 private:
 
-  MIDASGeneralSegmentorViewControlsWidget(const MIDASGeneralSegmentorViewControlsWidget&);  // Purposefully not implemented.
-  void operator=(const MIDASGeneralSegmentorViewControlsWidget&);  // Purposefully not implemented.
+  niftkGeneralSegmentorWidget(const niftkGeneralSegmentorWidget&);  // Purposefully not implemented.
+  void operator=(const niftkGeneralSegmentorWidget&);  // Purposefully not implemented.
 
 };
 

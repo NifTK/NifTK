@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkBaseSegmentationViewControls.h"
+#include "niftkBaseSegmentorWidget.h"
 
 #include <mitkToolManager.h>
 
@@ -21,7 +21,7 @@
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentationViewControls::niftkBaseSegmentationViewControls(QWidget* parent)
+niftkBaseSegmentorWidget::niftkBaseSegmentorWidget(QWidget* parent)
   : m_SegmentationSelectorWidget(nullptr),
     m_ToolSelectorWidget(nullptr),
     m_ContainerForSelectorWidget(nullptr),
@@ -49,7 +49,7 @@ niftkBaseSegmentationViewControls::niftkBaseSegmentationViewControls(QWidget* pa
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentationViewControls::~niftkBaseSegmentationViewControls()
+niftkBaseSegmentorWidget::~niftkBaseSegmentorWidget()
 {
   if (m_SegmentationSelectorWidget != NULL)
   {
@@ -64,19 +64,19 @@ niftkBaseSegmentationViewControls::~niftkBaseSegmentationViewControls()
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentationViewControls::CreateConnections()
+void niftkBaseSegmentorWidget::CreateConnections()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentationViewControls::EnableSegmentationWidgets(bool enabled)
+void niftkBaseSegmentorWidget::EnableSegmentationWidgets(bool enabled)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentationViewControls::SetEnableManualToolSelectionBox(bool enabled)
+void niftkBaseSegmentorWidget::SetEnableManualToolSelectionBox(bool enabled)
 {
   m_ToolSelectorWidget->m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
   m_ToolSelectorWidget->m_ManualToolGUIContainer->setEnabled(enabled);
@@ -84,14 +84,14 @@ void niftkBaseSegmentationViewControls::SetEnableManualToolSelectionBox(bool ena
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentationViewControls::SetToolManager(mitk::ToolManager* toolManager)
+void niftkBaseSegmentorWidget::SetToolManager(mitk::ToolManager* toolManager)
 {
   m_ToolSelectorWidget->SetToolManager(toolManager);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager* niftkBaseSegmentationViewControls::GetToolManager() const
+mitk::ToolManager* niftkBaseSegmentorWidget::GetToolManager() const
 {
   return m_ToolSelectorWidget->GetToolManager();
 }

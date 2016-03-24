@@ -36,7 +36,7 @@
 #include <QmitkRenderWindow.h>
 
 #include <NifTKConfigure.h>
-#include <niftkBaseSegmentationViewControls.h>
+#include <niftkBaseSegmentorWidget.h>
 #include <niftkMIDASNewSegmentationDialog.h>
 #include <niftkMIDASTool.h>
 #include <niftkMIDASDrawTool.h>

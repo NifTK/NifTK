@@ -183,7 +183,6 @@ void NIFTKMIDAS_EXPORT ConvertMITKContoursAndAppendToITKContours(mitk::ContourMo
 /**
  * \class GeneralSegmentorPipelineParams
  * \brief A simple parameters object to pass all parameters to the ITK based region growing pipeline.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
 struct NIFTKMIDAS_EXPORT GeneralSegmentorPipelineParams
 {
@@ -202,7 +201,6 @@ struct NIFTKMIDAS_EXPORT GeneralSegmentorPipelineParams
 /**
  * \class GeneralSegmentorPipelineInterface
  * \brief Abstract interface to plug the ITK pipeline into MITK framework.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */
 class NIFTKMIDAS_EXPORT GeneralSegmentorPipelineInterface
 {
@@ -229,7 +227,6 @@ public:
 /**
  * \class GeneralSegmentorPipeline
  * \brief A specific implementation of GeneralSegmentorPipelineInterface, based on ITK, called from MITK.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  *
  * The input images are 3D, and the contours from the MIDASDrawTool and MIDASPolyTool are in 3D,
  * with coordinates in millimetres. This pipeline basically extracts 2D slices, and performs 2D region

@@ -39,7 +39,7 @@
 #include <niftkMIDASEventFilter.h>
 
 class QmitkRenderWindow;
-class niftkBaseSegmentationViewControls;
+class niftkBaseSegmentorWidget;
 
 /**
  * \class niftkBaseSegmentationView
@@ -232,7 +232,7 @@ protected:
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   QColor m_DefaultSegmentationColor;
 
-  niftkBaseSegmentationViewControls* m_BaseSegmentationViewControls;
+  niftkBaseSegmentorWidget* m_BaseSegmentationViewControls;
 
 private:
 
