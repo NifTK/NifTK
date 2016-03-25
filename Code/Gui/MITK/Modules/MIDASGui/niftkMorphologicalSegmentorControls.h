@@ -43,9 +43,6 @@ public:
   /// \brief Destructor.
   virtual ~niftkMorphologicalSegmentorControls();
 
-  /// \brief Creates the GUI, initialising everything to off.
-  void setupUi(QWidget* parent);
-
   /// \brief Get the current tab index.
   int GetTabIndex() const;
 

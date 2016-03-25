@@ -40,9 +40,6 @@ public:
   /// \brief Destructor.
   ~niftkGeneralSegmentorControls();
 
-  /// \brief Creates the GUI.
-  void setupUi(QWidget*);
-
   /// \brief Sets the min and max values on the lower and upper sliders
   void SetLowerAndUpperIntensityRanges(double lower, double upper);
 

@@ -176,6 +176,9 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget *parent)
   m_BaseSegmentorControls = this->CreateSegmentorControls(parent);
 
   m_BaseSegmentorControls->SetToolManager(m_ToolManager);
+
+  this->connect(m_BaseSegmentorControls, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
+  this->connect(m_BaseSegmentorControls, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
 }
 
 
@@ -211,6 +214,12 @@ void niftkBaseSegmentorView::OnToolSelected(int toolID)
   {
     mainWindow->setFocus();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorView::OnNewSegmentationButtonClicked()
+{
 }
 
 

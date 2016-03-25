@@ -28,7 +28,7 @@ niftkMorphologicalSegmentorControls::niftkMorphologicalSegmentorControls(QWidget
   QWidget* containerForControlsWidget = new QWidget(parent);
   containerForControlsWidget->setContentsMargins(0, 0, 0, 0);
 
-  this->setupUi(containerForControlsWidget);
+  Ui_niftkMorphologicalSegmentorWidget::setupUi(containerForControlsWidget);
 
   layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
   layout->addWidget(m_ContainerForToolWidget, 1, 0);
@@ -41,19 +41,6 @@ niftkMorphologicalSegmentorControls::niftkMorphologicalSegmentorControls(QWidget
   m_TabWidget->setCurrentIndex(0);
 
   m_ToolSelectorWidget->SetDisplayedToolGroups("Paintbrush");
-}
-
-
-//-----------------------------------------------------------------------------
-niftkMorphologicalSegmentorControls::~niftkMorphologicalSegmentorControls()
-{
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorControls::setupUi(QWidget* parent)
-{
-  Ui_niftkMorphologicalSegmentorWidget::setupUi(parent);
 
   m_ThresholdingLowerThresholdSlider->layout()->setSpacing(2);
   m_ThresholdingLowerThresholdSlider->setSpinBoxAlignment(Qt::AlignRight);
@@ -142,6 +129,12 @@ void niftkMorphologicalSegmentorControls::setupUi(QWidget* parent)
   this->connect(m_DilationsIterationsSlider, SIGNAL(valueChanged(double)), SLOT(OnDilationsIterationsChanged()));
   this->connect(m_RethresholdingBoxSizeSlider, SIGNAL(valueChanged(double)), SLOT(OnRethresholdingSliderChanged()));
   this->connect(m_RestartButton, SIGNAL(clicked()), SLOT(OnRestartButtonClicked()));
+}
+
+
+//-----------------------------------------------------------------------------
+niftkMorphologicalSegmentorControls::~niftkMorphologicalSegmentorControls()
+{
 }
 
 

@@ -109,9 +109,15 @@ signals:
 protected slots:
 
   /**
-   * \brief Called from niftkToolSelectorWidget when a tool changes.... where we may need to enable or disable the editors from moving/changing position, zoom, etc.
+   * \brief Called from niftkToolSelectorWidget when a tool changes.
+   * We may need to enable or disable the editors from moving/changing position, zoom, etc.
    */
   virtual void OnToolSelected(int);
+
+  /**
+   * \brief Called from niftkSegmentationSelectorWidget when the 'Start/restart segmentation' button is clicked.
+   */
+  virtual void OnNewSegmentationButtonClicked();
 
 protected:
 

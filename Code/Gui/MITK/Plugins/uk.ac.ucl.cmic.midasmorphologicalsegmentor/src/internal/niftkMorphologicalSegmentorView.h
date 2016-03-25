@@ -72,7 +72,7 @@ public:
 protected slots:
  
   /// \brief Called when the user hits the button "New segmentation", which creates the necessary reference data.
-  void OnNewSegmentationButtonClicked();
+  virtual void OnNewSegmentationButtonClicked();
 
   /// \brief Called from niftkMorphologicalSegmentorControls when thresholding sliders or spin boxes changed.
   void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);

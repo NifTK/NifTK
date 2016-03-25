@@ -28,7 +28,7 @@ niftkGeneralSegmentorControls::niftkGeneralSegmentorControls(QWidget *parent)
   QWidget* containerForControlsWidget = new QWidget(parent);
   containerForControlsWidget->setContentsMargins(0, 0, 0, 0);
 
-  this->setupUi(containerForControlsWidget);
+  Ui_niftkGeneralSegmentorWidget::setupUi(containerForControlsWidget);
 
   layout->addWidget(m_ContainerForSelectorWidget, 0, 0);
   layout->addWidget(m_ContainerForToolWidget, 1, 0);
@@ -40,8 +40,11 @@ niftkGeneralSegmentorControls::niftkGeneralSegmentorControls(QWidget *parent)
 
   m_ToolSelectorWidget->SetDisplayedToolGroups("Seed Draw Poly");
 
+  m_ThresholdsSlider->layout()->setSpacing(2);
+
   this->SetThresholdingCheckBoxEnabled(false);
   this->SetThresholdingWidgetsEnabled(false);
+  this->SetAllWidgetsEnabled(false);
 
   this->connect(m_CleanButton, SIGNAL(clicked()), SIGNAL(CleanButtonClicked()));
   this->connect(m_WipeButton, SIGNAL(clicked()), SIGNAL(WipeButtonClicked()));
@@ -66,17 +69,6 @@ niftkGeneralSegmentorControls::niftkGeneralSegmentorControls(QWidget *parent)
 //-----------------------------------------------------------------------------
 niftkGeneralSegmentorControls::~niftkGeneralSegmentorControls()
 {
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorControls::setupUi(QWidget* parent)
-{
-  Ui_niftkGeneralSegmentorWidget::setupUi(parent);
-
-  m_ThresholdsSlider->layout()->setSpacing(2);
-
-  this->SetAllWidgetsEnabled(false);
 }
 
 

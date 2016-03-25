@@ -142,7 +142,6 @@ niftkBaseSegmentorControls* niftkGeneralSegmentorView::CreateSegmentorControls(Q
 {
   m_GeneralSegmentorControls = new niftkGeneralSegmentorControls(parent);
 
-  this->connect(m_GeneralSegmentorControls, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
   this->connect(m_GeneralSegmentorControls, SIGNAL(CleanButtonClicked()), SLOT(OnCleanButtonClicked()));
   this->connect(m_GeneralSegmentorControls, SIGNAL(WipeButtonClicked()), SLOT(OnWipeButtonClicked()));
   this->connect(m_GeneralSegmentorControls, SIGNAL(WipePlusButtonClicked()), SLOT(OnWipePlusButtonClicked()));
@@ -158,11 +157,11 @@ niftkBaseSegmentorControls* niftkGeneralSegmentorView::CreateSegmentorControls(Q
   this->connect(m_GeneralSegmentorControls, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
   this->connect(m_GeneralSegmentorControls, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
   this->connect(m_GeneralSegmentorControls, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
-  this->connect(m_GeneralSegmentorControls, SIGNAL(ThresholdValueChanged(double)), SLOT(OnThresholdValueChanged()));
-  this->connect(m_GeneralSegmentorControls, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
+  this->connect(m_GeneralSegmentorControls, SIGNAL(ThresholdValueChanged()), SLOT(OnThresholdValueChanged()));
 
   /// Transfer the focus back to the main window if any button is pressed.
   /// This is needed so that the key interactions (like 'a'/'z' for changing slice) keep working.
+  this->connect(m_GeneralSegmentorControls, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnAnyButtonClicked()));
   this->connect(m_GeneralSegmentorControls, SIGNAL(CleanButtonClicked()), SLOT(OnAnyButtonClicked()));
   this->connect(m_GeneralSegmentorControls, SIGNAL(WipeButtonClicked()), SLOT(OnAnyButtonClicked()));
   this->connect(m_GeneralSegmentorControls, SIGNAL(WipePlusButtonClicked()), SLOT(OnAnyButtonClicked()));
@@ -178,7 +177,6 @@ niftkBaseSegmentorControls* niftkGeneralSegmentorView::CreateSegmentorControls(Q
   this->connect(m_GeneralSegmentorControls, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
   this->connect(m_GeneralSegmentorControls, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
   this->connect(m_GeneralSegmentorControls, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorControls, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnAnyButtonClicked()));
 
   return m_GeneralSegmentorControls;
 }
@@ -411,6 +409,8 @@ mitk::DataNode::Pointer niftkGeneralSegmentorView::CreateHelperImage(mitk::Image
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnNewSegmentationButtonClicked()
 {
+  niftkBaseSegmentorView::OnNewSegmentationButtonClicked();
+
   // Create the new segmentation, either using a previously selected one, or create a new volume.
   mitk::DataNode::Pointer newSegmentation = NULL;
   bool isRestarting = false;
