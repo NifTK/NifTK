@@ -28,7 +28,7 @@
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
-class NIFTKMIDASGUI_EXPORT niftkToolSelectorWidget : public QWidget, public Ui::niftkToolSelectorWidget {
+class NIFTKMIDASGUI_EXPORT niftkToolSelectorWidget : public QWidget, private Ui::niftkToolSelectorWidget {
 
   Q_OBJECT
 
@@ -52,7 +52,7 @@ public:
   /**
    * \brief Get the enabled status.
    */
-  bool GetEnabled() const;
+  bool IsEnabled() const;
 
   /**
    * \brief Retrieves the tool manager using the micro services API.
@@ -64,19 +64,14 @@ public:
   /// \param toolManager
   void SetToolManager(mitk::ToolManager* toolManager);
 
+  void SetDisplayedToolGroups(const QString& toolGroups);
+
 signals:
 
   /**
-   * \brief Emits the tool selected signal from the contained QmitkToolSelectionBox.
+   * \brief Connected to the ToolSelected(int) signal from the contained QmitkToolSelectionBox.
    */
-  void ToolSelected(int);
-
-public slots:
-
-  /**
-   * \brief We connect the QmitkToolSelectionBox ToolSelected signal to this OnToolSelected slot.
-   */
-  void OnToolSelected(int);
+  void ToolSelected(int toolId);
 
 protected:
 

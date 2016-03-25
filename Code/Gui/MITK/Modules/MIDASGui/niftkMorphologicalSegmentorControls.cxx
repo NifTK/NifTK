@@ -40,7 +40,7 @@ niftkMorphologicalSegmentorControls::niftkMorphologicalSegmentorControls(QWidget
 
   m_TabWidget->setCurrentIndex(0);
 
-  m_ToolSelectorWidget->m_ManualToolSelectionBox->SetDisplayedToolGroups("Paintbrush");
+  m_ToolSelectorWidget->SetDisplayedToolGroups("Paintbrush");
 }
 
 

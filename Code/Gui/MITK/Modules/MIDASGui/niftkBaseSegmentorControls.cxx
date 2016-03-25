@@ -36,12 +36,9 @@ niftkBaseSegmentorControls::niftkBaseSegmentorControls(QWidget* parent)
   // Subclasses add it to their layouts, at the appropriate point.
   m_ContainerForToolWidget = new QWidget(parent);
   m_ToolSelectorWidget = new niftkToolSelectorWidget(m_ContainerForToolWidget);
-  m_ToolSelectorWidget->m_ManualToolSelectionBox->SetGenerateAccelerators(true);
-  m_ToolSelectorWidget->m_ManualToolSelectionBox->SetLayoutColumns(3);
-  m_ToolSelectorWidget->m_ManualToolSelectionBox->SetToolGUIArea(m_ToolSelectorWidget->m_ManualToolGUIContainer);
-  m_ToolSelectorWidget->m_ManualToolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::EnabledWithWorkingData);
 
   this->connect(m_SegmentationSelectorWidget, SIGNAL(NewSegmentationButtonClicked()), SIGNAL(NewSegmentationButtonClicked()));
+  this->connect(m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SIGNAL(ToolSelected(int)));
 }
 
 
@@ -67,10 +64,16 @@ void niftkBaseSegmentorControls::EnableSegmentationWidgets(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorControls::SetEnableManualToolSelectionBox(bool enabled)
+bool niftkBaseSegmentorControls::IsToolSelectorEnabled() const
 {
-  m_ToolSelectorWidget->m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
-  m_ToolSelectorWidget->m_ManualToolGUIContainer->setEnabled(enabled);
+  return m_ToolSelectorWidget->IsEnabled();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorControls::SetToolSelectorEnabled(bool enabled)
+{
+  m_ToolSelectorWidget->SetEnabled(enabled);
 }
 
 

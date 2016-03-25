@@ -194,10 +194,10 @@ protected:
   virtual mitk::ToolManager::DataVectorType GetWorkingData();
 
   /// \brief Method to enable derived classes to turn widgets off/on, with default do nothing implementation.
-  virtual void EnableSegmentationWidgets(bool b) = 0;
+  virtual void EnableSegmentationWidgets(bool enabled) = 0;
 
   /// \brief Turns the tool selection box on/off
-  virtual void SetEnableManualToolSelectionBox(bool enabled);
+  virtual void SetToolSelectorEnabled(bool enabled);
 
   /// \brief Creates the GUI parts.
   virtual void CreateQtPartControl(QWidget *parent);

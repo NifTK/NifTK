@@ -50,8 +50,11 @@ public:
   /// \brief Method to enable derived classes to turn widgets off/on, with default do nothing implementation.
   virtual void EnableSegmentationWidgets(bool enabled);
 
+  /// \brief Tells if the tool selection box is on/off
+  bool IsToolSelectorEnabled() const;
+
   /// \brief Turns the tool selection box on/off
-  virtual void SetEnableManualToolSelectionBox(bool enabled);
+  void SetToolSelectorEnabled(bool enabled);
 
   /// \brief Sets the tool manager of the tool selection box.
   void SetToolManager(mitk::ToolManager* toolManager);
@@ -71,14 +74,19 @@ public:
 
 signals:
 
+  /// \brief Emitted when the user clicks on the 'Start/restart segmentation' button.
   void NewSegmentationButtonClicked();
+
+  /// \brief Emitted when a tool is selected or all tools are deselected.
+  /// If all tools got deselected, toolId is -1.
+  void ToolSelected(int toolId);
 
 protected:
 
   /// \brief Common widget, enabling selection of Image and Segmentation, that might be replaced once we have a database.
   niftkSegmentationSelectorWidget *m_SegmentationSelectorWidget;
 
-public:
+protected:
 
   /// \brief Common widget, enabling selection of a segmentation tool.
   niftkToolSelectorWidget *m_ToolSelectorWidget;

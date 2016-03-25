@@ -150,7 +150,7 @@ void niftkGeneralSegmentorView::CreateConnections()
 {
   niftkBaseSegmentorView::CreateConnections();
 
-  this->connect(m_GeneralSegmentorControls->m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+  this->connect(m_GeneralSegmentorControls, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
   this->connect(m_GeneralSegmentorControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnCleanButtonClicked()));
   this->connect(m_GeneralSegmentorControls->m_WipeButton, SIGNAL(clicked()), SLOT(OnWipeButtonClicked()));
   this->connect(m_GeneralSegmentorControls->m_WipePlusButton, SIGNAL(clicked()), SLOT(OnWipePlusButtonClicked()));
@@ -1121,7 +1121,7 @@ bool niftkGeneralSegmentorView::SelectSeedTool()
   /// We should not do anything with the tools until they are registered to the
   /// tool manager.
 
-  if (m_GeneralSegmentorControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
+  if (m_GeneralSegmentorControls->IsToolSelectorEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1143,7 +1143,7 @@ bool niftkGeneralSegmentorView::SelectSeedTool()
 bool niftkGeneralSegmentorView::SelectDrawTool()
 {
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
+  if (m_GeneralSegmentorControls->IsToolSelectorEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1165,7 +1165,7 @@ bool niftkGeneralSegmentorView::SelectDrawTool()
 bool niftkGeneralSegmentorView::SelectPolyTool()
 {
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
+  if (m_GeneralSegmentorControls->IsToolSelectorEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1186,7 +1186,7 @@ bool niftkGeneralSegmentorView::SelectPolyTool()
 //-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorView::UnselectTools()
 {
-  if (m_GeneralSegmentorControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
+  if (m_GeneralSegmentorControls->IsToolSelectorEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
 
@@ -1206,7 +1206,7 @@ bool niftkGeneralSegmentorView::UnselectTools()
 bool niftkGeneralSegmentorView::SelectViewMode()
 {
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
+  if (m_GeneralSegmentorControls->IsToolSelectorEnabled())
   {
     if (!this->HasInitialisedWorkingData())
     {
@@ -1448,7 +1448,7 @@ bool niftkGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, i
 bool niftkGeneralSegmentorView::CleanSlice()
 {
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorControls->m_ToolSelectorWidget->m_ManualToolSelectionBox->isEnabled())
+  if (m_GeneralSegmentorControls->IsToolSelectorEnabled())
   {
     this->OnCleanButtonClicked();
     return true;

@@ -477,9 +477,9 @@ mitk::BaseRenderer* niftkBaseSegmentorView::GetFocusedRenderer()
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::SetEnableManualToolSelectionBox(bool enabled)
+void niftkBaseSegmentorView::SetToolSelectorEnabled(bool enabled)
 {
-  m_BaseSegmentorControls->SetEnableManualToolSelectionBox(enabled);
+  m_BaseSegmentorControls->SetToolSelectorEnabled(enabled);
 }
 
 

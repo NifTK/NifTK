@@ -35,7 +35,12 @@ niftkToolSelectorWidget::niftkToolSelectorWidget(QWidget *parent)
   /// but this might be different on other platforms.
   m_ManualToolGUIContainer->setMinimumHeight(24);
 
-  this->connect(m_ManualToolSelectionBox, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+  m_ManualToolSelectionBox->SetGenerateAccelerators(true);
+  m_ManualToolSelectionBox->SetLayoutColumns(3);
+  m_ManualToolSelectionBox->SetToolGUIArea(m_ManualToolGUIContainer);
+  m_ManualToolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::EnabledWithWorkingData);
+
+  this->connect(m_ManualToolSelectionBox, SIGNAL(ToolSelected(int)), SIGNAL(ToolSelected(int)));
 }
 
 
@@ -77,14 +82,14 @@ void niftkToolSelectorWidget::SetEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool niftkToolSelectorWidget::GetEnabled() const
+bool niftkToolSelectorWidget::IsEnabled() const
 {
   return this->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkToolSelectorWidget::OnToolSelected(int toolId)
+void niftkToolSelectorWidget::SetDisplayedToolGroups(const QString& toolGroups)
 {
-  emit ToolSelected(toolId);
+  m_ManualToolSelectionBox->SetDisplayedToolGroups(toolGroups.toStdString());
 }

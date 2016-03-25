@@ -386,7 +386,7 @@ void niftkMorphologicalSegmentorView::OnTabChanged(int tabIndex)
   {
     if (tabIndex == 1 || tabIndex == 2)
     {
-      m_MorphologicalSegmentorControls->m_ToolSelectorWidget->SetEnabled(true);
+      m_MorphologicalSegmentorControls->SetToolSelectorEnabled(true);
 
       mitk::ToolManager::Pointer toolManager = this->GetToolManager();
       niftk::MIDASPaintbrushTool::Pointer paintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>()));
@@ -435,7 +435,7 @@ void niftkMorphologicalSegmentorView::OnTabChanged(int tabIndex)
     }
     else
     {
-      m_MorphologicalSegmentorControls->m_ToolSelectorWidget->SetEnabled(false);
+      m_MorphologicalSegmentorControls->SetToolSelectorEnabled(false);
       this->OnToolSelected(-1); // make sure we de-activate tools.
     }
 
@@ -564,7 +564,7 @@ void niftkMorphologicalSegmentorView::CreateConnections()
   niftkBaseSegmentorView::CreateConnections();
 
   this->connect(m_MorphologicalSegmentorControls, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
-  this->connect(m_MorphologicalSegmentorControls->m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+  this->connect(m_MorphologicalSegmentorControls, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
   this->connect(m_MorphologicalSegmentorControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
   this->connect(m_MorphologicalSegmentorControls, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
   this->connect(m_MorphologicalSegmentorControls, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
@@ -617,11 +617,11 @@ void niftkMorphologicalSegmentorView::EnableSegmentationWidgets(bool enabled)
   int tabIndex = m_MorphologicalSegmentorControls->GetTabIndex();
   if (enabled && (tabIndex == 1 || tabIndex == 2))
   {
-    m_MorphologicalSegmentorControls->m_ToolSelectorWidget->SetEnabled(true);
+    m_MorphologicalSegmentorControls->SetToolSelectorEnabled(true);
   }
   else
   {
-    m_MorphologicalSegmentorControls->m_ToolSelectorWidget->SetEnabled(false);
+    m_MorphologicalSegmentorControls->SetToolSelectorEnabled(false);
   }
 
   m_MorphologicalSegmentorControls->SetEnabled(enabled);

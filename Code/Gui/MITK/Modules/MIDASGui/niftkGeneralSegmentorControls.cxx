@@ -38,10 +38,7 @@ niftkGeneralSegmentorControls::niftkGeneralSegmentorControls(QWidget *parent)
   layout->setRowStretch(1, 1);
   layout->setRowStretch(2, 0);
 
-  m_ToolSelectorWidget->m_ManualToolSelectionBox->SetDisplayedToolGroups("Seed Draw Poly");
-  m_ToolSelectorWidget->m_ManualToolSelectionBox->SetLayoutColumns(3);
-  m_ToolSelectorWidget->m_ManualToolSelectionBox->SetShowNames(true);
-  m_ToolSelectorWidget->m_ManualToolSelectionBox->SetGenerateAccelerators(false);
+  m_ToolSelectorWidget->SetDisplayedToolGroups("Seed Draw Poly");
 
   this->SetThresholdingCheckboxEnabled(false);
   this->SetThresholdingWidgetsEnabled(false);
