@@ -27,7 +27,7 @@
  */
 class NIFTKMIDASGUI_EXPORT niftkGeneralSegmentorControls
   : public niftkBaseSegmentorControls,
-    public Ui::niftkGeneralSegmentorWidget
+    private Ui::niftkGeneralSegmentorWidget
 {
 
   Q_OBJECT
@@ -52,8 +52,8 @@ public:
   /// \brief Turns all widgets on/off
   void SetAllWidgetsEnabled(bool enabled);
 
-  // \brief Enable the checkbox that controls all the thresholding widgets.
-  void SetThresholdingCheckboxEnabled(bool enabled);
+  /// \brief Enable the checkbox that controls all the thresholding widgets.
+  void SetThresholdingCheckBoxEnabled(bool enabled);
 
   /// \brief Turns thresholding widgets on/off
   void SetThresholdingWidgetsEnabled(bool enabled);
@@ -61,7 +61,56 @@ public:
   /// \brief Turns the OK, Cancel and reset buttons on/off.
   void SetOKCancelResetWidgetsEnabled(bool enabled);
 
-protected:
+  /// \brief Tells if the checkbox that controls all the thresholding widgets is checked in/out.
+  bool IsThresholdingCheckBoxChecked() const;
+
+  /// \brief Checks in/out the checkbox that controls all the thresholding widgets.
+  void SetThresholdingCheckBoxChecked(bool checked);
+
+  /// \brief Tells if the 'see prior' checkbox is checked.
+  bool IsSeePriorCheckBoxChecked() const;
+
+  /// \brief Checks in/out the 'see prior' checkbox.
+  void SetSeePriorCheckBoxChecked(bool checked);
+
+  /// \brief Tells if the 'see next' checkbox is checked.
+  bool IsSeeNextCheckBoxChecked() const;
+
+  /// \brief Checks in/out the 'see next' checkbox.
+  void SetSeeNextCheckBoxChecked(bool checked);
+
+  /// \brief Tells if the 'retain marks' checkbox is checked.
+  bool IsRetainMarksCheckBoxChecked() const;
+
+  /// \brief Checks in/out the 'retain marks' checkbox.
+  void SetRetainMarksCheckBoxChecked(bool checked);
+
+  /// \brief Returns that lower threshold.
+  /// The lower threshould is the minimum value of the threshold slider.
+  double GetLowerThreshold() const;
+
+  /// \brief Returns that upper threshold.
+  /// The upper threshold is the maximum value of the threshold slider.
+  double GetUpperThreshold() const;
+
+signals:
+
+  void CleanButtonClicked();
+  void WipeButtonClicked();
+  void WipePlusButtonClicked();
+  void WipeMinusButtonClicked();
+  void PropagateUpButtonClicked();
+  void PropagateDownButtonClicked();
+  void Propagate3DButtonClicked();
+  void OKButtonClicked();
+  void CancelButtonClicked();
+  void RestartButtonClicked();
+  void ResetButtonClicked();
+  void ThresholdApplyButtonClicked();
+  void ThresholdingCheckBoxToggled(bool);
+  void SeePriorCheckBoxToggled(bool);
+  void SeeNextCheckBoxToggled(bool);
+  void ThresholdValueChanged();
 
 private:
 

@@ -40,8 +40,26 @@ niftkGeneralSegmentorControls::niftkGeneralSegmentorControls(QWidget *parent)
 
   m_ToolSelectorWidget->SetDisplayedToolGroups("Seed Draw Poly");
 
-  this->SetThresholdingCheckboxEnabled(false);
+  this->SetThresholdingCheckBoxEnabled(false);
   this->SetThresholdingWidgetsEnabled(false);
+
+  this->connect(m_CleanButton, SIGNAL(clicked()), SIGNAL(CleanButtonClicked()));
+  this->connect(m_WipeButton, SIGNAL(clicked()), SIGNAL(WipeButtonClicked()));
+  this->connect(m_WipePlusButton, SIGNAL(clicked()), SIGNAL(WipePlusButtonClicked()));
+  this->connect(m_WipeMinusButton, SIGNAL(clicked()), SIGNAL(WipeMinusButtonClicked()));
+  this->connect(m_PropUpButton, SIGNAL(clicked()), SIGNAL(PropagateUpButtonClicked()));
+  this->connect(m_PropDownButton, SIGNAL(clicked()), SIGNAL(PropagateDownButtonClicked()));
+  this->connect(m_Prop3DButton, SIGNAL(clicked()), SIGNAL(Propagate3DButtonClicked()));
+  this->connect(m_OKButton, SIGNAL(clicked()), SIGNAL(OKButtonClicked()));
+  this->connect(m_CancelButton, SIGNAL(clicked()), SIGNAL(CancelButtonClicked()));
+  this->connect(m_RestartButton, SIGNAL(clicked()), SIGNAL(RestartButtonClicked()));
+  this->connect(m_ResetButton, SIGNAL(clicked()), SIGNAL(ResetButtonClicked()));
+  this->connect(m_ThresholdApplyButton, SIGNAL(clicked()), SIGNAL(ThresholdApplyButtonClicked()));
+  this->connect(m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SIGNAL(ThresholdingCheckBoxToggled(bool)));
+  this->connect(m_SeePriorCheckBox, SIGNAL(toggled(bool)), SIGNAL(SeePriorCheckBoxToggled(bool)));
+  this->connect(m_SeeNextCheckBox, SIGNAL(toggled(bool)), SIGNAL(SeeNextCheckBoxToggled(bool)));
+  this->connect(m_ThresholdsSlider, SIGNAL(minimumValueChanged(double)), SIGNAL(ThresholdValueChanged()));
+  this->connect(m_ThresholdsSlider, SIGNAL(maximumValueChanged(double)), SIGNAL(ThresholdValueChanged()));
 }
 
 
@@ -63,7 +81,7 @@ void niftkGeneralSegmentorControls::setupUi(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorControls::SetThresholdingCheckboxEnabled(bool enabled)
+void niftkGeneralSegmentorControls::SetThresholdingCheckBoxEnabled(bool enabled)
 {
   m_ThresholdingCheckBox->setEnabled(enabled);
 }
@@ -90,6 +108,64 @@ void niftkGeneralSegmentorControls::SetThresholdingWidgetsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
+bool niftkGeneralSegmentorControls::IsThresholdingCheckBoxChecked() const
+{
+  return m_ThresholdingCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkGeneralSegmentorControls::SetThresholdingCheckBoxChecked(bool checked)
+{
+  bool wasBlocked = m_ThresholdingCheckBox->blockSignals(true);
+  m_ThresholdingCheckBox->setChecked(checked);
+  m_ThresholdingCheckBox->blockSignals(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkGeneralSegmentorControls::IsSeePriorCheckBoxChecked() const
+{
+  return m_SeePriorCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkGeneralSegmentorControls::SetSeePriorCheckBoxChecked(bool checked)
+{
+  m_SeePriorCheckBox->setChecked(checked);
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkGeneralSegmentorControls::IsSeeNextCheckBoxChecked() const
+{
+  return m_SeeNextCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkGeneralSegmentorControls::SetSeeNextCheckBoxChecked(bool checked)
+{
+  m_SeeNextCheckBox->setChecked(checked);
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkGeneralSegmentorControls::IsRetainMarksCheckBoxChecked() const
+{
+  return m_RetainMarksCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkGeneralSegmentorControls::SetRetainMarksCheckBoxChecked(bool checked)
+{
+  m_RetainMarksCheckBox->setChecked(checked);
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkGeneralSegmentorControls::SetOKCancelResetWidgetsEnabled(bool enabled)
 {
   m_OKButton->setEnabled(enabled);
@@ -102,7 +178,7 @@ void niftkGeneralSegmentorControls::SetOKCancelResetWidgetsEnabled(bool enabled)
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorControls::SetAllWidgetsEnabled(bool enabled)
 {
-  this->SetThresholdingCheckboxEnabled(enabled);
+  this->SetThresholdingCheckBoxEnabled(enabled);
   this->SetThresholdingWidgetsEnabled(enabled);
   this->SetOKCancelResetWidgetsEnabled(enabled);
   m_RetainMarksCheckBox->setEnabled(enabled);
@@ -134,4 +210,18 @@ void niftkGeneralSegmentorControls::SetSeedMinAndMaxValues(double min, double ma
 
   m_SeedMinValue->setText(minText);
   m_SeedMaxValue->setText(maxText);
+}
+
+
+//-----------------------------------------------------------------------------
+double niftkGeneralSegmentorControls::GetLowerThreshold() const
+{
+  return m_ThresholdsSlider->minimumValue();
+}
+
+
+//-----------------------------------------------------------------------------
+double niftkGeneralSegmentorControls::GetUpperThreshold() const
+{
+  return m_ThresholdsSlider->maximumValue();
 }
