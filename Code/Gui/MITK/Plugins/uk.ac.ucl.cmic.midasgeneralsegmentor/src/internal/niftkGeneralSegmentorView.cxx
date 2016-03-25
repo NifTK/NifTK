@@ -168,7 +168,7 @@ void niftkGeneralSegmentorView::CreateConnections()
   this->connect(m_GeneralSegmentorControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
   this->connect(m_GeneralSegmentorControls->m_ThresholdsSlider, SIGNAL(minimumValueChanged(double)), SLOT(OnThresholdValueChanged()));
   this->connect(m_GeneralSegmentorControls->m_ThresholdsSlider, SIGNAL(maximumValueChanged(double)), SLOT(OnThresholdValueChanged()));
-  this->connect(m_GeneralSegmentorControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnCreateNewSegmentationButtonClicked()) );
+  this->connect(m_GeneralSegmentorControls, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
 
   /// Transfer the focus back to the main window if any button is pressed.
   /// This is needed so that the key interactions (like 'a'/'z' for changing slice) keep working.
@@ -187,7 +187,7 @@ void niftkGeneralSegmentorView::CreateConnections()
   this->connect(m_GeneralSegmentorControls->m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
   this->connect(m_GeneralSegmentorControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
   this->connect(m_GeneralSegmentorControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(clicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorControls, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnAnyButtonClicked()));
 }
 
 
@@ -416,7 +416,7 @@ mitk::DataNode::Pointer niftkGeneralSegmentorView::CreateHelperImage(mitk::Image
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnCreateNewSegmentationButtonClicked()
+void niftkGeneralSegmentorView::OnNewSegmentationButtonClicked()
 {
   // Create the new segmentation, either using a previously selected one, or create a new volume.
   mitk::DataNode::Pointer newSegmentation = NULL;

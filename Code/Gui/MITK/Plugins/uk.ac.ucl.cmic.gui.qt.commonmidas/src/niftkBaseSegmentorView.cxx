@@ -268,16 +268,14 @@ void niftkBaseSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer /
     }
 
     // If we have worked out the reference data, then set the combo box.
-    m_BaseSegmentorControls->m_SegmentationSelectorWidget->m_ReferenceImageNameLabel->blockSignals(true);
     if (referenceData.IsNotNull())
     {
-      m_BaseSegmentorControls->m_SegmentationSelectorWidget->m_ReferenceImageNameLabel->setText(tr("<font color='black'>%1</font>").arg(referenceData->GetName().c_str()));
+      m_BaseSegmentorControls->SelectReferenceImage(QString::fromStdString(referenceData->GetName()));
     }
     else
     {
-      m_BaseSegmentorControls->m_SegmentationSelectorWidget->m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+      m_BaseSegmentorControls->SelectReferenceImage();
     }
-    m_BaseSegmentorControls->m_SegmentationSelectorWidget->m_ReferenceImageNameLabel->blockSignals(false);
 
     // Tell the tool manager the images for reference and working purposes.
     this->SetToolManagerSelection(referenceData, workingDataNodes);
@@ -520,27 +518,16 @@ void niftkBaseSegmentorView::SetToolManagerSelection(const mitk::DataNode* refer
   toolManager->SetReferenceData(const_cast<mitk::DataNode*>(referenceData));
   toolManager->SetWorkingData(workingDataNodes);
 
-  if (referenceData)
+  if (referenceData && !workingDataNodes.empty())
   {
-    if (workingDataNodes.size() == 0)
-    {
-      m_BaseSegmentorControls->m_SegmentationSelectorWidget->m_NewSegmentationButton->setEnabled(true);
-      m_BaseSegmentorControls->m_SegmentationSelectorWidget->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
-    }
-    else
-    {
-      mitk::DataNode::Pointer node = workingDataNodes[0];
-      mitk::DataNode::Pointer segmentationImage = this->GetSegmentationNodeFromWorkingData(node);
-      assert(segmentationImage);
-
-      m_BaseSegmentorControls->m_SegmentationSelectorWidget->m_NewSegmentationButton->setEnabled(false);
-      m_BaseSegmentorControls->m_SegmentationSelectorWidget->m_SegmentationImageNameLabel->setText(tr("<font color='black'>%1</font>").arg(segmentationImage->GetName().c_str()));
-    }
+    mitk::DataNode::Pointer node = workingDataNodes[0];
+    mitk::DataNode::Pointer segmentationImage = this->GetSegmentationNodeFromWorkingData(node);
+    assert(segmentationImage);
+    m_BaseSegmentorControls->SelectSegmentationImage(QString::fromStdString(segmentationImage->GetName()));
   }
   else
   {
-    m_BaseSegmentorControls->m_SegmentationSelectorWidget->m_NewSegmentationButton->setEnabled(false);
-    m_BaseSegmentorControls->m_SegmentationSelectorWidget->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+    m_BaseSegmentorControls->SelectSegmentationImage();
   }
 }
 

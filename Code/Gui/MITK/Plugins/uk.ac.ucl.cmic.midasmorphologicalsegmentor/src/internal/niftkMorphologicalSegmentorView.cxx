@@ -105,7 +105,7 @@ void niftkMorphologicalSegmentorView::RegisterTools(mitk::ToolManager::Pointer t
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorView::OnCreateNewSegmentationButtonPressed()
+void niftkMorphologicalSegmentorView::OnNewSegmentationButtonClicked()
 {
   // Create the new segmentation, either using a previously selected one, or create a new volume.
   mitk::DataNode::Pointer newSegmentation = NULL;
@@ -563,7 +563,7 @@ void niftkMorphologicalSegmentorView::CreateConnections()
 {
   niftkBaseSegmentorView::CreateConnections();
 
-  this->connect(m_MorphologicalSegmentorControls->m_SegmentationSelectorWidget->m_NewSegmentationButton, SIGNAL(released()), SLOT(OnCreateNewSegmentationButtonPressed()) );
+  this->connect(m_MorphologicalSegmentorControls, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
   this->connect(m_MorphologicalSegmentorControls->m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
   this->connect(m_MorphologicalSegmentorControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
   this->connect(m_MorphologicalSegmentorControls, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));

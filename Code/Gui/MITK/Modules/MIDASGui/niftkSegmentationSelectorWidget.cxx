@@ -12,9 +12,6 @@
 
 =============================================================================*/
 
-#ifndef __niftkSegmentationSelectorWidget_cpp
-#define __niftkSegmentationSelectorWidget_cpp
-
 #include "niftkSegmentationSelectorWidget.h"
 
 
@@ -23,6 +20,11 @@ niftkSegmentationSelectorWidget::niftkSegmentationSelectorWidget(QWidget *parent
 : QWidget(parent)
 {
   this->setupUi(parent);
+
+  this->SelectReferenceImage();
+  this->SelectSegmentationImage();
+
+  this->connect(m_NewSegmentationButton, SIGNAL(clicked()), SIGNAL(NewSegmentationButtonClicked()));
 }
 
 
@@ -31,4 +33,27 @@ niftkSegmentationSelectorWidget::~niftkSegmentationSelectorWidget()
 {
 }
 
-#endif
+
+//-----------------------------------------------------------------------------
+void niftkSegmentationSelectorWidget::SelectReferenceImage(const QString& imageName)
+{
+  QString labelText = imageName.isNull()
+      ? "<font color='red'>&lt;not selected&gt;</font>"
+      : QString("<font color='black'>%1</font>").arg(imageName);
+
+  m_ReferenceImageNameLabel->setText(labelText);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSegmentationSelectorWidget::SelectSegmentationImage(const QString& imageName)
+{
+  QString labelText = imageName.isNull()
+      ? "<font color='red'>&lt;not selected&gt;</font>"
+      : QString("<font color='black'>%1</font>").arg(imageName);
+
+  bool referenceImageSelected = m_ReferenceImageNameLabel->text() != QString("<font color='red'>&lt;not selected&gt;</font>");
+  m_NewSegmentationButton->setEnabled(imageName.isNull() && referenceImageSelected);
+
+  m_SegmentationImageNameLabel->setText(labelText);
+}

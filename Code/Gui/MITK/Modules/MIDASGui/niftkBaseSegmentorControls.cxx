@@ -31,11 +31,6 @@ niftkBaseSegmentorControls::niftkBaseSegmentorControls(QWidget* parent)
   // Subclasses add it to their layouts, at the appropriate point.
   m_ContainerForSelectorWidget = new QWidget(parent);
   m_SegmentationSelectorWidget = new niftkSegmentationSelectorWidget(m_ContainerForSelectorWidget);
-  m_SegmentationSelectorWidget->m_NewSegmentationButton->setEnabled(false);
-  m_SegmentationSelectorWidget->m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
-  m_SegmentationSelectorWidget->m_ReferenceImageNameLabel->show();
-  m_SegmentationSelectorWidget->m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
-  m_SegmentationSelectorWidget->m_SegmentationImageNameLabel->show();
 
   // Set up the Tool Selector.
   // Subclasses add it to their layouts, at the appropriate point.
@@ -45,6 +40,8 @@ niftkBaseSegmentorControls::niftkBaseSegmentorControls(QWidget* parent)
   m_ToolSelectorWidget->m_ManualToolSelectionBox->SetLayoutColumns(3);
   m_ToolSelectorWidget->m_ManualToolSelectionBox->SetToolGUIArea(m_ToolSelectorWidget->m_ManualToolGUIContainer);
   m_ToolSelectorWidget->m_ManualToolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::EnabledWithWorkingData);
+
+  this->connect(m_SegmentationSelectorWidget, SIGNAL(NewSegmentationButtonClicked()), SIGNAL(NewSegmentationButtonClicked()));
 }
 
 
@@ -60,12 +57,6 @@ niftkBaseSegmentorControls::~niftkBaseSegmentorControls()
   {
     delete m_ToolSelectorWidget;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentorControls::CreateConnections()
-{
 }
 
 
@@ -94,4 +85,18 @@ void niftkBaseSegmentorControls::SetToolManager(mitk::ToolManager* toolManager)
 mitk::ToolManager* niftkBaseSegmentorControls::GetToolManager() const
 {
   return m_ToolSelectorWidget->GetToolManager();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorControls::SelectReferenceImage(const QString& imageName)
+{
+  m_SegmentationSelectorWidget->SelectReferenceImage(imageName);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorControls::SelectSegmentationImage(const QString& imageName)
+{
+  m_SegmentationSelectorWidget->SelectSegmentationImage(imageName);
 }

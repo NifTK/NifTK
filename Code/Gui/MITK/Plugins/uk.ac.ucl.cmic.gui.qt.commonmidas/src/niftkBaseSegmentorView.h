@@ -207,7 +207,7 @@ protected:
   /// that returns an object whose class derives from niftkBaseSegmentorControls.
   virtual niftkBaseSegmentorControls* CreateSegmentorControls(QWidget* parent) = 0;
 
-  /// \brief Creates the QT connections.
+  /// \brief Creates the Qt connections.
   virtual void CreateConnections();
 
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.

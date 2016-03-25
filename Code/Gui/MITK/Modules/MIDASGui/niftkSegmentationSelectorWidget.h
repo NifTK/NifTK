@@ -22,9 +22,9 @@
 /**
  * \class niftkSegmentationSelectorWidget
  * \brief Implements the widget to select a reference image, and create a new segmentation.
- * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
-class NIFTKMIDASGUI_EXPORT niftkSegmentationSelectorWidget : public QWidget, public Ui::niftkMIDASImageAndSegmentationSelector {
+class NIFTKMIDASGUI_EXPORT niftkSegmentationSelectorWidget : public QWidget, private Ui::niftkMIDASImageAndSegmentationSelector
+{
 
   Q_OBJECT
 
@@ -36,6 +36,18 @@ public:
   /** Destructor. */
   virtual ~niftkSegmentationSelectorWidget();
 
+  /// \brief Displays the name of the reference image on a label.
+  /// If no argument or empty string is passed then it displays the "not selected" message in red.
+  void SelectReferenceImage(const QString& referenceImage = QString::null);
+
+  /// \brief Displays the name of the segmentation image on a label.
+  /// If no argument or empty string is passed then it displays the "not selected" message in red.
+  void SelectSegmentationImage(const QString& segmentationImage = QString::null);
+
+signals:
+
+  void NewSegmentationButtonClicked();
+
 protected:
 
 private:
@@ -46,4 +58,3 @@ private:
 };
 
 #endif
-
