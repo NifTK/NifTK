@@ -176,8 +176,6 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget *parent)
   m_BaseSegmentorControls = this->CreateSegmentorControls(parent);
 
   m_BaseSegmentorControls->SetToolManager(m_ToolManager);
-
-  this->CreateConnections();
 }
 
 
@@ -460,12 +458,6 @@ mitk::DataNode* niftkBaseSegmentorView::CreateNewSegmentation(const QColor& defa
     }
   }
   return emptySegmentation.GetPointer();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::CreateConnections()
-{
 }
 
 

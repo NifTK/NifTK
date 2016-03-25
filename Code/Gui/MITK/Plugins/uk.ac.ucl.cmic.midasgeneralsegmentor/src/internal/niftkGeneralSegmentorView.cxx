@@ -141,14 +141,6 @@ void niftkGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 niftkBaseSegmentorControls* niftkGeneralSegmentorView::CreateSegmentorControls(QWidget *parent)
 {
   m_GeneralSegmentorControls = new niftkGeneralSegmentorControls(parent);
-  return m_GeneralSegmentorControls;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::CreateConnections()
-{
-  niftkBaseSegmentorView::CreateConnections();
 
   this->connect(m_GeneralSegmentorControls, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
   this->connect(m_GeneralSegmentorControls->m_CleanButton, SIGNAL(clicked()), SLOT(OnCleanButtonClicked()));
@@ -188,6 +180,8 @@ void niftkGeneralSegmentorView::CreateConnections()
   this->connect(m_GeneralSegmentorControls->m_SeePriorCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
   this->connect(m_GeneralSegmentorControls->m_SeeNextCheckBox, SIGNAL(toggled(bool)), SLOT(OnAnyButtonClicked()));
   this->connect(m_GeneralSegmentorControls, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnAnyButtonClicked()));
+
+  return m_GeneralSegmentorControls;
 }
 
 

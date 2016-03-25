@@ -299,9 +299,6 @@ protected:
   /// but we currently do nothing.
   virtual void SetFocus() override;
 
-  /// \brief Creates the Qt connections of widgets in this class to the slots in this class.
-  virtual void CreateConnections() override;
-
   /// \see niftkBaseSegmentorView::EnableSegmentationWidgets
   virtual void EnableSegmentationWidgets(bool checked) override;
 

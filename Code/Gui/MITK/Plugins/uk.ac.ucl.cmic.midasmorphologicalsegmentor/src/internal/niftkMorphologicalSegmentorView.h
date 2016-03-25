@@ -114,9 +114,6 @@ protected:
   /// \brief Called by framework, sets the focus on a specific widget, but currently does nothing.
   virtual void SetFocus() override;
 
-  /// \brief Connects the Qt signals from the GUI components to the methods in this class.
-  virtual void CreateConnections() override;
-
   /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME.
   virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) override;
 

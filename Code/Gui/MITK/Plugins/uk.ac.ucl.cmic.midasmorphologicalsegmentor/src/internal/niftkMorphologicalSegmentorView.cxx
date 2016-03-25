@@ -548,20 +548,6 @@ void niftkMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
 niftkBaseSegmentorControls* niftkMorphologicalSegmentorView::CreateSegmentorControls(QWidget *parent)
 {
   m_MorphologicalSegmentorControls = new niftkMorphologicalSegmentorControls(parent);
-  return m_MorphologicalSegmentorControls;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorView::SetFocus()
-{
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorView::CreateConnections()
-{
-  niftkBaseSegmentorView::CreateConnections();
 
   this->connect(m_MorphologicalSegmentorControls, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
   this->connect(m_MorphologicalSegmentorControls, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
@@ -573,6 +559,14 @@ void niftkMorphologicalSegmentorView::CreateConnections()
   this->connect(m_MorphologicalSegmentorControls, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
 //  this->connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
   this->connect(m_MorphologicalSegmentorControls, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
+
+  return m_MorphologicalSegmentorControls;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMorphologicalSegmentorView::SetFocus()
+{
 }
 
 
