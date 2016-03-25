@@ -456,9 +456,7 @@ void niftkMorphologicalSegmentorView::OnOKButtonClicked()
   {
     this->OnToolSelected(-1);
     this->EnableSegmentationWidgets(false);
-    bool wasBlocked = m_MorphologicalSegmentorControls->m_TabWidget->blockSignals(true);
-    m_MorphologicalSegmentorControls->m_TabWidget->setCurrentIndex(0);
-    m_MorphologicalSegmentorControls->m_TabWidget->blockSignals(wasBlocked);
+    m_MorphologicalSegmentorControls->SetTabIndex(0);
     m_PipelineManager->FinalizeSegmentation();
 
     /// Remove the axial cut-off plane node from the data storage.
@@ -518,9 +516,7 @@ void niftkMorphologicalSegmentorView::OnCancelButtonClicked()
   {
     this->OnToolSelected(-1);
     this->EnableSegmentationWidgets(false);
-    bool wasBlocked = m_MorphologicalSegmentorControls->m_TabWidget->blockSignals(true);
-    m_MorphologicalSegmentorControls->m_TabWidget->setCurrentIndex(0);
-    m_MorphologicalSegmentorControls->m_TabWidget->blockSignals(wasBlocked);
+    m_MorphologicalSegmentorControls->SetTabIndex(0);
     m_PipelineManager->RemoveWorkingData();
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
@@ -648,9 +644,7 @@ void niftkMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedN
   {
     this->OnToolSelected(-1);
     this->EnableSegmentationWidgets(false);
-    bool wasBlocked = m_MorphologicalSegmentorControls->m_TabWidget->blockSignals(true);
-    m_MorphologicalSegmentorControls->m_TabWidget->setCurrentIndex(0);
-    m_MorphologicalSegmentorControls->m_TabWidget->blockSignals(wasBlocked);
+    m_MorphologicalSegmentorControls->SetTabIndex(0);
     m_PipelineManager->RemoveWorkingData();
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
@@ -747,10 +741,11 @@ void niftkMorphologicalSegmentorView::onVisibilityChanged(const mitk::DataNode* 
     bool segmentationNodeVisibility;
     if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
     {
+      int tabIndex = m_MorphologicalSegmentorControls->GetTabIndex();
       workingData[niftk::MIDASPaintbrushTool::EROSIONS_ADDITIONS]->SetVisibility(false);
-      workingData[niftk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS]->SetVisibility(m_MorphologicalSegmentorControls->m_TabWidget->currentIndex() == 1);
+      workingData[niftk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 1);
       workingData[niftk::MIDASPaintbrushTool::DILATIONS_ADDITIONS]->SetVisibility(false);
-      workingData[niftk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS]->SetVisibility(m_MorphologicalSegmentorControls->m_TabWidget->currentIndex() == 2);
+      workingData[niftk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 2);
       axialCutOffPlaneNode->SetVisibility(true);
     }
     else

@@ -246,9 +246,18 @@ void niftkMorphologicalSegmentorControls::SetControlsByPipelineParams(Morphologi
 
 
 //-----------------------------------------------------------------------------
-int niftkMorphologicalSegmentorControls::GetTabIndex()
+int niftkMorphologicalSegmentorControls::GetTabIndex() const
 {
   return m_TabWidget->currentIndex();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMorphologicalSegmentorControls::SetTabIndex(int tabIndex)
+{
+  bool wasBlocked = m_TabWidget->blockSignals(true);
+  m_TabWidget->setCurrentIndex(tabIndex);
+  m_TabWidget->blockSignals(wasBlocked);
 }
 
 

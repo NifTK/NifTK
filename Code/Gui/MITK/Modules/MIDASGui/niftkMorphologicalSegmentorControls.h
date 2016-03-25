@@ -31,7 +31,7 @@ class QAbstractButton;
  */
 class NIFTKMIDASGUI_EXPORT niftkMorphologicalSegmentorControls
   : public niftkBaseSegmentorControls,
-    public Ui_niftkMorphologicalSegmentorWidget
+    private Ui_niftkMorphologicalSegmentorWidget
 {
   Q_OBJECT
 
@@ -47,7 +47,11 @@ public:
   void setupUi(QWidget* parent);
 
   /// \brief Get the current tab index.
-  int GetTabIndex();
+  int GetTabIndex() const;
+
+  /// \brief Set the current tab index.
+  /// No TabChanged(int) signal is emitted.
+  void SetTabIndex(int tabIndex);
 
   /// \brief Enables/disables all controls.
   void SetEnabled(bool enabled);
