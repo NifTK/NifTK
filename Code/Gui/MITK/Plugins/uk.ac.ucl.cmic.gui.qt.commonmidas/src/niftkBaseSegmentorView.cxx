@@ -36,7 +36,7 @@
 
 #include <NifTKConfigure.h>
 #include <niftkBaseSegmentorControls.h>
-#include <niftkMIDASNewSegmentationDialog.h>
+#include <niftkNewSegmentationDialog.h>
 #include <niftkMIDASTool.h>
 #include <niftkMIDASDrawTool.h>
 #include <niftkMIDASPolyTool.h>
@@ -429,7 +429,7 @@ mitk::DataNode* niftkBaseSegmentorView::CreateNewSegmentation(const QColor& defa
     {
       if (referenceImage->GetDimension() > 2)
       {
-        niftkMIDASNewSegmentationDialog* dialog = new niftkMIDASNewSegmentationDialog(defaultColor, this->GetParent() ); // needs a QWidget as parent, "this" is not QWidget
+        niftkNewSegmentationDialog* dialog = new niftkNewSegmentationDialog(defaultColor, this->GetParent() ); // needs a QWidget as parent, "this" is not QWidget
         int dialogReturnValue = dialog->exec();
         if ( dialogReturnValue == QDialog::Rejected ) return NULL; // user clicked cancel or pressed Esc or something similar
 

@@ -13,10 +13,10 @@
 #============================================================================*/
 
 set(CPP_FILES
-  Dialogs/niftkMIDASNewSegmentationDialog.cxx
   niftkBaseSegmentorControls.cxx
   niftkGeneralSegmentorControls.cxx
   niftkMorphologicalSegmentorControls.cxx
+  niftkNewSegmentationDialog.cxx
   niftkSegmentationSelectorWidget.cxx
   niftkToolSelectorWidget.cxx
   niftkMIDASDrawToolGUI.cxx
@@ -24,10 +24,10 @@ set(CPP_FILES
 )
 
 set(MOC_H_FILES 
-  Dialogs/niftkMIDASNewSegmentationDialog.h
   niftkBaseSegmentorControls.h
   niftkGeneralSegmentorControls.h
   niftkMorphologicalSegmentorControls.h
+  niftkNewSegmentationDialog.h
   niftkSegmentationSelectorWidget.h
   niftkToolSelectorWidget.h
   niftkMIDASDrawToolGUI.h
