@@ -34,14 +34,14 @@ class ctkSliderWidget;
  * The reverse is not true. Any mitk::Tool must not know that it has a GUI, and hence the reason they
  * are in a different library / Module.
  */
-class NIFTKMIDASGUI_EXPORT niftkMIDASDrawToolGUI : public QmitkToolGUI
+class NIFTKMIDASGUI_EXPORT niftkDrawToolGUI : public QmitkToolGUI
 {
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(niftkMIDASDrawToolGUI, QmitkToolGUI);
-  itkNewMacro(niftkMIDASDrawToolGUI);
+  mitkClassMacro(niftkDrawToolGUI, QmitkToolGUI);
+  itkNewMacro(niftkDrawToolGUI);
 
   /// \brief Method to set or initialise the size of the cursor (radius of influence).
   void OnCursorSizeChanged(double cursorSize);
@@ -60,8 +60,8 @@ protected slots:
 
 protected:
 
-  niftkMIDASDrawToolGUI();
-  virtual ~niftkMIDASDrawToolGUI();
+  niftkDrawToolGUI();
+  virtual ~niftkDrawToolGUI();
 
   ctkSliderWidget* m_Slider;
   QFrame* m_Frame;

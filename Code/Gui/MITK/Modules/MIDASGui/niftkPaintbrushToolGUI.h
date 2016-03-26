@@ -34,14 +34,14 @@ class QFrame;
  * The reverse is not true. Any mitk::Tool must not know that it has a GUI, and hence the reason they
  * are in a different library / Module.
  */
-class NIFTKMIDASGUI_EXPORT niftkMIDASPaintbrushToolGUI : public QmitkToolGUI
+class NIFTKMIDASGUI_EXPORT niftkPaintbrushToolGUI : public QmitkToolGUI
 {
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(niftkMIDASPaintbrushToolGUI, QmitkToolGUI);
-  itkNewMacro(niftkMIDASPaintbrushToolGUI);
+  mitkClassMacro(niftkPaintbrushToolGUI, QmitkToolGUI);
+  itkNewMacro(niftkPaintbrushToolGUI);
 
   /// \brief Method to set or initialise the size of the cursor (radius of influence).
   void OnCursorSizeChanged(int current);
@@ -60,8 +60,8 @@ protected slots:
 
 protected:
 
-  niftkMIDASPaintbrushToolGUI();
-  virtual ~niftkMIDASPaintbrushToolGUI();
+  niftkPaintbrushToolGUI();
+  virtual ~niftkPaintbrushToolGUI();
 
   QSlider* m_Slider;
   QLabel* m_SizeLabel;
