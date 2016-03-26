@@ -13,10 +13,10 @@
 #============================================================================*/
 
 set(CPP_FILES
-  niftkBaseSegmentorControls.cxx
+  niftkBaseSegmentorGUI.cxx
   niftkDrawToolGUI.cxx
-  niftkGeneralSegmentorControls.cxx
-  niftkMorphologicalSegmentorControls.cxx
+  niftkGeneralSegmentorGUI.cxx
+  niftkMorphologicalSegmentorGUI.cxx
   niftkNewSegmentationDialog.cxx
   niftkPaintbrushToolGUI.cxx
   niftkSegmentationSelectorWidget.cxx
@@ -24,10 +24,10 @@ set(CPP_FILES
 )
 
 set(MOC_H_FILES 
-  niftkBaseSegmentorControls.h
+  niftkBaseSegmentorGUI.h
   niftkDrawToolGUI.h
-  niftkGeneralSegmentorControls.h
-  niftkMorphologicalSegmentorControls.h
+  niftkGeneralSegmentorGUI.h
+  niftkMorphologicalSegmentorGUI.h
   niftkNewSegmentationDialog.h
   niftkPaintbrushToolGUI.h
   niftkSegmentationSelectorWidget.h

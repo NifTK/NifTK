@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __niftkMorphologicalSegmentorControls_h
-#define __niftkMorphologicalSegmentorControls_h
+#ifndef __niftkMorphologicalSegmentorGUI_h
+#define __niftkMorphologicalSegmentorGUI_h
 
 #include "ui_niftkMorphologicalSegmentorWidget.h"
-#include "niftkBaseSegmentorControls.h"
+#include "niftkBaseSegmentorGUI.h"
 
 #include <MorphologicalSegmentorPipelineParams.h>
 
@@ -25,12 +25,12 @@
 class QAbstractButton;
 
 /**
- * \class niftkMorphologicalSegmentorControls
+ * \class niftkMorphologicalSegmentorGUI
  * \brief Implements a few Qt specific things that are of no interest to the MITK view class.
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  */
-class NIFTKMIDASGUI_EXPORT niftkMorphologicalSegmentorControls
-  : public niftkBaseSegmentorControls,
+class NIFTKMIDASGUI_EXPORT niftkMorphologicalSegmentorGUI
+  : public niftkBaseSegmentorGUI,
     private Ui_niftkMorphologicalSegmentorWidget
 {
   Q_OBJECT
@@ -38,10 +38,10 @@ class NIFTKMIDASGUI_EXPORT niftkMorphologicalSegmentorControls
 public:
 
   /// \brief Constructor.
-  niftkMorphologicalSegmentorControls(QWidget* parent = nullptr);
+  niftkMorphologicalSegmentorGUI(QWidget* parent = nullptr);
 
   /// \brief Destructor.
-  virtual ~niftkMorphologicalSegmentorControls();
+  virtual ~niftkMorphologicalSegmentorGUI();
 
   /// \brief Get the current tab index.
   int GetTabIndex() const;

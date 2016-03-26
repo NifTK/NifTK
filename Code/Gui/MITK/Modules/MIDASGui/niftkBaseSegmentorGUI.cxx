@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkBaseSegmentorControls.h"
+#include "niftkBaseSegmentorGUI.h"
 
 #include <mitkToolManager.h>
 
@@ -21,7 +21,7 @@
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorControls::niftkBaseSegmentorControls(QWidget* parent)
+niftkBaseSegmentorGUI::niftkBaseSegmentorGUI(QWidget* parent)
   : m_SegmentationSelectorWidget(nullptr),
     m_ToolSelectorWidget(nullptr),
     m_ContainerForSelectorWidget(nullptr),
@@ -43,7 +43,7 @@ niftkBaseSegmentorControls::niftkBaseSegmentorControls(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorControls::~niftkBaseSegmentorControls()
+niftkBaseSegmentorGUI::~niftkBaseSegmentorGUI()
 {
   if (m_SegmentationSelectorWidget != NULL)
   {
@@ -58,48 +58,48 @@ niftkBaseSegmentorControls::~niftkBaseSegmentorControls()
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorControls::EnableSegmentationWidgets(bool enabled)
+void niftkBaseSegmentorGUI::EnableSegmentationWidgets(bool enabled)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkBaseSegmentorControls::IsToolSelectorEnabled() const
+bool niftkBaseSegmentorGUI::IsToolSelectorEnabled() const
 {
   return m_ToolSelectorWidget->IsEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorControls::SetToolSelectorEnabled(bool enabled)
+void niftkBaseSegmentorGUI::SetToolSelectorEnabled(bool enabled)
 {
   m_ToolSelectorWidget->SetEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorControls::SetToolManager(mitk::ToolManager* toolManager)
+void niftkBaseSegmentorGUI::SetToolManager(mitk::ToolManager* toolManager)
 {
   m_ToolSelectorWidget->SetToolManager(toolManager);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager* niftkBaseSegmentorControls::GetToolManager() const
+mitk::ToolManager* niftkBaseSegmentorGUI::GetToolManager() const
 {
   return m_ToolSelectorWidget->GetToolManager();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorControls::SelectReferenceImage(const QString& imageName)
+void niftkBaseSegmentorGUI::SelectReferenceImage(const QString& imageName)
 {
   m_SegmentationSelectorWidget->SelectReferenceImage(imageName);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorControls::SelectSegmentationImage(const QString& imageName)
+void niftkBaseSegmentorGUI::SelectSegmentationImage(const QString& imageName)
 {
   m_SegmentationSelectorWidget->SelectSegmentationImage(imageName);
 }

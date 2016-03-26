@@ -48,7 +48,7 @@
 class QButtonGroup;
 class QGridLayout;
 
-class niftkGeneralSegmentorControls;
+class niftkGeneralSegmentorGUI;
 
 /**
  * \class niftkGeneralSegmentorView
@@ -293,7 +293,7 @@ protected:
   virtual void CreateQtPartControl(QWidget *parent) override;
 
   /// \brief Creates the general segmentor widget that holds the GUI components of the view.
-  virtual niftkBaseSegmentorControls* CreateSegmentorControls(QWidget* parent) override;
+  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
 
   /// \brief Called by framework, this method can set the focus on a specific widget,
   /// but we currently do nothing.
@@ -445,8 +445,8 @@ private:
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
   niftkGeneralSegmentorEventInterface::Pointer m_Interface;
 
-  /// \brief All the controls for the main view part.
-  niftkGeneralSegmentorControls* m_GeneralSegmentorControls;
+  /// \brief All the GUI controls for the main view part.
+  niftkGeneralSegmentorGUI* m_GeneralSegmentorGUI;
 
   /// \brief Keep track of this to SliceNavigationController register and unregister event listeners.
   mitk::SliceNavigationController::Pointer m_SliceNavigationController;

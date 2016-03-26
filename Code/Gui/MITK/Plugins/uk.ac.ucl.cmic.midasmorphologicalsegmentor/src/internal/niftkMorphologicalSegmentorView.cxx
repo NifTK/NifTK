@@ -38,7 +38,7 @@
 
 #include <niftkMIDASOrientationUtils.h>
 
-#include <niftkMorphologicalSegmentorControls.h>
+#include <niftkMorphologicalSegmentorGUI.h>
 
 
 const std::string niftkMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
@@ -46,7 +46,7 @@ const std::string niftkMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.mid
 //-----------------------------------------------------------------------------
 niftkMorphologicalSegmentorView::niftkMorphologicalSegmentorView()
 : niftkBaseSegmentorView()
-, m_MorphologicalSegmentorControls(NULL)
+, m_MorphologicalSegmentorGUI(NULL)
 , m_PipelineManager(NULL)
 , m_TabIndex(-1)
 {
@@ -388,7 +388,7 @@ void niftkMorphologicalSegmentorView::OnTabChanged(int tabIndex)
   {
     if (tabIndex == 1 || tabIndex == 2)
     {
-      m_MorphologicalSegmentorControls->SetToolSelectorEnabled(true);
+      m_MorphologicalSegmentorGUI->SetToolSelectorEnabled(true);
 
       mitk::ToolManager::Pointer toolManager = this->GetToolManager();
       niftk::MIDASPaintbrushTool::Pointer paintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>()));
@@ -437,7 +437,7 @@ void niftkMorphologicalSegmentorView::OnTabChanged(int tabIndex)
     }
     else
     {
-      m_MorphologicalSegmentorControls->SetToolSelectorEnabled(false);
+      m_MorphologicalSegmentorGUI->SetToolSelectorEnabled(false);
       this->OnToolSelected(-1); // make sure we de-activate tools.
     }
 
@@ -458,7 +458,7 @@ void niftkMorphologicalSegmentorView::OnOKButtonClicked()
   {
     this->OnToolSelected(-1);
     this->EnableSegmentationWidgets(false);
-    m_MorphologicalSegmentorControls->SetTabIndex(0);
+    m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->FinalizeSegmentation();
 
     /// Remove the axial cut-off plane node from the data storage.
@@ -518,7 +518,7 @@ void niftkMorphologicalSegmentorView::OnCancelButtonClicked()
   {
     this->OnToolSelected(-1);
     this->EnableSegmentationWidgets(false);
-    m_MorphologicalSegmentorControls->SetTabIndex(0);
+    m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->RemoveWorkingData();
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
@@ -543,20 +543,20 @@ void niftkMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorControls* niftkMorphologicalSegmentorView::CreateSegmentorControls(QWidget *parent)
+niftkBaseSegmentorGUI* niftkMorphologicalSegmentorView::CreateSegmentorGUI(QWidget *parent)
 {
-  m_MorphologicalSegmentorControls = new niftkMorphologicalSegmentorControls(parent);
+  m_MorphologicalSegmentorGUI = new niftkMorphologicalSegmentorGUI(parent);
 
-  this->connect(m_MorphologicalSegmentorControls, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
-  this->connect(m_MorphologicalSegmentorControls, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
-  this->connect(m_MorphologicalSegmentorControls, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
-  this->connect(m_MorphologicalSegmentorControls, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
-  this->connect(m_MorphologicalSegmentorControls, SIGNAL(TabChanged(int)), SLOT(OnTabChanged(int)));
-  this->connect(m_MorphologicalSegmentorControls, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(TabChanged(int)), SLOT(OnTabChanged(int)));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
 //  this->connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
-  this->connect(m_MorphologicalSegmentorControls, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
 
-  return m_MorphologicalSegmentorControls;
+  return m_MorphologicalSegmentorGUI;
 }
 
 
@@ -604,17 +604,17 @@ mitk::DataNode* niftkMorphologicalSegmentorView::GetSegmentationNodeFromWorkingD
 //-----------------------------------------------------------------------------
 void niftkMorphologicalSegmentorView::EnableSegmentationWidgets(bool enabled)
 {
-  int tabIndex = m_MorphologicalSegmentorControls->GetTabIndex();
+  int tabIndex = m_MorphologicalSegmentorGUI->GetTabIndex();
   if (enabled && (tabIndex == 1 || tabIndex == 2))
   {
-    m_MorphologicalSegmentorControls->SetToolSelectorEnabled(true);
+    m_MorphologicalSegmentorGUI->SetToolSelectorEnabled(true);
   }
   else
   {
-    m_MorphologicalSegmentorControls->SetToolSelectorEnabled(false);
+    m_MorphologicalSegmentorGUI->SetToolSelectorEnabled(false);
   }
 
-  m_MorphologicalSegmentorControls->SetEnabled(enabled);
+  m_MorphologicalSegmentorGUI->SetEnabled(enabled);
 }
 
 
@@ -644,7 +644,7 @@ void niftkMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedN
   {
     this->OnToolSelected(-1);
     this->EnableSegmentationWidgets(false);
-    m_MorphologicalSegmentorControls->SetTabIndex(0);
+    m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->RemoveWorkingData();
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
@@ -709,7 +709,7 @@ void niftkMorphologicalSegmentorView::SetControlsFromReferenceImage()
     int numberOfAxialSlices = referenceImage->GetDimension(axialAxis);
     int upDirection = niftk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
 
-    m_MorphologicalSegmentorControls->SetControlsByReferenceImage(
+    m_MorphologicalSegmentorGUI->SetControlsByReferenceImage(
         referenceImage->GetStatistics()->GetScalarValueMin(),
         referenceImage->GetStatistics()->GetScalarValueMax(),
         numberOfAxialSlices,
@@ -724,7 +724,7 @@ void niftkMorphologicalSegmentorView::SetControlsFromSegmentationNodeProps()
   MorphologicalSegmentorPipelineParams params;
   m_PipelineManager->GetPipelineParamsFromSegmentationNode(params);
 
-  m_MorphologicalSegmentorControls->SetControlsByPipelineParams(params);
+  m_MorphologicalSegmentorGUI->SetControlsByPipelineParams(params);
 }
 
 
@@ -741,7 +741,7 @@ void niftkMorphologicalSegmentorView::onVisibilityChanged(const mitk::DataNode* 
     bool segmentationNodeVisibility;
     if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
     {
-      int tabIndex = m_MorphologicalSegmentorControls->GetTabIndex();
+      int tabIndex = m_MorphologicalSegmentorGUI->GetTabIndex();
       workingData[niftk::MIDASPaintbrushTool::EROSIONS_ADDITIONS]->SetVisibility(false);
       workingData[niftk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 1);
       workingData[niftk::MIDASPaintbrushTool::DILATIONS_ADDITIONS]->SetVisibility(false);

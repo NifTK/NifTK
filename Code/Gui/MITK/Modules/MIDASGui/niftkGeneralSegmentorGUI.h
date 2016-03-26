@@ -12,21 +12,21 @@
 
 =============================================================================*/
 
-#ifndef __niftkGeneralSegmentorControls_h
-#define __niftkGeneralSegmentorControls_h
+#ifndef __niftkGeneralSegmentorGUI_h
+#define __niftkGeneralSegmentorGUI_h
 
 #include <QWidget>
 #include "ui_niftkGeneralSegmentorWidget.h"
-#include <niftkBaseSegmentorControls.h>
+#include <niftkBaseSegmentorGUI.h>
 
 #include <niftkMIDASGuiExports.h>
 
 /**
- * \class niftkGeneralSegmentorControls
+ * \class niftkGeneralSegmentorGUI
  * \brief Implements the Qt/Widget specific functionality pertaining to the MIDAS General Segmentor View.
  */
-class NIFTKMIDASGUI_EXPORT niftkGeneralSegmentorControls
-  : public niftkBaseSegmentorControls,
+class NIFTKMIDASGUI_EXPORT niftkGeneralSegmentorGUI
+  : public niftkBaseSegmentorGUI,
     private Ui::niftkGeneralSegmentorWidget
 {
 
@@ -35,10 +35,10 @@ class NIFTKMIDASGUI_EXPORT niftkGeneralSegmentorControls
 public:
 
   /// \brief Constructor.
-  niftkGeneralSegmentorControls(QWidget *parent);
+  niftkGeneralSegmentorGUI(QWidget *parent);
 
   /// \brief Destructor.
-  ~niftkGeneralSegmentorControls();
+  ~niftkGeneralSegmentorGUI();
 
   /// \brief Sets the min and max values on the lower and upper sliders
   void SetLowerAndUpperIntensityRanges(double lower, double upper);
@@ -111,8 +111,8 @@ signals:
 
 private:
 
-  niftkGeneralSegmentorControls(const niftkGeneralSegmentorControls&);  // Purposefully not implemented.
-  void operator=(const niftkGeneralSegmentorControls&);  // Purposefully not implemented.
+  niftkGeneralSegmentorGUI(const niftkGeneralSegmentorGUI&);  // Purposefully not implemented.
+  void operator=(const niftkGeneralSegmentorGUI&);  // Purposefully not implemented.
 
 };
 

@@ -23,7 +23,7 @@
 #include "niftkMorphologicalSegmentorPreferencePage.h"
 #include <niftkMorphologicalSegmentorPipelineManager.h>
 
-class niftkMorphologicalSegmentorControls;
+class niftkMorphologicalSegmentorGUI;
 
 /**
  * \class niftkMorphologicalSegmentorView
@@ -74,19 +74,19 @@ protected slots:
   /// \brief Called when the user hits the button "New segmentation", which creates the necessary reference data.
   virtual void OnNewSegmentationButtonClicked();
 
-  /// \brief Called from niftkMorphologicalSegmentorControls when thresholding sliders or spin boxes changed.
+  /// \brief Called from niftkMorphologicalSegmentorGUI when thresholding sliders or spin boxes changed.
   void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);
 
-  /// \brief Called from niftkMorphologicalSegmentorControls when erosion sliders or spin boxes changed.
+  /// \brief Called from niftkMorphologicalSegmentorGUI when erosion sliders or spin boxes changed.
   void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
 
-  /// \brief Called from niftkMorphologicalSegmentorControls when dilation sliders or spin boxes changed.
+  /// \brief Called from niftkMorphologicalSegmentorGUI when dilation sliders or spin boxes changed.
   void OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
 
-  /// \brief Called from niftkMorphologicalSegmentorControls when re-thresholding widgets changed.
+  /// \brief Called from niftkMorphologicalSegmentorGUI when re-thresholding widgets changed.
   void OnRethresholdingValuesChanged(int boxSize);
 
-  /// \brief Called from niftkMorphologicalSegmentorControls when a tab changes.
+  /// \brief Called from niftkMorphologicalSegmentorGUI when a tab changes.
   void OnTabChanged(int i);
 
   /// \brief Called from niftkMorphologicalSegmentatorControls when OK button is clicked, which should finalise / finish and accept the segmentation.
@@ -95,7 +95,7 @@ protected slots:
   /// \brief Called from niftkMorphologicalSegmentatorControls when Restart button is clicked, which means "back to start", like a "reset" button.
   void OnRestartButtonClicked();
 
-  /// \brief Called from niftkMorphologicalSegmentorControls when cancel button is clicked, which should mean "throw away" / "abandon" current segmentation.
+  /// \brief Called from niftkMorphologicalSegmentorGUI when cancel button is clicked, which should mean "throw away" / "abandon" current segmentation.
   void OnCancelButtonClicked();
 
 protected:
@@ -109,7 +109,7 @@ protected:
   virtual void CreateQtPartControl(QWidget *parent) override;
 
   /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
-  virtual niftkBaseSegmentorControls* CreateSegmentorControls(QWidget* parent) override;
+  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
 
   /// \brief Called by framework, sets the focus on a specific widget, but currently does nothing.
   virtual void SetFocus() override;
@@ -161,8 +161,8 @@ private:
   /// \param imageIndex tells which image has been modified: erosion addition / subtraction or dilation addition / subtraction.
   virtual void OnSegmentationEdited(int imageIndex);
 
-  /// \brief All the controls for the main Morphological Editor view part.
-  niftkMorphologicalSegmentorControls* m_MorphologicalSegmentorControls;
+  /// \brief All the GUI controls for the main Morphological Editor view part.
+  niftkMorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;
 
   /// \brief As much "business logic" as possible is delegated to this class so we can unit test it, without a GUI.
   niftk::MorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;

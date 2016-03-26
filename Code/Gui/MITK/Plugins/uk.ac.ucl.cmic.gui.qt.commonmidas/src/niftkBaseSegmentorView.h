@@ -39,17 +39,15 @@
 #include <niftkMIDASEventFilter.h>
 
 class QmitkRenderWindow;
-class niftkBaseSegmentorControls;
+class niftkBaseSegmentorGUI;
 
 /**
  * \class niftkBaseSegmentorView
  * \brief Base view component for MIDAS Segmentation widgets.
  *
- * \ingroup uk_ac_ucl_cmic_gui_qt_common
- *
  * \sa QmitkBaseView
- * \sa MIDASMorphologicalSegmentorView
- * \sa MIDASGeneralSegmentorView
+ * \sa niftkMorphologicalSegmentorView
+ * \sa niftkGeneralSegmentorView
  * \sa MITKSegmentationView
  */
 class CMIC_QT_COMMONMIDAS niftkBaseSegmentorView : public QmitkBaseView, public niftk::MIDASEventFilter
@@ -210,8 +208,8 @@ protected:
 
   /// \brief Creates the segmentor widget that holds the GUI components of the view.
   /// This function is called from CreateQtPartControl. Derived classes should provide their implementation
-  /// that returns an object whose class derives from niftkBaseSegmentorControls.
-  virtual niftkBaseSegmentorControls* CreateSegmentorControls(QWidget* parent) = 0;
+  /// that returns an object whose class derives from niftkBaseSegmentorGUI.
+  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) = 0;
 
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.
   virtual void ApplyDisplayOptions(mitk::DataNode* node);
@@ -239,7 +237,7 @@ protected:
 
 private:
 
-  niftkBaseSegmentorControls* m_BaseSegmentorControls;
+  niftkBaseSegmentorGUI* m_BaseSegmentorGUI;
 
   /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer m_SelectedNode;

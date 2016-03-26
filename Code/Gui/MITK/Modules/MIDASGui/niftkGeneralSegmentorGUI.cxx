@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "niftkGeneralSegmentorControls.h"
+#include "niftkGeneralSegmentorGUI.h"
 
 #include <niftkToolSelectorWidget.h>
 
 
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorControls::niftkGeneralSegmentorControls(QWidget *parent)
-: niftkBaseSegmentorControls(parent)
+niftkGeneralSegmentorGUI::niftkGeneralSegmentorGUI(QWidget *parent)
+: niftkBaseSegmentorGUI(parent)
 {
   QGridLayout* layout = new QGridLayout(parent);
   layout->setContentsMargins(6, 6, 6, 0);
@@ -67,20 +67,20 @@ niftkGeneralSegmentorControls::niftkGeneralSegmentorControls(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorControls::~niftkGeneralSegmentorControls()
+niftkGeneralSegmentorGUI::~niftkGeneralSegmentorGUI()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorControls::SetThresholdingCheckBoxEnabled(bool enabled)
+void niftkGeneralSegmentorGUI::SetThresholdingCheckBoxEnabled(bool enabled)
 {
   m_ThresholdingCheckBox->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorControls::SetThresholdingWidgetsEnabled(bool enabled)
+void niftkGeneralSegmentorGUI::SetThresholdingWidgetsEnabled(bool enabled)
 {
   m_ThresholdingGroupBox->setEnabled(enabled);
 //  m_ThresholdingGroupBox->setVisible(enabled);
@@ -100,14 +100,14 @@ void niftkGeneralSegmentorControls::SetThresholdingWidgetsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorControls::IsThresholdingCheckBoxChecked() const
+bool niftkGeneralSegmentorGUI::IsThresholdingCheckBoxChecked() const
 {
   return m_ThresholdingCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorControls::SetThresholdingCheckBoxChecked(bool checked)
+void niftkGeneralSegmentorGUI::SetThresholdingCheckBoxChecked(bool checked)
 {
   bool wasBlocked = m_ThresholdingCheckBox->blockSignals(true);
   m_ThresholdingCheckBox->setChecked(checked);
@@ -116,49 +116,49 @@ void niftkGeneralSegmentorControls::SetThresholdingCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorControls::IsSeePriorCheckBoxChecked() const
+bool niftkGeneralSegmentorGUI::IsSeePriorCheckBoxChecked() const
 {
   return m_SeePriorCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorControls::SetSeePriorCheckBoxChecked(bool checked)
+void niftkGeneralSegmentorGUI::SetSeePriorCheckBoxChecked(bool checked)
 {
   m_SeePriorCheckBox->setChecked(checked);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorControls::IsSeeNextCheckBoxChecked() const
+bool niftkGeneralSegmentorGUI::IsSeeNextCheckBoxChecked() const
 {
   return m_SeeNextCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorControls::SetSeeNextCheckBoxChecked(bool checked)
+void niftkGeneralSegmentorGUI::SetSeeNextCheckBoxChecked(bool checked)
 {
   m_SeeNextCheckBox->setChecked(checked);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorControls::IsRetainMarksCheckBoxChecked() const
+bool niftkGeneralSegmentorGUI::IsRetainMarksCheckBoxChecked() const
 {
   return m_RetainMarksCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorControls::SetRetainMarksCheckBoxChecked(bool checked)
+void niftkGeneralSegmentorGUI::SetRetainMarksCheckBoxChecked(bool checked)
 {
   m_RetainMarksCheckBox->setChecked(checked);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorControls::SetOKCancelResetWidgetsEnabled(bool enabled)
+void niftkGeneralSegmentorGUI::SetOKCancelResetWidgetsEnabled(bool enabled)
 {
   m_OKButton->setEnabled(enabled);
   m_CancelButton->setEnabled(enabled);
@@ -168,7 +168,7 @@ void niftkGeneralSegmentorControls::SetOKCancelResetWidgetsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorControls::SetAllWidgetsEnabled(bool enabled)
+void niftkGeneralSegmentorGUI::SetAllWidgetsEnabled(bool enabled)
 {
   this->SetThresholdingCheckBoxEnabled(enabled);
   this->SetThresholdingWidgetsEnabled(enabled);
@@ -184,7 +184,7 @@ void niftkGeneralSegmentorControls::SetAllWidgetsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorControls::SetLowerAndUpperIntensityRanges(double lower, double upper)
+void niftkGeneralSegmentorGUI::SetLowerAndUpperIntensityRanges(double lower, double upper)
 {
   m_ThresholdsSlider->setMinimum(lower);
   m_ThresholdsSlider->setMaximum(upper);
@@ -192,7 +192,7 @@ void niftkGeneralSegmentorControls::SetLowerAndUpperIntensityRanges(double lower
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorControls::SetSeedMinAndMaxValues(double min, double max)
+void niftkGeneralSegmentorGUI::SetSeedMinAndMaxValues(double min, double max)
 {
   QString minText;
   QString maxText;
@@ -206,14 +206,14 @@ void niftkGeneralSegmentorControls::SetSeedMinAndMaxValues(double min, double ma
 
 
 //-----------------------------------------------------------------------------
-double niftkGeneralSegmentorControls::GetLowerThreshold() const
+double niftkGeneralSegmentorGUI::GetLowerThreshold() const
 {
   return m_ThresholdsSlider->minimumValue();
 }
 
 
 //-----------------------------------------------------------------------------
-double niftkGeneralSegmentorControls::GetUpperThreshold() const
+double niftkGeneralSegmentorGUI::GetUpperThreshold() const
 {
   return m_ThresholdsSlider->maximumValue();
 }
