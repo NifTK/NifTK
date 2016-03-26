@@ -19,10 +19,9 @@
 
 #include <itkImageRegionConstIterator.h>
 
-namespace niftk
-{
-  MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPosnTool, "MIDAS Posn Tool");
-}
+#include "niftkToolFactoryMacros.h"
+
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPosnTool, "MIDAS Posn Tool");
 
 niftk::MIDASPosnTool::MIDASPosnTool()
 : MIDASTool()

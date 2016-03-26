@@ -27,15 +27,14 @@
 #include <usModuleResource.h>
 #include <usGetModuleContext.h>
 
+#include "niftkToolFactoryMacros.h"
+
 const std::string niftk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS("MIDAS PolyTool anchor points");
 const std::string niftk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR("MIDAS PolyTool previous contour");
 const mitk::OperationType niftk::MIDASPolyTool::MIDAS_POLY_TOOL_OP_ADD_TO_FEEDBACK_CONTOUR = 320420;
 const mitk::OperationType niftk::MIDASPolyTool::MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR = 320421;
 
-namespace niftk
-{
-  MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPolyTool, "MIDAS Poly Tool");
-}
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPolyTool, "MIDAS Poly Tool");
 
 niftk::MIDASPolyTool::MIDASPolyTool()
 : MIDASContourTool()

@@ -20,8 +20,10 @@
 #include <qlayout.h>
 #include <qpainter.h>
 
-MITK_TOOL_GUI_MACRO(NIFTKMIDASGUI_EXPORT, niftkMIDASPaintbrushToolGUI, "")
+#include <niftkToolFactoryMacros.h>
 
+
+NIFTK_TOOL_GUI_MACRO(NIFTKMIDASGUI_EXPORT, MIDASPaintbrushTool, niftkMIDASPaintbrushToolGUI, "MIDAS Paintbrush Tool GUI")
 
 //-----------------------------------------------------------------------------
 niftkMIDASPaintbrushToolGUI::niftkMIDASPaintbrushToolGUI()

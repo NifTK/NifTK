@@ -23,10 +23,9 @@
 #include <usModuleResource.h>
 #include <usGetModuleContext.h>
 
-namespace niftk
-{
-  MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASSeedTool, "MIDAS Seed Tool");
-}
+#include "niftkToolFactoryMacros.h"
+
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASSeedTool, "MIDAS Seed Tool");
 
 //-----------------------------------------------------------------------------
 niftk::MIDASSeedTool::~MIDASSeedTool()

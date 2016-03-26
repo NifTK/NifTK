@@ -17,6 +17,7 @@ set(H_FILES
   Algorithms/niftkGeneralSegmentorUtils.h
   Algorithms/niftkGeneralSegmentorUtils.txx
   Algorithms/niftkMorphologicalSegmentorPipelineManager.h
+  Interactions/niftkToolFactoryMacros.h
 )
 
 set(CPP_FILES

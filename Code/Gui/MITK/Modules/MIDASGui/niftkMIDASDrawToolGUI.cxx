@@ -20,9 +20,10 @@
 #include <QLayout>
 #include <QPainter>
 
+#include <niftkToolFactoryMacros.h>
 
-MITK_TOOL_GUI_MACRO(NIFTKMIDASGUI_EXPORT, niftkMIDASDrawToolGUI, "")
 
+NIFTK_TOOL_GUI_MACRO(NIFTKMIDASGUI_EXPORT, MIDASDrawTool, niftkMIDASDrawToolGUI, "MIDAS Draw Tool GUI")
 
 //-----------------------------------------------------------------------------
 niftkMIDASDrawToolGUI::niftkMIDASDrawToolGUI()

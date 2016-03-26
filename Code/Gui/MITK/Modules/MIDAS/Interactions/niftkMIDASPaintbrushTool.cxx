@@ -29,14 +29,15 @@
 #include <mitkUndoController.h>
 #include <mitkVector.h>
 
-#include "niftkMIDASPaintbrushTool.xpm"
-#include "niftkMIDASPaintbrushToolOpEditImage.h"
-#include "niftkMIDASPaintbrushToolEventInterface.h"
-
 // MicroServices
 #include <usGetModuleContext.h>
 #include <usModule.h>
 #include <usModuleRegistry.h>
+
+#include "niftkMIDASPaintbrushTool.xpm"
+#include "niftkMIDASPaintbrushToolOpEditImage.h"
+#include "niftkMIDASPaintbrushToolEventInterface.h"
+#include "niftkToolFactoryMacros.h"
 
 const std::string niftk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME = "MIDAS_EDITS_EROSIONS_ADDITIONS";
 const std::string niftk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_EROSIONS_SUBTRACTIONS";
@@ -46,10 +47,7 @@ const std::string niftk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME = "MID
 const std::string niftk::MIDASPaintbrushTool::REGION_PROPERTY_NAME = std::string("midas.morph.editing.region");
 const mitk::OperationType niftk::MIDASPaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 320410;
 
-namespace niftk
-{
-  MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPaintbrushTool, "MIDAS Paintbrush Tool");
-}
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPaintbrushTool, "MIDAS Paintbrush Tool");
 
 niftk::MIDASPaintbrushTool::MIDASPaintbrushTool()
 : mitk::SegTool2D("")
