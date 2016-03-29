@@ -174,6 +174,13 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
+niftkBaseSegmentorGUI* niftkBaseSegmentorView::CreateSegmentorGUI(QWidget* parent)
+{
+  return m_SegmentorController->CreateSegmentorGUI(parent);
+}
+
+
+//-----------------------------------------------------------------------------
 mitk::ToolManager* niftkBaseSegmentorView::GetToolManager()
 {
   assert(m_SegmentorController);

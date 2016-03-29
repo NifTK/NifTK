@@ -73,7 +73,7 @@ public:
 protected slots:
  
   /// \brief Called when the user hits the button "New segmentation", which creates the necessary reference data.
-  virtual void OnNewSegmentationButtonClicked();
+  virtual void OnNewSegmentationButtonClicked() override;
 
   /// \brief Called from niftkMorphologicalSegmentorGUI when thresholding sliders or spin boxes changed.
   void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);
@@ -106,9 +106,6 @@ protected:
 
   /// \brief Creates the morphological segmentor controller that realises the GUI logic behind the view.
   virtual niftkBaseSegmentorController* CreateSegmentorController() override;
-
-  /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
-  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
 
   /// \brief Called by framework, sets the focus on a specific widget, but currently does nothing.
   virtual void SetFocus() override;

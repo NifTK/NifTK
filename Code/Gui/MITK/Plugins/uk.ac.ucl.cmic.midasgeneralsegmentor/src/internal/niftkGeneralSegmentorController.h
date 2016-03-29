@@ -18,6 +18,7 @@
 #include <niftkBaseSegmentorController.h>
 
 
+class niftkGeneralSegmentorGUI;
 class niftkGeneralSegmentorView;
 
 /**
@@ -48,7 +49,13 @@ protected:
   /// this returns true, indicating that it's a valid "in-progress" segmentation.
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
 
+    /// \brief Creates the general segmentor widget that holds the GUI components of the view.
+  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
+
 private:
+
+  /// \brief All the GUI controls for the main view part.
+  niftkGeneralSegmentorGUI* m_GeneralSegmentorGUI;
 
   niftkGeneralSegmentorView* m_GeneralSegmentorView;
 

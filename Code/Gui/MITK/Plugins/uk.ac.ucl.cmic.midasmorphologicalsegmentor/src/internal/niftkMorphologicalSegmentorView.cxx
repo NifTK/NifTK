@@ -47,7 +47,6 @@ const std::string niftkMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.mid
 //-----------------------------------------------------------------------------
 niftkMorphologicalSegmentorView::niftkMorphologicalSegmentorView()
 : niftkBaseSegmentorView()
-, m_MorphologicalSegmentorGUI(NULL)
 , m_PipelineManager(NULL)
 , m_TabIndex(-1)
 {
@@ -529,24 +528,6 @@ niftkBaseSegmentorController* niftkMorphologicalSegmentorView::CreateSegmentorCo
 {
   m_MorphologicalSegmentorController = new niftkMorphologicalSegmentorController(this);
   return m_MorphologicalSegmentorController;
-}
-
-
-//-----------------------------------------------------------------------------
-niftkBaseSegmentorGUI* niftkMorphologicalSegmentorView::CreateSegmentorGUI(QWidget *parent)
-{
-  m_MorphologicalSegmentorGUI = new niftkMorphologicalSegmentorGUI(parent);
-
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(TabChanged(int)), SLOT(OnTabChanged(int)));
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
-//  this->connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
-
-  return m_MorphologicalSegmentorGUI;
 }
 
 

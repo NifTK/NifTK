@@ -16,11 +16,14 @@
 
 #include <niftkMIDASPaintbrushTool.h>
 
+#include <niftkMorphologicalSegmentorGUI.h>
+
 #include "niftkMorphologicalSegmentorView.h"
 
 //-----------------------------------------------------------------------------
 niftkMorphologicalSegmentorController::niftkMorphologicalSegmentorController(niftkMorphologicalSegmentorView* segmentorView)
   : niftkBaseSegmentorController(segmentorView),
+    m_MorphologicalSegmentorGUI(nullptr),
     m_MorphologicalSegmentorView(segmentorView)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
@@ -81,3 +84,20 @@ bool niftkMorphologicalSegmentorController::CanStartSegmentationForBinaryNode(co
 }
 
 
+//-----------------------------------------------------------------------------
+niftkBaseSegmentorGUI* niftkMorphologicalSegmentorController::CreateSegmentorGUI(QWidget *parent)
+{
+  m_MorphologicalSegmentorGUI = new niftkMorphologicalSegmentorGUI(parent);
+  m_MorphologicalSegmentorView->m_MorphologicalSegmentorGUI = m_MorphologicalSegmentorGUI;
+
+  m_MorphologicalSegmentorView->connect(m_MorphologicalSegmentorGUI, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
+  m_MorphologicalSegmentorView->connect(m_MorphologicalSegmentorGUI, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
+  m_MorphologicalSegmentorView->connect(m_MorphologicalSegmentorGUI, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
+  m_MorphologicalSegmentorView->connect(m_MorphologicalSegmentorGUI, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
+  m_MorphologicalSegmentorView->connect(m_MorphologicalSegmentorGUI, SIGNAL(TabChanged(int)), SLOT(OnTabChanged(int)));
+  m_MorphologicalSegmentorView->connect(m_MorphologicalSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
+//  m_MorphologicalSegmentorView->connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
+  m_MorphologicalSegmentorView->connect(m_MorphologicalSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
+
+  return m_MorphologicalSegmentorGUI;
+}

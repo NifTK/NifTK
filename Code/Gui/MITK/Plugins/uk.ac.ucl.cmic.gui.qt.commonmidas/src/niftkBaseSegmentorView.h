@@ -123,7 +123,7 @@ protected:
   /**
    * \see mitk::ILifecycleAwarePart::PartActivated
    */
-  virtual void Activated();
+  virtual void Activated() override;
 
   /// \brief Gets a single binary image registered with the ToolManager (that tools can edit), or NULL if it can't be found or is not an image.
   mitk::Image* GetWorkingImageFromToolManager(int index);
@@ -198,15 +198,14 @@ protected:
   virtual void SetToolSelectorEnabled(bool enabled);
 
   /// \brief Creates the GUI parts.
-  virtual void CreateQtPartControl(QWidget *parent);
+  virtual void CreateQtPartControl(QWidget *parent) override;
 
   /// \brief Creates the segmentor controller that realises the GUI logic behind the view.
   virtual niftkBaseSegmentorController* CreateSegmentorController() = 0;
 
   /// \brief Creates the segmentor widget that holds the GUI components of the view.
-  /// This function is called from CreateQtPartControl. Derived classes should provide their implementation
-  /// that returns an object whose class derives from niftkBaseSegmentorGUI.
-  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) = 0;
+  /// This function is called from CreateQtPartControl.
+  niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent);
 
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.
   void ApplyDisplayOptions(mitk::DataNode* node);
@@ -215,10 +214,10 @@ protected:
   virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes);
 
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
-  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
+  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes) override;
 
   /// \brief Called when preferences are updated.
-  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*) override;
 
   /// \brief Retrieve's the pref values from preference service, and store locally.
   virtual void RetrievePreferenceValues();

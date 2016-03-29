@@ -26,6 +26,7 @@
 
 class QWidget;
 
+class niftkBaseSegmentorGUI;
 class niftkBaseSegmentorView;
 
 /**
@@ -122,9 +123,19 @@ protected:
   /// \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancells the dialog box.
   virtual mitk::DataNode* CreateNewSegmentation(QWidget* parent, const QColor& defaultColor);
 
+  /// \brief Creates the segmentor widget that holds the GUI components of the view.
+  /// This function is called from CreateQtPartControl. Derived classes should provide their implementation
+  /// that returns an object whose class derives from niftkBaseSegmentorGUI.
+  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) = 0;
+
+  /// \brief Gets the segmentor widget that holds the GUI components of the view.
+  niftkBaseSegmentorGUI* GetSegmentorGUI() const;
+
 private:
 
   mitk::ToolManager::Pointer m_ToolManager;
+
+  niftkBaseSegmentorGUI* m_SegmentorGUI;
 
   niftkBaseSegmentorView* m_SegmentorView;
 

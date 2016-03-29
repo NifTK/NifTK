@@ -291,9 +291,6 @@ protected:
   /// \brief Creates the general segmentor controller that realises the GUI logic behind the view.
   virtual niftkBaseSegmentorController* CreateSegmentorController() override;
 
-  /// \brief Creates the general segmentor widget that holds the GUI components of the view.
-  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
-
   /// \brief Called by framework, this method can set the focus on a specific widget,
   /// but we currently do nothing.
   virtual void SetFocus() override;
@@ -434,7 +431,7 @@ private:
   /// \brief The general segmentor controller that realises the GUI logic behind the view.
   niftkGeneralSegmentorController* m_GeneralSegmentorController;
 
-  /// \brief All the GUI controls for the main view part.
+  /// \brief All the GUI controls for the main Irregular Editor view part.
   niftkGeneralSegmentorGUI* m_GeneralSegmentorGUI;
 
   /// \brief Keep track of this to SliceNavigationController register and unregister event listeners.

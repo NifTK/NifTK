@@ -18,6 +18,7 @@
 #include <niftkBaseSegmentorController.h>
 
 
+class niftkMorphologicalSegmentorGUI;
 class niftkMorphologicalSegmentorView;
 
 /**
@@ -50,7 +51,13 @@ protected:
   /// \brief For any binary image, we return true if the property midas.morph.stage is present, and false otherwise.
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
 
+  /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
+  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
+
 private:
+
+  /// \brief All the GUI controls for the main Morphological Editor view part.
+  niftkMorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;
 
   niftkMorphologicalSegmentorView* m_MorphologicalSegmentorView;
 
