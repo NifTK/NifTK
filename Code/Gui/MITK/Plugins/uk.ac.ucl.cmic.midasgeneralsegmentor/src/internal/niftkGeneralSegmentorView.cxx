@@ -111,10 +111,6 @@ niftkGeneralSegmentorView::niftkGeneralSegmentorView(
 //-----------------------------------------------------------------------------
 niftkGeneralSegmentorView::~niftkGeneralSegmentorView()
 {
-  if (m_GeneralSegmentorGUI)
-  {
-//    delete m_GeneralControls;
-  }
 }
 
 
@@ -212,46 +208,18 @@ void niftkGeneralSegmentorView::SetFocus()
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer niftkGeneralSegmentorView::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
+mitk::DataNode::Pointer niftkGeneralSegmentorView::CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
 {
-  mitk::ContourModelSet::Pointer contourSet = mitk::ContourModelSet::New();
-
-  mitk::DataNode::Pointer contourSetNode = mitk::DataNode::New();
-
-  contourSetNode->SetProperty("color", mitk::ColorProperty::New(r, g, b));
-  contourSetNode->SetProperty("contour.color", mitk::ColorProperty::New(r, g, b));
-  contourSetNode->SetFloatProperty("opacity", 1.0f);
-  contourSetNode->SetProperty("name", mitk::StringProperty::New(name));
-  contourSetNode->SetBoolProperty("helper object", true);
-  contourSetNode->SetBoolProperty("visible", visible);
-  contourSetNode->SetProperty("layer", mitk::IntProperty::New(layer));
-  contourSetNode->SetData(contourSet);
-
-  return contourSetNode;
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->CreateHelperImage(referenceImage, segmentationNode, r, g, b, name, visible, layer);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer niftkGeneralSegmentorView::CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
+mitk::DataNode::Pointer niftkGeneralSegmentorView::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
 {
-  mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  mitk::Tool* drawTool = toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>());
-  assert(drawTool);
-
-  mitk::ColorProperty::Pointer col = mitk::ColorProperty::New(r, g, b);
-
-  mitk::DataNode::Pointer helperImageNode = drawTool->CreateEmptySegmentationNode( referenceImage, name, col->GetColor());
-  helperImageNode->SetColor(col->GetColor());
-  helperImageNode->SetProperty("binaryimage.selectedcolor", col);
-  helperImageNode->SetBoolProperty("helper object", true);
-  helperImageNode->SetBoolProperty("visible", visible);
-  helperImageNode->SetProperty("layer", mitk::IntProperty::New(layer));
-
-  this->ApplyDisplayOptions(helperImageNode);
-
-  return helperImageNode;
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->CreateContourSet(segmentationNode, r, g, b, name, visible, layer);
 }
 
 
@@ -440,18 +408,8 @@ void niftkGeneralSegmentorView::OnNewSegmentationButtonClicked()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::StoreInitialSegmentation()
 {
-  mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  mitk::ToolManager::DataVectorType workingData = toolManager->GetWorkingData();
-
-  mitk::DataNode* segmentationNode = workingData[niftk::MIDASTool::SEGMENTATION];
-  mitk::DataNode* seedsNode = workingData[niftk::MIDASTool::SEEDS];
-  mitk::DataNode* initialSegmentationNode = workingData[niftk::MIDASTool::INITIAL_SEGMENTATION];
-  mitk::DataNode* initialSeedsNode = workingData[niftk::MIDASTool::INITIAL_SEEDS];
-
-  initialSegmentationNode->SetData(dynamic_cast<mitk::Image*>(segmentationNode->GetData())->Clone());
-  initialSeedsNode->SetData(dynamic_cast<mitk::PointSet*>(seedsNode->GetData())->Clone());
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->StoreInitialSegmentation();
 }
 
 
@@ -515,6 +473,7 @@ void niftkGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::EnableSegmentationWidgets(bool enabled)
 {
+  assert(m_GeneralSegmentorGUI);
   m_GeneralSegmentorGUI->SetAllWidgetsEnabled(enabled);
   bool thresholdingIsOn = m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked();
   m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(thresholdingIsOn);
@@ -524,77 +483,32 @@ void niftkGeneralSegmentorView::EnableSegmentationWidgets(bool enabled)
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::RecalculateMinAndMaxOfImage()
 {
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
-  {
-    double min = referenceImage->GetStatistics()->GetScalarValueMinNoRecompute();
-    double max = referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute();
-    m_GeneralSegmentorGUI->SetLowerAndUpperIntensityRanges(min, max);
-  }
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->RecalculateMinAndMaxOfImage();
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::RecalculateMinAndMaxOfSeedValues()
 {
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  mitk::PointSet::Pointer seeds = this->GetSeeds();
-
-  if (referenceImage.IsNotNull() && seeds.IsNotNull())
-  {
-    double min = 0;
-    double max = 0;
-
-    int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-    int axisNumber = this->GetViewAxis();
-
-    if (sliceNumber != -1 && axisNumber != -1)
-    {
-      try
-      {
-        AccessFixedDimensionByItk_n(referenceImage, niftk::ITKRecalculateMinAndMaxOfSeedValues, 3, (*(seeds.GetPointer()), axisNumber, sliceNumber, min, max));
-        m_GeneralSegmentorGUI->SetSeedMinAndMaxValues(min, max);
-      }
-      catch(const mitk::AccessByItkException& e)
-      {
-        MITK_ERROR << "Caught exception, so abandoning recalculating min and max of seeds values, due to:" << e.what();
-      }
-    }
-  }
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->RecalculateMinAndMaxOfSeedValues();
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::PointSet* niftkGeneralSegmentorView::GetSeeds()
 {
-
-  mitk::PointSet* result = NULL;
-
-  mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  mitk::DataNode::Pointer seedsNode = toolManager->GetWorkingData(niftk::MIDASTool::SEEDS);
-  if (seedsNode.IsNotNull())
-  {
-    result = dynamic_cast<mitk::PointSet*>(seedsNode->GetData());
-  }
-
-  return result;
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->GetSeeds();
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorView::HasInitialisedWorkingData()
 {
-  bool result = false;
-
-  mitk::ToolManager::DataVectorType nodes = this->GetWorkingData();
-  if (nodes.size() > 0)
-  {
-    result = true;
-  }
-
-  return result;
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->HasInitialisedWorkingData();
 }
 
 
@@ -1085,42 +999,8 @@ bool niftkGeneralSegmentorView::SelectViewMode()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::InitialiseSeedsForWholeVolume()
 {
-  if (!this->HasInitialisedWorkingData())
-  {
-    return;
-  }
-
-  MIDASOrientation orientation = this->GetOrientationAsEnum();
-  if (orientation == MIDAS_ORIENTATION_UNKNOWN)
-  {
-    orientation = MIDAS_ORIENTATION_CORONAL;
-  }
-
-  int axis = this->GetAxisFromReferenceImage(orientation);
-  if (axis == -1)
-  {
-    axis = 0;
-  }
-
-  mitk::PointSet *seeds = this->GetSeeds();
-  assert(seeds);
-
-  mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
-  assert(workingImage);
-
-  try
-  {
-    AccessFixedDimensionByItk_n(workingImage,
-        niftk::ITKInitialiseSeedsForVolume, 3,
-        (*seeds,
-         axis
-        )
-      );
-  }
-  catch(const mitk::AccessByItkException& e)
-  {
-    MITK_ERROR << "Caught exception during niftk::ITKInitialiseSeedsForVolume, so have not initialised seeds correctly, caused by:" << e.what();
-  }
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->InitialiseSeedsForWholeVolume();
 }
 
 

@@ -324,6 +324,7 @@ protected:
   void onVisibilityChanged(const mitk::DataNode* node) override;
 
 private:
+
   /// \brief Called when the view is closed or the segmentation node is removed from the data
   /// manager and destroys all working data (seeds, contours, region growing image), and also
   /// destroys the current segmentation.

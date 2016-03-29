@@ -345,25 +345,7 @@ void niftkBaseSegmentorView::ApplyDisplayOptions(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 int niftkBaseSegmentorView::GetSliceNumberFromSliceNavigationControllerAndReferenceImage()
 {
-  int sliceNumber = -1;
-
-  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController();
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-
-  if (referenceImage.IsNotNull() && snc.IsNotNull())
-  {
-    mitk::PlaneGeometry::ConstPointer pg = snc->GetCurrentPlaneGeometry();
-    if (pg.IsNotNull())
-    {
-      mitk::Point3D originInMillimetres = pg->GetOrigin();
-      mitk::Point3D originInVoxelCoordinates;
-      referenceImage->GetGeometry()->WorldToIndex(originInMillimetres, originInVoxelCoordinates);
-
-      int viewAxis = this->GetViewAxis();
-      sliceNumber = (int)(originInVoxelCoordinates[viewAxis] + 0.5);
-    }
-  }
-  return sliceNumber;
+  return m_SegmentorController->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
 }
 
 

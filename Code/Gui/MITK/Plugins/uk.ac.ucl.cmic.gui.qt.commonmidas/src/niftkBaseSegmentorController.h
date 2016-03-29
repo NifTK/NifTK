@@ -50,6 +50,8 @@ protected:
 
   mitk::DataStorage* GetDataStorage() const;
 
+  mitk::SliceNavigationController* GetSliceNavigationController() const;
+
   /// \brief Gets a vector of the working data nodes registered with the tool manager.
   /// The data nodes normally hold image, but could be surfaces etc.
   /// Empty list is returned if this can't be found.
@@ -94,6 +96,9 @@ protected:
 
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.
   virtual void ApplyDisplayOptions(mitk::DataNode* node);
+
+  /// \brief Works out the slice number.
+  int GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
 
   /// \brief Retrieves the currently active QmitkRenderWindow, and if it has a 2D mapper will return the current orientation of the view, returning ORIENTATION_UNKNOWN if it can't be found or the view is a 3D view for instance.
   MIDASOrientation GetOrientationAsEnum();
