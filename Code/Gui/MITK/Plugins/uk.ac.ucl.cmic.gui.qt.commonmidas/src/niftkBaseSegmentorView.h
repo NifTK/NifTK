@@ -261,8 +261,6 @@ private:
   /// \brief Stores the visibility state of the cursor in the main display before activating a tool.
   bool m_MainWindowCursorVisibleWithToolsOff;
 
-  mitk::ToolManager::Pointer m_ToolManager;
-
 friend class niftkBaseSegmentorController;
 
 };

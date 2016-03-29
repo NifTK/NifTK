@@ -155,12 +155,13 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget *parent)
 {
   this->SetParent(parent);
 
-  // Create an own tool manager and connect it to the data storage straight away.
-  m_ToolManager = mitk::ToolManager::New(this->GetDataStorage());
+  m_SegmentorController = this->CreateSegmentorController();
 
-  this->RegisterTools(m_ToolManager);
+  mitk::ToolManager::Pointer toolManager = m_SegmentorController->GetToolManager();
 
-  mitk::ToolManager::ToolVectorTypeConst tools = m_ToolManager->GetTools();
+  this->RegisterTools(toolManager);
+
+  mitk::ToolManager::ToolVectorTypeConst tools = toolManager->GetTools();
   mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();
   for ( ; it != tools.end(); ++it)
   {
@@ -175,9 +176,7 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget *parent)
   this->RetrievePreferenceValues();
 
   m_SegmentorGUI = this->CreateSegmentorGUI(parent);
-  m_SegmentorGUI->SetToolManager(m_ToolManager);
-
-  m_SegmentorController = this->CreateSegmentorController();
+  m_SegmentorGUI->SetToolManager(toolManager.GetPointer());
 
   this->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
   this->connect(m_SegmentorGUI, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
@@ -187,7 +186,9 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget *parent)
 //-----------------------------------------------------------------------------
 mitk::ToolManager* niftkBaseSegmentorView::GetToolManager()
 {
-  return m_ToolManager;
+  assert(m_SegmentorController);
+
+  return m_SegmentorController->GetToolManager();
 }
 
 

@@ -19,6 +19,8 @@
 
 #include <QObject>
 
+#include <mitkToolManager.h>
+
 class niftkBaseSegmentorView;
 
 /**
@@ -32,9 +34,15 @@ class CMIC_QT_COMMONMIDAS niftkBaseSegmentorController : public QObject
 public:
 
   niftkBaseSegmentorController(niftkBaseSegmentorView* segmentorView);
+
   virtual ~niftkBaseSegmentorController();
 
+  /// \brief Returns the segmentation tool manager used by the segmentor.
+  mitk::ToolManager* GetToolManager() const;
+
 private:
+
+  mitk::ToolManager::Pointer m_ToolManager;
 
   niftkBaseSegmentorView* m_SegmentorView;
 
