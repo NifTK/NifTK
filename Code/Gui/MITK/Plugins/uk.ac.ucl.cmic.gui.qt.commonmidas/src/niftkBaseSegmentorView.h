@@ -210,11 +210,8 @@ protected:
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.
   void ApplyDisplayOptions(mitk::DataNode* node);
 
-  /// \brief Propagate BlueBerry selection to ToolManager for manual segmentation.
-  virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes);
-
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
-  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes) override;
+  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer>& nodes) override;
 
   /// \brief Called when preferences are updated.
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*) override;
@@ -237,12 +234,6 @@ private:
   niftkBaseSegmentorController* m_SegmentorController;
 
   niftkBaseSegmentorGUI* m_SegmentorGUI;
-
-  /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
-  mitk::DataNode::Pointer m_SelectedNode;
-
-  /// \brief Keeps track of the last selected image, whenever only a single node is selected. If you multi-select, this is not updated.
-  mitk::Image::Pointer m_SelectedImage;
 
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   QColor m_DefaultSegmentationColor;

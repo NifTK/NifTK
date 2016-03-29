@@ -101,3 +101,33 @@ niftkBaseSegmentorGUI* niftkMorphologicalSegmentorController::CreateSegmentorGUI
 
   return m_MorphologicalSegmentorGUI;
 }
+
+
+//-----------------------------------------------------------------------------
+void niftkMorphologicalSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes)
+{
+  niftkBaseSegmentorController::OnDataManagerSelectionChanged(nodes);
+
+  bool enableWidgets = false;
+
+  if (nodes.size() == 1)
+  {
+    mitk::Image::ConstPointer referenceImage = m_MorphologicalSegmentorView->m_PipelineManager->GetReferenceImage();
+    mitk::Image::Pointer segmentationImage = m_MorphologicalSegmentorView->m_PipelineManager->GetSegmentationImage();
+
+    if (referenceImage.IsNotNull() && segmentationImage.IsNotNull())
+    {
+      m_MorphologicalSegmentorView->SetControlsFromSegmentationNodeProps();
+    }
+
+    bool isAlreadyFinished = true;
+    bool foundAlreadyFinishedProperty = nodes[0]->GetBoolProperty(niftk::MorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), isAlreadyFinished);
+
+    if (foundAlreadyFinishedProperty && !isAlreadyFinished)
+    {
+      enableWidgets = true;
+    }
+  }
+
+  m_MorphologicalSegmentorView->EnableSegmentationWidgets(enableWidgets);
+}

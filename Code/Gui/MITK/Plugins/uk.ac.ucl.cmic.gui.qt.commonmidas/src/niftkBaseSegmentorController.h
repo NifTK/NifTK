@@ -131,13 +131,29 @@ protected:
   /// \brief Gets the segmentor widget that holds the GUI components of the view.
   niftkBaseSegmentorGUI* GetSegmentorGUI() const;
 
+  /// \brief Called when the selection changes in the data manager.
+  /// \see QmitkAbstractView::OnSelectionChanged.
+  virtual void OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes);
+
+  /// \brief Returns the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
+  mitk::DataNode::Pointer GetSelectedNode() const;
+
 private:
+
+  /// \brief Propagate data manager selection to tool manager for manual segmentation.
+  virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes);
 
   mitk::ToolManager::Pointer m_ToolManager;
 
   niftkBaseSegmentorGUI* m_SegmentorGUI;
 
   niftkBaseSegmentorView* m_SegmentorView;
+
+  /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
+  mitk::DataNode::Pointer m_SelectedNode;
+
+  /// \brief Keeps track of the last selected image, whenever only a single node is selected. If you multi-select, this is not updated.
+  mitk::Image::Pointer m_SelectedImage;
 
 friend class niftkBaseSegmentorView;
 

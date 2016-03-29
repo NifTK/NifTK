@@ -600,35 +600,6 @@ QString niftkMorphologicalSegmentorView::GetPreferencesNodeName()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
-{
-  niftkBaseSegmentorView::OnSelectionChanged(part, nodes);
-
-  bool enableWidgets = false;
-
-  if (nodes.size() == 1)
-  {
-    mitk::Image::ConstPointer referenceImage = m_PipelineManager->GetReferenceImage();
-    mitk::Image::Pointer segmentationImage = m_PipelineManager->GetSegmentationImage();
-
-    if (referenceImage.IsNotNull() && segmentationImage.IsNotNull())
-    {
-      this->SetControlsFromSegmentationNodeProps();
-    }
-
-    bool isAlreadyFinished = true;
-    bool foundAlreadyFinishedProperty = nodes[0]->GetBoolProperty(niftk::MorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), isAlreadyFinished);
-
-    if (foundAlreadyFinishedProperty && !isAlreadyFinished)
-    {
-      enableWidgets = true;
-    }
-  }
-  this->EnableSegmentationWidgets(enableWidgets);
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkMorphologicalSegmentorView::SetSegmentationNodePropsFromReferenceImage()
 {
   m_PipelineManager->SetSegmentationNodePropsFromReferenceImage();

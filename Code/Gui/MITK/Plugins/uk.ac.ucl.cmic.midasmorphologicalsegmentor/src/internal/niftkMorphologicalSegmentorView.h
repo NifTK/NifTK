@@ -119,9 +119,6 @@ protected:
   /// \brief Returns the name of the preferences node to look up.
   virtual QString GetPreferencesNodeName() override;
 
-  /// \brief \see QmitkAbstractView::OnSelectionChanged.
-  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes) override;
-
   void onVisibilityChanged(const mitk::DataNode* node) override;
 
 private:

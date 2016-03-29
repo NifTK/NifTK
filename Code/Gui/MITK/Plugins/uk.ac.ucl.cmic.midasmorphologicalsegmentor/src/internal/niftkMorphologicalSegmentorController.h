@@ -54,6 +54,10 @@ protected:
   /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
   virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
 
+  /// \brief Called when the selection changes in the data manager.
+  /// \see QmitkAbstractView::OnSelectionChanged.
+  virtual void OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes) override;
+
 private:
 
   /// \brief All the GUI controls for the main Morphological Editor view part.
