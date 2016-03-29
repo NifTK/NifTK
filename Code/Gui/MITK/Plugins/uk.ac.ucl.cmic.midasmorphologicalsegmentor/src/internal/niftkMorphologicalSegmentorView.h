@@ -23,6 +23,7 @@
 #include "niftkMorphologicalSegmentorPreferencePage.h"
 #include <niftkMorphologicalSegmentorPipelineManager.h>
 
+class niftkMorphologicalSegmentorController;
 class niftkMorphologicalSegmentorGUI;
 
 /**
@@ -108,6 +109,9 @@ protected:
   /// \brief Called by framework, this method creates all the controls for this view
   virtual void CreateQtPartControl(QWidget *parent) override;
 
+  /// \brief Creates the morphological segmentor controller that realises the GUI logic behind the view.
+  virtual niftkBaseSegmentorController* CreateSegmentorController() override;
+
   /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
   virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
 
@@ -161,6 +165,9 @@ private:
   /// \param imageIndex tells which image has been modified: erosion addition / subtraction or dilation addition / subtraction.
   virtual void OnSegmentationEdited(int imageIndex);
 
+  /// \brief The morphological segmentor controller that realises the GUI logic behind the view.
+  niftkMorphologicalSegmentorController* m_MorphologicalSegmentorController;
+
   /// \brief All the GUI controls for the main Morphological Editor view part.
   niftkMorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;
 
@@ -169,6 +176,9 @@ private:
 
   /// \brief Keep local variable to update after the tab has changed.
   int m_TabIndex;
+
+friend class niftkMorphologicalSegmentorController;
+
 };
 
 #endif

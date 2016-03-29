@@ -38,6 +38,7 @@
 
 #include <niftkMIDASOrientationUtils.h>
 
+#include "niftkMorphologicalSegmentorController.h"
 #include <niftkMorphologicalSegmentorGUI.h>
 
 
@@ -539,6 +540,14 @@ void niftkMorphologicalSegmentorView::CreateQtPartControl(QWidget* parent)
   m_PipelineManager = niftk::MorphologicalSegmentorPipelineManager::New();
   m_PipelineManager->SetDataStorage(this->GetDataStorage());
   m_PipelineManager->SetToolManager(this->GetToolManager());
+}
+
+
+//-----------------------------------------------------------------------------
+niftkBaseSegmentorController* niftkMorphologicalSegmentorView::CreateSegmentorController()
+{
+  m_MorphologicalSegmentorController = new niftkMorphologicalSegmentorController(this);
+  return m_MorphologicalSegmentorController;
 }
 
 

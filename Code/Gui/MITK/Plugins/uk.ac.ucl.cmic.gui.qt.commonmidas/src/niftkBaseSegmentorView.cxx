@@ -35,6 +35,7 @@
 #include <QmitkRenderWindow.h>
 
 #include <NifTKConfigure.h>
+#include <niftkBaseSegmentorController.h>
 #include <niftkBaseSegmentorGUI.h>
 #include <niftkNewSegmentationDialog.h>
 #include <niftkMIDASTool.h>
@@ -53,7 +54,7 @@ niftkBaseSegmentorView::niftkBaseSegmentorView()
     m_SelectedImage(nullptr),
     m_ActiveToolID(-1),
     m_MainWindowCursorVisibleWithToolsOff(true),
-    m_BaseSegmentorGUI(nullptr)
+    m_SegmentorGUI(nullptr)
 {
   m_SelectedNode = NULL;
 }
@@ -73,8 +74,8 @@ niftkBaseSegmentorView::~niftkBaseSegmentorView()
     }
   }
 
-  delete m_BaseSegmentorGUI;
-  m_BaseSegmentorGUI = nullptr;
+  delete m_SegmentorGUI;
+  m_SegmentorGUI = nullptr;
 }
 
 
@@ -173,12 +174,13 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget *parent)
   // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
   this->RetrievePreferenceValues();
 
-  m_BaseSegmentorGUI = this->CreateSegmentorGUI(parent);
+  m_SegmentorGUI = this->CreateSegmentorGUI(parent);
+  m_SegmentorGUI->SetToolManager(m_ToolManager);
 
-  m_BaseSegmentorGUI->SetToolManager(m_ToolManager);
+  m_SegmentorController = this->CreateSegmentorController();
 
-  this->connect(m_BaseSegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
-  this->connect(m_BaseSegmentorGUI, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+  this->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
+  this->connect(m_SegmentorGUI, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
 }
 
 
@@ -277,11 +279,11 @@ void niftkBaseSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer /
     // If we have worked out the reference data, then set the combo box.
     if (referenceData.IsNotNull())
     {
-      m_BaseSegmentorGUI->SelectReferenceImage(QString::fromStdString(referenceData->GetName()));
+      m_SegmentorGUI->SelectReferenceImage(QString::fromStdString(referenceData->GetName()));
     }
     else
     {
-      m_BaseSegmentorGUI->SelectReferenceImage();
+      m_SegmentorGUI->SelectReferenceImage();
     }
 
     // Tell the tool manager the images for reference and working purposes.
@@ -290,7 +292,7 @@ void niftkBaseSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer /
   }
 
   // Adjust widgets according to whether we have a valid selection.
-  m_BaseSegmentorGUI->EnableSegmentationWidgets(valid);
+  m_SegmentorGUI->EnableSegmentationWidgets(valid);
 }
 
 
@@ -480,7 +482,7 @@ mitk::BaseRenderer* niftkBaseSegmentorView::GetFocusedRenderer()
 //-----------------------------------------------------------------------------
 void niftkBaseSegmentorView::SetToolSelectorEnabled(bool enabled)
 {
-  m_BaseSegmentorGUI->SetToolSelectorEnabled(enabled);
+  m_SegmentorGUI->SetToolSelectorEnabled(enabled);
 }
 
 
@@ -524,11 +526,11 @@ void niftkBaseSegmentorView::SetToolManagerSelection(const mitk::DataNode* refer
     mitk::DataNode::Pointer node = workingDataNodes[0];
     mitk::DataNode::Pointer segmentationImage = this->GetSegmentationNodeFromWorkingData(node);
     assert(segmentationImage);
-    m_BaseSegmentorGUI->SelectSegmentationImage(QString::fromStdString(segmentationImage->GetName()));
+    m_SegmentorGUI->SelectSegmentationImage(QString::fromStdString(segmentationImage->GetName()));
   }
   else
   {
-    m_BaseSegmentorGUI->SelectSegmentationImage();
+    m_SegmentorGUI->SelectSegmentationImage();
   }
 }
 

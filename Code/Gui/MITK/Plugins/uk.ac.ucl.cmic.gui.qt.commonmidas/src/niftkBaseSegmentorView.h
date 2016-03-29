@@ -39,6 +39,7 @@
 #include <niftkMIDASEventFilter.h>
 
 class QmitkRenderWindow;
+class niftkBaseSegmentorController;
 class niftkBaseSegmentorGUI;
 
 /**
@@ -206,6 +207,9 @@ protected:
   /// \brief Creates the GUI parts.
   virtual void CreateQtPartControl(QWidget *parent);
 
+  /// \brief Creates the segmentor controller that realises the GUI logic behind the view.
+  virtual niftkBaseSegmentorController* CreateSegmentorController() = 0;
+
   /// \brief Creates the segmentor widget that holds the GUI components of the view.
   /// This function is called from CreateQtPartControl. Derived classes should provide their implementation
   /// that returns an object whose class derives from niftkBaseSegmentorGUI.
@@ -237,7 +241,10 @@ protected:
 
 private:
 
-  niftkBaseSegmentorGUI* m_BaseSegmentorGUI;
+  /// \brief The segmentor controller that realises the GUI logic behind the view.
+  niftkBaseSegmentorController* m_SegmentorController;
+
+  niftkBaseSegmentorGUI* m_SegmentorGUI;
 
   /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer m_SelectedNode;
@@ -255,6 +262,8 @@ private:
   bool m_MainWindowCursorVisibleWithToolsOff;
 
   mitk::ToolManager::Pointer m_ToolManager;
+
+friend class niftkBaseSegmentorController;
 
 };
 

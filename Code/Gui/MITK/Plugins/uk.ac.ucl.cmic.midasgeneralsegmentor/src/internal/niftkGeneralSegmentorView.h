@@ -48,6 +48,7 @@
 class QButtonGroup;
 class QGridLayout;
 
+class niftkGeneralSegmentorController;
 class niftkGeneralSegmentorGUI;
 
 /**
@@ -292,6 +293,9 @@ protected:
   /// \brief Called by framework, this method creates all the controls for this view.
   virtual void CreateQtPartControl(QWidget *parent) override;
 
+  /// \brief Creates the general segmentor controller that realises the GUI logic behind the view.
+  virtual niftkBaseSegmentorController* CreateSegmentorController() override;
+
   /// \brief Creates the general segmentor widget that holds the GUI components of the view.
   virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
 
@@ -445,6 +449,9 @@ private:
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
   niftkGeneralSegmentorEventInterface::Pointer m_Interface;
 
+  /// \brief The general segmentor controller that realises the GUI logic behind the view.
+  niftkGeneralSegmentorController* m_GeneralSegmentorController;
+
   /// \brief All the GUI controls for the main view part.
   niftkGeneralSegmentorGUI* m_GeneralSegmentorGUI;
 
@@ -479,6 +486,8 @@ private:
   mitk::Point3D m_PreviousFocusPoint;
 
   bool m_IsRestarting;
+
+friend class niftkGeneralSegmentorController;
 
 };
 

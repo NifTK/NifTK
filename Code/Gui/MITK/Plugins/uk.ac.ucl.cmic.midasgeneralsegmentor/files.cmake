@@ -17,6 +17,7 @@ set(SRC_CPP_FILES
 
 set(INTERNAL_CPP_FILES
   niftkGeneralSegmentorActivator.cxx
+  niftkGeneralSegmentorController.cxx
   niftkGeneralSegmentorEventInterface.cxx
   niftkGeneralSegmentorPreferencePage.cxx
   niftkGeneralSegmentorView.cxx
@@ -27,6 +28,7 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/internal/niftkGeneralSegmentorActivator.h
+  src/internal/niftkGeneralSegmentorController.h
   src/internal/niftkGeneralSegmentorPreferencePage.h
   src/internal/niftkGeneralSegmentorView.h
 )

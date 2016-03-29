@@ -62,6 +62,7 @@
 
 #include <niftkGeneralSegmentorCommands.h>
 
+#include "niftkGeneralSegmentorController.h"
 #include <niftkGeneralSegmentorGUI.h>
 
 /*
@@ -134,6 +135,14 @@ void niftkGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 
 //    m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
   m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New(this);
+}
+
+
+//-----------------------------------------------------------------------------
+niftkBaseSegmentorController* niftkGeneralSegmentorView::CreateSegmentorController()
+{
+  m_GeneralSegmentorController = new niftkGeneralSegmentorController(this);
+  return m_GeneralSegmentorController;
 }
 
 
