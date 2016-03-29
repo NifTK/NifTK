@@ -40,6 +40,12 @@ public:
   /// \brief Returns the segmentation tool manager used by the segmentor.
   mitk::ToolManager* GetToolManager() const;
 
+protected:
+
+  /// \brief Registers the segmentation tools provided by this segmentor.
+  /// Subclasses should override it.
+  virtual void RegisterTools();
+
 private:
 
   mitk::ToolManager::Pointer m_ToolManager;

@@ -144,13 +144,6 @@ niftkBaseSegmentorView::niftkBaseSegmentorView(const niftkBaseSegmentorView& oth
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolManager)
-{
-  Q_UNUSED(toolManager);
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkBaseSegmentorView::CreateQtPartControl(QWidget *parent)
 {
   this->SetParent(parent);
@@ -158,8 +151,6 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget *parent)
   m_SegmentorController = this->CreateSegmentorController();
 
   mitk::ToolManager::Pointer toolManager = m_SegmentorController->GetToolManager();
-
-  this->RegisterTools(toolManager);
 
   mitk::ToolManager::ToolVectorTypeConst tools = toolManager->GetTools();
   mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();

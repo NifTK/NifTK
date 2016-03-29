@@ -33,6 +33,12 @@ public:
   niftkGeneralSegmentorController(niftkGeneralSegmentorView* segmentorView);
   virtual ~niftkGeneralSegmentorController();
 
+protected:
+
+  /// \brief Registers the segmentation tools provided by this segmentor.
+  /// Registers the draw, seed, poly and posn tools.
+  void RegisterTools() override;
+
 private:
 
   niftkGeneralSegmentorView* m_GeneralSegmentorView;

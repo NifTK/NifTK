@@ -66,12 +66,6 @@ niftkMorphologicalSegmentorView::niftkMorphologicalSegmentorView(
 //-----------------------------------------------------------------------------
 niftkMorphologicalSegmentorView::~niftkMorphologicalSegmentorView()
 {
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  int paintbrushToolId = toolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>();
-  niftk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>(toolManager->GetToolById(paintbrushToolId));
-  assert(paintbrushTool);
-
-  paintbrushTool->SegmentationEdited.RemoveListener(mitk::MessageDelegate1<niftkMorphologicalSegmentorView, int>(this, &niftkMorphologicalSegmentorView::OnSegmentationEdited));
 }
 
 
@@ -89,19 +83,6 @@ void niftkMorphologicalSegmentorView::ClosePart()
   {
     this->OnCancelButtonClicked();
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolManager)
-{
-  toolManager->RegisterTool("MIDASPaintbrushTool");
-
-  int paintbrushToolId = toolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>();
-  niftk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>(toolManager->GetToolById(paintbrushToolId));
-  assert(paintbrushTool);
-
-  paintbrushTool->SegmentationEdited.AddListener(mitk::MessageDelegate1<niftkMorphologicalSegmentorView, int>(this, &niftkMorphologicalSegmentorView::OnSegmentationEdited));
 }
 
 

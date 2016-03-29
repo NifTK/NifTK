@@ -33,6 +33,12 @@ public:
   niftkMorphologicalSegmentorController(niftkMorphologicalSegmentorView* segmentorView);
   virtual ~niftkMorphologicalSegmentorController();
 
+protected:
+
+  /// \brief Registers the segmentation tools provided by this segmentor.
+  /// Registers the paintbrush tool.
+  void RegisterTools() override;
+
 private:
 
   niftkMorphologicalSegmentorView* m_MorphologicalSegmentorView;

@@ -22,6 +22,8 @@ niftkBaseSegmentorController::niftkBaseSegmentorController(niftkBaseSegmentorVie
 {
   // Create an own tool manager and connect it to the data storage straight away.
   m_ToolManager = mitk::ToolManager::New(segmentorView->GetDataStorage());
+
+  this->RegisterTools();
 }
 
 
@@ -35,4 +37,10 @@ niftkBaseSegmentorController::~niftkBaseSegmentorController()
 mitk::ToolManager* niftkBaseSegmentorController::GetToolManager() const
 {
   return m_ToolManager;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorController::RegisterTools()
+{
 }

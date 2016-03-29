@@ -119,16 +119,6 @@ niftkGeneralSegmentorView::~niftkGeneralSegmentorView()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::RegisterTools(mitk::ToolManager::Pointer toolManager)
-{
-  toolManager->RegisterTool("MIDASDrawTool");
-  toolManager->RegisterTool("MIDASSeedTool");
-  toolManager->RegisterTool("MIDASPolyTool");
-  toolManager->RegisterTool("MIDASPosnTool");
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
 {
   niftkBaseSegmentorView::CreateQtPartControl(parent);
