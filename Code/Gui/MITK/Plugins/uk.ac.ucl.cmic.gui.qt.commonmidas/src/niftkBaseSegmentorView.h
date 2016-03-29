@@ -126,7 +126,7 @@ protected:
   virtual void Activated();
 
   /// \brief Gets a single binary image registered with the ToolManager (that tools can edit), or NULL if it can't be found or is not an image.
-  mitk::Image* GetWorkingImageFromToolManager(int i);
+  mitk::Image* GetWorkingImageFromToolManager(int index);
 
   /// \brief Gets the reference node from the ToolManager or NULL if it can't be found.
   mitk::DataNode* GetReferenceNodeFromToolManager();
@@ -168,28 +168,28 @@ protected:
   void SetReferenceImageSelected();
 
   /// \brief Returns the tool manager associated with this object (derived classes provide ones in different ways).
-  virtual mitk::ToolManager* GetToolManager();
+  mitk::ToolManager* GetToolManager();
 
   /// \brief Returns true if node represent an image that is non binary, and false otherwise.
-  virtual bool IsNodeAReferenceImage(const mitk::DataNode::Pointer node);
+  bool IsNodeAReferenceImage(const mitk::DataNode::Pointer node);
 
   /// \brief Returns true if node represents an image that is binary, and false otherwise.
-  virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node);
+  bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node);
 
   /// \brief Subclasses decide if they can restart the segmentation for a binary node.
-  virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) = 0;
+  bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node);
 
   /// \brief Returns true if node represents an image that is binary, and false otherwise.
-  virtual bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node);
+  bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
-  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
+  mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
-  virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node);
+  mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node);
 
   /// \brief Gets a vector of the working data nodes (normally image, but could be surfaces etc) registered with the tool manager (ie. that tools can edit), or empty list if this can't be found.
-  virtual mitk::ToolManager::DataVectorType GetWorkingData();
+  mitk::ToolManager::DataVectorType GetWorkingData();
 
   /// \brief Method to enable derived classes to turn widgets off/on, with default do nothing implementation.
   virtual void EnableSegmentationWidgets(bool enabled) = 0;
@@ -209,7 +209,7 @@ protected:
   virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) = 0;
 
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.
-  virtual void ApplyDisplayOptions(mitk::DataNode* node);
+  void ApplyDisplayOptions(mitk::DataNode* node);
 
   /// \brief Propagate BlueBerry selection to ToolManager for manual segmentation.
   virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes);

@@ -557,41 +557,6 @@ void niftkMorphologicalSegmentorView::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-bool niftkMorphologicalSegmentorView::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
-{
-  return m_PipelineManager->IsNodeASegmentationImage(node);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkMorphologicalSegmentorView::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
-{
-  return m_PipelineManager->IsNodeAWorkingImage(node);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkMorphologicalSegmentorView::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
-{
-  return m_PipelineManager->CanStartSegmentationForBinaryNode(node);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType niftkMorphologicalSegmentorView::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
-{
-  return m_PipelineManager->GetWorkingDataFromSegmentationNode(node);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* niftkMorphologicalSegmentorView::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
-{
-  return m_PipelineManager->GetSegmentationNodeFromWorkingData(node);
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkMorphologicalSegmentorView::EnableSegmentationWidgets(bool enabled)
 {
   int tabIndex = m_MorphologicalSegmentorGUI->GetTabIndex();

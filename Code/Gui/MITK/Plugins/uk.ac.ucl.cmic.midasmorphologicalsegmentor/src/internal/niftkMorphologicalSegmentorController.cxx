@@ -50,3 +50,40 @@ void niftkMorphologicalSegmentorController::RegisterTools()
 
   paintbrushTool->SegmentationEdited.AddListener(mitk::MessageDelegate1<niftkMorphologicalSegmentorView, int>(m_MorphologicalSegmentorView, &niftkMorphologicalSegmentorView::OnSegmentationEdited));
 }
+
+
+//-----------------------------------------------------------------------------
+bool niftkMorphologicalSegmentorController::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
+{
+  return m_MorphologicalSegmentorView->m_PipelineManager->IsNodeASegmentationImage(node);
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkMorphologicalSegmentorController::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
+{
+  return m_MorphologicalSegmentorView->m_PipelineManager->IsNodeAWorkingImage(node);
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::ToolManager::DataVectorType niftkMorphologicalSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
+{
+  return m_MorphologicalSegmentorView->m_PipelineManager->GetWorkingDataFromSegmentationNode(node);
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNode* niftkMorphologicalSegmentorController::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
+{
+  return m_MorphologicalSegmentorView->m_PipelineManager->GetSegmentationNodeFromWorkingData(node);
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkMorphologicalSegmentorController::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
+{
+  return m_MorphologicalSegmentorView->m_PipelineManager->CanStartSegmentationForBinaryNode(node);
+}
+
+

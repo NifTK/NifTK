@@ -25,7 +25,6 @@
 #include <mitkRenderingManager.h>
 #include <mitkBaseRenderer.h>
 #include <mitkSegTool2D.h>
-#include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkToolManager.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkStateMachine.h>
@@ -289,119 +288,86 @@ void niftkBaseSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer /
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* niftkBaseSegmentorView::GetWorkingImageFromToolManager(int i)
+mitk::Image* niftkBaseSegmentorView::GetWorkingImageFromToolManager(int index)
 {
-  mitk::Image* result = NULL;
-
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-  if (workingData.size() > 0 && i >= 0 && i < (int)workingData.size())
-  {
-    mitk::DataNode::Pointer node = workingData[i];
-
-    if (node.IsNotNull())
-    {
-      mitk::Image::Pointer image = dynamic_cast<mitk::Image*>( node->GetData() );
-      if (image.IsNotNull())
-      {
-        result = image.GetPointer();
-      }
-    }
-  }
-  return result;
+  return m_SegmentorController->GetWorkingImageFromToolManager(index);
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::DataNode* niftkBaseSegmentorView::GetReferenceNodeFromToolManager()
 {
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  return toolManager->GetReferenceData(0);
+  return m_SegmentorController->GetReferenceNodeFromToolManager();
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::Image* niftkBaseSegmentorView::GetReferenceImageFromToolManager()
 {
-  mitk::Image* result = NULL;
-
-  mitk::DataNode::Pointer node = this->GetReferenceNodeFromToolManager();
-  if (node.IsNotNull())
-  {
-    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>( node->GetData() );
-    if (image.IsNotNull())
-    {
-      result = image.GetPointer();
-    }
-  }
-  return result;
+  return m_SegmentorController->GetReferenceImageFromToolManager();
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::DataNode* niftkBaseSegmentorView::GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
-  mitk::DataNode* result = mitk::FindFirstParentImage(this->GetDataStorage(), node, false );
-  return result;
+  return m_SegmentorController->GetReferenceNodeFromSegmentationNode(node);
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::ToolManager::DataVectorType niftkBaseSegmentorView::GetWorkingData()
 {
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  return toolManager->GetWorkingData();
+  return m_SegmentorController->GetWorkingData();
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::Image* niftkBaseSegmentorView::GetReferenceImage()
 {
-  mitk::Image* result = this->GetReferenceImageFromToolManager();
-  return result;
+  return m_SegmentorController->GetReferenceImage();
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkBaseSegmentorView::IsNodeAReferenceImage(const mitk::DataNode::Pointer node)
 {
-  return mitk::IsNodeAGreyScaleImage(node);
+  return m_SegmentorController->IsNodeAReferenceImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkBaseSegmentorView::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
 {
-  return mitk::IsNodeABinaryImage(node);
+  return m_SegmentorController->IsNodeASegmentationImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkBaseSegmentorView::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
 {
-  return mitk::IsNodeABinaryImage(node);
+  return m_SegmentorController->IsNodeAWorkingImage(node);
 }
 
-mitk::ToolManager::DataVectorType niftkBaseSegmentorView::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
-{
-  // This default implementation just says Segmentation node == Working node, which subclasses could override.
 
-  mitk::ToolManager::DataVectorType result(1);
-  result[0] = node;
-  return result;
+//-----------------------------------------------------------------------------
+mitk::ToolManager::DataVectorType niftkBaseSegmentorView::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode)
+{
+  return m_SegmentorController->GetWorkingDataFromSegmentationNode(segmentationNode);
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::DataNode* niftkBaseSegmentorView::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
 {
-  // This default implementation just says Segmentation node == Working node, which subclasses could override.
+  return m_SegmentorController->GetSegmentationNodeFromWorkingData(node);
+}
 
-  mitk::DataNode::Pointer result = node;
-  return result;
+
+//-----------------------------------------------------------------------------
+bool niftkBaseSegmentorView::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
+{
+  return m_SegmentorController->CanStartSegmentationForBinaryNode(node);
 }
 
 
@@ -481,18 +447,7 @@ void niftkBaseSegmentorView::SetToolSelectorEnabled(bool enabled)
 //-----------------------------------------------------------------------------
 void niftkBaseSegmentorView::ApplyDisplayOptions(mitk::DataNode* node)
 {
-  if (!node) return;
-
-  bool isBinary(false);
-  if (node->GetBoolProperty("binary", isBinary) && isBinary)
-  {
-    node->ReplaceProperty("reslice interpolation", mitk::VtkResliceInterpolationProperty::New(VTK_RESLICE_NEAREST), const_cast<const mitk::BaseRenderer*>((mitk::BaseRenderer*)NULL));
-    node->SetBoolProperty("outline binary", true);
-    node->SetFloatProperty ("outline width", 1.0);
-    node->SetBoolProperty("showVolume", false);
-    node->SetBoolProperty("volumerendering", false);
-    node->SetOpacity(1.0);
-  }
+  m_SegmentorController->ApplyDisplayOptions(node);
 }
 
 
@@ -555,88 +510,49 @@ int niftkBaseSegmentorView::GetSliceNumberFromSliceNavigationControllerAndRefere
 //-----------------------------------------------------------------------------
 MIDASOrientation niftkBaseSegmentorView::GetOrientationAsEnum()
 {
-  MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
-  const mitk::SliceNavigationController* sliceNavigationController = this->GetSliceNavigationController();
-  if (sliceNavigationController != NULL)
-  {
-    mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
-
-    if (viewDirection == mitk::SliceNavigationController::Axial)
-    {
-      orientation = MIDAS_ORIENTATION_AXIAL;
-    }
-    else if (viewDirection == mitk::SliceNavigationController::Sagittal)
-    {
-      orientation = MIDAS_ORIENTATION_SAGITTAL;
-    }
-    else if (viewDirection == mitk::SliceNavigationController::Frontal)
-    {
-      orientation = MIDAS_ORIENTATION_CORONAL;
-    }
-  }
-  return orientation;
+  return m_SegmentorController->GetOrientationAsEnum();
 }
 
 
 //-----------------------------------------------------------------------------
 int niftkBaseSegmentorView::GetAxisFromReferenceImage(const MIDASOrientation& orientation)
 {
-  int axis = -1;
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
-  {
-    axis = niftk::GetThroughPlaneAxis(referenceImage, orientation);
-  }
-  return axis;
+  return m_SegmentorController->GetAxisFromReferenceImage(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
 int niftkBaseSegmentorView::GetReferenceImageAxialAxis()
 {
-  return this->GetAxisFromReferenceImage(MIDAS_ORIENTATION_AXIAL);
+  return m_SegmentorController->GetReferenceImageAxialAxis();
 }
 
 
 //-----------------------------------------------------------------------------
 int niftkBaseSegmentorView::GetReferenceImageCoronalAxis()
 {
-  return this->GetAxisFromReferenceImage(MIDAS_ORIENTATION_CORONAL);
+  return m_SegmentorController->GetReferenceImageCoronalAxis();
 }
 
 
 //-----------------------------------------------------------------------------
 int niftkBaseSegmentorView::GetReferenceImageSagittalAxis()
 {
-  return this->GetAxisFromReferenceImage(MIDAS_ORIENTATION_SAGITTAL);
+  return m_SegmentorController->GetReferenceImageSagittalAxis();
 }
 
 
 //-----------------------------------------------------------------------------
 int niftkBaseSegmentorView::GetViewAxis()
 {
-  int axisNumber = -1;
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  MIDASOrientation orientation = this->GetOrientationAsEnum();
-  if (referenceImage.IsNotNull() && orientation != MIDAS_ORIENTATION_UNKNOWN)
-  {
-    axisNumber = niftk::GetThroughPlaneAxis(referenceImage, orientation);
-  }
-  return axisNumber;
+  return m_SegmentorController->GetViewAxis();
 }
 
 
 //-----------------------------------------------------------------------------
 int niftkBaseSegmentorView::GetUpDirection()
 {
-  int upDirection = 0;
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  MIDASOrientation orientation = this->GetOrientationAsEnum();
-  if (referenceImage.IsNotNull() && orientation != MIDAS_ORIENTATION_UNKNOWN)
-  {
-    upDirection = niftk::GetUpDirection(referenceImage, orientation);
-  }
-  return upDirection;
+  return m_SegmentorController->GetUpDirection();
 }
 
 

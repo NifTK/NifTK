@@ -39,6 +39,19 @@ protected:
   /// Registers the draw, seed, poly and posn tools.
   void RegisterTools() override;
 
+  /// \brief For Irregular Volume Editing, a Segmentation image should have a grey
+  /// scale parent, and several children as described in the class introduction.
+  virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) override;
+
+  /// \brief Assumes input is a valid segmentation node, then searches for the derived
+  /// children of the node, looking for the seeds and contours  as described in the class introduction.
+  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) override;
+
+  /// \brief We return true if the segmentation can be "re-started", i.e. you switch between binary images
+  /// in the DataManager, and if the binary image has the correct hidden child nodes, then
+  /// this returns true, indicating that it's a valid "in-progress" segmentation.
+  virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
+
 private:
 
   niftkGeneralSegmentorView* m_GeneralSegmentorView;
