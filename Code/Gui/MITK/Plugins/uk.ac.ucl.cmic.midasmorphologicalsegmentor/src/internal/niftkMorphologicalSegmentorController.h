@@ -35,11 +35,7 @@ public:
 
 protected:
 
-  /// \brief Registers the segmentation tools provided by this segmentor.
-  /// Registers the paintbrush tool.
-  void RegisterTools() override;
-
-    /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME.
+  /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME.
   virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) override;
 
   /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME, and have a binary image parent.

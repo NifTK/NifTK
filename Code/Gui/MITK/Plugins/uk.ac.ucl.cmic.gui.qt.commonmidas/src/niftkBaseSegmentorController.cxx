@@ -14,8 +14,12 @@
 
 #include "niftkBaseSegmentorController.h"
 
+#include <QMessageBox>
+
 #include <mitkDataStorageUtils.h>
 #include <mitkVtkResliceInterpolationProperty.h>
+
+#include <niftkNewSegmentationDialog.h>
 
 #include "niftkBaseSegmentorView.h"
 
@@ -25,8 +29,6 @@ niftkBaseSegmentorController::niftkBaseSegmentorController(niftkBaseSegmentorVie
 {
   // Create an own tool manager and connect it to the data storage straight away.
   m_ToolManager = mitk::ToolManager::New(segmentorView->GetDataStorage());
-
-  this->RegisterTools();
 }
 
 
@@ -47,12 +49,6 @@ mitk::DataStorage* niftkBaseSegmentorController::GetDataStorage() const
 mitk::ToolManager* niftkBaseSegmentorController::GetToolManager() const
 {
   return m_ToolManager;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::RegisterTools()
-{
 }
 
 
@@ -120,7 +116,7 @@ mitk::Image* niftkBaseSegmentorController::GetReferenceImageFromToolManager()
 //-----------------------------------------------------------------------------
 mitk::DataNode* niftkBaseSegmentorController::GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode)
 {
-  mitk::DataNode* result = mitk::FindFirstParentImage(m_SegmentorView->GetDataStorage(), segmentationNode, false);
+  mitk::DataNode* result = mitk::FindFirstParentImage(this->GetDataStorage(), segmentationNode, false);
   return result;
 }
 
@@ -278,4 +274,63 @@ int niftkBaseSegmentorController::GetUpDirection()
     upDirection = niftk::GetUpDirection(referenceImage, orientation);
   }
   return upDirection;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNode* niftkBaseSegmentorController::CreateNewSegmentation(QWidget* parent, const QColor& defaultColor)
+{
+  mitk::DataNode::Pointer emptySegmentation = NULL;
+
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  assert(toolManager);
+
+  // Assumption: If a reference image is selected in the data manager, then it MUST be registered with ToolManager, and hence this is the one we intend to segment.
+  mitk::DataNode::Pointer referenceNode = this->GetReferenceNodeFromToolManager();
+  if (referenceNode.IsNotNull())
+  {
+    // Assumption: If a reference image is selected in the data manager, then it MUST be registered with ToolManager, and hence this is the one we intend to segment.
+    mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
+    if (referenceImage.IsNotNull())
+    {
+      if (referenceImage->GetDimension() > 2)
+      {
+        niftkNewSegmentationDialog* dialog = new niftkNewSegmentationDialog(defaultColor, parent); // needs a QWidget as parent, "this" is not QWidget
+        int dialogReturnValue = dialog->exec();
+        if ( dialogReturnValue == QDialog::Rejected ) return NULL; // user clicked cancel or pressed Esc or something similar
+
+        mitk::Tool* firstTool = toolManager->GetToolById(0);
+        if (firstTool)
+        {
+          try
+          {
+            mitk::Color color = dialog->GetColor();
+            emptySegmentation = firstTool->CreateEmptySegmentationNode( referenceImage, dialog->GetSegmentationName().toStdString(), color);
+            emptySegmentation->SetColor(color);
+            emptySegmentation->SetProperty("binaryimage.selectedcolor", mitk::ColorProperty::New(color));
+            emptySegmentation->SetProperty("midas.tmp.selectedcolor", mitk::ColorProperty::New(color));
+
+            if (emptySegmentation.IsNotNull())
+            {
+              this->ApplyDisplayOptions(emptySegmentation);
+              this->GetDataStorage()->Add(emptySegmentation, referenceNode); // add as a child, because the segmentation "derives" from the original
+            } // have got a new segmentation
+          }
+          catch (std::bad_alloc&)
+          {
+            QMessageBox::warning(NULL,"Create new segmentation","Could not allocate memory for new segmentation");
+          }
+        } // end if got a tool
+      } // end if 3D or above image
+      else
+      {
+        QMessageBox::information(NULL,"Segmentation","Segmentation is currently not supported for 2D images");
+      }
+    } // end if image not null
+    else
+    {
+      MITK_ERROR << "'Create new segmentation' button should never be clickable unless an image is selected...";
+    }
+  }
+  return emptySegmentation.GetPointer();
 }

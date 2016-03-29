@@ -35,10 +35,6 @@ public:
 
 protected:
 
-  /// \brief Registers the segmentation tools provided by this segmentor.
-  /// Registers the draw, seed, poly and posn tools.
-  void RegisterTools() override;
-
   /// \brief For Irregular Volume Editing, a Segmentation image should have a grey
   /// scale parent, and several children as described in the class introduction.
   virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) override;

@@ -372,61 +372,9 @@ bool niftkBaseSegmentorView::CanStartSegmentationForBinaryNode(const mitk::DataN
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* niftkBaseSegmentorView::CreateNewSegmentation(const QColor& defaultColor)
+mitk::DataNode* niftkBaseSegmentorView::CreateNewSegmentation(const QColor& defaultColour)
 {
-  mitk::DataNode::Pointer emptySegmentation = NULL;
-
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  // Assumption: If a reference image is selected in the data manager, then it MUST be registered with ToolManager, and hence this is the one we intend to segment.
-  mitk::DataNode::Pointer referenceNode = this->GetReferenceNodeFromToolManager();
-  if (referenceNode.IsNotNull())
-  {
-    // Assumption: If a reference image is selected in the data manager, then it MUST be registered with ToolManager, and hence this is the one we intend to segment.
-    mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-    if (referenceImage.IsNotNull())
-    {
-      if (referenceImage->GetDimension() > 2)
-      {
-        niftkNewSegmentationDialog* dialog = new niftkNewSegmentationDialog(defaultColor, this->GetParent() ); // needs a QWidget as parent, "this" is not QWidget
-        int dialogReturnValue = dialog->exec();
-        if ( dialogReturnValue == QDialog::Rejected ) return NULL; // user clicked cancel or pressed Esc or something similar
-
-        mitk::Tool* firstTool = toolManager->GetToolById(0);
-        if (firstTool)
-        {
-          try
-          {
-            mitk::Color color = dialog->GetColor();
-            emptySegmentation = firstTool->CreateEmptySegmentationNode( referenceImage, dialog->GetSegmentationName().toStdString(), color);
-            emptySegmentation->SetColor(color);
-            emptySegmentation->SetProperty("binaryimage.selectedcolor", mitk::ColorProperty::New(color));
-            emptySegmentation->SetProperty("midas.tmp.selectedcolor", mitk::ColorProperty::New(color));
-
-            if (emptySegmentation.IsNotNull())
-            {
-              this->ApplyDisplayOptions(emptySegmentation);
-              this->GetDataStorage()->Add(emptySegmentation, referenceNode); // add as a child, because the segmentation "derives" from the original
-            } // have got a new segmentation
-          }
-          catch (std::bad_alloc&)
-          {
-            QMessageBox::warning(NULL,"Create new segmentation","Could not allocate memory for new segmentation");
-          }
-        } // end if got a tool
-      } // end if 3D or above image
-      else
-      {
-        QMessageBox::information(NULL,"Segmentation","Segmentation is currently not supported for 2D images");
-      }
-    } // end if image not null
-    else
-    {
-      MITK_ERROR << "'Create new segmentation' button should never be clickable unless an image is selected...";
-    }
-  }
-  return emptySegmentation.GetPointer();
+  return m_SegmentorController->CreateNewSegmentation(this->GetParent(), defaultColour);
 }
 
 

@@ -23,23 +23,17 @@ niftkGeneralSegmentorController::niftkGeneralSegmentorController(niftkGeneralSeg
   : niftkBaseSegmentorController(segmentorView),
     m_GeneralSegmentorView(segmentorView)
 {
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  toolManager->RegisterTool("MIDASDrawTool");
+  toolManager->RegisterTool("MIDASSeedTool");
+  toolManager->RegisterTool("MIDASPolyTool");
+  toolManager->RegisterTool("MIDASPosnTool");
 }
 
 
 //-----------------------------------------------------------------------------
 niftkGeneralSegmentorController::~niftkGeneralSegmentorController()
 {
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::RegisterTools()
-{
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  toolManager->RegisterTool("MIDASDrawTool");
-  toolManager->RegisterTool("MIDASSeedTool");
-  toolManager->RegisterTool("MIDASPolyTool");
-  toolManager->RegisterTool("MIDASPosnTool");
 }
 
 

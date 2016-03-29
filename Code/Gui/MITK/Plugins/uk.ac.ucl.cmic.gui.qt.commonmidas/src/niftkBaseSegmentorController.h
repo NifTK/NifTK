@@ -17,11 +17,14 @@
 
 #include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>
 
+#include <QColor>
 #include <QObject>
 
 #include <mitkToolManager.h>
 
 #include <niftkMIDASOrientationUtils.h>
+
+class QWidget;
 
 class niftkBaseSegmentorView;
 
@@ -45,10 +48,6 @@ public:
 protected:
 
   mitk::DataStorage* GetDataStorage() const;
-
-  /// \brief Registers the segmentation tools provided by this segmentor.
-  /// Subclasses should override it.
-  virtual void RegisterTools();
 
   /// \brief Gets a vector of the working data nodes registered with the tool manager.
   /// The data nodes normally hold image, but could be surfaces etc.
@@ -115,6 +114,13 @@ protected:
 
   /// \brief Returns the "Up" direction which is the anterior, superior or right direction depending on which orientation you are interested in.
   int GetUpDirection();
+
+  /// \brief Creates from derived classes when the the user hits the "New segmentation", producing a dialog box,
+  /// and on successful completion of the dialog box, will create a new segmentation image.
+  ///
+  /// \param defaultColor The default colour to pass to the new segmentation dialog box.
+  /// \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancells the dialog box.
+  virtual mitk::DataNode* CreateNewSegmentation(QWidget* parent, const QColor& defaultColor);
 
 private:
 
