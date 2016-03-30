@@ -85,6 +85,8 @@ protected:
     /// \brief Creates the general segmentor widget that holds the GUI components of the view.
   virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
 
+  void OnNodeVisibilityChanged(const mitk::DataNode* node);
+
 protected slots:
 
   /// \brief Qt slot called from "see prior" checkbox to show the contour from the previous slice.
@@ -97,6 +99,43 @@ protected slots:
   /// current contours on the current slice should be cleaned, see additional spec,
   /// currently at:  https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1096
   void OnCleanButtonClicked();
+
+  /// \brief Qt slot called when the Wipe button is pressed and will erase the current
+  /// slice and seeds on the current slice.
+  void OnWipeButtonClicked();
+
+  /// \brief Qt slot called when the Wipe+ button is pressed and will erase the
+  /// whole region Anterior/Superior/Right from the current slice, including seeds.
+  void OnWipePlusButtonClicked();
+
+  /// \brief Qt slot called when the Wipe- button is pressed and will erase the
+  /// whole region Posterior/Inferior/Left from the current slice, including seeds.
+  void OnWipeMinusButtonClicked();
+
+  /// \brief Qt slot called when the Propagate Up button is pressed to take the
+  /// current seeds and threshold values, and propagate Anterior/Superior/Right.
+  void OnPropagateUpButtonClicked();
+
+  /// \brief Qt slot called when the Propagate Down button is pressed to take the current
+  /// seeds and threshold values, and propagate Posterior/Inferor/Left.
+  void OnPropagateDownButtonClicked();
+
+  /// \brief Qt slot called when the Propagate 3D button is pressed that is effectively
+  /// equivalent to calling OnPropagateUpButtonPressed and OnPropagateDownButtonPressed.
+  void OnPropagate3DButtonClicked();
+
+  /// \brief Qt slot called when the Apply button is pressed and used to accept the
+  /// current region growing segmentation, and recalculates seed positions as per MIDAS spec
+  /// described in this class intro.
+  void OnThresholdApplyButtonClicked();
+
+  /// \brief Qt slot called when the "threshold" checkbox is checked, and toggles
+  /// the thresholding widget section on and calls niftkGeneralSegmentorView::UpdateRegionGrowing.
+  void OnThresholdingCheckBoxToggled(bool checked);
+
+  /// \brief Qt slot called when the lower or upper threshold slider is moved, calls
+  /// niftkGeneralSegmentorView::UpdateRegionGrowing as thresholds have changed.
+  void OnThresholdValueChanged();
 
 private:
 
@@ -161,6 +200,9 @@ private:
 
   /// \brief Takes the current slice, and updates the prior (WorkingData[4]) and next (WorkingData[5]) contour sets.
   void UpdatePriorAndNext(bool updateRendering = true);
+
+  /// \brief Does propagate up/down/3D.
+  void DoPropagate(bool isUp, bool is3D);
 
   /// \brief Does wipe, where if direction=0, wipes current slice, if direction=1, wipes anterior,
   /// and if direction=-1, wipes posterior.

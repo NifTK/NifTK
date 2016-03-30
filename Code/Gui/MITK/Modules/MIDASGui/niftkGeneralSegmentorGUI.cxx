@@ -73,6 +73,15 @@ niftkGeneralSegmentorGUI::~niftkGeneralSegmentorGUI()
 
 
 //-----------------------------------------------------------------------------
+void niftkGeneralSegmentorGUI::EnableSegmentationWidgets(bool enabled)
+{
+  this->SetAllWidgetsEnabled(enabled);
+  bool thresholdingIsOn = this->IsThresholdingCheckBoxChecked();
+  this->SetThresholdingWidgetsEnabled(thresholdingIsOn);
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkGeneralSegmentorGUI::SetThresholdingCheckBoxEnabled(bool enabled)
 {
   m_ThresholdingCheckBox->setEnabled(enabled);

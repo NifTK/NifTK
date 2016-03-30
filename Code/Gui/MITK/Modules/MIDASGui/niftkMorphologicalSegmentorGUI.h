@@ -43,6 +43,10 @@ public:
   /// \brief Destructor.
   virtual ~niftkMorphologicalSegmentorGUI();
 
+  /// \brief Method to enable to turn widgets off/on
+  /// \see niftkBaseSegmentorGUI::EnableSegmentationWidgets
+  virtual void EnableSegmentationWidgets(bool enabled) override;
+
   /// \brief Get the current tab index.
   int GetTabIndex() const;
 

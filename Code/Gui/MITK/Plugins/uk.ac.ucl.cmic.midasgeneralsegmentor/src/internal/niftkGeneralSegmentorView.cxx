@@ -411,48 +411,8 @@ void niftkGeneralSegmentorView::StoreInitialSegmentation()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
 {
-  if (!this->HasInitialisedWorkingData())
-  {
-    return;
-  }
-
-  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
-  if (!workingData.empty() && node == workingData[niftk::MIDASTool::SEGMENTATION])
-  {
-    bool segmentationNodeVisibility;
-    if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
-    {
-      workingData[niftk::MIDASTool::SEEDS]->SetVisibility(true);
-      workingData[niftk::MIDASTool::CONTOURS]->SetVisibility(true);
-      workingData[niftk::MIDASTool::DRAW_CONTOURS]->SetVisibility(true);
-      if (m_GeneralSegmentorGUI->IsSeePriorCheckBoxChecked())
-      {
-        workingData[niftk::MIDASTool::PRIOR_CONTOURS]->SetVisibility(true);
-      }
-      if (m_GeneralSegmentorGUI->IsSeeNextCheckBoxChecked())
-      {
-        workingData[niftk::MIDASTool::NEXT_CONTOURS]->SetVisibility(true);
-      }
-      if (m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
-      {
-        workingData[niftk::MIDASTool::REGION_GROWING]->SetVisibility(true);
-      }
-      workingData[niftk::MIDASTool::INITIAL_SEGMENTATION]->SetVisibility(false);
-      workingData[niftk::MIDASTool::INITIAL_SEEDS]->SetVisibility(false);
-
-      mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-      niftk::MIDASPolyTool* polyTool = static_cast<niftk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>()));
-      assert(polyTool);
-      polyTool->SetFeedbackContourVisible(toolManager->GetActiveTool() == polyTool);
-    }
-    else
-    {
-      for (std::size_t i = 1; i < workingData.size(); ++i)
-      {
-        workingData[i]->SetVisibility(false);
-      }
-    }
-  }
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->OnNodeVisibilityChanged(node);
 }
 
 
@@ -464,16 +424,6 @@ void niftkGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
 /**************************************************************
  * Start of: Utility functions
  *************************************************************/
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::EnableSegmentationWidgets(bool enabled)
-{
-  assert(m_GeneralSegmentorGUI);
-  m_GeneralSegmentorGUI->SetAllWidgetsEnabled(enabled);
-  bool thresholdingIsOn = m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked();
-  m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(thresholdingIsOn);
-}
-
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::RecalculateMinAndMaxOfImage()
@@ -659,7 +609,7 @@ void niftkGeneralSegmentorView::OnOKButtonClicked()
 
   this->DestroyPipeline();
   this->RemoveWorkingData();
-  this->EnableSegmentationWidgets(false);
+  m_GeneralSegmentorGUI->EnableSegmentationWidgets(false);
   this->SetCurrentSelection(workingData);
 
   this->RequestRenderWindowUpdate();
@@ -728,7 +678,7 @@ void niftkGeneralSegmentorView::DiscardSegmentation()
     this->RemoveWorkingData();
     this->GetDataStorage()->Remove(segmentationNode);
   }
-  this->EnableSegmentationWidgets(false);
+  m_GeneralSegmentorGUI->EnableSegmentationWidgets(false);
   this->SetReferenceImageSelected();
   this->RequestRenderWindowUpdate();
   mitk::UndoController::GetCurrentUndoModel()->Clear();
@@ -969,34 +919,16 @@ void niftkGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnThresholdingCheckBoxToggled(bool checked)
 {
-  if (!this->HasInitialisedWorkingData())
-  {
-    // So, if there is NO working data, we leave the widgets disabled regardless.
-    m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(false);
-    return;
-  }
-
-  this->RecalculateMinAndMaxOfImage();
-  this->RecalculateMinAndMaxOfSeedValues();
-
-  m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(checked);
-
-  if (checked)
-  {
-    this->UpdateRegionGrowing();
-  }
-
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-  workingData[niftk::MIDASTool::REGION_GROWING]->SetVisibility(checked);
-
-  this->RequestRenderWindowUpdate();
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->OnThresholdingCheckBoxToggled(checked);
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnThresholdValueChanged()
 {
-  this->UpdateRegionGrowing();
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->OnThresholdValueChanged();
 }
 
 
@@ -1025,8 +957,8 @@ void niftkGeneralSegmentorView::UpdateRegionGrowing(
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnThresholdApplyButtonClicked()
 {
-  int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  this->DoThresholdApply(sliceNumber, sliceNumber, true, false, false);
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->OnThresholdApplyButtonClicked();
 }
 
 
@@ -1349,81 +1281,24 @@ void niftkGeneralSegmentorView::OnCleanButtonClicked()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnWipeButtonClicked()
 {
-  this->DoWipe(0);
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->OnWipeButtonClicked();
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnWipePlusButtonClicked()
 {
-  MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
-
-  QString orientationText;
-  QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
-
-  if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
-  {
-    orientationText = "superior to";
-  }
-  else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
-  {
-    orientationText = "right of";
-  }
-  else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
-  {
-    orientationText = "anterior to";
-  }
-  else
-  {
-    orientationText = "up from";
-  }
-
-  int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
-                                                            tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
-                                                            QMessageBox::Yes | QMessageBox::No);
-  if (returnValue == QMessageBox::No)
-  {
-    return;
-  }
-
-  this->DoWipe(1);
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->OnWipePlusButtonClicked();
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnWipeMinusButtonClicked()
 {
-  MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
-
-  QString orientationText;
-  QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
-
-  if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
-  {
-    orientationText = "inferior to";
-  }
-  else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
-  {
-    orientationText = "left of";
-  }
-  else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
-  {
-    orientationText = "posterior to";
-  }
-  else
-  {
-    orientationText = "down from";
-  }
-
-  int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
-                                                            tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
-                                                            QMessageBox::Yes | QMessageBox::No);
-  if (returnValue == QMessageBox::No)
-  {
-    return;
-  }
-
-  this->DoWipe(-1);
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->OnWipeMinusButtonClicked();
 }
 
 
@@ -1438,210 +1313,32 @@ bool niftkGeneralSegmentorView::DoWipe(int direction)
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnPropagate3DButtonClicked()
 {
-  this->DoPropagate(false, true);
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->OnPropagate3DButtonClicked();
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnPropagateUpButtonClicked()
 {
-  this->DoPropagate(true, false);
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->OnPropagateUpButtonClicked();
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnPropagateDownButtonClicked()
 {
-  this->DoPropagate(false, false);
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->OnPropagateDownButtonClicked();
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
 {
-  if (!this->HasInitialisedWorkingData())
-  {
-    return;
-  }
-
-  MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
-  itk::Orientation orientation = niftk::GetItkOrientation(midasOrientation);
-
-  QString message;
-
-  if (is3D)
-  {
-    message = "All slices will be over-written";
-  }
-  else
-  {
-    QString orientationText;
-    QString messageWithOrientation = "All slices %1 the present will be over-written";
-
-    if (isUp)
-    {
-      if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
-      {
-        orientationText = "superior to";
-      }
-      else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
-      {
-        orientationText = "right of";
-      }
-      else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
-      {
-        orientationText = "anterior to";
-      }
-      else
-      {
-        orientationText = "up from";
-      }
-    }
-    else if (!isUp)
-    {
-      if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
-      {
-        orientationText = "inferior to";
-      }
-      else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
-      {
-        orientationText = "left of";
-      }
-      else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
-      {
-        orientationText = "posterior to";
-      }
-      else
-      {
-        orientationText = "up from";
-      }
-    }
-
-    message = tr(messageWithOrientation.toStdString().c_str()).arg(orientationText);
-  }
-
-  int returnValue = QMessageBox::warning(this->GetParent(), tr("NiftyView"),
-                                                   tr("%1.\n"
-                                                      "Are you sure?").arg(message),
-                                                   QMessageBox::Yes | QMessageBox::No);
-  if (returnValue == QMessageBox::No)
-  {
-    return;
-  }
-
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
-  {
-
-    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[niftk::MIDASTool::SEGMENTATION];
-    mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(niftk::MIDASTool::SEGMENTATION);
-
-    if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
-    {
-
-      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(niftk::MIDASTool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
-      assert(regionGrowingNode);
-
-      mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
-      assert(regionGrowingImage);
-
-      mitk::PointSet* seeds = this->GetSeeds();
-      assert(seeds);
-
-      mitk::ToolManager *toolManager = this->GetToolManager();
-      assert(toolManager);
-
-      niftk::MIDASDrawTool *drawTool = static_cast<niftk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>()));
-      assert(drawTool);
-
-      double lowerThreshold = m_GeneralSegmentorGUI->GetLowerThreshold();
-      double upperThreshold = m_GeneralSegmentorGUI->GetUpperThreshold();
-      int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-      int axisNumber = this->GetViewAxis();
-      int direction = this->GetUpDirection();
-      if (!is3D && !isUp)
-      {
-        direction *= -1;
-      }
-      else if (is3D)
-      {
-        direction = 0;
-      }
-
-      mitk::PointSet::Pointer copyOfInputSeeds = mitk::PointSet::New();
-      mitk::PointSet::Pointer outputSeeds = mitk::PointSet::New();
-      std::vector<int> outputRegion;
-
-      if (axisNumber != -1 && sliceNumber != -1 && orientation != itk::ORIENTATION_UNKNOWN)
-      {
-
-        m_GeneralSegmentorController->m_IsUpdating = true;
-
-        try
-        {
-          AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-              niftk::ITKPropagateToRegionGrowingImage, 3,
-              (*seeds,
-               sliceNumber,
-               axisNumber,
-               direction,
-               lowerThreshold,
-               upperThreshold,
-               *(copyOfInputSeeds.GetPointer()),
-               *(outputSeeds.GetPointer()),
-               outputRegion,
-               regionGrowingNode,  // This is the node for the image we are writing to.
-               regionGrowingImage  // This is the image we are writing to.
-              )
-            );
-
-          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>())
-          {
-            toolManager->ActivateTool(-1);
-          }
-
-          mitk::UndoStackItem::IncCurrObjectEventId();
-          mitk::UndoStackItem::IncCurrGroupEventId();
-          mitk::UndoStackItem::ExecuteIncrement();
-
-          QString message = tr("Propagate: copy region growing");
-          niftk::OpPropagate::ProcessorPointer processor = niftk::OpPropagate::ProcessorType::New();
-          niftk::OpPropagate *doPropOp = new niftk::OpPropagate(niftk::OP_PROPAGATE, true, outputRegion, processor);
-          niftk::OpPropagate *undoPropOp = new niftk::OpPropagate(niftk::OP_PROPAGATE, false, outputRegion, processor);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_GeneralSegmentorController->m_Interface, doPropOp, undoPropOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          this->ExecuteOperation(doPropOp);
-
-          message = tr("Propagate: copy seeds");
-          niftk::OpPropagateSeeds *doPropSeedsOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, true, sliceNumber, axisNumber, outputSeeds);
-          niftk::OpPropagateSeeds *undoPropSeedsOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, false, sliceNumber, axisNumber, copyOfInputSeeds);
-          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(m_GeneralSegmentorController->m_Interface, doPropSeedsOp, undoPropSeedsOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
-          this->ExecuteOperation(doPropOp);
-
-          drawTool->ClearWorkingData();
-          this->UpdateCurrentSliceContours(false);
-          this->UpdateRegionGrowing(false);
-        }
-        catch(const mitk::AccessByItkException& e)
-        {
-          MITK_ERROR << "Could not propagate: Caught mitk::AccessByItkException:" << e.what() << std::endl;
-        }
-        catch( itk::ExceptionObject &err )
-        {
-          MITK_ERROR << "Could not propagate: Caught itk::ExceptionObject:" << err.what() << std::endl;
-        }
-
-        m_GeneralSegmentorController->m_IsUpdating = false;
-      }
-      else
-      {
-        MITK_ERROR << "Could not propagate: Error axisNumber=" << axisNumber << ", sliceNumber=" << sliceNumber << ", orientation=" << orientation << ", direction=" << direction << std::endl;
-      }
-    }
-  }
-
-  this->RequestRenderWindowUpdate();
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->DoPropagate(isUp, is3D);
 }
 
 

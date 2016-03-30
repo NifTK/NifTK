@@ -157,6 +157,23 @@ void niftkMorphologicalSegmentorGUI::SetEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
+void niftkMorphologicalSegmentorGUI::EnableSegmentationWidgets(bool enabled)
+{
+  int tabIndex = this->GetTabIndex();
+  if (enabled && (tabIndex == 1 || tabIndex == 2))
+  {
+    this->SetToolSelectorEnabled(true);
+  }
+  else
+  {
+    this->SetToolSelectorEnabled(false);
+  }
+
+  this->SetEnabled(enabled);
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkMorphologicalSegmentorGUI::SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection)
 {
   bool wasBlocked = this->blockSignals(true);

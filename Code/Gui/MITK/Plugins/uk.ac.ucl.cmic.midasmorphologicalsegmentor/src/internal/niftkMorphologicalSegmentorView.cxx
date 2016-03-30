@@ -438,7 +438,7 @@ void niftkMorphologicalSegmentorView::OnOKButtonClicked()
   if (segmentationNode.IsNotNull())
   {
     this->OnToolSelected(-1);
-    this->EnableSegmentationWidgets(false);
+    m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->FinalizeSegmentation();
 
@@ -498,7 +498,7 @@ void niftkMorphologicalSegmentorView::OnCancelButtonClicked()
   if (segmentationNode.IsNotNull())
   {
     this->OnToolSelected(-1);
-    this->EnableSegmentationWidgets(false);
+    m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->RemoveWorkingData();
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
@@ -538,23 +538,6 @@ void niftkMorphologicalSegmentorView::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorView::EnableSegmentationWidgets(bool enabled)
-{
-  int tabIndex = m_MorphologicalSegmentorGUI->GetTabIndex();
-  if (enabled && (tabIndex == 1 || tabIndex == 2))
-  {
-    m_MorphologicalSegmentorGUI->SetToolSelectorEnabled(true);
-  }
-  else
-  {
-    m_MorphologicalSegmentorGUI->SetToolSelectorEnabled(false);
-  }
-
-  m_MorphologicalSegmentorGUI->SetEnabled(enabled);
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkMorphologicalSegmentorView::OnSegmentationEdited(int imageIndex)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
@@ -579,7 +562,7 @@ void niftkMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedN
   if (segmentationNode.IsNotNull() && segmentationNode.GetPointer() == removedNode)
   {
     this->OnToolSelected(-1);
-    this->EnableSegmentationWidgets(false);
+    m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->RemoveWorkingData();
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());

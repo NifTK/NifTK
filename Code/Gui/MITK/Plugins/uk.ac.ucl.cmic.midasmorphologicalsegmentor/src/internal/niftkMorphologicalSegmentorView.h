@@ -110,9 +110,6 @@ protected:
   /// \brief Called by framework, sets the focus on a specific widget, but currently does nothing.
   virtual void SetFocus() override;
 
-  /// \brief Method to enable this and derived classes to turn widgets off/on
-  virtual void EnableSegmentationWidgets(bool enabled) override;
-
   /// \brief Called when a node is removed.
   virtual void NodeRemoved(const mitk::DataNode* node) override;
 

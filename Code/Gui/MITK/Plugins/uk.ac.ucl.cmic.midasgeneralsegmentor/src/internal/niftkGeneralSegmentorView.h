@@ -295,9 +295,6 @@ protected:
   /// but we currently do nothing.
   virtual void SetFocus() override;
 
-  /// \see niftkBaseSegmentorView::EnableSegmentationWidgets
-  virtual void EnableSegmentationWidgets(bool checked) override;
-
   /// \brief Returns the name of the preferences node to look up.
   /// \see niftkBaseSegmentorView::GetPreferencesNodeName
   virtual QString GetPreferencesNodeName() override { return niftkGeneralSegmentorPreferencePage::PREFERENCES_NODE_NAME; }

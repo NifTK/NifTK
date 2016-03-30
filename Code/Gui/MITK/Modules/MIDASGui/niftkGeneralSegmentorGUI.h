@@ -40,6 +40,10 @@ public:
   /// \brief Destructor.
   ~niftkGeneralSegmentorGUI();
 
+  /// \brief Method to enable to turn widgets off/on
+  /// \see niftkBaseSegmentorGUI::EnableSegmentationWidgets
+  virtual void EnableSegmentationWidgets(bool checked) override;
+
   /// \brief Sets the min and max values on the lower and upper sliders
   void SetLowerAndUpperIntensityRanges(double lower, double upper);
 

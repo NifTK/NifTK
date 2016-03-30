@@ -129,5 +129,5 @@ void niftkMorphologicalSegmentorController::OnDataManagerSelectionChanged(const 
     }
   }
 
-  m_MorphologicalSegmentorView->EnableSegmentationWidgets(enableWidgets);
+  m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(enableWidgets);
 }

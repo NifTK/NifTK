@@ -191,9 +191,6 @@ protected:
   /// \brief Gets a vector of the working data nodes (normally image, but could be surfaces etc) registered with the tool manager (ie. that tools can edit), or empty list if this can't be found.
   mitk::ToolManager::DataVectorType GetWorkingData();
 
-  /// \brief Method to enable derived classes to turn widgets off/on, with default do nothing implementation.
-  virtual void EnableSegmentationWidgets(bool enabled) = 0;
-
   /// \brief Turns the tool selection box on/off
   virtual void SetToolSelectorEnabled(bool enabled);
 
