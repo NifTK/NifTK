@@ -444,16 +444,6 @@ private:
   /// \brief Used for the mitk::FocusManager to register callbacks to track the currently focus window.
   unsigned long m_FocusManagerObserverTag;
 
-  /// \brief Flag to stop re-entering code, while updating.
-  bool m_IsUpdating;
-
-  /// \brief Flag to stop re-entering code, while trying to delete/clear the pipeline.
-  bool m_IsDeleting;
-
-  /// \brief Additional flag to stop re-entering code, specifically to block
-  /// slice change commands from the slice navigation controller.
-  bool m_IsChangingSlice;
-
   /// \brief Keep track of the previous slice number and reset to -1 when the window focus changes.
   int m_PreviousSliceNumber;
 
@@ -464,8 +454,6 @@ private:
   /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
   /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
   mitk::Point3D m_PreviousFocusPoint;
-
-  bool m_IsRestarting;
 
 friend class niftkGeneralSegmentorController;
 

@@ -16,6 +16,7 @@
 
 #include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
+#include <mitkITKImageImport.h>
 #include <mitkPointSet.h>
 
 #include <mitkDataStorageUtils.h>
@@ -32,7 +33,11 @@
 //-----------------------------------------------------------------------------
 niftkGeneralSegmentorController::niftkGeneralSegmentorController(niftkGeneralSegmentorView* segmentorView)
   : niftkBaseSegmentorController(segmentorView),
-    m_GeneralSegmentorView(segmentorView)
+    m_GeneralSegmentorView(segmentorView),
+    m_IsUpdating(false),
+    m_IsDeleting(false),
+    m_IsChangingSlice(false),
+    m_IsRestarting(false)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   toolManager->RegisterTool("MIDASDrawTool");
@@ -818,3 +823,293 @@ bool niftkGeneralSegmentorController::CleanSlice()
 /**************************************************************
  * End of: Functions for simply tool toggling
  *************************************************************/
+
+/******************************************************************
+ * Start of ExecuteOperation - main method in Undo/Redo framework.
+ *
+ * Notes: In this method, we update items, using the given
+ * operation. We do not know if this is a "Undo" or a "Redo"
+ * type of operation. We can set the modified field.
+ * But do not be tempted to put things like:
+ *
+ * this->RequestRenderWindowUpdate();
+ *
+ * or
+ *
+ * this->UpdateRegionGrowing() etc.
+ *
+ * as these methods may be called multiple times during one user
+ * operation. So the methods creating the mitk::Operation objects
+ * should also be the ones deciding when we update the display.
+ ******************************************************************/
+
+void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
+{
+  if (!this->HasInitialisedWorkingData())
+  {
+    return;
+  }
+
+  if (!operation) return;
+
+  mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(niftk::MIDASTool::SEGMENTATION);
+  assert(segmentationImage);
+
+  mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[niftk::MIDASTool::SEGMENTATION];
+  assert(segmentationNode);
+
+  mitk::Image* referenceImage = this->GetReferenceImageFromToolManager();
+  assert(referenceImage);
+
+  mitk::Image* regionGrowingImage = this->GetWorkingImageFromToolManager(niftk::MIDASTool::REGION_GROWING);
+  assert(regionGrowingImage);
+
+  mitk::PointSet* seeds = this->GetSeeds();
+  assert(seeds);
+
+  mitk::DataNode::Pointer seedsNode = this->GetWorkingData()[niftk::MIDASTool::SEEDS];
+  assert(seedsNode);
+
+  mitk::IRenderWindowPart* renderWindowPart = m_GeneralSegmentorView->GetRenderWindowPart();
+  assert(renderWindowPart);
+
+  switch (operation->GetOperationType())
+  {
+  case niftk::OP_CHANGE_SLICE:
+    {
+      // Simply to make sure we can switch slice, and undo/redo it.
+      niftk::OpChangeSliceCommand* op = dynamic_cast<niftk::OpChangeSliceCommand*>(operation);
+      assert(op);
+
+      mitk::Point3D currentPoint = renderWindowPart->GetSelectedPosition();
+
+      mitk::Point3D beforePoint = op->GetBeforePoint();
+      mitk::Point3D afterPoint = op->GetAfterPoint();
+      int beforeSlice = op->GetBeforeSlice();
+      int afterSlice = op->GetAfterSlice();
+
+      mitk::Point3D selectedPoint;
+
+      if (op->IsRedo())
+      {
+        selectedPoint = afterPoint;
+      }
+      else
+      {
+        selectedPoint = beforePoint;
+      }
+
+      // Only move if we are not already on this slice.
+      // Better to compare integers than floating point numbers.
+      if (beforeSlice != afterSlice)
+      {
+        m_IsChangingSlice = true;
+        renderWindowPart->SetSelectedPosition(selectedPoint);
+        m_IsChangingSlice = false;
+      }
+
+      break;
+    }
+  case niftk::OP_PROPAGATE_SEEDS:
+    {
+      niftk::OpPropagateSeeds* op = dynamic_cast<niftk::OpPropagateSeeds*>(operation);
+      assert(op);
+
+      mitk::PointSet* newSeeds = op->GetSeeds();
+      assert(newSeeds);
+
+      mitk::CopyPointSets(*newSeeds, *seeds);
+
+      seeds->Modified();
+      seedsNode->Modified();
+
+      break;
+    }
+  case niftk::OP_RETAIN_MARKS:
+    {
+      try
+      {
+        niftk::OpRetainMarks* op = static_cast<niftk::OpRetainMarks*>(operation);
+        assert(op);
+
+        niftk::OpRetainMarks::ProcessorType::Pointer processor = op->GetProcessor();
+        bool redo = op->IsRedo();
+        int fromSlice = op->GetFromSlice();
+        int toSlice = op->GetToSlice();
+        itk::Orientation orientation = op->GetOrientation();
+
+        typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> BinaryImage3DType;
+        typedef mitk::ImageToItk< BinaryImage3DType > SegmentationImageToItkType;
+        SegmentationImageToItkType::Pointer targetImageToItk = SegmentationImageToItkType::New();
+        targetImageToItk->SetInput(segmentationImage);
+        targetImageToItk->Update();
+
+        processor->SetSourceImage(targetImageToItk->GetOutput());
+        processor->SetDestinationImage(targetImageToItk->GetOutput());
+        processor->SetSlices(orientation, fromSlice, toSlice);
+
+        if (redo)
+        {
+          processor->Redo();
+        }
+        else
+        {
+          processor->Undo();
+        }
+
+        targetImageToItk = NULL;
+
+        mitk::Image::Pointer outputImage = mitk::ImportItkImage( processor->GetDestinationImage());
+
+        processor->SetSourceImage(NULL);
+        processor->SetDestinationImage(NULL);
+
+        segmentationNode->SetData(outputImage);
+        segmentationNode->Modified();
+      }
+      catch( itk::ExceptionObject &err )
+      {
+        MITK_ERROR << "Could not do retain marks: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        return;
+      }
+
+      break;
+    }
+  case niftk::OP_THRESHOLD_APPLY:
+    {
+      niftk::OpThresholdApply *op = dynamic_cast<niftk::OpThresholdApply*>(operation);
+      assert(op);
+
+      try
+      {
+        AccessFixedDimensionByItk_n(referenceImage, niftk::ITKPropagateToSegmentationImage, 3,
+              (
+                segmentationImage,
+                regionGrowingImage,
+                op
+              )
+            );
+
+        m_GeneralSegmentorGUI->SetThresholdingCheckBoxChecked(op->GetThresholdFlag());
+        m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(op->GetThresholdFlag());
+
+        segmentationImage->Modified();
+        segmentationNode->Modified();
+
+        regionGrowingImage->Modified();
+
+      }
+      catch(const mitk::AccessByItkException& e)
+      {
+        MITK_ERROR << "Could not do threshold: Caught mitk::AccessByItkException:" << e.what() << std::endl;
+        return;
+      }
+      catch( itk::ExceptionObject &err )
+      {
+        MITK_ERROR << "Could not do threshold: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        return;
+      }
+
+      break;
+    }
+  case niftk::OP_CLEAN:
+    {
+      try
+      {
+        niftk::OpClean* op = dynamic_cast<niftk::OpClean*>(operation);
+        assert(op);
+
+        mitk::ContourModelSet* newContours = op->GetContourSet();
+        assert(newContours);
+
+        mitk::ContourModelSet* contoursToReplace = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[niftk::MIDASTool::CONTOURS]->GetData());
+        assert(contoursToReplace);
+
+        niftk::MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
+        contoursToReplace->Modified();
+        this->GetWorkingData()[niftk::MIDASTool::CONTOURS]->Modified();
+
+        segmentationImage->Modified();
+        segmentationNode->Modified();
+
+      }
+      catch( itk::ExceptionObject &err )
+      {
+        MITK_ERROR << "Could not do clean: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        return;
+      }
+
+      break;
+    }
+  case niftk::OP_WIPE:
+    {
+      niftk::OpWipe *op = dynamic_cast<niftk::OpWipe*>(operation);
+      assert(op);
+
+      try
+      {
+        AccessFixedTypeByItk_n(segmentationImage,
+            niftk::ITKDoWipe,
+            (unsigned char),
+            (3),
+              (
+                seeds,
+                op
+              )
+            );
+
+        segmentationImage->Modified();
+        segmentationNode->Modified();
+
+      }
+      catch(const mitk::AccessByItkException& e)
+      {
+        MITK_ERROR << "Could not do wipe: Caught mitk::AccessByItkException:" << e.what() << std::endl;
+        return;
+      }
+      catch( itk::ExceptionObject &err )
+      {
+        MITK_ERROR << "Could not do wipe: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        return;
+      }
+
+      break;
+    }
+  case niftk::OP_PROPAGATE:
+    {
+      niftk::OpPropagate *op = dynamic_cast<niftk::OpPropagate*>(operation);
+      assert(op);
+
+      try
+      {
+        AccessFixedDimensionByItk_n(referenceImage, niftk::ITKPropagateToSegmentationImage, 3,
+              (
+                segmentationImage,
+                regionGrowingImage,
+                op
+              )
+            );
+
+        segmentationImage->Modified();
+        segmentationNode->Modified();
+
+      }
+      catch(const mitk::AccessByItkException& e)
+      {
+        MITK_ERROR << "Could not do propagation: Caught mitk::AccessByItkException:" << e.what() << std::endl;
+        return;
+      }
+      catch( itk::ExceptionObject &err )
+      {
+        MITK_ERROR << "Could not do propagation: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        return;
+      }
+      break;
+    }
+  default:;
+  }
+}
+
+/******************************************************************
+ * End of ExecuteOperation - main method in Undo/Redo framework.
+ ******************************************************************/

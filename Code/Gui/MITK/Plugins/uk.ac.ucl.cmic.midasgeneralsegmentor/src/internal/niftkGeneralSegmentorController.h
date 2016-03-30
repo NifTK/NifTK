@@ -15,6 +15,8 @@
 #ifndef __niftkGeneralSegmentorController_h
 #define __niftkGeneralSegmentorController_h
 
+#include <mitkOperationActor.h>
+
 #include <niftkBaseSegmentorController.h>
 #include <niftkMIDASToolKeyPressResponder.h>
 
@@ -30,7 +32,10 @@ class niftkGeneralSegmentorView;
 /**
  * \class niftkGeneralSegmentorController
  */
-class niftkGeneralSegmentorController : public niftkBaseSegmentorController, public niftk::MIDASToolKeyPressResponder
+class niftkGeneralSegmentorController
+  : public niftkBaseSegmentorController,
+    public mitk::OperationActor,
+    public niftk::MIDASToolKeyPressResponder
 {
 
   Q_OBJECT
@@ -57,6 +62,9 @@ public:
 
   /// \brief \see niftk::MIDASToolKeyPressResponder::CleanSlice()
   virtual bool CleanSlice() override;
+
+  /// \brief Method to enable this class to interact with the Undo/Redo framework.
+  virtual void ExecuteOperation(mitk::Operation* operation) override;
 
 protected:
 
@@ -148,6 +156,18 @@ private:
   niftkGeneralSegmentorGUI* m_GeneralSegmentorGUI;
 
   niftkGeneralSegmentorView* m_GeneralSegmentorView;
+
+  /// \brief Flag to stop re-entering code, while updating.
+  bool m_IsUpdating;
+
+  /// \brief Flag to stop re-entering code, while trying to delete/clear the pipeline.
+  bool m_IsDeleting;
+
+  /// \brief Additional flag to stop re-entering code, specifically to block
+  /// slice change commands from the slice navigation controller.
+  bool m_IsChangingSlice;
+
+  bool m_IsRestarting;
 
 friend class niftkGeneralSegmentorView;
 
