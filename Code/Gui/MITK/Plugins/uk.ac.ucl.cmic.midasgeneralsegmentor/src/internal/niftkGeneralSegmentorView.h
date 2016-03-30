@@ -426,9 +426,6 @@ private:
   /// \brief This class hooks into the Global Interaction system to respond to Key press events.
   niftk::MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
 
-  /// \brief Pointer to interface object, used as callback in Undo/Redo framework
-  niftkGeneralSegmentorEventInterface::Pointer m_Interface;
-
   /// \brief The general segmentor controller that realises the GUI logic behind the view.
   niftkGeneralSegmentorController* m_GeneralSegmentorController;
 

@@ -13,11 +13,12 @@
 =============================================================================*/
 
 #include "niftkGeneralSegmentorEventInterface.h"
-#include "niftkGeneralSegmentorView.h"
+
+#include "niftkGeneralSegmentorController.h"
 
 //-----------------------------------------------------------------------------
 niftkGeneralSegmentorEventInterface::niftkGeneralSegmentorEventInterface()
-: m_View(NULL)
+: m_GeneralSegmentorController(nullptr)
 {
 }
 
@@ -29,14 +30,14 @@ niftkGeneralSegmentorEventInterface::~niftkGeneralSegmentorEventInterface()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorEventInterface::SetGeneralSegmentorView( niftkGeneralSegmentorView* view )
+void niftkGeneralSegmentorEventInterface::SetGeneralSegmentorController( niftkGeneralSegmentorController* generalSegmentorController)
 {
-  m_View = view;
+  m_GeneralSegmentorController = generalSegmentorController;
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorEventInterface::ExecuteOperation(mitk::Operation* op)
 {
-  m_View->ExecuteOperation(op);
+  m_GeneralSegmentorController->ExecuteOperation(op);
 }
