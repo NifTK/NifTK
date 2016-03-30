@@ -520,30 +520,8 @@ void niftkGeneralSegmentorView::FilterSeedsToCurrentSlice(
     mitk::PointSet& outputPoints
     )
 {
-  if (!this->HasInitialisedWorkingData())
-  {
-    return;
-  }
-
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
-  {
-    try
-    {
-      AccessFixedDimensionByItk_n(referenceImage,
-          niftk::ITKFilterSeedsToCurrentSlice, 3,
-          (inputPoints,
-           axisNumber,
-           sliceNumber,
-           outputPoints
-          )
-        );
-    }
-    catch(const mitk::AccessByItkException& e)
-    {
-      MITK_ERROR << "Caught exception, so abandoning FilterSeedsToCurrentSlice, caused by:" << e.what();
-    }
-  }
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->FilterSeedsToCurrentSlice(inputPoints, axisNumber, sliceNumber, outputPoints);
 }
 
 
@@ -555,27 +533,8 @@ void niftkGeneralSegmentorView::FilterSeedsToEnclosedSeedsOnCurrentSlice(
     mitk::PointSet& outputPoints
     )
 {
-  outputPoints.Clear();
-
-  mitk::PointSet::Pointer singleSeedPointSet = mitk::PointSet::New();
-
-  mitk::PointSet::PointsConstIterator inputPointsIt = inputPoints.Begin();
-  mitk::PointSet::PointsConstIterator inputPointsEnd = inputPoints.End();
-  for ( ; inputPointsIt != inputPointsEnd; ++inputPointsIt)
-  {
-    mitk::PointSet::PointType point = inputPointsIt->Value();
-    mitk::PointSet::PointIdentifier pointID = inputPointsIt->Index();
-
-    singleSeedPointSet->Clear();
-    singleSeedPointSet->InsertPoint(0, point);
-
-    bool unenclosed = this->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceNumber, *(singleSeedPointSet.GetPointer()));
-
-    if (!unenclosed)
-    {
-      outputPoints.InsertPoint(pointID, point);
-    }
-  }
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->FilterSeedsToEnclosedSeedsOnCurrentSlice(inputPoints, thresholdOn, sliceNumber, outputPoints);
 }
 
 
@@ -849,142 +808,48 @@ void niftkGeneralSegmentorView::ClearWorkingData()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::ToggleTool(int toolId)
 {
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  int activeToolId = toolManager->GetActiveToolID();
-
-  if (toolId == activeToolId)
-  {
-    toolManager->ActivateTool(-1);
-  }
-  else
-  {
-    toolManager->ActivateTool(toolId);
-  }
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->ToggleTool(toolId);
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorView::SelectSeedTool()
 {
-  /// Note:
-  /// If the tool selection box is disabled then the tools are not registered to
-  /// the tool manager ( RegisterClient() ). Then if you activate a tool and another
-  /// tool was already active, then its interaction event observer service tries to
-  /// be unregistered. But since the tools was not registered into the tool manager,
-  /// the observer service is still null, and the attempt to unregister it causes crash.
-  ///
-  /// Consequence:
-  /// We should not do anything with the tools until they are registered to the
-  /// tool manager.
-
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
-  {
-    mitk::ToolManager* toolManager = this->GetToolManager();
-    int activeToolId = toolManager->GetActiveToolID();
-    int seedToolId = toolManager->GetToolIdByToolType<niftk::MIDASSeedTool>();
-
-    if (seedToolId != activeToolId)
-    {
-      toolManager->ActivateTool(seedToolId);
-    }
-
-    return true;
-  }
-
-  return false;
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->SelectSeedTool();
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorView::SelectDrawTool()
 {
-  /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
-  {
-    mitk::ToolManager* toolManager = this->GetToolManager();
-    int activeToolId = toolManager->GetActiveToolID();
-    int drawToolId = toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>();
-
-    if (drawToolId != activeToolId)
-    {
-      toolManager->ActivateTool(drawToolId);
-    }
-
-    return true;
-  }
-
-  return false;
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->SelectDrawTool();
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorView::SelectPolyTool()
 {
-  /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
-  {
-    mitk::ToolManager* toolManager = this->GetToolManager();
-    int activeToolId = toolManager->GetActiveToolID();
-    int polyToolId = toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>();
-
-    if (polyToolId != activeToolId)
-    {
-      toolManager->ActivateTool(polyToolId);
-    }
-
-    return true;
-  }
-
-  return false;
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->SelectPolyTool();
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorView::UnselectTools()
 {
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
-  {
-    mitk::ToolManager* toolManager = this->GetToolManager();
-
-    if (toolManager->GetActiveToolID() != -1)
-    {
-      toolManager->ActivateTool(-1);
-    }
-
-    return true;
-  }
-
-  return false;
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->UnselectTools();
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorView::SelectViewMode()
 {
-  /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
-  {
-    if (!this->HasInitialisedWorkingData())
-    {
-      QList<mitk::DataNode::Pointer> selectedNodes = this->GetDataManagerSelection();
-      foreach (mitk::DataNode::Pointer selectedNode, selectedNodes)
-      {
-        selectedNode->SetVisibility(!selectedNode->IsVisible(0));
-      }
-      this->RequestRenderWindowUpdate();
-
-      return true;
-    }
-
-    mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-    bool segmentationNodeIsVisible = workingData[niftk::MIDASTool::SEGMENTATION]->IsVisible(0);
-    workingData[niftk::MIDASTool::SEGMENTATION]->SetVisibility(!segmentationNodeIsVisible);
-    this->RequestRenderWindowUpdate();
-
-    return true;
-  }
-
-  return false;
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->SelectViewMode();
 }
 
 
@@ -1050,219 +915,56 @@ void niftkGeneralSegmentorView::OnFocusChanged()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
 {
-  if (!this->HasInitialisedWorkingData())
-  {
-    return;
-  }
-
-  int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  int axisNumber = this->GetViewAxis();
-
-  mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
-  assert(workingImage);
-
-  mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-  mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[niftk::MIDASTool::CONTOURS]->GetData());
-
-  // TODO
-  // This assertion fails sometimes if both the morphological and irregular (this) volume editor is
-  // switched on and you are using the paintbrush tool of the morpho editor.
-//  assert(contourSet);
-
-  if (contourSet)
-  {
-    if (sliceNumber >= 0 && axisNumber >= 0)
-    {
-      niftk::GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
-
-      if (contourSet->GetSize() > 0)
-      {
-        workingData[niftk::MIDASTool::CONTOURS]->Modified();
-
-        if (updateRendering)
-        {
-          this->RequestRenderWindowUpdate();
-        }
-      }
-    }
-  }
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->UpdateCurrentSliceContours(updateRendering);
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber)
 {
-  mitk::PointSet* seeds = this->GetSeeds();
-  assert(seeds);
-
-  return this->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceNumber, *seeds);
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceNumber);
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber, mitk::PointSet& seeds)
 {
-  bool sliceDoesHaveUnenclosedSeeds = false;
-
-  if (!this->HasInitialisedWorkingData())
-  {
-    return sliceDoesHaveUnenclosedSeeds;
-  }
-
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(0);
-
-  mitk::ToolManager *toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  niftk::MIDASPolyTool *polyTool = static_cast<niftk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>()));
-  assert(polyTool);
-
-  mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
-  mitk::ContourModel* polyToolContour = polyTool->GetContour();
-  if (polyToolContour != NULL && polyToolContour->GetNumberOfVertices() >= 2)
-  {
-    polyToolContours->AddContourModel(polyToolContour);
-  }
-
-  mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[niftk::MIDASTool::CONTOURS]->GetData());
-  mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[niftk::MIDASTool::DRAW_CONTOURS]->GetData());
-
-  double lowerThreshold = m_GeneralSegmentorGUI->GetLowerThreshold();
-  double upperThreshold = m_GeneralSegmentorGUI->GetUpperThreshold();
-
-  int axisNumber = this->GetViewAxis();
-
-  if (axisNumber != -1 && sliceNumber != -1)
-  {
-    try
-    {
-      AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-        niftk::ITKSliceDoesHaveUnEnclosedSeeds, 3,
-          (seeds,
-           *segmentationContours,
-           *polyToolContours,
-           *drawToolContours,
-           *segmentationImage,
-            lowerThreshold,
-            upperThreshold,
-            thresholdOn,
-            axisNumber,
-            sliceNumber,
-            sliceDoesHaveUnenclosedSeeds
-          )
-      );
-    }
-    catch(const mitk::AccessByItkException& e)
-    {
-      MITK_ERROR << "Caught exception during niftk::ITKSliceDoesHaveUnEnclosedSeeds, so will return false, caused by:" << e.what();
-    }
-  }
-
-  return sliceDoesHaveUnenclosedSeeds;
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceNumber, seeds);
 }
 
 
 //-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorView::CleanSlice()
 {
-  /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
-  {
-    this->OnCleanButtonClicked();
-    return true;
-  }
-
-  return false;
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->CleanSlice();
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnSeePriorCheckBoxToggled(bool checked)
 {
-  if (!this->HasInitialisedWorkingData())
-  {
-    return;
-  }
-
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-
-  if (checked)
-  {
-    this->UpdatePriorAndNext();
-  }
-  workingData[niftk::MIDASTool::PRIOR_CONTOURS]->SetVisibility(checked);
-  this->RequestRenderWindowUpdate();
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->OnSeePriorCheckBoxToggled(checked);
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnSeeNextCheckBoxToggled(bool checked)
 {
-  if (!this->HasInitialisedWorkingData())
-  {
-    return;
-  }
-
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-
-  if (checked)
-  {
-    this->UpdatePriorAndNext();
-  }
-  workingData[niftk::MIDASTool::NEXT_CONTOURS]->SetVisibility(checked);
-  this->RequestRenderWindowUpdate();
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->OnSeeNextCheckBoxToggled(checked);
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
 {
-  if (!this->HasInitialisedWorkingData())
-  {
-    return;
-  }
-
-  int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  int axisNumber = this->GetViewAxis();
-
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-  mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(0);
-
-  if (m_GeneralSegmentorGUI->IsSeePriorCheckBoxChecked())
-  {
-    mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[niftk::MIDASTool::PRIOR_CONTOURS]->GetData());
-    niftk::GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber-1, sliceNumber, contourSet);
-
-    if (contourSet->GetSize() > 0)
-    {
-      workingData[niftk::MIDASTool::PRIOR_CONTOURS]->Modified();
-
-      if (updateRendering)
-      {
-        this->RequestRenderWindowUpdate();
-      }
-    }
-  }
-
-  if (m_GeneralSegmentorGUI->IsSeeNextCheckBoxChecked())
-  {
-    mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[niftk::MIDASTool::NEXT_CONTOURS]->GetData());
-    niftk::GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber+1, sliceNumber, contourSet);
-
-    if (contourSet->GetSize() > 0)
-    {
-      workingData[niftk::MIDASTool::NEXT_CONTOURS]->Modified();
-
-      if (updateRendering)
-      {
-        this->RequestRenderWindowUpdate();
-      }
-    }
-  }
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->UpdatePriorAndNext(updateRendering);
 }
 
 

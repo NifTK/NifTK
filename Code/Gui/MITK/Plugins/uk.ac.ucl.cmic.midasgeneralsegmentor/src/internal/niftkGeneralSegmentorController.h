@@ -16,6 +16,7 @@
 #define __niftkGeneralSegmentorController_h
 
 #include <niftkBaseSegmentorController.h>
+#include <niftkMIDASToolKeyPressResponder.h>
 
 
 namespace mitk
@@ -29,7 +30,7 @@ class niftkGeneralSegmentorView;
 /**
  * \class niftkGeneralSegmentorController
  */
-class niftkGeneralSegmentorController : public niftkBaseSegmentorController
+class niftkGeneralSegmentorController : public niftkBaseSegmentorController, public niftk::MIDASToolKeyPressResponder
 {
 
   Q_OBJECT
@@ -38,6 +39,24 @@ public:
 
   niftkGeneralSegmentorController(niftkGeneralSegmentorView* segmentorView);
   virtual ~niftkGeneralSegmentorController();
+
+  /// \brief \see niftk::MIDASToolKeyPressResponder::SelectSeedTool()
+  virtual bool SelectSeedTool() override;
+
+  /// \brief \see niftk::MIDASToolKeyPressResponder::SelectDrawTool()
+  virtual bool SelectDrawTool() override;
+
+  /// \brief \see niftk::MIDASToolKeyPressResponder::UnselectTools()
+  virtual bool UnselectTools() override;
+
+  /// \brief \see niftk::MIDASToolKeyPressResponder::SelectPolyTool()
+  virtual bool SelectPolyTool() override;
+
+  /// \brief \see niftk::MIDASToolKeyPressResponder::SelectViewMode()
+  virtual bool SelectViewMode() override;
+
+  /// \brief \see niftk::MIDASToolKeyPressResponder::CleanSlice()
+  virtual bool CleanSlice() override;
 
 protected:
 
@@ -56,6 +75,14 @@ protected:
 
     /// \brief Creates the general segmentor widget that holds the GUI components of the view.
   virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
+
+protected slots:
+
+  /// \brief Qt slot called from "see prior" checkbox to show the contour from the previous slice.
+  void OnSeePriorCheckBoxToggled(bool checked);
+
+  /// \brief Qt slot called from "see next" checkbox to show the contour from the next slice.
+  void OnSeeNextCheckBoxToggled(bool checked);
 
 private:
 
@@ -85,6 +112,37 @@ private:
   /// and looks up the pixel value in the reference image (grey scale image being segmented)
   /// at that location, and updates the min and max labels on the GUI thresholding panel.
   void RecalculateMinAndMaxOfSeedValues();
+
+  /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
+  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber);
+
+  /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
+  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber, mitk::PointSet& seeds);
+
+  /// \brief Filters seeds to current slice
+  void FilterSeedsToCurrentSlice(
+      mitk::PointSet& inputPoints,
+      int& axis,
+      int& sliceNumber,
+      mitk::PointSet& outputPoints
+      );
+
+  /// \brief Filters seeds to current slice, and selects seeds that are enclosed.
+  void FilterSeedsToEnclosedSeedsOnCurrentSlice(
+      mitk::PointSet& inputPoints,
+      bool& thresholdOn,
+      int& sliceNumber,
+      mitk::PointSet& outputPoints
+      );
+
+  /// \brief Takes the current slice, and refreshes the current slice contour set (WorkingData[2]).
+  void UpdateCurrentSliceContours(bool updateRendering = true);
+
+  /// \brief Takes the current slice, and updates the prior (WorkingData[4]) and next (WorkingData[5]) contour sets.
+  void UpdatePriorAndNext(bool updateRendering = true);
+
+  /// \brief Used to toggle tools on/off.
+  void ToggleTool(int toolId);
 
   /// \brief All the GUI controls for the main view part.
   niftkGeneralSegmentorGUI* m_GeneralSegmentorGUI;

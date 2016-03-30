@@ -50,6 +50,20 @@ mitk::DataStorage* niftkBaseSegmentorController::GetDataStorage() const
 
 
 //-----------------------------------------------------------------------------
+void niftkBaseSegmentorController::RequestRenderWindowUpdate() const
+{
+  m_SegmentorView->RequestRenderWindowUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+QList<mitk::DataNode::Pointer> niftkBaseSegmentorController::GetDataManagerSelection() const
+{
+  return m_SegmentorView->GetDataManagerSelection();
+}
+
+
+//-----------------------------------------------------------------------------
 mitk::SliceNavigationController* niftkBaseSegmentorController::GetSliceNavigationController() const
 {
   return m_SegmentorView->GetSliceNavigationController();
@@ -458,6 +472,12 @@ void niftkBaseSegmentorController::OnDataManagerSelectionChanged(const QList<mit
 mitk::DataNode::Pointer niftkBaseSegmentorController::GetSelectedNode() const
 {
   return m_SelectedNode;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorController::OnNewSegmentationButtonClicked()
+{
 }
 
 

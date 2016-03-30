@@ -199,7 +199,7 @@ protected slots:
   /// \brief Qt slot called when the user hits the button "New segmentation",
   /// creating new working data such as a region growing image, contour objects
   /// to store contour lines that we are drawing, and seeds for region growing.
-  virtual void OnNewSegmentationButtonClicked();
+  virtual void OnNewSegmentationButtonClicked() override;
 
   /// \brief Qt slot called from "see prior" checkbox to show the contour from the previous slice.
   void OnSeePriorCheckBoxToggled(bool checked);

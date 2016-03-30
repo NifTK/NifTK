@@ -20,6 +20,7 @@
 #include <QColor>
 #include <QObject>
 
+#include <mitkDataNode.h>
 #include <mitkToolManager.h>
 
 #include <niftkMIDASOrientationUtils.h>
@@ -49,6 +50,16 @@ public:
 protected:
 
   mitk::DataStorage* GetDataStorage() const;
+
+  void RequestRenderWindowUpdate() const;
+
+  /**
+   * Returns the current selection made in the datamanager bundle or an empty list
+   * if there is no selection or if it is empty.
+   *
+   * \see QmitkAbstractView::GetDataManagerSelection()
+   */
+  QList<mitk::DataNode::Pointer> GetDataManagerSelection() const;
 
   mitk::SliceNavigationController* GetSliceNavigationController() const;
 
@@ -142,6 +153,13 @@ protected:
 
   /// \brief Returns the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer GetSelectedNode() const;
+
+protected slots:
+
+  /**
+   * \brief Called from niftkSegmentationSelectorWidget when the 'Start/restart segmentation' button is clicked.
+   */
+  virtual void OnNewSegmentationButtonClicked();
 
 private:
 

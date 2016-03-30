@@ -182,7 +182,6 @@ niftkBaseSegmentorGUI* niftkBaseSegmentorView::CreateSegmentorGUI(QWidget* paren
 mitk::ToolManager* niftkBaseSegmentorView::GetToolManager()
 {
   assert(m_SegmentorController);
-
   return m_SegmentorController->GetToolManager();
 }
 
@@ -218,6 +217,8 @@ void niftkBaseSegmentorView::OnToolSelected(int toolID)
 //-----------------------------------------------------------------------------
 void niftkBaseSegmentorView::OnNewSegmentationButtonClicked()
 {
+  assert(m_SegmentorController);
+  m_SegmentorController->OnNewSegmentationButtonClicked();
 }
 
 
