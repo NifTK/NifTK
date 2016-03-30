@@ -93,6 +93,11 @@ protected slots:
   /// \brief Qt slot called from "see next" checkbox to show the contour from the next slice.
   void OnSeeNextCheckBoxToggled(bool checked);
 
+  /// \brief Qt slot called when the Clean button is pressed, indicating the
+  /// current contours on the current slice should be cleaned, see additional spec,
+  /// currently at:  https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1096
+  void OnCleanButtonClicked();
+
 private:
 
   /// \brief Used to create an image used for the region growing, see class intro.
@@ -156,6 +161,10 @@ private:
 
   /// \brief Takes the current slice, and updates the prior (WorkingData[4]) and next (WorkingData[5]) contour sets.
   void UpdatePriorAndNext(bool updateRendering = true);
+
+  /// \brief Does wipe, where if direction=0, wipes current slice, if direction=1, wipes anterior,
+  /// and if direction=-1, wipes posterior.
+  bool DoWipe(int direction);
 
   /// \brief Method that actually does the threshold apply, so we can call it from the
   /// threshold apply button and not change slice, or when we change slice.
