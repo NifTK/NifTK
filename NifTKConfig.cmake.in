@@ -47,7 +47,7 @@ set(NIFTK_VERSION_STRING "@NIFTK_VERSION_STRING@")
 # C++ language standard
 #-----------------------------------------------------------------------------
 
-set(MITK_CXX_STANDARD @MITK_CXX_STANDARD@)
+set(NIFTK_CXX_STANDARD @MITK_CXX_STANDARD@)
 
 #-----------------------------------------------------------------------------
 # Include required CMake scripts
@@ -56,8 +56,13 @@ set(MITK_CXX_STANDARD @MITK_CXX_STANDARD@)
 # Standard CMake macros
 include(FeatureSummary)
 
-# Make all the NifTK CMake macros are available.
+# Make sure all the NifTK CMake macros are available.
+# These have to be copied into the build folder, as the user
+# may not have the source folder around when compiling an 
+# external project. 
+
 set(NIFTK_CMAKE_MODULE_PATH "@NIFTK_BINARY_DIR@/CMakeMacros")
+list(APPEND NIFTK_CMAKE_MODULE_PATH "@NIFTK_BINARY_DIR@")
 list(APPEND CMAKE_MODULE_PATH ${NIFTK_CMAKE_MODULE_PATH})
 
 # Standard CMake macros
@@ -68,6 +73,7 @@ include(GenerateExportHeader)
 
 # The list of 'include' commands should match those in NifTK/CMake folder.
 include(mitkMacroEmptyExternalProject)
+include(mitkMacroFindDependency)
 include(mitkFunctionGetGccVersion)
 include(mitkFunctionGetVersion)
 include(niftkMacroBuildCLI)
@@ -113,6 +119,7 @@ set(NifTK_VERSION_APRILTAGS "@NIFTK_VERSION_AprilTags@")
 set(NifTK_VERSION_FLANN "@NIFTK_VERSION_FLANN@")
 set(NifTK_VERSION_PCL "@NIFTK_VERSION_PCL@")
 set(NifTK_VERSION_qRestAPI "@NIFTK_VERSION_qRestAPI@")
+set(NifTK_VERSION_VL "@NIFTK_VERSION_VL@")
 
 # Various config params for NifTK, so 3rd parties can know HOW it was built.
 set(NifTK_BUILD_COMMAND_LINE_PROGRAMS "@BUILD_COMMAND_LINE_PROGRAMS@")
@@ -124,6 +131,7 @@ set(NifTK_BUILD_NiftySim "@BUILD_NiftySim@")
 set(NifTK_BUILD_NiftyRec "@BUILD_NiftyRec@")
 set(NifTK_BUILD_PCL "@BUILD_PCL@")
 set(NifTK_BUILD_RTK "@BUILD_RTK@")
+set(NifTK_BUILD_VL "@BUILD_VL@")
 set(NifTK_BUILD_SHARED "@BUILD_SHARED_LIBS@")
 set(NifTK_BUILD_MESHING "@BUILD_MESHING@")
 set(NifTK_BUILD_GUI "@BUILD_GUI@")
@@ -180,6 +188,7 @@ set(NifTK_LICENSE_QT  "@CMAKE_BINARY_DIR@/LICENSE_Qt.txt")
 set(NifTK_LICENSE_EIGEN  "@CMAKE_BINARY_DIR@/LICENSE_Eigen.txt")
 set(NifTK_LICENSE_FLANN  "@CMAKE_BINARY_DIR@/LICENSE_FLANN.txt")
 set(NifTK_LICENSE_PCL  "@CMAKE_BINARY_DIR@/LICENSE_PCL.txt")
+set(NifTK_LICENSE_VL  "@CMAKE_BINARY_DIR@/LICENSE_VL.txt")
 set(NifTK_LICENSE_NIFTYLINK "@CMAKE_BINARY_DIR@/ExternalLicenses/NiftyLink.txt")
 set(NifTK_LICENSE_OPENIGTLINK "@CMAKE_BINARY_DIR@/ExternalLicenses/OpenIGTLink.txt")
 set(NifTK_LICENSE_QSLOG "@CMAKE_BINARY_DIR@/ExternalLicenses/QsLog.txt")
@@ -235,21 +244,132 @@ set(NifTK_BINARY_EXECUTABLE_DIR
 )
 
 set(NifTK_DOXYGEN_INPUT_DIR
-  @CMAKE_SOURCE_DIR@/Documentation/TechnicalManual-ISO
+  @CMAKE_SOURCE_DIR@/Doc/TechnicalManual-ISO
 )
 
-find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED)
+#-----------------------------------------------------------------------------
+# External dependencies
+#-----------------------------------------------------------------------------
 
+set(CMAKE_PREFIX_PATH "@CMAKE_PREFIX_PATH@")
+
+#-----------------------------------------------------------------------------
+# Qt variables and dependencies
+#-----------------------------------------------------------------------------
+set(NIFTK_USE_QT @MITK_USE_QT@)
+set(NIFTK_USE_Qt4 @MITK_USE_Qt4@)
+set(NIFTK_USE_Qt5 @MITK_USE_Qt5@)
+
+set(NIFTK_DESIRED_QT_VERSION @DESIRED_QT_VERSION@)
+
+if(NIFTK_USE_Qt4)
+  set(NIFTK_QT4_MINIMUM_VERSION @MITK_QT4_MINIMUM_VERSION@)
+  find_package(Qt4 ${NIFTK_QT4_MINIMUM_VERSION} COMPONENTS ${MITK_QT4_COMPONENTS} REQUIRED)
+elseif(NIFTK_USE_Qt5)
+  set(NIFTK_QT5_MINIMUM_VERSION @MITK_QT5_MINIMUM_VERSION@)
+  set(NIFTK_QT5_COMPONENTS @MITK_QT5_COMPONENTS@)
+  mitkMacroFindDependency(Qt5 ${MITK_QT5_MINIMUM_VERSION} COMPONENTS ${MITK_QT5_COMPONENTS})
+endif()
+
+#-----------------------------------------------------------------------------
+# Special Python variables
+#-----------------------------------------------------------------------------
+
+set(NIFTK_USE_Python @MITK_USE_Python@)
+set(NIFTK_USE_SYSTEM_PYTHON @MITK_USE_SYSTEM_PYTHON@)
+if(NIFTK_USE_Python)
+  set(PYTHON_EXECUTABLE "@PYTHON_EXECUTABLE@" CACHE FILEPATH "")
+  set(PYTHON_INCLUDE_DIR "@PYTHON_INCLUDE_DIR@" CACHE PATH "")
+  set(PYTHON_LIBRARY "@PYTHON_LIBRARY@" CACHE FILEPATH "")
+  set(PYTHON_INCLUDE_DIR2 "@PYTHON_INCLUDE_DIR2@" CACHE PATH "")
+  mitkMacroFindDependency(PythonLibs)
+  mitkMacroFindDependency(PythonInterp)
+endif()
+
+#-----------------------------------------------------------------------------
+# Special Boost variables
+#-----------------------------------------------------------------------------
+
+set(NIFTK_USE_Boost @MITK_USE_Boost@)
+set(NIFTK_USE_Boost_LIBRARIES @MITK_USE_Boost_LIBRARIES@)
+set(NIFTK_USE_SYSTEM_Boost @MITK_USE_SYSTEM_Boost@)
+if(NIFTK_USE_Boost)
+  set(BOOST_ROOT "@BOOST_ROOT@" CACHE PATH "")
+  set(BOOST_LIBRARYDIR "@BOOST_LIBRARYDIR@" CACHE PATH "")
+endif()
+
+#-----------------------------------------------------------------------------
+# We need this later for a DCMTK workaround
+#-----------------------------------------------------------------------------
+set(_dcmtk_dir_orig "@DCMTK_ROOT@")
+
+#-----------------------------------------------------------------------------
+# External dependencies from the superbuild
+# or injected from somewhere else via
+# <project>_DIR variables.
+#-----------------------------------------------------------------------------
+@MITK_CONFIG_EXTERNAL_PROJECTS@
+
+# Ensure the MITK module path comes first
+set(CMAKE_MODULE_PATH ${MITK_CMAKE_MODULE_PATH} ${CMAKE_MODULE_PATH})
+
+#-----------------------------------------------------------------------------
+# Special handling for DCMTK
+#-----------------------------------------------------------------------------
+if(MITK_USE_DCMTK)
+  # Due to the preferred CONFIG mode in find_package calls above,
+  # the DCMTKConfig.cmake file is read, which does not provide useful
+  # package information. We explictly need MODULE mode to find DCMTK.
+  find_package(DCMTK REQUIRED MODULE)
+endif()
+
+#-----------------------------------------------------------------------------
+# Special handling for SOFA
+#-----------------------------------------------------------------------------
+if(MITK_USE_SOFA)
+  # The SOFAConfig.cmake file does not provide exported targets or
+  # libraries with absolute paths, hence we need to make the link
+  # directories globally available until the SOFAConfig.cmake file
+  # supports a proper mechanism for handling targets.
+# find_package(SOFA PATHS ${SOFA_DIR} CONFIG REQUIRED)
+  link_directories(${SOFA_LIBRARY_DIRS})
+endif()
+
+#-----------------------------------------------------------------------------
+# Special handling for Boost
+#-----------------------------------------------------------------------------
+
+if(MITK_USE_Boost)
+  # Same as SOFA above
+  link_directories(${Boost_LIBRARY_DIRS})
+endif()
+
+#-----------------------------------------------------------------------------
+# Special handling for OpenIGTLink
+#-----------------------------------------------------------------------------
+
+if(MITK_USE_OpenIGTLink)
+  # Same as SOFA above
+  link_directories(${OpenIGTLink_LIBRARY_DIRS})
+endif()
+
+#-----------------------------------------------------------------------------
+# Find MITK
+#-----------------------------------------------------------------------------
 set(MITK_USE_EXT 1)
 set(MITK_USE_Boost 1)
 set(MITK_USE_DCMTK 1)
-set(MITK_USE_BLUEBERRY ${MITK_USE_BLUEBERRY})
-set(MITK_USE_QT ${MITK_USE_QT})
-set(MITK_DESIRED_QT_VERSION @DESIRED_QT_VERSION@)
-set(MITK_USE_OpenCV ${NifTK_BUILD_IGI})
-if(${NifTK_GENERATE_DOXYGEN_HELP})
-  set(BLUEBERRY_USE_QT_HELP ON)
+set(MITK_USE_BLUEBERRY @MITK_USE_BLUEBERRY@)
+set(MITK_USE_QT OFF)
+if(NIFTK_USE_Qt4 OR NIFTK_USE_Qt5)
+  set(MITK_USE_QT ON)
 endif()
+set(MITK_DESIRED_QT_VERSION ${NIFTK_DESIRED_QT_VERSION})
+set(MITK_USE_OpenCV ${NifTK_BUILD_IGI})
+
+if(NIFTK_GENERATE_DOXYGEN_HELP)
+  set(BLUEBERRY_USE_QT_HELP ON)
+endif(NIFTK_GENERATE_DOXYGEN_HELP)
 
 # Note:
 # We build NifTK with Boost but MITK without it. The next 'find_package(MITK REQUIRED)'
@@ -307,17 +427,6 @@ endif()
 # BlueBerry support
 if(MITK_USE_BLUEBERRY)
 
-  set(BlueBerry_DIR "@MITK_BINARY_DIR@/BlueBerry")
-
-  # Don't include the BlueBerry exports file, since the targets are
-  # also exported in the MITK exports file
-  set(BB_PLUGIN_EXPORTS_FILE_INCLUDED 1)
-  find_package(BlueBerry)
-
-  if(NOT BlueBerry_FOUND)
-    message(SEND_ERROR "MITK does not seem to be configured with BlueBerry support. Set MITK_USE_BLUEBERRY to ON in your MITK build configuration.")
-  endif()
-
   set(NIFTK_PLUGIN_USE_FILE "@CMAKE_BINARY_DIR@/NifTKPluginUseFile.cmake")
   if(NIFTK_PLUGIN_USE_FILE)
     if(EXISTS "${NIFTK_PLUGIN_USE_FILE}")
@@ -329,3 +438,4 @@ endif()
 
 # Set properties on exported targets
 @NIFTK_EXPORTED_TARGET_PROPERTIES@
+
