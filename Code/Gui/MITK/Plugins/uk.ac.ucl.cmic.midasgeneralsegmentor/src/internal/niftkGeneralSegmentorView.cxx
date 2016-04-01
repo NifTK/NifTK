@@ -14,65 +14,16 @@
 
 #include "niftkGeneralSegmentorView.h"
 
-#include <QButtonGroup>
-#include <QGridLayout>
-#include <QMessageBox>
-
-#include <itkCommand.h>
-#include <itkContinuousIndex.h>
-#include <itkImageFileWriter.h>
-
-#include <mitkColorProperty.h>
-#include <mitkContourModelSet.h>
-#include <mitkDataNodeObject.h>
-#include <mitkDataStorageUtils.h>
-#include <mitkFocusManager.h>
-#include <mitkGlobalInteraction.h>
-#include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
 #include <mitkIRenderingManager.h>
-#include <mitkITKImageImport.h>
-#include <mitkOperationEvent.h>
-#include <mitkPlaneGeometry.h>
-#include <mitkPointSet.h>
-#include <mitkPointUtils.h>
-#include <mitkProperties.h>
-#include <mitkRenderingManager.h>
-#include <mitkSegmentationObjectFactory.h>
-#include <mitkSegTool2D.h>
-#include <mitkSlicedGeometry3D.h>
-#include <mitkStringProperty.h>
-#include <mitkSurface.h>
-#include <mitkTool.h>
-#include <mitkUndoController.h>
-#include <mitkVtkResliceInterpolationProperty.h>
 
-#include <QmitkRenderWindow.h>
-
-#include <niftkGeneralSegmentorPipeline.h>
-#include <niftkGeneralSegmentorPipelineCache.h>
-#include <niftkGeneralSegmentorUtils.h>
-#include <niftkMIDASDrawTool.h>
-#include <niftkMIDASImageUtils.h>
-#include <niftkMIDASOrientationUtils.h>
-#include <niftkMIDASPolyTool.h>
-#include <niftkMIDASPosnTool.h>
-#include <niftkMIDASSeedTool.h>
+#include <mitkDataStorageUtils.h>
+#include <niftkMIDASContourTool.h>
 #include <niftkMIDASTool.h>
-
-#include <niftkGeneralSegmentorCommands.h>
-
-#include "niftkGeneralSegmentorController.h"
 #include <niftkGeneralSegmentorGUI.h>
 
-/*
-#include <sys/time.h>
-double timespecDiff(struct timespec *timeA_p, struct timespec *timeB_p)
-{
-  return (((timeA_p->tv_sec * 1000000000) + timeA_p->tv_nsec) -
-           ((timeB_p->tv_sec * 1000000000) + timeB_p->tv_nsec))/1000000000.0;
-}
-*/
+#include "niftkGeneralSegmentorPreferencePage.h"
+#include "niftkGeneralSegmentorController.h"
 
 const std::string niftkGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
 
@@ -83,8 +34,7 @@ const std::string niftkGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgene
 //-----------------------------------------------------------------------------
 niftkGeneralSegmentorView::niftkGeneralSegmentorView()
 : niftkBaseSegmentorView()
-, m_ToolKeyPressStateMachine(NULL)
-, m_GeneralSegmentorGUI(NULL)
+, m_GeneralSegmentorGUI(nullptr)
 {
 }
 
@@ -105,20 +55,17 @@ niftkGeneralSegmentorView::~niftkGeneralSegmentorView()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::CreateQtPartControl(QWidget *parent)
-{
-  niftkBaseSegmentorView::CreateQtPartControl(parent);
-
-//    m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
-  m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New(this);
-}
-
-
-//-----------------------------------------------------------------------------
 niftkBaseSegmentorController* niftkGeneralSegmentorView::CreateSegmentorController()
 {
   m_GeneralSegmentorController = new niftkGeneralSegmentorController(this);
   return m_GeneralSegmentorController;
+}
+
+
+//-----------------------------------------------------------------------------
+QString niftkGeneralSegmentorView::GetPreferencesNodeName()
+{
+  return niftkGeneralSegmentorPreferencePage::PREFERENCES_NODE_NAME;
 }
 
 
@@ -168,22 +115,6 @@ void niftkGeneralSegmentorView::SetFocus()
 /**************************************************************
  * Start of: Functions to create reference data (hidden nodes)
  *************************************************************/
-
-//-----------------------------------------------------------------------------
-mitk::DataNode::Pointer niftkGeneralSegmentorView::CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->CreateHelperImage(referenceImage, segmentationNode, r, g, b, name, visible, layer);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode::Pointer niftkGeneralSegmentorView::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->CreateContourSet(segmentationNode, r, g, b, name, visible, layer);
-}
-
 
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnNewSegmentationButtonClicked()
@@ -369,10 +300,42 @@ void niftkGeneralSegmentorView::OnNewSegmentationButtonClicked()
 
 
 //-----------------------------------------------------------------------------
+mitk::DataNode::Pointer niftkGeneralSegmentorView::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
+{
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->CreateContourSet(segmentationNode, r, g, b, name, visible, layer);
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNode::Pointer niftkGeneralSegmentorView::CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
+{
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->CreateHelperImage(referenceImage, segmentationNode, r, g, b, name, visible, layer);
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::StoreInitialSegmentation()
 {
   assert(m_GeneralSegmentorController);
   m_GeneralSegmentorController->StoreInitialSegmentation();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
+{
+  assert(m_GeneralSegmentorController);
+  return m_GeneralSegmentorController->UpdateCurrentSliceContours(updateRendering);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkGeneralSegmentorView::InitialiseSeedsForWholeVolume()
+{
+  assert(m_GeneralSegmentorController);
+  m_GeneralSegmentorController->InitialiseSeedsForWholeVolume();
 }
 
 
@@ -389,140 +352,6 @@ void niftkGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
  *************************************************************/
 
 
-/**************************************************************
- * Start of: Utility functions
- *************************************************************/
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::RecalculateMinAndMaxOfImage()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->RecalculateMinAndMaxOfImage();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::RecalculateMinAndMaxOfSeedValues()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->RecalculateMinAndMaxOfSeedValues();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::PointSet* niftkGeneralSegmentorView::GetSeeds()
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->GetSeeds();
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorView::HasInitialisedWorkingData()
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->HasInitialisedWorkingData();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::FilterSeedsToCurrentSlice(
-    mitk::PointSet& inputPoints,
-    int& axisNumber,
-    int& sliceNumber,
-    mitk::PointSet& outputPoints
-    )
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->FilterSeedsToCurrentSlice(inputPoints, axisNumber, sliceNumber, outputPoints);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::FilterSeedsToEnclosedSeedsOnCurrentSlice(
-    mitk::PointSet& inputPoints,
-    bool& thresholdOn,
-    int& sliceNumber,
-    mitk::PointSet& outputPoints
-    )
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->FilterSeedsToEnclosedSeedsOnCurrentSlice(inputPoints, thresholdOn, sliceNumber, outputPoints);
-}
-
-
-/**************************************************************
- * End of: Utility functions
- *************************************************************/
-
-/**************************************************************
- * Start of: Functions for simply tool toggling
- *************************************************************/
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::ToggleTool(int toolId)
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->ToggleTool(toolId);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorView::SelectSeedTool()
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->SelectSeedTool();
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorView::SelectDrawTool()
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->SelectDrawTool();
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorView::SelectPolyTool()
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->SelectPolyTool();
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorView::UnselectTools()
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->UnselectTools();
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorView::SelectViewMode()
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->SelectViewMode();
-}
-
-
-/**************************************************************
- * End of: Functions for simply tool toggling
- *************************************************************/
-
-/**************************************************************
- * Start of: The main MIDAS business logic.
- *************************************************************/
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::InitialiseSeedsForWholeVolume()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->InitialiseSeedsForWholeVolume();
-}
-
-
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::OnFocusChanged()
 {
@@ -533,95 +362,6 @@ void niftkGeneralSegmentorView::OnFocusChanged()
 }
 
 
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::UpdateCurrentSliceContours(bool updateRendering)
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->UpdateCurrentSliceContours(updateRendering);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber)
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceNumber);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorView::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber, mitk::PointSet& seeds)
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceNumber, seeds);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorView::CleanSlice()
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->CleanSlice();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->UpdatePriorAndNext(updateRendering);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::UpdateRegionGrowing(bool updateRendering)
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->UpdateRegionGrowing(updateRendering);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::UpdateRegionGrowing(
-    bool isVisible,
-    int sliceNumber,
-    double lowerThreshold,
-    double upperThreshold,
-    bool skipUpdate
-    )
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->UpdateRegionGrowing(isVisible, sliceNumber, lowerThreshold, upperThreshold, skipUpdate);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorView::DoThresholdApply(
-    int oldSliceNumber,
-    int newSliceNumber,
-    bool optimiseSeeds,
-    bool newSliceEmpty,
-    bool newCheckboxStatus)
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->DoThresholdApply(oldSliceNumber, newSliceNumber, optimiseSeeds, newSliceEmpty, newCheckboxStatus);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorView::DoWipe(int direction)
-{
-  assert(m_GeneralSegmentorController);
-  return m_GeneralSegmentorController->DoWipe(direction);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->DoPropagate(isUp, is3D);
-}
 
 
 //-----------------------------------------------------------------------------
@@ -638,45 +378,3 @@ void niftkGeneralSegmentorView::NodeRemoved(const mitk::DataNode* node)
   assert(m_GeneralSegmentorController);
   m_GeneralSegmentorController->OnNodeRemoved(node);
 }
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnContoursChanged()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnContoursChanged();
-}
-
-
-/**************************************************************
- * End of: The main MIDAS business logic.
- *************************************************************/
-
-/******************************************************************
- * Start of ExecuteOperation - main method in Undo/Redo framework.
- *
- * Notes: In this method, we update items, using the given
- * operation. We do not know if this is a "Undo" or a "Redo"
- * type of operation. We can set the modified field.
- * But do not be tempted to put things like:
- *
- * this->RequestRenderWindowUpdate();
- *
- * or
- *
- * this->UpdateRegionGrowing() etc.
- *
- * as these methods may be called multiple times during one user
- * operation. So the methods creating the mitk::Operation objects
- * should also be the ones deciding when we update the display.
- ******************************************************************/
-
-void niftkGeneralSegmentorView::ExecuteOperation(mitk::Operation* operation)
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->ExecuteOperation(operation);
-}
-
-/******************************************************************
- * End of ExecuteOperation - main method in Undo/Redo framework.
- ******************************************************************/

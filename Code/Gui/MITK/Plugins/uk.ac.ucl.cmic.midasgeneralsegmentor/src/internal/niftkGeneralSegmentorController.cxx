@@ -47,7 +47,8 @@ niftkGeneralSegmentorController::niftkGeneralSegmentorController(niftkGeneralSeg
     m_SliceNavigationController(nullptr),
     m_SliceNavigationControllerObserverTag(0),
     m_FocusManagerObserverTag(0),
-    m_PreviousSliceNumber(0)
+    m_PreviousSliceNumber(0),
+    m_ToolKeyPressStateMachine(nullptr)
 {
   m_Interface = niftkGeneralSegmentorEventInterface::New();
   m_Interface->SetGeneralSegmentorController(this);
@@ -57,6 +58,9 @@ niftkGeneralSegmentorController::niftkGeneralSegmentorController(niftkGeneralSeg
   toolManager->RegisterTool("MIDASSeedTool");
   toolManager->RegisterTool("MIDASPolyTool");
   toolManager->RegisterTool("MIDASPosnTool");
+
+//  m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
+  m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New(this);
 }
 
 
@@ -186,10 +190,10 @@ niftkBaseSegmentorGUI* niftkGeneralSegmentorController::CreateSegmentorGUI(QWidg
   this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnPropagateUpButtonClicked()));
   this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnPropagateDownButtonClicked()));
   this->connect(m_GeneralSegmentorGUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnPropagate3DButtonClicked()));
-  m_GeneralSegmentorView->connect(m_GeneralSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
-  m_GeneralSegmentorView->connect(m_GeneralSegmentorGUI, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
-  m_GeneralSegmentorView->connect(m_GeneralSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
-  m_GeneralSegmentorView->connect(m_GeneralSegmentorGUI, SIGNAL(ResetButtonClicked()), SLOT(OnResetButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(ResetButtonClicked()), SLOT(OnResetButtonClicked()));
   this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnThresholdApplyButtonClicked()));
   this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
   this->connect(m_GeneralSegmentorGUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
@@ -2866,7 +2870,6 @@ void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operatio
 
         segmentationImage->Modified();
         segmentationNode->Modified();
-
       }
       catch(const mitk::AccessByItkException& e)
       {
