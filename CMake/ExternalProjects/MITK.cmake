@@ -279,6 +279,7 @@ if(NOT DEFINED MITK_DIR)
         -DDCMTK_ROOT:PATH=${DCMTK_ROOT}                        # DCMTK_ROOT is used in MITKConfig.cmake
         -DOpenCV_DIR:PATH=${OpenCV_DIR}
         -DOpenIGTLink_DIR:PATH=${OpenIGTLink_DIR}
+        -DEigen_DIR:PATH=${Eigen_DIR}
         -DEigen_INCLUDE_DIR:PATH=${Eigen_INCLUDE_DIR}
         ${mitk_optional_cache_args}
         -DMITK_INITIAL_CACHE_FILE:FILEPATH=${mitk_initial_cache_file}
