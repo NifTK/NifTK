@@ -983,6 +983,7 @@ void AffineTransformView::RemoveBoundingObjectFromNode()
     if(this->GetDataStorage()->Exists(m_BoundingObjectNode))
     {
       this->GetDataStorage()->Remove(m_BoundingObjectNode);
+      m_AffineDataInteractor3D->GetDataNode()->SetColor(1.0, 1.0, 1.0);
       m_AffineDataInteractor3D->SetDataNode(NULL);
     }
   }
@@ -1016,6 +1017,10 @@ void AffineTransformView::OnInteractiveModeToggled(bool on)
     ResetUIValues();
     
     m_AffineTransformer->ResetTransform();
+
+    m_Controls->radioButton_translate->setChecked(true);
+    m_Controls->radioButton_001->setChecked(true);
+    m_Controls->checkBox_fixAngle->setChecked(false);
 
     mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
     renderManager->RequestUpdateAll();
