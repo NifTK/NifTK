@@ -187,10 +187,6 @@ public:
   /// \brief \see niftk::MIDASToolKeyPressResponder::CleanSlice()
   virtual bool CleanSlice() override;
 
-  /// \brief If the user hits the close icon, it is equivalent to a Cancel,
-  /// and the segmentation is destroyed without warning.
-  virtual void ClosePart();
-
   /// \brief Method to enable this class to interact with the Undo/Redo framework.
   virtual void ExecuteOperation(mitk::Operation* operation) override;
 
@@ -200,29 +196,6 @@ protected slots:
   /// creating new working data such as a region growing image, contour objects
   /// to store contour lines that we are drawing, and seeds for region growing.
   virtual void OnNewSegmentationButtonClicked() override;
-
-  /// \brief Qt slot called when the OK button is pressed and accepts the current
-  /// segmentation, destroying the working data (seeds, contours, region growing image),
-  /// leaving you with a finished segmentation.
-  void OnOKButtonClicked();
-
-  /// \brief Qt slot called when the Reset button is pressed and resets to the start
-  /// of the segmentation, so wipes the current segmentation (no undo), but leaves the
-  /// reference data so you can continue segmenting.
-  void OnResetButtonClicked();
-
-  /// \brief Qt slot called when the Cancel button is pressed and destroys all working
-  /// data (seeds, contours, region growing image), and also destroys the current segmentation
-  /// if it was created by this volume editor. Otherwise, it restores the original segmentation.
-  void OnCancelButtonClicked();
-
-  /// \brief Qt slot called when the Restart button is pressed and restores the initial
-  /// state of the segmentation.
-  void OnRestartButtonClicked();
-
-  /// \brief Qt slot called to effect a change of slice, which means accepting
-  /// the current segmentation, and moving to the prior/next slice, see class intro.
-  void OnSliceNumberChanged(int before, int after);
 
 protected:
 
@@ -257,22 +230,12 @@ protected:
   /// segmentation node is removed.
   virtual void NodeRemoved(const mitk::DataNode* node) override;
 
-  /// \brief Called from the slice navigation controller to indicate a different slice,
-  /// which in MIDAS terms means automatically accepting the currently segmented slice
-  /// and moving to the next one.
-  virtual void OnSliceChanged(const itk::EventObject & geometrySliceEvent);
-
   /// \brief Called from the registered Poly tool and Draw tool to indicate that contours have changed.
   virtual void OnContoursChanged();
 
   void onVisibilityChanged(const mitk::DataNode* node) override;
 
 private:
-
-  /// \brief Called when the view is closed or the segmentation node is removed from the data
-  /// manager and destroys all working data (seeds, contours, region growing image), and also
-  /// destroys the current segmentation.
-  void DiscardSegmentation();
 
   /// \brief Stores the initial state of the segmentation so that the Restart button can restore it.
   void StoreInitialSegmentation();
@@ -375,26 +338,6 @@ private:
 
   /// \brief All the GUI controls for the main Irregular Editor view part.
   niftkGeneralSegmentorGUI* m_GeneralSegmentorGUI;
-
-  /// \brief Keep track of this to SliceNavigationController register and unregister event listeners.
-  mitk::SliceNavigationController::Pointer m_SliceNavigationController;
-
-  /// \brief Each time the window changes, we register to the current slice navigation controller.
-  unsigned long m_SliceNavigationControllerObserverTag;
-
-  /// \brief Used for the mitk::FocusManager to register callbacks to track the currently focus window.
-  unsigned long m_FocusManagerObserverTag;
-
-  /// \brief Keep track of the previous slice number and reset to -1 when the window focus changes.
-  int m_PreviousSliceNumber;
-
-  /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
-  /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
-  mitk::Point3D m_CurrentFocusPoint;
-
-  /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
-  /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
-  mitk::Point3D m_PreviousFocusPoint;
 
 friend class niftkGeneralSegmentorController;
 

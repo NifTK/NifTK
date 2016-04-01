@@ -142,7 +142,62 @@ protected slots:
   /// It transfers the focus back to the main window so that the key interactions keep working.
   void OnAnyButtonClicked();
 
+  /// \brief Callback for when the window focus changes, where we update this view
+  /// to be listening to the right window, and make sure ITK pipelines know we have
+  /// changed orientation.
+  void OnFocusChanged();
+
+  /// \brief Qt slot called when the OK button is pressed and accepts the current
+  /// segmentation, destroying the working data (seeds, contours, region growing image),
+  /// leaving you with a finished segmentation.
+  void OnOKButtonClicked();
+
+  /// \brief Qt slot called when the Reset button is pressed and resets to the start
+  /// of the segmentation, so wipes the current segmentation (no undo), but leaves the
+  /// reference data so you can continue segmenting.
+  void OnResetButtonClicked();
+
+  /// \brief Qt slot called when the Cancel button is pressed and destroys all working
+  /// data (seeds, contours, region growing image), and also destroys the current segmentation
+  /// if it was created by this volume editor. Otherwise, it restores the original segmentation.
+  void OnCancelButtonClicked();
+
+  /// \brief Qt slot called when the Restart button is pressed and restores the initial
+  /// state of the segmentation.
+  void OnRestartButtonClicked();
+
 private:
+
+  void OnViewGetsVisible();
+
+  void OnViewGetsHidden();
+
+  /// \brief If the user hits the close icon, it is equivalent to a Cancel,
+  /// and the segmentation is destroyed without warning.
+  void OnViewGetsClosed();
+
+  /// \brief Called from the slice navigation controller to indicate a different slice,
+  /// which in MIDAS terms means automatically accepting the currently segmented slice
+  /// and moving to the next one.
+  virtual void OnSliceChanged(const itk::EventObject& geometrySliceEvent);
+
+  /// \brief Qt slot called to effect a change of slice, which means accepting
+  /// the current segmentation, and moving to the prior/next slice, see class intro.
+  void OnSliceNumberChanged(int before, int after);
+
+  /// \brief This view registers with the mitk::DataStorage and listens for changing
+  /// data, so this method is called when any node is changed, but only performs an update,
+  /// if the nodes changed are those registered with the ToolManager as WorkingData,
+  /// see class introduction.
+  void OnNodeChanged(const mitk::DataNode* node);
+
+  /// \brief This view registers with the mitk::DataStorage and listens for removing
+  /// data, so this method cancels the operation and frees the resources if the
+  /// segmentation node is removed.
+  void OnNodeRemoved(const mitk::DataNode* node);
+
+  /// \brief Called from the registered Poly tool and Draw tool to indicate that contours have changed.
+  virtual void OnContoursChanged();
 
   /// \brief Used to create an image used for the region growing, see class intro.
   mitk::DataNode::Pointer CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode,  float r, float g, float b, std::string name, bool visible, int layer);
@@ -220,6 +275,23 @@ private:
   /// \brief Used to toggle tools on/off.
   void ToggleTool(int toolId);
 
+  /// \brief Completely removes the current pipeline.
+  void DestroyPipeline();
+
+  /// \brief Removes the images we are using for editing during segmentation.
+  void RemoveWorkingData();
+
+  /// \brief Restores the initial state of the segmentation after the Restart button was pressed.
+  void RestoreInitialSegmentation();
+
+  /// \brief Called when the view is closed or the segmentation node is removed from the data
+  /// manager and destroys all working data (seeds, contours, region growing image), and also
+  /// destroys the current segmentation.
+  void DiscardSegmentation();
+
+  /// \brief Clears both images of the working data.
+  void ClearWorkingData();
+
   /// \brief All the GUI controls for the main view part.
   niftkGeneralSegmentorGUI* m_GeneralSegmentorGUI;
 
@@ -239,6 +311,26 @@ private:
   bool m_IsChangingSlice;
 
   bool m_IsRestarting;
+
+  /// \brief Keep track of this to SliceNavigationController register and unregister event listeners.
+  mitk::SliceNavigationController::Pointer m_SliceNavigationController;
+
+  /// \brief Each time the window changes, we register to the current slice navigation controller.
+  unsigned long m_SliceNavigationControllerObserverTag;
+
+  /// \brief Used for the mitk::FocusManager to register callbacks to track the currently focus window.
+  unsigned long m_FocusManagerObserverTag;
+
+  /// \brief Keep track of the previous slice number and reset to -1 when the window focus changes.
+  int m_PreviousSliceNumber;
+
+  /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
+  /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
+  mitk::Point3D m_CurrentFocusPoint;
+
+  /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
+  /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
+  mitk::Point3D m_PreviousFocusPoint;
 
 friend class niftkGeneralSegmentorView;
 
