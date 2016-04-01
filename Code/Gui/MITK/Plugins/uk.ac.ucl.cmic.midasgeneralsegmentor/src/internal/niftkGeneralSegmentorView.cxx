@@ -605,7 +605,7 @@ void niftkGeneralSegmentorView::OnOKButtonClicked()
 
   /// Apply the thresholds if we are thresholding, and chunk out the contour segments that
   /// do not close any region with seed.
-  this->OnCleanButtonClicked();
+  m_GeneralSegmentorController->OnCleanButtonClicked();
 
   this->DestroyPipeline();
   this->RemoveWorkingData();
@@ -854,7 +854,7 @@ void niftkGeneralSegmentorView::OnFocusChanged()
     }
 
     this->UpdatePriorAndNext();
-    this->OnThresholdingCheckBoxToggled(m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
+    m_GeneralSegmentorController->OnThresholdingCheckBoxToggled(m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
     this->RequestRenderWindowUpdate();
   }
 }
@@ -893,42 +893,10 @@ bool niftkGeneralSegmentorView::CleanSlice()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnSeePriorCheckBoxToggled(bool checked)
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnSeePriorCheckBoxToggled(checked);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnSeeNextCheckBoxToggled(bool checked)
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnSeeNextCheckBoxToggled(checked);
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::UpdatePriorAndNext(bool updateRendering)
 {
   assert(m_GeneralSegmentorController);
   m_GeneralSegmentorController->UpdatePriorAndNext(updateRendering);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnThresholdingCheckBoxToggled(bool checked)
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnThresholdingCheckBoxToggled(checked);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnThresholdValueChanged()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnThresholdValueChanged();
 }
 
 
@@ -951,14 +919,6 @@ void niftkGeneralSegmentorView::UpdateRegionGrowing(
 {
   assert(m_GeneralSegmentorController);
   m_GeneralSegmentorController->UpdateRegionGrowing(isVisible, sliceNumber, lowerThreshold, upperThreshold, skipUpdate);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnThresholdApplyButtonClicked()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnThresholdApplyButtonClicked();
 }
 
 
@@ -1271,38 +1231,6 @@ void niftkGeneralSegmentorView::OnSliceNumberChanged(int beforeSliceNumber, int 
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnCleanButtonClicked()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnCleanButtonClicked();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnWipeButtonClicked()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnWipeButtonClicked();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnWipePlusButtonClicked()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnWipePlusButtonClicked();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnWipeMinusButtonClicked()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnWipeMinusButtonClicked();
-}
-
-
-//-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorView::DoWipe(int direction)
 {
   assert(m_GeneralSegmentorController);
@@ -1311,46 +1239,10 @@ bool niftkGeneralSegmentorView::DoWipe(int direction)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnPropagate3DButtonClicked()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnPropagate3DButtonClicked();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnPropagateUpButtonClicked()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnPropagateUpButtonClicked();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnPropagateDownButtonClicked()
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnPropagateDownButtonClicked();
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::DoPropagate(bool isUp, bool is3D)
 {
   assert(m_GeneralSegmentorController);
   m_GeneralSegmentorController->DoPropagate(isUp, is3D);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnAnyButtonClicked()
-{
-  /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
-  /// (like 'a' and 'z' for changing slice) keep on working.
-  if (QmitkRenderWindow* mainWindow = this->GetSelectedRenderWindow())
-  {
-    mainWindow->setFocus();
-  }
 }
 
 

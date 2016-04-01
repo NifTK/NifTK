@@ -201,41 +201,6 @@ protected slots:
   /// to store contour lines that we are drawing, and seeds for region growing.
   virtual void OnNewSegmentationButtonClicked() override;
 
-  /// \brief Qt slot called from "see prior" checkbox to show the contour from the previous slice.
-  void OnSeePriorCheckBoxToggled(bool checked);
-
-  /// \brief Qt slot called from "see next" checkbox to show the contour from the next slice.
-  void OnSeeNextCheckBoxToggled(bool checked);
-
-  /// \brief Qt slot called when the Clean button is pressed, indicating the
-  /// current contours on the current slice should be cleaned, see additional spec,
-  /// currently at:  https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1096
-  void OnCleanButtonClicked();
-
-  /// \brief Qt slot called when the Propagate Up button is pressed to take the
-  /// current seeds and threshold values, and propagate Anterior/Superior/Right.
-  void OnPropagateUpButtonClicked();
-
-  /// \brief Qt slot called when the Propagate Down button is pressed to take the current
-  /// seeds and threshold values, and propagate Posterior/Inferor/Left.
-  void OnPropagateDownButtonClicked();
-
-  /// \brief Qt slot called when the Propagate 3D button is pressed that is effectively
-  /// equivalent to calling OnPropagateUpButtonPressed and OnPropagateDownButtonPressed.
-  void OnPropagate3DButtonClicked();
-
-  /// \brief Qt slot called when the Wipe button is pressed and will erase the current
-  /// slice and seeds on the current slice.
-  void OnWipeButtonClicked();
-
-  /// \brief Qt slot called when the Wipe+ button is pressed and will erase the
-  /// whole region Anterior/Superior/Right from the current slice, including seeds.
-  void OnWipePlusButtonClicked();
-
-  /// \brief Qt slot called when the Wipe- button is pressed and will erase the
-  /// whole region Posterior/Inferior/Left from the current slice, including seeds.
-  void OnWipeMinusButtonClicked();
-
   /// \brief Qt slot called when the OK button is pressed and accepts the current
   /// segmentation, destroying the working data (seeds, contours, region growing image),
   /// leaving you with a finished segmentation.
@@ -254,24 +219,6 @@ protected slots:
   /// \brief Qt slot called when the Restart button is pressed and restores the initial
   /// state of the segmentation.
   void OnRestartButtonClicked();
-
-  /// \brief Qt slot called when the Apply button is pressed and used to accept the
-  /// current region growing segmentation, and recalculates seed positions as per MIDAS spec
-  /// described in this class intro.
-  void OnThresholdApplyButtonClicked();
-
-  /// \brief Qt slot called when the any button is pressed on this widget.
-  ///
-  /// It transfers the focus back to the main window so that the key interactions keep working.
-  void OnAnyButtonClicked();
-
-  /// \brief Qt slot called when the "threshold" checkbox is checked, and toggles
-  /// the thresholding widget section on and calls niftkGeneralSegmentorView::UpdateRegionGrowing.
-  void OnThresholdingCheckBoxToggled(bool checked);
-
-  /// \brief Qt slot called when the lower or upper threshold slider is moved, calls
-  /// niftkGeneralSegmentorView::UpdateRegionGrowing as thresholds have changed.
-  void OnThresholdValueChanged();
 
   /// \brief Qt slot called to effect a change of slice, which means accepting
   /// the current segmentation, and moving to the prior/next slice, see class intro.

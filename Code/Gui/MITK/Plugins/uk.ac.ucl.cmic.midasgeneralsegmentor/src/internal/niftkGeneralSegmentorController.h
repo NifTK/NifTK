@@ -137,6 +137,11 @@ protected slots:
   /// niftkGeneralSegmentorView::UpdateRegionGrowing as thresholds have changed.
   void OnThresholdValueChanged();
 
+  /// \brief Qt slot called when the any button is pressed on this widget.
+  ///
+  /// It transfers the focus back to the main window so that the key interactions keep working.
+  void OnAnyButtonClicked();
+
 private:
 
   /// \brief Used to create an image used for the region growing, see class intro.
