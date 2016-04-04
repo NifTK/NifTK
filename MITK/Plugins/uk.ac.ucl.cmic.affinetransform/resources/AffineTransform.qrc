@@ -1,5 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
  <qresource prefix="/AffineTransform">
-     <file>AffineTransformInteractorSM.xml</file>
+   <file>AffineTransformInteractorSM.xml</file>
  </qresource>
  </RCC>
