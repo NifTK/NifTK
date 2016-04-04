@@ -51,13 +51,6 @@ public:
   /// \brief Returns the VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor".
   virtual std::string GetViewID() const;
 
-protected slots:
- 
-  /// \brief Qt slot called when the user hits the button "New segmentation",
-  /// creating new working data such as a region growing image, contour objects
-  /// to store contour lines that we are drawing, and seeds for region growing.
-  virtual void OnNewSegmentationButtonClicked() override;
-
 protected:
 
   /// \see mitk::ILifecycleAwarePart::PartVisible

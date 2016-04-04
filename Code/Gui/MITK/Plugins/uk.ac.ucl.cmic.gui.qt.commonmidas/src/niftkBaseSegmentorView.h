@@ -113,11 +113,6 @@ protected slots:
    */
   virtual void OnToolSelected(int);
 
-  /**
-   * \brief Called from niftkSegmentationSelectorWidget when the 'Start/restart segmentation' button is clicked.
-   */
-  virtual void OnNewSegmentationButtonClicked();
-
 protected:
 
   /**

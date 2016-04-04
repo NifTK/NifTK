@@ -21,7 +21,6 @@
 
 #include <MorphologicalSegmentorPipelineParams.h>
 #include "niftkMorphologicalSegmentorPreferencePage.h"
-#include <niftkMorphologicalSegmentorPipelineManager.h>
 
 class niftkMorphologicalSegmentorController;
 class niftkMorphologicalSegmentorGUI;
@@ -46,8 +45,6 @@ class niftkMorphologicalSegmentorGUI;
  */
 class niftkMorphologicalSegmentorView : public niftkBaseSegmentorView
 {
-
-  // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
   Q_OBJECT
 
 public:
@@ -67,42 +64,7 @@ public:
   /// \brief Returns VIEW_ID = uk.ac.ucl.cmic.midasmorphologicalsegmentor.
   virtual std::string GetViewID() const;
 
-  /// \brief If the user hits the close icon, it is equivalent to a Cancel.
-  virtual void ClosePart();
-
-protected slots:
- 
-  /// \brief Called when the user hits the button "New segmentation", which creates the necessary reference data.
-  virtual void OnNewSegmentationButtonClicked() override;
-
-  /// \brief Called from niftkMorphologicalSegmentorGUI when thresholding sliders or spin boxes changed.
-  void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);
-
-  /// \brief Called from niftkMorphologicalSegmentorGUI when erosion sliders or spin boxes changed.
-  void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
-
-  /// \brief Called from niftkMorphologicalSegmentorGUI when dilation sliders or spin boxes changed.
-  void OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
-
-  /// \brief Called from niftkMorphologicalSegmentorGUI when re-thresholding widgets changed.
-  void OnRethresholdingValuesChanged(int boxSize);
-
-  /// \brief Called from niftkMorphologicalSegmentorGUI when a tab changes.
-  void OnTabChanged(int i);
-
-  /// \brief Called from niftkMorphologicalSegmentatorControls when OK button is clicked, which should finalise / finish and accept the segmentation.
-  void OnOKButtonClicked();
-
-  /// \brief Called from niftkMorphologicalSegmentatorControls when Restart button is clicked, which means "back to start", like a "reset" button.
-  void OnRestartButtonClicked();
-
-  /// \brief Called from niftkMorphologicalSegmentorGUI when cancel button is clicked, which should mean "throw away" / "abandon" current segmentation.
-  void OnCancelButtonClicked();
-
 protected:
-
-  /// \brief Called by framework, this method creates all the controls for this view
-  virtual void CreateQtPartControl(QWidget *parent) override;
 
   /// \brief Creates the morphological segmentor controller that realises the GUI logic behind the view.
   virtual niftkBaseSegmentorController* CreateSegmentorController() override;
@@ -120,33 +82,11 @@ protected:
 
 private:
 
-  /// \brief Creates a node for storing the axial cut-off plane.
-  mitk::DataNode::Pointer CreateAxialCutOffPlaneNode(const mitk::Image* referenceImage);
-
-  /// \brief Looks up the reference image, and sets default parameter values on the segmentation node.
-  void SetSegmentationNodePropsFromReferenceImage();
-
-  /// \brief Sets the morphological controls to default values specified by reference image, like min/max intensity range, number of axial slices etc.
-  void SetControlsFromReferenceImage();
-
-  /// \brief Sets the morphological controls by the current property values stored on the segmentation node.
-  void SetControlsFromSegmentationNodeProps();
-
-  /// \brief Called when the segmentation is manually edited via the paintbrush tool.
-  /// \param imageIndex tells which image has been modified: erosion addition / subtraction or dilation addition / subtraction.
-  virtual void OnSegmentationEdited(int imageIndex);
-
   /// \brief The morphological segmentor controller that realises the GUI logic behind the view.
   niftkMorphologicalSegmentorController* m_MorphologicalSegmentorController;
 
   /// \brief All the GUI controls for the main Morphological Editor view part.
   niftkMorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;
-
-  /// \brief As much "business logic" as possible is delegated to this class so we can unit test it, without a GUI.
-  niftk::MorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
-
-  /// \brief Keep local variable to update after the tab has changed.
-  int m_TabIndex;
 
 friend class niftkMorphologicalSegmentorController;
 

@@ -15,6 +15,8 @@
 #ifndef __niftkMorphologicalSegmentorController_h
 #define __niftkMorphologicalSegmentorController_h
 
+#include <niftkMorphologicalSegmentorPipelineManager.h>
+
 #include <niftkBaseSegmentorController.h>
 
 
@@ -26,13 +28,25 @@ class niftkMorphologicalSegmentorView;
  */
 class niftkMorphologicalSegmentorController : public niftkBaseSegmentorController
 {
-
   Q_OBJECT
 
 public:
 
   niftkMorphologicalSegmentorController(niftkMorphologicalSegmentorView* segmentorView);
   virtual ~niftkMorphologicalSegmentorController();
+
+  /// \brief If the user hits the close icon, it is equivalent to a Cancel,
+  /// and the segmentation is destroyed without warning.
+  void OnViewGetsClosed();
+
+  /// \brief Called when a node is removed.
+  virtual void OnNodeRemoved(const mitk::DataNode* node);
+
+  /// \brief Called when the segmentation is manually edited via the paintbrush tool.
+  /// \param imageIndex tells which image has been modified: erosion addition / subtraction or dilation addition / subtraction.
+  virtual void OnSegmentationEdited(int imageIndex);
+
+  void OnNodeVisibilityChanged(const mitk::DataNode* node);
 
 protected:
 
@@ -58,12 +72,59 @@ protected:
   /// \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes) override;
 
+protected slots:
+
+  /// \brief Called when the user hits the button "New segmentation", which creates the necessary reference data.
+  virtual void OnNewSegmentationButtonClicked() override;
+
+  /// \brief Called from niftkMorphologicalSegmentorGUI when thresholding sliders or spin boxes changed.
+  void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);
+
+  /// \brief Called from niftkMorphologicalSegmentorGUI when erosion sliders or spin boxes changed.
+  void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
+
+  /// \brief Called from niftkMorphologicalSegmentorGUI when dilation sliders or spin boxes changed.
+  void OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
+
+  /// \brief Called from niftkMorphologicalSegmentorGUI when re-thresholding widgets changed.
+  void OnRethresholdingValuesChanged(int boxSize);
+
+  /// \brief Called from niftkMorphologicalSegmentorGUI when a tab changes.
+  void OnTabChanged(int i);
+
+  /// \brief Called from niftkMorphologicalSegmentatorControls when OK button is clicked, which should finalise / finish and accept the segmentation.
+  void OnOKButtonClicked();
+
+  /// \brief Called from niftkMorphologicalSegmentatorControls when Restart button is clicked, which means "back to start", like a "reset" button.
+  void OnRestartButtonClicked();
+
+  /// \brief Called from niftkMorphologicalSegmentorGUI when cancel button is clicked, which should mean "throw away" / "abandon" current segmentation.
+  void OnCancelButtonClicked();
+
 private:
+
+  /// \brief Creates a node for storing the axial cut-off plane.
+  mitk::DataNode::Pointer CreateAxialCutOffPlaneNode(const mitk::Image* referenceImage);
+
+  /// \brief Looks up the reference image, and sets default parameter values on the segmentation node.
+  void SetSegmentationNodePropsFromReferenceImage();
+
+  /// \brief Sets the morphological controls to default values specified by reference image, like min/max intensity range, number of axial slices etc.
+  void SetControlsFromReferenceImage();
+
+  /// \brief Sets the morphological controls by the current property values stored on the segmentation node.
+  void SetControlsFromSegmentationNodeProps();
 
   /// \brief All the GUI controls for the main Morphological Editor view part.
   niftkMorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;
 
   niftkMorphologicalSegmentorView* m_MorphologicalSegmentorView;
+
+  /// \brief As much "business logic" as possible is delegated to this class so we can unit test it, without a GUI.
+  niftk::MorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
+
+  /// \brief Keep local variable to update after the tab has changed.
+  int m_TabIndex;
 
 friend class niftkMorphologicalSegmentorView;
 

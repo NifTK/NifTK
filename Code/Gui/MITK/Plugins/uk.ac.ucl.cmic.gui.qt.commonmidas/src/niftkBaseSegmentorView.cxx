@@ -166,7 +166,7 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget *parent)
   m_SegmentorController->m_SegmentorGUI = m_SegmentorGUI;
   m_SegmentorGUI->SetToolManager(toolManager.GetPointer());
 
-  this->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
+  m_SegmentorController->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
   this->connect(m_SegmentorGUI, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
 }
 
@@ -211,14 +211,6 @@ void niftkBaseSegmentorView::OnToolSelected(int toolID)
   {
     mainWindow->setFocus();
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::OnNewSegmentationButtonClicked()
-{
-  assert(m_SegmentorController);
-  m_SegmentorController->OnNewSegmentationButtonClicked();
 }
 
 

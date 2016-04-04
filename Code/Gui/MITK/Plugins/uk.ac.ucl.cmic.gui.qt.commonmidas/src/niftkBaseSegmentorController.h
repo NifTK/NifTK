@@ -156,9 +156,7 @@ protected:
 
 protected slots:
 
-  /**
-   * \brief Called from niftkSegmentationSelectorWidget when the 'Start/restart segmentation' button is clicked.
-   */
+  /// \brief Called from niftkSegmentationSelectorWidget when the 'Start/restart segmentation' button is clicked.
   virtual void OnNewSegmentationButtonClicked();
 
 private:
