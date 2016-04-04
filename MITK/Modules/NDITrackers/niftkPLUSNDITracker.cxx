@@ -15,6 +15,7 @@
 #include "niftkPLUSNDITracker.h"
 #include <mitkExceptionMacro.h>
 #include <qextserialenumerator.h>
+#include "ndicapi_serial.h"
 
 namespace niftk
 {
@@ -143,8 +144,6 @@ std::string PLUSNDITracker::ConvertPortNameToPortIndexPlusOne(const std::string&
     result = QString::number(indexOfPort + 1).toStdString();
   }
 #else
-  // ToDo: Can someone improve this?
-  // I'm basically guessing, as I don't have a linux box to hand.
   // See NifTK/MITK/Modules/NDICAPI/ndicapi/ndicapi_serial.h
   if (name == NDI_DEVICE0)
   {
