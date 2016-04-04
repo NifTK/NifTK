@@ -28,7 +28,6 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
 
   // Enumerate the available ports, so they have a natural name rather than "COM1", "COM2".
   QStringList ports = getAvailableSerialPorts();
-  QStringList portPaths = getAvailableSerialPortPaths();
   for (int i = 0; i < ports.count(); i++)
   {
 #ifdef _WIN32
@@ -37,6 +36,7 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent, QString trackerName)
 #elif __APPLE__
     m_PortName->addItem(ports.at(i), QVariant::fromValue(ports.at(i)));
 #else
+    QStringList portPaths = getAvailableSerialPortPaths();
     m_PortName->addItem(ports.at(i), QVariant::fromValue(portPaths.at(i)));
 #endif
   }
