@@ -56,15 +56,9 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
       niftk::NDICAPITracker::NdiToolDescriptor>(tool->GetToolName(), descriptor));
   }
 
-  std::string pName = m_PortName;
-#ifdef _WIN32
-  // On windows, m_PortName is the COM port number.
-#else
-  pName = ConvertPortNameToPortIndex(pName);
-#endif
-
-  m_Tracker.SetBaudRate(115200);
+  std::string pName = ConvertPortNameToPortIndexPlusOne(m_PortName);
   m_Tracker.SetSerialPort(std::stoi(pName));
+  m_Tracker.SetBaudRate(115200);
   m_Tracker.SetMeasurementVolumeNumber(measurementVolumeNumber);
 
   if (m_Tracker.InternalConnect() != niftk::NDICAPITracker::PLUS_SUCCESS)
@@ -133,15 +127,63 @@ std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > PLUSNDITracker::GetTrackin
 
 
 //-----------------------------------------------------------------------------
-std::string PLUSNDITracker::ConvertPortNameToPortIndex(const std::string& name) const
+std::string PLUSNDITracker::ConvertPortNameToPortIndexPlusOne(const std::string& name) const
 {
-  std::string result = name;
+
+  std::string result = "";
+
+#ifdef _WIN32 // The name argument contains just the COM port number (without the 'COM') which is what NDICAPI wants.
+  result = name;
+
+#elif __APPLE__  // convert the /dev/cu.... to an index in the list, which NDICAPI converts back.
   QStringList ports = getAvailableSerialPorts();
   int indexOfPort = ports.indexOf(QString::fromStdString(name));
   if (indexOfPort != -1)
   {
     result = QString::number(indexOfPort + 1).toStdString();
   }
+#else
+  // ToDo: Can someone improve this?
+  // I'm basically guessing, as I don't have a linux box to hand.
+  // See NifTK/MITK/Modules/NDICAPI/ndicapi/ndicapi_serial.h
+  if (name == NDI_DEVICE0)
+  {
+    result = "1";
+  }
+  else if (name == NDI_DEVICE1)
+  {
+    result = "2";
+  }
+  else if (name == NDI_DEVICE2)
+  {
+    result = "3";
+  }
+  else if (name == NDI_DEVICE3)
+  {
+    result = "4";
+  }
+  else if (name == NDI_DEVICE4)
+  {
+    result = "5";
+  }
+  else if (name == NDI_DEVICE5)
+  {
+    result = "6";
+  }
+  else if (name == NDI_DEVICE6)
+  {
+    result = "7";
+  }
+  else if (name == NDI_DEVICE7)
+  {
+    result = "8";
+  }
+  else
+  {
+    mitkThrow() << "Invalid port name:" << name;
+  }
+#endif
+
   return result;
 }
 
