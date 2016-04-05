@@ -35,6 +35,10 @@ public:
   niftkMorphologicalSegmentorController(niftkMorphologicalSegmentorView* segmentorView);
   virtual ~niftkMorphologicalSegmentorController();
 
+  /// \brief Sets up the GUI.
+  /// This function has to be called from the CreateQtPartControl function of the view.
+  virtual void SetupSegmentorGUI(QWidget* parent) override;
+
   /// \brief If the user hits the close icon, it is equivalent to a Cancel,
   /// and the segmentation is destroyed without warning.
   void OnViewGetsClosed();

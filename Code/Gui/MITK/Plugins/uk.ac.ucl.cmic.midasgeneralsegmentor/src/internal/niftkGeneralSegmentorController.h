@@ -136,6 +136,10 @@ public:
   niftkGeneralSegmentorController(niftkGeneralSegmentorView* segmentorView);
   virtual ~niftkGeneralSegmentorController();
 
+  /// \brief Sets up the GUI.
+  /// This function has to be called from the CreateQtPartControl function of the view.
+  virtual void SetupSegmentorGUI(QWidget* parent) override;
+
   /// \brief \see niftk::MIDASToolKeyPressResponder::SelectSeedTool()
   virtual bool SelectSeedTool() override;
 
@@ -172,7 +176,7 @@ protected:
   /// this returns true, indicating that it's a valid "in-progress" segmentation.
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
 
-    /// \brief Creates the general segmentor widget that holds the GUI components of the view.
+  /// \brief Creates the general segmentor widget that holds the GUI components of the view.
   virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
 
   void OnNodeVisibilityChanged(const mitk::DataNode* node);

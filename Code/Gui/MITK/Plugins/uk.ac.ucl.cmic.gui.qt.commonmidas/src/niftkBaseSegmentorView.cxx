@@ -35,7 +35,6 @@
 
 #include <NifTKConfigure.h>
 #include <niftkBaseSegmentorController.h>
-#include <niftkBaseSegmentorGUI.h>
 #include <niftkNewSegmentationDialog.h>
 #include <niftkMIDASTool.h>
 #include <niftkMIDASDrawTool.h>
@@ -50,8 +49,7 @@ const QString niftkBaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET("midas editor d
 //-----------------------------------------------------------------------------
 niftkBaseSegmentorView::niftkBaseSegmentorView()
   : m_ActiveToolID(-1),
-    m_MainWindowCursorVisibleWithToolsOff(true),
-    m_SegmentorGUI(nullptr)
+    m_MainWindowCursorVisibleWithToolsOff(true)
 {
 }
 
@@ -59,8 +57,6 @@ niftkBaseSegmentorView::niftkBaseSegmentorView()
 //-----------------------------------------------------------------------------
 niftkBaseSegmentorView::~niftkBaseSegmentorView()
 {
-  delete m_SegmentorGUI;
-  m_SegmentorGUI = nullptr;
 }
 
 
@@ -83,30 +79,15 @@ niftkBaseSegmentorView::niftkBaseSegmentorView(const niftkBaseSegmentorView& oth
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::CreateQtPartControl(QWidget *parent)
+void niftkBaseSegmentorView::CreateQtPartControl(QWidget* parent)
 {
   this->SetParent(parent);
-
-  m_SegmentorController = this->CreateSegmentorController();
-
-  mitk::ToolManager::Pointer toolManager = m_SegmentorController->GetToolManager();
 
   // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
   this->RetrievePreferenceValues();
 
-  m_SegmentorGUI = this->CreateSegmentorGUI(parent);
-  m_SegmentorController->m_SegmentorGUI = m_SegmentorGUI;
-  m_SegmentorGUI->SetToolManager(toolManager.GetPointer());
-
-  m_SegmentorController->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
-  this->connect(m_SegmentorGUI, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
-}
-
-
-//-----------------------------------------------------------------------------
-niftkBaseSegmentorGUI* niftkBaseSegmentorView::CreateSegmentorGUI(QWidget* parent)
-{
-  return m_SegmentorController->CreateSegmentorGUI(parent);
+  m_SegmentorController = this->CreateSegmentorController();
+  m_SegmentorController->SetupSegmentorGUI(parent);
 }
 
 
@@ -242,7 +223,7 @@ bool niftkBaseSegmentorView::CanStartSegmentationForBinaryNode(const mitk::DataN
 //-----------------------------------------------------------------------------
 mitk::DataNode* niftkBaseSegmentorView::CreateNewSegmentation(const QColor& defaultColour)
 {
-  return m_SegmentorController->CreateNewSegmentation(this->GetParent(), defaultColour);
+  return m_SegmentorController->CreateNewSegmentation(defaultColour);
 }
 
 
@@ -250,13 +231,6 @@ mitk::DataNode* niftkBaseSegmentorView::CreateNewSegmentation(const QColor& defa
 mitk::BaseRenderer* niftkBaseSegmentorView::GetFocusedRenderer()
 {
   return QmitkBaseView::GetFocusedRenderer();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::SetToolSelectorEnabled(bool enabled)
-{
-  m_SegmentorGUI->SetToolSelectorEnabled(enabled);
 }
 
 

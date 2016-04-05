@@ -45,6 +45,10 @@ public:
 
   virtual ~niftkBaseSegmentorController();
 
+  /// \brief Sets up the GUI.
+  /// This function has to be called from the CreateQtPartControl function of the view.
+  virtual void SetupSegmentorGUI(QWidget* parent);
+
   /// \brief Returns the segmentation tool manager used by the segmentor.
   mitk::ToolManager* GetToolManager() const;
 
@@ -149,7 +153,7 @@ protected:
   ///
   /// \param defaultColor The default colour to pass to the new segmentation dialog box.
   /// \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancells the dialog box.
-  virtual mitk::DataNode* CreateNewSegmentation(QWidget* parent, const QColor& defaultColor);
+  virtual mitk::DataNode* CreateNewSegmentation(const QColor& defaultColor);
 
   /// \brief Creates the segmentor widget that holds the GUI components of the view.
   /// This function is called from CreateQtPartControl. Derived classes should provide their implementation

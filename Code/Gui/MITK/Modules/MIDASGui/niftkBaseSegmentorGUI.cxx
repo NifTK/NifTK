@@ -22,7 +22,8 @@
 
 //-----------------------------------------------------------------------------
 niftkBaseSegmentorGUI::niftkBaseSegmentorGUI(QWidget* parent)
-  : m_SegmentationSelectorWidget(nullptr),
+  : QObject(parent),
+    m_SegmentationSelectorWidget(nullptr),
     m_ToolSelectorWidget(nullptr),
     m_ContainerForSelectorWidget(nullptr),
     m_ContainerForToolWidget(nullptr)
@@ -54,6 +55,13 @@ niftkBaseSegmentorGUI::~niftkBaseSegmentorGUI()
   {
     delete m_ToolSelectorWidget;
   }
+}
+
+
+//-----------------------------------------------------------------------------
+QWidget* niftkBaseSegmentorGUI::GetParent() const
+{
+  return dynamic_cast<QWidget*>(this->parent());
 }
 
 

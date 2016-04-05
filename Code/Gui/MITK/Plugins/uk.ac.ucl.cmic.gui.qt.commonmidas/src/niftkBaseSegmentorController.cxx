@@ -46,6 +46,24 @@ niftkBaseSegmentorController::~niftkBaseSegmentorController()
 
 
 //-----------------------------------------------------------------------------
+void niftkBaseSegmentorController::SetupSegmentorGUI(QWidget* parent)
+{
+  m_SegmentorGUI = this->CreateSegmentorGUI(parent);
+  m_SegmentorGUI->SetToolManager(m_ToolManager);
+
+  this->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
+  m_SegmentorView->connect(m_SegmentorGUI, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+}
+
+
+//-----------------------------------------------------------------------------
+niftkBaseSegmentorGUI* niftkBaseSegmentorController::GetSegmentorGUI() const
+{
+  return m_SegmentorGUI;
+}
+
+
+//-----------------------------------------------------------------------------
 bool niftkBaseSegmentorController::EventFilter(const mitk::StateEvent* stateEvent) const
 {
   // If we have a render window part (aka. editor or display)...
@@ -377,7 +395,7 @@ int niftkBaseSegmentorController::GetUpDirection()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* niftkBaseSegmentorController::CreateNewSegmentation(QWidget* parent, const QColor& defaultColor)
+mitk::DataNode* niftkBaseSegmentorController::CreateNewSegmentation(const QColor& defaultColor)
 {
   mitk::DataNode::Pointer emptySegmentation = NULL;
 
@@ -394,7 +412,7 @@ mitk::DataNode* niftkBaseSegmentorController::CreateNewSegmentation(QWidget* par
     {
       if (referenceImage->GetDimension() > 2)
       {
-        niftkNewSegmentationDialog* dialog = new niftkNewSegmentationDialog(defaultColor, parent); // needs a QWidget as parent, "this" is not QWidget
+        niftkNewSegmentationDialog* dialog = new niftkNewSegmentationDialog(defaultColor, m_SegmentorGUI->GetParent());
         int dialogReturnValue = dialog->exec();
         if ( dialogReturnValue == QDialog::Rejected ) return NULL; // user clicked cancel or pressed Esc or something similar
 
@@ -433,15 +451,6 @@ mitk::DataNode* niftkBaseSegmentorController::CreateNewSegmentation(QWidget* par
   }
   return emptySegmentation.GetPointer();
 }
-
-
-//-----------------------------------------------------------------------------
-niftkBaseSegmentorGUI* niftkBaseSegmentorController::GetSegmentorGUI() const
-{
-  return m_SegmentorGUI;
-}
-
-
 
 
 //-----------------------------------------------------------------------------

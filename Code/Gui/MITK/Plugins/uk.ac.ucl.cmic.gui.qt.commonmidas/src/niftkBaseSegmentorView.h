@@ -38,7 +38,6 @@
 
 class QmitkRenderWindow;
 class niftkBaseSegmentorController;
-class niftkBaseSegmentorGUI;
 
 /**
  * \class niftkBaseSegmentorView
@@ -176,18 +175,11 @@ protected:
   /// \brief Gets a vector of the working data nodes (normally image, but could be surfaces etc) registered with the tool manager (ie. that tools can edit), or empty list if this can't be found.
   mitk::ToolManager::DataVectorType GetWorkingData();
 
-  /// \brief Turns the tool selection box on/off
-  virtual void SetToolSelectorEnabled(bool enabled);
-
   /// \brief Creates the GUI parts.
-  virtual void CreateQtPartControl(QWidget *parent) override;
+  virtual void CreateQtPartControl(QWidget* parent) override;
 
   /// \brief Creates the segmentor controller that realises the GUI logic behind the view.
   virtual niftkBaseSegmentorController* CreateSegmentorController() = 0;
-
-  /// \brief Creates the segmentor widget that holds the GUI components of the view.
-  /// This function is called from CreateQtPartControl.
-  niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent);
 
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.
   void ApplyDisplayOptions(mitk::DataNode* node);
@@ -214,8 +206,6 @@ private:
 
   /// \brief The segmentor controller that realises the GUI logic behind the view.
   niftkBaseSegmentorController* m_SegmentorController;
-
-  niftkBaseSegmentorGUI* m_SegmentorGUI;
 
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   QColor m_DefaultSegmentationColor;

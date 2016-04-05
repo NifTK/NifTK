@@ -82,6 +82,58 @@ niftkGeneralSegmentorController::~niftkGeneralSegmentorController()
 
 
 //-----------------------------------------------------------------------------
+niftkBaseSegmentorGUI* niftkGeneralSegmentorController::CreateSegmentorGUI(QWidget* parent)
+{
+  return new niftkGeneralSegmentorGUI(parent);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkGeneralSegmentorController::SetupSegmentorGUI(QWidget* parent)
+{
+  niftkBaseSegmentorController::SetupSegmentorGUI(parent);
+
+  m_GeneralSegmentorGUI = dynamic_cast<niftkGeneralSegmentorGUI*>(this->GetSegmentorGUI());
+
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(CleanButtonClicked()), SLOT(OnCleanButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeButtonClicked()), SLOT(OnWipeButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipePlusButtonClicked()), SLOT(OnWipePlusButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeMinusButtonClicked()), SLOT(OnWipeMinusButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnPropagateUpButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnPropagateDownButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnPropagate3DButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(ResetButtonClicked()), SLOT(OnResetButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnThresholdApplyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdValueChanged()), SLOT(OnThresholdValueChanged()));
+
+  /// Transfer the focus back to the main window if any button is pressed.
+  /// This is needed so that the key interactions (like 'a'/'z' for changing slice) keep working.
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(CleanButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipePlusButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeMinusButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(CancelButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(ResetButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
+}
+
+
+//-----------------------------------------------------------------------------
 bool niftkGeneralSegmentorController::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
 {
   assert(node);
@@ -189,52 +241,6 @@ bool niftkGeneralSegmentorController::CanStartSegmentationForBinaryNode(const mi
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorGUI* niftkGeneralSegmentorController::CreateSegmentorGUI(QWidget *parent)
-{
-  m_GeneralSegmentorGUI = new niftkGeneralSegmentorGUI(parent);
-  m_GeneralSegmentorView->m_GeneralSegmentorGUI = m_GeneralSegmentorGUI;
-
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(CleanButtonClicked()), SLOT(OnCleanButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeButtonClicked()), SLOT(OnWipeButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipePlusButtonClicked()), SLOT(OnWipePlusButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeMinusButtonClicked()), SLOT(OnWipeMinusButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnPropagateUpButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnPropagateDownButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnPropagate3DButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ResetButtonClicked()), SLOT(OnResetButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnThresholdApplyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdValueChanged()), SLOT(OnThresholdValueChanged()));
-
-  /// Transfer the focus back to the main window if any button is pressed.
-  /// This is needed so that the key interactions (like 'a'/'z' for changing slice) keep working.
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(CleanButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipePlusButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeMinusButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(CancelButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ResetButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
-
-  return m_GeneralSegmentorGUI;
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
 {
   niftkBaseSegmentorController::OnNewSegmentationButtonClicked();
@@ -262,7 +268,7 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
     }
     else
     {
-      newSegmentation = this->CreateNewSegmentation(m_GeneralSegmentorView->GetParent(), m_GeneralSegmentorView->GetDefaultSegmentationColor());
+      newSegmentation = this->CreateNewSegmentation(m_GeneralSegmentorView->GetDefaultSegmentationColor());
 
       // The above method returns NULL if the user exited the colour selection dialog box.
       if (newSegmentation.IsNull())
@@ -742,7 +748,7 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
 
             if (thisSliceIsEmpty)
             {
-              returnValue = QMessageBox::warning(m_GeneralSegmentorView->GetParent(), tr("NiftyView"),
+              returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
                                                       tr("The current slice is empty - retain marks cannot be performed.\n"
                                                          "Use the 'wipe' functionality to erase slices instead"),
                                                       QMessageBox::Ok
@@ -750,7 +756,7 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
             }
             else if (!nextSliceIsEmpty)
             {
-              returnValue = QMessageBox::warning(m_GeneralSegmentorView->GetParent(), tr("NiftyView"),
+              returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
                                                       tr("The new slice is not empty - retain marks will overwrite the slice.\n"
                                                          "Are you sure?"),
                                                       QMessageBox::Yes | QMessageBox::No);
@@ -1683,7 +1689,7 @@ void niftkGeneralSegmentorController::OnResetButtonClicked()
     return;
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorView->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
                                                             tr("Clear all slices ? \n This is not Undo-able! \n Are you sure?"),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -1754,7 +1760,7 @@ void niftkGeneralSegmentorController::OnRestartButtonClicked()
     return;
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorView->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
                                                             tr("Discard all changes?\nThis is not Undo-able!\nAre you sure?"),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -2059,7 +2065,7 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     message = tr(messageWithOrientation.toStdString().c_str()).arg(orientationText);
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorView->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
                                                    tr("%1.\n"
                                                       "Are you sure?").arg(message),
                                                    QMessageBox::Yes | QMessageBox::No);
@@ -2539,7 +2545,7 @@ void niftkGeneralSegmentorController::OnCleanButtonClicked()
     bool hasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(thresholdCheckBox, sliceNumber);
     if (hasUnenclosedSeeds)
     {
-      int returnValue = QMessageBox::warning(m_GeneralSegmentorView->GetParent(), tr("NiftyView"),
+      int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
                                                        tr("There are unenclosed seeds - slice will be wiped\n"
                                                           "Are you sure?"),
                                                        QMessageBox::Yes | QMessageBox::No);

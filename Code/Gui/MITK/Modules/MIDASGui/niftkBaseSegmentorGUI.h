@@ -37,7 +37,6 @@ class niftkToolSelectorWidget;
  */
 class NIFTKMIDASGUI_EXPORT niftkBaseSegmentorGUI : public QObject
 {
-
   Q_OBJECT
 
 public:
@@ -46,6 +45,9 @@ public:
   virtual ~niftkBaseSegmentorGUI();
 
 public:
+
+  /// \brief Returns the parent widget.
+  QWidget* GetParent() const;
 
   /// \brief Method to enable derived classes to turn widgets off/on, with default do nothing implementation.
   virtual void EnableSegmentationWidgets(bool enabled);

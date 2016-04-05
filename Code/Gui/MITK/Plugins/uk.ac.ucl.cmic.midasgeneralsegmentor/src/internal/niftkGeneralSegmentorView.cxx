@@ -19,7 +19,6 @@
 #include <mitkDataStorageUtils.h>
 #include <niftkMIDASContourTool.h>
 #include <niftkMIDASTool.h>
-#include <niftkGeneralSegmentorGUI.h>
 
 #include "niftkGeneralSegmentorPreferencePage.h"
 #include "niftkGeneralSegmentorController.h"
@@ -32,8 +31,7 @@ const std::string niftkGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgene
 
 //-----------------------------------------------------------------------------
 niftkGeneralSegmentorView::niftkGeneralSegmentorView()
-: niftkBaseSegmentorView()
-, m_GeneralSegmentorGUI(nullptr)
+  : niftkBaseSegmentorView()
 {
 }
 

@@ -23,7 +23,6 @@
 #include "niftkMorphologicalSegmentorPreferencePage.h"
 
 class niftkMorphologicalSegmentorController;
-class niftkMorphologicalSegmentorGUI;
 
 /**
  * \class niftkMorphologicalSegmentorView
@@ -84,9 +83,6 @@ private:
 
   /// \brief The morphological segmentor controller that realises the GUI logic behind the view.
   niftkMorphologicalSegmentorController* m_MorphologicalSegmentorController;
-
-  /// \brief All the GUI controls for the main Morphological Editor view part.
-  niftkMorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;
 
 friend class niftkMorphologicalSegmentorController;
 

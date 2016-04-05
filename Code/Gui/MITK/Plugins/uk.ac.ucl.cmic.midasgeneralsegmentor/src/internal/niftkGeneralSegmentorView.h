@@ -18,7 +18,6 @@
 #include <niftkBaseSegmentorView.h>
 
 class niftkGeneralSegmentorController;
-class niftkGeneralSegmentorGUI;
 
 /**
  * \class niftkGeneralSegmentorView
@@ -107,9 +106,6 @@ private:
 
   /// \brief The general segmentor controller that realises the GUI logic behind the view.
   niftkGeneralSegmentorController* m_GeneralSegmentorController;
-
-  /// \brief All the GUI controls for the main Irregular Editor view part.
-  niftkGeneralSegmentorGUI* m_GeneralSegmentorGUI;
 
 friend class niftkGeneralSegmentorController;
 

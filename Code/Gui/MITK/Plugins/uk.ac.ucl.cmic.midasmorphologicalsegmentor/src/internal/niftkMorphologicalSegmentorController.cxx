@@ -65,6 +65,31 @@ niftkMorphologicalSegmentorController::~niftkMorphologicalSegmentorController()
 
 
 //-----------------------------------------------------------------------------
+niftkBaseSegmentorGUI* niftkMorphologicalSegmentorController::CreateSegmentorGUI(QWidget* parent)
+{
+  return new niftkMorphologicalSegmentorGUI(parent);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMorphologicalSegmentorController::SetupSegmentorGUI(QWidget* parent)
+{
+  niftkBaseSegmentorController::SetupSegmentorGUI(parent);
+
+  m_MorphologicalSegmentorGUI = dynamic_cast<niftkMorphologicalSegmentorGUI*>(this->GetSegmentorGUI());
+
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(TabChanged(int)), SLOT(OnTabChanged(int)));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
+//  m_MorphologicalSegmentorView->connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
+  m_MorphologicalSegmentorView->connect(m_MorphologicalSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
+}
+
+
+//-----------------------------------------------------------------------------
 bool niftkMorphologicalSegmentorController::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
 {
   return m_PipelineManager->IsNodeASegmentationImage(node);
@@ -96,25 +121,6 @@ mitk::DataNode* niftkMorphologicalSegmentorController::GetSegmentationNodeFromWo
 bool niftkMorphologicalSegmentorController::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
 {
   return m_PipelineManager->CanStartSegmentationForBinaryNode(node);
-}
-
-
-//-----------------------------------------------------------------------------
-niftkBaseSegmentorGUI* niftkMorphologicalSegmentorController::CreateSegmentorGUI(QWidget *parent)
-{
-  m_MorphologicalSegmentorGUI = new niftkMorphologicalSegmentorGUI(parent);
-  m_MorphologicalSegmentorView->m_MorphologicalSegmentorGUI = m_MorphologicalSegmentorGUI;
-
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(TabChanged(int)), SLOT(OnTabChanged(int)));
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
-//  m_MorphologicalSegmentorView->connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
-  m_MorphologicalSegmentorView->connect(m_MorphologicalSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
-
-  return m_MorphologicalSegmentorGUI;
 }
 
 
@@ -153,7 +159,7 @@ void niftkMorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     }
     else
     {
-      newSegmentation = this->CreateNewSegmentation(m_MorphologicalSegmentorView->GetParent(), m_MorphologicalSegmentorView->GetDefaultSegmentationColor());
+      newSegmentation = this->CreateNewSegmentation(m_MorphologicalSegmentorView->GetDefaultSegmentationColor());
 
       // The above method returns NULL if the user exited the colour selection dialog box.
       if (newSegmentation.IsNull())
