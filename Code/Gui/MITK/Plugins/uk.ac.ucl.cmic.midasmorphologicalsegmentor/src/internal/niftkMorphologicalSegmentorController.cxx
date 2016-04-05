@@ -39,9 +39,10 @@ niftkMorphologicalSegmentorController::niftkMorphologicalSegmentorController(nif
   mitk::ToolManager* toolManager = this->GetToolManager();
   toolManager->RegisterTool("MIDASPaintbrushTool");
 
-  int paintbrushToolId = toolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>();
-  niftk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>(toolManager->GetToolById(paintbrushToolId));
+  niftk::MIDASPaintbrushTool* paintbrushTool = this->GetToolByType<niftk::MIDASPaintbrushTool>();
   assert(paintbrushTool);
+
+  paintbrushTool->InstallEventFilter(this);
 
   paintbrushTool->SegmentationEdited.AddListener(mitk::MessageDelegate1<niftkMorphologicalSegmentorController, int>(this, &niftkMorphologicalSegmentorController::OnSegmentationEdited));
 
@@ -54,12 +55,12 @@ niftkMorphologicalSegmentorController::niftkMorphologicalSegmentorController(nif
 //-----------------------------------------------------------------------------
 niftkMorphologicalSegmentorController::~niftkMorphologicalSegmentorController()
 {
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  int paintbrushToolId = toolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>();
-  niftk::MIDASPaintbrushTool* paintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>(toolManager->GetToolById(paintbrushToolId));
+  niftk::MIDASPaintbrushTool* paintbrushTool = this->GetToolByType<niftk::MIDASPaintbrushTool>();
   assert(paintbrushTool);
 
   paintbrushTool->SegmentationEdited.RemoveListener(mitk::MessageDelegate1<niftkMorphologicalSegmentorController, int>(this, &niftkMorphologicalSegmentorController::OnSegmentationEdited));
+
+  paintbrushTool->RemoveEventFilter(this);
 }
 
 

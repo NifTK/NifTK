@@ -30,8 +30,9 @@
 
 #include <niftkGeneralSegmentorUtils.h>
 #include <niftkMIDASDrawTool.h>
-#include <niftkMIDASPolyTool.h>
 #include <niftkMIDASSeedTool.h>
+#include <niftkMIDASPolyTool.h>
+#include <niftkMIDASPosnTool.h>
 
 #include <niftkGeneralSegmentorGUI.h>
 
@@ -60,6 +61,11 @@ niftkGeneralSegmentorController::niftkGeneralSegmentorController(niftkGeneralSeg
   toolManager->RegisterTool("MIDASPolyTool");
   toolManager->RegisterTool("MIDASPosnTool");
 
+  this->GetToolByType<niftk::MIDASDrawTool>()->InstallEventFilter(this);
+  this->GetToolByType<niftk::MIDASSeedTool>()->InstallEventFilter(this);
+  this->GetToolByType<niftk::MIDASPolyTool>()->InstallEventFilter(this);
+  this->GetToolByType<niftk::MIDASPosnTool>()->InstallEventFilter(this);
+
 //  m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
   m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New(this);
 }
@@ -68,6 +74,10 @@ niftkGeneralSegmentorController::niftkGeneralSegmentorController(niftkGeneralSeg
 //-----------------------------------------------------------------------------
 niftkGeneralSegmentorController::~niftkGeneralSegmentorController()
 {
+  this->GetToolByType<niftk::MIDASDrawTool>()->RemoveEventFilter(this);
+  this->GetToolByType<niftk::MIDASSeedTool>()->RemoveEventFilter(this);
+  this->GetToolByType<niftk::MIDASPolyTool>()->RemoveEventFilter(this);
+  this->GetToolByType<niftk::MIDASPosnTool>()->RemoveEventFilter(this);
 }
 
 

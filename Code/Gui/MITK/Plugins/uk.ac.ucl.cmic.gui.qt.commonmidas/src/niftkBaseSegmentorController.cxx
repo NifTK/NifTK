@@ -17,7 +17,10 @@
 #include <QMessageBox>
 
 #include <mitkDataStorageUtils.h>
+#include <mitkStateEvent.h>
 #include <mitkVtkResliceInterpolationProperty.h>
+
+#include <QmitkRenderWindow.h>
 
 #include <niftkNewSegmentationDialog.h>
 
@@ -39,6 +42,52 @@ niftkBaseSegmentorController::niftkBaseSegmentorController(niftkBaseSegmentorVie
 //-----------------------------------------------------------------------------
 niftkBaseSegmentorController::~niftkBaseSegmentorController()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkBaseSegmentorController::EventFilter(const mitk::StateEvent* stateEvent) const
+{
+  // If we have a render window part (aka. editor or display)...
+  if (mitk::IRenderWindowPart* renderWindowPart = m_SegmentorView->GetRenderWindowPart())
+  {
+    // and it has a focused render window...
+    if (QmitkRenderWindow* renderWindow = renderWindowPart->GetActiveQmitkRenderWindow())
+    {
+      // whose renderer is the sender of this event...
+      if (renderWindow->GetRenderer() == stateEvent->GetEvent()->GetSender())
+      {
+        // then we let the event pass through.
+        return false;
+      }
+    }
+  }
+
+  // Otherwise, if it comes from another window, we reject it.
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkBaseSegmentorController::EventFilter(mitk::InteractionEvent* event) const
+{
+  // If we have a render window part (aka. editor or display)...
+  if (mitk::IRenderWindowPart* renderWindowPart = m_SegmentorView->GetRenderWindowPart())
+  {
+    // and it has a focused render window...
+    if (QmitkRenderWindow* renderWindow = renderWindowPart->GetActiveQmitkRenderWindow())
+    {
+      // whose renderer is the sender of this event...
+      if (renderWindow->GetRenderer() == event->GetSender())
+      {
+        // then we let the event pass through.
+        return false;
+      }
+    }
+  }
+
+  // Otherwise, if it comes from another window, we reject it.
+  return true;
 }
 
 

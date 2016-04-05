@@ -59,65 +59,8 @@ niftkBaseSegmentorView::niftkBaseSegmentorView()
 //-----------------------------------------------------------------------------
 niftkBaseSegmentorView::~niftkBaseSegmentorView()
 {
-  mitk::ToolManager::ToolVectorTypeConst tools = this->GetToolManager()->GetTools();
-  mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();
-  for ( ; it != tools.end(); ++it)
-  {
-    mitk::Tool* tool = const_cast<mitk::Tool*>(it->GetPointer());
-    if (niftk::MIDASStateMachine* midasSM = dynamic_cast<niftk::MIDASStateMachine*>(tool))
-    {
-      midasSM->RemoveEventFilter(this);
-    }
-  }
-
   delete m_SegmentorGUI;
   m_SegmentorGUI = nullptr;
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkBaseSegmentorView::EventFilter(const mitk::StateEvent* stateEvent) const
-{
-  // If we have a render window part (aka. editor or display)...
-  if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
-  {
-    // and it has a focused render window...
-    if (QmitkRenderWindow* renderWindow = renderWindowPart->GetActiveQmitkRenderWindow())
-    {
-      // whose renderer is the sender of this event...
-      if (renderWindow->GetRenderer() == stateEvent->GetEvent()->GetSender())
-      {
-        // then we let the event pass through.
-        return false;
-      }
-    }
-  }
-
-  // Otherwise, if it comes from another window, we reject it.
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkBaseSegmentorView::EventFilter(mitk::InteractionEvent* event) const
-{
-  // If we have a render window part (aka. editor or display)...
-  if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
-  {
-    // and it has a focused render window...
-    if (QmitkRenderWindow* renderWindow = renderWindowPart->GetActiveQmitkRenderWindow())
-    {
-      // whose renderer is the sender of this event...
-      if (renderWindow->GetRenderer() == event->GetSender())
-      {
-        // then we let the event pass through.
-        return false;
-      }
-    }
-  }
-
-  // Otherwise, if it comes from another window, we reject it.
-  return true;
 }
 
 
@@ -147,17 +90,6 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget *parent)
   m_SegmentorController = this->CreateSegmentorController();
 
   mitk::ToolManager::Pointer toolManager = m_SegmentorController->GetToolManager();
-
-  mitk::ToolManager::ToolVectorTypeConst tools = toolManager->GetTools();
-  mitk::ToolManager::ToolVectorTypeConst::iterator it = tools.begin();
-  for ( ; it != tools.end(); ++it)
-  {
-    mitk::Tool* tool = const_cast<mitk::Tool*>(it->GetPointer());
-    if (niftk::MIDASStateMachine* midasSM = dynamic_cast<niftk::MIDASStateMachine*>(tool))
-    {
-      midasSM->InstallEventFilter(this);
-    }
-  }
 
   // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
   this->RetrievePreferenceValues();

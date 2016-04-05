@@ -23,6 +23,7 @@
 #include <mitkDataNode.h>
 #include <mitkToolManager.h>
 
+#include <niftkMIDASEventFilter.h>
 #include <niftkMIDASOrientationUtils.h>
 
 class QWidget;
@@ -33,7 +34,7 @@ class niftkBaseSegmentorView;
 /**
  * \class niftkBaseSegmentorController
  */
-class CMIC_QT_COMMONMIDAS niftkBaseSegmentorController : public QObject
+class CMIC_QT_COMMONMIDAS niftkBaseSegmentorController : public QObject, public niftk::MIDASEventFilter
 {
 
   Q_OBJECT
@@ -46,6 +47,17 @@ public:
 
   /// \brief Returns the segmentation tool manager used by the segmentor.
   mitk::ToolManager* GetToolManager() const;
+
+  template <class ToolType>
+  ToolType* GetToolByType();
+
+  /// \brief Returns true if the event should be filtered, i.e. not processed,
+  /// otherwise false.
+  virtual bool EventFilter(const mitk::StateEvent* stateEvent) const override;
+
+  /// \brief Returns true if the event should be filtered, i.e. not processed,
+  /// otherwise false.
+  virtual bool EventFilter(mitk::InteractionEvent* event) const override;
 
 protected:
 
@@ -179,5 +191,14 @@ private:
 friend class niftkBaseSegmentorView;
 
 };
+
+
+//-----------------------------------------------------------------------------
+template <class ToolType>
+ToolType* niftkBaseSegmentorController::GetToolByType()
+{
+  int toolId = m_ToolManager->GetToolIdByToolType<ToolType>();
+  return dynamic_cast<ToolType*>(m_ToolManager->GetToolById(toolId));
+}
 
 #endif
