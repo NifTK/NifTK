@@ -15,7 +15,7 @@
 find_package(OpenMP)
 
 set(_packages )
-set(_modules MitkCore niftkOpenCV )
+set(_modules MitkCore niftkOpenCV niftkOpenCVImageConversion)
 if(BUILD_PCL)
   list(APPEND _packages PCL)
   list(APPEND _modules niftkPCL)

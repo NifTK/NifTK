@@ -14,7 +14,7 @@
 
 MITK_CREATE_MODULE(
   INCLUDE_DIRS TrackedImage TrackedPointer  Utils Rendering
-  DEPENDS niftkCore niftkOpenCV niftkOpenCVUtils niftkIGIServices
+  DEPENDS niftkCore niftkOpenCV niftkOpenCVUtils 
   PACKAGE_DEPENDS Qt4|QtCore Qt5|Core
 )
 

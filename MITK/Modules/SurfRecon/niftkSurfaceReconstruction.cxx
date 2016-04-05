@@ -14,10 +14,10 @@
 
 #include "niftkSurfaceReconstruction.h"
 #include "niftkSequentialCpuQds.h"
+#include <niftkImageConversion.h>
 #include <opencv2/core/core_c.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkCameraIntrinsicsProperty.h>
-#include "../Conversion/ImageConversion.h"
 #include <mitkPointSet.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkCameraCalibrationFacade.h>
@@ -405,7 +405,7 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
       case DISPARITY_IMAGE:
       {
         IplImage* dispimg = methodImpl->CreateDisparityImage();
-        mitk::Image::Pointer imgData4Node = CreateMitkImage(dispimg);
+        mitk::Image::Pointer imgData4Node = niftk::CreateMitkImage(dispimg);
         cvReleaseImage(&dispimg);
 
         // disparity image is in the view of the left eye.

@@ -12,21 +12,9 @@
 #
 #============================================================================*/
 
-set(niftkIGIDataSourcesManager_DEPENDS
-  niftkIGIDataSources
-)
-
-if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
-  set(niftkIGIDataSourcesManager_DEPENDS
-    ${niftkIGIDataSourcesManager_DEPENDS}
-    niftkNVidia
-  )
-endif()
-
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS DataSources
-  DEPENDS ${niftkIGIDataSourcesManager_DEPENDS}
-  PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui NiftyLink|OpenIGTLink
+  DEPENDS niftkIGIDataSources
+  PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui NiftyLink|OpenIGTLink CTK|CTKWidgets
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

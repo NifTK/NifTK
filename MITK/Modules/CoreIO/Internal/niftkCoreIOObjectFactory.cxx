@@ -65,7 +65,10 @@ CoreIOObjectFactory::CoreIOObjectFactory()
       int rank = useDRCAnalyze == "PREFERRED";
 
       itk::DRCAnalyzeImageIO::Pointer itkDrcAnalyzeIO = itk::DRCAnalyzeImageIO::New();
-      mitk::ItkImageIO* drcAnalyzeIO = new mitk::ItkImageIO(niftk::CoreIOMimeTypes::ANALYZE_MIMETYPE(), itkDrcAnalyzeIO.GetPointer(), rank);
+      mitk::ItkImageIO* drcAnalyzeIO =
+          new mitk::ItkImageIO(niftk::CoreIOMimeTypes::ANALYZE_MIMETYPE(),
+                               itkDrcAnalyzeIO.GetPointer(),
+                               rank);
       m_FileIOs.push_back(drcAnalyzeIO);
     }
 
@@ -77,17 +80,25 @@ CoreIOObjectFactory::CoreIOObjectFactory()
       int rank = useDRCAnalyze == "OPTIONAL" || useDRCAnalyze.empty();
 
       itk::NiftiImageIO3201::Pointer itkNiftiIO = itk::NiftiImageIO3201::New();
-      mitk::ItkImageIO* niftiIO = new mitk::ItkImageIO(niftk::CoreIOMimeTypes::ANALYZE_MIMETYPE(), itkNiftiIO.GetPointer(), rank);
+      mitk::ItkImageIO* niftiIO =
+          new mitk::ItkImageIO(niftk::CoreIOMimeTypes::ANALYZE_MIMETYPE(),
+                               itkNiftiIO.GetPointer(),
+                               rank);
       m_FileIOs.push_back(niftiIO);
     }
 
     itk::NiftiImageIO3201::Pointer itkNiftiIO = itk::NiftiImageIO3201::New();
-    mitk::ItkImageIO* niftiIO = new mitk::ItkImageIO(niftk::CoreIOMimeTypes::NIFTI_MIMETYPE(), itkNiftiIO.GetPointer(), 0);
+    mitk::ItkImageIO* niftiIO =
+        new mitk::ItkImageIO(niftk::CoreIOMimeTypes::NIFTI_MIMETYPE(),
+                             itkNiftiIO.GetPointer(),
+                             0);
     m_FileIOs.push_back(niftiIO);
 
     itk::INRImageIO::Pointer itkINRImageIO = itk::INRImageIO::New();
-    mitk::ItkImageIO* inrImageIO = new mitk::ItkImageIO(niftk::CoreIOMimeTypes::INRIA_MIMETYPE(),
-                                                        itkINRImageIO.GetPointer(), 0);
+    mitk::ItkImageIO* inrImageIO =
+        new mitk::ItkImageIO(niftk::CoreIOMimeTypes::INRIA_MIMETYPE(),
+                             itkINRImageIO.GetPointer(),
+                             0);
     m_FileIOs.push_back(inrImageIO);
 
     CreateFileExtensionsMap();

@@ -156,6 +156,7 @@ if(NOT DEFINED MITK_DIR)
           org.mitk.gui.qt.aicpregistration
           org.mitk.gui.qt.stdmultiwidgeteditor    # needed by org.mitk.gui.qt.common.legacy
           org.mitk.gui.qt.common.legacy           # needed by org_mitk_gui_qt_igttracking
+          org.mitk.gui.qt.igttracking
         )
       endif()
 

@@ -50,29 +50,36 @@ endif()
 if(BUILD_IGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
+    SerialPort
+    NDICAPI 
     OpenCVUtils
+    OpenCVImageConversion
     PointReg
     ICPReg
     OpenCV
+    SurfRecon
     IGIServices
-    PointRegService
-    ICPRegService
     IGI
     IGIGui
+    NDITrackers
     IGIDataSources
-    SurfRecon
-  )
 
-  if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
-    set(MODULE_DIRS
-      ${MODULE_DIRS}
-      NVidia
-    )
-  endif()
-
-  set(MODULE_DIRS
-    ${MODULE_DIRS}
+    # Notice how the IGIDataSourcesManager does NOT know about
+    # Each data source. The interface is defined in IGIDataSources (above)
+    # but all the implementations are defined after IGIDataSourcesManager (below).
     IGIDataSourcesManager
+
+    # Micro Services should be last as nothing should depend on them.
+    # Furthermore, none of the classes should be exported. All should be internal.
+    PointRegService
+    ICPRegService
+    OIGTLSystemTimeService
+    OpenCVVideoDataSourceService
+    QtAudioDataSourceService
+    UltrasonixDataSourceService
+    NDITrackerDataSourceService
+    NiftyLinkDataSourceService
+    NVidiaSDIDataSourceService
   )
 endif()
 
