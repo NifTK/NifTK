@@ -21,7 +21,6 @@
 
 
 class niftkMorphologicalSegmentorGUI;
-class niftkMorphologicalSegmentorView;
 
 /**
  * \class niftkMorphologicalSegmentorController
@@ -32,7 +31,7 @@ class niftkMorphologicalSegmentorController : public niftkBaseSegmentorControlle
 
 public:
 
-  niftkMorphologicalSegmentorController(niftkMorphologicalSegmentorView* segmentorView);
+  niftkMorphologicalSegmentorController(niftkIBaseView* view);
   virtual ~niftkMorphologicalSegmentorController();
 
   /// \brief Sets up the GUI.
@@ -121,8 +120,6 @@ private:
 
   /// \brief All the GUI controls for the main Morphological Editor view part.
   niftkMorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;
-
-  niftkMorphologicalSegmentorView* m_MorphologicalSegmentorView;
 
   /// \brief As much "business logic" as possible is delegated to this class so we can unit test it, without a GUI.
   niftk::MorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;

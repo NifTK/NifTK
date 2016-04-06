@@ -255,8 +255,8 @@ private:
 //-----------------------------------------------------------------------------
 /**
  * \class OpWipe
- * \brief Class to hold data to pass back to MIDASGeneralSegmentorView to Undo/Redo the Wipe commands.
- * \see MIDASGeneralSegmentorView::DoWipe
+ * \brief Class to hold data to pass back to niftkGeneralSegmentorController to Undo/Redo the Wipe commands.
+ * \see niftkGeneralSegmentorController::DoWipe
  */
 class OpWipe: public OpGeneralSegmentorBaseCommand
 {

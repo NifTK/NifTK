@@ -28,8 +28,8 @@ namespace mitk
 class PointSet;
 }
 
+class niftkIBaseView;
 class niftkGeneralSegmentorGUI;
-class niftkGeneralSegmentorView;
 
 /**
  * \class niftkGeneralSegmentorController
@@ -133,7 +133,7 @@ class niftkGeneralSegmentorController
 
 public:
 
-  niftkGeneralSegmentorController(niftkGeneralSegmentorView* segmentorView);
+  niftkGeneralSegmentorController(niftkIBaseView* view);
   virtual ~niftkGeneralSegmentorController();
 
   /// \brief Sets up the GUI.
@@ -229,11 +229,11 @@ protected slots:
   void OnThresholdApplyButtonClicked();
 
   /// \brief Qt slot called when the "threshold" checkbox is checked, and toggles
-  /// the thresholding widget section on and calls niftkGeneralSegmentorView::UpdateRegionGrowing.
+  /// the thresholding widget section on and calls niftkGeneralSegmentorController::UpdateRegionGrowing.
   void OnThresholdingCheckBoxToggled(bool checked);
 
   /// \brief Qt slot called when the lower or upper threshold slider is moved, calls
-  /// niftkGeneralSegmentorView::UpdateRegionGrowing as thresholds have changed.
+  /// niftkGeneralSegmentorController::UpdateRegionGrowing as thresholds have changed.
   void OnThresholdValueChanged();
 
   /// \brief Qt slot called when the any button is pressed on this widget.
@@ -393,8 +393,6 @@ private:
 
   /// \brief All the GUI controls for the main view part.
   niftkGeneralSegmentorGUI* m_GeneralSegmentorGUI;
-
-  niftkGeneralSegmentorView* m_GeneralSegmentorView;
 
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
   niftkGeneralSegmentorEventInterface::Pointer m_Interface;

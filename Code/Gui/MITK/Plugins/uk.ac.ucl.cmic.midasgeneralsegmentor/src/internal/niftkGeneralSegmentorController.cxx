@@ -19,6 +19,7 @@
 #include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
 #include <mitkIRenderingManager.h>
+#include <mitkIRenderWindowPart.h>
 #include <mitkITKImageImport.h>
 #include <mitkOperationEvent.h>
 #include <mitkPointSet.h>
@@ -28,6 +29,7 @@
 
 #include <mitkDataStorageUtils.h>
 
+#include <niftkIBaseView.h>
 #include <niftkGeneralSegmentorUtils.h>
 #include <niftkMIDASDrawTool.h>
 #include <niftkMIDASSeedTool.h>
@@ -36,12 +38,9 @@
 
 #include <niftkGeneralSegmentorGUI.h>
 
-#include "niftkGeneralSegmentorView.h"
-
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorController::niftkGeneralSegmentorController(niftkGeneralSegmentorView* segmentorView)
-  : niftkBaseSegmentorController(segmentorView),
-    m_GeneralSegmentorView(segmentorView),
+niftkGeneralSegmentorController::niftkGeneralSegmentorController(niftkIBaseView* view)
+  : niftkBaseSegmentorController(view),
     m_IsUpdating(false),
     m_IsDeleting(false),
     m_IsChangingSlice(false),
@@ -268,7 +267,7 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
     }
     else
     {
-      newSegmentation = this->CreateNewSegmentation(m_GeneralSegmentorView->GetDefaultSegmentationColor());
+      newSegmentation = this->CreateNewSegmentation();
 
       // The above method returns NULL if the user exited the colour selection dialog box.
       if (newSegmentation.IsNull())
@@ -277,7 +276,7 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
       }
     }
 
-    m_GeneralSegmentorView->WaitCursorOn();
+    this->GetView()->WaitCursorOn();
 
     // Override the base colour to be orange, and we revert this when OK pressed at the end.
     mitk::Color tmpColor;
@@ -345,7 +344,7 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
     /// We should not refer to mitk::RenderingManager::GetInstance() because the DnD display uses its
     /// own rendering manager, not this one, like the MITK display.
     mitk::IRenderingManager* renderingManager = 0;
-    mitk::IRenderWindowPart* renderWindowPart = m_GeneralSegmentorView->GetRenderWindowPart();
+    mitk::IRenderWindowPart* renderWindowPart = this->GetView()->GetActiveRenderWindowPart();
     if (renderWindowPart)
     {
       renderingManager = renderWindowPart->GetRenderingManager();
@@ -407,18 +406,18 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
     m_GeneralSegmentorGUI->SetThresholdingCheckBoxEnabled(true);
     m_GeneralSegmentorGUI->SetThresholdingCheckBoxChecked(false);
 
-    m_GeneralSegmentorView->FocusOnCurrentWindow();
+    this->GetView()->FocusOnCurrentWindow();
     this->OnFocusChanged();
     this->RequestRenderWindowUpdate();
 
-    m_GeneralSegmentorView->WaitCursorOff();
+    this->GetView()->WaitCursorOff();
 
   } // end if we have a reference image
 
   m_IsRestarting = isRestarting;
 
   // Finally, select the new segmentation node.
-  m_GeneralSegmentorView->SetCurrentSelection(newSegmentation);
+  this->GetView()->SetCurrentSelection(newSegmentation);
 }
 
 
@@ -599,7 +598,7 @@ void niftkGeneralSegmentorController::OnViewGetsHidden()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorController::OnFocusChanged()
 {
-  mitk::BaseRenderer* focusedRenderer = m_GeneralSegmentorView->GetFocusedRenderer();
+  mitk::BaseRenderer* focusedRenderer = this->GetView()->GetFocusedRenderer();
 
   if (focusedRenderer != NULL)
   {
@@ -639,7 +638,7 @@ void niftkGeneralSegmentorController::OnFocusChanged()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorController::OnSliceChanged(const itk::EventObject& geometrySliceEvent)
 {
-  mitk::IRenderWindowPart* renderWindowPart = m_GeneralSegmentorView->GetRenderWindowPart();
+  mitk::IRenderWindowPart* renderWindowPart = this->GetView()->GetActiveRenderWindowPart();
   if (renderWindowPart != NULL &&  !m_IsChangingSlice)
   {
     int previousSlice = m_PreviousSliceNumber;
@@ -878,7 +877,7 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
             } // end if/else thresholding on
           } // end if/else retain marks.
 
-          mitk::IRenderWindowPart* renderWindowPart = m_GeneralSegmentorView->GetRenderWindowPart();
+          mitk::IRenderWindowPart* renderWindowPart = this->GetView()->GetActiveRenderWindowPart();
           if (renderWindowPart != NULL)
           {
             m_CurrentFocusPoint = renderWindowPart->GetSelectedPosition();
@@ -1547,7 +1546,7 @@ void niftkGeneralSegmentorController::OnAnyButtonClicked()
 {
   /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
   /// (like 'a' and 'z' for changing slice) keep on working.
-  if (QmitkRenderWindow* mainWindow = m_GeneralSegmentorView->GetSelectedRenderWindow())
+  if (QmitkRenderWindow* mainWindow = this->GetView()->GetSelectedRenderWindow())
   {
     mainWindow->setFocus();
   }
@@ -1674,7 +1673,7 @@ void niftkGeneralSegmentorController::OnOKButtonClicked()
   this->DestroyPipeline();
   this->RemoveWorkingData();
   m_GeneralSegmentorGUI->EnableSegmentationWidgets(false);
-  m_GeneralSegmentorView->SetCurrentSelection(workingData);
+  this->GetView()->SetCurrentSelection(workingData);
 
   this->RequestRenderWindowUpdate();
   mitk::UndoController::GetCurrentUndoModel()->Clear();
@@ -1746,8 +1745,8 @@ void niftkGeneralSegmentorController::DiscardSegmentation()
     this->GetDataStorage()->Remove(segmentationNode);
   }
   m_GeneralSegmentorGUI->EnableSegmentationWidgets(false);
-  m_GeneralSegmentorView->SetReferenceImageSelected();
-  m_GeneralSegmentorView->RequestRenderWindowUpdate();
+  this->SetReferenceImageSelected();
+  this->RequestRenderWindowUpdate();
   mitk::UndoController::GetCurrentUndoModel()->Clear();
 }
 
@@ -2222,7 +2221,7 @@ void niftkGeneralSegmentorController::OnWipePlusButtonClicked()
     orientationText = "up from";
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorView->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
                                                             tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -2259,7 +2258,7 @@ void niftkGeneralSegmentorController::OnWipeMinusButtonClicked()
     orientationText = "down from";
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorView->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
                                                             tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -2847,7 +2846,7 @@ void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operatio
   mitk::DataNode::Pointer seedsNode = this->GetWorkingData()[niftk::MIDASTool::SEEDS];
   assert(seedsNode);
 
-  mitk::IRenderWindowPart* renderWindowPart = m_GeneralSegmentorView->GetRenderWindowPart();
+  mitk::IRenderWindowPart* renderWindowPart = this->GetView()->GetActiveRenderWindowPart();
   assert(renderWindowPart);
 
   switch (operation->GetOperationType())

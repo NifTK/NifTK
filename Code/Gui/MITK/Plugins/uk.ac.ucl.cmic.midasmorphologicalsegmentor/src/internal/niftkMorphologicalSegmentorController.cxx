@@ -22,17 +22,15 @@
 #include <mitkUndoController.h>
 
 #include <mitkDataStorageUtils.h>
+#include <niftkIBaseView.h>
 #include <niftkMIDASPaintbrushTool.h>
 
 #include <niftkMorphologicalSegmentorGUI.h>
 
-#include "niftkMorphologicalSegmentorView.h"
-
 //-----------------------------------------------------------------------------
-niftkMorphologicalSegmentorController::niftkMorphologicalSegmentorController(niftkMorphologicalSegmentorView* segmentorView)
-  : niftkBaseSegmentorController(segmentorView),
+niftkMorphologicalSegmentorController::niftkMorphologicalSegmentorController(niftkIBaseView* view)
+  : niftkBaseSegmentorController(view),
     m_MorphologicalSegmentorGUI(nullptr),
-    m_MorphologicalSegmentorView(segmentorView),
     m_PipelineManager(nullptr),
     m_TabIndex(-1)
 {
@@ -84,8 +82,8 @@ void niftkMorphologicalSegmentorController::SetupSegmentorGUI(QWidget* parent)
   this->connect(m_MorphologicalSegmentorGUI, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
   this->connect(m_MorphologicalSegmentorGUI, SIGNAL(TabChanged(int)), SLOT(OnTabChanged(int)));
   this->connect(m_MorphologicalSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
-//  m_MorphologicalSegmentorView->connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
-  m_MorphologicalSegmentorView->connect(m_MorphologicalSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
+//  this->connect(m_MorphologicalControls, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
 }
 
 
@@ -159,7 +157,7 @@ void niftkMorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     }
     else
     {
-      newSegmentation = this->CreateNewSegmentation(m_MorphologicalSegmentorView->GetDefaultSegmentationColor());
+      newSegmentation = this->CreateNewSegmentation();
 
       // The above method returns NULL if the user exited the colour selection dialog box.
       if (newSegmentation.IsNull())
@@ -171,7 +169,7 @@ void niftkMorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->CreateAxialCutOffPlaneNode(image);
     this->GetDataStorage()->Add(axialCutOffPlaneNode, newSegmentation);
 
-    m_MorphologicalSegmentorView->WaitCursorOn();
+    this->GetView()->WaitCursorOn();
 
     // Mark the newSegmentation as "unfinished".
     newSegmentation->SetBoolProperty(niftk::MorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), false);
@@ -286,14 +284,14 @@ void niftkMorphologicalSegmentorController::OnNewSegmentationButtonClicked()
       QMessageBox::warning(NULL,"Create new segmentation","Could not allocate memory for new segmentation");
     }
 
-    m_MorphologicalSegmentorView->FocusOnCurrentWindow();
+    this->GetView()->FocusOnCurrentWindow();
     this->RequestRenderWindowUpdate();
-    m_MorphologicalSegmentorView->WaitCursorOff();
+    this->GetView()->WaitCursorOff();
 
   } // end if we have a reference image
 
   // Finally, select the new segmentation node.
-  m_MorphologicalSegmentorView->SetCurrentSelection(newSegmentation);
+  this->GetView()->SetCurrentSelection(newSegmentation);
 }
 
 
@@ -433,7 +431,7 @@ void niftkMorphologicalSegmentorController::OnTabChanged(int tabIndex)
     else
     {
       m_MorphologicalSegmentorGUI->SetToolSelectorEnabled(false);
-      m_MorphologicalSegmentorView->OnToolSelected(-1); // make sure we de-activate tools.
+      emit ToolSelected(-1); // make sure we de-activate tools.
     }
 
     m_PipelineManager->OnTabChanged(tabIndex);
@@ -451,7 +449,7 @@ void niftkMorphologicalSegmentorController::OnOKButtonClicked()
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
-    m_MorphologicalSegmentorView->OnToolSelected(-1);
+    emit ToolSelected(-1);
     m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->FinalizeSegmentation();
@@ -460,7 +458,7 @@ void niftkMorphologicalSegmentorController::OnOKButtonClicked()
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
     this->GetDataStorage()->Remove(axialCutOffPlaneNode);
 
-    m_MorphologicalSegmentorView->FireNodeSelected(this->GetReferenceNodeFromToolManager());
+    this->GetView()->FireNodeSelected(this->GetReferenceNodeFromToolManager());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
   }
@@ -473,7 +471,7 @@ void niftkMorphologicalSegmentorController::OnRestartButtonClicked()
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
-    m_MorphologicalSegmentorView->OnToolSelected(-1);
+    emit ToolSelected(-1);
     m_PipelineManager->ClearWorkingData();
     this->SetSegmentationNodePropsFromReferenceImage();
     this->SetControlsFromReferenceImage();
@@ -499,7 +497,7 @@ void niftkMorphologicalSegmentorController::OnRestartButtonClicked()
       axialCutOffPlane->SetOrigin(planeCentre);
     }
 
-    m_MorphologicalSegmentorView->FireNodeSelected(segmentationNode);
+    this->GetView()->FireNodeSelected(segmentationNode);
     this->RequestRenderWindowUpdate();
   }
 }
@@ -511,7 +509,7 @@ void niftkMorphologicalSegmentorController::OnCancelButtonClicked()
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
-    m_MorphologicalSegmentorView->OnToolSelected(-1);
+    emit ToolSelected(-1);
     m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->RemoveWorkingData();
@@ -520,7 +518,7 @@ void niftkMorphologicalSegmentorController::OnCancelButtonClicked()
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
     this->GetDataStorage()->Remove(axialCutOffPlaneNode);
     this->GetDataStorage()->Remove(segmentationNode);
-    m_MorphologicalSegmentorView->FireNodeSelected(this->GetReferenceNodeFromToolManager());
+    this->GetView()->FireNodeSelected(this->GetReferenceNodeFromToolManager());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
   }
@@ -565,14 +563,14 @@ void niftkMorphologicalSegmentorController::OnNodeRemoved(const mitk::DataNode* 
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull() && segmentationNode.GetPointer() == removedNode)
   {
-    m_MorphologicalSegmentorView->OnToolSelected(-1);
+    emit ToolSelected(-1);
     m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->RemoveWorkingData();
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
 //    this->GetDataStorage()->Remove(segmentationNode);
-    m_MorphologicalSegmentorView->FireNodeSelected(this->GetReferenceNodeFromToolManager());
+    this->GetView()->FireNodeSelected(this->GetReferenceNodeFromToolManager());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
   }

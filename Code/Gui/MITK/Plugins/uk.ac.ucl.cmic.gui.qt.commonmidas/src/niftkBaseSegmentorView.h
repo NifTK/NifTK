@@ -69,24 +69,6 @@ public:
    */
   static const QString DEFAULT_COLOUR_STYLE_SHEET;
 
-  /**
-   * \brief Creates from derived classes when the the user hits the "New segmentation", producing a dialog box,
-   * and on successful completion of the dialog box, will create a new segmentation image.
-   *
-   * \param defaultColor The default colour to pass to the new segmentation dialog box.
-   * \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancells the dialog box.
-   */
-  virtual mitk::DataNode* CreateNewSegmentation(const QColor& defaultColor);
-
-  /**
-   * \brief Returns the currently focused renderer.
-   *
-   * Same as QmitkBaseView::GetFocusedRenderer(), but with public visiblity.
-   *
-   * \return mitk::BaseRenderer* The currently focused renderer, or NULL if it has not been set.
-   */
-  mitk::BaseRenderer* GetFocusedRenderer();
-
 signals:
 
   /**
@@ -148,9 +130,6 @@ protected:
   /// \brief Returns the "Up" direction which is the anterior, superior or right direction depending on which orientation you are interested in.
   int GetUpDirection();
 
-  /// \brief Makes sure the reference image is the selected one
-  void SetReferenceImageSelected();
-
   /// \brief Returns the tool manager associated with this object (derived classes provide ones in different ways).
   mitk::ToolManager* GetToolManager();
 
@@ -199,16 +178,10 @@ protected:
   /// \brief Returns the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer GetSelectedNode() const;
 
-  /// \brief Default colour to be displayed in the new segmentation dialog box.
-  const QColor& GetDefaultSegmentationColor() const;
-
 private:
 
   /// \brief The segmentor controller that realises the GUI logic behind the view.
   niftkBaseSegmentorController* m_SegmentorController;
-
-  /// \brief Default colour to be displayed in the new segmentation dialog box.
-  QColor m_DefaultSegmentationColor;
 
   /// \brief The ID of the currently active tool or -1 if no tool is active.
   int m_ActiveToolID;

@@ -16,26 +16,28 @@
 
 #include <QMessageBox>
 
-#include <mitkDataStorageUtils.h>
+#include <mitkIRenderWindowPart.h>
 #include <mitkStateEvent.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 
 #include <QmitkRenderWindow.h>
 
+#include <mitkDataStorageUtils.h>
+
+#include <niftkIBaseView.h>
 #include <niftkNewSegmentationDialog.h>
 
 #include "niftkBaseSegmentorGUI.h"
-#include "niftkBaseSegmentorView.h"
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorController::niftkBaseSegmentorController(niftkBaseSegmentorView* segmentorView)
+niftkBaseSegmentorController::niftkBaseSegmentorController(niftkIBaseView* view)
   : m_SegmentorGUI(nullptr),
-    m_SegmentorView(segmentorView),
+    m_View(view),
     m_SelectedNode(nullptr),
     m_SelectedImage(nullptr)
 {
   // Create an own tool manager and connect it to the data storage straight away.
-  m_ToolManager = mitk::ToolManager::New(segmentorView->GetDataStorage());
+  m_ToolManager = mitk::ToolManager::New(view->GetDataStorage());
 }
 
 
@@ -52,7 +54,7 @@ void niftkBaseSegmentorController::SetupSegmentorGUI(QWidget* parent)
   m_SegmentorGUI->SetToolManager(m_ToolManager);
 
   this->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
-  m_SegmentorView->connect(m_SegmentorGUI, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
+  this->connect(m_SegmentorGUI, SIGNAL(ToolSelected(int)), SIGNAL(ToolSelected(int)));
 }
 
 
@@ -64,10 +66,31 @@ niftkBaseSegmentorGUI* niftkBaseSegmentorController::GetSegmentorGUI() const
 
 
 //-----------------------------------------------------------------------------
+niftkIBaseView* niftkBaseSegmentorController::GetView() const
+{
+  return m_View;
+}
+
+
+//-----------------------------------------------------------------------------
+const QColor& niftkBaseSegmentorController::GetDefaultSegmentationColour() const
+{
+  return m_DefaultSegmentationColour;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorController::SetDefaultSegmentationColour(const QColor& defaultSegmentationColour)
+{
+  m_DefaultSegmentationColour = defaultSegmentationColour;
+}
+
+
+//-----------------------------------------------------------------------------
 bool niftkBaseSegmentorController::EventFilter(const mitk::StateEvent* stateEvent) const
 {
   // If we have a render window part (aka. editor or display)...
-  if (mitk::IRenderWindowPart* renderWindowPart = m_SegmentorView->GetRenderWindowPart())
+  if (mitk::IRenderWindowPart* renderWindowPart = m_View->GetActiveRenderWindowPart())
   {
     // and it has a focused render window...
     if (QmitkRenderWindow* renderWindow = renderWindowPart->GetActiveQmitkRenderWindow())
@@ -90,7 +113,7 @@ bool niftkBaseSegmentorController::EventFilter(const mitk::StateEvent* stateEven
 bool niftkBaseSegmentorController::EventFilter(mitk::InteractionEvent* event) const
 {
   // If we have a render window part (aka. editor or display)...
-  if (mitk::IRenderWindowPart* renderWindowPart = m_SegmentorView->GetRenderWindowPart())
+  if (mitk::IRenderWindowPart* renderWindowPart = m_View->GetActiveRenderWindowPart())
   {
     // and it has a focused render window...
     if (QmitkRenderWindow* renderWindow = renderWindowPart->GetActiveQmitkRenderWindow())
@@ -112,28 +135,28 @@ bool niftkBaseSegmentorController::EventFilter(mitk::InteractionEvent* event) co
 //-----------------------------------------------------------------------------
 mitk::DataStorage* niftkBaseSegmentorController::GetDataStorage() const
 {
-  return m_SegmentorView->GetDataStorage();
+  return m_View->GetDataStorage();
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkBaseSegmentorController::RequestRenderWindowUpdate() const
 {
-  m_SegmentorView->RequestRenderWindowUpdate();
+  m_View->RequestRenderWindowUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
 QList<mitk::DataNode::Pointer> niftkBaseSegmentorController::GetDataManagerSelection() const
 {
-  return m_SegmentorView->GetDataManagerSelection();
+  return m_View->GetDataManagerSelection();
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::SliceNavigationController* niftkBaseSegmentorController::GetSliceNavigationController() const
 {
-  return m_SegmentorView->GetSliceNavigationController();
+  return m_View->GetSliceNavigationController();
 }
 
 
@@ -218,6 +241,17 @@ mitk::Image* niftkBaseSegmentorController::GetReferenceImage()
 {
   mitk::Image* result = this->GetReferenceImageFromToolManager();
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorController::SetReferenceImageSelected()
+{
+  mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
+  if (referenceImageNode.IsNotNull())
+  {
+    m_View->SetCurrentSelection(referenceImageNode);
+  }
 }
 
 
@@ -310,7 +344,7 @@ int niftkBaseSegmentorController::GetSliceNumberFromSliceNavigationControllerAnd
 MIDASOrientation niftkBaseSegmentorController::GetOrientationAsEnum()
 {
   MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
-  const mitk::SliceNavigationController* sliceNavigationController = m_SegmentorView->GetSliceNavigationController();
+  const mitk::SliceNavigationController* sliceNavigationController = this->GetSliceNavigationController();
   if (sliceNavigationController != NULL)
   {
     mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
@@ -395,7 +429,7 @@ int niftkBaseSegmentorController::GetUpDirection()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* niftkBaseSegmentorController::CreateNewSegmentation(const QColor& defaultColor)
+mitk::DataNode* niftkBaseSegmentorController::CreateNewSegmentation()
 {
   mitk::DataNode::Pointer emptySegmentation = NULL;
 
@@ -412,7 +446,7 @@ mitk::DataNode* niftkBaseSegmentorController::CreateNewSegmentation(const QColor
     {
       if (referenceImage->GetDimension() > 2)
       {
-        niftkNewSegmentationDialog* dialog = new niftkNewSegmentationDialog(defaultColor, m_SegmentorGUI->GetParent());
+        niftkNewSegmentationDialog* dialog = new niftkNewSegmentationDialog(m_DefaultSegmentationColour, m_SegmentorGUI->GetParent());
         int dialogReturnValue = dialog->exec();
         if ( dialogReturnValue == QDialog::Rejected ) return NULL; // user clicked cancel or pressed Esc or something similar
 

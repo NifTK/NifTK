@@ -29,7 +29,7 @@
 class QWidget;
 
 class niftkBaseSegmentorGUI;
-class niftkBaseSegmentorView;
+class niftkIBaseView;
 
 /**
  * \class niftkBaseSegmentorController
@@ -41,7 +41,7 @@ class CMIC_QT_COMMONMIDAS niftkBaseSegmentorController : public QObject, public 
 
 public:
 
-  niftkBaseSegmentorController(niftkBaseSegmentorView* segmentorView);
+  niftkBaseSegmentorController(niftkIBaseView* view);
 
   virtual ~niftkBaseSegmentorController();
 
@@ -62,6 +62,18 @@ public:
   /// \brief Returns true if the event should be filtered, i.e. not processed,
   /// otherwise false.
   virtual bool EventFilter(mitk::InteractionEvent* event) const override;
+
+  /// \brief Default colour to be displayed in the new segmentation dialog box.
+  const QColor& GetDefaultSegmentationColour() const;
+
+  /// \brief Default colour to be displayed in the new segmentation dialog box.
+  void SetDefaultSegmentationColour(const QColor& defaultSegmentationColour);
+
+signals:
+
+  /// \brief Emitted when a tool is selected or all tools are deselected.
+  /// If all tools got deselected, toolId is -1.
+  void ToolSelected(int toolId);
 
 protected:
 
@@ -102,6 +114,9 @@ protected:
   /// \brief Gets the reference image registered with the tool manager.
   /// Assumes that a reference (grey scale) image is always registered with the tool manager.
   mitk::Image* GetReferenceImage();
+
+  /// \brief Makes sure the reference image is the selected one
+  void SetReferenceImageSelected();
 
   /// \brief Returns true if node represent an image that is non binary, and false otherwise.
   virtual bool IsNodeAReferenceImage(const mitk::DataNode::Pointer node);
@@ -151,9 +166,8 @@ protected:
   /// \brief Creates from derived classes when the the user hits the "New segmentation", producing a dialog box,
   /// and on successful completion of the dialog box, will create a new segmentation image.
   ///
-  /// \param defaultColor The default colour to pass to the new segmentation dialog box.
-  /// \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancells the dialog box.
-  virtual mitk::DataNode* CreateNewSegmentation(const QColor& defaultColor);
+  /// \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancels the dialog box.
+  virtual mitk::DataNode* CreateNewSegmentation();
 
   /// \brief Creates the segmentor widget that holds the GUI components of the view.
   /// This function is called from CreateQtPartControl. Derived classes should provide their implementation
@@ -162,6 +176,9 @@ protected:
 
   /// \brief Gets the segmentor widget that holds the GUI components of the view.
   niftkBaseSegmentorGUI* GetSegmentorGUI() const;
+
+  /// \brief Gets the segmentor BlueBerry view.
+  niftkIBaseView* GetView() const;
 
   /// \brief Called when the selection changes in the data manager.
   /// \see QmitkAbstractView::OnSelectionChanged.
@@ -184,13 +201,16 @@ private:
 
   niftkBaseSegmentorGUI* m_SegmentorGUI;
 
-  niftkBaseSegmentorView* m_SegmentorView;
+  niftkIBaseView* m_View;
 
   /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer m_SelectedNode;
 
   /// \brief Keeps track of the last selected image, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::Image::Pointer m_SelectedImage;
+
+  /// \brief Default colour to be displayed in the new segmentation dialog box.
+  QColor m_DefaultSegmentationColour;
 
 friend class niftkBaseSegmentorView;
 

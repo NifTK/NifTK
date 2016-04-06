@@ -88,6 +88,7 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget* parent)
 
   m_SegmentorController = this->CreateSegmentorController();
   m_SegmentorController->SetupSegmentorGUI(parent);
+  this->connect(m_SegmentorController, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
 }
 
 
@@ -221,20 +222,6 @@ bool niftkBaseSegmentorView::CanStartSegmentationForBinaryNode(const mitk::DataN
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* niftkBaseSegmentorView::CreateNewSegmentation(const QColor& defaultColour)
-{
-  return m_SegmentorController->CreateNewSegmentation(defaultColour);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::BaseRenderer* niftkBaseSegmentorView::GetFocusedRenderer()
-{
-  return QmitkBaseView::GetFocusedRenderer();
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkBaseSegmentorView::ApplyDisplayOptions(mitk::DataNode* node)
 {
   m_SegmentorController->ApplyDisplayOptions(node);
@@ -298,17 +285,6 @@ int niftkBaseSegmentorView::GetUpDirection()
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::SetReferenceImageSelected()
-{
-  mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
-  if (referenceImageNode.IsNotNull())
-  {
-    this->SetCurrentSelection(referenceImageNode);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkBaseSegmentorView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
@@ -328,12 +304,13 @@ void niftkBaseSegmentorView::RetrievePreferenceValues()
 
   assert( prefs );
 
-  QString defaultColorName = prefs->Get(niftkBaseSegmentorView::DEFAULT_COLOUR, "");
-  m_DefaultSegmentationColor = QColor(defaultColorName);
-  if (defaultColorName == "") // default values
+  QString defaultColourName = prefs->Get(niftkBaseSegmentorView::DEFAULT_COLOUR, "");
+  QColor defaultSegmentationColour(defaultColourName);
+  if (defaultColourName == "")
   {
-    m_DefaultSegmentationColor = QColor(0, 255, 0);
+    defaultSegmentationColour = QColor(0, 255, 0);
   }
+  m_SegmentorController->SetDefaultSegmentationColour(defaultSegmentationColour);
 }
 
 
@@ -341,11 +318,4 @@ void niftkBaseSegmentorView::RetrievePreferenceValues()
 mitk::DataNode::Pointer niftkBaseSegmentorView::GetSelectedNode() const
 {
   return m_SegmentorController->GetSelectedNode();
-}
-
-
-//-----------------------------------------------------------------------------
-const QColor& niftkBaseSegmentorView::GetDefaultSegmentationColor() const
-{
-  return m_DefaultSegmentationColor;
 }
