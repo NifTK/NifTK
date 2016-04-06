@@ -64,6 +64,7 @@ if(NOT DEFINED MITK_DIR)
 
       list(APPEND _enabled_modules
         Core                    # needed by niftkCore
+        MitkDataTypesExt        # needed by niftkCore
         SceneSerializationBase  # needed by niftkCoreIO
         LegacyGL                # needed by PlanarFigure and AlgorithmsExt
         PlanarFigure            # needed by QtWidgets
