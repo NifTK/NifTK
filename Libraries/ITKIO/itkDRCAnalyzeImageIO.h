@@ -50,14 +50,14 @@ public:
   void SetDRCMode(bool b) { m_DRCMode = b; }
 
   /** Overriden from base class. */
-  virtual void ReadImageInformation();
+  virtual void ReadImageInformation() override;
 
 protected:
 
   DRCAnalyzeImageIO();
   ~DRCAnalyzeImageIO();
 
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   /** This should be protected in base class, but it isn't. */
   ImageIOBase::ByteOrder CheckAnalyzeEndian(const struct dsr &temphdr);

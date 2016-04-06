@@ -54,12 +54,12 @@ public:
  /**
   * Calls DoExecute.
   */
- void Execute(itk::Object *caller, const itk::EventObject & event);
+ void Execute(itk::Object *caller, const itk::EventObject & event) override;
 
  /**
   * Calls DoExecute.
   */
- void Execute(const itk::Object * object, const itk::EventObject & event);
+ void Execute(const itk::Object * object, const itk::EventObject & event) override;
 
 protected:
 

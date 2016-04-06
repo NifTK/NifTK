@@ -52,7 +52,7 @@ class NIFTKITK_WINEXPORT ITK_EXPORT itkLogHelper : public itk::Object
     */
     itkTypeMacro(itkLogHelper, Object);
 
-    void PrintSelf(std::ostream& os, itk::Indent indent) const;
+    void PrintSelf(std::ostream& os, itk::Indent indent) const override;
 
      /**
      * Set the logging level at run-time.

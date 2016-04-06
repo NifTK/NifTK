@@ -275,7 +275,7 @@ protected:
 
   ImageRegistrationFactory();
   virtual ~ImageRegistrationFactory() {};
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
 private:
   ImageRegistrationFactory(const Self&); // purposefully not implemented

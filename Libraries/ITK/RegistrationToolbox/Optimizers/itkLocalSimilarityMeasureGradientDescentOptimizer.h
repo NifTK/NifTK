@@ -69,7 +69,7 @@ public:
   typedef typename DeformableTransformType::JacobianDeterminantFilterType::OutputImageType JacobianImageType; 
 
   /** Start optimization. */
-  virtual void StartOptimization( void );
+  virtual void StartOptimization( void ) override;
 
   /** Resume previously stopped optimization with current parameters
    * \sa StopOptimization. */
@@ -235,7 +235,7 @@ protected:
   
   LocalSimilarityMeasureGradientDescentOptimizer(); 
   virtual ~LocalSimilarityMeasureGradientDescentOptimizer() {};
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   /** Set whether we are maximizing or not. */
   bool m_Maximize;
