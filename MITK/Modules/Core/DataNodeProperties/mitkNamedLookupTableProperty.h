@@ -35,7 +35,7 @@ public:
   mitkNewMacro2Param(NamedLookupTableProperty, const std::string&, const mitk::LookupTable::Pointer);
   mitkNewMacro3Param(NamedLookupTableProperty, const std::string&, const mitk::LookupTable::Pointer, bool);
 
-  virtual std::string GetValueAsString() const;
+  virtual std::string GetValueAsString() const override;
 
   itkSetStringMacro(Name);
   itkGetStringMacro(Name);
@@ -56,10 +56,10 @@ protected:
 private:
 
   NamedLookupTableProperty& operator=(const NamedLookupTableProperty&); // Purposefully not implemented
-  itk::LightObject::Pointer InternalClone() const;
+  itk::LightObject::Pointer InternalClone() const override;
 
-  virtual bool IsEqual(const BaseProperty& property) const;
-  virtual bool Assign(const BaseProperty& property);
+  virtual bool IsEqual(const BaseProperty& property) const override;
+  virtual bool Assign(const BaseProperty& property) override;
 
   std::string m_Name;
   bool        m_IsScaled;

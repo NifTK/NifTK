@@ -59,13 +59,13 @@ public:
    * its infrastructure.
    * It also checks if event is to be accepted when i already has been processed by a DataInteractor.
    */
-  virtual void Notify(InteractionEvent* interactionEvent, bool isHandled);
+  virtual void Notify(InteractionEvent* interactionEvent, bool isHandled) override;
 
 protected:
   DnDDisplayInteractor(niftkSingleViewerWidget* viewer);
   virtual ~DnDDisplayInteractor();
 
-  virtual void ConnectActionsAndFunctions();
+  virtual void ConnectActionsAndFunctions() override;
 
   virtual bool SelectPosition(StateMachineAction*, InteractionEvent*);
 

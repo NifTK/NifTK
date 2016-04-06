@@ -31,12 +31,12 @@ public:
   PNMReaderService();
   virtual ~PNMReaderService();
 
-  virtual std::vector<itk::SmartPointer<mitk::BaseData> > Read();
+  virtual std::vector<itk::SmartPointer<mitk::BaseData> > Read() override;
 
 private:
 
   PNMReaderService(const PNMReaderService& other);
-  virtual PNMReaderService * Clone() const;
+  virtual PNMReaderService * Clone() const override;
 
   us::ServiceRegistration<mitk::IFileReader> m_ServiceReg;
 };

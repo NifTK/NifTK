@@ -45,7 +45,7 @@ public:
   /**
    * \see BaseVideoProcessor::Initialize()
    */
-  virtual void Initialize();
+  virtual void Initialize() override;
 
 protected:
 
@@ -60,7 +60,7 @@ protected:
       const IplImage &leftInput,
       const IplImage &rightInput,
       IplImage &leftOutput,
-      IplImage &rightOutput);
+      IplImage &rightOutput) override;
 
 private:
 

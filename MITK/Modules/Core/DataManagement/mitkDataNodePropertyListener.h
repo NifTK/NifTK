@@ -73,17 +73,17 @@ protected:
   /// \brief Called when a node is added to the data storage.
   /// Adds the observers for the node then notifies them.
   /// \see DataStoragePropertyListener::NodeAdded
-  virtual void OnNodeAdded(mitk::DataNode* node);
+  virtual void OnNodeAdded(mitk::DataNode* node) override;
 
   /// \brief Called when a node is removed from the data storage.
   /// Notifies the observers for the node then removes them.
   /// \see DataStoragePropertyListener::NodeRemoved
-  virtual void OnNodeRemoved(mitk::DataNode* node);
+  virtual void OnNodeRemoved(mitk::DataNode* node) override;
 
   /// \brief Called when a node is deleted.
   /// Notifies the observers for the node then removes them.
   /// \see DataStoragePropertyListener::NodeDeleted
-  virtual void OnNodeDeleted(mitk::DataNode* node);
+  virtual void OnNodeDeleted(mitk::DataNode* node) override;
 
   /// \brief Called when the global or a renderer specific property of the node has changed or removed.
   virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer);

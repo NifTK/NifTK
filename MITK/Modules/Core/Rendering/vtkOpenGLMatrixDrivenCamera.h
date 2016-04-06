@@ -41,9 +41,9 @@ class NIFTKCORE_EXPORT vtkOpenGLMatrixDrivenCamera : public vtkOpenGLCamera
 public:
   static vtkOpenGLMatrixDrivenCamera *New();
   vtkTypeMacro(vtkOpenGLMatrixDrivenCamera, vtkOpenGLCamera);
-  virtual void PrintSelf(ostream& os, vtkIndent indent);
+  virtual void PrintSelf(ostream& os, vtkIndent indent) override;
 
-  void Render(vtkRenderer *ren);
+  void Render(vtkRenderer *ren) override;
 
   vtkSetMacro(UseCalibratedCamera, bool);
   vtkGetMacro(UseCalibratedCamera, bool);

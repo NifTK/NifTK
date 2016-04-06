@@ -56,7 +56,7 @@ public:
   */
   virtual double Register(const mitk::DataNode::Pointer fixedDataSet,
                           const mitk::DataNode::Pointer movingDataSet,
-                          vtkMatrix4x4& matrix) const;
+                          vtkMatrix4x4& matrix) const override;
 
 private:
   ICPRegServiceRAII(const ICPRegServiceRAII&); // deliberately not implemented

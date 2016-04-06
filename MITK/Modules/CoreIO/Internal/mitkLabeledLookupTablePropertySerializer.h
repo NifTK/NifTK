@@ -30,8 +30,8 @@ public:
   mitkClassMacro(LabeledLookupTablePropertySerializer, NamedLookupTablePropertySerializer);
   itkNewMacro(Self);
 
-  virtual TiXmlElement* Serialize();
-  virtual BaseProperty::Pointer Deserialize(TiXmlElement*);
+  virtual TiXmlElement* Serialize() override;
+  virtual BaseProperty::Pointer Deserialize(TiXmlElement*) override;
 
 protected:
 

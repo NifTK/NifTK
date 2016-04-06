@@ -68,10 +68,10 @@ protected:
 private:
 
   LabeledLookupTableProperty& operator=(const LabeledLookupTableProperty&); // Purposefully not implemented
-  itk::LightObject::Pointer InternalClone() const;
+  itk::LightObject::Pointer InternalClone() const override;
 
-  virtual bool IsEqual(const BaseProperty& property) const;
-  virtual bool Assign(const BaseProperty& property);
+  virtual bool IsEqual(const BaseProperty& property) const override;
+  virtual bool Assign(const BaseProperty& property) override;
 
   LabelListType m_Labels;
 };

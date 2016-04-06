@@ -39,7 +39,7 @@ public:
 
   LabelMapReader();
   LabelMapReader(const LabelMapReader & other);
-  virtual LabelMapReader * Clone() const;
+  virtual LabelMapReader * Clone() const override;
   virtual ~LabelMapReader(){};
   
   using mitk::AbstractFileReader::Read;
@@ -47,7 +47,7 @@ public:
   /**
    * \brief Read the file and return mitkBaseData 
    */
-  virtual std::vector<itk::SmartPointer<BaseData> > Read();  
+  virtual std::vector<itk::SmartPointer<BaseData> > Read() override;  
     
   /**
    * \brief Get a QmitkLookupTableContainer from file 

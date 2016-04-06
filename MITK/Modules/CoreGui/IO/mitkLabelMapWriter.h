@@ -45,13 +45,13 @@ public:
 
   LabelMapWriter();
   LabelMapWriter(const LabelMapWriter & other);
-  virtual LabelMapWriter * Clone() const;
+  virtual LabelMapWriter * Clone() const override;
   virtual ~LabelMapWriter(){};
   
   using mitk::AbstractFileWriter::Write;
 
   /** \brief Write labels, lookuptable to file.*/
-  virtual void Write();  
+  virtual void Write() override;  
 
   /** \brief Set the labels to write to file. */
   inline void SetLabels(const LabelListType& labels){m_Labels = labels;}

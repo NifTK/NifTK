@@ -51,14 +51,14 @@ public:
 
 
   //-----------------------------------------------------------------------------
-  void Execute(itk::Object* caller, const itk::EventObject& event)
+  void Execute(itk::Object* caller, const itk::EventObject& event) override
   {
     this->Execute((const itk::Object*) caller, event);
   }
 
 
   //-----------------------------------------------------------------------------
-  void Execute(const itk::Object* /*object*/, const itk::EventObject& /*event*/)
+  void Execute(const itk::Object* /*object*/, const itk::EventObject& /*event*/) override
   {
     m_MultiWindowWidget->OnDisplayGeometryModified(m_WindowIndex);
     return;

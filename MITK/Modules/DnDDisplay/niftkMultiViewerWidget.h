@@ -232,7 +232,7 @@ public:
   void SetFocused();
 
   /// \brief Shows the control panel if the mouse pointer is moved over the pin button.
-  virtual bool eventFilter(QObject* object, QEvent* event);
+  virtual bool eventFilter(QObject* object, QEvent* event) override;
 
 protected slots:
 

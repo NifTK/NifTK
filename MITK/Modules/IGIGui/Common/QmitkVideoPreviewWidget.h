@@ -38,9 +38,9 @@ public:
 
 
 protected:
-  virtual void initializeGL();
-  virtual void resizeGL(int width, int height);
-  virtual void paintGL();
+  virtual void initializeGL() override;
+  virtual void resizeGL(int width, int height) override;
+  virtual void paintGL() override;
 
   void setupViewport();
 
