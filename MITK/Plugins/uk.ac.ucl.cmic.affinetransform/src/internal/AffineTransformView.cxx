@@ -56,6 +56,8 @@
 #include <mitkCylinder.h>
 #include <mitkCone.h>
 #include <mitkCuboid.h>
+#include <usModuleRegistry.h>
+#include <usGetModuleContext.h>
 
 // NIFTK
 #include "AffineTransformView.h"
@@ -67,7 +69,7 @@
 AffineTransformView::AffineTransformView()
 {
   m_Controls = NULL;
-  m_AffineInteractor3D = NULL;
+  m_AffineDataInteractor3D = NULL;
   m_CustomAxesActor = NULL;
   m_LegendActor = NULL;
   m_BoundingObject = NULL;
@@ -77,26 +79,8 @@ AffineTransformView::AffineTransformView()
   m_LegendAdded = false;
   m_RotationMode = false;
 
-  QFile xmlDesc;
-  xmlDesc.setFileName(":/AffineTransform/AffineTransformInteractorSM.xml");
-  if (xmlDesc.exists() && xmlDesc.open(QIODevice::ReadOnly))
-  {
-    // Make a text stream on the doco  
-    QTextStream textStream(&xmlDesc);
-
-    // Read all the contents
-    QString qContents = textStream.readAll();
-  
-    // Load StateMachine patterns
-    mitk::GlobalInteraction* globalInteractor =  mitk::GlobalInteraction::GetInstance();
-    if (globalInteractor->GetStateMachineFactory()->LoadBehaviorString(qContents.toStdString()))
-    {
-      qDebug() <<"Loaded the state-machine correctly!";
-    }
-  }
-
   // Instantiate affine transformer
-  m_AffineTransformer = mitk::AffineTransformer::New();
+  m_AffineTransformer = niftk::AffineTransformer::New();
 
   // Pass the data storage pointer to it
   if (m_AffineTransformer.IsNotNull())
@@ -203,38 +187,6 @@ void AffineTransformView::CreateQtPartControl(QWidget *parent)
 //-----------------------------------------------------------------------------
 void AffineTransformView::SetControlsEnabled(bool isEnabled)
 {
-  m_Controls->rotationSpinBoxX->setEnabled(isEnabled);
-  m_Controls->rotationSpinBoxY->setEnabled(isEnabled);
-  m_Controls->rotationSpinBoxZ->setEnabled(isEnabled);
-  
-  m_Controls->rotationSliderX->setEnabled(isEnabled);
-  m_Controls->rotationSliderY->setEnabled(isEnabled);
-  m_Controls->rotationSliderZ->setEnabled(isEnabled);
-
-  m_Controls->shearingSpinBoxXY->setEnabled(isEnabled);
-  m_Controls->shearingSpinBoxXZ->setEnabled(isEnabled);
-  m_Controls->shearingSpinBoxYZ->setEnabled(isEnabled);
-
-  m_Controls->shearingSliderXY->setEnabled(isEnabled);
-  m_Controls->shearingSliderXZ->setEnabled(isEnabled);
-  m_Controls->shearingSliderYZ->setEnabled(isEnabled);
-
-  m_Controls->translationSpinBoxX->setEnabled(isEnabled);
-  m_Controls->translationSpinBoxY->setEnabled(isEnabled);
-  m_Controls->translationSpinBoxZ->setEnabled(isEnabled);
-
-  m_Controls->translationSliderX->setEnabled(isEnabled);
-  m_Controls->translationSliderY->setEnabled(isEnabled);
-  m_Controls->translationSliderZ->setEnabled(isEnabled);
-
-  m_Controls->scalingSpinBoxX->setEnabled(isEnabled);
-  m_Controls->scalingSpinBoxY->setEnabled(isEnabled);
-  m_Controls->scalingSpinBoxZ->setEnabled(isEnabled);
-
-  m_Controls->scalingSliderX->setEnabled(isEnabled);
-  m_Controls->scalingSliderY->setEnabled(isEnabled);
-  m_Controls->scalingSliderZ->setEnabled(isEnabled);
-
   m_Controls->centreRotationRadioButton->setEnabled(isEnabled);
   m_Controls->resampleButton->setEnabled(isEnabled);
   m_Controls->saveButton->setEnabled(isEnabled);
@@ -244,8 +196,48 @@ void AffineTransformView::SetControlsEnabled(bool isEnabled)
   m_Controls->applyButton->setEnabled(isEnabled);
 
   m_Controls->checkBox_Interactive->setEnabled(isEnabled);
+
+  SetSliderControlsEnabled(isEnabled);
 }
 
+void AffineTransformView::SetSliderControlsEnabled(bool isEnabled)
+{
+  m_Controls->rotationGroupBox->setEnabled(isEnabled);
+  m_Controls->rotationSpinBoxX->setEnabled(isEnabled);
+  m_Controls->rotationSpinBoxY->setEnabled(isEnabled);
+  m_Controls->rotationSpinBoxZ->setEnabled(isEnabled);
+  
+  m_Controls->rotationSliderX->setEnabled(isEnabled);
+  m_Controls->rotationSliderY->setEnabled(isEnabled);
+  m_Controls->rotationSliderZ->setEnabled(isEnabled);
+
+  m_Controls->shearGroupBox->setEnabled(isEnabled);
+  m_Controls->shearingSpinBoxXY->setEnabled(isEnabled);
+  m_Controls->shearingSpinBoxXZ->setEnabled(isEnabled);
+  m_Controls->shearingSpinBoxYZ->setEnabled(isEnabled);
+
+  m_Controls->shearingSliderXY->setEnabled(isEnabled);
+  m_Controls->shearingSliderXZ->setEnabled(isEnabled);
+  m_Controls->shearingSliderYZ->setEnabled(isEnabled);
+
+  m_Controls->translationGroupBox->setEnabled(isEnabled);
+  m_Controls->translationSpinBoxX->setEnabled(isEnabled);
+  m_Controls->translationSpinBoxY->setEnabled(isEnabled);
+  m_Controls->translationSpinBoxZ->setEnabled(isEnabled);
+
+  m_Controls->translationSliderX->setEnabled(isEnabled);
+  m_Controls->translationSliderY->setEnabled(isEnabled);
+  m_Controls->translationSliderZ->setEnabled(isEnabled);
+
+  m_Controls->scalingGroupBox->setEnabled(isEnabled);
+  m_Controls->scalingSpinBoxX->setEnabled(isEnabled);
+  m_Controls->scalingSpinBoxY->setEnabled(isEnabled);
+  m_Controls->scalingSpinBoxZ->setEnabled(isEnabled);
+
+  m_Controls->scalingSliderX->setEnabled(isEnabled);
+  m_Controls->scalingSliderY->setEnabled(isEnabled);
+  m_Controls->scalingSliderZ->setEnabled(isEnabled);
+}
 
 void AffineTransformView::SetInteractiveControlsEnabled(bool isEnabled)
 {
@@ -589,6 +581,7 @@ void AffineTransformView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part
   // Set the current node pointer into the transformer class
   m_AffineTransformer->OnNodeChanged(nodes[0]);
   m_DataOwnerNode = nodes[0];
+  m_AffineTransformer->InitialiseNodeProperties(m_DataOwnerNode);
 
   // Update the controls on the UI based on the datanode's properties
   SetUIValues(m_AffineTransformer->GetCurrentTransformParameters());
@@ -673,6 +666,19 @@ void AffineTransformView::GetValuesFromUI(mitk::AffineTransformParametersDataNod
   }
 
   parametersProperty->SetAffineTransformParameters(params);
+}
+
+//-----------------------------------------------------------------------------
+void AffineTransformView::GetValuesFromDisplay(vtkSmartPointer<vtkMatrix4x4> transform)
+{
+  for (int rInd = 0; rInd < 4; rInd++)
+  {
+    for (int cInd = 0; cInd < 4; cInd++)
+    { 
+      double val = m_Controls->affineTransformDisplay->item(rInd, cInd)->text().toDouble();
+      transform->SetElement(rInd, cInd, val);
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -782,7 +788,7 @@ void AffineTransformView::OnLoadTransformPushed()
 void AffineTransformView::OnSaveTransformPushed() 
 {
   QString fileName;
-  fileName = QFileDialog::getSaveFileName(NULL, tr("Destination for transform"), QString(), tr("ITK affine transform file (*.tfm *.txt);;Any file (*)"));
+  fileName = QFileDialog::getSaveFileName(NULL, tr("Destination for transform"), QString(), tr("ITK affine transform file (*.tfm);;NifTK affine transform file (*.txt)"));
   if (fileName.length() > 0) 
   {
     m_AffineTransformer->OnSaveTransform(fileName.toStdString());
@@ -810,7 +816,16 @@ void AffineTransformView::OnResampleTransformPushed()
 void AffineTransformView::OnApplyTransformPushed()
 {
   // Apply the transformation onto the current image
-  m_AffineTransformer->OnApplyTransform();
+  if (m_InInteractiveMode)
+  {
+    vtkSmartPointer<vtkMatrix4x4> transform = vtkSmartPointer<vtkMatrix4x4>::New();
+    GetValuesFromDisplay(transform);
+    m_AffineTransformer->ApplyTransformToNode(transform, m_DataOwnerNode);
+  }
+  else
+  {
+    m_AffineTransformer->OnApplyTransform();
+  }
 
   // Then reset the parameters.
   ResetUIValues();
@@ -841,6 +856,7 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
     return;
   }
 
+
   if (this->GetDataStorage()->GetNamedDerivedNode("BoundingObject", node))
   {
     m_BoundingObject->FitGeometry(m_CurrentDataObject->GetGeometry());
@@ -851,7 +867,7 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
     return;
   }
 
-  bool fitBoundingObject = false;
+  bool fitBoundingObject = true;
       
   if (m_BoundingObject.IsNull())
   {
@@ -895,23 +911,29 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
     m_BoundingObjectNode->SetProperty("layer", mitk::IntProperty::New(99)); // arbitrary, copied from segmentation functionality
     m_BoundingObjectNode->SetProperty("helper object", mitk::BoolProperty::New(true));
 
-    m_AffineInteractor3D = AffineTransformInteractor3D::New("AffineTransformInteractor", node);
-    connect(m_AffineInteractor3D, SIGNAL(transformReady()), this, SLOT(OnTransformReady()));
-    m_AffineInteractor3D->SetBoundingObjectNode(m_BoundingObjectNode);
+    m_AffineDataInteractor3D = niftk::AffineTransformDataInteractor3D::New();
+    
+    us::Module* niftkCore = us::ModuleRegistry::GetModule("niftkCore");
+    m_AffineDataInteractor3D->LoadStateMachine("AffineTransformSM.xml", niftkCore);
+    m_AffineDataInteractor3D->SetEventConfig("AffineTransformConfig.xml", niftkCore);
 
-    m_AffineInteractor3D->SetPrecision(3);
-          
+    m_AffineDataInteractor3D->SetDataNode(node);
+    m_AffineDataInteractor3D->SetBoundingObjectNode(m_BoundingObjectNode);
+         
+    connect(m_AffineDataInteractor3D, SIGNAL(transformReady()), this, SLOT(OnTransformReady()));
+
     if (m_RotationMode)
     {
-      m_AffineInteractor3D->SetInteractionModeToRotation();
+      m_AffineDataInteractor3D->SetInteractionModeToRotation();
     }
     else
     {
-      m_AffineInteractor3D->SetInteractionModeToTranslation();
+      m_AffineDataInteractor3D->SetInteractionModeToTranslation();
     }
 
     fitBoundingObject = true;
   }
+
 
   if (m_BoundingObject.IsNull())
   {
@@ -935,7 +957,7 @@ void AffineTransformView::CreateNewBoundingObject(mitk::DataNode::Pointer node)
 void AffineTransformView::AddBoundingObjectToNode(mitk::DataNode::Pointer node, bool fit)
 {
   m_CurrentDataObject = dynamic_cast<mitk::BaseData*>(node->GetData());
-  m_AffineInteractor3D->SetInteractionModeToTranslation();
+  m_AffineDataInteractor3D->SetInteractionModeToTranslation();
 
   if (!this->GetDataStorage()->Exists(m_BoundingObjectNode))
   {
@@ -946,10 +968,12 @@ void AffineTransformView::AddBoundingObjectToNode(mitk::DataNode::Pointer node, 
       m_BoundingObject->FitGeometry(m_CurrentDataObject->GetGeometry());
     }
 
-    mitk::GlobalInteraction::GetInstance()->AddInteractor(m_AffineInteractor3D);
+    m_AffineDataInteractor3D->SetDataNode(node);
   }
 
   m_BoundingObjectNode->SetVisibility(true);
+  DisplayLegends(true);
+
 }
 
 void AffineTransformView::RemoveBoundingObjectFromNode()
@@ -959,14 +983,19 @@ void AffineTransformView::RemoveBoundingObjectFromNode()
     if(this->GetDataStorage()->Exists(m_BoundingObjectNode))
     {
       this->GetDataStorage()->Remove(m_BoundingObjectNode);
-      mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AffineInteractor3D);
+      m_AffineDataInteractor3D->GetDataNode()->SetColor(1.0, 1.0, 1.0);
+      m_AffineDataInteractor3D->SetDataNode(NULL);
     }
   }
+
+  DisplayLegends(false);
 }
 
 void AffineTransformView::OnInteractiveModeToggled(bool on)
 {
   SetInteractiveControlsEnabled(on);
+  SetSliderControlsEnabled(!on);
+
   m_InInteractiveMode = on;
 
   if (on)
@@ -985,6 +1014,16 @@ void AffineTransformView::OnInteractiveModeToggled(bool on)
   else
   {
     RemoveBoundingObjectFromNode();
+    ResetUIValues();
+    
+    m_AffineTransformer->ResetTransform();
+
+    m_Controls->radioButton_translate->setChecked(true);
+    m_Controls->radioButton_001->setChecked(true);
+    m_Controls->checkBox_fixAngle->setChecked(false);
+
+    mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
+    renderManager->RequestUpdateAll();
   }
 }
 
@@ -999,15 +1038,15 @@ void AffineTransformView::OnRotationToggled(bool on)
     m_RotationMode = false;
   }
 
-  if (m_AffineInteractor3D.IsNotNull())
+  if (m_AffineDataInteractor3D.IsNotNull())
   {
     if (m_RotationMode == false)
     {
-      m_AffineInteractor3D->SetInteractionModeToTranslation();
+      m_AffineDataInteractor3D->SetInteractionModeToTranslation();
     }
     else
     {
-      m_AffineInteractor3D->SetInteractionModeToRotation();
+      m_AffineDataInteractor3D->SetInteractionModeToRotation();
     }
   }
 }
@@ -1018,56 +1057,61 @@ void AffineTransformView::OnFixAngleToggled(bool on)
   m_Controls->radioButton_010->setEnabled(on);
   m_Controls->radioButton_100->setEnabled(on);
 
-  if (m_AffineInteractor3D.IsNotNull())
+  if (m_AffineDataInteractor3D.IsNotNull())
   {
     if (!on)
     {
-      m_AffineInteractor3D->SetAxesFixed(false);
+      m_AffineDataInteractor3D->SetAxesFixed(false);
     }
     else if (m_Controls->radioButton_001->isChecked())
     {
-      m_AffineInteractor3D->SetAxesFixed(true, 0);
+      m_AffineDataInteractor3D->SetAxesFixed(true, 0);
     }
     else if (m_Controls->radioButton_010->isChecked())
     {
-      m_AffineInteractor3D->SetAxesFixed(true, 1);
+      m_AffineDataInteractor3D->SetAxesFixed(true, 1);
     }
     else if (m_Controls->radioButton_100->isChecked())
     {
-      m_AffineInteractor3D->SetAxesFixed(true, 2);
+      m_AffineDataInteractor3D->SetAxesFixed(true, 2);
     }
   }
 }
 
 void AffineTransformView::OnAxisChanged(bool on)
 {
-  if (m_AffineInteractor3D.IsNotNull())
+  if (m_AffineDataInteractor3D.IsNotNull())
   {
     if (m_Controls->radioButton_001->isChecked())
     {
-      m_AffineInteractor3D->SetAxesFixed(true, 0);
+      m_AffineDataInteractor3D->SetAxesFixed(true, 0);
     }
     else if (m_Controls->radioButton_010->isChecked())
     {
-      m_AffineInteractor3D->SetAxesFixed(true, 1);
+      m_AffineDataInteractor3D->SetAxesFixed(true, 1);
     }
     else if (m_Controls->radioButton_100->isChecked())
     {
-      m_AffineInteractor3D->SetAxesFixed(true, 2);
+      m_AffineDataInteractor3D->SetAxesFixed(true, 2);
     }
   }
 }
 
 void AffineTransformView::OnTransformReady()
 {
-  mitk::BaseGeometry* geom = m_DataOwnerNode->GetData()->GetGeometry();
-  // need to get and store the initial matrix to  decompose correctly
-  vtkMatrix4x4 * currentMat = geom->GetVtkTransform()->GetMatrix();
-
+  // need to get and store the initial matrix to  decompose correctly 
+  // this does not get decomposed or passed down to the affine transformer!
+  vtkMatrix4x4 * currentMat = m_AffineDataInteractor3D->GetUpdatedGeometry();
+  
   bool isBlocked = m_Controls->affineTransformDisplay->blockSignals(true);
 
-  for (int rInd = 0; rInd < 4; rInd++) for (int cInd = 0; cInd < 4; cInd++)
-		m_Controls->affineTransformDisplay->setItem(rInd, cInd, new QTableWidgetItem(QString::number(currentMat->Element[rInd][cInd])));
+  for (int rInd = 0; rInd < 4; rInd++)
+  {
+    for (int cInd = 0; cInd < 4; cInd++)
+    {
+  		m_Controls->affineTransformDisplay->setItem(rInd, cInd, new QTableWidgetItem(QString::number(currentMat->Element[rInd][cInd])));
+    }
+  }
 
   m_Controls->affineTransformDisplay->blockSignals(isBlocked);
 }
@@ -1075,25 +1119,19 @@ void AffineTransformView::OnTransformReady()
 bool AffineTransformView::DisplayLegends(bool legendsON)
 {
   QmitkRenderWindow *qRenderWindow = this->GetRenderWindowPart()->GetQmitkRenderWindow("3d");
-  vtkRenderWindow *renderWindow = NULL;
 
+  mitk::VtkPropRenderer* renderProp = NULL;
   if (qRenderWindow != NULL)
   {
-    renderWindow = qRenderWindow->GetVtkRenderWindow();
-  }
-
-  vtkRenderWindowInteractor *renderWindowInteractor = NULL;
-  if (renderWindow != NULL)
-  {
-    renderWindowInteractor = renderWindow->GetInteractor();
+    renderProp = qRenderWindow->GetRenderer();
   }
 
   vtkRenderer *currentVtkRenderer = NULL;
-  if (renderWindowInteractor != NULL)
+  if (renderProp != NULL)
   {
-    currentVtkRenderer = renderWindowInteractor->GetInteractorStyle()->GetCurrentRenderer();
+    currentVtkRenderer = renderProp->GetVtkRenderer();
   }
-
+   
   if (currentVtkRenderer == NULL)
   {
     return false;
@@ -1106,19 +1144,7 @@ bool AffineTransformView::DisplayLegends(bool legendsON)
       m_LegendActor = vtkLegendScaleActor::New();
       currentVtkRenderer->AddActor(m_LegendActor);
 
-      m_AxesActor = vtkAxesActor::New();
-      m_AxesActor->SetShaftTypeToCylinder();
-      m_AxesActor->SetXAxisLabelText( "X" );
-      m_AxesActor->SetYAxisLabelText( "Y" );
-      m_AxesActor->SetZAxisLabelText( "Z" );
-      m_AxesActor->SetTotalLength(200, 200, 200);
-      m_AxesActor->AxisLabelsOn();
-      m_AxesActor->SetCylinderRadius(0.02);
-      m_AxesActor->SetConeRadius(0.2);
-      m_AxesActor->SetPosition(0.0, 0.0, 0.0);
-      m_AxesActor->SetOrigin(0.0, 0.0, 0.0);
-
-      m_CustomAxesActor = new CustomVTKAxesActor();
+      m_CustomAxesActor = new niftk::CustomVTKAxesActor();
       m_CustomAxesActor->SetShaftTypeToCylinder();
       m_CustomAxesActor->SetXAxisLabelText("X");
       m_CustomAxesActor->SetYAxisLabelText("Y");
@@ -1143,13 +1169,12 @@ bool AffineTransformView::DisplayLegends(bool legendsON)
       m_LegendActor->Delete();
       m_LegendActor = NULL;
     }
-    if (m_AxesActor != NULL)
+    if (m_CustomAxesActor != NULL)
     {
-      currentVtkRenderer->RemoveActor(m_AxesActor);
-      m_AxesActor->Delete();
-      m_AxesActor = NULL;
+      currentVtkRenderer->RemoveActor(m_CustomAxesActor);
+      m_CustomAxesActor->Delete();
+      m_CustomAxesActor = NULL;
     }
-
     m_LegendAdded = false;
   }
 

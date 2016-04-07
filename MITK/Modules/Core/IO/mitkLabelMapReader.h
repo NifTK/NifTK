@@ -17,7 +17,7 @@
 
 
 #include <mitkAbstractFileReader.h>
-#include "niftkCoreGuiExports.h"
+#include "niftkCoreExports.h"
 #include "mitkLabeledLookupTableProperty.h"
 #include <QFile>
 #include <QColor>
@@ -32,7 +32,7 @@ namespace mitk
  * \brief Reader for label map files. 
  * \ingroup IO
  */
-class NIFTKCOREGUI_EXPORT LabelMapReader : public AbstractFileReader
+class NIFTKCORE_EXPORT LabelMapReader : public AbstractFileReader
 {
 
 public: 

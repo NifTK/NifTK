@@ -257,7 +257,7 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QGroupBox" name="groupBox_4">
+    <widget class="QGroupBox" name="translationGroupBox">
      <property name="title">
       <string>Translation</string>
      </property>
@@ -377,7 +377,7 @@
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="QGroupBox" name="groupBox_5">
+    <widget class="QGroupBox" name="scalingGroupBox">
      <property name="title">
       <string>Scaling (%)</string>
      </property>
@@ -515,7 +515,7 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QGroupBox" name="groupBox_6">
+    <widget class="QGroupBox" name="shearGroupBox">
      <property name="title">
       <string>Shearing</string>
      </property>

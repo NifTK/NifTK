@@ -15,7 +15,7 @@
 #ifndef QmitkLookupTableSaxHandler_h
 #define QmitkLookupTableSaxHandler_h
 
-#include <niftkCoreGuiExports.h>
+#include <niftkCoreExports.h>
 #include <vector>
 #include <QString>
 #include <QColor>
@@ -36,7 +36,7 @@ class QmitkLookupTableContainer;
  * This class is not thread safe, so you should load lookup tables
  * one at a time, in a single thread.
  */
-class NIFTKCOREGUI_EXPORT QmitkLookupTableSaxHandler : public QXmlDefaultHandler 
+class NIFTKCORE_EXPORT QmitkLookupTableSaxHandler : public QXmlDefaultHandler 
 {
 
 public:

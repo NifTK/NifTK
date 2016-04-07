@@ -1,0 +1,33 @@
+<statemachine>
+  <state name="start" startstate="true">
+    <transition event_class="MouseMoveEvent" event_variant="CheckOverObject" target="ObjectSelected">
+      <condition name="overObject" inverted="false"/>
+      <action name="selectObject"/>
+  </transition>
+  </state>  
+  <state name="ObjectSelected">
+    <transition event_class="MousePressEvent" event_variant="SelectObject" target="ObjectInteraction">
+      <condition name="overObject" inverted="false"/>
+      <action name="initMove"/>
+    </transition>
+    <transition event_class="MouseMoveEvent" event_variant="CheckOverObject" target="start">
+      <condition name="overObject" inverted="true"/>
+      <action name="deselectObject"/>
+    </transition>
+  </state>
+  <state name="ObjectInteraction">
+    <transition event_class="MouseMoveEvent" event_variant="MoveObject" target="ObjectInteraction">	  
+      <action name="move"/>
+    </transition>
+    <transition event_class="MouseReleaseEvent" event_variant="EndMoveObject" target="StoreTransformation">
+      <action name="accept"/>
+    </transition>
+    <transition event_class="MouseReleaseEvent" event_variant="EndMoveObjectAlt" target="StoreTransformation">
+      <action name="accept"/>
+    </transition>
+  </state>
+  <state name="StoreTransformation">
+    <transition event_class="MouseMoveEvent" event_variant="CheckOverObject" target="start">
+    </transition>
+  </state>  
+</statemachine>

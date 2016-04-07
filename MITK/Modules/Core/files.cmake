@@ -18,7 +18,7 @@ set(H_FILES
 
 set(CPP_FILES
   Algorithms/mitkNifTKCoreObjectFactory.cxx
-  Algorithms/mitkNifTKAffineTransformer.cxx
+  Algorithms/niftkAffineTransformer.cxx
   Algorithms/mitkNifTKCMC33.cpp
   Algorithms/mitkNifTKImageToSurfaceFilter.cpp
   Algorithms/mitkNifTKMeshSmoother.cpp
@@ -38,8 +38,13 @@ set(CPP_FILES
   DataManagement/mitkBasicTriangle.cpp
   DataManagement/mitkBasicVec3D.cpp
   DataManagement/mitkBasicVertex.cpp
+  LookupTables/QmitkLookupTableContainer.cxx
+  LookupTables/QmitkLookupTableSaxHandler.cxx
+  LookupTables/QmitkLookupTableManager.cxx
+  LookupTables/vtkLookupTableUtils.cxx
   Rendering/mitkCoordinateAxesVtkMapper3D.cxx
   Rendering/mitkFastPointSetVtkMapper3D.cxx
+  Rendering/niftkCustomVTKAxesActor.cxx
   Rendering/vtkOpenGLMatrixDrivenCamera.cxx
   DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cxx
   DataNodeProperties/mitkAffineTransformDataNodeProperty.cxx
@@ -47,6 +52,18 @@ set(CPP_FILES
   DataNodeProperties/mitkNamedLookupTableProperty.cxx
   DataNodeProperties/mitkLabeledLookupTableProperty.cxx
   IO/mitkFileIOUtils.cxx
+  IO/mitkLabelMapReader.cxx
+  IO/mitkLabelMapWriter.cxx
+  IO/niftkCoreIOMimeTypes.cxx
   Interactions/mitkPointSetUpdate.cxx
+  Interactions/niftkAffineTransformDataInteractor3D.cxx
 )
 
+set(MOC_H_FILES
+  Interactions/niftkAffineTransformDataInteractor3D.h
+)
+
+set(RESOURCE_FILES
+  Interactions/AffineTransformConfig.xml
+  Interactions/AffineTransformSM.xml
+)

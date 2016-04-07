@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkCoreGuiIOMimeTypes_h
-#define __niftkCoreGuiIOMimeTypes_h
+#ifndef __niftkCoreIOMimeTypes_h
+#define __niftkCoreIOMimeTypes_h
 
 #include <mitkCustomMimeType.h>
 #include <string>
@@ -21,7 +21,7 @@
 namespace niftk 
 {
 
-class CoreGuiIOMimeTypes
+class CoreIOMimeTypes
 {
 
 public:
@@ -34,10 +34,10 @@ public:
   
 private:
 
-  CoreGuiIOMimeTypes(); // purposely not implemented
-  CoreGuiIOMimeTypes(const CoreGuiIOMimeTypes&); // purposely not implemented
+  CoreIOMimeTypes(); // purposely not implemented
+  CoreIOMimeTypes(const CoreIOMimeTypes&); // purposely not implemented
 };
 
-} // end namespace
+}
 
 #endif
