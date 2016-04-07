@@ -53,7 +53,7 @@ NiftyLink is a cross-platform C++ library and officially supports:
 [innovateuk]: https://www.innovateuk.org
 [epsrc]: http://www.epsrc.ac.uk
 [mailinglist]: https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users
-[dashboard]: https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK
+[dashboard]: http://cdash.cmiclab.cs.ucl.ac.uk/index.php?project=NifTK 
 [doxygen]: http://cmic.cs.ucl.ac.uk/platform/niftk/current/html
 [citation]: http://link.springer.com/article/10.1007%2Fs11548-014-1124-7
 [niftk]: http://www.niftk.org

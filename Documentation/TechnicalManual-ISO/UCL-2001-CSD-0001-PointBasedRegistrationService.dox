@@ -1,0 +1,193 @@
+/**
+\page PointBasedRegistrationService Point Based Registration Service (PBRS)
+\tableofcontents
+
+\section PBRSPBRS Point Based Registration Service (PBRS)
+
+\li \ref UCLCopyrightStatement
+\li \ref UCLDefinitionsAcronyms
+\li \ref UCLRequirementsTraceability
+\li \ref UCLReferences
+
+\subsection PBRSCSD Component Specification Document (CSD)
+
+<table>
+<tr><td>Document ID:</td><td>UCL-2001-CSD-0001-PointBasedRegistrationService.dox</td></tr>
+<tr><td>Prepared By:</td><td>Matt Clarkson</td></tr>
+<tr><td>Authorised By:</td><td></td></tr>
+<tr><td>Last Modified:</td><td>26 Jun 2015</td></tr>
+</table>
+
+\subsection PBRSHistory Revision History
+
+A brief summary of changes between authorised releases of this document is recorded here.
+This section only describes the changes between authorised published versions.
+
+<table>
+  <tr>
+    <th>
+      Version
+    </th>
+    <th>
+      Date
+    </th>
+    <th>
+      Author(s)
+    </th>
+    <th>
+      Change(s)
+    </th>
+    <th>
+      Sections Affected
+    </th>
+  </tr>
+  <tr>
+    <td>
+      0.1
+    </td>
+    <td>
+      28 April 2015
+    </td>
+    <td>
+      Matt Clarkson
+    </td>
+    <td>
+      Initial Version
+    </td>
+    <td>
+      All
+    </td>
+  </tr>
+  <tr>
+    <td>
+      0.2
+    </td>
+    <td>
+      20 May 2015
+    </td>
+    <td>
+      Matt Clarkson
+    </td>
+    <td>
+      Update format of requirements identifier.
+    </td>
+    <td>
+      All
+    </td>
+  </tr>
+  <tr>
+    <td>
+      0.3
+    </td>
+    <td>
+      26 Jun 2015
+    </td>
+    <td>
+      Matt Clarkson
+    </td>
+    <td>
+      Refactored out common parts (Copyright, defn, refs, traceability), added REQ-2001-CSD-0001-008-01.
+    </td>
+    <td>
+      All
+    </td>
+  </tr>
+</table>
+
+\section PBRSIntro Introduction
+
+The purpose of this Component Specification Document (CSD) is to describe the
+Point Based Registration Service (PBRS).  It is intended to be read by those wanting
+to gain a technical understanding as to the fundamental requirements, design and
+implementation.  This document is not intended for end-users.
+
+\subsection PBRSScope Scope
+
+This document defines the requirements, design and implementation.
+
+\subsection PBRSGeneral General Description
+
+Given two sets of ordered, corresponding points, the aim of point based registration
+is to find the geometrical transformation that best aligns them. One point set is
+normally termed the 'fixed' point set, and the other the 'moving' point set. Alternatively
+they may be described as 'target' and 'source' respectively. The aim is to find the
+transformation that maps the 'moving' points onto the 'fixed' points.
+
+This problem occurs frequently in image guided surgery, and image registration.
+In image guided surgery, the fixed points may come from landmarks in an MR or CT scan. The moving points
+are measured in the operating room using a tracked pointer, and the physical coordinates
+are therefore specified in terms of the tracking device coordinates. The resultant
+transformation then registers physical space to the scan space.
+
+The general requirement is therefore that
+
+\li The points correspond to some meaningful landmarks that can be identified in both spaces.
+\li At least 3 points in each point set are required.
+\li The two point sets are the same length as each point must have a corresponding partner.
+\li The point sets are ordered, or have some form of 1 to 1 correspondence (e.g. unique identifiers for each point).
+
+In this service, we implement the algorithm describe in [3],
+which results in a rigid body transformation, meaning rotations and translations.
+
+\section PBRSRequirements Requirements
+\subsection PBRSFuncReq Functional Requirements
+
+These functional requirements shall be expressed, each on a single line.
+
+REQ-2001-CSD-0001-001-01: If number of fixed points < 3, throw mitk::Exception.
+
+REQ-2001-CSD-0001-002-01: If number of moving points < 3, throw mitk::Exception.
+
+REQ-2001-CSD-0001-003-01: If number of points doesn't match, throw mitk::Exception.
+
+REQ-2001-CSD-0001-004-01: Two point sets, identical apart from translation should register with FRE < 0.001
+
+REQ-2001-CSD-0001-005-01: Two point sets, identical apart from rotation should register with FRE < 0.001
+
+\subsection PBRSNonFuncReq Non-Functional Requirements
+
+These non-functional requirements shall be expressed, each on a single line.
+
+REQ-2001-CSD-0001-006-01: Point sets of 100,000 corresponding points must register in < 0.001 seconds.
+
+REQ-2001-CSD-0001-008-01: The PBRS shall be available as a Micro Service.
+
+\section PBRSDesign Design
+\subsection PBRSArchitecture Architecture
+
+Please read background information on the <a href="http://docs.mitk.org/2014.03/MicroServices_Overview.html">MITK Micro Services</a>.
+
+The architecture shall be:
+
+\li An abstract interface in the niftkIGIServices module.
+\li A stateless function in the niftkPointReg module.
+\li An MITK auto-loaded Micro Service in niftkPointRegService module that implements the abstract interface and calls the stateless function.
+\li An RAII object in niftkIGIServices module that may implement the abstract interface.
+
+This means that clients such as unit tests, other modules, or GUI code can
+either link directly to niftkPointReg which forces a link-time
+dependency, or they can have zero link-time dependency and rely on the Micro
+Service based approach.
+
+\subsection PBRSError Error Handling
+
+All errors shall be communicated by throwing an mitk::Exception.
+
+\section PBRSImpl Implementation
+
+A few implementation details are described below.
+
+\subsection PBRSLogging Logging
+
+This service is primarily a function call to a mathematical routine. It is a stateless,
+synchronous design, and as errors will be thrown immediately there is no need for logging.
+Any logging to describe which points have been registered can be performed by the calling client.
+
+\subsection PBRSClassesFunctions Classes and Functions
+
+\li The abstract interface is in niftk::PointRegServiceI in the niftkIGIServices module.
+\li This is implemented by niftk::PointRegServiceUsingSVD in the niftkPointRegService module.
+\li It is also implemented by the RAII object niftk::PointRegServiceRAII in the niftkIGIServices module.
+\li Main registration function in file \ref niftkArunLeastSquaresPointRegistration.h in the niftkPointReg module.
+
+*/

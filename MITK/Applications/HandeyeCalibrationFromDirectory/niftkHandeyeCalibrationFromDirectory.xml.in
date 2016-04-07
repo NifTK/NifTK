@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Hand-eye Calibration From Directory</title>
+  <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file, uses the video data to perform and intrinsic calibration and the tracking data to perform a handeye calibration.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>trackingInputDirectory</name>
+      <longflag>tracking</longflag>
+      <description>The directory containing the corresponding tracking matrices and video.</description>
+      <label>Tracking Matrix Input Directory</label>
+    </directory>    
+   
+    <directory>
+      <name>outputDirectory</name>
+      <longflag>outputDirectory</longflag>
+      <description>Output directory for calibration results.</description>
+      <label>Output Directory</label>
+      <channel>output</channel>
+    </directory>
+    
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <boolean>
+      <name>flipTracking</name>
+      <longflag>flipTracking</longflag>
+      <description>Flip the tracking matrices (left hand coordinated to right handed or vice versa).</description>
+      <label>Flip Tracking</label>
+      <default>0</default>
+    </boolean>
+   
+    <boolean>
+      <name>flipExtrinsic</name>
+      <longflag>flipExtrinsic</longflag>
+      <description>Flip the Extrinsic matrices (left hand coordinated to right handed or vice versa).</description>
+      <label>Flip Extrinsics</label>
+      <default>0</default>
+    </boolean>
+    
+    <boolean>
+      <name>visualise</name>
+      <longflag>visualise</longflag>
+      <description>Visualise the results.</description>
+      <label>Visualise</label>
+      <default>0</default>
+    </boolean>
+   
+    <integer>
+      <name>videoLag</name>
+      <longflag>videoLag</longflag>
+      <description>The lag between tracking and video in milliseconds.</description>
+      <label>Video Lag</label>
+      <default>50</default>
+    </integer>
+   
+    <integer>
+      <name>maxTimingError</name>
+      <longflag>maxTimingError</longflag>
+      <description>The maximum allowable timing error when choosing video and tracking pairs.</description>
+      <label>Max Timing Error</label>
+      <default>40e6</default>
+    </integer>
+
+    <integer>
+      <name>trackerIndex</name>
+      <longflag>trackerIndex</longflag>
+      <description>The tracker index to use.</description>
+      <label>Tracker Index</label>
+      <default>0</default>
+    </integer>
+
+    <integer>
+      <name>framesToUse</name>
+      <longflag>framesToUse</longflag>
+      <description>The target number of randomly selected video frames to use.</description>
+      <label>Frames To Use</label>
+      <default>30</default>
+    </integer>
+
+    <integer>
+      <name>framesToUseFactor</name>
+      <longflag>framesToUseFactor</longflag>
+      <description>The multiplier for the number of frames to check for chessboards.</description>
+      <label>Multiplier</label>
+      <default>2</default>
+    </integer>
+
+    <integer>
+      <name>numberCornerWidth</name>
+      <longflag>numberCornerWidth</longflag>
+      <description>The number of internal chessboard corners along the width axis.</description>
+      <label>Corners across Width</label>
+      <default>14</default>
+    </integer>
+    
+    <integer>
+      <name>numberCornerHeight</name>
+      <longflag>numberCornerHeight</longflag>
+      <description>The number of internal chessboard corners along the height axis.</description>
+      <label>Corners across Height</label>
+      <default>10</default>
+    </integer>
+
+    <float>
+      <name>squareSizeInMM</name>
+      <longflag>squareSizeInMM</longflag>
+      <description>The size in mm of each grid sqaure.</description>
+      <label>Square Size (mm)</label>
+      <default>3.0</default>
+    </float>
+
+    <boolean>
+      <name>dontSortByDistance</name>
+      <longflag>dontSortByDistance</longflag>
+      <description>Dont sort the tracking matrices by distance when doing the handeye.</description>
+      <label>Dont Sort By Distance</label>
+      <default>0</default>
+    </boolean>
+   
+    <integer-vector>
+      <name>pixelScaleFactors</name>
+      <longflag>pixelScaleFactors</longflag>
+      <description>A vector of integers representing scale factors to multiply the number of pixels by.</description>
+      <label>Pixel Scale Factors</label>
+      <default>1,2</default>
+    </integer-vector>
+	
+    <boolean>
+      <name>swapVideoChannels</name>
+      <longflag>swapVideoChannels</longflag>
+      <description>Swap left and right video channel.</description>
+      <label>Swap Video Channels</label>
+      <default>false</default>
+    </boolean>
+
+    <directory>
+      <name>existingIntrinsicsDirectory</name>
+      <longflag>existingIntrinsicsDirectory</longflag>
+      <description>For stereo calibration, use an existing intrinsic calibration.</description>
+      <label>Existing Intrinsics Directory</label>
+      <channel>input</channel>
+    </directory>
+
+    <directory>
+      <name>existingRightToLeftDirectory</name>
+      <longflag>existingRightToLeftDirectory</longflag>
+      <description>For stereo calibration, use an existing right-to-left calibration.</description>
+      <label>Existing right-to-left Directory</label>
+      <channel>input</channel>
+    </directory>
+
+    <boolean>
+      <name>randomise</name>
+      <longflag>randomise</longflag>
+      <description>Use random seed to select frames.</description>
+      <label>Randomise</label>
+      <default>false</default>
+    </boolean>
+
+    <boolean>
+      <name>stickToFramesToUse</name>
+      <longflag>stickToFramesToUse</longflag>
+      <description>If specified, will stick to the number of frames given by --framesToUse, otherwise we use all detected chessboards.</description>
+      <label>Strict #Frames</label>
+      <default>false</default>
+    </boolean>
+
+    <file fileExtensions=".mps">
+      <name>chessboardPoints</name>
+      <longflag>chessboardPoints</longflag>
+      <description>Chessboard Points in Tracker Space</description>
+      <label>Chessboard PointSet</label>
+      <channel>input</channel>
+    </file>
+
+  </parameters>
+  
+</executable>

@@ -14,7 +14,13 @@
 
 if(Boost_FOUND)
   list(APPEND ALL_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
-  list(APPEND ALL_LIBRARIES ${Boost_LIBRARIES})
-  link_directories(${Boost_LIBRARY_DIRS})
-endif()
 
+  if(WIN32)
+    # Force dynamic linking
+    list(APPEND ALL_COMPILE_OPTIONS -DBOOST_ALL_DYN_LINK)
+    list(APPEND ALL_LIBRARIES ${Boost_LIBRARIES})
+  else()
+    # Boost has an auto link feature (pragma comment lib) for Windows
+    list(APPEND ALL_LIBRARIES ${Boost_LIBRARIES})
+  endif()
+endif()

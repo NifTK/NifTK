@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Breast Cancer Imaging Tools . MRI . Directories of images</category>
+
+  <title>Breast Density from MRIs Given Mask and Image</title>
+
+  <description><![CDATA[Compute breast density for directories containing images and corresponding masks.]]></description>
+
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters advanced="false">
+
+    <label>Inputs</label>
+    <description><![CDATA[Input parameters]]></description>
+
+    <directory>
+      <name>dirInput</name>
+      <longflag>inDir</longflag>
+      <description>Input top-level directory of studies</description>
+      <label>Input directory to search for studies</label>
+      <channel>input</channel>
+    </directory>
+
+    <string>
+      <name>dirPrefix</name>
+      <longflag>dirPrefix</longflag>
+      <description>Only study directories with this prefix will be included in the processing.</description>
+      <label>Study directory prefix</label>
+    </string>
+
+    <string>
+      <name>dirMask</name>
+      <longflag>dirMask</longflag>
+      <description>The sub-directory of each study containing the mask image.</description>
+      <label>Input mask image sub-directory name</label>
+    </string>
+
+    <string>
+      <name>fileMaskPattern</name>
+      <longflag>fileMask</longflag>
+      <description>Mask images matching this string will be used.</description>
+      <label>Input mask image file name</label>
+    </string>
+
+    <string>
+      <name>dirImage</name>
+      <longflag>dirImage</longflag>
+      <description>The sub-directory of each study containing the image image.</description>
+      <label>Input image image sub-directory name</label>
+    </string>
+
+    <string>
+      <name>fileImagePattern</name>
+      <longflag>fileImage</longflag>
+      <description>Images matching this string will be used.</description>
+      <label>Input image file name</label>
+    </string>
+
+  </parameters>
+
+  <parameters advanced="false">
+
+    <label>Outputs</label>
+    <description><![CDATA[Output parameters]]></description>
+
+    <string>
+      <name>dirSubData</name>
+      <longflag>dirSubData</longflag>
+      <description>The sub-directory of each study to which intermediate images and data are saved.</description>
+      <label>Output data sub-directory name</label>
+    </string>
+
+    <file>
+      <name>fileLog</name>
+      <longflag>log</longflag>
+      <description>Output file to store progress logging info.</description>
+      <label>Log file</label>
+      <channel>output</channel>
+    </file>
+
+    <file>
+      <name>fileOutputCSV</name>
+      <flag>o</flag>
+      <description>Output csv file containing density measurements.</description>
+      <label>Output csv file</label>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+
+  <parameters advanced="false">
+
+    <label>Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output (i.e. print the DICOM header).</description>
+      <label>Print verbose information?</label>
+    </boolean>
+ 
+    <boolean>
+      <name>flgOverwrite</name>
+      <longflag>overwrite</longflag>
+      <description>The default behaviour is to only process new data. Selecting this option will recalculate all the data and overwrite any existing files.</description>
+      <label>Regenerate output files?</label>
+    </boolean>
+
+    <boolean>
+      <name>flgCompression</name>
+      <longflag>compress</longflag>
+      <description>Select this checkbox to compress all the saved images and hence save on disk space.</description>
+      <label>Compress images?</label>
+    </boolean>
+
+    <boolean>
+      <name>flgFatIsBright</name>
+      <longflag>fatIsBright</longflag>
+      <description>Select this checkbox if the input image displays fat as brighter than fibroglandular tissue.</description>
+      <label>Fat is bright?</label>
+    </boolean>
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debug output (i.e. print the DICOM header).</description>
+      <label>Print debugging output?</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Segmentation</label>
+    <description><![CDATA[Segmentation]]></description>
+
+    <file>
+      <name>comSegEM</name>
+      <longflag>segEM</longflag>
+      <description>The NiftySeg seg_EM path and command line to segment the internal breast region into fat and glandular tissue classes.</description>
+      <label>Seg_EM executable</label>
+      <default>seg_EM -v 2 -nopriors 2</default>
+      <channel>input</channel>
+    </file>
+
+  </parameters>
+
+</executable>

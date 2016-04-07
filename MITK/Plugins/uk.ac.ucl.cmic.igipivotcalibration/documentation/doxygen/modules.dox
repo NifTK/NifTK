@@ -1,0 +1,18 @@
+/**
+  \defgroup uk_ac_ucl_cmic_igipivotcalibration uk.ac.ucl.cmic.igipivotcalibration Plugin
+  \ingroup CMICPlugins
+
+  \brief Plugin to provide pointing device calibration. 
+  
+  Written by Yi Song (yi.song@ucl.ac.uk).
+  
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_igipivotcalibration_internal Internal
+  \ingroup uk_ac_ucl_cmic_igipivotcalibration
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.igipivotcalibration plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

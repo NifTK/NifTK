@@ -1,0 +1,110 @@
+/**
+\page @NIFTK_PLATFORM@License @NIFTK_PLATFORM@ Licenses
+
+\li \ref LicenseNifTK
+\li \ref LicenseNiftyLink
+\li \ref LicenseNiftyReg
+\li \ref LicenseNiftySeg
+\li \ref LicenseNiftySim
+\li \ref LicenseMITK
+\li \ref LicenseCTK
+\li \ref LicenseVTK
+\li \ref LicenseITK
+\li \ref LicenseGDCM
+\li \ref LicenseDCMTK
+\li \ref LicenseOpenCV
+\li \ref LicenseQt
+\li \ref LicenseArUco
+\li \ref LicenseEigen
+\li \ref LicenseAprilTags
+\li \ref LicenseFLANN
+\li \ref LicensePCL
+\li \ref LicenseRTK
+\li \ref LicenseOpenIGTLink
+\li \ref LicenseQsLog
+
+\section LicenseNifTK The @NIFTK_PLATFORM@ License
+
+\include LICENSE.txt
+
+\section LicenseNiftyLink The NiftyLink License
+
+\include ExternalLicenses/NiftyLink.txt
+
+\section LicenseNiftyReg The NiftyReg License
+
+\include LICENSE_NiftyReg.txt
+
+\section LicenseNiftySeg The NiftySeg License
+
+\include LICENSE_NiftySeg.txt
+
+\section LicenseNiftySim The NiftySim License
+
+\include LICENSE_NiftySim.txt
+
+\section LicenseMITK The MITK License
+
+\include LICENSE_MITK.txt
+
+\section LicenseCTK The CTK License
+
+\include LICENSE_CTK.txt
+
+\section LicenseITK The ITK License
+
+\include LICENSE_ITK.txt
+
+\section LicenseVTK The VTK License
+
+\include LICENSE_VTK.txt
+
+\section LicenseGDCM The GDCM License
+
+\include LICENSE_GDCM.txt
+
+\section LicenseDCMTK The DCMTK License
+
+\include LICENSE_DCMTK.txt
+
+\section LicenseOpenCV The OpenCV License
+
+\include LICENSE_OpenCV.txt
+
+\section LicenseQt The Qt License
+
+\include LICENSE_Qt.txt
+
+\section LicenseArUco The ArUco License
+
+\include LICENSE_ArUco.txt
+
+\section LicenseEigen The Eigen License
+
+\include LICENSE_Eigen.txt
+
+\section LicenseAprilTags The AprilTags License
+
+\include LICENSE_AprilTags.txt
+
+\section LicenseFLANN The FLANN License
+
+\include LICENSE_FLANN.txt
+
+\section LicensePCL The PCL License
+
+\include LICENSE_PCL.txt
+
+\section LicenseRTK The RTK License
+
+\include LICENSE_RTK.txt
+
+\section LicenseOpenIGTLink The OpenIGTLink License
+
+\include ExternalLicenses/OpenIGTLink.txt
+
+\section LicenseQsLog The QsLog License
+
+\include ExternalLicenses/QsLog.txt
+
+*/

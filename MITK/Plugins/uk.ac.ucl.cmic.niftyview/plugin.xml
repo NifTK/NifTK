@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+  <extension id="uk.ac.ucl.cmic.niftyview" point="org.blueberry.osgi.applications">
+    <application>
+      <run class="QmitkNiftyViewApplication"/>
+    </application>
+  </extension>
+
+  <extension point="org.blueberry.ui.perspectives">
+    <perspective
+      id="uk.ac.ucl.cmic.niftyview.minimalperspective"
+      name="Minimal Perspective"
+      class="QmitkCommonAppsMinimalPerspective"
+      icon="resources/icon_ucl.xpm">
+    </perspective>
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.commonapps.QmitkCommonAppsApplicationPreferencePage" name="Application Preferences" class="QmitkCommonAppsApplicationPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.commonapps.QmitkCommonAppsApplicationPreferencePageKeywords"></keywordreference>
+    </page>
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.niftyview.NiftyViewPreferencePage" name="Application Preferences - NiftyView" class="QmitkNiftyViewApplicationPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.niftyview.NiftyViewPreferencePageKeywords"></keywordreference>
+    </page>
+  </extension>
+
+</plugin>

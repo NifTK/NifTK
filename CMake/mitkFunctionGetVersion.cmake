@@ -44,11 +44,11 @@
 #! function extracts the current svn revision.
 #
 #! The information is provided in
-#! \ul
-#! \li ${prefix}_REVISION_ID The git hash or svn revision value
-#! \li ${prefix}_REVISION_NAME The git branch/tag name or empty
-#! \li ${prefix}_WC_TYPE The working copy type, one of "local", "git", or "svn"
-#! \lu
+#! <ul>
+#!  <li> ${prefix}_REVISION_ID The git hash or svn revision value
+#!  <li> ${prefix}_REVISION_NAME The git branch/tag name or empty
+#!  <li> ${prefix}_WC_TYPE The working copy type, one of "local", "git", or "svn"
+#! </ul>
 #!
 #! \param source_dir The directory containing a working copy
 #! \param prefix A prefix to prepend to the variables containing
@@ -108,7 +108,7 @@ function(mitkFunctionGetVersion source_dir prefix)
   set(${prefix}_REVISION_ID ${_wc_id} PARENT_SCOPE)
   set(_shortid ${_wc_id})
   if(_wc_type STREQUAL "git")
-    string(SUBSTRING ${_shortid} 0 8 _shortid)
+    string(SUBSTRING ${_shortid} 0 7 _shortid)
   endif()
   set(${prefix}_REVISION_SHORTID ${_shortid} PARENT_SCOPE)
   set(${prefix}_REVISION_NAME ${_wc_name} PARENT_SCOPE)

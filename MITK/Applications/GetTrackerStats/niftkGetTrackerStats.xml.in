@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Read a framemap log file and tracking directories and get tracker position and speed for each frame</title>
+  <description><![CDATA[Read a framemap log file and tracking directories and get tracker position and speed for each frame]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>trackingInputDirectory</name>
+      <longflag>tracking</longflag>
+      <description>The directory containing the corresponding tracking matrices and video.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+   
+    <integer>
+      <name>videoLag</name>
+      <longflag>videoLag</longflag>
+      <description>The lag between tracking and video in milliseconds</description>
+      <label>The video lag</label>
+      <default>50</default>
+    </integer>
+  
+    <integer>
+      <name>maxTimingError</name>
+      <longflag>maxTimingError</longflag>
+      <description>The maximum timing error in milliseconds</description>
+      <label>The maximum timing error in millisecond</label>
+      <default>20</default>
+    </integer>
+    <file>
+    
+    <name>handeyes</name>
+      <longflag>handeyes</longflag>
+      <description>A file defining the handeye tranforms.</description>
+      <label>A file defining the handeye transforms</label>
+    </file>
+
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+    
+    <boolean>
+      <name>dontInterpolate</name>
+	<longflag>dontInterpolate</longflag>
+	<description>Don't interpolate the tracking matrices between time stampe</description>
+	<label>Don't interpolate matrices</label>
+    </boolean>
+
+</parameters>
+  
+</executable>

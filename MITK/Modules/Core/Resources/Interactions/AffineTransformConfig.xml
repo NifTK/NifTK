@@ -1,0 +1,19 @@
+<config>
+   <event_variant class="MouseMoveEvent" name="CheckOverObject">
+  </event_variant>
+  <event_variant class="MousePressEvent" name="SelectObject">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+    <attribute name="Modifiers" value="alt"/>
+  </event_variant>
+  <event_variant class="MouseMoveEvent" name="MoveObject">
+    <attribute name="ButtonState" value="LeftMouseButton"/>
+    <attribute name="Modifiers" value="alt"/>
+  </event_variant> 
+  <event_variant class="MouseReleaseEvent" name="EndMoveObjectAlt">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+    <attribute name="Modifiers" value="alt"/>
+  </event_variant>
+  <event_variant class="MouseReleaseEvent" name="EndMoveObject">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+  </event_variant>
+</config>

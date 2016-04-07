@@ -1,0 +1,10 @@
+niftkIGITimerBasedThread\.h MemberFunctions Disable
+niftkIGIDataSourceManager\.cxx StatementPerLine Disable
+niftkIGIDataSourceManager\.h InternalVariables Disable
+niftkMITKTrackerDialog\.h InternalVariables Disable
+niftkMITKTrackerDataSourceService\.h InternalVariables Disable
+niftkNiftyLinkClientDataSourceService\.h InternalVariables Disable
+niftkNiftyLinkServerDataSourceService\.h InternalVariables Disable
+niftkOpenCVVideoDataSourceService\.h InternalVariables Disable
+niftkQtAudioDataSourceService\.h InternalVariables Disable
+niftkUltrasonixDataSourceService\.h InternalVariables Disable

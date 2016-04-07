@@ -11,6 +11,7 @@
 #  See LICENSE.txt in the top level directory for details.
 #
 #============================================================================*/
+
 find_package(Eigen REQUIRED)
 if(Eigen_FOUND)
   list(APPEND ALL_INCLUDE_DIRECTORIES ${Eigen_INCLUDE_DIR})

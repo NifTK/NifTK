@@ -1,0 +1,168 @@
+/*=============================================================================
+
+  NifTK: A software platform for medical image computing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
+
+#include "ImageConversion.h"
+//#include <mitkITKImageImport.txx>
+#include <mitkImageReadAccessor.h>
+#include <mitkImageCast.h>
+#include <itkImportImageFilter.h>
+#include <itkRGBPixel.h>
+
+
+namespace niftk
+{
+
+
+typedef itk::RGBPixel<unsigned char>                UCRGBPixelType;
+typedef itk::RGBAPixel<unsigned char>               UCRGBAPixelType;
+
+//-----------------------------------------------------------------------------
+template <typename ITKPixelType>
+static mitk::Image::Pointer CreateMitkImageInternal(const IplImage* image)
+{
+  typedef itk::Image<ITKPixelType, 2>                 ItkImageType;
+  typedef itk::ImportImageFilter<ITKPixelType, 2>     ImportFilterType;
+
+  // we do not do pixel type conversions!
+  if (image->nChannels != sizeof(ITKPixelType))
+  {
+    throw std::runtime_error("Source and target image type differ");
+  }
+
+  typename ImportFilterType::Pointer importFilter = ImportFilterType::New();
+  typename mitk::ITKImageImport<ItkImageType>::Pointer mitkFilter = mitk::ITKImageImport<ItkImageType>::New();
+
+  typename ImportFilterType::SizeType size;
+  size[0] = image->width;
+  size[1] = image->height;
+
+  typename ImportFilterType::IndexType start;
+  start.Fill( 0 );
+
+  typename ImportFilterType::RegionType region;
+  region.SetIndex( start );
+  region.SetSize(  size  );
+
+  double origin[ 2 ];
+  origin[0] = 0.0;    // X coordinate
+  origin[1] = 0.0;    // Y coordinate
+
+  double spacing[ 2 ];
+  spacing[0] = 1.0;    // along X direction
+  spacing[1] = 1.0;    // along Y direction
+
+  const unsigned int numberOfPixels = size[0] * size[1];
+
+  importFilter->SetRegion(region);
+  importFilter->SetOrigin(origin);
+  importFilter->SetSpacing(spacing);
+
+  // This creates a new buffer, and copies this image into it.
+  // Without this, if you use the OpenCV buffer directly, you can see
+  // artefacts as the framebuffer is written to.
+  const unsigned int numberOfBytes = numberOfPixels * sizeof(ITKPixelType);
+  ITKPixelType* localBuffer = new ITKPixelType[numberOfPixels];
+
+  // if the image pitch is the same as its width then everything is peachy
+  //  but if not we need to take care of that
+  const unsigned int numberOfBytesPerLine = image->width * image->nChannels;
+  if (numberOfBytesPerLine == static_cast<unsigned int>(image->widthStep))
+  {
+    std::memcpy(localBuffer, image->imageData, numberOfBytes);
+  }
+  else
+  {
+    // if that is not true then something is seriously borked
+    assert(image->widthStep >= static_cast<int>(numberOfBytesPerLine));
+
+    // "slow" path: copy line by line
+    for (int y = 0; y < image->height; ++y)
+    {
+      // widthStep is in bytes while width is in pixels
+      std::memcpy(&(((char*) localBuffer)[y * numberOfBytesPerLine]), &(image->imageData[y * image->widthStep]), numberOfBytesPerLine); 
+    }
+  }
+
+  // This will tell the importFilter to use the supplied buffer,
+  // and the output of this filter, references the same buffer.
+  // We don't let the import filter take control of the buffer
+  // because if you do, the importFilter destructor will destroy the
+  // buffer when it goes out of scope.  We want the output image to
+  // remain after the filter is out of scope.
+  bool importFilterWillTakeControlOfBuffer = false;
+  importFilter->SetImportPointer( localBuffer, numberOfPixels, importFilterWillTakeControlOfBuffer);
+  importFilter->Update();
+
+  // We then need a stand-alone ITK image, that survives after a pipeline.
+  typename ItkImageType::Pointer itkOutput = importFilter->GetOutput();
+  itkOutput->DisconnectPipeline();
+
+  // We then convert it to MITK, and this conversion takes responsibility for the memory.
+  mitk::Image::Pointer mitkImage;
+  mitk::CastToMitkImage(itkOutput, mitkImage);
+
+  // Delete local buffer, as even though the output object is disconnected, it does not manage data.
+  delete [] localBuffer;
+
+  return mitkImage;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::Image::Pointer CreateMitkImage(const IplImage* image)
+{
+  // FIXME: check for channel layout: rgb vs bgr
+  switch (image->nChannels)
+  {
+    case 1:
+      return CreateMitkImageInternal<unsigned char>(image);
+    case 3:
+      return CreateMitkImageInternal<UCRGBPixelType>(image);
+    case 4:
+      return CreateMitkImageInternal<UCRGBAPixelType>(image);
+  }
+
+  assert(false);
+  return 0;
+}
+
+//-----------------------------------------------------------------------------
+mitk::Image::Pointer CreateMitkImage(const cv::Mat* image)
+{
+  IplImage* IplImg = new IplImage(*image);
+  return CreateMitkImage (IplImg);
+}
+//-----------------------------------------------------------------------------
+cv::Mat MitkImageToOpenCVMat ( const mitk::Image::Pointer image )
+{
+  mitk::ImageReadAccessor  inputAccess(image);
+  const void* inputPointer = inputAccess.GetData();
+
+  cv::Size size (static_cast<int>(image->GetDimension(0)), static_cast<int>(image->GetDimension(1)));
+  int width = static_cast<int>(image->GetDimension(0));
+  int height = static_cast<int>(image->GetDimension(1));
+  int bitsPerComponent = image->GetPixelType().GetBitsPerComponent();
+  int numberOfComponents = image->GetPixelType().GetNumberOfComponents();
+  //expecting 8 bits per component, and 4 components, it might be more efficient to convert from RGBA to gray here ?
+  cv::Mat cvImage;
+  assert ( bitsPerComponent == 8 && (numberOfComponents == 3 || numberOfComponents == 4 || numberOfComponents == 1 ) );
+  //we can't handle anything else
+ // cvImage = cv::Mat(width, height, CV_8UC(numberOfComponents), const_cast<void*>(inputPointer), CV_AUTOSTEP);
+ // CV_AUTOSTEP doesn't work
+  cvImage = cv::Mat(height,width, CV_8UC(numberOfComponents), const_cast<void*>(inputPointer), width * bitsPerComponent/8 * numberOfComponents);
+
+  return cvImage;
+}
+
+} // namespace

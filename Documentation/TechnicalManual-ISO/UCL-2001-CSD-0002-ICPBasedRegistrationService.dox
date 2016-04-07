@@ -1,0 +1,140 @@
+/**
+\page ICPBasedRegistrationService ICP Based Registration Service (ICPBRS)
+\tableofcontents
+
+\section ICPBRS ICP Based Registration Service (ICPBRS)
+
+\li \ref UCLCopyrightStatement
+\li \ref UCLDefinitionsAcronyms
+\li \ref UCLRequirementsTraceability
+\li \ref UCLReferences
+
+\subsection ICPBRSCSD Component Specification Document (CSD)
+
+<table>
+<tr><td>Document ID:</td><td>UCL-2001-CSD-0002-ICPBasedRegistrationService.dox</td></tr>
+<tr><td>Prepared By:</td><td>Matt Clarkson</td></tr>
+<tr><td>Authorised By:</td><td></td></tr>
+<tr><td>Last Modified:</td><td>26 Jun 2015</td></tr>
+</table>
+
+\subsection ICPBRSHistory Revision History
+
+A brief summary of changes between authorised releases of this document is recorded here.
+This section only describes the changes between authorised published versions.
+
+<table>
+  <tr>
+    <th>
+      Version
+    </th>
+    <th>
+      Date
+    </th>
+    <th>
+      Author(s)
+    </th>
+    <th>
+      Change(s)
+    </th>
+    <th>
+      Sections Affected
+    </th>
+  </tr>
+  <tr>
+    <td>
+      0.1
+    </td>
+    <td>
+      26 Jun 2015
+    </td>
+    <td>
+      Matt Clarkson
+    </td>
+    <td>
+      Initial Version
+    </td>
+    <td>
+      All
+    </td>
+  </tr>
+</table>
+
+\section ICPBRSIntro Introduction
+
+The purpose of this Component Specification Document (CSD) is to describe the
+ICP Based Registration Service (ICPBRS).  It is intended to be read by those wanting
+to gain a technical understanding as to the fundamental requirements, design and
+implementation.  This document is not intended for end-users.
+
+\subsection ICPBRSScope Scope
+
+This document defines the requirements, design and implementation.
+
+\subsection ICPBRSGeneral General Description
+
+The general description can be found in [4]. The aim is to register two point sets.
+One or both point sets can be surfaces, meaning that points are grouped into triangles.
+If a triangle mesh is available, interpolation across the face of the triangle should be considered.
+
+\section ICPBRSRequirements Requirements
+\subsection ICPBRSFuncReq Functional Requirements
+
+These functional requirements shall be expressed, each on a single line.
+
+REQ-2001-CSD-0002-002-01: If number of fixed points < 3, throw mitk::Exception.
+
+REQ-2001-CSD-0002-003-01: If number of moving points < 3, throw mitk::Exception.
+
+REQ-2001-CSD-0002-004-01: Two point sets, identical apart from translation should register with RMS residual < 0.001
+
+REQ-2001-CSD-0002-005-01: Two point sets, identical apart from rotation should register with RMS residual < 0.001
+
+\subsection ICPBRSNonFuncReq Non-Functional Requirements
+
+These non-functional requirements shall be expressed, each on a single line.
+
+REQ-2001-CSD-0002-001-01: The ICPBRS shall be available as a Micro Service.
+
+REQ-2001-CSD-0002-006-01: Point sets of 100,000 corresponding points must register in < 0.001 seconds.
+
+\section ICPBRSDesign Design
+\subsection ICPBRSArchitecture Architecture
+
+The architecture is based on MITK Micro Services [5].
+
+The architecture shall be:
+
+\li An abstract interface in the niftkIGIServices module.
+\li A stateless function in the niftkICPReg module.
+\li An MITK auto-loaded Micro Service in niftkICPRegService module that implements the abstract interface and calls the stateless function.
+\li An RAII object in niftkIGIServices module that may implement the abstract interface.
+
+This means that clients such as unit tests, other modules, or GUI code can
+either link directly to niftkICPReg which forces a link-time
+dependency, or they can have zero link-time dependency and rely on the Micro
+Service based approach.
+
+\subsection ICPBRSError Error Handling
+
+All errors shall be communicated by throwing an mitk::Exception.
+
+\section ICPBRSImpl Implementation
+
+A few implementation details are described below.
+
+\subsection ICPBRSLogging Logging
+
+The service is currently implemented using vtkIterativeClosestPointTransform,
+which does not log each iteration of the ICP function. This service however should
+output the final RMS residual as a console message to a log file.
+
+\subsection ICPBRSClassesFunctions Classes and Functions
+
+\li The abstract interface is in niftk::SurfaceRegServiceI in the niftkIGIServices module.
+\li This is implemented by niftk::ICPRegService in the niftkICPRegService module.
+\li It is also implemented by the RAII object niftk::ICPRegServiceRAII in the niftkIGIServices module.
+\li Main registration class is in niftk::ICPBasedRegistration in the niftkICPReg module, which wraps
+niftk::VTKIterativeClosestPoint in the niftkVTK library.
+
+*/

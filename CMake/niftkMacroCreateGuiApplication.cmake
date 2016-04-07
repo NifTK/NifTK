@@ -17,9 +17,11 @@
 ###############################################################################
 
 macro(NIFTK_CREATE_GUI_APPLICATION)
-  MACRO_PARSE_ARGUMENTS(_APP
-                        "NAME;INCLUDE_PLUGINS;EXCLUDE_PLUGINS"
+
+  cmake_parse_arguments(_APP
                         ""
+                        "NAME"
+                        "INCLUDE_PLUGINS;EXCLUDE_PLUGINS"
                         ${ARGN}
                         )
 
@@ -31,8 +33,14 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
 
   # ... and here we are specifying additional link time dependencies.
   set(_link_libraries
-    niftkCore
     qtsingleapplication
+
+    # If you remove this, the app will compile and run.
+    # However, we need niftkCore to be loaded, and hence niftkCoreIO
+    # to be Auto-Loaded before the main application launches
+    # the Blueberry Application Framework. Without this line,
+    # we don't get all the I/O readers/writers/serializers loaded in time.
+    niftkCore
   )
 
   set(_app_options)
@@ -73,6 +81,10 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     list(APPEND _library_dirs ${NiftyLink_LIBRARY_DIRS})
   endif()
 
+  foreach(_install_dir ${CMAKE_PREFIX_PATH})
+    list(APPEND _library_dirs ${_install_dir}/lib)
+  endforeach()
+
   #############################################################################
   # Watch out for this:
   # In the top level CMakeLists, MACOSX_BUNDLE_NAMES will contain all the apps
@@ -94,7 +106,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     set(MACOSX_BUNDLE_NAMES ${MY_APP_NAME})
   endif()
   
-  FunctionCreateBlueBerryApplication(
+  mitkFunctionCreateBlueBerryApplication(
     NAME ${MY_APP_NAME}
     SOURCES ${MY_APP_NAME}.cxx
     PLUGINS ${_total_plugins}
@@ -103,7 +115,11 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
     ${_app_options}
   )
 
-  mitk_use_modules(TARGET ${MY_APP_NAME} MODULES niftkCore qtsingleapplication)
+  mitk_use_modules(
+    TARGET ${MY_APP_NAME}
+    MODULES MitkAppUtil
+    PACKAGES Qt4|QtGui Qt5|Widgets
+  )
 
   #############################################################################
   # Restore this MACOSX_BUNDLE_NAMES variable. See long-winded note above.

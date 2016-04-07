@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Breast Cancer Imaging Tools . MG . Images via Access Database</category>
+
+  <title>Calculate Mammographic Tumour Distribution</title>
+
+  <description><![CDATA[Calculates the distribution of tumours in a set of diagnostic mammograms by mapping their locations to a common reference mammogram.]]></description>
+
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>Input</label>
+    <description><![CDATA[Input Parameters]]></description>
+
+    <directory>
+      <name>dirInput</name>
+      <longflag>inDir</longflag>
+      <description>Top-level directory containing the input images</description>
+      <label>Input image directory</label>
+      <channel>output</channel>
+    </directory>
+
+    <file>
+      <name>fileImageXML</name>
+      <flag>i</flag>
+      <longflag>image</longflag>
+      <description>Input image info XML file</description>
+      <label>Input image info XML file</label>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>fileTumourXML</name>
+      <flag>t</flag>
+      <longflag>tumour</longflag>
+      <description>Input tumour mask info XML file</description>
+      <label>Input tumour mask info XML file</label>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>fileBreastEdgeXML</name>
+      <flag>e</flag>
+      <longflag>edge</longflag>
+      <description>Input breast edge points XML file</description>
+      <label>Input breast edge XML file</label>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>filePectoralisLinePointXML</name>
+      <flag>p</flag>
+      <longflag>pectoral</longflag>
+      <description>Input pectoralis XML file</description>
+      <label>Input pectoralis XML file</label>
+      <channel>input</channel>
+    </file>
+
+    <boolean>
+      <name>flgRegisterNonRigid</name>
+      <longflag>regNonRigid</longflag>
+      <description>Non-rigidly register the input image to the diagnostic image to enable the tumour location to be mapped into the pre-diagnostic image.</description>
+      <label>Non-rigidly register to the diagnostic image?</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Output</label>
+    <description><![CDATA[Output Parameters]]></description>
+
+    <directory>
+      <name>dirOutput</name>
+      <longflag>outDir</longflag>
+      <description>Output top-level directory to write images and data to</description>
+      <label>Output directory to write to</label>
+      <default>NiftyResults</default>
+      <channel>output</channel>
+    </directory>
+
+    <file>
+      <name>fileOutputCSV</name>
+      <flag>o</flag>
+      <longflag>csv</longflag>
+      <description>Output CSV file</description>
+      <label>Output CSV file</label>
+      <default>NiftyMeasurements.csv</default>
+      <channel>output</channel>
+    </file>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output (i.e. print the DICOM header).</description>
+      <label>Verbose</label>
+    </boolean>
+
+    <boolean>
+      <name>flgOverwrite</name>
+      <longflag>overwrite</longflag>
+      <description>If the image already exists then overwrite it.</description>
+      <label>Overwrite output files if they exist?</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Advanced</label>
+    <description><![CDATA[Additional Parameters]]></description>
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>debug</longflag>
+      <description>Generate debugging output.</description>
+      <label>Debug</label>
+    </boolean>
+
+  </parameters>
+
+</executable>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Triangulate 2D to 3D</title>
+  <description><![CDATA[Takes a file of 2D point pairs (left and right), and triangulates to 3D.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <file fileExtensions=".txt">
+      <name>inputPointPairs</name>
+      <longflag>inputPointPairs</longflag>
+      <description>Input Point Pairs</description>
+      <label>Input Point Pairs</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".txt">
+      <name>intrinsicLeft</name>
+      <longflag>intrinsicLeft</longflag>
+      <description>Left camera intrinsic parameters file as plain text file.</description>
+      <label>Left camera intrinsic parameters</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".txt">
+      <name>intrinsicRight</name>
+      <longflag>intrinsicRight</longflag>
+      <description>Right camera intrinsic parameters file as plain text file.</description>
+      <label>Right camera intrinsics</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".txt">
+      <name>rightToLeftExtrinsics</name>
+      <longflag>rightToLeftExtrinsics</longflag>
+      <description>Right to left camera transformation as plain text file.</description>
+      <label>Right to left camera transformation</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".txt">
+      <name>trackerToWorld</name>
+      <longflag>trackerToWorld</longflag>
+      <description>The tracking matrix</description>
+      <label>Tracking Matrix</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".txt">
+      <name>leftLensToTracker</name>
+      <longflag>leftLensToTracker</longflag>
+      <description>The transform from the left lens to the tracker marker (handeye)</description>
+      <label>Left Lens to tracker</label>
+      <channel>input</channel>
+    </file>
+    
+    <file fileExtensions=".png">
+      <name>leftMask</name>
+      <longflag>leftMask</longflag>
+      <description>Left Mask Image</description>
+      <label>Left Mask Image</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".png">
+      <name>rightMask</name>
+      <longflag>rightMask</longflag>
+      <description>Right Mask Image</description>
+      <label>Right Mask Image</label>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".mps">
+      <name>outputPoints</name>
+      <longflag>outputPoints</longflag>
+      <description>Output point set.</description>
+      <label>Output points</label>
+      <default>output.mps</default>
+      <channel>output</channel>
+    </file>    
+    <directory>
+      <name>outputMaskImagePrefix</name>
+      <longflag>outputMaskImagePrefix</longflag>
+      <description>Optionally write out images showing effect of masking</description>
+      <label>Output mask image prefix</label>
+      <channel>output</channel>
+    </directory>
+    <boolean>
+      <name>undistort</name>
+      <longflag>undistort</longflag>
+      <description>If set will undistort after masking and before triangulation</description>
+      <label>Undistort points</label>
+      <default>0</default>
+    </boolean>
+    <string>
+      <name>minimumDistanceFromLens</name>
+      <longflag>minimumDistanceFromLens</longflag>
+      <description>Cull points closer to the lens than this</description>
+      <label>Minimum Distance from Lens</label>
+    </string>
+    <string>
+      <name>maximumDistanceFromLens</name>
+      <longflag>maximumDistanceFromLens</longflag>
+      <description>Cull points further from the lens than this</description>
+      <label>Maximum Distance from Lens</label>
+    </string>
+
+  </parameters>
+</executable>

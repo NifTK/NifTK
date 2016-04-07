@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Sequential CPU Stereo Matching</title>
+  <description><![CDATA[Runs stereo matching with a Seqpential CPU algorithm.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Johannes Totz, Steve Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <file>
+      <name>leftImageFileName</name>
+      <longflag>left</longflag>
+      <description>Left image.</description>
+      <label>Left image</label>
+    </file>
+    <file>
+      <name>rightImageFileName</name>
+      <longflag>right</longflag>
+      <description>Right image.</description>
+      <label>Right image</label>
+    </file>  
+    <file fileExtensions=".txt">
+      <name>outputFileName</name>
+      <longflag>output</longflag>
+      <description>Output file left-right correspondences</description>
+      <label>Output file left-right correspondences</label>
+      <default>left2rightdisparity.txt</default>
+      <channel>output</channel>
+    </file>
+  </parameters> 
+</executable>

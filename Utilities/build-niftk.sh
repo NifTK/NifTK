@@ -26,6 +26,8 @@ branch="dev"
 threads=1
 do_coverage=false
 do_memcheck=false
+do_kwstyle=false
+do_cppcheck=false
 build_testing=true
 build_docs=true
 build_command_line_tools=true
@@ -122,6 +124,10 @@ Options:
 
     -p, --package                   Creates installer packages.
 
+    --kwstyle                       Does KWStyle checking (if KWStyle is found)
+
+    --cppcheck                      Does cppcheck static analysis (if cppcheck is found)
+
     -h, --help                      Prints this help.
 
 "
@@ -161,6 +167,8 @@ Test options:
 
   coverage:              $do_coverage
   valgrind:              $do_memcheck
+  kwstyle:               $do_kwstyle
+  cppcheck:              $do_cppcheck
   ctest type:            $ctest_type
 
 Install options:
@@ -245,6 +253,14 @@ do
   elif [ "$1" == "-v" ] || [ "$1" == "--valgrind" ]
   then
     do_memcheck=true
+    shift 1
+  elif [ "$1" == "--kwstyle" ]
+  then
+    do_kwstyle=true
+    shift 1
+  elif [ "$1" == "--cppcheck" ]
+  then
+    do_cppcheck=true
     shift 1
   elif [ "$1" == "-D" ]
   then
@@ -338,17 +354,9 @@ fi
 
 NIFTK_SUPERBUILD_DIR="${build_root}/${build_dir}"
 NIFTK_DIR=$NIFTK_SUPERBUILD_DIR/NifTK-build
-ITK_DIR=$NIFTK_SUPERBUILD_DIR/ITK-build
-VTK_DIR=$NIFTK_SUPERBUILD_DIR/VTK-build
-GDCM_DIR=$NIFTK_SUPERBUILD_DIR/GDCM-build
-CTK_DIR=$NIFTK_SUPERBUILD_DIR/CTK-build/CTK-build
-MITK_DIR=$NIFTK_SUPERBUILD_DIR/MITK-build/MITK-build
 
 export NIFTK_DRC_ANALYZE=ON
 export GIT_SSL_NO_VERIFY=1
-
-export LD_LIBRARY_PATH="$BOOST_DIR:$ITK_DIR/bin:$VTK_DIR/bin:$GDCM_DIR/bin:$CTK_DIR/bin:$MITK_DIR/bin:$MITK_DIR/bin/plugins:$NIFTK_DIR/bin:$NIFTK_DIR/bin/plugins"
-export DYLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 
 # -----------------------------------------------------------------------------
 # Clean old directories
@@ -396,6 +404,20 @@ then
   ctest_command="make clean ; ctest -D ${ctest_type}Start ; ctest -D ${ctest_type}Update ; ctest -D ${ctest_type}Configure ; ctest -D ${ctest_type}Build ; ctest -D ${ctest_type}Test ; ctest -D ${ctest_type}Coverage ; ctest -D ${ctest_type}MemCheck ; ctest -D ${ctest_type}Submit"
 else
   ctest_command="make clean ; ctest -D ${ctest_type}"
+fi
+
+if $do_kwstyle
+then
+  cmake_args="${cmake_args} -DNIFTK_USE_KWSTYLE=ON"
+else
+  cmake_args="${cmake_args} -DNIFTK_USE_KWSTYLE=OFF"
+fi
+
+if $do_cppcheck
+then
+  cmake_args="${cmake_args} -DNIFTK_USE_CPPCHECK=ON"
+else
+  cmake_args="${cmake_args} -DNIFTK_USE_CPPCHECK=OFF"
 fi
 
 if $build_docs

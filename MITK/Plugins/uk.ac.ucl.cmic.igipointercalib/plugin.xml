@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.igipointercalib"
+          name="US Pointer Calibration"
+          class="PointerCalibView"
+          icon="resources/icon.xpm" />
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.PointerCalibViewPreferencePage" name="US Pointer Calibration" class="PointerCalibViewPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.PointerCalibViewKeywords"></keywordreference>
+    </page>
+  </extension>
+
+</plugin>
