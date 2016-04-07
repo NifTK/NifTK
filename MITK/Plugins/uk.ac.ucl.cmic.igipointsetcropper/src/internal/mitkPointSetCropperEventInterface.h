@@ -37,7 +37,7 @@ namespace mitk
       m_PointSetCropper = PointSetCropper;
     }
 
-    virtual void  ExecuteOperation(mitk::Operation* op);
+    virtual void  ExecuteOperation(mitk::Operation* op) override;
 
   private:
 

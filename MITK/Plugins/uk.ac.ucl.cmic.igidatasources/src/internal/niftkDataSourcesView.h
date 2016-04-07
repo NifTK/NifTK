@@ -58,12 +58,12 @@ protected:
   /**
   * \brief Called by framework, this method creates all the controls for this view
   */
-  virtual void CreateQtPartControl(QWidget *parent);
+  virtual void CreateQtPartControl(QWidget *parent) override;
 
   /**
   * \brief Called by framework, sets the focus on a specific widget.
   */
-  virtual void SetFocus();
+  virtual void SetFocus() override;
 
 signals:
 
@@ -107,7 +107,7 @@ private:
   /**
   * \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
   */
-  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*) override;
 
   niftk::IGIDataSourceManagerWidget* m_DataSourceManagerWidget;
   bool                               m_SetupWasCalled;

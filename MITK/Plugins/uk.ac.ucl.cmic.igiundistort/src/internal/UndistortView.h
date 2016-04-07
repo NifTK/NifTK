@@ -40,13 +40,13 @@ public:
 
   static const char*    VIEW_ID;
 
-  virtual void CreateQtPartControl(QWidget *parent);
+  virtual void CreateQtPartControl(QWidget *parent) override;
 
   // from berry::WorkbenchPart
-  virtual void SetFocus();
+  virtual void SetFocus() override;
 
   /// \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
-  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*) override;
 
 protected:
   void UpdateNodeTable();

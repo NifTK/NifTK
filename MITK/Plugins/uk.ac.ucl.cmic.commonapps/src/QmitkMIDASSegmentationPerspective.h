@@ -36,7 +36,7 @@ public:
   QmitkMIDASSegmentationPerspective();
   QmitkMIDASSegmentationPerspective(const QmitkMIDASSegmentationPerspective& other);
   
-  void CreateInitialLayout(berry::IPageLayout::Pointer layout);
+  void CreateInitialLayout(berry::IPageLayout::Pointer layout) override;
 
 };
 

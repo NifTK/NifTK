@@ -79,12 +79,12 @@ public:
   /*!
    * \brief SetFocus
    */
-  virtual void SetFocus();
+  virtual void SetFocus() override;
 
   /*!
   \brief Creates the Qt widget containing the functionality controls, like sliders, buttons etc.
   */
-  virtual void CreateQtPartControl(QWidget* parent);
+  virtual void CreateQtPartControl(QWidget* parent) override;
 
   /*!
   \brief Creates the Qt connections needed
@@ -94,11 +94,11 @@ public:
   /*
   \brief Interface of a mitk::StateMachine (for undo/redo)
   */
-  virtual void  ExecuteOperation (mitk::Operation*);
+  virtual void  ExecuteOperation (mitk::Operation*) override;
 
   QWidget* GetControls();
 
-  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
+  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes) override;
 
 public slots:
 
@@ -162,7 +162,7 @@ protected:
    * \brief NodeRemoved
    * \param node
    */
-  virtual void NodeRemoved(const mitk::DataNode* node);
+  virtual void NodeRemoved(const mitk::DataNode* node) override;
 
 private:
 
