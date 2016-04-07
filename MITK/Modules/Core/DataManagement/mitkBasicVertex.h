@@ -15,9 +15,6 @@ See LICENSE.txt in the top level directory for details.
 #ifndef __mitkBasicVertex_h
 #define __mitkBasicVertex_h
 
-using namespace std;
-
-#include <vector>
 #include <set>
 
 #include "mitkBasicVec3D.h"
@@ -187,14 +184,14 @@ public:
   unsigned RemoveTriNeighbor(int t) { return m_TriNeighbors.erase(t); }
 
   /// \brief Get the whole set of vertex neighbours - const
-  const set<int>& GetVertNeighbors() const { return m_VertNeighbors; }
+  const std::set<int>& GetVertNeighbors() const { return m_VertNeighbors; }
   // \brief Get the whole set of vertex neighbours
-  set<int>&       GetVertNeighbors()       { return m_VertNeighbors; }
+  std::set<int>&       GetVertNeighbors()       { return m_VertNeighbors; }
   
   /// \brief Get the whole set of triangle neighbours - const
-  const set<int>& GetTriNeighbors() const  { return m_TriNeighbors; }
+  const std::set<int>& GetTriNeighbors() const  { return m_TriNeighbors; }
   /// \brief Get the whole set of triangle neighbours
-  set<int>&       GetTriNeighbors()        { return m_TriNeighbors; }
+  std::set<int>&       GetTriNeighbors()        { return m_TriNeighbors; }
 
   /// \brief Check is vertex has a certain vertex neighbour
   bool HasVertNeighbor(int v) const { return (m_VertNeighbors.find(v) != m_VertNeighbors.end()); }
@@ -233,7 +230,7 @@ public:
   /// Is the current vertex on an edge?  If so, get edge information.
   /// This is used to put constraints on the border so that the mesh
   /// edges aren't "eaten away" by the mesh simplification.
-  void GetAllBorderEdges(set<Border> &borderSet, BasicMesh& m);
+  void GetAllBorderEdges(std::set<Border> &borderSet, BasicMesh& m);
 
   ///\brief Evaluate the quadric cost function for the current vertex
   /// Used for Garland & Heckbert's quadric edge collapse cost (used for mesh simplifications/progressive meshes)
@@ -257,8 +254,8 @@ private:
   BasicVec3D m_Coords;         // X, Y, Z position of this vertex
   BasicVec3D m_Normal;         // vertex normal, used for Gouraud shading
 
-  set<int>   m_VertNeighbors;   // connected to this vertex via an edge
-  set<int>   m_TriNeighbors;       // triangles of which this vertex is a part
+  std::set<int>   m_VertNeighbors;   // connected to this vertex via an edge
+  std::set<int>   m_TriNeighbors;    // triangles of which this vertex is a part
 
   bool       m_Active;             // false if vertex has been removed
 
@@ -273,6 +270,6 @@ private:
   mutable float m_VN[3];           //mutable floats used for returning values
 };
 
-} //end of namespace
+}
 
-#endif // #ifndef __BasicVertex_h
+#endif
