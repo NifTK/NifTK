@@ -15,7 +15,7 @@
 #ifndef __niftkBaseSegmentorController_h
 #define __niftkBaseSegmentorController_h
 
-#include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>
+#include <niftkMIDASGuiExports.h>
 
 #include <QColor>
 #include <QObject>
@@ -34,7 +34,7 @@ class niftkIBaseView;
 /**
  * \class niftkBaseSegmentorController
  */
-class CMIC_QT_COMMONMIDAS niftkBaseSegmentorController : public QObject, public niftk::MIDASEventFilter
+class NIFTKMIDASGUI_EXPORT niftkBaseSegmentorController : public QObject, public niftk::MIDASEventFilter
 {
 
   Q_OBJECT

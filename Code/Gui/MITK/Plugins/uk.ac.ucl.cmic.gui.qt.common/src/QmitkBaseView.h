@@ -101,12 +101,6 @@ public:
   virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes) override;
 
   /**
-   * Returns the currently active mitk::IRenderWindowPart.
-   * \return The active mitk::IRenderWindowPart or nullptr if there is not any.
-   */
-  mitk::IRenderWindowPart* GetActiveRenderWindowPart() const override;
-
-  /**
    * \brief Retrieves a RenderWindow from the mitkRenderWindowPart.
    * \param id The name of the QmitkRenderWindow, such as "axial", "sagittal", "coronal".
    * \return QmitkRenderWindow* The render window or NULL if it can not be found.
@@ -155,6 +149,12 @@ public:
 
   /// \brief Used to try and get the FocusManager to focus on the Current IRenderWindowPart.
   virtual void FocusOnCurrentWindow() const override;
+
+  /// \brief Gets the selected position in the active render window part.
+  virtual mitk::Point3D GetSelectedPosition() const override;
+
+  /// \brief Sets the selected position in the active render window part.
+  virtual void SetSelectedPosition(const mitk::Point3D& selectedPosition) override;
 
 protected:
 

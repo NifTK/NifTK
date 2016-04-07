@@ -343,31 +343,31 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
     /// TODO
     /// We should not refer to mitk::RenderingManager::GetInstance() because the DnD display uses its
     /// own rendering manager, not this one, like the MITK display.
-    mitk::IRenderingManager* renderingManager = 0;
-    mitk::IRenderWindowPart* renderWindowPart = this->GetView()->GetActiveRenderWindowPart();
-    if (renderWindowPart)
-    {
-      renderingManager = renderWindowPart->GetRenderingManager();
-    }
-    if (renderingManager)
-    {
-      // Make sure these points and contours are not rendered in 3D, as there can be many of them if you "propagate",
-      // and furthermore, there seem to be several seg faults rendering contour code in 3D. Haven't investigated yet.
-      QList<vtkRenderWindow*> renderWindows = renderingManager->GetAllRegisteredVtkRenderWindows();
-      for (QList<vtkRenderWindow*>::const_iterator iter = renderWindows.begin(); iter != renderWindows.end(); ++iter)
-      {
-        if ( mitk::BaseRenderer::GetInstance((*iter))->GetMapperID() == mitk::BaseRenderer::Standard3D )
-        {
-          pointSetNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-          seePriorNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-          seeNextNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-          currentContours->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-          drawContours->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-          initialSegmentationNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-          initialSeedsNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-        }
-      }
-    }
+//    mitk::IRenderingManager* renderingManager = 0;
+//    mitk::IRenderWindowPart* renderWindowPart = this->GetView()->GetActiveRenderWindowPart();
+//    if (renderWindowPart)
+//    {
+//      renderingManager = renderWindowPart->GetRenderingManager();
+//    }
+//    if (renderingManager)
+//    {
+//      // Make sure these points and contours are not rendered in 3D, as there can be many of them if you "propagate",
+//      // and furthermore, there seem to be several seg faults rendering contour code in 3D. Haven't investigated yet.
+//      QList<vtkRenderWindow*> renderWindows = renderingManager->GetAllRegisteredVtkRenderWindows();
+//      for (QList<vtkRenderWindow*>::const_iterator iter = renderWindows.begin(); iter != renderWindows.end(); ++iter)
+//      {
+//        if ( mitk::BaseRenderer::GetInstance((*iter))->GetMapperID() == mitk::BaseRenderer::Standard3D )
+//        {
+//          pointSetNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+//          seePriorNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+//          seeNextNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+//          currentContours->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+//          drawContours->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+//          initialSegmentationNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+//          initialSeedsNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
+//        }
+//      }
+//    }
 
     // Adding to data storage, where the ordering affects the layering.
     this->GetDataStorage()->Add(seePriorNode, newSegmentation);
@@ -638,13 +638,12 @@ void niftkGeneralSegmentorController::OnFocusChanged()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorController::OnSliceChanged(const itk::EventObject& geometrySliceEvent)
 {
-  mitk::IRenderWindowPart* renderWindowPart = this->GetView()->GetActiveRenderWindowPart();
-  if (renderWindowPart != NULL &&  !m_IsChangingSlice)
+  if (!m_IsChangingSlice)
   {
     int previousSlice = m_PreviousSliceNumber;
 
     int currentSlice = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-    mitk::Point3D currentFocus = renderWindowPart->GetSelectedPosition();
+    mitk::Point3D currentFocus = this->GetView()->GetSelectedPosition();
 
     if (previousSlice == -1)
     {
@@ -877,11 +876,7 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
             } // end if/else thresholding on
           } // end if/else retain marks.
 
-          mitk::IRenderWindowPart* renderWindowPart = this->GetView()->GetActiveRenderWindowPart();
-          if (renderWindowPart != NULL)
-          {
-            m_CurrentFocusPoint = renderWindowPart->GetSelectedPosition();
-          }
+          m_CurrentFocusPoint = this->GetView()->GetSelectedPosition();
 
           QString message = tr("Propagate seeds from slice %1 to %2").arg(beforeSliceNumber).arg(afterSliceNumber);
           niftk::OpPropagateSeeds *doPropOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, true, afterSliceNumber, axisNumber, propagatedSeeds);
@@ -2846,9 +2841,6 @@ void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operatio
   mitk::DataNode::Pointer seedsNode = this->GetWorkingData()[niftk::MIDASTool::SEEDS];
   assert(seedsNode);
 
-  mitk::IRenderWindowPart* renderWindowPart = this->GetView()->GetActiveRenderWindowPart();
-  assert(renderWindowPart);
-
   switch (operation->GetOperationType())
   {
   case niftk::OP_CHANGE_SLICE:
@@ -2856,8 +2848,6 @@ void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operatio
       // Simply to make sure we can switch slice, and undo/redo it.
       niftk::OpChangeSliceCommand* op = dynamic_cast<niftk::OpChangeSliceCommand*>(operation);
       assert(op);
-
-      mitk::Point3D currentPoint = renderWindowPart->GetSelectedPosition();
 
       mitk::Point3D beforePoint = op->GetBeforePoint();
       mitk::Point3D afterPoint = op->GetAfterPoint();
@@ -2880,7 +2870,7 @@ void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operatio
       if (beforeSlice != afterSlice)
       {
         m_IsChangingSlice = true;
-        renderWindowPart->SetSelectedPosition(selectedPoint);
+        this->GetView()->SetSelectedPosition(selectedPoint);
         m_IsChangingSlice = false;
       }
 

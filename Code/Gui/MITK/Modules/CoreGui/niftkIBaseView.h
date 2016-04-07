@@ -23,7 +23,6 @@
 namespace mitk
 {
 class BaseRenderer;
-class IRenderWindowPart;
 class SliceNavigationController;
 }
 
@@ -47,10 +46,6 @@ public:
 
   /// \brief Used to try and get the FocusManager to focus on the Current IRenderWindowPart.
   virtual void FocusOnCurrentWindow() const = 0;
-
-  /// Returns the currently active render window part.
-  /// \return The active render window part or nullptr if there is not any.
-  virtual mitk::IRenderWindowPart* GetActiveRenderWindowPart() const = 0;
 
   /// \brief Retrieves the currently selected RenderWindow from the mitkRenderWindowPart.
   /// \return QmitkRenderWindow* The selected render window or NULL if it no render window is selected.
@@ -90,6 +85,12 @@ public:
 
   /// \brief Convenient method to restore the standard cursor
   virtual void WaitCursorOff() = 0;
+
+  /// \brief Gets the selected position in the active render window part.
+  virtual mitk::Point3D GetSelectedPosition() const = 0;
+
+  /// \brief Sets the selected position in the active render window part.
+  virtual void SetSelectedPosition(const mitk::Point3D& selectedPosition) = 0;
 
 };
 

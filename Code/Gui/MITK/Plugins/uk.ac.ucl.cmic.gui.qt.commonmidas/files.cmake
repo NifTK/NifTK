@@ -13,7 +13,6 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  niftkBaseSegmentorController.cxx
   niftkBaseSegmentorView.cxx
 )
 
@@ -24,7 +23,6 @@ set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/niftkBaseSegmentorController.h
   src/niftkBaseSegmentorView.h
 )
 

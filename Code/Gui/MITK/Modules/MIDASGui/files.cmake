@@ -13,6 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
+  niftkBaseSegmentorController.cxx
   niftkBaseSegmentorGUI.cxx
   niftkDrawToolGUI.cxx
   niftkGeneralSegmentorGUI.cxx
@@ -24,6 +25,7 @@ set(CPP_FILES
 )
 
 set(MOC_H_FILES 
+  niftkBaseSegmentorController.h
   niftkBaseSegmentorGUI.h
   niftkDrawToolGUI.h
   niftkGeneralSegmentorGUI.h
