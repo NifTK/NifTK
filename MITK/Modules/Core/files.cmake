@@ -41,8 +41,6 @@ set(CPP_FILES
   LookupTables/QmitkLookupTableContainer.cxx
   LookupTables/QmitkLookupTableSaxHandler.cxx
   LookupTables/QmitkLookupTableManager.cxx
-  LookupTables/QmitkLookupTableProviderServiceImpl.cxx
-  LookupTables/QmitkLookupTableProviderServiceActivator.cxx
   LookupTables/vtkLookupTableUtils.cxx
   Rendering/mitkCoordinateAxesVtkMapper3D.cxx
   Rendering/mitkFastPointSetVtkMapper3D.cxx

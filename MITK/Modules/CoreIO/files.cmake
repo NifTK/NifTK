@@ -26,4 +26,5 @@ set(CPP_FILES
   Internal/mitkCoordinateAxesDataSerializer.cxx
   Internal/mitkLabeledLookupTablePropertySerializer.cxx
   Internal/mitkNamedLookupTablePropertySerializer.cxx
+  Internal/QmitkLookupTableProviderServiceImpl.cxx
 )
