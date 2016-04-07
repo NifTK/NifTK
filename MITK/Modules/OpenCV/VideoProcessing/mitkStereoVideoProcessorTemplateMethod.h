@@ -39,11 +39,6 @@ public:
    */
   virtual void Initialize() override;
 
-  /**
-   * \brief BaseVideoProcessor::Run()
-   */
-  virtual void Run() = 0;
-
 protected:
 
   ~StereoVideoProcessorTemplateMethod();
