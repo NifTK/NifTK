@@ -99,7 +99,7 @@ protected:
   BreastSideType m_BreastSide;
   ImageConstPointer  m_Image;
 
-  void PrintSelf(std::ostream & os, Indent indent) const;
+  void PrintSelf(std::ostream & os, Indent indent) const override;
 
 private:
 

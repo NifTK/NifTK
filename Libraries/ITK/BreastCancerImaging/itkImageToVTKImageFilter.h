@@ -85,7 +85,7 @@ public:
   ExporterFilterType * GetExporter() const;
 
   /** This call delegates the update to the importer */
-  void Update();
+  void Update() override;
 
 protected:
   ImageToVTKImageFilter();

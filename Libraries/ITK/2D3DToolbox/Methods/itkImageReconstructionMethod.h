@@ -156,16 +156,16 @@ public:
 
   /** Method to return the latest modified time of this object or
    * any of its cached ivars */
-  unsigned long GetMTime() const;  
+  unsigned long GetMTime() const override;  
     
 protected:
   ImageReconstructionMethod();
   virtual ~ImageReconstructionMethod() {};
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   /** We avoid propagating the input region to the output by
   overloading this function */
-  virtual void GenerateOutputInformation() {};
+  virtual void GenerateOutputInformation() override {};
   
   /** Method that initiates the reconstruction. This will Initialise and ensure
    * that all inputs the registration needs are in place, via a call to 
@@ -181,7 +181,7 @@ protected:
 
   /** Method invoked by the pipeline in order to trigger the computation of 
    * the reconstruction. */
-  void  GenerateData ();
+  void  GenerateData () override;
 
 
 private:

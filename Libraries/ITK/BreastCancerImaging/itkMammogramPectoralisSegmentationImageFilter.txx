@@ -71,11 +71,11 @@ public:
     m_Debug = flgDebug;
   }
 
-  void Execute(itk::Object *caller, const itk::EventObject & event) {
+  void Execute(itk::Object *caller, const itk::EventObject & event) override {
     Execute( (const itk::Object *)caller, event);
   }
 
-  void Execute(const itk::Object *, const itk::EventObject & event) {
+  void Execute(const itk::Object *, const itk::EventObject & event) override {
     if( typeid( event ) == typeid( itk::StartEvent ) )
     {
       std::cout << std::endl << "Position              Value";

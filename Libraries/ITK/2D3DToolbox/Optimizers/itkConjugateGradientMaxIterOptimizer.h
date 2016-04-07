@@ -57,10 +57,10 @@ public:
   itkGetMacro( MaximumNumberOfFunctionEvaluations, unsigned int );
 
   /** Start optimization with an initial value. */
-  void StartOptimization( void );
+  void StartOptimization( void ) override;
 
   /** Plug in a Cost Function into the optimizer  */
-  virtual void SetCostFunction( SingleValuedCostFunction * costFunction );
+  virtual void SetCostFunction( SingleValuedCostFunction * costFunction ) override;
 
 
   /** Return the number of iterations performed so far */

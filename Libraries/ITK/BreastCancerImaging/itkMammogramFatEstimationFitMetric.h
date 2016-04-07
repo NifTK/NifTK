@@ -53,22 +53,22 @@ public:
 
   itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 0 );
 
-  virtual unsigned int GetNumberOfParameters(void) const  
+  virtual unsigned int GetNumberOfParameters(void) const override  
   {
     return ParametricSpaceDimension;
   }
 
   void GetDerivative( const ParametersType &parameters, 
-                      DerivativeType &Derivative ) const
+                      DerivativeType &Derivative ) const override
   {
     return;
   }
 
-  virtual MeasureType GetValue( const ParametersType &parameters ) const;
+  virtual MeasureType GetValue( const ParametersType &parameters ) const override;
 
   void GetValueAndDerivative( const ParametersType &parameters,
                               MeasureType &Value, 
-                              DerivativeType &Derivative ) const
+                              DerivativeType &Derivative ) const override
   {
     Value = this->GetValue( parameters );
     this->GetDerivative( parameters, Derivative );
@@ -85,7 +85,7 @@ protected:
   virtual ~MammogramFatEstimationFitMetric();
   MammogramFatEstimationFitMetric(const Self &) {}
   void operator=(const Self &) {}
-  void PrintSelf(std::ostream & os, Indent indent) const;
+  void PrintSelf(std::ostream & os, Indent indent) const override;
 
 };
 

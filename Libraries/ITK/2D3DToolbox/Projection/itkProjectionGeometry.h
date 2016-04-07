@@ -117,7 +117,7 @@ protected:
   ProjectionGeometry();
   virtual ~ProjectionGeometry() {};
 
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   /// Initialise the object and check inputs are defined
   void Initialise(void);

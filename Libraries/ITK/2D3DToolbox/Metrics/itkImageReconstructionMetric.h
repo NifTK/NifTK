@@ -83,7 +83,7 @@ public:
   void SetProjectionGeometry( ProjectionGeometryType *projGeometry );
 
   /** Return the number of parameters required by the Transform */
-  unsigned int GetNumberOfParameters(void) const;
+  unsigned int GetNumberOfParameters(void) const override;
 
   /// Get the 3D reconstructed volume
   const InputVolumeType *GetReconstructedVolume(void) {
@@ -119,7 +119,7 @@ public:
     * to the specified parameters    */ 
   virtual void GetValueAndDerivative( const ParametersType & parameters,
                                       MeasureType & value,
-                                      DerivativeType & derivative ) const;
+                                      DerivativeType & derivative ) const override;
 
   /** This method returns the value of the cost function corresponding
     * to the specified parameters. This method set to protected
@@ -127,7 +127,7 @@ public:
     * GetValueAndDerivative() which case we can get away without
     * performing the forward and back-projections for both GetValue()
     * and GetDerivative(). */ 
-  virtual MeasureType GetValue( const ParametersType & parameters ) const;
+  virtual MeasureType GetValue( const ParametersType & parameters ) const override;
 
   /** This method returns the derivative of the cost function corresponding
     * to the specified parameters. This method set to protected
@@ -136,7 +136,7 @@ public:
     * performing the forward and back-projections for both GetValue()
     * and GetDerivative().  */ 
   virtual void GetDerivative( const ParametersType & parameters,
-                              DerivativeType & derivative ) const;
+                              DerivativeType & derivative ) const override;
 
 
 protected:
@@ -144,7 +144,7 @@ protected:
   ImageReconstructionMetric();
   virtual ~ImageReconstructionMetric() {};
 
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   /** Filename to optionally save the current iteration of the
       reconstruction estimate to */

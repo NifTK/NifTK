@@ -33,7 +33,7 @@ public:
   void SetIsEating(bool b) { m_IsEating = b; }
   bool GetIsEating() const { return m_IsEating; }
  protected:
-  virtual bool eventFilter(QObject *obj, QEvent *event)
+  virtual bool eventFilter(QObject *obj, QEvent *event) override
   {
     if (m_IsEating && event->type() == QEvent::Wheel) {
       return true;

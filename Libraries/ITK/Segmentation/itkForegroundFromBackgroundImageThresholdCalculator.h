@@ -126,7 +126,7 @@ protected:
   RegionType m_Region;
   bool       m_RegionSetByUser;
 
-  void PrintSelf(std::ostream & os, Indent indent) const;
+  void PrintSelf(std::ostream & os, Indent indent) const override;
 
   void WriteHistogramToTextFile( std::string fileName,
                                  HistogramType *histogram );
