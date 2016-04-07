@@ -29,7 +29,7 @@
  */
 class InvalidImageSizeException: public std::exception
 {
-  virtual const char* what() const throw()
+  virtual const char* what() const throw() override
   {
     return "Invalid image size exception.";
   }
