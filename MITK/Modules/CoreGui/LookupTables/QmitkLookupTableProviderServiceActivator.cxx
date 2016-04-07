@@ -31,7 +31,6 @@ void QmitkLookupTableProviderServiceActivator::Load(us::ModuleContext *context)
   
   us::ServiceProperties props;
   context->RegisterService<QmitkLookupTableProviderService>(m_ServiceImpl.get(), props);
-  props[ us::ServiceConstants::SERVICE_RANKING() ] = 10;
 
   std::vector<mitk::CustomMimeType*> mimeTypes = niftk::CoreGuiIOMimeTypes::Get();
   for (std::vector<mitk::CustomMimeType*>::const_iterator mimeTypeIter = mimeTypes.begin(),
