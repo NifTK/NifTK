@@ -38,6 +38,12 @@ set(CPP_FILES
   DataManagement/mitkBasicTriangle.cpp
   DataManagement/mitkBasicVec3D.cpp
   DataManagement/mitkBasicVertex.cpp
+  LookupTables/QmitkLookupTableContainer.cxx
+  LookupTables/QmitkLookupTableSaxHandler.cxx
+  LookupTables/QmitkLookupTableManager.cxx
+  LookupTables/QmitkLookupTableProviderServiceImpl.cxx
+  LookupTables/QmitkLookupTableProviderServiceActivator.cxx
+  LookupTables/vtkLookupTableUtils.cxx
   Rendering/mitkCoordinateAxesVtkMapper3D.cxx
   Rendering/mitkFastPointSetVtkMapper3D.cxx
   Rendering/niftkCustomVTKAxesActor.cxx
@@ -48,6 +54,9 @@ set(CPP_FILES
   DataNodeProperties/mitkNamedLookupTableProperty.cxx
   DataNodeProperties/mitkLabeledLookupTableProperty.cxx
   IO/mitkFileIOUtils.cxx
+  IO/mitkLabelMapReader.cxx
+  IO/mitkLabelMapWriter.cxx
+  IO/niftkCoreIOMimeTypes.cxx
   Interactions/mitkPointSetUpdate.cxx
   Interactions/niftkAffineTransformDataInteractor3D.cxx
 )

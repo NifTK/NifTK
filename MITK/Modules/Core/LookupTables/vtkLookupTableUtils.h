@@ -15,7 +15,7 @@
 #ifndef vtkLookupTableUtils_h
 #define vtkLookupTableUtils_h
 
-#include "niftkCoreGuiExports.h"
+#include "niftkCoreExports.h"
 #include <vector>
 #include <QColor>
 
@@ -38,20 +38,20 @@ namespace mitk
   /**
    * \brief Replace the color in the LookupTable at the given index
    */
-  NIFTKCOREGUI_EXPORT vtkLookupTable* ChangeColor(vtkLookupTable* lut, int value, const QColor& newColor);
+  NIFTKCORE_EXPORT vtkLookupTable* ChangeColor(vtkLookupTable* lut, int value, const QColor& newColor);
 
   /**
    * \brief Swap colors in the LookupTable at the given indices. 
    */
-  NIFTKCOREGUI_EXPORT vtkLookupTable* SwapColors(vtkLookupTable* lut, int value1, int value2);
+  NIFTKCORE_EXPORT vtkLookupTable* SwapColors(vtkLookupTable* lut, int value1, int value2);
 
   /**
    * \brief Resize the LookupTable while retaining all of the previously set values.
    * Newly added values are assigned the nan color.
    */
-  NIFTKCOREGUI_EXPORT vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double newMaximum);
+  NIFTKCORE_EXPORT vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double newMaximum);
 
-  NIFTKCOREGUI_EXPORT vtkLookupTable* CreateEmptyLookupTable(const QColor& lowColor = QColor(0, 0, 0, 0), const QColor& highColor = QColor(0, 0, 0, 0));
+  NIFTKCORE_EXPORT vtkLookupTable* CreateEmptyLookupTable(const QColor& lowColor = QColor(0, 0, 0, 0), const QColor& highColor = QColor(0, 0, 0, 0));
   
 }
 

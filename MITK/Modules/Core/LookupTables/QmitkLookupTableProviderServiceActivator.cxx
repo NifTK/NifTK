@@ -14,7 +14,7 @@
 
 #include "QmitkLookupTableProviderServiceActivator.h"
 #include "QmitkLookupTableProviderServiceImpl_p.h"
-#include "niftkCoreGuiIOMimeTypes.h"
+#include "niftkCoreIOMimeTypes.h"
 
 //-----------------------------------------------------------------------------
 QmitkLookupTableProviderServiceActivator::QmitkLookupTableProviderServiceActivator()
@@ -33,7 +33,7 @@ void QmitkLookupTableProviderServiceActivator::Load(us::ModuleContext *context)
   context->RegisterService<QmitkLookupTableProviderService>(m_ServiceImpl.get(), props);
   props[ us::ServiceConstants::SERVICE_RANKING() ] = 10;
 
-  std::vector<mitk::CustomMimeType*> mimeTypes = niftk::CoreGuiIOMimeTypes::Get();
+  std::vector<mitk::CustomMimeType*> mimeTypes = niftk::CoreIOMimeTypes::Get();
   for (std::vector<mitk::CustomMimeType*>::const_iterator mimeTypeIter = mimeTypes.begin(),
     iterEnd = mimeTypes.end(); mimeTypeIter != iterEnd; ++mimeTypeIter)
   {

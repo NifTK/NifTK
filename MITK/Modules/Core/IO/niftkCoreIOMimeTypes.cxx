@@ -12,14 +12,11 @@
 
 =============================================================================*/
 
-#include "niftkCoreGuiIOMimeTypes.h"
+#include "niftkCoreIOMimeTypes.h"
 #include <mitkIOMimeTypes.h>
 
-namespace niftk
-{
-
 //-----------------------------------------------------------------------------
-std::vector<mitk::CustomMimeType*> CoreGuiIOMimeTypes::Get()
+std::vector<mitk::CustomMimeType*> niftk::CoreIOMimeTypes::Get()
 {
   std::vector<mitk::CustomMimeType*> mimeTypes;
 
@@ -32,7 +29,7 @@ std::vector<mitk::CustomMimeType*> CoreGuiIOMimeTypes::Get()
 
 // ----------------------------------------------------------------
 // LabelMap Mime type
-mitk::CustomMimeType CoreGuiIOMimeTypes::LABELMAP_MIMETYPE()
+mitk::CustomMimeType niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE()
 {
   mitk::CustomMimeType mimeType(LABELMAP_MIMETYPE_NAME());
   std::string category = "LabelMap File";
@@ -43,16 +40,14 @@ mitk::CustomMimeType CoreGuiIOMimeTypes::LABELMAP_MIMETYPE()
   return mimeType;
 }
 
-std::string CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_NAME()
+std::string niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()
 {
   static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".lmap";
   return name;
 }
 
-std::string CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION()
+std::string niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION()
 {
   static std::string description = "Label map that defines the mapping between color and pixel value.";
   return description;
 }
-
-} // end namespace

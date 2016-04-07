@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "mitkLabelMapReader.h"
-#include "niftkCoreGuiIOMimeTypes.h"
-#include "QmitkLookupTableContainer.h"
+#include "niftkCoreIOMimeTypes.h"
+#include "LookupTables/QmitkLookupTableContainer.h"
 
 #include <mitkCustomMimeType.h>
 #include <mitkLogMacros.h>
@@ -31,7 +31,7 @@
 
 //-----------------------------------------------------------------------------
 mitk::LabelMapReader::LabelMapReader()
-: mitk::AbstractFileReader(CustomMimeType(niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_NAME()), niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
+: mitk::AbstractFileReader(CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()), niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
 {
   m_ServiceReg = this->RegisterService();
 }
