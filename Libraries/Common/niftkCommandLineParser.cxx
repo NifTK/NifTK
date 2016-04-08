@@ -20,7 +20,6 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-using namespace std;
 
 #include <niftkConversionUtils.h>
 #include <niftkCommandLineParser.h>

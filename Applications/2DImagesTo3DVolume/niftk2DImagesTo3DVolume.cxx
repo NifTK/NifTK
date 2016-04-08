@@ -21,8 +21,6 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
-
 struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_STRING|OPT_REQ, "o", "string", "Output 3D image."},
   {OPT_FLOAT, "spZ", "float", "Spacing (mm) in the Z direction. [5]"},

@@ -382,7 +382,7 @@ ForwardProjectionWithAffineTransformDifferenceFilter<IntensityType>
     m_BackProjectorTwo->GraftOutput( this->GetOutput() );
     m_BackProjectorTwo->Update();
 
-    niftkitkDebugMacro(<< "Finished forward and back projections: " << iProjection << endl);
+    niftkitkDebugMacro(<< "Finished forward and back projections: " << iProjection << std::endl);
 
   }
 

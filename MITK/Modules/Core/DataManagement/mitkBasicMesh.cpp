@@ -30,7 +30,7 @@ namespace mitk
     m_TriList.clear();
   }
 
-  BasicMesh::BasicMesh(vector<BasicVertex> &vertices, vector<BasicTriangle> &triangles, int numOfVerts, int numOfTris)
+  BasicMesh::BasicMesh(std::vector<BasicVertex> &vertices, std::vector<BasicTriangle> &triangles, int numOfVerts, int numOfTris)
   {
     m_NumVerts = 0;
     m_NumTriangles = 0;
@@ -72,10 +72,10 @@ namespace mitk
   }
 
   void BasicMesh::InitWithVertsAndTris(
-    vector<BasicVertex> &vertices
-  , vector<BasicTriangle> &triangles
-  , int numOfVerts
-  , int numOfTris)
+    std::vector<BasicVertex> &vertices,
+    std::vector<BasicTriangle> &triangles,
+    int numOfVerts,
+    int numOfTris)
   {
     m_VertList.clear();
     m_VertList.resize(numOfVerts);
@@ -137,9 +137,9 @@ namespace mitk
   void BasicMesh::CalcOneVertNormal(unsigned vert)
   {
     BasicVertex& v = GetVertex(vert);
-    const set<int>& triset = v.GetTriNeighbors();
+    const std::set<int>& triset = v.GetTriNeighbors();
 
-    set<int>::iterator iter;
+    std::set<int>::iterator iter;
 
     BasicVec3D vec;
 

@@ -154,7 +154,7 @@ void BreastSegmentationView::CreateConnections()
 
 void BreastSegmentationView::OnCancelButtonPressed()
 {
-  cout << "CancelButtonPressed" << endl;
+  std::cout << "CancelButtonPressed" << std::endl;
 }
 
 
@@ -164,7 +164,7 @@ void BreastSegmentationView::OnCancelButtonPressed()
 
 void BreastSegmentationView::OnExecuteButtonPressed()
 {
-  cout << "ExecuteButtonPressed" << endl;
+  std::cout << "ExecuteButtonPressed" << std::endl;
 
   if ( ! m_Modified )
   {

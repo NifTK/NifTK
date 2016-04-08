@@ -2260,7 +2260,7 @@ void CMC33::resizeAndAllocateConnectivity(int index)
     m_MeshDataExt->m_VertexToTriangleIndices.resize(vert2TriSize*2);
 
     // Assign an empty element
-    vector<size_t> tri_indices;
+    std::vector<size_t> tri_indices;
     m_MeshDataExt->m_VertexToTriangleIndices[index] = tri_indices;
   }
 
@@ -2271,7 +2271,7 @@ void CMC33::resizeAndAllocateConnectivity(int index)
     m_MeshDataExt->m_VertexToVertexIndices.resize(vert2VertSize*2);
 
     // Assign an empty element
-    vector<size_t> vert_indices;
+    std::vector<size_t> vert_indices;
     m_MeshDataExt->m_VertexToVertexIndices[index] = vert_indices;
   }
 }

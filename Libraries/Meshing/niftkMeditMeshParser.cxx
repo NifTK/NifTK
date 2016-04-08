@@ -25,8 +25,6 @@
 #include <algorithm>
 #include <typeinfo>
 
-using namespace std;
-using namespace niftk;
 
 /*
  * Reads until keyword is encountered in the input stream
@@ -264,7 +262,7 @@ vtkSmartPointer<vtkPoints> MeditMeshParser::_ReadVertices(ifstream &r_fin) const
   return p_points;
   
  ParserFail:    
-  errOSS << " Error parsing file " << m_InputFileName << endl;
+  errOSS << " Error parsing file " << m_InputFileName << std::endl;
 
   throw niftk::IOException(errOSS.str());
 } /* _ReadVertices */
