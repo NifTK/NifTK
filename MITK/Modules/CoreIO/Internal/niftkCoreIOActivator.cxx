@@ -33,8 +33,12 @@ niftk::CoreIOActivator::CoreIOActivator()
 
 //-----------------------------------------------------------------------------
 void niftk::CoreIOActivator::Load(us::ModuleContext* context)
-{
+{  
+  m_LookupTableProviderService.reset(new QmitkLookupTableProviderServiceImpl);
+
   us::ServiceProperties props;
+  context->RegisterService<QmitkLookupTableProviderService>(m_LookupTableProviderService.get(), props);
+
   props[ us::ServiceConstants::SERVICE_RANKING() ] = 10;
 
   std::vector<mitk::CustomMimeType*> mimeTypes = niftk::CoreIOMimeTypes::Get();
@@ -52,7 +56,6 @@ void niftk::CoreIOActivator::Load(us::ModuleContext* context)
   m_PNMReaderService.reset(new niftk::PNMReaderService());
   m_PNMWriterService.reset(new niftk::PNMWriterService());
 
-  m_LookupTableProviderService.reset(new QmitkLookupTableProviderServiceImpl);
   m_LabelMapReaderService.reset(new mitk::LabelMapReader());
   m_LabelMapWriterService.reset(new mitk::LabelMapWriter());
 }
