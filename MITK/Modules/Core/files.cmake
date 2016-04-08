@@ -67,3 +67,8 @@ set(RESOURCE_FILES
   Interactions/AffineTransformConfig.xml
   Interactions/AffineTransformSM.xml
 )
+
+set(QRC_FILES
+  Resources/niftkCore.qrc
+)
+
