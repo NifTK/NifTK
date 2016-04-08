@@ -53,7 +53,7 @@ public:
    * \brief Called when the visibility of a node in the data storage changed.
    * \param node The node in the data storage whose visibility property has been modified.
    */
-  virtual void onVisibilityChanged(const mitk::DataNode* node);
+  virtual void onVisibilityChanged(const mitk::DataNode* node) override;
 
   /**
    * \brief Called when the window focus changes, and tracks the current mitk::BaseRenderer*.
@@ -94,7 +94,7 @@ public:
   void SetCurrentSelection(mitk::DataNode::Pointer dataNode);
 
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
-  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
+  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes) override;
 
   /**
    * \brief Retrieves a RenderWindow from the mitkRenderWindowPart.
@@ -118,22 +118,22 @@ protected:
   /**
    * \see mitk::ILifecycleAwarePart::PartActivated
    */
-  virtual void Activated();
+  virtual void Activated() override;
 
   /**
    * \see mitk::ILifecycleAwarePart::PartDeactivated
    */
-  virtual void Deactivated();
+  virtual void Deactivated() override;
 
   /**
    * \see mitk::ILifecycleAwarePart::PartVisible
    */
-  virtual void Visible();
+  virtual void Visible() override;
 
   /**
    * \see mitk::ILifecycleAwarePart::PartHidden
    */
-  virtual void Hidden();
+  virtual void Hidden() override;
 
   /**
    * Get the parent Qt widget for this view.

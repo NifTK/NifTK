@@ -62,7 +62,7 @@ protected:
   VnlIterationUpdateCommand();
 
   /** Both Execute methods call this. */
-  virtual void DoExecute(const itk::Object * object, const itk::EventObject & event);
+  virtual void DoExecute(const itk::Object * object, const itk::EventObject & event) override;
   
 private:
 

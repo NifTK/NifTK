@@ -29,7 +29,7 @@ public:
   void showBytesDownloaded(unsigned long numBytes);
   void showUnzipInProgress();
   bool wasDownloadCanceled();
-  void closeEvent(QCloseEvent* event);
+  void closeEvent(QCloseEvent* event) override;
 
 public slots:
   bool close();

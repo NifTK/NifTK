@@ -80,13 +80,13 @@ public:
    * \post Sets classes ImageIOBase::m_FileName variable to be FileNameToWrite
    * \return Returns true if this ImageIO can read the file specified.
    */
-  virtual bool CanReadFile(const char* FileNameToRead);
+  virtual bool CanReadFile(const char* FileNameToRead) override;
 
   /** Set the spacing and dimension information for the set filename. */
-  virtual void ReadImageInformation();
+  virtual void ReadImageInformation() override;
 
   /** Reads the data from disk into the memory buffer provided. */
-  virtual void Read(void* buffer);
+  virtual void Read(void* buffer) override;
 
   /*-------- This part of the interfaces deals with writing data. ----- */
 
@@ -96,19 +96,19 @@ public:
    * \post Sets classes ImageIOBase::m_FileName variable to be FileNameToWrite
    * \return Returns true if this ImageIO can write the file specified.
    */
-  virtual bool CanWriteFile(const char * FileNameToWrite);
+  virtual bool CanWriteFile(const char * FileNameToWrite) override;
 
   /** Set the spacing and dimension information for the set filename. */
-  virtual void WriteImageInformation();
+  virtual void WriteImageInformation() override;
 
   /** Writes the data to disk from the memory buffer provided. Make sure
    * that the IORegions has been set properly. */
-  virtual void Write(const void* buffer);
+  virtual void Write(const void* buffer) override;
 
   /** Calculate the region of the image that can be efficiently read 
    *  in response to a given requested region. */
   virtual ImageIORegion 
-  GenerateStreamableReadRegionFromRequestedRegion( const ImageIORegion & requestedRegion ) const;
+  GenerateStreamableReadRegionFromRequestedRegion( const ImageIORegion & requestedRegion ) const override;
 
   /** A mode to allow the Nifti filter to read and write to the LegacyAnalyze75 format as interpreted by
     * the nifti library maintainers.  This format does not properly respect the file orientation fields.
@@ -122,12 +122,12 @@ public:
     * The same fix is applied by the MITK in their internal (not exposed)
     * NIfTI reader.
     */
-  virtual bool SupportsDimension(unsigned long dim);
+  virtual bool SupportsDimension(unsigned long dim) override;
 
 protected:
   NiftiImageIO3201();
   ~NiftiImageIO3201();
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
   virtual bool GetUseLegacyModeForTwoFileWriting(void) const { return false; }
 private:
   bool  MustRescale();

@@ -24,9 +24,6 @@
 
 #include <fstream>
 
-using namespace std;
-using namespace niftk;
-
 CGALMesherBackEnd::CGALMesherBackEnd(void) : m_facetAngle(30), m_facetEdgeLength(1), m_facetApproximationError(3), m_cellSize(1), m_cellEdgeRadiusRatio(3) {}
 
 using namespace CGAL::parameters;

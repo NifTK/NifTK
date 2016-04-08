@@ -53,17 +53,17 @@ protected:
   /**
    * \see mitk::ILifecycleAwarePart::PartActivated
    */
-  virtual void Activated();
+  virtual void Activated() override;
 
   /// \brief Called by framework, this method creates all the controls for this view
-  virtual void CreateQtPartControl(QWidget *parent);
+  virtual void CreateQtPartControl(QWidget *parent) override;
 
-  virtual bool eventFilter(QObject *obj, QEvent *event);
+  virtual bool eventFilter(QObject *obj, QEvent *event) override;
 
   /// \brief Called by framework, sets the focus on a specific widget.
-  virtual void SetFocus();
+  virtual void SetFocus() override;
 
-  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes);
+  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes) override;
 
 protected slots:
 
@@ -79,7 +79,7 @@ private:
   void RetrievePreferenceValues();
 
   /// \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
-  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*) override;
 
   void SelectReferenceNode(mitk::DataNode::Pointer node);
   void SelectSurfaceNode(mitk::DataNode::Pointer node);

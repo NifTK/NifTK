@@ -85,7 +85,7 @@ public:
    * Compute the BSI.
    */
   virtual void Compute(void);
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
   /**
   * Calculate the simple linear regression between x and y.  
   */

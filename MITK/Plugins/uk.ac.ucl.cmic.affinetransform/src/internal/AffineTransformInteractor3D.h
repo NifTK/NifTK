@@ -76,7 +76,7 @@ public:
     *
     * overwritten, cause we don't look at the boundingbox, we look at each point
     */
-  virtual float CanHandleEvent(mitk::StateEvent const *stateEvent) const;
+  virtual float CanHandleEvent(mitk::StateEvent const *stateEvent) const override;
   //vtkRenderer * GetCurrentVTKRenderer() { return m_currentVtkRenderer; }
 
   inline void SetBoundingObjectNode(mitk::DataNode * bObj) { m_boundingObjectNode = bObj; }

@@ -53,14 +53,14 @@ public:
 
   static const QString VIEW_ID;
 
-  virtual void CreateQtPartControl(QWidget *parent);
+  virtual void CreateQtPartControl(QWidget *parent) override;
 
   /// \brief called by QmitkAbstractView when DataManager's selection has changed
   virtual void OnSelectionChanged( berry::IWorkbenchPart::Pointer source,
-                                   const QList<mitk::DataNode::Pointer>& nodes );
+                                   const QList<mitk::DataNode::Pointer>& nodes ) override;
 
   /// \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
-  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*) override;
 
 protected slots:
 
@@ -80,7 +80,7 @@ protected slots:
 
 protected:
 
-  virtual void SetFocus();
+  virtual void SetFocus() override;
 
 private:
 
@@ -251,7 +251,7 @@ private:
 
 
   /// \brief Processes the clipboard copy event.
-  bool eventFilter(QObject* object, QEvent* event);
+  bool eventFilter(QObject* object, QEvent* event) override;
 
   Ui::ImageStatisticsViewControls m_Controls;
   bool                            m_AutoUpdate;

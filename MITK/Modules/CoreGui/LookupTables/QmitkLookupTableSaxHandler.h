@@ -51,18 +51,18 @@ public:
   bool startElement(const QString& namespaceURI,
                     const QString& localName,
                     const QString& qName,
-                    const QXmlAttributes& attributes);
+                    const QXmlAttributes& attributes) override;
 
   /** Methods that we must implement for the handler. */
   bool endElement(const QString& namespaceURI,
                   const QString& localName,
-                  const QString& qName);
+                  const QString& qName) override;
 
   /** Methods that we must implement for the handler. */
-  bool characters(const QString& str);
+  bool characters(const QString& str) override;
 
   /** Methods that we must implement for the handler. */
-  bool fatalError(const QXmlParseException& exception);
+  bool fatalError(const QXmlParseException& exception) override;
 
 private:
 

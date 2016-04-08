@@ -64,10 +64,10 @@ public:
   itkTypeMacro( BSplineBendingEnergyConstraint, Constraint );
 
   /** Calculates the bending energy. */
-  virtual MeasureType EvaluateConstraint(const ParametersType & parameters);
+  virtual MeasureType EvaluateConstraint(const ParametersType & parameters) override;
 
   /** Calculates the derivative of the bending energy. */
-  virtual void EvaluateDerivative(const ParametersType & parameters, DerivativeType & derivative ) const;
+  virtual void EvaluateDerivative(const ParametersType & parameters, DerivativeType & derivative ) const override;
   
   /** Set/Get the Transfrom. */
   itkSetObjectMacro( Transform, TransformType );
@@ -78,7 +78,7 @@ protected:
   BSplineBendingEnergyConstraint();
   virtual ~BSplineBendingEnergyConstraint() {};
 
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
 private:  
   

@@ -34,10 +34,10 @@ public:
   QmitkLookupTableProviderServiceActivator();
 
   /** \brief Load module context */
-  void Load(us::ModuleContext *context);
+  void Load(us::ModuleContext *context) override;
 
   /** \brief Unload module context */
-  void Unload(us::ModuleContext* );
+  void Unload(us::ModuleContext* ) override;
 
 private:
 

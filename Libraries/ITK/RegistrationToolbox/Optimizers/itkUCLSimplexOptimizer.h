@@ -45,7 +45,7 @@ public:
   itkTypeMacro( UCLSimplexOptimizer, AmoebaOptimizer );
 
   /** Plug in a Cost Function into the optimizer  */
-  virtual void SetCostFunction(SingleValuedCostFunction * costFunction );
+  virtual void SetCostFunction(SingleValuedCostFunction * costFunction ) override;
 
 protected:
   UCLSimplexOptimizer();

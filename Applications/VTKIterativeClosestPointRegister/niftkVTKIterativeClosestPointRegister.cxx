@@ -75,7 +75,7 @@ public:
   static KeyPressInteractorStyle* New();
   vtkTypeMacro(KeyPressInteractorStyle, vtkInteractorStyleTrackballCamera);
 
-  virtual void OnKeyPress()
+  virtual void OnKeyPress() override
   {
     // Get the keypress
     vtkRenderWindowInteractor *rwi = this->Interactor;

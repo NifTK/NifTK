@@ -32,12 +32,12 @@ public:
   CoordinateAxesDataReaderService();
   virtual ~CoordinateAxesDataReaderService();
 
-  virtual std::vector< itk::SmartPointer<mitk::BaseData> > Read();
+  virtual std::vector< itk::SmartPointer<mitk::BaseData> > Read() override;
 
 private:
 
   CoordinateAxesDataReaderService(const CoordinateAxesDataReaderService& other);
-  virtual CoordinateAxesDataReaderService* Clone() const;
+  virtual CoordinateAxesDataReaderService* Clone() const override;
 };
 
 } // end namespace

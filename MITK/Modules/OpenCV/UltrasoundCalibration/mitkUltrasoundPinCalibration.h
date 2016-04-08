@@ -42,7 +42,7 @@ public:
   /**
    * \see mitk::InvariantPointCalibration::Calibrate().
    */
-  virtual double Calibrate();
+  virtual double Calibrate() override;
 
 protected:
 

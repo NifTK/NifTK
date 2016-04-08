@@ -123,7 +123,7 @@ protected:
   MammogramViewType m_MammogramView;
   double m_Score;
 
-  void PrintSelf(std::ostream & os, Indent indent) const;
+  void PrintSelf(std::ostream & os, Indent indent) const override;
 
 private:
 

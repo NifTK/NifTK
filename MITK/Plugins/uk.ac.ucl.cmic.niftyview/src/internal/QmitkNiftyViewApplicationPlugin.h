@@ -34,16 +34,16 @@ public:
   QmitkNiftyViewApplicationPlugin();
   ~QmitkNiftyViewApplicationPlugin();
 
-  virtual void start(ctkPluginContext*);
-  virtual void stop(ctkPluginContext*);
+  virtual void start(ctkPluginContext*) override;
+  virtual void stop(ctkPluginContext*) override;
 
 protected:
 
   /// \brief Called each time a data node is added, so we make sure it is initialised with a Window/Level.
-  virtual void NodeAdded(const mitk::DataNode *node);
+  virtual void NodeAdded(const mitk::DataNode *node) override;
 
   /// \brief Called by framework to get a URL for help system.
-  virtual QString GetHelpHomePageURL() const;
+  virtual QString GetHelpHomePageURL() const override;
 
 private:
 

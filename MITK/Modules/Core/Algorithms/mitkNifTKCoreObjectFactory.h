@@ -31,10 +31,10 @@ public:
   itkNewMacro(NifTKCoreObjectFactory);
 
   /// \see CoreObjectFactoryBase::CreateMapper
-  virtual Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId);
+  virtual Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId) override;
 
   /// \see CoreObjectFactoryBase::SetDefaultProperties
-  virtual void SetDefaultProperties(mitk::DataNode* node);
+  virtual void SetDefaultProperties(mitk::DataNode* node) override;
 
   /// \see CoreObjectFactoryBase::GetFileExtensions
   DEPRECATED(virtual const char* GetFileExtensions());

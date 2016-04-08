@@ -37,51 +37,51 @@ public:
   /**
    * \see QmitkLookupTableProviderService::GetNumberOfLookupTables()
    */
-  virtual unsigned int GetNumberOfLookupTables();
+  virtual unsigned int GetNumberOfLookupTables() override;
 
   /**
    * \see QmitkLookupTableProviderService::CheckName()
    */
-  virtual bool CheckName(const QString& name);
+  virtual bool CheckName(const QString& name) override;
 
   /**
    * \see QmitkLookupTableProviderService::CreateLookupTable()
    */
   virtual vtkLookupTable* CreateLookupTable(const QString& lookupTableName,
                                             float lowestValueOpacity,
-                                            float highestValueOpacity);
+                                            float highestValueOpacity) override;
 
   /**
    * \see QmitkLookupTableProviderService::CreateLookupTableProperty()
    */
   virtual mitk::NamedLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName,
                                                                             float lowestValueOpacity,
-                                                                            float highestValueOpacity);
+                                                                            float highestValueOpacity) override;
   
   /**
    * \see QmitkLookupTableProviderService::CreateLookupTableProperty()
    */
-  virtual mitk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName);
+  virtual mitk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName) override;
 
   /**
    * \see QmitkLookupTableProviderService::AddNewLookupTableContainer()
    */
-  virtual void AddNewLookupTableContainer(const QmitkLookupTableContainer* container);
+  virtual void AddNewLookupTableContainer(const QmitkLookupTableContainer* container) override;
   
   /**
    * \see QmitkLookupTableProviderService::ReplaceLookupTableContainer()
    */
-  virtual void ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& lookupTableName);
+  virtual void ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& lookupTableName) override;
 
   /**
    * \see QmitkLookupTableProviderService::GetIsScaled
    */
-  virtual bool GetIsScaled(const QString& lookupTableName);
+  virtual bool GetIsScaled(const QString& lookupTableName) override;
 
   /**
    * \see QmitkLookupTableProviderService::GetTableNames
    */
-  virtual std::vector<QString> GetTableNames();
+  virtual std::vector<QString> GetTableNames() override;
 
 
   /**

@@ -69,7 +69,7 @@ public:
     { SetMaximize( true ); }
 
   /** Start optimization. */
-  void    StartOptimization( void );
+  void    StartOptimization( void ) override;
 
   /** Resume previously stopped optimization with current parameters.
    * \sa StopOptimization */
@@ -96,7 +96,7 @@ public:
 protected:
   UCLRegularStepOptimizer();
   virtual ~UCLRegularStepOptimizer() {};
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
 private:  
   UCLRegularStepOptimizer(const Self&); //purposely not implemented

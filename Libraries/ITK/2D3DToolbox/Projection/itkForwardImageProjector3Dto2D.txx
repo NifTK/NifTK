@@ -176,7 +176,7 @@ ForwardImageProjector3Dto2D<IntensityType>
     writer->Update();
   }
   catch( itk::ExceptionObject & err ) {
-    std::cerr << "ERROR: Failed to write output to file: " << filename << "; " << err << endl;
+    std::cerr << "ERROR: Failed to write output to file: " << filename << "; " << err << std::endl;
   }
 
   if (n >= 21)
@@ -363,7 +363,7 @@ ForwardImageProjector3Dto2D<IntensityType>
     writer->Update();
   }
   catch( itk::ExceptionObject & err ) {
-    std::cerr << "ERROR: Failed to write output to file: " << filename << "; " << err << endl;
+    std::cerr << "ERROR: Failed to write output to file: " << filename << "; " << err << std::endl;
   }
 
   if (n >= 21)
@@ -375,14 +375,14 @@ ForwardImageProjector3Dto2D<IntensityType>
   OutputImagePointer     outImage = this->GetOutput();
   ImageRegionIterator<OutputImageType> outputIterator;
 
-  cout << endl << "DEBUG - Output of forward projection: " << endl;
+  std::cout << std::endl << "DEBUG - Output of forward projection: " << std::endl;
  
   outputIterator = ImageRegionIterator<OutputImageType>(outImage, outImage->GetLargestPossibleRegion());
 
   for ( outputIterator.GoToBegin(); !outputIterator.IsAtEnd(); ++outputIterator) 
-      cout << outputIterator.Get() << " ";
+      std::cout << outputIterator.Get() << " ";
 
-  cout << endl;
+  std::cout << std::endl;
 #endif
 }
 

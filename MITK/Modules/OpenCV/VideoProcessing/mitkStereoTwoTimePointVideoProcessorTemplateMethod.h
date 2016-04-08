@@ -35,12 +35,12 @@ public:
   /**
    * \see BaseVideoProcessor::Initialize()
    */
-  virtual void Initialize();
+  virtual void Initialize() override;
 
   /**
    * \brief BaseVideoProcessor::Run()
    */
-  virtual void Run();
+  virtual void Run() override;
 
 protected:
 

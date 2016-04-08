@@ -57,7 +57,7 @@ public:
 
   itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 4 );
 
-  virtual unsigned int GetNumberOfParameters(void) const  
+  virtual unsigned int GetNumberOfParameters(void) const override  
   {
     return ParametricSpaceDimension;
   }
@@ -80,11 +80,11 @@ public:
   void SetMaxDistance( DistancePixelType distance ) { m_MaxDistance = distance; }
 
 
-  MeasureType GetValue( const ParametersType &parameters ) const;
+  MeasureType GetValue( const ParametersType &parameters ) const override;
 
-  void WriteIntensityVsEdgeDistToFile( std::string fileOutputIntensityVsEdgeDist );
+  void WriteIntensityVsEdgeDistToFile( std::string fileOutputIntensityVsEdgeDist ) override;
   void WriteFitToFile( std::string fileOutputFit,
-                       const ParametersType &parameters );
+                       const ParametersType &parameters ) override;
 
   void GenerateFatArray( unsigned int nDistances, float *fatEstimate, 
                          const ParametersType &parameters );
@@ -95,7 +95,7 @@ protected:
   virtual ~MammogramFatEstimationFitMetricForArray();
   MammogramFatEstimationFitMetricForArray(const Self &) {}
   void operator=(const Self &) {}
-  void PrintSelf(std::ostream & os, Indent indent) const;
+  void PrintSelf(std::ostream & os, Indent indent) const override;
 
   unsigned int m_NumberOfDistances;
   float *m_MinIntensityVsEdgeDistance;

@@ -95,7 +95,7 @@ public:
     m_Data = inputData;
   }
 
-  MeasureType GetValue( const ParametersType &parameters ) const
+  MeasureType GetValue( const ParametersType &parameters ) const override
   {
     unsigned int i;
 
@@ -127,7 +127,7 @@ public:
  }
 
   void GetDerivative( const ParametersType &parameters,
-                            DerivativeType &derivative ) const
+                            DerivativeType &derivative ) const override
   {
     unsigned int iPoint = 0;
 
@@ -154,12 +154,12 @@ public:
     iPoint++;
   }
 
-  unsigned int GetNumberOfParameters(void) const
+  unsigned int GetNumberOfParameters(void) const override
   {
     return NumberOfParameters;
   }
 
-  unsigned int GetNumberOfValues(void) const
+  unsigned int GetNumberOfValues(void) const override
   {
     return m_NumberOfDataPoints;
   }
@@ -201,12 +201,12 @@ class CommandIterationUpdateSuperEllipseFit : public Command
   typedef LevenbergMarquardtOptimizer OptimizerType;
   typedef const OptimizerType *OptimizerPointer;
 
-  void Execute(Object *caller, const EventObject & event)
+  void Execute(Object *caller, const EventObject & event) override
   {
     Execute( (const Object *)caller, event);
   }
 
-  void Execute(const Object * object, const EventObject & event)
+  void Execute(const Object * object, const EventObject & event) override
   {
     std::cout << "Observer::Execute() " << std::endl;
     OptimizerPointer optimizer = 

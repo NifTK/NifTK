@@ -45,18 +45,18 @@ public:
   /**
   * \brief Equal to the number of points * 3.
   */
-  virtual unsigned int GetNumberOfValues(void) const;
+  virtual unsigned int GetNumberOfValues(void) const override;
 
   /**
   * \brief Required by base class to return the number of parameters.
   */
-  virtual unsigned int GetNumberOfParameters() const;
+  virtual unsigned int GetNumberOfParameters() const override;
 
   /**
   * \brief Simply uses central differences to approximate the derivative for each of the parameters.
   * See also SetScales where you set the relative size of each parameter step size.
   */
-  virtual void GetDerivative( const ParametersType & parameters, DerivativeType  & derivative ) const;
+  virtual void GetDerivative( const ParametersType & parameters, DerivativeType  & derivative ) const override;
 
   /**
   * \brief Used when calculating derivative using central differences.
@@ -83,7 +83,7 @@ public:
   * where this function returns an array of n (x, y, z) tuples where n is the number
   * of points, and each x, y, z measure is the difference from the invariant point.
   */
-  virtual MeasureType GetValue( const ParametersType & parameters ) const;
+  virtual MeasureType GetValue( const ParametersType & parameters ) const override;
 
   /**
   * \brief Sets the points in image space.

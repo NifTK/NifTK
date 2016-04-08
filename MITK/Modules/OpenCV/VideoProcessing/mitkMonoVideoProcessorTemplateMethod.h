@@ -36,12 +36,12 @@ public:
   /**
    * \see BaseVideoProcessor::Initialize()
    */
-  virtual void Initialize();
+  virtual void Initialize() override;
 
   /**
    * \see BaseVideoProcessor::Run()
    */
-  virtual void Run();
+  virtual void Run() override;
 
 protected:
 
@@ -56,7 +56,7 @@ protected:
    * \brief Overrides base class method \see BaseVideoProcessor::GetOutputImageSize(), returning the size
    * of the grabbed image in the base class. i.e. this class does nothing to the size.
    */
-  CvSize GetOutputImageSize();
+  CvSize GetOutputImageSize() override;
 
   /**
    * \brief Derived classes override this method to do their processing.

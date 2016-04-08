@@ -390,7 +390,7 @@ int main(int argc, char** argv)
     inputProjectionReader->Update();
   }
   catch( itk::ExceptionObject & err ) {
-    std::cerr << "ERROR: Failed to load input projection volume: " << fileInputProjectionVolume << "; " << err << endl;
+    std::cerr << "ERROR: Failed to load input projection volume: " << fileInputProjectionVolume << "; " << err << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -415,7 +415,7 @@ int main(int argc, char** argv)
       inputEstimateReader->Update();
     }
     catch( itk::ExceptionObject & err ) {
-      std::cerr << "ERROR: Failed to load reconstruction estimate: " << fileInputCurrentEstimate << "; " << err << endl;
+      std::cerr << "ERROR: Failed to load reconstruction estimate: " << fileInputCurrentEstimate << "; " << err << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -442,7 +442,7 @@ int main(int argc, char** argv)
   if (flgGE_5000) {
 
     if (nProjections != 11) {
-      std::cerr << "ERROR: Number of projections in input volume (" << nProjections << ") must equal 11 for GE-5000 geometry" << endl;
+      std::cerr << "ERROR: Number of projections in input volume (" << nProjections << ") must equal 11 for GE-5000 geometry" << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -456,7 +456,7 @@ int main(int argc, char** argv)
   else if (flgGE_6000) {
 
     if (nProjections != 15) {
-      std::cerr << "ERROR: Number of projections in input volume (" << nProjections << ") must equal 15 for GE-6000 geometry" << endl;
+      std::cerr << "ERROR: Number of projections in input volume (" << nProjections << ") must equal 15 for GE-6000 geometry" << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -469,7 +469,7 @@ int main(int argc, char** argv)
   else if (flgMammomat) {
 
     if (nProjections != 25) {
-      std::cerr << "ERROR: Number of projections in input volume (" << nProjections << ") must equal 25 for Siemens Mammomat geometry" << endl;
+      std::cerr << "ERROR: Number of projections in input volume (" << nProjections << ") must equal 25 for Siemens Mammomat geometry" << std::endl;
       return EXIT_FAILURE;
     }
     
@@ -630,13 +630,13 @@ int main(int argc, char** argv)
     std::cout << "Starting reconstruction..." << std::endl;
 
     if (flgDebug)
-      cout << "ImageReconstructionMethod: " << imReconstructor << endl;
+      std::cout << "ImageReconstructionMethod: " << imReconstructor << std::endl;
 
     imReconstructor->Update();
     std::cout << "Reconstruction complete" << std::endl;
   }
   catch( itk::ExceptionObject & err ) {
-    std::cerr << "ERROR: Failed to calculate the reconstruction; " << err << endl;
+    std::cerr << "ERROR: Failed to calculate the reconstruction; " << err << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -647,13 +647,13 @@ int main(int argc, char** argv)
   boost::posix_time::ptime endTime = boost::posix_time::second_clock::local_time();
   boost::posix_time::time_duration duration = endTime - startTime;
 
-  cout << "Execution time: " << boost::posix_time::to_simple_string(duration) << std::endl;
+  std::cout << "Execution time: " << boost::posix_time::to_simple_string(duration) << std::endl;
 
   if (fileOutputExecutionTime.length() != 0) {
-    ofstream fout(fileOutputExecutionTime.c_str());
+    std::ofstream fout(fileOutputExecutionTime.c_str());
 
     if ((! fout) || fout.bad()) {
-      cerr << "ERROR: Could not open file: " << fileOutputExecutionTime << endl;
+      std::cerr << "ERROR: Could not open file: " << fileOutputExecutionTime << std::endl;
       return 1;
     }
 
@@ -691,7 +691,7 @@ int main(int argc, char** argv)
     writer->Update();
   }
   catch( itk::ExceptionObject & err ) {
-    std::cerr << "ERROR: Failed to write output to file: " << fileOutputReconstruction << "; " << err << endl;
+    std::cerr << "ERROR: Failed to write output to file: " << fileOutputReconstruction << "; " << err << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -763,5 +763,3 @@ int main(int argc, char** argv)
 
   return EXIT_SUCCESS;
 }
-
-

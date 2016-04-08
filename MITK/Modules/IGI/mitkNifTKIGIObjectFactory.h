@@ -34,22 +34,22 @@ class NIFTKIGI_EXPORT NifTKIGIObjectFactory : public CoreObjectFactoryBase
     itkNewMacro(NifTKIGIObjectFactory);
 
     /// \see CoreObjectFactoryBase::CreateMapper
-    virtual Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId);
+    virtual Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId) override;
 
     /// \see CoreObjectFactoryBase::SetDefaultProperties
-    virtual void SetDefaultProperties(mitk::DataNode* node);
+    virtual void SetDefaultProperties(mitk::DataNode* node) override;
 
     /// \see CoreObjectFactoryBase::GetFileExtensions
-    virtual const char* GetFileExtensions();
+    virtual const char* GetFileExtensions() override;
 
     /// \see CoreObjectFactoryBase::GetFileExtensionsMap
-    virtual mitk::CoreObjectFactoryBase::MultimapType GetFileExtensionsMap();
+    virtual mitk::CoreObjectFactoryBase::MultimapType GetFileExtensionsMap() override;
 
     /// \see CoreObjectFactoryBase::GetSaveFileExtensions
-    virtual const char* GetSaveFileExtensions();
+    virtual const char* GetSaveFileExtensions() override;
 
     /// \see CoreObjectFactoryBase::GetSaveFileExtensionsMap
-    virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap();
+    virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap() override;
 
   protected:
     NifTKIGIObjectFactory();

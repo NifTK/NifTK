@@ -21,7 +21,6 @@
 #include <itkImage.h>
 #include <itkMIDASUpSamplingFilter.h>
 #include <itkImageRegionConstIterator.h>
-using namespace std;
 
 /**
  * Basic tests for MIDASUpSamplingFilterTest

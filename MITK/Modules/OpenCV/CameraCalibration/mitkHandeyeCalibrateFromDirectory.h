@@ -67,7 +67,7 @@ public:
   bool LoadExistingIntrinsicCalibrations (std::string directory);
   bool LoadExistingRightToLeft(const std::string& directory);
   void SetInputDirectory(const std::string& inputDir);
-  virtual void SetOutputDirectory(const std::string& outputDir);
+  virtual void SetOutputDirectory(const std::string& outputDir) override;
   void SetChessBoardToTracker(vtkMatrix4x4* matrix);
 
 protected:

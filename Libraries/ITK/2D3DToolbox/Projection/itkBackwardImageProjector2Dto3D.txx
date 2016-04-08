@@ -430,14 +430,14 @@ BackwardImageProjector2Dto3D<IntensityType>
 #if 0
   ImageRegionIterator<OutputImageType> outputIterator;
 
-  cout << "DEBUG - Output of back projection: ";
+  std::cout << "DEBUG - Output of back projection: ";
  
   outputIterator = ImageRegionIterator<OutputImageType>(outImage, outImage->GetLargestPossibleRegion());
 
   for ( outputIterator.GoToBegin(); !outputIterator.IsAtEnd(); ++outputIterator) 
-      cout << outputIterator.Get() << " ";
+      std::cout << outputIterator.Get() << " ";
 
-  cout << endl;
+  std::cout << std::endl;
 #endif
 }
 

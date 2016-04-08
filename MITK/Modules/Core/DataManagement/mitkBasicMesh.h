@@ -15,8 +15,6 @@ See LICENSE.txt in the top level directory for details.
 #ifndef __mitkBasicMesh_h
 #define __mitkBasicMesh_h
 
-using namespace std;
-
 #include <vector>
 #include "niftkCoreExports.h"
 #include "mitkBasicVertex.h"
@@ -38,12 +36,12 @@ public:
   /// \brief Default constructor
   BasicMesh();
   /// \brief Constructor with vertices and triangles as parameters
-  BasicMesh(vector<BasicVertex> &vertices, vector<BasicTriangle> &triangles, int numOfVerts, int numOfTris);
+  BasicMesh(std::vector<BasicVertex> &vertices, std::vector<BasicTriangle> &triangles, int numOfVerts, int numOfTris);
   /// \brief Destructor
   virtual ~BasicMesh();
 
   /// \brief Initialize the mesh with an externally defined set of triangles and vertices
-  void InitWithVertsAndTris(vector<BasicVertex> &vertices, vector<BasicTriangle> &triangles, int numOfVerts, int numOfTris);
+  void InitWithVertsAndTris(std::vector<BasicVertex> &vertices, std::vector<BasicTriangle> &triangles, int numOfVerts, int numOfTris);
 
   /// \brief Copy constructor
   BasicMesh(const BasicMesh&);
@@ -74,7 +72,7 @@ public:
   /// \brief Compute normal for the vertex with the specified index
   void CalcOneVertNormal(unsigned vert);
 
-  /// \brief Print mesh state to cout
+  /// \brief Print mesh state to std::cout
   void PrintStatus();
 
 private:
@@ -88,13 +86,13 @@ private:
   void CalcVertNormals();
 
 private:
-  vector<BasicVertex>   m_VertList; // list of vertices in mesh
-  vector<BasicTriangle> m_TriList;  // list of triangles in mesh
+  std::vector<BasicVertex>   m_VertList; // list of vertices in mesh
+  std::vector<BasicTriangle> m_TriList;  // list of triangles in mesh
 
   int m_NumVerts;
   int m_NumTriangles;
 };
 
-} // end of namespace
+}
 
-#endif // __mitkBasicMesh_h
+#endif

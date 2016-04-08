@@ -53,7 +53,7 @@ public:
   /**
    * \brief Used from the Undo stack, see mitk::OperationActor::ExecuteOperation().
    */
-  virtual void ExecuteOperation(mitk::Operation* operation);
+  virtual void ExecuteOperation(mitk::Operation* operation) override;
 
   /**
    * \brief Sets the data storage onto this object.

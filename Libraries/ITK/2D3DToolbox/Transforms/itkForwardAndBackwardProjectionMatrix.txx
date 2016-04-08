@@ -205,7 +205,7 @@ namespace itk
 
           }
 
-          niftkitkDebugMacro(<<"Finished forward projection: " << iProjection << endl);
+          niftkitkDebugMacro(<<"Finished forward projection: " << iProjection << std::endl);
 
         }
 
@@ -349,7 +349,7 @@ namespace itk
 
           }
 
-          niftkitkDebugMacro(<<"Finished forward projection: " << iProjection << endl);
+          niftkitkDebugMacro(<<"Finished forward projection: " << iProjection << std::endl);
 
         }
 

@@ -362,7 +362,7 @@ public slots:
 protected:
 
   /// \brief Re-renders the visible render windows on a paint event, e.g. when the widget is resized.
-  virtual void paintEvent(QPaintEvent* event);
+  virtual void paintEvent(QPaintEvent* event) override;
 
 protected slots:
 

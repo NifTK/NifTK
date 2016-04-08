@@ -568,7 +568,7 @@ void AffineTransformer::OnSaveTransform(std::string fileName)
     }
     catch (itk::ExceptionObject &r_ex)
     {
-      MITK_ERROR << "Caught ITK exception:\n" << r_ex.what() << endl;
+      MITK_ERROR << "Caught ITK exception:\n" << r_ex.what() << std::endl;
     }
   }
   else if (fileName.find(".txt") != std::string::npos)
@@ -639,7 +639,7 @@ void AffineTransformer::OnLoadTransform(std::string fileName)
 
       if (sp_transformIO->GetTransformList()->size() == 0)
       {
-        MITK_ERROR << "ITK didn't find any transforms in " << fileName << endl;
+        MITK_ERROR << "ITK didn't find any transforms in " << fileName << std::endl;
         return;
       }
       
@@ -1000,7 +1000,7 @@ void AffineTransformer::ApplyResampleToCurrentNode()
   }
   catch (mitk::AccessByItkException &r_ex)
   {
-    MITK_ERROR << "MITK Exception:\n" << r_ex.what() << endl;
+    MITK_ERROR << "MITK Exception:\n" << r_ex.what() << std::endl;
   }
 
   image->Modified();

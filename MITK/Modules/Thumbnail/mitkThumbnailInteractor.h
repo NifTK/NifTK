@@ -47,18 +47,18 @@ public:
    * its infrastructure.
    * It also checks if event is to be accepted when i already has been processed by a DataInteractor.
    */
-  virtual void Notify(InteractionEvent* interactionEvent, bool isHandled);
+  virtual void Notify(InteractionEvent* interactionEvent, bool isHandled) override;
 
 protected:
 
   ThumbnailInteractor(QmitkThumbnailRenderWindow* thumbnailWindow);
   virtual ~ThumbnailInteractor();
 
-  virtual void ConnectActionsAndFunctions();
+  virtual void ConnectActionsAndFunctions() override;
 
-  virtual bool Init(StateMachineAction* action, InteractionEvent* event);
-  virtual bool Move(StateMachineAction* action, InteractionEvent* event);
-  virtual bool Zoom(StateMachineAction* action, InteractionEvent* event);
+  virtual bool Init(StateMachineAction* action, InteractionEvent* event) override;
+  virtual bool Move(StateMachineAction* action, InteractionEvent* event) override;
+  virtual bool Zoom(StateMachineAction* action, InteractionEvent* event) override;
 
 private:
 

@@ -32,12 +32,12 @@ public:
   CoordinateAxesDataWriterService();
   virtual ~CoordinateAxesDataWriterService();
 
-  virtual void Write();
+  virtual void Write() override;
 
 private:
 
   CoordinateAxesDataWriterService(const CoordinateAxesDataWriterService& other);
-  virtual CoordinateAxesDataWriterService* Clone() const;
+  virtual CoordinateAxesDataWriterService* Clone() const override;
 };
 
 } // end namespace

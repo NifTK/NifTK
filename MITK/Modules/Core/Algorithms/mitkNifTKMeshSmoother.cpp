@@ -98,7 +98,7 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
 
   Clear();
 
-  MITK_INFO << "Reading file: " << file_name << endl;
+  MITK_INFO << "Reading file: " << file_name << std::endl;
 
   ifstream in(file_name, ios_base::binary);
 
@@ -106,7 +106,7 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
     return false;
 
   const size_t header_size = 80;
-  vector<char> buffer(header_size, 0);
+  std::vector<char> buffer(header_size, 0);
   unsigned int num_triangles = 0; // Must be 4-byte unsigned int.
 
   // Read header.
@@ -121,7 +121,7 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
     'i' == tolower(buffer[3]) && 
     'd' == tolower(buffer[4]) )
   {
-    MITK_INFO << "Encountered ASCII STL file header -- aborting." << endl;
+    MITK_INFO << "Encountered ASCII STL file header -- aborting." << std::endl;
     return false;
   }
 
@@ -133,7 +133,7 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
 
   m_MeshDataExt->m_Triangles.resize(num_triangles);
 
-  MITK_INFO << "Triangles:    " << m_MeshDataExt->m_Triangles.size() << endl;
+  MITK_INFO << "Triangles:    " << m_MeshDataExt->m_Triangles.size() << std::endl;
 
   // Enough bytes for twelve 4-byte floats plus one 2-byte integer, per triangle.
   const size_t per_triangle_data_size = (12*sizeof(float) + sizeof(short unsigned int));
@@ -142,7 +142,7 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
 
   size_t num_triangles_remaining = m_MeshDataExt->m_Triangles.size();
   size_t tri_index = 0;
-  set<BasicVertex> vertex_set;
+  std::set<BasicVertex> vertex_set;
 
   while(num_triangles_remaining > 0)
   {
@@ -188,7 +188,7 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
         cp += sizeof(float);
 
         // Look for vertex in set.
-        set<BasicVertex>::const_iterator find_iter = vertex_set.find(v);
+        std::set<BasicVertex>::const_iterator find_iter = vertex_set.find(v);
 
         // If vertex not found in set...
         if(vertex_set.end() == find_iter)
@@ -210,7 +210,7 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
           m_MeshDataExt->m_Triangles[tri_index].SetVertIndex(j, v.GetIndex());
 
           // Add triangle index to vertex
-          vector<size_t> tri_indices;
+          std::vector<size_t> tri_indices;
           tri_indices.push_back(tri_index);
           m_MeshDataExt->m_VertexToTriangleIndices.push_back(tri_indices);
         }
@@ -236,7 +236,7 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
   for(size_t i = 0; i < m_MeshDataExt->m_VertexToTriangleIndices.size(); i++)
   {
     // Use a temporary set to avoid duplicates.
-    set<size_t> m_VertexToVertexIndices_set;
+    std::set<size_t> m_VertexToVertexIndices_set;
 
     for(size_t j = 0; j < m_MeshDataExt->m_VertexToTriangleIndices[i].size(); j++)
     {
@@ -248,17 +248,17 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
     }
 
     // Copy to final vector.
-    for(set<size_t>::const_iterator ci = m_VertexToVertexIndices_set.begin(); ci != m_VertexToVertexIndices_set.end(); ci++)
+    for(std::set<size_t>::const_iterator ci = m_VertexToVertexIndices_set.begin(); ci != m_VertexToVertexIndices_set.end(); ci++)
       m_MeshDataExt->m_VertexToVertexIndices[i].push_back(*ci);
   }
 
-  MITK_INFO << "Vertices:     " << m_MeshDataExt->m_Triangles.size()*3 << " (of which " << m_MeshDataExt->m_Vertices.size() << " are unique)" << endl;
+  MITK_INFO << "Vertices:     " << m_MeshDataExt->m_Triangles.size()*3 << " (of which " << m_MeshDataExt->m_Vertices.size() << " are unique)" << std::endl;
 
   in.close();
 
   //if(true == generate_normals)
   //{
-  //  MITK_INFO << "Generating normals" << endl;
+  //  MITK_INFO << "Generating normals" << std::endl;
   //  GenerateVertexAndTriangleNormals();
   //}
 
@@ -268,7 +268,7 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
 // This produces results that are practically identical to Meshlab
 void MeshSmoother::LaplaceSmooth(const float scale)
 {
-  vector<BasicVec3D> displacements(m_MeshDataExt->m_Vertices.size(), BasicVec3D(0, 0, 0));
+  std::vector<BasicVec3D> displacements(m_MeshDataExt->m_Vertices.size(), BasicVec3D(0, 0, 0));
 
   // Get per-vertex displacement.
   for(size_t i = 0; i < m_MeshDataExt->m_Vertices.size(); i++)
@@ -334,7 +334,7 @@ void MeshSmoother::TaubinSmooth(const float lambda, const float mu, const size_t
 
 void MeshSmoother::InverseEdgeLengthSmooth(const float scale)
 {
-  vector<BasicVec3D> displacements(m_MeshDataExt->m_Vertices.size(), BasicVec3D(0, 0, 0));
+  std::vector<BasicVec3D> displacements(m_MeshDataExt->m_Vertices.size(), BasicVec3D(0, 0, 0));
 
   // Get per-vertex displacement.
   for(size_t i = 0; i < m_MeshDataExt->m_Vertices.size(); i++)
@@ -344,7 +344,7 @@ void MeshSmoother::InverseEdgeLengthSmooth(const float scale)
     if(0 ==  m_MeshDataExt->m_VertexToVertexIndices[i].size())
       continue;
 
-    vector<float> weights( m_MeshDataExt->m_VertexToVertexIndices[i].size(), 0.0f);
+    std::vector<float> weights( m_MeshDataExt->m_VertexToVertexIndices[i].size(), 0.0f);
 
     // Calculate weights based on inverse edge lengths.
     for(size_t j = 0; j <  m_MeshDataExt->m_VertexToVertexIndices[i].size(); j++)
@@ -386,7 +386,7 @@ void MeshSmoother::InverseEdgeLengthSmooth(const float scale)
 
 void MeshSmoother::CurvatureNormalSmooth(const float scale)
 {
-  vector<BasicVec3D> displacements(m_MeshDataExt->m_Vertices.size(), BasicVec3D(0, 0, 0));
+  std::vector<BasicVec3D> displacements(m_MeshDataExt->m_Vertices.size(), BasicVec3D(0, 0, 0));
 
   // Get per-vertex displacement.
   for(size_t i = 0; i < m_MeshDataExt->m_Vertices.size(); i++)
@@ -394,7 +394,7 @@ void MeshSmoother::CurvatureNormalSmooth(const float scale)
     if(0 == m_MeshDataExt->m_VertexToVertexIndices[i].size())
       continue;
 
-    vector<float> weights(m_MeshDataExt->m_VertexToVertexIndices[i].size(), 0.0f);
+    std::vector<float> weights(m_MeshDataExt->m_VertexToVertexIndices[i].size(), 0.0f);
 
     size_t angle_error = 0;
 
@@ -469,8 +469,8 @@ void MeshSmoother::CurvatureNormalSmooth(const float scale)
 
     if(angle_error != 0)
     {
-      MITK_INFO << "Warning: Vertex " << i << " belongs to " << angle_error << " edges that do not belong to two triangles (" << m_MeshDataExt->m_VertexToVertexIndices[i].size() - angle_error << " edges were OK)." << endl;
-      MITK_INFO << "Your mesh probably has cracks or holes in it." << endl;
+      MITK_INFO << "Warning: Vertex " << i << " belongs to " << angle_error << " edges that do not belong to two triangles (" << m_MeshDataExt->m_VertexToVertexIndices[i].size() - angle_error << " edges were OK)." << std::endl;
+      MITK_INFO << "Your mesh probably has cracks or holes in it." << std::endl;
     }
 
     // Normalize the weights so that they sum up to 1.
@@ -547,9 +547,9 @@ void MeshSmoother::SetMaxExtent(float max_extent)
 
   float scale_value = max_extent / curr_max_extent;
 
-  MITK_INFO << "Original max extent: " << curr_max_extent << endl;
-  MITK_INFO << "Scaling all vertices by a factor of: " << scale_value << endl;
-  MITK_INFO << "New max extent: " << max_extent << endl;
+  MITK_INFO << "Original max extent: " << curr_max_extent << std::endl;
+  MITK_INFO << "Scaling all vertices by a factor of: " << scale_value << std::endl;
+  MITK_INFO << "New max extent: " << max_extent << std::endl;
 
   for(size_t i = 0; i < m_MeshDataExt->m_Vertices.size(); i++)
     m_MeshDataExt->m_Vertices[i].SetCoords(m_MeshDataExt->m_Vertices[i].GetCoords() * scale_value);
@@ -557,7 +557,7 @@ void MeshSmoother::SetMaxExtent(float max_extent)
 
 void MeshSmoother::RescaleMesh(double scale_value)
 {
-  MITK_INFO << "Scaling all vertices by a factor of: " << scale_value << endl;
+  MITK_INFO << "Scaling all vertices by a factor of: " << scale_value << std::endl;
 
   for(size_t i = 0; i < m_MeshDataExt->m_Vertices.size(); i++)
     m_MeshDataExt->m_Vertices[i].SetCoords(m_MeshDataExt->m_Vertices[i].GetCoords() * scale_value);
@@ -695,7 +695,7 @@ void MeshSmoother::FixCracks(void)
   }
 
   // Find edges that belong to only one triangle.
-  set<ordered_indexed_edge> problem_edges_set;
+  std::set<ordered_indexed_edge> problem_edges_set;
   size_t problem_edge_id = 0;
 
   // For each vertex.
@@ -751,27 +751,27 @@ void MeshSmoother::FixCracks(void)
 
   if(0 == problem_edges_set.size())
   {
-    //MITK_INFO << "No cracks found -- the mesh seems to be in good condition" << endl;
+    //MITK_INFO << "No cracks found -- the mesh seems to be in good condition" << std::endl;
     return;
   }
 
   if(0 != problem_edges_set.size() % 2)
   {
-    MITK_INFO << "Found " << problem_edges_set.size() << " problem edges" << endl;
-    MITK_ERROR << "Error -- the number of problem edges must be an even number (perhaps the mesh has holes?). Aborting." << endl;
+    MITK_INFO << "Found " << problem_edges_set.size() << " problem edges" << std::endl;
+    MITK_ERROR << "Error -- the number of problem edges must be an even number (perhaps the mesh has holes?). Aborting." << std::endl;
     return;
   }
 
   // Make a copy of the set into a vector because the edge matching will
   // run a bit faster while looping through a vector by index vs looping through
   // a set by iterator.
-  vector<ordered_indexed_edge> problem_edges_vec(problem_edges_set.begin(), problem_edges_set.end());
-  vector<bool> processed_problem_edges(problem_edges_set.size(), false);
+  std::vector<ordered_indexed_edge> problem_edges_vec(problem_edges_set.begin(), problem_edges_set.end());
+  std::vector<bool> processed_problem_edges(problem_edges_set.size(), false);
   problem_edges_set.clear();
 
-  set<ordered_size_t_pair> merge_vertices;
+  std::set<ordered_size_t_pair> merge_vertices;
 
-  //MITK_INFO << "Pairing problem edges" << endl;
+  //MITK_INFO << "Pairing problem edges" << std::endl;
 
   // Each problem edge is practically a duplicate of some other, but not quite exactly.
   // So, find the closest match for each problem edge.
@@ -788,7 +788,7 @@ void MeshSmoother::FixCracks(void)
     {
       // Note: Don't check to see if this edge has been processed yet.
       // Doing so will actually only slow this down further.
-      // Perhaps vector<bool> is a bit of a sloth?
+      // Perhaps std::vector<bool> is a bit of a sloth?
       //if(true == processed_problem_edges[problem_edges_vec[j].id])
       //	continue;
 
@@ -827,22 +827,22 @@ void MeshSmoother::FixCracks(void)
       merge_vertices.insert(ordered_size_t_pair(problem_edges_vec[i].indices[1], problem_edges_vec[closest_problem_edges_vec_index].indices[1]));
   }
 
-  //MITK_INFO << "Merging " << merge_vertices.size() << " vertex pairs" << endl;
+  //MITK_INFO << "Merging " << merge_vertices.size() << " vertex pairs" << std::endl;
 
-  for(set<ordered_size_t_pair>::const_iterator ci = merge_vertices.begin(); ci != merge_vertices.end(); ci++)
+  for (std::set<ordered_size_t_pair>::const_iterator ci = merge_vertices.begin(); ci != merge_vertices.end(); ci++)
     MergeVertexPair(ci->indices[0], ci->indices[1]);
 
   // Recalculate normals, if necessary.
   //RegenerateVertexAndTriangleNormalsIfExists();
 }
 
-template<typename T> void MeshSmoother::EliminateVectorDuplicates(vector<T> &v)
+template<typename T> void MeshSmoother::EliminateVectorDuplicates(std::vector<T> &v)
 {
   if(0 == v.size())
     return;
 
-  set<T> s(v.begin(), v.end()); // Eliminate duplicates (and sort them)
-  vector<T> vtemp(s.begin(), s.end()); // Stuff things back into a temp vector
+  std::set<T> s(v.begin(), v.end()); // Eliminate duplicates (and sort them)
+  std::vector<T> vtemp(s.begin(), s.end()); // Stuff things back into a temp vector
   v.swap(vtemp); // Assign temp vector contents to destination vector
 }
 

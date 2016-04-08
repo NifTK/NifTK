@@ -19,13 +19,10 @@
 
 #include "itkUCLMacro.h"
 #include <iostream>
-using namespace std;
-
-
 
 namespace itk {
 
-namespace Functor {  
+namespace Functor {
 
 
 template <class TScalar, int TNumberOfOrientations>
@@ -196,9 +193,6 @@ ScalarToRGBOBIFPixelFunctor<TScalar, TNumberOfOrientations>
 
   return ans;
 }
-
-
-  
 
 
 } // end namespace Functor

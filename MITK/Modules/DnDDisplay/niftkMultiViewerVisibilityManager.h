@@ -125,14 +125,14 @@ protected:
 
   /// \brief Called when a node is added, and we set rendering window specific visibility
   /// to false for all registered windows, plus other default properties such as interpolation type.
-  virtual void OnNodeAdded(mitk::DataNode* node);
+  virtual void OnNodeAdded(mitk::DataNode* node) override;
 
   /// \brief Called when a node is added, and we set rendering window specific visibility
-  virtual void OnNodeRemoved(mitk::DataNode* node);
+  virtual void OnNodeRemoved(mitk::DataNode* node) override;
 
   /// \brief Called when the property value has changed globally or for the given renderer.
   /// If the global property has changed, renderer is NULL.
-  virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer);
+  virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
   /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to initialVisibility.
   virtual void AddNodeToViewer(int windowIndex, mitk::DataNode* node, bool visibility=true);

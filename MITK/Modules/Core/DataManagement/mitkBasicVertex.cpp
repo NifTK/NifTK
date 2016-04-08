@@ -213,7 +213,7 @@ std::ostream&
   os << " Index: " << vo.GetIndex() << " ";
   os << vo.GetCoordArray(); // for some reason this isn't working as a friend function, not sure why
   // it is pulling ostream from the STL typedef, not the regular ostream, though.
-  set<int>::iterator pos;
+  std::set<int>::iterator pos;
   os << " Vert Neighbors:";
   for (pos = vo.GetVertNeighbors().begin(); pos != vo.GetVertNeighbors().end(); ++pos)
   {
@@ -270,7 +270,7 @@ void BasicVertex::CalcQuadric(BasicMesh& m, bool bUseTriArea)
     }
   }
 
-  set<int>::iterator pos;
+  std::set<int>::iterator pos;
   for (pos = m_TriNeighbors.begin(); pos != m_TriNeighbors.end(); ++pos)
   {
     int triIndex = *pos;
@@ -347,7 +347,7 @@ void BasicVertex::SetQuadric(double Qnew[4][4])
 // vertex is on an edge.
 bool BasicVertex::IsBorder(BasicMesh& m)
 {
-  set<int>::iterator pos, pos2;
+  std::set<int>::iterator pos, pos2;
   for (pos = GetVertNeighbors().begin(); pos != GetVertNeighbors().end(); ++pos)
   {
     int triCount = 0;
@@ -372,13 +372,13 @@ bool BasicVertex::IsBorder(BasicMesh& m)
 }
 
 // Return all border info if the vertex is on an edge of the mesh.
-void BasicVertex::GetAllBorderEdges(set<Border> &borderSet, BasicMesh& m)
+void BasicVertex::GetAllBorderEdges(std::set<Border> &borderSet, BasicMesh& m)
 {
   // Go through the list of all neighboring vertices, and see how many
   // triangles this vertex has in common w/ each neighboring vertex.  Normally
   // there will be two triangles in common, but if there is only one, then this 
   // vertex is on an edge.
-  set<int>::iterator pos, pos2;
+  std::set<int>::iterator pos, pos2;
 
   for (pos = GetVertNeighbors().begin(); pos != GetVertNeighbors().end(); ++pos)
   {

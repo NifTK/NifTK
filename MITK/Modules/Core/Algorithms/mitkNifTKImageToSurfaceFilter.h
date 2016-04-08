@@ -69,10 +69,10 @@ namespace mitk {
     itkNewMacro(Self);
 
     /// \brief For each image time slice a surface will be created. This method is called by Update().
-    virtual void GenerateData();
+    virtual void GenerateData() override;
 
     /// \brief Initializes the output information ( i.e. the geometry information ) of the output of the filter
-    virtual void GenerateOutputInformation();
+    virtual void GenerateOutputInformation() override;
 
     /// \brief Returns a const reference to the input image (e.g. the original input image that ist used to create the surface)
     const mitk::Image *GetInput(void);

@@ -515,12 +515,11 @@ IntensityProfileView::initPlotter()
 mitk::TimeBounds
 IntensityProfileView::ComputeTimeBounds()
 {
-  using namespace mitk;
   Q_D(IntensityProfileView);
 
-  TimeBounds timeBounds;
+  mitk::TimeBounds timeBounds;
 
-  ScalarType stmin, stmax, cur;
+  mitk::ScalarType stmin, stmax, cur;
 
   stmin= itk::NumericTraits<mitk::ScalarType>::NonpositiveMin();
   stmax= itk::NumericTraits<mitk::ScalarType>::max();
@@ -530,10 +529,10 @@ IntensityProfileView::ComputeTimeBounds()
 
   foreach (mitk::DataNode* node, d->referenceNodes)
   {
-    const TimeGeometry* timeGeometry = node->GetData()->GetUpdatedTimeGeometry();
+    const mitk::TimeGeometry* timeGeometry = node->GetData()->GetUpdatedTimeGeometry();
     if (timeGeometry != NULL )
     {
-      const TimeBounds & curTimeBounds = timeGeometry->GetTimeBounds();
+      const mitk::TimeBounds & curTimeBounds = timeGeometry->GetTimeBounds();
       cur=curTimeBounds[0];
       //is it after -infinity, but before everything else that we found until now?
       if((cur > stmin) && (cur < timeBounds[0]))

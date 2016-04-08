@@ -34,21 +34,21 @@ public:
   virtual QString defaultUserID() const;
   virtual void setDefaultUserID(const QString& userID);
 
-  virtual QString defaultDirectory() const;
-  virtual void setDefaultDirectory(const QString& dir);
+  virtual QString defaultDirectory() const override;
+  virtual void setDefaultDirectory(const QString& dir) override;
 
-  virtual QString defaultWorkDirectory() const;
-  virtual void setDefaultWorkDirectory(const QString& workDir);
+  virtual QString defaultWorkDirectory() const override;
+  virtual void setDefaultWorkDirectory(const QString& workDir) override;
 
-  virtual QMap<QString, ctkXnatLoginProfile*> loginProfiles() const;
-  virtual void setLoginProfiles(QMap<QString, ctkXnatLoginProfile*> loginProfiles);
+  virtual QMap<QString, ctkXnatLoginProfile*> loginProfiles() const override;
+  virtual void setLoginProfiles(QMap<QString, ctkXnatLoginProfile*> loginProfiles) override;
 
-  virtual ctkXnatLoginProfile* loginProfile(QString profileName) const;
-  virtual void setLoginProfile(QString profileName, ctkXnatLoginProfile*);
+  virtual ctkXnatLoginProfile* loginProfile(QString profileName) const override;
+  virtual void setLoginProfile(QString profileName, ctkXnatLoginProfile*) override;
 
-  virtual void removeLoginProfile(QString profileName);
+  virtual void removeLoginProfile(QString profileName) override;
 
-  ctkXnatLoginProfile* defaultLoginProfile() const;
+  ctkXnatLoginProfile* defaultLoginProfile() const override;
 
 private:
   berry::IPreferences::Pointer preferences;

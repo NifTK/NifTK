@@ -66,11 +66,11 @@ protected:
   DataNodeVisibilityTracker& operator=(const DataNodeVisibilityTracker&); // Purposefully not implemented.
 
   /// \see DataStorageListener::NodeAdded
-  virtual void OnNodeAdded(mitk::DataNode* node);
+  virtual void OnNodeAdded(mitk::DataNode* node) override;
 
   /// \brief Called when the property value has changed globally or for the given renderer.
   /// If the global property has changed, renderer is NULL.
-  virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer);
+  virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
 private:
 

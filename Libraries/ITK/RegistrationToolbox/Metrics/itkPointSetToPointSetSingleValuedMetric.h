@@ -116,7 +116,7 @@ public:
   void SetTransformParameters( const ParametersType & parameters ) const;
 
   /** Return the number of parameters required by the Transform */
-  unsigned int GetNumberOfParameters(void) const 
+  unsigned int GetNumberOfParameters(void) const override 
   { return m_Transform->GetNumberOfParameters(); }
 
   /** Initialize the Metric by making sure that all the components
@@ -126,7 +126,7 @@ public:
 protected:
   PointSetToPointSetSingleValuedMetric();
   virtual ~PointSetToPointSetSingleValuedMetric() {};
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   FixedPointSetConstPointer   m_FixedPointSet;
   MovingPointSetConstPointer  m_MovingPointSet;
