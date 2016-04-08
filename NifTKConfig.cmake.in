@@ -38,10 +38,12 @@ if(CMAKE_VERSION VERSION_LESS @NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION@)
 endif()
 
 # The NifTK version number
-set(NIFTK_VERSION_MAJOR "@NIFTK_VERSION_MAJOR@")
-set(NIFTK_VERSION_MINOR "@NIFTK_VERSION_MINOR@")
-set(NIFTK_VERSION_PATCH "@NIFTK_VERSION_PATCH@")
+set(NIFTK_VERSION_MAJOR  "@NIFTK_VERSION_MAJOR@")
+set(NIFTK_VERSION_MINOR  "@NIFTK_VERSION_MINOR@")
+set(NIFTK_VERSION_PATCH  "@NIFTK_VERSION_PATCH@")
 set(NIFTK_VERSION_STRING "@NIFTK_VERSION_STRING@")
+set(NifTK_VERSION_HASH   "@NIFTK_REVISION_SHORTID@")
+set(NifTK_VERSION_DATE   "@NIFTK_DATE_TIME@")
 
 #-----------------------------------------------------------------------------
 # C++ language standard
@@ -52,9 +54,6 @@ set(NIFTK_CXX_STANDARD @MITK_CXX_STANDARD@)
 #-----------------------------------------------------------------------------
 # Include required CMake scripts
 #-----------------------------------------------------------------------------
-
-# Standard CMake macros
-include(FeatureSummary)
 
 # Make sure all the NifTK CMake macros are available.
 # These have to be copied into the build folder, as the user
@@ -71,7 +70,8 @@ include(FeatureSummary)
 include(FindPackageHandleStandardArgs)
 include(GenerateExportHeader)
 
-# The list of 'include' commands should match those in NifTK/CMake folder.
+# The list of 'include' commands should match those in NifTK/CMake folder,
+# and that list of files should be copied into NIFTK_CMAKE_MODULE_PATH.
 include(mitkMacroEmptyExternalProject)
 include(mitkMacroFindDependency)
 include(mitkFunctionGetGccVersion)
@@ -84,14 +84,6 @@ include(niftkMacroGenerateCLIScript)
 include(niftkMacroGetGitBranch)
 include(niftkMacroGetGitDateTime)
 include(niftkMacroInstallCLIScript)
-
-# The NifTK Library version number.
-set(NifTK_VERSION_MAJOR "@NIFTK_VERSION_MAJOR@")
-set(NifTK_VERSION_MINOR "@NIFTK_VERSION_MINOR@")
-set(NifTK_VERSION_PATCH "@NIFTK_VERSION_PATCH@")
-set(NifTK_VERSION_STRING "@NIFTK_VERSION_MAJOR@.@NIFTK_VERSION_MINOR@.@NIFTK_VERSION_PATCH@")
-set(NifTK_VERSION_HASH "@NIFTK_REVISION_SHORTID@")
-set(NifTK_VERSION_DATE "@NIFTK_DATE_TIME@")
 
 # Other version numbers
 set(NifTK_VERSION_QT "@NIFTK_VERSION_QT@")
