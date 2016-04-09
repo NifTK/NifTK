@@ -19,7 +19,7 @@ if (UltrasonixUlterius_FOUND)
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources niftkOpenCVImageConversion
     PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets OpenCV
-    AUTOLOAD_WITH niftkIGI
+    AUTOLOAD_WITH niftkIGIServices
   )
 
   include_directories(${Ultrasonix_ULTERIUS_INCLUDE_DIR})

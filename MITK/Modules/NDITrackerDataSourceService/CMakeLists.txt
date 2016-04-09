@@ -16,7 +16,7 @@
 MITK_CREATE_MODULE(
   DEPENDS niftkCore niftkIGIDataSources niftkNDITrackers niftkSerialPort
   PACKAGE_DEPENDS CTK|CTKWidgets
-  AUTOLOAD_WITH niftkIGI
+  AUTOLOAD_WITH niftkIGIServices
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

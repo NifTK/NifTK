@@ -14,12 +14,12 @@
 
 ##############################################################################
 # Note: As a 'Service Only' Module, this module should only depend on
-# niftkIGIServices. It should not be necessary to add any other modules.
+# niftkIGIServices. It should not be necessary to add ant other modules.
 ##############################################################################
 
 MITK_CREATE_MODULE(
   DEPENDS niftkIGIServices 
-  AUTOLOAD_WITH niftkIGI
+  AUTOLOAD_WITH niftkIGIServices
   PACKAGE_DEPENDS NiftyLink 
 )
 

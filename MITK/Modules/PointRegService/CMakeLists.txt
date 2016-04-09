@@ -21,7 +21,7 @@
 
 MITK_CREATE_MODULE(
   DEPENDS niftkIGIServices niftkPointReg
-  AUTOLOAD_WITH niftkIGI
+  AUTOLOAD_WITH niftkIGIServices
   PACKAGE_DEPENDS OpenCV
 )
 
