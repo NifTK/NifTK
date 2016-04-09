@@ -154,6 +154,8 @@ set(NIFTK_ADDITIONAL_C_FLAGS "@NIFTK_ADDITIONAL_C_FLAGS@")
 set(NIFTK_ADDITIONAL_CXX_FLAGS "@NIFTK_ADDITIONAL_CXX_FLAGS@")
 set(NIFTK_USE_CUDA "@NIFTK_USE_CUDA@")
 set(NIFTK_DELAYLOAD_CUDA "@NIFTK_DELAYLOAD_CUDA@")
+set(NIFTK_CMAKE_MACOSX_RPATH "@CMAKE_MACOSX_RPATH@")
+set(NIFTK_CMAKE_INSTALL_RPATH "@CMAKE_INSTALL_RPATH@")
 
 # Additional documentation, to enable compliance with licenses.
 # (Most licenses say that you have to provide a copy of the license statement).
