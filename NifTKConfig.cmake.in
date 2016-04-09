@@ -403,11 +403,7 @@ endforeach()
 list(APPEND MODULES_PACKAGE_DEPENDS_DIRS "@NIFTK_BINARY_DIR@/CMakePackageDepends")
 
 # Stuff to enable the packaging to work.
-get_property(mitk_additional_library_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
-if(mitk_additional_library_search_paths)
-  list(APPEND mitk_additional_library_search_paths ${NIFTK_LIBRARY_DIRS})
-endif()
-set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_mitk_additional_library_search_paths})
+set(NIFTK_ADDITIONAL_LIBRARY_SEARCH_PATHS "@MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS_CONFIG@")
 
 # Stuff that actually includes the NIFTK_EXPORTS_FILE which contains include dirs,
 # library dirs and dependency descriptions for all modules and plugins in NIFTK.
@@ -427,6 +423,13 @@ if(MITK_USE_BLUEBERRY)
       include("${NIFTK_PLUGIN_USE_FILE}")
     endif()
   endif()
+
+  set(MITK_PROVISIONING_FILES
+      ${BLUEBERRY_PLUGIN_PROVISIONING_FILE}
+      @NIFTK_NIFTYVIEW_PROVISIONING_FILE@
+      @NIFTK_NIFTYIGI_PROVISIONING_FILE@
+      @NIFTK_NIFTYMIDAS_PROVISIONING_FILE@
+     )
 
 endif()
 
