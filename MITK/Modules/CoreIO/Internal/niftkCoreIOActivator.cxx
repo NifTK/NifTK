@@ -33,7 +33,7 @@ niftk::CoreIOActivator::CoreIOActivator()
 
 //-----------------------------------------------------------------------------
 void niftk::CoreIOActivator::Load(us::ModuleContext* context)
-{  
+{
   m_LookupTableProviderService.reset(new QmitkLookupTableProviderServiceImpl);
 
   us::ServiceProperties props;
