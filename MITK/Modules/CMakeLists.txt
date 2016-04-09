@@ -58,9 +58,9 @@ if(BUILD_IGI)
     ICPReg
     OpenCV
     SurfRecon
-    IGIServices
     IGI
     IGIGui
+    IGIServices
     NDITrackers
     IGIDataSources
 

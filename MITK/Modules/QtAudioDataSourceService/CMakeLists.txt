@@ -17,7 +17,7 @@ if (QT_QTMULTIMEDIA_INCLUDE_DIR)
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources
     PACKAGE_DEPENDS Qt4|QtCore+QtMultimedia Qt5|Widgets+Multimedia
-    AUTOLOAD_WITH niftkIGIServices
+    AUTOLOAD_WITH niftkIGI
   )
 
   if (NIFTK_USE_COTIRE AND COMMAND cotire)
