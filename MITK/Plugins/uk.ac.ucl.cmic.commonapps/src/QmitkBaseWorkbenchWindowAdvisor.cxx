@@ -13,6 +13,9 @@
 =============================================================================*/
 
 #include "QmitkBaseWorkbenchWindowAdvisor.h"
+
+#include <cstring>
+
 #include "QmitkCommonAppsApplicationPlugin.h"
 #include <QMainWindow>
 #include <QMenu>
@@ -30,7 +33,6 @@
 #include <mitkNodePredicateProperty.h>
 #include <mitkProperties.h>
 #include <mitkRenderingManager.h>
-#include <niftkEnvironmentHelper.h>
 #include <NifTKConfigure.h>
 
 //-----------------------------------------------------------------------------
@@ -132,7 +134,8 @@ void QmitkBaseWorkbenchWindowAdvisor::OpenEditor(const QString& editorName)
 //-----------------------------------------------------------------------------
 void QmitkBaseWorkbenchWindowAdvisor::OpenEditorIfEnvironmentVariableIsON(const std::string& envVariable, const QString& editorName)
 {
-  if (niftk::GetEnvVar(envVariable) == "ON")
+  const char* envVarValue = std::getenv(envVariable.c_str());
+  if (envVarValue && std::strcmp(envVarValue, "ON") == 0)
   {
     this->OpenEditor(editorName);
   }

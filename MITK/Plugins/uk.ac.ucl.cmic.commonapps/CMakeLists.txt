@@ -20,8 +20,6 @@ mitk_create_plugin(
   MODULE_DEPENDS niftkCore niftkCoreGui
 )
 
-target_link_libraries(uk_ac_ucl_cmic_commonapps PRIVATE niftkcommon)
-
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(uk_ac_ucl_cmic_commonapps)
 endif()

@@ -55,7 +55,8 @@ CoreIOObjectFactory::CoreIOObjectFactory()
     /// TODO
     /// ITK readers and writers should be registered from itk::NifTKImageIOFactory.
 
-    std::string useDRCAnalyze = niftk::GetEnvVar("NIFTK_DRC_ANALYZE");
+    const char* useDRCAnalyzeCStr = std::getenv("NIFTK_DRC_ANALYZE");
+    std::string useDRCAnalyze = useDRCAnalyzeCStr ? std::string(useDRCAnalyzeCStr) : std::string();
 
     if (useDRCAnalyze == "ON"
         || useDRCAnalyze == "PREFERRED"
