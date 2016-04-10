@@ -34,6 +34,9 @@
 #define mitkNifTKCMC33_h
 
 #include "niftkCoreExports.h"
+
+#include <vector>
+
 #include "mitkBasicVertex.h"
 #include "mitkBasicTriangle.h"
 
