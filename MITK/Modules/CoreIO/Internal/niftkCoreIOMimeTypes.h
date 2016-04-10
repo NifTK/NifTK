@@ -69,6 +69,10 @@ public:
   static std::string INRIA_MIMETYPE_NAME();
   static std::string INRIA_MIMETYPE_DESCRIPTION();
 
+  static mitk::CustomMimeType LABELMAP_MIMETYPE();
+  static std::string LABELMAP_MIMETYPE_NAME();
+  static std::string LABELMAP_MIMETYPE_DESCRIPTION();
+
 private:
 
   CoreIOMimeTypes(); // purposely not implemented

@@ -15,7 +15,7 @@
 
 set(AprilTags_FOUND 0)
 
-set(AprilTags_DIR @AprilTags_DIR@)
+set(AprilTags_DIR @AprilTags_DIRECTORY@)
 
 find_path(APRILTAGS_INC
   Tag16h5.h 

@@ -15,7 +15,7 @@
 #ifndef QmitkLookupTableManager_h
 #define QmitkLookupTableManager_h
 
-#include <niftkCoreGuiExports.h>
+#include <niftkCoreExports.h>
 #include <unordered_map>
 #include <vector>
 #include <QString>
@@ -34,7 +34,7 @@
 class QmitkLookupTableContainer;
 class vtkLookupTable;
 
-class NIFTKCOREGUI_EXPORT QmitkLookupTableManager 
+class NIFTKCORE_EXPORT QmitkLookupTableManager 
 {
 
 public:

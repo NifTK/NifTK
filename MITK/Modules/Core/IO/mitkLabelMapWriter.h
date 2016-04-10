@@ -18,7 +18,7 @@
 
 
 #include <mitkAbstractFileWriter.h>
-#include "niftkCoreGuiExports.h"
+#include "niftkCoreExports.h"
 #include "mitkLabeledLookupTableProperty.h"
 
 
@@ -36,7 +36,7 @@ namespace mitk
   *
   * \ingroup IO
   */
-class NIFTKCOREGUI_EXPORT LabelMapWriter : public AbstractFileWriter
+class NIFTKCORE_EXPORT LabelMapWriter : public AbstractFileWriter
 {
 
 public: 

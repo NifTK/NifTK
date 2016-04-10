@@ -38,6 +38,7 @@
 #include <iostream> 
 #include <fstream>
 #include <algorithm>
+#include <vector>
 
 #include "mitkNifTKCMC33.h"
 #include "mitkNifTKCMC33LookUpTable.h"

@@ -15,7 +15,7 @@
 #ifndef QmitkLookupTableContainer_h
 #define QmitkLookupTableContainer_h
 
-#include <niftkCoreGuiExports.h>
+#include <niftkCoreExports.h>
 
 #include <QString>
 #include <vtkLookupTable.h>
@@ -25,7 +25,7 @@
  * \brief Class to contain a vtkLookupTable and to store meta-data attributes
  * like display name, which order to display it in in GUI, etc.
  */
-class NIFTKCOREGUI_EXPORT QmitkLookupTableContainer 
+class NIFTKCORE_EXPORT QmitkLookupTableContainer 
 {
 
 public:

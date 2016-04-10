@@ -973,6 +973,7 @@ configure_file(${CMAKE_SOURCE_DIR}/CMake/FindAprilTags.cmake ${CMAKE_BINARY_DIR}
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroFindDependency.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroFindDependency.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroBuildCLI.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroBuildCLI.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineApplication.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineScript.cmake COPYONLY)
@@ -1909,11 +1910,19 @@ set(NIFTK_EXPORTED_TARGET_PROPERTIES )
 foreach(target_to_export ${targets_to_export})
   get_target_property(autoload_targets ${target_to_export} MITK_AUTOLOAD_TARGETS)
   if(autoload_targets)
-    set(MITK_EXPORTED_TARGET_PROPERTIES "${MITK_EXPORTED_TARGET_PROPERTIES} set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_TARGETS \"${autoload_targets}\")")
+
+# Watch out for the newline in this next set statement. Its intentional, and necessary.
+    set(NIFTK_EXPORTED_TARGET_PROPERTIES "${NIFTK_EXPORTED_TARGET_PROPERTIES} 
+set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_TARGETS \"${autoload_targets}\")")
+
   endif()
   get_target_property(autoload_dir ${target_to_export} MITK_AUTOLOAD_DIRECTORY)
   if(autoload_dir)
-    set(MITK_EXPORTED_TARGET_PROPERTIES "${MITK_EXPORTED_TARGET_PROPERTIES} set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_DIRECTORY \"${autoload_dir}\")")
+
+# Watch out for the newline in this next set statement. Its intentional, and necessary.
+    set(NIFTK_EXPORTED_TARGET_PROPERTIES "${NIFTK_EXPORTED_TARGET_PROPERTIES} 
+set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_DIRECTORY \"${autoload_dir}\")")
+
   endif()
 endforeach()
 

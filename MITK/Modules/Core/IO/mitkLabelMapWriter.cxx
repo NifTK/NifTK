@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "mitkLabelMapWriter.h"
-#include "niftkCoreGuiIOMimeTypes.h"
+#include "niftkCoreIOMimeTypes.h"
 
 #include <mitkAbstractFileWriter.h>
 #include <mitkCustomMimeType.h>
@@ -25,7 +25,7 @@
 
 //-----------------------------------------------------------------------------
 mitk::LabelMapWriter::LabelMapWriter()
-: mitk::AbstractFileWriter("Label Map", CustomMimeType(niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_NAME() ), niftk::CoreGuiIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
+: mitk::AbstractFileWriter("Label Map", CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME() ), niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
 {
   RegisterService();
 }

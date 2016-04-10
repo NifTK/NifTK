@@ -15,21 +15,26 @@
 #ifndef niftkCoreIOActivator_h
 #define niftkCoreIOActivator_h
 
-#include "niftkCoordinateAxesDataReaderService.h"
-#include "niftkCoordinateAxesDataWriterService.h"
-#include "niftkPNMReaderService.h"
-#include "niftkPNMWriterService.h"
 #include <mitkIFileReader.h>
 #include <mitkIFileWriter.h>
 #include <usModuleActivator.h>
 #include <usModuleContext.h>
 #include <memory>
 
+#include <mitkLabelMapReader.h>
+#include <mitkLabelMapWriter.h>
+#include <QmitkLookupTableProviderService.h>
+#include "niftkCoordinateAxesDataReaderService.h"
+#include "niftkCoordinateAxesDataWriterService.h"
+#include "niftkPNMReaderService.h"
+#include "niftkPNMWriterService.h"
+
 namespace niftk
 {
 
 /**
 * @class CoreIOActivator
+*
 * @brief The CoreIOActivator class
 */
 class CoreIOActivator : public us::ModuleActivator
@@ -45,10 +50,15 @@ private:
   std::auto_ptr<niftk::CoordinateAxesDataReaderService> m_CoordinateAxesDataReaderService;
   std::auto_ptr<niftk::CoordinateAxesDataWriterService> m_CoordinateAxesDataWriterService;
   
-  std::auto_ptr<niftk::PNMReaderService> m_PNMReaderService;
-  std::auto_ptr<niftk::PNMWriterService> m_PNMWriterService;
+  std::auto_ptr<niftk::PNMReaderService>                m_PNMReaderService;
+  std::auto_ptr<niftk::PNMWriterService>                m_PNMWriterService;
+
+  std::auto_ptr<QmitkLookupTableProviderService>        m_LookupTableProviderService;
+  std::auto_ptr<mitk::LabelMapReader>                   m_LabelMapReaderService;
+  std::auto_ptr<mitk::LabelMapWriter>                   m_LabelMapWriterService;
+
 };
 
-} // end namespace
+}
 
 #endif

@@ -15,6 +15,11 @@
 project(NiftyView)
 set(MY_APP_NAME NiftyView)
 
+# Create a cache entry for the provisioning file which is used to export
+# the file name in the NifTKConfig.cmake file. This will keep external projects
+# which rely on this file happy.
+set(NIFTK_NIFTYVIEW_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyView.provisioning" CACHE INTERNAL "NiftyView provisioning file" FORCE)
+
 ###########################################################
 # Note: You need to explicitly turn OFF MITK/CTK plugins.
 #
