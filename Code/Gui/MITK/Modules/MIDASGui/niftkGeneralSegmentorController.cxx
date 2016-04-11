@@ -18,8 +18,8 @@
 
 #include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
-#include <mitkIRenderingManager.h>
-#include <mitkIRenderWindowPart.h>
+//#include <mitkIRenderingManager.h>
+//#include <mitkIRenderWindowPart.h>
 #include <mitkITKImageImport.h>
 #include <mitkOperationEvent.h>
 #include <mitkPointSet.h>
@@ -36,7 +36,7 @@
 #include <niftkMIDASPolyTool.h>
 #include <niftkMIDASPosnTool.h>
 
-#include <niftkGeneralSegmentorGUI.h>
+#include "Internal/niftkGeneralSegmentorGUI.h"
 
 //-----------------------------------------------------------------------------
 niftkGeneralSegmentorController::niftkGeneralSegmentorController(niftkIBaseView* view)

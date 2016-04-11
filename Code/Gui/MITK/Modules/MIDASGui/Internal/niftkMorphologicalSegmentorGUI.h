@@ -20,8 +20,6 @@
 
 #include <MorphologicalSegmentorPipelineParams.h>
 
-#include <niftkMIDASGuiExports.h>
-
 class QAbstractButton;
 
 /**
@@ -29,7 +27,7 @@ class QAbstractButton;
  * \brief Implements a few Qt specific things that are of no interest to the MITK view class.
  * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
  */
-class NIFTKMIDASGUI_EXPORT niftkMorphologicalSegmentorGUI
+class niftkMorphologicalSegmentorGUI
   : public niftkBaseSegmentorGUI,
     private Ui_niftkMorphologicalSegmentorWidget
 {

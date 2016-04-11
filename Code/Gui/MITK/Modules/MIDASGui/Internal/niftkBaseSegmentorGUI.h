@@ -15,8 +15,6 @@
 #ifndef __niftkBaseSegmentorGUI_h
 #define __niftkBaseSegmentorGUI_h
 
-#include <niftkMIDASGuiExports.h>
-
 #include <QObject>
 
 namespace mitk
@@ -35,7 +33,7 @@ class niftkToolSelectorWidget;
  * \sa niftkGeneralSegmentorGUI
  * \sa MITKSegmentationView
  */
-class NIFTKMIDASGUI_EXPORT niftkBaseSegmentorGUI : public QObject
+class niftkBaseSegmentorGUI : public QObject
 {
   Q_OBJECT
 

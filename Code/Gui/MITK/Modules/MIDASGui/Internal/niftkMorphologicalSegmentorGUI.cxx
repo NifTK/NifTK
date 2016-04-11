@@ -14,7 +14,7 @@
 
 #include "niftkMorphologicalSegmentorGUI.h"
 
-#include <niftkToolSelectorWidget.h>
+#include "niftkToolSelectorWidget.h"
 
 
 //-----------------------------------------------------------------------------

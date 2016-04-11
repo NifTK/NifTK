@@ -15,8 +15,6 @@
 #ifndef __niftkNewSegmentationDialog_h
 #define __niftkNewSegmentationDialog_h
 
-#include <niftkMIDASGuiExports.h>
-
 #include <QColor>
 
 #include <QmitkNewSegmentationDialog.h>
@@ -26,7 +24,7 @@
  * \brief Derives from QmitkNewSegmentationDialog, to simply set the default colour to pure green.
  * \sa QmitkNewSegmentationDialog
  */
-class NIFTKMIDASGUI_EXPORT niftkNewSegmentationDialog : public QmitkNewSegmentationDialog
+class niftkNewSegmentationDialog : public QmitkNewSegmentationDialog
 {
   Q_OBJECT
 

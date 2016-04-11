@@ -17,15 +17,13 @@
 
 #include <QWidget>
 #include "ui_niftkGeneralSegmentorWidget.h"
-#include <niftkBaseSegmentorGUI.h>
-
-#include <niftkMIDASGuiExports.h>
+#include "niftkBaseSegmentorGUI.h"
 
 /**
  * \class niftkGeneralSegmentorGUI
  * \brief Implements the Qt/Widget specific functionality pertaining to the MIDAS General Segmentor View.
  */
-class NIFTKMIDASGUI_EXPORT niftkGeneralSegmentorGUI
+class niftkGeneralSegmentorGUI
   : public niftkBaseSegmentorGUI,
     private Ui::niftkGeneralSegmentorWidget
 {

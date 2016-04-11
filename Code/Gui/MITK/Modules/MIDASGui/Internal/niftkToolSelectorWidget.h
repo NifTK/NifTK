@@ -15,7 +15,6 @@
 #ifndef niftkToolSelectorWidget_h
 #define niftkToolSelectorWidget_h
 
-#include <niftkMIDASGuiExports.h>
 #include <QWidget>
 #include "ui_niftkToolSelectorWidget.h"
 
@@ -28,7 +27,7 @@
  *
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
-class NIFTKMIDASGUI_EXPORT niftkToolSelectorWidget : public QWidget, private Ui::niftkToolSelectorWidget {
+class niftkToolSelectorWidget : public QWidget, private Ui::niftkToolSelectorWidget {
 
   Q_OBJECT
 

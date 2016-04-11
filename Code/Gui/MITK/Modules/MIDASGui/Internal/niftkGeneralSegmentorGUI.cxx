@@ -14,7 +14,7 @@
 
 #include "niftkGeneralSegmentorGUI.h"
 
-#include <niftkToolSelectorWidget.h>
+#include "niftkToolSelectorWidget.h"
 
 
 //-----------------------------------------------------------------------------

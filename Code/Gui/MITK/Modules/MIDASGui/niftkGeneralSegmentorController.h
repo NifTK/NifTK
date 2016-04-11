@@ -15,13 +15,15 @@
 #ifndef __niftkGeneralSegmentorController_h
 #define __niftkGeneralSegmentorController_h
 
+#include <niftkMIDASGuiExports.h>
+
 #include <mitkOperationActor.h>
 
 #include <niftkBaseSegmentorController.h>
 #include <niftkMIDASToolKeyPressResponder.h>
 #include <niftkMIDASToolKeyPressStateMachine.h>
 
-#include "niftkGeneralSegmentorEventInterface.h"
+#include "Internal/niftkGeneralSegmentorEventInterface.h"
 
 namespace mitk
 {
@@ -123,12 +125,11 @@ class niftkGeneralSegmentorGUI;
  * \sa niftkBaseSegmentorController
  * \sa MIDASMorphologicalSegmentorController
  */
-class niftkGeneralSegmentorController
+class NIFTKMIDASGUI_EXPORT niftkGeneralSegmentorController
   : public niftkBaseSegmentorController,
     public mitk::OperationActor,
     public niftk::MIDASToolKeyPressResponder
 {
-
   Q_OBJECT
 
 public:

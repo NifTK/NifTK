@@ -15,7 +15,6 @@
 #ifndef niftkMIDASDrawToolGUI_h
 #define niftkMIDASDrawToolGUI_h
 
-#include <niftkMIDASGuiExports.h>
 #include <niftkMIDASDrawTool.h>
 #include <QmitkToolGUI.h>
 
@@ -34,7 +33,7 @@ class ctkSliderWidget;
  * The reverse is not true. Any mitk::Tool must not know that it has a GUI, and hence the reason they
  * are in a different library / Module.
  */
-class NIFTKMIDASGUI_EXPORT niftkDrawToolGUI : public QmitkToolGUI
+class niftkDrawToolGUI : public QmitkToolGUI
 {
   Q_OBJECT
 

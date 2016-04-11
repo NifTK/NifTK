@@ -15,7 +15,6 @@
 #ifndef niftkMIDASPaintbrushToolGUI_h
 #define niftkMIDASPaintbrushToolGUI_h
 
-#include <niftkMIDASGuiExports.h>
 #include <QmitkToolGUI.h>
 #include <niftkMIDASPaintbrushTool.h>
 
@@ -34,7 +33,7 @@ class QFrame;
  * The reverse is not true. Any mitk::Tool must not know that it has a GUI, and hence the reason they
  * are in a different library / Module.
  */
-class NIFTKMIDASGUI_EXPORT niftkPaintbrushToolGUI : public QmitkToolGUI
+class niftkPaintbrushToolGUI : public QmitkToolGUI
 {
   Q_OBJECT
 

@@ -24,9 +24,9 @@
 #include <mitkDataStorageUtils.h>
 
 #include <niftkIBaseView.h>
-#include <niftkNewSegmentationDialog.h>
 
-#include "niftkBaseSegmentorGUI.h"
+#include "Internal/niftkBaseSegmentorGUI.h"
+#include "Internal/niftkNewSegmentationDialog.h"
 
 //-----------------------------------------------------------------------------
 niftkBaseSegmentorController::niftkBaseSegmentorController(niftkIBaseView* view)

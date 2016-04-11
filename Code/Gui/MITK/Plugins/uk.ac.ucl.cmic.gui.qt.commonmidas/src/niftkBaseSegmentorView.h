@@ -28,8 +28,6 @@
 
 // Qmitk for Qt/MITK stuff.
 #include <QmitkBaseView.h>
-#include <niftkSegmentationSelectorWidget.h>
-#include <niftkToolSelectorWidget.h>
 #include <niftkMIDASOrientationUtils.h>
 
 // Miscellaneous.

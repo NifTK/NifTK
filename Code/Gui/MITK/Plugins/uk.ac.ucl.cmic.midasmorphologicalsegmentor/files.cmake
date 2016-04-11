@@ -17,7 +17,6 @@ set(SRC_CPP_FILES
 
 set(INTERNAL_CPP_FILES
   niftkMorphologicalSegmentorActivator.cxx
-  niftkMorphologicalSegmentorController.cxx
   niftkMorphologicalSegmentorPreferencePage.cxx
   niftkMorphologicalSegmentorView.cxx
 )
@@ -27,7 +26,6 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/internal/niftkMorphologicalSegmentorActivator.h
-  src/internal/niftkMorphologicalSegmentorController.h
   src/internal/niftkMorphologicalSegmentorPreferencePage.h
   src/internal/niftkMorphologicalSegmentorView.h
 )

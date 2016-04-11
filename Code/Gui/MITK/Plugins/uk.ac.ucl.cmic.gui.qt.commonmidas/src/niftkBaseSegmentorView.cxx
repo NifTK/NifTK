@@ -35,7 +35,6 @@
 
 #include <NifTKConfigure.h>
 #include <niftkBaseSegmentorController.h>
-#include <niftkNewSegmentationDialog.h>
 #include <niftkMIDASTool.h>
 #include <niftkMIDASDrawTool.h>
 #include <niftkMIDASPolyTool.h>

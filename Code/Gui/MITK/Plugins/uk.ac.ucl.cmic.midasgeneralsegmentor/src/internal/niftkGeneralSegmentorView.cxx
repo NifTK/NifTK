@@ -20,8 +20,9 @@
 #include <niftkMIDASContourTool.h>
 #include <niftkMIDASTool.h>
 
+#include <niftkGeneralSegmentorController.h>
+
 #include "niftkGeneralSegmentorPreferencePage.h"
-#include "niftkGeneralSegmentorController.h"
 
 const std::string niftkGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
 

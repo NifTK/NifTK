@@ -35,7 +35,7 @@
 
 #include <niftkMIDASOrientationUtils.h>
 
-#include "niftkMorphologicalSegmentorController.h"
+#include <niftkMorphologicalSegmentorController.h>
 
 
 const std::string niftkMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";

@@ -23,7 +23,7 @@
 #include <niftkToolFactoryMacros.h>
 
 
-NIFTK_TOOL_GUI_MACRO(NIFTKMIDASGUI_EXPORT, MIDASPaintbrushTool, niftkPaintbrushToolGUI, "Paintbrush Tool GUI")
+NIFTK_TOOL_GUI_MACRO_NO_EXPORT(MIDASPaintbrushTool, niftkPaintbrushToolGUI, "Paintbrush Tool GUI")
 
 //-----------------------------------------------------------------------------
 niftkPaintbrushToolGUI::niftkPaintbrushToolGUI()

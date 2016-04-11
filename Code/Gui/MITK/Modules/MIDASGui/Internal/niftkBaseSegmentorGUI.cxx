@@ -16,8 +16,8 @@
 
 #include <mitkToolManager.h>
 
-#include <niftkSegmentationSelectorWidget.h>
-#include <niftkToolSelectorWidget.h>
+#include "niftkSegmentationSelectorWidget.h"
+#include "niftkToolSelectorWidget.h"
 
 
 //-----------------------------------------------------------------------------

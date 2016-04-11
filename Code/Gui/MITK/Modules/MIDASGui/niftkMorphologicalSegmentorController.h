@@ -15,6 +15,8 @@
 #ifndef __niftkMorphologicalSegmentorController_h
 #define __niftkMorphologicalSegmentorController_h
 
+#include <niftkMIDASGuiExports.h>
+
 #include <niftkMorphologicalSegmentorPipelineManager.h>
 
 #include <niftkBaseSegmentorController.h>
@@ -25,7 +27,7 @@ class niftkMorphologicalSegmentorGUI;
 /**
  * \class niftkMorphologicalSegmentorController
  */
-class niftkMorphologicalSegmentorController : public niftkBaseSegmentorController
+class NIFTKMIDASGUI_EXPORT niftkMorphologicalSegmentorController : public niftkBaseSegmentorController
 {
   Q_OBJECT
 

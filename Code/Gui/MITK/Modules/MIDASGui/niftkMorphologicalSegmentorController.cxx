@@ -25,7 +25,7 @@
 #include <niftkIBaseView.h>
 #include <niftkMIDASPaintbrushTool.h>
 
-#include <niftkMorphologicalSegmentorGUI.h>
+#include "Internal/niftkMorphologicalSegmentorGUI.h"
 
 //-----------------------------------------------------------------------------
 niftkMorphologicalSegmentorController::niftkMorphologicalSegmentorController(niftkIBaseView* view)
