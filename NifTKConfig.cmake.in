@@ -50,6 +50,7 @@ set(NIFTK_VERSION_DATE   "@NIFTK_DATE_TIME@")
 #-----------------------------------------------------------------------------
 
 set(NIFTK_CXX_STANDARD @MITK_CXX_STANDARD@)
+set(NIFTK_CXX11_FLAG @MITK_CXX11_FLAG@)
 
 #-----------------------------------------------------------------------------
 # Include required CMake scripts
@@ -419,7 +420,7 @@ endif()
 # BlueBerry support
 if(MITK_USE_BLUEBERRY)
 
-  set(NIFTK_PLUGIN_USE_FILE "@CMAKE_BINARY_DIR@/NIFTKPluginUseFile.cmake")
+  set(NIFTK_PLUGIN_USE_FILE "@CMAKE_BINARY_DIR@/NifTKPluginUseFile.cmake")
   if(NIFTK_PLUGIN_USE_FILE)
     if(EXISTS "${NIFTK_PLUGIN_USE_FILE}")
       include("${NIFTK_PLUGIN_USE_FILE}")
