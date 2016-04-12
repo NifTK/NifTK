@@ -40,7 +40,7 @@ Physical Science Research Council][epsrc] (EPSRC).
 Supported Platforms
 -----------------------------
 
-NiftyLink is a cross-platform C++ library and officially supports:
+NifTK is a cross-platform C++ library and officially supports:
 
  - Windows
  - MacOS X
