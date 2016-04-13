@@ -82,11 +82,12 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget* parent)
 {
   this->SetParent(parent);
 
+  m_SegmentorController = this->CreateSegmentorController();
+  m_SegmentorController->SetupSegmentorGUI(parent);
+
   // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
   this->RetrievePreferenceValues();
 
-  m_SegmentorController = this->CreateSegmentorController();
-  m_SegmentorController->SetupSegmentorGUI(parent);
   this->connect(m_SegmentorController, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
 }
 
