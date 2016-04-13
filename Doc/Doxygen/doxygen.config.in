@@ -341,7 +341,6 @@ IMAGE_PATH            = @CMAKE_SOURCE_DIR@/Doc/Images \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.dnddisplay/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor/documentation/UserManual \
-                        @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.mitksegmentation/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.niftyreg/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.niftyseg/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic.snapshot/documentation/UserManual \
@@ -357,7 +356,6 @@ IMAGE_PATH            = @CMAKE_SOURCE_DIR@/Doc/Images \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.dnddisplay \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.midasgeneralsegmentor \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.midasmorphologicalsegmentor \
-                        @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.mitksegmentation \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.niftyreg \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.niftyseg \
                         @CMAKE_SOURCE_DIR@/Doc/TechnicalManual/TestingProcedures/uk.ac.ucl.cmic.snapshot \

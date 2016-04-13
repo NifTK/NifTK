@@ -18,6 +18,6 @@ set(MODULE_TESTS
 
 set(MODULE_CUSTOM_TESTS
   niftkMIDASPaintbrushToolTest.cxx
-  niftkMIDASMorphologicalSegmentorPipelineManagerTest.cxx
+  niftkMorphologicalSegmentorPipelineManagerTest.cxx
 #  niftkMIDASSegmentationNodeAddedVisibilityTest.cxx
 )

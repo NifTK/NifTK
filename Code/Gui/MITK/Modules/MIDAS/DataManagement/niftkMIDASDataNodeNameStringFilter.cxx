@@ -15,7 +15,7 @@
 #include "niftkMIDASDataNodeNameStringFilter.h"
 #include <niftkMIDASTool.h>
 #include <niftkMIDASPaintbrushTool.h>
-#include <niftkMIDASMorphologicalSegmentorPipelineManager.h>
+#include <niftkMorphologicalSegmentorPipelineManager.h>
 #include <niftkMIDASPolyTool.h>
 
 namespace niftk
@@ -36,7 +36,7 @@ MIDASDataNodeNameStringFilter::MIDASDataNodeNameStringFilter()
   this->AddToList(niftk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME);
   this->AddToList(niftk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME);
   this->AddToList(niftk::MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME);
-  this->AddToList(niftk::MIDASMorphologicalSegmentorPipelineManager::SEGMENTATION_OF_LAST_STAGE_NAME);
+  this->AddToList(niftk::MorphologicalSegmentorPipelineManager::SEGMENTATION_OF_LAST_STAGE_NAME);
   this->AddToList(niftk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
   this->AddToList(niftk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
   this->AddToList("Paintbrush_Node");

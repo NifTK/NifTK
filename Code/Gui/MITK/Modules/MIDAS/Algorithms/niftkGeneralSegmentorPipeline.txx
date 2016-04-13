@@ -12,22 +12,15 @@
 
 =============================================================================*/
 
-#ifndef __niftkGeneralSegmentorPipeline_txx
-#define __niftkGeneralSegmentorPipeline_txx
-
 #include <itkImage.h>
 #include <itkImageFileWriter.h>
 #include <itkImageRegionIterator.h>
 
 #include <niftkMIDASOrientationUtils.h>
 
-
-namespace niftk
-{
-
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-GeneralSegmentorPipeline<TPixel, VImageDimension>
+niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::GeneralSegmentorPipeline()
 {
   m_SliceNumber = -1;
@@ -50,8 +43,16 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
+niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
+::~GeneralSegmentorPipeline()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 void
-GeneralSegmentorPipeline<TPixel, VImageDimension>
+niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::SetParam(GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams& p)
 {
   m_ExtractGreyRegionOfInterestFilter->SetInput(referenceImage);
@@ -70,7 +71,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
-GeneralSegmentorPipeline<TPixel, VImageDimension>
+niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::Update(GeneralSegmentorPipelineParams& params)
 {
   try
@@ -95,10 +96,10 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     mitk::Vector3D spacingInWorldCoordinateOrder;
     niftk::GetSpacingInWorldCoordinateOrder(m_ExtractBinaryRegionOfInterestFilter->GetInput(), spacingInWorldCoordinateOrder);
 
-    ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);  
-    ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, m_ManualContours, spacingInWorldCoordinateOrder);
-    ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, m_ManualContours, spacingInWorldCoordinateOrder);
-    ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours, spacingInWorldCoordinateOrder);
+    niftk::ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);
+    niftk::ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, m_ManualContours, spacingInWorldCoordinateOrder);
+    niftk::ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, m_ManualContours, spacingInWorldCoordinateOrder);
+    niftk::ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours, spacingInWorldCoordinateOrder);
      
     // 4. Update the pipeline so far to get output slice that we can draw onto.
     m_ExtractGreyRegionOfInterestFilter->SetExtractionRegion(region3D);
@@ -456,7 +457,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
 template<typename TPixel, unsigned int VImageDimension>
 void
-GeneralSegmentorPipeline<TPixel, VImageDimension>
+niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::SetPaintingRegion(const ContinuousIndexType& pointInVx, RegionType& paintingRegion)
 {
 #ifndef NDEBUG
@@ -489,7 +490,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
 template<typename TPixel, unsigned int VImageDimension>
 void
-GeneralSegmentorPipeline<TPixel, VImageDimension>
+niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::DisconnectPipeline()
 {
   // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
@@ -502,7 +503,3 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_RegionGrowingFilter->SetSegmentationContourImage(NULL);
   m_RegionGrowingFilter->SetManualContourImage(NULL);
 }
-
-}
-
-#endif

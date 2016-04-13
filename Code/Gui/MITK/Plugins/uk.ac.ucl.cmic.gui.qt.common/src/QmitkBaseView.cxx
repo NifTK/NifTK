@@ -234,9 +234,9 @@ void QmitkBaseView::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkBaseView::GetFocusedRenderer()
+mitk::BaseRenderer* QmitkBaseView::GetFocusedRenderer() const
 {
-  Q_D(QmitkBaseView);
+  Q_D(const QmitkBaseView);
   return d->m_Focused2DRenderer;
 }
 
@@ -344,6 +344,34 @@ mitk::DataStorage::Pointer QmitkBaseView::GetDataStorage() const
 
 
 //-----------------------------------------------------------------------------
+QList<mitk::DataNode::Pointer> QmitkBaseView::GetDataManagerSelection() const
+{
+  return SuperClass::GetDataManagerSelection();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::FireNodeSelected(mitk::DataNode::Pointer node)
+{
+  SuperClass::FireNodeSelected(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::WaitCursorOn()
+{
+  SuperClass::WaitCursorOn();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::WaitCursorOff()
+{
+  SuperClass::WaitCursorOff();
+}
+
+
+//-----------------------------------------------------------------------------
 bool QmitkBaseView::SetMainWindowCursorVisible(bool visible)
 {
   mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
@@ -403,6 +431,13 @@ bool QmitkBaseView::SetMainWindowCursorVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
+void QmitkBaseView::RequestRenderWindowUpdate(mitk::RenderingManager::RequestType requestType)
+{
+  SuperClass::RequestRenderWindowUpdate(requestType);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkBaseView::SetCurrentSelection(mitk::DataNode::Pointer dataNode)
 {
   if (dataNode.IsNull())
@@ -453,9 +488,9 @@ QmitkRenderWindow* QmitkBaseView::GetRenderWindow(QString id)
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkBaseView::GetSelectedRenderWindow()
+QmitkRenderWindow* QmitkBaseView::GetSelectedRenderWindow() const
 {
-  QmitkRenderWindow* renderWindow = 0;
+  QmitkRenderWindow* renderWindow = renderWindow;
 
   if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
   {
@@ -481,7 +516,7 @@ void QmitkBaseView::SetViewToCoordinate(const mitk::Point3D &coordinate)
 
 
 //-----------------------------------------------------------------------------
-void QmitkBaseView::FocusOnCurrentWindow()
+void QmitkBaseView::FocusOnCurrentWindow() const
 {
   mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
   if (renderWindowPart != NULL)
@@ -495,5 +530,22 @@ void QmitkBaseView::FocusOnCurrentWindow()
       focusManager->SetFocused(base);
     }
   }
+}
 
+
+//-----------------------------------------------------------------------------
+mitk::Point3D QmitkBaseView::GetSelectedPosition() const
+{
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+  assert(renderWindowPart);
+  return renderWindowPart->GetSelectedPosition();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::SetSelectedPosition(const mitk::Point3D& selectedPosition)
+{
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+  assert(renderWindowPart);
+  renderWindowPart->SetSelectedPosition(selectedPosition);
 }

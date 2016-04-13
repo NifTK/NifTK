@@ -12,6 +12,10 @@
 #
 #============================================================================*/
 
+set(H_FILES
+  niftkIBaseView.h
+)
+
 set(CPP_FILES
   IO/mitkLabelMapReader.cxx
   IO/mitkLabelMapWriter.cxx

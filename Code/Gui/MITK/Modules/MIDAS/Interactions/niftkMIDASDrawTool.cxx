@@ -32,13 +32,12 @@
 #include <usModuleResource.h>
 #include <usGetModuleContext.h>
 
+#include "niftkToolFactoryMacros.h"
+
 const mitk::OperationType niftk::MIDASDrawTool::MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR = 320422;
 const mitk::OperationType niftk::MIDASDrawTool::MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR = 320423;
 
-namespace niftk
-{
-  MITK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASDrawTool, "MIDAS Draw Tool");
-}
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASDrawTool, "MIDAS Draw Tool");
 
 //-----------------------------------------------------------------------------
 niftk::MIDASDrawTool::MIDASDrawTool()

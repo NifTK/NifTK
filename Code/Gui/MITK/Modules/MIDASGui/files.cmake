@@ -13,22 +13,37 @@
 #============================================================================*/
 
 set(CPP_FILES
-  Dialogs/niftkMIDASNewSegmentationDialog.cxx
-  niftkMIDASToolSelectorWidget.cxx
-  niftkMIDASImageAndSegmentationSelectorWidget.cxx
-  niftkMIDASDrawToolGUI.cxx
-  niftkMIDASPaintbrushToolGUI.cxx
+  Internal/niftkBaseSegmentorGUI.cxx
+  Internal/niftkDrawToolGUI.cxx
+  Internal/niftkGeneralSegmentorEventInterface.cxx
+  Internal/niftkGeneralSegmentorGUI.cxx
+  Internal/niftkMorphologicalSegmentorGUI.cxx
+  Internal/niftkNewSegmentationDialog.cxx
+  Internal/niftkPaintbrushToolGUI.cxx
+  Internal/niftkSegmentationSelectorWidget.cxx
+  Internal/niftkToolSelectorWidget.cxx
+  niftkBaseSegmentorController.cxx
+  niftkGeneralSegmentorController.cxx
+  niftkMorphologicalSegmentorController.cxx
 )
 
 set(MOC_H_FILES 
-  Dialogs/niftkMIDASNewSegmentationDialog.h
-  niftkMIDASToolSelectorWidget.h
-  niftkMIDASImageAndSegmentationSelectorWidget.h
-  niftkMIDASDrawToolGUI.h
-  niftkMIDASPaintbrushToolGUI.h
+  Internal/niftkBaseSegmentorGUI.h
+  Internal/niftkDrawToolGUI.h
+  Internal/niftkGeneralSegmentorGUI.h
+  Internal/niftkMorphologicalSegmentorGUI.h
+  Internal/niftkNewSegmentationDialog.h
+  Internal/niftkPaintbrushToolGUI.h
+  Internal/niftkSegmentationSelectorWidget.h
+  Internal/niftkToolSelectorWidget.h
+  niftkBaseSegmentorController.h
+  niftkGeneralSegmentorController.h
+  niftkMorphologicalSegmentorController.h
 )
 
 set(UI_FILES
-  Resources/UI/niftkMIDASImageAndSegmentationSelector.ui
-  Resources/UI/niftkMIDASToolSelector.ui
+  Internal/niftkGeneralSegmentorWidget.ui
+  Internal/niftkMorphologicalSegmentorWidget.ui
+  Internal/niftkSegmentationSelectorWidget.ui
+  Internal/niftkToolSelectorWidget.ui
 )

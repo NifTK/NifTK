@@ -357,7 +357,7 @@ ITKCountBetweenThreshold(
  * \param upper An upper threshold for intensity values
  * \return unsigned long int The number of voxels.
  */
-NIFTKCORE_EXPORT unsigned long int CountBetweenThreshold(const mitk::Image* image, const float& lower, const float& upper)
+NIFTKCORE_EXPORT unsigned long int CountBetweenThreshold(const mitk::Image* image, float lower, float upper)
 {
   unsigned long int counter = 0;
 
