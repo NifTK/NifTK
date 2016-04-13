@@ -31,7 +31,6 @@ class niftkToolSelectorWidget;
  *
  * \sa niftkMorphologicalSegmentorGUI
  * \sa niftkGeneralSegmentorGUI
- * \sa MITKSegmentationView
  */
 class niftkBaseSegmentorGUI : public QObject
 {

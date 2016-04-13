@@ -44,7 +44,6 @@ class niftkBaseSegmentorController;
  * \sa QmitkBaseView
  * \sa niftkMorphologicalSegmentorView
  * \sa niftkGeneralSegmentorView
- * \sa MITKSegmentationView
  */
 class CMIC_QT_COMMONMIDAS niftkBaseSegmentorView : public QmitkBaseView
 {
