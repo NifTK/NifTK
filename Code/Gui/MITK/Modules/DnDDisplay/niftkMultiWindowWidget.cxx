@@ -24,6 +24,7 @@
 #include <QGridLayout>
 
 #include <mitkGlobalInteraction.h>
+#include <mitkImage.h>
 #include <mitkNodePredicateAnd.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateNot.h>
