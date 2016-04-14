@@ -215,7 +215,7 @@ private:
   int m_ActiveToolID;
 
   /// \brief Stores the visibility state of the cursor in the main display before activating a tool.
-  bool m_MainWindowCursorVisibleWithToolsOff;
+  bool m_CursorIsVisibleWhenToolsAreOff;
 
 friend class niftkBaseSegmentorView;
 
