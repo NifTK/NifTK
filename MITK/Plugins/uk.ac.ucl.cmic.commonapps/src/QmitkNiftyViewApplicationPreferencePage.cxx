@@ -177,7 +177,7 @@ void QmitkNiftyViewApplicationPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void QmitkNiftyViewApplicationPreferencePage::Update()
 {
-  QString method = m_PreferencesNode->Get(IMAGE_INITIALISATION_METHOD_NAME, IMAGE_INITIALISATION_MIDAS);
+  QString method = m_PreferencesNode->Get(IMAGE_INITIALISATION_METHOD_NAME, IMAGE_INITIALISATION_PERCENTAGE);
   if (method == IMAGE_INITIALISATION_LEVELWINDOW)
   {
     m_UseLevelWindowRadioButton->setChecked(true);
