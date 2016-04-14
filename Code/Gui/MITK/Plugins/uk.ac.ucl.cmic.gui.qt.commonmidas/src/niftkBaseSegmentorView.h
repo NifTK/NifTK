@@ -73,14 +73,6 @@ signals:
    */
   void InteractorRequest(const ctkDictionary&);
 
-protected slots:
-
-  /**
-   * \brief Called from niftkToolSelectorWidget when a tool changes.
-   * We may need to enable or disable the editors from moving/changing position, zoom, etc.
-   */
-  virtual void OnToolSelected(int);
-
 protected:
 
   /**
@@ -179,12 +171,6 @@ private:
 
   /// \brief The segmentor controller that realises the GUI logic behind the view.
   niftkBaseSegmentorController* m_SegmentorController;
-
-  /// \brief The ID of the currently active tool or -1 if no tool is active.
-  int m_ActiveToolID;
-
-  /// \brief Stores the visibility state of the cursor in the main display before activating a tool.
-  bool m_MainWindowCursorVisibleWithToolsOff;
 
 friend class niftkBaseSegmentorController;
 

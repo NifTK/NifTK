@@ -69,11 +69,10 @@ public:
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   void SetDefaultSegmentationColour(const QColor& defaultSegmentationColour);
 
-signals:
+protected slots:
 
-  /// \brief Emitted when a tool is selected or all tools are deselected.
-  /// If all tools got deselected, toolId is -1.
-  void ToolSelected(int toolId);
+  /// \brief Called from niftkToolSelectorWidget when a tool changes.
+  virtual void OnToolSelected(int toolID);
 
 protected:
 
@@ -211,6 +210,12 @@ private:
 
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   QColor m_DefaultSegmentationColour;
+
+  /// \brief The ID of the currently active tool or -1 if no tool is active.
+  int m_ActiveToolID;
+
+  /// \brief Stores the visibility state of the cursor in the main display before activating a tool.
+  bool m_MainWindowCursorVisibleWithToolsOff;
 
 friend class niftkBaseSegmentorView;
 

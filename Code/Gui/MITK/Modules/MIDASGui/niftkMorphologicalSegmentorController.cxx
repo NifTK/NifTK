@@ -431,7 +431,7 @@ void niftkMorphologicalSegmentorController::OnTabChanged(int tabIndex)
     else
     {
       m_MorphologicalSegmentorGUI->SetToolSelectorEnabled(false);
-      emit ToolSelected(-1); // make sure we de-activate tools.
+      this->OnToolSelected(-1); // make sure we de-activate tools.
     }
 
     m_PipelineManager->OnTabChanged(tabIndex);
@@ -449,7 +449,7 @@ void niftkMorphologicalSegmentorController::OnOKButtonClicked()
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
-    emit ToolSelected(-1);
+    this->OnToolSelected(-1);
     m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->FinalizeSegmentation();
@@ -471,7 +471,7 @@ void niftkMorphologicalSegmentorController::OnRestartButtonClicked()
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
-    emit ToolSelected(-1);
+    this->OnToolSelected(-1);
     m_PipelineManager->ClearWorkingData();
     this->SetSegmentationNodePropsFromReferenceImage();
     this->SetControlsFromReferenceImage();
@@ -509,7 +509,7 @@ void niftkMorphologicalSegmentorController::OnCancelButtonClicked()
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull())
   {
-    emit ToolSelected(-1);
+    this->OnToolSelected(-1);
     m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->RemoveWorkingData();
@@ -563,7 +563,7 @@ void niftkMorphologicalSegmentorController::OnNodeRemoved(const mitk::DataNode* 
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   if (segmentationNode.IsNotNull() && segmentationNode.GetPointer() == removedNode)
   {
-    emit ToolSelected(-1);
+    this->OnToolSelected(-1);
     m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->RemoveWorkingData();
