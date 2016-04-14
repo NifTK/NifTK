@@ -19,6 +19,7 @@
 #include <mitkFocusManager.h>
 #include <mitkSliceNavigationController.h>
 #include <mitkWeakPointerProperty.h>
+#include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateProperty.h>
 #include <mitkNodePredicateAnd.h>
 #include <QmitkRenderWindow.h>
@@ -385,14 +386,12 @@ bool QmitkBaseView::IsActiveEditorCursorVisible() const
   mitk::BaseRenderer* mainAxialRenderer = renderWindowPart->GetQmitkRenderWindow("axial")->GetRenderer();
   mitk::BaseRenderer* mainSagittalRenderer = renderWindowPart->GetQmitkRenderWindow("sagittal")->GetRenderer();
 
-  mitk::StringProperty::Pointer crossPlaneNameProperty = mitk::StringProperty::New();
   mitk::WeakPointerProperty::Pointer crossPlaneRendererProperty = mitk::WeakPointerProperty::New();
 
   mitk::NodePredicateAnd::Pointer crossPlanePredicate = mitk::NodePredicateAnd::New(
-        mitk::NodePredicateProperty::New("name", crossPlaneNameProperty),
+        mitk::NodePredicateDataType::New("PlaneGeometryData"),
         mitk::NodePredicateProperty::New("renderer", crossPlaneRendererProperty));
 
-  crossPlaneNameProperty->SetValue("widget1Plane");
   crossPlaneRendererProperty->SetValue(mainAxialRenderer);
   mitk::DataNode* axialCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
   if (!axialCrossPlaneNode)
@@ -410,26 +409,24 @@ bool QmitkBaseView::IsActiveEditorCursorVisible() const
 //-----------------------------------------------------------------------------
 void QmitkBaseView::SetActiveEditorCursorVisible(bool visible) const
 {
-  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
-
-  mitk::BaseRenderer* mainAxialRenderer = renderWindowPart->GetQmitkRenderWindow("axial")->GetRenderer();
-  mitk::BaseRenderer* mainSagittalRenderer = renderWindowPart->GetQmitkRenderWindow("sagittal")->GetRenderer();
-  mitk::BaseRenderer* mainCoronalRenderer = renderWindowPart->GetQmitkRenderWindow("coronal")->GetRenderer();
-
-  mitk::StringProperty::Pointer crossPlaneNameProperty = mitk::StringProperty::New();
-  mitk::WeakPointerProperty::Pointer crossPlaneRendererProperty = mitk::WeakPointerProperty::New();
-
-  mitk::NodePredicateAnd::Pointer crossPlanePredicate = mitk::NodePredicateAnd::New(
-        mitk::NodePredicateProperty::New("name", crossPlaneNameProperty),
-        mitk::NodePredicateProperty::New("renderer", crossPlaneRendererProperty));
-
   mitk::DataStorage* dataStorage = this->GetDataStorage();
   if (!dataStorage)
   {
     return;
   }
 
-  crossPlaneNameProperty->SetValue("widget1Plane");
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+
+  mitk::BaseRenderer* mainAxialRenderer = renderWindowPart->GetQmitkRenderWindow("axial")->GetRenderer();
+  mitk::BaseRenderer* mainSagittalRenderer = renderWindowPart->GetQmitkRenderWindow("sagittal")->GetRenderer();
+  mitk::BaseRenderer* mainCoronalRenderer = renderWindowPart->GetQmitkRenderWindow("coronal")->GetRenderer();
+
+  mitk::WeakPointerProperty::Pointer crossPlaneRendererProperty = mitk::WeakPointerProperty::New();
+
+  mitk::NodePredicateAnd::Pointer crossPlanePredicate = mitk::NodePredicateAnd::New(
+        mitk::NodePredicateDataType::New("PlaneGeometryData"),
+        mitk::NodePredicateProperty::New("renderer", crossPlaneRendererProperty));
+
   crossPlaneRendererProperty->SetValue(mainAxialRenderer);
   mitk::DataNode* axialCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
   if (!axialCrossPlaneNode)
@@ -437,11 +434,9 @@ void QmitkBaseView::SetActiveEditorCursorVisible(bool visible) const
     return;
   }
 
-  crossPlaneNameProperty->SetValue("widget2Plane");
   crossPlaneRendererProperty->SetValue(mainSagittalRenderer);
   mitk::DataNode* sagittalCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
 
-  crossPlaneNameProperty->SetValue("widget3Plane");
   crossPlaneRendererProperty->SetValue(mainCoronalRenderer);
   mitk::DataNode* coronalCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
 
