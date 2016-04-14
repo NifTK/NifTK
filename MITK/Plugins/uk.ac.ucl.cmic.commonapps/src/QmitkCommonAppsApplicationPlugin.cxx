@@ -16,6 +16,13 @@
 #include "QmitkCommonAppsApplicationPreferencePage.h"
 #include "QmitkNiftyViewApplicationPreferencePage.h"
 
+#if (_MSC_VER == 1700)
+// Visual Studio 2012 does not provide the std::isnan function in cmath but _isnan in float.h.
+#include <float.h>
+#else
+#include <cmath>
+#endif
+
 #include <berryPlatform.h>
 #include <berryIPreferencesService.h>
 
@@ -414,6 +421,17 @@ void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
           catch(const mitk::AccessByItkException& e)
           {
             MITK_ERROR << "Caught exception during QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty, so image statistics will be wrong." << e.what();
+          }
+
+#if (_MSC_VER == 1700)
+          // Visual Studio 2012 does not provide the C++11 std::isnan function.
+          if (_isnan(stdDevData))
+#else
+          if (std::isnan(stdDevData))
+#endif
+          {
+            MITK_WARN << "The image has NaN values. Overriding window/level initialisation mode from MIDAS convention to the mode based on percentage of data range.";
+            initialisationMethod = QmitkNiftyViewApplicationPreferencePage::IMAGE_INITIALISATION_PERCENTAGE;
           }
 
           // This image hasn't had the data members that this view needs (minDataLimit, maxDataLimit etc) initialized yet.
