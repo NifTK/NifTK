@@ -24,6 +24,13 @@
 #include <QGridLayout>
 
 #include <mitkGlobalInteraction.h>
+#include <mitkImage.h>
+#include <mitkNodePredicateAnd.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateNot.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkOverlayManager.h>
+#include <mitkOverlay2DLayouter.h>
 #include <mitkProportionalTimeGeometry.h>
 #include <mitkSlicedGeometry3D.h>
 #include <mitkVtkLayerController.h>
@@ -272,6 +279,8 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   // mitk::DisplayInteractor. This line decreases the reference counter of the mouse mode switcher
   // so that it is destructed and it unregisters and destructs its display interactor as well.
   m_MouseModeSwitcher = 0;
+
+  this->InitialiseIntensityAnnotations();
 }
 
 
@@ -473,7 +482,19 @@ void niftkMultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)
       m_FocusHasChanged = true;
       m_FocusLosingWindowIndex = m_SelectedWindowIndex;
     }
+
+    if (m_SelectedWindowIndex < 3)
+    {
+      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
+    }
+
     m_SelectedWindowIndex = selectedWindowIndex;
+
+    if (m_SelectedWindowIndex < 3)
+    {
+      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(true);
+    }
+
     this->BlockUpdate(updateWasBlocked);
   }
 }
@@ -774,6 +795,7 @@ void niftkMultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, b
     this->SetVisibility(mitkWidget2, nodes[i], visibility);
     this->SetVisibility(mitkWidget3, nodes[i], visibility);
   }
+  this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
   this->Update3DWindowVisibility();
 }
 
@@ -1367,6 +1389,12 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
 
     m_TimeStep = 0;
     m_TimeStepHasChanged = true;
+
+    if (m_SelectedWindowIndex < 3)
+    {
+      this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
+      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(true);
+    }
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -2105,9 +2133,120 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
         windowIndex = CORONAL;
       }
       this->SynchroniseCursorPositions(windowIndex);
+      this->UpdateIntensityAnnotation(windowIndex);
     }
 
     this->BlockUpdate(updateWasBlocked);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::InitialiseIntensityAnnotations()
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    mitk::BaseRenderer* renderer = m_RenderWindows[i]->GetRenderer();
+    mitk::OverlayManager::Pointer overlayManager = renderer->GetOverlayManager();
+    mitk::Overlay2DLayouter::Pointer topLeftLayouter = mitk::Overlay2DLayouter::CreateLayouter(
+          mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
+    overlayManager->AddLayouter(topLeftLayouter.GetPointer());
+
+    mitk::TextOverlay2D::Pointer intensityAnnotation = mitk::TextOverlay2D::New();
+    m_IntensityAnnotations[i] = intensityAnnotation;
+    intensityAnnotation->SetFontSize(12);
+    intensityAnnotation->SetColor(0.0f, 1.0f, 0.0f);
+    intensityAnnotation->SetOpacity(1.0f);
+    intensityAnnotation->SetVisibility(false);
+
+    overlayManager->AddOverlay(intensityAnnotation.GetPointer(), renderer);
+    overlayManager->SetLayouter(intensityAnnotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
+{
+  if (windowIndex >= 0 && windowIndex < 3)
+  {
+    mitk::BaseRenderer* renderer = m_RenderWindows[windowIndex]->GetRenderer();
+    mitk::TextOverlay2D::Pointer intensityAnnotation = m_IntensityAnnotations[windowIndex];
+
+    mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+    mitk::NodePredicateProperty::Pointer isBinary = mitk::NodePredicateProperty::New("binary", mitk::BoolProperty::New(true));
+    mitk::NodePredicateNot::Pointer isNotBinary = mitk::NodePredicateNot::New(isBinary);
+    mitk::NodePredicateAnd::Pointer isImageAndNotBinary = mitk::NodePredicateAnd::New(isImage, isNotBinary);
+    mitk::NodePredicateProperty::Pointer isVisible = mitk::NodePredicateProperty::New("visible", mitk::BoolProperty::New(true), renderer);
+    mitk::NodePredicateAnd::Pointer isVisibleAndImageAndNotBinary = mitk::NodePredicateAnd::New(isVisible, isImageAndNotBinary);
+
+    /// Note:
+    /// The nodes are printed in the order of their layer.
+    std::multimap<int, mitk::DataNode*> visibleNonBinaryImageNodes;
+
+    mitk::DataStorage::SetOfObjects::ConstPointer nodes = renderer->GetDataStorage()->GetSubset(isVisibleAndImageAndNotBinary).GetPointer();
+    for (mitk::DataStorage::SetOfObjects::ConstIterator it = nodes->Begin(); it != nodes->End(); ++it)
+    {
+      mitk::DataNode* node = it->Value();
+      int layer = 0;
+      if (node->GetIntProperty("layer", layer, renderer))
+      {
+        visibleNonBinaryImageNodes.insert(std::make_pair(layer, node));
+      }
+    }
+
+    std::stringstream stream;
+    stream.precision(3);
+    stream.imbue(std::locale::classic());
+
+    if (visibleNonBinaryImageNodes.size() == 0)
+    {
+      intensityAnnotation->SetVisibility(false);
+    }
+    else if (visibleNonBinaryImageNodes.size() == 1)
+    {
+      stream << "Intensity: ";
+      intensityAnnotation->SetVisibility(true);
+    }
+    else if (visibleNonBinaryImageNodes.size() > 1)
+    {
+      stream << "Intensities: ";
+      intensityAnnotation->SetVisibility(true);
+    }
+
+    for (std::multimap<int, mitk::DataNode*>::const_iterator it = visibleNonBinaryImageNodes.begin(); it != visibleNonBinaryImageNodes.end(); ++it)
+    {
+      mitk::DataNode* node = it->second;
+
+      int component = 0;
+      node->GetIntProperty("Image.Displayed Component", component);
+
+      mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+
+      mitk::ScalarType intensity = image->GetPixelValueByWorldCoordinate(m_SelectedPosition, m_TimeStep, component);
+
+      if (it != visibleNonBinaryImageNodes.begin())
+      {
+        stream << "; ";
+      }
+
+      if (visibleNonBinaryImageNodes.size() != 1)
+      {
+        stream << node->GetName() << ": ";
+      }
+
+      if (std::fabs(intensity) > 10e6 || std::fabs(intensity) < 10e-3)
+      {
+        stream << std::scientific << intensity;
+      }
+      else
+      {
+        stream << intensity;
+      }
+    }
+
+    intensityAnnotation->SetText(stream.str());
+    intensityAnnotation->Modified();
   }
 }
 
@@ -2742,7 +2881,8 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
       {
         if (m_RenderWindows[i]->isVisible() && rendererNeedsUpdate[i])
         {
-          m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
+//          m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
+          m_RenderingManager->ForceImmediateUpdate(m_RenderWindows[i]->GetRenderWindow());
         }
       }
 
