@@ -451,7 +451,10 @@ private:
   /// \brief Callback function that gets called by the mitk::FocusManager to indicate the currently focused window.
   void OnFocusChanged();
 
-  /// \brief Updates the annotation that shows the intensity values in the visible images.
+  /// \brief Initialises the annotations that show the intensity values in the visible images in the 2D windows.
+  void InitialiseIntensityAnnotations();
+
+  /// \brief Updates the annotation that shows the intensity values in the visible images in the given window.
   void UpdateIntensityAnnotation(int windowIndex) const;
 
   std::vector<QmitkRenderWindow*> m_RenderWindows;

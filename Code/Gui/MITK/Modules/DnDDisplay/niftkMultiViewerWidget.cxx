@@ -216,6 +216,8 @@ niftkMultiViewerControls* niftkMultiViewerWidget::CreateControlPanel(QWidget* pa
 //-----------------------------------------------------------------------------
 niftkMultiViewerWidget::~niftkMultiViewerWidget()
 {
+  m_VisibilityManager->DeregisterViewers();
+
   this->EnableLinkedNavigation(false);
 
   // Deregister focus observer.

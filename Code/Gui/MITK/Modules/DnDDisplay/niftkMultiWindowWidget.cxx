@@ -280,24 +280,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   // so that it is destructed and it unregisters and destructs its display interactor as well.
   m_MouseModeSwitcher = 0;
 
-  for (int i = 0; i < 3; ++i)
-  {
-    mitk::BaseRenderer* renderer = m_RenderWindows[i]->GetRenderer();
-    mitk::OverlayManager::Pointer overlayManager = renderer->GetOverlayManager();
-    mitk::Overlay2DLayouter::Pointer topLeftLayouter = mitk::Overlay2DLayouter::CreateLayouter(
-          mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
-    overlayManager->AddLayouter(topLeftLayouter.GetPointer());
-
-    mitk::TextOverlay2D::Pointer intensityAnnotation = mitk::TextOverlay2D::New();
-    m_IntensityAnnotations[i] = intensityAnnotation;
-    intensityAnnotation->SetFontSize(12);
-    intensityAnnotation->SetColor(0.0f, 1.0f, 0.0f);
-    intensityAnnotation->SetOpacity(1.0f);
-    intensityAnnotation->SetVisibility(false);
-
-    overlayManager->AddOverlay(intensityAnnotation.GetPointer(), renderer);
-    overlayManager->SetLayouter(intensityAnnotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
-  }
+  this->InitialiseIntensityAnnotations();
 }
 
 
@@ -812,6 +795,7 @@ void niftkMultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, b
     this->SetVisibility(mitkWidget2, nodes[i], visibility);
     this->SetVisibility(mitkWidget3, nodes[i], visibility);
   }
+  this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
   this->Update3DWindowVisibility();
 }
 
@@ -1406,8 +1390,11 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
     m_TimeStep = 0;
     m_TimeStepHasChanged = true;
 
-    this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
-    m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(true);
+    if (m_SelectedWindowIndex < 3)
+    {
+      this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
+      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(true);
+    }
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -2150,6 +2137,30 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
     }
 
     this->BlockUpdate(updateWasBlocked);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::InitialiseIntensityAnnotations()
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    mitk::BaseRenderer* renderer = m_RenderWindows[i]->GetRenderer();
+    mitk::OverlayManager::Pointer overlayManager = renderer->GetOverlayManager();
+    mitk::Overlay2DLayouter::Pointer topLeftLayouter = mitk::Overlay2DLayouter::CreateLayouter(
+          mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
+    overlayManager->AddLayouter(topLeftLayouter.GetPointer());
+
+    mitk::TextOverlay2D::Pointer intensityAnnotation = mitk::TextOverlay2D::New();
+    m_IntensityAnnotations[i] = intensityAnnotation;
+    intensityAnnotation->SetFontSize(12);
+    intensityAnnotation->SetColor(0.0f, 1.0f, 0.0f);
+    intensityAnnotation->SetOpacity(1.0f);
+    intensityAnnotation->SetVisibility(false);
+
+    overlayManager->AddOverlay(intensityAnnotation.GetPointer(), renderer);
+    overlayManager->SetLayouter(intensityAnnotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
   }
 }
 

@@ -188,6 +188,17 @@ void niftkMultiViewerVisibilityManager::OnNodeRemoved(mitk::DataNode* node)
 {
   Superclass::OnNodeRemoved(node);
 
+  // This is just to trigger updating the intensity annotations.
+  for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
+  {
+    if (m_Viewers[viewerIndex]->IsFocused())
+    {
+      std::vector<mitk::DataNode*> nodes;
+      nodes.push_back(node);
+      m_Viewers[viewerIndex]->SetVisibility(nodes, false);
+    }
+  }
+
   for (std::size_t i = 0; i < m_DataNodesPerViewer.size(); i++)
   {
     std::set<mitk::DataNode*>::iterator it;
