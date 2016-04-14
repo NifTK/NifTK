@@ -105,7 +105,8 @@ void niftkBaseSegmentorView::OnToolSelected(int toolID)
 {
   if (toolID != -1)
   {
-    bool mainWindowCursorWasVisible = this->SetMainWindowCursorVisible(false);
+    bool mainWindowCursorWasVisible = this->IsActiveEditorCursorVisible();
+    this->SetActiveEditorCursorVisible(false);
 
     if (m_ActiveToolID == -1)
     {
@@ -114,7 +115,7 @@ void niftkBaseSegmentorView::OnToolSelected(int toolID)
   }
   else
   {
-    this->SetMainWindowCursorVisible(m_MainWindowCursorVisibleWithToolsOff);
+    this->SetActiveEditorCursorVisible(m_MainWindowCursorVisibleWithToolsOff);
   }
 
   m_ActiveToolID = toolID;
