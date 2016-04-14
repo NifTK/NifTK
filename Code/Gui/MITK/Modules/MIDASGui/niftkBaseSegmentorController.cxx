@@ -33,7 +33,9 @@ niftkBaseSegmentorController::niftkBaseSegmentorController(niftkIBaseView* view)
   : m_SegmentorGUI(nullptr),
     m_View(view),
     m_SelectedNode(nullptr),
-    m_SelectedImage(nullptr)
+    m_SelectedImage(nullptr),
+    m_ActiveToolID(-1),
+    m_CursorIsVisibleWhenToolsAreOff(true)
 {
   // Create an own tool manager and connect it to the data storage straight away.
   m_ToolManager = mitk::ToolManager::New(view->GetDataStorage());
@@ -53,7 +55,7 @@ void niftkBaseSegmentorController::SetupSegmentorGUI(QWidget* parent)
   m_SegmentorGUI->SetToolManager(m_ToolManager);
 
   this->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
-  this->connect(m_SegmentorGUI, SIGNAL(ToolSelected(int)), SIGNAL(ToolSelected(int)));
+  this->connect(m_SegmentorGUI, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
 }
 
 
@@ -583,5 +585,46 @@ void niftkBaseSegmentorController::SetToolManagerSelection(const mitk::DataNode*
   else
   {
     m_SegmentorGUI->SelectSegmentationImage();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorController::OnToolSelected(int toolID)
+{
+  /// Note: The view is not created when the GUI is set up, therefore
+  /// we cannot initialise this variable at another place.
+  static bool firstCall = true;
+  if (firstCall)
+  {
+    firstCall = false;
+    m_CursorIsVisibleWhenToolsAreOff = m_View->IsActiveEditorCursorVisible();
+  }
+
+  if (toolID != -1)
+  {
+    bool cursorWasVisible = m_View->IsActiveEditorCursorVisible();
+    if (cursorWasVisible)
+    {
+      m_View->SetActiveEditorCursorVisible(false);
+    }
+
+    if (m_ActiveToolID == -1)
+    {
+      m_CursorIsVisibleWhenToolsAreOff = cursorWasVisible;
+    }
+  }
+  else
+  {
+    m_View->SetActiveEditorCursorVisible(m_CursorIsVisibleWhenToolsAreOff);
+  }
+
+  m_ActiveToolID = toolID;
+
+  /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
+  /// (like 'a' and 'z' for changing slice) keep on working.
+  if (QmitkRenderWindow* mainWindow = m_View->GetSelectedRenderWindow())
+  {
+    mainWindow->setFocus();
   }
 }

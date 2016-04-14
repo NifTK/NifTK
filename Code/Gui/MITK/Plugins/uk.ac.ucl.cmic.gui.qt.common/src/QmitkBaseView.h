@@ -113,9 +113,11 @@ public:
    */
   virtual QmitkRenderWindow* GetSelectedRenderWindow() const override;
 
+  /// \brief Gets the visibility of the cursor (aka. crosshair) in the 2D render windows of the main display.
+  virtual bool IsActiveEditorCursorVisible() const override;
+
   /// \brief Sets the visibility of the cursor (aka. crosshair) in the 2D render windows of the main display.
-  /// \return The actual visibility of the cursor when this function is called.
-  bool SetMainWindowCursorVisible(bool visible);
+  virtual void SetActiveEditorCursorVisible(bool visible) const override;
 
   /// \brief Request an update of all render windows of the currently active render window part.
   /// \param requestType Specifies the type of render windows for which an update

@@ -47,8 +47,6 @@ const QString niftkBaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET("midas editor d
 
 //-----------------------------------------------------------------------------
 niftkBaseSegmentorView::niftkBaseSegmentorView()
-  : m_ActiveToolID(-1),
-    m_MainWindowCursorVisibleWithToolsOff(true)
 {
 }
 
@@ -87,8 +85,6 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget* parent)
 
   // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
   this->RetrievePreferenceValues();
-
-  this->connect(m_SegmentorController, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
 }
 
 
@@ -97,34 +93,6 @@ mitk::ToolManager* niftkBaseSegmentorView::GetToolManager()
 {
   assert(m_SegmentorController);
   return m_SegmentorController->GetToolManager();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::OnToolSelected(int toolID)
-{
-  if (toolID != -1)
-  {
-    bool mainWindowCursorWasVisible = this->SetMainWindowCursorVisible(false);
-
-    if (m_ActiveToolID == -1)
-    {
-      m_MainWindowCursorVisibleWithToolsOff = mainWindowCursorWasVisible;
-    }
-  }
-  else
-  {
-    this->SetMainWindowCursorVisible(m_MainWindowCursorVisibleWithToolsOff);
-  }
-
-  m_ActiveToolID = toolID;
-
-  /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
-  /// (like 'a' and 'z' for changing slice) keep on working.
-  if (QmitkRenderWindow* mainWindow = this->GetSelectedRenderWindow())
-  {
-    mainWindow->setFocus();
-  }
 }
 
 

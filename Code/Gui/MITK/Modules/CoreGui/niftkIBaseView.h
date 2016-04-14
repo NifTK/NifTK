@@ -80,6 +80,12 @@ public:
   ///  or <code>nullptr</code> if it can't be determined.
   virtual mitk::SliceNavigationController* GetSliceNavigationController() = 0;
 
+  /// \brief Tells if the cursor (aka. crosshair) is visible in the active editor.
+  virtual bool IsActiveEditorCursorVisible() const = 0;
+
+  /// \brief Shows or hides the cursor (aka. crosshair) is in the active editor.
+  virtual void SetActiveEditorCursorVisible(bool visible) const = 0;
+
   /// \brief Convenient method to set and reset a wait cursor ("hourglass")
   virtual void WaitCursorOn() = 0;
 
