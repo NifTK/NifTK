@@ -23,7 +23,7 @@ if(BUILD_PCL)
 endif()
 
 
-find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
+find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt5 REQUIRED)
 link_directories(${VL_LIBRARIES})
 include_directories(${VL_INCLUDE_DIRS})
 

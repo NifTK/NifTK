@@ -29,11 +29,11 @@
 #include <vlGraphics/BlitFramebuffer.hpp>
 #include <vlGraphics/Texture.hpp>
 #include <vlCore/VisualizationLibrary.hpp>
-#include <QtGui/QMouseEvent>
-#include <QtGui/QWidget>
-#include <QtCore/QTimer>
-#include <QtCore/QObject>
-#include <QtOpenGL/QGLWidget>
+#include <QMouseEvent>
+#include <QWidget>
+#include <QTimer>
+#include <QObject>
+#include <QGLWidget>
 #include <mitkOclResourceService.h>
 #include <mitkDataNode.h>
 #include <mitkSurface.h>
