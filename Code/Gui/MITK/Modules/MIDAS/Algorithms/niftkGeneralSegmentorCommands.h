@@ -15,6 +15,8 @@
 #ifndef __GeneralSegmentorCommands_h
 #define __GeneralSegmentorCommands_h
 
+#include "niftkMIDASExports.h"
+
 #include <mitkContourModelSet.h>
 #include <mitkDataNode.h>
 #include <mitkOperation.h>
@@ -43,7 +45,7 @@ const mitk::OperationType OP_PROPAGATE = 9320417;
  * \class OpGeneralSegmentorBaseCommand
  * \brief Base class for MIDAS General Segmentor commands.
  */
-class OpGeneralSegmentorBaseCommand: public mitk::Operation
+class NIFTKMIDAS_EXPORT OpGeneralSegmentorBaseCommand: public mitk::Operation
 {
 public:
 
@@ -63,7 +65,7 @@ protected:
  * \class OpChangeSliceCommand
  * \brief Command class for changing slice.
  */
-class OpChangeSliceCommand : public OpGeneralSegmentorBaseCommand
+class NIFTKMIDAS_EXPORT OpChangeSliceCommand : public OpGeneralSegmentorBaseCommand
 {
 public:
   OpChangeSliceCommand(
@@ -96,7 +98,7 @@ protected:
  * \class OpPropagateSeeds
  * \brief Command class to store data for propagating seeds from one slice to the next.
  */
-class OpPropagateSeeds: public OpGeneralSegmentorBaseCommand
+class NIFTKMIDAS_EXPORT OpPropagateSeeds: public OpGeneralSegmentorBaseCommand
 {
 public:
 
@@ -128,7 +130,7 @@ private:
  * \class OpRetainMarks
  * \brief Command class to store data to copy one slice to the next.
  */
-class OpRetainMarks: public OpGeneralSegmentorBaseCommand
+class NIFTKMIDAS_EXPORT OpRetainMarks: public OpGeneralSegmentorBaseCommand
 {
 public:
   typedef itk::MIDASRetainMarksNoThresholdingProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
@@ -174,7 +176,7 @@ private:
  * \class OpPropagate
  * \brief Class to hold data to do propagate up/down/3D.
  */
-class OpPropagate: public OpGeneralSegmentorBaseCommand
+class NIFTKMIDAS_EXPORT OpPropagate: public OpGeneralSegmentorBaseCommand
 {
 public:
 
@@ -205,7 +207,7 @@ private:
  * \class OpThresholdApply
  * \brief Class to hold data to apply the threshold region into the segmented image.
  */
-class OpThresholdApply: public OpPropagate
+class NIFTKMIDAS_EXPORT OpThresholdApply: public OpPropagate
 {
 public:
 
@@ -234,7 +236,7 @@ private:
  * \class OpClean
  * \brief Class to hold data for the MIDAS "clean" command, which filters the current contour set.
  */
-class OpClean : public OpGeneralSegmentorBaseCommand
+class NIFTKMIDAS_EXPORT OpClean : public OpGeneralSegmentorBaseCommand
 {
 public:
   OpClean(
@@ -258,7 +260,7 @@ private:
  * \brief Class to hold data to pass back to niftkGeneralSegmentorController to Undo/Redo the Wipe commands.
  * \see niftkGeneralSegmentorController::DoWipe
  */
-class OpWipe: public OpGeneralSegmentorBaseCommand
+class NIFTKMIDAS_EXPORT OpWipe: public OpGeneralSegmentorBaseCommand
 {
 public:
   typedef itk::MIDASImageUpdateClearRegionProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
