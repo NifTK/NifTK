@@ -15,7 +15,7 @@
 #include <QTextStream>
 #include <QFile>
 
-#include "VLQt4Widget.h"
+#include "VLQtWidget.h"
 #include <vlCore/Log.hpp>
 #include <vlCore/Time.hpp>
 #include <vlCore/Colors.hpp>
@@ -90,7 +90,7 @@ struct CUDAInterop
 
 
 //-----------------------------------------------------------------------------
-VLQt4Widget::TextureDataPOD::TextureDataPOD()
+VLQtWidget::TextureDataPOD::TextureDataPOD()
   : m_LastUpdatedID(0)
   , m_CUDARes(0)
 {
@@ -139,7 +139,7 @@ struct VLUserData : public vl::Object
 
 
 //-----------------------------------------------------------------------------
-VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
+VLQtWidget::VLQtWidget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(parent, shareWidget, f)
   , m_BackgroundWidth(0)
   , m_BackgroundHeight(0)
@@ -166,7 +166,7 @@ VLQt4Widget::VLQt4Widget(QWidget* parent, const QGLWidget* shareWidget, Qt::Wind
 
 
 //-----------------------------------------------------------------------------
-VLQt4Widget::~VLQt4Widget()
+VLQtWidget::~VLQtWidget()
 {
   ScopedOGLContext  ctx(this->context());
 
@@ -199,7 +199,7 @@ VLQt4Widget::~VLQt4Widget()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::FreeCUDAInteropTextures()
+void VLQtWidget::FreeCUDAInteropTextures()
 {
   // internal method, so sanity check.
   assert(QGLContext::currentContext() == QGLWidget::context());
@@ -231,7 +231,7 @@ void VLQt4Widget::FreeCUDAInteropTextures()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::OnNodeModified(const mitk::DataNode* node)
+void VLQtWidget::OnNodeModified(const mitk::DataNode* node)
 {
   mitk::DataNode::ConstPointer   dn(node);
   QueueUpdateDataNode(dn);
@@ -239,7 +239,7 @@ void VLQt4Widget::OnNodeModified(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-bool VLQt4Widget::NodeIsTranslucent(const mitk::DataNode::ConstPointer& node)
+bool VLQtWidget::NodeIsTranslucent(const mitk::DataNode::ConstPointer& node)
 {
   float opacity = 1.0f;
   mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
@@ -250,7 +250,7 @@ bool VLQt4Widget::NodeIsTranslucent(const mitk::DataNode::ConstPointer& node)
 
 
 //-----------------------------------------------------------------------------
-bool VLQt4Widget::NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& node)
+bool VLQtWidget::NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& node)
 {
   if (!m_TranslucentActors.empty())
   {
@@ -273,7 +273,7 @@ bool VLQt4Widget::NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& no
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+void VLQtWidget::OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   mitk::DataNode::ConstPointer  cdn(node);
 
@@ -288,7 +288,7 @@ void VLQt4Widget::OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mi
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+void VLQtWidget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   mitk::DataNode::ConstPointer  cdn(node);
 
@@ -303,7 +303,7 @@ void VLQt4Widget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::B
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+void VLQtWidget::OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   m_TranslucentStructuresMerged = false;
 
@@ -313,46 +313,46 @@ void VLQt4Widget::OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk:
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::AddDataStorageListeners()
+void VLQtWidget::AddDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
     // if someone calls node->Modified() we need to redraw.
-    m_DataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<VLQt4Widget, const mitk::DataNode*>(this, &VLQt4Widget::OnNodeModified));
+    m_DataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::OnNodeModified));
 
     m_NodeVisibilityListener = mitk::DataNodePropertyListener::New(m_DataStorage, "visible");
-    m_NodeVisibilityListener->NodePropertyChanged += mitk::MessageDelegate2<VLQt4Widget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQt4Widget::OnNodeVisibilityPropertyChanged);
+    m_NodeVisibilityListener->NodePropertyChanged += mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeVisibilityPropertyChanged);
 
     m_NodeColorPropertyListener = mitk::DataNodePropertyListener::New(m_DataStorage, "color");
-    m_NodeColorPropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<VLQt4Widget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQt4Widget::OnNodeColorPropertyChanged);
+    m_NodeColorPropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeColorPropertyChanged);
 
     m_NodeOpacityPropertyListener = mitk::DataNodePropertyListener::New(m_DataStorage, "opacity");
-    m_NodeOpacityPropertyListener->NodePropertyChanged += mitk::MessageDelegate2<VLQt4Widget, mitk::DataNode*, const mitk::BaseRenderer*>( this, &VLQt4Widget::OnNodeOpacityPropertyChanged);
+    m_NodeOpacityPropertyListener->NodePropertyChanged += mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>( this, &VLQtWidget::OnNodeOpacityPropertyChanged);
 
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::RemoveDataStorageListeners()
+void VLQtWidget::RemoveDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
-    m_DataStorage->ChangedNodeEvent.RemoveListener(mitk::MessageDelegate1<VLQt4Widget, const mitk::DataNode*>(this, &VLQt4Widget::OnNodeModified));
+    m_DataStorage->ChangedNodeEvent.RemoveListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::OnNodeModified));
 
     if (m_NodeVisibilityListener)
-      m_NodeVisibilityListener->NodePropertyChanged -= mitk::MessageDelegate2<VLQt4Widget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQt4Widget::OnNodeVisibilityPropertyChanged);
+      m_NodeVisibilityListener->NodePropertyChanged -= mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeVisibilityPropertyChanged);
     if (m_NodeColorPropertyListener)
-      m_NodeColorPropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<VLQt4Widget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQt4Widget::OnNodeColorPropertyChanged);
+      m_NodeColorPropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeColorPropertyChanged);
     if (m_NodeOpacityPropertyListener)
-      m_NodeOpacityPropertyListener->NodePropertyChanged -= mitk::MessageDelegate2<VLQt4Widget, mitk::DataNode*, const mitk::BaseRenderer*>( this, &VLQt4Widget::OnNodeOpacityPropertyChanged);
+      m_NodeOpacityPropertyListener->NodePropertyChanged -= mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>( this, &VLQtWidget::OnNodeOpacityPropertyChanged);
 
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
+void VLQtWidget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
 {
   ScopedOGLContext  ctx(this->context());
 
@@ -372,7 +372,7 @@ void VLQt4Widget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::SetOclResourceService(OclResourceService* oclserv)
+void VLQtWidget::SetOclResourceService(OclResourceService* oclserv)
 {
   // no idea if this is really a necessary restriction.
   // if it is then maybe the ocl-service should be a constructor parameter.
@@ -384,7 +384,7 @@ void VLQt4Widget::SetOclResourceService(OclResourceService* oclserv)
 
 
 //-----------------------------------------------------------------------------
-vl::FramebufferObject* VLQt4Widget::GetFBO()
+vl::FramebufferObject* VLQtWidget::GetFBO()
 {
   // createAndUpdateFBOSizes() where we always stuff a proper fbo into the blit.
   return dynamic_cast<vl::FramebufferObject*>(m_FinalBlit->readFramebuffer());
@@ -392,7 +392,7 @@ vl::FramebufferObject* VLQt4Widget::GetFBO()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage, const std::string& nodename)
+void VLQtWidget::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage, const std::string& nodename)
 {
 #ifdef _USE_CUDA
   ScopedOGLContext  ctx(this->context());
@@ -426,7 +426,7 @@ void VLQt4Widget::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStora
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::initializeGL()
+void VLQtWidget::initializeGL()
 {
   // sanity check: context is initialised by Qt
   assert(this->context() == QGLContext::currentContext());
@@ -605,7 +605,7 @@ void VLQt4Widget::initializeGL()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::SetBackgroundColour(float r, float g, float b)
+void VLQtWidget::SetBackgroundColour(float r, float g, float b)
 {
   if (m_BackgroundCamera)
     m_BackgroundCamera->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
@@ -615,7 +615,7 @@ void VLQt4Widget::SetBackgroundColour(float r, float g, float b)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::EnableTrackballManipulator(bool enable)
+void VLQtWidget::EnableTrackballManipulator(bool enable)
 {
   if (enable)
   {
@@ -643,7 +643,7 @@ void VLQt4Widget::EnableTrackballManipulator(bool enable)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::CreateAndUpdateFBOSizes(int width, int height)
+void VLQtWidget::CreateAndUpdateFBOSizes(int width, int height)
 {
   // sanity check: internal method, context should have been activated by caller.
   assert(this->context() == QGLContext::currentContext());
@@ -677,7 +677,7 @@ void VLQt4Widget::CreateAndUpdateFBOSizes(int width, int height)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::resizeGL(int width, int height)
+void VLQtWidget::resizeGL(int width, int height)
 {
   // sanity check: context is initialised by Qt
   assert(this->context() == QGLContext::currentContext());
@@ -708,7 +708,7 @@ void VLQt4Widget::resizeGL(int width, int height)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateViewportAndCameraAfterResize()
+void VLQtWidget::UpdateViewportAndCameraAfterResize()
 {
   // some sane defaults
   m_Camera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
@@ -756,7 +756,7 @@ void VLQt4Widget::UpdateViewportAndCameraAfterResize()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::paintGL()
+void VLQtWidget::paintGL()
 {
   // sanity check: context is initialised by Qt
   assert(this->context() == QGLContext::currentContext());
@@ -768,7 +768,7 @@ void VLQt4Widget::paintGL()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::RenderScene()
+void VLQtWidget::RenderScene()
 {
   // caller of paintGL() (i.e. Qt's internals) should have activated our context!
   assert(this->context() == QGLContext::currentContext());
@@ -817,7 +817,7 @@ void VLQt4Widget::RenderScene()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::ClearScene()
+void VLQtWidget::ClearScene()
 {
   ScopedOGLContext  ctx(context());
 
@@ -841,7 +841,7 @@ void VLQt4Widget::ClearScene()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateThresholdVal(int isoVal)
+void VLQtWidget::UpdateThresholdVal(int isoVal)
 {
   ScopedOGLContext    ctx(context());
 
@@ -856,7 +856,7 @@ void VLQt4Widget::UpdateThresholdVal(int isoVal)
 
 
 //-----------------------------------------------------------------------------
-bool VLQt4Widget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
+bool VLQtWidget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
 {
   m_CameraNode = node;
 
@@ -873,7 +873,7 @@ bool VLQt4Widget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node
 
 
 //-----------------------------------------------------------------------------
-vl::mat4 VLQt4Widget::GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data)
+vl::mat4 VLQtWidget::GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data)
 {
   vl::mat4  mat;
   // intentionally not setIdentity()
@@ -908,7 +908,7 @@ vl::mat4 VLQt4Widget::GetVLMatrixFromData(const mitk::BaseData::ConstPointer& da
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateTransformFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data)
+void VLQtWidget::UpdateTransformFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data)
 {
   vl::mat4  mat = GetVLMatrixFromData(data);
 
@@ -921,7 +921,7 @@ void VLQt4Widget::UpdateTransformFromData(vl::ref<vl::Transform> txf, const mitk
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node)
+void VLQtWidget::UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNotNull())
   {
@@ -944,7 +944,7 @@ void VLQt4Widget::UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const m
 
 
 //-----------------------------------------------------------------------------
-vl::ref<VLUserData> VLQt4Widget::GetUserData(vl::ref<vl::Actor> actor)
+vl::ref<VLUserData> VLQtWidget::GetUserData(vl::ref<vl::Actor> actor)
 {
   vl::ref<VLUserData>   userdata = actor->userData()->as<VLUserData>();
   if (userdata.get() == 0)
@@ -958,7 +958,7 @@ vl::ref<VLUserData> VLQt4Widget::GetUserData(vl::ref<vl::Actor> actor)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateTransformFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node)
+void VLQtWidget::UpdateTransformFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNotNull())
   {
@@ -968,7 +968,7 @@ void VLQt4Widget::UpdateTransformFromNode(vl::ref<vl::Transform> txf, const mitk
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateCameraParameters()
+void VLQtWidget::UpdateCameraParameters()
 {
   // calibration parameters come from the background node.
   // so no background, no camera parameters.
@@ -1019,7 +1019,7 @@ void VLQt4Widget::UpdateCameraParameters()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
+void VLQtWidget::PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -1071,7 +1071,7 @@ void VLQt4Widget::PrepareBackgroundActor(const mitk::Image* img, const mitk::Bas
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
+void VLQtWidget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -1137,7 +1137,7 @@ void VLQt4Widget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci
 
 
 //-----------------------------------------------------------------------------
-bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
+bool VLQtWidget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -1232,7 +1232,7 @@ bool VLQt4Widget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::AddAllNodesFromDataStorage()
+void VLQtWidget::AddAllNodesFromDataStorage()
 {
   if (m_DataStorage.IsNull())
     return;
@@ -1252,7 +1252,7 @@ void VLQt4Widget::AddAllNodesFromDataStorage()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
+void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
     return;
@@ -1357,14 +1357,14 @@ void VLQt4Widget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node)
+void VLQtWidget::QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node)
 {
   m_NodesQueuedForUpdate.insert(node);
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
+void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
     return;
@@ -1524,7 +1524,7 @@ void VLQt4Widget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::FindActorForNode(const mitk::DataNode::ConstPointer& node)
+vl::ref<vl::Actor> VLQtWidget::FindActorForNode(const mitk::DataNode::ConstPointer& node)
 {
   std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
   if (it != m_NodeToActorMap.end())
@@ -1537,7 +1537,7 @@ vl::ref<vl::Actor> VLQt4Widget::FindActorForNode(const mitk::DataNode::ConstPoin
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node)
+void VLQtWidget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -1595,7 +1595,7 @@ void VLQt4Widget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& nod
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node)
+void VLQtWidget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -1678,7 +1678,7 @@ void VLQt4Widget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& n
         assert(vlActor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
 
         niftk::CUDAManager*  cudamng   = niftk::CUDAManager::GetInstance();
-        cudaStream_t         mystream  = cudamng->GetStream("VLQt4Widget vl-texture update");
+        cudaStream_t         mystream  = cudamng->GetStream("VLQtWidget vl-texture update");
         niftk::ReadAccessor  inputRA   = cudamng->RequestReadAccess(lwcImage);
 
         // make sure producer of the cuda-image finished.
@@ -1734,7 +1734,7 @@ void VLQt4Widget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& n
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
+void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
 {
   // dont leave a dangling update behind.
   m_NodesQueuedForUpdate.erase(node);
@@ -1783,7 +1783,7 @@ void VLQt4Widget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord)
+vl::ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -1832,7 +1832,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddCoordinateAxisActor(const mitk::CoordinateAxe
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::AddPointCloudActor(niftk::PCLData* pcl)
+vl::ref<vl::Actor> VLQtWidget::AddPointCloudActor(niftk::PCLData* pcl)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -1888,7 +1888,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointCloudActor(niftk::PCLData* pcl)
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::AddPointsetActor(const mitk::PointSet::Pointer& mitkPS)
+vl::ref<vl::Actor> VLQtWidget::AddPointsetActor(const mitk::PointSet::Pointer& mitkPS)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -1929,7 +1929,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddPointsetActor(const mitk::PointSet::Pointer& 
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf)
+vl::ref<vl::Actor> VLQtWidget::AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -1962,7 +1962,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddSurfaceActor(const mitk::Surface::Pointer& mi
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Geometry> VLQt4Widget::CreateGeometryFor2DImage(int width, int height)
+vl::ref<vl::Geometry> VLQtWidget::CreateGeometryFor2DImage(int width, int height)
 {
   vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
   vl::ref<vl::ArrayFloat3>      vert3 = new vl::ArrayFloat3;
@@ -1995,7 +1995,7 @@ vl::ref<vl::Geometry> VLQt4Widget::CreateGeometryFor2DImage(int width, int heigh
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* _cudaImg)
+vl::ref<vl::Actor> VLQtWidget::AddCUDAImageActor(const mitk::BaseData* _cudaImg)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -2042,7 +2042,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddCUDAImageActor(const mitk::BaseData* _cudaImg
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly)
+void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -2292,7 +2292,7 @@ void VLQt4Widget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry>
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkImg)
+vl::ref<vl::Actor> VLQtWidget::AddImageActor(const mitk::Image::Pointer& mitkImg)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -2315,7 +2315,7 @@ vl::ref<vl::Actor> VLQt4Widget::AddImageActor(const mitk::Image::Pointer& mitkIm
 
 
 //-----------------------------------------------------------------------------
-vl::EImageType VLQt4Widget::MapITKPixelTypeToVL(int itkComponentType)
+vl::EImageType VLQtWidget::MapITKPixelTypeToVL(int itkComponentType)
 {
   static const vl::EImageType     typeMap[] =
   {
@@ -2337,7 +2337,7 @@ vl::EImageType VLQt4Widget::MapITKPixelTypeToVL(int itkComponentType)
 
 
 //-----------------------------------------------------------------------------
-vl::EImageFormat VLQt4Widget::MapComponentsToVLColourFormat(int components)
+vl::EImageFormat VLQtWidget::MapComponentsToVLColourFormat(int components)
 {
   // this assumes the image data is a normal colour image, not encoding pointers or
   // indices, or similar stuff.
@@ -2358,7 +2358,7 @@ vl::EImageFormat VLQt4Widget::MapComponentsToVLColourFormat(int components)
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::Add2DImageActor(const mitk::Image::Pointer& mitkImg)
+vl::ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkImg)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -2413,7 +2413,7 @@ vl::ref<vl::Actor> VLQt4Widget::Add2DImageActor(const mitk::Image::Pointer& mitk
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQt4Widget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
+vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -2613,7 +2613,7 @@ vl::ref<vl::Actor> VLQt4Widget::Add3DImageActor(const mitk::Image::Pointer& mitk
 
 
 //-----------------------------------------------------------------------------
-vl::String VLQt4Widget::LoadGLSLSourceFromResources(const char* filename)
+vl::String VLQtWidget::LoadGLSLSourceFromResources(const char* filename)
 {
   QString   sourceFilename(filename);
   sourceFilename.prepend(":/NewVisualization/");
@@ -2636,7 +2636,7 @@ vl::String VLQt4Widget::LoadGLSLSourceFromResources(const char* filename)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::UpdateTranslucentTriangles()
+void VLQtWidget::UpdateTranslucentTriangles()
 {
   bool    thereIsSomethingTranslucent = true;
   //if (!m_TranslucentStructuresMerged)
@@ -2737,7 +2737,7 @@ void VLQt4Widget::UpdateTranslucentTriangles()
 
 
 //-----------------------------------------------------------------------------
-bool VLQt4Widget::MergeTranslucentTriangles()
+bool VLQtWidget::MergeTranslucentTriangles()
 {
   // sanity check: internal method, context should have been activated by caller.
   assert(this->context() == QGLContext::currentContext());
@@ -3220,7 +3220,7 @@ bool VLQt4Widget::MergeTranslucentTriangles()
 
 
 //-----------------------------------------------------------------------------
-bool VLQt4Widget::SortTranslucentTriangles()
+bool VLQtWidget::SortTranslucentTriangles()
 {
   // Get context 
   cl_context clContext = m_OclService->GetContext();
@@ -3370,7 +3370,7 @@ bool VLQt4Widget::SortTranslucentTriangles()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::setContinuousUpdate(bool continuous)
+void VLQtWidget::setContinuousUpdate(bool continuous)
 {
   vl::OpenGLContext::setContinuousUpdate(continuous);
 
@@ -3391,14 +3391,14 @@ void VLQt4Widget::setContinuousUpdate(bool continuous)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::setWindowTitle(const vl::String& title)
+void VLQtWidget::setWindowTitle(const vl::String& title)
 {
   QGLWidget::setWindowTitle( QString::fromStdString(title.toStdString()) );
 }
 
 
 //-----------------------------------------------------------------------------
-bool VLQt4Widget::setFullscreen(bool fullscreen)
+bool VLQtWidget::setFullscreen(bool fullscreen)
 {
   // fullscreen not allowed (yet)!
   fullscreen = false;
@@ -3413,35 +3413,35 @@ bool VLQt4Widget::setFullscreen(bool fullscreen)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::show()
+void VLQtWidget::show()
 {
   QGLWidget::show();
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::hide()
+void VLQtWidget::hide()
 {
   QGLWidget::hide();
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::setPosition(int x, int y)
+void VLQtWidget::setPosition(int x, int y)
 {
   QGLWidget::move(x,y);
 }
 
 
 //-----------------------------------------------------------------------------
-vl::ivec2 VLQt4Widget::position() const
+vl::ivec2 VLQtWidget::position() const
 {
   return vl::ivec2(QGLWidget::pos().x(), QGLWidget::pos().y());
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::update()
+void VLQtWidget::update()
 {
   // schedules a repaint, will eventually call into paintGL()
   QGLWidget::update();
@@ -3449,7 +3449,7 @@ void VLQt4Widget::update()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::setSize(int w, int h)
+void VLQtWidget::setSize(int w, int h)
 {
   // this already excludes the window's frame so it's ok for Visualization Library standards
   QGLWidget::resize(w,h);
@@ -3457,7 +3457,7 @@ void VLQt4Widget::setSize(int w, int h)
 
 
 //-----------------------------------------------------------------------------
-vl::ivec2 VLQt4Widget::size() const
+vl::ivec2 VLQtWidget::size() const
 {
   // this already excludes the window's frame so it's ok for Visualization Library standards
   return vl::ivec2(QGLWidget::size().width(), QGLWidget::size().height());
@@ -3465,7 +3465,7 @@ vl::ivec2 VLQt4Widget::size() const
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::swapBuffers()
+void VLQtWidget::swapBuffers()
 {
   // on windows, swapBuffers() does not depend on the opengl rendering context.
   // instead it is initiated on the device context, which is not implicitly bound to the calling thread.
@@ -3527,7 +3527,7 @@ void VLQt4Widget::swapBuffers()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::makeCurrent()
+void VLQtWidget::makeCurrent()
 {
   QGLWidget::makeCurrent();
   // sanity check
@@ -3536,14 +3536,14 @@ void VLQt4Widget::makeCurrent()
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::setMousePosition(int x, int y)
+void VLQtWidget::setMousePosition(int x, int y)
 {
   QCursor::setPos(mapToGlobal(QPoint(x,y)));
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::setMouseVisible(bool visible)
+void VLQtWidget::setMouseVisible(bool visible)
 {
   vl::OpenGLContext::setMouseVisible(visible);
 
@@ -3555,14 +3555,14 @@ void VLQt4Widget::setMouseVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::getFocus()
+void VLQtWidget::getFocus()
 {
   QGLWidget::setFocus(Qt::OtherFocusReason);
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::setRefreshRate(int msec)
+void VLQtWidget::setRefreshRate(int msec)
 {
   m_Refresh = msec;
   m_UpdateTimer.setInterval(m_Refresh);
@@ -3570,7 +3570,7 @@ void VLQt4Widget::setRefreshRate(int msec)
 
 
 //-----------------------------------------------------------------------------
-int VLQt4Widget::refreshRate()
+int VLQtWidget::refreshRate()
 {
   return m_Refresh;
 }
@@ -3578,7 +3578,7 @@ int VLQt4Widget::refreshRate()
 
 #if 0
 //-----------------------------------------------------------------------------
-void VLQt4Widget::dragEnterEvent(QDragEnterEvent *ev)
+void VLQtWidget::dragEnterEvent(QDragEnterEvent *ev)
 {
   if (ev->mimeData()->hasUrls())
     ev->acceptProposedAction();
@@ -3586,7 +3586,7 @@ void VLQt4Widget::dragEnterEvent(QDragEnterEvent *ev)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::dropEvent(QDropEvent* ev)
+void VLQtWidget::dropEvent(QDropEvent* ev)
 {
   if ( ev->mimeData()->hasUrls() )
   {
@@ -3612,7 +3612,7 @@ void VLQt4Widget::dropEvent(QDropEvent* ev)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::mouseMoveEvent(QMouseEvent* ev)
+void VLQtWidget::mouseMoveEvent(QMouseEvent* ev)
 {
   if (!vl::OpenGLContext::mIgnoreNextMouseMoveEvent)
     dispatchMouseMoveEvent(ev->x(), ev->y());
@@ -3621,7 +3621,7 @@ void VLQt4Widget::mouseMoveEvent(QMouseEvent* ev)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::mousePressEvent(QMouseEvent* ev)
+void VLQtWidget::mousePressEvent(QMouseEvent* ev)
 {
   vl::EMouseButton bt = vl::NoButton;
   switch(ev->button())
@@ -3637,7 +3637,7 @@ void VLQt4Widget::mousePressEvent(QMouseEvent* ev)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::mouseReleaseEvent(QMouseEvent* ev)
+void VLQtWidget::mouseReleaseEvent(QMouseEvent* ev)
 {
   vl::EMouseButton bt = vl::NoButton;
   switch(ev->button())
@@ -3653,14 +3653,14 @@ void VLQt4Widget::mouseReleaseEvent(QMouseEvent* ev)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::wheelEvent(QWheelEvent* ev)
+void VLQtWidget::wheelEvent(QWheelEvent* ev)
 {
   vl::OpenGLContext::dispatchMouseWheelEvent(ev->delta() / 120);
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::keyPressEvent(QKeyEvent* ev)
+void VLQtWidget::keyPressEvent(QKeyEvent* ev)
 {
   unsigned short unicode_ch = 0;
   vl::EKey key = vl::Key_None;
@@ -3670,7 +3670,7 @@ void VLQt4Widget::keyPressEvent(QKeyEvent* ev)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::keyReleaseEvent(QKeyEvent* ev)
+void VLQtWidget::keyReleaseEvent(QKeyEvent* ev)
 {
   unsigned short unicode_ch = 0;
   vl::EKey key = vl::Key_None;
@@ -3680,7 +3680,7 @@ void VLQt4Widget::keyReleaseEvent(QKeyEvent* ev)
 
 
 //-----------------------------------------------------------------------------
-void VLQt4Widget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out)
+void VLQtWidget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out)
 {
   // translate non unicode characters
   key_out     = vl::Key_None;
@@ -3875,7 +3875,7 @@ void VLQt4Widget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, 
 
 
 //-----------------------------------------------------------------------------
-QGLContext* VLQt4Widget::context()
+QGLContext* VLQtWidget::context()
 {
   return const_cast<QGLContext*>(QGLWidget::context());
 }

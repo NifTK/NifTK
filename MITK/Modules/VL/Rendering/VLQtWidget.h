@@ -74,7 +74,7 @@ class TrackballManipulator;
  * This class is not thread-safe! Methods should only ever be called on the main
  * GUI thread.
  */
-class NIFTKVL_EXPORT VLQt4Widget : public QGLWidget, public vl::OpenGLContext
+class NIFTKVL_EXPORT VLQtWidget : public QGLWidget, public vl::OpenGLContext
 {
   Q_OBJECT
 
@@ -82,9 +82,9 @@ public:
   using vl::Object::setObjectName;
   using QObject::setObjectName;
 
-  VLQt4Widget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0);
+  VLQtWidget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0);
 
-  virtual ~VLQt4Widget();
+  virtual ~VLQtWidget();
 
   void setRefreshRate(int msec);
   int refreshRate();
