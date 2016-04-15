@@ -16,13 +16,13 @@
 #define __niftkSegmentationSelectorWidget_h
 
 #include <QWidget>
-#include "ui_niftkMIDASImageAndSegmentationSelector.h"
+#include "ui_niftkSegmentationSelectorWidget.h"
 
 /**
  * \class niftkSegmentationSelectorWidget
  * \brief Implements the widget to select a reference image, and create a new segmentation.
  */
-class niftkSegmentationSelectorWidget : public QWidget, private Ui::niftkMIDASImageAndSegmentationSelector
+class niftkSegmentationSelectorWidget : public QWidget, private Ui::niftkSegmentationSelectorWidget
 {
 
   Q_OBJECT
