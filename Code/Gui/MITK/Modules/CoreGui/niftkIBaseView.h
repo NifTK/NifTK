@@ -15,7 +15,7 @@
 #ifndef __niftkIBaseView_h
 #define __niftkIBaseView_h
 
-#include <niftkCoreGUIExports.h>
+#include "niftkCoreGuiExports.h"
 
 #include <mitkDataStorage.h>
 #include <mitkRenderingManager.h>
