@@ -29,11 +29,11 @@
 #include <vlGraphics/BlitFramebuffer.hpp>
 #include <vlGraphics/Texture.hpp>
 #include <vlCore/VisualizationLibrary.hpp>
-#include <QtGui/QMouseEvent>
-#include <QtGui/QWidget>
-#include <QtCore/QTimer>
-#include <QtCore/QObject>
-#include <QtOpenGL/QGLWidget>
+#include <QMouseEvent>
+#include <QWidget>
+#include <QTimer>
+#include <QObject>
+#include <QGLWidget>
 #include <mitkOclResourceService.h>
 #include <mitkDataNode.h>
 #include <mitkSurface.h>
@@ -74,7 +74,7 @@ class TrackballManipulator;
  * This class is not thread-safe! Methods should only ever be called on the main
  * GUI thread.
  */
-class NIFTKVL_EXPORT VLQt4Widget : public QGLWidget, public vl::OpenGLContext
+class NIFTKVL_EXPORT VLQtWidget : public QGLWidget, public vl::OpenGLContext
 {
   Q_OBJECT
 
@@ -82,9 +82,9 @@ public:
   using vl::Object::setObjectName;
   using QObject::setObjectName;
 
-  VLQt4Widget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0);
+  VLQtWidget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0);
 
-  virtual ~VLQt4Widget();
+  virtual ~VLQtWidget();
 
   void setRefreshRate(int msec);
   int refreshRate();

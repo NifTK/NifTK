@@ -21,7 +21,7 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
 endif()
 
 # not sure if this is necessary here.
-find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
+find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt5 REQUIRED)
 link_directories(${VL_LIBRARIES})
 include_directories(${VL_INCLUDE_DIRS})
 

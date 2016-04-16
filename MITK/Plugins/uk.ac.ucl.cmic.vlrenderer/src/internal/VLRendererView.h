@@ -29,7 +29,7 @@
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 
-#include <Rendering/VLQt4Widget.h>
+#include <Rendering/VLQtWidget.h>
 
 /**
  * \class VLRendererView
@@ -91,7 +91,7 @@ private:
 
   // VL rendering specific members
   // FIXME: should just be a pointer, so we can drop the header dependency on vl.
-  vl::ref<VLQt4Widget>       m_VLQtRenderWindow;
+  vl::ref<VLQtWidget>       m_VLQtRenderWindow;
 
   // Listeners
   mitk::DataNodePropertyListener::Pointer    m_SelectionListener;

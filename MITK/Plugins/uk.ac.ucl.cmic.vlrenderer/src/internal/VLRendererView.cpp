@@ -149,7 +149,7 @@ void VLRendererView::CreateQtPartControl(QWidget* parent)
 void VLRendererView::InitVLRendering()
 {
   assert(m_VLQtRenderWindow == 0);
-  m_VLQtRenderWindow = new VLQt4Widget(0, SharedOGLContext::GetShareWidget());
+  m_VLQtRenderWindow = new VLQtWidget(0, SharedOGLContext::GetShareWidget());
   m_VLQtRenderWindow->SetDataStorage(GetDataStorage());
 
 
