@@ -308,6 +308,7 @@ void ImageLookupTablesView::BlockSignals(bool b)
   m_Controls->m_MinSlider->blockSignals(b);
   m_Controls->m_MaxSlider->blockSignals(b);
   m_Controls->m_WindowSlider->blockSignals(b);
+  m_Controls->m_LookupTableComboBox->blockSignals(b);
   m_Controls->m_LevelSlider->blockSignals(b);
   m_Controls->m_MinLimitDoubleSpinBox->blockSignals(b);
   m_Controls->m_MaxLimitDoubleSpinBox->blockSignals(b);
@@ -338,46 +339,36 @@ void ImageLookupTablesView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /
 //-----------------------------------------------------------------------------
 bool ImageLookupTablesView::IsSelectionValid(const QList<mitk::DataNode::Pointer>& nodes)
 {
-  bool isValid = true;
-
   if (nodes.count() != 1)
   {
-    isValid = false;
+    return false;
   }
 
+  mitk::DataNode::Pointer node = nodes.at(0);
   // All nodes must be non null, non-helper images.
-  foreach (mitk::DataNode::Pointer node, nodes)
+  if (node.IsNull())
   {
-    if (node.IsNull())
-    {
-      isValid = false;
-    }
-
-    if (node.IsNotNull() && dynamic_cast<mitk::Image*>(node->GetData()) == NULL)
-    {
-      isValid = false;
-    }
-
-    bool isHelper(false);
-    if (node->GetBoolProperty("helper object", isHelper) && isHelper)
-    {
-      isValid = false;
-    }
-
-    bool isSelected(false);
-    node->GetBoolProperty("selected", isSelected);
-    if (!isSelected)
-    {
-      isValid = false;
-    }
-
-    if (!node->GetProperty("levelwindow"))
-    {
-      isValid = false;
-    }
-
+    return false;
+  }
+  else if ( dynamic_cast<mitk::Image*>(node->GetData()) == NULL)
+  {
+    return false;
   }
 
+  bool isHelper(false);
+  if (node->GetBoolProperty("helper object", isHelper) && isHelper)
+  {
+    return false;
+  }
+
+  bool isSelected(false);
+  node->GetBoolProperty("selected", isSelected);
+  if (!isSelected)
+  {
+    return false;
+  }
+
+  bool isValid = mitk::IsNodeAGreyScaleImage(node);
   return isValid;
 }
 
