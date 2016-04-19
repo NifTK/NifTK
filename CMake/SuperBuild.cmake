@@ -426,6 +426,8 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DAprilTags_DIRECTORY:PATH=${AprilTags_DIR}
       -DPython_DIR:PATH=${Python_DIR}
       -DPCL_DIR:PATH=${PCL_DIR}
+      -DOpenCV_DIR:PATH=${OpenCV_DIR}                 # Issue 4304: Needed for ffmpeg packaging to work.
+      -DOPENCV_WITH_FFMPEG:BOOL=${OPENCV_WITH_FFMPEG} # Issue 4304:
     DEPENDS ${proj_DEPENDENCIES}
   )
 
