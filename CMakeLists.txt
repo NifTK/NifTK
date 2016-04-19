@@ -1733,6 +1733,23 @@ if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
 endif()
 
 ######################################################################
+# Force ffmpeg on windows to install correctly.
+######################################################################
+if(WIN32 AND OPENCV_WITH_FFMPEG)
+  set(_ffmpeg_lib_name "opencv_ffmpeg2411_64.dll") # warning: will change with each new OpenCV version.
+  find_path(_opencv_with_ffmpeg_lib_path
+    ${_ffmpeg_lib_name}
+    PATHS ${OpenCV_DIR}/x64/vc11/bin ${OpenCV_DIR}/x64/vc12/bin
+    NO_DEFAULT_PATH
+  )
+  if(_opencv_with_ffmpeg_lib_path)
+    set(_ffmpeg_lib_full_path ${_opencv_with_ffmpeg_lib_path}/${_ffmpeg_lib_name})
+    install(FILES ${_ffmpeg_lib_full_path} DESTINATION bin)
+    message("Will install ffmpeg library:${_ffmpeg_lib_full_path}")
+  endif()
+endif()
+
+######################################################################
 # Decide what subdirectories we are building, and go and build them.
 ######################################################################
 
