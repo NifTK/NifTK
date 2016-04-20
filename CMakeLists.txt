@@ -823,8 +823,12 @@ if(BUILD_GUI)
 endif(BUILD_GUI)
 
 if(BUILD_ITKFFTW)
-  message(WARNING "You have chosen to compile FFTW. This means the binary code, and all executables linked against it will be covered by GPL. This is not supported by NifTK.")
+  message(WARNING "You have chosen to compile FFTW. This means the binary code, and all executables linked against it will be covered by GPL. This means if you distribute binaries, you must also distribute all our source code and all the FFTW source code. This option is not supported by NifTK.")
 endif(BUILD_ITKFFTW)
+
+if(OPENCV_WITH_FFMPEG)
+  message(WARNING "You have chosen to compile FFmpeg support. This is not recommended. It is possible to distribute FFmpeg under LGPLv2.1, but only if you fully comply with the legal requirements, and specifically, as FFmpeg contains GPL code, do not compile GPL code into FFmpeg. If you compile GPL code into FFmpeg and distribute binaries, you must also distribute all our source code along with all the FFmpeg source code. This option is not supported by NifTK.")
+endif()
 
 ########################################################################
 # Simplest if we list ALL our include directories here.
@@ -1733,19 +1737,30 @@ if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
 endif()
 
 ######################################################################
-# Force ffmpeg on windows to install correctly.
+# ffmpeg packaging hacks.
 ######################################################################
-if(WIN32 AND OPENCV_WITH_FFMPEG)
-  set(_ffmpeg_lib_name "opencv_ffmpeg2411_64.dll") # warning: will change with each new OpenCV version.
-  find_path(_opencv_with_ffmpeg_lib_path
-    ${_ffmpeg_lib_name}
-    PATHS ${OpenCV_DIR}/x64/vc11/bin ${OpenCV_DIR}/x64/vc12/bin
-    NO_DEFAULT_PATH
-  )
-  if(_opencv_with_ffmpeg_lib_path)
-    set(_ffmpeg_lib_full_path ${_opencv_with_ffmpeg_lib_path}/${_ffmpeg_lib_name})
-    install(FILES ${_ffmpeg_lib_full_path} DESTINATION bin)
-    message("Will install ffmpeg library:${_ffmpeg_lib_full_path}")
+if(OPENCV_WITH_FFMPEG)
+  if(WIN32)
+    set(_ffmpeg_lib_name "opencv_ffmpeg2411_64.dll") # warning: will change with each new OpenCV version.
+    find_path(_opencv_with_ffmpeg_lib_path
+      ${_ffmpeg_lib_name}
+      PATHS ${OpenCV_DIR}/x64/vc11/bin ${OpenCV_DIR}/x64/vc12/bin
+      NO_DEFAULT_PATH
+    )
+    if(_opencv_with_ffmpeg_lib_path)
+      set(_ffmpeg_lib_full_path ${_opencv_with_ffmpeg_lib_path}/${_ffmpeg_lib_name})
+      install(FILES ${_ffmpeg_lib_full_path} DESTINATION bin)
+      message("Installing ffmpeg library:${_ffmpeg_lib_full_path}")
+    endif()
+  else()
+    find_package(OpenCV REQUIRED)
+    if(OpenCV_USE_FFMPEG)
+      get_filename_component(_ffmpeg_lib_dir ${OpenCV_FFMPEG_CODEC_LIB} DIRECTORY)
+      message("Adding ffmpeg library directory: ${_ffmpeg_lib_dir} to search path")
+      get_property(_additional_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+      list(APPEND _additional_search_paths ${_ffmpeg_lib_dir})
+      set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths})
+    endif()
   endif()
 endif()
 
