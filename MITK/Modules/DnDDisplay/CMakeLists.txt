@@ -23,5 +23,5 @@ if (NIFTK_USE_COTIRE AND COMMAND cotire)
 endif()
 
 if(BUILD_TESTING)
-#  add_subdirectory(Testing)
+  add_subdirectory(Testing)
 endif()

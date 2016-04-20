@@ -28,15 +28,15 @@ set(MODULE_DIRS
   Core
   CoreIO
   CoreGui
-  DnDDisplay
-  Thumbnail
 )
 
 if(BUILD_MIDAS)
   set(MODULE_DIRS
     ${MODULE_DIRS}
+    DnDDisplay
     MIDAS
     MIDASGui
+    Thumbnail
   )
 endif()
 
