@@ -22,7 +22,7 @@ if (NiftyLink_FOUND)
   )
 
   if (NIFTK_USE_COTIRE AND COMMAND cotire)
-    cotire(niftkMITKTrackerDataSourceService)
+    cotire(niftkNiftyLinkDataSourceService)
   endif()
 
 endif()
