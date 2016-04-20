@@ -823,11 +823,11 @@ if(BUILD_GUI)
 endif(BUILD_GUI)
 
 if(BUILD_ITKFFTW)
-  message(WARNING "You have chosen to compile FFTW. This means the binary code, and all executables linked against it will be covered by GPL. This means if you distribute binaries, you must also distribute all our source code and all the FFTW source code. This option is not supported by NifTK.")
+  message(WARNING "You have chosen to compile FFTW. This means the binary code, and all executables linked against it will be covered by GPL. This means if you distribute binaries, you must also distribute all the NifTK source code and all the FFTW source code. This option is not supported by NifTK.")
 endif(BUILD_ITKFFTW)
 
 if(OPENCV_WITH_FFMPEG)
-  message(WARNING "You have chosen to compile FFmpeg support. This is not recommended. It is possible to distribute FFmpeg under LGPLv2.1, but only if you fully comply with the legal requirements, and specifically, as FFmpeg contains GPL code, do not compile GPL code into FFmpeg. If you compile GPL code into FFmpeg and distribute binaries, you must also distribute all our source code along with all the FFmpeg source code. This option is not supported by NifTK.")
+  message(WARNING "You have chosen to compile FFmpeg support. This is not recommended. It is possible to distribute FFmpeg under LGPLv2.1, but only if you fully comply with the legal requirements, and specifically, as FFmpeg contains GPL code, do not compile GPL code into FFmpeg. If you compile GPL code into FFmpeg and distribute binaries, you must also distribute all the NifTK source code along with all the FFmpeg source code. This option is not supported by NifTK.")
 endif()
 
 ########################################################################
