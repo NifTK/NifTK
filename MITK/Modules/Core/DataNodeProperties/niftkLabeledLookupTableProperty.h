@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#ifndef mitkLabeledLookupTableProperty_h
-#define mitkLabeledLookupTableProperty_h
+#ifndef __niftkLabeledLookupTableProperty_h
+#define __niftkLabeledLookupTableProperty_h
 
 #include "niftkCoreExports.h"
-#include "mitkNamedLookupTableProperty.h"
+#include "niftkNamedLookupTableProperty.h"
 #include <QString>
 
-namespace mitk
+namespace niftk
 {
 
 /**
@@ -27,14 +27,14 @@ namespace mitk
  * \brief Provides a property so that each value/color has an associated name.
  * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
  */
-class NIFTKCORE_EXPORT LabeledLookupTableProperty : public NamedLookupTableProperty
+class NIFTKCORE_EXPORT LabeledLookupTableProperty : public niftk::NamedLookupTableProperty
 {
 public:
 
   typedef std::pair<int, QString> LabelType;
   typedef std::vector<LabelType> LabelListType;
 
-  mitkClassMacro(LabeledLookupTableProperty, NamedLookupTableProperty);
+  mitkClassMacro(LabeledLookupTableProperty, niftk::NamedLookupTableProperty);
   itkNewMacro(LabeledLookupTableProperty);
   mitkNewMacro3Param(LabeledLookupTableProperty, 
                      const std::string&, 
@@ -70,13 +70,12 @@ private:
   LabeledLookupTableProperty& operator=(const LabeledLookupTableProperty&); // Purposefully not implemented
   itk::LightObject::Pointer InternalClone() const override;
 
-  virtual bool IsEqual(const BaseProperty& property) const override;
-  virtual bool Assign(const BaseProperty& property) override;
+  virtual bool IsEqual(const mitk::BaseProperty& property) const override;
+  virtual bool Assign(const mitk::BaseProperty& property) override;
 
   LabelListType m_Labels;
 };
 
-} // namespace mitk
-
+}
 
 #endif

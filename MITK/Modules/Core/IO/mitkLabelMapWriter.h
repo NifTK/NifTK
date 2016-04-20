@@ -19,7 +19,7 @@
 
 #include <mitkAbstractFileWriter.h>
 #include "niftkCoreExports.h"
-#include "mitkLabeledLookupTableProperty.h"
+#include "niftkLabeledLookupTableProperty.h"
 
 
 
@@ -41,7 +41,7 @@ class NIFTKCORE_EXPORT LabelMapWriter : public AbstractFileWriter
 
 public: 
 
-  typedef mitk::LabeledLookupTableProperty::LabelListType LabelListType;
+  typedef niftk::LabeledLookupTableProperty::LabelListType LabelListType;
 
   LabelMapWriter();
   LabelMapWriter(const LabelMapWriter & other);

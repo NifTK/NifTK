@@ -12,33 +12,33 @@
 
 =============================================================================*/
 
-#ifndef __mitkNamedLookupTablePropertySerializer_h
-#define __mitkNamedLookupTablePropertySerializer_h
+#ifndef __niftkLabeledLookupTablePropertySerializer_h
+#define __niftkLabeledLookupTablePropertySerializer_h
 
-#include <mitkLookupTablePropertySerializer.h>
+#include "niftkNamedLookupTablePropertySerializer.h"
 
-namespace mitk
+namespace niftk
 {
 
 /**
-  \brief Serializes NamedLookupTableProperty
+  \brief Serializes LabeledLookupTableProperty
 */
-class NamedLookupTablePropertySerializer : public LookupTablePropertySerializer
+class LabeledLookupTablePropertySerializer : public NamedLookupTablePropertySerializer
 {
 public:
 
-  mitkClassMacro(NamedLookupTablePropertySerializer, LookupTablePropertySerializer);
+  mitkClassMacro(LabeledLookupTablePropertySerializer, NamedLookupTablePropertySerializer);
   itkNewMacro(Self);
 
   virtual TiXmlElement* Serialize() override;
-  virtual BaseProperty::Pointer Deserialize(TiXmlElement*) override;
+  virtual mitk::BaseProperty::Pointer Deserialize(TiXmlElement*) override;
 
 protected:
 
-  NamedLookupTablePropertySerializer();
-  virtual ~NamedLookupTablePropertySerializer();
+  LabeledLookupTablePropertySerializer();
+  virtual ~LabeledLookupTablePropertySerializer();
 };
 
-} // namespace
+}
 
-#endif //__mitkNamedLookupTablePropertySerializer_h
+#endif

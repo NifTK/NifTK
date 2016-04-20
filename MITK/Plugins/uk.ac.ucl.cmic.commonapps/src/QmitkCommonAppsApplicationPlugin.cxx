@@ -37,7 +37,7 @@
 #include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkRenderingModeProperty.h>
-#include <mitkNamedLookupTableProperty.h>
+#include <niftkNamedLookupTableProperty.h>
 #include <mitkExceptionMacro.h>
 #include <itkStatisticsImageFilter.h>
 #include <itkCommand.h>
@@ -510,7 +510,7 @@ void QmitkCommonAppsApplicationPlugin::OnLookupTablePropertyChanged(const itk::O
         {
           // Get LUT from Micro Service.
           QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
-          mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
+          niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
           node->SetProperty("LookupTable", mitkLUTProperty);
         }
       }
@@ -547,14 +547,14 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
       float highestOpacity = prefNode->GetFloat(QmitkCommonAppsApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
 
       mitk::BaseProperty::Pointer lutProp = node->GetProperty("LookupTable");
-      const mitk::NamedLookupTableProperty* prop = dynamic_cast<const mitk::NamedLookupTableProperty*>(lutProp.GetPointer());
+      const niftk::NamedLookupTableProperty* prop = dynamic_cast<const niftk::NamedLookupTableProperty*>(lutProp.GetPointer());
       if(prop == NULL )
       {
         QString defaultName = "grey";
 
         // Get LUT from Micro Service.
         QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
-        mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultName, lowestOpacity, highestOpacity);
+        niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultName, lowestOpacity, highestOpacity);
 
         node->ReplaceProperty("LookupTable", mitkLUTProperty);
         node->SetStringProperty("LookupTableName", defaultName.toStdString().c_str());
@@ -605,8 +605,8 @@ void QmitkCommonAppsApplicationPlugin::RegisterInterpolationProperty(
       mitk::BaseProperty::Pointer mitkLUT = node->GetProperty("LookupTable");
       if (mitkLUT.IsNotNull())
       {
-        mitk::LabeledLookupTableProperty::Pointer labelProperty 
-          = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+        niftk::LabeledLookupTableProperty::Pointer labelProperty 
+          = dynamic_cast<niftk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
 
         if (labelProperty.IsNotNull() && labelProperty->GetIsScaled())
         {

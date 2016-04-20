@@ -16,8 +16,8 @@
 #define QmitkLookupTableProviderServiceImpl_p_h
 
 #include "QmitkLookupTableProviderService.h"
-#include <mitkNamedLookupTableProperty.h>
-#include <mitkLabeledLookupTableProperty.h>
+#include <niftkNamedLookupTableProperty.h>
+#include <niftkLabeledLookupTableProperty.h>
 #include <memory>
 
 class QmitkLookupTableManager;
@@ -54,14 +54,14 @@ public:
   /**
    * \see QmitkLookupTableProviderService::CreateLookupTableProperty()
    */
-  virtual mitk::NamedLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName,
+  virtual niftk::NamedLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName,
                                                                             float lowestValueOpacity,
                                                                             float highestValueOpacity) override;
   
   /**
    * \see QmitkLookupTableProviderService::CreateLookupTableProperty()
    */
-  virtual mitk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName) override;
+  virtual niftk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName) override;
 
   /**
    * \see QmitkLookupTableProviderService::AddNewLookupTableContainer()
@@ -87,7 +87,7 @@ public:
   /**
    * \see Returns labels for the given table, if they exist.
    */
-  mitk::LabeledLookupTableProperty::LabelListType GetLabels(const QString& lookupTableName);
+  niftk::LabeledLookupTableProperty::LabelListType GetLabels(const QString& lookupTableName);
 
 private:
 

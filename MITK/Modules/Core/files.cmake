@@ -49,8 +49,8 @@ set(CPP_FILES
   DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cxx
   DataNodeProperties/mitkAffineTransformDataNodeProperty.cxx
   DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cxx
-  DataNodeProperties/mitkNamedLookupTableProperty.cxx
-  DataNodeProperties/mitkLabeledLookupTableProperty.cxx
+  DataNodeProperties/niftkLabeledLookupTableProperty.cxx
+  DataNodeProperties/niftkNamedLookupTableProperty.cxx
   IO/mitkFileIOUtils.cxx
   IO/mitkLabelMapReader.cxx
   IO/mitkLabelMapWriter.cxx

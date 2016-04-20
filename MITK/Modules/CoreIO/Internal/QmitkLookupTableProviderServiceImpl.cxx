@@ -80,7 +80,7 @@ bool QmitkLookupTableProviderServiceImpl::GetIsScaled(const QString& lookupTable
 
 
 //-----------------------------------------------------------------------------
-mitk::LabeledLookupTableProperty::LabelListType
+niftk::LabeledLookupTableProperty::LabelListType
 QmitkLookupTableProviderServiceImpl::GetLabels(const QString& lookupTableName)
 {
   const QmitkLookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableName);
@@ -127,7 +127,7 @@ vtkLookupTable* QmitkLookupTableProviderServiceImpl
 
 
 //-----------------------------------------------------------------------------
-mitk::NamedLookupTableProperty::Pointer 
+niftk::NamedLookupTableProperty::Pointer 
 QmitkLookupTableProviderServiceImpl
 ::CreateLookupTableProperty(const QString& lookupTableName, float lowestValueOpacity, float highestValueOpacity)
 {
@@ -136,7 +136,7 @@ QmitkLookupTableProviderServiceImpl
   mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
   mitkLUT->SetVtkLookupTable(vtkLUT);
 
-  mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = mitk::NamedLookupTableProperty::New();
+  niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = niftk::NamedLookupTableProperty::New();
   mitkLUTProperty->SetLookupTable(mitkLUT);
   mitkLUTProperty->SetName(lookupTableName.toStdString());
   mitkLUTProperty->SetIsScaled(this->GetIsScaled(lookupTableName));
@@ -146,7 +146,7 @@ QmitkLookupTableProviderServiceImpl
 
 
 //-----------------------------------------------------------------------------
-mitk::LabeledLookupTableProperty::Pointer 
+niftk::LabeledLookupTableProperty::Pointer 
 QmitkLookupTableProviderServiceImpl::CreateLookupTableProperty(const QString& lookupTableName)
 {
   vtkLookupTable *vtkLUT = this->CreateLookupTable(lookupTableName, 0, 0);
@@ -154,7 +154,7 @@ QmitkLookupTableProviderServiceImpl::CreateLookupTableProperty(const QString& lo
   mitk::LookupTable::Pointer mitkLUT = mitk::LookupTable::New();
   mitkLUT->SetVtkLookupTable(vtkLUT);
 
-  mitk::LabeledLookupTableProperty::Pointer mitkLUTProperty = mitk::LabeledLookupTableProperty::New();
+  niftk::LabeledLookupTableProperty::Pointer mitkLUTProperty = niftk::LabeledLookupTableProperty::New();
   mitkLUTProperty->SetLookupTable(mitkLUT);
   mitkLUTProperty->SetName(lookupTableName.toStdString());
   mitkLUTProperty->SetIsScaled(this->GetIsScaled(lookupTableName));
