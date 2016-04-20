@@ -20,6 +20,6 @@ MITK_CREATE_MODULE(
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkMITKTrackerDataSourceService)
+  cotire(niftkNDITrackerDataSourceService)
 endif()
 

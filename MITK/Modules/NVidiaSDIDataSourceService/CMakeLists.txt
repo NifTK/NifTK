@@ -41,7 +41,7 @@ if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
   endif()
 
   if (NIFTK_USE_COTIRE AND COMMAND cotire)
-    #cotire(niftkNVidiaSDIDataSourceService)
+    cotire(niftkNVidiaSDIDataSourceService)
   endif()
 
 endif()
