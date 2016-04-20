@@ -43,7 +43,6 @@ set(PROJECT_PLUGINS
 
 # These are 'Application' plugins, and so are 'View' independent.
   Plugins/uk.ac.ucl.cmic.commonapps:ON
-  Plugins/uk.ac.ucl.cmic.niftyview:ON
 
 # These are 'View' plugins, and just depend on MITK.
   Plugins/uk.ac.ucl.cmic.snapshot:ON
@@ -65,10 +64,25 @@ if(BUILD_VL)
 endif()
 
 # ---------------------------------------------------------------------------------------------------
-# MIDAS Specific Plugins
+# NiftyView Specific Plugins
 # ---------------------------------------------------------------------------------------------------
 
-set(MIDAS_PLUGINS
+set(NiftyView_PLUGINS
+  Plugins/uk.ac.ucl.cmic.niftyview:ON
+)
+
+if(NIFTK_Apps/NiftyView)
+  set(PROJECT_PLUGINS
+    ${PROJECT_PLUGINS}
+    ${NiftyView_PLUGINS}
+  )
+endif()
+
+# ---------------------------------------------------------------------------------------------------
+# NiftyMIDAS Specific Plugins
+# ---------------------------------------------------------------------------------------------------
+
+set(NiftyMIDAS_PLUGINS
   Plugins/uk.ac.ucl.cmic.commonmidas:ON
   Plugins/uk.ac.ucl.cmic.niftymidas:ON
   Plugins/uk.ac.ucl.cmic.sideviewer:ON
@@ -78,18 +92,18 @@ set(MIDAS_PLUGINS
   Plugins/uk.ac.ucl.cmic.dnddisplay:ON
 )
 
-if(BUILD_MIDAS)
+if(NIFTK_Apps/NiftyMIDAS)
   set(PROJECT_PLUGINS
     ${PROJECT_PLUGINS}
-    ${MIDAS_PLUGINS}
+    ${NiftyMIDAS_PLUGINS}
   )
-endif(BUILD_MIDAS)
+endif()
 
 # ---------------------------------------------------------------------------------------------------
-# IGI Specific Plugins
+# NiftyIGI Specific Plugins
 # ---------------------------------------------------------------------------------------------------
 
-set(IGI_PLUGINS
+set(NiftyIGI_PLUGINS
   Plugins/uk.ac.ucl.cmic.niftyigi:ON
   Plugins/uk.ac.ucl.cmic.igioverlayeditor:ON
   Plugins/uk.ac.ucl.cmic.igidatasources:ON
@@ -106,24 +120,24 @@ set(IGI_PLUGINS
 )
 
 if(WIN32)
-  set(IGI_PLUGINS
-    ${IGI_PLUGINS}
+  set(NiftyIGI_PLUGINS
+    ${NiftyIGI_PLUGINS}
     Plugins/uk.ac.ucl.cmic.igifootpedalhotkey:ON
   )
 endif()
 
-if(BUILD_IGI)
+if(BUILD_VL)
+  set(NiftyIGI_PLUGINS
+    ${NiftyIGI_PLUGINS}
+    Plugins/uk.ac.ucl.cmic.igivleditor:ON
+  )
+endif()
+
+if(NIFTK_Apps/NiftyIGI)
   set(PROJECT_PLUGINS
     ${PROJECT_PLUGINS}
-    ${IGI_PLUGINS}
+    ${NiftyIGI_PLUGINS}
   )
-
-  if(BUILD_VL)
-    set(PROJECT_PLUGINS
-      ${PROJECT_PLUGINS}
-      Plugins/uk.ac.ucl.cmic.igivleditor:ON
-    )
-  endif()
 endif()
 
 # ---------------------------------------------------------------------------------------------------
@@ -133,5 +147,6 @@ set(OBSOLETE_PLUGINS
   Plugins/uk.ac.ucl.cmic.niftyseg:OFF
   Plugins/uk.ac.ucl.cmic.niftyreg:OFF # If turned on, must be listed after the xnat plugin.
   Plugins/uk.ac.ucl.cmic.breastsegmentation:OFF
+  Plugins/uk.ac.ucl.cmic.mitksegmentation:OFF
   Plugins/it.unito.cim.intensityprofile:OFF
 )
