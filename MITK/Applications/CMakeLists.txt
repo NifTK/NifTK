@@ -13,30 +13,6 @@
 #============================================================================*/
 
 #################################################################################
-# GUI applications based on the BlueBerry framework
-#################################################################################
-
-# Note: The name of the App in Apps.cmake, must match the directory name.
-
-if(MITK_USE_BLUEBERRY)
-
-  foreach(NIFTK_APP ${NIFTK_APPS})
-
-    # extract option_name
-    string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
-    set(target_info_list ${target_info})
-    list(GET target_info_list 1 option_name)
-    list(GET target_info_list 0 app_name)
-
-    if(${option_name})
-      add_subdirectory(${app_name})
-    endif()
-
-  endforeach()
-
-endif()
-
-#################################################################################
 # Command line applications, integrated into GUI via the CLI module.
 #################################################################################
 
@@ -103,3 +79,33 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
   endif()
 
 endif()
+
+#################################################################################
+# GUI applications based on the BlueBerry framework.
+#
+# This section must go after the command line applications, or else when you run
+# the CMake fixup_bundle macro (most important for Mac), the command line apps 
+# are not yet present, and the command line apps end up with unresolved external 
+# dependencies. Worse still, the packaging will appear to succeed.
+#################################################################################
+
+# Note: The name of the App in Apps.cmake, must match the directory name.
+
+if(MITK_USE_BLUEBERRY)
+
+  foreach(NIFTK_APP ${NIFTK_APPS})
+
+    # extract option_name
+    string(REPLACE "^^" "\\;" target_info ${NIFTK_APP})
+    set(target_info_list ${target_info})
+    list(GET target_info_list 1 option_name)
+    list(GET target_info_list 0 app_name)
+
+    if(${option_name})
+      add_subdirectory(${app_name})
+    endif()
+
+  endforeach()
+
+endif()
+
