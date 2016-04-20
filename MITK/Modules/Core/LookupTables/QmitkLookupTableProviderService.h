@@ -17,8 +17,8 @@
 
 #include <vector>
 #include <string>
-#include <mitkNamedLookupTableProperty.h>
-#include <mitkLabeledLookupTableProperty.h>
+#include <niftkNamedLookupTableProperty.h>
+#include <niftkLabeledLookupTableProperty.h>
 
 // Microservices
 #include <mitkServiceInterface.h>
@@ -54,16 +54,16 @@ struct QmitkLookupTableProviderService
                                             float highestValueOpacity) = 0;
 
   /**
-   * \brief Same as CreateLookupTable, but wraps it into a mitk::NamedLookupTableProperty.
+   * \brief Same as CreateLookupTable, but wraps it into a niftk::NamedLookupTableProperty.
    */
-  virtual mitk::NamedLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName,
+  virtual niftk::NamedLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName,
                                                                             float lowestValueOpacity,
                                                                             float highestValueOpacity) = 0;
 
   /**
-   * \brief Similar to CreateLookupTable, but create a mitk::LabeledLookupTableProperty.
+   * \brief Similar to CreateLookupTable, but create a niftk::LabeledLookupTableProperty.
    */
-  virtual mitk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName) = 0;
+  virtual niftk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName) = 0;
 
   /**
    * \brief Add a new LookupTableContainer to the LookupTableManager.

@@ -12,13 +12,13 @@
 
 =============================================================================*/
 
-#ifndef mitkNamedLookupTableProperty_h
-#define mitkNamedLookupTableProperty_h
+#ifndef __niftkNamedLookupTableProperty_h
+#define __niftkNamedLookupTableProperty_h
 
 #include "niftkCoreExports.h"
 #include <mitkLookupTableProperty.h>
 
-namespace mitk
+namespace niftk
 {
 
 /**
@@ -58,13 +58,13 @@ private:
   NamedLookupTableProperty& operator=(const NamedLookupTableProperty&); // Purposefully not implemented
   itk::LightObject::Pointer InternalClone() const override;
 
-  virtual bool IsEqual(const BaseProperty& property) const override;
-  virtual bool Assign(const BaseProperty& property) override;
+  virtual bool IsEqual(const mitk::BaseProperty& property) const override;
+  virtual bool Assign(const mitk::BaseProperty& property) override;
 
   std::string m_Name;
   bool        m_IsScaled;
 };
 
-} // namespace mitk
+}
 
 #endif

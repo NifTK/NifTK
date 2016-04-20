@@ -12,19 +12,20 @@
 
 =============================================================================*/
 
-#ifndef mitkCoordinateAxesDataSerializer_h
-#define mitkCoordinateAxesDataSerializer_h
+#ifndef niftkCoordinateAxesDataSerializer_h
+#define niftkCoordinateAxesDataSerializer_h
 
 #include "mitkBaseDataSerializer.h"
 
-namespace mitk
+namespace niftk
 {
+
 /**
 * @class CoordinateAxesDataSerializer
 * @brief Serializes mitk::CoordinateAxesData for mitk::SceneIO
 * @internal
 */
-class CoordinateAxesDataSerializer : public BaseDataSerializer
+class CoordinateAxesDataSerializer : public mitk::BaseDataSerializer
 {
 public:
   mitkClassMacro( CoordinateAxesDataSerializer, BaseDataSerializer );
@@ -36,6 +37,6 @@ protected:
   virtual ~CoordinateAxesDataSerializer();
 };
 
-} // namespace
+}
 
 #endif

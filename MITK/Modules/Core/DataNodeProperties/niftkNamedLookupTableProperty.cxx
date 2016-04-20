@@ -12,13 +12,10 @@
 
 =============================================================================*/
 
-#include "mitkNamedLookupTableProperty.h"
-
-namespace mitk
-{
+#include "niftkNamedLookupTableProperty.h"
 
 //-----------------------------------------------------------------------------
-NamedLookupTableProperty::NamedLookupTableProperty()
+niftk::NamedLookupTableProperty::NamedLookupTableProperty()
 : Superclass()
 , m_Name("n/a")
 , m_IsScaled(1)
@@ -27,7 +24,7 @@ NamedLookupTableProperty::NamedLookupTableProperty()
 
 
 //-----------------------------------------------------------------------------
-NamedLookupTableProperty::NamedLookupTableProperty(const NamedLookupTableProperty& other)
+niftk::NamedLookupTableProperty::NamedLookupTableProperty(const niftk::NamedLookupTableProperty& other)
 : Superclass(other)
 , m_Name(other.m_Name)
 , m_IsScaled(other.m_IsScaled)
@@ -36,7 +33,7 @@ NamedLookupTableProperty::NamedLookupTableProperty(const NamedLookupTablePropert
 
 
 //-----------------------------------------------------------------------------
-NamedLookupTableProperty::NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut)
+niftk::NamedLookupTableProperty::NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut)
 : Superclass(lut)
 , m_Name(name)
 , m_IsScaled(1)
@@ -45,7 +42,7 @@ NamedLookupTableProperty::NamedLookupTableProperty(const std::string& name, cons
 
 
 //-----------------------------------------------------------------------------
-NamedLookupTableProperty::NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut, bool scale)
+niftk::NamedLookupTableProperty::NamedLookupTableProperty(const std::string& name, const mitk::LookupTable::Pointer lut, bool scale)
 : Superclass(lut)
 , m_Name(name)
 , m_IsScaled(scale)
@@ -54,20 +51,20 @@ NamedLookupTableProperty::NamedLookupTableProperty(const std::string& name, cons
 
 
 //-----------------------------------------------------------------------------
-NamedLookupTableProperty::~NamedLookupTableProperty()
+niftk::NamedLookupTableProperty::~NamedLookupTableProperty()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-std::string NamedLookupTableProperty::GetValueAsString() const
+std::string niftk::NamedLookupTableProperty::GetValueAsString() const
 {
   return m_Name;
 }
 
 
 //-----------------------------------------------------------------------------
-itk::LightObject::Pointer NamedLookupTableProperty::InternalClone() const
+itk::LightObject::Pointer niftk::NamedLookupTableProperty::InternalClone() const
 {
   itk::LightObject::Pointer result(new Self(*this));
   return result;
@@ -75,7 +72,7 @@ itk::LightObject::Pointer NamedLookupTableProperty::InternalClone() const
 
 
 //-----------------------------------------------------------------------------
-bool NamedLookupTableProperty::IsEqual(const BaseProperty& property) const
+bool niftk::NamedLookupTableProperty::IsEqual(const mitk::BaseProperty& property) const
 {
   return *(this->m_LookupTable) == *(static_cast<const Self&>(property).m_LookupTable)
       && this->m_Name == static_cast<const Self&>(property).m_Name
@@ -84,7 +81,7 @@ bool NamedLookupTableProperty::IsEqual(const BaseProperty& property) const
 
 
 //-----------------------------------------------------------------------------
-bool NamedLookupTableProperty::Assign(const BaseProperty& property)
+bool niftk::NamedLookupTableProperty::Assign(const mitk::BaseProperty& property)
 {
   this->m_LookupTable = static_cast<const Self&>(property).m_LookupTable;
   this->m_Name = static_cast<const Self&>(property).m_Name;
@@ -92,5 +89,3 @@ bool NamedLookupTableProperty::Assign(const BaseProperty& property)
 
   return true;
 }
-
-} // end namespace

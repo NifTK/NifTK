@@ -18,7 +18,7 @@
 
 #include <mitkAbstractFileReader.h>
 #include "niftkCoreExports.h"
-#include "mitkLabeledLookupTableProperty.h"
+#include <niftkLabeledLookupTableProperty.h>
 #include <QFile>
 #include <QColor>
 
@@ -71,7 +71,7 @@ private:
   bool ReadLabelMap(std::istream &);  
 
   /** To temporarily store the labels (pixel value/name). */
-  LabeledLookupTableProperty::LabelListType m_Labels;
+  niftk::LabeledLookupTableProperty::LabelListType m_Labels;
 
   typedef std::vector<QColor> ColorListType;
   /** To temporarily store the list of colors. */

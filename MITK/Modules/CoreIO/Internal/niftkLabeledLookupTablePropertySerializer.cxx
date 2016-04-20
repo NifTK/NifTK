@@ -12,29 +12,28 @@
 
 =============================================================================*/
 
-#include "mitkLabeledLookupTablePropertySerializer.h"
-#include "mitkLabeledLookupTableProperty.h"
+#include "niftkLabeledLookupTablePropertySerializer.h"
+#include "niftkLabeledLookupTableProperty.h"
 
-namespace mitk
-{
+#include "niftkSerializerMacros.h"
 
 
 //-----------------------------------------------------------------------------
-LabeledLookupTablePropertySerializer::LabeledLookupTablePropertySerializer()
+niftk::LabeledLookupTablePropertySerializer::LabeledLookupTablePropertySerializer()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-LabeledLookupTablePropertySerializer::~LabeledLookupTablePropertySerializer()
+niftk::LabeledLookupTablePropertySerializer::~LabeledLookupTablePropertySerializer()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-TiXmlElement* LabeledLookupTablePropertySerializer::Serialize()
+TiXmlElement* niftk::LabeledLookupTablePropertySerializer::Serialize()
 {
-  if (const LabeledLookupTableProperty* prop = dynamic_cast<const LabeledLookupTableProperty*>(m_Property.GetPointer()))
+  if (const niftk::LabeledLookupTableProperty* prop = dynamic_cast<const niftk::LabeledLookupTableProperty*>(m_Property.GetPointer()))
   {
     TiXmlElement* element = new TiXmlElement("LabeledLookupTable");
 
@@ -52,7 +51,7 @@ TiXmlElement* LabeledLookupTablePropertySerializer::Serialize()
       child->LinkEndChild(grandChildNinife);
     }
 
-    const NamedLookupTableProperty* baseProp = dynamic_cast< const NamedLookupTableProperty*>(m_Property.GetPointer());
+    const niftk::NamedLookupTableProperty* baseProp = dynamic_cast<const niftk::NamedLookupTableProperty*>(m_Property.GetPointer());
     this->SetProperty(baseProp);
     child = this->Superclass::Serialize();
 
@@ -67,19 +66,19 @@ TiXmlElement* LabeledLookupTablePropertySerializer::Serialize()
 
 
 //-----------------------------------------------------------------------------
-BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(TiXmlElement* element)
+mitk::BaseProperty::Pointer niftk::LabeledLookupTablePropertySerializer::Deserialize(TiXmlElement* element)
 {
   if (!element)
   { 
     return NULL;
   }
 
-  LabeledLookupTableProperty::Pointer  labeledLUT = LabeledLookupTableProperty::New();
+  niftk::LabeledLookupTableProperty::Pointer  labeledLUT = niftk::LabeledLookupTableProperty::New();
 
   TiXmlElement* child  = element->FirstChildElement("LabelList");
   if (child)
   {
-    LabeledLookupTableProperty::LabelListType labels;
+    niftk::LabeledLookupTableProperty::LabelListType labels;
     for (TiXmlElement* grandChild = child->FirstChildElement("Label"); grandChild; grandChild = grandChild->NextSiblingElement("Label"))
     {
       double value;
@@ -93,7 +92,7 @@ BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(TiXmlEle
         return NULL;
       }
 
-      LabeledLookupTableProperty::LabelType newLabel = std::make_pair(int(value), QString::fromStdString(labelName));
+      niftk::LabeledLookupTableProperty::LabelType newLabel = std::make_pair(int(value), QString::fromStdString(labelName));
       labels.push_back(newLabel);
     }
 
@@ -101,13 +100,13 @@ BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(TiXmlEle
   }
 
   child = element->FirstChildElement("NamedLookupTable");
-  BaseProperty::Pointer baseProp;
+  mitk::BaseProperty::Pointer baseProp;
   if (child)
   {
     baseProp = this->Superclass::Deserialize(child);
   }
 
-  NamedLookupTableProperty* namedLUTProp = dynamic_cast< NamedLookupTableProperty*>(baseProp.GetPointer());
+  niftk::NamedLookupTableProperty* namedLUTProp = dynamic_cast<niftk::NamedLookupTableProperty*>(baseProp.GetPointer());
   if (namedLUTProp != NULL)
   {
     labeledLUT->SetLookupTable(namedLUTProp->GetLookupTable());
@@ -118,6 +117,4 @@ BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(TiXmlEle
   return labeledLUT.GetPointer();
 }
 
-}
-
-MITK_REGISTER_SERIALIZER(LabeledLookupTablePropertySerializer)
+NIFTK_REGISTER_SERIALIZER(LabeledLookupTablePropertySerializer)
