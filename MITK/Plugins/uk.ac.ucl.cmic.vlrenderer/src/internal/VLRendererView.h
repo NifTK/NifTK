@@ -31,6 +31,12 @@
 
 #include <Rendering/VLQtWidget.h>
 
+// Note:
+// On Linux, some of the above includes include Xlib.h, transitively.
+// Xlib.h defines a 'Bool' symbol that clashes with QMetaType::Bool
+// what makes the Qt metaobject compiler fail to compile the moc file.
+#undef Bool
+
 /**
  * \class VLRendererView
  * \brief Provides a simple GUI to visualize stuff
