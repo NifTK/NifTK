@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
@@ -29,7 +29,7 @@
  */
 void Usage(char *exec)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
     std::cout << "Takes a copy of an input image, copying data into another image, where the origin, spacing and direction can be over-written." << std::endl;
     std::cout << "  " << std::endl;

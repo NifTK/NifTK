@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
@@ -30,7 +30,7 @@
 
 void Usage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Implements the subsampling described in section 3.2 and 3.2.1 of Acosta et. al. MIA 13 (2009) 730-743 doi:10.1016/j.media.2009.07.03" << std::endl;
   std::cout << "  This was used to generate low resolution test images from very high resolution ones." << std::endl;

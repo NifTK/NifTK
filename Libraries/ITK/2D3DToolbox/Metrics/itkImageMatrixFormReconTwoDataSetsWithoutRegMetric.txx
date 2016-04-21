@@ -18,8 +18,6 @@
 #include "itkImageMatrixFormReconTwoDataSetsWithoutRegMetric.h"
 #include <itkImageRegionIterator.h>
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {

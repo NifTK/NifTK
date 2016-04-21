@@ -12,7 +12,6 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
@@ -21,6 +20,8 @@
 #include <itkNifTKImageIOFactory.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkImageRegionIterator.h>
+
+#include <niftkLogHelper.h>
 
 /*!
  * \file niftkVoxelWiseMaximumIntensities.cxx
@@ -40,18 +41,18 @@
  */
 
 void Usage(char *exec)
-  {
-	niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Uses ITK ImageFileReader to load any number of input images, calculates the maximum intensity on a voxel by voxel basis and writes the output with ITK ImageFileWriter. All input images must be the same size, are converted to float on input, and hence are float on output." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -o outputImage -i inputImage " << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>        Input image (repeated) " << std::endl;
-    std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;   
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Uses ITK ImageFileReader to load any number of input images, calculates the maximum intensity on a voxel by voxel basis and writes the output with ITK ImageFileWriter. All input images must be the same size, are converted to float on input, and hence are float on output." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -o outputImage -i inputImage " << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i    <filename>        Input image (repeated) " << std::endl;
+  std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
+  std::cout << "*** [options]   ***" << std::endl << std::endl;   
+}
 
 struct arguments
 {

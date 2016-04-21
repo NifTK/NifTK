@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "itkLogHelper.h"
+#include <niftkLogHelper.h>
 #include <itkDOMNodeXMLReader.h>
 #include <itkImageFileWriter.h>
 #include <itkImageFileReader.h>
@@ -68,7 +68,7 @@ typedef itk::ImageFileWriter< Image3DType > WriterType;
 
 void Usage(char *exec)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << " " << std::endl;
   std::cout << "Converts a set of 2D OCT tif files into a 3D volume." << std::endl;
   std::cout << " " << std::endl;

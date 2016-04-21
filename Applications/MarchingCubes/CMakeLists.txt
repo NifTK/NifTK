@@ -21,9 +21,6 @@ if(VTK_FOUND)
       niftkVTK
       ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
       niftkcommon
-      niftkITK
-      niftkITKIO
-      ${ITK_LIBRARIES}
   )
 
 endif()

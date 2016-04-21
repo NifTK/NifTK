@@ -18,8 +18,6 @@
 #include <itkImage.h>
 #include <itkImageRegionIterator.h>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 template<class TPixel,unsigned int VDimension, class TAllocator>

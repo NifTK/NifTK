@@ -23,7 +23,6 @@
  * \li Image headers not checked. By "voxel by voxel basis" we mean that the image geometry, origin, orientation is not checked.
  */
 
-#include <itkLogHelper.h>
 #include <itkCommandLineHelper.h>
 #include <itkCropTargetImageWhereSourceImageNonZero.h>
 #include <itkImage.h>

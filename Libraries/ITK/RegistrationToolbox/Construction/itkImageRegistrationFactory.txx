@@ -20,8 +20,6 @@
 #include <itkTransformFactory.h>
 #include <itkTransformFileReader.h>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 template <typename TInputImageType, unsigned int Dimension, class TScalarType>

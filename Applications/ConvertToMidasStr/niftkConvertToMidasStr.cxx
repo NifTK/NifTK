@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-// #include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
@@ -31,7 +31,7 @@
  */
 void Usage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Output a Jacobian file in MIDAS str format." << std::endl;
   std::cout << "  " << std::endl;

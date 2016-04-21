@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkBinaryThresholdImageFilter.h>
@@ -34,7 +34,7 @@
 
 void Usage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  From a given label image, assumed to have 3 values, one for GM, one for WM and one for CSF, will extract the GM/WM boundary." << std::endl;
   std::cout << "  " << std::endl;

@@ -22,8 +22,6 @@
 #include <niftkConversionUtils.h>
 #include <iostream>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 // Constructor with default arguments

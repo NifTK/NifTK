@@ -19,8 +19,6 @@
 #include <niftkConversionUtils.h>
 #include <cmath>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 

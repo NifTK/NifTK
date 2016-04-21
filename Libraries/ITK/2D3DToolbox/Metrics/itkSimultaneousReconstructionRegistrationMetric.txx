@@ -17,8 +17,6 @@
 
 #include "itkSimultaneousReconstructionRegistrationMetric.h"
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {

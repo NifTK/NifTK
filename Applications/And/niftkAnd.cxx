@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
@@ -37,19 +37,19 @@
  */
 
 void Usage(char *exec)
-  {
-	niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Runs the ITK AndImageFilter to add two images of equal sizes on a voxel by voxel basis." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName1 -j inputFileName2 -o outputFileName [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>        Input image1 " << std::endl;
-    std::cout << "    -j    <filename>        Input image2 " << std::endl;
-    std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;   
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Runs the ITK AndImageFilter to add two images of equal sizes on a voxel by voxel basis." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputFileName1 -j inputFileName2 -o outputFileName [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i    <filename>        Input image1 " << std::endl;
+  std::cout << "    -j    <filename>        Input image2 " << std::endl;
+  std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
+  std::cout << "*** [options]   ***" << std::endl << std::endl;   
+}
 
 struct arguments
 {

@@ -19,10 +19,8 @@ if(VTK_FOUND AND BUILD_MESHING)
     BUILD_CLI
     TARGET_LIBRARIES
       niftkMeshing
-      niftkITK
       niftkVTK
       niftkcommon
-      ${ITK_LIBRARIES}
       ${CGAL_LIBRARIES}
       ${CGAL_3RD_PARTY_LIBRARIES}
   )

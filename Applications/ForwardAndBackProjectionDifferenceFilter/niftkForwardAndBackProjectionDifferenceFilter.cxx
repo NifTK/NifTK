@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
@@ -26,21 +26,21 @@
  * \section niftkForwardAndBackProjectionDifferenceFilterSummar Compute the difference between a set of projection images and a reconstruction estimate (or zero).
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl
-	      << "  Compute the difference between a set of projection images and a reconstruction estimate (or zero)."
-	      << std::endl << std::endl
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl
+      << "  Compute the difference between a set of projection images and a reconstruction estimate (or zero)."
+      << std::endl << std::endl
 
-	      << "  " << exec 
-	      << " -projs InputProjectionVolume -o OutputDifference " << std::endl
-	      << "  " << std::endl
-	      << "*** [mandatory] ***" << std::endl << std::endl
-	      << "    -projs <filename>       Input volume of 2D projection images" << std::endl
-	      << "    -o    <filename>        Output 3D back-projected image" << std::endl << std::endl
-	      << "*** [options]   ***" << std::endl << std::endl
-	      << "    -est <filename>         Input current estimate of the 3D volume" << std::endl << std::endl;
-  }
+      << "  " << exec
+      << " -projs InputProjectionVolume -o OutputDifference " << std::endl
+      << "  " << std::endl
+      << "*** [mandatory] ***" << std::endl << std::endl
+      << "    -projs <filename>       Input volume of 2D projection images" << std::endl
+      << "    -o    <filename>        Output 3D back-projected image" << std::endl << std::endl
+      << "*** [options]   ***" << std::endl << std::endl
+      << "    -est <filename>         Input current estimate of the 3D volume" << std::endl << std::endl;
+}
 
 
 /**

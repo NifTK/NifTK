@@ -46,7 +46,6 @@
 #include <niftkEnvironmentHelper.h>
 
 #include <itkCommandLineHelper.h>
-#include <itkLogHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageSeriesReader.h>

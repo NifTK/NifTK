@@ -19,8 +19,6 @@
 
 #include "itkSiemensMammomat_TomosynthesisGeometry.h"
 
-#include "itkLogHelper.h"
-
 
 namespace itk
 {

@@ -15,7 +15,7 @@
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
@@ -130,7 +130,7 @@ int main(int argc, char** argv)
 
   if (argc < 7) 
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cerr << std::endl;
     std::cout << "Program to enlarge the image size and pad it with a background value." << std::endl;
     std::cout << argv[0] << " input output size_x size_y size_z pad_value" << std::endl;

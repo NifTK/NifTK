@@ -20,8 +20,6 @@
 #include "itkFiniteDifferenceVoxel.h"
 #include <itkVectorNearestNeighborInterpolateImageFunction.h>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 

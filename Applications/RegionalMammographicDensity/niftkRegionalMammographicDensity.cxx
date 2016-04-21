@@ -12,8 +12,6 @@
 
   =============================================================================*/
 
-#include <itkLogHelper.h>
-
 #include <niftkFileHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>

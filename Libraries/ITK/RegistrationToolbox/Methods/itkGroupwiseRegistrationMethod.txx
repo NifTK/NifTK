@@ -17,13 +17,9 @@
 
 #include <itkGroupwiseRegistrationMethod.h>
 
-#include <itkLogHelper.h>
-
 #include <itkImageFileWriter.h>
 #include <itkArray.h>
 #include <itkEulerAffineTransform.h>
-
-#include <itkLogHelper.h>
 
 namespace itk
 {

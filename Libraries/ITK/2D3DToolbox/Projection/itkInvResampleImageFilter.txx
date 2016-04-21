@@ -30,8 +30,6 @@
 #include <itkImageLinearIteratorWithIndex.h>
 #include <itkSpecialCoordinatesImage.h>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 

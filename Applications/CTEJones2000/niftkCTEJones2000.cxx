@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
@@ -29,7 +29,7 @@
  */
 void Usage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Implements Jones et. al. Human Brain Mapping 11:12-32(2000), with optional Gauss-Seidel optimisation," << std::endl;
   std::cout << "  and implements Diep et. al ISBI 2007 to cope with anisotropic voxel sizes. " << std::endl;

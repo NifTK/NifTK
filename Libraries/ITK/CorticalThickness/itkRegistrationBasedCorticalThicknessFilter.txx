@@ -27,8 +27,6 @@
 #include <itkWarpImageFilter.h>
 #include <itkImageFileWriter.h>
 
-#include <itkLogHelper.h>
-
 namespace itk {
 
 template< class TInputImage, typename TScalarType >

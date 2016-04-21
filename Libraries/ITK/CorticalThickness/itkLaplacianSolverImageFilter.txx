@@ -20,8 +20,6 @@
 #include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkImageRegionIterator.h>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 template <typename TInputImage, typename TScalarType > 

@@ -15,7 +15,6 @@
 #ifndef _itkMaskedImageRegistrationMethod_txx
 #define _itkMaskedImageRegistrationMethod_txx
 
-#include <itkLogHelper.h>
 #include "itkMaskedImageRegistrationMethod.h"
 
 

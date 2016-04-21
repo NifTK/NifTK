@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include <string>
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
@@ -40,7 +40,7 @@ typedef float InputPixelType;
 
 void Usage(char *exec)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
     std::cout << "  Takes up to 5 volumes, each one being a probability map with values [0-1]," << std::endl;
     std::cout << "  and produces a single volume with 3 labels (GM, WM, CSF)." << std::endl;

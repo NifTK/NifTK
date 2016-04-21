@@ -11,7 +11,7 @@ PURPOSE.
 See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-#include "itkLogHelper.h"
+#include <niftkLogHelper.h>
 
 
 #include <itkCastImageFilter.h>
@@ -158,7 +158,7 @@ See LICENSE.txt in the top level directory for details.
 
 void Usage(char *exec)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << " " << std::endl;
   std::cout << " Applies Sato's vesselness filter to an image using a range of scales." << std::endl;
   std::cout << " " << std::endl;

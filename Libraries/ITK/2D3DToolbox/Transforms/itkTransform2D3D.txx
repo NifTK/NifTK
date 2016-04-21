@@ -16,7 +16,6 @@
 #define _itkTransform2D3D_txx
 
 #include "itkTransform2D3D.h"
-#include <itkLogHelper.h>
 
 
 namespace itk

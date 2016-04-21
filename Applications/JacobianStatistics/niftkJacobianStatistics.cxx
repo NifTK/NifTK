@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
@@ -32,7 +32,7 @@
 
 void Usage(char *exec)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
     std::cout << "  Takes a jacobian image and a mask and calculates statistics for the masked region" << std::endl;
     std::cout << "  " << std::endl;

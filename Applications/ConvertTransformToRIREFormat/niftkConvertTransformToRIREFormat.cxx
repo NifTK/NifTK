@@ -12,7 +12,6 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
@@ -27,6 +26,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <niftkLogHelper.h>
+
 /*!
  * \file niftkConvertTransformToRIREFormat.cxx
  * \page niftkConvertTransformToRIREFormat
@@ -37,7 +38,7 @@
 
 void Usage(char *exec)
   {
-	niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
     std::cout << "  Converts an ITK transformation file to that required by Vanderbilt's Retrospective Image Registration Evaluation project." << std::endl;
     std::cout << "  " << std::endl;

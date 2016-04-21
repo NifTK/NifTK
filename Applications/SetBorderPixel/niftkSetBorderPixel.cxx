@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
@@ -27,19 +27,19 @@
  * \section niftkSetBorderPixelSummary Simply sets the border pixel to the specified value.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Simply sets the border pixel to the specified value." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>        Input image " << std::endl;
-    std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -v    <float> [255]     Border value" << std::endl;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Simply sets the border pixel to the specified value." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i    <filename>        Input image " << std::endl;
+  std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;
+  std::cout << "*** [options]   ***" << std::endl << std::endl;
+  std::cout << "    -v    <float> [255]     Border value" << std::endl;
+}
 
 struct arguments
 {

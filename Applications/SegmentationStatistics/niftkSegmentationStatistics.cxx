@@ -19,7 +19,7 @@
 #include <itkNifTKImageIOFactory.h>
 #include <itkBinaryThresholdImageFilter.h>
 #include <itkImageRegionConstIterator.h>
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 
 /*!
  * \file niftkSegmentationStatistics.cxx
@@ -28,7 +28,7 @@
  */
 void Usage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Computes segmentation statistics between different segmentations. Initially based on Shattuck et. al. NeuroImage 45(2009) 431-439." << std::endl;
   std::cout << "  " << std::endl;

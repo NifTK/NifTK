@@ -19,8 +19,6 @@
 #include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkImageRegionIterator.h>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 template <class TImageType, typename TScalarType, unsigned int NDimensions> 

@@ -28,7 +28,6 @@
 
 #include <itkCreatePositiveMammogram.h>
 
-#include <itkLogHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>

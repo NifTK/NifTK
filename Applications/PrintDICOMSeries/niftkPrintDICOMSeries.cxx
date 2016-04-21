@@ -26,7 +26,6 @@
 #include <niftkConversionUtils.h>
 
 #include <itkCommandLineHelper.h>
-#include <itkLogHelper.h>
 
 #include <itkImageSeriesReader.h>
 #include <itkMetaDataDictionary.h>

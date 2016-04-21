@@ -21,8 +21,6 @@
 #include <algorithm>
 #include <vector>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 template <class TImageType, typename TScalarType, unsigned int NDimensions> 

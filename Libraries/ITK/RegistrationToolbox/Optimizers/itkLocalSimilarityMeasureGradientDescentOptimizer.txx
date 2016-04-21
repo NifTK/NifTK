@@ -31,7 +31,6 @@
 #include <niftkConversionUtils.h>
 #include <itkAbsImageFilter.h>
 
-#include <itkLogHelper.h>
 #include <itkUCLMacro.h>
 
 namespace itk

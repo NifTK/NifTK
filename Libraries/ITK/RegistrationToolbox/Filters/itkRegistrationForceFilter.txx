@@ -21,7 +21,6 @@
 #include <itkImageRegionIterator.h>
 #include <itkCastImageFilter.h>
 
-#include <itkLogHelper.h>
 #include <itkUCLMacro.h>
 
 namespace itk {

@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include <sstream>
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
@@ -28,7 +28,7 @@
  */
 void Usage(char *exec)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Checks scalar images. Will throw exceptions if check fails. By default does nothing. You have to specify at least one test to perform." << std::endl;
   std::cout << "  " << std::endl;

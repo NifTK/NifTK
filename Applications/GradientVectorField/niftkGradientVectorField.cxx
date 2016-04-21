@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
@@ -32,29 +32,29 @@
  * \section niftkGradientVectorFieldSummary Take the gradient of an image, and outputs a vector image. Mainly used for generating test images.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Take the gradient of an image, and outputs a vector image. Mainly used for generating test images." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName -o outputFileName" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i                 : Input scalar image" << std::endl;
-    std::cout << "    -o                 : Output vector image" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -method [int]      : Where:" << std::endl;
-    std::cout << "                         0 - Default, use Central Differences" << std::endl;
-    std::cout << "                         1 - Use ITKs itkGradientImageFilter" << std::endl;
-    std::cout << "                         2 - Use ITKs itkGradientRecursiveGaussianImageFilter" << std::endl;
-    std::cout << "    -dx <filename>     : Write the gradient in x direction" << std::endl;
-    std::cout << "    -dy <filename>     : Write the gradient in y direction" << std::endl;
-    std::cout << "    -dz <filename>     : Write the gradient in z direction" << std::endl;
-    std::cout << "    -norm              : Normalize. Default off." << std::endl;
-    std::cout << "    -sigma <float> [2] : Sigma to smooth vectors with" << std::endl;
-    return;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Take the gradient of an image, and outputs a vector image. Mainly used for generating test images." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputFileName -o outputFileName" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i                 : Input scalar image" << std::endl;
+  std::cout << "    -o                 : Output vector image" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [options]   ***" << std::endl << std::endl;
+  std::cout << "    -method [int]      : Where:" << std::endl;
+  std::cout << "                         0 - Default, use Central Differences" << std::endl;
+  std::cout << "                         1 - Use ITKs itkGradientImageFilter" << std::endl;
+  std::cout << "                         2 - Use ITKs itkGradientRecursiveGaussianImageFilter" << std::endl;
+  std::cout << "    -dx <filename>     : Write the gradient in x direction" << std::endl;
+  std::cout << "    -dy <filename>     : Write the gradient in y direction" << std::endl;
+  std::cout << "    -dz <filename>     : Write the gradient in z direction" << std::endl;
+  std::cout << "    -norm              : Normalize. Default off." << std::endl;
+  std::cout << "    -sigma <float> [2] : Sigma to smooth vectors with" << std::endl;
+  return;
+}
 
 struct arguments
 {

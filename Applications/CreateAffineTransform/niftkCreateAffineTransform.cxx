@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkEulerAffineTransform.h>
 #include <itkPerspectiveProjectionTransform.h>
@@ -29,7 +29,7 @@
 
 void Usage(char *exec)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    niftk::LogHelper::PrintCommandLineHeader(std::cout);
     
     std::cout << "  " << std::endl
 	      << "  Creates an ITK affine transformation from user specified parameters." << std::endl

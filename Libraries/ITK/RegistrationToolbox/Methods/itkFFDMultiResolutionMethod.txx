@@ -17,8 +17,6 @@
 
 #include "itkFFDMultiResolutionMethod.h"
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 /*

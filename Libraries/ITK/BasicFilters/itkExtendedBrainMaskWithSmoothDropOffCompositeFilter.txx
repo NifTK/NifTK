@@ -17,7 +17,7 @@
 
 #include "itkExtendedBrainMaskWithSmoothDropOffCompositeFilter.h"
 
-#include <itkLogHelper.h>
+#include <itkUCLMacro.h>
 
 namespace itk
 {

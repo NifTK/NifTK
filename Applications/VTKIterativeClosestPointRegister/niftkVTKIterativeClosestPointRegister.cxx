@@ -31,7 +31,6 @@
 #include <niftkVTKFunctions.h>
 
 #include <niftkConversionUtils.h>
-#include <itkLogHelper.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
 #include <vtkPolyDataWriter.h>

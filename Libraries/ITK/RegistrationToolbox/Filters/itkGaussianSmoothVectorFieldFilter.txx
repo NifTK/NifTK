@@ -17,8 +17,6 @@
 
 #include "itkGaussianSmoothVectorFieldFilter.h"
 
-#include <itkLogHelper.h>
-
 namespace itk {
 
 template <class TScalarType, unsigned int NumberImageDimensions, unsigned int NumberVectorDimensions> 
