@@ -17,6 +17,7 @@ set(CUDAKernelsTests_SRCS
 
 set(NIFTK_TEST_CUDA_LINK_LIBRARIES
   ${ITK_LIBRARIES}
+  ${Boost_LIBRARIES}
   niftkCUDAKernels
 )
 
@@ -42,7 +43,7 @@ include_directories(${NIFTK_INCLUDE_DIRS_BUILD_TREE})
 
 add_executable(niftkCUDAKernelsTests niftkCUDAKernelsTests.cxx ${CUDAKernelsTests_SRCS})
 target_include_directories(niftkCUDAKernelsTests PRIVATE ${ITK_INCLUDE_DIRS})
-target_link_libraries(niftkCUDAKernelsTests ${NIFTK_TEST_CUDA_LINK_LIBRARIES} )
+target_link_libraries(niftkCUDAKernelsTests PRIVATE ${NIFTK_TEST_CUDA_LINK_LIBRARIES})
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   # Suppress warning because of a bug in the Boost gil library.

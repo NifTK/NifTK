@@ -20,7 +20,6 @@ set(NIFTK_TEST_EXT_VTK_LINK_LIBRARIES
   ${ITK_LIBRARIES}
   vtkIOLegacy
   niftkVTK
-  ${Boost_LIBRARIES}
   )
 
 #----------------------------------------------------------------------------------------------------------------------------

@@ -21,6 +21,5 @@ NIFTK_CREATE_COMMAND_LINE_APPLICATION(
     niftkITK
     niftkITKIO
     ${ITK_LIBRARIES}
-    ${Boost_LIBRARIES}
 )
 

@@ -26,7 +26,6 @@ if(VTK_FOUND AND MITK_USE_Qt4)
       niftkITK
       niftkITKIO
       ${ITK_LIBRARIES}
-      ${Boost_LIBRARIES}
   )
 
 endif()
