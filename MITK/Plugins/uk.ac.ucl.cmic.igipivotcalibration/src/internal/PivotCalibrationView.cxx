@@ -39,16 +39,6 @@
 #include <vtkMatrix4x4.h>
 #include <vtkTransform.h>
 
-#include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/regex.hpp>
-
-#include <niftkCoordinateAxesData.h>
-#include <niftkDataStorageUtils.h>
-#include <niftkFileIOUtils.h>
-#include <niftkFileHelper.h>
-#include <niftkVTKFunctions.h>
-
 
 //-----------------------------------------------------------------------------
 const char* PivotCalibrationView::VIEW_ID = "uk.ac.ucl.cmic.igipivotcalibration";

@@ -24,7 +24,6 @@
 #include <mitkImageWriteAccessor.h>
 #include <QDir>
 #include <QMutexLocker>
-#include <boost/typeof/typeof.hpp>
 
 namespace niftk
 {
@@ -240,7 +239,7 @@ void NVidiaSDIDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
   // dont replay the same timestamp over and over again.
   if (m_MostRecentlyPlayedbackTimeStamp != requestedTimeStamp)
   {
-    BOOST_AUTO(i, m_PlaybackIndex.upper_bound(requestedTimeStamp));
+    auto i = m_PlaybackIndex.upper_bound(requestedTimeStamp));
     // so we need to pick the previous
     if (i != m_PlaybackIndex.begin())
     {
