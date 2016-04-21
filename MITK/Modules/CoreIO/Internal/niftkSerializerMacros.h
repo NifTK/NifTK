@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkSerializerMacros_h
-#define __niftkSerializerMacros_h
+#ifndef niftkSerializerMacros_h
+#define niftkSerializerMacros_h
 
 // Note:
 // MITK_REGISTER_SERIALIZER assumes that the type is in the 'mitk' namespace.

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkNamedLookupTablePropertySerializer_h
-#define __niftkNamedLookupTablePropertySerializer_h
+#ifndef niftkNamedLookupTablePropertySerializer_h
+#define niftkNamedLookupTablePropertySerializer_h
 
 #include <mitkLookupTablePropertySerializer.h>
 

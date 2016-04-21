@@ -33,13 +33,16 @@ niftk::NamedLookupTablePropertySerializer::~NamedLookupTablePropertySerializer()
 //-----------------------------------------------------------------------------
 TiXmlElement* niftk::NamedLookupTablePropertySerializer::Serialize()
 {
-  if (const niftk::NamedLookupTableProperty* prop = dynamic_cast<const niftk::NamedLookupTableProperty*>(m_Property.GetPointer()))
+  if (const niftk::NamedLookupTableProperty* prop =
+        dynamic_cast<const niftk::NamedLookupTableProperty*>(m_Property.GetPointer()))
   {
     TiXmlElement* element = new TiXmlElement("NamedLookupTable");
     element->SetAttribute("Name", prop->GetName());
     element->SetAttribute("IsScaled", prop->GetIsScaled());
 
-    const mitk::LookupTableProperty* baseProp = dynamic_cast< const mitk::LookupTableProperty*>(m_Property.GetPointer());
+    const mitk::LookupTableProperty* baseProp =
+      dynamic_cast< const mitk::LookupTableProperty*>(m_Property.GetPointer());
+
     this->SetProperty( baseProp);
     TiXmlElement* child = this->Superclass::Serialize();
 
@@ -56,7 +59,7 @@ TiXmlElement* niftk::NamedLookupTablePropertySerializer::Serialize()
 //-----------------------------------------------------------------------------
 mitk::BaseProperty::Pointer niftk::NamedLookupTablePropertySerializer::Deserialize(TiXmlElement* element)
 {
-  if (!element) 
+  if (!element)
   {
     return NULL;
   }

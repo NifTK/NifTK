@@ -33,7 +33,8 @@ niftk::LabeledLookupTablePropertySerializer::~LabeledLookupTablePropertySerializ
 //-----------------------------------------------------------------------------
 TiXmlElement* niftk::LabeledLookupTablePropertySerializer::Serialize()
 {
-  if (const niftk::LabeledLookupTableProperty* prop = dynamic_cast<const niftk::LabeledLookupTableProperty*>(m_Property.GetPointer()))
+  if (const niftk::LabeledLookupTableProperty* prop =
+        dynamic_cast<const niftk::LabeledLookupTableProperty*>(m_Property.GetPointer()))
   {
     TiXmlElement* element = new TiXmlElement("LabeledLookupTable");
 
@@ -51,7 +52,9 @@ TiXmlElement* niftk::LabeledLookupTablePropertySerializer::Serialize()
       child->LinkEndChild(grandChildNinife);
     }
 
-    const niftk::NamedLookupTableProperty* baseProp = dynamic_cast<const niftk::NamedLookupTableProperty*>(m_Property.GetPointer());
+    const niftk::NamedLookupTableProperty* baseProp =
+      dynamic_cast<const niftk::NamedLookupTableProperty*>(m_Property.GetPointer());
+
     this->SetProperty(baseProp);
     child = this->Superclass::Serialize();
 
@@ -69,7 +72,7 @@ TiXmlElement* niftk::LabeledLookupTablePropertySerializer::Serialize()
 mitk::BaseProperty::Pointer niftk::LabeledLookupTablePropertySerializer::Deserialize(TiXmlElement* element)
 {
   if (!element)
-  { 
+  {
     return NULL;
   }
 
@@ -79,20 +82,24 @@ mitk::BaseProperty::Pointer niftk::LabeledLookupTablePropertySerializer::Deseria
   if (child)
   {
     niftk::LabeledLookupTableProperty::LabelListType labels;
-    for (TiXmlElement* grandChild = child->FirstChildElement("Label"); grandChild; grandChild = grandChild->NextSiblingElement("Label"))
+    for (TiXmlElement* grandChild = child->FirstChildElement("Label");
+         grandChild;
+         grandChild = grandChild->NextSiblingElement("Label"))
     {
       double value;
       std::string labelName;
-      if (grandChild->QueryDoubleAttribute("LabelValue", &value) != TIXML_SUCCESS) 
+      if (grandChild->QueryDoubleAttribute("LabelValue", &value) != TIXML_SUCCESS)
       {
         return NULL;
       }
-      if (grandChild->QueryStringAttribute("LabelName", &labelName) != TIXML_SUCCESS) 
+      if (grandChild->QueryStringAttribute("LabelName", &labelName) != TIXML_SUCCESS)
       {
         return NULL;
       }
 
-      niftk::LabeledLookupTableProperty::LabelType newLabel = std::make_pair(int(value), QString::fromStdString(labelName));
+      niftk::LabeledLookupTableProperty::LabelType newLabel =
+        std::make_pair(int(value), QString::fromStdString(labelName));
+
       labels.push_back(newLabel);
     }
 

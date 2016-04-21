@@ -8,3 +8,4 @@ niftkNiftyLinkServerDataSourceService\.h InternalVariables Disable
 niftkOpenCVVideoDataSourceService\.h InternalVariables Disable
 niftkQtAudioDataSourceService\.h InternalVariables Disable
 niftkUltrasonixDataSourceService\.h InternalVariables Disable
+niftkSerializerMacros\.h Namespace Disable
