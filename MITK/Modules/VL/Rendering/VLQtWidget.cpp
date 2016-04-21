@@ -1057,7 +1057,7 @@ void VLQtWidget::PrepareBackgroundActor(const mitk::Image* img, const mitk::Base
   polys->indexBuffer()->at(1) = 1;
   polys->indexBuffer()->at(2) = 2;
   polys->indexBuffer()->at(3) = 3;
-  vlquad->drawCalls().push_back(polys.get());
+  vlquad->drawCalls()->push_back(polys.get());
 
   // replace original quad with ours.
   actor->setLod(0, vlquad.get());
@@ -1812,7 +1812,7 @@ vl::ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const mitk::CoordinateAxes
   lines->indexBuffer()->at(4) = 0;  lines->indexBuffer()->at(5) = 3;      // z
 
   vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
-  vlGeom->drawCalls().push_back(lines.get());
+  vlGeom->drawCalls()->push_back(lines.get());
   vlGeom->setVertexArray(vlVerts.get());
   vlGeom->setColorArray(vlColors.get());
 
@@ -1912,7 +1912,7 @@ vl::ref<vl::Actor> VLQtWidget::AddPointsetActor(const mitk::PointSet::Pointer& m
 
   vl::ref<vl::DrawArrays>       vlPoints = new vl::DrawArrays(vl::PT_POINTS, 0, vlVerts->size());
   vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
-  vlGeom->drawCalls().push_back(vlPoints.get());
+  vlGeom->drawCalls()->push_back(vlPoints.get());
   vlGeom->setVertexArray(vlVerts.get());
 
   vl::ref<vl::Effect>   fx = new vl::Effect;
@@ -1988,7 +1988,7 @@ vl::ref<vl::Geometry> VLQtWidget::CreateGeometryFor2DImage(int width, int height
   polys->indexBuffer()->at(1) = 1;
   polys->indexBuffer()->at(2) = 2;
   polys->indexBuffer()->at(3) = 3;
-  vlquad->drawCalls().push_back(polys.get());
+  vlquad->drawCalls()->push_back(polys.get());
 
   return vlquad;
 }
@@ -2232,7 +2232,7 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
   vlVerts->resize(numOfPoints *3);
   vlNormals->resize(numOfPoints *3);
    
-  vlPoly->drawCalls().push_back(vlTriangles.get());
+  vlPoly->drawCalls()->push_back(vlTriangles.get());
   vlTriangles->indexBuffer()->resize(numOfTriangles*3);
   
   vlPoly->setVertexArray(vlVerts.get());
@@ -2831,8 +2831,8 @@ bool VLQtWidget::MergeTranslucentTriangles()
   for (int i = 0; i < translucentSurfaces.size(); i++)
   {
     // Get pointer to the index buffer
-    size_t numOfDrawcalls = translucentSurfaces.at(i)->drawCalls().size();
-    vl::DrawCall * dc = translucentSurfaces.at(i)->drawCalls().at(numOfDrawcalls-1);
+    size_t numOfDrawcalls = translucentSurfaces.at(i)->drawCalls()->size();
+    vl::DrawCall * dc = translucentSurfaces.at(i)->drawCalls()->at(numOfDrawcalls-1);
     vl::ref<vl::DrawElementsUInt> vlTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
 
     // Update triangle counter
@@ -2875,7 +2875,7 @@ bool VLQtWidget::MergeTranslucentTriangles()
     m_TranslucentSurface->setVertexArray(vlVerts.get());
     m_TranslucentSurface->setNormalArray(vlNormals.get());
     m_TranslucentSurface->setColorArray(vlColors.get());
-    m_TranslucentSurface->drawCalls().push_back(vlTriangles.get());
+    m_TranslucentSurface->drawCalls()->push_back(vlTriangles.get());
   }
   else
   {
@@ -2883,8 +2883,8 @@ bool VLQtWidget::MergeTranslucentTriangles()
     vlNormals = dynamic_cast<vl::ArrayFloat3 *>(m_TranslucentSurface->normalArray());
     vlColors  = dynamic_cast<vl::ArrayUByte4 *>(m_TranslucentSurface->colorArray());
 
-    size_t numOfDrawcalls = m_TranslucentSurface->drawCalls().size();
-    vl::DrawCall * dc = m_TranslucentSurface->drawCalls().at(numOfDrawcalls-1);
+    size_t numOfDrawcalls = m_TranslucentSurface->drawCalls()->size();
+    vl::DrawCall * dc = m_TranslucentSurface->drawCalls()->at(numOfDrawcalls-1);
     vlTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
 
     if (vlVerts == 0 || vlNormals == 0 || vlTriangles == 0)
