@@ -35,6 +35,7 @@ Linux continuous build:
   - cmake -DEP_BASE:PATH=${ep_dir}
         -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
         -DEP_DIRECTORY_PER_VERSION:BOOL=ON
+        -DBUILD_VL:BOOL=ON
         -DBUILD_TESTING:BOOL=ON
         -DNIFTK_USE_CPPCHECK:BOOL=ON
         -DNIFTK_USE_KWSTYLE:BOOL=ON
@@ -76,6 +77,7 @@ Mac continuous build:
   - cmake -DEP_BASE:PATH=${ep_dir}
         -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
         -DEP_DIRECTORY_PER_VERSION:BOOL=ON
+        -DBUILD_VL:BOOL=ON
         -DBUILD_TESTING:BOOL=ON
         -DNIFTYLINK_CHECK_COVERAGE=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON
