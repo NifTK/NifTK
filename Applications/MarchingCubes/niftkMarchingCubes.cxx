@@ -24,7 +24,7 @@
 #include <vtkMarchingCubes.h>
 #include <NifTKConfigure.h>
 #include <vtkPolyDataNormals.h>
- #include <vtkSmartPointer.h>
+#include <vtkSmartPointer.h>
 
 
 /*!

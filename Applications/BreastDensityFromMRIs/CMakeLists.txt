@@ -19,15 +19,17 @@ if(SlicerExecutionModel_FOUND AND VTK_FOUND AND MITK_USE_Qt4)
     BUILD_SLICER
     INSTALL_SCRIPT
     TARGET_LIBRARIES
-      ${NIFTK_VTK_LIBS_WITH_QT}
+      ${Boost_LIBRARIES}
+      ${ITK_LIBRARIES}
+      vtkCommonCore
+      vtkCommonMisc
+      vtkFiltersCore
+      vtkIOImage
+      vtkIOLegacy
       ${QT_LIBRARIES}
-      niftkVTK
-      ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
       niftkcommon
       niftkITK
       niftkITKIO
-      ${ITK_LIBRARIES}
-      ${Boost_LIBRARIES}
   )
 
 endif()

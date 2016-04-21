@@ -12,18 +12,14 @@
 #
 #============================================================================*/
 
-if(SlicerExecutionModel_FOUND AND VTK_FOUND AND MITK_USE_Qt4)
+if(SlicerExecutionModel_FOUND AND MITK_USE_Qt4)
 
   NIFTK_CREATE_COMMAND_LINE_APPLICATION(
     NAME niftkRegionalMammographicDensity
     BUILD_SLICER
     INSTALL_SCRIPT
     TARGET_LIBRARIES
-      ${Boost_LIBRARIES}
-      ${ITK_LIBRARIES}
       ${QT_LIBRARIES}
-      niftkVTK
-      ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
       niftkcommon
       niftkITK
       niftkITKIO

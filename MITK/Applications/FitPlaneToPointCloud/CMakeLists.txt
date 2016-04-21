@@ -26,6 +26,5 @@ NIFTK_CREATE_COMMAND_LINE_APPLICATION(
     niftkPointReg
     niftkSurfRecon
     niftkICPReg
-    niftkVTK
     niftkPCL
 )

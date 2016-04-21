@@ -21,12 +21,13 @@
 #include <vtkDoubleArray.h>
 #include <vtkCellArray.h>
 #include <vtkPointData.h>
-#include <niftkVTKFunctions.h>
 #include <vtkSphereSource.h>
 #include <vtkAppendPolyData.h>
 #include <vtkCylinderSource.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkTransform.h>
+
+#include <niftkVTKFunctions.h>
 
 /**
  * \brief Generates a VTK model to match the ARUCO board created by aruco_create_board.

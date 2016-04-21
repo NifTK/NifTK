@@ -16,11 +16,8 @@
 #include <limits>
 #include <mitkUltrasoundPinCalibrationEvaluation.h>
 #include <niftkUltrasoundPinCalibrationEvaluationCLP.h>
-#include <niftkVTKFunctions.h>
 #include <mitkVector.h>
 #include <mitkExceptionMacro.h>
-#include <vtkMatrix4x4.h>
-#include <vtkSmartPointer.h>
 
 int main(int argc, char** argv)
 {

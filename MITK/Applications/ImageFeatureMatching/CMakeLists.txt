@@ -26,7 +26,6 @@ NIFTK_CREATE_COMMAND_LINE_APPLICATION(
     niftkPointReg
     niftkSurfRecon
     niftkICPReg
-    niftkVTK
 )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")

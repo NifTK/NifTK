@@ -18,8 +18,13 @@ if(VTK_FOUND)
     NAME niftkConvertPLYtoVTK
     BUILD_CLI
     TARGET_LIBRARIES
-      niftkVTK
-      ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
+      vtkIOLegacy
+      vtkIOPLY
+      vtkInteractionStyle
+      vtkRenderingCore
+      vtkRenderingFreeType
+      vtkRenderingFreeTypeOpenGL
+      vtkRenderingOpenGL
       niftkcommon
   )
 

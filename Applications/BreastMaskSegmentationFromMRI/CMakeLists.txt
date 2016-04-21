@@ -18,14 +18,17 @@ if(VTK_FOUND)
     NAME niftkBreastMaskSegmentationFromMRI
     BUILD_CLI
     TARGET_LIBRARIES
-      niftkVTK
-      ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
+      ${Boost_LIBRARIES}
+      ${ITK_LIBRARIES}
+      vtkCommonCore
+      vtkCommonExecutionModel
+      vtkCommonMisc
+      vtkFiltersCore
+      vtkIOImage
+      vtkIOLegacy
       niftkcommon
       niftkITK
       niftkITKIO
-      ${ITK_LIBRARIES}
-      ${Boost_LIBRARIES}
   )
 
 endif()
-

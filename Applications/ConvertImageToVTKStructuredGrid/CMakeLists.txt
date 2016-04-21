@@ -18,12 +18,12 @@ if(VTK_FOUND)
     NAME niftkConvertImageToVTKStructuredGrid
     BUILD_CLI
     TARGET_LIBRARIES
-      niftkVTK
-      ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
+      ${ITK_LIBRARIES}
+      vtkCommonCore
+      vtkIOLegacy
       niftkcommon
       niftkITK
       niftkITKIO
-      ${ITK_LIBRARIES}
   )
 
 endif()
