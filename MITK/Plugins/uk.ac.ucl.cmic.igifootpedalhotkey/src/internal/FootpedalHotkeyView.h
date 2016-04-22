@@ -20,8 +20,10 @@
 #include "ui_FootpedalHotkeyViewWidget.h"
 #include <QTimer>
 
-
-class QmitkWindowsHotkeyHandler;
+namespace niftk
+{
+  class WindowsHotkeyHandler;
+}
 
 /**
  * Reacts to presses on a foot pedal.
@@ -77,18 +79,18 @@ private slots:
   /** Triggered by igidatasources plugin (and QmitkIGIDataSourceManager) to tell us that recording has started. */
   void OnRecordingStarted(const ctkEvent& event);
 
-  void OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int hotkey);
+  void OnHotkeyPressed(niftk::WindowsHotkeyHandler* sender, int hotkey);
 
   void OnTimer1();
   void OnTimer2();
   void OnTimer3();
 
 private:
-  QmitkWindowsHotkeyHandler*      m_Footswitch1;
+  niftk::WindowsHotkeyHandler*    m_Footswitch1;
   QTimer*                         m_Footswitch1OffTimer;    // to emulate hotkey-release events.
-  QmitkWindowsHotkeyHandler*      m_Footswitch2;
+  niftk::WindowsHotkeyHandler*    m_Footswitch2;
   QTimer*                         m_Footswitch2OffTimer;
-  QmitkWindowsHotkeyHandler*      m_Footswitch3;
+  niftk::WindowsHotkeyHandler*    m_Footswitch3;
   QTimer*                         m_Footswitch3OffTimer;
 
 
