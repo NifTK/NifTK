@@ -20,15 +20,11 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
   list(APPEND _depends niftkCUDA)
 endif()
 
-# not sure if this is necessary here.
-find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt5 REQUIRED)
-link_directories(${VL_LIBRARIES})
-include_directories(${VL_INCLUDE_DIRS})
-
 mitk_create_plugin(
   EXPORT_DIRECTIVE NEWVISUALIZATION_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS ${_depends}
+  MODULE_DEPENDS MitkCore MitkQtWidgets MitkQtWidgetsExt niftkCore niftkCoreGui niftkVL
+  PACKAGE_DEPENDS VL|VLGraphics
 )
 
 # not nice...
