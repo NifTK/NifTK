@@ -38,9 +38,12 @@ endif()
 include_directories(${CMAKE_SOURCE_DIR}/Libraries/CUDAKernels)
 include_directories(${CMAKE_SOURCE_DIR}/Libraries/CUDAKernels/Example)
 include_directories(${CUDA_TOOLKIT_INCLUDE})
+include_directories(${NIFTK_INCLUDE_DIRS_BUILD_TREE})
 
 add_executable(niftkCUDAKernelsTests niftkCUDAKernelsTests.cxx ${CUDAKernelsTests_SRCS})
+target_include_directories(niftkCUDAKernelsTests PRIVATE ${ITK_INCLUDE_DIRS})
 target_link_libraries(niftkCUDAKernelsTests ${NIFTK_TEST_CUDA_LINK_LIBRARIES} )
+set_target_properties(niftkCUDAKernelsTests PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
 
 set(CUDAKernels_TESTS ${CXX_TEST_PATH}/niftkCUDAKernelsTests)
 
