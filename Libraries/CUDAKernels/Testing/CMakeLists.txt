@@ -43,7 +43,11 @@ include_directories(${NIFTK_INCLUDE_DIRS_BUILD_TREE})
 add_executable(niftkCUDAKernelsTests niftkCUDAKernelsTests.cxx ${CUDAKernelsTests_SRCS})
 target_include_directories(niftkCUDAKernelsTests PRIVATE ${ITK_INCLUDE_DIRS})
 target_link_libraries(niftkCUDAKernelsTests ${NIFTK_TEST_CUDA_LINK_LIBRARIES} )
-set_target_properties(niftkCUDAKernelsTests PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # Suppress warning because of a bug in the Boost gil library.
+  set_target_properties(niftkCUDAKernelsTests PROPERTIES COMPILE_FLAGS "-Wno-c++11-narrowing")
+endif()
 
 set(CUDAKernels_TESTS ${CXX_TEST_PATH}/niftkCUDAKernelsTests)
 
