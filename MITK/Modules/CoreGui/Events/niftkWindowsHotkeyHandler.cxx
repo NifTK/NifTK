@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "QmitkWindowsHotkeyHandler.h"
+#include "niftkWindowsHotkeyHandler.h"
 #include <sstream>
 #include <cassert>
 #include <mitkLogMacros.h>
@@ -24,13 +24,16 @@
 #endif
 #include <Windows.h>
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-struct QmitkWindowsHotkeyHandlerImpl
+struct WindowsHotkeyHandlerImpl
 {
   ATOM      m_HotkeyAtom;
   DWORD     m_HandlerThreadId;
 
-  QmitkWindowsHotkeyHandlerImpl()
+  WindowsHotkeyHandlerImpl()
     : m_HotkeyAtom(0)
     , m_HandlerThreadId(0)
   {
@@ -39,8 +42,8 @@ struct QmitkWindowsHotkeyHandlerImpl
 
 
 //-----------------------------------------------------------------------------
-QmitkWindowsHotkeyHandler::QmitkWindowsHotkeyHandler(Hotkey hk)
-  : m_Pimpl(new QmitkWindowsHotkeyHandlerImpl)
+WindowsHotkeyHandler::WindowsHotkeyHandler(Hotkey hk)
+  : m_Pimpl(new WindowsHotkeyHandlerImpl)
   , m_Hotkey(hk)
   , m_ShouldQuit(false)
 {
@@ -56,7 +59,7 @@ QmitkWindowsHotkeyHandler::QmitkWindowsHotkeyHandler(Hotkey hk)
 
 
 //-----------------------------------------------------------------------------
-QmitkWindowsHotkeyHandler::~QmitkWindowsHotkeyHandler()
+WindowsHotkeyHandler::~WindowsHotkeyHandler()
 {
   m_ShouldQuit = true;
 
@@ -80,7 +83,7 @@ QmitkWindowsHotkeyHandler::~QmitkWindowsHotkeyHandler()
 
 
 //-----------------------------------------------------------------------------
-void QmitkWindowsHotkeyHandler::run()
+void WindowsHotkeyHandler::run()
 {
   assert(QThread::currentThread() == this);
 
@@ -153,3 +156,4 @@ void QmitkWindowsHotkeyHandler::run()
   // normal cleanup happens in destructor.
 }
 
+} // end namespace

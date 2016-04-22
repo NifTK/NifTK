@@ -13,22 +13,22 @@
 #============================================================================*/
 
 set(CPP_FILES
-  QmitkDataStorageCheckableComboBox.cxx
-  QmitkHelpAboutDialog.cxx
-  Rendering/SharedOGLContext.cxx
-  Rendering/ScopedOGLContext.cxx
+  Widgets/niftkDataStorageCheckableComboBox.cxx
+  Widgets/niftkHelpAboutDialog.cxx
+  Rendering/niftkSharedOGLContext.cxx
+  Rendering/niftkScopedOGLContext.cxx
 )
 
 set(MOC_H_FILES
-  Events/QmitkPaintEventEater.h
-  Events/QmitkWheelEventEater.h
-  Events/QmitkMouseEventEater.h
-  QmitkDataStorageCheckableComboBox.h
-  QmitkHelpAboutDialog.h
+  Events/niftkPaintEventEater.h
+  Events/niftkWheelEventEater.h
+  Events/niftkMouseEventEater.h
+  Widgets/niftkDataStorageCheckableComboBox.h
+  Widgets/niftkHelpAboutDialog.h
 )
 
 set(UI_FILES
-  QmitkHelpAboutDialog.ui
+  Widgets/niftkHelpAboutDialog.ui
 )
 
 set(QRC_FILES
@@ -38,10 +38,10 @@ set(QRC_FILES
 if(WIN32)
   set(CPP_FILES
     ${CPP_FILES}
-    Events/QmitkWindowsHotkeyHandler.cxx
+    Events/niftkWindowsHotkeyHandler.cxx
   )
   set(MOC_H_FILES
     ${MOC_H_FILES}
-    Events/QmitkWindowsHotkeyHandler.h
+    Events/niftkWindowsHotkeyHandler.h
   )
 endif()

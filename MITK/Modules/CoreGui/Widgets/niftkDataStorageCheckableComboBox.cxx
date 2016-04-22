@@ -12,13 +12,36 @@
 
 =============================================================================*/
 
-#include "QmitkDataStorageCheckableComboBox.h"
+/*=============================================================================
+  This file was copy-pasted from MITK and modified.
+  MITK copyright statement is below.
+=============================================================================*/
 
+/*===================================================================
+
+The Medical Imaging Interaction Toolkit (MITK)
+
+Copyright (c) German Cancer Research Center,
+Division of Medical and Biological Informatics.
+All rights reserved.
+
+This software is distributed WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE.
+
+See LICENSE.txt or http://www.mitk.org for details.
+
+===================================================================*/
+
+#include "niftkDataStorageCheckableComboBox.h"
 #include <itkCommand.h>
+
+namespace niftk
+{
 
 //#CTORS/DTOR
 
-QmitkDataStorageCheckableComboBox::QmitkDataStorageCheckableComboBox( QWidget* parent, bool _AutoSelectNewNodes )
+DataStorageCheckableComboBox::DataStorageCheckableComboBox( QWidget* parent, bool _AutoSelectNewNodes )
 : ctkCheckableComboBox(parent)
 , m_DataStorage(0)
 , m_Predicate(0)
@@ -28,8 +51,9 @@ QmitkDataStorageCheckableComboBox::QmitkDataStorageCheckableComboBox( QWidget* p
   this->Init();
 }
 
-QmitkDataStorageCheckableComboBox::QmitkDataStorageCheckableComboBox( mitk::DataStorage* _DataStorage, const mitk::NodePredicateBase* _Predicate,
-                                                   QWidget* parent, bool _AutoSelectNewNodes )
+DataStorageCheckableComboBox::DataStorageCheckableComboBox(
+    mitk::DataStorage* _DataStorage, const mitk::NodePredicateBase* _Predicate,
+    QWidget* parent, bool _AutoSelectNewNodes )
 : ctkCheckableComboBox(parent)
 , m_DataStorage(0)
 , m_Predicate(_Predicate)
@@ -41,16 +65,16 @@ QmitkDataStorageCheckableComboBox::QmitkDataStorageCheckableComboBox( mitk::Data
   this->SetDataStorage(_DataStorage);
 }
 
-QmitkDataStorageCheckableComboBox::~QmitkDataStorageCheckableComboBox()
+DataStorageCheckableComboBox::~DataStorageCheckableComboBox()
 {
   // if there was an old storage, remove listeners
   if(m_DataStorage.IsNotNull())
   {
-    this->m_DataStorage->AddNodeEvent.RemoveListener( mitk::MessageDelegate1<QmitkDataStorageCheckableComboBox
-      , const mitk::DataNode*>( this, &QmitkDataStorageCheckableComboBox::AddNode ) );
+    this->m_DataStorage->AddNodeEvent.RemoveListener( mitk::MessageDelegate1<DataStorageCheckableComboBox
+      , const mitk::DataNode*>( this, &DataStorageCheckableComboBox::AddNode ) );
 
-    this->m_DataStorage->RemoveNodeEvent.RemoveListener( mitk::MessageDelegate1<QmitkDataStorageCheckableComboBox
-      , const mitk::DataNode*>( this, &QmitkDataStorageCheckableComboBox::RemoveNode ) );
+    this->m_DataStorage->RemoveNodeEvent.RemoveListener( mitk::MessageDelegate1<DataStorageCheckableComboBox
+      , const mitk::DataNode*>( this, &DataStorageCheckableComboBox::RemoveNode ) );
   }
   //we have lots of observers to nodes and their name properties, this get's ugly if nodes live longer than the box
   while(m_Nodes.size() > 0)
@@ -58,31 +82,30 @@ QmitkDataStorageCheckableComboBox::~QmitkDataStorageCheckableComboBox()
 }
 
 //#PUBLIC GETTER
-mitk::DataStorage::Pointer QmitkDataStorageCheckableComboBox::GetDataStorage() const
+mitk::DataStorage::Pointer DataStorageCheckableComboBox::GetDataStorage() const
 {
   return m_DataStorage.GetPointer();
 }
 
-const mitk::NodePredicateBase::ConstPointer QmitkDataStorageCheckableComboBox::GetPredicate() const
+const mitk::NodePredicateBase::ConstPointer DataStorageCheckableComboBox::GetPredicate() const
 {
   return m_Predicate.GetPointer();
 }
 
-mitk::DataNode::Pointer QmitkDataStorageCheckableComboBox::GetNode( int index ) const
+mitk::DataNode::Pointer DataStorageCheckableComboBox::GetNode( int index ) const
 {
   return (this->HasIndex(index))? m_Nodes.at(index): 0;
 }
 
-std::vector<mitk::DataNode*> QmitkDataStorageCheckableComboBox::GetSelectedNodes() const
+std::vector<mitk::DataNode*> DataStorageCheckableComboBox::GetSelectedNodes() const
 {
   std::vector<mitk::DataNode*> nodes;
-  mitk::DataNode* node = NULL;
 
   QModelIndexList indexes = this->checkedIndexes();
 
   foreach (QModelIndex item, indexes)
   {
-    node = this->GetNode(item.row());
+    mitk::DataNode* node = this->GetNode(item.row());
     if (node != NULL)
     {
       nodes.push_back(node);
@@ -91,7 +114,7 @@ std::vector<mitk::DataNode*> QmitkDataStorageCheckableComboBox::GetSelectedNodes
   return nodes;
 }
 
-mitk::DataStorage::SetOfObjects::ConstPointer QmitkDataStorageCheckableComboBox::GetNodes() const
+mitk::DataStorage::SetOfObjects::ConstPointer DataStorageCheckableComboBox::GetNodes() const
 {
   mitk::DataStorage::SetOfObjects::Pointer _SetOfObjects = mitk::DataStorage::SetOfObjects::New();
 
@@ -103,13 +126,13 @@ mitk::DataStorage::SetOfObjects::ConstPointer QmitkDataStorageCheckableComboBox:
   return _SetOfObjects.GetPointer();
 }
 
-bool QmitkDataStorageCheckableComboBox::GetAutoSelectNewItems()
+bool DataStorageCheckableComboBox::GetAutoSelectNewItems()
 {
   return m_AutoSelectNewNodes;
 }
 
 //#PUBLIC SETTER
-void QmitkDataStorageCheckableComboBox::SetDataStorage(mitk::DataStorage* _DataStorage)
+void DataStorageCheckableComboBox::SetDataStorage(mitk::DataStorage* _DataStorage)
 {
   // reset only if datastorage really changed
   if(m_DataStorage.GetPointer() != _DataStorage)
@@ -117,11 +140,11 @@ void QmitkDataStorageCheckableComboBox::SetDataStorage(mitk::DataStorage* _DataS
     // if there was an old storage, remove listeners
     if(m_DataStorage.IsNotNull())
     {
-      this->m_DataStorage->AddNodeEvent.RemoveListener( mitk::MessageDelegate1<QmitkDataStorageCheckableComboBox
-        , const mitk::DataNode*>( this, &QmitkDataStorageCheckableComboBox::AddNode ) );
+      this->m_DataStorage->AddNodeEvent.RemoveListener( mitk::MessageDelegate1<DataStorageCheckableComboBox
+        , const mitk::DataNode*>( this, &DataStorageCheckableComboBox::AddNode ) );
 
-      this->m_DataStorage->RemoveNodeEvent.RemoveListener( mitk::MessageDelegate1<QmitkDataStorageCheckableComboBox
-        , const mitk::DataNode*>( this, &QmitkDataStorageCheckableComboBox::RemoveNode ) );
+      this->m_DataStorage->RemoveNodeEvent.RemoveListener( mitk::MessageDelegate1<DataStorageCheckableComboBox
+        , const mitk::DataNode*>( this, &DataStorageCheckableComboBox::RemoveNode ) );
     }
     // set new storage
     m_DataStorage = _DataStorage;
@@ -129,11 +152,11 @@ void QmitkDataStorageCheckableComboBox::SetDataStorage(mitk::DataStorage* _DataS
     // if there is a new storage, add listeners
     if(m_DataStorage.IsNotNull())
     {
-      this->m_DataStorage->AddNodeEvent.AddListener( mitk::MessageDelegate1<QmitkDataStorageCheckableComboBox
-        , const mitk::DataNode*>( this, &QmitkDataStorageCheckableComboBox::AddNode ) );
+      this->m_DataStorage->AddNodeEvent.AddListener( mitk::MessageDelegate1<DataStorageCheckableComboBox
+        , const mitk::DataNode*>( this, &DataStorageCheckableComboBox::AddNode ) );
 
-      this->m_DataStorage->RemoveNodeEvent.AddListener( mitk::MessageDelegate1<QmitkDataStorageCheckableComboBox
-        , const mitk::DataNode*>( this, &QmitkDataStorageCheckableComboBox::RemoveNode ) );
+      this->m_DataStorage->RemoveNodeEvent.AddListener( mitk::MessageDelegate1<DataStorageCheckableComboBox
+        , const mitk::DataNode*>( this, &DataStorageCheckableComboBox::RemoveNode ) );
     }
 
     // reset predicate to reset the combobox
@@ -141,7 +164,7 @@ void QmitkDataStorageCheckableComboBox::SetDataStorage(mitk::DataStorage* _DataS
   }
 }
 
-void QmitkDataStorageCheckableComboBox::SetPredicate(const mitk::NodePredicateBase* _Predicate)
+void DataStorageCheckableComboBox::SetPredicate(const mitk::NodePredicateBase* _Predicate)
 {
   if(m_Predicate != _Predicate)
   {
@@ -150,7 +173,7 @@ void QmitkDataStorageCheckableComboBox::SetPredicate(const mitk::NodePredicateBa
   }
 }
 
-void QmitkDataStorageCheckableComboBox::AddNode( const mitk::DataNode* _DataNode )
+void DataStorageCheckableComboBox::AddNode( const mitk::DataNode* _DataNode )
 {
   // this is an event function, make sure that we didnt call ourself
   if(!m_BlockEvents)
@@ -162,7 +185,7 @@ void QmitkDataStorageCheckableComboBox::AddNode( const mitk::DataNode* _DataNode
   }
 }
 
-void QmitkDataStorageCheckableComboBox::RemoveNode( int index )
+void DataStorageCheckableComboBox::RemoveNode( int index )
 {
   if(this->HasIndex(index))
   {
@@ -189,7 +212,7 @@ void QmitkDataStorageCheckableComboBox::RemoveNode( int index )
   }
 }
 
-void QmitkDataStorageCheckableComboBox::RemoveNode( const mitk::DataNode* _DataNode )
+void DataStorageCheckableComboBox::RemoveNode( const mitk::DataNode* _DataNode )
 {
   // this is an event function, make sure that we didnt call ourself
   if(!m_BlockEvents)
@@ -200,7 +223,7 @@ void QmitkDataStorageCheckableComboBox::RemoveNode( const mitk::DataNode* _DataN
   }
 }
 
-void QmitkDataStorageCheckableComboBox::SetNode(int index, const mitk::DataNode* _DataNode)
+void DataStorageCheckableComboBox::SetNode(int index, const mitk::DataNode* _DataNode)
 {
   if(this->HasIndex(index))
   {
@@ -208,17 +231,17 @@ void QmitkDataStorageCheckableComboBox::SetNode(int index, const mitk::DataNode*
   }
 }
 
-void QmitkDataStorageCheckableComboBox::SetNode( const mitk::DataNode* _DataNode, const mitk::DataNode* _OtherDataNode)
+void DataStorageCheckableComboBox::SetNode( const mitk::DataNode* _DataNode, const mitk::DataNode* _OtherDataNode)
 {
   this->SetNode( this->Find(_DataNode), _OtherDataNode);
 }
 
-void QmitkDataStorageCheckableComboBox::SetAutoSelectNewItems( bool _AutoSelectNewItems )
+void DataStorageCheckableComboBox::SetAutoSelectNewItems( bool _AutoSelectNewItems )
 {
   m_AutoSelectNewNodes = _AutoSelectNewItems;
 }
 
-void QmitkDataStorageCheckableComboBox::OnDataNodeDeleteOrModified(const itk::Object *caller, const itk::EventObject &event)
+void DataStorageCheckableComboBox::OnDataNodeDeleteOrModified(const itk::Object *caller, const itk::EventObject &event)
 {
   if(!m_BlockEvents)
   {
@@ -234,9 +257,9 @@ void QmitkDataStorageCheckableComboBox::OnDataNodeDeleteOrModified(const itk::Ob
 
       // node name changed, set it
       // but first of all find associated node
-      for(std::map<mitk::DataNode*, const mitk::BaseProperty*>::iterator it=m_PropertyToNode.begin()
-        ; it!=m_PropertyToNode.end()
-        ; ++it)
+      for(std::map<mitk::DataNode*, const mitk::BaseProperty*>::iterator it=m_PropertyToNode.begin();
+          it != m_PropertyToNode.end();
+          ++it)
       {
         // property is found take node
         if(it->second == _NameProperty)
@@ -259,12 +282,12 @@ void QmitkDataStorageCheckableComboBox::OnDataNodeDeleteOrModified(const itk::Ob
   }
 }
 
-void QmitkDataStorageCheckableComboBox::SetSelectedNode(mitk::DataNode::Pointer item)
+void DataStorageCheckableComboBox::SetSelectedNode(mitk::DataNode::Pointer item)
 {
   int index = this->Find(item);
   if (index == -1)
   {
-    MITK_INFO << "QmitkDataStorageCheckableComboBox: item not available";
+    MITK_INFO << "DataStorageCheckableComboBox: item not available";
   }
   else
   {
@@ -274,12 +297,12 @@ void QmitkDataStorageCheckableComboBox::SetSelectedNode(mitk::DataNode::Pointer 
 }
 
 //#PROTECTED GETTER
-bool QmitkDataStorageCheckableComboBox::HasIndex(unsigned int index) const
+bool DataStorageCheckableComboBox::HasIndex(unsigned int index) const
 {
   return (m_Nodes.size() > 0 && index < m_Nodes.size());
 }
 
-int QmitkDataStorageCheckableComboBox::Find( const mitk::DataNode* _DataNode ) const
+int DataStorageCheckableComboBox::Find( const mitk::DataNode* _DataNode ) const
 {
   int index = -1;
 
@@ -293,7 +316,7 @@ int QmitkDataStorageCheckableComboBox::Find( const mitk::DataNode* _DataNode ) c
 }
 
 
-void QmitkDataStorageCheckableComboBox::InsertNode(int index, const mitk::DataNode* _DataNode)
+void DataStorageCheckableComboBox::InsertNode(int index, const mitk::DataNode* _DataNode)
 {
   // check new or updated node first
   if(m_Predicate.IsNotNull() && !m_Predicate->CheckNode(_DataNode))
@@ -334,8 +357,9 @@ void QmitkDataStorageCheckableComboBox::InsertNode(int index, const mitk::DataNo
       return;
 
     // add modified observer
-    itk::MemberCommand<QmitkDataStorageCheckableComboBox>::Pointer modifiedCommand = itk::MemberCommand<QmitkDataStorageCheckableComboBox>::New();
-    modifiedCommand->SetCallbackFunction(this, &QmitkDataStorageCheckableComboBox::OnDataNodeDeleteOrModified);
+    itk::MemberCommand<DataStorageCheckableComboBox>::Pointer modifiedCommand =
+        itk::MemberCommand<DataStorageCheckableComboBox>::New();
+    modifiedCommand->SetCallbackFunction(this, &DataStorageCheckableComboBox::OnDataNodeDeleteOrModified);
     // !!!! add modified observer for the name
     /// property of the node because this is the only thing we are interested in !!!!!
     if(nameProperty)
@@ -348,8 +372,9 @@ void QmitkDataStorageCheckableComboBox::InsertNode(int index, const mitk::DataNo
       m_NodesModifiedObserverTags.push_back( -1 );
 
     // add delete observer
-    itk::MemberCommand<QmitkDataStorageCheckableComboBox>::Pointer deleteCommand = itk::MemberCommand<QmitkDataStorageCheckableComboBox>::New();
-    deleteCommand->SetCallbackFunction(this, &QmitkDataStorageCheckableComboBox::OnDataNodeDeleteOrModified);
+    itk::MemberCommand<DataStorageCheckableComboBox>::Pointer deleteCommand =
+        itk::MemberCommand<DataStorageCheckableComboBox>::New();
+    deleteCommand->SetCallbackFunction(this, &DataStorageCheckableComboBox::OnDataNodeDeleteOrModified);
     m_NodesDeleteObserverTags.push_back( _NonConstDataNode->AddObserver(itk::DeleteEvent(), modifiedCommand) );
   }
 
@@ -379,11 +404,11 @@ void QmitkDataStorageCheckableComboBox::InsertNode(int index, const mitk::DataNo
   }
 }
 
-void QmitkDataStorageCheckableComboBox::Init()
+void DataStorageCheckableComboBox::Init()
 {
 }
 
-void QmitkDataStorageCheckableComboBox::Reset()
+void DataStorageCheckableComboBox::Reset()
 {
   // remove all nodes first
   while( !m_Nodes.empty() )
@@ -414,3 +439,5 @@ void QmitkDataStorageCheckableComboBox::Reset()
     }
   }
 }
+
+} // end namespace

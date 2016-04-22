@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>QmitkHelpAboutDialog</class>
- <widget class="QDialog" name="QmitkHelpAboutDialog">
+ <class>HelpAboutDialog</class>
+ <widget class="QDialog" name="HelpAboutDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -63,7 +63,7 @@
   <connection>
    <sender>m_OkayButtonBox</sender>
    <signal>accepted()</signal>
-   <receiver>QmitkHelpAboutDialog</receiver>
+   <receiver>HelpAboutDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -79,7 +79,7 @@
   <connection>
    <sender>m_OkayButtonBox</sender>
    <signal>rejected()</signal>
-   <receiver>QmitkHelpAboutDialog</receiver>
+   <receiver>HelpAboutDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

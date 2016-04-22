@@ -12,8 +12,29 @@
 
 =============================================================================*/
 
-#ifndef QmitkDataStorageCheckableComboBox_h
-#define QmitkDataStorageCheckableComboBox_h
+/*=============================================================================
+  This file was copy-pasted from MITK and modified.
+  MITK copyright statement is below.
+=============================================================================*/
+
+/*===================================================================
+
+The Medical Imaging Interaction Toolkit (MITK)
+
+Copyright (c) German Cancer Research Center,
+Division of Medical and Biological Informatics.
+All rights reserved.
+
+This software is distributed WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE.
+
+See LICENSE.txt or http://www.mitk.org for details.
+
+===================================================================*/
+
+#ifndef niftkDataStorageCheckableComboBox_h
+#define niftkDataStorageCheckableComboBox_h
 
 #include "niftkCoreGuiExports.h"
 #include <ctkCheckableComboBox.h>
@@ -24,8 +45,10 @@
 #include <QComboBox>
 #include <map>
 
+namespace niftk
+{
 
-class NIFTKCOREGUI_EXPORT QmitkDataStorageCheckableComboBox : public ctkCheckableComboBox
+class NIFTKCOREGUI_EXPORT DataStorageCheckableComboBox : public ctkCheckableComboBox
 {
   //#CLASS-MACROS,FRIENDS
   Q_OBJECT
@@ -35,17 +58,19 @@ class NIFTKCOREGUI_EXPORT QmitkDataStorageCheckableComboBox : public ctkCheckabl
     ///
     /// \brief Ctor for an empty combobox. Use setDataStorage and setPredicate afterwards.
     ///
-    QmitkDataStorageCheckableComboBox(QWidget* parent = 0, bool _AutoSelectNewNodes=false);
+    DataStorageCheckableComboBox(QWidget* parent = 0, bool _AutoSelectNewNodes=false);
 
     ///
     /// \brief Ctor for constructing QmitkDataStorageComboBox with given DataStorageComboBox and given _Predicate.
     ///
-    QmitkDataStorageCheckableComboBox( mitk::DataStorage* _DataStorage, const mitk::NodePredicateBase* _Predicate, QWidget* parent = 0, bool _AutoSelectNewNodes=false);
+    DataStorageCheckableComboBox( mitk::DataStorage* _DataStorage,
+                                  const mitk::NodePredicateBase* _Predicate,
+                                  QWidget* parent = 0, bool _AutoSelectNewNodes = false);
 
     ///
     /// \brief Standard Dtor. Nothing to do here.
     ///
-    ~QmitkDataStorageCheckableComboBox();
+    ~DataStorageCheckableComboBox();
 
     ///
     /// \brief Seaches for a given node and returns a valid index or -1 if the node was not found.
@@ -97,7 +122,8 @@ class NIFTKCOREGUI_EXPORT QmitkDataStorageCheckableComboBox : public ctkCheckabl
     ///
     virtual void AddNode(const mitk::DataNode* _DataNode);
     ///
-    /// Removes a node from the ComboBox at a specified index (if the index exists). Gets called when a DataStorage Remove Event was thrown.
+    /// Removes a node from the ComboBox at a specified index (if the index exists).
+    /// Gets called when a DataStorage Remove Event was thrown.
     ///
     virtual void RemoveNode(int index);
     ///
@@ -115,22 +141,21 @@ class NIFTKCOREGUI_EXPORT QmitkDataStorageCheckableComboBox : public ctkCheckabl
     ///
     virtual void SetNode(const mitk::DataNode* _DataNode, const mitk::DataNode* _OtherDataNode);
     ///
-    /// Sets AutoSelectNewItems flag. If set to true new Nodes will be automatically selected. Default is false.
+    /// Sets AutoSelectNewItems flag. If set to true new Nodes will be
+    /// automatically selected. Default is false.
     ///
     virtual void SetAutoSelectNewItems(bool _AutoSelectNewItems);
     ///
-    /// \brief Called when a node is deleted or the name property of the node was modified. Calls RemoveNode or SetNode then.
+    /// \brief Called when a node is deleted or the name property of the node was modified.
+    /// Calls RemoveNode or SetNode then.
     ///
     virtual void OnDataNodeDeleteOrModified(const itk::Object *caller, const itk::EventObject &event);
-
-
 
   signals:
     ///
     /// \brief Throw a signal when the _DataNode selection changed.
     ///
     void OnSelectionChanged(const mitk::DataNode*);
-
 
   //#PROTECTED GETTER
   protected:
@@ -151,7 +176,8 @@ class NIFTKCOREGUI_EXPORT QmitkDataStorageCheckableComboBox : public ctkCheckabl
 
   protected:
     ///
-    /// \brief Inserts a new node at the given index. If the index does not exist, the _DataNode is simply appended to the combobox.
+    /// \brief Inserts a new node at the given index. If the index does not exist,
+    /// the _DataNode is simply appended to the combobox.
     ///
     /// This function is used by AddNode() and SetNode() because they just to the same:
     /// 1. If node is replaced (that is when index exists),
@@ -216,4 +242,6 @@ class NIFTKCOREGUI_EXPORT QmitkDataStorageCheckableComboBox : public ctkCheckabl
     bool m_AutoSelectNewNodes;
 };
 
-#endif // QmitkDataStorageCheckableComboBox
+} // end namespace
+
+#endif

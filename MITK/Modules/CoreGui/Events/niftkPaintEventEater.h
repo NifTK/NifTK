@@ -12,38 +12,57 @@
 
 =============================================================================*/
 
-#ifndef QmitkWheelEventEater_h
-#define QmitkWheelEventEater_h
+#ifndef niftkPaintEventEater_h
+#define niftkPaintEventEater_h
 
 #include "niftkCoreGuiExports.h"
 #include <QWidget>
 #include <QEvent>
 
+namespace niftk
+{
+
 /**
- * \class QmitkWheelEventEater
- * \brief Qt event filter to eat wheel events.
- */
-class NIFTKCOREGUI_EXPORT QmitkWheelEventEater : public QObject
+* \class QmitkPaintEventEater
+* \brief Qt Event Filter to eat paint events.
+*/
+class NIFTKCOREGUI_EXPORT PaintEventEater : public QObject
 {
   Q_OBJECT
 
 public:
-  QmitkWheelEventEater(QWidget* parent=NULL) : QObject(parent) { m_IsEating = true; }
-  ~QmitkWheelEventEater() {}
-  void SetIsEating(bool b) { m_IsEating = b; }
-  bool GetIsEating() const { return m_IsEating; }
- protected:
-  virtual bool eventFilter(QObject *obj, QEvent *event) override
+  PaintEventEater(QWidget* parent=NULL)
+    : QObject(parent)
   {
-    if (m_IsEating && event->type() == QEvent::Wheel) {
+    m_IsEating = true;
+  }
+  ~PaintEventEater()
+  {
+  }
+  void SetIsEating(bool b)
+  {
+    m_IsEating = b;
+  }
+  bool GetIsEating() const
+  {
+    return m_IsEating;
+  }
+protected:
+  virtual bool eventFilter(QObject *obj, QEvent *event)
+  {
+    if (m_IsEating && event->type() == QEvent::Paint)
+    {
       return true;
-    } else {
+    } else
+    {
       // standard event processing
       return QObject::eventFilter(obj, event);
     }
   }
- private:
+private:
   bool m_IsEating;
- }; // end class
+}; // end class
+
+} // end namespace
 
 #endif
