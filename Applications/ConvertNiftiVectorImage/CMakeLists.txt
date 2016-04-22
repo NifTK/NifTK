@@ -12,20 +12,13 @@
 #
 #============================================================================*/
 
-if(VTK_FOUND)
-
-  NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-    NAME niftkConvertNiftiVectorImage
-    BUILD_CLI
-    TARGET_LIBRARIES
-      niftkVTK
-      ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
-      niftkcommon
-      niftkITK
-      niftkITKIO
-      ${ITK_LIBRARIES}
-      ${Boost_LIBRARIES}
-  )
-
-endif()
-
+NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+  NAME niftkConvertNiftiVectorImage
+  BUILD_CLI
+  TARGET_LIBRARIES
+    ${Boost_LIBRARIES}
+    ${ITK_LIBRARIES}
+    niftkcommon
+    niftkITK
+    niftkITKIO
+)

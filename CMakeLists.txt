@@ -1111,8 +1111,8 @@ if(Boost_FOUND)
       add_definitions(-DBoost_LIB_DIAGNOSTIC_DEFINITIONS)  # To get debug messages
       add_definitions(-DBOOST_ALL_NO_LIB)      # To stop auto-linking, which seems to be adding "lib" as library prefix in .obj files.
     endif(NIFTK_WITHIN_SUPERBUILD)
-  endif(WIN32)
-endif(Boost_FOUND)
+  endif()
+endif()
 
 ######################################################################
 # Find OpenMP and make sure Microsoft DirectComposition Library (dcomp.dll) is deployed
