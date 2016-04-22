@@ -15,7 +15,6 @@
 set(CPP_FILES
   QmitkDataStorageCheckableComboBox.cxx
   QmitkHelpAboutDialog.cxx
-  QmitkCmicLogo.cxx
   Rendering/SharedOGLContext.cxx
   Rendering/ScopedOGLContext.cxx
 )

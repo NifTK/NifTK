@@ -16,7 +16,7 @@
 #define QmitkCmicLogo_h
 
 #include <mitkBaseData.h>
-#include "niftkCoreGuiExports.h"
+#include "niftkCoreExports.h"
 
 class vtkRenderer;
 class vtkRenderWindow;
@@ -37,7 +37,7 @@ class RenderWindow;
  * of a vtkRenderWindow.
  
  */
-class NIFTKCOREGUI_EXPORT CMICLogo : public mitk::BaseData
+class NIFTKCORE_EXPORT CMICLogo : public mitk::BaseData
 {
 public:
 
