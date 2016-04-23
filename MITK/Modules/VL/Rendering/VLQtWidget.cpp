@@ -40,7 +40,7 @@
 #include <mitkImage.h>
 #include <stdexcept>
 #include <sstream>
-#include "ScopedOGLContext.h"
+#include <niftkScopedOGLContext.h>
 #include "TrackballManipulator.h"
 #ifdef BUILD_IGI
 #include <CameraCalibration/niftkUndistortion.h>
@@ -168,7 +168,7 @@ VLQtWidget::VLQtWidget(QWidget* parent, const QGLWidget* shareWidget, Qt::Window
 //-----------------------------------------------------------------------------
 VLQtWidget::~VLQtWidget()
 {
-  ScopedOGLContext  ctx(this->context());
+  niftk::ScopedOGLContext  ctx(this->context());
 
   RemoveDataStorageListeners();
 
@@ -354,7 +354,7 @@ void VLQtWidget::RemoveDataStorageListeners()
 //-----------------------------------------------------------------------------
 void VLQtWidget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
 {
-  ScopedOGLContext  ctx(this->context());
+  niftk::ScopedOGLContext  ctx(this->context());
 
   RemoveDataStorageListeners();
 
@@ -395,7 +395,7 @@ vl::FramebufferObject* VLQtWidget::GetFBO()
 void VLQtWidget::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage, const std::string& nodename)
 {
 #ifdef _USE_CUDA
-  ScopedOGLContext  ctx(this->context());
+  niftk::ScopedOGLContext  ctx(this->context());
 
   if (enable)
   {
@@ -819,7 +819,7 @@ void VLQtWidget::RenderScene()
 //-----------------------------------------------------------------------------
 void VLQtWidget::ClearScene()
 {
-  ScopedOGLContext  ctx(context());
+  niftk::ScopedOGLContext  ctx(context());
 
   if (m_SceneManager)
   {
@@ -843,7 +843,7 @@ void VLQtWidget::ClearScene()
 //-----------------------------------------------------------------------------
 void VLQtWidget::UpdateThresholdVal(int isoVal)
 {
-  ScopedOGLContext    ctx(context());
+  niftk::ScopedOGLContext    ctx(context());
 
   float val_threshold = 0.0f;
   m_ThresholdVal->getUniform(&val_threshold);
@@ -1141,7 +1141,7 @@ bool VLQtWidget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
-  ScopedOGLContext    ctx(context());
+  niftk::ScopedOGLContext    ctx(context());
 
   // clear up after previous background node.
   if (m_BackgroundNode.IsNotNull())
@@ -1289,7 +1289,7 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
-  ScopedOGLContext    ctx(context());
+  niftk::ScopedOGLContext    ctx(context());
 
 
   vl::ref<vl::Actor>    newActor;
@@ -1380,7 +1380,7 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
-  ScopedOGLContext    ctx(context());
+  niftk::ScopedOGLContext    ctx(context());
 
   bool  isVisble = true;
   mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
@@ -1744,7 +1744,7 @@ void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
 
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
-  ScopedOGLContext    ctx(context());
+  niftk::ScopedOGLContext    ctx(context());
 
   // recompute the big-fat-translucent-triangle-buffer.
   m_TranslucentStructuresMerged = false;
@@ -3469,7 +3469,7 @@ void VLQtWidget::swapBuffers()
 {
   // on windows, swapBuffers() does not depend on the opengl rendering context.
   // instead it is initiated on the device context, which is not implicitly bound to the calling thread.
-  ScopedOGLContext    ctx(context());
+  niftk::ScopedOGLContext    ctx(context());
 
   QGLWidget::swapBuffers();
 

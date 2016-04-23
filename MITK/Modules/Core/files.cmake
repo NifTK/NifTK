@@ -38,6 +38,7 @@ set(CPP_FILES
   DataManagement/mitkBasicTriangle.cpp
   DataManagement/mitkBasicVec3D.cpp
   DataManagement/mitkBasicVertex.cpp
+  DataManagement/QmitkCmicLogo.cxx
   LookupTables/QmitkLookupTableContainer.cxx
   LookupTables/QmitkLookupTableSaxHandler.cxx
   LookupTables/QmitkLookupTableManager.cxx

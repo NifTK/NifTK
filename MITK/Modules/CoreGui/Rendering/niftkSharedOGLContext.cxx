@@ -12,12 +12,14 @@
 
 =============================================================================*/
 
-#include "SharedOGLContext.h"
+#include "niftkSharedOGLContext.h"
 #include <QMutexLocker>
 #include <QGLContext>
 #include <cassert>
 #include <stdexcept>
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 QMutex                SharedOGLContext::s_Lock(QMutex::Recursive);
@@ -91,3 +93,5 @@ QGLWidget* SharedOGLContext::GetShareWidget()
 
   return s_Instance->m_ShareWidget;
 }
+
+} // end namespace

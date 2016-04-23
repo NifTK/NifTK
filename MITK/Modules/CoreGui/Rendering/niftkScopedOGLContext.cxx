@@ -12,18 +12,20 @@
 
 =============================================================================*/
 
-#include "ScopedOGLContext.h"
+#include "niftkScopedOGLContext.h"
 #include <QGLContext>
 #include <cassert>
 #include <stdexcept>
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 ScopedOGLContext::ScopedOGLContext(QGLContext* newctx)
-  : ourctx(newctx)
+  : m_Ourctx(newctx)
 {
-  prevctx = const_cast<QGLContext*>(QGLContext::currentContext());
-  ourctx->makeCurrent();
+  m_Prevctx = const_cast<QGLContext*>(QGLContext::currentContext());
+  m_Ourctx->makeCurrent();
 }
 
 
@@ -31,10 +33,12 @@ ScopedOGLContext::ScopedOGLContext(QGLContext* newctx)
 ScopedOGLContext::~ScopedOGLContext()
 {
   // did somebody mess up our context?
-  assert(QGLContext::currentContext() == ourctx);
+  assert(QGLContext::currentContext() == m_Ourctx);
 
-  if (prevctx)
-    prevctx->makeCurrent();
+  if (m_Prevctx)
+    m_Prevctx->makeCurrent();
   else
-    ourctx->doneCurrent();
+    m_Ourctx->doneCurrent();
 }
+
+} // end namespace

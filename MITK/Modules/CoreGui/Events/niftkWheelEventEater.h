@@ -12,45 +12,45 @@
 
 =============================================================================*/
 
-#ifndef QmitkMouseEventEater_h
-#define QmitkMouseEventEater_h
+#ifndef niftkWheelEventEater_h
+#define niftkWheelEventEater_h
 
 #include "niftkCoreGuiExports.h"
 #include <QWidget>
 #include <QEvent>
 
+namespace niftk
+{
+
 /**
- * \class QmitkMouseEventEater
- * \brief Qt event filter to eat mouse events
- * \ingroup uk.ac.ucl.cmic.thumbnail
- */
-class NIFTKCOREGUI_EXPORT QmitkMouseEventEater : public QObject
+* \class QmitkWheelEventEater
+* \brief Qt event filter to eat wheel events.
+*/
+class NIFTKCOREGUI_EXPORT QmitkWheelEventEater : public QObject
 {
   Q_OBJECT
 
 public:
-  QmitkMouseEventEater(QWidget* parent=NULL) : QObject(parent) { m_IsEating = true; }
-  ~QmitkMouseEventEater() {}
+  QmitkWheelEventEater(QWidget* parent=NULL) : QObject(parent) { m_IsEating = true; }
+  ~QmitkWheelEventEater() {}
   void SetIsEating(bool b) { m_IsEating = b; }
   bool GetIsEating() const { return m_IsEating; }
- protected:
+protected:
   virtual bool eventFilter(QObject *obj, QEvent *event) override
   {
-    if (m_IsEating &&
-        (   event->type() == QEvent::MouseButtonDblClick
-         || event->type() == QEvent::MouseButtonPress
-         || event->type() == QEvent::MouseButtonRelease
-         || event->type() == QEvent::MouseMove
-         || event->type() == QEvent::MouseTrackingChange
-        )) {
+    if (m_IsEating && event->type() == QEvent::Wheel)
+    {
       return true;
-    } else {
+    } else
+    {
       // standard event processing
       return QObject::eventFilter(obj, event);
     }
   }
- private:
+private:
   bool m_IsEating;
- }; // end class
+}; // end class
+
+} // end namespace
 
 #endif

@@ -25,7 +25,7 @@
 #include <berryIBerryPreferences.h>
 #include <QDir>
 #include <QDateTime>
-#include <QmitkWindowsHotkeyHandler.h>
+#include <niftkWindowsHotkeyHandler.h>
 
 
 //-----------------------------------------------------------------------------
@@ -100,14 +100,14 @@ void FootpedalHotkeyView::CreateQtPartControl(QWidget* parent)
   }
 
   bool ok = false;
-  m_Footswitch1 = new QmitkWindowsHotkeyHandler(QmitkWindowsHotkeyHandler::CTRL_ALT_F5);
-  ok = QObject::connect(m_Footswitch1, SIGNAL(HotkeyPressed(QmitkWindowsHotkeyHandler*, int)), this, SLOT(OnHotkeyPressed(QmitkWindowsHotkeyHandler*, int)), Qt::QueuedConnection);
+  m_Footswitch1 = new niftk::WindowsHotkeyHandler(niftk::WindowsHotkeyHandler::CTRL_ALT_F5);
+  ok = QObject::connect(m_Footswitch1, SIGNAL(HotkeyPressed(niftk::WindowsHotkeyHandler*, int)), this, SLOT(OnHotkeyPressed(niftk::WindowsHotkeyHandler*, int)), Qt::QueuedConnection);
   assert(ok);
-  m_Footswitch2 = new QmitkWindowsHotkeyHandler(QmitkWindowsHotkeyHandler::CTRL_ALT_F6);
-  ok = QObject::connect(m_Footswitch2, SIGNAL(HotkeyPressed(QmitkWindowsHotkeyHandler*, int)), this, SLOT(OnHotkeyPressed(QmitkWindowsHotkeyHandler*, int)), Qt::QueuedConnection);
+  m_Footswitch2 = new niftk::WindowsHotkeyHandler(niftk::WindowsHotkeyHandler::CTRL_ALT_F6);
+  ok = QObject::connect(m_Footswitch2, SIGNAL(HotkeyPressed(niftk::WindowsHotkeyHandler*, int)), this, SLOT(OnHotkeyPressed(niftk::WindowsHotkeyHandler*, int)), Qt::QueuedConnection);
   assert(ok);
-  m_Footswitch3 = new QmitkWindowsHotkeyHandler(QmitkWindowsHotkeyHandler::CTRL_ALT_F7);
-  ok = QObject::connect(m_Footswitch3, SIGNAL(HotkeyPressed(QmitkWindowsHotkeyHandler*, int)), this, SLOT(OnHotkeyPressed(QmitkWindowsHotkeyHandler*, int)), Qt::QueuedConnection);
+  m_Footswitch3 = new niftk::WindowsHotkeyHandler(niftk::WindowsHotkeyHandler::CTRL_ALT_F7);
+  ok = QObject::connect(m_Footswitch3, SIGNAL(HotkeyPressed(niftk::WindowsHotkeyHandler*, int)), this, SLOT(OnHotkeyPressed(niftk::WindowsHotkeyHandler*, int)), Qt::QueuedConnection);
   assert(ok);
 
   m_Footswitch1OffTimer = new QTimer(this);
@@ -162,13 +162,13 @@ void FootpedalHotkeyView::OnTimer3()
 
 
 //-----------------------------------------------------------------------------
-void FootpedalHotkeyView::OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int hotkey)
+void FootpedalHotkeyView::OnHotkeyPressed(niftk::WindowsHotkeyHandler* sender, int hotkey)
 {
   ctkDictionary   properties;
 
   switch (hotkey)
   {
-    case QmitkWindowsHotkeyHandler::CTRL_ALT_F5:
+    case niftk::WindowsHotkeyHandler::CTRL_ALT_F5:
       if (!m_Footswitch1OffTimer->isActive())
       {
         MITK_INFO << "Starting recording due to footpedal/hotkey 1.";
@@ -182,7 +182,7 @@ void FootpedalHotkeyView::OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int
       m_Footswitch1OffTimer->start();
       break;
 
-    case QmitkWindowsHotkeyHandler::CTRL_ALT_F6:
+    case niftk::WindowsHotkeyHandler::CTRL_ALT_F6:
       if (!m_Footswitch2OffTimer->isActive())
       {
         MITK_INFO << "Unassigned footpedal 2 press.";
@@ -192,7 +192,7 @@ void FootpedalHotkeyView::OnHotkeyPressed(QmitkWindowsHotkeyHandler* sender, int
       m_Footswitch2OffTimer->start();
       break;
 
-    case QmitkWindowsHotkeyHandler::CTRL_ALT_F7:
+    case niftk::WindowsHotkeyHandler::CTRL_ALT_F7:
       if (!m_Footswitch3OffTimer->isActive())
       {
         MITK_INFO << "Unassigned footpedal 3 press.";

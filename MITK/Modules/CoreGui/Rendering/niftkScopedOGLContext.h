@@ -12,34 +12,28 @@
 
 =============================================================================*/
 
-#ifndef SharedOGLContext_h
-#define SharedOGLContext_h
+#ifndef niftkScopedOGLContext_h
+#define niftkScopedOGLContext_h
 
 #include <niftkCoreGuiExports.h>
-#include <QtOpenGL/QGLWidget>
-#include <QMutex>
+#include <QtOpenGL/QGLContext>
 
-// forward-decl
-class SharedOGLContext;
-
-
-class NIFTKCOREGUI_EXPORT SharedOGLContext
+namespace niftk
 {
 
-public:
-  static QGLWidget* GetShareWidget();
+/**
+* \brief Utility class to activate a given OpenGL context,
+* and restore the previous one on scope-exit.
+*/
+struct NIFTKCOREGUI_EXPORT ScopedOGLContext
+{
+  ScopedOGLContext(QGLContext* newctx);
+  ~ScopedOGLContext();
 
-
-protected:
-  SharedOGLContext();
-  ~SharedOGLContext();
-
-
-private:
-  QGLWidget*                  m_ShareWidget;
-
-  static SharedOGLContext*    s_Instance;
-  static QMutex               s_Lock;
+  QGLContext*   m_Prevctx;
+  QGLContext*   m_Ourctx;
 };
 
-#endif // SharedOGLContext_h
+} // end namespace
+
+#endif // niftkScopedOGLContext_h

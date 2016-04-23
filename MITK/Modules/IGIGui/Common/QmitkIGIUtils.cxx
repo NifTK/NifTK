@@ -119,7 +119,7 @@ bool SaveMatrixToFile(const vtkMatrix4x4& matrix, const QString& fileName)
 //-----------------------------------------------------------------------------
 // Deliberately not exposed.
 //-----------------------------------------------------------------------------
-void ApplyMatricesToAllTransformsInCheckbox(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox, bool composeRatherThanSet)
+void ApplyMatricesToAllTransformsInCheckbox(const vtkMatrix4x4& transform, const niftk::DataStorageCheckableComboBox& comboBox, bool composeRatherThanSet)
 {
   std::vector<mitk::DataNode*> nodes = comboBox.GetSelectedNodes();
   mitk::DataNode::Pointer node = NULL;
@@ -170,14 +170,14 @@ void ApplyMatricesToAllTransformsInCheckbox(const vtkMatrix4x4& transform, const
 
 
 //-----------------------------------------------------------------------------
-void ApplyTransformToSelectedNodes(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox)
+void ApplyTransformToSelectedNodes(const vtkMatrix4x4& transform, const niftk::DataStorageCheckableComboBox& comboBox)
 {
   ApplyMatricesToAllTransformsInCheckbox(transform, comboBox, false);
 }
 
 
 //-----------------------------------------------------------------------------
-void ComposeTransformWithSelectedNodes(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox)
+void ComposeTransformWithSelectedNodes(const vtkMatrix4x4& transform, const niftk::DataStorageCheckableComboBox& comboBox)
 {
   ApplyMatricesToAllTransformsInCheckbox(transform, comboBox, true);
 }
