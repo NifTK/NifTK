@@ -134,20 +134,10 @@ void UltrasonixDataSourceService::CleanBuffer()
 
 
 //-----------------------------------------------------------------------------
-QString UltrasonixDataSourceService::GetRecordingDirectoryName()
-{
-  return this->GetRecordingLocation()
-      + niftk::GetPreferredSlash()
-      + this->GetName()
-      + "_" + (tr("%1").arg(m_ChannelNumber))
-      ;
-}
-
-
-//-----------------------------------------------------------------------------
 void UltrasonixDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
                                                  niftk::IGIDataType::IGITimeType lastTimeStamp)
 {
+  /*
   QMutexLocker locker(&m_Lock);
 
   IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
@@ -165,6 +155,7 @@ void UltrasonixDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType 
   {
     assert(false);
   }
+  */
 }
 
 
@@ -187,9 +178,8 @@ void UltrasonixDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType r
 
 
 //-----------------------------------------------------------------------------
-bool UltrasonixDataSourceService::ProbeRecordedData(const QString& path,
-                                                     niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                                     niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
+bool UltrasonixDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+                                                    niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {
   // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.
   niftk::IGIDataType::IGITimeType  firstTimeStampFound = 0;
