@@ -843,7 +843,7 @@ void VLQtWidget::ClearScene()
 //-----------------------------------------------------------------------------
 void VLQtWidget::UpdateThresholdVal(int isoVal)
 {
-  niftk::ScopedOGLContext    ctx(context());
+  niftk::ScopedOGLContext ctx(context());
 
   float val_threshold = 0.0f;
   m_ThresholdVal->getUniform(&val_threshold);
@@ -1021,10 +1021,8 @@ void VLQtWidget::UpdateCameraParameters()
 //-----------------------------------------------------------------------------
 void VLQtWidget::PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
   // nasty
   mitk::Image::Pointer  imgp(const_cast<mitk::Image*>(img));
@@ -1073,10 +1071,8 @@ void VLQtWidget::PrepareBackgroundActor(const mitk::Image* img, const mitk::Base
 //-----------------------------------------------------------------------------
 void VLQtWidget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
 #ifdef _USE_CUDA
   assert(lwci != 0);
@@ -1139,9 +1135,8 @@ void VLQtWidget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci,
 //-----------------------------------------------------------------------------
 bool VLQtWidget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  niftk::ScopedOGLContext    ctx(context());
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
   // clear up after previous background node.
   if (m_BackgroundNode.IsNotNull())
@@ -1287,9 +1282,8 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 #endif
 
 
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  niftk::ScopedOGLContext    ctx(context());
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
 
   vl::ref<vl::Actor>    newActor;
@@ -1378,9 +1372,8 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     return;
 
 
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  niftk::ScopedOGLContext    ctx(context());
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
   bool  isVisble = true;
   mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
@@ -1539,9 +1532,7 @@ vl::ref<vl::Actor> VLQtWidget::FindActorForNode(const mitk::DataNode::ConstPoint
 //-----------------------------------------------------------------------------
 void VLQtWidget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
   assert(QGLContext::currentContext() == QGLWidget::context());
 
   if (node.IsNotNull())
@@ -1597,9 +1588,7 @@ void VLQtWidget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node
 //-----------------------------------------------------------------------------
 void VLQtWidget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
   assert(QGLContext::currentContext() == QGLWidget::context());
 
 #ifdef _USE_CUDA
@@ -1742,9 +1731,8 @@ void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
   if (node.IsNull() || node->GetData() == 0)
     return;
 
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  niftk::ScopedOGLContext    ctx(context());
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
   // recompute the big-fat-translucent-triangle-buffer.
   m_TranslucentStructuresMerged = false;
@@ -1785,10 +1773,8 @@ void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
 //-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
   vl::ref<vl::Transform> tr     = new vl::Transform;
   UpdateTransformFromData(tr, coord.GetPointer());
@@ -1834,10 +1820,8 @@ vl::ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const mitk::CoordinateAxes
 //-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQtWidget::AddPointCloudActor(niftk::PCLData* pcl)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
 #ifdef _USE_PCL
   pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr   cloud = pcl->GetCloud();
@@ -1890,11 +1874,8 @@ vl::ref<vl::Actor> VLQtWidget::AddPointCloudActor(niftk::PCLData* pcl)
 //-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQtWidget::AddPointsetActor(const mitk::PointSet::Pointer& mitkPS)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
-
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
   vl::ref<vl::Transform> tr     = new vl::Transform;
   UpdateTransformFromData(tr, mitkPS.GetPointer());
@@ -1931,11 +1912,8 @@ vl::ref<vl::Actor> VLQtWidget::AddPointsetActor(const mitk::PointSet::Pointer& m
 //-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQtWidget::AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
-
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
   vl::ref<vl::Geometry>  vlSurf = new vl::Geometry();
   ConvertVTKPolyData(mitkSurf->GetVtkPolyData(), vlSurf);
@@ -1997,10 +1975,8 @@ vl::ref<vl::Geometry> VLQtWidget::CreateGeometryFor2DImage(int width, int height
 //-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQtWidget::AddCUDAImageActor(const mitk::BaseData* _cudaImg)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
 #ifdef _USE_CUDA
   niftk::LightweightCUDAImage lwci;
@@ -2044,10 +2020,8 @@ vl::ref<vl::Actor> VLQtWidget::AddCUDAImageActor(const mitk::BaseData* _cudaImg)
 //-----------------------------------------------------------------------------
 void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
   if (vtkPoly == 0)
     return;
@@ -2294,10 +2268,8 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
 //-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQtWidget::AddImageActor(const mitk::Image::Pointer& mitkImg)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
   unsigned int* dims = 0;
   dims = mitkImg->GetDimensions();
@@ -2360,10 +2332,8 @@ vl::EImageFormat VLQtWidget::MapComponentsToVLColourFormat(int components)
 //-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkImg)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
   unsigned int*       dims    = mitkImg->GetDimensions();    // we do not own dims!
   mitk::PixelType     pixType = mitkImg->GetPixelType();
@@ -2415,11 +2385,8 @@ vl::ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkI
 //-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
 {
-  // beware: vl does not draw a clean boundary between what is client and what is server side state.
-  // so we always need our opengl context current.
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
-
+  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
+  niftk::ScopedOGLContext ctx(context());
 
   mitk::PixelType pixType = mitkImg->GetPixelType();
   size_t numOfComponents = pixType.GetNumberOfComponents();
@@ -3469,7 +3436,7 @@ void VLQtWidget::swapBuffers()
 {
   // on windows, swapBuffers() does not depend on the opengl rendering context.
   // instead it is initiated on the device context, which is not implicitly bound to the calling thread.
-  niftk::ScopedOGLContext    ctx(context());
+  niftk::ScopedOGLContext ctx(context());
 
   QGLWidget::swapBuffers();
 
