@@ -1322,6 +1322,7 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 void VLQtWidget::QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node)
 {
   m_NodesQueuedForUpdate.insert(node);
+  update();
 }
 
 
