@@ -106,21 +106,20 @@ struct CUDAInterop { };
 //-----------------------------------------------------------------------------
 namespace
 {
-
-class VLInit
-{
-public:
-  VLInit()
+  class VLInit
   {
-    vl::VisualizationLibrary::init();
-  }
-  ~VLInit()
-  {
-    vl::VisualizationLibrary::shutdown();
-  }
-};
-VLInit        s_ModuleInit;
+  public:
+    VLInit()
+    {
+      vl::VisualizationLibrary::init();
+    }
+    ~VLInit()
+    {
+      vl::VisualizationLibrary::shutdown();
+    }
+  };
 
+  VLInit s_ModuleInit;
 }
 
 
@@ -132,9 +131,8 @@ struct VLUserData : public vl::Object
   {
   }
 
-
-  itk::ModifiedTimeType   m_TransformLastModified;
-  itk::ModifiedTimeType   m_ImageVtkDataLastModified;
+  itk::ModifiedTimeType m_TransformLastModified;
+  itk::ModifiedTimeType m_ImageVtkDataLastModified;
 };
 
 
@@ -145,16 +143,17 @@ VLQtWidget::VLQtWidget(QWidget* parent, const QGLWidget* shareWidget, Qt::Window
   , m_BackgroundHeight(0)
   , m_CUDAInteropPimpl(0)
   , m_OclService(0)
-  , m_OclTriangleSorter(0)
-  , m_TranslucentStructuresMerged(false)
-  , m_TranslucentStructuresSorted(false)
-  , m_TotalNumOfTranslucentTriangles(0)
-  , m_TotalNumOfTranslucentVertices(0)
-  , m_MergedTranslucentIndexBuf(0)
-  , m_MergedTranslucentVertexBuf(0)
+  //, m_OclTriangleSorter(0)
+  //, m_TranslucentStructuresMerged(false)
+  //, m_TranslucentStructuresSorted(false)
+  //, m_TotalNumOfTranslucentTriangles(0)
+  //, m_TotalNumOfTranslucentVertices(0)
+  //, m_MergedTranslucentIndexBuf(0)
+  //, m_MergedTranslucentVertexBuf(0)
   , m_Refresh(33) // 30 fps
 {
-  setContinuousUpdate(true);
+  // FIXME: we need this on when we render live movies or manually request an update.
+  setContinuousUpdate(false);
   setMouseTracking(true);
   setAutoBufferSwap(false);
   setAcceptDrops(false);
@@ -172,22 +171,22 @@ VLQtWidget::~VLQtWidget()
 
   RemoveDataStorageListeners();
 
-  if (m_OclTriangleSorter)
-    delete m_OclTriangleSorter;
+  //if (m_OclTriangleSorter)
+  //  delete m_OclTriangleSorter;
 
-  m_OclTriangleSorter = 0;
+  //m_OclTriangleSorter = 0;
 
-  if (m_MergedTranslucentVertexBuf)
-  {
-    clReleaseMemObject(m_MergedTranslucentVertexBuf);
-    m_MergedTranslucentVertexBuf = 0;
-  }
+  //if (m_MergedTranslucentVertexBuf)
+  //{
+  //  clReleaseMemObject(m_MergedTranslucentVertexBuf);
+  //  m_MergedTranslucentVertexBuf = 0;
+  //}
 
-  if (m_MergedTranslucentIndexBuf)
-  {
-    clReleaseMemObject(m_MergedTranslucentIndexBuf);
-    m_MergedTranslucentIndexBuf = 0;
-  }
+  //if (m_MergedTranslucentIndexBuf)
+  //{
+  //  clReleaseMemObject(m_MergedTranslucentIndexBuf);
+  //  m_MergedTranslucentIndexBuf = 0;
+  //}
 
   dispatchDestroyEvent();
 
@@ -235,40 +234,9 @@ void VLQtWidget::OnNodeModified(const mitk::DataNode* node)
 {
   mitk::DataNode::ConstPointer   dn(node);
   QueueUpdateDataNode(dn);
-}
-
-
-//-----------------------------------------------------------------------------
-bool VLQtWidget::NodeIsTranslucent(const mitk::DataNode::ConstPointer& node)
-{
-  float opacity = 1.0f;
-  mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
-  if (opacityProp != 0)
-    opacity = opacityProp->GetValue();
-  return opacity < 1.0f;
-}
-
-
-//-----------------------------------------------------------------------------
-bool VLQtWidget::NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& node)
-{
-  if (!m_TranslucentActors.empty())
-  {
-    std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::const_iterator i = m_NodeToActorMap.find(node);
-    if (i != m_NodeToActorMap.end())
-    {
-      vl::ref<vl::Actor>    nodeActor = i->second;
-      assert(nodeActor.get() != 0);
-
-      std::set<vl::ref<vl::Actor> >::const_iterator j = m_TranslucentActors.find(nodeActor);
-      if (j != m_TranslucentActors.end())
-      {
-        return true;
-      }
-    }
-  }
-
-  return false;
+  // std::cout << "QueueUpdateDataNode: " << typeid(node->GetData()->GetNameOfClass()).name() << '\n';
+  // std::cout << "QueueUpdateDataNode: " << node->GetData()->GetNameOfClass() << '\n';
+  std::cout << "QueueUpdateDataNode: " << node->GetName() << '\n';
 }
 
 
@@ -277,11 +245,11 @@ void VLQtWidget::OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mit
 {
   mitk::DataNode::ConstPointer  cdn(node);
 
-  if (NodeIsTranslucent(cdn))
-  {
-    // we only need to recompute the merged buffer if the changed node is actually translucent.
-    m_TranslucentStructuresMerged = false;
-  }
+  //if (NodeIsTranslucent(cdn))
+  //{
+  //  // we only need to recompute the merged buffer if the changed node is actually translucent.
+  //  m_TranslucentStructuresMerged = false;
+  //}
 
   QueueUpdateDataNode(cdn);
 }
@@ -292,11 +260,11 @@ void VLQtWidget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::Ba
 {
   mitk::DataNode::ConstPointer  cdn(node);
 
-  if (NodeIsTranslucent(cdn))
-  {
-    // we only need to recompute the merged buffer if the changed node is actually translucent.
-    m_TranslucentStructuresMerged = false;
-  }
+  //if (NodeIsTranslucent(cdn))
+  //{
+  //  // we only need to recompute the merged buffer if the changed node is actually translucent.
+  //  m_TranslucentStructuresMerged = false;
+  //}
 
   QueueUpdateDataNode(cdn);
 }
@@ -305,9 +273,9 @@ void VLQtWidget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::Ba
 //-----------------------------------------------------------------------------
 void VLQtWidget::OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
-  m_TranslucentStructuresMerged = false;
+  //m_TranslucentStructuresMerged = false;
 
-  mitk::DataNode::ConstPointer  cdn(node);
+  mitk::DataNode::ConstPointer cdn(node);
   QueueUpdateDataNode(cdn);
 }
 
@@ -433,18 +401,18 @@ void VLQtWidget::initializeGL()
 
   vl::OpenGLContext::initGLContext();
 
-  // use the device that is running our opengl context as the compute-device
-  // for sorting triangles in the correct order.
-  if (m_OclService)
-  {
-    // Have to call makeCurrent() otherwise the shared CL-GL context creation fails
-    makeCurrent();
+  //// use the device that is running our opengl context as the compute-device
+  //// for sorting triangles in the correct order.
+  //if (m_OclService)
+  //{
+  //  // Have to call makeCurrent() otherwise the shared CL-GL context creation fails
+  //  makeCurrent();
 
-    // Force tests to run on the first GPU with shared context
-    m_OclService->SpecifyPlatformAndDevice(0, 0, true);
-    // Calling this to make sure that the context is created right at startup
-    cl_context clContext = m_OclService->GetContext();
-  }
+  //  // Force tests to run on the first GPU with shared context
+  //  m_OclService->SpecifyPlatformAndDevice(0, 0, true);
+  //  // Calling this to make sure that the context is created right at startup
+  //  cl_context clContext = m_OclService->GetContext();
+  //}
 
 
 #ifdef _MSC_VER
@@ -781,7 +749,7 @@ void VLQtWidget::RenderScene()
   m_NodesQueuedForUpdate.clear();
 
   // UpdateTranslucentTriangles() is clever enough to do work only if necessary.
-  UpdateTranslucentTriangles();
+  // UpdateTranslucentTriangles();
 
 
   // update scene graph.
@@ -827,9 +795,9 @@ void VLQtWidget::ClearScene()
       m_SceneManager->tree()->actors()->clear();
   }
 
-  m_TranslucentActors.clear();
-  m_TranslucentSurface = 0;
-  m_TranslucentSurfaceActor = 0;
+  //m_TranslucentActors.clear();
+  //m_TranslucentSurface = 0;
+  //m_TranslucentSurfaceActor = 0;
 
   m_BackgroundNode = 0;
   m_CameraNode = 0;
@@ -1735,7 +1703,7 @@ void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
   niftk::ScopedOGLContext ctx(context());
 
   // recompute the big-fat-translucent-triangle-buffer.
-  m_TranslucentStructuresMerged = false;
+  // m_TranslucentStructuresMerged = false;
 
 #ifdef _USE_CUDA
   {
@@ -2603,740 +2571,6 @@ vl::String VLQtWidget::LoadGLSLSourceFromResources(const char* filename)
 
 
 //-----------------------------------------------------------------------------
-void VLQtWidget::UpdateTranslucentTriangles()
-{
-  bool    thereIsSomethingTranslucent = true;
-  //if (!m_TranslucentStructuresMerged)
-  {
-    thereIsSomethingTranslucent = MergeTranslucentTriangles();
-  }
-#if 0
-  else
-  {
-    vl::ref<vl::ActorCollection> actors = m_SceneManager->tree()->actors();
-    int numOfActors = actors->size();
-  
-    unsigned int summedNumOfVerts = 0;
-    for (int i = 0; i < numOfActors; i++)
-    {
-      vl::ref<vl::Actor> act = actors->at(i);
-      std::string objName = act->objectName();
-      int renderBlock = act->renderBlock();
-    
-      size_t found =objName.find("_surface");
-      if ((found != std::string::npos) && (renderBlock == RENDERBLOCK_TRANSLUCENT))
-      {
-        vl::ref<vl::Renderable> ren = m_ActorToRenderableMap[act];
-        vl::ref<vl::Geometry> surface = dynamic_cast<vl::Geometry*>(ren.get());
-        if (surface == 0)
-          continue;
-
-        // Update vertex counter
-        unsigned int numOfVertices = surface->vertexArray()->size() /3;
-        summedNumOfVerts += numOfVertices;
-      }
-    }
-
-    if (summedNumOfVerts != m_TotalNumOfTranslucentVertices && summedNumOfVerts != 0)
-    {
-      thereIsSomethingTranslucent = MergeTranslucentTriangles();
-    }
-    else if (summedNumOfVerts == 0)
-    {
-      thereIsSomethingTranslucent = false;
-    }
-  }
-#endif
-  // m_TotalNumOfTranslucentVertices is set by MergeTranslucentTriangles().
-
-  bool    mergedok = false;
-  if ((m_TotalNumOfTranslucentVertices > 0) && (m_TranslucentActors.size() > 0) && thereIsSomethingTranslucent)
-    mergedok = true;
-
-  bool  sortedok = false;
-  if (mergedok)
-    sortedok = SortTranslucentTriangles();
-
-  // the sorted-translucent-all-in-one-actor is only visible if merging and sorting actually worked.
-  // otherwise, fall back to unsorted.
-  if (mergedok && sortedok)
-  {
-    vl::ref<vl::Effect>    fx;
-    vl::ref<vl::Transform> tr;
-
-    if (m_TranslucentSurfaceActor == 0)
-    {
-      // Add the new merged geometry actor
-      tr = new vl::Transform();
-      fx = new vl::Effect;
-      m_TranslucentSurfaceActor = m_SceneManager->tree()->addActor(m_TranslucentSurface.get(), fx.get(), tr.get());
-      m_TranslucentSurfaceActor->setObjectName("m_TranslucentSurfaceActor");
-    }
-    else
-    {
-      fx = m_TranslucentSurfaceActor->effect();
-      tr = m_TranslucentSurfaceActor->transform();
-    }
-
-    m_TranslucentSurfaceActor->setRenderBlock(RENDERBLOCK_SORTEDTRANSLUCENT);
-    m_TranslucentSurfaceActor->setEnableMask(ENABLEMASK_SORTEDTRANSLUCENT);
-    fx->shader()->gocMaterial()->setColorMaterialEnabled(true);
-
-    // no backface culling for translucent objects: you should be able to see the backside!
-    fx->shader()->disable(vl::EN_CULL_FACE);
-
-    fx->shader()->enable(vl::EN_BLEND);
-    fx->shader()->enable(vl::EN_DEPTH_TEST);
-    fx->shader()->enable(vl::EN_LIGHTING);
-    fx->shader()->setRenderState(m_Light.get(), 0 );
-
-    // dont render unsorted translucent triangles by simply disabling that part of the pipeline.
-    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_TRANSLUCENT | ENABLEMASK_SORTEDTRANSLUCENT);
-  }
-  else
-  {
-    // if there is no sorted-translucent-geometry just disable that part of the pipeline.
-    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_SORTEDTRANSLUCENT);
-    // also re-enable unsorted possibly-translucent geometry.
-    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() | ENABLEMASK_TRANSLUCENT);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-bool VLQtWidget::MergeTranslucentTriangles()
-{
-  // sanity check: internal method, context should have been activated by caller.
-  assert(this->context() == QGLContext::currentContext());
-
-  vl::ref<vl::ActorCollection> actors = m_SceneManager->tree()->actors();
-  int numOfActors = actors->size();
-
-  if (m_OclService == 0)
-    return false;
-
-  // hopefully the buffers wrapping vbos will have finished doing stuff.
-  glFinish();
-
-  // Get context 
-  cl_context clContext = m_OclService->GetContext();
-  cl_command_queue clCmdQue = m_OclService->GetCommandQueue();
-
-  if (clContext == 0 || clCmdQue == 0)
-    return false;
-
-  std::vector<vl::ref<vl::Geometry> >  translucentSurfaces;
-  std::vector<vl::fvec4>               translucentColors;
-
-  cl_int clStatus = 0;
-
-  // Instantiate TriangleSorter
-  if (m_OclTriangleSorter == 0)
-    m_OclTriangleSorter = new mitk::OclTriangleSorter();
-
-  // Make sure previous values are cleared
-  m_OclTriangleSorter->Reset();
-
-  m_TotalNumOfTranslucentTriangles = 0;
-  m_TotalNumOfTranslucentVertices  = 0;
-
-  m_TranslucentActors.clear();
-
-  if (m_MergedTranslucentIndexBuf != 0)
-  {
-    clStatus = clReleaseMemObject(m_MergedTranslucentIndexBuf);
-    CHECK_OCL_ERR(clStatus);
-    m_MergedTranslucentIndexBuf = 0;
-  }
-
-  if (m_MergedTranslucentVertexBuf != 0)
-  {
-    clStatus = clReleaseMemObject(m_MergedTranslucentVertexBuf);
-    CHECK_OCL_ERR(clStatus);
-    m_MergedTranslucentVertexBuf = 0;
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Find all the translucent geometries and stuff their actor/geometry/transform to lists
-
-  for (int i = 0; i < numOfActors; i++)
-  {
-    vl::ref<vl::Actor>  act           = actors->at(i);
-    const std::string&  objName       = act->objectName();
-    int                 renderBlock   = act->renderBlock();
-    bool                enabled       = act->enableMask() != 0;
-    bool                nameOk        = objName.find("_surface") != std::string::npos;
-
-    if (nameOk && (renderBlock == RENDERBLOCK_TRANSLUCENT) && enabled)
-    {
-      vl::ref<vl::Renderable> ren = m_ActorToRenderableMap[act];
-      vl::ref<vl::Geometry> surface = dynamic_cast<vl::Geometry*>(ren.get());
-      if (surface == 0)
-        continue;
-
-      m_TranslucentActors.insert(act);
-
-      vl::ref<vl::Effect> fx = act->effect();
-      vl::fvec4 color = fx->shader()->gocMaterial()->frontDiffuse();
-      translucentColors.push_back(color);
-      translucentSurfaces.push_back(surface);
-    }
-  }
-
-  // Return if there's nothing to do 
-  if (translucentSurfaces.size() == 0)
-  {
-    // dont call again, there is nothing to merge.
-    m_TranslucentStructuresMerged = true;
-    return false;
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Acquire the VBO/IBO handles of the translucent objects
-  // and pass them to the triangle sorter as GLuint objects
-
-  for (int i = 0; i < translucentSurfaces.size(); i++)
-  {
-    // Get pointer to the index buffer
-    size_t numOfDrawcalls = translucentSurfaces.at(i)->drawCalls().size();
-    vl::DrawCall * dc = translucentSurfaces.at(i)->drawCalls().at(numOfDrawcalls-1);
-    vl::ref<vl::DrawElementsUInt> vlTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
-
-    // Update triangle counter
-    unsigned int numOfTriangles = vlTriangles->countTriangles();
-    m_TotalNumOfTranslucentTriangles += numOfTriangles;
-    
-    // Update buffer, get handle and push it to TriangleSorter
-    vlTriangles->indexBuffer()->updateBufferObject();
-    GLuint indexBufferHandle = vlTriangles->indexBuffer()->bufferObject()->handle();
-    m_OclTriangleSorter->AddGLIndexBuffer(indexBufferHandle, numOfTriangles);
-
-    // Update vertex counter
-    unsigned int numOfVertices = translucentSurfaces.at(i)->vertexArray()->size() /3;
-    m_TotalNumOfTranslucentVertices += numOfVertices;
-
-    // Update buffer, get handle and push it to TriangleSorter
-    translucentSurfaces.at(i)->vertexArray()->updateBufferObject();
-    GLuint vertexArrayHandle = translucentSurfaces.at(i)->vertexArray()->bufferObject()->handle();
-    m_OclTriangleSorter->AddGLVertexBuffer(vertexArrayHandle, numOfVertices);
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Allocate VL arrays for the merged object's vertices and normals
-
-  vl::ref<vl::ArrayFloat3>      vlVerts;
-  vl::ref<vl::ArrayFloat3>      vlNormals;
-  vl::ref<vl::ArrayUByte4>      vlColors;
-  vl::ref<vl::DrawElementsUInt> vlTriangles;
-
-  // Acquire or create the merged VL geometry object that holds all translucent triangles
-  if (m_TranslucentSurface == 0)
-  {
-    m_TranslucentSurface = new vl::Geometry();
-
-    vlVerts     = new vl::ArrayFloat3;
-    vlNormals   = new vl::ArrayFloat3;
-    vlTriangles = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
-    vlColors    = new vl::ArrayUByte4;
-
-    m_TranslucentSurface->setVertexArray(vlVerts.get());
-    m_TranslucentSurface->setNormalArray(vlNormals.get());
-    m_TranslucentSurface->setColorArray(vlColors.get());
-    m_TranslucentSurface->drawCalls().push_back(vlTriangles.get());
-  }
-  else
-  {
-    vlVerts   = dynamic_cast<vl::ArrayFloat3 *>(m_TranslucentSurface->vertexArray());
-    vlNormals = dynamic_cast<vl::ArrayFloat3 *>(m_TranslucentSurface->normalArray());
-    vlColors  = dynamic_cast<vl::ArrayUByte4 *>(m_TranslucentSurface->colorArray());
-
-    size_t numOfDrawcalls = m_TranslucentSurface->drawCalls().size();
-    vl::DrawCall * dc = m_TranslucentSurface->drawCalls().at(numOfDrawcalls-1);
-    vlTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
-
-    if (vlVerts == 0 || vlNormals == 0 || vlTriangles == 0)
-    {
-      MITK_ERROR <<"Failed to acquire buffer objects from the VL geometry.";
-      return false;
-    }
-  }
-
-  // hack bounding box. vl uses it for scene culling.
-  vl::AABB    mergedbb;
-  vl::Sphere  mergedbs;
-  for (int i = 0; i < translucentSurfaces.size(); ++i)
-  {
-    mergedbb += translucentSurfaces[i]->boundingBox();
-    mergedbs += translucentSurfaces[i]->boundingSphere();
-  }
-  m_TranslucentSurface->setBoundingBox(mergedbb);
-  m_TranslucentSurface->setBoundingSphere(mergedbs);
-  m_TranslucentSurface->setBoundsDirty(false);
-
-  // Resize buffer objects
-  vlVerts->resize(m_TotalNumOfTranslucentVertices *3);
-  vlNormals->resize(m_TotalNumOfTranslucentVertices *3);
-  vlColors->resize(m_TotalNumOfTranslucentVertices);
-  vlTriangles->indexBuffer()->resize(m_TotalNumOfTranslucentTriangles*3);
-
-  // Make sure that the buffers are allocated in GPU memory
-  m_TranslucentSurface->vertexArray()->updateBufferObject();
-  m_TranslucentSurface->normalArray()->updateBufferObject();
-  m_TranslucentSurface->colorArray()->updateBufferObject();
-  vlTriangles->indexBuffer()->updateBufferObject();
-
-  // this is good here! do not remove.
-  glFinish();
-
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Get hold of the Index buffer of the merged object a'la OpenCL mem
-  GLuint mergedIndexBufferHandle = vlTriangles->indexBuffer()->bufferObject()->handle();
-  m_MergedTranslucentIndexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedIndexBufferHandle, &clStatus);
-  if (clStatus)
-  {
-    CHECK_OCL_ERR(clStatus);
-    return false;
-  }
-  // note: m_MergedTranslucentIndexBuf is normally released at the beginning of this method.
-
-  clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
-  if (clStatus)
-  {
-    CHECK_OCL_ERR(clStatus);
-    clStatus = clReleaseMemObject(m_MergedTranslucentIndexBuf);
-    if (clStatus)
-    {
-      CHECK_OCL_ERR(clStatus);
-    }
-    m_MergedTranslucentIndexBuf = 0;
-    return false;
-  }
-
-  // Here we retrieve the merged and sorted index buffer
-  cl_uint totalNumOfVertices;
-  bool mergedok = m_OclTriangleSorter->MergeIndexBuffers(m_MergedTranslucentIndexBuf, totalNumOfVertices);
-  if (!mergedok)
-    return false;
-
-  if (totalNumOfVertices != m_TotalNumOfTranslucentVertices)
-  {
-    MITK_ERROR <<"Index buffer merge error, returning!";
-    return false;
-  }
-
-  clStatus = clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
-  if (clStatus)
-  {
-    CHECK_OCL_ERR(clStatus);
-    return false;
-  }
-
-  clStatus = clFinish(clCmdQue);
-  if (clStatus)
-  {
-    CHECK_OCL_ERR(clStatus);
-    return false;
-  }
-
-  // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
-  GLuint mergedVertexArrayHandle = vlVerts->bufferObject()->handle();
-  m_MergedTranslucentVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedVertexArrayHandle, &clStatus);
-  if (clStatus)
-  {
-    CHECK_OCL_ERR(clStatus);
-    return false;
-  }
-
-  clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
-  if (clStatus)
-  {
-    CHECK_OCL_ERR(clStatus);
-    return false;
-  }
-
-  // Get normal array
-  GLuint mergedNormalArrayHandle = vlNormals->bufferObject()->handle();
-  cl_mem clMergedNormalBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedNormalArrayHandle, &clStatus);
-  if (clStatus)
-  {
-    CHECK_OCL_ERR(clStatus);
-    return false;
-  }
-
-  clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
-  if (clStatus)
-  {
-    CHECK_OCL_ERR(clStatus);
-    return false;
-  }
-
-  size_t vertexBufferOffset = 0;
-  size_t normalBufferOffset = 0;
-  size_t colorBufferOffset = 0;
-
-  std::vector<cl_mem> clVertexBufs;
-  std::vector<cl_mem> clNormalBufs;
-
-  // Here we merge the vertices and normals and colors
-  for (size_t i = 0; i < translucentSurfaces.size(); i++)
-  {
-    // get number of vertices
-    unsigned int numOfVertices2 = translucentSurfaces.at(i)->vertexArray()->size() /3;
-    //MITK_INFO <<"Copying vertices of structure " <<i <<": " <<numOfVertices2;
-    unsigned int computedSize = numOfVertices2 * sizeof(GLfloat) * 3;
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Get vertex array
-    GLuint vertexArrayHandle = translucentSurfaces.at(i)->vertexArray()->bufferObject()->handle();
-    cl_mem clVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, vertexArrayHandle, &clStatus);
-    if (clStatus)
-    {
-      CHECK_OCL_ERR(clStatus);
-      return false;
-    }
-    clVertexBufs.push_back(clVertexBuf);
-
-    clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
-    if (clStatus)
-    {
-      CHECK_OCL_ERR(clStatus);
-      return false;
-    }
-
-    // Copy to merged buffer
-    clStatus = clEnqueueCopyBuffer(clCmdQue, clVertexBuf, m_MergedTranslucentVertexBuf, 0, vertexBufferOffset, computedSize, 0, 0, 0);
-    if (clStatus)
-    {
-      CHECK_OCL_ERR(clStatus);
-      return false;
-    }
-    vertexBufferOffset += computedSize;
-
-    clStatus = clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
-    if (clStatus)
-    {
-      CHECK_OCL_ERR(clStatus);
-      return false;
-    }
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Get normal array
-    GLuint normalArrayHandle = translucentSurfaces.at(i)->normalArray()->bufferObject()->handle();
-    cl_mem clNormalBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, normalArrayHandle, &clStatus);
-    if (clStatus)
-    {
-      CHECK_OCL_ERR(clStatus);
-      return false;
-    }
-    clNormalBufs.push_back(clNormalBuf);
-
-    clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
-    if (clStatus)
-    {
-      CHECK_OCL_ERR(clStatus);
-      return false;
-    }
-
-    // Copy to merged buffer
-    clStatus = clEnqueueCopyBuffer(clCmdQue, clNormalBuf, clMergedNormalBuf, 0, normalBufferOffset, computedSize, 0, 0, 0);
-    if (clStatus)
-    {
-      CHECK_OCL_ERR(clStatus);
-      return false;
-    }
-    normalBufferOffset += computedSize;
-
-    clStatus = clEnqueueReleaseGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
-    if (clStatus)
-    {
-      CHECK_OCL_ERR(clStatus);
-      return false;
-    }
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Get color array
-    size_t colorBufSize = numOfVertices2*sizeof(unsigned int);
-    vl::fvec4 color = translucentColors.at(i);
-
-    unsigned int * colorData = new unsigned int[numOfVertices2];
-    for (unsigned int bla = 0; bla < numOfVertices2; bla++)
-    {
-      // Color format: AABBGGRR
-      unsigned char a = color[3] * 255;
-      unsigned char b = color[2] * 255;
-      unsigned char g = color[1] * 255;
-      unsigned char r = color[0] * 255;
-      colorData[bla] = r | (g << 8) | (b << 16) | (a << 24);
-    }
-
-    vlColors->bufferObject()->setBufferSubData(colorBufferOffset, colorBufSize, colorData);
-    glFinish();
-    colorBufferOffset += colorBufSize;
-    delete colorData;
- 
-  }
-
-/*
-  MITK_INFO <<"Total num of triangles: " <<totalNumOfTriangles <<" Total num of vertices: " <<totalNumOfVertices;
-
-  //range = 1024;
-  float step = 255.0f/range;
-
-  unsigned int * colorData = new unsigned int[totalNumOfVertices];
-  float * vertDistData = new float[totalNumOfVertices];
-  memset(vertDistData, 0, totalNumOfVertices*sizeof(float));
-
-  for (unsigned int bla = 0; bla < totalNumOfTriangles; bla++)
-  {
-    float distVal  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[bla]);
-    //if (distVal >= 1024.0f)
-    //  distVal = 1023.0f;
-    
-    // Color format: AABBGGRR
-    unsigned char a = 255;
-    unsigned char b = 0;
-    unsigned char g = (distVal-minDist)*step;
-    unsigned char r = 255 - (distVal-minDist)*step;
-    unsigned int colorVal = r | (g << 8) | (b << 16) | (a << 24);
-  
-//    if (bla < 1000)
-//      std::cout <<"Index: " <<bla <<" dist: " <<std::setprecision(10) <<distVal <<" color: " <<(int)r <<" " <<(int)g <<" " <<(int)b <<"\n";
-
-    cl_uint vertIndex0 = mergedIBO[bla*3 +0];
-    cl_uint vertIndex1 = mergedIBO[bla*3 +1];
-    cl_uint vertIndex2 = mergedIBO[bla*3 +2];
-
-    if (vertIndex0 >= totalNumOfVertices)
-    {
-      MITK_INFO <<"vertIndex0: " <<vertIndex0 <<" Total num of vertices: " <<totalNumOfVertices;
-      break;
-    }
-
-    if (vertIndex1 >= totalNumOfVertices)
-    {
-      MITK_INFO <<"vertIndex1: " <<vertIndex1 <<" Total num of vertices: " <<totalNumOfVertices;
-      break;
-    }
-
-    if (vertIndex2 >= totalNumOfVertices)
-    {
-      MITK_INFO <<"vertIndex2: " <<vertIndex2 <<" Total num of vertices: " <<totalNumOfVertices;
-      break;
-    }
-
-    if (distVal > vertDistData[vertIndex0])
-    {
-      vertDistData[vertIndex0] = distVal;
-      colorData[vertIndex0]    = colorVal;
-    }
-
-    if (distVal > vertDistData[vertIndex1])
-    {
-      vertDistData[vertIndex1] = distVal;
-      colorData[vertIndex1]    = colorVal;
-    }
-
-    if (distVal > vertDistData[vertIndex2])
-    {
-      vertDistData[vertIndex2] = distVal;
-      colorData[vertIndex2]    = colorVal;
-    }
-  }
-
-  colorBufferOffset = 0;
-  vlColors->bufferObject()->setBufferSubData(colorBufferOffset, totalNumOfVertices*sizeof(unsigned int), colorData);
-
-  delete colorData;
-  delete vertDistData;
-*/
-  clStatus |= clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
-  clStatus |= clEnqueueReleaseGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
-  clStatus |= clFinish(clCmdQue);
-  if (clStatus)
-  {
-    CHECK_OCL_ERR(clStatus);
-    return false;
-  }
-
-  for (size_t ii = 0; ii < clVertexBufs.size(); ii++)
-  {
-    clStatus = clReleaseMemObject(clVertexBufs.at(ii));
-    CHECK_OCL_ERR(clStatus);
-    clVertexBufs.at(ii) = 0;
-  }
-  
-  for (size_t ii = 0; ii < clNormalBufs.size(); ii++)
-  {
-    clStatus = clReleaseMemObject(clNormalBufs.at(ii));
-    CHECK_OCL_ERR(clStatus);
-    clNormalBufs.at(ii) = 0;
-  }
-
-  clStatus = clReleaseMemObject(clMergedNormalBuf);
-  if (clStatus)
-  {
-    CHECK_OCL_ERR(clStatus);
-    return false;
-  }
-  clMergedNormalBuf = 0;
-
-  m_TranslucentStructuresMerged = true;
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool VLQtWidget::SortTranslucentTriangles()
-{
-  // Get context 
-  cl_context clContext = m_OclService->GetContext();
-  cl_command_queue clCmdQue = m_OclService->GetCommandQueue();
-
-  if (clContext == 0 || clCmdQue == 0 || !m_TranslucentStructuresMerged)
-    return false;
-
-  // Get camera position
-  vl::vec3 cameraPos = m_Camera->modelingMatrix().getT();
-  cl_float4 clCameraPos;
-  clCameraPos.s[0] = cameraPos[0];
-  clCameraPos.s[1] = cameraPos[1];
-  clCameraPos.s[2] = cameraPos[2];
-  clCameraPos.s[3] = 1.0f;
-
-  cl_int clStatus = 0;
-
-  // Pass on the camera position to the sorter
-  m_OclTriangleSorter->SetViewPoint(clCameraPos);
-
-  // Compute trinagle distances and sort the triangles
-  bool sortok = m_OclTriangleSorter->SortIndexBufferByDist(m_MergedTranslucentIndexBuf, m_MergedTranslucentVertexBuf, m_TotalNumOfTranslucentTriangles, m_TotalNumOfTranslucentVertices);
-  if (!sortok)
-    return false;
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // This code is only for debugging. It colors the translucent object's triangles based on distance from camera.
-/*
-  vl::ref<vl::ArrayUByte4>      vlColors;
-  vlColors  = dynamic_cast<vl::ArrayUByte4 *>(m_TranslucentSurface->colorArray());
-
-  cl_mem mergedDistBufOutput = clCreateBuffer(clContext, CL_MEM_READ_WRITE, m_TotalNumOfTranslucentTriangles*sizeof(cl_uint), 0, 0);
-  
-  // Here we retrieve the merged and sorted distance buffer
-  m_OclTriangleSorter->GetTriangleDistOutput(mergedDistBufOutput, m_TotalNumOfTranslucentTriangles);
-
-  cl_uint * mergedDistances = new cl_uint[m_TotalNumOfTranslucentTriangles];
-  clStatus = clEnqueueReadBuffer(clCmdQue, mergedDistBufOutput, true, 0, m_TotalNumOfTranslucentTriangles*sizeof(cl_uint), mergedDistances, 0, 0, 0);
-  CHECK_OCL_ERR(clStatus);
-
-  cl_uint * mergedIBO = new cl_uint[m_TotalNumOfTranslucentTriangles*3];
-  clStatus = clEnqueueReadBuffer(clCmdQue, m_MergedTranslucentIndexBuf, true, 0, m_TotalNumOfTranslucentTriangles*3*sizeof(cl_uint), mergedIBO, 0, 0, 0);
-  CHECK_OCL_ERR(clStatus);
-
-  //std::ofstream outfileA;
-  //outfileA.open ("d://triangleDists.txt", std::ios::out);
-
-  float maxDist = -FLT_MAX;
-  for (int kk = 0; kk < m_TotalNumOfTranslucentTriangles; kk++)
-  {
-    float val  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[kk]);
-
-    if (val > maxDist)
-      maxDist = val;
-
-    //outfileA <<"Index: " <<kk <<" s: " <<mergedDistances[kk] <<" Dist: " <<std::setprecision(10) <<val <<"\n";
-  }
-
-  //outfileA.close();
-
-  float minDist = FLT_MAX;
-  for (int kk = 0; kk < m_TotalNumOfTranslucentTriangles; kk++)
-  {
-    float val  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[kk]);
-    if (val < minDist)
-      minDist = val;
-  }
-
-  float range = (maxDist-minDist);
-  float step = 255.0f/range;
-
-  unsigned int * colorData = new unsigned int[m_TotalNumOfTranslucentVertices];
-  float * vertDistData = new float[m_TotalNumOfTranslucentVertices];
-  memset(vertDistData, 0, m_TotalNumOfTranslucentVertices*sizeof(float));
-
-  for (unsigned int bla = 0; bla < m_TotalNumOfTranslucentTriangles; bla++)
-  {
-    float distVal  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[bla]);
-    //if (distVal >= 1024.0f)
-    //  distVal = 1023.0f;
-    
-    // Color format: AABBGGRR
-    unsigned char a = 255;
-    unsigned char b = 0;
-    unsigned char g = (distVal-minDist)*step;
-    unsigned char r = 255 - (distVal-minDist)*step;
-    unsigned int colorVal = r | (g << 8) | (b << 16) | (a << 24);
-  
-//    if (bla < 1000)
-//      std::cout <<"Index: " <<bla <<" dist: " <<std::setprecision(10) <<distVal <<" color: " <<(int)r <<" " <<(int)g <<" " <<(int)b <<"\n";
-
-    cl_uint vertIndex0 = mergedIBO[bla*3 +0];
-    cl_uint vertIndex1 = mergedIBO[bla*3 +1];
-    cl_uint vertIndex2 = mergedIBO[bla*3 +2];
-
-    if (vertIndex0 >= m_TotalNumOfTranslucentVertices)
-    {
-      MITK_INFO <<"vertIndex0: " <<vertIndex0 <<" Total num of vertices: " <<m_TotalNumOfTranslucentVertices;
-      break;
-    }
-
-    if (vertIndex1 >= m_TotalNumOfTranslucentVertices)
-    {
-      MITK_INFO <<"vertIndex1: " <<vertIndex1 <<" Total num of vertices: " <<m_TotalNumOfTranslucentVertices;
-      break;
-    }
-
-    if (vertIndex2 >= m_TotalNumOfTranslucentVertices)
-    {
-      MITK_INFO <<"vertIndex2: " <<vertIndex2 <<" Total num of vertices: " <<m_TotalNumOfTranslucentVertices;
-      break;
-    }
-
-    if (distVal > vertDistData[vertIndex0])
-    {
-      vertDistData[vertIndex0] = distVal;
-      colorData[vertIndex0]    = colorVal;
-    }
-
-    if (distVal > vertDistData[vertIndex1])
-    {
-      vertDistData[vertIndex1] = distVal;
-      colorData[vertIndex1]    = colorVal;
-    }
-
-    if (distVal > vertDistData[vertIndex2])
-    {
-      vertDistData[vertIndex2] = distVal;
-      colorData[vertIndex2]    = colorVal;
-    }
-  }
-
-  vlColors->bufferObject()->setBufferSubData(0, m_TotalNumOfTranslucentVertices*sizeof(unsigned int), colorData);
-
-  delete mergedIBO;
-  delete mergedDistances;
-  delete colorData;
-  delete vertDistData;
-
-  clReleaseMemObject(mergedDistBufOutput);
-  mergedDistBufOutput = 0;
-*/
-
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
 void VLQtWidget::setContinuousUpdate(bool continuous)
 {
   vl::OpenGLContext::setContinuousUpdate(continuous);
@@ -3840,9 +3074,770 @@ void VLQtWidget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, v
   }
 }
 
-
 //-----------------------------------------------------------------------------
 QGLContext* VLQtWidget::context()
 {
   return const_cast<QGLContext*>(QGLWidget::context());
 }
+
+////-----------------------------------------------------------------------------
+//bool VLQtWidget::NodeIsTranslucent(const mitk::DataNode::ConstPointer& node)
+//{
+//  float opacity = 1.0f;
+//  mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
+//  if (opacityProp != 0)
+//    opacity = opacityProp->GetValue();
+//  return opacity < 1.0f;
+//}
+//
+//
+////-----------------------------------------------------------------------------
+//bool VLQtWidget::NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& node)
+//{
+//  if (!m_TranslucentActors.empty())
+//  {
+//    std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::const_iterator i = m_NodeToActorMap.find(node);
+//    if (i != m_NodeToActorMap.end())
+//    {
+//      vl::ref<vl::Actor>    nodeActor = i->second;
+//      assert(nodeActor.get() != 0);
+//
+//      std::set<vl::ref<vl::Actor> >::const_iterator j = m_TranslucentActors.find(nodeActor);
+//      if (j != m_TranslucentActors.end())
+//      {
+//        return true;
+//      }
+//    }
+//  }
+//
+//  return false;
+//}
+//-----------------------------------------------------------------------------
+//void VLQtWidget::UpdateTranslucentTriangles()
+//{
+//  bool    thereIsSomethingTranslucent = true;
+//  //if (!m_TranslucentStructuresMerged)
+//  {
+//    thereIsSomethingTranslucent = MergeTranslucentTriangles();
+//  }
+//#if 0
+//  else
+//  {
+//    vl::ref<vl::ActorCollection> actors = m_SceneManager->tree()->actors();
+//    int numOfActors = actors->size();
+//  
+//    unsigned int summedNumOfVerts = 0;
+//    for (int i = 0; i < numOfActors; i++)
+//    {
+//      vl::ref<vl::Actor> act = actors->at(i);
+//      std::string objName = act->objectName();
+//      int renderBlock = act->renderBlock();
+//    
+//      size_t found =objName.find("_surface");
+//      if ((found != std::string::npos) && (renderBlock == RENDERBLOCK_TRANSLUCENT))
+//      {
+//        vl::ref<vl::Renderable> ren = m_ActorToRenderableMap[act];
+//        vl::ref<vl::Geometry> surface = dynamic_cast<vl::Geometry*>(ren.get());
+//        if (surface == 0)
+//          continue;
+//
+//        // Update vertex counter
+//        unsigned int numOfVertices = surface->vertexArray()->size() /3;
+//        summedNumOfVerts += numOfVertices;
+//      }
+//    }
+//
+//    if (summedNumOfVerts != m_TotalNumOfTranslucentVertices && summedNumOfVerts != 0)
+//    {
+//      thereIsSomethingTranslucent = MergeTranslucentTriangles();
+//    }
+//    else if (summedNumOfVerts == 0)
+//    {
+//      thereIsSomethingTranslucent = false;
+//    }
+//  }
+//#endif
+//  // m_TotalNumOfTranslucentVertices is set by MergeTranslucentTriangles().
+//
+//  bool    mergedok = false;
+//  if ((m_TotalNumOfTranslucentVertices > 0) && (m_TranslucentActors.size() > 0) && thereIsSomethingTranslucent)
+//    mergedok = true;
+//
+//  bool  sortedok = false;
+//  if (mergedok)
+//    sortedok = SortTranslucentTriangles();
+//
+//  // the sorted-translucent-all-in-one-actor is only visible if merging and sorting actually worked.
+//  // otherwise, fall back to unsorted.
+//  if (mergedok && sortedok)
+//  {
+//    vl::ref<vl::Effect>    fx;
+//    vl::ref<vl::Transform> tr;
+//
+//    if (m_TranslucentSurfaceActor == 0)
+//    {
+//      // Add the new merged geometry actor
+//      tr = new vl::Transform();
+//      fx = new vl::Effect;
+//      m_TranslucentSurfaceActor = m_SceneManager->tree()->addActor(m_TranslucentSurface.get(), fx.get(), tr.get());
+//      m_TranslucentSurfaceActor->setObjectName("m_TranslucentSurfaceActor");
+//    }
+//    else
+//    {
+//      fx = m_TranslucentSurfaceActor->effect();
+//      tr = m_TranslucentSurfaceActor->transform();
+//    }
+//
+//    m_TranslucentSurfaceActor->setRenderBlock(RENDERBLOCK_SORTEDTRANSLUCENT);
+//    m_TranslucentSurfaceActor->setEnableMask(ENABLEMASK_SORTEDTRANSLUCENT);
+//    fx->shader()->gocMaterial()->setColorMaterialEnabled(true);
+//
+//    // no backface culling for translucent objects: you should be able to see the backside!
+//    fx->shader()->disable(vl::EN_CULL_FACE);
+//
+//    fx->shader()->enable(vl::EN_BLEND);
+//    fx->shader()->enable(vl::EN_DEPTH_TEST);
+//    fx->shader()->enable(vl::EN_LIGHTING);
+//    fx->shader()->setRenderState(m_Light.get(), 0 );
+//
+//    // dont render unsorted translucent triangles by simply disabling that part of the pipeline.
+//    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_TRANSLUCENT | ENABLEMASK_SORTEDTRANSLUCENT);
+//  }
+//  else
+//  {
+//    // if there is no sorted-translucent-geometry just disable that part of the pipeline.
+//    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() & ~ENABLEMASK_SORTEDTRANSLUCENT);
+//    // also re-enable unsorted possibly-translucent geometry.
+//    m_OpaqueObjectsRendering->setEnableMask(m_OpaqueObjectsRendering->enableMask() | ENABLEMASK_TRANSLUCENT);
+//  }
+//}
+//-----------------------------------------------------------------------------
+//bool VLQtWidget::MergeTranslucentTriangles()
+//{
+//  // sanity check: internal method, context should have been activated by caller.
+//  assert(this->context() == QGLContext::currentContext());
+//
+//  vl::ref<vl::ActorCollection> actors = m_SceneManager->tree()->actors();
+//  int numOfActors = actors->size();
+//
+//  if (m_OclService == 0)
+//    return false;
+//
+//  // hopefully the buffers wrapping vbos will have finished doing stuff.
+//  glFinish();
+//
+//  // Get context 
+//  cl_context clContext = m_OclService->GetContext();
+//  cl_command_queue clCmdQue = m_OclService->GetCommandQueue();
+//
+//  if (clContext == 0 || clCmdQue == 0)
+//    return false;
+//
+//  std::vector<vl::ref<vl::Geometry> >  translucentSurfaces;
+//  std::vector<vl::fvec4>               translucentColors;
+//
+//  cl_int clStatus = 0;
+//
+//  // Instantiate TriangleSorter
+//  if (m_OclTriangleSorter == 0)
+//    m_OclTriangleSorter = new mitk::OclTriangleSorter();
+//
+//  // Make sure previous values are cleared
+//  m_OclTriangleSorter->Reset();
+//
+//  m_TotalNumOfTranslucentTriangles = 0;
+//  m_TotalNumOfTranslucentVertices  = 0;
+//
+//  m_TranslucentActors.clear();
+//
+//  if (m_MergedTranslucentIndexBuf != 0)
+//  {
+//    clStatus = clReleaseMemObject(m_MergedTranslucentIndexBuf);
+//    CHECK_OCL_ERR(clStatus);
+//    m_MergedTranslucentIndexBuf = 0;
+//  }
+//
+//  if (m_MergedTranslucentVertexBuf != 0)
+//  {
+//    clStatus = clReleaseMemObject(m_MergedTranslucentVertexBuf);
+//    CHECK_OCL_ERR(clStatus);
+//    m_MergedTranslucentVertexBuf = 0;
+//  }
+//
+//  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//  // Find all the translucent geometries and stuff their actor/geometry/transform to lists
+//
+//  for (int i = 0; i < numOfActors; i++)
+//  {
+//    vl::ref<vl::Actor>  act           = actors->at(i);
+//    const std::string&  objName       = act->objectName();
+//    int                 renderBlock   = act->renderBlock();
+//    bool                enabled       = act->enableMask() != 0;
+//    bool                nameOk        = objName.find("_surface") != std::string::npos;
+//
+//    if (nameOk && (renderBlock == RENDERBLOCK_TRANSLUCENT) && enabled)
+//    {
+//      vl::ref<vl::Renderable> ren = m_ActorToRenderableMap[act];
+//      vl::ref<vl::Geometry> surface = dynamic_cast<vl::Geometry*>(ren.get());
+//      if (surface == 0)
+//        continue;
+//
+//      m_TranslucentActors.insert(act);
+//
+//      vl::ref<vl::Effect> fx = act->effect();
+//      vl::fvec4 color = fx->shader()->gocMaterial()->frontDiffuse();
+//      translucentColors.push_back(color);
+//      translucentSurfaces.push_back(surface);
+//    }
+//  }
+//
+//  // Return if there's nothing to do 
+//  if (translucentSurfaces.size() == 0)
+//  {
+//    // dont call again, there is nothing to merge.
+//    m_TranslucentStructuresMerged = true;
+//    return false;
+//  }
+//
+//  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//  // Acquire the VBO/IBO handles of the translucent objects
+//  // and pass them to the triangle sorter as GLuint objects
+//
+//  for (int i = 0; i < translucentSurfaces.size(); i++)
+//  {
+//    // Get pointer to the index buffer
+//    size_t numOfDrawcalls = translucentSurfaces.at(i)->drawCalls().size();
+//    vl::DrawCall * dc = translucentSurfaces.at(i)->drawCalls().at(numOfDrawcalls-1);
+//    vl::ref<vl::DrawElementsUInt> vlTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
+//
+//    // Update triangle counter
+//    unsigned int numOfTriangles = vlTriangles->countTriangles();
+//    m_TotalNumOfTranslucentTriangles += numOfTriangles;
+//    
+//    // Update buffer, get handle and push it to TriangleSorter
+//    vlTriangles->indexBuffer()->updateBufferObject();
+//    GLuint indexBufferHandle = vlTriangles->indexBuffer()->bufferObject()->handle();
+//    m_OclTriangleSorter->AddGLIndexBuffer(indexBufferHandle, numOfTriangles);
+//
+//    // Update vertex counter
+//    unsigned int numOfVertices = translucentSurfaces.at(i)->vertexArray()->size() /3;
+//    m_TotalNumOfTranslucentVertices += numOfVertices;
+//
+//    // Update buffer, get handle and push it to TriangleSorter
+//    translucentSurfaces.at(i)->vertexArray()->updateBufferObject();
+//    GLuint vertexArrayHandle = translucentSurfaces.at(i)->vertexArray()->bufferObject()->handle();
+//    m_OclTriangleSorter->AddGLVertexBuffer(vertexArrayHandle, numOfVertices);
+//  }
+//
+//  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//  // Allocate VL arrays for the merged object's vertices and normals
+//
+//  vl::ref<vl::ArrayFloat3>      vlVerts;
+//  vl::ref<vl::ArrayFloat3>      vlNormals;
+//  vl::ref<vl::ArrayUByte4>      vlColors;
+//  vl::ref<vl::DrawElementsUInt> vlTriangles;
+//
+//  // Acquire or create the merged VL geometry object that holds all translucent triangles
+//  if (m_TranslucentSurface == 0)
+//  {
+//    m_TranslucentSurface = new vl::Geometry();
+//
+//    vlVerts     = new vl::ArrayFloat3;
+//    vlNormals   = new vl::ArrayFloat3;
+//    vlTriangles = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
+//    vlColors    = new vl::ArrayUByte4;
+//
+//    m_TranslucentSurface->setVertexArray(vlVerts.get());
+//    m_TranslucentSurface->setNormalArray(vlNormals.get());
+//    m_TranslucentSurface->setColorArray(vlColors.get());
+//    m_TranslucentSurface->drawCalls().push_back(vlTriangles.get());
+//  }
+//  else
+//  {
+//    vlVerts   = dynamic_cast<vl::ArrayFloat3 *>(m_TranslucentSurface->vertexArray());
+//    vlNormals = dynamic_cast<vl::ArrayFloat3 *>(m_TranslucentSurface->normalArray());
+//    vlColors  = dynamic_cast<vl::ArrayUByte4 *>(m_TranslucentSurface->colorArray());
+//
+//    size_t numOfDrawcalls = m_TranslucentSurface->drawCalls().size();
+//    vl::DrawCall * dc = m_TranslucentSurface->drawCalls().at(numOfDrawcalls-1);
+//    vlTriangles = dynamic_cast<vl::DrawElementsUInt *>(dc);
+//
+//    if (vlVerts == 0 || vlNormals == 0 || vlTriangles == 0)
+//    {
+//      MITK_ERROR <<"Failed to acquire buffer objects from the VL geometry.";
+//      return false;
+//    }
+//  }
+//
+//  // hack bounding box. vl uses it for scene culling.
+//  vl::AABB    mergedbb;
+//  vl::Sphere  mergedbs;
+//  for (int i = 0; i < translucentSurfaces.size(); ++i)
+//  {
+//    mergedbb += translucentSurfaces[i]->boundingBox();
+//    mergedbs += translucentSurfaces[i]->boundingSphere();
+//  }
+//  m_TranslucentSurface->setBoundingBox(mergedbb);
+//  m_TranslucentSurface->setBoundingSphere(mergedbs);
+//  m_TranslucentSurface->setBoundsDirty(false);
+//
+//  // Resize buffer objects
+//  vlVerts->resize(m_TotalNumOfTranslucentVertices *3);
+//  vlNormals->resize(m_TotalNumOfTranslucentVertices *3);
+//  vlColors->resize(m_TotalNumOfTranslucentVertices);
+//  vlTriangles->indexBuffer()->resize(m_TotalNumOfTranslucentTriangles*3);
+//
+//  // Make sure that the buffers are allocated in GPU memory
+//  m_TranslucentSurface->vertexArray()->updateBufferObject();
+//  m_TranslucentSurface->normalArray()->updateBufferObject();
+//  m_TranslucentSurface->colorArray()->updateBufferObject();
+//  vlTriangles->indexBuffer()->updateBufferObject();
+//
+//  // this is good here! do not remove.
+//  glFinish();
+//
+//
+//  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//  // Get hold of the Index buffer of the merged object a'la OpenCL mem
+//  GLuint mergedIndexBufferHandle = vlTriangles->indexBuffer()->bufferObject()->handle();
+//  m_MergedTranslucentIndexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedIndexBufferHandle, &clStatus);
+//  if (clStatus)
+//  {
+//    CHECK_OCL_ERR(clStatus);
+//    return false;
+//  }
+//  // note: m_MergedTranslucentIndexBuf is normally released at the beginning of this method.
+//
+//  clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
+//  if (clStatus)
+//  {
+//    CHECK_OCL_ERR(clStatus);
+//    clStatus = clReleaseMemObject(m_MergedTranslucentIndexBuf);
+//    if (clStatus)
+//    {
+//      CHECK_OCL_ERR(clStatus);
+//    }
+//    m_MergedTranslucentIndexBuf = 0;
+//    return false;
+//  }
+//
+//  // Here we retrieve the merged and sorted index buffer
+//  cl_uint totalNumOfVertices;
+//  bool mergedok = m_OclTriangleSorter->MergeIndexBuffers(m_MergedTranslucentIndexBuf, totalNumOfVertices);
+//  if (!mergedok)
+//    return false;
+//
+//  if (totalNumOfVertices != m_TotalNumOfTranslucentVertices)
+//  {
+//    MITK_ERROR <<"Index buffer merge error, returning!";
+//    return false;
+//  }
+//
+//  clStatus = clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentIndexBuf, 0, NULL, NULL);
+//  if (clStatus)
+//  {
+//    CHECK_OCL_ERR(clStatus);
+//    return false;
+//  }
+//
+//  clStatus = clFinish(clCmdQue);
+//  if (clStatus)
+//  {
+//    CHECK_OCL_ERR(clStatus);
+//    return false;
+//  }
+//
+//  // Get hold of the Vertex/Normal buffers of the merged object a'la OpenCL mem
+//  GLuint mergedVertexArrayHandle = vlVerts->bufferObject()->handle();
+//  m_MergedTranslucentVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedVertexArrayHandle, &clStatus);
+//  if (clStatus)
+//  {
+//    CHECK_OCL_ERR(clStatus);
+//    return false;
+//  }
+//
+//  clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
+//  if (clStatus)
+//  {
+//    CHECK_OCL_ERR(clStatus);
+//    return false;
+//  }
+//
+//  // Get normal array
+//  GLuint mergedNormalArrayHandle = vlNormals->bufferObject()->handle();
+//  cl_mem clMergedNormalBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, mergedNormalArrayHandle, &clStatus);
+//  if (clStatus)
+//  {
+//    CHECK_OCL_ERR(clStatus);
+//    return false;
+//  }
+//
+//  clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
+//  if (clStatus)
+//  {
+//    CHECK_OCL_ERR(clStatus);
+//    return false;
+//  }
+//
+//  size_t vertexBufferOffset = 0;
+//  size_t normalBufferOffset = 0;
+//  size_t colorBufferOffset = 0;
+//
+//  std::vector<cl_mem> clVertexBufs;
+//  std::vector<cl_mem> clNormalBufs;
+//
+//  // Here we merge the vertices and normals and colors
+//  for (size_t i = 0; i < translucentSurfaces.size(); i++)
+//  {
+//    // get number of vertices
+//    unsigned int numOfVertices2 = translucentSurfaces.at(i)->vertexArray()->size() /3;
+//    //MITK_INFO <<"Copying vertices of structure " <<i <<": " <<numOfVertices2;
+//    unsigned int computedSize = numOfVertices2 * sizeof(GLfloat) * 3;
+//
+//    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//    // Get vertex array
+//    GLuint vertexArrayHandle = translucentSurfaces.at(i)->vertexArray()->bufferObject()->handle();
+//    cl_mem clVertexBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, vertexArrayHandle, &clStatus);
+//    if (clStatus)
+//    {
+//      CHECK_OCL_ERR(clStatus);
+//      return false;
+//    }
+//    clVertexBufs.push_back(clVertexBuf);
+//
+//    clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
+//    if (clStatus)
+//    {
+//      CHECK_OCL_ERR(clStatus);
+//      return false;
+//    }
+//
+//    // Copy to merged buffer
+//    clStatus = clEnqueueCopyBuffer(clCmdQue, clVertexBuf, m_MergedTranslucentVertexBuf, 0, vertexBufferOffset, computedSize, 0, 0, 0);
+//    if (clStatus)
+//    {
+//      CHECK_OCL_ERR(clStatus);
+//      return false;
+//    }
+//    vertexBufferOffset += computedSize;
+//
+//    clStatus = clEnqueueReleaseGLObjects(clCmdQue, 1, &clVertexBuf, 0, NULL, NULL);
+//    if (clStatus)
+//    {
+//      CHECK_OCL_ERR(clStatus);
+//      return false;
+//    }
+//
+//    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//    // Get normal array
+//    GLuint normalArrayHandle = translucentSurfaces.at(i)->normalArray()->bufferObject()->handle();
+//    cl_mem clNormalBuf = clCreateFromGLBuffer(clContext, CL_MEM_READ_WRITE, normalArrayHandle, &clStatus);
+//    if (clStatus)
+//    {
+//      CHECK_OCL_ERR(clStatus);
+//      return false;
+//    }
+//    clNormalBufs.push_back(clNormalBuf);
+//
+//    clStatus = clEnqueueAcquireGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
+//    if (clStatus)
+//    {
+//      CHECK_OCL_ERR(clStatus);
+//      return false;
+//    }
+//
+//    // Copy to merged buffer
+//    clStatus = clEnqueueCopyBuffer(clCmdQue, clNormalBuf, clMergedNormalBuf, 0, normalBufferOffset, computedSize, 0, 0, 0);
+//    if (clStatus)
+//    {
+//      CHECK_OCL_ERR(clStatus);
+//      return false;
+//    }
+//    normalBufferOffset += computedSize;
+//
+//    clStatus = clEnqueueReleaseGLObjects(clCmdQue, 1, &clNormalBuf, 0, NULL, NULL);
+//    if (clStatus)
+//    {
+//      CHECK_OCL_ERR(clStatus);
+//      return false;
+//    }
+//
+//    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//    // Get color array
+//    size_t colorBufSize = numOfVertices2*sizeof(unsigned int);
+//    vl::fvec4 color = translucentColors.at(i);
+//
+//    unsigned int * colorData = new unsigned int[numOfVertices2];
+//    for (unsigned int bla = 0; bla < numOfVertices2; bla++)
+//    {
+//      // Color format: AABBGGRR
+//      unsigned char a = color[3] * 255;
+//      unsigned char b = color[2] * 255;
+//      unsigned char g = color[1] * 255;
+//      unsigned char r = color[0] * 255;
+//      colorData[bla] = r | (g << 8) | (b << 16) | (a << 24);
+//    }
+//
+//    vlColors->bufferObject()->setBufferSubData(colorBufferOffset, colorBufSize, colorData);
+//    glFinish();
+//    colorBufferOffset += colorBufSize;
+//    delete colorData;
+// 
+//  }
+//
+///*
+//  MITK_INFO <<"Total num of triangles: " <<totalNumOfTriangles <<" Total num of vertices: " <<totalNumOfVertices;
+//
+//  //range = 1024;
+//  float step = 255.0f/range;
+//
+//  unsigned int * colorData = new unsigned int[totalNumOfVertices];
+//  float * vertDistData = new float[totalNumOfVertices];
+//  memset(vertDistData, 0, totalNumOfVertices*sizeof(float));
+//
+//  for (unsigned int bla = 0; bla < totalNumOfTriangles; bla++)
+//  {
+//    float distVal  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[bla]);
+//    //if (distVal >= 1024.0f)
+//    //  distVal = 1023.0f;
+//    
+//    // Color format: AABBGGRR
+//    unsigned char a = 255;
+//    unsigned char b = 0;
+//    unsigned char g = (distVal-minDist)*step;
+//    unsigned char r = 255 - (distVal-minDist)*step;
+//    unsigned int colorVal = r | (g << 8) | (b << 16) | (a << 24);
+//  
+////    if (bla < 1000)
+////      std::cout <<"Index: " <<bla <<" dist: " <<std::setprecision(10) <<distVal <<" color: " <<(int)r <<" " <<(int)g <<" " <<(int)b <<"\n";
+//
+//    cl_uint vertIndex0 = mergedIBO[bla*3 +0];
+//    cl_uint vertIndex1 = mergedIBO[bla*3 +1];
+//    cl_uint vertIndex2 = mergedIBO[bla*3 +2];
+//
+//    if (vertIndex0 >= totalNumOfVertices)
+//    {
+//      MITK_INFO <<"vertIndex0: " <<vertIndex0 <<" Total num of vertices: " <<totalNumOfVertices;
+//      break;
+//    }
+//
+//    if (vertIndex1 >= totalNumOfVertices)
+//    {
+//      MITK_INFO <<"vertIndex1: " <<vertIndex1 <<" Total num of vertices: " <<totalNumOfVertices;
+//      break;
+//    }
+//
+//    if (vertIndex2 >= totalNumOfVertices)
+//    {
+//      MITK_INFO <<"vertIndex2: " <<vertIndex2 <<" Total num of vertices: " <<totalNumOfVertices;
+//      break;
+//    }
+//
+//    if (distVal > vertDistData[vertIndex0])
+//    {
+//      vertDistData[vertIndex0] = distVal;
+//      colorData[vertIndex0]    = colorVal;
+//    }
+//
+//    if (distVal > vertDistData[vertIndex1])
+//    {
+//      vertDistData[vertIndex1] = distVal;
+//      colorData[vertIndex1]    = colorVal;
+//    }
+//
+//    if (distVal > vertDistData[vertIndex2])
+//    {
+//      vertDistData[vertIndex2] = distVal;
+//      colorData[vertIndex2]    = colorVal;
+//    }
+//  }
+//
+//  colorBufferOffset = 0;
+//  vlColors->bufferObject()->setBufferSubData(colorBufferOffset, totalNumOfVertices*sizeof(unsigned int), colorData);
+//
+//  delete colorData;
+//  delete vertDistData;
+//*/
+//  clStatus |= clEnqueueReleaseGLObjects(clCmdQue, 1, &m_MergedTranslucentVertexBuf, 0, NULL, NULL);
+//  clStatus |= clEnqueueReleaseGLObjects(clCmdQue, 1, &clMergedNormalBuf, 0, NULL, NULL);
+//  clStatus |= clFinish(clCmdQue);
+//  if (clStatus)
+//  {
+//    CHECK_OCL_ERR(clStatus);
+//    return false;
+//  }
+//
+//  for (size_t ii = 0; ii < clVertexBufs.size(); ii++)
+//  {
+//    clStatus = clReleaseMemObject(clVertexBufs.at(ii));
+//    CHECK_OCL_ERR(clStatus);
+//    clVertexBufs.at(ii) = 0;
+//  }
+//  
+//  for (size_t ii = 0; ii < clNormalBufs.size(); ii++)
+//  {
+//    clStatus = clReleaseMemObject(clNormalBufs.at(ii));
+//    CHECK_OCL_ERR(clStatus);
+//    clNormalBufs.at(ii) = 0;
+//  }
+//
+//  clStatus = clReleaseMemObject(clMergedNormalBuf);
+//  if (clStatus)
+//  {
+//    CHECK_OCL_ERR(clStatus);
+//    return false;
+//  }
+//  clMergedNormalBuf = 0;
+//
+//  m_TranslucentStructuresMerged = true;
+//  return true;
+//}
+//-----------------------------------------------------------------------------
+//bool VLQtWidget::SortTranslucentTriangles()
+//{
+//  // Get context 
+//  cl_context clContext = m_OclService->GetContext();
+//  cl_command_queue clCmdQue = m_OclService->GetCommandQueue();
+//
+//  if (clContext == 0 || clCmdQue == 0 || !m_TranslucentStructuresMerged)
+//    return false;
+//
+//  // Get camera position
+//  vl::vec3 cameraPos = m_Camera->modelingMatrix().getT();
+//  cl_float4 clCameraPos;
+//  clCameraPos.s[0] = cameraPos[0];
+//  clCameraPos.s[1] = cameraPos[1];
+//  clCameraPos.s[2] = cameraPos[2];
+//  clCameraPos.s[3] = 1.0f;
+//
+//  cl_int clStatus = 0;
+//
+//  // Pass on the camera position to the sorter
+//  m_OclTriangleSorter->SetViewPoint(clCameraPos);
+//
+//  // Compute trinagle distances and sort the triangles
+//  bool sortok = m_OclTriangleSorter->SortIndexBufferByDist(m_MergedTranslucentIndexBuf, m_MergedTranslucentVertexBuf, m_TotalNumOfTranslucentTriangles, m_TotalNumOfTranslucentVertices);
+//  if (!sortok)
+//    return false;
+//
+//  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//  // This code is only for debugging. It colors the translucent object's triangles based on distance from camera.
+///*
+//  vl::ref<vl::ArrayUByte4>      vlColors;
+//  vlColors  = dynamic_cast<vl::ArrayUByte4 *>(m_TranslucentSurface->colorArray());
+//
+//  cl_mem mergedDistBufOutput = clCreateBuffer(clContext, CL_MEM_READ_WRITE, m_TotalNumOfTranslucentTriangles*sizeof(cl_uint), 0, 0);
+//  
+//  // Here we retrieve the merged and sorted distance buffer
+//  m_OclTriangleSorter->GetTriangleDistOutput(mergedDistBufOutput, m_TotalNumOfTranslucentTriangles);
+//
+//  cl_uint * mergedDistances = new cl_uint[m_TotalNumOfTranslucentTriangles];
+//  clStatus = clEnqueueReadBuffer(clCmdQue, mergedDistBufOutput, true, 0, m_TotalNumOfTranslucentTriangles*sizeof(cl_uint), mergedDistances, 0, 0, 0);
+//  CHECK_OCL_ERR(clStatus);
+//
+//  cl_uint * mergedIBO = new cl_uint[m_TotalNumOfTranslucentTriangles*3];
+//  clStatus = clEnqueueReadBuffer(clCmdQue, m_MergedTranslucentIndexBuf, true, 0, m_TotalNumOfTranslucentTriangles*3*sizeof(cl_uint), mergedIBO, 0, 0, 0);
+//  CHECK_OCL_ERR(clStatus);
+//
+//  //std::ofstream outfileA;
+//  //outfileA.open ("d://triangleDists.txt", std::ios::out);
+//
+//  float maxDist = -FLT_MAX;
+//  for (int kk = 0; kk < m_TotalNumOfTranslucentTriangles; kk++)
+//  {
+//    float val  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[kk]);
+//
+//    if (val > maxDist)
+//      maxDist = val;
+//
+//    //outfileA <<"Index: " <<kk <<" s: " <<mergedDistances[kk] <<" Dist: " <<std::setprecision(10) <<val <<"\n";
+//  }
+//
+//  //outfileA.close();
+//
+//  float minDist = FLT_MAX;
+//  for (int kk = 0; kk < m_TotalNumOfTranslucentTriangles; kk++)
+//  {
+//    float val  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[kk]);
+//    if (val < minDist)
+//      minDist = val;
+//  }
+//
+//  float range = (maxDist-minDist);
+//  float step = 255.0f/range;
+//
+//  unsigned int * colorData = new unsigned int[m_TotalNumOfTranslucentVertices];
+//  float * vertDistData = new float[m_TotalNumOfTranslucentVertices];
+//  memset(vertDistData, 0, m_TotalNumOfTranslucentVertices*sizeof(float));
+//
+//  for (unsigned int bla = 0; bla < m_TotalNumOfTranslucentTriangles; bla++)
+//  {
+//    float distVal  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[bla]);
+//    //if (distVal >= 1024.0f)
+//    //  distVal = 1023.0f;
+//    
+//    // Color format: AABBGGRR
+//    unsigned char a = 255;
+//    unsigned char b = 0;
+//    unsigned char g = (distVal-minDist)*step;
+//    unsigned char r = 255 - (distVal-minDist)*step;
+//    unsigned int colorVal = r | (g << 8) | (b << 16) | (a << 24);
+//  
+////    if (bla < 1000)
+////      std::cout <<"Index: " <<bla <<" dist: " <<std::setprecision(10) <<distVal <<" color: " <<(int)r <<" " <<(int)g <<" " <<(int)b <<"\n";
+//
+//    cl_uint vertIndex0 = mergedIBO[bla*3 +0];
+//    cl_uint vertIndex1 = mergedIBO[bla*3 +1];
+//    cl_uint vertIndex2 = mergedIBO[bla*3 +2];
+//
+//    if (vertIndex0 >= m_TotalNumOfTranslucentVertices)
+//    {
+//      MITK_INFO <<"vertIndex0: " <<vertIndex0 <<" Total num of vertices: " <<m_TotalNumOfTranslucentVertices;
+//      break;
+//    }
+//
+//    if (vertIndex1 >= m_TotalNumOfTranslucentVertices)
+//    {
+//      MITK_INFO <<"vertIndex1: " <<vertIndex1 <<" Total num of vertices: " <<m_TotalNumOfTranslucentVertices;
+//      break;
+//    }
+//
+//    if (vertIndex2 >= m_TotalNumOfTranslucentVertices)
+//    {
+//      MITK_INFO <<"vertIndex2: " <<vertIndex2 <<" Total num of vertices: " <<m_TotalNumOfTranslucentVertices;
+//      break;
+//    }
+//
+//    if (distVal > vertDistData[vertIndex0])
+//    {
+//      vertDistData[vertIndex0] = distVal;
+//      colorData[vertIndex0]    = colorVal;
+//    }
+//
+//    if (distVal > vertDistData[vertIndex1])
+//    {
+//      vertDistData[vertIndex1] = distVal;
+//      colorData[vertIndex1]    = colorVal;
+//    }
+//
+//    if (distVal > vertDistData[vertIndex2])
+//    {
+//      vertDistData[vertIndex2] = distVal;
+//      colorData[vertIndex2]    = colorVal;
+//    }
+//  }
+//
+//  vlColors->bufferObject()->setBufferSubData(0, m_TotalNumOfTranslucentVertices*sizeof(unsigned int), colorData);
+//
+//  delete mergedIBO;
+//  delete mergedDistances;
+//  delete colorData;
+//  delete vertDistData;
+//
+//  clReleaseMemObject(mergedDistBufOutput);
+//  mergedDistBufOutput = 0;
+//*/
+//
+//  return true;
+//}
+

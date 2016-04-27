@@ -52,23 +52,23 @@ typedef struct cudaGraphicsResource* cudaGraphicsResource_t;
 struct CUDAInterop;
 namespace niftk
 {
-class CUDAImage;
-class CUDAImageProperty;
-class LightweightCUDAImage;
+  class CUDAImage;
+  class CUDAImageProperty;
+  class LightweightCUDAImage;
 }
 namespace mitk
 {
-class DataStorage;
+  class DataStorage;
 }
 namespace niftk
 {
-class PCLData;
+  class PCLData;
 }
+
 struct VLUserData;
 class TrackballManipulator;
 
-#include "OclTriangleSorter.h"
-
+// #include "OclTriangleSorter.h"
 
 /**
  * This class is not thread-safe! Methods should only ever be called on the main
@@ -210,11 +210,11 @@ protected:
   vl::ref<vl::Actor> FindActorForNode(const mitk::DataNode::ConstPointer& node);
   vl::ref<VLUserData> GetUserData(vl::ref<vl::Actor> actor);
 
-  void UpdateTranslucentTriangles();
-  bool SortTranslucentTriangles();
-  bool MergeTranslucentTriangles();
-  bool NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& node);
-  bool NodeIsTranslucent(const mitk::DataNode::ConstPointer& node);
+  // void UpdateTranslucentTriangles();
+  // bool SortTranslucentTriangles();
+  // bool MergeTranslucentTriangles();
+  // bool NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& node);
+  // bool NodeIsTranslucent(const mitk::DataNode::ConstPointer& node);
 
 
   mitk::DataStorage::Pointer                  m_DataStorage;
@@ -292,18 +292,20 @@ protected:
   //@}
 
 
-  OclResourceService*                 m_OclService;
-  std::set<vl::ref<vl::Actor> >       m_TranslucentActors;
-  vl::ref<vl::Geometry>               m_TranslucentSurface;
-  vl::ref<vl::Actor>                  m_TranslucentSurfaceActor;
-  mitk::OclTriangleSorter           * m_OclTriangleSorter;
+  // Currently not used: left here just in case we need it for future fun :)
+  OclResourceService* m_OclService;
 
-  bool m_TranslucentStructuresMerged;
-  bool m_TranslucentStructuresSorted;
-  cl_uint m_TotalNumOfTranslucentTriangles;
-  cl_uint m_TotalNumOfTranslucentVertices;
-  cl_mem m_MergedTranslucentIndexBuf;
-  cl_mem m_MergedTranslucentVertexBuf;
+  // std::set<vl::ref<vl::Actor> >       m_TranslucentActors;
+  // vl::ref<vl::Geometry>               m_TranslucentSurface;
+  // vl::ref<vl::Actor>                  m_TranslucentSurfaceActor;
+  // mitk::OclTriangleSorter           * m_OclTriangleSorter;
+
+  // bool m_TranslucentStructuresMerged;
+  // bool m_TranslucentStructuresSorted;
+  // cl_uint m_TotalNumOfTranslucentTriangles;
+  // cl_uint m_TotalNumOfTranslucentVertices;
+  // cl_mem m_MergedTranslucentIndexBuf;
+  // cl_mem m_MergedTranslucentVertexBuf;
 
 
 protected:
