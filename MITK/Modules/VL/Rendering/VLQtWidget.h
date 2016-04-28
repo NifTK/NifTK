@@ -21,6 +21,7 @@
 #include <vlGraphics/OpenGLContext.hpp>
 #include <vlGraphics/Light.hpp>
 #include <vlGraphics/Camera.hpp>
+#include <vlGraphics/RendererVivid.hpp>
 #include <vlGraphics/Rendering.hpp>
 #include <vlGraphics/RenderingTree.hpp>
 #include <vlGraphics/SceneManagerActorTree.hpp>
@@ -235,6 +236,7 @@ protected:
 
   vl::ref<vl::RenderingTree>            m_RenderingTree;
   vl::ref<vl::Rendering>                m_OpaqueObjectsRendering;
+  vl::ref<vl::RendererVivid>            m_Vivid;
   vl::ref<vl::Rendering>                m_VolumeRendering;
   vl::ref<vl::Rendering>                m_BackgroundRendering;
   vl::ref<vl::BlitFramebuffer>          m_FinalBlit;

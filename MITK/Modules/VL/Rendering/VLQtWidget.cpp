@@ -481,6 +481,14 @@ void VLQtWidget::initializeGL()
 
   m_OpaqueObjectsRendering->setRenderQueueSorter( NULL );
   m_OpaqueObjectsRendering->setCullingEnabled( false );
+
+  /* Use Vivid Renderer */
+  m_Vivid = new vl::RendererVivid();
+  m_Vivid->setFramebuffer( vl::OpenGLContext::framebuffer() );
+  m_OpaqueObjectsRendering->setRenderer( m_Vivid.get() );
+  
+  // FIXME: allow switching between rendering modes
+  // m_Vivid->setRenderingMode( vl::RendererVivid::FastRender );
   // volume rendering is a separate stage, after opaque.
   // it needs access to the depth-buffer of the opaque geometry so that raycast can clip properly.
   m_VolumeRendering = new vl::Rendering;
@@ -1335,7 +1343,7 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   if (node.IsNull() || node->GetData() == 0)
     return;
 
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
+  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator it = m_NodeToActorMap.find(node);
   if (it == m_NodeToActorMap.end())
     return;
 
