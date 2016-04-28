@@ -242,7 +242,7 @@ protected:
   vl::ref<vl::Camera>                   m_Camera;
   vl::ref<vl::Camera>                   m_BackgroundCamera;
   vl::ref<vl::Light>                    m_Light;
-  vl::ref<vl::Transform>                m_LightTr;
+  // vl::ref<vl::Transform>                m_LightTr;
   vl::ref<TrackballManipulator>         m_Trackball;
 
   vl::ref<vl::GLSLProgram>              m_GenericGLSLShader;
