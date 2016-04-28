@@ -14,11 +14,14 @@
 
 #include <QTextStream>
 #include <QFile>
+#include <QDir>
 
 #include "VLQtWidget.h"
 #include <vlCore/Log.hpp>
 #include <vlCore/Time.hpp>
 #include <vlCore/Colors.hpp>
+#include <vlCore/GlobalSettings.hpp>
+#include <vlCore/FileSystem.hpp>
 #include <vlGraphics/GeometryPrimitives.hpp>
 #include <vlGraphics/RenderQueueSorter.hpp>
 #include <vlGraphics/GLSL.hpp>
@@ -489,6 +492,11 @@ void VLQtWidget::initializeGL()
   
   // FIXME: allow switching between rendering modes
   // m_Vivid->setRenderingMode( vl::RendererVivid::FastRender );
+
+  // FIXME: implement Qt VirtualDirectory & VirtualFile: just copy/paste DiskFile/Directory and use Qt instead of Win32/POSIX
+  vl::defFileSystem()->directories().clear();
+  vl::defFileSystem()->directories().push_back( new vl::DiskDirectory( "C:\\git-ucl\\VisualizationLibrary\\data" ) );
+
   // volume rendering is a separate stage, after opaque.
   // it needs access to the depth-buffer of the opaque geometry so that raycast can clip properly.
   m_VolumeRendering = new vl::Rendering;
