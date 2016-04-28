@@ -2600,7 +2600,7 @@ vl::String VLQtWidget::LoadGLSLSourceFromResources(const char* filename)
     QTextStream   textStream(&sourceFile);
 
     QString   qContents = textStream.readAll();
-    return vl::String(qContents.toStdString().c_str());
+    return vl::String::fromStdString(qContents.toStdString());
   }
   else
   {
