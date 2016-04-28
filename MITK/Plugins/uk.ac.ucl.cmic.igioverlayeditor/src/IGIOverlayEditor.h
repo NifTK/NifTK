@@ -51,80 +51,80 @@ public:
   /**
    * \see mitk::IRenderWindowPart::GetActiveQmitkRenderWindow()
    */
-  QmitkRenderWindow* GetActiveQmitkRenderWindow() const;
+  QmitkRenderWindow* GetActiveQmitkRenderWindow() const override;
 
   /**
    * \see mitk::IRenderWindowPart::GetQmitkRenderWindows()
    */
-  QHash<QString,QmitkRenderWindow*> GetQmitkRenderWindows() const;
+  QHash<QString,QmitkRenderWindow*> GetQmitkRenderWindows() const override;
 
   /**
    * \see mitk::IRenderWindowPart::GetQmitkRenderWindow(QString)
    */
-  QmitkRenderWindow* GetQmitkRenderWindow(const QString& id) const;
+  QmitkRenderWindow* GetQmitkRenderWindow(const QString& id) const override;
 
   /**
    * \see mitk::IRenderWindowPart::GetSelectionPosition()
    */
-  mitk::Point3D GetSelectedPosition(const QString& id = QString()) const;
+  mitk::Point3D GetSelectedPosition(const QString& id = QString()) const override;
 
   /**
    * \see mitk::IRenderWindowPart::SetSelectedPosition()
    */
-  void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
+  void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString()) override;
 
   /**
    * \see mitk::IRenderWindowPart::EnableDecorations()
    */
-  void EnableDecorations(bool enable, const QStringList& decorations = QStringList());
+  void EnableDecorations(bool enable, const QStringList& decorations = QStringList()) override;
 
   /**
    * \see mitk::IRenderWindowPart::IsDecorationEnabled()
    */
-  bool IsDecorationEnabled(const QString& decoration) const;
+  bool IsDecorationEnabled(const QString& decoration) const override;
 
   /**
    * \see mitk::IRenderWindowPart::GetDecorations()
    */
-  QStringList GetDecorations() const;
+  QStringList GetDecorations() const override;
 
   // -------------------  mitk::ILinkedRenderWindowPart  ----------------------
 
   /**
    * \see mitk::ILinkedRenderWindowPart::GetSlicesRotator()
    */
-  mitk::SlicesRotator* GetSlicesRotator() const;
+  mitk::SlicesRotator* GetSlicesRotator() const override;
 
   /**
    * \see mitk::ILinkedRenderWindowPart::GetSlicesSwiveller()
    */
-  mitk::SlicesSwiveller* GetSlicesSwiveller() const;
+  mitk::SlicesSwiveller* GetSlicesSwiveller() const override;
 
   /**
    * \see mitk::ILinkedRenderWindowPart::EnableSlicingPlanes()
    */
-  void EnableSlicingPlanes(bool enable);
+  void EnableSlicingPlanes(bool enable) override;
 
   /**
    * \see mitk::ILinkedRenderWindowPart::IsSlicingPlanesEnabled()
    */
-  bool IsSlicingPlanesEnabled() const;
+  bool IsSlicingPlanesEnabled() const override;
 
   /**
    * \see mitk::ILinkedRenderWindowPart::EnableLinkedNavigation()
    */
-  void EnableLinkedNavigation(bool enable);
+  void EnableLinkedNavigation(bool enable) override;
 
   /**
    * \see mitk::ILinkedRenderWindowPart::IsLinkedNavigationEnabled()
    */
-  bool IsLinkedNavigationEnabled() const;
+  bool IsLinkedNavigationEnabled() const override;
 
 protected:
 
-  void SetFocus();
-  void OnPreferencesChanged(const berry::IBerryPreferences*);
-  void CreateQtPartControl(QWidget* parent);
+  void SetFocus() override;
+  void OnPreferencesChanged(const berry::IBerryPreferences*) override;
+  void CreateQtPartControl(QWidget* parent) override;
 
   void WriteCurrentConfig(const QString& directory) const;
 

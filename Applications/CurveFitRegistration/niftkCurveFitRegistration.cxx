@@ -15,7 +15,6 @@
 #include <math.h>
 #include <float.h>
 #include <iomanip>
-#include <vector>
 #include <fstream>
 
 #include <itkLevenbergMarquardtOptimizer.h>
@@ -30,9 +29,6 @@
 
 #include <niftkConversionUtils.h>
 #include <niftkCommandLineParser.h>
-
-
-using namespace std;
 
 
 // -----------------------------------------------------------
@@ -152,7 +148,7 @@ int DoMain( char *exec, arguments args )
     std::cout << "Registration complete" << std::endl;
   }
   catch( itk::ExceptionObject & err ) {
-    std::cerr << "ERROR: Failed to fit a curve; " << err << endl;
+    std::cerr << "ERROR: Failed to fit a curve; " << err << std::endl;
     return EXIT_FAILURE;
   }
  

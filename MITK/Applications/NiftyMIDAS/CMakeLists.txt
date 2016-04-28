@@ -15,6 +15,11 @@
 project(NiftyMIDAS)
 set(MY_APP_NAME NiftyMIDAS)
 
+# Create a cache entry for the provisioning file which is used to export
+# the file name in the NifTKConfig.cmake file. This will keep external projects
+# which rely on this file happy.
+set(NIFTK_NIFTYMIDAS_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyMIDAS.provisioning" CACHE INTERNAL "NiftyMIDAS provisioning file" FORCE)
+
 ###########################################################
 # Note: You need to explicitly turn OFF MITK/CTK plugins.
 #

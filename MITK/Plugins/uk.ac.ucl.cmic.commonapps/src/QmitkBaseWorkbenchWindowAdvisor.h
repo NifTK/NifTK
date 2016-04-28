@@ -36,12 +36,12 @@ public:
   /// \brief We override the base class PreWindowOpen to specifically set
   /// QmitkExtWorkbenchWindowAdvisor::showVersionInfo and
   /// QmitkExtWorkbenchWindowAdvisor::showMitkVersionInfo to false.
-  virtual void PreWindowOpen();
+  virtual void PreWindowOpen() override;
 
   /// \brief We override the base class PostWindowCreate to customise
   /// the About dialog box to call our QmitkHelpAboutDialog, and to remove
   /// the Welcome dialog box.
-  virtual void PostWindowCreate();
+  virtual void PostWindowCreate() override;
 
 public slots:
 

@@ -34,8 +34,8 @@ public:
   VisibilityChangedCommand(VisibilityChangeObserver* observer, const mitk::DataNode* node);
   virtual ~VisibilityChangedCommand();
 
-  virtual void Execute(itk::Object* /*caller*/, const itk::EventObject& /*event*/);
-  virtual void Execute(const itk::Object* /*caller*/, const itk::EventObject& /*event*/);
+  virtual void Execute(itk::Object* /*caller*/, const itk::EventObject& /*event*/) override;
+  virtual void Execute(const itk::Object* /*caller*/, const itk::EventObject& /*event*/) override;
 
 private:
   VisibilityChangeObserver* m_Observer;

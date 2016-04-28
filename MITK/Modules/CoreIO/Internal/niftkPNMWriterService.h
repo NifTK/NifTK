@@ -31,12 +31,12 @@ public:
   PNMWriterService();
   virtual ~PNMWriterService();
 
-  virtual void Write();
+  virtual void Write() override;
 
 private:
 
   PNMWriterService(const PNMWriterService & other);
-  virtual PNMWriterService * Clone() const;
+  virtual PNMWriterService * Clone() const override;
 };
 
 } // end of namespace mitk

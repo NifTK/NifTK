@@ -28,15 +28,15 @@ set(MODULE_DIRS
   Core
   CoreIO
   CoreGui
-  DnDDisplay
-  Thumbnail
 )
 
 if(BUILD_MIDAS)
   set(MODULE_DIRS
     ${MODULE_DIRS}
+    DnDDisplay
     MIDAS
     MIDASGui
+    Thumbnail
   )
 endif()
 
@@ -58,10 +58,10 @@ if(BUILD_IGI)
     ICPReg
     OpenCV
     SurfRecon
-    IGIServices
+    NDITrackers
     IGI
     IGIGui
-    NDITrackers
+    IGIServices
     IGIDataSources
 
     # Notice how the IGIDataSourcesManager does NOT know about

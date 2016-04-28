@@ -78,7 +78,7 @@ public:
   /**
    * \brief Defined in base class, returns the current value as a string for display in property view.
    */
-  virtual std::string GetValueAsString() const;
+  virtual std::string GetValueAsString() const override;
 
   /**
    * \brief Method to set these parameters back to identity, which is [false, 0, 0, 0, 0, 0, 0].
@@ -94,17 +94,17 @@ protected:
   /**
    * \see mitk::BaseProperty::IsEqual()
    */
-  virtual bool IsEqual(const BaseProperty& property) const;
+  virtual bool IsEqual(const BaseProperty& property) const override;
 
   /**
    * \see mitk::BaseProperty::Assign()
    */
-  virtual bool Assign(const BaseProperty& );
+  virtual bool Assign(const BaseProperty& ) override;
 
 private:
 
   ITKRegionParametersDataNodeProperty& operator=(const ITKRegionParametersDataNodeProperty&); // Purposefully not implemented.
-  itk::LightObject::Pointer InternalClone() const;
+  itk::LightObject::Pointer InternalClone() const override;
 
   ParametersType m_Parameters;
   bool m_IsValid;

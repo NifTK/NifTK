@@ -45,7 +45,7 @@
 #include <usModuleResourceStream.h>
 #include <usModuleRegistry.h>
 
-#include <Rendering/SharedOGLContext.h>
+#include <niftkSharedOGLContext.h>
 
 #ifdef _USE_CUDA
 #include <niftkCUDAImage.h>
@@ -149,7 +149,7 @@ void VLRendererView::CreateQtPartControl(QWidget* parent)
 void VLRendererView::InitVLRendering()
 {
   assert(m_VLQtRenderWindow == 0);
-  m_VLQtRenderWindow = new VLQt4Widget(0, SharedOGLContext::GetShareWidget());
+  m_VLQtRenderWindow = new VLQtWidget(0, niftk::SharedOGLContext::GetShareWidget());
   m_VLQtRenderWindow->SetDataStorage(GetDataStorage());
 
 

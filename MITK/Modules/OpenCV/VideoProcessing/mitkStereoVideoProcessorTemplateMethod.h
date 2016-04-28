@@ -37,12 +37,7 @@ public:
   /**
    * \see BaseVideoProcessor::Initialize()
    */
-  virtual void Initialize();
-
-  /**
-   * \brief BaseVideoProcessor::Run()
-   */
-  virtual void Run() = 0;
+  virtual void Initialize() override;
 
 protected:
 
@@ -58,7 +53,7 @@ protected:
    * the size of the grabbed image, or if writerInterleaved constructor argument is true, the size of the
    * left and right image side by side.
    */
-  CvSize GetOutputImageSize();
+  CvSize GetOutputImageSize() override;
 
   /**
    * \brief Utility method, to facilitate writing out a stereo pair.

@@ -188,7 +188,7 @@ public:
 
   /** Method to return the latest modified time of this object or
    * any of its cached ivars */
-  unsigned long GetMTime() const;  
+  unsigned long GetMTime() const override;  
   
   /** Set the multi-resolution pyramid schedule */
   ScheduleType* GetSchedule() { return m_Schedule;}
@@ -213,12 +213,12 @@ public:
 protected:
   MultiResolutionImageRegistrationWrapper();
   virtual ~MultiResolutionImageRegistrationWrapper() {};
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   /** 
    * Method invoked by the pipeline in order to trigger the computation of the registration. 
    */
-  void  GenerateData ();
+  void  GenerateData () override;
 
   /**
    * This is only called once, before the registration starts, to set up all the pyramids.

@@ -13,3 +13,6 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkCUDA)
+
+target_link_libraries(niftkCUDATestDriver PRIVATE ${CUDA_CUDA_LIBRARY} ${CUDA_CUDART_LIBRARY})
+

@@ -1088,9 +1088,9 @@ void WritePolydataAsTetgenSmeshFile( const char *smesh_file, vtkPolyData *surfac
   vtkPoints *points = surface->GetPoints();
   int numPts = points->GetNumberOfPoints();
 
-  *fp << "# Node count, 3 dim, no attribute, no boundary marker" << endl;
-  *fp << numPts << " " << 3 << " " << 0 << " " << 0 << endl;
-  *fp << "# Node index, node coordinates" << endl;
+  *fp << "# Node count, 3 dim, no attribute, no boundary marker" << std::endl;
+  *fp << numPts << " " << 3 << " " << 0 << " " << 0 << std::endl;
+  *fp << "# Node index, node coordinates" << std::endl;
 
 
   // Write the point data
@@ -1115,7 +1115,7 @@ void WritePolydataAsTetgenSmeshFile( const char *smesh_file, vtkPolyData *surfac
 	if (i < 2) *fp << " "; 
       }
 
-      *fp << endl;
+      *fp << std::endl;
     }
       
   }
@@ -1138,10 +1138,10 @@ void WritePolydataAsTetgenSmeshFile( const char *smesh_file, vtkPolyData *surfac
   int ncells=cells->GetNumberOfCells();
 //  int size=cells->GetNumberOfConnectivityEntries();
 
-  *fp << "# Facet listings" << endl;
-  *fp << "# Number of facets, no boundary marker" << endl;
-  *fp << ncells << " " << 0 << endl;
-  *fp << "# Number of nodes defining the facet, node indices" << endl;
+  *fp << "# Facet listings" << std::endl;
+  *fp << "# Number of facets, no boundary marker" << std::endl;
+  *fp << ncells << " " << 0 << std::endl;
+  *fp << "# Number of nodes defining the facet, node indices" << std::endl;
 
   if (ncells < 1) {
     std::cerr << "No cells in surface mesh, SMESH file save aborted." ;
@@ -1162,10 +1162,10 @@ void WritePolydataAsTetgenSmeshFile( const char *smesh_file, vtkPolyData *surfac
     *fp << "\n";
   }
   
-  *fp << "# No holes" << endl;
-  *fp << 0 << endl;
-  *fp << "# No region attributes" << endl;
-  *fp << 0 << endl;
+  *fp << "# No holes" << std::endl;
+  *fp << 0 << std::endl;
+  *fp << "# No region attributes" << std::endl;
+  *fp << 0 << std::endl;
 
   delete fp;
 }

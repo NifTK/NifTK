@@ -35,7 +35,7 @@ public:
   /**
   * \see SystemTimeServiceI::GetSystemTimeInNanoseconds()
   */
-  virtual TimeType GetSystemTimeInNanoseconds() const;
+  virtual TimeType GetSystemTimeInNanoseconds() const override;
 
 private:
 

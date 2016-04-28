@@ -36,7 +36,7 @@ public:
 protected:
 
   /// \brief Derived classes override this to provide a workbench advisor.
-  virtual berry::WorkbenchAdvisor* GetWorkbenchAdvisor();
+  virtual berry::WorkbenchAdvisor* GetWorkbenchAdvisor() override;
 
 };
 

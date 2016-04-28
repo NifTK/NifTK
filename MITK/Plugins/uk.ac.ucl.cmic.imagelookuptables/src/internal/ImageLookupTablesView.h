@@ -52,24 +52,24 @@ public:
   /**
    * \brief Called by framework, this method creates all the controls for this view.
    */
-  virtual void CreateQtPartControl(QWidget *parent);
+  virtual void CreateQtPartControl(QWidget *parent) override;
 
   /**
    * \brief Called by framework when DataManager's selection has changed.
    */
   virtual void OnSelectionChanged( berry::IWorkbenchPart::Pointer source,
-                                   const QList<mitk::DataNode::Pointer>& nodes );
+                                   const QList<mitk::DataNode::Pointer>& nodes ) override;
 protected:
 
   /**
    * \brief \see QmitkBaseView::Activated()
    */
-  virtual void Activated();
+  virtual void Activated() override;
 
   /**
    * \brief Called by framework, sets the focus on a specific widget.
    */
-  virtual void SetFocus();
+  virtual void SetFocus() override;
 
   /**
    * \brief We listen to the Level/Window property on the registered image, so this callback updates this GUI when the watched property changes.
@@ -243,7 +243,7 @@ private:
   /**
    * \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
    */
-  virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*) override;
 
   /**
    * \brief All the controls for the main view part.

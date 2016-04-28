@@ -112,7 +112,7 @@ private:
   OpenCVVideoDataSourceService(const OpenCVVideoDataSourceService&); // deliberately not implemented
   OpenCVVideoDataSourceService& operator=(const OpenCVVideoDataSourceService&); // deliberately not implemented
 
-  void SaveItem(niftk::IGIDataType::Pointer item);
+  void SaveItem(niftk::IGIDataType::Pointer item) override;
 
   static niftk::IGIDataSourceLocker               s_Lock;
   QMutex                                          m_Lock;

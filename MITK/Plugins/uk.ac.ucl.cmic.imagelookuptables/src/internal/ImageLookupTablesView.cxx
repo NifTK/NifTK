@@ -36,8 +36,8 @@
 #include <mitkImageAccessByItk.h>
 #include <mitkLookupTable.h>
 #include <mitkLookupTableProperty.h>
-#include <mitkNamedLookupTableProperty.h>
-#include <mitkLabeledLookupTableProperty.h>
+#include <niftkNamedLookupTableProperty.h>
+#include <niftkLabeledLookupTableProperty.h>
 
 #include <mitkRenderingManager.h>
 #include <mitkRenderingModeProperty.h>
@@ -308,6 +308,7 @@ void ImageLookupTablesView::BlockSignals(bool b)
   m_Controls->m_MinSlider->blockSignals(b);
   m_Controls->m_MaxSlider->blockSignals(b);
   m_Controls->m_WindowSlider->blockSignals(b);
+  m_Controls->m_LookupTableComboBox->blockSignals(b);
   m_Controls->m_LevelSlider->blockSignals(b);
   m_Controls->m_MinLimitDoubleSpinBox->blockSignals(b);
   m_Controls->m_MaxLimitDoubleSpinBox->blockSignals(b);
@@ -338,46 +339,36 @@ void ImageLookupTablesView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /
 //-----------------------------------------------------------------------------
 bool ImageLookupTablesView::IsSelectionValid(const QList<mitk::DataNode::Pointer>& nodes)
 {
-  bool isValid = true;
-
   if (nodes.count() != 1)
   {
-    isValid = false;
+    return false;
   }
 
+  mitk::DataNode::Pointer node = nodes.at(0);
   // All nodes must be non null, non-helper images.
-  foreach (mitk::DataNode::Pointer node, nodes)
+  if (node.IsNull())
   {
-    if (node.IsNull())
-    {
-      isValid = false;
-    }
-
-    if (node.IsNotNull() && dynamic_cast<mitk::Image*>(node->GetData()) == NULL)
-    {
-      isValid = false;
-    }
-
-    bool isHelper(false);
-    if (node->GetBoolProperty("helper object", isHelper) && isHelper)
-    {
-      isValid = false;
-    }
-
-    bool isSelected(false);
-    node->GetBoolProperty("selected", isSelected);
-    if (!isSelected)
-    {
-      isValid = false;
-    }
-
-    if (!node->GetProperty("levelwindow"))
-    {
-      isValid = false;
-    }
-
+    return false;
+  }
+  else if ( dynamic_cast<mitk::Image*>(node->GetData()) == NULL)
+  {
+    return false;
   }
 
+  bool isHelper(false);
+  if (node->GetBoolProperty("helper object", isHelper) && isHelper)
+  {
+    return false;
+  }
+
+  bool isSelected(false);
+  node->GetBoolProperty("selected", isSelected);
+  if (!isSelected)
+  {
+    return false;
+  }
+
+  bool isValid = mitk::IsNodeAGreyScaleImage(node);
   return isValid;
 }
 
@@ -687,7 +678,7 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
       m_CurrentNode->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
 
       // Get LUT from Micro Service.
-      mitk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
+      niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
       m_CurrentNode->ReplaceProperty("LookupTable", mitkLUTProperty);
 
       mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
@@ -701,7 +692,7 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
     else
     {
       // Get LUT from Micro Service.
-      mitk::LabeledLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName);
+      niftk::LabeledLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName);
       m_CurrentNode->ReplaceProperty("LookupTable", mitkLUTProperty);
 
       mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_COLOR);
@@ -826,8 +817,8 @@ void ImageLookupTablesView::OnSaveButtonPressed()
     return;
   }
 
-  mitk::LabeledLookupTableProperty::Pointer labelProperty 
-    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+  niftk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<niftk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
 
   if (labelProperty.IsNull())
   {
@@ -982,8 +973,8 @@ void ImageLookupTablesView::UpdateLabelMapTable()
     return;
   }
 
-  mitk::LabeledLookupTableProperty::Pointer labelProperty 
-    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+  niftk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<niftk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
 
   if (labelProperty.IsNull())
   {
@@ -993,7 +984,7 @@ void ImageLookupTablesView::UpdateLabelMapTable()
   }
 
   // get labels and LUT
-  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  niftk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   vtkSmartPointer<vtkLookupTable> vtkLUT = labelProperty->GetLookupTable()->GetVtkLookupTable();
 
   m_Controls->widget_LabelTable->setRowCount(labels.size());
@@ -1062,15 +1053,15 @@ void ImageLookupTablesView::OnAddLabelButtonPressed()
     return;
   }
 
-  mitk::LabeledLookupTableProperty::Pointer labelProperty 
-    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+  niftk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<niftk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
   if (labelProperty.IsNull())
   {
     MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
     return;
   }
 
-  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  niftk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   vtkSmartPointer<vtkLookupTable> oldLUT = labelProperty->GetLookupTable()->GetVtkLookupTable();
 
   bool en = m_Controls->widget_LabelTable->blockSignals(true);
@@ -1113,8 +1104,8 @@ void ImageLookupTablesView::OnRemoveLabelButtonPressed()
     return;
   }
 
-  mitk::LabeledLookupTableProperty::Pointer labelProperty 
-    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+  niftk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<niftk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
   if (labelProperty.IsNull())
   {
     MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
@@ -1124,7 +1115,7 @@ void ImageLookupTablesView::OnRemoveLabelButtonPressed()
   bool en = m_Controls->widget_LabelTable->blockSignals(true);
 
   QList<QTableWidgetSelectionRange> selectedItems = m_Controls->widget_LabelTable->selectedRanges();
-  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  niftk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   vtkSmartPointer<vtkLookupTable> lut = labelProperty->GetLookupTable()->GetVtkLookupTable();
 
   QColor nanColor(lut->GetNanColor()[0], lut->GetNanColor()[1], lut->GetNanColor()[2], lut->GetNanColor()[3]);
@@ -1167,8 +1158,8 @@ void ImageLookupTablesView::OnMoveLabelUpButtonPressed()
     return;
   }
 
-  mitk::LabeledLookupTableProperty::Pointer labelProperty 
-    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+  niftk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<niftk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
   if (labelProperty.IsNull())
   {
     MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
@@ -1177,7 +1168,7 @@ void ImageLookupTablesView::OnMoveLabelUpButtonPressed()
 
   bool en = m_Controls->widget_LabelTable->blockSignals(true);
 
-  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  niftk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   QList<QTableWidgetSelectionRange> selectedItems = m_Controls->widget_LabelTable->selectedRanges();
 
   for (unsigned int i = 0; i < selectedItems.size(); i++)
@@ -1219,8 +1210,8 @@ void ImageLookupTablesView::OnMoveLabelDownButtonPressed()
     return;
   }
 
-  mitk::LabeledLookupTableProperty::Pointer labelProperty 
-    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+  niftk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<niftk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
   if (labelProperty.IsNull())
   {
     MITK_ERROR << "LookupTable is not a LabeledLookupTableProperty";
@@ -1229,7 +1220,7 @@ void ImageLookupTablesView::OnMoveLabelDownButtonPressed()
 
   bool en = m_Controls->widget_LabelTable->blockSignals(true);
 
-  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  niftk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   QList<QTableWidgetSelectionRange> selectedItems = m_Controls->widget_LabelTable->selectedRanges();
 
   for (unsigned int i = 0; i < selectedItems.size(); i++)
@@ -1271,8 +1262,8 @@ void ImageLookupTablesView::OnColorButtonPressed(int index)
     return;
   }
 
-  mitk::LabeledLookupTableProperty::Pointer labelProperty 
-    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+  niftk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<niftk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
 
   if (labelProperty.IsNull())
   {
@@ -1282,7 +1273,7 @@ void ImageLookupTablesView::OnColorButtonPressed(int index)
 
   bool en = m_Controls->widget_LabelTable->blockSignals(true);
   
-  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  niftk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   vtkSmartPointer<vtkLookupTable> lut = labelProperty->GetLookupTable()->GetVtkLookupTable();
 
   int value = labels.at(index).first;
@@ -1343,8 +1334,8 @@ void ImageLookupTablesView::OnLabelMapTableCellChanged(int row, int column)
     return;
   }
 
-  mitk::LabeledLookupTableProperty::Pointer labelProperty 
-    = dynamic_cast<mitk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
+  niftk::LabeledLookupTableProperty::Pointer labelProperty 
+    = dynamic_cast<niftk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
 
   if (labelProperty.IsNull())
   {
@@ -1353,7 +1344,7 @@ void ImageLookupTablesView::OnLabelMapTableCellChanged(int row, int column)
   }
 
   
-  mitk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
+  niftk::LabeledLookupTableProperty::LabelListType labels = labelProperty->GetLabels();
   vtkSmartPointer<vtkLookupTable> lut = labelProperty->GetLookupTable()->GetVtkLookupTable();
 
   if (column == 1)

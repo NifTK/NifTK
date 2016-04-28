@@ -51,7 +51,7 @@ public:
   mitkClassMacro(FastPointSetVtkMapper3D, VtkMapper);
   itkNewMacro(Self);
 
-  virtual vtkProp* GetVtkProp(mitk::BaseRenderer* renderer);
+  virtual vtkProp* GetVtkProp(mitk::BaseRenderer* renderer) override;
   virtual const mitk::PointSet* GetInput();
 
 protected:
@@ -84,8 +84,8 @@ protected:
 
   mitk::LocalStorageHandler<LocalStorage> m_LocalStorage;
 
-  virtual void GenerateDataForRenderer(mitk::BaseRenderer* renderer);
-  virtual void ResetMapper( mitk::BaseRenderer* renderer );
+  virtual void GenerateDataForRenderer(mitk::BaseRenderer* renderer) override;
+  virtual void ResetMapper( mitk::BaseRenderer* renderer ) override;
 
 };
 

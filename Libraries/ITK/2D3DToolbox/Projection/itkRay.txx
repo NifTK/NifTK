@@ -22,9 +22,6 @@
 //#define DEEP_DEBUG_RAY
 //#define DEBUG_RAY
 
-
-using namespace std;
-
 namespace itk
 {
 
@@ -930,7 +927,7 @@ Ray<TInputImage, TCoordRep>
     m_TotalRayVoxelPlanes = (int)zNum;
 
 #ifdef DEEP_DEBUG_RAY
-    std::cout << "TotalRayVoxelPlanes: " << m_TotalRayVoxelPlanes << endl;
+    std::cout << "TotalRayVoxelPlanes: " << m_TotalRayVoxelPlanes << std::endl;
 #endif
 
     m_TraversalDirection = TRANSVERSE_IN_Z;
@@ -1021,10 +1018,10 @@ Ray<TInputImage, TCoordRep>
     else {
 
 #ifdef DEEP_DEBUG_RAY
-      cout <<  " m_TotalRayVoxelPlanes: " << m_TotalRayVoxelPlanes << endl
-	   << "Istart[0]: " << Istart[0] << " m_RayVoxelStartPosition[0]: " << m_RayVoxelStartPosition[0] << " m_VoxelIncrement[0]: " << m_VoxelIncrement[0] << " Idirn[0]: " << Idirn[0] << " m_NumberOfVoxelsInX: " << m_NumberOfVoxelsInX << endl
-	   << "Istart[1]: " << Istart[1] << " m_RayVoxelStartPosition[1]: " << m_RayVoxelStartPosition[1] << " m_VoxelIncrement[1]: " << m_VoxelIncrement[1] << " Idirn[1]: " << Idirn[1] << " m_NumberOfVoxelsInY: " << m_NumberOfVoxelsInY << endl
-	   << "Istart[2]: " << Istart[2] << " m_RayVoxelStartPosition[2]: " << m_RayVoxelStartPosition[2] << " m_VoxelIncrement[2]: " << m_VoxelIncrement[2] << " Idirn[2]: " << Idirn[2] << " m_NumberOfVoxelsInZ: " << m_NumberOfVoxelsInZ << endl;
+      std::cout <<  " m_TotalRayVoxelPlanes: " << m_TotalRayVoxelPlanes << std::endl
+	   << "Istart[0]: " << Istart[0] << " m_RayVoxelStartPosition[0]: " << m_RayVoxelStartPosition[0] << " m_VoxelIncrement[0]: " << m_VoxelIncrement[0] << " Idirn[0]: " << Idirn[0] << " m_NumberOfVoxelsInX: " << m_NumberOfVoxelsInX << std::endl
+	   << "Istart[1]: " << Istart[1] << " m_RayVoxelStartPosition[1]: " << m_RayVoxelStartPosition[1] << " m_VoxelIncrement[1]: " << m_VoxelIncrement[1] << " Idirn[1]: " << Idirn[1] << " m_NumberOfVoxelsInY: " << m_NumberOfVoxelsInY << std::endl
+	   << "Istart[2]: " << Istart[2] << " m_RayVoxelStartPosition[2]: " << m_RayVoxelStartPosition[2] << " m_VoxelIncrement[2]: " << m_VoxelIncrement[2] << " Idirn[2]: " << Idirn[2] << " m_NumberOfVoxelsInZ: " << m_NumberOfVoxelsInZ << std::endl;
 #endif
       m_TotalRayVoxelPlanes--;
 

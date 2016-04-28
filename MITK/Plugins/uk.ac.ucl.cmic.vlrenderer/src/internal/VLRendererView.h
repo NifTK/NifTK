@@ -29,7 +29,13 @@
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 
-#include <Rendering/VLQt4Widget.h>
+#include <Rendering/VLQtWidget.h>
+
+// Note:
+// On Linux, some of the above includes include Xlib.h, transitively.
+// Xlib.h defines a 'Bool' symbol that clashes with QMetaType::Bool
+// what makes the Qt metaobject compiler fail to compile the moc file.
+#undef Bool
 
 /**
  * \class VLRendererView
@@ -91,7 +97,7 @@ private:
 
   // VL rendering specific members
   // FIXME: should just be a pointer, so we can drop the header dependency on vl.
-  vl::ref<VLQt4Widget>       m_VLQtRenderWindow;
+  vl::ref<VLQtWidget>       m_VLQtRenderWindow;
 
   // Listeners
   mitk::DataNodePropertyListener::Pointer    m_SelectionListener;

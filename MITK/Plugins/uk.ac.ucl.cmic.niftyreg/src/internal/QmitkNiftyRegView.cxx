@@ -1375,7 +1375,7 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
   if ( m_RegParameters.m_FlagDoInitialRigidReg ) 
   {
 
-    fout << "reg_aladin \\" << endl;
+    fout << "reg_aladin \\" << std::endl;
 
     // The reference image filename
 
@@ -1386,7 +1386,7 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
       fout << "/";
 
     fout << m_RegParameters.m_AladinParameters.referenceImageName.toStdString().c_str() 
-	 << ".nii \\" << endl;
+	 << ".nii \\" << std::endl;
 
     // The floating image filename
 
@@ -1397,33 +1397,33 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
       fout << "/";
 
     fout << m_RegParameters.m_AladinParameters.floatingImageName.toStdString().c_str() 
-	 << ".nii \\" << endl;
+	 << ".nii \\" << std::endl;
 
     if ( m_RegParameters.m_AladinParameters.symFlag )
-      fout << "   -sym \\" << endl;
+      fout << "   -sym \\" << std::endl;
 
     if ( m_RegParameters.m_AladinParameters.outputAffineFlag )
       fout << "   -aff " 
 	   << m_RegParameters.m_AladinParameters.outputAffineName.toStdString().c_str() 
-	   << " \\" << endl;
+	   << " \\" << std::endl;
 
     if ( m_RegParameters.m_AladinParameters.alignCenterFlag )
-      fout << "   -nac \\" << endl;
+      fout << "   -nac \\" << std::endl;
 
     if ( m_RegParameters.m_AladinParameters.regnType == RIGID_ONLY )
-      fout << "   -rigOnly \\" << endl;
+      fout << "   -rigOnly \\" << std::endl;
     else if ( m_RegParameters.m_AladinParameters.regnType == DIRECT_AFFINE )
-      fout << "   -affDirect \\" << endl;
+      fout << "   -affDirect \\" << std::endl;
 
-    fout << "   -maxit " << m_RegParameters.m_AladinParameters.maxiterationNumber << " \\" << endl
-	 << "   -%v " << m_RegParameters.m_AladinParameters.block_percent_to_use << " \\" << endl
-	 << "   -%i " << m_RegParameters.m_AladinParameters.inlier_lts << " \\" << endl
-	 << "   -interp " << m_RegParameters.m_AladinParameters.interpolation << " \\" << endl;
+    fout << "   -maxit " << m_RegParameters.m_AladinParameters.maxiterationNumber << " \\" << std::endl
+	 << "   -%v " << m_RegParameters.m_AladinParameters.block_percent_to_use << " \\" << std::endl
+	 << "   -%i " << m_RegParameters.m_AladinParameters.inlier_lts << " \\" << std::endl
+	 << "   -interp " << m_RegParameters.m_AladinParameters.interpolation << " \\" << std::endl;
 
     if ( m_RegParameters.m_FlagFlirtAffine )
-      fout << "   -affFlirt " << m_RegParameters.m_InputAffineName.toStdString().c_str() << " \\" << endl;
+      fout << "   -affFlirt " << m_RegParameters.m_InputAffineName.toStdString().c_str() << " \\" << std::endl;
     else if ( m_RegParameters.m_FlagInputAffine )
-      fout << "   -inaff " << m_RegParameters.m_InputAffineName.toStdString().c_str() << " \\" << endl;
+      fout << "   -inaff " << m_RegParameters.m_InputAffineName.toStdString().c_str() << " \\" << std::endl;
 
     // The reference image mask filename
 
@@ -1435,17 +1435,17 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
 	fout << "/";
       
       fout << m_RegParameters.m_AladinParameters.referenceMaskName.toStdString().c_str() 
-	   << ".nii \\" << endl;
+	   << ".nii \\" << std::endl;
     }
 
     if ( m_RegParameters.m_TargetSigmaValue )
-      fout << "   -smooR " << m_RegParameters.m_TargetSigmaValue << " \\" << endl;
+      fout << "   -smooR " << m_RegParameters.m_TargetSigmaValue << " \\" << std::endl;
 
     if ( m_RegParameters.m_SourceSigmaValue )
-      fout << "   -smooF " << m_RegParameters.m_SourceSigmaValue << " \\" << endl;
+      fout << "   -smooF " << m_RegParameters.m_SourceSigmaValue << " \\" << std::endl;
 
-    fout << "   -ln " << m_RegParameters.m_LevelNumber << " \\" << endl
-	 << "   -lp " << m_RegParameters.m_Level2Perform << " \\" << endl;
+    fout << "   -ln " << m_RegParameters.m_LevelNumber << " \\" << std::endl
+	 << "   -lp " << m_RegParameters.m_Level2Perform << " \\" << std::endl;
 
     if ( m_RegParameters.m_AladinParameters.outputResultFlag ) {
       fout << "   -res " 
@@ -1455,16 +1455,16 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
 	fout << "/";
       
       fout  << m_RegParameters.m_AladinParameters.outputResultName.toStdString().c_str() 
-	    << ".nii" << endl << endl;
+	    << ".nii" << std::endl << std::endl;
     }
     else
-      fout << "   -res outputAffineResult.nii" << endl << endl;
+      fout << "   -res outputAffineResult.nii" << std::endl << std::endl;
   }
 
 
   if ( m_RegParameters.m_FlagDoNonRigidReg ) 
   {
-    fout << "reg_f3d \\" << endl;
+    fout << "reg_f3d \\" << std::endl;
 
     // The reference image filename
 
@@ -1475,7 +1475,7 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
       fout << "/";
       
     fout << m_RegParameters.m_F3dParameters.referenceImageName.toStdString().c_str()
-	 << ".nii \\" << endl;
+	 << ".nii \\" << std::endl;
 
     // The floating image filename
 
@@ -1486,18 +1486,18 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
       fout << "/";
       
     fout << m_RegParameters.m_F3dParameters.floatingImageName.toStdString().c_str()
-	 << ".nii \\" << endl;
+	 << ".nii \\" << std::endl;
 
     if ( m_RegParameters.m_F3dParameters.inputControlPointGridFlag )
-      fout << "   -incpp " << m_RegParameters.m_F3dParameters.inputControlPointGridName.toStdString().c_str() << ".nii \\" << endl;
+      fout << "   -incpp " << m_RegParameters.m_F3dParameters.inputControlPointGridName.toStdString().c_str() << ".nii \\" << std::endl;
     
     if ( m_RegParameters.m_FlagFlirtAffine )
-      fout << "   -affFlirt " << m_RegParameters.m_InputAffineName.toStdString().c_str() << " \\" << endl;
+      fout << "   -affFlirt " << m_RegParameters.m_InputAffineName.toStdString().c_str() << " \\" << std::endl;
     else if ( m_RegParameters.m_FlagInputAffine )
-      fout << "   -inaff " << m_RegParameters.m_InputAffineName.toStdString().c_str() << " \\" << endl;
+      fout << "   -inaff " << m_RegParameters.m_InputAffineName.toStdString().c_str() << " \\" << std::endl;
     
     if ( ! m_RegParameters.m_F3dParameters.outputControlPointGridName.isEmpty() )
-      fout << "   -cpp " << m_RegParameters.m_F3dParameters.outputControlPointGridName.toStdString().c_str() << " \\" << endl;
+      fout << "   -cpp " << m_RegParameters.m_F3dParameters.outputControlPointGridName.toStdString().c_str() << " \\" << std::endl;
     
     // The reference image mask name
     
@@ -1509,68 +1509,68 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
 	fout << "/";
       
       fout << m_RegParameters.m_F3dParameters.referenceMaskName.toStdString().c_str() 
-	   << ".nii \\" << endl;
+	   << ".nii \\" << std::endl;
     }
 
     if ( m_RegParameters.m_TargetSigmaValue )
-      fout << "   -smooR " << m_RegParameters.m_TargetSigmaValue << " \\" << endl;
+      fout << "   -smooR " << m_RegParameters.m_TargetSigmaValue << " \\" << std::endl;
     
     if ( m_RegParameters.m_SourceSigmaValue )
-      fout << "   -smooF " << m_RegParameters.m_SourceSigmaValue << " \\" << endl;
+      fout << "   -smooF " << m_RegParameters.m_SourceSigmaValue << " \\" << std::endl;
     
-    fout << "   -rbn " << m_RegParameters.m_F3dParameters.referenceBinNumber << " \\" << endl
-	 << "   -fbn " << m_RegParameters.m_F3dParameters.floatingBinNumber << " \\" << endl;
+    fout << "   -rbn " << m_RegParameters.m_F3dParameters.referenceBinNumber << " \\" << std::endl
+	 << "   -fbn " << m_RegParameters.m_F3dParameters.floatingBinNumber << " \\" << std::endl;
     
     if ( m_RegParameters.m_F3dParameters.referenceThresholdUp != -std::numeric_limits<PrecisionTYPE>::max() )
-      fout << "   -rUpTh " << m_RegParameters.m_F3dParameters.referenceThresholdUp << " \\" << endl;
+      fout << "   -rUpTh " << m_RegParameters.m_F3dParameters.referenceThresholdUp << " \\" << std::endl;
     if ( m_RegParameters.m_F3dParameters.referenceThresholdLow != -std::numeric_limits<PrecisionTYPE>::max() )
-      fout << "   -rLwTh " << m_RegParameters.m_F3dParameters.referenceThresholdLow << " \\" << endl;
+      fout << "   -rLwTh " << m_RegParameters.m_F3dParameters.referenceThresholdLow << " \\" << std::endl;
     
     if ( m_RegParameters.m_F3dParameters.floatingThresholdUp != -std::numeric_limits<PrecisionTYPE>::max() )
-      fout << "   -fUpTh " << m_RegParameters.m_F3dParameters.floatingThresholdUp << " \\" << endl;
+      fout << "   -fUpTh " << m_RegParameters.m_F3dParameters.floatingThresholdUp << " \\" << std::endl;
     if ( m_RegParameters.m_F3dParameters.floatingThresholdLow != -std::numeric_limits<PrecisionTYPE>::max() )
-      fout << "   -fLwTh " << m_RegParameters.m_F3dParameters.floatingThresholdLow << " \\" << endl;
+      fout << "   -fLwTh " << m_RegParameters.m_F3dParameters.floatingThresholdLow << " \\" << std::endl;
     
-    fout << "   -sx " << m_RegParameters.m_F3dParameters.spacing[0] << " \\" << endl
-	 << "   -sy " << m_RegParameters.m_F3dParameters.spacing[1] << " \\" << endl
-	 << "   -sz " << m_RegParameters.m_F3dParameters.spacing[2] << " \\" << endl;
+    fout << "   -sx " << m_RegParameters.m_F3dParameters.spacing[0] << " \\" << std::endl
+	 << "   -sy " << m_RegParameters.m_F3dParameters.spacing[1] << " \\" << std::endl
+	 << "   -sz " << m_RegParameters.m_F3dParameters.spacing[2] << " \\" << std::endl;
     
-    fout << "   -be " << m_RegParameters.m_F3dParameters.bendingEnergyWeight << " \\" << endl
+    fout << "   -be " << m_RegParameters.m_F3dParameters.bendingEnergyWeight << " \\" << std::endl
       
 	 << "   -le " << m_RegParameters.m_F3dParameters.linearEnergyWeight0 
-	 << " " << m_RegParameters.m_F3dParameters.linearEnergyWeight1 << " \\" << endl
+	 << " " << m_RegParameters.m_F3dParameters.linearEnergyWeight1 << " \\" << std::endl
       
-	 << "   -jl " << m_RegParameters.m_F3dParameters.jacobianLogWeight << " \\" << endl;
+	 << "   -jl " << m_RegParameters.m_F3dParameters.jacobianLogWeight << " \\" << std::endl;
     
     if ( ! m_RegParameters.m_F3dParameters.jacobianLogApproximation )
-      fout << "   -noAppJL \\" << endl;
+      fout << "   -noAppJL \\" << std::endl;
     
     if ( ! m_RegParameters.m_F3dParameters.useConjugate )
-      fout << "   -noConj \\" << endl;
+      fout << "   -noConj \\" << std::endl;
     
     if ( m_RegParameters.m_F3dParameters.similarity == SSD_SIMILARITY )
-      fout << "   -ssd \\" << endl;
+      fout << "   -ssd \\" << std::endl;
     else if ( m_RegParameters.m_F3dParameters.similarity == KLDIV_SIMILARITY )
-      fout << "   -kld \\" << endl;
+      fout << "   -kld \\" << std::endl;
     
-    fout << "   -maxit " << m_RegParameters.m_F3dParameters.maxiterationNumber << " \\" << endl;
+    fout << "   -maxit " << m_RegParameters.m_F3dParameters.maxiterationNumber << " \\" << std::endl;
     
-    fout << "   -ln " << m_RegParameters.m_LevelNumber << " \\" << endl
-	 << "   -lp " << m_RegParameters.m_Level2Perform << " \\" << endl;
+    fout << "   -ln " << m_RegParameters.m_LevelNumber << " \\" << std::endl
+	 << "   -lp " << m_RegParameters.m_Level2Perform << " \\" << std::endl;
     
     if ( m_RegParameters.m_F3dParameters.noPyramid )
-      fout << "   -nopy \\" << endl;
+      fout << "   -nopy \\" << std::endl;
    
-    fout << "   -interp " << m_RegParameters.m_F3dParameters.interpolation << " \\" << endl;
+    fout << "   -interp " << m_RegParameters.m_F3dParameters.interpolation << " \\" << std::endl;
  
     if ( m_RegParameters.m_F3dParameters.gradientSmoothingSigma )
-      fout << "   -smoothGrad " << m_RegParameters.m_F3dParameters.gradientSmoothingSigma << " \\" << endl;
+      fout << "   -smoothGrad " << m_RegParameters.m_F3dParameters.gradientSmoothingSigma << " \\" << std::endl;
     
     if ( m_RegParameters.m_F3dParameters.warpedPaddingValue != -std::numeric_limits<PrecisionTYPE>::max() )
-      fout << "   -pad " << m_RegParameters.m_F3dParameters.warpedPaddingValue << " \\" << endl;
+      fout << "   -pad " << m_RegParameters.m_F3dParameters.warpedPaddingValue << " \\" << std::endl;
     
     if ( ! m_RegParameters.m_F3dParameters.verbose )
-      fout << "   -voff \\" << endl;
+      fout << "   -voff \\" << std::endl;
     
     if ( ! m_RegParameters.m_F3dParameters.outputWarpedName.isEmpty() )
     {
@@ -1581,10 +1581,10 @@ void QmitkNiftyRegView::WriteRegistrationParametersToFile( QString &filename  )
 	fout << "/";
       
       fout << m_RegParameters.m_F3dParameters.outputWarpedName.toStdString().c_str() 
-	   << ".nii" << endl << endl;
+	   << ".nii" << std::endl << std::endl;
     }
     else
-      fout << "   -res outputNonRigidResult.nii" << endl << endl;    
+      fout << "   -res outputNonRigidResult.nii" << std::endl << std::endl;    
   }
 
  
@@ -2158,26 +2158,26 @@ void QmitkNiftyRegView::OnExecutePushButtonPressed( void )
 
     mitk::Image::Pointer mitkSourceImage = dynamic_cast<mitk::Image*>( (*nodes)[0]->GetData() );
 
-    cout << "Creating nifti image" << endl;
+    std::cout << "Creating nifti image" << std::endl;
     nifti_image *niftiSourceImage  = ConvertMitkImageToNifti( mitkSourceImage );
 
     nifti_set_filenames( niftiSourceImage,
 			 "/scratch0/NOT_BACKED_UP/JamiesAffineRegnHeaderTestData/testNiftiFromItk.nii",0,0 );
     nifti_image_write( niftiSourceImage );
 
-    cout << "Creating mitk image" << endl;
+    std::cout << "Creating mitk image" << std::endl;
     mitkSourceImage = ConvertNiftiImageToMitk( niftiSourceImage );
     
     nifti_image_free( niftiSourceImage );
 
-    cout << "Adding mitk image to data storage" << endl;
+    std::cout << "Adding mitk image to data storage" << std::endl;
     mitk::DataNode::Pointer resultNode = mitk::DataNode::New();
     resultNode->SetProperty("name", mitk::StringProperty::New( "test" ) );
     resultNode->SetData( mitkSourceImage );
 
     GetDataStorage()->Add( resultNode );
 
-    cout << "Done" << endl;
+    std::cout << "Done" << std::endl;
   }
 
   return;

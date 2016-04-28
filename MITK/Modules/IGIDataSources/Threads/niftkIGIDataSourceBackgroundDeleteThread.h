@@ -35,7 +35,7 @@ public:
   /**
   * \see IGITimerBasedThread::OnTimeoutImpl()
   */
-  virtual void OnTimeoutImpl();
+  virtual void OnTimeoutImpl() override;
 
 private:
   IGICleanableDataSourceI *m_Source;

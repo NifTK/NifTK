@@ -266,7 +266,7 @@ SimultaneousReconstructionRegistrationMetric<IntensityType>
 
 	currentMeasure = currentMeasureOne + currentMeasureTwo;
 
-  cout << "Current cost: " << currentMeasure << endl;
+  std::cout << "Current cost: " << currentMeasure << std::endl;
 
   return currentMeasure;
 

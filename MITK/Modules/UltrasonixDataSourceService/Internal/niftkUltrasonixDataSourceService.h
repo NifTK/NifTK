@@ -67,19 +67,9 @@ public:
   virtual void StopPlayback() override;
 
   /**
-  * \see IGIDataSourceI::GetRecordingDirectoryName()
-  */
-  virtual QString GetRecordingDirectoryName() override;
-
-  /**
   * \see IGIDataSourceI::Update()
   */
   virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
-
-  /**
-  * \see niftk::IGIDataSource::SaveItem()
-  */
-  virtual void SaveItem(niftk::IGIDataType::Pointer item) override;
 
   /**
   * \see niftk::IGIDataSource::CleanBuffer()
@@ -94,8 +84,7 @@ public:
   /**
   * \see IGIDataSourceI::ProbeRecordedData()
   */
-  bool ProbeRecordedData(const QString& path,
-                         niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+  bool ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                          niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
 
   /**
@@ -120,6 +109,8 @@ private:
 
   UltrasonixDataSourceService(const UltrasonixDataSourceService&); // deliberately not implemented
   UltrasonixDataSourceService& operator=(const UltrasonixDataSourceService&); // deliberately not implemented
+
+  void SaveItem(niftk::IGIDataType::Pointer item) override;
 
   static niftk::IGIDataSourceLocker               s_Lock;
   QMutex                                          m_Lock;

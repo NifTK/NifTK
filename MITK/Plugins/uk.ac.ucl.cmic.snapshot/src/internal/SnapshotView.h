@@ -44,10 +44,10 @@ public:
 protected:
 
   /// \brief Called by framework, this method creates all the controls for this view
-  virtual void CreateQtPartControl(QWidget *parent);
+  virtual void CreateQtPartControl(QWidget *parent) override;
 
   /// \brief Called by framework, sets the focus on a specific widget.
-  virtual void SetFocus();
+  virtual void SetFocus() override;
 
 protected slots:
   

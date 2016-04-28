@@ -30,10 +30,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <berryPlatformUI.h>
 #include <berryIWorkbenchPage.h>
 
-using namespace berry;
-using namespace mitk;
-using namespace std;
-
 QmitkCreatePolygonModelAction::QmitkCreatePolygonModelAction()
 {
 }
@@ -42,10 +38,10 @@ QmitkCreatePolygonModelAction::~QmitkCreatePolygonModelAction()
 {
 }
 
-void QmitkCreatePolygonModelAction::Run(const QList<DataNode::Pointer> &selectedNodes)
+void QmitkCreatePolygonModelAction::Run(const QList<mitk::DataNode::Pointer>& selectedNodes)
 {
-  DataNode::Pointer selectedNode = selectedNodes[0];
-  Image::Pointer image = dynamic_cast<mitk::Image *>(selectedNode->GetData());
+  mitk::DataNode::Pointer selectedNode = selectedNodes[0];
+  mitk::Image::Pointer image = dynamic_cast<mitk::Image *>(selectedNode->GetData());
   
   if (image.IsNull())
     return;

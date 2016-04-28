@@ -40,7 +40,7 @@ public:
   static VTK4PointsReader* New();
   vtkTypeMacro(VTK4PointsReader, vtkPolyDataAlgorithm);
 
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   /**
    * \brief Set/Get the name of the file from which to read points.
@@ -77,7 +77,7 @@ protected:
 
   int RequestData(vtkInformation*,
                   vtkInformationVector**,
-                  vtkInformationVector*);
+                  vtkInformationVector*) override;
   
   bool          m_Clipping[4];
   double        m_Min[4];

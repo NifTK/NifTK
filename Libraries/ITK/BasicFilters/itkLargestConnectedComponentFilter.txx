@@ -23,8 +23,6 @@
 #include <itkImageRegionIterator.h>
 #include <itkImageFileWriter.h>
 
-using namespace std;
-
 namespace itk
 {
   //Constructor

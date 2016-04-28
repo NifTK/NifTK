@@ -13,6 +13,9 @@
 =============================================================================*/
 
 #include "QmitkBaseWorkbenchWindowAdvisor.h"
+
+#include <cstring>
+
 #include "QmitkCommonAppsApplicationPlugin.h"
 #include <QMainWindow>
 #include <QMenu>
@@ -20,7 +23,7 @@
 #include <QAction>
 #include <QList>
 #include <QApplication>
-#include <QmitkHelpAboutDialog.h>
+#include <niftkHelpAboutDialog.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
 #include <mitkDataStorageEditorInput.h>
@@ -30,7 +33,6 @@
 #include <mitkNodePredicateProperty.h>
 #include <mitkProperties.h>
 #include <mitkRenderingManager.h>
-#include <niftkEnvironmentHelper.h>
 #include <NifTKConfigure.h>
 
 //-----------------------------------------------------------------------------
@@ -45,7 +47,7 @@ QmitkBaseWorkbenchWindowAdvisor::QmitkBaseWorkbenchWindowAdvisor(
 //-----------------------------------------------------------------------------
 void QmitkBaseWorkbenchWindowAdvisor::OnHelpAbout()
 {
-  QmitkHelpAboutDialog *dialog = new QmitkHelpAboutDialog(QApplication::activeWindow(), QApplication::applicationName());
+  niftk::HelpAboutDialog *dialog = new niftk::HelpAboutDialog(QApplication::activeWindow(), QApplication::applicationName());
   dialog->setModal(true);
   dialog->show();
 }
@@ -54,8 +56,8 @@ void QmitkBaseWorkbenchWindowAdvisor::OnHelpAbout()
 //-----------------------------------------------------------------------------
 void QmitkBaseWorkbenchWindowAdvisor::PreWindowOpen()
 {
-  this->ShowMitkVersionInfo(false); // Please look in QmitkHelpAboutDialog.h
-  this->ShowVersionInfo(false);     // Please look in QmitkHelpAboutDialog.h
+  this->ShowMitkVersionInfo(false); // Please look in niftk::HelpAboutDialog.h
+  this->ShowVersionInfo(false);     // Please look in niftk::HelpAboutDialog.h
 
   QmitkExtWorkbenchWindowAdvisor::PreWindowOpen();
 
@@ -132,7 +134,8 @@ void QmitkBaseWorkbenchWindowAdvisor::OpenEditor(const QString& editorName)
 //-----------------------------------------------------------------------------
 void QmitkBaseWorkbenchWindowAdvisor::OpenEditorIfEnvironmentVariableIsON(const std::string& envVariable, const QString& editorName)
 {
-  if (niftk::GetEnvVar(envVariable) == "ON")
+  const char* envVarValue = std::getenv(envVariable.c_str());
+  if (envVarValue && std::strcmp(envVarValue, "ON") == 0)
   {
     this->OpenEditor(editorName);
   }

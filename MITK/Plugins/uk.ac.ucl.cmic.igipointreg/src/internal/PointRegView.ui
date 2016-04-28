@@ -77,7 +77,7 @@
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QmitkDataStorageCheckableComboBox" name="m_ComposeWithDataNode">
+        <widget class="niftk::DataStorageCheckableComboBox" name="m_ComposeWithDataNode">
          <property name="toolTip">
           <string>select a data set</string>
          </property>
@@ -126,9 +126,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>QmitkDataStorageCheckableComboBox</class>
+   <class>niftk::DataStorageCheckableComboBox</class>
    <extends>QComboBox</extends>
-   <header location="global">QmitkDataStorageCheckableComboBox.h</header>
+   <header location="global">niftkDataStorageCheckableComboBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

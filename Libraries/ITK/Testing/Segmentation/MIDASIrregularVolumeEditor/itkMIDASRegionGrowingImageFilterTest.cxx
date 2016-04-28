@@ -31,7 +31,6 @@
 #include <itkPointSet.h>
 #include <itkMIDASRegionGrowingImageFilter.h>
 
-using namespace std;
 
 /***********************************************************
  * This test deprecated. This test assumes that the
@@ -341,8 +340,8 @@ int _TestImage2(const string &gsImgPath, const string &regionImgPath,
 			for (ic_testPx.GoToBegin(), ic_refPx.GoToBegin(); !ic_testPx.IsAtEnd(); ++ic_testPx, ++ic_refPx) {
 				assert(ic_testPx.GetIndex() == ic_refPx.GetIndex());
 				if (ic_testPx.Get() != ic_refPx.Get()) {
-					cout << ic_testPx.Get() << endl;
-					cout << ic_refPx.Get() << endl;
+					std::cout << ic_testPx.Get() << std::endl;
+					std::cout << ic_refPx.Get() << std::endl;
 					return EXIT_FAILURE;
 				}
 			}
@@ -350,7 +349,7 @@ int _TestImage2(const string &gsImgPath, const string &regionImgPath,
 			return EXIT_SUCCESS;
 		}
 	} catch (itk::ExceptionObject &r_ex) {
-		cerr << "Caught ITK exception:" << r_ex.what() << endl;
+		std::cerr << "Caught ITK exception:" << r_ex.what() << std::endl;
 
 		return EXIT_FAILURE;
 	}

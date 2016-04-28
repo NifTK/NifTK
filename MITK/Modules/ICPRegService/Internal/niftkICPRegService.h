@@ -39,12 +39,12 @@ public:
   */
   virtual double Register(const mitk::DataNode::Pointer fixedDataSet,
                           const mitk::DataNode::Pointer movingDataSet,
-                          vtkMatrix4x4& matrix) const;
+                          vtkMatrix4x4& matrix) const override;
 
   /**
   * \see niftk::SurfaceRegServiceI
   */
-  virtual void Configure(const us::ServiceProperties& properties);
+  virtual void Configure(const us::ServiceProperties& properties) override;
 
 private:
 

@@ -74,7 +74,7 @@ public:
 protected:
   IntensityNormalisationCalculator();
   virtual ~IntensityNormalisationCalculator() {};
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
   
 private:
   IntensityNormalisationCalculator(const Self&); //purposely not implemented

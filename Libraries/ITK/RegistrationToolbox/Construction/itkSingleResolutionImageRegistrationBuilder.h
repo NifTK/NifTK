@@ -116,7 +116,7 @@ class ITK_EXPORT SingleResolutionImageRegistrationBuilder : public Object
 
     SingleResolutionImageRegistrationBuilder();
     virtual ~SingleResolutionImageRegistrationBuilder(){};
-    void PrintSelf(std::ostream& os, Indent indent) const;
+    void PrintSelf(std::ostream& os, Indent indent) const override;
 
   private:
 

@@ -53,8 +53,8 @@ public:
   static QmitkCommonAppsApplicationPlugin* GetDefault();
   ctkPluginContext* GetPluginContext() const;
 
-  virtual void start(ctkPluginContext* context);
-  virtual void stop(ctkPluginContext* context);
+  virtual void start(ctkPluginContext* context) override;
+  virtual void stop(ctkPluginContext* context) override;
 
 protected:
 

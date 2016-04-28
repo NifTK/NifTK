@@ -55,7 +55,7 @@ public:
   */
   virtual double Register(const mitk::PointSet::Pointer fixedPoints,
                           const mitk::PointSet::Pointer movingPoints,
-                          vtkMatrix4x4& matrix) const;
+                          vtkMatrix4x4& matrix) const override;
 
 private:
   PointRegServiceRAII(const PointRegServiceRAII&); // deliberately not implemented

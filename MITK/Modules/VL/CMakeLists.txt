@@ -14,18 +14,13 @@
 
 # render code needs opencl for translucent triangle sorting.
 set(_modules MitkOpenCL niftkCoreGui)
-set(_packages Qt4|QtGui Qt4|QtOpenGL Qt5|Gui Qt5|OpenGL)
+set(_packages Qt4|QtGui Qt4|QtOpenGL Qt5|Gui Qt5|OpenGL VL|VLCore VL|VLGraphics VL|VLVolume VL|VLQt5)
 
 if(BUILD_PCL)
   # pcl depends on eigen
   list(APPEND _packages Eigen)
   list(APPEND _packages PCL)
 endif()
-
-
-find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt4 REQUIRED)
-link_directories(${VL_LIBRARIES})
-include_directories(${VL_INCLUDE_DIRS})
 
 # vl renderer can use calibrated cameras
 if(BUILD_IGI)
@@ -59,8 +54,8 @@ target_link_libraries(niftkVL
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
   target_link_libraries(niftkVL
     PRIVATE
-	  ${CUDA_CUDA_LIBRARY}
-	  ${CUDA_CUDART_LIBRARY}
+      ${CUDA_CUDA_LIBRARY}
+      ${CUDA_CUDART_LIBRARY}
   )
 endif()
 

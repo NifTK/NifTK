@@ -48,13 +48,13 @@ public:
 
   /** Determine the file type. Returns true if this ImageIO can read the
    * file specified. */
-  virtual bool CanReadFile(const char*);
+  virtual bool CanReadFile(const char*) override;
   
   /** Set the spacing and diemention information for the set filename. */
-  virtual void ReadImageInformation();
+  virtual void ReadImageInformation() override;
 
   /** Reads the data from disk into the memory buffer provided. */
-  virtual void Read(void* buffer);
+  virtual void Read(void* buffer) override;
 
   /** Read header and setup data **/
   virtual bool ReadHeader(); 
@@ -66,19 +66,19 @@ public:
   /** Compute the size (in bytes) of the components of a pixel. For
    * example, and RGB pixel of unsigned char would have a 
    * component size of 1 byte. */
-  virtual unsigned int GetComponentSize() const;
+  virtual unsigned int GetComponentSize() const override;
 
   /** Determine the file type. Returns true if this ImageIO can read the
    * file specified. */
-  virtual bool CanWriteFile(const char*);
+  virtual bool CanWriteFile(const char*) override;
 
   /** Writes the spacing and dimentions of the image.
    * Assumes SetFileName has been called with a valid file name. */
-  virtual void WriteImageInformation();
+  virtual void WriteImageInformation() override;
 
   /** Writes the data to disk from the memory buffer provided. Make sure
    * that the IORegion has been set properly. */
-  virtual void Write(const void* buffer);
+  virtual void Write(const void* buffer) override;
 
 protected:
   INRImageIO();
@@ -92,7 +92,7 @@ protected:
   virtual bool GetParamFromHeader( char* headerPtr, const char *variableToFind, const char *patternToFind, unsigned int *target, unsigned int defaultValue );
   virtual bool GetParamFromHeader( char* headerPtr, const char *variableToFind, const char *patternToFind, float *target, float defaultValue );
 
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
   void WriteSlice(std::string& fileName, const void* buffer);
 

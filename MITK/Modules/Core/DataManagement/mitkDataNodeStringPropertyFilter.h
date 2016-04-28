@@ -47,7 +47,7 @@ public:
   ///
   /// \param node a candidate node
   /// \return bool true if the node should pass and false otherwise.
-  virtual bool Pass(const mitk::DataNode* node);
+  virtual bool Pass(const mitk::DataNode* node) override;
 
   /// \brief Clears the list of strings to match against.
   virtual void ClearList();

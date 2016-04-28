@@ -37,14 +37,14 @@ class CMIC_QT_COMMONAPPS QmitkBaseAppWorkbenchAdvisor: public berry::QtWorkbench
 {
 public:
 
-  virtual void Initialize(berry::IWorkbenchConfigurer::Pointer configurer);
+  virtual void Initialize(berry::IWorkbenchConfigurer::Pointer configurer) override;
 
   /**
    * \brief Called by framework to create the WorkbenchWindowAdvisor,
    * and derived classes should instead override CreateQmitkBaseWorkbenchWindowAdvisor.
    */
   virtual berry::WorkbenchWindowAdvisor* CreateWorkbenchWindowAdvisor(
-      berry::IWorkbenchWindowConfigurer::Pointer configurer);
+      berry::IWorkbenchWindowConfigurer::Pointer configurer) override;
 
   /**
    * \brief Derived classes should provide a default perspective id
@@ -57,7 +57,7 @@ public:
    * asking the user whether they really want to close the application.
    * @returns true if closing is ok, false otherwise.
    */
-  virtual bool PreShutdown();
+  virtual bool PreShutdown() override;
 
 protected:
 

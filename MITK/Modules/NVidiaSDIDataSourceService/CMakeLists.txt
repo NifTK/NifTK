@@ -20,8 +20,8 @@ if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
     AUTOLOAD_WITH niftkIGIServices
   )
 
-  include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/video)
-  include_directories(${CMAKE_SOURCE_DIR}/Code/Libs/NVAPI/glew)
+  include_directories(${CMAKE_SOURCE_DIR}/Libraries/NVAPI/video)
+  include_directories(${CMAKE_SOURCE_DIR}/Libraries/NVAPI/glew)
   include_directories(${QT_QTOPENGL_INCLUDE_DIR})
   include_directories(${CUDA_TOOLKIT_INCLUDE})
 
@@ -41,7 +41,7 @@ if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
   endif()
 
   if (NIFTK_USE_COTIRE AND COMMAND cotire)
-    #cotire(niftkNVidiaSDIDataSourceService)
+    cotire(niftkNVidiaSDIDataSourceService)
   endif()
 
 endif()

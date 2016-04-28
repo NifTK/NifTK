@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
       }
     }
   } catch (niftk::ExceptionObject &r_ex) {
-    std::cerr << r_ex.what() << endl;
+    std::cerr << r_ex.what() << std::endl;
     cliOpts.PrintUsage();
 
     return EXIT_FAILURE;

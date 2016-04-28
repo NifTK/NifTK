@@ -47,7 +47,7 @@ public:
   * \brief Override the QThread run method to start the thread.
   * \see QThread::run()
   */
-  virtual void run();
+  virtual void run() override;
 
   /**
   * \brief Make sure everything is stopped and cleaned up.

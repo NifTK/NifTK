@@ -45,7 +45,7 @@ public:
   /**
    * \brief When mouse is pressed, we store the timestamp, 2D pixel location, in a single line, in a new file, whose filename is timestamp.
    */
-  virtual void mousePressEvent(QMouseEvent* event);
+  virtual void mousePressEvent(QMouseEvent* event) override;
   
   /**
    * \brief Responds to key press events.
@@ -57,12 +57,12 @@ public:
    *   Q = quit application
    * </pre>
    */
-  virtual void keyPressEvent(QKeyEvent* event);
+  virtual void keyPressEvent(QKeyEvent* event) override;
   
   /**
    * \brief To Force the size of the window.
    */
-  virtual void enterEvent(QEvent* event);
+  virtual void enterEvent(QEvent* event) override;
 
   void SetPNG ( bool );
 

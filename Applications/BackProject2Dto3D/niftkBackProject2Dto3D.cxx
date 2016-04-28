@@ -51,8 +51,8 @@ void Usage(char *exec)
 	      << "    -g    <filename>        Affine transformation " << std::endl
 	      << "    -o    <filename>        Output 3D back-projected image" << std::endl << std::endl
 	      << "*** [options]   ***" << std::endl << std::endl
-	      << "    -v                             Output verbose info" << endl
-	      << "    -dbg                           Output debugging info" << endl << endl
+	      << "    -v                             Output verbose info" << std::endl
+	      << "    -dbg                           Output debugging info" << std::endl << std::endl
 	      << "    -im3D <filename>               Input 3D image" << std::endl
 	      << "    -s3D   <int> <int> <int>        The size of the 3D back-projection image [100 x 100 x 100]" << std::endl
 	      << "    -r3D  <float> <float> <float>  The resolution of the 3D back-projection image [1mm x 1mm x 1mm]" << std::endl
@@ -131,11 +131,11 @@ int main(int argc, char** argv)
       return -1;
     }
     else if(strcmp(argv[i], "-v") == 0) {
-      cout << "Verbose output enabled" << endl;
+      std::cout << "Verbose output enabled" << std::endl;
     }
     else if(strcmp(argv[i], "-dbg") == 0) {
       flgDebug = true;
-      cout << "Debugging output enabled" << endl;
+      std::cout << "Debugging output enabled" << std::endl;
     }
     else if(strcmp(argv[i], "-im3D") == 0) {
       fileInputImage3D = argv[++i];
@@ -158,9 +158,9 @@ int main(int argc, char** argv)
       nVoxels3D[1] = atoi(argv[++i]);
       nVoxels3D[2] = atoi(argv[++i]);
       std::cout << "Set -s3D="
-				    << niftk::ConvertToString((int) nVoxels3D[0]) << " "
-		    		<< niftk::ConvertToString((int) nVoxels3D[1]) << " "
-		    		<< niftk::ConvertToString((int) nVoxels3D[2])<< std::endl;
+            << niftk::ConvertToString((int) nVoxels3D[0]) << " "
+            << niftk::ConvertToString((int) nVoxels3D[1]) << " "
+            << niftk::ConvertToString((int) nVoxels3D[2])<< std::endl;
       flgInputImage3D_SizeSet = true;
     }
     else if(strcmp(argv[i], "-r3D") == 0) {
@@ -168,9 +168,9 @@ int main(int argc, char** argv)
       spacing3D[1] = atof(argv[++i]);
       spacing3D[2] = atof(argv[++i]);
       std::cout << "Set -r3D="
-				    << niftk::ConvertToString(spacing3D[0]) << " "
-				    << niftk::ConvertToString(spacing3D[1]) << " "
-				    << niftk::ConvertToString(spacing3D[2])<< std::endl;
+            << niftk::ConvertToString(spacing3D[0]) << " "
+            << niftk::ConvertToString(spacing3D[1]) << " "
+            << niftk::ConvertToString(spacing3D[2])<< std::endl;
       flgInputImage3D_ResSet = true;
     }
     else if(strcmp(argv[i], "-o3D") == 0) {
@@ -178,9 +178,9 @@ int main(int argc, char** argv)
       origin3D[1] = atof(argv[++i]);
       origin3D[2] = atof(argv[++i]);
       std::cout << "Set -o3D="
-				    << niftk::ConvertToString(origin3D[0]) << " "
-				    << niftk::ConvertToString(origin3D[1]) << " "
-				    << niftk::ConvertToString(origin3D[2])<< std::endl;
+            << niftk::ConvertToString(origin3D[0]) << " "
+            << niftk::ConvertToString(origin3D[1]) << " "
+            << niftk::ConvertToString(origin3D[2])<< std::endl;
     }
     else if(strcmp(argv[i], "-f") == 0) {
       focalLength = atof(argv[++i]);

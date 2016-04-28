@@ -24,8 +24,10 @@ endif()
 
 if(BUILD_VL)
 
-  set(version "d4927b74e2")
-  set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary.git")
+  # set(version "dev")
+  # set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary.git")
+  set(version "ce74f3c5c8")
+  set(location "https://github.com/MicBosi/VisualizationLibrary.git")
 
   niftkMacroDefineExternalProjectVariables(VL ${version} ${location})
 
@@ -70,7 +72,9 @@ if(BUILD_VL)
         -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
         -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
-        -DVL_GUI_QT4_SUPPORT:BOOL=${_vl_qt_support}
+        -DVL_GUI_QT5_SUPPORT:BOOL=${_vl_qt_support}
+        -DVL_GUI_QT5_EXAMPLES:BOOL=0
+        -DVL_USER_DATA_OBJECT:BOOL=1
         ${additional_cmake_args}
       CMAKE_CACHE_ARGS
         ${EP_COMMON_CACHE_ARGS}

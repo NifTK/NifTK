@@ -22,8 +22,8 @@
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 
-#include "VLQt4Widget.h"
-#include <Rendering/SharedOGLContext.h>
+#include "VLQtWidget.h"
+#include <niftkSharedOGLContext.h>
 
 
 //-----------------------------------------------------------------------------
@@ -33,9 +33,9 @@ QmitkIGIVLEditor::QmitkIGIVLEditor(QWidget * /*parent*/)
 {
   this->setupUi(this);
 
-  m_OverlayViewer = new VLQt4Widget(m_Splitter, SharedOGLContext::GetShareWidget());
+  m_OverlayViewer = new VLQtWidget(m_Splitter, niftk::SharedOGLContext::GetShareWidget());
   m_Splitter->addWidget(m_OverlayViewer);
-  m_3DViewer = new VLQt4Widget(m_Splitter, SharedOGLContext::GetShareWidget());
+  m_3DViewer = new VLQtWidget(m_Splitter, niftk::SharedOGLContext::GetShareWidget());
   m_Splitter->addWidget(m_3DViewer);
 
   m_OpacitySlider->setMinimum(0);

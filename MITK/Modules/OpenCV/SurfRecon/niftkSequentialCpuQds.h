@@ -73,16 +73,16 @@ public:
 
   // supports greyscale, RGB or RGBA images.
   // input dimensions need to match the width and height passed into constructor.
-  virtual void Process(const IplImage* left, const IplImage* right);
+  virtual void Process(const IplImage* left, const IplImage* right) override;
 
 
-  virtual int GetWidth() const;
-  virtual int GetHeight() const;
+  virtual int GetWidth() const override;
+  virtual int GetHeight() const override;
 
   // caller needs to clean up
-  virtual IplImage* CreateDisparityImage() const;
+  virtual IplImage* CreateDisparityImage() const override;
 
-  virtual CvPoint GetMatch(int x, int y) const;
+  virtual CvPoint GetMatch(int x, int y) const override;
 
 private:
   SequentialCpuQds(const SequentialCpuQds& copyme);

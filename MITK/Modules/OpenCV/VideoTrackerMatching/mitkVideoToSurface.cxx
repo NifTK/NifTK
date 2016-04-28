@@ -217,9 +217,9 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
 
       long long timingError;
       cv::Mat WorldToLeftCamera = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, m_TrackerIndex).inv();
-      
+
       unsigned long long matrixTimeStamp;
-      unsigned long long absTimingError = static_cast<unsigned long long> ( abs(timingError));
+      unsigned long long absTimingError = static_cast<unsigned long long>(std::abs(timingError));
       if ( timingError < 0 ) 
       {
         matrixTimeStamp = trackerMatcher->GetVideoFrameTimeStamp(framenumber) + absTimingError;

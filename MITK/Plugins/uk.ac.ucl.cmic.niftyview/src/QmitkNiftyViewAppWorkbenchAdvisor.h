@@ -35,10 +35,10 @@ class CMIC_QT_NIFTYVIEWAPP QmitkNiftyViewAppWorkbenchAdvisor: public QmitkBaseAp
 public:
 
   /// \brief Returns uk.ac.ucl.cmic.niftyview.midasperspective which should match that in plugin.xml.
-  virtual QString GetInitialWindowPerspectiveId();
+  virtual QString GetInitialWindowPerspectiveId() override;
 
   /// \brief Gets the resource name of the window icon.
-  virtual QString GetWindowIconResourcePath() const;
+  virtual QString GetWindowIconResourcePath() const override;
 
 protected:
 
@@ -46,7 +46,7 @@ protected:
    * \brief Actually creates the derived WorkbenchWindowAdvisor.
    */
   virtual QmitkBaseWorkbenchWindowAdvisor* CreateQmitkBaseWorkbenchWindowAdvisor(
-      berry::IWorkbenchWindowConfigurer::Pointer configurer);
+      berry::IWorkbenchWindowConfigurer::Pointer configurer) override;
 
 };
 

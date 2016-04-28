@@ -35,7 +35,7 @@ public:
   QmitkCommonAppsIGIPerspective();
   QmitkCommonAppsIGIPerspective(const QmitkCommonAppsIGIPerspective& other);
   
-  void CreateInitialLayout(berry::IPageLayout::Pointer layout);
+  void CreateInitialLayout(berry::IPageLayout::Pointer layout) override;
 
 };
 

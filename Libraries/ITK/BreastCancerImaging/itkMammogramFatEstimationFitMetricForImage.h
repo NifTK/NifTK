@@ -57,7 +57,7 @@ public:
 
   itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 7 );
 
-  virtual unsigned int GetNumberOfParameters(void) const  
+  virtual unsigned int GetNumberOfParameters(void) const override  
   {
     return ParametricSpaceDimension;
   }
@@ -124,15 +124,15 @@ public:
   /** Get the distance image. */
   itkGetObjectMacro( Distance, DistanceImageType );
 
-  MeasureType GetValue( const ParametersType &parameters ) const;
+  MeasureType GetValue( const ParametersType &parameters ) const override;
 
   void ClearFatImage( void );
 
   void GenerateFatImage( const ParametersType &parameters );
 
-  void WriteIntensityVsEdgeDistToFile( std::string fileOutputIntensityVsEdgeDist );
+  void WriteIntensityVsEdgeDistToFile( std::string fileOutputIntensityVsEdgeDist ) override;
   void WriteFitToFile( std::string fileOutputFit,
-                       const ParametersType &parameters );
+                       const ParametersType &parameters ) override;
 
 
 protected:
@@ -141,7 +141,7 @@ protected:
   virtual ~MammogramFatEstimationFitMetricForImage();
   MammogramFatEstimationFitMetricForImage(const Self &) {}
   void operator=(const Self &) {}
-  void PrintSelf(std::ostream & os, Indent indent) const;
+  void PrintSelf(std::ostream & os, Indent indent) const override;
 
   InputImageRegionType   m_ImRegion;
   InputImageSpacingType  m_ImSpacing;

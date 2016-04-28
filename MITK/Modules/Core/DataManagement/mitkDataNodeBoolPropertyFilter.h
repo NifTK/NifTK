@@ -49,7 +49,7 @@ public:
   ///
   /// \param node a candidate node
   /// \return bool true if the node should pass and false otherwise.
-  virtual bool Pass(const mitk::DataNode* node);
+  virtual bool Pass(const mitk::DataNode* node) override;
 
   /// \brief Sets the list of renderers to check.
   void SetRenderers(std::vector<mitk::BaseRenderer*>& list);

@@ -19,7 +19,7 @@
 #include <mitkSurface.h>
 #include <QString>
 #include <vtkMatrix4x4.h>
-#include <QmitkDataStorageCheckableComboBox.h>
+#include <niftkDataStorageCheckableComboBox.h>
 #include "igtlTypes.h"
 
 /**
@@ -42,12 +42,12 @@ NIFTKIGIGUI_EXPORT bool SaveMatrixToFile(const vtkMatrix4x4& matrix, const QStri
 /**
  * \brief Applies (sets, i.e. copies) the given transform to all checked nodes in the comboBox.
  */
-NIFTKIGIGUI_EXPORT void ApplyTransformToSelectedNodes(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox);
+NIFTKIGIGUI_EXPORT void ApplyTransformToSelectedNodes(const vtkMatrix4x4& transform, const niftk::DataStorageCheckableComboBox& comboBox);
 
 /**
  * \brief Composes the given transform with all checked nodes in the comboBox.
  */
-NIFTKIGIGUI_EXPORT void ComposeTransformWithSelectedNodes(const vtkMatrix4x4& transform, const QmitkDataStorageCheckableComboBox& comboBox);
+NIFTKIGIGUI_EXPORT void ComposeTransformWithSelectedNodes(const vtkMatrix4x4& transform, const niftk::DataStorageCheckableComboBox& comboBox);
 
 /**
  * \brief For visualisation purposes, creates a representation of the laparoscope.

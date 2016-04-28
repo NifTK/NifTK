@@ -120,7 +120,7 @@ public:
 
   itkStaticConstMacro( ParametricSpaceDimension, unsigned int, 8 );
 
-  unsigned int GetNumberOfParameters(void) const  
+  unsigned int GetNumberOfParameters(void) const override  
   {
     return ParametricSpaceDimension;
   }
@@ -129,21 +129,21 @@ public:
                       ParametersType &parameters );
 
   void GetDerivative( const ParametersType &parameters, 
-                      DerivativeType &Derivative ) const
+                      DerivativeType &Derivative ) const override
   {
     return;
   }
 
   MeasureType GetValueAtPecIntercept( const InputImagePointType &pecInterceptInMM );
 
-  MeasureType GetValue( const ParametersType &parameters ) const;
+  MeasureType GetValue( const ParametersType &parameters ) const override;
 
   MeasureType GetValueNCC( const ParametersType &parameters ) const;
   MeasureType GetValueSSD( const ParametersType &parameters ) const;
 
   void GetValueAndDerivative( const ParametersType &parameters,
                               MeasureType &Value, 
-                              DerivativeType &Derivative ) const
+                              DerivativeType &Derivative ) const override
   {
     Value = this->GetValue( parameters );
     this->GetDerivative( parameters, Derivative );
@@ -164,7 +164,7 @@ protected:
   virtual ~MammogramPectoralisFitMetric();
   MammogramPectoralisFitMetric(const Self &) {}
   void operator=(const Self &) {}
-  void PrintSelf(std::ostream & os, Indent indent) const;
+  void PrintSelf(std::ostream & os, Indent indent) const override;
 
   bool m_flgOptimiseSSD;
 

@@ -41,10 +41,7 @@ using std::ios_base;
 using std::ios;
 
 #include <set>
-using std::set;
-
 #include <vector>
-using std::vector;
 
 #include <limits>
 using std::numeric_limits;

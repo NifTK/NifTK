@@ -38,7 +38,7 @@ public:
    * to additionally provide an option to force the MITK display open
    * with an environment variable called NIFTK_MITK_DISPLAY=ON.
    */
-  virtual void PostWindowCreate();
+  virtual void PostWindowCreate() override;
 };
 
 #endif /*QMITKNIFTYVIEWWORKBENCHWINDOWADVISOR_H_*/

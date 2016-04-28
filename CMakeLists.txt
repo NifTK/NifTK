@@ -63,7 +63,7 @@ else()
   # Our version number. Edit this to generate a new version.
   # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
   # Also, Trac 1592, version number must change if CTK changes significantly.
-  project(NIFTK VERSION 16.02.0)
+  project(NIFTK VERSION 16.04.0)
 endif()
 
 ######################################################################
@@ -155,7 +155,6 @@ option(BUILD_Python "Build Python wrapping." OFF)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
 option(BUILD_RTK "Build RTK - Experimental." OFF)
 option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
-option(BUILD_ITKFFTW "Build ITK's FFTW - Not Supported." OFF)
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
@@ -271,7 +270,6 @@ mark_as_advanced(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES)
 mark_as_advanced(BUILD_CAMINO)
 mark_as_advanced(BUILD_PCL)
 mark_as_advanced(BUILD_RTK)
-mark_as_advanced(BUILD_ITKFFTW)
 mark_as_advanced(BUILD_MESHING)
 
 ######################################################################
@@ -788,18 +786,29 @@ set(OPENCV_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for OpenCV
 mark_as_advanced(OPENCV_ADDITIONAL_CXX_FLAGS)
 set(OPENCV_WITH_CUDA OFF CACHE BOOL "Build OpenCV with CUDA support (takes a long time)")
 mark_as_advanced(OPENCV_WITH_CUDA)
-if(WIN32)
-  set(OPENCV_WITH_FFMPEG ON CACHE BOOL "Build OpenCV with FFMPEG support")
-else(WIN32)
-  set(OPENCV_WITH_FFMPEG OFF CACHE BOOL "Build OpenCV with FFMPEG support")
-endif(WIN32)
-mark_as_advanced(OPENCV_WITH_FFMPEG)
 set(OPENCV_WITH_NONFREE OFF CACHE BOOL "Build OpenCV with nonfree library")
 mark_as_advanced(OPENCV_WITH_NONFREE)
 
 set(NIFTYSIM_USE_CUDA OFF CACHE BOOL "Build NiftySim with CUDA support")
 mark_as_advanced(NIFTYSIM_USE_CUDA)
 
+######################################################################
+# GPL restricted options. These must default to off.
+# Basically, a researcher/developer can turn them on and use them.
+# But we cannot distribute binaries unless we distribute code
+# under the GPL, which we do not want to do. So, do not distribute.
+######################################################################
+option(BUILD_ITKFFTW "Build ITK's FFTW - Not Supported, do not distribute, due to GPL restrictions." OFF)
+mark_as_advanced(BUILD_ITKFFTW)
+if(BUILD_ITKFFTW)
+  message(WARNING "You have chosen to compile FFTW. This means the binary code, and all executables linked against it will be covered by GPL. This means if you distribute binaries, you must also distribute all the NifTK source code and all the FFTW source code using the GPL license. Hence this option is not supported by NifTK.")
+endif(BUILD_ITKFFTW)
+
+option(OPENCV_WITH_FFMPEG "Build OpenCV with FFMPEG support - Not Supported, do not distribute, due to GPL restrictions." OFF)
+mark_as_advanced(OPENCV_WITH_FFMPEG)
+if(OPENCV_WITH_FFMPEG)
+  message(WARNING "You have chosen to compile FFmpeg support. This is not recommended. It is possible to distribute FFmpeg under LGPLv2.1, but only if you fully comply with the legal requirements, and specifically, as FFmpeg contains GPL code, do not compile GPL code into FFmpeg. If you compile GPL code into FFmpeg and distribute binaries, you must also distribute all the NifTK source code along with all the FFmpeg source code using the GPL license. Hence this option is not supported by NifTK.")
+endif()
 
 ########################################################################
 # Set NIFTK_INSTALL_PREFIX, and NIFTK_LINK_PREFIX, used in scripts.
@@ -821,10 +830,6 @@ endif(BUILD_GUI)
 if(BUILD_GUI)
   set(NIFTK_GENERATE_DOXYGEN_HELP ON)
 endif(BUILD_GUI)
-
-if(BUILD_ITKFFTW)
-  message(WARNING "You have chosen to compile FFTW. This means the binary code, and all executables linked against it will be covered by GPL. This is not supported by NifTK.")
-endif(BUILD_ITKFFTW)
 
 ########################################################################
 # Simplest if we list ALL our include directories here.
@@ -973,6 +978,7 @@ configure_file(${CMAKE_SOURCE_DIR}/CMake/FindAprilTags.cmake ${CMAKE_BINARY_DIR}
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroFindDependency.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroFindDependency.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroBuildCLI.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroBuildCLI.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineApplication.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineApplication.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/niftkMacroCreateCommandLineScript.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/niftkMacroCreateCommandLineScript.cmake COPYONLY)
@@ -1732,6 +1738,34 @@ if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
 endif()
 
 ######################################################################
+# ffmpeg packaging hacks.
+######################################################################
+if(OPENCV_WITH_FFMPEG)
+  if(WIN32)
+    set(_ffmpeg_lib_name "opencv_ffmpeg2411_64.dll") # warning: will change with each new OpenCV version.
+    find_path(_opencv_with_ffmpeg_lib_path
+      ${_ffmpeg_lib_name}
+      PATHS ${OpenCV_DIR}/x64/vc11/bin ${OpenCV_DIR}/x64/vc12/bin
+      NO_DEFAULT_PATH
+    )
+    if(_opencv_with_ffmpeg_lib_path)
+      set(_ffmpeg_lib_full_path ${_opencv_with_ffmpeg_lib_path}/${_ffmpeg_lib_name})
+      install(FILES ${_ffmpeg_lib_full_path} DESTINATION bin)
+      message("Installing ffmpeg library:${_ffmpeg_lib_full_path}")
+    endif()
+  else()
+    find_package(OpenCV REQUIRED)
+    if(OpenCV_USE_FFMPEG)
+      get_filename_component(_ffmpeg_lib_dir ${OpenCV_FFMPEG_CODEC_LIB} DIRECTORY)
+      message("Adding ffmpeg library directory: ${_ffmpeg_lib_dir} to search path")
+      get_property(_additional_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+      list(APPEND _additional_search_paths ${_ffmpeg_lib_dir})
+      set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths})
+    endif()
+  endif()
+endif()
+
+######################################################################
 # Decide what subdirectories we are building, and go and build them.
 ######################################################################
 
@@ -1909,11 +1943,19 @@ set(NIFTK_EXPORTED_TARGET_PROPERTIES )
 foreach(target_to_export ${targets_to_export})
   get_target_property(autoload_targets ${target_to_export} MITK_AUTOLOAD_TARGETS)
   if(autoload_targets)
-    set(MITK_EXPORTED_TARGET_PROPERTIES "${MITK_EXPORTED_TARGET_PROPERTIES} set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_TARGETS \"${autoload_targets}\")")
+
+# Watch out for the newline in this next set statement. Its intentional, and necessary.
+    set(NIFTK_EXPORTED_TARGET_PROPERTIES "${NIFTK_EXPORTED_TARGET_PROPERTIES} 
+set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_TARGETS \"${autoload_targets}\")")
+
   endif()
   get_target_property(autoload_dir ${target_to_export} MITK_AUTOLOAD_DIRECTORY)
   if(autoload_dir)
-    set(MITK_EXPORTED_TARGET_PROPERTIES "${MITK_EXPORTED_TARGET_PROPERTIES} set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_DIRECTORY \"${autoload_dir}\")")
+
+# Watch out for the newline in this next set statement. Its intentional, and necessary.
+    set(NIFTK_EXPORTED_TARGET_PROPERTIES "${NIFTK_EXPORTED_TARGET_PROPERTIES} 
+set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_DIRECTORY \"${autoload_dir}\")")
+
   endif()
 endforeach()
 

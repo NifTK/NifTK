@@ -13,14 +13,14 @@
 #============================================================================*/
 
 set(CPP_FILES
-  Rendering/VLQt4Widget.cpp
+  Rendering/VLQtWidget.cpp
   Rendering/OclTriangleSorter.cxx
   Rendering/TrackballManipulator.cxx
   VLEditor/QmitkIGIVLEditor.cxx
 )
 
 set(MOC_H_FILES
-  Rendering/VLQt4Widget.h
+  Rendering/VLQtWidget.h
   VLEditor/QmitkIGIVLEditor.h
 )
 

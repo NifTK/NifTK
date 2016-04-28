@@ -38,6 +38,11 @@ set(CPP_FILES
   DataManagement/mitkBasicTriangle.cpp
   DataManagement/mitkBasicVec3D.cpp
   DataManagement/mitkBasicVertex.cpp
+  DataManagement/QmitkCmicLogo.cxx
+  LookupTables/QmitkLookupTableContainer.cxx
+  LookupTables/QmitkLookupTableSaxHandler.cxx
+  LookupTables/QmitkLookupTableManager.cxx
+  LookupTables/vtkLookupTableUtils.cxx
   Rendering/mitkCoordinateAxesVtkMapper3D.cxx
   Rendering/mitkFastPointSetVtkMapper3D.cxx
   Rendering/niftkCustomVTKAxesActor.cxx
@@ -45,9 +50,12 @@ set(CPP_FILES
   DataNodeProperties/mitkAffineTransformParametersDataNodeProperty.cxx
   DataNodeProperties/mitkAffineTransformDataNodeProperty.cxx
   DataNodeProperties/mitkITKRegionParametersDataNodeProperty.cxx
-  DataNodeProperties/mitkNamedLookupTableProperty.cxx
-  DataNodeProperties/mitkLabeledLookupTableProperty.cxx
+  DataNodeProperties/niftkLabeledLookupTableProperty.cxx
+  DataNodeProperties/niftkNamedLookupTableProperty.cxx
   IO/mitkFileIOUtils.cxx
+  IO/mitkLabelMapReader.cxx
+  IO/mitkLabelMapWriter.cxx
+  IO/niftkCoreIOMimeTypes.cxx
   Interactions/mitkPointSetUpdate.cxx
   Interactions/niftkAffineTransformDataInteractor3D.cxx
 )
@@ -60,3 +68,8 @@ set(RESOURCE_FILES
   Interactions/AffineTransformConfig.xml
   Interactions/AffineTransformSM.xml
 )
+
+set(QRC_FILES
+  Resources/niftkCore.qrc
+)
+

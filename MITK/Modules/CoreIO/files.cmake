@@ -17,13 +17,14 @@ set(H_FILES
 
 set(CPP_FILES
   Internal/niftkCoordinateAxesDataReaderService.cxx
+  Internal/niftkCoordinateAxesDataSerializer.cxx
   Internal/niftkCoordinateAxesDataWriterService.cxx
-  Internal/niftkPNMReaderService.cxx
-  Internal/niftkPNMWriterService.cxx
   Internal/niftkCoreIOMimeTypes.cxx
   Internal/niftkCoreIOActivator.cxx
   Internal/niftkCoreIOObjectFactory.cxx
-  Internal/mitkCoordinateAxesDataSerializer.cxx
-  Internal/mitkLabeledLookupTablePropertySerializer.cxx
-  Internal/mitkNamedLookupTablePropertySerializer.cxx
+  Internal/niftkLabeledLookupTablePropertySerializer.cxx
+  Internal/niftkNamedLookupTablePropertySerializer.cxx
+  Internal/niftkPNMReaderService.cxx
+  Internal/niftkPNMWriterService.cxx
+  Internal/QmitkLookupTableProviderServiceImpl.cxx
 )

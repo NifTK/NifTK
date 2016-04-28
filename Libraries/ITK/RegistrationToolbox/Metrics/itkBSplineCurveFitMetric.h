@@ -68,10 +68,10 @@ class ITK_EXPORT BSplineCurveFitMetric : public MultipleValuedCostFunction
   void Initialise( void );
 
   /** Return the number of parameters required by the Transform */
-  unsigned int GetNumberOfParameters(void) const;
+  unsigned int GetNumberOfParameters(void) const override;
   
   /** Return the number of values that are computed by the metric. */
-  unsigned int GetNumberOfValues( void ) const; 
+  unsigned int GetNumberOfValues( void ) const override; 
 
   /** This method returns the value and derivative of the cost function corresponding
     * to the specified parameters    */ 
@@ -81,12 +81,12 @@ class ITK_EXPORT BSplineCurveFitMetric : public MultipleValuedCostFunction
 
   /** This method returns the value of the cost function corresponding
     * to the specified parameters. */ 
-  virtual MeasureType GetValue( const ParametersType & parameters ) const;
+  virtual MeasureType GetValue( const ParametersType & parameters ) const override;
 
   /** This method returns the derivative of the cost function corresponding
     * to the specified parameters. */ 
   virtual void GetDerivative( const ParametersType & parameters,
-                              DerivativeType & derivative ) const;
+                              DerivativeType & derivative ) const override;
 
 
 protected:
@@ -94,7 +94,7 @@ protected:
   BSplineCurveFitMetric();
   virtual ~BSplineCurveFitMetric() {};
 
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 
 
 private:

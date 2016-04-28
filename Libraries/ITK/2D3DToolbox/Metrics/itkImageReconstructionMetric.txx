@@ -225,7 +225,7 @@ ImageReconstructionMetric<IntensityType>
       writer->Update();
     }
     catch( ExceptionObject & err ) {
-      std::cerr << "ERROR: Failed to write output to file: " << fileOutputReconstruction << "; " << err << endl;
+      std::cerr << "ERROR: Failed to write output to file: " << fileOutputReconstruction << "; " << err << std::endl;
       return;
     }
   }
@@ -278,7 +278,7 @@ ImageReconstructionMetric<IntensityType>
 
   }
 
-  cout << "Current cost: " << currentMeasure << endl;
+  std::cout << "Current cost: " << currentMeasure << std::endl;
 
   return currentMeasure;
 }

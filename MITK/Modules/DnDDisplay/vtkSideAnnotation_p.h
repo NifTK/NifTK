@@ -34,7 +34,7 @@ public:
 
   /// \brief Overrides vtkCornerAnnotation::RenderOpaqueGeometry(vtkViewPort*) to
   /// restore the colours after the annotations are re-rendered.
-  int RenderOpaqueGeometry(vtkViewport *viewport);
+  int RenderOpaqueGeometry(vtkViewport *viewport) override;
 
   /// \brief Sets the colour of the text on the specified side.
   void SetColour(int i, double* colour);
@@ -51,11 +51,11 @@ protected:
 
   /// \brief Overrides vtkCornerAnnotation::SetTextActorsPosition(int vsize[2])
   /// to position the annotations on the sides instead of the corners.
-  virtual void SetTextActorsPosition(int vsize[2]);
+  virtual void SetTextActorsPosition(int vsize[2]) override;
 
   /// \brief Overrides vtkCornerAnnotation::SetTextActorsJustification()
   /// to align the text to the inner side of the render window.
-  virtual void SetTextActorsJustification();
+  virtual void SetTextActorsJustification() override;
 
 private:
 

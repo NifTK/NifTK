@@ -76,7 +76,7 @@ RayleighFunction(unsigned int nDataPoints,
 
   /// Evaluate the vector of residual for parameters 'a'
 
-  void f(const vnl_vector<double> &a, vnl_vector<double> &residual) 
+  void f(const vnl_vector<double> &a, vnl_vector<double> &residual) override 
   {
     for (unsigned int i=0; i<m_nDataPoints; ++i)       
     {
@@ -86,7 +86,7 @@ RayleighFunction(unsigned int nDataPoints,
 
   /// Evaluate the gradient with respect to each parameter
 
-  void gradf(const vnl_vector<double> &a, vnl_matrix<double> &J) 
+  void gradf(const vnl_vector<double> &a, vnl_matrix<double> &J) override 
   {
     for (unsigned int i=0; i<m_nDataPoints; ++i) {
       J(i,0) = compute_dydk(i, a[0], a[1] );

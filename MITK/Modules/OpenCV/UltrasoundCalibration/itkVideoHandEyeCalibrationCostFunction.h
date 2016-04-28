@@ -44,7 +44,7 @@ public:
   /**
    * \see itk::InvariantPointCalibrationCostFunction::GetCalibrationTransformation().
    */
-  virtual cv::Matx44d GetCalibrationTransformation(const ParametersType & parameters) const;
+  virtual cv::Matx44d GetCalibrationTransformation(const ParametersType & parameters) const override;
 
 protected:
 

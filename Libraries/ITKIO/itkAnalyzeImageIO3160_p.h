@@ -121,13 +121,13 @@ public:
        * \post Sets classes ImageIOBase::m_FileName variable to be FileNameToWrite
        * \return Returns true if this ImageIO can read the file specified.
        */
-  virtual bool CanReadFile(const char* FileNameToRead);
+  virtual bool CanReadFile(const char* FileNameToRead) override;
 
   /** Set the spacing and dimension information for the set filename. */
-  virtual void ReadImageInformation();
+  virtual void ReadImageInformation() override;
 
   /** Reads the data from disk into the memory buffer provided. */
-  virtual void Read(void* buffer);
+  virtual void Read(void* buffer) override;
 
   /*-------- This part of the interfaces deals with writing data. ----- */
 
@@ -137,27 +137,27 @@ public:
        * \post Sets classes ImageIOBase::m_FileName variable to be FileNameToWrite
        * \return Returns true if this ImageIO can write the file specified.
        */
-  virtual bool CanWriteFile(const char * FileNameToWrite);
+  virtual bool CanWriteFile(const char * FileNameToWrite) override;
 
   /** Set the spacing and dimension information for the set filename. */
-  virtual void WriteImageInformation();
+  virtual void WriteImageInformation() override;
 
   /** Writes the data to disk from the memory buffer provided. Make sure
        * that the IORegions has been set properly. */
-  virtual void Write(const void* buffer);
+  virtual void Write(const void* buffer) override;
 
   /** Return the directions with a correction for the 2D case. */
-  virtual std::vector<double> GetDirection(unsigned int i) const;
+  virtual std::vector<double> GetDirection(unsigned int i) const override;
 
   /** Return the directions to be assigned by default to recipient
    *  images whose dimension is smaller than the image dimension in file.  */
-  virtual std::vector<double> GetDefaultDirection(unsigned int i) const;
+  virtual std::vector<double> GetDefaultDirection(unsigned int i) const override;
 
 
 protected:
   AnalyzeImageIO3160();
   ~AnalyzeImageIO3160();
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
 private:
   /**
     * \enum ValidAnalyzeOrientationFlags

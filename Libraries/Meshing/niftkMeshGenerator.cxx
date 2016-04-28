@@ -31,11 +31,6 @@
 #include <cstdlib>
 #include <algorithm>
 #include <cassert>
-#include <sstream>
-#include <set>
-
-using namespace niftk;
-using namespace std;
 
 MeshGenerator::MeshGenerator(void) : m_DoSurface(false) {
   m_facetAngle = -1, m_facetEdgeLength = -1, m_facetApproximationError = -1;

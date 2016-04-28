@@ -169,7 +169,7 @@ protected:
   /**
    * \brief Re-implemented so we can tell QmitkBitmapOverlay the display size has changed.
    */
-  virtual void resizeEvent(QResizeEvent* event);
+  virtual void resizeEvent(QResizeEvent* event) override;
 
 private:
 

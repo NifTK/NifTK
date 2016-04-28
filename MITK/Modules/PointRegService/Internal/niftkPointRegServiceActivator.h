@@ -34,8 +34,8 @@ public:
   PointRegServiceActivator();
   ~PointRegServiceActivator();
 
-  void Load(us::ModuleContext* context);
-  void Unload(us::ModuleContext*);
+  void Load(us::ModuleContext* context) override;
+  void Unload(us::ModuleContext*) override;
 
 private:
 

@@ -48,13 +48,13 @@ public:
   static const char* FILE_DIALOG_PATTERN;
   static const char* FILE_DIALOG_NAME;
 
-  void SetRequestedRegionToLargestPossibleRegion();
-  bool RequestedRegionIsOutsideOfTheBufferedRegion();
-  virtual bool VerifyRequestedRegion();
-  virtual void SetRequestedRegion(const itk::DataObject *data);
+  void SetRequestedRegionToLargestPossibleRegion() override;
+  bool RequestedRegionIsOutsideOfTheBufferedRegion() override;
+  virtual bool VerifyRequestedRegion() override;
+  virtual void SetRequestedRegion(const itk::DataObject *data) override;
   const RegionType& GetLargestPossibleRegion() const;
   virtual const RegionType& GetRequestedRegion() const;
-  virtual void UpdateOutputInformation();
+  virtual void UpdateOutputInformation() override;
 
   void GetVtkMatrix(vtkMatrix4x4& matrixToWriteTo) const;
   void SetVtkMatrix(const vtkMatrix4x4& matrix);

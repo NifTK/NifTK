@@ -92,7 +92,7 @@ Subtract2DImageFromVolumeSliceFilter<IntensityType>
 {
 #if 0
 
-  cout << "DEBUG - Inputs to Subtract2DImageFromVolumeSliceFilter: ";
+  std::cout << "DEBUG - Inputs to Subtract2DImageFromVolumeSliceFilter: ";
 
   // We use dynamic_cast since inputs are stored as DataObjects.  The
   // ImageToImageFilter::GetInput(int) always returns a pointer to a
@@ -118,13 +118,13 @@ Subtract2DImageFromVolumeSliceFilter<IntensityType>
     index3D[0] = index2D[0];
     index3D[1] = index2D[1];
 
-    cout << index3D[0]  << ", " << index3D[1]  << ", " << index3D[2] 
-	 << ": " << itInput2D.Get() << " - " << pInput3D->GetPixel(index3D) << endl;
+    std::cout << index3D[0]  << ", " << index3D[1]  << ", " << index3D[2] 
+	 << ": " << itInput2D.Get() << " - " << pInput3D->GetPixel(index3D) << std::endl;
 
     ++itInput2D;
   }
 
-  cout << endl;
+  std::cout << std::endl;
 
 #endif
 }
@@ -207,15 +207,15 @@ Subtract2DImageFromVolumeSliceFilter<IntensityType>
   OutputSubtractedImagePointer outImage = this->GetOutput();
   ImageRegionIterator<OutputSubtractedImageType> outputIterator;
 
-  cout << "Output of Subtract2DImageFromVolumeSliceFilter: ";
+  std::cout << "Output of Subtract2DImageFromVolumeSliceFilter: ";
  
   outputIterator = ImageRegionIterator<OutputSubtractedImageType>(outImage, outImage->GetLargestPossibleRegion());
 
   for ( outputIterator.GoToBegin(); !outputIterator.IsAtEnd(); ++outputIterator) {
-      cout << outputIterator.Get() << " ";
+      std::cout << outputIterator.Get() << " ";
   }
 
-  cout << endl;
+  std::cout << std::endl;
 #endif
 }
 

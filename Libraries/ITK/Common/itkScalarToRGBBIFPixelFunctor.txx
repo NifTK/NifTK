@@ -19,11 +19,10 @@
 
 #include "itkUCLMacro.h"
 #include <iostream>
-using namespace std;
 
 namespace itk {
 
-namespace Functor {  
+namespace Functor {
 
 /* -----------------------------------------------------------------------
    Constructor
@@ -134,9 +133,6 @@ ScalarToRGBBIFPixelFunctor<TScalar>
 
   return ans;
 }
-
-
-  
 
 
 } // end namespace Functor
