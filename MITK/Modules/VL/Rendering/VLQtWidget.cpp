@@ -594,7 +594,6 @@ void VLQtWidget::SetBackgroundColour(float r, float g, float b)
 {
   // FIXME
   m_OpaqueObjectsRendering->camera()->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
-  m_Vivid->setBackgroundColor(vl::fvec4(r, g, b, 1));
 
   if (m_BackgroundCamera)
     m_BackgroundCamera->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
