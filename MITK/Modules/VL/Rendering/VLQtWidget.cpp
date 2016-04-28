@@ -494,9 +494,9 @@ void VLQtWidget::initializeGL()
 
   m_RenderingTree = new vl::RenderingTree;
   m_RenderingTree->setObjectName("m_RenderingTree");
-  m_RenderingTree->subRenderings()->push_back(m_BackgroundRendering.get());
+  // m_RenderingTree->subRenderings()->push_back(m_BackgroundRendering.get());
   m_RenderingTree->subRenderings()->push_back(m_OpaqueObjectsRendering.get());
-  m_RenderingTree->subRenderings()->push_back(m_VolumeRendering.get());
+  // m_RenderingTree->subRenderings()->push_back(m_VolumeRendering.get());
 
   // once rendering to fbo has finished, blit it to the screen's backbuffer.
   // a final swapbuffers in renderScene() and/or paintGL() will show it on screen.
