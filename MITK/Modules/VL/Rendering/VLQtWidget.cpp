@@ -662,6 +662,7 @@ void VLQtWidget::resizeGL(int width, int height)
   framebuffer()->setHeight(height);
   m_OpaqueObjectsRendering->renderer()->framebuffer()->setWidth(width);
   m_OpaqueObjectsRendering->renderer()->framebuffer()->setHeight(height);
+  /*
   m_VolumeRendering->renderer()->framebuffer()->setWidth(width);
   m_VolumeRendering->renderer()->framebuffer()->setHeight(height);
 
@@ -669,6 +670,7 @@ void VLQtWidget::resizeGL(int width, int height)
 
   m_FinalBlit->setSrcRect(0, 0, width, height);
   m_FinalBlit->setDstRect(0, 0, width, height);
+  */
 
   UpdateViewportAndCameraAfterResize();
 
