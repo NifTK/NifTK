@@ -1397,86 +1397,87 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
       color[2] = mitkColor[2];
     }
 
-    vl::ref<vl::Effect> fx = vlActor->effect();
-    fx->shader()->enable(vl::EN_DEPTH_TEST);
-    fx->shader()->setRenderState(m_Light.get(), 0);
-    fx->shader()->gocMaterial()->setDiffuse(vl::white);   // normal shading is done via tint colour.
-    fx->shader()->gocRenderStateSet()->setRenderState(m_GenericGLSLShader.get(), -1);
 
-    // the uniform tint colour is defined on the actor, instead of shader or effect.
-    vlActor->gocUniformSet()->gocUniform("u_TintColour")->setUniform4f(1, color.ptr());
+    //vl::ref<vl::Effect> fx = vlActor->effect();
+    //fx->shader()->enable(vl::EN_DEPTH_TEST);
+    //fx->shader()->setRenderState(m_Light.get(), 0);
+    //fx->shader()->gocMaterial()->setDiffuse(vl::white);   // normal shading is done via tint colour.
+    //fx->shader()->gocRenderStateSet()->setRenderState(m_GenericGLSLShader.get(), -1);
 
-    // shader still needs to know whether to apply light-shading or not.
-    float   disableLighting = fx->shader()->isEnabled(vl::EN_LIGHTING) ? 0.0f : 1.0f;
-    vlActor->gocUniformSet()->gocUniform("u_DisableLighting")->setUniform1f(1, &disableLighting);
+    //// the uniform tint colour is defined on the actor, instead of shader or effect.
+    //vlActor->gocUniformSet()->gocUniform("u_TintColour")->setUniform4f(1, color.ptr());
 
-    // by convention, all meaningful texture maps are bound in slot 0.
-    // slot 1 will have the default-empty-dummy.
-    if (fx->shader()->getTextureSampler(0) != 0)
-      vlActor->gocUniformSet()->gocUniform("u_TextureMap")->setUniformI(0);
-    else
-      vlActor->gocUniformSet()->gocUniform("u_TextureMap")->setUniformI(1);
+    //// shader still needs to know whether to apply light-shading or not.
+    //float   disableLighting = fx->shader()->isEnabled(vl::EN_LIGHTING) ? 0.0f : 1.0f;
+    //vlActor->gocUniformSet()->gocUniform("u_DisableLighting")->setUniform1f(1, &disableLighting);
 
+    //// by convention, all meaningful texture maps are bound in slot 0.
+    //// slot 1 will have the default-empty-dummy.
+    //if (fx->shader()->getTextureSampler(0) != 0) {
+    //  vlActor->gocUniformSet()->gocUniform("u_TextureMap")->setUniformI(0);
+    //}
+    //else {
+    //  vlActor->gocUniformSet()->gocUniform("u_TextureMap")->setUniformI(1);
+    //}
 
-    float   pointsize = 1;
-    bool    haspointsize = node->GetFloatProperty("pointsize", pointsize);
-    if (haspointsize)
-    {
-      vl::PointSize* ps = fx->shader()->getPointSize();
-      if (ps != 0)
-      {
-        if (ps->pointSize() != pointsize)
-          ps = 0;
-      }
+    //float   pointsize = 1;
+    //bool    haspointsize = node->GetFloatProperty("pointsize", pointsize);
+    //if (haspointsize)
+    //{
+    //  vl::PointSize* ps = fx->shader()->getPointSize();
+    //  if (ps != 0)
+    //  {
+    //    if (ps->pointSize() != pointsize)
+    //      ps = 0;
+    //  }
 
-      if (ps == 0)
-      {
-        fx->shader()->setRenderState(new vl::PointSize(pointsize));
-        if (pointsize > 1)
-          fx->shader()->enable(vl::EN_POINT_SMOOTH);
-        else
-          fx->shader()->disable(vl::EN_POINT_SMOOTH);
-      }
-    }
+    //  if (ps == 0)
+    //  {
+    //    fx->shader()->setRenderState(new vl::PointSize(pointsize));
+    //    if (pointsize > 1)
+    //      fx->shader()->enable(vl::EN_POINT_SMOOTH);
+    //    else
+    //      fx->shader()->disable(vl::EN_POINT_SMOOTH);
+    //  }
+    //}
 
+    //bool isVolume = false;
+    //// special case for volumes: they'll have a certain event-callback bound.
+    //for (int i = 0; i < vlActor->actorEventCallbacks()->size(); ++i)
+    //{
+    //  isVolume |= (dynamic_cast<vl::RaycastVolume*>(vlActor->actorEventCallbacks()->at(i)) != 0);
+    //  if (isVolume)
+    //    break;
+    //}
 
-    bool  isVolume = false;
-    // special case for volumes: they'll have a certain event-callback bound.
-    for (int i = 0; i < vlActor->actorEventCallbacks()->size(); ++i)
-    {
-      isVolume |= (dynamic_cast<vl::RaycastVolume*>(vlActor->actorEventCallbacks()->at(i)) != 0);
-      if (isVolume)
-        break;
-    }
-
-    if (isVolume)
-    {
-      vlActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
-      vlActor->setEnableMask(ENABLEMASK_VOLUME);
-      fx->shader()->enable(vl::EN_BLEND);
-      fx->shader()->enable(vl::EN_CULL_FACE);
-      fx->shader()->gocMaterial()->setTransparency(1.0f);//opacity);
-    }
-    else
-    {
-      bool  isProbablyTranslucent = opacity <= (1.0f - (1.0f / 255.0f));
-      if (isProbablyTranslucent)
-      {
-        vlActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
-        vlActor->setEnableMask(ENABLEMASK_TRANSLUCENT);
-        fx->shader()->enable(vl::EN_BLEND);
-        // no backface culling for translucent objects: you should be able to see the backside!
-        fx->shader()->disable(vl::EN_CULL_FACE);
-      }
-      else
-      {
-        vlActor->setRenderBlock(RENDERBLOCK_OPAQUE);
-        vlActor->setEnableMask(ENABLEMASK_OPAQUE);
-        fx->shader()->disable(vl::EN_BLEND);
-        //fx->shader()->enable(vl::EN_CULL_FACE);
-        fx->shader()->disable(vl::EN_CULL_FACE);
-      }
-    }
+    //if (isVolume)
+    //{
+    //  vlActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
+    //  vlActor->setEnableMask(ENABLEMASK_VOLUME);
+    //  fx->shader()->enable(vl::EN_BLEND);
+    //  fx->shader()->enable(vl::EN_CULL_FACE);
+    //  fx->shader()->gocMaterial()->setTransparency(1.0f);//opacity);
+    //}
+    //else
+    //{
+    //  bool  isProbablyTranslucent = opacity <= (1.0f - (1.0f / 255.0f));
+    //  if (isProbablyTranslucent)
+    //  {
+    //    vlActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
+    //    vlActor->setEnableMask(ENABLEMASK_TRANSLUCENT);
+    //    fx->shader()->enable(vl::EN_BLEND);
+    //    // no backface culling for translucent objects: you should be able to see the backside!
+    //    fx->shader()->disable(vl::EN_CULL_FACE);
+    //  }
+    //  else
+    //  {
+    //    vlActor->setRenderBlock(RENDERBLOCK_OPAQUE);
+    //    vlActor->setEnableMask(ENABLEMASK_OPAQUE);
+    //    fx->shader()->disable(vl::EN_BLEND);
+    //    //fx->shader()->enable(vl::EN_CULL_FACE);
+    //    fx->shader()->disable(vl::EN_CULL_FACE);
+    //  }
+    //}
   }
 
   UpdateActorTransformFromNode(vlActor, node);
