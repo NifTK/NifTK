@@ -505,7 +505,7 @@ void VLQtWidget::initializeGL()
   m_FinalBlit->setLinearFilteringEnabled(false);
   m_FinalBlit->setBufferMask(vl::BB_COLOR_BUFFER_BIT | vl::BB_DEPTH_BUFFER_BIT);
   m_FinalBlit->setDrawFramebuffer(vl::OpenGLContext::framebuffer());
-  m_RenderingTree->onFinishedCallbacks()->push_back(m_FinalBlit.get());
+  // m_RenderingTree->onFinishedCallbacks()->push_back(m_FinalBlit.get());
 
   // updating the size of our fbo is a bit of a pain.
   CreateAndUpdateFBOSizes(QGLWidget::width(), QGLWidget::height());
