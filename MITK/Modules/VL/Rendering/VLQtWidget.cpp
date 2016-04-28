@@ -508,7 +508,7 @@ void VLQtWidget::initializeGL()
   // m_RenderingTree->onFinishedCallbacks()->push_back(m_FinalBlit.get());
 
   // updating the size of our fbo is a bit of a pain.
-  CreateAndUpdateFBOSizes(QGLWidget::width(), QGLWidget::height());
+  // CreateAndUpdateFBOSizes(QGLWidget::width(), QGLWidget::height());
 
   // moves the light with the main camera.
   // FIXME: attaching this to the rendering looks wrong
