@@ -473,7 +473,6 @@ void VLQtWidget::initializeGL()
   m_OpaqueObjectsRendering->sceneManagers()->push_back(m_SceneManager.get());
   /*
   m_OpaqueObjectsRendering->setEnableMask(ENABLEMASK_OPAQUE | ENABLEMASK_TRANSLUCENT | ENABLEMASK_SORTEDTRANSLUCENT);
-  m_OpaqueObjectsRendering->setCullingEnabled(true);
   // we sort them anyway, front-to-back so that early-fragment rejection can work its magic.
   m_OpaqueObjectsRendering->setRenderQueueSorter(new vl::RenderQueueSorterAggressive);
   // dont trash earlier stages.
@@ -481,6 +480,7 @@ void VLQtWidget::initializeGL()
   */
 
   m_OpaqueObjectsRendering->setRenderQueueSorter( NULL );
+  m_OpaqueObjectsRendering->setCullingEnabled( false );
   // volume rendering is a separate stage, after opaque.
   // it needs access to the depth-buffer of the opaque geometry so that raycast can clip properly.
   m_VolumeRendering = new vl::Rendering;
