@@ -436,9 +436,8 @@ void VLQtWidget::initializeGL()
   // m_LightTr = new vl::Transform;
 
   m_Light = new vl::Light;
-  m_Light->setAmbient(vl::fvec4(0.1f, 0.1f, 0.1f, 1.0f));
-  m_Light->setDiffuse(vl::white);
-  m_Light->bindTransform(m_LightTr.get());
+  // m_Light->setAmbient(vl::fvec4(0.1f, 0.1f, 0.1f, 1.0f));
+  // m_Light->setDiffuse(vl::white);
   // m_Light->bindTransform(m_LightTr.get());
 
   vl::vec4 lightPos;
