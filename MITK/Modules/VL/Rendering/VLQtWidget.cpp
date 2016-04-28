@@ -512,7 +512,7 @@ void VLQtWidget::initializeGL()
 
   // moves the light with the main camera.
   // FIXME: attaching this to the rendering looks wrong
-  m_OpaqueObjectsRendering->transform()->addChild(m_LightTr.get());
+  // m_OpaqueObjectsRendering->transform()->addChild(m_LightTr.get());
 
   // trackball is active by default because we do not yet have any camera-tracking data.
   EnableTrackballManipulator(true);
@@ -756,7 +756,7 @@ void VLQtWidget::RenderScene()
   // update scene graph.
   vl::mat4 cameraMatrix = m_Camera->modelingMatrix();
   // FIXME: light is lagging behind one frame
-  m_LightTr->setLocalMatrix(cameraMatrix);
+  // m_LightTr->setLocalMatrix(cameraMatrix);
 
 
   // trigger execution of the renderer(s).
