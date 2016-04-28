@@ -1397,6 +1397,22 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
       color[2] = mitkColor[2];
     }
 
+    vl::ref<vl::Effect> fx1 = new vl::Effect;
+    fx1->shader()->enable(vl::EN_BLEND);
+    fx1->shader()->enable(vl::EN_DEPTH_TEST);
+    fx1->shader()->enable(vl::EN_LIGHTING);
+    fx1->shader()->setRenderState( new vl::Light, 0 );
+    fx1->shader()->gocLightModel()->setTwoSide(true);
+    fx1->shader()->gocLightModel()->setLocalViewer(true);
+    fx1->shader()->gocMaterial()->setAmbient( vl::fvec4(1.0f, 1.0f, 1.0f, 1.0f) );
+    fx1->shader()->gocMaterial()->setDiffuse( color );
+    fx1->shader()->gocMaterial()->setSpecular( vl::fvec4(0.5f, 0.5f, 0.5f, 1.0f) );
+    fx1->shader()->gocMaterial()->setShininess(128.0f);
+    //fx1->shader()->gocMaterial()->setColorMaterialEnabled(false);
+    //fx1->shader()->gocMaterial()->setColorMaterial(vl::PF_FRONT_AND_BACK, vl::CM_DIFFUSE);
+    //fx1->shader()->gocUniform("COLOR_MATERIAL_ON")->setUniformI(0);
+
+    vlActor->setEffect(fx1.get());
 
     //vl::ref<vl::Effect> fx = vlActor->effect();
     //fx->shader()->enable(vl::EN_DEPTH_TEST);
