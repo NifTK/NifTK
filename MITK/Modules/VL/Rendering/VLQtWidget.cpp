@@ -431,7 +431,7 @@ void VLQtWidget::initializeGL()
   //m_CameraTransform = new vl::Transform;
   //m_Camera->bindTransform(m_CameraTransform.get());
 
-  vl::vec3    cameraPos = m_Camera->modelingMatrix().getT();
+  vl::vec3 cameraPos = m_Camera->modelingMatrix().getT();
 
   // m_LightTr = new vl::Transform;
 
@@ -446,7 +446,6 @@ void VLQtWidget::initializeGL()
   lightPos[2] = cameraPos[2];
   lightPos[3] = 0;
   m_Light->setPosition(lightPos);
-
 
   m_SceneManager = new vl::SceneManagerActorTree;
 
@@ -467,8 +466,7 @@ void VLQtWidget::initializeGL()
   m_BackgroundCamera->viewport()->setClearColor(vl::fuchsia);
   m_BackgroundCamera->viewport()->enableScissorSetup(false);
 
-  // opaque objects dont need any sorting (in theory).
-  // but they have to happen before anything else.
+  // opaque objects dont need any sorting (in theory) but they have to happen before anything else.
   m_OpaqueObjectsRendering = new vl::Rendering;
   m_OpaqueObjectsRendering->setObjectName("m_OpaqueObjectsRendering");
   m_OpaqueObjectsRendering->setCamera(m_Camera.get());
@@ -1339,10 +1337,9 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   if (it == m_NodeToActorMap.end())
     return;
 
-  vl::ref<vl::Actor>    vlActor = it->second;
+  vl::ref<vl::Actor> vlActor = it->second;
   if (vlActor.get() == 0)
     return;
-
 
   // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
   niftk::ScopedOGLContext ctx(context());
