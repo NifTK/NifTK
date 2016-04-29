@@ -130,7 +130,7 @@ private slots:
   * \brief Called from niftk::IGIDataSourceManager,
   * and used to update the data sources table.
   */
-  void OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >);
+  void OnUpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >);
 
   /**
   * \brief Called from Playback GUI to advance time.
