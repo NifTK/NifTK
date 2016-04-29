@@ -595,6 +595,7 @@ std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGI
         {
           this->GetDataStorage()->Remove(node);
           imageInNode->GetGeometry()->SetSpacing(shouldbeImageSpacing);
+          imageInNode->GetVtkImageData()->SetSpacing(shouldbeImageSpacing[0], shouldbeImageSpacing[1], shouldbeImageSpacing[2]);
           this->GetDataStorage()->Add(node);
         }
         imageInNode->GetVtkImageData()->Modified();
