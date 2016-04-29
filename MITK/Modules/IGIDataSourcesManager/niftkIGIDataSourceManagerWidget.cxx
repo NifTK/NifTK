@@ -525,6 +525,8 @@ void IGIDataSourceManagerWidget::OnFreezeTableHeaderClicked(int section)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> > infos)
 {
+  niftk::IGIDataType::IGITimeType now;
+  emit UpdateGuiFinishedDataSources (now);
   QMutexLocker locker(&m_Lock);
 
   // This can happen if this gets called before a data source is added.
