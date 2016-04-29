@@ -41,13 +41,6 @@ public:
     const IGIDataSourceProperties& properties) const override = 0;
 
   /**
-  * \see IGIDataSourceFactoryServiceI::CreateInitialisationDialog()
-  *
-  * All MITK trackers need the port (USB port) number and config file settings at startup.
-  */
-  virtual IGIInitialisationDialog* CreateInitialisationDialog(QWidget *parent) const override;
-
-  /**
   * \see IGIDataSourceFactoryServiceI::CreateConfigurationDialog()
   *
   * All MITK trackers allow the lag to be set.
@@ -66,7 +59,9 @@ public:
   */
   void ExtractProperties(const IGIDataSourceProperties& properties,
       std::string& outputPortName,
-      std::string& outputFileName) const;
+      std::string& outputFileName,
+      int&         baudRate
+  ) const;
 };
 
 } // end namespace

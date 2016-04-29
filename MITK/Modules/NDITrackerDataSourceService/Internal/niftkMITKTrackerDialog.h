@@ -31,7 +31,7 @@ class MITKTrackerDialog : public IGIInitialisationDialog,
 
 public:
 
-  MITKTrackerDialog(QWidget *parent, QString trackerName);
+  MITKTrackerDialog(QWidget *parent, QString trackerName, int defaultBaudRate);
   ~MITKTrackerDialog();
 
 private slots:

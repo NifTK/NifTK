@@ -14,6 +14,7 @@
 
 #include "niftkMITKPolarisVicraDataSourceFactory.h"
 #include "niftkMITKTrackerDataSourceService.h"
+#include "niftkMITKTrackerDialog.h"
 #include <niftkVicraTracker.h>
 
 namespace niftk
@@ -33,6 +34,13 @@ MITKPolarisVicraDataSourceFactory::~MITKPolarisVicraDataSourceFactory()
 
 
 //-----------------------------------------------------------------------------
+IGIInitialisationDialog* MITKPolarisVicraDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
+{
+  return new niftk::MITKTrackerDialog(parent, this->GetName(), 1228739);
+}
+
+
+//-----------------------------------------------------------------------------
 IGIDataSourceI::Pointer MITKPolarisVicraDataSourceFactory::CreateService(
     mitk::DataStorage::Pointer dataStorage,
     const IGIDataSourceProperties& properties) const
@@ -40,11 +48,12 @@ IGIDataSourceI::Pointer MITKPolarisVicraDataSourceFactory::CreateService(
 
   std::string portName;
   std::string fileName;
+  int         baudRate;
 
-  this->ExtractProperties(properties, portName, fileName);
+  this->ExtractProperties(properties, portName, fileName, baudRate);
 
   niftk::VicraTracker::Pointer tracker = niftk::VicraTracker::New(
-        dataStorage, portName, fileName
+        dataStorage, portName, fileName, baudRate
         );
 
   niftk::MITKTrackerDataSourceService::Pointer serviceInstance

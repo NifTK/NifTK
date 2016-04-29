@@ -14,7 +14,6 @@
 
 #include "niftkMITKTrackerDataSourceFactory.h"
 #include "niftkMITKTrackerDataSourceService.h"
-#include "niftkMITKTrackerDialog.h"
 #include <niftkLagDialog.h>
 
 namespace niftk
@@ -33,13 +32,6 @@ MITKTrackerDataSourceFactory::MITKTrackerDataSourceFactory(QString name)
 //-----------------------------------------------------------------------------
 MITKTrackerDataSourceFactory::~MITKTrackerDataSourceFactory()
 {
-}
-
-
-//-----------------------------------------------------------------------------
-IGIInitialisationDialog* MITKTrackerDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
-{
-  return new niftk::MITKTrackerDialog(parent, this->GetName());
 }
 
 
@@ -63,7 +55,9 @@ QList<QString> MITKTrackerDataSourceFactory::GetLegacyClassNames() const
 //-----------------------------------------------------------------------------
 void MITKTrackerDataSourceFactory::ExtractProperties(const IGIDataSourceProperties& properties,
     std::string& outputPortName,
-    std::string& outputFileName) const
+    std::string& outputFileName,
+    int&         baudRate
+    ) const
 {
   if(!properties.contains("port"))
   {
@@ -86,6 +80,12 @@ void MITKTrackerDataSourceFactory::ExtractProperties(const IGIDataSourceProperti
     mitkThrow() << "Empty configuration file name specified!";
   }
   outputFileName = fileName;
+
+  if (!properties.contains("baudRate"))
+  {
+    mitkThrow() << "Baud rate not specified!";
+  }
+  baudRate = properties.value("baudRate").toInt();
 }
 
 } // end namespace

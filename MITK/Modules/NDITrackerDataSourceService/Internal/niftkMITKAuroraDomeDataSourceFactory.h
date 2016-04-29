@@ -37,6 +37,14 @@ public:
   */
   virtual IGIDataSourceI::Pointer CreateService(mitk::DataStorage::Pointer dataStorage,
     const IGIDataSourceProperties& properties) const override;
+
+  /**
+  * \see IGIDataSourceFactoryServiceI::CreateInitialisationDialog()
+  *
+  * All NDI trackers need the port (USB port) number, baud rate and config file settings at startup.
+  */
+  virtual IGIInitialisationDialog* CreateInitialisationDialog(QWidget *parent) const override;
+
 };
 
 } // end namespace

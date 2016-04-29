@@ -14,6 +14,7 @@
 
 #include "niftkMITKPolarisSpectraDataSourceFactory.h"
 #include "niftkMITKTrackerDataSourceService.h"
+#include "niftkMITKTrackerDialog.h"
 #include <niftkSpectraTracker.h>
 
 namespace niftk
@@ -33,6 +34,13 @@ MITKPolarisSpectraDataSourceFactory::~MITKPolarisSpectraDataSourceFactory()
 
 
 //-----------------------------------------------------------------------------
+IGIInitialisationDialog* MITKPolarisSpectraDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
+{
+  return new niftk::MITKTrackerDialog(parent, this->GetName(), 1228739);
+}
+
+
+//-----------------------------------------------------------------------------
 IGIDataSourceI::Pointer MITKPolarisSpectraDataSourceFactory::CreateService(
     mitk::DataStorage::Pointer dataStorage,
     const IGIDataSourceProperties& properties) const
@@ -40,11 +48,12 @@ IGIDataSourceI::Pointer MITKPolarisSpectraDataSourceFactory::CreateService(
 
   std::string portName;
   std::string fileName;
+  int         baudRate;
 
-  this->ExtractProperties(properties, portName, fileName);
+  this->ExtractProperties(properties, portName, fileName, baudRate);
 
   niftk::SpectraTracker::Pointer tracker = niftk::SpectraTracker::New(
-        dataStorage, portName, fileName
+        dataStorage, portName, fileName, baudRate
         );
 
   niftk::MITKTrackerDataSourceService::Pointer serviceInstance
