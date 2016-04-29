@@ -520,7 +520,9 @@ std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGI
         if (imageInNode.IsNull())
         {
           mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&subimg);
+          this->GetDataStorage()->Remove(node);
           node->SetData(convertedImage);
+          this->GetDataStorage()->Add(node);
         }
         else
         {
@@ -591,9 +593,10 @@ std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGI
             (std::abs(currentImageSpacing[1] - shouldbeImageSpacing[1]) > 0.01) ||
             (std::abs(currentImageSpacing[2] - shouldbeImageSpacing[2]) > 0.01))
         {
+          this->GetDataStorage()->Remove(node);
           imageInNode->GetGeometry()->SetSpacing(shouldbeImageSpacing);
+          this->GetDataStorage()->Add(node);
         }
-
         imageInNode->GetVtkImageData()->Modified();
         node->Modified();
       } // for
