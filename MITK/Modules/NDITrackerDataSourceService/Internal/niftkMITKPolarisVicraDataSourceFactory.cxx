@@ -36,7 +36,7 @@ MITKPolarisVicraDataSourceFactory::~MITKPolarisVicraDataSourceFactory()
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* MITKPolarisVicraDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  return new niftk::MITKTrackerDialog(parent, this->GetName(), 1228739);
+  return new niftk::MITKTrackerDialog(parent, this->GetName(), 115200);
 }
 
 
