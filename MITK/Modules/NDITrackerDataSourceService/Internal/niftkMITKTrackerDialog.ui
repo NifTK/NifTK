@@ -34,7 +34,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="m_PortNumberLabel">
          <property name="text">
-          <string>USB Port number</string>
+          <string>Port name</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -47,7 +47,7 @@
        <item row="2" column="0">
         <widget class="QLabel" name="m_BaudRateLabel">
          <property name="text">
-          <string>Baud Rate</string>
+          <string>Baud rate</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
