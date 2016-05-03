@@ -17,6 +17,8 @@
 #include <QDir>
 
 #include "VLQtWidget.h"
+#include <vlQt5/QtDirectory.hpp>
+#include <vlQt5/QtFile.hpp>
 #include <vlCore/Log.hpp>
 #include <vlCore/Time.hpp>
 #include <vlCore/Colors.hpp>
@@ -493,9 +495,9 @@ void VLQtWidget::initializeGL()
   // FIXME: allow switching between rendering modes
   // m_Vivid->setRenderingMode( vl::RendererVivid::FastRender );
 
-  // FIXME: implement Qt VirtualDirectory & VirtualFile: just copy/paste DiskFile/Directory and use Qt instead of Win32/POSIX
+  // Interface VL with Qt's resource system to load GLSL shaders.
   vl::defFileSystem()->directories().clear();
-  vl::defFileSystem()->directories().push_back( new vl::DiskDirectory( "C:\\git-ucl\\VisualizationLibrary\\data" ) );
+  vl::defFileSystem()->directories().push_back( new vl::QtDirectory( ":/VL/" ) );
 
   // volume rendering is a separate stage, after opaque.
   // it needs access to the depth-buffer of the opaque geometry so that raycast can clip properly.
@@ -2590,7 +2592,7 @@ vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkI
 vl::String VLQtWidget::LoadGLSLSourceFromResources(const char* filename)
 {
   QString   sourceFilename(filename);
-  sourceFilename.prepend(":/NewVisualization/");
+  sourceFilename.prepend(":/VL/");
   QFile   sourceFile;
   sourceFile.setFileName(sourceFilename);
 
