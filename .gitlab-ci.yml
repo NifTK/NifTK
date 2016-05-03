@@ -209,6 +209,21 @@ Linux release build:
   - linux, release
 
 
+# Dummy test job to prevent that deploy job is preceded by clean job.
+Linux release test:
+
+  stage: test
+
+  script:
+  - true
+
+  only:
+  - tags
+
+  tags:
+  - linux, release
+
+
 # Mac build for tagged versions.
 # Full clean build with all the external projects, without testing and with Python.
 Mac release build:
@@ -226,6 +241,21 @@ Mac release build:
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
         ${src_dir}
   - make -j 8
+
+  only:
+  - tags
+
+  tags:
+  - mac, release
+
+
+# Dummy test job to prevent that deploy job is preceded by clean job.
+Mac release test:
+
+  stage: test
+
+  script:
+  - true
 
   only:
   - tags
@@ -274,8 +304,10 @@ Linux release installer:
   - version=${CI_BUILD_TAG}
   - cd ${pb_dir}
   - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
+  - source /etc/os-release
+  - os_version="${ID}-${VERSION_ID}
   - make package
-  - installer_file="niftk-${version}-linux-centos-7-x64.tar.gz"
+  - installer_file="niftk-${version}-linux-${os_version}-x64.tar.gz"
   - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
   - "# Upload the tarball"
   - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
