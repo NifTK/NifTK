@@ -1,9 +1,31 @@
 <!DOCTYPE RCC><RCC version="1.0">
-  <qresource prefix="/NewVisualization">
+  <qresource prefix="/VL">
     <file>TriangleSorter.cl</file>
     <file>volume_luminance_light.vs</file>
     <file>volume_raycast_isosurface_transp.fs</file>
     <file>generic.fs</file>
     <file>generic.vs</file>
+    <file>vivid/glsl/dual_peeling_blend_fragment.glsl</file>
+    <file>vivid/glsl/dual_peeling_blend_vertex.glsl</file>
+    <file>vivid/glsl/dual_peeling_final_fragment.glsl</file>
+    <file>vivid/glsl/dual_peeling_final_vertex.glsl</file>
+    <file>vivid/glsl/dual_peeling_init_fragment.glsl</file>
+    <file>vivid/glsl/dual_peeling_init_vertex.glsl</file>
+    <file>vivid/glsl/dual_peeling_peel_fragment.glsl</file>
+    <file>vivid/glsl/dual_peeling_peel_fragment_ppdl.glsl</file>
+    <file>vivid/glsl/dual_peeling_peel_vertex.glsl</file>
+    <file>vivid/glsl/dual_peeling_peel_vertex_ppdl.glsl</file>
+    <file>vivid/glsl/front_peeling_blend_fragment.glsl</file>
+    <file>vivid/glsl/front_peeling_blend_vertex.glsl</file>
+    <file>vivid/glsl/front_peeling_final_fragment.glsl</file>
+    <file>vivid/glsl/front_peeling_final_vertex.glsl</file>
+    <file>vivid/glsl/front_peeling_init_fragment.glsl</file>
+    <file>vivid/glsl/front_peeling_init_vertex.glsl</file>
+    <file>vivid/glsl/front_peeling_peel_fragment.glsl</file>
+    <file>vivid/glsl/front_peeling_peel_vertex.glsl</file>
+    <file>vivid/glsl/front_peeling_peel_vertex_ppdl.glsl</file>
+    <file>vivid/glsl/shade_fragment.glsl</file>
+    <file>vivid/glsl/shade_fragment_ppdl.glsl</file>
+    <file>vivid/glsl/shade_vertex.glsl</file>
   </qresource>
 </RCC>
