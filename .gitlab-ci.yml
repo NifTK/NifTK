@@ -215,7 +215,7 @@ Linux release test:
   stage: test
 
   script:
-  - true
+  - echo
 
   only:
   - tags
@@ -255,7 +255,7 @@ Mac release test:
   stage: test
 
   script:
-  - true
+  - echo
 
   only:
   - tags
