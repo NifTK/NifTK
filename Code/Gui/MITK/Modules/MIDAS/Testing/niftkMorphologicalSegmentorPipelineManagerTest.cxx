@@ -76,7 +76,7 @@ public:
     m_RenderingManager = mitk::RenderingManager::GetInstance();
     m_RenderingManager->SetDataStorage(m_DataStorage);
 
-    m_RenderWindow = mitk::RenderWindow::New(NULL, "niftkMIDASMorphologicalSegmentorPipelineManagerTestClass", m_RenderingManager);
+    m_RenderWindow = mitk::RenderWindow::New(NULL, "niftkMorphologicalSegmentorPipelineManagerTestClass", m_RenderingManager);
 
     m_RenderingManager->InitializeViews(m_DataStorage->ComputeVisibleBoundingGeometry3D());
   }
@@ -94,7 +94,7 @@ public:
 };
 
 /**
- * Basic test harness for niftkMIDASMorphologicalSegmentorPipelineManager.
+ * Basic test harness for niftkMorphologicalSegmentorPipelineManager.
  */
 int niftkMorphologicalSegmentorPipelineManagerTest(int argc, char * argv[])
 {
