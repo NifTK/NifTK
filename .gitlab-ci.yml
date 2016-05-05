@@ -65,6 +65,60 @@ Linux continuous test:
   - linux, continuous
 
 
+Continuous docs:
+
+  stage: deploy
+
+  script:
+  - version=`git describe`
+  - cd ${pb_dir}
+  - rm -rf Doxygen/html
+  - chmod a+rx bin/GenerateCommandLineDoxygen
+  - bin/GenerateCommandLineDoxygen
+  - chmod a+rx bin/GenerateTestingReports
+  - bin/GenerateTestingReports
+  - doxygen doxygen.config
+  - cd Doxygen
+  - find html -type f -exec chmod 644 {} \;
+  - find html -type d -exec chmod 755 {} \;
+  - rm -rf niftk-${version}-docs
+  - mv html niftk-${version}-docs
+  - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
+  - echo "API reference documentation generated:"
+  - "# Upload the tarball"
+  - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
+  - "# Extract the tarball and replace the old files"
+  - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
+        rm -rf `readlink -f niftk-current-docs.tar.bz2` `readlink -f current` ;
+        rm niftk-current-docs current ;
+        tar xfj niftk-${version}-docs.tar.bz2 ;
+        ln -s niftk-${version}-docs.tar.bz2 niftk-current-docs.tar.bz2 ;
+        ln -s niftk-${version}-docs current"
+
+  only:
+  - master
+
+  tags:
+  - linux, continuous
+
+
+Linux continuous clean up:
+
+  stage: cleanup
+
+  script:
+  - rm -rf ${sb_dir}
+  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+
+  when: always
+
+  only:
+  - branches
+
+  tags:
+  - linux, continuous
+
+
 Mac continuous build:
 
   stage: build
@@ -105,6 +159,23 @@ Mac continuous test:
   - mac, continuous
 
 
+Mac continuous clean up:
+
+  stage: cleanup
+
+  script:
+  - rm -rf ${sb_dir}
+  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+
+  when: always
+
+  only:
+  - branches
+
+  tags:
+  - mac, continuous
+
+
 Windows continuous build:
 
   stage: build
@@ -137,46 +208,21 @@ Windows continuous test:
   - windows, continuous
 
 
-##########################################
-# Deploy development documentation pages
-##########################################
+Windows continuous clean up:
 
-
-Continuous docs:
-
-  stage: deploy
+  stage: cleanup
 
   script:
-  - version=`git describe`
-  - cd ${pb_dir}
-  - rm -rf Doxygen/html
-  - chmod a+rx bin/GenerateCommandLineDoxygen
-  - bin/GenerateCommandLineDoxygen
-  - chmod a+rx bin/GenerateTestingReports
-  - bin/GenerateTestingReports
-  - doxygen doxygen.config
-  - cd Doxygen
-  - find html -type f -exec chmod 644 {} \;
-  - find html -type d -exec chmod 755 {} \;
-  - rm -rf niftk-${version}-docs
-  - mv html niftk-${version}-docs
-  - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
-  - echo "API reference documentation generated:"
-  - "# Upload the tarball"
-  - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
-  - "# Extract the tarball and replace the old files"
-  - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
-        rm -rf `readlink -f niftk-current-docs.tar.bz2` `readlink -f current` ;
-        rm niftk-current-docs current ;
-        tar xfj niftk-${version}-docs.tar.bz2 ;
-        ln -s niftk-${version}-docs.tar.bz2 niftk-current-docs.tar.bz2 ;
-        ln -s niftk-${version}-docs current"
+  - rm -rf ${sb_dir}
+  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+
+  when: always
 
   only:
-  - master
+  - branches
 
   tags:
-  - linux, continuous
+  - windows, continuous
 
 
 ##########################################
@@ -184,9 +230,7 @@ Continuous docs:
 ##########################################
 
 
-# Linux build for tagged versions.
-# Full clean build with all the external projects, without testing and with Python.
-Linux release build:
+Ubuntu 14.04 release build:
 
   stage: build
 
@@ -206,26 +250,80 @@ Linux release build:
   - tags
 
   tags:
-  - linux, release
+  - linux, ubuntu-14.04, unmanaged, release
 
 
-# Dummy test job to prevent that deploy job is preceded by clean job.
-Linux release test:
+CentOS 7 release build:
 
-  stage: test
+  stage: build
 
   script:
-  - echo
+  - mkdir ${sb_dir}
+  - cd ${sb_dir}
+  - cmake -DBUILD_TESTING:BOOL=OFF
+        -DNIFTK_USE_CPPCHECK:BOOL=OFF
+        -DNIFTK_USE_KWSTYLE:BOOL=OFF
+        -DBUILD_Python:BOOL=ON
+        -DNIFTK_Apps/NiftyView:BOOL=ON
+        -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        ${src_dir}
+  - make -j 8
 
   only:
   - tags
 
   tags:
-  - linux, release
+  - linux, centos-7, unmanaged, release
 
 
-# Mac build for tagged versions.
-# Full clean build with all the external projects, without testing and with Python.
+Cluster release build:
+
+  stage: build
+
+  script:
+  - mkdir ${sb_dir}
+  - cd ${sb_dir}
+  - cmake -DBUILD_TESTING:BOOL=OFF
+        -DNIFTK_USE_CPPCHECK:BOOL=OFF
+        -DNIFTK_USE_KWSTYLE:BOOL=OFF
+        -DBUILD_Python:BOOL=ON
+        -DOPENCV_WITH_FFMPEG:BOOL=ON
+        -DNIFTK_Apps/NiftyView:BOOL=ON
+        -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        ${src_dir}
+  - make -j 8
+
+  only:
+  - tags
+
+  tags:
+  - linux, centos-6, cluster, release
+
+
+Managed CentOS 7 release build:
+
+  stage: build
+
+  script:
+  - mkdir ${sb_dir}
+  - cd ${sb_dir}
+  - cmake -DBUILD_TESTING:BOOL=OFF
+        -DNIFTK_USE_CPPCHECK:BOOL=OFF
+        -DNIFTK_USE_KWSTYLE:BOOL=OFF
+        -DBUILD_Python:BOOL=ON
+        -DOPENCV_WITH_FFMPEG:BOOL=ON
+        -DNIFTK_Apps/NiftyView:BOOL=ON
+        -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        ${src_dir}
+  - make -j 8
+
+  only:
+  - tags
+
+  tags:
+  - linux, centos-7, managed, release
+
+
 Mac release build:
 
   stage: build
@@ -247,6 +345,64 @@ Mac release build:
 
   tags:
   - mac, release
+
+
+# Dummy test jobs to prevent that deploy job is preceded by clean job.
+
+Ubuntu 14.04 release test:
+
+  stage: test
+
+  script:
+  - echo
+
+  only:
+  - tags
+
+  tags:
+  - linux, ubuntu-14.04, unmanaged, release
+
+
+CentOS 7 release test:
+
+  stage: test
+
+  script:
+  - echo
+
+  only:
+  - tags
+
+  tags:
+  - linux, centos-7, unmanaged, release
+
+
+Cluster release test:
+
+  stage: test
+
+  script:
+  - echo
+
+  only:
+  - tags
+
+  tags:
+  - linux, centos-6, cluster, release
+
+
+Managed CentOS 7 release test:
+
+  stage: test
+
+  script:
+  - echo
+
+  only:
+  - tags
+
+  tags:
+  - linux, centos-7, managed, release
 
 
 # Dummy test job to prevent that deploy job is preceded by clean job.
@@ -293,10 +449,10 @@ Release docs:
   - tags
 
   tags:
-  - linux, release
+  - linux, ubuntu-14.04,unmanaged, release
 
 
-Linux release installer:
+Ubuntu 14.04 release installer:
 
   stage: deploy
 
@@ -305,7 +461,7 @@ Linux release installer:
   - cd ${pb_dir}
   - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
   - source /etc/os-release
-  - os_version="${ID}-${VERSION_ID}
+  - os_version="${ID}-${VERSION_ID}"
   - make package
   - installer_file="niftk-${version}-linux-${os_version}-x64.tar.gz"
   - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
@@ -316,7 +472,83 @@ Linux release installer:
   - tags
 
   tags:
-  - linux, release
+  - linux, ubuntu-14.04, unmanaged, release
+
+
+CentOS 7 release installer:
+
+  stage: deploy
+
+  script:
+  - version=${CI_BUILD_TAG}
+  - cd ${pb_dir}
+  - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
+  - source /etc/os-release
+  - os_version="${ID}-${VERSION_ID}"
+  - make package
+  - installer_file="niftk-${version}-linux-${os_version}-x64.tar.gz"
+  - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
+  - "# Upload the tarball"
+  - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+
+  only:
+  - tags
+
+  tags:
+  - linux, centos-7, unmanaged, release
+
+
+Cluster release installer:
+
+  stage: deploy
+
+  script:
+  - version=${CI_BUILD_TAG}
+  - cd ${pb_dir}
+  - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
+  - source /etc/os-release
+  - os_version="${ID}-${VERSION_ID}"
+  - make package
+  - installer_file="niftk-${version}-linux-${os_version}-x64.tar.gz"
+  - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
+  - install_prefix=/share/apps/cmic/niftk/niftk-${niftk_version_string}
+  - install_tmp_dir="${install_prefix}-tmp"
+  - mkdir ${install_tmp_dir}
+  - cd ${install_tmp_dir}
+  - tar xvfz ${installer_file}
+  - cd `ls`
+  - install_path=`pwd`
+  - cd ../..
+  - mv ${install_prefix} "${install_tmp_dir}/"
+  - mv ${install_path} ${install_prefix}
+  - rm -rf "${install_tmp_dir}"
+
+  only:
+  - tags
+
+  tags:
+  - linux, centos-6, cluster, release
+
+
+Managed CentOS 7 release installer:
+
+  stage: deploy
+
+  script:
+  - version=${CI_BUILD_TAG}
+  - cd ${pb_dir}
+  - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
+  - source /etc/os-release
+  - os_version="${ID}-${VERSION_ID}"
+  - make package
+  - installer_file="niftk-${version}-linux-${os_version}-x64.tar.gz"
+  - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
+
+  only:
+  - tags
+
+  tags:
+  - linux, centos-7, managed, release
 
 
 Mac release installer:
@@ -344,23 +576,8 @@ Mac release installer:
 # Jobs for cleaning up
 ##########################################
 
-Linux continuous clean up:
 
-  stage: cleanup
-
-  script:
-  - rm -rf ${sb_dir}
-  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
-
-  only:
-  - branches
-
-  tags:
-  - linux, continuous
-
-Linux release clean up:
+Ubuntu 14.04 release clean up:
 
   stage: cleanup
 
@@ -374,9 +591,10 @@ Linux release clean up:
   - tags
 
   tags:
-  - linux, release
+  - linux, ubuntu-14.04, unmanaged, release
 
-Mac continuous clean up:
+
+CentOS 7 release clean up:
 
   stage: cleanup
 
@@ -387,10 +605,45 @@ Mac continuous clean up:
   when: always
 
   only:
-  - branches
+  - tags
 
   tags:
-  - mac, continuous
+  - linux, centos-7, unmanaged, release
+
+
+Cluster release clean up:
+
+  stage: cleanup
+
+  script:
+  - rm -rf ${sb_dir}
+  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+
+  when: always
+
+  only:
+  - tags
+
+  tags:
+  - linux, centos-6, cluster, release
+
+
+Managed CentOS 7 release clean up:
+
+  stage: cleanup
+
+  script:
+  - rm -rf ${sb_dir}
+  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+
+  when: always
+
+  only:
+  - tags
+
+  tags:
+  - linux, centos-7, managed, release
+
 
 Mac release clean up:
 
@@ -408,21 +661,6 @@ Mac release clean up:
   tags:
   - mac, release
 
-Windows continuous clean up:
-
-  stage: cleanup
-
-  script:
-  - rm -rf ${sb_dir}
-  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
-
-  only:
-  - branches
-
-  tags:
-  - windows, continuous
 
 #Windows release clean up:
 #
@@ -439,4 +677,3 @@ Windows continuous clean up:
 #
 #  tags:
 #  - windows, release
-
