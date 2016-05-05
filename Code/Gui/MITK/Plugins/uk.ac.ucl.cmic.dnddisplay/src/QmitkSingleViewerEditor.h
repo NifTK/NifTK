@@ -233,6 +233,12 @@ protected slots:
   /// \brief Called when the show cursor option has been changed in a viewer.
   void OnCursorVisibilityChanged(bool visible);
 
+  /// \brief Called when the show direction annotations option has been changed in a viewer.
+  void OnDirectionAnnotationsVisibilityChanged(bool visible);
+
+  /// \brief Called when the show intensity annotation option has been changed in a viewer.
+  void OnIntensityAnnotationVisibilityChanged(bool visible);
+
 private:
 
   const QScopedPointer<QmitkSingleViewerEditorPrivate> d;

@@ -125,6 +125,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 , m_CursorSagittalPositionsAreBound(true)
 , m_CursorCoronalPositionsAreBound(false)
 , m_ScaleFactorBinding(true)
+, m_IntensityAnnotationIsVisible(false)
 {
   /// Note:
   /// The rendering manager is surely not null. If NULL is specified then the superclass
@@ -492,7 +493,7 @@ void niftkMultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)
 
     if (m_SelectedWindowIndex < 3)
     {
-      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(true);
+      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(m_IntensityAnnotationIsVisible);
     }
 
     this->BlockUpdate(updateWasBlocked);
@@ -707,19 +708,19 @@ void niftkMultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
 //-----------------------------------------------------------------------------
 bool niftkMultiWindowWidget::IsIntensityAnnotationVisible() const
 {
-  return m_DirectionAnnotations[AXIAL]->GetVisibility()
-      && m_DirectionAnnotations[SAGITTAL]->GetVisibility()
-      && m_DirectionAnnotations[CORONAL]->GetVisibility();
+  return m_IntensityAnnotationIsVisible;
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMultiWindowWidget::SetIntensityAnnotationVisible(bool visible)
 {
-  m_DirectionAnnotations[AXIAL]->SetVisibility(visible);
-  m_DirectionAnnotations[SAGITTAL]->SetVisibility(visible);
-  m_DirectionAnnotations[CORONAL]->SetVisibility(visible);
-  this->RequestUpdate();
+  if (visible != m_IntensityAnnotationIsVisible)
+  {
+    m_IntensityAnnotationIsVisible = visible;
+    m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(visible);
+    this->RequestUpdate();
+  }
 }
 
 
@@ -2176,7 +2177,7 @@ void niftkMultiWindowWidget::InitialiseIntensityAnnotations()
     intensityAnnotation->SetFontSize(12);
     intensityAnnotation->SetColor(0.0f, 1.0f, 0.0f);
     intensityAnnotation->SetOpacity(1.0f);
-    intensityAnnotation->SetVisibility(false);
+    intensityAnnotation->SetVisibility(i == m_SelectedWindowIndex && m_IntensityAnnotationIsVisible);
 
     overlayManager->AddOverlay(intensityAnnotation.GetPointer(), renderer);
     overlayManager->SetLayouter(intensityAnnotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
@@ -2225,12 +2226,12 @@ void niftkMultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
     else if (visibleNonBinaryImageNodes.size() == 1)
     {
       stream << "Intensity: ";
-      intensityAnnotation->SetVisibility(true);
+      intensityAnnotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_IntensityAnnotationIsVisible);
     }
     else if (visibleNonBinaryImageNodes.size() > 1)
     {
       stream << "Intensities: ";
-      intensityAnnotation->SetVisibility(true);
+      intensityAnnotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_IntensityAnnotationIsVisible);
     }
 
     for (std::multimap<int, mitk::DataNode*>::const_iterator it = visibleNonBinaryImageNodes.begin(); it != visibleNonBinaryImageNodes.end(); ++it)

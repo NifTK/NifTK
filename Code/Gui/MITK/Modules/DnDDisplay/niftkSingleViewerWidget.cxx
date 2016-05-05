@@ -1069,6 +1069,8 @@ void niftkSingleViewerWidget::ToggleDirectionAnnotations()
   this->SetDirectionAnnotationsVisible(visible);
 
   this->RequestUpdate();
+
+  emit DirectionAnnotationsVisibilityChanged(visible);
 }
 
 
@@ -1080,6 +1082,8 @@ void niftkSingleViewerWidget::ToggleIntensityAnnotation()
   this->SetIntensityAnnotationVisible(visible);
 
   this->RequestUpdate();
+
+  emit IntensityAnnotationVisibilityChanged(visible);
 }
 
 

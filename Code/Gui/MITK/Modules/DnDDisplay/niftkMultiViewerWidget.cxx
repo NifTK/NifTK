@@ -254,6 +254,8 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer(const QString& nam
   this->connect(viewer, SIGNAL(CursorPositionBindingChanged(bool)), SLOT(OnCursorPositionBindingChanged(bool)));
   this->connect(viewer, SIGNAL(ScaleFactorBindingChanged(bool)), SLOT(OnScaleFactorBindingChanged(bool)));
   this->connect(viewer, SIGNAL(CursorVisibilityChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
+  this->connect(viewer, SIGNAL(DirectionAnnotationsVisibilityChanged(bool)), SLOT(OnDirectionAnnotationsVisibilityChanged(bool)));
+  this->connect(viewer, SIGNAL(IntensityAnnotationVisibilityChanged(bool)), SLOT(OnIntensityAnnotationVisibilityChanged(bool)));
 
   return viewer;
 }
@@ -874,6 +876,8 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns)
 
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
   this->OnCursorVisibilityChanged(selectedViewer->IsCursorVisible());
+  this->OnDirectionAnnotationsVisibilityChanged(selectedViewer->AreDirectionAnnotationsVisible());
+  this->OnIntensityAnnotationVisibilityChanged(selectedViewer->IsIntensityAnnotationVisible());
   this->SetShow3DWindowIn2x2WindowLayout(m_Show3DWindowIn2x2WindowLayout);
 
   if (m_ControlPanel->AreViewerGeometriesBound())
@@ -1408,6 +1412,54 @@ void niftkMultiViewerWidget::OnCursorVisibilityChanged(bool visible)
         otherViewer->SetCursorVisible(visible);
         otherViewer->blockSignals(signalsWereBlocked);
       }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::OnDirectionAnnotationsVisibilityChanged(bool visible)
+{
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+  if (!viewer)
+  {
+    /// Note: this slot is also directly invoked from this class. In this case sender() returns 0.
+    viewer = this->GetSelectedViewer();
+  }
+
+  m_ControlPanel->SetDirectionAnnotationsVisible(visible);
+
+  foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+  {
+    if (otherViewer != viewer)
+    {
+      bool signalsWereBlocked = otherViewer->blockSignals(true);
+      otherViewer->SetDirectionAnnotationsVisible(visible);
+      otherViewer->blockSignals(signalsWereBlocked);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::OnIntensityAnnotationVisibilityChanged(bool visible)
+{
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+  if (!viewer)
+  {
+    /// Note: this slot is also directly invoked from this class. In this case sender() returns 0.
+    viewer = this->GetSelectedViewer();
+  }
+
+  m_ControlPanel->SetIntensityAnnotationVisible(visible);
+
+  foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+  {
+    if (otherViewer != viewer)
+    {
+      bool signalsWereBlocked = otherViewer->blockSignals(true);
+      otherViewer->SetIntensityAnnotationVisible(visible);
+      otherViewer->blockSignals(signalsWereBlocked);
     }
   }
 }

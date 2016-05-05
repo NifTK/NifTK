@@ -582,6 +582,7 @@ private:
   bool m_ScaleFactorBindingHasChanged;
 
   mitk::TextOverlay2D::Pointer m_IntensityAnnotations[3];
+  bool m_IntensityAnnotationIsVisible;
 
   friend class DisplayGeometryModificationCommand;
 

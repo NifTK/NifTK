@@ -366,6 +366,12 @@ signals:
   /// \brief Emitted when the visibility of the cursor (aka. crosshair) has changed.
   void CursorVisibilityChanged(bool visible);
 
+  /// \brief Emitted when the visibility of the direction annotations has changed.
+  void DirectionAnnotationsVisibilityChanged(bool visible);
+
+  /// \brief Emitted when the visibility of the intensity annotation has changed.
+  void IntensityAnnotationVisibilityChanged(bool visible);
+
 public slots:
 
   /// \brief Called when nodes are dropped on the contained render windows.

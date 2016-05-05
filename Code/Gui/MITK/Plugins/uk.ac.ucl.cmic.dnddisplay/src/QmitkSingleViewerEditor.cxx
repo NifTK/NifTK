@@ -357,6 +357,8 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     this->connect(d->m_SingleViewer, SIGNAL(ScaleFactorChanged(WindowOrientation, double)), SLOT(OnScaleFactorChanged(WindowOrientation, double)));
     this->connect(d->m_SingleViewer, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
     this->connect(d->m_SingleViewer, SIGNAL(CursorVisibilityChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
+    this->connect(d->m_SingleViewer, SIGNAL(DirectionAnnotationsVisibilityChanged(bool)), SLOT(OnDirectionAnnotationsVisibilityChanged(bool)));
+    this->connect(d->m_SingleViewer, SIGNAL(IntensityAnnotationVisibilityChanged(bool)), SLOT(OnIntensityAnnotationVisibilityChanged(bool)));
 
     this->connect(d->m_ControlPanel, SIGNAL(SelectedSliceChanged(int)), SLOT(OnSelectedSliceControlChanged(int)));
     this->connect(d->m_ControlPanel, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepControlChanged(int)));
@@ -840,6 +842,24 @@ void QmitkSingleViewerEditor::OnCursorVisibilityChanged(bool visible)
 {
   bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
   d->m_ControlPanel->SetCursorVisible(visible);
+  d->m_ControlPanel->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnDirectionAnnotationsVisibilityChanged(bool visible)
+{
+  bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
+  d->m_ControlPanel->SetDirectionAnnotationsVisible(visible);
+  d->m_ControlPanel->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnIntensityAnnotationVisibilityChanged(bool visible)
+{
+  bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
+  d->m_ControlPanel->SetIntensityAnnotationVisible(visible);
   d->m_ControlPanel->blockSignals(signalsWereBlocked);
 }
 
