@@ -156,4 +156,14 @@
     <attribute name="Key" value="X"/>
   </event_variant>
 
+  <!-- Toggle direction annotations -->
+  <event_variant class="InteractionKeyEvent" name="ToggleDirectionAnnotations">
+    <attribute name="Key" value="D"/>
+  </event_variant>
+
+  <!-- Toggle intensity annotation -->
+  <event_variant class="InteractionKeyEvent" name="ToggleIntensityAnnotation">
+    <attribute name="Key" value="I"/>
+  </event_variant>
+
 </config>

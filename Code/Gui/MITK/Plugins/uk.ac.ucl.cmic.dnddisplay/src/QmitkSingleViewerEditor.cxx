@@ -295,6 +295,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     QString backgroundColourName = prefs->Get(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black");
     QColor backgroundColour(backgroundColourName);
     bool showDirectionAnnotations = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true);
+    bool showIntensityAnnotation = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true);
     bool showShowingOptions = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true);
     bool showWindowLayoutControls = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true);
     bool showMagnificationSlider = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true);
@@ -327,6 +328,8 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 //    d->m_SingleViewer->SetCursorDefaultVisibility(show2DCursors);
     d->m_SingleViewer->SetDirectionAnnotationsVisible(showDirectionAnnotations);
     d->m_ControlPanel->SetDirectionAnnotationsVisible(showDirectionAnnotations);
+    d->m_SingleViewer->SetIntensityAnnotationVisible(showIntensityAnnotation);
+    d->m_ControlPanel->SetIntensityAnnotationVisible(showIntensityAnnotation);
     d->m_SingleViewer->SetShow3DWindowIn2x2WindowLayout(show3DWindowInMultiWindowLayout);
     d->m_ControlPanel->SetMagnificationControlsVisible(showMagnificationSlider);
     d->m_SingleViewer->SetRememberSettingsPerWindowLayout(rememberSettingsPerLayout);
@@ -354,6 +357,8 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     this->connect(d->m_SingleViewer, SIGNAL(ScaleFactorChanged(WindowOrientation, double)), SLOT(OnScaleFactorChanged(WindowOrientation, double)));
     this->connect(d->m_SingleViewer, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
     this->connect(d->m_SingleViewer, SIGNAL(CursorVisibilityChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
+    this->connect(d->m_SingleViewer, SIGNAL(DirectionAnnotationsVisibilityChanged(bool)), SLOT(OnDirectionAnnotationsVisibilityChanged(bool)));
+    this->connect(d->m_SingleViewer, SIGNAL(IntensityAnnotationVisibilityChanged(bool)), SLOT(OnIntensityAnnotationVisibilityChanged(bool)));
 
     this->connect(d->m_ControlPanel, SIGNAL(SelectedSliceChanged(int)), SLOT(OnSelectedSliceControlChanged(int)));
     this->connect(d->m_ControlPanel, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepControlChanged(int)));
@@ -361,6 +366,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 
     this->connect(d->m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityControlChanged(bool)));
     this->connect(d->m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsControlChanged(bool)));
+    this->connect(d->m_ControlPanel, SIGNAL(ShowIntensityAnnotationChanged(bool)), SLOT(OnShowIntensityAnnotationControlChanged(bool)));
     this->connect(d->m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), SLOT(OnShow3DWindowControlChanged(bool)));
 
     this->connect(d->m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutControlChanged(WindowLayout)));
@@ -433,6 +439,7 @@ void QmitkSingleViewerEditor::OnPreferencesChanged( const berry::IBerryPreferenc
     d->m_ShowCursor = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true);
 
     d->m_SingleViewer->SetDirectionAnnotationsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
+    d->m_SingleViewer->SetIntensityAnnotationVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
     d->m_SingleViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
     d->m_SingleViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
     d->m_ControlPanel->SetSliceTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
@@ -737,6 +744,15 @@ void QmitkSingleViewerEditor::OnShowDirectionAnnotationsControlChanged(bool visi
 
 
 //-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnShowIntensityAnnotationControlChanged(bool visible)
+{
+  bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
+  d->m_SingleViewer->SetIntensityAnnotationVisible(visible);
+  d->m_SingleViewer->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkSingleViewerEditor::OnCursorVisibilityControlChanged(bool visible)
 {
   bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
@@ -826,6 +842,24 @@ void QmitkSingleViewerEditor::OnCursorVisibilityChanged(bool visible)
 {
   bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
   d->m_ControlPanel->SetCursorVisible(visible);
+  d->m_ControlPanel->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnDirectionAnnotationsVisibilityChanged(bool visible)
+{
+  bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
+  d->m_ControlPanel->SetDirectionAnnotationsVisible(visible);
+  d->m_ControlPanel->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnIntensityAnnotationVisibilityChanged(bool visible)
+{
+  bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
+  d->m_ControlPanel->SetIntensityAnnotationVisible(visible);
   d->m_ControlPanel->blockSignals(signalsWereBlocked);
 }
 

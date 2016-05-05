@@ -781,6 +781,7 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
     int defaultNumberOfColumns = prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER, 1);
     bool showDropTypeControls = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false);
     bool showDirectionAnnotations = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true);
+    bool showIntensityAnnotation = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true);
     bool showShowingOptions = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true);
     bool showWindowLayoutControls = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true);
     bool showViewerNumberControls = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true);
@@ -815,6 +816,7 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_MultiViewer->SetShowDropTypeControls(showDropTypeControls);
     d->m_MultiViewer->SetCursorDefaultVisibility(show2DCursors);
     d->m_MultiViewer->SetDirectionAnnotationsVisible(showDirectionAnnotations);
+    d->m_MultiViewer->SetIntensityAnnotationVisible(showIntensityAnnotation);
     d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(show3DWindowInMultiWindowLayout);
     d->m_MultiViewer->SetShowMagnificationSlider(showMagnificationSlider);
     d->m_MultiViewer->SetRememberSettingsPerWindowLayout(rememberSettingsPerLayout);
@@ -893,6 +895,7 @@ void QmitkMultiViewerEditor::OnPreferencesChanged( const berry::IBerryPreference
     d->m_MultiViewer->SetShowMagnificationSlider(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
     d->m_MultiViewer->SetCursorDefaultVisibility(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true));
     d->m_MultiViewer->SetDirectionAnnotationsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
+    d->m_MultiViewer->SetIntensityAnnotationVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
     d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
     d->m_MultiViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
     d->m_MultiViewer->SetSliceTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));

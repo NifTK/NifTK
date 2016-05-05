@@ -110,6 +110,12 @@ public:
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
 
+  /// \brief Tells if the intensity annotation is visible.
+  bool IsIntensityAnnotationVisible() const;
+
+  /// \brief Sets the visibility of the intensity annotation.
+  void SetIntensityAnnotationVisible(bool visible);
+
   /// \brief Returns the flag indicating if nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
   bool GetShow3DWindowIn2x2WindowLayout() const;
 
@@ -576,6 +582,7 @@ private:
   bool m_ScaleFactorBindingHasChanged;
 
   mitk::TextOverlay2D::Pointer m_IntensityAnnotations[3];
+  bool m_IntensityAnnotationIsVisible;
 
   friend class DisplayGeometryModificationCommand;
 

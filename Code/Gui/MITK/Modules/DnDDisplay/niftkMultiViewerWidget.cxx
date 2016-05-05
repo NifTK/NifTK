@@ -158,6 +158,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
    ************************************/
 
   m_ControlPanel->SetDirectionAnnotationsVisible(true);
+  m_ControlPanel->SetIntensityAnnotationVisible(true);
 
   // Default to dropping into single window.
   m_ControlPanel->SetDropType(DNDDISPLAY_DROP_SINGLE);
@@ -172,6 +173,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 
   this->connect(m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityControlChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsControlsChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ShowIntensityAnnotationChanged(bool)), SLOT(OnShowIntensityAnnotationControlsChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), SLOT(OnShow3DWindowControlChanged(bool)));
 
   this->connect(m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutControlChanged(WindowLayout)));
@@ -252,6 +254,8 @@ niftkSingleViewerWidget* niftkMultiViewerWidget::CreateViewer(const QString& nam
   this->connect(viewer, SIGNAL(CursorPositionBindingChanged(bool)), SLOT(OnCursorPositionBindingChanged(bool)));
   this->connect(viewer, SIGNAL(ScaleFactorBindingChanged(bool)), SLOT(OnScaleFactorBindingChanged(bool)));
   this->connect(viewer, SIGNAL(CursorVisibilityChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
+  this->connect(viewer, SIGNAL(DirectionAnnotationsVisibilityChanged(bool)), SLOT(OnDirectionAnnotationsVisibilityChanged(bool)));
+  this->connect(viewer, SIGNAL(IntensityAnnotationVisibilityChanged(bool)), SLOT(OnIntensityAnnotationVisibilityChanged(bool)));
 
   return viewer;
 }
@@ -631,6 +635,24 @@ void niftkMultiViewerWidget::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
+bool niftkMultiViewerWidget::IsIntensityAnnotationVisible() const
+{
+  return m_ControlPanel->IsIntensityAnnotationVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::SetIntensityAnnotationVisible(bool visible)
+{
+  m_ControlPanel->SetIntensityAnnotationVisible(visible);
+  foreach (niftkSingleViewerWidget* viewer, m_Viewers)
+  {
+    viewer->SetIntensityAnnotationVisible(visible);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool niftkMultiViewerWidget::GetShow3DWindowIn2x2WindowLayout() const
 {
   return m_Show3DWindowIn2x2WindowLayout;
@@ -854,6 +876,8 @@ void niftkMultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns)
 
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
   this->OnCursorVisibilityChanged(selectedViewer->IsCursorVisible());
+  this->OnDirectionAnnotationsVisibilityChanged(selectedViewer->AreDirectionAnnotationsVisible());
+  this->OnIntensityAnnotationVisibilityChanged(selectedViewer->IsIntensityAnnotationVisible());
   this->SetShow3DWindowIn2x2WindowLayout(m_Show3DWindowIn2x2WindowLayout);
 
   if (m_ControlPanel->AreViewerGeometriesBound())
@@ -1394,6 +1418,54 @@ void niftkMultiViewerWidget::OnCursorVisibilityChanged(bool visible)
 
 
 //-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::OnDirectionAnnotationsVisibilityChanged(bool visible)
+{
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+  if (!viewer)
+  {
+    /// Note: this slot is also directly invoked from this class. In this case sender() returns 0.
+    viewer = this->GetSelectedViewer();
+  }
+
+  m_ControlPanel->SetDirectionAnnotationsVisible(visible);
+
+  foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+  {
+    if (otherViewer != viewer)
+    {
+      bool signalsWereBlocked = otherViewer->blockSignals(true);
+      otherViewer->SetDirectionAnnotationsVisible(visible);
+      otherViewer->blockSignals(signalsWereBlocked);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::OnIntensityAnnotationVisibilityChanged(bool visible)
+{
+  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+  if (!viewer)
+  {
+    /// Note: this slot is also directly invoked from this class. In this case sender() returns 0.
+    viewer = this->GetSelectedViewer();
+  }
+
+  m_ControlPanel->SetIntensityAnnotationVisible(visible);
+
+  foreach (niftkSingleViewerWidget* otherViewer, m_Viewers)
+  {
+    if (otherViewer != viewer)
+    {
+      bool signalsWereBlocked = otherViewer->blockSignals(true);
+      otherViewer->SetIntensityAnnotationVisible(visible);
+      otherViewer->blockSignals(signalsWereBlocked);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkMultiViewerWidget::OnTimeGeometryChanged(const mitk::TimeGeometry* timeGeometry)
 {
   niftkSingleViewerWidget* dropOntoViewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
@@ -1556,6 +1628,13 @@ void niftkMultiViewerWidget::OnCursorVisibilityControlChanged(bool visible)
 void niftkMultiViewerWidget::OnShowDirectionAnnotationsControlsChanged(bool visible)
 {
   this->SetDirectionAnnotationsVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::OnShowIntensityAnnotationControlsChanged(bool visible)
+{
+  this->SetIntensityAnnotationVisible(visible);
 }
 
 

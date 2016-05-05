@@ -71,6 +71,7 @@ niftkSingleViewerControls::niftkSingleViewerControls(QWidget *parent)
 
   this->connect(ui->m_ShowCursorCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowCursorChanged(bool)));
   this->connect(ui->m_ShowDirectionAnnotationsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowDirectionAnnotationsChanged(bool)));
+  this->connect(ui->m_ShowIntensityAnnotationCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowIntensityAnnotationChanged(bool)));
   this->connect(ui->m_Show3DWindowCheckBox, SIGNAL(toggled(bool)), SIGNAL(Show3DWindowChanged(bool)));
 
   this->connect(ui->m_BindWindowCursorsCheckBox, SIGNAL(toggled(bool)), SIGNAL(WindowCursorBindingChanged(bool)));
@@ -442,6 +443,22 @@ void niftkSingleViewerControls::SetDirectionAnnotationsVisible(bool visible)
   bool wasBlocked = ui->m_ShowDirectionAnnotationsCheckBox->blockSignals(true);
   ui->m_ShowDirectionAnnotationsCheckBox->setChecked(visible);
   ui->m_ShowDirectionAnnotationsCheckBox->blockSignals(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkSingleViewerControls::IsIntensityAnnotationVisible() const
+{
+  return ui->m_ShowIntensityAnnotationCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerControls::SetIntensityAnnotationVisible(bool visible)
+{
+  bool wasBlocked = ui->m_ShowIntensityAnnotationCheckBox->blockSignals(true);
+  ui->m_ShowIntensityAnnotationCheckBox->setChecked(visible);
+  ui->m_ShowIntensityAnnotationCheckBox->blockSignals(wasBlocked);
 }
 
 

@@ -79,6 +79,9 @@ public:
   /// \brief Stores the preference name for whether we show the direction annotations.
   static const QString DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS;
 
+  /// \brief Stores the preference name for whether we show the intensity annotation.
+  static const QString DNDDISPLAY_SHOW_INTENSITY_ANNOTATION;
+
   /// \brief Stores the preference name for whether we show the 3D window in multiple window layout, as screen can get a bit cluttered.
   static const QString DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT;
 
@@ -132,6 +135,7 @@ private:
   QCheckBox* m_MagnificationSelectTracking;
   QCheckBox* m_Show2DCursorsCheckBox;
   QCheckBox* m_ShowDirectionAnnotationsCheckBox;
+  QCheckBox* m_ShowIntensityAnnotationCheckBox;
   QCheckBox* m_Show3DWindowInMultiWindowLayoutCheckBox;
   QComboBox* m_DefaultWindowLayoutComboBox;
   QCheckBox* m_RememberEachWindowLayoutsViewerSettings;

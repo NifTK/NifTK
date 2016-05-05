@@ -283,6 +283,20 @@ void niftkSingleViewerWidget::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
+bool niftkSingleViewerWidget::IsIntensityAnnotationVisible() const
+{
+  return m_MultiWidget->IsIntensityAnnotationVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::SetIntensityAnnotationVisible(bool visible)
+{
+  m_MultiWidget->SetIntensityAnnotationVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
 bool niftkSingleViewerWidget::GetShow3DWindowIn2x2WindowLayout() const
 {
   return m_MultiWidget->GetShow3DWindowIn2x2WindowLayout();
@@ -1044,6 +1058,32 @@ void niftkSingleViewerWidget::ToggleCursorVisibility()
   this->RequestUpdate();
 
   emit CursorVisibilityChanged(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::ToggleDirectionAnnotations()
+{
+  bool visible = !this->AreDirectionAnnotationsVisible();
+
+  this->SetDirectionAnnotationsVisible(visible);
+
+  this->RequestUpdate();
+
+  emit DirectionAnnotationsVisibilityChanged(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkSingleViewerWidget::ToggleIntensityAnnotation()
+{
+  bool visible = !this->IsIntensityAnnotationVisible();
+
+  this->SetIntensityAnnotationVisible(visible);
+
+  this->RequestUpdate();
+
+  emit IntensityAnnotationVisibilityChanged(visible);
 }
 
 
