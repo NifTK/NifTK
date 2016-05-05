@@ -44,6 +44,7 @@ protected:
                  mitk::TrackingDeviceData deviceData,
                  std::string toolConfigFileName,
                  int preferredFramesPerSecond,
+                 int baudRate,
                  int measurementVolumeNumber
                  ); // Purposefully hidden.
 

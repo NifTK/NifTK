@@ -23,6 +23,9 @@
          <property name="text">
           <string>Config file</string>
          </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
         </widget>
        </item>
        <item row="0" column="1">
@@ -31,12 +34,28 @@
        <item row="1" column="0">
         <widget class="QLabel" name="m_PortNumberLabel">
          <property name="text">
-          <string>USB Port number</string>
+          <string>Port name</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
         <widget class="QComboBox" name="m_PortName"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="m_BaudRateLabel">
+         <property name="text">
+          <string>Baud rate</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="m_BaudRate"/>
        </item>
       </layout>
      </item>

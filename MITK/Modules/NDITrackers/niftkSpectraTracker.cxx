@@ -20,8 +20,10 @@ namespace niftk
 //-----------------------------------------------------------------------------
 SpectraTracker::SpectraTracker(mitk::DataStorage::Pointer dataStorage,
                                std::string portName,
-                               std::string toolConfigFileName)
-: PLUSNDITracker(dataStorage, portName, mitk::DeviceDataPolarisSpectra, toolConfigFileName, 60, 0)
+                               std::string toolConfigFileName,
+                               int baudRate
+                               )
+: PLUSNDITracker(dataStorage, portName, mitk::DeviceDataPolarisSpectra, toolConfigFileName, 60, baudRate, 0)
 {
 }
 

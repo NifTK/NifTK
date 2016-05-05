@@ -20,8 +20,10 @@ namespace niftk
 //-----------------------------------------------------------------------------
 AuroraTableTopTracker::AuroraTableTopTracker(mitk::DataStorage::Pointer dataStorage,
                                              std::string portName,
-                                             std::string toolConfigFileName)
-: PLUSNDITracker(dataStorage, portName, mitk::DeviceDataAuroraTabletop, toolConfigFileName, 40, 0)
+                                             std::string toolConfigFileName,
+                                             int baudRate
+                                             )
+: PLUSNDITracker(dataStorage, portName, mitk::DeviceDataAuroraTabletop, toolConfigFileName, 40, baudRate, 0)
 {
 }
 

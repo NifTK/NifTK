@@ -899,7 +899,7 @@ void IGIDataSourceManager::OnUpdateGui()
     dataSourceInfos.push_back(qListDataItemInfos);
   }
 
-  emit UpdateFinishedDataSources(dataSourceInfos);
+  emit UpdateFinishedDataSources(currentTime, dataSourceInfos);
 
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 

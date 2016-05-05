@@ -14,6 +14,7 @@
 
 #include "niftkMITKAuroraDomeDataSourceFactory.h"
 #include "niftkMITKTrackerDataSourceService.h"
+#include "niftkMITKTrackerDialog.h"
 #include <niftkAuroraDomeTracker.h>
 
 namespace niftk
@@ -33,6 +34,13 @@ MITKAuroraDomeDataSourceFactory::~MITKAuroraDomeDataSourceFactory()
 
 
 //-----------------------------------------------------------------------------
+IGIInitialisationDialog* MITKAuroraDomeDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
+{
+  return new niftk::MITKTrackerDialog(parent, this->GetName(), 115200);
+}
+
+
+//-----------------------------------------------------------------------------
 IGIDataSourceI::Pointer MITKAuroraDomeDataSourceFactory::CreateService(
     mitk::DataStorage::Pointer dataStorage,
     const IGIDataSourceProperties& properties) const
@@ -40,11 +48,12 @@ IGIDataSourceI::Pointer MITKAuroraDomeDataSourceFactory::CreateService(
 
   std::string portName;
   std::string fileName;
+  int         baudRate;
 
-  this->ExtractProperties(properties, portName, fileName);
+  this->ExtractProperties(properties, portName, fileName, baudRate);
 
   niftk::AuroraDomeTracker::Pointer tracker = niftk::AuroraDomeTracker::New(
-        dataStorage, portName, fileName
+        dataStorage, portName, fileName, baudRate
         );
 
   niftk::MITKTrackerDataSourceService::Pointer serviceInstance
