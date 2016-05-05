@@ -705,6 +705,25 @@ void niftkMultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
+bool niftkMultiWindowWidget::IsIntensityAnnotationVisible() const
+{
+  return m_DirectionAnnotations[AXIAL]->GetVisibility()
+      && m_DirectionAnnotations[SAGITTAL]->GetVisibility()
+      && m_DirectionAnnotations[CORONAL]->GetVisibility();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiWindowWidget::SetIntensityAnnotationVisible(bool visible)
+{
+  m_DirectionAnnotations[AXIAL]->SetVisibility(visible);
+  m_DirectionAnnotations[SAGITTAL]->SetVisibility(visible);
+  m_DirectionAnnotations[CORONAL]->SetVisibility(visible);
+  this->RequestUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
 bool niftkMultiWindowWidget::GetShow3DWindowIn2x2WindowLayout() const
 {
   return m_Show3DWindowIn2x2WindowLayout;

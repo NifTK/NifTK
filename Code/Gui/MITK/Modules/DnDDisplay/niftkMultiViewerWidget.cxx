@@ -158,6 +158,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
    ************************************/
 
   m_ControlPanel->SetDirectionAnnotationsVisible(true);
+  m_ControlPanel->SetIntensityAnnotationVisible(true);
 
   // Default to dropping into single window.
   m_ControlPanel->SetDropType(DNDDISPLAY_DROP_SINGLE);
@@ -172,6 +173,7 @@ niftkMultiViewerWidget::niftkMultiViewerWidget(
 
   this->connect(m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityControlChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsControlsChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ShowIntensityAnnotationChanged(bool)), SLOT(OnShowIntensityAnnotationControlsChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), SLOT(OnShow3DWindowControlChanged(bool)));
 
   this->connect(m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutControlChanged(WindowLayout)));
@@ -626,6 +628,24 @@ void niftkMultiViewerWidget::SetDirectionAnnotationsVisible(bool visible)
   foreach (niftkSingleViewerWidget* viewer, m_Viewers)
   {
     viewer->SetDirectionAnnotationsVisible(visible);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool niftkMultiViewerWidget::IsIntensityAnnotationVisible() const
+{
+  return m_ControlPanel->IsIntensityAnnotationVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::SetIntensityAnnotationVisible(bool visible)
+{
+  m_ControlPanel->SetIntensityAnnotationVisible(visible);
+  foreach (niftkSingleViewerWidget* viewer, m_Viewers)
+  {
+    viewer->SetIntensityAnnotationVisible(visible);
   }
 }
 
@@ -1556,6 +1576,13 @@ void niftkMultiViewerWidget::OnCursorVisibilityControlChanged(bool visible)
 void niftkMultiViewerWidget::OnShowDirectionAnnotationsControlsChanged(bool visible)
 {
   this->SetDirectionAnnotationsVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkMultiViewerWidget::OnShowIntensityAnnotationControlsChanged(bool visible)
+{
+  this->SetIntensityAnnotationVisible(visible);
 }
 
 

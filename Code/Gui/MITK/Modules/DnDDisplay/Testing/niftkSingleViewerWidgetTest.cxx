@@ -615,6 +615,7 @@ void niftkSingleViewerWidgetTestClass::init()
 //  QColor backgroundColour("black");
   QColor backgroundColour("#fffaf0");
   d->Viewer->SetDirectionAnnotationsVisible(true);
+  d->Viewer->SetIntensityAnnotationVisible(true);
   d->Viewer->SetBackgroundColour(backgroundColour);
   d->Viewer->SetShow3DWindowIn2x2WindowLayout(true);
   d->Viewer->SetRememberSettingsPerWindowLayout(false);

@@ -90,6 +90,14 @@ TODO Std move to abort interaction of scroll/pan/zoom
         <transition event_class="InteractionKeyEvent" event_variant="ToggleCursorVisibility" target="start">
             <action name="toggleCursorVisibility"/>
         </transition>
+
+        <transition event_class="InteractionKeyEvent" event_variant="ToggleDirectionAnnotations" target="start">
+            <action name="toggleDirectionAnnotations"/>
+        </transition>
+
+        <transition event_class="InteractionKeyEvent" event_variant="ToggleIntensityAnnotation" target="start">
+            <action name="toggleIntensityAnnotation"/>
+        </transition>
     </state>
 
     <state name="selectingPosition">

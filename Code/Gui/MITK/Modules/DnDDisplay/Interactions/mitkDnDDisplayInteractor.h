@@ -97,6 +97,12 @@ protected:
   /// \brief Toggles the visibility of the cursor.
   virtual bool ToggleCursorVisibility(StateMachineAction* action, InteractionEvent* interactionEvent);
 
+  /// \brief Toggles displaying the direction annotations on/off.
+  virtual bool ToggleDirectionAnnotations(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief Toggles displaying the intensity annotation on/off.
+  virtual bool ToggleIntensityAnnotation(StateMachineAction* action, InteractionEvent* interactionEvent);
+
   /// \brief Selects the previous slice.
   /// The slices are ordered in the following way:
   ///   <li>axial: inferior to superior

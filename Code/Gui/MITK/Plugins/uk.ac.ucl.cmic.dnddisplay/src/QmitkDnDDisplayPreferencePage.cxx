@@ -35,6 +35,7 @@ const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRA
 
 const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS("DnD display show 2D cursors");
 const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS("DnD display show direction annotations");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION("DnD display show intensity annotation");
 const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT("DnD display show 3D window in multiple window layout");
 
 const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT("DnD display default window layout");
@@ -60,6 +61,7 @@ QmitkDnDDisplayPreferencePage::QmitkDnDDisplayPreferencePage()
 , m_MagnificationSelectTracking(NULL)
 , m_Show2DCursorsCheckBox(NULL)
 , m_ShowDirectionAnnotationsCheckBox(NULL)
+, m_ShowIntensityAnnotationCheckBox(NULL)
 , m_Show3DWindowInMultiWindowLayoutCheckBox(NULL)
 , m_DefaultWindowLayoutComboBox(NULL)
 , m_RememberEachWindowLayoutsViewerSettings(NULL)
@@ -121,6 +123,9 @@ void QmitkDnDDisplayPreferencePage::CreateQtControl(QWidget* parent)
 
   m_ShowDirectionAnnotationsCheckBox = new QCheckBox(parent);
   formLayout->addRow("show direction annotations", m_ShowDirectionAnnotationsCheckBox);
+
+  m_ShowIntensityAnnotationCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show intensity annotation", m_ShowIntensityAnnotationCheckBox);
 
   m_Show3DWindowInMultiWindowLayoutCheckBox = new QCheckBox(parent);
   formLayout->addRow("show 3D window in multiple window layout", m_Show3DWindowInMultiWindowLayoutCheckBox);
@@ -220,6 +225,7 @@ bool QmitkDnDDisplayPreferencePage::PerformOk()
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, m_ShowViewerNumberControlsCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_2D_CURSORS, m_Show2DCursorsCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, m_ShowDirectionAnnotationsCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, m_ShowIntensityAnnotationCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, m_Show3DWindowInMultiWindowLayoutCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, m_ShowMagnificationSliderCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, m_RememberEachWindowLayoutsViewerSettings->isChecked());
@@ -262,6 +268,7 @@ void QmitkDnDDisplayPreferencePage::Update()
   m_ShowViewerNumberControlsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true));
   m_Show2DCursorsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_2D_CURSORS, true));
   m_ShowDirectionAnnotationsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
+  m_ShowIntensityAnnotationCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
   m_Show3DWindowInMultiWindowLayoutCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
   m_ShowMagnificationSliderCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
   m_RememberEachWindowLayoutsViewerSettings->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));

@@ -150,6 +150,7 @@ void niftkMultiViewerWidgetTestClass::init()
   d->MultiViewer->SetShowDropTypeControls(false);
   d->MultiViewer->SetCursorDefaultVisibility(true);
   d->MultiViewer->SetDirectionAnnotationsVisible(true);
+  d->MultiViewer->SetIntensityAnnotationVisible(true);
   d->MultiViewer->SetShow3DWindowIn2x2WindowLayout(false);
   d->MultiViewer->SetShowMagnificationSlider(true);
   d->MultiViewer->SetRememberSettingsPerWindowLayout(true);

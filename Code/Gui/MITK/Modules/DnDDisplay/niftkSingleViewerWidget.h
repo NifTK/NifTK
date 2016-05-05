@@ -138,6 +138,12 @@ public:
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
 
+  /// \brief Tells if the intensity annotation is visible.
+  bool IsIntensityAnnotationVisible() const;
+
+  /// \brief Sets the visibility of the intensity annotation.
+  void SetIntensityAnnotationVisible(bool visible);
+
   /// \brief Returns the flag indicating if nodes will be visible in the 3D window in 2x2 window layout. In 3D window layout, always visible.
   bool GetShow3DWindowIn2x2WindowLayout() const;
 
@@ -302,6 +308,12 @@ public:
 
   /// \brief Shows or hides the cursor.
   void ToggleCursorVisibility();
+
+  /// \brief Shows or hides the direction annotations.
+  void ToggleDirectionAnnotations();
+
+  /// \brief Shows or hides the intensity annotation.
+  void ToggleIntensityAnnotation();
 
   /// \brief Blocks the update of the viewer.
   ///
