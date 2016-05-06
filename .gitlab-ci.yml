@@ -7,18 +7,18 @@ stages:
 
 before_script:
   - export src_dir=${CI_PROJECT_DIR}
-  - export ep_dir="${CI_PROJECT_DIR}-ep"
   - export git_hash=${CI_BUILD_REF:0:6}
+  - export ep_dir="${CI_PROJECT_DIR}-ep"
   - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}"
   - export pb_dir="${sb_dir}/NifTK-build"
   - hostname
   - whoami
   - pwd
-  - echo $src_dir
-  - echo $ep_dir
-  - echo $git_hash
-  - echo $sb_dir
-  - echo $pb_dir
+  - echo "Sources: $src_dir"
+  - echo "Commit: $git_hash"
+  - echo "External projects: $ep_dir"
+  - echo "Superbuild: $sb_dir"
+  - echo "Project build: $pb_dir"
 
 ##########################################
 # Jobs for continuous testing
@@ -449,7 +449,7 @@ Release docs:
   - tags
 
   tags:
-  - linux, ubuntu-14.04,unmanaged, release
+  - linux, ubuntu-14.04, unmanaged, release
 
 
 Ubuntu 14.04 release installer:
@@ -519,7 +519,7 @@ Cluster release installer:
   - cd `ls`
   - install_path=`pwd`
   - cd ../..
-  - mv ${install_prefix} "${install_tmp_dir}/"
+  - if [ -e ${install_prefix} ] ; then mv ${install_prefix} "${install_tmp_dir}/" ; fi
   - mv ${install_path} ${install_prefix}
   - rm -rf "${install_tmp_dir}"
 
@@ -551,7 +551,7 @@ Managed CentOS 7 release installer:
   - cd `ls`
   - install_path=`pwd`
   - cd ../..
-  - mv ${install_prefix} "${install_tmp_dir}/"
+  - if [ -e ${install_prefix} ] ; then mv ${install_prefix} "${install_tmp_dir}/" ; fi
   - mv ${install_path} ${install_prefix}
   - rm -rf "${install_tmp_dir}"
 
