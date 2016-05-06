@@ -53,9 +53,7 @@ set(CPP_FILES
   DataNodeProperties/niftkLabeledLookupTableProperty.cxx
   DataNodeProperties/niftkNamedLookupTableProperty.cxx
   IO/mitkFileIOUtils.cxx
-  IO/mitkLabelMapReader.cxx
-  IO/mitkLabelMapWriter.cxx
-  IO/niftkCoreIOMimeTypes.cxx
+  #IO/niftkCoreIOMimeTypes.cxx
   Interactions/mitkPointSetUpdate.cxx
   Interactions/niftkAffineTransformDataInteractor3D.cxx
 )

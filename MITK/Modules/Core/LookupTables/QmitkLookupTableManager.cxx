@@ -27,7 +27,7 @@
 #include <usGetModuleContext.h>
 #include <usModule.h>
 #include <usModuleRegistry.h>
-#include <mitkLabelMapReader.h>
+//#include <mitkLabelMapReader.h>
 
 
 //-----------------------------------------------------------------------------
@@ -82,7 +82,7 @@ QmitkLookupTableManager::QmitkLookupTableManager()
     }
   }
 
-  QStringList txtFilter;
+ /* QStringList txtFilter;
   txtFilter << "*.txt";
   QStringList labelMapList = fileDir.entryList(txtFilter, QDir::Files,QDir::SortFlag::Name);
 
@@ -93,8 +93,7 @@ QmitkLookupTableManager::QmitkLookupTableManager()
     
     QFile lutFile(fileName);
 
-    // intialized label map reader
-    mitk::LabelMapReader reader;
+    niftk::LabelMapReader reader;
 
     reader.SetQFile(lutFile);
     reader.SetOrder(lutList.size() + i);
@@ -110,7 +109,7 @@ QmitkLookupTableManager::QmitkLookupTableManager()
     {
       MITK_ERROR << "QmitkLookupTableManager():failed to load lookup table:" << fileName.toLocal8Bit().constData();
     }
-  }
+  }*/
 
   MapType::iterator iter;
   for (iter = map.begin(); iter != map.end(); iter++)
