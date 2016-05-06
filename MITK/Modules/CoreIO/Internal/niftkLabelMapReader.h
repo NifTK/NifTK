@@ -18,7 +18,6 @@
 
 #include <mitkAbstractFileReader.h>
 #include <niftkLabeledLookupTableProperty.h>
-#include <QFile>
 #include <QColor>
 
 class QmitkLookupTableContainer;
@@ -59,11 +58,6 @@ public:
    */
   void SetOrder(int order){m_Order = order;}
 
-  /**
-   * \brief Set the file to read the label information from
-   */
-  void SetQFile(QFile &file){m_InputQFile = &file;};
-
 private: 
 
   /** \brief Parse the istream to determine the labels, colors. */
@@ -83,9 +77,6 @@ private:
 
   /** To temporarily store the display name. */
   QString m_DisplayName;
-
-  /** To store the QFile to read the labels from. */
-  QFile* m_InputQFile;
 
 };
 

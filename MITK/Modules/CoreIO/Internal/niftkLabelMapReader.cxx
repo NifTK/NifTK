@@ -24,7 +24,7 @@
 #include <vtkLookupTable.h>
 #include <vtkIntArray.h>
 #include <vtkStringArray.h>
-
+#include <QFile.h>
 #include <sstream>
 #include <iostream>
 
@@ -65,29 +65,32 @@ std::vector<itk::SmartPointer<mitk::BaseData> > niftk::LabelMapReader::Read()
   setlocale(LC_ALL, locale.c_str());
 
   std::string fileName = this->GetInputLocation();
-  std::ifstream infile(fileName, std::ifstream::in);
-
+  QString labelName = QString::fromStdString(fileName);
   bool isLoaded = false;
-  QString labelName;
-  if (infile.is_open())
+
+  if (fileName.find(":") == 0)
   {
-    labelName = QString::fromStdString(fileName);
-    isLoaded = this->ReadLabelMap(infile);
-    infile.close();
-  }
-  else
-  {
-    m_InputQFile->open(QIODevice::ReadOnly);   
-    labelName = m_InputQFile->fileName();
+    QFile lutFile(fileName.c_str());
+    lutFile.open(QIODevice::ReadOnly);   
 
     // this is a dirty hack to get the resource file in the right format to read
-    std::string fileStr(m_InputQFile->readAll());
+    std::string fileStr(lutFile.readAll());
     std::stringstream sStream; 
     sStream << fileStr;
     isLoaded = this->ReadLabelMap(sStream);
-    m_InputQFile->close();
+    lutFile.close();
   }
+  else
+  {
+    // detect if : starts the fileName
+    std::ifstream infile(fileName, std::ifstream::in);
 
+    if (infile.is_open())
+    {
+      isLoaded = this->ReadLabelMap(infile);
+      infile.close();
+    }
+  }
   if (isLoaded)
   {
     int startInd = labelName.lastIndexOf("/") + 1;
