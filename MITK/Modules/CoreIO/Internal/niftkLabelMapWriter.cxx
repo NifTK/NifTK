@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkLabelMapWriter.h"
+#include "niftkLabelMapWriter.h"
 #include "niftkCoreIOMimeTypes.h"
 
 #include <mitkAbstractFileWriter.h>
@@ -20,33 +20,41 @@
 #include <mitkLogMacros.h>
 #include <mitkCommon.h>
 #include <vtkSmartPointer.h>
+#include <QmitkLookupTableContainer.h>
 
 #include <fstream>
 
 //-----------------------------------------------------------------------------
-mitk::LabelMapWriter::LabelMapWriter()
-: mitk::AbstractFileWriter("Label Map", CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME() ), niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
+niftk::LabelMapWriter::LabelMapWriter()
+: mitk::AbstractFileWriter(QmitkLookupTableContainer::GetStaticNameOfClass(),
+                           mitk::CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()), 
+                           niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
 {
   RegisterService();
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::LabelMapWriter::LabelMapWriter(const mitk::LabelMapWriter & other)
+niftk::LabelMapWriter::LabelMapWriter(const niftk::LabelMapWriter & other)
 : mitk::AbstractFileWriter(other)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::LabelMapWriter * mitk::LabelMapWriter::Clone() const
+niftk::LabelMapWriter::~LabelMapWriter()
 {
-  return new mitk::LabelMapWriter(*this);
+}
+
+//-----------------------------------------------------------------------------
+niftk::LabelMapWriter * niftk::LabelMapWriter::Clone() const
+{
+  return new niftk::LabelMapWriter(*this);
 }
 
 
 //-----------------------------------------------------------------------------
-void mitk::LabelMapWriter::Write()
+void niftk::LabelMapWriter::Write()
 {
 
   std::ostream* out;
@@ -68,6 +76,8 @@ void mitk::LabelMapWriter::Write()
   }
   
   std::string outputLocation;
+  QmitkLookupTableContainer::ConstPointer lutContainer
+    = dynamic_cast<const QmitkLookupTableContainer*>(this->GetInput());
 
   try
   {
@@ -80,7 +90,10 @@ void mitk::LabelMapWriter::Write()
     std::locale I("C");
     out->imbue(I);
     
-    WriteLabelMap();
+   
+    // const_cast here because vtk is stupid and vtkLookupTable->GetTableValue() is not a const function
+    vtkLookupTable* unconstTable = const_cast<vtkLookupTable*> (lutContainer->GetLookupTable()); 
+    WriteLabelMap(lutContainer->GetLabels(), unconstTable);
     
     setlocale(LC_ALL, currLocale.c_str());
   }
@@ -93,19 +106,21 @@ void mitk::LabelMapWriter::Write()
 
 
 //-----------------------------------------------------------------------------
-void mitk::LabelMapWriter::WriteLabelMap()
+void niftk::LabelMapWriter::WriteLabelMap(
+  LabeledLookupTableProperty::LabelListType labels,
+  vtkLookupTable* lookupTable) const
 {
-  if (m_Labels.empty() || m_LookupTable == NULL)
+  if (labels.empty() || lookupTable == NULL)
   {
     mitkThrow() << "Labels or LookupTable not set.";
   }
 
   std::ofstream outfile(this->GetOutputLocation().c_str(), std::ofstream::binary);
   
-  for (unsigned int i = 0; i < m_Labels.size(); i++)
+  for (unsigned int i = 0; i < labels.size(); i++)
   {
-    int value = m_Labels.at(i).first;  
-    QString name = m_Labels.at(i).second;
+    int value = labels.at(i).first;  
+    QString name = labels.at(i).second;
 
     // in the slicer file format white space is used to denote space betweeen values, 
     // replacing all white spaces/empty strings with a character to ensure proper IO.
@@ -118,8 +133,8 @@ void mitk::LabelMapWriter::WriteLabelMap()
       name.replace(" ", "*");
     }
 
-    vtkIdType index = m_LookupTable->GetIndex(value);
-    double* rgba = m_LookupTable->GetTableValue(index);
+    vtkIdType index = lookupTable->GetIndex(value);
+    double* rgba = lookupTable->GetTableValue(index);
     int r = rgba[0] * 255;
     int g = rgba[1] * 255;
     int b = rgba[2] * 255;

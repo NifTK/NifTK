@@ -12,19 +12,18 @@
 
 =============================================================================*/
 
-#ifndef __mitkLabelMapReader_h
-#define __mitkLabelMapReader_h
+#ifndef __nifitkLabelMapReader_h
+#define __nifitkLabelMapReader_h
 
 
 #include <mitkAbstractFileReader.h>
-#include "niftkCoreExports.h"
 #include <niftkLabeledLookupTableProperty.h>
 #include <QFile>
 #include <QColor>
 
 class QmitkLookupTableContainer;
 
-namespace mitk 
+namespace niftk 
 {
 
 /**
@@ -32,7 +31,7 @@ namespace mitk
  * \brief Reader for label map files. 
  * \ingroup IO
  */
-class NIFTKCORE_EXPORT LabelMapReader : public AbstractFileReader
+class LabelMapReader : public mitk::AbstractFileReader
 {
 
 public: 
@@ -47,7 +46,7 @@ public:
   /**
    * \brief Read the file and return mitkBaseData 
    */
-  virtual std::vector<itk::SmartPointer<BaseData> > Read() override;  
+  virtual std::vector<itk::SmartPointer<mitk::BaseData> > Read() override;  
     
   /**
    * \brief Get a QmitkLookupTableContainer from file 

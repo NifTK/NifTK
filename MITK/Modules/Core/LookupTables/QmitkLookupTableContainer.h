@@ -15,6 +15,7 @@
 #ifndef QmitkLookupTableContainer_h
 #define QmitkLookupTableContainer_h
 
+#include <mitkBaseData.h>
 #include <niftkCoreExports.h>
 
 #include <QString>
@@ -25,13 +26,16 @@
  * \brief Class to contain a vtkLookupTable and to store meta-data attributes
  * like display name, which order to display it in in GUI, etc.
  */
-class NIFTKCORE_EXPORT QmitkLookupTableContainer 
+class NIFTKCORE_EXPORT QmitkLookupTableContainer : public mitk::BaseData
 {
 
 public:
 
   typedef std::pair<int, QString> LabelType;
   typedef std::vector<LabelType> LabelListType; 
+
+  mitkClassMacro(QmitkLookupTableContainer, mitk::BaseData);
+
 
   /** Constructor that takes a lookup table. */
   QmitkLookupTableContainer(const vtkLookupTable* lut);
@@ -70,6 +74,13 @@ public:
   /** Get labels. */
  LabelListType GetLabels()const { return m_Labels; }
 
+ void SetRequestedRegionToLargestPossibleRegion() override {}  
+ 
+ bool RequestedRegionIsOutsideOfTheBufferedRegion() override { return false; }
+
+ virtual bool VerifyRequestedRegion() override { return true; }
+
+ virtual void SetRequestedRegion(const itk::DataObject *data) override {}
 
 private:
 

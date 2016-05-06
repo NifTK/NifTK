@@ -12,18 +12,17 @@
 
 =============================================================================*/
 
-#ifndef __mitkLabelMapWriter_h
-#define __mitkLabelMapWriter_h
+#ifndef __niftkLabelMapWriter_h
+#define __niftkLabelMapWriter_h
 
 
 
 #include <mitkAbstractFileWriter.h>
-#include "niftkCoreExports.h"
 #include "niftkLabeledLookupTableProperty.h"
 
 
 
-namespace mitk 
+namespace niftk 
 {
 
 
@@ -36,39 +35,25 @@ namespace mitk
   *
   * \ingroup IO
   */
-class NIFTKCORE_EXPORT LabelMapWriter : public AbstractFileWriter
+class LabelMapWriter : public mitk::AbstractFileWriter
 {
 
 public: 
 
-  typedef niftk::LabeledLookupTableProperty::LabelListType LabelListType;
-
   LabelMapWriter();
-  LabelMapWriter(const LabelMapWriter & other);
-  virtual LabelMapWriter * Clone() const override;
-  virtual ~LabelMapWriter(){};
-  
-  using mitk::AbstractFileWriter::Write;
+  virtual ~LabelMapWriter();
 
-  /** \brief Write labels, lookuptable to file.*/
   virtual void Write() override;  
-
-  /** \brief Set the labels to write to file. */
-  inline void SetLabels(const LabelListType& labels){m_Labels = labels;}
-
-  /** \brief Set the vtkLookupTable to write to file. */
-  inline void SetVtkLookupTable(vtkLookupTable* vtkLUT){m_LookupTable = vtkLUT;}
 
 private: 
 
+  LabelMapWriter(const LabelMapWriter & other);
+  virtual LabelMapWriter * Clone() const override;
+
   /** \brief Write labels, lookuptable to stream. */
-  void WriteLabelMap(); 
-
-  /** To store the labels to write to file. */
-  LabelListType m_Labels;
-
-  /** To store the vtkLookupTable to write to file. */
-  vtkLookupTable* m_LookupTable;
+  void WriteLabelMap(
+    LabeledLookupTableProperty::LabelListType labels,
+    vtkLookupTable* lookupTable) const; 
 };
 
 } // namespace mitk

@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkLabelMapReader.h"
+#include "niftkLabelMapReader.h"
 #include "niftkCoreIOMimeTypes.h"
 #include "LookupTables/QmitkLookupTableContainer.h"
 
@@ -30,29 +30,29 @@
 
 
 //-----------------------------------------------------------------------------
-mitk::LabelMapReader::LabelMapReader()
-: mitk::AbstractFileReader(CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()), niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
+niftk::LabelMapReader::LabelMapReader()
+: mitk::AbstractFileReader(mitk::CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()), niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
 {
   m_ServiceReg = this->RegisterService();
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::LabelMapReader::LabelMapReader(const LabelMapReader &other)
+niftk::LabelMapReader::LabelMapReader(const LabelMapReader &other)
 : mitk::AbstractFileReader(other)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::LabelMapReader * mitk::LabelMapReader::Clone() const
+niftk::LabelMapReader * niftk::LabelMapReader::Clone() const
 {
-  return new mitk::LabelMapReader(*this);
+  return new niftk::LabelMapReader(*this);
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
+std::vector<itk::SmartPointer<mitk::BaseData> > niftk::LabelMapReader::Read()
 {
   // make sure the internal datatypes are empty
   m_Labels.clear();
@@ -102,12 +102,14 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
     MITK_ERROR << "Unable to read NifTK label map!";
   }
 
+  QmitkLookupTableContainer::Pointer containter = GetLookupTableContainer();
+  result.push_back(itk::SmartPointer<mitk::BaseData>(containter));
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
+bool niftk::LabelMapReader::ReadLabelMap(std::istream & file)
 {
   bool isLoaded = false;
 
@@ -169,7 +171,7 @@ bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
 
 
 //-----------------------------------------------------------------------------
-QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
+QmitkLookupTableContainer* niftk::LabelMapReader::GetLookupTableContainer()
 {
   if (m_Colors.empty() || m_Labels.empty())
   {
