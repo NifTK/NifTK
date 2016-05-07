@@ -18,6 +18,9 @@
 #include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_CameraCalView.h"
+#include <niftkNiftyCalVideoCalibrationManager.h>
+#include <QFuture>
+#include <QFutureWatcher>
 
 namespace niftk
 {
@@ -72,9 +75,21 @@ private slots:
   void OnGrabButtonPressed();
   void OnUndoButtonPressed();
   void OnSaveButtonPressed();
+  void OnBackgroundProcessFinished();
+
+  /**
+   * \brief Called when user changes any of the 3 combo boxes.
+   *
+   * If the niftk::NiftyCalVideoCalibrationManager has had any successful
+   * snapshots (video and optionally tracking info), then changing any
+   * of the combo boxes will trigger a reset.
+   */
   void OnComboBoxChanged();
 
 private:
+
+  void Calibrate();
+  double RunCalibration();
 
   /**
    * \brief Retrieve's the pref values from preference service, and stored in member variables.
@@ -86,12 +101,11 @@ private:
    */
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*) override;
 
-  /**
-   * \brief All the controls for the main view part.
-   */
-  Ui::CameraCalView *m_Controls;
-  int                m_NumberSuccessfulViews;
-  int                m_MinimumNumberViews;
+  Ui::CameraCalView                               *m_Controls;
+  niftk::NiftyCalVideoCalibrationManager::Pointer  m_Manager;
+  QFuture<double>                                  m_BackgroundProcess;
+  QFutureWatcher<double>                           m_BackgroundProcessWatcher;
+  QString                                          m_DefaultSaveDirectory;
 };
 
 } // end namespace
