@@ -70,8 +70,9 @@ protected:
 private slots:
 
   void OnGrabButtonPressed();
-  void OnRestartButtonPressed();
+  void OnUndoButtonPressed();
   void OnSaveButtonPressed();
+  void OnComboBoxChanged();
 
 private:
 

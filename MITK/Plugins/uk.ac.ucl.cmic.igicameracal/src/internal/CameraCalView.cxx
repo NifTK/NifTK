@@ -78,8 +78,16 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
 
     // I'm trying to stick to only 3 buttons, so we can easily link to foot switch.
     connect(m_Controls->m_GrabButton, SIGNAL(pressed()), this, SLOT(OnGrabButtonPressed()));
-    connect(m_Controls->m_RestartButton, SIGNAL(pressed()), this, SLOT(OnRestartButtonPressed()));
+    connect(m_Controls->m_UndoButton, SIGNAL(pressed()), this, SLOT(OnUndoButtonPressed()));
     connect(m_Controls->m_SaveButton, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
+
+    // Hook up combo boxes, so we know when user changes node
+    connect(m_Controls->m_LeftCameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
+    connect(m_Controls->m_RightCameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
+    connect(m_Controls->m_TrackerMatrixComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
+
+    m_Controls->m_UndoButton->setEnabled(false);
+    m_Controls->m_SaveButton->setEnabled(false);
 
     RetrievePreferenceValues();
   }
@@ -130,9 +138,9 @@ void CameraCalView::OnGrabButtonPressed()
 
 
 //-----------------------------------------------------------------------------
-void CameraCalView::OnRestartButtonPressed()
+void CameraCalView::OnUndoButtonPressed()
 {
-  std::cout << "Matt, OnRestartButtonPressed" << std::endl;
+  std::cout << "Matt, OnUndoButtonPressed" << std::endl;
 }
 
 
@@ -140,6 +148,13 @@ void CameraCalView::OnRestartButtonPressed()
 void CameraCalView::OnSaveButtonPressed()
 {
   std::cout << "Matt, OnSaveButtonPressed" << std::endl;
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalView::OnComboBoxChanged()
+{
+  std::cout << "Matt, OnComboBoxChanged" << std::endl;
 }
 
 } // end namespace

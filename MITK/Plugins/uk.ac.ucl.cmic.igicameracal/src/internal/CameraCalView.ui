@@ -90,12 +90,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="m_RestartButton">
+      <widget class="QPushButton" name="m_UndoButton">
        <property name="toolTip">
         <string>perform calibration</string>
        </property>
        <property name="text">
-        <string>restart</string>
+        <string>undo</string>
        </property>
       </widget>
      </item>
