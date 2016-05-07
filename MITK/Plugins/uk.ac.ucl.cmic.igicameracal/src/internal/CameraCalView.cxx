@@ -16,7 +16,8 @@
 #include "CameraCalView.h"
 #include "CameraCalViewPreferencePage.h"
 #include <mitkNodePredicateDataType.h>
-#include <mitkNodePredicateDataType.h>
+#include <mitkCoordinateAxesData.h>
+#include <mitkImage.h>
 #include <QMessageBox>
 #include <QFileDialog>
 
@@ -28,6 +29,7 @@ const std::string CameraCalView::VIEW_ID = "uk.ac.ucl.cmic.igicameracal";
 //-----------------------------------------------------------------------------
 CameraCalView::CameraCalView()
 : m_Controls(NULL)
+, m_NumberSuccessfulViews(0)
 {
 }
 
@@ -60,6 +62,25 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     m_Controls = new Ui::CameraCalView();
     m_Controls->setupUi(parent);
 
+    mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+    m_Controls->m_LeftCameraComboBox->SetPredicate(isImage);
+    m_Controls->m_LeftCameraComboBox->SetAutoSelectNewItems(false);
+    m_Controls->m_RightCameraComboBox->SetPredicate(isImage);
+    m_Controls->m_RightCameraComboBox->SetAutoSelectNewItems(false);
+
+    mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isMatrix = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+    m_Controls->m_TrackerMatrixComboBox->SetPredicate(isMatrix);
+    m_Controls->m_TrackerMatrixComboBox->SetAutoSelectNewItems(false);
+
+    m_Controls->m_LeftCameraComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_RightCameraComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_TrackerMatrixComboBox->SetDataStorage(dataStorage);
+
+    // I'm trying to stick to only 3 buttons, so we can easily link to foot switch.
+    connect(m_Controls->m_GrabButton, SIGNAL(pressed()), this, SLOT(OnGrabButtonPressed()));
+    connect(m_Controls->m_RestartButton, SIGNAL(pressed()), this, SLOT(OnRestartButtonPressed()));
+    connect(m_Controls->m_SaveButton, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
+
     RetrievePreferenceValues();
   }
 }
@@ -86,6 +107,39 @@ void CameraCalView::RetrievePreferenceValues()
 void CameraCalView::SetFocus()
 {
   m_Controls->m_LeftCameraComboBox->setFocus();
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalView::OnGrabButtonPressed()
+{
+  mitk::DataNode::Pointer node = m_Controls->m_LeftCameraComboBox->GetSelectedNode();
+  if (node.IsNull())
+  {
+    QMessageBox msgBox;
+    msgBox.setText("The left camera image is non-existent, or not-selected.");
+    msgBox.setInformativeText("Please select a left camera image.");
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+    return;
+  }
+
+  // Basically - each grab, we see if we can calibrate.
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalView::OnRestartButtonPressed()
+{
+  std::cout << "Matt, OnRestartButtonPressed" << std::endl;
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalView::OnSaveButtonPressed()
+{
+  std::cout << "Matt, OnSaveButtonPressed" << std::endl;
 }
 
 } // end namespace

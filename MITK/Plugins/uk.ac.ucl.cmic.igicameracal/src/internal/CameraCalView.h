@@ -24,7 +24,7 @@ namespace niftk
 
 /**
  * \class CameraCalView
- * \brief User interface to provide controls to do video camera calibration.
+ * \brief User interface to provide controls to do mono/stereo, video camera calibration.
  * \ingroup uk_ac_ucl_cmic_igicameracal_internal
  */
 class CameraCalView : public QmitkBaseView
@@ -69,6 +69,10 @@ protected:
 
 private slots:
 
+  void OnGrabButtonPressed();
+  void OnRestartButtonPressed();
+  void OnSaveButtonPressed();
+
 private:
 
   /**
@@ -85,6 +89,8 @@ private:
    * \brief All the controls for the main view part.
    */
   Ui::CameraCalView *m_Controls;
+  int                m_NumberSuccessfulViews;
+  int                m_MinimumNumberViews;
 };
 
 } // end namespace
