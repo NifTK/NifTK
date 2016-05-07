@@ -118,6 +118,7 @@ set(NiftyIGI_PLUGINS
   Plugins/uk.ac.ucl.cmic.igipointsetcropper:ON
   Plugins/uk.ac.ucl.cmic.igipivotcalibration:ON
   Plugins/uk.ac.ucl.cmic.igipointercalib:ON
+  Plugins/uk.ac.ucl.cmic.igicameracal:ON
 )
 
 if(WIN32)
