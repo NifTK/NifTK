@@ -37,6 +37,8 @@ public:
   mitkClassMacroItkParent(NiftyCalVideoCalibrationManager, itk::Object);
   itkNewMacro(NiftyCalVideoCalibrationManager);
 
+  void SetDataStorage(const mitk::DataStorage::Pointer& storage);
+
   itkSetMacro(LeftImageNode, mitk::DataNode::Pointer);
   itkGetMacro(LeftImageNode, mitk::DataNode::Pointer);
 
@@ -49,9 +51,9 @@ public:
   itkSetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
   itkGetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
 
-  void SetDataStorage(const mitk::DataStorage::Pointer& storage);
-  void Restart();
   unsigned int GetNumberOfSnapshots() const;
+
+  void Restart();
   bool Grab();
   double Calibrate();
   void Undo();
