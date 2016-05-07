@@ -14,11 +14,11 @@ before_script:
   - hostname
   - whoami
   - pwd
-  - echo "Sources: $src_dir"
-  - echo "Commit: $git_hash"
-  - echo "External projects: $ep_dir"
-  - echo "Superbuild: $sb_dir"
-  - echo "Project build: $pb_dir"
+  - echo "Sources - ${src_dir}"
+  - echo "Commit - ${git_hash}"
+  - echo "External projects - ${ep_dir}"
+  - echo "Superbuild - ${sb_dir}"
+  - echo "Project build - ${pb_dir}"
 
 ##########################################
 # Jobs for continuous testing
