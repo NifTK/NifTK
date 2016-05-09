@@ -14,6 +14,7 @@
 
 #include "niftkNiftyCalVideoCalibrationManager.h"
 #include <mitkExceptionMacro.h>
+#include <niftkNiftyCalTypes.h>
 
 namespace niftk
 {
@@ -95,6 +96,7 @@ void NiftyCalVideoCalibrationManager::Undo()
 void NiftyCalVideoCalibrationManager::Save(const std::string dirName)
 {
   MITK_INFO << "Saving calibration to " << dirName;
+  niftk::NiftyCalTimeType time;
 }
 
 } // end namespace

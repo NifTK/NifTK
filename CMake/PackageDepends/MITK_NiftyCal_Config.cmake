@@ -11,16 +11,9 @@
 #  See LICENSE.txt in the top level directory for details.
 #
 #============================================================================*/
-
-MITK_CREATE_MODULE(
-  DEPENDS niftkOpenCV niftkOpenCVUtils 
-  PACKAGE_DEPENDS NiftyCal AprilTags OpenCV
-)
-
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkNiftyCal)
+find_package(NiftyCal REQUIRED)
+if(NiftyCal_FOUND)
+  list(APPEND ALL_INCLUDE_DIRECTORIES ${NiftyCal_INCLUDE_DIRS})
+  list(APPEND ALL_LIBRARIES ${NiftyCal_LIBRARIES})
 endif()
 
-if(BUILD_TESTING)
-#  add_subdirectory(Testing)
-endif()
