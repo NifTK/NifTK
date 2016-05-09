@@ -13,6 +13,7 @@
 #============================================================================*/
 find_package(NiftyCal REQUIRED)
 if(NiftyCal_FOUND)
+  include_directories(${NiftyCal_INCLUDE_DIRS})
   list(APPEND ALL_INCLUDE_DIRECTORIES ${NiftyCal_INCLUDE_DIRS})
   list(APPEND ALL_LIBRARIES ${NiftyCal_LIBRARIES})
 endif()

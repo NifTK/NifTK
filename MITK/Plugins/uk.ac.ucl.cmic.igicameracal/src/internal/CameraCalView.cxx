@@ -34,7 +34,9 @@ CameraCalView::CameraCalView()
 , m_Manager(nullptr)
 {
   bool ok = false;
-  ok = connect(&m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
+  ok = connect(&m_BackgroundGrabProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundGrabProcessFinished()));
+  assert(ok);
+  ok = connect(&m_BackgroundCalibrateProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundCalibrateProcessFinished()));
   assert(ok);
 }
 
@@ -42,7 +44,8 @@ CameraCalView::CameraCalView()
 //-----------------------------------------------------------------------------
 CameraCalView::~CameraCalView()
 {
-  m_BackgroundProcessWatcher.waitForFinished();
+  m_BackgroundGrabProcessWatcher.waitForFinished();
+  m_BackgroundCalibrateProcessWatcher.waitForFinished();
 
   if (m_Controls != NULL)
   {
@@ -108,6 +111,20 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
 
 
 //-----------------------------------------------------------------------------
+void CameraCalView::SetButtonsEnabled(bool isEnabled)
+{
+  m_Controls->m_LeftCameraComboBox->setEnabled(isEnabled);
+  m_Controls->m_RightCameraComboBox->setEnabled(isEnabled);
+  m_Controls->m_TrackerMatrixComboBox->setEnabled(isEnabled);
+  m_Controls->m_GrabButton->setEnabled(isEnabled);
+
+  m_Controls->m_UndoButton->setEnabled(m_Manager->GetNumberOfSnapshots() > 0);
+  m_Controls->m_SaveButton->setEnabled(m_Manager->GetNumberOfSnapshots()
+                                       >= m_Manager->GetMinimumNumberOfSnapshotsForCalibrating());
+}
+
+
+//-----------------------------------------------------------------------------
 void CameraCalView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
@@ -135,7 +152,8 @@ void CameraCalView::SetFocus()
 void CameraCalView::OnComboBoxChanged()
 {
   // should not be able to call/click here if it's still running.
-  assert(!m_BackgroundProcess.isRunning());
+  assert(!m_BackgroundGrabProcess.isRunning());
+  assert(!m_BackgroundCalibrateProcess.isRunning());
 
   mitk::DataNode::Pointer leftImageNode = m_Controls->m_LeftCameraComboBox->GetSelectedNode();
   mitk::DataNode::Pointer rightImageNode = m_Controls->m_RightCameraComboBox->GetSelectedNode();
@@ -147,24 +165,25 @@ void CameraCalView::OnComboBoxChanged()
     bool needsReset = false;
 
     mitk::DataNode::Pointer leftImageNodeInManager = m_Manager->GetLeftImageNode();
+    mitk::DataNode::Pointer rightImageNodeInManager = m_Manager->GetRightImageNode();
+    mitk::DataNode::Pointer trackingNodeInManager = m_Manager->GetTrackingTransformNode();
+
     if (   leftImageNode.IsNotNull()
-        && leftImageNodeInManager.IsNotNull()
+        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull())
         && leftImageNode != leftImageNodeInManager)
     {
       needsReset = true;
     }
 
-    mitk::DataNode::Pointer rightImageNodeInManager = m_Manager->GetRightImageNode();
     if (   rightImageNode.IsNotNull()
-        && rightImageNodeInManager.IsNotNull()
+        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull())
         && rightImageNode != rightImageNodeInManager)
     {
       needsReset = true;
     }
 
-    mitk::DataNode::Pointer trackingNodeInManager = m_Manager->GetTrackingTransformNode();
     if (   trackingNode.IsNotNull()
-        && trackingNodeInManager.IsNotNull()
+        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull())
         && trackingNode != trackingNodeInManager)
     {
       needsReset = true;
@@ -193,7 +212,8 @@ void CameraCalView::OnComboBoxChanged()
 void CameraCalView::OnGrabButtonPressed()
 {
   // should not be able to call/click here if it's still running.
-  assert(!m_BackgroundProcess.isRunning());
+  assert(!m_BackgroundGrabProcess.isRunning());
+  assert(!m_BackgroundCalibrateProcess.isRunning());
 
   mitk::DataNode::Pointer node = m_Controls->m_LeftCameraComboBox->GetSelectedNode();
   if (node.IsNull())
@@ -207,19 +227,31 @@ void CameraCalView::OnGrabButtonPressed()
     return;
   }
 
-  bool successfullyGrabbed = m_Manager->Grab();
+  this->SetButtonsEnabled(false);
 
-  if (m_Manager->GetNumberOfSnapshots() > 0)
-  {
-    m_Controls->m_UndoButton->setEnabled(true);
-  }
+  QPixmap image(":/uk.ac.ucl.cmic.igicameracal/boobaloo-Don-t-Step-No-Gnome--300px.png");
+  m_Controls->m_ImageLabel->setPixmap(image);
+  m_Controls->m_ImageLabel->show();
+
+  m_BackgroundGrabProcess = QtConcurrent::run(this, &CameraCalView::RunGrab);
+  m_BackgroundGrabProcessWatcher.setFuture(m_BackgroundGrabProcess);
+}
+
+
+//-----------------------------------------------------------------------------
+bool CameraCalView::RunGrab()
+{
+  return m_Manager->Grab();
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalView::OnBackgroundGrabProcessFinished()
+{
+  bool successfullyGrabbed = m_BackgroundGrabProcessWatcher.result();
 
   if (successfullyGrabbed)
   {
-    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/green-tick-300px.png");
-    m_Controls->m_ImageLabel->setPixmap(image);
-    m_Controls->m_ImageLabel->show();
-
     this->Calibrate();
   }
   else
@@ -227,6 +259,11 @@ void CameraCalView::OnGrabButtonPressed()
     QPixmap image(":/uk.ac.ucl.cmic.igicameracal/red-cross-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
+  }
+
+  if (!m_BackgroundCalibrateProcess.isRunning())
+  {
+    this->SetButtonsEnabled(true);
   }
 }
 
@@ -237,19 +274,21 @@ void CameraCalView::Calibrate()
   if (m_Manager->GetNumberOfSnapshots()
       >= m_Manager->GetMinimumNumberOfSnapshotsForCalibrating())
   {
-    m_Controls->m_LeftCameraComboBox->setEnabled(false);
-    m_Controls->m_RightCameraComboBox->setEnabled(false);
-    m_Controls->m_TrackerMatrixComboBox->setEnabled(false);
-    m_Controls->m_GrabButton->setEnabled(false);
-    m_Controls->m_UndoButton->setEnabled(false);
-    m_Controls->m_SaveButton->setEnabled(false);
+    this->SetButtonsEnabled(false);
 
     QPixmap image(":/uk.ac.ucl.cmic.igicameracal/boobaloo-Don-t-Step-No-Gnome--300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
 
-    m_BackgroundProcess = QtConcurrent::run(this, &CameraCalView::RunCalibration);
-    m_BackgroundProcessWatcher.setFuture(m_BackgroundProcess);
+    m_BackgroundCalibrateProcess = QtConcurrent::run(this, &CameraCalView::RunCalibration);
+    m_BackgroundCalibrateProcessWatcher.setFuture(m_BackgroundCalibrateProcess);
+  }
+  else
+  {
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/green-tick-300px.png");
+    m_Controls->m_ImageLabel->setPixmap(image);
+    m_Controls->m_ImageLabel->show();
+    m_Controls->m_ProjectionErrorValue->setText("Too few images.");
   }
 }
 
@@ -262,24 +301,26 @@ double CameraCalView::RunCalibration()
 
 
 //-----------------------------------------------------------------------------
-void CameraCalView::OnBackgroundProcessFinished()
+void CameraCalView::OnBackgroundCalibrateProcessFinished()
 {
-  QPixmap image(":/uk.ac.ucl.cmic.igicameracal/green-tick-300px.png");
-  m_Controls->m_ImageLabel->setPixmap(image);
-  m_Controls->m_ImageLabel->show();
+  double rms = m_BackgroundCalibrateProcessWatcher.result();
 
-  m_Controls->m_LeftCameraComboBox->setEnabled(true);
-  m_Controls->m_RightCameraComboBox->setEnabled(true);
-  m_Controls->m_TrackerMatrixComboBox->setEnabled(true);
-  m_Controls->m_GrabButton->setEnabled(true);
-  m_Controls->m_UndoButton->setEnabled(true);
-
-  if (m_Manager->GetNumberOfSnapshots()
-      >= m_Manager->GetMinimumNumberOfSnapshotsForCalibrating())
+  if (rms < 1)
   {
-    m_Controls->m_SaveButton->setEnabled(true);
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/green-tick-300px.png");
+    m_Controls->m_ImageLabel->setPixmap(image);
+    m_Controls->m_ImageLabel->show();
+  }
+  else
+  {
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/red-cross-300px.png");
+    m_Controls->m_ImageLabel->setPixmap(image);
+    m_Controls->m_ImageLabel->show();
   }
 
+  m_Controls->m_ProjectionErrorValue->setText(tr("%1 mm (%2 images).").arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
+
+  this->SetButtonsEnabled(true);
 }
 
 
@@ -287,17 +328,16 @@ void CameraCalView::OnBackgroundProcessFinished()
 void CameraCalView::OnUnGrabButtonPressed()
 {
   // should not be able to call/click here if it's still running.
-  assert(!m_BackgroundProcess.isRunning());
+  assert(!m_BackgroundGrabProcess.isRunning());
+  assert(!m_BackgroundCalibrateProcess.isRunning());
 
   m_Manager->UnGrab();
-
-  if (m_Manager->GetNumberOfSnapshots()
-      < m_Manager->GetMinimumNumberOfSnapshotsForCalibrating())
-  {
-    m_Controls->m_SaveButton->setEnabled(false);
-  }
-
   this->Calibrate();
+
+  if (!m_BackgroundCalibrateProcess.isRunning())
+  {
+    this->SetButtonsEnabled(true);
+  }
 }
 
 
@@ -305,7 +345,8 @@ void CameraCalView::OnUnGrabButtonPressed()
 void CameraCalView::OnSaveButtonPressed()
 {
   // should not be able to call/click here if it's still running.
-  assert(!m_BackgroundProcess.isRunning());
+  assert(!m_BackgroundGrabProcess.isRunning());
+  assert(!m_BackgroundCalibrateProcess.isRunning());
 
   QString dir = QFileDialog::getExistingDirectory(nullptr, tr("Save"),
                                                   m_DefaultSaveDirectory,

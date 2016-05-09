@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  DEPENDS niftkOpenCV niftkOpenCVUtils 
+  DEPENDS niftkOpenCV niftkOpenCVUtils niftkOpenCVImageConversion
   PACKAGE_DEPENDS NiftyCal AprilTags OpenCV
 )
 

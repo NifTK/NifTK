@@ -75,7 +75,8 @@ private slots:
   void OnGrabButtonPressed();
   void OnUnGrabButtonPressed();
   void OnSaveButtonPressed();
-  void OnBackgroundProcessFinished();
+  void OnBackgroundGrabProcessFinished();
+  void OnBackgroundCalibrateProcessFinished();
 
   /**
    * \brief Called when user changes any of the 3 combo boxes.
@@ -88,8 +89,11 @@ private slots:
 
 private:
 
+  bool RunGrab();
   void Calibrate();
   double RunCalibration();
+
+  void SetButtonsEnabled(bool isEnabled);
 
   /**
    * \brief Retrieve's the pref values from preference service, and stored in member variables.
@@ -103,8 +107,10 @@ private:
 
   Ui::CameraCalView                               *m_Controls;
   niftk::NiftyCalVideoCalibrationManager::Pointer  m_Manager;
-  QFuture<double>                                  m_BackgroundProcess;
-  QFutureWatcher<double>                           m_BackgroundProcessWatcher;
+  QFuture<bool>                                    m_BackgroundGrabProcess;
+  QFutureWatcher<bool>                             m_BackgroundGrabProcessWatcher;
+  QFuture<double>                                  m_BackgroundCalibrateProcess;
+  QFutureWatcher<double>                           m_BackgroundCalibrateProcessWatcher;
   QString                                          m_DefaultSaveDirectory;
 };
 

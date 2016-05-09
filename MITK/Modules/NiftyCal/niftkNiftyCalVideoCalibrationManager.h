@@ -20,6 +20,8 @@
 #include <itkObjectFactoryBase.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
+#include <list>
+#include <niftkPointUtilities.h>
 
 namespace niftk {
 
@@ -54,7 +56,13 @@ public:
   unsigned int GetNumberOfSnapshots() const;
 
   void Restart();
+
+  /**
+   * \brief Grabs images and tracking, and runs the point extraction.
+   * \return Returns true if successful and false otherwise.
+   */
   bool Grab();
+
   void UnGrab();
   double Calibrate();
   void Save(const std::string dirName);
@@ -74,6 +82,9 @@ private:
   mitk::DataNode::Pointer    m_RightImageNode;
   mitk::DataNode::Pointer    m_TrackingTransformNode;
   unsigned int               m_MinimumNumberOfSnapshotsForCalibrating;
+
+  std::list<niftk::PointSet> m_LeftPoints;
+  std::list<niftk::PointSet> m_RightPoints;
 
 }; // end class
 
