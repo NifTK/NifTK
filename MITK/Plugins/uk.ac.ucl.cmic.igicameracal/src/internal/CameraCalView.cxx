@@ -318,7 +318,7 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
     m_Controls->m_ImageLabel->show();
   }
 
-  m_Controls->m_ProjectionErrorValue->setText(tr("%1 mm (%2 images).").arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
+  m_Controls->m_ProjectionErrorValue->setText(tr("%1 pixels (%2 images).").arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
 
   this->SetButtonsEnabled(true);
 }
