@@ -73,7 +73,7 @@ protected:
 private slots:
 
   void OnGrabButtonPressed();
-  void OnUndoButtonPressed();
+  void OnUnGrabButtonPressed();
   void OnSaveButtonPressed();
   void OnBackgroundProcessFinished();
 

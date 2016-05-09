@@ -72,6 +72,13 @@ bool NiftyCalVideoCalibrationManager::Grab()
 
 
 //-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::UnGrab()
+{
+  MITK_INFO << "Removing last snapshot.";
+}
+
+
+//-----------------------------------------------------------------------------
 double NiftyCalVideoCalibrationManager::Calibrate()
 {
   MITK_INFO << "Calibrating.";
@@ -82,13 +89,6 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   }
   MITK_INFO << "Calibrating - DONE";
   return 0;
-}
-
-
-//-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::Undo()
-{
-  MITK_INFO << "Removing last snapshot.";
 }
 
 

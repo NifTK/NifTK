@@ -55,8 +55,8 @@ public:
 
   void Restart();
   bool Grab();
+  void UnGrab();
   double Calibrate();
-  void Undo();
   void Save(const std::string dirName);
 
 protected:

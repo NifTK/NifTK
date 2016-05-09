@@ -85,7 +85,7 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
 
     // I'm trying to stick to only 3 buttons, so we can easily link to foot switch.
     connect(m_Controls->m_GrabButton, SIGNAL(pressed()), this, SLOT(OnGrabButtonPressed()));
-    connect(m_Controls->m_UndoButton, SIGNAL(pressed()), this, SLOT(OnUndoButtonPressed()));
+    connect(m_Controls->m_UndoButton, SIGNAL(pressed()), this, SLOT(OnUnGrabButtonPressed()));
     connect(m_Controls->m_SaveButton, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
 
     // Hook up combo boxes, so we know when user changes node
@@ -284,12 +284,12 @@ void CameraCalView::OnBackgroundProcessFinished()
 
 
 //-----------------------------------------------------------------------------
-void CameraCalView::OnUndoButtonPressed()
+void CameraCalView::OnUnGrabButtonPressed()
 {
   // should not be able to call/click here if it's still running.
   assert(!m_BackgroundProcess.isRunning());
 
-  m_Manager->Undo();
+  m_Manager->UnGrab();
 
   if (m_Manager->GetNumberOfSnapshots()
       < m_Manager->GetMinimumNumberOfSnapshotsForCalibrating())
