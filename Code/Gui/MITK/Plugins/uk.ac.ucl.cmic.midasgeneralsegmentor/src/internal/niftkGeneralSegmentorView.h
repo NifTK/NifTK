@@ -84,21 +84,6 @@ protected:
 
 private:
 
-  /// \brief Stores the initial state of the segmentation so that the Restart button can restore it.
-  void StoreInitialSegmentation();
-
-  /// \brief Used to create a contour set, used for the current, prior and next contours, see class intro.
-  mitk::DataNode::Pointer CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer);
-
-  /// \brief Used to create an image used for the region growing, see class intro.
-  mitk::DataNode::Pointer CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode,  float r, float g, float b, std::string name, bool visible, int layer);
-
-  /// \brief Used when restarting a volume, to initialize all seeds for an existing segmentation.
-  void InitialiseSeedsForWholeVolume();
-
-  /// \brief Takes the current slice, and refreshes the current slice contour set (WorkingData[2]).
-  void UpdateCurrentSliceContours(bool updateRendering=true);
-
   /// \brief Callback for when the window focus changes, where we update this view
   /// to be listening to the right window, and make sure ITK pipelines know we have
   /// changed orientation.
@@ -106,8 +91,6 @@ private:
 
   /// \brief The general segmentor controller that realises the GUI logic behind the view.
   niftkGeneralSegmentorController* m_GeneralSegmentorController;
-
-friend class niftkGeneralSegmentorController;
 
 };
 

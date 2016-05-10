@@ -84,8 +84,6 @@ private:
   /// \brief The morphological segmentor controller that realises the GUI logic behind the view.
   niftkMorphologicalSegmentorController* m_MorphologicalSegmentorController;
 
-friend class niftkMorphologicalSegmentorController;
-
 };
 
 #endif
