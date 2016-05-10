@@ -75,6 +75,11 @@ public:
 
 private slots:
 
+  void OnFeaturesComboSelected();
+  void On3DModelButtonPressed();
+  void OnModelToTrackerButtonPressed();
+  void OnOutputDirectoryButtonPressed();
+
 private:
 
   QScopedPointer<Ui::CameraCalViewPreferencePage> m_Ui;

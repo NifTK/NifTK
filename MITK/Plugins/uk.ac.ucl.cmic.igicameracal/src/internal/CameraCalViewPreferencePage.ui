@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_3">
+  <layout class="QHBoxLayout" name="horizontalLayout_6">
    <item>
     <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
@@ -38,29 +38,96 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="m_3DModelLineEdit"/>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QLineEdit" name="m_3DModelLineEdit"/>
+       </item>
+       <item>
+        <widget class="QToolButton" name="m_3DModelToolButton">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="2" column="0">
+      <widget class="QLabel" name="m_ScaleImageLabel">
+       <property name="text">
+        <string>scale image:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QDoubleSpinBox" name="m_ScaleImageInXSpinBox">
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="minimum">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>1.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="m_ScaleImageInYSpinBox">
+         <property name="decimals">
+          <number>1</number>
+         </property>
+         <property name="minimum">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>10.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>1.000000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="3" column="0">
       <widget class="QLabel" name="m_FeaturesLabel">
        <property name="text">
         <string>features to detect:</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="3" column="1">
       <widget class="QComboBox" name="m_FeaturesComboBox"/>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="m_GridSizeLabel">
        <property name="text">
         <string>grid size:</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="4" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QSpinBox" name="m_GridPointsInXSpinBox"/>
+        <widget class="QSpinBox" name="m_GridPointsInXSpinBox">
+         <property name="minimum">
+          <number>2</number>
+         </property>
+         <property name="value">
+          <number>14</number>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QLabel" name="m_ByLabel">
@@ -70,24 +137,14 @@
         </widget>
        </item>
        <item>
-        <widget class="QSpinBox" name="m_GridPointsInYSpinBox"/>
-       </item>
-      </layout>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="m_ScaleImageLabel">
-       <property name="text">
-        <string>scale image:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QDoubleSpinBox" name="m_ScaleImageInXSpinBox"/>
-       </item>
-       <item>
-        <widget class="QDoubleSpinBox" name="m_ScaleImageInYSpinBox"/>
+        <widget class="QSpinBox" name="m_GridPointsInYSpinBox">
+         <property name="minimum">
+          <number>2</number>
+         </property>
+         <property name="value">
+          <number>10</number>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -119,7 +176,18 @@
       </widget>
      </item>
      <item row="7" column="1">
-      <widget class="QLineEdit" name="m_ModelToTrackerLineEdit"/>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLineEdit" name="m_ModelToTrackerLineEdit"/>
+       </item>
+       <item>
+        <widget class="QToolButton" name="m_ModelToTrackerToolButton">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="8" column="0">
       <widget class="QLabel" name="m_OutputDirectoryLabel">
@@ -129,7 +197,18 @@
       </widget>
      </item>
      <item row="8" column="1">
-      <widget class="QLineEdit" name="m_OutputDirectoryLineEdit"/>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLineEdit" name="m_OutputDirectoryLineEdit"/>
+       </item>
+       <item>
+        <widget class="QToolButton" name="m_OutputDirectoryToolButton">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
