@@ -28,7 +28,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_LeftImageNode(nullptr)
 , m_RightImageNode(nullptr)
 , m_TrackingTransformNode(nullptr)
-, m_MinimumNumberOfSnapshotsForCalibrating(5)
+, m_MinimumNumberOfSnapshotsForCalibrating(3)
 {
 }
 
