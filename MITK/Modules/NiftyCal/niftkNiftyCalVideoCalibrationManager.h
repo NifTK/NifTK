@@ -106,6 +106,7 @@ private:
   mitk::DataNode::Pointer    m_TrackingTransformNode;
   unsigned int               m_MinimumNumberOfSnapshotsForCalibrating;
 
+  // Data used for calibration.
   std::list<niftk::PointSet> m_LeftPoints;
   std::list<niftk::PointSet> m_RightPoints;
 

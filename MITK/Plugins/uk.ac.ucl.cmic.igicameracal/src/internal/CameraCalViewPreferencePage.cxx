@@ -13,13 +13,7 @@
 =============================================================================*/
 
 #include "CameraCalViewPreferencePage.h"
-
-#include <QFormLayout>
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QCheckBox>
-#include <QMessageBox>
-#include <QPushButton>
+#include "ui_CameraCalViewPreferencePage.h"
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
@@ -31,7 +25,8 @@ const QString CameraCalViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmi
 
 //-----------------------------------------------------------------------------
 CameraCalViewPreferencePage::CameraCalViewPreferencePage()
-: m_MainControl(NULL)
+: m_Control(nullptr)
+, m_Ui(new Ui::CameraCalViewPreferencePage)
 , m_Initializing(false)
 , m_CameraCalViewPreferencesNode(NULL)
 {
@@ -64,13 +59,12 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
 
+  m_Control = new QWidget(parent);
+  m_Ui->setupUi(m_Control);
+
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   m_CameraCalViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 
-  m_MainControl = new QWidget(parent);
-  QFormLayout *formLayout = new QFormLayout;
-
-  m_MainControl->setLayout(formLayout);
   this->Update();
 
   m_Initializing = false;
@@ -80,7 +74,7 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
 //-----------------------------------------------------------------------------
 QWidget* CameraCalViewPreferencePage::GetQtControl() const
 {
-  return m_MainControl;
+  return m_Control;
 }
 
 

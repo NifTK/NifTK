@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CameraCalViewPreferencePage</class>
+ <widget class="QWidget" name="CameraCalViewPreferencePage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>516</width>
+    <height>367</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="m_IterativeLabel">
+       <property name="text">
+        <string>iterative:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QRadioButton" name="m_IterativeCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="m_3DModelLabel">
+       <property name="text">
+        <string>3D model file:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="m_3DModelLineEdit"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="m_FeaturesLabel">
+       <property name="text">
+        <string>features to detect:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="m_FeaturesComboBox"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="m_GridSizeLabel">
+       <property name="text">
+        <string>grid size:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QSpinBox" name="m_GridPointsInXSpinBox"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="m_ByLabel">
+         <property name="text">
+          <string>by</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="m_GridPointsInYSpinBox"/>
+       </item>
+      </layout>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="m_ScaleImageLabel">
+       <property name="text">
+        <string>scale image:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QDoubleSpinBox" name="m_ScaleImageInXSpinBox"/>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="m_ScaleImageInYSpinBox"/>
+       </item>
+      </layout>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="m_TagFamilyLabel">
+       <property name="text">
+        <string>tag family:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QComboBox" name="m_TagFamilyComboBox"/>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="m_HandEyeLabel">
+       <property name="text">
+        <string>hand-eye method:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QComboBox" name="m_HandEyeComboBox"/>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="m_ModelToTrackerLabel">
+       <property name="text">
+        <string>3D model-to-tracker:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QLineEdit" name="m_ModelToTrackerLineEdit"/>
+     </item>
+     <item row="8" column="0">
+      <widget class="QLabel" name="m_OutputDirectoryLabel">
+       <property name="text">
+        <string>output directory:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QLineEdit" name="m_OutputDirectoryLineEdit"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

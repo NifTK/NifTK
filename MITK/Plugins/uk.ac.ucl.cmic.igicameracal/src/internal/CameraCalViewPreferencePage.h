@@ -18,8 +18,14 @@
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
 #include <QString>
+#include <QScopedPointer>
 
 class QWidget;
+
+namespace Ui
+{
+class CameraCalViewPreferencePage;
+}
 
 namespace niftk
 {
@@ -71,10 +77,10 @@ private slots:
 
 private:
 
-  QWidget        *m_MainControl;
-  bool            m_Initializing;
-
-  berry::IPreferences::Pointer m_CameraCalViewPreferencesNode;
+  QScopedPointer<Ui::CameraCalViewPreferencePage> m_Ui;
+  QWidget*                                        m_Control;
+  bool                                            m_Initializing;
+  berry::IPreferences::Pointer                    m_CameraCalViewPreferencesNode;
 };
 
 } // end namespace

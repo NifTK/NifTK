@@ -24,6 +24,7 @@ set(INTERNAL_CPP_FILES
 
 set(UI_FILES
   src/internal/CameraCalView.ui
+  src/internal/CameraCalViewPreferencePage.ui
 )
 
 set(MOC_H_FILES
