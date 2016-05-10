@@ -55,6 +55,10 @@ public:
 
   unsigned int GetNumberOfSnapshots() const;
 
+  /**
+   * \brief Clears down the internal points and image arrays,
+   * so calibration will restart with zero data.
+   */
   void Restart();
 
   /**
@@ -63,8 +67,27 @@ public:
    */
   bool Grab();
 
+  /**
+   * \brief Removes the last grabbed snapshot.
+   */
   void UnGrab();
+
+  /**
+   * \brief Performs the actual calibration.
+   *
+   * This can be mono, stereo, iterative and include hand-eye,
+   * depending on the configuration parameters stored in this class.
+   *
+   * \return rms re-projection error (pixels)
+   */
   double Calibrate();
+
+  /**
+   * \brief Saves a bunch of standard (from a NifTK perspective)
+   * calibration files to the given directory path. If files
+   * exist, they will be moved and given a timestamp of when
+   * they were moved.
+   */
   void Save(const std::string dirName);
 
 protected:

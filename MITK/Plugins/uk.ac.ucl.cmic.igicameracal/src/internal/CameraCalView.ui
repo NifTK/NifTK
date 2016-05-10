@@ -19,7 +19,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="m_LeftCameraLabel">
        <property name="text">
-        <string>left image</string>
+        <string>left image:</string>
        </property>
       </widget>
      </item>
@@ -33,7 +33,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="m_RightCameraLabel">
        <property name="text">
-        <string>right image (optional)</string>
+        <string>right image (optional):</string>
        </property>
       </widget>
      </item>
@@ -47,7 +47,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="m_TrackerMatrixLabel">
        <property name="text">
-        <string>tracker matrix (optional)</string>
+        <string>tracker matrix (optional):</string>
        </property>
       </widget>
      </item>
@@ -61,7 +61,7 @@
      <item row="3" column="0">
       <widget class="QLabel" name="m_ProjectionErrorLabel">
        <property name="text">
-        <string>projection error (pixels)</string>
+        <string>projection error (pixels):</string>
        </property>
       </widget>
      </item>
