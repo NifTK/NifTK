@@ -36,6 +36,20 @@ class NIFTKNIFTYCAL_EXPORT NiftyCalVideoCalibrationManager : public itk::Object
 {
 public:
 
+  enum CalibrationPatterns
+  {
+    CHESSBOARD,
+    CIRCLE_GRID,
+    APRIL_TAGS
+  };
+
+  enum HandEyeMethod
+  {
+    TSAI,
+    DIRECT,
+    MALTI
+  };
+
   mitkClassMacroItkParent(NiftyCalVideoCalibrationManager, itk::Object);
   itkNewMacro(NiftyCalVideoCalibrationManager);
 
