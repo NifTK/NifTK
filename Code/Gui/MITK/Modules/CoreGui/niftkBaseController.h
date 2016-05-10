@@ -25,10 +25,16 @@ class QWidget;
 
 class niftkIBaseView;
 
+namespace mitk
+{
+class BaseRenderer;
+}
+
 namespace niftk
 {
 
 class BaseGUI;
+class BaseControllerPrivate;
 
 /**
  * \class BaseController
@@ -78,11 +84,24 @@ protected:
   /// \brief Gets the segmentor BlueBerry view.
   niftkIBaseView* GetView() const;
 
+  /**
+   * \brief Called when the window focus changes, and tracks the current mitk::BaseRenderer*.
+   */
+  virtual void OnFocusChanged();
+
+  /// \brief Returns the currently focused renderer, as this class is tracking the focus changes.
+  /// \return mitk::BaseRenderer* The currently focused renderer, or nullptr if it has not been set.
+  virtual mitk::BaseRenderer* GetFocusedRenderer() const;
+
 private:
 
   BaseGUI* m_GUI;
 
   niftkIBaseView* m_View;
+
+  QScopedPointer<BaseControllerPrivate> d_ptr;
+
+  Q_DECLARE_PRIVATE(BaseController);
 
 };
 
