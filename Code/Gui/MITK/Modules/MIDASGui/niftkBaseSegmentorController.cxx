@@ -30,8 +30,8 @@
 
 //-----------------------------------------------------------------------------
 niftkBaseSegmentorController::niftkBaseSegmentorController(niftkIBaseView* view)
-  : m_SegmentorGUI(nullptr),
-    m_View(view),
+  : niftk::BaseController(view),
+    m_SegmentorGUI(nullptr),
     m_SelectedNode(nullptr),
     m_SelectedImage(nullptr),
     m_ActiveToolID(-1),
@@ -49,9 +49,11 @@ niftkBaseSegmentorController::~niftkBaseSegmentorController()
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::SetupSegmentorGUI(QWidget* parent)
+void niftkBaseSegmentorController::SetupGUI(QWidget* parent)
 {
-  m_SegmentorGUI = this->CreateSegmentorGUI(parent);
+  niftk::BaseController::SetupGUI(parent);
+
+  m_SegmentorGUI = dynamic_cast<niftkBaseSegmentorGUI*>(this->GetGUI());
   m_SegmentorGUI->SetToolManager(m_ToolManager);
 
   this->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
@@ -63,13 +65,6 @@ void niftkBaseSegmentorController::SetupSegmentorGUI(QWidget* parent)
 niftkBaseSegmentorGUI* niftkBaseSegmentorController::GetSegmentorGUI() const
 {
   return m_SegmentorGUI;
-}
-
-
-//-----------------------------------------------------------------------------
-niftkIBaseView* niftkBaseSegmentorController::GetView() const
-{
-  return m_View;
 }
 
 
@@ -90,7 +85,7 @@ void niftkBaseSegmentorController::SetDefaultSegmentationColour(const QColor& de
 //-----------------------------------------------------------------------------
 bool niftkBaseSegmentorController::EventFilter(const mitk::StateEvent* stateEvent) const
 {
-  if (QmitkRenderWindow* renderWindow = m_View->GetSelectedRenderWindow())
+  if (QmitkRenderWindow* renderWindow = this->GetView()->GetSelectedRenderWindow())
   {
     if (renderWindow->GetRenderer() == stateEvent->GetEvent()->GetSender())
     {
@@ -105,7 +100,7 @@ bool niftkBaseSegmentorController::EventFilter(const mitk::StateEvent* stateEven
 //-----------------------------------------------------------------------------
 bool niftkBaseSegmentorController::EventFilter(mitk::InteractionEvent* event) const
 {
-  if (QmitkRenderWindow* renderWindow = m_View->GetSelectedRenderWindow())
+  if (QmitkRenderWindow* renderWindow = this->GetView()->GetSelectedRenderWindow())
   {
     if (renderWindow->GetRenderer() == event->GetSender())
     {
@@ -114,34 +109,6 @@ bool niftkBaseSegmentorController::EventFilter(mitk::InteractionEvent* event) co
   }
 
   return true;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataStorage* niftkBaseSegmentorController::GetDataStorage() const
-{
-  return m_View->GetDataStorage();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::RequestRenderWindowUpdate() const
-{
-  m_View->RequestRenderWindowUpdate();
-}
-
-
-//-----------------------------------------------------------------------------
-QList<mitk::DataNode::Pointer> niftkBaseSegmentorController::GetDataManagerSelection() const
-{
-  return m_View->GetDataManagerSelection();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::SliceNavigationController* niftkBaseSegmentorController::GetSliceNavigationController() const
-{
-  return m_View->GetSliceNavigationController();
 }
 
 
@@ -235,7 +202,7 @@ void niftkBaseSegmentorController::SetReferenceImageSelected()
   mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
   if (referenceImageNode.IsNotNull())
   {
-    m_View->SetCurrentSelection(referenceImageNode);
+    this->GetView()->SetCurrentSelection(referenceImageNode);
   }
 }
 
@@ -322,32 +289,6 @@ int niftkBaseSegmentorController::GetSliceNumberFromSliceNavigationControllerAnd
     }
   }
   return sliceNumber;
-}
-
-
-//-----------------------------------------------------------------------------
-MIDASOrientation niftkBaseSegmentorController::GetOrientationAsEnum()
-{
-  MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
-  const mitk::SliceNavigationController* sliceNavigationController = this->GetSliceNavigationController();
-  if (sliceNavigationController != NULL)
-  {
-    mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
-
-    if (viewDirection == mitk::SliceNavigationController::Axial)
-    {
-      orientation = MIDAS_ORIENTATION_AXIAL;
-    }
-    else if (viewDirection == mitk::SliceNavigationController::Sagittal)
-    {
-      orientation = MIDAS_ORIENTATION_SAGITTAL;
-    }
-    else if (viewDirection == mitk::SliceNavigationController::Frontal)
-    {
-      orientation = MIDAS_ORIENTATION_CORONAL;
-    }
-  }
-  return orientation;
 }
 
 
@@ -598,15 +539,15 @@ void niftkBaseSegmentorController::OnToolSelected(int toolID)
   if (firstCall)
   {
     firstCall = false;
-    m_CursorIsVisibleWhenToolsAreOff = m_View->IsActiveEditorCursorVisible();
+    m_CursorIsVisibleWhenToolsAreOff = this->GetView()->IsActiveEditorCursorVisible();
   }
 
   if (toolID != -1)
   {
-    bool cursorWasVisible = m_View->IsActiveEditorCursorVisible();
+    bool cursorWasVisible = this->GetView()->IsActiveEditorCursorVisible();
     if (cursorWasVisible)
     {
-      m_View->SetActiveEditorCursorVisible(false);
+      this->GetView()->SetActiveEditorCursorVisible(false);
     }
 
     if (m_ActiveToolID == -1)
@@ -616,14 +557,14 @@ void niftkBaseSegmentorController::OnToolSelected(int toolID)
   }
   else
   {
-    m_View->SetActiveEditorCursorVisible(m_CursorIsVisibleWhenToolsAreOff);
+    this->GetView()->SetActiveEditorCursorVisible(m_CursorIsVisibleWhenToolsAreOff);
   }
 
   m_ActiveToolID = toolID;
 
   /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
   /// (like 'a' and 'z' for changing slice) keep on working.
-  if (QmitkRenderWindow* mainWindow = m_View->GetSelectedRenderWindow())
+  if (QmitkRenderWindow* mainWindow = this->GetView()->GetSelectedRenderWindow())
   {
     mainWindow->setFocus();
   }

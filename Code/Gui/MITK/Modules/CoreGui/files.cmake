@@ -31,6 +31,8 @@ set(CPP_FILES
   QmitkCmicLogo.cxx
   Rendering/SharedOGLContext.cxx
   Rendering/ScopedOGLContext.cxx
+  niftkBaseController.cxx
+  niftkBaseGUI.cxx
 )
 
 set(MOC_H_FILES
@@ -39,6 +41,8 @@ set(MOC_H_FILES
   Events/QmitkMouseEventEater.h
   QmitkDataStorageCheckableComboBox.h
   QmitkHelpAboutDialog.h
+  niftkBaseController.h
+  niftkBaseGUI.h
 )
 
 set(UI_FILES

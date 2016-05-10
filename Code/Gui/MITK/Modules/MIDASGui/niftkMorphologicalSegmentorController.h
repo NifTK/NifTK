@@ -38,7 +38,7 @@ public:
 
   /// \brief Sets up the GUI.
   /// This function has to be called from the CreateQtPartControl function of the view.
-  virtual void SetupSegmentorGUI(QWidget* parent) override;
+  virtual void SetupGUI(QWidget* parent) override;
 
   /// \brief If the user hits the close icon, it is equivalent to a Cancel,
   /// and the segmentation is destroyed without warning.
@@ -71,7 +71,7 @@ protected:
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
 
   /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
-  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
+  virtual niftk::BaseGUI* CreateGUI(QWidget* parent) override;
 
   /// \brief Called when the selection changes in the data manager.
   /// \see QmitkAbstractView::OnSelectionChanged.

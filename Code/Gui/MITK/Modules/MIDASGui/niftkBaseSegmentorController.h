@@ -18,11 +18,12 @@
 #include <niftkMIDASGuiExports.h>
 
 #include <QColor>
-#include <QObject>
+#include <QList>
 
 #include <mitkDataNode.h>
 #include <mitkToolManager.h>
 
+#include <niftkBaseController.h>
 #include <niftkMIDASEventFilter.h>
 #include <niftkMIDASOrientationUtils.h>
 
@@ -34,7 +35,7 @@ class niftkIBaseView;
 /**
  * \class niftkBaseSegmentorController
  */
-class NIFTKMIDASGUI_EXPORT niftkBaseSegmentorController : public QObject, public niftk::MIDASEventFilter
+class NIFTKMIDASGUI_EXPORT niftkBaseSegmentorController : public niftk::BaseController, public niftk::MIDASEventFilter
 {
 
   Q_OBJECT
@@ -47,7 +48,7 @@ public:
 
   /// \brief Sets up the GUI.
   /// This function has to be called from the CreateQtPartControl function of the view.
-  virtual void SetupSegmentorGUI(QWidget* parent);
+  virtual void SetupGUI(QWidget* parent) override;
 
   /// \brief Returns the segmentation tool manager used by the segmentor.
   mitk::ToolManager* GetToolManager() const;
@@ -75,20 +76,6 @@ protected slots:
   virtual void OnToolSelected(int toolID);
 
 protected:
-
-  mitk::DataStorage* GetDataStorage() const;
-
-  void RequestRenderWindowUpdate() const;
-
-  /**
-   * Returns the current selection made in the datamanager bundle or an empty list
-   * if there is no selection or if it is empty.
-   *
-   * \see QmitkAbstractView::GetDataManagerSelection()
-   */
-  QList<mitk::DataNode::Pointer> GetDataManagerSelection() const;
-
-  mitk::SliceNavigationController* GetSliceNavigationController() const;
 
   /// \brief Gets a vector of the working data nodes registered with the tool manager.
   /// The data nodes normally hold image, but could be surfaces etc.
@@ -141,9 +128,6 @@ protected:
   /// \brief Works out the slice number.
   int GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
 
-  /// \brief Retrieves the currently active QmitkRenderWindow, and if it has a 2D mapper will return the current orientation of the view, returning ORIENTATION_UNKNOWN if it can't be found or the view is a 3D view for instance.
-  MIDASOrientation GetOrientationAsEnum();
-
   /// \brief Looks up the ReferenceImage registered with ToolManager and returns the axis [0,1,2] that corresponds to the given orientation, or -1 if it can't be found.
   int GetAxisFromReferenceImage(const MIDASOrientation& orientation);
 
@@ -168,16 +152,8 @@ protected:
   /// \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancels the dialog box.
   virtual mitk::DataNode* CreateNewSegmentation();
 
-  /// \brief Creates the segmentor widget that holds the GUI components of the view.
-  /// This function is called from CreateQtPartControl. Derived classes should provide their implementation
-  /// that returns an object whose class derives from niftkBaseSegmentorGUI.
-  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) = 0;
-
   /// \brief Gets the segmentor widget that holds the GUI components of the view.
   niftkBaseSegmentorGUI* GetSegmentorGUI() const;
-
-  /// \brief Gets the segmentor BlueBerry view.
-  niftkIBaseView* GetView() const;
 
   /// \brief Called when the selection changes in the data manager.
   /// \see QmitkAbstractView::OnSelectionChanged.
@@ -199,8 +175,6 @@ private:
   mitk::ToolManager::Pointer m_ToolManager;
 
   niftkBaseSegmentorGUI* m_SegmentorGUI;
-
-  niftkIBaseView* m_View;
 
   /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer m_SelectedNode;

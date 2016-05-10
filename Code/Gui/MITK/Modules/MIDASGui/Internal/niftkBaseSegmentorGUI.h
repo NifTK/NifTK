@@ -15,7 +15,7 @@
 #ifndef __niftkBaseSegmentorGUI_h
 #define __niftkBaseSegmentorGUI_h
 
-#include <QObject>
+#include <niftkBaseGUI.h>
 
 namespace mitk
 {
@@ -32,7 +32,7 @@ class niftkToolSelectorWidget;
  * \sa niftkMorphologicalSegmentorGUI
  * \sa niftkGeneralSegmentorGUI
  */
-class niftkBaseSegmentorGUI : public QObject
+class niftkBaseSegmentorGUI : public niftk::BaseGUI
 {
   Q_OBJECT
 
@@ -42,9 +42,6 @@ public:
   virtual ~niftkBaseSegmentorGUI();
 
 public:
-
-  /// \brief Returns the parent widget.
-  QWidget* GetParent() const;
 
   /// \brief Method to enable derived classes to turn widgets off/on, with default do nothing implementation.
   virtual void EnableSegmentationWidgets(bool enabled);

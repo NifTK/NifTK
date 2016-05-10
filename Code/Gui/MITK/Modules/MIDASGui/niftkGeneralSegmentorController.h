@@ -139,7 +139,7 @@ public:
 
   /// \brief Sets up the GUI.
   /// This function has to be called from the CreateQtPartControl function of the view.
-  virtual void SetupSegmentorGUI(QWidget* parent) override;
+  virtual void SetupGUI(QWidget* parent) override;
 
   /// \brief \see niftk::MIDASToolKeyPressResponder::SelectSeedTool()
   virtual bool SelectSeedTool() override;
@@ -178,7 +178,7 @@ protected:
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
 
   /// \brief Creates the general segmentor widget that holds the GUI components of the view.
-  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
+  virtual niftk::BaseGUI* CreateGUI(QWidget* parent) override;
 
   void OnNodeVisibilityChanged(const mitk::DataNode* node);
 
@@ -281,9 +281,13 @@ private:
   /// and moving to the next one.
   virtual void OnSliceChanged(const itk::EventObject& geometrySliceEvent);
 
+  /// \brief Qt slot called to effect a change of orientation, which means accepting
+  /// the current segmentation, and moving to the prior/next slice, see class intro.
+  void OnOrientationChanged(MIDASOrientation previousOrientation, MIDASOrientation nextOrientation);
+
   /// \brief Qt slot called to effect a change of slice, which means accepting
   /// the current segmentation, and moving to the prior/next slice, see class intro.
-  void OnSliceNumberChanged(int before, int after);
+  void OnSliceNumberChanged(int previousSliceNumber, int sliceNumber);
 
   /// \brief This view registers with the mitk::DataStorage and listens for changing
   /// data, so this method is called when any node is changed, but only performs an update,

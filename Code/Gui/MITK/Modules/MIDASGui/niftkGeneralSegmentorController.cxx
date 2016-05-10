@@ -81,16 +81,16 @@ niftkGeneralSegmentorController::~niftkGeneralSegmentorController()
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorGUI* niftkGeneralSegmentorController::CreateSegmentorGUI(QWidget* parent)
+niftk::BaseGUI* niftkGeneralSegmentorController::CreateGUI(QWidget* parent)
 {
   return new niftkGeneralSegmentorGUI(parent);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::SetupSegmentorGUI(QWidget* parent)
+void niftkGeneralSegmentorController::SetupGUI(QWidget* parent)
 {
-  niftkBaseSegmentorController::SetupSegmentorGUI(parent);
+  niftkBaseSegmentorController::SetupGUI(parent);
 
   m_GeneralSegmentorGUI = dynamic_cast<niftkGeneralSegmentorGUI*>(this->GetSegmentorGUI());
 
@@ -661,17 +661,23 @@ void niftkGeneralSegmentorController::OnSliceChanged(const itk::EventObject& geo
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber, int afterSliceNumber)
+void niftkGeneralSegmentorController::OnOrientationChanged(MIDASOrientation previousOrientation, MIDASOrientation nextOrientation)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkGeneralSegmentorController::OnSliceNumberChanged(int previousSliceNumber, int nextSliceNumber)
 {
   if (  !this->HasInitialisedWorkingData()
       || m_IsUpdating
       || m_IsChangingSlice
-      || beforeSliceNumber == -1
-      || afterSliceNumber == -1
-      || abs(beforeSliceNumber - afterSliceNumber) != 1
+      || previousSliceNumber == -1
+      || nextSliceNumber == -1
+      || abs(previousSliceNumber - nextSliceNumber) != 1
       )
   {
-    m_PreviousSliceNumber = afterSliceNumber;
+    m_PreviousSliceNumber = nextSliceNumber;
     m_PreviousFocusPoint = m_CurrentFocusPoint;
 
     bool updateRendering(false);
@@ -701,9 +707,9 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
       assert(drawTool);
 
       if (   axisNumber != -1
-          && beforeSliceNumber != -1
-          && afterSliceNumber != -1
-          && beforeSliceNumber != afterSliceNumber)
+          && previousSliceNumber != -1
+          && nextSliceNumber != -1
+          && previousSliceNumber != nextSliceNumber)
       {
         std::vector<int> outputRegion;
         mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
@@ -724,7 +730,7 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
           AccessFixedDimensionByItk_n(segmentationImage,
               niftk::ITKSliceIsEmpty, 3,
               (axisNumber,
-               afterSliceNumber,
+               nextSliceNumber,
                nextSliceIsEmpty
               )
             );
@@ -738,7 +744,7 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
               AccessFixedDimensionByItk_n(segmentationImage,
                   niftk::ITKSliceIsEmpty, 3,
                   (axisNumber,
-                   beforeSliceNumber,
+                   previousSliceNumber,
                    thisSliceIsEmpty
                   )
                 );
@@ -763,7 +769,7 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
             if (returnValue == QMessageBox::Ok || returnValue == QMessageBox::No )
             {
               m_IsUpdating = false;
-              m_PreviousSliceNumber = afterSliceNumber;
+              m_PreviousSliceNumber = nextSliceNumber;
               m_PreviousFocusPoint = m_CurrentFocusPoint;
               this->UpdatePriorAndNext();
               this->UpdateRegionGrowing();
@@ -776,9 +782,9 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
             AccessFixedDimensionByItk_n(segmentationImage,
                 niftk::ITKPreProcessingOfSeedsForChangingSlice, 3,
                 (*seeds,
-                 beforeSliceNumber,
+                 previousSliceNumber,
                  axisNumber,
-                 afterSliceNumber,
+                 nextSliceNumber,
                  false, // We propagate seeds at current position, so no optimisation
                  nextSliceIsEmpty,
                  *(copyOfCurrentSeeds.GetPointer()),
@@ -789,7 +795,7 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
 
             if (m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
             {
-              QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(beforeSliceNumber).arg(afterSliceNumber);
+              QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(previousSliceNumber).arg(nextSliceNumber);
               niftk::OpThresholdApply::ProcessorPointer processor = niftk::OpThresholdApply::ProcessorType::New();
               niftk::OpThresholdApply *doThresholdOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
               niftk::OpThresholdApply *undoThresholdOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
@@ -802,10 +808,10 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
             }
 
             // Do retain marks, which copies slice from beforeSliceNumber to afterSliceNumber
-            QString message = tr("Retaining marks in slice %1 and copying to %2").arg(beforeSliceNumber).arg(afterSliceNumber);
+            QString message = tr("Retaining marks in slice %1 and copying to %2").arg(previousSliceNumber).arg(nextSliceNumber);
             niftk::OpRetainMarks::ProcessorPointer processor = niftk::OpRetainMarks::ProcessorType::New();
-            niftk::OpRetainMarks *doOp = new niftk::OpRetainMarks(niftk::OP_RETAIN_MARKS, true, beforeSliceNumber, afterSliceNumber, axisNumber, orientation, outputRegion, processor);
-            niftk::OpRetainMarks *undoOp = new niftk::OpRetainMarks(niftk::OP_RETAIN_MARKS, false, beforeSliceNumber, afterSliceNumber, axisNumber, orientation, outputRegion, processor);
+            niftk::OpRetainMarks *doOp = new niftk::OpRetainMarks(niftk::OP_RETAIN_MARKS, true, previousSliceNumber, nextSliceNumber, axisNumber, orientation, outputRegion, processor);
+            niftk::OpRetainMarks *undoOp = new niftk::OpRetainMarks(niftk::OP_RETAIN_MARKS, false, previousSliceNumber, nextSliceNumber, axisNumber, orientation, outputRegion, processor);
             mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doOp, undoOp, message.toStdString());
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
             this->ExecuteOperation(doOp);
@@ -815,9 +821,9 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
             AccessFixedDimensionByItk_n(segmentationImage,
                 niftk::ITKPreProcessingOfSeedsForChangingSlice, 3,
                 (*seeds,
-                 beforeSliceNumber,
+                 previousSliceNumber,
                  axisNumber,
-                 afterSliceNumber,
+                 nextSliceNumber,
                  true, // optimise seed position on current slice.
                  nextSliceIsEmpty,
                  *(copyOfCurrentSeeds.GetPointer()),
@@ -840,13 +846,13 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
             }
             else // threshold box not checked
             {
-              bool thisSliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(false, beforeSliceNumber);
+              bool thisSliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(false, previousSliceNumber);
 
               if (thisSliceHasUnenclosedSeeds)
               {
                 niftk::OpWipe::ProcessorPointer processor = niftk::OpWipe::ProcessorType::New();
-                niftk::OpWipe *doWipeOp = new niftk::OpWipe(niftk::OP_WIPE, true, beforeSliceNumber, axisNumber, outputRegion, propagatedSeeds, processor);
-                niftk::OpWipe *undoWipeOp = new niftk::OpWipe(niftk::OP_WIPE, false, beforeSliceNumber, axisNumber, outputRegion, copyOfCurrentSeeds, processor);
+                niftk::OpWipe *doWipeOp = new niftk::OpWipe(niftk::OP_WIPE, true, previousSliceNumber, axisNumber, outputRegion, propagatedSeeds, processor);
+                niftk::OpWipe *undoWipeOp = new niftk::OpWipe(niftk::OP_WIPE, false, previousSliceNumber, axisNumber, outputRegion, copyOfCurrentSeeds, processor);
                 mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doWipeOp, undoWipeOp, "Wipe command");
                 mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
                 this->ExecuteOperation(doWipeOp);
@@ -857,7 +863,7 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
                 // So, we do a region growing, without intensity limits. (we already know there are no unenclosed seeds).
 
                 this->UpdateRegionGrowing(false,
-                                          beforeSliceNumber,
+                                          previousSliceNumber,
                                           referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
                                           referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
                                           false);
@@ -878,16 +884,16 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
 
           m_CurrentFocusPoint = this->GetView()->GetSelectedPosition();
 
-          QString message = tr("Propagate seeds from slice %1 to %2").arg(beforeSliceNumber).arg(afterSliceNumber);
-          niftk::OpPropagateSeeds *doPropOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, true, afterSliceNumber, axisNumber, propagatedSeeds);
-          niftk::OpPropagateSeeds *undoPropOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, false, beforeSliceNumber, axisNumber, copyOfCurrentSeeds);
+          QString message = tr("Propagate seeds from slice %1 to %2").arg(previousSliceNumber).arg(nextSliceNumber);
+          niftk::OpPropagateSeeds *doPropOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, true, nextSliceNumber, axisNumber, propagatedSeeds);
+          niftk::OpPropagateSeeds *undoPropOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, false, previousSliceNumber, axisNumber, copyOfCurrentSeeds);
           mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(m_Interface, doPropOp, undoPropOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
           this->ExecuteOperation(doPropOp);
 
-          message = tr("Change slice from %1 to %2").arg(beforeSliceNumber).arg(afterSliceNumber);
-          niftk::OpChangeSliceCommand *doOp = new niftk::OpChangeSliceCommand(niftk::OP_CHANGE_SLICE, true, beforeSliceNumber, afterSliceNumber, m_PreviousFocusPoint, m_CurrentFocusPoint);
-          niftk::OpChangeSliceCommand *undoOp = new niftk::OpChangeSliceCommand(niftk::OP_CHANGE_SLICE, false, beforeSliceNumber, afterSliceNumber, m_PreviousFocusPoint, m_CurrentFocusPoint);
+          message = tr("Change slice from %1 to %2").arg(previousSliceNumber).arg(nextSliceNumber);
+          niftk::OpChangeSliceCommand *doOp = new niftk::OpChangeSliceCommand(niftk::OP_CHANGE_SLICE, true, previousSliceNumber, nextSliceNumber, m_PreviousFocusPoint, m_CurrentFocusPoint);
+          niftk::OpChangeSliceCommand *undoOp = new niftk::OpChangeSliceCommand(niftk::OP_CHANGE_SLICE, false, previousSliceNumber, nextSliceNumber, m_PreviousFocusPoint, m_CurrentFocusPoint);
           mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doOp, undoOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           this->ExecuteOperation(doOp);
@@ -1232,15 +1238,16 @@ void niftkGeneralSegmentorController::OnThresholdValueChanged()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorController::UpdateRegionGrowing(bool updateRendering)
 {
-  bool isVisible = m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked();
-  int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  double lowerThreshold = m_GeneralSegmentorGUI->GetLowerThreshold();
-  double upperThreshold = m_GeneralSegmentorGUI->GetUpperThreshold();
-  bool skipUpdate = !isVisible;
+  bool isThresholdingOn = m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked();
 
-  if (isVisible)
+  if (isThresholdingOn)
   {
-    this->UpdateRegionGrowing(isVisible, sliceNumber, lowerThreshold, upperThreshold, skipUpdate);
+    int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
+    double lowerThreshold = m_GeneralSegmentorGUI->GetLowerThreshold();
+    double upperThreshold = m_GeneralSegmentorGUI->GetUpperThreshold();
+    bool skipUpdate = !isThresholdingOn;
+
+    this->UpdateRegionGrowing(isThresholdingOn, sliceNumber, lowerThreshold, upperThreshold, skipUpdate);
 
     if (updateRendering)
     {

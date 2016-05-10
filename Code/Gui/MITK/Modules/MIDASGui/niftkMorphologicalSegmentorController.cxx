@@ -63,16 +63,16 @@ niftkMorphologicalSegmentorController::~niftkMorphologicalSegmentorController()
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorGUI* niftkMorphologicalSegmentorController::CreateSegmentorGUI(QWidget* parent)
+niftk::BaseGUI* niftkMorphologicalSegmentorController::CreateGUI(QWidget* parent)
 {
   return new niftkMorphologicalSegmentorGUI(parent);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorController::SetupSegmentorGUI(QWidget* parent)
+void niftkMorphologicalSegmentorController::SetupGUI(QWidget* parent)
 {
-  niftkBaseSegmentorController::SetupSegmentorGUI(parent);
+  niftkBaseSegmentorController::SetupGUI(parent);
 
   m_MorphologicalSegmentorGUI = dynamic_cast<niftkMorphologicalSegmentorGUI*>(this->GetSegmentorGUI());
 
