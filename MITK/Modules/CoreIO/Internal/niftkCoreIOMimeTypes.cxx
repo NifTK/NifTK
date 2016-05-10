@@ -248,14 +248,14 @@ mitk::CustomMimeType niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE()
   std::string category = "LabelMap File";
   mimeType.SetComment("Label Map format");
   mimeType.SetCategory(category);
-  mimeType.AddExtension("lmap");
+  mimeType.AddExtension("txt");
     
   return mimeType;
 }
 
 std::string niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()
 {
-  static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".lmap";
+  static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".txt";
   return name;
 }
 

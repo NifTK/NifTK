@@ -25,6 +25,7 @@
 #include <qmessagebox.h>
 #include <QXmlSimpleReader>
 #include <QmitkLookupTableSaxHandler.h>
+#include <mitkIOUtil.h>
 
 #include <itkImage.h>
 #include <itkCommand.h>
@@ -47,8 +48,6 @@
 #include <berryPlatform.h>
 #include <berryIPreferencesService.h>
 
-#include "mitkLabelMapWriter.h"
-#include "mitkLabelMapReader.h"
 #include "QmitkImageLookupTablesPreferencePage.h"
 #include "vtkLookupTableUtils.h"
 #include <QmitkLookupTableManager.h>
@@ -845,16 +844,15 @@ void ImageLookupTablesView::OnSaveButtonPressed()
     return;
   }
 
-  mitk::LabelMapWriter writer;
-  writer.SetOutputLocation(fileNameAndPath.toStdString());
-  writer.SetLabels(labelProperty->GetLabels());
-  writer.SetVtkLookupTable(labelProperty->GetLookupTable()->GetVtkLookupTable());
-  writer.Write();   
-
   QmitkLookupTableContainer* newLUT 
-    = new QmitkLookupTableContainer(labelProperty->GetLookupTable()->GetVtkLookupTable(),labelProperty->GetLabels());
+    = new QmitkLookupTableContainer(labelProperty->GetLookupTable()->GetVtkLookupTable(), labelProperty->GetLabels());
+  newLUT->SetDisplayName(labelProperty->GetName());
 
-   newLUT->SetDisplayName(labelProperty->GetName());
+  MITK_INFO << "fileName " << fileNameAndPath.toStdString().c_str();
+
+  
+  mitk::IOUtil::Save(newLUT, fileNameAndPath.toStdString());
+
 
   int index = fileNameAndPath.lastIndexOf("/")+1;
   QString labelName = fileNameAndPath.mid(index);
@@ -1440,18 +1438,25 @@ QString ImageLookupTablesView::LoadLookupTable(QString& fileName)
   }
   else
   {
-    // intialized label map reader
-    mitk::LabelMapReader reader;
+    std::vector<mitk::BaseData::Pointer> containerData = mitk::IOUtil::Load(fileName.toStdString());
+    if (containerData.empty())
+    {
+      MITK_ERROR << "Ualbe to load QmitkLookupTableContainer from " << fileName;
+    }
+    else
+    {
+      loadedContainer =
+        dynamic_cast<QmitkLookupTableContainer* >(containerData.at(0).GetPointer());
 
-    reader.SetInput(fileName.toStdString());
-    reader.SetOrder(lutService->GetNumberOfLookupTables());
-    reader.Read();
-
-    loadedContainer = reader.GetLookupTableContainer();
-    loadedContainer->SetDisplayName(loadedContainer->GetDisplayName());
+      if (loadedContainer != NULL)
+      {
+        loadedContainer->SetDisplayName(loadedContainer->GetDisplayName());
+        loadedContainer->SetOrder(lutService->GetNumberOfLookupTables());
+      }
+    }
   }
 
-  if (loadedContainer != NULL )
+  if (loadedContainer != NULL)
   {
     lutService->AddNewLookupTableContainer(loadedContainer);
     lutName = loadedContainer->GetDisplayName();

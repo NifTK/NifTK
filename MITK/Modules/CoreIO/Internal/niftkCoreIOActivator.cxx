@@ -56,8 +56,8 @@ void niftk::CoreIOActivator::Load(us::ModuleContext* context)
   m_PNMReaderService.reset(new niftk::PNMReaderService());
   m_PNMWriterService.reset(new niftk::PNMWriterService());
 
-  m_LabelMapReaderService.reset(new mitk::LabelMapReader());
-  m_LabelMapWriterService.reset(new mitk::LabelMapWriter());
+  m_LabelMapReaderService.reset(new niftk::LabelMapReader());
+  m_LabelMapWriterService.reset(new niftk::LabelMapWriter());
 }
 
 

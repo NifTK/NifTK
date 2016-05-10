@@ -21,11 +21,11 @@
 #include <usModuleContext.h>
 #include <memory>
 
-#include <mitkLabelMapReader.h>
-#include <mitkLabelMapWriter.h>
 #include <QmitkLookupTableProviderService.h>
 #include "niftkCoordinateAxesDataReaderService.h"
 #include "niftkCoordinateAxesDataWriterService.h"
+#include "niftkLabelMapReader.h"
+#include "niftkLabelMapWriter.h"
 #include "niftkPNMReaderService.h"
 #include "niftkPNMWriterService.h"
 
@@ -54,8 +54,8 @@ private:
   std::auto_ptr<niftk::PNMWriterService>                m_PNMWriterService;
 
   std::auto_ptr<QmitkLookupTableProviderService>        m_LookupTableProviderService;
-  std::auto_ptr<mitk::LabelMapReader>                   m_LabelMapReaderService;
-  std::auto_ptr<mitk::LabelMapWriter>                   m_LabelMapWriterService;
+  std::auto_ptr<niftk::LabelMapReader>                  m_LabelMapReaderService;
+  std::auto_ptr<niftk::LabelMapWriter>                  m_LabelMapWriterService;
 
 };
 

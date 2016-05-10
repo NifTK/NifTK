@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkLabelMapReader.h"
+#include "niftkLabelMapReader.h"
 #include "niftkCoreIOMimeTypes.h"
 #include "LookupTables/QmitkLookupTableContainer.h"
 
@@ -24,35 +24,35 @@
 #include <vtkLookupTable.h>
 #include <vtkIntArray.h>
 #include <vtkStringArray.h>
-
+#include <QFile.h>
 #include <sstream>
 #include <iostream>
 
 
 //-----------------------------------------------------------------------------
-mitk::LabelMapReader::LabelMapReader()
-: mitk::AbstractFileReader(CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()), niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
+niftk::LabelMapReader::LabelMapReader()
+: mitk::AbstractFileReader(mitk::CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()), niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
 {
   m_ServiceReg = this->RegisterService();
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::LabelMapReader::LabelMapReader(const LabelMapReader &other)
+niftk::LabelMapReader::LabelMapReader(const LabelMapReader &other)
 : mitk::AbstractFileReader(other)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::LabelMapReader * mitk::LabelMapReader::Clone() const
+niftk::LabelMapReader * niftk::LabelMapReader::Clone() const
 {
-  return new mitk::LabelMapReader(*this);
+  return new niftk::LabelMapReader(*this);
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
+std::vector<itk::SmartPointer<mitk::BaseData> > niftk::LabelMapReader::Read()
 {
   // make sure the internal datatypes are empty
   m_Labels.clear();
@@ -65,29 +65,32 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
   setlocale(LC_ALL, locale.c_str());
 
   std::string fileName = this->GetInputLocation();
-  std::ifstream infile(fileName, std::ifstream::in);
-
+  QString labelName = QString::fromStdString(fileName);
   bool isLoaded = false;
-  QString labelName;
-  if (infile.is_open())
+
+  if (fileName.find(":") == 0)
   {
-    labelName = QString::fromStdString(fileName);
-    isLoaded = this->ReadLabelMap(infile);
-    infile.close();
-  }
-  else
-  {
-    m_InputQFile->open(QIODevice::ReadOnly);   
-    labelName = m_InputQFile->fileName();
+    QFile lutFile(fileName.c_str());
+    lutFile.open(QIODevice::ReadOnly);   
 
     // this is a dirty hack to get the resource file in the right format to read
-    std::string fileStr(m_InputQFile->readAll());
+    std::string fileStr(lutFile.readAll());
     std::stringstream sStream; 
     sStream << fileStr;
     isLoaded = this->ReadLabelMap(sStream);
-    m_InputQFile->close();
+    lutFile.close();
   }
+  else
+  {
+    // detect if : starts the fileName
+    std::ifstream infile(fileName, std::ifstream::in);
 
+    if (infile.is_open())
+    {
+      isLoaded = this->ReadLabelMap(infile);
+      infile.close();
+    }
+  }
   if (isLoaded)
   {
     int startInd = labelName.lastIndexOf("/") + 1;
@@ -102,12 +105,14 @@ std::vector<itk::SmartPointer<mitk::BaseData> > mitk::LabelMapReader::Read()
     MITK_ERROR << "Unable to read NifTK label map!";
   }
 
+  QmitkLookupTableContainer::Pointer containter = GetLookupTableContainer();
+  result.push_back(itk::SmartPointer<mitk::BaseData>(containter));
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
+bool niftk::LabelMapReader::ReadLabelMap(std::istream & file)
 {
   bool isLoaded = false;
 
@@ -169,7 +174,7 @@ bool mitk::LabelMapReader::ReadLabelMap(std::istream & file)
 
 
 //-----------------------------------------------------------------------------
-QmitkLookupTableContainer* mitk::LabelMapReader::GetLookupTableContainer()
+QmitkLookupTableContainer* niftk::LabelMapReader::GetLookupTableContainer()
 {
   if (m_Colors.empty() || m_Labels.empty())
   {

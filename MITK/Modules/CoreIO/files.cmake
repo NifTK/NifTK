@@ -26,5 +26,7 @@ set(CPP_FILES
   Internal/niftkNamedLookupTablePropertySerializer.cxx
   Internal/niftkPNMReaderService.cxx
   Internal/niftkPNMWriterService.cxx
+  Internal/niftkLabelMapReader.cxx
+  Internal/niftkLabelMapWriter.cxx
   Internal/QmitkLookupTableProviderServiceImpl.cxx
 )

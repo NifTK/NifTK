@@ -27,7 +27,7 @@
 #include <usGetModuleContext.h>
 #include <usModule.h>
 #include <usModuleRegistry.h>
-#include <mitkLabelMapReader.h>
+#include <mitkIOUtil.h>
 
 
 //-----------------------------------------------------------------------------
@@ -85,30 +85,49 @@ QmitkLookupTableManager::QmitkLookupTableManager()
   QStringList txtFilter;
   txtFilter << "*.txt";
   QStringList labelMapList = fileDir.entryList(txtFilter, QDir::Files,QDir::SortFlag::Name);
-
   for (int i = 0; i < labelMapList.size(); i++)
   {
+    QmitkLookupTableContainer *lut = NULL;
     QString fileName = fileDir.filePath(labelMapList[i]);
     MITK_DEBUG << "QmitkLookupTableManager():Loading txt " << fileName.toLocal8Bit().constData();
-    
-    QFile lutFile(fileName);
+   
+    mitk::FileReaderRegistry* frr = new mitk::FileReaderRegistry();
 
-    // intialized label map reader
-    mitk::LabelMapReader reader;
+    mitk::MimeType myMimeType = frr->GetMimeTypeForFile(fileName.toStdString());
+    std::vector<mitk::FileReaderRegistry::ReaderReference> refs = frr->GetReferences(myMimeType);
 
-    reader.SetQFile(lutFile);
-    reader.SetOrder(lutList.size() + i);
-    reader.Read();
-
-    const QmitkLookupTableContainer *lut = reader.GetLookupTableContainer();
- 
-    if (lut != NULL)
+    if (refs.empty())
     {
-      map.insert(PairType(lutList.size() + i, lut));
+      MITK_ERROR << "No references found for mime type: " << myMimeType.GetName();
+    }
+
+    mitk::IFileReader* myReader = frr->GetReader(refs.at(0));
+
+    if (myReader == NULL)
+    {
+      MITK_ERROR << "No reader found for mime type: " << myMimeType.GetName();
+    }
+    
+    myReader->SetInput(fileName.toStdString());
+    std::vector<mitk::BaseData::Pointer> container = myReader->Read(); // this will never work because the file does not exist!¬!!!!
+    if (container.empty())
+    {
+      MITK_ERROR << "Unable to load QmitkLookupTableContainer from " << fileName.toStdString();
     }
     else
     {
-      MITK_ERROR << "QmitkLookupTableManager():failed to load lookup table:" << fileName.toLocal8Bit().constData();
+      lut =
+        dynamic_cast<QmitkLookupTableContainer* >(container.at(0).GetPointer());
+
+      if (lut != NULL)
+      {
+        lut->SetOrder(lutList.size() + i);
+        map.insert(PairType(lutList.size() + i, lut));
+      }
+      else
+      {
+        MITK_ERROR << "QmitkLookupTableManager():failed to load lookup table:" << fileName.toLocal8Bit().constData();
+      }
     }
   }
 

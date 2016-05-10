@@ -25,6 +25,8 @@ QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut)
   newTable->SetNanColor(const_cast<vtkLookupTable*>(lut)->GetNanColor());
 
   m_LookupTable = const_cast<vtkLookupTable const*>(newTable);
+
+  Superclass::InitializeTimeGeometry();
 }
 
 
@@ -41,6 +43,8 @@ QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut, 
   m_Order = 0;
   m_IsScaled = false;
   m_Labels = labels;
+
+  Superclass::InitializeTimeGeometry();
 }
 
 
