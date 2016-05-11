@@ -22,13 +22,31 @@
 namespace niftk
 {
 
+const bool                NiftyCalVideoCalibrationManager::DefaultDoIterative(false);
+const unsigned int        NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating(3);
+const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorX(1);
+const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorY(1);
+const int                 NiftyCalVideoCalibrationManager::DefaultGridSizeX(14);
+const int                 NiftyCalVideoCalibrationManager::DefaultGridSizeY(10);
+const std::string         NiftyCalVideoCalibrationManager::DefaultTagFamily("25h7");
+const NiftyCalVideoCalibrationManager::CalibrationPatterns NiftyCalVideoCalibrationManager::DefaultCalibrationPattern(NiftyCalVideoCalibrationManager::CHESSBOARD);
+const NiftyCalVideoCalibrationManager::HandEyeMethod       NiftyCalVideoCalibrationManager::DefaultHandEyeMethod(NiftyCalVideoCalibrationManager::TSAI);
+
 //-----------------------------------------------------------------------------
 NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 : m_DataStorage(nullptr)
 , m_LeftImageNode(nullptr)
 , m_RightImageNode(nullptr)
 , m_TrackingTransformNode(nullptr)
-, m_MinimumNumberOfSnapshotsForCalibrating(3)
+, m_DoIterative(NiftyCalVideoCalibrationManager::DefaultDoIterative)
+, m_MinimumNumberOfSnapshotsForCalibrating(NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating)
+, m_ScaleFactorX(NiftyCalVideoCalibrationManager::DefaultScaleFactorX)
+, m_ScaleFactorY(NiftyCalVideoCalibrationManager::DefaultScaleFactorY)
+, m_GridSizeX(NiftyCalVideoCalibrationManager::DefaultGridSizeX)
+, m_GridSizeY(NiftyCalVideoCalibrationManager::DefaultGridSizeY)
+, m_CalibrationPattern(NiftyCalVideoCalibrationManager::DefaultCalibrationPattern)
+, m_HandeyeMethod(NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)
+, m_TagFamily(NiftyCalVideoCalibrationManager::DefaultTagFamily)
 {
 }
 

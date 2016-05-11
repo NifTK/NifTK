@@ -52,6 +52,16 @@ public:
     MALTI
   };
 
+  const static bool                DefaultDoIterative;
+  const static unsigned int        DefaultMinimumNumberOfSnapshotsForCalibrating;
+  const static double              DefaultScaleFactorX;
+  const static double              DefaultScaleFactorY;
+  const static int                 DefaultGridSizeX;
+  const static int                 DefaultGridSizeY;
+  const static CalibrationPatterns DefaultCalibrationPattern;
+  const static HandEyeMethod       DefaultHandEyeMethod;
+  const static std::string         DefaultTagFamily;
+
   mitkClassMacroItkParent(NiftyCalVideoCalibrationManager, itk::Object);
   itkNewMacro(NiftyCalVideoCalibrationManager);
 
@@ -65,7 +75,6 @@ public:
 
   itkSetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
   itkGetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
-
 
   itkSetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
   itkGetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
@@ -143,10 +152,10 @@ private:
   mitk::DataNode::Pointer    m_LeftImageNode;
   mitk::DataNode::Pointer    m_RightImageNode;
   mitk::DataNode::Pointer    m_TrackingTransformNode;
-  unsigned int               m_MinimumNumberOfSnapshotsForCalibrating;
 
   // Data from preferences
   bool                       m_DoIterative;
+  unsigned int               m_MinimumNumberOfSnapshotsForCalibrating;
   std::string                m_3DModelFileName;
   double                     m_ScaleFactorX;
   double                     m_ScaleFactorY;
