@@ -72,10 +72,17 @@ signals:
 
 protected:
 
-  /**
-   * \see mitk::ILifecycleAwarePart::PartActivated
-   */
+  /// \see mitk::ILifecycleAwarePart::PartActivated
   virtual void Activated() override;
+
+  /// \see mitk::ILifecycleAwarePart::PartDeactivated
+  virtual void Deactivated() override;
+
+  /// \see mitk::ILifecycleAwarePart::PartVisible
+  virtual void Visible() override;
+
+  /// \see mitk::ILifecycleAwarePart::PartHidden
+  virtual void Hidden() override;
 
   /// \brief Creates the GUI parts.
   virtual void CreateQtPartControl(QWidget* parent) override;

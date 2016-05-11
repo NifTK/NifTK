@@ -52,12 +52,6 @@ public:
 
 protected:
 
-  /// \see mitk::ILifecycleAwarePart::PartVisible
-  virtual void Visible() override;
-
-  /// \see mitk::ILifecycleAwarePart::PartHidden
-  virtual void Hidden() override;
-
   /// \brief Creates the general segmentor controller that realises the GUI logic behind the view.
   virtual niftkBaseSegmentorController* CreateSegmentorController() override;
 

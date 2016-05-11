@@ -60,24 +60,6 @@ QString niftkGeneralSegmentorView::GetPreferencesNodeName()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::Visible()
-{
-  niftkBaseSegmentorView::Visible();
-
-  m_GeneralSegmentorController->OnViewGetsVisible();
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::Hidden()
-{
-  niftkBaseSegmentorView::Hidden();
-
-  m_GeneralSegmentorController->OnViewGetsHidden();
-}
-
-
-//-----------------------------------------------------------------------------
 std::string niftkGeneralSegmentorView::GetViewID() const
 {
   return VIEW_ID;

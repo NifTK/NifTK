@@ -44,7 +44,37 @@ void niftkBaseSegmentorView::Activated()
   QmitkBaseView::Activated();
 
   assert(m_SegmentorController);
-  m_SegmentorController->OnDataManagerSelectionChanged(this->GetDataManagerSelection());
+  m_SegmentorController->OnViewGetsActivated();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorView::Deactivated()
+{
+  QmitkBaseView::Deactivated();
+
+  assert(m_SegmentorController);
+  m_SegmentorController->OnViewGetsDeactivated();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorView::Visible()
+{
+  QmitkBaseView::Visible();
+
+  assert(m_SegmentorController);
+  m_SegmentorController->OnViewGetsVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorView::Hidden()
+{
+  QmitkBaseView::Hidden();
+
+  assert(m_SegmentorController);
+  m_SegmentorController->OnViewGetsHidden();
 }
 
 

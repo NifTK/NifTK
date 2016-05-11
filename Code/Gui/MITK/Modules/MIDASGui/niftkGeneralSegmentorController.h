@@ -266,9 +266,9 @@ protected slots:
 
 private:
 
-  void OnViewGetsVisible();
+  virtual void OnViewGetsVisible() override;
 
-  void OnViewGetsHidden();
+  virtual void OnViewGetsHidden() override;
 
   /// \brief If the user hits the close icon, it is equivalent to a Cancel,
   /// and the segmentation is destroyed without warning.

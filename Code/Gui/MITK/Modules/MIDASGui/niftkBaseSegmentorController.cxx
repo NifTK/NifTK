@@ -531,6 +531,31 @@ void niftkBaseSegmentorController::SetToolManagerSelection(const mitk::DataNode*
 
 
 //-----------------------------------------------------------------------------
+void niftkBaseSegmentorController::OnViewGetsActivated()
+{
+  this->OnDataManagerSelectionChanged(this->GetDataManagerSelection());
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorController::OnViewGetsDeactivated()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorController::OnViewGetsVisible()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void niftkBaseSegmentorController::OnViewGetsHidden()
+{
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkBaseSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* node)
 {
 }

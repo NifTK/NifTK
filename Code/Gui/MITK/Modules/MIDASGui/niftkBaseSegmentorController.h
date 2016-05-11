@@ -70,6 +70,11 @@ public:
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   void SetDefaultSegmentationColour(const QColor& defaultSegmentationColour);
 
+  virtual void OnViewGetsActivated();
+  virtual void OnViewGetsDeactivated();
+  virtual void OnViewGetsVisible();
+  virtual void OnViewGetsHidden();
+
   virtual void OnNodeVisibilityChanged(const mitk::DataNode* node);
 
   /// \brief This controller registers with the mitk::DataStorage and listens for changing
