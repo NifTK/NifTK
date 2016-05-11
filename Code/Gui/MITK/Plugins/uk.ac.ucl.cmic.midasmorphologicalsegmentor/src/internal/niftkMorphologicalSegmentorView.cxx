@@ -25,15 +25,15 @@
 #include <mitkImageCast.h>
 #include <mitkITKImageImport.h>
 
-#include <niftkMIDASImageUtils.h>
-#include <niftkMIDASOrientationUtils.h>
+#include <niftkImageUtils.h>
+#include <niftkImageOrientationUtils.h>
 
 #include <itkConversionUtils.h>
 #include <mitkITKRegionParametersDataNodeProperty.h>
 #include <niftkMIDASTool.h>
 #include <niftkMIDASPaintbrushTool.h>
 
-#include <niftkMIDASOrientationUtils.h>
+#include <niftkImageOrientationUtils.h>
 
 #include <niftkMorphologicalSegmentorController.h>
 

@@ -31,7 +31,7 @@
 #include <mitkGlobalInteraction.h>
 
 #include <mitkNifTKCoreObjectFactory.h>
-#include <niftkMIDASImageUtils.h>
+#include <niftkImageUtils.h>
 #include <niftkMIDASDataNodeNameStringFilter.h>
 #include <mitkDataNodeAddedVisibilitySetter.h>
 #include <niftkMIDASTool.h>

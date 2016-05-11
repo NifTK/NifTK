@@ -28,7 +28,7 @@
 
 // Qmitk for Qt/MITK stuff.
 #include <QmitkBaseView.h>
-#include <niftkMIDASOrientationUtils.h>
+#include <niftkImageOrientationUtils.h>
 
 // Miscellaneous.
 #include <mitkToolManager.h>
@@ -99,10 +99,10 @@ protected:
   int GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
 
   /// \brief Retrieves the currently active QmitkRenderWindow, and if it has a 2D mapper will return the current orientation of the view, returning ORIENTATION_UNKNOWN if it can't be found or the view is a 3D view for instance.
-  MIDASOrientation GetOrientationAsEnum();
+  niftk::ImageOrientation GetOrientationAsEnum();
 
   /// \brief Looks up the ReferenceImage registered with ToolManager and returns the axis [0,1,2] that corresponds to the given orientation, or -1 if it can't be found.
-  int GetAxisFromReferenceImage(const MIDASOrientation& orientation);
+  int GetAxisFromReferenceImage(niftk::ImageOrientation orientation);
 
   /// \brief Returns the reference image axial axis [0,1,2] or -1 if it can't be found.
   int GetReferenceImageAxialAxis();

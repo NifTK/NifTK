@@ -27,12 +27,12 @@
 #include <mitkImageAccessByItk.h>
 
 #include <mitkNifTKCoreObjectFactory.h>
-#include <niftkMIDASImageUtils.h>
+#include <niftkImageUtils.h>
 
 /**
- * \brief Test class for niftkMIDASImageUtilsTest.
+ * \brief Test class for niftkImageUtils.
  */
-class niftkMIDASImageUtilsTestClass
+class niftkImageUtilsTestClass
 {
 
 public:
@@ -71,14 +71,14 @@ public:
 };
 
 /**
- * Basic test harness for niftkMIDASImageUtilsTest.
+ * Basic test harness for niftkImageUtilsTest.
  */
-int niftkMIDASImageUtilsTest(int argc, char * argv[])
+int niftkImageUtilsTest(int argc, char * argv[])
 {
   // always start with this!
-  MITK_TEST_BEGIN("niftkMIDASImageUtilsTest");
+  MITK_TEST_BEGIN("niftkImageUtilsTest");
 
-  niftkMIDASImageUtilsTestClass *testClass = new niftkMIDASImageUtilsTestClass();
+  niftkImageUtilsTestClass *testClass = new niftkImageUtilsTestClass();
   testClass->CopyImage(argv[1]);
   delete testClass;
   MITK_TEST_END();

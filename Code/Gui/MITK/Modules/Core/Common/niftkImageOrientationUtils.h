@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASOrientationUtils_h
-#define niftkMIDASOrientationUtils_h
+#ifndef niftkImageOrientationUtils_h
+#define niftkImageOrientationUtils_h
 
 #include "niftkCoreExports.h"
 #include <mitkImage.h>
-#include "niftkMIDASEnums.h"
+#include "niftkImageOrientation.h"
 #include <itkMIDASHelper.h>
 
 /**
- * \file niftkMIDASOrientationUtils.h
+ * \file niftkImageOrientationUtils.h
  * \brief Some utilities to help with MIDAS conventions on orientation.
  */
 namespace niftk {
@@ -29,25 +29,25 @@ namespace niftk {
 /**
  * \brief Converts an MITK orientation enum to an ITK orientation enum, and ideally these types should be merged.
  */
-NIFTKCORE_EXPORT itk::Orientation GetItkOrientation(const MIDASOrientation& orientation);
+NIFTKCORE_EXPORT itk::Orientation GetItkOrientation(ImageOrientation orientation);
 
 
 /*
  * \brief Converts an ITK orientation enum to an MITK orientation enum, and ideally these types should be merged.
  */
-NIFTKCORE_EXPORT MIDASOrientation GetMitkOrientation(const itk::Orientation& orientation);
+NIFTKCORE_EXPORT ImageOrientation GetMitkOrientation(itk::Orientation orientation);
 
 
 /**
  * \brief See GetUpDirection as in effect, we are only using the direction cosines from the geometry.
  */
-NIFTKCORE_EXPORT int GetUpDirection(const mitk::Image* image, const MIDASOrientation& orientation);
+NIFTKCORE_EXPORT int GetUpDirection(const mitk::Image* image, ImageOrientation orientation);
 
 
 /**
  * \brief Returns either +1, or -1 to indicate in which direction you should change the slice number to go "up".
  * \param geometry An MITK geometry, not NULL.
- * \param orientation a MIDASOrientation corresponding to Axial, Coronal or Sagittal.
+ * \param orientation an ImageOrientation corresponding to Axial, Coronal or Sagittal.
  * \return -1 or +1 telling you to either increase of decrease the slice number or 0 for "unknown".
  *
  * So, the MIDAS spec is: Shortcut key A=Up, Z=Down which means:
@@ -64,10 +64,10 @@ NIFTKCORE_EXPORT int GetUpDirection(const mitk::BaseGeometry* geometry, itk::Ori
 /**
  * \brief Returns either -1 (unknown), or [0,1,2] for the x, y, or z axis corresponding to the through plane direction for the specified orientation.
  * \param image An MITK image, not NULL.
- * \param orientation a MIDASOrientation corresponding to Axial, Coronal or Sagittal.
+ * \param orientation an ImageOrientation corresponding to Axial, Coronal or Sagittal.
  * \return -1=unknown, or the axis number [0,1,2].
  */
-NIFTKCORE_EXPORT int GetThroughPlaneAxis(const mitk::Image* image, const MIDASOrientation& orientation);
+NIFTKCORE_EXPORT int GetThroughPlaneAxis(const mitk::Image* image, ImageOrientation orientation);
 
 
 /**
@@ -163,7 +163,7 @@ void GetExtentsInMmInWorldCoordinateOrder(const mitk::Image* mitkImage, mitk::Ve
 }
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "niftkMIDASOrientationUtils.txx"
+#include "niftkImageOrientationUtils.txx"
 #endif
 
 #endif

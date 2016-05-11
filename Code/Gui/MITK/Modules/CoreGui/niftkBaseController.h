@@ -19,7 +19,7 @@
 
 #include <QObject>
 
-#include <niftkMIDASOrientationUtils.h>
+#include <niftkImageOrientationUtils.h>
 
 class QWidget;
 
@@ -71,7 +71,7 @@ protected:
   mitk::SliceNavigationController* GetSliceNavigationController() const;
 
   /// \brief Retrieves the currently active QmitkRenderWindow, and if it has a 2D mapper will return the current orientation of the view, returning ORIENTATION_UNKNOWN if it can't be found or the view is a 3D view for instance.
-  MIDASOrientation GetOrientationAsEnum();
+  ImageOrientation GetImageOrientation();
 
   /// \brief Creates the widget that holds the GUI components of the view.
   /// This function is called from CreateQtPartControl. Derived classes should provide their implementation

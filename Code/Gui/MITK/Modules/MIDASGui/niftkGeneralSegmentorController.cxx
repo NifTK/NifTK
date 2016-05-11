@@ -661,7 +661,7 @@ void niftkGeneralSegmentorController::OnSliceChanged(const itk::EventObject& geo
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnOrientationChanged(MIDASOrientation previousOrientation, MIDASOrientation nextOrientation)
+void niftkGeneralSegmentorController::OnOrientationChanged(niftk::ImageOrientation previousOrientation, niftk::ImageOrientation nextOrientation)
 {
 }
 
@@ -697,7 +697,7 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int previousSliceNumb
     if (segmentationNode.IsNotNull() && segmentationImage.IsNotNull())
     {
       int axisNumber = this->GetViewAxis();
-      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
+      niftk::ImageOrientation tmpOrientation = this->GetImageOrientation();
       itk::Orientation orientation = niftk::GetItkOrientation(tmpOrientation);
 
       mitk::ToolManager *toolManager = this->GetToolManager();
@@ -1041,10 +1041,10 @@ void niftkGeneralSegmentorController::InitialiseSeedsForWholeVolume()
     return;
   }
 
-  MIDASOrientation orientation = this->GetOrientationAsEnum();
-  if (orientation == MIDAS_ORIENTATION_UNKNOWN)
+  niftk::ImageOrientation orientation = this->GetImageOrientation();
+  if (orientation == niftk::IMAGE_ORIENTATION_UNKNOWN)
   {
-    orientation = MIDAS_ORIENTATION_CORONAL;
+    orientation = niftk::IMAGE_ORIENTATION_CORONAL;
   }
 
   int axis = this->GetAxisFromReferenceImage(orientation);
@@ -2010,8 +2010,8 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     return;
   }
 
-  MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
-  itk::Orientation orientation = niftk::GetItkOrientation(midasOrientation);
+  niftk::ImageOrientation imageOrientation = this->GetImageOrientation();
+  itk::Orientation orientation = niftk::GetItkOrientation(imageOrientation);
 
   QString message;
 
@@ -2026,15 +2026,15 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
 
     if (isUp)
     {
-      if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
+      if (imageOrientation == niftk::IMAGE_ORIENTATION_AXIAL)
       {
         orientationText = "superior to";
       }
-      else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
+      else if (imageOrientation == niftk::IMAGE_ORIENTATION_SAGITTAL)
       {
         orientationText = "right of";
       }
-      else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
+      else if (imageOrientation == niftk::IMAGE_ORIENTATION_CORONAL)
       {
         orientationText = "anterior to";
       }
@@ -2045,15 +2045,15 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     }
     else if (!isUp)
     {
-      if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
+      if (imageOrientation == niftk::IMAGE_ORIENTATION_AXIAL)
       {
         orientationText = "inferior to";
       }
-      else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
+      else if (imageOrientation == niftk::IMAGE_ORIENTATION_SAGITTAL)
       {
         orientationText = "left of";
       }
-      else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
+      else if (imageOrientation == niftk::IMAGE_ORIENTATION_CORONAL)
       {
         orientationText = "posterior to";
       }
@@ -2201,20 +2201,20 @@ void niftkGeneralSegmentorController::OnWipeButtonClicked()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorController::OnWipePlusButtonClicked()
 {
-  MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
+  niftk::ImageOrientation imageOrientation = this->GetImageOrientation();
 
   QString orientationText;
   QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
 
-  if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
+  if (imageOrientation == niftk::IMAGE_ORIENTATION_AXIAL)
   {
     orientationText = "superior to";
   }
-  else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
+  else if (imageOrientation == niftk::IMAGE_ORIENTATION_SAGITTAL)
   {
     orientationText = "right of";
   }
-  else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
+  else if (imageOrientation == niftk::IMAGE_ORIENTATION_CORONAL)
   {
     orientationText = "anterior to";
   }
@@ -2238,20 +2238,20 @@ void niftkGeneralSegmentorController::OnWipePlusButtonClicked()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorController::OnWipeMinusButtonClicked()
 {
-  MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
+  niftk::ImageOrientation imageOrientation = this->GetImageOrientation();
 
   QString orientationText;
   QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
 
-  if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
+  if (imageOrientation == niftk::IMAGE_ORIENTATION_AXIAL)
   {
     orientationText = "inferior to";
   }
-  else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
+  else if (imageOrientation == niftk::IMAGE_ORIENTATION_SAGITTAL)
   {
     orientationText = "left of";
   }
-  else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
+  else if (imageOrientation == niftk::IMAGE_ORIENTATION_CORONAL)
   {
     orientationText = "posterior to";
   }

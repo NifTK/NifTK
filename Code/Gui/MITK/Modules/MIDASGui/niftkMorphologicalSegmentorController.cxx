@@ -335,8 +335,8 @@ void niftkMorphologicalSegmentorController::OnThresholdingValuesChanged(double l
   mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceImageNode->GetData());
   mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
-  int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
-  int axialUpDirection = niftk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
+  int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, niftk::IMAGE_ORIENTATION_AXIAL);
+  int axialUpDirection = niftk::GetUpDirection(referenceImage, niftk::IMAGE_ORIENTATION_AXIAL);
 
   mitk::Plane* axialCutOffPlane = this->GetDataStorage()->GetNamedDerivedObject<mitk::Plane>("Axial cut-off plane", segmentationNode);
 
@@ -486,7 +486,7 @@ void niftkMorphologicalSegmentorController::OnRestartButtonClicked()
 
       mitk::Plane* axialCutOffPlane = this->GetDataStorage()->GetNamedDerivedObject<mitk::Plane>("Axial cut-off plane", segmentationNode);
 
-      int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
+      int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, niftk::IMAGE_ORIENTATION_AXIAL);
 
       // The centre of the plane is the same as the centre of the image, but it is shifted
       // along the axial axis to a position determined by axialSliceNumber.
@@ -614,13 +614,13 @@ mitk::DataNode::Pointer niftkMorphologicalSegmentorController::CreateAxialCutOff
 {
   mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
-  int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
-  int sagittalAxis = niftk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_SAGITTAL);
-  int coronalAxis = niftk::GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_CORONAL);
+  int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, niftk::IMAGE_ORIENTATION_AXIAL);
+  int sagittalAxis = niftk::GetThroughPlaneAxis(referenceImage, niftk::IMAGE_ORIENTATION_SAGITTAL);
+  int coronalAxis = niftk::GetThroughPlaneAxis(referenceImage, niftk::IMAGE_ORIENTATION_CORONAL);
 
-  int axialUpDirection = niftk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
-  int sagittalUpDirection = niftk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_SAGITTAL);
-  int coronalUpDirection = niftk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_CORONAL);
+  int axialUpDirection = niftk::GetUpDirection(referenceImage, niftk::IMAGE_ORIENTATION_AXIAL);
+  int sagittalUpDirection = niftk::GetUpDirection(referenceImage, niftk::IMAGE_ORIENTATION_SAGITTAL);
+  int coronalUpDirection = niftk::GetUpDirection(referenceImage, niftk::IMAGE_ORIENTATION_CORONAL);
 
   /// The centre of the plane is the same as the centre of the image, but it is shifted
   /// along the axial axis to a position determined by axialSliceNumber.
@@ -679,7 +679,7 @@ void niftkMorphologicalSegmentorController::SetControlsFromReferenceImage()
   {
     int axialAxis = this->GetReferenceImageAxialAxis();
     int numberOfAxialSlices = referenceImage->GetDimension(axialAxis);
-    int upDirection = niftk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
+    int upDirection = niftk::GetUpDirection(referenceImage, niftk::IMAGE_ORIENTATION_AXIAL);
 
     m_MorphologicalSegmentorGUI->SetControlsByReferenceImage(
         referenceImage->GetStatistics()->GetScalarValueMin(),

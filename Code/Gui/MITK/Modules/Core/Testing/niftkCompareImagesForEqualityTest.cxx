@@ -27,12 +27,12 @@
 #include <mitkImageAccessByItk.h>
 
 #include <mitkNifTKCoreObjectFactory.h>
-#include <niftkMIDASImageUtils.h>
+#include <niftkImageUtils.h>
 
 /**
- * \brief Test class for niftkMIDASCompareImagesForEqualityTest.
+ * \brief Test class for niftkCompareImagesForEqualityTest.
  */
-class niftkMIDASCompareImagesForEqualityTestClass
+class niftkCompareImagesForEqualityTestClass
 {
 
 public:
@@ -77,12 +77,12 @@ public:
 /**
  * \brief Basic test harness to make sure we load DRC Analyze the same as Nifti.
  */
-int niftkMIDASCompareImagesForEqualityTest(int argc, char * argv[])
+int niftkCompareImagesForEqualityTest(int argc, char * argv[])
 {
   // always start with this!
-  MITK_TEST_BEGIN("niftkMIDASCompareImagesForEqualityTest");
+  MITK_TEST_BEGIN("niftkCompareImagesForEqualityTest");
 
-  niftkMIDASCompareImagesForEqualityTestClass::TestEquality(argv);
+  niftkCompareImagesForEqualityTestClass::TestEquality(argv);
 
   MITK_TEST_END();
 }

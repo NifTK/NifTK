@@ -25,7 +25,7 @@
 
 #include <niftkBaseController.h>
 #include <niftkMIDASEventFilter.h>
-#include <niftkMIDASOrientationUtils.h>
+#include <niftkImageOrientationUtils.h>
 
 class QWidget;
 
@@ -129,7 +129,7 @@ protected:
   int GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
 
   /// \brief Looks up the ReferenceImage registered with ToolManager and returns the axis [0,1,2] that corresponds to the given orientation, or -1 if it can't be found.
-  int GetAxisFromReferenceImage(const MIDASOrientation& orientation);
+  int GetAxisFromReferenceImage(niftk::ImageOrientation orientation);
 
   /// \brief Returns the reference image axial axis [0,1,2] or -1 if it can't be found.
   int GetReferenceImageAxialAxis();

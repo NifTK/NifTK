@@ -25,14 +25,14 @@
 #include <mitkStandaloneDataStorage.h>
 #include <mitkDataNode.h>
 
-#include <niftkMIDASEnums.h>
-#include <niftkMIDASImageUtils.h>
+#include <niftkImageOrientation.h>
+#include <niftkImageUtils.h>
 #include <mitkNifTKCoreObjectFactory.h>
 
 /**
- * \brief Test class for niftkMIDASImageUtils.
+ * \brief Test class for niftkImageUtils.
  */
-class niftkMIDASAsAcquiredOrientationTestClass
+class niftkAsAcquiredOrientationTestClass
 {
 
 public:
@@ -42,7 +42,7 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestAsAcquired...");
 
-    // Assume zero arg is program name, first argument is image name, second argument is integer matching enum MIDASOrientation
+    // Assume zero arg is program name, first argument is image name, second argument is integer matching enum ImageOrientation
     MITK_TEST_OUTPUT(<< "TestAsAcquired...argv[1]=" << argv[1] << ", argv[2]=" << argv[2] << ", argv[3]=" << argv[3]);
 
     std::string fileName = argv[1];
@@ -61,26 +61,26 @@ public:
     bool isImage = niftk::IsImage(node);
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(isImage, true),".. Testing IsImage=true");
 
-    MIDASOrientation orientation = niftk::GetAsAcquiredOrientation(MIDASOrientation(defaultOrientation), dynamic_cast<mitk::Image*>(node->GetData()));
-    MITK_TEST_OUTPUT(<< "MIDASOrientation default=" << defaultOrientation);
-    MITK_TEST_OUTPUT(<< "MIDASOrientation output=" << orientation);
-    MITK_TEST_OUTPUT(<< "MIDASOrientation expected=" << expectedOrientation);
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(orientation, (MIDASOrientation)expectedOrientation),".. Testing expected orientation");
+    niftk::ImageOrientation orientation = niftk::GetAsAcquiredOrientation(niftk::ImageOrientation(defaultOrientation), dynamic_cast<mitk::Image*>(node->GetData()));
+    MITK_TEST_OUTPUT(<< "ImageOrientation default=" << defaultOrientation);
+    MITK_TEST_OUTPUT(<< "ImageOrientation output=" << orientation);
+    MITK_TEST_OUTPUT(<< "ImageOrientation expected=" << expectedOrientation);
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(orientation, (niftk::ImageOrientation)expectedOrientation),".. Testing expected orientation");
 
     MITK_TEST_OUTPUT(<< "Finished TestAsAcquired...");
   }
 };
 
 /**
- * \brief Basic test harness for a variety of classes, mainly niftkMIDASImageUtils
+ * \brief Basic test harness for a variety of classes, mainly niftkImageUtils
  * that works out the orientation of the XY plane.
  */
-int niftkMIDASAsAcquiredOrientationTest(int argc, char * argv[])
+int niftkAsAcquiredOrientationTest(int argc, char * argv[])
 {
   // always start with this!
-  MITK_TEST_BEGIN("niftkMIDASAsAcquiredOrientationTest");
+  MITK_TEST_BEGIN("niftkAsAcquiredOrientationTest");
 
-  niftkMIDASAsAcquiredOrientationTestClass::TestAsAcquired(argv);
+  niftkAsAcquiredOrientationTestClass::TestAsAcquired(argv);
 
   MITK_TEST_END();
 }

@@ -18,7 +18,7 @@
 /*!
  * \enum WindowOrientation
  * \brief Describes the different types of orientation, axial, sagittal, coronal,
- * that can be achieved in the MIDAS style Display window. This is different from
+ * that can be achieved in the Drag&Drop Display windows. This is different from
  * the WindowLayout. The orientation might be used to refer to the axis of an image,
  * so an image can ONLY be sampled in AXIAL, SAGITTAL and CORONAL direction.
  */

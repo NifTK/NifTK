@@ -25,15 +25,15 @@
 #include <mitkStandaloneDataStorage.h>
 #include <mitkDataNode.h>
 
-#include <niftkMIDASEnums.h>
-#include <niftkMIDASImageUtils.h>
-#include <niftkMIDASOrientationUtils.h>
+#include <niftkImageOrientation.h>
+#include <niftkImageUtils.h>
+#include <niftkImageOrientationUtils.h>
 #include <mitkNifTKCoreObjectFactory.h>
 
 /**
- * \brief Test class for niftkMIDASOrientationUtilsTest.
+ * \brief Test class for niftkImageOrientationUtilsTest.
  */
-class niftkMIDASOrientationUtilsTestClass
+class niftkImageOrientationUtilsTestClass
 {
 
 public:
@@ -64,11 +64,11 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestMitkToItk...");
 
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetItkOrientation(MIDAS_ORIENTATION_AXIAL),    itk::ORIENTATION_AXIAL),   ".. Testing axial.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetItkOrientation(MIDAS_ORIENTATION_SAGITTAL), itk::ORIENTATION_SAGITTAL),".. Testing sagittal.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetItkOrientation(MIDAS_ORIENTATION_CORONAL),  itk::ORIENTATION_CORONAL), ".. Testing coronal.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetItkOrientation(MIDAS_ORIENTATION_UNKNOWN),  itk::ORIENTATION_UNKNOWN), ".. Testing unknown.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetItkOrientation((MIDASOrientation)999),      itk::ORIENTATION_UNKNOWN), ".. Testing garbage.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetItkOrientation(niftk::IMAGE_ORIENTATION_AXIAL),    itk::ORIENTATION_AXIAL),   ".. Testing axial.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetItkOrientation(niftk::IMAGE_ORIENTATION_SAGITTAL), itk::ORIENTATION_SAGITTAL),".. Testing sagittal.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetItkOrientation(niftk::IMAGE_ORIENTATION_CORONAL),  itk::ORIENTATION_CORONAL), ".. Testing coronal.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetItkOrientation(niftk::IMAGE_ORIENTATION_UNKNOWN),  itk::ORIENTATION_UNKNOWN), ".. Testing unknown.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetItkOrientation((niftk::ImageOrientation)999),      itk::ORIENTATION_UNKNOWN), ".. Testing garbage.");
 
     MITK_TEST_OUTPUT(<< "Finished TestMitkToItk...");
   }
@@ -79,11 +79,11 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TesttItkToMitk...");
 
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation(itk::ORIENTATION_AXIAL),     MIDAS_ORIENTATION_AXIAL),   ".. Testing axial.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation(itk::ORIENTATION_SAGITTAL),  MIDAS_ORIENTATION_SAGITTAL),".. Testing sagittal.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation(itk::ORIENTATION_CORONAL),   MIDAS_ORIENTATION_CORONAL), ".. Testing coronal.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation(itk::ORIENTATION_UNKNOWN),   MIDAS_ORIENTATION_UNKNOWN), ".. Testing unknown.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation((itk::Orientation)999), MIDAS_ORIENTATION_UNKNOWN), ".. Testing garbage.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation(itk::ORIENTATION_AXIAL),     niftk::IMAGE_ORIENTATION_AXIAL),   ".. Testing axial.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation(itk::ORIENTATION_SAGITTAL),  niftk::IMAGE_ORIENTATION_SAGITTAL),".. Testing sagittal.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation(itk::ORIENTATION_CORONAL),   niftk::IMAGE_ORIENTATION_CORONAL), ".. Testing coronal.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation(itk::ORIENTATION_UNKNOWN),   niftk::IMAGE_ORIENTATION_UNKNOWN), ".. Testing unknown.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation((itk::Orientation)999), niftk::IMAGE_ORIENTATION_UNKNOWN), ".. Testing garbage.");
 
     MITK_TEST_OUTPUT(<< "Finished TesttItkToMitk...");
   }
@@ -105,14 +105,14 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestGetUpDirection...");
 
-    int testAx = niftk::GetUpDirection(m_Image, MIDAS_ORIENTATION_AXIAL);
-    int testSa = niftk::GetUpDirection(m_Image, MIDAS_ORIENTATION_SAGITTAL);
-    int testCo = niftk::GetUpDirection(m_Image, MIDAS_ORIENTATION_CORONAL);
+    int testAx = niftk::GetUpDirection(m_Image, niftk::IMAGE_ORIENTATION_AXIAL);
+    int testSa = niftk::GetUpDirection(m_Image, niftk::IMAGE_ORIENTATION_SAGITTAL);
+    int testCo = niftk::GetUpDirection(m_Image, niftk::IMAGE_ORIENTATION_CORONAL);
 
     MITK_TEST_CONDITION_REQUIRED(testAx == upAx,     ".. Testing axial, up=superior=" << upAx << ", but got " << testAx);
     MITK_TEST_CONDITION_REQUIRED(testSa == upSa, ".. Testing sagittal, up=right=" << upSa << ", but got " << testSa);
     MITK_TEST_CONDITION_REQUIRED(testCo == upCo,   ".. Testing coronal, up=anterior=" << upCo << ", but got " << testCo);
-    MITK_TEST_CONDITION_REQUIRED(niftk::GetUpDirection(m_Image, MIDAS_ORIENTATION_UNKNOWN) == 0,   ".. Testing unknown=0");
+    MITK_TEST_CONDITION_REQUIRED(niftk::GetUpDirection(m_Image, niftk::IMAGE_ORIENTATION_UNKNOWN) == 0,   ".. Testing unknown=0");
 
     MITK_TEST_OUTPUT(<< "Finished TestGetUpDirection...");
   }
@@ -123,14 +123,14 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestGetThroughPlaneAxis...");
 
-    int testAx = niftk::GetThroughPlaneAxis(m_Image, MIDAS_ORIENTATION_AXIAL);
-    int testSa = niftk::GetThroughPlaneAxis(m_Image, MIDAS_ORIENTATION_SAGITTAL);
-    int testCo = niftk::GetThroughPlaneAxis(m_Image, MIDAS_ORIENTATION_CORONAL);
+    int testAx = niftk::GetThroughPlaneAxis(m_Image, niftk::IMAGE_ORIENTATION_AXIAL);
+    int testSa = niftk::GetThroughPlaneAxis(m_Image, niftk::IMAGE_ORIENTATION_SAGITTAL);
+    int testCo = niftk::GetThroughPlaneAxis(m_Image, niftk::IMAGE_ORIENTATION_CORONAL);
 
     MITK_TEST_CONDITION_REQUIRED(testAx == axAx,     ".. Testing axial==" << axAx << ", but got " << testAx);
     MITK_TEST_CONDITION_REQUIRED(testSa == axSa, ".. Testing sagittal==" << axSa << ", but got " << testSa);
     MITK_TEST_CONDITION_REQUIRED(testCo == axCo,   ".. Testing coronal==" << axCo << ", but got " << testCo);
-    MITK_TEST_CONDITION_REQUIRED(niftk::GetThroughPlaneAxis(m_Image, MIDAS_ORIENTATION_UNKNOWN) == -1,   ".. Testing unknown==-1");
+    MITK_TEST_CONDITION_REQUIRED(niftk::GetThroughPlaneAxis(m_Image, niftk::IMAGE_ORIENTATION_UNKNOWN) == -1,   ".. Testing unknown==-1");
 
     MITK_TEST_OUTPUT(<< "Finished TestGetThroughPlaneAxis...");
   }
@@ -141,9 +141,9 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestImageUpIsSameAsGeometryUp...");
 
-    int imUpAx = niftk::GetUpDirection(m_Image, MIDAS_ORIENTATION_AXIAL);
-    int imUpSa = niftk::GetUpDirection(m_Image, MIDAS_ORIENTATION_SAGITTAL);
-    int imUpCo = niftk::GetUpDirection(m_Image, MIDAS_ORIENTATION_CORONAL);
+    int imUpAx = niftk::GetUpDirection(m_Image, niftk::IMAGE_ORIENTATION_AXIAL);
+    int imUpSa = niftk::GetUpDirection(m_Image, niftk::IMAGE_ORIENTATION_SAGITTAL);
+    int imUpCo = niftk::GetUpDirection(m_Image, niftk::IMAGE_ORIENTATION_CORONAL);
 
     int geomUpAx = niftk::GetUpDirection(m_Image->GetGeometry(), itk::ORIENTATION_AXIAL);
     int geomUpSa = niftk::GetUpDirection(m_Image->GetGeometry(), itk::ORIENTATION_SAGITTAL);
@@ -159,14 +159,14 @@ public:
 };
 
 /**
- * \brief Basic test harness for niftkMIDASOrientationUtils.
+ * \brief Basic test harness for niftkImageOrientationUtils.
  */
-int niftkMIDASOrientationUtilsTest(int argc, char * argv[])
+int niftkImageOrientationUtilsTest(int argc, char * argv[])
 {
   // always start with this!
-  MITK_TEST_BEGIN("niftkMIDASOrientationUtilsTest");
+  MITK_TEST_BEGIN("niftkImageOrientationUtilsTest");
 
-  niftkMIDASOrientationUtilsTestClass* testClass = new niftkMIDASOrientationUtilsTestClass();
+  niftkImageOrientationUtilsTestClass* testClass = new niftkImageOrientationUtilsTestClass();
 
   std::string orientationString = argv[2];
   int upAx = atoi(argv[3]);

@@ -16,7 +16,7 @@
 #include <itkImageFileWriter.h>
 #include <itkImageRegionIterator.h>
 
-#include <niftkMIDASOrientationUtils.h>
+#include <niftkImageOrientationUtils.h>
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>

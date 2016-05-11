@@ -24,8 +24,8 @@
 #include <mitkITKRegionParametersDataNodeProperty.h>
 #include <niftkMIDASPaintbrushTool.h>
 #include <niftkMIDASTool.h>
-#include <niftkMIDASImageUtils.h>
-#include <niftkMIDASOrientationUtils.h>
+#include <niftkImageUtils.h>
+#include <niftkImageOrientationUtils.h>
 
 #include <itkImageDuplicator.h>
 
@@ -384,10 +384,10 @@ void MorphologicalSegmentorPipelineManager::SetSegmentationNodePropsFromReferenc
   if(referenceImage.IsNotNull() && segmentationNode.IsNotNull())
   {
     int thresholdingSlice = 0;
-    int upDirection = niftk::GetUpDirection(referenceImage, MIDAS_ORIENTATION_AXIAL);
+    int upDirection = niftk::GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
     if (upDirection == -1)
     {
-      int axialAxis = GetThroughPlaneAxis(referenceImage, MIDAS_ORIENTATION_AXIAL);
+      int axialAxis = GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
       thresholdingSlice = referenceImage->GetDimension(axialAxis) - 1;
     }
 

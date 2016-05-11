@@ -175,7 +175,7 @@ void NIFTKMIDAS_EXPORT ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds
 /// @spacing have to be the spacing along the sagittal, coronal then axial axis, in this order. ITK images and MITK
 /// geometries store the spacing in voxel coordinate order.
 ///
-/// You can translate between the two coordinate systems with the utility functions in niftkMIDASOrientationUtils.h.
+/// You can translate between the two coordinate systems with the utility functions in niftkImageOrientationUtils.h.
 ///
 void NIFTKMIDAS_EXPORT ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet* mitkContours, ParametricPathVectorType& itkContours, const mitk::Vector3D& spacing);
 

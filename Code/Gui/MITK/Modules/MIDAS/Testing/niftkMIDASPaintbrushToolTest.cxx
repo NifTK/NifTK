@@ -38,7 +38,7 @@
 #include <mitkNifTKCoreObjectFactory.h>
 #include <niftkMIDASTool.h>
 #include <niftkMIDASPaintbrushTool.h>
-#include <niftkMIDASImageUtils.h>
+#include <niftkImageUtils.h>
 #include <mitkITKRegionParametersDataNodeProperty.h>
 
 /**

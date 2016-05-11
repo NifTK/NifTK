@@ -39,7 +39,7 @@
 #include <niftkMIDASDrawTool.h>
 #include <niftkMIDASPolyTool.h>
 #include <niftkMIDASSeedTool.h>
-#include <niftkMIDASOrientationUtils.h>
+#include <niftkImageOrientationUtils.h>
 
 const QString niftkBaseSegmentorView::DEFAULT_COLOUR("midas editor default colour");
 const QString niftkBaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
@@ -204,14 +204,14 @@ int niftkBaseSegmentorView::GetSliceNumberFromSliceNavigationControllerAndRefere
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation niftkBaseSegmentorView::GetOrientationAsEnum()
+niftk::ImageOrientation niftkBaseSegmentorView::GetOrientationAsEnum()
 {
-  return m_SegmentorController->GetOrientationAsEnum();
+  return m_SegmentorController->GetImageOrientation();
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkBaseSegmentorView::GetAxisFromReferenceImage(const MIDASOrientation& orientation)
+int niftkBaseSegmentorView::GetAxisFromReferenceImage(niftk::ImageOrientation orientation)
 {
   return m_SegmentorController->GetAxisFromReferenceImage(orientation);
 }

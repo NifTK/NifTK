@@ -32,9 +32,9 @@ class BaseRenderer;
  *
  * If the tracked renderer is set to 0, only the global visibility is observed.
  *
- * This finds use in the Thumbnail window plugin, which tracks visibility properties, and applies
- * them to a single render window, and also the MIDAS Segmentation Viewer widget which tracks
- * visibility properties, and applies them to another viewer.
+ * This finds use in the Thumbnail viewer plugin, which tracks visibility properties, and applies
+ * them to a single render window, and also in the Side Viewer which tracks visibility properties,
+ * and applies them to another viewer.
  */
 class NIFTKCORE_EXPORT DataNodeVisibilityTracker : public mitk::DataNodePropertyListener
 {

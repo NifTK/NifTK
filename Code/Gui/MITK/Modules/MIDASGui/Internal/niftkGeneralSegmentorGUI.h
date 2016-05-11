@@ -21,7 +21,7 @@
 
 /**
  * \class niftkGeneralSegmentorGUI
- * \brief Implements the Qt/Widget specific functionality pertaining to the MIDAS General Segmentor View.
+ * \brief Implements the Qt/Widget specific functionality pertaining to the General Segmentor View.
  */
 class niftkGeneralSegmentorGUI
   : public niftkBaseSegmentorGUI,

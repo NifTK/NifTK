@@ -293,7 +293,7 @@ int niftkBaseSegmentorController::GetSliceNumberFromSliceNavigationControllerAnd
 
 
 //-----------------------------------------------------------------------------
-int niftkBaseSegmentorController::GetAxisFromReferenceImage(const MIDASOrientation& orientation)
+int niftkBaseSegmentorController::GetAxisFromReferenceImage(niftk::ImageOrientation orientation)
 {
   int axis = -1;
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
@@ -308,21 +308,21 @@ int niftkBaseSegmentorController::GetAxisFromReferenceImage(const MIDASOrientati
 //-----------------------------------------------------------------------------
 int niftkBaseSegmentorController::GetReferenceImageAxialAxis()
 {
-  return this->GetAxisFromReferenceImage(MIDAS_ORIENTATION_AXIAL);
+  return this->GetAxisFromReferenceImage(niftk::IMAGE_ORIENTATION_AXIAL);
 }
 
 
 //-----------------------------------------------------------------------------
 int niftkBaseSegmentorController::GetReferenceImageCoronalAxis()
 {
-  return this->GetAxisFromReferenceImage(MIDAS_ORIENTATION_CORONAL);
+  return this->GetAxisFromReferenceImage(niftk::IMAGE_ORIENTATION_CORONAL);
 }
 
 
 //-----------------------------------------------------------------------------
 int niftkBaseSegmentorController::GetReferenceImageSagittalAxis()
 {
-  return this->GetAxisFromReferenceImage(MIDAS_ORIENTATION_SAGITTAL);
+  return this->GetAxisFromReferenceImage(niftk::IMAGE_ORIENTATION_SAGITTAL);
 }
 
 
@@ -331,8 +331,8 @@ int niftkBaseSegmentorController::GetViewAxis()
 {
   int axisNumber = -1;
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  MIDASOrientation orientation = this->GetOrientationAsEnum();
-  if (referenceImage.IsNotNull() && orientation != MIDAS_ORIENTATION_UNKNOWN)
+  niftk::ImageOrientation orientation = this->GetImageOrientation();
+  if (referenceImage.IsNotNull() && orientation != niftk::IMAGE_ORIENTATION_UNKNOWN)
   {
     axisNumber = niftk::GetThroughPlaneAxis(referenceImage, orientation);
   }
@@ -345,8 +345,8 @@ int niftkBaseSegmentorController::GetUpDirection()
 {
   int upDirection = 0;
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  MIDASOrientation orientation = this->GetOrientationAsEnum();
-  if (referenceImage.IsNotNull() && orientation != MIDAS_ORIENTATION_UNKNOWN)
+  niftk::ImageOrientation orientation = this->GetImageOrientation();
+  if (referenceImage.IsNotNull() && orientation != niftk::IMAGE_ORIENTATION_UNKNOWN)
   {
     upDirection = niftk::GetUpDirection(referenceImage, orientation);
   }

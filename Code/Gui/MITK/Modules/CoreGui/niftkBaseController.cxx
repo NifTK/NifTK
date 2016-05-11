@@ -205,9 +205,9 @@ mitk::BaseRenderer* niftk::BaseController::GetFocusedRenderer() const
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation niftk::BaseController::GetOrientationAsEnum()
+niftk::ImageOrientation niftk::BaseController::GetImageOrientation()
 {
-  MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
+  ImageOrientation orientation = IMAGE_ORIENTATION_UNKNOWN;
   const mitk::SliceNavigationController* sliceNavigationController = this->GetSliceNavigationController();
   if (sliceNavigationController != NULL)
   {
@@ -215,15 +215,15 @@ MIDASOrientation niftk::BaseController::GetOrientationAsEnum()
 
     if (viewDirection == mitk::SliceNavigationController::Axial)
     {
-      orientation = MIDAS_ORIENTATION_AXIAL;
+      orientation = IMAGE_ORIENTATION_AXIAL;
     }
     else if (viewDirection == mitk::SliceNavigationController::Sagittal)
     {
-      orientation = MIDAS_ORIENTATION_SAGITTAL;
+      orientation = IMAGE_ORIENTATION_SAGITTAL;
     }
     else if (viewDirection == mitk::SliceNavigationController::Frontal)
     {
-      orientation = MIDAS_ORIENTATION_CORONAL;
+      orientation = IMAGE_ORIENTATION_CORONAL;
     }
   }
   return orientation;
