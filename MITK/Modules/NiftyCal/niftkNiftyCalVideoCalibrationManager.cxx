@@ -17,6 +17,9 @@
 #include <niftkNiftyCalTypes.h>
 #include <niftkImageConversion.h>
 #include <niftkOpenCVChessboardPointDetector.h>
+#include <niftkIOUtilities.h>
+#include <niftkMonoCameraCalibration.h>
+#include <niftkStereoCameraCalibration.h>
 #include <cv.h>
 
 namespace niftk
@@ -131,6 +134,8 @@ bool NiftyCalVideoCalibrationManager::ConvertImage(
   {
     cv::Mat image = niftk::MitkImageToOpenCVMat(inputImage);
     cv::cvtColor(image, outputImage, CV_BGR2GRAY);
+    m_ImageSize.width = image.cols;
+    m_ImageSize.height = image.rows;
     converted = true;
   }
 
@@ -254,13 +259,70 @@ void NiftyCalVideoCalibrationManager::UnGrab()
 double NiftyCalVideoCalibrationManager::Calibrate()
 {
   MITK_INFO << "Calibrating.";
-  int j=0;
-  for (int i = 0; i < 1000000000; i++)
+
+  double rms = 0;
+
+  if (m_ImageNode[0].IsNull())
   {
-    j++;
+    mitkThrow() << "Left image should never be NULL";
   }
+
+  niftk::Model3D model = niftk::LoadModel3D(m_3DModelFileName);
+  if (model.empty())
+  {
+    mitkThrow() << "Failed to load model points";
+  }
+
+  if (m_DoIterative)
+  {
+
+  }
+  else
+  {
+    rms = niftk::MonoCameraCalibration(model,
+                                       m_Points[0],
+                                       m_ImageSize,
+                                       m_Intrinsic[0],
+                                       m_Distortion[0],
+                                       m_Rvecs[0],
+                                       m_Tvecs[0]
+                                      );
+
+    if (m_ImageNode[1].IsNotNull())
+    {
+
+      niftk::MonoCameraCalibration(model,
+                                   m_Points[1],
+                                   m_ImageSize,
+                                   m_Intrinsic[1],
+                                   m_Distortion[1],
+                                   m_Rvecs[1],
+                                   m_Tvecs[1]
+                                  );
+
+      rms = niftk::StereoCameraCalibration(model,
+                                           m_Points[0],
+                                           m_Points[1],
+                                           m_ImageSize,
+                                           m_Intrinsic[0],
+                                           m_Distortion[0],
+                                           m_Rvecs[0],
+                                           m_Tvecs[0],
+                                           m_Intrinsic[1],
+                                           m_Distortion[1],
+                                           m_Rvecs[1],
+                                           m_Tvecs[1],
+                                           m_EssentialMatrix,
+                                           m_FundamentalMatrix,
+                                           m_Left2RightRotation,
+                                           m_Left2RightTranslation,
+                                           CV_CALIB_USE_INTRINSIC_GUESS
+                                           );
+    }
+  }
+
   MITK_INFO << "Calibrating - DONE";
-  return 2;
+  return rms;
 }
 
 

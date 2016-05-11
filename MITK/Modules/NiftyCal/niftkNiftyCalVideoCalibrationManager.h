@@ -174,10 +174,20 @@ private:
   cv::Mat                    m_TmpImage[2];
 
   // Data used for calibration.
+  cv::Size2i                 m_ImageSize;
   std::list<niftk::PointSet> m_Points[2];
   std::list< std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_OriginalImages[2];
   std::list< std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_ImagesForWarping[2];
 
+  // Calibration result
+  cv::Mat                    m_Intrinsic[2];
+  cv::Mat                    m_Distortion[2];
+  std::vector<cv::Mat>       m_Rvecs[2];
+  std::vector<cv::Mat>       m_Tvecs[2];
+  cv::Mat                    m_EssentialMatrix;
+  cv::Mat                    m_FundamentalMatrix;
+  cv::Mat                    m_Left2RightRotation;
+  cv::Mat                    m_Left2RightTranslation;
 
 }; // end class
 
