@@ -46,6 +46,7 @@ public:
   /** Stores the name of the node, not the value of the parameters. */
   static const QString PREFERENCES_NODE_NAME;
   static const QString ITERATIVE_NODE_NAME;
+  static const QString MINIMUM_VIEWS_NODE_NAME;
   static const QString MODEL_NODE_NAME;
   static const QString SCALEX_NODE_NAME;
   static const QString SCALEY_NODE_NAME;

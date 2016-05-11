@@ -28,6 +28,7 @@ namespace niftk
 
 const QString CameraCalViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igicameracal");
 const QString CameraCalViewPreferencePage::ITERATIVE_NODE_NAME("iterative");
+const QString CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME("minimum number of views");
 const QString CameraCalViewPreferencePage::MODEL_NODE_NAME("3D model points");
 const QString CameraCalViewPreferencePage::SCALEX_NODE_NAME("scale factor in x to resize image");
 const QString CameraCalViewPreferencePage::SCALEY_NODE_NAME("scale factor in y to resize image");
@@ -206,6 +207,7 @@ bool CameraCalViewPreferencePage::PerformOk()
 {
   m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::ITERATIVE_NODE_NAME, m_Ui->m_IterativeCheckBox->isChecked());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_NODE_NAME, m_Ui->m_3DModelLineEdit->text());
+  m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME, m_Ui->m_MinimumViewsSpinBox->value());
   m_CameraCalViewPreferencesNode->PutDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, m_Ui->m_ScaleImageInXSpinBox->value());
   m_CameraCalViewPreferencesNode->PutDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, m_Ui->m_ScaleImageInYSpinBox->value());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, m_Ui->m_GridPointsInXSpinBox->value());
@@ -230,6 +232,7 @@ void CameraCalViewPreferencePage::Update()
 {
   m_Ui->m_IterativeCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::ITERATIVE_NODE_NAME, false));
   m_Ui->m_3DModelLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_NODE_NAME, ""));
+  m_Ui->m_MinimumViewsSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME, 1));
   m_Ui->m_ScaleImageInXSpinBox->setValue(m_CameraCalViewPreferencesNode->GetDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, 1));
   m_Ui->m_ScaleImageInYSpinBox->setValue(m_CameraCalViewPreferencesNode->GetDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, 1));
   m_Ui->m_GridPointsInXSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, 14));

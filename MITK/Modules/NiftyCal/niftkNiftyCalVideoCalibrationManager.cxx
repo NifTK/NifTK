@@ -73,8 +73,6 @@ bool NiftyCalVideoCalibrationManager::Grab()
 {
   bool result = false;
 
-  // To Do: Pause DataSources update - (from plugin layer).
-
   if (m_LeftImageNode.IsNull())
   {
     mitkThrow() << "Left image should never be NULL";
@@ -191,7 +189,6 @@ double NiftyCalVideoCalibrationManager::Calibrate()
 void NiftyCalVideoCalibrationManager::Save(const std::string dirName)
 {
   MITK_INFO << "Saving calibration to " << dirName;
-  niftk::NiftyCalTimeType time;
 }
 
 } // end namespace

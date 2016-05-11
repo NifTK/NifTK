@@ -138,6 +138,7 @@ void CameraCalView::RetrievePreferenceValues()
   if (prefs.IsNotNull())
   {
     m_Manager->SetDoIterative(prefs->GetBool(CameraCalViewPreferencePage::ITERATIVE_NODE_NAME, false));
+    m_Manager->SetMinimumNumberOfSnapshotsForCalibrating(prefs->GetInt(CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME, 3));
     m_Manager->Set3DModelFileName(prefs->Get(CameraCalViewPreferencePage::MODEL_NODE_NAME, "").toStdString());
     m_Manager->SetScaleFactorX(prefs->GetDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, 1));
     m_Manager->SetScaleFactorY(prefs->GetDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, 1));

@@ -66,9 +66,9 @@ public:
   itkSetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
   itkGetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
 
+
   itkSetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
   itkGetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
-
   itkSetMacro(DoIterative, bool);
   itkGetMacro(DoIterative, bool);
   itkSetMacro(3DModelFileName, std::string);
