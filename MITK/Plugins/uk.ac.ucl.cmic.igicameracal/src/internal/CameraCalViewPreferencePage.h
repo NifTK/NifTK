@@ -49,7 +49,7 @@ public:
   static const QString MODEL_NODE_NAME;
   static const QString SCALEX_NODE_NAME;
   static const QString SCALEY_NODE_NAME;
-  static const QString FEATURES_NODE_NAME;
+  static const QString PATTERN_NODE_NAME;
   static const QString TAG_FAMILY_NODE_NAME;
   static const QString GRIDX_NODE_NAME;
   static const QString GRIDY_NODE_NAME;

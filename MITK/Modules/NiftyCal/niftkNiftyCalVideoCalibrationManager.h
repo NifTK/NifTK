@@ -38,6 +38,7 @@ public:
 
   enum CalibrationPatterns
   {
+    // Order must match that in niftk::CameraCalViewPreferencePage
     CHESSBOARD,
     CIRCLE_GRID,
     APRIL_TAGS
@@ -45,6 +46,7 @@ public:
 
   enum HandEyeMethod
   {
+    // Order must match that in niftk::CameraCalViewPreferencePage
     TSAI,
     DIRECT,
     MALTI
@@ -66,6 +68,29 @@ public:
 
   itkSetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
   itkGetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
+
+  itkSetMacro(DoIterative, bool);
+  itkGetMacro(DoIterative, bool);
+  itkSetMacro(3DModelFileName, std::string);
+  itkGetMacro(3DModelFileName, std::string);
+  itkSetMacro(ScaleFactorX, double);
+  itkGetMacro(ScaleFactorX, double);
+  itkSetMacro(ScaleFactorY, double);
+  itkGetMacro(ScaleFactorY, double);
+  itkSetMacro(GridSizeX, int);
+  itkGetMacro(GridSizeX, int);
+  itkSetMacro(GridSizeY, int);
+  itkGetMacro(GridSizeY, int);
+  itkSetMacro(ModelToTrackerFileName, std::string);
+  itkGetMacro(ModelToTrackerFileName, std::string);
+  itkSetMacro(OutputDirName, std::string);
+  itkGetMacro(OutputDirName, std::string);
+  itkSetMacro(CalibrationPattern, CalibrationPatterns);
+  itkGetMacro(CalibrationPattern, CalibrationPatterns);
+  itkSetMacro(HandeyeMethod, HandEyeMethod);
+  itkGetMacro(HandeyeMethod, HandEyeMethod);
+  itkSetMacro(TagFamily, std::string);
+  itkGetMacro(TagFamily, std::string);
 
   unsigned int GetNumberOfSnapshots() const;
 
@@ -119,6 +144,19 @@ private:
   mitk::DataNode::Pointer    m_RightImageNode;
   mitk::DataNode::Pointer    m_TrackingTransformNode;
   unsigned int               m_MinimumNumberOfSnapshotsForCalibrating;
+
+  // Data from preferences
+  bool                       m_DoIterative;
+  std::string                m_3DModelFileName;
+  double                     m_ScaleFactorX;
+  double                     m_ScaleFactorY;
+  int                        m_GridSizeX;
+  int                        m_GridSizeY;
+  std::string                m_ModelToTrackerFileName;
+  std::string                m_OutputDirName;
+  CalibrationPatterns        m_CalibrationPattern;
+  HandEyeMethod              m_HandeyeMethod;
+  std::string                m_TagFamily;
 
   // Data used for calibration.
   std::list<niftk::PointSet> m_LeftPoints;

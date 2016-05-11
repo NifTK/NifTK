@@ -31,7 +31,7 @@ const QString CameraCalViewPreferencePage::ITERATIVE_NODE_NAME("iterative");
 const QString CameraCalViewPreferencePage::MODEL_NODE_NAME("3D model points");
 const QString CameraCalViewPreferencePage::SCALEX_NODE_NAME("scale factor in x to resize image");
 const QString CameraCalViewPreferencePage::SCALEY_NODE_NAME("scale factor in y to resize image");
-const QString CameraCalViewPreferencePage::FEATURES_NODE_NAME("features");
+const QString CameraCalViewPreferencePage::PATTERN_NODE_NAME("pattern");
 const QString CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME("tag family");
 const QString CameraCalViewPreferencePage::GRIDX_NODE_NAME("grid size in x");
 const QString CameraCalViewPreferencePage::GRIDY_NODE_NAME("grid size in y");
@@ -212,12 +212,9 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, m_Ui->m_GridPointsInYSpinBox->value());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, m_Ui->m_ModelToTrackerLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, m_Ui->m_OutputDirectoryLineEdit->text());
-
-  // For combo box, we save the index. So don't re-order the combo-boxes. Just add to the end.
-  m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::FEATURES_NODE_NAME, m_Ui->m_FeaturesComboBox->currentIndex());
-  m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, m_Ui->m_TagFamilyComboBox->currentIndex());
+  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, m_Ui->m_TagFamilyComboBox->currentText());
+  m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, m_Ui->m_FeaturesComboBox->currentIndex());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, m_Ui->m_HandEyeComboBox->currentIndex());
-
   return true;
 }
 
@@ -239,10 +236,9 @@ void CameraCalViewPreferencePage::Update()
   m_Ui->m_GridPointsInYSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, 10));
   m_Ui->m_ModelToTrackerLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, ""));
   m_Ui->m_OutputDirectoryLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, ""));
-
-  // For combo box, we save the index. So don't re-order the combo-boxes. Just add to the end.
-  m_Ui->m_FeaturesComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::FEATURES_NODE_NAME, 0));
-  m_Ui->m_TagFamilyComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, 1));
+  m_Ui->m_TagFamilyComboBox->setCurrentIndex(
+        m_Ui->m_TagFamilyComboBox->findText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, "25h7")));
+  m_Ui->m_FeaturesComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, 0));
   m_Ui->m_HandEyeComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, 0));
 }
 

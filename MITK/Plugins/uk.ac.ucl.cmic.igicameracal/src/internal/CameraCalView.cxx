@@ -137,6 +137,21 @@ void CameraCalView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
+    m_Manager->SetDoIterative(prefs->GetBool(CameraCalViewPreferencePage::ITERATIVE_NODE_NAME, false));
+    m_Manager->Set3DModelFileName(prefs->Get(CameraCalViewPreferencePage::MODEL_NODE_NAME, "").toStdString());
+    m_Manager->SetScaleFactorX(prefs->GetDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, 1));
+    m_Manager->SetScaleFactorY(prefs->GetDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, 1));
+    m_Manager->SetGridSizeX(prefs->GetInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, 14));
+    m_Manager->SetGridSizeY(prefs->GetInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, 10));
+    m_Manager->SetModelToTrackerFileName(prefs->Get(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, "").toStdString());
+    m_Manager->SetOutputDirName(prefs->Get(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, "").toStdString());
+    m_Manager->SetTagFamily(prefs->Get(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, "25h7").toStdString());
+    m_Manager->SetCalibrationPattern(
+          static_cast<niftk::NiftyCalVideoCalibrationManager::CalibrationPatterns>(
+            prefs->GetInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, 0)));
+    m_Manager->SetHandeyeMethod(
+          static_cast<niftk::NiftyCalVideoCalibrationManager::HandEyeMethod>(
+            prefs->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, 0)));
   }
 }
 
