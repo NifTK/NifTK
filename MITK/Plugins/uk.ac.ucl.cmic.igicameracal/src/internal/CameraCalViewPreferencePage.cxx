@@ -27,6 +27,17 @@ namespace niftk
 {
 
 const QString CameraCalViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igicameracal");
+const QString CameraCalViewPreferencePage::ITERATIVE_NODE_NAME("iterative");
+const QString CameraCalViewPreferencePage::MODEL_NODE_NAME("3D model points");
+const QString CameraCalViewPreferencePage::SCALEX_NODE_NAME("scale factor in x to resize image");
+const QString CameraCalViewPreferencePage::SCALEY_NODE_NAME("scale factor in y to resize image");
+const QString CameraCalViewPreferencePage::FEATURES_NODE_NAME("features");
+const QString CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME("tag family");
+const QString CameraCalViewPreferencePage::GRIDX_NODE_NAME("grid size in x");
+const QString CameraCalViewPreferencePage::GRIDY_NODE_NAME("grid size in y");
+const QString CameraCalViewPreferencePage::HANDEYE_NODE_NAME("handeye method");
+const QString CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME("model to tracker transform");
+const QString CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME("output dir");
 
 //-----------------------------------------------------------------------------
 CameraCalViewPreferencePage::CameraCalViewPreferencePage()
@@ -193,6 +204,20 @@ void CameraCalViewPreferencePage::OnOutputDirectoryButtonPressed()
 //-----------------------------------------------------------------------------
 bool CameraCalViewPreferencePage::PerformOk()
 {
+  m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::ITERATIVE_NODE_NAME, m_Ui->m_IterativeCheckBox->isChecked());
+  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_NODE_NAME, m_Ui->m_3DModelLineEdit->text());
+  m_CameraCalViewPreferencesNode->PutDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, m_Ui->m_ScaleImageInXSpinBox->value());
+  m_CameraCalViewPreferencesNode->PutDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, m_Ui->m_ScaleImageInYSpinBox->value());
+  m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, m_Ui->m_GridPointsInXSpinBox->value());
+  m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, m_Ui->m_GridPointsInYSpinBox->value());
+  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, m_Ui->m_ModelToTrackerLineEdit->text());
+  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, m_Ui->m_OutputDirectoryLineEdit->text());
+
+  // For combo box, we save the index. So don't re-order the combo-boxes. Just add to the end.
+  m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::FEATURES_NODE_NAME, m_Ui->m_FeaturesComboBox->currentIndex());
+  m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, m_Ui->m_TagFamilyComboBox->currentIndex());
+  m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, m_Ui->m_HandEyeComboBox->currentIndex());
+
   return true;
 }
 
@@ -206,6 +231,19 @@ void CameraCalViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void CameraCalViewPreferencePage::Update()
 {
+  m_Ui->m_IterativeCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::ITERATIVE_NODE_NAME, false));
+  m_Ui->m_3DModelLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_NODE_NAME, ""));
+  m_Ui->m_ScaleImageInXSpinBox->setValue(m_CameraCalViewPreferencesNode->GetDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, 1));
+  m_Ui->m_ScaleImageInYSpinBox->setValue(m_CameraCalViewPreferencesNode->GetDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, 1));
+  m_Ui->m_GridPointsInXSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, 14));
+  m_Ui->m_GridPointsInYSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, 10));
+  m_Ui->m_ModelToTrackerLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, ""));
+  m_Ui->m_OutputDirectoryLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, ""));
+
+  // For combo box, we save the index. So don't re-order the combo-boxes. Just add to the end.
+  m_Ui->m_FeaturesComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::FEATURES_NODE_NAME, 0));
+  m_Ui->m_TagFamilyComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, 1));
+  m_Ui->m_HandEyeComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, 0));
 }
 
 } // end namespace

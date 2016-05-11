@@ -43,10 +43,19 @@ class CameraCalViewPreferencePage : public QObject, public berry::IQtPreferenceP
 
 public:
 
-  /**
-   * \brief Stores the name of the preferences node.
-   */
+  /** Stores the name of the node, not the value of the parameters. */
   static const QString PREFERENCES_NODE_NAME;
+  static const QString ITERATIVE_NODE_NAME;
+  static const QString MODEL_NODE_NAME;
+  static const QString SCALEX_NODE_NAME;
+  static const QString SCALEY_NODE_NAME;
+  static const QString FEATURES_NODE_NAME;
+  static const QString TAG_FAMILY_NODE_NAME;
+  static const QString GRIDX_NODE_NAME;
+  static const QString GRIDY_NODE_NAME;
+  static const QString HANDEYE_NODE_NAME;
+  static const QString MODEL_TO_TRACKER_NODE_NAME;
+  static const QString OUTPUT_DIR_NODE_NAME;
 
   CameraCalViewPreferencePage();
   CameraCalViewPreferencePage(const CameraCalViewPreferencePage& other);
