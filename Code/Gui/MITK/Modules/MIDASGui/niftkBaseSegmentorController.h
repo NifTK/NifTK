@@ -77,16 +77,6 @@ public:
 
   virtual void OnNodeVisibilityChanged(const mitk::DataNode* node);
 
-  /// \brief This controller registers with the mitk::DataStorage and listens for changing
-  /// data, so this method is called when any node is changed, but only performs an update,
-  /// if the nodes changed are those registered with the ToolManager as WorkingData.
-  virtual void OnNodeChanged(const mitk::DataNode* node);
-
-  /// \brief This controller registers with the mitk::DataStorage and listens for removing
-  /// data, so this method cancels the operation and frees the resources if the
-  /// segmentation node is removed.
-  virtual void OnNodeRemoved(const mitk::DataNode* node);
-
 protected slots:
 
   /// \brief Called from niftkToolSelectorWidget when a tool changes.

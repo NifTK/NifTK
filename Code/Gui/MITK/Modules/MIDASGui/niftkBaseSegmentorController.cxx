@@ -562,18 +562,6 @@ void niftkBaseSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode*
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::OnNodeChanged(const mitk::DataNode* node)
-{
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::OnNodeRemoved(const mitk::DataNode* node)
-{
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkBaseSegmentorController::OnToolSelected(int toolID)
 {
   /// Note: The view is not created when the GUI is set up, therefore

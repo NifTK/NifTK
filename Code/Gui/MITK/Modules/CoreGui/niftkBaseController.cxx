@@ -19,6 +19,9 @@
 #include <mitkGlobalInteraction.h>
 #include <QmitkRenderWindow.h>
 
+#include <mitkDataStorageListener.h>
+#include <mitkDataNodePropertyListener.h>
+
 #include "niftkBaseGUI.h"
 #include "niftkIBaseView.h"
 
@@ -26,6 +29,7 @@ namespace niftk
 {
 
 class BaseControllerPrivate
+  : private mitk::DataStorageListener
 {
   Q_DECLARE_PUBLIC(BaseController);
 
@@ -35,17 +39,22 @@ class BaseControllerPrivate
 
   niftkIBaseView* m_View;
 
+  void OnFocusedWindowDeleted();
+
+  void OnFocusChanged();
+
+  virtual void OnNodeAdded(mitk::DataNode* node) override;
+
+  virtual void OnNodeChanged(mitk::DataNode* node) override;
+
+  virtual void OnNodeRemoved(mitk::DataNode* node) override;
+
+  virtual void OnNodeDeleted(mitk::DataNode* node) override;
+
 public:
 
   BaseControllerPrivate(BaseController* q, niftkIBaseView* view);
   ~BaseControllerPrivate();
-
-  void OnFocusedWindowDeleted()
-  {
-    m_Focused2DRenderer = 0;
-  }
-
-  void OnFocusChanged();
 
   /// \brief Used for the mitkFocusManager to register callbacks to track the currently focused window.
   unsigned long m_FocusManagerObserverTag;
@@ -62,7 +71,8 @@ public:
 
 //-----------------------------------------------------------------------------
 niftk::BaseControllerPrivate::BaseControllerPrivate(BaseController* baseController, niftkIBaseView* view)
-  : q_ptr(baseController),
+  : mitk::DataStorageListener(view->GetDataStorage()),
+    q_ptr(baseController),
     m_GUI(nullptr),
     m_View(view),
     m_FocusManagerObserverTag(0),
@@ -122,6 +132,44 @@ void niftk::BaseControllerPrivate::OnFocusChanged()
   }
 
   q->OnFocusChanged();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseControllerPrivate::OnFocusedWindowDeleted()
+{
+  m_Focused2DRenderer = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseControllerPrivate::OnNodeAdded(mitk::DataNode* node)
+{
+  Q_Q(BaseController);
+  q->OnNodeAdded(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseControllerPrivate::OnNodeChanged(mitk::DataNode* node)
+{
+  Q_Q(BaseController);
+  q->OnNodeChanged(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseControllerPrivate::OnNodeRemoved(mitk::DataNode* node)
+{
+  Q_Q(BaseController);
+  q->OnNodeRemoved(node);
+}
+
+//-----------------------------------------------------------------------------
+void niftk::BaseControllerPrivate::OnNodeDeleted(mitk::DataNode* node)
+{
+  Q_Q(BaseController);
+  q->OnNodeDeleted(node);
 }
 
 
@@ -201,6 +249,30 @@ mitk::BaseRenderer* niftk::BaseController::GetFocusedRenderer() const
 {
   Q_D(const BaseController);
   return d->m_Focused2DRenderer;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseController::OnNodeAdded(const mitk::DataNode* node)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseController::OnNodeChanged(const mitk::DataNode* node)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseController::OnNodeRemoved(const mitk::DataNode* node)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseController::OnNodeDeleted(const mitk::DataNode* node)
+{
 }
 
 

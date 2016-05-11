@@ -93,6 +93,11 @@ protected:
   /// \return mitk::BaseRenderer* The currently focused renderer, or nullptr if it has not been set.
   virtual mitk::BaseRenderer* GetFocusedRenderer() const;
 
+  virtual void OnNodeAdded(const mitk::DataNode* node);
+  virtual void OnNodeChanged(const mitk::DataNode* node);
+  virtual void OnNodeRemoved(const mitk::DataNode* node);
+  virtual void OnNodeDeleted(const mitk::DataNode* node);
+
 private:
 
   QScopedPointer<BaseControllerPrivate> d_ptr;

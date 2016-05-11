@@ -108,22 +108,6 @@ void niftkBaseSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::NodeChanged(const mitk::DataNode* node)
-{
-  assert(m_SegmentorController);
-  m_SegmentorController->OnNodeChanged(node);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::NodeRemoved(const mitk::DataNode* node)
-{
-  assert(m_SegmentorController);
-  m_SegmentorController->OnNodeRemoved(node);
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkBaseSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer>& nodes)
 {
   Q_UNUSED(part);
