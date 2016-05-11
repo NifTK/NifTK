@@ -169,6 +169,17 @@ protected:
 
   void onVisibilityChanged(const mitk::DataNode* node) override;
 
+  /// \brief This view registers with the mitk::DataStorage and listens for changing
+  /// data, so this method is called when any node is changed, but only performs an update,
+  /// if the nodes changed are those registered with the ToolManager as WorkingData,
+  /// see class introduction.
+  virtual void NodeChanged(const mitk::DataNode* node) override;
+
+  /// \brief This view registers with the mitk::DataStorage and listens for removing
+  /// data, so this method cancels the operation and frees the resources if the
+  /// segmentation node is removed.
+  virtual void NodeRemoved(const mitk::DataNode* node) override;
+
 private:
 
   /// \brief The segmentor controller that realises the GUI logic behind the view.

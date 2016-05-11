@@ -14,15 +14,10 @@
 
 #include "niftkGeneralSegmentorView.h"
 
-#include <mitkImageStatisticsHolder.h>
-
-#include <mitkDataStorageUtils.h>
-#include <niftkMIDASContourTool.h>
-#include <niftkMIDASTool.h>
-
 #include <niftkGeneralSegmentorController.h>
 
 #include "niftkGeneralSegmentorPreferencePage.h"
+
 
 const std::string niftkGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
 
@@ -81,6 +76,7 @@ void niftkGeneralSegmentorView::Hidden()
   m_GeneralSegmentorController->OnViewGetsHidden();
 }
 
+
 //-----------------------------------------------------------------------------
 std::string niftkGeneralSegmentorView::GetViewID() const
 {
@@ -93,20 +89,4 @@ void niftkGeneralSegmentorView::SetFocus()
 {
   // it seems best not to force the focus, and just leave the
   // focus with whatever the user pressed ... i.e. let Qt handle it.
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnNodeChanged(node);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::NodeRemoved(const mitk::DataNode* node)
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnNodeRemoved(node);
 }

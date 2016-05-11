@@ -44,14 +44,15 @@ public:
   /// and the segmentation is destroyed without warning.
   void OnViewGetsClosed();
 
-  /// \brief Called when a node is removed.
-  virtual void OnNodeRemoved(const mitk::DataNode* node);
+  /// \brief Called when the visibility of a data node has changed.
+  virtual void OnNodeVisibilityChanged(const mitk::DataNode* node) override;
+
+  /// \brief Called when a data node has been removed.
+  virtual void OnNodeRemoved(const mitk::DataNode* node) override;
 
   /// \brief Called when the segmentation is manually edited via the paintbrush tool.
   /// \param imageIndex tells which image has been modified: erosion addition / subtraction or dilation addition / subtraction.
   virtual void OnSegmentationEdited(int imageIndex);
-
-  virtual void OnNodeVisibilityChanged(const mitk::DataNode* node) override;
 
 protected:
 

@@ -291,12 +291,12 @@ private:
   /// data, so this method is called when any node is changed, but only performs an update,
   /// if the nodes changed are those registered with the ToolManager as WorkingData,
   /// see class introduction.
-  void OnNodeChanged(const mitk::DataNode* node);
+  virtual void OnNodeChanged(const mitk::DataNode* node) override;
 
   /// \brief This view registers with the mitk::DataStorage and listens for removing
   /// data, so this method cancels the operation and frees the resources if the
   /// segmentation node is removed.
-  void OnNodeRemoved(const mitk::DataNode* node);
+  virtual void OnNodeRemoved(const mitk::DataNode* node) override;
 
   /// \brief Called from the registered Poly tool and Draw tool to indicate that contours have changed.
   virtual void OnContoursChanged();

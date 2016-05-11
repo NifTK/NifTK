@@ -14,31 +14,13 @@
 
 #include "niftkMorphologicalSegmentorView.h"
 
-#include <QMessageBox>
-
-#include <berryIWorkbenchPage.h>
-
-#include <mitkColorProperty.h>
-#include <mitkDataStorageUtils.h>
-#include <mitkImage.h>
-#include <mitkImageAccessByItk.h>
-#include <mitkImageCast.h>
-#include <mitkITKImageImport.h>
-
-#include <niftkImageUtils.h>
-#include <niftkImageOrientationUtils.h>
-
-#include <itkConversionUtils.h>
-#include <mitkITKRegionParametersDataNodeProperty.h>
-#include <niftkMIDASTool.h>
-#include <niftkMIDASPaintbrushTool.h>
-
-#include <niftkImageOrientationUtils.h>
+#include "niftkMorphologicalSegmentorPreferencePage.h"
 
 #include <niftkMorphologicalSegmentorController.h>
 
 
 const std::string niftkMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
+
 
 //-----------------------------------------------------------------------------
 niftkMorphologicalSegmentorView::niftkMorphologicalSegmentorView()
@@ -72,22 +54,13 @@ std::string niftkMorphologicalSegmentorView::GetViewID() const
 //-----------------------------------------------------------------------------
 niftkBaseSegmentorController* niftkMorphologicalSegmentorView::CreateSegmentorController()
 {
-  m_MorphologicalSegmentorController = new niftkMorphologicalSegmentorController(this);
-  return m_MorphologicalSegmentorController;
+  return new niftkMorphologicalSegmentorController(this);
 }
 
 
 //-----------------------------------------------------------------------------
 void niftkMorphologicalSegmentorView::SetFocus()
 {
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
-{
-  assert(m_MorphologicalSegmentorController);
-  m_MorphologicalSegmentorController->OnNodeRemoved(removedNode);
 }
 
 

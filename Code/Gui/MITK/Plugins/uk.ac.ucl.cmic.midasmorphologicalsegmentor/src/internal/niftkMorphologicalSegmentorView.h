@@ -12,17 +12,10 @@
 
 =============================================================================*/
 
-#ifndef __niftkMorphologicalSegmentorView_h
-#define __niftkMorphologicalSegmentorView_h
+#ifndef niftkMorphologicalSegmentorView_h
+#define niftkMorphologicalSegmentorView_h
 
 #include <niftkBaseSegmentorView.h>
-
-#include <mitkImage.h>
-
-#include <MorphologicalSegmentorPipelineParams.h>
-#include "niftkMorphologicalSegmentorPreferencePage.h"
-
-class niftkMorphologicalSegmentorController;
 
 /**
  * \class niftkMorphologicalSegmentorView
@@ -71,16 +64,8 @@ protected:
   /// \brief Called by framework, sets the focus on a specific widget, but currently does nothing.
   virtual void SetFocus() override;
 
-  /// \brief Called when a node is removed.
-  virtual void NodeRemoved(const mitk::DataNode* node) override;
-
   /// \brief Returns the name of the preferences node to look up.
   virtual QString GetPreferencesNodeName() override;
-
-private:
-
-  /// \brief The morphological segmentor controller that realises the GUI logic behind the view.
-  niftkMorphologicalSegmentorController* m_MorphologicalSegmentorController;
 
 };
 
