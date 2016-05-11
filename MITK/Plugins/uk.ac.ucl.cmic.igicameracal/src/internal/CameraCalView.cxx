@@ -15,6 +15,7 @@
 // Qmitk
 #include "CameraCalView.h"
 #include "CameraCalViewPreferencePage.h"
+#include "CameraCalViewActivator.h"
 #include <mitkNodePredicateDataType.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkImage.h>
@@ -22,6 +23,10 @@
 #include <QFileDialog>
 #include <QPixmap>
 #include <QtConcurrentRun>
+#include <ctkServiceReference.h>
+#include <service/event/ctkEventAdmin.h>
+#include <service/event/ctkEvent.h>
+#include <service/event/ctkEventConstants.h>
 
 namespace niftk
 {
@@ -49,6 +54,20 @@ CameraCalView::~CameraCalView()
 
   if (m_Controls != NULL)
   {
+    ctkPluginContext* context = niftk::CameraCalViewActivator::getContext();
+    assert(context);
+
+    ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
+    if (ref)
+    {
+      ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
+      if (eventAdmin)
+      {
+        eventAdmin->unpublishSignal(this, SIGNAL(PauseIGIUpdate(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATEPAUSE");
+        eventAdmin->unpublishSignal(this, SIGNAL(RestartIGIUpdate(ctkDictionary)), "uk/ac/ucl/cmic/IGIUPDATERESTART");
+      }
+    }
+
     delete m_Controls;
   }
 }
@@ -106,6 +125,18 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
 
     // Get user prefs, so we can decide if we doing chessboards/AprilTags etc.
     RetrievePreferenceValues();
+
+    // Here, we publish signals to ask the DataSourcesManager to pause momentarily.
+    ctkPluginContext* context = niftk::CameraCalViewActivator::getContext();
+    assert(context);
+
+    ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
+    if (ref)
+    {
+      ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
+      eventAdmin->publishSignal(this, SIGNAL(PauseIGIUpdate(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATEPAUSE", Qt::DirectConnection);
+      eventAdmin->publishSignal(this, SIGNAL(RestartIGIUpdate(ctkDictionary)), "uk/ac/ucl/cmic/IGIUPDATERESTART", Qt::DirectConnection);
+    }
   }
 }
 
@@ -243,6 +274,9 @@ void CameraCalView::OnGrabButtonPressed()
     return;
   }
 
+  ctkDictionary dictionary;
+  emit PauseIGIUpdate(dictionary);
+
   this->SetButtonsEnabled(false);
 
   QPixmap image(":/uk.ac.ucl.cmic.igicameracal/boobaloo-Don-t-Step-No-Gnome--300px.png");
@@ -264,6 +298,9 @@ bool CameraCalView::RunGrab()
 //-----------------------------------------------------------------------------
 void CameraCalView::OnBackgroundGrabProcessFinished()
 {
+  ctkDictionary dictionary;
+  emit RestartIGIUpdate(dictionary);
+
   bool successfullyGrabbed = m_BackgroundGrabProcessWatcher.result();
 
   if (successfullyGrabbed)

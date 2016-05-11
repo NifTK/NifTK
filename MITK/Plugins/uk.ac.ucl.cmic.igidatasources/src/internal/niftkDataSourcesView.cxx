@@ -64,6 +64,22 @@ DataSourcesView::~DataSourcesView()
 
 
 //-----------------------------------------------------------------------------
+void DataSourcesView::OnUpdateShouldPause(const ctkEvent& event)
+{
+  // Comming from CTK event bus.
+  m_DataSourceManagerWidget->PauseUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+void DataSourcesView::OnUpdateShouldRestart(const ctkEvent& event)
+{
+  // Comming from CTK event bus.
+  m_DataSourceManagerWidget->RestartUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
 void DataSourcesView::OnRecordingShouldStart(const ctkEvent& event)
 {
   // Comming from CTK event bus.
@@ -126,6 +142,11 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
     eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStart(ctkEvent)), properties);
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGISTOPRECORDING";
     eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStop(ctkEvent)), properties);
+
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATEPAUSE";
+    eventAdmin->subscribeSlot(this, SLOT(OnUpdateShouldPause(ctkEvent)), properties);
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATERESTART";
+    eventAdmin->subscribeSlot(this, SLOT(OnUpdateShouldRestart(ctkEvent)), properties);
   }
 
   m_SetupWasCalled = true;

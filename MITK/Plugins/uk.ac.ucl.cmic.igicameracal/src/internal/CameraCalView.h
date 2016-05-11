@@ -21,6 +21,7 @@
 #include <niftkNiftyCalVideoCalibrationManager.h>
 #include <QFuture>
 #include <QFutureWatcher>
+#include <ctkDictionary.h>
 
 namespace niftk
 {
@@ -69,6 +70,11 @@ protected:
 protected slots:
 
 protected:
+
+signals:
+
+  void PauseIGIUpdate(const ctkDictionary&);
+  void RestartIGIUpdate(const ctkDictionary&);
 
 private slots:
 
