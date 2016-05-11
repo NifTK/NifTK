@@ -19,6 +19,8 @@
 
 #include <QObject>
 
+#include <mitkDataNode.h>
+
 #include <niftkImageOrientationUtils.h>
 
 class QWidget;
@@ -28,6 +30,7 @@ class niftkIBaseView;
 namespace mitk
 {
 class BaseRenderer;
+class DataStorage;
 }
 
 namespace niftk

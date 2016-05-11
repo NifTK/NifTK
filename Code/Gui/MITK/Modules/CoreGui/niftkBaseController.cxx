@@ -15,6 +15,7 @@
 #include "niftkBaseController.h"
 
 #include <mitkBaseRenderer.h>
+#include <mitkDataStorage.h>
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
 #include <QmitkRenderWindow.h>
@@ -340,6 +341,12 @@ void niftk::BaseController::OnNodeRemoved(const mitk::DataNode* node)
 
 //-----------------------------------------------------------------------------
 void niftk::BaseController::OnNodeDeleted(const mitk::DataNode* node)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseController::OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
 }
 
