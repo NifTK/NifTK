@@ -31,9 +31,13 @@ class BaseControllerPrivate
 
   BaseController* const q_ptr;
 
+  BaseGUI* m_GUI;
+
+  niftkIBaseView* m_View;
+
 public:
 
-  BaseControllerPrivate(BaseController* q);
+  BaseControllerPrivate(BaseController* q, niftkIBaseView* view);
   ~BaseControllerPrivate();
 
   void OnFocusedWindowDeleted()
@@ -57,8 +61,10 @@ public:
 }
 
 //-----------------------------------------------------------------------------
-niftk::BaseControllerPrivate::BaseControllerPrivate(BaseController* baseController)
+niftk::BaseControllerPrivate::BaseControllerPrivate(BaseController* baseController, niftkIBaseView* view)
   : q_ptr(baseController),
+    m_GUI(nullptr),
+    m_View(view),
     m_FocusManagerObserverTag(0),
     m_Focused2DRenderer(nullptr),
     m_FocusedWindowDeletedObserverTag(0)
@@ -121,9 +127,7 @@ void niftk::BaseControllerPrivate::OnFocusChanged()
 
 //-----------------------------------------------------------------------------
 niftk::BaseController::BaseController(niftkIBaseView* view)
-  : d_ptr(new niftk::BaseControllerPrivate(this)),
-    m_GUI(nullptr),
-    m_View(view)
+  : d_ptr(new niftk::BaseControllerPrivate(this, view))
 {
 }
 
@@ -137,49 +141,52 @@ niftk::BaseController::~BaseController()
 //-----------------------------------------------------------------------------
 void niftk::BaseController::SetupGUI(QWidget* parent)
 {
-  m_GUI = this->CreateGUI(parent);
+  Q_D(BaseController);
+  d->m_GUI = this->CreateGUI(parent);
 }
 
 
 //-----------------------------------------------------------------------------
 niftk::BaseGUI* niftk::BaseController::GetGUI() const
 {
-  return m_GUI;
+  Q_D(const BaseController);
+  return d->m_GUI;
 }
 
 
 //-----------------------------------------------------------------------------
 niftkIBaseView* niftk::BaseController::GetView() const
 {
-  return m_View;
+  Q_D(const BaseController);
+  return d->m_View;
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::DataStorage* niftk::BaseController::GetDataStorage() const
 {
-  return m_View->GetDataStorage();
+  return this->GetView()->GetDataStorage();
 }
 
 
 //-----------------------------------------------------------------------------
 void niftk::BaseController::RequestRenderWindowUpdate() const
 {
-  m_View->RequestRenderWindowUpdate();
+  this->GetView()->RequestRenderWindowUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
 QList<mitk::DataNode::Pointer> niftk::BaseController::GetDataManagerSelection() const
 {
-  return m_View->GetDataManagerSelection();
+  return this->GetView()->GetDataManagerSelection();
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::SliceNavigationController* niftk::BaseController::GetSliceNavigationController() const
 {
-  return m_View->GetSliceNavigationController();
+  return this->GetView()->GetSliceNavigationController();
 }
 
 

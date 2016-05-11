@@ -95,10 +95,6 @@ protected:
 
 private:
 
-  BaseGUI* m_GUI;
-
-  niftkIBaseView* m_View;
-
   QScopedPointer<BaseControllerPrivate> d_ptr;
 
   Q_DECLARE_PRIVATE(BaseController);
