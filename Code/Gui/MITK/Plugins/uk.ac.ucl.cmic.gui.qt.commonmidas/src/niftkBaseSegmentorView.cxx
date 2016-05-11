@@ -15,31 +15,12 @@
 #include "niftkBaseSegmentorView.h"
 
 #include <berryPlatform.h>
+#include <berryIBerryPreferences.h>
+#include <berryIPreferences.h>
+#include <berryIPreferencesService.h>
 
-#include <QMessageBox>
-#include <mitkILinkedRenderWindowPart.h>
-#include <mitkImageAccessByItk.h>
-#include <mitkDataNodeObject.h>
-#include <mitkProperties.h>
-#include <mitkColorProperty.h>
-#include <mitkRenderingManager.h>
-#include <mitkBaseRenderer.h>
-#include <mitkSegTool2D.h>
-#include <mitkToolManager.h>
-#include <mitkGlobalInteraction.h>
-#include <mitkStateMachine.h>
-#include <mitkDataStorageUtils.h>
-#include <mitkColorProperty.h>
-#include <mitkProperties.h>
-#include <QmitkRenderWindow.h>
-
-#include <NifTKConfigure.h>
 #include <niftkBaseSegmentorController.h>
-#include <niftkMIDASTool.h>
-#include <niftkMIDASDrawTool.h>
-#include <niftkMIDASPolyTool.h>
-#include <niftkMIDASSeedTool.h>
-#include <niftkImageOrientationUtils.h>
+
 
 const QString niftkBaseSegmentorView::DEFAULT_COLOUR("midas editor default colour");
 const QString niftkBaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
@@ -89,14 +70,6 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager* niftkBaseSegmentorView::GetToolManager()
-{
-  assert(m_SegmentorController);
-  return m_SegmentorController->GetToolManager();
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkBaseSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
 {
   assert(m_SegmentorController);
@@ -130,153 +103,6 @@ void niftkBaseSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer p
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* niftkBaseSegmentorView::GetWorkingImageFromToolManager(int index)
-{
-  return m_SegmentorController->GetWorkingImageFromToolManager(index);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* niftkBaseSegmentorView::GetReferenceNodeFromToolManager()
-{
-  return m_SegmentorController->GetReferenceNodeFromToolManager();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::Image* niftkBaseSegmentorView::GetReferenceImageFromToolManager()
-{
-  return m_SegmentorController->GetReferenceImageFromToolManager();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* niftkBaseSegmentorView::GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer node)
-{
-  return m_SegmentorController->GetReferenceNodeFromSegmentationNode(node);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType niftkBaseSegmentorView::GetWorkingData()
-{
-  return m_SegmentorController->GetWorkingData();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::Image* niftkBaseSegmentorView::GetReferenceImage()
-{
-  return m_SegmentorController->GetReferenceImage();
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkBaseSegmentorView::IsNodeAReferenceImage(const mitk::DataNode::Pointer node)
-{
-  return m_SegmentorController->IsNodeAReferenceImage(node);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkBaseSegmentorView::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
-{
-  return m_SegmentorController->IsNodeASegmentationImage(node);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkBaseSegmentorView::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
-{
-  return m_SegmentorController->IsNodeAWorkingImage(node);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType niftkBaseSegmentorView::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode)
-{
-  return m_SegmentorController->GetWorkingDataFromSegmentationNode(segmentationNode);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* niftkBaseSegmentorView::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
-{
-  return m_SegmentorController->GetSegmentationNodeFromWorkingData(node);
-}
-
-
-//-----------------------------------------------------------------------------
-bool niftkBaseSegmentorView::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
-{
-  return m_SegmentorController->CanStartSegmentationForBinaryNode(node);
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::ApplyDisplayOptions(mitk::DataNode* node)
-{
-  m_SegmentorController->ApplyDisplayOptions(node);
-}
-
-
-//-----------------------------------------------------------------------------
-int niftkBaseSegmentorView::GetSliceNumberFromSliceNavigationControllerAndReferenceImage()
-{
-  return m_SegmentorController->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-}
-
-
-//-----------------------------------------------------------------------------
-niftk::ImageOrientation niftkBaseSegmentorView::GetOrientationAsEnum()
-{
-  return m_SegmentorController->GetImageOrientation();
-}
-
-
-//-----------------------------------------------------------------------------
-int niftkBaseSegmentorView::GetAxisFromReferenceImage(niftk::ImageOrientation orientation)
-{
-  return m_SegmentorController->GetAxisFromReferenceImage(orientation);
-}
-
-
-//-----------------------------------------------------------------------------
-int niftkBaseSegmentorView::GetReferenceImageAxialAxis()
-{
-  return m_SegmentorController->GetReferenceImageAxialAxis();
-}
-
-
-//-----------------------------------------------------------------------------
-int niftkBaseSegmentorView::GetReferenceImageCoronalAxis()
-{
-  return m_SegmentorController->GetReferenceImageCoronalAxis();
-}
-
-
-//-----------------------------------------------------------------------------
-int niftkBaseSegmentorView::GetReferenceImageSagittalAxis()
-{
-  return m_SegmentorController->GetReferenceImageSagittalAxis();
-}
-
-
-//-----------------------------------------------------------------------------
-int niftkBaseSegmentorView::GetViewAxis()
-{
-  return m_SegmentorController->GetViewAxis();
-}
-
-
-//-----------------------------------------------------------------------------
-int niftkBaseSegmentorView::GetUpDirection()
-{
-  return m_SegmentorController->GetUpDirection();
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkBaseSegmentorView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
@@ -303,11 +129,4 @@ void niftkBaseSegmentorView::RetrievePreferenceValues()
     defaultSegmentationColour = QColor(0, 255, 0);
   }
   m_SegmentorController->SetDefaultSegmentationColour(defaultSegmentationColour);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode::Pointer niftkBaseSegmentorView::GetSelectedNode() const
-{
-  return m_SegmentorController->GetSelectedNode();
 }
