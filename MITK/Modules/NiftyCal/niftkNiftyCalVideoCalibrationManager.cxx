@@ -35,8 +35,6 @@ const NiftyCalVideoCalibrationManager::HandEyeMethod       NiftyCalVideoCalibrat
 //-----------------------------------------------------------------------------
 NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 : m_DataStorage(nullptr)
-, m_LeftImageNode(nullptr)
-, m_RightImageNode(nullptr)
 , m_TrackingTransformNode(nullptr)
 , m_DoIterative(NiftyCalVideoCalibrationManager::DefaultDoIterative)
 , m_MinimumNumberOfSnapshotsForCalibrating(NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating)
@@ -48,6 +46,8 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_HandeyeMethod(NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)
 , m_TagFamily(NiftyCalVideoCalibrationManager::DefaultTagFamily)
 {
+  m_ImageNode[0] = nullptr;
+  m_ImageNode[1] = nullptr;
 }
 
 
@@ -71,18 +71,126 @@ void NiftyCalVideoCalibrationManager::SetDataStorage(
 
 
 //-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::SetLeftImageNode(mitk::DataNode::Pointer node)
+{
+  this->m_ImageNode[0] = node;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNode::Pointer NiftyCalVideoCalibrationManager::GetLeftImageNode() const
+{
+  return m_ImageNode[0];
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::SetRightImageNode(mitk::DataNode::Pointer node)
+{
+  this->m_ImageNode[1] = node;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNode::Pointer NiftyCalVideoCalibrationManager::GetRightImageNode() const
+{
+  return m_ImageNode[1];
+}
+
+
+//-----------------------------------------------------------------------------
 unsigned int NiftyCalVideoCalibrationManager::GetNumberOfSnapshots() const
 {
-  return m_LeftPoints.size();
+  return m_Points[0].size();
 }
 
 
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::Restart()
 {
-  m_LeftPoints.clear();
-  m_RightPoints.clear();
-  MITK_INFO << "Restart. Left point size now:" << m_LeftPoints.size() << ", right: " <<  m_RightPoints.size();
+  for (int i = 0; i < 2; i++)
+  {
+    m_Points[i].clear();
+    m_OriginalImages[i].clear();
+    m_ImagesForWarping[i].clear();
+  }
+  MITK_INFO << "Restart. Left point size now:" << m_Points[0].size() << ", right: " <<  m_Points[1].size();
+}
+
+
+//-----------------------------------------------------------------------------
+bool NiftyCalVideoCalibrationManager::ConvertImage(
+    mitk::DataNode::Pointer imageNode, cv::Mat& outputImage)
+{
+  bool converted = false;
+
+  mitk::Image::Pointer inputImage = dynamic_cast<mitk::Image*>(imageNode->GetData());
+  if (inputImage.IsNotNull())
+  {
+    cv::Mat image = niftk::MitkImageToOpenCVMat(inputImage);
+    cv::cvtColor(image, outputImage, CV_BGR2GRAY);
+    converted = true;
+  }
+
+  return converted;
+}
+
+
+//-----------------------------------------------------------------------------
+bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Mat& image)
+{
+  bool result = false;
+
+  cv::Point2d scaleFactors;
+  scaleFactors.x = m_ScaleFactorX;
+  scaleFactors.y = m_ScaleFactorY;
+
+  cv::Mat copyOfImage1 = image.clone(); // Remember OpenCV reference counting.
+  cv::Mat copyOfImage2 = image.clone(); // Remember OpenCV reference counting.
+
+  if (m_CalibrationPattern == CHESSBOARD)
+  {
+    cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
+
+    niftk::OpenCVChessboardPointDetector *openCVDetector1 = new niftk::OpenCVChessboardPointDetector(internalCorners);
+    openCVDetector1->SetImageScaleFactor(scaleFactors);
+    openCVDetector1->SetImage(&copyOfImage1);
+
+    niftk::PointSet points = openCVDetector1->GetPoints();
+    if (points.size() == m_GridSizeX * m_GridSizeY)
+    {
+      result = true;
+      m_Points[imageIndex].push_back(points);
+
+      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(openCVDetector1);
+      m_OriginalImages[imageIndex].push_back(std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
+      dynamic_cast<niftk::OpenCVChessboardPointDetector*>(m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
+
+      niftk::OpenCVChessboardPointDetector *openCVDetector2 = new niftk::OpenCVChessboardPointDetector(internalCorners);
+      openCVDetector2->SetImageScaleFactor(scaleFactors);
+      openCVDetector2->SetImage(&copyOfImage2);
+
+      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(openCVDetector2);
+      m_ImagesForWarping[imageIndex].push_back(std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
+      dynamic_cast<niftk::OpenCVChessboardPointDetector*>(m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
+    }
+  }
+  else if (m_CalibrationPattern == CIRCLE_GRID)
+  {
+    std::cerr << "Matt, m_CalibrationPattern == CIRCLE_GRID" << std::endl;
+  }
+  else if (m_CalibrationPattern == APRIL_TAGS)
+  {
+    std::cerr << "Matt, m_CalibrationPattern == APRIL_TAGS" << std::endl;
+  }
+  else
+  {
+    mitkThrow() << "Invalid calibration pattern.";
+  }
+
+  return result;
 }
 
 
@@ -91,83 +199,36 @@ bool NiftyCalVideoCalibrationManager::Grab()
 {
   bool result = false;
 
-  if (m_LeftImageNode.IsNull())
+  if (m_ImageNode[0].IsNull())
   {
     mitkThrow() << "Left image should never be NULL";
   }
 
-  bool gotLeft = false;
-  bool gotRight = false;
+  bool converted[2] = {false, false};
+  bool extracted[2] = {false, false};
 
-  mitk::Image::Pointer leftImage = dynamic_cast<mitk::Image*>(m_LeftImageNode->GetData());
-  if (leftImage.IsNotNull())
+  // Its only a loop over 2 channels, but then we can use OpenMP!
+  for (int i = 0; i < 2; i++)
   {
-    cv::Mat image = niftk::MitkImageToOpenCVMat(leftImage);
-
-    cv::Point2d scaleFactors;
-    scaleFactors.x = 1;
-    scaleFactors.y = 1;
-
-    cv::Mat greyImage;
-    cv::cvtColor(image, greyImage, CV_BGR2GRAY);
-
-    cv::Size2i internalCorners(14, 10);
-    niftk::OpenCVChessboardPointDetector detector(internalCorners);
-    detector.SetImage(&greyImage);
-    detector.SetImageScaleFactor(scaleFactors);
-
-    niftk::PointSet points = detector.GetPoints();
-    if (points.size() > 0)
+    if (m_ImageNode[i].IsNotNull())
     {
-      gotLeft = true;
-      m_LeftPoints.push_back(points);
-    }
-    else
-    {
-      MITK_INFO << "Failed to extract left camera points.";
-    }
-  }
-
-  if (m_RightImageNode.IsNotNull())
-  {
-    mitk::Image::Pointer rightImage = dynamic_cast<mitk::Image*>(m_RightImageNode->GetData());
-    if (rightImage.IsNotNull())
-    {
-      cv::Mat image = niftk::MitkImageToOpenCVMat(rightImage);
-
-      cv::Point2d scaleFactors;
-      scaleFactors.x = 1;
-      scaleFactors.y = 1;
-
-      cv::Mat greyImage;
-      cv::cvtColor(image, greyImage, CV_BGR2GRAY);
-
-      cv::Size2i internalCorners(14, 10);
-      niftk::OpenCVChessboardPointDetector detector(internalCorners);
-      detector.SetImage(&greyImage);
-      detector.SetImageScaleFactor(scaleFactors);
-
-      niftk::PointSet points = detector.GetPoints();
-      if (points.size() > 0)
+      converted[i] = this->ConvertImage(m_ImageNode[i], m_TmpImage[i]);
+      if (converted[i])
       {
-        gotRight = true;
-        m_RightPoints.push_back(points);
-      }
-      else
-      {
-        MITK_INFO << "Failed to extract right camera points.";
+        extracted[i] = this->ExtractPoints(i, m_TmpImage[i]);
       }
     }
   }
 
-  if (gotLeft &&
-      ((m_RightImageNode.IsNotNull() && gotRight) || m_RightImageNode.IsNull())
+  if (converted[0] && extracted[0] // must do left.
+      && ((m_ImageNode[1].IsNotNull() && converted[1] && extracted[1])
+          || m_ImageNode[1].IsNull())
       )
   {
     result = true;
   }
 
-  MITK_INFO << "Grabbed. Left point size now:" << m_LeftPoints.size() << ", right: " <<  m_RightPoints.size();
+  MITK_INFO << "Grabbed. Left point size now:" << m_Points[0].size() << ", right: " <<  m_Points[1].size();
   return result;
 }
 
@@ -175,17 +236,17 @@ bool NiftyCalVideoCalibrationManager::Grab()
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::UnGrab()
 {
-  if (!m_LeftPoints.empty())
+  for (int i = 0; i < 2; i++)
   {
-    m_LeftPoints.pop_back();
+    if (!m_Points[i].empty())
+    {
+      m_Points[i].pop_back();
+      m_OriginalImages[i].pop_back();
+      m_ImagesForWarping[i].pop_back();
+    }
   }
 
-  if (!m_RightPoints.empty())
-  {
-    m_RightPoints.pop_back();
-  }
-
-  MITK_INFO << "UnGrab. Left point size now:" << m_LeftPoints.size() << ", right: " <<  m_RightPoints.size();
+  MITK_INFO << "UnGrab. Left point size now:" << m_Points[0].size() << ", right: " <<  m_Points[1].size();
 }
 
 

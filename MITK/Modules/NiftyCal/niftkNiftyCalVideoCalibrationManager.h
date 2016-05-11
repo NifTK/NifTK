@@ -22,6 +22,7 @@
 #include <mitkDataNode.h>
 #include <list>
 #include <niftkPointUtilities.h>
+#include <niftkIPoint2DDetector.h>
 
 namespace niftk {
 
@@ -67,11 +68,10 @@ public:
 
   void SetDataStorage(const mitk::DataStorage::Pointer& storage);
 
-  itkSetMacro(LeftImageNode, mitk::DataNode::Pointer);
-  itkGetMacro(LeftImageNode, mitk::DataNode::Pointer);
-
-  itkSetMacro(RightImageNode, mitk::DataNode::Pointer);
-  itkGetMacro(RightImageNode, mitk::DataNode::Pointer);
+  void SetLeftImageNode(mitk::DataNode::Pointer node);
+  mitk::DataNode::Pointer GetLeftImageNode() const;
+  void SetRightImageNode(mitk::DataNode::Pointer node);
+  mitk::DataNode::Pointer GetRightImageNode() const;
 
   itkSetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
   itkGetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
@@ -148,12 +148,15 @@ protected:
 
 private:
 
+  bool ConvertImage(mitk::DataNode::Pointer imageNode, cv::Mat& outputImage);
+  bool ExtractPoints(int imageIndex, const cv::Mat& image);
+
+  // Data from Plugin.
   mitk::DataStorage::Pointer m_DataStorage;
-  mitk::DataNode::Pointer    m_LeftImageNode;
-  mitk::DataNode::Pointer    m_RightImageNode;
+  mitk::DataNode::Pointer    m_ImageNode[2];
   mitk::DataNode::Pointer    m_TrackingTransformNode;
 
-  // Data from preferences
+  // Data from preferences.
   bool                       m_DoIterative;
   unsigned int               m_MinimumNumberOfSnapshotsForCalibrating;
   std::string                m_3DModelFileName;
@@ -167,9 +170,14 @@ private:
   HandEyeMethod              m_HandeyeMethod;
   std::string                m_TagFamily;
 
+  // Data used for temporary storage
+  cv::Mat                    m_TmpImage[2];
+
   // Data used for calibration.
-  std::list<niftk::PointSet> m_LeftPoints;
-  std::list<niftk::PointSet> m_RightPoints;
+  std::list<niftk::PointSet> m_Points[2];
+  std::list< std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_OriginalImages[2];
+  std::list< std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_ImagesForWarping[2];
+
 
 }; // end class
 
