@@ -578,7 +578,7 @@ void niftkMorphologicalSegmentorController::OnNodeRemoved(const mitk::DataNode* 
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* node)
+void niftkMorphologicalSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* /*renderer*/)
 {
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
 

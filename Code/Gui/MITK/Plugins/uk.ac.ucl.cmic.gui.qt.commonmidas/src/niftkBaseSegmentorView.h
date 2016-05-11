@@ -102,8 +102,6 @@ protected:
   /// \brief Derived classes decide which preferences are actually read.
   virtual QString GetPreferencesNodeName() = 0;
 
-  void onVisibilityChanged(const mitk::DataNode* node) override;
-
 private:
 
   /// \brief The segmentor controller that realises the GUI logic behind the view.

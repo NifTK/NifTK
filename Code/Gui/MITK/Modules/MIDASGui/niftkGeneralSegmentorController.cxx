@@ -503,7 +503,7 @@ void niftkGeneralSegmentorController::StoreInitialSegmentation()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* node)
+void niftkGeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* /*renderer*/)
 {
   if (!this->HasInitialisedWorkingData())
   {

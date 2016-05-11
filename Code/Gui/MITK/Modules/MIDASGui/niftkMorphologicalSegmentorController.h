@@ -45,7 +45,7 @@ public:
   void OnViewGetsClosed();
 
   /// \brief Called when the visibility of a data node has changed.
-  virtual void OnNodeVisibilityChanged(const mitk::DataNode* node) override;
+  virtual void OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
   /// \brief Called when a data node has been removed.
   virtual void OnNodeRemoved(const mitk::DataNode* node) override;

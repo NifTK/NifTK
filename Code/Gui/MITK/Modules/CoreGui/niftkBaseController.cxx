@@ -29,7 +29,6 @@ namespace niftk
 {
 
 class BaseControllerPrivate
-  : private mitk::DataStorageListener
 {
   Q_DECLARE_PUBLIC(BaseController);
 
@@ -39,17 +38,69 @@ class BaseControllerPrivate
 
   niftkIBaseView* m_View;
 
+  class DataStorageListener : private mitk::DataStorageListener
+  {
+  public:
+    DataStorageListener(BaseControllerPrivate* d, mitk::DataStorage* dataStorage)
+      : mitk::DataStorageListener(dataStorage),
+        m_D(d)
+    {
+    }
+  private:
+    virtual void OnNodeAdded(mitk::DataNode* node) override
+    {
+      m_D->OnNodeAdded(node);
+    }
+
+    virtual void OnNodeChanged(mitk::DataNode* node) override
+    {
+      m_D->OnNodeChanged(node);
+    }
+
+    virtual void OnNodeRemoved(mitk::DataNode* node) override
+    {
+      m_D->OnNodeRemoved(node);
+    }
+
+    virtual void OnNodeDeleted(mitk::DataNode* node) override
+    {
+      m_D->OnNodeDeleted(node);
+    }
+
+    BaseControllerPrivate* m_D;
+  };
+
+  class VisibilityListener : private mitk::DataNodePropertyListener
+  {
+  public:
+    VisibilityListener(BaseControllerPrivate* d, mitk::DataStorage* dataStorage)
+      : mitk::DataNodePropertyListener(dataStorage, "visible"),
+        m_D(d)
+    {
+    }
+  private:
+    virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer) override
+    {
+      m_D->OnNodeVisibilityChanged(node, renderer);
+    }
+
+    BaseControllerPrivate* m_D;
+  };
+
+
   void OnFocusedWindowDeleted();
 
   void OnFocusChanged();
 
-  virtual void OnNodeAdded(mitk::DataNode* node) override;
+  void OnNodeAdded(mitk::DataNode* node);
 
-  virtual void OnNodeChanged(mitk::DataNode* node) override;
+  void OnNodeChanged(mitk::DataNode* node);
 
-  virtual void OnNodeRemoved(mitk::DataNode* node) override;
+  void OnNodeRemoved(mitk::DataNode* node);
 
-  virtual void OnNodeDeleted(mitk::DataNode* node) override;
+  void OnNodeDeleted(mitk::DataNode* node);
+
+  void OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer);
 
 public:
 
@@ -65,19 +116,24 @@ public:
   /// \brief Observer to get notified of the deletion of the focused renderer.
   unsigned long m_FocusedWindowDeletedObserverTag;
 
+  DataStorageListener* m_DataStorageListener;
+
+  VisibilityListener* m_VisibilityListener;
+
 };
 
 }
 
 //-----------------------------------------------------------------------------
 niftk::BaseControllerPrivate::BaseControllerPrivate(BaseController* baseController, niftkIBaseView* view)
-  : mitk::DataStorageListener(view->GetDataStorage()),
-    q_ptr(baseController),
+  : q_ptr(baseController),
     m_GUI(nullptr),
     m_View(view),
     m_FocusManagerObserverTag(0),
     m_Focused2DRenderer(nullptr),
-    m_FocusedWindowDeletedObserverTag(0)
+    m_FocusedWindowDeletedObserverTag(0),
+    m_DataStorageListener(new DataStorageListener(this, view->GetDataStorage())),
+    m_VisibilityListener(new VisibilityListener(this, view->GetDataStorage()))
 {
   Q_Q(BaseController);
 
@@ -103,6 +159,9 @@ niftk::BaseControllerPrivate::~BaseControllerPrivate()
   {
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
+
+  delete m_DataStorageListener;
+  delete m_VisibilityListener;
 }
 
 
@@ -165,11 +224,20 @@ void niftk::BaseControllerPrivate::OnNodeRemoved(mitk::DataNode* node)
   q->OnNodeRemoved(node);
 }
 
+
 //-----------------------------------------------------------------------------
 void niftk::BaseControllerPrivate::OnNodeDeleted(mitk::DataNode* node)
 {
   Q_Q(BaseController);
   q->OnNodeDeleted(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseControllerPrivate::OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+{
+  Q_Q(BaseController);
+  q->OnNodeVisibilityChanged(node, renderer);
 }
 
 

@@ -75,8 +75,6 @@ public:
   virtual void OnViewGetsVisible();
   virtual void OnViewGetsHidden();
 
-  virtual void OnNodeVisibilityChanged(const mitk::DataNode* node);
-
 protected slots:
 
   /// \brief Called from niftkToolSelectorWidget when a tool changes.

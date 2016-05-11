@@ -178,7 +178,7 @@ protected:
   /// \brief Creates the general segmentor widget that holds the GUI components of the view.
   virtual niftk::BaseGUI* CreateGUI(QWidget* parent) override;
 
-  virtual void OnNodeVisibilityChanged(const mitk::DataNode* node) override;
+  virtual void OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
 protected slots:
 
