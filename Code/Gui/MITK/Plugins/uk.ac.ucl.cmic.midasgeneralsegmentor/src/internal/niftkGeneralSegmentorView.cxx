@@ -105,16 +105,6 @@ void niftkGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::OnFocusChanged()
-{
-  QmitkBaseView::OnFocusChanged();
-
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnFocusChanged();
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
 {
   assert(m_GeneralSegmentorController);

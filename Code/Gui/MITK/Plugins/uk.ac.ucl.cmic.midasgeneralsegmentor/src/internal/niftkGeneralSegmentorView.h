@@ -84,11 +84,6 @@ protected:
 
 private:
 
-  /// \brief Callback for when the window focus changes, where we update this view
-  /// to be listening to the right window, and make sure ITK pipelines know we have
-  /// changed orientation.
-  void OnFocusChanged() override;
-
   /// \brief The general segmentor controller that realises the GUI logic behind the view.
   niftkGeneralSegmentorController* m_GeneralSegmentorController;
 
