@@ -97,14 +97,6 @@ void niftkGeneralSegmentorView::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
-{
-  assert(m_GeneralSegmentorController);
-  m_GeneralSegmentorController->OnNodeVisibilityChanged(node);
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkGeneralSegmentorView::NodeChanged(const mitk::DataNode* node)
 {
   assert(m_GeneralSegmentorController);

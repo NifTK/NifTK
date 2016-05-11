@@ -70,6 +70,8 @@ public:
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   void SetDefaultSegmentationColour(const QColor& defaultSegmentationColour);
 
+  virtual void OnNodeVisibilityChanged(const mitk::DataNode* node) = 0;
+
 protected slots:
 
   /// \brief Called from niftkToolSelectorWidget when a tool changes.

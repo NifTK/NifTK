@@ -80,8 +80,6 @@ protected:
   /// segmentation node is removed.
   virtual void NodeRemoved(const mitk::DataNode* node) override;
 
-  void onVisibilityChanged(const mitk::DataNode* node) override;
-
 private:
 
   /// \brief The general segmentor controller that realises the GUI logic behind the view.

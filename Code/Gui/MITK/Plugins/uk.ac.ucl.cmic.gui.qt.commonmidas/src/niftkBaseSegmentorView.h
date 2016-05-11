@@ -167,6 +167,8 @@ protected:
   /// \brief Returns the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer GetSelectedNode() const;
 
+  void onVisibilityChanged(const mitk::DataNode* node) override;
+
 private:
 
   /// \brief The segmentor controller that realises the GUI logic behind the view.

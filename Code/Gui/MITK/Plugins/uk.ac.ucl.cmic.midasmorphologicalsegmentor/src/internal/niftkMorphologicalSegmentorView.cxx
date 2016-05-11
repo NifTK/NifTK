@@ -96,11 +96,3 @@ QString niftkMorphologicalSegmentorView::GetPreferencesNodeName()
 {
   return niftkMorphologicalSegmentorPreferencePage::PREFERENCES_NODE_NAME;
 }
-
-
-//-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
-{
-  assert(m_MorphologicalSegmentorController);
-  m_MorphologicalSegmentorController->OnNodeVisibilityChanged(node);
-}

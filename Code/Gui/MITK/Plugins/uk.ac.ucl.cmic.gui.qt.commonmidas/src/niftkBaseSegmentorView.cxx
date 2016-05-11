@@ -97,6 +97,13 @@ mitk::ToolManager* niftkBaseSegmentorView::GetToolManager()
 
 
 //-----------------------------------------------------------------------------
+void niftkBaseSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
+{
+  assert(m_SegmentorController);
+  m_SegmentorController->OnNodeVisibilityChanged(node);
+}
+
+//-----------------------------------------------------------------------------
 void niftkBaseSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer>& nodes)
 {
   Q_UNUSED(part);

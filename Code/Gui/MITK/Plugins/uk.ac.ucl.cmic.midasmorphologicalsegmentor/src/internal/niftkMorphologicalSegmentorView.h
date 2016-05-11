@@ -77,8 +77,6 @@ protected:
   /// \brief Returns the name of the preferences node to look up.
   virtual QString GetPreferencesNodeName() override;
 
-  void onVisibilityChanged(const mitk::DataNode* node) override;
-
 private:
 
   /// \brief The morphological segmentor controller that realises the GUI logic behind the view.

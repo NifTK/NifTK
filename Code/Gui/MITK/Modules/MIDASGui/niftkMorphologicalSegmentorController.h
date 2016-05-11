@@ -51,7 +51,7 @@ public:
   /// \param imageIndex tells which image has been modified: erosion addition / subtraction or dilation addition / subtraction.
   virtual void OnSegmentationEdited(int imageIndex);
 
-  void OnNodeVisibilityChanged(const mitk::DataNode* node);
+  virtual void OnNodeVisibilityChanged(const mitk::DataNode* node) override;
 
 protected:
 
