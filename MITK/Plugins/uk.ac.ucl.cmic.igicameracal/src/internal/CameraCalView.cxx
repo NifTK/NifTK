@@ -16,6 +16,7 @@
 #include "CameraCalView.h"
 #include "CameraCalViewPreferencePage.h"
 #include "CameraCalViewActivator.h"
+#include <niftkNiftyCalException.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkImage.h>
@@ -297,7 +298,46 @@ void CameraCalView::OnGrabButtonPressed()
 //-----------------------------------------------------------------------------
 bool CameraCalView::RunGrab()
 {
-  return m_Manager->Grab();
+
+  bool isSuccessful = false;
+  std::string errorMessage = "";
+
+  // This happens in a separate thread, so try to catch everything.
+  // Even if we understand where NiftyCal exceptions come from,
+  // and in our own code, where MITK exceptions come from, we probably
+  // have not searched through all of OpenCV/AprilTags etc.
+
+  try
+  {
+    isSuccessful = m_Manager->Grab();
+  }
+  catch (niftk::NiftyCalException& e)
+  {
+    errorMessage = e.GetDescription();
+    MITK_ERROR << "CameraCalView::RunGrab() failed:" << e.GetDescription();
+  }
+  catch (mitk::Exception& e)
+  {
+    errorMessage = e.GetDescription();
+    MITK_ERROR << "CameraCalView::RunGrab() failed:" << e.GetDescription();
+  }
+  catch (std::exception& e)
+  {
+    errorMessage = e.what();
+    MITK_ERROR << "CameraCalView::RunGrab() failed:" << e.what();
+  }
+
+  if (!errorMessage.empty())
+  {
+    QMessageBox msgBox;
+    msgBox.setText("An Error Occurred.");
+    msgBox.setInformativeText(QString::fromStdString(errorMessage));
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+  }
+
+  return isSuccessful;
 }
 
 
@@ -355,7 +395,45 @@ void CameraCalView::Calibrate()
 //-----------------------------------------------------------------------------
 double CameraCalView::RunCalibration()
 {
-  return m_Manager->Calibrate();
+  double rms = 0;
+  std::string errorMessage = "";
+
+  // This happens in a separate thread, so try to catch everything.
+  // Even if we understand where NiftyCal exceptions come from,
+  // and in our own code, where MITK exceptions come from, we probably
+  // have not searched through all of OpenCV/AprilTags etc.
+
+  try
+  {
+    rms = m_Manager->Calibrate();
+  }
+  catch (niftk::NiftyCalException& e)
+  {
+    errorMessage = e.GetDescription();
+    MITK_ERROR << "CameraCalView::RunCalibration() failed:" << e.GetDescription();
+  }
+  catch (mitk::Exception& e)
+  {
+    errorMessage = e.GetDescription();
+    MITK_ERROR << "CameraCalView::RunCalibration() failed:" << e.GetDescription();
+  }
+  catch (std::exception& e)
+  {
+    errorMessage = e.what();
+    MITK_ERROR << "CameraCalView::RunCalibration() failed:" << e.what();
+  }
+
+  if (!errorMessage.empty())
+  {
+    QMessageBox msgBox;
+    msgBox.setText("An Error Occurred.");
+    msgBox.setInformativeText(QString::fromStdString(errorMessage));
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+  }
+
+  return rms;
 }
 
 
