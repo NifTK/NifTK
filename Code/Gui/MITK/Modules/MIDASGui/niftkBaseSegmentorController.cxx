@@ -331,7 +331,7 @@ int niftkBaseSegmentorController::GetViewAxis()
 {
   int axisNumber = -1;
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  niftk::ImageOrientation orientation = this->GetImageOrientation();
+  niftk::ImageOrientation orientation = this->GetOrientation();
   if (referenceImage.IsNotNull() && orientation != niftk::IMAGE_ORIENTATION_UNKNOWN)
   {
     axisNumber = niftk::GetThroughPlaneAxis(referenceImage, orientation);
@@ -345,7 +345,7 @@ int niftkBaseSegmentorController::GetUpDirection()
 {
   int upDirection = 0;
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  niftk::ImageOrientation orientation = this->GetImageOrientation();
+  niftk::ImageOrientation orientation = this->GetOrientation();
   if (referenceImage.IsNotNull() && orientation != niftk::IMAGE_ORIENTATION_UNKNOWN)
   {
     upDirection = niftk::GetUpDirection(referenceImage, orientation);

@@ -595,6 +595,13 @@ void niftkGeneralSegmentorController::OnViewGetsHidden()
 
 
 //-----------------------------------------------------------------------------
+void niftkGeneralSegmentorController::OnSelectedSliceChanged(niftk::ImageOrientation orientation, int sliceIndex)
+{
+  MITK_INFO << "niftkGeneralSegmentorController::OnSelectedSliceChanged() orientation: " << orientation << " ; slice index: " << sliceIndex;
+}
+
+
+//-----------------------------------------------------------------------------
 void niftkGeneralSegmentorController::OnFocusChanged()
 {
   mitk::BaseRenderer* focusedRenderer = this->GetFocused2DRenderer();
@@ -690,7 +697,7 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int previousSliceNumb
     if (segmentationNode.IsNotNull() && segmentationImage.IsNotNull())
     {
       int axisNumber = this->GetViewAxis();
-      niftk::ImageOrientation tmpOrientation = this->GetImageOrientation();
+      niftk::ImageOrientation tmpOrientation = this->GetOrientation();
       itk::Orientation orientation = niftk::GetItkOrientation(tmpOrientation);
 
       mitk::ToolManager *toolManager = this->GetToolManager();
@@ -1034,7 +1041,7 @@ void niftkGeneralSegmentorController::InitialiseSeedsForWholeVolume()
     return;
   }
 
-  niftk::ImageOrientation orientation = this->GetImageOrientation();
+  niftk::ImageOrientation orientation = this->GetOrientation();
   if (orientation == niftk::IMAGE_ORIENTATION_UNKNOWN)
   {
     orientation = niftk::IMAGE_ORIENTATION_CORONAL;
@@ -2003,7 +2010,7 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     return;
   }
 
-  niftk::ImageOrientation imageOrientation = this->GetImageOrientation();
+  niftk::ImageOrientation imageOrientation = this->GetOrientation();
   itk::Orientation orientation = niftk::GetItkOrientation(imageOrientation);
 
   QString message;
@@ -2194,7 +2201,7 @@ void niftkGeneralSegmentorController::OnWipeButtonClicked()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorController::OnWipePlusButtonClicked()
 {
-  niftk::ImageOrientation imageOrientation = this->GetImageOrientation();
+  niftk::ImageOrientation imageOrientation = this->GetOrientation();
 
   QString orientationText;
   QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
@@ -2231,7 +2238,7 @@ void niftkGeneralSegmentorController::OnWipePlusButtonClicked()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorController::OnWipeMinusButtonClicked()
 {
-  niftk::ImageOrientation imageOrientation = this->GetImageOrientation();
+  niftk::ImageOrientation imageOrientation = this->GetOrientation();
 
   QString orientationText;
   QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";

@@ -473,7 +473,7 @@ QmitkRenderWindow* QmitkBaseView::GetRenderWindow(QString id)
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* QmitkBaseView::GetSelectedRenderWindow() const
 {
-  QmitkRenderWindow* renderWindow = renderWindow;
+  QmitkRenderWindow* renderWindow = nullptr;
 
   if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
   {

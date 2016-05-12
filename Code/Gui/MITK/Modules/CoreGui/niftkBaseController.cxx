@@ -181,15 +181,12 @@ niftk::BaseControllerPrivate::~BaseControllerPrivate()
 //-----------------------------------------------------------------------------
 void niftk::BaseControllerPrivate::OnFocusChanged()
 {
-  MITK_INFO << "niftk::BaseControllerPrivate::OnFocusChanged()";
   Q_Q(BaseController);
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   assert(focusManager);
 
   mitk::BaseRenderer* focusedRenderer = focusManager->GetFocused();
-
-  /// TODO check if the renderer is in the active editor
 
   if (focusedRenderer != m_FocusedRenderer)
   {
@@ -209,27 +206,32 @@ void niftk::BaseControllerPrivate::OnFocusChanged()
 
     assert(focusedRenderer);
 
-    itk::SimpleMemberCommand<BaseControllerPrivate>::Pointer focusedRendererDeletedCommand = itk::SimpleMemberCommand<BaseControllerPrivate>::New();
-    focusedRendererDeletedCommand->SetCallbackFunction(this, &BaseControllerPrivate::OnFocusedRendererDeleted);
-    m_FocusedRendererDeletionObserverTag = focusedRenderer->AddObserver(itk::DeleteEvent(), focusedRendererDeletedCommand);
-
-    m_FocusedRenderer = focusedRenderer;
-
-    mitk::SliceNavigationController* sliceNavigationController = focusedRenderer->GetSliceNavigationController();
-    assert(sliceNavigationController);
-
-    if (focusedRenderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
+    /// We are only interested in render windows of the active render window part.
+    /// Auxiliary renderers in side views are ignored.
+    QmitkRenderWindow* selectedRenderWindow = q->GetView()->GetSelectedRenderWindow();
+    if (selectedRenderWindow && focusedRenderer == selectedRenderWindow->GetRenderer())
     {
-      m_SliceNavigationController = sliceNavigationController;
+      itk::SimpleMemberCommand<BaseControllerPrivate>::Pointer focusedRendererDeletedCommand = itk::SimpleMemberCommand<BaseControllerPrivate>::New();
+      focusedRendererDeletedCommand->SetCallbackFunction(this, &BaseControllerPrivate::OnFocusedRendererDeleted);
+      m_FocusedRendererDeletionObserverTag = focusedRenderer->AddObserver(itk::DeleteEvent(), focusedRendererDeletedCommand);
 
-      itk::SimpleMemberCommand<BaseControllerPrivate>::Pointer sliceChangedCommand = itk::SimpleMemberCommand<BaseControllerPrivate>::New();
-      sliceChangedCommand->SetCallbackFunction(this, &BaseControllerPrivate::OnSelectedSliceChanged);
-      m_SliceChangeObserverTag = sliceNavigationController->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), sliceChangedCommand);
+      m_FocusedRenderer = focusedRenderer;
 
-      ImageOrientation orientation = q->GetImageOrientation();
+      mitk::SliceNavigationController* sliceNavigationController = focusedRenderer->GetSliceNavigationController();
+      assert(sliceNavigationController);
+
+      if (focusedRenderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
+      {
+        m_SliceNavigationController = sliceNavigationController;
+
+        itk::SimpleMemberCommand<BaseControllerPrivate>::Pointer sliceChangedCommand = itk::SimpleMemberCommand<BaseControllerPrivate>::New();
+        sliceChangedCommand->SetCallbackFunction(this, &BaseControllerPrivate::OnSelectedSliceChanged);
+        m_SliceChangeObserverTag = sliceNavigationController->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), sliceChangedCommand);
+      }
+
+      ImageOrientation orientation = q->GetOrientation();
       int sliceIndex = q->GetSliceIndex();
-      MITK_INFO << "niftk::BaseControllerPrivate::OnFocusChanged() emit selected slice changed: orientation: " << orientation << " slice: " << sliceIndex;
-      emit q->SelectedSliceChanged(orientation, sliceIndex);
+      q->OnSelectedSliceChanged(orientation, sliceIndex);
     }
   }
 }
@@ -247,10 +249,9 @@ void niftk::BaseControllerPrivate::OnFocusedRendererDeleted()
 void niftk::BaseControllerPrivate::OnSelectedSliceChanged()
 {
   Q_Q(BaseController);
-  ImageOrientation orientation = q->GetImageOrientation();
+  ImageOrientation orientation = q->GetOrientation();
   int sliceIndex = q->GetSliceIndex();
-  MITK_INFO << "niftk::BaseControllerPrivate::OnSelectedSliceChanged() emit selected slice changed: orientation: " << orientation << " slice: " << sliceIndex;
-  emit q->SelectedSliceChanged(orientation, sliceIndex);
+  q->OnSelectedSliceChanged(orientation, sliceIndex);
 }
 
 
@@ -404,6 +405,12 @@ void niftk::BaseController::OnViewGetsHidden()
 
 
 //-----------------------------------------------------------------------------
+void niftk::BaseController::OnSelectedSliceChanged(niftk::ImageOrientation orientation, int sliceIndex)
+{
+}
+
+
+//-----------------------------------------------------------------------------
 void niftk::BaseController::OnNodeAdded(const mitk::DataNode* node)
 {
 }
@@ -434,7 +441,7 @@ void niftk::BaseController::OnNodeVisibilityChanged(const mitk::DataNode* node, 
 
 
 //-----------------------------------------------------------------------------
-niftk::ImageOrientation niftk::BaseController::GetImageOrientation() const
+niftk::ImageOrientation niftk::BaseController::GetOrientation() const
 {
   ImageOrientation orientation = IMAGE_ORIENTATION_UNKNOWN;
   const mitk::SliceNavigationController* sliceNavigationController = this->GetSliceNavigationController();

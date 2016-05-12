@@ -47,9 +47,19 @@ class NIFTKCOREGUI_EXPORT BaseController : public QObject
 
 public:
 
+  /// \brief Constructs a BaseController object.
   BaseController(niftkIBaseView* view);
 
+  /// \brief Destructs the BaseController object.
   virtual ~BaseController();
+
+  /// \brief Returns the orientation of the selected render window.
+  /// Returns IMAGE_ORIENTATION_UNKNOWN if no window is selected or the selected window is a 3D window.
+  ImageOrientation GetOrientation() const;
+
+  /// \brief Returns the index of the displayed slice in the currently selected window.
+  /// Returns -1 if no window is selected or the selected window is a 3D window.
+  int GetSliceIndex() const;
 
   /// \brief Sets up the GUI.
   /// This function has to be called from the CreateQtPartControl function of the view.
@@ -67,19 +77,6 @@ public:
   /// \brief Called when the BlueBerry view that hosts the GUI for this controller becomes hidden.
   virtual void OnViewGetsHidden();
 
-signals:
-
-  /// \brief Signal sent when the selected slice changes.
-  /// This happens when selected window changes in the current editor (render window part)
-  /// or when the focus is on a 2D render window in the current editor and the selected
-  /// slice changes, either through interaction (e.g. by scrolling with the mouse wheel)
-  /// or through an API call.
-  /// \param orientation
-  ///     The orientation of the 2D window or IMAGE_ORIENTATION_UNKNOWN if a 3D window is selected.
-  /// \param sliceIndex
-  ///     The index of the current slice or -1 if a 3D window is selected.
-  void SelectedSliceChanged(niftk::ImageOrientation orientation, int sliceIndex);
-
 protected:
 
   mitk::DataStorage* GetDataStorage() const;
@@ -94,13 +91,16 @@ protected:
 
   mitk::SliceNavigationController* GetSliceNavigationController() const;
 
-  /// \brief Returns the orientation of the selected render window.
-  /// Returns IMAGE_ORIENTATION_UNKNOWN if no window is selected or the selected window is a 3D window.
-  ImageOrientation GetImageOrientation() const;
-
-  /// \brief Returns the index of the displayed slice in the currently selected window.
-  /// Returns -1 if no window is selected or the selected window is a 3D window.
-  int GetSliceIndex() const;
+  /// \brief Called when the selected slice changes.
+  /// This happens when selected window changes in the current editor (render window part)
+  /// or when the focus is on a 2D render window in the current editor and the selected
+  /// slice changes, either through interaction (e.g. by scrolling with the mouse wheel)
+  /// or through an API call.
+  /// \param orientation
+  ///     The orientation of the 2D window or IMAGE_ORIENTATION_UNKNOWN if a 3D window is selected.
+  /// \param sliceIndex
+  ///     The index of the current slice or -1 if a 3D window is selected.
+  virtual void OnSelectedSliceChanged(niftk::ImageOrientation orientation, int sliceIndex);
 
   /// \brief Creates the widget that holds the GUI components of the view.
   /// This function is called from CreateQtPartControl. Derived classes should provide their implementation

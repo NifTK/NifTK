@@ -180,6 +180,8 @@ protected:
 
   virtual void OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
+  virtual void OnSelectedSliceChanged(niftk::ImageOrientation orientation, int sliceIndex) override;
+
 protected slots:
 
   /// \brief Qt slot called when the user hits the button "New segmentation",
