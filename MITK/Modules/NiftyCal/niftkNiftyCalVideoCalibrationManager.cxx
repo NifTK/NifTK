@@ -62,7 +62,6 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 //-----------------------------------------------------------------------------
 NiftyCalVideoCalibrationManager::~NiftyCalVideoCalibrationManager()
 {
-
 }
 
 
@@ -116,6 +115,7 @@ void NiftyCalVideoCalibrationManager::Set3DModelFileName(const std::string fileN
     mitkThrow() << "Empty 3D model file name";
   }
 
+  m_3DModelFileName = fileName;
   niftk::Model3D model = niftk::LoadModel3D(m_3DModelFileName);
 
   if (model.empty())
@@ -123,7 +123,7 @@ void NiftyCalVideoCalibrationManager::Set3DModelFileName(const std::string fileN
     mitkThrow() << "Failed to load model points";
   }
 
-  m_ModelOf3DPoints = model;
+  m_3DModelPoints = model;
   this->Modified();
 }
 
@@ -360,7 +360,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     mitkThrow() << "Left image should never be NULL.";
   }
 
-  if (m_ModelOf3DPoints.empty())
+  if (m_3DModelPoints.empty())
   {
     mitkThrow() << "Model should never be empty.";
   }
@@ -368,7 +368,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   if (m_DoIterative)
   {
     rms = niftk::IterativeMonoCameraCalibration(
-          m_ModelOf3DPoints,
+          m_3DModelPoints,
           m_ReferenceDataForIterativeCalib,
           m_OriginalImages[0],
           m_ImagesForWarping[0],
@@ -382,7 +382,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     if (m_ImageNode[1].IsNotNull())
     {
       rms = niftk::IterativeStereoCameraCalibration(
-            m_ModelOf3DPoints,
+            m_3DModelPoints,
             m_ReferenceDataForIterativeCalib,
             m_OriginalImages[0],
             m_OriginalImages[1],
@@ -407,7 +407,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   else
   {
     rms = niftk::MonoCameraCalibration(
-          m_ModelOf3DPoints,
+          m_3DModelPoints,
           m_Points[0],
           m_ImageSize,
           m_Intrinsic[0],
@@ -420,7 +420,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     {
 
       niftk::MonoCameraCalibration(
-            m_ModelOf3DPoints,
+            m_3DModelPoints,
             m_Points[1],
             m_ImageSize,
             m_Intrinsic[1],
@@ -430,7 +430,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
             );
 
       rms = niftk::StereoCameraCalibration(
-            m_ModelOf3DPoints,
+            m_3DModelPoints,
             m_Points[0],
             m_Points[1],
             m_ImageSize,
@@ -462,7 +462,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   {
   }
 
-  MITK_INFO << "Calibrating - DONE";
+  MITK_INFO << "Calibrating - DONE.";
   return rms;
 }
 
@@ -470,7 +470,9 @@ double NiftyCalVideoCalibrationManager::Calibrate()
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::Save(const std::string dirName)
 {
-  MITK_INFO << "Saving calibration to " << dirName;
+  MITK_INFO << "Saving calibration to " << dirName << ".";
+
+  MITK_INFO << "Saving calibration to " << dirName << " - DONE.";
 }
 
 } // end namespace

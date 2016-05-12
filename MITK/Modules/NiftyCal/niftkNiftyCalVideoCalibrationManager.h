@@ -74,7 +74,6 @@ public:
   mitk::DataNode::Pointer GetLeftImageNode() const;
   void SetRightImageNode(mitk::DataNode::Pointer node);
   mitk::DataNode::Pointer GetRightImageNode() const;
-
   itkSetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
   itkGetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
 
@@ -82,8 +81,6 @@ public:
   itkGetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
   itkSetMacro(DoIterative, bool);
   itkGetMacro(DoIterative, bool);
-  void Set3DModelFileName(const std::string fileName);
-  itkGetMacro(3DModelFileName, std::string);
   itkSetMacro(ScaleFactorX, double);
   itkGetMacro(ScaleFactorX, double);
   itkSetMacro(ScaleFactorY, double);
@@ -92,16 +89,19 @@ public:
   itkGetMacro(GridSizeX, int);
   itkSetMacro(GridSizeY, int);
   itkGetMacro(GridSizeY, int);
-  itkSetMacro(ModelToTrackerFileName, std::string);
-  itkGetMacro(ModelToTrackerFileName, std::string);
-  itkSetMacro(OutputDirName, std::string);
-  itkGetMacro(OutputDirName, std::string);
   itkSetMacro(CalibrationPattern, CalibrationPatterns);
   itkGetMacro(CalibrationPattern, CalibrationPatterns);
   itkSetMacro(HandeyeMethod, HandEyeMethod);
   itkGetMacro(HandeyeMethod, HandEyeMethod);
   itkSetMacro(TagFamily, std::string);
   itkGetMacro(TagFamily, std::string);
+
+  void Set3DModelFileName(const std::string fileName);
+  itkGetMacro(3DModelFileName, std::string);
+  itkSetMacro(ModelToTrackerFileName, std::string);
+  itkGetMacro(ModelToTrackerFileName, std::string);
+  itkSetMacro(OutputDirName, std::string);
+  itkGetMacro(OutputDirName, std::string);
 
   unsigned int GetNumberOfSnapshots() const;
 
@@ -134,9 +134,7 @@ public:
 
   /**
    * \brief Saves a bunch of standard (from a NifTK perspective)
-   * calibration files to the given directory path. If files
-   * exist, they will be moved and given a timestamp of when
-   * they were moved.
+   * calibration files to the given directory path.
    */
   void Save(const std::string dirName);
 
@@ -178,7 +176,7 @@ private:
   // Data used for calibration.
   cv::Size2i                                                               m_ImageSize;
   std::list<niftk::PointSet>                                               m_Points[2];
-  niftk::Model3D                                                           m_ModelOf3DPoints;
+  niftk::Model3D                                                           m_3DModelPoints;
   std::pair< cv::Mat, niftk::PointSet>                                     m_ReferenceDataForIterativeCalib;
   std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_OriginalImages[2];
   std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_ImagesForWarping[2];
