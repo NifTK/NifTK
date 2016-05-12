@@ -20,11 +20,10 @@
 #include <itkObjectFactoryBase.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
-#include <list>
 #include <niftkPointUtilities.h>
 #include <niftkIPoint2DDetector.h>
-#include <vtkMatrix4x4.h>
-#include <vtkSmartPointer.h>
+#include <cv.h>
+#include <list>
 
 namespace niftk {
 
@@ -33,7 +32,7 @@ namespace niftk {
  * \brief Manager class to perform video calibration as provided by NiftyCal.
  *
  * This one is not an MITK Service as it is stateful. So, it would
- * be unwise to have a system-wide service, called from multiple threads.
+ * be more problematic to have a system-wide service, called from multiple threads.
  */
 class NIFTKNIFTYCAL_EXPORT NiftyCalVideoCalibrationManager : public itk::Object
 {
@@ -180,7 +179,7 @@ private:
   std::pair< cv::Mat, niftk::PointSet>                                     m_ReferenceDataForIterativeCalib;
   std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_OriginalImages[2];
   std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_ImagesForWarping[2];
-  std::list<vtkSmartPointer<vtkMatrix4x4> >                                m_TrackingMatrices;
+  std::list<cv::Matx44d >                                                  m_TrackingMatrices;
 
   // Calibration result
   cv::Mat                    m_Intrinsic[2];

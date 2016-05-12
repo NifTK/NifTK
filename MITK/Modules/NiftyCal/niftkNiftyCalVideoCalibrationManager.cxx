@@ -25,7 +25,8 @@
 #include <niftkStereoCameraCalibration.h>
 #include <niftkIterativeMonoCameraCalibration.h>
 #include <niftkIterativeStereoCameraCalibration.h>
-#include <cv.h>
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
 
 namespace niftk
 {
@@ -311,7 +312,17 @@ bool NiftyCalVideoCalibrationManager::Grab()
     }
     vtkSmartPointer<vtkMatrix4x4> mat = vtkSmartPointer<vtkMatrix4x4>::New();
     tracking->GetVtkMatrix(*mat);
-    m_TrackingMatrices.push_back(mat);
+
+    cv::Matx44d openCVMat;
+
+    for (int r = 0; r < 4; r++)
+    {
+      for (int c = 0; c < 4; c++)
+      {
+        openCVMat(r,c) = mat->GetElement(r,c);
+      }
+    }
+    m_TrackingMatrices.push_back(openCVMat);
   }
 
   // Then we check if we got everything, and therefore we are successful.
