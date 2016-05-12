@@ -177,7 +177,6 @@ void CameraCalView::RetrievePreferenceValues()
     m_Manager->SetGridSizeX(prefs->GetInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeX));
     m_Manager->SetGridSizeY(prefs->GetInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeY));
     m_Manager->SetModelToTrackerFileName(prefs->Get(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, "").toStdString());
-    m_Manager->SetOutputDirName(prefs->Get(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, "").toStdString());
     m_Manager->SetTagFamily(prefs->Get(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, QString::fromStdString(niftk::NiftyCalVideoCalibrationManager::DefaultTagFamily)).toStdString());
     m_Manager->SetCalibrationPattern(
           static_cast<niftk::NiftyCalVideoCalibrationManager::CalibrationPatterns>(
@@ -485,7 +484,14 @@ void CameraCalView::OnSaveButtonPressed()
   assert(!m_BackgroundGrabProcess.isRunning());
   assert(!m_BackgroundCalibrateProcess.isRunning());
 
-  m_Manager->Save();
+  QString dir = QFileDialog::getExistingDirectory(nullptr, tr("Output Directory"),
+                                                  "",
+                                                  QFileDialog::ShowDirsOnly
+                                                  | QFileDialog::DontResolveSymlinks);
+  if (!dir.isEmpty())
+  {
+    m_Manager->Save();
+  }
 }
 
 

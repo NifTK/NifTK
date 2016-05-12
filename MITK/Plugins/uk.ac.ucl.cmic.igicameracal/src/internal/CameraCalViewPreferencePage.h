@@ -58,7 +58,6 @@ public:
   static const QString REFERENCE_IMAGE_NODE_NAME;
   static const QString REFERENCE_POINTS_NODE_NAME;
   static const QString MODEL_TO_TRACKER_NODE_NAME;
-  static const QString OUTPUT_DIR_NODE_NAME;
 
   CameraCalViewPreferencePage();
   CameraCalViewPreferencePage(const CameraCalViewPreferencePage& other);
@@ -90,7 +89,6 @@ private slots:
   void OnFeaturesComboSelected();
   void On3DModelButtonPressed();
   void OnModelToTrackerButtonPressed();
-  void OnOutputDirectoryButtonPressed();
   void OnReferenceImageButtonPressed();
   void OnReferencePointsButtonPressed();
   void OnIterativeCheckBoxChecked(bool checked);

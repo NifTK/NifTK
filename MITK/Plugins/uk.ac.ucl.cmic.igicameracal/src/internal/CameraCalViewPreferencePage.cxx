@@ -40,7 +40,6 @@ const QString CameraCalViewPreferencePage::HANDEYE_NODE_NAME("handeye method");
 const QString CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME("model to tracker transform");
 const QString CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME("reference image");
 const QString CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME("reference points");
-const QString CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME("output dir");
 
 //-----------------------------------------------------------------------------
 CameraCalViewPreferencePage::CameraCalViewPreferencePage()
@@ -104,8 +103,6 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   ok = connect(m_Ui->m_3DModelToolButton, SIGNAL(pressed()), this, SLOT(On3DModelButtonPressed()));
   assert(ok);
   ok = connect(m_Ui->m_ModelToTrackerToolButton, SIGNAL(pressed()), this, SLOT(OnModelToTrackerButtonPressed()));
-  assert(ok);
-  ok = connect(m_Ui->m_OutputDirectoryToolButton, SIGNAL(pressed()), this, SLOT(OnOutputDirectoryButtonPressed()));
   assert(ok);
   ok = connect(m_Ui->m_ReferenceImagePushButton, SIGNAL(pressed()), this, SLOT(OnReferenceImageButtonPressed()));
   assert(ok);
@@ -186,20 +183,6 @@ void CameraCalViewPreferencePage::OnModelToTrackerButtonPressed()
 
 
 //-----------------------------------------------------------------------------
-void CameraCalViewPreferencePage::OnOutputDirectoryButtonPressed()
-{
-  QString dir = QFileDialog::getExistingDirectory(nullptr, tr("Output Dir"),
-                                                  "",
-                                                  QFileDialog::ShowDirsOnly
-                                                  | QFileDialog::DontResolveSymlinks);
-  if (!dir.isEmpty())
-  {
-    m_Ui->m_OutputDirectoryLineEdit->setText(dir);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void CameraCalViewPreferencePage::OnReferenceImageButtonPressed()
 {
   QString fileName = QFileDialog::getOpenFileName(m_Control,
@@ -260,7 +243,6 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, m_Ui->m_GridPointsInXSpinBox->value());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, m_Ui->m_GridPointsInYSpinBox->value());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, m_Ui->m_ModelToTrackerLineEdit->text());
-  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, m_Ui->m_OutputDirectoryLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, m_Ui->m_ReferenceImageLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, m_Ui->m_ReferencePointsLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, m_Ui->m_TagFamilyComboBox->currentText());
@@ -287,7 +269,6 @@ void CameraCalViewPreferencePage::Update()
   m_Ui->m_GridPointsInXSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeX));
   m_Ui->m_GridPointsInYSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeY));
   m_Ui->m_ModelToTrackerLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, ""));
-  m_Ui->m_OutputDirectoryLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, ""));
   m_Ui->m_ReferenceImageLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, ""));
   m_Ui->m_ReferencePointsLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, ""));
   m_Ui->m_TagFamilyComboBox->setCurrentIndex(
