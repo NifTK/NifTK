@@ -27,6 +27,7 @@
 #include <niftkIterativeStereoCameraCalibration.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
+#include <highgui.h>
 
 namespace niftk
 {
@@ -68,7 +69,7 @@ NiftyCalVideoCalibrationManager::~NiftyCalVideoCalibrationManager()
 
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::SetDataStorage(
-    const mitk::DataStorage::Pointer& storage)
+    const mitk::DataStorage::Pointer storage)
 {
   if (storage.IsNull())
   {
@@ -109,23 +110,64 @@ mitk::DataNode::Pointer NiftyCalVideoCalibrationManager::GetRightImageNode() con
 
 
 //-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::Set3DModelFileName(const std::string fileName)
+void NiftyCalVideoCalibrationManager::Set3DModelFileName(const std::string& fileName)
 {
   if (fileName.empty())
   {
     mitkThrow() << "Empty 3D model file name";
   }
 
-  m_3DModelFileName = fileName;
-  niftk::Model3D model = niftk::LoadModel3D(m_3DModelFileName);
-
+  niftk::Model3D model = niftk::LoadModel3D(fileName);
   if (model.empty())
   {
     mitkThrow() << "Failed to load model points";
   }
 
+  m_3DModelFileName = fileName;
   m_3DModelPoints = model;
   this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::SetReferenceDataFileNames(const std::string& imageFileName, const std::string& pointsFileName)
+{
+  if (!imageFileName.empty() && !pointsFileName.empty())
+  {
+    cv::Mat referenceImage = cv::imread(imageFileName);
+    if (referenceImage.rows == 0 || referenceImage.cols == 0)
+    {
+      mitkThrow() << "Failed to read reference image " << imageFileName;
+    }
+
+    cv::Mat referenceImageGreyScale;
+    cv::cvtColor(referenceImage, referenceImageGreyScale, CV_BGR2GRAY);
+
+    std::pair< cv::Mat, niftk::PointSet> referenceImageData;
+    referenceImageData.first = referenceImageGreyScale;
+    referenceImageData.second = niftk::LoadPointSet(pointsFileName);
+
+    if (referenceImageData.second.size() == 0)
+    {
+      mitkThrow() << "Failed to read reference points " << pointsFileName;
+    }
+
+    m_ReferenceImageFileName = imageFileName;
+    m_ReferencePointsFileName = pointsFileName;
+    m_ReferenceDataForIterativeCalib = referenceImageData;
+    this->Modified();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::SetModelToTrackerFileName(const std::string& fileName)
+{
+  if (!fileName.empty())
+  {
+    m_3DModelToTracker = niftk::LoadMatrix(fileName);
+    this->Modified();
+  }
 }
 
 
@@ -479,11 +521,11 @@ double NiftyCalVideoCalibrationManager::Calibrate()
 
 
 //-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::Save(const std::string dirName)
+void NiftyCalVideoCalibrationManager::Save()
 {
-  MITK_INFO << "Saving calibration to " << dirName << ".";
+  MITK_INFO << "Saving calibration to " << m_OutputDirName << ".";
 
-  MITK_INFO << "Saving calibration to " << dirName << " - DONE.";
+  MITK_INFO << "Saving calibration to " << m_OutputDirName << " - DONE.";
 }
 
 } // end namespace

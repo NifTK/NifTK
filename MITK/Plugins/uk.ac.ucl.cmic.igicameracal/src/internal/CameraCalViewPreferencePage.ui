@@ -6,52 +6,38 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>516</width>
-    <height>367</height>
+    <width>567</width>
+    <height>503</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_6">
+  <layout class="QHBoxLayout" name="horizontalLayout_8">
    <item>
     <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
-      <widget class="QLabel" name="m_IterativeLabel">
-       <property name="text">
-        <string>iterative:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QRadioButton" name="m_IterativeCheckBox">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
       <widget class="QLabel" name="m_MinimumViewsLabel">
        <property name="text">
         <string>minimum number of views:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="0" column="1">
       <widget class="QSpinBox" name="m_MinimumViewsSpinBox">
        <property name="minimum">
         <number>3</number>
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
+     <item row="1" column="0">
       <widget class="QLabel" name="m_3DModelLabel">
        <property name="text">
         <string>3D model file:</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="1" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
         <widget class="QLineEdit" name="m_3DModelLineEdit"/>
@@ -65,14 +51,14 @@
        </item>
       </layout>
      </item>
-     <item row="3" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="m_ScaleImageLabel">
        <property name="text">
         <string>scale image:</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="2" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QDoubleSpinBox" name="m_ScaleImageInXSpinBox">
@@ -114,24 +100,80 @@
        </item>
       </layout>
      </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="m_IterativeLabel">
+       <property name="text">
+        <string>iterative:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QRadioButton" name="m_IterativeCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
      <item row="4" column="0">
+      <widget class="QLabel" name="m_ReferenceImageLabel">
+       <property name="text">
+        <string>reference image:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QLineEdit" name="m_ReferenceImageLineEdit"/>
+       </item>
+       <item>
+        <widget class="QToolButton" name="m_ReferenceImagePushButton">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="m_ReferencePointsLabel">
+       <property name="text">
+        <string>reference points:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <widget class="QLineEdit" name="m_ReferencePointsLineEdit"/>
+       </item>
+       <item>
+        <widget class="QToolButton" name="m_ReferencePointsPushButton">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="6" column="0">
       <widget class="QLabel" name="m_FeaturesLabel">
        <property name="text">
         <string>features to detect:</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="6" column="1">
       <widget class="QComboBox" name="m_FeaturesComboBox"/>
      </item>
-     <item row="5" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="m_GridSizeLabel">
        <property name="text">
         <string>grid size:</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="7" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QSpinBox" name="m_GridPointsInXSpinBox">
@@ -162,34 +204,34 @@
        </item>
       </layout>
      </item>
-     <item row="6" column="0">
+     <item row="8" column="0">
       <widget class="QLabel" name="m_TagFamilyLabel">
        <property name="text">
         <string>tag family:</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
+     <item row="8" column="1">
       <widget class="QComboBox" name="m_TagFamilyComboBox"/>
      </item>
-     <item row="7" column="0">
+     <item row="9" column="0">
       <widget class="QLabel" name="m_HandEyeLabel">
        <property name="text">
         <string>hand-eye method:</string>
        </property>
       </widget>
      </item>
-     <item row="7" column="1">
+     <item row="9" column="1">
       <widget class="QComboBox" name="m_HandEyeComboBox"/>
      </item>
-     <item row="8" column="0">
+     <item row="10" column="0">
       <widget class="QLabel" name="m_ModelToTrackerLabel">
        <property name="text">
         <string>3D model-to-tracker:</string>
        </property>
       </widget>
      </item>
-     <item row="8" column="1">
+     <item row="10" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
         <widget class="QLineEdit" name="m_ModelToTrackerLineEdit"/>
@@ -203,14 +245,14 @@
        </item>
       </layout>
      </item>
-     <item row="9" column="0">
+     <item row="11" column="0">
       <widget class="QLabel" name="m_OutputDirectoryLabel">
        <property name="text">
         <string>output directory:</string>
        </property>
       </widget>
      </item>
-     <item row="9" column="1">
+     <item row="11" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QLineEdit" name="m_OutputDirectoryLineEdit"/>

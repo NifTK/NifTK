@@ -180,10 +180,16 @@ void CameraCalView::RetrievePreferenceValues()
     m_Manager->SetTagFamily(prefs->Get(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, QString::fromStdString(niftk::NiftyCalVideoCalibrationManager::DefaultTagFamily)).toStdString());
     m_Manager->SetCalibrationPattern(
           static_cast<niftk::NiftyCalVideoCalibrationManager::CalibrationPatterns>(
-            prefs->GetInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultCalibrationPattern))));
+            prefs->GetInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultCalibrationPattern)))
+          );
     m_Manager->SetHandeyeMethod(
           static_cast<niftk::NiftyCalVideoCalibrationManager::HandEyeMethod>(
-            prefs->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultHandEyeMethod))));
+            prefs->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)))
+          );
+    m_Manager->SetReferenceDataFileNames(
+          prefs->Get(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, "").toStdString(),
+          prefs->Get(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, "").toStdString()
+          );
   }
 }
 
@@ -401,14 +407,7 @@ void CameraCalView::OnSaveButtonPressed()
   assert(!m_BackgroundGrabProcess.isRunning());
   assert(!m_BackgroundCalibrateProcess.isRunning());
 
-  QString dir = QFileDialog::getExistingDirectory(nullptr, tr("Save"),
-                                                  m_DefaultSaveDirectory,
-                                                  QFileDialog::ShowDirsOnly
-                                                  | QFileDialog::DontResolveSymlinks);
-  if (!dir.isEmpty())
-  {
-    m_Manager->Save(dir.toStdString());
-  }
+  m_Manager->Save();
 }
 
 

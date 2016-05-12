@@ -67,7 +67,7 @@ public:
   mitkClassMacroItkParent(NiftyCalVideoCalibrationManager, itk::Object);
   itkNewMacro(NiftyCalVideoCalibrationManager);
 
-  void SetDataStorage(const mitk::DataStorage::Pointer& storage);
+  void SetDataStorage(const mitk::DataStorage::Pointer storage);
 
   void SetLeftImageNode(mitk::DataNode::Pointer node);
   mitk::DataNode::Pointer GetLeftImageNode() const;
@@ -95,12 +95,17 @@ public:
   itkSetMacro(TagFamily, std::string);
   itkGetMacro(TagFamily, std::string);
 
-  void Set3DModelFileName(const std::string fileName);
+  void Set3DModelFileName(const std::string& fileName);
   itkGetMacro(3DModelFileName, std::string);
-  itkSetMacro(ModelToTrackerFileName, std::string);
-  itkGetMacro(ModelToTrackerFileName, std::string);
+
   itkSetMacro(OutputDirName, std::string);
   itkGetMacro(OutputDirName, std::string);
+
+  void SetReferenceDataFileNames(const std::string& imageFileName, const std::string& pointsFileName);
+  itkGetMacro(ReferenceImageFileName, std::string);
+
+  void SetModelToTrackerFileName(const std::string& fileName);
+  itkGetMacro(ModelToTrackerFileName, std::string);
 
   unsigned int GetNumberOfSnapshots() const;
 
@@ -133,9 +138,9 @@ public:
 
   /**
    * \brief Saves a bunch of standard (from a NifTK perspective)
-   * calibration files to the given directory path.
+   * calibration files to the output dir, overwriting existing files.
    */
-  void Save(const std::string dirName);
+  void Save();
 
 protected:
 
@@ -163,20 +168,23 @@ private:
   double                     m_ScaleFactorY;
   int                        m_GridSizeX;
   int                        m_GridSizeY;
-  std::string                m_ModelToTrackerFileName;
-  std::string                m_OutputDirName;
   CalibrationPatterns        m_CalibrationPattern;
   HandEyeMethod              m_HandeyeMethod;
   std::string                m_TagFamily;
+  std::string                m_OutputDirName;
+  std::string                m_ModelToTrackerFileName;
+  std::string                m_ReferenceImageFileName;
+  std::string                m_ReferencePointsFileName;
 
   // Data used for temporary storage
   cv::Mat                    m_TmpImage[2];
 
   // Data used for calibration.
   cv::Size2i                                                               m_ImageSize;
-  std::list<niftk::PointSet>                                               m_Points[2];
-  niftk::Model3D                                                           m_3DModelPoints;
   std::pair< cv::Mat, niftk::PointSet>                                     m_ReferenceDataForIterativeCalib;
+  cv::Matx44d                                                              m_3DModelToTracker;
+  niftk::Model3D                                                           m_3DModelPoints;
+  std::list<niftk::PointSet>                                               m_Points[2];
   std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_OriginalImages[2];
   std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_ImagesForWarping[2];
   std::list<cv::Matx44d >                                                  m_TrackingMatrices;

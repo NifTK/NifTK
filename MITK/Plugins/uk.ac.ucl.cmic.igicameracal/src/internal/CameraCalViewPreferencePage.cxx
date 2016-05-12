@@ -38,6 +38,8 @@ const QString CameraCalViewPreferencePage::GRIDX_NODE_NAME("grid size in x");
 const QString CameraCalViewPreferencePage::GRIDY_NODE_NAME("grid size in y");
 const QString CameraCalViewPreferencePage::HANDEYE_NODE_NAME("handeye method");
 const QString CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME("model to tracker transform");
+const QString CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME("reference image");
+const QString CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME("reference points");
 const QString CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME("output dir");
 
 //-----------------------------------------------------------------------------
@@ -96,7 +98,6 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_HandEyeComboBox->addItem("Direct", QVariant(niftk::NiftyCalVideoCalibrationManager::DIRECT));
   m_Ui->m_HandEyeComboBox->addItem("Malti 2013", QVariant(niftk::NiftyCalVideoCalibrationManager::MALTI));
 
-
   bool ok = false;
   ok = connect(m_Ui->m_FeaturesComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnFeaturesComboSelected()));
   assert(ok);
@@ -106,9 +107,17 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   assert(ok);
   ok = connect(m_Ui->m_OutputDirectoryToolButton, SIGNAL(pressed()), this, SLOT(OnOutputDirectoryButtonPressed()));
   assert(ok);
+  ok = connect(m_Ui->m_ReferenceImagePushButton, SIGNAL(pressed()), this, SLOT(OnReferenceImageButtonPressed()));
+  assert(ok);
+  ok = connect(m_Ui->m_ReferencePointsPushButton, SIGNAL(pressed()), this, SLOT(OnReferencePointsButtonPressed()));
+  assert(ok);
+  ok = connect(m_Ui->m_IterativeCheckBox, SIGNAL(clicked(bool)), this, SLOT(OnIterativeCheckBoxChecked(bool)));
+  assert(ok);
 
   m_Ui->m_FeaturesComboBox->setCurrentIndex(2);
   m_Ui->m_TagFamilyComboBox->setCurrentIndex(1);
+  m_Ui->m_IterativeCheckBox->setChecked(false);
+  this->OnIterativeCheckBoxChecked(false);
 
   this->Update();
 
@@ -130,32 +139,20 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
   {
     case niftk::NiftyCalVideoCalibrationManager::CHESSBOARD:
     case niftk::NiftyCalVideoCalibrationManager::CIRCLE_GRID:
-      m_Ui->m_GridSizeLabel->setEnabled(true);
       m_Ui->m_GridSizeLabel->setVisible(true);
-      m_Ui->m_GridPointsInXSpinBox->setEnabled(true);
       m_Ui->m_GridPointsInXSpinBox->setVisible(true);
-      m_Ui->m_ByLabel->setEnabled(true);
       m_Ui->m_ByLabel->setVisible(true);
-      m_Ui->m_GridPointsInYSpinBox->setEnabled(true);
       m_Ui->m_GridPointsInYSpinBox->setVisible(true);
-      m_Ui->m_TagFamilyComboBox->setEnabled(false);
       m_Ui->m_TagFamilyComboBox->setVisible(false);
-      m_Ui->m_TagFamilyLabel->setEnabled(false);
       m_Ui->m_TagFamilyLabel->setVisible(false);
     break;
 
     case niftk::NiftyCalVideoCalibrationManager::APRIL_TAGS:
-      m_Ui->m_GridSizeLabel->setEnabled(false);
       m_Ui->m_GridSizeLabel->setVisible(false);
-      m_Ui->m_GridPointsInXSpinBox->setEnabled(false);
       m_Ui->m_GridPointsInXSpinBox->setVisible(false);
-      m_Ui->m_ByLabel->setEnabled(false);
       m_Ui->m_ByLabel->setVisible(false);
-      m_Ui->m_GridPointsInYSpinBox->setEnabled(false);
       m_Ui->m_GridPointsInYSpinBox->setVisible(false);
-      m_Ui->m_TagFamilyComboBox->setEnabled(true);
       m_Ui->m_TagFamilyComboBox->setVisible(true);
-      m_Ui->m_TagFamilyLabel->setEnabled(true);
       m_Ui->m_TagFamilyLabel->setVisible(true);
     break;
   }
@@ -166,7 +163,7 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
 void CameraCalViewPreferencePage::On3DModelButtonPressed()
 {
   QString fileName = QFileDialog::getOpenFileName(m_Control,
-      tr("3D Model File"), "", tr("Model Files (*.txt)"));
+      tr("3D Model File"), "", tr("3D Model Files (*.txt)"));
 
   if (!fileName.isEmpty())
   {
@@ -203,6 +200,56 @@ void CameraCalViewPreferencePage::OnOutputDirectoryButtonPressed()
 
 
 //-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnReferenceImageButtonPressed()
+{
+  QString fileName = QFileDialog::getOpenFileName(m_Control,
+      tr("Reference image"), "", tr("Image Files (*.jpg *.png *.bmp)"));
+
+  if (!fileName.isEmpty())
+  {
+    m_Ui->m_ReferenceImageLineEdit->setText(fileName);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnReferencePointsButtonPressed()
+{
+  QString fileName = QFileDialog::getOpenFileName(m_Control,
+      tr("Reference points"), "", tr("2D Model Files (*.txt)"));
+
+  if (!fileName.isEmpty())
+  {
+    m_Ui->m_ReferencePointsLineEdit->setText(fileName);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnIterativeCheckBoxChecked(bool checked)
+{
+  if (checked)
+  {
+    m_Ui->m_ReferenceImageLabel->setVisible(true);
+    m_Ui->m_ReferenceImageLineEdit->setVisible(true);
+    m_Ui->m_ReferenceImagePushButton->setVisible(true);
+    m_Ui->m_ReferencePointsLabel->setVisible(true);
+    m_Ui->m_ReferencePointsLineEdit->setVisible(true);
+    m_Ui->m_ReferencePointsPushButton->setVisible(true);
+  }
+  else
+  {
+    m_Ui->m_ReferenceImageLabel->setVisible(false);
+    m_Ui->m_ReferenceImageLineEdit->setVisible(false);
+    m_Ui->m_ReferenceImagePushButton->setVisible(false);
+    m_Ui->m_ReferencePointsLabel->setVisible(false);
+    m_Ui->m_ReferencePointsLineEdit->setVisible(false);
+    m_Ui->m_ReferencePointsPushButton->setVisible(false);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool CameraCalViewPreferencePage::PerformOk()
 {
   m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::ITERATIVE_NODE_NAME, m_Ui->m_IterativeCheckBox->isChecked());
@@ -214,6 +261,8 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, m_Ui->m_GridPointsInYSpinBox->value());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, m_Ui->m_ModelToTrackerLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, m_Ui->m_OutputDirectoryLineEdit->text());
+  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, m_Ui->m_ReferenceImageLineEdit->text());
+  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, m_Ui->m_ReferencePointsLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, m_Ui->m_TagFamilyComboBox->currentText());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, m_Ui->m_FeaturesComboBox->currentIndex());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, m_Ui->m_HandEyeComboBox->currentIndex());
@@ -239,6 +288,8 @@ void CameraCalViewPreferencePage::Update()
   m_Ui->m_GridPointsInYSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeY));
   m_Ui->m_ModelToTrackerLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, ""));
   m_Ui->m_OutputDirectoryLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, ""));
+  m_Ui->m_ReferenceImageLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, ""));
+  m_Ui->m_ReferencePointsLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, ""));
   m_Ui->m_TagFamilyComboBox->setCurrentIndex(
         m_Ui->m_TagFamilyComboBox->findText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, QString::fromStdString(niftk::NiftyCalVideoCalibrationManager::DefaultTagFamily))));
   m_Ui->m_FeaturesComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultCalibrationPattern)));
