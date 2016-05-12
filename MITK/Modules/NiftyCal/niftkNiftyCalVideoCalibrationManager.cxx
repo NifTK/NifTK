@@ -73,7 +73,7 @@ void NiftyCalVideoCalibrationManager::SetDataStorage(
 {
   if (storage.IsNull())
   {
-    mitkThrow() << "Null DataStorage passed";
+    mitkThrow() << "Null DataStorage passed.";
   }
   m_DataStorage = storage;
 }
@@ -114,13 +114,13 @@ void NiftyCalVideoCalibrationManager::Set3DModelFileName(const std::string& file
 {
   if (fileName.empty())
   {
-    mitkThrow() << "Empty 3D model file name";
+    mitkThrow() << "Empty 3D model file name.";
   }
 
   niftk::Model3D model = niftk::LoadModel3D(fileName);
   if (model.empty())
   {
-    mitkThrow() << "Failed to load model points";
+    mitkThrow() << "Failed to load model points.";
   }
 
   m_3DModelFileName = fileName;
@@ -137,7 +137,7 @@ void NiftyCalVideoCalibrationManager::SetReferenceDataFileNames(const std::strin
     cv::Mat referenceImage = cv::imread(imageFileName);
     if (referenceImage.rows == 0 || referenceImage.cols == 0)
     {
-      mitkThrow() << "Failed to read reference image " << imageFileName;
+      mitkThrow() << "Failed to read reference image:" << imageFileName;
     }
 
     cv::Mat referenceImageGreyScale;
@@ -149,7 +149,7 @@ void NiftyCalVideoCalibrationManager::SetReferenceDataFileNames(const std::strin
 
     if (referenceImageData.second.size() == 0)
     {
-      mitkThrow() << "Failed to read reference points " << pointsFileName;
+      mitkThrow() << "Failed to read reference points:" << pointsFileName;
     }
 
     m_ReferenceImageFileName = imageFileName;
@@ -328,7 +328,7 @@ bool NiftyCalVideoCalibrationManager::Grab()
 
   if (m_ImageNode[0].IsNull())
   {
-    mitkThrow() << "Left image should never be NULL";
+    mitkThrow() << "Left image should never be NULL.";
   }
 
   // 3 entries - first two represent image nodes, third represents the tracker node.
@@ -350,7 +350,7 @@ bool NiftyCalVideoCalibrationManager::Grab()
     mitk::CoordinateAxesData::Pointer tracking = dynamic_cast<mitk::CoordinateAxesData*>(m_TrackingTransformNode->GetData());
     if (tracking.IsNull())
     {
-      mitkThrow() << "Tracking node contains null tracking matrix";
+      mitkThrow() << "Tracking node contains null tracking matrix.";
     }
     vtkSmartPointer<vtkMatrix4x4> mat = vtkSmartPointer<vtkMatrix4x4>::New();
     tracking->GetVtkMatrix(*mat);
@@ -397,7 +397,7 @@ void NiftyCalVideoCalibrationManager::UnGrab()
     }
   }
 
-  MITK_INFO << "UnGrab. Left point size now:" << m_Points[0].size() << ", right: " <<  m_Points[1].size();
+  MITK_INFO << "UnGrab. Left point size now:" << m_Points[0].size() << ", right:" <<  m_Points[1].size();
 }
 
 
