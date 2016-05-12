@@ -169,7 +169,7 @@ void niftkMorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->CreateAxialCutOffPlaneNode(image);
     this->GetDataStorage()->Add(axialCutOffPlaneNode, newSegmentation);
 
-    this->GetView()->WaitCursorOn();
+    this->WaitCursorOn();
 
     // Mark the newSegmentation as "unfinished".
     newSegmentation->SetBoolProperty(niftk::MorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), false);
@@ -286,7 +286,7 @@ void niftkMorphologicalSegmentorController::OnNewSegmentationButtonClicked()
 
     this->GetView()->FocusOnCurrentWindow();
     this->RequestRenderWindowUpdate();
-    this->GetView()->WaitCursorOff();
+    this->WaitCursorOff();
 
   } // end if we have a reference image
 

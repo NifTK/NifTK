@@ -86,12 +86,6 @@ public:
   /// \brief Shows or hides the cursor (aka. crosshair) is in the active editor.
   virtual void SetActiveEditorCursorVisible(bool visible) const = 0;
 
-  /// \brief Convenient method to set and reset a wait cursor ("hourglass")
-  virtual void WaitCursorOn() = 0;
-
-  /// \brief Convenient method to restore the standard cursor
-  virtual void WaitCursorOff() = 0;
-
   /// \brief Gets the selected position in the active render window part.
   virtual mitk::Point3D GetSelectedPosition() const = 0;
 

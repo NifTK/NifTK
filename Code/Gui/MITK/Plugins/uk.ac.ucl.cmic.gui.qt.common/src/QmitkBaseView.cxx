@@ -276,20 +276,6 @@ mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationControllerInte
 
 
 //-----------------------------------------------------------------------------
-int QmitkBaseView::GetSliceNumberFromSliceNavigationController()
-{
-  int sliceNumber = -1;
-
-  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController();
-  if (snc.IsNotNull())
-  {
-    sliceNumber = snc->GetSlice()->GetPos();
-  }
-  return sliceNumber;
-}
-
-
-//-----------------------------------------------------------------------------
 void QmitkBaseView::Activated()
 {
   Q_D(QmitkBaseView);
@@ -355,20 +341,6 @@ QList<mitk::DataNode::Pointer> QmitkBaseView::GetDataManagerSelection() const
 void QmitkBaseView::FireNodeSelected(mitk::DataNode::Pointer node)
 {
   SuperClass::FireNodeSelected(node);
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkBaseView::WaitCursorOn()
-{
-  SuperClass::WaitCursorOn();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkBaseView::WaitCursorOff()
-{
-  SuperClass::WaitCursorOff();
 }
 
 

@@ -88,7 +88,7 @@ protected:
 
   /// \brief Returns the currently focused renderer, as this class is tracking the focus changes.
   /// \return mitk::BaseRenderer* The currently focused renderer, or nullptr if it has not been set.
-  virtual mitk::BaseRenderer* GetFocusedRenderer() const;
+  virtual mitk::BaseRenderer* GetFocused2DRenderer() const;
 
   /// \brief Called when a data node is added to the data storage.
   /// Empty implementation. Derived classes can override it.
@@ -111,7 +111,22 @@ protected:
   /// Empty implementation. Derived classes can override it.
   virtual void OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer);
 
+  /// Convenient method to set and reset a wait cursor ("hourglass")
+  void WaitCursorOn();
+
+  /// Convenient method to restore the standard cursor
+  void WaitCursorOff();
+
+  /// Convenient method to set and reset a busy cursor
+  void BusyCursorOn();
+
+  /// Convenient method to restore the standard cursor
+  void BusyCursorOff();
+
 private:
+
+  /// Convenient method to restore the standard cursor
+  void RestoreOverrideCursor();
 
   QScopedPointer<BaseControllerPrivate> d_ptr;
 

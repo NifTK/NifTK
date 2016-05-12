@@ -14,6 +14,8 @@
 
 #include "niftkBaseController.h"
 
+#include <QApplication>
+
 #include <mitkBaseRenderer.h>
 #include <mitkDataStorage.h>
 #include <mitkFocusManager.h>
@@ -314,7 +316,7 @@ void niftk::BaseController::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* niftk::BaseController::GetFocusedRenderer() const
+mitk::BaseRenderer* niftk::BaseController::GetFocused2DRenderer() const
 {
   Q_D(const BaseController);
   return d->m_Focused2DRenderer;
@@ -374,4 +376,39 @@ niftk::ImageOrientation niftk::BaseController::GetImageOrientation()
     }
   }
   return orientation;
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseController::WaitCursorOn()
+{
+  QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseController::WaitCursorOff()
+{
+  this->RestoreOverrideCursor();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseController::BusyCursorOn()
+{
+  QApplication::setOverrideCursor( QCursor(Qt::BusyCursor) );
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseController::BusyCursorOff()
+{
+  this->RestoreOverrideCursor();
+}
+
+
+//-----------------------------------------------------------------------------
+void niftk::BaseController::RestoreOverrideCursor()
+{
+  QApplication::restoreOverrideCursor();
 }

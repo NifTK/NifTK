@@ -135,12 +135,6 @@ public:
   /// SetSelectionProvider() or your own QItemSelectionModel via GetDataNodeSelectionModel().
   virtual void FireNodeSelected(mitk::DataNode::Pointer node) override;
 
-  /// \brief Convenient method to set and reset a wait cursor ("hourglass")
-  virtual void WaitCursorOn() override;
-
-  /// \brief Convenient method to restore the standard cursor
-  virtual void WaitCursorOff() override;
-
   /// \brief Retrieve the current slice navigation controller from the currently focused render window.
   /// \return mitk::SliceNavigationController* The slice navigation controller for the currenty focused render window, or <code>NULL</code> if it can't be determined.
   virtual mitk::SliceNavigationController* GetSliceNavigationController() override;
@@ -193,13 +187,6 @@ protected:
    * \param QWidget* The widget passed into CreateQtPartControl.
    */
   virtual void SetParent(QWidget*);
-
-  /**
-   * \brief Returns the slice number from the slice navigatiob controller from the currently focused render window.
-   *
-   * \return int The slice number or -1 if it can't be found.
-   */
-  int GetSliceNumberFromSliceNavigationController();
 
   /**
    * \brief Gets the current render window, and sets it to the given coordinate, specified in millimetres.

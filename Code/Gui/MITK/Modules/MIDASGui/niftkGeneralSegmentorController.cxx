@@ -276,7 +276,7 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
       }
     }
 
-    this->GetView()->WaitCursorOn();
+    this->WaitCursorOn();
 
     // Override the base colour to be orange, and we revert this when OK pressed at the end.
     mitk::Color tmpColor;
@@ -410,7 +410,7 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
     this->OnFocusChanged();
     this->RequestRenderWindowUpdate();
 
-    this->GetView()->WaitCursorOff();
+    this->WaitCursorOff();
 
   } // end if we have a reference image
 
@@ -674,7 +674,7 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int previousSliceNumb
       || m_IsChangingSlice
       || previousSliceNumber == -1
       || nextSliceNumber == -1
-      || abs(previousSliceNumber - nextSliceNumber) != 1
+      || std::abs(previousSliceNumber - nextSliceNumber) != 1
       )
   {
     m_PreviousSliceNumber = nextSliceNumber;
