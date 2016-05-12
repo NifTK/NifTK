@@ -54,7 +54,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="m_ScaleImageLabel">
        <property name="text">
-        <string>scale image:</string>
+        <string>rescale image:</string>
        </property>
       </widget>
      </item>

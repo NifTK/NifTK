@@ -523,9 +523,9 @@ double NiftyCalVideoCalibrationManager::Calibrate()
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::Save()
 {
-  MITK_INFO << "Saving calibration to " << m_OutputDirName << ".";
+  MITK_INFO << "Saving calibration to:" << m_OutputDirName << ".";
 
-  MITK_INFO << "Saving calibration to " << m_OutputDirName << " - DONE.";
+  MITK_INFO << "Saving calibration to:" << m_OutputDirName << " - DONE.";
 }
 
 } // end namespace

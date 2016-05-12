@@ -100,6 +100,8 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   bool ok = false;
   ok = connect(m_Ui->m_FeaturesComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnFeaturesComboSelected()));
   assert(ok);
+  ok = connect(m_Ui->m_HandEyeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnHandEyeComboSelected()));
+  assert(ok);
   ok = connect(m_Ui->m_3DModelToolButton, SIGNAL(pressed()), this, SLOT(On3DModelButtonPressed()));
   assert(ok);
   ok = connect(m_Ui->m_ModelToTrackerToolButton, SIGNAL(pressed()), this, SLOT(OnModelToTrackerButtonPressed()));
@@ -111,9 +113,12 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   ok = connect(m_Ui->m_IterativeCheckBox, SIGNAL(clicked(bool)), this, SLOT(OnIterativeCheckBoxChecked(bool)));
   assert(ok);
 
-  m_Ui->m_FeaturesComboBox->setCurrentIndex(2);
+  m_Ui->m_FeaturesComboBox->setCurrentIndex(0);
   m_Ui->m_TagFamilyComboBox->setCurrentIndex(1);
   m_Ui->m_IterativeCheckBox->setChecked(false);
+  m_Ui->m_HandEyeComboBox->setCurrentIndex(0);
+  this->OnFeaturesComboSelected();
+  this->OnHandEyeComboSelected();
   this->OnIterativeCheckBoxChecked(false);
 
   this->Update();
@@ -151,6 +156,27 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
       m_Ui->m_GridPointsInYSpinBox->setVisible(false);
       m_Ui->m_TagFamilyComboBox->setVisible(true);
       m_Ui->m_TagFamilyLabel->setVisible(true);
+    break;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnHandEyeComboSelected()
+{
+  switch(m_Ui->m_HandEyeComboBox->currentIndex())
+  {
+    case niftk::NiftyCalVideoCalibrationManager::TSAI:
+    case niftk::NiftyCalVideoCalibrationManager::MALTI:
+      m_Ui->m_ModelToTrackerLabel->setVisible(false);
+      m_Ui->m_ModelToTrackerLineEdit->setVisible(false);
+      m_Ui->m_ModelToTrackerToolButton->setVisible(false);
+    break;
+
+    case niftk::NiftyCalVideoCalibrationManager::DIRECT:
+      m_Ui->m_ModelToTrackerLabel->setVisible(true);
+      m_Ui->m_ModelToTrackerLineEdit->setVisible(true);
+      m_Ui->m_ModelToTrackerToolButton->setVisible(true);
     break;
   }
 }
