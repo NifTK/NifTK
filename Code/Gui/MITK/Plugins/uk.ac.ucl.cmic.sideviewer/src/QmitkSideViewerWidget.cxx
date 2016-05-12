@@ -814,30 +814,31 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
   {
     m_MainWindow->GetSliceNavigationController()->ConnectGeometrySendEvent(this);
   }
-  if (m_MainAxialWindow)
+
+  /// Note that changing the window layout resets the geometry, what sets the selected position in the centre.
+  /// Therefore, we need to set the slice indexes to that of the main windows.
+
+  if (mainAxialWindow)
   {
     m_MainAxialSnc->ConnectGeometryEvents(axialSnc);
     axialSnc->ConnectGeometryEvents(m_MainAxialSnc);
     this->connect(m_MainAxialWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+    axialSnc->GetSlice()->SetPos(m_MainAxialSnc->GetSlice()->GetPos());
   }
   if (mainSagittalWindow)
   {
     m_MainSagittalSnc->ConnectGeometryEvents(sagittalSnc);
     sagittalSnc->ConnectGeometryEvents(m_MainSagittalSnc);
     this->connect(m_MainSagittalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+    sagittalSnc->GetSlice()->SetPos(m_MainSagittalSnc->GetSlice()->GetPos());
   }
   if (mainCoronalWindow)
   {
     m_MainCoronalSnc->ConnectGeometryEvents(coronalSnc);
     coronalSnc->ConnectGeometryEvents(m_MainCoronalSnc);
     this->connect(m_MainCoronalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+    coronalSnc->GetSlice()->SetPos(m_MainCoronalSnc->GetSlice()->GetPos());
   }
-
-  /// Note that changing the window layout resets the geometry, what sets the selected position in the centre.
-  /// Therefore, we resend the main window position here.
-  m_MainAxialWindow->GetSliceNavigationController()->SendSlice();
-  m_MainSagittalWindow->GetSliceNavigationController()->SendSlice();
-  m_MainCoronalWindow->GetSliceNavigationController()->SendSlice();
 
   m_Viewer->RequestUpdate();
 }
