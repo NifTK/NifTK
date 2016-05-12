@@ -598,7 +598,7 @@ void niftkGeneralSegmentorController::OnViewGetsHidden()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorController::OnFocusChanged()
 {
-  mitk::BaseRenderer* focusedRenderer = this->GetView()->GetFocusedRenderer();
+  mitk::BaseRenderer* focusedRenderer = this->GetFocused2DRenderer();
 
   if (focusedRenderer != NULL)
   {

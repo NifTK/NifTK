@@ -235,22 +235,7 @@ void QmitkBaseView::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkBaseView::GetFocusedRenderer() const
-{
-  Q_D(const QmitkBaseView);
-  return d->m_Focused2DRenderer;
-}
-
-
-//-----------------------------------------------------------------------------
 mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationController()
-{
-  return this->GetSliceNavigationControllerInternal();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationControllerInternal()
 {
   mitk::SliceNavigationController::Pointer result = NULL;
 

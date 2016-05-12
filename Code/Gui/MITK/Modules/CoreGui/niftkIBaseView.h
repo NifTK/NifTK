@@ -40,11 +40,7 @@ class NIFTKCOREGUI_EXPORT niftkIBaseView
 
 public:
 
-  /// \brief Returns the currently focused renderer.
-  /// \return The currently focused renderer, or nullptr if it has not been set.
-  virtual mitk::BaseRenderer* GetFocusedRenderer() const = 0;
-
-  /// \brief Used to try and get the FocusManager to focus on the Current IRenderWindowPart.
+  /// \brief Used to try and get the FocusManager to focus on the current IRenderWindowPart.
   virtual void FocusOnCurrentWindow() const = 0;
 
   /// \brief Retrieves the currently selected RenderWindow from the mitkRenderWindowPart.

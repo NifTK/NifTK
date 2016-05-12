@@ -243,7 +243,7 @@ protected slots:
   /// \brief Callback for when the window focus changes, where we update this view
   /// to be listening to the right window, and make sure ITK pipelines know we have
   /// changed orientation.
-  void OnFocusChanged();
+  virtual void OnFocusChanged() override;
 
   /// \brief Qt slot called when the OK button is pressed and accepts the current
   /// segmentation, destroying the working data (seeds, contours, region growing image),

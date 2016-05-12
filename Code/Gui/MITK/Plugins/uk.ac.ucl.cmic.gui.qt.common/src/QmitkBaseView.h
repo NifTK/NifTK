@@ -139,10 +139,6 @@ public:
   /// \return mitk::SliceNavigationController* The slice navigation controller for the currenty focused render window, or <code>NULL</code> if it can't be determined.
   virtual mitk::SliceNavigationController* GetSliceNavigationController() override;
 
-  /// \brief Returns the currently focused renderer, as this class is tracking the focus changes.
-  /// \return mitk::BaseRenderer* The currently focused renderer, or nullptr if it has not been set.
-  virtual mitk::BaseRenderer* GetFocusedRenderer() const override;
-
   /// \brief Used to try and get the FocusManager to focus on the Current IRenderWindowPart.
   virtual void FocusOnCurrentWindow() const override;
 
@@ -198,8 +194,6 @@ private:
 
   void onNodeAddedInternal(const mitk::DataNode*);
   void onNodeRemovedInternal(const mitk::DataNode*);
-
-  mitk::SliceNavigationController* GetSliceNavigationControllerInternal();
 
   QScopedPointer<QmitkBaseViewPrivate> d_ptr;
 
