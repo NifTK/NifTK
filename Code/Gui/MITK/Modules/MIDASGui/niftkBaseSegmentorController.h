@@ -70,10 +70,8 @@ public:
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   void SetDefaultSegmentationColour(const QColor& defaultSegmentationColour);
 
-  virtual void OnViewGetsActivated();
-  virtual void OnViewGetsDeactivated();
-  virtual void OnViewGetsVisible();
-  virtual void OnViewGetsHidden();
+  /// \brief Called when the BlueBerry view that hosts the GUI for this controller gets activated.
+  virtual void OnViewGetsActivated() override;
 
 protected slots:
 

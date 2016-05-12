@@ -279,10 +279,6 @@ private:
   /// and moving to the next one.
   virtual void OnSliceChanged(const itk::EventObject& geometrySliceEvent);
 
-  /// \brief Qt slot called to effect a change of orientation, which means accepting
-  /// the current segmentation, and moving to the prior/next slice, see class intro.
-  void OnOrientationChanged(niftk::ImageOrientation previousOrientation, niftk::ImageOrientation nextOrientation);
-
   /// \brief Qt slot called to effect a change of slice, which means accepting
   /// the current segmentation, and moving to the prior/next slice, see class intro.
   void OnSliceNumberChanged(int previousSliceNumber, int sliceNumber);
@@ -417,9 +413,6 @@ private:
 
   /// \brief Each time the window changes, we register to the current slice navigation controller.
   unsigned long m_SliceNavigationControllerObserverTag;
-
-  /// \brief Used for the mitk::FocusManager to register callbacks to track the currently focus window.
-  unsigned long m_FocusManagerObserverTag;
 
   /// \brief Keep track of the previous slice number and reset to -1 when the window focus changes.
   int m_PreviousSliceNumber;

@@ -18,8 +18,6 @@
 
 #include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
-//#include <mitkIRenderingManager.h>
-//#include <mitkIRenderWindowPart.h>
 #include <mitkITKImageImport.h>
 #include <mitkOperationEvent.h>
 #include <mitkPointSet.h>
@@ -47,7 +45,6 @@ niftkGeneralSegmentorController::niftkGeneralSegmentorController(niftkIBaseView*
     m_IsRestarting(false),
     m_SliceNavigationController(nullptr),
     m_SliceNavigationControllerObserverTag(0),
-    m_FocusManagerObserverTag(0),
     m_PreviousSliceNumber(0),
     m_ToolKeyPressStateMachine(nullptr)
 {
@@ -576,6 +573,8 @@ void niftkGeneralSegmentorController::OnViewGetsVisible()
 //-----------------------------------------------------------------------------
 void niftkGeneralSegmentorController::OnViewGetsHidden()
 {
+  niftkBaseSegmentorController::OnViewGetsHidden();
+
   if (m_SliceNavigationController.IsNotNull())
   {
     m_SliceNavigationController->RemoveObserver(m_SliceNavigationControllerObserverTag);
@@ -657,12 +656,6 @@ void niftkGeneralSegmentorController::OnSliceChanged(const itk::EventObject& geo
     m_PreviousSliceNumber = currentSlice;
     m_PreviousFocusPoint = currentFocus;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnOrientationChanged(niftk::ImageOrientation previousOrientation, niftk::ImageOrientation nextOrientation)
-{
 }
 
 

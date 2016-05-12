@@ -538,24 +538,6 @@ void niftkBaseSegmentorController::OnViewGetsActivated()
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::OnViewGetsDeactivated()
-{
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::OnViewGetsVisible()
-{
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::OnViewGetsHidden()
-{
-}
-
-
-//-----------------------------------------------------------------------------
 void niftkBaseSegmentorController::OnToolSelected(int toolID)
 {
   /// Note: The view is not created when the GUI is set up, therefore

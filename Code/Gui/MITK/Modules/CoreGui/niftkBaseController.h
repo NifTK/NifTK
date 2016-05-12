@@ -55,6 +55,31 @@ public:
   /// This function has to be called from the CreateQtPartControl function of the view.
   virtual void SetupGUI(QWidget* parent);
 
+  /// \brief Called when the BlueBerry view that hosts the GUI for this controller gets activated.
+  virtual void OnViewGetsActivated();
+
+  /// \brief Called when the BlueBerry view that hosts the GUI for this controller gets deactivated.
+  virtual void OnViewGetsDeactivated();
+
+  /// \brief Called when the BlueBerry view that hosts the GUI for this controller becomes visible.
+  virtual void OnViewGetsVisible();
+
+  /// \brief Called when the BlueBerry view that hosts the GUI for this controller becomes hidden.
+  virtual void OnViewGetsHidden();
+
+signals:
+
+  /// \brief Signal sent when the selected slice changes.
+  /// This happens when selected window changes in the current editor (render window part)
+  /// or when the focus is on a 2D render window in the current editor and the selected
+  /// slice changes, either through interaction (e.g. by scrolling with the mouse wheel)
+  /// or through an API call.
+  /// \param orientation
+  ///     The orientation of the 2D window or IMAGE_ORIENTATION_UNKNOWN if a 3D window is selected.
+  /// \param sliceIndex
+  ///     The index of the current slice or -1 if a 3D window is selected.
+  void SelectedSliceChanged(niftk::ImageOrientation orientation, int sliceIndex);
+
 protected:
 
   mitk::DataStorage* GetDataStorage() const;
@@ -69,8 +94,13 @@ protected:
 
   mitk::SliceNavigationController* GetSliceNavigationController() const;
 
-  /// \brief Retrieves the currently active QmitkRenderWindow, and if it has a 2D mapper will return the current orientation of the view, returning ORIENTATION_UNKNOWN if it can't be found or the view is a 3D view for instance.
-  ImageOrientation GetImageOrientation();
+  /// \brief Returns the orientation of the selected render window.
+  /// Returns IMAGE_ORIENTATION_UNKNOWN if no window is selected or the selected window is a 3D window.
+  ImageOrientation GetImageOrientation() const;
+
+  /// \brief Returns the index of the displayed slice in the currently selected window.
+  /// Returns -1 if no window is selected or the selected window is a 3D window.
+  int GetSliceIndex() const;
 
   /// \brief Creates the widget that holds the GUI components of the view.
   /// This function is called from CreateQtPartControl. Derived classes should provide their implementation
