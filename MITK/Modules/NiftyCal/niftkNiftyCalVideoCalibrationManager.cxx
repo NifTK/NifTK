@@ -14,12 +14,17 @@
 
 #include "niftkNiftyCalVideoCalibrationManager.h"
 #include <mitkExceptionMacro.h>
+#include <mitkCoordinateAxesData.h>
 #include <niftkNiftyCalTypes.h>
 #include <niftkImageConversion.h>
 #include <niftkOpenCVChessboardPointDetector.h>
+#include <niftkOpenCVCirclesPointDetector.h>
+#include <niftkAprilTagsPointDetector.h>
 #include <niftkIOUtilities.h>
 #include <niftkMonoCameraCalibration.h>
 #include <niftkStereoCameraCalibration.h>
+#include <niftkIterativeMonoCameraCalibration.h>
+#include <niftkIterativeStereoCameraCalibration.h>
 #include <cv.h>
 
 namespace niftk
@@ -104,6 +109,26 @@ mitk::DataNode::Pointer NiftyCalVideoCalibrationManager::GetRightImageNode() con
 
 
 //-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::Set3DModelFileName(const std::string fileName)
+{
+  if (fileName.empty())
+  {
+    mitkThrow() << "Empty 3D model file name";
+  }
+
+  niftk::Model3D model = niftk::LoadModel3D(m_3DModelFileName);
+
+  if (model.empty())
+  {
+    mitkThrow() << "Failed to load model points";
+  }
+
+  m_ModelOf3DPoints = model;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
 unsigned int NiftyCalVideoCalibrationManager::GetNumberOfSnapshots() const
 {
   return m_Points[0].size();
@@ -118,35 +143,34 @@ void NiftyCalVideoCalibrationManager::Restart()
     m_Points[i].clear();
     m_OriginalImages[i].clear();
     m_ImagesForWarping[i].clear();
+    m_TrackingMatrices.clear();
   }
   MITK_INFO << "Restart. Left point size now:" << m_Points[0].size() << ", right: " <<  m_Points[1].size();
 }
 
 
 //-----------------------------------------------------------------------------
-bool NiftyCalVideoCalibrationManager::ConvertImage(
+void NiftyCalVideoCalibrationManager::ConvertImage(
     mitk::DataNode::Pointer imageNode, cv::Mat& outputImage)
 {
-  bool converted = false;
-
   mitk::Image::Pointer inputImage = dynamic_cast<mitk::Image*>(imageNode->GetData());
-  if (inputImage.IsNotNull())
+
+  if (inputImage.IsNull())
   {
-    cv::Mat image = niftk::MitkImageToOpenCVMat(inputImage);
-    cv::cvtColor(image, outputImage, CV_BGR2GRAY);
-    m_ImageSize.width = image.cols;
-    m_ImageSize.height = image.rows;
-    converted = true;
+    mitkThrow() << "Null input image.";
   }
 
-  return converted;
+  cv::Mat image = niftk::MitkImageToOpenCVMat(inputImage);
+  cv::cvtColor(image, outputImage, CV_BGR2GRAY);
+  m_ImageSize.width = image.cols;
+  m_ImageSize.height = image.rows;
 }
 
 
 //-----------------------------------------------------------------------------
 bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Mat& image)
 {
-  bool result = false;
+  bool isSuccessful = false;
 
   cv::Point2d scaleFactors;
   scaleFactors.x = m_ScaleFactorX;
@@ -154,6 +178,17 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
 
   cv::Mat copyOfImage1 = image.clone(); // Remember OpenCV reference counting.
   cv::Mat copyOfImage2 = image.clone(); // Remember OpenCV reference counting.
+
+  // Watch out: OpenCV reference counts the image data block.
+  // So, if you create two cv::Mat, using say the copy constructor
+  // or assignment constructor, both cv::Mat point to the same memory
+  // block, unless you explicitly call the clone method. This
+  // causes a problem when we store them in a STL container.
+  // So, in the code below, we add the detector and the image into
+  // a std::pair, and stuff it in a list. This causes the cv::Mat
+  // in the list to be a different container object to the one you
+  // started with, which is why we have to dynamic cast, and then
+  // call SetImage again.
 
   if (m_CalibrationPattern == CHESSBOARD)
   {
@@ -166,7 +201,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     niftk::PointSet points = openCVDetector1->GetPoints();
     if (points.size() == m_GridSizeX * m_GridSizeY)
     {
-      result = true;
+      isSuccessful = true;
       m_Points[imageIndex].push_back(points);
 
       std::shared_ptr<niftk::IPoint2DDetector> originalDetector(openCVDetector1);
@@ -184,57 +219,114 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   }
   else if (m_CalibrationPattern == CIRCLE_GRID)
   {
-    std::cerr << "Matt, m_CalibrationPattern == CIRCLE_GRID" << std::endl;
+    cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
+
+    niftk::OpenCVCirclesPointDetector *openCVDetector1 = new niftk::OpenCVCirclesPointDetector(internalCorners);
+    openCVDetector1->SetImageScaleFactor(scaleFactors);
+    openCVDetector1->SetImage(&copyOfImage1);
+
+    niftk::PointSet points = openCVDetector1->GetPoints();
+    if (points.size() == m_GridSizeX * m_GridSizeY)
+    {
+      isSuccessful = true;
+      m_Points[imageIndex].push_back(points);
+
+      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(openCVDetector1);
+      m_OriginalImages[imageIndex].push_back(std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
+      dynamic_cast<niftk::OpenCVCirclesPointDetector*>(m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
+
+      niftk::OpenCVCirclesPointDetector *openCVDetector2 = new niftk::OpenCVCirclesPointDetector(internalCorners);
+      openCVDetector2->SetImageScaleFactor(scaleFactors);
+      openCVDetector2->SetImage(&copyOfImage2);
+
+      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(openCVDetector2);
+      m_ImagesForWarping[imageIndex].push_back(std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
+      dynamic_cast<niftk::OpenCVCirclesPointDetector*>(m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
+    }
   }
   else if (m_CalibrationPattern == APRIL_TAGS)
   {
-    std::cerr << "Matt, m_CalibrationPattern == APRIL_TAGS" << std::endl;
+    niftk::AprilTagsPointDetector *openCVDetector1 = new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
+    openCVDetector1->SetImageScaleFactor(scaleFactors);
+    openCVDetector1->SetImage(&copyOfImage1);
+
+    niftk::PointSet points = openCVDetector1->GetPoints();
+    if (points.size() > 0)
+    {
+      isSuccessful = true;
+      m_Points[imageIndex].push_back(points);
+
+      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(openCVDetector1);
+      m_OriginalImages[imageIndex].push_back(std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
+      dynamic_cast<niftk::AprilTagsPointDetector*>(m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
+
+      niftk::AprilTagsPointDetector *openCVDetector2 = new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
+      openCVDetector2->SetImageScaleFactor(scaleFactors);
+      openCVDetector2->SetImage(&copyOfImage2);
+
+      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(openCVDetector2);
+      m_ImagesForWarping[imageIndex].push_back(std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
+      dynamic_cast<niftk::AprilTagsPointDetector*>(m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
+    }
   }
   else
   {
     mitkThrow() << "Invalid calibration pattern.";
   }
 
-  return result;
+  return isSuccessful;
 }
 
 
 //-----------------------------------------------------------------------------
 bool NiftyCalVideoCalibrationManager::Grab()
 {
-  bool result = false;
+  bool isSuccessful = false;
 
   if (m_ImageNode[0].IsNull())
   {
     mitkThrow() << "Left image should never be NULL";
   }
 
-  bool converted[2] = {false, false};
-  bool extracted[2] = {false, false};
+  // 3 entries - first two represent image nodes, third represents the tracker node.
+  bool extracted[3] = {false, false, false};
 
-  // Its only a loop over 2 channels, but then we can use OpenMP!
+  // Deliberately looping over only the entries for two image nodes.
   for (int i = 0; i < 2; i++)
   {
     if (m_ImageNode[i].IsNotNull())
     {
-      converted[i] = this->ConvertImage(m_ImageNode[i], m_TmpImage[i]);
-      if (converted[i])
-      {
-        extracted[i] = this->ExtractPoints(i, m_TmpImage[i]);
-      }
+      this->ConvertImage(m_ImageNode[i], m_TmpImage[i]);
+      extracted[i] = this->ExtractPoints(i, m_TmpImage[i]);
     }
   }
 
-  if (converted[0] && extracted[0] // must do left.
-      && ((m_ImageNode[1].IsNotNull() && converted[1] && extracted[1])
+  // Now we extract the tracking node.
+  if (m_TrackingTransformNode.IsNotNull())
+  {
+    mitk::CoordinateAxesData::Pointer tracking = dynamic_cast<mitk::CoordinateAxesData*>(m_TrackingTransformNode->GetData());
+    if (tracking.IsNull())
+    {
+      mitkThrow() << "Tracking node contains null tracking matrix";
+    }
+    vtkSmartPointer<vtkMatrix4x4> mat = vtkSmartPointer<vtkMatrix4x4>::New();
+    tracking->GetVtkMatrix(*mat);
+    m_TrackingMatrices.push_back(mat);
+  }
+
+  // Then we check if we got everything, and therefore we are successful.
+  if (extracted[0] // must always do left.
+      && ((m_ImageNode[1].IsNotNull() && extracted[1]) // right image is optional
           || m_ImageNode[1].IsNull())
+      && ((m_TrackingTransformNode.IsNotNull() && extracted[2]) // tracking node is optional
+          || m_TrackingTransformNode.IsNull())
       )
   {
-    result = true;
+    isSuccessful = true;
   }
 
   MITK_INFO << "Grabbed. Left point size now:" << m_Points[0].size() << ", right: " <<  m_Points[1].size();
-  return result;
+  return isSuccessful;
 }
 
 
@@ -248,6 +340,7 @@ void NiftyCalVideoCalibrationManager::UnGrab()
       m_Points[i].pop_back();
       m_OriginalImages[i].pop_back();
       m_ImagesForWarping[i].pop_back();
+      m_TrackingMatrices.pop_back();
     }
   }
 
@@ -264,61 +357,109 @@ double NiftyCalVideoCalibrationManager::Calibrate()
 
   if (m_ImageNode[0].IsNull())
   {
-    mitkThrow() << "Left image should never be NULL";
+    mitkThrow() << "Left image should never be NULL.";
   }
 
-  niftk::Model3D model = niftk::LoadModel3D(m_3DModelFileName);
-  if (model.empty())
+  if (m_ModelOf3DPoints.empty())
   {
-    mitkThrow() << "Failed to load model points";
+    mitkThrow() << "Model should never be empty.";
   }
 
   if (m_DoIterative)
   {
+    rms = niftk::IterativeMonoCameraCalibration(
+          m_ModelOf3DPoints,
+          m_ReferenceDataForIterativeCalib,
+          m_OriginalImages[0],
+          m_ImagesForWarping[0],
+          m_ImageSize,
+          m_Intrinsic[0],
+          m_Distortion[0],
+          m_Rvecs[0],
+          m_Tvecs[0]
+          );
 
+    if (m_ImageNode[1].IsNotNull())
+    {
+      rms = niftk::IterativeStereoCameraCalibration(
+            m_ModelOf3DPoints,
+            m_ReferenceDataForIterativeCalib,
+            m_OriginalImages[0],
+            m_OriginalImages[1],
+            m_ImageSize,
+            m_ImagesForWarping[0],
+            m_Intrinsic[0],
+            m_Distortion[0],
+            m_Rvecs[0],
+            m_Tvecs[0],
+            m_ImagesForWarping[1],
+            m_Intrinsic[1],
+            m_Distortion[1],
+            m_Rvecs[1],
+            m_Tvecs[1],
+            m_EssentialMatrix,
+            m_FundamentalMatrix,
+            m_Left2RightRotation,
+            m_Left2RightTranslation
+            );
+    }
   }
   else
   {
-    rms = niftk::MonoCameraCalibration(model,
-                                       m_Points[0],
-                                       m_ImageSize,
-                                       m_Intrinsic[0],
-                                       m_Distortion[0],
-                                       m_Rvecs[0],
-                                       m_Tvecs[0]
-                                      );
+    rms = niftk::MonoCameraCalibration(
+          m_ModelOf3DPoints,
+          m_Points[0],
+          m_ImageSize,
+          m_Intrinsic[0],
+          m_Distortion[0],
+          m_Rvecs[0],
+          m_Tvecs[0]
+          );
 
     if (m_ImageNode[1].IsNotNull())
     {
 
-      niftk::MonoCameraCalibration(model,
-                                   m_Points[1],
-                                   m_ImageSize,
-                                   m_Intrinsic[1],
-                                   m_Distortion[1],
-                                   m_Rvecs[1],
-                                   m_Tvecs[1]
-                                  );
+      niftk::MonoCameraCalibration(
+            m_ModelOf3DPoints,
+            m_Points[1],
+            m_ImageSize,
+            m_Intrinsic[1],
+            m_Distortion[1],
+            m_Rvecs[1],
+            m_Tvecs[1]
+            );
 
-      rms = niftk::StereoCameraCalibration(model,
-                                           m_Points[0],
-                                           m_Points[1],
-                                           m_ImageSize,
-                                           m_Intrinsic[0],
-                                           m_Distortion[0],
-                                           m_Rvecs[0],
-                                           m_Tvecs[0],
-                                           m_Intrinsic[1],
-                                           m_Distortion[1],
-                                           m_Rvecs[1],
-                                           m_Tvecs[1],
-                                           m_EssentialMatrix,
-                                           m_FundamentalMatrix,
-                                           m_Left2RightRotation,
-                                           m_Left2RightTranslation,
-                                           CV_CALIB_USE_INTRINSIC_GUESS
-                                           );
+      rms = niftk::StereoCameraCalibration(
+            m_ModelOf3DPoints,
+            m_Points[0],
+            m_Points[1],
+            m_ImageSize,
+            m_Intrinsic[0],
+            m_Distortion[0],
+            m_Rvecs[0],
+            m_Tvecs[0],
+            m_Intrinsic[1],
+            m_Distortion[1],
+            m_Rvecs[1],
+            m_Tvecs[1],
+            m_EssentialMatrix,
+            m_FundamentalMatrix,
+            m_Left2RightRotation,
+            m_Left2RightTranslation,
+            CV_CALIB_USE_INTRINSIC_GUESS
+            );
     }
+  }
+
+  // To Do: Hand-Eye methods
+  if (m_HandeyeMethod == TSAI)
+  {
+  }
+  else if (m_HandeyeMethod == DIRECT)
+  {
+  }
+  else if (m_HandeyeMethod == MALTI)
+  {
   }
 
   MITK_INFO << "Calibrating - DONE";

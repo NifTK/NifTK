@@ -23,6 +23,8 @@
 #include <list>
 #include <niftkPointUtilities.h>
 #include <niftkIPoint2DDetector.h>
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
 
 namespace niftk {
 
@@ -80,7 +82,7 @@ public:
   itkGetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
   itkSetMacro(DoIterative, bool);
   itkGetMacro(DoIterative, bool);
-  itkSetMacro(3DModelFileName, std::string);
+  void Set3DModelFileName(const std::string fileName);
   itkGetMacro(3DModelFileName, std::string);
   itkSetMacro(ScaleFactorX, double);
   itkGetMacro(ScaleFactorX, double);
@@ -148,7 +150,7 @@ protected:
 
 private:
 
-  bool ConvertImage(mitk::DataNode::Pointer imageNode, cv::Mat& outputImage);
+  void ConvertImage(mitk::DataNode::Pointer imageNode, cv::Mat& outputImage);
   bool ExtractPoints(int imageIndex, const cv::Mat& image);
 
   // Data from Plugin.
@@ -174,10 +176,13 @@ private:
   cv::Mat                    m_TmpImage[2];
 
   // Data used for calibration.
-  cv::Size2i                 m_ImageSize;
-  std::list<niftk::PointSet> m_Points[2];
-  std::list< std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_OriginalImages[2];
-  std::list< std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_ImagesForWarping[2];
+  cv::Size2i                                                               m_ImageSize;
+  std::list<niftk::PointSet>                                               m_Points[2];
+  niftk::Model3D                                                           m_ModelOf3DPoints;
+  std::pair< cv::Mat, niftk::PointSet>                                     m_ReferenceDataForIterativeCalib;
+  std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_OriginalImages[2];
+  std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_ImagesForWarping[2];
+  std::list<vtkSmartPointer<vtkMatrix4x4> >                                m_TrackingMatrices;
 
   // Calibration result
   cv::Mat                    m_Intrinsic[2];
