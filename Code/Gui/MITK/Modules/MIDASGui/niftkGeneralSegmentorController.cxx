@@ -50,12 +50,15 @@ public:
   GeneralSegmentorControllerPrivate(GeneralSegmentorController* q);
   ~GeneralSegmentorControllerPrivate();
 
-
+  int m_PreviousOrientation;
+  int m_PreviousSliceIndex;
 };
 
 //-----------------------------------------------------------------------------
 GeneralSegmentorControllerPrivate::GeneralSegmentorControllerPrivate(GeneralSegmentorController* generalSegmentorController)
-  : q_ptr(generalSegmentorController)
+  : q_ptr(generalSegmentorController),
+    m_PreviousOrientation(IMAGE_ORIENTATION_UNKNOWN),
+    m_PreviousSliceIndex(-1)
 {
   Q_Q(GeneralSegmentorController);
 }
@@ -69,7 +72,7 @@ GeneralSegmentorControllerPrivate::~GeneralSegmentorControllerPrivate()
 
 
 //-----------------------------------------------------------------------------
-GeneralSegmentorController::GeneralSegmentorController(niftkIBaseView* view)
+GeneralSegmentorController::GeneralSegmentorController(IBaseView* view)
   : BaseSegmentorController(view),
     m_IsUpdating(false),
     m_IsDeleting(false),
@@ -629,7 +632,16 @@ void GeneralSegmentorController::OnViewGetsHidden()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orientation, int sliceIndex)
 {
-  MITK_INFO << "GeneralSegmentorController::OnSelectedSliceChanged() orientation: " << orientation << " ; slice index: " << sliceIndex;
+  Q_D(GeneralSegmentorController);
+
+  if (orientation != d->m_PreviousOrientation || sliceIndex != d->m_PreviousSliceIndex)
+  {
+    MITK_INFO << "GeneralSegmentorController::OnSelectedSliceChanged() orientation: " << orientation << " ; slice index: " << sliceIndex;
+
+
+    d->m_PreviousOrientation = orientation;
+    d->m_PreviousSliceIndex = sliceIndex;
+  }
 }
 
 

@@ -25,8 +25,6 @@
 
 class QWidget;
 
-class niftkIBaseView;
-
 namespace mitk
 {
 class BaseRenderer;
@@ -38,6 +36,8 @@ namespace niftk
 
 class BaseGUI;
 class BaseControllerPrivate;
+class IBaseView;
+
 
 /// \class BaseController
 class NIFTKCOREGUI_EXPORT BaseController : public QObject
@@ -48,7 +48,7 @@ class NIFTKCOREGUI_EXPORT BaseController : public QObject
 public:
 
   /// \brief Constructs a BaseController object.
-  BaseController(niftkIBaseView* view);
+  BaseController(IBaseView* view);
 
   /// \brief Destructs the BaseController object.
   virtual ~BaseController();
@@ -111,7 +111,7 @@ protected:
   BaseGUI* GetGUI() const;
 
   /// \brief Gets the segmentor BlueBerry view.
-  niftkIBaseView* GetView() const;
+  IBaseView* GetView() const;
 
   /// \brief Called when the window focus changes, and tracks the current mitk::BaseRenderer*.
   virtual void OnFocusChanged();

@@ -34,7 +34,7 @@ class NIFTKMIDASGUI_EXPORT MorphologicalSegmentorController : public BaseSegment
 
 public:
 
-  MorphologicalSegmentorController(niftkIBaseView* view);
+  MorphologicalSegmentorController(IBaseView* view);
   virtual ~MorphologicalSegmentorController();
 
   /// \brief Sets up the GUI.

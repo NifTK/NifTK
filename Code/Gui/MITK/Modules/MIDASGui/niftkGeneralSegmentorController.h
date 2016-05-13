@@ -30,8 +30,6 @@ namespace mitk
 class PointSet;
 }
 
-class niftkIBaseView;
-
 namespace niftk
 {
 
@@ -138,7 +136,7 @@ class NIFTKMIDASGUI_EXPORT GeneralSegmentorController
 
 public:
 
-  GeneralSegmentorController(niftkIBaseView* view);
+  GeneralSegmentorController(IBaseView* view);
   virtual ~GeneralSegmentorController();
 
   /// \brief Sets up the GUI.

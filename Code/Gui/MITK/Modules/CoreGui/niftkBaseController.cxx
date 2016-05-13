@@ -39,7 +39,7 @@ class BaseControllerPrivate
 
   BaseGUI* m_GUI;
 
-  niftkIBaseView* m_View;
+  IBaseView* m_View;
 
   class DataStorageListener : private mitk::DataStorageListener
   {
@@ -109,7 +109,7 @@ class BaseControllerPrivate
 
 public:
 
-  BaseControllerPrivate(BaseController* q, niftkIBaseView* view);
+  BaseControllerPrivate(BaseController* q, IBaseView* view);
   ~BaseControllerPrivate();
 
   /// \brief Used to track the currently focused renderer.
@@ -135,10 +135,9 @@ private:
 
 };
 
-}
 
 //-----------------------------------------------------------------------------
-niftk::BaseControllerPrivate::BaseControllerPrivate(BaseController* baseController, niftkIBaseView* view)
+BaseControllerPrivate::BaseControllerPrivate(BaseController* baseController, IBaseView* view)
   : q_ptr(baseController),
     m_GUI(nullptr),
     m_View(view),
@@ -164,7 +163,7 @@ niftk::BaseControllerPrivate::BaseControllerPrivate(BaseController* baseControll
 
 
 //-----------------------------------------------------------------------------
-niftk::BaseControllerPrivate::~BaseControllerPrivate()
+BaseControllerPrivate::~BaseControllerPrivate()
 {
   Q_Q(BaseController);
 
@@ -179,7 +178,7 @@ niftk::BaseControllerPrivate::~BaseControllerPrivate()
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseControllerPrivate::OnFocusChanged()
+void BaseControllerPrivate::OnFocusChanged()
 {
   Q_Q(BaseController);
 
@@ -238,7 +237,7 @@ void niftk::BaseControllerPrivate::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseControllerPrivate::OnFocusedRendererDeleted()
+void BaseControllerPrivate::OnFocusedRendererDeleted()
 {
   m_FocusedRenderer = nullptr;
   m_SliceNavigationController = nullptr;
@@ -246,7 +245,7 @@ void niftk::BaseControllerPrivate::OnFocusedRendererDeleted()
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseControllerPrivate::OnSelectedSliceChanged()
+void BaseControllerPrivate::OnSelectedSliceChanged()
 {
   Q_Q(BaseController);
   ImageOrientation orientation = q->GetOrientation();
@@ -256,7 +255,7 @@ void niftk::BaseControllerPrivate::OnSelectedSliceChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseControllerPrivate::OnNodeAdded(mitk::DataNode* node)
+void BaseControllerPrivate::OnNodeAdded(mitk::DataNode* node)
 {
   Q_Q(BaseController);
   q->OnNodeAdded(node);
@@ -264,7 +263,7 @@ void niftk::BaseControllerPrivate::OnNodeAdded(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseControllerPrivate::OnNodeChanged(mitk::DataNode* node)
+void BaseControllerPrivate::OnNodeChanged(mitk::DataNode* node)
 {
   Q_Q(BaseController);
   q->OnNodeChanged(node);
@@ -272,7 +271,7 @@ void niftk::BaseControllerPrivate::OnNodeChanged(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseControllerPrivate::OnNodeRemoved(mitk::DataNode* node)
+void BaseControllerPrivate::OnNodeRemoved(mitk::DataNode* node)
 {
   Q_Q(BaseController);
   q->OnNodeRemoved(node);
@@ -280,7 +279,7 @@ void niftk::BaseControllerPrivate::OnNodeRemoved(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseControllerPrivate::OnNodeDeleted(mitk::DataNode* node)
+void BaseControllerPrivate::OnNodeDeleted(mitk::DataNode* node)
 {
   Q_Q(BaseController);
   q->OnNodeDeleted(node);
@@ -288,7 +287,7 @@ void niftk::BaseControllerPrivate::OnNodeDeleted(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseControllerPrivate::OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+void BaseControllerPrivate::OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   Q_Q(BaseController);
   q->OnNodeVisibilityChanged(node, renderer);
@@ -296,20 +295,20 @@ void niftk::BaseControllerPrivate::OnNodeVisibilityChanged(const mitk::DataNode*
 
 
 //-----------------------------------------------------------------------------
-niftk::BaseController::BaseController(niftkIBaseView* view)
-  : d_ptr(new niftk::BaseControllerPrivate(this, view))
+BaseController::BaseController(IBaseView* view)
+  : d_ptr(new BaseControllerPrivate(this, view))
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::BaseController::~BaseController()
+BaseController::~BaseController()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::SetupGUI(QWidget* parent)
+void BaseController::SetupGUI(QWidget* parent)
 {
   Q_D(BaseController);
   d->m_GUI = this->CreateGUI(parent);
@@ -317,7 +316,7 @@ void niftk::BaseController::SetupGUI(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-niftk::BaseGUI* niftk::BaseController::GetGUI() const
+BaseGUI* BaseController::GetGUI() const
 {
   Q_D(const BaseController);
   return d->m_GUI;
@@ -325,7 +324,7 @@ niftk::BaseGUI* niftk::BaseController::GetGUI() const
 
 
 //-----------------------------------------------------------------------------
-niftkIBaseView* niftk::BaseController::GetView() const
+IBaseView* BaseController::GetView() const
 {
   Q_D(const BaseController);
   return d->m_View;
@@ -333,28 +332,28 @@ niftkIBaseView* niftk::BaseController::GetView() const
 
 
 //-----------------------------------------------------------------------------
-mitk::DataStorage* niftk::BaseController::GetDataStorage() const
+mitk::DataStorage* BaseController::GetDataStorage() const
 {
   return this->GetView()->GetDataStorage();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::RequestRenderWindowUpdate() const
+void BaseController::RequestRenderWindowUpdate() const
 {
   this->GetView()->RequestRenderWindowUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
-QList<mitk::DataNode::Pointer> niftk::BaseController::GetDataManagerSelection() const
+QList<mitk::DataNode::Pointer> BaseController::GetDataManagerSelection() const
 {
   return this->GetView()->GetDataManagerSelection();
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::SliceNavigationController* niftk::BaseController::GetSliceNavigationController() const
+mitk::SliceNavigationController* BaseController::GetSliceNavigationController() const
 {
   Q_D(const BaseController);
   return d->m_SliceNavigationController;
@@ -362,13 +361,13 @@ mitk::SliceNavigationController* niftk::BaseController::GetSliceNavigationContro
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::OnFocusChanged()
+void BaseController::OnFocusChanged()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* niftk::BaseController::GetFocused2DRenderer() const
+mitk::BaseRenderer* BaseController::GetFocused2DRenderer() const
 {
   Q_D(const BaseController);
   return d->m_FocusedRenderer;
@@ -376,25 +375,25 @@ mitk::BaseRenderer* niftk::BaseController::GetFocused2DRenderer() const
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::OnViewGetsActivated()
+void BaseController::OnViewGetsActivated()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::OnViewGetsDeactivated()
+void BaseController::OnViewGetsDeactivated()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::OnViewGetsVisible()
+void BaseController::OnViewGetsVisible()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::OnViewGetsHidden()
+void BaseController::OnViewGetsHidden()
 {
   Q_D(const BaseController);
   if (d->m_SliceNavigationController)
@@ -405,43 +404,43 @@ void niftk::BaseController::OnViewGetsHidden()
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::OnSelectedSliceChanged(niftk::ImageOrientation orientation, int sliceIndex)
+void BaseController::OnSelectedSliceChanged(ImageOrientation orientation, int sliceIndex)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::OnNodeAdded(const mitk::DataNode* node)
+void BaseController::OnNodeAdded(const mitk::DataNode* node)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::OnNodeChanged(const mitk::DataNode* node)
+void BaseController::OnNodeChanged(const mitk::DataNode* node)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::OnNodeRemoved(const mitk::DataNode* node)
+void BaseController::OnNodeRemoved(const mitk::DataNode* node)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::OnNodeDeleted(const mitk::DataNode* node)
+void BaseController::OnNodeDeleted(const mitk::DataNode* node)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+void BaseController::OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::ImageOrientation niftk::BaseController::GetOrientation() const
+ImageOrientation BaseController::GetOrientation() const
 {
   ImageOrientation orientation = IMAGE_ORIENTATION_UNKNOWN;
   const mitk::SliceNavigationController* sliceNavigationController = this->GetSliceNavigationController();
@@ -467,7 +466,7 @@ niftk::ImageOrientation niftk::BaseController::GetOrientation() const
 
 
 //-----------------------------------------------------------------------------
-int niftk::BaseController::GetSliceIndex() const
+int BaseController::GetSliceIndex() const
 {
   Q_D(const BaseController);
 
@@ -483,35 +482,37 @@ int niftk::BaseController::GetSliceIndex() const
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::WaitCursorOn()
+void BaseController::WaitCursorOn()
 {
   QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::WaitCursorOff()
+void BaseController::WaitCursorOff()
 {
   this->RestoreOverrideCursor();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::BusyCursorOn()
+void BaseController::BusyCursorOn()
 {
   QApplication::setOverrideCursor( QCursor(Qt::BusyCursor) );
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::BusyCursorOff()
+void BaseController::BusyCursorOff()
 {
   this->RestoreOverrideCursor();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::BaseController::RestoreOverrideCursor()
+void BaseController::RestoreOverrideCursor()
 {
   QApplication::restoreOverrideCursor();
+}
+
 }

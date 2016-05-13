@@ -29,12 +29,11 @@
 
 class QWidget;
 
-class niftkIBaseView;
-
 namespace niftk
 {
 
 class BaseSegmentorGUI;
+
 
 /// \class BaseSegmentorController
 class NIFTKMIDASGUI_EXPORT BaseSegmentorController : public BaseController, public MIDASEventFilter
@@ -44,7 +43,7 @@ class NIFTKMIDASGUI_EXPORT BaseSegmentorController : public BaseController, publ
 
 public:
 
-  BaseSegmentorController(niftkIBaseView* view);
+  BaseSegmentorController(IBaseView* view);
 
   virtual ~BaseSegmentorController();
 

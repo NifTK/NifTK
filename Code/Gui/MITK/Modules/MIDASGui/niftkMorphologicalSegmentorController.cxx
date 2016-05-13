@@ -31,7 +31,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-MorphologicalSegmentorController::MorphologicalSegmentorController(niftkIBaseView* view)
+MorphologicalSegmentorController::MorphologicalSegmentorController(IBaseView* view)
   : BaseSegmentorController(view),
     m_MorphologicalSegmentorGUI(nullptr),
     m_PipelineManager(nullptr),

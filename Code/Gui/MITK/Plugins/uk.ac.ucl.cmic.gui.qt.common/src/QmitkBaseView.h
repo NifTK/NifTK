@@ -40,7 +40,7 @@ class BaseRenderer;
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
 class CMIC_QT_COMMON QmitkBaseView : public QmitkAbstractView,
-                                     public virtual niftkIBaseView,
+                                     public virtual niftk::IBaseView,
                                      public VisibilityChangeObserver,
                                      public mitk::ILifecycleAwarePart
 {

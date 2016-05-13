@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkIBaseView_h
-#define __niftkIBaseView_h
+#ifndef niftkIBaseView_h
+#define niftkIBaseView_h
 
 #include "niftkCoreGuiExports.h"
 
@@ -28,14 +28,15 @@ class SliceNavigationController;
 
 class QmitkRenderWindow;
 
-/**
- * \class niftkIBaseView
- * \brief Public interface to QmitkBaseView.
- *
- * The aim of this class is to expose view functionality to the module layer.
- * \sa QmitkBaseView
- */
-class NIFTKCOREGUI_EXPORT niftkIBaseView
+namespace niftk
+{
+
+/// \class IBaseView
+/// \brief Public interface to QmitkBaseView.
+///
+/// The aim of this class is to expose view functionality to the module layer.
+/// \sa QmitkBaseView
+class NIFTKCOREGUI_EXPORT IBaseView
 {
 
 public:
@@ -89,5 +90,7 @@ public:
   virtual void SetSelectedPosition(const mitk::Point3D& selectedPosition) = 0;
 
 };
+
+}
 
 #endif

@@ -32,7 +32,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-BaseSegmentorController::BaseSegmentorController(niftkIBaseView* view)
+BaseSegmentorController::BaseSegmentorController(IBaseView* view)
   : BaseController(view),
     m_SegmentorGUI(nullptr),
     m_SelectedNode(nullptr),
