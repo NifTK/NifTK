@@ -28,9 +28,12 @@
 #include "Internal/niftkBaseSegmentorGUI.h"
 #include "Internal/niftkNewSegmentationDialog.h"
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorController::niftkBaseSegmentorController(niftkIBaseView* view)
-  : niftk::BaseController(view),
+BaseSegmentorController::BaseSegmentorController(niftkIBaseView* view)
+  : BaseController(view),
     m_SegmentorGUI(nullptr),
     m_SelectedNode(nullptr),
     m_SelectedImage(nullptr),
@@ -43,17 +46,17 @@ niftkBaseSegmentorController::niftkBaseSegmentorController(niftkIBaseView* view)
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorController::~niftkBaseSegmentorController()
+BaseSegmentorController::~BaseSegmentorController()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::SetupGUI(QWidget* parent)
+void BaseSegmentorController::SetupGUI(QWidget* parent)
 {
-  niftk::BaseController::SetupGUI(parent);
+  BaseController::SetupGUI(parent);
 
-  m_SegmentorGUI = dynamic_cast<niftkBaseSegmentorGUI*>(this->GetGUI());
+  m_SegmentorGUI = dynamic_cast<BaseSegmentorGUI*>(this->GetGUI());
   m_SegmentorGUI->SetToolManager(m_ToolManager);
 
   this->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
@@ -62,28 +65,28 @@ void niftkBaseSegmentorController::SetupGUI(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorGUI* niftkBaseSegmentorController::GetSegmentorGUI() const
+BaseSegmentorGUI* BaseSegmentorController::GetSegmentorGUI() const
 {
   return m_SegmentorGUI;
 }
 
 
 //-----------------------------------------------------------------------------
-const QColor& niftkBaseSegmentorController::GetDefaultSegmentationColour() const
+const QColor& BaseSegmentorController::GetDefaultSegmentationColour() const
 {
   return m_DefaultSegmentationColour;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::SetDefaultSegmentationColour(const QColor& defaultSegmentationColour)
+void BaseSegmentorController::SetDefaultSegmentationColour(const QColor& defaultSegmentationColour)
 {
   m_DefaultSegmentationColour = defaultSegmentationColour;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkBaseSegmentorController::EventFilter(const mitk::StateEvent* stateEvent) const
+bool BaseSegmentorController::EventFilter(const mitk::StateEvent* stateEvent) const
 {
   if (QmitkRenderWindow* renderWindow = this->GetView()->GetSelectedRenderWindow())
   {
@@ -98,7 +101,7 @@ bool niftkBaseSegmentorController::EventFilter(const mitk::StateEvent* stateEven
 
 
 //-----------------------------------------------------------------------------
-bool niftkBaseSegmentorController::EventFilter(mitk::InteractionEvent* event) const
+bool BaseSegmentorController::EventFilter(mitk::InteractionEvent* event) const
 {
   if (QmitkRenderWindow* renderWindow = this->GetView()->GetSelectedRenderWindow())
   {
@@ -113,14 +116,14 @@ bool niftkBaseSegmentorController::EventFilter(mitk::InteractionEvent* event) co
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager* niftkBaseSegmentorController::GetToolManager() const
+mitk::ToolManager* BaseSegmentorController::GetToolManager() const
 {
   return m_ToolManager;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType niftkBaseSegmentorController::GetWorkingData()
+mitk::ToolManager::DataVectorType BaseSegmentorController::GetWorkingData()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -130,7 +133,7 @@ mitk::ToolManager::DataVectorType niftkBaseSegmentorController::GetWorkingData()
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* niftkBaseSegmentorController::GetWorkingImageFromToolManager(int index)
+mitk::Image* BaseSegmentorController::GetWorkingImageFromToolManager(int index)
 {
   mitk::Image* result = nullptr;
 
@@ -153,7 +156,7 @@ mitk::Image* niftkBaseSegmentorController::GetWorkingImageFromToolManager(int in
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* niftkBaseSegmentorController::GetReferenceNodeFromToolManager()
+mitk::DataNode* BaseSegmentorController::GetReferenceNodeFromToolManager()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -163,7 +166,7 @@ mitk::DataNode* niftkBaseSegmentorController::GetReferenceNodeFromToolManager()
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* niftkBaseSegmentorController::GetReferenceImageFromToolManager()
+mitk::Image* BaseSegmentorController::GetReferenceImageFromToolManager()
 {
   mitk::Image* result = nullptr;
 
@@ -181,7 +184,7 @@ mitk::Image* niftkBaseSegmentorController::GetReferenceImageFromToolManager()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* niftkBaseSegmentorController::GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode)
+mitk::DataNode* BaseSegmentorController::GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode)
 {
   mitk::DataNode* result = mitk::FindFirstParentImage(this->GetDataStorage(), segmentationNode, false);
   return result;
@@ -189,7 +192,7 @@ mitk::DataNode* niftkBaseSegmentorController::GetReferenceNodeFromSegmentationNo
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* niftkBaseSegmentorController::GetReferenceImage()
+mitk::Image* BaseSegmentorController::GetReferenceImage()
 {
   mitk::Image* result = this->GetReferenceImageFromToolManager();
   return result;
@@ -197,7 +200,7 @@ mitk::Image* niftkBaseSegmentorController::GetReferenceImage()
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::SetReferenceImageSelected()
+void BaseSegmentorController::SetReferenceImageSelected()
 {
   mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
   if (referenceImageNode.IsNotNull())
@@ -208,28 +211,28 @@ void niftkBaseSegmentorController::SetReferenceImageSelected()
 
 
 //-----------------------------------------------------------------------------
-bool niftkBaseSegmentorController::IsNodeAReferenceImage(const mitk::DataNode::Pointer node)
+bool BaseSegmentorController::IsNodeAReferenceImage(const mitk::DataNode::Pointer node)
 {
   return mitk::IsNodeAGreyScaleImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkBaseSegmentorController::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
+bool BaseSegmentorController::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
 {
   return mitk::IsNodeABinaryImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkBaseSegmentorController::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
+bool BaseSegmentorController::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
 {
   return mitk::IsNodeABinaryImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType niftkBaseSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
+mitk::ToolManager::DataVectorType BaseSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   // This default implementation just says Segmentation node == Working node, which subclasses could override.
 
@@ -240,7 +243,7 @@ mitk::ToolManager::DataVectorType niftkBaseSegmentorController::GetWorkingDataFr
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* niftkBaseSegmentorController::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
+mitk::DataNode* BaseSegmentorController::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
 {
   // This default implementation just says Segmentation node == Working node, which subclasses could override.
 
@@ -250,7 +253,7 @@ mitk::DataNode* niftkBaseSegmentorController::GetSegmentationNodeFromWorkingData
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::ApplyDisplayOptions(mitk::DataNode* node)
+void BaseSegmentorController::ApplyDisplayOptions(mitk::DataNode* node)
 {
   if (!node) return;
 
@@ -268,7 +271,7 @@ void niftkBaseSegmentorController::ApplyDisplayOptions(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-int niftkBaseSegmentorController::GetSliceNumberFromSliceNavigationControllerAndReferenceImage()
+int BaseSegmentorController::GetSliceNumberFromSliceNavigationControllerAndReferenceImage()
 {
   int sliceNumber = -1;
 
@@ -293,60 +296,60 @@ int niftkBaseSegmentorController::GetSliceNumberFromSliceNavigationControllerAnd
 
 
 //-----------------------------------------------------------------------------
-int niftkBaseSegmentorController::GetAxisFromReferenceImage(niftk::ImageOrientation orientation)
+int BaseSegmentorController::GetAxisFromReferenceImage(ImageOrientation orientation)
 {
   int axis = -1;
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
   if (referenceImage.IsNotNull())
   {
-    axis = niftk::GetThroughPlaneAxis(referenceImage, orientation);
+    axis = GetThroughPlaneAxis(referenceImage, orientation);
   }
   return axis;
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkBaseSegmentorController::GetReferenceImageAxialAxis()
+int BaseSegmentorController::GetReferenceImageAxialAxis()
 {
-  return this->GetAxisFromReferenceImage(niftk::IMAGE_ORIENTATION_AXIAL);
+  return this->GetAxisFromReferenceImage(IMAGE_ORIENTATION_AXIAL);
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkBaseSegmentorController::GetReferenceImageCoronalAxis()
+int BaseSegmentorController::GetReferenceImageCoronalAxis()
 {
-  return this->GetAxisFromReferenceImage(niftk::IMAGE_ORIENTATION_CORONAL);
+  return this->GetAxisFromReferenceImage(IMAGE_ORIENTATION_CORONAL);
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkBaseSegmentorController::GetReferenceImageSagittalAxis()
+int BaseSegmentorController::GetReferenceImageSagittalAxis()
 {
-  return this->GetAxisFromReferenceImage(niftk::IMAGE_ORIENTATION_SAGITTAL);
+  return this->GetAxisFromReferenceImage(IMAGE_ORIENTATION_SAGITTAL);
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkBaseSegmentorController::GetViewAxis()
+int BaseSegmentorController::GetViewAxis()
 {
   int axisNumber = -1;
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  niftk::ImageOrientation orientation = this->GetOrientation();
-  if (referenceImage.IsNotNull() && orientation != niftk::IMAGE_ORIENTATION_UNKNOWN)
+  ImageOrientation orientation = this->GetOrientation();
+  if (referenceImage.IsNotNull() && orientation != IMAGE_ORIENTATION_UNKNOWN)
   {
-    axisNumber = niftk::GetThroughPlaneAxis(referenceImage, orientation);
+    axisNumber = GetThroughPlaneAxis(referenceImage, orientation);
   }
   return axisNumber;
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkBaseSegmentorController::GetUpDirection()
+int BaseSegmentorController::GetUpDirection()
 {
   int upDirection = 0;
   mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  niftk::ImageOrientation orientation = this->GetOrientation();
-  if (referenceImage.IsNotNull() && orientation != niftk::IMAGE_ORIENTATION_UNKNOWN)
+  ImageOrientation orientation = this->GetOrientation();
+  if (referenceImage.IsNotNull() && orientation != IMAGE_ORIENTATION_UNKNOWN)
   {
     upDirection = niftk::GetUpDirection(referenceImage, orientation);
   }
@@ -355,7 +358,7 @@ int niftkBaseSegmentorController::GetUpDirection()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* niftkBaseSegmentorController::CreateNewSegmentation()
+mitk::DataNode* BaseSegmentorController::CreateNewSegmentation()
 {
   mitk::DataNode::Pointer emptySegmentation = NULL;
 
@@ -372,7 +375,7 @@ mitk::DataNode* niftkBaseSegmentorController::CreateNewSegmentation()
     {
       if (referenceImage->GetDimension() > 2)
       {
-        niftkNewSegmentationDialog* dialog = new niftkNewSegmentationDialog(m_DefaultSegmentationColour, m_SegmentorGUI->GetParent());
+        NewSegmentationDialog* dialog = new NewSegmentationDialog(m_DefaultSegmentationColour, m_SegmentorGUI->GetParent());
         int dialogReturnValue = dialog->exec();
         if ( dialogReturnValue == QDialog::Rejected ) return NULL; // user clicked cancel or pressed Esc or something similar
 
@@ -414,7 +417,7 @@ mitk::DataNode* niftkBaseSegmentorController::CreateNewSegmentation()
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes)
+void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes)
 {
   assert(m_SegmentorGUI);
 
@@ -487,20 +490,20 @@ void niftkBaseSegmentorController::OnDataManagerSelectionChanged(const QList<mit
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer niftkBaseSegmentorController::GetSelectedNode() const
+mitk::DataNode::Pointer BaseSegmentorController::GetSelectedNode() const
 {
   return m_SelectedNode;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::OnNewSegmentationButtonClicked()
+void BaseSegmentorController::OnNewSegmentationButtonClicked()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes)
+void BaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -531,14 +534,14 @@ void niftkBaseSegmentorController::SetToolManagerSelection(const mitk::DataNode*
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::OnViewGetsActivated()
+void BaseSegmentorController::OnViewGetsActivated()
 {
   this->OnDataManagerSelectionChanged(this->GetDataManagerSelection());
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorController::OnToolSelected(int toolID)
+void BaseSegmentorController::OnToolSelected(int toolID)
 {
   /// Note: The view is not created when the GUI is set up, therefore
   /// we cannot initialise this variable at another place.
@@ -575,4 +578,6 @@ void niftkBaseSegmentorController::OnToolSelected(int toolID)
   {
     mainWindow->setFocus();
   }
+}
+
 }

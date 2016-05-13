@@ -21,25 +21,27 @@
 
 #include <niftkBaseSegmentorController.h>
 
+namespace niftk
+{
 
-const QString niftkBaseSegmentorView::DEFAULT_COLOUR("midas editor default colour");
-const QString niftkBaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
+const QString BaseSegmentorView::DEFAULT_COLOUR("midas editor default colour");
+const QString BaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET("midas editor default colour style sheet");
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorView::niftkBaseSegmentorView()
+BaseSegmentorView::BaseSegmentorView()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorView::~niftkBaseSegmentorView()
+BaseSegmentorView::~BaseSegmentorView()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::Activated()
+void BaseSegmentorView::Activated()
 {
   QmitkBaseView::Activated();
 
@@ -49,7 +51,7 @@ void niftkBaseSegmentorView::Activated()
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::Deactivated()
+void BaseSegmentorView::Deactivated()
 {
   QmitkBaseView::Deactivated();
 
@@ -59,7 +61,7 @@ void niftkBaseSegmentorView::Deactivated()
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::Visible()
+void BaseSegmentorView::Visible()
 {
   QmitkBaseView::Visible();
 
@@ -69,7 +71,7 @@ void niftkBaseSegmentorView::Visible()
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::Hidden()
+void BaseSegmentorView::Hidden()
 {
   QmitkBaseView::Hidden();
 
@@ -79,7 +81,7 @@ void niftkBaseSegmentorView::Hidden()
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorView::niftkBaseSegmentorView(const niftkBaseSegmentorView& other)
+BaseSegmentorView::BaseSegmentorView(const BaseSegmentorView& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -87,7 +89,7 @@ niftkBaseSegmentorView::niftkBaseSegmentorView(const niftkBaseSegmentorView& oth
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::CreateQtPartControl(QWidget* parent)
+void BaseSegmentorView::CreateQtPartControl(QWidget* parent)
 {
   this->SetParent(parent);
 
@@ -100,7 +102,7 @@ void niftkBaseSegmentorView::CreateQtPartControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer>& nodes)
+void BaseSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer>& nodes)
 {
   Q_UNUSED(part);
   assert(m_SegmentorController);
@@ -109,14 +111,14 @@ void niftkBaseSegmentorView::OnSelectionChanged(berry::IWorkbenchPart::Pointer p
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::OnPreferencesChanged(const berry::IBerryPreferences*)
+void BaseSegmentorView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkBaseSegmentorView::RetrievePreferenceValues()
+void BaseSegmentorView::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
@@ -128,11 +130,13 @@ void niftkBaseSegmentorView::RetrievePreferenceValues()
 
   assert( prefs );
 
-  QString defaultColourName = prefs->Get(niftkBaseSegmentorView::DEFAULT_COLOUR, "");
+  QString defaultColourName = prefs->Get(BaseSegmentorView::DEFAULT_COLOUR, "");
   QColor defaultSegmentationColour(defaultColourName);
   if (defaultColourName == "")
   {
     defaultSegmentationColour = QColor(0, 255, 0);
   }
   m_SegmentorController->SetDefaultSegmentationColour(defaultSegmentationColour);
+}
+
 }

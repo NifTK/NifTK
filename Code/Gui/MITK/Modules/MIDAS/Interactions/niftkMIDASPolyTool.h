@@ -65,7 +65,7 @@ public:
   /// \brief When called, we initialize contours, as the PolyLine keeps going until the whole tool is Activated/Deactivated.
   virtual void Activated();
 
-  /// \brief When called, add the current poly line to the node specified by niftk::MIDASTool::CURRENT_CONTOURS_NAME.
+  /// \brief When called, add the current poly line to the node specified by MIDASTool::CURRENT_CONTOURS_NAME.
   virtual void Deactivated();
 
   /// \brief When called, we incrementally build up a poly line.
@@ -81,7 +81,7 @@ public:
   virtual bool DeselectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Clears the contour, meaning it re-initialised the feedback contour in
-  /// mitk::FeedbackContourTool, and also the background contour in niftk::MIDASContourTool
+  /// mitk::FeedbackContourTool, and also the background contour in MIDASContourTool
   /// and the Previous Contour and Poly Line points in this class.
   virtual void ClearData();
 
@@ -106,7 +106,7 @@ private:
   /// \brief Makes sure the previous contour is not rendered in any 3D window.
   void Disable3dRenderingOfPreviousContour();
 
-  /// \brief Takes the contourReferencePointsInput and planeGeometry, and if there are >1 points in the contour, generates new feedbackContour and backgroundContour by calling niftk::MIDASContourTool::DrawLineAroundVoxelEdges.
+  /// \brief Takes the contourReferencePointsInput and planeGeometry, and if there are >1 points in the contour, generates new feedbackContour and backgroundContour by calling MIDASContourTool::DrawLineAroundVoxelEdges.
   void DrawWholeContour(const mitk::ContourModel& contourReferencePointsInput, const mitk::PlaneGeometry* planeGeometry, mitk::ContourModel& feedbackContour, mitk::ContourModel& backgroundContour);
 
   /// \brief Called from OnMiddleMousePressed and OnMiddleMousePressedAndMoved, used to draw the previous contour in green, and the current contour (which is being dragged by the mouse with the middle click) in yellow.

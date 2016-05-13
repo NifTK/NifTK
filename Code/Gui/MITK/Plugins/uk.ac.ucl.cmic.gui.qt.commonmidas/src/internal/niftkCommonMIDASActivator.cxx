@@ -15,17 +15,22 @@
 #include "niftkCommonMIDASActivator.h"
 #include <QtPlugin>
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-void niftk::CommonMIDASActivator::start(ctkPluginContext* context)
+void CommonMIDASActivator::start(ctkPluginContext* context)
 {
   Q_UNUSED(context)
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::CommonMIDASActivator::stop(ctkPluginContext* context)
+void CommonMIDASActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
+}
+
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)

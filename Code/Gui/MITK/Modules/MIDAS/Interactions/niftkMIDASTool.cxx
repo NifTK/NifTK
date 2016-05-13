@@ -30,21 +30,24 @@
 
 #include "niftkMIDASEventFilter.h"
 
-const std::string niftk::MIDASTool::SEEDS_NAME = "MIDAS_SEEDS";
-const std::string niftk::MIDASTool::CONTOURS_NAME = "MIDAS_CURRENT_CONTOURS";
-const std::string niftk::MIDASTool::PRIOR_CONTOURS_NAME = "MIDAS_PRIOR_CONTOURS";
-const std::string niftk::MIDASTool::NEXT_CONTOURS_NAME = "MIDAS_NEXT_CONTOURS";
-const std::string niftk::MIDASTool::DRAW_CONTOURS_NAME = "MIDAS_DRAW_CONTOURS";
-const std::string niftk::MIDASTool::REGION_GROWING_NAME = "MIDAS_REGION_GROWING_IMAGE";
-const std::string niftk::MIDASTool::INITIAL_SEGMENTATION_NAME = "MIDAS_INITIAL_SEGMENTATION_IMAGE";
-const std::string niftk::MIDASTool::INITIAL_SEEDS_NAME = "MIDAS_INITIAL_SEEDS";
+namespace niftk
+{
+
+const std::string MIDASTool::SEEDS_NAME = "MIDAS_SEEDS";
+const std::string MIDASTool::CONTOURS_NAME = "MIDAS_CURRENT_CONTOURS";
+const std::string MIDASTool::PRIOR_CONTOURS_NAME = "MIDAS_PRIOR_CONTOURS";
+const std::string MIDASTool::NEXT_CONTOURS_NAME = "MIDAS_NEXT_CONTOURS";
+const std::string MIDASTool::DRAW_CONTOURS_NAME = "MIDAS_DRAW_CONTOURS";
+const std::string MIDASTool::REGION_GROWING_NAME = "MIDAS_REGION_GROWING_IMAGE";
+const std::string MIDASTool::INITIAL_SEGMENTATION_NAME = "MIDAS_INITIAL_SEGMENTATION_IMAGE";
+const std::string MIDASTool::INITIAL_SEEDS_NAME = "MIDAS_INITIAL_SEEDS";
 
 //-----------------------------------------------------------------------------
-bool niftk::MIDASTool::s_BehaviourStringsLoaded = false;
+bool MIDASTool::s_BehaviourStringsLoaded = false;
 
 
 //-----------------------------------------------------------------------------
-niftk::MIDASTool::MIDASTool()
+MIDASTool::MIDASTool()
 : mitk::FeedbackContourTool("")
 , m_AddToPointSetInteractor(NULL)
 , m_LastSeenNumberOfSeeds(0)
@@ -56,13 +59,13 @@ niftk::MIDASTool::MIDASTool()
 
 
 //-----------------------------------------------------------------------------
-niftk::MIDASTool::~MIDASTool()
+MIDASTool::~MIDASTool()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASTool::LoadBehaviourStrings()
+void MIDASTool::LoadBehaviourStrings()
 {
   if (!s_BehaviourStringsLoaded)
   {
@@ -81,7 +84,7 @@ void niftk::MIDASTool::LoadBehaviourStrings()
 }
 
 
-bool niftk::MIDASTool::LoadBehaviour(const std::string& fileName, us::Module* module)
+bool MIDASTool::LoadBehaviour(const std::string& fileName, us::Module* module)
 {
   mitk::GlobalInteraction* globalInteraction =  mitk::GlobalInteraction::GetInstance();
   mitk::StateMachineFactory* stateMachineFactory = globalInteraction->GetStateMachineFactory();
@@ -108,7 +111,7 @@ bool niftk::MIDASTool::LoadBehaviour(const std::string& fileName, us::Module* mo
 
 
 //-----------------------------------------------------------------------------
-bool niftk::MIDASTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
+bool MIDASTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
   bool canHandleIt = MIDASStateMachine::CanHandleEvent(event);
   if (canHandleIt)
@@ -120,9 +123,9 @@ bool niftk::MIDASTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNod
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASTool::InstallEventFilter(niftk::MIDASEventFilter* eventFilter)
+void MIDASTool::InstallEventFilter(MIDASEventFilter* eventFilter)
 {
-  niftk::MIDASStateMachine::InstallEventFilter(eventFilter);
+  MIDASStateMachine::InstallEventFilter(eventFilter);
   if (m_AddToPointSetInteractor.IsNotNull())
   {
     m_AddToPointSetInteractor->InstallEventFilter(eventFilter);
@@ -131,25 +134,25 @@ void niftk::MIDASTool::InstallEventFilter(niftk::MIDASEventFilter* eventFilter)
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASTool::RemoveEventFilter(niftk::MIDASEventFilter* eventFilter)
+void MIDASTool::RemoveEventFilter(MIDASEventFilter* eventFilter)
 {
   if (m_AddToPointSetInteractor.IsNotNull())
   {
     m_AddToPointSetInteractor->RemoveEventFilter(eventFilter);
   }
-  niftk::MIDASStateMachine::RemoveEventFilter(eventFilter);
+  MIDASStateMachine::RemoveEventFilter(eventFilter);
 }
 
 
 //-----------------------------------------------------------------------------
-const char* niftk::MIDASTool::GetGroup() const
+const char* MIDASTool::GetGroup() const
 {
   return "MIDAS";
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASTool::Activated()
+void MIDASTool::Activated()
 {
   Superclass::Activated();
 
@@ -189,15 +192,15 @@ void niftk::MIDASTool::Activated()
 
     if (m_AddToPointSetInteractor.IsNull())
     {
-      m_AddToPointSetInteractor = niftk::MIDASPointSetInteractor::New("MIDASToolPointSetInteractor", pointSetNode);
+      m_AddToPointSetInteractor = MIDASPointSetInteractor::New("MIDASToolPointSetInteractor", pointSetNode);
 
-//      m_AddToPointSetInteractor = niftk::MIDASPointSetDataInteractor::New();
+//      m_AddToPointSetInteractor = MIDASPointSetDataInteractor::New();
 //      m_AddToPointSetInteractor->LoadStateMachine("MIDASToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
 //      m_AddToPointSetInteractor->SetEventConfig("MIDASToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
-      std::vector<niftk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
-      std::vector<niftk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-      std::vector<niftk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+      std::vector<MIDASEventFilter*> eventFilters = this->GetEventFilters();
+      std::vector<MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+      std::vector<MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
       for ( ; it != itEnd; ++it)
       {
         m_AddToPointSetInteractor->InstallEventFilter(*it);
@@ -210,9 +213,9 @@ void niftk::MIDASTool::Activated()
 
     m_LastSeenNumberOfSeeds = m_PointSet->GetSize();
 
-    itk::SimpleMemberCommand<niftk::MIDASTool>::Pointer onSeedsModifiedCommand =
-      itk::SimpleMemberCommand<niftk::MIDASTool>::New();
-    onSeedsModifiedCommand->SetCallbackFunction( this, &niftk::MIDASTool::OnSeedsModified );
+    itk::SimpleMemberCommand<MIDASTool>::Pointer onSeedsModifiedCommand =
+      itk::SimpleMemberCommand<MIDASTool>::New();
+    onSeedsModifiedCommand->SetCallbackFunction( this, &MIDASTool::OnSeedsModified );
     m_SeedsChangedTag = pointSet->AddObserver(itk::ModifiedEvent(), onSeedsModifiedCommand);
   }
 
@@ -241,7 +244,7 @@ void niftk::MIDASTool::Activated()
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASTool::Deactivated()
+void MIDASTool::Deactivated()
 {
   m_IsActivated = false;
 
@@ -284,9 +287,9 @@ void niftk::MIDASTool::Deactivated()
       /// If we do not do this, the interactor stays active and will keep processing the events.
 //      m_AddToPointSetInteractor->SetDataNode(0);
 
-      std::vector<niftk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
-      std::vector<niftk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-      std::vector<niftk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+      std::vector<MIDASEventFilter*> eventFilters = this->GetEventFilters();
+      std::vector<MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+      std::vector<MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
       for ( ; it != itEnd; ++it)
       {
         m_AddToPointSetInteractor->RemoveEventFilter(*it);
@@ -301,21 +304,21 @@ void niftk::MIDASTool::Deactivated()
 
 
 //-----------------------------------------------------------------------------
-bool niftk::MIDASTool::GetBlockNumberOfSeedsSignal() const
+bool MIDASTool::GetBlockNumberOfSeedsSignal() const
 {
   return m_BlockNumberOfSeedsSignal;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASTool::SetBlockNumberOfSeedsSignal(bool blockNumberOfSeedsSignal)
+void MIDASTool::SetBlockNumberOfSeedsSignal(bool blockNumberOfSeedsSignal)
 {
   m_BlockNumberOfSeedsSignal = blockNumberOfSeedsSignal;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASTool::RenderCurrentWindow(const mitk::PositionEvent& positionEvent)
+void MIDASTool::RenderCurrentWindow(const mitk::PositionEvent& positionEvent)
 {
   assert( positionEvent.GetSender()->GetRenderWindow() );
   positionEvent.GetSender()->RequestUpdate();
@@ -323,7 +326,7 @@ void niftk::MIDASTool::RenderCurrentWindow(const mitk::PositionEvent& positionEv
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASTool::RenderAllWindows()
+void MIDASTool::RenderAllWindows()
 {
   if (m_LastEventSender)
   {
@@ -333,7 +336,7 @@ void niftk::MIDASTool::RenderAllWindows()
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASTool::UpdateWorkingDataNodeBoolProperty(int dataIndex, const std::string& name, bool value)
+void MIDASTool::UpdateWorkingDataNodeBoolProperty(int dataIndex, const std::string& name, bool value)
 {
   assert(m_ToolManager);
 
@@ -345,21 +348,21 @@ void niftk::MIDASTool::UpdateWorkingDataNodeBoolProperty(int dataIndex, const st
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer niftk::MIDASTool::GetPointSetNode() const
+mitk::DataNode::Pointer MIDASTool::GetPointSetNode() const
 {
   return m_PointSetNode;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::PointSet::Pointer niftk::MIDASTool::GetPointSet() const
+mitk::PointSet::Pointer MIDASTool::GetPointSet() const
 {
   return m_PointSet;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASTool::OnSeedsModified()
+void MIDASTool::OnSeedsModified()
 {
   if (m_PointSet.IsNotNull())
   {
@@ -373,4 +376,6 @@ void niftk::MIDASTool::OnSeedsModified()
       }
     }
   }
+}
+
 }

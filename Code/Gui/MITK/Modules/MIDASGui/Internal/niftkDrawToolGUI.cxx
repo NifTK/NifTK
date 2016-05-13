@@ -22,10 +22,13 @@
 
 #include <niftkToolFactoryMacros.h>
 
-NIFTK_TOOL_GUI_MACRO_NO_EXPORT(MIDASDrawTool, niftkDrawToolGUI, "Draw Tool GUI")
+namespace niftk
+{
+
+NIFTK_TOOL_GUI_MACRO_NO_EXPORT(MIDASDrawTool, DrawToolGUI, "Draw Tool GUI")
 
 //-----------------------------------------------------------------------------
-niftkDrawToolGUI::niftkDrawToolGUI()
+DrawToolGUI::DrawToolGUI()
 :QmitkToolGUI()
 , m_Slider(NULL)
 , m_Frame(NULL)
@@ -54,35 +57,35 @@ niftkDrawToolGUI::niftkDrawToolGUI()
 
 
 //-----------------------------------------------------------------------------
-niftkDrawToolGUI::~niftkDrawToolGUI()
+DrawToolGUI::~DrawToolGUI()
 {
   if (m_DrawTool.IsNotNull())
   {
-    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<niftkDrawToolGUI, double>(this, &niftkDrawToolGUI::OnCursorSizeChanged);
+    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<DrawToolGUI, double>(this, &DrawToolGUI::OnCursorSizeChanged);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkDrawToolGUI::OnNewToolAssociated(mitk::Tool* tool)
+void DrawToolGUI::OnNewToolAssociated(mitk::Tool* tool)
 {
   if (m_DrawTool.IsNotNull())
   {
-    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<niftkDrawToolGUI, double>(this, &niftkDrawToolGUI::OnCursorSizeChanged);
+    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<DrawToolGUI, double>(this, &DrawToolGUI::OnCursorSizeChanged);
   }
 
-  m_DrawTool = dynamic_cast<niftk::MIDASDrawTool*>(tool);
+  m_DrawTool = dynamic_cast<MIDASDrawTool*>(tool);
 
   if (m_DrawTool.IsNotNull())
   {
     this->OnCursorSizeChanged(m_DrawTool->GetCursorSize());
-    m_DrawTool->CursorSizeChanged += mitk::MessageDelegate1<niftkDrawToolGUI, double>(this, &niftkDrawToolGUI::OnCursorSizeChanged);
+    m_DrawTool->CursorSizeChanged += mitk::MessageDelegate1<DrawToolGUI, double>(this, &DrawToolGUI::OnCursorSizeChanged);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkDrawToolGUI::OnSliderValueChanged(double value)
+void DrawToolGUI::OnSliderValueChanged(double value)
 {
   if (m_DrawTool.IsNotNull())
   {
@@ -92,7 +95,9 @@ void niftkDrawToolGUI::OnSliderValueChanged(double value)
 
 
 //-----------------------------------------------------------------------------
-void niftkDrawToolGUI::OnCursorSizeChanged(double cursorSize)
+void DrawToolGUI::OnCursorSizeChanged(double cursorSize)
 {
   m_Slider->setValue(cursorSize);
+}
+
 }

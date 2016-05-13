@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkGeneralSegmentorController_h
-#define __niftkGeneralSegmentorController_h
+#ifndef niftkGeneralSegmentorController_h
+#define niftkGeneralSegmentorController_h
 
 #include <niftkMIDASGuiExports.h>
 
@@ -31,9 +31,15 @@ class PointSet;
 }
 
 class niftkIBaseView;
-class niftkGeneralSegmentorGUI;
 
-/// \class niftkGeneralSegmentorController
+namespace niftk
+{
+
+class GeneralSegmentorControllerPrivate;
+class GeneralSegmentorGUI;
+
+
+/// \class GeneralSegmentorController
 /// \brief Provides the MIDAS general purpose, Irregular Volume Editor functionality originally developed
 /// at the Dementia Research Centre UCL (http://dementia.ion.ucl.ac.uk/).
 ///
@@ -95,7 +101,7 @@ class niftkGeneralSegmentorGUI;
 ///
 /// The threshold "apply" button is only enabled when the threshold check-box is enabled,
 /// and disabled otherwise. The current segmentation, draw tool contours and poly tool contours
-/// (eg. WorkingData items 2 and 3, plus temporary data in the niftk::MIDASPolyTool) all limit the
+/// (eg. WorkingData items 2 and 3, plus temporary data in the MIDASPolyTool) all limit the
 /// region growing.
 ///
 /// When we hit "apply":
@@ -123,38 +129,38 @@ class niftkGeneralSegmentorGUI;
 ///
 /// \sa niftkBaseSegmentorController
 /// \sa MIDASMorphologicalSegmentorController
-class NIFTKMIDASGUI_EXPORT niftkGeneralSegmentorController
-  : public niftkBaseSegmentorController,
+class NIFTKMIDASGUI_EXPORT GeneralSegmentorController
+  : public BaseSegmentorController,
     public mitk::OperationActor,
-    public niftk::MIDASToolKeyPressResponder
+    public MIDASToolKeyPressResponder
 {
   Q_OBJECT
 
 public:
 
-  niftkGeneralSegmentorController(niftkIBaseView* view);
-  virtual ~niftkGeneralSegmentorController();
+  GeneralSegmentorController(niftkIBaseView* view);
+  virtual ~GeneralSegmentorController();
 
   /// \brief Sets up the GUI.
   /// This function has to be called from the CreateQtPartControl function of the view.
   virtual void SetupGUI(QWidget* parent) override;
 
-  /// \brief \see niftk::MIDASToolKeyPressResponder::SelectSeedTool()
+  /// \brief \see MIDASToolKeyPressResponder::SelectSeedTool()
   virtual bool SelectSeedTool() override;
 
-  /// \brief \see niftk::MIDASToolKeyPressResponder::SelectDrawTool()
+  /// \brief \see MIDASToolKeyPressResponder::SelectDrawTool()
   virtual bool SelectDrawTool() override;
 
-  /// \brief \see niftk::MIDASToolKeyPressResponder::UnselectTools()
+  /// \brief \see MIDASToolKeyPressResponder::UnselectTools()
   virtual bool UnselectTools() override;
 
-  /// \brief \see niftk::MIDASToolKeyPressResponder::SelectPolyTool()
+  /// \brief \see MIDASToolKeyPressResponder::SelectPolyTool()
   virtual bool SelectPolyTool() override;
 
-  /// \brief \see niftk::MIDASToolKeyPressResponder::SelectViewMode()
+  /// \brief \see MIDASToolKeyPressResponder::SelectViewMode()
   virtual bool SelectViewMode() override;
 
-  /// \brief \see niftk::MIDASToolKeyPressResponder::CleanSlice()
+  /// \brief \see MIDASToolKeyPressResponder::CleanSlice()
   virtual bool CleanSlice() override;
 
   /// \brief Method to enable this class to interact with the Undo/Redo framework.
@@ -176,11 +182,11 @@ protected:
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
 
   /// \brief Creates the general segmentor widget that holds the GUI components of the view.
-  virtual niftk::BaseGUI* CreateGUI(QWidget* parent) override;
+  virtual BaseGUI* CreateGUI(QWidget* parent) override;
 
   virtual void OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
-  virtual void OnSelectedSliceChanged(niftk::ImageOrientation orientation, int sliceIndex) override;
+  virtual void OnSelectedSliceChanged(ImageOrientation orientation, int sliceIndex) override;
 
 protected slots:
 
@@ -230,11 +236,11 @@ protected slots:
   void OnThresholdApplyButtonClicked();
 
   /// \brief Qt slot called when the "threshold" checkbox is checked, and toggles
-  /// the thresholding widget section on and calls niftkGeneralSegmentorController::UpdateRegionGrowing.
+  /// the thresholding widget section on and calls GeneralSegmentorController::UpdateRegionGrowing.
   void OnThresholdingCheckBoxToggled(bool checked);
 
   /// \brief Qt slot called when the lower or upper threshold slider is moved, calls
-  /// niftkGeneralSegmentorController::UpdateRegionGrowing as thresholds have changed.
+  /// GeneralSegmentorController::UpdateRegionGrowing as thresholds have changed.
   void OnThresholdValueChanged();
 
   /// \brief Qt slot called when the any button is pressed on this widget.
@@ -393,10 +399,10 @@ private:
   void ClearWorkingData();
 
   /// \brief All the GUI controls for the main view part.
-  niftkGeneralSegmentorGUI* m_GeneralSegmentorGUI;
+  GeneralSegmentorGUI* m_GeneralSegmentorGUI;
 
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
-  niftkGeneralSegmentorEventInterface::Pointer m_Interface;
+  GeneralSegmentorEventInterface::Pointer m_Interface;
 
   /// \brief Flag to stop re-entering code, while updating.
   bool m_IsUpdating;
@@ -428,10 +434,16 @@ private:
   mitk::Point3D m_PreviousFocusPoint;
 
   /// \brief This class hooks into the Global Interaction system to respond to Key press events.
-  niftk::MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
+  MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
 
-friend class niftkGeneralSegmentorView;
+private:
+
+  QScopedPointer<GeneralSegmentorControllerPrivate> d_ptr;
+
+  Q_DECLARE_PRIVATE(GeneralSegmentorController);
 
 };
+
+}
 
 #endif

@@ -18,9 +18,12 @@
 
 #include <niftkImageOrientationUtils.h>
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
+GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::GeneralSegmentorPipeline()
 {
   m_SliceNumber = -1;
@@ -43,7 +46,7 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
+GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::~GeneralSegmentorPipeline()
 {
 }
@@ -52,7 +55,7 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
+GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::SetParam(GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams& p)
 {
   m_ExtractGreyRegionOfInterestFilter->SetInput(referenceImage);
@@ -71,7 +74,7 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
+GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::Update(GeneralSegmentorPipelineParams& params)
 {
   try
@@ -94,12 +97,12 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 
     // 3. Convert seeds / contours.
     mitk::Vector3D spacingInWorldCoordinateOrder;
-    niftk::GetSpacingInWorldCoordinateOrder(m_ExtractBinaryRegionOfInterestFilter->GetInput(), spacingInWorldCoordinateOrder);
+    GetSpacingInWorldCoordinateOrder(m_ExtractBinaryRegionOfInterestFilter->GetInput(), spacingInWorldCoordinateOrder);
 
-    niftk::ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);
-    niftk::ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, m_ManualContours, spacingInWorldCoordinateOrder);
-    niftk::ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, m_ManualContours, spacingInWorldCoordinateOrder);
-    niftk::ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours, spacingInWorldCoordinateOrder);
+    ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);
+    ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, m_ManualContours, spacingInWorldCoordinateOrder);
+    ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, m_ManualContours, spacingInWorldCoordinateOrder);
+    ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours, spacingInWorldCoordinateOrder);
      
     // 4. Update the pipeline so far to get output slice that we can draw onto.
     m_ExtractGreyRegionOfInterestFilter->SetExtractionRegion(region3D);
@@ -457,7 +460,7 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 
 template<typename TPixel, unsigned int VImageDimension>
 void
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
+GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::SetPaintingRegion(const ContinuousIndexType& pointInVx, RegionType& paintingRegion)
 {
 #ifndef NDEBUG
@@ -490,7 +493,7 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 
 template<typename TPixel, unsigned int VImageDimension>
 void
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
+GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::DisconnectPipeline()
 {
   // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
@@ -502,4 +505,6 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_RegionGrowingFilter->SetInput(NULL);
   m_RegionGrowingFilter->SetSegmentationContourImage(NULL);
   m_RegionGrowingFilter->SetManualContourImage(NULL);
+}
+
 }

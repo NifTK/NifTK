@@ -16,28 +16,33 @@
 
 #include "niftkGeneralSegmentorController.h"
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorEventInterface::niftkGeneralSegmentorEventInterface()
+GeneralSegmentorEventInterface::GeneralSegmentorEventInterface()
 : m_GeneralSegmentorController(nullptr)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorEventInterface::~niftkGeneralSegmentorEventInterface()
+GeneralSegmentorEventInterface::~GeneralSegmentorEventInterface()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorEventInterface::SetGeneralSegmentorController( niftkGeneralSegmentorController* generalSegmentorController)
+void GeneralSegmentorEventInterface::SetGeneralSegmentorController(GeneralSegmentorController* generalSegmentorController)
 {
   m_GeneralSegmentorController = generalSegmentorController;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorEventInterface::ExecuteOperation(mitk::Operation* op)
+void GeneralSegmentorEventInterface::ExecuteOperation(mitk::Operation* op)
 {
   m_GeneralSegmentorController->ExecuteOperation(op);
+}
+
 }

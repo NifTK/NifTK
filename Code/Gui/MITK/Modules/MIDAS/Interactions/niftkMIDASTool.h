@@ -52,11 +52,11 @@ namespace niftk
  * This means derived classes could be notified when the number of seeds has changed.
  * This is only called if the tool is Active.
  *
- * \sa niftk::MIDASSeedTool
- * \sa niftk::MIDASContourTool
- * \sa niftk::MIDASDrawTool
- * \sa niftk::MIDASPolyTool
- * \sa niftk::MIDASPointSetDataInteractor
+ * \sa MIDASSeedTool
+ * \sa MIDASContourTool
+ * \sa MIDASDrawTool
+ * \sa MIDASPolyTool
+ * \sa MIDASPointSetDataInteractor
  */
 class NIFTKMIDAS_EXPORT MIDASTool : public mitk::FeedbackContourTool, public MIDASStateMachine
 {
@@ -144,7 +144,7 @@ protected:
 
   /// \brief Tells if this tool can handle the given event.
   ///
-  /// This implementation delegates the call to niftk::MIDASStateMachine::CanHandleEvent(),
+  /// This implementation delegates the call to MIDASStateMachine::CanHandleEvent(),
   /// that checks if the event is filtered by one of the installed event filters and if not,
   /// calls CanHandle() and returns with its result.
   ///
@@ -175,8 +175,8 @@ private:
   void OnSeedsModified();
 
   /// \brief This is the interactor just to add points. All MIDAS tools can add seeds. Only the SeedTool can move/remove them.
-  niftk::MIDASPointSetInteractor::Pointer m_AddToPointSetInteractor;
-//  niftk::MIDASPointSetDataInteractor::Pointer m_AddToPointSetInteractor;
+  MIDASPointSetInteractor::Pointer m_AddToPointSetInteractor;
+//  MIDASPointSetDataInteractor::Pointer m_AddToPointSetInteractor;
 
   /// \brief The node that contains the point set that is the working data of the seed tool.
   mitk::DataNode::Pointer m_PointSetNode;

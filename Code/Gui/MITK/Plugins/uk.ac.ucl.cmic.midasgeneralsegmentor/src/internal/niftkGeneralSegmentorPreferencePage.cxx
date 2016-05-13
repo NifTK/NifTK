@@ -27,10 +27,13 @@
 
 #include <niftkBaseSegmentorView.h>
 
-const QString niftkGeneralSegmentorPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasgeneralsegmentor");
+namespace niftk
+{
+
+const QString GeneralSegmentorPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasgeneralsegmentor");
 
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorPreferencePage::niftkGeneralSegmentorPreferencePage()
+GeneralSegmentorPreferencePage::GeneralSegmentorPreferencePage()
 : m_MainControl(0)
 , m_Initializing(false)
 {
@@ -39,7 +42,7 @@ niftkGeneralSegmentorPreferencePage::niftkGeneralSegmentorPreferencePage()
 
 
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorPreferencePage::niftkGeneralSegmentorPreferencePage(const niftkGeneralSegmentorPreferencePage& other)
+GeneralSegmentorPreferencePage::GeneralSegmentorPreferencePage(const GeneralSegmentorPreferencePage& other)
 : berry::Object(), QObject()
 {
   Q_UNUSED(other)
@@ -48,21 +51,21 @@ niftkGeneralSegmentorPreferencePage::niftkGeneralSegmentorPreferencePage(const n
 
 
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorPreferencePage::~niftkGeneralSegmentorPreferencePage()
+GeneralSegmentorPreferencePage::~GeneralSegmentorPreferencePage()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorPreferencePage::Init(berry::IWorkbench::Pointer )
+void GeneralSegmentorPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorPreferencePage::CreateQtControl(QWidget* parent)
+void GeneralSegmentorPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
@@ -98,34 +101,34 @@ void niftkGeneralSegmentorPreferencePage::CreateQtControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-QWidget* niftkGeneralSegmentorPreferencePage::GetQtControl() const
+QWidget* GeneralSegmentorPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorPreferencePage::PerformOk()
+bool GeneralSegmentorPreferencePage::PerformOk()
 {
-  m_GeneralSegmentorPreferencesNode->Put(niftkBaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet);
-  m_GeneralSegmentorPreferencesNode->Put(niftkBaseSegmentorView::DEFAULT_COLOUR, m_DefaultColor);
+  m_GeneralSegmentorPreferencesNode->Put(BaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet);
+  m_GeneralSegmentorPreferencesNode->Put(BaseSegmentorView::DEFAULT_COLOUR, m_DefaultColor);
 
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorPreferencePage::PerformCancel()
+void GeneralSegmentorPreferencePage::PerformCancel()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorPreferencePage::Update()
+void GeneralSegmentorPreferencePage::Update()
 {
-  m_DefauleColorStyleSheet = m_GeneralSegmentorPreferencesNode->Get(niftkBaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET, "");
-  m_DefaultColor = m_GeneralSegmentorPreferencesNode->Get(niftkBaseSegmentorView::DEFAULT_COLOUR, "");
+  m_DefauleColorStyleSheet = m_GeneralSegmentorPreferencesNode->Get(BaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET, "");
+  m_DefaultColor = m_GeneralSegmentorPreferencesNode->Get(BaseSegmentorView::DEFAULT_COLOUR, "");
   if (m_DefauleColorStyleSheet=="")
   {
     m_DefauleColorStyleSheet = "background-color: rgb(0,255,0)";
@@ -139,7 +142,7 @@ void niftkGeneralSegmentorPreferencePage::Update()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorPreferencePage::OnDefaultColourChanged()
+void GeneralSegmentorPreferencePage::OnDefaultColourChanged()
 {
   QColor colour = QColorDialog::getColor();
   if (colour.isValid())
@@ -166,9 +169,11 @@ void niftkGeneralSegmentorPreferencePage::OnDefaultColourChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorPreferencePage::OnResetDefaultColour()
+void GeneralSegmentorPreferencePage::OnResetDefaultColour()
 {
   m_DefauleColorStyleSheet = "background-color: rgb(0,255,0)";
   m_DefaultColor = "#00ff00";
   m_DefaultColorPushButton->setStyleSheet(m_DefauleColorStyleSheet);
+}
+
 }

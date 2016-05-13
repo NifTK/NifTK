@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkMorphologicalSegmentorPreferencePage_h
-#define __niftkMorphologicalSegmentorPreferencePage_h
+#ifndef niftkMorphologicalSegmentorPreferencePage_h
+#define niftkMorphologicalSegmentorPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
@@ -21,13 +21,13 @@
 class QWidget;
 class QPushButton;
 
-/**
- * \class niftkMorphologicalSegmentorPreferencePage
- * \brief Preferences page for this plugin, enabling choice volume rendering on/off.
- * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor
- *
- */
-class niftkMorphologicalSegmentorPreferencePage : public QObject, public berry::IQtPreferencePage
+namespace niftk
+{
+
+/// \class MorphologicalSegmentorPreferencePage
+/// \brief Preferences page for this plugin, enabling choice volume rendering on/off.
+/// \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor
+class MorphologicalSegmentorPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
@@ -37,9 +37,9 @@ public:
   /// \brief Stores the name of the preferences node.
   static const QString PREFERENCES_NODE_NAME;
 
-  niftkMorphologicalSegmentorPreferencePage();
-  niftkMorphologicalSegmentorPreferencePage(const niftkMorphologicalSegmentorPreferencePage& other);
-  ~niftkMorphologicalSegmentorPreferencePage();
+  MorphologicalSegmentorPreferencePage();
+  MorphologicalSegmentorPreferencePage(const MorphologicalSegmentorPreferencePage& other);
+  ~MorphologicalSegmentorPreferencePage();
 
   void Init(berry::IWorkbench::Pointer workbench);
 
@@ -78,5 +78,7 @@ protected:
 
   berry::IPreferences::Pointer m_niftkMorphologicalSegmentationViewPreferencesNode;
 };
+
+}
 
 #endif

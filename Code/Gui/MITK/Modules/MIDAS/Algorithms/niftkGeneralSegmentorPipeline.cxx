@@ -14,21 +14,23 @@
 
 #include "niftkGeneralSegmentorPipeline.h"
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-niftk::GeneralSegmentorPipelineInterface::GeneralSegmentorPipelineInterface()
+GeneralSegmentorPipelineInterface::GeneralSegmentorPipelineInterface()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::GeneralSegmentorPipelineInterface::~GeneralSegmentorPipelineInterface()
+GeneralSegmentorPipelineInterface::~GeneralSegmentorPipelineInterface()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, itk::PointSet<float, 3> *points)
+void ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, itk::PointSet<float, 3> *points)
 {
   typedef itk::PointSet<float, 3>      PointSetType;
   typedef PointSetType::Pointer        PointSetPointer;
@@ -54,7 +56,7 @@ void niftk::ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, itk::Poin
 
 
 //-----------------------------------------------------------------------------
-void niftk::ConvertMITKContoursAndAppendToITKContours(
+void ConvertMITKContoursAndAppendToITKContours(
     mitk::ContourModelSet *mitkContours, std::vector<ParametricPathType::Pointer>& itkContours, const mitk::Vector3D& spacingInWorldCoordinateOrder)
 {
   mitk::ContourModelSet::ContourModelSetIterator mitkContoursIt = mitkContours->Begin();
@@ -194,4 +196,6 @@ void niftk::ConvertMITKContoursAndAppendToITKContours(
     }
     itkContours.push_back(itkContour);
   }
+}
+
 }

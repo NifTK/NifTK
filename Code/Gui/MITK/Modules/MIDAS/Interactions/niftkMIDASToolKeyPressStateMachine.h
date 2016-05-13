@@ -60,7 +60,7 @@ protected:
 
   /// \brief Tells if this tool can handle the given event.
   ///
-  /// This implementation delegates the call to niftk::MIDASStateMachine::CanHandleEvent(),
+  /// This implementation delegates the call to MIDASStateMachine::CanHandleEvent(),
   /// that checks if the event is filtered by one of the installed event filters and if not,
   /// calls CanHandle() and returns with its result.
   ///
@@ -68,22 +68,22 @@ protected:
   /// override the CanHandle function.
   virtual bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode);
 
-  /// \see niftk::MIDASToolKeyPressResponder::SelectSeedTool()
+  /// \see MIDASToolKeyPressResponder::SelectSeedTool()
   bool SelectSeedTool(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \see niftk::MIDASToolKeyPressResponder::SelectDrawTool()
+  /// \see MIDASToolKeyPressResponder::SelectDrawTool()
   bool SelectDrawTool(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \see niftk::MIDASToolKeyPressResponder::UnselectTools()
+  /// \see MIDASToolKeyPressResponder::UnselectTools()
   bool UnselectTools(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \see niftk::MIDASToolKeyPressResponder::SelectPolyTool()
+  /// \see MIDASToolKeyPressResponder::SelectPolyTool()
   bool SelectPolyTool(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \see niftk::MIDASToolKeyPressResponder::SelectViewMode()
+  /// \see MIDASToolKeyPressResponder::SelectViewMode()
   bool SelectViewMode(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \see niftk::MIDASToolKeyPressResponder::CleanSlice()
+  /// \see MIDASToolKeyPressResponder::CleanSlice()
   bool CleanSlice(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
 private:

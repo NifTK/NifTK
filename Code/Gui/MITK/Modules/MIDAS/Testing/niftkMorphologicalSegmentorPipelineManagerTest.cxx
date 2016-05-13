@@ -39,10 +39,13 @@
 #include <mitkNifTKCoreObjectFactory.h>
 #include <niftkMorphologicalSegmentorPipelineManager.h>
 
+namespace niftk
+{
+
 /**
  * \brief Test class for niftkMorphologicalSegmentorPipelineManagerTest.
  */
-class niftkMorphologicalSegmentorPipelineManagerTestClass
+class MorphologicalSegmentorPipelineManagerTestClass
 {
 
 public:
@@ -51,7 +54,7 @@ public:
   mitk::ToolManager::Pointer m_ToolManager;
   mitk::RenderWindow::Pointer m_RenderWindow;
   mitk::RenderingManager::Pointer m_RenderingManager;
-  niftk::MorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
+  MorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
 
   //-----------------------------------------------------------------------------
   void Setup(char* argv[])
@@ -63,7 +66,7 @@ public:
     m_DataStorage = mitk::StandaloneDataStorage::New();
     m_ToolManager = mitk::ToolManager::New(m_DataStorage);
 
-    m_PipelineManager = niftk::MorphologicalSegmentorPipelineManager::New();
+    m_PipelineManager = MorphologicalSegmentorPipelineManager::New();
     m_PipelineManager->SetDataStorage(m_DataStorage);
     m_PipelineManager->SetToolManager(m_ToolManager);
 
@@ -93,6 +96,8 @@ public:
   }
 };
 
+}
+
 /**
  * Basic test harness for niftkMorphologicalSegmentorPipelineManager.
  */
@@ -103,7 +108,7 @@ int niftkMorphologicalSegmentorPipelineManagerTest(int argc, char * argv[])
 
   // We are testing specifically with image ${NIFTK_DATA_DIR}/Input/volunteers/16856/16856-002-1.img.
 
-  niftkMorphologicalSegmentorPipelineManagerTestClass *testClass = new niftkMorphologicalSegmentorPipelineManagerTestClass();
+  niftk::MorphologicalSegmentorPipelineManagerTestClass *testClass = new niftk::MorphologicalSegmentorPipelineManagerTestClass();
   testClass->Setup(argv);
   testClass->TestAll();
   delete testClass;

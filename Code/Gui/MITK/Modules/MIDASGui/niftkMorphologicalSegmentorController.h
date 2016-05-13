@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkMorphologicalSegmentorController_h
-#define __niftkMorphologicalSegmentorController_h
+#ifndef niftkMorphologicalSegmentorController_h
+#define niftkMorphologicalSegmentorController_h
 
 #include <niftkMIDASGuiExports.h>
 
@@ -22,19 +22,20 @@
 #include <niftkBaseSegmentorController.h>
 
 
-class niftkMorphologicalSegmentorGUI;
+namespace niftk
+{
 
-/**
- * \class niftkMorphologicalSegmentorController
- */
-class NIFTKMIDASGUI_EXPORT niftkMorphologicalSegmentorController : public niftkBaseSegmentorController
+class MorphologicalSegmentorGUI;
+
+/// \class MorphologicalSegmentorController
+class NIFTKMIDASGUI_EXPORT MorphologicalSegmentorController : public BaseSegmentorController
 {
   Q_OBJECT
 
 public:
 
-  niftkMorphologicalSegmentorController(niftkIBaseView* view);
-  virtual ~niftkMorphologicalSegmentorController();
+  MorphologicalSegmentorController(niftkIBaseView* view);
+  virtual ~MorphologicalSegmentorController();
 
   /// \brief Sets up the GUI.
   /// This function has to be called from the CreateQtPartControl function of the view.
@@ -72,7 +73,7 @@ protected:
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
 
   /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
-  virtual niftk::BaseGUI* CreateGUI(QWidget* parent) override;
+  virtual BaseGUI* CreateGUI(QWidget* parent) override;
 
   /// \brief Called when the selection changes in the data manager.
   /// \see QmitkAbstractView::OnSelectionChanged.
@@ -122,16 +123,16 @@ private:
   void SetControlsFromSegmentationNodeProps();
 
   /// \brief All the GUI controls for the main Morphological Editor view part.
-  niftkMorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;
+  MorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;
 
   /// \brief As much "business logic" as possible is delegated to this class so we can unit test it, without a GUI.
-  niftk::MorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
+  MorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
 
   /// \brief Keep local variable to update after the tab has changed.
   int m_TabIndex;
 
-friend class niftkMorphologicalSegmentorView;
-
 };
+
+}
 
 #endif

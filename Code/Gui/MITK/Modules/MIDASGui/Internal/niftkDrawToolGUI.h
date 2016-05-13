@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASDrawToolGUI_h
-#define niftkMIDASDrawToolGUI_h
+#ifndef niftkDrawToolGUI_h
+#define niftkDrawToolGUI_h
 
 #include <niftkMIDASDrawTool.h>
 #include <QmitkToolGUI.h>
@@ -22,25 +22,26 @@ class QFrame;
 
 class ctkSliderWidget;
 
-/**
- * \class niftkMIDASDrawToolGUI
- * \brief GUI component for the niftk::MIDASDrawTool, providing a single slider to control the radius in
- * millimetres of the "erase" function.
- *
- * Notice how this class can have a reference to the mitk::Tool it is controlling, and registers with the
- * mitk::Tool in the OnNewToolAssociated method, and de-registers with the mitk::Tool in the destructor.
- *
- * The reverse is not true. Any mitk::Tool must not know that it has a GUI, and hence the reason they
- * are in a different library / Module.
- */
-class niftkDrawToolGUI : public QmitkToolGUI
+namespace niftk
+{
+
+/// \class DrawToolGUI
+/// \brief GUI component for the DrawTool, providing a single slider to control the radius in
+/// millimetres of the "erase" function.
+///
+/// Notice how this class can have a reference to the mitk::Tool it is controlling, and registers with the
+/// mitk::Tool in the OnNewToolAssociated method, and de-registers with the mitk::Tool in the destructor.
+///
+/// The reverse is not true. Any mitk::Tool must not know that it has a GUI, and hence the reason they
+/// are in a different library / Module.
+class DrawToolGUI : public QmitkToolGUI
 {
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(niftkDrawToolGUI, QmitkToolGUI);
-  itkNewMacro(niftkDrawToolGUI);
+  mitkClassMacro(DrawToolGUI, QmitkToolGUI);
+  itkNewMacro(DrawToolGUI);
 
   /// \brief Method to set or initialise the size of the cursor (radius of influence).
   void OnCursorSizeChanged(double cursorSize);
@@ -59,13 +60,15 @@ protected slots:
 
 protected:
 
-  niftkDrawToolGUI();
-  virtual ~niftkDrawToolGUI();
+  DrawToolGUI();
+  virtual ~DrawToolGUI();
 
   ctkSliderWidget* m_Slider;
   QFrame* m_Frame;
 
-  niftk::MIDASDrawTool::Pointer m_DrawTool;
+  MIDASDrawTool::Pointer m_DrawTool;
 };
+
+}
 
 #endif

@@ -23,8 +23,8 @@ namespace niftk
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorActivator::start(ctkPluginContext* context)
 {
-  BERRY_REGISTER_EXTENSION_CLASS(niftkMorphologicalSegmentorView, context);
-  BERRY_REGISTER_EXTENSION_CLASS(niftkMorphologicalSegmentorPreferencePage, context);
+  BERRY_REGISTER_EXTENSION_CLASS(MorphologicalSegmentorView, context);
+  BERRY_REGISTER_EXTENSION_CLASS(MorphologicalSegmentorPreferencePage, context);
 }
 
 

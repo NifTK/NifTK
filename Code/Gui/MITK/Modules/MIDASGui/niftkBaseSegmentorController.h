@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkBaseSegmentorController_h
-#define __niftkBaseSegmentorController_h
+#ifndef niftkBaseSegmentorController_h
+#define niftkBaseSegmentorController_h
 
 #include <niftkMIDASGuiExports.h>
 
@@ -29,22 +29,24 @@
 
 class QWidget;
 
-class niftkBaseSegmentorGUI;
 class niftkIBaseView;
 
-/**
- * \class niftkBaseSegmentorController
- */
-class NIFTKMIDASGUI_EXPORT niftkBaseSegmentorController : public niftk::BaseController, public niftk::MIDASEventFilter
+namespace niftk
+{
+
+class BaseSegmentorGUI;
+
+/// \class BaseSegmentorController
+class NIFTKMIDASGUI_EXPORT BaseSegmentorController : public BaseController, public MIDASEventFilter
 {
 
   Q_OBJECT
 
 public:
 
-  niftkBaseSegmentorController(niftkIBaseView* view);
+  BaseSegmentorController(niftkIBaseView* view);
 
-  virtual ~niftkBaseSegmentorController();
+  virtual ~BaseSegmentorController();
 
   /// \brief Sets up the GUI.
   /// This function has to be called from the CreateQtPartControl function of the view.
@@ -132,7 +134,7 @@ protected:
   int GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
 
   /// \brief Looks up the ReferenceImage registered with ToolManager and returns the axis [0,1,2] that corresponds to the given orientation, or -1 if it can't be found.
-  int GetAxisFromReferenceImage(niftk::ImageOrientation orientation);
+  int GetAxisFromReferenceImage(ImageOrientation orientation);
 
   /// \brief Returns the reference image axial axis [0,1,2] or -1 if it can't be found.
   int GetReferenceImageAxialAxis();
@@ -156,7 +158,7 @@ protected:
   virtual mitk::DataNode* CreateNewSegmentation();
 
   /// \brief Gets the segmentor widget that holds the GUI components of the view.
-  niftkBaseSegmentorGUI* GetSegmentorGUI() const;
+  BaseSegmentorGUI* GetSegmentorGUI() const;
 
   /// \brief Called when the selection changes in the data manager.
   /// \see QmitkAbstractView::OnSelectionChanged.
@@ -177,7 +179,7 @@ private:
 
   mitk::ToolManager::Pointer m_ToolManager;
 
-  niftkBaseSegmentorGUI* m_SegmentorGUI;
+  BaseSegmentorGUI* m_SegmentorGUI;
 
   /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
   mitk::DataNode::Pointer m_SelectedNode;
@@ -194,17 +196,19 @@ private:
   /// \brief Stores the visibility state of the cursor in the main display before activating a tool.
   bool m_CursorIsVisibleWhenToolsAreOff;
 
-friend class niftkBaseSegmentorView;
+friend class BaseSegmentorView;
 
 };
 
 
 //-----------------------------------------------------------------------------
 template <class ToolType>
-ToolType* niftkBaseSegmentorController::GetToolByType()
+ToolType* BaseSegmentorController::GetToolByType()
 {
   int toolId = m_ToolManager->GetToolIdByToolType<ToolType>();
   return dynamic_cast<ToolType*>(m_ToolManager->GetToolById(toolId));
+}
+
 }
 
 #endif

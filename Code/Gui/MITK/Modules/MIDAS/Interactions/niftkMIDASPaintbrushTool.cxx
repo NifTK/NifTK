@@ -39,17 +39,20 @@
 #include "niftkMIDASPaintbrushToolEventInterface.h"
 #include "niftkToolFactoryMacros.h"
 
-const std::string niftk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME = "MIDAS_EDITS_EROSIONS_ADDITIONS";
-const std::string niftk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_EROSIONS_SUBTRACTIONS";
-const std::string niftk::MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME = "MIDAS_EDITS_DILATIONS_ADDITIONS";
-const std::string niftk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_DILATIONS_SUBTRACTIONS";
-
-const std::string niftk::MIDASPaintbrushTool::REGION_PROPERTY_NAME = std::string("midas.morph.editing.region");
-const mitk::OperationType niftk::MIDASPaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 320410;
-
 NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPaintbrushTool, "MIDAS Paintbrush Tool");
 
-niftk::MIDASPaintbrushTool::MIDASPaintbrushTool()
+namespace niftk
+{
+
+const std::string MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME = "MIDAS_EDITS_EROSIONS_ADDITIONS";
+const std::string MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_EROSIONS_SUBTRACTIONS";
+const std::string MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME = "MIDAS_EDITS_DILATIONS_ADDITIONS";
+const std::string MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_DILATIONS_SUBTRACTIONS";
+
+const std::string MIDASPaintbrushTool::REGION_PROPERTY_NAME = std::string("midas.morph.editing.region");
+const mitk::OperationType MIDASPaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 320410;
+
+MIDASPaintbrushTool::MIDASPaintbrushTool()
 : mitk::SegTool2D("")
 , m_Interface(NULL)
 , m_CursorSize(1)
@@ -57,15 +60,15 @@ niftk::MIDASPaintbrushTool::MIDASPaintbrushTool()
 , m_WorkingImage(NULL)
 , m_ErosionMode(true)
 {
-  m_Interface = niftk::MIDASPaintbrushToolEventInterface::New();
+  m_Interface = MIDASPaintbrushToolEventInterface::New();
   m_Interface->SetMIDASPaintbrushTool( this );
 }
 
-niftk::MIDASPaintbrushTool::~MIDASPaintbrushTool()
+MIDASPaintbrushTool::~MIDASPaintbrushTool()
 {
 }
 
-void niftk::MIDASPaintbrushTool::InitializeStateMachine()
+void MIDASPaintbrushTool::InitializeStateMachine()
 {
   try
   {
@@ -78,7 +81,7 @@ void niftk::MIDASPaintbrushTool::InitializeStateMachine()
   }
 }
 
-void niftk::MIDASPaintbrushTool::ConnectActionsAndFunctions()
+void MIDASPaintbrushTool::ConnectActionsAndFunctions()
 {
   CONNECT_FUNCTION("startAddingAddition", StartAddingAddition);
   CONNECT_FUNCTION("keepAddingAddition", KeepAddingAddition);
@@ -91,17 +94,17 @@ void niftk::MIDASPaintbrushTool::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("stopRemovingSubtraction", StopRemovingSubtraction);
 }
 
-const char* niftk::MIDASPaintbrushTool::GetName() const
+const char* MIDASPaintbrushTool::GetName() const
 {
   return "Paintbrush";
 }
 
-const char** niftk::MIDASPaintbrushTool::GetXPM() const
+const char** MIDASPaintbrushTool::GetXPM() const
 {
   return niftkMIDASPaintbrushTool_xpm;
 }
 
-void niftk::MIDASPaintbrushTool::Activated()
+void MIDASPaintbrushTool::Activated()
 {
   Superclass::Activated();
 
@@ -128,7 +131,7 @@ void niftk::MIDASPaintbrushTool::Activated()
   }
 }
 
-void niftk::MIDASPaintbrushTool::Deactivated()
+void MIDASPaintbrushTool::Deactivated()
 {
   // Re-enabling InteractionEventObservers that have been previously disabled for legacy handling of Tools
   // in new interaction framework
@@ -154,32 +157,32 @@ void niftk::MIDASPaintbrushTool::Deactivated()
   mitk::Tool::Deactivated();
 }
 
-bool niftk::MIDASPaintbrushTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
+bool MIDASPaintbrushTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
   return this->CanHandleEvent(event);
 }
 
-int niftk::MIDASPaintbrushTool::GetCursorSize() const
+int MIDASPaintbrushTool::GetCursorSize() const
 {
   return m_CursorSize;
 }
 
-void niftk::MIDASPaintbrushTool::SetCursorSize(int cursorSize)
+void MIDASPaintbrushTool::SetCursorSize(int cursorSize)
 {
   m_CursorSize = cursorSize;
 }
 
-bool niftk::MIDASPaintbrushTool::GetErosionMode() const
+bool MIDASPaintbrushTool::GetErosionMode() const
 {
   return m_ErosionMode;
 }
 
-void niftk::MIDASPaintbrushTool::SetErosionMode(bool erosionMode)
+void MIDASPaintbrushTool::SetErosionMode(bool erosionMode)
 {
   m_ErosionMode = erosionMode;;
 }
 
-void niftk::MIDASPaintbrushTool::GetListOfAffectedVoxels(
+void MIDASPaintbrushTool::GetListOfAffectedVoxels(
     const mitk::PlaneGeometry& planeGeometry,
     mitk::Point3D& currentPoint,
     mitk::Point3D& previousPoint,
@@ -326,7 +329,7 @@ void niftk::MIDASPaintbrushTool::GetListOfAffectedVoxels(
   } // end if length > 0
 } // end function
 
-bool niftk::MIDASPaintbrushTool::MarkInitialPosition(unsigned int dataIndex, mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPaintbrushTool::MarkInitialPosition(unsigned int dataIndex, mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::DataNode* workingNode = m_ToolManager->GetWorkingData(dataIndex);
   if (!workingNode)
@@ -351,7 +354,7 @@ bool niftk::MIDASPaintbrushTool::MarkInitialPosition(unsigned int dataIndex, mit
 }
 
 
-bool niftk::MIDASPaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, mitk::InteractionEvent* event,
+bool MIDASPaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, mitk::InteractionEvent* event,
     int dataIndex,
     unsigned char valueForRedo,
     unsigned char valueForUndo
@@ -412,7 +415,7 @@ bool niftk::MIDASPaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, 
   return true;
 }
 
-int niftk::MIDASPaintbrushTool::GetDataIndex(bool isLeftMouseButton)
+int MIDASPaintbrushTool::GetDataIndex(bool isLeftMouseButton)
 {
   int dataIndex = -1;
 
@@ -443,21 +446,21 @@ int niftk::MIDASPaintbrushTool::GetDataIndex(bool isLeftMouseButton)
   return dataIndex;
 }
 
-bool niftk::MIDASPaintbrushTool::StartAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPaintbrushTool::StartAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(true);
   bool result = this->MarkInitialPosition(dataIndex, action, event);
   return result;
 }
 
-bool niftk::MIDASPaintbrushTool::KeepAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPaintbrushTool::KeepAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(true);
   this->DoMouseMoved(action, event, dataIndex, 1, 0);
   return true;
 }
 
-bool niftk::MIDASPaintbrushTool::StopAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPaintbrushTool::StopAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(true);
   this->SetInvalidRegion(dataIndex);
@@ -472,20 +475,20 @@ bool niftk::MIDASPaintbrushTool::StopAddingAddition(mitk::StateMachineAction* ac
   return true;
 }
 
-bool niftk::MIDASPaintbrushTool::StartAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPaintbrushTool::StartAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(false);
   return this->MarkInitialPosition(dataIndex, action, event);
 }
 
-bool niftk::MIDASPaintbrushTool::KeepAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPaintbrushTool::KeepAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(false);
   this->DoMouseMoved(action, event, dataIndex, 1, 0);
   return true;
 }
 
-bool niftk::MIDASPaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
@@ -493,20 +496,20 @@ bool niftk::MIDASPaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction*
   return true;
 }
 
-bool niftk::MIDASPaintbrushTool::StartRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPaintbrushTool::StartRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(false);
   return this->MarkInitialPosition(dataIndex, action, event);
 }
 
-bool niftk::MIDASPaintbrushTool::KeepRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPaintbrushTool::KeepRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(false);
   this->DoMouseMoved(action, event, dataIndex, 0, 1);
   return true;
 }
 
-bool niftk::MIDASPaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
@@ -514,7 +517,7 @@ bool niftk::MIDASPaintbrushTool::StopRemovingSubtraction(mitk::StateMachineActio
   return true;
 }
 
-void niftk::MIDASPaintbrushTool::SetRegion(unsigned int dataIndex, bool valid, const std::vector<int>& boundingBox)
+void MIDASPaintbrushTool::SetRegion(unsigned int dataIndex, bool valid, const std::vector<int>& boundingBox)
 {
   mitk::DataNode* workingNode = m_ToolManager->GetWorkingData(dataIndex);
   assert(workingNode);
@@ -536,17 +539,17 @@ void niftk::MIDASPaintbrushTool::SetRegion(unsigned int dataIndex, bool valid, c
   }
 }
 
-void niftk::MIDASPaintbrushTool::SetInvalidRegion(unsigned int dataIndex)
+void MIDASPaintbrushTool::SetInvalidRegion(unsigned int dataIndex)
 {
   this->SetRegion(dataIndex, false);
 }
 
-void niftk::MIDASPaintbrushTool::SetValidRegion(unsigned int dataIndex, const std::vector<int>& boundingBox)
+void MIDASPaintbrushTool::SetValidRegion(unsigned int dataIndex, const std::vector<int>& boundingBox)
 {
   this->SetRegion(dataIndex, true, boundingBox);
 }
 
-void niftk::MIDASPaintbrushTool::ExecuteOperation(mitk::Operation* operation)
+void MIDASPaintbrushTool::ExecuteOperation(mitk::Operation* operation)
 {
   if (!operation) return;
 
@@ -583,7 +586,7 @@ void niftk::MIDASPaintbrushTool::ExecuteOperation(mitk::Operation* operation)
 }
 
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::MIDASPaintbrushTool::RunITKProcessor(
+void MIDASPaintbrushTool::RunITKProcessor(
     itk::Image<TPixel, VImageDimension>* itkImage,
     ProcessorType::Pointer processor,
     bool redo,
@@ -603,4 +606,6 @@ void niftk::MIDASPaintbrushTool::RunITKProcessor(
   }
 
   processor->SetDestinationImage(NULL);
+}
+
 }

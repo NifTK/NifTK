@@ -24,9 +24,11 @@
 #include <itkMIDASImageUpdatePasteRegionProcessor.h>
 #include <itkMIDASRetainMarksNoThresholdingProcessor.h>
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-niftk::OpGeneralSegmentorBaseCommand::OpGeneralSegmentorBaseCommand(mitk::OperationType type, bool redo)
+OpGeneralSegmentorBaseCommand::OpGeneralSegmentorBaseCommand(mitk::OperationType type, bool redo)
 : mitk::Operation(type)
 , m_Redo(redo)
 {
@@ -34,20 +36,20 @@ niftk::OpGeneralSegmentorBaseCommand::OpGeneralSegmentorBaseCommand(mitk::Operat
 
 
 //-----------------------------------------------------------------------------
-niftk::OpGeneralSegmentorBaseCommand::~OpGeneralSegmentorBaseCommand()
+OpGeneralSegmentorBaseCommand::~OpGeneralSegmentorBaseCommand()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftk::OpGeneralSegmentorBaseCommand::IsRedo() const
+bool OpGeneralSegmentorBaseCommand::IsRedo() const
 {
   return m_Redo;
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::OpChangeSliceCommand::OpChangeSliceCommand(
+OpChangeSliceCommand::OpChangeSliceCommand(
     mitk::OperationType type,
     bool redo,
     int beforeSlice,
@@ -55,7 +57,7 @@ niftk::OpChangeSliceCommand::OpChangeSliceCommand(
     mitk::Point3D beforePoint,
     mitk::Point3D afterPoint
     )
-: niftk::OpGeneralSegmentorBaseCommand(type, redo)
+: OpGeneralSegmentorBaseCommand(type, redo)
 , m_BeforeSlice(beforeSlice)
 , m_AfterSlice(afterSlice)
 , m_BeforePoint(beforePoint)
@@ -65,42 +67,42 @@ niftk::OpChangeSliceCommand::OpChangeSliceCommand(
 
 
 //-----------------------------------------------------------------------------
-int niftk::OpChangeSliceCommand::GetBeforeSlice() const
+int OpChangeSliceCommand::GetBeforeSlice() const
 {
   return m_BeforeSlice;
 }
 
 
 //-----------------------------------------------------------------------------
-int niftk::OpChangeSliceCommand::GetAfterSlice() const
+int OpChangeSliceCommand::GetAfterSlice() const
 {
   return m_AfterSlice;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D niftk::OpChangeSliceCommand::GetBeforePoint() const
+mitk::Point3D OpChangeSliceCommand::GetBeforePoint() const
 {
   return m_BeforePoint;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D niftk::OpChangeSliceCommand::GetAfterPoint() const
+mitk::Point3D OpChangeSliceCommand::GetAfterPoint() const
 {
   return m_AfterPoint;
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::OpPropagateSeeds::OpPropagateSeeds(
+OpPropagateSeeds::OpPropagateSeeds(
     mitk::OperationType type,
     bool redo,
     int sliceNumber,
     int axisNumber,
     mitk::PointSet::Pointer seeds
     )
-: niftk::OpGeneralSegmentorBaseCommand(type, redo)
+: OpGeneralSegmentorBaseCommand(type, redo)
 , m_SliceNumber(sliceNumber)
 , m_AxisNumber(axisNumber)
 , m_Seeds(seeds)
@@ -109,34 +111,34 @@ niftk::OpPropagateSeeds::OpPropagateSeeds(
 
 
 //-----------------------------------------------------------------------------
-niftk::OpPropagateSeeds::~OpPropagateSeeds()
+OpPropagateSeeds::~OpPropagateSeeds()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-int niftk::OpPropagateSeeds::GetSliceNumber() const
+int OpPropagateSeeds::GetSliceNumber() const
 {
   return m_SliceNumber;
 }
 
 
 //-----------------------------------------------------------------------------
-int niftk::OpPropagateSeeds::GetAxisNumber() const
+int OpPropagateSeeds::GetAxisNumber() const
 {
   return m_AxisNumber;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::PointSet::Pointer niftk::OpPropagateSeeds::GetSeeds() const
+mitk::PointSet::Pointer OpPropagateSeeds::GetSeeds() const
 {
   return m_Seeds;
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::OpRetainMarks::OpRetainMarks(
+OpRetainMarks::OpRetainMarks(
     mitk::OperationType type,
     bool redo,
     int fromSlice,
@@ -146,7 +148,7 @@ niftk::OpRetainMarks::OpRetainMarks(
     std::vector<int> &region,
     ProcessorPointer processor
     )
-: niftk::OpGeneralSegmentorBaseCommand(type, redo)
+: OpGeneralSegmentorBaseCommand(type, redo)
 , m_FromSlice(fromSlice)
 , m_ToSlice(toSlice)
 , m_AxisNumber(axisNumber)
@@ -158,61 +160,61 @@ niftk::OpRetainMarks::OpRetainMarks(
 
 
 //-----------------------------------------------------------------------------
-niftk::OpRetainMarks::~OpRetainMarks()
+OpRetainMarks::~OpRetainMarks()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-int niftk::OpRetainMarks::GetFromSlice() const
+int OpRetainMarks::GetFromSlice() const
 {
   return m_FromSlice;
 }
 
 
 //-----------------------------------------------------------------------------
-int niftk::OpRetainMarks::GetToSlice() const
+int OpRetainMarks::GetToSlice() const
 {
   return m_ToSlice;
 }
 
 
 //-----------------------------------------------------------------------------
-int niftk::OpRetainMarks::GetAxisNumber() const
+int OpRetainMarks::GetAxisNumber() const
 {
   return m_AxisNumber;
 }
 
 
 //-----------------------------------------------------------------------------
-itk::Orientation niftk::OpRetainMarks::GetOrientation() const
+itk::Orientation OpRetainMarks::GetOrientation() const
 {
   return m_Orientation;
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<int> niftk::OpRetainMarks::GetRegion() const
+std::vector<int> OpRetainMarks::GetRegion() const
 {
   return m_Region;
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::OpRetainMarks::ProcessorPointer niftk::OpRetainMarks::GetProcessor() const
+OpRetainMarks::ProcessorPointer OpRetainMarks::GetProcessor() const
 {
   return m_Processor;
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::OpPropagate::OpPropagate(
+OpPropagate::OpPropagate(
     mitk::OperationType type,
     bool redo,
     std::vector<int> &region,
     ProcessorPointer processor
     )
-: niftk::OpGeneralSegmentorBaseCommand(type, redo)
+: OpGeneralSegmentorBaseCommand(type, redo)
 , m_Region(region)
 , m_Processor(processor)
 {
@@ -220,79 +222,79 @@ niftk::OpPropagate::OpPropagate(
 
 
 //-----------------------------------------------------------------------------
-niftk::OpPropagate::~OpPropagate()
+OpPropagate::~OpPropagate()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<int> niftk::OpPropagate::GetRegion() const
+std::vector<int> OpPropagate::GetRegion() const
 {
   return m_Region;
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::OpPropagate::ProcessorPointer niftk::OpPropagate::GetProcessor() const
+OpPropagate::ProcessorPointer OpPropagate::GetProcessor() const
 {
   return m_Processor;
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::OpThresholdApply::OpThresholdApply(
+OpThresholdApply::OpThresholdApply(
     mitk::OperationType type,
     bool redo,
     std::vector<int> &region,
     ProcessorPointer processor,
     bool thresholdFlag
     )
-: niftk::OpPropagate(type, redo, region, processor)
+: OpPropagate(type, redo, region, processor)
 , m_ThresholdFlag(thresholdFlag)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::OpThresholdApply::~OpThresholdApply()
+OpThresholdApply::~OpThresholdApply()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftk::OpThresholdApply::GetThresholdFlag() const
+bool OpThresholdApply::GetThresholdFlag() const
 {
   return m_ThresholdFlag;
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::OpClean::OpClean(
+OpClean::OpClean(
     mitk::OperationType type,
     bool redo,
     mitk::ContourModelSet::Pointer contourSet
     )
-: niftk::OpGeneralSegmentorBaseCommand(type, redo)
+: OpGeneralSegmentorBaseCommand(type, redo)
 , m_ContourSet(contourSet)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::OpClean::~OpClean()
+OpClean::~OpClean()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::ContourModelSet::Pointer niftk::OpClean::GetContourSet() const
+mitk::ContourModelSet::Pointer OpClean::GetContourSet() const
 {
   return m_ContourSet;
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::OpWipe::OpWipe(
+OpWipe::OpWipe(
     mitk::OperationType type,
     bool redo,
     int sliceNumber,
@@ -301,7 +303,7 @@ niftk::OpWipe::OpWipe(
     mitk::PointSet::Pointer seeds,
     ProcessorPointer processor
     )
-: niftk::OpGeneralSegmentorBaseCommand(type, redo)
+: OpGeneralSegmentorBaseCommand(type, redo)
 , m_SliceNumber(sliceNumber)
 , m_AxisNumber(axisNumber)
 , m_Region(region)
@@ -312,41 +314,43 @@ niftk::OpWipe::OpWipe(
 
 
 //-----------------------------------------------------------------------------
-niftk::OpWipe::~OpWipe()
+OpWipe::~OpWipe()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-int niftk::OpWipe::GetSliceNumber() const
+int OpWipe::GetSliceNumber() const
 {
   return m_SliceNumber;
 }
 
 
 //-----------------------------------------------------------------------------
-int niftk::OpWipe::GetAxisNumber() const
+int OpWipe::GetAxisNumber() const
 {
   return m_AxisNumber;
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<int> niftk::OpWipe::GetRegion() const
+std::vector<int> OpWipe::GetRegion() const
 {
   return m_Region;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::PointSet::Pointer niftk::OpWipe::GetSeeds() const
+mitk::PointSet::Pointer OpWipe::GetSeeds() const
 {
   return m_Seeds;
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::OpWipe::ProcessorPointer niftk::OpWipe::GetProcessor() const
+OpWipe::ProcessorPointer OpWipe::GetProcessor() const
 {
   return m_Processor;
+}
+
 }

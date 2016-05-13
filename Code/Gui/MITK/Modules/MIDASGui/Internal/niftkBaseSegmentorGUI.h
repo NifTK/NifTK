@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkBaseSegmentorGUI_h
-#define __niftkBaseSegmentorGUI_h
+#ifndef niftkBaseSegmentorGUI_h
+#define niftkBaseSegmentorGUI_h
 
 #include <niftkBaseGUI.h>
 
@@ -22,24 +22,25 @@ namespace mitk
 class ToolManager;
 }
 
-class niftkSegmentationSelectorWidget;
-class niftkToolSelectorWidget;
+namespace niftk
+{
 
-/**
- * \class niftkBaseSegmentorGUI
- * \brief Base class for GUI controls on MIDAS segmentor views.
- *
- * \sa niftkMorphologicalSegmentorGUI
- * \sa niftkGeneralSegmentorGUI
- */
-class niftkBaseSegmentorGUI : public niftk::BaseGUI
+class SegmentationSelectorWidget;
+class ToolSelectorWidget;
+
+/// \class BaseSegmentorGUI
+/// \brief Base class for GUI controls on MIDAS segmentor views.
+///
+/// \sa niftkMorphologicalSegmentorGUI
+/// \sa niftkGeneralSegmentorGUI
+class BaseSegmentorGUI : public BaseGUI
 {
   Q_OBJECT
 
 public:
 
-  niftkBaseSegmentorGUI(QWidget* parent);
-  virtual ~niftkBaseSegmentorGUI();
+  BaseSegmentorGUI(QWidget* parent);
+  virtual ~BaseSegmentorGUI();
 
 public:
 
@@ -80,12 +81,12 @@ signals:
 protected:
 
   /// \brief Common widget, enabling selection of Image and Segmentation, that might be replaced once we have a database.
-  niftkSegmentationSelectorWidget *m_SegmentationSelectorWidget;
+  SegmentationSelectorWidget *m_SegmentationSelectorWidget;
 
 protected:
 
   /// \brief Common widget, enabling selection of a segmentation tool.
-  niftkToolSelectorWidget *m_ToolSelectorWidget;
+  ToolSelectorWidget *m_ToolSelectorWidget;
 
 protected:
 
@@ -96,5 +97,7 @@ protected:
   QWidget *m_ContainerForToolWidget;
 
 };
+
+}
 
 #endif

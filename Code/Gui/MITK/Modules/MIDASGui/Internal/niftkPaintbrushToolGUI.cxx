@@ -22,11 +22,13 @@
 
 #include <niftkToolFactoryMacros.h>
 
+namespace niftk
+{
 
-NIFTK_TOOL_GUI_MACRO_NO_EXPORT(MIDASPaintbrushTool, niftkPaintbrushToolGUI, "Paintbrush Tool GUI")
+NIFTK_TOOL_GUI_MACRO_NO_EXPORT(MIDASPaintbrushTool, PaintbrushToolGUI, "Paintbrush Tool GUI")
 
 //-----------------------------------------------------------------------------
-niftkPaintbrushToolGUI::niftkPaintbrushToolGUI()
+PaintbrushToolGUI::PaintbrushToolGUI()
 :QmitkToolGUI()
 , m_Slider(NULL)
 , m_SizeLabel(NULL)
@@ -57,34 +59,34 @@ niftkPaintbrushToolGUI::niftkPaintbrushToolGUI()
 
 
 //-----------------------------------------------------------------------------
-niftkPaintbrushToolGUI::~niftkPaintbrushToolGUI()
+PaintbrushToolGUI::~PaintbrushToolGUI()
 {
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->CursorSizeChanged -= mitk::MessageDelegate1<niftkPaintbrushToolGUI, int>( this, &niftkPaintbrushToolGUI::OnCursorSizeChanged );
+    m_PaintbrushTool->CursorSizeChanged -= mitk::MessageDelegate1<PaintbrushToolGUI, int>( this, &PaintbrushToolGUI::OnCursorSizeChanged );
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkPaintbrushToolGUI::OnNewToolAssociated(mitk::Tool* tool)
+void PaintbrushToolGUI::OnNewToolAssociated(mitk::Tool* tool)
 {
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->CursorSizeChanged -= mitk::MessageDelegate1<niftkPaintbrushToolGUI, int>( this, &niftkPaintbrushToolGUI::OnCursorSizeChanged );
+    m_PaintbrushTool->CursorSizeChanged -= mitk::MessageDelegate1<PaintbrushToolGUI, int>( this, &PaintbrushToolGUI::OnCursorSizeChanged );
   }
 
-  m_PaintbrushTool = dynamic_cast<niftk::MIDASPaintbrushTool*>( tool );
+  m_PaintbrushTool = dynamic_cast<MIDASPaintbrushTool*>( tool );
 
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->CursorSizeChanged += mitk::MessageDelegate1<niftkPaintbrushToolGUI, int>( this, &niftkPaintbrushToolGUI::OnCursorSizeChanged );
+    m_PaintbrushTool->CursorSizeChanged += mitk::MessageDelegate1<PaintbrushToolGUI, int>( this, &PaintbrushToolGUI::OnCursorSizeChanged );
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkPaintbrushToolGUI::OnSliderValueChanged(int value)
+void PaintbrushToolGUI::OnSliderValueChanged(int value)
 {
   if (m_PaintbrushTool.IsNotNull())
   {
@@ -95,8 +97,9 @@ void niftkPaintbrushToolGUI::OnSliderValueChanged(int value)
 
 
 //-----------------------------------------------------------------------------
-void niftkPaintbrushToolGUI::OnCursorSizeChanged(int current)
+void PaintbrushToolGUI::OnCursorSizeChanged(int current)
 {
   m_Slider->setValue(current);
 }
 
+}

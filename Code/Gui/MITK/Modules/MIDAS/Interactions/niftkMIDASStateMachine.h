@@ -67,7 +67,7 @@ public:
   ///
   /// float CanHandleEvent(const mitk::StateEvent* stateEvent) const
   /// {
-  ///   return niftk::MIDASStateMachine::CanHandleEvent(stateEvent);
+  ///   return MIDASStateMachine::CanHandleEvent(stateEvent);
   /// }
   ///
   /// The original logic should be implemented in the CanHandle function.

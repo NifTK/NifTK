@@ -18,20 +18,22 @@
 
 #include "niftkGeneralSegmentorPreferencePage.h"
 
+namespace niftk
+{
 
-const std::string niftkGeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
+const std::string GeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
 
 
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorView::niftkGeneralSegmentorView()
-  : niftkBaseSegmentorView()
+GeneralSegmentorView::GeneralSegmentorView()
+  : BaseSegmentorView()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorView::niftkGeneralSegmentorView(
-    const niftkGeneralSegmentorView& other)
+GeneralSegmentorView::GeneralSegmentorView(
+    const GeneralSegmentorView& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -39,36 +41,38 @@ niftkGeneralSegmentorView::niftkGeneralSegmentorView(
 
 
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorView::~niftkGeneralSegmentorView()
+GeneralSegmentorView::~GeneralSegmentorView()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorController* niftkGeneralSegmentorView::CreateSegmentorController()
+BaseSegmentorController* GeneralSegmentorView::CreateSegmentorController()
 {
-  m_GeneralSegmentorController = new niftkGeneralSegmentorController(this);
+  m_GeneralSegmentorController = new GeneralSegmentorController(this);
   return m_GeneralSegmentorController;
 }
 
 
 //-----------------------------------------------------------------------------
-QString niftkGeneralSegmentorView::GetPreferencesNodeName()
+QString GeneralSegmentorView::GetPreferencesNodeName()
 {
-  return niftkGeneralSegmentorPreferencePage::PREFERENCES_NODE_NAME;
+  return GeneralSegmentorPreferencePage::PREFERENCES_NODE_NAME;
 }
 
 
 //-----------------------------------------------------------------------------
-std::string niftkGeneralSegmentorView::GetViewID() const
+std::string GeneralSegmentorView::GetViewID() const
 {
   return VIEW_ID;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorView::SetFocus()
+void GeneralSegmentorView::SetFocus()
 {
   // it seems best not to force the focus, and just leave the
   // focus with whatever the user pressed ... i.e. let Qt handle it.
+}
+
 }

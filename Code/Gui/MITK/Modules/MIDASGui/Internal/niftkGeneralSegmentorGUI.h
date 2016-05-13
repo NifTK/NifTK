@@ -12,31 +12,31 @@
 
 =============================================================================*/
 
-#ifndef __niftkGeneralSegmentorGUI_h
-#define __niftkGeneralSegmentorGUI_h
+#ifndef niftkGeneralSegmentorGUI_h
+#define niftkGeneralSegmentorGUI_h
 
 #include <QWidget>
 #include "ui_niftkGeneralSegmentorWidget.h"
 #include "niftkBaseSegmentorGUI.h"
 
-/**
- * \class niftkGeneralSegmentorGUI
- * \brief Implements the Qt/Widget specific functionality pertaining to the General Segmentor View.
- */
-class niftkGeneralSegmentorGUI
-  : public niftkBaseSegmentorGUI,
-    private Ui::niftkGeneralSegmentorWidget
+namespace niftk
 {
 
+/// \class GeneralSegmentorGUI
+/// \brief Implements the Qt/Widget specific functionality pertaining to the General Segmentor View.
+class GeneralSegmentorGUI
+  : public BaseSegmentorGUI,
+    private Ui::niftkGeneralSegmentorWidget
+{
   Q_OBJECT
 
 public:
 
   /// \brief Constructor.
-  niftkGeneralSegmentorGUI(QWidget *parent);
+  GeneralSegmentorGUI(QWidget *parent);
 
   /// \brief Destructor.
-  ~niftkGeneralSegmentorGUI();
+  ~GeneralSegmentorGUI();
 
   /// \brief Method to enable to turn widgets off/on
   /// \see niftkBaseSegmentorGUI::EnableSegmentationWidgets
@@ -113,10 +113,12 @@ signals:
 
 private:
 
-  niftkGeneralSegmentorGUI(const niftkGeneralSegmentorGUI&);  // Purposefully not implemented.
-  void operator=(const niftkGeneralSegmentorGUI&);  // Purposefully not implemented.
+  GeneralSegmentorGUI(const GeneralSegmentorGUI&);  // Purposefully not implemented.
+  void operator=(const GeneralSegmentorGUI&);  // Purposefully not implemented.
 
 };
+
+}
 
 #endif
 

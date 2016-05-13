@@ -25,20 +25,23 @@
 
 #include "niftkMIDASEventFilter.h"
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-niftk::MIDASStateMachine::MIDASStateMachine()
+MIDASStateMachine::MIDASStateMachine()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::MIDASStateMachine::~MIDASStateMachine()
+MIDASStateMachine::~MIDASStateMachine()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-float niftk::MIDASStateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+float MIDASStateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent) const
 {
   if (this->IsFiltered(stateEvent))
   {
@@ -50,7 +53,7 @@ float niftk::MIDASStateMachine::CanHandleEvent(const mitk::StateEvent* stateEven
 
 
 //-----------------------------------------------------------------------------
-bool niftk::MIDASStateMachine::CanHandleEvent(mitk::InteractionEvent* event)
+bool MIDASStateMachine::CanHandleEvent(mitk::InteractionEvent* event)
 {
   if (this->IsFiltered(event))
   {
@@ -62,7 +65,7 @@ bool niftk::MIDASStateMachine::CanHandleEvent(mitk::InteractionEvent* event)
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASStateMachine::InstallEventFilter(niftk::MIDASEventFilter* eventFilter)
+void MIDASStateMachine::InstallEventFilter(MIDASEventFilter* eventFilter)
 {
   std::vector<MIDASEventFilter*>::iterator it =
       std::find(m_EventFilters.begin(), m_EventFilters.end(), eventFilter);
@@ -75,7 +78,7 @@ void niftk::MIDASStateMachine::InstallEventFilter(niftk::MIDASEventFilter* event
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASStateMachine::RemoveEventFilter(niftk::MIDASEventFilter* eventFilter)
+void MIDASStateMachine::RemoveEventFilter(MIDASEventFilter* eventFilter)
 {
   std::vector<MIDASEventFilter*>::iterator it =
       std::find(m_EventFilters.begin(), m_EventFilters.end(), eventFilter);
@@ -88,14 +91,14 @@ void niftk::MIDASStateMachine::RemoveEventFilter(niftk::MIDASEventFilter* eventF
 
 
 //-----------------------------------------------------------------------------
-std::vector<niftk::MIDASEventFilter*> niftk::MIDASStateMachine::GetEventFilters() const
+std::vector<MIDASEventFilter*> MIDASStateMachine::GetEventFilters() const
 {
   return m_EventFilters;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftk::MIDASStateMachine::IsFiltered(const mitk::StateEvent* stateEvent) const
+bool MIDASStateMachine::IsFiltered(const mitk::StateEvent* stateEvent) const
 {
   /// Sanity check.
   if (!stateEvent || !stateEvent->GetEvent()->GetSender())
@@ -119,7 +122,7 @@ bool niftk::MIDASStateMachine::IsFiltered(const mitk::StateEvent* stateEvent) co
 
 
 //-----------------------------------------------------------------------------
-bool niftk::MIDASStateMachine::IsFiltered(mitk::InteractionEvent* event)
+bool MIDASStateMachine::IsFiltered(mitk::InteractionEvent* event)
 {
   /// Sanity check.
   if (!event || !event->GetSender())
@@ -139,4 +142,6 @@ bool niftk::MIDASStateMachine::IsFiltered(mitk::InteractionEvent* event)
   }
 
   return false;
+}
+
 }

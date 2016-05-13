@@ -17,31 +17,32 @@
 
 #include <niftkBaseSegmentorView.h>
 
-class niftkGeneralSegmentorController;
+namespace niftk
+{
 
-/**
- * \class niftkGeneralSegmentorView
- * \brief Provides a view for the MIDAS general purpose, Irregular Volume Editor functionality, originally developed
- * at the Dementia Research Centre UCL (http://dementia.ion.ucl.ac.uk/).
- *
- * \sa niftkBaseSegmentorView
- * \sa niftkGeneralSegmentorController
- * \sa niftkMorphologicalSegmentorView
- */
-class niftkGeneralSegmentorView : public niftkBaseSegmentorView
+class GeneralSegmentorController;
+
+/// \class GeneralSegmentorView
+/// \brief Provides a view for the MIDAS general purpose, Irregular Volume Editor functionality, originally developed
+/// at the Dementia Research Centre UCL (http://dementia.ion.ucl.ac.uk/).
+///
+/// \sa niftkBaseSegmentorView
+/// \sa GeneralSegmentorController
+/// \sa niftkMorphologicalSegmentorView
+class GeneralSegmentorView : public BaseSegmentorView
 {
   Q_OBJECT
 
 public:
 
   /// \brief Constructor.
-  niftkGeneralSegmentorView();
+  GeneralSegmentorView();
 
   /// \brief Copy constructor which deliberately throws a runtime exception, as no-one should call it.
-  niftkGeneralSegmentorView(const niftkGeneralSegmentorView& other);
+  GeneralSegmentorView(const GeneralSegmentorView& other);
 
   /// \brief Destructor.
-  virtual ~niftkGeneralSegmentorView();
+  virtual ~GeneralSegmentorView();
 
   /// \brief Each View for a plugin has its own globally unique ID, this one is
   /// "uk.ac.ucl.cmic.midasgeneralsegmentor" and the .cxx file and plugin.xml should match.
@@ -53,7 +54,7 @@ public:
 protected:
 
   /// \brief Creates the general segmentor controller that realises the GUI logic behind the view.
-  virtual niftkBaseSegmentorController* CreateSegmentorController() override;
+  virtual BaseSegmentorController* CreateSegmentorController() override;
 
   /// \brief Called by framework, this method can set the focus on a specific widget,
   /// but we currently do nothing.
@@ -66,8 +67,10 @@ protected:
 private:
 
   /// \brief The general segmentor controller that realises the GUI logic behind the view.
-  niftkGeneralSegmentorController* m_GeneralSegmentorController;
+  GeneralSegmentorController* m_GeneralSegmentorController;
 
 };
+
+}
 
 #endif

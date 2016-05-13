@@ -21,24 +21,27 @@
 #include <mitkAction.h>
 #include <mitkInteractionConst.h>
 
-niftk::MIDASPointSetInteractor::MIDASPointSetInteractor(const char * type, mitk::DataNode* dataNode, int n)
+namespace niftk
+{
+
+MIDASPointSetInteractor::MIDASPointSetInteractor(const char * type, mitk::DataNode* dataNode, int n)
 : mitk::PointSetInteractor(type, dataNode, n)
 {
   this->SetPrecision(1);
 }
 
-niftk::MIDASPointSetInteractor::~MIDASPointSetInteractor()
+MIDASPointSetInteractor::~MIDASPointSetInteractor()
 {
 }
 
-float niftk::MIDASPointSetInteractor::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+float MIDASPointSetInteractor::CanHandleEvent(const mitk::StateEvent* stateEvent) const
 {
-  return niftk::MIDASStateMachine::CanHandleEvent(stateEvent);
+  return MIDASStateMachine::CanHandleEvent(stateEvent);
 }
 
 //##Documentation
 //## overwritten cause this class can handle it better!
-float niftk::MIDASPointSetInteractor::CanHandle(const mitk::StateEvent* stateEvent) const
+float MIDASPointSetInteractor::CanHandle(const mitk::StateEvent* stateEvent) const
 {
   float returnValue = 0.0f;
 
@@ -90,7 +93,7 @@ float niftk::MIDASPointSetInteractor::CanHandle(const mitk::StateEvent* stateEve
   return returnValue;
 }
 
-bool niftk::MIDASPointSetInteractor::ExecuteAction( mitk::Action* action, mitk::StateEvent const* stateEvent )
+bool MIDASPointSetInteractor::ExecuteAction( mitk::Action* action, mitk::StateEvent const* stateEvent )
 {
   mitk::DisplayPositionEvent const *displayPositionEvent =
       dynamic_cast<const mitk::DisplayPositionEvent*>(stateEvent->GetEvent());
@@ -118,4 +121,6 @@ bool niftk::MIDASPointSetInteractor::ExecuteAction( mitk::Action* action, mitk::
   }
 
   return Superclass::ExecuteAction(action, stateEvent);
+}
+
 }

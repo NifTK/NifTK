@@ -220,7 +220,7 @@ void ITKPropagateToSegmentationImage(
     itk::Image<TGreyScalePixel, VImageDimension>* referenceGreyScaleImage,
     mitk::Image* segmentedImage,
     mitk::Image* regionGrowingImage,
-    niftk::OpPropagate *op);
+    OpPropagate *op);
 
 /// \brief Called to extract a contour set from a binary image, as might be used
 /// for "See Prior", "See Next", or the outlining a binary segmentation.
@@ -305,7 +305,7 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKDoWipe(
     itk::Image<TPixel, VImageDimension> *itkImage,
     mitk::PointSet* currentSeeds,
-    niftk::OpWipe *op
+    OpWipe *op
     );
 
 /// \brief Returns true if the image has non-zero edge pixels, and false otherwise.

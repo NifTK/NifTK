@@ -14,9 +14,11 @@
 
 #include "niftkSegmentationSelectorWidget.h"
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-niftkSegmentationSelectorWidget::niftkSegmentationSelectorWidget(QWidget *parent)
+SegmentationSelectorWidget::SegmentationSelectorWidget(QWidget *parent)
 : QWidget(parent)
 {
   this->setupUi(parent);
@@ -29,13 +31,13 @@ niftkSegmentationSelectorWidget::niftkSegmentationSelectorWidget(QWidget *parent
 
 
 //-----------------------------------------------------------------------------
-niftkSegmentationSelectorWidget::~niftkSegmentationSelectorWidget()
+SegmentationSelectorWidget::~SegmentationSelectorWidget()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSegmentationSelectorWidget::SelectReferenceImage(const QString& imageName)
+void SegmentationSelectorWidget::SelectReferenceImage(const QString& imageName)
 {
   QString labelText = imageName.isNull()
       ? "<font color='red'>&lt;not selected&gt;</font>"
@@ -46,7 +48,7 @@ void niftkSegmentationSelectorWidget::SelectReferenceImage(const QString& imageN
 
 
 //-----------------------------------------------------------------------------
-void niftkSegmentationSelectorWidget::SelectSegmentationImage(const QString& imageName)
+void SegmentationSelectorWidget::SelectSegmentationImage(const QString& imageName)
 {
   QString labelText = imageName.isNull()
       ? "<font color='red'>&lt;not selected&gt;</font>"
@@ -56,4 +58,6 @@ void niftkSegmentationSelectorWidget::SelectSegmentationImage(const QString& ima
   m_NewSegmentationButton->setEnabled(imageName.isNull() && referenceImageSelected);
 
   m_SegmentationImageNameLabel->setText(labelText);
+}
+
 }

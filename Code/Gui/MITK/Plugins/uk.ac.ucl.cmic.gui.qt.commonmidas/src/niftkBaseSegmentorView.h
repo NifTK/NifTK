@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkBaseSegmentorView_h
-#define __niftkBaseSegmentorView_h
+#ifndef niftkBaseSegmentorView_h
+#define niftkBaseSegmentorView_h
 
 #include <uk_ac_ucl_cmic_gui_qt_commonmidas_Export.h>
 
@@ -32,26 +32,27 @@ namespace berry
 class IBerryPreferences;
 }
 
-class niftkBaseSegmentorController;
+namespace niftk
+{
 
-/**
- * \class niftkBaseSegmentorView
- * \brief Base view component for MIDAS Segmentation widgets.
- *
- * \sa QmitkBaseView
- * \sa niftkMorphologicalSegmentorView
- * \sa niftkGeneralSegmentorView
- */
-class CMIC_QT_COMMONMIDAS niftkBaseSegmentorView : public QmitkBaseView
+class BaseSegmentorController;
+
+/// \class BaseSegmentorView
+/// \brief Base view component for MIDAS Segmentation widgets.
+///
+/// \sa QmitkBaseView
+/// \sa MorphologicalSegmentorView
+/// \sa GeneralSegmentorView
+class CMIC_QT_COMMONMIDAS BaseSegmentorView : public QmitkBaseView
 {
 
   Q_OBJECT
 
 public:
 
-  niftkBaseSegmentorView();
-  niftkBaseSegmentorView(const niftkBaseSegmentorView& other);
-  virtual ~niftkBaseSegmentorView();
+  BaseSegmentorView();
+  BaseSegmentorView(const BaseSegmentorView& other);
+  virtual ~BaseSegmentorView();
 
   /**
    * \brief Stores the preference name of the default outline colour (defaults to pure green).
@@ -88,7 +89,7 @@ protected:
   virtual void CreateQtPartControl(QWidget* parent) override;
 
   /// \brief Creates the segmentor controller that realises the GUI logic behind the view.
-  virtual niftkBaseSegmentorController* CreateSegmentorController() = 0;
+  virtual BaseSegmentorController* CreateSegmentorController() = 0;
 
   /// \brief \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer>& nodes) override;
@@ -105,8 +106,10 @@ protected:
 private:
 
   /// \brief The segmentor controller that realises the GUI logic behind the view.
-  niftkBaseSegmentorController* m_SegmentorController;
+  BaseSegmentorController* m_SegmentorController;
 
 };
+
+}
 
 #endif

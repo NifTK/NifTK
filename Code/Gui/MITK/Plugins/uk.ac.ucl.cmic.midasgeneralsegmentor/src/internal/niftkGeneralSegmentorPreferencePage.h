@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkGeneralSegmentorPreferencePage_h
-#define __niftkGeneralSegmentorPreferencePage_h
+#ifndef niftkGeneralSegmentorPreferencePage_h
+#define niftkGeneralSegmentorPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
@@ -21,13 +21,13 @@
 class QWidget;
 class QPushButton;
 
-/**
- * \class niftkGeneralSegmentorPreferencePage
- * \brief Preferences page for this plugin, enabling the choice of the default colour of the segmentation.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor
- *
- */
-class niftkGeneralSegmentorPreferencePage : public QObject, public berry::IQtPreferencePage
+namespace niftk
+{
+
+/// \class GeneralSegmentorPreferencePage
+/// \brief Preferences page for this plugin, enabling the choice of the default colour of the segmentation.
+/// \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor
+class GeneralSegmentorPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
@@ -37,9 +37,9 @@ public:
   /// \brief Stores the name of the preferences node.
   static const QString PREFERENCES_NODE_NAME;
 
-  niftkGeneralSegmentorPreferencePage();
-  niftkGeneralSegmentorPreferencePage(const niftkGeneralSegmentorPreferencePage& other);
-  ~niftkGeneralSegmentorPreferencePage();
+  GeneralSegmentorPreferencePage();
+  GeneralSegmentorPreferencePage(const GeneralSegmentorPreferencePage& other);
+  ~GeneralSegmentorPreferencePage();
 
   void Init(berry::IWorkbench::Pointer workbench);
 
@@ -78,5 +78,7 @@ protected:
 
   berry::IPreferences::Pointer m_GeneralSegmentorPreferencesNode;
 };
+
+}
 
 #endif

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkMorphologicalSegmentorGUI_h
-#define __niftkMorphologicalSegmentorGUI_h
+#ifndef niftkMorphologicalSegmentorGUI_h
+#define niftkMorphologicalSegmentorGUI_h
 
 #include "ui_niftkMorphologicalSegmentorWidget.h"
 #include "niftkBaseSegmentorGUI.h"
@@ -22,13 +22,14 @@
 
 class QAbstractButton;
 
-/**
- * \class niftkMorphologicalSegmentorGUI
- * \brief Implements a few Qt specific things that are of no interest to the MITK view class.
- * \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
- */
-class niftkMorphologicalSegmentorGUI
-  : public niftkBaseSegmentorGUI,
+namespace niftk
+{
+
+/// \class MorphologicalSegmentorGUI
+/// \brief Implements a few Qt specific things that are of no interest to the MITK view class.
+/// \ingroup uk_ac_ucl_cmic_midasmorphologicalsegmentor_internal
+class MorphologicalSegmentorGUI
+  : public BaseSegmentorGUI,
     private Ui_niftkMorphologicalSegmentorWidget
 {
   Q_OBJECT
@@ -36,10 +37,10 @@ class niftkMorphologicalSegmentorGUI
 public:
 
   /// \brief Constructor.
-  niftkMorphologicalSegmentorGUI(QWidget* parent = nullptr);
+  MorphologicalSegmentorGUI(QWidget* parent = nullptr);
 
   /// \brief Destructor.
-  virtual ~niftkMorphologicalSegmentorGUI();
+  virtual ~MorphologicalSegmentorGUI();
 
   /// \brief Method to enable to turn widgets off/on
   /// \see niftkBaseSegmentorGUI::EnableSegmentationWidgets
@@ -95,5 +96,7 @@ private:
   void EmitRethresholdingValues();
 
 };
+
+}
 
 #endif

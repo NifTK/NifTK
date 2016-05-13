@@ -15,8 +15,11 @@
 #include "niftkToolSelectorWidget.h"
 #include <mitkToolManagerProvider.h>
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-niftkToolSelectorWidget::niftkToolSelectorWidget(QWidget *parent)
+ToolSelectorWidget::ToolSelectorWidget(QWidget *parent)
 {
   this->setupUi(parent);
 
@@ -45,26 +48,26 @@ niftkToolSelectorWidget::niftkToolSelectorWidget(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-niftkToolSelectorWidget::~niftkToolSelectorWidget()
+ToolSelectorWidget::~ToolSelectorWidget()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager* niftkToolSelectorWidget::GetToolManager() const
+mitk::ToolManager* ToolSelectorWidget::GetToolManager() const
 {
   return m_ManualToolSelectionBox->GetToolManager();
 }
 
 //-----------------------------------------------------------------------------
-void niftkToolSelectorWidget::SetToolManager(mitk::ToolManager* toolManager)
+void ToolSelectorWidget::SetToolManager(mitk::ToolManager* toolManager)
 {
   m_ManualToolSelectionBox->SetToolManager(*toolManager);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkToolSelectorWidget::SetEnabled(bool enabled)
+void ToolSelectorWidget::SetEnabled(bool enabled)
 {
   this->setEnabled(enabled);
   m_ManualToolSelectionBox->QWidget::setEnabled(enabled);
@@ -82,14 +85,16 @@ void niftkToolSelectorWidget::SetEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool niftkToolSelectorWidget::IsEnabled() const
+bool ToolSelectorWidget::IsEnabled() const
 {
   return this->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkToolSelectorWidget::SetDisplayedToolGroups(const QString& toolGroups)
+void ToolSelectorWidget::SetDisplayedToolGroups(const QString& toolGroups)
 {
   m_ManualToolSelectionBox->SetDisplayedToolGroups(toolGroups.toStdString());
+}
+
 }
