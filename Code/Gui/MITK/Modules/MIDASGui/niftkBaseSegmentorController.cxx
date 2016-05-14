@@ -133,7 +133,7 @@ mitk::ToolManager::DataVectorType BaseSegmentorController::GetWorkingData()
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* BaseSegmentorController::GetWorkingImageFromToolManager(int index)
+mitk::Image* BaseSegmentorController::GetWorkingImage(int index)
 {
   mitk::Image* result = nullptr;
 
@@ -156,7 +156,7 @@ mitk::Image* BaseSegmentorController::GetWorkingImageFromToolManager(int index)
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* BaseSegmentorController::GetReferenceNodeFromToolManager()
+mitk::DataNode* BaseSegmentorController::GetReferenceNode()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -166,11 +166,11 @@ mitk::DataNode* BaseSegmentorController::GetReferenceNodeFromToolManager()
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* BaseSegmentorController::GetReferenceImageFromToolManager()
+mitk::Image* BaseSegmentorController::GetReferenceImage()
 {
   mitk::Image* result = nullptr;
 
-  mitk::DataNode* node = this->GetReferenceNodeFromToolManager();
+  mitk::DataNode* node = this->GetReferenceNode();
   if (node)
   {
     mitk::Image* image = dynamic_cast<mitk::Image*>( node->GetData() );
@@ -184,7 +184,7 @@ mitk::Image* BaseSegmentorController::GetReferenceImageFromToolManager()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* BaseSegmentorController::GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode)
+mitk::DataNode* BaseSegmentorController::FindReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode)
 {
   mitk::DataNode* result = mitk::FindFirstParentImage(this->GetDataStorage(), segmentationNode, false);
   return result;
@@ -192,17 +192,9 @@ mitk::DataNode* BaseSegmentorController::GetReferenceNodeFromSegmentationNode(co
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* BaseSegmentorController::GetReferenceImage()
-{
-  mitk::Image* result = this->GetReferenceImageFromToolManager();
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 void BaseSegmentorController::SetReferenceImageSelected()
 {
-  mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
+  mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNode();
   if (referenceImageNode.IsNotNull())
   {
     this->GetView()->SetCurrentSelection(referenceImageNode);
@@ -211,21 +203,21 @@ void BaseSegmentorController::SetReferenceImageSelected()
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::IsNodeAReferenceImage(const mitk::DataNode::Pointer node)
+bool BaseSegmentorController::IsAReferenceImage(const mitk::DataNode::Pointer node)
 {
   return mitk::IsNodeAGreyScaleImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
+bool BaseSegmentorController::IsASegmentationImage(const mitk::DataNode::Pointer node)
 {
   return mitk::IsNodeABinaryImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
+bool BaseSegmentorController::IsAWorkingImage(const mitk::DataNode::Pointer node)
 {
   return mitk::IsNodeABinaryImage(node);
 }
@@ -276,7 +268,7 @@ int BaseSegmentorController::GetSliceNumberFromSliceNavigationControllerAndRefer
   int sliceNumber = -1;
 
   mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController();
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
+  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
 
   if (referenceImage.IsNotNull() && snc.IsNotNull())
   {
@@ -299,7 +291,7 @@ int BaseSegmentorController::GetSliceNumberFromSliceNavigationControllerAndRefer
 int BaseSegmentorController::GetAxisFromReferenceImage(ImageOrientation orientation)
 {
   int axis = -1;
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
+  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
   if (referenceImage.IsNotNull())
   {
     axis = GetThroughPlaneAxis(referenceImage, orientation);
@@ -333,7 +325,7 @@ int BaseSegmentorController::GetReferenceImageSagittalAxis()
 int BaseSegmentorController::GetViewAxis()
 {
   int axisNumber = -1;
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
+  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
   ImageOrientation orientation = this->GetOrientation();
   if (referenceImage.IsNotNull() && orientation != IMAGE_ORIENTATION_UNKNOWN)
   {
@@ -347,7 +339,7 @@ int BaseSegmentorController::GetViewAxis()
 int BaseSegmentorController::GetUpDirection()
 {
   int upDirection = 0;
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
+  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
   ImageOrientation orientation = this->GetOrientation();
   if (referenceImage.IsNotNull() && orientation != IMAGE_ORIENTATION_UNKNOWN)
   {
@@ -366,11 +358,11 @@ mitk::DataNode* BaseSegmentorController::CreateNewSegmentation()
   assert(toolManager);
 
   // Assumption: If a reference image is selected in the data manager, then it MUST be registered with ToolManager, and hence this is the one we intend to segment.
-  mitk::DataNode::Pointer referenceNode = this->GetReferenceNodeFromToolManager();
+  mitk::DataNode::Pointer referenceNode = this->GetReferenceNode();
   if (referenceNode.IsNotNull())
   {
     // Assumption: If a reference image is selected in the data manager, then it MUST be registered with ToolManager, and hence this is the one we intend to segment.
-    mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
+    mitk::Image::Pointer referenceImage = this->GetReferenceImage();
     if (referenceImage.IsNotNull())
     {
       if (referenceImage->GetDimension() > 2)
@@ -442,13 +434,13 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
     mitk::ToolManager::DataVectorType workingDataNodes;
 
     // Rely on subclasses deciding if the node is something we are interested in.
-    if (this->IsNodeAReferenceImage(node))
+    if (this->IsAReferenceImage(node))
     {
       referenceData = node;
     }
 
     // A segmentation image, is the final output, the one being segmented.
-    if (this->IsNodeASegmentationImage(node))
+    if (this->IsASegmentationImage(node))
     {
       segmentedData = node;
     }
@@ -460,9 +452,9 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
     if (segmentedData.IsNotNull())
     {
 
-      referenceData = this->GetReferenceNodeFromSegmentationNode(segmentedData);
+      referenceData = this->FindReferenceNodeFromSegmentationNode(segmentedData);
 
-      if (this->IsNodeASegmentationImage(node))
+      if (this->IsASegmentationImage(node))
       {
         workingDataNodes = this->GetWorkingDataFromSegmentationNode(segmentedData);
         valid = true;

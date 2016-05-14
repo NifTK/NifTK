@@ -91,14 +91,14 @@ void MorphologicalSegmentorController::SetupGUI(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-bool MorphologicalSegmentorController::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
+bool MorphologicalSegmentorController::IsASegmentationImage(const mitk::DataNode::Pointer node)
 {
   return m_PipelineManager->IsNodeASegmentationImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
-bool MorphologicalSegmentorController::IsNodeAWorkingImage(const mitk::DataNode::Pointer node)
+bool MorphologicalSegmentorController::IsAWorkingImage(const mitk::DataNode::Pointer node)
 {
   return m_PipelineManager->IsNodeAWorkingImage(node);
 }
@@ -152,7 +152,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
 
     if (mitk::IsNodeABinaryImage(selectedNode)
         && this->CanStartSegmentationForBinaryNode(selectedNode)
-        && !this->IsNodeASegmentationImage(selectedNode)
+        && !this->IsASegmentationImage(selectedNode)
         )
     {
       newSegmentation =  selectedNode;
@@ -333,7 +333,7 @@ void MorphologicalSegmentorController::OnThresholdingValuesChanged(double lowerT
 {
   m_PipelineManager->OnThresholdingValuesChanged(lowerThreshold, upperThreshold, axialSliceNumber);
 
-  mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
+  mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNode();
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
   mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceImageNode->GetData());
   mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
@@ -387,7 +387,7 @@ void MorphologicalSegmentorController::OnTabChanged(int tabIndex)
       m_MorphologicalSegmentorGUI->SetToolSelectorEnabled(true);
 
       mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-      MIDASPaintbrushTool::Pointer paintbrushTool = dynamic_cast<MIDASPaintbrushTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<MIDASPaintbrushTool>()));
+      MIDASPaintbrushTool::Pointer paintbrushTool = this->GetToolByType<MIDASPaintbrushTool>();
 
       mitk::DataNode::Pointer erodeSubtractNode = this->GetToolManager()->GetWorkingData(MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS);
       mitk::DataNode::Pointer dilateSubtractNode = this->GetToolManager()->GetWorkingData(MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS);
@@ -461,7 +461,7 @@ void MorphologicalSegmentorController::OnOKButtonClicked()
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
     this->GetDataStorage()->Remove(axialCutOffPlaneNode);
 
-    this->GetView()->FireNodeSelected(this->GetReferenceNodeFromToolManager());
+    this->GetView()->FireNodeSelected(this->GetReferenceNode());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
   }
@@ -483,7 +483,7 @@ void MorphologicalSegmentorController::OnRestartButtonClicked()
 
     /// Reset the axial cut-off plane to the bottom of the image.
     {
-      mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNodeFromToolManager();
+      mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNode();
       mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceImageNode->GetData());
       mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
@@ -521,7 +521,7 @@ void MorphologicalSegmentorController::OnCancelButtonClicked()
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
     this->GetDataStorage()->Remove(axialCutOffPlaneNode);
     this->GetDataStorage()->Remove(segmentationNode);
-    this->GetView()->FireNodeSelected(this->GetReferenceNodeFromToolManager());
+    this->GetView()->FireNodeSelected(this->GetReferenceNode());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
   }
@@ -573,7 +573,7 @@ void MorphologicalSegmentorController::OnNodeRemoved(const mitk::DataNode* remov
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
 //    this->GetDataStorage()->Remove(segmentationNode);
-    this->GetView()->FireNodeSelected(this->GetReferenceNodeFromToolManager());
+    this->GetView()->FireNodeSelected(this->GetReferenceNode());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
   }

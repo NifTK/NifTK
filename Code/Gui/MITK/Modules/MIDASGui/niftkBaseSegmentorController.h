@@ -88,34 +88,31 @@ protected:
 
   /// \brief Gets a single binary image registered with the ToolManager.
   /// Returns nullptr if it can't be found or is not an image.
-  mitk::Image* GetWorkingImageFromToolManager(int index);
+  mitk::Image* GetWorkingImage(int index);
 
   /// \brief Gets the reference node from the tool manager or nullptr if it can't be found.
-  mitk::DataNode* GetReferenceNodeFromToolManager();
+  mitk::DataNode* GetReferenceNode();
 
   /// \brief Gets the reference image from the tool manager, or nullptr if this doesn't yet exist or is not an image.
-  mitk::Image* GetReferenceImageFromToolManager();
+  /// Assumes that a reference (grey scale) image is always registered with the tool manager.
+  mitk::Image* GetReferenceImage();
 
   /// \brief Gets the reference node that the segmentation node belongs to.
   /// Assumes that the reference (grey scale) node is always the direct parent of the
   /// segmentation (binary) node, so we simply search for a non binary parent.
-  mitk::DataNode* GetReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode);
-
-  /// \brief Gets the reference image registered with the tool manager.
-  /// Assumes that a reference (grey scale) image is always registered with the tool manager.
-  mitk::Image* GetReferenceImage();
+  mitk::DataNode* FindReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode);
 
   /// \brief Makes sure the reference image is the selected one
   void SetReferenceImageSelected();
 
   /// \brief Returns true if node represent an image that is non binary, and false otherwise.
-  virtual bool IsNodeAReferenceImage(const mitk::DataNode::Pointer node);
+  virtual bool IsAReferenceImage(const mitk::DataNode::Pointer node);
 
   /// \brief Returns true if node represents an image that is binary, and false otherwise.
-  virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node);
+  virtual bool IsASegmentationImage(const mitk::DataNode::Pointer node);
 
   /// \brief Returns true if node represents an image that is binary, and false otherwise.
-  virtual bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node);
+  virtual bool IsAWorkingImage(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
   virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);

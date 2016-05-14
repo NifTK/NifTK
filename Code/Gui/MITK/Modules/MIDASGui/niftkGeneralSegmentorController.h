@@ -168,7 +168,7 @@ protected:
 
   /// \brief For Irregular Volume Editing, a Segmentation image should have a grey
   /// scale parent, and several children as described in the class introduction.
-  virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) override;
+  virtual bool IsASegmentationImage(const mitk::DataNode::Pointer node) override;
 
   /// \brief Assumes input is a valid segmentation node, then searches for the derived
   /// children of the node, looking for the seeds and contours  as described in the class introduction.
@@ -421,15 +421,15 @@ private:
   unsigned long m_SliceNavigationControllerObserverTag;
 
   /// \brief Keep track of the previous slice number and reset to -1 when the window focus changes.
-  int m_PreviousSliceNumber;
+  int m_PreviousSliceIndex;
 
   /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
   /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
-  mitk::Point3D m_CurrentFocusPoint;
+  mitk::Point3D m_CurrentSelectedPosition;
 
   /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
   /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
-  mitk::Point3D m_PreviousFocusPoint;
+  mitk::Point3D m_PreviousSelectedPosition;
 
   /// \brief This class hooks into the Global Interaction system to respond to Key press events.
   MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
