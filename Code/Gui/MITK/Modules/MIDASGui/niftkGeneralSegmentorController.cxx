@@ -74,6 +74,7 @@ GeneralSegmentorControllerPrivate::~GeneralSegmentorControllerPrivate()
 //-----------------------------------------------------------------------------
 GeneralSegmentorController::GeneralSegmentorController(IBaseView* view)
   : BaseSegmentorController(view),
+    d_ptr(new GeneralSegmentorControllerPrivate(this)),
     m_IsUpdating(false),
     m_IsDeleting(false),
     m_IsChangingSlice(false),
