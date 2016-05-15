@@ -98,7 +98,7 @@ public:
   void Set3DModelFileName(const std::string& fileName);
   itkGetMacro(3DModelFileName, std::string);
 
-  itkSetMacro(OutputDirName, std::string);
+  void SetOutputDirName(const std::string& dirName);
   itkGetMacro(OutputDirName, std::string);
 
   void SetReferenceDataFileNames(const std::string& imageFileName, const std::string& pointsFileName);
@@ -154,6 +154,13 @@ private:
 
   void ConvertImage(mitk::DataNode::Pointer imageNode, cv::Mat& outputImage);
   bool ExtractPoints(int imageIndex, const cv::Mat& image);
+  cv::Matx44d DoTsaiHandEye(int imageIndex);
+  cv::Matx44d DoDirectHandEye(int imageIndex);
+  cv::Matx44d DoMaltiHandEye(int imageIndex);
+  void SaveImages(const std::string& prefix,
+                  const std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> >&
+                  );
+  void SavePoints(const std::string& prefix, const std::list<niftk::PointSet>& points);
 
   // Data from Plugin.
   mitk::DataStorage::Pointer m_DataStorage;
@@ -196,8 +203,10 @@ private:
   std::vector<cv::Mat>       m_Tvecs[2];
   cv::Mat                    m_EssentialMatrix;
   cv::Mat                    m_FundamentalMatrix;
-  cv::Mat                    m_Left2RightRotation;
-  cv::Mat                    m_Left2RightTranslation;
+  cv::Mat                    m_RightToLeftRotation;
+  cv::Mat                    m_RightToLeftTranslation;
+  cv::Matx44d                m_LeftHandEyeMatrices[3];    // We always calculate all 3 methods.
+  cv::Matx44d                m_RightHandEyeMatrices[3];   // And if we have stereo, we do both separately.
 
 }; // end class
 

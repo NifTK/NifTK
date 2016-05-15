@@ -15,6 +15,7 @@
 #include "niftkNiftyCalVideoCalibrationManager.h"
 #include <mitkExceptionMacro.h>
 #include <mitkCoordinateAxesData.h>
+#include <niftkFileHelper.h>
 #include <niftkNiftyCalTypes.h>
 #include <niftkImageConversion.h>
 #include <niftkOpenCVChessboardPointDetector.h>
@@ -28,6 +29,7 @@
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 #include <highgui.h>
+#include <sstream>
 
 namespace niftk
 {
@@ -172,6 +174,19 @@ void NiftyCalVideoCalibrationManager::SetModelToTrackerFileName(const std::strin
 
 
 //-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::SetOutputDirName(const std::string& dirName)
+{
+  if (dirName.empty())
+  {
+    mitkThrow() << "Empty output directory name.";
+  }
+
+  m_OutputDirName = (dirName + niftk::GetFileSeparator());
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
 unsigned int NiftyCalVideoCalibrationManager::GetNumberOfSnapshots() const
 {
   return m_Points[0].size();
@@ -189,6 +204,27 @@ void NiftyCalVideoCalibrationManager::Restart()
     m_TrackingMatrices.clear();
   }
   MITK_INFO << "Restart. Left point size now:" << m_Points[0].size() << ", right: " <<  m_Points[1].size();
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex)
+{
+
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d NiftyCalVideoCalibrationManager::DoDirectHandEye(int imageIndex)
+{
+
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex)
+{
+
 }
 
 
@@ -452,8 +488,8 @@ double NiftyCalVideoCalibrationManager::Calibrate()
             m_Tvecs[1],
             m_EssentialMatrix,
             m_FundamentalMatrix,
-            m_Left2RightRotation,
-            m_Left2RightTranslation
+            m_RightToLeftRotation,
+            m_RightToLeftTranslation
             );
     }
   }
@@ -497,22 +533,26 @@ double NiftyCalVideoCalibrationManager::Calibrate()
             m_Tvecs[1],
             m_EssentialMatrix,
             m_FundamentalMatrix,
-            m_Left2RightRotation,
-            m_Left2RightTranslation,
+            m_RightToLeftRotation,
+            m_RightToLeftTranslation,
             CV_CALIB_USE_INTRINSIC_GUESS
             );
     }
   }
 
-  // To Do: Hand-Eye methods
-  if (m_HandeyeMethod == TSAI)
+  // Do all hand-eye methods if we have tracking info.
+  if (m_TrackingTransformNode.IsNotNull())
   {
-  }
-  else if (m_HandeyeMethod == DIRECT)
-  {
-  }
-  else if (m_HandeyeMethod == MALTI)
-  {
+    m_LeftHandEyeMatrices[TSAI] = DoTsaiHandEye(0);
+    m_LeftHandEyeMatrices[DIRECT] = DoDirectHandEye(0);
+    m_LeftHandEyeMatrices[MALTI] = DoMaltiHandEye(0);
+
+    if (m_ImageNode[1].IsNotNull())
+    {
+      m_RightHandEyeMatrices[TSAI] = DoTsaiHandEye(1);
+      m_RightHandEyeMatrices[DIRECT] = DoDirectHandEye(1);
+      m_RightHandEyeMatrices[MALTI] = DoMaltiHandEye(1);
+    }
   }
 
   MITK_INFO << "Calibrating - DONE.";
@@ -523,9 +563,82 @@ double NiftyCalVideoCalibrationManager::Calibrate()
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::Save()
 {
-  MITK_INFO << "Saving calibration to:" << m_OutputDirName << ".";
+  if (m_ImageNode[0].IsNull())
+  {
+    mitkThrow() << "Left image should never be NULL.";
+  }
 
-  MITK_INFO << "Saving calibration to:" << m_OutputDirName << " - DONE.";
+  if (m_OutputDirName.empty())
+  {
+    mitkThrow() << "Empty output directory name.";
+  }
+
+  MITK_INFO << "Saving calibration to:" << m_OutputDirName << ":";
+
+  niftk::SaveNifTKIntrinsics(m_Intrinsic[0], m_Distortion[0], m_OutputDirName + "calib.left.intrinsics.txt");
+  this->SaveImages("images.left.", m_OriginalImages[0]);
+  this->SavePoints("points.left.", m_Points[0]);
+
+  if (m_ImageNode[1].IsNotNull())
+  {
+    niftk::SaveNifTKIntrinsics(m_Intrinsic[1], m_Distortion[1], m_OutputDirName + "calib.right.intrinsics.txt");
+    niftk::SaveNifTKStereoExtrinsics(m_RightToLeftRotation, m_RightToLeftTranslation, m_OutputDirName + "calib.r2l.txt");
+    this->SaveImages("images.right.", m_OriginalImages[0]);
+    this->SavePoints("points.right.", m_Points[0]);
+  }
+
+  if (m_TrackingTransformNode.IsNotNull())
+  {
+    int counter = 0;
+    std::list<cv::Matx44d >::const_iterator iter;
+    for (iter = m_TrackingMatrices.begin();
+         iter != m_TrackingMatrices.end();
+         ++iter
+         )
+    {
+      std::ostringstream fileName;
+      fileName << m_OutputDirName << "tracking." << counter++ << ".4x4";
+      niftk::Save4x4Matrix(*iter, fileName.str());
+    }
+  }
+
+  MITK_INFO << "Saving calibration to:" << m_OutputDirName << ": - DONE.";
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::SaveImages(const std::string& prefix,
+  const std::list<
+    std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> >& images)
+{
+  int counter = 0;
+  std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> >::const_iterator iter;
+  for (iter = images.begin();
+       iter != images.end();
+       ++iter
+       )
+  {
+    std::ostringstream fileName;
+    fileName << m_OutputDirName << prefix << counter++ << ".png";
+    cv::imwrite(fileName.str(), (*iter).second);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::SavePoints(const std::string& prefix, const std::list<niftk::PointSet>& points)
+{
+  int counter = 0;
+  std::list<niftk::PointSet>::const_iterator iter;
+  for (iter = points.begin();
+       iter != points.end();
+       ++iter
+       )
+  {
+    std::ostringstream fileName;
+    fileName << m_OutputDirName << prefix << counter++ << ".png";
+    niftk::SavePointSet(*iter, fileName.str());
+  }
 }
 
 } // end namespace
