@@ -490,6 +490,7 @@ void CameraCalView::OnSaveButtonPressed()
                                                   | QFileDialog::DontResolveSymlinks);
   if (!dir.isEmpty())
   {
+    m_Manager->SetOutputDirName(dir.toStdString());
     m_Manager->Save();
   }
 }
