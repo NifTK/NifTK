@@ -24,7 +24,7 @@ endif()
 if(BUILD_IGI)
 
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyCal.git")
-  set(version "fa42c40189")
+  set(version "432ad77d27")
 
   niftkMacroDefineExternalProjectVariables(NiftyCal ${version} ${location})
 

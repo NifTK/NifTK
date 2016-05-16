@@ -244,8 +244,7 @@ private:
   cv::Mat                    m_FundamentalMatrix;
   cv::Mat                    m_RightToLeftRotation;
   cv::Mat                    m_RightToLeftTranslation;
-  cv::Matx44d                m_LeftHandEyeMatrices[3];    // We always calculate all 3 methods.
-  cv::Matx44d                m_RightHandEyeMatrices[3];   // And if we have stereo, we do both separately.
+  std::vector<cv::Matx44d>   m_HandEyeMatrices[2];
 
 }; // end class
 
