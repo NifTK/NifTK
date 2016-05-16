@@ -24,9 +24,11 @@
 #include <vlCore/Colors.hpp>
 #include <vlCore/GlobalSettings.hpp>
 #include <vlCore/FileSystem.hpp>
+#include <vlCore/ResourceDatabase.hpp>
 #include <vlGraphics/GeometryPrimitives.hpp>
 #include <vlGraphics/RenderQueueSorter.hpp>
 #include <vlGraphics/GLSL.hpp>
+#include <vlGraphics/plugins/ioVLX.hpp>
 #include <vlGraphics/FramebufferObject.hpp>
 #include <vlVolume/RaycastVolume.hpp>
 #include <cassert>
@@ -1235,6 +1237,21 @@ void VLQtWidget::AddAllNodesFromDataStorage()
 
     AddDataNode(mitk::DataNode::ConstPointer(currentDataNode.GetPointer()));
   }
+
+  #if 0
+    vl::ref< vl::ResourceDatabase > db = new vl::ResourceDatabase;
+    for( int i = 0; i < m_SceneManager->tree()->actors()->size(); ++i ) {
+      vl::Actor* act = m_SceneManager->tree()->actors()->at(i);
+      if ( act->enableMask() ) {
+        // db->resources().push_back( act );
+        // vl::String fname = filename( files[i] );
+        db->resources().push_back( act );
+        vl::String fname = "niftk";
+        vl::saveVLT( "C:/git-ucl/VisualizationLibrary/data/tmp/" + fname + ".vlt", db.get() );
+        vl::saveVLB( "C:/git-ucl/VisualizationLibrary/data/tmp/" + fname + ".vlb", db.get() );
+      }
+    }
+  #endif
 }
 
 
@@ -1941,7 +1958,7 @@ vl::ref<vl::Actor> VLQtWidget::AddSurfaceActor(const mitk::Surface::Pointer& mit
   fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
   // UpdateDataNode() takes care of assigning colour etc.
 
-  vl::ref<vl::Actor>    surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
+  vl::ref<vl::Actor> surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
   m_ActorToRenderableMap[surfActor] = vlSurf;
 
   return surfActor;
