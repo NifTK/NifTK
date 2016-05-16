@@ -230,6 +230,8 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex)
 {
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
 
+  // To Do - Implement it.
+
   cv::Matx44d handEye = cv::Matx44d::eye();
   return handEye;
 }
@@ -239,8 +241,6 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex)
 cv::Matx44d NiftyCalVideoCalibrationManager::DoDirectHandEye(int imageIndex)
 {
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
-
-  // To Do - Implement it.
 
   cv::Matx44d handEye =
       niftk::CalculateHandEyeByDirectMatrixMultiplication(
