@@ -101,8 +101,10 @@ public:
   void SetOutputDirName(const std::string& dirName);
   itkGetMacro(OutputDirName, std::string);
 
-  void SetReferenceDataFileNames(const std::string& imageFileName, const std::string& pointsFileName);
+  void SetReferenceDataFileNames(const std::string& imageFileName,
+                                 const std::string& pointsFileName);
   itkGetMacro(ReferenceImageFileName, std::string);
+  itkGetMacro(ReferencePointsFileName, std::string);
 
   void SetModelToTrackerFileName(const std::string& fileName);
   itkGetMacro(ModelToTrackerFileName, std::string);
@@ -152,16 +154,49 @@ protected:
 
 private:
 
+  /**
+   * \brief Extracts mitk::Image from imageNode, converts to OpenCV and makes grey-scale.
+   */
   void ConvertImage(mitk::DataNode::Pointer imageNode, cv::Mat& outputImage);
+
+  /**
+   * \brief Runs the niftk::IPoint2DDetector on the image.
+   *
+   * The preferences page will determine the current preferred method of extraction.
+   * e.g. Chessboard, grid of circles, AprilTags.
+   */
   bool ExtractPoints(int imageIndex, const cv::Mat& image);
+
+  /**
+   * \brief Converts OpenCV rotation vectors and translation vectors to matrices.
+   */
   std::list<cv::Matx44d > ExtractCameraMatrices(int imageIndex);
 
+  /**
+   * \brief Actually does Tsai's hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
+   */
   cv::Matx44d DoTsaiHandEye(int imageIndex);
+
+  /**
+   * \brief Actually does direct hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
+   */
   cv::Matx44d DoDirectHandEye(int imageIndex);
+
+  /**
+   * \brief Actually does Malti's hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
+   */
   cv::Matx44d DoMaltiHandEye(int imageIndex);
+
+  /**
+   * \brief Saves list of images that were used for calibration.
+   */
   void SaveImages(const std::string& prefix,
                   const std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> >&
                   );
+
+  /**
+   * \brief Saves list of points that were used for calibration.
+   */
   void SavePoints(const std::string& prefix, const std::list<niftk::PointSet>& points);
 
   // Data from Plugin.
