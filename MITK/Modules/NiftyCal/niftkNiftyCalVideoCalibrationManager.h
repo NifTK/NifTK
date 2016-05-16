@@ -172,6 +172,8 @@ private:
    */
   std::list<cv::Matx44d > ExtractCameraMatrices(int imageIndex);
 
+  std::vector<cv::Mat> ConvertMatrices(const std::list<cv::Matx44d>& list);
+
   /**
    * \brief Actually does Tsai's hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
    */

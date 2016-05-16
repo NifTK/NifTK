@@ -15,6 +15,7 @@
 #include "niftkNiftyCalVideoCalibrationManager.h"
 #include <mitkExceptionMacro.h>
 #include <mitkCoordinateAxesData.h>
+#include <mitkOpenCVMaths.h>
 #include <niftkFileHelper.h>
 #include <niftkImageConversion.h>
 
@@ -226,13 +227,39 @@ std::list<cv::Matx44d > NiftyCalVideoCalibrationManager::ExtractCameraMatrices(i
 
 
 //-----------------------------------------------------------------------------
+std::vector<cv::Mat> NiftyCalVideoCalibrationManager::ConvertMatrices(const std::list<cv::Matx44d>& list)
+{
+  std::vector<cv::Mat> matrices;
+  std::list<cv::Matx44d>::const_iterator iter;
+
+  for (iter = list.begin();
+       iter != list.end();
+       ++iter
+       )
+  {
+    cv::Mat tmp(*iter);
+    matrices.push_back(tmp);
+  }
+  return matrices;
+}
+
+
+//-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex)
 {
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
+  std::vector<cv::Mat> cameraMat = this->ConvertMatrices(cameraMatrices);
+  std::vector<cv::Mat> trackerMat = this->ConvertMatrices(m_TrackingMatrices);
+  std::vector<double> residuals;
 
-  // To Do - Implement it.
+  // Call's Steve's implementation of Tsai 1989.
+  cv::Mat eyeHand = mitk::Tracker2ToTracker1RotationAndTranslation(
+        trackerMat, cameraMat, residuals
+        );
 
-  cv::Matx44d handEye = cv::Matx44d::eye();
+  cv::Matx44d tmp(eyeHand);
+  cv::Matx44d handEye = tmp.inv();
+
   return handEye;
 }
 
