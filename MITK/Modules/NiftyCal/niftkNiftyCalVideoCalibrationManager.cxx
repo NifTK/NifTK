@@ -698,7 +698,7 @@ void NiftyCalVideoCalibrationManager::SavePoints(const std::string& prefix, cons
        )
   {
     std::ostringstream fileName;
-    fileName << m_OutputDirName << prefix << counter++ << ".png";
+    fileName << m_OutputDirName << prefix << counter++ << ".txt";
     niftk::SavePointSet(*iter, fileName.str());
   }
 }
