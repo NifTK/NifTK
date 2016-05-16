@@ -61,6 +61,10 @@ public:
   /// Returns -1 if no window is selected or the selected window is a 3D window.
   int GetSliceIndex() const;
 
+  /// \brief Returns the selected position in the current editor (render window part).
+  /// The selected position is the voxel at the intersection of the crosshair planes.
+  mitk::Point3D GetSelectedPosition() const;
+
   /// \brief Sets up the GUI.
   /// This function has to be called from the CreateQtPartControl function of the view.
   virtual void SetupGUI(QWidget* parent);

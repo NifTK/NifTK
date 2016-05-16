@@ -482,6 +482,13 @@ int BaseController::GetSliceIndex() const
 
 
 //-----------------------------------------------------------------------------
+mitk::Point3D BaseController::GetSelectedPosition() const
+{
+  return this->GetView()->GetSelectedPosition();
+}
+
+
+//-----------------------------------------------------------------------------
 void BaseController::WaitCursorOn()
 {
   QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
