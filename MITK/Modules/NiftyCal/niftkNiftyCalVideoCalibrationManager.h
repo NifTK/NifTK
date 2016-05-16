@@ -154,6 +154,8 @@ private:
 
   void ConvertImage(mitk::DataNode::Pointer imageNode, cv::Mat& outputImage);
   bool ExtractPoints(int imageIndex, const cv::Mat& image);
+  std::list<cv::Matx44d > ExtractCameraMatrices(int imageIndex);
+
   cv::Matx44d DoTsaiHandEye(int imageIndex);
   cv::Matx44d DoDirectHandEye(int imageIndex);
   cv::Matx44d DoMaltiHandEye(int imageIndex);

@@ -16,16 +16,19 @@
 #include <mitkExceptionMacro.h>
 #include <mitkCoordinateAxesData.h>
 #include <niftkFileHelper.h>
-#include <niftkNiftyCalTypes.h>
 #include <niftkImageConversion.h>
+
+#include <niftkNiftyCalTypes.h>
 #include <niftkOpenCVChessboardPointDetector.h>
 #include <niftkOpenCVCirclesPointDetector.h>
 #include <niftkAprilTagsPointDetector.h>
 #include <niftkIOUtilities.h>
+#include <niftkMatrixUtilities.h>
 #include <niftkMonoCameraCalibration.h>
 #include <niftkStereoCameraCalibration.h>
 #include <niftkIterativeMonoCameraCalibration.h>
 #include <niftkIterativeStereoCameraCalibration.h>
+
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 #include <highgui.h>
@@ -208,23 +211,57 @@ void NiftyCalVideoCalibrationManager::Restart()
 
 
 //-----------------------------------------------------------------------------
+std::list<cv::Matx44d > NiftyCalVideoCalibrationManager::ExtractCameraMatrices(int imageIndex)
+{
+  std::list<cv::Matx44d> cameraMatrices;
+  for (int i = 0; i < m_Rvecs[imageIndex].size(); i++)
+  {
+    cv::Matx44d mat = niftk::RodriguesToMatrix(m_Rvecs[imageIndex][i],
+                                               m_Tvecs[imageIndex][i]
+                                               );
+    cameraMatrices.push_back(mat);
+  }
+  return cameraMatrices;
+}
+
+
+//-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex)
 {
+  std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
 
+  cv::Matx44d handEye = cv::Matx44d::eye();
+  return handEye;
 }
 
 
 //-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoDirectHandEye(int imageIndex)
 {
+  std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
 
+  // To Do - Implement it.
+
+  cv::Matx44d handEye =
+      niftk::CalculateHandEyeByDirectMatrixMultiplication(
+        m_3DModelToTracker,
+        m_TrackingMatrices,
+        cameraMatrices
+        );
+
+  return handEye;
 }
 
 
 //-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex)
 {
+  std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
 
+  // To Do - Implement it.
+
+  cv::Matx44d handEye = cv::Matx44d::eye();
+  return handEye;
 }
 
 
@@ -583,8 +620,8 @@ void NiftyCalVideoCalibrationManager::Save()
   {
     niftk::SaveNifTKIntrinsics(m_Intrinsic[1], m_Distortion[1], m_OutputDirName + "calib.right.intrinsics.txt");
     niftk::SaveNifTKStereoExtrinsics(m_RightToLeftRotation, m_RightToLeftTranslation, m_OutputDirName + "calib.r2l.txt");
-    this->SaveImages("images.right.", m_OriginalImages[0]);
-    this->SavePoints("points.right.", m_Points[0]);
+    this->SaveImages("images.right.", m_OriginalImages[1]);
+    this->SavePoints("points.right.", m_Points[1]);
   }
 
   if (m_TrackingTransformNode.IsNotNull())
@@ -599,6 +636,31 @@ void NiftyCalVideoCalibrationManager::Save()
       std::ostringstream fileName;
       fileName << m_OutputDirName << "tracking." << counter++ << ".4x4";
       niftk::Save4x4Matrix(*iter, fileName.str());
+    }
+
+    // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
+    niftk::Save4x4Matrix(m_LeftHandEyeMatrices[0], m_OutputDirName + "calib.left.handeye.tsai.txt");
+    niftk::Save4x4Matrix(m_LeftHandEyeMatrices[1], m_OutputDirName + "calib.left.handeye.direct.txt");
+    niftk::Save4x4Matrix(m_LeftHandEyeMatrices[2], m_OutputDirName + "calib.left.handeye.malti.txt");
+    niftk::Save4x4Matrix(m_LeftHandEyeMatrices[m_HandeyeMethod], m_OutputDirName + "calib.left.handeye.txt");
+
+    niftk::SaveRigidParams(m_LeftHandEyeMatrices[0], m_OutputDirName + "calib.left.handeye.tsai.params.txt");
+    niftk::SaveRigidParams(m_LeftHandEyeMatrices[1], m_OutputDirName + "calib.left.handeye.direct.params.txt");
+    niftk::SaveRigidParams(m_LeftHandEyeMatrices[2], m_OutputDirName + "calib.left.handeye.malti.params.txt");
+    niftk::SaveRigidParams(m_LeftHandEyeMatrices[m_HandeyeMethod], m_OutputDirName + "calib.left.handeye.params.txt");
+
+    if (m_ImageNode[1].IsNotNull())
+    {
+      // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
+      niftk::Save4x4Matrix(m_RightHandEyeMatrices[0], m_OutputDirName + "calib.right.handeye.tsai.txt");
+      niftk::Save4x4Matrix(m_RightHandEyeMatrices[1], m_OutputDirName + "calib.right.handeye.direct.txt");
+      niftk::Save4x4Matrix(m_RightHandEyeMatrices[2], m_OutputDirName + "calib.right.handeye.malti.txt");
+      niftk::Save4x4Matrix(m_RightHandEyeMatrices[m_HandeyeMethod], m_OutputDirName + "calib.right.handeye.txt");
+
+      niftk::SaveRigidParams(m_RightHandEyeMatrices[0], m_OutputDirName + "calib.right.handeye.tsai.params.txt");
+      niftk::SaveRigidParams(m_RightHandEyeMatrices[1], m_OutputDirName + "calib.right.handeye.direct.params.txt");
+      niftk::SaveRigidParams(m_RightHandEyeMatrices[2], m_OutputDirName + "calib.right.handeye.malti.params.txt");
+      niftk::SaveRigidParams(m_RightHandEyeMatrices[m_HandeyeMethod], m_OutputDirName + "calib.right.handeye.params.txt");
     }
   }
 
