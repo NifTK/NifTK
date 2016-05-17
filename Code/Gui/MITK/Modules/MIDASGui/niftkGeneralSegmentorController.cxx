@@ -688,7 +688,7 @@ void GeneralSegmentorController::OnFocusChanged()
           m_SliceNavigationController->AddObserver(
               mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSliceChangedCommand);
 
-      m_SliceNavigationController->SendSlice();
+      this->OnSliceChanged();
     }
 
     this->UpdatePriorAndNext();
@@ -1672,11 +1672,8 @@ void GeneralSegmentorController::RestoreInitialSegmentation()
     segmentationNode->SetData(dynamic_cast<mitk::Image*>(initialSegmentationNode->GetData())->Clone());
     seedsNode->SetData(dynamic_cast<mitk::PointSet*>(initialSeedsNode->GetData())->Clone());
 
-    // This will cause OnSliceNumberChanged to be called, forcing refresh of all contours.
-    if (m_SliceNavigationController)
-    {
-      m_SliceNavigationController->SendSlice();
-    }
+    // This will force refresh of all contours.
+    this->OnSliceChanged();
   }
   catch(const mitk::AccessByItkException& e)
   {
@@ -1830,11 +1827,8 @@ void GeneralSegmentorController::ClearWorkingData()
     mitk::PointSet::Pointer seeds = this->GetSeeds();
     seeds->Clear();
 
-    // This will cause OnSliceNumberChanged to be called, forcing refresh of all contours.
-    if (m_SliceNavigationController)
-    {
-      m_SliceNavigationController->SendSlice();
-    }
+    // This will force refresh of all contours.
+    this->OnSliceChanged();
   }
   catch(const mitk::AccessByItkException& e)
   {
