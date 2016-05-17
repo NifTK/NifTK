@@ -675,8 +675,8 @@ void GeneralSegmentorController::OnFocusChanged()
 
     if (m_SliceNavigationController.IsNotNull())
     {
-      itk::ReceptorMemberCommand<GeneralSegmentorController>::Pointer onSliceChangedCommand =
-        itk::ReceptorMemberCommand<GeneralSegmentorController>::New();
+      itk::SimpleMemberCommand<GeneralSegmentorController>::Pointer onSliceChangedCommand =
+        itk::SimpleMemberCommand<GeneralSegmentorController>::New();
 
       onSliceChangedCommand->SetCallbackFunction(this, &GeneralSegmentorController::OnSliceChanged);
 
@@ -699,9 +699,9 @@ void GeneralSegmentorController::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-void GeneralSegmentorController::OnSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
+void GeneralSegmentorController::OnSliceChanged()
 {
-  MITK_INFO << "GeneralSegmentorController::OnSliceChanged(const itk::EventObject& geometrySliceEvent)";
+  MITK_INFO << "GeneralSegmentorController::OnSliceChanged()";
   if (!m_IsChangingSlice)
   {
     int previousSliceIndex = m_PreviousSliceIndex;
