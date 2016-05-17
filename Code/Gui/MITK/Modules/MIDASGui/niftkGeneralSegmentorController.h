@@ -282,12 +282,8 @@ private:
 
   /// \brief Called from the slice navigation controller to indicate a different slice,
   /// which in MIDAS terms means automatically accepting the currently segmented slice
-  /// and moving to the next one.
+  /// and moving to the next one, see class intro.
   virtual void OnSliceChanged(const itk::EventObject& geometrySliceEvent);
-
-  /// \brief Qt slot called to effect a change of slice, which means accepting
-  /// the current segmentation, and moving to the prior/next slice, see class intro.
-  void OnSliceNumberChanged(int previousSliceNumber, int sliceNumber);
 
   /// \brief This view registers with the mitk::DataStorage and listens for changing
   /// data, so this method is called when any node is changed, but only performs an update,
