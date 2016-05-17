@@ -417,15 +417,11 @@ private:
   unsigned long m_SliceNavigationControllerObserverTag;
 
   /// \brief Keep track of the previous slice number and reset to -1 when the window focus changes.
-  int m_PreviousSliceIndex;
+  int m_SelectedSliceIndex;
 
-  /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
+  /// \brief We track the previous selected position, as it is used in calculations of which slice we are on,
   /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
-  mitk::Point3D m_CurrentSelectedPosition;
-
-  /// \brief We track the current and previous focus point, as it is used in calculations of which slice we are on,
-  /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
-  mitk::Point3D m_PreviousSelectedPosition;
+  mitk::Point3D m_SelectedPosition;
 
   /// \brief This class hooks into the Global Interaction system to respond to Key press events.
   MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;

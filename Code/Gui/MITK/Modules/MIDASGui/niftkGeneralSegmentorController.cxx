@@ -82,7 +82,7 @@ GeneralSegmentorController::GeneralSegmentorController(IBaseView* view)
     m_IsRestarting(false),
     m_SliceNavigationController(nullptr),
     m_SliceNavigationControllerObserverTag(0),
-    m_PreviousSliceIndex(0),
+    m_SelectedSliceIndex(0),
     m_ToolKeyPressStateMachine(nullptr)
 {
   m_Interface = GeneralSegmentorEventInterface::New();
@@ -680,9 +680,8 @@ void GeneralSegmentorController::OnFocusChanged()
 
       onSliceChangedCommand->SetCallbackFunction(this, &GeneralSegmentorController::OnSliceChanged);
 
-      m_PreviousSliceIndex = -1;
-      m_PreviousSelectedPosition.Fill(0);
-      m_CurrentSelectedPosition.Fill(0);
+      m_SelectedSliceIndex = -1;
+      m_SelectedPosition.Fill(0);
 
       m_SliceNavigationControllerObserverTag =
           m_SliceNavigationController->AddObserver(
@@ -704,25 +703,24 @@ void GeneralSegmentorController::OnSliceChanged()
   MITK_INFO << "GeneralSegmentorController::OnSliceChanged()";
   if (!m_IsChangingSlice)
   {
-    int previousSliceIndex = m_PreviousSliceIndex;
+    int previousSliceIndex = m_SelectedSliceIndex;
 
-    int currentSliceIndex = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
+    int selectedSliceIndex = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
     mitk::Point3D selectedPosition = this->GetView()->GetSelectedPosition();
 
     if (previousSliceIndex == -1)
     {
-      previousSliceIndex = currentSliceIndex;
-      m_PreviousSelectedPosition = selectedPosition;
-      m_CurrentSelectedPosition = selectedPosition;
+      previousSliceIndex = selectedSliceIndex;
+      m_SelectedPosition = selectedPosition;
     }
 
     if (  !this->HasInitialisedWorkingData()
         || m_IsUpdating
-        || std::abs(previousSliceIndex - currentSliceIndex) != 1
+        || std::abs(previousSliceIndex - selectedSliceIndex) != 1
         )
     {
-      m_PreviousSliceIndex = currentSliceIndex;
-      m_PreviousSelectedPosition = m_CurrentSelectedPosition;
+      m_SelectedSliceIndex = selectedSliceIndex;
+      m_SelectedPosition = selectedPosition;
     }
     else
     {
@@ -757,7 +755,7 @@ void GeneralSegmentorController::OnSliceChanged()
         AccessFixedDimensionByItk_n(segmentationImage,
             ITKSliceIsEmpty, 3,
             (axisNumber,
-             currentSliceIndex,
+             selectedSliceIndex,
              nextSliceIsEmpty
             )
           );
@@ -795,8 +793,8 @@ void GeneralSegmentorController::OnSliceChanged()
 
           if (returnValue == QMessageBox::Ok || returnValue == QMessageBox::No )
           {
-            m_PreviousSliceIndex = currentSliceIndex;
-            m_PreviousSelectedPosition = m_CurrentSelectedPosition;
+            m_SelectedSliceIndex = selectedSliceIndex;
+            m_SelectedPosition = selectedPosition;
             operationCancelled = true;
           }
           else
@@ -806,7 +804,7 @@ void GeneralSegmentorController::OnSliceChanged()
                 (*seeds,
                  previousSliceIndex,
                  axisNumber,
-                 currentSliceIndex,
+                 selectedSliceIndex,
                  false, // We propagate seeds at current position, so no optimisation
                  nextSliceIsEmpty,
                  *(copyOfCurrentSeeds.GetPointer()),
@@ -817,7 +815,7 @@ void GeneralSegmentorController::OnSliceChanged()
 
             if (m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
             {
-              QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(previousSliceIndex).arg(currentSliceIndex);
+              QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(previousSliceIndex).arg(selectedSliceIndex);
               OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
               OpThresholdApply *doThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
               OpThresholdApply *undoThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
@@ -830,10 +828,10 @@ void GeneralSegmentorController::OnSliceChanged()
             }
 
             // Do retain marks, which copies slice from beforeSliceNumber to afterSliceNumber
-            QString message = tr("Retaining marks in slice %1 and copying to %2").arg(previousSliceIndex).arg(currentSliceIndex);
+            QString message = tr("Retaining marks in slice %1 and copying to %2").arg(previousSliceIndex).arg(selectedSliceIndex);
             OpRetainMarks::ProcessorPointer processor = OpRetainMarks::ProcessorType::New();
-            OpRetainMarks *doOp = new OpRetainMarks(OP_RETAIN_MARKS, true, previousSliceIndex, currentSliceIndex, axisNumber, itkOrientation, outputRegion, processor);
-            OpRetainMarks *undoOp = new OpRetainMarks(OP_RETAIN_MARKS, false, previousSliceIndex, currentSliceIndex, axisNumber, itkOrientation, outputRegion, processor);
+            OpRetainMarks *doOp = new OpRetainMarks(OP_RETAIN_MARKS, true, previousSliceIndex, selectedSliceIndex, axisNumber, itkOrientation, outputRegion, processor);
+            OpRetainMarks *undoOp = new OpRetainMarks(OP_RETAIN_MARKS, false, previousSliceIndex, selectedSliceIndex, axisNumber, itkOrientation, outputRegion, processor);
             mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doOp, undoOp, message.toStdString());
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
             this->ExecuteOperation(doOp);
@@ -846,7 +844,7 @@ void GeneralSegmentorController::OnSliceChanged()
               (*seeds,
                previousSliceIndex,
                axisNumber,
-               currentSliceIndex,
+               selectedSliceIndex,
                true, // optimise seed position on current slice.
                nextSliceIsEmpty,
                *(copyOfCurrentSeeds.GetPointer()),
@@ -907,18 +905,16 @@ void GeneralSegmentorController::OnSliceChanged()
 
         if (!operationCancelled)
         {
-          m_CurrentSelectedPosition = this->GetView()->GetSelectedPosition();
-
-          QString message = tr("Propagate seeds from slice %1 to %2").arg(previousSliceIndex).arg(currentSliceIndex);
-          OpPropagateSeeds *doPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, currentSliceIndex, axisNumber, propagatedSeeds);
+          QString message = tr("Propagate seeds from slice %1 to %2").arg(previousSliceIndex).arg(selectedSliceIndex);
+          OpPropagateSeeds *doPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, selectedSliceIndex, axisNumber, propagatedSeeds);
           OpPropagateSeeds *undoPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, previousSliceIndex, axisNumber, copyOfCurrentSeeds);
           mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(m_Interface, doPropOp, undoPropOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
           this->ExecuteOperation(doPropOp);
 
-          message = tr("Change slice from %1 to %2").arg(previousSliceIndex).arg(currentSliceIndex);
-          OpChangeSliceCommand *doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, previousSliceIndex, currentSliceIndex, m_PreviousSelectedPosition, m_CurrentSelectedPosition);
-          OpChangeSliceCommand *undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, previousSliceIndex, currentSliceIndex, m_PreviousSelectedPosition, m_CurrentSelectedPosition);
+          message = tr("Change slice from %1 to %2").arg(previousSliceIndex).arg(selectedSliceIndex);
+          OpChangeSliceCommand *doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, previousSliceIndex, selectedSliceIndex, m_SelectedPosition, selectedPosition);
+          OpChangeSliceCommand *undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, previousSliceIndex, selectedSliceIndex, m_SelectedPosition, selectedPosition);
           mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doOp, undoOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           this->ExecuteOperation(doOp);
@@ -953,8 +949,8 @@ void GeneralSegmentorController::OnSliceChanged()
     this->UpdateRegionGrowing(false);
     this->RequestRenderWindowUpdate();
 
-    m_PreviousSliceIndex = currentSliceIndex;
-    m_PreviousSelectedPosition = selectedPosition;
+    m_SelectedSliceIndex = selectedSliceIndex;
+    m_SelectedPosition = selectedPosition;
   }
 }
 
