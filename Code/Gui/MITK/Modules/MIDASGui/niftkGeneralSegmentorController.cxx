@@ -911,6 +911,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
         }
         else // changing to any other slice (not the previous or next on the same orientation)
         {
+          this->InitialiseSeedsForWholeVolume();
           this->UpdateCurrentSliceContours(false);
           this->UpdatePriorAndNext(false);
           this->UpdateRegionGrowing(false);
