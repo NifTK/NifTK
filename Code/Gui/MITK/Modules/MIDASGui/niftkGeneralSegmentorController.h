@@ -394,49 +394,6 @@ private:
   /// \brief Clears both images of the working data.
   void ClearWorkingData();
 
-  /// \brief All the GUI controls for the main view part.
-  GeneralSegmentorGUI* m_GeneralSegmentorGUI;
-
-  /// \brief Pointer to interface object, used as callback in Undo/Redo framework
-  GeneralSegmentorEventInterface::Pointer m_Interface;
-
-  /// \brief Flag to stop re-entering code, while updating.
-  bool m_IsUpdating;
-
-  /// \brief Flag to stop re-entering code, while trying to delete/clear the pipeline.
-  bool m_IsDeleting;
-
-  /// \brief Additional flag to stop re-entering code, specifically to block
-  /// slice change commands from the slice navigation controller.
-  bool m_IsChangingSlice;
-
-  bool m_IsRestarting;
-
-  /// \brief Keep track of this to SliceNavigationController register and unregister event listeners.
-  mitk::SliceNavigationController::Pointer m_SliceNavigationController;
-
-  /// \brief Each time the window changes, we register to the current slice navigation controller.
-  unsigned long m_SliceNavigationControllerObserverTag;
-
-  /// \brief Keeps track of the previous slice axis and reset to -1 when the window focus changes.
-  /// The slice axis is in terms of the reference image coordinates (voxel space), not the orientation
-  /// of the renderer (world space).
-  int m_SliceAxis;
-
-  /// \brief Keeps track of the previous slice index and reset to -1 when the window focus changes.
-  /// The slice index is in terms of the reference image coordinates (voxel space), not the coordinates
-  /// of the renderer (world space).
-  int m_SliceIndex;
-
-  /// \brief We track the previous selected position, as it is used in calculations of which slice we are on,
-  /// as under certain conditions, you can't just take the slice index from the slice navigation controller.
-  mitk::Point3D m_SelectedPosition;
-
-  /// \brief This class hooks into the Global Interaction system to respond to Key press events.
-  MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
-
-private:
-
   QScopedPointer<GeneralSegmentorControllerPrivate> d_ptr;
 
   Q_DECLARE_PRIVATE(GeneralSegmentorController);

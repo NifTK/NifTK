@@ -50,17 +50,74 @@ public:
   GeneralSegmentorControllerPrivate(GeneralSegmentorController* q);
   ~GeneralSegmentorControllerPrivate();
 
-  mitk::Point3D m_SelectedPosition;
-  int m_Orientation;
+  /// \brief All the GUI controls for the main view part.
+  GeneralSegmentorGUI* m_GUI;
+
+  /// \brief Pointer to interface object, used as callback in Undo/Redo framework
+  GeneralSegmentorEventInterface::Pointer m_Interface;
+
+  /// \brief This class hooks into the Global Interaction system to respond to Key press events.
+  MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
+
+  /// \brief Selected orientation in the viewer.
+  ImageOrientation m_Orientation;
+
+  /// \brief Index of the selected slice in world space.
   int m_SelectedSliceIndex;
+
+  /// \brief Keeps track of the previous slice index and reset to -1 when the window focus changes.
+  /// The slice index is in terms of the reference image coordinates (voxel space), not the coordinates
+  /// of the renderer (world space).
+  int m_SliceIndex;
+
+  /// \brief We track the previous selected position, as it is used in calculations of which slice we are on,
+  /// as under certain conditions, you can't just take the slice index from the slice navigation controller.
+  mitk::Point3D m_SelectedPosition;
+
+  /// \brief Flag to stop re-entering code, while updating.
+  bool m_IsUpdating;
+
+  /// \brief Flag to stop re-entering code, while trying to delete/clear the pipeline.
+  bool m_IsDeleting;
+
+  /// \brief Additional flag to stop re-entering code, specifically to block
+  /// slice change commands from the slice navigation controller.
+  bool m_IsChangingSlice;
+
+  bool m_IsRestarting;
 };
 
 //-----------------------------------------------------------------------------
 GeneralSegmentorControllerPrivate::GeneralSegmentorControllerPrivate(GeneralSegmentorController* generalSegmentorController)
   : q_ptr(generalSegmentorController),
+    m_ToolKeyPressStateMachine(nullptr),
     m_Orientation(IMAGE_ORIENTATION_UNKNOWN),
-    m_SelectedSliceIndex(-1)
+    m_SelectedSliceIndex(-1),
+    m_SliceIndex(-1),
+    m_IsUpdating(false),
+    m_IsDeleting(false),
+    m_IsChangingSlice(false),
+    m_IsRestarting(false)
 {
+  Q_Q(GeneralSegmentorController);
+
+  m_Interface = GeneralSegmentorEventInterface::New();
+  m_Interface->SetGeneralSegmentorController(q);
+
+  mitk::ToolManager* toolManager = q->GetToolManager();
+  toolManager->RegisterTool("MIDASDrawTool");
+  toolManager->RegisterTool("MIDASSeedTool");
+  toolManager->RegisterTool("MIDASPolyTool");
+  toolManager->RegisterTool("MIDASPosnTool");
+
+  q->GetToolByType<MIDASDrawTool>()->InstallEventFilter(q);
+  q->GetToolByType<MIDASSeedTool>()->InstallEventFilter(q);
+  q->GetToolByType<MIDASPolyTool>()->InstallEventFilter(q);
+  q->GetToolByType<MIDASPosnTool>()->InstallEventFilter(q);
+
+//  m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", q);
+  m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New(q);
+
   m_SelectedPosition.Fill(0);
 }
 
@@ -68,37 +125,14 @@ GeneralSegmentorControllerPrivate::GeneralSegmentorControllerPrivate(GeneralSegm
 //-----------------------------------------------------------------------------
 GeneralSegmentorControllerPrivate::~GeneralSegmentorControllerPrivate()
 {
-  Q_Q(GeneralSegmentorController);
 }
 
 
 //-----------------------------------------------------------------------------
 GeneralSegmentorController::GeneralSegmentorController(IBaseView* view)
   : BaseSegmentorController(view),
-    d_ptr(new GeneralSegmentorControllerPrivate(this)),
-    m_IsUpdating(false),
-    m_IsDeleting(false),
-    m_IsChangingSlice(false),
-    m_IsRestarting(false),
-    m_SliceIndex(0),
-    m_ToolKeyPressStateMachine(nullptr)
+    d_ptr(new GeneralSegmentorControllerPrivate(this))
 {
-  m_Interface = GeneralSegmentorEventInterface::New();
-  m_Interface->SetGeneralSegmentorController(this);
-
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  toolManager->RegisterTool("MIDASDrawTool");
-  toolManager->RegisterTool("MIDASSeedTool");
-  toolManager->RegisterTool("MIDASPolyTool");
-  toolManager->RegisterTool("MIDASPosnTool");
-
-  this->GetToolByType<MIDASDrawTool>()->InstallEventFilter(this);
-  this->GetToolByType<MIDASSeedTool>()->InstallEventFilter(this);
-  this->GetToolByType<MIDASPolyTool>()->InstallEventFilter(this);
-  this->GetToolByType<MIDASPosnTool>()->InstallEventFilter(this);
-
-//  m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
-  m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New(this);
 }
 
 
@@ -122,45 +156,47 @@ BaseGUI* GeneralSegmentorController::CreateGUI(QWidget* parent)
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::SetupGUI(QWidget* parent)
 {
+  Q_D(GeneralSegmentorController);
+
   BaseSegmentorController::SetupGUI(parent);
 
-  m_GeneralSegmentorGUI = dynamic_cast<GeneralSegmentorGUI*>(this->GetSegmentorGUI());
+  d->m_GUI = dynamic_cast<GeneralSegmentorGUI*>(this->GetSegmentorGUI());
 
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(CleanButtonClicked()), SLOT(OnCleanButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeButtonClicked()), SLOT(OnWipeButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipePlusButtonClicked()), SLOT(OnWipePlusButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeMinusButtonClicked()), SLOT(OnWipeMinusButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnPropagateUpButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnPropagateDownButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnPropagate3DButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ResetButtonClicked()), SLOT(OnResetButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnThresholdApplyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdValueChanged()), SLOT(OnThresholdValueChanged()));
+  this->connect(d->m_GUI, SIGNAL(CleanButtonClicked()), SLOT(OnCleanButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(WipeButtonClicked()), SLOT(OnWipeButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(WipePlusButtonClicked()), SLOT(OnWipePlusButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(WipeMinusButtonClicked()), SLOT(OnWipeMinusButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnPropagateUpButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnPropagateDownButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnPropagate3DButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(ResetButtonClicked()), SLOT(OnResetButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnThresholdApplyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
+  this->connect(d->m_GUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
+  this->connect(d->m_GUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
+  this->connect(d->m_GUI, SIGNAL(ThresholdValueChanged()), SLOT(OnThresholdValueChanged()));
 
   /// Transfer the focus back to the main window if any button is pressed.
   /// This is needed so that the key interactions (like 'a'/'z' for changing slice) keep working.
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(CleanButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipePlusButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeMinusButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(CancelButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ResetButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(CleanButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(WipeButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(WipePlusButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(WipeMinusButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(OKButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(CancelButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(RestartButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(ResetButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
 }
 
 
@@ -274,6 +310,8 @@ bool GeneralSegmentorController::CanStartSegmentationForBinaryNode(const mitk::D
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 {
+  Q_D(GeneralSegmentorController);
+
   BaseSegmentorController::OnNewSegmentationButtonClicked();
 
   // Create the new segmentation, either using a previously selected one, or create a new volume.
@@ -433,20 +471,20 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
     this->StoreInitialSegmentation();
 
     // Setup GUI.
-    m_GeneralSegmentorGUI->SetAllWidgetsEnabled(true);
-    m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(false);
-    m_GeneralSegmentorGUI->SetThresholdingCheckBoxEnabled(true);
-    m_GeneralSegmentorGUI->SetThresholdingCheckBoxChecked(false);
+    d->m_GUI->SetAllWidgetsEnabled(true);
+    d->m_GUI->SetThresholdingWidgetsEnabled(false);
+    d->m_GUI->SetThresholdingCheckBoxEnabled(true);
+    d->m_GUI->SetThresholdingCheckBoxChecked(false);
 
     this->GetView()->FocusOnCurrentWindow();
-    this->OnSelectedSliceChanged(this->GetOrientation(), this->GetSliceIndex());
+    this->OnSliceChanged();
     this->RequestRenderWindowUpdate();
 
     this->WaitCursorOff();
 
   } // end if we have a reference image
 
-  m_IsRestarting = isRestarting;
+  d->m_IsRestarting = isRestarting;
 
   // Finally, select the new segmentation node.
   this->GetView()->SetCurrentSelection(newSegmentation);
@@ -537,6 +575,8 @@ void GeneralSegmentorController::StoreInitialSegmentation()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* /*renderer*/)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
@@ -551,15 +591,15 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
       workingData[MIDASTool::SEEDS]->SetVisibility(true);
       workingData[MIDASTool::CONTOURS]->SetVisibility(true);
       workingData[MIDASTool::DRAW_CONTOURS]->SetVisibility(true);
-      if (m_GeneralSegmentorGUI->IsSeePriorCheckBoxChecked())
+      if (d->m_GUI->IsSeePriorCheckBoxChecked())
       {
         workingData[MIDASTool::PRIOR_CONTOURS]->SetVisibility(true);
       }
-      if (m_GeneralSegmentorGUI->IsSeeNextCheckBoxChecked())
+      if (d->m_GUI->IsSeeNextCheckBoxChecked())
       {
         workingData[MIDASTool::NEXT_CONTOURS]->SetVisibility(true);
       }
-      if (m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
+      if (d->m_GUI->IsThresholdingCheckBoxChecked())
       {
         workingData[MIDASTool::REGION_GROWING]->SetVisibility(true);
       }
@@ -591,7 +631,7 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
 void GeneralSegmentorController::OnViewGetsVisible()
 {
   /// TODO
-//  mitk::GlobalInteraction::GetInstance()->AddListener( m_ToolKeyPressStateMachine );
+//  mitk::GlobalInteraction::GetInstance()->AddListener(d->m_ToolKeyPressStateMachine);
 
   // Connect registered tools back to here, so we can do seed processing logic here.
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
@@ -611,7 +651,7 @@ void GeneralSegmentorController::OnViewGetsHidden()
   BaseSegmentorController::OnViewGetsHidden();
 
   /// TODO
-//  mitk::GlobalInteraction::GetInstance()->RemoveListener(m_ToolKeyPressStateMachine);
+//  mitk::GlobalInteraction::GetInstance()->RemoveListener(d->m_ToolKeyPressStateMachine);
 
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
@@ -627,63 +667,64 @@ void GeneralSegmentorController::OnViewGetsHidden()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orientation, int selectedSliceIndex)
 {
-  MITK_INFO << "GeneralSegmentorController::OnSelectedSliceChanged():"
-               "    orientation: " << orientation <<
-               "    slice index: " << selectedSliceIndex <<
-               "    m_SliceAxis: " << m_SliceAxis <<
-               "    m_SliceIndex: " << m_SliceIndex;
+//  MITK_INFO << "GeneralSegmentorController::OnSelectedSliceChanged():"
+//               "    orientation: " << orientation <<
+//               "    viewer slice index: " << selectedSliceIndex <<
+//               "    reference image slice index: " << d->m_SliceIndex;
   Q_D(GeneralSegmentorController);
 
-  if (orientation != IMAGE_ORIENTATION_UNKNOWN)
+  if (orientation != d->m_Orientation || selectedSliceIndex != d->m_SelectedSliceIndex)
   {
-    if (orientation != d->m_Orientation)
+    if (orientation != IMAGE_ORIENTATION_UNKNOWN)
     {
-      m_SliceIndex = -1;
-      m_SelectedPosition.Fill(0);
+      if (orientation != d->m_Orientation)
+      {
+        d->m_SliceIndex = -1;
+        d->m_SelectedPosition.Fill(0);
+      }
+
+      this->OnSliceChanged();
+
+      if (orientation != d->m_Orientation)
+      {
+        this->UpdatePriorAndNext();
+        this->OnThresholdingCheckBoxToggled(d->m_GUI->IsThresholdingCheckBoxChecked());
+        this->RequestRenderWindowUpdate();
+      }
     }
 
-    this->OnSliceChanged();
-
-    if (orientation != d->m_Orientation)
-    {
-      this->UpdatePriorAndNext();
-      this->OnThresholdingCheckBoxToggled(m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
-      this->RequestRenderWindowUpdate();
-    }
+    d->m_Orientation = orientation;
+    d->m_SelectedSliceIndex = selectedSliceIndex;
   }
-
-  d->m_Orientation = orientation;
-  d->m_SelectedSliceIndex = selectedSliceIndex;
 }
 
 
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnSliceChanged()
 {
-  MITK_INFO << "GeneralSegmentorController::OnSliceChanged()" <<
-               "    m_SliceAxis: " << m_SliceAxis <<
-               "    m_SliceIndex: " << m_SliceIndex;
-  if (!m_IsChangingSlice)
+  Q_D(GeneralSegmentorController);
+
+//  MITK_INFO << "GeneralSegmentorController::OnSliceChanged()" <<
+//               "    slice index: " << d->m_SliceIndex;
+  if (!d->m_IsChangingSlice)
   {
     int sliceIndex = this->GetReferenceImageSliceIndex();
-    mitk::Point3D selectedPosition = this->GetView()->GetSelectedPosition();
+    mitk::Point3D selectedPosition = this->GetSelectedPosition();
 
-    if (m_SliceIndex == -1)
+    if (d->m_SliceIndex == -1)
     {
-      m_SliceIndex = sliceIndex;
-      m_SelectedPosition = selectedPosition;
+      d->m_SliceIndex = sliceIndex;
+      d->m_SelectedPosition = selectedPosition;
     }
 
-    MITK_INFO << "GeneralSegmentorController::OnSliceChanged()" <<
-                 "    m_SliceAxis: " << m_SliceAxis <<
-                 "    m_SliceIndex: " << m_SliceIndex <<
-                 "    sliceIndex: " << sliceIndex;
+//    MITK_INFO << "GeneralSegmentorController::OnSliceChanged()" <<
+//                 "    last slice index: " << d->m_SliceIndex <<
+//                 "    current slice index: " << sliceIndex;
 
     if (this->HasInitialisedWorkingData()
-        && !m_IsUpdating
-        && std::abs(m_SliceIndex - sliceIndex) == 1)
+        && !d->m_IsUpdating
+        && std::abs(d->m_SliceIndex - sliceIndex) == 1)
     {
-      MITK_INFO << "GeneralSegmentorController::OnSliceChanged() doing something";
       mitk::Image* referenceImage = this->GetReferenceImage();
       mitk::Image* segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
       assert(referenceImage && segmentationImage);
@@ -703,7 +744,7 @@ void GeneralSegmentorController::OnSliceChanged()
       bool thisSliceIsEmpty(false);
       bool operationCancelled = false;
 
-      m_IsUpdating = true;
+      d->m_IsUpdating = true;
 
       try
       {
@@ -720,16 +761,16 @@ void GeneralSegmentorController::OnSliceChanged()
             )
           );
 
-        if (m_GeneralSegmentorGUI->IsRetainMarksCheckBoxChecked())
+        if (d->m_GUI->IsRetainMarksCheckBoxChecked())
         {
           int returnValue(QMessageBox::NoButton);
 
-          if (!m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
+          if (!d->m_GUI->IsThresholdingCheckBoxChecked())
           {
             AccessFixedDimensionByItk_n(segmentationImage,
                 ITKSliceIsEmpty, 3,
                 (sliceAxis,
-                 m_SliceIndex,
+                 d->m_SliceIndex,
                  thisSliceIsEmpty
                 )
               );
@@ -737,7 +778,7 @@ void GeneralSegmentorController::OnSliceChanged()
 
           if (thisSliceIsEmpty)
           {
-            returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+            returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
                                                     tr("The current slice is empty - retain marks cannot be performed.\n"
                                                        "Use the 'wipe' functionality to erase slices instead"),
                                                     QMessageBox::Ok
@@ -745,7 +786,7 @@ void GeneralSegmentorController::OnSliceChanged()
           }
           else if (!nextSliceIsEmpty)
           {
-            returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+            returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
                                                     tr("The new slice is not empty - retain marks will overwrite the slice.\n"
                                                        "Are you sure?"),
                                                     QMessageBox::Yes | QMessageBox::No);
@@ -753,8 +794,6 @@ void GeneralSegmentorController::OnSliceChanged()
 
           if (returnValue == QMessageBox::Ok || returnValue == QMessageBox::No )
           {
-            m_SliceIndex = sliceIndex;
-            m_SelectedPosition = selectedPosition;
             operationCancelled = true;
           }
           else
@@ -762,7 +801,7 @@ void GeneralSegmentorController::OnSliceChanged()
             AccessFixedDimensionByItk_n(segmentationImage,
                 ITKPreProcessingOfSeedsForChangingSlice, 3,
                 (*seeds,
-                 m_SliceIndex,
+                 d->m_SliceIndex,
                  sliceAxis,
                  sliceIndex,
                  false, // We propagate seeds at current position, so no optimisation
@@ -773,13 +812,13 @@ void GeneralSegmentorController::OnSliceChanged()
                 )
               );
 
-            if (m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
+            if (d->m_GUI->IsThresholdingCheckBoxChecked())
             {
-              QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(m_SliceIndex).arg(sliceIndex);
+              QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(d->m_SliceIndex).arg(sliceIndex);
               OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
               OpThresholdApply *doThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
               OpThresholdApply *undoThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
-              mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doThresholdOp, undoThresholdOp, message.toStdString());
+              mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doThresholdOp, undoThresholdOp, message.toStdString());
               mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
               this->ExecuteOperation(doThresholdOp);
 
@@ -788,11 +827,11 @@ void GeneralSegmentorController::OnSliceChanged()
             }
 
             // Do retain marks, which copies slice from beforeSliceIndex to afterSliceIndex
-            QString message = tr("Retaining marks in slice %1 and copying to %2").arg(m_SliceIndex).arg(sliceIndex);
+            QString message = tr("Retaining marks in slice %1 and copying to %2").arg(d->m_SliceIndex).arg(sliceIndex);
             OpRetainMarks::ProcessorPointer processor = OpRetainMarks::ProcessorType::New();
-            OpRetainMarks *doOp = new OpRetainMarks(OP_RETAIN_MARKS, true, m_SliceIndex, sliceIndex, sliceAxis, itkOrientation, outputRegion, processor);
-            OpRetainMarks *undoOp = new OpRetainMarks(OP_RETAIN_MARKS, false, m_SliceIndex, sliceIndex, sliceAxis, itkOrientation, outputRegion, processor);
-            mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doOp, undoOp, message.toStdString());
+            OpRetainMarks *doOp = new OpRetainMarks(OP_RETAIN_MARKS, true, d->m_SliceIndex, sliceIndex, sliceAxis, itkOrientation, outputRegion, processor);
+            OpRetainMarks *undoOp = new OpRetainMarks(OP_RETAIN_MARKS, false, d->m_SliceIndex, sliceIndex, sliceAxis, itkOrientation, outputRegion, processor);
+            mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
             this->ExecuteOperation(doOp);
           }
@@ -802,7 +841,7 @@ void GeneralSegmentorController::OnSliceChanged()
           AccessFixedDimensionByItk_n(segmentationImage,
               ITKPreProcessingOfSeedsForChangingSlice, 3,
               (*seeds,
-               m_SliceIndex,
+               d->m_SliceIndex,
                sliceAxis,
                sliceIndex,
                true, // optimise seed position on current slice.
@@ -813,12 +852,12 @@ void GeneralSegmentorController::OnSliceChanged()
               )
             );
 
-          if (m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
+          if (d->m_GUI->IsThresholdingCheckBoxChecked())
           {
             OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
-            OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
-            OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
-            mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
+            OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, d->m_GUI->IsThresholdingCheckBoxChecked());
+            OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, d->m_GUI->IsThresholdingCheckBoxChecked());
+            mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(d->m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
             this->ExecuteOperation(doApplyOp);
 
@@ -827,14 +866,14 @@ void GeneralSegmentorController::OnSliceChanged()
           }
           else // threshold box not checked
           {
-            bool thisSliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(false, m_SliceIndex);
+            bool thisSliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(false, d->m_SliceIndex);
 
             if (thisSliceHasUnenclosedSeeds)
             {
               OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
-              OpWipe *doWipeOp = new OpWipe(OP_WIPE, true, m_SliceIndex, sliceAxis, outputRegion, propagatedSeeds, processor);
-              OpWipe *undoWipeOp = new OpWipe(OP_WIPE, false, m_SliceIndex, sliceAxis, outputRegion, copyOfCurrentSeeds, processor);
-              mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doWipeOp, undoWipeOp, "Wipe command");
+              OpWipe *doWipeOp = new OpWipe(OP_WIPE, true, d->m_SliceIndex, sliceAxis, outputRegion, propagatedSeeds, processor);
+              OpWipe *undoWipeOp = new OpWipe(OP_WIPE, false, d->m_SliceIndex, sliceAxis, outputRegion, copyOfCurrentSeeds, processor);
+              mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doWipeOp, undoWipeOp, "Wipe command");
               mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
               this->ExecuteOperation(doWipeOp);
             }
@@ -844,7 +883,7 @@ void GeneralSegmentorController::OnSliceChanged()
               // So, we do a region growing, without intensity limits. (we already know there are no unenclosed seeds).
 
               this->UpdateRegionGrowing(false,
-                                        m_SliceIndex,
+                                        d->m_SliceIndex,
                                         referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
                                         referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
                                         false);
@@ -853,7 +892,7 @@ void GeneralSegmentorController::OnSliceChanged()
               OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
               OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
               OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
-              mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
+              mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(d->m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
               mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
               this->ExecuteOperation(doApplyOp);
 
@@ -865,17 +904,17 @@ void GeneralSegmentorController::OnSliceChanged()
 
         if (!operationCancelled)
         {
-          QString message = tr("Propagate seeds from slice %1 to %2").arg(m_SliceIndex).arg(sliceIndex);
+          QString message = tr("Propagate seeds from slice %1 to %2").arg(d->m_SliceIndex).arg(sliceIndex);
           OpPropagateSeeds *doPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceIndex, sliceAxis, propagatedSeeds);
-          OpPropagateSeeds *undoPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, m_SliceIndex, sliceAxis, copyOfCurrentSeeds);
-          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(m_Interface, doPropOp, undoPropOp, message.toStdString());
+          OpPropagateSeeds *undoPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, d->m_SliceIndex, sliceAxis, copyOfCurrentSeeds);
+          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(d->m_Interface, doPropOp, undoPropOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
           this->ExecuteOperation(doPropOp);
 
-          message = tr("Change slice from %1 to %2").arg(m_SliceIndex).arg(sliceIndex);
-          OpChangeSliceCommand *doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, m_SliceIndex, sliceIndex, m_SelectedPosition, selectedPosition);
-          OpChangeSliceCommand *undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, m_SliceIndex, sliceIndex, m_SelectedPosition, selectedPosition);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doOp, undoOp, message.toStdString());
+          message = tr("Change slice from %1 to %2").arg(d->m_SliceIndex).arg(sliceIndex);
+          OpChangeSliceCommand *doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, d->m_SliceIndex, sliceIndex, d->m_SelectedPosition, selectedPosition);
+          OpChangeSliceCommand *undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, d->m_SliceIndex, sliceIndex, d->m_SelectedPosition, selectedPosition);
+          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           this->ExecuteOperation(doOp);
         }
@@ -900,7 +939,7 @@ void GeneralSegmentorController::OnSliceChanged()
         }
       }
 
-      m_IsUpdating = false;
+      d->m_IsUpdating = false;
 
       this->UpdatePriorAndNext(false);
     }
@@ -909,8 +948,8 @@ void GeneralSegmentorController::OnSliceChanged()
     this->UpdateRegionGrowing(false);
     this->RequestRenderWindowUpdate();
 
-    m_SliceIndex = sliceIndex;
-    m_SelectedPosition = selectedPosition;
+    d->m_SliceIndex = sliceIndex;
+    d->m_SelectedPosition = selectedPosition;
   }
 }
 
@@ -918,8 +957,10 @@ void GeneralSegmentorController::OnSliceChanged()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
 {
-  if (m_IsDeleting
-      || m_IsUpdating
+  Q_D(GeneralSegmentorController);
+
+  if (d->m_IsDeleting
+      || d->m_IsUpdating
       || !this->HasInitialisedWorkingData()
       )
   {
@@ -1064,12 +1105,14 @@ void GeneralSegmentorController::InitialiseSeedsForWholeVolume()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::RecalculateMinAndMaxOfImage()
 {
+  Q_D(GeneralSegmentorController);
+
   mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
     double min = referenceImage->GetStatistics()->GetScalarValueMinNoRecompute();
     double max = referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute();
-    m_GeneralSegmentorGUI->SetLowerAndUpperIntensityRanges(min, max);
+    d->m_GUI->SetLowerAndUpperIntensityRanges(min, max);
   }
 }
 
@@ -1077,6 +1120,8 @@ void GeneralSegmentorController::RecalculateMinAndMaxOfImage()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::RecalculateMinAndMaxOfSeedValues()
 {
+  Q_D(GeneralSegmentorController);
+
   mitk::Image* referenceImage = this->GetReferenceImage();
   mitk::PointSet* seeds = this->GetSeeds();
 
@@ -1093,7 +1138,7 @@ void GeneralSegmentorController::RecalculateMinAndMaxOfSeedValues()
       try
       {
         AccessFixedDimensionByItk_n(referenceImage, ITKRecalculateMinAndMaxOfSeedValues, 3, (*seeds, sliceAxis, sliceIndex, min, max));
-        m_GeneralSegmentorGUI->SetSeedMinAndMaxValues(min, max);
+        d->m_GUI->SetSeedMinAndMaxValues(min, max);
       }
       catch(const mitk::AccessByItkException& e)
       {
@@ -1190,17 +1235,19 @@ void GeneralSegmentorController::OnSeeNextCheckBoxToggled(bool checked)
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     // So, if there is NO working data, we leave the widgets disabled regardless.
-    m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(false);
+    d->m_GUI->SetThresholdingWidgetsEnabled(false);
     return;
   }
 
   this->RecalculateMinAndMaxOfImage();
   this->RecalculateMinAndMaxOfSeedValues();
 
-  m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(checked);
+  d->m_GUI->SetThresholdingWidgetsEnabled(checked);
 
   if (checked)
   {
@@ -1224,13 +1271,15 @@ void GeneralSegmentorController::OnThresholdValueChanged()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::UpdateRegionGrowing(bool updateRendering)
 {
-  bool isThresholdingOn = m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked();
+  Q_D(GeneralSegmentorController);
+
+  bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
 
   if (isThresholdingOn)
   {
     int sliceIndex = this->GetReferenceImageSliceIndex();
-    double lowerThreshold = m_GeneralSegmentorGUI->GetLowerThreshold();
-    double upperThreshold = m_GeneralSegmentorGUI->GetUpperThreshold();
+    double lowerThreshold = d->m_GUI->GetLowerThreshold();
+    double upperThreshold = d->m_GUI->GetUpperThreshold();
     bool skipUpdate = !isThresholdingOn;
 
     this->UpdateRegionGrowing(isThresholdingOn, sliceIndex, lowerThreshold, upperThreshold, skipUpdate);
@@ -1252,6 +1301,8 @@ void GeneralSegmentorController::UpdateRegionGrowing(
     bool skipUpdate
     )
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
@@ -1269,7 +1320,7 @@ void GeneralSegmentorController::UpdateRegionGrowing(
       mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
       workingData[MIDASTool::REGION_GROWING]->SetVisibility(isVisible);
 
-      m_IsUpdating = true;
+      d->m_IsUpdating = true;
 
       mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(MIDASTool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
       assert(regionGrowingNode);
@@ -1333,7 +1384,7 @@ void GeneralSegmentorController::UpdateRegionGrowing(
         MITK_ERROR << "Could not do region growing: Error sliceAxis=" << sliceAxis << ", sliceIndex=" << sliceIndex << std::endl;
       }
 
-      m_IsUpdating = false;
+      d->m_IsUpdating = false;
     }
   }
 }
@@ -1342,6 +1393,8 @@ void GeneralSegmentorController::UpdateRegionGrowing(
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
@@ -1353,7 +1406,7 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
   mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
   mitk::Image::Pointer segmentationImage = this->GetWorkingImage(0);
 
-  if (m_GeneralSegmentorGUI->IsSeePriorCheckBoxChecked())
+  if (d->m_GUI->IsSeePriorCheckBoxChecked())
   {
     mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[MIDASTool::PRIOR_CONTOURS]->GetData());
     GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex-1, sliceIndex, contourSet);
@@ -1369,7 +1422,7 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
     }
   }
 
-  if (m_GeneralSegmentorGUI->IsSeeNextCheckBoxChecked())
+  if (d->m_GUI->IsSeeNextCheckBoxChecked())
   {
     mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[MIDASTool::NEXT_CONTOURS]->GetData());
     GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex+1, sliceIndex, contourSet);
@@ -1400,6 +1453,8 @@ bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, 
 //-----------------------------------------------------------------------------
 bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceIndex, mitk::PointSet& seeds)
 {
+  Q_D(GeneralSegmentorController);
+
   bool sliceDoesHaveUnenclosedSeeds = false;
 
   if (!this->HasInitialisedWorkingData())
@@ -1426,8 +1481,8 @@ bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, 
   mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[MIDASTool::CONTOURS]->GetData());
   mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[MIDASTool::DRAW_CONTOURS]->GetData());
 
-  double lowerThreshold = m_GeneralSegmentorGUI->GetLowerThreshold();
-  double upperThreshold = m_GeneralSegmentorGUI->GetUpperThreshold();
+  double lowerThreshold = d->m_GUI->GetLowerThreshold();
+  double upperThreshold = d->m_GUI->GetUpperThreshold();
 
   int sliceAxis = this->GetReferenceImageSliceAxis();
 
@@ -1548,10 +1603,12 @@ void GeneralSegmentorController::OnAnyButtonClicked()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::DestroyPipeline()
 {
+  Q_D(GeneralSegmentorController);
+
   mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
-    m_IsDeleting = true;
+    d->m_IsDeleting = true;
     try
     {
       AccessFixedDimensionByItk(referenceImage, ITKDestroyPipeline, 3);
@@ -1560,7 +1617,7 @@ void GeneralSegmentorController::DestroyPipeline()
     {
       MITK_ERROR << "Caught exception, so abandoning destroying the ITK pipeline, caused by:" << e.what();
     }
-    m_IsDeleting = false;
+    d->m_IsDeleting = false;
   }
 }
 
@@ -1568,12 +1625,14 @@ void GeneralSegmentorController::DestroyPipeline()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::RemoveWorkingData()
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  m_IsDeleting = true;
+  d->m_IsDeleting = true;
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
@@ -1588,7 +1647,7 @@ void GeneralSegmentorController::RemoveWorkingData()
   toolManager->SetWorkingData(emptyWorkingDataArray);
   toolManager->ActivateTool(-1);
 
-  m_IsDeleting = false;
+  d->m_IsDeleting = false;
 }
 
 
@@ -1640,6 +1699,8 @@ void GeneralSegmentorController::RestoreInitialSegmentation()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnOKButtonClicked()
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
@@ -1656,7 +1717,7 @@ void GeneralSegmentorController::OnOKButtonClicked()
 
   this->DestroyPipeline();
   this->RemoveWorkingData();
-  m_GeneralSegmentorGUI->EnableSegmentationWidgets(false);
+  d->m_GUI->EnableSegmentationWidgets(false);
   this->GetView()->SetCurrentSelection(workingData);
 
   this->RequestRenderWindowUpdate();
@@ -1667,12 +1728,14 @@ void GeneralSegmentorController::OnOKButtonClicked()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnResetButtonClicked()
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
                                                             tr("Clear all slices ? \n This is not Undo-able! \n Are you sure?"),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -1709,6 +1772,8 @@ void GeneralSegmentorController::OnViewGetsClosed()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::DiscardSegmentation()
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
@@ -1718,7 +1783,7 @@ void GeneralSegmentorController::DiscardSegmentation()
   assert(segmentationNode);
 
   this->DestroyPipeline();
-  if (m_IsRestarting)
+  if (d->m_IsRestarting)
   {
     this->RestoreInitialSegmentation();
     this->RemoveWorkingData();
@@ -1728,7 +1793,7 @@ void GeneralSegmentorController::DiscardSegmentation()
     this->RemoveWorkingData();
     this->GetDataStorage()->Remove(segmentationNode);
   }
-  m_GeneralSegmentorGUI->EnableSegmentationWidgets(false);
+  d->m_GUI->EnableSegmentationWidgets(false);
   this->SetReferenceImageSelected();
   this->RequestRenderWindowUpdate();
   mitk::UndoController::GetCurrentUndoModel()->Clear();
@@ -1738,12 +1803,14 @@ void GeneralSegmentorController::DiscardSegmentation()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnRestartButtonClicked()
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
                                                             tr("Discard all changes?\nThis is not Undo-able!\nAre you sure?"),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -1820,6 +1887,8 @@ void GeneralSegmentorController::ToggleTool(int toolId)
 //-----------------------------------------------------------------------------
 bool GeneralSegmentorController::SelectSeedTool()
 {
+  Q_D(GeneralSegmentorController);
+
   /// Note:
   /// If the tool selection box is disabled then the tools are not registered to
   /// the tool manager ( RegisterClient() ). Then if you activate a tool and another
@@ -1831,7 +1900,7 @@ bool GeneralSegmentorController::SelectSeedTool()
   /// We should not do anything with the tools until they are registered to the
   /// tool manager.
 
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
+  if (d->m_GUI->IsToolSelectorEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1852,8 +1921,10 @@ bool GeneralSegmentorController::SelectSeedTool()
 //-----------------------------------------------------------------------------
 bool GeneralSegmentorController::SelectDrawTool()
 {
+  Q_D(GeneralSegmentorController);
+
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
+  if (d->m_GUI->IsToolSelectorEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1874,8 +1945,10 @@ bool GeneralSegmentorController::SelectDrawTool()
 //-----------------------------------------------------------------------------
 bool GeneralSegmentorController::SelectPolyTool()
 {
+  Q_D(GeneralSegmentorController);
+
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
+  if (d->m_GUI->IsToolSelectorEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1896,7 +1969,9 @@ bool GeneralSegmentorController::SelectPolyTool()
 //-----------------------------------------------------------------------------
 bool GeneralSegmentorController::UnselectTools()
 {
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
+  Q_D(GeneralSegmentorController);
+
+  if (d->m_GUI->IsToolSelectorEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
 
@@ -1915,8 +1990,10 @@ bool GeneralSegmentorController::UnselectTools()
 //-----------------------------------------------------------------------------
 bool GeneralSegmentorController::SelectViewMode()
 {
+  Q_D(GeneralSegmentorController);
+
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
+  if (d->m_GUI->IsToolSelectorEnabled())
   {
     if (!this->HasInitialisedWorkingData())
     {
@@ -1949,8 +2026,10 @@ bool GeneralSegmentorController::SelectViewMode()
 //-----------------------------------------------------------------------------
 bool GeneralSegmentorController::CleanSlice()
 {
+  Q_D(GeneralSegmentorController);
+
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
+  if (d->m_GUI->IsToolSelectorEnabled())
   {
     this->OnCleanButtonClicked();
     return true;
@@ -1984,6 +2063,8 @@ void GeneralSegmentorController::OnPropagateDownButtonClicked()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
@@ -2045,7 +2126,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     message = tr(messageWithOrientation.toStdString().c_str()).arg(orientationText);
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
                                                    tr("%1.\n"
                                                       "Are you sure?").arg(message),
                                                    QMessageBox::Yes | QMessageBox::No);
@@ -2079,8 +2160,8 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
       MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
       assert(drawTool);
 
-      double lowerThreshold = m_GeneralSegmentorGUI->GetLowerThreshold();
-      double upperThreshold = m_GeneralSegmentorGUI->GetUpperThreshold();
+      double lowerThreshold = d->m_GUI->GetLowerThreshold();
+      double upperThreshold = d->m_GUI->GetUpperThreshold();
       int sliceAxis = this->GetReferenceImageSliceAxis();
       int sliceIndex = this->GetReferenceImageSliceIndex();
       int sliceUpDirection = this->GetReferenceImageSliceUpDirection();
@@ -2100,7 +2181,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
       if (sliceAxis != -1 && sliceIndex != -1 && orientation != itk::ORIENTATION_UNKNOWN)
       {
 
-        m_IsUpdating = true;
+        d->m_IsUpdating = true;
 
         try
         {
@@ -2133,14 +2214,14 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
           OpPropagate::ProcessorPointer processor = OpPropagate::ProcessorType::New();
           OpPropagate *doPropOp = new OpPropagate(OP_PROPAGATE, true, outputRegion, processor);
           OpPropagate *undoPropOp = new OpPropagate(OP_PROPAGATE, false, outputRegion, processor);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doPropOp, undoPropOp, message.toStdString());
+          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doPropOp, undoPropOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           this->ExecuteOperation(doPropOp);
 
           message = tr("Propagate: copy seeds");
           OpPropagateSeeds *doPropSeedsOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceIndex, sliceAxis, outputSeeds);
           OpPropagateSeeds *undoPropSeedsOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceIndex, sliceAxis, copyOfInputSeeds);
-          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(m_Interface, doPropSeedsOp, undoPropSeedsOp, message.toStdString());
+          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(d->m_Interface, doPropSeedsOp, undoPropSeedsOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
           this->ExecuteOperation(doPropOp);
 
@@ -2157,7 +2238,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
           MITK_ERROR << "Could not propagate: Caught itk::ExceptionObject:" << err.what() << std::endl;
         }
 
-        m_IsUpdating = false;
+        d->m_IsUpdating = false;
       }
       else
       {
@@ -2180,6 +2261,8 @@ void GeneralSegmentorController::OnWipeButtonClicked()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnWipePlusButtonClicked()
 {
+  Q_D(GeneralSegmentorController);
+
   ImageOrientation imageOrientation = this->GetOrientation();
 
   QString orientationText;
@@ -2202,7 +2285,7 @@ void GeneralSegmentorController::OnWipePlusButtonClicked()
     orientationText = "up from";
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
                                                             tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -2217,6 +2300,8 @@ void GeneralSegmentorController::OnWipePlusButtonClicked()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnWipeMinusButtonClicked()
 {
+  Q_D(GeneralSegmentorController);
+
   ImageOrientation imageOrientation = this->GetOrientation();
 
   QString orientationText;
@@ -2239,7 +2324,7 @@ void GeneralSegmentorController::OnWipeMinusButtonClicked()
     orientationText = "down from";
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
                                                             tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -2254,6 +2339,8 @@ void GeneralSegmentorController::OnWipeMinusButtonClicked()
 //-----------------------------------------------------------------------------
 bool GeneralSegmentorController::DoWipe(int direction)
 {
+  Q_D(GeneralSegmentorController);
+
   bool wipeWasPerformed = false;
 
   if (!this->HasInitialisedWorkingData())
@@ -2289,7 +2376,7 @@ bool GeneralSegmentorController::DoWipe(int direction)
       if (sliceAxis != -1 && sliceIndex != -1)
       {
 
-        m_IsUpdating = true;
+        d->m_IsUpdating = true;
 
         try
         {
@@ -2342,7 +2429,7 @@ bool GeneralSegmentorController::DoWipe(int direction)
           OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
           OpWipe *doOp = new OpWipe(OP_WIPE, true, sliceIndex, sliceAxis, outputRegion, outputSeeds, processor);
           OpWipe *undoOp = new OpWipe(OP_WIPE, false, sliceIndex, sliceAxis, outputRegion, copyOfInputSeeds, processor);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doOp, undoOp, "Wipe command");
+          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           this->ExecuteOperation(doOp);
 
@@ -2361,7 +2448,7 @@ bool GeneralSegmentorController::DoWipe(int direction)
           MITK_ERROR << "Could not do wipe command: Caught itk::ExceptionObject:" << err.what() << std::endl;
         }
 
-        m_IsUpdating = false;
+        d->m_IsUpdating = false;
       }
       else
       {
@@ -2395,6 +2482,8 @@ bool GeneralSegmentorController::DoThresholdApply(
     bool newSliceEmpty,
     bool newCheckboxStatus)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return false;
@@ -2433,7 +2522,7 @@ bool GeneralSegmentorController::DoThresholdApply(
 
       if (sliceAxis != -1 && oldSliceIndex != -1)
       {
-        m_IsUpdating = true;
+        d->m_IsUpdating = true;
 
         try
         {
@@ -2451,7 +2540,7 @@ bool GeneralSegmentorController::DoThresholdApply(
               )
             );
 
-          bool currentCheckboxStatus = m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked();
+          bool currentCheckboxStatus = d->m_GUI->IsThresholdingCheckBoxChecked();
 
           if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<MIDASPolyTool>())
           {
@@ -2466,14 +2555,14 @@ bool GeneralSegmentorController::DoThresholdApply(
           OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
           OpThresholdApply *doThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, newCheckboxStatus);
           OpThresholdApply *undoThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, currentCheckboxStatus);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doThresholdOp, undoThresholdOp, message.toStdString());
+          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doThresholdOp, undoThresholdOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           this->ExecuteOperation(doThresholdOp);
 
           message = tr("Propagate seeds on slice %1").arg(oldSliceIndex);
           OpPropagateSeeds *doPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, newSliceIndex, sliceAxis, outputSeeds);
           OpPropagateSeeds *undoPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, oldSliceIndex, sliceAxis, copyOfInputSeeds);
-          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(m_Interface, doPropOp, undoPropOp, message.toStdString());
+          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(d->m_Interface, doPropOp, undoPropOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
           this->ExecuteOperation(doPropOp);
 
@@ -2495,7 +2584,7 @@ bool GeneralSegmentorController::DoThresholdApply(
           MITK_ERROR << "Could not do threshold apply command: Caught itk::ExceptionObject:" << err.what() << std::endl;
         }
 
-        m_IsUpdating = false;
+        d->m_IsUpdating = false;
 
       } // end if we have valid axis / slice
     } // end if we have working data
@@ -2512,12 +2601,14 @@ bool GeneralSegmentorController::DoThresholdApply(
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnCleanButtonClicked()
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  bool thresholdCheckBox = m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked();
+  bool thresholdCheckBox = d->m_GUI->IsThresholdingCheckBoxChecked();
   int sliceIndex = this->GetReferenceImageSliceIndex();
 
   if (!thresholdCheckBox)
@@ -2525,7 +2616,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
     bool hasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(thresholdCheckBox, sliceIndex);
     if (hasUnenclosedSeeds)
     {
-      int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+      int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
                                                        tr("There are unenclosed seeds - slice will be wiped\n"
                                                           "Are you sure?"),
                                                        QMessageBox::Yes | QMessageBox::No);
@@ -2579,8 +2670,8 @@ void GeneralSegmentorController::OnCleanButtonClicked()
       mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
       assert(regionGrowingImage);
 
-      double lowerThreshold = m_GeneralSegmentorGUI->GetLowerThreshold();
-      double upperThreshold = m_GeneralSegmentorGUI->GetUpperThreshold();
+      double lowerThreshold = d->m_GUI->GetLowerThreshold();
+      double upperThreshold = d->m_GUI->GetUpperThreshold();
       int sliceAxis = this->GetReferenceImageSliceAxis();
 
       mitk::ContourModelSet::Pointer copyOfInputContourSet = mitk::ContourModelSet::New();
@@ -2588,7 +2679,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
 
       if (sliceAxis != -1 && sliceIndex != -1)
       {
-        m_IsUpdating = true;
+        d->m_IsUpdating = true;
 
         try
         {
@@ -2713,7 +2804,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
                sliceIndex,
                lowerThreshold,
                upperThreshold,
-               m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked(),
+               d->m_GUI->IsThresholdingCheckBoxChecked(),
                *(copyOfInputContourSet.GetPointer()),
                *(outputContourSet.GetPointer())
               )
@@ -2725,20 +2816,20 @@ void GeneralSegmentorController::OnCleanButtonClicked()
 
           OpClean *doOp = new OpClean(OP_CLEAN, true, outputContourSet);
           OpClean *undoOp = new OpClean(OP_CLEAN, false, copyOfInputContourSet);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doOp, undoOp, "Clean: Filtering contours");
+          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Clean: Filtering contours");
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           this->ExecuteOperation(doOp);
 
           // Then we update the region growing to get up-to-date contours.
           this->UpdateRegionGrowing();
 
-          if (!m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
+          if (!d->m_GUI->IsThresholdingCheckBoxChecked())
           {
             // Then we "apply" this region growing.
             OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
-            OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
-            OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
-            mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(m_Interface, doApplyOp, undoApplyOp, "Clean: Calculate new image");
+            OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, d->m_GUI->IsThresholdingCheckBoxChecked());
+            OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, d->m_GUI->IsThresholdingCheckBoxChecked());
+            mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(d->m_Interface, doApplyOp, undoApplyOp, "Clean: Calculate new image");
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
             this->ExecuteOperation(doApplyOp);
 
@@ -2764,7 +2855,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
           MITK_ERROR << "Could not do clean command: Caught itk::ExceptionObject:" << err.what() << std::endl;
         }
 
-        m_IsUpdating = false;
+        d->m_IsUpdating = false;
 
       }
       else
@@ -2802,6 +2893,8 @@ void GeneralSegmentorController::OnCleanButtonClicked()
 
 void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
@@ -2855,9 +2948,9 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
       // Better to compare integers than floating point numbers.
       if (beforeSlice != afterSlice)
       {
-        m_IsChangingSlice = true;
+        d->m_IsChangingSlice = true;
         this->GetView()->SetSelectedPosition(selectedPoint);
-        m_IsChangingSlice = false;
+        d->m_IsChangingSlice = false;
       }
 
       break;
@@ -2942,8 +3035,8 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
               )
             );
 
-        m_GeneralSegmentorGUI->SetThresholdingCheckBoxChecked(op->GetThresholdFlag());
-        m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(op->GetThresholdFlag());
+        d->m_GUI->SetThresholdingCheckBoxChecked(op->GetThresholdFlag());
+        d->m_GUI->SetThresholdingWidgetsEnabled(op->GetThresholdFlag());
 
         segmentationImage->Modified();
         segmentationNode->Modified();
