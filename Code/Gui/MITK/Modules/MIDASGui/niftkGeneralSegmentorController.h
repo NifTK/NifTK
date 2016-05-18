@@ -184,6 +184,13 @@ protected:
 
   virtual void OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
+  /// \brief Called when the different slice gets selected in the viewer.
+  /// This happens when a different renderer is selected or when the selected slice
+  /// changes in the focused renderer either by interaction (e.g. scrolling by
+  /// mouse wheel) or by API call.
+  /// This function makes sure ITK pipelines know we have changed orientation.
+  /// Note that the slice index is in termes of the renderer (world space), not the
+  /// reference image (voxel space).
   virtual void OnSelectedSliceChanged(ImageOrientation orientation, int sliceIndex) override;
 
 protected slots:
@@ -245,11 +252,6 @@ protected slots:
   ///
   /// It transfers the focus back to the main window so that the key interactions keep working.
   void OnAnyButtonClicked();
-
-  /// \brief Callback for when the window focus changes, where we update this view
-  /// to be listening to the right window, and make sure ITK pipelines know we have
-  /// changed orientation.
-  virtual void OnFocusChanged() override;
 
   /// \brief Qt slot called when the OK button is pressed and accepts the current
   /// segmentation, destroying the working data (seeds, contours, region growing image),

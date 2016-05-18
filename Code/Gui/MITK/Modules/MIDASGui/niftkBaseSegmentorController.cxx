@@ -279,13 +279,13 @@ int BaseSegmentorController::GetReferenceImageSliceAxis()
 //-----------------------------------------------------------------------------
 int BaseSegmentorController::GetReferenceImageSliceAxis(ImageOrientation orientation)
 {
-  int axis = -1;
+  int referenceImageSliceAxis = -1;
   mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
-    axis = GetThroughPlaneAxis(referenceImage, orientation);
+    referenceImageSliceAxis = GetThroughPlaneAxis(referenceImage, orientation);
   }
-  return axis;
+  return referenceImageSliceAxis;
 }
 
 

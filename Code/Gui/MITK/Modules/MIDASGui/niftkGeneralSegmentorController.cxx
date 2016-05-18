@@ -80,8 +80,6 @@ GeneralSegmentorController::GeneralSegmentorController(IBaseView* view)
     m_IsDeleting(false),
     m_IsChangingSlice(false),
     m_IsRestarting(false),
-    m_SliceNavigationController(nullptr),
-    m_SliceNavigationControllerObserverTag(0),
     m_SliceIndex(0),
     m_ToolKeyPressStateMachine(nullptr)
 {
@@ -441,7 +439,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
     m_GeneralSegmentorGUI->SetThresholdingCheckBoxChecked(false);
 
     this->GetView()->FocusOnCurrentWindow();
-    this->OnFocusChanged();
+    this->OnSelectedSliceChanged(this->GetOrientation(), this->GetSliceIndex());
     this->RequestRenderWindowUpdate();
 
     this->WaitCursorOff();
@@ -612,11 +610,6 @@ void GeneralSegmentorController::OnViewGetsHidden()
 {
   BaseSegmentorController::OnViewGetsHidden();
 
-  if (m_SliceNavigationController.IsNotNull())
-  {
-    m_SliceNavigationController->RemoveObserver(m_SliceNavigationControllerObserverTag);
-  }
-
   /// TODO
 //  mitk::GlobalInteraction::GetInstance()->RemoveListener(m_ToolKeyPressStateMachine);
 
@@ -632,75 +625,44 @@ void GeneralSegmentorController::OnViewGetsHidden()
 
 
 //-----------------------------------------------------------------------------
-void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orientation, int sliceIndex)
+void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orientation, int selectedSliceIndex)
 {
+  MITK_INFO << "GeneralSegmentorController::OnSelectedSliceChanged():"
+               "    orientation: " << orientation <<
+               "    slice index: " << selectedSliceIndex <<
+               "    m_SliceAxis: " << m_SliceAxis <<
+               "    m_SliceIndex: " << m_SliceIndex;
   Q_D(GeneralSegmentorController);
 
-  if (orientation != d->m_Orientation || sliceIndex != d->m_SelectedSliceIndex)
+  if (orientation != IMAGE_ORIENTATION_UNKNOWN)
   {
-    MITK_INFO << "GeneralSegmentorController::OnSelectedSliceChanged() orientation: " << orientation << " ; slice index: " << sliceIndex;
-
-    mitk::Point3D selectedPosition = this->GetSelectedPosition();
-
-    if (!m_IsChangingSlice)
+    if (orientation != d->m_Orientation)
     {
-      // ...
-    }
-
-    this->UpdatePriorAndNext();
-    this->OnThresholdingCheckBoxToggled(m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
-    this->RequestRenderWindowUpdate();
-
-    d->m_SelectedPosition = selectedPosition;
-    d->m_Orientation = orientation;
-    d->m_SelectedSliceIndex = sliceIndex;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void GeneralSegmentorController::OnFocusChanged()
-{
-  MITK_INFO << "GeneralSegmentorController::OnFocusChanged()";
-  mitk::BaseRenderer* focusedRenderer = this->GetFocused2DRenderer();
-
-  if (focusedRenderer)
-  {
-    if (m_SliceNavigationController.IsNotNull())
-    {
-      m_SliceNavigationController->RemoveObserver(m_SliceNavigationControllerObserverTag);
-    }
-
-    m_SliceNavigationController = this->GetSliceNavigationController();
-
-    if (m_SliceNavigationController.IsNotNull())
-    {
-      itk::SimpleMemberCommand<GeneralSegmentorController>::Pointer onSliceChangedCommand =
-        itk::SimpleMemberCommand<GeneralSegmentorController>::New();
-
-      onSliceChangedCommand->SetCallbackFunction(this, &GeneralSegmentorController::OnSliceChanged);
-
       m_SliceIndex = -1;
       m_SelectedPosition.Fill(0);
-
-      m_SliceNavigationControllerObserverTag =
-          m_SliceNavigationController->AddObserver(
-              mitk::SliceNavigationController::GeometrySliceEvent(nullptr, 0), onSliceChangedCommand);
-
-      this->OnSliceChanged();
     }
 
-    this->UpdatePriorAndNext();
-    this->OnThresholdingCheckBoxToggled(m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
-    this->RequestRenderWindowUpdate();
+    this->OnSliceChanged();
+
+    if (orientation != d->m_Orientation)
+    {
+      this->UpdatePriorAndNext();
+      this->OnThresholdingCheckBoxToggled(m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
+      this->RequestRenderWindowUpdate();
+    }
   }
+
+  d->m_Orientation = orientation;
+  d->m_SelectedSliceIndex = selectedSliceIndex;
 }
 
 
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnSliceChanged()
 {
-  MITK_INFO << "GeneralSegmentorController::OnSliceChanged()";
+  MITK_INFO << "GeneralSegmentorController::OnSliceChanged()" <<
+               "    m_SliceAxis: " << m_SliceAxis <<
+               "    m_SliceIndex: " << m_SliceIndex;
   if (!m_IsChangingSlice)
   {
     int sliceIndex = this->GetReferenceImageSliceIndex();
@@ -712,10 +674,16 @@ void GeneralSegmentorController::OnSliceChanged()
       m_SelectedPosition = selectedPosition;
     }
 
+    MITK_INFO << "GeneralSegmentorController::OnSliceChanged()" <<
+                 "    m_SliceAxis: " << m_SliceAxis <<
+                 "    m_SliceIndex: " << m_SliceIndex <<
+                 "    sliceIndex: " << sliceIndex;
+
     if (this->HasInitialisedWorkingData()
         && !m_IsUpdating
         && std::abs(m_SliceIndex - sliceIndex) == 1)
     {
+      MITK_INFO << "GeneralSegmentorController::OnSliceChanged() doing something";
       mitk::Image* referenceImage = this->GetReferenceImage();
       mitk::Image* segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
       assert(referenceImage && segmentationImage);
