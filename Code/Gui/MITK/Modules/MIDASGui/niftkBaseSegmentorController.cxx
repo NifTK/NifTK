@@ -263,36 +263,25 @@ void BaseSegmentorController::ApplyDisplayOptions(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-int BaseSegmentorController::GetSliceNumberFromSliceNavigationControllerAndReferenceImage()
+int BaseSegmentorController::GetReferenceImageSliceAxis()
 {
-  int sliceNumber = -1;
-
-  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController();
+  int referenceImageAxis = -1;
   mitk::Image::Pointer referenceImage = this->GetReferenceImage();
-
-  if (referenceImage.IsNotNull() && snc.IsNotNull())
+  ImageOrientation orientation = this->GetOrientation();
+  if (referenceImage.IsNotNull() && orientation != IMAGE_ORIENTATION_UNKNOWN)
   {
-    mitk::PlaneGeometry::ConstPointer pg = snc->GetCurrentPlaneGeometry();
-    if (pg.IsNotNull())
-    {
-      mitk::Point3D originInMillimetres = pg->GetOrigin();
-      mitk::Point3D originInVoxelCoordinates;
-      referenceImage->GetGeometry()->WorldToIndex(originInMillimetres, originInVoxelCoordinates);
-
-      int viewAxis = this->GetViewAxis();
-      sliceNumber = (int)(originInVoxelCoordinates[viewAxis] + 0.5);
-    }
+    referenceImageAxis = GetThroughPlaneAxis(referenceImage, orientation);
   }
-  return sliceNumber;
+  return referenceImageAxis;
 }
 
 
 //-----------------------------------------------------------------------------
-int BaseSegmentorController::GetAxisFromReferenceImage(ImageOrientation orientation)
+int BaseSegmentorController::GetReferenceImageSliceAxis(ImageOrientation orientation)
 {
   int axis = -1;
-  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
-  if (referenceImage.IsNotNull())
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
   {
     axis = GetThroughPlaneAxis(referenceImage, orientation);
   }
@@ -301,42 +290,32 @@ int BaseSegmentorController::GetAxisFromReferenceImage(ImageOrientation orientat
 
 
 //-----------------------------------------------------------------------------
-int BaseSegmentorController::GetReferenceImageAxialAxis()
+int BaseSegmentorController::GetReferenceImageSliceIndex()
 {
-  return this->GetAxisFromReferenceImage(IMAGE_ORIENTATION_AXIAL);
-}
+  int referenceImageSliceIndex = -1;
 
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::SliceNavigationController* snc = this->GetSliceNavigationController();
 
-//-----------------------------------------------------------------------------
-int BaseSegmentorController::GetReferenceImageCoronalAxis()
-{
-  return this->GetAxisFromReferenceImage(IMAGE_ORIENTATION_CORONAL);
-}
-
-
-//-----------------------------------------------------------------------------
-int BaseSegmentorController::GetReferenceImageSagittalAxis()
-{
-  return this->GetAxisFromReferenceImage(IMAGE_ORIENTATION_SAGITTAL);
-}
-
-
-//-----------------------------------------------------------------------------
-int BaseSegmentorController::GetViewAxis()
-{
-  int axisNumber = -1;
-  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
-  ImageOrientation orientation = this->GetOrientation();
-  if (referenceImage.IsNotNull() && orientation != IMAGE_ORIENTATION_UNKNOWN)
+  if (referenceImage && snc)
   {
-    axisNumber = GetThroughPlaneAxis(referenceImage, orientation);
+    const mitk::PlaneGeometry* planeGeometry = snc->GetCurrentPlaneGeometry();
+    if (planeGeometry)
+    {
+      mitk::Point3D originInMm = planeGeometry->GetOrigin();
+      mitk::Point3D originInVx;
+      referenceImage->GetGeometry()->WorldToIndex(originInMm, originInVx);
+
+      int viewAxis = this->GetReferenceImageSliceAxis();
+      referenceImageSliceIndex = (int)(originInVx[viewAxis] + 0.5);
+    }
   }
-  return axisNumber;
+  return referenceImageSliceIndex;
 }
 
 
 //-----------------------------------------------------------------------------
-int BaseSegmentorController::GetUpDirection()
+int BaseSegmentorController::GetReferenceImageSliceUpDirection()
 {
   int upDirection = 0;
   mitk::Image::Pointer referenceImage = this->GetReferenceImage();

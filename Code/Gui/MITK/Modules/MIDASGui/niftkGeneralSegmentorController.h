@@ -73,7 +73,7 @@ class GeneralSegmentorGUI;
 /// In other words, for an image containing a single region:
 /// <pre>
 /// Find the first voxel in the image, best voxel location = current voxel location,
-/// and best distance = maximum number of voxels along an image axis.
+/// and best distance = maximum number of voxels along an image slice axis.
 /// For each voxel
 ///   Scan +x, -x, +y, -y and measure the minimum distance to the boundary
 ///   If minimum distance > best distance
@@ -327,16 +327,16 @@ private:
   void RecalculateMinAndMaxOfSeedValues();
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber);
+  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceIndex);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber, mitk::PointSet& seeds);
+  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceIndex, mitk::PointSet& seeds);
 
   /// \brief Filters seeds to current slice
   void FilterSeedsToCurrentSlice(
       mitk::PointSet& inputPoints,
-      int& axis,
-      int& sliceNumber,
+      int& sliceAxis,
+      int& sliceIndex,
       mitk::PointSet& outputPoints
       );
 
@@ -344,7 +344,7 @@ private:
   void FilterSeedsToEnclosedSeedsOnCurrentSlice(
       mitk::PointSet& inputPoints,
       bool& thresholdOn,
-      int& sliceNumber,
+      int& sliceIndex,
       mitk::PointSet& outputPoints
       );
 
@@ -353,7 +353,7 @@ private:
 
   /// \brief Given the two thresholds, and all seeds and contours, will recalculate the thresholded region in the current slice.
   /// \param isVisible whether the region growing volume should be visible.
-  void UpdateRegionGrowing(bool isVisible, int sliceNumber, double lowerThreshold, double upperThreshold, bool skipUpdate);
+  void UpdateRegionGrowing(bool isVisible, int sliceIndex, double lowerThreshold, double upperThreshold, bool skipUpdate);
 
   /// \brief Takes the current slice, and refreshes the current slice contour set (WorkingData[2]).
   void UpdateCurrentSliceContours(bool updateRendering = true);
@@ -370,7 +370,7 @@ private:
 
   /// \brief Method that actually does the threshold apply, so we can call it from the
   /// threshold apply button and not change slice, or when we change slice.
-  bool DoThresholdApply(int oldSliceNumber, int newSliceNumber, bool optimiseSeeds, bool newSliceEmpty, bool newCheckboxStatus);
+  bool DoThresholdApply(int oldSliceIndex, int newSliceIndex, bool optimiseSeeds, bool newSliceEmpty, bool newCheckboxStatus);
 
   /// \brief Used to toggle tools on/off.
   void ToggleTool(int toolId);
@@ -416,11 +416,18 @@ private:
   /// \brief Each time the window changes, we register to the current slice navigation controller.
   unsigned long m_SliceNavigationControllerObserverTag;
 
-  /// \brief Keep track of the previous slice number and reset to -1 when the window focus changes.
-  int m_SelectedSliceIndex;
+  /// \brief Keeps track of the previous slice axis and reset to -1 when the window focus changes.
+  /// The slice axis is in terms of the reference image coordinates (voxel space), not the orientation
+  /// of the renderer (world space).
+  int m_SliceAxis;
+
+  /// \brief Keeps track of the previous slice index and reset to -1 when the window focus changes.
+  /// The slice index is in terms of the reference image coordinates (voxel space), not the coordinates
+  /// of the renderer (world space).
+  int m_SliceIndex;
 
   /// \brief We track the previous selected position, as it is used in calculations of which slice we are on,
-  /// as under certain conditions, you can't just take the slice number from the slice navigation controller.
+  /// as under certain conditions, you can't just take the slice index from the slice navigation controller.
   mitk::Point3D m_SelectedPosition;
 
   /// \brief This class hooks into the Global Interaction system to respond to Key press events.

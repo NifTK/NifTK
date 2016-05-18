@@ -680,7 +680,7 @@ void MorphologicalSegmentorController::SetControlsFromReferenceImage()
   mitk::Image::ConstPointer referenceImage = m_PipelineManager->GetReferenceImage();
   if (referenceImage.IsNotNull())
   {
-    int axialAxis = this->GetReferenceImageAxialAxis();
+    int axialAxis = this->GetReferenceImageSliceAxis(IMAGE_ORIENTATION_AXIAL);
     int numberOfAxialSlices = referenceImage->GetDimension(axialAxis);
     int upDirection = niftk::GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
 

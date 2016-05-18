@@ -26,8 +26,8 @@ template<typename TPixel, unsigned int VImageDimension>
 GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::GeneralSegmentorPipeline()
 {
-  m_SliceNumber = -1;
-  m_AxisNumber = -1;
+  m_SliceIndex = -1;
+  m_SliceAxis = -1;
   m_LowerThreshold = 0;
   m_UpperThreshold = 0;
   m_AllSeeds = itk::PointSet<float, 3>::New();
@@ -63,8 +63,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_ExtractBinaryRegionOfInterestFilter->SetInput(segmentationImage);
   m_ExtractBinaryRegionOfInterestFilter->SetDirectionCollapseToIdentity();
 
-  m_SliceNumber = p.m_SliceNumber;
-  m_AxisNumber = p.m_AxisNumber;
+  m_SliceIndex = p.m_SliceIndex;
+  m_SliceAxis = p.m_SliceAxis;
   m_LowerThreshold = static_cast<int>(p.m_LowerThreshold);
   m_UpperThreshold = static_cast<int>(p.m_UpperThreshold);
   m_EraseFullSlice = p.m_EraseFullSlice;
@@ -84,8 +84,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     SizeType sliceSize3D = region3D.GetSize();
     IndexType sliceIndex3D = region3D.GetIndex();
 
-    sliceSize3D[m_AxisNumber] = 1;
-    sliceIndex3D[m_AxisNumber] = m_SliceNumber;
+    sliceSize3D[m_SliceAxis] = 1;
+    sliceIndex3D[m_SliceAxis] = m_SliceIndex;
 
     region3D.SetSize(sliceSize3D);
     region3D.SetIndex(sliceIndex3D);
@@ -122,8 +122,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
     // 5. Declare some variables.
     RegionType paintingRegion;
-    paintingRegion.SetIndex(m_AxisNumber, m_SliceNumber);
-    paintingRegion.SetSize(m_AxisNumber, 1);
+    paintingRegion.SetIndex(m_SliceAxis, m_SliceIndex);
+    paintingRegion.SetSize(m_SliceAxis, 1);
 
     unsigned char segImageInside = 0;
     unsigned char segImageBorder = 1;
@@ -468,7 +468,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 #endif
   for (int axis = 0; axis < 3; ++axis)
   {
-    if (axis != m_AxisNumber)
+    if (axis != m_SliceAxis)
     {
       double roundedIndex = std::floor(pointInVx[axis] + 0.5);
       if (std::abs(pointInVx[axis] - roundedIndex) < 0.1)

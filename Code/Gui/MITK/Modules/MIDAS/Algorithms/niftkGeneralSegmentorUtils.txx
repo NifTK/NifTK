@@ -422,8 +422,8 @@ void ITKUpdateRegionGrowing(
       pipelineCache->GetPipeline<TPixel, VImageDimension>();
 
   GeneralSegmentorPipelineParams params;
-  params.m_SliceNumber = sliceNumber;
-  params.m_AxisNumber = axisNumber;
+  params.m_SliceIndex = sliceNumber;
+  params.m_SliceAxis = axisNumber;
   params.m_LowerThreshold = lowerThreshold;
   params.m_UpperThreshold = upperThreshold;
   params.m_Seeds = &seeds;
@@ -1321,8 +1321,8 @@ void ITKSliceDoesHaveUnEnclosedSeeds(
   ITKFilterSeedsToCurrentSlice(itkImage, seeds, axis, slice, *(seedsForThisSlice.GetPointer()));
 
   GeneralSegmentorPipelineParams params;
-  params.m_SliceNumber = slice;
-  params.m_AxisNumber = axis;
+  params.m_SliceIndex = slice;
+  params.m_SliceAxis = axis;
   params.m_Seeds = seedsForThisSlice;
   params.m_SegmentationContours = &segmentationContours;
   params.m_PolyContours = &polyToolContours;
@@ -1399,8 +1399,8 @@ void ITKFilterContours(
   MIDASContourTool::CopyContourSet(segmentationContours, outputCopyOfInputContours, true);
 
   GeneralSegmentorPipelineParams params;
-  params.m_SliceNumber = slice;
-  params.m_AxisNumber = axis;
+  params.m_SliceIndex = slice;
+  params.m_SliceAxis = axis;
   params.m_Seeds = &seeds;
   params.m_SegmentationContours = &segmentationContours;
   params.m_DrawContours = &drawToolContours;
