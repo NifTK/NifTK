@@ -14,6 +14,7 @@
 
 set(H_FILES
   Algorithms/niftkGeneralSegmentorCommands.h
+  Algorithms/niftkGeneralSegmentorPipeline.txx
   Algorithms/niftkGeneralSegmentorUtils.h
   Algorithms/niftkGeneralSegmentorUtils.txx
   Algorithms/niftkMorphologicalSegmentorPipelineManager.h
