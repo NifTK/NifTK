@@ -477,8 +477,12 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
     d->m_GUI->SetThresholdingCheckBoxChecked(false);
 
     this->GetView()->FocusOnCurrentWindow();
-    this->OnSliceChanged();
+
+    this->UpdateCurrentSliceContours(false);
+    this->UpdateRegionGrowing(false);
     this->RequestRenderWindowUpdate();
+    d->m_SliceIndex = this->GetReferenceImageSliceIndex();
+    d->m_SelectedPosition = this->GetSelectedPosition();
 
     this->WaitCursorOff();
 
@@ -680,7 +684,6 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
       if (orientation != d->m_Orientation)
       {
         d->m_SliceIndex = -1;
-        d->m_SelectedPosition.Fill(0);
       }
 
       this->OnSliceChanged();
@@ -740,10 +743,11 @@ void GeneralSegmentorController::OnSliceChanged()
       mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
       mitk::PointSet::Pointer propagatedSeeds = mitk::PointSet::New();
       mitk::PointSet* seeds = this->GetSeeds();
-      bool nextSliceIsEmpty(true);
-      bool thisSliceIsEmpty(false);
+      bool nextSliceIsEmpty = true;
+      bool thisSliceIsEmpty = false;
       bool operationCancelled = false;
 
+      bool wasUpdating = d->m_IsUpdating;
       d->m_IsUpdating = true;
 
       try
@@ -939,7 +943,7 @@ void GeneralSegmentorController::OnSliceChanged()
         }
       }
 
-      d->m_IsUpdating = false;
+      d->m_IsUpdating = wasUpdating;
 
       this->UpdatePriorAndNext(false);
     }
@@ -1320,6 +1324,7 @@ void GeneralSegmentorController::UpdateRegionGrowing(
       mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
       workingData[MIDASTool::REGION_GROWING]->SetVisibility(isVisible);
 
+      bool wasUpdating = d->m_IsUpdating;
       d->m_IsUpdating = true;
 
       mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(MIDASTool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
@@ -1384,7 +1389,7 @@ void GeneralSegmentorController::UpdateRegionGrowing(
         MITK_ERROR << "Could not do region growing: Error sliceAxis=" << sliceAxis << ", sliceIndex=" << sliceIndex << std::endl;
       }
 
-      d->m_IsUpdating = false;
+      d->m_IsUpdating = wasUpdating;
     }
   }
 }
@@ -1608,6 +1613,7 @@ void GeneralSegmentorController::DestroyPipeline()
   mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
+    bool wasDeleting = d->m_IsDeleting;
     d->m_IsDeleting = true;
     try
     {
@@ -1617,7 +1623,7 @@ void GeneralSegmentorController::DestroyPipeline()
     {
       MITK_ERROR << "Caught exception, so abandoning destroying the ITK pipeline, caused by:" << e.what();
     }
-    d->m_IsDeleting = false;
+    d->m_IsDeleting = wasDeleting;
   }
 }
 
@@ -1632,6 +1638,7 @@ void GeneralSegmentorController::RemoveWorkingData()
     return;
   }
 
+  bool wasDeleting = d->m_IsDeleting;
   d->m_IsDeleting = true;
 
   mitk::ToolManager* toolManager = this->GetToolManager();
@@ -1647,7 +1654,7 @@ void GeneralSegmentorController::RemoveWorkingData()
   toolManager->SetWorkingData(emptyWorkingDataArray);
   toolManager->ActivateTool(-1);
 
-  d->m_IsDeleting = false;
+  d->m_IsDeleting = wasDeleting;
 }
 
 
@@ -1686,8 +1693,8 @@ void GeneralSegmentorController::RestoreInitialSegmentation()
     segmentationNode->SetData(dynamic_cast<mitk::Image*>(initialSegmentationNode->GetData())->Clone());
     seedsNode->SetData(dynamic_cast<mitk::PointSet*>(initialSeedsNode->GetData())->Clone());
 
-    // This will force refresh of all contours.
-    this->OnSliceChanged();
+    this->UpdateCurrentSliceContours(false);
+    this->UpdateRegionGrowing(false);
   }
   catch(const mitk::AccessByItkException& e)
   {
@@ -1849,8 +1856,8 @@ void GeneralSegmentorController::ClearWorkingData()
     mitk::PointSet::Pointer seeds = this->GetSeeds();
     seeds->Clear();
 
-    // This will force refresh of all contours.
-    this->OnSliceChanged();
+    this->UpdateCurrentSliceContours(false);
+    this->UpdateRegionGrowing(false);
   }
   catch(const mitk::AccessByItkException& e)
   {
@@ -2180,7 +2187,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
 
       if (sliceAxis != -1 && sliceIndex != -1 && orientation != itk::ORIENTATION_UNKNOWN)
       {
-
+        bool wasUpdating = d->m_IsUpdating;
         d->m_IsUpdating = true;
 
         try
@@ -2238,7 +2245,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
           MITK_ERROR << "Could not propagate: Caught itk::ExceptionObject:" << err.what() << std::endl;
         }
 
-        d->m_IsUpdating = false;
+        d->m_IsUpdating = wasUpdating;
       }
       else
       {
@@ -2375,7 +2382,7 @@ bool GeneralSegmentorController::DoWipe(int direction)
 
       if (sliceAxis != -1 && sliceIndex != -1)
       {
-
+        bool wasUpdating = d->m_IsUpdating;
         d->m_IsUpdating = true;
 
         try
@@ -2448,7 +2455,7 @@ bool GeneralSegmentorController::DoWipe(int direction)
           MITK_ERROR << "Could not do wipe command: Caught itk::ExceptionObject:" << err.what() << std::endl;
         }
 
-        d->m_IsUpdating = false;
+        d->m_IsUpdating = wasUpdating;
       }
       else
       {
@@ -2522,6 +2529,7 @@ bool GeneralSegmentorController::DoThresholdApply(
 
       if (sliceAxis != -1 && oldSliceIndex != -1)
       {
+        bool wasUpdating = d->m_IsUpdating;
         d->m_IsUpdating = true;
 
         try
@@ -2584,7 +2592,7 @@ bool GeneralSegmentorController::DoThresholdApply(
           MITK_ERROR << "Could not do threshold apply command: Caught itk::ExceptionObject:" << err.what() << std::endl;
         }
 
-        d->m_IsUpdating = false;
+        d->m_IsUpdating = wasUpdating;
 
       } // end if we have valid axis / slice
     } // end if we have working data
@@ -2679,6 +2687,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
 
       if (sliceAxis != -1 && sliceIndex != -1)
       {
+        bool wasUpdating = d->m_IsUpdating;
         d->m_IsUpdating = true;
 
         try
@@ -2855,7 +2864,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
           MITK_ERROR << "Could not do clean command: Caught itk::ExceptionObject:" << err.what() << std::endl;
         }
 
-        d->m_IsUpdating = false;
+        d->m_IsUpdating = wasUpdating;
 
       }
       else
@@ -2948,9 +2957,10 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
       // Better to compare integers than floating point numbers.
       if (beforeSlice != afterSlice)
       {
+        bool wasChangingSlice = d->m_IsChangingSlice;
         d->m_IsChangingSlice = true;
         this->GetView()->SetSelectedPosition(selectedPoint);
-        d->m_IsChangingSlice = false;
+        d->m_IsChangingSlice = wasChangingSlice;
       }
 
       break;
@@ -2974,7 +2984,7 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
     {
       try
       {
-        OpRetainMarks* op = static_cast<OpRetainMarks*>(operation);
+        OpRetainMarks* op = dynamic_cast<OpRetainMarks*>(operation);
         assert(op);
 
         OpRetainMarks::ProcessorType::Pointer processor = op->GetProcessor();
