@@ -904,14 +904,16 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
 
           d->m_IsUpdating = wasUpdating;
 
-          this->UpdatePriorAndNext(false);
           this->UpdateCurrentSliceContours(false);
+          this->UpdatePriorAndNext(false);
           this->UpdateRegionGrowing(false);
           this->RequestRenderWindowUpdate();
         }
         else // changing to any other slice (not the previous or next on the same orientation)
         {
-          this->UpdatePriorAndNext();
+          this->UpdateCurrentSliceContours(false);
+          this->UpdatePriorAndNext(false);
+          this->UpdateRegionGrowing(false);
           this->OnThresholdingCheckBoxToggled(d->m_GUI->IsThresholdingCheckBoxChecked());
           this->RequestRenderWindowUpdate();
         }
