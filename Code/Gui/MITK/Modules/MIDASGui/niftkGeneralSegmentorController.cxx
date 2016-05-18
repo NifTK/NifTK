@@ -671,39 +671,21 @@ void GeneralSegmentorController::OnViewGetsHidden()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orientation, int selectedSliceIndex)
 {
-//  MITK_INFO << "GeneralSegmentorController::OnSelectedSliceChanged():"
-//               "    orientation: " << orientation <<
-//               "    viewer slice index: " << selectedSliceIndex <<
-//               "    reference image slice index: " << d->m_SliceIndex;
   Q_D(GeneralSegmentorController);
 
   if (orientation != d->m_Orientation || selectedSliceIndex != d->m_SelectedSliceIndex)
   {
     if (orientation != IMAGE_ORIENTATION_UNKNOWN)
     {
-      if (orientation != d->m_Orientation)
+      int sliceIndex = this->GetReferenceImageSliceIndex();
+      mitk::Point3D selectedPosition = this->GetSelectedPosition();
+
+      if (this->HasInitialisedWorkingData()
+          && !d->m_IsUpdating
+          && !d->m_IsChangingSlice)
       {
-        d->m_SliceIndex = -1;
-      }
-
-      if (!d->m_IsChangingSlice)
-      {
-        int sliceIndex = this->GetReferenceImageSliceIndex();
-        mitk::Point3D selectedPosition = this->GetSelectedPosition();
-
-        if (d->m_SliceIndex == -1)
-        {
-          d->m_SliceIndex = sliceIndex;
-          d->m_SelectedPosition = selectedPosition;
-        }
-
-    //    MITK_INFO << "GeneralSegmentorController::OnSelectedSliceChanged()" <<
-    //                 "    last slice index: " << d->m_SliceIndex <<
-    //                 "    current slice index: " << sliceIndex;
-
-        if (this->HasInitialisedWorkingData()
-            && !d->m_IsUpdating
-            && std::abs(d->m_SliceIndex - sliceIndex) == 1)
+        /// Changing to previous or next slice of the same orientation.
+        if (orientation == d->m_Orientation && std::abs(d->m_SliceIndex - sliceIndex) == 1)
         {
           mitk::Image* referenceImage = this->GetReferenceImage();
           mitk::Image* segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
@@ -904,7 +886,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
           {
             MITK_ERROR << "Could not change slice: Caught mitk::AccessByItkException:" << e.what() << std::endl;
           }
-          catch( itk::ExceptionObject& err )
+          catch(const itk::ExceptionObject& err)
           {
             MITK_ERROR << "Could not change slice: Caught itk::ExceptionObject:" << err.what() << std::endl;
           }
@@ -923,27 +905,28 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
           d->m_IsUpdating = wasUpdating;
 
           this->UpdatePriorAndNext(false);
+          this->UpdateCurrentSliceContours(false);
+          this->UpdateRegionGrowing(false);
+          this->RequestRenderWindowUpdate();
+        }
+        else // changing to any other slice (not the previous or next on the same orientation)
+        {
+          this->UpdatePriorAndNext();
+          this->OnThresholdingCheckBoxToggled(d->m_GUI->IsThresholdingCheckBoxChecked());
+          this->RequestRenderWindowUpdate();
         }
 
-        this->UpdateCurrentSliceContours(false);
-        this->UpdateRegionGrowing(false);
-        this->RequestRenderWindowUpdate();
+      } // if initialised, not being updated and not changing slice
 
-        d->m_SliceIndex = sliceIndex;
-        d->m_SelectedPosition = selectedPosition;
-      }
+      d->m_SliceIndex = sliceIndex;
+      d->m_SelectedPosition = selectedPosition;
 
-      if (orientation != d->m_Orientation)
-      {
-        this->UpdatePriorAndNext();
-        this->OnThresholdingCheckBoxToggled(d->m_GUI->IsThresholdingCheckBoxChecked());
-        this->RequestRenderWindowUpdate();
-      }
-    }
+    } // if valid orientation (2D)
 
     d->m_Orientation = orientation;
     d->m_SelectedSliceIndex = selectedSliceIndex;
-  }
+
+  } // if orientation or slice index has changed
 }
 
 
