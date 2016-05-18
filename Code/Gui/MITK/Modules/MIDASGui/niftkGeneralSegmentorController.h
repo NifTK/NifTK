@@ -188,9 +188,15 @@ protected:
   /// This happens when a different renderer is selected or when the selected slice
   /// changes in the focused renderer either by interaction (e.g. scrolling by
   /// mouse wheel) or by API call.
-  /// This function makes sure ITK pipelines know we have changed orientation.
-  /// Note that the slice index is in termes of the renderer (world space), not the
-  /// reference image (voxel space).
+  /// When the orientation changes, this function makes sure ITK pipelines know about that.
+  /// Changing the selected slice in MIDAS terms means automatically accepting the currently
+  /// segmented slice and moving to the next one, see class intro.
+  /// \param orientation the orientation of the selected slice
+  ///     It might not equal to the axis of the slice in the reference image.
+  ///     This depends on the permutation of the axes.
+  /// \param sliceIndex the index of the slice in the renderer (world space)
+  ///     It might not equal to the index of the slice in the reference image.
+  ///     This depends on the 'up direction' of the axis.
   virtual void OnSelectedSliceChanged(ImageOrientation orientation, int sliceIndex) override;
 
 protected slots:
@@ -281,11 +287,6 @@ private:
   /// \brief If the user hits the close icon, it is equivalent to a Cancel,
   /// and the segmentation is destroyed without warning.
   void OnViewGetsClosed();
-
-  /// \brief Called from the slice navigation controller to indicate a different slice,
-  /// which in MIDAS terms means automatically accepting the currently segmented slice
-  /// and moving to the next one, see class intro.
-  virtual void OnSliceChanged();
 
   /// \brief This view registers with the mitk::DataStorage and listens for changing
   /// data, so this method is called when any node is changed, but only performs an update,

@@ -686,7 +686,252 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
         d->m_SliceIndex = -1;
       }
 
-      this->OnSliceChanged();
+      if (!d->m_IsChangingSlice)
+      {
+        int sliceIndex = this->GetReferenceImageSliceIndex();
+        mitk::Point3D selectedPosition = this->GetSelectedPosition();
+
+        if (d->m_SliceIndex == -1)
+        {
+          d->m_SliceIndex = sliceIndex;
+          d->m_SelectedPosition = selectedPosition;
+        }
+
+    //    MITK_INFO << "GeneralSegmentorController::OnSelectedSliceChanged()" <<
+    //                 "    last slice index: " << d->m_SliceIndex <<
+    //                 "    current slice index: " << sliceIndex;
+
+        if (this->HasInitialisedWorkingData()
+            && !d->m_IsUpdating
+            && std::abs(d->m_SliceIndex - sliceIndex) == 1)
+        {
+          mitk::Image* referenceImage = this->GetReferenceImage();
+          mitk::Image* segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
+          assert(referenceImage && segmentationImage);
+
+          int sliceAxis = this->GetReferenceImageSliceAxis();
+          itk::Orientation itkOrientation = GetItkOrientation(this->GetOrientation());
+          assert(sliceAxis != -1);
+
+          mitk::ToolManager* toolManager = this->GetToolManager();
+          MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
+
+          std::vector<int> outputRegion;
+          mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
+          mitk::PointSet::Pointer propagatedSeeds = mitk::PointSet::New();
+          mitk::PointSet* seeds = this->GetSeeds();
+          bool nextSliceIsEmpty = true;
+          bool thisSliceIsEmpty = false;
+          bool operationCancelled = false;
+
+          bool wasUpdating = d->m_IsUpdating;
+          d->m_IsUpdating = true;
+
+          try
+          {
+            ///////////////////////////////////////////////////////
+            // See: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1742
+            //      for the whole logic surrounding changing slice.
+            ///////////////////////////////////////////////////////
+
+            AccessFixedDimensionByItk_n(segmentationImage,
+                ITKSliceIsEmpty, 3,
+                (sliceAxis,
+                 sliceIndex,
+                 nextSliceIsEmpty
+                )
+              );
+
+            if (d->m_GUI->IsRetainMarksCheckBoxChecked())
+            {
+              int returnValue(QMessageBox::NoButton);
+
+              if (!d->m_GUI->IsThresholdingCheckBoxChecked())
+              {
+                AccessFixedDimensionByItk_n(segmentationImage,
+                    ITKSliceIsEmpty, 3,
+                    (sliceAxis,
+                     d->m_SliceIndex,
+                     thisSliceIsEmpty
+                    )
+                  );
+              }
+
+              if (thisSliceIsEmpty)
+              {
+                returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
+                                                        tr("The current slice is empty - retain marks cannot be performed.\n"
+                                                           "Use the 'wipe' functionality to erase slices instead"),
+                                                        QMessageBox::Ok
+                                     );
+              }
+              else if (!nextSliceIsEmpty)
+              {
+                returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
+                                                        tr("The new slice is not empty - retain marks will overwrite the slice.\n"
+                                                           "Are you sure?"),
+                                                        QMessageBox::Yes | QMessageBox::No);
+              }
+
+              if (returnValue == QMessageBox::Ok || returnValue == QMessageBox::No )
+              {
+                operationCancelled = true;
+              }
+              else
+              {
+                AccessFixedDimensionByItk_n(segmentationImage,
+                    ITKPreProcessingOfSeedsForChangingSlice, 3,
+                    (*seeds,
+                     d->m_SliceIndex,
+                     sliceAxis,
+                     sliceIndex,
+                     false, // We propagate seeds at current position, so no optimisation
+                     nextSliceIsEmpty,
+                     *(copyOfCurrentSeeds.GetPointer()),
+                     *(propagatedSeeds.GetPointer()),
+                     outputRegion
+                    )
+                  );
+
+                if (d->m_GUI->IsThresholdingCheckBoxChecked())
+                {
+                  QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(d->m_SliceIndex).arg(sliceIndex);
+                  OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
+                  OpThresholdApply *doThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
+                  OpThresholdApply *undoThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
+                  mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doThresholdOp, undoThresholdOp, message.toStdString());
+                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+                  this->ExecuteOperation(doThresholdOp);
+
+                  drawTool->ClearWorkingData();
+                  this->UpdateCurrentSliceContours();
+                }
+
+                // Do retain marks, which copies slice from beforeSliceIndex to afterSliceIndex
+                QString message = tr("Retaining marks in slice %1 and copying to %2").arg(d->m_SliceIndex).arg(sliceIndex);
+                OpRetainMarks::ProcessorPointer processor = OpRetainMarks::ProcessorType::New();
+                OpRetainMarks *doOp = new OpRetainMarks(OP_RETAIN_MARKS, true, d->m_SliceIndex, sliceIndex, sliceAxis, itkOrientation, outputRegion, processor);
+                OpRetainMarks *undoOp = new OpRetainMarks(OP_RETAIN_MARKS, false, d->m_SliceIndex, sliceIndex, sliceAxis, itkOrientation, outputRegion, processor);
+                mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+                this->ExecuteOperation(doOp);
+              }
+            }
+            else // so, "Retain Marks" is Off.
+            {
+              AccessFixedDimensionByItk_n(segmentationImage,
+                  ITKPreProcessingOfSeedsForChangingSlice, 3,
+                  (*seeds,
+                   d->m_SliceIndex,
+                   sliceAxis,
+                   sliceIndex,
+                   true, // optimise seed position on current slice.
+                   nextSliceIsEmpty,
+                   *(copyOfCurrentSeeds.GetPointer()),
+                   *(propagatedSeeds.GetPointer()),
+                   outputRegion
+                  )
+                );
+
+              if (d->m_GUI->IsThresholdingCheckBoxChecked())
+              {
+                OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
+                OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, d->m_GUI->IsThresholdingCheckBoxChecked());
+                OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, d->m_GUI->IsThresholdingCheckBoxChecked());
+                mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(d->m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
+                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
+                this->ExecuteOperation(doApplyOp);
+
+                drawTool->ClearWorkingData();
+                this->UpdateCurrentSliceContours();
+              }
+              else // threshold box not checked
+              {
+                bool thisSliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(false, d->m_SliceIndex);
+
+                if (thisSliceHasUnenclosedSeeds)
+                {
+                  OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
+                  OpWipe *doWipeOp = new OpWipe(OP_WIPE, true, d->m_SliceIndex, sliceAxis, outputRegion, propagatedSeeds, processor);
+                  OpWipe *undoWipeOp = new OpWipe(OP_WIPE, false, d->m_SliceIndex, sliceAxis, outputRegion, copyOfCurrentSeeds, processor);
+                  mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doWipeOp, undoWipeOp, "Wipe command");
+                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+                  this->ExecuteOperation(doWipeOp);
+                }
+                else // so, we don't have unenclosed seeds
+                {
+                  // There may be the case where the user has simply drawn a region, and put a seed in the middle.
+                  // So, we do a region growing, without intensity limits. (we already know there are no unenclosed seeds).
+
+                  this->UpdateRegionGrowing(false,
+                                            d->m_SliceIndex,
+                                            referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
+                                            referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
+                                            false);
+
+                  // Then we "apply" this region growing.
+                  OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
+                  OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
+                  OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
+                  mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(d->m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
+                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
+                  this->ExecuteOperation(doApplyOp);
+
+                  drawTool->ClearWorkingData();
+
+                } // end if/else unenclosed seeds
+              } // end if/else thresholding on
+            } // end if/else retain marks.
+
+            if (!operationCancelled)
+            {
+              QString message = tr("Propagate seeds from slice %1 to %2").arg(d->m_SliceIndex).arg(sliceIndex);
+              OpPropagateSeeds *doPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceIndex, sliceAxis, propagatedSeeds);
+              OpPropagateSeeds *undoPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, d->m_SliceIndex, sliceAxis, copyOfCurrentSeeds);
+              mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(d->m_Interface, doPropOp, undoPropOp, message.toStdString());
+              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
+              this->ExecuteOperation(doPropOp);
+
+              message = tr("Change slice from %1 to %2").arg(d->m_SliceIndex).arg(sliceIndex);
+              OpChangeSliceCommand *doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, d->m_SliceIndex, sliceIndex, d->m_SelectedPosition, selectedPosition);
+              OpChangeSliceCommand *undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, d->m_SliceIndex, sliceIndex, d->m_SelectedPosition, selectedPosition);
+              mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+              this->ExecuteOperation(doOp);
+            }
+          }
+          catch(const mitk::AccessByItkException& e)
+          {
+            MITK_ERROR << "Could not change slice: Caught mitk::AccessByItkException:" << e.what() << std::endl;
+          }
+          catch( itk::ExceptionObject& err )
+          {
+            MITK_ERROR << "Could not change slice: Caught itk::ExceptionObject:" << err.what() << std::endl;
+          }
+
+          if (!operationCancelled)
+          {
+            if (MIDASPolyTool* polyTool = dynamic_cast<MIDASPolyTool*>(toolManager->GetActiveTool()))
+            {
+              //toolManager->ActivateTool(-1);
+              /// This makes the poly tool save its result to the working data nodes and stay it open.
+              polyTool->Deactivated();
+              polyTool->Activated();
+            }
+          }
+
+          d->m_IsUpdating = wasUpdating;
+
+          this->UpdatePriorAndNext(false);
+        }
+
+        this->UpdateCurrentSliceContours(false);
+        this->UpdateRegionGrowing(false);
+        this->RequestRenderWindowUpdate();
+
+        d->m_SliceIndex = sliceIndex;
+        d->m_SelectedPosition = selectedPosition;
+      }
 
       if (orientation != d->m_Orientation)
       {
@@ -698,262 +943,6 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
 
     d->m_Orientation = orientation;
     d->m_SelectedSliceIndex = selectedSliceIndex;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void GeneralSegmentorController::OnSliceChanged()
-{
-  Q_D(GeneralSegmentorController);
-
-//  MITK_INFO << "GeneralSegmentorController::OnSliceChanged()" <<
-//               "    slice index: " << d->m_SliceIndex;
-  if (!d->m_IsChangingSlice)
-  {
-    int sliceIndex = this->GetReferenceImageSliceIndex();
-    mitk::Point3D selectedPosition = this->GetSelectedPosition();
-
-    if (d->m_SliceIndex == -1)
-    {
-      d->m_SliceIndex = sliceIndex;
-      d->m_SelectedPosition = selectedPosition;
-    }
-
-//    MITK_INFO << "GeneralSegmentorController::OnSliceChanged()" <<
-//                 "    last slice index: " << d->m_SliceIndex <<
-//                 "    current slice index: " << sliceIndex;
-
-    if (this->HasInitialisedWorkingData()
-        && !d->m_IsUpdating
-        && std::abs(d->m_SliceIndex - sliceIndex) == 1)
-    {
-      mitk::Image* referenceImage = this->GetReferenceImage();
-      mitk::Image* segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
-      assert(referenceImage && segmentationImage);
-
-      int sliceAxis = this->GetReferenceImageSliceAxis();
-      itk::Orientation itkOrientation = GetItkOrientation(this->GetOrientation());
-      assert(sliceAxis != -1);
-
-      mitk::ToolManager* toolManager = this->GetToolManager();
-      MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
-
-      std::vector<int> outputRegion;
-      mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
-      mitk::PointSet::Pointer propagatedSeeds = mitk::PointSet::New();
-      mitk::PointSet* seeds = this->GetSeeds();
-      bool nextSliceIsEmpty = true;
-      bool thisSliceIsEmpty = false;
-      bool operationCancelled = false;
-
-      bool wasUpdating = d->m_IsUpdating;
-      d->m_IsUpdating = true;
-
-      try
-      {
-        ///////////////////////////////////////////////////////
-        // See: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1742
-        //      for the whole logic surrounding changing slice.
-        ///////////////////////////////////////////////////////
-
-        AccessFixedDimensionByItk_n(segmentationImage,
-            ITKSliceIsEmpty, 3,
-            (sliceAxis,
-             sliceIndex,
-             nextSliceIsEmpty
-            )
-          );
-
-        if (d->m_GUI->IsRetainMarksCheckBoxChecked())
-        {
-          int returnValue(QMessageBox::NoButton);
-
-          if (!d->m_GUI->IsThresholdingCheckBoxChecked())
-          {
-            AccessFixedDimensionByItk_n(segmentationImage,
-                ITKSliceIsEmpty, 3,
-                (sliceAxis,
-                 d->m_SliceIndex,
-                 thisSliceIsEmpty
-                )
-              );
-          }
-
-          if (thisSliceIsEmpty)
-          {
-            returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
-                                                    tr("The current slice is empty - retain marks cannot be performed.\n"
-                                                       "Use the 'wipe' functionality to erase slices instead"),
-                                                    QMessageBox::Ok
-                                 );
-          }
-          else if (!nextSliceIsEmpty)
-          {
-            returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
-                                                    tr("The new slice is not empty - retain marks will overwrite the slice.\n"
-                                                       "Are you sure?"),
-                                                    QMessageBox::Yes | QMessageBox::No);
-          }
-
-          if (returnValue == QMessageBox::Ok || returnValue == QMessageBox::No )
-          {
-            operationCancelled = true;
-          }
-          else
-          {
-            AccessFixedDimensionByItk_n(segmentationImage,
-                ITKPreProcessingOfSeedsForChangingSlice, 3,
-                (*seeds,
-                 d->m_SliceIndex,
-                 sliceAxis,
-                 sliceIndex,
-                 false, // We propagate seeds at current position, so no optimisation
-                 nextSliceIsEmpty,
-                 *(copyOfCurrentSeeds.GetPointer()),
-                 *(propagatedSeeds.GetPointer()),
-                 outputRegion
-                )
-              );
-
-            if (d->m_GUI->IsThresholdingCheckBoxChecked())
-            {
-              QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(d->m_SliceIndex).arg(sliceIndex);
-              OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
-              OpThresholdApply *doThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
-              OpThresholdApply *undoThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
-              mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doThresholdOp, undoThresholdOp, message.toStdString());
-              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-              this->ExecuteOperation(doThresholdOp);
-
-              drawTool->ClearWorkingData();
-              this->UpdateCurrentSliceContours();
-            }
-
-            // Do retain marks, which copies slice from beforeSliceIndex to afterSliceIndex
-            QString message = tr("Retaining marks in slice %1 and copying to %2").arg(d->m_SliceIndex).arg(sliceIndex);
-            OpRetainMarks::ProcessorPointer processor = OpRetainMarks::ProcessorType::New();
-            OpRetainMarks *doOp = new OpRetainMarks(OP_RETAIN_MARKS, true, d->m_SliceIndex, sliceIndex, sliceAxis, itkOrientation, outputRegion, processor);
-            OpRetainMarks *undoOp = new OpRetainMarks(OP_RETAIN_MARKS, false, d->m_SliceIndex, sliceIndex, sliceAxis, itkOrientation, outputRegion, processor);
-            mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
-            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-            this->ExecuteOperation(doOp);
-          }
-        }
-        else // so, "Retain Marks" is Off.
-        {
-          AccessFixedDimensionByItk_n(segmentationImage,
-              ITKPreProcessingOfSeedsForChangingSlice, 3,
-              (*seeds,
-               d->m_SliceIndex,
-               sliceAxis,
-               sliceIndex,
-               true, // optimise seed position on current slice.
-               nextSliceIsEmpty,
-               *(copyOfCurrentSeeds.GetPointer()),
-               *(propagatedSeeds.GetPointer()),
-               outputRegion
-              )
-            );
-
-          if (d->m_GUI->IsThresholdingCheckBoxChecked())
-          {
-            OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
-            OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, d->m_GUI->IsThresholdingCheckBoxChecked());
-            OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, d->m_GUI->IsThresholdingCheckBoxChecked());
-            mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(d->m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
-            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
-            this->ExecuteOperation(doApplyOp);
-
-            drawTool->ClearWorkingData();
-            this->UpdateCurrentSliceContours();
-          }
-          else // threshold box not checked
-          {
-            bool thisSliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(false, d->m_SliceIndex);
-
-            if (thisSliceHasUnenclosedSeeds)
-            {
-              OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
-              OpWipe *doWipeOp = new OpWipe(OP_WIPE, true, d->m_SliceIndex, sliceAxis, outputRegion, propagatedSeeds, processor);
-              OpWipe *undoWipeOp = new OpWipe(OP_WIPE, false, d->m_SliceIndex, sliceAxis, outputRegion, copyOfCurrentSeeds, processor);
-              mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doWipeOp, undoWipeOp, "Wipe command");
-              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-              this->ExecuteOperation(doWipeOp);
-            }
-            else // so, we don't have unenclosed seeds
-            {
-              // There may be the case where the user has simply drawn a region, and put a seed in the middle.
-              // So, we do a region growing, without intensity limits. (we already know there are no unenclosed seeds).
-
-              this->UpdateRegionGrowing(false,
-                                        d->m_SliceIndex,
-                                        referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
-                                        referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
-                                        false);
-
-              // Then we "apply" this region growing.
-              OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
-              OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
-              OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
-              mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(d->m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
-              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
-              this->ExecuteOperation(doApplyOp);
-
-              drawTool->ClearWorkingData();
-
-            } // end if/else unenclosed seeds
-          } // end if/else thresholding on
-        } // end if/else retain marks.
-
-        if (!operationCancelled)
-        {
-          QString message = tr("Propagate seeds from slice %1 to %2").arg(d->m_SliceIndex).arg(sliceIndex);
-          OpPropagateSeeds *doPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceIndex, sliceAxis, propagatedSeeds);
-          OpPropagateSeeds *undoPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, d->m_SliceIndex, sliceAxis, copyOfCurrentSeeds);
-          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(d->m_Interface, doPropOp, undoPropOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
-          this->ExecuteOperation(doPropOp);
-
-          message = tr("Change slice from %1 to %2").arg(d->m_SliceIndex).arg(sliceIndex);
-          OpChangeSliceCommand *doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, d->m_SliceIndex, sliceIndex, d->m_SelectedPosition, selectedPosition);
-          OpChangeSliceCommand *undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, d->m_SliceIndex, sliceIndex, d->m_SelectedPosition, selectedPosition);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          this->ExecuteOperation(doOp);
-        }
-      }
-      catch(const mitk::AccessByItkException& e)
-      {
-        MITK_ERROR << "Could not change slice: Caught mitk::AccessByItkException:" << e.what() << std::endl;
-      }
-      catch( itk::ExceptionObject& err )
-      {
-        MITK_ERROR << "Could not change slice: Caught itk::ExceptionObject:" << err.what() << std::endl;
-      }
-
-      if (!operationCancelled)
-      {
-        if (MIDASPolyTool* polyTool = dynamic_cast<MIDASPolyTool*>(toolManager->GetActiveTool()))
-        {
-          //toolManager->ActivateTool(-1);
-          /// This makes the poly tool save its result to the working data nodes and stay it open.
-          polyTool->Deactivated();
-          polyTool->Activated();
-        }
-      }
-
-      d->m_IsUpdating = wasUpdating;
-
-      this->UpdatePriorAndNext(false);
-    }
-
-    this->UpdateCurrentSliceContours(false);
-    this->UpdateRegionGrowing(false);
-    this->RequestRenderWindowUpdate();
-
-    d->m_SliceIndex = sliceIndex;
-    d->m_SelectedPosition = selectedPosition;
   }
 }
 
