@@ -97,22 +97,22 @@ public:
   OpPropagateSeeds(
       mitk::OperationType type,
       bool redo,
-      int sliceNumber,
-      int axisNumber,
+      int sliceAxis,
+      int sliceIndex,
       mitk::PointSet::Pointer seeds
       );
 
   ~OpPropagateSeeds();
 
-  int GetSliceNumber() const;
+  int GetSliceAxis() const;
 
-  int GetAxisNumber() const;
+  int GetSliceIndex() const;
 
   mitk::PointSet::Pointer GetSeeds() const;
 
 private:
-  int m_SliceNumber;
-  int m_AxisNumber;
+  int m_SliceAxis;
+  int m_SliceIndex;
   mitk::PointSet::Pointer m_Seeds;
 };
 
@@ -133,9 +133,9 @@ public:
       bool redo,
       int fromSlice,
       int toSlice,
-      int axisNumber,
+      int sliceAxis,
       itk::Orientation orientation,
-      std::vector<int> &region,
+      const std::vector<int>& region,
       ProcessorPointer processor
       );
 
@@ -145,7 +145,7 @@ public:
 
   int GetToSlice() const;
 
-  int GetAxisNumber() const;
+  int GetSliceAxis() const;
 
   itk::Orientation GetOrientation() const;
 
@@ -156,7 +156,7 @@ public:
 private:
   int m_FromSlice;
   int m_ToSlice;
-  int m_AxisNumber;
+  int m_SliceAxis;
   itk::Orientation m_Orientation;
   std::vector<int> m_Region;
   ProcessorPointer m_Processor;
@@ -178,7 +178,7 @@ public:
   OpPropagate(
       mitk::OperationType type,
       bool redo,
-      std::vector<int> &region,
+      const std::vector<int>& region,
       ProcessorPointer processor
       );
 
@@ -209,7 +209,7 @@ public:
   OpThresholdApply(
       mitk::OperationType type,
       bool redo,
-      std::vector<int> &region,
+      const std::vector<int>& region,
       ProcessorPointer processor,
       bool thresholdFlag
       );
@@ -261,18 +261,18 @@ public:
   OpWipe(
       mitk::OperationType type,
       bool redo,
-      int sliceNumber,
-      int axisNumber,
-      std::vector<int> &region,
+      int sliceAxis,
+      int sliceIndex,
+      const std::vector<int>& region,
       mitk::PointSet::Pointer seeds,
       ProcessorPointer processor
       );
 
   ~OpWipe();
 
-  int GetSliceNumber() const;
+  int GetSliceAxis() const;
 
-  int GetAxisNumber() const;
+  int GetSliceIndex() const;
 
   std::vector<int> GetRegion() const;
 
@@ -281,8 +281,8 @@ public:
   ProcessorPointer GetProcessor() const;
 
 private:
-  int m_SliceNumber;
-  int m_AxisNumber;
+  int m_SliceAxis;
+  int m_SliceIndex;
   std::vector<int> m_Region;
   mitk::PointSet::Pointer m_Seeds;
   ProcessorPointer m_Processor;

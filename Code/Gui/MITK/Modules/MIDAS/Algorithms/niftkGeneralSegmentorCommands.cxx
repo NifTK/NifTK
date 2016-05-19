@@ -29,8 +29,8 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 OpGeneralSegmentorBaseCommand::OpGeneralSegmentorBaseCommand(mitk::OperationType type, bool redo)
-: mitk::Operation(type)
-, m_Redo(redo)
+: mitk::Operation(type),
+  m_Redo(redo)
 {
 }
 
@@ -55,9 +55,9 @@ OpChangeSliceCommand::OpChangeSliceCommand(
     mitk::Point3D beforePoint,
     mitk::Point3D afterPoint
     )
-: OpGeneralSegmentorBaseCommand(type, redo)
-, m_BeforePoint(beforePoint)
-, m_AfterPoint(afterPoint)
+: OpGeneralSegmentorBaseCommand(type, redo),
+  m_BeforePoint(beforePoint),
+  m_AfterPoint(afterPoint)
 {
 }
 
@@ -80,14 +80,14 @@ mitk::Point3D OpChangeSliceCommand::GetAfterPoint() const
 OpPropagateSeeds::OpPropagateSeeds(
     mitk::OperationType type,
     bool redo,
-    int sliceNumber,
-    int axisNumber,
+    int sliceAxis,
+    int sliceIndex,
     mitk::PointSet::Pointer seeds
     )
-: OpGeneralSegmentorBaseCommand(type, redo)
-, m_SliceNumber(sliceNumber)
-, m_AxisNumber(axisNumber)
-, m_Seeds(seeds)
+: OpGeneralSegmentorBaseCommand(type, redo),
+  m_SliceAxis(sliceAxis),
+  m_SliceIndex(sliceIndex),
+  m_Seeds(seeds)
 {
 }
 
@@ -99,16 +99,16 @@ OpPropagateSeeds::~OpPropagateSeeds()
 
 
 //-----------------------------------------------------------------------------
-int OpPropagateSeeds::GetSliceNumber() const
+int OpPropagateSeeds::GetSliceAxis() const
 {
-  return m_SliceNumber;
+  return m_SliceAxis;
 }
 
 
 //-----------------------------------------------------------------------------
-int OpPropagateSeeds::GetAxisNumber() const
+int OpPropagateSeeds::GetSliceIndex() const
 {
-  return m_AxisNumber;
+  return m_SliceIndex;
 }
 
 
@@ -125,18 +125,18 @@ OpRetainMarks::OpRetainMarks(
     bool redo,
     int fromSlice,
     int toSlice,
-    int axisNumber,
+    int sliceAxis,
     itk::Orientation orientation,
-    std::vector<int> &region,
+    const std::vector<int>& region,
     ProcessorPointer processor
     )
-: OpGeneralSegmentorBaseCommand(type, redo)
-, m_FromSlice(fromSlice)
-, m_ToSlice(toSlice)
-, m_AxisNumber(axisNumber)
-, m_Orientation(orientation)
-, m_Region(region)
-, m_Processor(processor)
+: OpGeneralSegmentorBaseCommand(type, redo),
+  m_FromSlice(fromSlice),
+  m_ToSlice(toSlice),
+  m_SliceAxis(sliceAxis),
+  m_Orientation(orientation),
+  m_Region(region),
+  m_Processor(processor)
 {
 }
 
@@ -162,9 +162,9 @@ int OpRetainMarks::GetToSlice() const
 
 
 //-----------------------------------------------------------------------------
-int OpRetainMarks::GetAxisNumber() const
+int OpRetainMarks::GetSliceAxis() const
 {
-  return m_AxisNumber;
+  return m_SliceAxis;
 }
 
 
@@ -193,12 +193,12 @@ OpRetainMarks::ProcessorPointer OpRetainMarks::GetProcessor() const
 OpPropagate::OpPropagate(
     mitk::OperationType type,
     bool redo,
-    std::vector<int> &region,
+    const std::vector<int>& region,
     ProcessorPointer processor
     )
-: OpGeneralSegmentorBaseCommand(type, redo)
-, m_Region(region)
-, m_Processor(processor)
+: OpGeneralSegmentorBaseCommand(type, redo),
+  m_Region(region),
+  m_Processor(processor)
 {
 }
 
@@ -227,12 +227,12 @@ OpPropagate::ProcessorPointer OpPropagate::GetProcessor() const
 OpThresholdApply::OpThresholdApply(
     mitk::OperationType type,
     bool redo,
-    std::vector<int> &region,
+    const std::vector<int>& region,
     ProcessorPointer processor,
     bool thresholdFlag
     )
-: OpPropagate(type, redo, region, processor)
-, m_ThresholdFlag(thresholdFlag)
+: OpPropagate(type, redo, region, processor),
+  m_ThresholdFlag(thresholdFlag)
 {
 }
 
@@ -256,8 +256,8 @@ OpClean::OpClean(
     bool redo,
     mitk::ContourModelSet::Pointer contourSet
     )
-: OpGeneralSegmentorBaseCommand(type, redo)
-, m_ContourSet(contourSet)
+: OpGeneralSegmentorBaseCommand(type, redo),
+  m_ContourSet(contourSet)
 {
 }
 
@@ -279,18 +279,18 @@ mitk::ContourModelSet::Pointer OpClean::GetContourSet() const
 OpWipe::OpWipe(
     mitk::OperationType type,
     bool redo,
-    int sliceNumber,
-    int axisNumber,
-    std::vector<int> &region,
+    int sliceAxis,
+    int sliceIndex,
+    const std::vector<int>& region,
     mitk::PointSet::Pointer seeds,
     ProcessorPointer processor
     )
-: OpGeneralSegmentorBaseCommand(type, redo)
-, m_SliceNumber(sliceNumber)
-, m_AxisNumber(axisNumber)
-, m_Region(region)
-, m_Seeds(seeds)
-, m_Processor(processor)
+: OpGeneralSegmentorBaseCommand(type, redo),
+  m_SliceAxis(sliceAxis),
+  m_SliceIndex(sliceIndex),
+  m_Region(region),
+  m_Seeds(seeds),
+  m_Processor(processor)
 {
 }
 
@@ -302,16 +302,16 @@ OpWipe::~OpWipe()
 
 
 //-----------------------------------------------------------------------------
-int OpWipe::GetSliceNumber() const
+int OpWipe::GetSliceAxis() const
 {
-  return m_SliceNumber;
+  return m_SliceAxis;
 }
 
 
 //-----------------------------------------------------------------------------
-int OpWipe::GetAxisNumber() const
+int OpWipe::GetSliceIndex() const
 {
-  return m_AxisNumber;
+  return m_SliceIndex;
 }
 
 

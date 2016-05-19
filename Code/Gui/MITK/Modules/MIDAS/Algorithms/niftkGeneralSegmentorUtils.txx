@@ -1007,7 +1007,7 @@ void ITKAddNewSeedsToPointSet(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void ITKPreProcessingOfSeedsForChangingSlice(
+void ITKPreprocessingOfSeedsForChangingSlice(
     const itk::Image<TPixel, VImageDimension>* itkImage, // Note: the itkImage input should be the binary region growing image.
     const mitk::PointSet* inputSeeds,
     int sliceAxis,
@@ -1129,7 +1129,7 @@ void ITKPreProcessingOfSeedsForChangingSlice(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void ITKPreProcessingForWipe(
+void ITKPreprocessingForWipe(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::PointSet* inputSeeds,
     int sliceAxis,
@@ -1219,8 +1219,8 @@ void ITKDoWipe(
 
   processor->SetDestinationImage(NULL);
 
-  int axis = op->GetAxisNumber();
-  int slice = op->GetSliceNumber();
+  int axis = op->GetSliceAxis();
+  int slice = op->GetSliceIndex();
 
   // Update the current point set.
   currentSeeds->Clear();

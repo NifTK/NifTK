@@ -265,15 +265,15 @@ void ITKAddNewSeedsToPointSet(
 /// and if we are doing threshold apply, we re-calculate seeds for the current slice based
 /// on the connected component analysis described in the class header at the top of this file.
 ///
-/// Notice how this is similar to the PreProcessing required for Propagate, seen in
+/// Notice how this is similar to the preprocessing required for Propagate, seen in
 /// PropagateToRegionGrowingImageUsingITK. Also note that itkImage input should be the
-/// binary region growing node.
+/// binary region growing image.
 template<typename TPixel, unsigned int VImageDimension>
-void ITKPreProcessingOfSeedsForChangingSlice(
+void ITKPreprocessingOfSeedsForChangingSlice(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::PointSet* inputSeeds,
     int sliceAxis,
-    int previousSliceIndex,
+    int oldSliceIndex,
     int newSliceIndex,
     bool optimiseSeedPosition,
     bool newSliceIsEmpty,
@@ -285,7 +285,7 @@ void ITKPreProcessingOfSeedsForChangingSlice(
 /// \brief Does any pre-processing necessary to facilitate Undo/Redo for Wipe commands,
 /// which in this case means computing a new list of seeds, and the region of interest to be wiped.
 template<typename TPixel, unsigned int VImageDimension>
-void ITKPreProcessingForWipe(
+void ITKPreprocessingForWipe(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::PointSet* inputSeeds,
     int sliceAxis,
