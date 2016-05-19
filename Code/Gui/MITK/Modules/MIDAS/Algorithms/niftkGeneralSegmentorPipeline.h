@@ -187,8 +187,8 @@ void NIFTKMIDAS_EXPORT ConvertMITKContoursAndAppendToITKContours(mitk::ContourMo
 struct NIFTKMIDAS_EXPORT GeneralSegmentorPipelineParams
 {
   bool m_EraseFullSlice;
-  int m_SliceIndex;
   int m_SliceAxis;
+  int m_SliceIndex;
   double m_LowerThreshold;
   double m_UpperThreshold;
   const mitk::PointSet* m_Seeds;
@@ -287,8 +287,8 @@ private:
 public:
 
   // Member variables.
-  int m_SliceIndex;
   int m_SliceAxis;
+  int m_SliceIndex;
   TPixel m_LowerThreshold;
   TPixel m_UpperThreshold;
   PointSetPointer m_AllSeeds;

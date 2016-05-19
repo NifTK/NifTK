@@ -38,7 +38,7 @@ namespace niftk
 template<typename TPixel, unsigned int VImageDimension>
 void ITKFillRegion(
     itk::Image<TPixel, VImageDimension>* itkImage,
-    typename itk::Image<TPixel, VImageDimension>::RegionType &region,
+    const typename itk::Image<TPixel, VImageDimension>::RegionType& region,
     TPixel fillValue
     )
 {
@@ -464,8 +464,8 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKPropagateToRegionGrowingImage
  (const itk::Image<TPixel, VImageDimension>* itkImage,
   const mitk::PointSet* inputSeeds,
-  int sliceIndex,
   int sliceAxis,
+  int sliceIndex,
   int direction,
   double lowerThreshold,
   double upperThreshold,
@@ -515,12 +515,12 @@ void ITKPropagateToRegionGrowingImage
 
   if (direction == 1 || direction == -1)
   {
-    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceIndex, sliceAxis, direction, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceAxis, sliceIndex, direction, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
   }
   else if (direction == 0)
   {
-    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceIndex, sliceAxis, 1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
-    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceIndex, sliceAxis, -1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceAxis, sliceIndex, 1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceAxis, sliceIndex, -1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
   }
 
   // Get hold of ITK version of MITK image.
@@ -545,8 +545,8 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKPropagateUpOrDown(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::PointSet* seeds,
-    int sliceIndex,
     int sliceAxis,
+    int sliceIndex,
     int direction,
     double lowerThreshold,
     double upperThreshold,
@@ -1010,8 +1010,8 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKPreProcessingOfSeedsForChangingSlice(
     const itk::Image<TPixel, VImageDimension>* itkImage, // Note: the itkImage input should be the binary region growing image.
     const mitk::PointSet* inputSeeds,
-    int sliceIndex,
     int sliceAxis,
+    int oldSliceIndex,
     int newSliceIndex,
     bool optimiseSeedPosition,
     bool newSliceIsEmpty,
@@ -1029,7 +1029,7 @@ void ITKPreProcessingOfSeedsForChangingSlice(
   typename BinaryImageType::IndexType regionIndex = region.GetIndex();
 
   regionSize[sliceAxis] = 1;
-  regionIndex[sliceAxis] = sliceIndex;
+  regionIndex[sliceAxis] = oldSliceIndex;
 
   region.SetSize(regionSize);
   region.SetIndex(regionIndex);
@@ -1042,7 +1042,7 @@ void ITKPreProcessingOfSeedsForChangingSlice(
   outputRegion.push_back(regionSize[2]);
 
   // If we are moving to new slice
-  if (sliceIndex != newSliceIndex)
+  if (oldSliceIndex != newSliceIndex)
   {
     if (newSliceIsEmpty)
     {
@@ -1055,7 +1055,7 @@ void ITKPreProcessingOfSeedsForChangingSlice(
           inputSeeds,
           &outputNewSeeds,
           sliceAxis,
-          sliceIndex,
+          oldSliceIndex,
           newSliceIndex
           );
     }
@@ -1132,8 +1132,8 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKPreProcessingForWipe(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::PointSet* inputSeeds,
-    int sliceIndex,
     int sliceAxis,
+    int sliceIndex,
     int direction,
     mitk::PointSet& outputCopyOfInputSeeds,
     mitk::PointSet& outputNewSeeds,

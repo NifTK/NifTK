@@ -21,9 +21,9 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 void GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
-    int axisNumber,
-    int sliceNumber,
-    int projectedSliceNumber,
+    int sliceAxis,
+    int sliceIndex,
+    int projectedSliceIndex,
     mitk::ContourModelSet::Pointer outputContourSet
     )
 {
@@ -33,9 +33,9 @@ void GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
         ITKGenerateOutlineFromBinaryImage,
         (unsigned char),
         (3),
-        (axisNumber,
-         sliceNumber,
-         projectedSliceNumber,
+        (sliceAxis,
+         sliceIndex,
+         projectedSliceIndex,
          outputContourSet
         )
       );

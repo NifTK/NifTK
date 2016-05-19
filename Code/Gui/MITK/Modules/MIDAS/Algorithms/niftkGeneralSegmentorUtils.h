@@ -37,8 +37,8 @@ class OpWipe;
 ///
 /// Called for generating the "See Prior", "See Next" and also the outline contour of the current segmentation.
 void NIFTKMIDAS_EXPORT GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
-    int axisNumber,
-    int sliceNumber,
+    int sliceAxis,
+    int sliceIndex,
     int projectedSliceNumber,
     mitk::ContourModelSet::Pointer outputContourSet
     );
@@ -48,7 +48,7 @@ void NIFTKMIDAS_EXPORT GenerateOutlineFromBinaryImage(mitk::Image::Pointer image
 template<typename TPixel, unsigned int VImageDimension>
 void ITKFillRegion(
     itk::Image<TPixel, VImageDimension>* itkImage,
-    typename itk::Image<TPixel, VImageDimension>::RegionType& region,
+    const typename itk::Image<TPixel, VImageDimension>::RegionType& region,
     TPixel fillValue
     );
 
@@ -185,8 +185,8 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKPropagateToRegionGrowingImage(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::PointSet* inputSeeds,
-    int sliceIndex,
     int sliceAxis,
+    int sliceIndex,
     int direction,
     double lowerThreshold,
     double upperThreshold,
@@ -206,8 +206,8 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKPropagateUpOrDown(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::PointSet* seeds,
-    int sliceIndex,
     int sliceAxis,
+    int sliceIndex,
     int direction,
     double lowerThreshold,
     double upperThreshold,
@@ -272,8 +272,8 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKPreProcessingOfSeedsForChangingSlice(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::PointSet* inputSeeds,
-    int previousSliceIndex,
     int sliceAxis,
+    int previousSliceIndex,
     int newSliceIndex,
     bool optimiseSeedPosition,
     bool newSliceIsEmpty,
@@ -288,8 +288,8 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKPreProcessingForWipe(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::PointSet* inputSeeds,
-    int sliceIndex,
     int sliceAxis,
+    int sliceIndex,
     int direction,
     mitk::PointSet& outputCopyOfInputSeeds,
     mitk::PointSet& outputNewSeeds,
