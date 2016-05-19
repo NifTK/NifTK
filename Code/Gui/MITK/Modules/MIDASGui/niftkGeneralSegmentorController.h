@@ -317,8 +317,11 @@ private:
   /// \brief Looks for the Seeds registered as WorkingData[1] with the ToolManager.
   mitk::PointSet* GetSeeds();
 
+  /// \brief Initialises seeds for a given slice.
+  void InitialiseSeedsForSlice(int sliceAxis, int sliceIndex);
+
   /// \brief Used when restarting a volume, to initialize all seeds for an existing segmentation.
-  void InitialiseSeedsForWholeVolume();
+  void InitialiseSeedsForVolume();
 
   /// \brief Retrieves the min and max of the image (cached), and sets the thresholding
   /// intensity sliders range accordingly.

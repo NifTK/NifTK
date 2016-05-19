@@ -1565,6 +1565,32 @@ void ITKDestroyPipeline(itk::Image<TPixel, VImageDimension>* itkImage)
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
+void ITKInitialiseSeedsForSlice(
+    itk::Image<TPixel, VImageDimension> *itkImage,
+    mitk::PointSet& seeds,
+    int sliceAxis,
+    int sliceIndex
+    )
+{
+  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
+  typedef typename ImageType::RegionType RegionType;
+
+  RegionType region = itkImage->GetLargestPossibleRegion();
+  region.SetIndex(sliceAxis, sliceIndex);
+  region.SetSize(sliceAxis, 1);
+
+  ITKAddNewSeedsToPointSet(
+      itkImage,
+      region,
+      0,
+      sliceAxis,
+      seeds
+      );
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 void ITKInitialiseSeedsForVolume(
     itk::Image<TPixel, VImageDimension> *itkImage,
     mitk::PointSet& seeds,

@@ -392,6 +392,21 @@ void ITKDestroyPipeline(
     );
 
 
+/// \brief Creates seeds for each distinct 4-connected region for a given slice.
+///
+/// This methods creates a region for the given slice and calls ITKAddNewSeedsToPointSet
+/// to create new seeds.
+/// \param sliceAxis through slice axis, which should be [0|1|2].
+/// \param sliceIndex the index of the slice along the given axis.
+template<typename TPixel, unsigned int VImageDimension>
+void ITKInitialiseSeedsForSlice(
+    itk::Image<TPixel, VImageDimension> *itkImage,
+    mitk::PointSet& seeds,
+    int sliceAxis,
+    int sliceIndex
+    );
+
+
 /// \brief Creates seeds for each distinct 4-connected region on each slice for a given axis.
 ///
 /// This is called when the user starts a segmentation from an existing one. When you click

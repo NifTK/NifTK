@@ -464,7 +464,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 
     if (isRestarting)
     {
-      this->InitialiseSeedsForWholeVolume();
+      this->InitialiseSeedsForVolume();
       this->UpdateCurrentSliceContours();
     }
 
@@ -675,13 +675,17 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
 
   if (orientation != d->m_Orientation || selectedSliceIndex != d->m_SelectedSliceIndex)
   {
-    if (orientation != IMAGE_ORIENTATION_UNKNOWN)
+    if (this->HasInitialisedWorkingData()
+        && orientation != IMAGE_ORIENTATION_UNKNOWN)
     {
+      int sliceAxis = this->GetReferenceImageSliceAxis();
       int sliceIndex = this->GetReferenceImageSliceIndex();
       mitk::Point3D selectedPosition = this->GetSelectedPosition();
 
-      if (this->HasInitialisedWorkingData()
-          && !d->m_IsUpdating
+      assert(sliceAxis >= 0);
+      assert(sliceIndex >= 0);
+
+      if (!d->m_IsUpdating
           && !d->m_IsChangingSlice)
       {
         /// Changing to previous or next slice of the same orientation.
@@ -691,9 +695,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
           mitk::Image* segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
           assert(referenceImage && segmentationImage);
 
-          int sliceAxis = this->GetReferenceImageSliceAxis();
           itk::Orientation itkOrientation = GetItkOrientation(this->GetOrientation());
-          assert(sliceAxis != -1);
 
           mitk::ToolManager* toolManager = this->GetToolManager();
           MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
@@ -907,24 +909,23 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
           this->UpdateCurrentSliceContours(false);
           this->UpdatePriorAndNext(false);
           this->UpdateRegionGrowing(false);
-          this->RequestRenderWindowUpdate();
         }
         else // changing to any other slice (not the previous or next on the same orientation)
         {
-          this->InitialiseSeedsForWholeVolume();
+          this->InitialiseSeedsForSlice(sliceAxis, sliceIndex);
           this->UpdateCurrentSliceContours(false);
           this->UpdatePriorAndNext(false);
           this->UpdateRegionGrowing(false);
           this->OnThresholdingCheckBoxToggled(d->m_GUI->IsThresholdingCheckBoxChecked());
-          this->RequestRenderWindowUpdate();
         }
 
-      } // if initialised, not being updated and not changing slice
+        this->RequestRenderWindowUpdate();
+      } // if not being updated and not changing slice
 
       d->m_SliceIndex = sliceIndex;
       d->m_SelectedPosition = selectedPosition;
 
-    } // if valid orientation (2D)
+    } // if initialised and valid orientation (2D window selected)
 
     d->m_Orientation = orientation;
     d->m_SelectedSliceIndex = selectedSliceIndex;
@@ -1040,7 +1041,38 @@ mitk::PointSet* GeneralSegmentorController::GetSeeds()
 
 
 //-----------------------------------------------------------------------------
-void GeneralSegmentorController::InitialiseSeedsForWholeVolume()
+void GeneralSegmentorController::InitialiseSeedsForSlice(int sliceAxis, int sliceIndex)
+{
+  if (!this->HasInitialisedWorkingData())
+  {
+    return;
+  }
+
+  mitk::PointSet* seeds = this->GetSeeds();
+  assert(seeds);
+
+  mitk::Image::Pointer workingImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
+  assert(workingImage);
+
+  try
+  {
+    AccessFixedDimensionByItk_n(workingImage,
+        ITKInitialiseSeedsForSlice, 3,
+        (*seeds,
+         sliceAxis,
+         sliceIndex
+        )
+      );
+  }
+  catch(const mitk::AccessByItkException& e)
+  {
+    MITK_ERROR << "Caught exception during ITKInitialiseSeedsForVolume, so have not initialised seeds correctly, caused by:" << e.what();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void GeneralSegmentorController::InitialiseSeedsForVolume()
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1048,21 +1080,15 @@ void GeneralSegmentorController::InitialiseSeedsForWholeVolume()
   }
 
   ImageOrientation orientation = this->GetOrientation();
-  if (orientation == IMAGE_ORIENTATION_UNKNOWN)
-  {
-    orientation = IMAGE_ORIENTATION_CORONAL;
-  }
+  assert(orientation != IMAGE_ORIENTATION_UNKNOWN);
 
   int sliceAxis = this->GetReferenceImageSliceAxis(orientation);
-  if (sliceAxis == -1)
-  {
-    sliceAxis = 0;
-  }
+  assert(sliceAxis >= 0);
 
   mitk::PointSet *seeds = this->GetSeeds();
   assert(seeds);
 
-  mitk::Image::Pointer workingImage = this->GetWorkingImage(0);
+  mitk::Image::Pointer workingImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
   assert(workingImage);
 
   try
@@ -1139,7 +1165,7 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
   int sliceIndex = this->GetReferenceImageSliceIndex();
   int sliceAxis = this->GetReferenceImageSliceAxis();
 
-  mitk::Image::Pointer workingImage = this->GetWorkingImage(0);
+  mitk::Image::Pointer workingImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
   assert(workingImage);
 
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
@@ -1384,7 +1410,7 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
   int sliceAxis = this->GetReferenceImageSliceAxis();
 
   mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-  mitk::Image::Pointer segmentationImage = this->GetWorkingImage(0);
+  mitk::Image::Pointer segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
 
   if (d->m_GUI->IsSeePriorCheckBoxChecked())
   {
@@ -1443,7 +1469,7 @@ bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, 
   }
 
   mitk::Image::Pointer referenceImage = this->GetReferenceImage();
-  mitk::Image::Pointer segmentationImage = this->GetWorkingImage(0);
+  mitk::Image::Pointer segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
