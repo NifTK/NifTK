@@ -472,7 +472,6 @@ void ITKPropagateToRegionGrowingImage
   mitk::PointSet& outputCopyOfInputSeeds,
   mitk::PointSet& outputNewSeeds,
   std::vector<int>& outputRegion,
-  mitk::DataNode::Pointer& outputRegionGrowingNode,
   mitk::Image::Pointer& outputRegionGrowingImage
  )
 {
@@ -515,12 +514,12 @@ void ITKPropagateToRegionGrowingImage
 
   if (direction == 1 || direction == -1)
   {
-    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceAxis, sliceIndex, direction, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceAxis, sliceIndex, direction, lowerThreshold, upperThreshold, outputRegionGrowingImage);
   }
   else if (direction == 0)
   {
-    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceAxis, sliceIndex, 1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
-    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceAxis, sliceIndex, -1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceAxis, sliceIndex, 1, lowerThreshold, upperThreshold, outputRegionGrowingImage);
+    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceAxis, sliceIndex, -1, lowerThreshold, upperThreshold, outputRegionGrowingImage);
   }
 
   // Get hold of ITK version of MITK image.
@@ -550,7 +549,6 @@ void ITKPropagateUpOrDown(
     int direction,
     double lowerThreshold,
     double upperThreshold,
-    mitk::DataNode::Pointer& outputRegionGrowingNode,
     mitk::Image::Pointer& outputRegionGrowingImage
     )
 {

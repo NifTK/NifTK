@@ -193,7 +193,6 @@ void ITKPropagateToRegionGrowingImage(
     mitk::PointSet& outputCopyOfInputSeeds,
     mitk::PointSet& outputNewSeeds,
     std::vector<int>& outputRegion,
-    mitk::DataNode::Pointer& outputRegionGrowingNode,
     mitk::Image::Pointer& outputRegionGrowingImage
     );
 
@@ -211,7 +210,6 @@ void ITKPropagateUpOrDown(
     int direction,
     double lowerThreshold,
     double upperThreshold,
-    mitk::DataNode::Pointer& outputRegionGrowingNode,
     mitk::Image::Pointer& outputRegionGrowingImage
     );
 

@@ -2180,7 +2180,6 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
                *(copyOfInputSeeds.GetPointer()),
                *(outputSeeds.GetPointer()),
                outputRegion,
-               regionGrowingNode,  // This is the node for the image we are writing to.
                regionGrowingImage  // This is the image we are writing to.
               )
             );
@@ -2891,7 +2890,10 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
     return;
   }
 
-  if (!operation) return;
+  if (!operation)
+  {
+    return;
+  }
 
   mitk::Image::Pointer segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
   assert(segmentationImage);
