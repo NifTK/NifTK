@@ -286,11 +286,11 @@ void ITKRecalculateMinAndMaxOfSeedValues(
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void ITKFilterInputPointSetToExcludeRegionOfInterest(
-    itk::Image<TPixel, VImageDimension> *itkImage,
+    itk::Image<TPixel, VImageDimension>* itkImage,
     typename itk::Image<TPixel, VImageDimension>::RegionType regionOfInterest,
-    mitk::PointSet &inputSeeds,
-    mitk::PointSet &outputCopyOfInputSeeds,
-    mitk::PointSet &outputNewSeedsNotInRegionOfInterest
+    const mitk::PointSet& inputSeeds,
+    mitk::PointSet& outputCopyOfInputSeeds,
+    mitk::PointSet& outputNewSeedsNotInRegionOfInterest
     )
 {
   // Copy inputSeeds to outputCopyOfInputSeeds seeds, so that they can be passed on to
@@ -328,7 +328,7 @@ void ITKFilterInputPointSetToExcludeRegionOfInterest(
 template<typename TPixel, unsigned int VImageDimension>
 bool ITKSliceDoesHaveSeeds(
     itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet* seeds,
+    const mitk::PointSet* seeds,
     int axis,
     int slice
     )
@@ -1012,14 +1012,14 @@ void ITKAddNewSeedsToPointSet(
 template<typename TPixel, unsigned int VImageDimension>
 void ITKPreProcessingOfSeedsForChangingSlice(
     itk::Image<TPixel, VImageDimension> *itkImage, // Note: the itkImage input should be the binary region growing image.
-    mitk::PointSet &inputSeeds,
+    const mitk::PointSet& inputSeeds,
     int sliceNumber,
     int axisNumber,
     int newSliceNumber,
     bool optimiseSeedPosition,
     bool newSliceIsEmpty,
-    mitk::PointSet &outputCopyOfInputSeeds,
-    mitk::PointSet &outputNewSeeds,
+    mitk::PointSet& outputCopyOfInputSeeds,
+    mitk::PointSet& outputNewSeeds,
     std::vector<int> &outputRegion
     )
 {
@@ -1511,7 +1511,7 @@ void ITKFilterContours(
 template<typename TPixel, unsigned int VImageDimension>
 void ITKPropagateSeedsToNewSlice(
     itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet* currentSeeds,
+    const mitk::PointSet* currentSeeds,
     mitk::PointSet* newSeeds,
     int axis,
     int oldSliceNumber,
