@@ -688,13 +688,15 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
       if (!d->m_IsUpdating
           && !d->m_IsChangingSlice)
       {
+        mitk::Image* referenceImage = this->GetReferenceImage();
+        mitk::Image* segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
+        assert(referenceImage && segmentationImage);
+
+        bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
+
         /// Changing to previous or next slice of the same orientation.
         if (orientation == d->m_Orientation && std::abs(d->m_SliceIndex - sliceIndex) == 1)
         {
-          mitk::Image* referenceImage = this->GetReferenceImage();
-          mitk::Image* segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
-          assert(referenceImage && segmentationImage);
-
           itk::Orientation itkOrientation = GetItkOrientation(this->GetOrientation());
 
           mitk::ToolManager* toolManager = this->GetToolManager();
@@ -730,7 +732,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
             {
               int answer = QMessageBox::NoButton;
 
-              if (!d->m_GUI->IsThresholdingCheckBoxChecked())
+              if (!isThresholdingOn)
               {
                 AccessFixedDimensionByItk_n(segmentationImage,
                     ITKSliceIsEmpty, 3,
@@ -777,7 +779,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                     )
                   );
 
-                if (d->m_GUI->IsThresholdingCheckBoxChecked())
+                if (isThresholdingOn)
                 {
                   QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(d->m_SliceIndex).arg(sliceIndex);
                   OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
@@ -817,11 +819,11 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                   )
                 );
 
-              if (d->m_GUI->IsThresholdingCheckBoxChecked())
+              if (isThresholdingOn)
               {
                 OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
-                OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, d->m_GUI->IsThresholdingCheckBoxChecked());
-                OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, d->m_GUI->IsThresholdingCheckBoxChecked());
+                OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
+                OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
                 mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(d->m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
                 mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
                 this->ExecuteOperation(doApplyOp);
@@ -893,9 +895,9 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
           {
             MITK_ERROR << "Could not change slice: Caught mitk::AccessByItkException:" << e.what() << std::endl;
           }
-          catch(const itk::ExceptionObject& err)
+          catch(const itk::ExceptionObject& e)
           {
-            MITK_ERROR << "Could not change slice: Caught itk::ExceptionObject:" << err.what() << std::endl;
+            MITK_ERROR << "Could not change slice: Caught itk::ExceptionObject:" << e.what() << std::endl;
           }
 
           if (!operationCancelled)
@@ -921,7 +923,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
           this->UpdateCurrentSliceContours(false);
           this->UpdatePriorAndNext(false);
           this->UpdateRegionGrowing(false);
-          this->OnThresholdingCheckBoxToggled(d->m_GUI->IsThresholdingCheckBoxChecked());
+          this->OnThresholdingCheckBoxToggled(isThresholdingOn);
         }
 
         this->RequestRenderWindowUpdate();
@@ -2247,9 +2249,9 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
         {
           MITK_ERROR << "Could not propagate: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         }
-        catch( itk::ExceptionObject &err )
+        catch(const itk::ExceptionObject& e)
         {
-          MITK_ERROR << "Could not propagate: Caught itk::ExceptionObject:" << err.what() << std::endl;
+          MITK_ERROR << "Could not propagate: Caught itk::ExceptionObject:" << e.what() << std::endl;
         }
 
         d->m_IsUpdating = wasUpdating;
@@ -2457,9 +2459,9 @@ bool GeneralSegmentorController::DoWipe(int direction)
         {
           MITK_ERROR << "Could not do wipe command: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         }
-        catch( itk::ExceptionObject &err )
+        catch(const itk::ExceptionObject& e)
         {
-          MITK_ERROR << "Could not do wipe command: Caught itk::ExceptionObject:" << err.what() << std::endl;
+          MITK_ERROR << "Could not do wipe command: Caught itk::ExceptionObject:" << e.what() << std::endl;
         }
 
         d->m_IsUpdating = wasUpdating;
@@ -2557,7 +2559,7 @@ bool GeneralSegmentorController::DoThresholdApply(
               )
             );
 
-          bool currentCheckboxStatus = d->m_GUI->IsThresholdingCheckBoxChecked();
+          bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
 
           if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<MIDASPolyTool>())
           {
@@ -2574,7 +2576,7 @@ bool GeneralSegmentorController::DoThresholdApply(
               .arg(sliceAxis).arg(sliceIndex);
           OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
           OpThresholdApply *doThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, newCheckboxStatus);
-          OpThresholdApply *undoThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, currentCheckboxStatus);
+          OpThresholdApply *undoThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, isThresholdingOn);
           mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doThresholdOp, undoThresholdOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           this->ExecuteOperation(doThresholdOp);
@@ -2601,9 +2603,9 @@ bool GeneralSegmentorController::DoThresholdApply(
         {
           MITK_ERROR << "Could not do threshold apply command: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         }
-        catch( itk::ExceptionObject &err )
+        catch(const itk::ExceptionObject& e)
         {
-          MITK_ERROR << "Could not do threshold apply command: Caught itk::ExceptionObject:" << err.what() << std::endl;
+          MITK_ERROR << "Could not do threshold apply command: Caught itk::ExceptionObject:" << e.what() << std::endl;
         }
 
         d->m_IsUpdating = wasUpdating;
@@ -2630,12 +2632,12 @@ void GeneralSegmentorController::OnCleanButtonClicked()
     return;
   }
 
-  bool thresholdCheckBox = d->m_GUI->IsThresholdingCheckBoxChecked();
+  bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
   int sliceIndex = this->GetReferenceImageSliceIndex();
 
-  if (!thresholdCheckBox)
+  if (!isThresholdingOn)
   {
-    bool hasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(thresholdCheckBox, sliceIndex);
+    bool hasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(isThresholdingOn, sliceIndex);
     if (hasUnenclosedSeeds)
     {
       int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
@@ -2716,7 +2718,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
               )
             );
 
-          if (thresholdCheckBox)
+          if (isThresholdingOn)
           {
             bool useThresholdsWhenCalculatingEnclosedSeeds = false;
 
@@ -2827,7 +2829,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
                sliceIndex,
                lowerThreshold,
                upperThreshold,
-               d->m_GUI->IsThresholdingCheckBoxChecked(),
+               isThresholdingOn,
                *(copyOfInputContourSet.GetPointer()),
                *(outputContourSet.GetPointer())
               )
@@ -2846,12 +2848,12 @@ void GeneralSegmentorController::OnCleanButtonClicked()
           // Then we update the region growing to get up-to-date contours.
           this->UpdateRegionGrowing();
 
-          if (!d->m_GUI->IsThresholdingCheckBoxChecked())
+          if (!isThresholdingOn)
           {
             // Then we "apply" this region growing.
             OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
-            OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, d->m_GUI->IsThresholdingCheckBoxChecked());
-            OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, d->m_GUI->IsThresholdingCheckBoxChecked());
+            OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
+            OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
             mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(d->m_Interface, doApplyOp, undoApplyOp, "Clean: Calculate new image");
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
             this->ExecuteOperation(doApplyOp);
@@ -2873,9 +2875,9 @@ void GeneralSegmentorController::OnCleanButtonClicked()
         {
           MITK_ERROR << "Could not do clean command: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         }
-        catch( itk::ExceptionObject &err )
+        catch(const itk::ExceptionObject& e)
         {
-          MITK_ERROR << "Could not do clean command: Caught itk::ExceptionObject:" << err.what() << std::endl;
+          MITK_ERROR << "Could not do clean command: Caught itk::ExceptionObject:" << e.what() << std::endl;
         }
 
         d->m_IsUpdating = wasUpdating;
@@ -3036,9 +3038,9 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
         segmentationNode->SetData(outputImage);
         segmentationNode->Modified();
       }
-      catch( itk::ExceptionObject &err )
+      catch(const itk::ExceptionObject& e)
       {
-        MITK_ERROR << "Could not do retain marks: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        MITK_ERROR << "Could not do retain marks: Caught itk::ExceptionObject:" << e.what() << std::endl;
         return;
       }
 
@@ -3073,9 +3075,9 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
         MITK_ERROR << "Could not do threshold: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         return;
       }
-      catch( itk::ExceptionObject &err )
+      catch(const itk::ExceptionObject& e)
       {
-        MITK_ERROR << "Could not do threshold: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        MITK_ERROR << "Could not do threshold: Caught itk::ExceptionObject:" << e.what() << std::endl;
         return;
       }
 
@@ -3102,9 +3104,9 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
         segmentationNode->Modified();
 
       }
-      catch( itk::ExceptionObject &err )
+      catch(const itk::ExceptionObject& e)
       {
-        MITK_ERROR << "Could not do clean: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        MITK_ERROR << "Could not do clean: Caught itk::ExceptionObject:" << e.what() << std::endl;
         return;
       }
 
@@ -3136,9 +3138,9 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
         MITK_ERROR << "Could not do wipe: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         return;
       }
-      catch( itk::ExceptionObject &err )
+      catch(const itk::ExceptionObject& e)
       {
-        MITK_ERROR << "Could not do wipe: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        MITK_ERROR << "Could not do wipe: Caught itk::ExceptionObject:" << e.what() << std::endl;
         return;
       }
 
@@ -3167,9 +3169,9 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
         MITK_ERROR << "Could not do propagation: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         return;
       }
-      catch( itk::ExceptionObject &err )
+      catch(const itk::ExceptionObject& e)
       {
-        MITK_ERROR << "Could not do propagation: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        MITK_ERROR << "Could not do propagation: Caught itk::ExceptionObject:" << e.what() << std::endl;
         return;
       }
       break;
