@@ -318,10 +318,9 @@ private:
   mitk::PointSet* GetSeeds();
 
   /// \brief Initialises seeds for a given slice.
+  /// Used when starting a segmentation or switching orientation, to place seeds
+  /// into the regions of the current slice.
   void InitialiseSeedsForSlice(int sliceAxis, int sliceIndex);
-
-  /// \brief Used when restarting a volume, to initialize all seeds for an existing segmentation.
-  void InitialiseSeedsForVolume();
 
   /// \brief Retrieves the min and max of the image (cached), and sets the thresholding
   /// intensity sliders range accordingly.

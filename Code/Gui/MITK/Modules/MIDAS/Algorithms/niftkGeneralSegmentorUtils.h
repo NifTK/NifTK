@@ -406,21 +406,6 @@ void ITKInitialiseSeedsForSlice(
     int sliceIndex
     );
 
-
-/// \brief Creates seeds for each distinct 4-connected region on each slice for a given axis.
-///
-/// This is called when the user starts a segmentation from an existing one. When you click
-/// "re-start segmentation", the current view will have an orientation (axial, coronal, sagittal)
-/// and hence a known through-slice axis. So this methods retrieves the largest possible
-/// region, and calls ITKAddNewSeedsToPointSet to iterate through each slice, and create new seeds.
-/// \param axis through slice axis, which should be [0|1|2].
-template<typename TPixel, unsigned int VImageDimension>
-void ITKInitialiseSeedsForVolume(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet& seeds,
-    int axis
-    );
-
 }
 
 #include "niftkGeneralSegmentorUtils.txx"

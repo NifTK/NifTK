@@ -1588,27 +1588,4 @@ void ITKInitialiseSeedsForSlice(
       );
 }
 
-
-//-----------------------------------------------------------------------------
-template<typename TPixel, unsigned int VImageDimension>
-void ITKInitialiseSeedsForVolume(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet& seeds,
-    int axis
-    )
-{
-  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
-  typedef typename ImageType::RegionType RegionType;
-
-  RegionType region = itkImage->GetLargestPossibleRegion();
-
-  ITKAddNewSeedsToPointSet(
-      itkImage,
-      region,
-      0,
-      axis,
-      seeds
-      );
-}
-
 }

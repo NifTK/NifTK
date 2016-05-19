@@ -464,7 +464,9 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 
     if (isRestarting)
     {
-      this->InitialiseSeedsForVolume();
+      int sliceAxis = this->GetReferenceImageSliceAxis();
+      int sliceIndex = this->GetReferenceImageSliceIndex();
+      this->InitialiseSeedsForSlice(sliceAxis, sliceIndex);
       this->UpdateCurrentSliceContours();
     }
 
@@ -1074,43 +1076,7 @@ void GeneralSegmentorController::InitialiseSeedsForSlice(int sliceAxis, int slic
   }
   catch(const mitk::AccessByItkException& e)
   {
-    MITK_ERROR << "Caught exception during ITKInitialiseSeedsForVolume, so have not initialised seeds correctly, caused by:" << e.what();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void GeneralSegmentorController::InitialiseSeedsForVolume()
-{
-  if (!this->HasInitialisedWorkingData())
-  {
-    return;
-  }
-
-  ImageOrientation orientation = this->GetOrientation();
-  assert(orientation != IMAGE_ORIENTATION_UNKNOWN);
-
-  int sliceAxis = this->GetReferenceImageSliceAxis(orientation);
-  assert(sliceAxis >= 0);
-
-  mitk::PointSet *seeds = this->GetSeeds();
-  assert(seeds);
-
-  mitk::Image::Pointer workingImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
-  assert(workingImage);
-
-  try
-  {
-    AccessFixedDimensionByItk_n(workingImage,
-        ITKInitialiseSeedsForVolume, 3,
-        (*seeds,
-         sliceAxis
-        )
-      );
-  }
-  catch(const mitk::AccessByItkException& e)
-  {
-    MITK_ERROR << "Caught exception during ITKInitialiseSeedsForVolume, so have not initialised seeds correctly, caused by:" << e.what();
+    MITK_ERROR << "Caught exception during ITKInitialiseSeedsForSlice, so have not initialised seeds correctly, caused by:" << e.what();
   }
 }
 
