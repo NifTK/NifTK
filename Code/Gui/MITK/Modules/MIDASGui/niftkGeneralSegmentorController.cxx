@@ -886,8 +886,8 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
               message = tr("Change %1 slice from %2 to %3 (image axis: %4, from slice: %5 to slice: %6)")
                   .arg(QString::fromStdString(orientationName)).arg(d->m_SelectedSliceIndex).arg(selectedSliceIndex)
                   .arg(sliceAxis).arg(d->m_SliceIndex).arg(sliceIndex);
-              OpChangeSliceCommand *doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, d->m_SliceIndex, sliceIndex, d->m_SelectedPosition, selectedPosition);
-              OpChangeSliceCommand *undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, d->m_SliceIndex, sliceIndex, d->m_SelectedPosition, selectedPosition);
+              OpChangeSliceCommand *doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, d->m_SelectedPosition, selectedPosition);
+              OpChangeSliceCommand *undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, d->m_SelectedPosition, selectedPosition);
               mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
               mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
               this->ExecuteOperation(doOp);
@@ -2921,8 +2921,6 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
 
       mitk::Point3D beforePoint = op->GetBeforePoint();
       mitk::Point3D afterPoint = op->GetAfterPoint();
-      int beforeSlice = op->GetBeforeSlice();
-      int afterSlice = op->GetAfterSlice();
 
       mitk::Point3D selectedPoint;
 
@@ -2935,15 +2933,10 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
         selectedPoint = beforePoint;
       }
 
-      // Only move if we are not already on this slice.
-      // Better to compare integers than floating point numbers.
-      if (beforeSlice != afterSlice)
-      {
-        bool wasChangingSlice = d->m_IsChangingSlice;
-        d->m_IsChangingSlice = true;
-        this->GetView()->SetSelectedPosition(selectedPoint);
-        d->m_IsChangingSlice = wasChangingSlice;
-      }
+      bool wasChangingSlice = d->m_IsChangingSlice;
+      d->m_IsChangingSlice = true;
+      this->GetView()->SetSelectedPosition(selectedPoint);
+      d->m_IsChangingSlice = wasChangingSlice;
 
       break;
     }

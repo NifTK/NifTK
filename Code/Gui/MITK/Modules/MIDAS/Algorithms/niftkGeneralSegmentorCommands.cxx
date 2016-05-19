@@ -52,31 +52,13 @@ bool OpGeneralSegmentorBaseCommand::IsRedo() const
 OpChangeSliceCommand::OpChangeSliceCommand(
     mitk::OperationType type,
     bool redo,
-    int beforeSlice,
-    int afterSlice,
     mitk::Point3D beforePoint,
     mitk::Point3D afterPoint
     )
 : OpGeneralSegmentorBaseCommand(type, redo)
-, m_BeforeSlice(beforeSlice)
-, m_AfterSlice(afterSlice)
 , m_BeforePoint(beforePoint)
 , m_AfterPoint(afterPoint)
 {
-}
-
-
-//-----------------------------------------------------------------------------
-int OpChangeSliceCommand::GetBeforeSlice() const
-{
-  return m_BeforeSlice;
-}
-
-
-//-----------------------------------------------------------------------------
-int OpChangeSliceCommand::GetAfterSlice() const
-{
-  return m_AfterSlice;
 }
 
 

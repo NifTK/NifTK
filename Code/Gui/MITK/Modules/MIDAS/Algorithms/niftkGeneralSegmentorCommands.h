@@ -71,23 +71,15 @@ public:
   OpChangeSliceCommand(
       mitk::OperationType type,
       bool redo,
-      int beforeSlice,
-      int afterSlice,
       mitk::Point3D beforePoint,
       mitk::Point3D afterPoint
       );
-
-  int GetBeforeSlice() const;
-
-  int GetAfterSlice() const;
 
   mitk::Point3D GetBeforePoint() const;
 
   mitk::Point3D GetAfterPoint() const;
 
 protected:
-  int m_BeforeSlice;
-  int m_AfterSlice;
   mitk::Point3D m_BeforePoint;
   mitk::Point3D m_AfterPoint;
 };
