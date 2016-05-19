@@ -704,8 +704,8 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
           mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
           mitk::PointSet::Pointer propagatedSeeds = mitk::PointSet::New();
           mitk::PointSet* seeds = this->GetSeeds();
-          bool nextSliceIsEmpty = true;
-          bool thisSliceIsEmpty = false;
+          bool previousSliceIsEmpty = false;
+          bool sliceIsEmpty = true;
           bool operationCancelled = false;
 
           bool wasUpdating = d->m_IsUpdating;
@@ -722,13 +722,13 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                 ITKSliceIsEmpty, 3,
                 (sliceAxis,
                  sliceIndex,
-                 nextSliceIsEmpty
+                 sliceIsEmpty
                 )
               );
 
             if (d->m_GUI->IsRetainMarksCheckBoxChecked())
             {
-              int returnValue(QMessageBox::NoButton);
+              int answer = QMessageBox::NoButton;
 
               if (!d->m_GUI->IsThresholdingCheckBoxChecked())
               {
@@ -736,28 +736,28 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                     ITKSliceIsEmpty, 3,
                     (sliceAxis,
                      d->m_SliceIndex,
-                     thisSliceIsEmpty
+                     previousSliceIsEmpty
                     )
                   );
               }
 
-              if (thisSliceIsEmpty)
+              if (previousSliceIsEmpty)
               {
-                returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
-                                                        tr("The current slice is empty - retain marks cannot be performed.\n"
+                answer = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
+                                                        tr("The previous slice is empty - retain marks cannot be performed.\n"
                                                            "Use the 'wipe' functionality to erase slices instead"),
                                                         QMessageBox::Ok
                                      );
               }
-              else if (!nextSliceIsEmpty)
+              else if (!sliceIsEmpty)
               {
-                returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
+                answer = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                         tr("The new slice is not empty - retain marks will overwrite the slice.\n"
                                                            "Are you sure?"),
                                                         QMessageBox::Yes | QMessageBox::No);
               }
 
-              if (returnValue == QMessageBox::Ok || returnValue == QMessageBox::No )
+              if (answer == QMessageBox::Ok || answer == QMessageBox::No )
               {
                 operationCancelled = true;
               }
@@ -770,7 +770,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                      sliceAxis,
                      sliceIndex,
                      false, // We propagate seeds at current position, so no optimisation
-                     nextSliceIsEmpty,
+                     sliceIsEmpty,
                      *(copyOfCurrentSeeds.GetPointer()),
                      *(propagatedSeeds.GetPointer()),
                      outputRegion
@@ -810,7 +810,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                    sliceAxis,
                    sliceIndex,
                    true, // optimise seed position on current slice.
-                   nextSliceIsEmpty,
+                   sliceIsEmpty,
                    *(copyOfCurrentSeeds.GetPointer()),
                    *(propagatedSeeds.GetPointer()),
                    outputRegion
@@ -869,14 +869,19 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
 
             if (!operationCancelled)
             {
-              QString message = tr("Propagate seeds from slice %1 to %2").arg(d->m_SliceIndex).arg(sliceIndex);
+              std::string orientationName = GetOrientationName(orientation);
+              QString message = tr("Propagate seeds on %1 slice %2 (image axis: %3, slice: %4)")
+                  .arg(QString::fromStdString(orientationName)).arg(selectedSliceIndex)
+                  .arg(sliceAxis).arg(sliceIndex);
               OpPropagateSeeds *doPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceIndex, sliceAxis, propagatedSeeds);
               OpPropagateSeeds *undoPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, d->m_SliceIndex, sliceAxis, copyOfCurrentSeeds);
               mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(d->m_Interface, doPropOp, undoPropOp, message.toStdString());
               mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
               this->ExecuteOperation(doPropOp);
 
-              message = tr("Change slice from %1 to %2").arg(d->m_SliceIndex).arg(sliceIndex);
+              message = tr("Change %1 slice from %2 to %3 (image axis: %4, from slice: %5 to slice: %6)")
+                  .arg(QString::fromStdString(orientationName)).arg(d->m_SelectedSliceIndex).arg(selectedSliceIndex)
+                  .arg(sliceAxis).arg(d->m_SliceIndex).arg(sliceIndex);
               OpChangeSliceCommand *doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, d->m_SliceIndex, sliceIndex, d->m_SelectedPosition, selectedPosition);
               OpChangeSliceCommand *undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, d->m_SliceIndex, sliceIndex, d->m_SelectedPosition, selectedPosition);
               mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
@@ -920,6 +925,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
         }
 
         this->RequestRenderWindowUpdate();
+
       } // if not being updated and not changing slice
 
       d->m_SliceIndex = sliceIndex;
@@ -930,7 +936,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
     d->m_Orientation = orientation;
     d->m_SelectedSliceIndex = selectedSliceIndex;
 
-  } // if orientation or slice index has changed
+  } // if orientation or selected slice has changed
 }
 
 
@@ -1743,7 +1749,7 @@ void GeneralSegmentorController::OnResetButtonClicked()
     return;
   }
 
-  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                             tr("Clear all slices ? \n This is not Undo-able! \n Are you sure?"),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -1818,7 +1824,7 @@ void GeneralSegmentorController::OnRestartButtonClicked()
     return;
   }
 
-  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                             tr("Discard all changes?\nThis is not Undo-able!\nAre you sure?"),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -2134,7 +2140,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     message = tr(messageWithOrientation.toStdString().c_str()).arg(orientationText);
   }
 
-  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                    tr("%1.\n"
                                                       "Are you sure?").arg(message),
                                                    QMessageBox::Yes | QMessageBox::No);
@@ -2293,7 +2299,7 @@ void GeneralSegmentorController::OnWipePlusButtonClicked()
     orientationText = "up from";
   }
 
-  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                             tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -2332,7 +2338,7 @@ void GeneralSegmentorController::OnWipeMinusButtonClicked()
     orientationText = "down from";
   }
 
-  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                             tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -2477,15 +2483,12 @@ bool GeneralSegmentorController::DoWipe(int direction)
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnThresholdApplyButtonClicked()
 {
-  int sliceIndex = this->GetReferenceImageSliceIndex();
-  this->DoThresholdApply(sliceIndex, sliceIndex, true, false, false);
+  this->DoThresholdApply(true, false, false);
 }
 
 
 //-----------------------------------------------------------------------------
 bool GeneralSegmentorController::DoThresholdApply(
-    int oldSliceIndex,
-    int newSliceIndex,
     bool optimiseSeeds,
     bool newSliceEmpty,
     bool newCheckboxStatus)
@@ -2502,6 +2505,11 @@ bool GeneralSegmentorController::DoThresholdApply(
   mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
+    ImageOrientation orientation = this->GetOrientation();
+    int selectedSliceIndex = this->GetSliceIndex();
+
+    int sliceIndex = this->GetReferenceImageSliceIndex();
+
     mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[MIDASTool::SEGMENTATION];
     mitk::Image::Pointer segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
 
@@ -2528,7 +2536,7 @@ bool GeneralSegmentorController::DoThresholdApply(
       mitk::PointSet::Pointer outputSeeds = mitk::PointSet::New();
       std::vector<int> outputRegion;
 
-      if (sliceAxis != -1 && oldSliceIndex != -1)
+      if (sliceAxis != -1 && sliceIndex != -1)
       {
         bool wasUpdating = d->m_IsUpdating;
         d->m_IsUpdating = true;
@@ -2538,9 +2546,9 @@ bool GeneralSegmentorController::DoThresholdApply(
           AccessFixedDimensionByItk_n(regionGrowingImage,
               ITKPreProcessingOfSeedsForChangingSlice, 3,
               (*seeds,
-               oldSliceIndex,
+               sliceIndex,
                sliceAxis,
-               newSliceIndex,
+               sliceIndex,
                optimiseSeeds,
                newSliceEmpty,
                *(copyOfInputSeeds.GetPointer()),
@@ -2560,7 +2568,10 @@ bool GeneralSegmentorController::DoThresholdApply(
           mitk::UndoStackItem::IncCurrGroupEventId();
           mitk::UndoStackItem::ExecuteIncrement();
 
-          QString message = tr("Apply threshold on slice %1").arg(oldSliceIndex);
+          std::string orientationName = GetOrientationName(orientation);
+          QString message = tr("Apply threshold on %1 slice %2 (image axis: %3, slice: %4)")
+              .arg(QString::fromStdString(orientationName)).arg(selectedSliceIndex)
+              .arg(sliceAxis).arg(sliceIndex);
           OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
           OpThresholdApply *doThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, newCheckboxStatus);
           OpThresholdApply *undoThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, currentCheckboxStatus);
@@ -2568,9 +2579,11 @@ bool GeneralSegmentorController::DoThresholdApply(
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
           this->ExecuteOperation(doThresholdOp);
 
-          message = tr("Propagate seeds on slice %1").arg(oldSliceIndex);
-          OpPropagateSeeds *doPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, newSliceIndex, sliceAxis, outputSeeds);
-          OpPropagateSeeds *undoPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, oldSliceIndex, sliceAxis, copyOfInputSeeds);
+          message = tr("Propagate seeds on %1 slice %2 (image axis: %3, slice: %4)")
+              .arg(QString::fromStdString(orientationName)).arg(selectedSliceIndex)
+              .arg(sliceAxis).arg(sliceIndex);
+          OpPropagateSeeds *doPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceIndex, sliceAxis, outputSeeds);
+          OpPropagateSeeds *undoPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceIndex, sliceAxis, copyOfInputSeeds);
           mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(d->m_Interface, doPropOp, undoPropOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
           this->ExecuteOperation(doPropOp);
@@ -2625,7 +2638,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
     bool hasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(thresholdCheckBox, sliceIndex);
     if (hasUnenclosedSeeds)
     {
-      int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyView"),
+      int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                        tr("There are unenclosed seeds - slice will be wiped\n"
                                                           "Are you sure?"),
                                                        QMessageBox::Yes | QMessageBox::No);
@@ -2707,7 +2720,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
           {
             bool useThresholdsWhenCalculatingEnclosedSeeds = false;
 
-            this->DoThresholdApply(sliceIndex, sliceIndex, true, false, true);
+            this->DoThresholdApply(true, false, true);
 
             // Get seeds just on the current slice
             mitk::PointSet::Pointer seedsForCurrentSlice = mitk::PointSet::New();

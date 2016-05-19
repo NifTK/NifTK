@@ -64,6 +64,17 @@ ImageOrientation GetMitkOrientation(itk::Orientation orientation)
 
 
 //-----------------------------------------------------------------------------
+std::string GetOrientationName(ImageOrientation orientation)
+{
+  return
+      orientation == IMAGE_ORIENTATION_AXIAL ? "axial" :
+      orientation == IMAGE_ORIENTATION_SAGITTAL ? "sagittal" :
+      orientation == IMAGE_ORIENTATION_CORONAL ? "coronal" :
+      "unknown";
+}
+
+
+//-----------------------------------------------------------------------------
 int GetUpDirection(const mitk::BaseGeometry* geometry, itk::Orientation orientation)
 {
 

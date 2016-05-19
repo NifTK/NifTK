@@ -376,7 +376,8 @@ private:
 
   /// \brief Method that actually does the threshold apply, so we can call it from the
   /// threshold apply button and not change slice, or when we change slice.
-  bool DoThresholdApply(int oldSliceIndex, int newSliceIndex, bool optimiseSeeds, bool newSliceEmpty, bool newCheckboxStatus);
+  /// It applies the threshold on the current slice.
+  bool DoThresholdApply(bool optimiseSeeds, bool newSliceEmpty, bool newCheckboxStatus);
 
   /// \brief Used to toggle tools on/off.
   void ToggleTool(int toolId);
