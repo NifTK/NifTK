@@ -56,7 +56,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 template<typename TPixel, unsigned int VImageDimension>
 void
 GeneralSegmentorPipeline<TPixel, VImageDimension>
-::SetParam(GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams& p)
+::SetParam(const GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams& p)
 {
   m_ExtractGreyRegionOfInterestFilter->SetInput(referenceImage);
   m_ExtractGreyRegionOfInterestFilter->SetDirectionCollapseToIdentity();

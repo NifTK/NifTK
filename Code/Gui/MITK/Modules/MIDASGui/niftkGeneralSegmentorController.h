@@ -335,13 +335,13 @@ private:
   bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceIndex);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceIndex, mitk::PointSet& seeds);
+  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceIndex, const mitk::PointSet* seeds);
 
   /// \brief Filters seeds to current slice
   void FilterSeedsToCurrentSlice(
-      mitk::PointSet& inputPoints,
-      int& sliceAxis,
-      int& sliceIndex,
+      const mitk::PointSet* inputPoints,
+      int sliceAxis,
+      int sliceIndex,
       mitk::PointSet& outputPoints
       );
 

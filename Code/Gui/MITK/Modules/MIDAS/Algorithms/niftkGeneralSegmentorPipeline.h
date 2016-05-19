@@ -135,7 +135,7 @@ typedef ParametricPathType::VertexType     ParametricPathVertexType;
 ///
 
 /** Converts Points from MITK to ITK. */
-void NIFTKMIDAS_EXPORT ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, itk::PointSet<float, 3> *points);
+void NIFTKMIDAS_EXPORT ConvertMITKSeedsAndAppendToITKSeeds(const mitk::PointSet* seeds, itk::PointSet<float, 3>* points);
 
 
 /// \brief Converts MITK contours from to ITK contours and appends them to a list.
@@ -191,11 +191,10 @@ struct NIFTKMIDAS_EXPORT GeneralSegmentorPipelineParams
   int m_SliceAxis;
   double m_LowerThreshold;
   double m_UpperThreshold;
-  mitk::PointSet *m_Seeds;
-  mitk::ContourModelSet *m_SegmentationContours;
-  mitk::ContourModelSet *m_DrawContours;
-  mitk::ContourModelSet *m_PolyContours;
-
+  const mitk::PointSet* m_Seeds;
+  mitk::ContourModelSet* m_SegmentationContours;
+  mitk::ContourModelSet* m_DrawContours;
+  mitk::ContourModelSet* m_PolyContours;
 };
 
 /**
@@ -263,7 +262,7 @@ public:
 
   virtual ~GeneralSegmentorPipeline();
 
-  void SetParam(GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams &params);
+  void SetParam(const GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams& params);
 
   void Update(GeneralSegmentorPipelineParams &params);
 
