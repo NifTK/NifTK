@@ -265,6 +265,9 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex)
       residualTranslation
       );
 
+  std::cout << "Tsai 1989, linear hand-eye: rot="
+            << residualRotation << ", trans=" << residualTranslation << std::endl;
+
   return handEye;
 }
 
@@ -313,7 +316,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex)
     m_Distortion[imageIndex]
     );
 
-  std::cout << "NonLinearHandEyeOptimiser: rms=" << reprojectionRMS << std::endl;
+  std::cout << "Malti 2013, non-linear hand-eye: rms=" << reprojectionRMS << std::endl;
 
   return handEye;
 }
