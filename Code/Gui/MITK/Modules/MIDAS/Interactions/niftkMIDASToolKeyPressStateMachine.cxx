@@ -59,7 +59,7 @@ MIDASToolKeyPressStateMachine::~MIDASToolKeyPressStateMachine()
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASToolKeyPressStateMachine::ConnectActionsAndFunctions()
+void MIDASToolKeyPressStateMachine::ConnectActionsAndFunctions()
 {
   CONNECT_FUNCTION("selectSeedTool", SelectSeedTool);
   CONNECT_FUNCTION("selectDrawTool", SelectDrawTool);
@@ -71,7 +71,7 @@ void niftk::MIDASToolKeyPressStateMachine::ConnectActionsAndFunctions()
 
 
 //-----------------------------------------------------------------------------
-bool niftk::MIDASToolKeyPressStateMachine::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
+bool MIDASToolKeyPressStateMachine::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
   return this->CanHandleEvent(event);
 }

@@ -21,23 +21,28 @@
 
 #include "niftkToolFactoryMacros.h"
 
+namespace niftk
+{
+
 NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPosnTool, "MIDAS Posn Tool");
 
-niftk::MIDASPosnTool::MIDASPosnTool()
+MIDASPosnTool::MIDASPosnTool()
 : MIDASTool()
 {
 }
 
-niftk::MIDASPosnTool::~MIDASPosnTool()
+MIDASPosnTool::~MIDASPosnTool()
 {
 }
 
-const char* niftk::MIDASPosnTool::GetName() const
+const char* MIDASPosnTool::GetName() const
 {
   return "Posn";
 }
 
-const char** niftk::MIDASPosnTool::GetXPM() const
+const char** MIDASPosnTool::GetXPM() const
 {
   return niftkMIDASPosnTool_xpm;
+}
+
 }

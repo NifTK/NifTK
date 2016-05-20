@@ -12,27 +12,36 @@
 
 =============================================================================*/
 
-#include "niftkCommonMIDASActivator.h"
-#include <QtPlugin>
+#ifndef __niftkBaseGUI_h
+#define __niftkBaseGUI_h
+
+#include <niftkCoreGuiExports.h>
+
+#include <QObject>
+
+class QWidget;
 
 namespace niftk
 {
 
-//-----------------------------------------------------------------------------
-void CommonMIDASActivator::start(ctkPluginContext* context)
+/// \class BaseGUI
+/// \brief Base class for GUI controls on BlueBerry views.
+class NIFTKCOREGUI_EXPORT BaseGUI : public QObject
 {
-  Q_UNUSED(context)
+  Q_OBJECT
+
+public:
+
+  BaseGUI(QWidget* parent);
+  virtual ~BaseGUI();
+
+public:
+
+  /// \brief Returns the parent widget.
+  QWidget* GetParent() const;
+
+};
+
 }
 
-
-//-----------------------------------------------------------------------------
-void CommonMIDASActivator::stop(ctkPluginContext* context)
-{
-  Q_UNUSED(context)
-}
-
-}
-
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_commonmidas, niftk::CommonMIDASActivator)
 #endif

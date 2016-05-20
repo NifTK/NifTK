@@ -32,9 +32,9 @@ class BaseRenderer;
  *
  * If the tracked renderer is set to 0, only the global visibility is observed.
  *
- * This finds use in the Thumbnail window plugin, which tracks visibility properties, and applies
- * them to a single render window, and also the MIDAS Segmentation Viewer widget which tracks
- * visibility properties, and applies them to another viewer.
+ * This finds use in the Thumbnail viewer plugin, which tracks visibility properties, and applies
+ * them to a single render window, and also in the Side Viewer which tracks visibility properties,
+ * and applies them to another viewer.
  */
 class NIFTKCORE_EXPORT DataNodeVisibilityTracker : public mitk::DataNodePropertyListener
 {
@@ -66,11 +66,11 @@ protected:
   DataNodeVisibilityTracker& operator=(const DataNodeVisibilityTracker&); // Purposefully not implemented.
 
   /// \see DataStorageListener::NodeAdded
-  virtual void OnNodeAdded(mitk::DataNode* node);
+  virtual void OnNodeAdded(mitk::DataNode* node) override;
 
   /// \brief Called when the property value has changed globally or for the given renderer.
   /// If the global property has changed, renderer is NULL.
-  virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer);
+  virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
 private:
 

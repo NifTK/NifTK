@@ -24,6 +24,9 @@
 #include "niftkGeneralSegmentorPipelineCache.h"
 #include <niftkMIDASContourTool.h>
 
+namespace niftk
+{
+
 /**************************************************************
  * Notes: All code below this should never set the Modified
  * flag. The ITK layer, just does basic iterating, basic
@@ -33,9 +36,9 @@
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKFillRegion(
+void ITKFillRegion(
     itk::Image<TPixel, VImageDimension>* itkImage,
-    typename itk::Image<TPixel, VImageDimension>::RegionType &region,
+    const typename itk::Image<TPixel, VImageDimension>::RegionType& region,
     TPixel fillValue
     )
 {
@@ -51,20 +54,20 @@ void niftk::ITKFillRegion(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKClearImage(itk::Image<TPixel, VImageDimension>* itkImage)
+void ITKClearImage(itk::Image<TPixel, VImageDimension>* itkImage)
 {
   typedef itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::RegionType RegionType;
 
   RegionType largestPossibleRegion = itkImage->GetLargestPossibleRegion();
-  niftk::ITKFillRegion(itkImage, largestPossibleRegion, (TPixel)0);
+  ITKFillRegion(itkImage, largestPossibleRegion, (TPixel)0);
 }
 
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKCopyImage(
-    itk::Image<TPixel, VImageDimension>* input,
+void ITKCopyImage(
+    const itk::Image<TPixel, VImageDimension>* input,
     itk::Image<TPixel, VImageDimension>* output
     )
 {
@@ -84,10 +87,10 @@ void niftk::ITKCopyImage(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKCopyRegion(
-    itk::Image<TPixel, VImageDimension>* input,
-    int axis,
-    int slice,
+void ITKCopyRegion(
+    const itk::Image<TPixel, VImageDimension>* input,
+    int sliceAxis,
+    int sliceIndex,
     itk::Image<TPixel, VImageDimension>* output
     )
 {
@@ -95,7 +98,7 @@ void niftk::ITKCopyRegion(
   typedef typename ImageType::RegionType RegionType;
 
   RegionType sliceRegion;
-  niftk::ITKCalculateSliceRegion(input, axis, slice, sliceRegion);
+  ITKCalculateSliceRegion(input, sliceAxis, sliceIndex, sliceRegion);
 
   itk::ImageRegionConstIterator<ImageType> inputIterator(input, sliceRegion);
   itk::ImageRegionIterator<ImageType> outputIterator(output, sliceRegion);
@@ -109,11 +112,11 @@ void niftk::ITKCopyRegion(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKCalculateSliceRegion(
-    itk::Image<TPixel, VImageDimension>* itkImage,
-    int axis,
-    int slice,
-    typename itk::Image<TPixel, VImageDimension>::RegionType &outputRegion
+void ITKCalculateSliceRegion(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    int sliceAxis,
+    int sliceIndex,
+    typename itk::Image<TPixel, VImageDimension>::RegionType& outputRegion
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
@@ -125,8 +128,8 @@ void niftk::ITKCalculateSliceRegion(
   SizeType regionSize = region.GetSize();
   IndexType regionIndex = region.GetIndex();
 
-  regionSize[axis] = 1;
-  regionIndex[axis] = slice;
+  regionSize[sliceAxis] = 1;
+  regionIndex[sliceAxis] = sliceIndex;
 
   outputRegion.SetSize(regionSize);
   outputRegion.SetIndex(regionIndex);
@@ -135,10 +138,10 @@ void niftk::ITKCalculateSliceRegion(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKCalculateSliceRegionAsVector(
-    itk::Image<TPixel, VImageDimension>* itkImage,
-    int axis,
-    int slice,
+void ITKCalculateSliceRegionAsVector(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    int sliceAxis,
+    int sliceIndex,
     std::vector<int>& outputRegion
     )
 {
@@ -148,7 +151,7 @@ void niftk::ITKCalculateSliceRegionAsVector(
   typedef typename ImageType::IndexType IndexType;
 
   RegionType region;
-  niftk::ITKCalculateSliceRegion(itkImage, axis, slice, region);
+  ITKCalculateSliceRegion(itkImage, sliceAxis, sliceIndex, region);
 
   SizeType regionSize = region.GetSize();
   IndexType regionIndex = region.GetIndex();
@@ -164,9 +167,9 @@ void niftk::ITKCalculateSliceRegionAsVector(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKClearSlice(itk::Image<TPixel, VImageDimension>* itkImage,
-    int axis,
-    int slice
+void ITKClearSlice(itk::Image<TPixel, VImageDimension>* itkImage,
+    int sliceAxis,
+    int sliceIndex
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
@@ -175,29 +178,29 @@ void niftk::ITKClearSlice(itk::Image<TPixel, VImageDimension>* itkImage,
   RegionType sliceRegion;
   TPixel pixelValue = 0;
 
-  niftk::ITKCalculateSliceRegion(itkImage, axis, slice, sliceRegion);
-  niftk::ITKFillRegion(itkImage, sliceRegion, pixelValue);
+  ITKCalculateSliceRegion(itkImage, sliceAxis, sliceIndex, sliceRegion);
+  ITKFillRegion(itkImage, sliceRegion, pixelValue);
 }
 
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKFilterSeedsToCurrentSlice(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet &inputSeeds,
-    int axis,
-    int slice,
-    mitk::PointSet &outputSeeds
+void ITKFilterSeedsToCurrentSlice(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* inputSeeds,
+    int sliceAxis,
+    int sliceIndex,
+    mitk::PointSet* outputSeeds
     )
 {
-  outputSeeds.Clear();
+  outputSeeds->Clear();
 
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::IndexType IndexType;
   typedef typename ImageType::PointType PointType;
 
-  mitk::PointSet::PointsConstIterator inputSeedsIt = inputSeeds.Begin();
-  mitk::PointSet::PointsConstIterator inputSeedsEnd = inputSeeds.End();
+  mitk::PointSet::PointsConstIterator inputSeedsIt = inputSeeds->Begin();
+  mitk::PointSet::PointsConstIterator inputSeedsEnd = inputSeeds->End();
   for ( ; inputSeedsIt != inputSeedsEnd; ++inputSeedsIt)
   {
     mitk::PointSet::PointType inputSeed = inputSeedsIt->Value();
@@ -205,9 +208,9 @@ void niftk::ITKFilterSeedsToCurrentSlice(
     IndexType inputSeedIndex;
     itkImage->TransformPhysicalPointToIndex(inputSeed, inputSeedIndex);
 
-    if (inputSeedIndex[axis] == slice)
+    if (inputSeedIndex[sliceAxis] == sliceIndex)
     {
-      outputSeeds.InsertPoint(inputSeedID, inputSeed);
+      outputSeeds->InsertPoint(inputSeedID, inputSeed);
     }
   }
 }
@@ -215,16 +218,16 @@ void niftk::ITKFilterSeedsToCurrentSlice(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKRecalculateMinAndMaxOfSeedValues(
-    itk::Image<TPixel, VImageDimension>* itkImage,
-    mitk::PointSet &inputSeeds,
-    int axis,
-    int slice,
-    double &min,
-    double &max
+void ITKRecalculateMinAndMaxOfSeedValues(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* inputSeeds,
+    int sliceAxis,
+    int sliceIndex,
+    double& min,
+    double& max
     )
 {
-  if (inputSeeds.GetSize() == 0)
+  if (inputSeeds->GetSize() == 0)
   {
     min = 0;
     max = 0;
@@ -236,7 +239,7 @@ void niftk::ITKRecalculateMinAndMaxOfSeedValues(
     typedef typename ImageType::IndexType IndexType;
 
     mitk::PointSet::Pointer filteredSeeds = mitk::PointSet::New();
-    niftk::ITKFilterSeedsToCurrentSlice(itkImage, inputSeeds, axis, slice, *(filteredSeeds.GetPointer()));
+    ITKFilterSeedsToCurrentSlice(itkImage, inputSeeds, sliceAxis, sliceIndex, filteredSeeds);
 
     if (filteredSeeds->GetSize() == 0)
     {
@@ -282,12 +285,12 @@ void niftk::ITKRecalculateMinAndMaxOfSeedValues(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKFilterInputPointSetToExcludeRegionOfInterest(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    typename itk::Image<TPixel, VImageDimension>::RegionType regionOfInterest,
-    mitk::PointSet &inputSeeds,
-    mitk::PointSet &outputCopyOfInputSeeds,
-    mitk::PointSet &outputNewSeedsNotInRegionOfInterest
+void ITKFilterInputPointSetToExcludeRegionOfInterest(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const typename itk::Image<TPixel, VImageDimension>::RegionType& regionOfInterest,
+    const mitk::PointSet* inputSeeds,
+    mitk::PointSet* outputCopyOfInputSeeds,
+    mitk::PointSet* outputNewSeedsNotInRegionOfInterest
     )
 {
   // Copy inputSeeds to outputCopyOfInputSeeds seeds, so that they can be passed on to
@@ -298,15 +301,15 @@ void niftk::ITKFilterInputPointSetToExcludeRegionOfInterest(
   typedef typename ImageType::IndexType IndexType;
   typedef typename ImageType::PointType PointType;
 
-  mitk::PointSet::PointsConstIterator inputSeedsIt = inputSeeds.Begin();
-  mitk::PointSet::PointsConstIterator inputSeedsEnd = inputSeeds.End();
+  mitk::PointSet::PointsConstIterator inputSeedsIt = inputSeeds->Begin();
+  mitk::PointSet::PointsConstIterator inputSeedsEnd = inputSeeds->End();
   for ( ; inputSeedsIt != inputSeedsEnd; ++inputSeedsIt)
   {
     mitk::PointSet::PointType inputPoint = inputSeedsIt->Value();
     mitk::PointSet::PointIdentifier inputPointID = inputSeedsIt->Index();
 
     // Copy every point to outputCopyOfInputSeeds.
-    outputCopyOfInputSeeds.InsertPoint(inputPointID, inputPoint);
+    outputCopyOfInputSeeds->InsertPoint(inputPointID, inputPoint);
 
     // Only copy points outside of ROI.
     PointType voxelIndexInMillimetres = inputPoint;
@@ -315,7 +318,7 @@ void niftk::ITKFilterInputPointSetToExcludeRegionOfInterest(
 
     if (!regionOfInterest.IsInside(voxelIndex))
     {
-      outputNewSeedsNotInRegionOfInterest.InsertPoint(inputPointID, inputPoint);
+      outputNewSeedsNotInRegionOfInterest->InsertPoint(inputPointID, inputPoint);
     }
   }
 }
@@ -323,11 +326,11 @@ void niftk::ITKFilterInputPointSetToExcludeRegionOfInterest(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-bool niftk::ITKSliceDoesHaveSeeds(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet* seeds,
-    int axis,
-    int slice
+bool ITKSliceDoesHaveSeeds(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* seeds,
+    int sliceAxis,
+    int sliceIndex
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
@@ -343,7 +346,7 @@ bool niftk::ITKSliceDoesHaveSeeds(
     IndexType voxelIndex;
     itkImage->TransformPhysicalPointToIndex(voxelIndexInMillimetres, voxelIndex);
 
-    if (voxelIndex[axis] ==  slice)
+    if (voxelIndex[sliceAxis] ==  sliceIndex)
     {
       hasSeeds = true;
       break;
@@ -356,18 +359,18 @@ bool niftk::ITKSliceDoesHaveSeeds(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-bool niftk::ITKSliceIsEmpty(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    int axis,
-    int slice,
-    bool &outputSliceIsEmpty
+bool ITKSliceIsEmpty(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    int sliceAxis,
+    int sliceIndex,
+    bool& outputSliceIsEmpty
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::RegionType RegionType;
 
   RegionType region;
-  niftk::ITKCalculateSliceRegion(itkImage, axis, slice, region);
+  ITKCalculateSliceRegion(itkImage, sliceAxis, sliceIndex, region);
 
   outputSliceIsEmpty = true;
 
@@ -387,20 +390,19 @@ bool niftk::ITKSliceIsEmpty(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKUpdateRegionGrowing(
-    itk::Image<TPixel, VImageDimension>* itkImage,  // Grey scale image (read only).
+void ITKUpdateRegionGrowing(
+    const itk::Image<TPixel, VImageDimension>* itkImage,  // Grey scale image (read only).
     bool skipUpdate,
-    mitk::Image &workingImage,
-    mitk::PointSet &seeds,
-    mitk::ContourModelSet &segmentationContours,
-    mitk::ContourModelSet &drawContours,
-    mitk::ContourModelSet &polyContours,
-    int sliceNumber,
-    int axisNumber,
+    const mitk::Image* workingImage,
+    const mitk::PointSet* seeds,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* drawContours,
+    mitk::ContourModelSet* polyContours,
+    int sliceAxis,
+    int sliceIndex,
     double lowerThreshold,
     double upperThreshold,
-    mitk::DataNode::Pointer &outputRegionGrowingNode,
-    mitk::Image::Pointer &outputRegionGrowingImage
+    mitk::Image* outputRegionGrowingImage
     )
 {
   typedef itk::Image<unsigned char, VImageDimension> ImageType;
@@ -411,22 +413,22 @@ void niftk::ITKUpdateRegionGrowing(
   regionGrowingToItk->Update();
 
   typename ImageToItkType::Pointer workingImageToItk = ImageToItkType::New();
-  workingImageToItk->SetInput(&workingImage);
+  workingImageToItk->SetInput(workingImage);
   workingImageToItk->Update();
 
-  niftk::GeneralSegmentorPipelineCache* pipelineCache = niftk::GeneralSegmentorPipelineCache::Instance();
-  niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>* pipeline =
+  GeneralSegmentorPipelineCache* pipelineCache = GeneralSegmentorPipelineCache::Instance();
+  GeneralSegmentorPipeline<TPixel, VImageDimension>* pipeline =
       pipelineCache->GetPipeline<TPixel, VImageDimension>();
 
-  niftk::GeneralSegmentorPipelineParams params;
-  params.m_SliceNumber = sliceNumber;
-  params.m_AxisNumber = axisNumber;
+  GeneralSegmentorPipelineParams params;
+  params.m_SliceIndex = sliceIndex;
+  params.m_SliceAxis = sliceAxis;
   params.m_LowerThreshold = lowerThreshold;
   params.m_UpperThreshold = upperThreshold;
-  params.m_Seeds = &seeds;
-  params.m_SegmentationContours = &segmentationContours;
-  params.m_DrawContours = &drawContours;
-  params.m_PolyContours = &polyContours;
+  params.m_Seeds = seeds;
+  params.m_SegmentationContours = segmentationContours;
+  params.m_DrawContours = drawContours;
+  params.m_PolyContours = polyContours;
   params.m_EraseFullSlice = true;
 
   // Update pipeline.
@@ -459,26 +461,25 @@ void niftk::ITKUpdateRegionGrowing(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKPropagateToRegionGrowingImage
- (itk::Image<TPixel, VImageDimension>* itkImage,
-  mitk::PointSet& inputSeeds,
-  int sliceNumber,
-  int axisNumber,
+void ITKPropagateToRegionGrowingImage
+ (const itk::Image<TPixel, VImageDimension>* itkImage,
+  const mitk::PointSet* inputSeeds,
+  int sliceAxis,
+  int sliceIndex,
   int direction,
   double lowerThreshold,
   double upperThreshold,
-  mitk::PointSet &outputCopyOfInputSeeds,
-  mitk::PointSet &outputNewSeeds,
-  std::vector<int> &outputRegion,
-  mitk::DataNode::Pointer &outputRegionGrowingNode,
-  mitk::Image::Pointer &outputRegionGrowingImage
+  mitk::PointSet* outputCopyOfInputSeeds,
+  mitk::PointSet* outputNewSeeds,
+  std::vector<int>& outputRegion,
+  mitk::Image* outputRegionGrowingImage
  )
 {
   typedef typename itk::Image<TPixel, VImageDimension> GreyScaleImageType;
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
 
   // First take a copy of input seeds, as we need to store them for Undo/Redo purposes.
-  mitk::CopyPointSets(inputSeeds, outputCopyOfInputSeeds);
+  mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
 
   // Work out the output region of interest that will be affected.
   // We want the region upstream/downstream/both of the slice of interest
@@ -490,13 +491,13 @@ void niftk::ITKPropagateToRegionGrowingImage
 
   if (direction == 1)
   {
-    outputRegionSize[axisNumber] = outputRegionSize[axisNumber] - sliceNumber;
-    outputRegionIndex[axisNumber] = sliceNumber;
+    outputRegionSize[sliceAxis] = outputRegionSize[sliceAxis] - sliceIndex;
+    outputRegionIndex[sliceAxis] = sliceIndex;
   }
   else if (direction == -1)
   {
-    outputRegionSize[axisNumber] = sliceNumber + 1;
-    outputRegionIndex[axisNumber] = 0;
+    outputRegionSize[sliceAxis] = sliceIndex + 1;
+    outputRegionIndex[sliceAxis] = 0;
   }
   outputITKRegion.SetSize(outputRegionSize);
   outputITKRegion.SetIndex(outputRegionIndex);
@@ -509,16 +510,16 @@ void niftk::ITKPropagateToRegionGrowingImage
   outputRegion.push_back(outputRegionSize[2]);
 
   mitk::PointSet::Pointer temporaryPointSet = mitk::PointSet::New();
-  niftk::ITKFilterSeedsToCurrentSlice(itkImage, inputSeeds, axisNumber, sliceNumber, *(temporaryPointSet.GetPointer()));
+  ITKFilterSeedsToCurrentSlice(itkImage, inputSeeds, sliceAxis, sliceIndex, temporaryPointSet);
 
   if (direction == 1 || direction == -1)
   {
-    niftk::ITKPropagateUpOrDown(itkImage, *(temporaryPointSet.GetPointer()), sliceNumber, axisNumber, direction, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceAxis, sliceIndex, direction, lowerThreshold, upperThreshold, outputRegionGrowingImage);
   }
   else if (direction == 0)
   {
-    niftk::ITKPropagateUpOrDown(itkImage, *(temporaryPointSet.GetPointer()), sliceNumber, axisNumber, 1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
-    niftk::ITKPropagateUpOrDown(itkImage, *(temporaryPointSet.GetPointer()), sliceNumber, axisNumber, -1, lowerThreshold, upperThreshold, outputRegionGrowingNode, outputRegionGrowingImage);
+    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceAxis, sliceIndex, 1, lowerThreshold, upperThreshold, outputRegionGrowingImage);
+    ITKPropagateUpOrDown(itkImage, temporaryPointSet, sliceAxis, sliceIndex, -1, lowerThreshold, upperThreshold, outputRegionGrowingImage);
   }
 
   // Get hold of ITK version of MITK image.
@@ -529,11 +530,10 @@ void niftk::ITKPropagateToRegionGrowingImage
   outputToItk->UpdateLargestPossibleRegion();
 
   // For each slice in the region growing output, calculate new seeds on a per slice basis.
-  niftk::ITKAddNewSeedsToPointSet(
+  ITKAddNewSeedsToPointSet(
       outputToItk->GetOutput(),
       outputITKRegion,
-      sliceNumber,
-      axisNumber,
+      sliceAxis,
       outputNewSeeds
       );
 }
@@ -541,29 +541,28 @@ void niftk::ITKPropagateToRegionGrowingImage
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKPropagateUpOrDown(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet &seeds,
-    int sliceNumber,
-    int axis,
+void ITKPropagateUpOrDown(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* seeds,
+    int sliceAxis,
+    int sliceIndex,
     int direction,
     double lowerThreshold,
     double upperThreshold,
-    mitk::DataNode::Pointer &outputRegionGrowingNode,
-    mitk::Image::Pointer &outputRegionGrowingImage
+    mitk::Image* outputRegionGrowingImage
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> GreyScaleImageType;
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
 
   // Convert MITK seeds to ITK seeds.
-  niftk::GeneralSegmentorPipelineInterface::PointSetType::Pointer itkSeeds = niftk::GeneralSegmentorPipelineInterface::PointSetType::New();
-  niftk::ConvertMITKSeedsAndAppendToITKSeeds(&seeds, itkSeeds);
+  GeneralSegmentorPipelineInterface::PointSetType::Pointer itkSeeds = GeneralSegmentorPipelineInterface::PointSetType::New();
+  ConvertMITKSeedsAndAppendToITKSeeds(seeds, itkSeeds);
 
   // This mask is used to control the propagation in the region growing filter.
   typename GreyScaleImageType::IndexType propagationMask;
   propagationMask.Fill(0);
-  propagationMask[axis] = direction;
+  propagationMask[sliceAxis] = direction;
 
   // Calculate the appropriate region
   typename GreyScaleImageType::RegionType region = itkImage->GetLargestPossibleRegion();
@@ -572,20 +571,20 @@ void niftk::ITKPropagateUpOrDown(
 
   if (direction == 1)
   {
-    regionSize[axis] = regionSize[axis] - sliceNumber;
-    regionIndex[axis] = sliceNumber;
+    regionSize[sliceAxis] = regionSize[sliceAxis] - sliceIndex;
+    regionIndex[sliceAxis] = sliceIndex;
   }
   else if (direction == -1)
   {
-    regionSize[axis] = sliceNumber + 1;
-    regionIndex[axis] = 0;
+    regionSize[sliceAxis] = sliceIndex + 1;
+    regionIndex[sliceAxis] = 0;
   }
   region.SetSize(regionSize);
   region.SetIndex(regionIndex);
 
   // Perform 3D region growing.
-  typename niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>::MIDASRegionGrowingFilterType::Pointer regionGrowingFilter =
-      niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>::MIDASRegionGrowingFilterType::New();
+  typename GeneralSegmentorPipeline<TPixel, VImageDimension>::MIDASRegionGrowingFilterType::Pointer regionGrowingFilter =
+      GeneralSegmentorPipeline<TPixel, VImageDimension>::MIDASRegionGrowingFilterType::New();
   regionGrowingFilter->SetInput(itkImage);
   regionGrowingFilter->SetRegionOfInterest(region);
   regionGrowingFilter->SetUseRegionOfInterest(true);
@@ -626,11 +625,11 @@ void niftk::ITKPropagateUpOrDown(
 
 //-----------------------------------------------------------------------------
 template <typename TGreyScalePixel, unsigned int VImageDimension>
-void niftk::ITKPropagateToSegmentationImage(
-    itk::Image<TGreyScalePixel, VImageDimension>* referenceGreyScaleImage,
+void ITKPropagateToSegmentationImage(
+    const itk::Image<TGreyScalePixel, VImageDimension>* itkImage,
     mitk::Image* segmentedImage,
     mitk::Image* regionGrowingImage,
-    niftk::OpPropagate *op)
+    OpPropagate* op)
 {
   typedef typename itk::Image<TGreyScalePixel, VImageDimension> GreyScaleImageType;
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
@@ -644,7 +643,7 @@ void niftk::ITKPropagateToSegmentationImage(
   regionGrowingImageToItk->SetInput(regionGrowingImage);
   regionGrowingImageToItk->Update();
 
-  niftk::OpPropagate::ProcessorPointer processor = op->GetProcessor();
+  OpPropagate::ProcessorPointer processor = op->GetProcessor();
   std::vector<int> region = op->GetRegion();
   bool redo = op->IsRedo();
 
@@ -677,12 +676,12 @@ void niftk::ITKPropagateToSegmentationImage(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKGenerateOutlineFromBinaryImage(
-    itk::Image<TPixel, VImageDimension>* itkImage,
-    int axisNumber,
-    int sliceNumber,
-    int projectedSliceNumber,
-    mitk::ContourModelSet::Pointer outputContourSet
+void ITKGenerateOutlineFromBinaryImage(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    int sliceAxis,
+    int sliceIndex,
+    int projectedSliceIndex,
+    mitk::ContourModelSet* outputContourSet
     )
 {
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> BinaryImage3DType;
@@ -707,8 +706,8 @@ void niftk::ITKGenerateOutlineFromBinaryImage(
   Index3DType projectedRegionIndex = region.GetIndex();
 
   // Collapse this 3D region down to 2D. So along the specified axis, the size=0.
-  regionSize[axisNumber] = 0;
-  regionIndex[axisNumber] = sliceNumber;
+  regionSize[sliceAxis] = 0;
+  regionIndex[sliceAxis] = sliceIndex;
   region.SetSize(regionSize);
   region.SetIndex(regionIndex);
 
@@ -717,7 +716,7 @@ void niftk::ITKGenerateOutlineFromBinaryImage(
   // So, the input sliceNumber controls which slice of data we actually extract, but the "Projected"
   // slice determines the output coordinates of the contours. The contours are "projected" onto that slice.
 
-  projectedRegionIndex[axisNumber] = projectedSliceNumber;
+  projectedRegionIndex[sliceAxis] = projectedSliceIndex;
 
   // To convert 2D voxel coordinates, to 3D coordinates, we need to map the
   // X and Y axes of the 2D image into a 3D vector in the original 3D space.
@@ -730,7 +729,7 @@ void niftk::ITKGenerateOutlineFromBinaryImage(
   int axisCounter = 0;
   for (int i = 0; i < 3; i++)
   {
-    if (i != axisNumber)
+    if (i != sliceAxis)
     {
       axes[axisCounter][i] += 1;
       axisCounter++;
@@ -816,11 +815,11 @@ void niftk::ITKGenerateOutlineFromBinaryImage(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKGetLargestMinimumDistanceSeedLocation(
-  itk::Image<TPixel, VImageDimension>* itkImage,
-  TPixel& foregroundPixelValue,
-  typename itk::Image<TPixel, VImageDimension>::IndexType &outputSeedIndex,
-  int &outputDistance)
+void ITKGetLargestMinimumDistanceSeedLocation(
+  const itk::Image<TPixel, VImageDimension>* itkImage,
+  TPixel foregroundPixelValue,
+  typename itk::Image<TPixel, VImageDimension>::IndexType& outputSeedIndex,
+  int& outputDistance)
 {
   typedef itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::PixelType       PixelType;
@@ -923,12 +922,11 @@ void niftk::ITKGetLargestMinimumDistanceSeedLocation(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKAddNewSeedsToPointSet(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    typename itk::Image<TPixel, VImageDimension>::RegionType region,
-    int sliceNumber,
-    int axisNumber,
-    mitk::PointSet &outputNewSeeds
+void ITKAddNewSeedsToPointSet(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const typename itk::Image<TPixel, VImageDimension>::RegionType& region,
+    int sliceAxis,
+    mitk::PointSet* outputNewSeeds
     )
 {
   // Note, although templated over TPixel, input should only ever be unsigned char binary images.
@@ -959,12 +957,12 @@ void niftk::ITKAddNewSeedsToPointSet(
 
   perSliceRegionSize = region.GetSize();;
   perSliceRegionStartIndex = region.GetIndex();
-  perSliceRegionSize[axisNumber] = 1;
+  perSliceRegionSize[sliceAxis] = 1;
   perSliceRegion.SetSize(perSliceRegionSize);
 
-  for (unsigned int i = 0; i < region.GetSize(axisNumber); i++)
+  for (unsigned int i = 0; i < region.GetSize(sliceAxis); i++)
   {
-    perSliceRegionStartIndex[axisNumber] = region.GetIndex(axisNumber) + i;
+    perSliceRegionStartIndex[sliceAxis] = region.GetIndex(sliceAxis) + i;
     perSliceRegion.SetIndex(perSliceRegionStartIndex);
 
     // Extract slice, and get connected components.
@@ -978,7 +976,7 @@ void niftk::ITKAddNewSeedsToPointSet(
 
     int notUsed;
     mitk::PointSet::PointType point;
-    int numberOfPoints = outputNewSeeds.GetSize();
+    int numberOfPoints = outputNewSeeds->GetSize();
 
     for (ccImageIterator.GoToBegin(); !ccImageIterator.IsAtEnd(); ++ccImageIterator)
     {
@@ -989,11 +987,11 @@ void niftk::ITKAddNewSeedsToPointSet(
         setOfLabels.insert(voxelValue);
 
         // Work out the best seed position.
-        niftk::ITKGetLargestMinimumDistanceSeedLocation<typename IntegerImageType::PixelType, VImageDimension>(connectedComponentsFilter->GetOutput(), voxelValue, voxelIndex, notUsed);
+        ITKGetLargestMinimumDistanceSeedLocation<typename IntegerImageType::PixelType, VImageDimension>(connectedComponentsFilter->GetOutput(), voxelValue, voxelIndex, notUsed);
 
         // And convert that seed position to a 3D point.
         itkImage->TransformIndexToPhysicalPoint(voxelIndex, point);
-        outputNewSeeds.InsertPoint(numberOfPoints, point);
+        outputNewSeeds->InsertPoint(numberOfPoints, point);
         numberOfPoints++;
       } // end if new label
     } // end for each label
@@ -1007,139 +1005,106 @@ void niftk::ITKAddNewSeedsToPointSet(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKPreProcessingOfSeedsForChangingSlice(
-    itk::Image<TPixel, VImageDimension> *itkImage, // Note: the itkImage input should be the binary region growing image.
-    mitk::PointSet &inputSeeds,
-    int sliceNumber,
-    int axisNumber,
-    int newSliceNumber,
+void ITKPreprocessingOfSeedsForChangingSlice(
+    const itk::Image<TPixel, VImageDimension>* itkImage, // Note: the itkImage input should be the binary region growing image.
+    const mitk::PointSet* inputSeeds,
+    int oldSliceAxis,
+    int oldSliceIndex,
+    int newSliceAxis,
+    int newSliceIndex,
     bool optimiseSeedPosition,
     bool newSliceIsEmpty,
-    mitk::PointSet &outputCopyOfInputSeeds,
-    mitk::PointSet &outputNewSeeds,
-    std::vector<int> &outputRegion
+    mitk::PointSet* outputCopyOfInputSeeds,
+    mitk::PointSet* outputNewSeeds,
+    std::vector<int>& outputRegion
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> BinaryImageType;
 
-  // Work out the region of the current slice.
+  typename BinaryImageType::RegionType oldSliceRegion = itkImage->GetLargestPossibleRegion();
+  typename BinaryImageType::RegionType newSliceRegion = itkImage->GetLargestPossibleRegion();
 
-  typename BinaryImageType::RegionType region = itkImage->GetLargestPossibleRegion();
-  typename BinaryImageType::SizeType regionSize = region.GetSize();
-  typename BinaryImageType::IndexType regionIndex = region.GetIndex();
+  oldSliceRegion.SetIndex(oldSliceAxis, oldSliceIndex);
+  oldSliceRegion.SetSize(oldSliceAxis, 1);
+  newSliceRegion.SetIndex(newSliceAxis, newSliceIndex);
+  newSliceRegion.SetSize(newSliceAxis, 1);
 
-  regionSize[axisNumber] = 1;
-  regionIndex[axisNumber] = sliceNumber;
+  outputRegion.push_back(oldSliceRegion.GetIndex(0));
+  outputRegion.push_back(oldSliceRegion.GetIndex(1));
+  outputRegion.push_back(oldSliceRegion.GetIndex(2));
+  outputRegion.push_back(oldSliceRegion.GetSize(0));
+  outputRegion.push_back(oldSliceRegion.GetSize(1));
+  outputRegion.push_back(oldSliceRegion.GetSize(2));
 
-  region.SetSize(regionSize);
-  region.SetIndex(regionIndex);
-
-  outputRegion.push_back(regionIndex[0]);
-  outputRegion.push_back(regionIndex[1]);
-  outputRegion.push_back(regionIndex[2]);
-  outputRegion.push_back(regionSize[0]);
-  outputRegion.push_back(regionSize[1]);
-  outputRegion.push_back(regionSize[2]);
-
-  // If we are moving to new slice
-  if (sliceNumber != newSliceNumber)
+  // If we are moving to an empty adjacent slice
+  if (oldSliceAxis == newSliceAxis && std::abs(newSliceIndex - oldSliceIndex) == 1 && newSliceIsEmpty)
   {
-    if (newSliceIsEmpty)
-    {
-      // Copy all input seeds, as we are moving to an empty slice.
-      mitk::CopyPointSets(inputSeeds, outputCopyOfInputSeeds);
+    // Copy all input seeds, as we are moving to an empty slice.
+    mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
 
-      // Take all seeds on the current slice number, and propagate to new slice.
-      niftk::ITKPropagateSeedsToNewSlice(
-          itkImage,
-          &inputSeeds,
-          &outputNewSeeds,
-          axisNumber,
-          sliceNumber,
-          newSliceNumber
-          );
-    }
-    else // new slice is not empty.
-    {
-      if (optimiseSeedPosition) // if this is false, we do nothing - i.e. leave existing seeds AS IS.
-      {
-        regionSize = region.GetSize();
-        regionIndex = region.GetIndex();
-
-        regionSize[axisNumber] = 1;
-        regionIndex[axisNumber] = newSliceNumber;
-
-        region.SetSize(regionSize);
-        region.SetIndex(regionIndex);
-
-        // We copy all seeds except those on the new slice.
-        niftk::ITKFilterInputPointSetToExcludeRegionOfInterest(
-            itkImage,
-            region,
-            inputSeeds,
-            outputCopyOfInputSeeds,
-            outputNewSeeds
-            );
-
-        // We then re-generate a new set of seeds for the new slice.
-        niftk::ITKAddNewSeedsToPointSet(
-            itkImage,
-            region,
-            newSliceNumber,
-            axisNumber,
-            outputNewSeeds
-            );
-
-      } // end if (optimiseSeedPosition)
-    } // end if (newSliceIsEmpty)
+    // Take all seeds on the current slice number, and propagate to new slice.
+    ITKPropagateSeedsToNewSlice(
+        itkImage,
+        inputSeeds,
+        outputNewSeeds,
+        oldSliceAxis,
+        oldSliceIndex,
+        newSliceIndex
+        );
   }
-  else // We are not moving slice
-  {
-    if (optimiseSeedPosition)
+  else if (oldSliceAxis == newSliceAxis)  // jumping to non adjacent slice in the same orientation
+  {                                       // or to an adjacent slice but it is not empty
+
+    if (optimiseSeedPosition) // if this is false, we do nothing - i.e. leave existing seeds AS IS.
     {
-      // We copy all seeds except those on the current slice.
-      niftk::ITKFilterInputPointSetToExcludeRegionOfInterest(
+      // We make a copy of the input seeds and copy all seeds except those on the new slice new the new seeds.
+      ITKFilterInputPointSetToExcludeRegionOfInterest(
           itkImage,
-          region,
+          newSliceRegion,
           inputSeeds,
           outputCopyOfInputSeeds,
           outputNewSeeds
           );
 
-      // Here we calculate new seeds based on the connected component analysis - i.e. 1 seed per region.
-      niftk::ITKAddNewSeedsToPointSet(
+      // We then re-generate a new set of seeds for the new slice.
+      ITKAddNewSeedsToPointSet(
           itkImage,
-          region,
-          sliceNumber,
-          axisNumber,
+          newSliceRegion,
+          newSliceAxis,
           outputNewSeeds
           );
     }
-  } // end if (sliceNumber != newSliceNumber)
-
-  if (outputCopyOfInputSeeds.GetSize() == 0)
-  {
-    mitk::CopyPointSets(inputSeeds, outputCopyOfInputSeeds);
+    else
+    {
+      mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
+      mitk::CopyPointSets(*inputSeeds, *outputNewSeeds);
+    }
   }
-
-  if (outputNewSeeds.GetSize() == 0)
+  else  // changing orientation
   {
-    mitk::CopyPointSets(inputSeeds, outputNewSeeds);
+    mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
+
+    ITKAddNewSeedsToPointSet(
+        itkImage,
+        newSliceRegion,
+        newSliceAxis,
+        outputNewSeeds
+        );
   }
 }
 
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKPreProcessingForWipe(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet &inputSeeds,
-    int sliceNumber,
-    int axisNumber,
+void ITKPreprocessingForWipe(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* inputSeeds,
+    int sliceAxis,
+    int sliceIndex,
     int direction,
-    mitk::PointSet &outputCopyOfInputSeeds,
-    mitk::PointSet &outputNewSeeds,
-    std::vector<int> &outputRegion
+    mitk::PointSet* outputCopyOfInputSeeds,
+    mitk::PointSet* outputNewSeeds,
+    std::vector<int>& outputRegion
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
@@ -1152,20 +1117,20 @@ void niftk::ITKPreProcessingForWipe(
   if (direction == 0)
   {
     // Single slice
-    regionSize[axisNumber] = 1;
-    regionIndex[axisNumber] = sliceNumber;
+    regionSize[sliceAxis] = 1;
+    regionIndex[sliceAxis] = sliceIndex;
   }
   else if (direction == 1)
   {
     // All anterior
-    regionSize[axisNumber] = regionSize[axisNumber] - sliceNumber - 1;
-    regionIndex[axisNumber] = sliceNumber + 1;
+    regionSize[sliceAxis] = regionSize[sliceAxis] - sliceIndex - 1;
+    regionIndex[sliceAxis] = sliceIndex + 1;
   }
   else if (direction == -1)
   {
     // All posterior
-    regionSize[axisNumber] = sliceNumber;
-    regionIndex[axisNumber] = 0;
+    regionSize[sliceAxis] = sliceIndex;
+    regionIndex[sliceAxis] = 0;
   }
   region.SetSize(regionSize);
   region.SetIndex(regionIndex);
@@ -1179,7 +1144,7 @@ void niftk::ITKPreProcessingForWipe(
 
   // We take a complete copy of the input seeds, and copy any seeds not in the current slice
   // as these seeds in the current slice will be overwritten in AddNewSeedsToPointSet.
-  niftk::ITKFilterInputPointSetToExcludeRegionOfInterest(
+  ITKFilterInputPointSetToExcludeRegionOfInterest(
       itkImage,
       region,
       inputSeeds,
@@ -1191,16 +1156,16 @@ void niftk::ITKPreProcessingForWipe(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKDoWipe(
-    itk::Image<TPixel, VImageDimension> *itkImage,
+void ITKDoWipe(
+    itk::Image<TPixel, VImageDimension>* itkImage,
     mitk::PointSet* currentSeeds,
-    niftk::OpWipe *op
+    OpWipe* op
     )
 {
   // Assuming we are only called for the unsigned char, current segmentation image.
   typedef typename itk::Image<TPixel, VImageDimension> BinaryImageType;
 
-  niftk::OpWipe::ProcessorPointer processor = op->GetProcessor();
+  OpWipe::ProcessorPointer processor = op->GetProcessor();
   std::vector<int> region = op->GetRegion();
   bool redo = op->IsRedo();
 
@@ -1221,8 +1186,8 @@ void niftk::ITKDoWipe(
 
   processor->SetDestinationImage(NULL);
 
-  int axis = op->GetAxisNumber();
-  int slice = op->GetSliceNumber();
+  int sliceAxis = op->GetSliceAxis();
+  int sliceIndex = op->GetSliceIndex();
 
   // Update the current point set.
   currentSeeds->Clear();
@@ -1236,7 +1201,7 @@ void niftk::ITKDoWipe(
     typename BinaryImageType::IndexType outputSeedIndex;
     itkImage->TransformPhysicalPointToIndex(outputSeed, outputSeedIndex);
     // If it's a do/redo then we do not copy back the seeds from the current slice. (Wipe them.)
-    if (!redo || outputSeedIndex[axis] != slice)
+    if (!redo || outputSeedIndex[sliceAxis] != sliceIndex)
     {
       currentSeeds->InsertPoint(outputSeedID, outputSeed);
     }
@@ -1246,8 +1211,8 @@ void niftk::ITKDoWipe(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-bool niftk::ITKImageHasNonZeroEdgePixels(
-    itk::Image<TPixel, VImageDimension> *itkImage
+bool ITKImageHasNonZeroEdgePixels(
+    const itk::Image<TPixel, VImageDimension>* itkImage
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
@@ -1287,19 +1252,19 @@ bool niftk::ITKImageHasNonZeroEdgePixels(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKSliceDoesHaveUnEnclosedSeeds(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet &seeds,
-    mitk::ContourModelSet &segmentationContours,
-    mitk::ContourModelSet &polyToolContours,
-    mitk::ContourModelSet &drawToolContours,
-    mitk::Image &workingImage,
+void ITKSliceDoesHaveUnenclosedSeeds(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* seeds,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* polyToolContours,
+    mitk::ContourModelSet* drawToolContours,
+    const mitk::Image* workingImage,
     double lowerThreshold,
     double upperThreshold,
     bool useThresholds,
-    int axis,
-    int slice,
-    bool &sliceDoesHaveUnenclosedSeeds
+    int sliceAxis,
+    int sliceIndex,
+    bool& sliceDoesHaveUnenclosedSeeds
     )
 {
   sliceDoesHaveUnenclosedSeeds = false;
@@ -1310,20 +1275,20 @@ void niftk::ITKSliceDoesHaveUnEnclosedSeeds(
   typedef mitk::ImageToItk< BinaryImageType > ImageToItkType;
 
   typename ImageToItkType::Pointer workingImageToItk = ImageToItkType::New();
-  workingImageToItk->SetInput(&workingImage);
+  workingImageToItk->SetInput(workingImage);
   workingImageToItk->Update();
 
   // Filter seeds to only use ones on current slice.
   mitk::PointSet::Pointer seedsForThisSlice = mitk::PointSet::New();
-  niftk::ITKFilterSeedsToCurrentSlice(itkImage, seeds, axis, slice, *(seedsForThisSlice.GetPointer()));
+  ITKFilterSeedsToCurrentSlice(itkImage, seeds, sliceAxis, sliceIndex, seedsForThisSlice);
 
-  niftk::GeneralSegmentorPipelineParams params;
-  params.m_SliceNumber = slice;
-  params.m_AxisNumber = axis;
+  GeneralSegmentorPipelineParams params;
+  params.m_SliceIndex = sliceIndex;
+  params.m_SliceAxis = sliceAxis;
   params.m_Seeds = seedsForThisSlice;
-  params.m_SegmentationContours = &segmentationContours;
-  params.m_PolyContours = &polyToolContours;
-  params.m_DrawContours = &drawToolContours;
+  params.m_SegmentationContours = segmentationContours;
+  params.m_PolyContours = polyToolContours;
+  params.m_DrawContours = drawToolContours;
   params.m_EraseFullSlice = false;
 
   if (useThresholds)
@@ -1337,7 +1302,7 @@ void niftk::ITKSliceDoesHaveUnEnclosedSeeds(
     params.m_UpperThreshold = std::numeric_limits<TPixel>::max();
   }
 
-  niftk::GeneralSegmentorPipeline<TPixel, VImageDimension> pipeline;
+  GeneralSegmentorPipeline<TPixel, VImageDimension> pipeline;
   pipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
   pipeline.SetParam(itkImage, workingImageToItk->GetOutput(), params);
   pipeline.Update(params);
@@ -1347,7 +1312,7 @@ void niftk::ITKSliceDoesHaveUnEnclosedSeeds(
   workingImageToItk = NULL;
 
   // Check the output, to see if we have seeds inside non-enclosing green contours.
-  sliceDoesHaveUnenclosedSeeds = niftk::ITKImageHasNonZeroEdgePixels<
+  sliceDoesHaveUnenclosedSeeds = ITKImageHasNonZeroEdgePixels<
       mitk::Tool::DefaultSegmentationDataType, VImageDimension>
       (pipeline.m_RegionGrowingFilter->GetOutput());
 }
@@ -1355,31 +1320,31 @@ void niftk::ITKSliceDoesHaveUnEnclosedSeeds(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKFilterContours(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::Image &workingImage,
-    mitk::PointSet &seeds,
-    mitk::ContourModelSet &segmentationContours,
-    mitk::ContourModelSet &drawToolContours,
-    mitk::ContourModelSet &polyToolContours,
-    int axis,
-    int slice,
+void ITKFilterContours(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::Image* workingImage,
+    const mitk::PointSet* seeds,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* drawToolContours,
+    mitk::ContourModelSet* polyToolContours,
+    int sliceAxis,
+    int sliceIndex,
     double lowerThreshold,
     double upperThreshold,
     bool isThresholding,
-    mitk::ContourModelSet &outputCopyOfInputContours,
-    mitk::ContourModelSet &outputContours
+    mitk::ContourModelSet* outputCopyOfInputContours,
+    mitk::ContourModelSet* outputContours
     )
 {
   typedef itk::Image<unsigned char, VImageDimension> ImageType;
   typedef mitk::ImageToItk< ImageType > ImageToItkType;
 
   typename ImageToItkType::Pointer workingImageToItk = ImageToItkType::New();
-  workingImageToItk->SetInput(&workingImage);
+  workingImageToItk->SetInput(workingImage);
   workingImageToItk->Update();
 
   // Input contour set could be empty, so nothing to filter.
-  if (segmentationContours.GetSize() == 0)
+  if (segmentationContours->GetSize() == 0)
   {
     return;
   }
@@ -1393,15 +1358,15 @@ void niftk::ITKFilterContours(
   typedef typename BinaryImageType::RegionType RegionType;
   typedef typename BinaryImageType::PointType PointType;
 
-  niftk::MIDASContourTool::CopyContourSet(segmentationContours, outputCopyOfInputContours, true);
+  MIDASContourTool::CopyContourSet(*segmentationContours, *outputCopyOfInputContours, true);
 
-  niftk::GeneralSegmentorPipelineParams params;
-  params.m_SliceNumber = slice;
-  params.m_AxisNumber = axis;
-  params.m_Seeds = &seeds;
-  params.m_SegmentationContours = &segmentationContours;
-  params.m_DrawContours = &drawToolContours;
-  params.m_PolyContours = &polyToolContours;
+  GeneralSegmentorPipelineParams params;
+  params.m_SliceIndex = sliceIndex;
+  params.m_SliceAxis = sliceAxis;
+  params.m_Seeds = seeds;
+  params.m_SegmentationContours = segmentationContours;
+  params.m_DrawContours = drawToolContours;
+  params.m_PolyContours = polyToolContours;
   params.m_EraseFullSlice = true;
 
   if (isThresholding)
@@ -1415,7 +1380,7 @@ void niftk::ITKFilterContours(
     params.m_UpperThreshold = std::numeric_limits<TPixel>::max();
   }
 
-  niftk::GeneralSegmentorPipeline<TPixel, VImageDimension> localPipeline;
+  GeneralSegmentorPipeline<TPixel, VImageDimension> localPipeline;
   localPipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
   localPipeline.SetParam(itkImage, workingImageToItk->GetOutput(), params);
   localPipeline.Update(params);
@@ -1433,20 +1398,20 @@ void niftk::ITKFilterContours(
   ContinuousIndexType continuousVoxelIndex;
   IndexType voxelIndex;
 
-  mitk::ContourModelSet::ContourModelSetIterator contourIt = outputCopyOfInputContours.Begin();
+  mitk::ContourModelSet::ContourModelSetIterator contourIt = outputCopyOfInputContours->Begin();
   mitk::ContourModel::Pointer firstContour = *contourIt;
 
-  outputContours.Clear();
+  outputContours->Clear();
   mitk::ContourModel::Pointer outputContour = mitk::ContourModel::New();
-  niftk::MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
+  MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
 
   RegionType neighbourhoodRegion;
   SizeType neighbourhoodSize;
   IndexType neighbourhoodIndex;
   neighbourhoodSize.Fill(2);
-  neighbourhoodSize[axis] = 1;
+  neighbourhoodSize[sliceAxis] = 1;
 
-  while ( contourIt != outputCopyOfInputContours.End() )
+  while ( contourIt != outputCopyOfInputContours->End() )
   {
     mitk::ContourModel::Pointer nextContour = *contourIt;
 
@@ -1465,7 +1430,7 @@ void niftk::ITKFilterContours(
       {
         voxelIndex[j] = (int)(continuousVoxelIndex[j]);
       }
-      voxelIndex[axis] = slice;
+      voxelIndex[sliceAxis] = sliceIndex;
       neighbourhoodIndex = voxelIndex;
       neighbourhoodRegion.SetSize(neighbourhoodSize);
       neighbourhoodRegion.SetIndex(neighbourhoodIndex);
@@ -1487,16 +1452,16 @@ void niftk::ITKFilterContours(
       }
       else if (!isNearRegion && outputContour->GetNumberOfVertices() >= 2)
       {
-        outputContours.AddContourModel(outputContour);
+        outputContours->AddContourModel(outputContour);
         outputContour = mitk::ContourModel::New();
-        niftk::MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
+        MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
       }
     }
     if (outputContour->GetNumberOfVertices() >= 2)
     {
-      outputContours.AddContourModel(outputContour);
+      outputContours->AddContourModel(outputContour);
       outputContour = mitk::ContourModel::New();
-      niftk::MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
+      MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
     }
     contourIt++;
   }
@@ -1506,20 +1471,20 @@ void niftk::ITKFilterContours(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKPropagateSeedsToNewSlice(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet* currentSeeds,
+void ITKPropagateSeedsToNewSlice(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* currentSeeds,
     mitk::PointSet* newSeeds,
-    int axis,
-    int oldSliceNumber,
-    int newSliceNumber
+    int sliceAxis,
+    int oldSliceIndex,
+    int newSliceIndex
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::IndexType IndexType;
   typedef typename ImageType::PointType PointType;
 
-  bool newSliceHasSeeds = niftk::ITKSliceDoesHaveSeeds(itkImage, currentSeeds, axis, newSliceNumber);
+  bool newSliceHasSeeds = ITKSliceDoesHaveSeeds(itkImage, currentSeeds, sliceAxis, newSliceIndex);
 
   newSeeds->Clear();
 
@@ -1539,10 +1504,10 @@ void niftk::ITKPropagateSeedsToNewSlice(
       IndexType voxelIndex;
       itkImage->TransformPhysicalPointToIndex(voxelIndexInMillimetres, voxelIndex);
 
-      if (voxelIndex[axis] == oldSliceNumber)
+      if (voxelIndex[sliceAxis] == oldSliceIndex)
       {
         IndexType newVoxelIndex = voxelIndex;
-        newVoxelIndex[axis] = newSliceNumber;
+        newVoxelIndex[sliceAxis] = newSliceIndex;
         itkImage->TransformIndexToPhysicalPoint(newVoxelIndex, voxelIndexInMillimetres);
 
         newSeeds->InsertPoint(currentSeedID, voxelIndexInMillimetres);
@@ -1554,30 +1519,34 @@ void niftk::ITKPropagateSeedsToNewSlice(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKDestroyPipeline(itk::Image<TPixel, VImageDimension>* itkImage)
+void ITKDestroyPipeline(const itk::Image<TPixel, VImageDimension>* /*itkImage*/)
 {
-  niftk::GeneralSegmentorPipelineCache::Instance()->DestroyPipeline<TPixel, VImageDimension>();
+  GeneralSegmentorPipelineCache::Instance()->DestroyPipeline<TPixel, VImageDimension>();
 }
 
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::ITKInitialiseSeedsForVolume(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet& seeds,
-    int axis
+void ITKInitialiseSeedsForSlice(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    mitk::PointSet* seeds,
+    int sliceAxis,
+    int sliceIndex
     )
 {
   typedef typename itk::Image<TPixel, VImageDimension> ImageType;
   typedef typename ImageType::RegionType RegionType;
 
   RegionType region = itkImage->GetLargestPossibleRegion();
+  region.SetIndex(sliceAxis, sliceIndex);
+  region.SetSize(sliceAxis, 1);
 
-  niftk::ITKAddNewSeedsToPointSet(
+  ITKAddNewSeedsToPointSet(
       itkImage,
       region,
-      0,
-      axis,
+      sliceAxis,
       seeds
       );
+}
+
 }

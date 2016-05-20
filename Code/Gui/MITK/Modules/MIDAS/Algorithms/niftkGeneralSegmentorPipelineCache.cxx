@@ -14,15 +14,17 @@
 
 #include "niftkGeneralSegmentorPipelineCache.h"
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-niftk::GeneralSegmentorPipelineCache::GeneralSegmentorPipelineCache()
+GeneralSegmentorPipelineCache::GeneralSegmentorPipelineCache()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::GeneralSegmentorPipelineCache::~GeneralSegmentorPipelineCache()
+GeneralSegmentorPipelineCache::~GeneralSegmentorPipelineCache()
 {
   std::map<std::string, GeneralSegmentorPipelineInterface*>::iterator it = m_TypeToPipelineMap.begin();
   std::map<std::string, GeneralSegmentorPipelineInterface*>::iterator itEnd = m_TypeToPipelineMap.end();
@@ -35,7 +37,7 @@ niftk::GeneralSegmentorPipelineCache::~GeneralSegmentorPipelineCache()
 
 
 //-----------------------------------------------------------------------------
-niftk::GeneralSegmentorPipelineCache* niftk::GeneralSegmentorPipelineCache::Instance()
+GeneralSegmentorPipelineCache* GeneralSegmentorPipelineCache::Instance()
 {
   static GeneralSegmentorPipelineCache* s_instance = nullptr;
   if (!s_instance)
@@ -43,4 +45,6 @@ niftk::GeneralSegmentorPipelineCache* niftk::GeneralSegmentorPipelineCache::Inst
     s_instance = new GeneralSegmentorPipelineCache();
   }
   return s_instance;
+}
+
 }

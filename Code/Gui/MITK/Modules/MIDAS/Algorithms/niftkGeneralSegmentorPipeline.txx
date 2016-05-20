@@ -16,15 +16,18 @@
 #include <itkImageFileWriter.h>
 #include <itkImageRegionIterator.h>
 
-#include <niftkMIDASOrientationUtils.h>
+#include <niftkImageOrientationUtils.h>
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
+GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::GeneralSegmentorPipeline()
 {
-  m_SliceNumber = -1;
-  m_AxisNumber = -1;
+  m_SliceIndex = -1;
+  m_SliceAxis = -1;
   m_LowerThreshold = 0;
   m_UpperThreshold = 0;
   m_AllSeeds = itk::PointSet<float, 3>::New();
@@ -43,7 +46,7 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
+GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::~GeneralSegmentorPipeline()
 {
 }
@@ -52,16 +55,16 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
-::SetParam(GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams& p)
+GeneralSegmentorPipeline<TPixel, VImageDimension>
+::SetParam(const GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams& p)
 {
   m_ExtractGreyRegionOfInterestFilter->SetInput(referenceImage);
   m_ExtractGreyRegionOfInterestFilter->SetDirectionCollapseToIdentity();
   m_ExtractBinaryRegionOfInterestFilter->SetInput(segmentationImage);
   m_ExtractBinaryRegionOfInterestFilter->SetDirectionCollapseToIdentity();
 
-  m_SliceNumber = p.m_SliceNumber;
-  m_AxisNumber = p.m_AxisNumber;
+  m_SliceIndex = p.m_SliceIndex;
+  m_SliceAxis = p.m_SliceAxis;
   m_LowerThreshold = static_cast<int>(p.m_LowerThreshold);
   m_UpperThreshold = static_cast<int>(p.m_UpperThreshold);
   m_EraseFullSlice = p.m_EraseFullSlice;
@@ -71,7 +74,7 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
+GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::Update(GeneralSegmentorPipelineParams& params)
 {
   try
@@ -81,8 +84,8 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
     SizeType sliceSize3D = region3D.GetSize();
     IndexType sliceIndex3D = region3D.GetIndex();
 
-    sliceSize3D[m_AxisNumber] = 1;
-    sliceIndex3D[m_AxisNumber] = m_SliceNumber;
+    sliceSize3D[m_SliceAxis] = 1;
+    sliceIndex3D[m_SliceAxis] = m_SliceIndex;
 
     region3D.SetSize(sliceSize3D);
     region3D.SetIndex(sliceIndex3D);
@@ -94,12 +97,12 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 
     // 3. Convert seeds / contours.
     mitk::Vector3D spacingInWorldCoordinateOrder;
-    niftk::GetSpacingInWorldCoordinateOrder(m_ExtractBinaryRegionOfInterestFilter->GetInput(), spacingInWorldCoordinateOrder);
+    GetSpacingInWorldCoordinateOrder(m_ExtractBinaryRegionOfInterestFilter->GetInput(), spacingInWorldCoordinateOrder);
 
-    niftk::ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);
-    niftk::ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, m_ManualContours, spacingInWorldCoordinateOrder);
-    niftk::ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, m_ManualContours, spacingInWorldCoordinateOrder);
-    niftk::ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours, spacingInWorldCoordinateOrder);
+    ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);
+    ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, m_ManualContours, spacingInWorldCoordinateOrder);
+    ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, m_ManualContours, spacingInWorldCoordinateOrder);
+    ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours, spacingInWorldCoordinateOrder);
      
     // 4. Update the pipeline so far to get output slice that we can draw onto.
     m_ExtractGreyRegionOfInterestFilter->SetExtractionRegion(region3D);
@@ -119,8 +122,8 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 
     // 5. Declare some variables.
     RegionType paintingRegion;
-    paintingRegion.SetIndex(m_AxisNumber, m_SliceNumber);
-    paintingRegion.SetSize(m_AxisNumber, 1);
+    paintingRegion.SetIndex(m_SliceAxis, m_SliceIndex);
+    paintingRegion.SetSize(m_SliceAxis, 1);
 
     unsigned char segImageInside = 0;
     unsigned char segImageBorder = 1;
@@ -457,7 +460,7 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 
 template<typename TPixel, unsigned int VImageDimension>
 void
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
+GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::SetPaintingRegion(const ContinuousIndexType& pointInVx, RegionType& paintingRegion)
 {
 #ifndef NDEBUG
@@ -465,7 +468,7 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 #endif
   for (int axis = 0; axis < 3; ++axis)
   {
-    if (axis != m_AxisNumber)
+    if (axis != m_SliceAxis)
     {
       double roundedIndex = std::floor(pointInVx[axis] + 0.5);
       if (std::abs(pointInVx[axis] - roundedIndex) < 0.1)
@@ -490,7 +493,7 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
 
 template<typename TPixel, unsigned int VImageDimension>
 void
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
+GeneralSegmentorPipeline<TPixel, VImageDimension>
 ::DisconnectPipeline()
 {
   // Aim: Make sure all smart pointers to the input reference (grey scale T1 image) are released.
@@ -502,4 +505,6 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_RegionGrowingFilter->SetInput(NULL);
   m_RegionGrowingFilter->SetSegmentationContourImage(NULL);
   m_RegionGrowingFilter->SetManualContourImage(NULL);
+}
+
 }

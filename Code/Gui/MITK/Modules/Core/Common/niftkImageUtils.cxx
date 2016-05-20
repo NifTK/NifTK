@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkMIDASImageUtils.h"
+#include "niftkImageUtils.h"
 
 #include <itkImage.h>
 #include <itkImageFileWriter.h>
@@ -30,7 +30,7 @@ template<typename TPixel, unsigned int VImageDimension>
 void
 ITKGetAsAcquiredOrientation(
   const itk::Image<TPixel, VImageDimension>* itkImage,
-  MIDASOrientation &outputOrientation
+  ImageOrientation& outputOrientation
 )
 {
   typedef itk::Image<TPixel, VImageDimension> ImageType;
@@ -44,47 +44,47 @@ ITKGetAsAcquiredOrientation(
   {
     if (orientationString[1] == 'A' || orientationString[1] == 'P')
     {
-      outputOrientation = MIDAS_ORIENTATION_AXIAL;
+      outputOrientation = IMAGE_ORIENTATION_AXIAL;
     }
     else
     {
-      outputOrientation = MIDAS_ORIENTATION_CORONAL;
+      outputOrientation = IMAGE_ORIENTATION_CORONAL;
     }
   }
   else if (orientationString[0] == 'A' || orientationString[0] == 'P')
   {
     if (orientationString[1] == 'L' || orientationString[1] == 'R')
     {
-      outputOrientation = MIDAS_ORIENTATION_AXIAL;
+      outputOrientation = IMAGE_ORIENTATION_AXIAL;
     }
     else
     {
-      outputOrientation = MIDAS_ORIENTATION_SAGITTAL;
+      outputOrientation = IMAGE_ORIENTATION_SAGITTAL;
     }
   }
   else if (orientationString[0] == 'S' || orientationString[0] == 'I')
   {
     if (orientationString[1] == 'L' || orientationString[1] == 'R')
     {
-      outputOrientation = MIDAS_ORIENTATION_CORONAL;
+      outputOrientation = IMAGE_ORIENTATION_CORONAL;
     }
     else
     {
-      outputOrientation = MIDAS_ORIENTATION_SAGITTAL;
+      outputOrientation = IMAGE_ORIENTATION_SAGITTAL;
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation GetAsAcquiredOrientation(const MIDASOrientation& defaultOrientation, const mitk::Image* image)
+ImageOrientation GetAsAcquiredOrientation(ImageOrientation defaultOrientation, const mitk::Image* image)
 {
-  MIDASOrientation result = defaultOrientation;
+  ImageOrientation result = defaultOrientation;
   if (image != NULL)
   {
     // "As Acquired" means you take the orientation of the XY plane
     // in the original image data, so we switch to ITK to work it out.
-    MIDASOrientation orientation = MIDAS_ORIENTATION_UNKNOWN;
+    ImageOrientation orientation = IMAGE_ORIENTATION_UNKNOWN;
     int dimensions = image->GetDimension();
     switch(dimensions)
     {
@@ -95,17 +95,17 @@ MIDASOrientation GetAsAcquiredOrientation(const MIDASOrientation& defaultOrienta
       MITK_ERROR << "During GetAsAcquiredOrientation, unsupported number of dimensions:" << dimensions << std::endl;
     }
 
-    if (orientation == MIDAS_ORIENTATION_AXIAL)
+    if (orientation == IMAGE_ORIENTATION_AXIAL)
     {
-      result = MIDAS_ORIENTATION_AXIAL;
+      result = IMAGE_ORIENTATION_AXIAL;
     }
-    else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+    else if (orientation == IMAGE_ORIENTATION_SAGITTAL)
     {
-      result = MIDAS_ORIENTATION_SAGITTAL;
+      result = IMAGE_ORIENTATION_SAGITTAL;
     }
-    else if (orientation == MIDAS_ORIENTATION_CORONAL)
+    else if (orientation == IMAGE_ORIENTATION_CORONAL)
     {
-      result = MIDAS_ORIENTATION_CORONAL;
+      result = IMAGE_ORIENTATION_CORONAL;
     }
     else
     {

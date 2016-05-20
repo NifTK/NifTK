@@ -52,7 +52,7 @@ protected:
 
   /// \brief Tells if this tool can handle the given event.
   ///
-  /// This implementation delegates the call to niftk::MIDASStateMachine::CanHandleEvent(),
+  /// This implementation delegates the call to MIDASStateMachine::CanHandleEvent(),
   /// that checks if the event is filtered by one of the installed event filters and if not,
   /// calls CanHandle() and returns with its result.
   ///

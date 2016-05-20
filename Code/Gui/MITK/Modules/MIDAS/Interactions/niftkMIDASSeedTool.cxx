@@ -27,14 +27,17 @@
 
 NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASSeedTool, "MIDAS Seed Tool");
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-niftk::MIDASSeedTool::~MIDASSeedTool()
+MIDASSeedTool::~MIDASSeedTool()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::MIDASSeedTool::MIDASSeedTool()
+MIDASSeedTool::MIDASSeedTool()
 : MIDASTool()
 , m_PointSetInteractor(NULL)
 {
@@ -42,7 +45,7 @@ niftk::MIDASSeedTool::MIDASSeedTool()
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASSeedTool::InitializeStateMachine()
+void MIDASSeedTool::InitializeStateMachine()
 {
   try
   {
@@ -58,21 +61,21 @@ void niftk::MIDASSeedTool::InitializeStateMachine()
 
 
 //-----------------------------------------------------------------------------
-const char* niftk::MIDASSeedTool::GetName() const
+const char* MIDASSeedTool::GetName() const
 {
   return "Seed";
 }
 
 
 //-----------------------------------------------------------------------------
-const char** niftk::MIDASSeedTool::GetXPM() const
+const char** MIDASSeedTool::GetXPM() const
 {
   return niftkMIDASSeedTool_xpm;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASSeedTool::InstallEventFilter(MIDASEventFilter* eventFilter)
+void MIDASSeedTool::InstallEventFilter(MIDASEventFilter* eventFilter)
 {
   Superclass::InstallEventFilter(eventFilter);
   if (m_PointSetInteractor.IsNotNull())
@@ -83,7 +86,7 @@ void niftk::MIDASSeedTool::InstallEventFilter(MIDASEventFilter* eventFilter)
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASSeedTool::RemoveEventFilter(MIDASEventFilter* eventFilter)
+void MIDASSeedTool::RemoveEventFilter(MIDASEventFilter* eventFilter)
 {
   if (m_PointSetInteractor.IsNotNull())
   {
@@ -94,7 +97,7 @@ void niftk::MIDASSeedTool::RemoveEventFilter(MIDASEventFilter* eventFilter)
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASSeedTool::Activated()
+void MIDASSeedTool::Activated()
 {
   Superclass::Activated();
 
@@ -104,15 +107,15 @@ void niftk::MIDASSeedTool::Activated()
   {
     if (m_PointSetInteractor.IsNull())
     {
-      m_PointSetInteractor = niftk::MIDASPointSetInteractor::New("MIDASSeedToolPointSetInteractor", pointSetNode);
+      m_PointSetInteractor = MIDASPointSetInteractor::New("MIDASSeedToolPointSetInteractor", pointSetNode);
 
-//      m_PointSetInteractor = niftk::MIDASPointSetDataInteractor::New();
+//      m_PointSetInteractor = MIDASPointSetDataInteractor::New();
 //      m_PointSetInteractor->LoadStateMachine("MIDASSeedToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
 //      m_PointSetInteractor->SetEventConfig("MIDASSeedToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
-      std::vector<niftk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
-      std::vector<niftk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-      std::vector<niftk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+      std::vector<MIDASEventFilter*> eventFilters = this->GetEventFilters();
+      std::vector<MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+      std::vector<MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
       for ( ; it != itEnd; ++it)
       {
         m_PointSetInteractor->InstallEventFilter(*it);
@@ -127,7 +130,7 @@ void niftk::MIDASSeedTool::Activated()
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASSeedTool::Deactivated()
+void MIDASSeedTool::Deactivated()
 {
   if (m_PointSetInteractor.IsNotNull())
   {
@@ -140,9 +143,9 @@ void niftk::MIDASSeedTool::Deactivated()
     /// If we do not do this, the interactor stays active and will keep processing the events.
 //    m_PointSetInteractor->SetDataNode(0);
 
-    std::vector<niftk::MIDASEventFilter*> eventFilters = this->GetEventFilters();
-    std::vector<niftk::MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-    std::vector<niftk::MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+    std::vector<MIDASEventFilter*> eventFilters = this->GetEventFilters();
+    std::vector<MIDASEventFilter*>::const_iterator it = eventFilters.begin();
+    std::vector<MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
     for ( ; it != itEnd; ++it)
     {
       m_PointSetInteractor->RemoveEventFilter(*it);
@@ -152,4 +155,6 @@ void niftk::MIDASSeedTool::Deactivated()
   }
 
   Superclass::Deactivated();
+}
+
 }

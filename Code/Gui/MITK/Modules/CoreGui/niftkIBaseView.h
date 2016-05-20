@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkIBaseView_h
-#define __niftkIBaseView_h
+#ifndef niftkIBaseView_h
+#define niftkIBaseView_h
 
 #include "niftkCoreGuiExports.h"
 
@@ -28,23 +28,20 @@ class SliceNavigationController;
 
 class QmitkRenderWindow;
 
-/**
- * \class niftkIBaseView
- * \brief Public interface to QmitkBaseView.
- *
- * The aim of this class is to expose view functionality to the module layer.
- * \sa QmitkBaseView
- */
-class NIFTKCOREGUI_EXPORT niftkIBaseView
+namespace niftk
+{
+
+/// \class IBaseView
+/// \brief Public interface to QmitkBaseView.
+///
+/// The aim of this class is to expose view functionality to the module layer.
+/// \sa QmitkBaseView
+class NIFTKCOREGUI_EXPORT IBaseView
 {
 
 public:
 
-  /// \brief Returns the currently focused renderer.
-  /// \return The currently focused renderer, or nullptr if it has not been set.
-  virtual mitk::BaseRenderer* GetFocusedRenderer() const = 0;
-
-  /// \brief Used to try and get the FocusManager to focus on the Current IRenderWindowPart.
+  /// \brief Used to try and get the FocusManager to focus on the current IRenderWindowPart.
   virtual void FocusOnCurrentWindow() const = 0;
 
   /// \brief Retrieves the currently selected RenderWindow from the mitkRenderWindowPart.
@@ -86,12 +83,6 @@ public:
   /// \brief Shows or hides the cursor (aka. crosshair) is in the active editor.
   virtual void SetActiveEditorCursorVisible(bool visible) const = 0;
 
-  /// \brief Convenient method to set and reset a wait cursor ("hourglass")
-  virtual void WaitCursorOn() = 0;
-
-  /// \brief Convenient method to restore the standard cursor
-  virtual void WaitCursorOff() = 0;
-
   /// \brief Gets the selected position in the active render window part.
   virtual mitk::Point3D GetSelectedPosition() const = 0;
 
@@ -99,5 +90,7 @@ public:
   virtual void SetSelectedPosition(const mitk::Point3D& selectedPosition) = 0;
 
 };
+
+}
 
 #endif

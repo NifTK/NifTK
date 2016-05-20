@@ -38,13 +38,16 @@
 #include <mitkNifTKCoreObjectFactory.h>
 #include <niftkMIDASTool.h>
 #include <niftkMIDASPaintbrushTool.h>
-#include <niftkMIDASImageUtils.h>
+#include <niftkImageUtils.h>
 #include <mitkITKRegionParametersDataNodeProperty.h>
+
+namespace niftk
+{
 
 /**
  * \brief Test class for niftkMIDASPaintbrushTool.
  */
-class niftkMIDASPaintbrushToolClass
+class MIDASPaintbrushToolClass
 {
 
 public:
@@ -53,7 +56,7 @@ public:
   mitk::ToolManager::Pointer m_ToolManager;
   mitk::RenderWindow::Pointer m_RenderWindow;
   mitk::RenderingManager::Pointer m_RenderingManager;
-  niftk::MIDASPaintbrushTool* m_Tool;
+  MIDASPaintbrushTool* m_Tool;
   int m_PaintbrushToolId;
 
   //-----------------------------------------------------------------------------
@@ -64,7 +67,7 @@ public:
     prop->SetValid(false);
 
     node->SetName(name);
-    node->AddProperty(niftk::MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), prop);
+    node->AddProperty(MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), prop);
   }
 
   //-----------------------------------------------------------------------------
@@ -88,16 +91,16 @@ public:
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 4),".. Testing 4 images loaded.");
 
     const mitk::DataNode::Pointer erodeAdditionsNode = (*allImages)[0];
-    this->SetupNode(erodeAdditionsNode, niftk::MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME);
+    this->SetupNode(erodeAdditionsNode, MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME);
 
     const mitk::DataNode::Pointer erodeSubtractionsNode = (*allImages)[1];
-    this->SetupNode(erodeSubtractionsNode, niftk::MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME);
+    this->SetupNode(erodeSubtractionsNode, MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME);
 
     const mitk::DataNode::Pointer dilateAdditionsNode = (*allImages)[2];
-    this->SetupNode(dilateAdditionsNode, niftk::MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME);
+    this->SetupNode(dilateAdditionsNode, MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME);
 
     const mitk::DataNode::Pointer dilateSubtractionsNode = (*allImages)[3];
-    this->SetupNode(dilateSubtractionsNode, niftk::MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME);
+    this->SetupNode(dilateSubtractionsNode, MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME);
 
     mitk::ToolManager::DataVectorType vector;
     vector.push_back(erodeAdditionsNode);
@@ -106,7 +109,7 @@ public:
     vector.push_back(dilateSubtractionsNode);
 
     m_ToolManager->SetWorkingData(vector);
-    m_Tool = dynamic_cast<niftk::MIDASPaintbrushTool*>(m_ToolManager->GetToolById(m_ToolManager->GetToolIdByToolType<niftk::MIDASPaintbrushTool>()));
+    m_Tool = dynamic_cast<MIDASPaintbrushTool*>(m_ToolManager->GetToolById(m_ToolManager->GetToolIdByToolType<MIDASPaintbrushTool>()));
 
     m_RenderingManager = mitk::RenderingManager::GetInstance();
     m_RenderingManager->SetDataStorage(m_DataStorage);
@@ -156,13 +159,13 @@ public:
 
     MITK_TEST_CONDITION( image.IsNotNull(), ".. Testing image present");
 
-    niftk::FillImage(image, 0);
-    unsigned long int numberOfVoxelsInImage = niftk::GetNumberOfVoxels(constImage);
-    unsigned long int voxelCounter = niftk::CountBetweenThreshold(constImage, -0.01, 0.01);
+    FillImage(image, 0);
+    unsigned long int numberOfVoxelsInImage = GetNumberOfVoxels(constImage);
+    unsigned long int voxelCounter = CountBetweenThreshold(constImage, -0.01, 0.01);
     MITK_TEST_CONDITION( voxelCounter == numberOfVoxelsInImage, ".. Testing image blank");
 
     // Get Middle Voxel, convert to millimetres, make position event.
-    mitk::Point3D voxelIndex = niftk::GetMiddlePointInVoxels(image);
+    mitk::Point3D voxelIndex = GetMiddlePointInVoxels(image);
     mitk::InteractionPositionEvent::Pointer event = this->GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
     // Generate Left or Right mouse click event.
@@ -178,7 +181,7 @@ public:
     }
 
     // Count voxels that got painted.
-    voxelCounter = niftk::CountBetweenThreshold(constImage, 0.99, 1.01);
+    voxelCounter = CountBetweenThreshold(constImage, 0.99, 1.01);
 
     // Compare with the expected number of voxels that got painted.
     MITK_TEST_OUTPUT(<<"Resulting voxel size=" << voxelCounter);
@@ -202,17 +205,17 @@ public:
     mitk::DataNode::Pointer node = workingData[imageId];
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
-    niftk::FillImage(image, 0);
+    FillImage(image, 0);
 
     // Set tool size
     m_Tool->SetCursorSize(cursorSize);
 
-    unsigned long int numberOfVoxelsInImage = niftk::GetNumberOfVoxels(constImage);
-    unsigned long int voxelCounter = niftk::CountBetweenThreshold(constImage, -0.01, 0.01);
+    unsigned long int numberOfVoxelsInImage = GetNumberOfVoxels(constImage);
+    unsigned long int voxelCounter = CountBetweenThreshold(constImage, -0.01, 0.01);
     MITK_TEST_CONDITION( voxelCounter == numberOfVoxelsInImage, ".. Testing image blank");
 
     // Get Middle Voxel, convert to millimetres, make position event.
-    mitk::Point3D voxelIndex = niftk::GetMiddlePointInVoxels(constImage);
+    mitk::Point3D voxelIndex = GetMiddlePointInVoxels(constImage);
     mitk::InteractionPositionEvent::Pointer middlePositionEvent = this->GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
     // Paint in XY plane, exactly diagonal.
@@ -238,7 +241,7 @@ public:
     }
 
     // Count voxels that got painted.
-    voxelCounter = niftk::CountBetweenThreshold(constImage, 0.99, 1.01);
+    voxelCounter = CountBetweenThreshold(constImage, 0.99, 1.01);
     MITK_TEST_OUTPUT(<<"Resulting voxelCounter=" << voxelCounter << ", with expectedResult=" << expectedResult);
     MITK_TEST_CONDITION( voxelCounter == expectedResult, ".. Testing cross size");
 
@@ -256,17 +259,17 @@ public:
     mitk::DataNode::Pointer node = workingData[1];
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
-    niftk::FillImage(image, 1);
+    FillImage(image, 1);
 
     // Set tool size
     m_Tool->SetCursorSize(2);
 
-    unsigned long int numberOfVoxelsInImage = niftk::GetNumberOfVoxels(constImage);
-    unsigned long int voxelCounter = niftk::CountBetweenThreshold(constImage, 0.99, 1.01);
+    unsigned long int numberOfVoxelsInImage = GetNumberOfVoxels(constImage);
+    unsigned long int voxelCounter = CountBetweenThreshold(constImage, 0.99, 1.01);
     MITK_TEST_CONDITION( voxelCounter == numberOfVoxelsInImage, ".. Testing image all filled in");
 
     // Get Middle Voxel, convert to millimetres, make position event.
-    mitk::Point3D voxelIndex = niftk::GetMiddlePointInVoxels(constImage);
+    mitk::Point3D voxelIndex = GetMiddlePointInVoxels(constImage);
     mitk::InteractionPositionEvent::Pointer middlePositionEvent = this->GeneratePositionEvent(m_RenderWindow->GetRenderer(), constImage, voxelIndex);
 
     // Paint in XY plane, exactly diagonal.
@@ -283,7 +286,7 @@ public:
     m_Tool->StopRemovingSubtraction(NULL, nextPositionEvent);
 
     // Count voxels that got painted.
-    voxelCounter = niftk::CountBetweenThreshold(constImage, 0.99, 1.01);
+    voxelCounter = CountBetweenThreshold(constImage, 0.99, 1.01);
     unsigned int expectedResult = numberOfVoxelsInImage - 8;
     MITK_TEST_OUTPUT(<<"Resulting voxelCounter=" << voxelCounter << ", with expectedResult=" << expectedResult);
     MITK_TEST_CONDITION( voxelCounter == expectedResult, ".. Testing cross size");
@@ -303,7 +306,7 @@ public:
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
 
-    niftk::FillImage(image, 0);
+    FillImage(image, 0);
 
     // Set tool size
     m_Tool->SetCursorSize(3);
@@ -342,8 +345,8 @@ public:
     }
 
     // Count voxels that got painted.
-    unsigned long int voxelCounter = niftk::CountBetweenThreshold(constImage, 0.99, 1.01);
-    unsigned long int numberOfVoxelsInImage = niftk::GetNumberOfVoxels(constImage);
+    unsigned long int voxelCounter = CountBetweenThreshold(constImage, 0.99, 1.01);
+    unsigned long int numberOfVoxelsInImage = GetNumberOfVoxels(constImage);
     MITK_TEST_OUTPUT(<<"Resulting voxelCounter=" << voxelCounter << ", with expectedResult=" << numberOfVoxelsInImage);
     MITK_TEST_CONDITION( voxelCounter == numberOfVoxelsInImage, ".. Testing painted all voxels");
 
@@ -361,7 +364,7 @@ public:
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
 
-    niftk::FillImage(image, 0);
+    FillImage(image, 0);
 
     // Set tool size
     m_Tool->SetCursorSize(3);
@@ -386,7 +389,7 @@ public:
     m_Tool->StopAddingAddition(NULL, nextPositionEvent);
 
     // Count voxels that got painted, should be zero.
-    unsigned long int voxelCounter = niftk::CountBetweenThreshold(constImage, 0.99, 1.01);
+    unsigned long int voxelCounter = CountBetweenThreshold(constImage, 0.99, 1.01);
     MITK_TEST_OUTPUT(<<"Resulting voxelCounter=" << voxelCounter << ", with expectedResult=0");
     MITK_TEST_CONDITION( voxelCounter == 0, ".. Testing painted zero voxels");
 
@@ -419,6 +422,8 @@ public:
 
 };
 
+}
+
 /**
  * Basic test harness for niftkMIDASPaintbrushToolScanTest.
  */
@@ -429,7 +434,7 @@ int niftkMIDASPaintbrushToolTest(int argc, char * argv[])
 
   // We are testing specifically with image ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii which is 11x11x11.
 
-  niftkMIDASPaintbrushToolClass *testClass = new niftkMIDASPaintbrushToolClass();
+  niftk::MIDASPaintbrushToolClass *testClass = new niftk::MIDASPaintbrushToolClass();
   testClass->Setup(argv);
   testClass->TestToolPresent();
   testClass->TestSingleClick(0, 2, 0);

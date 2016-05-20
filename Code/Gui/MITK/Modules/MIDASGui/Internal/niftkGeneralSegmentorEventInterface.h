@@ -12,25 +12,26 @@
 
 =============================================================================*/
 
-#ifndef __niftkGeneralSegmentorEventInterface_h
-#define __niftkGeneralSegmentorEventInterface_h
+#ifndef niftkGeneralSegmentorEventInterface_h
+#define niftkGeneralSegmentorEventInterface_h
 
 #include <itkObject.h>
 #include <itkSmartPointer.h>
 #include <itkObjectFactory.h>
 #include <mitkOperationActor.h>
 
-class niftkGeneralSegmentorController;
+namespace niftk
+{
 
-/**
- * \class niftkGeneralSegmentorEventInterface
- * \brief Interface class, simply to callback onto niftkGeneralSegmentorController class for Undo/Redo purposes.
- * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
- */
-class niftkGeneralSegmentorEventInterface: public itk::Object, public mitk::OperationActor
+class GeneralSegmentorController;
+
+/// \class GeneralSegmentorEventInterface
+/// \brief Interface class, simply to callback onto niftkGeneralSegmentorController class for Undo/Redo purposes.
+/// \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
+class GeneralSegmentorEventInterface: public itk::Object, public mitk::OperationActor
 {
 public:
-  typedef niftkGeneralSegmentorEventInterface       Self;
+  typedef GeneralSegmentorEventInterface       Self;
   typedef itk::SmartPointer<const Self>             ConstPointer;
   typedef itk::SmartPointer<Self>                   Pointer;
 
@@ -38,21 +39,23 @@ public:
   itkNewMacro(Self);
 
   /// \brief Sets the view to callback on to.
-  void SetGeneralSegmentorController(niftkGeneralSegmentorController* generalSegmentorController);
+  void SetGeneralSegmentorController(GeneralSegmentorController* generalSegmentorController);
 
   /// \brief Main execution function.
   virtual void ExecuteOperation(mitk::Operation* op) override;
 
 protected:
 
-  niftkGeneralSegmentorEventInterface();
+  GeneralSegmentorEventInterface();
 
-  virtual ~niftkGeneralSegmentorEventInterface();
+  virtual ~GeneralSegmentorEventInterface();
 
 private:
 
-  niftkGeneralSegmentorController* m_GeneralSegmentorController;
+  GeneralSegmentorController* m_GeneralSegmentorController;
 
 };
+
+}
 
 #endif

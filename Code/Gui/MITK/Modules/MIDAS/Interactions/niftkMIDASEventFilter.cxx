@@ -14,14 +14,18 @@
 
 #include "niftkMIDASEventFilter.h"
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-niftk::MIDASEventFilter::MIDASEventFilter()
+MIDASEventFilter::MIDASEventFilter()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::MIDASEventFilter::~MIDASEventFilter()
+MIDASEventFilter::~MIDASEventFilter()
 {
+}
+
 }

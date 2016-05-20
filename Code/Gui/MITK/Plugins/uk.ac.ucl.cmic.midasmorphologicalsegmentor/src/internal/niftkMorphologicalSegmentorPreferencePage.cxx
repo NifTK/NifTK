@@ -27,11 +27,14 @@
 
 #include <niftkBaseSegmentorView.h>
 
-const QString niftkMorphologicalSegmentorPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasmorphologicalsegmentor");
+namespace niftk
+{
+
+const QString MorphologicalSegmentorPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasmorphologicalsegmentor");
 
 
 //-----------------------------------------------------------------------------
-niftkMorphologicalSegmentorPreferencePage::niftkMorphologicalSegmentorPreferencePage()
+MorphologicalSegmentorPreferencePage::MorphologicalSegmentorPreferencePage()
 : m_MainControl(0)
 , m_Initializing(false)
 {
@@ -40,7 +43,7 @@ niftkMorphologicalSegmentorPreferencePage::niftkMorphologicalSegmentorPreference
 
 
 //-----------------------------------------------------------------------------
-niftkMorphologicalSegmentorPreferencePage::niftkMorphologicalSegmentorPreferencePage(const niftkMorphologicalSegmentorPreferencePage& other)
+MorphologicalSegmentorPreferencePage::MorphologicalSegmentorPreferencePage(const MorphologicalSegmentorPreferencePage& other)
 : berry::Object(), QObject()
 {
   Q_UNUSED(other)
@@ -49,21 +52,21 @@ niftkMorphologicalSegmentorPreferencePage::niftkMorphologicalSegmentorPreference
 
 
 //-----------------------------------------------------------------------------
-niftkMorphologicalSegmentorPreferencePage::~niftkMorphologicalSegmentorPreferencePage()
+MorphologicalSegmentorPreferencePage::~MorphologicalSegmentorPreferencePage()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorPreferencePage::Init(berry::IWorkbench::Pointer )
+void MorphologicalSegmentorPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorPreferencePage::CreateQtControl(QWidget* parent)
+void MorphologicalSegmentorPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
@@ -99,33 +102,33 @@ void niftkMorphologicalSegmentorPreferencePage::CreateQtControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-QWidget* niftkMorphologicalSegmentorPreferencePage::GetQtControl() const
+QWidget* MorphologicalSegmentorPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkMorphologicalSegmentorPreferencePage::PerformOk()
+bool MorphologicalSegmentorPreferencePage::PerformOk()
 {
-  m_niftkMorphologicalSegmentationViewPreferencesNode->Put(niftkBaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet);
-  m_niftkMorphologicalSegmentationViewPreferencesNode->Put(niftkBaseSegmentorView::DEFAULT_COLOUR, m_DefaultColor);
+  m_niftkMorphologicalSegmentationViewPreferencesNode->Put(BaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET, m_DefauleColorStyleSheet);
+  m_niftkMorphologicalSegmentationViewPreferencesNode->Put(BaseSegmentorView::DEFAULT_COLOUR, m_DefaultColor);
 
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorPreferencePage::PerformCancel()
+void MorphologicalSegmentorPreferencePage::PerformCancel()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorPreferencePage::Update()
+void MorphologicalSegmentorPreferencePage::Update()
 {
-  m_DefauleColorStyleSheet = m_niftkMorphologicalSegmentationViewPreferencesNode->Get(niftkBaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET, "");
-  m_DefaultColor = m_niftkMorphologicalSegmentationViewPreferencesNode->GetByteArray(niftkBaseSegmentorView::DEFAULT_COLOUR, "");
+  m_DefauleColorStyleSheet = m_niftkMorphologicalSegmentationViewPreferencesNode->Get(BaseSegmentorView::DEFAULT_COLOUR_STYLE_SHEET, "");
+  m_DefaultColor = m_niftkMorphologicalSegmentationViewPreferencesNode->GetByteArray(BaseSegmentorView::DEFAULT_COLOUR, "");
   if (m_DefauleColorStyleSheet=="")
   {
     m_DefauleColorStyleSheet = "background-color: rgb(0,255,0)";
@@ -139,7 +142,7 @@ void niftkMorphologicalSegmentorPreferencePage::Update()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorPreferencePage::OnDefaultColourChanged()
+void MorphologicalSegmentorPreferencePage::OnDefaultColourChanged()
 {
   QColor colour = QColorDialog::getColor();
   if (colour.isValid())
@@ -166,9 +169,11 @@ void niftkMorphologicalSegmentorPreferencePage::OnDefaultColourChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorPreferencePage::OnResetDefaultColour()
+void MorphologicalSegmentorPreferencePage::OnResetDefaultColour()
 {
   m_DefauleColorStyleSheet = "background-color: rgb(0,255,0)";
   m_DefaultColor = "#00ff00";
   m_DefaultColorPushButton->setStyleSheet(m_DefauleColorStyleSheet);
+}
+
 }

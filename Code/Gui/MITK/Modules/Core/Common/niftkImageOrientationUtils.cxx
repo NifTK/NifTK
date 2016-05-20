@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkMIDASOrientationUtils.h"
+#include "niftkImageOrientationUtils.h"
 
 #include <mitkImageAccessByItk.h>
 #include <mitkITKImageImport.h>
@@ -20,17 +20,17 @@
 namespace niftk {
 
 //-----------------------------------------------------------------------------
-itk::Orientation GetItkOrientation(const MIDASOrientation& orientation)
+itk::Orientation GetItkOrientation(ImageOrientation orientation)
 {
-  if (orientation == MIDAS_ORIENTATION_AXIAL)
+  if (orientation == IMAGE_ORIENTATION_AXIAL)
   {
     return itk::ORIENTATION_AXIAL;
   }
-  else if (orientation == MIDAS_ORIENTATION_SAGITTAL)
+  else if (orientation == IMAGE_ORIENTATION_SAGITTAL)
   {
     return itk::ORIENTATION_SAGITTAL;
   }
-  else if (orientation == MIDAS_ORIENTATION_CORONAL)
+  else if (orientation == IMAGE_ORIENTATION_CORONAL)
   {
     return itk::ORIENTATION_CORONAL;
   }
@@ -42,24 +42,35 @@ itk::Orientation GetItkOrientation(const MIDASOrientation& orientation)
 
 
 //-----------------------------------------------------------------------------
-MIDASOrientation GetMitkOrientation(const itk::Orientation& orientation)
+ImageOrientation GetMitkOrientation(itk::Orientation orientation)
 {
   if (orientation == itk::ORIENTATION_AXIAL)
   {
-    return MIDAS_ORIENTATION_AXIAL;
+    return IMAGE_ORIENTATION_AXIAL;
   }
   else if (orientation == itk::ORIENTATION_SAGITTAL)
   {
-    return MIDAS_ORIENTATION_SAGITTAL;
+    return IMAGE_ORIENTATION_SAGITTAL;
   }
   else if (orientation == itk::ORIENTATION_CORONAL)
   {
-    return MIDAS_ORIENTATION_CORONAL;
+    return IMAGE_ORIENTATION_CORONAL;
   }
   else
   {
-    return MIDAS_ORIENTATION_UNKNOWN;
+    return IMAGE_ORIENTATION_UNKNOWN;
   }
+}
+
+
+//-----------------------------------------------------------------------------
+std::string GetOrientationName(ImageOrientation orientation)
+{
+  return
+      orientation == IMAGE_ORIENTATION_AXIAL ? "axial" :
+      orientation == IMAGE_ORIENTATION_SAGITTAL ? "sagittal" :
+      orientation == IMAGE_ORIENTATION_CORONAL ? "coronal" :
+      "unknown";
 }
 
 
@@ -107,7 +118,7 @@ int GetUpDirection(const mitk::BaseGeometry* geometry, itk::Orientation orientat
 
 
 //-----------------------------------------------------------------------------
-int GetUpDirection(const mitk::Image* image, const MIDASOrientation& orientation)
+int GetUpDirection(const mitk::Image* image, ImageOrientation orientation)
 {
   int result = 0;
 
@@ -136,7 +147,7 @@ int GetUpDirection(const mitk::Image* image, const MIDASOrientation& orientation
 
 
 //-----------------------------------------------------------------------------
-int GetThroughPlaneAxis(const mitk::Image* image, const MIDASOrientation& orientation)
+int GetThroughPlaneAxis(const mitk::Image* image, ImageOrientation orientation)
 {
   int result = -1;
 
@@ -195,9 +206,9 @@ std::string GetOrientationString(const mitk::Image* image)
 //-----------------------------------------------------------------------------
 void GetAxesInWorldCoordinateOrder(const mitk::Image* mitkImage, int axesInWorldCoordinateOrder[3])
 {
-  axesInWorldCoordinateOrder[0] = niftk::GetThroughPlaneAxis(mitkImage, MIDAS_ORIENTATION_SAGITTAL);
-  axesInWorldCoordinateOrder[1] = niftk::GetThroughPlaneAxis(mitkImage, MIDAS_ORIENTATION_CORONAL);
-  axesInWorldCoordinateOrder[2] = niftk::GetThroughPlaneAxis(mitkImage, MIDAS_ORIENTATION_AXIAL);
+  axesInWorldCoordinateOrder[0] = niftk::GetThroughPlaneAxis(mitkImage, IMAGE_ORIENTATION_SAGITTAL);
+  axesInWorldCoordinateOrder[1] = niftk::GetThroughPlaneAxis(mitkImage, IMAGE_ORIENTATION_CORONAL);
+  axesInWorldCoordinateOrder[2] = niftk::GetThroughPlaneAxis(mitkImage, IMAGE_ORIENTATION_AXIAL);
 }
 
 

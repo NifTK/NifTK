@@ -21,7 +21,7 @@ namespace niftk
 {
 
 /**
- * \class niftk::GeneralSegmentorActivator
+ * \class GeneralSegmentorActivator
  * \brief CTK Plugin Activator class for niftkGeneralSegmentorView.
  * \ingroup uk_ac_ucl_cmic_midasgeneralsegmentor_internal
  */

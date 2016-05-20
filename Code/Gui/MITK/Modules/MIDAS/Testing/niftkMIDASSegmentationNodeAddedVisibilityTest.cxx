@@ -31,16 +31,19 @@
 #include <mitkGlobalInteraction.h>
 
 #include <mitkNifTKCoreObjectFactory.h>
-#include <niftkMIDASImageUtils.h>
+#include <niftkImageUtils.h>
 #include <niftkMIDASDataNodeNameStringFilter.h>
 #include <mitkDataNodeAddedVisibilitySetter.h>
 #include <niftkMIDASTool.h>
 #include <niftkMIDASPolyTool.h>
 
+namespace niftk
+{
+
 /**
  * \brief Test class for niftkMIDASSegmentationNodeAddedVisibilityTest.
  */
-class niftkMIDASSegmentationNodeAddedVisibilityTestClass
+class MIDASSegmentationNodeAddedVisibilityTestClass
 {
 
 public:
@@ -64,7 +67,7 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestCreateFitler...");
 
-    niftk::MIDASDataNodeNameStringFilter::Pointer filter = niftk::MIDASDataNodeNameStringFilter::New();
+    MIDASDataNodeNameStringFilter::Pointer filter = MIDASDataNodeNameStringFilter::New();
     MITK_TEST_CONDITION_REQUIRED(filter.IsNotNull(),".. Testing filter pointer not null.");
 
     MITK_TEST_OUTPUT(<< "Finished TestCreateFitler...");
@@ -76,7 +79,7 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestFilterPassWithNoPropertiesSet...");
 
-    niftk::MIDASDataNodeNameStringFilter::Pointer filter = niftk::MIDASDataNodeNameStringFilter::New();
+    MIDASDataNodeNameStringFilter::Pointer filter = MIDASDataNodeNameStringFilter::New();
     bool result = filter->Pass(m_DataNode);
     MITK_TEST_CONDITION_REQUIRED(result,".. Testing filter passes by default");
 
@@ -89,7 +92,7 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestFilterFailWithGivenString...");
 
-    niftk::MIDASDataNodeNameStringFilter::Pointer filter = niftk::MIDASDataNodeNameStringFilter::New();
+    MIDASDataNodeNameStringFilter::Pointer filter = MIDASDataNodeNameStringFilter::New();
     m_DataNode->SetName(name);
     bool result = filter->Pass(m_DataNode);
     MITK_TEST_CONDITION_REQUIRED(!result,".. Testing filter fails with name=" << name);
@@ -121,7 +124,7 @@ public:
 
     // Create the setter we are testing.
     mitk::DataNodeAddedVisibilitySetter::Pointer setter = mitk::DataNodeAddedVisibilitySetter::New();
-    niftk::MIDASDataNodeNameStringFilter::Pointer filter = niftk::MIDASDataNodeNameStringFilter::New();
+    MIDASDataNodeNameStringFilter::Pointer filter = MIDASDataNodeNameStringFilter::New();
     setter->AddFilter(filter.GetPointer());
     setter->SetVisibility(false);
     setter->SetDataStorage(dataStorage);
@@ -160,6 +163,8 @@ public:
   }
 };
 
+}
+
 /**
  * Basic test harness niftkMIDASSegmentationNodeAddedVisibilityTestClass.
  */
@@ -170,24 +175,24 @@ int niftkMIDASSegmentationNodeAddedVisibilityTest(int argc, char * argv[])
 
   // We are testing specifically with image ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii which is 11x11x11.
 
-  niftkMIDASSegmentationNodeAddedVisibilityTestClass *testClass = new niftkMIDASSegmentationNodeAddedVisibilityTestClass();
+  niftk::MIDASSegmentationNodeAddedVisibilityTestClass *testClass = new niftk::MIDASSegmentationNodeAddedVisibilityTestClass();
   testClass->Setup();
 
   testClass->TestCreateFilter();
   testClass->TestFilterPassWithNoPropertiesSet();
   testClass->TestFilterFailWithGivenString("One of FeedbackContourTool's feedback nodes");
   testClass->TestFilterFailWithGivenString("MIDASContourTool");
-  testClass->TestFilterFailWithGivenString(niftk::MIDASTool::SEED_POINT_SET_NAME);
-  testClass->TestFilterFailWithGivenString(niftk::MIDASTool::CURRENT_CONTOURS_NAME);
-  testClass->TestFilterFailWithGivenString(niftk::MIDASTool::REGION_GROWING_IMAGE_NAME);
-  testClass->TestFilterFailWithGivenString(niftk::MIDASTool::PRIOR_CONTOURS_NAME);
-  testClass->TestFilterFailWithGivenString(niftk::MIDASTool::NEXT_CONTOURS_NAME);
-  testClass->TestFilterFailWithGivenString(niftk::MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS);
-  testClass->TestFilterFailWithGivenString(niftk::MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS);
-  testClass->TestFilterFailWithGivenString(niftk::MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS);
-  testClass->TestFilterFailWithGivenString(niftk::MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS);
-  testClass->TestFilterFailWithGivenString(niftk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
-  testClass->TestFilterFailWithGivenString(niftk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
+  testClass->TestFilterFailWithGivenString(MIDASTool::SEED_POINT_SET_NAME);
+  testClass->TestFilterFailWithGivenString(MIDASTool::CURRENT_CONTOURS_NAME);
+  testClass->TestFilterFailWithGivenString(MIDASTool::REGION_GROWING_IMAGE_NAME);
+  testClass->TestFilterFailWithGivenString(MIDASTool::PRIOR_CONTOURS_NAME);
+  testClass->TestFilterFailWithGivenString(MIDASTool::NEXT_CONTOURS_NAME);
+  testClass->TestFilterFailWithGivenString(MIDASTool::MORPH_EDITS_EROSIONS_SUBTRACTIONS);
+  testClass->TestFilterFailWithGivenString(MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS);
+  testClass->TestFilterFailWithGivenString(MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS);
+  testClass->TestFilterFailWithGivenString(MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS);
+  testClass->TestFilterFailWithGivenString(MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
+  testClass->TestFilterFailWithGivenString(MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
   testClass->TestFilterFailWithGivenString("Paintbrush_Node");
   testClass->TestVisibilitySetter(argv, false); // global
   testClass->TestVisibilitySetter(argv, true); // renderer specific

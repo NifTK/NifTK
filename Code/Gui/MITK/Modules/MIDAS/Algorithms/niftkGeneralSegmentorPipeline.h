@@ -135,7 +135,7 @@ typedef ParametricPathType::VertexType     ParametricPathVertexType;
 ///
 
 /** Converts Points from MITK to ITK. */
-void NIFTKMIDAS_EXPORT ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds, itk::PointSet<float, 3> *points);
+void NIFTKMIDAS_EXPORT ConvertMITKSeedsAndAppendToITKSeeds(const mitk::PointSet* seeds, itk::PointSet<float, 3>* points);
 
 
 /// \brief Converts MITK contours from to ITK contours and appends them to a list.
@@ -175,7 +175,7 @@ void NIFTKMIDAS_EXPORT ConvertMITKSeedsAndAppendToITKSeeds(mitk::PointSet *seeds
 /// @spacing have to be the spacing along the sagittal, coronal then axial axis, in this order. ITK images and MITK
 /// geometries store the spacing in voxel coordinate order.
 ///
-/// You can translate between the two coordinate systems with the utility functions in niftkMIDASOrientationUtils.h.
+/// You can translate between the two coordinate systems with the utility functions in niftkImageOrientationUtils.h.
 ///
 void NIFTKMIDAS_EXPORT ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet* mitkContours, ParametricPathVectorType& itkContours, const mitk::Vector3D& spacing);
 
@@ -187,15 +187,14 @@ void NIFTKMIDAS_EXPORT ConvertMITKContoursAndAppendToITKContours(mitk::ContourMo
 struct NIFTKMIDAS_EXPORT GeneralSegmentorPipelineParams
 {
   bool m_EraseFullSlice;
-  int m_SliceNumber;
-  int m_AxisNumber;
+  int m_SliceAxis;
+  int m_SliceIndex;
   double m_LowerThreshold;
   double m_UpperThreshold;
-  mitk::PointSet *m_Seeds;
-  mitk::ContourModelSet *m_SegmentationContours;
-  mitk::ContourModelSet *m_DrawContours;
-  mitk::ContourModelSet *m_PolyContours;
-
+  const mitk::PointSet* m_Seeds;
+  mitk::ContourModelSet* m_SegmentationContours;
+  mitk::ContourModelSet* m_DrawContours;
+  mitk::ContourModelSet* m_PolyContours;
 };
 
 /**
@@ -263,7 +262,7 @@ public:
 
   virtual ~GeneralSegmentorPipeline();
 
-  void SetParam(GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams &params);
+  void SetParam(const GreyScaleImageType* referenceImage, SegmentationImageType* segmentationImage, GeneralSegmentorPipelineParams& params);
 
   void Update(GeneralSegmentorPipelineParams &params);
 
@@ -288,8 +287,8 @@ private:
 public:
 
   // Member variables.
-  int m_SliceNumber;
-  int m_AxisNumber;
+  int m_SliceAxis;
+  int m_SliceIndex;
   TPixel m_LowerThreshold;
   TPixel m_UpperThreshold;
   PointSetPointer m_AllSeeds;

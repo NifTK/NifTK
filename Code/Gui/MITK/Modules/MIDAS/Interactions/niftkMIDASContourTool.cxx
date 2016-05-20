@@ -34,11 +34,14 @@
 #include "niftkMIDASContourToolEventInterface.h"
 #include "niftkMIDASContourToolOpAccumulateContour.h"
 
-const std::string niftk::MIDASContourTool::EDITING_PROPERTY_NAME = std::string("midas.contour.editing");
-const std::string niftk::MIDASContourTool::MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR("MIDAS Background Contour");
-const mitk::OperationType niftk::MIDASContourTool::MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR = 320419;
+namespace niftk
+{
 
-niftk::MIDASContourTool::MIDASContourTool()
+const std::string MIDASContourTool::EDITING_PROPERTY_NAME = std::string("midas.contour.editing");
+const std::string MIDASContourTool::MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR("MIDAS Background Contour");
+const mitk::OperationType MIDASContourTool::MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR = 320419;
+
+MIDASContourTool::MIDASContourTool()
 : MIDASTool()
 , m_ContourWidth(1)
 , m_ContourClosed(false)
@@ -64,11 +67,11 @@ niftk::MIDASContourTool::MIDASContourTool()
 
 }
 
-niftk::MIDASContourTool::~MIDASContourTool()
+MIDASContourTool::~MIDASContourTool()
 {
 }
 
-void niftk::MIDASContourTool::Disable3dRenderingOfNode(mitk::DataNode* node)
+void MIDASContourTool::Disable3dRenderingOfNode(mitk::DataNode* node)
 {
   mitk::RenderingManager* renderingManager =
       m_LastEventSender ? m_LastEventSender->GetRenderingManager() : 0;
@@ -88,19 +91,19 @@ void niftk::MIDASContourTool::Disable3dRenderingOfNode(mitk::DataNode* node)
   }
 }
 
-void niftk::MIDASContourTool::Disable3dRenderingOfBackgroundContour()
+void MIDASContourTool::Disable3dRenderingOfBackgroundContour()
 {
   this->Disable3dRenderingOfNode(m_BackgroundContourNode);
 }
 
-void niftk::MIDASContourTool::SetBackgroundContour(mitk::ContourModel& contour)
+void MIDASContourTool::SetBackgroundContour(mitk::ContourModel& contour)
 {
   this->Disable3dRenderingOfBackgroundContour();
   m_BackgroundContour = &contour;
   m_BackgroundContourNode->SetData( m_BackgroundContour );
 }
 
-void niftk::MIDASContourTool::SetBackgroundContourVisible(bool visible)
+void MIDASContourTool::SetBackgroundContourVisible(bool visible)
 {
   this->Disable3dRenderingOfBackgroundContour();
 
@@ -124,7 +127,7 @@ void niftk::MIDASContourTool::SetBackgroundContourVisible(bool visible)
   m_BackgroundContourVisible = visible;
 }
 
-void niftk::MIDASContourTool::ClearData()
+void MIDASContourTool::ClearData()
 {
   mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
   feedbackContour->Initialize();
@@ -137,33 +140,33 @@ void niftk::MIDASContourTool::ClearData()
 //  backgroundContour->SetWidth(m_ContourWidth);
 }
 
-void niftk::MIDASContourTool::SetBackgroundContourColor( float r, float g, float b )
+void MIDASContourTool::SetBackgroundContourColor( float r, float g, float b )
 {
   m_BackgroundContourNode->SetProperty("color", mitk::ColorProperty::New(r, g, b));
   m_BackgroundContourNode->SetProperty("contour.color", mitk::ColorProperty::New(r, g, b));
 }
 
-void niftk::MIDASContourTool::SetBackgroundContourColorDefault()
+void MIDASContourTool::SetBackgroundContourColorDefault()
 {
   this->SetBackgroundContourColor(0.0/255.0, 255.0/255.0, 0.0/255.0);
 }
 
-mitk::ContourModel* niftk::MIDASContourTool::GetBackgroundContour()
+mitk::ContourModel* MIDASContourTool::GetBackgroundContour()
 {
   return m_BackgroundContour;
 }
 
-mitk::ContourModel* niftk::MIDASContourTool::GetContour()
+mitk::ContourModel* MIDASContourTool::GetContour()
 {
   return mitk::FeedbackContourTool::GetFeedbackContour();
 }
 
-void niftk::MIDASContourTool::SetFeedbackContourVisible(bool b)
+void MIDASContourTool::SetFeedbackContourVisible(bool b)
 {
   mitk::FeedbackContourTool::SetFeedbackContourVisible(b);
 }
 
-bool niftk::MIDASContourTool::OnMousePressed(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASContourTool::OnMousePressed(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::DataNode* referenceNode = m_ToolManager->GetReferenceData(0);
   if (!referenceNode) return false;
@@ -182,7 +185,7 @@ bool niftk::MIDASContourTool::OnMousePressed(mitk::StateMachineAction* action, m
   return true;
 }
 
-void niftk::MIDASContourTool::ConvertPointInMmToVx(
+void MIDASContourTool::ConvertPointInMmToVx(
     const mitk::Point3D& pointInMm,
     mitk::Point3D& pointInVx)
 {
@@ -191,7 +194,7 @@ void niftk::MIDASContourTool::ConvertPointInMmToVx(
   m_SegmentationImageGeometry->WorldToIndex(pointInMm, pointInVx);
 }
 
-void niftk::MIDASContourTool::ConvertPointToNearestVoxelCentreInVx(
+void MIDASContourTool::ConvertPointToNearestVoxelCentreInVx(
     const mitk::Point3D& pointInMm,
     mitk::Point3D& nearestVoxelCentreInVx)
 {
@@ -203,7 +206,7 @@ void niftk::MIDASContourTool::ConvertPointToNearestVoxelCentreInVx(
   }
 }
 
-void niftk::MIDASContourTool::ConvertPointToNearestVoxelCentreInMm(
+void MIDASContourTool::ConvertPointToNearestVoxelCentreInMm(
     const mitk::Point3D& pointInMm,
     mitk::Point3D& nearestVoxelCentreInMm)
 {
@@ -214,7 +217,7 @@ void niftk::MIDASContourTool::ConvertPointToNearestVoxelCentreInMm(
   m_SegmentationImageGeometry->IndexToWorld(pointInVx, nearestVoxelCentreInMm);
 }
 
-void niftk::MIDASContourTool::GetClosestCornerPoint2D(
+void MIDASContourTool::GetClosestCornerPoint2D(
     const mitk::Point3D& pointInTrueMm,
     int* whichTwoAxesInVx,
     mitk::Point3D& cornerPointBetweenVoxelsInTrueMm)
@@ -259,7 +262,7 @@ void niftk::MIDASContourTool::GetClosestCornerPoint2D(
   cornerPointBetweenVoxelsInTrueMm = bestCornerPointSoFar;
 }
 
-int niftk::MIDASContourTool::GetEqualCoordinateAxes(
+int MIDASContourTool::GetEqualCoordinateAxes(
     const mitk::Point3D& point1InMm,
     const mitk::Point3D& point2InMm,
     int* whichTwoAxesInVx)
@@ -283,7 +286,7 @@ int niftk::MIDASContourTool::GetEqualCoordinateAxes(
   return equalCoordinateAxes;
 }
 
-void niftk::MIDASContourTool::GetAdditionalCornerPoint(
+void MIDASContourTool::GetAdditionalCornerPoint(
     const mitk::Point3D& c1InMm,
     const mitk::Point3D& p2InMm,
     const mitk::Point3D& c2InMm,
@@ -322,7 +325,7 @@ void niftk::MIDASContourTool::GetAdditionalCornerPoint(
   }
 }
 
-bool niftk::MIDASContourTool::DrawLineAroundVoxelEdges(
+bool MIDASContourTool::DrawLineAroundVoxelEdges(
     const mitk::Image* image,                 // input
     const mitk::BaseGeometry* geometry,       // input
     const mitk::PlaneGeometry* planeGeometry, // input
@@ -497,7 +500,7 @@ bool niftk::MIDASContourTool::DrawLineAroundVoxelEdges(
   return contourAugmented;
 }
 
-void niftk::MIDASContourTool::InitialiseContour(mitk::ContourModel& a, mitk::ContourModel& b)
+void MIDASContourTool::InitialiseContour(mitk::ContourModel& a, mitk::ContourModel& b)
 {
   b.SetClosed(a.IsClosed());
   // TODO Removed at from the new MITK segmentation framework.
@@ -508,10 +511,10 @@ void niftk::MIDASContourTool::InitialiseContour(mitk::ContourModel& a, mitk::Con
 //  b.SetWidth(a.GetWidth());
 }
 
-void niftk::MIDASContourTool::CopyContour(mitk::ContourModel &a, mitk::ContourModel &b)
+void MIDASContourTool::CopyContour(mitk::ContourModel &a, mitk::ContourModel &b)
 {
   b.Initialize();
-  niftk::MIDASContourTool::InitialiseContour(a, b);
+  MIDASContourTool::InitialiseContour(a, b);
   for (unsigned long i = 0; i < a.GetNumberOfVertices(); i++)
   {
     b.AddVertex(const_cast<mitk::ContourModel::VertexType&>(*a.GetVertexAt(i)));
@@ -519,7 +522,7 @@ void niftk::MIDASContourTool::CopyContour(mitk::ContourModel &a, mitk::ContourMo
   b.UpdateOutputInformation();
 }
 
-void niftk::MIDASContourTool::CopyContourSet(mitk::ContourModelSet &a, mitk::ContourModelSet &b, bool initialise)
+void MIDASContourTool::CopyContourSet(mitk::ContourModelSet &a, mitk::ContourModelSet &b, bool initialise)
 {
   if (initialise)
   {
@@ -533,7 +536,7 @@ void niftk::MIDASContourTool::CopyContourSet(mitk::ContourModelSet &a, mitk::Con
     mitk::ContourModel* nextContour = (*contourIt).GetPointer();
     mitk::ContourModel::Pointer outputContour = mitk::ContourModel::New();
 
-    niftk::MIDASContourTool::CopyContour(*nextContour, *(outputContour.GetPointer()));
+    MIDASContourTool::CopyContour(*nextContour, *(outputContour.GetPointer()));
 
     b.AddContourModel(outputContour);
 
@@ -541,7 +544,7 @@ void niftk::MIDASContourTool::CopyContourSet(mitk::ContourModelSet &a, mitk::Con
   }
 }
 
-void niftk::MIDASContourTool::AccumulateContourInWorkingData(mitk::ContourModel& contour, int contourIndex)
+void MIDASContourTool::AccumulateContourInWorkingData(mitk::ContourModel& contour, int contourIndex)
 {
   assert(m_ToolManager);
 
@@ -552,17 +555,17 @@ void niftk::MIDASContourTool::AccumulateContourInWorkingData(mitk::ContourModel&
   assert(inputContourSet);
 
   mitk::ContourModelSet::Pointer copyOfInputContourSet = mitk::ContourModelSet::New();
-  niftk::MIDASContourTool::CopyContourSet(*(inputContourSet), *(copyOfInputContourSet.GetPointer()));
+  MIDASContourTool::CopyContourSet(*(inputContourSet), *(copyOfInputContourSet.GetPointer()));
 
   mitk::ContourModelSet::Pointer newContourSet = mitk::ContourModelSet::New();
-  niftk::MIDASContourTool::CopyContourSet(*(inputContourSet), *(newContourSet.GetPointer()));
+  MIDASContourTool::CopyContourSet(*(inputContourSet), *(newContourSet.GetPointer()));
 
   mitk::ContourModel::Pointer copyOfInputContour = mitk::ContourModel::New();
-  niftk::MIDASContourTool::CopyContour(contour, *(copyOfInputContour.GetPointer()));
+  MIDASContourTool::CopyContour(contour, *(copyOfInputContour.GetPointer()));
 
   newContourSet->AddContourModel(copyOfInputContour);
 
-  niftk::MIDASContourToolOpAccumulateContour *doOp = new niftk::MIDASContourToolOpAccumulateContour(
+  MIDASContourToolOpAccumulateContour *doOp = new MIDASContourToolOpAccumulateContour(
       MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR,
       true,
       contourIndex,
@@ -570,7 +573,7 @@ void niftk::MIDASContourTool::AccumulateContourInWorkingData(mitk::ContourModel&
       );
 
 
-  niftk::MIDASContourToolOpAccumulateContour *undoOp = new niftk::MIDASContourToolOpAccumulateContour(
+  MIDASContourToolOpAccumulateContour *undoOp = new MIDASContourToolOpAccumulateContour(
       MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR,
       false,
       contourIndex,
@@ -582,7 +585,7 @@ void niftk::MIDASContourTool::AccumulateContourInWorkingData(mitk::ContourModel&
   this->ExecuteOperation(doOp);
 }
 
-void niftk::MIDASContourTool::ExecuteOperation(mitk::Operation* operation)
+void MIDASContourTool::ExecuteOperation(mitk::Operation* operation)
 {
   if (!operation) return;
 
@@ -603,7 +606,7 @@ void niftk::MIDASContourTool::ExecuteOperation(mitk::Operation* operation)
         mitk::ContourModelSet* contoursToReplace = static_cast<mitk::ContourModelSet*>((m_ToolManager->GetWorkingData(dataIndex))->GetData());
         assert(contoursToReplace);
 
-        niftk::MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
+        MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
 
         contoursToReplace->UpdateOutputInformation();
         contoursToReplace->Modified();
@@ -621,3 +624,4 @@ void niftk::MIDASContourTool::ExecuteOperation(mitk::Operation* operation)
   this->RenderAllWindows();
 }
 
+}

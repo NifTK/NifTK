@@ -20,9 +20,9 @@ set(MODULE_TESTS
 )
 
 set(MODULE_CUSTOM_TESTS
-  niftkMIDASOrientationUtilsTest.cxx
-  niftkMIDASAsAcquiredOrientationTest.cxx
-  niftkMIDASImageUtilsTest.cxx
-  niftkMIDASCompareImagesForEqualityTest.cxx
+  niftkImageOrientationUtilsTest.cxx
+  niftkAsAcquiredOrientationTest.cxx
+  niftkImageUtilsTest.cxx
+  niftkCompareImagesForEqualityTest.cxx
   mitkCoordinateAxesDataRenderingTest.cxx
 )

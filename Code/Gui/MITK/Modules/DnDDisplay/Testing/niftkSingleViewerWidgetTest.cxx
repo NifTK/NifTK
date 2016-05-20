@@ -29,7 +29,7 @@
 #include <QmitkMimeTypes.h>
 #include <QmitkRegisterClasses.h>
 
-#include <niftkMIDASOrientationUtils.h>
+#include <niftkImageOrientationUtils.h>
 #include <mitkNifTKCoreObjectFactory.h>
 #include <niftkSingleViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>

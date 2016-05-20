@@ -17,26 +17,30 @@
 #include "niftkMIDASPolyToolOpAddToFeedbackContour.h"
 #include "niftkMIDASPolyToolOpUpdateFeedbackContour.h"
 #include "niftkMIDASPolyTool.xpm"
-#include <mitkOperationEvent.h>
-#include <mitkUndoController.h>
-#include <mitkPointUtils.h>
-#include <mitkToolManager.h>
+
 #include <mitkBaseRenderer.h>
 #include <mitkContourModel.h>
+#include <mitkOperationEvent.h>
+#include <mitkPointUtils.h>
+#include <mitkToolManager.h>
+#include <mitkUndoController.h>
 
 #include <usModuleResource.h>
 #include <usGetModuleContext.h>
 
 #include "niftkToolFactoryMacros.h"
 
-const std::string niftk::MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS("MIDAS PolyTool anchor points");
-const std::string niftk::MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR("MIDAS PolyTool previous contour");
-const mitk::OperationType niftk::MIDASPolyTool::MIDAS_POLY_TOOL_OP_ADD_TO_FEEDBACK_CONTOUR = 320420;
-const mitk::OperationType niftk::MIDASPolyTool::MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR = 320421;
-
 NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPolyTool, "MIDAS Poly Tool");
 
-niftk::MIDASPolyTool::MIDASPolyTool()
+namespace niftk
+{
+
+const std::string MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS("MIDAS PolyTool anchor points");
+const std::string MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR("MIDAS PolyTool previous contour");
+const mitk::OperationType MIDASPolyTool::MIDAS_POLY_TOOL_OP_ADD_TO_FEEDBACK_CONTOUR = 320420;
+const mitk::OperationType MIDASPolyTool::MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR = 320421;
+
+MIDASPolyTool::MIDASPolyTool()
 : MIDASContourTool()
 , m_ReferencePoints(NULL)
 , m_PreviousContourReferencePoints(NULL)
@@ -78,13 +82,13 @@ niftk::MIDASPolyTool::MIDASPolyTool()
   m_Interface->SetMIDASPolyTool(this);
 }
 
-niftk::MIDASPolyTool::~MIDASPolyTool()
+MIDASPolyTool::~MIDASPolyTool()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASPolyTool::InitializeStateMachine()
+void MIDASPolyTool::InitializeStateMachine()
 {
   try
   {
@@ -98,7 +102,7 @@ void niftk::MIDASPolyTool::InitializeStateMachine()
 }
 
 
-void niftk::MIDASPolyTool::ConnectActionsAndFunctions()
+void MIDASPolyTool::ConnectActionsAndFunctions()
 {
   CONNECT_FUNCTION("addLine", AddLine);
   CONNECT_FUNCTION("selectPoint", SelectPoint);
@@ -107,24 +111,24 @@ void niftk::MIDASPolyTool::ConnectActionsAndFunctions()
 }
 
 
-const char* niftk::MIDASPolyTool::GetName() const
+const char* MIDASPolyTool::GetName() const
 {
   return "Poly";
 }
 
-const char** niftk::MIDASPolyTool::GetXPM() const
+const char** MIDASPolyTool::GetXPM() const
 {
   return niftkMIDASPolyTool_xpm;
 }
 
-void niftk::MIDASPolyTool::Disable3dRenderingOfPreviousContour()
+void MIDASPolyTool::Disable3dRenderingOfPreviousContour()
 {
   this->Disable3dRenderingOfNode(m_PreviousContourNode);
 }
 
-void niftk::MIDASPolyTool::ClearData()
+void MIDASPolyTool::ClearData()
 {
-  niftk::MIDASContourTool::ClearData();
+  MIDASContourTool::ClearData();
 
   // These are added to the DataManager, but only drawn when the middle mouse is down (and subsequently moved).
   m_PreviousContour->Initialize();
@@ -148,7 +152,7 @@ void niftk::MIDASPolyTool::ClearData()
 //  m_PreviousContourReferencePoints->SetWidth(m_ContourWidth);
 }
 
-void niftk::MIDASPolyTool::Activated()
+void MIDASPolyTool::Activated()
 {
   Superclass::Activated();
 
@@ -179,7 +183,7 @@ void niftk::MIDASPolyTool::Activated()
   this->SetPolyLinePointSetVisible(false);
 }
 
-void niftk::MIDASPolyTool::Deactivated()
+void MIDASPolyTool::Deactivated()
 {
   mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
 
@@ -204,7 +208,7 @@ void niftk::MIDASPolyTool::Deactivated()
   Superclass::Deactivated();
 }
 
-void niftk::MIDASPolyTool::SetPreviousContourVisible(bool visible)
+void MIDASPolyTool::SetPreviousContourVisible(bool visible)
 {
   this->Disable3dRenderingOfPreviousContour();
 
@@ -226,7 +230,7 @@ void niftk::MIDASPolyTool::SetPreviousContourVisible(bool visible)
   m_PreviousContourVisible = visible;
 }
 
-void niftk::MIDASPolyTool::SetPolyLinePointSetVisible(bool visible)
+void MIDASPolyTool::SetPolyLinePointSetVisible(bool visible)
 {
   if (m_PolyLinePointSetVisible == visible)
   {
@@ -246,7 +250,7 @@ void niftk::MIDASPolyTool::SetPolyLinePointSetVisible(bool visible)
   m_PolyLinePointSetVisible = visible;
 }
 
-void niftk::MIDASPolyTool::DrawWholeContour(
+void MIDASPolyTool::DrawWholeContour(
     const mitk::ContourModel& contourReferencePointsInput,
     const mitk::PlaneGeometry* planeGeometry,
     mitk::ContourModel& feedbackContour,
@@ -285,7 +289,7 @@ void niftk::MIDASPolyTool::DrawWholeContour(
   }
 }
 
-void niftk::MIDASPolyTool::UpdateFeedbackContour(
+void MIDASPolyTool::UpdateFeedbackContour(
     bool registerNewPoint,
     const mitk::Point3D& closestCornerPoint,
     const mitk::PlaneGeometry* planeGeometry,
@@ -319,7 +323,7 @@ void niftk::MIDASPolyTool::UpdateFeedbackContour(
 
   if (provideUndo)
   {
-    niftk::MIDASPolyToolOpUpdateFeedbackContour *doOp = new niftk::MIDASPolyToolOpUpdateFeedbackContour(
+    MIDASPolyToolOpUpdateFeedbackContour *doOp = new MIDASPolyToolOpUpdateFeedbackContour(
         MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR,
         m_DraggedPointIndex,
         closestCornerPoint,
@@ -328,7 +332,7 @@ void niftk::MIDASPolyTool::UpdateFeedbackContour(
         );
 
 
-    niftk::MIDASPolyToolOpUpdateFeedbackContour *undoOp = new niftk::MIDASPolyToolOpUpdateFeedbackContour(
+    MIDASPolyToolOpUpdateFeedbackContour *undoOp = new MIDASPolyToolOpUpdateFeedbackContour(
         MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR,
         m_DraggedPointIndex,
         m_PreviousContourReferencePoints->GetVertexAt(m_DraggedPointIndex)->Coordinates,
@@ -348,7 +352,7 @@ void niftk::MIDASPolyTool::UpdateFeedbackContour(
   }
 }
 
-void niftk::MIDASPolyTool::UpdateContours(mitk::StateMachineAction* action, mitk::InteractionPositionEvent* positionEvent, bool provideUndo, bool registerNewPoint)
+void MIDASPolyTool::UpdateContours(mitk::StateMachineAction* action, mitk::InteractionPositionEvent* positionEvent, bool provideUndo, bool registerNewPoint)
 {
   if (m_ReferencePoints->GetNumberOfVertices() > 1)
   {
@@ -392,7 +396,7 @@ void niftk::MIDASPolyTool::UpdateContours(mitk::StateMachineAction* action, mitk
  * When the tool is activated, the next mouse click starts the line.
  * We then keep adding points and lines until the tool is deactivated.
  */
-bool niftk::MIDASPolyTool::AddLine(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPolyTool::AddLine(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   // Don't forget to call baseclass method.
   MIDASContourTool::OnMousePressed(action, event);
@@ -429,7 +433,7 @@ bool niftk::MIDASPolyTool::AddLine(mitk::StateMachineAction* action, mitk::Inter
   this->CopyContour(*(m_ReferencePoints.GetPointer()), *(nextPoints.GetPointer()));
   nextPoints->AddVertex(closestCornerPoint);
 
-  niftk::MIDASPolyToolOpAddToFeedbackContour *doOp = new niftk::MIDASPolyToolOpAddToFeedbackContour(
+  MIDASPolyToolOpAddToFeedbackContour *doOp = new MIDASPolyToolOpAddToFeedbackContour(
       MIDAS_POLY_TOOL_OP_ADD_TO_FEEDBACK_CONTOUR,
       closestCornerPoint,
       nextPoints,
@@ -437,7 +441,7 @@ bool niftk::MIDASPolyTool::AddLine(mitk::StateMachineAction* action, mitk::Inter
       );
 
 
-  niftk::MIDASPolyToolOpAddToFeedbackContour *undoOp = new niftk::MIDASPolyToolOpAddToFeedbackContour(
+  MIDASPolyToolOpAddToFeedbackContour *undoOp = new MIDASPolyToolOpAddToFeedbackContour(
       MIDAS_POLY_TOOL_OP_ADD_TO_FEEDBACK_CONTOUR,
       previousPoint,
       currentPoints,
@@ -449,11 +453,11 @@ bool niftk::MIDASPolyTool::AddLine(mitk::StateMachineAction* action, mitk::Inter
   this->ExecuteOperation(doOp);
 
   // Set this flag to indicate that we have stopped editing, which will trigger an update of the region growing.
-  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, niftk::MIDASContourTool::EDITING_PROPERTY_NAME, false);
+  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, MIDASContourTool::EDITING_PROPERTY_NAME, false);
   return true;
 }
 
-bool niftk::MIDASPolyTool::SelectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPolyTool::SelectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
   if (!positionEvent)
@@ -463,11 +467,11 @@ bool niftk::MIDASPolyTool::SelectPoint(mitk::StateMachineAction* action, mitk::I
 
   this->CopyContour(*(m_ReferencePoints), *(m_PreviousContourReferencePoints));
   this->UpdateContours(action, positionEvent, false, true);
-  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, niftk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
+  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, MIDASContourTool::EDITING_PROPERTY_NAME, true);
   return true;
 }
 
-bool niftk::MIDASPolyTool::MovePoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPolyTool::MovePoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
   if (!positionEvent)
@@ -477,11 +481,11 @@ bool niftk::MIDASPolyTool::MovePoint(mitk::StateMachineAction* action, mitk::Int
 
   this->SetPreviousContourVisible(true);
   this->UpdateContours(action, positionEvent, false, false);
-  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, niftk::MIDASContourTool::EDITING_PROPERTY_NAME, true);
+  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, MIDASContourTool::EDITING_PROPERTY_NAME, true);
   return true;
 }
 
-bool niftk::MIDASPolyTool::DeselectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool MIDASPolyTool::DeselectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
   if (!positionEvent)
@@ -490,15 +494,15 @@ bool niftk::MIDASPolyTool::DeselectPoint(mitk::StateMachineAction* action, mitk:
   }
   this->SetPreviousContourVisible(false);
   this->UpdateContours(action, positionEvent, true, false);
-  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, niftk::MIDASContourTool::EDITING_PROPERTY_NAME, false);
+  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, MIDASContourTool::EDITING_PROPERTY_NAME, false);
   return true;
 }
 
-void niftk::MIDASPolyTool::ExecuteOperation(mitk::Operation* operation)
+void MIDASPolyTool::ExecuteOperation(mitk::Operation* operation)
 {
   if (!operation) return;
 
-  niftk::MIDASContourTool::ExecuteOperation(operation);
+  MIDASContourTool::ExecuteOperation(operation);
 
   mitk::ContourModel* feedbackContour = mitk::FeedbackContourTool::GetFeedbackContour();
   assert(feedbackContour);
@@ -565,4 +569,6 @@ void niftk::MIDASPolyTool::ExecuteOperation(mitk::Operation* operation)
 
   // Make sure all views everywhere get updated.
   this->RenderAllWindows();
+}
+
 }

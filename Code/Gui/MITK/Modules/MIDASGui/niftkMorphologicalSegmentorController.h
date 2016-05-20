@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkMorphologicalSegmentorController_h
-#define __niftkMorphologicalSegmentorController_h
+#ifndef niftkMorphologicalSegmentorController_h
+#define niftkMorphologicalSegmentorController_h
 
 #include <niftkMIDASGuiExports.h>
 
@@ -22,44 +22,46 @@
 #include <niftkBaseSegmentorController.h>
 
 
-class niftkMorphologicalSegmentorGUI;
+namespace niftk
+{
 
-/**
- * \class niftkMorphologicalSegmentorController
- */
-class NIFTKMIDASGUI_EXPORT niftkMorphologicalSegmentorController : public niftkBaseSegmentorController
+class MorphologicalSegmentorGUI;
+
+/// \class MorphologicalSegmentorController
+class NIFTKMIDASGUI_EXPORT MorphologicalSegmentorController : public BaseSegmentorController
 {
   Q_OBJECT
 
 public:
 
-  niftkMorphologicalSegmentorController(niftkIBaseView* view);
-  virtual ~niftkMorphologicalSegmentorController();
+  MorphologicalSegmentorController(IBaseView* view);
+  virtual ~MorphologicalSegmentorController();
 
   /// \brief Sets up the GUI.
   /// This function has to be called from the CreateQtPartControl function of the view.
-  virtual void SetupSegmentorGUI(QWidget* parent) override;
+  virtual void SetupGUI(QWidget* parent) override;
 
   /// \brief If the user hits the close icon, it is equivalent to a Cancel,
   /// and the segmentation is destroyed without warning.
   void OnViewGetsClosed();
 
-  /// \brief Called when a node is removed.
-  virtual void OnNodeRemoved(const mitk::DataNode* node);
+  /// \brief Called when the visibility of a data node has changed.
+  virtual void OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
+
+  /// \brief Called when a data node has been removed.
+  virtual void OnNodeRemoved(const mitk::DataNode* node) override;
 
   /// \brief Called when the segmentation is manually edited via the paintbrush tool.
   /// \param imageIndex tells which image has been modified: erosion addition / subtraction or dilation addition / subtraction.
   virtual void OnSegmentationEdited(int imageIndex);
 
-  void OnNodeVisibilityChanged(const mitk::DataNode* node);
-
 protected:
 
   /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME.
-  virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) override;
+  virtual bool IsASegmentationImage(const mitk::DataNode::Pointer node) override;
 
   /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME, and have a binary image parent.
-  virtual bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node) override;
+  virtual bool IsAWorkingImage(const mitk::DataNode::Pointer node) override;
 
   /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME. Returns empty list if both not found.
   virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) override;
@@ -71,7 +73,7 @@ protected:
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
 
   /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
-  virtual niftkBaseSegmentorGUI* CreateSegmentorGUI(QWidget* parent) override;
+  virtual BaseGUI* CreateGUI(QWidget* parent) override;
 
   /// \brief Called when the selection changes in the data manager.
   /// \see QmitkAbstractView::OnSelectionChanged.
@@ -121,16 +123,16 @@ private:
   void SetControlsFromSegmentationNodeProps();
 
   /// \brief All the GUI controls for the main Morphological Editor view part.
-  niftkMorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;
+  MorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;
 
   /// \brief As much "business logic" as possible is delegated to this class so we can unit test it, without a GUI.
-  niftk::MorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
+  MorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
 
   /// \brief Keep local variable to update after the tab has changed.
   int m_TabIndex;
 
-friend class niftkMorphologicalSegmentorView;
-
 };
+
+}
 
 #endif

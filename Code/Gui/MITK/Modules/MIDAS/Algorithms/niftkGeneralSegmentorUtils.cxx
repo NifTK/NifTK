@@ -16,30 +16,35 @@
 
 #include <mitkImageAccessByItk.h>
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-void niftk::GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
-    int axisNumber,
-    int sliceNumber,
-    int projectedSliceNumber,
-    mitk::ContourModelSet::Pointer outputContourSet
+void GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
+    int sliceAxis,
+    int sliceIndex,
+    int projectedSliceIndex,
+    mitk::ContourModelSet* outputContourSet
     )
 {
   try
   {
     AccessFixedTypeByItk_n(image,
-        niftk::ITKGenerateOutlineFromBinaryImage,
+        ITKGenerateOutlineFromBinaryImage,
         (unsigned char),
         (3),
-        (axisNumber,
-         sliceNumber,
-         projectedSliceNumber,
+        (sliceAxis,
+         sliceIndex,
+         projectedSliceIndex,
          outputContourSet
         )
       );
   }
   catch(const mitk::AccessByItkException& e)
   {
-    MITK_ERROR << "Failed in niftk::ITKGenerateOutlineFromBinaryImage due to:" << e.what();
+    MITK_ERROR << "Failed in ITKGenerateOutlineFromBinaryImage due to:" << e.what();
     outputContourSet->Clear();
   }
+}
+
 }

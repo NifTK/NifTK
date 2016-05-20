@@ -32,7 +32,7 @@ namespace niftk
 
 /**
  * \class MIDASContourTool
- * \brief Provides common functionality for niftk::MIDASDrawTool and niftk::MIDASPolyTool
+ * \brief Provides common functionality for MIDASDrawTool and MIDASPolyTool
  * where these two tools enable drawing lines and poly-lines around voxel edges.
  *
  * This class derives from mitk::FeedbackContourTool, and uses several contours to
@@ -43,9 +43,9 @@ namespace niftk
  * mouse.
  *
  * \sa mitk::FeedbackContourTool
- * \sa niftk::MIDASTool
- * \sa niftk::MIDASDrawTool
- * \sa niftk::MIDASPolyTool
+ * \sa MIDASTool
+ * \sa MIDASDrawTool
+ * \sa MIDASPolyTool
  */
 class NIFTKMIDAS_EXPORT MIDASContourTool : public MIDASTool {
 

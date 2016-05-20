@@ -40,7 +40,7 @@ class BaseRenderer;
  * \ingroup uk_ac_ucl_cmic_gui_qt_common
  */
 class CMIC_QT_COMMON QmitkBaseView : public QmitkAbstractView,
-                                     public virtual niftkIBaseView,
+                                     public virtual niftk::IBaseView,
                                      public VisibilityChangeObserver,
                                      public mitk::ILifecycleAwarePart
 {
@@ -135,19 +135,9 @@ public:
   /// SetSelectionProvider() or your own QItemSelectionModel via GetDataNodeSelectionModel().
   virtual void FireNodeSelected(mitk::DataNode::Pointer node) override;
 
-  /// \brief Convenient method to set and reset a wait cursor ("hourglass")
-  virtual void WaitCursorOn() override;
-
-  /// \brief Convenient method to restore the standard cursor
-  virtual void WaitCursorOff() override;
-
   /// \brief Retrieve the current slice navigation controller from the currently focused render window.
   /// \return mitk::SliceNavigationController* The slice navigation controller for the currenty focused render window, or <code>NULL</code> if it can't be determined.
   virtual mitk::SliceNavigationController* GetSliceNavigationController() override;
-
-  /// \brief Returns the currently focused renderer, as this class is tracking the focus changes.
-  /// \return mitk::BaseRenderer* The currently focused renderer, or nullptr if it has not been set.
-  virtual mitk::BaseRenderer* GetFocusedRenderer() const override;
 
   /// \brief Used to try and get the FocusManager to focus on the Current IRenderWindowPart.
   virtual void FocusOnCurrentWindow() const override;
@@ -195,13 +185,6 @@ protected:
   virtual void SetParent(QWidget*);
 
   /**
-   * \brief Returns the slice number from the slice navigatiob controller from the currently focused render window.
-   *
-   * \return int The slice number or -1 if it can't be found.
-   */
-  int GetSliceNumberFromSliceNavigationController();
-
-  /**
    * \brief Gets the current render window, and sets it to the given coordinate, specified in millimetres.
    * \param coordinate specified in millimetres.
    */
@@ -211,8 +194,6 @@ private:
 
   void onNodeAddedInternal(const mitk::DataNode*);
   void onNodeRemovedInternal(const mitk::DataNode*);
-
-  mitk::SliceNavigationController* GetSliceNavigationControllerInternal();
 
   QScopedPointer<QmitkBaseViewPrivate> d_ptr;
 

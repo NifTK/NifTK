@@ -18,8 +18,6 @@
 
 #include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
-//#include <mitkIRenderingManager.h>
-//#include <mitkIRenderWindowPart.h>
 #include <mitkITKImageImport.h>
 #include <mitkOperationEvent.h>
 #include <mitkPointSet.h>
@@ -38,102 +36,178 @@
 
 #include "Internal/niftkGeneralSegmentorGUI.h"
 
+namespace niftk
+{
+
+class GeneralSegmentorControllerPrivate
+{
+  Q_DECLARE_PUBLIC(GeneralSegmentorController);
+
+  GeneralSegmentorController* const q_ptr;
+
+public:
+
+  GeneralSegmentorControllerPrivate(GeneralSegmentorController* q);
+  ~GeneralSegmentorControllerPrivate();
+
+  /// \brief All the GUI controls for the main view part.
+  GeneralSegmentorGUI* m_GUI;
+
+  /// \brief Pointer to interface object, used as callback in Undo/Redo framework
+  GeneralSegmentorEventInterface::Pointer m_Interface;
+
+  /// \brief This class hooks into the Global Interaction system to respond to Key press events.
+  MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
+
+  /// \brief Selected orientation in the viewer.
+  ImageOrientation m_Orientation;
+
+  /// \brief Index of the selected slice in world space.
+  int m_SelectedSliceIndex;
+
+  /// \brief Keeps track of the previous slice axis.
+  /// The slice axis is in terms of the reference image coordinates (voxel space), not the coordinates
+  /// of the renderer (orientation in world space).
+  int m_SliceAxis;
+
+  /// \brief Keeps track of the previous slice index.
+  /// The slice index is in terms of the reference image coordinates (voxel space), not the coordinates
+  /// of the renderer (world space).
+  int m_SliceIndex;
+
+  /// \brief We track the previous selected position, as it is used in calculations of which slice we are on,
+  /// as under certain conditions, you can't just take the slice index from the slice navigation controller.
+  mitk::Point3D m_SelectedPosition;
+
+  /// \brief Flag to stop re-entering code, while updating.
+  bool m_IsUpdating;
+
+  /// \brief Flag to stop re-entering code, while trying to delete/clear the pipeline.
+  bool m_IsDeleting;
+
+  /// \brief Additional flag to stop re-entering code, specifically to block
+  /// slice change commands from the slice navigation controller.
+  bool m_IsChangingSlice;
+
+  bool m_IsRestarting;
+};
+
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorController::niftkGeneralSegmentorController(niftkIBaseView* view)
-  : niftkBaseSegmentorController(view),
+GeneralSegmentorControllerPrivate::GeneralSegmentorControllerPrivate(GeneralSegmentorController* generalSegmentorController)
+  : q_ptr(generalSegmentorController),
+    m_ToolKeyPressStateMachine(nullptr),
+    m_Orientation(IMAGE_ORIENTATION_UNKNOWN),
+    m_SelectedSliceIndex(-1),
+    m_SliceAxis(-1),
+    m_SliceIndex(-1),
     m_IsUpdating(false),
     m_IsDeleting(false),
     m_IsChangingSlice(false),
-    m_IsRestarting(false),
-    m_SliceNavigationController(nullptr),
-    m_SliceNavigationControllerObserverTag(0),
-    m_FocusManagerObserverTag(0),
-    m_PreviousSliceNumber(0),
-    m_ToolKeyPressStateMachine(nullptr)
+    m_IsRestarting(false)
 {
-  m_Interface = niftkGeneralSegmentorEventInterface::New();
-  m_Interface->SetGeneralSegmentorController(this);
+  Q_Q(GeneralSegmentorController);
 
-  mitk::ToolManager* toolManager = this->GetToolManager();
+  m_Interface = GeneralSegmentorEventInterface::New();
+  m_Interface->SetGeneralSegmentorController(q);
+
+  mitk::ToolManager* toolManager = q->GetToolManager();
   toolManager->RegisterTool("MIDASDrawTool");
   toolManager->RegisterTool("MIDASSeedTool");
   toolManager->RegisterTool("MIDASPolyTool");
   toolManager->RegisterTool("MIDASPosnTool");
 
-  this->GetToolByType<niftk::MIDASDrawTool>()->InstallEventFilter(this);
-  this->GetToolByType<niftk::MIDASSeedTool>()->InstallEventFilter(this);
-  this->GetToolByType<niftk::MIDASPolyTool>()->InstallEventFilter(this);
-  this->GetToolByType<niftk::MIDASPosnTool>()->InstallEventFilter(this);
+  q->GetToolByType<MIDASDrawTool>()->InstallEventFilter(q);
+  q->GetToolByType<MIDASSeedTool>()->InstallEventFilter(q);
+  q->GetToolByType<MIDASPolyTool>()->InstallEventFilter(q);
+  q->GetToolByType<MIDASPosnTool>()->InstallEventFilter(q);
 
-//  m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", this);
-  m_ToolKeyPressStateMachine = niftk::MIDASToolKeyPressStateMachine::New(this);
+//  m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", q);
+  m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New(q);
+
+  m_SelectedPosition.Fill(0);
 }
 
 
 //-----------------------------------------------------------------------------
-niftkGeneralSegmentorController::~niftkGeneralSegmentorController()
+GeneralSegmentorControllerPrivate::~GeneralSegmentorControllerPrivate()
 {
-  this->GetToolByType<niftk::MIDASDrawTool>()->RemoveEventFilter(this);
-  this->GetToolByType<niftk::MIDASSeedTool>()->RemoveEventFilter(this);
-  this->GetToolByType<niftk::MIDASPolyTool>()->RemoveEventFilter(this);
-  this->GetToolByType<niftk::MIDASPosnTool>()->RemoveEventFilter(this);
 }
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorGUI* niftkGeneralSegmentorController::CreateSegmentorGUI(QWidget* parent)
+GeneralSegmentorController::GeneralSegmentorController(IBaseView* view)
+  : BaseSegmentorController(view),
+    d_ptr(new GeneralSegmentorControllerPrivate(this))
 {
-  return new niftkGeneralSegmentorGUI(parent);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::SetupSegmentorGUI(QWidget* parent)
+GeneralSegmentorController::~GeneralSegmentorController()
 {
-  niftkBaseSegmentorController::SetupSegmentorGUI(parent);
+  this->GetToolByType<MIDASDrawTool>()->RemoveEventFilter(this);
+  this->GetToolByType<MIDASSeedTool>()->RemoveEventFilter(this);
+  this->GetToolByType<MIDASPolyTool>()->RemoveEventFilter(this);
+  this->GetToolByType<MIDASPosnTool>()->RemoveEventFilter(this);
+}
 
-  m_GeneralSegmentorGUI = dynamic_cast<niftkGeneralSegmentorGUI*>(this->GetSegmentorGUI());
 
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(CleanButtonClicked()), SLOT(OnCleanButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeButtonClicked()), SLOT(OnWipeButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipePlusButtonClicked()), SLOT(OnWipePlusButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeMinusButtonClicked()), SLOT(OnWipeMinusButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnPropagateUpButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnPropagateDownButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnPropagate3DButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ResetButtonClicked()), SLOT(OnResetButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnThresholdApplyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdValueChanged()), SLOT(OnThresholdValueChanged()));
+//-----------------------------------------------------------------------------
+BaseGUI* GeneralSegmentorController::CreateGUI(QWidget* parent)
+{
+  return new GeneralSegmentorGUI(parent);
+}
+
+
+//-----------------------------------------------------------------------------
+void GeneralSegmentorController::SetupGUI(QWidget* parent)
+{
+  Q_D(GeneralSegmentorController);
+
+  BaseSegmentorController::SetupGUI(parent);
+
+  d->m_GUI = dynamic_cast<GeneralSegmentorGUI*>(this->GetSegmentorGUI());
+
+  this->connect(d->m_GUI, SIGNAL(CleanButtonClicked()), SLOT(OnCleanButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(WipeButtonClicked()), SLOT(OnWipeButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(WipePlusButtonClicked()), SLOT(OnWipePlusButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(WipeMinusButtonClicked()), SLOT(OnWipeMinusButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnPropagateUpButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnPropagateDownButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnPropagate3DButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(OKButtonClicked()), SLOT(OnOKButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(CancelButtonClicked()), SLOT(OnCancelButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(RestartButtonClicked()), SLOT(OnRestartButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(ResetButtonClicked()), SLOT(OnResetButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnThresholdApplyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
+  this->connect(d->m_GUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
+  this->connect(d->m_GUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
+  this->connect(d->m_GUI, SIGNAL(ThresholdValueChanged()), SLOT(OnThresholdValueChanged()));
 
   /// Transfer the focus back to the main window if any button is pressed.
   /// This is needed so that the key interactions (like 'a'/'z' for changing slice) keep working.
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(CleanButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipePlusButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(WipeMinusButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(OKButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(CancelButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(RestartButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ResetButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
-  this->connect(m_GeneralSegmentorGUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(CleanButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(WipeButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(WipePlusButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(WipeMinusButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(PropagateUpButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(PropagateDownButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(Propagate3DButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(OKButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(CancelButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(RestartButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(ResetButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(ThresholdApplyButtonClicked()), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
+  this->connect(d->m_GUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::IsNodeASegmentationImage(const mitk::DataNode::Pointer node)
+bool GeneralSegmentorController::IsASegmentationImage(const mitk::DataNode::Pointer node)
 {
   assert(node);
   bool result = false;
@@ -146,12 +220,12 @@ bool niftkGeneralSegmentorController::IsNodeASegmentationImage(const mitk::DataN
     if (parent.IsNotNull())
     {
       mitk::DataStorage* dataStorage = this->GetDataStorage();
-      mitk::DataNode::Pointer seedsNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::SEEDS_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer currentContoursNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::CONTOURS_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer drawContoursNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::DRAW_CONTOURS_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer seePriorContoursNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::PRIOR_CONTOURS_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer seeNextContoursNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::NEXT_CONTOURS_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer regionGrowingImageNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::REGION_GROWING_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer seedsNode = dataStorage->GetNamedDerivedNode(MIDASTool::SEEDS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer currentContoursNode = dataStorage->GetNamedDerivedNode(MIDASTool::CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer drawContoursNode = dataStorage->GetNamedDerivedNode(MIDASTool::DRAW_CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer seePriorContoursNode = dataStorage->GetNamedDerivedNode(MIDASTool::PRIOR_CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer seeNextContoursNode = dataStorage->GetNamedDerivedNode(MIDASTool::NEXT_CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer regionGrowingImageNode = dataStorage->GetNamedDerivedNode(MIDASTool::REGION_GROWING_NAME.c_str(), node, true);
 
       if (seedsNode.IsNotNull()
           && currentContoursNode.IsNotNull()
@@ -170,7 +244,7 @@ bool niftkGeneralSegmentorController::IsNodeASegmentationImage(const mitk::DataN
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType niftkGeneralSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
+mitk::ToolManager::DataVectorType GeneralSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   assert(node);
   mitk::ToolManager::DataVectorType result;
@@ -182,14 +256,14 @@ mitk::ToolManager::DataVectorType niftkGeneralSegmentorController::GetWorkingDat
     if (parent.IsNotNull())
     {
       mitk::DataStorage* dataStorage = this->GetDataStorage();
-      mitk::DataNode::Pointer seedsNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::SEEDS_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer currentContoursNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::CONTOURS_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer drawContoursNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::DRAW_CONTOURS_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer seePriorContoursNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::PRIOR_CONTOURS_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer seeNextContoursNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::NEXT_CONTOURS_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer regionGrowingImageNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::REGION_GROWING_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer initialSegmentationImageNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::INITIAL_SEGMENTATION_NAME.c_str(), node, true);
-      mitk::DataNode::Pointer initialSeedsNode = dataStorage->GetNamedDerivedNode(niftk::MIDASTool::INITIAL_SEEDS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer seedsNode = dataStorage->GetNamedDerivedNode(MIDASTool::SEEDS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer currentContoursNode = dataStorage->GetNamedDerivedNode(MIDASTool::CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer drawContoursNode = dataStorage->GetNamedDerivedNode(MIDASTool::DRAW_CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer seePriorContoursNode = dataStorage->GetNamedDerivedNode(MIDASTool::PRIOR_CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer seeNextContoursNode = dataStorage->GetNamedDerivedNode(MIDASTool::NEXT_CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer regionGrowingImageNode = dataStorage->GetNamedDerivedNode(MIDASTool::REGION_GROWING_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer initialSegmentationImageNode = dataStorage->GetNamedDerivedNode(MIDASTool::INITIAL_SEGMENTATION_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer initialSeedsNode = dataStorage->GetNamedDerivedNode(MIDASTool::INITIAL_SEEDS_NAME.c_str(), node, true);
 
       if (seedsNode.IsNotNull()
           && currentContoursNode.IsNotNull()
@@ -219,7 +293,7 @@ mitk::ToolManager::DataVectorType niftkGeneralSegmentorController::GetWorkingDat
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
+bool GeneralSegmentorController::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
 {
   bool canRestart = false;
 
@@ -240,17 +314,19 @@ bool niftkGeneralSegmentorController::CanStartSegmentationForBinaryNode(const mi
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
+void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 {
-  niftkBaseSegmentorController::OnNewSegmentationButtonClicked();
+  Q_D(GeneralSegmentorController);
+
+  BaseSegmentorController::OnNewSegmentationButtonClicked();
 
   // Create the new segmentation, either using a previously selected one, or create a new volume.
-  mitk::DataNode::Pointer newSegmentation = NULL;
+  mitk::DataNode::Pointer newSegmentation = nullptr;
   bool isRestarting = false;
 
   // Make sure we have a reference images... which should always be true at this point.
-  mitk::Image* image = this->GetReferenceImageFromToolManager();
-  if (image != NULL)
+  mitk::Image* image = this->GetReferenceImage();
+  if (image)
   {
     mitk::ToolManager::Pointer toolManager = this->GetToolManager();
     assert(toolManager);
@@ -259,7 +335,7 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
 
     if (mitk::IsNodeABinaryImage(selectedNode)
         && this->CanStartSegmentationForBinaryNode(selectedNode)
-        && !this->IsNodeASegmentationImage(selectedNode)
+        && !this->IsASegmentationImage(selectedNode)
         )
     {
       newSegmentation =  selectedNode;
@@ -269,14 +345,14 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
     {
       newSegmentation = this->CreateNewSegmentation();
 
-      // The above method returns NULL if the user exited the colour selection dialog box.
+      // The above method returns nullptr if the user exited the colour selection dialog box.
       if (newSegmentation.IsNull())
       {
         return;
       }
     }
 
-    this->GetView()->WaitCursorOn();
+    this->WaitCursorOn();
 
     // Override the base colour to be orange, and we revert this when OK pressed at the end.
     mitk::Color tmpColor;
@@ -290,7 +366,7 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
     // Set initial properties.
     newSegmentation->SetProperty("layer", mitk::IntProperty::New(90));
     newSegmentation->SetFloatProperty("opacity", 1.0f);
-    newSegmentation->SetBoolProperty(niftk::MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), false);
+    newSegmentation->SetBoolProperty(MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), false);
 
     // Make sure these are up to date, even though we don't use them right now.
     image->GetStatistics()->GetScalarValueMin();
@@ -300,7 +376,7 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
     mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
     mitk::DataNode::Pointer pointSetNode = mitk::DataNode::New();
     pointSetNode->SetData(pointSet);
-    pointSetNode->SetProperty("name", mitk::StringProperty::New(niftk::MIDASTool::SEEDS_NAME));
+    pointSetNode->SetProperty("name", mitk::StringProperty::New(MIDASTool::SEEDS_NAME));
     pointSetNode->SetFloatProperty("opacity", 1.0f);
     pointSetNode->SetProperty("point line width", mitk::IntProperty::New(1));
     pointSetNode->SetProperty("point 2D size", mitk::IntProperty::New(5));
@@ -312,17 +388,17 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
     pointSetNode->SetColor(1.0, 0.0, 0.0);
 
     // Create all the contours.
-    mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 0,1,0, niftk::MIDASTool::CONTOURS_NAME, true, 97);
-    mitk::DataNode::Pointer drawContours = this->CreateContourSet(newSegmentation, 0,1,0, niftk::MIDASTool::DRAW_CONTOURS_NAME, true, 98);
-    mitk::DataNode::Pointer seeNextNode = this->CreateContourSet(newSegmentation, 0,1,1, niftk::MIDASTool::NEXT_CONTOURS_NAME, false, 95);
-    mitk::DataNode::Pointer seePriorNode = this->CreateContourSet(newSegmentation, 0.68,0.85,0.90, niftk::MIDASTool::PRIOR_CONTOURS_NAME, false, 96);
+    mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 0,1,0, MIDASTool::CONTOURS_NAME, true, 97);
+    mitk::DataNode::Pointer drawContours = this->CreateContourSet(newSegmentation, 0,1,0, MIDASTool::DRAW_CONTOURS_NAME, true, 98);
+    mitk::DataNode::Pointer seeNextNode = this->CreateContourSet(newSegmentation, 0,1,1, MIDASTool::NEXT_CONTOURS_NAME, false, 95);
+    mitk::DataNode::Pointer seePriorNode = this->CreateContourSet(newSegmentation, 0.68,0.85,0.90, MIDASTool::PRIOR_CONTOURS_NAME, false, 96);
 
     // Create the region growing image.
-    mitk::DataNode::Pointer regionGrowingImageNode = this->CreateHelperImage(image, newSegmentation, 0,0,1, niftk::MIDASTool::REGION_GROWING_NAME, false, 94);
+    mitk::DataNode::Pointer regionGrowingImageNode = this->CreateHelperImage(image, newSegmentation, 0,0,1, MIDASTool::REGION_GROWING_NAME, false, 94);
 
     // Create nodes to store the original segmentation and seeds, so that it can be restored if the Restart button is pressed.
     mitk::DataNode::Pointer initialSegmentationNode = mitk::DataNode::New();
-    initialSegmentationNode->SetProperty("name", mitk::StringProperty::New(niftk::MIDASTool::INITIAL_SEGMENTATION_NAME));
+    initialSegmentationNode->SetProperty("name", mitk::StringProperty::New(MIDASTool::INITIAL_SEGMENTATION_NAME));
     initialSegmentationNode->SetBoolProperty("helper object", true);
     initialSegmentationNode->SetBoolProperty("visible", false);
     initialSegmentationNode->SetProperty("layer", mitk::IntProperty::New(99));
@@ -331,7 +407,7 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
     initialSegmentationNode->SetProperty("binaryimage.selectedcolor", tmpColorProperty);
 
     mitk::DataNode::Pointer initialSeedsNode = mitk::DataNode::New();
-    initialSeedsNode->SetProperty("name", mitk::StringProperty::New(niftk::MIDASTool::INITIAL_SEEDS_NAME));
+    initialSeedsNode->SetProperty("name", mitk::StringProperty::New(MIDASTool::INITIAL_SEEDS_NAME));
     initialSeedsNode->SetBoolProperty("helper object", true);
     initialSeedsNode->SetBoolProperty("visible", false);
     initialSeedsNode->SetBoolProperty("show distant lines", false);
@@ -381,40 +457,48 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
 
     // Set working data. See header file, as the order here is critical, and should match the documented order.
     mitk::ToolManager::DataVectorType workingData(9);
-    workingData[niftk::MIDASTool::SEGMENTATION] = newSegmentation;
-    workingData[niftk::MIDASTool::SEEDS] = pointSetNode;
-    workingData[niftk::MIDASTool::CONTOURS] = currentContours;
-    workingData[niftk::MIDASTool::DRAW_CONTOURS] = drawContours;
-    workingData[niftk::MIDASTool::PRIOR_CONTOURS] = seePriorNode;
-    workingData[niftk::MIDASTool::NEXT_CONTOURS] = seeNextNode;
-    workingData[niftk::MIDASTool::REGION_GROWING] = regionGrowingImageNode;
-    workingData[niftk::MIDASTool::INITIAL_SEGMENTATION] = initialSegmentationNode;
-    workingData[niftk::MIDASTool::INITIAL_SEEDS] = initialSeedsNode;
+    workingData[MIDASTool::SEGMENTATION] = newSegmentation;
+    workingData[MIDASTool::SEEDS] = pointSetNode;
+    workingData[MIDASTool::CONTOURS] = currentContours;
+    workingData[MIDASTool::DRAW_CONTOURS] = drawContours;
+    workingData[MIDASTool::PRIOR_CONTOURS] = seePriorNode;
+    workingData[MIDASTool::NEXT_CONTOURS] = seeNextNode;
+    workingData[MIDASTool::REGION_GROWING] = regionGrowingImageNode;
+    workingData[MIDASTool::INITIAL_SEGMENTATION] = initialSegmentationNode;
+    workingData[MIDASTool::INITIAL_SEEDS] = initialSeedsNode;
     toolManager->SetWorkingData(workingData);
 
     if (isRestarting)
     {
-      this->InitialiseSeedsForWholeVolume();
+      int sliceAxis = this->GetReferenceImageSliceAxis();
+      int sliceIndex = this->GetReferenceImageSliceIndex();
+      this->InitialiseSeedsForSlice(sliceAxis, sliceIndex);
       this->UpdateCurrentSliceContours();
     }
 
     this->StoreInitialSegmentation();
 
     // Setup GUI.
-    m_GeneralSegmentorGUI->SetAllWidgetsEnabled(true);
-    m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(false);
-    m_GeneralSegmentorGUI->SetThresholdingCheckBoxEnabled(true);
-    m_GeneralSegmentorGUI->SetThresholdingCheckBoxChecked(false);
+    d->m_GUI->SetAllWidgetsEnabled(true);
+    d->m_GUI->SetThresholdingWidgetsEnabled(false);
+    d->m_GUI->SetThresholdingCheckBoxEnabled(true);
+    d->m_GUI->SetThresholdingCheckBoxChecked(false);
 
     this->GetView()->FocusOnCurrentWindow();
-    this->OnFocusChanged();
+
+    this->UpdateCurrentSliceContours(false);
+    this->UpdateRegionGrowing(false);
     this->RequestRenderWindowUpdate();
 
-    this->GetView()->WaitCursorOff();
+    d->m_SliceAxis = this->GetReferenceImageSliceAxis();
+    d->m_SliceIndex = this->GetReferenceImageSliceIndex();
+    d->m_SelectedPosition = this->GetSelectedPosition();
+
+    this->WaitCursorOff();
 
   } // end if we have a reference image
 
-  m_IsRestarting = isRestarting;
+  d->m_IsRestarting = isRestarting;
 
   // Finally, select the new segmentation node.
   this->GetView()->SetCurrentSelection(newSegmentation);
@@ -422,7 +506,7 @@ void niftkGeneralSegmentorController::OnNewSegmentationButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::HasInitialisedWorkingData()
+bool GeneralSegmentorController::HasInitialisedWorkingData()
 {
   bool result = false;
 
@@ -441,12 +525,12 @@ bool niftkGeneralSegmentorController::HasInitialisedWorkingData()
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer niftkGeneralSegmentorController::CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
+mitk::DataNode::Pointer GeneralSegmentorController::CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
 {
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::Tool* drawTool = toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>());
+  mitk::Tool* drawTool = this->GetToolByType<MIDASDrawTool>();
   assert(drawTool);
 
   mitk::ColorProperty::Pointer col = mitk::ColorProperty::New(r, g, b);
@@ -465,7 +549,7 @@ mitk::DataNode::Pointer niftkGeneralSegmentorController::CreateHelperImage(mitk:
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer niftkGeneralSegmentorController::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
+mitk::DataNode::Pointer GeneralSegmentorController::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
 {
   mitk::ContourModelSet::Pointer contourSet = mitk::ContourModelSet::New();
 
@@ -485,17 +569,17 @@ mitk::DataNode::Pointer niftkGeneralSegmentorController::CreateContourSet(mitk::
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::StoreInitialSegmentation()
+void GeneralSegmentorController::StoreInitialSegmentation()
 {
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
   mitk::ToolManager::DataVectorType workingData = toolManager->GetWorkingData();
 
-  mitk::DataNode* segmentationNode = workingData[niftk::MIDASTool::SEGMENTATION];
-  mitk::DataNode* seedsNode = workingData[niftk::MIDASTool::SEEDS];
-  mitk::DataNode* initialSegmentationNode = workingData[niftk::MIDASTool::INITIAL_SEGMENTATION];
-  mitk::DataNode* initialSeedsNode = workingData[niftk::MIDASTool::INITIAL_SEEDS];
+  mitk::DataNode* segmentationNode = workingData[MIDASTool::SEGMENTATION];
+  mitk::DataNode* seedsNode = workingData[MIDASTool::SEEDS];
+  mitk::DataNode* initialSegmentationNode = workingData[MIDASTool::INITIAL_SEGMENTATION];
+  mitk::DataNode* initialSeedsNode = workingData[MIDASTool::INITIAL_SEEDS];
 
   initialSegmentationNode->SetData(dynamic_cast<mitk::Image*>(segmentationNode->GetData())->Clone());
   initialSeedsNode->SetData(dynamic_cast<mitk::PointSet*>(seedsNode->GetData())->Clone());
@@ -503,39 +587,41 @@ void niftkGeneralSegmentorController::StoreInitialSegmentation()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* node)
+void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* /*renderer*/)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
   std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
-  if (!workingData.empty() && node == workingData[niftk::MIDASTool::SEGMENTATION])
+  if (!workingData.empty() && node == workingData[MIDASTool::SEGMENTATION])
   {
     bool segmentationNodeVisibility;
     if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
     {
-      workingData[niftk::MIDASTool::SEEDS]->SetVisibility(true);
-      workingData[niftk::MIDASTool::CONTOURS]->SetVisibility(true);
-      workingData[niftk::MIDASTool::DRAW_CONTOURS]->SetVisibility(true);
-      if (m_GeneralSegmentorGUI->IsSeePriorCheckBoxChecked())
+      workingData[MIDASTool::SEEDS]->SetVisibility(true);
+      workingData[MIDASTool::CONTOURS]->SetVisibility(true);
+      workingData[MIDASTool::DRAW_CONTOURS]->SetVisibility(true);
+      if (d->m_GUI->IsSeePriorCheckBoxChecked())
       {
-        workingData[niftk::MIDASTool::PRIOR_CONTOURS]->SetVisibility(true);
+        workingData[MIDASTool::PRIOR_CONTOURS]->SetVisibility(true);
       }
-      if (m_GeneralSegmentorGUI->IsSeeNextCheckBoxChecked())
+      if (d->m_GUI->IsSeeNextCheckBoxChecked())
       {
-        workingData[niftk::MIDASTool::NEXT_CONTOURS]->SetVisibility(true);
+        workingData[MIDASTool::NEXT_CONTOURS]->SetVisibility(true);
       }
-      if (m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
+      if (d->m_GUI->IsThresholdingCheckBoxChecked())
       {
-        workingData[niftk::MIDASTool::REGION_GROWING]->SetVisibility(true);
+        workingData[MIDASTool::REGION_GROWING]->SetVisibility(true);
       }
-      workingData[niftk::MIDASTool::INITIAL_SEGMENTATION]->SetVisibility(false);
-      workingData[niftk::MIDASTool::INITIAL_SEEDS]->SetVisibility(false);
+      workingData[MIDASTool::INITIAL_SEGMENTATION]->SetVisibility(false);
+      workingData[MIDASTool::INITIAL_SEEDS]->SetVisibility(false);
 
       mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-      niftk::MIDASPolyTool* polyTool = static_cast<niftk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>()));
+      MIDASPolyTool* polyTool = this->GetToolByType<MIDASPolyTool>();
       assert(polyTool);
       polyTool->SetFeedbackContourVisible(toolManager->GetActiveTool() == polyTool);
     }
@@ -556,300 +642,223 @@ void niftkGeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNo
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnViewGetsVisible()
+void GeneralSegmentorController::OnViewGetsVisible()
 {
   /// TODO
-//  mitk::GlobalInteraction::GetInstance()->AddListener( m_ToolKeyPressStateMachine );
+//  mitk::GlobalInteraction::GetInstance()->AddListener(d->m_ToolKeyPressStateMachine);
 
   // Connect registered tools back to here, so we can do seed processing logic here.
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  niftk::MIDASPolyTool* midasPolyTool = dynamic_cast<niftk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>()));
-  midasPolyTool->ContoursHaveChanged += mitk::MessageDelegate<niftkGeneralSegmentorController>(this, &niftkGeneralSegmentorController::OnContoursChanged);
+  MIDASPolyTool* midasPolyTool = this->GetToolByType<MIDASPolyTool>();
+  midasPolyTool->ContoursHaveChanged += mitk::MessageDelegate<GeneralSegmentorController>(this, &GeneralSegmentorController::OnContoursChanged);
 
-  niftk::MIDASDrawTool* midasDrawTool = dynamic_cast<niftk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>()));
-  midasDrawTool->ContoursHaveChanged += mitk::MessageDelegate<niftkGeneralSegmentorController>(this, &niftkGeneralSegmentorController::OnContoursChanged);
+  MIDASDrawTool* midasDrawTool = this->GetToolByType<MIDASDrawTool>();
+  midasDrawTool->ContoursHaveChanged += mitk::MessageDelegate<GeneralSegmentorController>(this, &GeneralSegmentorController::OnContoursChanged);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnViewGetsHidden()
+void GeneralSegmentorController::OnViewGetsHidden()
 {
-  if (m_SliceNavigationController.IsNotNull())
-  {
-    m_SliceNavigationController->RemoveObserver(m_SliceNavigationControllerObserverTag);
-  }
+  BaseSegmentorController::OnViewGetsHidden();
 
   /// TODO
-//  mitk::GlobalInteraction::GetInstance()->RemoveListener(m_ToolKeyPressStateMachine);
+//  mitk::GlobalInteraction::GetInstance()->RemoveListener(d->m_ToolKeyPressStateMachine);
 
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  niftk::MIDASPolyTool* midasPolyTool = dynamic_cast<niftk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>()));
-  midasPolyTool->ContoursHaveChanged -= mitk::MessageDelegate<niftkGeneralSegmentorController>(this, &niftkGeneralSegmentorController::OnContoursChanged);
+  MIDASPolyTool* polyTool = this->GetToolByType<MIDASPolyTool>();
+  polyTool->ContoursHaveChanged -= mitk::MessageDelegate<GeneralSegmentorController>(this, &GeneralSegmentorController::OnContoursChanged);
 
-  niftk::MIDASDrawTool* midasDrawTool = dynamic_cast<niftk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>()));
-  midasDrawTool->ContoursHaveChanged -= mitk::MessageDelegate<niftkGeneralSegmentorController>(this, &niftkGeneralSegmentorController::OnContoursChanged);
+  MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
+  drawTool->ContoursHaveChanged -= mitk::MessageDelegate<GeneralSegmentorController>(this, &GeneralSegmentorController::OnContoursChanged);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnFocusChanged()
+void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orientation, int selectedSliceIndex)
 {
-  mitk::BaseRenderer* focusedRenderer = this->GetView()->GetFocusedRenderer();
+  Q_D(GeneralSegmentorController);
 
-  if (focusedRenderer != NULL)
+  if (orientation != d->m_Orientation || selectedSliceIndex != d->m_SelectedSliceIndex)
   {
-
-    if (m_SliceNavigationController.IsNotNull())
+    if (this->HasInitialisedWorkingData()
+        && orientation != IMAGE_ORIENTATION_UNKNOWN)
     {
-      m_SliceNavigationController->RemoveObserver(m_SliceNavigationControllerObserverTag);
-    }
+      int sliceAxis = this->GetReferenceImageSliceAxis();
+      int sliceIndex = this->GetReferenceImageSliceIndex();
+      mitk::Point3D selectedPosition = this->GetSelectedPosition();
 
-    m_SliceNavigationController = this->GetSliceNavigationController();
+      assert(sliceAxis >= 0);
+      assert(sliceIndex >= 0);
 
-    if (m_SliceNavigationController.IsNotNull())
-    {
-      itk::ReceptorMemberCommand<niftkGeneralSegmentorController>::Pointer onSliceChangedCommand =
-        itk::ReceptorMemberCommand<niftkGeneralSegmentorController>::New();
-
-      onSliceChangedCommand->SetCallbackFunction(this, &niftkGeneralSegmentorController::OnSliceChanged);
-
-      m_PreviousSliceNumber = -1;
-      m_PreviousFocusPoint.Fill(0);
-      m_CurrentFocusPoint.Fill(0);
-
-      m_SliceNavigationControllerObserverTag =
-          m_SliceNavigationController->AddObserver(
-              mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSliceChangedCommand);
-
-      m_SliceNavigationController->SendSlice();
-    }
-
-    this->UpdatePriorAndNext();
-    this->OnThresholdingCheckBoxToggled(m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
-    this->RequestRenderWindowUpdate();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnSliceChanged(const itk::EventObject& geometrySliceEvent)
-{
-  if (!m_IsChangingSlice)
-  {
-    int previousSlice = m_PreviousSliceNumber;
-
-    int currentSlice = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-    mitk::Point3D currentFocus = this->GetView()->GetSelectedPosition();
-
-    if (previousSlice == -1)
-    {
-      previousSlice = currentSlice;
-      m_PreviousFocusPoint = currentFocus;
-      m_CurrentFocusPoint = currentFocus;
-    }
-
-    this->OnSliceNumberChanged(previousSlice, currentSlice);
-
-    m_PreviousSliceNumber = currentSlice;
-    m_PreviousFocusPoint = currentFocus;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber, int afterSliceNumber)
-{
-  if (  !this->HasInitialisedWorkingData()
-      || m_IsUpdating
-      || m_IsChangingSlice
-      || beforeSliceNumber == -1
-      || afterSliceNumber == -1
-      || abs(beforeSliceNumber - afterSliceNumber) != 1
-      )
-  {
-    m_PreviousSliceNumber = afterSliceNumber;
-    m_PreviousFocusPoint = m_CurrentFocusPoint;
-
-    bool updateRendering(false);
-    this->UpdateCurrentSliceContours(updateRendering);
-    this->UpdateRegionGrowing(updateRendering);
-    this->RequestRenderWindowUpdate();
-
-    return;
-  }
-
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
-  {
-    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[niftk::MIDASTool::SEGMENTATION];
-    mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(niftk::MIDASTool::SEGMENTATION);
-
-    if (segmentationNode.IsNotNull() && segmentationImage.IsNotNull())
-    {
-      int axisNumber = this->GetViewAxis();
-      MIDASOrientation tmpOrientation = this->GetOrientationAsEnum();
-      itk::Orientation orientation = niftk::GetItkOrientation(tmpOrientation);
-
-      mitk::ToolManager *toolManager = this->GetToolManager();
-      assert(toolManager);
-
-      niftk::MIDASDrawTool *drawTool = static_cast<niftk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>()));
-      assert(drawTool);
-
-      if (   axisNumber != -1
-          && beforeSliceNumber != -1
-          && afterSliceNumber != -1
-          && beforeSliceNumber != afterSliceNumber)
+      if (!d->m_IsUpdating
+          && !d->m_IsChangingSlice)
       {
-        std::vector<int> outputRegion;
-        mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
-        mitk::PointSet::Pointer propagatedSeeds = mitk::PointSet::New();
-        mitk::PointSet* seeds = this->GetSeeds();
-        bool nextSliceIsEmpty(true);
-        bool thisSliceIsEmpty(false);
+        mitk::Image* referenceImage = this->GetReferenceImage();
+        mitk::Image* segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
+        assert(referenceImage && segmentationImage);
 
-        m_IsUpdating = true;
+        bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
+
+        mitk::Operation* doOp;
+        mitk::Operation* undoOp;
+        mitk::OperationEvent* opEvent;
+
+        MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
+
+        mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
+        mitk::PointSet::Pointer newSeeds = mitk::PointSet::New();
+        std::vector<int> outputRegion;
+
+        mitk::PointSet* seeds = this->GetSeeds();
+        bool oldSliceIsEmpty = false;
+        bool newSliceIsEmpty = true;
+
+        bool wasUpdating = d->m_IsUpdating;
+        d->m_IsUpdating = true;
+
+        ///////////////////////////////////////////////////////
+        // See: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1742
+        //      for the whole logic surrounding changing slice.
+        ///////////////////////////////////////////////////////
 
         try
         {
-          ///////////////////////////////////////////////////////
-          // See: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1742
-          //      for the whole logic surrounding changing slice.
-          ///////////////////////////////////////////////////////
-
           AccessFixedDimensionByItk_n(segmentationImage,
-              niftk::ITKSliceIsEmpty, 3,
-              (axisNumber,
-               afterSliceNumber,
-               nextSliceIsEmpty
+              ITKSliceIsEmpty, 3,
+              (sliceAxis,
+               sliceIndex,
+               newSliceIsEmpty
               )
             );
 
-          if (m_GeneralSegmentorGUI->IsRetainMarksCheckBoxChecked())
-          {
-            int returnValue(QMessageBox::NoButton);
+          bool operationCancelled = false;
 
-            if (!m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
+          if (orientation == d->m_Orientation
+              && std::abs(d->m_SliceIndex - sliceIndex) == 1
+              && d->m_GUI->IsRetainMarksCheckBoxChecked())
+          {
+            int answer = QMessageBox::NoButton;
+
+            if (!isThresholdingOn)
             {
               AccessFixedDimensionByItk_n(segmentationImage,
-                  niftk::ITKSliceIsEmpty, 3,
-                  (axisNumber,
-                   beforeSliceNumber,
-                   thisSliceIsEmpty
+                  ITKSliceIsEmpty, 3,
+                  (d->m_SliceAxis,
+                   d->m_SliceIndex,
+                   oldSliceIsEmpty
                   )
                 );
             }
 
-            if (thisSliceIsEmpty)
+            if (oldSliceIsEmpty)
             {
-              returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
-                                                      tr("The current slice is empty - retain marks cannot be performed.\n"
+              answer = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
+                                                      tr("The previous slice is empty - retain marks cannot be performed.\n"
                                                          "Use the 'wipe' functionality to erase slices instead"),
                                                       QMessageBox::Ok
                                    );
             }
-            else if (!nextSliceIsEmpty)
+            else if (!newSliceIsEmpty)
             {
-              returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+              answer = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                       tr("The new slice is not empty - retain marks will overwrite the slice.\n"
                                                          "Are you sure?"),
                                                       QMessageBox::Yes | QMessageBox::No);
             }
 
-            if (returnValue == QMessageBox::Ok || returnValue == QMessageBox::No )
+            if (answer == QMessageBox::Ok || answer == QMessageBox::No )
             {
-              m_IsUpdating = false;
-              m_PreviousSliceNumber = afterSliceNumber;
-              m_PreviousFocusPoint = m_CurrentFocusPoint;
-              this->UpdatePriorAndNext();
-              this->UpdateRegionGrowing();
-              this->UpdateCurrentSliceContours();
-              this->RequestRenderWindowUpdate();
-
-              return;
+              operationCancelled = true;
             }
-
-            AccessFixedDimensionByItk_n(segmentationImage,
-                niftk::ITKPreProcessingOfSeedsForChangingSlice, 3,
-                (*seeds,
-                 beforeSliceNumber,
-                 axisNumber,
-                 afterSliceNumber,
-                 false, // We propagate seeds at current position, so no optimisation
-                 nextSliceIsEmpty,
-                 *(copyOfCurrentSeeds.GetPointer()),
-                 *(propagatedSeeds.GetPointer()),
-                 outputRegion
-                )
-              );
-
-            if (m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
+            else
             {
-              QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(beforeSliceNumber).arg(afterSliceNumber);
-              niftk::OpThresholdApply::ProcessorPointer processor = niftk::OpThresholdApply::ProcessorType::New();
-              niftk::OpThresholdApply *doThresholdOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
-              niftk::OpThresholdApply *undoThresholdOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
-              mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doThresholdOp, undoThresholdOp, message.toStdString());
-              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-              this->ExecuteOperation(doThresholdOp);
+              AccessFixedDimensionByItk_n(segmentationImage,
+                  ITKPreprocessingOfSeedsForChangingSlice, 3,
+                  (seeds,
+                   d->m_SliceAxis,
+                   d->m_SliceIndex,
+                   sliceAxis,
+                   sliceIndex,
+                   false, // We propagate seeds at current position, so no optimisation
+                   newSliceIsEmpty,
+                   copyOfCurrentSeeds,
+                   newSeeds,
+                   outputRegion
+                  )
+                );
 
-              drawTool->ClearWorkingData();
-              this->UpdateCurrentSliceContours();
+              if (isThresholdingOn)
+              {
+                QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(d->m_SliceIndex).arg(sliceIndex);
+                OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
+                doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
+                undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
+                opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+                this->ExecuteOperation(doOp);
+
+                drawTool->ClearWorkingData();
+                this->UpdateCurrentSliceContours();
+              }
+
+              itk::Orientation itkOrientation = GetItkOrientation(this->GetOrientation());
+
+              // Do retain marks, which copies slice from beforeSliceIndex to afterSliceIndex
+              QString message = tr("Retaining marks in slice %1 and copying to %2").arg(d->m_SliceIndex).arg(sliceIndex);
+              OpRetainMarks::ProcessorPointer processor = OpRetainMarks::ProcessorType::New();
+              doOp = new OpRetainMarks(OP_RETAIN_MARKS, true, sliceAxis, d->m_SliceIndex, sliceIndex, itkOrientation, outputRegion, processor);
+              undoOp = new OpRetainMarks(OP_RETAIN_MARKS, false, sliceAxis, d->m_SliceIndex, sliceIndex, itkOrientation, outputRegion, processor);
+              opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+              this->ExecuteOperation(doOp);
             }
-
-            // Do retain marks, which copies slice from beforeSliceNumber to afterSliceNumber
-            QString message = tr("Retaining marks in slice %1 and copying to %2").arg(beforeSliceNumber).arg(afterSliceNumber);
-            niftk::OpRetainMarks::ProcessorPointer processor = niftk::OpRetainMarks::ProcessorType::New();
-            niftk::OpRetainMarks *doOp = new niftk::OpRetainMarks(niftk::OP_RETAIN_MARKS, true, beforeSliceNumber, afterSliceNumber, axisNumber, orientation, outputRegion, processor);
-            niftk::OpRetainMarks *undoOp = new niftk::OpRetainMarks(niftk::OP_RETAIN_MARKS, false, beforeSliceNumber, afterSliceNumber, axisNumber, orientation, outputRegion, processor);
-            mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doOp, undoOp, message.toStdString());
-            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-            this->ExecuteOperation(doOp);
           }
-          else // so, "Retain Marks" is Off.
+          else // so, switching orientation, jumping slice or "Retain Marks" is off.
           {
             AccessFixedDimensionByItk_n(segmentationImage,
-                niftk::ITKPreProcessingOfSeedsForChangingSlice, 3,
-                (*seeds,
-                 beforeSliceNumber,
-                 axisNumber,
-                 afterSliceNumber,
+                ITKPreprocessingOfSeedsForChangingSlice, 3,
+                (seeds,
+                 d->m_SliceAxis,
+                 d->m_SliceIndex,
+                 sliceAxis,
+                 sliceIndex,
                  true, // optimise seed position on current slice.
-                 nextSliceIsEmpty,
-                 *(copyOfCurrentSeeds.GetPointer()),
-                 *(propagatedSeeds.GetPointer()),
+                 newSliceIsEmpty,
+                 copyOfCurrentSeeds,
+                 newSeeds,
                  outputRegion
                 )
               );
 
-            if (m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
+            if (isThresholdingOn)
             {
-              niftk::OpThresholdApply::ProcessorPointer processor = niftk::OpThresholdApply::ProcessorType::New();
-              niftk::OpThresholdApply *doApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, true, outputRegion, processor, m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
-              niftk::OpThresholdApply *undoApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, false, outputRegion, processor, m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
-              mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
-              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
-              this->ExecuteOperation(doApplyOp);
+              OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
+              doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
+              undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
+              opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Apply threshold");
+              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+              this->ExecuteOperation(doOp);
 
               drawTool->ClearWorkingData();
               this->UpdateCurrentSliceContours();
             }
             else // threshold box not checked
             {
-              bool thisSliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(false, beforeSliceNumber);
+              bool oldSliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(false, d->m_SliceAxis, d->m_SliceIndex);
 
-              if (thisSliceHasUnenclosedSeeds)
+              if (oldSliceHasUnenclosedSeeds)
               {
-                niftk::OpWipe::ProcessorPointer processor = niftk::OpWipe::ProcessorType::New();
-                niftk::OpWipe *doWipeOp = new niftk::OpWipe(niftk::OP_WIPE, true, beforeSliceNumber, axisNumber, outputRegion, propagatedSeeds, processor);
-                niftk::OpWipe *undoWipeOp = new niftk::OpWipe(niftk::OP_WIPE, false, beforeSliceNumber, axisNumber, outputRegion, copyOfCurrentSeeds, processor);
-                mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doWipeOp, undoWipeOp, "Wipe command");
-                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-                this->ExecuteOperation(doWipeOp);
+                OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
+                doOp = new OpWipe(OP_WIPE, true, d->m_SliceAxis, d->m_SliceIndex, outputRegion, newSeeds, processor);
+                undoOp = new OpWipe(OP_WIPE, false, d->m_SliceAxis, d->m_SliceIndex, outputRegion, copyOfCurrentSeeds, processor);
+                opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
+                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+                this->ExecuteOperation(doOp);
               }
               else // so, we don't have unenclosed seeds
               {
@@ -857,18 +866,19 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
                 // So, we do a region growing, without intensity limits. (we already know there are no unenclosed seeds).
 
                 this->UpdateRegionGrowing(false,
-                                          beforeSliceNumber,
+                                          d->m_SliceAxis,
+                                          d->m_SliceIndex,
                                           referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
                                           referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
                                           false);
 
                 // Then we "apply" this region growing.
-                niftk::OpThresholdApply::ProcessorPointer processor = niftk::OpThresholdApply::ProcessorType::New();
-                niftk::OpThresholdApply *doApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
-                niftk::OpThresholdApply *undoApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
-                mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(m_Interface, doApplyOp, undoApplyOp, "Apply threshold");
-                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
-                this->ExecuteOperation(doApplyOp);
+                OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
+                doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
+                undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
+                opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Apply threshold");
+                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+                this->ExecuteOperation(doOp);
 
                 drawTool->ClearWorkingData();
 
@@ -876,58 +886,75 @@ void niftkGeneralSegmentorController::OnSliceNumberChanged(int beforeSliceNumber
             } // end if/else thresholding on
           } // end if/else retain marks.
 
-          m_CurrentFocusPoint = this->GetView()->GetSelectedPosition();
+          if (!operationCancelled)
+          {
+            QString oldOrientationName = QString::fromStdString(GetOrientationName(d->m_Orientation));
+            QString newOrientationName = QString::fromStdString(GetOrientationName(orientation));
+            QString message = tr("Propagate seeds on %1 slice %2 (image axis: %3, slice: %4)")
+                .arg(newOrientationName).arg(selectedSliceIndex)
+                .arg(sliceAxis).arg(sliceIndex);
+            doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, newSeeds);
+            undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, d->m_SliceAxis, d->m_SliceIndex, copyOfCurrentSeeds);
+            opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+            this->ExecuteOperation(doOp);
 
-          QString message = tr("Propagate seeds from slice %1 to %2").arg(beforeSliceNumber).arg(afterSliceNumber);
-          niftk::OpPropagateSeeds *doPropOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, true, afterSliceNumber, axisNumber, propagatedSeeds);
-          niftk::OpPropagateSeeds *undoPropOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, false, beforeSliceNumber, axisNumber, copyOfCurrentSeeds);
-          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(m_Interface, doPropOp, undoPropOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
-          this->ExecuteOperation(doPropOp);
+            message = tr("Change from %1 slice %2 to %3 slice %4 (from image axis %5 slice %6 to axis %7 slice %8)")
+                .arg(oldOrientationName).arg(d->m_SelectedSliceIndex).arg(newOrientationName).arg(selectedSliceIndex)
+                .arg(d->m_SliceAxis).arg(d->m_SliceIndex).arg(sliceAxis).arg(sliceIndex);
+            doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, d->m_SelectedPosition, selectedPosition);
+            undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, d->m_SelectedPosition, selectedPosition);
+            opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+            this->ExecuteOperation(doOp);
 
-          message = tr("Change slice from %1 to %2").arg(beforeSliceNumber).arg(afterSliceNumber);
-          niftk::OpChangeSliceCommand *doOp = new niftk::OpChangeSliceCommand(niftk::OP_CHANGE_SLICE, true, beforeSliceNumber, afterSliceNumber, m_PreviousFocusPoint, m_CurrentFocusPoint);
-          niftk::OpChangeSliceCommand *undoOp = new niftk::OpChangeSliceCommand(niftk::OP_CHANGE_SLICE, false, beforeSliceNumber, afterSliceNumber, m_PreviousFocusPoint, m_CurrentFocusPoint);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doOp, undoOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          this->ExecuteOperation(doOp);
+            mitk::ToolManager* toolManager = this->GetToolManager();
+            if (MIDASPolyTool* polyTool = dynamic_cast<MIDASPolyTool*>(toolManager->GetActiveTool()))
+            {
+              /// This makes the poly tool save its result to the working data nodes and stay it open.
+              polyTool->Deactivated();
+              polyTool->Activated();
+            }
+          }
+
+          this->UpdateCurrentSliceContours(false);
+          this->UpdatePriorAndNext(false);
+          this->UpdateRegionGrowing(false);
         }
         catch(const mitk::AccessByItkException& e)
         {
           MITK_ERROR << "Could not change slice: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         }
-        catch( itk::ExceptionObject &err )
+        catch(const itk::ExceptionObject& e)
         {
-          MITK_ERROR << "Could not change slice: Caught itk::ExceptionObject:" << err.what() << std::endl;
+          MITK_ERROR << "Could not change slice: Caught itk::ExceptionObject:" << e.what() << std::endl;
         }
 
-        m_IsUpdating = false;
+        d->m_IsUpdating = wasUpdating;
 
-        if (niftk::MIDASPolyTool* polyTool = dynamic_cast<niftk::MIDASPolyTool*>(toolManager->GetActiveTool()))
-        {
-//          toolManager->ActivateTool(-1);
-          /// This makes the poly tool save its result to the working data nodes and stay it open.
-          polyTool->Deactivated();
-          polyTool->Activated();
-        }
-
-        bool updateRendering(false);
-        this->UpdatePriorAndNext(updateRendering);
-        this->UpdateRegionGrowing(updateRendering);
-        this->UpdateCurrentSliceContours(updateRendering);
         this->RequestRenderWindowUpdate();
+      } // if not being updated and not changing slice
 
-      } // end if, slice number, axis ok.
-    } // end have working image
-  } // end have reference image
+      d->m_SliceAxis = sliceAxis;
+      d->m_SliceIndex = sliceIndex;
+      d->m_SelectedPosition = selectedPosition;
+
+    } // if initialised and valid orientation (2D window selected)
+
+    d->m_Orientation = orientation;
+    d->m_SelectedSliceIndex = selectedSliceIndex;
+
+  } // if orientation or selected slice has changed
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
+void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
 {
-  if (m_IsDeleting
-      || m_IsUpdating
+  Q_D(GeneralSegmentorController);
+
+  if (d->m_IsDeleting
+      || d->m_IsUpdating
       || !this->HasInitialisedWorkingData()
       )
   {
@@ -940,11 +967,11 @@ void niftkGeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
     bool seedsChanged(false);
     bool drawContoursChanged(false);
 
-    if (workingData[niftk::MIDASTool::SEEDS] != NULL && workingData[niftk::MIDASTool::SEEDS] == node)
+    if (workingData[MIDASTool::SEEDS] && workingData[MIDASTool::SEEDS] == node)
     {
       seedsChanged = true;
     }
-    if (workingData[niftk::MIDASTool::DRAW_CONTOURS] != NULL && workingData[niftk::MIDASTool::DRAW_CONTOURS] == node)
+    if (workingData[MIDASTool::DRAW_CONTOURS] && workingData[MIDASTool::DRAW_CONTOURS] == node)
     {
       drawContoursChanged = true;
     }
@@ -954,17 +981,17 @@ void niftkGeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
       return;
     }
 
-    mitk::DataNode::Pointer segmentationImageNode = workingData[niftk::MIDASTool::SEGMENTATION];
+    mitk::DataNode::Pointer segmentationImageNode = workingData[MIDASTool::SEGMENTATION];
     if (segmentationImageNode.IsNotNull())
     {
       mitk::PointSet* seeds = this->GetSeeds();
-      if (seeds != NULL && seeds->GetSize() > 0)
+      if (seeds && seeds->GetSize() > 0)
       {
 
         bool contourIsBeingEdited(false);
         if (segmentationImageNode.GetPointer() == node)
         {
-          segmentationImageNode->GetBoolProperty(niftk::MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), contourIsBeingEdited);
+          segmentationImageNode->GetBoolProperty(MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), contourIsBeingEdited);
         }
 
         if (!contourIsBeingEdited)
@@ -986,14 +1013,14 @@ void niftkGeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnNodeRemoved(const mitk::DataNode* removedNode)
+void GeneralSegmentorController::OnNodeRemoved(const mitk::DataNode* removedNode)
 {
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(niftk::MIDASTool::SEGMENTATION);
+  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(MIDASTool::SEGMENTATION);
 
   if (segmentationNode.GetPointer() == removedNode)
   {
@@ -1003,21 +1030,21 @@ void niftkGeneralSegmentorController::OnNodeRemoved(const mitk::DataNode* remove
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnContoursChanged()
+void GeneralSegmentorController::OnContoursChanged()
 {
   this->UpdateRegionGrowing();
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::PointSet* niftkGeneralSegmentorController::GetSeeds()
+mitk::PointSet* GeneralSegmentorController::GetSeeds()
 {
   mitk::PointSet* result = nullptr;
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::DataNode* seedsNode = toolManager->GetWorkingData(niftk::MIDASTool::SEEDS);
+  mitk::DataNode* seedsNode = toolManager->GetWorkingData(MIDASTool::SEEDS);
   if (seedsNode)
   {
     result = dynamic_cast<mitk::PointSet*>(seedsNode->GetData());
@@ -1028,80 +1055,73 @@ mitk::PointSet* niftkGeneralSegmentorController::GetSeeds()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::InitialiseSeedsForWholeVolume()
+void GeneralSegmentorController::InitialiseSeedsForSlice(int sliceAxis, int sliceIndex)
 {
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  MIDASOrientation orientation = this->GetOrientationAsEnum();
-  if (orientation == MIDAS_ORIENTATION_UNKNOWN)
-  {
-    orientation = MIDAS_ORIENTATION_CORONAL;
-  }
-
-  int axis = this->GetAxisFromReferenceImage(orientation);
-  if (axis == -1)
-  {
-    axis = 0;
-  }
-
-  mitk::PointSet *seeds = this->GetSeeds();
+  mitk::PointSet* seeds = this->GetSeeds();
   assert(seeds);
 
-  mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
+  mitk::Image::Pointer workingImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
   assert(workingImage);
 
   try
   {
     AccessFixedDimensionByItk_n(workingImage,
-        niftk::ITKInitialiseSeedsForVolume, 3,
-        (*seeds,
-         axis
+        ITKInitialiseSeedsForSlice, 3,
+        (seeds,
+         sliceAxis,
+         sliceIndex
         )
       );
   }
   catch(const mitk::AccessByItkException& e)
   {
-    MITK_ERROR << "Caught exception during niftk::ITKInitialiseSeedsForVolume, so have not initialised seeds correctly, caused by:" << e.what();
+    MITK_ERROR << "Caught exception during ITKInitialiseSeedsForSlice, so have not initialised seeds correctly, caused by:" << e.what();
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::RecalculateMinAndMaxOfImage()
+void GeneralSegmentorController::RecalculateMinAndMaxOfImage()
 {
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
+  Q_D(GeneralSegmentorController);
+
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
   {
     double min = referenceImage->GetStatistics()->GetScalarValueMinNoRecompute();
     double max = referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute();
-    m_GeneralSegmentorGUI->SetLowerAndUpperIntensityRanges(min, max);
+    d->m_GUI->SetLowerAndUpperIntensityRanges(min, max);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::RecalculateMinAndMaxOfSeedValues()
+void GeneralSegmentorController::RecalculateMinAndMaxOfSeedValues()
 {
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  mitk::PointSet::Pointer seeds = this->GetSeeds();
+  Q_D(GeneralSegmentorController);
 
-  if (referenceImage.IsNotNull() && seeds.IsNotNull())
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::PointSet* seeds = this->GetSeeds();
+
+  if (referenceImage && seeds)
   {
     double min = 0;
     double max = 0;
 
-    int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-    int axisNumber = this->GetViewAxis();
+    int sliceIndex = this->GetReferenceImageSliceIndex();
+    int sliceAxis = this->GetReferenceImageSliceAxis();
 
-    if (sliceNumber != -1 && axisNumber != -1)
+    if (sliceIndex != -1 && sliceAxis != -1)
     {
       try
       {
-        AccessFixedDimensionByItk_n(referenceImage, niftk::ITKRecalculateMinAndMaxOfSeedValues, 3, (*(seeds.GetPointer()), axisNumber, sliceNumber, min, max));
-        m_GeneralSegmentorGUI->SetSeedMinAndMaxValues(min, max);
+        AccessFixedDimensionByItk_n(referenceImage, ITKRecalculateMinAndMaxOfSeedValues, 3, (seeds, sliceAxis, sliceIndex, min, max));
+        d->m_GUI->SetSeedMinAndMaxValues(min, max);
       }
       catch(const mitk::AccessByItkException& e)
       {
@@ -1113,24 +1133,24 @@ void niftkGeneralSegmentorController::RecalculateMinAndMaxOfSeedValues()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering)
+void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering)
 {
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  int axisNumber = this->GetViewAxis();
+  int sliceIndex = this->GetReferenceImageSliceIndex();
+  int sliceAxis = this->GetReferenceImageSliceAxis();
 
-  mitk::Image::Pointer workingImage = this->GetWorkingImageFromToolManager(0);
+  mitk::Image::Pointer workingImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
   assert(workingImage);
 
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
   mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-  mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[niftk::MIDASTool::CONTOURS]->GetData());
+  mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[MIDASTool::CONTOURS]->GetData());
 
   // TODO
   // This assertion fails sometimes if both the morphological and irregular (this) volume editor is
@@ -1139,13 +1159,13 @@ void niftkGeneralSegmentorController::UpdateCurrentSliceContours(bool updateRend
 
   if (contourSet)
   {
-    if (sliceNumber >= 0 && axisNumber >= 0)
+    if (sliceIndex >= 0 && sliceAxis >= 0)
     {
-      niftk::GenerateOutlineFromBinaryImage(workingImage, axisNumber, sliceNumber, sliceNumber, contourSet);
+      GenerateOutlineFromBinaryImage(workingImage, sliceAxis, sliceIndex, sliceIndex, contourSet);
 
       if (contourSet->GetSize() > 0)
       {
-        workingData[niftk::MIDASTool::CONTOURS]->Modified();
+        workingData[MIDASTool::CONTOURS]->Modified();
 
         if (updateRendering)
         {
@@ -1158,7 +1178,7 @@ void niftkGeneralSegmentorController::UpdateCurrentSliceContours(bool updateRend
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnSeePriorCheckBoxToggled(bool checked)
+void GeneralSegmentorController::OnSeePriorCheckBoxToggled(bool checked)
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1171,13 +1191,13 @@ void niftkGeneralSegmentorController::OnSeePriorCheckBoxToggled(bool checked)
   {
     this->UpdatePriorAndNext();
   }
-  workingData[niftk::MIDASTool::PRIOR_CONTOURS]->SetVisibility(checked);
+  workingData[MIDASTool::PRIOR_CONTOURS]->SetVisibility(checked);
   this->RequestRenderWindowUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnSeeNextCheckBoxToggled(bool checked)
+void GeneralSegmentorController::OnSeeNextCheckBoxToggled(bool checked)
 {
   if (!this->HasInitialisedWorkingData())
   {
@@ -1190,25 +1210,27 @@ void niftkGeneralSegmentorController::OnSeeNextCheckBoxToggled(bool checked)
   {
     this->UpdatePriorAndNext();
   }
-  workingData[niftk::MIDASTool::NEXT_CONTOURS]->SetVisibility(checked);
+  workingData[MIDASTool::NEXT_CONTOURS]->SetVisibility(checked);
   this->RequestRenderWindowUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
+void GeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     // So, if there is NO working data, we leave the widgets disabled regardless.
-    m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(false);
+    d->m_GUI->SetThresholdingWidgetsEnabled(false);
     return;
   }
 
   this->RecalculateMinAndMaxOfImage();
   this->RecalculateMinAndMaxOfSeedValues();
 
-  m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(checked);
+  d->m_GUI->SetThresholdingWidgetsEnabled(checked);
 
   if (checked)
   {
@@ -1216,31 +1238,35 @@ void niftkGeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked
   }
 
   mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-  workingData[niftk::MIDASTool::REGION_GROWING]->SetVisibility(checked);
+  workingData[MIDASTool::REGION_GROWING]->SetVisibility(checked);
 
   this->RequestRenderWindowUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnThresholdValueChanged()
+void GeneralSegmentorController::OnThresholdValueChanged()
 {
   this->UpdateRegionGrowing();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::UpdateRegionGrowing(bool updateRendering)
+void GeneralSegmentorController::UpdateRegionGrowing(bool updateRendering)
 {
-  bool isVisible = m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked();
-  int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  double lowerThreshold = m_GeneralSegmentorGUI->GetLowerThreshold();
-  double upperThreshold = m_GeneralSegmentorGUI->GetUpperThreshold();
-  bool skipUpdate = !isVisible;
+  Q_D(GeneralSegmentorController);
 
-  if (isVisible)
+  bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
+
+  if (isThresholdingOn)
   {
-    this->UpdateRegionGrowing(isVisible, sliceNumber, lowerThreshold, upperThreshold, skipUpdate);
+    int sliceAxis = this->GetReferenceImageSliceAxis();
+    int sliceIndex = this->GetReferenceImageSliceIndex();
+    double lowerThreshold = d->m_GUI->GetLowerThreshold();
+    double upperThreshold = d->m_GUI->GetUpperThreshold();
+    bool skipUpdate = !isThresholdingOn;
+
+    this->UpdateRegionGrowing(isThresholdingOn, sliceAxis, sliceIndex, lowerThreshold, upperThreshold, skipUpdate);
 
     if (updateRendering)
     {
@@ -1251,34 +1277,38 @@ void niftkGeneralSegmentorController::UpdateRegionGrowing(bool updateRendering)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::UpdateRegionGrowing(
+void GeneralSegmentorController::UpdateRegionGrowing(
     bool isVisible,
-    int sliceNumber,
+    int sliceAxis,
+    int sliceIndex,
     double lowerThreshold,
     double upperThreshold,
     bool skipUpdate
     )
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
   {
-    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[niftk::MIDASTool::SEGMENTATION];
-    mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(niftk::MIDASTool::SEGMENTATION);
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[MIDASTool::SEGMENTATION];
+    mitk::Image::Pointer segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
 
     if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
 
       mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-      workingData[niftk::MIDASTool::REGION_GROWING]->SetVisibility(isVisible);
+      workingData[MIDASTool::REGION_GROWING]->SetVisibility(isVisible);
 
-      m_IsUpdating = true;
+      bool wasUpdating = d->m_IsUpdating;
+      d->m_IsUpdating = true;
 
-      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(niftk::MIDASTool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
+      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(MIDASTool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
       assert(regionGrowingNode);
 
       mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
@@ -1287,42 +1317,39 @@ void niftkGeneralSegmentorController::UpdateRegionGrowing(
       mitk::PointSet* seeds = this->GetSeeds();
       assert(seeds);
 
-      mitk::ToolManager *toolManager = this->GetToolManager();
+      mitk::ToolManager* toolManager = this->GetToolManager();
       assert(toolManager);
 
-      niftk::MIDASPolyTool *polyTool = static_cast<niftk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>()));
+      MIDASPolyTool* polyTool = this->GetToolByType<MIDASPolyTool>();
       assert(polyTool);
 
       mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
 
       mitk::ContourModel* polyToolContour = polyTool->GetContour();
-      if (polyToolContour != NULL && polyToolContour->GetNumberOfVertices() >= 2)
+      if (polyToolContour && polyToolContour->GetNumberOfVertices() >= 2)
       {
         polyToolContours->AddContourModel(polyToolContour);
       }
 
-      mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[niftk::MIDASTool::CONTOURS]->GetData());
-      mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[niftk::MIDASTool::DRAW_CONTOURS]->GetData());
+      mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[MIDASTool::CONTOURS]->GetData());
+      mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[MIDASTool::DRAW_CONTOURS]->GetData());
 
-      int axisNumber = this->GetViewAxis();
-
-      if (axisNumber != -1 && sliceNumber != -1)
+      if (sliceAxis != -1 && sliceIndex != -1)
       {
         try
         {
           AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-              niftk::ITKUpdateRegionGrowing, 3,
+              ITKUpdateRegionGrowing, 3,
               (skipUpdate,
-               *segmentationImage,
-               *seeds,
-               *segmentationContours,
-               *drawToolContours,
-               *polyToolContours,
-               sliceNumber,
-               axisNumber,
+               segmentationImage,
+               seeds,
+               segmentationContours,
+               drawToolContours,
+               polyToolContours,
+               sliceAxis,
+               sliceIndex,
                lowerThreshold,
                upperThreshold,
-               regionGrowingNode,  // This is the node for the image we are writing to.
                regionGrowingImage  // This is the image we are writing to.
               )
             );
@@ -1337,38 +1364,39 @@ void niftkGeneralSegmentorController::UpdateRegionGrowing(
       }
       else
       {
-        MITK_ERROR << "Could not do region growing: Error axisNumber=" << axisNumber << ", sliceNumber=" << sliceNumber << std::endl;
+        MITK_ERROR << "Could not do region growing: Error sliceAxis=" << sliceAxis << ", sliceIndex=" << sliceIndex << std::endl;
       }
 
-      m_IsUpdating = false;
-
+      d->m_IsUpdating = wasUpdating;
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
+void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  int axisNumber = this->GetViewAxis();
+  int sliceIndex = this->GetReferenceImageSliceIndex();
+  int sliceAxis = this->GetReferenceImageSliceAxis();
 
   mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-  mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(0);
+  mitk::Image::Pointer segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
 
-  if (m_GeneralSegmentorGUI->IsSeePriorCheckBoxChecked())
+  if (d->m_GUI->IsSeePriorCheckBoxChecked())
   {
-    mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[niftk::MIDASTool::PRIOR_CONTOURS]->GetData());
-    niftk::GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber-1, sliceNumber, contourSet);
+    mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[MIDASTool::PRIOR_CONTOURS]->GetData());
+    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex-1, sliceIndex, contourSet);
 
     if (contourSet->GetSize() > 0)
     {
-      workingData[niftk::MIDASTool::PRIOR_CONTOURS]->Modified();
+      workingData[MIDASTool::PRIOR_CONTOURS]->Modified();
 
       if (updateRendering)
       {
@@ -1377,14 +1405,14 @@ void niftkGeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
     }
   }
 
-  if (m_GeneralSegmentorGUI->IsSeeNextCheckBoxChecked())
+  if (d->m_GUI->IsSeeNextCheckBoxChecked())
   {
-    mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[niftk::MIDASTool::NEXT_CONTOURS]->GetData());
-    niftk::GenerateOutlineFromBinaryImage(segmentationImage, axisNumber, sliceNumber+1, sliceNumber, contourSet);
+    mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[MIDASTool::NEXT_CONTOURS]->GetData());
+    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex+1, sliceIndex, contourSet);
 
     if (contourSet->GetSize() > 0)
     {
-      workingData[niftk::MIDASTool::NEXT_CONTOURS]->Modified();
+      workingData[MIDASTool::NEXT_CONTOURS]->Modified();
 
       if (updateRendering)
       {
@@ -1396,18 +1424,20 @@ void niftkGeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber)
+bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceAxis, int sliceIndex)
 {
   mitk::PointSet* seeds = this->GetSeeds();
   assert(seeds);
 
-  return this->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceNumber, *seeds);
+  return this->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceAxis, sliceIndex, seeds);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceNumber, mitk::PointSet& seeds)
+bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceAxis, int sliceIndex, const mitk::PointSet* seeds)
 {
+  Q_D(GeneralSegmentorController);
+
   bool sliceDoesHaveUnenclosedSeeds = false;
 
   if (!this->HasInitialisedWorkingData())
@@ -1415,53 +1445,51 @@ bool niftkGeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool threshol
     return sliceDoesHaveUnenclosedSeeds;
   }
 
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(0);
+  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
+  mitk::Image::Pointer segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
 
-  mitk::ToolManager *toolManager = this->GetToolManager();
+  mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  niftk::MIDASPolyTool *polyTool = static_cast<niftk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>()));
+  MIDASPolyTool* polyTool = this->GetToolByType<MIDASPolyTool>();
   assert(polyTool);
 
   mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
   mitk::ContourModel* polyToolContour = polyTool->GetContour();
-  if (polyToolContour != NULL && polyToolContour->GetNumberOfVertices() >= 2)
+  if (polyToolContour && polyToolContour->GetNumberOfVertices() >= 2)
   {
     polyToolContours->AddContourModel(polyToolContour);
   }
 
-  mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[niftk::MIDASTool::CONTOURS]->GetData());
-  mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[niftk::MIDASTool::DRAW_CONTOURS]->GetData());
+  mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[MIDASTool::CONTOURS]->GetData());
+  mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[MIDASTool::DRAW_CONTOURS]->GetData());
 
-  double lowerThreshold = m_GeneralSegmentorGUI->GetLowerThreshold();
-  double upperThreshold = m_GeneralSegmentorGUI->GetUpperThreshold();
+  double lowerThreshold = d->m_GUI->GetLowerThreshold();
+  double upperThreshold = d->m_GUI->GetUpperThreshold();
 
-  int axisNumber = this->GetViewAxis();
-
-  if (axisNumber != -1 && sliceNumber != -1)
+  if (sliceAxis != -1 && sliceIndex != -1)
   {
     try
     {
       AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-        niftk::ITKSliceDoesHaveUnEnclosedSeeds, 3,
+        ITKSliceDoesHaveUnenclosedSeeds, 3,
           (seeds,
-           *segmentationContours,
-           *polyToolContours,
-           *drawToolContours,
-           *segmentationImage,
-            lowerThreshold,
-            upperThreshold,
-            thresholdOn,
-            axisNumber,
-            sliceNumber,
-            sliceDoesHaveUnenclosedSeeds
+           segmentationContours,
+           polyToolContours,
+           drawToolContours,
+           segmentationImage,
+           lowerThreshold,
+           upperThreshold,
+           thresholdOn,
+           sliceAxis,
+           sliceIndex,
+           sliceDoesHaveUnenclosedSeeds
           )
       );
     }
     catch(const mitk::AccessByItkException& e)
     {
-      MITK_ERROR << "Caught exception during niftk::ITKSliceDoesHaveUnEnclosedSeeds, so will return false, caused by:" << e.what();
+      MITK_ERROR << "Caught exception during ITKSliceDoesHaveUnenclosedSeeds, so will return false, caused by:" << e.what();
     }
   }
 
@@ -1470,11 +1498,11 @@ bool niftkGeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool threshol
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::FilterSeedsToCurrentSlice(
-    mitk::PointSet& inputPoints,
-    int& axisNumber,
-    int& sliceNumber,
-    mitk::PointSet& outputPoints
+void GeneralSegmentorController::FilterSeedsToCurrentSlice(
+    const mitk::PointSet* inputPoints,
+    int sliceAxis,
+    int sliceIndex,
+    mitk::PointSet* outputPoints
     )
 {
   if (!this->HasInitialisedWorkingData())
@@ -1482,16 +1510,16 @@ void niftkGeneralSegmentorController::FilterSeedsToCurrentSlice(
     return;
   }
 
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
+  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
   if (referenceImage.IsNotNull())
   {
     try
     {
       AccessFixedDimensionByItk_n(referenceImage,
-          niftk::ITKFilterSeedsToCurrentSlice, 3,
+          ITKFilterSeedsToCurrentSlice, 3,
           (inputPoints,
-           axisNumber,
-           sliceNumber,
+           sliceAxis,
+           sliceIndex,
            outputPoints
           )
         );
@@ -1505,19 +1533,20 @@ void niftkGeneralSegmentorController::FilterSeedsToCurrentSlice(
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::FilterSeedsToEnclosedSeedsOnCurrentSlice(
-    mitk::PointSet& inputPoints,
-    bool& thresholdOn,
-    int& sliceNumber,
-    mitk::PointSet& outputPoints
+void GeneralSegmentorController::FilterSeedsToEnclosedSeedsOnSlice(
+    const mitk::PointSet* inputPoints,
+    bool thresholdOn,
+    int sliceAxis,
+    int sliceIndex,
+    mitk::PointSet* outputPoints
     )
 {
-  outputPoints.Clear();
+  outputPoints->Clear();
 
   mitk::PointSet::Pointer singleSeedPointSet = mitk::PointSet::New();
 
-  mitk::PointSet::PointsConstIterator inputPointsIt = inputPoints.Begin();
-  mitk::PointSet::PointsConstIterator inputPointsEnd = inputPoints.End();
+  mitk::PointSet::PointsConstIterator inputPointsIt = inputPoints->Begin();
+  mitk::PointSet::PointsConstIterator inputPointsEnd = inputPoints->End();
   for ( ; inputPointsIt != inputPointsEnd; ++inputPointsIt)
   {
     mitk::PointSet::PointType point = inputPointsIt->Value();
@@ -1526,18 +1555,18 @@ void niftkGeneralSegmentorController::FilterSeedsToEnclosedSeedsOnCurrentSlice(
     singleSeedPointSet->Clear();
     singleSeedPointSet->InsertPoint(0, point);
 
-    bool unenclosed = this->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceNumber, *(singleSeedPointSet.GetPointer()));
+    bool unenclosed = this->DoesSliceHaveUnenclosedSeeds(thresholdOn, sliceAxis, sliceIndex, singleSeedPointSet);
 
     if (!unenclosed)
     {
-      outputPoints.InsertPoint(pointID, point);
+      outputPoints->InsertPoint(pointID, point);
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnAnyButtonClicked()
+void GeneralSegmentorController::OnAnyButtonClicked()
 {
   /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
   /// (like 'a' and 'z' for changing slice) keep on working.
@@ -1554,34 +1583,40 @@ void niftkGeneralSegmentorController::OnAnyButtonClicked()
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::DestroyPipeline()
+void GeneralSegmentorController::DestroyPipeline()
 {
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
+  Q_D(GeneralSegmentorController);
+
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
   {
-    m_IsDeleting = true;
+    bool wasDeleting = d->m_IsDeleting;
+    d->m_IsDeleting = true;
     try
     {
-      AccessFixedDimensionByItk(referenceImage, niftk::ITKDestroyPipeline, 3);
+      AccessFixedDimensionByItk(referenceImage, ITKDestroyPipeline, 3);
     }
     catch(const mitk::AccessByItkException& e)
     {
       MITK_ERROR << "Caught exception, so abandoning destroying the ITK pipeline, caused by:" << e.what();
     }
-    m_IsDeleting = false;
+    d->m_IsDeleting = wasDeleting;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::RemoveWorkingData()
+void GeneralSegmentorController::RemoveWorkingData()
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  m_IsDeleting = true;
+  bool wasDeleting = d->m_IsDeleting;
+  d->m_IsDeleting = true;
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
@@ -1596,22 +1631,22 @@ void niftkGeneralSegmentorController::RemoveWorkingData()
   toolManager->SetWorkingData(emptyWorkingDataArray);
   toolManager->ActivateTool(-1);
 
-  m_IsDeleting = false;
+  d->m_IsDeleting = wasDeleting;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::RestoreInitialSegmentation()
+void GeneralSegmentorController::RestoreInitialSegmentation()
 {
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(niftk::MIDASTool::SEGMENTATION);
+  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(MIDASTool::SEGMENTATION);
   assert(segmentationNode);
 
-  mitk::DataNode::Pointer seedsNode = this->GetToolManager()->GetWorkingData(niftk::MIDASTool::SEEDS);
+  mitk::DataNode::Pointer seedsNode = this->GetToolManager()->GetWorkingData(MIDASTool::SEEDS);
   assert(seedsNode);
 
   try
@@ -1622,42 +1657,41 @@ void niftkGeneralSegmentorController::RestoreInitialSegmentation()
 
 //    mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
 //    assert(segmentationImage);
-//    AccessFixedDimensionByItk(segmentationImage.GetPointer(), niftk::ITKClearImage, 3);
+//    AccessFixedDimensionByItk(segmentationImage.GetPointer(), ITKClearImage, 3);
 //    segmentationImage->Modified();
 //    segmentationNode->Modified();
 
 //    mitk::PointSet::Pointer seeds = this->GetSeeds();
 //    seeds->Clear();
 
-    mitk::DataNode::Pointer initialSegmentationNode = this->GetToolManager()->GetWorkingData(niftk::MIDASTool::INITIAL_SEGMENTATION);
-    mitk::DataNode::Pointer initialSeedsNode = this->GetToolManager()->GetWorkingData(niftk::MIDASTool::INITIAL_SEEDS);
+    mitk::DataNode::Pointer initialSegmentationNode = this->GetToolManager()->GetWorkingData(MIDASTool::INITIAL_SEGMENTATION);
+    mitk::DataNode::Pointer initialSeedsNode = this->GetToolManager()->GetWorkingData(MIDASTool::INITIAL_SEEDS);
 
     segmentationNode->SetData(dynamic_cast<mitk::Image*>(initialSegmentationNode->GetData())->Clone());
     seedsNode->SetData(dynamic_cast<mitk::PointSet*>(initialSeedsNode->GetData())->Clone());
 
-    // This will cause OnSliceNumberChanged to be called, forcing refresh of all contours.
-    if (m_SliceNavigationController)
-    {
-      m_SliceNavigationController->SendSlice();
-    }
+    this->UpdateCurrentSliceContours(false);
+    this->UpdateRegionGrowing(false);
   }
   catch(const mitk::AccessByItkException& e)
   {
-    MITK_ERROR << "Caught exception during niftk::ITKClearImage, caused by:" << e.what();
+    MITK_ERROR << "Caught exception during ITKClearImage, caused by:" << e.what();
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnOKButtonClicked()
+void GeneralSegmentorController::OnOKButtonClicked()
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
   // Set the colour to that which the user selected in the first place.
-  mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(niftk::MIDASTool::SEGMENTATION);
+  mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(MIDASTool::SEGMENTATION);
   workingData->SetProperty("color", workingData->GetProperty("midas.tmp.selectedcolor"));
   workingData->SetProperty("binaryimage.selectedcolor", workingData->GetProperty("midas.tmp.selectedcolor"));
 
@@ -1667,7 +1701,7 @@ void niftkGeneralSegmentorController::OnOKButtonClicked()
 
   this->DestroyPipeline();
   this->RemoveWorkingData();
-  m_GeneralSegmentorGUI->EnableSegmentationWidgets(false);
+  d->m_GUI->EnableSegmentationWidgets(false);
   this->GetView()->SetCurrentSelection(workingData);
 
   this->RequestRenderWindowUpdate();
@@ -1676,14 +1710,16 @@ void niftkGeneralSegmentorController::OnOKButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnResetButtonClicked()
+void GeneralSegmentorController::OnResetButtonClicked()
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                             tr("Clear all slices ? \n This is not Undo-able! \n Are you sure?"),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -1700,14 +1736,14 @@ void niftkGeneralSegmentorController::OnResetButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnCancelButtonClicked()
+void GeneralSegmentorController::OnCancelButtonClicked()
 {
   this->DiscardSegmentation();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnViewGetsClosed()
+void GeneralSegmentorController::OnViewGetsClosed()
 {
   /// TODO this is not invoked at all.
   /// This function was called "ClosePart" before it was moved here from niftkGeneralSegmentorView.
@@ -1718,18 +1754,20 @@ void niftkGeneralSegmentorController::OnViewGetsClosed()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::DiscardSegmentation()
+void GeneralSegmentorController::DiscardSegmentation()
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(niftk::MIDASTool::SEGMENTATION);
+  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(MIDASTool::SEGMENTATION);
   assert(segmentationNode);
 
   this->DestroyPipeline();
-  if (m_IsRestarting)
+  if (d->m_IsRestarting)
   {
     this->RestoreInitialSegmentation();
     this->RemoveWorkingData();
@@ -1739,7 +1777,7 @@ void niftkGeneralSegmentorController::DiscardSegmentation()
     this->RemoveWorkingData();
     this->GetDataStorage()->Remove(segmentationNode);
   }
-  m_GeneralSegmentorGUI->EnableSegmentationWidgets(false);
+  d->m_GUI->EnableSegmentationWidgets(false);
   this->SetReferenceImageSelected();
   this->RequestRenderWindowUpdate();
   mitk::UndoController::GetCurrentUndoModel()->Clear();
@@ -1747,14 +1785,16 @@ void niftkGeneralSegmentorController::DiscardSegmentation()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnRestartButtonClicked()
+void GeneralSegmentorController::OnRestartButtonClicked()
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                             tr("Discard all changes?\nThis is not Undo-able!\nAre you sure?"),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -1771,14 +1811,14 @@ void niftkGeneralSegmentorController::OnRestartButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::ClearWorkingData()
+void GeneralSegmentorController::ClearWorkingData()
 {
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(niftk::MIDASTool::SEGMENTATION);
+  mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(MIDASTool::SEGMENTATION);
   assert(workingData);
 
   mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(workingData->GetData());
@@ -1786,22 +1826,19 @@ void niftkGeneralSegmentorController::ClearWorkingData()
 
   try
   {
-    AccessFixedDimensionByItk(segmentationImage.GetPointer(), niftk::ITKClearImage, 3);
+    AccessFixedDimensionByItk(segmentationImage.GetPointer(), ITKClearImage, 3);
     segmentationImage->Modified();
     workingData->Modified();
 
     mitk::PointSet::Pointer seeds = this->GetSeeds();
     seeds->Clear();
 
-    // This will cause OnSliceNumberChanged to be called, forcing refresh of all contours.
-    if (m_SliceNavigationController)
-    {
-      m_SliceNavigationController->SendSlice();
-    }
+    this->UpdateCurrentSliceContours(false);
+    this->UpdateRegionGrowing(false);
   }
   catch(const mitk::AccessByItkException& e)
   {
-    MITK_ERROR << "Caught exception during niftk::ITKClearImage, caused by:" << e.what();
+    MITK_ERROR << "Caught exception during ITKClearImage, caused by:" << e.what();
   }
 }
 
@@ -1815,7 +1852,7 @@ void niftkGeneralSegmentorController::ClearWorkingData()
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::ToggleTool(int toolId)
+void GeneralSegmentorController::ToggleTool(int toolId)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   int activeToolId = toolManager->GetActiveToolID();
@@ -1832,8 +1869,10 @@ void niftkGeneralSegmentorController::ToggleTool(int toolId)
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::SelectSeedTool()
+bool GeneralSegmentorController::SelectSeedTool()
 {
+  Q_D(GeneralSegmentorController);
+
   /// Note:
   /// If the tool selection box is disabled then the tools are not registered to
   /// the tool manager ( RegisterClient() ). Then if you activate a tool and another
@@ -1845,11 +1884,11 @@ bool niftkGeneralSegmentorController::SelectSeedTool()
   /// We should not do anything with the tools until they are registered to the
   /// tool manager.
 
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
+  if (d->m_GUI->IsToolSelectorEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
-    int seedToolId = toolManager->GetToolIdByToolType<niftk::MIDASSeedTool>();
+    int seedToolId = toolManager->GetToolIdByToolType<MIDASSeedTool>();
 
     if (seedToolId != activeToolId)
     {
@@ -1864,14 +1903,16 @@ bool niftkGeneralSegmentorController::SelectSeedTool()
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::SelectDrawTool()
+bool GeneralSegmentorController::SelectDrawTool()
 {
+  Q_D(GeneralSegmentorController);
+
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
+  if (d->m_GUI->IsToolSelectorEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
-    int drawToolId = toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>();
+    int drawToolId = toolManager->GetToolIdByToolType<MIDASDrawTool>();
 
     if (drawToolId != activeToolId)
     {
@@ -1886,14 +1927,16 @@ bool niftkGeneralSegmentorController::SelectDrawTool()
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::SelectPolyTool()
+bool GeneralSegmentorController::SelectPolyTool()
 {
+  Q_D(GeneralSegmentorController);
+
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
+  if (d->m_GUI->IsToolSelectorEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
-    int polyToolId = toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>();
+    int polyToolId = toolManager->GetToolIdByToolType<MIDASPolyTool>();
 
     if (polyToolId != activeToolId)
     {
@@ -1908,9 +1951,11 @@ bool niftkGeneralSegmentorController::SelectPolyTool()
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::UnselectTools()
+bool GeneralSegmentorController::UnselectTools()
 {
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
+  Q_D(GeneralSegmentorController);
+
+  if (d->m_GUI->IsToolSelectorEnabled())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
 
@@ -1927,10 +1972,12 @@ bool niftkGeneralSegmentorController::UnselectTools()
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::SelectViewMode()
+bool GeneralSegmentorController::SelectViewMode()
 {
+  Q_D(GeneralSegmentorController);
+
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
+  if (d->m_GUI->IsToolSelectorEnabled())
   {
     if (!this->HasInitialisedWorkingData())
     {
@@ -1945,8 +1992,8 @@ bool niftkGeneralSegmentorController::SelectViewMode()
     }
 
     mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
-    bool segmentationNodeIsVisible = workingData[niftk::MIDASTool::SEGMENTATION]->IsVisible(0);
-    workingData[niftk::MIDASTool::SEGMENTATION]->SetVisibility(!segmentationNodeIsVisible);
+    bool segmentationNodeIsVisible = workingData[MIDASTool::SEGMENTATION]->IsVisible(0);
+    workingData[MIDASTool::SEGMENTATION]->SetVisibility(!segmentationNodeIsVisible);
     this->RequestRenderWindowUpdate();
 
     return true;
@@ -1961,10 +2008,12 @@ bool niftkGeneralSegmentorController::SelectViewMode()
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::CleanSlice()
+bool GeneralSegmentorController::CleanSlice()
 {
+  Q_D(GeneralSegmentorController);
+
   /// Note: see comment in SelectSeedTool().
-  if (m_GeneralSegmentorGUI->IsToolSelectorEnabled())
+  if (d->m_GUI->IsToolSelectorEnabled())
   {
     this->OnCleanButtonClicked();
     return true;
@@ -1975,36 +2024,38 @@ bool niftkGeneralSegmentorController::CleanSlice()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnPropagate3DButtonClicked()
+void GeneralSegmentorController::OnPropagate3DButtonClicked()
 {
   this->DoPropagate(false, true);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnPropagateUpButtonClicked()
+void GeneralSegmentorController::OnPropagateUpButtonClicked()
 {
   this->DoPropagate(true, false);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnPropagateDownButtonClicked()
+void GeneralSegmentorController::OnPropagateDownButtonClicked()
 {
   this->DoPropagate(false, false);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
+void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
-  itk::Orientation orientation = niftk::GetItkOrientation(midasOrientation);
+  ImageOrientation imageOrientation = this->GetOrientation();
+  itk::Orientation orientation = GetItkOrientation(imageOrientation);
 
   QString message;
 
@@ -2019,15 +2070,15 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
 
     if (isUp)
     {
-      if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
+      if (imageOrientation == IMAGE_ORIENTATION_AXIAL)
       {
         orientationText = "superior to";
       }
-      else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
+      else if (imageOrientation == IMAGE_ORIENTATION_SAGITTAL)
       {
         orientationText = "right of";
       }
-      else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
+      else if (imageOrientation == IMAGE_ORIENTATION_CORONAL)
       {
         orientationText = "anterior to";
       }
@@ -2038,15 +2089,15 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     }
     else if (!isUp)
     {
-      if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
+      if (imageOrientation == IMAGE_ORIENTATION_AXIAL)
       {
         orientationText = "inferior to";
       }
-      else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
+      else if (imageOrientation == IMAGE_ORIENTATION_SAGITTAL)
       {
         orientationText = "left of";
       }
-      else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
+      else if (imageOrientation == IMAGE_ORIENTATION_CORONAL)
       {
         orientationText = "posterior to";
       }
@@ -2059,7 +2110,7 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     message = tr(messageWithOrientation.toStdString().c_str()).arg(orientationText);
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                    tr("%1.\n"
                                                       "Are you sure?").arg(message),
                                                    QMessageBox::Yes | QMessageBox::No);
@@ -2068,17 +2119,17 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     return;
   }
 
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
   {
 
-    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[niftk::MIDASTool::SEGMENTATION];
-    mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(niftk::MIDASTool::SEGMENTATION);
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[MIDASTool::SEGMENTATION];
+    mitk::Image::Pointer segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
 
     if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
 
-      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(niftk::MIDASTool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
+      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(MIDASTool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
       assert(regionGrowingNode);
 
       mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
@@ -2087,54 +2138,53 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
       mitk::PointSet* seeds = this->GetSeeds();
       assert(seeds);
 
-      mitk::ToolManager *toolManager = this->GetToolManager();
+      mitk::ToolManager* toolManager = this->GetToolManager();
       assert(toolManager);
 
-      niftk::MIDASDrawTool *drawTool = static_cast<niftk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>()));
+      MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
       assert(drawTool);
 
-      double lowerThreshold = m_GeneralSegmentorGUI->GetLowerThreshold();
-      double upperThreshold = m_GeneralSegmentorGUI->GetUpperThreshold();
-      int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-      int axisNumber = this->GetViewAxis();
-      int direction = this->GetUpDirection();
+      double lowerThreshold = d->m_GUI->GetLowerThreshold();
+      double upperThreshold = d->m_GUI->GetUpperThreshold();
+      int sliceAxis = this->GetReferenceImageSliceAxis();
+      int sliceIndex = this->GetReferenceImageSliceIndex();
+      int sliceUpDirection = this->GetReferenceImageSliceUpDirection();
       if (!is3D && !isUp)
       {
-        direction *= -1;
+        sliceUpDirection *= -1;
       }
       else if (is3D)
       {
-        direction = 0;
+        sliceUpDirection = 0;
       }
 
       mitk::PointSet::Pointer copyOfInputSeeds = mitk::PointSet::New();
       mitk::PointSet::Pointer outputSeeds = mitk::PointSet::New();
       std::vector<int> outputRegion;
 
-      if (axisNumber != -1 && sliceNumber != -1 && orientation != itk::ORIENTATION_UNKNOWN)
+      if (sliceAxis != -1 && sliceIndex != -1 && orientation != itk::ORIENTATION_UNKNOWN)
       {
-
-        m_IsUpdating = true;
+        bool wasUpdating = d->m_IsUpdating;
+        d->m_IsUpdating = true;
 
         try
         {
           AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-              niftk::ITKPropagateToRegionGrowingImage, 3,
-              (*seeds,
-               sliceNumber,
-               axisNumber,
-               direction,
+              ITKPropagateToRegionGrowingImage, 3,
+              (seeds,
+               sliceAxis,
+               sliceIndex,
+               sliceUpDirection,
                lowerThreshold,
                upperThreshold,
-               *(copyOfInputSeeds.GetPointer()),
-               *(outputSeeds.GetPointer()),
+               copyOfInputSeeds,
+               outputSeeds,
                outputRegion,
-               regionGrowingNode,  // This is the node for the image we are writing to.
                regionGrowingImage  // This is the image we are writing to.
               )
             );
 
-          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>())
+          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<MIDASPolyTool>())
           {
             toolManager->ActivateTool(-1);
           }
@@ -2143,20 +2193,24 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
           mitk::UndoStackItem::IncCurrGroupEventId();
           mitk::UndoStackItem::ExecuteIncrement();
 
+          mitk::Operation* doOp;
+          mitk::Operation* undoOp;
+          mitk::OperationEvent* opEvent;
+
           QString message = tr("Propagate: copy region growing");
-          niftk::OpPropagate::ProcessorPointer processor = niftk::OpPropagate::ProcessorType::New();
-          niftk::OpPropagate *doPropOp = new niftk::OpPropagate(niftk::OP_PROPAGATE, true, outputRegion, processor);
-          niftk::OpPropagate *undoPropOp = new niftk::OpPropagate(niftk::OP_PROPAGATE, false, outputRegion, processor);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doPropOp, undoPropOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          this->ExecuteOperation(doPropOp);
+          OpPropagate::ProcessorPointer processor = OpPropagate::ProcessorType::New();
+          doOp = new OpPropagate(OP_PROPAGATE, true, outputRegion, processor);
+          undoOp = new OpPropagate(OP_PROPAGATE, false, outputRegion, processor);
+          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+          this->ExecuteOperation(doOp);
 
           message = tr("Propagate: copy seeds");
-          niftk::OpPropagateSeeds *doPropSeedsOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, true, sliceNumber, axisNumber, outputSeeds);
-          niftk::OpPropagateSeeds *undoPropSeedsOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, false, sliceNumber, axisNumber, copyOfInputSeeds);
-          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(m_Interface, doPropSeedsOp, undoPropSeedsOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
-          this->ExecuteOperation(doPropOp);
+          doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, outputSeeds);
+          undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceAxis, sliceIndex, copyOfInputSeeds);
+          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+          this->ExecuteOperation(doOp);
 
           drawTool->ClearWorkingData();
           this->UpdateCurrentSliceContours(false);
@@ -2166,16 +2220,16 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
         {
           MITK_ERROR << "Could not propagate: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         }
-        catch( itk::ExceptionObject &err )
+        catch(const itk::ExceptionObject& e)
         {
-          MITK_ERROR << "Could not propagate: Caught itk::ExceptionObject:" << err.what() << std::endl;
+          MITK_ERROR << "Could not propagate: Caught itk::ExceptionObject:" << e.what() << std::endl;
         }
 
-        m_IsUpdating = false;
+        d->m_IsUpdating = wasUpdating;
       }
       else
       {
-        MITK_ERROR << "Could not propagate: Error axisNumber=" << axisNumber << ", sliceNumber=" << sliceNumber << ", orientation=" << orientation << ", direction=" << direction << std::endl;
+        MITK_ERROR << "Could not propagate: Error sliceAxis=" << sliceAxis << ", sliceIndex=" << sliceIndex << ", orientation=" << orientation << ", direction=" << sliceUpDirection << std::endl;
       }
     }
   }
@@ -2185,29 +2239,31 @@ void niftkGeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnWipeButtonClicked()
+void GeneralSegmentorController::OnWipeButtonClicked()
 {
   this->DoWipe(0);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnWipePlusButtonClicked()
+void GeneralSegmentorController::OnWipePlusButtonClicked()
 {
-  MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
+  Q_D(GeneralSegmentorController);
+
+  ImageOrientation imageOrientation = this->GetOrientation();
 
   QString orientationText;
   QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
 
-  if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
+  if (imageOrientation == IMAGE_ORIENTATION_AXIAL)
   {
     orientationText = "superior to";
   }
-  else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
+  else if (imageOrientation == IMAGE_ORIENTATION_SAGITTAL)
   {
     orientationText = "right of";
   }
-  else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
+  else if (imageOrientation == IMAGE_ORIENTATION_CORONAL)
   {
     orientationText = "anterior to";
   }
@@ -2216,7 +2272,7 @@ void niftkGeneralSegmentorController::OnWipePlusButtonClicked()
     orientationText = "up from";
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                             tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -2229,22 +2285,24 @@ void niftkGeneralSegmentorController::OnWipePlusButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnWipeMinusButtonClicked()
+void GeneralSegmentorController::OnWipeMinusButtonClicked()
 {
-  MIDASOrientation midasOrientation = this->GetOrientationAsEnum();
+  Q_D(GeneralSegmentorController);
+
+  ImageOrientation imageOrientation = this->GetOrientation();
 
   QString orientationText;
   QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
 
-  if (midasOrientation == MIDAS_ORIENTATION_AXIAL)
+  if (imageOrientation == IMAGE_ORIENTATION_AXIAL)
   {
     orientationText = "inferior to";
   }
-  else if (midasOrientation == MIDAS_ORIENTATION_SAGITTAL)
+  else if (imageOrientation == IMAGE_ORIENTATION_SAGITTAL)
   {
     orientationText = "left of";
   }
-  else if (midasOrientation == MIDAS_ORIENTATION_CORONAL)
+  else if (imageOrientation == IMAGE_ORIENTATION_CORONAL)
   {
     orientationText = "posterior to";
   }
@@ -2253,7 +2311,7 @@ void niftkGeneralSegmentorController::OnWipeMinusButtonClicked()
     orientationText = "down from";
   }
 
-  int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                             tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
                                                             QMessageBox::Yes | QMessageBox::No);
   if (returnValue == QMessageBox::No)
@@ -2266,8 +2324,10 @@ void niftkGeneralSegmentorController::OnWipeMinusButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::DoWipe(int direction)
+bool GeneralSegmentorController::DoWipe(int direction)
 {
+  Q_D(GeneralSegmentorController);
+
   bool wipeWasPerformed = false;
 
   if (!this->HasInitialisedWorkingData())
@@ -2275,46 +2335,46 @@ bool niftkGeneralSegmentorController::DoWipe(int direction)
     return wipeWasPerformed;
   }
 
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
   {
 
-    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[niftk::MIDASTool::SEGMENTATION];
-    mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(niftk::MIDASTool::SEGMENTATION);
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[MIDASTool::SEGMENTATION];
+    mitk::Image::Pointer segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
 
     if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
       mitk::PointSet* seeds = this->GetSeeds();
       assert(seeds);
 
-      int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-      int axisNumber = this->GetViewAxis();
-      int upDirection = this->GetUpDirection();
+      int sliceAxis = this->GetReferenceImageSliceAxis();
+      int sliceIndex = this->GetReferenceImageSliceIndex();
+      int sliceUpDirection = this->GetReferenceImageSliceUpDirection();
 
       if (direction != 0) // zero means, current slice.
       {
-        direction = direction*upDirection;
+        direction *= sliceUpDirection;
       }
 
       mitk::PointSet::Pointer copyOfInputSeeds = mitk::PointSet::New();
       mitk::PointSet::Pointer outputSeeds = mitk::PointSet::New();
       std::vector<int> outputRegion;
 
-      if (axisNumber != -1 && sliceNumber != -1)
+      if (sliceAxis != -1 && sliceIndex != -1)
       {
-
-        m_IsUpdating = true;
+        bool wasUpdating = d->m_IsUpdating;
+        d->m_IsUpdating = true;
 
         try
         {
 
-          mitk::ToolManager *toolManager = this->GetToolManager();
+          mitk::ToolManager* toolManager = this->GetToolManager();
           assert(toolManager);
 
-          niftk::MIDASDrawTool *drawTool = static_cast<niftk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>()));
+          MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
           assert(drawTool);
 
-          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>())
+          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<MIDASPolyTool>())
           {
             toolManager->ActivateTool(-1);
           }
@@ -2326,9 +2386,9 @@ bool niftkGeneralSegmentorController::DoWipe(int direction)
             mitk::CopyPointSets(*seeds, *outputSeeds);
 
             AccessFixedDimensionByItk_n(segmentationImage,
-                niftk::ITKCalculateSliceRegionAsVector, 3,
-                (axisNumber,
-                 sliceNumber,
+                ITKCalculateSliceRegionAsVector, 3,
+                (sliceAxis,
+                 sliceIndex,
                  outputRegion
                 )
               );
@@ -2337,13 +2397,13 @@ bool niftkGeneralSegmentorController::DoWipe(int direction)
           else
           {
             AccessFixedDimensionByItk_n(segmentationImage, // The binary image = current segmentation
-                niftk::ITKPreProcessingForWipe, 3,
-                (*seeds,
-                 sliceNumber,
-                 axisNumber,
+                ITKPreprocessingForWipe, 3,
+                (seeds,
+                 sliceAxis,
+                 sliceIndex,
                  direction,
-                 *(copyOfInputSeeds.GetPointer()),
-                 *(outputSeeds.GetPointer()),
+                 copyOfInputSeeds,
+                 outputSeeds,
                  outputRegion
                 )
               );
@@ -2353,11 +2413,11 @@ bool niftkGeneralSegmentorController::DoWipe(int direction)
           mitk::UndoStackItem::IncCurrGroupEventId();
           mitk::UndoStackItem::ExecuteIncrement();
 
-          niftk::OpWipe::ProcessorPointer processor = niftk::OpWipe::ProcessorType::New();
-          niftk::OpWipe *doOp = new niftk::OpWipe(niftk::OP_WIPE, true, sliceNumber, axisNumber, outputRegion, outputSeeds, processor);
-          niftk::OpWipe *undoOp = new niftk::OpWipe(niftk::OP_WIPE, false, sliceNumber, axisNumber, outputRegion, copyOfInputSeeds, processor);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doOp, undoOp, "Wipe command");
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+          OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
+          mitk::Operation* doOp = new OpWipe(OP_WIPE, true, sliceAxis, sliceIndex, outputRegion, outputSeeds, processor);
+          mitk::Operation* undoOp = new OpWipe(OP_WIPE, false, sliceAxis, sliceIndex, outputRegion, copyOfInputSeeds, processor);
+          mitk::OperationEvent* opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
           this->ExecuteOperation(doOp);
 
           drawTool->ClearWorkingData();
@@ -2370,16 +2430,16 @@ bool niftkGeneralSegmentorController::DoWipe(int direction)
         {
           MITK_ERROR << "Could not do wipe command: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         }
-        catch( itk::ExceptionObject &err )
+        catch(const itk::ExceptionObject& e)
         {
-          MITK_ERROR << "Could not do wipe command: Caught itk::ExceptionObject:" << err.what() << std::endl;
+          MITK_ERROR << "Could not do wipe command: Caught itk::ExceptionObject:" << e.what() << std::endl;
         }
 
-        m_IsUpdating = false;
+        d->m_IsUpdating = wasUpdating;
       }
       else
       {
-        MITK_ERROR << "Could not wipe: Error, axisNumber=" << axisNumber << ", sliceNumber=" << sliceNumber << std::endl;
+        MITK_ERROR << "Could not wipe: Error, sliceAxis=" << sliceAxis << ", sliceIndex=" << sliceIndex << std::endl;
       }
     }
   }
@@ -2394,21 +2454,20 @@ bool niftkGeneralSegmentorController::DoWipe(int direction)
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnThresholdApplyButtonClicked()
+void GeneralSegmentorController::OnThresholdApplyButtonClicked()
 {
-  int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
-  this->DoThresholdApply(sliceNumber, sliceNumber, true, false, false);
+  this->DoThresholdApply(true, false, false);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkGeneralSegmentorController::DoThresholdApply(
-    int oldSliceNumber,
-    int newSliceNumber,
+bool GeneralSegmentorController::DoThresholdApply(
     bool optimiseSeeds,
     bool newSliceEmpty,
     bool newCheckboxStatus)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return false;
@@ -2416,15 +2475,20 @@ bool niftkGeneralSegmentorController::DoThresholdApply(
 
   bool updateWasApplied = false;
 
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
   {
-    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[niftk::MIDASTool::SEGMENTATION];
-    mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(niftk::MIDASTool::SEGMENTATION);
+    ImageOrientation orientation = this->GetOrientation();
+    int selectedSliceIndex = this->GetSliceIndex();
+
+    int sliceIndex = this->GetReferenceImageSliceIndex();
+
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[MIDASTool::SEGMENTATION];
+    mitk::Image::Pointer segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
 
     if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
-      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(niftk::MIDASTool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
+      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(MIDASTool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
       assert(regionGrowingNode);
 
       mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
@@ -2433,41 +2497,43 @@ bool niftkGeneralSegmentorController::DoThresholdApply(
       mitk::PointSet* seeds = this->GetSeeds();
       assert(seeds);
 
-      mitk::ToolManager *toolManager = this->GetToolManager();
+      mitk::ToolManager* toolManager = this->GetToolManager();
       assert(toolManager);
 
-      niftk::MIDASDrawTool *drawTool = static_cast<niftk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>()));
+      MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
       assert(drawTool);
 
-      int axisNumber = this->GetViewAxis();
+      int sliceAxis = this->GetReferenceImageSliceAxis();
 
       mitk::PointSet::Pointer copyOfInputSeeds = mitk::PointSet::New();
       mitk::PointSet::Pointer outputSeeds = mitk::PointSet::New();
       std::vector<int> outputRegion;
 
-      if (axisNumber != -1 && oldSliceNumber != -1)
+      if (sliceAxis != -1 && sliceIndex != -1)
       {
-        m_IsUpdating = true;
+        bool wasUpdating = d->m_IsUpdating;
+        d->m_IsUpdating = true;
 
         try
         {
           AccessFixedDimensionByItk_n(regionGrowingImage,
-              niftk::ITKPreProcessingOfSeedsForChangingSlice, 3,
-              (*seeds,
-               oldSliceNumber,
-               axisNumber,
-               newSliceNumber,
+              ITKPreprocessingOfSeedsForChangingSlice, 3,
+              (seeds,
+               sliceAxis,
+               sliceIndex,
+               sliceAxis,
+               sliceIndex,
                optimiseSeeds,
                newSliceEmpty,
-               *(copyOfInputSeeds.GetPointer()),
-               *(outputSeeds.GetPointer()),
+               copyOfInputSeeds,
+               outputSeeds,
                outputRegion
               )
             );
 
-          bool currentCheckboxStatus = m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked();
+          bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
 
-          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>())
+          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<MIDASPolyTool>())
           {
             toolManager->ActivateTool(-1);
           }
@@ -2476,20 +2542,29 @@ bool niftkGeneralSegmentorController::DoThresholdApply(
           mitk::UndoStackItem::IncCurrGroupEventId();
           mitk::UndoStackItem::ExecuteIncrement();
 
-          QString message = tr("Apply threshold on slice %1").arg(oldSliceNumber);
-          niftk::OpThresholdApply::ProcessorPointer processor = niftk::OpThresholdApply::ProcessorType::New();
-          niftk::OpThresholdApply *doThresholdOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, true, outputRegion, processor, newCheckboxStatus);
-          niftk::OpThresholdApply *undoThresholdOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, false, outputRegion, processor, currentCheckboxStatus);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doThresholdOp, undoThresholdOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          this->ExecuteOperation(doThresholdOp);
+          mitk::Operation* doOp;
+          mitk::Operation* undoOp;
+          mitk::OperationEvent* opEvent;
 
-          message = tr("Propagate seeds on slice %1").arg(oldSliceNumber);
-          niftk::OpPropagateSeeds *doPropOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, true, newSliceNumber, axisNumber, outputSeeds);
-          niftk::OpPropagateSeeds *undoPropOp = new niftk::OpPropagateSeeds(niftk::OP_PROPAGATE_SEEDS, false, oldSliceNumber, axisNumber, copyOfInputSeeds);
-          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(m_Interface, doPropOp, undoPropOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
-          this->ExecuteOperation(doPropOp);
+          std::string orientationName = GetOrientationName(orientation);
+          QString message = tr("Apply threshold on %1 slice %2 (image axis: %3, slice: %4)")
+              .arg(QString::fromStdString(orientationName)).arg(selectedSliceIndex)
+              .arg(sliceAxis).arg(sliceIndex);
+          OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
+          doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, newCheckboxStatus);
+          undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, isThresholdingOn);
+          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+          this->ExecuteOperation(doOp);
+
+          message = tr("Propagate seeds on %1 slice %2 (image axis: %3, slice: %4)")
+              .arg(QString::fromStdString(orientationName)).arg(selectedSliceIndex)
+              .arg(sliceAxis).arg(sliceIndex);
+          doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, outputSeeds);
+          undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceAxis, sliceIndex, copyOfInputSeeds);
+          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+          this->ExecuteOperation(doOp);
 
           drawTool->ClearWorkingData();
 
@@ -2504,12 +2579,12 @@ bool niftkGeneralSegmentorController::DoThresholdApply(
         {
           MITK_ERROR << "Could not do threshold apply command: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         }
-        catch( itk::ExceptionObject &err )
+        catch(const itk::ExceptionObject& e)
         {
-          MITK_ERROR << "Could not do threshold apply command: Caught itk::ExceptionObject:" << err.what() << std::endl;
+          MITK_ERROR << "Could not do threshold apply command: Caught itk::ExceptionObject:" << e.what() << std::endl;
         }
 
-        m_IsUpdating = false;
+        d->m_IsUpdating = wasUpdating;
 
       } // end if we have valid axis / slice
     } // end if we have working data
@@ -2524,22 +2599,25 @@ bool niftkGeneralSegmentorController::DoThresholdApply(
 
 
 //-----------------------------------------------------------------------------
-void niftkGeneralSegmentorController::OnCleanButtonClicked()
+void GeneralSegmentorController::OnCleanButtonClicked()
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  bool thresholdCheckBox = m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked();
-  int sliceNumber = this->GetSliceNumberFromSliceNavigationControllerAndReferenceImage();
+  bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
+  int sliceAxis = this->GetReferenceImageSliceAxis();
+  int sliceIndex = this->GetReferenceImageSliceIndex();
 
-  if (!thresholdCheckBox)
+  if (!isThresholdingOn)
   {
-    bool hasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(thresholdCheckBox, sliceNumber);
+    bool hasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(isThresholdingOn, sliceAxis, sliceIndex);
     if (hasUnenclosedSeeds)
     {
-      int returnValue = QMessageBox::warning(m_GeneralSegmentorGUI->GetParent(), tr("NiftyView"),
+      int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
                                                        tr("There are unenclosed seeds - slice will be wiped\n"
                                                           "Are you sure?"),
                                                        QMessageBox::Yes | QMessageBox::No);
@@ -2553,107 +2631,108 @@ void niftkGeneralSegmentorController::OnCleanButtonClicked()
 
   bool cleanWasPerformed = false;
 
-  mitk::Image::Pointer referenceImage = this->GetReferenceImageFromToolManager();
-  if (referenceImage.IsNotNull())
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
   {
-    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[niftk::MIDASTool::SEGMENTATION];
-    mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(niftk::MIDASTool::SEGMENTATION);
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[MIDASTool::SEGMENTATION];
+    mitk::Image::Pointer segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
 
     if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
       mitk::PointSet* seeds = this->GetSeeds();
       assert(seeds);
 
-      mitk::ToolManager *toolManager = this->GetToolManager();
+      mitk::ToolManager* toolManager = this->GetToolManager();
       assert(toolManager);
 
-      niftk::MIDASPolyTool *polyTool = static_cast<niftk::MIDASPolyTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASPolyTool>()));
+      MIDASPolyTool* polyTool = this->GetToolByType<MIDASPolyTool>();
       assert(polyTool);
 
-      niftk::MIDASDrawTool *drawTool = static_cast<niftk::MIDASDrawTool*>(toolManager->GetToolById(toolManager->GetToolIdByToolType<niftk::MIDASDrawTool>()));
+      MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
       assert(drawTool);
 
       mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
 
       mitk::ContourModel* polyToolContour = polyTool->GetContour();
-      if (polyToolContour != NULL && polyToolContour->GetNumberOfVertices() >= 2)
+      if (polyToolContour && polyToolContour->GetNumberOfVertices() >= 2)
       {
         polyToolContours->AddContourModel(polyToolContour);
       }
 
-      mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[niftk::MIDASTool::CONTOURS]->GetData());
+      mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[MIDASTool::CONTOURS]->GetData());
       assert(segmentationContours);
 
-      mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[niftk::MIDASTool::DRAW_CONTOURS]->GetData());
+      mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[MIDASTool::DRAW_CONTOURS]->GetData());
       assert(drawToolContours);
 
-      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(niftk::MIDASTool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
+      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(MIDASTool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
       assert(regionGrowingNode);
 
       mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
       assert(regionGrowingImage);
 
-      double lowerThreshold = m_GeneralSegmentorGUI->GetLowerThreshold();
-      double upperThreshold = m_GeneralSegmentorGUI->GetUpperThreshold();
-      int axisNumber = this->GetViewAxis();
+      double lowerThreshold = d->m_GUI->GetLowerThreshold();
+      double upperThreshold = d->m_GUI->GetUpperThreshold();
+      int sliceAxis = this->GetReferenceImageSliceAxis();
 
       mitk::ContourModelSet::Pointer copyOfInputContourSet = mitk::ContourModelSet::New();
       mitk::ContourModelSet::Pointer outputContourSet = mitk::ContourModelSet::New();
 
-      if (axisNumber != -1 && sliceNumber != -1)
+      if (sliceAxis != -1 && sliceIndex != -1)
       {
-        m_IsUpdating = true;
+        bool wasUpdating = d->m_IsUpdating;
+        d->m_IsUpdating = true;
 
         try
         {
           // Calculate the region of interest for this slice.
           std::vector<int> outputRegion;
           AccessFixedDimensionByItk_n(segmentationImage,
-              niftk::ITKCalculateSliceRegionAsVector, 3,
-              (axisNumber,
-               sliceNumber,
+              ITKCalculateSliceRegionAsVector, 3,
+              (sliceAxis,
+               sliceIndex,
                outputRegion
               )
             );
 
-          if (thresholdCheckBox)
+          if (isThresholdingOn)
           {
             bool useThresholdsWhenCalculatingEnclosedSeeds = false;
 
-            this->DoThresholdApply(sliceNumber, sliceNumber, true, false, true);
+            this->DoThresholdApply(true, false, true);
 
             // Get seeds just on the current slice
             mitk::PointSet::Pointer seedsForCurrentSlice = mitk::PointSet::New();
             this->FilterSeedsToCurrentSlice(
-                *seeds,
-                axisNumber,
-                sliceNumber,
-                *(seedsForCurrentSlice.GetPointer())
+                seeds,
+                sliceAxis,
+                sliceIndex,
+                seedsForCurrentSlice
                 );
 
             // Reduce the list just down to those that are fully enclosed.
             mitk::PointSet::Pointer enclosedSeeds = mitk::PointSet::New();
-            this->FilterSeedsToEnclosedSeedsOnCurrentSlice(
-                *seedsForCurrentSlice,
+            this->FilterSeedsToEnclosedSeedsOnSlice(
+                seedsForCurrentSlice,
                 useThresholdsWhenCalculatingEnclosedSeeds,
-                sliceNumber,
-                *(enclosedSeeds.GetPointer())
+                sliceAxis,
+                sliceIndex,
+                enclosedSeeds
                 );
 
             // Do region growing, using only enclosed seeds.
             AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-                niftk::ITKUpdateRegionGrowing, 3,
+                ITKUpdateRegionGrowing, 3,
                 (false,
-                 *segmentationImage,
-                 *enclosedSeeds,
-                 *segmentationContours,
-                 *drawToolContours,
-                 *polyToolContours,
-                 sliceNumber,
-                 axisNumber,
+                 segmentationImage,
+                 enclosedSeeds,
+                 segmentationContours,
+                 drawToolContours,
+                 polyToolContours,
+                 sliceAxis,
+                 sliceIndex,
                  lowerThreshold,
                  upperThreshold,
-                 regionGrowingNode,  // This is the node for the image we are writing to.
                  regionGrowingImage  // This is the image we are writing to.
                 )
             );
@@ -2670,15 +2749,15 @@ void niftkGeneralSegmentorController::OnCleanButtonClicked()
             outputToItk->SetInput(segmentationImage);
             outputToItk->Update();
 
-            niftk::ITKCopyRegion<unsigned char, 3>(
+            ITKCopyRegion<unsigned char, 3>(
                 regionGrowingToItk->GetOutput(),
-                axisNumber,
-                sliceNumber,
+                sliceAxis,
+                sliceIndex,
                 outputToItk->GetOutput()
                 );
 
-            regionGrowingToItk = NULL;
-            outputToItk = NULL;
+            regionGrowingToItk = nullptr;
+            outputToItk = nullptr;
 
             // Update the current slice contours, to regenerate cleaned orange contours
             // around just the regions of interest that have a valid seed.
@@ -2693,18 +2772,17 @@ void niftkGeneralSegmentorController::OnCleanButtonClicked()
             // and either abandoned this method, or accepted the warning and wiped the slice.
 
             AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-                niftk::ITKUpdateRegionGrowing, 3,
+                ITKUpdateRegionGrowing, 3,
                 (false,
-                 *segmentationImage,
-                 *seeds,
-                 *segmentationContours,
-                 *drawToolContours,
-                 *polyToolContours,
-                 sliceNumber,
-                 axisNumber,
+                 segmentationImage,
+                 seeds,
+                 segmentationContours,
+                 drawToolContours,
+                 polyToolContours,
+                 sliceAxis,
+                 sliceIndex,
                  referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
                  referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
-                 regionGrowingNode,  // This is the node for the image we are writing to.
                  regionGrowingImage  // This is the image we are writing to.
                 )
             );
@@ -2717,19 +2795,19 @@ void niftkGeneralSegmentorController::OnCleanButtonClicked()
           // by a seed and a threshold, but that have not been "applied" yet.
 
           AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-              niftk::ITKFilterContours, 3,
-              (*segmentationImage,
-               *seeds,
-               *segmentationContours,
-               *drawToolContours,
-               *polyToolContours,
-               axisNumber,
-               sliceNumber,
+              ITKFilterContours, 3,
+              (segmentationImage,
+               seeds,
+               segmentationContours,
+               drawToolContours,
+               polyToolContours,
+               sliceAxis,
+               sliceIndex,
                lowerThreshold,
                upperThreshold,
-               m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked(),
-               *(copyOfInputContourSet.GetPointer()),
-               *(outputContourSet.GetPointer())
+               isThresholdingOn,
+               copyOfInputContourSet,
+               outputContourSet
               )
             );
 
@@ -2737,31 +2815,35 @@ void niftkGeneralSegmentorController::OnCleanButtonClicked()
           mitk::UndoStackItem::IncCurrGroupEventId();
           mitk::UndoStackItem::ExecuteIncrement();
 
-          niftk::OpClean *doOp = new niftk::OpClean(niftk::OP_CLEAN, true, outputContourSet);
-          niftk::OpClean *undoOp = new niftk::OpClean(niftk::OP_CLEAN, false, copyOfInputContourSet);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(m_Interface, doOp, undoOp, "Clean: Filtering contours");
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+          mitk::Operation* doOp;
+          mitk::Operation* undoOp;
+          mitk::OperationEvent* opEvent;
+
+          doOp = new OpClean(OP_CLEAN, true, outputContourSet);
+          undoOp = new OpClean(OP_CLEAN, false, copyOfInputContourSet);
+          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Clean: Filtering contours");
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
           this->ExecuteOperation(doOp);
 
           // Then we update the region growing to get up-to-date contours.
           this->UpdateRegionGrowing();
 
-          if (!m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked())
+          if (!isThresholdingOn)
           {
             // Then we "apply" this region growing.
-            niftk::OpThresholdApply::ProcessorPointer processor = niftk::OpThresholdApply::ProcessorType::New();
-            niftk::OpThresholdApply *doApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, true, outputRegion, processor, m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
-            niftk::OpThresholdApply *undoApplyOp = new niftk::OpThresholdApply(niftk::OP_THRESHOLD_APPLY, false, outputRegion, processor, m_GeneralSegmentorGUI->IsThresholdingCheckBoxChecked());
-            mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(m_Interface, doApplyOp, undoApplyOp, "Clean: Calculate new image");
-            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
-            this->ExecuteOperation(doApplyOp);
+            OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
+            doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
+            undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
+            opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Clean: Calculate new image");
+            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+            this->ExecuteOperation(doOp);
 
             // We should update the current slice contours, as the green contours
             // are the current segmentation that will be applied when we change slice.
             this->UpdateCurrentSliceContours();
           }
 
-          drawTool->Clean(sliceNumber, axisNumber);
+          drawTool->Clean(sliceIndex, sliceAxis);
 
           segmentationImage->Modified();
           segmentationNode->Modified();
@@ -2773,17 +2855,17 @@ void niftkGeneralSegmentorController::OnCleanButtonClicked()
         {
           MITK_ERROR << "Could not do clean command: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         }
-        catch( itk::ExceptionObject &err )
+        catch(const itk::ExceptionObject& e)
         {
-          MITK_ERROR << "Could not do clean command: Caught itk::ExceptionObject:" << err.what() << std::endl;
+          MITK_ERROR << "Could not do clean command: Caught itk::ExceptionObject:" << e.what() << std::endl;
         }
 
-        m_IsUpdating = false;
+        d->m_IsUpdating = wasUpdating;
 
       }
       else
       {
-        MITK_ERROR << "Could not do clean operation: Error axisNumber=" << axisNumber << ", sliceNumber=" << sliceNumber << std::endl;
+        MITK_ERROR << "Could not do clean operation: Error sliceAxis=" << sliceAxis << ", sliceIndex=" << sliceIndex << std::endl;
       }
     }
   }
@@ -2814,45 +2896,48 @@ void niftkGeneralSegmentorController::OnCleanButtonClicked()
  * should also be the ones deciding when we update the display.
  ******************************************************************/
 
-void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
+void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  if (!operation) return;
+  if (!operation)
+  {
+    return;
+  }
 
-  mitk::Image::Pointer segmentationImage = this->GetWorkingImageFromToolManager(niftk::MIDASTool::SEGMENTATION);
+  mitk::Image::Pointer segmentationImage = this->GetWorkingImage(MIDASTool::SEGMENTATION);
   assert(segmentationImage);
 
-  mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[niftk::MIDASTool::SEGMENTATION];
+  mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[MIDASTool::SEGMENTATION];
   assert(segmentationNode);
 
-  mitk::Image* referenceImage = this->GetReferenceImageFromToolManager();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   assert(referenceImage);
 
-  mitk::Image* regionGrowingImage = this->GetWorkingImageFromToolManager(niftk::MIDASTool::REGION_GROWING);
+  mitk::Image* regionGrowingImage = this->GetWorkingImage(MIDASTool::REGION_GROWING);
   assert(regionGrowingImage);
 
   mitk::PointSet* seeds = this->GetSeeds();
   assert(seeds);
 
-  mitk::DataNode::Pointer seedsNode = this->GetWorkingData()[niftk::MIDASTool::SEEDS];
+  mitk::DataNode::Pointer seedsNode = this->GetWorkingData()[MIDASTool::SEEDS];
   assert(seedsNode);
 
   switch (operation->GetOperationType())
   {
-  case niftk::OP_CHANGE_SLICE:
+  case OP_CHANGE_SLICE:
     {
       // Simply to make sure we can switch slice, and undo/redo it.
-      niftk::OpChangeSliceCommand* op = dynamic_cast<niftk::OpChangeSliceCommand*>(operation);
+      OpChangeSliceCommand* op = dynamic_cast<OpChangeSliceCommand*>(operation);
       assert(op);
 
       mitk::Point3D beforePoint = op->GetBeforePoint();
       mitk::Point3D afterPoint = op->GetAfterPoint();
-      int beforeSlice = op->GetBeforeSlice();
-      int afterSlice = op->GetAfterSlice();
 
       mitk::Point3D selectedPoint;
 
@@ -2865,20 +2950,16 @@ void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operatio
         selectedPoint = beforePoint;
       }
 
-      // Only move if we are not already on this slice.
-      // Better to compare integers than floating point numbers.
-      if (beforeSlice != afterSlice)
-      {
-        m_IsChangingSlice = true;
-        this->GetView()->SetSelectedPosition(selectedPoint);
-        m_IsChangingSlice = false;
-      }
+      bool wasChangingSlice = d->m_IsChangingSlice;
+      d->m_IsChangingSlice = true;
+      this->GetView()->SetSelectedPosition(selectedPoint);
+      d->m_IsChangingSlice = wasChangingSlice;
 
       break;
     }
-  case niftk::OP_PROPAGATE_SEEDS:
+  case OP_PROPAGATE_SEEDS:
     {
-      niftk::OpPropagateSeeds* op = dynamic_cast<niftk::OpPropagateSeeds*>(operation);
+      OpPropagateSeeds* op = dynamic_cast<OpPropagateSeeds*>(operation);
       assert(op);
 
       mitk::PointSet* newSeeds = op->GetSeeds();
@@ -2891,17 +2972,16 @@ void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operatio
 
       break;
     }
-  case niftk::OP_RETAIN_MARKS:
+  case OP_RETAIN_MARKS:
     {
       try
       {
-        niftk::OpRetainMarks* op = static_cast<niftk::OpRetainMarks*>(operation);
+        OpRetainMarks* op = dynamic_cast<OpRetainMarks*>(operation);
         assert(op);
 
-        niftk::OpRetainMarks::ProcessorType::Pointer processor = op->GetProcessor();
-        bool redo = op->IsRedo();
-        int fromSlice = op->GetFromSlice();
-        int toSlice = op->GetToSlice();
+        OpRetainMarks::ProcessorType::Pointer processor = op->GetProcessor();
+        int fromSlice = op->GetFromSliceIndex();
+        int toSlice = op->GetToSliceIndex();
         itk::Orientation orientation = op->GetOrientation();
 
         typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> BinaryImage3DType;
@@ -2914,7 +2994,7 @@ void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operatio
         processor->SetDestinationImage(targetImageToItk->GetOutput());
         processor->SetSlices(orientation, fromSlice, toSlice);
 
-        if (redo)
+        if (op->IsRedo())
         {
           processor->Redo();
         }
@@ -2923,99 +3003,97 @@ void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operatio
           processor->Undo();
         }
 
-        targetImageToItk = NULL;
+        targetImageToItk = nullptr;
 
         mitk::Image::Pointer outputImage = mitk::ImportItkImage( processor->GetDestinationImage());
 
-        processor->SetSourceImage(NULL);
-        processor->SetDestinationImage(NULL);
+        processor->SetSourceImage(nullptr);
+        processor->SetDestinationImage(nullptr);
 
         segmentationNode->SetData(outputImage);
         segmentationNode->Modified();
       }
-      catch( itk::ExceptionObject &err )
+      catch(const itk::ExceptionObject& e)
       {
-        MITK_ERROR << "Could not do retain marks: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        MITK_ERROR << "Could not do retain marks: Caught itk::ExceptionObject:" << e.what() << std::endl;
         return;
       }
 
       break;
     }
-  case niftk::OP_THRESHOLD_APPLY:
+  case OP_THRESHOLD_APPLY:
     {
-      niftk::OpThresholdApply *op = dynamic_cast<niftk::OpThresholdApply*>(operation);
+      OpThresholdApply* op = dynamic_cast<OpThresholdApply*>(operation);
       assert(op);
 
       try
       {
-        AccessFixedDimensionByItk_n(referenceImage, niftk::ITKPropagateToSegmentationImage, 3,
-              (
-                segmentationImage,
-                regionGrowingImage,
-                op
+        AccessFixedDimensionByItk_n(referenceImage, ITKPropagateToSegmentationImage, 3,
+              (segmentationImage,
+               regionGrowingImage,
+               op
               )
             );
 
-        m_GeneralSegmentorGUI->SetThresholdingCheckBoxChecked(op->GetThresholdFlag());
-        m_GeneralSegmentorGUI->SetThresholdingWidgetsEnabled(op->GetThresholdFlag());
+        d->m_GUI->SetThresholdingCheckBoxChecked(op->GetThresholdFlag());
+        d->m_GUI->SetThresholdingWidgetsEnabled(op->GetThresholdFlag());
 
         segmentationImage->Modified();
         segmentationNode->Modified();
 
         regionGrowingImage->Modified();
-
       }
       catch(const mitk::AccessByItkException& e)
       {
         MITK_ERROR << "Could not do threshold: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         return;
       }
-      catch( itk::ExceptionObject &err )
+      catch(const itk::ExceptionObject& e)
       {
-        MITK_ERROR << "Could not do threshold: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        MITK_ERROR << "Could not do threshold: Caught itk::ExceptionObject:" << e.what() << std::endl;
         return;
       }
 
       break;
     }
-  case niftk::OP_CLEAN:
+  case OP_CLEAN:
     {
       try
       {
-        niftk::OpClean* op = dynamic_cast<niftk::OpClean*>(operation);
+        OpClean* op = dynamic_cast<OpClean*>(operation);
         assert(op);
 
         mitk::ContourModelSet* newContours = op->GetContourSet();
         assert(newContours);
 
-        mitk::ContourModelSet* contoursToReplace = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[niftk::MIDASTool::CONTOURS]->GetData());
+        mitk::ContourModelSet* contoursToReplace = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[MIDASTool::CONTOURS]->GetData());
         assert(contoursToReplace);
 
-        niftk::MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
+        MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
         contoursToReplace->Modified();
-        this->GetWorkingData()[niftk::MIDASTool::CONTOURS]->Modified();
+        this->GetWorkingData()[MIDASTool::CONTOURS]->Modified();
 
         segmentationImage->Modified();
         segmentationNode->Modified();
 
       }
-      catch( itk::ExceptionObject &err )
+      catch(const itk::ExceptionObject& e)
       {
-        MITK_ERROR << "Could not do clean: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        MITK_ERROR << "Could not do clean: Caught itk::ExceptionObject:" << e.what() << std::endl;
         return;
       }
 
       break;
     }
-  case niftk::OP_WIPE:
+  case OP_WIPE:
     {
-      niftk::OpWipe *op = dynamic_cast<niftk::OpWipe*>(operation);
+      OpWipe* op = dynamic_cast<OpWipe*>(operation);
       assert(op);
 
       try
       {
         AccessFixedTypeByItk_n(segmentationImage,
-            niftk::ITKDoWipe,
+            ITKDoWipe,
             (unsigned char),
             (3),
               (
@@ -3033,22 +3111,22 @@ void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operatio
         MITK_ERROR << "Could not do wipe: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         return;
       }
-      catch( itk::ExceptionObject &err )
+      catch(const itk::ExceptionObject& e)
       {
-        MITK_ERROR << "Could not do wipe: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        MITK_ERROR << "Could not do wipe: Caught itk::ExceptionObject:" << e.what() << std::endl;
         return;
       }
 
       break;
     }
-  case niftk::OP_PROPAGATE:
+  case OP_PROPAGATE:
     {
-      niftk::OpPropagate *op = dynamic_cast<niftk::OpPropagate*>(operation);
+      OpPropagate* op = dynamic_cast<OpPropagate*>(operation);
       assert(op);
 
       try
       {
-        AccessFixedDimensionByItk_n(referenceImage, niftk::ITKPropagateToSegmentationImage, 3,
+        AccessFixedDimensionByItk_n(referenceImage, ITKPropagateToSegmentationImage, 3,
               (
                 segmentationImage,
                 regionGrowingImage,
@@ -3064,9 +3142,9 @@ void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operatio
         MITK_ERROR << "Could not do propagation: Caught mitk::AccessByItkException:" << e.what() << std::endl;
         return;
       }
-      catch( itk::ExceptionObject &err )
+      catch(const itk::ExceptionObject& e)
       {
-        MITK_ERROR << "Could not do propagation: Caught itk::ExceptionObject:" << err.what() << std::endl;
+        MITK_ERROR << "Could not do propagation: Caught itk::ExceptionObject:" << e.what() << std::endl;
         return;
       }
       break;
@@ -3078,3 +3156,5 @@ void niftkGeneralSegmentorController::ExecuteOperation(mitk::Operation* operatio
 /******************************************************************
  * End of ExecuteOperation - main method in Undo/Redo framework.
  ******************************************************************/
+
+}

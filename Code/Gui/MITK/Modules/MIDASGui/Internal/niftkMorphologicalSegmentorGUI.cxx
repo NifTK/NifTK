@@ -16,10 +16,12 @@
 
 #include "niftkToolSelectorWidget.h"
 
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-niftkMorphologicalSegmentorGUI::niftkMorphologicalSegmentorGUI(QWidget* parent)
-  : niftkBaseSegmentorGUI(parent)
+MorphologicalSegmentorGUI::MorphologicalSegmentorGUI(QWidget* parent)
+  : BaseSegmentorGUI(parent)
 {
   QGridLayout* layout = new QGridLayout(parent);
   layout->setContentsMargins(6, 6, 6, 0);
@@ -133,13 +135,13 @@ niftkMorphologicalSegmentorGUI::niftkMorphologicalSegmentorGUI(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-niftkMorphologicalSegmentorGUI::~niftkMorphologicalSegmentorGUI()
+MorphologicalSegmentorGUI::~MorphologicalSegmentorGUI()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::SetEnabled(bool enabled)
+void MorphologicalSegmentorGUI::SetEnabled(bool enabled)
 {
   int tabIndex = enabled ? this->GetTabIndex() : -1;
 
@@ -157,7 +159,7 @@ void niftkMorphologicalSegmentorGUI::SetEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::EnableSegmentationWidgets(bool enabled)
+void MorphologicalSegmentorGUI::EnableSegmentationWidgets(bool enabled)
 {
   int tabIndex = this->GetTabIndex();
   if (enabled && (tabIndex == 1 || tabIndex == 2))
@@ -174,7 +176,7 @@ void niftkMorphologicalSegmentorGUI::EnableSegmentationWidgets(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection)
+void MorphologicalSegmentorGUI::SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection)
 {
   bool wasBlocked = this->blockSignals(true);
 
@@ -232,7 +234,7 @@ void niftkMorphologicalSegmentorGUI::SetControlsByReferenceImage(double lowestVa
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::SetControlsByPipelineParams(MorphologicalSegmentorPipelineParams& params)
+void MorphologicalSegmentorGUI::SetControlsByPipelineParams(MorphologicalSegmentorPipelineParams& params)
 {
   bool wasBlocked = this->blockSignals(true);
 
@@ -256,14 +258,14 @@ void niftkMorphologicalSegmentorGUI::SetControlsByPipelineParams(MorphologicalSe
 
 
 //-----------------------------------------------------------------------------
-int niftkMorphologicalSegmentorGUI::GetTabIndex() const
+int MorphologicalSegmentorGUI::GetTabIndex() const
 {
   return m_TabWidget->currentIndex();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::SetTabIndex(int tabIndex)
+void MorphologicalSegmentorGUI::SetTabIndex(int tabIndex)
 {
   bool wasBlocked = m_TabWidget->blockSignals(true);
   m_TabWidget->setCurrentIndex(tabIndex);
@@ -272,7 +274,7 @@ void niftkMorphologicalSegmentorGUI::SetTabIndex(int tabIndex)
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::EmitThresholdingValues()
+void MorphologicalSegmentorGUI::EmitThresholdingValues()
 {
   emit ThresholdingValuesChanged(
          m_ThresholdingLowerThresholdSlider->value(),
@@ -283,7 +285,7 @@ void niftkMorphologicalSegmentorGUI::EmitThresholdingValues()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::EmitErosionValues()
+void MorphologicalSegmentorGUI::EmitErosionValues()
 {
   emit ErosionsValuesChanged(
          m_ErosionsUpperThresholdSlider->value(),
@@ -293,7 +295,7 @@ void niftkMorphologicalSegmentorGUI::EmitErosionValues()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::EmitDilationValues()
+void MorphologicalSegmentorGUI::EmitDilationValues()
 {
   emit DilationsValuesChanged(
          m_DilationsLowerThresholdSlider->value(),
@@ -304,7 +306,7 @@ void niftkMorphologicalSegmentorGUI::EmitDilationValues()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::EmitRethresholdingValues()
+void MorphologicalSegmentorGUI::EmitRethresholdingValues()
 {
   emit RethresholdingValuesChanged(
          static_cast<int>(m_RethresholdingBoxSizeSlider->value())
@@ -313,7 +315,7 @@ void niftkMorphologicalSegmentorGUI::EmitRethresholdingValues()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::OnThresholdLowerValueChanged()
+void MorphologicalSegmentorGUI::OnThresholdLowerValueChanged()
 {
   double lowerValue = m_ThresholdingLowerThresholdSlider->value();
   double upperValue = m_ThresholdingUpperThresholdSlider->value();
@@ -328,7 +330,7 @@ void niftkMorphologicalSegmentorGUI::OnThresholdLowerValueChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::OnThresholdUpperValueChanged()
+void MorphologicalSegmentorGUI::OnThresholdUpperValueChanged()
 {
   double lowerValue = m_ThresholdingLowerThresholdSlider->value();
   double upperValue = m_ThresholdingUpperThresholdSlider->value();
@@ -343,14 +345,14 @@ void niftkMorphologicalSegmentorGUI::OnThresholdUpperValueChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::OnAxialCutOffSliderChanged()
+void MorphologicalSegmentorGUI::OnAxialCutOffSliderChanged()
 {
   this->EmitThresholdingValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::OnBackButtonClicked()
+void MorphologicalSegmentorGUI::OnBackButtonClicked()
 {
   int tabIndex = this->GetTabIndex();
 
@@ -364,7 +366,7 @@ void niftkMorphologicalSegmentorGUI::OnBackButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::OnNextButtonClicked()
+void MorphologicalSegmentorGUI::OnNextButtonClicked()
 {
   int tabIndex = this->GetTabIndex();
 
@@ -396,21 +398,21 @@ void niftkMorphologicalSegmentorGUI::OnNextButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::OnErosionsIterationsChanged()
+void MorphologicalSegmentorGUI::OnErosionsIterationsChanged()
 {
   this->EmitErosionValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::OnErosionsUpperThresholdChanged()
+void MorphologicalSegmentorGUI::OnErosionsUpperThresholdChanged()
 {
   this->EmitErosionValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::OnDilationsLowerThresholdChanged()
+void MorphologicalSegmentorGUI::OnDilationsLowerThresholdChanged()
 {
   double lowerValue = m_DilationsLowerThresholdSlider->value();
   double upperValue = m_DilationsUpperThresholdSlider->value();
@@ -425,7 +427,7 @@ void niftkMorphologicalSegmentorGUI::OnDilationsLowerThresholdChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::OnDilationsUpperThresholdChanged()
+void MorphologicalSegmentorGUI::OnDilationsUpperThresholdChanged()
 {
   double lowerValue = m_DilationsLowerThresholdSlider->value();
   double upperValue = m_DilationsUpperThresholdSlider->value();
@@ -440,24 +442,26 @@ void niftkMorphologicalSegmentorGUI::OnDilationsUpperThresholdChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::OnDilationsIterationsChanged()
+void MorphologicalSegmentorGUI::OnDilationsIterationsChanged()
 {
   this->EmitDilationValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::OnRethresholdingSliderChanged()
+void MorphologicalSegmentorGUI::OnRethresholdingSliderChanged()
 {
   this->EmitRethresholdingValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorGUI::OnRestartButtonClicked()
+void MorphologicalSegmentorGUI::OnRestartButtonClicked()
 {
   m_TabWidget->setCurrentIndex(0);
   this->SetEnabled(true);
 
   emit RestartButtonClicked();
+}
+
 }

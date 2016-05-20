@@ -18,20 +18,23 @@
 #include <mitkInteractionEvent.h>
 #include <mitkBaseRenderer.h>
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-niftk::MIDASRendererFilter::MIDASRendererFilter()
+MIDASRendererFilter::MIDASRendererFilter()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::MIDASRendererFilter::~MIDASRendererFilter()
+MIDASRendererFilter::~MIDASRendererFilter()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftk::MIDASRendererFilter::EventFilter(const mitk::StateEvent* stateEvent) const
+bool MIDASRendererFilter::EventFilter(const mitk::StateEvent* stateEvent) const
 {
   mitk::BaseRenderer* renderer = stateEvent->GetEvent()->GetSender();
   std::vector<mitk::BaseRenderer*>::const_iterator it =
@@ -41,7 +44,7 @@ bool niftk::MIDASRendererFilter::EventFilter(const mitk::StateEvent* stateEvent)
 
 
 //-----------------------------------------------------------------------------
-bool niftk::MIDASRendererFilter::EventFilter(mitk::InteractionEvent* event) const
+bool MIDASRendererFilter::EventFilter(mitk::InteractionEvent* event) const
 {
   mitk::BaseRenderer* renderer = event->GetSender();
   std::vector<mitk::BaseRenderer*>::const_iterator it =
@@ -51,7 +54,7 @@ bool niftk::MIDASRendererFilter::EventFilter(mitk::InteractionEvent* event) cons
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASRendererFilter::AddRenderer(mitk::BaseRenderer* renderer)
+void MIDASRendererFilter::AddRenderer(mitk::BaseRenderer* renderer)
 {
   std::vector<mitk::BaseRenderer*>::iterator it =
       std::find(m_Renderers.begin(), m_Renderers.end(), renderer);
@@ -64,7 +67,7 @@ void niftk::MIDASRendererFilter::AddRenderer(mitk::BaseRenderer* renderer)
 
 
 //-----------------------------------------------------------------------------
-void niftk::MIDASRendererFilter::RemoveRenderer(mitk::BaseRenderer* renderer)
+void MIDASRendererFilter::RemoveRenderer(mitk::BaseRenderer* renderer)
 {
   std::vector<mitk::BaseRenderer*>::iterator it =
       std::find(m_Renderers.begin(), m_Renderers.end(), renderer);
@@ -73,4 +76,6 @@ void niftk::MIDASRendererFilter::RemoveRenderer(mitk::BaseRenderer* renderer)
   {
     m_Renderers.erase(it);
   }
+}
+
 }

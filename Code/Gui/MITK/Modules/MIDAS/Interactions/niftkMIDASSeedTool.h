@@ -27,8 +27,8 @@ namespace niftk
  * \class MIDASSeedTool
  * \brief MIDAS seed tool for adding / removing / moving seeds.
  *
- * Interestingly, ANY of niftk::MIDASPolyTool, niftk::MIDASDrawTool or niftk::MIDASSeedTool can add seeds.
- * but only niftk::MIDASSeedTool can remove them.
+ * Interestingly, ANY of MIDASPolyTool, MIDASDrawTool or MIDASSeedTool can add seeds.
+ * but only MIDASSeedTool can remove them.
  *
  * Provides
  * <pre>
@@ -78,8 +78,8 @@ protected:
 
 private:
 
-  niftk::MIDASPointSetInteractor::Pointer m_PointSetInteractor;
-//  niftk::MIDASPointSetDataInteractor::Pointer m_PointSetInteractor;
+  MIDASPointSetInteractor::Pointer m_PointSetInteractor;
+//  MIDASPointSetDataInteractor::Pointer m_PointSetInteractor;
 
 };
 

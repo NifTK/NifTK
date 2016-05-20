@@ -12,9 +12,12 @@
 
 =============================================================================*/
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>* niftk::GeneralSegmentorPipelineCache::GetPipeline()
+GeneralSegmentorPipeline<TPixel, VImageDimension>* GeneralSegmentorPipelineCache::GetPipeline()
 {
   std::stringstream key;
   key << typeid(TPixel).name() << VImageDimension;
@@ -27,13 +30,13 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>* niftk::GeneralSegmento
 
   if (it == m_TypeToPipelineMap.end())
   {
-    pipeline = new niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>();
+    pipeline = new GeneralSegmentorPipeline<TPixel, VImageDimension>();
     myPipeline = pipeline;
     m_TypeToPipelineMap.insert(StringAndPipelineInterfacePair(key.str(), pipeline));
   }
   else
   {
-    pipeline = static_cast<niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>*>(it->second);
+    pipeline = static_cast<GeneralSegmentorPipeline<TPixel, VImageDimension>*>(it->second);
   }
 
   return pipeline;
@@ -42,7 +45,7 @@ niftk::GeneralSegmentorPipeline<TPixel, VImageDimension>* niftk::GeneralSegmento
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void niftk::GeneralSegmentorPipelineCache::DestroyPipeline()
+void GeneralSegmentorPipelineCache::DestroyPipeline()
 {
   std::stringstream key;
   key << typeid(TPixel).name() << VImageDimension;
@@ -53,4 +56,6 @@ void niftk::GeneralSegmentorPipelineCache::DestroyPipeline()
   delete it->second;
 
   m_TypeToPipelineMap.erase(it);
+}
+
 }

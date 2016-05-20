@@ -17,8 +17,11 @@
 #include <QPushButton>
 #include <QString>
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-niftkNewSegmentationDialog::niftkNewSegmentationDialog(const QColor& defaultColor, QWidget* parent)
+NewSegmentationDialog::NewSegmentationDialog(const QColor& defaultColor, QWidget* parent)
 : QmitkNewSegmentationDialog(parent)
 {
   QString styleSheet = "background-color: rgb(";
@@ -38,6 +41,8 @@ niftkNewSegmentationDialog::niftkNewSegmentationDialog(const QColor& defaultColo
 
 
 //-----------------------------------------------------------------------------
-niftkNewSegmentationDialog::~niftkNewSegmentationDialog()
+NewSegmentationDialog::~NewSegmentationDialog()
 {
+}
+
 }

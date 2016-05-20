@@ -37,10 +37,10 @@ class OpWipe;
 ///
 /// Called for generating the "See Prior", "See Next" and also the outline contour of the current segmentation.
 void NIFTKMIDAS_EXPORT GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
-    int axisNumber,
-    int sliceNumber,
+    int sliceAxis,
+    int sliceIndex,
     int projectedSliceNumber,
-    mitk::ContourModelSet::Pointer outputContourSet
+    mitk::ContourModelSet* outputContourSet
     );
 
 
@@ -48,7 +48,7 @@ void NIFTKMIDAS_EXPORT GenerateOutlineFromBinaryImage(mitk::Image::Pointer image
 template<typename TPixel, unsigned int VImageDimension>
 void ITKFillRegion(
     itk::Image<TPixel, VImageDimension>* itkImage,
-    typename itk::Image<TPixel, VImageDimension>::RegionType &region,
+    const typename itk::Image<TPixel, VImageDimension>::RegionType& region,
     TPixel fillValue
     );
 
@@ -63,7 +63,7 @@ void ITKClearImage(
 /// \brief Copies an image from input to output, assuming input and output already allocated and of the same size.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKCopyImage(
-    itk::Image<TPixel, VImageDimension>* input,
+    const itk::Image<TPixel, VImageDimension>* input,
     itk::Image<TPixel, VImageDimension>* output
     );
 
@@ -71,27 +71,27 @@ void ITKCopyImage(
 /// \brief Copies the region from input to output, assuming both images are the same size, and contain the region.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKCopyRegion(
-    itk::Image<TPixel, VImageDimension>* input,
-    int axis,
-    int slice,
+    const itk::Image<TPixel, VImageDimension>* input,
+    int sliceAxis,
+    int sliceIndex,
     itk::Image<TPixel, VImageDimension>* output
     );
 
 /// \brief Calculates the region corresponding to a single slice.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKCalculateSliceRegion(
-    itk::Image<TPixel, VImageDimension>* itkImage,
-    int axis,
-    int slice,
-    typename itk::Image<TPixel, VImageDimension>::RegionType &outputRegion
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    int sliceAxis,
+    int sliceIndex,
+    typename itk::Image<TPixel, VImageDimension>::RegionType& outputRegion
     );
 
 /// \brief Calculates the region corresponding to a single slice.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKCalculateSliceRegionAsVector(
-    itk::Image<TPixel, VImageDimension>* itkImage,
-    int axis,
-    int slice,
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    int sliceAxis,
+    int sliceIndex,
     std::vector<int>& outputRegion
     );
 
@@ -99,19 +99,19 @@ void ITKCalculateSliceRegionAsVector(
 /// \brief Clears a slice by setting all voxels to zero for a given slice and axis.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKClearSlice(itk::Image<TPixel, VImageDimension>* itkImage,
-    int axis,
-    int slice
+    int sliceAxis,
+    int sliceIndex
     );
 
 /// \brief Takes the inputSeeds and filters them so that outputSeeds
 /// contains just those seeds contained within the current slice.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKFilterSeedsToCurrentSlice(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet &inputSeeds,
-    int axis,
-    int slice,
-    mitk::PointSet &outputSeeds
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* inputSeeds,
+    int sliceAxis,
+    int sliceIndex,
+    mitk::PointSet* outputSeeds
     );
 
 /// \brief Called from RecalculateMinAndMaxOfSeedValues(), the actual method
@@ -119,12 +119,12 @@ void ITKFilterSeedsToCurrentSlice(
 /// locations given by the seeds.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKRecalculateMinAndMaxOfSeedValues(
-    itk::Image<TPixel, VImageDimension>* itkImage,
-    mitk::PointSet &inputSeeds,
-    int axis,
-    int slice,
-    double &min,
-    double &max
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* inputSeeds,
+    int sliceAxis,
+    int sliceIndex,
+    double& min,
+    double& max
     );
 
 /// \brief Takes the inputSeeds and copies them to outputCopyOfInputSeeds,
@@ -132,67 +132,68 @@ void ITKRecalculateMinAndMaxOfSeedValues(
 /// is not within the region of interest.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKFilterInputPointSetToExcludeRegionOfInterest(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    typename itk::Image<TPixel, VImageDimension>::RegionType regionOfInterest,
-    mitk::PointSet &inputSeeds,
-    mitk::PointSet &outputCopyOfInputSeeds,
-    mitk::PointSet &outputNewSeedsNotInRegionOfInterest
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const typename itk::Image<TPixel, VImageDimension>::RegionType& regionOfInterest,
+    const mitk::PointSet* inputSeeds,
+    mitk::PointSet* outputCopyOfInputSeeds,
+    mitk::PointSet* outputNewSeedsNotInRegionOfInterest
     );
 
 /// \brief Will return true if the given slice has seeds within that slice.
 template<typename TPixel, unsigned int VImageDimension>
 bool ITKSliceDoesHaveSeeds(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet* seeds,
-    int axis,
-    int slice
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* seeds,
+    int sliceAxis,
+    int sliceIndex
     );
 
 /// \brief Creates a region of interest within itkImage corresponding to the
 /// given slice, and checks if it is empty returning true if it is all zero.
 template<typename TPixel, unsigned int VImageDimension>
 bool ITKSliceIsEmpty(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    int axis,
-    int slice,
-    bool &outputSliceIsEmpty
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    int sliceAxis,
+    int sliceIndex,
+    bool& outputSliceIsEmpty
     );
 
 /// \brief Called from UpdateRegionGrowing(), updates the interactive ITK
 /// single 2D slice region growing pipeline.
+/// Note: segmentationContours, drawContours and polyContours could be
+/// const pointers, but some const functions are missing from mitk::ContourModelSet.
+/// They are not modified from within this function (including transitive calls).
 template<typename TPixel, unsigned int VImageDimension>
 void ITKUpdateRegionGrowing(
-    itk::Image<TPixel, VImageDimension> *itkImage,
+    const itk::Image<TPixel, VImageDimension>* itkImage,
     bool skipUpdate,
-    mitk::Image &workingImage,
-    mitk::PointSet &seeds,
-    mitk::ContourModelSet &segmentationContours,
-    mitk::ContourModelSet &drawContours,
-    mitk::ContourModelSet &polyContours,
-    int sliceNumber,
-    int axis,
+    const mitk::Image* workingImage,
+    const mitk::PointSet* seeds,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* drawContours,
+    mitk::ContourModelSet* polyContours,
+    int sliceAxis,
+    int sliceIndex,
     double lowerThreshold,
     double upperThreshold,
-    mitk::DataNode::Pointer &outputRegionGrowingNode,
-    mitk::Image::Pointer &outputRegionGrowingImage
+    mitk::Image* outputRegionGrowingImage
     );
 
 /// \brief Method takes all the input, and calculates the 3D propagated
 /// region (up or down or 3D), and stores it in the region growing node.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKPropagateToRegionGrowingImage(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet &inputSeeds,
-    int sliceNumber,
-    int axis,
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* inputSeeds,
+    int sliceAxis,
+    int sliceIndex,
     int direction,
     double lowerThreshold,
     double upperThreshold,
-    mitk::PointSet &outputCopyOfInputSeeds,
-    mitk::PointSet &outputNewSeeds,
-    std::vector<int> &outputRegion,
-    mitk::DataNode::Pointer &outputRegionGrowingNode,
-    mitk::Image::Pointer &outputRegionGrowingImage
+    mitk::PointSet* outputCopyOfInputSeeds,
+    mitk::PointSet* outputNewSeeds,
+    std::vector<int>& outputRegion,
+    mitk::Image* outputRegionGrowingImage
     );
 
 /// \brief Called from ITKPropagateToRegionGrowingImage to propagate up or down.
@@ -202,35 +203,34 @@ void ITKPropagateToRegionGrowingImage(
 /// and then perform 5D region growing in the correct direction.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKPropagateUpOrDown(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet &seeds,
-    int sliceNumber,
-    int axis,
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* seeds,
+    int sliceAxis,
+    int sliceIndex,
     int direction,
     double lowerThreshold,
     double upperThreshold,
-    mitk::DataNode::Pointer &outputRegionGrowingNode,
-    mitk::Image::Pointer &outputRegionGrowingImage
+    mitk::Image* outputRegionGrowingImage
     );
 
 /// \brief Called from the ExecuteOperate (i.e. undo/redo framework) to
 /// actually apply the calculated propagated region to the current segmentation.
 template <typename TGreyScalePixel, unsigned int VImageDimension>
 void ITKPropagateToSegmentationImage(
-    itk::Image<TGreyScalePixel, VImageDimension>* referenceGreyScaleImage,
+    const itk::Image<TGreyScalePixel, VImageDimension>* itkImage,
     mitk::Image* segmentedImage,
     mitk::Image* regionGrowingImage,
-    niftk::OpPropagate *op);
+    OpPropagate* op);
 
 /// \brief Called to extract a contour set from a binary image, as might be used
 /// for "See Prior", "See Next", or the outlining a binary segmentation.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKGenerateOutlineFromBinaryImage(
-    itk::Image<TPixel, VImageDimension>* itkImage,
-    int axisNumber,
-    int sliceNumber,
-    int projectedSliceNumber,
-    mitk::ContourModelSet::Pointer contourSet
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    int sliceAxis,
+    int sliceIndex,
+    int projectedSliceIndex,
+    mitk::ContourModelSet* contourSet
     );
 
 /// \brief Works out the largest minimum distance to the edge of the image data, filtered on a given foregroundPixelValue.
@@ -239,21 +239,20 @@ void ITKGenerateOutlineFromBinaryImage(
 /// distance to the edge. Returns the largest minimum distance over the whole of the foreground region.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKGetLargestMinimumDistanceSeedLocation(
-  itk::Image<TPixel, VImageDimension>* itkImage,
-  TPixel& foregroundPixelValue,
-  typename itk::Image<TPixel, VImageDimension>::IndexType &outputSeedIndex,
-  int &outputDistance
+  const itk::Image<TPixel, VImageDimension>* itkImage,
+  TPixel foregroundPixelValue,
+  typename itk::Image<TPixel, VImageDimension>::IndexType& outputSeedIndex,
+  int& outputDistance
   );
 
 /// \brief For the given input itkImage (assumed to always be binary), and regionOfInterest,
 /// will iterate on a slice by slice basis, recalculating new seeds.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKAddNewSeedsToPointSet(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    typename itk::Image<TPixel, VImageDimension>::RegionType regionOfInterest,
-    int sliceNumber,
-    int axisNumber,
-    mitk::PointSet &outputNewSeeds
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const typename itk::Image<TPixel, VImageDimension>::RegionType& regionOfInterest,
+    int sliceAxis,
+    mitk::PointSet* outputNewSeeds
     );
 
 /// \brief Does any pre-processing of seeds necessary to facilitate Undo/Redo
@@ -264,35 +263,36 @@ void ITKAddNewSeedsToPointSet(
 /// and if we are doing threshold apply, we re-calculate seeds for the current slice based
 /// on the connected component analysis described in the class header at the top of this file.
 ///
-/// Notice how this is similar to the PreProcessing required for Propagate, seen in
+/// Notice how this is similar to the preprocessing required for Propagate, seen in
 /// PropagateToRegionGrowingImageUsingITK. Also note that itkImage input should be the
-/// binary region growing node.
+/// binary region growing image.
 template<typename TPixel, unsigned int VImageDimension>
-void ITKPreProcessingOfSeedsForChangingSlice(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet &inputSeeds,
-    int sliceNumber,
-    int axis,
-    int newSliceNumber,
+void ITKPreprocessingOfSeedsForChangingSlice(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* inputSeeds,
+    int oldSliceAxis,
+    int oldSliceIndex,
+    int newSliceAxis,
+    int newSliceIndex,
     bool optimiseSeedPosition,
     bool newSliceIsEmpty,
-    mitk::PointSet &outputCopyOfInputSeeds,
-    mitk::PointSet &outputNewSeeds,
-    std::vector<int> &outputRegion
+    mitk::PointSet* outputCopyOfInputSeeds,
+    mitk::PointSet* outputNewSeeds,
+    std::vector<int>& outputRegion
     );
 
 /// \brief Does any pre-processing necessary to facilitate Undo/Redo for Wipe commands,
 /// which in this case means computing a new list of seeds, and the region of interest to be wiped.
 template<typename TPixel, unsigned int VImageDimension>
-void ITKPreProcessingForWipe(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet &inputSeeds,
-    int sliceNumber,
-    int axis,
+void ITKPreprocessingForWipe(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* inputSeeds,
+    int sliceAxis,
+    int sliceIndex,
     int direction,
-    mitk::PointSet &outputCopyOfInputSeeds,
-    mitk::PointSet &outputNewSeeds,
-    std::vector<int> &outputRegion
+    mitk::PointSet* outputCopyOfInputSeeds,
+    mitk::PointSet* outputNewSeeds,
+    std::vector<int>& outputRegion
     );
 
 /// \brief Does the wipe command for Wipe, Wipe+, Wipe-.
@@ -303,15 +303,15 @@ void ITKPreProcessingForWipe(
 /// The seed processing is done elsewhere. \see DoWipe.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKDoWipe(
-    itk::Image<TPixel, VImageDimension> *itkImage,
+    itk::Image<TPixel, VImageDimension>* itkImage,
     mitk::PointSet* currentSeeds,
-    niftk::OpWipe *op
+    OpWipe* op
     );
 
 /// \brief Returns true if the image has non-zero edge pixels, and false otherwise.
 template<typename TPixel, unsigned int VImageDimension>
 bool ITKImageHasNonZeroEdgePixels(
-    itk::Image<TPixel, VImageDimension> *itkImage
+    const itk::Image<TPixel, VImageDimension>* itkImage
     );
 
 /// \brief Will return true if slice has unenclosed seeds, and false otherwise.
@@ -325,19 +325,19 @@ bool ITKImageHasNonZeroEdgePixels(
 /// and if false will use the min and maximum limit of the pixel data type
 /// of the itkImage.
 template<typename TPixel, unsigned int VImageDimension>
-void ITKSliceDoesHaveUnEnclosedSeeds(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet &seeds,
-    mitk::ContourModelSet &segmentationContours,
-    mitk::ContourModelSet &polyToolContours,
-    mitk::ContourModelSet &drawToolContours,
-    mitk::Image &workingImage,
+void ITKSliceDoesHaveUnenclosedSeeds(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* seeds,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* polyToolContours,
+    mitk::ContourModelSet* drawToolContours,
+    const mitk::Image* workingImage,
     double lowerThreshold,
     double upperThreshold,
     bool useThresholds,
-    int axis,
-    int slice,
-    bool &sliceDoesHaveUnenclosedSeeds
+    int sliceAxis,
+    int sliceIndex,
+    bool& sliceDoesHaveUnenclosedSeeds
     );
 
 /// \brief Extracts a new contour set, for doing "Clean" operation.
@@ -353,19 +353,19 @@ void ITKSliceDoesHaveUnEnclosedSeeds(
 /// of the itkImage.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKFilterContours(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::Image &workingImage,
-    mitk::PointSet &seeds,
-    mitk::ContourModelSet &segmentationContours,
-    mitk::ContourModelSet &drawContours,
-    mitk::ContourModelSet &polyContours,
-    int axis,
-    int slice,
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::Image* workingImage,
+    const mitk::PointSet* seeds,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* drawContours,
+    mitk::ContourModelSet* polyContours,
+    int sliceAxis,
+    int sliceIndex,
     double lowerThreshold,
     double upperThreshold,
     bool isThresholding,
-    mitk::ContourModelSet &outputCopyOfInputContours,
-    mitk::ContourModelSet &outputContours
+    mitk::ContourModelSet* outputCopyOfInputContours,
+    mitk::ContourModelSet* outputContours
 );
 
 /// \brief Given an image, and a set of seeds, will append new seeds in the new slice if necessary.
@@ -375,12 +375,12 @@ void ITKFilterContours(
 /// simply switch slices, and the new region propagates forwards.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKPropagateSeedsToNewSlice(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet* currentSeeds,
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* currentSeeds,
     mitk::PointSet* newSeeds,
-    int axis,
-    int oldSliceNumber,
-    int newSliceNumber
+    int sliceAxis,
+    int oldSliceIndex,
+    int newSliceIndex
     );
 
 /// \brief Completely removes the current 2D region growing pipeline that is stored in the map m_TypeToPipelineMap.
@@ -388,22 +388,22 @@ void ITKPropagateSeedsToNewSlice(
 /// a dummy parameter, as it is called via the MITK ImageAccess macros.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKDestroyPipeline(
-    itk::Image<TPixel, VImageDimension>* itkImage
+    const itk::Image<TPixel, VImageDimension>* itkImage
     );
 
 
-/// \brief Creates seeds for each distinct 4-connected region on each slice for a given axis.
+/// \brief Creates seeds for each distinct 4-connected region for a given slice.
 ///
-/// This is called when the user starts a segmentation from an existing one. When you click
-/// "re-start segmentation", the current view will have an orientation (axial, coronal, sagittal)
-/// and hence a known through-slice axis. So this methods retrieves the largest possible
-/// region, and calls ITKAddNewSeedsToPointSet to iterate through each slice, and create new seeds.
-/// \param axis through slice axis, which should be [0|1|2].
+/// This methods creates a region for the given slice and calls ITKAddNewSeedsToPointSet
+/// to create new seeds.
+/// \param sliceAxis through slice axis, which should be [0|1|2].
+/// \param sliceIndex the index of the slice along the given axis.
 template<typename TPixel, unsigned int VImageDimension>
-void ITKInitialiseSeedsForVolume(
-    itk::Image<TPixel, VImageDimension> *itkImage,
-    mitk::PointSet& seeds,
-    int axis
+void ITKInitialiseSeedsForSlice(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    mitk::PointSet* seeds,
+    int sliceAxis,
+    int sliceIndex
     );
 
 }

@@ -12,27 +12,25 @@
 
 =============================================================================*/
 
-#include "niftkCommonMIDASActivator.h"
-#include <QtPlugin>
+#include "niftkBaseGUI.h"
 
-namespace niftk
-{
+#include <QWidget>
 
 //-----------------------------------------------------------------------------
-void CommonMIDASActivator::start(ctkPluginContext* context)
+niftk::BaseGUI::BaseGUI(QWidget* parent)
+  : QObject(parent)
 {
-  Q_UNUSED(context)
 }
 
 
 //-----------------------------------------------------------------------------
-void CommonMIDASActivator::stop(ctkPluginContext* context)
+niftk::BaseGUI::~BaseGUI()
 {
-  Q_UNUSED(context)
 }
 
-}
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_commonmidas, niftk::CommonMIDASActivator)
-#endif
+//-----------------------------------------------------------------------------
+QWidget* niftk::BaseGUI::GetParent() const
+{
+  return dynamic_cast<QWidget*>(this->parent());
+}

@@ -14,42 +14,26 @@
 
 #include "niftkMorphologicalSegmentorView.h"
 
-#include <QMessageBox>
-
-#include <berryIWorkbenchPage.h>
-
-#include <mitkColorProperty.h>
-#include <mitkDataStorageUtils.h>
-#include <mitkImage.h>
-#include <mitkImageAccessByItk.h>
-#include <mitkImageCast.h>
-#include <mitkITKImageImport.h>
-
-#include <niftkMIDASImageUtils.h>
-#include <niftkMIDASOrientationUtils.h>
-
-#include <itkConversionUtils.h>
-#include <mitkITKRegionParametersDataNodeProperty.h>
-#include <niftkMIDASTool.h>
-#include <niftkMIDASPaintbrushTool.h>
-
-#include <niftkMIDASOrientationUtils.h>
+#include "niftkMorphologicalSegmentorPreferencePage.h"
 
 #include <niftkMorphologicalSegmentorController.h>
 
+namespace niftk
+{
 
-const std::string niftkMorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
+const std::string MorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
+
 
 //-----------------------------------------------------------------------------
-niftkMorphologicalSegmentorView::niftkMorphologicalSegmentorView()
-: niftkBaseSegmentorView()
+MorphologicalSegmentorView::MorphologicalSegmentorView()
+: BaseSegmentorView()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftkMorphologicalSegmentorView::niftkMorphologicalSegmentorView(
-    const niftkMorphologicalSegmentorView& other)
+MorphologicalSegmentorView::MorphologicalSegmentorView(
+    const MorphologicalSegmentorView& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -57,50 +41,35 @@ niftkMorphologicalSegmentorView::niftkMorphologicalSegmentorView(
 
 
 //-----------------------------------------------------------------------------
-niftkMorphologicalSegmentorView::~niftkMorphologicalSegmentorView()
+MorphologicalSegmentorView::~MorphologicalSegmentorView()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-std::string niftkMorphologicalSegmentorView::GetViewID() const
+std::string MorphologicalSegmentorView::GetViewID() const
 {
   return VIEW_ID;
 }
 
 
 //-----------------------------------------------------------------------------
-niftkBaseSegmentorController* niftkMorphologicalSegmentorView::CreateSegmentorController()
+BaseSegmentorController* MorphologicalSegmentorView::CreateSegmentorController()
 {
-  m_MorphologicalSegmentorController = new niftkMorphologicalSegmentorController(this);
-  return m_MorphologicalSegmentorController;
+  return new MorphologicalSegmentorController(this);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorView::SetFocus()
+void MorphologicalSegmentorView::SetFocus()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorView::NodeRemoved(const mitk::DataNode* removedNode)
+QString MorphologicalSegmentorView::GetPreferencesNodeName()
 {
-  assert(m_MorphologicalSegmentorController);
-  m_MorphologicalSegmentorController->OnNodeRemoved(removedNode);
+  return MorphologicalSegmentorPreferencePage::PREFERENCES_NODE_NAME;
 }
 
-
-//-----------------------------------------------------------------------------
-QString niftkMorphologicalSegmentorView::GetPreferencesNodeName()
-{
-  return niftkMorphologicalSegmentorPreferencePage::PREFERENCES_NODE_NAME;
-}
-
-
-//-----------------------------------------------------------------------------
-void niftkMorphologicalSegmentorView::onVisibilityChanged(const mitk::DataNode* node)
-{
-  assert(m_MorphologicalSegmentorController);
-  m_MorphologicalSegmentorController->OnNodeVisibilityChanged(node);
 }

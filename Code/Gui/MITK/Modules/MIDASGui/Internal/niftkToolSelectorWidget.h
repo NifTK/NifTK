@@ -18,16 +18,17 @@
 #include <QWidget>
 #include "ui_niftkToolSelectorWidget.h"
 
-/**
- * \class niftkToolSelectorWidget
- * \brief Implements a widget containing the QmitkToolGUIArea and QmitkToolSelectionBox.
- *
- * This widget provides SetEnabled() and GetEnabled(), which simplify the idea
- * of enabling/disabling the toolbox.
- *
- * \ingroup uk_ac_ucl_cmic_gui_qt_common
- */
-class niftkToolSelectorWidget : public QWidget, private Ui::niftkToolSelectorWidget {
+namespace niftk
+{
+
+/// \class ToolSelectorWidget
+/// \brief Implements a widget containing the QmitkToolGUIArea and QmitkToolSelectionBox.
+///
+/// This widget provides SetEnabled() and GetEnabled(), which simplify the idea
+/// of enabling/disabling the toolbox.
+///
+/// \ingroup uk_ac_ucl_cmic_gui_qt_common
+class ToolSelectorWidget : public QWidget, private Ui::niftkToolSelectorWidget {
 
   Q_OBJECT
 
@@ -36,12 +37,12 @@ public:
   /**
    * \brief Constructor.
    */
-  niftkToolSelectorWidget(QWidget *parent = 0);
+  ToolSelectorWidget(QWidget *parent = 0);
 
   /**
    * \brief Destructor.
    */
-  ~niftkToolSelectorWidget();
+  ~ToolSelectorWidget();
 
   /**
    * \brief Set the widget to be enabled / disabled.
@@ -76,10 +77,12 @@ protected:
 
 private:
 
-  niftkToolSelectorWidget(const niftkToolSelectorWidget&);  // Purposefully not implemented.
-  void operator=(const niftkToolSelectorWidget&);  // Purposefully not implemented.
+  ToolSelectorWidget(const ToolSelectorWidget&);  // Purposefully not implemented.
+  void operator=(const ToolSelectorWidget&);  // Purposefully not implemented.
 
 };
+
+}
 
 #endif
 

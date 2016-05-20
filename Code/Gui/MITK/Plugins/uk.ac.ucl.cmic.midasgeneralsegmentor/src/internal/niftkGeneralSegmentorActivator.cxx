@@ -25,10 +25,10 @@ namespace niftk
 //-----------------------------------------------------------------------------
 void GeneralSegmentorActivator::start(ctkPluginContext* context)
 {
-  BERRY_REGISTER_EXTENSION_CLASS(niftkGeneralSegmentorView, context);
-  BERRY_REGISTER_EXTENSION_CLASS(niftkGeneralSegmentorPreferencePage, context);
+  BERRY_REGISTER_EXTENSION_CLASS(GeneralSegmentorView, context);
+  BERRY_REGISTER_EXTENSION_CLASS(GeneralSegmentorPreferencePage, context);
 
-  niftk::MIDASTool::LoadBehaviourStrings();
+  MIDASTool::LoadBehaviourStrings();
 }
 
 //-----------------------------------------------------------------------------

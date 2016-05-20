@@ -235,22 +235,7 @@ void QmitkBaseView::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkBaseView::GetFocusedRenderer() const
-{
-  Q_D(const QmitkBaseView);
-  return d->m_Focused2DRenderer;
-}
-
-
-//-----------------------------------------------------------------------------
 mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationController()
-{
-  return this->GetSliceNavigationControllerInternal();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationControllerInternal()
 {
   mitk::SliceNavigationController::Pointer result = NULL;
 
@@ -272,20 +257,6 @@ mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationControllerInte
     }
   }
   return result;
-}
-
-
-//-----------------------------------------------------------------------------
-int QmitkBaseView::GetSliceNumberFromSliceNavigationController()
-{
-  int sliceNumber = -1;
-
-  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController();
-  if (snc.IsNotNull())
-  {
-    sliceNumber = snc->GetSlice()->GetPos();
-  }
-  return sliceNumber;
 }
 
 
@@ -355,20 +326,6 @@ QList<mitk::DataNode::Pointer> QmitkBaseView::GetDataManagerSelection() const
 void QmitkBaseView::FireNodeSelected(mitk::DataNode::Pointer node)
 {
   SuperClass::FireNodeSelected(node);
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkBaseView::WaitCursorOn()
-{
-  SuperClass::WaitCursorOn();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkBaseView::WaitCursorOff()
-{
-  SuperClass::WaitCursorOff();
 }
 
 
@@ -516,7 +473,7 @@ QmitkRenderWindow* QmitkBaseView::GetRenderWindow(QString id)
 //-----------------------------------------------------------------------------
 QmitkRenderWindow* QmitkBaseView::GetSelectedRenderWindow() const
 {
-  QmitkRenderWindow* renderWindow = renderWindow;
+  QmitkRenderWindow* renderWindow = nullptr;
 
   if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
   {
