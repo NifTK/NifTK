@@ -123,17 +123,17 @@ mitk::PointSet::Pointer OpPropagateSeeds::GetSeeds() const
 OpRetainMarks::OpRetainMarks(
     mitk::OperationType type,
     bool redo,
-    int fromSlice,
-    int toSlice,
     int sliceAxis,
+    int fromSliceIndex,
+    int toSliceIndex,
     itk::Orientation orientation,
     const std::vector<int>& region,
     ProcessorPointer processor
     )
 : OpGeneralSegmentorBaseCommand(type, redo),
-  m_FromSlice(fromSlice),
-  m_ToSlice(toSlice),
   m_SliceAxis(sliceAxis),
+  m_FromSliceIndex(fromSliceIndex),
+  m_ToSliceIndex(toSliceIndex),
   m_Orientation(orientation),
   m_Region(region),
   m_Processor(processor)
@@ -148,23 +148,23 @@ OpRetainMarks::~OpRetainMarks()
 
 
 //-----------------------------------------------------------------------------
-int OpRetainMarks::GetFromSlice() const
-{
-  return m_FromSlice;
-}
-
-
-//-----------------------------------------------------------------------------
-int OpRetainMarks::GetToSlice() const
-{
-  return m_ToSlice;
-}
-
-
-//-----------------------------------------------------------------------------
 int OpRetainMarks::GetSliceAxis() const
 {
   return m_SliceAxis;
+}
+
+
+//-----------------------------------------------------------------------------
+int OpRetainMarks::GetFromSliceIndex() const
+{
+  return m_FromSliceIndex;
+}
+
+
+//-----------------------------------------------------------------------------
+int OpRetainMarks::GetToSliceIndex() const
+{
+  return m_ToSliceIndex;
 }
 
 

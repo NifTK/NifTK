@@ -698,6 +698,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
 
         mitk::Operation* doOp;
         mitk::Operation* undoOp;
+        mitk::OperationEvent* opEvent;
 
         /// Changing to previous or next slice of the same orientation.
         if (orientation == d->m_Orientation && std::abs(d->m_SliceIndex - sliceIndex) == 1)
@@ -790,8 +791,8 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                   OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
                   doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
                   undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
-                  mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
-                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+                  opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
                   this->ExecuteOperation(doOp);
 
                   drawTool->ClearWorkingData();
@@ -801,10 +802,10 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                 // Do retain marks, which copies slice from beforeSliceIndex to afterSliceIndex
                 QString message = tr("Retaining marks in slice %1 and copying to %2").arg(d->m_SliceIndex).arg(sliceIndex);
                 OpRetainMarks::ProcessorPointer processor = OpRetainMarks::ProcessorType::New();
-                doOp = new OpRetainMarks(OP_RETAIN_MARKS, true, d->m_SliceIndex, sliceIndex, sliceAxis, itkOrientation, outputRegion, processor);
-                undoOp = new OpRetainMarks(OP_RETAIN_MARKS, false, d->m_SliceIndex, sliceIndex, sliceAxis, itkOrientation, outputRegion, processor);
-                mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
-                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+                doOp = new OpRetainMarks(OP_RETAIN_MARKS, true, sliceAxis, d->m_SliceIndex, sliceIndex, itkOrientation, outputRegion, processor);
+                undoOp = new OpRetainMarks(OP_RETAIN_MARKS, false, sliceAxis, d->m_SliceIndex, sliceIndex, itkOrientation, outputRegion, processor);
+                opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
                 this->ExecuteOperation(doOp);
               }
             }
@@ -829,8 +830,8 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                 OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
                 doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
                 undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
-                mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Apply threshold");
-                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
+                opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Apply threshold");
+                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
                 this->ExecuteOperation(doOp);
 
                 drawTool->ClearWorkingData();
@@ -845,8 +846,8 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                   OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
                   doOp = new OpWipe(OP_WIPE, true, sliceAxis, d->m_SliceIndex, outputRegion, propagatedSeeds, processor);
                   undoOp = new OpWipe(OP_WIPE, false, sliceAxis, d->m_SliceIndex, outputRegion, copyOfCurrentSeeds, processor);
-                  mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
-                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+                  opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
+                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
                   this->ExecuteOperation(doOp);
                 }
                 else // so, we don't have unenclosed seeds
@@ -864,8 +865,8 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                   OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
                   doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
                   undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
-                  mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Apply threshold");
-                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
+                  opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Apply threshold");
+                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
                   this->ExecuteOperation(doOp);
 
                   drawTool->ClearWorkingData();
@@ -882,8 +883,8 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                   .arg(sliceAxis).arg(sliceIndex);
               doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, propagatedSeeds);
               undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceAxis, d->m_SliceIndex, copyOfCurrentSeeds);
-              mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
-              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
+              opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
               this->ExecuteOperation(doOp);
 
               message = tr("Change %1 slice from %2 to %3 (image axis: %4, from slice: %5 to slice: %6)")
@@ -891,8 +892,8 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                   .arg(sliceAxis).arg(d->m_SliceIndex).arg(sliceIndex);
               doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, d->m_SelectedPosition, selectedPosition);
               undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, d->m_SelectedPosition, selectedPosition);
-              mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
-              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+              opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
               this->ExecuteOperation(doOp);
             }
           }
@@ -1314,10 +1315,10 @@ void GeneralSegmentorController::UpdateRegionGrowing(
       mitk::PointSet* seeds = this->GetSeeds();
       assert(seeds);
 
-      mitk::ToolManager *toolManager = this->GetToolManager();
+      mitk::ToolManager* toolManager = this->GetToolManager();
       assert(toolManager);
 
-      MIDASPolyTool *polyTool = this->GetToolByType<MIDASPolyTool>();
+      MIDASPolyTool* polyTool = this->GetToolByType<MIDASPolyTool>();
       assert(polyTool);
 
       mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
@@ -2193,20 +2194,24 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
           mitk::UndoStackItem::IncCurrGroupEventId();
           mitk::UndoStackItem::ExecuteIncrement();
 
+          mitk::Operation* doOp;
+          mitk::Operation* undoOp;
+          mitk::OperationEvent* opEvent;
+
           QString message = tr("Propagate: copy region growing");
           OpPropagate::ProcessorPointer processor = OpPropagate::ProcessorType::New();
-          OpPropagate *doPropOp = new OpPropagate(OP_PROPAGATE, true, outputRegion, processor);
-          OpPropagate *undoPropOp = new OpPropagate(OP_PROPAGATE, false, outputRegion, processor);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doPropOp, undoPropOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          this->ExecuteOperation(doPropOp);
+          doOp = new OpPropagate(OP_PROPAGATE, true, outputRegion, processor);
+          undoOp = new OpPropagate(OP_PROPAGATE, false, outputRegion, processor);
+          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+          this->ExecuteOperation(doOp);
 
           message = tr("Propagate: copy seeds");
-          OpPropagateSeeds *doPropSeedsOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, outputSeeds);
-          OpPropagateSeeds *undoPropSeedsOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceAxis, sliceIndex, copyOfInputSeeds);
-          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(d->m_Interface, doPropSeedsOp, undoPropSeedsOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
-          this->ExecuteOperation(doPropOp);
+          doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, outputSeeds);
+          undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceAxis, sliceIndex, copyOfInputSeeds);
+          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+          this->ExecuteOperation(doOp);
 
           drawTool->ClearWorkingData();
           this->UpdateCurrentSliceContours(false);
@@ -2410,10 +2415,10 @@ bool GeneralSegmentorController::DoWipe(int direction)
           mitk::UndoStackItem::ExecuteIncrement();
 
           OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
-          OpWipe *doOp = new OpWipe(OP_WIPE, true, sliceAxis, sliceIndex, outputRegion, outputSeeds, processor);
-          OpWipe *undoOp = new OpWipe(OP_WIPE, false, sliceAxis, sliceIndex, outputRegion, copyOfInputSeeds, processor);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+          mitk::Operation* doOp = new OpWipe(OP_WIPE, true, sliceAxis, sliceIndex, outputRegion, outputSeeds, processor);
+          mitk::Operation* undoOp = new OpWipe(OP_WIPE, false, sliceAxis, sliceIndex, outputRegion, copyOfInputSeeds, processor);
+          mitk::OperationEvent* opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
           this->ExecuteOperation(doOp);
 
           drawTool->ClearWorkingData();
@@ -2537,25 +2542,29 @@ bool GeneralSegmentorController::DoThresholdApply(
           mitk::UndoStackItem::IncCurrGroupEventId();
           mitk::UndoStackItem::ExecuteIncrement();
 
+          mitk::Operation* doOp;
+          mitk::Operation* undoOp;
+          mitk::OperationEvent* opEvent;
+
           std::string orientationName = GetOrientationName(orientation);
           QString message = tr("Apply threshold on %1 slice %2 (image axis: %3, slice: %4)")
               .arg(QString::fromStdString(orientationName)).arg(selectedSliceIndex)
               .arg(sliceAxis).arg(sliceIndex);
           OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
-          OpThresholdApply *doThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, newCheckboxStatus);
-          OpThresholdApply *undoThresholdOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, isThresholdingOn);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doThresholdOp, undoThresholdOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
-          this->ExecuteOperation(doThresholdOp);
+          doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, newCheckboxStatus);
+          undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, isThresholdingOn);
+          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+          this->ExecuteOperation(doOp);
 
           message = tr("Propagate seeds on %1 slice %2 (image axis: %3, slice: %4)")
               .arg(QString::fromStdString(orientationName)).arg(selectedSliceIndex)
               .arg(sliceAxis).arg(sliceIndex);
-          OpPropagateSeeds *doPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, outputSeeds);
-          OpPropagateSeeds *undoPropOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceAxis, sliceIndex, copyOfInputSeeds);
-          mitk::OperationEvent* operationPropEvent = new mitk::OperationEvent(d->m_Interface, doPropOp, undoPropOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationPropEvent );
-          this->ExecuteOperation(doPropOp);
+          doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, outputSeeds);
+          undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceAxis, sliceIndex, copyOfInputSeeds);
+          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+          this->ExecuteOperation(doOp);
 
           drawTool->ClearWorkingData();
 
@@ -2804,10 +2813,14 @@ void GeneralSegmentorController::OnCleanButtonClicked()
           mitk::UndoStackItem::IncCurrGroupEventId();
           mitk::UndoStackItem::ExecuteIncrement();
 
-          OpClean *doOp = new OpClean(OP_CLEAN, true, outputContourSet);
-          OpClean *undoOp = new OpClean(OP_CLEAN, false, copyOfInputContourSet);
-          mitk::OperationEvent* operationEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Clean: Filtering contours");
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
+          mitk::Operation* doOp;
+          mitk::Operation* undoOp;
+          mitk::OperationEvent* opEvent;
+
+          doOp = new OpClean(OP_CLEAN, true, outputContourSet);
+          undoOp = new OpClean(OP_CLEAN, false, copyOfInputContourSet);
+          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Clean: Filtering contours");
+          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
           this->ExecuteOperation(doOp);
 
           // Then we update the region growing to get up-to-date contours.
@@ -2817,11 +2830,11 @@ void GeneralSegmentorController::OnCleanButtonClicked()
           {
             // Then we "apply" this region growing.
             OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
-            OpThresholdApply *doApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
-            OpThresholdApply *undoApplyOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
-            mitk::OperationEvent* operationApplyEvent = new mitk::OperationEvent(d->m_Interface, doApplyOp, undoApplyOp, "Clean: Calculate new image");
-            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationApplyEvent );
-            this->ExecuteOperation(doApplyOp);
+            doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
+            undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
+            opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Clean: Calculate new image");
+            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+            this->ExecuteOperation(doOp);
 
             // We should update the current slice contours, as the green contours
             // are the current segmentation that will be applied when we change slice.
@@ -2965,9 +2978,8 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
         assert(op);
 
         OpRetainMarks::ProcessorType::Pointer processor = op->GetProcessor();
-        bool redo = op->IsRedo();
-        int fromSlice = op->GetFromSlice();
-        int toSlice = op->GetToSlice();
+        int fromSlice = op->GetFromSliceIndex();
+        int toSlice = op->GetToSliceIndex();
         itk::Orientation orientation = op->GetOrientation();
 
         typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> BinaryImage3DType;
@@ -2980,7 +2992,7 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
         processor->SetDestinationImage(targetImageToItk->GetOutput());
         processor->SetSlices(orientation, fromSlice, toSlice);
 
-        if (redo)
+        if (op->IsRedo())
         {
           processor->Redo();
         }
@@ -3009,16 +3021,15 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
     }
   case OP_THRESHOLD_APPLY:
     {
-      OpThresholdApply *op = dynamic_cast<OpThresholdApply*>(operation);
+      OpThresholdApply* op = dynamic_cast<OpThresholdApply*>(operation);
       assert(op);
 
       try
       {
         AccessFixedDimensionByItk_n(referenceImage, ITKPropagateToSegmentationImage, 3,
-              (
-                segmentationImage,
-                regionGrowingImage,
-                op
+              (segmentationImage,
+               regionGrowingImage,
+               op
               )
             );
 
@@ -3029,7 +3040,6 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
         segmentationNode->Modified();
 
         regionGrowingImage->Modified();
-
       }
       catch(const mitk::AccessByItkException& e)
       {
@@ -3075,7 +3085,7 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
     }
   case OP_WIPE:
     {
-      OpWipe *op = dynamic_cast<OpWipe*>(operation);
+      OpWipe* op = dynamic_cast<OpWipe*>(operation);
       assert(op);
 
       try
@@ -3109,7 +3119,7 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
     }
   case OP_PROPAGATE:
     {
-      OpPropagate *op = dynamic_cast<OpPropagate*>(operation);
+      OpPropagate* op = dynamic_cast<OpPropagate*>(operation);
       assert(op);
 
       try

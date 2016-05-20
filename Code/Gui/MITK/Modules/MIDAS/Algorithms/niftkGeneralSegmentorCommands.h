@@ -131,9 +131,9 @@ public:
   OpRetainMarks(
       mitk::OperationType type,
       bool redo,
-      int fromSlice,
-      int toSlice,
       int sliceAxis,
+      int fromSliceIndex,
+      int toSliceIndex,
       itk::Orientation orientation,
       const std::vector<int>& region,
       ProcessorPointer processor
@@ -141,11 +141,11 @@ public:
 
   ~OpRetainMarks();
 
-  int GetFromSlice() const;
-
-  int GetToSlice() const;
-
   int GetSliceAxis() const;
+
+  int GetFromSliceIndex() const;
+
+  int GetToSliceIndex() const;
 
   itk::Orientation GetOrientation() const;
 
@@ -154,9 +154,9 @@ public:
   ProcessorPointer GetProcessor() const;
 
 private:
-  int m_FromSlice;
-  int m_ToSlice;
   int m_SliceAxis;
+  int m_FromSliceIndex;
+  int m_ToSliceIndex;
   itk::Orientation m_Orientation;
   std::vector<int> m_Region;
   ProcessorPointer m_Processor;
