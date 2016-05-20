@@ -1021,106 +1021,59 @@ void ITKPreprocessingOfSeedsForChangingSlice(
 {
   typedef typename itk::Image<TPixel, VImageDimension> BinaryImageType;
 
-  // Work out the region of the current slice.
+  typename BinaryImageType::RegionType oldSliceRegion = itkImage->GetLargestPossibleRegion();
+  typename BinaryImageType::RegionType newSliceRegion = itkImage->GetLargestPossibleRegion();
 
-  typename BinaryImageType::RegionType region = itkImage->GetLargestPossibleRegion();
-  typename BinaryImageType::SizeType regionSize = region.GetSize();
-  typename BinaryImageType::IndexType regionIndex = region.GetIndex();
+  oldSliceRegion.SetIndex(oldSliceAxis, oldSliceIndex);
+  oldSliceRegion.SetSize(oldSliceAxis, 1);
+  newSliceRegion.SetIndex(newSliceAxis, newSliceIndex);
+  newSliceRegion.SetSize(newSliceAxis, 1);
 
-  regionSize[oldSliceAxis] = 1;
-  regionIndex[oldSliceAxis] = oldSliceIndex;
+  outputRegion.push_back(oldSliceRegion.GetIndex(0));
+  outputRegion.push_back(oldSliceRegion.GetIndex(1));
+  outputRegion.push_back(oldSliceRegion.GetIndex(2));
+  outputRegion.push_back(oldSliceRegion.GetSize(0));
+  outputRegion.push_back(oldSliceRegion.GetSize(1));
+  outputRegion.push_back(oldSliceRegion.GetSize(2));
 
-  region.SetSize(regionSize);
-  region.SetIndex(regionIndex);
-
-  outputRegion.push_back(regionIndex[0]);
-  outputRegion.push_back(regionIndex[1]);
-  outputRegion.push_back(regionIndex[2]);
-  outputRegion.push_back(regionSize[0]);
-  outputRegion.push_back(regionSize[1]);
-  outputRegion.push_back(regionSize[2]);
-
-  // If we are moving to new slice
-  if (oldSliceIndex != newSliceIndex)
+  // If we are moving to an empty adjacent slice
+  if (oldSliceAxis == newSliceAxis && std::abs(newSliceIndex - oldSliceIndex) == 1 && newSliceIsEmpty)
   {
-    if (newSliceIsEmpty)
-    {
-      // Copy all input seeds, as we are moving to an empty slice.
-      mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
+    // Copy all input seeds, as we are moving to an empty slice.
+    mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
 
-      // Take all seeds on the current slice number, and propagate to new slice.
-      ITKPropagateSeedsToNewSlice(
-          itkImage,
-          inputSeeds,
-          outputNewSeeds,
-          oldSliceAxis,
-          oldSliceIndex,
-          newSliceIndex
-          );
-    }
-    else // new slice is not empty.
-    {
-      if (optimiseSeedPosition) // if this is false, we do nothing - i.e. leave existing seeds AS IS.
-      {
-        regionSize = region.GetSize();
-        regionIndex = region.GetIndex();
-
-        regionSize[oldSliceAxis] = 1;
-        regionIndex[oldSliceAxis] = newSliceIndex;
-
-        region.SetSize(regionSize);
-        region.SetIndex(regionIndex);
-
-        // We copy all seeds except those on the new slice.
-        ITKFilterInputPointSetToExcludeRegionOfInterest(
-            itkImage,
-            region,
-            inputSeeds,
-            outputCopyOfInputSeeds,
-            outputNewSeeds
-            );
-
-        // We then re-generate a new set of seeds for the new slice.
-        ITKAddNewSeedsToPointSet(
-            itkImage,
-            region,
-            oldSliceAxis,
-            outputNewSeeds
-            );
-
-      } // end if (optimiseSeedPosition)
-    } // end if (newSliceIsEmpty)
+    // Take all seeds on the current slice number, and propagate to new slice.
+    ITKPropagateSeedsToNewSlice(
+        itkImage,
+        inputSeeds,
+        outputNewSeeds,
+        oldSliceAxis,
+        oldSliceIndex,
+        newSliceIndex
+        );
   }
-  else // We are not moving slice
+  else if (optimiseSeedPosition) // if this is false, we do nothing - i.e. leave existing seeds AS IS.
   {
-    if (optimiseSeedPosition)
-    {
-      // We copy all seeds except those on the current slice.
-      ITKFilterInputPointSetToExcludeRegionOfInterest(
-          itkImage,
-          region,
-          inputSeeds,
-          outputCopyOfInputSeeds,
-          outputNewSeeds
-          );
+    // We make a copy of the input seeds and copy all seeds except those on the new slice new the new seeds.
+    ITKFilterInputPointSetToExcludeRegionOfInterest(
+        itkImage,
+        newSliceRegion,
+        inputSeeds,
+        outputCopyOfInputSeeds,
+        outputNewSeeds
+        );
 
-      // Here we calculate new seeds based on the connected component analysis - i.e. 1 seed per region.
-      ITKAddNewSeedsToPointSet(
-          itkImage,
-          region,
-          oldSliceAxis,
-          outputNewSeeds
-          );
-    }
-  } // end if (sliceNumber != newSliceNumber)
-
-  if (outputCopyOfInputSeeds->GetSize() == 0)
+    // We then re-generate a new set of seeds for the new slice.
+    ITKAddNewSeedsToPointSet(
+        itkImage,
+        newSliceRegion,
+        oldSliceAxis,
+        outputNewSeeds
+        );
+  }
+  else
   {
     mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
-  }
-
-  if (outputNewSeeds->GetSize() == 0)
-  {
     mitk::CopyPointSets(*inputSeeds, *outputNewSeeds);
   }
 }
