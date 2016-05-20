@@ -36,7 +36,7 @@ if(TARGET ${TESTDRIVER})
   mitkAddCustomModuleTest(MIDAS-mitkDRCAnalyzeSameIntensitiesAsNiftiTest_01719-c niftkCompareImagesForEqualityTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-c.img ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-c.nii 0)
 
   # Test that if we load the same Nifti image twice, the "is equals" checks all do return true.
-  mitkAddCustomModuleTest(MIDAS-mitkTwoNiftiImagesAreEqualTest niftkMIDASCompareImagesForEqualityTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.nii ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.nii 0)
+  mitkAddCustomModuleTest(MIDAS-mitkTwoNiftiImagesAreEqualTest niftkCompareImagesForEqualityTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.nii ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.nii 0)
 
   # Trac 1696 - Unit tests for niftkImageOrientationUtils - testing things like, which axis is "up", which direction is "up", as these map to A/Z keys etc.
   mitkAddCustomModuleTest(MIDAS-niftkImageOrientationUtilsTest-01719-a niftkImageOrientationUtilsTest ${NIFTK_DATA_DIR}/Input/volunteers/01719/01719-012-a.img RAI  1 -1 -1 2 0 1)
