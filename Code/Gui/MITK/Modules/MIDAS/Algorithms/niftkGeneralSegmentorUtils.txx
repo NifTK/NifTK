@@ -1052,29 +1052,44 @@ void ITKPreprocessingOfSeedsForChangingSlice(
         newSliceIndex
         );
   }
-  else if (optimiseSeedPosition) // if this is false, we do nothing - i.e. leave existing seeds AS IS.
-  {
-    // We make a copy of the input seeds and copy all seeds except those on the new slice new the new seeds.
-    ITKFilterInputPointSetToExcludeRegionOfInterest(
-        itkImage,
-        newSliceRegion,
-        inputSeeds,
-        outputCopyOfInputSeeds,
-        outputNewSeeds
-        );
+  else if (oldSliceAxis == newSliceAxis)  // jumping to non adjacent slice in the same orientation
+  {                                       // or to an adjacent slice but it is not empty
 
-    // We then re-generate a new set of seeds for the new slice.
+    if (optimiseSeedPosition) // if this is false, we do nothing - i.e. leave existing seeds AS IS.
+    {
+      // We make a copy of the input seeds and copy all seeds except those on the new slice new the new seeds.
+      ITKFilterInputPointSetToExcludeRegionOfInterest(
+          itkImage,
+          newSliceRegion,
+          inputSeeds,
+          outputCopyOfInputSeeds,
+          outputNewSeeds
+          );
+
+      // We then re-generate a new set of seeds for the new slice.
+      ITKAddNewSeedsToPointSet(
+          itkImage,
+          newSliceRegion,
+          newSliceAxis,
+          outputNewSeeds
+          );
+    }
+    else
+    {
+      mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
+      mitk::CopyPointSets(*inputSeeds, *outputNewSeeds);
+    }
+  }
+  else  // changing orientation
+  {
+    mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
+
     ITKAddNewSeedsToPointSet(
         itkImage,
         newSliceRegion,
-        oldSliceAxis,
+        newSliceAxis,
         outputNewSeeds
         );
-  }
-  else
-  {
-    mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
-    mitk::CopyPointSets(*inputSeeds, *outputNewSeeds);
   }
 }
 

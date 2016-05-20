@@ -332,10 +332,10 @@ private:
   void RecalculateMinAndMaxOfSeedValues();
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceIndex);
+  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceAxis, int sliceIndex);
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
-  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceIndex, const mitk::PointSet* seeds);
+  bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceAxis, int sliceIndex, const mitk::PointSet* seeds);
 
   /// \brief Filters seeds to current slice
   void FilterSeedsToCurrentSlice(
@@ -345,10 +345,11 @@ private:
       mitk::PointSet* outputPoints
       );
 
-  /// \brief Filters seeds to current slice, and selects seeds that are enclosed.
-  void FilterSeedsToEnclosedSeedsOnCurrentSlice(
+  /// \brief Filters seeds to slice, and selects seeds that are enclosed.
+  void FilterSeedsToEnclosedSeedsOnSlice(
       const mitk::PointSet* inputPoints,
       bool thresholdOn,
+      int sliceAxis,
       int sliceIndex,
       mitk::PointSet* outputPoints
       );
@@ -356,9 +357,9 @@ private:
   /// \brief Retrieves the lower and upper threshold from widgets and calls UpdateRegionGrowing.
   void UpdateRegionGrowing(bool updateRendering = true);
 
-  /// \brief Given the two thresholds, and all seeds and contours, will recalculate the thresholded region in the current slice.
+  /// \brief Given the two thresholds, and all seeds and contours, will recalculate the thresholded region in the given slice.
   /// \param isVisible whether the region growing volume should be visible.
-  void UpdateRegionGrowing(bool isVisible, int sliceIndex, double lowerThreshold, double upperThreshold, bool skipUpdate);
+  void UpdateRegionGrowing(bool isVisible, int sliceAxis, int sliceIndex, double lowerThreshold, double upperThreshold, bool skipUpdate);
 
   /// \brief Takes the current slice, and refreshes the current slice contour set (WorkingData[2]).
   void UpdateCurrentSliceContours(bool updateRendering = true);
