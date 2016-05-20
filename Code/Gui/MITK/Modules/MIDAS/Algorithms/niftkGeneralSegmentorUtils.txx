@@ -1217,8 +1217,8 @@ void ITKDoWipe(
 
   processor->SetDestinationImage(NULL);
 
-  int axis = op->GetSliceAxis();
-  int slice = op->GetSliceIndex();
+  int sliceAxis = op->GetSliceAxis();
+  int sliceIndex = op->GetSliceIndex();
 
   // Update the current point set.
   currentSeeds->Clear();
@@ -1232,7 +1232,7 @@ void ITKDoWipe(
     typename BinaryImageType::IndexType outputSeedIndex;
     itkImage->TransformPhysicalPointToIndex(outputSeed, outputSeedIndex);
     // If it's a do/redo then we do not copy back the seeds from the current slice. (Wipe them.)
-    if (!redo || outputSeedIndex[axis] != slice)
+    if (!redo || outputSeedIndex[sliceAxis] != sliceIndex)
     {
       currentSeeds->InsertPoint(outputSeedID, outputSeed);
     }
