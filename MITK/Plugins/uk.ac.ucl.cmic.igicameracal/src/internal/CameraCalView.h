@@ -69,6 +69,9 @@ protected:
 
 protected slots:
 
+  /** Send by footpedal/hotkey plugin. */
+  void OnGrab(const ctkEvent& event);
+
 protected:
 
 signals:

@@ -79,10 +79,6 @@ signals:
 
 protected slots:
 
-  /** Send by footpedal/hotkey plugin. */
-  void OnRecordingShouldStart(const ctkEvent& event);
-  void OnRecordingShouldStop(const ctkEvent& event);
-
   /** Sent by other plugins, requesting a pause/restart. */
   void OnUpdateShouldPause(const ctkEvent& event);
   void OnUpdateShouldRestart(const ctkEvent& event);

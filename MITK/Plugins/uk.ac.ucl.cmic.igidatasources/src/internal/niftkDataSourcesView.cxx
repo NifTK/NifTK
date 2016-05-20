@@ -80,22 +80,6 @@ void DataSourcesView::OnUpdateShouldRestart(const ctkEvent& event)
 
 
 //-----------------------------------------------------------------------------
-void DataSourcesView::OnRecordingShouldStart(const ctkEvent& event)
-{
-  // Comming from CTK event bus.
-  m_DataSourceManagerWidget->StartRecording();
-}
-
-
-//-----------------------------------------------------------------------------
-void DataSourcesView::OnRecordingShouldStop(const ctkEvent& event)
-{
-  // Comming from CTK event bus.
-  m_DataSourceManagerWidget->StopRecording();
-}
-
-
-//-----------------------------------------------------------------------------
 void DataSourcesView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
@@ -143,6 +127,8 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGISTOPRECORDING";
     eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStop(ctkEvent)), properties);
 
+	// Other plugins can publish this to request that the data source stops momentarily.
+	// Its useful for applications that need to grab synchronised data. eg. camera calibration.
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATEPAUSE";
     eventAdmin->subscribeSlot(this, SLOT(OnUpdateShouldPause(ctkEvent)), properties);
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATERESTART";

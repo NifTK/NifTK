@@ -19,12 +19,12 @@
 #include <niftkFileHelper.h>
 #include <niftkImageConversion.h>
 
+#include <niftkMatrixUtilities.h>
 #include <niftkNiftyCalTypes.h>
 #include <niftkOpenCVChessboardPointDetector.h>
 #include <niftkOpenCVCirclesPointDetector.h>
 #include <niftkAprilTagsPointDetector.h>
 #include <niftkIOUtilities.h>
-#include <niftkMatrixUtilities.h>
 #include <niftkMonoCameraCalibration.h>
 #include <niftkStereoCameraCalibration.h>
 #include <niftkIterativeMonoCameraCalibration.h>

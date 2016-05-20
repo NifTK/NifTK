@@ -137,6 +137,10 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
       ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
       eventAdmin->publishSignal(this, SIGNAL(PauseIGIUpdate(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATEPAUSE", Qt::DirectConnection);
       eventAdmin->publishSignal(this, SIGNAL(RestartIGIUpdate(ctkDictionary)), "uk/ac/ucl/cmic/IGIUPDATERESTART", Qt::DirectConnection);
+
+      ctkDictionary properties;
+      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH1START";
+      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties);
     }
   }
 }
@@ -258,6 +262,16 @@ void CameraCalView::OnComboBoxChanged()
   m_Manager->SetLeftImageNode(leftImageNode);
   m_Manager->SetRightImageNode(rightImageNode);
   m_Manager->SetTrackingTransformNode(trackingNode);
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalView::OnGrab(const ctkEvent& event)
+{
+  if (!m_BackgroundGrabProcess.isRunning() && !m_BackgroundCalibrateProcess.isRunning())
+  {
+    this->OnGrabButtonPressed();
+  }
 }
 
 
