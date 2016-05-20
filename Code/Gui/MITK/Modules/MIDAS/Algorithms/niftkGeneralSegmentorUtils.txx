@@ -1008,8 +1008,9 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKPreprocessingOfSeedsForChangingSlice(
     const itk::Image<TPixel, VImageDimension>* itkImage, // Note: the itkImage input should be the binary region growing image.
     const mitk::PointSet* inputSeeds,
-    int sliceAxis,
+    int oldSliceAxis,
     int oldSliceIndex,
+    int newSliceAxis,
     int newSliceIndex,
     bool optimiseSeedPosition,
     bool newSliceIsEmpty,
@@ -1026,8 +1027,8 @@ void ITKPreprocessingOfSeedsForChangingSlice(
   typename BinaryImageType::SizeType regionSize = region.GetSize();
   typename BinaryImageType::IndexType regionIndex = region.GetIndex();
 
-  regionSize[sliceAxis] = 1;
-  regionIndex[sliceAxis] = oldSliceIndex;
+  regionSize[oldSliceAxis] = 1;
+  regionIndex[oldSliceAxis] = oldSliceIndex;
 
   region.SetSize(regionSize);
   region.SetIndex(regionIndex);
@@ -1052,7 +1053,7 @@ void ITKPreprocessingOfSeedsForChangingSlice(
           itkImage,
           inputSeeds,
           outputNewSeeds,
-          sliceAxis,
+          oldSliceAxis,
           oldSliceIndex,
           newSliceIndex
           );
@@ -1064,8 +1065,8 @@ void ITKPreprocessingOfSeedsForChangingSlice(
         regionSize = region.GetSize();
         regionIndex = region.GetIndex();
 
-        regionSize[sliceAxis] = 1;
-        regionIndex[sliceAxis] = newSliceIndex;
+        regionSize[oldSliceAxis] = 1;
+        regionIndex[oldSliceAxis] = newSliceIndex;
 
         region.SetSize(regionSize);
         region.SetIndex(regionIndex);
@@ -1083,7 +1084,7 @@ void ITKPreprocessingOfSeedsForChangingSlice(
         ITKAddNewSeedsToPointSet(
             itkImage,
             region,
-            sliceAxis,
+            oldSliceAxis,
             outputNewSeeds
             );
 
@@ -1107,7 +1108,7 @@ void ITKPreprocessingOfSeedsForChangingSlice(
       ITKAddNewSeedsToPointSet(
           itkImage,
           region,
-          sliceAxis,
+          oldSliceAxis,
           outputNewSeeds
           );
     }

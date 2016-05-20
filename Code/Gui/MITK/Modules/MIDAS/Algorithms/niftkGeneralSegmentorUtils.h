@@ -270,8 +270,9 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKPreprocessingOfSeedsForChangingSlice(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::PointSet* inputSeeds,
-    int sliceAxis,
+    int oldSliceAxis,
     int oldSliceIndex,
+    int newSliceAxis,
     int newSliceIndex,
     bool optimiseSeedPosition,
     bool newSliceIsEmpty,

@@ -776,6 +776,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                     (seeds,
                      sliceAxis,
                      d->m_SliceIndex,
+                     sliceAxis,
                      sliceIndex,
                      false, // We propagate seeds at current position, so no optimisation
                      sliceIsEmpty,
@@ -816,6 +817,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                   (seeds,
                    sliceAxis,
                    d->m_SliceIndex,
+                   sliceAxis,
                    sliceIndex,
                    true, // optimise seed position on current slice.
                    sliceIsEmpty,
@@ -2522,6 +2524,7 @@ bool GeneralSegmentorController::DoThresholdApply(
               (seeds,
                sliceAxis,
                sliceIndex,
+               sliceAxis,
                sliceIndex,
                optimiseSeeds,
                newSliceEmpty,
