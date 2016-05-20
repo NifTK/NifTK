@@ -29,6 +29,7 @@
 #include <niftkStereoCameraCalibration.h>
 #include <niftkIterativeMonoCameraCalibration.h>
 #include <niftkIterativeStereoCameraCalibration.h>
+#include <niftkNonLinearHandEyeOptimiser.h>
 
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
@@ -252,18 +253,17 @@ std::vector<cv::Mat> NiftyCalVideoCalibrationManager::ConvertMatrices(const std:
 //-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex)
 {
+  double residualRotation = 0;
+  double residualTranslation = 0;
+
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
-  std::vector<cv::Mat> cameraMat = this->ConvertMatrices(cameraMatrices);
-  std::vector<cv::Mat> trackerMat = this->ConvertMatrices(m_TrackingMatrices);
-  std::vector<double> residuals;
 
-  // Call's Steve's implementation of Tsai 1989.
-  cv::Mat eyeHand = mitk::Tracker2ToTracker1RotationAndTranslation(
-        trackerMat, cameraMat, residuals
-        );
-
-  cv::Matx44d tmp(eyeHand);
-  cv::Matx44d handEye = tmp.inv();
+  cv::Matx44d handEye =
+    niftk::CalculateHandEyeUsingTsaisMethod(m_TrackingMatrices,
+      cameraMatrices,
+      residualRotation,
+      residualTranslation
+      );
 
   return handEye;
 }
@@ -275,11 +275,11 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoDirectHandEye(int imageIndex)
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
 
   cv::Matx44d handEye =
-      niftk::CalculateHandEyeByDirectMatrixMultiplication(
-        m_3DModelToTracker,
-        m_TrackingMatrices,
-        cameraMatrices
-        );
+    niftk::CalculateHandEyeByDirectMatrixMultiplication(
+      m_3DModelToTracker,
+      m_TrackingMatrices,
+      cameraMatrices
+      );
 
   return handEye;
 }
@@ -296,9 +296,25 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex)
         cameraMatrices
         );
 
-  // To Do - Implement it.
 
-  cv::Matx44d handEye = cv::Matx44d::eye();
+  // Assumes we have done Tsai first.
+  niftk::NonLinearHandEyeOptimiser::Pointer optimiser = niftk::NonLinearHandEyeOptimiser::New();
+  optimiser->SetModel(&m_3DModelPoints);
+  optimiser->SetPoints(&m_Points[imageIndex]);
+  optimiser->SetHandMatrices(&m_TrackingMatrices);
+  optimiser->SetEyeMatrices(&cameraMatrices);
+
+  cv::Matx44d handEye = m_HandEyeMatrices[imageIndex][TSAI];
+
+  double reprojectionRMS = optimiser->Optimise(
+    modelToWorld,
+    handEye,
+    m_Intrinsic[imageIndex],
+    m_Distortion[imageIndex]
+    );
+
+  std::cout << "NonLinearHandEyeOptimiser: rms=" << reprojectionRMS << std::endl;
+
   return handEye;
 }
 
