@@ -342,15 +342,15 @@ private:
       const mitk::PointSet* inputPoints,
       int sliceAxis,
       int sliceIndex,
-      mitk::PointSet& outputPoints
+      mitk::PointSet* outputPoints
       );
 
   /// \brief Filters seeds to current slice, and selects seeds that are enclosed.
   void FilterSeedsToEnclosedSeedsOnCurrentSlice(
-      mitk::PointSet& inputPoints,
-      bool& thresholdOn,
-      int& sliceIndex,
-      mitk::PointSet& outputPoints
+      const mitk::PointSet* inputPoints,
+      bool thresholdOn,
+      int sliceIndex,
+      mitk::PointSet* outputPoints
       );
 
   /// \brief Retrieves the lower and upper threshold from widgets and calls UpdateRegionGrowing.

@@ -24,7 +24,7 @@ void GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
     int sliceAxis,
     int sliceIndex,
     int projectedSliceIndex,
-    mitk::ContourModelSet::Pointer outputContourSet
+    mitk::ContourModelSet* outputContourSet
     )
 {
   try

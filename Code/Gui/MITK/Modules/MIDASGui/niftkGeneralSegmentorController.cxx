@@ -779,8 +779,8 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                      sliceIndex,
                      false, // We propagate seeds at current position, so no optimisation
                      sliceIsEmpty,
-                     *(copyOfCurrentSeeds.GetPointer()),
-                     *(propagatedSeeds.GetPointer()),
+                     copyOfCurrentSeeds,
+                     propagatedSeeds,
                      outputRegion
                     )
                   );
@@ -819,8 +819,8 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                    sliceIndex,
                    true, // optimise seed position on current slice.
                    sliceIsEmpty,
-                   *(copyOfCurrentSeeds.GetPointer()),
-                   *(propagatedSeeds.GetPointer()),
+                   copyOfCurrentSeeds,
+                   propagatedSeeds,
                    outputRegion
                   )
                 );
@@ -1072,7 +1072,7 @@ void GeneralSegmentorController::InitialiseSeedsForSlice(int sliceAxis, int slic
   {
     AccessFixedDimensionByItk_n(workingImage,
         ITKInitialiseSeedsForSlice, 3,
-        (*seeds,
+        (seeds,
          sliceAxis,
          sliceIndex
         )
@@ -1476,9 +1476,9 @@ bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, 
       AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
         ITKSliceDoesHaveUnenclosedSeeds, 3,
           (seeds,
-           *segmentationContours,
-           *polyToolContours,
-           *drawToolContours,
+           segmentationContours,
+           polyToolContours,
+           drawToolContours,
            segmentationImage,
            lowerThreshold,
            upperThreshold,
@@ -1504,7 +1504,7 @@ void GeneralSegmentorController::FilterSeedsToCurrentSlice(
     const mitk::PointSet* inputPoints,
     int sliceAxis,
     int sliceIndex,
-    mitk::PointSet& outputPoints
+    mitk::PointSet* outputPoints
     )
 {
   if (!this->HasInitialisedWorkingData())
@@ -1536,18 +1536,18 @@ void GeneralSegmentorController::FilterSeedsToCurrentSlice(
 
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::FilterSeedsToEnclosedSeedsOnCurrentSlice(
-    mitk::PointSet& inputPoints,
-    bool& thresholdOn,
-    int& sliceIndex,
-    mitk::PointSet& outputPoints
+    const mitk::PointSet* inputPoints,
+    bool thresholdOn,
+    int sliceIndex,
+    mitk::PointSet* outputPoints
     )
 {
-  outputPoints.Clear();
+  outputPoints->Clear();
 
   mitk::PointSet::Pointer singleSeedPointSet = mitk::PointSet::New();
 
-  mitk::PointSet::PointsConstIterator inputPointsIt = inputPoints.Begin();
-  mitk::PointSet::PointsConstIterator inputPointsEnd = inputPoints.End();
+  mitk::PointSet::PointsConstIterator inputPointsIt = inputPoints->Begin();
+  mitk::PointSet::PointsConstIterator inputPointsEnd = inputPoints->End();
   for ( ; inputPointsIt != inputPointsEnd; ++inputPointsIt)
   {
     mitk::PointSet::PointType point = inputPointsIt->Value();
@@ -1560,7 +1560,7 @@ void GeneralSegmentorController::FilterSeedsToEnclosedSeedsOnCurrentSlice(
 
     if (!unenclosed)
     {
-      outputPoints.InsertPoint(pointID, point);
+      outputPoints->InsertPoint(pointID, point);
     }
   }
 }
@@ -2178,8 +2178,8 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
                sliceUpDirection,
                lowerThreshold,
                upperThreshold,
-               *(copyOfInputSeeds.GetPointer()),
-               *(outputSeeds.GetPointer()),
+               copyOfInputSeeds,
+               outputSeeds,
                outputRegion,
                regionGrowingImage  // This is the image we are writing to.
               )
@@ -2403,8 +2403,8 @@ bool GeneralSegmentorController::DoWipe(int direction)
                  sliceAxis,
                  sliceIndex,
                  direction,
-                 *(copyOfInputSeeds.GetPointer()),
-                 *(outputSeeds.GetPointer()),
+                 copyOfInputSeeds,
+                 outputSeeds,
                  outputRegion
                 )
               );
@@ -2525,8 +2525,8 @@ bool GeneralSegmentorController::DoThresholdApply(
                sliceIndex,
                optimiseSeeds,
                newSliceEmpty,
-               *(copyOfInputSeeds.GetPointer()),
-               *(outputSeeds.GetPointer()),
+               copyOfInputSeeds,
+               outputSeeds,
                outputRegion
               )
             );
@@ -2706,16 +2706,16 @@ void GeneralSegmentorController::OnCleanButtonClicked()
                 seeds,
                 sliceAxis,
                 sliceIndex,
-                *(seedsForCurrentSlice.GetPointer())
+                seedsForCurrentSlice
                 );
 
             // Reduce the list just down to those that are fully enclosed.
             mitk::PointSet::Pointer enclosedSeeds = mitk::PointSet::New();
             this->FilterSeedsToEnclosedSeedsOnCurrentSlice(
-                *seedsForCurrentSlice,
+                seedsForCurrentSlice,
                 useThresholdsWhenCalculatingEnclosedSeeds,
                 sliceIndex,
-                *(enclosedSeeds.GetPointer())
+                enclosedSeeds
                 );
 
             // Do region growing, using only enclosed seeds.
@@ -2796,16 +2796,16 @@ void GeneralSegmentorController::OnCleanButtonClicked()
               ITKFilterContours, 3,
               (segmentationImage,
                seeds,
-               *segmentationContours,
-               *drawToolContours,
-               *polyToolContours,
+               segmentationContours,
+               drawToolContours,
+               polyToolContours,
                sliceAxis,
                sliceIndex,
                lowerThreshold,
                upperThreshold,
                isThresholdingOn,
-               *(copyOfInputContourSet.GetPointer()),
-               *(outputContourSet.GetPointer())
+               copyOfInputContourSet,
+               outputContourSet
               )
             );
 

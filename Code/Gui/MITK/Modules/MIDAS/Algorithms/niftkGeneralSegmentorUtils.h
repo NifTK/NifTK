@@ -40,7 +40,7 @@ void NIFTKMIDAS_EXPORT GenerateOutlineFromBinaryImage(mitk::Image::Pointer image
     int sliceAxis,
     int sliceIndex,
     int projectedSliceNumber,
-    mitk::ContourModelSet::Pointer outputContourSet
+    mitk::ContourModelSet* outputContourSet
     );
 
 
@@ -111,7 +111,7 @@ void ITKFilterSeedsToCurrentSlice(
     const mitk::PointSet* inputSeeds,
     int sliceAxis,
     int sliceIndex,
-    mitk::PointSet& outputSeeds
+    mitk::PointSet* outputSeeds
     );
 
 /// \brief Called from RecalculateMinAndMaxOfSeedValues(), the actual method
@@ -135,8 +135,8 @@ void ITKFilterInputPointSetToExcludeRegionOfInterest(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const typename itk::Image<TPixel, VImageDimension>::RegionType& regionOfInterest,
     const mitk::PointSet* inputSeeds,
-    mitk::PointSet& outputCopyOfInputSeeds,
-    mitk::PointSet& outputNewSeedsNotInRegionOfInterest
+    mitk::PointSet* outputCopyOfInputSeeds,
+    mitk::PointSet* outputNewSeedsNotInRegionOfInterest
     );
 
 /// \brief Will return true if the given slice has seeds within that slice.
@@ -176,7 +176,7 @@ void ITKUpdateRegionGrowing(
     int sliceIndex,
     double lowerThreshold,
     double upperThreshold,
-    mitk::Image::Pointer& outputRegionGrowingImage
+    mitk::Image* outputRegionGrowingImage
     );
 
 /// \brief Method takes all the input, and calculates the 3D propagated
@@ -190,10 +190,10 @@ void ITKPropagateToRegionGrowingImage(
     int direction,
     double lowerThreshold,
     double upperThreshold,
-    mitk::PointSet& outputCopyOfInputSeeds,
-    mitk::PointSet& outputNewSeeds,
+    mitk::PointSet* outputCopyOfInputSeeds,
+    mitk::PointSet* outputNewSeeds,
     std::vector<int>& outputRegion,
-    mitk::Image::Pointer& outputRegionGrowingImage
+    mitk::Image* outputRegionGrowingImage
     );
 
 /// \brief Called from ITKPropagateToRegionGrowingImage to propagate up or down.
@@ -210,7 +210,7 @@ void ITKPropagateUpOrDown(
     int direction,
     double lowerThreshold,
     double upperThreshold,
-    mitk::Image::Pointer& outputRegionGrowingImage
+    mitk::Image* outputRegionGrowingImage
     );
 
 /// \brief Called from the ExecuteOperate (i.e. undo/redo framework) to
@@ -230,7 +230,7 @@ void ITKGenerateOutlineFromBinaryImage(
     int sliceAxis,
     int sliceIndex,
     int projectedSliceIndex,
-    mitk::ContourModelSet::Pointer contourSet
+    mitk::ContourModelSet* contourSet
     );
 
 /// \brief Works out the largest minimum distance to the edge of the image data, filtered on a given foregroundPixelValue.
@@ -252,7 +252,7 @@ void ITKAddNewSeedsToPointSet(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const typename itk::Image<TPixel, VImageDimension>::RegionType& regionOfInterest,
     int sliceAxis,
-    mitk::PointSet& outputNewSeeds
+    mitk::PointSet* outputNewSeeds
     );
 
 /// \brief Does any pre-processing of seeds necessary to facilitate Undo/Redo
@@ -275,8 +275,8 @@ void ITKPreprocessingOfSeedsForChangingSlice(
     int newSliceIndex,
     bool optimiseSeedPosition,
     bool newSliceIsEmpty,
-    mitk::PointSet& outputCopyOfInputSeeds,
-    mitk::PointSet& outputNewSeeds,
+    mitk::PointSet* outputCopyOfInputSeeds,
+    mitk::PointSet* outputNewSeeds,
     std::vector<int>& outputRegion
     );
 
@@ -289,8 +289,8 @@ void ITKPreprocessingForWipe(
     int sliceAxis,
     int sliceIndex,
     int direction,
-    mitk::PointSet& outputCopyOfInputSeeds,
-    mitk::PointSet& outputNewSeeds,
+    mitk::PointSet* outputCopyOfInputSeeds,
+    mitk::PointSet* outputNewSeeds,
     std::vector<int>& outputRegion
     );
 
@@ -327,9 +327,9 @@ template<typename TPixel, unsigned int VImageDimension>
 void ITKSliceDoesHaveUnenclosedSeeds(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::PointSet* seeds,
-    mitk::ContourModelSet& segmentationContours,
-    mitk::ContourModelSet& polyToolContours,
-    mitk::ContourModelSet& drawToolContours,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* polyToolContours,
+    mitk::ContourModelSet* drawToolContours,
     const mitk::Image* workingImage,
     double lowerThreshold,
     double upperThreshold,
@@ -355,16 +355,16 @@ void ITKFilterContours(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::Image* workingImage,
     const mitk::PointSet* seeds,
-    mitk::ContourModelSet& segmentationContours,
-    mitk::ContourModelSet& drawContours,
-    mitk::ContourModelSet& polyContours,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* drawContours,
+    mitk::ContourModelSet* polyContours,
     int sliceAxis,
     int sliceIndex,
     double lowerThreshold,
     double upperThreshold,
     bool isThresholding,
-    mitk::ContourModelSet& outputCopyOfInputContours,
-    mitk::ContourModelSet& outputContours
+    mitk::ContourModelSet* outputCopyOfInputContours,
+    mitk::ContourModelSet* outputContours
 );
 
 /// \brief Given an image, and a set of seeds, will append new seeds in the new slice if necessary.
@@ -400,7 +400,7 @@ void ITKDestroyPipeline(
 template<typename TPixel, unsigned int VImageDimension>
 void ITKInitialiseSeedsForSlice(
     const itk::Image<TPixel, VImageDimension>* itkImage,
-    mitk::PointSet& seeds,
+    mitk::PointSet* seeds,
     int sliceAxis,
     int sliceIndex
     );
