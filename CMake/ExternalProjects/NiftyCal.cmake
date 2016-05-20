@@ -24,9 +24,10 @@ endif()
 if(BUILD_IGI)
 
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyCal.git")
-  set(version "432ad77d27")
+  set(version "094f06bf1d")
 
   niftkMacroDefineExternalProjectVariables(NiftyCal ${version} ${location})
+  set(proj_DEPENDENCIES OpenCV Eigen AprilTags ITK)
 
   if(NOT DEFINED NiftyCal_DIR)
 
@@ -49,6 +50,7 @@ if(BUILD_IGI)
         -DEigen_DIR:PATH=${Eigen_DIR}
         -DEigen_INCLUDE_DIR:PATH=${Eigen_INCLUDE_DIR}
         -DAprilTags_DIRECTORY:PATH=${AprilTags_DIR}
+        -DITK_DIR:PATH=${ITK_DIR}
       CMAKE_CACHE_ARGS
         ${EP_COMMON_CACHE_ARGS}
       CMAKE_CACHE_DEFAULT_ARGS

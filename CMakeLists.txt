@@ -572,7 +572,6 @@ mitkFunctionAddExternalProject(NAME FLANN     OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME VL        OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME CGAL      OFF ADVANCED DEPENDS Boost)
 mitkFunctionAddExternalProject(NAME NiftyLink OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME NiftyCal  OFF ADVANCED DEPENDS OpenCV AprilTags Eigen)
 mitkFunctionAddExternalProject(NAME NiftySim  OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME NiftySeg  OFF ADVANCED NO_PACKAGE DEPENDS Eigen)
 mitkFunctionAddExternalProject(NAME NiftyReg  OFF ADVANCED NO_PACKAGE)
@@ -590,6 +589,8 @@ mitkFunctionAddExternalProject(NAME MITK      ON  ADVANCED NO_CACHE DEPENDS ITK 
 
 mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON ADVANCED DEPENDS ITK)
 mitkFunctionAddExternalProject(NAME RTK                  OFF ADVANCED DEPENDS ITK GDCM)
+mitkFunctionAddExternalProject(NAME NiftyCal  OFF ADVANCED DEPENDS OpenCV AprilTags Eigen ITK)
+
 # -----------------------------------------
 # Other MITK_USE_* options not related to external projects build via the NifTK superbuild
 
