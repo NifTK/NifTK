@@ -43,7 +43,7 @@ const mitk::OperationType OP_PROPAGATE = 9320417;
 
 /**
  * \class OpGeneralSegmentorBaseCommand
- * \brief Base class for MIDAS General Segmentor commands.
+ * \brief Base class for General Segmentor commands.
  */
 class NIFTKMIDAS_EXPORT OpGeneralSegmentorBaseCommand: public mitk::Operation
 {

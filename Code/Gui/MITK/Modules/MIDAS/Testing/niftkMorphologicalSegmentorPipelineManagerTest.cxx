@@ -34,8 +34,8 @@
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
 
-#include <niftkMIDASTool.h>
-#include <niftkMIDASPaintbrushTool.h>
+#include <niftkTool.h>
+#include <niftkPaintbrushTool.h>
 #include <mitkNifTKCoreObjectFactory.h>
 #include <niftkMorphologicalSegmentorPipelineManager.h>
 
@@ -61,7 +61,7 @@ public:
   {
     std::string fileName = argv[1];
 
-    mitk::GlobalInteraction::GetInstance()->Initialize("niftkMIDASPaintbrushToolClass");
+    mitk::GlobalInteraction::GetInstance()->Initialize("niftkPaintbrushToolClass");
 
     m_DataStorage = mitk::StandaloneDataStorage::New();
     m_ToolManager = mitk::ToolManager::New(m_DataStorage);

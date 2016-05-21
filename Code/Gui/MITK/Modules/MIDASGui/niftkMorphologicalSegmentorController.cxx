@@ -23,7 +23,7 @@
 
 #include <mitkDataStorageUtils.h>
 #include <niftkIBaseView.h>
-#include <niftkMIDASPaintbrushTool.h>
+#include <niftkPaintbrushTool.h>
 
 #include "Internal/niftkMorphologicalSegmentorGUI.h"
 

@@ -22,41 +22,41 @@ set(H_FILES
 )
 
 set(CPP_FILES
-  DataManagement/niftkMIDASDataNodeNameStringFilter.cxx
+  DataManagement/niftkDataNodeNameStringFilter.cxx
   Algorithms/niftkMorphologicalSegmentorPipelineManager.cxx
   Algorithms/niftkGeneralSegmentorCommands.cxx
   Algorithms/niftkGeneralSegmentorPipeline.cxx
   Algorithms/niftkGeneralSegmentorPipelineCache.cxx
   Algorithms/niftkGeneralSegmentorUtils.cxx
-  Interactions/niftkMIDASTool.cxx
-  Interactions/niftkMIDASContourToolEventInterface.cxx
-  Interactions/niftkMIDASContourToolOpAccumulateContour.cxx
-  Interactions/niftkMIDASContourTool.cxx
-  Interactions/niftkMIDASDrawToolEventInterface.cxx
-  Interactions/niftkMIDASDrawToolOpEraseContour.cxx
-  Interactions/niftkMIDASDrawTool.cxx
-  Interactions/niftkMIDASEventFilter.cxx
-  Interactions/niftkMIDASPointSetInteractor.cxx
-  Interactions/niftkMIDASPointSetDataInteractor.cxx
-  Interactions/niftkMIDASPolyToolEventInterface.cxx
-  Interactions/niftkMIDASPolyToolOpAddToFeedbackContour.cxx
-  Interactions/niftkMIDASPolyToolOpUpdateFeedbackContour.cxx
-  Interactions/niftkMIDASPolyTool.cxx
-  Interactions/niftkMIDASSeedTool.cxx
-  Interactions/niftkMIDASPosnTool.cxx
-  Interactions/niftkMIDASPaintbrushToolEventInterface.cxx
-  Interactions/niftkMIDASPaintbrushToolOpEditImage.cxx
-  Interactions/niftkMIDASPaintbrushTool.cxx
-  Interactions/niftkMIDASRendererFilter.cxx
-  Interactions/niftkMIDASStateMachine.cxx
-  Interactions/niftkMIDASToolKeyPressStateMachine.cxx
+  Interactions/niftkTool.cxx
+  Interactions/niftkContourToolEventInterface.cxx
+  Interactions/niftkContourToolOpAccumulateContour.cxx
+  Interactions/niftkContourTool.cxx
+  Interactions/niftkDrawToolEventInterface.cxx
+  Interactions/niftkDrawToolOpEraseContour.cxx
+  Interactions/niftkDrawTool.cxx
+  Interactions/niftkEventFilter.cxx
+  Interactions/niftkPointSetInteractor.cxx
+  Interactions/niftkPointSetDataInteractor.cxx
+  Interactions/niftkPolyToolEventInterface.cxx
+  Interactions/niftkPolyToolOpAddToFeedbackContour.cxx
+  Interactions/niftkPolyToolOpUpdateFeedbackContour.cxx
+  Interactions/niftkPolyTool.cxx
+  Interactions/niftkSeedTool.cxx
+  Interactions/niftkPosnTool.cxx
+  Interactions/niftkPaintbrushToolEventInterface.cxx
+  Interactions/niftkPaintbrushToolOpEditImage.cxx
+  Interactions/niftkPaintbrushTool.cxx
+  Interactions/niftkRendererFilter.cxx
+  Interactions/niftkStateMachine.cxx
+  Interactions/niftkToolKeyPressStateMachine.cxx
 )
 
 set(RESOURCE_FILES
-  Interactions/DisplayConfig_niftkTool.xml
-  Interactions/DisplayConfig_niftkPaintbrushTool.xml
-  Interactions/DnDDisplayConfig_niftkTool.xml
-  Interactions/DnDDisplayConfig_niftkPaintbrushTool.xml
+  Interactions/mitkDisplayConfig_niftkTool.xml
+  Interactions/mitkDisplayConfig_niftkPaintbrushTool.xml
+  Interactions/niftkDnDDisplayConfig_niftkTool.xml
+  Interactions/niftkDnDDisplayConfig_niftkPaintbrushTool.xml
   Interactions/niftkDrawTool.xml
   Interactions/niftkDrawToolConfig.xml
   Interactions/niftkPolyTool.xml

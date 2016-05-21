@@ -29,10 +29,10 @@
 
 #include <niftkIBaseView.h>
 #include <niftkGeneralSegmentorUtils.h>
-#include <niftkMIDASDrawTool.h>
-#include <niftkMIDASSeedTool.h>
-#include <niftkMIDASPolyTool.h>
-#include <niftkMIDASPosnTool.h>
+#include <niftkDrawTool.h>
+#include <niftkSeedTool.h>
+#include <niftkPolyTool.h>
+#include <niftkPosnTool.h>
 
 #include "Internal/niftkGeneralSegmentorGUI.h"
 

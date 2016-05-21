@@ -24,7 +24,7 @@
 #include <mitkToolManager.h>
 
 #include <niftkBaseController.h>
-#include <niftkMIDASEventFilter.h>
+#include <niftkEventFilter.h>
 #include <niftkImageOrientationUtils.h>
 
 class QWidget;

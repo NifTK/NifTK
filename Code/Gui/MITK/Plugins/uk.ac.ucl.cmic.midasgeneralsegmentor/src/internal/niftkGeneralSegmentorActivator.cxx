@@ -17,7 +17,7 @@
 #include <QtPlugin>
 #include "niftkGeneralSegmentorPreferencePage.h"
 
-#include <niftkMIDASTool.h>
+#include <niftkTool.h>
 
 namespace niftk
 {

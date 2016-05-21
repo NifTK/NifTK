@@ -15,7 +15,7 @@
 #ifndef niftkDrawToolGUI_h
 #define niftkDrawToolGUI_h
 
-#include <niftkMIDASDrawTool.h>
+#include <niftkDrawTool.h>
 #include <QmitkToolGUI.h>
 
 class QFrame;

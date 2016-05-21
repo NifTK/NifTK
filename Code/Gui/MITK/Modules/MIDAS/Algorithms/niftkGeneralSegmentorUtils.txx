@@ -22,7 +22,7 @@
 #include <mitkPointUtils.h>
 #include "niftkGeneralSegmentorPipeline.h"
 #include "niftkGeneralSegmentorPipelineCache.h"
-#include <niftkMIDASContourTool.h>
+#include <niftkContourTool.h>
 
 namespace niftk
 {

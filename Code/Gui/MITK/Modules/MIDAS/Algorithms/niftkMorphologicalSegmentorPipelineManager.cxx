@@ -22,8 +22,8 @@
 
 #include <mitkDataStorageUtils.h>
 #include <mitkITKRegionParametersDataNodeProperty.h>
-#include <niftkMIDASPaintbrushTool.h>
-#include <niftkMIDASTool.h>
+#include <niftkPaintbrushTool.h>
+#include <niftkTool.h>
 #include <niftkImageUtils.h>
 #include <niftkImageOrientationUtils.h>
 

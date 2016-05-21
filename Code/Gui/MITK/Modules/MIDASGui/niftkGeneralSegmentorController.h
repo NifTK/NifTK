@@ -20,8 +20,8 @@
 #include <mitkOperationActor.h>
 
 #include <niftkBaseSegmentorController.h>
-#include <niftkMIDASToolKeyPressResponder.h>
-#include <niftkMIDASToolKeyPressStateMachine.h>
+#include <niftkToolKeyPressResponder.h>
+#include <niftkToolKeyPressStateMachine.h>
 
 #include "Internal/niftkGeneralSegmentorEventInterface.h"
 

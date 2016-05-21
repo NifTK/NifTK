@@ -16,7 +16,7 @@
 #define niftkPaintbrushToolGUI_h
 
 #include <QmitkToolGUI.h>
-#include <niftkMIDASPaintbrushTool.h>
+#include <niftkPaintbrushTool.h>
 
 class QSlider;
 class QLabel;
