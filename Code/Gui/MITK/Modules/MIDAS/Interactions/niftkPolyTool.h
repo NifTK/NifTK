@@ -12,15 +12,17 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASPolyTool_h
-#define niftkMIDASPolyTool_h
+#ifndef niftkPolyTool_h
+#define niftkPolyTool_h
 
 #include "niftkMIDASExports.h"
-#include "niftkContourTool.h"
-#include "niftkPolyToolEventInterface.h"
-#include <mitkPointSet.h>
+
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
+#include <mitkPointSet.h>
+
+#include "niftkContourTool.h"
+#include "niftkPolyToolEventInterface.h"
 
 namespace niftk
 {

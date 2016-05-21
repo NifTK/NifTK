@@ -14,20 +14,20 @@
 
 #include "niftkMorphologicalSegmentorPipelineManager.h"
 
+#include <itkImageDuplicator.h>
+
 #include <mitkDataNode.h>
+#include <mitkDataStorageUtils.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
 #include <mitkITKImageImport.h>
 #include <mitkSegmentationObjectFactory.h>
 
-#include <mitkDataStorageUtils.h>
+#include <niftkImageUtils.h>
+#include <niftkImageOrientationUtils.h>
 #include <mitkITKRegionParametersDataNodeProperty.h>
 #include <niftkPaintbrushTool.h>
 #include <niftkTool.h>
-#include <niftkImageUtils.h>
-#include <niftkImageOrientationUtils.h>
-
-#include <itkImageDuplicator.h>
 
 namespace niftk
 {

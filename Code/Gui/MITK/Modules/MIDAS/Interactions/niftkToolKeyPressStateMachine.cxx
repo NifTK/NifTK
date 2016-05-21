@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkToolKeyPressStateMachine.h"
+
 #include <mitkWheelEvent.h>
 
 #include <usGetModuleContext.h>

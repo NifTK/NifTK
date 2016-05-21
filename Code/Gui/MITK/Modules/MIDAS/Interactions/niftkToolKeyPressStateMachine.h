@@ -12,17 +12,18 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASToolKeyPressStateMachine_h
-#define niftkMIDASToolKeyPressStateMachine_h
+#ifndef niftkToolKeyPressStateMachine_h
+#define niftkToolKeyPressStateMachine_h
 
 #include "niftkMIDASExports.h"
-#include "niftkToolKeyPressResponder.h"
+
+#include <mitkInteractionEventObserver.h>
 #include <mitkStateMachine.h>
 
 #include <usServiceRegistration.h>
-#include <mitkInteractionEventObserver.h>
 
 #include "niftkStateMachine.h"
+#include "niftkToolKeyPressResponder.h"
 
 namespace niftk
 {

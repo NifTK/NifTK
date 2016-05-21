@@ -12,24 +12,25 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASTool_h
-#define niftkMIDASTool_h
+#ifndef niftkTool_h
+#define niftkTool_h
 
 #include "niftkMIDASExports.h"
-#include "niftkStateMachine.h"
-#include <mitkFeedbackContourTool.h>
-#include <mitkDataNode.h>
-#include <mitkPointSet.h>
-#include <mitkPositionEvent.h>
-#include <mitkMessage.h>
-
-#include "niftkPointSetInteractor.h"
-//#include "niftkPointSetDataInteractor.h"
-
-#include <usServiceReference.h>
 
 #include <map>
 #include <vector>
+
+#include <mitkDataNode.h>
+#include <mitkFeedbackContourTool.h>
+#include <mitkMessage.h>
+#include <mitkPositionEvent.h>
+#include <mitkPointSet.h>
+
+#include <usServiceReference.h>
+
+//#include "niftkPointSetDataInteractor.h"
+#include "niftkPointSetInteractor.h"
+#include "niftkStateMachine.h"
 
 namespace niftk
 {

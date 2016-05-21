@@ -12,14 +12,15 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASDrawTool_h
-#define niftkMIDASDrawTool_h
+#ifndef niftkDrawTool_h
+#define niftkDrawTool_h
 
 #include "niftkMIDASExports.h"
-#include "niftkContourTool.h"
-#include "niftkDrawToolEventInterface.h"
 
 #include <mitkPlanarCircle.h>
+
+#include "niftkContourTool.h"
+#include "niftkDrawToolEventInterface.h"
 
 namespace niftk
 {

@@ -12,15 +12,15 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASStateMachine_h
-#define niftkMIDASStateMachine_h
+#ifndef niftkStateMachine_h
+#define niftkStateMachine_h
 
 #include "niftkMIDASExports.h"
 
-#include <mitkStateEvent.h>
-#include <mitkInteractionEvent.h>
-
 #include <vector>
+
+#include <mitkInteractionEvent.h>
+#include <mitkStateEvent.h>
 
 namespace niftk
 {

@@ -15,27 +15,29 @@
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
-#include <math.h>
-#include <iostream>
+
+#include <cmath>
 #include <cstdlib>
-#include <mitkTestingMacros.h>
-#include <mitkDataStorage.h>
-#include <mitkStandaloneDataStorage.h>
-#include <mitkIOUtil.h>
-#include <mitkDataNode.h>
-#include <mitkImageAccessByItk.h>
+#include <iostream>
+
 #include <mitkBaseRenderer.h>
+#include <mitkDataNode.h>
+#include <mitkDataStorage.h>
+#include <mitkGlobalInteraction.h>
+#include <mitkImageAccessByItk.h>
+#include <mitkIOUtil.h>
 #include <mitkRenderingManager.h>
 #include <mitkRenderWindow.h>
 #include <mitkRenderWindowBase.h>
-#include <mitkGlobalInteraction.h>
+#include <mitkStandaloneDataStorage.h>
+#include <mitkTestingMacros.h>
 
 #include <mitkNifTKCoreObjectFactory.h>
-#include <niftkImageUtils.h>
-#include <niftkDataNodeNameStringFilter.h>
 #include <mitkDataNodeAddedVisibilitySetter.h>
-#include <niftkTool.h>
+#include <niftkDataNodeNameStringFilter.h>
+#include <niftkImageUtils.h>
 #include <niftkPolyTool.h>
+#include <niftkTool.h>
 
 namespace niftk
 {

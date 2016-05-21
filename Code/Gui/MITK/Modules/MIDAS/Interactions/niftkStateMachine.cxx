@@ -14,9 +14,10 @@
 
 #include "niftkStateMachine.h"
 
-#include <mitkToolManager.h>
-#include <mitkGlobalInteraction.h>
 #include <itkCommand.h>
+
+#include <mitkGlobalInteraction.h>
+#include <mitkToolManager.h>
 
 // MicroServices
 #include <usGetModuleContext.h>

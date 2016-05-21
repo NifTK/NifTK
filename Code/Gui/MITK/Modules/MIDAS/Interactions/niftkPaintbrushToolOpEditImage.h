@@ -12,15 +12,18 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASPaintbrushToolOpEditImage_h
-#define niftkMIDASPaintbrushToolOpEditImage_h
+#ifndef niftkPaintbrushToolOpEditImage_h
+#define niftkPaintbrushToolOpEditImage_h
 
 #include "niftkMIDASExports.h"
-#include <itkMIDASImageUpdatePixelWiseSingleValueProcessor.h>
+
+#include <itkImage.h>
+
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
 #include <mitkTool.h>
-#include <itkImage.h>
+
+#include <itkMIDASImageUpdatePixelWiseSingleValueProcessor.h>
 
 namespace niftk
 {

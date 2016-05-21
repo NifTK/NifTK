@@ -13,10 +13,11 @@
 =============================================================================*/
 
 #include "niftkDataNodeNameStringFilter.h"
-#include <niftkTool.h>
-#include <niftkPaintbrushTool.h>
+
 #include <niftkMorphologicalSegmentorPipelineManager.h>
+#include <niftkPaintbrushTool.h>
 #include <niftkPolyTool.h>
+#include <niftkTool.h>
 
 namespace niftk
 {

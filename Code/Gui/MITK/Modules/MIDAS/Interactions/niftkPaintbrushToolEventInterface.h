@@ -12,12 +12,13 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASPaintbrushToolEventInterface_h
-#define niftkMIDASPaintbrushToolEventInterface_h
+#ifndef niftkPaintbrushToolEventInterface_h
+#define niftkPaintbrushToolEventInterface_h
 
 #include <itkObject.h>
-#include <itkSmartPointer.h>
 #include <itkObjectFactory.h>
+#include <itkSmartPointer.h>
+
 #include <mitkOperationActor.h>
 
 namespace niftk

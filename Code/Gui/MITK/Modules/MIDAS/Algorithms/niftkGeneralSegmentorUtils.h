@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkGeneralSegmentorUtils_h
-#define __niftkGeneralSegmentorUtils_h
+#ifndef niftkGeneralSegmentorUtils_h
+#define niftkGeneralSegmentorUtils_h
 
 #include "niftkMIDASExports.h"
 

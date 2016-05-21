@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkMIDASContourTool_h
-#define __niftkMIDASContourTool_h
+#ifndef niftkContourTool_h
+#define niftkContourTool_h
 
 #include "niftkMIDASExports.h"
 

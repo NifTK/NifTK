@@ -13,16 +13,17 @@
 =============================================================================*/
 
 #include "niftkSeedTool.h"
-#include "niftkSeedTool.xpm"
-#include <mitkToolManager.h>
-#include <mitkPointSet.h>
-#include <mitkProperties.h>
-#include <mitkPositionEvent.h>
+
 #include <mitkGlobalInteraction.h>
+#include <mitkPointSet.h>
+#include <mitkPositionEvent.h>
+#include <mitkProperties.h>
+#include <mitkToolManager.h>
 
-#include <usModuleResource.h>
 #include <usGetModuleContext.h>
+#include <usModuleResource.h>
 
+#include "niftkSeedTool.xpm"
 #include "niftkToolFactoryMacros.h"
 
 NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASSeedTool, "MIDAS Seed Tool");

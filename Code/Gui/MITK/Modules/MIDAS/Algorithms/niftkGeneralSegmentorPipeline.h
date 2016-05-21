@@ -12,22 +12,23 @@
 
 =============================================================================*/
 
-#ifndef __niftkGeneralSegmentorPipeline_h
-#define __niftkGeneralSegmentorPipeline_h
+#ifndef niftkGeneralSegmentorPipeline_h
+#define niftkGeneralSegmentorPipeline_h
 
 #include "niftkMIDASExports.h"
 
-#include <itkIndex.h>
-#include <itkContinuousIndex.h>
-#include <itkImage.h>
-#include <itkExtractImageFilter.h>
 #include <itkCastImageFilter.h>
+#include <itkContinuousIndex.h>
+#include <itkExtractImageFilter.h>
+#include <itkImage.h>
+#include <itkIndex.h>
 #include <itkPasteImageFilter.h>
-#include <itkMIDASRegionGrowingImageFilter.h>
 
 #include <mitkContourModelSet.h>
 #include <mitkPointSet.h>
 #include <mitkTool.h>
+
+#include <itkMIDASRegionGrowingImageFilter.h>
 
 namespace niftk
 {

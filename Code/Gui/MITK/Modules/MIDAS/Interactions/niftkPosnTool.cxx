@@ -13,12 +13,13 @@
 =============================================================================*/
 
 #include "niftkPosnTool.h"
-#include "niftkPosnTool.xpm"
-#include <mitkImageAccessByItk.h>
-#include <mitkToolManager.h>
 
 #include <itkImageRegionConstIterator.h>
 
+#include <mitkImageAccessByItk.h>
+#include <mitkToolManager.h>
+
+#include "niftkPosnTool.xpm"
 #include "niftkToolFactoryMacros.h"
 
 namespace niftk

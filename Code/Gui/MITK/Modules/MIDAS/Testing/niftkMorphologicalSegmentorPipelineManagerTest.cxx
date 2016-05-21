@@ -15,29 +15,31 @@
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
-#include <math.h>
-#include <iostream>
+
 #include <cstdlib>
-#include <mitkTestingMacros.h>
-#include <mitkIOUtil.h>
-#include <mitkDataStorage.h>
-#include <mitkStandaloneDataStorage.h>
-#include <mitkDataNode.h>
-#include <mitkImageAccessByItk.h>
-#include <mitkToolManager.h>
-#include <mitkGeometry3D.h>
-#include <mitkPositionEvent.h>
-#include <mitkStateEvent.h>
+#include <iostream>
+#include <math.h>
+
 #include <mitkBaseRenderer.h>
+#include <mitkDataNode.h>
+#include <mitkDataStorage.h>
+#include <mitkFocusManager.h>
+#include <mitkGeometry3D.h>
+#include <mitkGlobalInteraction.h>
+#include <mitkImageAccessByItk.h>
+#include <mitkIOUtil.h>
+#include <mitkPositionEvent.h>
 #include <mitkRenderingManager.h>
 #include <mitkRenderWindow.h>
-#include <mitkFocusManager.h>
-#include <mitkGlobalInteraction.h>
+#include <mitkStandaloneDataStorage.h>
+#include <mitkStateEvent.h>
+#include <mitkTestingMacros.h>
+#include <mitkToolManager.h>
 
-#include <niftkTool.h>
-#include <niftkPaintbrushTool.h>
-#include <mitkNifTKCoreObjectFactory.h>
 #include <niftkMorphologicalSegmentorPipelineManager.h>
+#include <mitkNifTKCoreObjectFactory.h>
+#include <niftkPaintbrushTool.h>
+#include <niftkTool.h>
 
 namespace niftk
 {

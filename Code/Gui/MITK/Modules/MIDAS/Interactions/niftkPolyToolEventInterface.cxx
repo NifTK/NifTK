@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkPolyToolEventInterface.h"
+
 #include "niftkPolyTool.h"
 
 namespace niftk

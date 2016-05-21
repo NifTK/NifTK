@@ -12,10 +12,11 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASPosnTool_h
-#define niftkMIDASPosnTool_h
+#ifndef niftkPosnTool_h
+#define niftkPosnTool_h
 
 #include "niftkMIDASExports.h"
+
 #include "niftkTool.h"
 
 namespace niftk

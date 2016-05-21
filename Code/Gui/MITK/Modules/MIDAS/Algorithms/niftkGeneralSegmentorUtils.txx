@@ -18,11 +18,11 @@
 #include <itkOrthogonalContourExtractor2DImageFilter.h>
 
 #include <mitkImageToItk.h>
-
 #include <mitkPointUtils.h>
+
+#include <niftkContourTool.h>
 #include "niftkGeneralSegmentorPipeline.h"
 #include "niftkGeneralSegmentorPipelineCache.h"
-#include <niftkContourTool.h>
 
 namespace niftk
 {

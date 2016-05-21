@@ -12,16 +12,16 @@
 
 =============================================================================*/
 
-#ifndef __niftkMIDASMorphologicalSegmentorPipelineManager_h
-#define __niftkMIDASMorphologicalSegmentorPipelineManager_h
+#ifndef niftkMorphologicalSegmentorPipelineManager_h
+#define niftkMorphologicalSegmentorPipelineManager_h
 
 #include "niftkMIDASExports.h"
 
 #include <itkLightObject.h>
 
 #include <mitkDataStorage.h>
-#include <mitkToolManager.h>
 #include <mitkImage.h>
+#include <mitkToolManager.h>
 
 #include <MorphologicalSegmentorPipeline.h>
 #include <MorphologicalSegmentorPipelineInterface.h>

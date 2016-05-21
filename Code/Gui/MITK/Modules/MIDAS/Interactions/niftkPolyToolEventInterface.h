@@ -12,12 +12,13 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASPolyToolEventInterface_h
-#define niftkMIDASPolyToolEventInterface_h
+#ifndef niftkPolyToolEventInterface_h
+#define niftkPolyToolEventInterface_h
 
 #include <itkObject.h>
-#include <itkSmartPointer.h>
 #include <itkObjectFactory.h>
+#include <itkSmartPointer.h>
+
 #include <mitkOperationActor.h>
 
 namespace niftk

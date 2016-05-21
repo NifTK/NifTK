@@ -12,15 +12,16 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASRendererFilter_h
-#define niftkMIDASRendererFilter_h
+#ifndef niftkRendererFilter_h
+#define niftkRendererFilter_h
 
 #include "niftkMIDASExports.h"
 
-#include "niftkEventFilter.h"
+#include <vector>
 
 #include <mitkCommon.h>
-#include <vector>
+
+#include "niftkEventFilter.h"
 
 namespace mitk
 {

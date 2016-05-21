@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkContourToolEventInterface.h"
+
 #include "niftkContourTool.h"
 
 namespace niftk

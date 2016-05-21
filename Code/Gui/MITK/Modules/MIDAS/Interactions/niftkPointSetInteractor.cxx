@@ -13,13 +13,14 @@
 =============================================================================*/
 
 #include "niftkPointSetInteractor.h"
-#include <mitkPositionEvent.h>
-#include <mitkBaseRenderer.h>
-#include <mitkRenderingManager.h>
-#include <mitkPointSet.h>
-#include <mitkStateEvent.h>
+
 #include <mitkAction.h>
+#include <mitkBaseRenderer.h>
 #include <mitkInteractionConst.h>
+#include <mitkPointSet.h>
+#include <mitkPositionEvent.h>
+#include <mitkRenderingManager.h>
+#include <mitkStateEvent.h>
 
 namespace niftk
 {

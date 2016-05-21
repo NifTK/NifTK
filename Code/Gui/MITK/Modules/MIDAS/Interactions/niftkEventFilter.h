@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASEventFilter_h
-#define niftkMIDASEventFilter_h
+#ifndef niftkEventFilter_h
+#define niftkEventFilter_h
 
 #include "niftkMIDASExports.h"
 

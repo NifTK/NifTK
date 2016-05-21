@@ -12,12 +12,13 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASContourToolEventInterface_h
-#define niftkMIDASContourToolEventInterface_h
+#ifndef niftkContourToolEventInterface_h
+#define niftkContourToolEventInterface_h
 
 #include <itkObject.h>
-#include <itkSmartPointer.h>
 #include <itkObjectFactory.h>
+#include <itkSmartPointer.h>
+
 #include <mitkOperationActor.h>
 
 namespace niftk

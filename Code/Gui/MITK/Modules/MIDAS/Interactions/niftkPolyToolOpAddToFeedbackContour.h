@@ -12,16 +12,17 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASPolyToolOpAddToFeedbackContour_h
-#define niftkMIDASPolyToolOpAddToFeedbackContour_h
+#ifndef niftkPolyToolOpAddToFeedbackContour_h
+#define niftkPolyToolOpAddToFeedbackContour_h
 
 #include "niftkMIDASExports.h"
+
+#include <mitkContourModel.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
+#include <mitkPlaneGeometry.h>
 #include <mitkTool.h>
 #include <mitkToolManager.h>
-#include <mitkContourModel.h>
-#include <mitkPlaneGeometry.h>
 
 namespace niftk
 {

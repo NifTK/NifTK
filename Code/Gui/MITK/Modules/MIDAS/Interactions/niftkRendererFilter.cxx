@@ -14,9 +14,9 @@
 
 #include "niftkRendererFilter.h"
 
-#include <mitkStateEvent.h>
-#include <mitkInteractionEvent.h>
 #include <mitkBaseRenderer.h>
+#include <mitkInteractionEvent.h>
+#include <mitkStateEvent.h>
 
 namespace niftk
 {

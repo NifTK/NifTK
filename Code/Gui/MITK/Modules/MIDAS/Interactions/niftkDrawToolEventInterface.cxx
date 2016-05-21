@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkDrawToolEventInterface.h"
+
 #include "niftkDrawTool.h"
 
 namespace niftk

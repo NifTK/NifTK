@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkPaintbrushToolEventInterface.h"
+
 #include "niftkPaintbrushTool.h"
 
 namespace niftk

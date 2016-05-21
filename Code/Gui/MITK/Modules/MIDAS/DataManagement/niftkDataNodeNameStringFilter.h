@@ -12,10 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __niftkMIDASDataNodeNameStringFilter_h
-#define __niftkMIDASDataNodeNameStringFilter_h
+#ifndef niftkDataNodeNameStringFilter_h
+#define niftkDataNodeNameStringFilter_h
 
 #include "niftkMIDASExports.h"
+
 #include <mitkDataNodeStringPropertyFilter.h>
 #include <mitkDataStorage.h>
 

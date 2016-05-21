@@ -12,15 +12,16 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASPointSetInteractor_h
-#define niftkMIDASPointSetInteractor_h
+#ifndef niftkPointSetInteractor_h
+#define niftkPointSetInteractor_h
 
 #include "niftkMIDASExports.h"
 
-#include <mitkPointSetInteractor.h>
-#include "niftkStateMachine.h"
-
 #include <vector>
+
+#include <mitkPointSetInteractor.h>
+
+#include "niftkStateMachine.h"
 
 namespace niftk
 {

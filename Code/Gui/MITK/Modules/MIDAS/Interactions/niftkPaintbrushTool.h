@@ -12,20 +12,22 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASPaintbrushTool_h
-#define niftkMIDASPaintbrushTool_h
+#ifndef niftkPaintbrushTool_h
+#define niftkPaintbrushTool_h
 
 #include "niftkMIDASExports.h"
 
 #include <itkImage.h>
-#include <itkMIDASImageUpdatePixelWiseSingleValueProcessor.h>
 
 #include <mitkGeometry3D.h>
 #include <mitkImage.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
 #include <mitkSegTool2D.h>
+
 #include <usServiceReference.h>
+
+#include <itkMIDASImageUpdatePixelWiseSingleValueProcessor.h>
 
 #include "niftkPaintbrushToolOpEditImage.h"
 #include "niftkPaintbrushToolEventInterface.h"

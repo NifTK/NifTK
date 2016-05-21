@@ -12,14 +12,15 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASDrawToolOpEraseContour_h
-#define niftkMIDASDrawToolOpEraseContour_h
+#ifndef niftkDrawToolOpEraseContour_h
+#define niftkDrawToolOpEraseContour_h
 
 #include "niftkMIDASExports.h"
+
+#include <mitkContourModelSet.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
 #include <mitkTool.h>
-#include <mitkContourModelSet.h>
 
 namespace niftk
 {

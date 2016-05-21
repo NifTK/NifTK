@@ -13,10 +13,6 @@
 =============================================================================*/
 
 #include "niftkPolyTool.h"
-#include "niftkPolyToolEventInterface.h"
-#include "niftkPolyToolOpAddToFeedbackContour.h"
-#include "niftkPolyToolOpUpdateFeedbackContour.h"
-#include "niftkPolyTool.xpm"
 
 #include <mitkBaseRenderer.h>
 #include <mitkContourModel.h>
@@ -25,9 +21,13 @@
 #include <mitkToolManager.h>
 #include <mitkUndoController.h>
 
-#include <usModuleResource.h>
 #include <usGetModuleContext.h>
+#include <usModuleResource.h>
 
+#include "niftkPolyTool.xpm"
+#include "niftkPolyToolEventInterface.h"
+#include "niftkPolyToolOpAddToFeedbackContour.h"
+#include "niftkPolyToolOpUpdateFeedbackContour.h"
 #include "niftkToolFactoryMacros.h"
 
 NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPolyTool, "MIDAS Poly Tool");

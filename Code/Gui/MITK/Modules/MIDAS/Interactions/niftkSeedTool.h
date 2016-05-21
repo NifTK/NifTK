@@ -12,13 +12,14 @@
 
 =============================================================================*/
 
-#ifndef niftkMIDASSeedTool_h
-#define niftkMIDASSeedTool_h
+#ifndef niftkSeedTool_h
+#define niftkSeedTool_h
 
 #include "niftkMIDASExports.h"
-#include "niftkTool.h"
-#include "niftkPointSetInteractor.h"
+
 //#include "niftkPointSetDataInteractor.h"
+#include "niftkPointSetInteractor.h"
+#include "niftkTool.h"
 
 namespace niftk
 {

@@ -13,26 +13,29 @@
 =============================================================================*/
 
 #include "niftkDrawTool.h"
-#include "niftkDrawToolEventInterface.h"
-#include "niftkDrawToolOpEraseContour.h"
-#include "niftkDrawTool.xpm"
-#include <mitkVector.h>
-#include <mitkToolManager.h>
+
+#include <itkContinuousIndex.h>
+
+#include <vtkImageData.h>
+
 #include <mitkBaseRenderer.h>
-#include <mitkDataNode.h>
 #include <mitkContourModelSet.h>
-#include <mitkPlanarCircle.h>
-#include <mitkPointUtils.h>
-#include <mitkOperationEvent.h>
-#include <mitkUndoController.h>
+#include <mitkDataNode.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkITKImageImport.h>
-#include <vtkImageData.h>
-#include <itkContinuousIndex.h>
+#include <mitkOperationEvent.h>
+#include <mitkPlanarCircle.h>
+#include <mitkPointUtils.h>
+#include <mitkToolManager.h>
+#include <mitkUndoController.h>
+#include <mitkVector.h>
 
 #include <usModuleResource.h>
 #include <usGetModuleContext.h>
 
+#include "niftkDrawTool.xpm"
+#include "niftkDrawToolEventInterface.h"
+#include "niftkDrawToolOpEraseContour.h"
 #include "niftkToolFactoryMacros.h"
 
 NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASDrawTool, "MIDAS Draw Tool");
