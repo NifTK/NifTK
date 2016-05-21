@@ -71,8 +71,8 @@ void MIDASTool::LoadBehaviourStrings()
   {
     us::Module* thisModule = us::GetModuleContext()->GetModule();
 
-    if (Self::LoadBehaviour("MIDASToolPointSetInteractor.xml", thisModule)
-        && Self::LoadBehaviour("MIDASSeedToolPointSetInteractor.xml", thisModule))
+    if (Self::LoadBehaviour("niftkToolPointSetInteractor.xml", thisModule)
+        && Self::LoadBehaviour("niftkSeedToolPointSetInteractor.xml", thisModule))
     {
       s_BehaviourStringsLoaded = true;
     }
@@ -195,8 +195,8 @@ void MIDASTool::Activated()
       m_AddToPointSetInteractor = MIDASPointSetInteractor::New("MIDASToolPointSetInteractor", pointSetNode);
 
 //      m_AddToPointSetInteractor = MIDASPointSetDataInteractor::New();
-//      m_AddToPointSetInteractor->LoadStateMachine("MIDASToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
-//      m_AddToPointSetInteractor->SetEventConfig("MIDASToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
+//      m_AddToPointSetInteractor->LoadStateMachine("niftkToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
+//      m_AddToPointSetInteractor->SetEventConfig("niftkToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
       std::vector<MIDASEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<MIDASEventFilter*>::const_iterator it = eventFilters.begin();
@@ -234,7 +234,7 @@ void MIDASTool::Activated()
         // remember the original configuration
         m_DisplayInteractorConfigs.insert(std::make_pair(*it, displayInteractor->GetEventConfig()));
         // here the alternative configuration is loaded
-        displayInteractor->SetEventConfig("DnDDisplayConfigMIDASTool.xml", us::GetModuleContext()->GetModule());
+        displayInteractor->SetEventConfig("DnDDisplayConfig_niftkTool.xml", us::GetModuleContext()->GetModule());
       }
     }
   }

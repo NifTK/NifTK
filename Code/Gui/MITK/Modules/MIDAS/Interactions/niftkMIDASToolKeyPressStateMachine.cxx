@@ -40,12 +40,12 @@ MIDASToolKeyPressStateMachine::MIDASToolKeyPressStateMachine(MIDASToolKeyPressRe
   assert(responder);
   m_Responder = responder;
 
-  this->LoadStateMachine("MIDASToolKeyPressStateMachine.xml", us::GetModuleContext()->GetModule());
-  this->SetEventConfig("MIDASToolKeyPressStateMachineConfig.xml", us::GetModuleContext()->GetModule());
+  this->LoadStateMachine("niftkToolKeyPressStateMachine.xml", us::GetModuleContext()->GetModule());
+  this->SetEventConfig("niftkToolKeyPressStateMachineConfig.xml", us::GetModuleContext()->GetModule());
 
   // Register as listener via micro services
   us::ServiceProperties props;
-  props["name"] = std::string("MIDASToolKeyPressStateMachine");
+  props["name"] = std::string("niftkToolKeyPressStateMachine");
 
   m_ServiceRegistration = us::GetModuleContext()->RegisterService<mitk::InteractionEventObserver>(this, props);
 }

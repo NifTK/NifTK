@@ -72,12 +72,12 @@ void MIDASPaintbrushTool::InitializeStateMachine()
 {
   try
   {
-    this->LoadStateMachine("MIDASPaintbrushTool.xml", us::GetModuleContext()->GetModule());
-    this->SetEventConfig("MIDASPaintbrushToolConfig.xml", us::GetModuleContext()->GetModule());
+    this->LoadStateMachine("niftkPaintbrushTool.xml", us::GetModuleContext()->GetModule());
+    this->SetEventConfig("niftkPaintbrushToolConfig.xml", us::GetModuleContext()->GetModule());
   }
   catch( const std::exception& e )
   {
-    MITK_ERROR << "Could not load statemachine pattern MIDASPaintbrushTool.xml with exception: " << e.what();
+    MITK_ERROR << "Could not load statemachine pattern niftkPaintbrushTool.xml with exception: " << e.what();
   }
 }
 
@@ -125,7 +125,7 @@ void MIDASPaintbrushTool::Activated()
         // remember the original configuration
         m_DisplayInteractorConfigs.insert(std::make_pair(*it, displayInteractor->GetEventConfig()));
         // here the alternative configuration is loaded
-        displayInteractor->SetEventConfig("DnDDisplayConfigMIDASPaintbrushTool.xml", us::GetModuleContext()->GetModule());
+        displayInteractor->SetEventConfig("DnDDisplayConfig_niftkPaintbrushTool.xml", us::GetModuleContext()->GetModule());
       }
     }
   }

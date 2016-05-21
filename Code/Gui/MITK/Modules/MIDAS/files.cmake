@@ -53,23 +53,23 @@ set(CPP_FILES
 )
 
 set(RESOURCE_FILES
-  Interactions/DisplayConfigMIDASTool.xml
-  Interactions/DisplayConfigMIDASPaintbrushTool.xml
-  Interactions/DnDDisplayConfigMIDASTool.xml
-  Interactions/DnDDisplayConfigMIDASPaintbrushTool.xml
-  Interactions/MIDASDrawTool.xml
-  Interactions/MIDASDrawToolConfig.xml
-  Interactions/MIDASPolyTool.xml
-  Interactions/MIDASPolyToolConfig.xml
-  Interactions/MIDASPaintbrushTool.xml
-  Interactions/MIDASPaintbrushToolConfig.xml
-  Interactions/MIDASToolPointSetInteractor.xml
-  Interactions/MIDASToolPointSetDataInteractor.xml
-  Interactions/MIDASToolPointSetDataInteractorConfig.xml
-  Interactions/MIDASSeedTool.xml
-  Interactions/MIDASSeedToolPointSetInteractor.xml
-  Interactions/MIDASSeedToolPointSetDataInteractor.xml
-  Interactions/MIDASSeedToolPointSetDataInteractorConfig.xml
-  Interactions/MIDASToolKeyPressStateMachine.xml
-  Interactions/MIDASToolKeyPressStateMachineConfig.xml
+  Interactions/DisplayConfig_niftkTool.xml
+  Interactions/DisplayConfig_niftkPaintbrushTool.xml
+  Interactions/DnDDisplayConfig_niftkTool.xml
+  Interactions/DnDDisplayConfig_niftkPaintbrushTool.xml
+  Interactions/niftkDrawTool.xml
+  Interactions/niftkDrawToolConfig.xml
+  Interactions/niftkPolyTool.xml
+  Interactions/niftkPolyToolConfig.xml
+  Interactions/niftkPaintbrushTool.xml
+  Interactions/niftkPaintbrushToolConfig.xml
+  Interactions/niftkToolPointSetInteractor.xml
+  Interactions/niftkToolPointSetDataInteractor.xml
+  Interactions/niftkToolPointSetDataInteractorConfig.xml
+  Interactions/niftkSeedTool.xml
+  Interactions/niftkSeedToolPointSetInteractor.xml
+  Interactions/niftkSeedToolPointSetDataInteractor.xml
+  Interactions/niftkSeedToolPointSetDataInteractorConfig.xml
+  Interactions/niftkToolKeyPressStateMachine.xml
+  Interactions/niftkToolKeyPressStateMachineConfig.xml
 )

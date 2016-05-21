@@ -92,12 +92,12 @@ void MIDASPolyTool::InitializeStateMachine()
 {
   try
   {
-    this->LoadStateMachine("MIDASPolyTool.xml", us::GetModuleContext()->GetModule());
-    this->SetEventConfig("MIDASPolyToolConfig.xml", us::GetModuleContext()->GetModule());
+    this->LoadStateMachine("niftkPolyTool.xml", us::GetModuleContext()->GetModule());
+    this->SetEventConfig("niftkPolyToolConfig.xml", us::GetModuleContext()->GetModule());
   }
   catch( const std::exception& e )
   {
-    MITK_ERROR << "Could not load statemachine pattern MIDASPolyTool.xml with exception: " << e.what();
+    MITK_ERROR << "Could not load statemachine pattern niftkPolyTool.xml with exception: " << e.what();
   }
 }
 

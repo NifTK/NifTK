@@ -121,7 +121,7 @@ GeneralSegmentorControllerPrivate::GeneralSegmentorControllerPrivate(GeneralSegm
   q->GetToolByType<MIDASPolyTool>()->InstallEventFilter(q);
   q->GetToolByType<MIDASPosnTool>()->InstallEventFilter(q);
 
-//  m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New("MIDASToolKeyPressStateMachine", q);
+//  m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New("niftkToolKeyPressStateMachine", q);
   m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New(q);
 
   m_SelectedPosition.Fill(0);

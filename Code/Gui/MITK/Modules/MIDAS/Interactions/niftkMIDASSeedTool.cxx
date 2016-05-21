@@ -51,11 +51,11 @@ void MIDASSeedTool::InitializeStateMachine()
   {
     /// Note:
     /// This is a dummy, empty state machine, with no transitions. The job is done by the interactor.
-    this->LoadStateMachine("MIDASSeedTool.xml", us::GetModuleContext()->GetModule());
+    this->LoadStateMachine("niftkSeedTool.xml", us::GetModuleContext()->GetModule());
   }
   catch( const std::exception& e )
   {
-    MITK_ERROR << "Could not load statemachine pattern MIDASSeedToolStateMachine.xml with exception: " << e.what();
+    MITK_ERROR << "Could not load statemachine pattern niftkSeedToolStateMachine.xml with exception: " << e.what();
   }
 }
 
@@ -110,8 +110,8 @@ void MIDASSeedTool::Activated()
       m_PointSetInteractor = MIDASPointSetInteractor::New("MIDASSeedToolPointSetInteractor", pointSetNode);
 
 //      m_PointSetInteractor = MIDASPointSetDataInteractor::New();
-//      m_PointSetInteractor->LoadStateMachine("MIDASSeedToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
-//      m_PointSetInteractor->SetEventConfig("MIDASSeedToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
+//      m_PointSetInteractor->LoadStateMachine("niftkSeedToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
+//      m_PointSetInteractor->SetEventConfig("niftkSeedToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
       std::vector<MIDASEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<MIDASEventFilter*>::const_iterator it = eventFilters.begin();
