@@ -183,7 +183,7 @@ int niftkMIDASSegmentationNodeAddedVisibilityTest(int argc, char * argv[])
   testClass->TestCreateFilter();
   testClass->TestFilterPassWithNoPropertiesSet();
   testClass->TestFilterFailWithGivenString("One of FeedbackContourTool's feedback nodes");
-  testClass->TestFilterFailWithGivenString("MIDASContourTool");
+  testClass->TestFilterFailWithGivenString("niftkContourTool");
   testClass->TestFilterFailWithGivenString(MIDASTool::SEED_POINT_SET_NAME);
   testClass->TestFilterFailWithGivenString(MIDASTool::CURRENT_CONTOURS_NAME);
   testClass->TestFilterFailWithGivenString(MIDASTool::REGION_GROWING_IMAGE_NAME);
@@ -193,8 +193,8 @@ int niftkMIDASSegmentationNodeAddedVisibilityTest(int argc, char * argv[])
   testClass->TestFilterFailWithGivenString(MIDASTool::MORPH_EDITS_EROSIONS_ADDITIONS);
   testClass->TestFilterFailWithGivenString(MIDASTool::MORPH_EDITS_DILATIONS_SUBTRACTIONS);
   testClass->TestFilterFailWithGivenString(MIDASTool::MORPH_EDITS_DILATIONS_ADDITIONS);
-  testClass->TestFilterFailWithGivenString(MIDASPolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
-  testClass->TestFilterFailWithGivenString(MIDASPolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
+  testClass->TestFilterFailWithGivenString(PolyTool::MIDAS_POLY_TOOL_ANCHOR_POINTS);
+  testClass->TestFilterFailWithGivenString(PolyTool::MIDAS_POLY_TOOL_PREVIOUS_CONTOUR);
   testClass->TestFilterFailWithGivenString("Paintbrush_Node");
   testClass->TestVisibilitySetter(argv, false); // global
   testClass->TestVisibilitySetter(argv, true); // renderer specific

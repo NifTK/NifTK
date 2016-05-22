@@ -19,21 +19,21 @@
 namespace niftk
 {
 
-MIDASContourToolEventInterface::MIDASContourToolEventInterface()
+ContourToolEventInterface::ContourToolEventInterface()
 : m_Tool(NULL)
 {
 }
 
-MIDASContourToolEventInterface::~MIDASContourToolEventInterface()
+ContourToolEventInterface::~ContourToolEventInterface()
 {
 }
 
-void MIDASContourToolEventInterface::SetMIDASContourTool( MIDASContourTool* tool )
+void ContourToolEventInterface::SetContourTool( ContourTool* tool )
 {
   m_Tool = tool;
 }
 
-void MIDASContourToolEventInterface::ExecuteOperation(mitk::Operation* op)
+void ContourToolEventInterface::ExecuteOperation(mitk::Operation* op)
 {
   m_Tool->ExecuteOperation(op);
 }

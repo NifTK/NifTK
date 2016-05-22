@@ -25,23 +25,23 @@
 namespace niftk
 {
 
-NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPosnTool, "MIDAS Posn Tool");
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, PosnTool, "Posn Tool");
 
-MIDASPosnTool::MIDASPosnTool()
+PosnTool::PosnTool()
 : MIDASTool()
 {
 }
 
-MIDASPosnTool::~MIDASPosnTool()
+PosnTool::~PosnTool()
 {
 }
 
-const char* MIDASPosnTool::GetName() const
+const char* PosnTool::GetName() const
 {
   return "Posn";
 }
 
-const char** MIDASPosnTool::GetXPM() const
+const char** PosnTool::GetXPM() const
 {
   return niftkPosnTool_xpm;
 }

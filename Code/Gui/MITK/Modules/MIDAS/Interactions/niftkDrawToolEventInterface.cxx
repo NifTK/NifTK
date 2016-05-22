@@ -19,21 +19,21 @@
 namespace niftk
 {
 
-MIDASDrawToolEventInterface::MIDASDrawToolEventInterface()
+DrawToolEventInterface::DrawToolEventInterface()
 : m_Tool(NULL)
 {
 }
 
-MIDASDrawToolEventInterface::~MIDASDrawToolEventInterface()
+DrawToolEventInterface::~DrawToolEventInterface()
 {
 }
 
-void MIDASDrawToolEventInterface::SetMIDASDrawTool( MIDASDrawTool* tool )
+void DrawToolEventInterface::SetDrawTool( DrawTool* tool )
 {
   m_Tool = tool;
 }
 
-void MIDASDrawToolEventInterface::ExecuteOperation(mitk::Operation* op)
+void DrawToolEventInterface::ExecuteOperation(mitk::Operation* op)
 {
   m_Tool->ExecuteOperation(op);
 }

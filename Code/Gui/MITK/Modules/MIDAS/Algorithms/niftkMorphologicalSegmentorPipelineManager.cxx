@@ -249,16 +249,16 @@ bool MorphologicalSegmentorPipelineManager::IsNodeASegmentationImage(const mitk:
     mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, false);
     if (parent.IsNotNull())
     {
-      // Should also have at least 4 children (see MIDASPaintbrushTool)
+      // Should also have at least 4 children (see PaintbrushTool)
       mitk::DataStorage::SetOfObjects::Pointer children = mitk::FindDerivedImages(this->GetDataStorage(), node, true);
       for (std::size_t i = 0; i < children->size(); ++i)
       {
         set.insert(children->at(i)->GetName());
       }
-      if (set.find(MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME) != set.end()
-          && set.find(MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME) != set.end()
-          && set.find(MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME) != set.end()
-          && set.find(MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME) != set.end())
+      if (set.find(PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME) != set.end()
+          && set.find(PaintbrushTool::EROSIONS_ADDITIONS_NAME) != set.end()
+          && set.find(PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME) != set.end()
+          && set.find(PaintbrushTool::DILATIONS_ADDITIONS_NAME) != set.end())
       {
         result = true;
       }
@@ -282,10 +282,10 @@ bool MorphologicalSegmentorPipelineManager::IsNodeAWorkingImage(const mitk::Data
       std::string name;
       if (node->GetStringProperty("name", name))
       {
-        if (   name == MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME
-            || name == MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME
-            || name == MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME
-            || name == MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME
+        if (   name == PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME
+            || name == PaintbrushTool::EROSIONS_ADDITIONS_NAME
+            || name == PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME
+            || name == PaintbrushTool::DILATIONS_ADDITIONS_NAME
             )
         {
           result = true;
@@ -326,21 +326,21 @@ mitk::ToolManager::DataVectorType MorphologicalSegmentorPipelineManager::GetWork
   {
     mitk::DataNode::Pointer node = children->at(i);
     std::string name = node->GetName();
-    if (name == MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME)
+    if (name == PaintbrushTool::EROSIONS_ADDITIONS_NAME)
     {
-      workingData[MIDASPaintbrushTool::EROSIONS_ADDITIONS] = node;
+      workingData[PaintbrushTool::EROSIONS_ADDITIONS] = node;
     }
-    else if (name == MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME)
+    else if (name == PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME)
     {
-      workingData[MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS] = node;
+      workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS] = node;
     }
-    else if (name == MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME)
+    else if (name == PaintbrushTool::DILATIONS_ADDITIONS_NAME)
     {
-      workingData[MIDASPaintbrushTool::DILATIONS_ADDITIONS] = node;
+      workingData[PaintbrushTool::DILATIONS_ADDITIONS] = node;
     }
-    else if (name == MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME)
+    else if (name == PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME)
     {
-      workingData[MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS] = node;
+      workingData[PaintbrushTool::DILATIONS_SUBTRACTIONS] = node;
     }
   }
 
@@ -413,10 +413,10 @@ void MorphologicalSegmentorPipelineManager::UpdateSegmentation()
   // The grey scale image:
   mitk::Image::ConstPointer referenceImage = this->GetReferenceImage();
   // The working images:
-  mitk::Image::ConstPointer erosionsAdditions = this->GetWorkingImage(MIDASPaintbrushTool::EROSIONS_ADDITIONS).GetPointer();
-  mitk::Image::ConstPointer erosionsSubtractions = this->GetWorkingImage(MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS).GetPointer();
-  mitk::Image::ConstPointer dilationsAdditions = this->GetWorkingImage(MIDASPaintbrushTool::DILATIONS_ADDITIONS).GetPointer();
-  mitk::Image::ConstPointer dilationsSubtractions = this->GetWorkingImage(MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS).GetPointer();
+  mitk::Image::ConstPointer erosionsAdditions = this->GetWorkingImage(PaintbrushTool::EROSIONS_ADDITIONS).GetPointer();
+  mitk::Image::ConstPointer erosionsSubtractions = this->GetWorkingImage(PaintbrushTool::EROSIONS_SUBTRACTIONS).GetPointer();
+  mitk::Image::ConstPointer dilationsAdditions = this->GetWorkingImage(PaintbrushTool::DILATIONS_ADDITIONS).GetPointer();
+  mitk::Image::ConstPointer dilationsSubtractions = this->GetWorkingImage(PaintbrushTool::DILATIONS_SUBTRACTIONS).GetPointer();
   // The output image:
   mitk::Image::Pointer segmentationImage = this->GetSegmentationImage();
 
@@ -466,25 +466,25 @@ void MorphologicalSegmentorPipelineManager::UpdateSegmentation()
       mitkToItk->SetOptions(mitk::ImageAccessorBase::IgnoreLock);
       mitkToItk->SetInput(erosionsAdditions);
       mitkToItk->Update();
-      workingImages[MIDASPaintbrushTool::EROSIONS_ADDITIONS] = mitkToItk->GetOutput();
+      workingImages[PaintbrushTool::EROSIONS_ADDITIONS] = mitkToItk->GetOutput();
 
       mitkToItk = ImageToItkType::New();
       mitkToItk->SetOptions(mitk::ImageAccessorBase::IgnoreLock);
       mitkToItk->SetInput(erosionsSubtractions);
       mitkToItk->Update();
-      workingImages[MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS] = mitkToItk->GetOutput();
+      workingImages[PaintbrushTool::EROSIONS_SUBTRACTIONS] = mitkToItk->GetOutput();
 
       mitkToItk = ImageToItkType::New();
       mitkToItk->SetOptions(mitk::ImageAccessorBase::IgnoreLock);
       mitkToItk->SetInput(dilationsAdditions);
       mitkToItk->Update();
-      workingImages[MIDASPaintbrushTool::DILATIONS_ADDITIONS] = mitkToItk->GetOutput();
+      workingImages[PaintbrushTool::DILATIONS_ADDITIONS] = mitkToItk->GetOutput();
 
       mitkToItk = ImageToItkType::New();
       mitkToItk->SetOptions(mitk::ImageAccessorBase::IgnoreLock);
       mitkToItk->SetInput(dilationsSubtractions);
       mitkToItk->Update();
-      workingImages[MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS] = mitkToItk->GetOutput();
+      workingImages[PaintbrushTool::DILATIONS_SUBTRACTIONS] = mitkToItk->GetOutput();
     }
 
     std::vector<int> region(6);
@@ -498,7 +498,7 @@ void MorphologicalSegmentorPipelineManager::UpdateSegmentation()
 
       mitk::ITKRegionParametersDataNodeProperty::Pointer editingProperty
         = static_cast<mitk::ITKRegionParametersDataNodeProperty*>(
-            workingData[i]->GetProperty(MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
+            workingData[i]->GetProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str()));
 
       if (editingProperty.IsNotNull())
       {

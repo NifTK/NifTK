@@ -26,21 +26,21 @@ namespace niftk
 {
 
 /**
- * \class MIDASDrawToolOpEraseContour
- * \brief Operation class to hold data to pass back to this MIDASDrawTool,
- * so that this MIDASDrawTool can execute the Undo/Redo command.
+ * \class DrawToolOpEraseContour
+ * \brief Operation class to hold data to pass back to this DrawTool,
+ * so that this DrawTool can execute the Undo/Redo command.
  */
-class NIFTKMIDAS_EXPORT MIDASDrawToolOpEraseContour: public mitk::Operation
+class NIFTKMIDAS_EXPORT DrawToolOpEraseContour: public mitk::Operation
 {
 public:
 
-  MIDASDrawToolOpEraseContour(
+  DrawToolOpEraseContour(
       mitk::OperationType type,
       mitk::ContourModelSet* contour,
       int dataIndex
       );
 
-  ~MIDASDrawToolOpEraseContour();
+  ~DrawToolOpEraseContour();
 
   mitk::ContourModelSet* GetContourModelSet() const;
 

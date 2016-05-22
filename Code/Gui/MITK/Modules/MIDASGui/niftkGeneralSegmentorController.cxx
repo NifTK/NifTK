@@ -111,15 +111,15 @@ GeneralSegmentorControllerPrivate::GeneralSegmentorControllerPrivate(GeneralSegm
   m_Interface->SetGeneralSegmentorController(q);
 
   mitk::ToolManager* toolManager = q->GetToolManager();
-  toolManager->RegisterTool("MIDASDrawTool");
-  toolManager->RegisterTool("MIDASSeedTool");
-  toolManager->RegisterTool("MIDASPolyTool");
-  toolManager->RegisterTool("MIDASPosnTool");
+  toolManager->RegisterTool("DrawTool");
+  toolManager->RegisterTool("SeedTool");
+  toolManager->RegisterTool("PolyTool");
+  toolManager->RegisterTool("PosnTool");
 
-  q->GetToolByType<MIDASDrawTool>()->InstallEventFilter(q);
-  q->GetToolByType<MIDASSeedTool>()->InstallEventFilter(q);
-  q->GetToolByType<MIDASPolyTool>()->InstallEventFilter(q);
-  q->GetToolByType<MIDASPosnTool>()->InstallEventFilter(q);
+  q->GetToolByType<DrawTool>()->InstallEventFilter(q);
+  q->GetToolByType<SeedTool>()->InstallEventFilter(q);
+  q->GetToolByType<PolyTool>()->InstallEventFilter(q);
+  q->GetToolByType<PosnTool>()->InstallEventFilter(q);
 
 //  m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New("niftkToolKeyPressStateMachine", q);
   m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New(q);
@@ -145,10 +145,10 @@ GeneralSegmentorController::GeneralSegmentorController(IBaseView* view)
 //-----------------------------------------------------------------------------
 GeneralSegmentorController::~GeneralSegmentorController()
 {
-  this->GetToolByType<MIDASDrawTool>()->RemoveEventFilter(this);
-  this->GetToolByType<MIDASSeedTool>()->RemoveEventFilter(this);
-  this->GetToolByType<MIDASPolyTool>()->RemoveEventFilter(this);
-  this->GetToolByType<MIDASPosnTool>()->RemoveEventFilter(this);
+  this->GetToolByType<DrawTool>()->RemoveEventFilter(this);
+  this->GetToolByType<SeedTool>()->RemoveEventFilter(this);
+  this->GetToolByType<PolyTool>()->RemoveEventFilter(this);
+  this->GetToolByType<PosnTool>()->RemoveEventFilter(this);
 }
 
 
@@ -366,7 +366,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
     // Set initial properties.
     newSegmentation->SetProperty("layer", mitk::IntProperty::New(90));
     newSegmentation->SetFloatProperty("opacity", 1.0f);
-    newSegmentation->SetBoolProperty(MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), false);
+    newSegmentation->SetBoolProperty(ContourTool::EDITING_PROPERTY_NAME.c_str(), false);
 
     // Make sure these are up to date, even though we don't use them right now.
     image->GetStatistics()->GetScalarValueMin();
@@ -530,7 +530,7 @@ mitk::DataNode::Pointer GeneralSegmentorController::CreateHelperImage(mitk::Imag
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::Tool* drawTool = this->GetToolByType<MIDASDrawTool>();
+  mitk::Tool* drawTool = this->GetToolByType<DrawTool>();
   assert(drawTool);
 
   mitk::ColorProperty::Pointer col = mitk::ColorProperty::New(r, g, b);
@@ -621,7 +621,7 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
       workingData[MIDASTool::INITIAL_SEEDS]->SetVisibility(false);
 
       mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-      MIDASPolyTool* polyTool = this->GetToolByType<MIDASPolyTool>();
+      PolyTool* polyTool = this->GetToolByType<PolyTool>();
       assert(polyTool);
       polyTool->SetFeedbackContourVisible(toolManager->GetActiveTool() == polyTool);
     }
@@ -651,11 +651,11 @@ void GeneralSegmentorController::OnViewGetsVisible()
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  MIDASPolyTool* midasPolyTool = this->GetToolByType<MIDASPolyTool>();
-  midasPolyTool->ContoursHaveChanged += mitk::MessageDelegate<GeneralSegmentorController>(this, &GeneralSegmentorController::OnContoursChanged);
+  PolyTool* polyTool = this->GetToolByType<PolyTool>();
+  polyTool->ContoursHaveChanged += mitk::MessageDelegate<GeneralSegmentorController>(this, &GeneralSegmentorController::OnContoursChanged);
 
-  MIDASDrawTool* midasDrawTool = this->GetToolByType<MIDASDrawTool>();
-  midasDrawTool->ContoursHaveChanged += mitk::MessageDelegate<GeneralSegmentorController>(this, &GeneralSegmentorController::OnContoursChanged);
+  DrawTool* drawTool = this->GetToolByType<DrawTool>();
+  drawTool->ContoursHaveChanged += mitk::MessageDelegate<GeneralSegmentorController>(this, &GeneralSegmentorController::OnContoursChanged);
 }
 
 
@@ -670,10 +670,10 @@ void GeneralSegmentorController::OnViewGetsHidden()
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  MIDASPolyTool* polyTool = this->GetToolByType<MIDASPolyTool>();
+  PolyTool* polyTool = this->GetToolByType<PolyTool>();
   polyTool->ContoursHaveChanged -= mitk::MessageDelegate<GeneralSegmentorController>(this, &GeneralSegmentorController::OnContoursChanged);
 
-  MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
+  DrawTool* drawTool = this->GetToolByType<DrawTool>();
   drawTool->ContoursHaveChanged -= mitk::MessageDelegate<GeneralSegmentorController>(this, &GeneralSegmentorController::OnContoursChanged);
 }
 
@@ -708,7 +708,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
         mitk::Operation* undoOp;
         mitk::OperationEvent* opEvent;
 
-        MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
+        DrawTool* drawTool = this->GetToolByType<DrawTool>();
 
         mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
         mitk::PointSet::Pointer newSeeds = mitk::PointSet::New();
@@ -909,7 +909,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
             this->ExecuteOperation(doOp);
 
             mitk::ToolManager* toolManager = this->GetToolManager();
-            if (MIDASPolyTool* polyTool = dynamic_cast<MIDASPolyTool*>(toolManager->GetActiveTool()))
+            if (PolyTool* polyTool = dynamic_cast<PolyTool*>(toolManager->GetActiveTool()))
             {
               /// This makes the poly tool save its result to the working data nodes and stay it open.
               polyTool->Deactivated();
@@ -991,7 +991,7 @@ void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
         bool contourIsBeingEdited(false);
         if (segmentationImageNode.GetPointer() == node)
         {
-          segmentationImageNode->GetBoolProperty(MIDASContourTool::EDITING_PROPERTY_NAME.c_str(), contourIsBeingEdited);
+          segmentationImageNode->GetBoolProperty(ContourTool::EDITING_PROPERTY_NAME.c_str(), contourIsBeingEdited);
         }
 
         if (!contourIsBeingEdited)
@@ -1320,7 +1320,7 @@ void GeneralSegmentorController::UpdateRegionGrowing(
       mitk::ToolManager* toolManager = this->GetToolManager();
       assert(toolManager);
 
-      MIDASPolyTool* polyTool = this->GetToolByType<MIDASPolyTool>();
+      PolyTool* polyTool = this->GetToolByType<PolyTool>();
       assert(polyTool);
 
       mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
@@ -1451,7 +1451,7 @@ bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, 
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  MIDASPolyTool* polyTool = this->GetToolByType<MIDASPolyTool>();
+  PolyTool* polyTool = this->GetToolByType<PolyTool>();
   assert(polyTool);
 
   mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
@@ -1888,7 +1888,7 @@ bool GeneralSegmentorController::SelectSeedTool()
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
-    int seedToolId = toolManager->GetToolIdByToolType<MIDASSeedTool>();
+    int seedToolId = toolManager->GetToolIdByToolType<SeedTool>();
 
     if (seedToolId != activeToolId)
     {
@@ -1912,7 +1912,7 @@ bool GeneralSegmentorController::SelectDrawTool()
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
-    int drawToolId = toolManager->GetToolIdByToolType<MIDASDrawTool>();
+    int drawToolId = toolManager->GetToolIdByToolType<DrawTool>();
 
     if (drawToolId != activeToolId)
     {
@@ -1936,7 +1936,7 @@ bool GeneralSegmentorController::SelectPolyTool()
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
-    int polyToolId = toolManager->GetToolIdByToolType<MIDASPolyTool>();
+    int polyToolId = toolManager->GetToolIdByToolType<PolyTool>();
 
     if (polyToolId != activeToolId)
     {
@@ -2141,7 +2141,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
       mitk::ToolManager* toolManager = this->GetToolManager();
       assert(toolManager);
 
-      MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
+      DrawTool* drawTool = this->GetToolByType<DrawTool>();
       assert(drawTool);
 
       double lowerThreshold = d->m_GUI->GetLowerThreshold();
@@ -2184,7 +2184,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
               )
             );
 
-          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<MIDASPolyTool>())
+          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<PolyTool>())
           {
             toolManager->ActivateTool(-1);
           }
@@ -2371,10 +2371,10 @@ bool GeneralSegmentorController::DoWipe(int direction)
           mitk::ToolManager* toolManager = this->GetToolManager();
           assert(toolManager);
 
-          MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
+          DrawTool* drawTool = this->GetToolByType<DrawTool>();
           assert(drawTool);
 
-          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<MIDASPolyTool>())
+          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<PolyTool>())
           {
             toolManager->ActivateTool(-1);
           }
@@ -2500,7 +2500,7 @@ bool GeneralSegmentorController::DoThresholdApply(
       mitk::ToolManager* toolManager = this->GetToolManager();
       assert(toolManager);
 
-      MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
+      DrawTool* drawTool = this->GetToolByType<DrawTool>();
       assert(drawTool);
 
       int sliceAxis = this->GetReferenceImageSliceAxis();
@@ -2533,7 +2533,7 @@ bool GeneralSegmentorController::DoThresholdApply(
 
           bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
 
-          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<MIDASPolyTool>())
+          if (toolManager->GetActiveToolID() == toolManager->GetToolIdByToolType<PolyTool>())
           {
             toolManager->ActivateTool(-1);
           }
@@ -2645,10 +2645,10 @@ void GeneralSegmentorController::OnCleanButtonClicked()
       mitk::ToolManager* toolManager = this->GetToolManager();
       assert(toolManager);
 
-      MIDASPolyTool* polyTool = this->GetToolByType<MIDASPolyTool>();
+      PolyTool* polyTool = this->GetToolByType<PolyTool>();
       assert(polyTool);
 
-      MIDASDrawTool* drawTool = this->GetToolByType<MIDASDrawTool>();
+      DrawTool* drawTool = this->GetToolByType<DrawTool>();
       assert(drawTool);
 
       mitk::ContourModelSet::Pointer polyToolContours = mitk::ContourModelSet::New();
@@ -3069,7 +3069,7 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
         mitk::ContourModelSet* contoursToReplace = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[MIDASTool::CONTOURS]->GetData());
         assert(contoursToReplace);
 
-        MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
+        ContourTool::CopyContourSet(*newContours, *contoursToReplace);
         contoursToReplace->Modified();
         this->GetWorkingData()[MIDASTool::CONTOURS]->Modified();
 

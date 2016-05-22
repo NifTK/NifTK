@@ -31,8 +31,8 @@ namespace niftk
 {
 
 /**
- * \class MIDASContourTool
- * \brief Provides common functionality for MIDASDrawTool and MIDASPolyTool
+ * \class ContourTool
+ * \brief Provides common functionality for DrawTool and PolyTool
  * where these two tools enable drawing lines and poly-lines around voxel edges.
  *
  * This class derives from mitk::FeedbackContourTool, and uses several contours to
@@ -44,14 +44,14 @@ namespace niftk
  *
  * \sa mitk::FeedbackContourTool
  * \sa MIDASTool
- * \sa MIDASDrawTool
- * \sa MIDASPolyTool
+ * \sa DrawTool
+ * \sa PolyTool
  */
-class NIFTKMIDAS_EXPORT MIDASContourTool : public MIDASTool {
+class NIFTKMIDAS_EXPORT ContourTool : public MIDASTool {
 
 public:
 
-  mitkClassMacro(MIDASContourTool, MIDASTool);
+  mitkClassMacro(ContourTool, MIDASTool);
 
   /// \brief We store the name of a property to say we are editing.
   static const std::string EDITING_PROPERTY_NAME;
@@ -85,8 +85,8 @@ public:
 
 protected:
 
-  MIDASContourTool(); // purposely hidden
-  virtual ~MIDASContourTool(); // purposely hidden
+  ContourTool(); // purposely hidden
+  virtual ~ContourTool(); // purposely hidden
 
   /// \brief Calls the FeedbackContour::OnMousePressed method, then checks for working image, reference image and geometry.
   virtual bool OnMousePressed(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
@@ -162,7 +162,7 @@ private:
   static const mitk::OperationType MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR;
 
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
-  MIDASContourToolEventInterface::Pointer m_Interface;
+  ContourToolEventInterface::Pointer m_Interface;
 
 };
 

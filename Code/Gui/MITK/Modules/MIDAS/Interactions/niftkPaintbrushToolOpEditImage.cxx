@@ -17,7 +17,7 @@
 namespace niftk
 {
 
-MIDASPaintbrushToolOpEditImage::MIDASPaintbrushToolOpEditImage(
+PaintbrushToolOpEditImage::PaintbrushToolOpEditImage(
     mitk::OperationType type,
     bool redo,
     int imageNumber,
@@ -36,36 +36,36 @@ MIDASPaintbrushToolOpEditImage::MIDASPaintbrushToolOpEditImage(
 {
 }
 
-MIDASPaintbrushToolOpEditImage::~MIDASPaintbrushToolOpEditImage()
+PaintbrushToolOpEditImage::~PaintbrushToolOpEditImage()
 {
 }
 
-bool MIDASPaintbrushToolOpEditImage::IsRedo() const
+bool PaintbrushToolOpEditImage::IsRedo() const
 {
   return m_Redo;
 }
 
-int MIDASPaintbrushToolOpEditImage::GetImageNumber() const
+int PaintbrushToolOpEditImage::GetImageNumber() const
 {
   return m_ImageNumber;
 }
 
-unsigned char MIDASPaintbrushToolOpEditImage::GetValueToWrite() const
+unsigned char PaintbrushToolOpEditImage::GetValueToWrite() const
 {
   return m_ValueToWrite;
 }
 
-mitk::Image* MIDASPaintbrushToolOpEditImage::GetImageToEdit() const
+mitk::Image* PaintbrushToolOpEditImage::GetImageToEdit() const
 {
   return m_ImageToEdit;
 }
 
-mitk::DataNode* MIDASPaintbrushToolOpEditImage::GetNodeToEdit() const
+mitk::DataNode* PaintbrushToolOpEditImage::GetNodeToEdit() const
 {
   return m_NodeToEdit;
 }
 
-MIDASPaintbrushToolOpEditImage::ProcessorType::Pointer MIDASPaintbrushToolOpEditImage::GetProcessor() const
+PaintbrushToolOpEditImage::ProcessorType::Pointer PaintbrushToolOpEditImage::GetProcessor() const
 {
   return m_Processor;
 }

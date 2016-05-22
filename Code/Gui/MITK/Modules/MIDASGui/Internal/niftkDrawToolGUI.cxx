@@ -25,7 +25,7 @@
 namespace niftk
 {
 
-NIFTK_TOOL_GUI_MACRO_NO_EXPORT(MIDASDrawTool, DrawToolGUI, "Draw Tool GUI")
+NIFTK_TOOL_GUI_MACRO_NO_EXPORT(DrawTool, DrawToolGUI, "Draw Tool GUI")
 
 //-----------------------------------------------------------------------------
 DrawToolGUI::DrawToolGUI()
@@ -74,7 +74,7 @@ void DrawToolGUI::OnNewToolAssociated(mitk::Tool* tool)
     m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<DrawToolGUI, double>(this, &DrawToolGUI::OnCursorSizeChanged);
   }
 
-  m_DrawTool = dynamic_cast<MIDASDrawTool*>(tool);
+  m_DrawTool = dynamic_cast<DrawTool*>(tool);
 
   if (m_DrawTool.IsNotNull())
   {

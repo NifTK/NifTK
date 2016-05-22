@@ -24,16 +24,16 @@
 namespace niftk
 {
 
-class MIDASDrawTool;
+class DrawTool;
 
 /**
- * \class MIDASDrawToolEventInterface
- * \brief Interface class, simply to callback onto MIDASDrawTool for Undo/Redo purposes.
+ * \class DrawToolEventInterface
+ * \brief Interface class, simply to callback onto DrawTool for Undo/Redo purposes.
  */
-class MIDASDrawToolEventInterface: public itk::Object, public mitk::OperationActor
+class DrawToolEventInterface: public itk::Object, public mitk::OperationActor
 {
 public:
-  typedef MIDASDrawToolEventInterface       Self;
+  typedef DrawToolEventInterface       Self;
   typedef itk::SmartPointer<const Self>     ConstPointer;
   typedef itk::SmartPointer<Self>           Pointer;
 
@@ -41,16 +41,16 @@ public:
   itkNewMacro(Self);
 
   /// \brief Sets the tool to callback on to.
-  void SetMIDASDrawTool( MIDASDrawTool* tool );
+  void SetDrawTool( DrawTool* tool );
 
   /// \brief Main execution function.
-  virtual void  ExecuteOperation(mitk::Operation* op);
+  virtual void  ExecuteOperation(mitk::Operation* op) override;
 
 protected:
-  MIDASDrawToolEventInterface();
-  ~MIDASDrawToolEventInterface();
+  DrawToolEventInterface();
+  ~DrawToolEventInterface();
 private:
-  MIDASDrawTool* m_Tool;
+  DrawTool* m_Tool;
 };
 
 }

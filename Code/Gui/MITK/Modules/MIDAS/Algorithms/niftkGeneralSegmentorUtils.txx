@@ -1358,7 +1358,7 @@ void ITKFilterContours(
   typedef typename BinaryImageType::RegionType RegionType;
   typedef typename BinaryImageType::PointType PointType;
 
-  MIDASContourTool::CopyContourSet(*segmentationContours, *outputCopyOfInputContours, true);
+  ContourTool::CopyContourSet(*segmentationContours, *outputCopyOfInputContours, true);
 
   GeneralSegmentorPipelineParams params;
   params.m_SliceIndex = sliceIndex;
@@ -1403,7 +1403,7 @@ void ITKFilterContours(
 
   outputContours->Clear();
   mitk::ContourModel::Pointer outputContour = mitk::ContourModel::New();
-  MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
+  ContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
 
   RegionType neighbourhoodRegion;
   SizeType neighbourhoodSize;
@@ -1454,14 +1454,14 @@ void ITKFilterContours(
       {
         outputContours->AddContourModel(outputContour);
         outputContour = mitk::ContourModel::New();
-        MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
+        ContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
       }
     }
     if (outputContour->GetNumberOfVertices() >= 2)
     {
       outputContours->AddContourModel(outputContour);
       outputContour = mitk::ContourModel::New();
-      MIDASContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
+      ContourTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
     }
     contourIt++;
   }

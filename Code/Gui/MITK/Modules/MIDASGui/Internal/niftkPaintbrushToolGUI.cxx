@@ -25,7 +25,7 @@
 namespace niftk
 {
 
-NIFTK_TOOL_GUI_MACRO_NO_EXPORT(MIDASPaintbrushTool, PaintbrushToolGUI, "Paintbrush Tool GUI")
+NIFTK_TOOL_GUI_MACRO_NO_EXPORT(PaintbrushTool, PaintbrushToolGUI, "Paintbrush Tool GUI")
 
 //-----------------------------------------------------------------------------
 PaintbrushToolGUI::PaintbrushToolGUI()
@@ -76,7 +76,7 @@ void PaintbrushToolGUI::OnNewToolAssociated(mitk::Tool* tool)
     m_PaintbrushTool->CursorSizeChanged -= mitk::MessageDelegate1<PaintbrushToolGUI, int>( this, &PaintbrushToolGUI::OnCursorSizeChanged );
   }
 
-  m_PaintbrushTool = dynamic_cast<MIDASPaintbrushTool*>( tool );
+  m_PaintbrushTool = dynamic_cast<PaintbrushTool*>( tool );
 
   if (m_PaintbrushTool.IsNotNull())
   {

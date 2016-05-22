@@ -37,8 +37,8 @@ namespace niftk
 {
 
  /**
-  * \class MIDASPaintbrushTool
-  * \brief MIDAS paint brush tool used during editing on the morphological editor screen (a.k.a connection breaker).
+  * \class PaintbrushTool
+  * \brief Paint brush tool used during editing on the morphological editor screen (a.k.a connection breaker).
   *
   * Note the following:
   * <pre>
@@ -55,7 +55,7 @@ namespace niftk
   * 4.) Derives from mitk::OperationActor, so this tool supports undo/redo.
   * </pre>
   *
-  * This class is a MITK tool with a GUI defined in niftkMIDASPaintbrushToolGUI, and instantiated
+  * This class is a MITK tool with a GUI defined in niftk::PaintbrushToolGUI, and instantiated
   * using the object factory described in Maleike et. al. doi:10.1016/j.cmpb.2009.04.004.
   *
   * To effectively use this tool, you need a 3 button mouse.
@@ -63,7 +63,7 @@ namespace niftk
   * Trac 1695, 1700, 1701, 1706: Fixing up dilations: We change pipeline so that WorkingData 0,1 are
   * applied during erosions phase, and WorkingData 2,3 are applied during dilations phase.
   */
-class NIFTKMIDAS_EXPORT MIDASPaintbrushTool : public mitk::SegTool2D, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT PaintbrushTool : public mitk::SegTool2D, public MIDASStateMachine
 {
 
 public:
@@ -91,8 +91,8 @@ public:
   static const std::string DILATIONS_SUBTRACTIONS_NAME;
 
 
-  mitkClassMacro(MIDASPaintbrushTool, mitk::SegTool2D);
-  itkNewMacro(MIDASPaintbrushTool);
+  mitkClassMacro(PaintbrushTool, mitk::SegTool2D);
+  itkNewMacro(PaintbrushTool);
 
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> ImageType;
   typedef itk::MIDASImageUpdatePixelWiseSingleValueProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
@@ -143,8 +143,8 @@ public:
 
 protected:
 
-  MIDASPaintbrushTool();          // purposely hidden
-  virtual ~MIDASPaintbrushTool(); // purposely hidden
+  PaintbrushTool();          // purposely hidden
+  virtual ~PaintbrushTool(); // purposely hidden
 
   /// \brief Connects state machine actions to functions.
   virtual void ConnectActionsAndFunctions();
@@ -219,7 +219,7 @@ private:
       );
 
   // Pointer to interface object, used as callback in Undo/Redo framework
-  MIDASPaintbrushToolEventInterface::Pointer m_Interface;
+  PaintbrushToolEventInterface::Pointer m_Interface;
 
   /// \brief Calculates the current image number.
   int GetDataIndex(bool isLeftMouseButton);

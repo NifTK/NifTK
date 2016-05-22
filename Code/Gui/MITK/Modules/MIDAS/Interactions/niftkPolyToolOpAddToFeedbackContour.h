@@ -28,22 +28,22 @@ namespace niftk
 {
 
 /**
- * \class MIDASPolyToolOpAddToFeedbackContour
- * \brief Operation class to hold data to pass back to this MIDASPolyTool,
- * so that the MIDASPolyTool can execute the Undo/Redo command.
+ * \class PolyToolOpAddToFeedbackContour
+ * \brief Operation class to hold data to pass back to this PolyTool,
+ * so that the PolyTool can execute the Undo/Redo command.
  */
-class NIFTKMIDAS_EXPORT MIDASPolyToolOpAddToFeedbackContour: public mitk::Operation
+class NIFTKMIDAS_EXPORT PolyToolOpAddToFeedbackContour: public mitk::Operation
 {
 public:
 
-  MIDASPolyToolOpAddToFeedbackContour(
+  PolyToolOpAddToFeedbackContour(
       mitk::OperationType type,
       mitk::Point3D &point,
       mitk::ContourModel* contour,
       const mitk::PlaneGeometry* geometry
       );
 
-  ~MIDASPolyToolOpAddToFeedbackContour();
+  ~PolyToolOpAddToFeedbackContour();
 
   mitk::Point3D GetPoint() const;
 

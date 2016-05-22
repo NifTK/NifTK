@@ -99,7 +99,7 @@ class GeneralSegmentorGUI;
 ///
 /// The threshold "apply" button is only enabled when the threshold check-box is enabled,
 /// and disabled otherwise. The current segmentation, draw tool contours and poly tool contours
-/// (eg. WorkingData items 2 and 3, plus temporary data in the MIDASPolyTool) all limit the
+/// (eg. WorkingData items 2 and 3, plus temporary data in the PolyTool) all limit the
 /// region growing.
 ///
 /// When we hit "apply":

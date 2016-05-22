@@ -66,7 +66,7 @@ protected:
   ctkSliderWidget* m_Slider;
   QFrame* m_Frame;
 
-  MIDASDrawTool::Pointer m_DrawTool;
+  DrawTool::Pointer m_DrawTool;
 };
 
 }

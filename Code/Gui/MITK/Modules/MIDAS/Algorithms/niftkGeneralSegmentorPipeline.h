@@ -228,7 +228,7 @@ public:
  * \class GeneralSegmentorPipeline
  * \brief A specific implementation of GeneralSegmentorPipelineInterface, based on ITK, called from MITK.
  *
- * The input images are 3D, and the contours from the MIDASDrawTool and MIDASPolyTool are in 3D,
+ * The input images are 3D, and the contours from the DrawTool and PolyTool are in 3D,
  * with coordinates in millimetres. This pipeline basically extracts 2D slices, and performs 2D region
  * growing, providing the blue outline images seen within the GUI.
  */

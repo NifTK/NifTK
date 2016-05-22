@@ -26,7 +26,7 @@ namespace niftk
 {
 
 /**
- * \class MIDASDrawTool
+ * \class DrawTool
  * \brief Tool to draw lines around voxel edges like MIDAS does rather than through them
  * as most of the MITK tools do.
  *
@@ -41,12 +41,12 @@ namespace niftk
  * </pre>
  * and includes Undo/Redo functionality.
  */
-class NIFTKMIDAS_EXPORT MIDASDrawTool : public MIDASContourTool {
+class NIFTKMIDAS_EXPORT DrawTool : public ContourTool {
 
 public:
 
-  mitkClassMacro(MIDASDrawTool, MIDASContourTool);
-  itkNewMacro(MIDASDrawTool);
+  mitkClassMacro(DrawTool, ContourTool);
+  itkNewMacro(DrawTool);
 
   virtual void InitializeStateMachine();
 
@@ -87,7 +87,7 @@ public:
   /// \brief Finish editing.
   virtual bool StopErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \brief Different to MIDASContourTool::ClearData which clears the Feedback contour, this one finds the working data node, and erases all contours.
+  /// \brief Different to ContourTool::ClearData which clears the Feedback contour, this one finds the working data node, and erases all contours.
   virtual void ClearWorkingData();
 
   /// \brief Called by the main application to clean the contour, which means, to erase any bits of contour
@@ -96,8 +96,8 @@ public:
 
 protected:
 
-  MIDASDrawTool(); // purposely hidden
-  virtual ~MIDASDrawTool(); // purposely hidden
+  DrawTool(); // purposely hidden
+  virtual ~DrawTool(); // purposely hidden
 
   /// \brief Connects state machine actions to functions.
   virtual void ConnectActionsAndFunctions();
@@ -139,7 +139,7 @@ private:
   mitk::Point3D m_MostRecentPointInMm;
 
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
-  MIDASDrawToolEventInterface::Pointer m_Interface;
+  DrawToolEventInterface::Pointer m_Interface;
 
   mitk::PlanarCircle::Pointer m_EraserScope;
   mitk::DataNode::Pointer m_EraserScopeNode;

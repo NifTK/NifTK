@@ -58,7 +58,7 @@ public:
   mitk::ToolManager::Pointer m_ToolManager;
   mitk::RenderWindow::Pointer m_RenderWindow;
   mitk::RenderingManager::Pointer m_RenderingManager;
-  MIDASPaintbrushTool* m_Tool;
+  PaintbrushTool* m_Tool;
   int m_PaintbrushToolId;
 
   //-----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ public:
     prop->SetValid(false);
 
     node->SetName(name);
-    node->AddProperty(MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), prop);
+    node->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), prop);
   }
 
   //-----------------------------------------------------------------------------
@@ -93,16 +93,16 @@ public:
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 4),".. Testing 4 images loaded.");
 
     const mitk::DataNode::Pointer erodeAdditionsNode = (*allImages)[0];
-    this->SetupNode(erodeAdditionsNode, MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME);
+    this->SetupNode(erodeAdditionsNode, PaintbrushTool::EROSIONS_ADDITIONS_NAME);
 
     const mitk::DataNode::Pointer erodeSubtractionsNode = (*allImages)[1];
-    this->SetupNode(erodeSubtractionsNode, MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME);
+    this->SetupNode(erodeSubtractionsNode, PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME);
 
     const mitk::DataNode::Pointer dilateAdditionsNode = (*allImages)[2];
-    this->SetupNode(dilateAdditionsNode, MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME);
+    this->SetupNode(dilateAdditionsNode, PaintbrushTool::DILATIONS_ADDITIONS_NAME);
 
     const mitk::DataNode::Pointer dilateSubtractionsNode = (*allImages)[3];
-    this->SetupNode(dilateSubtractionsNode, MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME);
+    this->SetupNode(dilateSubtractionsNode, PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME);
 
     mitk::ToolManager::DataVectorType vector;
     vector.push_back(erodeAdditionsNode);
@@ -111,7 +111,7 @@ public:
     vector.push_back(dilateSubtractionsNode);
 
     m_ToolManager->SetWorkingData(vector);
-    m_Tool = dynamic_cast<MIDASPaintbrushTool*>(m_ToolManager->GetToolById(m_ToolManager->GetToolIdByToolType<MIDASPaintbrushTool>()));
+    m_Tool = dynamic_cast<PaintbrushTool*>(m_ToolManager->GetToolById(m_ToolManager->GetToolIdByToolType<PaintbrushTool>()));
 
     m_RenderingManager = mitk::RenderingManager::GetInstance();
     m_RenderingManager->SetDataStorage(m_DataStorage);

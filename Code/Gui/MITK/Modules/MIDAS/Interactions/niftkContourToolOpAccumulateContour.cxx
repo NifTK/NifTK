@@ -17,7 +17,7 @@
 namespace niftk
 {
 
-MIDASContourToolOpAccumulateContour::MIDASContourToolOpAccumulateContour(
+ContourToolOpAccumulateContour::ContourToolOpAccumulateContour(
   mitk::OperationType type,
   bool redo,
   int dataIndex,
@@ -30,21 +30,21 @@ MIDASContourToolOpAccumulateContour::MIDASContourToolOpAccumulateContour(
 {
 }
 
-MIDASContourToolOpAccumulateContour::~MIDASContourToolOpAccumulateContour()
+ContourToolOpAccumulateContour::~ContourToolOpAccumulateContour()
 {
 }
 
-bool MIDASContourToolOpAccumulateContour::IsRedo() const
+bool ContourToolOpAccumulateContour::IsRedo() const
 {
   return m_Redo;
 }
 
-int MIDASContourToolOpAccumulateContour::GetDataIndex() const
+int ContourToolOpAccumulateContour::GetDataIndex() const
 {
   return m_DataIndex;
 }
 
-mitk::ContourModelSet::Pointer MIDASContourToolOpAccumulateContour::GetContourSet() const
+mitk::ContourModelSet::Pointer ContourToolOpAccumulateContour::GetContourSet() const
 {
   return m_ContourSet;
 }

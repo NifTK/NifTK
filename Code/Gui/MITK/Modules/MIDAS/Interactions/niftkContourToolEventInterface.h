@@ -24,16 +24,16 @@
 namespace niftk
 {
 
-class MIDASContourTool;
+class ContourTool;
 
 /**
- * \class MIDASContourToolEventInterface
- * \brief Interface class, simply to callback onto MIDASContourTool for Undo/Redo purposes.
+ * \class ContourToolEventInterface
+ * \brief Interface class, simply to callback onto ContourTool for Undo/Redo purposes.
  */
-class MIDASContourToolEventInterface: public itk::Object, public mitk::OperationActor
+class ContourToolEventInterface: public itk::Object, public mitk::OperationActor
 {
 public:
-  typedef MIDASContourToolEventInterface       Self;
+  typedef ContourToolEventInterface       Self;
   typedef itk::SmartPointer<const Self>        ConstPointer;
   typedef itk::SmartPointer<Self>              Pointer;
 
@@ -41,16 +41,16 @@ public:
   itkNewMacro(Self);
 
   /// \brief Sets the tool to callback on to.
-  void SetMIDASContourTool( MIDASContourTool* tool );
+  void SetContourTool(ContourTool* tool);
 
   /// \brief Main execution function.
   virtual void  ExecuteOperation(mitk::Operation* op);
 
 protected:
-  MIDASContourToolEventInterface();
-  ~MIDASContourToolEventInterface();
+  ContourToolEventInterface();
+  ~ContourToolEventInterface();
 private:
-  MIDASContourTool* m_Tool;
+  ContourTool* m_Tool;
 };
 
 }

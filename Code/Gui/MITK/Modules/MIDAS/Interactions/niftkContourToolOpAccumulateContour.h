@@ -27,22 +27,22 @@ namespace niftk
 {
 
 /**
- * \class MIDASContourToolOpAccumulateContour
- * \brief Operation class to hold data to pass back to this MIDASContourTool,
- * so that this MIDASContourTool can execute the Undo/Redo command.
+ * \class ContourToolOpAccumulateContour
+ * \brief Operation class to hold data to pass back to this ContourTool,
+ * so that this ContourTool can execute the Undo/Redo command.
  */
-class NIFTKMIDAS_EXPORT MIDASContourToolOpAccumulateContour: public mitk::Operation
+class NIFTKMIDAS_EXPORT ContourToolOpAccumulateContour: public mitk::Operation
 {
 public:
 
-  MIDASContourToolOpAccumulateContour(
+  ContourToolOpAccumulateContour(
       mitk::OperationType type,
       bool redo,
       int dataIndex,
       mitk::ContourModelSet::Pointer contourSet
       );
 
-  ~MIDASContourToolOpAccumulateContour();
+  ~ContourToolOpAccumulateContour();
 
   bool IsRedo() const;
 

@@ -23,25 +23,25 @@ namespace niftk
 {
 
 /**
- * \class MIDASPosnTool
+ * \class PosnTool
  * \brief Dummy class, as the MIDAS posn tool, just enables you to change the
  * position of the slices in 2 or 3 windows, which is the default behaviour of
  * the MITK ortho-viewer anyway.
  */
-class NIFTKMIDAS_EXPORT MIDASPosnTool : public MIDASTool
+class NIFTKMIDAS_EXPORT PosnTool : public MIDASTool
 {
 
 public:
-  mitkClassMacro(MIDASPosnTool, MIDASTool);
-  itkNewMacro(MIDASPosnTool);
+  mitkClassMacro(PosnTool, MIDASTool);
+  itkNewMacro(PosnTool);
 
   virtual const char* GetName() const;
   virtual const char** GetXPM() const;
 
 protected:
 
-  MIDASPosnTool(); // purposefully hidden
-  virtual ~MIDASPosnTool(); // purposefully hidden
+  PosnTool(); // purposefully hidden
+  virtual ~PosnTool(); // purposefully hidden
 
 private:
 

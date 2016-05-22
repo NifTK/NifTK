@@ -17,7 +17,7 @@
 namespace niftk
 {
 
-MIDASPolyToolOpAddToFeedbackContour::MIDASPolyToolOpAddToFeedbackContour(
+PolyToolOpAddToFeedbackContour::PolyToolOpAddToFeedbackContour(
   mitk::OperationType type,
   mitk::Point3D &point,
   mitk::ContourModel* contour,
@@ -30,21 +30,21 @@ MIDASPolyToolOpAddToFeedbackContour::MIDASPolyToolOpAddToFeedbackContour(
 {
 }
 
-MIDASPolyToolOpAddToFeedbackContour::~MIDASPolyToolOpAddToFeedbackContour()
+PolyToolOpAddToFeedbackContour::~PolyToolOpAddToFeedbackContour()
 {
 }
 
-mitk::Point3D MIDASPolyToolOpAddToFeedbackContour::GetPoint() const
+mitk::Point3D PolyToolOpAddToFeedbackContour::GetPoint() const
 {
   return m_Point;
 }
 
-mitk::ContourModel* MIDASPolyToolOpAddToFeedbackContour::GetContour() const
+mitk::ContourModel* PolyToolOpAddToFeedbackContour::GetContour() const
 {
   return m_Contour.GetPointer();
 }
 
-const mitk::PlaneGeometry* MIDASPolyToolOpAddToFeedbackContour::GetPlaneGeometry()
+const mitk::PlaneGeometry* PolyToolOpAddToFeedbackContour::GetPlaneGeometry()
 {
   return m_PlaneGeometry;
 }

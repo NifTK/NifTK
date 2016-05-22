@@ -19,21 +19,21 @@
 namespace niftk
 {
 
-MIDASPolyToolEventInterface::MIDASPolyToolEventInterface()
+PolyToolEventInterface::PolyToolEventInterface()
 : m_Tool(NULL)
 {
 }
 
-MIDASPolyToolEventInterface::~MIDASPolyToolEventInterface()
+PolyToolEventInterface::~PolyToolEventInterface()
 {
 }
 
-void MIDASPolyToolEventInterface::SetMIDASPolyTool( MIDASPolyTool* tool )
+void PolyToolEventInterface::SetPolyTool( PolyTool* tool )
 {
   m_Tool = tool;
 }
 
-void MIDASPolyToolEventInterface::ExecuteOperation(mitk::Operation* op)
+void PolyToolEventInterface::ExecuteOperation(mitk::Operation* op)
 {
   m_Tool->ExecuteOperation(op);
 }

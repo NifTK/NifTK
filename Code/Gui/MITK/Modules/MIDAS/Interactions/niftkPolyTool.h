@@ -28,7 +28,7 @@ namespace niftk
 {
 
 /**
- * \class MIDASPolyTool
+ * \class PolyTool
  * \brief Tool to draw poly lines around voxel edges like MIDAS does rather than through them as most of the MITK tools do.
  *
  * Provides
@@ -42,12 +42,12 @@ namespace niftk
  * which should be the mitk::ContourModelSet representing the current set of contours in the gui, which in MIDAS terms
  * is the green lines representing the current segmentation.
  */
-class NIFTKMIDAS_EXPORT MIDASPolyTool : public MIDASContourTool {
+class NIFTKMIDAS_EXPORT PolyTool : public ContourTool {
 
 public:
 
-  mitkClassMacro(MIDASPolyTool, Tool);
-  itkNewMacro(MIDASPolyTool);
+  mitkClassMacro(PolyTool, Tool);
+  itkNewMacro(PolyTool);
 
   /// \see mitk::Tool::GetName()
   virtual const char* GetName() const;
@@ -83,14 +83,14 @@ public:
   virtual bool DeselectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Clears the contour, meaning it re-initialised the feedback contour in
-  /// mitk::FeedbackContourTool, and also the background contour in MIDASContourTool
+  /// mitk::FeedbackContourTool, and also the background contour in ContourTool
   /// and the Previous Contour and Poly Line points in this class.
   virtual void ClearData();
 
 protected:
 
-  MIDASPolyTool(); // purposely hidden
-  virtual ~MIDASPolyTool(); // purposely hidden
+  PolyTool(); // purposely hidden
+  virtual ~PolyTool(); // purposely hidden
 
   virtual void InitializeStateMachine();
 
@@ -108,7 +108,7 @@ private:
   /// \brief Makes sure the previous contour is not rendered in any 3D window.
   void Disable3dRenderingOfPreviousContour();
 
-  /// \brief Takes the contourReferencePointsInput and planeGeometry, and if there are >1 points in the contour, generates new feedbackContour and backgroundContour by calling MIDASContourTool::DrawLineAroundVoxelEdges.
+  /// \brief Takes the contourReferencePointsInput and planeGeometry, and if there are >1 points in the contour, generates new feedbackContour and backgroundContour by calling ContourTool::DrawLineAroundVoxelEdges.
   void DrawWholeContour(const mitk::ContourModel& contourReferencePointsInput, const mitk::PlaneGeometry* planeGeometry, mitk::ContourModel& feedbackContour, mitk::ContourModel& backgroundContour);
 
   /// \brief Called from OnMiddleMousePressed and OnMiddleMousePressedAndMoved, used to draw the previous contour in green, and the current contour (which is being dragged by the mouse with the middle click) in yellow.
@@ -142,7 +142,7 @@ private:
   static const mitk::OperationType MIDAS_POLY_TOOL_OP_UPDATE_FEEDBACK_CONTOUR;
 
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
-  MIDASPolyToolEventInterface::Pointer m_Interface;
+  PolyToolEventInterface::Pointer m_Interface;
 
   /// \brief When we are dragging a point, we want to keep track of the point we clicked on,
   /// and not always pick the closest point. Otherwise, if you middle clicked on a point

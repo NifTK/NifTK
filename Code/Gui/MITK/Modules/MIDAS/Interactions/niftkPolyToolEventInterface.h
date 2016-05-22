@@ -24,16 +24,16 @@
 namespace niftk
 {
 
-class MIDASPolyTool;
+class PolyTool;
 
 /**
- * \class MIDASPolyToolEventInterface
- * \brief Interface class, simply to callback onto MIDASPolyTool for Undo/Redo purposes.
+ * \class PolyToolEventInterface
+ * \brief Interface class, simply to callback onto PolyTool for Undo/Redo purposes.
  */
-class MIDASPolyToolEventInterface: public itk::Object, public mitk::OperationActor
+class PolyToolEventInterface: public itk::Object, public mitk::OperationActor
 {
 public:
-  typedef MIDASPolyToolEventInterface       Self;
+  typedef PolyToolEventInterface       Self;
   typedef itk::SmartPointer<const Self>     ConstPointer;
   typedef itk::SmartPointer<Self>           Pointer;
 
@@ -41,16 +41,16 @@ public:
   itkNewMacro(Self);
 
   /// \brief Sets the tool to callback on to.
-  void SetMIDASPolyTool( MIDASPolyTool* tool );
+  void SetPolyTool( PolyTool* tool );
 
   /// \brief Main execution function.
-  virtual void  ExecuteOperation(mitk::Operation* op);
+  virtual void ExecuteOperation(mitk::Operation* op) override;
 
 protected:
-  MIDASPolyToolEventInterface();
-  ~MIDASPolyToolEventInterface();
+  PolyToolEventInterface();
+  ~PolyToolEventInterface();
 private:
-  MIDASPolyTool* m_Tool;
+  PolyTool* m_Tool;
 };
 
 }

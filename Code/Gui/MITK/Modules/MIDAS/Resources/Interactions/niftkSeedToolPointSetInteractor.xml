@@ -1,4 +1,4 @@
-<stateMachine NAME="MIDASSeedToolPointSetInteractor">
+<stateMachine NAME="SeedToolPointSetInteractor">
 
   <state NAME="stateStart" START_STATE="TRUE" ID="1" >
     <transition NAME="middleButtonDown" NEXT_STATE_ID="2" EVENT_ID="4">

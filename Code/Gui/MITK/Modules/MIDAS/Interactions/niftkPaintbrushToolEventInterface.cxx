@@ -19,23 +19,23 @@
 namespace niftk
 {
 
-MIDASPaintbrushToolEventInterface::MIDASPaintbrushToolEventInterface()
-: m_MIDASPaintbrushTool(NULL)
+PaintbrushToolEventInterface::PaintbrushToolEventInterface()
+: m_PaintbrushTool(NULL)
 {
 }
 
-MIDASPaintbrushToolEventInterface::~MIDASPaintbrushToolEventInterface()
+PaintbrushToolEventInterface::~PaintbrushToolEventInterface()
 {
 }
 
-void MIDASPaintbrushToolEventInterface::SetMIDASPaintbrushTool( MIDASPaintbrushTool* paintbrushTool )
+void PaintbrushToolEventInterface::SetPaintbrushTool(PaintbrushTool* paintbrushTool)
 {
-  m_MIDASPaintbrushTool = paintbrushTool;
+  m_PaintbrushTool = paintbrushTool;
 }
 
-void MIDASPaintbrushToolEventInterface::ExecuteOperation(mitk::Operation* op)
+void PaintbrushToolEventInterface::ExecuteOperation(mitk::Operation* op)
 {
-  m_MIDASPaintbrushTool->ExecuteOperation(op);
+  m_PaintbrushTool->ExecuteOperation(op);
 }
 
 }

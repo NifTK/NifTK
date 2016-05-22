@@ -25,11 +25,11 @@ namespace niftk
 {
 
 /**
- * \class MIDASSeedTool
- * \brief MIDAS seed tool for adding / removing / moving seeds.
+ * \class SeedTool
+ * \brief Seed tool for adding / removing / moving seeds.
  *
- * Interestingly, ANY of MIDASPolyTool, MIDASDrawTool or MIDASSeedTool can add seeds.
- * but only MIDASSeedTool can remove them.
+ * Interestingly, ANY of PolyTool, DrawTool or SeedTool can add seeds.
+ * but only SeedTool can remove them.
  *
  * Provides
  * <pre>
@@ -41,12 +41,12 @@ namespace niftk
  * and includes Undo/Redo functionality. Given the above list, to remove seeds most people
  * hold the middle mouse button down, and drag it around, sucking up the seed points like a hoover.
  */
-class NIFTKMIDAS_EXPORT MIDASSeedTool : public MIDASTool {
+class NIFTKMIDAS_EXPORT SeedTool : public MIDASTool {
 
 public:
 
-  mitkClassMacro(MIDASSeedTool, MIDASTool);
-  itkNewMacro(MIDASSeedTool);
+  mitkClassMacro(SeedTool, MIDASTool);
+  itkNewMacro(SeedTool);
 
   virtual void InitializeStateMachine();
 
@@ -74,8 +74,8 @@ public:
 
 protected:
 
-  MIDASSeedTool();
-  virtual ~MIDASSeedTool();
+  SeedTool();
+  virtual ~SeedTool();
 
 private:
 

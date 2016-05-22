@@ -26,19 +26,19 @@
 #include "niftkSeedTool.xpm"
 #include "niftkToolFactoryMacros.h"
 
-NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASSeedTool, "MIDAS Seed Tool");
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, SeedTool, "Seed Tool");
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-MIDASSeedTool::~MIDASSeedTool()
+SeedTool::~SeedTool()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASSeedTool::MIDASSeedTool()
+SeedTool::SeedTool()
 : MIDASTool()
 , m_PointSetInteractor(NULL)
 {
@@ -46,7 +46,7 @@ MIDASSeedTool::MIDASSeedTool()
 
 
 //-----------------------------------------------------------------------------
-void MIDASSeedTool::InitializeStateMachine()
+void SeedTool::InitializeStateMachine()
 {
   try
   {
@@ -62,21 +62,21 @@ void MIDASSeedTool::InitializeStateMachine()
 
 
 //-----------------------------------------------------------------------------
-const char* MIDASSeedTool::GetName() const
+const char* SeedTool::GetName() const
 {
   return "Seed";
 }
 
 
 //-----------------------------------------------------------------------------
-const char** MIDASSeedTool::GetXPM() const
+const char** SeedTool::GetXPM() const
 {
   return niftkSeedTool_xpm;
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASSeedTool::InstallEventFilter(MIDASEventFilter* eventFilter)
+void SeedTool::InstallEventFilter(MIDASEventFilter* eventFilter)
 {
   Superclass::InstallEventFilter(eventFilter);
   if (m_PointSetInteractor.IsNotNull())
@@ -87,7 +87,7 @@ void MIDASSeedTool::InstallEventFilter(MIDASEventFilter* eventFilter)
 
 
 //-----------------------------------------------------------------------------
-void MIDASSeedTool::RemoveEventFilter(MIDASEventFilter* eventFilter)
+void SeedTool::RemoveEventFilter(MIDASEventFilter* eventFilter)
 {
   if (m_PointSetInteractor.IsNotNull())
   {
@@ -98,7 +98,7 @@ void MIDASSeedTool::RemoveEventFilter(MIDASEventFilter* eventFilter)
 
 
 //-----------------------------------------------------------------------------
-void MIDASSeedTool::Activated()
+void SeedTool::Activated()
 {
   Superclass::Activated();
 
@@ -108,7 +108,7 @@ void MIDASSeedTool::Activated()
   {
     if (m_PointSetInteractor.IsNull())
     {
-      m_PointSetInteractor = MIDASPointSetInteractor::New("MIDASSeedToolPointSetInteractor", pointSetNode);
+      m_PointSetInteractor = MIDASPointSetInteractor::New("SeedToolPointSetInteractor", pointSetNode);
 
 //      m_PointSetInteractor = MIDASPointSetDataInteractor::New();
 //      m_PointSetInteractor->LoadStateMachine("niftkSeedToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
@@ -131,7 +131,7 @@ void MIDASSeedTool::Activated()
 
 
 //-----------------------------------------------------------------------------
-void MIDASSeedTool::Deactivated()
+void SeedTool::Deactivated()
 {
   if (m_PointSetInteractor.IsNotNull())
   {

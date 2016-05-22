@@ -38,23 +38,23 @@
 #include "niftkDrawToolOpEraseContour.h"
 #include "niftkToolFactoryMacros.h"
 
-NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASDrawTool, "MIDAS Draw Tool");
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, DrawTool, "Draw Tool");
 
 namespace niftk
 {
 
-const mitk::OperationType MIDASDrawTool::MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR = 320422;
-const mitk::OperationType MIDASDrawTool::MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR = 320423;
+const mitk::OperationType DrawTool::MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR = 320422;
+const mitk::OperationType DrawTool::MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR = 320423;
 
 //-----------------------------------------------------------------------------
-MIDASDrawTool::MIDASDrawTool()
-: MIDASContourTool()
+DrawTool::DrawTool()
+: ContourTool()
 , m_CursorSize(0.5)
 , m_Interface(NULL)
 , m_EraserScopeVisible(false)
 {
-  m_Interface = MIDASDrawToolEventInterface::New();
-  m_Interface->SetMIDASDrawTool(this);
+  m_Interface = DrawToolEventInterface::New();
+  m_Interface->SetDrawTool(this);
 
   m_EraserScope = mitk::PlanarCircle::New();
   mitk::Point2D centre;
@@ -76,13 +76,13 @@ MIDASDrawTool::MIDASDrawTool()
 
 
 //-----------------------------------------------------------------------------
-MIDASDrawTool::~MIDASDrawTool()
+DrawTool::~DrawTool()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASDrawTool::InitializeStateMachine()
+void DrawTool::InitializeStateMachine()
 {
   try
   {
@@ -97,7 +97,7 @@ void MIDASDrawTool::InitializeStateMachine()
 
 
 //-----------------------------------------------------------------------------
-void MIDASDrawTool::ConnectActionsAndFunctions()
+void DrawTool::ConnectActionsAndFunctions()
 {
   CONNECT_FUNCTION("startDrawing", StartDrawing);
   CONNECT_FUNCTION("stopDrawing", StopDrawing);
@@ -109,21 +109,21 @@ void MIDASDrawTool::ConnectActionsAndFunctions()
 
 
 //-----------------------------------------------------------------------------
-const char* MIDASDrawTool::GetName() const
+const char* DrawTool::GetName() const
 {
   return "Draw";
 }
 
 
 //-----------------------------------------------------------------------------
-const char** MIDASDrawTool::GetXPM() const
+const char** DrawTool::GetXPM() const
 {
   return niftkDrawTool_xpm;
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASDrawTool::ClearWorkingData()
+void DrawTool::ClearWorkingData()
 {
   assert(m_ToolManager);
 
@@ -143,10 +143,10 @@ void MIDASDrawTool::ClearWorkingData()
  and also store the current point, at which the mouse was pressed down. It's the next
  method OnMouseMoved that starts to draw the line.
 */
-bool MIDASDrawTool::StartDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool DrawTool::StartDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   // Don't forget to call baseclass method.
-  MIDASContourTool::OnMousePressed(action, event);
+  ContourTool::OnMousePressed(action, event);
 
   // Make sure we have a valid position event, otherwise no point continuing.
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
@@ -161,8 +161,8 @@ bool MIDASDrawTool::StartDrawing(mitk::StateMachineAction* action, mitk::Interac
   // Turn the feedback contours on, background contours off and default the colours.
   FeedbackContourTool::SetFeedbackContourVisible(true);
   FeedbackContourTool::SetFeedbackContourColorDefault();
-  MIDASContourTool::SetBackgroundContourVisible(false);
-  MIDASContourTool::SetBackgroundContourColorDefault();
+  ContourTool::SetBackgroundContourVisible(false);
+  ContourTool::SetBackgroundContourColorDefault();
 
   // The default opacity of contours is 0.5. The FeedbackContourTool does not expose the
   // feedback contour node, only the contour data. Therefore, we have to access it through the
@@ -190,7 +190,7 @@ bool MIDASDrawTool::StartDrawing(mitk::StateMachineAction* action, mitk::Interac
  pixel (unless you move your mouse slowly), so you have to draw a line between
  two points that may span more than one voxel, or fractions of a voxel.
 */
-bool MIDASDrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool DrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   if (m_SegmentationImage == NULL || m_SegmentationImageGeometry == NULL) return false;
 
@@ -207,11 +207,11 @@ bool MIDASDrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::Interact
   }
 
   // Set this flag to indicate that we are editing, which will block the update of the region growing.
-  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, MIDASContourTool::EDITING_PROPERTY_NAME, true);
+  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, ContourTool::EDITING_PROPERTY_NAME, true);
 
   // Retrieve the contour that we will add points to.
   mitk::ContourModel* feedbackContour = mitk::FeedbackContourTool::GetFeedbackContour();
-  mitk::ContourModel* backgroundContour = MIDASContourTool::GetBackgroundContour();
+  mitk::ContourModel* backgroundContour = ContourTool::GetBackgroundContour();
 
   // Draw lines between the current pixel position, and the previous one (stored in OnMousePressed).
   bool contourAugmented = this->DrawLineAroundVoxelEdges(
@@ -242,7 +242,7 @@ bool MIDASDrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::Interact
  * When we finish a contour, we take the Current contour, and add it to the Cumulative contour.
  * This action should be undo-able, as we are creating data.
  */
-bool MIDASDrawTool::StopDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool DrawTool::StopDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   // Make sure we have a valid position event, otherwise no point continuing.
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
@@ -264,23 +264,23 @@ bool MIDASDrawTool::StopDrawing(mitk::StateMachineAction* action, mitk::Interact
   // Re-initialize contours to zero length.
   this->ClearData();
   FeedbackContourTool::SetFeedbackContourVisible(false);
-  MIDASContourTool::SetBackgroundContourVisible(false);
+  ContourTool::SetBackgroundContourVisible(false);
 
   // Set this flag to indicate that we have stopped editing, which will trigger an update of the region growing.
-  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, MIDASContourTool::EDITING_PROPERTY_NAME, false);
+  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, ContourTool::EDITING_PROPERTY_NAME, false);
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-double MIDASDrawTool::GetCursorSize() const
+double DrawTool::GetCursorSize() const
 {
   return m_CursorSize;
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASDrawTool::SetCursorSize(double cursorSize)
+void DrawTool::SetCursorSize(double cursorSize)
 {
   m_CursorSize = cursorSize;
 
@@ -291,7 +291,7 @@ void MIDASDrawTool::SetCursorSize(double cursorSize)
 
 
 //-----------------------------------------------------------------------------
-bool MIDASDrawTool::StartErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool DrawTool::StartErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
   if (!positionEvent)
@@ -317,7 +317,7 @@ bool MIDASDrawTool::StartErasing(mitk::StateMachineAction* action, mitk::Interac
 
 
 //-----------------------------------------------------------------------------
-bool MIDASDrawTool::KeepErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool DrawTool::KeepErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
   if (!positionEvent)
@@ -340,7 +340,7 @@ bool MIDASDrawTool::KeepErasing(mitk::StateMachineAction* action, mitk::Interact
 
 
 //-----------------------------------------------------------------------------
-bool MIDASDrawTool::StopErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool DrawTool::StopErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   this->SetEraserScopeVisible(false, event->GetSender());
 
@@ -351,7 +351,7 @@ bool MIDASDrawTool::StopErasing(mitk::StateMachineAction* action, mitk::Interact
 
 
 //-----------------------------------------------------------------------------
-bool MIDASDrawTool::DeleteFromContour(int dataIndex, mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool DrawTool::DeleteFromContour(int dataIndex, mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   // Make sure we have a valid position event, otherwise no point continuing.
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
@@ -369,14 +369,14 @@ bool MIDASDrawTool::DeleteFromContour(int dataIndex, mitk::StateMachineAction* a
 
   if (contourNode.IsNull())
   {
-    MITK_ERROR << "MIDASDrawTool::DeleteFromContour, cannot find contour data node, this is a programming bug, please report it" << std::endl;
+    MITK_ERROR << "DrawTool::DeleteFromContour, cannot find contour data node, this is a programming bug, please report it" << std::endl;
     return false;
   }
 
   mitk::ContourModelSet::Pointer contourSet = static_cast<mitk::ContourModelSet*>(contourNode->GetData());
   if (contourSet.IsNull())
   {
-    MITK_ERROR << "MIDASDrawTool::DeleteFromContour, cannot find contours, this is a programming bug, please report it" << std::endl;
+    MITK_ERROR << "DrawTool::DeleteFromContour, cannot find contours, this is a programming bug, please report it" << std::endl;
     return false;
   }
 
@@ -395,7 +395,7 @@ bool MIDASDrawTool::DeleteFromContour(int dataIndex, mitk::StateMachineAction* a
 
   // Copy the input contour.
   mitk::ContourModelSet::Pointer copyOfInputContourSet = mitk::ContourModelSet::New();
-  MIDASContourTool::CopyContourSet(*(contourSet.GetPointer()), *(copyOfInputContourSet.GetPointer()));
+  ContourTool::CopyContourSet(*(contourSet.GetPointer()), *(copyOfInputContourSet.GetPointer()));
 
   // Now generate the revised (edited) output contour.
   mitk::ContourModelSet::ContourModelSetIterator contourSetIt = contourSet->Begin();
@@ -431,7 +431,7 @@ bool MIDASDrawTool::DeleteFromContour(int dataIndex, mitk::StateMachineAction* a
     {
       // Outside of the radius.
       outputContour = mitk::ContourModel::New();
-      MIDASDrawTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
+      DrawTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
       outputContour->AddVertex(startPoint);
     }
 
@@ -502,7 +502,7 @@ bool MIDASDrawTool::DeleteFromContour(int dataIndex, mitk::StateMachineAction* a
             planeGeometry->Map(exit, exitPoint);
 
             outputContour = mitk::ContourModel::New();
-            MIDASDrawTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
+            DrawTool::InitialiseContour(*(firstContour.GetPointer()), *(outputContour.GetPointer()));
 
             // Find the first corner point after the exit point and add it
             // to the contour if it is different than the end point.
@@ -533,13 +533,13 @@ bool MIDASDrawTool::DeleteFromContour(int dataIndex, mitk::StateMachineAction* a
   }
 
   // Now we have the input contour set, and a filtered contour set, so pass to Undo/Redo mechanism
-  MIDASDrawToolOpEraseContour *doOp = new MIDASDrawToolOpEraseContour(
+  DrawToolOpEraseContour *doOp = new DrawToolOpEraseContour(
       MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR,
       outputContourSet,
       dataIndex
       );
 
-  MIDASDrawToolOpEraseContour *undoOp = new MIDASDrawToolOpEraseContour(
+  DrawToolOpEraseContour *undoOp = new DrawToolOpEraseContour(
       MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR,
       copyOfInputContourSet,
       dataIndex
@@ -553,7 +553,7 @@ bool MIDASDrawTool::DeleteFromContour(int dataIndex, mitk::StateMachineAction* a
 
 
 //-----------------------------------------------------------------------------
-void MIDASDrawTool::Clean(int sliceNumber, int axisNumber)
+void DrawTool::Clean(int sliceNumber, int axisNumber)
 {
   mitk::DataNode::Pointer drawContourNode = m_ToolManager->GetWorkingData(DRAW_CONTOURS);
   mitk::ContourModelSet::Pointer drawContourSet = dynamic_cast<mitk::ContourModelSet*>(drawContourNode->GetData());
@@ -569,11 +569,11 @@ void MIDASDrawTool::Clean(int sliceNumber, int axisNumber)
 
   // First take a copy of input contours, for Undo/Redo purposes.
   mitk::ContourModelSet::Pointer copyOfInputContourSet = mitk::ContourModelSet::New();
-  MIDASContourTool::CopyContourSet(*(drawContourSet.GetPointer()), *(copyOfInputContourSet.GetPointer()));
+  ContourTool::CopyContourSet(*(drawContourSet.GetPointer()), *(copyOfInputContourSet.GetPointer()));
 
   // For each contour point ... if it is not near the region growing image, we delete it.
   mitk::ContourModelSet::Pointer filteredContourSet = mitk::ContourModelSet::New();
-  MIDASContourTool::CopyContourSet(*(drawContourSet.GetPointer()), *(filteredContourSet.GetPointer()));
+  ContourTool::CopyContourSet(*(drawContourSet.GetPointer()), *(filteredContourSet.GetPointer()));
 
   try
   {
@@ -587,13 +587,13 @@ void MIDASDrawTool::Clean(int sliceNumber, int axisNumber)
       );
 
     // Now we package up the original contours, and filtered contours for Undo/Redo mechanism.
-    MIDASDrawToolOpEraseContour *doOp = new MIDASDrawToolOpEraseContour(
+    DrawToolOpEraseContour *doOp = new DrawToolOpEraseContour(
         MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR,
         filteredContourSet,
         DRAW_CONTOURS
         );
 
-    MIDASDrawToolOpEraseContour *undoOp = new MIDASDrawToolOpEraseContour(
+    DrawToolOpEraseContour *undoOp = new DrawToolOpEraseContour(
         MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR,
         copyOfInputContourSet,
         DRAW_CONTOURS
@@ -605,18 +605,18 @@ void MIDASDrawTool::Clean(int sliceNumber, int axisNumber)
   }
   catch(const mitk::AccessByItkException& e)
   {
-    MITK_ERROR << "Could not do MIDASDrawTool::Clean: Caught mitk::AccessByItkException:" << e.what() << std::endl;
+    MITK_ERROR << "Could not do DrawTool::Clean: Caught mitk::AccessByItkException:" << e.what() << std::endl;
   }
   catch( itk::ExceptionObject &err )
   {
-    MITK_ERROR << "Could not do MIDASDrawTool::Clean: Caught itk::ExceptionObject:" << err.what() << std::endl;
+    MITK_ERROR << "Could not do DrawTool::Clean: Caught itk::ExceptionObject:" << err.what() << std::endl;
   }
 }
 
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void MIDASDrawTool::ITKCleanContours(
+void DrawTool::ITKCleanContours(
     itk::Image<TPixel, VImageDimension> *itkImage,
     mitk::ContourModelSet& inputContours,
     mitk::ContourModelSet& outputContours,
@@ -659,7 +659,7 @@ void MIDASDrawTool::ITKCleanContours(
   mitk::ContourModel::Pointer inputContour = *contourIt;
 
   mitk::ContourModel::Pointer outputContour = mitk::ContourModel::New();
-  MIDASDrawTool::InitialiseContour(*(inputContour.GetPointer()), *(outputContour.GetPointer()));
+  DrawTool::InitialiseContour(*(inputContour.GetPointer()), *(outputContour.GetPointer()));
 
   // Basically iterate round each contour, and each point.
   while ( contourIt != inputContours.End() )
@@ -712,7 +712,7 @@ void MIDASDrawTool::ITKCleanContours(
       {
         outputContours.AddContourModel(outputContour);
         outputContour = mitk::ContourModel::New();
-        MIDASDrawTool::InitialiseContour(*(inputContour.GetPointer()), *(outputContour.GetPointer()));
+        DrawTool::InitialiseContour(*(inputContour.GetPointer()), *(outputContour.GetPointer()));
       }
     }
 
@@ -721,28 +721,28 @@ void MIDASDrawTool::ITKCleanContours(
       outputContours.AddContourModel(outputContour);
     }
     outputContour = mitk::ContourModel::New();
-    MIDASDrawTool::InitialiseContour(*(inputContour.GetPointer()), *(outputContour.GetPointer()));
+    DrawTool::InitialiseContour(*(inputContour.GetPointer()), *(outputContour.GetPointer()));
     contourIt++;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASDrawTool::ExecuteOperation(mitk::Operation* operation)
+void DrawTool::ExecuteOperation(mitk::Operation* operation)
 {
   if (!operation)
   {
     return;
   }
 
-  MIDASContourTool::ExecuteOperation(operation);
+  ContourTool::ExecuteOperation(operation);
 
   switch (operation->GetOperationType())
   {
   case MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR:
   case MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR:
     {
-      MIDASDrawToolOpEraseContour *op = static_cast<MIDASDrawToolOpEraseContour*>(operation);
+      DrawToolOpEraseContour *op = static_cast<DrawToolOpEraseContour*>(operation);
       if (op != NULL)
       {
         assert(m_ToolManager);
@@ -758,7 +758,7 @@ void MIDASDrawTool::ExecuteOperation(mitk::Operation* operation)
         mitk::ContourModelSet* newContours = op->GetContourModelSet();
         assert(newContours);
 
-        MIDASContourTool::CopyContourSet(*newContours, *contoursToReplace);
+        ContourTool::CopyContourSet(*newContours, *contoursToReplace);
 
         contoursToReplace->Modified();
         contourNode->Modified();
@@ -778,7 +778,7 @@ void MIDASDrawTool::ExecuteOperation(mitk::Operation* operation)
 
 
 //-----------------------------------------------------------------------------
-void MIDASDrawTool::Activated()
+void DrawTool::Activated()
 {
   Superclass::Activated();
   CursorSizeChanged.Send(m_CursorSize);
@@ -786,7 +786,7 @@ void MIDASDrawTool::Activated()
 
 
 //-----------------------------------------------------------------------------
-void MIDASDrawTool::SetEraserScopeVisible(bool visible, mitk::BaseRenderer* renderer)
+void DrawTool::SetEraserScopeVisible(bool visible, mitk::BaseRenderer* renderer)
 {
   if (m_EraserScopeVisible == visible)
   {

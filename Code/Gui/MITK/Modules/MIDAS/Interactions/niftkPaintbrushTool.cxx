@@ -39,20 +39,20 @@
 #include "niftkPaintbrushToolEventInterface.h"
 #include "niftkToolFactoryMacros.h"
 
-NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, MIDASPaintbrushTool, "MIDAS Paintbrush Tool");
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, PaintbrushTool, "Paintbrush Tool");
 
 namespace niftk
 {
 
-const std::string MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME = "MIDAS_EDITS_EROSIONS_ADDITIONS";
-const std::string MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_EROSIONS_SUBTRACTIONS";
-const std::string MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME = "MIDAS_EDITS_DILATIONS_ADDITIONS";
-const std::string MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_DILATIONS_SUBTRACTIONS";
+const std::string PaintbrushTool::EROSIONS_ADDITIONS_NAME = "MIDAS_EDITS_EROSIONS_ADDITIONS";
+const std::string PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_EROSIONS_SUBTRACTIONS";
+const std::string PaintbrushTool::DILATIONS_ADDITIONS_NAME = "MIDAS_EDITS_DILATIONS_ADDITIONS";
+const std::string PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_DILATIONS_SUBTRACTIONS";
 
-const std::string MIDASPaintbrushTool::REGION_PROPERTY_NAME = std::string("midas.morph.editing.region");
-const mitk::OperationType MIDASPaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 320410;
+const std::string PaintbrushTool::REGION_PROPERTY_NAME = std::string("midas.morph.editing.region");
+const mitk::OperationType PaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 320410;
 
-MIDASPaintbrushTool::MIDASPaintbrushTool()
+PaintbrushTool::PaintbrushTool()
 : mitk::SegTool2D("")
 , m_Interface(NULL)
 , m_CursorSize(1)
@@ -60,15 +60,15 @@ MIDASPaintbrushTool::MIDASPaintbrushTool()
 , m_WorkingImage(NULL)
 , m_ErosionMode(true)
 {
-  m_Interface = MIDASPaintbrushToolEventInterface::New();
-  m_Interface->SetMIDASPaintbrushTool( this );
+  m_Interface = PaintbrushToolEventInterface::New();
+  m_Interface->SetPaintbrushTool( this );
 }
 
-MIDASPaintbrushTool::~MIDASPaintbrushTool()
+PaintbrushTool::~PaintbrushTool()
 {
 }
 
-void MIDASPaintbrushTool::InitializeStateMachine()
+void PaintbrushTool::InitializeStateMachine()
 {
   try
   {
@@ -81,7 +81,7 @@ void MIDASPaintbrushTool::InitializeStateMachine()
   }
 }
 
-void MIDASPaintbrushTool::ConnectActionsAndFunctions()
+void PaintbrushTool::ConnectActionsAndFunctions()
 {
   CONNECT_FUNCTION("startAddingAddition", StartAddingAddition);
   CONNECT_FUNCTION("keepAddingAddition", KeepAddingAddition);
@@ -94,17 +94,17 @@ void MIDASPaintbrushTool::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("stopRemovingSubtraction", StopRemovingSubtraction);
 }
 
-const char* MIDASPaintbrushTool::GetName() const
+const char* PaintbrushTool::GetName() const
 {
   return "Paintbrush";
 }
 
-const char** MIDASPaintbrushTool::GetXPM() const
+const char** PaintbrushTool::GetXPM() const
 {
   return niftkPaintbrushTool_xpm;
 }
 
-void MIDASPaintbrushTool::Activated()
+void PaintbrushTool::Activated()
 {
   Superclass::Activated();
 
@@ -131,7 +131,7 @@ void MIDASPaintbrushTool::Activated()
   }
 }
 
-void MIDASPaintbrushTool::Deactivated()
+void PaintbrushTool::Deactivated()
 {
   // Re-enabling InteractionEventObservers that have been previously disabled for legacy handling of Tools
   // in new interaction framework
@@ -157,32 +157,32 @@ void MIDASPaintbrushTool::Deactivated()
   mitk::Tool::Deactivated();
 }
 
-bool MIDASPaintbrushTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
+bool PaintbrushTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
   return this->CanHandleEvent(event);
 }
 
-int MIDASPaintbrushTool::GetCursorSize() const
+int PaintbrushTool::GetCursorSize() const
 {
   return m_CursorSize;
 }
 
-void MIDASPaintbrushTool::SetCursorSize(int cursorSize)
+void PaintbrushTool::SetCursorSize(int cursorSize)
 {
   m_CursorSize = cursorSize;
 }
 
-bool MIDASPaintbrushTool::GetErosionMode() const
+bool PaintbrushTool::GetErosionMode() const
 {
   return m_ErosionMode;
 }
 
-void MIDASPaintbrushTool::SetErosionMode(bool erosionMode)
+void PaintbrushTool::SetErosionMode(bool erosionMode)
 {
   m_ErosionMode = erosionMode;;
 }
 
-void MIDASPaintbrushTool::GetListOfAffectedVoxels(
+void PaintbrushTool::GetListOfAffectedVoxels(
     const mitk::PlaneGeometry& planeGeometry,
     mitk::Point3D& currentPoint,
     mitk::Point3D& previousPoint,
@@ -329,7 +329,7 @@ void MIDASPaintbrushTool::GetListOfAffectedVoxels(
   } // end if length > 0
 } // end function
 
-bool MIDASPaintbrushTool::MarkInitialPosition(unsigned int dataIndex, mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::MarkInitialPosition(unsigned int dataIndex, mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::DataNode* workingNode = m_ToolManager->GetWorkingData(dataIndex);
   if (!workingNode)
@@ -354,7 +354,7 @@ bool MIDASPaintbrushTool::MarkInitialPosition(unsigned int dataIndex, mitk::Stat
 }
 
 
-bool MIDASPaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, mitk::InteractionEvent* event,
+bool PaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, mitk::InteractionEvent* event,
     int dataIndex,
     unsigned char valueForRedo,
     unsigned char valueForUndo
@@ -396,8 +396,8 @@ bool MIDASPaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, mitk::I
       std::vector<int> boundingBox = processor->ComputeMinimalBoundingBox();
       this->SetValidRegion(dataIndex, boundingBox);
 
-      MIDASPaintbrushToolOpEditImage *doOp = new MIDASPaintbrushToolOpEditImage(MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE, true, dataIndex, valueForRedo, imageToWriteTo, workingNode, processor);
-      MIDASPaintbrushToolOpEditImage *undoOp = new MIDASPaintbrushToolOpEditImage(MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE, false, dataIndex, valueForUndo, imageToWriteTo, workingNode, processor);
+      PaintbrushToolOpEditImage *doOp = new PaintbrushToolOpEditImage(MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE, true, dataIndex, valueForRedo, imageToWriteTo, workingNode, processor);
+      PaintbrushToolOpEditImage *undoOp = new PaintbrushToolOpEditImage(MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE, false, dataIndex, valueForUndo, imageToWriteTo, workingNode, processor);
       mitk::OperationEvent* operationEvent = new mitk::OperationEvent( m_Interface, doOp, undoOp, "Edit Image");
       mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
 
@@ -405,7 +405,7 @@ bool MIDASPaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, mitk::I
     }
     catch( itk::ExceptionObject & err )
     {
-      MITK_ERROR << "Failed to perform edit in niftkMIDASPaintrushTool due to:" << err << std::endl;
+      MITK_ERROR << "Failed to perform edit in niftkPaintrushTool due to:" << err << std::endl;
     }
   }
 
@@ -415,7 +415,7 @@ bool MIDASPaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, mitk::I
   return true;
 }
 
-int MIDASPaintbrushTool::GetDataIndex(bool isLeftMouseButton)
+int PaintbrushTool::GetDataIndex(bool isLeftMouseButton)
 {
   int dataIndex = -1;
 
@@ -446,21 +446,21 @@ int MIDASPaintbrushTool::GetDataIndex(bool isLeftMouseButton)
   return dataIndex;
 }
 
-bool MIDASPaintbrushTool::StartAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::StartAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(true);
   bool result = this->MarkInitialPosition(dataIndex, action, event);
   return result;
 }
 
-bool MIDASPaintbrushTool::KeepAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::KeepAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(true);
   this->DoMouseMoved(action, event, dataIndex, 1, 0);
   return true;
 }
 
-bool MIDASPaintbrushTool::StopAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::StopAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(true);
   this->SetInvalidRegion(dataIndex);
@@ -475,20 +475,20 @@ bool MIDASPaintbrushTool::StopAddingAddition(mitk::StateMachineAction* action, m
   return true;
 }
 
-bool MIDASPaintbrushTool::StartAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::StartAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(false);
   return this->MarkInitialPosition(dataIndex, action, event);
 }
 
-bool MIDASPaintbrushTool::KeepAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::KeepAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(false);
   this->DoMouseMoved(action, event, dataIndex, 1, 0);
   return true;
 }
 
-bool MIDASPaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
@@ -496,20 +496,20 @@ bool MIDASPaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* action
   return true;
 }
 
-bool MIDASPaintbrushTool::StartRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::StartRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(false);
   return this->MarkInitialPosition(dataIndex, action, event);
 }
 
-bool MIDASPaintbrushTool::KeepRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::KeepRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(false);
   this->DoMouseMoved(action, event, dataIndex, 0, 1);
   return true;
 }
 
-bool MIDASPaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
@@ -517,7 +517,7 @@ bool MIDASPaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* acti
   return true;
 }
 
-void MIDASPaintbrushTool::SetRegion(unsigned int dataIndex, bool valid, const std::vector<int>& boundingBox)
+void PaintbrushTool::SetRegion(unsigned int dataIndex, bool valid, const std::vector<int>& boundingBox)
 {
   mitk::DataNode* workingNode = m_ToolManager->GetWorkingData(dataIndex);
   assert(workingNode);
@@ -539,17 +539,17 @@ void MIDASPaintbrushTool::SetRegion(unsigned int dataIndex, bool valid, const st
   }
 }
 
-void MIDASPaintbrushTool::SetInvalidRegion(unsigned int dataIndex)
+void PaintbrushTool::SetInvalidRegion(unsigned int dataIndex)
 {
   this->SetRegion(dataIndex, false);
 }
 
-void MIDASPaintbrushTool::SetValidRegion(unsigned int dataIndex, const std::vector<int>& boundingBox)
+void PaintbrushTool::SetValidRegion(unsigned int dataIndex, const std::vector<int>& boundingBox)
 {
   this->SetRegion(dataIndex, true, boundingBox);
 }
 
-void MIDASPaintbrushTool::ExecuteOperation(mitk::Operation* operation)
+void PaintbrushTool::ExecuteOperation(mitk::Operation* operation)
 {
   if (!operation) return;
 
@@ -557,7 +557,7 @@ void MIDASPaintbrushTool::ExecuteOperation(mitk::Operation* operation)
   {
   case MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE:
     {
-      MIDASPaintbrushToolOpEditImage *op = static_cast<MIDASPaintbrushToolOpEditImage*>(operation);
+      PaintbrushToolOpEditImage *op = static_cast<PaintbrushToolOpEditImage*>(operation);
       unsigned char valueToWrite = op->GetValueToWrite();
       ProcessorType::Pointer processor = op->GetProcessor();
       mitk::Image::Pointer imageToEdit = op->GetImageToEdit();
@@ -586,7 +586,7 @@ void MIDASPaintbrushTool::ExecuteOperation(mitk::Operation* operation)
 }
 
 template<typename TPixel, unsigned int VImageDimension>
-void MIDASPaintbrushTool::RunITKProcessor(
+void PaintbrushTool::RunITKProcessor(
     itk::Image<TPixel, VImageDimension>* itkImage,
     ProcessorType::Pointer processor,
     bool redo,

@@ -17,7 +17,7 @@
 namespace niftk
 {
 
-MIDASDrawToolOpEraseContour::MIDASDrawToolOpEraseContour(
+DrawToolOpEraseContour::DrawToolOpEraseContour(
   mitk::OperationType type,
   mitk::ContourModelSet* contourModelSet,
   int dataIndex
@@ -28,16 +28,16 @@ MIDASDrawToolOpEraseContour::MIDASDrawToolOpEraseContour(
 {
 }
 
-MIDASDrawToolOpEraseContour::~MIDASDrawToolOpEraseContour()
+DrawToolOpEraseContour::~DrawToolOpEraseContour()
 {
 }
 
-mitk::ContourModelSet* MIDASDrawToolOpEraseContour::GetContourModelSet() const
+mitk::ContourModelSet* DrawToolOpEraseContour::GetContourModelSet() const
 {
   return m_ContourModelSet;
 }
 
-int MIDASDrawToolOpEraseContour::GetDataIndex() const
+int DrawToolOpEraseContour::GetDataIndex() const
 {
   return m_DataIndex;
 }

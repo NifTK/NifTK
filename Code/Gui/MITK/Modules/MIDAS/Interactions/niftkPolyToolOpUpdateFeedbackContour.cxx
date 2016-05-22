@@ -17,7 +17,7 @@
 namespace niftk
 {
 
-MIDASPolyToolOpUpdateFeedbackContour::MIDASPolyToolOpUpdateFeedbackContour(
+PolyToolOpUpdateFeedbackContour::PolyToolOpUpdateFeedbackContour(
   mitk::OperationType type,
   unsigned int pointId,
   const mitk::Point3D &point,
@@ -32,26 +32,26 @@ MIDASPolyToolOpUpdateFeedbackContour::MIDASPolyToolOpUpdateFeedbackContour(
 {
 }
 
-MIDASPolyToolOpUpdateFeedbackContour::~MIDASPolyToolOpUpdateFeedbackContour()
+PolyToolOpUpdateFeedbackContour::~PolyToolOpUpdateFeedbackContour()
 {
 }
 
-unsigned int MIDASPolyToolOpUpdateFeedbackContour::GetPointId() const
+unsigned int PolyToolOpUpdateFeedbackContour::GetPointId() const
 {
   return m_PointId;
 }
 
-const mitk::Point3D MIDASPolyToolOpUpdateFeedbackContour::GetPoint() const
+const mitk::Point3D PolyToolOpUpdateFeedbackContour::GetPoint() const
 {
   return m_Point;
 }
 
-mitk::ContourModel* MIDASPolyToolOpUpdateFeedbackContour::GetContour() const
+mitk::ContourModel* PolyToolOpUpdateFeedbackContour::GetContour() const
 {
   return m_Contour.GetPointer();
 }
 
-const mitk::PlaneGeometry* MIDASPolyToolOpUpdateFeedbackContour::GetPlaneGeometry()
+const mitk::PlaneGeometry* PolyToolOpUpdateFeedbackContour::GetPlaneGeometry()
 {
   return m_PlaneGeometry;
 }

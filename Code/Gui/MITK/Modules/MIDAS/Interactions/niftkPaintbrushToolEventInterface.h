@@ -24,16 +24,16 @@
 namespace niftk
 {
 
-class MIDASPaintbrushTool;
+class PaintbrushTool;
 
 /**
- * \class MIDASPaintbrushToolEventInterface
- * \brief Interface class, simply to callback operations onto the MIDASPaintbrushTool.
+ * \class PaintbrushToolEventInterface
+ * \brief Interface class, simply to callback operations onto the PaintbrushTool.
  */
-class MIDASPaintbrushToolEventInterface: public itk::Object, public mitk::OperationActor
+class PaintbrushToolEventInterface: public itk::Object, public mitk::OperationActor
 {
 public:
-  typedef MIDASPaintbrushToolEventInterface  Self;
+  typedef PaintbrushToolEventInterface  Self;
   typedef itk::SmartPointer<const Self>      ConstPointer;
   typedef itk::SmartPointer<Self>            Pointer;
 
@@ -41,16 +41,16 @@ public:
   itkNewMacro(Self);
 
   /// \brief Sets the tool to callback on to.
-  void SetMIDASPaintbrushTool( MIDASPaintbrushTool* paintbrushTool );
+  void SetPaintbrushTool(PaintbrushTool* paintbrushTool);
 
   /// \brief Main execution function.
-  virtual void  ExecuteOperation(mitk::Operation* op);
+  virtual void ExecuteOperation(mitk::Operation* op) override;
 
 protected:
-  MIDASPaintbrushToolEventInterface();
-  ~MIDASPaintbrushToolEventInterface();
+  PaintbrushToolEventInterface();
+  ~PaintbrushToolEventInterface();
 private:
-  MIDASPaintbrushTool* m_MIDASPaintbrushTool;
+  PaintbrushTool* m_PaintbrushTool;
 };
 
 }

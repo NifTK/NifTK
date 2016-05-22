@@ -25,8 +25,8 @@ class QFrame;
 namespace niftk
 {
 
-/// \class niftkMIDASPaintbrushToolGUI
-/// \brief GUI component for the MIDASPaintbrushTool, providing the number of pixels in radius for
+/// \class niftkPaintbrushToolGUI
+/// \brief GUI component for the PaintbrushTool, providing the number of pixels in radius for
 /// the cursor.
 ///
 /// Notice how this class can have a reference to the mitk::Tool it is controlling, and registers with the
@@ -67,7 +67,7 @@ protected:
   QLabel* m_SizeLabel;
   QFrame* m_Frame;
 
-  MIDASPaintbrushTool::Pointer m_PaintbrushTool;
+  PaintbrushTool::Pointer m_PaintbrushTool;
 };
 
 }

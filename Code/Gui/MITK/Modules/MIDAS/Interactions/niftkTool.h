@@ -42,7 +42,7 @@ namespace niftk
  *
  * Matt: I made it inherit from FeedbackContourTool, as multiple inheritance was getting messy.
  *
- * Note that the MIDASSeedTool, MIDASDrawTool and MIDASPolyTool all inherit from this class.
+ * Note that the SeedTool, DrawTool and PolyTool all inherit from this class.
  * Each of these tools will have their point set interactor. Each tool is managed
  * by an mitk::ToolManager which guarantees that only one is active at any given time.
  * As each tool becomes activated it will register the interactor with GlobalInteraction,
@@ -53,11 +53,11 @@ namespace niftk
  * This means derived classes could be notified when the number of seeds has changed.
  * This is only called if the tool is Active.
  *
- * \sa MIDASSeedTool
- * \sa MIDASContourTool
- * \sa MIDASDrawTool
- * \sa MIDASPolyTool
- * \sa MIDASPointSetDataInteractor
+ * \sa SeedTool
+ * \sa ContourTool
+ * \sa DrawTool
+ * \sa PolyTool
+ * \sa PointSetDataInteractor
  */
 class NIFTKMIDAS_EXPORT MIDASTool : public mitk::FeedbackContourTool, public MIDASStateMachine
 {

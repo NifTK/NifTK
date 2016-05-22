@@ -82,7 +82,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent, mitk::Re
   m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
   m_MIDASToolNodeNameFilter->SetPropertyName("name");
   m_MIDASToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
-  m_MIDASToolNodeNameFilter->AddToList("MIDASContourTool");
+  m_MIDASToolNodeNameFilter->AddToList("niftkContourTool");
   m_MIDASToolNodeNameFilter->AddToList("MIDAS_SEEDS");
   m_MIDASToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
   m_MIDASToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
@@ -94,8 +94,8 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent, mitk::Re
   m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
   m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
   m_MIDASToolNodeNameFilter->AddToList("MORPHO_SEGMENTATION_OF_LAST_STAGE");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool anchor points");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
+  m_MIDASToolNodeNameFilter->AddToList("PolyTool anchor points");
+  m_MIDASToolNodeNameFilter->AddToList("PolyTool previous contour");
   m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
 
   m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(m_DataStorage);

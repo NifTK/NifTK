@@ -29,16 +29,16 @@ namespace niftk
 {
 
 /**
- * \class MIDASPaintbrushToolOpEditImage
- * \brief Operation class to hold data to pass back to this MIDASPaintbrushTool,
- * so that this MIDASPaintbrushTool can execute the Undo/Redo command.
+ * \class PaintbrushToolOpEditImage
+ * \brief Operation class to hold data to pass back to this PaintbrushTool,
+ * so that this PaintbrushTool can execute the Undo/Redo command.
  */
-class NIFTKMIDAS_EXPORT MIDASPaintbrushToolOpEditImage: public mitk::Operation
+class NIFTKMIDAS_EXPORT PaintbrushToolOpEditImage: public mitk::Operation
 {
 public:
   typedef itk::MIDASImageUpdatePixelWiseSingleValueProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
 
-  MIDASPaintbrushToolOpEditImage(
+  PaintbrushToolOpEditImage(
       mitk::OperationType type,
       bool redo,
       int imageNumber,
@@ -48,7 +48,7 @@ public:
       ProcessorType* processor
       );
 
-  ~MIDASPaintbrushToolOpEditImage();
+  ~PaintbrushToolOpEditImage();
 
   bool IsRedo() const;
 
