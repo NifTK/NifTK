@@ -384,8 +384,8 @@ void NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEyeInStereo(cv::Matx44d
 
   optimiser->Optimise(modelToWorld, handEye, stereoExtrinsics);
 
-  m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC] = handEye;
-  m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC] = (stereoExtrinsics.inv()) * handEye;
+  leftHandEye = handEye;
+  rightHandEye = (stereoExtrinsics.inv()) * handEye;
 }
 
 
@@ -750,15 +750,15 @@ void NiftyCalVideoCalibrationManager::Save()
   MITK_INFO << "Saving calibration to:" << m_OutputDirName << ":";
 
   niftk::SaveNifTKIntrinsics(m_Intrinsic[0], m_Distortion[0], m_OutputDirName + "calib.left.intrinsics.txt");
-  this->SaveImages("images.left.", m_OriginalImages[0]);
-  this->SavePoints("points.left.", m_Points[0]);
+  this->SaveImages("calib.left.images.", m_OriginalImages[0]);
+  this->SavePoints("calib.left.points.", m_Points[0]);
 
   if (m_ImageNode[1].IsNotNull())
   {
     niftk::SaveNifTKIntrinsics(m_Intrinsic[1], m_Distortion[1], m_OutputDirName + "calib.right.intrinsics.txt");
     niftk::SaveNifTKStereoExtrinsics(m_RightToLeftRotation, m_RightToLeftTranslation, m_OutputDirName + "calib.r2l.txt");
-    this->SaveImages("images.right.", m_OriginalImages[1]);
-    this->SavePoints("points.right.", m_Points[1]);
+    this->SaveImages("calib.right.images.", m_OriginalImages[1]);
+    this->SavePoints("calib.right.points.", m_Points[1]);
   }
 
   if (m_TrackingTransformNode.IsNotNull())
@@ -771,32 +771,36 @@ void NiftyCalVideoCalibrationManager::Save()
          )
     {
       std::ostringstream fileName;
-      fileName << m_OutputDirName << "tracking." << counter++ << ".4x4";
+      fileName << m_OutputDirName << "calib.tracking." << counter++ << ".4x4";
       niftk::Save4x4Matrix(*iter, fileName.str());
     }
 
     // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
     niftk::Save4x4Matrix(m_HandEyeMatrices[0][0], m_OutputDirName + "calib.left.handeye.tsai.txt");
-    niftk::Save4x4Matrix(m_HandEyeMatrices[0][1], m_OutputDirName + "calib.left.handeye.direct.txt");
+    niftk::Save4x4Matrix(m_HandEyeMatrices[0][1], m_OutputDirName + "calib.left.handeye.kang.txt");
     niftk::Save4x4Matrix(m_HandEyeMatrices[0][2], m_OutputDirName + "calib.left.handeye.malti.txt");
+    niftk::Save4x4Matrix(m_HandEyeMatrices[0][3], m_OutputDirName + "calib.left.handeye.allextrinsic.txt");
     niftk::Save4x4Matrix(m_HandEyeMatrices[0][m_HandeyeMethod], m_OutputDirName + "calib.left.handeye.txt");
 
     niftk::SaveRigidParams(m_HandEyeMatrices[0][0], m_OutputDirName + "calib.left.handeye.tsai.params.txt");
-    niftk::SaveRigidParams(m_HandEyeMatrices[0][1], m_OutputDirName + "calib.left.handeye.direct.params.txt");
+    niftk::SaveRigidParams(m_HandEyeMatrices[0][1], m_OutputDirName + "calib.left.handeye.kang.params.txt");
     niftk::SaveRigidParams(m_HandEyeMatrices[0][2], m_OutputDirName + "calib.left.handeye.malti.params.txt");
+    niftk::SaveRigidParams(m_HandEyeMatrices[0][3], m_OutputDirName + "calib.left.handeye.allextrinsic.params.txt");
     niftk::SaveRigidParams(m_HandEyeMatrices[0][m_HandeyeMethod], m_OutputDirName + "calib.left.handeye.params.txt");
 
     if (m_ImageNode[1].IsNotNull())
     {
       // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
       niftk::Save4x4Matrix(m_HandEyeMatrices[1][0], m_OutputDirName + "calib.right.handeye.tsai.txt");
-      niftk::Save4x4Matrix(m_HandEyeMatrices[1][1], m_OutputDirName + "calib.right.handeye.direct.txt");
+      niftk::Save4x4Matrix(m_HandEyeMatrices[1][1], m_OutputDirName + "calib.right.handeye.kang.txt");
       niftk::Save4x4Matrix(m_HandEyeMatrices[1][2], m_OutputDirName + "calib.right.handeye.malti.txt");
+      niftk::Save4x4Matrix(m_HandEyeMatrices[1][3], m_OutputDirName + "calib.right.handeye.allextrinsic.txt");
       niftk::Save4x4Matrix(m_HandEyeMatrices[1][m_HandeyeMethod], m_OutputDirName + "calib.right.handeye.txt");
 
       niftk::SaveRigidParams(m_HandEyeMatrices[1][0], m_OutputDirName + "calib.right.handeye.tsai.params.txt");
-      niftk::SaveRigidParams(m_HandEyeMatrices[1][1], m_OutputDirName + "calib.right.handeye.direct.params.txt");
+      niftk::SaveRigidParams(m_HandEyeMatrices[1][1], m_OutputDirName + "calib.right.handeye.kang.params.txt");
       niftk::SaveRigidParams(m_HandEyeMatrices[1][2], m_OutputDirName + "calib.right.handeye.malti.params.txt");
+      niftk::SaveRigidParams(m_HandEyeMatrices[1][3], m_OutputDirName + "calib.right.handeye.allextrinsic.params.txt");
       niftk::SaveRigidParams(m_HandEyeMatrices[1][m_HandeyeMethod], m_OutputDirName + "calib.right.handeye.params.txt");
     }
   }
