@@ -57,7 +57,7 @@ public:
   GeneralSegmentorEventInterface::Pointer m_Interface;
 
   /// \brief This class hooks into the Global Interaction system to respond to Key press events.
-  MIDASToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
+  ToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
 
   /// \brief Selected orientation in the viewer.
   ImageOrientation m_Orientation;
@@ -122,7 +122,7 @@ GeneralSegmentorControllerPrivate::GeneralSegmentorControllerPrivate(GeneralSegm
   q->GetToolByType<PosnTool>()->InstallEventFilter(q);
 
 //  m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New("niftkToolKeyPressStateMachine", q);
-  m_ToolKeyPressStateMachine = MIDASToolKeyPressStateMachine::New(q);
+  m_ToolKeyPressStateMachine = ToolKeyPressStateMachine::New(q);
 
   m_SelectedPosition.Fill(0);
 }

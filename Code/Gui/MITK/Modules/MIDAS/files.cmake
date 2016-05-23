@@ -19,10 +19,11 @@ set(H_FILES
   Algorithms/niftkGeneralSegmentorUtils.txx
   Algorithms/niftkMorphologicalSegmentorPipelineManager.h
   Interactions/niftkToolFactoryMacros.h
+  Interactions/niftkToolKeyPressResponder.h
 )
 
 set(CPP_FILES
-  DataManagement/niftkDataNodeNameStringFilter.cxx
+  DataManagement/niftkToolWorkingDataNameFilter.cxx
   Algorithms/niftkMorphologicalSegmentorPipelineManager.cxx
   Algorithms/niftkGeneralSegmentorCommands.cxx
   Algorithms/niftkGeneralSegmentorPipeline.cxx

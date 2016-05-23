@@ -31,12 +31,12 @@ namespace niftk
  * \sa MIDASToolKeyPressStateMachine
  * \sa StateMachine
  */
-class NIFTKMIDAS_EXPORT MIDASToolKeyPressResponder
+class NIFTKMIDAS_EXPORT ToolKeyPressResponder
 {
 public:
 
-  MIDASToolKeyPressResponder() {}
-  virtual ~MIDASToolKeyPressResponder() {}
+  ToolKeyPressResponder() {}
+  virtual ~ToolKeyPressResponder() {}
 
   /// \brief Select the seed tool, where in MIDAS this is the S key.
   virtual bool SelectSeedTool() = 0;

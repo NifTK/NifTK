@@ -30,10 +30,10 @@ class MIDASEventFilter;
 /**
  * \class MIDASStateMachine
  *
- * \brief Common base class for MIDAS tools and interactors.
+ * \brief Common base class for segmentor tools and interactors.
  *
  * Provides a way to define event filters externally and apply
- * them to the MIDAS state machines. This can be used to discard
+ * them to state machines. This can be used to discard
  * events that come from an unwanted render window. With other
  * words, we can limit the scope of the state machine to certain
  * render windows, e.g. to the active render window of the main display.

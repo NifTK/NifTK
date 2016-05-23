@@ -29,16 +29,16 @@ namespace niftk
 {
 
 /**
- * \class MIDASToolPressStateMachine
+ * \class ToolPressStateMachine
  * \brief StateMachine to check for key press events that MIDAS is interested in,
- * and pass them onto any registered MIDASToolKeyPressResponder.
+ * and pass them onto any registered ToolKeyPressResponder.
  */
-class NIFTKMIDAS_EXPORT MIDASToolKeyPressStateMachine : public mitk::EventStateMachine, public mitk::InteractionEventObserver, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT ToolKeyPressStateMachine : public mitk::EventStateMachine, public mitk::InteractionEventObserver, public MIDASStateMachine
 {
 
 public:
-  mitkClassMacro(MIDASToolKeyPressStateMachine, mitk::EventStateMachine); // this creates the Self typedef
-  mitkNewMacro1Param(Self, MIDASToolKeyPressResponder*);
+  mitkClassMacro(ToolKeyPressStateMachine, mitk::EventStateMachine); // this creates the Self typedef
+  mitkNewMacro1Param(Self, ToolKeyPressResponder*);
 
   /**
    * By this function the Observer gets notified about new events.
@@ -46,18 +46,18 @@ public:
    * its infrastructure.
    * It also checks if event is to be accepted when it already has been processed by a DataInteractor.
    */
-  virtual void Notify(mitk::InteractionEvent* interactionEvent, bool isHandled);
+  virtual void Notify(mitk::InteractionEvent* interactionEvent, bool isHandled) override;
 
 protected:
 
   /// \brief Purposely hidden, protected constructor, so class is instantiated via static ::New() macro, where we pass in the state machine pattern name, and also the object to pass the data onto.
-  MIDASToolKeyPressStateMachine(MIDASToolKeyPressResponder* responder);
+  ToolKeyPressStateMachine(ToolKeyPressResponder* responder);
 
   /// \brief Purposely hidden, destructor.
-  virtual ~MIDASToolKeyPressStateMachine();
+  virtual ~ToolKeyPressStateMachine();
 
   /// \brief Connects state machine actions to functions.
-  virtual void ConnectActionsAndFunctions();
+  virtual void ConnectActionsAndFunctions() override;
 
   /// \brief Tells if this tool can handle the given event.
   ///
@@ -67,30 +67,30 @@ protected:
   ///
   /// Note that this function is purposefully not virtual. Eventual subclasses should
   /// override the CanHandle function.
-  virtual bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode);
+  virtual bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode) override;
 
-  /// \see MIDASToolKeyPressResponder::SelectSeedTool()
+  /// \see ToolKeyPressResponder::SelectSeedTool()
   bool SelectSeedTool(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \see MIDASToolKeyPressResponder::SelectDrawTool()
+  /// \see ToolKeyPressResponder::SelectDrawTool()
   bool SelectDrawTool(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \see MIDASToolKeyPressResponder::UnselectTools()
+  /// \see ToolKeyPressResponder::UnselectTools()
   bool UnselectTools(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \see MIDASToolKeyPressResponder::SelectPolyTool()
+  /// \see ToolKeyPressResponder::SelectPolyTool()
   bool SelectPolyTool(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \see MIDASToolKeyPressResponder::SelectViewMode()
+  /// \see ToolKeyPressResponder::SelectViewMode()
   bool SelectViewMode(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \see MIDASToolKeyPressResponder::CleanSlice()
+  /// \see ToolKeyPressResponder::CleanSlice()
   bool CleanSlice(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
 private:
 
   /// \brief the object that gets called, specified in constructor.
-  MIDASToolKeyPressResponder* m_Responder;
+  ToolKeyPressResponder* m_Responder;
 
   /**
     * Reference to the service registration of the observer,

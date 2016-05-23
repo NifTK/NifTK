@@ -179,7 +179,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   renderers.push_back(m_Viewer->GetCoronalWindow()->GetRenderer());
 
   /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
-//    niftk::MIDASDataNodeNameStringFilter::Pointer filter = niftk::MIDASDataNodeNameStringFilter::New();
+//    niftk::ToolWorkingDataNameFilter::Pointer filter = niftk::ToolWorkingDataNameFilter::New();
 
   m_ToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
   m_ToolNodeNameFilter->SetPropertyName("name");

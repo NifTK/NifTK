@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkDataNodeNameStringFilter.h"
+#include "niftkToolWorkingDataNameFilter.h"
 
 #include <niftkMorphologicalSegmentorPipelineManager.h>
 #include <niftkPaintbrushTool.h>
@@ -23,7 +23,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-MIDASDataNodeNameStringFilter::MIDASDataNodeNameStringFilter()
+ToolWorkingDataNameFilter::ToolWorkingDataNameFilter()
 {
   this->AddToList("One of FeedbackContourTool's feedback nodes");
   this->AddToList(ContourTool::MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR);
@@ -49,7 +49,7 @@ MIDASDataNodeNameStringFilter::MIDASDataNodeNameStringFilter()
 
 
 //-----------------------------------------------------------------------------
-MIDASDataNodeNameStringFilter::~MIDASDataNodeNameStringFilter()
+ToolWorkingDataNameFilter::~ToolWorkingDataNameFilter()
 {
 
 }

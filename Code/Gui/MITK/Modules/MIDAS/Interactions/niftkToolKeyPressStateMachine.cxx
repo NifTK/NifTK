@@ -23,7 +23,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-void MIDASToolKeyPressStateMachine::Notify(mitk::InteractionEvent* interactionEvent, bool isHandled)
+void ToolKeyPressStateMachine::Notify(mitk::InteractionEvent* interactionEvent, bool isHandled)
 {
   // to use the state machine pattern,
   // the event is passed to the state machine interface to be handled
@@ -35,7 +35,7 @@ void MIDASToolKeyPressStateMachine::Notify(mitk::InteractionEvent* interactionEv
 
 
 //-----------------------------------------------------------------------------
-MIDASToolKeyPressStateMachine::MIDASToolKeyPressStateMachine(MIDASToolKeyPressResponder* responder)
+ToolKeyPressStateMachine::ToolKeyPressStateMachine(ToolKeyPressResponder* responder)
 : mitk::EventStateMachine()
 {
   assert(responder);
@@ -53,14 +53,14 @@ MIDASToolKeyPressStateMachine::MIDASToolKeyPressStateMachine(MIDASToolKeyPressRe
 
 
 //-----------------------------------------------------------------------------
-MIDASToolKeyPressStateMachine::~MIDASToolKeyPressStateMachine()
+ToolKeyPressStateMachine::~ToolKeyPressStateMachine()
 {
   m_ServiceRegistration.Unregister();
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASToolKeyPressStateMachine::ConnectActionsAndFunctions()
+void ToolKeyPressStateMachine::ConnectActionsAndFunctions()
 {
   CONNECT_FUNCTION("selectSeedTool", SelectSeedTool);
   CONNECT_FUNCTION("selectDrawTool", SelectDrawTool);
@@ -72,49 +72,49 @@ void MIDASToolKeyPressStateMachine::ConnectActionsAndFunctions()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASToolKeyPressStateMachine::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
+bool ToolKeyPressStateMachine::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
   return this->CanHandleEvent(event);
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASToolKeyPressStateMachine::SelectSeedTool(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool ToolKeyPressStateMachine::SelectSeedTool(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   return m_Responder->SelectSeedTool();
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASToolKeyPressStateMachine::SelectDrawTool(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool ToolKeyPressStateMachine::SelectDrawTool(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   return m_Responder->SelectDrawTool();
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASToolKeyPressStateMachine::UnselectTools(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool ToolKeyPressStateMachine::UnselectTools(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   return m_Responder->UnselectTools();
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASToolKeyPressStateMachine::SelectPolyTool(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool ToolKeyPressStateMachine::SelectPolyTool(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   return m_Responder->SelectPolyTool();
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASToolKeyPressStateMachine::SelectViewMode(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool ToolKeyPressStateMachine::SelectViewMode(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   return m_Responder->SelectViewMode();
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASToolKeyPressStateMachine::CleanSlice(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool ToolKeyPressStateMachine::CleanSlice(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   return m_Responder->CleanSlice();
 }

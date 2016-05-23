@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkDataNodeNameStringFilter_h
-#define niftkDataNodeNameStringFilter_h
+#ifndef niftkToolWorkingDataNameFilter_h
+#define niftkToolWorkingDataNameFilter_h
 
 #include "niftkMIDASExports.h"
 
@@ -24,7 +24,7 @@ namespace niftk
 {
 
 /**
- * \class MIDASDataNodeNameStringFilter
+ * \class ToolWorkingDataNameFilter
  *
  * \brief A filter that returns Pass=false if the name is in the following list, and true otherwise.
  *
@@ -43,21 +43,21 @@ namespace niftk
  * Paintbrush_Node
  * </pre>
  */
-class NIFTKMIDAS_EXPORT MIDASDataNodeNameStringFilter : public mitk::DataNodeStringPropertyFilter
+class NIFTKMIDAS_EXPORT ToolWorkingDataNameFilter : public mitk::DataNodeStringPropertyFilter
 {
 
 public:
 
-  mitkClassMacro(MIDASDataNodeNameStringFilter, mitk::DataNodeStringPropertyFilter);
-  itkNewMacro(MIDASDataNodeNameStringFilter);
+  mitkClassMacro(ToolWorkingDataNameFilter, mitk::DataNodeStringPropertyFilter);
+  itkNewMacro(ToolWorkingDataNameFilter);
 
 protected:
 
-  MIDASDataNodeNameStringFilter();
-  virtual ~MIDASDataNodeNameStringFilter();
+  ToolWorkingDataNameFilter();
+  virtual ~ToolWorkingDataNameFilter();
 
-  MIDASDataNodeNameStringFilter(const MIDASDataNodeNameStringFilter&); // Purposefully not implemented.
-  MIDASDataNodeNameStringFilter& operator=(const MIDASDataNodeNameStringFilter&); // Purposefully not implemented.
+  ToolWorkingDataNameFilter(const ToolWorkingDataNameFilter&); // Purposefully not implemented.
+  ToolWorkingDataNameFilter& operator=(const ToolWorkingDataNameFilter&); // Purposefully not implemented.
 
 private:
 

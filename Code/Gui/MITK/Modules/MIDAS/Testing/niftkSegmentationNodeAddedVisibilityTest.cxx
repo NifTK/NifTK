@@ -34,7 +34,7 @@
 
 #include <mitkNifTKCoreObjectFactory.h>
 #include <mitkDataNodeAddedVisibilitySetter.h>
-#include <niftkDataNodeNameStringFilter.h>
+#include <niftkToolWorkingDataNameFilter.h>
 #include <niftkImageUtils.h>
 #include <niftkPolyTool.h>
 #include <niftkTool.h>
@@ -69,7 +69,7 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestCreateFitler...");
 
-    MIDASDataNodeNameStringFilter::Pointer filter = MIDASDataNodeNameStringFilter::New();
+    ToolWorkingDataNameFilter::Pointer filter = ToolWorkingDataNameFilter::New();
     MITK_TEST_CONDITION_REQUIRED(filter.IsNotNull(),".. Testing filter pointer not null.");
 
     MITK_TEST_OUTPUT(<< "Finished TestCreateFitler...");
@@ -81,7 +81,7 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestFilterPassWithNoPropertiesSet...");
 
-    MIDASDataNodeNameStringFilter::Pointer filter = MIDASDataNodeNameStringFilter::New();
+    ToolWorkingDataNameFilter::Pointer filter = ToolWorkingDataNameFilter::New();
     bool result = filter->Pass(m_DataNode);
     MITK_TEST_CONDITION_REQUIRED(result,".. Testing filter passes by default");
 
@@ -94,7 +94,7 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestFilterFailWithGivenString...");
 
-    MIDASDataNodeNameStringFilter::Pointer filter = MIDASDataNodeNameStringFilter::New();
+    ToolWorkingDataNameFilter::Pointer filter = ToolWorkingDataNameFilter::New();
     m_DataNode->SetName(name);
     bool result = filter->Pass(m_DataNode);
     MITK_TEST_CONDITION_REQUIRED(!result,".. Testing filter fails with name=" << name);
@@ -126,7 +126,7 @@ public:
 
     // Create the setter we are testing.
     mitk::DataNodeAddedVisibilitySetter::Pointer setter = mitk::DataNodeAddedVisibilitySetter::New();
-    MIDASDataNodeNameStringFilter::Pointer filter = MIDASDataNodeNameStringFilter::New();
+    ToolWorkingDataNameFilter::Pointer filter = ToolWorkingDataNameFilter::New();
     setter->AddFilter(filter.GetPointer());
     setter->SetVisibility(false);
     setter->SetDataStorage(dataStorage);

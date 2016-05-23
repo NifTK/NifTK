@@ -130,7 +130,7 @@ class GeneralSegmentorGUI;
 class NIFTKMIDASGUI_EXPORT GeneralSegmentorController
   : public BaseSegmentorController,
     public mitk::OperationActor,
-    public MIDASToolKeyPressResponder
+    public ToolKeyPressResponder
 {
   Q_OBJECT
 
@@ -143,22 +143,16 @@ public:
   /// This function has to be called from the CreateQtPartControl function of the view.
   virtual void SetupGUI(QWidget* parent) override;
 
-  /// \brief \see MIDASToolKeyPressResponder::SelectSeedTool()
   virtual bool SelectSeedTool() override;
 
-  /// \brief \see MIDASToolKeyPressResponder::SelectDrawTool()
   virtual bool SelectDrawTool() override;
 
-  /// \brief \see MIDASToolKeyPressResponder::UnselectTools()
   virtual bool UnselectTools() override;
 
-  /// \brief \see MIDASToolKeyPressResponder::SelectPolyTool()
   virtual bool SelectPolyTool() override;
 
-  /// \brief \see MIDASToolKeyPressResponder::SelectViewMode()
   virtual bool SelectViewMode() override;
 
-  /// \brief \see MIDASToolKeyPressResponder::CleanSlice()
   virtual bool CleanSlice() override;
 
   /// \brief Method to enable this class to interact with the Undo/Redo framework.
