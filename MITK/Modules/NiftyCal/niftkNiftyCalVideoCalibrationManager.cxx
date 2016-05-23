@@ -30,6 +30,8 @@
 #include <niftkIterativeMonoCameraCalibration.h>
 #include <niftkIterativeStereoCameraCalibration.h>
 #include <niftkNonLinearMaltiHandEyeOptimiser.h>
+#include <niftkNonLinearMaltiNDOFHandEyeOptimiser.h>
+#include <niftkNonLinearMaltiStereoHandEyeOptimiser.h>
 
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
@@ -65,7 +67,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 {
   m_ImageNode[0] = nullptr;
   m_ImageNode[1] = nullptr;
-  for (int i = 0; i < 3; i++)                           // 3 different methods
+  for (int i = 0; i < 4; i++)                           // 4 different methods - see HandEyeMethod enum
   {
     m_HandEyeMatrices[0].push_back(cv::Matx44d::eye()); // left
     m_HandEyeMatrices[1].push_back(cv::Matx44d::eye()); // right
@@ -265,15 +267,15 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex)
       residualTranslation
       );
 
-  std::cout << "Tsai 1989, linear hand-eye: rot="
-            << residualRotation << ", trans=" << residualTranslation << std::endl;
+  std::cout << "Tsai 1989, linear hand-eye: rot=" << residualRotation
+            << ", trans=" << residualTranslation << std::endl;
 
   return handEye;
 }
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d NiftyCalVideoCalibrationManager::DoDirectHandEye(int imageIndex)
+cv::Matx44d NiftyCalVideoCalibrationManager::DoKangHandEye(int imageIndex)
 {
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
 
@@ -293,12 +295,12 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex)
 {
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
 
+  // Assumes we have done Tsai first.
   cv::Matx44d modelToWorld = niftk::CalculateAverageModelToWorld(
         m_HandEyeMatrices[imageIndex][TSAI_1989],
         m_TrackingMatrices,
         cameraMatrices
         );
-
 
   // Assumes we have done Tsai first.
   niftk::NonLinearMaltiHandEyeOptimiser::Pointer optimiser = niftk::NonLinearMaltiHandEyeOptimiser::New();
@@ -308,16 +310,82 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex)
 
   cv::Matx44d handEye = m_HandEyeMatrices[imageIndex][TSAI_1989];
 
-  double reprojectionRMS = optimiser->Optimise(
-    modelToWorld,
-    handEye,
-    m_Intrinsic[imageIndex],
-    m_Distortion[imageIndex]
-    );
+  double reprojectionRMS = optimiser->Optimise(modelToWorld,
+                                               handEye,
+                                               m_Intrinsic[imageIndex],
+                                               m_Distortion[imageIndex]
+                                              );
 
   std::cout << "Malti 2013, non-linear hand-eye: rms=" << reprojectionRMS << std::endl;
 
   return handEye;
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageIndex)
+{
+  std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
+
+  cv::Matx44d handEye = m_HandEyeMatrices[imageIndex][TSAI_1989];
+
+  // Assumes we have done Tsai first.
+  cv::Matx44d modelToWorld = niftk::CalculateAverageModelToWorld(
+        handEye,
+        m_TrackingMatrices,
+        cameraMatrices
+        );
+
+  // Assumes we have done Tsai first.
+  niftk::NonLinearMaltiNDOFHandEyeOptimiser::Pointer optimiser = niftk::NonLinearMaltiNDOFHandEyeOptimiser::New();
+  optimiser->SetModel(&m_3DModelPoints);
+  optimiser->SetPoints(&m_Points[imageIndex]);
+  optimiser->SetHandMatrices(&m_TrackingMatrices);
+  optimiser->SetIntrinsic(&m_Intrinsic[imageIndex]);   // i.e. we DON'T optimise these.
+  optimiser->SetDistortion(&m_Distortion[imageIndex]); // i.e. we DON'T optimise these.
+
+  double reprojectionRMS = optimiser->Optimise(modelToWorld, // We do optimise all extrinsic
+                                               handEye       // but we don't really care about
+                                              );             // the result. So, we only output these.
+
+  std::cout << "Malti 2013, non-linear hand-eye, but with full extrinsic: "
+            << "rms=" << reprojectionRMS << std::endl;
+
+  return handEye;
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEyeInStereo(cv::Matx44d& leftHandEye,
+                                                                     cv::Matx44d& rightHandEye)
+{
+  std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
+  cv::Matx44d handEye = m_HandEyeMatrices[0][TSAI_1989]; // 0 == from left.
+
+  // Assumes we have done Tsai first.
+  cv::Matx44d modelToWorld = niftk::CalculateAverageModelToWorld(
+        handEye,
+        m_TrackingMatrices,
+        cameraMatrices
+        );
+
+  // Assumes we have done Tsai first.
+  niftk::NonLinearMaltiStereoHandEyeOptimiser::Pointer optimiser = niftk::NonLinearMaltiStereoHandEyeOptimiser::New();
+  optimiser->SetModel(&m_3DModelPoints);
+  optimiser->SetPoints(&m_Points[0]);
+  optimiser->SetRightHandPoints(&m_Points[1]);
+  optimiser->SetHandMatrices(&m_TrackingMatrices);
+  optimiser->SetLeftIntrinsic(&m_Intrinsic[0]);    // i.e. we DON'T optimise these.
+  optimiser->SetLeftDistortion(&m_Distortion[0]);  // i.e. we DON'T optimise these.
+  optimiser->SetRightIntrinsic(&m_Intrinsic[0]);   // i.e. we DON'T optimise these.
+  optimiser->SetRightDistortion(&m_Distortion[0]); // i.e. we DON'T optimise these.
+
+  cv::Matx44d stereoExtrinsics = niftk::RodriguesToMatrix(m_RightToLeftRotation, m_RightToLeftTranslation);
+
+  optimiser->Optimise(modelToWorld, handEye, stereoExtrinsics);
+
+  m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC] = handEye;
+  m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC] = (stereoExtrinsics.inv()) * handEye;
 }
 
 
@@ -639,16 +707,25 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     // Don't change the order of these.
     // Malti requires an initial hand-eye, so we use Tsai.
     m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0);
-    m_HandEyeMatrices[0][KANG_2014] = DoDirectHandEye(0);
+    m_HandEyeMatrices[0][KANG_2014] = DoKangHandEye(0);
     m_HandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0);
+    if (m_ImageNode[1].IsNull())
+    {
+      m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC] = DoFullExtrinsicHandEye(0);
+    }
+
 
     if (m_ImageNode[1].IsNotNull())
     {
       // Don't change the order of these.
       // Malti requires an initial hand-eye, so we use Tsai.
       m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1);
-      m_HandEyeMatrices[1][KANG_2014] = DoDirectHandEye(1);
+      m_HandEyeMatrices[1][KANG_2014] = DoKangHandEye(1);
       m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1);
+
+      DoFullExtrinsicHandEyeInStereo(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
+                                     m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC]
+                                    );
     }
   }
 

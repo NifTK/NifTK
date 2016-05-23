@@ -176,19 +176,26 @@ private:
   std::vector<cv::Mat> ConvertMatrices(const std::list<cv::Matx44d>& list);
 
   /**
-   * \brief Actually does Tsai's hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
+   * \brief Actually does Tsai's 1989 hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
    */
   cv::Matx44d DoTsaiHandEye(int imageIndex);
 
   /**
-   * \brief Actually does direct hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
+   * \brief Actually does Kang 2014 hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
    */
-  cv::Matx44d DoDirectHandEye(int imageIndex);
+  cv::Matx44d DoKangHandEye(int imageIndex);
 
   /**
-   * \brief Actually does Malti's hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
+   * \brief Actually does Malti's 2013 hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
    */
   cv::Matx44d DoMaltiHandEye(int imageIndex);
+
+  /**
+   * \brief Actually does a full non-linear calibration of all extrinsic parameters.
+   */
+  cv::Matx44d DoFullExtrinsicHandEye(int imageIndex);
+
+  void DoFullExtrinsicHandEyeInStereo(cv::Matx44d& leftHandEye, cv::Matx44d& rightHandEye);
 
   /**
    * \brief Saves list of images that were used for calibration.
@@ -234,7 +241,7 @@ private:
   std::list<niftk::PointSet>                                               m_Points[2];
   std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_OriginalImages[2];
   std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_ImagesForWarping[2];
-  std::list<cv::Matx44d >                                                  m_TrackingMatrices;
+  std::list<cv::Matx44d>                                                   m_TrackingMatrices;
 
   // Calibration result
   cv::Mat                    m_Intrinsic[2];
