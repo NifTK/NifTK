@@ -22,8 +22,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>* GeneralSegmentorPipelineCache
   std::stringstream key;
   key << typeid(TPixel).name() << VImageDimension;
 
-  GeneralSegmentorPipeline<TPixel, VImageDimension>* pipeline = NULL;
-  GeneralSegmentorPipelineInterface* myPipeline = NULL;
+  GeneralSegmentorPipeline<TPixel, VImageDimension>* pipeline;
 
   std::map<std::string, GeneralSegmentorPipelineInterface*>::iterator it;
   it = m_TypeToPipelineMap.find(key.str());
@@ -31,7 +30,6 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>* GeneralSegmentorPipelineCache
   if (it == m_TypeToPipelineMap.end())
   {
     pipeline = new GeneralSegmentorPipeline<TPixel, VImageDimension>();
-    myPipeline = pipeline;
     m_TypeToPipelineMap.insert(StringAndPipelineInterfacePair(key.str(), pipeline));
   }
   else
@@ -53,9 +51,11 @@ void GeneralSegmentorPipelineCache::DestroyPipeline()
   std::map<std::string, GeneralSegmentorPipelineInterface*>::iterator it;
   it = m_TypeToPipelineMap.find(key.str());
 
-  delete it->second;
-
-  m_TypeToPipelineMap.erase(it);
+  if (it != m_TypeToPipelineMap.end())
+  {
+    delete it->second;
+    m_TypeToPipelineMap.erase(it);
+  }
 }
 
 }
