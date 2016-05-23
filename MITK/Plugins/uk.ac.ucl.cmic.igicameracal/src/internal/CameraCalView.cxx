@@ -173,27 +173,49 @@ void CameraCalView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-    m_Manager->SetDoIterative(prefs->GetBool(CameraCalViewPreferencePage::ITERATIVE_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoIterative));
     m_Manager->SetMinimumNumberOfSnapshotsForCalibrating(prefs->GetInt(CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating));
-    m_Manager->Set3DModelFileName(prefs->Get(CameraCalViewPreferencePage::MODEL_NODE_NAME, "").toStdString());
+
+    std::string fileName = prefs->Get(CameraCalViewPreferencePage::MODEL_NODE_NAME, "").toStdString();
+    if (!fileName.empty())
+    {
+      m_Manager->Set3DModelFileName(fileName);
+    }
+
     m_Manager->SetScaleFactorX(prefs->GetDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultScaleFactorX));
     m_Manager->SetScaleFactorY(prefs->GetDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultScaleFactorY));
-    m_Manager->SetGridSizeX(prefs->GetInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeX));
-    m_Manager->SetGridSizeY(prefs->GetInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeY));
-    m_Manager->SetModelToTrackerFileName(prefs->Get(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, "").toStdString());
-    m_Manager->SetTagFamily(prefs->Get(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, QString::fromStdString(niftk::NiftyCalVideoCalibrationManager::DefaultTagFamily)).toStdString());
+
+    bool doIterative = prefs->GetBool(CameraCalViewPreferencePage::ITERATIVE_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoIterative);
+    m_Manager->SetDoIterative(doIterative);
+
+    std::string refImage = prefs->Get(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, "").toStdString();
+    std::string refPoints = prefs->Get(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, "").toStdString();
+
+    if (!refImage.empty() && !refPoints.empty())
+    {
+      m_Manager->SetReferenceDataFileNames(
+            refImage,
+            refPoints
+            );
+    }
+
     m_Manager->SetCalibrationPattern(
           static_cast<niftk::NiftyCalVideoCalibrationManager::CalibrationPatterns>(
             prefs->GetInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultCalibrationPattern)))
           );
-    m_Manager->SetHandeyeMethod(
-          static_cast<niftk::NiftyCalVideoCalibrationManager::HandEyeMethod>(
-            prefs->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)))
-          );
-    m_Manager->SetReferenceDataFileNames(
-          prefs->Get(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, "").toStdString(),
-          prefs->Get(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, "").toStdString()
-          );
+    m_Manager->SetGridSizeX(prefs->GetInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeX));
+    m_Manager->SetGridSizeY(prefs->GetInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeY));
+    m_Manager->SetTagFamily(prefs->Get(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, QString::fromStdString(niftk::NiftyCalVideoCalibrationManager::DefaultTagFamily)).toStdString());
+
+    niftk::NiftyCalVideoCalibrationManager::HandEyeMethod method = static_cast<niftk::NiftyCalVideoCalibrationManager::HandEyeMethod>(
+          prefs->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)));
+    m_Manager->SetHandeyeMethod(method);
+
+    std::string modelToTrackerFileName = prefs->Get(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, "").toStdString();
+
+    if (!modelToTrackerFileName.empty())
+    {
+      m_Manager->SetModelToTrackerFileName(modelToTrackerFileName);
+    }
   }
 }
 
