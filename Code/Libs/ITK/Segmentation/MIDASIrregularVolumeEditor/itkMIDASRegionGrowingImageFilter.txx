@@ -141,21 +141,24 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
     OutputPixelType segmentationContourImageCurrentPixel = segmentationContourImage->GetPixel(currentImgIdx);
     OutputPixelType segmentationContourImageNextPixel = segmentationContourImage->GetPixel(nextImgIdx);
 
-    if ((segmentationContourImageCurrentPixel != m_SegmentationContourImageInsideValue
-         || !isFullyConnected)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageInsideValue
-            || segmentationContourImageNextPixel != m_SegmentationContourImageBorderValue
-            || isFullyConnected)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageBorderValue
-            || segmentationContourImageNextPixel != m_SegmentationContourImageBorderValue
-            || !isFullyConnected)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageBorderValue
-            || segmentationContourImageNextPixel != m_SegmentationContourImageInsideValue)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageOutsideValue
-            || !isFullyConnected)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageOutsideValue
-            || segmentationContourImageNextPixel != m_SegmentationContourImageBorderValue
-            || isFullyConnected))
+    bool addVoxel =
+        (segmentationContourImageCurrentPixel == m_SegmentationContourImageInsideValue
+         && isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageInsideValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
+            & !isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
+            && isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageInsideValue)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
+            && isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
+            && !isFullyConnected);
+
+    if (!addVoxel)
     {
       return;
     }
@@ -167,10 +170,13 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
     OutputPixelType manualContourCurrentPixel = manualContourImage->GetPixel(currentImgIdx);
     OutputPixelType manualContourNextPixel = manualContourImage->GetPixel(nextImgIdx);
 
-    if (manualContourCurrentPixel == m_ManualContourImageBorderValue
-        && (!isFullyConnected
-            || (manualContourNextPixel == m_ManualContourImageBorderValue
-                && this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx))))
+    bool addVoxel =
+        manualContourCurrentPixel != m_ManualContourImageBorderValue
+        || (isFullyConnected
+            && (manualContourNextPixel != m_ManualContourImageBorderValue
+                 || !this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx)));
+
+    if (!addVoxel)
     {
       return;
     }
