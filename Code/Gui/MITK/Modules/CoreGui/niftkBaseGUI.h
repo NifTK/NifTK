@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkBaseGUI_h
-#define __niftkBaseGUI_h
+#ifndef niftkBaseGUI_h
+#define niftkBaseGUI_h
 
 #include <niftkCoreGuiExports.h>
 

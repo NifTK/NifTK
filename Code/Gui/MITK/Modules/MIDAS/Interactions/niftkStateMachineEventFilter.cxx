@@ -12,19 +12,19 @@
 
 =============================================================================*/
 
-#include "niftkEventFilter.h"
+#include "niftkStateMachineEventFilter.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-MIDASEventFilter::MIDASEventFilter()
+StateMachineEventFilter::StateMachineEventFilter()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASEventFilter::~MIDASEventFilter()
+StateMachineEventFilter::~StateMachineEventFilter()
 {
 }
 

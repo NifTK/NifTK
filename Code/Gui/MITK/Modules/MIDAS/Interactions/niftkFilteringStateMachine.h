@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkStateMachine_h
-#define niftkStateMachine_h
+#ifndef niftkFilteringStateMachine_h
+#define niftkFilteringStateMachine_h
 
 #include "niftkMIDASExports.h"
 
@@ -25,10 +25,10 @@
 namespace niftk
 {
 
-class MIDASEventFilter;
+class StateMachineEventFilter;
 
 /**
- * \class MIDASStateMachine
+ * \class FilteringStateMachine
  *
  * \brief Common base class for segmentor tools and interactors.
  *
@@ -46,16 +46,16 @@ class MIDASEventFilter;
  *
  * Note that this class is not derived from mitk::StateMachine.
  */
-class NIFTKMIDAS_EXPORT MIDASStateMachine
+class NIFTKMIDAS_EXPORT FilteringStateMachine
 {
 
 public:
 
-  /// \brief Constructs a MIDASStateMachine object.
-  MIDASStateMachine();
+  /// \brief Constructs a FilteringStateMachine object.
+  FilteringStateMachine();
 
-  /// \brief Destructs the MIDASStateMachine object.
-  virtual ~MIDASStateMachine();
+  /// \brief Destructs the FilteringStateMachine object.
+  virtual ~FilteringStateMachine();
 
   /// \brief This function is to replace the original CanHandleEvent function to support event filtering.
   ///
@@ -67,7 +67,7 @@ public:
   ///
   /// float CanHandleEvent(const mitk::StateEvent* stateEvent) const
   /// {
-  ///   return MIDASStateMachine::CanHandleEvent(stateEvent);
+  ///   return FilteringStateMachine::CanHandleEvent(stateEvent);
   /// }
   ///
   /// The original logic should be implemented in the CanHandle function.
@@ -78,13 +78,13 @@ public:
   bool CanHandleEvent(mitk::InteractionEvent* event);
 
   /// \brief Installs an event filter that can reject a state machine event or let it pass through.
-  virtual void InstallEventFilter(MIDASEventFilter* eventFilter);
+  virtual void InstallEventFilter(StateMachineEventFilter* eventFilter);
 
   /// \brief Removes an event filter that can reject a state machine event or let it pass through.
-  virtual void RemoveEventFilter(MIDASEventFilter* eventFilter);
+  virtual void RemoveEventFilter(StateMachineEventFilter* eventFilter);
 
   /// \brief Gets the list of the installed event filters.
-  std::vector<MIDASEventFilter*> GetEventFilters() const;
+  std::vector<StateMachineEventFilter*> GetEventFilters() const;
 
   /// \brief Tells if the event is rejected by the installed event filters or they let it pass through.
   bool IsFiltered(const mitk::StateEvent* stateEvent) const;
@@ -111,7 +111,7 @@ protected:
 private:
 
   /// \brief Filter the events that are sent to the interactors.
-  std::vector<MIDASEventFilter*> m_EventFilters;
+  std::vector<StateMachineEventFilter*> m_EventFilters;
 
 };
 

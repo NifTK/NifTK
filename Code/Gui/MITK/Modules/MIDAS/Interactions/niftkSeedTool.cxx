@@ -76,7 +76,7 @@ const char** SeedTool::GetXPM() const
 
 
 //-----------------------------------------------------------------------------
-void SeedTool::InstallEventFilter(MIDASEventFilter* eventFilter)
+void SeedTool::InstallEventFilter(StateMachineEventFilter* eventFilter)
 {
   Superclass::InstallEventFilter(eventFilter);
   if (m_PointSetInteractor.IsNotNull())
@@ -87,7 +87,7 @@ void SeedTool::InstallEventFilter(MIDASEventFilter* eventFilter)
 
 
 //-----------------------------------------------------------------------------
-void SeedTool::RemoveEventFilter(MIDASEventFilter* eventFilter)
+void SeedTool::RemoveEventFilter(StateMachineEventFilter* eventFilter)
 {
   if (m_PointSetInteractor.IsNotNull())
   {
@@ -114,9 +114,9 @@ void SeedTool::Activated()
 //      m_PointSetInteractor->LoadStateMachine("niftkSeedToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
 //      m_PointSetInteractor->SetEventConfig("niftkSeedToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
-      std::vector<MIDASEventFilter*> eventFilters = this->GetEventFilters();
-      std::vector<MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-      std::vector<MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+      std::vector<StateMachineEventFilter*> eventFilters = this->GetEventFilters();
+      std::vector<StateMachineEventFilter*>::const_iterator it = eventFilters.begin();
+      std::vector<StateMachineEventFilter*>::const_iterator itEnd = eventFilters.end();
       for ( ; it != itEnd; ++it)
       {
         m_PointSetInteractor->InstallEventFilter(*it);
@@ -144,9 +144,9 @@ void SeedTool::Deactivated()
     /// If we do not do this, the interactor stays active and will keep processing the events.
 //    m_PointSetInteractor->SetDataNode(0);
 
-    std::vector<MIDASEventFilter*> eventFilters = this->GetEventFilters();
-    std::vector<MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-    std::vector<MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+    std::vector<StateMachineEventFilter*> eventFilters = this->GetEventFilters();
+    std::vector<StateMachineEventFilter*>::const_iterator it = eventFilters.begin();
+    std::vector<StateMachineEventFilter*>::const_iterator itEnd = eventFilters.end();
     for ( ; it != itEnd; ++it)
     {
       m_PointSetInteractor->RemoveEventFilter(*it);

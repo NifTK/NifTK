@@ -30,14 +30,14 @@
 
 //#include "niftkPointSetDataInteractor.h"
 #include "niftkPointSetInteractor.h"
-#include "niftkStateMachine.h"
+#include "niftkFilteringStateMachine.h"
 
 namespace niftk
 {
 
 /**
  * \class Tool
- * \brief Base class for MIDAS tools that need access to the list of
+ * \brief Base class for segmentor tools that need access to the list of
  * seeds for the current reference data volume registered with the ToolManager.
  *
  * Matt: I made it inherit from FeedbackContourTool, as multiple inheritance was getting messy.
@@ -59,7 +59,7 @@ namespace niftk
  * \sa PolyTool
  * \sa PointSetDataInteractor
  */
-class NIFTKMIDAS_EXPORT Tool : public mitk::FeedbackContourTool, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT Tool : public mitk::FeedbackContourTool, public FilteringStateMachine
 {
 
 public:
@@ -129,14 +129,14 @@ public:
   void SetBlockNumberOfSeedsSignal(bool blockNumberOfSeedsSignal);
 
   /// \brief Adds an event filter that can reject a state machine event or let it pass through.
-  /// Overrides niftkMIDASStateMachine::InstallEventFilter() so that it adds every filter also to the
+  /// Overrides niftk::FilteringStateMachine::InstallEventFilter() so that it adds every filter also to the
   /// internal point set interactor.
-  virtual void InstallEventFilter(MIDASEventFilter* eventFilter);
+  virtual void InstallEventFilter(StateMachineEventFilter* eventFilter);
 
   /// \brief Removes an event filter that can reject a state machine event or let it pass through.
-  /// Overrides niftkMIDASStateMachine::InstallEventFilter() to that it removes every filter also from the
+  /// Overrides niftkFilteringStateMachine::InstallEventFilter() to that it removes every filter also from the
   /// internal point set interactor.
-  virtual void RemoveEventFilter(MIDASEventFilter* eventFilter);
+  virtual void RemoveEventFilter(StateMachineEventFilter* eventFilter);
 
 protected:
 
@@ -145,7 +145,7 @@ protected:
 
   /// \brief Tells if this tool can handle the given event.
   ///
-  /// This implementation delegates the call to MIDASStateMachine::CanHandleEvent(),
+  /// This implementation delegates the call to FilteringStateMachine::CanHandleEvent(),
   /// that checks if the event is filtered by one of the installed event filters and if not,
   /// calls CanHandle() and returns with its result.
   ///

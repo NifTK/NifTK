@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkStateMachine.h"
+#include "niftkFilteringStateMachine.h"
 
 #include <itkCommand.h>
 
@@ -24,25 +24,25 @@
 #include <usModule.h>
 #include <usModuleRegistry.h>
 
-#include "niftkEventFilter.h"
+#include "niftkStateMachineEventFilter.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-MIDASStateMachine::MIDASStateMachine()
+FilteringStateMachine::FilteringStateMachine()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASStateMachine::~MIDASStateMachine()
+FilteringStateMachine::~FilteringStateMachine()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-float MIDASStateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent) const
+float FilteringStateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent) const
 {
   if (this->IsFiltered(stateEvent))
   {
@@ -54,7 +54,7 @@ float MIDASStateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent) cons
 
 
 //-----------------------------------------------------------------------------
-bool MIDASStateMachine::CanHandleEvent(mitk::InteractionEvent* event)
+bool FilteringStateMachine::CanHandleEvent(mitk::InteractionEvent* event)
 {
   if (this->IsFiltered(event))
   {
@@ -66,9 +66,9 @@ bool MIDASStateMachine::CanHandleEvent(mitk::InteractionEvent* event)
 
 
 //-----------------------------------------------------------------------------
-void MIDASStateMachine::InstallEventFilter(MIDASEventFilter* eventFilter)
+void FilteringStateMachine::InstallEventFilter(StateMachineEventFilter* eventFilter)
 {
-  std::vector<MIDASEventFilter*>::iterator it =
+  std::vector<StateMachineEventFilter*>::iterator it =
       std::find(m_EventFilters.begin(), m_EventFilters.end(), eventFilter);
 
   if (it == m_EventFilters.end())
@@ -79,9 +79,9 @@ void MIDASStateMachine::InstallEventFilter(MIDASEventFilter* eventFilter)
 
 
 //-----------------------------------------------------------------------------
-void MIDASStateMachine::RemoveEventFilter(MIDASEventFilter* eventFilter)
+void FilteringStateMachine::RemoveEventFilter(StateMachineEventFilter* eventFilter)
 {
-  std::vector<MIDASEventFilter*>::iterator it =
+  std::vector<StateMachineEventFilter*>::iterator it =
       std::find(m_EventFilters.begin(), m_EventFilters.end(), eventFilter);
 
   if (it != m_EventFilters.end())
@@ -92,14 +92,14 @@ void MIDASStateMachine::RemoveEventFilter(MIDASEventFilter* eventFilter)
 
 
 //-----------------------------------------------------------------------------
-std::vector<MIDASEventFilter*> MIDASStateMachine::GetEventFilters() const
+std::vector<StateMachineEventFilter*> FilteringStateMachine::GetEventFilters() const
 {
   return m_EventFilters;
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASStateMachine::IsFiltered(const mitk::StateEvent* stateEvent) const
+bool FilteringStateMachine::IsFiltered(const mitk::StateEvent* stateEvent) const
 {
   /// Sanity check.
   if (!stateEvent || !stateEvent->GetEvent()->GetSender())
@@ -107,8 +107,8 @@ bool MIDASStateMachine::IsFiltered(const mitk::StateEvent* stateEvent) const
     return true;
   }
 
-  std::vector<MIDASEventFilter*>::const_iterator it = m_EventFilters.begin();
-  std::vector<MIDASEventFilter*>::const_iterator itEnd = m_EventFilters.end();
+  std::vector<StateMachineEventFilter*>::const_iterator it = m_EventFilters.begin();
+  std::vector<StateMachineEventFilter*>::const_iterator itEnd = m_EventFilters.end();
 
   for ( ; it != itEnd; ++it)
   {
@@ -123,7 +123,7 @@ bool MIDASStateMachine::IsFiltered(const mitk::StateEvent* stateEvent) const
 
 
 //-----------------------------------------------------------------------------
-bool MIDASStateMachine::IsFiltered(mitk::InteractionEvent* event)
+bool FilteringStateMachine::IsFiltered(mitk::InteractionEvent* event)
 {
   /// Sanity check.
   if (!event || !event->GetSender())
@@ -131,8 +131,8 @@ bool MIDASStateMachine::IsFiltered(mitk::InteractionEvent* event)
     return true;
   }
 
-  std::vector<MIDASEventFilter*>::const_iterator it = m_EventFilters.begin();
-  std::vector<MIDASEventFilter*>::const_iterator itEnd = m_EventFilters.end();
+  std::vector<StateMachineEventFilter*>::const_iterator it = m_EventFilters.begin();
+  std::vector<StateMachineEventFilter*>::const_iterator itEnd = m_EventFilters.end();
 
   for ( ; it != itEnd; ++it)
   {

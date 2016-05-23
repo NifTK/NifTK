@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkRendererFilter_h
-#define niftkRendererFilter_h
+#ifndef niftkStateMachineRendererFilter_h
+#define niftkStateMachineRendererFilter_h
 
 #include "niftkMIDASExports.h"
 
@@ -21,7 +21,7 @@
 
 #include <mitkCommon.h>
 
-#include "niftkEventFilter.h"
+#include "niftkStateMachineEventFilter.h"
 
 namespace mitk
 {
@@ -32,26 +32,26 @@ namespace niftk
 {
 
 /**
- * \class MIDASRendererFilter
+ * \class StateMachineRendererFilter
  *
- * \brief MIDASRendererFilter represents a condition that allows only the events
+ * \brief StateMachineRendererFilter represents a condition that allows only the events
  * coming from certain renderers to be processed.
  *
  * Events from other renderers will be rejected.
  */
-class NIFTKMIDAS_EXPORT MIDASRendererFilter : public MIDASEventFilter
+class NIFTKMIDAS_EXPORT StateMachineRendererFilter : public StateMachineEventFilter
 {
 
 public:
 
-  mitkClassMacro(MIDASRendererFilter, MIDASEventFilter);
+  mitkClassMacro(StateMachineRendererFilter, StateMachineEventFilter);
 
   /// \brief Returns true if the sender of the event (the renderer where the event
   /// comes from) is not among the renderers added to this object.
   /// Otherwise, it returns false.
-  virtual bool EventFilter(const mitk::StateEvent* stateEvent) const;
+  virtual bool EventFilter(const mitk::StateEvent* stateEvent) const override;
 
-  virtual bool EventFilter(mitk::InteractionEvent* event) const;
+  virtual bool EventFilter(mitk::InteractionEvent* event) const override;
 
   /// \brief Adds the renderer to the list of allowed event sources.
   void AddRenderer(mitk::BaseRenderer* renderer);
@@ -61,8 +61,8 @@ public:
 
 protected:
 
-  MIDASRendererFilter(); // purposefully hidden
-  virtual ~MIDASRendererFilter(); // purposefully hidden
+  StateMachineRendererFilter(); // purposefully hidden
+  virtual ~StateMachineRendererFilter(); // purposefully hidden
 
 private:
 

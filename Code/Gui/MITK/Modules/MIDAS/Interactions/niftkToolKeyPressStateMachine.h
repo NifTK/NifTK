@@ -22,7 +22,7 @@
 
 #include <usServiceRegistration.h>
 
-#include "niftkStateMachine.h"
+#include "niftkFilteringStateMachine.h"
 #include "niftkToolKeyPressResponder.h"
 
 namespace niftk
@@ -33,7 +33,7 @@ namespace niftk
  * \brief StateMachine to check for key press events that MIDAS is interested in,
  * and pass them onto any registered ToolKeyPressResponder.
  */
-class NIFTKMIDAS_EXPORT ToolKeyPressStateMachine : public mitk::EventStateMachine, public mitk::InteractionEventObserver, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT ToolKeyPressStateMachine : public mitk::EventStateMachine, public mitk::InteractionEventObserver, public FilteringStateMachine
 {
 
 public:
@@ -61,7 +61,7 @@ protected:
 
   /// \brief Tells if this tool can handle the given event.
   ///
-  /// This implementation delegates the call to MIDASStateMachine::CanHandleEvent(),
+  /// This implementation delegates the call to FilteringStateMachine::CanHandleEvent(),
   /// that checks if the event is filtered by one of the installed event filters and if not,
   /// calls CanHandle() and returns with its result.
   ///

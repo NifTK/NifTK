@@ -28,7 +28,7 @@
 #include <usModuleResource.h>
 #include <usModuleResourceStream.h>
 
-#include "niftkEventFilter.h"
+#include "niftkStateMachineEventFilter.h"
 
 namespace niftk
 {
@@ -113,7 +113,7 @@ bool Tool::LoadBehaviour(const std::string& fileName, us::Module* module)
 //-----------------------------------------------------------------------------
 bool Tool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
-  bool canHandleIt = MIDASStateMachine::CanHandleEvent(event);
+  bool canHandleIt = FilteringStateMachine::CanHandleEvent(event);
   if (canHandleIt)
   {
     m_LastEventSender = event->GetSender();
@@ -123,9 +123,9 @@ bool Tool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 
 
 //-----------------------------------------------------------------------------
-void Tool::InstallEventFilter(MIDASEventFilter* eventFilter)
+void Tool::InstallEventFilter(StateMachineEventFilter* eventFilter)
 {
-  MIDASStateMachine::InstallEventFilter(eventFilter);
+  FilteringStateMachine::InstallEventFilter(eventFilter);
   if (m_AddToPointSetInteractor.IsNotNull())
   {
     m_AddToPointSetInteractor->InstallEventFilter(eventFilter);
@@ -134,13 +134,13 @@ void Tool::InstallEventFilter(MIDASEventFilter* eventFilter)
 
 
 //-----------------------------------------------------------------------------
-void Tool::RemoveEventFilter(MIDASEventFilter* eventFilter)
+void Tool::RemoveEventFilter(StateMachineEventFilter* eventFilter)
 {
   if (m_AddToPointSetInteractor.IsNotNull())
   {
     m_AddToPointSetInteractor->RemoveEventFilter(eventFilter);
   }
-  MIDASStateMachine::RemoveEventFilter(eventFilter);
+  FilteringStateMachine::RemoveEventFilter(eventFilter);
 }
 
 
@@ -198,9 +198,9 @@ void Tool::Activated()
 //      m_AddToPointSetInteractor->LoadStateMachine("niftkToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
 //      m_AddToPointSetInteractor->SetEventConfig("niftkToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
-      std::vector<MIDASEventFilter*> eventFilters = this->GetEventFilters();
-      std::vector<MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-      std::vector<MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+      std::vector<StateMachineEventFilter*> eventFilters = this->GetEventFilters();
+      std::vector<StateMachineEventFilter*>::const_iterator it = eventFilters.begin();
+      std::vector<StateMachineEventFilter*>::const_iterator itEnd = eventFilters.end();
       for ( ; it != itEnd; ++it)
       {
         m_AddToPointSetInteractor->InstallEventFilter(*it);
@@ -287,9 +287,9 @@ void Tool::Deactivated()
       /// If we do not do this, the interactor stays active and will keep processing the events.
 //      m_AddToPointSetInteractor->SetDataNode(0);
 
-      std::vector<MIDASEventFilter*> eventFilters = this->GetEventFilters();
-      std::vector<MIDASEventFilter*>::const_iterator it = eventFilters.begin();
-      std::vector<MIDASEventFilter*>::const_iterator itEnd = eventFilters.end();
+      std::vector<StateMachineEventFilter*> eventFilters = this->GetEventFilters();
+      std::vector<StateMachineEventFilter*>::const_iterator it = eventFilters.begin();
+      std::vector<StateMachineEventFilter*>::const_iterator itEnd = eventFilters.end();
       for ( ; it != itEnd; ++it)
       {
         m_AddToPointSetInteractor->RemoveEventFilter(*it);

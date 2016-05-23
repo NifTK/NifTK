@@ -63,14 +63,14 @@ public:
   virtual void Deactivated();
 
   /// \brief Adds an event filter that can reject a state machine event or let it pass through.
-  /// Overrides niftkMIDASStateMachine::InstallEventFilter() so that it adds every filter also to the
+  /// Overrides niftk::FilteringStateMachine::InstallEventFilter() so that it adds every filter also to the
   /// internal point set interactor.
-  virtual void InstallEventFilter(MIDASEventFilter* eventFilter);
+  virtual void InstallEventFilter(StateMachineEventFilter* eventFilter);
 
   /// \brief Removes an event filter that can reject a state machine event or let it pass through.
-  /// Overrides niftkMIDASStateMachine::InstallEventFilter() to that it removes every filter also from the
+  /// Overrides niftk::tateMachineFilters::InstallEventFilter() to that it removes every filter also from the
   /// internal point set interactor.
-  virtual void RemoveEventFilter(MIDASEventFilter* eventFilter);
+  virtual void RemoveEventFilter(StateMachineEventFilter* eventFilter);
 
 protected:
 

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkEventFilter_h
-#define niftkEventFilter_h
+#ifndef niftkStateMachineEventFilter_h
+#define niftkStateMachineEventFilter_h
 
 #include "niftkMIDASExports.h"
 
@@ -29,23 +29,24 @@ namespace niftk
 {
 
 /**
- * \class MIDASEventFilter
+ * \class StateMachineEventFilter
  *
- * \brief MIDASEventFilter represents a condition that has to be fulfilled
- * so that an event is processed by a MIDAS state machine.
+ * \brief StateMachineEventFilter represents a condition that has to be fulfilled
+ * so that an event is processed by a tool or interactor that derives from
+ * niftk::FilteringStateMachine.
  *
  * This can be used e.g. to restrict the scope of a tool or interactor to specific
  * render windows.
  */
-class NIFTKMIDAS_EXPORT MIDASEventFilter
+class NIFTKMIDAS_EXPORT StateMachineEventFilter
 {
 
 public:
 
-  mitkClassMacroNoParent(MIDASEventFilter);
+  mitkClassMacroNoParent(StateMachineEventFilter);
 
-  MIDASEventFilter();
-  virtual ~MIDASEventFilter();
+  StateMachineEventFilter();
+  virtual ~StateMachineEventFilter();
 
   /// \brief Returns true if the event should be filtered, i.e. not processed,
   /// otherwise false.

@@ -36,7 +36,7 @@ PointSetDataInteractor::~PointSetDataInteractor()
 
 bool PointSetDataInteractor::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
-  return MIDASStateMachine::CanHandleEvent(event);
+  return FilteringStateMachine::CanHandleEvent(event);
 }
 
 //##Documentation

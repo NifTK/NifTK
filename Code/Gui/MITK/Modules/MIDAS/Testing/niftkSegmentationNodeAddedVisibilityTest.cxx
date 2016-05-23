@@ -43,9 +43,9 @@ namespace niftk
 {
 
 /**
- * \brief Test class for niftkMIDASSegmentationNodeAddedVisibilityTest.
+ * \brief Test class for niftkSegmentationNodeAddedVisibilityTest.
  */
-class MIDASSegmentationNodeAddedVisibilityTestClass
+class SegmentationNodeAddedVisibilityTestClass
 {
 
 public:
@@ -168,16 +168,16 @@ public:
 }
 
 /**
- * Basic test harness niftkMIDASSegmentationNodeAddedVisibilityTestClass.
+ * Basic test harness niftkSegmentationNodeAddedVisibilityTestClass.
  */
-int niftkMIDASSegmentationNodeAddedVisibilityTest(int argc, char * argv[])
+int niftkSegmentationNodeAddedVisibilityTest(int argc, char * argv[])
 {
   // always start with this!
   MITK_TEST_BEGIN("niftkSegmentationNodeAddedVisibilityTest");
 
   // We are testing specifically with image ${NIFTK_DATA_DIR}/Input/nv-11x11x11.nii which is 11x11x11.
 
-  niftk::MIDASSegmentationNodeAddedVisibilityTestClass *testClass = new niftk::MIDASSegmentationNodeAddedVisibilityTestClass();
+  niftk::SegmentationNodeAddedVisibilityTestClass *testClass = new niftk::SegmentationNodeAddedVisibilityTestClass();
   testClass->Setup();
 
   testClass->TestCreateFilter();

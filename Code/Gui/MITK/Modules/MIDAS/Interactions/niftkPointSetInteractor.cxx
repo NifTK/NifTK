@@ -37,7 +37,7 @@ PointSetInteractor::~PointSetInteractor()
 
 float PointSetInteractor::CanHandleEvent(const mitk::StateEvent* stateEvent) const
 {
-  return MIDASStateMachine::CanHandleEvent(stateEvent);
+  return FilteringStateMachine::CanHandleEvent(stateEvent);
 }
 
 //##Documentation

@@ -21,7 +21,7 @@
 
 #include <mitkPointSetInteractor.h>
 
-#include "niftkStateMachine.h"
+#include "niftkFilteringStateMachine.h"
 
 namespace niftk
 {
@@ -30,7 +30,7 @@ namespace niftk
  * \brief Derived from mitk::PointSetInteractor so we can handle the mouse move event.
  * \ingroup Interaction
  */
-class NIFTKMIDAS_EXPORT PointSetInteractor : public mitk::PointSetInteractor, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT PointSetInteractor : public mitk::PointSetInteractor, public FilteringStateMachine
 {
 public:
   mitkClassMacro(PointSetInteractor, mitk::PointSetInteractor);
@@ -53,7 +53,7 @@ protected:
 
   /// \brief Tells if this tool can handle the given event.
   ///
-  /// This implementation delegates the call to MIDASStateMachine::CanHandleEvent(),
+  /// This implementation delegates the call to FilteringStateMachine::CanHandleEvent(),
   /// that checks if the event is filtered by one of the installed event filters and if not,
   /// calls CanHandle() and returns with its result.
   ///

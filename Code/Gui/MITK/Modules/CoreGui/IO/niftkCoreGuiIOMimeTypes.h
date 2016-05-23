@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkCoreGuiIOMimeTypes_h
-#define __niftkCoreGuiIOMimeTypes_h
+#ifndef niftkCoreGuiIOMimeTypes_h
+#define niftkCoreGuiIOMimeTypes_h
 
 #include <mitkCustomMimeType.h>
 #include <string>

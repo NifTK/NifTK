@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkRendererFilter.h"
+#include "niftkStateMachineRendererFilter.h"
 
 #include <mitkBaseRenderer.h>
 #include <mitkInteractionEvent.h>
@@ -22,19 +22,19 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-MIDASRendererFilter::MIDASRendererFilter()
+StateMachineRendererFilter::StateMachineRendererFilter()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-MIDASRendererFilter::~MIDASRendererFilter()
+StateMachineRendererFilter::~StateMachineRendererFilter()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool MIDASRendererFilter::EventFilter(const mitk::StateEvent* stateEvent) const
+bool StateMachineRendererFilter::EventFilter(const mitk::StateEvent* stateEvent) const
 {
   mitk::BaseRenderer* renderer = stateEvent->GetEvent()->GetSender();
   std::vector<mitk::BaseRenderer*>::const_iterator it =
@@ -44,7 +44,7 @@ bool MIDASRendererFilter::EventFilter(const mitk::StateEvent* stateEvent) const
 
 
 //-----------------------------------------------------------------------------
-bool MIDASRendererFilter::EventFilter(mitk::InteractionEvent* event) const
+bool StateMachineRendererFilter::EventFilter(mitk::InteractionEvent* event) const
 {
   mitk::BaseRenderer* renderer = event->GetSender();
   std::vector<mitk::BaseRenderer*>::const_iterator it =
@@ -54,7 +54,7 @@ bool MIDASRendererFilter::EventFilter(mitk::InteractionEvent* event) const
 
 
 //-----------------------------------------------------------------------------
-void MIDASRendererFilter::AddRenderer(mitk::BaseRenderer* renderer)
+void StateMachineRendererFilter::AddRenderer(mitk::BaseRenderer* renderer)
 {
   std::vector<mitk::BaseRenderer*>::iterator it =
       std::find(m_Renderers.begin(), m_Renderers.end(), renderer);
@@ -67,7 +67,7 @@ void MIDASRendererFilter::AddRenderer(mitk::BaseRenderer* renderer)
 
 
 //-----------------------------------------------------------------------------
-void MIDASRendererFilter::RemoveRenderer(mitk::BaseRenderer* renderer)
+void StateMachineRendererFilter::RemoveRenderer(mitk::BaseRenderer* renderer)
 {
   std::vector<mitk::BaseRenderer*>::iterator it =
       std::find(m_Renderers.begin(), m_Renderers.end(), renderer);

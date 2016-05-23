@@ -31,7 +31,7 @@
 
 #include "niftkPaintbrushToolOpEditImage.h"
 #include "niftkPaintbrushToolEventInterface.h"
-#include "niftkStateMachine.h"
+#include "niftkFilteringStateMachine.h"
 
 namespace niftk
 {
@@ -63,7 +63,7 @@ namespace niftk
   * Trac 1695, 1700, 1701, 1706: Fixing up dilations: We change pipeline so that WorkingData 0,1 are
   * applied during erosions phase, and WorkingData 2,3 are applied during dilations phase.
   */
-class NIFTKMIDAS_EXPORT PaintbrushTool : public mitk::SegTool2D, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT PaintbrushTool : public mitk::SegTool2D, public FilteringStateMachine
 {
 
 public:
@@ -151,7 +151,7 @@ protected:
 
   /// \brief Tells if this tool can handle the given event.
   ///
-  /// This implementation delegates the call to MIDASStateMachine::CanHandleEvent(),
+  /// This implementation delegates the call to FilteringStateMachine::CanHandleEvent(),
   /// that checks if the event is filtered by one of the installed event filters and if not,
   /// calls CanHandle() and returns with its result.
   ///

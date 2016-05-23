@@ -29,27 +29,27 @@ set(CPP_FILES
   Algorithms/niftkGeneralSegmentorPipeline.cxx
   Algorithms/niftkGeneralSegmentorPipelineCache.cxx
   Algorithms/niftkGeneralSegmentorUtils.cxx
-  Interactions/niftkTool.cxx
+  Interactions/niftkContourTool.cxx
   Interactions/niftkContourToolEventInterface.cxx
   Interactions/niftkContourToolOpAccumulateContour.cxx
-  Interactions/niftkContourTool.cxx
+  Interactions/niftkDrawTool.cxx
   Interactions/niftkDrawToolEventInterface.cxx
   Interactions/niftkDrawToolOpEraseContour.cxx
-  Interactions/niftkDrawTool.cxx
-  Interactions/niftkEventFilter.cxx
-  Interactions/niftkPointSetInteractor.cxx
+  Interactions/niftkFilteringStateMachine.cxx
+  Interactions/niftkPaintbrushTool.cxx
+  Interactions/niftkPaintbrushToolEventInterface.cxx
+  Interactions/niftkPaintbrushToolOpEditImage.cxx
   Interactions/niftkPointSetDataInteractor.cxx
+  Interactions/niftkPointSetInteractor.cxx
+  Interactions/niftkPolyTool.cxx
   Interactions/niftkPolyToolEventInterface.cxx
   Interactions/niftkPolyToolOpAddToFeedbackContour.cxx
   Interactions/niftkPolyToolOpUpdateFeedbackContour.cxx
-  Interactions/niftkPolyTool.cxx
-  Interactions/niftkSeedTool.cxx
   Interactions/niftkPosnTool.cxx
-  Interactions/niftkPaintbrushToolEventInterface.cxx
-  Interactions/niftkPaintbrushToolOpEditImage.cxx
-  Interactions/niftkPaintbrushTool.cxx
-  Interactions/niftkRendererFilter.cxx
-  Interactions/niftkStateMachine.cxx
+  Interactions/niftkSeedTool.cxx
+  Interactions/niftkStateMachineEventFilter.cxx
+  Interactions/niftkStateMachineRendererFilter.cxx
+  Interactions/niftkTool.cxx
   Interactions/niftkToolKeyPressStateMachine.cxx
 )
 
