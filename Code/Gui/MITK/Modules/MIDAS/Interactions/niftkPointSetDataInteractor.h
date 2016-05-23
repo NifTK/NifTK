@@ -26,14 +26,14 @@
 namespace niftk
 {
 /**
- * \class niftkMIDASPointSetDataInteractor
- * \brief Derived from mitkPointSetDataInteractor so we can handle the mouse move event.
+ * \class PointSetDataInteractor
+ * \brief Derived from mitk::PointSetDataInteractor so we can handle the mouse move event.
  * \ingroup Interaction
  */
-class NIFTKMIDAS_EXPORT MIDASPointSetDataInteractor : public mitk::PointSetDataInteractor, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT PointSetDataInteractor : public mitk::PointSetDataInteractor, public MIDASStateMachine
 {
 public:
-  mitkClassMacro(MIDASPointSetDataInteractor, mitk::PointSetDataInteractor);
+  mitkClassMacro(PointSetDataInteractor, mitk::PointSetDataInteractor);
   itkFactorylessNewMacro(Self)
   itkCloneMacro(Self)
 
@@ -44,12 +44,12 @@ protected:
    * If no n is set, then the number of points is unlimited
    * n=0 is not supported. In this case, n is set to 1.
    */
-  MIDASPointSetDataInteractor();
+  PointSetDataInteractor();
 
   /**
    * \brief Default Destructor
    **/
-  virtual ~MIDASPointSetDataInteractor();
+  virtual ~PointSetDataInteractor();
 
   /// \brief Tells if this tool can handle the given event.
   ///

@@ -41,11 +41,11 @@ namespace niftk
  * and includes Undo/Redo functionality. Given the above list, to remove seeds most people
  * hold the middle mouse button down, and drag it around, sucking up the seed points like a hoover.
  */
-class NIFTKMIDAS_EXPORT SeedTool : public MIDASTool {
+class NIFTKMIDAS_EXPORT SeedTool : public Tool {
 
 public:
 
-  mitkClassMacro(SeedTool, MIDASTool);
+  mitkClassMacro(SeedTool, Tool);
   itkNewMacro(SeedTool);
 
   virtual void InitializeStateMachine();
@@ -79,8 +79,8 @@ protected:
 
 private:
 
-  MIDASPointSetInteractor::Pointer m_PointSetInteractor;
-//  MIDASPointSetDataInteractor::Pointer m_PointSetInteractor;
+  PointSetInteractor::Pointer m_PointSetInteractor;
+//  PointSetDataInteractor::Pointer m_PointSetInteractor;
 
 };
 

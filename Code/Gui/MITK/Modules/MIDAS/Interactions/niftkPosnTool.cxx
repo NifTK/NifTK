@@ -28,7 +28,7 @@ namespace niftk
 NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, PosnTool, "Posn Tool");
 
 PosnTool::PosnTool()
-: MIDASTool()
+: Tool()
 {
 }
 

@@ -26,13 +26,13 @@ namespace niftk
 MIDASDataNodeNameStringFilter::MIDASDataNodeNameStringFilter()
 {
   this->AddToList("One of FeedbackContourTool's feedback nodes");
-  this->AddToList("niftkContourTool");
-  this->AddToList(MIDASTool::SEEDS_NAME);
-  this->AddToList(MIDASTool::CONTOURS_NAME);
-  this->AddToList(MIDASTool::REGION_GROWING_NAME);
-  this->AddToList(MIDASTool::PRIOR_CONTOURS_NAME);
-  this->AddToList(MIDASTool::NEXT_CONTOURS_NAME);
-  this->AddToList(MIDASTool::DRAW_CONTOURS_NAME);
+  this->AddToList(ContourTool::MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR);
+  this->AddToList(Tool::SEEDS_NAME);
+  this->AddToList(Tool::CONTOURS_NAME);
+  this->AddToList(Tool::REGION_GROWING_NAME);
+  this->AddToList(Tool::PRIOR_CONTOURS_NAME);
+  this->AddToList(Tool::NEXT_CONTOURS_NAME);
+  this->AddToList(Tool::DRAW_CONTOURS_NAME);
   this->AddToList(PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME);
   this->AddToList(PaintbrushTool::EROSIONS_ADDITIONS_NAME);
   this->AddToList(PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME);

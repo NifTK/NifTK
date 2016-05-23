@@ -24,24 +24,24 @@
 namespace niftk
 {
 
-MIDASPointSetDataInteractor::MIDASPointSetDataInteractor()
+PointSetDataInteractor::PointSetDataInteractor()
 : mitk::PointSetDataInteractor()
 {
   this->SetAccuracy(1.0);
 }
 
-MIDASPointSetDataInteractor::~MIDASPointSetDataInteractor()
+PointSetDataInteractor::~PointSetDataInteractor()
 {
 }
 
-bool MIDASPointSetDataInteractor::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
+bool PointSetDataInteractor::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
   return MIDASStateMachine::CanHandleEvent(event);
 }
 
 //##Documentation
 //## overwritten cause this class can handle it better!
-bool MIDASPointSetDataInteractor::CanHandle(mitk::InteractionEvent* event)
+bool PointSetDataInteractor::CanHandle(mitk::InteractionEvent* event)
 {
 /*
   float returnValue = 0.0f;
@@ -97,7 +97,7 @@ bool MIDASPointSetDataInteractor::CanHandle(mitk::InteractionEvent* event)
   return true;
 }
 
-bool MIDASPointSetDataInteractor::ExecuteAction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PointSetDataInteractor::ExecuteAction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::InteractionPositionEvent* positionEvent =
       dynamic_cast<mitk::InteractionPositionEvent*>(event);

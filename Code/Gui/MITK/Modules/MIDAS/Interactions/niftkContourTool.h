@@ -43,15 +43,15 @@ namespace niftk
  * mouse.
  *
  * \sa mitk::FeedbackContourTool
- * \sa MIDASTool
- * \sa DrawTool
- * \sa PolyTool
+ * \sa niftk::Tool
+ * \sa niftk::DrawTool
+ * \sa niftk::PolyTool
  */
-class NIFTKMIDAS_EXPORT ContourTool : public MIDASTool {
+class NIFTKMIDAS_EXPORT ContourTool : public Tool {
 
 public:
 
-  mitkClassMacro(ContourTool, MIDASTool);
+  mitkClassMacro(ContourTool, Tool);
 
   /// \brief We store the name of a property to say we are editing.
   static const std::string EDITING_PROPERTY_NAME;

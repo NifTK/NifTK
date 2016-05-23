@@ -42,7 +42,7 @@ const std::string ContourTool::MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR("MIDAS Back
 const mitk::OperationType ContourTool::MIDAS_CONTOUR_TOOL_OP_ACCUMULATE_CONTOUR = 320419;
 
 ContourTool::ContourTool()
-: MIDASTool()
+: Tool()
 , m_ContourWidth(1)
 , m_ContourClosed(false)
 , m_Tolerance(0.01)
@@ -64,7 +64,6 @@ ContourTool::ContourTool()
 
   m_Interface = ContourToolEventInterface::New();
   m_Interface->SetContourTool(this);
-
 }
 
 ContourTool::~ContourTool()

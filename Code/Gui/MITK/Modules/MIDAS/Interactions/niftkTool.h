@@ -36,7 +36,7 @@ namespace niftk
 {
 
 /**
- * \class MIDASTool
+ * \class Tool
  * \brief Base class for MIDAS tools that need access to the list of
  * seeds for the current reference data volume registered with the ToolManager.
  *
@@ -59,20 +59,20 @@ namespace niftk
  * \sa PolyTool
  * \sa PointSetDataInteractor
  */
-class NIFTKMIDAS_EXPORT MIDASTool : public mitk::FeedbackContourTool, public MIDASStateMachine
+class NIFTKMIDAS_EXPORT Tool : public mitk::FeedbackContourTool, public MIDASStateMachine
 {
 
 public:
 
-  mitkClassMacro(MIDASTool, mitk::FeedbackContourTool);
+  mitkClassMacro(Tool, mitk::FeedbackContourTool);
 
   /// \brief Loads the behaviour string to the global interaction.
-  /// This function should be called before any MIDASTool object is created.
+  /// This function should be called before any niftk::Tool object is created.
   static void LoadBehaviourStrings();
 
   static bool LoadBehaviour(const std::string& fileName, us::Module* module);
 
-  const char* GetGroup() const;
+  const char* GetGroup() const override;
 
   /// \brief Constants that identify the data needed for the irregular edit tools.
   /// They should be used to index the vector of working data.
@@ -140,8 +140,8 @@ public:
 
 protected:
 
-  MIDASTool(); // purposefully hidden
-  virtual ~MIDASTool(); // purposely hidden
+  Tool(); // purposefully hidden
+  virtual ~Tool(); // purposely hidden
 
   /// \brief Tells if this tool can handle the given event.
   ///
@@ -176,8 +176,8 @@ private:
   void OnSeedsModified();
 
   /// \brief This is the interactor just to add points. All MIDAS tools can add seeds. Only the SeedTool can move/remove them.
-  MIDASPointSetInteractor::Pointer m_AddToPointSetInteractor;
-//  MIDASPointSetDataInteractor::Pointer m_AddToPointSetInteractor;
+  PointSetInteractor::Pointer m_AddToPointSetInteractor;
+//  PointSetDataInteractor::Pointer m_AddToPointSetInteractor;
 
   /// \brief The node that contains the point set that is the working data of the seed tool.
   mitk::DataNode::Pointer m_PointSetNode;

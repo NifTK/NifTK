@@ -79,24 +79,24 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent, mitk::Re
 
   /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
 
-  m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
-  m_MIDASToolNodeNameFilter->SetPropertyName("name");
-  m_MIDASToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
-  m_MIDASToolNodeNameFilter->AddToList("niftkContourTool");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_SEEDS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_PRIOR_CONTOURS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_NEXT_CONTOURS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_DRAW_CONTOURS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPHO_SEGMENTATION_OF_LAST_STAGE");
-  m_MIDASToolNodeNameFilter->AddToList("PolyTool anchor points");
-  m_MIDASToolNodeNameFilter->AddToList("PolyTool previous contour");
-  m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
+  m_ToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
+  m_ToolNodeNameFilter->SetPropertyName("name");
+  m_ToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
+  m_ToolNodeNameFilter->AddToList("MIDAS Background Contour");
+  m_ToolNodeNameFilter->AddToList("MIDAS_SEEDS");
+  m_ToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
+  m_ToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
+  m_ToolNodeNameFilter->AddToList("MIDAS_PRIOR_CONTOURS");
+  m_ToolNodeNameFilter->AddToList("MIDAS_NEXT_CONTOURS");
+  m_ToolNodeNameFilter->AddToList("MIDAS_DRAW_CONTOURS");
+  m_ToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
+  m_ToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
+  m_ToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
+  m_ToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
+  m_ToolNodeNameFilter->AddToList("MORPHO_SEGMENTATION_OF_LAST_STAGE");
+  m_ToolNodeNameFilter->AddToList("PolyTool anchor points");
+  m_ToolNodeNameFilter->AddToList("PolyTool previous contour");
+  m_ToolNodeNameFilter->AddToList("Paintbrush_Node");
 
   m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(m_DataStorage);
 
@@ -108,7 +108,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent, mitk::Re
   nodesToIgnore.push_back(m_BoundingBoxNode);
   m_VisibilityTracker->SetNodesToIgnore(nodesToIgnore);
 
-  m_VisibilityTracker->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
+  m_VisibilityTracker->AddFilter(m_ToolNodeNameFilter.GetPointer());
 
   m_MouseEventEater = new QmitkMouseEventEater();
   m_MouseEventEater->SetIsEating(false);

@@ -28,11 +28,11 @@ namespace niftk
  * position of the slices in 2 or 3 windows, which is the default behaviour of
  * the MITK ortho-viewer anyway.
  */
-class NIFTKMIDAS_EXPORT PosnTool : public MIDASTool
+class NIFTKMIDAS_EXPORT PosnTool : public Tool
 {
 
 public:
-  mitkClassMacro(PosnTool, MIDASTool);
+  mitkClassMacro(PosnTool, Tool);
   itkNewMacro(PosnTool);
 
   virtual const char* GetName() const;

@@ -63,13 +63,13 @@ These datasets are operated upon by niftk::SeedTool, niftk::PolyTool and niftk::
 
 \image html ArchitectureMIDASGeneralEditorTools.png "Figure 2. Hierarchy of editing tools"
 
-It can be seen in Figure 2 that these derive from niftk::MIDASTool.  The Seed tool based functionality is:
+It can be seen in Figure 2 that these derive from niftk::Tool.  The Seed tool based functionality is:
 
 \li Right mouse click = place seed
 \li Middle mouse click = erase seed
 \li Left mouse click and move = move seed
 
-However, the Right mouse click works regardless of which tool is selected.  For this reason, the niftk::MIDASTool
+However, the Right mouse click works regardless of which tool is selected.  For this reason, the niftk::Tool
 has an mitk::PointSetInterfactor subclass that registers with mitk::GlobalInteraction when the tool is activated, and de-registers
 when de-actived.  Thus each of niftk::DrawTool, niftk::PolyTool and niftk::SeedTool can add
 seeds. But it is only the niftk::SeedTool that can erase / move seeds. Also note that the seeds are defined 
@@ -136,7 +136,7 @@ or copy back the back image to effect an Undo operation.
 The MIDAS Irregular Volume Editor is more complex than the \link ArchitectureMIDASMorphEditor MIDAS Morphological Editor. \endlink
 This functionality can be seen as a combination of tools provided via the 
 <a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation Framework</a>
-and extra Qt widgets calling various update functions to affect the segmented image. The niftk::MIDASTool subclasses 
+and extra Qt widgets calling various update functions to affect the segmented image. The niftk::Tool subclasses 
 are used to edit the contours, and the contours are then applied to update the image volume. This plugin can therefore be 
 easily extended by providing different mitk::Tool subclasses. The additional Qt widgets call back to MIDASGeneralSegmentorView
 to provide bulk functionality such as Wipe, Wipe+, Wipe-, PropUp, PropDown, Prop3D etc. 

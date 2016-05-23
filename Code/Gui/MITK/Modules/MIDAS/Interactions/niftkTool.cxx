@@ -33,21 +33,21 @@
 namespace niftk
 {
 
-const std::string MIDASTool::SEEDS_NAME = "MIDAS_SEEDS";
-const std::string MIDASTool::CONTOURS_NAME = "MIDAS_CURRENT_CONTOURS";
-const std::string MIDASTool::PRIOR_CONTOURS_NAME = "MIDAS_PRIOR_CONTOURS";
-const std::string MIDASTool::NEXT_CONTOURS_NAME = "MIDAS_NEXT_CONTOURS";
-const std::string MIDASTool::DRAW_CONTOURS_NAME = "MIDAS_DRAW_CONTOURS";
-const std::string MIDASTool::REGION_GROWING_NAME = "MIDAS_REGION_GROWING_IMAGE";
-const std::string MIDASTool::INITIAL_SEGMENTATION_NAME = "MIDAS_INITIAL_SEGMENTATION_IMAGE";
-const std::string MIDASTool::INITIAL_SEEDS_NAME = "MIDAS_INITIAL_SEEDS";
+const std::string Tool::SEEDS_NAME = "MIDAS_SEEDS";
+const std::string Tool::CONTOURS_NAME = "MIDAS_CURRENT_CONTOURS";
+const std::string Tool::PRIOR_CONTOURS_NAME = "MIDAS_PRIOR_CONTOURS";
+const std::string Tool::NEXT_CONTOURS_NAME = "MIDAS_NEXT_CONTOURS";
+const std::string Tool::DRAW_CONTOURS_NAME = "MIDAS_DRAW_CONTOURS";
+const std::string Tool::REGION_GROWING_NAME = "MIDAS_REGION_GROWING_IMAGE";
+const std::string Tool::INITIAL_SEGMENTATION_NAME = "MIDAS_INITIAL_SEGMENTATION_IMAGE";
+const std::string Tool::INITIAL_SEEDS_NAME = "MIDAS_INITIAL_SEEDS";
 
 //-----------------------------------------------------------------------------
-bool MIDASTool::s_BehaviourStringsLoaded = false;
+bool Tool::s_BehaviourStringsLoaded = false;
 
 
 //-----------------------------------------------------------------------------
-MIDASTool::MIDASTool()
+Tool::Tool()
 : mitk::FeedbackContourTool("")
 , m_AddToPointSetInteractor(NULL)
 , m_LastSeenNumberOfSeeds(0)
@@ -59,13 +59,13 @@ MIDASTool::MIDASTool()
 
 
 //-----------------------------------------------------------------------------
-MIDASTool::~MIDASTool()
+Tool::~Tool()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASTool::LoadBehaviourStrings()
+void Tool::LoadBehaviourStrings()
 {
   if (!s_BehaviourStringsLoaded)
   {
@@ -84,7 +84,7 @@ void MIDASTool::LoadBehaviourStrings()
 }
 
 
-bool MIDASTool::LoadBehaviour(const std::string& fileName, us::Module* module)
+bool Tool::LoadBehaviour(const std::string& fileName, us::Module* module)
 {
   mitk::GlobalInteraction* globalInteraction =  mitk::GlobalInteraction::GetInstance();
   mitk::StateMachineFactory* stateMachineFactory = globalInteraction->GetStateMachineFactory();
@@ -111,7 +111,7 @@ bool MIDASTool::LoadBehaviour(const std::string& fileName, us::Module* module)
 
 
 //-----------------------------------------------------------------------------
-bool MIDASTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
+bool Tool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
   bool canHandleIt = MIDASStateMachine::CanHandleEvent(event);
   if (canHandleIt)
@@ -123,7 +123,7 @@ bool MIDASTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* data
 
 
 //-----------------------------------------------------------------------------
-void MIDASTool::InstallEventFilter(MIDASEventFilter* eventFilter)
+void Tool::InstallEventFilter(MIDASEventFilter* eventFilter)
 {
   MIDASStateMachine::InstallEventFilter(eventFilter);
   if (m_AddToPointSetInteractor.IsNotNull())
@@ -134,7 +134,7 @@ void MIDASTool::InstallEventFilter(MIDASEventFilter* eventFilter)
 
 
 //-----------------------------------------------------------------------------
-void MIDASTool::RemoveEventFilter(MIDASEventFilter* eventFilter)
+void Tool::RemoveEventFilter(MIDASEventFilter* eventFilter)
 {
   if (m_AddToPointSetInteractor.IsNotNull())
   {
@@ -145,14 +145,14 @@ void MIDASTool::RemoveEventFilter(MIDASEventFilter* eventFilter)
 
 
 //-----------------------------------------------------------------------------
-const char* MIDASTool::GetGroup() const
+const char* Tool::GetGroup() const
 {
   return "MIDAS";
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASTool::Activated()
+void Tool::Activated()
 {
   Superclass::Activated();
 
@@ -192,9 +192,9 @@ void MIDASTool::Activated()
 
     if (m_AddToPointSetInteractor.IsNull())
     {
-      m_AddToPointSetInteractor = MIDASPointSetInteractor::New("MIDASToolPointSetInteractor", pointSetNode);
+      m_AddToPointSetInteractor = PointSetInteractor::New("ToolPointSetInteractor", pointSetNode);
 
-//      m_AddToPointSetInteractor = MIDASPointSetDataInteractor::New();
+//      m_AddToPointSetInteractor = PointSetDataInteractor::New();
 //      m_AddToPointSetInteractor->LoadStateMachine("niftkToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
 //      m_AddToPointSetInteractor->SetEventConfig("niftkToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
@@ -213,9 +213,9 @@ void MIDASTool::Activated()
 
     m_LastSeenNumberOfSeeds = m_PointSet->GetSize();
 
-    itk::SimpleMemberCommand<MIDASTool>::Pointer onSeedsModifiedCommand =
-      itk::SimpleMemberCommand<MIDASTool>::New();
-    onSeedsModifiedCommand->SetCallbackFunction( this, &MIDASTool::OnSeedsModified );
+    itk::SimpleMemberCommand<Tool>::Pointer onSeedsModifiedCommand =
+      itk::SimpleMemberCommand<Tool>::New();
+    onSeedsModifiedCommand->SetCallbackFunction( this, &Tool::OnSeedsModified );
     m_SeedsChangedTag = pointSet->AddObserver(itk::ModifiedEvent(), onSeedsModifiedCommand);
   }
 
@@ -244,7 +244,7 @@ void MIDASTool::Activated()
 
 
 //-----------------------------------------------------------------------------
-void MIDASTool::Deactivated()
+void Tool::Deactivated()
 {
   m_IsActivated = false;
 
@@ -304,21 +304,21 @@ void MIDASTool::Deactivated()
 
 
 //-----------------------------------------------------------------------------
-bool MIDASTool::GetBlockNumberOfSeedsSignal() const
+bool Tool::GetBlockNumberOfSeedsSignal() const
 {
   return m_BlockNumberOfSeedsSignal;
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASTool::SetBlockNumberOfSeedsSignal(bool blockNumberOfSeedsSignal)
+void Tool::SetBlockNumberOfSeedsSignal(bool blockNumberOfSeedsSignal)
 {
   m_BlockNumberOfSeedsSignal = blockNumberOfSeedsSignal;
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASTool::RenderCurrentWindow(const mitk::PositionEvent& positionEvent)
+void Tool::RenderCurrentWindow(const mitk::PositionEvent& positionEvent)
 {
   assert( positionEvent.GetSender()->GetRenderWindow() );
   positionEvent.GetSender()->RequestUpdate();
@@ -326,7 +326,7 @@ void MIDASTool::RenderCurrentWindow(const mitk::PositionEvent& positionEvent)
 
 
 //-----------------------------------------------------------------------------
-void MIDASTool::RenderAllWindows()
+void Tool::RenderAllWindows()
 {
   if (m_LastEventSender)
   {
@@ -336,7 +336,7 @@ void MIDASTool::RenderAllWindows()
 
 
 //-----------------------------------------------------------------------------
-void MIDASTool::UpdateWorkingDataNodeBoolProperty(int dataIndex, const std::string& name, bool value)
+void Tool::UpdateWorkingDataNodeBoolProperty(int dataIndex, const std::string& name, bool value)
 {
   assert(m_ToolManager);
 
@@ -348,21 +348,21 @@ void MIDASTool::UpdateWorkingDataNodeBoolProperty(int dataIndex, const std::stri
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer MIDASTool::GetPointSetNode() const
+mitk::DataNode::Pointer Tool::GetPointSetNode() const
 {
   return m_PointSetNode;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::PointSet::Pointer MIDASTool::GetPointSet() const
+mitk::PointSet::Pointer Tool::GetPointSet() const
 {
   return m_PointSet;
 }
 
 
 //-----------------------------------------------------------------------------
-void MIDASTool::OnSeedsModified()
+void Tool::OnSeedsModified()
 {
   if (m_PointSet.IsNotNull())
   {

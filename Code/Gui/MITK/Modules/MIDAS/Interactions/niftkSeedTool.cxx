@@ -39,7 +39,7 @@ SeedTool::~SeedTool()
 
 //-----------------------------------------------------------------------------
 SeedTool::SeedTool()
-: MIDASTool()
+: Tool()
 , m_PointSetInteractor(NULL)
 {
 }
@@ -108,9 +108,9 @@ void SeedTool::Activated()
   {
     if (m_PointSetInteractor.IsNull())
     {
-      m_PointSetInteractor = MIDASPointSetInteractor::New("SeedToolPointSetInteractor", pointSetNode);
+      m_PointSetInteractor = PointSetInteractor::New("SeedToolPointSetInteractor", pointSetNode);
 
-//      m_PointSetInteractor = MIDASPointSetDataInteractor::New();
+//      m_PointSetInteractor = PointSetDataInteractor::New();
 //      m_PointSetInteractor->LoadStateMachine("niftkSeedToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
 //      m_PointSetInteractor->SetEventConfig("niftkSeedToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 

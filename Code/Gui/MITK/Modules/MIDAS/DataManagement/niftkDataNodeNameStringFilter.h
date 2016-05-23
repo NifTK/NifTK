@@ -30,7 +30,7 @@ namespace niftk
  *
  * </pre>
  * FeedbackContourTool
- * niftkContourTool
+ * niftk::ContourTool::MIDAS_CONTOUR_TOOL_BACKGROUND_CONTOUR
  * niftk::Tool::SEED_POINT_SET_NAME
  * niftk::Tool::CURRENT_CONTOURS_NAME
  * niftk::Tool::REGION_GROWING_IMAGE_NAME

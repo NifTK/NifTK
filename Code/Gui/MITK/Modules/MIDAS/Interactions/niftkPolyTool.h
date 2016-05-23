@@ -67,7 +67,7 @@ public:
   /// \brief When called, we initialize contours, as the PolyLine keeps going until the whole tool is Activated/Deactivated.
   virtual void Activated();
 
-  /// \brief When called, add the current poly line to the node specified by MIDASTool::CURRENT_CONTOURS_NAME.
+  /// \brief When called, add the current poly line to the node specified by niftk::Tool::CURRENT_CONTOURS_NAME.
   virtual void Deactivated();
 
   /// \brief When called, we incrementally build up a poly line.

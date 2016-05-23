@@ -195,7 +195,7 @@ private:
   mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
   /// \brief Filter that tells which nodes should not be handled.
-  mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
+  mitk::DataNodeStringPropertyFilter::Pointer m_ToolNodeNameFilter;
 
   /// \brief The current magnification in the selected window of the viewer in this widget.
   /// It is used to increase or decrease the magnification value to the closest integers
