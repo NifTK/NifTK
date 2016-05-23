@@ -122,13 +122,6 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
     eventAdmin->publishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
 
     ctkDictionary properties;
-    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGISTARTRECORDING";
-    eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStart(ctkEvent)), properties);
-    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGISTOPRECORDING";
-    eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStop(ctkEvent)), properties);
-
-	// Other plugins can publish this to request that the data source stops momentarily.
-	// Its useful for applications that need to grab synchronised data. eg. camera calibration.
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATEPAUSE";
     eventAdmin->subscribeSlot(this, SLOT(OnUpdateShouldPause(ctkEvent)), properties);
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATERESTART";
