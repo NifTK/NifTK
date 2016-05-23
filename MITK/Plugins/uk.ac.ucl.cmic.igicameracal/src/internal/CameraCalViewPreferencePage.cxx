@@ -83,8 +83,8 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   m_CameraCalViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 
-  m_Ui->m_FeaturesComboBox->addItem("Chessboard", QVariant(niftk::NiftyCalVideoCalibrationManager::CHESSBOARD));
-  m_Ui->m_FeaturesComboBox->addItem("Circles", QVariant(niftk::NiftyCalVideoCalibrationManager::CIRCLE_GRID));
+  m_Ui->m_FeaturesComboBox->addItem("Chess board", QVariant(niftk::NiftyCalVideoCalibrationManager::CHESS_BOARD));
+  m_Ui->m_FeaturesComboBox->addItem("Circle grid", QVariant(niftk::NiftyCalVideoCalibrationManager::CIRCLE_GRID));
   m_Ui->m_FeaturesComboBox->addItem("April Tags", QVariant(niftk::NiftyCalVideoCalibrationManager::APRIL_TAGS));
 
   m_Ui->m_TagFamilyComboBox->addItem("16h5");
@@ -93,9 +93,10 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_TagFamilyComboBox->addItem("36h9");
   m_Ui->m_TagFamilyComboBox->addItem("36h11");
 
-  m_Ui->m_HandEyeComboBox->addItem("Tsai 1989", QVariant(niftk::NiftyCalVideoCalibrationManager::TSAI));
-  m_Ui->m_HandEyeComboBox->addItem("Direct", QVariant(niftk::NiftyCalVideoCalibrationManager::DIRECT));
-  m_Ui->m_HandEyeComboBox->addItem("Malti 2013", QVariant(niftk::NiftyCalVideoCalibrationManager::MALTI));
+  m_Ui->m_HandEyeComboBox->addItem("Tsai 1989", QVariant(niftk::NiftyCalVideoCalibrationManager::TSAI_1989));
+  m_Ui->m_HandEyeComboBox->addItem("Kang 2014", QVariant(niftk::NiftyCalVideoCalibrationManager::KANG_2014));
+  m_Ui->m_HandEyeComboBox->addItem("Malti 2013", QVariant(niftk::NiftyCalVideoCalibrationManager::MALTI_2013));
+  m_Ui->m_HandEyeComboBox->addItem("Non-linear, extrinsic.", QVariant(niftk::NiftyCalVideoCalibrationManager::NON_LINEAR_EXTRINSIC));
 
   bool ok = false;
   ok = connect(m_Ui->m_FeaturesComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnFeaturesComboSelected()));
@@ -139,7 +140,7 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
 {
   switch(m_Ui->m_FeaturesComboBox->currentIndex())
   {
-    case niftk::NiftyCalVideoCalibrationManager::CHESSBOARD:
+    case niftk::NiftyCalVideoCalibrationManager::CHESS_BOARD:
     case niftk::NiftyCalVideoCalibrationManager::CIRCLE_GRID:
       m_Ui->m_GridSizeLabel->setVisible(true);
       m_Ui->m_GridPointsInXSpinBox->setVisible(true);
@@ -166,14 +167,15 @@ void CameraCalViewPreferencePage::OnHandEyeComboSelected()
 {
   switch(m_Ui->m_HandEyeComboBox->currentIndex())
   {
-    case niftk::NiftyCalVideoCalibrationManager::TSAI:
-    case niftk::NiftyCalVideoCalibrationManager::MALTI:
+    case niftk::NiftyCalVideoCalibrationManager::TSAI_1989:
+    case niftk::NiftyCalVideoCalibrationManager::MALTI_2013:
+  case niftk::NiftyCalVideoCalibrationManager::NON_LINEAR_EXTRINSIC:
       m_Ui->m_ModelToTrackerLabel->setVisible(false);
       m_Ui->m_ModelToTrackerLineEdit->setVisible(false);
       m_Ui->m_ModelToTrackerToolButton->setVisible(false);
     break;
 
-    case niftk::NiftyCalVideoCalibrationManager::DIRECT:
+    case niftk::NiftyCalVideoCalibrationManager::KANG_2014:
       m_Ui->m_ModelToTrackerLabel->setVisible(true);
       m_Ui->m_ModelToTrackerLineEdit->setVisible(true);
       m_Ui->m_ModelToTrackerToolButton->setVisible(true);

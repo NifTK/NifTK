@@ -46,8 +46,8 @@ const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorY(1
 const int                 NiftyCalVideoCalibrationManager::DefaultGridSizeX(14);
 const int                 NiftyCalVideoCalibrationManager::DefaultGridSizeY(10);
 const std::string         NiftyCalVideoCalibrationManager::DefaultTagFamily("25h7");
-const NiftyCalVideoCalibrationManager::CalibrationPatterns NiftyCalVideoCalibrationManager::DefaultCalibrationPattern(NiftyCalVideoCalibrationManager::CHESSBOARD);
-const NiftyCalVideoCalibrationManager::HandEyeMethod       NiftyCalVideoCalibrationManager::DefaultHandEyeMethod(NiftyCalVideoCalibrationManager::TSAI);
+const NiftyCalVideoCalibrationManager::CalibrationPatterns NiftyCalVideoCalibrationManager::DefaultCalibrationPattern(NiftyCalVideoCalibrationManager::CHESS_BOARD);
+const NiftyCalVideoCalibrationManager::HandEyeMethod       NiftyCalVideoCalibrationManager::DefaultHandEyeMethod(NiftyCalVideoCalibrationManager::TSAI_1989);
 
 //-----------------------------------------------------------------------------
 NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
@@ -294,7 +294,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex)
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
 
   cv::Matx44d modelToWorld = niftk::CalculateAverageModelToWorld(
-        m_HandEyeMatrices[imageIndex][TSAI],
+        m_HandEyeMatrices[imageIndex][TSAI_1989],
         m_TrackingMatrices,
         cameraMatrices
         );
@@ -306,7 +306,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex)
   optimiser->SetPoints(&m_Points[imageIndex]);
   optimiser->SetHandMatrices(&m_TrackingMatrices);
 
-  cv::Matx44d handEye = m_HandEyeMatrices[imageIndex][TSAI];
+  cv::Matx44d handEye = m_HandEyeMatrices[imageIndex][TSAI_1989];
 
   double reprojectionRMS = optimiser->Optimise(
     modelToWorld,
@@ -362,7 +362,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   // started with, which is why we have to dynamic cast, and then
   // call SetImage again.
 
-  if (m_CalibrationPattern == CHESSBOARD)
+  if (m_CalibrationPattern == CHESS_BOARD)
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
 
@@ -638,17 +638,17 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   {
     // Don't change the order of these.
     // Malti requires an initial hand-eye, so we use Tsai.
-    m_HandEyeMatrices[0][TSAI] = DoTsaiHandEye(0);
-    m_HandEyeMatrices[0][DIRECT] = DoDirectHandEye(0);
-    m_HandEyeMatrices[0][MALTI] = DoMaltiHandEye(0);
+    m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0);
+    m_HandEyeMatrices[0][KANG_2014] = DoDirectHandEye(0);
+    m_HandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0);
 
     if (m_ImageNode[1].IsNotNull())
     {
       // Don't change the order of these.
       // Malti requires an initial hand-eye, so we use Tsai.
-      m_HandEyeMatrices[1][TSAI] = DoTsaiHandEye(1);
-      m_HandEyeMatrices[1][DIRECT] = DoDirectHandEye(1);
-      m_HandEyeMatrices[1][MALTI] = DoMaltiHandEye(1);
+      m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1);
+      m_HandEyeMatrices[1][KANG_2014] = DoDirectHandEye(1);
+      m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1);
     }
   }
 

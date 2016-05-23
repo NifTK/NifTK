@@ -41,7 +41,7 @@ public:
   enum CalibrationPatterns
   {
     // Order must match that in niftk::CameraCalViewPreferencePage
-    CHESSBOARD,
+    CHESS_BOARD,
     CIRCLE_GRID,
     APRIL_TAGS
   };
@@ -49,9 +49,10 @@ public:
   enum HandEyeMethod
   {
     // Order must match that in niftk::CameraCalViewPreferencePage
-    TSAI,
-    DIRECT,
-    MALTI
+    TSAI_1989,
+    KANG_2014,
+    MALTI_2013,
+    NON_LINEAR_EXTRINSIC
   };
 
   const static bool                DefaultDoIterative;
