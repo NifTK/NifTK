@@ -29,7 +29,7 @@
 #include <niftkStereoCameraCalibration.h>
 #include <niftkIterativeMonoCameraCalibration.h>
 #include <niftkIterativeStereoCameraCalibration.h>
-#include <niftkNonLinearHandEyeOptimiser.h>
+#include <niftkNonLinearMaltiHandEyeOptimiser.h>
 
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
@@ -301,11 +301,10 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex)
 
 
   // Assumes we have done Tsai first.
-  niftk::NonLinearHandEyeOptimiser::Pointer optimiser = niftk::NonLinearHandEyeOptimiser::New();
+  niftk::NonLinearMaltiHandEyeOptimiser::Pointer optimiser = niftk::NonLinearMaltiHandEyeOptimiser::New();
   optimiser->SetModel(&m_3DModelPoints);
   optimiser->SetPoints(&m_Points[imageIndex]);
   optimiser->SetHandMatrices(&m_TrackingMatrices);
-  optimiser->SetEyeMatrices(&cameraMatrices);
 
   cv::Matx44d handEye = m_HandEyeMatrices[imageIndex][TSAI];
 
