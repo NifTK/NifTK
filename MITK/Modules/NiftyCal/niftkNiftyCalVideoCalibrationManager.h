@@ -84,20 +84,28 @@ public:
 
   itkSetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
   itkGetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
+
   itkSetMacro(DoIterative, bool);
   itkGetMacro(DoIterative, bool);
+
   itkSetMacro(ScaleFactorX, double);
   itkGetMacro(ScaleFactorX, double);
+
   itkSetMacro(ScaleFactorY, double);
   itkGetMacro(ScaleFactorY, double);
+
   itkSetMacro(GridSizeX, int);
   itkGetMacro(GridSizeX, int);
+
   itkSetMacro(GridSizeY, int);
   itkGetMacro(GridSizeY, int);
+
   itkSetMacro(CalibrationPattern, CalibrationPatterns);
   itkGetMacro(CalibrationPattern, CalibrationPatterns);
+
   itkSetMacro(HandeyeMethod, HandEyeMethod);
   itkGetMacro(HandeyeMethod, HandEyeMethod);
+
   itkSetMacro(TagFamily, std::string);
   itkGetMacro(TagFamily, std::string);
 
@@ -280,6 +288,7 @@ private:
   cv::Mat                                       m_RightToLeftRotation;
   cv::Mat                                       m_RightToLeftTranslation;
   std::vector<cv::Matx44d>                      m_HandEyeMatrices[2];
+  std::vector<cv::Matx44d>                      m_ReferenceHandEyeMatrices[2];
 
 }; // end class
 
