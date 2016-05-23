@@ -72,10 +72,15 @@ public:
 
   void SetLeftImageNode(mitk::DataNode::Pointer node);
   mitk::DataNode::Pointer GetLeftImageNode() const;
+
   void SetRightImageNode(mitk::DataNode::Pointer node);
   mitk::DataNode::Pointer GetRightImageNode() const;
+
   itkSetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
   itkGetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
+
+  itkSetMacro(ReferenceTrackingTransformNode, mitk::DataNode::Pointer);
+  itkGetMacro(ReferenceTrackingTransformNode, mitk::DataNode::Pointer);
 
   itkSetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
   itkGetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
@@ -171,31 +176,43 @@ private:
   /**
    * \brief Converts OpenCV rotation vectors and translation vectors to matrices.
    */
-  std::list<cv::Matx44d > ExtractCameraMatrices(int imageIndex);
+  std::list<cv::Matx44d> ExtractCameraMatrices(int imageIndex);
 
+  /**
+   * \brief Extracts a set of tracking matrices, optionally making them w.r.t the refererence.
+   */
+  std::list<cv::Matx44d> ExtractTrackingMatrices(bool useReference);
+
+  /**
+   * \brief Converts a list of matrices to a vector.
+   */
   std::vector<cv::Mat> ConvertMatrices(const std::list<cv::Matx44d>& list);
 
   /**
    * \brief Actually does Tsai's 1989 hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
    */
-  cv::Matx44d DoTsaiHandEye(int imageIndex);
+  cv::Matx44d DoTsaiHandEye(int imageIndex, bool useReference);
 
   /**
    * \brief Actually does Kang 2014 hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
    */
-  cv::Matx44d DoKangHandEye(int imageIndex);
+  cv::Matx44d DoKangHandEye(int imageIndex, bool useReference);
 
   /**
    * \brief Actually does Malti's 2013 hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
    */
-  cv::Matx44d DoMaltiHandEye(int imageIndex);
+  cv::Matx44d DoMaltiHandEye(int imageIndex, bool useReference);
 
   /**
    * \brief Actually does a full non-linear calibration of all extrinsic parameters.
    */
-  cv::Matx44d DoFullExtrinsicHandEye(int imageIndex);
+  cv::Matx44d DoFullExtrinsicHandEye(int imageIndex, bool useReference);
 
-  void DoFullExtrinsicHandEyeInStereo(cv::Matx44d& leftHandEye, cv::Matx44d& rightHandEye);
+  /**
+   * \brief Bespoke method to calculate independent leftHandEye and rightHandEye,
+   * by optimising all parameters in stereo, simultaneously.
+   */
+  void DoFullExtrinsicHandEyeInStereo(cv::Matx44d& leftHandEye, cv::Matx44d& rightHandEye, bool useReference);
 
   /**
    * \brief Saves list of images that were used for calibration.
@@ -209,50 +226,60 @@ private:
    */
   void SavePoints(const std::string& prefix, const std::list<niftk::PointSet>& points);
 
-  // Data from Plugin.
-  mitk::DataStorage::Pointer m_DataStorage;
-  mitk::DataNode::Pointer    m_ImageNode[2];
-  mitk::DataNode::Pointer    m_TrackingTransformNode;
+  // Data from Plugin/DataStorage.
+  mitk::DataStorage::Pointer                    m_DataStorage;
+  mitk::DataNode::Pointer                       m_ImageNode[2];
+  mitk::DataNode::Pointer                       m_TrackingTransformNode;
+  mitk::DataNode::Pointer                       m_ReferenceTrackingTransformNode;
 
   // Data from preferences.
-  bool                       m_DoIterative;
-  unsigned int               m_MinimumNumberOfSnapshotsForCalibrating;
-  std::string                m_3DModelFileName;
-  double                     m_ScaleFactorX;
-  double                     m_ScaleFactorY;
-  int                        m_GridSizeX;
-  int                        m_GridSizeY;
-  CalibrationPatterns        m_CalibrationPattern;
-  HandEyeMethod              m_HandeyeMethod;
-  std::string                m_TagFamily;
-  std::string                m_OutputDirName;
-  std::string                m_ModelToTrackerFileName;
-  std::string                m_ReferenceImageFileName;
-  std::string                m_ReferencePointsFileName;
+  bool                                          m_DoIterative;
+  unsigned int                                  m_MinimumNumberOfSnapshotsForCalibrating;
+  std::string                                   m_3DModelFileName;
+  double                                        m_ScaleFactorX;
+  double                                        m_ScaleFactorY;
+  int                                           m_GridSizeX;
+  int                                           m_GridSizeY;
+  CalibrationPatterns                           m_CalibrationPattern;
+  HandEyeMethod                                 m_HandeyeMethod;
+  std::string                                   m_TagFamily;
+  std::string                                   m_OutputDirName;
+  std::string                                   m_ModelToTrackerFileName;
+  std::string                                   m_ReferenceImageFileName;
+  std::string                                   m_ReferencePointsFileName;
 
   // Data used for temporary storage
-  cv::Mat                    m_TmpImage[2];
+  cv::Mat                                       m_TmpImage[2];
 
   // Data used for calibration.
-  cv::Size2i                                                               m_ImageSize;
-  std::pair< cv::Mat, niftk::PointSet>                                     m_ReferenceDataForIterativeCalib;
-  cv::Matx44d                                                              m_3DModelToTracker;
-  niftk::Model3D                                                           m_3DModelPoints;
-  std::list<niftk::PointSet>                                               m_Points[2];
-  std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_OriginalImages[2];
-  std::list<std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat> > m_ImagesForWarping[2];
-  std::list<cv::Matx44d>                                                   m_TrackingMatrices;
+  cv::Size2i                                    m_ImageSize;
+  std::pair< cv::Mat, niftk::PointSet>          m_ReferenceDataForIterativeCalib;
+  cv::Matx44d                                   m_3DModelToTracker;
+  niftk::Model3D                                m_3DModelPoints;
+  std::list<niftk::PointSet>                    m_Points[2];
+  std::list<
+    std::pair<
+      std::shared_ptr<niftk::IPoint2DDetector>,
+      cv::Mat>
+    >                                           m_OriginalImages[2];
+  std::list<
+    std::pair<
+      std::shared_ptr<niftk::IPoint2DDetector>,
+      cv::Mat>
+    >                                           m_ImagesForWarping[2];
+  std::list<cv::Matx44d>                        m_TrackingMatrices;
+  std::list<cv::Matx44d>                        m_ReferenceTrackingMatrices;
 
   // Calibration result
-  cv::Mat                    m_Intrinsic[2];
-  cv::Mat                    m_Distortion[2];
-  std::vector<cv::Mat>       m_Rvecs[2];
-  std::vector<cv::Mat>       m_Tvecs[2];
-  cv::Mat                    m_EssentialMatrix;
-  cv::Mat                    m_FundamentalMatrix;
-  cv::Mat                    m_RightToLeftRotation;
-  cv::Mat                    m_RightToLeftTranslation;
-  std::vector<cv::Matx44d>   m_HandEyeMatrices[2];
+  cv::Mat                                       m_Intrinsic[2];
+  cv::Mat                                       m_Distortion[2];
+  std::vector<cv::Mat>                          m_Rvecs[2];
+  std::vector<cv::Mat>                          m_Tvecs[2];
+  cv::Mat                                       m_EssentialMatrix;
+  cv::Mat                                       m_FundamentalMatrix;
+  cv::Mat                                       m_RightToLeftRotation;
+  cv::Mat                                       m_RightToLeftTranslation;
+  std::vector<cv::Matx44d>                      m_HandEyeMatrices[2];
 
 }; // end class
 
