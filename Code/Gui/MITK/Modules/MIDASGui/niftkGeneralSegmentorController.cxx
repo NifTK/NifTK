@@ -389,7 +389,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 
     // Create all the contours.
     mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 0,1,0, Tool::CONTOURS_NAME, true, 97);
-    mitk::DataNode::Pointer drawContours = this->CreateContourSet(newSegmentation, 0,1,0, Tool::DRAW_CONTOURS_NAME, true, 98);
+    mitk::DataNode::Pointer drawContours = this->CreateContourSet(newSegmentation, 102.0/255.0, 0.0, 153.0/255.0, Tool::DRAW_CONTOURS_NAME, true, 98);
     mitk::DataNode::Pointer seeNextNode = this->CreateContourSet(newSegmentation, 0,1,1, Tool::NEXT_CONTOURS_NAME, false, 95);
     mitk::DataNode::Pointer seePriorNode = this->CreateContourSet(newSegmentation, 0.68,0.85,0.90, Tool::PRIOR_CONTOURS_NAME, false, 96);
 
