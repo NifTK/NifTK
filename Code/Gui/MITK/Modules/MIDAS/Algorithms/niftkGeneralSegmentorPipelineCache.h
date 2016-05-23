@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkGeneralSegmentorPipelineCache_h
-#define __niftkGeneralSegmentorPipelineCache_h
+#ifndef niftkGeneralSegmentorPipelineCache_h
+#define niftkGeneralSegmentorPipelineCache_h
 
 #include "niftkMIDASExports.h"
 

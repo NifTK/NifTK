@@ -234,7 +234,7 @@ private:
   /// \brief To track visibility changes.
   mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
-  mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
+  mitk::DataNodeStringPropertyFilter::Pointer m_ToolNodeNameFilter;
 
   mitk::ThumbnailInteractor::Pointer m_DisplayInteractor;
 

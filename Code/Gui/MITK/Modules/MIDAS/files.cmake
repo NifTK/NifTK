@@ -19,57 +19,58 @@ set(H_FILES
   Algorithms/niftkGeneralSegmentorUtils.txx
   Algorithms/niftkMorphologicalSegmentorPipelineManager.h
   Interactions/niftkToolFactoryMacros.h
+  Interactions/niftkToolKeyPressResponder.h
 )
 
 set(CPP_FILES
-  DataManagement/niftkMIDASDataNodeNameStringFilter.cxx
+  DataManagement/niftkToolWorkingDataNameFilter.cxx
   Algorithms/niftkMorphologicalSegmentorPipelineManager.cxx
   Algorithms/niftkGeneralSegmentorCommands.cxx
   Algorithms/niftkGeneralSegmentorPipeline.cxx
   Algorithms/niftkGeneralSegmentorPipelineCache.cxx
   Algorithms/niftkGeneralSegmentorUtils.cxx
-  Interactions/niftkMIDASTool.cxx
-  Interactions/niftkMIDASContourToolEventInterface.cxx
-  Interactions/niftkMIDASContourToolOpAccumulateContour.cxx
-  Interactions/niftkMIDASContourTool.cxx
-  Interactions/niftkMIDASDrawToolEventInterface.cxx
-  Interactions/niftkMIDASDrawToolOpEraseContour.cxx
-  Interactions/niftkMIDASDrawTool.cxx
-  Interactions/niftkMIDASEventFilter.cxx
-  Interactions/niftkMIDASPointSetInteractor.cxx
-  Interactions/niftkMIDASPointSetDataInteractor.cxx
-  Interactions/niftkMIDASPolyToolEventInterface.cxx
-  Interactions/niftkMIDASPolyToolOpAddToFeedbackContour.cxx
-  Interactions/niftkMIDASPolyToolOpUpdateFeedbackContour.cxx
-  Interactions/niftkMIDASPolyTool.cxx
-  Interactions/niftkMIDASSeedTool.cxx
-  Interactions/niftkMIDASPosnTool.cxx
-  Interactions/niftkMIDASPaintbrushToolEventInterface.cxx
-  Interactions/niftkMIDASPaintbrushToolOpEditImage.cxx
-  Interactions/niftkMIDASPaintbrushTool.cxx
-  Interactions/niftkMIDASRendererFilter.cxx
-  Interactions/niftkMIDASStateMachine.cxx
-  Interactions/niftkMIDASToolKeyPressStateMachine.cxx
+  Interactions/niftkContourTool.cxx
+  Interactions/niftkContourToolEventInterface.cxx
+  Interactions/niftkContourToolOpAccumulateContour.cxx
+  Interactions/niftkDrawTool.cxx
+  Interactions/niftkDrawToolEventInterface.cxx
+  Interactions/niftkDrawToolOpEraseContour.cxx
+  Interactions/niftkFilteringStateMachine.cxx
+  Interactions/niftkPaintbrushTool.cxx
+  Interactions/niftkPaintbrushToolEventInterface.cxx
+  Interactions/niftkPaintbrushToolOpEditImage.cxx
+  Interactions/niftkPointSetDataInteractor.cxx
+  Interactions/niftkPointSetInteractor.cxx
+  Interactions/niftkPolyTool.cxx
+  Interactions/niftkPolyToolEventInterface.cxx
+  Interactions/niftkPolyToolOpAddToFeedbackContour.cxx
+  Interactions/niftkPolyToolOpUpdateFeedbackContour.cxx
+  Interactions/niftkPosnTool.cxx
+  Interactions/niftkSeedTool.cxx
+  Interactions/niftkStateMachineEventFilter.cxx
+  Interactions/niftkStateMachineRendererFilter.cxx
+  Interactions/niftkTool.cxx
+  Interactions/niftkToolKeyPressStateMachine.cxx
 )
 
 set(RESOURCE_FILES
-  Interactions/DisplayConfigMIDASTool.xml
-  Interactions/DisplayConfigMIDASPaintbrushTool.xml
-  Interactions/DnDDisplayConfigMIDASTool.xml
-  Interactions/DnDDisplayConfigMIDASPaintbrushTool.xml
-  Interactions/MIDASDrawTool.xml
-  Interactions/MIDASDrawToolConfig.xml
-  Interactions/MIDASPolyTool.xml
-  Interactions/MIDASPolyToolConfig.xml
-  Interactions/MIDASPaintbrushTool.xml
-  Interactions/MIDASPaintbrushToolConfig.xml
-  Interactions/MIDASToolPointSetInteractor.xml
-  Interactions/MIDASToolPointSetDataInteractor.xml
-  Interactions/MIDASToolPointSetDataInteractorConfig.xml
-  Interactions/MIDASSeedTool.xml
-  Interactions/MIDASSeedToolPointSetInteractor.xml
-  Interactions/MIDASSeedToolPointSetDataInteractor.xml
-  Interactions/MIDASSeedToolPointSetDataInteractorConfig.xml
-  Interactions/MIDASToolKeyPressStateMachine.xml
-  Interactions/MIDASToolKeyPressStateMachineConfig.xml
+  Interactions/mitkDisplayConfig_niftkTool.xml
+  Interactions/mitkDisplayConfig_niftkPaintbrushTool.xml
+  Interactions/niftkDnDDisplayConfig_niftkTool.xml
+  Interactions/niftkDnDDisplayConfig_niftkPaintbrushTool.xml
+  Interactions/niftkDrawTool.xml
+  Interactions/niftkDrawToolConfig.xml
+  Interactions/niftkPolyTool.xml
+  Interactions/niftkPolyToolConfig.xml
+  Interactions/niftkPaintbrushTool.xml
+  Interactions/niftkPaintbrushToolConfig.xml
+  Interactions/niftkToolPointSetInteractor.xml
+  Interactions/niftkToolPointSetDataInteractor.xml
+  Interactions/niftkToolPointSetDataInteractorConfig.xml
+  Interactions/niftkSeedTool.xml
+  Interactions/niftkSeedToolPointSetInteractor.xml
+  Interactions/niftkSeedToolPointSetDataInteractor.xml
+  Interactions/niftkSeedToolPointSetDataInteractorConfig.xml
+  Interactions/niftkToolKeyPressStateMachine.xml
+  Interactions/niftkToolKeyPressStateMachineConfig.xml
 )

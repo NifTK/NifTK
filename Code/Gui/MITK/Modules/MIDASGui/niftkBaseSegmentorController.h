@@ -24,7 +24,7 @@
 #include <mitkToolManager.h>
 
 #include <niftkBaseController.h>
-#include <niftkMIDASEventFilter.h>
+#include <niftkStateMachineEventFilter.h>
 #include <niftkImageOrientationUtils.h>
 
 class QWidget;
@@ -36,7 +36,7 @@ class BaseSegmentorGUI;
 
 
 /// \class BaseSegmentorController
-class NIFTKMIDASGUI_EXPORT BaseSegmentorController : public BaseController, public MIDASEventFilter
+class NIFTKMIDASGUI_EXPORT BaseSegmentorController : public BaseController, public StateMachineEventFilter
 {
 
   Q_OBJECT

@@ -17,7 +17,7 @@
 #include <QtPlugin>
 #include "niftkGeneralSegmentorPreferencePage.h"
 
-#include <niftkMIDASTool.h>
+#include <niftkTool.h>
 
 namespace niftk
 {
@@ -28,7 +28,7 @@ void GeneralSegmentorActivator::start(ctkPluginContext* context)
   BERRY_REGISTER_EXTENSION_CLASS(GeneralSegmentorView, context);
   BERRY_REGISTER_EXTENSION_CLASS(GeneralSegmentorPreferencePage, context);
 
-  MIDASTool::LoadBehaviourStrings();
+  Tool::LoadBehaviourStrings();
 }
 
 //-----------------------------------------------------------------------------

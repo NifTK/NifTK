@@ -59,20 +59,20 @@ as described in the <a href="http://www.sciencedirect.com/science/article/pii/S0
 \li 4 = Contours for Prior slice.
 \li 5 = Contours for Next slice.
 
-These datasets are operated upon by niftk::MIDASSeedTool, niftk::MIDASPolyTool and niftk::MIDASDrawTool.
+These datasets are operated upon by niftk::SeedTool, niftk::PolyTool and niftk::DrawTool.
 
 \image html ArchitectureMIDASGeneralEditorTools.png "Figure 2. Hierarchy of editing tools"
 
-It can be seen in Figure 2 that these derive from niftk::MIDASTool.  The MIDAS Seed based functionality is:
+It can be seen in Figure 2 that these derive from niftk::Tool.  The Seed tool based functionality is:
 
 \li Right mouse click = place seed
 \li Middle mouse click = erase seed
 \li Left mouse click and move = move seed
 
-However, the Right mouse click works regardless of which tool is selected.  For this reason, the niftk::MIDASTool
+However, the Right mouse click works regardless of which tool is selected.  For this reason, the niftk::Tool
 has an mitk::PointSetInterfactor subclass that registers with mitk::GlobalInteraction when the tool is activated, and de-registers
-when de-actived.  Thus each of niftk::MIDASDrawTool, niftk::MIDASPolyTool and niftk::MIDASSeedTool can add
-seeds. But it is only the niftk::MIDASSeedTool that can erase / move seeds. Also note that the seeds are defined 
+when de-actived.  Thus each of niftk::DrawTool, niftk::PolyTool and niftk::SeedTool can add
+seeds. But it is only the niftk::SeedTool that can erase / move seeds. Also note that the seeds are defined 
 at voxel locations, and editing works on a slice by slice basis.  There may be many seeds on slices that are not visible,
 but these do not affect the current slice.
 
@@ -81,18 +81,18 @@ The niftk::MIDASDrawTool performs
 \li Left mouse button click and move = draw contour
 \li Middle mouse button click and move = erase contours
 
-These contours are added directly to WorkingData 2. niftk::MIDASContourTool can signal when a contour has been updated,
+These contours are added directly to WorkingData 2. niftk::ContourTool can signal when a contour has been updated,
 and the MIDASGeneralSegmentorView can register with that signal (implemented without Qt), to know when to update
 any region growing.
 
-The niftk::MIDASPolyTool performs
+The niftk::PolyTool performs
 
 \li Left mouse button = add poly=line point
 \li Middle mouse button click and move = find nearest control point and drag it.
 
-The niftk::MIDASPolyTool maintains its own internal contour, which is rendered in yellow. When the user de-activates
+The niftk::PolyTool maintains its own internal contour, which is rendered in yellow. When the user de-activates
 the tool, or activates another tool, the PolyLine is copied to the WorkingData 2 to join all other contours. For
-each left or middle click operation, the MIDAS PolyTool signals to MIDASGeneralSegmentorView that it has performed an edit.
+each left or middle click operation, the PolyTool signals to GeneralSegmentorView that it has performed an edit.
 
 \section ArchitectureMIDASGeneralEditorRegionGrowing Intensity Thresholding (Region Growing)
 
@@ -100,7 +100,7 @@ The intensity based thresholding is performed using a simple region growing pipe
 mitk::GeneralSegmentorPipeline.
 
 \li Extract the relevant slice from the mitk::ToolManager's ReferenceData 0 using ITK's itk::ExtractImageFilter.
-\li Take the contours from mitk::ToolManager's WorkingData 2, and the niftk::MIDASPolyTool feedback contour, and render them into an image.
+\li Take the contours from mitk::ToolManager's WorkingData 2, and the niftk::PolyTool feedback contour, and render them into an image.
 \li Perform conditional region growing adding pixels if the grey value is within range, and up to and including a contour using itk::MIDASRegionGrowingImageFilter.
 
 This mitk::GeneralSegmentorPipeline is also used in 3D for Propagate Up/Down functionality, and also used to work out
@@ -136,7 +136,7 @@ or copy back the back image to effect an Undo operation.
 The MIDAS Irregular Volume Editor is more complex than the \link ArchitectureMIDASMorphEditor MIDAS Morphological Editor. \endlink
 This functionality can be seen as a combination of tools provided via the 
 <a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation Framework</a>
-and extra Qt widgets calling various update functions to affect the segmented image. The niftk::MIDASTool subclasses 
+and extra Qt widgets calling various update functions to affect the segmented image. The niftk::Tool subclasses 
 are used to edit the contours, and the contours are then applied to update the image volume. This plugin can therefore be 
 easily extended by providing different mitk::Tool subclasses. The additional Qt widgets call back to MIDASGeneralSegmentorView
 to provide bulk functionality such as Wipe, Wipe+, Wipe-, PropUp, PropDown, Prop3D etc. 

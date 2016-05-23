@@ -25,7 +25,7 @@ namespace itk
  * \brief Class to support undo/redo of an operation that
  * takes a list of pixels, and sets them all to a given value.
  *
- * This operation is used in the MIDAS PaintbrushTool, used
+ * This operation is used in the PaintbrushTool, used
  * in the MorphologicalEditor.
  */
 template <class TPixel, unsigned int VImageDimension>

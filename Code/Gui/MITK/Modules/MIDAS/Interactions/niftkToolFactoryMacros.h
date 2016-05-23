@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __niftkToolFactoryMacros_h
-#define __niftkToolFactoryMacros_h
+#ifndef niftkToolFactoryMacros_h
+#define niftkToolFactoryMacros_h
 
 // Note:
 // MITK_TOOL_MACRO assumes that the type is in the 'mitk' namespace.

@@ -15,7 +15,7 @@
 #ifndef niftkDrawToolGUI_h
 #define niftkDrawToolGUI_h
 
-#include <niftkMIDASDrawTool.h>
+#include <niftkDrawTool.h>
 #include <QmitkToolGUI.h>
 
 class QFrame;
@@ -66,7 +66,7 @@ protected:
   ctkSliderWidget* m_Slider;
   QFrame* m_Frame;
 
-  MIDASDrawTool::Pointer m_DrawTool;
+  DrawTool::Pointer m_DrawTool;
 };
 
 }

@@ -23,7 +23,7 @@
 
 #include <mitkDataStorageUtils.h>
 #include <niftkIBaseView.h>
-#include <niftkMIDASPaintbrushTool.h>
+#include <niftkPaintbrushTool.h>
 
 #include "Internal/niftkMorphologicalSegmentorGUI.h"
 
@@ -38,9 +38,9 @@ MorphologicalSegmentorController::MorphologicalSegmentorController(IBaseView* vi
     m_TabIndex(-1)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
-  toolManager->RegisterTool("MIDASPaintbrushTool");
+  toolManager->RegisterTool("PaintbrushTool");
 
-  MIDASPaintbrushTool* paintbrushTool = this->GetToolByType<MIDASPaintbrushTool>();
+  PaintbrushTool* paintbrushTool = this->GetToolByType<PaintbrushTool>();
   assert(paintbrushTool);
 
   paintbrushTool->InstallEventFilter(this);
@@ -56,7 +56,7 @@ MorphologicalSegmentorController::MorphologicalSegmentorController(IBaseView* vi
 //-----------------------------------------------------------------------------
 MorphologicalSegmentorController::~MorphologicalSegmentorController()
 {
-  MIDASPaintbrushTool* paintbrushTool = this->GetToolByType<MIDASPaintbrushTool>();
+  PaintbrushTool* paintbrushTool = this->GetToolByType<PaintbrushTool>();
   assert(paintbrushTool);
 
   paintbrushTool->SegmentationEdited.RemoveListener(mitk::MessageDelegate1<MorphologicalSegmentorController, int>(this, &MorphologicalSegmentorController::OnSegmentationEdited));
@@ -143,7 +143,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     mitk::ToolManager* toolManager = this->GetToolManager();
     assert(toolManager);
 
-    int paintbrushToolId = toolManager->GetToolIdByToolType<MIDASPaintbrushTool>();
+    int paintbrushToolId = toolManager->GetToolIdByToolType<PaintbrushTool>();
 
     mitk::Tool* paintbrushTool = toolManager->GetToolById(paintbrushToolId);
     assert(paintbrushTool);
@@ -193,42 +193,42 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
       mitk::ITKRegionParametersDataNodeProperty::Pointer erodeAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       erodeAddEditingProp->SetSize(1,1,1);
       erodeAddEditingProp->SetValid(false);
-      mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode(image, MIDASPaintbrushTool::EROSIONS_ADDITIONS_NAME, col->GetColor());
+      mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode(image, PaintbrushTool::EROSIONS_ADDITIONS_NAME, col->GetColor());
       erodeAddNode->SetBoolProperty("helper object", true);
       erodeAddNode->SetBoolProperty("visible", false);
       erodeAddNode->SetColor(segCol);
       erodeAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
-      erodeAddNode->AddProperty(MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeAddEditingProp);
+      erodeAddNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeAddEditingProp);
 
       mitk::ITKRegionParametersDataNodeProperty::Pointer erodeSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       erodeSubtractEditingProp->SetSize(1,1,1);
       erodeSubtractEditingProp->SetValid(false);
-      mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS_NAME, col->GetColor());
+      mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME, col->GetColor());
       erodeSubtractNode->SetBoolProperty("helper object", true);
       erodeSubtractNode->SetBoolProperty("visible", false);
       erodeSubtractNode->SetColor(col->GetColor());
       erodeSubtractNode->SetProperty("binaryimage.selectedcolor", col);
-      erodeSubtractNode->AddProperty(MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeSubtractEditingProp);
+      erodeSubtractNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeSubtractEditingProp);
 
       mitk::ITKRegionParametersDataNodeProperty::Pointer dilateAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       dilateAddEditingProp->SetSize(1,1,1);
       dilateAddEditingProp->SetValid(false);
-      mitk::DataNode::Pointer dilateAddNode = paintbrushTool->CreateEmptySegmentationNode( image, MIDASPaintbrushTool::DILATIONS_ADDITIONS_NAME, col->GetColor());
+      mitk::DataNode::Pointer dilateAddNode = paintbrushTool->CreateEmptySegmentationNode( image, PaintbrushTool::DILATIONS_ADDITIONS_NAME, col->GetColor());
       dilateAddNode->SetBoolProperty("helper object", true);
       dilateAddNode->SetBoolProperty("visible", false);
       dilateAddNode->SetColor(segCol);
       dilateAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
-      dilateAddNode->AddProperty(MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateAddEditingProp);
+      dilateAddNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateAddEditingProp);
 
       mitk::ITKRegionParametersDataNodeProperty::Pointer dilateSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
       dilateSubtractEditingProp->SetSize(1,1,1);
       dilateSubtractEditingProp->SetValid(false);
-      mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS_NAME, col->GetColor());
+      mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME, col->GetColor());
       dilateSubtractNode->SetBoolProperty("helper object", true);
       dilateSubtractNode->SetBoolProperty("visible", false);
       dilateSubtractNode->SetColor(col->GetColor());
       dilateSubtractNode->SetProperty("binaryimage.selectedcolor", col);
-      dilateSubtractNode->AddProperty(MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateSubtractEditingProp);
+      dilateSubtractNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateSubtractEditingProp);
 
       this->ApplyDisplayOptions(erodeAddNode);
       this->ApplyDisplayOptions(erodeSubtractNode);
@@ -252,7 +252,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
       // This must match the order in:
       //
       // 1. niftkMorphologicalSegmentorPipelineManager::UpdateSegmentation()
-      // 2. niftkMIDASPaintbrushTool.
+      // 2. niftk::PaintbrushTool.
       // and unit tests etc. Probably best to search for
       // MORPH_EDITS_EROSIONS_SUBTRACTIONS
       // MORPH_EDITS_EROSIONS_ADDITIONS
@@ -260,10 +260,10 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
       // MORPH_EDITS_DILATIONS_ADDITIONS
 
       mitk::ToolManager::DataVectorType workingData(4);
-      workingData[MIDASPaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
-      workingData[MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
-      workingData[MIDASPaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;
-      workingData[MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS] = dilateSubtractNode;
+      workingData[PaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
+      workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
+      workingData[PaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;
+      workingData[PaintbrushTool::DILATIONS_SUBTRACTIONS] = dilateSubtractNode;
 
       toolManager->SetWorkingData(workingData);
 
@@ -387,10 +387,10 @@ void MorphologicalSegmentorController::OnTabChanged(int tabIndex)
       m_MorphologicalSegmentorGUI->SetToolSelectorEnabled(true);
 
       mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-      MIDASPaintbrushTool::Pointer paintbrushTool = this->GetToolByType<MIDASPaintbrushTool>();
+      PaintbrushTool::Pointer paintbrushTool = this->GetToolByType<PaintbrushTool>();
 
-      mitk::DataNode::Pointer erodeSubtractNode = this->GetToolManager()->GetWorkingData(MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS);
-      mitk::DataNode::Pointer dilateSubtractNode = this->GetToolManager()->GetWorkingData(MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS);
+      mitk::DataNode::Pointer erodeSubtractNode = this->GetToolManager()->GetWorkingData(PaintbrushTool::EROSIONS_SUBTRACTIONS);
+      mitk::DataNode::Pointer dilateSubtractNode = this->GetToolManager()->GetWorkingData(PaintbrushTool::DILATIONS_SUBTRACTIONS);
 
       if (tabIndex == 1)
       {
@@ -551,7 +551,7 @@ void MorphologicalSegmentorController::OnSegmentationEdited(int imageIndex)
     mitk::DataNode* node = toolManager->GetWorkingData(imageIndex);
     assert(node);
     mitk::ITKRegionParametersDataNodeProperty::Pointer prop =
-        dynamic_cast<mitk::ITKRegionParametersDataNodeProperty*>(node->GetProperty(MIDASPaintbrushTool::REGION_PROPERTY_NAME.c_str()));
+        dynamic_cast<mitk::ITKRegionParametersDataNodeProperty*>(node->GetProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str()));
     if (prop.IsNotNull() && prop->HasVolume())
     {
       m_PipelineManager->UpdateSegmentation();
@@ -594,10 +594,10 @@ void MorphologicalSegmentorController::OnNodeVisibilityChanged(const mitk::DataN
     if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
     {
       int tabIndex = m_MorphologicalSegmentorGUI->GetTabIndex();
-      workingData[MIDASPaintbrushTool::EROSIONS_ADDITIONS]->SetVisibility(false);
-      workingData[MIDASPaintbrushTool::EROSIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 1);
-      workingData[MIDASPaintbrushTool::DILATIONS_ADDITIONS]->SetVisibility(false);
-      workingData[MIDASPaintbrushTool::DILATIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 2);
+      workingData[PaintbrushTool::EROSIONS_ADDITIONS]->SetVisibility(false);
+      workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 1);
+      workingData[PaintbrushTool::DILATIONS_ADDITIONS]->SetVisibility(false);
+      workingData[PaintbrushTool::DILATIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 2);
       axialCutOffPlaneNode->SetVisibility(true);
     }
     else
