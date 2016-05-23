@@ -112,6 +112,8 @@ public:
   BaseControllerPrivate(BaseController* q, IBaseView* view);
   ~BaseControllerPrivate();
 
+  void SetupGUI();
+
   /// \brief Used to track the currently focused renderer.
   mitk::BaseRenderer* m_FocusedRenderer;
 
@@ -149,16 +151,6 @@ BaseControllerPrivate::BaseControllerPrivate(BaseController* baseController, IBa
     m_DataStorageListener(new DataStorageListener(this, view->GetDataStorage())),
     m_VisibilityListener(new VisibilityListener(this, view->GetDataStorage()))
 {
-  Q_Q(BaseController);
-
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  assert(focusManager);
-
-  itk::SimpleMemberCommand<BaseControllerPrivate>::Pointer onFocusChangedCommand =
-    itk::SimpleMemberCommand<BaseControllerPrivate>::New();
-  onFocusChangedCommand->SetCallbackFunction(this, &BaseControllerPrivate::OnFocusChanged);
-
-  m_FocusChangeObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
 }
 
 
@@ -174,6 +166,22 @@ BaseControllerPrivate::~BaseControllerPrivate()
 
   delete m_DataStorageListener;
   delete m_VisibilityListener;
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseControllerPrivate::SetupGUI()
+{
+  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
+  assert(focusManager);
+
+  itk::SimpleMemberCommand<BaseControllerPrivate>::Pointer onFocusChangedCommand =
+    itk::SimpleMemberCommand<BaseControllerPrivate>::New();
+  onFocusChangedCommand->SetCallbackFunction(this, &BaseControllerPrivate::OnFocusChanged);
+
+  m_FocusChangeObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
+
+  this->OnFocusChanged();
 }
 
 
@@ -312,6 +320,7 @@ void BaseController::SetupGUI(QWidget* parent)
 {
   Q_D(BaseController);
   d->m_GUI = this->CreateGUI(parent);
+  d->SetupGUI();
 }
 
 
