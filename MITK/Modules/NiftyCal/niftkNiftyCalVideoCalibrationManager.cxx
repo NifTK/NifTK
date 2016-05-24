@@ -48,8 +48,12 @@ const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorY(1
 const int                 NiftyCalVideoCalibrationManager::DefaultGridSizeX(14);
 const int                 NiftyCalVideoCalibrationManager::DefaultGridSizeY(10);
 const std::string         NiftyCalVideoCalibrationManager::DefaultTagFamily("25h7");
-const NiftyCalVideoCalibrationManager::CalibrationPatterns NiftyCalVideoCalibrationManager::DefaultCalibrationPattern(NiftyCalVideoCalibrationManager::CHESS_BOARD);
-const NiftyCalVideoCalibrationManager::HandEyeMethod       NiftyCalVideoCalibrationManager::DefaultHandEyeMethod(NiftyCalVideoCalibrationManager::TSAI_1989);
+
+const NiftyCalVideoCalibrationManager::CalibrationPatterns
+  NiftyCalVideoCalibrationManager::DefaultCalibrationPattern(NiftyCalVideoCalibrationManager::CHESS_BOARD);
+
+const NiftyCalVideoCalibrationManager::HandEyeMethod
+  NiftyCalVideoCalibrationManager::DefaultHandEyeMethod(NiftyCalVideoCalibrationManager::TSAI_1989);
 
 //-----------------------------------------------------------------------------
 NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
@@ -57,7 +61,8 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_TrackingTransformNode(nullptr)
 , m_ReferenceTrackingTransformNode(nullptr)
 , m_DoIterative(NiftyCalVideoCalibrationManager::DefaultDoIterative)
-, m_MinimumNumberOfSnapshotsForCalibrating(NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating)
+, m_MinimumNumberOfSnapshotsForCalibrating(
+    NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating)
 , m_ScaleFactorX(NiftyCalVideoCalibrationManager::DefaultScaleFactorX)
 , m_ScaleFactorY(NiftyCalVideoCalibrationManager::DefaultScaleFactorY)
 , m_GridSizeX(NiftyCalVideoCalibrationManager::DefaultGridSizeX)
@@ -127,7 +132,7 @@ mitk::DataNode::Pointer NiftyCalVideoCalibrationManager::GetRightImageNode() con
 
 
 //-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::Set3DModelFileName(const std::string& fileName)
+void NiftyCalVideoCalibrationManager::SetModelFileName(const std::string& fileName)
 {
   if (fileName.empty())
   {
@@ -140,14 +145,15 @@ void NiftyCalVideoCalibrationManager::Set3DModelFileName(const std::string& file
     mitkThrow() << "Failed to load model points.";
   }
 
-  m_3DModelFileName = fileName;
-  m_3DModelPoints = model;
+  m_ModelFileName = fileName;
+  m_ModelPoints = model;
   this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::SetReferenceDataFileNames(const std::string& imageFileName, const std::string& pointsFileName)
+void NiftyCalVideoCalibrationManager::SetReferenceDataFileNames(
+    const std::string& imageFileName, const std::string& pointsFileName)
 {
   if (!imageFileName.empty() && !pointsFileName.empty())
   {
@@ -178,11 +184,12 @@ void NiftyCalVideoCalibrationManager::SetReferenceDataFileNames(const std::strin
 
 
 //-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::SetModelToTrackerFileName(const std::string& fileName)
+void NiftyCalVideoCalibrationManager::SetModelToTrackerFileName(
+    const std::string& fileName)
 {
   if (!fileName.empty())
   {
-    m_3DModelToTracker = niftk::LoadMatrix(fileName);
+    m_ModelToTracker = niftk::LoadMatrix(fileName);
     this->Modified();
   }
 }
@@ -219,7 +226,8 @@ void NiftyCalVideoCalibrationManager::Restart()
     m_TrackingMatrices.clear();
     m_ReferenceTrackingMatrices.clear();
   }
-  MITK_INFO << "Restart. Left point size now:" << m_Points[0].size() << ", right: " <<  m_Points[1].size();
+  MITK_INFO << "Restart. Left point size now:" << m_Points[0].size()
+            << ", right: " <<  m_Points[1].size();
 }
 
 
@@ -328,7 +336,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoKangHandEye(int imageIndex, bool 
 
   cv::Matx44d handEye =
     niftk::CalculateHandEyeByDirectMatrixMultiplication(
-      m_3DModelToTracker,
+      m_ModelToTracker,
       trackingMatrices,
       cameraMatrices
       );
@@ -343,22 +351,21 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex, bool
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
+  // Assumes we have done Tsai first.
   cv::Matx44d handEye = m_HandEyeMatrices[imageIndex][TSAI_1989];
   if (useReference)
   {
     handEye = m_ReferenceHandEyeMatrices[imageIndex][TSAI_1989];
   }
 
-  // Assumes we have done Tsai first.
   cv::Matx44d modelToWorld = niftk::CalculateAverageModelToWorld(
         handEye,
         trackingMatrices,
         cameraMatrices
         );
 
-  // Assumes we have done Tsai first.
   niftk::NonLinearMaltiHandEyeOptimiser::Pointer optimiser = niftk::NonLinearMaltiHandEyeOptimiser::New();
-  optimiser->SetModel(&m_3DModelPoints);
+  optimiser->SetModel(&m_ModelPoints);
   optimiser->SetPoints(&m_Points[imageIndex]);
   optimiser->SetHandMatrices(&trackingMatrices);
 
@@ -384,22 +391,21 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageInd
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
+  // Assumes we have done Tsai first.
   cv::Matx44d handEye = m_HandEyeMatrices[imageIndex][TSAI_1989];
   if (useReference)
   {
     handEye = m_ReferenceHandEyeMatrices[imageIndex][TSAI_1989];
   }
 
-  // Assumes we have done Tsai first.
   cv::Matx44d modelToWorld = niftk::CalculateAverageModelToWorld(
         handEye,
         trackingMatrices,
         cameraMatrices
         );
 
-  // Assumes we have done Tsai first.
   niftk::NonLinearMaltiNDOFHandEyeOptimiser::Pointer optimiser = niftk::NonLinearMaltiNDOFHandEyeOptimiser::New();
-  optimiser->SetModel(&m_3DModelPoints);
+  optimiser->SetModel(&m_ModelPoints);
   optimiser->SetPoints(&m_Points[imageIndex]);
   optimiser->SetHandMatrices(&trackingMatrices);
   optimiser->SetIntrinsic(&m_Intrinsic[imageIndex]);   // i.e. we DON'T optimise these.
@@ -407,7 +413,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageInd
 
   double reprojectionRMS = optimiser->Optimise(modelToWorld, // We do optimise all extrinsic
                                                handEye       // but we don't really care about
-                                              );             // the result. So, we only output these.
+                                              );             // the extrinsic results.
 
   std::cout << "Malti 2013, non-linear hand-eye, but with full extrinsic: "
             << "rms=" << reprojectionRMS << std::endl;
@@ -425,22 +431,21 @@ void NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEyeInStereo(cv::Matx44d
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
+  // Assumes we have done Tsai first.
   cv::Matx44d handEye = m_HandEyeMatrices[0][TSAI_1989]; // 0 == from left.
   if (useReference)
   {
     handEye = m_ReferenceHandEyeMatrices[0][TSAI_1989];
   }
 
-  // Assumes we have done Tsai first.
   cv::Matx44d modelToWorld = niftk::CalculateAverageModelToWorld(
         handEye,
         trackingMatrices,
         cameraMatrices
         );
 
-  // Assumes we have done Tsai first.
   niftk::NonLinearMaltiStereoHandEyeOptimiser::Pointer optimiser = niftk::NonLinearMaltiStereoHandEyeOptimiser::New();
-  optimiser->SetModel(&m_3DModelPoints);
+  optimiser->SetModel(&m_ModelPoints);
   optimiser->SetPoints(&m_Points[0]);
   optimiser->SetRightHandPoints(&m_Points[1]);
   optimiser->SetHandMatrices(&trackingMatrices);
@@ -514,16 +519,21 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       m_Points[imageIndex].push_back(points);
 
       std::shared_ptr<niftk::IPoint2DDetector> originalDetector(openCVDetector1);
-      m_OriginalImages[imageIndex].push_back(std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
-      dynamic_cast<niftk::OpenCVChessboardPointDetector*>(m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
+      m_OriginalImages[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
+      dynamic_cast<niftk::OpenCVChessboardPointDetector*>(
+        m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
-      niftk::OpenCVChessboardPointDetector *openCVDetector2 = new niftk::OpenCVChessboardPointDetector(internalCorners);
+      niftk::OpenCVChessboardPointDetector *openCVDetector2 =
+        new niftk::OpenCVChessboardPointDetector(internalCorners);
       openCVDetector2->SetImageScaleFactor(scaleFactors);
       openCVDetector2->SetImage(&copyOfImage2);
 
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(openCVDetector2);
-      m_ImagesForWarping[imageIndex].push_back(std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
-      dynamic_cast<niftk::OpenCVChessboardPointDetector*>(m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
+      m_ImagesForWarping[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
+      dynamic_cast<niftk::OpenCVChessboardPointDetector*>(
+        m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }
   else if (m_CalibrationPattern == CIRCLE_GRID)
@@ -541,21 +551,27 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       m_Points[imageIndex].push_back(points);
 
       std::shared_ptr<niftk::IPoint2DDetector> originalDetector(openCVDetector1);
-      m_OriginalImages[imageIndex].push_back(std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
-      dynamic_cast<niftk::OpenCVCirclesPointDetector*>(m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
+      m_OriginalImages[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
+      dynamic_cast<niftk::OpenCVCirclesPointDetector*>(
+        m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
-      niftk::OpenCVCirclesPointDetector *openCVDetector2 = new niftk::OpenCVCirclesPointDetector(internalCorners);
+      niftk::OpenCVCirclesPointDetector *openCVDetector2 =
+        new niftk::OpenCVCirclesPointDetector(internalCorners);
       openCVDetector2->SetImageScaleFactor(scaleFactors);
       openCVDetector2->SetImage(&copyOfImage2);
 
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(openCVDetector2);
-      m_ImagesForWarping[imageIndex].push_back(std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
-      dynamic_cast<niftk::OpenCVCirclesPointDetector*>(m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
+      m_ImagesForWarping[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
+      dynamic_cast<niftk::OpenCVCirclesPointDetector*>(
+        m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }
   else if (m_CalibrationPattern == APRIL_TAGS)
   {
-    niftk::AprilTagsPointDetector *openCVDetector1 = new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
+    niftk::AprilTagsPointDetector *openCVDetector1 =
+      new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
     openCVDetector1->SetImageScaleFactor(scaleFactors);
     openCVDetector1->SetImage(&copyOfImage1);
 
@@ -566,16 +582,21 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       m_Points[imageIndex].push_back(points);
 
       std::shared_ptr<niftk::IPoint2DDetector> originalDetector(openCVDetector1);
-      m_OriginalImages[imageIndex].push_back(std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
-      dynamic_cast<niftk::AprilTagsPointDetector*>(m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
+      m_OriginalImages[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
+      dynamic_cast<niftk::AprilTagsPointDetector*>(
+        m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
-      niftk::AprilTagsPointDetector *openCVDetector2 = new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
+      niftk::AprilTagsPointDetector *openCVDetector2 =
+        new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
       openCVDetector2->SetImageScaleFactor(scaleFactors);
       openCVDetector2->SetImage(&copyOfImage2);
 
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(openCVDetector2);
-      m_ImagesForWarping[imageIndex].push_back(std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
-      dynamic_cast<niftk::AprilTagsPointDetector*>(m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
+      m_ImagesForWarping[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
+      dynamic_cast<niftk::AprilTagsPointDetector*>(
+        m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }
   else
@@ -597,7 +618,7 @@ bool NiftyCalVideoCalibrationManager::Grab()
     mitkThrow() << "Left image should never be NULL.";
   }
 
-  // 4 entries - first two represent image nodes, 3,4 represents the tracker nodes.
+  // 4 entries - 1,2 represent image nodes, 3,4 represents the tracker nodes.
   bool extracted[4] = {false, false, false, false};
 
   // Deliberately looping over only the entries for two image nodes.
@@ -613,7 +634,9 @@ bool NiftyCalVideoCalibrationManager::Grab()
   // Now we extract the tracking node.
   if (m_TrackingTransformNode.IsNotNull())
   {
-    mitk::CoordinateAxesData::Pointer tracking = dynamic_cast<mitk::CoordinateAxesData*>(m_TrackingTransformNode->GetData());
+    mitk::CoordinateAxesData::Pointer tracking = dynamic_cast<mitk::CoordinateAxesData*>(
+          m_TrackingTransformNode->GetData());
+
     if (tracking.IsNull())
     {
       mitkThrow() << "Tracking node contains null tracking matrix.";
@@ -637,7 +660,9 @@ bool NiftyCalVideoCalibrationManager::Grab()
   // Now we extract the reference tracking node - ToDo: fix code duplication.
   if (m_ReferenceTrackingTransformNode.IsNotNull())
   {
-    mitk::CoordinateAxesData::Pointer tracking = dynamic_cast<mitk::CoordinateAxesData*>(m_ReferenceTrackingTransformNode->GetData());
+    mitk::CoordinateAxesData::Pointer tracking = dynamic_cast<mitk::CoordinateAxesData*>(
+          m_ReferenceTrackingTransformNode->GetData());
+
     if (tracking.IsNull())
     {
       mitkThrow() << "Reference tracking node contains null tracking matrix.";
@@ -707,7 +732,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     mitkThrow() << "Left image should never be NULL.";
   }
 
-  if (m_3DModelPoints.empty())
+  if (m_ModelPoints.empty())
   {
     mitkThrow() << "Model should never be empty.";
   }
@@ -715,7 +740,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   if (m_DoIterative)
   {
     rms = niftk::IterativeMonoCameraCalibration(
-          m_3DModelPoints,
+          m_ModelPoints,
           m_ReferenceDataForIterativeCalib,
           m_OriginalImages[0],
           m_ImagesForWarping[0],
@@ -729,7 +754,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     if (m_ImageNode[1].IsNotNull())
     {
       rms = niftk::IterativeStereoCameraCalibration(
-            m_3DModelPoints,
+            m_ModelPoints,
             m_ReferenceDataForIterativeCalib,
             m_OriginalImages[0],
             m_OriginalImages[1],
@@ -754,7 +779,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   else
   {
     rms = niftk::MonoCameraCalibration(
-          m_3DModelPoints,
+          m_ModelPoints,
           m_Points[0],
           m_ImageSize,
           m_Intrinsic[0],
@@ -767,7 +792,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     {
 
       niftk::MonoCameraCalibration(
-            m_3DModelPoints,
+            m_ModelPoints,
             m_Points[1],
             m_ImageSize,
             m_Intrinsic[1],
@@ -777,7 +802,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
             );
 
       rms = niftk::StereoCameraCalibration(
-            m_3DModelPoints,
+            m_ModelPoints,
             m_Points[0],
             m_Points[1],
             m_ImageSize,
@@ -880,8 +905,12 @@ void NiftyCalVideoCalibrationManager::Save()
 
   if (m_ImageNode[1].IsNotNull())
   {
-    niftk::SaveNifTKIntrinsics(m_Intrinsic[1], m_Distortion[1], m_OutputDirName + "calib.right.intrinsics.txt");
-    niftk::SaveNifTKStereoExtrinsics(m_RightToLeftRotation, m_RightToLeftTranslation, m_OutputDirName + "calib.r2l.txt");
+    niftk::SaveNifTKIntrinsics(
+      m_Intrinsic[1], m_Distortion[1], m_OutputDirName + "calib.right.intrinsics.txt");
+
+    niftk::SaveNifTKStereoExtrinsics(
+      m_RightToLeftRotation, m_RightToLeftTranslation, m_OutputDirName + "calib.r2l.txt");
+
     this->SaveImages("calib.right.images.", m_OriginalImages[1]);
     this->SavePoints("calib.right.points.", m_Points[1]);
   }
@@ -916,17 +945,27 @@ void NiftyCalVideoCalibrationManager::Save()
     if (m_ImageNode[1].IsNotNull())
     {
       // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
-      niftk::Save4x4Matrix(m_HandEyeMatrices[1][0], m_OutputDirName + "calib.right.handeye.tsai.txt");
-      niftk::Save4x4Matrix(m_HandEyeMatrices[1][1], m_OutputDirName + "calib.right.handeye.kang.txt");
-      niftk::Save4x4Matrix(m_HandEyeMatrices[1][2], m_OutputDirName + "calib.right.handeye.malti.txt");
-      niftk::Save4x4Matrix(m_HandEyeMatrices[1][3], m_OutputDirName + "calib.right.handeye.allextrinsic.txt");
-      niftk::Save4x4Matrix(m_HandEyeMatrices[1][m_HandeyeMethod], m_OutputDirName + "calib.right.handeye.txt");
+      niftk::Save4x4Matrix(m_HandEyeMatrices[1][0], m_OutputDirName
+          + "calib.right.handeye.tsai.txt");
+      niftk::Save4x4Matrix(m_HandEyeMatrices[1][1], m_OutputDirName
+          + "calib.right.handeye.kang.txt");
+      niftk::Save4x4Matrix(m_HandEyeMatrices[1][2], m_OutputDirName
+          + "calib.right.handeye.malti.txt");
+      niftk::Save4x4Matrix(m_HandEyeMatrices[1][3], m_OutputDirName
+          + "calib.right.handeye.allextrinsic.txt");
+      niftk::Save4x4Matrix(m_HandEyeMatrices[1][m_HandeyeMethod], m_OutputDirName
+          + "calib.right.handeye.txt");
 
-      niftk::SaveRigidParams(m_HandEyeMatrices[1][0], m_OutputDirName + "calib.right.handeye.tsai.params.txt");
-      niftk::SaveRigidParams(m_HandEyeMatrices[1][1], m_OutputDirName + "calib.right.handeye.kang.params.txt");
-      niftk::SaveRigidParams(m_HandEyeMatrices[1][2], m_OutputDirName + "calib.right.handeye.malti.params.txt");
-      niftk::SaveRigidParams(m_HandEyeMatrices[1][3], m_OutputDirName + "calib.right.handeye.allextrinsic.params.txt");
-      niftk::SaveRigidParams(m_HandEyeMatrices[1][m_HandeyeMethod], m_OutputDirName + "calib.right.handeye.params.txt");
+      niftk::SaveRigidParams(m_HandEyeMatrices[1][0], m_OutputDirName
+          + "calib.right.handeye.tsai.params.txt");
+      niftk::SaveRigidParams(m_HandEyeMatrices[1][1], m_OutputDirName
+          + "calib.right.handeye.kang.params.txt");
+      niftk::SaveRigidParams(m_HandEyeMatrices[1][2], m_OutputDirName
+          + "calib.right.handeye.malti.params.txt");
+      niftk::SaveRigidParams(m_HandEyeMatrices[1][3], m_OutputDirName
+          + "calib.right.handeye.allextrinsic.params.txt");
+      niftk::SaveRigidParams(m_HandEyeMatrices[1][m_HandeyeMethod], m_OutputDirName
+          + "calib.right.handeye.params.txt");
     }
 
     if (m_ReferenceTrackingTransformNode.IsNotNull())
@@ -944,32 +983,52 @@ void NiftyCalVideoCalibrationManager::Save()
       }
 
       // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
-      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][0], m_OutputDirName + "calib.left.handeye.reference.tsai.txt");
-      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][1], m_OutputDirName + "calib.left.handeye.reference.kang.txt");
-      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][2], m_OutputDirName + "calib.left.handeye.reference.malti.txt");
-      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][3], m_OutputDirName + "calib.left.handeye.reference.allextrinsic.txt");
-      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][m_HandeyeMethod], m_OutputDirName + "calib.left.handeye.reference.txt");
+      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][0], m_OutputDirName
+          + "calib.left.handeye.reference.tsai.txt");
+      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][1], m_OutputDirName
+          + "calib.left.handeye.reference.kang.txt");
+      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][2], m_OutputDirName
+          + "calib.left.handeye.reference.malti.txt");
+      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][3], m_OutputDirName
+          + "calib.left.handeye.reference.allextrinsic.txt");
+      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][m_HandeyeMethod], m_OutputDirName
+          + "calib.left.handeye.reference.txt");
 
-      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][0], m_OutputDirName + "calib.left.handeye.reference.tsai.params.txt");
-      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][1], m_OutputDirName + "calib.left.handeye.reference.kang.params.txt");
-      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][2], m_OutputDirName + "calib.left.handeye.reference.malti.params.txt");
-      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][3], m_OutputDirName + "calib.left.handeye.reference.allextrinsic.params.txt");
-      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][m_HandeyeMethod], m_OutputDirName + "calib.left.handeye.reference.params.txt");
+      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][0], m_OutputDirName
+          + "calib.left.handeye.reference.tsai.params.txt");
+      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][1], m_OutputDirName
+          + "calib.left.handeye.reference.kang.params.txt");
+      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][2], m_OutputDirName
+          + "calib.left.handeye.reference.malti.params.txt");
+      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][3], m_OutputDirName
+          + "calib.left.handeye.reference.allextrinsic.params.txt");
+      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][m_HandeyeMethod], m_OutputDirName
+          + "calib.left.handeye.reference.params.txt");
 
       if (m_ImageNode[1].IsNotNull())
       {
         // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
-        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][0], m_OutputDirName + "calib.right.handeye.reference.tsai.txt");
-        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][1], m_OutputDirName + "calib.right.handeye.reference.kang.txt");
-        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][2], m_OutputDirName + "calib.right.handeye.reference.malti.txt");
-        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][3], m_OutputDirName + "calib.right.handeye.reference.allextrinsic.txt");
-        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][m_HandeyeMethod], m_OutputDirName + "calib.right.handeye.reference.txt");
+        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][0], m_OutputDirName
+            + "calib.right.handeye.reference.tsai.txt");
+        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][1], m_OutputDirName
+            + "calib.right.handeye.reference.kang.txt");
+        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][2], m_OutputDirName
+            + "calib.right.handeye.reference.malti.txt");
+        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][3], m_OutputDirName
+            + "calib.right.handeye.reference.allextrinsic.txt");
+        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][m_HandeyeMethod], m_OutputDirName
+            + "calib.right.handeye.reference.txt");
 
-        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][0], m_OutputDirName + "calib.right.handeye.reference.tsai.params.txt");
-        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][1], m_OutputDirName + "calib.right.handeye.reference.kang.params.txt");
-        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][2], m_OutputDirName + "calib.right.handeye.reference.malti.params.txt");
-        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][3], m_OutputDirName + "calib.right.handeye.reference.allextrinsic.params.txt");
-        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][m_HandeyeMethod], m_OutputDirName + "calib.right.handeye.reference.params.txt");
+        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][0], m_OutputDirName
+            + "calib.right.handeye.reference.tsai.params.txt");
+        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][1], m_OutputDirName
+            + "calib.right.handeye.reference.kang.params.txt");
+        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][2], m_OutputDirName
+            + "calib.right.handeye.reference.malti.params.txt");
+        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][3], m_OutputDirName
+            + "calib.right.handeye.reference.allextrinsic.params.txt");
+        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][m_HandeyeMethod], m_OutputDirName
+            + "calib.right.handeye.reference.params.txt");
       }
     } // end if we have a reference transform
   } // end if we have tracking info

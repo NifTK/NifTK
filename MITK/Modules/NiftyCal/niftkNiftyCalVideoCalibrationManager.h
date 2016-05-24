@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkNiftyCalVideoCalibrateManager_h
-#define niftkNiftyCalVideoCalibrateManager_h
+#ifndef niftkNiftyCalVideoCalibrationManager_h
+#define niftkNiftyCalVideoCalibrationManager_h
 
 #include "niftkNiftyCalExports.h"
 #include <itkObject.h>
@@ -109,8 +109,8 @@ public:
   itkSetMacro(TagFamily, std::string);
   itkGetMacro(TagFamily, std::string);
 
-  void Set3DModelFileName(const std::string& fileName);
-  itkGetMacro(3DModelFileName, std::string);
+  void SetModelFileName(const std::string& fileName);
+  itkGetMacro(ModelFileName, std::string);
 
   void SetOutputDirName(const std::string& dirName);
   itkGetMacro(OutputDirName, std::string);
@@ -243,7 +243,7 @@ private:
   // Data from preferences.
   bool                                          m_DoIterative;
   unsigned int                                  m_MinimumNumberOfSnapshotsForCalibrating;
-  std::string                                   m_3DModelFileName;
+  std::string                                   m_ModelFileName;
   double                                        m_ScaleFactorX;
   double                                        m_ScaleFactorY;
   int                                           m_GridSizeX;
@@ -262,8 +262,8 @@ private:
   // Data used for calibration.
   cv::Size2i                                    m_ImageSize;
   std::pair< cv::Mat, niftk::PointSet>          m_ReferenceDataForIterativeCalib;
-  cv::Matx44d                                   m_3DModelToTracker;
-  niftk::Model3D                                m_3DModelPoints;
+  cv::Matx44d                                   m_ModelToTracker;
+  niftk::Model3D                                m_ModelPoints;
   std::list<niftk::PointSet>                    m_Points[2];
   std::list<
     std::pair<

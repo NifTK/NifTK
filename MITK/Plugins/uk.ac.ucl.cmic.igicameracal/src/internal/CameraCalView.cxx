@@ -183,7 +183,7 @@ void CameraCalView::RetrievePreferenceValues()
     std::string fileName = prefs->Get(CameraCalViewPreferencePage::MODEL_NODE_NAME, "").toStdString();
     if (!fileName.empty())
     {
-      m_Manager->Set3DModelFileName(fileName);
+      m_Manager->SetModelFileName(fileName);
     }
 
     m_Manager->SetScaleFactorX(prefs->GetDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultScaleFactorX));
