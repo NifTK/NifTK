@@ -14,6 +14,9 @@
 
 #include "niftkNiftyCalVideoCalibrationManager.h"
 #include <mitkExceptionMacro.h>
+#include <mitkCameraIntrinsics.h>
+#include <mitkCameraIntrinsicsProperty.h>
+#include <mitkProperties.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkOpenCVMaths.h>
 #include <niftkFileHelper.h>
@@ -48,6 +51,7 @@ const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorY(1
 const int                 NiftyCalVideoCalibrationManager::DefaultGridSizeX(14);
 const int                 NiftyCalVideoCalibrationManager::DefaultGridSizeY(10);
 const std::string         NiftyCalVideoCalibrationManager::DefaultTagFamily("25h7");
+const bool                NiftyCalVideoCalibrationManager::DefaultUpdateNodes(true);
 
 const NiftyCalVideoCalibrationManager::CalibrationPatterns
   NiftyCalVideoCalibrationManager::DefaultCalibrationPattern(NiftyCalVideoCalibrationManager::CHESS_BOARD);
@@ -70,6 +74,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_CalibrationPattern(NiftyCalVideoCalibrationManager::DefaultCalibrationPattern)
 , m_HandeyeMethod(NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)
 , m_TagFamily(NiftyCalVideoCalibrationManager::DefaultTagFamily)
+, m_UpdateNodes(NiftyCalVideoCalibrationManager::DefaultUpdateNodes)
 {
   m_ImageNode[0] = nullptr;
   m_ImageNode[1] = nullptr;
@@ -952,6 +957,54 @@ double NiftyCalVideoCalibrationManager::Calibrate()
       } // end if we are in stereo
     } // end if we have a reference matrix.
   } // end if we have tracking data.
+
+  // If true, we set properties on the images,
+  // so that the overlay viewer renders in correctly calibrated mode.
+  if (m_UpdateNodes)
+  {
+
+    mitk::CameraIntrinsics::Pointer leftIntrinsics = mitk::CameraIntrinsics::New();
+    leftIntrinsics->SetIntrinsics(m_Intrinsic[0], m_Distortion[0]);
+
+    mitk::CameraIntrinsicsProperty::Pointer leftIntrinsicsProp = mitk::CameraIntrinsicsProperty::New(leftIntrinsics);
+    m_ImageNode[0]->SetProperty("niftk.CameraCalibration", leftIntrinsicsProp);
+
+    mitk::Image::Pointer leftImage = dynamic_cast<mitk::Image*>(m_ImageNode[0]->GetData());
+    if (leftImage.IsNotNull())
+    {
+      leftImage->SetProperty("niftk.CameraCalibration", leftIntrinsicsProp);
+    }
+
+    if (m_ImageNode[1].IsNotNull())
+    {
+      mitk::CameraIntrinsics::Pointer rightIntrinsics = mitk::CameraIntrinsics::New();
+      rightIntrinsics->SetIntrinsics(m_Intrinsic[1], m_Distortion[1]);
+
+      cv::Matx44d rightToLeft = niftk::RodriguesToMatrix(m_RightToLeftRotation, m_RightToLeftTranslation);
+      cv::Matx44d leftToRight = rightToLeft.inv();
+      itk::Matrix<float, 4, 4>    txf;
+      txf.SetIdentity();
+      for (int r = 0; r < 4; r++)
+      {
+        for (int c = 0; c < 4; c++)
+        {
+          txf.GetVnlMatrix()(r, c) = leftToRight(r, c);
+        }
+      }
+      MatrixProperty::Pointer matrixProp = MatrixProperty::New(txf);
+
+      mitk::CameraIntrinsicsProperty::Pointer rightIntrinsicsProp = mitk::CameraIntrinsicsProperty::New(rightIntrinsics);
+      m_ImageNode[1]->SetProperty("niftk.CameraCalibration", rightIntrinsicsProp);
+      m_ImageNode[1]->SetProperty("niftk.StereoRigTransformation", matrixProp);
+
+      mitk::Image::Pointer rightImage = dynamic_cast<mitk::Image*>(m_ImageNode[1]->GetData());
+      if (rightImage.IsNotNull())
+      {
+        rightImage->SetProperty("niftk.CameraCalibration", rightIntrinsicsProp);
+        rightImage->SetProperty("niftk.StereoRigTransformation", matrixProp);
+      }
+    }
+  }
 
   MITK_INFO << "Calibrating - DONE.";
   return rms;

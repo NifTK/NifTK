@@ -66,6 +66,7 @@ public:
   const static CalibrationPatterns DefaultCalibrationPattern;
   const static HandEyeMethod       DefaultHandEyeMethod;
   const static std::string         DefaultTagFamily;
+  const static bool                DefaultUpdateNodes;
 
   mitkClassMacroItkParent(NiftyCalVideoCalibrationManager, itk::Object);
   itkNewMacro(NiftyCalVideoCalibrationManager);
@@ -89,6 +90,9 @@ public:
 
   itkSetMacro(DoIterative, bool);
   itkGetMacro(DoIterative, bool);
+
+  itkSetMacro(UpdateNodes, bool);
+  itkGetMacro(UpdateNodes, bool);
 
   itkSetMacro(ScaleFactorX, double);
   itkGetMacro(ScaleFactorX, double);
@@ -236,6 +240,8 @@ private:
    */
   void SavePoints(const std::string& prefix, const std::list<niftk::PointSet>& points);
 
+  typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> > MatrixProperty;
+
   // Data from Plugin/DataStorage.
   mitk::DataStorage::Pointer                     m_DataStorage;
   mitk::DataNode::Pointer                        m_ImageNode[2];
@@ -257,6 +263,7 @@ private:
   std::string                                    m_ModelToTrackerFileName;
   std::string                                    m_ReferenceImageFileName;
   std::string                                    m_ReferencePointsFileName;
+  bool                                           m_UpdateNodes;
 
   // Data used for temporary storage
   cv::Mat                                        m_TmpImage[2];
