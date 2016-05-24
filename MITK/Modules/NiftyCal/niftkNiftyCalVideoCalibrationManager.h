@@ -20,6 +20,7 @@
 #include <itkObjectFactoryBase.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
+#include <mitkPointSet.h>
 #include <niftkPointUtilities.h>
 #include <niftkIPoint2DDetector.h>
 #include <cv.h>
@@ -264,6 +265,8 @@ private:
   std::pair< cv::Mat, niftk::PointSet>          m_ReferenceDataForIterativeCalib;
   cv::Matx44d                                   m_ModelToTracker;
   niftk::Model3D                                m_ModelPoints;
+  mitk::PointSet::Pointer                       m_ModelPointsToVisualise;
+  mitk::DataNode::Pointer                       m_ModelPointsToVisualiseDataNode;
   std::list<niftk::PointSet>                    m_Points[2];
   std::list<
     std::pair<

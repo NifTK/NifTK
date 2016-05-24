@@ -80,12 +80,24 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
     m_ReferenceHandEyeMatrices[0].push_back(cv::Matx44d::eye()); // left
     m_ReferenceHandEyeMatrices[1].push_back(cv::Matx44d::eye()); // right
   }
+  m_ModelPointsToVisualise = mitk::PointSet::New();
+  m_ModelPointsToVisualiseDataNode = mitk::DataNode::New();
+  m_ModelPointsToVisualiseDataNode->SetData(m_ModelPointsToVisualise);
+  m_ModelPointsToVisualiseDataNode->SetName("CalibrationModelPoints");
+  m_ModelPointsToVisualiseDataNode->SetBoolProperty("helper object", true);
 }
 
 
 //-----------------------------------------------------------------------------
 NiftyCalVideoCalibrationManager::~NiftyCalVideoCalibrationManager()
 {
+  if (m_DataStorage.IsNotNull())
+  {
+    if (m_DataStorage->Exists(m_ModelPointsToVisualiseDataNode))
+    {
+      m_DataStorage->Remove(m_ModelPointsToVisualiseDataNode);
+    }
+  }
 }
 
 
@@ -147,6 +159,25 @@ void NiftyCalVideoCalibrationManager::SetModelFileName(const std::string& fileNa
 
   m_ModelFileName = fileName;
   m_ModelPoints = model;
+
+  m_ModelPointsToVisualise->Clear();
+  niftk::Model3D::const_iterator iter;
+  for (iter = m_ModelPoints.begin();
+       iter != m_ModelPoints.end();
+       ++iter
+       )
+  {
+    cv::Point3d p1 = (*iter).second.point;
+    mitk::Point3D p2;
+    p2[0] = p1.x;
+    p2[1] = p1.y;
+    p2[2] = p1.z;
+    m_ModelPointsToVisualise->InsertPoint((*iter).first, p2);
+  }
+  if (m_DataStorage.IsNotNull() && !m_DataStorage->Exists(m_ModelPointsToVisualiseDataNode))
+  {
+    m_DataStorage->Add(m_ModelPointsToVisualiseDataNode);
+  }
   this->Modified();
 }
 
