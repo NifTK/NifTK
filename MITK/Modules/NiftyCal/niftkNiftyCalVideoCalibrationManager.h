@@ -21,6 +21,7 @@
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 #include <mitkPointSet.h>
+#include <mitkCoordinateAxesData.h>
 #include <niftkPointUtilities.h>
 #include <niftkIPoint2DDetector.h>
 #include <cv.h>
@@ -236,62 +237,63 @@ private:
   void SavePoints(const std::string& prefix, const std::list<niftk::PointSet>& points);
 
   // Data from Plugin/DataStorage.
-  mitk::DataStorage::Pointer                    m_DataStorage;
-  mitk::DataNode::Pointer                       m_ImageNode[2];
-  mitk::DataNode::Pointer                       m_TrackingTransformNode;
-  mitk::DataNode::Pointer                       m_ReferenceTrackingTransformNode;
+  mitk::DataStorage::Pointer                     m_DataStorage;
+  mitk::DataNode::Pointer                        m_ImageNode[2];
+  mitk::DataNode::Pointer                        m_TrackingTransformNode;
+  mitk::DataNode::Pointer                        m_ReferenceTrackingTransformNode;
 
   // Data from preferences.
-  bool                                          m_DoIterative;
-  unsigned int                                  m_MinimumNumberOfSnapshotsForCalibrating;
-  std::string                                   m_ModelFileName;
-  double                                        m_ScaleFactorX;
-  double                                        m_ScaleFactorY;
-  int                                           m_GridSizeX;
-  int                                           m_GridSizeY;
-  CalibrationPatterns                           m_CalibrationPattern;
-  HandEyeMethod                                 m_HandeyeMethod;
-  std::string                                   m_TagFamily;
-  std::string                                   m_OutputDirName;
-  std::string                                   m_ModelToTrackerFileName;
-  std::string                                   m_ReferenceImageFileName;
-  std::string                                   m_ReferencePointsFileName;
+  bool                                           m_DoIterative;
+  unsigned int                                   m_MinimumNumberOfSnapshotsForCalibrating;
+  std::string                                    m_ModelFileName;
+  double                                         m_ScaleFactorX;
+  double                                         m_ScaleFactorY;
+  int                                            m_GridSizeX;
+  int                                            m_GridSizeY;
+  CalibrationPatterns                            m_CalibrationPattern;
+  HandEyeMethod                                  m_HandeyeMethod;
+  std::string                                    m_TagFamily;
+  std::string                                    m_OutputDirName;
+  std::string                                    m_ModelToTrackerFileName;
+  std::string                                    m_ReferenceImageFileName;
+  std::string                                    m_ReferencePointsFileName;
 
   // Data used for temporary storage
-  cv::Mat                                       m_TmpImage[2];
+  cv::Mat                                        m_TmpImage[2];
 
   // Data used for calibration.
-  cv::Size2i                                    m_ImageSize;
-  std::pair< cv::Mat, niftk::PointSet>          m_ReferenceDataForIterativeCalib;
-  cv::Matx44d                                   m_ModelToTracker;
-  niftk::Model3D                                m_ModelPoints;
-  mitk::PointSet::Pointer                       m_ModelPointsToVisualise;
-  mitk::DataNode::Pointer                       m_ModelPointsToVisualiseDataNode;
-  std::list<niftk::PointSet>                    m_Points[2];
+  cv::Size2i                                     m_ImageSize;
+  std::pair< cv::Mat, niftk::PointSet>           m_ReferenceDataForIterativeCalib;
+  cv::Matx44d                                    m_ModelToTracker;
+  niftk::Model3D                                 m_ModelPoints;
+  mitk::PointSet::Pointer                        m_ModelPointsToVisualise;
+  mitk::DataNode::Pointer                        m_ModelPointsToVisualiseDataNode;
+  std::list<niftk::PointSet>                     m_Points[2];
   std::list<
     std::pair<
       std::shared_ptr<niftk::IPoint2DDetector>,
       cv::Mat>
-    >                                           m_OriginalImages[2];
+    >                                            m_OriginalImages[2];
   std::list<
     std::pair<
       std::shared_ptr<niftk::IPoint2DDetector>,
       cv::Mat>
-    >                                           m_ImagesForWarping[2];
-  std::list<cv::Matx44d>                        m_TrackingMatrices;
-  std::list<cv::Matx44d>                        m_ReferenceTrackingMatrices;
+    >                                            m_ImagesForWarping[2];
+  std::list<cv::Matx44d>                         m_TrackingMatrices;
+  std::vector<mitk::DataNode::Pointer>           m_TrackingMatricesDataNodes;
+  std::list<cv::Matx44d>                         m_ReferenceTrackingMatrices;
 
   // Calibration result
-  cv::Mat                                       m_Intrinsic[2];
-  cv::Mat                                       m_Distortion[2];
-  std::vector<cv::Mat>                          m_Rvecs[2];
-  std::vector<cv::Mat>                          m_Tvecs[2];
-  cv::Mat                                       m_EssentialMatrix;
-  cv::Mat                                       m_FundamentalMatrix;
-  cv::Mat                                       m_RightToLeftRotation;
-  cv::Mat                                       m_RightToLeftTranslation;
-  std::vector<cv::Matx44d>                      m_HandEyeMatrices[2];
-  std::vector<cv::Matx44d>                      m_ReferenceHandEyeMatrices[2];
+  cv::Mat                                        m_Intrinsic[2];
+  cv::Mat                                        m_Distortion[2];
+  std::vector<cv::Mat>                           m_Rvecs[2];
+  std::vector<cv::Mat>                           m_Tvecs[2];
+  cv::Mat                                        m_EssentialMatrix;
+  cv::Mat                                        m_FundamentalMatrix;
+  cv::Mat                                        m_RightToLeftRotation;
+  cv::Mat                                        m_RightToLeftTranslation;
+  std::vector<cv::Matx44d>                       m_HandEyeMatrices[2];
+  std::vector<cv::Matx44d>                       m_ReferenceHandEyeMatrices[2];
 
 }; // end class
 

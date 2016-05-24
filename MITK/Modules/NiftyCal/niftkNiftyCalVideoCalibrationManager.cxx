@@ -93,9 +93,11 @@ NiftyCalVideoCalibrationManager::~NiftyCalVideoCalibrationManager()
 {
   if (m_DataStorage.IsNotNull())
   {
-    if (m_DataStorage->Exists(m_ModelPointsToVisualiseDataNode))
+    m_DataStorage->Remove(m_ModelPointsToVisualiseDataNode);
+
+    for (int i = 0; i < m_TrackingMatricesDataNodes.size(); i++)
     {
-      m_DataStorage->Remove(m_ModelPointsToVisualiseDataNode);
+      m_DataStorage->Remove(m_TrackingMatricesDataNodes[i]);
     }
   }
 }
@@ -160,6 +162,7 @@ void NiftyCalVideoCalibrationManager::SetModelFileName(const std::string& fileNa
   m_ModelFileName = fileName;
   m_ModelPoints = model;
 
+  // To visualise it.
   m_ModelPointsToVisualise->Clear();
   niftk::Model3D::const_iterator iter;
   for (iter = m_ModelPoints.begin();
@@ -254,9 +257,20 @@ void NiftyCalVideoCalibrationManager::Restart()
     m_Points[i].clear();
     m_OriginalImages[i].clear();
     m_ImagesForWarping[i].clear();
-    m_TrackingMatrices.clear();
-    m_ReferenceTrackingMatrices.clear();
   }
+  for (int i = 0; i < m_TrackingMatricesDataNodes.size(); i++)
+  {
+    if (m_DataStorage.IsNotNull()
+        && m_DataStorage->Exists(m_TrackingMatricesDataNodes[i])
+       )
+    {
+      m_DataStorage->Remove(m_TrackingMatricesDataNodes[i]);
+    }
+  }
+  m_TrackingMatricesDataNodes.clear();
+  m_TrackingMatrices.clear();
+  m_ReferenceTrackingMatrices.clear();
+
   MITK_INFO << "Restart. Left point size now:" << m_Points[0].size()
             << ", right: " <<  m_Points[1].size();
 }
@@ -662,6 +676,12 @@ bool NiftyCalVideoCalibrationManager::Grab()
     }
   }
 
+  // Early exit? Actually: this->ExtractPoints should throw if it fails.
+  if (!extracted[0])
+  {
+    return isSuccessful;
+  }
+
   // Now we extract the tracking node.
   if (m_TrackingTransformNode.IsNotNull())
   {
@@ -685,6 +705,24 @@ bool NiftyCalVideoCalibrationManager::Grab()
       }
     }
     m_TrackingMatrices.push_back(openCVMat);
+
+    // Visualise it.
+    mitk::CoordinateAxesData::Pointer copyOfTrackingMatrix = mitk::CoordinateAxesData::New();
+    copyOfTrackingMatrix->SetVtkMatrix(*mat);
+    mitk::DataNode::Pointer trackingNode = mitk::DataNode::New();
+    trackingNode->SetData(copyOfTrackingMatrix);
+    trackingNode->SetName("CalibrationTrackingData");
+    trackingNode->SetVisibility(true);
+    trackingNode->SetBoolProperty("helper object", true);
+    trackingNode->SetBoolProperty("includeInBoundingBox", true);
+    trackingNode->SetBoolProperty("show text", true);
+    m_TrackingMatricesDataNodes.push_back(trackingNode);
+    if (m_DataStorage.IsNotNull())
+    {
+      m_DataStorage->Add(trackingNode);
+    }
+
+    // Finished.
     extracted[2] = true;
   }
 
@@ -735,16 +773,21 @@ bool NiftyCalVideoCalibrationManager::Grab()
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::UnGrab()
 {
-  for (int i = 0; i < 2; i++)
+  if (!m_Points[0].empty())
   {
-    if (!m_Points[i].empty())
+    for (int i = 0; i < 2; i++)
     {
       m_Points[i].pop_back();
       m_OriginalImages[i].pop_back();
       m_ImagesForWarping[i].pop_back();
-      m_TrackingMatrices.pop_back();
-      m_ReferenceTrackingMatrices.pop_back();
     }
+    if (m_DataStorage.IsNotNull())
+    {
+      m_DataStorage->Remove(m_TrackingMatricesDataNodes[m_TrackingMatricesDataNodes.size() - 1]);
+    }
+    m_TrackingMatricesDataNodes.pop_back();
+    m_TrackingMatrices.pop_back();
+    m_ReferenceTrackingMatrices.pop_back();
   }
 
   MITK_INFO << "UnGrab. Left point size now:" << m_Points[0].size() << ", right:" <<  m_Points[1].size();
