@@ -25,6 +25,9 @@
      </item>
      <item row="0" column="1">
       <widget class="QSpinBox" name="m_MinimumViewsSpinBox">
+       <property name="toolTip">
+        <string>Number of images before trying calibration.</string>
+       </property>
        <property name="minimum">
         <number>5</number>
        </property>
@@ -36,14 +39,18 @@
      <item row="1" column="0">
       <widget class="QLabel" name="m_3DModelLabel">
        <property name="text">
-        <string>3D model file:</string>
+        <string>model file:</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
-        <widget class="QLineEdit" name="m_3DModelLineEdit"/>
+        <widget class="QLineEdit" name="m_3DModelLineEdit">
+         <property name="toolTip">
+          <string>Plain text file containing point id and 3D coordinates.</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QToolButton" name="m_3DModelToolButton">
@@ -65,6 +72,9 @@
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QDoubleSpinBox" name="m_ScaleImageInXSpinBox">
+         <property name="toolTip">
+          <string>Scale image in X direction.</string>
+         </property>
          <property name="decimals">
           <number>1</number>
          </property>
@@ -84,6 +94,9 @@
        </item>
        <item>
         <widget class="QDoubleSpinBox" name="m_ScaleImageInYSpinBox">
+         <property name="toolTip">
+          <string>Scale image in Y direction.</string>
+         </property>
          <property name="decimals">
           <number>1</number>
          </property>
@@ -106,12 +119,15 @@
      <item row="3" column="0">
       <widget class="QLabel" name="m_IterativeLabel">
        <property name="text">
-        <string>iterative:</string>
+        <string>do iterative calibration:</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
       <widget class="QRadioButton" name="m_IterativeCheckBox">
+       <property name="toolTip">
+        <string>Do iterative calibration.</string>
+       </property>
        <property name="text">
         <string/>
        </property>
@@ -127,7 +143,11 @@
      <item row="4" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_6">
        <item>
-        <widget class="QLineEdit" name="m_ReferenceImageLineEdit"/>
+        <widget class="QLineEdit" name="m_ReferenceImageLineEdit">
+         <property name="toolTip">
+          <string>Reference image for iterative calibration.</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QToolButton" name="m_ReferenceImagePushButton">
@@ -148,7 +168,11 @@
      <item row="5" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_7">
        <item>
-        <widget class="QLineEdit" name="m_ReferencePointsLineEdit"/>
+        <widget class="QLineEdit" name="m_ReferencePointsLineEdit">
+         <property name="toolTip">
+          <string>Reference points (2D) for iterative calibration.</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QToolButton" name="m_ReferencePointsPushButton">
@@ -167,7 +191,11 @@
       </widget>
      </item>
      <item row="6" column="1">
-      <widget class="QComboBox" name="m_FeaturesComboBox"/>
+      <widget class="QComboBox" name="m_FeaturesComboBox">
+       <property name="toolTip">
+        <string>Select type of features.</string>
+       </property>
+      </widget>
      </item>
      <item row="7" column="0">
       <widget class="QLabel" name="m_GridSizeLabel">
@@ -180,6 +208,9 @@
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QSpinBox" name="m_GridPointsInXSpinBox">
+         <property name="toolTip">
+          <string>Number of features in X direction.</string>
+         </property>
          <property name="minimum">
           <number>2</number>
          </property>
@@ -197,6 +228,9 @@
        </item>
        <item>
         <widget class="QSpinBox" name="m_GridPointsInYSpinBox">
+         <property name="toolTip">
+          <string>Number of features in Y direction.</string>
+         </property>
          <property name="minimum">
           <number>2</number>
          </property>
@@ -215,7 +249,11 @@
       </widget>
      </item>
      <item row="8" column="1">
-      <widget class="QComboBox" name="m_TagFamilyComboBox"/>
+      <widget class="QComboBox" name="m_TagFamilyComboBox">
+       <property name="toolTip">
+        <string>April Tag family name.</string>
+       </property>
+      </widget>
      </item>
      <item row="9" column="0">
       <widget class="QLabel" name="m_MinPointsLabel">
@@ -226,6 +264,9 @@
      </item>
      <item row="9" column="1">
       <widget class="QSpinBox" name="m_MinPointsSpinBox">
+       <property name="toolTip">
+        <string>Minimum number of points for April Tags.</string>
+       </property>
        <property name="minimum">
         <number>5</number>
        </property>
@@ -237,17 +278,24 @@
      <item row="10" column="0">
       <widget class="QLabel" name="m_HandEyeLabel">
        <property name="text">
-        <string>hand-eye method:</string>
+        <string>preferred hand-eye method:</string>
        </property>
       </widget>
      </item>
      <item row="10" column="1">
-      <widget class="QComboBox" name="m_HandEyeComboBox"/>
+      <widget class="QComboBox" name="m_HandEyeComboBox">
+       <property name="toolTip">
+        <string>This plugin calculates all available hand-eye methods, so this is the one to visualise.</string>
+       </property>
+      </widget>
      </item>
      <item row="11" column="0">
       <widget class="QLabel" name="m_ModelToTrackerLabel">
+       <property name="toolTip">
+        <string>Name of a 4x4 file to describe model to tracker transform.</string>
+       </property>
        <property name="text">
-        <string>3D model-to-tracker:</string>
+        <string>model-to-tracker:</string>
        </property>
       </widget>
      </item>
