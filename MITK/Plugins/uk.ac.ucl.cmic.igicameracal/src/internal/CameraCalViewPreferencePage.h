@@ -58,6 +58,7 @@ public:
   static const QString REFERENCE_IMAGE_NODE_NAME;
   static const QString REFERENCE_POINTS_NODE_NAME;
   static const QString MODEL_TO_TRACKER_NODE_NAME;
+  static const QString MINIMUM_NUMBER_POINTS_NODE_NAME;
 
   CameraCalViewPreferencePage();
   CameraCalViewPreferencePage(const CameraCalViewPreferencePage& other);

@@ -40,6 +40,7 @@ const QString CameraCalViewPreferencePage::HANDEYE_NODE_NAME("handeye method");
 const QString CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME("model to tracker transform");
 const QString CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME("reference image");
 const QString CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME("reference points");
+const QString CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME("minimum number of points");
 
 //-----------------------------------------------------------------------------
 CameraCalViewPreferencePage::CameraCalViewPreferencePage()
@@ -148,6 +149,8 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
       m_Ui->m_GridPointsInYSpinBox->setVisible(true);
       m_Ui->m_TagFamilyComboBox->setVisible(false);
       m_Ui->m_TagFamilyLabel->setVisible(false);
+      m_Ui->m_MinPointsSpinBox->setVisible(false);
+      m_Ui->m_MinPointsLabel->setVisible(false);
     break;
 
     case niftk::NiftyCalVideoCalibrationManager::APRIL_TAGS:
@@ -157,6 +160,8 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
       m_Ui->m_GridPointsInYSpinBox->setVisible(false);
       m_Ui->m_TagFamilyComboBox->setVisible(true);
       m_Ui->m_TagFamilyLabel->setVisible(true);
+      m_Ui->m_MinPointsSpinBox->setVisible(true);
+      m_Ui->m_MinPointsLabel->setVisible(true);
     break;
   }
 }
@@ -276,6 +281,7 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, m_Ui->m_TagFamilyComboBox->currentText());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, m_Ui->m_FeaturesComboBox->currentIndex());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, m_Ui->m_HandEyeComboBox->currentIndex());
+  m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME, m_Ui->m_MinPointsSpinBox->value());
   return true;
 }
 
@@ -303,6 +309,7 @@ void CameraCalViewPreferencePage::Update()
         m_Ui->m_TagFamilyComboBox->findText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, QString::fromStdString(niftk::NiftyCalVideoCalibrationManager::DefaultTagFamily))));
   m_Ui->m_FeaturesComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultCalibrationPattern)));
   m_Ui->m_HandEyeComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)));
+  m_Ui->m_MinPointsSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints));
 }
 
 } // end namespace

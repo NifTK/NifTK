@@ -48,10 +48,11 @@ const bool                NiftyCalVideoCalibrationManager::DefaultDoIterative(fa
 const unsigned int        NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating(5);
 const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorX(1);
 const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorY(1);
-const int                 NiftyCalVideoCalibrationManager::DefaultGridSizeX(14);
-const int                 NiftyCalVideoCalibrationManager::DefaultGridSizeY(10);
+const unsigned int        NiftyCalVideoCalibrationManager::DefaultGridSizeX(14);
+const unsigned int        NiftyCalVideoCalibrationManager::DefaultGridSizeY(10);
 const std::string         NiftyCalVideoCalibrationManager::DefaultTagFamily("25h7");
 const bool                NiftyCalVideoCalibrationManager::DefaultUpdateNodes(true);
+const unsigned int        NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints(70);
 
 const NiftyCalVideoCalibrationManager::CalibrationPatterns
   NiftyCalVideoCalibrationManager::DefaultCalibrationPattern(NiftyCalVideoCalibrationManager::CHESS_BOARD);
@@ -75,6 +76,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_HandeyeMethod(NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)
 , m_TagFamily(NiftyCalVideoCalibrationManager::DefaultTagFamily)
 , m_UpdateNodes(NiftyCalVideoCalibrationManager::DefaultUpdateNodes)
+, m_MinimumNumberOfPoints(NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints)
 {
   m_ImageNode[0] = nullptr;
   m_ImageNode[1] = nullptr;
@@ -635,7 +637,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     openCVDetector1->SetImage(&copyOfImage1);
 
     niftk::PointSet points = openCVDetector1->GetPoints();
-    if (points.size() > 0)
+    if (points.size() >= m_MinimumNumberOfPoints)
     {
       isSuccessful = true;
       m_Points[imageIndex].push_back(points);

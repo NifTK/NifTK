@@ -61,11 +61,12 @@ public:
   const static unsigned int        DefaultMinimumNumberOfSnapshotsForCalibrating;
   const static double              DefaultScaleFactorX;
   const static double              DefaultScaleFactorY;
-  const static int                 DefaultGridSizeX;
-  const static int                 DefaultGridSizeY;
+  const static unsigned int        DefaultGridSizeX;
+  const static unsigned int        DefaultGridSizeY;
   const static CalibrationPatterns DefaultCalibrationPattern;
   const static HandEyeMethod       DefaultHandEyeMethod;
   const static std::string         DefaultTagFamily;
+  const static unsigned int        DefaultMinimumNumberOfPoints;
   const static bool                DefaultUpdateNodes;
 
   mitkClassMacroItkParent(NiftyCalVideoCalibrationManager, itk::Object);
@@ -100,11 +101,14 @@ public:
   itkSetMacro(ScaleFactorY, double);
   itkGetMacro(ScaleFactorY, double);
 
-  itkSetMacro(GridSizeX, int);
-  itkGetMacro(GridSizeX, int);
+  itkSetMacro(GridSizeX, unsigned int);
+  itkGetMacro(GridSizeX, unsigned int);
 
-  itkSetMacro(GridSizeY, int);
-  itkGetMacro(GridSizeY, int);
+  itkSetMacro(GridSizeY, unsigned int);
+  itkGetMacro(GridSizeY, unsigned int);
+
+  itkSetMacro(MinimumNumberOfPoints, unsigned int);
+  itkGetMacro(MinimumNumberOfPoints, unsigned int);
 
   itkSetMacro(CalibrationPattern, CalibrationPatterns);
   itkGetMacro(CalibrationPattern, CalibrationPatterns);
@@ -254,8 +258,8 @@ private:
   std::string                                    m_ModelFileName;
   double                                         m_ScaleFactorX;
   double                                         m_ScaleFactorY;
-  int                                            m_GridSizeX;
-  int                                            m_GridSizeY;
+  unsigned int                                   m_GridSizeX;
+  unsigned int                                   m_GridSizeY;
   CalibrationPatterns                            m_CalibrationPattern;
   HandEyeMethod                                  m_HandeyeMethod;
   std::string                                    m_TagFamily;
@@ -264,6 +268,7 @@ private:
   std::string                                    m_ReferenceImageFileName;
   std::string                                    m_ReferencePointsFileName;
   bool                                           m_UpdateNodes;
+  unsigned int                                   m_MinimumNumberOfPoints;
 
   // Data used for temporary storage
   cv::Mat                                        m_TmpImage[2];

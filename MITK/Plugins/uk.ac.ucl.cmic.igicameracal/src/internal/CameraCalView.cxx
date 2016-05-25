@@ -209,6 +209,7 @@ void CameraCalView::RetrievePreferenceValues()
           );
     m_Manager->SetGridSizeX(prefs->GetInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeX));
     m_Manager->SetGridSizeY(prefs->GetInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeY));
+    m_Manager->SetMinimumNumberOfPoints(prefs->GetInt(CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints));
     m_Manager->SetTagFamily(prefs->Get(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, QString::fromStdString(niftk::NiftyCalVideoCalibrationManager::DefaultTagFamily)).toStdString());
 
     niftk::NiftyCalVideoCalibrationManager::HandEyeMethod method = static_cast<niftk::NiftyCalVideoCalibrationManager::HandEyeMethod>(
