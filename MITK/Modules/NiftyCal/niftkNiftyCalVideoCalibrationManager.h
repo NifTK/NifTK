@@ -239,6 +239,11 @@ private:
   void DoFullExtrinsicHandEyeInStereo(cv::Matx44d& leftHandEye, cv::Matx44d& rightHandEye, bool useReference);
 
   /**
+   * \brief Transforms m_ModelPoints into m_ModelPointsToVisualise;
+   */
+  void UpdateVisualisedPoints(cv::Matx44d& transform);
+
+  /**
    * \brief Saves list of images that were used for calibration.
    */
   void SaveImages(const std::string& prefix,
