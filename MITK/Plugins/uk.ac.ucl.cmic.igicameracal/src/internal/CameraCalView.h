@@ -69,8 +69,11 @@ protected:
 
 protected slots:
 
-  /** Send by footpedal/hotkey plugin. */
+  /** Sent by footpedal/hotkey plugin. */
   void OnGrab(const ctkEvent& event);
+
+  /** Sent by DataSources plugin.*/
+  void OnUpdate(const ctkEvent& event);
 
 protected:
 

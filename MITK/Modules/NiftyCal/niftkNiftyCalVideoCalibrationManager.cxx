@@ -250,6 +250,51 @@ void NiftyCalVideoCalibrationManager::SetOutputDirName(const std::string& dirNam
 
 
 //-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::UpdateCameraToWorldPosition()
+{
+  if (m_TrackingTransformNode.IsNotNull())
+  {
+    mitk::CoordinateAxesData::Pointer tracking = dynamic_cast<mitk::CoordinateAxesData*>(
+          m_TrackingTransformNode->GetData());
+    if (tracking.IsNull())
+    {
+      mitkThrow() << "Tracking node contains null tracking matrix.";
+    }
+    vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    tracking->GetVtkMatrix(*trackingMatrix);
+
+    vtkSmartPointer<vtkMatrix4x4> handEyeMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    for (int r = 0; r < 4; r++)
+    {
+      for (int c = 0; c < 4; c++)
+      {
+        handEyeMatrix->SetElement(r, c, m_HandEyeMatrices[0][m_HandeyeMethod](r, c));
+      }
+    }
+    handEyeMatrix->Invert();
+
+    vtkSmartPointer<vtkMatrix4x4> cameraToWorldMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    vtkMatrix4x4::Multiply4x4(trackingMatrix, handEyeMatrix, cameraToWorldMatrix);
+
+    std::string cameraToWorldNode = "niftk.ls.cameratoworld";
+    mitk::DataNode::Pointer node = m_DataStorage->GetNamedNode(cameraToWorldNode);
+    if (node.IsNull())
+    {
+      node = mitk::DataNode::New();
+    }
+
+    mitk::CoordinateAxesData::Pointer coords = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+    if (coords.IsNull())
+    {
+      coords = mitk::CoordinateAxesData::New();
+    }
+
+    coords->SetVtkMatrix(*cameraToWorldMatrix);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 unsigned int NiftyCalVideoCalibrationManager::GetNumberOfSnapshots() const
 {
   return m_Points[0].size();

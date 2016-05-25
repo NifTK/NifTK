@@ -168,6 +168,12 @@ public:
    */
   void Save();
 
+  /**
+   * \brief To update the camera to world in mitk::DataStorage so
+   * we can watch the current calibration live in real-time.
+   */
+  void UpdateCameraToWorldPosition();
+
 protected:
 
   NiftyCalVideoCalibrationManager(); // Purposefully hidden.

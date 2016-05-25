@@ -145,6 +145,11 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
       ctkDictionary properties;
       properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH1START";
       eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties);
+
+      ctkDictionary properties2;
+      properties2[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
+      eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties2);
+
     }
   }
 }
@@ -310,6 +315,13 @@ void CameraCalView::OnGrab(const ctkEvent& event)
   {
     this->OnGrabButtonPressed();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalView::OnUpdate(const ctkEvent& event)
+{
+  m_Manager->UpdateCameraToWorldPosition();
 }
 
 
