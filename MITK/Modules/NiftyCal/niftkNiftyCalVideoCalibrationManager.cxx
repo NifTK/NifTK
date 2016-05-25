@@ -384,9 +384,18 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoKangHandEye(int imageIndex, bool 
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
+  cv::Matx44d modelToRef = m_ModelToTracker;
+  if(useReference)
+  {
+    cv::Matx44d averageReferenceToTracker =
+        niftk::AverageMatricesUsingEigenValues(m_ReferenceTrackingMatrices);
+
+    modelToRef = averageReferenceToTracker.inv() * m_ModelToTracker;
+  }
+
   cv::Matx44d handEye =
     niftk::CalculateHandEyeByDirectMatrixMultiplication(
-      m_ModelToTracker,
+      modelToRef,
       trackingMatrices,
       cameraMatrices
       );
