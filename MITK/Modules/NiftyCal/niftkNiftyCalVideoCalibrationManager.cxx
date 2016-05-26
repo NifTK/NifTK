@@ -850,20 +850,31 @@ bool NiftyCalVideoCalibrationManager::Grab()
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::UnGrab()
 {
-  if (!m_Points[0].empty())
+  if (m_Points[0].empty())
   {
-    for (int i = 0; i < 2; i++)
+    return;
+  }
+
+  for (int i = 0; i < 2; i++)
+  {
+    if (!m_Points[i].empty())
     {
       m_Points[i].pop_back();
       m_OriginalImages[i].pop_back();
       m_ImagesForWarping[i].pop_back();
     }
+  }
+  if (!m_TrackingMatricesDataNodes.empty())
+  {
     if (m_DataStorage.IsNotNull())
     {
       m_DataStorage->Remove(m_TrackingMatricesDataNodes[m_TrackingMatricesDataNodes.size() - 1]);
     }
     m_TrackingMatricesDataNodes.pop_back();
     m_TrackingMatrices.pop_back();
+  }
+  if (!m_ReferenceTrackingMatrices.empty())
+  {
     m_ReferenceTrackingMatrices.pop_back();
   }
 
