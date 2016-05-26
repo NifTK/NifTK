@@ -114,6 +114,16 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="m_ClearButton">
+       <property name="toolTip">
+        <string>save calibration</string>
+       </property>
+       <property name="text">
+        <string>clear</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="m_SaveButton">
        <property name="toolTip">
         <string>save calibration</string>

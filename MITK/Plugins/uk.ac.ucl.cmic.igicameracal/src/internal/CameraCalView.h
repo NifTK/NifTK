@@ -86,6 +86,7 @@ private slots:
 
   void OnGrabButtonPressed();
   void OnUnGrabButtonPressed();
+  void OnClearButtonPressed();
   void OnSaveButtonPressed();
   void OnBackgroundGrabProcessFinished();
   void OnBackgroundCalibrateProcessFinished();

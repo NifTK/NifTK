@@ -109,9 +109,9 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_TrackerMatrixComboBox->SetDataStorage(dataStorage);
     m_Controls->m_ReferenceTrackerMatrixComboBox->SetDataStorage(dataStorage);
 
-    // I'm trying to stick to only 3 buttons, so we can easily link to foot switch.
     connect(m_Controls->m_GrabButton, SIGNAL(pressed()), this, SLOT(OnGrabButtonPressed()));
     connect(m_Controls->m_UndoButton, SIGNAL(pressed()), this, SLOT(OnUnGrabButtonPressed()));
+    connect(m_Controls->m_ClearButton, SIGNAL(pressed()), this, SLOT(OnClearButtonPressed()));
     connect(m_Controls->m_SaveButton, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
 
     // Hook up combo boxes, so we know when user changes node
@@ -149,7 +149,6 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
       ctkDictionary properties2;
       properties2[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
       eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties2);
-
     }
   }
 }
@@ -305,6 +304,14 @@ void CameraCalView::OnComboBoxChanged()
   m_Manager->SetRightImageNode(rightImageNode);
   m_Manager->SetTrackingTransformNode(trackingNode);
   m_Manager->SetReferenceTrackingTransformNode(referenceTrackingNode);
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalView::OnClearButtonPressed()
+{
+  m_Manager->Restart();
+  m_Controls->m_ProjectionErrorValue->setText("Too few images.");
 }
 
 
