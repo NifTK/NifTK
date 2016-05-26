@@ -142,13 +142,21 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
       eventAdmin->publishSignal(this, SIGNAL(PauseIGIUpdate(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATEPAUSE", Qt::DirectConnection);
       eventAdmin->publishSignal(this, SIGNAL(RestartIGIUpdate(ctkDictionary)), "uk/ac/ucl/cmic/IGIUPDATERESTART", Qt::DirectConnection);
 
-      ctkDictionary properties;
-      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH1START";
-      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties);
+      ctkDictionary properties1;
+      properties1[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
+      eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties1);
 
       ctkDictionary properties2;
-      properties2[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
-      eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties2);
+      properties2[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH1START";
+      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties2);
+
+      ctkDictionary properties3;
+      properties3[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH2START";
+      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties3);
+
+      ctkDictionary properties4;
+      properties4[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH3START";
+      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties4);
     }
   }
 }
@@ -321,6 +329,26 @@ void CameraCalView::OnGrab(const ctkEvent& event)
   if (!m_BackgroundGrabProcess.isRunning() && !m_BackgroundCalibrateProcess.isRunning())
   {
     this->OnGrabButtonPressed();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalView::OnUnGrab(const ctkEvent& event)
+{
+  if (!m_BackgroundGrabProcess.isRunning() && !m_BackgroundCalibrateProcess.isRunning())
+  {
+    this->OnUnGrabButtonPressed();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalView::OnClear(const ctkEvent& event)
+{
+  if (!m_BackgroundGrabProcess.isRunning() && !m_BackgroundCalibrateProcess.isRunning())
+  {
+    this->OnClearButtonPressed();
   }
 }
 
