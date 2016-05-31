@@ -27,6 +27,8 @@
 #include <niftkChessboardPointDetector.h>
 #include <niftkCirclesPointDetector.h>
 #include <niftkAprilTagsPointDetector.h>
+#include <niftkCirclesIterativePointDetector.h>
+#include <niftkRingsPointDetector.h>
 #include <niftkIOUtilities.h>
 #include <niftkMonoCameraCalibration.h>
 #include <niftkStereoCameraCalibration.h>
@@ -235,6 +237,27 @@ void NiftyCalVideoCalibrationManager::SetReferenceDataFileNames(
     m_ReferenceImageFileName = imageFileName;
     m_ReferencePointsFileName = pointsFileName;
     m_ReferenceDataForIterativeCalib = referenceImageData;
+    this->Modified();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::SetTemplateImageFileName(const std::string& fileName)
+{
+  if (!fileName.empty())
+  {
+    cv::Mat templateImage = cv::imread(fileName);
+    if (templateImage.rows == 0 || templateImage.cols == 0)
+    {
+      mitkThrow() << "Failed to read template image:" << fileName;
+    }
+
+    cv::Mat templateImageGreyScale;
+    cv::cvtColor(templateImage, templateImageGreyScale, CV_BGR2GRAY);
+
+    m_TemplateImageFileName = fileName;
+    m_TemplateImage = templateImageGreyScale;
     this->Modified();
   }
 }
@@ -718,6 +741,104 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       m_ImagesForWarping[imageIndex].push_back(
         std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
       dynamic_cast<niftk::AprilTagsPointDetector*>(
+        m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
+    }
+  }
+  else if (m_CalibrationPattern == TEMPLATE_MATCHING_CIRCLES)
+  {
+    cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
+    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 4.0, m_TemplateImage.rows / 4.0);
+    unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
+
+    niftk::CirclesIterativePointDetector *circlesIterativeDetector1
+        = new niftk::CirclesIterativePointDetector(internalCorners, offsetIfNotIterative);
+    circlesIterativeDetector1->SetImage(&copyOfImage1);
+    circlesIterativeDetector1->SetImageScaleFactor(scaleFactors);
+    circlesIterativeDetector1->SetTemplateImage(&m_TemplateImage);
+    circlesIterativeDetector1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+    circlesIterativeDetector1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+    circlesIterativeDetector1->SetMaxAreaInPixels(maxArea);
+    circlesIterativeDetector1->SetUseContours(true);
+    circlesIterativeDetector1->SetUseInternalResampling(true);
+    circlesIterativeDetector1->SetUseTemplateMatching(true);
+
+    niftk::PointSet points = circlesIterativeDetector1->GetPoints();
+    if (points.size() == m_GridSizeX * m_GridSizeY)
+    {
+      isSuccessful = true;
+      m_Points[imageIndex].push_back(points);
+
+      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(circlesIterativeDetector1);
+      m_OriginalImages[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
+      dynamic_cast<niftk::CirclesIterativePointDetector*>(
+        m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
+
+      niftk::CirclesIterativePointDetector *circlesIterativeDetector2
+          = new niftk::CirclesIterativePointDetector(internalCorners, offsetIfNotIterative);
+      circlesIterativeDetector1->SetImage(&copyOfImage2);
+      circlesIterativeDetector1->SetImageScaleFactor(scaleFactors);
+      circlesIterativeDetector1->SetTemplateImage(&m_TemplateImage);
+      circlesIterativeDetector1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+      circlesIterativeDetector1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+      circlesIterativeDetector1->SetMaxAreaInPixels(maxArea);
+      circlesIterativeDetector1->SetUseContours(false);
+      circlesIterativeDetector1->SetUseInternalResampling(false);
+      circlesIterativeDetector1->SetUseTemplateMatching(true);
+
+      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(circlesIterativeDetector2);
+      m_ImagesForWarping[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
+      dynamic_cast<niftk::CirclesIterativePointDetector*>(
+        m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
+    }
+  }
+  else if (m_CalibrationPattern == TEMPLATE_MATCHING_RINGS)
+  {
+    cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
+    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 4.0, m_TemplateImage.rows / 4.0);
+    unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
+
+    niftk::RingsPointDetector *ringsIterativeDetector1
+        = new niftk::RingsPointDetector(internalCorners, offsetIfNotIterative);
+    ringsIterativeDetector1->SetImage(&copyOfImage1);
+    ringsIterativeDetector1->SetImageScaleFactor(scaleFactors);
+    ringsIterativeDetector1->SetTemplateImage(&m_TemplateImage);
+    ringsIterativeDetector1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+    ringsIterativeDetector1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+    ringsIterativeDetector1->SetMaxAreaInPixels(maxArea);
+    ringsIterativeDetector1->SetUseContours(true);
+    ringsIterativeDetector1->SetUseInternalResampling(true);
+    ringsIterativeDetector1->SetUseTemplateMatching(true);
+
+    niftk::PointSet points = ringsIterativeDetector1->GetPoints();
+    if (points.size() == m_GridSizeX * m_GridSizeY)
+    {
+      isSuccessful = true;
+      m_Points[imageIndex].push_back(points);
+
+      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(ringsIterativeDetector1);
+      m_OriginalImages[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
+      dynamic_cast<niftk::RingsPointDetector*>(
+        m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
+
+      niftk::RingsPointDetector *ringsIterativeDetector2
+          = new niftk::RingsPointDetector(internalCorners, offsetIfNotIterative);
+      ringsIterativeDetector2->SetImage(&copyOfImage2);
+      ringsIterativeDetector2->SetImageScaleFactor(scaleFactors);
+      ringsIterativeDetector2->SetTemplateImage(&m_TemplateImage);
+      ringsIterativeDetector2->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+      ringsIterativeDetector2->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+      ringsIterativeDetector2->SetMaxAreaInPixels(maxArea);
+      ringsIterativeDetector2->SetUseContours(false);
+      ringsIterativeDetector2->SetUseInternalResampling(false);
+      ringsIterativeDetector2->SetUseTemplateMatching(true);
+
+      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(ringsIterativeDetector2);
+      m_ImagesForWarping[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
+      dynamic_cast<niftk::RingsPointDetector*>(
         m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }

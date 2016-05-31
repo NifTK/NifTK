@@ -215,6 +215,12 @@ void CameraCalView::RetrievePreferenceValues()
             );
     }
 
+    std::string templateImage = prefs->Get(CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME, "").toStdString();
+    if (!templateImage.empty())
+    {
+      m_Manager->SetTemplateImageFileName(templateImage);
+    }
+
     m_Manager->SetCalibrationPattern(
           static_cast<niftk::NiftyCalVideoCalibrationManager::CalibrationPatterns>(
             prefs->GetInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultCalibrationPattern)))

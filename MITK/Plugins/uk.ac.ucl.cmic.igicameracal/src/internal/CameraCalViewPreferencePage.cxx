@@ -41,6 +41,7 @@ const QString CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME("model to 
 const QString CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME("reference image");
 const QString CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME("reference points");
 const QString CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME("minimum number of points");
+const QString CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME("template image");
 
 //-----------------------------------------------------------------------------
 CameraCalViewPreferencePage::CameraCalViewPreferencePage()
@@ -87,6 +88,8 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_FeaturesComboBox->addItem("OpenCV chess board", QVariant(niftk::NiftyCalVideoCalibrationManager::CHESS_BOARD));
   m_Ui->m_FeaturesComboBox->addItem("OpenCV asymmetric circle grid", QVariant(niftk::NiftyCalVideoCalibrationManager::CIRCLE_GRID));
   m_Ui->m_FeaturesComboBox->addItem("April Tags", QVariant(niftk::NiftyCalVideoCalibrationManager::APRIL_TAGS));
+  m_Ui->m_FeaturesComboBox->addItem("Template matching symmetric circles", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_CIRCLES));
+  m_Ui->m_FeaturesComboBox->addItem("Template matching symmetric rings", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_RINGS));
 
   m_Ui->m_TagFamilyComboBox->addItem("16h5");
   m_Ui->m_TagFamilyComboBox->addItem("25h7");
@@ -112,7 +115,7 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   assert(ok);
   ok = connect(m_Ui->m_ReferencePointsPushButton, SIGNAL(pressed()), this, SLOT(OnReferencePointsButtonPressed()));
   assert(ok);
-  ok = connect(m_Ui->m_IterativeCheckBox, SIGNAL(clicked(bool)), this, SLOT(OnIterativeCheckBoxChecked(bool)));
+  ok = connect(m_Ui->m_TemplateImagePushButton, SIGNAL(pressed()), this, SLOT(OnTemplateImageButtonPressed()));
   assert(ok);
 
   m_Ui->m_FeaturesComboBox->setCurrentIndex(0);
@@ -121,7 +124,6 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_HandEyeComboBox->setCurrentIndex(0);
   this->OnFeaturesComboSelected();
   this->OnHandEyeComboSelected();
-  this->OnIterativeCheckBoxChecked(false);
 
   this->Update();
 
@@ -143,6 +145,8 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
   {
     case niftk::NiftyCalVideoCalibrationManager::CHESS_BOARD:
     case niftk::NiftyCalVideoCalibrationManager::CIRCLE_GRID:
+    case niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_CIRCLES:
+    case niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_RINGS:
       m_Ui->m_GridSizeLabel->setVisible(true);
       m_Ui->m_GridPointsInXSpinBox->setVisible(true);
       m_Ui->m_ByLabel->setVisible(true);
@@ -229,6 +233,19 @@ void CameraCalViewPreferencePage::OnReferenceImageButtonPressed()
 
 
 //-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnTemplateImageButtonPressed()
+{
+  QString fileName = QFileDialog::getOpenFileName(m_Control,
+      tr("Template image"), "", tr("Image Files (*.jpg *.png *.bmp)"));
+
+  if (!fileName.isEmpty())
+  {
+    m_Ui->m_TemplateImageLineEdit->setText(fileName);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void CameraCalViewPreferencePage::OnReferencePointsButtonPressed()
 {
   QString fileName = QFileDialog::getOpenFileName(m_Control,
@@ -237,30 +254,6 @@ void CameraCalViewPreferencePage::OnReferencePointsButtonPressed()
   if (!fileName.isEmpty())
   {
     m_Ui->m_ReferencePointsLineEdit->setText(fileName);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void CameraCalViewPreferencePage::OnIterativeCheckBoxChecked(bool checked)
-{
-  if (checked)
-  {
-    m_Ui->m_ReferenceImageLabel->setVisible(true);
-    m_Ui->m_ReferenceImageLineEdit->setVisible(true);
-    m_Ui->m_ReferenceImagePushButton->setVisible(true);
-    m_Ui->m_ReferencePointsLabel->setVisible(true);
-    m_Ui->m_ReferencePointsLineEdit->setVisible(true);
-    m_Ui->m_ReferencePointsPushButton->setVisible(true);
-  }
-  else
-  {
-    m_Ui->m_ReferenceImageLabel->setVisible(false);
-    m_Ui->m_ReferenceImageLineEdit->setVisible(false);
-    m_Ui->m_ReferenceImagePushButton->setVisible(false);
-    m_Ui->m_ReferencePointsLabel->setVisible(false);
-    m_Ui->m_ReferencePointsLineEdit->setVisible(false);
-    m_Ui->m_ReferencePointsPushButton->setVisible(false);
   }
 }
 
@@ -282,6 +275,7 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, m_Ui->m_FeaturesComboBox->currentIndex());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, m_Ui->m_HandEyeComboBox->currentIndex());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME, m_Ui->m_MinPointsSpinBox->value());
+  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME, m_Ui->m_TemplateImageLineEdit->text());
   return true;
 }
 
@@ -310,6 +304,7 @@ void CameraCalViewPreferencePage::Update()
   m_Ui->m_FeaturesComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::PATTERN_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultCalibrationPattern)));
   m_Ui->m_HandEyeComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)));
   m_Ui->m_MinPointsSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints));
+  m_Ui->m_TemplateImageLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME, ""));
 }
 
 } // end namespace

@@ -45,7 +45,9 @@ public:
     // Order must match that in niftk::CameraCalViewPreferencePage
     CHESS_BOARD,
     CIRCLE_GRID,
-    APRIL_TAGS
+    APRIL_TAGS,
+    TEMPLATE_MATCHING_CIRCLES,
+    TEMPLATE_MATCHING_RINGS
   };
 
   enum HandEyeMethod
@@ -129,6 +131,9 @@ public:
                                  const std::string& pointsFileName);
   itkGetMacro(ReferenceImageFileName, std::string);
   itkGetMacro(ReferencePointsFileName, std::string);
+
+  void SetTemplateImageFileName(const std::string& fileName);
+  itkGetMacro(TemplateImageFileName, std::string);
 
   void SetModelToTrackerFileName(const std::string& fileName);
   itkGetMacro(ModelToTrackerFileName, std::string);
@@ -280,6 +285,7 @@ private:
   std::string                                    m_ReferencePointsFileName;
   bool                                           m_UpdateNodes;
   unsigned int                                   m_MinimumNumberOfPoints;
+  std::string                                    m_TemplateImageFileName;
 
   // Data used for temporary storage
   cv::Mat                                        m_TmpImage[2];
@@ -287,6 +293,7 @@ private:
   // Data used for calibration.
   cv::Size2i                                     m_ImageSize;
   std::pair< cv::Mat, niftk::PointSet>           m_ReferenceDataForIterativeCalib;
+  cv::Mat                                        m_TemplateImage;
   cv::Matx44d                                    m_ModelToTracker;
   niftk::Model3D                                 m_ModelPoints;
   mitk::PointSet::Pointer                        m_ModelPointsToVisualise;

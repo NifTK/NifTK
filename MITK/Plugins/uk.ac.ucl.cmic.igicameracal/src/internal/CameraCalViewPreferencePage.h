@@ -59,6 +59,7 @@ public:
   static const QString REFERENCE_POINTS_NODE_NAME;
   static const QString MODEL_TO_TRACKER_NODE_NAME;
   static const QString MINIMUM_NUMBER_POINTS_NODE_NAME;
+  static const QString TEMPLATE_IMAGE_NODE_NAME;
 
   CameraCalViewPreferencePage();
   CameraCalViewPreferencePage(const CameraCalViewPreferencePage& other);
@@ -93,7 +94,7 @@ private slots:
   void OnModelToTrackerButtonPressed();
   void OnReferenceImageButtonPressed();
   void OnReferencePointsButtonPressed();
-  void OnIterativeCheckBoxChecked(bool checked);
+  void OnTemplateImageButtonPressed();
 
 private:
 
