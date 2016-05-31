@@ -24,8 +24,8 @@
 
 #include <niftkMatrixUtilities.h>
 #include <niftkNiftyCalTypes.h>
-#include <niftkOpenCVChessboardPointDetector.h>
-#include <niftkOpenCVCirclesPointDetector.h>
+#include <niftkChessboardPointDetector.h>
+#include <niftkCirclesPointDetector.h>
 #include <niftkAprilTagsPointDetector.h>
 #include <niftkIOUtilities.h>
 #include <niftkMonoCameraCalibration.h>
@@ -630,31 +630,31 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
 
-    niftk::OpenCVChessboardPointDetector *openCVDetector1 = new niftk::OpenCVChessboardPointDetector(internalCorners);
-    openCVDetector1->SetImageScaleFactor(scaleFactors);
-    openCVDetector1->SetImage(&copyOfImage1);
+    niftk::ChessboardPointDetector *chessboardDetector1 = new niftk::ChessboardPointDetector(internalCorners);
+    chessboardDetector1->SetImageScaleFactor(scaleFactors);
+    chessboardDetector1->SetImage(&copyOfImage1);
 
-    niftk::PointSet points = openCVDetector1->GetPoints();
+    niftk::PointSet points = chessboardDetector1->GetPoints();
     if (points.size() == m_GridSizeX * m_GridSizeY)
     {
       isSuccessful = true;
       m_Points[imageIndex].push_back(points);
 
-      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(openCVDetector1);
+      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(chessboardDetector1);
       m_OriginalImages[imageIndex].push_back(
         std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
-      dynamic_cast<niftk::OpenCVChessboardPointDetector*>(
+      dynamic_cast<niftk::ChessboardPointDetector*>(
         m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
-      niftk::OpenCVChessboardPointDetector *openCVDetector2 =
-        new niftk::OpenCVChessboardPointDetector(internalCorners);
-      openCVDetector2->SetImageScaleFactor(scaleFactors);
-      openCVDetector2->SetImage(&copyOfImage2);
+      niftk::ChessboardPointDetector *chessboardDetector2 =
+        new niftk::ChessboardPointDetector(internalCorners);
+      chessboardDetector2->SetImageScaleFactor(scaleFactors);
+      chessboardDetector2->SetImage(&copyOfImage2);
 
-      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(openCVDetector2);
+      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(chessboardDetector2);
       m_ImagesForWarping[imageIndex].push_back(
         std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
-      dynamic_cast<niftk::OpenCVChessboardPointDetector*>(
+      dynamic_cast<niftk::ChessboardPointDetector*>(
         m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }
@@ -662,59 +662,59 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
 
-    niftk::OpenCVCirclesPointDetector *openCVDetector1 = new niftk::OpenCVCirclesPointDetector(internalCorners);
-    openCVDetector1->SetImageScaleFactor(scaleFactors);
-    openCVDetector1->SetImage(&copyOfImage1);
+    niftk::CirclesPointDetector *circlesDetector1 = new niftk::CirclesPointDetector(internalCorners);
+    circlesDetector1->SetImageScaleFactor(scaleFactors);
+    circlesDetector1->SetImage(&copyOfImage1);
 
-    niftk::PointSet points = openCVDetector1->GetPoints();
+    niftk::PointSet points = circlesDetector1->GetPoints();
     if (points.size() == m_GridSizeX * m_GridSizeY)
     {
       isSuccessful = true;
       m_Points[imageIndex].push_back(points);
 
-      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(openCVDetector1);
+      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(circlesDetector1);
       m_OriginalImages[imageIndex].push_back(
         std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
-      dynamic_cast<niftk::OpenCVCirclesPointDetector*>(
+      dynamic_cast<niftk::CirclesPointDetector*>(
         m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
-      niftk::OpenCVCirclesPointDetector *openCVDetector2 =
-        new niftk::OpenCVCirclesPointDetector(internalCorners);
-      openCVDetector2->SetImageScaleFactor(scaleFactors);
-      openCVDetector2->SetImage(&copyOfImage2);
+      niftk::CirclesPointDetector *circlesDetector2 =
+        new niftk::CirclesPointDetector(internalCorners);
+      circlesDetector2->SetImageScaleFactor(scaleFactors);
+      circlesDetector2->SetImage(&copyOfImage2);
 
-      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(openCVDetector2);
+      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(circlesDetector2);
       m_ImagesForWarping[imageIndex].push_back(
         std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
-      dynamic_cast<niftk::OpenCVCirclesPointDetector*>(
+      dynamic_cast<niftk::CirclesPointDetector*>(
         m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }
   else if (m_CalibrationPattern == APRIL_TAGS)
   {
-    niftk::AprilTagsPointDetector *openCVDetector1 =
+    niftk::AprilTagsPointDetector *aprilTagsDetector1 =
       new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
-    openCVDetector1->SetImageScaleFactor(scaleFactors);
-    openCVDetector1->SetImage(&copyOfImage1);
+    aprilTagsDetector1->SetImageScaleFactor(scaleFactors);
+    aprilTagsDetector1->SetImage(&copyOfImage1);
 
-    niftk::PointSet points = openCVDetector1->GetPoints();
+    niftk::PointSet points = aprilTagsDetector1->GetPoints();
     if (points.size() >= m_MinimumNumberOfPoints)
     {
       isSuccessful = true;
       m_Points[imageIndex].push_back(points);
 
-      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(openCVDetector1);
+      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(aprilTagsDetector1);
       m_OriginalImages[imageIndex].push_back(
         std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
       dynamic_cast<niftk::AprilTagsPointDetector*>(
         m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
-      niftk::AprilTagsPointDetector *openCVDetector2 =
+      niftk::AprilTagsPointDetector *aprilTagsDetector2 =
         new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
-      openCVDetector2->SetImageScaleFactor(scaleFactors);
-      openCVDetector2->SetImage(&copyOfImage2);
+      aprilTagsDetector2->SetImageScaleFactor(scaleFactors);
+      aprilTagsDetector2->SetImage(&copyOfImage2);
 
-      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(openCVDetector2);
+      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(aprilTagsDetector2);
       m_ImagesForWarping[imageIndex].push_back(
         std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
       dynamic_cast<niftk::AprilTagsPointDetector*>(

@@ -84,8 +84,8 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   m_CameraCalViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 
-  m_Ui->m_FeaturesComboBox->addItem("Chess board", QVariant(niftk::NiftyCalVideoCalibrationManager::CHESS_BOARD));
-  m_Ui->m_FeaturesComboBox->addItem("Circle grid", QVariant(niftk::NiftyCalVideoCalibrationManager::CIRCLE_GRID));
+  m_Ui->m_FeaturesComboBox->addItem("OpenCV chess board", QVariant(niftk::NiftyCalVideoCalibrationManager::CHESS_BOARD));
+  m_Ui->m_FeaturesComboBox->addItem("OpenCV asymmetric circle grid", QVariant(niftk::NiftyCalVideoCalibrationManager::CIRCLE_GRID));
   m_Ui->m_FeaturesComboBox->addItem("April Tags", QVariant(niftk::NiftyCalVideoCalibrationManager::APRIL_TAGS));
 
   m_Ui->m_TagFamilyComboBox->addItem("16h5");
