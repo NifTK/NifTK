@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkDataNodePropertyListener.h"
+
 #include <itkCommand.h>
 
 #include <mitkBaseRenderer.h>
@@ -315,7 +316,11 @@ void DataNodePropertyListener::AddAllObservers()
   mitk::DataStorage::SetOfObjects::ConstPointer all = dataStorage->GetAll();
   for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
   {
-    this->AddObservers(it->Value().GetPointer());
+    mitk::DataNode* node = it->Value();
+    if (this->Pass(node))
+    {
+      this->AddObservers(node);
+    }
   }
 }
 
