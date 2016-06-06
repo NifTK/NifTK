@@ -37,6 +37,7 @@ BaseSegmentorView::BaseSegmentorView()
 //-----------------------------------------------------------------------------
 BaseSegmentorView::~BaseSegmentorView()
 {
+  delete m_SegmentorController;
 }
 
 
