@@ -156,13 +156,10 @@ protected:
   /// \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes);
 
-  /// \brief Returns the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
-  mitk::DataNode::Pointer GetSelectedNode() const;
-
 protected slots:
 
   /// \brief Called from niftkSegmentationSelectorWidget when the 'Start/restart segmentation' button is clicked.
-  virtual void OnNewSegmentationButtonClicked();
+  virtual void OnNewSegmentationButtonClicked() = 0;
 
 private:
 
@@ -172,12 +169,6 @@ private:
   mitk::ToolManager::Pointer m_ToolManager;
 
   BaseSegmentorGUI* m_SegmentorGUI;
-
-  /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
-  mitk::DataNode::Pointer m_SelectedNode;
-
-  /// \brief Keeps track of the last selected image, whenever only a single node is selected. If you multi-select, this is not updated.
-  mitk::Image::Pointer m_SelectedImage;
 
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   QColor m_DefaultSegmentationColour;

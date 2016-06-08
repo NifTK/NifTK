@@ -128,170 +128,173 @@ bool MorphologicalSegmentorController::CanStartSegmentationForBinaryNode(const m
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
 {
-  BaseSegmentorController::OnNewSegmentationButtonClicked();
+  /// Note:
+  /// The 'new segmentation' button is enabled only when a reference image is selected.
+  /// A reference image gets selected when the selection in the data manager changes to a valid
+  /// reference image or a segmentation that was created by this segmentor.
+  /// Hence, we can assume that we have a valid tool manager, paintbrush tool and reference image.
 
-  // Create the new segmentation, either using a previously selected one, or create a new volume.
-  mitk::DataNode::Pointer newSegmentation = NULL;
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  assert(toolManager);
+
+  const mitk::Image* referenceImage = this->GetReferenceImage();
+  assert(referenceImage);
+
+  mitk::Tool* paintbrushTool = this->GetToolByType<PaintbrushTool>();
+  assert(paintbrushTool);
+
+  QList<mitk::DataNode::Pointer> selectedNodes = this->GetView()->GetDataManagerSelection();
+  if (selectedNodes.size() != 1)
+  {
+    return;
+  }
+
+  mitk::DataNode::Pointer selectedNode = selectedNodes.at(0);
+
+  /// Create the new segmentation, either using a previously selected one, or create a new volume.
+  mitk::DataNode::Pointer newSegmentation;
   bool isRestarting = false;
 
-  // Make sure we have a reference images... which should always be true at this point.
-  mitk::Image::ConstPointer image = m_PipelineManager->GetReferenceImage();
-  if (image.IsNotNull())
+  if (mitk::IsNodeABinaryImage(selectedNode)
+      && this->CanStartSegmentationForBinaryNode(selectedNode)
+      && !this->IsASegmentationImage(selectedNode)
+      )
   {
+    newSegmentation =  selectedNode;
+    isRestarting = true;
+  }
+  else
+  {
+    newSegmentation = this->CreateNewSegmentation();
 
-    // Make sure we can retrieve the paintbrush tool, which can be used to create a new segmentation image.
-    mitk::ToolManager* toolManager = this->GetToolManager();
-    assert(toolManager);
-
-    int paintbrushToolId = toolManager->GetToolIdByToolType<PaintbrushTool>();
-
-    mitk::Tool* paintbrushTool = toolManager->GetToolById(paintbrushToolId);
-    assert(paintbrushTool);
-
-    mitk::DataNode::Pointer selectedNode = this->GetSelectedNode();
-
-    if (mitk::IsNodeABinaryImage(selectedNode)
-        && this->CanStartSegmentationForBinaryNode(selectedNode)
-        && !this->IsASegmentationImage(selectedNode)
-        )
+    // The above method returns NULL if the user exited the colour selection dialog box.
+    if (newSegmentation.IsNull())
     {
-      newSegmentation =  selectedNode;
-      isRestarting = true;
+      return;
+    }
+  }
+
+  mitk::DataNode::Pointer axialCutOffPlaneNode = this->CreateAxialCutOffPlaneNode(referenceImage);
+  this->GetDataStorage()->Add(axialCutOffPlaneNode, newSegmentation);
+
+  this->WaitCursorOn();
+
+  // Mark the newSegmentation as "unfinished".
+  newSegmentation->SetBoolProperty(MorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), false);
+
+  try
+  {
+    // Create that orange colour that MIDAS uses to highlight edited regions.
+    mitk::ColorProperty::Pointer col = mitk::ColorProperty::New();
+    col->SetColor((float)1.0, (float)(165.0/255.0), (float)0.0);
+
+    // Create additions data node, and store reference to image
+    float segCol[3];
+    newSegmentation->GetColor(segCol);
+    mitk::ColorProperty::Pointer segmentationColor = mitk::ColorProperty::New(segCol[0], segCol[1], segCol[2]);
+
+
+    // Create extra data and store with ToolManager
+    mitk::ITKRegionParametersDataNodeProperty::Pointer erodeAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+    erodeAddEditingProp->SetSize(1,1,1);
+    erodeAddEditingProp->SetValid(false);
+    mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode(referenceImage, PaintbrushTool::EROSIONS_ADDITIONS_NAME, col->GetColor());
+    erodeAddNode->SetBoolProperty("helper object", true);
+    erodeAddNode->SetBoolProperty("visible", false);
+    erodeAddNode->SetColor(segCol);
+    erodeAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
+    erodeAddNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeAddEditingProp);
+
+    mitk::ITKRegionParametersDataNodeProperty::Pointer erodeSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+    erodeSubtractEditingProp->SetSize(1,1,1);
+    erodeSubtractEditingProp->SetValid(false);
+    mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( referenceImage, PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME, col->GetColor());
+    erodeSubtractNode->SetBoolProperty("helper object", true);
+    erodeSubtractNode->SetBoolProperty("visible", false);
+    erodeSubtractNode->SetColor(col->GetColor());
+    erodeSubtractNode->SetProperty("binaryimage.selectedcolor", col);
+    erodeSubtractNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeSubtractEditingProp);
+
+    mitk::ITKRegionParametersDataNodeProperty::Pointer dilateAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+    dilateAddEditingProp->SetSize(1,1,1);
+    dilateAddEditingProp->SetValid(false);
+    mitk::DataNode::Pointer dilateAddNode = paintbrushTool->CreateEmptySegmentationNode( referenceImage, PaintbrushTool::DILATIONS_ADDITIONS_NAME, col->GetColor());
+    dilateAddNode->SetBoolProperty("helper object", true);
+    dilateAddNode->SetBoolProperty("visible", false);
+    dilateAddNode->SetColor(segCol);
+    dilateAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
+    dilateAddNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateAddEditingProp);
+
+    mitk::ITKRegionParametersDataNodeProperty::Pointer dilateSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+    dilateSubtractEditingProp->SetSize(1,1,1);
+    dilateSubtractEditingProp->SetValid(false);
+    mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( referenceImage, PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME, col->GetColor());
+    dilateSubtractNode->SetBoolProperty("helper object", true);
+    dilateSubtractNode->SetBoolProperty("visible", false);
+    dilateSubtractNode->SetColor(col->GetColor());
+    dilateSubtractNode->SetProperty("binaryimage.selectedcolor", col);
+    dilateSubtractNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateSubtractEditingProp);
+
+    this->ApplyDisplayOptions(erodeAddNode);
+    this->ApplyDisplayOptions(erodeSubtractNode);
+    this->ApplyDisplayOptions(dilateAddNode);
+    this->ApplyDisplayOptions(dilateSubtractNode);
+
+    // Add the image to data storage, and specify this derived image as the one the toolManager will edit to.
+    this->GetDataStorage()->Add(erodeAddNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
+    this->GetDataStorage()->Add(erodeSubtractNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
+    this->GetDataStorage()->Add(dilateAddNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
+    this->GetDataStorage()->Add(dilateSubtractNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
+
+    // Set working data. Compare with MIDASGeneralSegmentorView.
+    // Note the order:
+    //
+    // 1. The First image is the "Additions" image for erosions, that we can manually add data/voxels to.
+    // 2. The Second image is the "Subtractions" image for erosions, that is used for connection breaker.
+    // 3. The Third image is the "Additions" image for dilations, that we can manually add data/voxels to.
+    // 4. The Forth image is the "Subtractions" image for dilations, that is used for connection breaker.
+    //
+    // This must match the order in:
+    //
+    // 1. niftkMorphologicalSegmentorPipelineManager::UpdateSegmentation()
+    // 2. niftk::PaintbrushTool.
+    // and unit tests etc. Probably best to search for
+    // MORPH_EDITS_EROSIONS_SUBTRACTIONS
+    // MORPH_EDITS_EROSIONS_ADDITIONS
+    // MORPH_EDITS_DILATIONS_SUBTRACTIONS
+    // MORPH_EDITS_DILATIONS_ADDITIONS
+
+    mitk::ToolManager::DataVectorType workingData(4);
+    workingData[PaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
+    workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
+    workingData[PaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;
+    workingData[PaintbrushTool::DILATIONS_SUBTRACTIONS] = dilateSubtractNode;
+
+    toolManager->SetWorkingData(workingData);
+
+    // Set properties, and then the control values to match.
+    if (isRestarting)
+    {
+      newSegmentation->SetBoolProperty("midas.morph.restarting", true);
+      this->SetControlsFromSegmentationNodeProps();
+      m_PipelineManager->UpdateSegmentation();
     }
     else
     {
-      newSegmentation = this->CreateNewSegmentation();
-
-      // The above method returns NULL if the user exited the colour selection dialog box.
-      if (newSegmentation.IsNull())
-      {
-        return;
-      }
+      this->SetSegmentationNodePropsFromReferenceImage();
+      this->SetControlsFromReferenceImage();
+      this->SetControlsFromSegmentationNodeProps();
+      m_PipelineManager->UpdateSegmentation();
     }
+  }
+  catch (std::bad_alloc&)
+  {
+    QMessageBox::warning(NULL,"Create new segmentation","Could not allocate memory for new segmentation");
+  }
 
-    mitk::DataNode::Pointer axialCutOffPlaneNode = this->CreateAxialCutOffPlaneNode(image);
-    this->GetDataStorage()->Add(axialCutOffPlaneNode, newSegmentation);
-
-    this->WaitCursorOn();
-
-    // Mark the newSegmentation as "unfinished".
-    newSegmentation->SetBoolProperty(MorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), false);
-
-    try
-    {
-      // Create that orange colour that MIDAS uses to highlight edited regions.
-      mitk::ColorProperty::Pointer col = mitk::ColorProperty::New();
-      col->SetColor((float)1.0, (float)(165.0/255.0), (float)0.0);
-
-      // Create additions data node, and store reference to image
-      float segCol[3];
-      newSegmentation->GetColor(segCol);
-      mitk::ColorProperty::Pointer segmentationColor = mitk::ColorProperty::New(segCol[0], segCol[1], segCol[2]);
-
-
-      // Create extra data and store with ToolManager
-      mitk::ITKRegionParametersDataNodeProperty::Pointer erodeAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
-      erodeAddEditingProp->SetSize(1,1,1);
-      erodeAddEditingProp->SetValid(false);
-      mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode(image, PaintbrushTool::EROSIONS_ADDITIONS_NAME, col->GetColor());
-      erodeAddNode->SetBoolProperty("helper object", true);
-      erodeAddNode->SetBoolProperty("visible", false);
-      erodeAddNode->SetColor(segCol);
-      erodeAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
-      erodeAddNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeAddEditingProp);
-
-      mitk::ITKRegionParametersDataNodeProperty::Pointer erodeSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
-      erodeSubtractEditingProp->SetSize(1,1,1);
-      erodeSubtractEditingProp->SetValid(false);
-      mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME, col->GetColor());
-      erodeSubtractNode->SetBoolProperty("helper object", true);
-      erodeSubtractNode->SetBoolProperty("visible", false);
-      erodeSubtractNode->SetColor(col->GetColor());
-      erodeSubtractNode->SetProperty("binaryimage.selectedcolor", col);
-      erodeSubtractNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeSubtractEditingProp);
-
-      mitk::ITKRegionParametersDataNodeProperty::Pointer dilateAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
-      dilateAddEditingProp->SetSize(1,1,1);
-      dilateAddEditingProp->SetValid(false);
-      mitk::DataNode::Pointer dilateAddNode = paintbrushTool->CreateEmptySegmentationNode( image, PaintbrushTool::DILATIONS_ADDITIONS_NAME, col->GetColor());
-      dilateAddNode->SetBoolProperty("helper object", true);
-      dilateAddNode->SetBoolProperty("visible", false);
-      dilateAddNode->SetColor(segCol);
-      dilateAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
-      dilateAddNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateAddEditingProp);
-
-      mitk::ITKRegionParametersDataNodeProperty::Pointer dilateSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
-      dilateSubtractEditingProp->SetSize(1,1,1);
-      dilateSubtractEditingProp->SetValid(false);
-      mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( image, PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME, col->GetColor());
-      dilateSubtractNode->SetBoolProperty("helper object", true);
-      dilateSubtractNode->SetBoolProperty("visible", false);
-      dilateSubtractNode->SetColor(col->GetColor());
-      dilateSubtractNode->SetProperty("binaryimage.selectedcolor", col);
-      dilateSubtractNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateSubtractEditingProp);
-
-      this->ApplyDisplayOptions(erodeAddNode);
-      this->ApplyDisplayOptions(erodeSubtractNode);
-      this->ApplyDisplayOptions(dilateAddNode);
-      this->ApplyDisplayOptions(dilateSubtractNode);
-
-      // Add the image to data storage, and specify this derived image as the one the toolManager will edit to.
-      this->GetDataStorage()->Add(erodeAddNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
-      this->GetDataStorage()->Add(erodeSubtractNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
-      this->GetDataStorage()->Add(dilateAddNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
-      this->GetDataStorage()->Add(dilateSubtractNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
-
-      // Set working data. Compare with MIDASGeneralSegmentorView.
-      // Note the order:
-      //
-      // 1. The First image is the "Additions" image for erosions, that we can manually add data/voxels to.
-      // 2. The Second image is the "Subtractions" image for erosions, that is used for connection breaker.
-      // 3. The Third image is the "Additions" image for dilations, that we can manually add data/voxels to.
-      // 4. The Forth image is the "Subtractions" image for dilations, that is used for connection breaker.
-      //
-      // This must match the order in:
-      //
-      // 1. niftkMorphologicalSegmentorPipelineManager::UpdateSegmentation()
-      // 2. niftk::PaintbrushTool.
-      // and unit tests etc. Probably best to search for
-      // MORPH_EDITS_EROSIONS_SUBTRACTIONS
-      // MORPH_EDITS_EROSIONS_ADDITIONS
-      // MORPH_EDITS_DILATIONS_SUBTRACTIONS
-      // MORPH_EDITS_DILATIONS_ADDITIONS
-
-      mitk::ToolManager::DataVectorType workingData(4);
-      workingData[PaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
-      workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
-      workingData[PaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;
-      workingData[PaintbrushTool::DILATIONS_SUBTRACTIONS] = dilateSubtractNode;
-
-      toolManager->SetWorkingData(workingData);
-
-      // Set properties, and then the control values to match.
-      if (isRestarting)
-      {
-        newSegmentation->SetBoolProperty("midas.morph.restarting", true);
-        this->SetControlsFromSegmentationNodeProps();
-        m_PipelineManager->UpdateSegmentation();
-      }
-      else
-      {
-        this->SetSegmentationNodePropsFromReferenceImage();
-        this->SetControlsFromReferenceImage();
-        this->SetControlsFromSegmentationNodeProps();
-        m_PipelineManager->UpdateSegmentation();
-      }
-    }
-    catch (std::bad_alloc&)
-    {
-      QMessageBox::warning(NULL,"Create new segmentation","Could not allocate memory for new segmentation");
-    }
-
-    this->GetView()->FocusOnCurrentWindow();
-    this->RequestRenderWindowUpdate();
-    this->WaitCursorOff();
-
-  } // end if we have a reference image
+  this->GetView()->FocusOnCurrentWindow();
+  this->RequestRenderWindowUpdate();
+  this->WaitCursorOff();
 
   // Finally, select the new segmentation node.
   this->GetView()->SetCurrentSelection(newSegmentation);

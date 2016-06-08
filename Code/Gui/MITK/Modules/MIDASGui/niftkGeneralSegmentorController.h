@@ -297,10 +297,10 @@ private:
   virtual void OnContoursChanged();
 
   /// \brief Used to create an image used for the region growing, see class intro.
-  mitk::DataNode::Pointer CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode,  float r, float g, float b, std::string name, bool visible, int layer);
+  mitk::DataNode::Pointer CreateHelperImage(const mitk::Image* referenceImage, const mitk::Color& colour, const std::string& name, bool visible, int layer);
 
   /// \brief Used to create a contour set, used for the current, prior and next contours, see class intro.
-  mitk::DataNode::Pointer CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer);
+  mitk::DataNode::Pointer CreateContourSet(const mitk::Color& colour, const std::string& name, bool visible, int layer);
 
   /// \brief Utility method to check that we have initialised all the working data such as contours, region growing images etc.
   bool HasInitialisedWorkingData();
