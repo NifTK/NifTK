@@ -84,7 +84,7 @@ protected:
   /// \brief Gets a vector of the working data nodes registered with the tool manager.
   /// The data nodes normally hold image, but could be surfaces etc.
   /// Empty list is returned if this can't be found.
-  mitk::ToolManager::DataVectorType GetWorkingData();
+  std::vector<mitk::DataNode*> GetWorkingData();
 
   /// \brief Gets a single binary image registered with the ToolManager.
   /// Returns nullptr if it can't be found or is not an image.
@@ -115,7 +115,7 @@ protected:
   virtual bool IsAWorkingImage(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
-  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
+  virtual std::vector<mitk::DataNode*> GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
   virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node);
@@ -152,6 +152,9 @@ protected:
   /// \brief Gets the segmentor widget that holds the GUI components of the view.
   BaseSegmentorGUI* GetSegmentorGUI() const;
 
+  /// \brief Utility method to check that we have initialised all the working data such as contours, region growing images etc.
+  bool HasInitialisedWorkingData();
+
   /// \brief Called when the selection changes in the data manager.
   /// \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes);
@@ -164,7 +167,7 @@ protected slots:
 private:
 
   /// \brief Propagate data manager selection to tool manager for manual segmentation.
-  virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes);
+  virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const std::vector<mitk::DataNode*>& workingDataNodes);
 
   mitk::ToolManager::Pointer m_ToolManager;
 

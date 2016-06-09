@@ -246,10 +246,10 @@ bool GeneralSegmentorController::IsASegmentationImage(const mitk::DataNode::Poin
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType GeneralSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
+std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   assert(node);
-  mitk::ToolManager::DataVectorType result;
+  std::vector<mitk::DataNode*> result;
 
   if (mitk::IsNodeABinaryImage(node))
   {
@@ -477,7 +477,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   this->GetDataStorage()->Add(initialSeedsNode, newSegmentation);
 
   // Set working data. See header file, as the order here is critical, and should match the documented order.
-  mitk::ToolManager::DataVectorType workingData(9);
+  std::vector<mitk::DataNode*> workingData(9);
   workingData[Tool::SEGMENTATION] = newSegmentation;
   workingData[Tool::SEEDS] = pointSetNode;
   workingData[Tool::CONTOURS] = currentContours;
@@ -521,21 +521,6 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 
   // Finally, select the new segmentation node.
   this->GetView()->SetCurrentSelection(newSegmentation);
-}
-
-
-//-----------------------------------------------------------------------------
-bool GeneralSegmentorController::HasInitialisedWorkingData()
-{
-  bool result = false;
-
-  mitk::ToolManager::DataVectorType nodes = this->GetWorkingData();
-  if (nodes.size() > 0)
-  {
-    result = true;
-  }
-
-  return result;
 }
 
 
@@ -591,7 +576,7 @@ void GeneralSegmentorController::StoreInitialSegmentation()
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::ToolManager::DataVectorType workingData = toolManager->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = toolManager->GetWorkingData();
 
   mitk::DataNode* segmentationNode = workingData[Tool::SEGMENTATION];
   mitk::DataNode* seedsNode = workingData[Tool::SEEDS];
@@ -978,7 +963,7 @@ void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
     return;
   }
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   if (workingData.size() > 0)
   {
     bool seedsChanged(false);
@@ -1166,7 +1151,7 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[Tool::CONTOURS]->GetData());
 
   // TODO
@@ -1202,7 +1187,7 @@ void GeneralSegmentorController::OnSeePriorCheckBoxToggled(bool checked)
     return;
   }
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
 
   if (checked)
   {
@@ -1221,7 +1206,7 @@ void GeneralSegmentorController::OnSeeNextCheckBoxToggled(bool checked)
     return;
   }
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
 
   if (checked)
   {
@@ -1254,7 +1239,7 @@ void GeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
     this->UpdateRegionGrowing();
   }
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   workingData[Tool::REGION_GROWING]->SetVisibility(checked);
 
   this->RequestRenderWindowUpdate();
@@ -1319,7 +1304,7 @@ void GeneralSegmentorController::UpdateRegionGrowing(
     if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
 
-      mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+      std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
       workingData[Tool::REGION_GROWING]->SetVisibility(isVisible);
 
       bool wasUpdating = d->m_IsUpdating;
@@ -1403,7 +1388,7 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
   int sliceIndex = this->GetReferenceImageSliceIndex();
   int sliceAxis = this->GetReferenceImageSliceAxis();
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   mitk::Image::Pointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   if (d->m_GUI->IsSeePriorCheckBoxChecked())
@@ -1636,7 +1621,7 @@ void GeneralSegmentorController::RemoveWorkingData()
   d->m_IsDeleting = true;
 
   mitk::ToolManager* toolManager = this->GetToolManager();
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
 
   // We don't do the first image, as thats the final segmentation.
   for (unsigned int i = 1; i < workingData.size(); i++)
@@ -1644,7 +1629,7 @@ void GeneralSegmentorController::RemoveWorkingData()
     this->GetDataStorage()->Remove(workingData[i]);
   }
 
-  mitk::ToolManager::DataVectorType emptyWorkingDataArray;
+  std::vector<mitk::DataNode*> emptyWorkingDataArray(0);
   toolManager->SetWorkingData(emptyWorkingDataArray);
   toolManager->ActivateTool(-1);
 
@@ -2008,7 +1993,7 @@ bool GeneralSegmentorController::SelectViewMode()
       return true;
     }
 
-    mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+    std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
     bool segmentationNodeIsVisible = workingData[Tool::SEGMENTATION]->IsVisible(0);
     workingData[Tool::SEGMENTATION]->SetVisibility(!segmentationNodeIsVisible);
     this->RequestRenderWindowUpdate();

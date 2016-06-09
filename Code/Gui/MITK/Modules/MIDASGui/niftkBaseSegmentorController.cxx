@@ -121,7 +121,7 @@ mitk::ToolManager* BaseSegmentorController::GetToolManager() const
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType BaseSegmentorController::GetWorkingData()
+std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingData()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -135,7 +135,7 @@ mitk::Image* BaseSegmentorController::GetWorkingImage(int index)
 {
   mitk::Image* result = nullptr;
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   if (workingData.size() > 0 && index >= 0 && index < (int)workingData.size())
   {
     mitk::DataNode::Pointer node = workingData[index];
@@ -222,11 +222,11 @@ bool BaseSegmentorController::IsAWorkingImage(const mitk::DataNode::Pointer node
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType BaseSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
+std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   // This default implementation just says Segmentation node == Working node, which subclasses could override.
 
-  mitk::ToolManager::DataVectorType result(1);
+  std::vector<mitk::DataNode*> result(1);
   result[0] = node;
   return result;
 }
@@ -386,9 +386,25 @@ mitk::DataNode* BaseSegmentorController::CreateNewSegmentation()
 
 
 //-----------------------------------------------------------------------------
+bool BaseSegmentorController::HasInitialisedWorkingData()
+{
+  return !this->GetWorkingData().empty();
+}
+
+
+//-----------------------------------------------------------------------------
 void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& selectedNodes)
 {
   assert(m_SegmentorGUI);
+
+  if (this->HasInitialisedWorkingData())
+  {
+    /// It is not allowed to work on several segmentation at a time, simultaneously.
+    /// If you are already working on a segmentation, you have to finalise it (OK)
+    /// or discard it (Cancel) before you can start segmenting another image. (Or
+    /// making another segmentation of the same image.)
+    return;
+  }
 
   // By default, assume we are not going to enable the controls.
   bool valid = false;
@@ -402,9 +418,9 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
     // MAJOR ASSUMPTION: Intermediate working images will be hidden, and hence not clickable.
 
     mitk::DataNode::Pointer selectedNode = selectedNodes[0];
-    mitk::DataNode::Pointer referenceImageNode = 0;
-    mitk::DataNode::Pointer segmentationImageNode = 0;
-    mitk::ToolManager::DataVectorType workingDataNodes;
+    mitk::DataNode::Pointer referenceImageNode;
+    mitk::DataNode::Pointer segmentationImageNode;
+    std::vector<mitk::DataNode*> workingDataNodes;
 
     // Rely on subclasses deciding if the node is something we are interested in.
     if (this->IsAReferenceImage(selectedNode))
@@ -454,7 +470,7 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
 
 
 //-----------------------------------------------------------------------------
-void BaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes)
+void BaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* referenceData, const std::vector<mitk::DataNode*>& workingDataNodes)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);

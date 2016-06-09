@@ -105,7 +105,7 @@ bool MorphologicalSegmentorController::IsAWorkingImage(const mitk::DataNode::Poi
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType MorphologicalSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
+std::vector<mitk::DataNode*> MorphologicalSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   return m_PipelineManager->GetWorkingDataFromSegmentationNode(node);
 }
@@ -264,7 +264,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     // MORPH_EDITS_DILATIONS_SUBTRACTIONS
     // MORPH_EDITS_DILATIONS_ADDITIONS
 
-    mitk::ToolManager::DataVectorType workingData(4);
+    std::vector<mitk::DataNode*> workingData(4);
     workingData[PaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
     workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
     workingData[PaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;

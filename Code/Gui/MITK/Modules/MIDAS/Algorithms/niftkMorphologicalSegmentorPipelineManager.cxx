@@ -87,7 +87,7 @@ mitk::Image::ConstPointer MorphologicalSegmentorPipelineManager::GetReferenceIma
 {
   mitk::Image::ConstPointer referenceImage = NULL;
 
-  mitk::ToolManager::DataVectorType referenceData = this->GetToolManager()->GetReferenceData();
+  std::vector<mitk::DataNode*> referenceData = this->GetToolManager()->GetReferenceData();
   if (referenceData.size() > 0)
   {
     referenceImage = dynamic_cast<mitk::Image*>(referenceData[0]->GetData());
@@ -101,7 +101,7 @@ mitk::Image::Pointer MorphologicalSegmentorPipelineManager::GetWorkingImage(unsi
 {
   mitk::Image::Pointer result = NULL;
 
-  mitk::ToolManager::DataVectorType workingData = this->GetToolManager()->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetToolManager()->GetWorkingData();
   if (workingData.size() > dataIndex)
   {
     result = dynamic_cast<mitk::Image*>(workingData[dataIndex]->GetData());
@@ -313,11 +313,11 @@ bool MorphologicalSegmentorPipelineManager::CanStartSegmentationForBinaryNode(co
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType MorphologicalSegmentorPipelineManager::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) const
+std::vector<mitk::DataNode*> MorphologicalSegmentorPipelineManager::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) const
 {
   assert(node);
 
-  mitk::ToolManager::DataVectorType workingData(4);
+  std::vector<mitk::DataNode*> workingData(4);
   std::fill(workingData.begin(), workingData.end(), (mitk::DataNode*) 0);
 
   mitk::DataStorage::SetOfObjects::Pointer children = mitk::FindDerivedImages(this->GetDataStorage(), node, true );
@@ -490,7 +490,7 @@ void MorphologicalSegmentorPipelineManager::UpdateSegmentation()
     std::vector<int> region(6);
     std::vector<bool> editingFlags;
 
-    mitk::ToolManager::DataVectorType workingData = this->GetToolManager()->GetWorkingData();
+    std::vector<mitk::DataNode*> workingData = this->GetToolManager()->GetWorkingData();
 
     for (unsigned int i = 0; i < workingData.size(); i++)
     {
@@ -600,7 +600,7 @@ void MorphologicalSegmentorPipelineManager::RemoveWorkingData()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
 
-  mitk::ToolManager::DataVectorType workingData = toolManager->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = toolManager->GetWorkingData();
 
   for (unsigned int i = 0; i < workingData.size(); i++)
   {
@@ -608,7 +608,7 @@ void MorphologicalSegmentorPipelineManager::RemoveWorkingData()
     this->GetDataStorage()->Remove(node);
   }
 
-  mitk::ToolManager::DataVectorType emptyWorkingDataArray;
+  std::vector<mitk::DataNode*> emptyWorkingDataArray(0);
   toolManager->SetWorkingData(emptyWorkingDataArray);
   toolManager->ActivateTool(-1);
 }
