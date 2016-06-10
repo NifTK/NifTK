@@ -272,6 +272,15 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
 
     toolManager->SetWorkingData(workingData);
 
+    /// Note:
+    /// The tool selection box tracks the events when the working data changes,
+    /// and enables and disables the tool buttons accordingly. However, we want
+    /// to enable the buttons only in the second and third step of the workflow
+    /// (erosion and dilation). So, since we are at the first step, we have to
+    /// disable the tool selector that was enabled at the previous call when
+    /// setting the working data.
+    m_MorphologicalSegmentorGUI->SetToolSelectorEnabled(false);
+
     // Set properties, and then the control values to match.
     if (isRestarting)
     {

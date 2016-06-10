@@ -162,14 +162,8 @@ void MorphologicalSegmentorGUI::SetEnabled(bool enabled)
 void MorphologicalSegmentorGUI::EnableSegmentationWidgets(bool enabled)
 {
   int tabIndex = this->GetTabIndex();
-  if (enabled && (tabIndex == 1 || tabIndex == 2))
-  {
-    this->SetToolSelectorEnabled(true);
-  }
-  else
-  {
-    this->SetToolSelectorEnabled(false);
-  }
+
+  this->SetToolSelectorEnabled(enabled && (tabIndex == 1 || tabIndex == 2));
 
   this->SetEnabled(enabled);
 }

@@ -602,14 +602,14 @@ void MorphologicalSegmentorPipelineManager::RemoveWorkingData()
 
   std::vector<mitk::DataNode*> workingData = toolManager->GetWorkingData();
 
-  for (unsigned int i = 0; i < workingData.size(); i++)
-  {
-    mitk::DataNode* node = workingData[i];
-    this->GetDataStorage()->Remove(node);
-  }
-
   std::vector<mitk::DataNode*> emptyWorkingDataArray(0);
   toolManager->SetWorkingData(emptyWorkingDataArray);
+
+  for (auto workingNode: workingData)
+  {
+    this->GetDataStorage()->Remove(workingNode);
+  }
+
   toolManager->ActivateTool(-1);
 }
 
