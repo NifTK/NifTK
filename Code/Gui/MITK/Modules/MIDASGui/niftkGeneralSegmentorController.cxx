@@ -1886,7 +1886,7 @@ bool GeneralSegmentorController::SelectSeedTool()
   /// We should not do anything with the tools until they are registered to the
   /// tool manager.
 
-  if (d->m_GUI->IsToolSelectorEnabled())
+  if (this->HasInitialisedWorkingData())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1910,7 +1910,7 @@ bool GeneralSegmentorController::SelectDrawTool()
   Q_D(GeneralSegmentorController);
 
   /// Note: see comment in SelectSeedTool().
-  if (d->m_GUI->IsToolSelectorEnabled())
+  if (this->HasInitialisedWorkingData())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1934,7 +1934,7 @@ bool GeneralSegmentorController::SelectPolyTool()
   Q_D(GeneralSegmentorController);
 
   /// Note: see comment in SelectSeedTool().
-  if (d->m_GUI->IsToolSelectorEnabled())
+  if (this->HasInitialisedWorkingData())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -1957,7 +1957,7 @@ bool GeneralSegmentorController::UnselectTools()
 {
   Q_D(GeneralSegmentorController);
 
-  if (d->m_GUI->IsToolSelectorEnabled())
+  if (this->HasInitialisedWorkingData())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
 
@@ -1979,29 +1979,23 @@ bool GeneralSegmentorController::SelectViewMode()
   Q_D(GeneralSegmentorController);
 
   /// Note: see comment in SelectSeedTool().
-  if (d->m_GUI->IsToolSelectorEnabled())
+  if (this->HasInitialisedWorkingData())
   {
-    if (!this->HasInitialisedWorkingData())
+    mitk::DataNode* segmentationNode = this->GetToolManager()->GetWorkingData(Tool::SEGMENTATION);
+    segmentationNode->SetVisibility(!segmentationNode->IsVisible(0));
+  }
+  else
+  {
+    QList<mitk::DataNode::Pointer> selectedNodes = this->GetDataManagerSelection();
+    foreach (mitk::DataNode::Pointer selectedNode, selectedNodes)
     {
-      QList<mitk::DataNode::Pointer> selectedNodes = this->GetDataManagerSelection();
-      foreach (mitk::DataNode::Pointer selectedNode, selectedNodes)
-      {
-        selectedNode->SetVisibility(!selectedNode->IsVisible(0));
-      }
-      this->RequestRenderWindowUpdate();
-
-      return true;
+      selectedNode->SetVisibility(!selectedNode->IsVisible(0));
     }
-
-    std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
-    bool segmentationNodeIsVisible = workingData[Tool::SEGMENTATION]->IsVisible(0);
-    workingData[Tool::SEGMENTATION]->SetVisibility(!segmentationNodeIsVisible);
-    this->RequestRenderWindowUpdate();
-
-    return true;
   }
 
-  return false;
+  this->RequestRenderWindowUpdate();
+
+  return true;
 }
 
 
@@ -2015,7 +2009,7 @@ bool GeneralSegmentorController::CleanSlice()
   Q_D(GeneralSegmentorController);
 
   /// Note: see comment in SelectSeedTool().
-  if (d->m_GUI->IsToolSelectorEnabled())
+  if (this->HasInitialisedWorkingData())
   {
     this->OnCleanButtonClicked();
     return true;

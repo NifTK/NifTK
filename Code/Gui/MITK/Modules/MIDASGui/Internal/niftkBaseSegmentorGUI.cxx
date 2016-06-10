@@ -66,7 +66,7 @@ BaseSegmentorGUI::~BaseSegmentorGUI()
 
 
 //-----------------------------------------------------------------------------
-void BaseSegmentorGUI::EnableSegmentationWidgets(bool enabled)
+void BaseSegmentorGUI::EnableSegmentationWidgets(bool /*enabled*/)
 {
 }
 
