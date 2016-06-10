@@ -46,6 +46,7 @@ BaseSegmentorController::BaseSegmentorController(IBaseView* view)
 //-----------------------------------------------------------------------------
 BaseSegmentorController::~BaseSegmentorController()
 {
+  m_ToolManager->ActiveToolChanged -= mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnActiveToolChanged);
 }
 
 
@@ -57,8 +58,9 @@ void BaseSegmentorController::SetupGUI(QWidget* parent)
   m_SegmentorGUI = dynamic_cast<BaseSegmentorGUI*>(this->GetGUI());
   m_SegmentorGUI->SetToolManager(m_ToolManager);
 
+  m_ToolManager->ActiveToolChanged += mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnActiveToolChanged);
+
   this->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
-  this->connect(m_SegmentorGUI, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
 }
 
 
@@ -450,22 +452,9 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
       }
     }
 
-    // If we have worked out the reference data, then set the combo box.
-    if (referenceImageNode.IsNotNull())
-    {
-      m_SegmentorGUI->SelectReferenceImage(QString::fromStdString(referenceImageNode->GetName()));
-    }
-    else
-    {
-      m_SegmentorGUI->SelectReferenceImage();
-    }
-
     // Tell the tool manager the images for reference and working purposes.
     this->SetToolManagerSelection(referenceImageNode, workingDataNodes);
   }
-
-  // Adjust widgets according to whether we have a valid selection.
-  m_SegmentorGUI->EnableSegmentationWidgets(valid);
 }
 
 
@@ -485,18 +474,6 @@ void BaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* refe
 
   toolManager->SetReferenceData(const_cast<mitk::DataNode*>(referenceData));
   toolManager->SetWorkingData(workingDataNodes);
-
-  if (referenceData && !workingDataNodes.empty())
-  {
-    mitk::DataNode::Pointer node = workingDataNodes[0];
-    mitk::DataNode::Pointer segmentationImage = this->GetSegmentationNodeFromWorkingData(node);
-    assert(segmentationImage);
-    m_SegmentorGUI->SelectSegmentationImage(QString::fromStdString(segmentationImage->GetName()));
-  }
-  else
-  {
-    m_SegmentorGUI->SelectSegmentationImage();
-  }
 }
 
 
@@ -508,8 +485,10 @@ void BaseSegmentorController::OnViewGetsActivated()
 
 
 //-----------------------------------------------------------------------------
-void BaseSegmentorController::OnToolSelected(int toolID)
+void BaseSegmentorController::OnActiveToolChanged()
 {
+  int activeToolID = m_ToolManager->GetActiveToolID();
+
   /// Note: The view is not created when the GUI is set up, therefore
   /// we cannot initialise this variable at another place.
   static bool firstCall = true;
@@ -519,7 +498,7 @@ void BaseSegmentorController::OnToolSelected(int toolID)
     m_CursorIsVisibleWhenToolsAreOff = this->GetView()->IsActiveEditorCursorVisible();
   }
 
-  if (toolID != -1)
+  if (activeToolID != -1)
   {
     bool cursorWasVisible = this->GetView()->IsActiveEditorCursorVisible();
     if (cursorWasVisible)
@@ -537,7 +516,7 @@ void BaseSegmentorController::OnToolSelected(int toolID)
     this->GetView()->SetActiveEditorCursorVisible(m_CursorIsVisibleWhenToolsAreOff);
   }
 
-  m_ActiveToolID = toolID;
+  m_ActiveToolID = activeToolID;
 
   /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
   /// (like 'a' and 'z' for changing slice) keep on working.

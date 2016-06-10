@@ -44,9 +44,6 @@ public:
 
 public:
 
-  /// \brief Method to enable derived classes to turn widgets off/on, with default do nothing implementation.
-  virtual void EnableSegmentationWidgets(bool enabled);
-
   /// \brief Tells if the tool selection box is on/off
   bool IsToolSelectorEnabled() const;
 
@@ -59,42 +56,35 @@ public:
   /// \brief Gets the tool manager of the tool selection box.
   mitk::ToolManager* GetToolManager() const;
 
-  /// \brief Selects the reference image in the internal segmentation selector widget.
-  /// If no argument or empty string is passed then it unselects the reference image
-  /// and displays a default message.
-  void SelectReferenceImage(const QString& referenceImage = QString::null);
-
-  /// \brief Selects the segmentation image in the internal segmentation selector widget.
-  /// If no argument or empty string is passed then it unselects the reference image
-  /// and displays a default message.
-  void SelectSegmentationImage(const QString& segmentationImage = QString::null);
-
 signals:
 
   /// \brief Emitted when the user clicks on the 'Start/restart segmentation' button.
   void NewSegmentationButtonClicked();
 
-  /// \brief Emitted when a tool is selected or all tools are deselected.
-  /// If all tools got deselected, toolId is -1.
-  void ToolSelected(int toolId);
+protected:
+
+  /// \brief Method to enable derived classes to turn widgets off/on, with default do nothing implementation.
+  virtual void EnableSegmentationWidgets(bool enabled);
+
+private:
+
+  void OnWorkingDataChanged();
 
 protected:
 
   /// \brief Common widget, enabling selection of Image and Segmentation, that might be replaced once we have a database.
   SegmentationSelectorWidget *m_SegmentationSelectorWidget;
 
-protected:
-
   /// \brief Common widget, enabling selection of a segmentation tool.
   ToolSelectorWidget *m_ToolSelectorWidget;
-
-protected:
 
   /// \brief Container for Selector Widget.
   QWidget *m_ContainerForSelectorWidget;
 
   /// \brief Container for Tool Widget.
   QWidget *m_ContainerForToolWidget;
+
+  mitk::ToolManager* m_ToolManager;
 
 };
 

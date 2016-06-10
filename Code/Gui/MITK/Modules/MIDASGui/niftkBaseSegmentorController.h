@@ -74,12 +74,10 @@ public:
   /// \brief Called when the BlueBerry view that hosts the GUI for this controller gets activated.
   virtual void OnViewGetsActivated() override;
 
-protected slots:
+protected:
 
   /// \brief Called from niftkToolSelectorWidget when a tool changes.
-  virtual void OnToolSelected(int toolID);
-
-protected:
+  virtual void OnActiveToolChanged();
 
   /// \brief Gets a vector of the working data nodes registered with the tool manager.
   /// The data nodes normally hold image, but could be surfaces etc.

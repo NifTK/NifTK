@@ -42,8 +42,6 @@ ToolSelectorWidget::ToolSelectorWidget(QWidget *parent)
   m_ManualToolSelectionBox->SetLayoutColumns(3);
   m_ManualToolSelectionBox->SetToolGUIArea(m_ManualToolGUIContainer);
   m_ManualToolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::EnabledWithWorkingData);
-
-  this->connect(m_ManualToolSelectionBox, SIGNAL(ToolSelected(int)), SIGNAL(ToolSelected(int)));
 }
 
 
@@ -58,6 +56,7 @@ mitk::ToolManager* ToolSelectorWidget::GetToolManager() const
 {
   return m_ManualToolSelectionBox->GetToolManager();
 }
+
 
 //-----------------------------------------------------------------------------
 void ToolSelectorWidget::SetToolManager(mitk::ToolManager* toolManager)

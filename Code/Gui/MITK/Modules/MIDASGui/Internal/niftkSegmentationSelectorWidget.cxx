@@ -14,17 +14,17 @@
 
 #include "niftkSegmentationSelectorWidget.h"
 
+#include <mitkToolManager.h>
+
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-SegmentationSelectorWidget::SegmentationSelectorWidget(QWidget *parent)
-: QWidget(parent)
+SegmentationSelectorWidget::SegmentationSelectorWidget(QWidget* parent)
+: QWidget(parent),
+  m_ToolManager(nullptr)
 {
   this->setupUi(parent);
-
-  this->SelectReferenceImage();
-  this->SelectSegmentationImage();
 
   this->connect(m_NewSegmentationButton, SIGNAL(clicked()), SIGNAL(NewSegmentationButtonClicked()));
 }
@@ -33,31 +33,83 @@ SegmentationSelectorWidget::SegmentationSelectorWidget(QWidget *parent)
 //-----------------------------------------------------------------------------
 SegmentationSelectorWidget::~SegmentationSelectorWidget()
 {
+  if (m_ToolManager)
+  {
+    m_ToolManager->ReferenceDataChanged -= mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::OnReferenceDataChanged);
+    m_ToolManager->WorkingDataChanged -= mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::OnWorkingDataChanged);
+  }
 }
 
 
 //-----------------------------------------------------------------------------
-void SegmentationSelectorWidget::SelectReferenceImage(const QString& imageName)
+mitk::ToolManager* SegmentationSelectorWidget::GetToolManager() const
 {
-  QString labelText = imageName.isNull()
-      ? "<font color='red'>&lt;not selected&gt;</font>"
-      : QString("<font color='black'>%1</font>").arg(imageName);
-
-  m_ReferenceImageNameLabel->setText(labelText);
+  return m_ToolManager;
 }
 
 
 //-----------------------------------------------------------------------------
-void SegmentationSelectorWidget::SelectSegmentationImage(const QString& imageName)
+void SegmentationSelectorWidget::SetToolManager(mitk::ToolManager* toolManager)
 {
-  QString labelText = imageName.isNull()
-      ? "<font color='red'>&lt;not selected&gt;</font>"
-      : QString("<font color='black'>%1</font>").arg(imageName);
+  if (toolManager != m_ToolManager)
+  {
+    if (m_ToolManager)
+    {
+      m_ToolManager->ReferenceDataChanged -= mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::OnReferenceDataChanged);
+      m_ToolManager->WorkingDataChanged -= mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::OnWorkingDataChanged);
+    }
 
-  bool referenceImageSelected = m_ReferenceImageNameLabel->text() != QString("<font color='red'>&lt;not selected&gt;</font>");
-  m_NewSegmentationButton->setEnabled(imageName.isNull() && referenceImageSelected);
+    if (toolManager)
+    {
+      toolManager->ReferenceDataChanged += mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::OnReferenceDataChanged);
+      toolManager->WorkingDataChanged += mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::OnWorkingDataChanged);
+    }
 
-  m_SegmentationImageNameLabel->setText(labelText);
+    m_ToolManager = toolManager;
+
+    this->OnReferenceDataChanged();
+    this->OnWorkingDataChanged();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SegmentationSelectorWidget::OnReferenceDataChanged()
+{
+  bool hasReferenceData = m_ToolManager && !m_ToolManager->GetReferenceData().empty();
+  bool hasWorkingData = m_ToolManager && !m_ToolManager->GetWorkingData().empty();
+
+  if (hasReferenceData)
+  {
+    QString referenceImageName = QString::fromStdString(m_ToolManager->GetReferenceData(0)->GetName());
+    m_ReferenceImageNameLabel->setText(QString("<font color='black'>%1</font>").arg(referenceImageName));
+  }
+  else
+  {
+    m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+  }
+
+  m_NewSegmentationButton->setEnabled(hasReferenceData && !hasWorkingData);
+}
+
+
+//-----------------------------------------------------------------------------
+void SegmentationSelectorWidget::OnWorkingDataChanged()
+{
+  bool hasReferenceData = m_ToolManager && !m_ToolManager->GetReferenceData().empty();
+  bool hasWorkingData = m_ToolManager && !m_ToolManager->GetWorkingData().empty();
+
+  if (hasWorkingData)
+  {
+    QString segmentationImageName = QString::fromStdString(m_ToolManager->GetWorkingData(0)->GetName());
+    m_SegmentationImageNameLabel->setText(QString("<font color='black'>%1</font>").arg(segmentationImageName));
+  }
+  else
+  {
+    m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+  }
+
+  m_NewSegmentationButton->setEnabled(hasReferenceData && !hasWorkingData);
 }
 
 }
