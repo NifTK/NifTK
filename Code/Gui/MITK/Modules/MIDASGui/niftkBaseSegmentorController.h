@@ -74,17 +74,15 @@ public:
   /// \brief Called when the BlueBerry view that hosts the GUI for this controller gets activated.
   virtual void OnViewGetsActivated() override;
 
-protected slots:
+protected:
 
   /// \brief Called from niftkToolSelectorWidget when a tool changes.
-  virtual void OnToolSelected(int toolID);
-
-protected:
+  virtual void OnActiveToolChanged();
 
   /// \brief Gets a vector of the working data nodes registered with the tool manager.
   /// The data nodes normally hold image, but could be surfaces etc.
   /// Empty list is returned if this can't be found.
-  mitk::ToolManager::DataVectorType GetWorkingData();
+  std::vector<mitk::DataNode*> GetWorkingData();
 
   /// \brief Gets a single binary image registered with the ToolManager.
   /// Returns nullptr if it can't be found or is not an image.
@@ -115,7 +113,7 @@ protected:
   virtual bool IsAWorkingImage(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
-  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
+  virtual std::vector<mitk::DataNode*> GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
   virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node);
@@ -152,32 +150,26 @@ protected:
   /// \brief Gets the segmentor widget that holds the GUI components of the view.
   BaseSegmentorGUI* GetSegmentorGUI() const;
 
+  /// \brief Utility method to check that we have initialised all the working data such as contours, region growing images etc.
+  bool HasInitialisedWorkingData();
+
   /// \brief Called when the selection changes in the data manager.
   /// \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes);
 
-  /// \brief Returns the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
-  mitk::DataNode::Pointer GetSelectedNode() const;
-
 protected slots:
 
   /// \brief Called from niftkSegmentationSelectorWidget when the 'Start/restart segmentation' button is clicked.
-  virtual void OnNewSegmentationButtonClicked();
+  virtual void OnNewSegmentationButtonClicked() = 0;
 
 private:
 
   /// \brief Propagate data manager selection to tool manager for manual segmentation.
-  virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes);
+  virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const std::vector<mitk::DataNode*>& workingDataNodes);
 
   mitk::ToolManager::Pointer m_ToolManager;
 
   BaseSegmentorGUI* m_SegmentorGUI;
-
-  /// \brief Keeps track of the last selected node, whenever only a single node is selected. If you multi-select, this is not updated.
-  mitk::DataNode::Pointer m_SelectedNode;
-
-  /// \brief Keeps track of the last selected image, whenever only a single node is selected. If you multi-select, this is not updated.
-  mitk::Image::Pointer m_SelectedImage;
 
   /// \brief Default colour to be displayed in the new segmentation dialog box.
   QColor m_DefaultSegmentationColour;

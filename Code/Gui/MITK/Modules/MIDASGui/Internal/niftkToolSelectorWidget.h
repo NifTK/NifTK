@@ -34,46 +34,27 @@ class ToolSelectorWidget : public QWidget, private Ui::niftkToolSelectorWidget {
 
 public:
 
-  /**
-   * \brief Constructor.
-   */
+  /// \brief Constructor.
   ToolSelectorWidget(QWidget *parent = 0);
 
-  /**
-   * \brief Destructor.
-   */
+  /// \brief Destructor.
   ~ToolSelectorWidget();
 
-  /**
-   * \brief Set the widget to be enabled / disabled.
-   */
+  /// \brief Set the widget to be enabled / disabled.
   void SetEnabled(bool enabled);
 
-  /**
-   * \brief Get the enabled status.
-   */
+  /// \brief Get the enabled status.
   bool IsEnabled() const;
 
-  /**
-   * \brief Retrieves the tool manager using the micro services API.
-   */
+  /// \brief Retrieves the tool manager using the micro services API.
   mitk::ToolManager* GetToolManager() const;
 
-  /// \brief SetToolManager
+  /// \brief Sets the tool manager
   /// nullptr is not allowed, a valid manager is required.
   /// \param toolManager
   void SetToolManager(mitk::ToolManager* toolManager);
 
   void SetDisplayedToolGroups(const QString& toolGroups);
-
-signals:
-
-  /**
-   * \brief Connected to the ToolSelected(int) signal from the contained QmitkToolSelectionBox.
-   */
-  void ToolSelected(int toolId);
-
-protected:
 
 private:
 

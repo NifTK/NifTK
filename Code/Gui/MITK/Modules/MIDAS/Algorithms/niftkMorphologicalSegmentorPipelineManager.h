@@ -134,7 +134,7 @@ public:
   virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) const;
 
   /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_NAME and ADDITIONS_NAME. Returns empty list if both not found.
-  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) const;
+  virtual std::vector<mitk::DataNode*> GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) const;
 
   /// \brief Assumes input is a valid working node, then searches for a binary parent node, returns NULL if not found.
   virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node) const;

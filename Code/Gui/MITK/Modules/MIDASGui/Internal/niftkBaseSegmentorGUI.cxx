@@ -28,7 +28,8 @@ BaseSegmentorGUI::BaseSegmentorGUI(QWidget* parent)
     m_SegmentationSelectorWidget(nullptr),
     m_ToolSelectorWidget(nullptr),
     m_ContainerForSelectorWidget(nullptr),
-    m_ContainerForToolWidget(nullptr)
+    m_ContainerForToolWidget(nullptr),
+    m_ToolManager(nullptr)
 {
   // Set up the Image and Segmentation Selector.
   // Subclasses add it to their layouts, at the appropriate point.
@@ -41,19 +42,23 @@ BaseSegmentorGUI::BaseSegmentorGUI(QWidget* parent)
   m_ToolSelectorWidget = new ToolSelectorWidget(m_ContainerForToolWidget);
 
   this->connect(m_SegmentationSelectorWidget, SIGNAL(NewSegmentationButtonClicked()), SIGNAL(NewSegmentationButtonClicked()));
-  this->connect(m_ToolSelectorWidget, SIGNAL(ToolSelected(int)), SIGNAL(ToolSelected(int)));
 }
 
 
 //-----------------------------------------------------------------------------
 BaseSegmentorGUI::~BaseSegmentorGUI()
 {
-  if (m_SegmentationSelectorWidget != NULL)
+  if (m_ToolManager)
+  {
+    m_ToolManager->WorkingDataChanged -= mitk::MessageDelegate<BaseSegmentorGUI>(this, &BaseSegmentorGUI::OnWorkingDataChanged);
+  }
+
+  if (m_SegmentationSelectorWidget)
   {
     delete m_SegmentationSelectorWidget;
   }
 
-  if (m_ToolSelectorWidget != NULL)
+  if (m_ToolSelectorWidget)
   {
     delete m_ToolSelectorWidget;
   }
@@ -83,28 +88,41 @@ void BaseSegmentorGUI::SetToolSelectorEnabled(bool enabled)
 //-----------------------------------------------------------------------------
 void BaseSegmentorGUI::SetToolManager(mitk::ToolManager* toolManager)
 {
-  m_ToolSelectorWidget->SetToolManager(toolManager);
+  if (toolManager != m_ToolManager)
+  {
+    if (m_ToolManager)
+    {
+      m_ToolManager->WorkingDataChanged -= mitk::MessageDelegate<BaseSegmentorGUI>(this, &BaseSegmentorGUI::OnWorkingDataChanged);
+    }
+
+    if (toolManager)
+    {
+      toolManager->WorkingDataChanged += mitk::MessageDelegate<BaseSegmentorGUI>(this, &BaseSegmentorGUI::OnWorkingDataChanged);
+    }
+
+    m_ToolManager = toolManager;
+
+    m_ToolSelectorWidget->SetToolManager(toolManager);
+    m_SegmentationSelectorWidget->SetToolManager(toolManager);
+
+    this->OnWorkingDataChanged();
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 mitk::ToolManager* BaseSegmentorGUI::GetToolManager() const
 {
-  return m_ToolSelectorWidget->GetToolManager();
+  return m_ToolManager;
 }
 
 
 //-----------------------------------------------------------------------------
-void BaseSegmentorGUI::SelectReferenceImage(const QString& imageName)
+void BaseSegmentorGUI::OnWorkingDataChanged()
 {
-  m_SegmentationSelectorWidget->SelectReferenceImage(imageName);
-}
+  bool hasWorkingData = m_ToolManager && !m_ToolManager->GetWorkingData().empty();
 
-
-//-----------------------------------------------------------------------------
-void BaseSegmentorGUI::SelectSegmentationImage(const QString& imageName)
-{
-  m_SegmentationSelectorWidget->SelectSegmentationImage(imageName);
+  this->EnableSegmentationWidgets(hasWorkingData);
 }
 
 }

@@ -89,7 +89,9 @@ public:
   /// slice change commands from the slice navigation controller.
   bool m_IsChangingSlice;
 
-  bool m_IsRestarting;
+  /// \brief Tells if the segmentation has been created from scratch or an existing segmentation is being edited.
+  /// Its value is 'true' if an existing segmentation is 're-edited', otherwise false.
+  bool m_WasRestarted;
 };
 
 //-----------------------------------------------------------------------------
@@ -103,7 +105,7 @@ GeneralSegmentorControllerPrivate::GeneralSegmentorControllerPrivate(GeneralSegm
     m_IsUpdating(false),
     m_IsDeleting(false),
     m_IsChangingSlice(false),
-    m_IsRestarting(false)
+    m_WasRestarted(false)
 {
   Q_Q(GeneralSegmentorController);
 
@@ -244,10 +246,10 @@ bool GeneralSegmentorController::IsASegmentationImage(const mitk::DataNode::Poin
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType GeneralSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
+std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   assert(node);
-  mitk::ToolManager::DataVectorType result;
+  std::vector<mitk::DataNode*> result;
 
   if (mitk::IsNodeABinaryImage(node))
   {
@@ -318,107 +320,126 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  BaseSegmentorController::OnNewSegmentationButtonClicked();
+  /// Note:
+  /// The 'new segmentation' button is enabled only when a reference image is selected.
+  /// A reference image gets selected when the selection in the data manager changes to a valid
+  /// reference image or a segmentation that was created by this segmentor.
+  /// Hence, we can assume that we have a valid tool manager, paintbrush tool and reference image.
 
-  // Create the new segmentation, either using a previously selected one, or create a new volume.
-  mitk::DataNode::Pointer newSegmentation = nullptr;
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  assert(toolManager);
+
+  const mitk::Image* referenceImage = this->GetReferenceImage();
+  assert(referenceImage);
+
+  QList<mitk::DataNode::Pointer> selectedNodes = this->GetView()->GetDataManagerSelection();
+  if (selectedNodes.size() != 1)
+  {
+    return;
+  }
+
+  mitk::DataNode::Pointer selectedNode = selectedNodes.at(0);
+
+  /// Create the new segmentation, either using a previously selected one, or create a new volume.
+  mitk::DataNode::Pointer newSegmentation;
   bool isRestarting = false;
 
-  // Make sure we have a reference images... which should always be true at this point.
-  mitk::Image* image = this->GetReferenceImage();
-  if (image)
+  if (mitk::IsNodeABinaryImage(selectedNode)
+      && this->CanStartSegmentationForBinaryNode(selectedNode)
+      && !this->IsASegmentationImage(selectedNode)
+      )
   {
-    mitk::ToolManager::Pointer toolManager = this->GetToolManager();
-    assert(toolManager);
+    newSegmentation =  selectedNode;
+    isRestarting = true;
+  }
+  else
+  {
+    newSegmentation = this->CreateNewSegmentation();
 
-    mitk::DataNode::Pointer selectedNode = this->GetSelectedNode();
-
-    if (mitk::IsNodeABinaryImage(selectedNode)
-        && this->CanStartSegmentationForBinaryNode(selectedNode)
-        && !this->IsASegmentationImage(selectedNode)
-        )
+    // The above method returns nullptr if the user exited the colour selection dialog box.
+    if (newSegmentation.IsNull())
     {
-      newSegmentation =  selectedNode;
-      isRestarting = true;
+      return;
     }
-    else
-    {
-      newSegmentation = this->CreateNewSegmentation();
+  }
 
-      // The above method returns nullptr if the user exited the colour selection dialog box.
-      if (newSegmentation.IsNull())
-      {
-        return;
-      }
-    }
+  this->WaitCursorOn();
 
-    this->WaitCursorOn();
+  // Override the base colour to be orange, and we revert this when OK pressed at the end.
+  mitk::Color tmpColor;
+  tmpColor[0] = 1.0;
+  tmpColor[1] = 0.65;
+  tmpColor[2] = 0.0;
+  mitk::ColorProperty::Pointer tmpColorProperty = mitk::ColorProperty::New(tmpColor);
+  newSegmentation->SetColor(tmpColor);
+  newSegmentation->SetProperty("binaryimage.selectedcolor", tmpColorProperty);
 
-    // Override the base colour to be orange, and we revert this when OK pressed at the end.
-    mitk::Color tmpColor;
-    tmpColor[0] = 1.0;
-    tmpColor[1] = 0.65;
-    tmpColor[2] = 0.0;
-    mitk::ColorProperty::Pointer tmpColorProperty = mitk::ColorProperty::New(tmpColor);
-    newSegmentation->SetColor(tmpColor);
-    newSegmentation->SetProperty("binaryimage.selectedcolor", tmpColorProperty);
+  // Set initial properties.
+  newSegmentation->SetProperty("layer", mitk::IntProperty::New(90));
+  newSegmentation->SetFloatProperty("opacity", 1.0f);
+  newSegmentation->SetBoolProperty(ContourTool::EDITING_PROPERTY_NAME.c_str(), false);
 
-    // Set initial properties.
-    newSegmentation->SetProperty("layer", mitk::IntProperty::New(90));
-    newSegmentation->SetFloatProperty("opacity", 1.0f);
-    newSegmentation->SetBoolProperty(ContourTool::EDITING_PROPERTY_NAME.c_str(), false);
+  // Make sure these are up to date, even though we don't use them right now.
+  referenceImage->GetStatistics()->GetScalarValueMin();
+  referenceImage->GetStatistics()->GetScalarValueMax();
 
-    // Make sure these are up to date, even though we don't use them right now.
-    image->GetStatistics()->GetScalarValueMin();
-    image->GetStatistics()->GetScalarValueMax();
+  // This creates the point set for the seeds.
+  mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
+  mitk::DataNode::Pointer pointSetNode = mitk::DataNode::New();
+  pointSetNode->SetData(pointSet);
+  pointSetNode->SetProperty("name", mitk::StringProperty::New(Tool::SEEDS_NAME));
+  pointSetNode->SetFloatProperty("opacity", 1.0f);
+  pointSetNode->SetProperty("point line width", mitk::IntProperty::New(1));
+  pointSetNode->SetProperty("point 2D size", mitk::IntProperty::New(5));
+  pointSetNode->SetBoolProperty("helper object", true);
+  pointSetNode->SetBoolProperty("show distant lines", false);
+  pointSetNode->SetFloatProperty("Pointset.2D.distance to plane", 0.1);
+  pointSetNode->SetBoolProperty("show distances", false);
+  pointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
+  pointSetNode->SetColor(1.0, 0.0, 0.0);
 
-    // This creates the point set for the seeds.
-    mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
-    mitk::DataNode::Pointer pointSetNode = mitk::DataNode::New();
-    pointSetNode->SetData(pointSet);
-    pointSetNode->SetProperty("name", mitk::StringProperty::New(Tool::SEEDS_NAME));
-    pointSetNode->SetFloatProperty("opacity", 1.0f);
-    pointSetNode->SetProperty("point line width", mitk::IntProperty::New(1));
-    pointSetNode->SetProperty("point 2D size", mitk::IntProperty::New(5));
-    pointSetNode->SetBoolProperty("helper object", true);
-    pointSetNode->SetBoolProperty("show distant lines", false);
-    pointSetNode->SetFloatProperty("Pointset.2D.distance to plane", 0.1);
-    pointSetNode->SetBoolProperty("show distances", false);
-    pointSetNode->SetProperty("layer", mitk::IntProperty::New(99));
-    pointSetNode->SetColor(1.0, 0.0, 0.0);
+  // Create all the contours.
+  mitk::Color currentContoursColour;
+  currentContoursColour.Set(0.0f, 1.0f, 0.0f);
+  mitk::DataNode::Pointer currentContours = this->CreateContourSet(currentContoursColour, Tool::CONTOURS_NAME, true, 97);
+  mitk::Color drawContoursColour;
+  drawContoursColour.Set(102.0/255.0, 0.0, 153.0/255.0);
+  mitk::DataNode::Pointer drawContours = this->CreateContourSet(drawContoursColour, Tool::DRAW_CONTOURS_NAME, true, 98);
+  mitk::Color nextContoursColour;
+  nextContoursColour.Set(0.0f, 1.0f, 1.0f);
+  mitk::DataNode::Pointer nextContoursNode = this->CreateContourSet(nextContoursColour, Tool::NEXT_CONTOURS_NAME, false, 95);
+  mitk::Color priorContoursColour;
+  priorContoursColour.Set(0.68f, 0.85f, 0.90f);
+  mitk::DataNode::Pointer priorContoursNode = this->CreateContourSet(priorContoursColour, Tool::PRIOR_CONTOURS_NAME, false, 96);
 
-    // Create all the contours.
-    mitk::DataNode::Pointer currentContours = this->CreateContourSet(newSegmentation, 0,1,0, Tool::CONTOURS_NAME, true, 97);
-    mitk::DataNode::Pointer drawContours = this->CreateContourSet(newSegmentation, 102.0/255.0, 0.0, 153.0/255.0, Tool::DRAW_CONTOURS_NAME, true, 98);
-    mitk::DataNode::Pointer seeNextNode = this->CreateContourSet(newSegmentation, 0,1,1, Tool::NEXT_CONTOURS_NAME, false, 95);
-    mitk::DataNode::Pointer seePriorNode = this->CreateContourSet(newSegmentation, 0.68,0.85,0.90, Tool::PRIOR_CONTOURS_NAME, false, 96);
+  // Create the region growing image.
+  mitk::Color regionGrowingImageColour;
+  regionGrowingImageColour.Set(0.0f, 0.0f, 1.0f);
+  mitk::DataNode::Pointer regionGrowingImageNode = this->CreateHelperImage(referenceImage, regionGrowingImageColour, Tool::REGION_GROWING_NAME, false, 94);
 
-    // Create the region growing image.
-    mitk::DataNode::Pointer regionGrowingImageNode = this->CreateHelperImage(image, newSegmentation, 0,0,1, Tool::REGION_GROWING_NAME, false, 94);
+  // Create nodes to store the original segmentation and seeds, so that it can be restored if the Restart button is pressed.
+  mitk::DataNode::Pointer initialSegmentationNode = mitk::DataNode::New();
+  initialSegmentationNode->SetProperty("name", mitk::StringProperty::New(Tool::INITIAL_SEGMENTATION_NAME));
+  initialSegmentationNode->SetBoolProperty("helper object", true);
+  initialSegmentationNode->SetBoolProperty("visible", false);
+  initialSegmentationNode->SetProperty("layer", mitk::IntProperty::New(99));
+  initialSegmentationNode->SetFloatProperty("opacity", 1.0f);
+  initialSegmentationNode->SetColor(tmpColor);
+  initialSegmentationNode->SetProperty("binaryimage.selectedcolor", tmpColorProperty);
 
-    // Create nodes to store the original segmentation and seeds, so that it can be restored if the Restart button is pressed.
-    mitk::DataNode::Pointer initialSegmentationNode = mitk::DataNode::New();
-    initialSegmentationNode->SetProperty("name", mitk::StringProperty::New(Tool::INITIAL_SEGMENTATION_NAME));
-    initialSegmentationNode->SetBoolProperty("helper object", true);
-    initialSegmentationNode->SetBoolProperty("visible", false);
-    initialSegmentationNode->SetProperty("layer", mitk::IntProperty::New(99));
-    initialSegmentationNode->SetFloatProperty("opacity", 1.0f);
-    initialSegmentationNode->SetColor(tmpColor);
-    initialSegmentationNode->SetProperty("binaryimage.selectedcolor", tmpColorProperty);
+  mitk::DataNode::Pointer initialSeedsNode = mitk::DataNode::New();
+  initialSeedsNode->SetProperty("name", mitk::StringProperty::New(Tool::INITIAL_SEEDS_NAME));
+  initialSeedsNode->SetBoolProperty("helper object", true);
+  initialSeedsNode->SetBoolProperty("visible", false);
+  initialSeedsNode->SetBoolProperty("show distant lines", false);
+  initialSeedsNode->SetFloatProperty("Pointset.2D.distance to plane", 0.1);
+  initialSeedsNode->SetBoolProperty("show distances", false);
+  initialSeedsNode->SetProperty("layer", mitk::IntProperty::New(99));
+  initialSeedsNode->SetColor(1.0, 0.0, 0.0);
 
-    mitk::DataNode::Pointer initialSeedsNode = mitk::DataNode::New();
-    initialSeedsNode->SetProperty("name", mitk::StringProperty::New(Tool::INITIAL_SEEDS_NAME));
-    initialSeedsNode->SetBoolProperty("helper object", true);
-    initialSeedsNode->SetBoolProperty("visible", false);
-    initialSeedsNode->SetBoolProperty("show distant lines", false);
-    initialSeedsNode->SetFloatProperty("Pointset.2D.distance to plane", 0.1);
-    initialSeedsNode->SetBoolProperty("show distances", false);
-    initialSeedsNode->SetProperty("layer", mitk::IntProperty::New(99));
-    initialSeedsNode->SetColor(1.0, 0.0, 0.0);
-
-    /// TODO
-    /// We should not refer to mitk::RenderingManager::GetInstance() because the DnD display uses its
-    /// own rendering manager, not this one, like the MITK display.
+  /// TODO
+  /// We should not refer to mitk::RenderingManager::GetInstance() because the DnD display uses its
+  /// own rendering manager, not this one, like the MITK display.
 //    mitk::IRenderingManager* renderingManager = 0;
 //    mitk::IRenderWindowPart* renderWindowPart = this->GetView()->GetActiveRenderWindowPart();
 //    if (renderWindowPart)
@@ -445,78 +466,61 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 //      }
 //    }
 
-    // Adding to data storage, where the ordering affects the layering.
-    this->GetDataStorage()->Add(seePriorNode, newSegmentation);
-    this->GetDataStorage()->Add(seeNextNode, newSegmentation);
-    this->GetDataStorage()->Add(regionGrowingImageNode, newSegmentation);
-    this->GetDataStorage()->Add(currentContours, newSegmentation);
-    this->GetDataStorage()->Add(drawContours, newSegmentation);
-    this->GetDataStorage()->Add(pointSetNode, newSegmentation);
-    this->GetDataStorage()->Add(initialSegmentationNode, newSegmentation);
-    this->GetDataStorage()->Add(initialSeedsNode, newSegmentation);
+  // Adding to data storage, where the ordering affects the layering.
+  this->GetDataStorage()->Add(priorContoursNode, newSegmentation);
+  this->GetDataStorage()->Add(nextContoursNode, newSegmentation);
+  this->GetDataStorage()->Add(regionGrowingImageNode, newSegmentation);
+  this->GetDataStorage()->Add(currentContours, newSegmentation);
+  this->GetDataStorage()->Add(drawContours, newSegmentation);
+  this->GetDataStorage()->Add(pointSetNode, newSegmentation);
+  this->GetDataStorage()->Add(initialSegmentationNode, newSegmentation);
+  this->GetDataStorage()->Add(initialSeedsNode, newSegmentation);
 
-    // Set working data. See header file, as the order here is critical, and should match the documented order.
-    mitk::ToolManager::DataVectorType workingData(9);
-    workingData[Tool::SEGMENTATION] = newSegmentation;
-    workingData[Tool::SEEDS] = pointSetNode;
-    workingData[Tool::CONTOURS] = currentContours;
-    workingData[Tool::DRAW_CONTOURS] = drawContours;
-    workingData[Tool::PRIOR_CONTOURS] = seePriorNode;
-    workingData[Tool::NEXT_CONTOURS] = seeNextNode;
-    workingData[Tool::REGION_GROWING] = regionGrowingImageNode;
-    workingData[Tool::INITIAL_SEGMENTATION] = initialSegmentationNode;
-    workingData[Tool::INITIAL_SEEDS] = initialSeedsNode;
-    toolManager->SetWorkingData(workingData);
+  // Set working data. See header file, as the order here is critical, and should match the documented order.
+  std::vector<mitk::DataNode*> workingData(9);
+  workingData[Tool::SEGMENTATION] = newSegmentation;
+  workingData[Tool::SEEDS] = pointSetNode;
+  workingData[Tool::CONTOURS] = currentContours;
+  workingData[Tool::DRAW_CONTOURS] = drawContours;
+  workingData[Tool::PRIOR_CONTOURS] = priorContoursNode;
+  workingData[Tool::NEXT_CONTOURS] = nextContoursNode;
+  workingData[Tool::REGION_GROWING] = regionGrowingImageNode;
+  workingData[Tool::INITIAL_SEGMENTATION] = initialSegmentationNode;
+  workingData[Tool::INITIAL_SEEDS] = initialSeedsNode;
+  toolManager->SetWorkingData(workingData);
 
-    if (isRestarting)
-    {
-      int sliceAxis = this->GetReferenceImageSliceAxis();
-      int sliceIndex = this->GetReferenceImageSliceIndex();
-      this->InitialiseSeedsForSlice(sliceAxis, sliceIndex);
-      this->UpdateCurrentSliceContours();
-    }
+  if (isRestarting)
+  {
+    int sliceAxis = this->GetReferenceImageSliceAxis();
+    int sliceIndex = this->GetReferenceImageSliceIndex();
+    this->InitialiseSeedsForSlice(sliceAxis, sliceIndex);
+    this->UpdateCurrentSliceContours();
+  }
 
-    this->StoreInitialSegmentation();
+  this->StoreInitialSegmentation();
 
-    // Setup GUI.
-    d->m_GUI->SetAllWidgetsEnabled(true);
-    d->m_GUI->SetThresholdingWidgetsEnabled(false);
-    d->m_GUI->SetThresholdingCheckBoxEnabled(true);
-    d->m_GUI->SetThresholdingCheckBoxChecked(false);
+  // Setup GUI.
+  d->m_GUI->SetAllWidgetsEnabled(true);
+  d->m_GUI->SetThresholdingWidgetsEnabled(false);
+  d->m_GUI->SetThresholdingCheckBoxEnabled(true);
+  d->m_GUI->SetThresholdingCheckBoxChecked(false);
 
-    this->GetView()->FocusOnCurrentWindow();
+  this->GetView()->FocusOnCurrentWindow();
 
-    this->UpdateCurrentSliceContours(false);
-    this->UpdateRegionGrowing(false);
-    this->RequestRenderWindowUpdate();
+  this->UpdateCurrentSliceContours(false);
+  this->UpdateRegionGrowing(false);
+  this->RequestRenderWindowUpdate();
 
-    d->m_SliceAxis = this->GetReferenceImageSliceAxis();
-    d->m_SliceIndex = this->GetReferenceImageSliceIndex();
-    d->m_SelectedPosition = this->GetSelectedPosition();
+  d->m_SliceAxis = this->GetReferenceImageSliceAxis();
+  d->m_SliceIndex = this->GetReferenceImageSliceIndex();
+  d->m_SelectedPosition = this->GetSelectedPosition();
 
-    this->WaitCursorOff();
+  this->WaitCursorOff();
 
-  } // end if we have a reference image
-
-  d->m_IsRestarting = isRestarting;
+  d->m_WasRestarted = isRestarting;
 
   // Finally, select the new segmentation node.
   this->GetView()->SetCurrentSelection(newSegmentation);
-}
-
-
-//-----------------------------------------------------------------------------
-bool GeneralSegmentorController::HasInitialisedWorkingData()
-{
-  bool result = false;
-
-  mitk::ToolManager::DataVectorType nodes = this->GetWorkingData();
-  if (nodes.size() > 0)
-  {
-    result = true;
-  }
-
-  return result;
 }
 
 
@@ -525,7 +529,7 @@ bool GeneralSegmentorController::HasInitialisedWorkingData()
  *************************************************************/
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer GeneralSegmentorController::CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
+mitk::DataNode::Pointer GeneralSegmentorController::CreateHelperImage(const mitk::Image* referenceImage, const mitk::Color& colour, const std::string& name, bool visible, int layer)
 {
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
@@ -533,11 +537,9 @@ mitk::DataNode::Pointer GeneralSegmentorController::CreateHelperImage(mitk::Imag
   mitk::Tool* drawTool = this->GetToolByType<DrawTool>();
   assert(drawTool);
 
-  mitk::ColorProperty::Pointer col = mitk::ColorProperty::New(r, g, b);
-
-  mitk::DataNode::Pointer helperImageNode = drawTool->CreateEmptySegmentationNode( referenceImage, name, col->GetColor());
-  helperImageNode->SetColor(col->GetColor());
-  helperImageNode->SetProperty("binaryimage.selectedcolor", col);
+  mitk::DataNode::Pointer helperImageNode = drawTool->CreateEmptySegmentationNode(referenceImage, name, colour);
+  helperImageNode->SetColor(colour);
+  helperImageNode->SetProperty("binaryimage.selectedcolor", mitk::ColorProperty::New(colour));
   helperImageNode->SetBoolProperty("helper object", true);
   helperImageNode->SetBoolProperty("visible", visible);
   helperImageNode->SetProperty("layer", mitk::IntProperty::New(layer));
@@ -549,14 +551,14 @@ mitk::DataNode::Pointer GeneralSegmentorController::CreateHelperImage(mitk::Imag
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer GeneralSegmentorController::CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer)
+mitk::DataNode::Pointer GeneralSegmentorController::CreateContourSet(const mitk::Color& colour, const std::string& name, bool visible, int layer)
 {
   mitk::ContourModelSet::Pointer contourSet = mitk::ContourModelSet::New();
 
   mitk::DataNode::Pointer contourSetNode = mitk::DataNode::New();
 
-  contourSetNode->SetProperty("color", mitk::ColorProperty::New(r, g, b));
-  contourSetNode->SetProperty("contour.color", mitk::ColorProperty::New(r, g, b));
+  contourSetNode->SetProperty("color", mitk::ColorProperty::New(colour));
+  contourSetNode->SetProperty("contour.color", mitk::ColorProperty::New(colour));
   contourSetNode->SetFloatProperty("opacity", 1.0f);
   contourSetNode->SetProperty("name", mitk::StringProperty::New(name));
   contourSetNode->SetBoolProperty("helper object", true);
@@ -574,7 +576,7 @@ void GeneralSegmentorController::StoreInitialSegmentation()
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::ToolManager::DataVectorType workingData = toolManager->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = toolManager->GetWorkingData();
 
   mitk::DataNode* segmentationNode = workingData[Tool::SEGMENTATION];
   mitk::DataNode* seedsNode = workingData[Tool::SEEDS];
@@ -961,7 +963,7 @@ void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
     return;
   }
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   if (workingData.size() > 0)
   {
     bool seedsChanged(false);
@@ -1149,7 +1151,7 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[Tool::CONTOURS]->GetData());
 
   // TODO
@@ -1185,7 +1187,7 @@ void GeneralSegmentorController::OnSeePriorCheckBoxToggled(bool checked)
     return;
   }
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
 
   if (checked)
   {
@@ -1204,7 +1206,7 @@ void GeneralSegmentorController::OnSeeNextCheckBoxToggled(bool checked)
     return;
   }
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
 
   if (checked)
   {
@@ -1237,7 +1239,7 @@ void GeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
     this->UpdateRegionGrowing();
   }
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   workingData[Tool::REGION_GROWING]->SetVisibility(checked);
 
   this->RequestRenderWindowUpdate();
@@ -1302,7 +1304,7 @@ void GeneralSegmentorController::UpdateRegionGrowing(
     if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
 
-      mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+      std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
       workingData[Tool::REGION_GROWING]->SetVisibility(isVisible);
 
       bool wasUpdating = d->m_IsUpdating;
@@ -1386,7 +1388,7 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
   int sliceIndex = this->GetReferenceImageSliceIndex();
   int sliceAxis = this->GetReferenceImageSliceAxis();
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   mitk::Image::Pointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   if (d->m_GUI->IsSeePriorCheckBoxChecked())
@@ -1619,7 +1621,7 @@ void GeneralSegmentorController::RemoveWorkingData()
   d->m_IsDeleting = true;
 
   mitk::ToolManager* toolManager = this->GetToolManager();
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
 
   // We don't do the first image, as thats the final segmentation.
   for (unsigned int i = 1; i < workingData.size(); i++)
@@ -1627,7 +1629,7 @@ void GeneralSegmentorController::RemoveWorkingData()
     this->GetDataStorage()->Remove(workingData[i]);
   }
 
-  mitk::ToolManager::DataVectorType emptyWorkingDataArray;
+  std::vector<mitk::DataNode*> emptyWorkingDataArray(0);
   toolManager->SetWorkingData(emptyWorkingDataArray);
   toolManager->ActivateTool(-1);
 
@@ -1767,7 +1769,7 @@ void GeneralSegmentorController::DiscardSegmentation()
   assert(segmentationNode);
 
   this->DestroyPipeline();
-  if (d->m_IsRestarting)
+  if (d->m_WasRestarted)
   {
     this->RestoreInitialSegmentation();
     this->RemoveWorkingData();
@@ -1991,7 +1993,7 @@ bool GeneralSegmentorController::SelectViewMode()
       return true;
     }
 
-    mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+    std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
     bool segmentationNodeIsVisible = workingData[Tool::SEGMENTATION]->IsVisible(0);
     workingData[Tool::SEGMENTATION]->SetVisibility(!segmentationNodeIsVisible);
     this->RequestRenderWindowUpdate();

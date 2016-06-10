@@ -35,8 +35,6 @@ namespace niftk
 BaseSegmentorController::BaseSegmentorController(IBaseView* view)
   : BaseController(view),
     m_SegmentorGUI(nullptr),
-    m_SelectedNode(nullptr),
-    m_SelectedImage(nullptr),
     m_ActiveToolID(-1),
     m_CursorIsVisibleWhenToolsAreOff(true)
 {
@@ -48,6 +46,7 @@ BaseSegmentorController::BaseSegmentorController(IBaseView* view)
 //-----------------------------------------------------------------------------
 BaseSegmentorController::~BaseSegmentorController()
 {
+  m_ToolManager->ActiveToolChanged -= mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnActiveToolChanged);
 }
 
 
@@ -59,8 +58,9 @@ void BaseSegmentorController::SetupGUI(QWidget* parent)
   m_SegmentorGUI = dynamic_cast<BaseSegmentorGUI*>(this->GetGUI());
   m_SegmentorGUI->SetToolManager(m_ToolManager);
 
+  m_ToolManager->ActiveToolChanged += mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnActiveToolChanged);
+
   this->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
-  this->connect(m_SegmentorGUI, SIGNAL(ToolSelected(int)), SLOT(OnToolSelected(int)));
 }
 
 
@@ -123,7 +123,7 @@ mitk::ToolManager* BaseSegmentorController::GetToolManager() const
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType BaseSegmentorController::GetWorkingData()
+std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingData()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -137,7 +137,7 @@ mitk::Image* BaseSegmentorController::GetWorkingImage(int index)
 {
   mitk::Image* result = nullptr;
 
-  mitk::ToolManager::DataVectorType workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   if (workingData.size() > 0 && index >= 0 && index < (int)workingData.size())
   {
     mitk::DataNode::Pointer node = workingData[index];
@@ -224,11 +224,11 @@ bool BaseSegmentorController::IsAWorkingImage(const mitk::DataNode::Pointer node
 
 
 //-----------------------------------------------------------------------------
-mitk::ToolManager::DataVectorType BaseSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
+std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   // This default implementation just says Segmentation node == Working node, which subclasses could override.
 
-  mitk::ToolManager::DataVectorType result(1);
+  std::vector<mitk::DataNode*> result(1);
   result[0] = node;
   return result;
 }
@@ -388,93 +388,78 @@ mitk::DataNode* BaseSegmentorController::CreateNewSegmentation()
 
 
 //-----------------------------------------------------------------------------
-void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes)
+bool BaseSegmentorController::HasInitialisedWorkingData()
+{
+  return !this->GetWorkingData().empty();
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& selectedNodes)
 {
   assert(m_SegmentorGUI);
+
+  if (this->HasInitialisedWorkingData())
+  {
+    /// It is not allowed to work on several segmentation at a time, simultaneously.
+    /// If you are already working on a segmentation, you have to finalise it (OK)
+    /// or discard it (Cancel) before you can start segmenting another image. (Or
+    /// making another segmentation of the same image.)
+    return;
+  }
 
   // By default, assume we are not going to enable the controls.
   bool valid = false;
 
   // This plugin only works if you single select, anything else is invalid (for now).
-  if (nodes.size() == 1)
+  if (selectedNodes.size() == 1)
   {
-
-    m_SelectedNode = nodes[0];
-    m_SelectedImage = dynamic_cast<mitk::Image*>(m_SelectedNode->GetData());
-
     // MAJOR ASSUMPTION: To get a segmentation plugin (i.e. all derived classes) to work, you select the segmentation node.
     // From this segmentation node, you can work out the reference data (always the parent).
     // In addition, you can work out any intermediate working images (either that image, or children).
     // MAJOR ASSUMPTION: Intermediate working images will be hidden, and hence not clickable.
 
-    mitk::DataNode::Pointer node = nodes[0];
-    mitk::DataNode::Pointer referenceData = 0;
-    mitk::DataNode::Pointer segmentedData = 0;
-    mitk::ToolManager::DataVectorType workingDataNodes;
+    mitk::DataNode::Pointer selectedNode = selectedNodes[0];
+    mitk::DataNode::Pointer referenceImageNode;
+    mitk::DataNode::Pointer segmentationImageNode;
+    std::vector<mitk::DataNode*> workingDataNodes;
 
     // Rely on subclasses deciding if the node is something we are interested in.
-    if (this->IsAReferenceImage(node))
+    if (this->IsAReferenceImage(selectedNode))
     {
-      referenceData = node;
+      referenceImageNode = selectedNode;
     }
 
     // A segmentation image, is the final output, the one being segmented.
-    if (this->IsASegmentationImage(node))
+    if (this->IsASegmentationImage(selectedNode))
     {
-      segmentedData = node;
+      segmentationImageNode = selectedNode;
     }
-    else if (mitk::IsNodeABinaryImage(node) && this->CanStartSegmentationForBinaryNode(node))
+    else if (mitk::IsNodeABinaryImage(selectedNode) && this->CanStartSegmentationForBinaryNode(selectedNode))
     {
-      segmentedData = node;
+      segmentationImageNode = selectedNode;
     }
 
-    if (segmentedData.IsNotNull())
+    if (segmentationImageNode.IsNotNull())
     {
 
-      referenceData = this->FindReferenceNodeFromSegmentationNode(segmentedData);
+      referenceImageNode = this->FindReferenceNodeFromSegmentationNode(segmentationImageNode);
 
-      if (this->IsASegmentationImage(node))
+      if (this->IsASegmentationImage(selectedNode))
       {
-        workingDataNodes = this->GetWorkingDataFromSegmentationNode(segmentedData);
+        workingDataNodes = this->GetWorkingDataFromSegmentationNode(segmentationImageNode);
         valid = true;
       }
     }
 
-    // If we have worked out the reference data, then set the combo box.
-    if (referenceData.IsNotNull())
-    {
-      m_SegmentorGUI->SelectReferenceImage(QString::fromStdString(referenceData->GetName()));
-    }
-    else
-    {
-      m_SegmentorGUI->SelectReferenceImage();
-    }
-
     // Tell the tool manager the images for reference and working purposes.
-    this->SetToolManagerSelection(referenceData, workingDataNodes);
-
+    this->SetToolManagerSelection(referenceImageNode, workingDataNodes);
   }
-
-  // Adjust widgets according to whether we have a valid selection.
-  m_SegmentorGUI->EnableSegmentationWidgets(valid);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer BaseSegmentorController::GetSelectedNode() const
-{
-  return m_SelectedNode;
-}
-
-
-//-----------------------------------------------------------------------------
-void BaseSegmentorController::OnNewSegmentationButtonClicked()
-{
-}
-
-
-//-----------------------------------------------------------------------------
-void BaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* referenceData, const mitk::ToolManager::DataVectorType workingDataNodes)
+void BaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* referenceData, const std::vector<mitk::DataNode*>& workingDataNodes)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -489,18 +474,6 @@ void BaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* refe
 
   toolManager->SetReferenceData(const_cast<mitk::DataNode*>(referenceData));
   toolManager->SetWorkingData(workingDataNodes);
-
-  if (referenceData && !workingDataNodes.empty())
-  {
-    mitk::DataNode::Pointer node = workingDataNodes[0];
-    mitk::DataNode::Pointer segmentationImage = this->GetSegmentationNodeFromWorkingData(node);
-    assert(segmentationImage);
-    m_SegmentorGUI->SelectSegmentationImage(QString::fromStdString(segmentationImage->GetName()));
-  }
-  else
-  {
-    m_SegmentorGUI->SelectSegmentationImage();
-  }
 }
 
 
@@ -512,8 +485,10 @@ void BaseSegmentorController::OnViewGetsActivated()
 
 
 //-----------------------------------------------------------------------------
-void BaseSegmentorController::OnToolSelected(int toolID)
+void BaseSegmentorController::OnActiveToolChanged()
 {
+  int activeToolID = m_ToolManager->GetActiveToolID();
+
   /// Note: The view is not created when the GUI is set up, therefore
   /// we cannot initialise this variable at another place.
   static bool firstCall = true;
@@ -523,7 +498,7 @@ void BaseSegmentorController::OnToolSelected(int toolID)
     m_CursorIsVisibleWhenToolsAreOff = this->GetView()->IsActiveEditorCursorVisible();
   }
 
-  if (toolID != -1)
+  if (activeToolID != -1)
   {
     bool cursorWasVisible = this->GetView()->IsActiveEditorCursorVisible();
     if (cursorWasVisible)
@@ -541,7 +516,7 @@ void BaseSegmentorController::OnToolSelected(int toolID)
     this->GetView()->SetActiveEditorCursorVisible(m_CursorIsVisibleWhenToolsAreOff);
   }
 
-  m_ActiveToolID = toolID;
+  m_ActiveToolID = activeToolID;
 
   /// Set the focus back to the main window. This is needed so that the keyboard shortcuts
   /// (like 'a' and 'z' for changing slice) keep on working.

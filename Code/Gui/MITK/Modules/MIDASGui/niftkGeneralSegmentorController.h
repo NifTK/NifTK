@@ -166,7 +166,7 @@ protected:
 
   /// \brief Assumes input is a valid segmentation node, then searches for the derived
   /// children of the node, looking for the seeds and contours  as described in the class introduction.
-  virtual mitk::ToolManager::DataVectorType GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) override;
+  virtual std::vector<mitk::DataNode*> GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) override;
 
   /// \brief We return true if the segmentation can be "re-started", i.e. you switch between binary images
   /// in the DataManager, and if the binary image has the correct hidden child nodes, then
@@ -297,13 +297,10 @@ private:
   virtual void OnContoursChanged();
 
   /// \brief Used to create an image used for the region growing, see class intro.
-  mitk::DataNode::Pointer CreateHelperImage(mitk::Image::Pointer referenceImage, mitk::DataNode::Pointer segmentationNode,  float r, float g, float b, std::string name, bool visible, int layer);
+  mitk::DataNode::Pointer CreateHelperImage(const mitk::Image* referenceImage, const mitk::Color& colour, const std::string& name, bool visible, int layer);
 
   /// \brief Used to create a contour set, used for the current, prior and next contours, see class intro.
-  mitk::DataNode::Pointer CreateContourSet(mitk::DataNode::Pointer segmentationNode, float r, float g, float b, std::string name, bool visible, int layer);
-
-  /// \brief Utility method to check that we have initialised all the working data such as contours, region growing images etc.
-  bool HasInitialisedWorkingData();
+  mitk::DataNode::Pointer CreateContourSet(const mitk::Color& colour, const std::string& name, bool visible, int layer);
 
   /// \brief Stores the initial state of the segmentation so that the Restart button can restore it.
   void StoreInitialSegmentation();

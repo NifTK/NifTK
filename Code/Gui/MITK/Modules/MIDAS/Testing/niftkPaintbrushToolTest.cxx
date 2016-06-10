@@ -104,7 +104,7 @@ public:
     const mitk::DataNode::Pointer dilateSubtractionsNode = (*allImages)[3];
     this->SetupNode(dilateSubtractionsNode, PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME);
 
-    mitk::ToolManager::DataVectorType vector;
+    std::vector<mitk::DataNode*> vector;
     vector.push_back(erodeAdditionsNode);
     vector.push_back(erodeSubtractionsNode);
     vector.push_back(dilateAdditionsNode);
@@ -153,7 +153,7 @@ public:
     MITK_TEST_OUTPUT(<< "Starting TestSingleClick... image=" << imageId << ", cursorSize=" << cursorSize << ", expectedResult=" << expectedResult);
 
     // First blank image.
-    mitk::ToolManager::DataVectorType workingData = m_ToolManager->GetWorkingData();
+    std::vector<mitk::DataNode*> workingData = m_ToolManager->GetWorkingData();
     mitk::DataNode::Pointer node = workingData[imageId];
 
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
@@ -203,7 +203,7 @@ public:
     MITK_TEST_OUTPUT(<< "Starting TestClickDrag... image=" << imageId << ", cursorSize=" << cursorSize << ", expectedResult=" << expectedResult);
 
     // First blank image.
-    mitk::ToolManager::DataVectorType workingData = m_ToolManager->GetWorkingData();
+    std::vector<mitk::DataNode*> workingData = m_ToolManager->GetWorkingData();
     mitk::DataNode::Pointer node = workingData[imageId];
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
@@ -257,7 +257,7 @@ public:
     MITK_TEST_OUTPUT(<< "Starting TestErase...");
 
     // First fill image 0 with 1.
-    mitk::ToolManager::DataVectorType workingData = m_ToolManager->GetWorkingData();
+    std::vector<mitk::DataNode*> workingData = m_ToolManager->GetWorkingData();
     mitk::DataNode::Pointer node = workingData[1];
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
@@ -303,7 +303,7 @@ public:
     MITK_TEST_OUTPUT(<< "Starting TestScan...");
 
     // First blank image.
-    mitk::ToolManager::DataVectorType workingData = m_ToolManager->GetWorkingData();
+    std::vector<mitk::DataNode*> workingData = m_ToolManager->GetWorkingData();
     mitk::DataNode::Pointer node = workingData[0];
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
@@ -361,7 +361,7 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TestClickOutOfBounds...x=" << x << ", " << y << ", " << z);
 
-    mitk::ToolManager::DataVectorType workingData = m_ToolManager->GetWorkingData();
+    std::vector<mitk::DataNode*> workingData = m_ToolManager->GetWorkingData();
     mitk::DataNode::Pointer node = workingData[0];
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     const mitk::Image* constImage = const_cast<const mitk::Image*>(image.GetPointer());
@@ -402,7 +402,7 @@ public:
   //-----------------------------------------------------------------------------
   void TestClickJustOutOfBounds()
   {
-    mitk::ToolManager::DataVectorType workingData = m_ToolManager->GetWorkingData();
+    std::vector<mitk::DataNode*> workingData = m_ToolManager->GetWorkingData();
     mitk::DataNode::Pointer node = workingData[0];
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
 
