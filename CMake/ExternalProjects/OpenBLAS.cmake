@@ -1,0 +1,74 @@
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+
+#-----------------------------------------------------------------------------
+# OpenBLAS
+#-----------------------------------------------------------------------------
+
+# Sanity checks
+if(DEFINED OpenBLAS_DIR AND NOT EXISTS ${OpenBLAS_DIR})
+  message(FATAL_ERROR "OpenBLAS_DIR variable is defined but corresponds to non-existing directory \"${OpenBLAS_ROOT}\".")
+endif()
+
+set(version "0.2.18")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/OpenBLAS-${version}.tar.gz")
+
+niftkMacroDefineExternalProjectVariables(OpenBLAS ${version} ${location})
+
+if(NOT DEFINED OpenBLAS_DIR)
+
+  ExternalProject_Add(${proj}
+    LIST_SEPARATOR ^^
+    PREFIX ${proj_CONFIG}
+    SOURCE_DIR ${proj_SOURCE}
+    BINARY_DIR ${proj_BUILD}
+    INSTALL_DIR ${proj_INSTALL}
+    URL ${proj_LOCATION}
+    URL_MD5 ${proj_CHECKSUM}
+    #CONFIGURE_COMMAND ""
+    #UPDATE_COMMAND ""
+    #BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+    CMAKE_GENERATOR ${gen}
+    CMAKE_ARGS
+      ${EP_COMMON_ARGS}
+      -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
+    CMAKE_CACHE_ARGS
+      ${EP_COMMON_CACHE_ARGS}
+    CMAKE_CACHE_DEFAULT_ARGS
+      ${EP_COMMON_CACHE_DEFAULT_ARGS}
+    DEPENDS ${proj_DEPENDENCIES}
+  )
+
+  set(OpenBLAS_SOURCE_DIR ${proj_SOURCE})
+  set(OpenBLAS_DIR ${proj_BUILD})
+  set(OpenBLAS_INCLUDE_DIR ${OpenBLAS_SOURCE_DIR})
+  set(OpenBLAS_LIBRARY_DIR ${OpenBLAS_DIR}/lib)
+
+  # Needed by Caffe
+  find_library(OpenBLAS_LIBRARY NAMES openblas
+               PATHS ${OpenBLAS_DIR}
+               PATH_SUFFIXES lib
+               NO_DEFAULT_PATH)
+
+  mitkFunctionInstallExternalCMakeProject(${proj})
+
+  message("SuperBuild loading OpenBLAS from ${OpenBLAS_DIR}.")
+
+else(NOT DEFINED OpenBLAS_DIR)
+
+  mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+
+endif(NOT DEFINED OpenBLAS_DIR)
