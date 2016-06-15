@@ -144,6 +144,7 @@ private:
   mitk::PlanarCircle::Pointer m_EraserScope;
   mitk::DataNode::Pointer m_EraserScopeNode;
   bool m_EraserScopeVisible;
+
 };
 
 }

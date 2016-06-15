@@ -49,4 +49,3 @@ set(CPP_FILES
   IO/mitkFileIOUtils.cxx
   Interactions/mitkPointSetUpdate.cxx
 )
-

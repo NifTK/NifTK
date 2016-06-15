@@ -24,13 +24,15 @@
 #include <usGetModuleContext.h>
 #include <usModuleResource.h>
 
+#include "niftkInteractionEventObserverMutex.h"
+
 #include "niftkPolyTool.xpm"
 #include "niftkPolyToolEventInterface.h"
 #include "niftkPolyToolOpAddToFeedbackContour.h"
 #include "niftkPolyToolOpUpdateFeedbackContour.h"
 #include "niftkToolFactoryMacros.h"
 
-NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, PolyTool, "Poly Tool");
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, PolyTool, "Poly Tool")
 
 namespace niftk
 {
@@ -157,7 +159,10 @@ void PolyTool::Activated()
   Superclass::Activated();
 
   mitk::DataNode* segmentationNode = m_ToolManager->GetWorkingData(SEGMENTATION);
-  if (!segmentationNode) return;
+  if (!segmentationNode)
+  {
+    return;
+  }
 
   // Store these for later (in base class), as dynamic casts are slow. HOWEVER, IT IS NOT THREAD SAFE.
   m_SegmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
@@ -459,11 +464,10 @@ bool PolyTool::AddLine(mitk::StateMachineAction* action, mitk::InteractionEvent*
 
 bool PolyTool::SelectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  InteractionEventObserverMutex::GetInstance()->Lock(this);
+
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
-  if (!positionEvent)
-  {
-    return false;
-  }
+  assert(positionEvent);
 
   this->CopyContour(*(m_ReferencePoints), *(m_PreviousContourReferencePoints));
   this->UpdateContours(action, positionEvent, false, true);
@@ -474,10 +478,7 @@ bool PolyTool::SelectPoint(mitk::StateMachineAction* action, mitk::InteractionEv
 bool PolyTool::MovePoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
-  if (!positionEvent)
-  {
-    return false;
-  }
+  assert(positionEvent);
 
   this->SetPreviousContourVisible(true);
   this->UpdateContours(action, positionEvent, false, false);
@@ -488,19 +489,23 @@ bool PolyTool::MovePoint(mitk::StateMachineAction* action, mitk::InteractionEven
 bool PolyTool::DeselectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
-  if (!positionEvent)
-  {
-    return false;
-  }
+  assert(positionEvent);
+
   this->SetPreviousContourVisible(false);
   this->UpdateContours(action, positionEvent, true, false);
   this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, ContourTool::EDITING_PROPERTY_NAME, false);
+
+  InteractionEventObserverMutex::GetInstance()->Unlock(this);
+
   return true;
 }
 
 void PolyTool::ExecuteOperation(mitk::Operation* operation)
 {
-  if (!operation) return;
+  if (!operation)
+  {
+    return;
+  }
 
   ContourTool::ExecuteOperation(operation);
 

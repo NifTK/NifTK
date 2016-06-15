@@ -18,7 +18,6 @@
 #include "niftkMIDASExports.h"
 
 #include <map>
-#include <vector>
 
 #include <mitkDataNode.h>
 #include <mitkFeedbackContourTool.h>
@@ -161,8 +160,6 @@ protected:
 
   /// \brief Helper method to update a boolean property on a given working data node.
   virtual void UpdateWorkingDataNodeBoolProperty(int dataIndex, const std::string& name, bool value);
-
-protected:
 
   /// \brief The node that contains the point set that is the working data of the seed tool.
   mitk::DataNode::Pointer GetPointSetNode() const;

@@ -26,7 +26,7 @@
 #include "niftkSeedTool.xpm"
 #include "niftkToolFactoryMacros.h"
 
-NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, SeedTool, "Seed Tool");
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, SeedTool, "Seed Tool")
 
 namespace niftk
 {
