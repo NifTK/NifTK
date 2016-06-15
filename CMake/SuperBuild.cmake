@@ -297,6 +297,10 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
   if(BUILD_VL)
     list(APPEND proj_DEPENDENCIES ${VL_DEPENDS})
   endif()
+  
+  if(BUILD_Caffe)
+    list(APPEND proj_DEPENDENCIES ${Caffe_DEPENDS})
+  endif()
 
   if(MSVC)
     # if we dont do this then windows headers will define all sorts of "keywords"
