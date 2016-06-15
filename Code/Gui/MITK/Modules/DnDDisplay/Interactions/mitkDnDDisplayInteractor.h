@@ -17,11 +17,13 @@
 
 #include <niftkDnDDisplayExports.h>
 
-#include <mitkDisplayInteractor.h>
-#include <niftkDnDDisplayEnums.h>
-
 #include <vector>
+
 #include <QObject>
+
+#include <mitkDisplayInteractor.h>
+
+#include <niftkDnDDisplayEnums.h>
 
 class niftkSingleViewerWidget;
 class QmitkRenderWindow;

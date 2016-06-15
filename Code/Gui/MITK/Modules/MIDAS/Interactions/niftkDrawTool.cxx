@@ -33,12 +33,14 @@
 #include <usModuleResource.h>
 #include <usGetModuleContext.h>
 
+#include <niftkInteractionEventObserverMutex.h>
+
 #include "niftkDrawTool.xpm"
 #include "niftkDrawToolEventInterface.h"
 #include "niftkDrawToolOpEraseContour.h"
 #include "niftkToolFactoryMacros.h"
 
-NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, DrawTool, "Draw Tool");
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, DrawTool, "Draw Tool")
 
 namespace niftk
 {
@@ -50,7 +52,7 @@ const mitk::OperationType DrawTool::MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR = 320423;
 DrawTool::DrawTool()
 : ContourTool()
 , m_CursorSize(0.5)
-, m_Interface(NULL)
+, m_Interface(nullptr)
 , m_EraserScopeVisible(false)
 {
   m_Interface = DrawToolEventInterface::New();
@@ -138,22 +140,19 @@ void DrawTool::ClearWorkingData()
 
 //-----------------------------------------------------------------------------
 
-/**
- To start a contour, we initialise the "FeedbackCountour", which is the "Current" contour,
- and also store the current point, at which the mouse was pressed down. It's the next
- method OnMouseMoved that starts to draw the line.
-*/
+/// To start a contour, we initialise the "FeedbackCountour", which is the "Current" contour,
+/// and also store the current point, at which the mouse was pressed down. It's the next
+/// method OnMouseMoved that starts to draw the line.
 bool DrawTool::StartDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  InteractionEventObserverMutex::GetInstance()->Lock(this);
+
   // Don't forget to call baseclass method.
   ContourTool::OnMousePressed(action, event);
 
   // Make sure we have a valid position event, otherwise no point continuing.
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
-  if (!positionEvent)
-  {
-    return false;
-  }
+  assert(positionEvent);
 
   // Initialize contours, and set properties.
   this->ClearData();
@@ -184,21 +183,19 @@ bool DrawTool::StartDrawing(mitk::StateMachineAction* action, mitk::InteractionE
 
 //-----------------------------------------------------------------------------
 
-/**
- As the mouse is moved, we draw a line in 2D slice, round edges of voxels.
- The complexity lies in the fact that MouseMove events don't give you every
- pixel (unless you move your mouse slowly), so you have to draw a line between
- two points that may span more than one voxel, or fractions of a voxel.
-*/
+/// As the mouse is moved, we draw a line in 2D slice, round edges of voxels.
+/// The complexity lies in the fact that MouseMove events don't give you every
+/// pixel (unless you move your mouse slowly), so you have to draw a line between
+/// two points that may span more than one voxel, or fractions of a voxel.
 bool DrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
-  if (m_SegmentationImage == NULL || m_SegmentationImageGeometry == NULL) return false;
-
-  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
-  if (!positionEvent)
+  if (!m_SegmentationImage || !m_SegmentationImageGeometry)
   {
     return false;
   }
+
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  assert(positionEvent);
 
   const mitk::PlaneGeometry* planeGeometry = positionEvent->GetSender()->GetCurrentWorldPlaneGeometry();
   if (!planeGeometry)
@@ -238,36 +235,32 @@ bool DrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::InteractionEv
 
 //-----------------------------------------------------------------------------
 
-/**
- * When we finish a contour, we take the Current contour, and add it to the Cumulative contour.
- * This action should be undo-able, as we are creating data.
- */
+/// When we finish a contour, we take the Current contour, and add it to the Cumulative contour.
+/// This action should be undo-able, as we are creating data.
 bool DrawTool::StopDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
-  // Make sure we have a valid position event, otherwise no point continuing.
+  /// Make sure we have a valid position event, otherwise no point continuing.
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
-  if (!positionEvent)
-  {
-    return false;
-  }
+  assert(positionEvent);
 
-  /** When the mouse is released, we need to add the contour to the cumulative one. */
+  /// When the mouse is released, we need to add the contour to the cumulative one.
   mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
 
-  if (feedbackContour->IsEmpty())
+  if (!feedbackContour->IsEmpty())
   {
-    return true;
+    this->AccumulateContourInWorkingData(*feedbackContour, DRAW_CONTOURS);
+
+    /// Re-initialize contours to zero length.
+    this->ClearData();
+    FeedbackContourTool::SetFeedbackContourVisible(false);
+    ContourTool::SetBackgroundContourVisible(false);
+
+    /// Set this flag to indicate that we have stopped editing, which will trigger an update of the region growing.
+    this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, ContourTool::EDITING_PROPERTY_NAME, false);
   }
 
-  this->AccumulateContourInWorkingData(*feedbackContour, DRAW_CONTOURS);
+  InteractionEventObserverMutex::GetInstance()->Unlock(this);
 
-  // Re-initialize contours to zero length.
-  this->ClearData();
-  FeedbackContourTool::SetFeedbackContourVisible(false);
-  ContourTool::SetBackgroundContourVisible(false);
-
-  // Set this flag to indicate that we have stopped editing, which will trigger an update of the region growing.
-  this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, ContourTool::EDITING_PROPERTY_NAME, false);
   return true;
 }
 
@@ -293,11 +286,10 @@ void DrawTool::SetCursorSize(double cursorSize)
 //-----------------------------------------------------------------------------
 bool DrawTool::StartErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  InteractionEventObserverMutex::GetInstance()->Lock(this);
+
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
-  if (!positionEvent)
-  {
-    return false;
-  }
+  assert(positionEvent);
 
   mitk::BaseRenderer* renderer = positionEvent->GetSender();
   const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
@@ -320,10 +312,7 @@ bool DrawTool::StartErasing(mitk::StateMachineAction* action, mitk::InteractionE
 bool DrawTool::KeepErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
-  if (!positionEvent)
-  {
-    return false;
-  }
+  assert(positionEvent);
 
   mitk::BaseRenderer* renderer = positionEvent->GetSender();
   const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
@@ -335,16 +324,19 @@ bool DrawTool::KeepErasing(mitk::StateMachineAction* action, mitk::InteractionEv
   bool result = true;
   result = result && this->DeleteFromContour(CONTOURS, action, event);
   result = result && this->DeleteFromContour(DRAW_CONTOURS, action, event);
+
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-bool DrawTool::StopErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool DrawTool::StopErasing(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* event)
 {
   this->SetEraserScopeVisible(false, event->GetSender());
 
   this->RenderAllWindows();
+
+  InteractionEventObserverMutex::GetInstance()->Unlock(this);
 
   return true;
 }
@@ -355,10 +347,7 @@ bool DrawTool::DeleteFromContour(int dataIndex, mitk::StateMachineAction* action
 {
   // Make sure we have a valid position event, otherwise no point continuing.
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
-  if (!positionEvent)
-  {
-    return false;
-  }
+  assert(positionEvent);
 
   // Get the world point.
   mitk::Point3D mousePositionInMm = positionEvent->GetPositionInWorld();
@@ -743,7 +732,7 @@ void DrawTool::ExecuteOperation(mitk::Operation* operation)
   case MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR:
     {
       DrawToolOpEraseContour *op = static_cast<DrawToolOpEraseContour*>(operation);
-      if (op != NULL)
+      if (op)
       {
         assert(m_ToolManager);
 

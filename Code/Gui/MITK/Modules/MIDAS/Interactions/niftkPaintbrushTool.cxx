@@ -34,12 +34,14 @@
 #include <usModule.h>
 #include <usModuleRegistry.h>
 
+#include <niftkInteractionEventObserverMutex.h>
+
 #include "niftkPaintbrushTool.xpm"
 #include "niftkPaintbrushToolOpEditImage.h"
 #include "niftkPaintbrushToolEventInterface.h"
 #include "niftkToolFactoryMacros.h"
 
-NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, PaintbrushTool, "Paintbrush Tool");
+NIFTK_TOOL_MACRO(NIFTKMIDAS_EXPORT, PaintbrushTool, "Paintbrush Tool")
 
 namespace niftk
 {
@@ -448,6 +450,8 @@ int PaintbrushTool::GetDataIndex(bool isLeftMouseButton)
 
 bool PaintbrushTool::StartAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  InteractionEventObserverMutex::GetInstance()->Lock(this);
+
   int dataIndex = this->GetDataIndex(true);
   bool result = this->MarkInitialPosition(dataIndex, action, event);
   return result;
@@ -472,11 +476,16 @@ bool PaintbrushTool::StopAddingAddition(mitk::StateMachineAction* action, mitk::
   // entire image or just the current slice, based on if there is a valid region set. (See
   // the SetInvalidRegion() call above.)
   this->SegmentationEdited.Send(dataIndex);
+
+  InteractionEventObserverMutex::GetInstance()->Unlock(this);
+
   return true;
 }
 
 bool PaintbrushTool::StartAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  InteractionEventObserverMutex::GetInstance()->Lock(this);
+
   int dataIndex = this->GetDataIndex(false);
   return this->MarkInitialPosition(dataIndex, action, event);
 }
@@ -493,11 +502,16 @@ bool PaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* action, mit
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
   this->SegmentationEdited.Send(dataIndex);
+
+  InteractionEventObserverMutex::GetInstance()->Unlock(this);
+
   return true;
 }
 
 bool PaintbrushTool::StartRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  InteractionEventObserverMutex::GetInstance()->Lock(this);
+
   int dataIndex = this->GetDataIndex(false);
   return this->MarkInitialPosition(dataIndex, action, event);
 }
@@ -514,6 +528,9 @@ bool PaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* action, m
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
   this->SegmentationEdited.Send(dataIndex);
+
+  InteractionEventObserverMutex::GetInstance()->Unlock(this);
+
   return true;
 }
 
