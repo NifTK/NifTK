@@ -15,6 +15,8 @@
 #ifndef InteractionEventObserverMutex_h
 #define InteractionEventObserverMutex_h
 
+#include "niftkCoreExports.h"
+
 #include <unordered_map>
 
 namespace mitk
@@ -44,7 +46,7 @@ namespace niftk
 /// and disables them. When the lock is released, it restores the original state
 /// of the interactors.
 
-class InteractionEventObserverMutex
+class NIFTKCORE_EXPORT InteractionEventObserverMutex
 {
 public:
 

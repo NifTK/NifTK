@@ -21,8 +21,6 @@
 #include <mitkOperationActor.h>
 #include <mitkPointSet.h>
 
-#include <niftkInteractionEventObserverMutex.h>
-
 #include "niftkContourTool.h"
 #include "niftkPolyToolEventInterface.h"
 

@@ -19,13 +19,14 @@ TODO Std move to abort interaction of scroll/pan/zoom
 
     <state name="start" startstate="true" >
         <transition event_class="InteractionPositionEvent" event_variant="StartSelectingPosition" target="selectingPosition">
-            <action name="selectPosition"/>
+          <action name="startSelectingPosition"/>
+          <action name="selectPosition"/>
         </transition>
         <transition event_class="InteractionPositionEvent" event_variant="StartPanning" target="panning">
-            <action name="initMove"/>
+            <action name="startPanning"/>
         </transition>
         <transition event_class="InteractionPositionEvent" event_variant="StartZooming" target="zooming">
-            <action name="initZoom"/>
+            <action name="startZooming"/>
         </transition>
 
         <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
@@ -104,21 +105,28 @@ TODO Std move to abort interaction of scroll/pan/zoom
         <transition event_class="InteractionPositionEvent" event_variant="SelectingPosition" target="selectingPosition">
             <action name="selectPosition"/>
         </transition>
-        <transition event_class="InteractionPositionEvent" event_variant="StopSelectingPosition" target="start"/>
+        <transition event_class="InteractionPositionEvent" event_variant="StopSelectingPosition" target="start">
+          <action name="stopSelectingPosition"/>
+        </transition>
     </state>
 
     <state name="panning">
         <transition event_class="InteractionPositionEvent" event_variant="Panning" target="panning">
-            <action name="move"/>
+            <!-- Do not rename this to 'pan' because the superclass assigns handler to this function. -->
+            <action name="pan"/>
         </transition>
-        <transition event_class="InteractionPositionEvent" event_variant="StopPanning" target="start"/>
+        <transition event_class="InteractionPositionEvent" event_variant="StopPanning" target="start">
+          <action name="stopPanning"/>
+        </transition>
     </state>
 
     <state name="zooming">
         <transition event_class="InteractionPositionEvent" event_variant="Zooming" target="zooming">
             <action name="zoom"/>
         </transition>
-        <transition event_class="InteractionPositionEvent" event_variant="StopZooming" target="start"/>
+        <transition event_class="InteractionPositionEvent" event_variant="StopZooming" target="start">
+          <action name="stopZooming"/>
+        </transition>
     </state>
 
     <state name="scrollingThroughSlicesBackwards">
@@ -131,11 +139,11 @@ TODO Std move to abort interaction of scroll/pan/zoom
         </transition>
         <transition event_class="InteractionEvent" event_variant="StartPanning" target="panning">
             <action name="stopScrolling"/>
-            <action name="initMove"/>
+            <action name="startPanning"/>
         </transition>
         <transition event_class="InteractionEvent" event_variant="StartZooming" target="zooming">
             <action name="stopScrolling"/>
-            <action name="initZoom"/>
+            <action name="startZooming"/>
         </transition>
         <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
             <action name="stopScrolling"/>
@@ -194,11 +202,11 @@ TODO Std move to abort interaction of scroll/pan/zoom
         </transition>
         <transition event_class="InteractionEvent" event_variant="StartPanning" target="panning">
             <action name="stopScrolling"/>
-            <action name="initMove"/>
+            <action name="startPanning"/>
         </transition>
         <transition event_class="InteractionEvent" event_variant="StartZooming" target="zooming">
             <action name="stopScrolling"/>
-            <action name="initZoom"/>
+            <action name="startZooming"/>
         </transition>
         <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
             <action name="stopScrolling"/>
@@ -257,11 +265,11 @@ TODO Std move to abort interaction of scroll/pan/zoom
         </transition>
         <transition event_class="InteractionEvent" event_variant="StartPanning" target="panning">
             <action name="stopScrolling"/>
-            <action name="initMove"/>
+            <action name="startPanning"/>
         </transition>
         <transition event_class="InteractionEvent" event_variant="StartZooming" target="zooming">
             <action name="stopScrolling"/>
-            <action name="initZoom"/>
+            <action name="startZooming"/>
         </transition>
         <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
             <action name="stopScrolling"/>
@@ -320,11 +328,11 @@ TODO Std move to abort interaction of scroll/pan/zoom
         </transition>
         <transition event_class="InteractionEvent" event_variant="StartPanning" target="panning">
             <action name="stopScrolling"/>
-            <action name="initMove"/>
+            <action name="startPanning"/>
         </transition>
         <transition event_class="InteractionEvent" event_variant="StartZooming" target="zooming">
             <action name="stopScrolling"/>
-            <action name="initZoom"/>
+            <action name="startZooming"/>
         </transition>
         <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
             <action name="stopScrolling"/>
