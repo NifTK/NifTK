@@ -108,6 +108,11 @@ if(NOT DEFINED Caffe_DIR)
   set(Caffe_INCLUDE_DIR ${Caffe_DIR}/include)
   set(Caffe_LIBRARY_DIR ${Caffe_DIR}/lib)
 
+  message("Caffe_SOURCE_DIR ${Caffe_SOURCE_DIR}")
+  message("Caffe_DIR ${Caffe_DIR}")
+  message("Caffe_INCLUDE_DIR ${Caffe_INCLUDE_DIR}")
+  message("Caffe_LIBRARY_DIR ${Caffe_LIBRARY_DIR}")
+
   mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading Caffe from ${Caffe_DIR}.")
