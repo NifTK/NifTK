@@ -1036,7 +1036,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
 
     if (m_ImageNode[1].IsNotNull())
     {
-      rms = niftk::IterativeStereoCameraCalibration(
+      cv::Matx21d rmss = niftk::IterativeStereoCameraCalibration(
             m_ModelPoints,
             m_ReferenceDataForIterativeCalib,
             m_OriginalImages[0],
@@ -1057,6 +1057,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
             m_RightToLeftRotation,
             m_RightToLeftTranslation
             );
+      rms = rmss(0, 0);
     }
   }
   else
