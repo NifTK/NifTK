@@ -36,7 +36,6 @@ set(CPP_FILES
   Interactions/niftkDrawToolEventInterface.cxx
   Interactions/niftkDrawToolOpEraseContour.cxx
   Interactions/niftkFilteringStateMachine.cxx
-  Interactions/niftkInteractionEventObserverMutex.cxx
   Interactions/niftkPaintbrushTool.cxx
   Interactions/niftkPaintbrushToolEventInterface.cxx
   Interactions/niftkPaintbrushToolOpEditImage.cxx

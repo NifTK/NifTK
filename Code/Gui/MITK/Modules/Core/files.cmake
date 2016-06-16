@@ -48,4 +48,5 @@ set(CPP_FILES
   DataNodeProperties/mitkLabeledLookupTableProperty.cxx
   IO/mitkFileIOUtils.cxx
   Interactions/mitkPointSetUpdate.cxx
+  Interactions/niftkInteractionEventObserverMutex.cxx
 )

@@ -24,7 +24,7 @@
 #include <usGetModuleContext.h>
 #include <usModuleResource.h>
 
-#include "niftkInteractionEventObserverMutex.h"
+#include <niftkInteractionEventObserverMutex.h>
 
 #include "niftkPolyTool.xpm"
 #include "niftkPolyToolEventInterface.h"
