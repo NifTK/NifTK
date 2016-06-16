@@ -48,15 +48,15 @@ if (NOT ProtoBuf_FOUND)
     NO_DEFAULT_PATH
   )
 
-  if(ProtoBuf_LIBRARY OR ProtoBuf_LIBRARY_DEBUG AND ProtoBuf_INCLUDE_DIR AND ProtoBuf_PROTOC_EXECUTABLE)
+  message( "ProtoBuf_INCLUDE_DIR: ${ProtoBuf_INCLUDE_DIR}" )
+  message( "ProtoBuf_LIBRARY:        ${ProtoBuf_LIBRARY}        ${ProtoBuf_LIBRARY_DEBUG}"       )
+  message( "ProtoBuf_LITE_LIBRARY:   ${ProtoBuf_LITE_LIBRARY}   ${ProtoBuf_LITE_LIBRARY_DEBUG}"  )
+  message( "ProtoBuf_PROTOC_LIBRARY: ${ProtoBuf_PROTOC_LIBRARY} ${ProtoBuf_PROTOC_LIBRARY_DEBUG}")
+  message( "ProtoBuf_PROTOC_EXECUTABLE: ${ProtoBuf_PROTOC_EXECUTABLE}" )
+
+  if((ProtoBuf_LIBRARY OR ProtoBuf_LIBRARY_DEBUG) AND ProtoBuf_INCLUDE_DIR AND ProtoBuf_PROTOC_EXECUTABLE)
 
     set(ProtoBuf_FOUND 1)
-
-    message( "ProtoBuf_INCLUDE_DIR: ${ProtoBuf_INCLUDE_DIR}" )
-    message( "ProtoBuf_LIBRARY:        ${ProtoBuf_LIBRARY}        ${ProtoBuf_LIBRARY_DEBUG}"       )
-    message( "ProtoBuf_LITE_LIBRARY:   ${ProtoBuf_LITE_LIBRARY}   ${ProtoBuf_LITE_LIBRARY_DEBUG}"  )
-    message( "ProtoBuf_PROTOC_LIBRARY: ${ProtoBuf_PROTOC_LIBRARY} ${ProtoBuf_PROTOC_LIBRARY_DEBUG}")
-    message( "ProtoBuf_PROTOC_EXECUTABLE: ${ProtoBuf_PROTOC_EXECUTABLE}" )
 
   endif()
 
