@@ -82,6 +82,10 @@ if(NOT DEFINED ProtoBuf_DIR)
     NO_DEFAULT_PATH
   )
 
+  message("ProtoBuf_INCLUDE_DIR ${ProtoBuf_INCLUDE_DIR}")
+  message("ProtoBuf_LIBRARY ${ProtoBuf_LIBRARY}")
+  message("ProtoBuf_PROTOC_EXECUTABLE ${ProtoBuf_PROTOC_EXECUTABLE}")
+
   mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading ProtoBuf from ${ProtoBuf_DIR}.")
