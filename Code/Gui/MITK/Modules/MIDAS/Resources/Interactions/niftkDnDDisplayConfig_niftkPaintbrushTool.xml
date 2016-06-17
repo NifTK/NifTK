@@ -65,13 +65,13 @@
 -->
 
   <!-- Scrolling through slices -->
-<!--
   <event_variant class="InteractionKeyEvent" name="SelectPreviousSlice">
     <attribute name="Key" value="A"/>
   </event_variant>
   <event_variant class="InteractionKeyEvent" name="SelectNextSlice">
     <attribute name="Key" value="Z"/>
   </event_variant>
+<!--
   <event_variant class="MouseWheelEvent" name="SelectPreviousSlice">
     <attribute name="ScrollDirection" value="up"/>
   </event_variant>
