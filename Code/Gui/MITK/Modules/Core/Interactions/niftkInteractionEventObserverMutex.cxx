@@ -14,7 +14,7 @@
 
 #include "niftkInteractionEventObserverMutex.h"
 
-#include <usModuleContext.h>
+#include <usGetModuleContext.h>
 #include <usServiceReference.h>
 
 #include <mitkInteractionEventObserver.h>
