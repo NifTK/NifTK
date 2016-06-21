@@ -621,12 +621,14 @@ if (BUILD_IGI)
   set(MITK_USE_NiftyLink ON CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyCal ON CACHE BOOL "" FORCE)
   set(MITK_USE_OpenCV ON CACHE BOOL "" FORCE)
+  set(MITK_USE_HDF5 ON CACHE BOOL "" FORCE)
 else()
   set(MITK_USE_AprilTags OFF CACHE BOOL "" FORCE)
   set(MITK_USE_ArUco OFF CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyLink OFF CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyCal OFF CACHE BOOL "" FORCE)
   set(MITK_USE_OpenCV OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_HDF5 OFF CACHE BOOL "" FORCE)
 endif()
 
 if (BUILD_PCL)
@@ -1003,6 +1005,9 @@ set(CMAKE_MODULE_PATH
 # So, the variables NIFTK_BOOSTINSTALL etc.
 # should be passed in on cmake command line, or set up using ccmake.
 ######################################################################
+
+message(FATAL_ERROR "Configure CMake files before we need to use them in the FIND_XXX.")
+
 find_package(aruco)
 if(aruco_FOUND)
   configure_file(${CMAKE_SOURCE_DIR}/CMake/FindArUco.cmake ${CMAKE_BINARY_DIR}/FindArUco.cmake @ONLY)
@@ -1252,7 +1257,16 @@ endif(BUILD_IGI)
 # Find Caffe
 ######################################################################
 
+#message("CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}")
+#
 if(BUILD_Caffe)
+#  find_package(HDF5)
+#  if(HDF5_FOUND)
+#    message("Found HDF5")
+#  else()
+#    message("Didn't find HDF5")
+#  endif()
+#
   find_package(Caffe)
   if(Caffe_FOUND)
     message("Found Caffe")

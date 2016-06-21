@@ -45,6 +45,7 @@ if(NOT DEFINED OpenBLAS_DIR)
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
       -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
+      -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
     CMAKE_CACHE_ARGS
       ${EP_COMMON_CACHE_ARGS}
     CMAKE_CACHE_DEFAULT_ARGS
@@ -53,15 +54,15 @@ if(NOT DEFINED OpenBLAS_DIR)
   )
 
   set(OpenBLAS_SOURCE_DIR ${proj_SOURCE})
-  set(OpenBLAS_DIR ${proj_BUILD})
+  set(OpenBLAS_DIR        ${proj_BUILD})
   set(OpenBLAS_INCLUDE_DIR ${OpenBLAS_SOURCE_DIR})
   set(OpenBLAS_LIBRARY_DIR ${OpenBLAS_DIR}/lib)
 
-  # Needed by Caffe
-  find_library(OpenBLAS_LIBRARY NAMES openblas
-               PATHS ${OpenBLAS_DIR}
-               PATH_SUFFIXES lib
-               NO_DEFAULT_PATH)
+  install(DIRECTORY ${proj_BUILD}/include
+          DESTINATION ${proj_INSTALL})
+
+  install(DIRECTORY ${proj_BUILD}/lib
+          DESTINATION ${proj_INSTALL})
 
   mitkFunctionInstallExternalCMakeProject(${proj})
 
