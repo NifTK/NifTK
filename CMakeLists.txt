@@ -1004,8 +1004,6 @@ set(CMAKE_MODULE_PATH
 # should be passed in on cmake command line, or set up using ccmake.
 ######################################################################
 
-message(FATAL_ERROR "Configure CMake files before we need to use them in the FIND_XXX.")
-
 find_package(aruco)
 if(aruco_FOUND)
   configure_file(${CMAKE_SOURCE_DIR}/CMake/FindArUco.cmake ${CMAKE_BINARY_DIR}/FindArUco.cmake @ONLY)
