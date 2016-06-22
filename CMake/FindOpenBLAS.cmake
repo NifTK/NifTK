@@ -1,33 +1,53 @@
-message(STATUS "Using custom OpenBLAS module")
-set(_openblas_root ${CMAKE_CURRENT_LIST_DIR}/../openblas)
-find_file(OPENBLAS_HEADER cblas.h ${_openblas_root}/include)
-find_file(OPENBLAS_IMPLIB libopenblas.dll.a ${_openblas_root}/lib)
-if(OPENBLAS_HEADER AND OPENBLAS_IMPLIB)
-    if(NOT TARGET OpenBLAS)
-        add_library(OpenBLAS SHARED IMPORTED)
-        set_target_properties(OpenBLAS PROPERTIES IMPORTED_LOCATION ${_openblas_root}/bin/libopenblas.dll
-												  IMPORTED_LOCATION_RELEASE ${_openblas_root}/bin/libopenblas.dll
-												  IMPORTED_LOCATION_DEBUG ${_openblas_root}/bin/libopenblas.dll
-                                                  IMPORTED_IMPLIB ${OPENBLAS_IMPLIB}
-												  IMPORTED_IMPLIB_RELEASE ${OPENBLAS_IMPLIB}
-												  IMPORTED_IMPLIB_DEBUG ${OPENBLAS_IMPLIB}
-                                                  INTERFACE_INCLUDE_DIRECTORIES ${_openblas_root}/include                                              
-                              )
-    endif()
-	set(OPENBLAS_LIBRARIES OpenBLAS)
-	set(${CMAKE_FIND_PACKAGE_NAME}_LIBRARIES OpenBLAS)
-    set(OPENBLAS_LIB OpenBLAS)
-	set(${CMAKE_FIND_PACKAGE_NAME}_LIB OpenBLAS)
-	
-	set(OPENBLAS_INCLUDE_DIR ${_openblas_root}/include)
-	set(OPENBLAS_INCLUDE_DIRS ${OPENBLAS_INCLUDE_DIR})
-	set(${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR ${OPENBLAS_INCLUDE_DIR})
-	set(${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIRS ${OPENBLAS_INCLUDE_DIR})
-	
-	set(OPENBLAS_FOUND TRUE)
-	set(${CMAKE_FIND_PACKAGE_NAME}_FOUND TRUE)
-	
-else()
-	set(OPENBLAS_FOUND FALSE)
-	set(${CMAKE_FIND_PACKAGE_NAME}_FOUND FALSE)
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+set(OpenBLAS_FOUND)
+
+set(OpenBLAS_DIR @OpenBLAS_DIR@ CACHE PATH "Directory containing OpenBLAS installation")
+
+set(OpenBLAS_INCLUDE_DIR
+  NAME cblas.h
+  PATHS ${OpenBLAS_DIR}
+  NO_DEFAULT_PATH
+)
+
+set(OpenBLAS_LIBRARY_DIR ${OpenBLAS_DIR}/lib)
+
+set(OpenBLAS_LIBRARY )
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+
+  find_library(OpenBLAS_LIBRARY NAMES openblas
+               PATHS ${OpenBLAS_LIBRARY_DIR}
+               PATH_SUFFIXES Release
+               NO_DEFAULT_PATH)
+
+elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+
+  find_library(OpenBLAS_LIBRARY NAMES openblasd
+               PATHS ${OpenBLAS_LIBRARY_DIR}
+               PATH_SUFFIXES Debug
+               NO_DEFAULT_PATH)
+
 endif()
+
+if(OpenBLAS_LIBRARY AND OpenBLAS_INCLUDE_DIR)
+
+  set(OpenBLAS_FOUND 1)
+
+endif()
+
+message( "OpenBLAS_INCLUDE_DIR: ${OpenBLAS_INCLUDE_DIR}" )
+message( "OpenBLAS_LIBRARY_DIR: ${OpenBLAS_LIBRARY_DIR}" )
+message( "OpenBLAS_LIBRARY:     ${OpenBLAS_LIBRARY}" )
