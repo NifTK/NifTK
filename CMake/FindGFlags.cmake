@@ -12,50 +12,42 @@
 #
 #============================================================================*/
 
-message( "******************* FindGFlags ******************* " )
+set(GFlags_FOUND)
 
-if (NOT GFlags_FOUND)
+set(GFlags_DIR @GFlags_DIR@ CACHE PATH "Directory containing GFlags installation")
 
-  set(GFlags_DIR @GFlags_DIR@ CACHE PATH "Directory containing GFlags installation")
+set(GFlags_INCLUDE_DIR
+  NAME gflags.h
+  PATHS ${GFlags_DIR}/include
+  NO_DEFAULT_PATH
+)
 
-  set(GFLAGS_INCLUDE_DIR
-    NAME gflags.h
-    PATHS ${GFlags_DIR}/include
-    NO_DEFAULT_PATH
-  )
+set(GFlags_LIBRARY_DIR ${GFlags_DIR}/lib)
 
-  set(GFLAGS_LIBRARY_DIR ${GFlags_DIR}/lib)
+set(GFlags_LIBRARY )
 
-  set(GFlags_LIBRARY )
+if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 
-  find_library(GFlags_LIBRARY_RELEASE NAMES gflags
-               PATHS ${GFLAGS_LIBRARY_DIR}
+  find_library(GFlags_LIBRARY NAMES gflags
+               PATHS ${GFlags_LIBRARY_DIR}
                PATH_SUFFIXES Release
                NO_DEFAULT_PATH)
 
-  if(GFlags_LIBRARY_RELEASE)
-    list(APPEND GFlags_LIBRARY ${GFlags_LIBRARY_RELEASE})
-  endif()
+elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
-  find_library(GFlags_LIBRARY_DEBUG NAMES gflagsd
-               PATHS ${GFLAGS_LIBRARY_DIR}
+  find_library(GFlags_LIBRARY NAMES gflagsd
+               PATHS ${GFlags_LIBRARY_DIR}
                PATH_SUFFIXES Debug
                NO_DEFAULT_PATH)
 
-  if(GFlags_LIBRARY_DEBUG)
-    list(APPEND GFlags_LIBRARY ${GFlags_LIBRARY_DEBUG})
-  endif()
+endif()
 
-  if(GFlags_LIBRARY AND GFLAGS_INCLUDE_DIR)
+if(GFlags_LIBRARY AND GFlags_INCLUDE_DIR)
 
-    set(GFLAGS_LIBRARY ${GFlags_LIBRARY})
-
-    set(GFlags_FOUND 1)
-
-  endif()
-
-  message( "GFlags_INCLUDE_DIR: ${GFLAGS_INCLUDE_DIR}" )
-  message( "GFlags_LIBRARY_DIR: ${GFlags_LIBRARY_DIR}" )
-  message( "GFlags_LIBRARY: ${GFLAGS_LIBRARY}" )
+  set(GFlags_FOUND 1)
 
 endif()
+
+message( "GFlags_INCLUDE_DIR: ${GFlags_INCLUDE_DIR}" )
+message( "GFlags_LIBRARY_DIR: ${GFlags_LIBRARY_DIR}" )
+message( "GFlags_LIBRARY: ${GFlags_LIBRARY}" )
