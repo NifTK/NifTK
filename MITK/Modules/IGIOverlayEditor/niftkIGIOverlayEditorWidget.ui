@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>QmitkIGIOverlayEditor</class>
- <widget class="QWidget" name="QmitkIGIOverlayEditor">
+ <class>IGIOverlayEditorWidget</class>
+ <widget class="QWidget" name="IGIOverlayEditorWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -149,7 +149,7 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
-       <widget class="QmitkSingle3DView" name="m_OverlayViewer" native="true">
+       <widget class="niftk::Single3DViewWidget" name="m_OverlayViewer" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -184,9 +184,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>QmitkSingle3DView</class>
+   <class>niftk::Single3DViewWidget</class>
    <extends>QWidget</extends>
-   <header>QmitkSingle3DView.h</header>
+   <header>niftkSingle3DViewWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

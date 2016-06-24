@@ -12,37 +12,40 @@
 
 =============================================================================*/
 
-#ifndef QmitkIGIOverlayEditor_h
-#define QmitkIGIOverlayEditor_h
+#ifndef niftkIGIOverlayEditorWidget_h
+#define niftkIGIOverlayEditorWidget_h
 
-#include "ui_QmitkIGIOverlayEditor.h"
-#include "niftkIGIGuiExports.h"
+#include "ui_niftkIGIOverlayEditorWidget.h"
+#include "niftkIGIOverlayEditorExports.h"
 #include <QWidget>
 #include <mitkColorProperty.h>
 #include <mitkDataStorage.h>
 
 class QmitkRenderWindow;
 
+namespace niftk
+{
 /**
- * \class QmitkIGIOverlayEditor
+ * \class IGIOverlayEditorWidget
  * \brief A widget that contains our QmitkSingle3DView, and a QmitkRenderWindow,
  * (both set to render 3D mode), and several widgets for some basic controls.
- * This class implements all the functionality for IGIOverlayEditor. An
+ * This class implements all the functionality for IGIOverlayEditorWidget. An
  * additional feature might be to remove the standalone QmitkRenderWindow in
- * the QmitkIGIOverlayEditor.ui and provide a QmitkStdMultiWidget?
- * \see IGIOverlayEditor
+ * the niftkIGIOverlayEditorWidget.ui and provide a QmitkStdMultiWidget?
+ * \see IGIOverlayEditorWidget
  */
-class NIFTKIGIGUI_EXPORT QmitkIGIOverlayEditor : public QWidget, public Ui_QmitkIGIOverlayEditor
+class NIFTKIGIOVERLAYEDITOR_EXPORT IGIOverlayEditorWidget : public QWidget,
+    public Ui_IGIOverlayEditorWidget
 {
 
   Q_OBJECT
 
 public:
 
-  QmitkIGIOverlayEditor(QWidget *parent);
-  virtual ~QmitkIGIOverlayEditor();
+  IGIOverlayEditorWidget(QWidget *parent);
+  virtual ~IGIOverlayEditorWidget();
 
-  //-------------- Start of methods required by IGIOverlayEditor --------------
+  //-------------- Start of methods required by IGIOverlayEditorWidget --------------
 
   void SetDataStorage(mitk::DataStorage* storage);
 
@@ -110,15 +113,15 @@ public:
 
   /**
    * \brief Sets whether or not we clip to the image plane when we are in image tracking mode.
-   */  
+   */
   void SetClipToImagePlane(const bool& clipToImagePlane);
-  
+
   /**
    * \brief Called by framework (event from ctkEventAdmin), to indicate that an update should be performed.
    */
   void Update();
 
-  //-------------- End of methods required by IGIOverlayEditor --------------
+  //-------------- End of methods required by IGIOverlayEditorWidget --------------
 
 private slots:
 
@@ -130,20 +133,22 @@ private slots:
 
 private:
 
-  QmitkIGIOverlayEditor(const QmitkIGIOverlayEditor&);  // Purposefully not implemented.
-  void operator=(const QmitkIGIOverlayEditor&);  // Purposefully not implemented.
+  IGIOverlayEditorWidget(const IGIOverlayEditorWidget&);  // Purposefully not implemented.
+  void operator=(const IGIOverlayEditorWidget&);  // Purposefully not implemented.
 
   /**
    * \brief Utility method to deregister data storage listeners.
    */
   void DeRegisterDataStorageListeners();
-  
+
   /**
    * \brief Called when a DataStorage Node Changed Event was emitted.
    */
   void NodeChanged(const mitk::DataNode* node);
-  
+
   mitk::DataStorage::Pointer m_DataStorage;
 };
 
-#endif // QmitkIGIOverlayEditor_h
+} // end namespace
+
+#endif

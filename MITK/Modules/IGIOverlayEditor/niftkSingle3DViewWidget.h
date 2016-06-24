@@ -12,12 +12,13 @@
 
 =============================================================================*/
 
-#ifndef QmitkSingle3DView_h
-#define QmitkSingle3DView_h
+#ifndef niftkSingle3DViewWidget_h
+#define niftkSingle3DViewWidget_h
 
-#include "niftkIGIGuiExports.h"
-#include "QmitkBitmapOverlay.h"
+#include "niftkIGIOverlayEditorExports.h"
+#include "niftkBitmapOverlayWidget.h"
 #include <QmitkCmicLogo.h>
+
 #include <mitkRenderWindowFrame.h>
 #include <mitkGradientBackground.h>
 #include <mitkDataStorage.h>
@@ -37,8 +38,10 @@ namespace mitk {
   class RenderingManager;
 }
 
+namespace niftk
+{
 /**
- * \class QmitkSingle3DView
+ * \class Single3DViewWidget
  * \brief Widget containing a single 3D render window whose purpose
  * is to render a 3D VTK scene, blended with RGB image data, such as
  * might be available from video or ultrasound.
@@ -52,18 +55,18 @@ namespace mitk {
  * image, then the camera switches to a calibrated camera, and otherwise
  * will assume the default VTK behaviour implemented in vtkOpenGLCamera.
  */
-class NIFTKIGIGUI_EXPORT QmitkSingle3DView : public QWidget
+class NIFTKIGIOVERLAYEDITOR_EXPORT Single3DViewWidget : public QWidget
 {
   Q_OBJECT
 
 public:
 
-  QmitkSingle3DView(QWidget* parent = 0, Qt::WindowFlags f = 0, mitk::RenderingManager* renderingManager = 0);
-  virtual ~QmitkSingle3DView();
+  Single3DViewWidget(QWidget* parent = 0, Qt::WindowFlags f = 0, mitk::RenderingManager* renderingManager = 0);
+  virtual ~Single3DViewWidget();
 
   /**
    * \brief Stores ds locally, and sets the data storage on the contained
-   * QmitkBitmapOverlay and QmitkRenderWindow.
+   * niftk::BitmapOverlay and QmitkRenderWindow.
    */
   void SetDataStorage( mitk::DataStorage* ds );
 
@@ -84,8 +87,8 @@ public:
   void SetOpacity(const float& value);
 
   /**
-   * \brief Passes the node onto the QmitkBitmapOverlay, so that
-   * the QmitkBitmapOverlay can use it for a background or foreground image.
+   * \brief Passes the node onto the niftk::BitmapOverlay, so that
+   * the niftk::BitmapOverlay can use it for a background or foreground image.
    * \param node an mitk::DataNode that should contain an RGB image.
    */
   void SetImageNode(const mitk::DataNode* node);
@@ -156,7 +159,7 @@ public:
 
   /**
    * \brief Sets whether or not we clip to the image plane when we are in image tracking mode.
-   */  
+   */
   void SetClipToImagePlane(const bool& clipToImagePlane);
 
   /**
@@ -167,7 +170,7 @@ public:
 protected:
 
   /**
-   * \brief Re-implemented so we can tell QmitkBitmapOverlay the display size has changed.
+   * \brief Re-implemented so we can tell niftk::BitmapOverlay the display size has changed.
    */
   virtual void resizeEvent(QResizeEvent* event) override;
 
@@ -223,7 +226,7 @@ private:
   mitk::RenderWindowFrame::Pointer              m_RenderWindowFrame;
   mitk::GradientBackground::Pointer             m_GradientBackground;
   CMICLogo::Pointer                             m_LogoRendering;
-  QmitkBitmapOverlay::Pointer                   m_BitmapOverlay;
+  niftk::BitmapOverlayWidget::Pointer           m_BitmapOverlay;
   QString                                       m_TrackingCalibrationFileName;
   vtkSmartPointer<vtkMatrix4x4>                 m_TrackingCalibrationTransform;
   mitk::DataNode::Pointer                       m_TransformNode;
@@ -236,4 +239,7 @@ private:
   double                                        m_ZFar;
   bool                                          m_ClipToImagePlane;
 };
-#endif /* QmitkSingle3DView */
+
+} // end namespace
+
+#endif

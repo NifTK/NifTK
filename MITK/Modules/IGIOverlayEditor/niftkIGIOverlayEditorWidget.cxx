@@ -12,19 +12,23 @@
 
 =============================================================================*/
 
-#include "QmitkIGIOverlayEditor.h"
+#include "niftkIGIOverlayEditorWidget.h"
+#include <mitkCoordinateAxesData.h>
+#include <mitkTrackedImage.h>
+
 #include <mitkNodePredicateDataType.h>
 #include <mitkImage.h>
 #include <mitkBaseRenderer.h>
 #include <mitkRenderingManager.h>
 #include <mitkTimeGeometry.h>
-#include <mitkCoordinateAxesData.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
-#include <mitkTrackedImage.h>
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-QmitkIGIOverlayEditor::QmitkIGIOverlayEditor(QWidget * /*parent*/)
+IGIOverlayEditorWidget::IGIOverlayEditorWidget(QWidget * /*parent*/)
 {
   this->setupUi(this);
 
@@ -57,26 +61,26 @@ QmitkIGIOverlayEditor::QmitkIGIOverlayEditor(QWidget * /*parent*/)
 
 
 //-----------------------------------------------------------------------------
-QmitkIGIOverlayEditor::~QmitkIGIOverlayEditor()
+IGIOverlayEditorWidget::~IGIOverlayEditorWidget()
 {
   this->DeRegisterDataStorageListeners();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::DeRegisterDataStorageListeners()
+void IGIOverlayEditorWidget::DeRegisterDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->ChangedNodeEvent.RemoveListener
-      (mitk::MessageDelegate1<QmitkIGIOverlayEditor, const mitk::DataNode*>
-      (this, &QmitkIGIOverlayEditor::NodeChanged ) );
+      (mitk::MessageDelegate1<IGIOverlayEditorWidget, const mitk::DataNode*>
+      (this, &IGIOverlayEditorWidget::NodeChanged ) );
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::OnOverlayCheckBoxChecked(bool checked)
+void IGIOverlayEditorWidget::OnOverlayCheckBoxChecked(bool checked)
 {
   if (!checked)
   {
@@ -93,7 +97,7 @@ void QmitkIGIOverlayEditor::OnOverlayCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::On3DViewerCheckBoxChecked(bool checked)
+void IGIOverlayEditorWidget::On3DViewerCheckBoxChecked(bool checked)
 {
   if (!checked)
   {
@@ -110,7 +114,7 @@ void QmitkIGIOverlayEditor::On3DViewerCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::OnOpacitySliderMoved(int value)
+void IGIOverlayEditorWidget::OnOpacitySliderMoved(int value)
 {
   m_OverlayViewer->SetOpacity(value / 100.0);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
@@ -118,7 +122,7 @@ void QmitkIGIOverlayEditor::OnOpacitySliderMoved(int value)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::OnImageSelected(const mitk::DataNode* node)
+void IGIOverlayEditorWidget::OnImageSelected(const mitk::DataNode* node)
 {
   m_OverlayViewer->SetImageNode(node);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
@@ -126,7 +130,7 @@ void QmitkIGIOverlayEditor::OnImageSelected(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::OnTransformSelected(const mitk::DataNode* node)
+void IGIOverlayEditorWidget::OnTransformSelected(const mitk::DataNode* node)
 {
   m_OverlayViewer->SetTransformNode(node);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
@@ -134,7 +138,7 @@ void QmitkIGIOverlayEditor::OnTransformSelected(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
+void IGIOverlayEditorWidget::SetDataStorage(mitk::DataStorage* storage)
 {
   if (m_DataStorage.IsNotNull() && m_DataStorage != storage)
   {
@@ -146,8 +150,8 @@ void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->ChangedNodeEvent.AddListener
-      (mitk::MessageDelegate1<QmitkIGIOverlayEditor, const mitk::DataNode*>
-      (this, &QmitkIGIOverlayEditor::NodeChanged ) );
+      (mitk::MessageDelegate1<IGIOverlayEditorWidget, const mitk::DataNode*>
+      (this, &IGIOverlayEditorWidget::NodeChanged ) );
   }
   
   mitk::TimeGeometry::Pointer geometry = storage->ComputeBoundingGeometry3D(storage->GetAll());
@@ -169,7 +173,7 @@ void QmitkIGIOverlayEditor::SetDataStorage(mitk::DataStorage* storage)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::NodeChanged(const mitk::DataNode* node)
+void IGIOverlayEditorWidget::NodeChanged(const mitk::DataNode* node)
 {
   bool propValue = false;
   if (node != NULL
@@ -183,7 +187,7 @@ void QmitkIGIOverlayEditor::NodeChanged(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkIGIOverlayEditor::GetActiveQmitkRenderWindow() const
+QmitkRenderWindow* IGIOverlayEditorWidget::GetActiveQmitkRenderWindow() const
 {
   QmitkRenderWindow *result = NULL;
 
@@ -205,7 +209,7 @@ QmitkRenderWindow* QmitkIGIOverlayEditor::GetActiveQmitkRenderWindow() const
 
 
 //-----------------------------------------------------------------------------
-QHash<QString, QmitkRenderWindow *> QmitkIGIOverlayEditor::GetQmitkRenderWindows() const
+QHash<QString, QmitkRenderWindow *> IGIOverlayEditorWidget::GetQmitkRenderWindows() const
 {
   QHash<QString, QmitkRenderWindow *> result;
   result.insert("overlay", m_OverlayViewer->GetRenderWindow());
@@ -215,7 +219,7 @@ QHash<QString, QmitkRenderWindow *> QmitkIGIOverlayEditor::GetQmitkRenderWindows
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkIGIOverlayEditor::GetQmitkRenderWindow(const QString &id) const
+QmitkRenderWindow* IGIOverlayEditorWidget::GetQmitkRenderWindow(const QString &id) const
 {
   QmitkRenderWindow *result = NULL;
   if (id == "3d")
@@ -231,21 +235,21 @@ QmitkRenderWindow* QmitkIGIOverlayEditor::GetQmitkRenderWindow(const QString &id
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::SetCalibrationFileName(const QString& fileName)
+void IGIOverlayEditorWidget::SetCalibrationFileName(const QString& fileName)
 {
   m_OverlayViewer->SetTrackingCalibrationFileName(fileName);
 }
 
 
 //-----------------------------------------------------------------------------
-QString QmitkIGIOverlayEditor::GetCalibrationFileName() const
+QString IGIOverlayEditorWidget::GetCalibrationFileName() const
 {
   return m_OverlayViewer->GetTrackingCalibrationFileName();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::SetCameraTrackingMode(const bool& isCameraTracking)
+void IGIOverlayEditorWidget::SetCameraTrackingMode(const bool& isCameraTracking)
 {
   m_OverlayViewer->SetCameraTrackingMode(isCameraTracking);
   m_TransformCombo->setVisible(isCameraTracking);
@@ -256,56 +260,58 @@ void QmitkIGIOverlayEditor::SetCameraTrackingMode(const bool& isCameraTracking)
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::SetClipToImagePlane(const bool& clipToImagePlane)
+void IGIOverlayEditorWidget::SetClipToImagePlane(const bool& clipToImagePlane)
 {
   m_OverlayViewer->SetClipToImagePlane(clipToImagePlane);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::SetDepartmentLogoPath(const QString& path)
+void IGIOverlayEditorWidget::SetDepartmentLogoPath(const QString& path)
 {
   m_OverlayViewer->SetDepartmentLogoPath(path);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::EnableDepartmentLogo()
+void IGIOverlayEditorWidget::EnableDepartmentLogo()
 {
   m_OverlayViewer->EnableDepartmentLogo();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::DisableDepartmentLogo()
+void IGIOverlayEditorWidget::DisableDepartmentLogo()
 {
   m_OverlayViewer->DisableDepartmentLogo();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::SetGradientBackgroundColors(const mitk::Color& colour1, const mitk::Color& colour2)
+void IGIOverlayEditorWidget::SetGradientBackgroundColors(const mitk::Color& colour1, const mitk::Color& colour2)
 {
   m_OverlayViewer->SetGradientBackgroundColors(colour1, colour2);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::EnableGradientBackground()
+void IGIOverlayEditorWidget::EnableGradientBackground()
 {
   m_OverlayViewer->EnableGradientBackground();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::DisableGradientBackground()
+void IGIOverlayEditorWidget::DisableGradientBackground()
 {
   m_OverlayViewer->DisableGradientBackground();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkIGIOverlayEditor::Update()
+void IGIOverlayEditorWidget::Update()
 {
   m_OverlayViewer->Update();
 }
+
+} // end namespace

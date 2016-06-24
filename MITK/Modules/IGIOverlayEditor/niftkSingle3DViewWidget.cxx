@@ -12,20 +12,23 @@
 
 =============================================================================*/
 
-#include "QmitkSingle3DView.h"
-#include <QGridLayout>
-#include <mitkDataStorageUtils.h>
+#include "niftkSingle3DViewWidget.h"
+#include <niftkVTKFunctions.h>
+#include <niftkUndistortion.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkCameraIntrinsics.h>
 #include <mitkCameraIntrinsicsProperty.h>
+#include <mitkDataStorageUtils.h>
+
+#include <QGridLayout>
 #include <mitkBaseGeometry.h>
 #include <vtkCamera.h>
 #include <vtkTransform.h>
-#include <niftkVTKFunctions.h>
-#include <niftkUndistortion.h>
 
+namespace niftk
+{
 //-----------------------------------------------------------------------------
-QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager)
+Single3DViewWidget::Single3DViewWidget(QWidget* parent, Qt::WindowFlags f, mitk::RenderingManager* renderingManager)
 : QWidget(parent, f)
 , m_DataStorage(NULL)
 , m_RenderWindow(NULL)
@@ -65,7 +68,7 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 
   mitk::BaseRenderer::GetInstance(m_RenderWindow->GetRenderWindow())->SetMapperID(mitk::BaseRenderer::Standard3D);
 
-  m_BitmapOverlay = QmitkBitmapOverlay::New();
+  m_BitmapOverlay = niftk::BitmapOverlayWidget::New();
   m_BitmapOverlay->SetRenderWindow(m_RenderWindow->GetRenderWindow());
 
   m_RenderWindow->GetRenderer()->GetVtkRenderer()->InteractiveOff();
@@ -93,34 +96,34 @@ QmitkSingle3DView::QmitkSingle3DView(QWidget* parent, Qt::WindowFlags f, mitk::R
 
 
 //-----------------------------------------------------------------------------
-QmitkSingle3DView::~QmitkSingle3DView()
+Single3DViewWidget::~Single3DViewWidget()
 {
   this->DeRegisterDataStorageListeners();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::DeRegisterDataStorageListeners()
+void Single3DViewWidget::DeRegisterDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->RemoveNodeEvent.RemoveListener
-      (mitk::MessageDelegate1<QmitkSingle3DView, const mitk::DataNode*>
-       (this, &QmitkSingle3DView::NodeRemoved ) );
+      (mitk::MessageDelegate1<Single3DViewWidget, const mitk::DataNode*>
+       (this, &Single3DViewWidget::NodeRemoved ) );
 
     m_DataStorage->ChangedNodeEvent.RemoveListener
-      (mitk::MessageDelegate1<QmitkSingle3DView, const mitk::DataNode*>
-      (this, &QmitkSingle3DView::NodeChanged ) );
+      (mitk::MessageDelegate1<Single3DViewWidget, const mitk::DataNode*>
+      (this, &Single3DViewWidget::NodeChanged ) );
 
     m_DataStorage->ChangedNodeEvent.RemoveListener
-      (mitk::MessageDelegate1<QmitkSingle3DView, const mitk::DataNode*>
-      (this, &QmitkSingle3DView::NodeAdded ) );
+      (mitk::MessageDelegate1<Single3DViewWidget, const mitk::DataNode*>
+      (this, &Single3DViewWidget::NodeAdded ) );
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetDataStorage( mitk::DataStorage* dataStorage )
+void Single3DViewWidget::SetDataStorage( mitk::DataStorage* dataStorage )
 {
   if (m_DataStorage.IsNotNull() && m_DataStorage != dataStorage)
   {
@@ -135,16 +138,16 @@ void QmitkSingle3DView::SetDataStorage( mitk::DataStorage* dataStorage )
     m_BitmapOverlay->Enable();
 
     m_DataStorage->RemoveNodeEvent.AddListener
-      (mitk::MessageDelegate1<QmitkSingle3DView, const mitk::DataNode*>
-       (this, &QmitkSingle3DView::NodeRemoved ) );
+      (mitk::MessageDelegate1<Single3DViewWidget, const mitk::DataNode*>
+       (this, &Single3DViewWidget::NodeRemoved ) );
 
     m_DataStorage->ChangedNodeEvent.AddListener
-      (mitk::MessageDelegate1<QmitkSingle3DView, const mitk::DataNode*>
-      (this, &QmitkSingle3DView::NodeChanged ) );
+      (mitk::MessageDelegate1<Single3DViewWidget, const mitk::DataNode*>
+      (this, &Single3DViewWidget::NodeChanged ) );
 
     m_DataStorage->ChangedNodeEvent.AddListener
-      (mitk::MessageDelegate1<QmitkSingle3DView, const mitk::DataNode*>
-      (this, &QmitkSingle3DView::NodeAdded ) );
+      (mitk::MessageDelegate1<Single3DViewWidget, const mitk::DataNode*>
+      (this, &Single3DViewWidget::NodeAdded ) );
   }
 
   mitk::BaseRenderer::GetInstance(m_RenderWindow->GetRenderWindow())->SetDataStorage(dataStorage);
@@ -152,14 +155,14 @@ void QmitkSingle3DView::SetDataStorage( mitk::DataStorage* dataStorage )
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::NodeAdded(const mitk::DataNode* node)
+void Single3DViewWidget::NodeAdded(const mitk::DataNode* node)
 {
   m_BitmapOverlay->NodeAdded(node);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::NodeRemoved (const mitk::DataNode * node )
+void Single3DViewWidget::NodeRemoved (const mitk::DataNode * node )
 {
   if ( node == m_ImageNode )
   {
@@ -170,7 +173,7 @@ void QmitkSingle3DView::NodeRemoved (const mitk::DataNode * node )
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::NodeChanged(const mitk::DataNode* node)
+void Single3DViewWidget::NodeChanged(const mitk::DataNode* node)
 {
   if (m_ImageNode.IsNotNull())
   {
@@ -180,28 +183,28 @@ void QmitkSingle3DView::NodeChanged(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkSingle3DView::GetRenderWindow() const
+QmitkRenderWindow* Single3DViewWidget::GetRenderWindow() const
 {
   return m_RenderWindow;
 }
 
 
 //-----------------------------------------------------------------------------
-float QmitkSingle3DView::GetOpacity() const
+float Single3DViewWidget::GetOpacity() const
 {
   return static_cast<float>(m_BitmapOverlay->GetOpacity());
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetOpacity(const float& value)
+void Single3DViewWidget::SetOpacity(const float& value)
 {
   m_BitmapOverlay->SetOpacity(value);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetTransformNode(const mitk::DataNode* node)
+void Single3DViewWidget::SetTransformNode(const mitk::DataNode* node)
 {
   if (node != NULL)
   {
@@ -211,49 +214,49 @@ void QmitkSingle3DView::SetTransformNode(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::EnableGradientBackground()
+void Single3DViewWidget::EnableGradientBackground()
 {
   m_GradientBackground->Enable();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::DisableGradientBackground()
+void Single3DViewWidget::DisableGradientBackground()
 {
   m_GradientBackground->Disable();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetGradientBackgroundColors( const mitk::Color & upper, const mitk::Color & lower )
+void Single3DViewWidget::SetGradientBackgroundColors( const mitk::Color & upper, const mitk::Color & lower )
 {
   m_GradientBackground->SetGradientColors(upper[0], upper[1], upper[2], lower[0], lower[1], lower[2]);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::EnableDepartmentLogo()
+void Single3DViewWidget::EnableDepartmentLogo()
 {
    m_LogoRendering->Enable();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::DisableDepartmentLogo()
+void Single3DViewWidget::DisableDepartmentLogo()
 {
    m_LogoRendering->Disable();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetDepartmentLogoPath(const QString& path)
+void Single3DViewWidget::SetDepartmentLogoPath(const QString& path)
 {
   m_LogoRendering->SetLogoSource(qPrintable(path));
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::resizeEvent(QResizeEvent* /*event*/)
+void Single3DViewWidget::resizeEvent(QResizeEvent* /*event*/)
 {
   m_BitmapOverlay->SetupCamera();
   this->Update();
@@ -261,14 +264,14 @@ void QmitkSingle3DView::resizeEvent(QResizeEvent* /*event*/)
 
 
 //-----------------------------------------------------------------------------
-QString QmitkSingle3DView::GetTrackingCalibrationFileName() const
+QString Single3DViewWidget::GetTrackingCalibrationFileName() const
 {
   return m_TrackingCalibrationFileName;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetTrackingCalibrationFileName(const QString& fileName)
+void Single3DViewWidget::SetTrackingCalibrationFileName(const QString& fileName)
 {
   if (m_DataStorage.IsNotNull() && fileName.size() > 0 && fileName != m_TrackingCalibrationFileName)
   {
@@ -289,7 +292,7 @@ void QmitkSingle3DView::SetTrackingCalibrationFileName(const QString& fileName)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetCameraTrackingMode(const bool& isCameraTracking)
+void Single3DViewWidget::SetCameraTrackingMode(const bool& isCameraTracking)
 {
   m_IsCameraTracking = isCameraTracking;
   m_BitmapOverlay->SetEnabled(isCameraTracking);
@@ -297,21 +300,21 @@ void QmitkSingle3DView::SetCameraTrackingMode(const bool& isCameraTracking)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkSingle3DView::GetCameraTrackingMode() const
+bool Single3DViewWidget::GetCameraTrackingMode() const
 {
   return m_IsCameraTracking;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetClipToImagePlane(const bool& clipToImagePlane)
+void Single3DViewWidget::SetClipToImagePlane(const bool& clipToImagePlane)
 {
   m_ClipToImagePlane = clipToImagePlane;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::UpdateCameraIntrinsicParameters()
+void Single3DViewWidget::UpdateCameraIntrinsicParameters()
 {
   bool isCalibrated = false;
 
@@ -345,7 +348,7 @@ void QmitkSingle3DView::UpdateCameraIntrinsicParameters()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::SetImageNode(const mitk::DataNode* node)
+void Single3DViewWidget::SetImageNode(const mitk::DataNode* node)
 {
   // Remember: node can be NULL, as we have to respond to NodeRemoved events.
 
@@ -371,7 +374,7 @@ void QmitkSingle3DView::SetImageNode(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::Update()
+void Single3DViewWidget::Update()
 {
   // Early exit if the widget itself is not yet on-screen.
   if (!this->isVisible())
@@ -398,7 +401,7 @@ void QmitkSingle3DView::Update()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
+void Single3DViewWidget::UpdateCameraViaTrackingTransformation()
 {
   // This implies a right handed coordinate system.
   // By default, assume camera position is at origin, looking down the world z-axis.
@@ -461,7 +464,7 @@ void QmitkSingle3DView::UpdateCameraViaTrackingTransformation()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSingle3DView::UpdateCameraToTrackImage()
+void Single3DViewWidget::UpdateCameraToTrackImage()
 {
   if (m_Image.IsNotNull())
   {
@@ -475,16 +478,16 @@ void QmitkSingle3DView::UpdateCameraToTrackImage()
 
     double distanceToFocalPoint = -1000;
     double clippingRange[2];
-    
+
     if (m_ClipToImagePlane)
     {
       clippingRange[0] = 999;
-      clippingRange[1] = 1001;      
+      clippingRange[1] = 1001;
     }
     else
     {
       clippingRange[0] = m_ZNear;
-      clippingRange[1] = m_ZFar;         
+      clippingRange[1] = m_ZFar;
     }
 
     double origin[3];
@@ -509,5 +512,7 @@ void QmitkSingle3DView::UpdateCameraToTrackImage()
     niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, true, *m_MatrixDrivenCamera, distanceToFocalPoint);
   }
 }
+
+} // end namespace
 
 

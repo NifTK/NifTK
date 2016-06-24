@@ -12,9 +12,9 @@
 
 =============================================================================*/
 
-#include "QmitkBitmapOverlay.h"
+#include "niftkBitmapOverlayWidget.h"
+#include <niftkVTKFunctions.h>
 
-#include <mitkVtkLayerController.h>
 #include <itkObject.h>
 #include <itkMacro.h>
 #include <vtkRenderer.h>
@@ -24,13 +24,13 @@
 #include <vtkImageMapper.h>
 #include <vtkCamera.h>
 #include <vtkImageData.h>
-
 #include <mitkImage.h>
+#include <mitkVtkLayerController.h>
 
-#include <niftkVTKFunctions.h>
-
+namespace niftk
+{
 //-----------------------------------------------------------------------------
-QmitkBitmapOverlay::QmitkBitmapOverlay()
+BitmapOverlayWidget::BitmapOverlayWidget()
 : m_RenderWindow(NULL)
 , m_BackRenderer(NULL)
 , m_FrontRenderer(NULL)
@@ -53,9 +53,8 @@ QmitkBitmapOverlay::QmitkBitmapOverlay()
 
 
 //-----------------------------------------------------------------------------
-QmitkBitmapOverlay::~QmitkBitmapOverlay()
+BitmapOverlayWidget::~BitmapOverlayWidget()
 {
-
   if ( m_RenderWindow != NULL )
   {
     if ( this->IsEnabled() )
@@ -92,7 +91,7 @@ QmitkBitmapOverlay::~QmitkBitmapOverlay()
 
 
 //-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::SetDataStorage (mitk::DataStorage::Pointer dataStorage)
+void BitmapOverlayWidget::SetDataStorage (mitk::DataStorage::Pointer dataStorage)
 {
   m_DataStorage = dataStorage;
   this->Modified();
@@ -100,14 +99,14 @@ void QmitkBitmapOverlay::SetDataStorage (mitk::DataStorage::Pointer dataStorage)
 
 
 //-----------------------------------------------------------------------------
-vtkRenderer* QmitkBitmapOverlay::GetVtkRenderer()
+vtkRenderer* BitmapOverlayWidget::GetVtkRenderer()
 {
   return m_BackRenderer;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::SetRenderWindow( vtkRenderWindow* renderWindow )
+void BitmapOverlayWidget::SetRenderWindow( vtkRenderWindow* renderWindow )
 {
   m_RenderWindow = renderWindow;
   this->Modified();
@@ -115,7 +114,7 @@ void QmitkBitmapOverlay::SetRenderWindow( vtkRenderWindow* renderWindow )
 
 
 //-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::SetEnabled(const bool& enable)
+void BitmapOverlayWidget::SetEnabled(const bool& enable)
 {
   if (enable)
   {
@@ -129,14 +128,14 @@ void QmitkBitmapOverlay::SetEnabled(const bool& enable)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkBitmapOverlay::IsEnabled()
+bool BitmapOverlayWidget::IsEnabled()
 {
   return  m_IsEnabled;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::Enable()
+void BitmapOverlayWidget::Enable()
 {
   if ( !this->IsEnabled() )
   {
@@ -149,7 +148,7 @@ void QmitkBitmapOverlay::Enable()
 
 
 //-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::Disable()
+void BitmapOverlayWidget::Disable()
 {
   if ( this->IsEnabled() )
   {
@@ -162,7 +161,7 @@ void QmitkBitmapOverlay::Disable()
 
 
 //-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::SetOpacity(const double& opacity)
+void BitmapOverlayWidget::SetOpacity(const double& opacity)
 {
   m_Opacity = opacity;
   m_BackActor->SetOpacity(1.0);
@@ -173,7 +172,7 @@ void QmitkBitmapOverlay::SetOpacity(const double& opacity)
 
 
 //-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::AutoSelectDataNode(const mitk::DataNode* node)
+void BitmapOverlayWidget::AutoSelectDataNode(const mitk::DataNode* node)
 {
   if (node != NULL && this->GetAutoSelectNodes())
   {
@@ -193,7 +192,7 @@ void QmitkBitmapOverlay::AutoSelectDataNode(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::NodeAdded (const mitk::DataNode * node)
+void BitmapOverlayWidget::NodeAdded (const mitk::DataNode * node)
 {
   if (m_ImageDataNode.IsNull())
   {
@@ -203,7 +202,7 @@ void QmitkBitmapOverlay::NodeAdded (const mitk::DataNode * node)
 
 
 //-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::NodeChanged (const mitk::DataNode * node)
+void BitmapOverlayWidget::NodeChanged (const mitk::DataNode * node)
 {
   if (m_ImageDataNode.IsNull())
   {
@@ -225,7 +224,7 @@ void QmitkBitmapOverlay::NodeChanged (const mitk::DataNode * node)
 
 
 //-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::NodeRemoved (const mitk::DataNode * node )
+void BitmapOverlayWidget::NodeRemoved (const mitk::DataNode * node )
 {
   if ( node == m_ImageDataNode )
   {
@@ -235,13 +234,13 @@ void QmitkBitmapOverlay::NodeRemoved (const mitk::DataNode * node )
 
 
 //-----------------------------------------------------------------------------
-bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
+bool BitmapOverlayWidget::SetNode(const mitk::DataNode* node)
 {
   bool wasSuccessful = false;
 
   if (m_DataStorage.IsNull())
   {
-    MITK_ERROR << "QmitkBitmapOverlay::SetNode: Error, DataStorage is NULL" << std::endl;
+    MITK_ERROR << "BitmapOverlayWidget::SetNode: Error, DataStorage is NULL" << std::endl;
     return wasSuccessful;
   }
 
@@ -289,7 +288,7 @@ bool QmitkBitmapOverlay::SetNode(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void QmitkBitmapOverlay::SetupCamera()
+void BitmapOverlayWidget::SetupCamera()
 {
   vtkImageData *image = m_BackActor->GetInput();
   if (image == NULL)
@@ -301,21 +300,21 @@ void QmitkBitmapOverlay::SetupCamera()
 
   if (m_RenderWindow == NULL)
   {
-    MITK_ERROR << "QmitkBitmapOverlay::SetupCamera: Error, the vtkRenderWindow is NULL" << std::endl;
+    MITK_ERROR << "BitmapOverlayWidget::SetupCamera: Error, the vtkRenderWindow is NULL" << std::endl;
     return;
   }
 
   vtkCamera* backCamera = m_BackRenderer->GetActiveCamera();
   if (backCamera == NULL)
   {
-    MITK_ERROR << "QmitkBitmapOverlay::SetupCamera: Error, the backCamera is NULL" << std::endl;
+    MITK_ERROR << "BitmapOverlayWidget::SetupCamera: Error, the backCamera is NULL" << std::endl;
     return;
   }
 
   vtkCamera* frontCamera = m_FrontRenderer->GetActiveCamera();
   if (frontCamera == NULL)
   {
-    MITK_ERROR << "QmitkBitmapOverlay::SetupCamera: Error, the frontCamera is NULL" << std::endl;
+    MITK_ERROR << "BitmapOverlayWidget::SetupCamera: Error, the frontCamera is NULL" << std::endl;
     return;
   }
 
@@ -343,7 +342,7 @@ void QmitkBitmapOverlay::SetupCamera()
   this->Modified();
 }
 
-
+} // end namespace
 
 
 

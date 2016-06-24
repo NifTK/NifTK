@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef QmitkBitmapOverlay_h
-#define QmitkBitmapOverlay_h
+#ifndef niftkBitmapOverlayWidget_h
+#define niftkBitmapOverlayWidget_h
 
-#include "niftkIGIGuiExports.h"
+#include "niftkIGIOverlayEditorExports.h"
 #include <mitkBaseData.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
@@ -26,15 +26,18 @@ class vtkMapper;
 class vtkImageActor;
 class vtkImageMapper;
 
+namespace niftk
+{
+
 /**
- * \class QmitkBitmapOverlay
+ * \class BitmapOverlayWidget
  * \brief Used to draw a 2D image into the background of a VTK Render Window.
  */
-class NIFTKIGIGUI_EXPORT QmitkBitmapOverlay : public itk::Object
+class NIFTKIGIOVERLAYEDITOR_EXPORT BitmapOverlayWidget : public itk::Object
 {
 public:
 
-  mitkClassMacroItkParent( QmitkBitmapOverlay, itk::Object );
+  mitkClassMacroItkParent( BitmapOverlayWidget, itk::Object );
   itkNewMacro( Self );
 
   /**
@@ -129,11 +132,11 @@ public:
 
 protected:
 
-  QmitkBitmapOverlay(); // Purposefully hidden.
-  virtual ~QmitkBitmapOverlay(); // Purposefully hidden.
+  BitmapOverlayWidget(); // Purposefully hidden.
+  virtual ~BitmapOverlayWidget(); // Purposefully hidden.
 
-  QmitkBitmapOverlay(const QmitkBitmapOverlay&); // Purposefully not implemented.
-  QmitkBitmapOverlay& operator=(const QmitkBitmapOverlay&); // Purposefully not implemented.
+  BitmapOverlayWidget(const BitmapOverlayWidget&); // Purposefully not implemented.
+  BitmapOverlayWidget& operator=(const BitmapOverlayWidget&); // Purposefully not implemented.
 
 private:
 
@@ -158,5 +161,7 @@ private:
   bool                        m_AutoSelectNodes;
   bool                        m_FlipViewUp;
 };
+
+} // end namespace
 
 #endif
