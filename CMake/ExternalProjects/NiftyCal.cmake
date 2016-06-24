@@ -24,7 +24,7 @@ endif()
 if(BUILD_IGI)
 
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyCal.git")
-  set(version "27342c4071")
+  set(version "b1dfc341e0")
 
   niftkMacroDefineExternalProjectVariables(NiftyCal ${version} ${location})
   set(proj_DEPENDENCIES OpenCV Eigen AprilTags ITK)
