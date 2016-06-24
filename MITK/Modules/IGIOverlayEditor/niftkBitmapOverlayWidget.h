@@ -75,7 +75,7 @@ public:
   itkGetMacro(AutoSelectNodes, bool);
 
   /**
-   * \brief Setter and Getter for whether to flip the view up vector of the VTK camera, which is necessary for NVidia and not necessary for OpenCV.
+   * \brief Setter and Getter for whether to flip the view up vector of the VTK camera.
    */
   itkSetMacro(FlipViewUp, bool);
   itkGetMacro(FlipViewUp, bool);
@@ -116,17 +116,17 @@ public:
   void SetupCamera();
 
   /**
-   * \brief Called from QmitkSingle3DView when a DataStorage Change Event was emitted.
+   * \brief Called from niftk::Single3DViewWidget when a DataStorage Change Event was emitted.
    */
   void NodeChanged(const mitk::DataNode* node);
 
   /**
-   * \brief Called from QmitkSingle3DView when a DataStorage Node Added Event was emitted.
+   * \brief Called from niftk::Single3DViewWidget when a DataStorage Node Added Event was emitted.
    */
   void NodeAdded(const mitk::DataNode* node);
 
   /**
-   * \brief Called from QmitkSingle3DView when a DataStorage Node Removed Event was emitted.
+   * \brief Called from niftk::Single3DViewWidget when a DataStorage Node Removed Event was emitted.
    */
   void NodeRemoved(const mitk::DataNode* node);
 
@@ -140,11 +140,6 @@ protected:
   BitmapOverlayWidget& operator=(const BitmapOverlayWidget&); // Purposefully not implemented.
 
 private:
-
-  /**
-   * \brief Checks if a node is a valid image to be auto-selected.
-   */
-  void AutoSelectDataNode(const mitk::DataNode* node);
 
   // We don't own this, so neither do we delete this.
   vtkRenderWindow*               m_RenderWindow;

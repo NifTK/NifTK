@@ -65,7 +65,7 @@ BitmapOverlayWidget::~BitmapOverlayWidget()
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::SetDataStorage (mitk::DataStorage::Pointer dataStorage)
+void BitmapOverlayWidget::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
   m_DataStorage = dataStorage;
   this->Modified();
@@ -80,7 +80,7 @@ vtkRenderer* BitmapOverlayWidget::GetVtkRenderer()
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::SetRenderWindow( vtkRenderWindow* renderWindow )
+void BitmapOverlayWidget::SetRenderWindow(vtkRenderWindow* renderWindow)
 {
   m_RenderWindow = renderWindow;
   this->Modified();
@@ -104,7 +104,7 @@ void BitmapOverlayWidget::SetEnabled(const bool& enable)
 //-----------------------------------------------------------------------------
 bool BitmapOverlayWidget::IsEnabled()
 {
-  return  m_IsEnabled;
+  return m_IsEnabled;
 }
 
 
@@ -140,57 +140,39 @@ void BitmapOverlayWidget::SetOpacity(const double& opacity)
   m_Opacity = opacity;
   m_BackActor->SetOpacity(1.0);
   m_FrontActor->SetOpacity(m_Opacity);
-
   this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::AutoSelectDataNode(const mitk::DataNode* node)
-{
-  if (node != NULL && this->GetAutoSelectNodes())
-  {
-    // ToDo: These strings hard coded, as this widget in niftkCoreGui rather than niftkIGIGui.
-    if (node->GetName() == "NVIDIA SDI stream 0")
-    {
-      this->SetFlipViewUp(true);
-      this->SetNode(node);
-    }
-    else if (node->GetName() == "OpenCV image")
-    {
-      this->SetFlipViewUp(true);
-      this->SetNode(node);
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void BitmapOverlayWidget::NodeAdded (const mitk::DataNode * node)
+void BitmapOverlayWidget::NodeAdded (const mitk::DataNode *node)
 {
   if (m_ImageDataNode.IsNull())
-  {
-    this->AutoSelectDataNode(node);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void BitmapOverlayWidget::NodeChanged (const mitk::DataNode * node)
-{
-  if (m_ImageDataNode.IsNull())
-  {
-    this->AutoSelectDataNode(node);
-  }
-  else if (node == m_ImageDataNode )
   {
     mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-    if (image != NULL)
+    if (image != NULL && image->GetDimension() == 2)
     {
+      this->SetNode(node);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void BitmapOverlayWidget::NodeChanged (const mitk::DataNode *node)
+{
+  if (m_ImageDataNode.IsNotNull() && node == m_ImageDataNode)
+  {
+    mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+    if (image != NULL && image->GetDimension() == 2)
+    {
+      // Basically, as we know the node has changed in some way,
+      // and its the node we are watching, then we are trying to
+      // set modified flags, so that the next rendering pass will
+      // update the screen.
       m_FrontActor->SetInputData(image->GetVtkImageData());
       m_BackActor->SetInputData(image->GetVtkImageData());
       image->GetVtkImageData()->Modified();
-
       this->Modified();
     }
   }
@@ -198,9 +180,9 @@ void BitmapOverlayWidget::NodeChanged (const mitk::DataNode * node)
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::NodeRemoved (const mitk::DataNode * node )
+void BitmapOverlayWidget::NodeRemoved(const mitk::DataNode * node)
 {
-  if ( node == m_ImageDataNode )
+  if (m_ImageDataNode.IsNotNull() && node == m_ImageDataNode)
   {
     this->SetNode(NULL);
   }
@@ -220,7 +202,6 @@ bool BitmapOverlayWidget::SetNode(const mitk::DataNode* node)
 
   if(m_RenderWindow != NULL)
   {
-
     if (node == NULL)
     {
       m_FrontActor->SetInputData(NULL);
@@ -231,13 +212,13 @@ bool BitmapOverlayWidget::SetNode(const mitk::DataNode* node)
     else
     {
       mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-      if (image != NULL)
+      if (image != NULL && image->GetDimension() == 2)
       {
         m_FrontActor->SetInputData(image->GetVtkImageData());
         m_BackActor->SetInputData(image->GetVtkImageData());
 
-        m_BackRenderer->AddActor( m_BackActor );
-        m_FrontRenderer->AddActor( m_FrontActor );
+        m_BackRenderer->AddActor(m_BackActor);
+        m_FrontRenderer->AddActor(m_FrontActor);
 
         m_BackRenderer->InteractiveOff();
         m_FrontRenderer->InteractiveOff();
