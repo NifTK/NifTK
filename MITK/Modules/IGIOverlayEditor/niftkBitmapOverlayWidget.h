@@ -19,6 +19,7 @@
 #include <mitkBaseData.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
+#include <vtkSmartPointer.h>
 
 class vtkRenderer;
 class vtkRenderWindow;
@@ -146,20 +147,19 @@ private:
   void AutoSelectDataNode(const mitk::DataNode* node);
 
   // We don't own this, so neither do we delete this.
-  vtkRenderWindow*            m_RenderWindow;
+  vtkRenderWindow*               m_RenderWindow;
 
-  vtkRenderer*                m_BackRenderer;
-  vtkRenderer*                m_FrontRenderer;
-  vtkImageActor*              m_BackActor;
-  vtkImageActor*              m_FrontActor;
-  vtkImageMapper*             m_Mapper;
+  vtkSmartPointer<vtkRenderer>   m_BackRenderer;
+  vtkSmartPointer<vtkRenderer>   m_FrontRenderer;
+  vtkSmartPointer<vtkImageActor> m_BackActor;
+  vtkSmartPointer<vtkImageActor> m_FrontActor;
 
-  mitk::DataStorage::Pointer  m_DataStorage;
-  mitk::DataNode::Pointer     m_ImageDataNode;
-  bool                        m_IsEnabled;
-  double                      m_Opacity;
-  bool                        m_AutoSelectNodes;
-  bool                        m_FlipViewUp;
+  mitk::DataStorage::Pointer     m_DataStorage;
+  mitk::DataNode::Pointer        m_ImageDataNode;
+  bool                           m_IsEnabled;
+  double                         m_Opacity;
+  bool                           m_AutoSelectNodes;
+  bool                           m_FlipViewUp;
 };
 
 } // end namespace

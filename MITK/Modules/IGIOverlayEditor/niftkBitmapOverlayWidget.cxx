@@ -29,6 +29,7 @@
 
 namespace niftk
 {
+
 //-----------------------------------------------------------------------------
 BitmapOverlayWidget::BitmapOverlayWidget()
 : m_RenderWindow(NULL)
@@ -36,7 +37,6 @@ BitmapOverlayWidget::BitmapOverlayWidget()
 , m_FrontRenderer(NULL)
 , m_BackActor(NULL)
 , m_FrontActor(NULL)
-, m_Mapper(NULL)
 , m_DataStorage(NULL)
 , m_ImageDataNode(NULL)
 , m_IsEnabled(false)
@@ -44,11 +44,10 @@ BitmapOverlayWidget::BitmapOverlayWidget()
 , m_AutoSelectNodes(true)
 , m_FlipViewUp(true)
 {
-  m_BackRenderer        = vtkRenderer::New();
-  m_FrontRenderer       = vtkRenderer::New();
-  m_BackActor           = vtkImageActor::New();
-  m_FrontActor          = vtkImageActor::New();
-  m_Mapper              = vtkImageMapper::New();
+  m_BackRenderer  = vtkSmartPointer<vtkRenderer>::New();
+  m_FrontRenderer = vtkSmartPointer<vtkRenderer>::New();
+  m_BackActor     = vtkSmartPointer<vtkImageActor>::New();
+  m_FrontActor    = vtkSmartPointer<vtkImageActor>::New();
 }
 
 
@@ -61,31 +60,6 @@ BitmapOverlayWidget::~BitmapOverlayWidget()
     {
       this->Disable();
     }
-  }
-
-  if ( m_Mapper != NULL )
-  {
-    m_Mapper->Delete();
-  }
-
-  if ( m_BackActor != NULL )
-  {
-    m_BackActor->Delete();
-  }
-
-  if ( m_FrontActor != NULL )
-  {
-    m_FrontActor->Delete();
-  }
-
-  if ( m_BackRenderer != NULL )
-  {
-    m_BackRenderer->Delete();
-  }
-
-  if ( m_FrontRenderer != NULL )
-  {
-    m_FrontRenderer->Delete();
   }
 }
 
