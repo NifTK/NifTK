@@ -162,11 +162,12 @@ void Single3DViewWidget::NodeAdded(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void Single3DViewWidget::NodeRemoved (const mitk::DataNode * node )
+void Single3DViewWidget::NodeRemoved (const mitk::DataNode * node)
 {
-  if ( node == m_ImageNode )
+  m_BitmapOverlay->NodeRemoved(node);
+
+  if (m_ImageNode.IsNotNull() && node == m_ImageNode)
   {
-    m_BitmapOverlay->NodeRemoved(node);
     this->SetImageNode(NULL);
   }
 }
@@ -175,10 +176,7 @@ void Single3DViewWidget::NodeRemoved (const mitk::DataNode * node )
 //-----------------------------------------------------------------------------
 void Single3DViewWidget::NodeChanged(const mitk::DataNode* node)
 {
-  if (m_ImageNode.IsNotNull())
-  {
-    m_BitmapOverlay->NodeChanged(node);
-  }
+  m_BitmapOverlay->NodeChanged(node);
 }
 
 
