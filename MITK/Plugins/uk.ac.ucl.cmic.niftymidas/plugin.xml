@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+  <extension id="uk.ac.ucl.cmic.niftymidas" point="org.blueberry.osgi.applications">
+    <application>
+      <run class="QmitkNiftyMIDASApplication"/>
+    </application>
+  </extension>
+
+  <extension point="org.blueberry.ui.perspectives">
+    <perspective
+      id="uk.ac.ucl.cmic.niftymidas.segmentation_perspective"
+      name="MIDAS Segmentation"
+      class="niftk::SegmentationPerspective"
+      icon="resources/icon_ion.xpm">
+    </perspective>
+  </extension>
+
+  <extension point="org.blueberry.ui.perspectives">
+    <perspective
+      id="uk.ac.ucl.cmic.niftymidas.qc_perspective"
+      name="MIDAS QC"
+      class="niftk::QCPerspective"
+      icon="resources/icon_ion.xpm">
+    </perspective>
+  </extension>
+
+</plugin>

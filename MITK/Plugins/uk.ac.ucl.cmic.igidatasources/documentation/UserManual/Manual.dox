@@ -1,0 +1,88 @@
+/**
+\page uk_ac_ucl_cmic_igidatasources The Data Sources View
+
+\image html icon.png "The Icon for Data Sources View"
+
+\section DataSourcesViewIntro Introduction
+
+The CMIC Data Sources plugin provides a single, consistent interface to control
+input data sources such as Trackers or Imaging Devices. The Data Sources plugin
+enables the user to create/start or destroy/stop each Data Source,
+start recording, stop recording and playback data in a consistent fashion.
+
+\section DataSourceViewMainControls Main Controls
+
+\image html DataSourcesView.png "Figure 1: The Main Controls"
+
+The main controls are shown in Figure 1. A drop down box displays the list of data sources.
+These are dynamically discovered at run-time. If you can't find the data-source you want,
+it may not have been compiled, or it compiled, but failed to load.
+
+In this screenshot, we see "USB Frame Grabber" has been selected, which is a data-source to grab
+from a USB source such as a web-cam or USB frame-grabber.
+
+\li "+" The plus button will create the data-source.
+\li "-" The minus button will destroy the currently selected data-source, or the most recently created one if none is currently selected.
+
+\image html DataSourcesViewFrameGrabber.png "Figure 2: Created a USB Frame Grabber"
+
+If we hit the plus button, the data-source is created. Figure 2 shows the appearance
+of the plugin. The "Sources" table contains a row per data source, and displays
+the status, frame-rate, and lag in milliseconds. The icon will be Green if the data
+is arriving at the expected rate, and Red if it is deemed to be late.
+
+If a data-source requires configuration in order to create itself, a dialog
+box will be raised asking you to enter parameters. For example, if you create
+an OpenIGTLink server, you will need to supply the TCP/IP port number.
+
+\section DataSourceViewPreferences Preferences
+
+\image html DataSourcesViewPreferences.png "Figure 3: Preferences to control the refresh rate, and where to record data to."
+
+Figure 3 shows the preferences:
+
+\li Data is grabbed from each device and buffered. However, you can independently control the
+refresh rate of the screen. Values between 5-20 fps are reasonable.
+\li You can set where data is recorded to. Each time you record data, you will record
+all currently created data-sources simultaneously as a synchronised "session".
+Each recording session will be stored in a separate time-stamped folder in the folder specified here.
+
+\section DataSourceViewRecording Recording
+
+The buttons are simple:
+
+\li Red circle: Start recording
+\li Red square: Stop recording
+\li Green arrow: Play back a previously recorded session.
+
+Each time you start recording, that session is stored in a new time-stamped folder,
+and each data-source writes into its own folder within that.
+
+\section DataSourceViewTechnical Technical Notes
+
+\li Each Data Source is implemented as its own dynamically loaded library. These libraries
+should be in a folder "niftkIGIServices" where the executable resides. The executable
+looks in this folder and loads all available plugins. So, if your Data Source is not visible,
+it was either not compiled, of failed to load. The most common cause of failure to load
+is missing dependencies (e.g. Qt libraries)
+\li While the design works equivalently in Windows, Linux, Mac, lots of device specific
+things will only be available on certain platforms. eg. NVIDIA SDI Data Source will only
+be available on Windows. The build process should only build plugins valid for each OS.
+
+\section DataSourceViewTracking Tracking
+
+There are two types of tracking interface:
+
+\li Tracking data can arrive over the network via OpenIGTLink (e.g. from NiftyGuide, Slicer, PLUS or MITK).
+In this case you should create either an OpenIGTLink Client or Server as appropriate, depending on what you are connecting to.
+\li For <a href="http://www.northerndigital.com">NDI</a> Polaris and Aurora, it makes
+sense to have them built into the main application. So, you can create a tracker
+interface directly. We use the MITK method whereby a single file contains the
+tool information. Use the MITK IGT Navigation Tool Manager to create a .IGTToolStorage file.
+This is the file that is required for each NDI Tracker listed in this plugin.
+
+\section DataSourcesViewReferences References
+
+If you use this plugin, please cite <a href="http://link.springer.com/article/10.1007%2Fs11548-014-1124-7">this paper.</a>
+*/
+

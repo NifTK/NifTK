@@ -61,4 +61,15 @@ macro(NIFTK_CREATE_COMMAND_LINE_APPLICATION)
   if(_APP_INSTALL_SCRIPT)
     NIFTK_GENERATE_CLI_SCRIPT(NAME ${_APP_NAME})
   endif()
+
+  ##############################################################
+  # If no GUI, we still need to make sure we have all the
+  # necessary libraries for the command line apps to work.
+  ##############################################################
+  if(NOT BUILD_GUI)
+    if(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES)
+      NIFTK_FIXUP_COMMAND_LINE_APPLICATIONS(APPS ${_APP_NAME})
+    endif()
+  endif()
+
 endmacro()

@@ -26,13 +26,13 @@
 #! NO_PACKAGE option is given, the find_package() call is suppressed.
 #!
 #! For each registered external project there must exist a file called
-#! CMakeExternals/<name>.cmake which defines the build process for
+#! ExternalProjects/<name>.cmake which defines the build process for
 #! the external project.
 #!
 #! \note Note that multiple calls of this function must be ordered
 #! relative to their declared dependencies. This applies to the DEPENDS
 #! arguments of this function as well as the actual target dependencies
-#! declared in the CMakeExternals/<name>.cmake file.
+#! declared in the ExternalProjects/<name>.cmake file.
 #!
 function(mitkFunctionAddExternalProject)
   cmake_parse_arguments(EP "ON;OFF;NO_CACHE;ADVANCED;NO_PACKAGE" "NAME;DOC;PACKAGE" "DEPENDS;COMPONENTS" ${ARGN})

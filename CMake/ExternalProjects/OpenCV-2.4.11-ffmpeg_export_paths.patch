@@ -1,0 +1,12 @@
+diff -Naur src/cmake/templates/OpenCVConfig.cmake.in src-modified/cmake/templates/OpenCVConfig.cmake.in
+--- src/cmake/templates/OpenCVConfig.cmake.in	2016-04-20 11:30:29.042218048 +0100
++++ src-modified/cmake/templates/OpenCVConfig.cmake.in	2016-04-20 11:33:23.933001495 +0100
+@@ -80,6 +80,8 @@
+ set(OpenCV_USE_CUBLAS   @HAVE_CUBLAS@)
+ set(OpenCV_USE_CUFFT    @HAVE_CUFFT@)
+ set(OpenCV_USE_NVCUVID  @HAVE_NVCUVID@)
++set(OpenCV_USE_FFMPEG   @HAVE_FFMPEG@)
++set(OpenCV_FFMPEG_CODEC_LIB @FFMPEG_CODEC_LIB@)
+ 
+ # Android API level from which OpenCV has been compiled is remembered
+ if(ANDROID)

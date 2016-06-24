@@ -282,7 +282,7 @@ if(BUILD_IGI)
 endif(BUILD_IGI)
 
 foreach(p ${external_projects})
-  include("CMake/CMakeExternals/${p}.cmake")
+  include("CMake/ExternalProjects/${p}.cmake")
 
   list(APPEND NIFTK_APP_OPTIONS -DNIFTK_VERSION_${p}:STRING=${${p}_VERSION})
   list(APPEND NIFTK_APP_OPTIONS -DNIFTK_LOCATION_${p}:STRING=${${p}_LOCATION})
@@ -457,9 +457,11 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DNiftySeg_DEBUG_POSTFIX:STRING=d
       -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
       -Daruco_DIR:PATH=${aruco_DIR}
-      -DAprilTags_DIR:PATH=${AprilTags_DIR}
+      -DAprilTags_DIRECTORY:PATH=${AprilTags_DIR}
       -DPython_DIR:PATH=${Python_DIR}
       -DPCL_DIR:PATH=${PCL_DIR}
+      -DOpenCV_DIR:PATH=${OpenCV_DIR}                 # Issue 4304: Needed for ffmpeg packaging to work.
+      -DOPENCV_WITH_FFMPEG:BOOL=${OPENCV_WITH_FFMPEG} # Issue 4304:
     DEPENDS ${proj_DEPENDENCIES}
   )
 
