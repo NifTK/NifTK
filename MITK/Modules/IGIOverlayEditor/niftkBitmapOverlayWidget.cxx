@@ -41,13 +41,14 @@ BitmapOverlayWidget::BitmapOverlayWidget()
 , m_ImageDataNode(NULL)
 , m_IsEnabled(false)
 , m_Opacity(0.5)
-, m_AutoSelectNodes(true)
 , m_FlipViewUp(true)
 {
   m_BackRenderer  = vtkSmartPointer<vtkRenderer>::New();
   m_FrontRenderer = vtkSmartPointer<vtkRenderer>::New();
   m_BackActor     = vtkSmartPointer<vtkImageActor>::New();
   m_FrontActor    = vtkSmartPointer<vtkImageActor>::New();
+  m_ClippingRange[0] = 1;
+  m_ClippingRange[1] = 100000;
 }
 
 
@@ -141,6 +142,23 @@ void BitmapOverlayWidget::SetOpacity(const double& opacity)
   m_BackActor->SetOpacity(1.0);
   m_FrontActor->SetOpacity(m_Opacity);
   this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void BitmapOverlayWidget::SetClippingRange(const double& near, const double& far)
+{
+  m_ClippingRange[0] = near;
+  m_ClippingRange[1] = far;
+  this->Modified();
+}
+
+
+//-----------------------------------------------------------------------------
+void BitmapOverlayWidget::GetClippingRange(double& near, double& far)
+{
+  near = m_ClippingRange[0];
+  far = m_ClippingRange[1];
 }
 
 
@@ -277,12 +295,8 @@ void BitmapOverlayWidget::SetupCamera()
   int    imageSize[3];
   double spacing[3];
   double origin[3];
-  double clippingRange[2];
   double xAxis[3] = {1, 0, 0};
   double yAxis[3] = {0, 1, 0};
-
-  clippingRange[0] = 1;
-  clippingRange[1] = 100000;
 
   image->GetDimensions(imageSize);
   image->GetOrigin(origin);
@@ -291,8 +305,8 @@ void BitmapOverlayWidget::SetupCamera()
   windowSize[0] = m_RenderWindow->GetSize()[0];
   windowSize[1] = m_RenderWindow->GetSize()[1];
 
-  niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, m_FlipViewUp, *backCamera);
-  niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, clippingRange, m_FlipViewUp, *frontCamera);
+  niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, m_ClippingRange, m_FlipViewUp, *backCamera);
+  niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, m_ClippingRange, m_FlipViewUp, *frontCamera);
 
   this->Modified();
 }

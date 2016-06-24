@@ -69,12 +69,6 @@ public:
   itkGetMacro(Opacity, double);
 
   /**
-   * \brief Setter and Getter for AutoSelectNodes, which if true will try and select relevant nodes ("NVIDIA SDI stream 0", "OpenCV image") by name.
-   */
-  itkSetMacro(AutoSelectNodes, bool);
-  itkGetMacro(AutoSelectNodes, bool);
-
-  /**
    * \brief Setter and Getter for whether to flip the view up vector of the VTK camera.
    */
   itkSetMacro(FlipViewUp, bool);
@@ -130,6 +124,8 @@ public:
    */
   void NodeRemoved(const mitk::DataNode* node);
 
+  void SetClippingRange(const double& near, const double& far);
+  void GetClippingRange(double& near, double& far);
 
 protected:
 
@@ -153,8 +149,8 @@ private:
   mitk::DataNode::Pointer        m_ImageDataNode;
   bool                           m_IsEnabled;
   double                         m_Opacity;
-  bool                           m_AutoSelectNodes;
   bool                           m_FlipViewUp;
+  double                         m_ClippingRange[2];
 };
 
 } // end namespace
