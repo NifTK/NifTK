@@ -338,6 +338,43 @@ Linux release clean up:
   - tags
 
   tags:
+  - mac, release
+
+
+##########################################
+# Jobs for cleaning up
+##########################################
+
+Linux continuous clean up:
+
+  stage: cleanup
+
+  script:
+  - rm -rf ${sb_dir}
+  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+
+  when: always
+
+  only:
+  - branches
+
+  tags:
+  - linux, continuous
+
+Linux release clean up:
+
+  stage: cleanup
+
+  script:
+  - rm -rf ${sb_dir}
+  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+
+  when: always
+
+  only:
+  - tags
+
+  tags:
   - linux, release
 
 Mac continuous clean up:

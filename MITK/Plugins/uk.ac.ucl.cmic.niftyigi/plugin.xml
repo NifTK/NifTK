@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+  <extension id="uk.ac.ucl.cmic.niftyigi" point="org.blueberry.osgi.applications">
+    <application>
+      <run class="QmitkNiftyIGIApplication"/>
+    </application>
+  </extension>
+
+  <extension point="org.blueberry.ui.perspectives">
+    <perspective
+      id="uk.ac.ucl.cmic.niftyigi.igiperspective"
+      name="IGI Perspective"
+      class="QmitkCommonAppsIGIPerspective"
+	  icon="resources/icon_cmic.xpm">
+    </perspective>
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.commonapps.QmitkCommonAppsApplicationPreferencePage" name="Application Preferences" class="QmitkCommonAppsApplicationPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.commonapps.QmitkCommonAppsApplicationPreferencePageKeywords"></keywordreference>
+    </page>
+  </extension>
+
+</plugin>

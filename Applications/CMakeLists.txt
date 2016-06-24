@@ -1,0 +1,195 @@
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+find_package(VTK REQUIRED)
+if(VTK_FOUND)
+  include(${VTK_USE_FILE})
+endif(VTK_FOUND)
+
+set(ITK_NO_IO_FACTORY_REGISTER_MANAGER 0)
+include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
+
+find_package(CUDA)
+
+set(_applications
+  2DImagesTo3DVolume
+  AbsImageFilter
+  Add
+  AddBorderToImage
+  Affine
+  And
+  AnonymiseDICOMImages
+  AnonymiseDICOMMammograms
+  ApplyMaskToImage
+  AtlasStatistics
+  Average
+  BackProject2Dto3D
+  BasicImageFeatures
+  BasicImageFeatures3D
+  BilateralImageFilter
+  BinaryShapeBasedSuperSamplingFilter
+  BlockMatching
+  BreastDCEandADC
+  BreastDensityCalculationGivenMRISegmentation
+  BreastDensityFromMRIs
+  BreastDensityFromMRIsGivenMaskAndImage
+  BreastDicomSeriesReadImageWrite
+  BreastMaskSegmentationFromMRI
+  BSI
+  CombineSegmentations
+  ComposeITKAffineTransformations
+  ComputeImageHistogram
+  ComputeJointHistogram
+  ComputeMeanTransformation
+  ConnectedComponents
+#  ContourExtractor2DImageFilter
+  ConvertImage
+  ConvertImageToDICOM
+  ConvertImageToVTKStructuredGrid
+  ConvertMidasStrToNii
+  ConvertNiftiVectorImage
+  ConvertPLYtoVTK
+  ConvertRawDICOMMammogramsToPresentation
+  ConvertToMidasStr
+  ConvertTransformToRIREFormat
+  CreateAffineTransform
+  CreateAffineTransform2D
+#  CreateBreastMesh
+  CreateMaskFromLabels
+  CreateMaskImage
+  CreateTransformation
+  CropImage
+  CTEAcosta2009Subsampling
+  CTEAssignAtlasValues
+  CTEBourgeat2008
+  CTEDas2009
+  CTEExtractGMWMBoundaryFromLabelImage
+  CTEHighRes
+  CTEHuttonLayering
+  CTEJones2000
+  CTEMaskedSmoothing
+  CTEPrepareVolumes
+  CTEYezzi2003
+  CUDAInfo
+  CurveFitRegistration
+  DecimatePolyData
+  DecomposeAffineMatrix
+  DeformationFieldTargetRegistrationError
+  Denoise
+  DicomSeriesReadImageWrite
+  Dilate
+  DilateMaskAndCrop
+  DistanceTransform
+  DoubleWindowBSI
+  DynamicContrastEnhancementAnalysis
+  ElasticBodySplineWarp
+  Erode
+  ExportDICOMTagsToCSVFile
+  EVFFCECT
+  Extract2DSliceFrom3DImage
+  ExtractCurvatures
+  ExtractRegion
+  ExtractScalp
+  ExtractZeroCrossing
+  ExtrudeMaskToVolume
+#  FFD
+  FillHoles
+  ForwardAndBackProjectionDifferenceFilter
+  ForwardProject3Dto2D
+  Gaussian
+  GetMetricValue
+  GradientVectorField
+  HistogramEqualization
+  HistogramMatchingImageFilter
+  ImageInfo
+  ImageMomentsRegistration
+  ImageReconstruction
+  Inject
+  InvertAffineTransform
+  InvertImage
+  InvertTransformation
+  ITKAffineResampleImage
+  JacobianStatistics
+  KmeansClassifier
+  KMeansWindowBSI
+  KMeansWindowWithLinearRegressionNormalisationBSI
+  KNDoubleWindowBSI
+  LogInvertImage
+  MakeLapUSProbeAprilTagsVisualisation
+  MakeLapUSProbeARUCOModel
+#  MakeLapUSProbeBasicModel
+  MammogramCharacteristics
+  MammogramFatSubtraction
+  MammogramMaskSegmentation
+  MammogramPectoralisSegmentation
+  MammographicTumourDistribution
+  MapVolumeDataToPolyDataVertices
+  MarchingCubes
+  MaskDICOMMammograms
+  MeshFromLabels
+  MTPDbc
+  Multiply
+  MultiplyTransformation
+  MultiScaleHessianImageEnhancement2D
+  MultiScaleHessianImageEnhancement3D
+  N4BiasFieldCorrection
+  NegateImage
+  OCTVolumeConstructor
+  OtsuThresholdImage
+  PadImage
+  PrintDICOMSeries
+  ProjectionGeometry
+  RegionalMammographicDensity
+  ReorientateImage
+  Rescale
+  RescaleImageUsingHistogramPercentiles
+  ResetDirectionField
+  ResetVoxelDimensionsField
+  SampleImage
+  ScalarConnectedComponentImageFilter
+  SegmentationStatistics
+  SegmentForegroundFromBackground
+  SeriesReadVolumeWrite
+  SetBorderPixel
+  ShiftProb
+  ShiftScale
+  ShrinkImage
+  SmoothPolyData
+  SplitVolumeIntoVoxelPlanes
+  STAPLE
+  SubsampleImage
+  Subtract
+  SubtractSliceFromVolume
+  SwapIntensity
+  TestCompareImage
+  TestImage
+  ThinPlateSplineScatteredDataPointSetToImage
+  ThinPlateSplineWarp
+  Threshold
+  Transformation
+  TransformPoint3Dto2D
+  TransformPolyData
+  UnaryImageOperatorsOnDirectoryTree
+  VesselExtractor
+  VolToFreeSurfer
+  VotingBinaryIterativeHoleFillingImageFilter
+  VoxelWiseMaximumIntensities
+  VTKDistanceToSurface
+  VTKIterativeClosestPointRegister
+)
+
+
+foreach(app ${_applications})
+  add_subdirectory(${app})
+endforeach()
