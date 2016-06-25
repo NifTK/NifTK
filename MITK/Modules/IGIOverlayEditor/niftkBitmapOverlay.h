@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkBitmapOverlayWidget_h
-#define niftkBitmapOverlayWidget_h
+#ifndef niftkBitmapOverlay_h
+#define niftkBitmapOverlay_h
 
 #include "niftkIGIOverlayEditorExports.h"
 #include <mitkBaseData.h>
@@ -31,14 +31,14 @@ namespace niftk
 {
 
 /**
- * \class BitmapOverlayWidget
+ * \class BitmapOverlay
  * \brief Used to draw a 2D image into the background of a VTK Render Window.
  */
-class NIFTKIGIOVERLAYEDITOR_EXPORT BitmapOverlayWidget : public itk::Object
+class NIFTKIGIOVERLAYEDITOR_EXPORT BitmapOverlay : public itk::Object
 {
 public:
 
-  mitkClassMacroItkParent( BitmapOverlayWidget, itk::Object );
+  mitkClassMacroItkParent( BitmapOverlay, itk::Object );
   itkNewMacro( Self );
 
   /**
@@ -129,11 +129,11 @@ public:
 
 protected:
 
-  BitmapOverlayWidget(); // Purposefully hidden.
-  virtual ~BitmapOverlayWidget(); // Purposefully hidden.
+  BitmapOverlay(); // Purposefully hidden.
+  virtual ~BitmapOverlay(); // Purposefully hidden.
 
-  BitmapOverlayWidget(const BitmapOverlayWidget&); // Purposefully not implemented.
-  BitmapOverlayWidget& operator=(const BitmapOverlayWidget&); // Purposefully not implemented.
+  BitmapOverlay(const BitmapOverlay&); // Purposefully not implemented.
+  BitmapOverlay& operator=(const BitmapOverlay&); // Purposefully not implemented.
 
 private:
 

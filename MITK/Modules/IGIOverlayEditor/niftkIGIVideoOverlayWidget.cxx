@@ -52,7 +52,8 @@ IGIVideoOverlayWidget::IGIVideoOverlayWidget(QWidget * /*parent*/)
   m_TrackingCombo->setCurrentIndex(0);
 
   m_LeftImageCheckBox->setChecked(true);
-  m_RightImageCheckBox->setChecked(true);
+  m_RightImageCheckBox->setChecked(false);
+  m_RightOverlayViewer->setVisible(false);
   m_3DViewCheckBox->setChecked(true);
 
   int width = m_Splitter->width();

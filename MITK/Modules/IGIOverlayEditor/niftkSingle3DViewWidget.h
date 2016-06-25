@@ -16,6 +16,7 @@
 #define niftkSingle3DViewWidget_h
 
 #include "niftkIGIOverlayEditorExports.h"
+#include "niftkBitmapOverlay.h"
 #include <QmitkCmicLogo.h>
 
 #include <mitkRenderWindowFrame.h>
@@ -56,6 +57,12 @@ public:
   virtual ~Single3DViewWidget();
 
   /**
+   * \brief Stores ds locally, and sets the data storage on the contained
+   * niftk::BitmapOverlay and QmitkRenderWindow.
+   */
+  void SetDataStorage(mitk::DataStorage* ds);
+
+  /**
    * \brief Returns a pointer to the contained QmitkRenderWindow.
    */
   QmitkRenderWindow* GetRenderWindow() const;
@@ -91,10 +98,15 @@ public:
   void SetDepartmentLogoPath(const QString& path);
 
   /**
-   * \brief Stores ds locally, and sets the data storage on the contained
-   * niftk::BitmapOverlay and QmitkRenderWindow.
+   * \brief Retrieves the opacity from the niftk::BitmapOverlayWidget.
    */
-  virtual void SetDataStorage(mitk::DataStorage* ds);
+  float GetOpacity() const;
+
+  /**
+   * \brief Sets the opacity on the niftk::BitmapOverlayWidget.
+   * \param value [0..1]
+   */
+  void SetOpacity(const float& value);
 
   /**
    * \brief Stores the node locally.
@@ -130,10 +142,10 @@ protected:
    */
   virtual void NodeAdded(const mitk::DataNode* node) {}
 
-  mitk::DataStorage::Pointer                    m_DataStorage;
-  mitk::Image::Pointer                          m_Image;
-  mitk::DataNode::Pointer                       m_ImageNode;
-  double                                        m_ClippingRange[2];
+  mitk::DataStorage::Pointer         m_DataStorage;
+  mitk::Image::Pointer               m_Image;
+  mitk::DataNode::Pointer            m_ImageNode;
+  double                             m_ClippingRange[2];
 
 private:
 
@@ -142,12 +154,13 @@ private:
   void InternalNodeChanged(const mitk::DataNode* node);
   void InternalNodeAdded(const mitk::DataNode* node);
 
-  mitk::RenderingManager                       *m_RenderingManager;
-  QmitkRenderWindow                            *m_RenderWindow;
-  QGridLayout                                  *m_Layout;
-  mitk::RenderWindowFrame::Pointer              m_RenderWindowFrame;
-  mitk::GradientBackground::Pointer             m_GradientBackground;
-  CMICLogo::Pointer                             m_LogoRendering;
+  mitk::RenderingManager            *m_RenderingManager;
+  QmitkRenderWindow                 *m_RenderWindow;
+  QGridLayout                       *m_Layout;
+  mitk::RenderWindowFrame::Pointer   m_RenderWindowFrame;
+  mitk::GradientBackground::Pointer  m_GradientBackground;
+  CMICLogo::Pointer                  m_LogoRendering;
+  niftk::BitmapOverlay::Pointer      m_BitmapOverlay;
 };
 
 } // end namespace

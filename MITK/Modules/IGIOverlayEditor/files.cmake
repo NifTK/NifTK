@@ -13,7 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
-  niftkBitmapOverlayWidget.cxx
+  niftkBitmapOverlay.cxx
   niftkSingle3DViewWidget.cxx
   niftkSingleUltrasoundWidget.cxx
   niftkSingleVideoWidget.cxx

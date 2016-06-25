@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkBitmapOverlayWidget.h"
+#include "niftkBitmapOverlay.h"
 #include <niftkVTKFunctions.h>
 
 #include <itkObject.h>
@@ -31,7 +31,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-BitmapOverlayWidget::BitmapOverlayWidget()
+BitmapOverlay::BitmapOverlay()
 : m_RenderWindow(NULL)
 , m_BackRenderer(NULL)
 , m_FrontRenderer(NULL)
@@ -53,7 +53,7 @@ BitmapOverlayWidget::BitmapOverlayWidget()
 
 
 //-----------------------------------------------------------------------------
-BitmapOverlayWidget::~BitmapOverlayWidget()
+BitmapOverlay::~BitmapOverlay()
 {
   if ( m_RenderWindow != NULL )
   {
@@ -66,7 +66,7 @@ BitmapOverlayWidget::~BitmapOverlayWidget()
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
+void BitmapOverlay::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 {
   m_DataStorage = dataStorage;
   this->Modified();
@@ -74,14 +74,14 @@ void BitmapOverlayWidget::SetDataStorage(mitk::DataStorage::Pointer dataStorage)
 
 
 //-----------------------------------------------------------------------------
-vtkRenderer* BitmapOverlayWidget::GetVtkRenderer()
+vtkRenderer* BitmapOverlay::GetVtkRenderer()
 {
   return m_BackRenderer;
 }
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::SetRenderWindow(vtkRenderWindow* renderWindow)
+void BitmapOverlay::SetRenderWindow(vtkRenderWindow* renderWindow)
 {
   m_RenderWindow = renderWindow;
   this->Modified();
@@ -89,7 +89,7 @@ void BitmapOverlayWidget::SetRenderWindow(vtkRenderWindow* renderWindow)
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::SetEnabled(const bool& enable)
+void BitmapOverlay::SetEnabled(const bool& enable)
 {
   if (enable)
   {
@@ -103,14 +103,14 @@ void BitmapOverlayWidget::SetEnabled(const bool& enable)
 
 
 //-----------------------------------------------------------------------------
-bool BitmapOverlayWidget::IsEnabled()
+bool BitmapOverlay::IsEnabled()
 {
   return m_IsEnabled;
 }
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::Enable()
+void BitmapOverlay::Enable()
 {
   if ( !this->IsEnabled() )
   {
@@ -123,7 +123,7 @@ void BitmapOverlayWidget::Enable()
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::Disable()
+void BitmapOverlay::Disable()
 {
   if ( this->IsEnabled() )
   {
@@ -136,7 +136,7 @@ void BitmapOverlayWidget::Disable()
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::SetOpacity(const double& opacity)
+void BitmapOverlay::SetOpacity(const double& opacity)
 {
   m_Opacity = opacity;
   m_BackActor->SetOpacity(1.0);
@@ -146,7 +146,7 @@ void BitmapOverlayWidget::SetOpacity(const double& opacity)
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::SetClippingRange(const double& near, const double& far)
+void BitmapOverlay::SetClippingRange(const double& near, const double& far)
 {
   m_ClippingRange[0] = near;
   m_ClippingRange[1] = far;
@@ -155,7 +155,7 @@ void BitmapOverlayWidget::SetClippingRange(const double& near, const double& far
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::GetClippingRange(double& near, double& far)
+void BitmapOverlay::GetClippingRange(double& near, double& far)
 {
   near = m_ClippingRange[0];
   far = m_ClippingRange[1];
@@ -163,7 +163,7 @@ void BitmapOverlayWidget::GetClippingRange(double& near, double& far)
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::NodeAdded (const mitk::DataNode *node)
+void BitmapOverlay::NodeAdded (const mitk::DataNode *node)
 {
   if (m_ImageDataNode.IsNull())
   {
@@ -177,7 +177,7 @@ void BitmapOverlayWidget::NodeAdded (const mitk::DataNode *node)
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::NodeChanged (const mitk::DataNode *node)
+void BitmapOverlay::NodeChanged (const mitk::DataNode *node)
 {
   if (m_ImageDataNode.IsNotNull() && node == m_ImageDataNode)
   {
@@ -198,7 +198,7 @@ void BitmapOverlayWidget::NodeChanged (const mitk::DataNode *node)
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::NodeRemoved(const mitk::DataNode * node)
+void BitmapOverlay::NodeRemoved(const mitk::DataNode * node)
 {
   if (m_ImageDataNode.IsNotNull() && node == m_ImageDataNode)
   {
@@ -208,13 +208,13 @@ void BitmapOverlayWidget::NodeRemoved(const mitk::DataNode * node)
 
 
 //-----------------------------------------------------------------------------
-bool BitmapOverlayWidget::SetNode(const mitk::DataNode* node)
+bool BitmapOverlay::SetNode(const mitk::DataNode* node)
 {
   bool wasSuccessful = false;
 
   if (m_DataStorage.IsNull())
   {
-    MITK_ERROR << "BitmapOverlayWidget::SetNode: Error, DataStorage is NULL" << std::endl;
+    MITK_ERROR << "BitmapOverlay::SetNode: Error, DataStorage is NULL" << std::endl;
     return wasSuccessful;
   }
 
@@ -261,7 +261,7 @@ bool BitmapOverlayWidget::SetNode(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlayWidget::SetupCamera()
+void BitmapOverlay::SetupCamera()
 {
   vtkImageData *image = m_BackActor->GetInput();
   if (image == NULL)
@@ -273,21 +273,21 @@ void BitmapOverlayWidget::SetupCamera()
 
   if (m_RenderWindow == NULL)
   {
-    MITK_ERROR << "BitmapOverlayWidget::SetupCamera: Error, the vtkRenderWindow is NULL" << std::endl;
+    MITK_ERROR << "BitmapOverlay::SetupCamera: Error, the vtkRenderWindow is NULL" << std::endl;
     return;
   }
 
   vtkCamera* backCamera = m_BackRenderer->GetActiveCamera();
   if (backCamera == NULL)
   {
-    MITK_ERROR << "BitmapOverlayWidget::SetupCamera: Error, the backCamera is NULL" << std::endl;
+    MITK_ERROR << "BitmapOverlay::SetupCamera: Error, the backCamera is NULL" << std::endl;
     return;
   }
 
   vtkCamera* frontCamera = m_FrontRenderer->GetActiveCamera();
   if (frontCamera == NULL)
   {
-    MITK_ERROR << "BitmapOverlayWidget::SetupCamera: Error, the frontCamera is NULL" << std::endl;
+    MITK_ERROR << "BitmapOverlay::SetupCamera: Error, the frontCamera is NULL" << std::endl;
     return;
   }
 

@@ -24,15 +24,16 @@ Single3DViewWidget::Single3DViewWidget(QWidget* parent,
                                        Qt::WindowFlags f,
                                        mitk::RenderingManager* renderingManager)
 : QWidget(parent, f)
-, m_DataStorage(NULL)
-, m_Image(NULL)
-, m_ImageNode(NULL)
+, m_DataStorage(nullptr)
+, m_Image(nullptr)
+, m_ImageNode(nullptr)
 , m_RenderingManager(renderingManager)
-, m_RenderWindow(NULL)
-, m_Layout(NULL)
-, m_RenderWindowFrame(NULL)
-, m_GradientBackground(NULL)
-, m_LogoRendering(NULL)
+, m_RenderWindow(nullptr)
+, m_Layout(nullptr)
+, m_RenderWindowFrame(nullptr)
+, m_GradientBackground(nullptr)
+, m_LogoRendering(nullptr)
+, m_BitmapOverlay(nullptr)
 {
   /******************************************************
    * Use the global RenderingManager if none was specified
@@ -54,6 +55,10 @@ Single3DViewWidget::Single3DViewWidget(QWidget* parent,
 
   m_RenderWindow->GetRenderer()->GetVtkRenderer()->InteractiveOff();
   m_RenderWindow->GetVtkRenderWindow()->GetInteractor()->Disable();
+
+  m_BitmapOverlay = niftk::BitmapOverlay::New();
+  m_BitmapOverlay->SetRenderWindow(this->GetRenderWindow()->GetRenderer()->GetRenderWindow());
+  m_BitmapOverlay->Enable();
 
   m_GradientBackground = mitk::GradientBackground::New();
   m_GradientBackground->SetRenderWindow(m_RenderWindow->GetRenderWindow());
@@ -109,6 +114,7 @@ void Single3DViewWidget::SetDataStorage( mitk::DataStorage* dataStorage )
   }
 
   m_DataStorage = dataStorage;
+  m_BitmapOverlay->SetDataStorage(m_DataStorage);
 
   if (m_DataStorage.IsNotNull())
   {
@@ -132,6 +138,7 @@ void Single3DViewWidget::SetDataStorage( mitk::DataStorage* dataStorage )
 //-----------------------------------------------------------------------------
 void Single3DViewWidget::InternalNodeAdded(const mitk::DataNode* node)
 {
+  m_BitmapOverlay->NodeAdded(node);
   this->NodeAdded(node);
 }
 
@@ -139,6 +146,11 @@ void Single3DViewWidget::InternalNodeAdded(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void Single3DViewWidget::InternalNodeRemoved (const mitk::DataNode* node)
 {
+  m_BitmapOverlay->NodeRemoved(node);
+  if (m_ImageNode.IsNotNull() && node == m_ImageNode)
+  {
+    this->SetImageNode(NULL);
+  }
   this->NodeRemoved(node);
 }
 
@@ -146,6 +158,7 @@ void Single3DViewWidget::InternalNodeRemoved (const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void Single3DViewWidget::InternalNodeChanged(const mitk::DataNode* node)
 {
+  m_BitmapOverlay->NodeChanged(node);
   this->NodeChanged(node);
 }
 
@@ -202,6 +215,7 @@ void Single3DViewWidget::SetDepartmentLogoPath(const QString& path)
 //-----------------------------------------------------------------------------
 void Single3DViewWidget::resizeEvent(QResizeEvent* /*event*/)
 {
+  m_BitmapOverlay->SetupCamera();
   this->Update();
 }
 
@@ -227,6 +241,19 @@ void Single3DViewWidget::SetImageNode(const mitk::DataNode* node)
   this->Update();
 }
 
+
+//-----------------------------------------------------------------------------
+float Single3DViewWidget::GetOpacity() const
+{
+  return static_cast<float>(m_BitmapOverlay->GetOpacity());
+}
+
+
+//-----------------------------------------------------------------------------
+void Single3DViewWidget::SetOpacity(const float& value)
+{
+  m_BitmapOverlay->SetOpacity(value);
+}
 
 } // end namespace
 

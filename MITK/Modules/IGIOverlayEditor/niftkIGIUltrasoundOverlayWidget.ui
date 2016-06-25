@@ -30,16 +30,6 @@
       <widget class="QmitkDataStorageComboBox" name="m_LeftImageCombo" native="true"/>
      </item>
      <item>
-      <widget class="QmitkDataStorageComboBox" name="m_RightImageCombo" native="true"/>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="m_RightImageCheckBox">
-       <property name="text">
-        <string>right image</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -51,55 +41,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QLabel" name="m_TrackingLabel">
-       <property name="text">
-        <string>tracking</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QmitkDataStorageComboBox" name="m_TrackingCombo" native="true"/>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QLabel" name="m_OpacityLabel">
-       <property name="text">
-        <string>overlay opacity</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSlider" name="m_OpacitySlider">
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>200</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
      </item>
      <item>
       <widget class="QCheckBox" name="m_3DViewCheckBox">
@@ -118,39 +59,16 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="">
-      <layout class="QHBoxLayout" name="m_OverlayViewerLayout">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetNoConstraint</enum>
-       </property>
-       <item>
-        <widget class="niftk::SingleUltrasoundWidget" name="m_LeftOverlayViewer" native="true">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="niftk::SingleUltrasoundWidget" name="m_RightOverlayViewer" native="true">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <zorder>m_LeftOverlayViewer</zorder>
-        </widget>
-       </item>
-      </layout>
+     <widget class="niftk::SingleUltrasoundWidget" name="m_LeftOverlayViewer" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
      </widget>
      <widget class="QmitkRenderWindow" name="m_3DViewer" native="true">
       <property name="sizePolicy">

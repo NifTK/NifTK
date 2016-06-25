@@ -17,7 +17,6 @@
 
 #include "niftkIGIOverlayEditorExports.h"
 #include "niftkSingle3DViewWidget.h"
-#include "niftkBitmapOverlayWidget.h"
 #include <mitkDataStorage.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
@@ -50,30 +49,6 @@ public:
   virtual ~SingleVideoWidget();
 
   /**
-   * \brief Stores ds locally, and sets the data storage on the contained
-   * niftk::BitmapOverlayWidget and QmitkRenderWindow.
-   */
-  virtual void SetDataStorage( mitk::DataStorage* ds );
-
-  /**
-   * \brief Retrieves the opacity from the niftk::BitmapOverlayWidget.
-   */
-  float GetOpacity() const;
-
-  /**
-   * \brief Sets the opacity on the niftk::BitmapOverlayWidget.
-   * \param value [0..1]
-   */
-  void SetOpacity(const float& value);
-
-  /**
-   * \brief Passes the node onto the niftk::BitmapOverlayWidget, so that
-   * the niftk::BitmapOverlayWidget. can use it for a background or foreground image.
-   * \param node an mitk::DataNode that should contain an RGB image.
-   */
-  virtual void SetImageNode(const mitk::DataNode* node);
-
-  /**
    * \brief Sets a node, which should contain an mitk::CoordinateAxesData,
    * which is used for moving the camera around.
    *
@@ -89,26 +64,6 @@ public:
   void Update();
 
 protected:
-
-  /**
-   * \brief Re-implemented so we can tell niftk::BitmapOverlay the display size has changed.
-   */
-  virtual void resizeEvent(QResizeEvent* event) override;
-
-  /**
-   * \brief Called when a DataStorage Node Removed Event was emitted.
-   */
-  virtual void NodeRemoved(const mitk::DataNode* node);
-
-  /**
-   * \brief Called when a DataStorage Node Changed Event was emitted.
-   */
-  virtual void NodeChanged(const mitk::DataNode* node);
-
-  /**
-   * \brief Called when a DataStorage Node Added Event was emitted.
-   */
-  virtual void NodeAdded(const mitk::DataNode* node);
 
 private:
 
@@ -127,7 +82,6 @@ private:
    */
   void UpdateCameraViaTrackingTransformation();
 
-  niftk::BitmapOverlayWidget::Pointer           m_BitmapOverlay;
   mitk::DataNode::Pointer                       m_TransformNode;
   vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>  m_MatrixDrivenCamera;
   bool                                          m_IsCalibrated;
