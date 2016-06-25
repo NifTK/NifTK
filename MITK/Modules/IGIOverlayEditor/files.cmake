@@ -15,16 +15,20 @@
 set(CPP_FILES
   niftkBitmapOverlayWidget.cxx
   niftkSingle3DViewWidget.cxx
-  niftkIGIOverlayEditorWidget.cxx
+  niftkSingleUltrasoundWidget.cxx
+  niftkSingleVideoWidget.cxx
+  niftkIGIVideoOverlayWidget.cxx
 )
 
 set(MOC_H_FILES
   niftkSingle3DViewWidget.h
-  niftkIGIOverlayEditorWidget.h
+  niftkSingleUltrasoundWidget.h
+  niftkSingleVideoWidget.h
+  niftkIGIVideoOverlayWidget.h
 )
 
 set(UI_FILES
-  niftkIGIOverlayEditorWidget.ui
+  niftkIGIVideoOverlayWidget.ui
 )
 
 set(QRC_FILES

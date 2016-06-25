@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>niftk::IGIVideoOverlayWidget</class>
+ <widget class="QWidget" name="niftk::IGIVideoOverlayWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>841</width>
+    <height>494</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="ctkCheckablePushButton" name="m_LeftImagePushButton" native="true"/>
+     </item>
+     <item>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_LeftImageCombo" native="true"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="ctkCheckablePushButton" name="m_RightImagePushButton" native="true"/>
+     </item>
+     <item>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_RightImageCombo" native="true"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="ctkCheckablePushButton" name="m_3DViewerPushButton" native="true"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_TrackingCombo" native="true"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="m_OpacityLabel">
+       <property name="text">
+        <string>overlay opacity</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSlider" name="m_OpacitySlider">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>200</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QSplitter" name="m_Splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="QWidget" name="">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="niftk::SingleVideoWidget" name="m_RightOverlayViewer" native="true">
+        </widget>
+       </item>
+       <item>
+        <widget class="niftk::SingleVideoWidget" name="m_LeftOverlayViewer" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QmitkRenderWindow" name="m_3DViewer" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QmitkRenderWindow</class>
+   <extends>QWidget</extends>
+   <header location="global">QmitkRenderWindow.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>niftk::SingleVideoWidget</class>
+   <extends>QWidget</extends>
+   <header>niftkSingleVideoWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QmitkDataStorageComboBoxWithSelectNone</class>
+   <extends>QWidget</extends>
+   <header location="global">QmitkDataStorageComboBoxWithSelectNone.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkCheckablePushButton</class>
+   <extends>QWidget</extends>
+   <header location="global">ctkCheckablePushButton.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
