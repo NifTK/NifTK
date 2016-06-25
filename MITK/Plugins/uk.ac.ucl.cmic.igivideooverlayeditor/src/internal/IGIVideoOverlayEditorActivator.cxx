@@ -12,26 +12,25 @@
 
 =============================================================================*/
 
-#include "IGIOverlayEditorActivator.h"
+#include "IGIVideoOverlayEditorActivator.h"
+#include "IGIVideoOverlayEditorPreferencePage.h"
+#include "IGIVideoOverlayEditor.h"
 
-#include "../IGIOverlayEditor.h"
-#include "IGIOverlayEditorPreferencePage.h"
+namespace niftk {
 
-namespace mitk {
-
-ctkPluginContext* IGIOverlayEditorActivator::m_PluginContext = 0;
+ctkPluginContext* IGIVideoOverlayEditorActivator::m_PluginContext = 0;
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditorActivator::start(ctkPluginContext* context)
+void IGIVideoOverlayEditorActivator::start(ctkPluginContext* context)
 {
-  BERRY_REGISTER_EXTENSION_CLASS(IGIOverlayEditor, context)
-  BERRY_REGISTER_EXTENSION_CLASS(IGIOverlayEditorPreferencePage, context)
+  BERRY_REGISTER_EXTENSION_CLASS(IGIVideoOverlayEditorPreferencePage, context)
+  BERRY_REGISTER_EXTENSION_CLASS(IGIVideoOverlayEditor, context)
   m_PluginContext = context;
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditorActivator::stop(ctkPluginContext* context)
+void IGIVideoOverlayEditorActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
   m_PluginContext = NULL;
@@ -39,7 +38,7 @@ void IGIOverlayEditorActivator::stop(ctkPluginContext* context)
 
 
 //-----------------------------------------------------------------------------
-ctkPluginContext* IGIOverlayEditorActivator::getContext()
+ctkPluginContext* IGIVideoOverlayEditorActivator::getContext()
 {
   return m_PluginContext;
 }
@@ -48,5 +47,5 @@ ctkPluginContext* IGIOverlayEditorActivator::getContext()
 } // end namespace
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igioverlayeditor, mitk::IGIOverlayEditorActivator)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igivideooverlayeditor, niftk::IGIVideoOverlayEditorActivator)
 #endif

@@ -12,26 +12,28 @@
 
 =============================================================================*/
 
-#ifndef IGIOverlayEditor_h
-#define IGIOverlayEditor_h
+#ifndef IGIVideoOverlayEditor_h
+#define IGIVideoOverlayEditor_h
 
 #include <QmitkAbstractRenderEditor.h>
 #include <mitkILinkedRenderWindowPart.h>
 #include <service/event/ctkEvent.h>
-#include <uk_ac_ucl_cmic_igioverlayeditor_Export.h>
 
-class QmitkIGIOverlayEditor;
-class IGIOverlayEditorPrivate;
+class IGIVideoOverlayEditorPrivate;
 
+namespace niftk
+{
+  class IGIVideoOverlayWidget;
+}
 /**
- * \class IGIOverlayEditor
- * \brief Simple editor that delegates all functionality to a QmitkIGIOverlayEditor,
+ * \class IGIVideoOverlayEditor
+ * \brief Simple editor that delegates all functionality to a niftk::IGIVideoOverlayWidget,
  * and most methods are dummy or do-nothing implementations, as the widget is for
  * a very specific purpose and most of the mitk::ILinkedRenderWindowPart are not needed.
- * \ingroup uk_ac_ucl_cmic_igioverlayeditor
+ * \ingroup uk_ac_ucl_cmic_igivideooverlayeditor_internal
  */
-class UK_AC_UCL_CMIC_IGIOVERLAYEDITOR IGIOverlayEditor
-    : public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
+class IGIVideoOverlayEditor
+  : public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
 {
   Q_OBJECT
 
@@ -39,12 +41,12 @@ public:
 
   static const char* EDITOR_ID;
 
-  berryObjectMacro(IGIOverlayEditor)
+  berryObjectMacro(IGIVideoOverlayEditor)
 
-  IGIOverlayEditor();
-  ~IGIOverlayEditor();
+  IGIVideoOverlayEditor();
+  ~IGIVideoOverlayEditor();
 
-  QmitkIGIOverlayEditor* GetIGIOverlayEditor();
+  niftk::IGIVideoOverlayWidget* GetIGIVideoOverlayWidget();
 
   // -------------------  mitk::IRenderWindowPart  ----------------------
 
@@ -126,8 +128,6 @@ protected:
   void OnPreferencesChanged(const berry::IBerryPreferences*) override;
   void CreateQtPartControl(QWidget* parent) override;
 
-  void WriteCurrentConfig(const QString& directory) const;
-
 protected slots:
 
   void OnPreferencesChanged();
@@ -139,18 +139,10 @@ private slots:
    */
   void OnIGIUpdate(const ctkEvent& event);
 
-  /**
-   * \brief We listen to "uk/ac/ucl/cmic/IGITRACKEDIMAGEUPDATE" and call this method.
-   */
-  void OnTrackedImageUpdate(const ctkEvent& event);
-
-  /** Listens to "uk/ac/ucl/cmic/IGIRECORDINGSTARTED" on the CTK bus and handles it here. */
-  void OnRecordingStarted(const ctkEvent& event);
-
 private:
 
-  const QScopedPointer<IGIOverlayEditorPrivate> d;
+  const QScopedPointer<IGIVideoOverlayEditorPrivate> d;
 
 };
 
-#endif /*IGIOverlayEditor_h */
+#endif

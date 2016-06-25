@@ -1,0 +1,62 @@
+/**
+\page uk_ac_ucl_cmic_igioverlayeditor The Overlay Display
+
+\section OverlayDisplayIntro Introduction
+
+The Overlay Display is an "Editor" in MITK-speak, meaning that it fills the centre part of
+the screen, and provides a view of the data in the Data Manager. It enables two types of
+view suitable for research in image guided surgery (IGS).
+
+\li Tracked Camera: The view is from the perspective of a tracked camera such as a laparoscope.
+\li Traacked Image: The view is locked perpendicular to a tracked image, such as that from an ultrasound scanner.
+
+\section OverlayDisplayUsageTrackedCamera Usage in Tracked Camera Mode
+
+Imagine you have a video capturing device such as a laparoscope, connected via the Data Sources View (see Figure 1).
+
+\image html pelvis-lap-07.jpg "Figure 1: Physical layout of a tracked (NDI Certus) laparoscope, viewing a pelvis phantom."
+
+Then the Overlay Display can be used to provide augmented reality, merging video data with rendererd data (see Figure 2).
+
+\image html Screenshot-Pelvis-Laparoscope.png "Figure 2: The Overlay Display merges laparoscopic video with rendered CT data (left) and displays a VTK 3D world (right)."
+
+The controls for the display itself are simple. See Figure 3.
+
+\image html OverlayEditorTrackedCameraControls.jpg "Figure 3: The Controls, as seen in Tracked Camera Mode."
+
+\li To the right of the "image:" label, you select a 2D video from data storage.
+\li To the right of the "transform:" label, you select the tracking transformation, that originates from your tracking system that is tracking your camera source.
+\li The 'overlay opacity' controls the blending between video and virtual data.
+\li The 'overlay' checkbox toggles the overlay (left) window on/off.
+\li The '3D viewer' checkbox toggles the 3D (right) window on/off.
+
+\section OverlayDisplayUsageTrackedImage Usage in Tracked Image Mode
+
+Imagine you have an ultrasound machine providing ultrasound images, connected via the Data Sources View (see Figure 4).
+
+\image html Ultrasound-phantom-01.jpg "Figure 4: Physical layout of a tracked (NDI Vicra) ultrasound probe, viewing an abdomen phantom."
+
+Then the Overlay Display can be used to provide a Freehand Ultrasound system (see Figure 5).
+
+\image html Screenshot-Ultrasound-Mac.jpg "Figure 5: The Overlay Display merges ultrasound data with virtual rendered data (left) and displays the 3D imaging plane, moving in the 3D world (right)."
+
+In image tracking mode, there is no-need to select the image, or transform, so those options disappear (see Figure 6).
+
+\image html OverlayEditorTrackedImageControls.jpg "Figure 6: The Controls, as seen in Tracked Image Mode."
+
+The decision of "which image to track" is made in Tracked Image View, which must be opened.
+
+\section OverlayDisplayPreferences Preferences
+
+\image html OverlayEditorPrefs.jpg "Figure 7: The user preferences."
+
+Here we can see:
+
+\li Radio-button to select "image tracking mode". As described above.
+\li When in image tracking mode, you can turn on clipping planes around the tracked image to clip 3D geometry (Experimental).
+\li Radio-button to select "camera tracking mode". As described above.
+\li When in camera tracking mode, you should select the hand-eye calibration matrix. It defaults to Identity if none is specified, or the file is not found.
+\li You can also specify the background colour.
+
+*/
+

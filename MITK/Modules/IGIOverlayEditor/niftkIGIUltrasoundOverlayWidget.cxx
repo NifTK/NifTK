@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkIGIVideoOverlayWidget.h"
+#include "niftkIGIUltrasoundOverlayWidget.h"
 #include <mitkCoordinateAxesData.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkImage.h>
@@ -26,7 +26,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIVideoOverlayWidget::IGIVideoOverlayWidget(QWidget * /*parent*/)
+IGIUltrasoundOverlayWidget::IGIUltrasoundOverlayWidget(QWidget * /*parent*/)
 {
   this->setupUi(this);
 
@@ -34,7 +34,7 @@ IGIVideoOverlayWidget::IGIVideoOverlayWidget(QWidget * /*parent*/)
   m_OpacitySlider->setMaximum(100);
   m_OpacitySlider->setSingleStep(1);
   m_OpacitySlider->setPageStep(10);
-  m_OpacitySlider->setValue(static_cast<int>(m_LeftOverlayViewer->GetOpacity()*100));
+  //m_OpacitySlider->setValue(static_cast<int>(m_LeftOverlayViewer->GetOpacity()*100));
 
   m_3DViewer->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
 
@@ -65,26 +65,26 @@ IGIVideoOverlayWidget::IGIVideoOverlayWidget(QWidget * /*parent*/)
 
 
 //-----------------------------------------------------------------------------
-IGIVideoOverlayWidget::~IGIVideoOverlayWidget()
+IGIUltrasoundOverlayWidget::~IGIUltrasoundOverlayWidget()
 {
   this->DeRegisterDataStorageListeners();
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::DeRegisterDataStorageListeners()
+void IGIUltrasoundOverlayWidget::DeRegisterDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->ChangedNodeEvent.RemoveListener
-      (mitk::MessageDelegate1<IGIVideoOverlayWidget, const mitk::DataNode*>
-      (this, &IGIVideoOverlayWidget::NodeChanged ) );
+      (mitk::MessageDelegate1<IGIUltrasoundOverlayWidget, const mitk::DataNode*>
+      (this, &IGIUltrasoundOverlayWidget::NodeChanged ) );
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::OnLeftOverlayCheckBoxChecked(bool checked)
+void IGIUltrasoundOverlayWidget::OnLeftOverlayCheckBoxChecked(bool checked)
 {
   if (checked)
   {
@@ -99,7 +99,7 @@ void IGIVideoOverlayWidget::OnLeftOverlayCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::OnRightOverlayCheckBoxChecked(bool checked)
+void IGIUltrasoundOverlayWidget::OnRightOverlayCheckBoxChecked(bool checked)
 {
   if (checked)
   {
@@ -114,7 +114,7 @@ void IGIVideoOverlayWidget::OnRightOverlayCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::On3DViewerCheckBoxChecked(bool checked)
+void IGIUltrasoundOverlayWidget::On3DViewerCheckBoxChecked(bool checked)
 {
   if (checked)
   {
@@ -129,16 +129,16 @@ void IGIVideoOverlayWidget::On3DViewerCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::OnOpacitySliderMoved(int value)
+void IGIUltrasoundOverlayWidget::OnOpacitySliderMoved(int value)
 {
-  m_LeftOverlayViewer->SetOpacity(value / 100.0);
-  m_RightOverlayViewer->SetOpacity(value / 100.0);
+  //m_LeftOverlayViewer->SetOpacity(value / 100.0);
+  //m_RightOverlayViewer->SetOpacity(value / 100.0);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
+void IGIUltrasoundOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
 {
   m_LeftOverlayViewer->SetImageNode(node);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
@@ -146,7 +146,7 @@ void IGIVideoOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::OnRightImageSelected(const mitk::DataNode* node)
+void IGIUltrasoundOverlayWidget::OnRightImageSelected(const mitk::DataNode* node)
 {
   m_RightOverlayViewer->SetImageNode(node);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
@@ -154,16 +154,16 @@ void IGIVideoOverlayWidget::OnRightImageSelected(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::OnTransformSelected(const mitk::DataNode* node)
+void IGIUltrasoundOverlayWidget::OnTransformSelected(const mitk::DataNode* node)
 {
-  m_LeftOverlayViewer->SetTransformNode(node);
-  m_RightOverlayViewer->SetTransformNode(node);
+  //m_LeftOverlayViewer->SetTransformNode(node);
+  //m_RightOverlayViewer->SetTransformNode(node);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
+void IGIUltrasoundOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
 {
   if (m_DataStorage.IsNotNull() && m_DataStorage != storage)
   {
@@ -175,8 +175,8 @@ void IGIVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->ChangedNodeEvent.AddListener
-      (mitk::MessageDelegate1<IGIVideoOverlayWidget, const mitk::DataNode*>
-      (this, &IGIVideoOverlayWidget::NodeChanged ) );
+      (mitk::MessageDelegate1<IGIUltrasoundOverlayWidget, const mitk::DataNode*>
+      (this, &IGIUltrasoundOverlayWidget::NodeChanged ) );
   }
   
   mitk::TimeGeometry::Pointer geometry = storage->ComputeBoundingGeometry3D(storage->GetAll());
@@ -209,13 +209,13 @@ void IGIVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::NodeChanged(const mitk::DataNode* node)
+void IGIUltrasoundOverlayWidget::NodeChanged(const mitk::DataNode* node)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* IGIVideoOverlayWidget::GetActiveQmitkRenderWindow() const
+QmitkRenderWindow* IGIUltrasoundOverlayWidget::GetActiveQmitkRenderWindow() const
 {
   QmitkRenderWindow *result = NULL;
 
@@ -241,7 +241,7 @@ QmitkRenderWindow* IGIVideoOverlayWidget::GetActiveQmitkRenderWindow() const
 
 
 //-----------------------------------------------------------------------------
-QHash<QString, QmitkRenderWindow *> IGIVideoOverlayWidget::GetQmitkRenderWindows() const
+QHash<QString, QmitkRenderWindow *> IGIUltrasoundOverlayWidget::GetQmitkRenderWindows() const
 {
   QHash<QString, QmitkRenderWindow *> result;
   result.insert("left overlay", m_LeftOverlayViewer->GetRenderWindow());
@@ -252,7 +252,7 @@ QHash<QString, QmitkRenderWindow *> IGIVideoOverlayWidget::GetQmitkRenderWindows
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* IGIVideoOverlayWidget::GetQmitkRenderWindow(const QString &id) const
+QmitkRenderWindow* IGIUltrasoundOverlayWidget::GetQmitkRenderWindow(const QString &id) const
 {
   QmitkRenderWindow *result = NULL;
   if (id == "3d")
@@ -272,7 +272,7 @@ QmitkRenderWindow* IGIVideoOverlayWidget::GetQmitkRenderWindow(const QString &id
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::SetDepartmentLogoPath(const QString& path)
+void IGIUltrasoundOverlayWidget::SetDepartmentLogoPath(const QString& path)
 {
   m_LeftOverlayViewer->SetDepartmentLogoPath(path);
   m_RightOverlayViewer->SetDepartmentLogoPath(path);
@@ -280,7 +280,7 @@ void IGIVideoOverlayWidget::SetDepartmentLogoPath(const QString& path)
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::EnableDepartmentLogo()
+void IGIUltrasoundOverlayWidget::EnableDepartmentLogo()
 {
   m_LeftOverlayViewer->EnableDepartmentLogo();
   m_RightOverlayViewer->EnableDepartmentLogo();
@@ -288,7 +288,7 @@ void IGIVideoOverlayWidget::EnableDepartmentLogo()
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::DisableDepartmentLogo()
+void IGIUltrasoundOverlayWidget::DisableDepartmentLogo()
 {
   m_LeftOverlayViewer->DisableDepartmentLogo();
   m_RightOverlayViewer->DisableDepartmentLogo();
@@ -296,7 +296,7 @@ void IGIVideoOverlayWidget::DisableDepartmentLogo()
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::SetGradientBackgroundColors(const mitk::Color& colour1, const mitk::Color& colour2)
+void IGIUltrasoundOverlayWidget::SetGradientBackgroundColors(const mitk::Color& colour1, const mitk::Color& colour2)
 {
   m_LeftOverlayViewer->SetGradientBackgroundColors(colour1, colour2);
   m_RightOverlayViewer->SetGradientBackgroundColors(colour1, colour2);
@@ -304,7 +304,7 @@ void IGIVideoOverlayWidget::SetGradientBackgroundColors(const mitk::Color& colou
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::EnableGradientBackground()
+void IGIUltrasoundOverlayWidget::EnableGradientBackground()
 {
   m_LeftOverlayViewer->EnableGradientBackground();
   m_RightOverlayViewer->EnableGradientBackground();
@@ -312,7 +312,7 @@ void IGIVideoOverlayWidget::EnableGradientBackground()
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::DisableGradientBackground()
+void IGIUltrasoundOverlayWidget::DisableGradientBackground()
 {
   m_LeftOverlayViewer->DisableGradientBackground();
   m_RightOverlayViewer->DisableGradientBackground();
@@ -320,7 +320,7 @@ void IGIVideoOverlayWidget::DisableGradientBackground()
 
 
 //-----------------------------------------------------------------------------
-void IGIVideoOverlayWidget::Update()
+void IGIUltrasoundOverlayWidget::Update()
 {
   m_LeftOverlayViewer->Update();
   m_RightOverlayViewer->Update();

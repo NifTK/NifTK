@@ -13,18 +13,18 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  IGIOverlayEditor.cxx
 )
 
 set(INTERNAL_CPP_FILES
-  IGIOverlayEditorActivator.cxx
-  IGIOverlayEditorPreferencePage.cxx
+  IGIVideoOverlayEditorActivator.cxx
+  IGIVideoOverlayEditorPreferencePage.cxx
+  IGIVideoOverlayEditor.cxx
 )
 
 set(MOC_H_FILES
-  src/IGIOverlayEditor.h
-  src/internal/IGIOverlayEditorActivator.h
-  src/internal/IGIOverlayEditorPreferencePage.h
+  src/internal/IGIVideoOverlayEditorActivator.h
+  src/internal/IGIVideoOverlayEditorPreferencePage.h
+  src/internal/IGIVideoOverlayEditor.h
 )
 
 set(UI_FILES

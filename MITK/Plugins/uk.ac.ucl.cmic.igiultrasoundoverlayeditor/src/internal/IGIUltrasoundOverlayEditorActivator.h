@@ -12,24 +12,24 @@
 
 =============================================================================*/
 
-#ifndef IGIOverlayEditorActivator_h
-#define IGIOverlayEditorActivator_h
+#ifndef IGIUltrasoundOverlayEditorActivator_h
+#define IGIUltrasoundOverlayEditorActivator_h
 
 #include <ctkPluginActivator.h>
 
-namespace mitk {
+namespace niftk {
 
 /**
- * \class IGIOverlayEditorActivator
- * \brief Activator class for the IGIOverlayEditor.
- * \ingroup uk_ac_ucl_cmic_igioverlayeditor_internal
+ * \class IGIUltrasoundOverlayEditorActivator
+ * \brief Activator class for the IGIUltrasoundOverlayEditor.
+ * \ingroup uk_ac_ucl_cmic_igiultrasoundoverlayeditor_internal
  */
-class IGIOverlayEditorActivator : public QObject, public ctkPluginActivator
+class IGIUltrasoundOverlayEditorActivator : public QObject, public ctkPluginActivator
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  Q_PLUGIN_METADATA(IID "uk_ac_ucl_cmic_igioverlayeditor")
+  Q_PLUGIN_METADATA(IID "uk_ac_ucl_cmic_igiultrasoundoverlayeditor")
 #endif
 
 public:
@@ -45,5 +45,5 @@ private:
 
 } // end namespace
 
-#endif /* IGIOverlayEditorActivator_h */
+#endif
 

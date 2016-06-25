@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "IGIOverlayEditor.h"
+#include "IGIVideoOverlayEditor.h"
 
 #include <berryUIException.h>
 #include <berryIWorkbenchPage.h>
@@ -38,25 +38,24 @@
 #include <mitkDataStorageEditorInput.h>
 #include <mitkIDataStorageService.h>
 
-#include <QmitkIGIOverlayEditor.h>
-#include <internal/IGIOverlayEditorPreferencePage.h>
-#include <internal/IGIOverlayEditorActivator.h>
+#include <niftkIGIVideoOverlayWidget.h>
+#include <internal/IGIVideoOverlayEditorPreferencePage.h>
+#include <internal/IGIVideoOverlayEditorActivator.h>
 
-const char* IGIOverlayEditor::EDITOR_ID = "org.mitk.editors.igioverlayeditor";
-
+const char* IGIVideoOverlayEditor::EDITOR_ID = "org.mitk.editors.IGIVideoOverlayEditor";
 
 /**
- * \class IGIOverlayEditorPrivate
- * \brief PIMPL pattern implementation of IGIOverlayEditor.
+ * \class IGIVideoOverlayEditorPrivate
+ * \brief PIMPL pattern implementation of IGIVideoOverlayEditor.
  */
-class IGIOverlayEditorPrivate
+class IGIVideoOverlayEditorPrivate
 {
 public:
 
-  IGIOverlayEditorPrivate();
-  ~IGIOverlayEditorPrivate();
+  IGIVideoOverlayEditorPrivate();
+  ~IGIVideoOverlayEditorPrivate();
 
-  QmitkIGIOverlayEditor* m_IGIOverlayEditor;
+  niftk::IGIVideoOverlayWidget* m_IGIVideoOverlayWidget;
   std::string m_FirstBackgroundColor;
   std::string m_SecondBackgroundColor;
   QScopedPointer<berry::IPartListener> m_PartListener;
@@ -66,14 +65,14 @@ public:
 /**
  * \class IGIOverlayWidgetPartListener
  * \brief Used to handle interaction with the contained overlay
- * editor widget when this IGIOverlayEditor is opened/closed etc.
+ * editor widget when this IGIVideoOverlayEditor is opened/closed etc.
  */
 struct IGIOverlayWidgetPartListener : public berry::IPartListener
 {
   berryObjectMacro(IGIOverlayWidgetPartListener)
 
   //---------------------------------------------------------------------------
-  IGIOverlayWidgetPartListener(IGIOverlayEditorPrivate* dd)
+  IGIOverlayWidgetPartListener(IGIVideoOverlayEditorPrivate* dd)
     : d(dd)
   {}
 
@@ -86,10 +85,10 @@ struct IGIOverlayWidgetPartListener : public berry::IPartListener
   //---------------------------------------------------------------------------
   void PartClosed(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
-    if (partRef->GetId() == IGIOverlayEditor::EDITOR_ID)
+    if (partRef->GetId() == IGIVideoOverlayEditor::EDITOR_ID)
     {
-      IGIOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIOverlayEditor>();
-      if (d->m_IGIOverlayEditor == editor->GetIGIOverlayEditor())
+      IGIVideoOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIVideoOverlayEditor>();
+      if (d->m_IGIVideoOverlayWidget == editor->GetIGIVideoOverlayWidget())
       {
         // Call editor to turn things off as the widget is being closed.
       }
@@ -99,10 +98,10 @@ struct IGIOverlayWidgetPartListener : public berry::IPartListener
   //---------------------------------------------------------------------------
   void PartHidden (berry::IWorkbenchPartReference::Pointer partRef)
   {
-    if (partRef->GetId() == IGIOverlayEditor::EDITOR_ID)
+    if (partRef->GetId() == IGIVideoOverlayEditor::EDITOR_ID)
     {
-      IGIOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIOverlayEditor>();
-      if (d->m_IGIOverlayEditor == editor->GetIGIOverlayEditor())
+      IGIVideoOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIVideoOverlayEditor>();
+      if (d->m_IGIVideoOverlayWidget == editor->GetIGIVideoOverlayWidget())
       {
         // Call editor to turn things off as the widget is being hidden.
       }
@@ -112,10 +111,10 @@ struct IGIOverlayWidgetPartListener : public berry::IPartListener
   //---------------------------------------------------------------------------
   void PartVisible (berry::IWorkbenchPartReference::Pointer partRef)
   {
-    if (partRef->GetId() == IGIOverlayEditor::EDITOR_ID)
+    if (partRef->GetId() == IGIVideoOverlayEditor::EDITOR_ID)
     {
-      IGIOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIOverlayEditor>();
-      if (d->m_IGIOverlayEditor == editor->GetIGIOverlayEditor())
+      IGIVideoOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIVideoOverlayEditor>();
+      if (d->m_IGIVideoOverlayWidget == editor->GetIGIVideoOverlayWidget())
       {
         // Call editor to turn things on as the widget is being made visible.
       }
@@ -124,67 +123,67 @@ struct IGIOverlayWidgetPartListener : public berry::IPartListener
 
 private:
 
-  IGIOverlayEditorPrivate* const d;
+  IGIVideoOverlayEditorPrivate* const d;
 
 };
 
 
 //-----------------------------------------------------------------------------
-IGIOverlayEditorPrivate::IGIOverlayEditorPrivate()
-  : m_IGIOverlayEditor(0)
+IGIVideoOverlayEditorPrivate::IGIVideoOverlayEditorPrivate()
+  : m_IGIVideoOverlayWidget(0)
   , m_PartListener(new IGIOverlayWidgetPartListener(this))
 {}
 
 
 //-----------------------------------------------------------------------------
-IGIOverlayEditorPrivate::~IGIOverlayEditorPrivate()
+IGIVideoOverlayEditorPrivate::~IGIVideoOverlayEditorPrivate()
 {
 }
 
 //-----------------------------------------------------------------------------
-IGIOverlayEditor::IGIOverlayEditor()
-  : d(new IGIOverlayEditorPrivate)
+IGIVideoOverlayEditor::IGIVideoOverlayEditor()
+  : d(new IGIVideoOverlayEditorPrivate)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-IGIOverlayEditor::~IGIOverlayEditor()
+IGIVideoOverlayEditor::~IGIVideoOverlayEditor()
 {
   this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener.data());
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkIGIOverlayEditor* IGIOverlayEditor::GetIGIOverlayEditor()
+niftk::IGIVideoOverlayWidget* IGIVideoOverlayEditor::GetIGIVideoOverlayWidget()
 {
-  return d->m_IGIOverlayEditor;
+  return d->m_IGIVideoOverlayWidget;
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow *IGIOverlayEditor::GetActiveQmitkRenderWindow() const
+QmitkRenderWindow *IGIVideoOverlayEditor::GetActiveQmitkRenderWindow() const
 {
-  return d->m_IGIOverlayEditor->GetActiveQmitkRenderWindow();
+  return d->m_IGIVideoOverlayWidget->GetActiveQmitkRenderWindow();
 }
 
 
 //-----------------------------------------------------------------------------
-QHash<QString, QmitkRenderWindow *> IGIOverlayEditor::GetQmitkRenderWindows() const
+QHash<QString, QmitkRenderWindow *> IGIVideoOverlayEditor::GetQmitkRenderWindows() const
 {
-  return d->m_IGIOverlayEditor->GetQmitkRenderWindows();
+  return d->m_IGIVideoOverlayWidget->GetQmitkRenderWindows();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow *IGIOverlayEditor::GetQmitkRenderWindow(const QString &id) const
+QmitkRenderWindow *IGIVideoOverlayEditor::GetQmitkRenderWindow(const QString &id) const
 {
-  return d->m_IGIOverlayEditor->GetQmitkRenderWindow(id);
+  return d->m_IGIVideoOverlayWidget->GetQmitkRenderWindow(id);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D IGIOverlayEditor::GetSelectedPosition(const QString & id) const
+mitk::Point3D IGIVideoOverlayEditor::GetSelectedPosition(const QString & id) const
 {
   // Not implemented.
   mitk::Point3D point;
@@ -196,27 +195,27 @@ mitk::Point3D IGIOverlayEditor::GetSelectedPosition(const QString & id) const
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString &id)
+void IGIVideoOverlayEditor::SetSelectedPosition(const mitk::Point3D &pos, const QString &id)
 {
   // Not implemented.
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor::EnableDecorations(bool /*enable*/, const QStringList & /*decorations*/)
+void IGIVideoOverlayEditor::EnableDecorations(bool /*enable*/, const QStringList & /*decorations*/)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool IGIOverlayEditor::IsDecorationEnabled(const QString & /*decoration*/) const
+bool IGIVideoOverlayEditor::IsDecorationEnabled(const QString & /*decoration*/) const
 {
   return false;
 }
 
 
 //-----------------------------------------------------------------------------
-QStringList IGIOverlayEditor::GetDecorations() const
+QStringList IGIVideoOverlayEditor::GetDecorations() const
 {
   QStringList decorations;
   return decorations;
@@ -224,58 +223,59 @@ QStringList IGIOverlayEditor::GetDecorations() const
 
 
 //-----------------------------------------------------------------------------
-mitk::SlicesRotator* IGIOverlayEditor::GetSlicesRotator() const
+mitk::SlicesRotator* IGIVideoOverlayEditor::GetSlicesRotator() const
 {
   return NULL;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::SlicesSwiveller* IGIOverlayEditor::GetSlicesSwiveller() const
+mitk::SlicesSwiveller* IGIVideoOverlayEditor::GetSlicesSwiveller() const
 {
   return NULL;
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor::EnableSlicingPlanes(bool /*enable*/)
+void IGIVideoOverlayEditor::EnableSlicingPlanes(bool /*enable*/)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool IGIOverlayEditor::IsSlicingPlanesEnabled() const
+bool IGIVideoOverlayEditor::IsSlicingPlanesEnabled() const
 {
   return false;
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor::EnableLinkedNavigation(bool /*enable*/)
+void IGIVideoOverlayEditor::EnableLinkedNavigation(bool /*enable*/)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool IGIOverlayEditor::IsLinkedNavigationEnabled() const
+bool IGIVideoOverlayEditor::IsLinkedNavigationEnabled() const
 {
   return false;
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor::CreateQtPartControl(QWidget* parent)
+void IGIVideoOverlayEditor::CreateQtPartControl(QWidget* parent)
 {
-  if (d->m_IGIOverlayEditor == 0)
+  if (d->m_IGIVideoOverlayWidget == 0)
   {
-    QHBoxLayout* layout = new QHBoxLayout(parent);
-    layout->setContentsMargins(0,0,0,0);
-
-    d->m_IGIOverlayEditor = new QmitkIGIOverlayEditor(parent);
-    layout->addWidget(d->m_IGIOverlayEditor);
 
     mitk::DataStorage::Pointer ds = this->GetDataStorage();
-    d->m_IGIOverlayEditor->SetDataStorage(ds);
+
+    d->m_IGIVideoOverlayWidget = new niftk::IGIVideoOverlayWidget(parent);
+    d->m_IGIVideoOverlayWidget->SetDataStorage(ds);
+
+    QHBoxLayout* layout = new QHBoxLayout(parent);
+    layout->setContentsMargins(0,0,0,0);
+    layout->addWidget(d->m_IGIVideoOverlayWidget);
 
     this->GetSite()->GetPage()->AddPartListener(d->m_PartListener.data());
 
@@ -284,36 +284,28 @@ void IGIOverlayEditor::CreateQtPartControl(QWidget* parent)
     this->RequestUpdate();
 
     // Finally: Listen to update pulse coming off of event bus. This pulse comes from the data manager updating.
-    ctkServiceReference ref = mitk::IGIOverlayEditorActivator::getContext()->getServiceReference<ctkEventAdmin>();
+    ctkServiceReference ref = niftk::IGIVideoOverlayEditorActivator::getContext()->getServiceReference<ctkEventAdmin>();
     if (ref)
     {
-      ctkEventAdmin* eventAdmin = mitk::IGIOverlayEditorActivator::getContext()->getService<ctkEventAdmin>(ref);
+      ctkEventAdmin* eventAdmin = niftk::IGIVideoOverlayEditorActivator::getContext()->getService<ctkEventAdmin>(ref);
       
       ctkDictionary propertiesIGI;
       propertiesIGI[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
       eventAdmin->subscribeSlot(this, SLOT(OnIGIUpdate(ctkEvent)), propertiesIGI);
-      
-      ctkDictionary propertiesTrackedImage;
-      propertiesTrackedImage[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGITRACKEDIMAGEUPDATE";
-      eventAdmin->subscribeSlot(this, SLOT(OnTrackedImageUpdate(ctkEvent)), propertiesTrackedImage, Qt::DirectConnection);
-
-      ctkDictionary propertiesRecordingStarted;
-      propertiesRecordingStarted[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIRECORDINGSTARTED";
-      eventAdmin->subscribeSlot(this, SLOT(OnRecordingStarted(ctkEvent)), propertiesRecordingStarted);
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor::OnPreferencesChanged()
+void IGIVideoOverlayEditor::OnPreferencesChanged()
 {
   this->OnPreferencesChanged(dynamic_cast<berry::IBerryPreferences*>(this->GetPreferences().GetPointer()));
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* prefs)
+void IGIVideoOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* prefs)
 {
   // Enable change of logo. If no DepartmentLogo was set explicitly, MBILogo is used.
   // Set new department logo by prefs->Set("DepartmentLogo", "PathToImage");
@@ -326,12 +318,12 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
 
       if (departmentLogoLocation.isEmpty())
       {
-        d->m_IGIOverlayEditor->DisableDepartmentLogo();
+        d->m_IGIVideoOverlayWidget->DisableDepartmentLogo();
       }
       else
       {
-        d->m_IGIOverlayEditor->SetDepartmentLogoPath(departmentLogoLocation);
-        d->m_IGIOverlayEditor->EnableDepartmentLogo();
+        d->m_IGIVideoOverlayWidget->SetDepartmentLogoPath(departmentLogoLocation);
+        d->m_IGIVideoOverlayWidget->EnableDepartmentLogo();
       }
       break;
     }
@@ -339,7 +331,7 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
  
   // Preferences for gradient background
   float color = 255.0;
-  QString firstColorName = prefs->Get(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, "");
+  QString firstColorName = prefs->Get(IGIVideoOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, "");
   QColor firstColor(firstColorName);
   mitk::Color upper;
   if (firstColorName=="") // default values
@@ -355,7 +347,7 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
     upper[2] = firstColor.blue() / color;
   }
 
-  QString secondColorName = prefs->Get(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, "");
+  QString secondColorName = prefs->Get(IGIVideoOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, "");
   QColor secondColor(secondColorName);
   mitk::Color lower;
   if (secondColorName=="") // default values
@@ -370,72 +362,23 @@ void IGIOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences* pref
     lower[1] = secondColor.green() / color;
     lower[2] = secondColor.blue() / color;
   }
-  d->m_IGIOverlayEditor->SetGradientBackgroundColors(upper, lower);
-  d->m_IGIOverlayEditor->EnableGradientBackground();
-
-  QString calibrationFileName = prefs->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "");
-  d->m_IGIOverlayEditor->SetCalibrationFileName(calibrationFileName);
-  d->m_IGIOverlayEditor->SetCameraTrackingMode(prefs->GetBool(IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE, true));
-  d->m_IGIOverlayEditor->SetClipToImagePlane(prefs->GetBool(IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, true));
+  d->m_IGIVideoOverlayWidget->SetGradientBackgroundColors(upper, lower);
+  d->m_IGIVideoOverlayWidget->EnableGradientBackground();
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor::SetFocus()
+void IGIVideoOverlayEditor::SetFocus()
 {
-  if (d->m_IGIOverlayEditor != 0)
+  if (d->m_IGIVideoOverlayWidget != 0)
   {
-    d->m_IGIOverlayEditor->setFocus();
+    d->m_IGIVideoOverlayWidget->setFocus();
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditor::OnIGIUpdate(const ctkEvent& event)
+void IGIVideoOverlayEditor::OnIGIUpdate(const ctkEvent& event)
 {
-  d->m_IGIOverlayEditor->Update();
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIOverlayEditor::OnTrackedImageUpdate(const ctkEvent& event)
-{
-  d->m_IGIOverlayEditor->Update();
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIOverlayEditor::WriteCurrentConfig(const QString& directory) const
-{
-  QFile   infoFile(directory + QDir::separator() + EDITOR_ID + ".txt");
-  bool opened = infoFile.open(QIODevice::ReadWrite | QIODevice::Text | QIODevice::Append);
-  if (opened)
-  {
-    QTextStream   info(&infoFile);
-    info.setCodec("UTF-8");
-    info << "START: " << QDateTime::currentDateTime().toString() << "\n";
-    info << "calibfile=" << d->m_IGIOverlayEditor->GetCalibrationFileName() << "\n";
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIOverlayEditor::OnRecordingStarted(const ctkEvent& event)
-{
-  QString   directory = event.getProperty("directory").toString();
-  if (!directory.isEmpty())
-  {
-    try
-    {
-      WriteCurrentConfig(directory);
-    }
-    catch (...)
-    {
-      MITK_ERROR << "Caught exception while writing info file! Ignoring it and aborting info file.";
-    }
-  }
-  else
-  {
-    MITK_WARN << "Received igi-recording-started event without directory information! Ignoring it.";
-  }
+  d->m_IGIVideoOverlayWidget->Update();
 }

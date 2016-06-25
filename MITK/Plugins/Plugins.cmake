@@ -105,7 +105,8 @@ endif()
 
 set(NiftyIGI_PLUGINS
   Plugins/uk.ac.ucl.cmic.niftyigi:ON
-  Plugins/uk.ac.ucl.cmic.igioverlayeditor:ON
+  Plugins/uk.ac.ucl.cmic.igivideooverlayeditor:ON
+  Plugins/uk.ac.ucl.cmic.igiultrasoundoverlayeditor:ON
   Plugins/uk.ac.ucl.cmic.igidatasources:ON
   Plugins/uk.ac.ucl.cmic.igisurfacerecon:ON
   Plugins/uk.ac.ucl.cmic.igitrackedimage:ON

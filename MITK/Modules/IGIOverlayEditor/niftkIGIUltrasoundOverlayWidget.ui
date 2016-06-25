@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>niftk::IGIVideoOverlayWidget</class>
- <widget class="QWidget" name="niftk::IGIVideoOverlayWidget">
+ <class>niftk::IGIUltrasoundOverlayWidget</class>
+ <widget class="QWidget" name="niftk::IGIUltrasoundOverlayWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -130,7 +130,7 @@
         <enum>QLayout::SetNoConstraint</enum>
        </property>
        <item>
-        <widget class="niftk::SingleVideoWidget" name="m_LeftOverlayViewer" native="true">
+        <widget class="niftk::SingleUltrasoundWidget" name="m_LeftOverlayViewer" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -140,7 +140,7 @@
         </widget>
        </item>
        <item>
-        <widget class="niftk::SingleVideoWidget" name="m_RightOverlayViewer" native="true">
+        <widget class="niftk::SingleUltrasoundWidget" name="m_RightOverlayViewer" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>
@@ -172,9 +172,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>niftk::SingleVideoWidget</class>
+   <class>niftk::SingleUltrasoundWidget</class>
    <extends>QWidget</extends>
-   <header>niftkSingleVideoWidget.h</header>
+   <header>niftkSingleUltrasoundWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

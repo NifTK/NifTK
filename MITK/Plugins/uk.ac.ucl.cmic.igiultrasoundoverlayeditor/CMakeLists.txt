@@ -12,28 +12,14 @@
 #
 #============================================================================*/
 
-set(CPP_FILES
-  niftkBitmapOverlayWidget.cxx
-  niftkSingle3DViewWidget.cxx
-  niftkSingleUltrasoundWidget.cxx
-  niftkSingleVideoWidget.cxx
-  niftkIGIVideoOverlayWidget.cxx
-  niftkIGIUltrasoundOverlayWidget.cxx
-)
+project(uk_ac_ucl_cmic_igiultrasoundoverlayeditor)
 
-set(MOC_H_FILES
-  niftkSingle3DViewWidget.h
-  niftkSingleUltrasoundWidget.h
-  niftkSingleVideoWidget.h
-  niftkIGIVideoOverlayWidget.h
-  niftkIGIUltrasoundOverlayWidget.h
-)
+mitk_create_plugin(
+  EXPORT_DIRECTIVE UK_AC_UCL_CMIC_IGIULTRASOUNDOVERLAYEDITOR
+  EXPORTED_INCLUDE_SUFFIXES src
+  MODULE_DEPENDS niftkIGIOverlayEditor
+  )
 
-set(UI_FILES
-  niftkIGIVideoOverlayWidget.ui
-  niftkIGIUltrasoundOverlayWidget.ui
-)
-
-set(QRC_FILES
-)
-
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(uk_ac_ucl_cmic_igiultrasoundoverlayeditor)
+endif()

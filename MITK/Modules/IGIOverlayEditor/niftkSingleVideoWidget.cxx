@@ -38,6 +38,7 @@ SingleVideoWidget::SingleVideoWidget(QWidget* parent,
 {
   m_BitmapOverlay = niftk::BitmapOverlayWidget::New();
   m_BitmapOverlay->SetRenderWindow(this->GetRenderWindow()->GetRenderer()->GetRenderWindow());
+  m_BitmapOverlay->Enable();
 
   m_MatrixDrivenCamera = vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>::New();
   this->GetRenderWindow()->GetRenderer()->GetVtkRenderer()->SetActiveCamera(m_MatrixDrivenCamera);
@@ -54,12 +55,7 @@ SingleVideoWidget::~SingleVideoWidget()
 void SingleVideoWidget::SetDataStorage(mitk::DataStorage* dataStorage)
 {
   Single3DViewWidget::SetDataStorage(dataStorage);
-
-  if (m_DataStorage.IsNotNull())
-  {
-    m_BitmapOverlay->SetDataStorage(m_DataStorage);
-    m_BitmapOverlay->Enable();
-  }
+  m_BitmapOverlay->SetDataStorage(m_DataStorage);
 }
 
 

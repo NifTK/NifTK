@@ -12,14 +12,14 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_igioverlayeditor)
+project(uk_ac_ucl_cmic_igivideooverlayeditor)
 
 mitk_create_plugin(
-  EXPORT_DIRECTIVE UK_AC_UCL_CMIC_IGIOVERLAYEDITOR
+  EXPORT_DIRECTIVE UK_AC_UCL_CMIC_IGIVIDEOOVERLAYEDITOR
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS niftkIGIGui
+  MODULE_DEPENDS niftkIGIOverlayEditor
   )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(uk_ac_ucl_cmic_igioverlayeditor)
+  cotire(uk_ac_ucl_cmic_igivideooverlayeditor)
 endif()

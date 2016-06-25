@@ -27,16 +27,17 @@ class ctkPathLineEdit;
 
 /**
  * \class IGIOverlayEditorPreferencePage
- * \brief Preference page for IGIOverlayEditor, currently setting the gradient background.
- * \ingroup uk_ac_ucl_cmic_igioverlayeditor_internal
+ * \brief Preference page for IGIUltrasoundOverlayEditor.
+ * \ingroup uk_ac_ucl_cmic_igiultrasoundoverlayeditor_internal
  */
-struct IGIOverlayEditorPreferencePage : public QObject, public berry::IQtPreferencePage
+struct IGIUltrasoundOverlayEditorPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
-  IGIOverlayEditorPreferencePage();
+
+  IGIUltrasoundOverlayEditorPreferencePage();
 
   void Init(berry::IWorkbench::Pointer workbench) override;
   void CreateQtControl(QWidget* widget) override;
@@ -79,16 +80,6 @@ public:
   static const QString SECOND_BACKGROUND_COLOUR;
 
   /**
-   * \brief Stores the name of the preference node containing the filename of the calibration (eg. hand-eye for a laparoscope).
-   */
-  static const QString CALIBRATION_FILE_NAME;
-
-  /**
-   * \brief Stores the name of the preference node containing whether we are doing a camera tracking mode (for video), or the alternative is image tracking (e.g. for ultrasound).
-   */
-  static const QString CAMERA_TRACKING_MODE;
-
-  /**
    * \brief Stores the name of the preference node containing whether we are using clipping planes in Image Tracking mode.
    */  
   static const QString CLIP_TO_IMAGE_PLANE;
@@ -102,18 +93,15 @@ public slots:
 protected:
 
   QWidget         *m_MainControl;
-  QRadioButton    *m_CameraTrackingMode;
-  QRadioButton    *m_ImageTrackingMode;
   QCheckBox       *m_ClipToImagePlane;
   QPushButton     *m_ColorButton1;
   QPushButton     *m_ColorButton2;
-  ctkPathLineEdit *m_CalibrationFileName;
   QString          m_FirstColor;
   QString          m_SecondColor;
   QString          m_FirstColorStyleSheet;
   QString          m_SecondColorStyleSheet;
 
-  berry::IPreferences::Pointer m_IGIOverlayEditorPreferencesNode;
+  berry::IPreferences::Pointer m_IGIUltrasoundOverlayEditorPreferencesNode;
 };
 
-#endif /* IGIOverlayEditorPreferencePage_h */
+#endif

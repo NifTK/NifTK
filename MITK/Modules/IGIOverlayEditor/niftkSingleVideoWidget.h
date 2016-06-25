@@ -50,6 +50,12 @@ public:
   virtual ~SingleVideoWidget();
 
   /**
+   * \brief Stores ds locally, and sets the data storage on the contained
+   * niftk::BitmapOverlayWidget and QmitkRenderWindow.
+   */
+  virtual void SetDataStorage( mitk::DataStorage* ds );
+
+  /**
    * \brief Retrieves the opacity from the niftk::BitmapOverlayWidget.
    */
   float GetOpacity() const;
@@ -59,12 +65,6 @@ public:
    * \param value [0..1]
    */
   void SetOpacity(const float& value);
-
-  /**
-   * \brief Stores ds locally, and sets the data storage on the contained
-   * niftk::BitmapOverlayWidget and QmitkRenderWindow.
-   */
-  virtual void SetDataStorage( mitk::DataStorage* ds );
 
   /**
    * \brief Passes the node onto the niftk::BitmapOverlayWidget, so that

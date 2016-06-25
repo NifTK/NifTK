@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include "IGIOverlayEditorPreferencePage.h"
-#include <IGIOverlayEditor.h>
+#include "IGIUltrasoundOverlayEditorPreferencePage.h"
+#include "IGIUltrasoundOverlayEditor.h"
 
 #include <QLabel>
 #include <QPushButton>
@@ -25,19 +25,15 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const QString IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET("first background color style sheet");
-const QString IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET("second background color style sheet");
-const QString IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR("first background color");
-const QString IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR("second background color");
-const QString IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
-const QString IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE("camera tracking mode");
-const QString IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE("clip to imae plane");
+const QString IGIUltrasoundOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET("first background color style sheet");
+const QString IGIUltrasoundOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET("second background color style sheet");
+const QString IGIUltrasoundOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR("first background color");
+const QString IGIUltrasoundOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR("second background color");
+const QString IGIUltrasoundOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE("clip to imae plane");
 
 //-----------------------------------------------------------------------------
-IGIOverlayEditorPreferencePage::IGIOverlayEditorPreferencePage()
+IGIUltrasoundOverlayEditorPreferencePage::IGIUltrasoundOverlayEditorPreferencePage()
 : m_MainControl(0)
-, m_CameraTrackingMode(NULL)
-, m_ImageTrackingMode(NULL)
 , m_ColorButton1(NULL)
 , m_ColorButton2(NULL)
 , m_ClipToImagePlane(NULL)
@@ -46,34 +42,25 @@ IGIOverlayEditorPreferencePage::IGIOverlayEditorPreferencePage()
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditorPreferencePage::Init(berry::IWorkbench::Pointer )
+void IGIUltrasoundOverlayEditorPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
+void IGIUltrasoundOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
-  m_IGIOverlayEditorPreferencesNode = prefService->GetSystemPreferences()->Node(IGIOverlayEditor::EDITOR_ID);
+  m_IGIUltrasoundOverlayEditorPreferencesNode = prefService->GetSystemPreferences()->Node(IGIUltrasoundOverlayEditor::EDITOR_ID);
 
   m_MainControl = new QWidget(parent);
 
   QFormLayout *formLayout = new QFormLayout;
 
-  m_ImageTrackingMode = new QRadioButton();
-  formLayout->addRow("image tracking mode", m_ImageTrackingMode);
-
   m_ClipToImagePlane = new QCheckBox();
   formLayout->addRow("image tracking clipping planes", m_ClipToImagePlane);
   
-  m_CameraTrackingMode = new QRadioButton();
-  formLayout->addRow("camera tracking mode", m_CameraTrackingMode);
-
-  m_CalibrationFileName = new ctkPathLineEdit();
-  formLayout->addRow("hand-eye calibration transform", m_CalibrationFileName);
-
   // gradient background
   QLabel* gBName = new QLabel;
   gBName->setText("gradient background");
@@ -130,40 +117,38 @@ void IGIOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-QWidget* IGIOverlayEditorPreferencePage::GetQtControl() const
+QWidget* IGIUltrasoundOverlayEditorPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
 
 //-----------------------------------------------------------------------------
-bool IGIOverlayEditorPreferencePage::PerformOk()
+bool IGIUltrasoundOverlayEditorPreferencePage::PerformOk()
 {
-  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET, m_FirstColorStyleSheet);
-  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET, m_SecondColorStyleSheet);
-  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, m_FirstColor);
-  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, m_SecondColor);
-  m_IGIOverlayEditorPreferencesNode->Put(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, m_CalibrationFileName->currentPath());
-  m_IGIOverlayEditorPreferencesNode->PutBool(IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE, m_CameraTrackingMode->isChecked());
-  m_IGIOverlayEditorPreferencesNode->PutBool(IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, m_ClipToImagePlane->isChecked());
+  m_IGIUltrasoundOverlayEditorPreferencesNode->Put(IGIUltrasoundOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET, m_FirstColorStyleSheet);
+  m_IGIUltrasoundOverlayEditorPreferencesNode->Put(IGIUltrasoundOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET, m_SecondColorStyleSheet);
+  m_IGIUltrasoundOverlayEditorPreferencesNode->Put(IGIUltrasoundOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, m_FirstColor);
+  m_IGIUltrasoundOverlayEditorPreferencesNode->Put(IGIUltrasoundOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, m_SecondColor);
+  m_IGIUltrasoundOverlayEditorPreferencesNode->PutBool(IGIUltrasoundOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, m_ClipToImagePlane->isChecked());
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditorPreferencePage::PerformCancel()
+void IGIUltrasoundOverlayEditorPreferencePage::PerformCancel()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditorPreferencePage::Update()
+void IGIUltrasoundOverlayEditorPreferencePage::Update()
 {
-  m_FirstColorStyleSheet = m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET, "");
-  m_SecondColorStyleSheet = m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET, "");
-  m_FirstColor = m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, "");
-  m_SecondColor = m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, "");
+  m_FirstColorStyleSheet = m_IGIUltrasoundOverlayEditorPreferencesNode->Get(IGIUltrasoundOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET, "");
+  m_SecondColorStyleSheet = m_IGIUltrasoundOverlayEditorPreferencesNode->Get(IGIUltrasoundOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET, "");
+  m_FirstColor = m_IGIUltrasoundOverlayEditorPreferencesNode->Get(IGIUltrasoundOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, "");
+  m_SecondColor = m_IGIUltrasoundOverlayEditorPreferencesNode->Get(IGIUltrasoundOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR, "");
   if (m_FirstColorStyleSheet=="")
   {
     m_FirstColorStyleSheet = "background-color:rgb(0,0,0)";
@@ -182,17 +167,13 @@ void IGIOverlayEditorPreferencePage::Update()
   }
   m_ColorButton1->setStyleSheet(m_FirstColorStyleSheet);
   m_ColorButton2->setStyleSheet(m_SecondColorStyleSheet);
-  m_CalibrationFileName->setCurrentPath(m_IGIOverlayEditorPreferencesNode->Get(IGIOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, ""));
 
-  m_ClipToImagePlane->setChecked(m_IGIOverlayEditorPreferencesNode->GetBool(IGIOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, true));
-  bool isCameraTracking = m_IGIOverlayEditorPreferencesNode->GetBool(IGIOverlayEditorPreferencePage::CAMERA_TRACKING_MODE, true);
-  m_CameraTrackingMode->setChecked(isCameraTracking);
-  m_ImageTrackingMode->setChecked(!isCameraTracking);
+  m_ClipToImagePlane->setChecked(m_IGIUltrasoundOverlayEditorPreferencesNode->GetBool(IGIUltrasoundOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, true));
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditorPreferencePage::FirstColorChanged()
+void IGIUltrasoundOverlayEditorPreferencePage::FirstColorChanged()
 {
   QColor color = QColorDialog::getColor();
   m_ColorButton1->setAutoFillBackground(true);
@@ -214,7 +195,7 @@ void IGIOverlayEditorPreferencePage::FirstColorChanged()
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditorPreferencePage::SecondColorChanged()
+void IGIUltrasoundOverlayEditorPreferencePage::SecondColorChanged()
 {
   QColor color = QColorDialog::getColor();
   m_ColorButton2->setAutoFillBackground(true);
@@ -236,7 +217,7 @@ void IGIOverlayEditorPreferencePage::SecondColorChanged()
 
 
 //-----------------------------------------------------------------------------
-void IGIOverlayEditorPreferencePage::ResetColors()
+void IGIUltrasoundOverlayEditorPreferencePage::ResetColors()
 {
   m_FirstColorStyleSheet = "background-color:rgb(0,0,0)";
   m_SecondColorStyleSheet = "background-color:rgb(0,0,0)";
