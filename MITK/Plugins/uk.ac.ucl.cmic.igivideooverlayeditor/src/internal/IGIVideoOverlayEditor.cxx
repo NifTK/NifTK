@@ -42,7 +42,7 @@
 #include <internal/IGIVideoOverlayEditorPreferencePage.h>
 #include <internal/IGIVideoOverlayEditorActivator.h>
 
-const char* IGIVideoOverlayEditor::EDITOR_ID = "org.mitk.editors.IGIVideoOverlayEditor";
+const char* IGIVideoOverlayEditor::EDITOR_ID = "org.mitk.editors.igivideooverlayeditor";
 
 /**
  * \class IGIVideoOverlayEditorPrivate
