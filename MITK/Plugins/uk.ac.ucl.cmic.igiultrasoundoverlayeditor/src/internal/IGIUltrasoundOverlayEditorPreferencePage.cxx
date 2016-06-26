@@ -59,7 +59,7 @@ void IGIUltrasoundOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
   QFormLayout *formLayout = new QFormLayout;
 
   m_ClipToImagePlane = new QCheckBox();
-  formLayout->addRow("image tracking clipping planes", m_ClipToImagePlane);
+  formLayout->addRow("clipping planes", m_ClipToImagePlane);
   
   // gradient background
   QLabel* gBName = new QLabel;
