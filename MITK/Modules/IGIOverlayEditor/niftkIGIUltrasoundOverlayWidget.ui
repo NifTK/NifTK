@@ -43,6 +43,32 @@
       </spacer>
      </item>
      <item>
+      <widget class="QLabel" name="m_OpacityLabel">
+       <property name="text">
+        <string>overlay opacity</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSlider" name="m_OpacitySlider">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>200</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QCheckBox" name="m_3DViewCheckBox">
        <property name="text">
         <string>3D view</string>

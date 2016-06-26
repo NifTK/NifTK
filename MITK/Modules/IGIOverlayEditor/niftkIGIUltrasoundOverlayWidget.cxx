@@ -30,11 +30,18 @@ IGIUltrasoundOverlayWidget::IGIUltrasoundOverlayWidget(QWidget * /*parent*/)
 {
   this->setupUi(this);
 
+  m_OpacitySlider->setMinimum(0);
+  m_OpacitySlider->setMaximum(100);
+  m_OpacitySlider->setSingleStep(1);
+  m_OpacitySlider->setPageStep(10);
+  m_OpacitySlider->setValue(static_cast<int>(m_LeftOverlayViewer->GetOpacity()*100));
+
   m_3DViewer->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
 
   connect(m_3DViewCheckBox, SIGNAL(toggled(bool)), this, SLOT(On3DViewerCheckBoxChecked(bool)));
   connect(m_LeftImageCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnLeftOverlayCheckBoxChecked(bool)));
   connect(m_LeftImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftImageSelected(const mitk::DataNode*)));
+  connect(m_OpacitySlider, SIGNAL(sliderMoved(int)), this, SLOT(OnOpacitySliderMoved(int)));
 
   m_LeftImageCombo->setCurrentIndex(0);
   m_LeftImageCheckBox->setChecked(true);
@@ -106,6 +113,14 @@ void IGIUltrasoundOverlayWidget::On3DViewerCheckBoxChecked(bool checked)
 void IGIUltrasoundOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
 {
   m_LeftOverlayViewer->SetImageNode(node);
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIUltrasoundOverlayWidget::OnOpacitySliderMoved(int value)
+{
+  m_LeftOverlayViewer->SetOpacity(value / 100.0);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
