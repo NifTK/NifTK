@@ -17,6 +17,7 @@
 
 #include "niftkIGIOverlayEditorExports.h"
 #include "niftkSingle3DViewWidget.h"
+#include "niftkBitmapOverlay.h"
 #include <mitkDataStorage.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
@@ -49,6 +50,27 @@ public:
   virtual ~SingleVideoWidget();
 
   /**
+   * \brief Stores ds in base-class and sets it on the niftk::BitmapOverlay.
+   */
+  virtual void SetDataStorage(mitk::DataStorage* ds);
+
+  /**
+   * \brief Called from base class and gives us an opportunity to update renderings etc.
+   */
+  virtual void Update();
+
+  /**
+   * \brief Retrieves the opacity from the niftk::BitmapOverlayWidget.
+   */
+  float GetOpacity() const;
+
+  /**
+   * \brief Sets the opacity on the niftk::BitmapOverlayWidget.
+   * \param value [0..1]
+   */
+  void SetOpacity(const float& value);
+
+  /**
    * \brief Sets a node, which should contain an mitk::CoordinateAxesData,
    * which is used for moving the camera around.
    *
@@ -58,12 +80,27 @@ public:
    */
   void SetTransformNode(const mitk::DataNode* node);
 
-  /**
-   * \brief Called from base class and gives us an opportunity to update renderings etc.
-   */
-  void Update();
-
 protected:
+
+  /**
+   * \brief Called when a DataStorage Node Removed Event was emitted.
+   */
+  virtual void NodeRemoved(const mitk::DataNode* node);
+
+  /**
+   * \brief Called when a DataStorage Node Changes Event was emitted.
+   */
+  virtual void NodeChanged(const mitk::DataNode* node);
+
+  /**
+   * \brief Called when a DataStorage Node Added Event was emitted.
+   */
+  virtual void NodeAdded(const mitk::DataNode* node);
+
+  /**
+   * \brief Re-implemented so we can correctly scale image while resizeing.
+   */
+  virtual void resizeEvent(QResizeEvent* event) override;
 
 private:
 
@@ -82,6 +119,7 @@ private:
    */
   void UpdateCameraViaTrackingTransformation();
 
+  niftk::BitmapOverlay::Pointer                 m_BitmapOverlay;
   mitk::DataNode::Pointer                       m_TransformNode;
   vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>  m_MatrixDrivenCamera;
   bool                                          m_IsCalibrated;

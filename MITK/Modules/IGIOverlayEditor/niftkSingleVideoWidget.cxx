@@ -31,10 +31,15 @@ SingleVideoWidget::SingleVideoWidget(QWidget* parent,
                                      Qt::WindowFlags f,
                                      mitk::RenderingManager* renderingManager)
 : Single3DViewWidget(parent, f, renderingManager)
-, m_TransformNode(NULL)
-, m_MatrixDrivenCamera(NULL)
+, m_BitmapOverlay(nullptr)
+, m_TransformNode(nullptr)
+, m_MatrixDrivenCamera(nullptr)
 , m_IsCalibrated(false)
 {
+  m_BitmapOverlay = niftk::BitmapOverlay::New();
+  m_BitmapOverlay->SetRenderWindow(this->GetRenderWindow()->GetRenderer()->GetRenderWindow());
+  m_BitmapOverlay->Enable();
+
   m_MatrixDrivenCamera = vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>::New();
   this->GetRenderWindow()->GetRenderer()->GetVtkRenderer()->SetActiveCamera(m_MatrixDrivenCamera);
 }
@@ -47,12 +52,62 @@ SingleVideoWidget::~SingleVideoWidget()
 
 
 //-----------------------------------------------------------------------------
+void SingleVideoWidget::SetDataStorage(mitk::DataStorage* ds)
+{
+  Single3DViewWidget::SetDataStorage(ds);
+  m_BitmapOverlay->SetDataStorage(ds);
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleVideoWidget::NodeRemoved(const mitk::DataNode* node)
+{
+  m_BitmapOverlay->NodeRemoved(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleVideoWidget::NodeChanged(const mitk::DataNode* node)
+{
+  m_BitmapOverlay->NodeChanged(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleVideoWidget::NodeAdded(const mitk::DataNode* node)
+{
+  m_BitmapOverlay->NodeAdded(node);
+}
+
+//-----------------------------------------------------------------------------
 void SingleVideoWidget::SetTransformNode(const mitk::DataNode* node)
 {
   if (node != NULL)
   {
     m_TransformNode = const_cast<mitk::DataNode*>(node);
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleVideoWidget::resizeEvent(QResizeEvent* /*event*/)
+{
+  m_BitmapOverlay->SetupCamera();
+  this->Update();
+}
+
+
+//-----------------------------------------------------------------------------
+float SingleVideoWidget::GetOpacity() const
+{
+  return static_cast<float>(m_BitmapOverlay->GetOpacity());
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleVideoWidget::SetOpacity(const float& value)
+{
+  m_BitmapOverlay->SetOpacity(value);
 }
 
 

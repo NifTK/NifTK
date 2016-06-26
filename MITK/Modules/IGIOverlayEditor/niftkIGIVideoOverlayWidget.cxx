@@ -62,6 +62,8 @@ IGIVideoOverlayWidget::IGIVideoOverlayWidget(QWidget * /*parent*/)
   sizes.append(width);
   m_Splitter->setSizes(sizes);
   m_Splitter->setChildrenCollapsible(true);
+
+  m_OverlayViewerLayout->setContentsMargins(0, 0, 0, 0);
 }
 
 

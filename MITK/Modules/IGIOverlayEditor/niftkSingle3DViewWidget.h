@@ -16,7 +16,6 @@
 #define niftkSingle3DViewWidget_h
 
 #include "niftkIGIOverlayEditorExports.h"
-#include "niftkBitmapOverlay.h"
 #include <QmitkCmicLogo.h>
 
 #include <mitkRenderWindowFrame.h>
@@ -57,12 +56,6 @@ public:
   virtual ~Single3DViewWidget();
 
   /**
-   * \brief Stores ds locally, and sets the data storage on the contained
-   * niftk::BitmapOverlay and QmitkRenderWindow.
-   */
-  void SetDataStorage(mitk::DataStorage* ds);
-
-  /**
    * \brief Returns a pointer to the contained QmitkRenderWindow.
    */
   QmitkRenderWindow* GetRenderWindow() const;
@@ -98,22 +91,24 @@ public:
   void SetDepartmentLogoPath(const QString& path);
 
   /**
-   * \brief Retrieves the opacity from the niftk::BitmapOverlayWidget.
+   * \brief Sets the clipping range, which derived classes use in different ways.
    */
-  float GetOpacity() const;
+  void SetClippingRange(const double& near, const double& far);
 
   /**
-   * \brief Sets the opacity on the niftk::BitmapOverlayWidget.
-   * \param value [0..1]
-   */
-  void SetOpacity(const float& value);
-
-  /**
-   * \brief Stores the node locally.
+   * \brief Stores the node locally in this base class.
    */
   virtual void SetImageNode(const mitk::DataNode* node);
 
-  void SetClippingRange(const double& near, const double& far);
+  /**
+   * \brief Stores ds locally in this base class, and sets the data storage on the QmitkRenderWindow.
+   */
+  virtual void SetDataStorage(mitk::DataStorage* ds);
+
+  /**
+   * \brief Derived classes need to update this to correclty rescale.
+   */
+  virtual void Update() = 0;
 
 protected:
 
@@ -121,11 +116,6 @@ protected:
    * \brief Re-implemented so we can correctly scale image while resizeing.
    */
   virtual void resizeEvent(QResizeEvent* event) override;
-
-  /**
-   * \brief Derived classes need to update this to correclty rescale.
-   */
-  virtual void Update() = 0;
 
   /**
    * \brief Called when a DataStorage Node Removed Event was emitted.
@@ -160,7 +150,6 @@ private:
   mitk::RenderWindowFrame::Pointer   m_RenderWindowFrame;
   mitk::GradientBackground::Pointer  m_GradientBackground;
   CMICLogo::Pointer                  m_LogoRendering;
-  niftk::BitmapOverlay::Pointer      m_BitmapOverlay;
 };
 
 } // end namespace

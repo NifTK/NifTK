@@ -34,7 +34,7 @@ IGIUltrasoundOverlayWidget::IGIUltrasoundOverlayWidget(QWidget * /*parent*/)
   m_OpacitySlider->setMaximum(100);
   m_OpacitySlider->setSingleStep(1);
   m_OpacitySlider->setPageStep(10);
-  m_OpacitySlider->setValue(static_cast<int>(m_LeftOverlayViewer->GetOpacity()*100));
+  //m_OpacitySlider->setValue(static_cast<int>(m_LeftOverlayViewer->GetOpacity()*100));
 
   m_3DViewer->GetRenderer()->SetMapperID(mitk::BaseRenderer::Standard3D );
 
@@ -120,7 +120,7 @@ void IGIUltrasoundOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void IGIUltrasoundOverlayWidget::OnOpacitySliderMoved(int value)
 {
-  m_LeftOverlayViewer->SetOpacity(value / 100.0);
+  //m_LeftOverlayViewer->SetOpacity(value / 100.0);
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 

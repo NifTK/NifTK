@@ -38,12 +38,16 @@ public:
 
   virtual ~SingleUltrasoundWidget();
 
-  void SetClipToImagePlane(const bool& clipToImagePlane);
-
   /**
    * \brief Called from base class and gives us an opportunity to update renderings etc.
    */
   virtual void Update();
+
+  /**
+   * \brief If true, sets the viewer to clip geometry +/- 1mm from image plane,
+   * giving a crude contouring effect.
+   */
+  void SetClipToImagePlane(const bool& clipToImagePlane);
 
 private:
 
