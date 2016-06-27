@@ -55,6 +55,11 @@ public:
   virtual void SetDataStorage(mitk::DataStorage* ds);
 
   /**
+   * \brief Overrides base class to set the selected node on the niftk::BitmapOverlay.
+   */
+  virtual void SetImageNode(mitk::DataNode* node);
+
+  /**
    * \brief Called from base class and gives us an opportunity to update renderings etc.
    */
   virtual void Update();

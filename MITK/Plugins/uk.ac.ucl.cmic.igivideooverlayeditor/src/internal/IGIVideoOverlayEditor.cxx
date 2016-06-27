@@ -150,6 +150,7 @@ IGIVideoOverlayEditor::IGIVideoOverlayEditor()
 //-----------------------------------------------------------------------------
 IGIVideoOverlayEditor::~IGIVideoOverlayEditor()
 {
+  this->disconnect();
   this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener.data());
 }
 

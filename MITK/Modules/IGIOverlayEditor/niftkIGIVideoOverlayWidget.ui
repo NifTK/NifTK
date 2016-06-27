@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>841</width>
+    <width>887</width>
     <height>494</height>
    </rect>
   </property>
@@ -27,7 +27,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QmitkDataStorageComboBox" name="m_LeftImageCombo" native="true"/>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_LeftImageCombo"/>
      </item>
      <item>
       <widget class="QCheckBox" name="m_RightImageCheckBox">
@@ -40,7 +40,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QmitkDataStorageComboBox" name="m_RightImageCombo" native="true"/>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_RightImageCombo"/>
      </item>
      <item>
       <spacer name="horizontalSpacer">
@@ -63,7 +63,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QmitkDataStorageComboBox" name="m_TrackingCombo" native="true"/>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_TrackingCombo"/>
      </item>
      <item>
       <spacer name="horizontalSpacer_2">
@@ -170,14 +170,13 @@
   <customwidget>
    <class>QmitkRenderWindow</class>
    <extends>QWidget</extends>
-   <header location="global">QmitkRenderWindow.h</header>
+   <header>QmitkRenderWindow.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>QmitkDataStorageComboBox</class>
-   <extends>QWidget</extends>
-   <header>QmitkDataStorageComboBox.h</header>
-   <container>1</container>
+   <class>QmitkDataStorageComboBoxWithSelectNone</class>
+   <extends>QComboBox</extends>
+   <header location="global">QmitkDataStorageComboBoxWithSelectNone.h</header>
   </customwidget>
   <customwidget>
    <class>niftk::SingleVideoWidget</class>

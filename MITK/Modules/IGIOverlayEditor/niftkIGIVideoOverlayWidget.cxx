@@ -41,15 +41,7 @@ IGIVideoOverlayWidget::IGIVideoOverlayWidget(QWidget * /*parent*/)
   connect(m_3DViewCheckBox, SIGNAL(toggled(bool)), this, SLOT(On3DViewerCheckBoxChecked(bool)));
   connect(m_LeftImageCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnLeftOverlayCheckBoxChecked(bool)));
   connect(m_RightImageCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnRightOverlayCheckBoxChecked(bool)));
-
-  connect(m_LeftImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftImageSelected(const mitk::DataNode*)));
-  connect(m_RightImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightImageSelected(const mitk::DataNode*)));
-  connect(m_TrackingCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnTransformSelected(const mitk::DataNode*)));
   connect(m_OpacitySlider, SIGNAL(sliderMoved(int)), this, SLOT(OnOpacitySliderMoved(int)));
-
-  m_LeftImageCombo->setCurrentIndex(0);
-  m_RightImageCombo->setCurrentIndex(0);
-  m_TrackingCombo->setCurrentIndex(0);
 
   m_LeftImageCheckBox->setChecked(true);
   m_RightImageCheckBox->setChecked(false);
@@ -62,8 +54,6 @@ IGIVideoOverlayWidget::IGIVideoOverlayWidget(QWidget * /*parent*/)
   sizes.append(width);
   m_Splitter->setSizes(sizes);
   m_Splitter->setChildrenCollapsible(true);
-
-  m_OverlayViewerLayout->setContentsMargins(0, 0, 0, 0);
 }
 
 
@@ -130,7 +120,10 @@ void IGIVideoOverlayWidget::OnOpacitySliderMoved(int value)
 //-----------------------------------------------------------------------------
 void IGIVideoOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
 {
-  m_LeftOverlayViewer->SetImageNode(const_cast<mitk::DataNode*>(node));
+  if (node != nullptr)
+  {
+    m_LeftOverlayViewer->SetImageNode(const_cast<mitk::DataNode*>(node));
+  }
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
@@ -138,7 +131,10 @@ void IGIVideoOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void IGIVideoOverlayWidget::OnRightImageSelected(const mitk::DataNode* node)
 {
-  m_RightOverlayViewer->SetImageNode(const_cast<mitk::DataNode*>(node));
+  if (node != nullptr)
+  {
+    m_RightOverlayViewer->SetImageNode(const_cast<mitk::DataNode*>(node));
+  }
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
@@ -146,8 +142,11 @@ void IGIVideoOverlayWidget::OnRightImageSelected(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void IGIVideoOverlayWidget::OnTransformSelected(const mitk::DataNode* node)
 {
-  m_LeftOverlayViewer->SetTransformNode(node);
-  m_RightOverlayViewer->SetTransformNode(node);
+  if (node != nullptr)
+  {
+    m_LeftOverlayViewer->SetTransformNode(node);
+    m_RightOverlayViewer->SetTransformNode(node);
+  }
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
@@ -168,22 +167,22 @@ void IGIVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
   m_LeftImageCombo->SetAutoSelectNewItems(false);
   m_LeftImageCombo->SetPredicate(isImage);
   m_LeftImageCombo->SetDataStorage(storage);
+  m_LeftImageCombo->setCurrentIndex(0);
 
   m_RightImageCombo->SetAutoSelectNewItems(false);
   m_RightImageCombo->SetPredicate(isImage);
   m_RightImageCombo->SetDataStorage(storage);
+  m_RightImageCombo->setCurrentIndex(0);
 
   mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
   m_TrackingCombo->SetAutoSelectNewItems(false);
   m_TrackingCombo->SetPredicate(isTransform);
   m_TrackingCombo->SetDataStorage(storage);
-
-  m_LeftImageCombo->setCurrentIndex(0);
-  this->OnLeftImageSelected(nullptr);
-  m_RightImageCombo->setCurrentIndex(0);
-  this->OnRightImageSelected(nullptr);
   m_TrackingCombo->setCurrentIndex(0);
-  this->OnTransformSelected(nullptr);
+
+  connect(m_LeftImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftImageSelected(const mitk::DataNode*)));
+  connect(m_RightImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightImageSelected(const mitk::DataNode*)));
+  connect(m_TrackingCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnTransformSelected(const mitk::DataNode*)));
 }
 
 

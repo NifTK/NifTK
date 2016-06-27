@@ -27,7 +27,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QmitkDataStorageComboBox" name="m_LeftImageCombo" native="true"/>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_LeftImageCombo"/>
      </item>
      <item>
       <spacer name="horizontalSpacer">
@@ -86,19 +86,18 @@
   <customwidget>
    <class>QmitkRenderWindow</class>
    <extends>QWidget</extends>
-   <header location="global">QmitkRenderWindow.h</header>
+   <header>QmitkRenderWindow.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QmitkDataStorageComboBoxWithSelectNone</class>
+   <extends>QComboBox</extends>
+   <header location="global">QmitkDataStorageComboBoxWithSelectNone.h</header>
   </customwidget>
   <customwidget>
    <class>niftk::SingleUltrasoundWidget</class>
    <extends>QWidget</extends>
    <header>niftkSingleUltrasoundWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>QmitkDataStorageComboBox</class>
-   <extends>QWidget</extends>
-   <header>QmitkDataStorageComboBox.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -34,9 +34,7 @@ IGIUltrasoundOverlayWidget::IGIUltrasoundOverlayWidget(QWidget * /*parent*/)
 
   connect(m_3DViewCheckBox, SIGNAL(toggled(bool)), this, SLOT(On3DViewerCheckBoxChecked(bool)));
   connect(m_LeftImageCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnLeftOverlayCheckBoxChecked(bool)));
-  connect(m_LeftImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftImageSelected(const mitk::DataNode*)));
 
-  m_LeftImageCombo->setCurrentIndex(0);
   m_LeftImageCheckBox->setChecked(true);
   m_3DViewCheckBox->setChecked(true);
 
@@ -70,9 +68,9 @@ void IGIUltrasoundOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
   m_LeftImageCombo->SetAutoSelectNewItems(false);
   m_LeftImageCombo->SetPredicate(isImage);
   m_LeftImageCombo->SetDataStorage(storage);
-
   m_LeftImageCombo->setCurrentIndex(0);
-  this->OnLeftImageSelected(nullptr);
+
+  connect(m_LeftImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftImageSelected(const mitk::DataNode*)));
 }
 
 

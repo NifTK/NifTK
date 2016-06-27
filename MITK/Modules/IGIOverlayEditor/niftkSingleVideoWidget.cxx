@@ -54,8 +54,20 @@ SingleVideoWidget::~SingleVideoWidget()
 //-----------------------------------------------------------------------------
 void SingleVideoWidget::SetDataStorage(mitk::DataStorage* ds)
 {
+  m_BitmapOverlay->Disable();
   Single3DViewWidget::SetDataStorage(ds);
   m_BitmapOverlay->SetDataStorage(ds);
+  m_BitmapOverlay->Enable();
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleVideoWidget::SetImageNode(mitk::DataNode* node)
+{
+  m_BitmapOverlay->Disable();
+  Single3DViewWidget::SetImageNode(node);
+  m_BitmapOverlay->SetNode(node);
+  m_BitmapOverlay->Enable();
 }
 
 

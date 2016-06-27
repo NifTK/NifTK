@@ -150,6 +150,7 @@ IGIUltrasoundOverlayEditor::IGIUltrasoundOverlayEditor()
 //-----------------------------------------------------------------------------
 IGIUltrasoundOverlayEditor::~IGIUltrasoundOverlayEditor()
 {
+  this->disconnect();
   this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener.data());
 }
 

@@ -71,8 +71,6 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls = new Ui::TrackedImageView();
     m_Controls->setupUi(parent);
 
-    connect(m_Controls->m_ImageNode, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnSelectionChanged(const mitk::DataNode*)));
-
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
 
@@ -80,11 +78,13 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ImageNode->SetAutoSelectNewItems(false);
     m_Controls->m_ImageNode->SetPredicate(isImage);
     m_Controls->m_ImageNode->SetDataStorage(dataStorage);
+    m_Controls->m_ImageNode->setCurrentIndex(0);
 
     mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
     m_Controls->m_ImageToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ImageToWorldNode->SetPredicate(isTransform);
     m_Controls->m_ImageToWorldNode->SetDataStorage(dataStorage);
+    m_Controls->m_ImageToWorldNode->setCurrentIndex(0);
 
     // Set up the Render Window.
     // This currently has to be a 2D view, to generate the 2D plane geometry to render
