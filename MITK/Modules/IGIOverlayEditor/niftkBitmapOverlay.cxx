@@ -48,7 +48,7 @@ BitmapOverlay::BitmapOverlay()
   m_BackActor     = vtkSmartPointer<vtkImageActor>::New();
   m_FrontActor    = vtkSmartPointer<vtkImageActor>::New();
   m_ClippingRange[0] = 1;
-  m_ClippingRange[1] = 100000;
+  m_ClippingRange[1] = 10000;
 }
 
 

@@ -98,15 +98,15 @@ public:
   /**
    * \brief Stores the node locally in this base class.
    */
-  virtual void SetImageNode(const mitk::DataNode* node);
+  virtual void SetImageNode(mitk::DataNode* node);
 
   /**
-   * \brief Stores ds locally in this base class, and sets the data storage on the QmitkRenderWindow.
+   * \brief Stores data source locally in this base class, and sets the data storage on the QmitkRenderWindow.
    */
   virtual void SetDataStorage(mitk::DataStorage* ds);
 
   /**
-   * \brief Derived classes need to update this to correclty rescale.
+   * \brief Derived classes need to update this to correctly rescale.
    */
   virtual void Update() = 0;
 

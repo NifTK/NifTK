@@ -363,8 +363,7 @@ void IGIUltrasoundOverlayEditor::OnPreferencesChanged(const berry::IBerryPrefere
   }
   d->m_IGIUltrasoundOverlayWidget->SetGradientBackgroundColors(upper, lower);
   d->m_IGIUltrasoundOverlayWidget->EnableGradientBackground();
-
-  //d->m_IGIUltrasoundOverlayWidget->SetClipToImagePlane(prefs->GetBool(IGIUltrasoundOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, true));
+  d->m_IGIUltrasoundOverlayWidget->SetClipToImagePlane(prefs->GetBool(IGIUltrasoundOverlayEditorPreferencePage::CLIP_TO_IMAGE_PLANE, true));
 }
 
 

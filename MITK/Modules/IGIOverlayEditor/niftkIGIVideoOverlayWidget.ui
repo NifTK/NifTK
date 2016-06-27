@@ -30,14 +30,17 @@
       <widget class="QmitkDataStorageComboBox" name="m_LeftImageCombo" native="true"/>
      </item>
      <item>
-      <widget class="QmitkDataStorageComboBox" name="m_RightImageCombo" native="true"/>
-     </item>
-     <item>
       <widget class="QCheckBox" name="m_RightImageCheckBox">
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
        <property name="text">
         <string>right image</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="QmitkDataStorageComboBox" name="m_RightImageCombo" native="true"/>
      </item>
      <item>
       <spacer name="horizontalSpacer">
@@ -124,7 +127,7 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QHBoxLayout" name="m_OverlayViewerLayout">
        <property name="sizeConstraint">
         <enum>QLayout::SetNoConstraint</enum>
@@ -147,7 +150,6 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <zorder>m_LeftOverlayViewer</zorder>
         </widget>
        </item>
       </layout>
@@ -172,15 +174,15 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>niftk::SingleVideoWidget</class>
-   <extends>QWidget</extends>
-   <header>niftkSingleVideoWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>QmitkDataStorageComboBox</class>
    <extends>QWidget</extends>
    <header>QmitkDataStorageComboBox.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>niftk::SingleVideoWidget</class>
+   <extends>QWidget</extends>
+   <header>niftkSingleVideoWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

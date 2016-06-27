@@ -28,8 +28,8 @@ namespace niftk
 /**
  * \class SingleVideoWidget
  * \brief Derived from niftk::Single3DViewWidget to provide a widget that
- * given an image, will render it a video frame rate into either the
- * foreground or the background or both.
+ * given a video image, will render it at video frame rate into either the
+ * foreground or the background or both, and additionally merge VTK renderings.
  *
  * This class can perform rendering, as if through a calibrated camera,
  * such as may be obtained view an OpenCV (Zhang 2000) camera model. If
@@ -60,6 +60,16 @@ public:
   virtual void Update();
 
   /**
+   * \brief Sets a node, which should contain an mitk::CoordinateAxesData,
+   * which is used for moving the camera around.
+   *
+   * For example, if this viewer is to render like a tracked laparoscope,
+   * then this transform node should represent the world-to-camera
+   * (i.e. tracker-to-hand, followed by hand-to-eye/camera) transform.
+   */
+  void SetTransformNode(const mitk::DataNode* node);
+
+  /**
    * \brief Retrieves the opacity from the niftk::BitmapOverlayWidget.
    */
   float GetOpacity() const;
@@ -69,16 +79,6 @@ public:
    * \param value [0..1]
    */
   void SetOpacity(const float& value);
-
-  /**
-   * \brief Sets a node, which should contain an mitk::CoordinateAxesData,
-   * which is used for moving the camera around.
-   *
-   * For example, if this viewer is to render like a tracked laparoscope,
-   * then this transform node should be the transform node from the tracker attached
-   * to the laparoscope, and this class will then render a laparoscope viewpoint.
-   */
-  void SetTransformNode(const mitk::DataNode* node);
 
 protected:
 

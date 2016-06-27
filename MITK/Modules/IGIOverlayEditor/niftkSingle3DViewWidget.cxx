@@ -211,7 +211,7 @@ void Single3DViewWidget::resizeEvent(QResizeEvent* /*event*/)
 
 
 //-----------------------------------------------------------------------------
-void Single3DViewWidget::SetImageNode(const mitk::DataNode* node)
+void Single3DViewWidget::SetImageNode(mitk::DataNode* node)
 {
   // Remember: node can be NULL, as we have to respond to NodeRemoved events.
   if (node == NULL)

@@ -14,6 +14,7 @@
 
 #include "niftkSingleUltrasoundWidget.h"
 #include <niftkVTKFunctions.h>
+#include <mitkImage2DToTexturePlaneMapper3D.h>
 
 namespace niftk
 {
@@ -30,6 +31,57 @@ SingleUltrasoundWidget::SingleUltrasoundWidget(QWidget* parent,
 //-----------------------------------------------------------------------------
 SingleUltrasoundWidget::~SingleUltrasoundWidget()
 {
+  this->RemoveTextureMapper();
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleUltrasoundWidget::RemoveTextureMapper()
+{
+  mitk::DataNode::Pointer imageNode = this->m_ImageNode;
+  if (imageNode.IsNotNull())
+  {
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
+    if (image.IsNotNull())
+    {
+      mitk::Mapper::Pointer mapper = imageNode->GetMapper(mitk::BaseRenderer::Standard3D);
+      if (dynamic_cast<mitk::Image2DToTexturePlaneMapper3D*>(mapper.GetPointer()) != NULL)
+      {
+        imageNode->SetMapper(mitk::BaseRenderer::Standard3D, NULL);
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleUltrasoundWidget::SetImageNode(mitk::DataNode* node)
+{
+  if (node == nullptr
+      || (node != nullptr
+          && this->m_ImageNode.IsNotNull()
+          && dynamic_cast<mitk::Image2DToTexturePlaneMapper3D*>(
+             this->m_ImageNode->GetMapper(mitk::BaseRenderer::Standard3D)) != nullptr
+         )
+      )
+  {
+    this->RemoveTextureMapper();
+  }
+
+  Single3DViewWidget::SetImageNode(node);
+
+  if (node != nullptr)
+  {
+    mitk::Image2DToTexturePlaneMapper3D::Pointer newMapper = mitk::Image2DToTexturePlaneMapper3D::New();
+    node->SetMapper(mitk::BaseRenderer::Standard3D, newMapper);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleUltrasoundWidget::SetClipToImagePlane(const bool& clipToImagePlane)
+{
+  m_ClipToImagePlane = clipToImagePlane;
 }
 
 
