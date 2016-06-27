@@ -114,8 +114,8 @@ void BitmapOverlay::Enable()
 {
   if ( !this->IsEnabled() )
   {
-    // mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer,false);
-    mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer,false);
+    mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertBackgroundRenderer(m_BackRenderer, true);
+    mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_FrontRenderer, true);
     m_IsEnabled = true;
     this->Modified();
   }
@@ -127,7 +127,7 @@ void BitmapOverlay::Disable()
 {
   if ( this->IsEnabled() )
   {
-    // mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_BackRenderer);
+    mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_BackRenderer);
     mitk::VtkLayerController::GetInstance(m_RenderWindow)->RemoveRenderer(m_FrontRenderer);
     m_IsEnabled = false;
     this->Modified();
