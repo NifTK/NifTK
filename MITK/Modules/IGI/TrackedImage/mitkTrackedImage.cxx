@@ -23,8 +23,6 @@
 namespace mitk
 {
 
-const char* TrackedImage::TRACKED_IMAGE_SELECTED_PROPERTY_NAME("niftk.trackedimage");
-
 //-----------------------------------------------------------------------------
 TrackedImage::TrackedImage()
 {

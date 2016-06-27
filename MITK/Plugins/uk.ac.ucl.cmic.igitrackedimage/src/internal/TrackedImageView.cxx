@@ -49,21 +49,6 @@ TrackedImageView::TrackedImageView()
 //-----------------------------------------------------------------------------
 TrackedImageView::~TrackedImageView()
 {
-  mitk::DataNode::Pointer imageNode = m_Controls->m_ImageNode->GetSelectedNode();  
-  if (imageNode.IsNotNull())
-  {
-    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
-    if (image.IsNotNull())
-    {
-      // Remove any instance of Image2DToTexturePlaneMapper3D
-      mitk::Mapper::Pointer mapper = imageNode->GetMapper(mitk::BaseRenderer::Standard3D);
-      if (dynamic_cast<mitk::Image2DToTexturePlaneMapper3D*>(mapper.GetPointer()) != NULL)
-      {
-        imageNode->SetMapper(mitk::BaseRenderer::Standard3D, NULL);
-      }
-    }
-  }
-
   if (m_Controls != NULL)
   {
     delete m_Controls;
@@ -92,16 +77,14 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     assert(dataStorage);
 
     mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-    m_Controls->m_ImageNode->SetDataStorage(dataStorage);
     m_Controls->m_ImageNode->SetAutoSelectNewItems(false);
     m_Controls->m_ImageNode->SetPredicate(isImage);
-    m_Controls->m_ImageNode->setEditable(true);
+    m_Controls->m_ImageNode->SetDataStorage(dataStorage);
 
     mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
-    m_Controls->m_ImageToWorldNode->SetDataStorage(dataStorage);
     m_Controls->m_ImageToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ImageToWorldNode->SetPredicate(isTransform);
-    m_Controls->m_ImageToWorldNode->setEditable(true);
+    m_Controls->m_ImageToWorldNode->SetDataStorage(dataStorage);
 
     // Set up the Render Window.
     // This currently has to be a 2D view, to generate the 2D plane geometry to render
@@ -126,7 +109,6 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
       ctkDictionary properties;
       properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
       eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
-      eventAdmin->publishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGITRACKEDIMAGEUPDATE", Qt::DirectConnection);
     }
   }
 }
@@ -206,48 +188,6 @@ void TrackedImageView::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void TrackedImageView::OnSelectionChanged(const mitk::DataNode* node)
-{
-  if (node != NULL)
-  {
-    mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-    if (image != NULL && image->GetGeometry() != NULL)
-    {
-      // Set a property saying which node is selected by this plugin.
-      for (int i = 0; i < this->m_Controls->m_ImageNode->count(); i++)
-      {
-        mitk::DataNode::Pointer aNode = this->m_Controls->m_ImageNode->GetNode(i);
-        aNode->SetBoolProperty(mitk::TrackedImage::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, false);
-
-        // Remove any instance of Image2DToTexturePlaneMapper3D
-        mitk::Mapper::Pointer mapper = aNode->GetMapper(mitk::BaseRenderer::Standard3D);
-        if (dynamic_cast<mitk::Image2DToTexturePlaneMapper3D*>(mapper.GetPointer()) != NULL)
-        {
-          aNode->SetMapper(mitk::BaseRenderer::Standard3D, NULL);
-        }
-      }
-      mitk::DataNode::Pointer nodeToUpdate = this->GetDataStorage()->GetNamedNode(node->GetName());
-      if (nodeToUpdate.IsNotNull())
-      {
-        nodeToUpdate->SetBoolProperty(mitk::TrackedImage::TRACKED_IMAGE_SELECTED_PROPERTY_NAME, true);
-
-        mitk::Image2DToTexturePlaneMapper3D::Pointer newMapper = mitk::Image2DToTexturePlaneMapper3D::New();
-        nodeToUpdate->SetMapper(mitk::BaseRenderer::Standard3D, newMapper);
-      }
-
-      // This is expensive, so only update if the window is visible.
-      if (m_Show2DWindow)
-      {
-        mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());
-      }
-
-      mitk::RenderingManager::GetInstance()->RequestUpdateAll();
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void TrackedImageView::OnUpdate(const ctkEvent& event)
 {
   Q_UNUSED(event);
@@ -259,25 +199,18 @@ void TrackedImageView::OnUpdate(const ctkEvent& event)
     if (image.IsNotNull())
     {
       mitk::DataNode::Pointer trackingSensorToTrackerTransform = m_Controls->m_ImageToWorldNode->GetSelectedNode();
-
       if (trackingSensorToTrackerTransform.IsNotNull())
       {
-        // We publish this update signal immediately after the image plane is updated,
-        // as we want the Overlay Display to listen synchronously, and update immediately.
-        // We don't want a rendering event to trigger the Overlay Display to re-render at the
-        // wrong position, and momentarily display the wrong thing.
-          
         mitk::TrackedImage::Pointer command = mitk::TrackedImage::New();
         command->Update(imageNode,
                         trackingSensorToTrackerTransform,
                         *m_ImageToTrackingSensorTransform,
                         *m_EmToOpticalMatrix
                         );
-                    
-        ctkDictionary properties;
-        emit Updated(properties);
 
         // This is expensive, so only update if the window is visible.
+        // It should only be used for short term purposes.
+        // e.g. generate nice picture for paper. Not for real usage.
         if (m_Show2DWindow)
         {
           mitk::RenderingManager::GetInstance()->InitializeView(m_Controls->m_RenderWindow->GetRenderWindow(), image->GetGeometry());

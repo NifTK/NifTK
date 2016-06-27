@@ -163,19 +163,20 @@ void IGIVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
   m_3DViewer->GetRenderer()->SetDataStorage(storage);
   m_LeftOverlayViewer->SetDataStorage(storage);
   m_RightOverlayViewer->SetDataStorage(storage);
-  m_LeftImageCombo->SetDataStorage(storage);
-  m_RightImageCombo->SetDataStorage(storage);
-  m_TrackingCombo->SetDataStorage(storage);
 
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
   m_LeftImageCombo->SetAutoSelectNewItems(false);
   m_LeftImageCombo->SetPredicate(isImage);
+  m_LeftImageCombo->SetDataStorage(storage);
+
   m_RightImageCombo->SetAutoSelectNewItems(false);
   m_RightImageCombo->SetPredicate(isImage);
+  m_RightImageCombo->SetDataStorage(storage);
 
   mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
   m_TrackingCombo->SetAutoSelectNewItems(false);
   m_TrackingCombo->SetPredicate(isTransform);
+  m_TrackingCombo->SetDataStorage(storage);
 
   m_LeftImageCombo->setCurrentIndex(0);
   this->OnLeftImageSelected(nullptr);
