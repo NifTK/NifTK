@@ -298,6 +298,7 @@ void IGIVideoOverlayWidget::SetDepartmentLogoPath(const QString& path)
 {
   m_LeftOverlayViewer->SetDepartmentLogoPath(path);
   m_RightOverlayViewer->SetDepartmentLogoPath(path);
+  m_TrackedViewer->SetDepartmentLogoPath(path);
 }
 
 
@@ -306,6 +307,7 @@ void IGIVideoOverlayWidget::EnableDepartmentLogo()
 {
   m_LeftOverlayViewer->EnableDepartmentLogo();
   m_RightOverlayViewer->EnableDepartmentLogo();
+  m_TrackedViewer->EnableDepartmentLogo();
 }
 
 
@@ -314,6 +316,7 @@ void IGIVideoOverlayWidget::DisableDepartmentLogo()
 {
   m_LeftOverlayViewer->DisableDepartmentLogo();
   m_RightOverlayViewer->DisableDepartmentLogo();
+  m_TrackedViewer->DisableDepartmentLogo();
 }
 
 
@@ -322,6 +325,7 @@ void IGIVideoOverlayWidget::SetGradientBackgroundColors(const mitk::Color& colou
 {
   m_LeftOverlayViewer->SetGradientBackgroundColors(colour1, colour2);
   m_RightOverlayViewer->SetGradientBackgroundColors(colour1, colour2);
+  m_TrackedViewer->SetGradientBackgroundColors(colour1, colour2);
 }
 
 
@@ -330,6 +334,7 @@ void IGIVideoOverlayWidget::EnableGradientBackground()
 {
   m_LeftOverlayViewer->EnableGradientBackground();
   m_RightOverlayViewer->EnableGradientBackground();
+  m_TrackedViewer->EnableGradientBackground();
 }
 
 
@@ -338,6 +343,7 @@ void IGIVideoOverlayWidget::DisableGradientBackground()
 {
   m_LeftOverlayViewer->DisableGradientBackground();
   m_RightOverlayViewer->DisableGradientBackground();
+  m_TrackedViewer->DisableGradientBackground();
 }
 
 
@@ -346,6 +352,7 @@ void IGIVideoOverlayWidget::Update()
 {
   m_LeftOverlayViewer->Update();
   m_RightOverlayViewer->Update();
+  m_TrackedViewer->Update();
 }
 
 } // end namespace
