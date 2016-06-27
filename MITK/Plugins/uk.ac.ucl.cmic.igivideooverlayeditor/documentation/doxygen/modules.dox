@@ -2,7 +2,8 @@
   \defgroup uk_ac_ucl_cmic_igivideooverlayeditor uk.ac.ucl.cmic.igivideooverlayeditor Plugin
   \ingroup CMICPlugins
 
-  \brief Plugin to provide a standard QmitkRenderWindow with a 3D Viewer and a QmitkOverlayViewer to provide a video overlay.
+  \brief Plugin to provide a standard QmitkRenderWindow as a 3D Viewer and two
+  niftk::SingleVideoWidget to provide a stereo video overlay.
  
   Written by Steve Thompson (s.thompson@ucl.ac.uk) and Matt Clarkson (m.clarkson@ucl.ac.uk).
 
