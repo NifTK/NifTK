@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>887</width>
+    <width>991</width>
     <height>494</height>
    </rect>
   </property>
@@ -15,14 +15,14 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QCheckBox" name="m_LeftImageCheckBox">
        <property name="layoutDirection">
         <enum>Qt::RightToLeft</enum>
        </property>
        <property name="text">
-        <string>left image</string>
+        <string>left</string>
        </property>
       </widget>
      </item>
@@ -35,7 +35,7 @@
         <enum>Qt::RightToLeft</enum>
        </property>
        <property name="text">
-        <string>right image</string>
+        <string>right</string>
        </property>
       </widget>
      </item>
@@ -81,7 +81,7 @@
      <item>
       <widget class="QLabel" name="m_OpacityLabel">
        <property name="text">
-        <string>overlay opacity</string>
+        <string>opacity</string>
        </property>
       </widget>
      </item>
@@ -105,9 +105,16 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="m_TrackedViewCheckBox">
+       <property name="text">
+        <string>tracked</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QCheckBox" name="m_3DViewCheckBox">
        <property name="text">
-        <string>3D view</string>
+        <string>3D</string>
        </property>
       </widget>
      </item>
@@ -115,23 +122,11 @@
    </item>
    <item>
     <widget class="QSplitter" name="m_Splitter">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="layoutWidget">
-      <layout class="QHBoxLayout" name="m_OverlayViewerLayout">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetNoConstraint</enum>
-       </property>
+     <widget class="QWidget" name="">
+      <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="niftk::SingleVideoWidget" name="m_LeftOverlayViewer" native="true">
          <property name="sizePolicy">
@@ -144,6 +139,16 @@
        </item>
        <item>
         <widget class="niftk::SingleVideoWidget" name="m_RightOverlayViewer" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="niftk::SingleVideoWidget" name="m_TrackedViewer" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>0</horstretch>

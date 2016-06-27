@@ -41,11 +41,14 @@ IGIVideoOverlayWidget::IGIVideoOverlayWidget(QWidget * /*parent*/)
   connect(m_3DViewCheckBox, SIGNAL(toggled(bool)), this, SLOT(On3DViewerCheckBoxChecked(bool)));
   connect(m_LeftImageCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnLeftOverlayCheckBoxChecked(bool)));
   connect(m_RightImageCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnRightOverlayCheckBoxChecked(bool)));
+  connect(m_TrackedViewCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnTrackedViewerCheckBoxChecked(bool)));
   connect(m_OpacitySlider, SIGNAL(sliderMoved(int)), this, SLOT(OnOpacitySliderMoved(int)));
 
   m_LeftImageCheckBox->setChecked(true);
   m_RightImageCheckBox->setChecked(false);
   m_RightOverlayViewer->setVisible(false);
+  m_TrackedViewCheckBox->setChecked(false);
+  m_TrackedViewer->setVisible(false);
   m_3DViewCheckBox->setChecked(true);
 
   int width = m_Splitter->width();
@@ -115,6 +118,23 @@ void IGIVideoOverlayWidget::On3DViewerCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
+void IGIVideoOverlayWidget::OnTrackedViewerCheckBoxChecked(bool checked)
+{
+  if (checked)
+  {
+    mitk::RenderingManager::GetInstance()->AddRenderWindow(
+          m_TrackedViewer->GetRenderWindow()->GetVtkRenderWindow());
+  }
+  else
+  {
+    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(
+          m_TrackedViewer->GetRenderWindow()->GetVtkRenderWindow());
+  }
+  m_TrackedViewer->setVisible(checked);
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIVideoOverlayWidget::OnOpacitySliderMoved(int value)
 {
   m_LeftOverlayViewer->SetOpacity(value / 100.0);
@@ -129,6 +149,7 @@ void IGIVideoOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
   if (node != nullptr)
   {
     m_LeftOverlayViewer->SetImageNode(const_cast<mitk::DataNode*>(node));
+    m_TrackedViewer->SetImageNode(const_cast<mitk::DataNode*>(node));
   }
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
@@ -152,6 +173,7 @@ void IGIVideoOverlayWidget::OnTransformSelected(const mitk::DataNode* node)
   {
     m_LeftOverlayViewer->SetTransformNode(node);
     m_RightOverlayViewer->SetTransformNode(node);
+    m_TrackedViewer->SetTransformNode(node);
   }
   mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
@@ -166,8 +188,12 @@ void IGIVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
   mitk::RenderingManager::GetInstance()->InitializeView(m_3DViewer->GetVtkRenderWindow(), geometry);
 
   m_3DViewer->GetRenderer()->SetDataStorage(storage);
+  m_LeftOverlayViewer->SetUseOverlay(true);
   m_LeftOverlayViewer->SetDataStorage(storage);
+  m_RightOverlayViewer->SetUseOverlay(true);
   m_RightOverlayViewer->SetDataStorage(storage);
+  m_TrackedViewer->SetUseOverlay(false);
+  m_TrackedViewer->SetDataStorage(storage);
 
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage =
       mitk::TNodePredicateDataType<mitk::Image>::New();
@@ -222,6 +248,10 @@ QmitkRenderWindow* IGIVideoOverlayWidget::GetActiveQmitkRenderWindow() const
     {
       result = m_3DViewer;
     }
+    else if (m_TrackedViewer->GetRenderWindow()->GetRenderer() == renderer)
+    {
+      result = m_TrackedViewer->GetRenderWindow();
+    }
   }
   return result;
 }
@@ -234,6 +264,7 @@ QHash<QString, QmitkRenderWindow *> IGIVideoOverlayWidget::GetQmitkRenderWindows
   result.insert("left overlay", m_LeftOverlayViewer->GetRenderWindow());
   result.insert("right overlay", m_RightOverlayViewer->GetRenderWindow());
   result.insert("3d", m_3DViewer);
+  result.insert("tracked", m_TrackedViewer->GetRenderWindow());
   return result;
 }
 
@@ -253,6 +284,10 @@ QmitkRenderWindow* IGIVideoOverlayWidget::GetQmitkRenderWindow(const QString &id
   else if (id == "right overlay")
   {
     result =  m_RightOverlayViewer->GetRenderWindow();
+  }
+  else if (id == "tracked")
+  {
+    result =  m_TrackedViewer->GetRenderWindow();
   }
   return result;
 }

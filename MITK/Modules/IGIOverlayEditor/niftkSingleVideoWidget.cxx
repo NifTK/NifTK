@@ -35,10 +35,10 @@ SingleVideoWidget::SingleVideoWidget(QWidget* parent,
 , m_TransformNode(nullptr)
 , m_MatrixDrivenCamera(nullptr)
 , m_IsCalibrated(false)
+, m_UseOverlay(true)
 {
   m_BitmapOverlay = niftk::BitmapOverlay::New();
   m_BitmapOverlay->SetRenderWindow(this->GetRenderWindow()->GetRenderer()->GetRenderWindow());
-  m_BitmapOverlay->Enable();
 
   m_MatrixDrivenCamera = vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>::New();
   this->GetRenderWindow()->GetRenderer()->GetVtkRenderer()->SetActiveCamera(m_MatrixDrivenCamera);
@@ -54,20 +54,33 @@ SingleVideoWidget::~SingleVideoWidget()
 //-----------------------------------------------------------------------------
 void SingleVideoWidget::SetDataStorage(mitk::DataStorage* ds)
 {
-  m_BitmapOverlay->Disable();
   Single3DViewWidget::SetDataStorage(ds);
   m_BitmapOverlay->SetDataStorage(ds);
-  m_BitmapOverlay->Enable();
+  this->SetUseOverlay(m_UseOverlay);
 }
 
 
 //-----------------------------------------------------------------------------
 void SingleVideoWidget::SetImageNode(mitk::DataNode* node)
 {
-  m_BitmapOverlay->Disable();
   Single3DViewWidget::SetImageNode(node);
   m_BitmapOverlay->SetNode(node);
-  m_BitmapOverlay->Enable();
+  this->SetUseOverlay(m_UseOverlay);
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleVideoWidget::SetUseOverlay(const bool& useIt)
+{
+  if (useIt)
+  {
+    m_BitmapOverlay->Enable();
+  }
+  else
+  {
+    m_BitmapOverlay->Disable();
+  }
+  m_UseOverlay = useIt;
 }
 
 

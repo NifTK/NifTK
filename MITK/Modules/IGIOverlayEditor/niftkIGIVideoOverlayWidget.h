@@ -105,6 +105,7 @@ private slots:
   void OnLeftOverlayCheckBoxChecked(bool);
   void OnRightOverlayCheckBoxChecked(bool);
   void On3DViewerCheckBoxChecked(bool);
+  void OnTrackedViewerCheckBoxChecked(bool);
   void OnOpacitySliderMoved(int);
   void OnLeftImageSelected(const mitk::DataNode* node);
   void OnRightImageSelected(const mitk::DataNode* node);

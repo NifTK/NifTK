@@ -65,6 +65,11 @@ public:
   virtual void Update();
 
   /**
+   * \brief If true, will enable the bitmap overlay, if false, will disable it.
+   */
+  void SetUseOverlay(const bool& b);
+
+  /**
    * \brief Sets a node, which should contain an mitk::CoordinateAxesData,
    * which is used for moving the camera around.
    *
@@ -128,6 +133,7 @@ private:
   mitk::DataNode::Pointer                       m_TransformNode;
   vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>  m_MatrixDrivenCamera;
   bool                                          m_IsCalibrated;
+  bool                                          m_UseOverlay;
 };
 
 } // end namespace
