@@ -217,7 +217,9 @@ void SingleVideoWidget::UpdateCameraViaTrackingTransformation()
   // If additionally, the user has selected a tracking matrix, we can move camera accordingly.
   if (m_TransformNode.IsNotNull())
   {
-    mitk::CoordinateAxesData::Pointer trackingTransform = dynamic_cast<mitk::CoordinateAxesData*>(m_TransformNode->GetData());
+    mitk::CoordinateAxesData::Pointer trackingTransform =
+        dynamic_cast<mitk::CoordinateAxesData*>(m_TransformNode->GetData());
+
     if (trackingTransform.IsNotNull())
     {
       vtkSmartPointer<vtkMatrix4x4> trackingTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -240,5 +242,3 @@ void SingleVideoWidget::UpdateCameraViaTrackingTransformation()
 }
 
 } // end namespace
-
-

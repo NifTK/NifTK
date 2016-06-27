@@ -305,15 +305,13 @@ void BitmapOverlay::SetupCamera()
   windowSize[0] = m_RenderWindow->GetSize()[0];
   windowSize[1] = m_RenderWindow->GetSize()[1];
 
-  niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, m_ClippingRange, m_FlipViewUp, *backCamera);
-  niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing, xAxis, yAxis, m_ClippingRange, m_FlipViewUp, *frontCamera);
+  niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing,
+                                    xAxis, yAxis, m_ClippingRange, m_FlipViewUp, *backCamera);
+
+  niftk::SetCameraParallelTo2DImage(imageSize, windowSize, origin, spacing,
+                                    xAxis, yAxis, m_ClippingRange, m_FlipViewUp, *frontCamera);
 
   this->Modified();
 }
 
 } // end namespace
-
-
-
-
-

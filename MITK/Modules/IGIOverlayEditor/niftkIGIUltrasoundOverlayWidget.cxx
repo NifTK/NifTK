@@ -70,7 +70,8 @@ void IGIUltrasoundOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
   m_LeftImageCombo->SetDataStorage(storage);
   m_LeftImageCombo->setCurrentIndex(0);
 
-  connect(m_LeftImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftImageSelected(const mitk::DataNode*)));
+  connect(m_LeftImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)),
+          this, SLOT(OnLeftImageSelected(const mitk::DataNode*)));
 }
 
 
@@ -80,12 +81,14 @@ void IGIUltrasoundOverlayWidget::OnLeftOverlayCheckBoxChecked(bool checked)
   if (checked)
   {
     m_3DViewCheckBox->setEnabled(true);
-    mitk::RenderingManager::GetInstance()->AddRenderWindow(m_LeftOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
+    mitk::RenderingManager::GetInstance()->AddRenderWindow(
+          m_LeftOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   else
   {
     m_3DViewCheckBox->setEnabled(false);
-    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_LeftOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
+    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(
+          m_LeftOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   m_LeftOverlayViewer->setVisible(checked);
 }

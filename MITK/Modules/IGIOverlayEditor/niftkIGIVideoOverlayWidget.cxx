@@ -68,11 +68,13 @@ void IGIVideoOverlayWidget::OnLeftOverlayCheckBoxChecked(bool checked)
 {
   if (checked)
   {
-    mitk::RenderingManager::GetInstance()->AddRenderWindow(m_LeftOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
+    mitk::RenderingManager::GetInstance()->AddRenderWindow(
+          m_LeftOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   else
   {
-    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_LeftOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
+    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(
+          m_LeftOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   m_LeftOverlayViewer->setVisible(checked);
 }
@@ -83,11 +85,13 @@ void IGIVideoOverlayWidget::OnRightOverlayCheckBoxChecked(bool checked)
 {
   if (checked)
   {
-    mitk::RenderingManager::GetInstance()->AddRenderWindow(m_RightOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
+    mitk::RenderingManager::GetInstance()->AddRenderWindow(
+          m_RightOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   else
   {
-    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_RightOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
+    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(
+          m_RightOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   m_RightOverlayViewer->setVisible(checked);
 }
@@ -98,11 +102,13 @@ void IGIVideoOverlayWidget::On3DViewerCheckBoxChecked(bool checked)
 {
   if (checked)
   {
-    mitk::RenderingManager::GetInstance()->AddRenderWindow(m_3DViewer->GetRenderWindow());
+    mitk::RenderingManager::GetInstance()->AddRenderWindow(
+          m_3DViewer->GetRenderWindow());
   }
   else
   {
-    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(m_3DViewer->GetRenderWindow());
+    mitk::RenderingManager::GetInstance()->RemoveRenderWindow(
+          m_3DViewer->GetRenderWindow());
   }
   m_3DViewer->setVisible(checked);
 }
@@ -163,7 +169,9 @@ void IGIVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
   m_LeftOverlayViewer->SetDataStorage(storage);
   m_RightOverlayViewer->SetDataStorage(storage);
 
-  mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+  mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage =
+      mitk::TNodePredicateDataType<mitk::Image>::New();
+
   m_LeftImageCombo->SetAutoSelectNewItems(false);
   m_LeftImageCombo->SetPredicate(isImage);
   m_LeftImageCombo->SetDataStorage(storage);
@@ -174,15 +182,22 @@ void IGIVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
   m_RightImageCombo->SetDataStorage(storage);
   m_RightImageCombo->setCurrentIndex(0);
 
-  mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+  mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform =
+      mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+
   m_TrackingCombo->SetAutoSelectNewItems(false);
   m_TrackingCombo->SetPredicate(isTransform);
   m_TrackingCombo->SetDataStorage(storage);
   m_TrackingCombo->setCurrentIndex(0);
 
-  connect(m_LeftImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftImageSelected(const mitk::DataNode*)));
-  connect(m_RightImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightImageSelected(const mitk::DataNode*)));
-  connect(m_TrackingCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), this, SLOT(OnTransformSelected(const mitk::DataNode*)));
+  connect(m_LeftImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)),
+          this, SLOT(OnLeftImageSelected(const mitk::DataNode*)));
+
+  connect(m_RightImageCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)),
+          this, SLOT(OnRightImageSelected(const mitk::DataNode*)));
+
+  connect(m_TrackingCombo, SIGNAL(OnSelectionChanged(const mitk::DataNode*)),
+          this, SLOT(OnTransformSelected(const mitk::DataNode*)));
 }
 
 

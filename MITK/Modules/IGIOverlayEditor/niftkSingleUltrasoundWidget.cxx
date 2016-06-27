@@ -153,5 +153,3 @@ void SingleUltrasoundWidget::UpdateCameraToTrackImage()
 }
 
 } // end namespace
-
-

@@ -232,5 +232,3 @@ void Single3DViewWidget::SetImageNode(mitk::DataNode* node)
 }
 
 } // end namespace
-
-

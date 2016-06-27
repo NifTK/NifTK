@@ -18,6 +18,7 @@
 #include "niftkIGIOverlayEditorExports.h"
 #include <QmitkCmicLogo.h>
 
+#include <mitkRenderingManager.h>
 #include <mitkRenderWindowFrame.h>
 #include <mitkGradientBackground.h>
 #include <mitkDataStorage.h>
@@ -29,10 +30,6 @@
 
 class QGridLayout;
 class QmitkRenderWindow;
-
-namespace mitk {
-  class RenderingManager;
-}
 
 namespace niftk
 {
