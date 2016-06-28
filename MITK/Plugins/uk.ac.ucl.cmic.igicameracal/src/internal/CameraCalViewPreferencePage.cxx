@@ -27,7 +27,8 @@ namespace niftk
 {
 
 const QString CameraCalViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igicameracal");
-const QString CameraCalViewPreferencePage::ITERATIVE_NODE_NAME("iterative");
+const QString CameraCalViewPreferencePage::DO_ITERATIVE_NODE_NAME("iterative");
+const QString CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME("optimise in 3D");
 const QString CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME("minimum number of views");
 const QString CameraCalViewPreferencePage::MODEL_NODE_NAME("3D model points");
 const QString CameraCalViewPreferencePage::SCALEX_NODE_NAME("scale factor in x to resize image");
@@ -121,6 +122,7 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_FeaturesComboBox->setCurrentIndex(0);
   m_Ui->m_TagFamilyComboBox->setCurrentIndex(1);
   m_Ui->m_IterativeCheckBox->setChecked(false);
+  m_Ui->m_Do3DOptimisationCheckBox->setChecked(false);
   m_Ui->m_HandEyeComboBox->setCurrentIndex(0);
   this->OnFeaturesComboSelected();
   this->OnHandEyeComboSelected();
@@ -261,7 +263,8 @@ void CameraCalViewPreferencePage::OnReferencePointsButtonPressed()
 //-----------------------------------------------------------------------------
 bool CameraCalViewPreferencePage::PerformOk()
 {
-  m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::ITERATIVE_NODE_NAME, m_Ui->m_IterativeCheckBox->isChecked());
+  m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::DO_ITERATIVE_NODE_NAME, m_Ui->m_IterativeCheckBox->isChecked());
+  m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME, m_Ui->m_Do3DOptimisationCheckBox->isChecked());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_NODE_NAME, m_Ui->m_3DModelLineEdit->text());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME, m_Ui->m_MinimumViewsSpinBox->value());
   m_CameraCalViewPreferencesNode->PutDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, m_Ui->m_ScaleImageInXSpinBox->value());
@@ -289,7 +292,8 @@ void CameraCalViewPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void CameraCalViewPreferencePage::Update()
 {
-  m_Ui->m_IterativeCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::ITERATIVE_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoIterative));
+  m_Ui->m_IterativeCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::DO_ITERATIVE_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoIterative));
+  m_Ui->m_Do3DOptimisationCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation));
   m_Ui->m_3DModelLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_NODE_NAME, ""));
   m_Ui->m_MinimumViewsSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating));
   m_Ui->m_ScaleImageInXSpinBox->setValue(m_CameraCalViewPreferencesNode->GetDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultScaleFactorX));

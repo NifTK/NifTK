@@ -201,8 +201,11 @@ void CameraCalView::RetrievePreferenceValues()
     m_Manager->SetScaleFactorX(prefs->GetDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultScaleFactorX));
     m_Manager->SetScaleFactorY(prefs->GetDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultScaleFactorY));
 
-    bool doIterative = prefs->GetBool(CameraCalViewPreferencePage::ITERATIVE_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoIterative);
+    bool doIterative = prefs->GetBool(CameraCalViewPreferencePage::DO_ITERATIVE_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoIterative);
     m_Manager->SetDoIterative(doIterative);
+
+    bool do3DOptimisation = prefs->GetBool(CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation);
+    m_Manager->SetDo3DOptimisation(do3DOptimisation);
 
     std::string refImage = prefs->Get(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, "").toStdString();
     std::string refPoints = prefs->Get(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, "").toStdString();

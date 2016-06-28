@@ -267,23 +267,34 @@
       </widget>
      </item>
      <item row="9" column="1">
-      <widget class="QRadioButton" name="m_IterativeCheckBox">
-       <property name="toolTip">
-        <string>Do iterative calibration.</string>
-       </property>
+      <widget class="QCheckBox" name="m_IterativeCheckBox">
        <property name="text">
         <string/>
        </property>
       </widget>
      </item>
      <item row="10" column="0">
+      <widget class="QLabel" name="m_Do3DOptimisationLabel">
+       <property name="text">
+        <string>do 3D optimisation:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1">
+      <widget class="QCheckBox" name="m_Do3DOptimisationCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="0">
       <widget class="QLabel" name="m_MinPointsLabel">
        <property name="text">
         <string>minimum number of points:</string>
        </property>
       </widget>
      </item>
-     <item row="10" column="1">
+     <item row="11" column="1">
       <widget class="QSpinBox" name="m_MinPointsSpinBox">
        <property name="toolTip">
         <string>Minimum number of points for April Tags.</string>
@@ -296,21 +307,21 @@
        </property>
       </widget>
      </item>
-     <item row="11" column="0">
+     <item row="12" column="0">
       <widget class="QLabel" name="m_HandEyeLabel">
        <property name="text">
         <string>preferred hand-eye method:</string>
        </property>
       </widget>
      </item>
-     <item row="11" column="1">
+     <item row="12" column="1">
       <widget class="QComboBox" name="m_HandEyeComboBox">
        <property name="toolTip">
         <string>This plugin calculates all available hand-eye methods, so this is the one to visualise.</string>
        </property>
       </widget>
      </item>
-     <item row="12" column="0">
+     <item row="13" column="0">
       <widget class="QLabel" name="m_ModelToTrackerLabel">
        <property name="toolTip">
         <string>Name of a 4x4 file to describe model to tracker transform.</string>
@@ -320,7 +331,7 @@
        </property>
       </widget>
      </item>
-     <item row="12" column="1">
+     <item row="13" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
         <widget class="QLineEdit" name="m_ModelToTrackerLineEdit"/>
