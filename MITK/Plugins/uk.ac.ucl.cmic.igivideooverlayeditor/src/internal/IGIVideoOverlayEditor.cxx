@@ -365,6 +365,9 @@ void IGIVideoOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences*
   }
   d->m_IGIVideoOverlayWidget->SetGradientBackgroundColors(upper, lower);
   d->m_IGIVideoOverlayWidget->EnableGradientBackground();
+
+  std::string calibrationFileName = prefs->Get(IGIVideoOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "").toStdString();
+  d->m_IGIVideoOverlayWidget->SetEyeHandFileName(calibrationFileName);
 }
 
 

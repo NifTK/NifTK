@@ -25,6 +25,7 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
+const QString IGIVideoOverlayEditorPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
 const QString IGIVideoOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET("first background color style sheet");
 const QString IGIVideoOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET("second background color style sheet");
 const QString IGIVideoOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR("first background color");
@@ -33,9 +34,10 @@ const QString IGIVideoOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR("sec
 
 //-----------------------------------------------------------------------------
 IGIVideoOverlayEditorPreferencePage::IGIVideoOverlayEditorPreferencePage()
-: m_MainControl(0)
-, m_ColorButton1(NULL)
-, m_ColorButton2(NULL)
+: m_MainControl(nullptr)
+, m_CalibrationFileName(nullptr)
+, m_ColorButton1(nullptr)
+, m_ColorButton2(nullptr)
 {
 }
 
@@ -56,6 +58,9 @@ void IGIVideoOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
   m_MainControl = new QWidget(parent);
 
   QFormLayout *formLayout = new QFormLayout;
+
+  m_CalibrationFileName = new ctkPathLineEdit();
+  formLayout->addRow("calibration matrix file name", m_CalibrationFileName);
 
   // gradient background
   QLabel* gBName = new QLabel;
@@ -122,6 +127,7 @@ QWidget* IGIVideoOverlayEditorPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool IGIVideoOverlayEditorPreferencePage::PerformOk()
 {
+  m_IGIVideoOverlayEditorPreferencesNode->Put(IGIVideoOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, m_CalibrationFileName->currentPath());
   m_IGIVideoOverlayEditorPreferencesNode->Put(IGIVideoOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET, m_FirstColorStyleSheet);
   m_IGIVideoOverlayEditorPreferencesNode->Put(IGIVideoOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET, m_SecondColorStyleSheet);
   m_IGIVideoOverlayEditorPreferencesNode->Put(IGIVideoOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, m_FirstColor);
@@ -140,6 +146,7 @@ void IGIVideoOverlayEditorPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void IGIVideoOverlayEditorPreferencePage::Update()
 {
+  m_CalibrationFileName->setCurrentPath(m_IGIVideoOverlayEditorPreferencesNode->Get(IGIVideoOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, ""));
   m_FirstColorStyleSheet = m_IGIVideoOverlayEditorPreferencesNode->Get(IGIVideoOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET, "");
   m_SecondColorStyleSheet = m_IGIVideoOverlayEditorPreferencesNode->Get(IGIVideoOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET, "");
   m_FirstColor = m_IGIVideoOverlayEditorPreferencesNode->Get(IGIVideoOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR, "");

@@ -294,6 +294,15 @@ QmitkRenderWindow* IGIVideoOverlayWidget::GetQmitkRenderWindow(const QString &id
 
 
 //-----------------------------------------------------------------------------
+void IGIVideoOverlayWidget::SetEyeHandFileName(const std::string& fileName)
+{
+  m_LeftOverlayViewer->SetEyeHandFileName(fileName);
+  m_RightOverlayViewer->SetEyeHandFileName(fileName);
+  m_TrackedViewer->SetEyeHandFileName(fileName);
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIVideoOverlayWidget::SetDepartmentLogoPath(const QString& path)
 {
   m_LeftOverlayViewer->SetDepartmentLogoPath(path);

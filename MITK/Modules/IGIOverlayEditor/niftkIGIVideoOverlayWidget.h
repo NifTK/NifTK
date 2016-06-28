@@ -98,6 +98,11 @@ public:
    */
   void Update();
 
+  /**
+   * \brief Set the filename of an eye-hand matrix.
+   */
+  void SetEyeHandFileName(const std::string& fileName);
+
   //-------------- End of methods required by IGIVideoOverlayWidget --------------
 
 private slots:

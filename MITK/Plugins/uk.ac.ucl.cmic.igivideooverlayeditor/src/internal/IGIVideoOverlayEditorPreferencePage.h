@@ -59,6 +59,11 @@ public:
   virtual void Update() override;
 
   /**
+   * \brief Stores the name of the preference node that contains the name of the calibration file.
+   */
+  static const QString CALIBRATION_FILE_NAME;
+
+  /**
    * \brief Stores the name of the preference node that contains the stylesheet of the first background colour.
    */
   static const QString FIRST_BACKGROUND_STYLE_SHEET;
@@ -87,9 +92,9 @@ public slots:
 protected:
 
   QWidget         *m_MainControl;
+  ctkPathLineEdit *m_CalibrationFileName;
   QPushButton     *m_ColorButton1;
   QPushButton     *m_ColorButton2;
-  ctkPathLineEdit *m_CalibrationFileName;
   QString          m_FirstColor;
   QString          m_SecondColor;
   QString          m_FirstColorStyleSheet;

@@ -90,6 +90,13 @@ public:
    */
   void SetOpacity(const float& value);
 
+  /**
+   * \brief If specified, will attempt to load the given file,
+   * and will assume that the provided transform is a tracking matrix,
+   * and calculate the camera-to-world transformation.
+   */
+  void SetEyeHandFileName(const std::string& fileName);
+
 protected:
 
   /**
@@ -134,6 +141,8 @@ private:
   vtkSmartPointer<vtkOpenGLMatrixDrivenCamera>  m_MatrixDrivenCamera;
   bool                                          m_IsCalibrated;
   bool                                          m_UseOverlay;
+  std::string                                   m_EyeHandFileName;
+  vtkSmartPointer<vtkMatrix4x4>                 m_EyeHandMatrix;
 };
 
 } // end namespace

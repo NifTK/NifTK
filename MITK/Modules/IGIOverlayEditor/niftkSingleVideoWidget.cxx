@@ -36,6 +36,8 @@ SingleVideoWidget::SingleVideoWidget(QWidget* parent,
 , m_MatrixDrivenCamera(nullptr)
 , m_IsCalibrated(false)
 , m_UseOverlay(true)
+, m_EyeHandFileName("")
+, m_EyeHandMatrix(nullptr)
 {
   m_BitmapOverlay = niftk::BitmapOverlay::New();
   m_BitmapOverlay->SetRenderWindow(this->GetRenderWindow()->GetRenderer()->GetRenderWindow());
@@ -48,6 +50,20 @@ SingleVideoWidget::SingleVideoWidget(QWidget* parent,
 //-----------------------------------------------------------------------------
 SingleVideoWidget::~SingleVideoWidget()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleVideoWidget::SetEyeHandFileName(const std::string& fileName)
+{
+  if (!fileName.empty())
+  {
+    // Note: Currently doesn't do error handling properly.
+    // i.e no return code, no exception.
+    m_EyeHandMatrix = niftk::LoadMatrix4x4FromFile(fileName);
+    m_EyeHandFileName = fileName;
+    MITK_INFO << "Loading eye-hand matrix:" << m_EyeHandFileName << std::endl;
+  }
 }
 
 
@@ -194,7 +210,7 @@ void SingleVideoWidget::UpdateCameraIntrinsicParameters()
 void SingleVideoWidget::UpdateCameraViaTrackingTransformation()
 {
   // This implies a right handed coordinate system.
-  // By default, assume camera position is at origin, looking down the world z-axis.
+  // By default, assume camera position is at origin, looking down the world +ve z-axis.
   double origin[4]     = {0, 0,    0,    1};
   double focalPoint[4] = {0, 0,   1000, 1};
   double viewUp[4]     = {0, -1000, 0,    1};
@@ -227,20 +243,37 @@ void SingleVideoWidget::UpdateCameraViaTrackingTransformation()
     }
   }
 
-  // If additionally, the user has selected a tracking matrix, we can move camera accordingly.
+  // If additionally, the user has selected a transformation matrix, we move camera accordingly.
+  // Note, 2 use-cases:
+  // (a) User specifies camera to world - just use the matrix as given.
+  // (b) User specified eye-hand matrix - multiply by eye-hand then tracking matrix
+  //                                    - to construct the camera to world.
   if (m_TransformNode.IsNotNull())
   {
-    mitk::CoordinateAxesData::Pointer trackingTransform =
+    mitk::CoordinateAxesData::Pointer transform =
         dynamic_cast<mitk::CoordinateAxesData*>(m_TransformNode->GetData());
 
-    if (trackingTransform.IsNotNull())
+    if (transform.IsNotNull())
     {
-      vtkSmartPointer<vtkMatrix4x4> trackingTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-      trackingTransform->GetVtkMatrix(*trackingTransformMatrix);
+      vtkSmartPointer<vtkMatrix4x4> suppliedMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+      transform->GetVtkMatrix(*suppliedMatrix);
 
-      trackingTransformMatrix->MultiplyPoint(origin, origin);
-      trackingTransformMatrix->MultiplyPoint(focalPoint, focalPoint);
-      trackingTransformMatrix->MultiplyPoint(viewUp, viewUp);
+      vtkSmartPointer<vtkMatrix4x4> cameraToWorld = vtkSmartPointer<vtkMatrix4x4>::New();
+
+      if (m_EyeHandFileName.empty())
+      {
+        // Use case (a) - supplied transform is camera to world.
+        cameraToWorld->DeepCopy(suppliedMatrix);
+      }
+      else
+      {
+        // Use case (b) - supplied transform is a tracking transform.
+        vtkMatrix4x4::Multiply4x4(suppliedMatrix, m_EyeHandMatrix, cameraToWorld);
+      }
+
+      cameraToWorld->MultiplyPoint(origin, origin);
+      cameraToWorld->MultiplyPoint(focalPoint, focalPoint);
+      cameraToWorld->MultiplyPoint(viewUp, viewUp);
       viewUp[0] = viewUp[0] - origin[0];
       viewUp[1] = viewUp[1] - origin[1];
       viewUp[2] = viewUp[2] - origin[2];
