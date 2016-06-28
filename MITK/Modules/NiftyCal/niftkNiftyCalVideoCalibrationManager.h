@@ -60,6 +60,7 @@ public:
   };
 
   const static bool                DefaultDoIterative;
+  const static bool                DefaultDo3DOptimisation;
   const static unsigned int        DefaultMinimumNumberOfSnapshotsForCalibrating;
   const static double              DefaultScaleFactorX;
   const static double              DefaultScaleFactorY;
@@ -93,6 +94,9 @@ public:
 
   itkSetMacro(DoIterative, bool);
   itkGetMacro(DoIterative, bool);
+
+  itkSetMacro(Do3DOptimisation, bool);
+  itkGetMacro(Do3DOptimisation, bool);
 
   itkSetMacro(UpdateNodes, bool);
   itkGetMacro(UpdateNodes, bool);
@@ -270,6 +274,7 @@ private:
 
   // Data from preferences.
   bool                                           m_DoIterative;
+  bool                                           m_Do3DOptimisation;
   unsigned int                                   m_MinimumNumberOfSnapshotsForCalibrating;
   std::string                                    m_ModelFileName;
   double                                         m_ScaleFactorX;
@@ -320,8 +325,8 @@ private:
   std::vector<cv::Mat>                           m_Tvecs[2];
   cv::Mat                                        m_EssentialMatrix;
   cv::Mat                                        m_FundamentalMatrix;
-  cv::Mat                                        m_RightToLeftRotation;
-  cv::Mat                                        m_RightToLeftTranslation;
+  cv::Mat                                        m_LeftToRightRotation;
+  cv::Mat                                        m_LeftToRightTranslation;
   std::vector<cv::Matx44d>                       m_HandEyeMatrices[2];
   std::vector<cv::Matx44d>                       m_ReferenceHandEyeMatrices[2];
 

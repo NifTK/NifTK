@@ -47,6 +47,7 @@ namespace niftk
 {
 
 const bool                NiftyCalVideoCalibrationManager::DefaultDoIterative(false);
+const bool                NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation(false);
 const unsigned int        NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating(5);
 const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorX(1);
 const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorY(1);
@@ -68,6 +69,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_TrackingTransformNode(nullptr)
 , m_ReferenceTrackingTransformNode(nullptr)
 , m_DoIterative(NiftyCalVideoCalibrationManager::DefaultDoIterative)
+, m_Do3DOptimisation(NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation)
 , m_MinimumNumberOfSnapshotsForCalibrating(
     NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating)
 , m_ScaleFactorX(NiftyCalVideoCalibrationManager::DefaultScaleFactorX)
@@ -599,7 +601,7 @@ void NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEyeInStereo(cv::Matx44d
   optimiser->SetRightIntrinsic(&m_Intrinsic[0]);   // i.e. we DON'T optimise these.
   optimiser->SetRightDistortion(&m_Distortion[0]); // i.e. we DON'T optimise these.
 
-  cv::Matx44d stereoExtrinsics = niftk::RodriguesToMatrix(m_RightToLeftRotation, m_RightToLeftTranslation);
+  cv::Matx44d stereoExtrinsics = niftk::RodriguesToMatrix(m_LeftToRightRotation, m_LeftToRightTranslation);
 
   optimiser->Optimise(modelToWorld, handEye, stereoExtrinsics);
 
@@ -1022,21 +1024,24 @@ double NiftyCalVideoCalibrationManager::Calibrate()
 
   if (m_DoIterative)
   {
-    rms = niftk::IterativeMonoCameraCalibration(
-          m_ModelPoints,
-          m_ReferenceDataForIterativeCalib,
-          m_OriginalImages[0],
-          m_ImagesForWarping[0],
-          m_ImageSize,
-          m_Intrinsic[0],
-          m_Distortion[0],
-          m_Rvecs[0],
-          m_Tvecs[0]
-          );
-
-    if (m_ImageNode[1].IsNotNull())
+    if (m_ImageNode[1].IsNull())
+    {
+      rms = niftk::IterativeMonoCameraCalibration(
+            m_ModelPoints,
+            m_ReferenceDataForIterativeCalib,
+            m_OriginalImages[0],
+            m_ImagesForWarping[0],
+            m_ImageSize,
+            m_Intrinsic[0],
+            m_Distortion[0],
+            m_Rvecs[0],
+            m_Tvecs[0]
+            );
+    }
+    else
     {
       cv::Matx21d rmss = niftk::IterativeStereoCameraCalibration(
+            m_Do3DOptimisation,
             m_ModelPoints,
             m_ReferenceDataForIterativeCalib,
             m_OriginalImages[0],
@@ -1054,10 +1059,15 @@ double NiftyCalVideoCalibrationManager::Calibrate()
             m_Tvecs[1],
             m_EssentialMatrix,
             m_FundamentalMatrix,
-            m_RightToLeftRotation,
-            m_RightToLeftTranslation
+            m_LeftToRightRotation,
+            m_LeftToRightTranslation
             );
       rms = rmss(0, 0);
+
+      MITK_INFO << "Iterative Stereo: projection error=" << rmss(0,0)
+                << ", reconstruction error=" << rmss(1, 0)
+                << ", did 3D optimisation=" << m_Do3DOptimisation
+                << std::endl;
     }
   }
   else
@@ -1092,18 +1102,28 @@ double NiftyCalVideoCalibrationManager::Calibrate()
             m_ImageSize,
             m_Intrinsic[0],
             m_Distortion[0],
-            m_Rvecs[0],
-            m_Tvecs[0],
             m_Intrinsic[1],
             m_Distortion[1],
-            m_Rvecs[1],
-            m_Tvecs[1],
             m_EssentialMatrix,
             m_FundamentalMatrix,
-            m_RightToLeftRotation,
-            m_RightToLeftTranslation,
+            m_LeftToRightRotation,
+            m_LeftToRightTranslation,
             CV_CALIB_USE_INTRINSIC_GUESS
             );
+
+      niftk::ComputeStereoExtrinsics(m_ModelPoints,
+                                     m_Points[0],
+                                     m_ImageSize,
+                                     m_Intrinsic[0],
+                                     m_Distortion[0],
+                                     m_LeftToRightRotation,
+                                     m_LeftToRightTranslation,
+                                     m_Rvecs[0],
+                                     m_Tvecs[0],
+                                     m_Rvecs[1],
+                                     m_Tvecs[1]
+                                    );
+
     }
   }
 
@@ -1185,15 +1205,15 @@ double NiftyCalVideoCalibrationManager::Calibrate()
       mitk::CameraIntrinsics::Pointer rightIntrinsics = mitk::CameraIntrinsics::New();
       rightIntrinsics->SetIntrinsics(m_Intrinsic[1], m_Distortion[1]);
 
-      cv::Matx44d rightToLeft = niftk::RodriguesToMatrix(m_RightToLeftRotation, m_RightToLeftTranslation);
-      cv::Matx44d leftToRight = rightToLeft.inv();
+      cv::Matx44d leftToRight = niftk::RodriguesToMatrix(m_LeftToRightRotation, m_LeftToRightTranslation);
+      cv::Matx44d rightToLeft = leftToRight.inv();
       itk::Matrix<float, 4, 4>    txf;
       txf.SetIdentity();
       for (int r = 0; r < 4; r++)
       {
         for (int c = 0; c < 4; c++)
         {
-          txf.GetVnlMatrix()(r, c) = leftToRight(r, c);
+          txf.GetVnlMatrix()(r, c) = rightToLeft(r, c);
         }
       }
       MatrixProperty::Pointer matrixProp = MatrixProperty::New(txf);
@@ -1259,7 +1279,7 @@ void NiftyCalVideoCalibrationManager::Save()
       m_Intrinsic[1], m_Distortion[1], m_OutputDirName + "calib.right.intrinsics.txt");
 
     niftk::SaveNifTKStereoExtrinsics(
-      m_RightToLeftRotation, m_RightToLeftTranslation, m_OutputDirName + "calib.r2l.txt");
+      m_LeftToRightRotation, m_LeftToRightTranslation, m_OutputDirName + "calib.r2l.txt");
 
     this->SaveImages("calib.right.images.", m_OriginalImages[1]);
     this->SavePoints("calib.right.points.", m_Points[1]);
