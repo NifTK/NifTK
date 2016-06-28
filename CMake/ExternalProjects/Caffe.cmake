@@ -30,20 +30,10 @@ niftkMacroDefineExternalProjectVariables(Caffe ${version} ${location})
 set(proj_DEPENDENCIES Boost GFlags GLog OpenBLAS ProtoBuf HDF5)
 
 if(${NIFTK_USE_CUDA})
-  set(CPU-ONLY OFF)
-else(${NIFTK_USE_CUDA})
-  set(CPU-ONLY ON)
-endif(${NIFTK_USE_CUDA})
-
-set(CMAKE_MODULE_PATH
-    ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/CMake
-    ${CMAKE_SOURCE_DIR}/CMake/ExternalProjects
-    ${CMAKE_SOURCE_DIR}/CMake/cuda
-    ${CMAKE_MODULE_PATH}
-   )
-message( "Caffe.cmake CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}" )
-
+  set(CPU_ONLY OFF)
+else()
+  set(CPU_ONLY ON)
+endif()
 
 
 if(NOT DEFINED Caffe_DIR)
@@ -114,7 +104,7 @@ if(NOT DEFINED Caffe_DIR)
       -DUSE_LEVELDB:BOOL=OFF
       -DUSE_LMDB:BOOL=OFF
       -DBUILD_python:BOOL=OFF
-      -DCPU-ONLY:BOOL=${CPU-ONLY}
+      -DCPU_ONLY:BOOL=${CPU_ONLY}
     CMAKE_CACHE_ARGS
       ${EP_COMMON_CACHE_ARGS}
       -DBLAS:STRING=Open
