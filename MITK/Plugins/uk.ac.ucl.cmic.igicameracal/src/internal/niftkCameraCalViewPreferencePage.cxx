@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "CameraCalViewPreferencePage.h"
+#include "niftkCameraCalViewPreferencePage.h"
 #include "ui_CameraCalViewPreferencePage.h"
 
 #include <berryIPreferencesService.h>

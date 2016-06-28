@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef CameraCalViewPreferencePage_h
-#define CameraCalViewPreferencePage_h
+#ifndef niftkCameraCalViewPreferencePage_h
+#define niftkCameraCalViewPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>

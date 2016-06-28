@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#include "CameraCalViewActivator.h"
+#include "niftkCameraCalViewActivator.h"
+#include "niftkCameraCalView.h"
+#include "niftkCameraCalViewPreferencePage.h"
 #include <QtPlugin>
-#include "CameraCalView.h"
-#include "CameraCalViewPreferencePage.h"
 
 namespace niftk
 {

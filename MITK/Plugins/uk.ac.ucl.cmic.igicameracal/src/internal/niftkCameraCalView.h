@@ -12,8 +12,8 @@
 
 =============================================================================*/
  
-#ifndef CameraCalView_h
-#define CameraCalView_h
+#ifndef niftkCameraCalView_h
+#define niftkCameraCalView_h
 
 #include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>

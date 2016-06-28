@@ -17,20 +17,20 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  CameraCalViewActivator.cxx
-  CameraCalView.cxx
-  CameraCalViewPreferencePage.cxx
+  niftkCameraCalViewActivator.cxx
+  niftkCameraCalView.cxx
+  niftkCameraCalViewPreferencePage.cxx
 )
 
 set(UI_FILES
-  src/internal/CameraCalView.ui
-  src/internal/CameraCalViewPreferencePage.ui
+  src/internal/niftkCameraCalView.ui
+  src/internal/niftkCameraCalViewPreferencePage.ui
 )
 
 set(MOC_H_FILES
-  src/internal/CameraCalViewActivator.h
-  src/internal/CameraCalView.h
-  src/internal/CameraCalViewPreferencePage.h
+  src/internal/niftkCameraCalViewActivator.h
+  src/internal/niftkCameraCalView.h
+  src/internal/niftkCameraCalViewPreferencePage.h
 )
 
 # list of resource files which can be used by the plug-in
@@ -45,7 +45,7 @@ set(CACHED_RESOURCE_FILES
 # list of Qt .qrc files which contain additional resources
 # specific to this plugin
 set(QRC_FILES
-  resources/CameraCalView.qrc
+  resources/niftkCameraCalView.qrc
 )
 
 set(CPP_FILES )

@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef CameraCalViewActivator_h
-#define CameraCalViewActivator_h
+#ifndef niftkCameraCalViewActivator_h
+#define niftkCameraCalViewActivator_h
 
 #include <ctkPluginActivator.h>
 

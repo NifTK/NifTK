@@ -12,10 +12,9 @@
 
 =============================================================================*/
 
-// Qmitk
-#include "CameraCalView.h"
-#include "CameraCalViewPreferencePage.h"
-#include "CameraCalViewActivator.h"
+#include "niftkCameraCalView.h"
+#include "niftkCameraCalViewPreferencePage.h"
+#include "niftkCameraCalViewActivator.h"
 #include <niftkNiftyCalException.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkCoordinateAxesData.h>
