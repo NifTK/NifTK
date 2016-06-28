@@ -27,7 +27,8 @@ namespace niftk
 {
 /**
  * \class IGIVideoOverlayWidget
- * \brief A widget that contains two niftk::SingleVideoWidget and a QmitkRenderWindow,
+ * \brief A widget that contains 3 niftk::SingleVideoWidget
+ * (left video, right video, rendered data only no video) and a QmitkRenderWindow,
  * (all set to render 3D mode), and several widgets for some basic controls.
  */
 class NIFTKIGIOVERLAYEDITOR_EXPORT IGIVideoOverlayWidget : public QWidget,

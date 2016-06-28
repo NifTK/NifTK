@@ -24,7 +24,11 @@ namespace niftk
  * \class SingleUltrasoundWidget
  * \brief Derived from niftk::Single3DViewWidget to provide a widget that
  * given an image, will always position the camera to face the image
- * and scale the image to maximally fill the window.
+ * and scale the image to maximally fill the window. In contrast to
+ * niftk::SingleVideoWidget the image plane is a plane in 3D space,
+ * not a projection through a camera model. Therefore, the image is
+ * modelled as a texture plane, so 3D geometry objects can appear infront
+ * or behind the plane.
  */
 class NIFTKIGIOVERLAYEDITOR_EXPORT SingleUltrasoundWidget : public Single3DViewWidget
 {

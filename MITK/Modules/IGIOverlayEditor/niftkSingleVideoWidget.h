@@ -28,14 +28,23 @@ namespace niftk
 /**
  * \class SingleVideoWidget
  * \brief Derived from niftk::Single3DViewWidget to provide a widget that
- * given a video image, will render it at video frame rate into either the
- * foreground or the background or both, and additionally merge VTK renderings.
+ * given a video image, will render it at video frame rate into both the
+ * foreground and the background layer, and additionally merge VTK renderings.
  *
- * This class can perform rendering, as if through a calibrated camera,
+ * According to VTK documentation, layers that are not the absolute background
+ * should have a transparent background. So, by placing the VTK rendering in
+ * a layer that is NOT the background, then the black background colour should
+ * be transparent black. Then we also render the video into the foreground to try
+ * and blend over it.
+ *
+ * In addition, this class can perform rendering, as if through a calibrated camera,
  * such as may be obtained view an OpenCV (Zhang 2000) camera model. If
  * the camera intrinsic parameters are found as a data node on the specified
  * image, then the camera switches to a calibrated camera, and otherwise
  * will assume the default VTK behaviour implemented in vtkOpenGLCamera.
+ * This only does the intrinsics, not the distortion parameters. So the
+ * supplied video should already be distortion corrected. The rendered
+ * VTK world should be distortion corrected world.
  */
 class NIFTKIGIOVERLAYEDITOR_EXPORT SingleVideoWidget : public Single3DViewWidget
 {
