@@ -188,11 +188,11 @@ void IGIVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
   mitk::RenderingManager::GetInstance()->InitializeView(m_3DViewer->GetVtkRenderWindow(), geometry);
 
   m_3DViewer->GetRenderer()->SetDataStorage(storage);
-  m_LeftOverlayViewer->SetUseOverlay(true);
+  m_LeftOverlayViewer->SetUseOverlay(true); // always set to true, so we get rendering and video.
   m_LeftOverlayViewer->SetDataStorage(storage);
-  m_RightOverlayViewer->SetUseOverlay(true);
+  m_RightOverlayViewer->SetUseOverlay(true); // always set to true, so we get rendering and video.
   m_RightOverlayViewer->SetDataStorage(storage);
-  m_TrackedViewer->SetUseOverlay(false);
+  m_TrackedViewer->SetUseOverlay(false); // always set to false, so we get rendering, but no video.
   m_TrackedViewer->SetDataStorage(storage);
 
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage =
