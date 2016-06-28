@@ -75,7 +75,7 @@
      <item row="4" column="0">
       <widget class="QLabel" name="m_ProjectionErrorLabel">
        <property name="text">
-        <string>projection error (pixels):</string>
+        <string>RMS error:</string>
        </property>
       </widget>
      </item>
