@@ -146,19 +146,19 @@ void BitmapOverlay::SetOpacity(const double& opacity)
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlay::SetClippingRange(const double& near, const double& far)
+void BitmapOverlay::SetClippingRange(const double& nearZ, const double& farZ)
 {
-  m_ClippingRange[0] = near;
-  m_ClippingRange[1] = far;
+  m_ClippingRange[0] = nearZ;
+  m_ClippingRange[1] = farZ;
   this->Modified();
 }
 
 
 //-----------------------------------------------------------------------------
-void BitmapOverlay::GetClippingRange(double& near, double& far)
+void BitmapOverlay::GetClippingRange(double& nearZ, double& farZ)
 {
-  near = m_ClippingRange[0];
-  far = m_ClippingRange[1];
+  nearZ = m_ClippingRange[0];
+  farZ = m_ClippingRange[1];
 }
 
 
