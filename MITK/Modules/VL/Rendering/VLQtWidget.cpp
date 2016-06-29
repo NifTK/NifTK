@@ -1226,7 +1226,7 @@ void VLQtWidget::AddAllNodesFromDataStorage()
   if (m_DataStorage.IsNull())
     return;
 
-  typedef itk::VectorContainer<unsigned int, mitk::DataNode::Pointer>   NodesContainerType;
+  typedef itk::VectorContainer<unsigned int, mitk::DataNode::Pointer> NodesContainerType;
   NodesContainerType::ConstPointer vc = m_DataStorage->GetAll();
 
   for (unsigned int i = 0; i < vc->Size(); ++i)
@@ -1235,10 +1235,10 @@ void VLQtWidget::AddAllNodesFromDataStorage()
     if (currentDataNode.IsNull() || currentDataNode->GetData()== 0)
       continue;
 
-    AddDataNode(mitk::DataNode::ConstPointer(currentDataNode.GetPointer()));
+    AddDataNode( mitk::DataNode::ConstPointer(currentDataNode.GetPointer()) );
   }
 
-  #if 0
+  #if 1
     vl::ref< vl::ResourceDatabase > db = new vl::ResourceDatabase;
     for( int i = 0; i < m_SceneManager->tree()->actors()->size(); ++i ) {
       vl::Actor* act = m_SceneManager->tree()->actors()->at(i);
@@ -1246,7 +1246,7 @@ void VLQtWidget::AddAllNodesFromDataStorage()
         // db->resources().push_back( act );
         // vl::String fname = filename( files[i] );
         db->resources().push_back( act );
-        vl::String fname = "niftk";
+        vl::String fname = "niftk-liver";
         vl::saveVLT( "C:/git-ucl/VisualizationLibrary/data/tmp/" + fname + ".vlt", db.get() );
         vl::saveVLB( "C:/git-ucl/VisualizationLibrary/data/tmp/" + fname + ".vlb", db.get() );
       }
@@ -1296,36 +1296,36 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 
 
   vl::ref<vl::Actor>    newActor;
-  std::string           namePostFix;
+  std::string           namePrefix;
   if (mitkImg.IsNotNull() && doMitkImageIfSuitable)
   {
     newActor = AddImageActor(mitkImg);
-    namePostFix = "_image";
+    namePrefix = "image:";
   }
   else
   if (mitkSurf.IsNotNull())
   {
     newActor = AddSurfaceActor(mitkSurf);
-    namePostFix = "_surface";
+    namePrefix = "surface:";
   }
   else
   if (mitkPS.IsNotNull())
   {
     newActor = AddPointsetActor(mitkPS);
-    namePostFix = "_pointset";
+    namePrefix = "point-set:";
   }
   else
   if (coords.IsNotNull())
   {
     newActor = AddCoordinateAxisActor(coords);
-    namePostFix = "_coordinateaxisdata";
+    namePrefix = "coordinate-axis-data:";
   }
 #ifdef _USE_PCL
   else
   if (pclPS.IsNotNull())
   {
     newActor = AddPointCloudActor(pclPS);
-    namePostFix = "_pcl";
+    namePrefix = "pcl:";
   }
 #endif
 #ifdef _USE_CUDA
@@ -1333,7 +1333,7 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
   if (cudaImg.IsNotNull())
   {
     newActor = AddCUDAImageActor(cudaImg);
-    namePostFix = "_cudaimage";
+    namePrefix = "cuda-image:";
 
     m_NodeToTextureMap[node] = TextureDataPOD();
   }
@@ -1341,9 +1341,9 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 
   if (newActor.get() != 0)// && sceneManager()->tree()->actors()->find(newActor.get()) == -1)
   {
-    std::string   objName = newActor->objectName();
-    objName.append(namePostFix);
-    newActor->setObjectName(objName.c_str());
+    std::string objName;
+    node->GetStringProperty( "name", objName );
+    newActor->setObjectName( ( namePrefix + objName ).c_str() );
 
     m_NodeToActorMap[node] = newActor;
 
@@ -1372,6 +1372,25 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNull() || node->GetData() == 0)
     return;
+
+#if 1
+  {
+    printf("---\n");
+    const std::string& name = node.GetPointer()->GetObjectName();
+    mitk::StringProperty* nameProp = dynamic_cast<mitk::StringProperty*>(node->GetProperty("name"));
+    if (nameProp != 0) {
+      printf("%s\n", nameProp->GetValue() );
+    }
+
+    const mitk::PropertyList::PropertyMap* propList = node->GetPropertyList()->GetMap();
+    mitk::PropertyList::PropertyMap::const_iterator it = node->GetPropertyList()->GetMap()->begin();
+    for( ; it != node->GetPropertyList()->GetMap()->end(); ++it ) {
+      const std::string name = it->first;
+      const mitk::BaseProperty::Pointer prop = it->second;
+      printf( "> %s: %s\n", name.c_str(), prop->GetValueAsString().c_str() );
+    }
+  }
+#endif
 
   std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator it = m_NodeToActorMap.find(node);
   if (it == m_NodeToActorMap.end())
