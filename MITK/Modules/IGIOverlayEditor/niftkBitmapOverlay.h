@@ -124,8 +124,8 @@ public:
    */
   void NodeRemoved(const mitk::DataNode* node);
 
-  void SetClippingRange(const double& near, const double& far);
-  void GetClippingRange(double& near, double& far);
+  void SetClippingRange(const double& nearZ, const double& farZ);
+  void GetClippingRange(double& nearZ, double& farZ);
 
 protected:
 
