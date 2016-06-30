@@ -37,6 +37,8 @@ Supported projects:
     OpenIGTLink
     SlicerExecutionModel
     qRestAPI
+    commontk/PythonQt
+    NifTK/PythonQt
     NiftyRec
     NiftyReg
     NiftySeg
@@ -109,6 +111,13 @@ function download_from_github() {
     mkdir $directory
     git clone --bare git://github.com/$organisation/$project $directory/.git
     cd $directory
+    if ! git cat-file -e $version 2> /dev/null
+    then
+        echo "The commit does not exist in the repository."
+        cd ..
+        rm -rf $directory
+        exit 1
+    fi
     git config --local --bool core.bare false
     mkdir -p .git/logs/refs
     cd ..
@@ -126,6 +135,48 @@ function download_from_github() {
   fi
 }
 
+function download_from_cmicdev() {
+  project=$1
+  version=$2
+  directory=$project-$version
+  tarball=$directory.tar.gz
+  if [[ $keep_repository && ! $keep_sources ]]
+  then
+    mkdir $directory
+    git clone --bare git://cmicdev.cs.ucl.ac.uk/$project $directory/.git
+    cd $directory
+    if ! git cat-file -e $version 2> /dev/null
+    then
+        echo "The commit does not exist in the repository."
+        cd ..
+        rm -rf $directory
+        exit 1
+    fi
+    git config --local --bool core.bare false
+    mkdir -p .git/logs/refs
+    cd ..
+  else
+    git clone git://cmicdev.cs.ucl.ac.uk/$project $directory
+    cd $directory
+    if ! git cat-file -e $version 2> /dev/null
+    then
+        echo "The commit does not exist in the repository."
+        cd ..
+        rm -rf $directory
+        exit 1
+    fi
+    git checkout $version
+    if [ ! $keep_repository ]
+    then
+      rm -rf .git
+    fi
+    cd ..
+  fi
+  rm $tarball 2> /dev/null
+  tar cvfz $tarball $directory
+  rm -rf $directory
+}
+
 function download_from_cmiclab() {
   project=$1
   version=$2
@@ -136,12 +187,26 @@ function download_from_cmiclab() {
     mkdir $directory
     git clone --bare git@cmiclab.cs.ucl.ac.uk:CMIC/$project $directory/.git
     cd $directory
+    if ! git cat-file -e $version 2> /dev/null
+    then
+        echo "The commit does not exist in the repository."
+        cd ..
+        rm -rf $directory
+        exit 1
+    fi
     git config --local --bool core.bare false
     mkdir -p .git/logs/refs
     cd ..
   else
     git clone git@cmiclab.cs.ucl.ac.uk:CMIC/$project $directory
     cd $directory
+    if ! git cat-file -e $version 2> /dev/null
+    then
+        echo "The commit does not exist in the repository."
+        cd ..
+        rm -rf $directory
+        exit 1
+    fi
     git checkout $version
     if [ ! $keep_repository ]
     then
@@ -193,6 +258,13 @@ function download_from_sourceforge_git() {
     mkdir $directory
     git clone --bare git://git.code.sf.net/p/$project_lowercase/$suffix $directory/.git
     cd $directory
+    if ! git cat-file -e $version 2> /dev/null
+    then
+        echo "The commit does not exist in the repository."
+        cd ..
+        rm -rf $directory
+        exit 1
+    fi
     git config --local --bool core.bare false
     mkdir -p .git/logs/refs
     cd ..
@@ -202,6 +274,13 @@ function download_from_sourceforge_git() {
   else
     git clone git://git.code.sf.net/p/$project_lowercase/$suffix $directory
     cd $directory
+    if ! git cat-file -e $version 2> /dev/null
+    then
+        echo "The commit does not exist in the repository."
+        cd ..
+        rm -rf $directory
+        exit 1
+    fi
     git checkout $version
     if [[ ! $keep_repository ]]
     then
@@ -238,6 +317,12 @@ then
 elif [ $project = qRestAPI ]
 then
   download_from_github commontk $project $version
+elif [ $project = commontk/PythonQt ]
+then
+  download_from_github commontk PythonQt $version
+elif [ $project = NifTK/PythonQt ]
+then
+  download_from_github NifTK PythonQt $version
 elif [ $project = NiftySeg ]
 then
   download_from_sourceforge_git $project $version git
@@ -275,12 +360,26 @@ then
   then
     mkdir $directory
     cd $directory
+    if ! git cat-file -e $version 2> /dev/null
+    then
+        echo "The commit does not exist in the repository."
+        cd ..
+        rm -rf $directory
+        exit 1
+    fi
     git clone --bare git://igstk.org/IGSTK.git .git
     git config --local --bool core.bare false
     mkdir -p .git/logs/refs
   else
     git clone git://igstk.org/IGSTK.git $directory
     cd $directory
+    if ! git cat-file -e $version 2> /dev/null
+    then
+        echo "The commit does not exist in the repository."
+        cd ..
+        rm -rf $directory
+        exit 1
+    fi
     git checkout $version
     if ! $keep_repository
     then
