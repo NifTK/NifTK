@@ -84,14 +84,15 @@ void TrackedPointerView::CreateQtPartControl( QWidget *parent )
     mitk::TNodePredicateDataType<mitk::PointSet>::Pointer isPointSet = mitk::TNodePredicateDataType<mitk::PointSet>::New();
     mitk::NodePredicateOr::Pointer isSurfaceOrPointSet = mitk::NodePredicateOr::New(isSurface, isPointSet);
 
+    m_Controls->m_ProbeSurfaceNode->SetAutoSelectNewItems(false);
     m_Controls->m_ProbeSurfaceNode->SetPredicate(isSurfaceOrPointSet);
     m_Controls->m_ProbeSurfaceNode->SetDataStorage(dataStorage);
-    m_Controls->m_ProbeSurfaceNode->SetAutoSelectNewItems(false);
 
     mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+    m_Controls->m_ProbeToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ProbeToWorldNode->SetPredicate(isTransform);
     m_Controls->m_ProbeToWorldNode->SetDataStorage(dataStorage);
-    m_Controls->m_ProbeToWorldNode->SetAutoSelectNewItems(false);
+    m_Controls->m_ProbeToWorldNode->setCurrentIndex(0);
 
     m_Controls->m_TipOriginSpinBoxes->setSingleStep(0.01);
     m_Controls->m_TipOriginSpinBoxes->setDecimals(2);

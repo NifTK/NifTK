@@ -32,7 +32,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ProbeSurfaceNode"/>
+        <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_ProbeSurfaceNode"/>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="m_ProbeToWorldLabel">
@@ -48,7 +48,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ProbeToWorldNode"/>
+        <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_ProbeToWorldNode"/>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="m_TipOriginLabel">
@@ -108,10 +108,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QmitkDataStorageComboBox</class>
+   <class>QmitkDataStorageComboBoxWithSelectNone</class>
    <extends>QComboBox</extends>
-   <header>QmitkDataStorageComboBox.h</header>
-   <container>1</container>
+   <header location="global">QmitkDataStorageComboBoxWithSelectNone.h</header>
   </customwidget>
   <customwidget>
    <class>ctkCoordinatesWidget</class>

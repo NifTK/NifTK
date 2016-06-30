@@ -1,0 +1,40 @@
+/**
+\page uk_ac_ucl_cmic_igiultrasoundoverlayeditor The Ultrasound Overlay Display
+
+\section UltrasoundOverlayDisplayIntro Introduction
+
+The Ultrasound Overlay Display is an "Editor" in MITK-speak, meaning that it fills the centre part of
+the screen, and provides a view of the data in the Data Manager. It is a custom viewer
+for providing augmented reality displays, merging rendered surface meshes and ultrasound data.
+
+\section UltrasoundOverlayDisplayUsageTrackedImage Usage
+
+Imagine you have an ultrasound machine providing ultrasound images, connected via the Data Sources View (see Figure 1).
+
+\image html Ultrasound-phantom-01.jpg "Figure 1: Physical layout of a tracked (NDI Vicra) ultrasound probe, viewing an abdomen phantom."
+
+Then the Ultrasound Overlay Display can be used to provide a Freehand Ultrasound system (see Figure 2).
+
+\image html Screenshot-Ultrasound-Mac.jpg "Figure 2: The Overlay Display merges ultrasound data with virtual rendered data (left) and displays the 3D imaging plane, moving in the 3D world (right)."
+
+The controls for the display itself are simple. See Figure 3.
+
+\image html OverlayEditorTrackedImageControls.jpg "Figure 3: The Controls."
+
+\li A combo box, labelled "please select" enables the user to select the image to track.
+Essentially the viewer orientates the left hand camera to always face this image.
+
+In order to actually move the image according to some tracking data, you should use the
+Tracked Image plugin. This editor is JUST a viewer.
+
+\section UltrasoundOverlayDisplayPreferences Preferences
+
+\image html OverlayEditorPrefs.jpg "Figure 4: The user preferences."
+
+Here we can see:
+
+\li "clipping planes" check box. If checked will place a clipping plane +/- 1mm from the image plane,
+creating a crude contouring effect, displaying the outline of surface meshes on the image data.
+
+*/
+

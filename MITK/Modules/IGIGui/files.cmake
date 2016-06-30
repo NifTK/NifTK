@@ -23,9 +23,6 @@ set(CPP_FILES
   Common/QmitkCalibratedModelRenderingPipeline.cxx
   Common/QmitkVideoTestClient.cxx
   Common/QmitkVideoPreviewWidget.cxx
-  OverlayEditor/QmitkBitmapOverlay.cxx
-  OverlayEditor/QmitkSingle3DView.cxx
-  OverlayEditor/QmitkIGIOverlayEditor.cxx
   DataSources/TrackerControlsWidget.cxx
 )
 
@@ -39,8 +36,6 @@ set(MOC_H_FILES
   Common/QmitkCalibratedModelRenderingPipeline.h
   Common/QmitkVideoTestClient.h
   Common/QmitkVideoPreviewWidget.h
-  OverlayEditor/QmitkSingle3DView.h
-  OverlayEditor/QmitkIGIOverlayEditor.h
   DataSources/TrackerControlsWidget.h
 )
 
@@ -50,7 +45,6 @@ set(UI_FILES
   Common/QmitkRMSErrorWidget.ui
   Common/QmitkImageAndTransformSenderWidget.ui
   Common/QmitkMatrixWidget.ui
-  OverlayEditor/QmitkIGIOverlayEditor.ui
   DataSources/TrackerControlsWidget.ui
 )
 

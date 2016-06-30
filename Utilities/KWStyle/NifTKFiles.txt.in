@@ -49,6 +49,8 @@
 @CMAKE_SOURCE_DIR@/MITK/Modules/IGIDataSources/Utils/niftk*.cxx
 @CMAKE_SOURCE_DIR@/MITK/Modules/IGIDataSourcesManager/niftk*.h
 @CMAKE_SOURCE_DIR@/MITK/Modules/IGIDataSourcesManager/niftk*.cxx
+@CMAKE_SOURCE_DIR@/MITK/Modules/IGIOverlayEditor/niftk*.h
+@CMAKE_SOURCE_DIR@/MITK/Modules/IGIOverlayEditor/niftk*.cxx
 @CMAKE_SOURCE_DIR@/MITK/Modules/NDITrackerDataSourceService/internal/niftk*.h
 @CMAKE_SOURCE_DIR@/MITK/Modules/NDITrackerDataSourceService/internal/niftk*.cxx
 @CMAKE_SOURCE_DIR@/MITK/Modules/NiftyLinkDataSourceService/internal/niftk*.h

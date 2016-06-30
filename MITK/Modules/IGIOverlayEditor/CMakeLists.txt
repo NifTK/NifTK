@@ -13,15 +13,11 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS Common 
-  DEPENDS MitkQtWidgetsExt MitkIGTUI niftkCoreGui niftkIGI
-  PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui QVTK NiftyLink
+  DEPENDS MitkQtWidgetsExt niftkIGI
+  PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui QVTK 
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkIGIGui)
+  cotire(niftkIGIOverlayEditor)
 endif()
 
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif()

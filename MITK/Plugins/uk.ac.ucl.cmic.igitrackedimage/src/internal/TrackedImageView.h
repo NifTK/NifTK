@@ -89,11 +89,6 @@ private slots:
    */
   void OnUpdate(const ctkEvent& event);
 
-  /**
-   * \brief When the image selection is changed, we re-init the views for the tracked image.
-   */
-  void OnSelectionChanged(const mitk::DataNode*);
-
 private:
 
   /**

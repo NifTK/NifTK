@@ -12,16 +12,28 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE(
-  INCLUDE_DIRS Common 
-  DEPENDS MitkQtWidgetsExt MitkIGTUI niftkCoreGui niftkIGI
-  PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui QVTK NiftyLink
+set(CPP_FILES
+  niftkBitmapOverlay.cxx
+  niftkSingle3DViewWidget.cxx
+  niftkSingleUltrasoundWidget.cxx
+  niftkSingleVideoWidget.cxx
+  niftkIGIVideoOverlayWidget.cxx
+  niftkIGIUltrasoundOverlayWidget.cxx
 )
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkIGIGui)
-endif()
+set(MOC_H_FILES
+  niftkSingle3DViewWidget.h
+  niftkSingleUltrasoundWidget.h
+  niftkSingleVideoWidget.h
+  niftkIGIVideoOverlayWidget.h
+  niftkIGIUltrasoundOverlayWidget.h
+)
 
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif()
+set(UI_FILES
+  niftkIGIVideoOverlayWidget.ui
+  niftkIGIUltrasoundOverlayWidget.ui
+)
+
+set(QRC_FILES
+)
+
