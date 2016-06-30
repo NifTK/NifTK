@@ -41,6 +41,7 @@ Supported projects:
     NifTK/PythonQt
     NiftyRec
     NiftyReg
+    EpiNav-NiftyReg
     NiftySeg
     NiftySim
     NiftyLink
@@ -329,6 +330,9 @@ then
 elif [ $project = NiftyReg ]
 then
   download_from_sourceforge_git $project $version git
+elif [ $project = "EpiNav-NiftyReg" ]
+then
+  download_from_cmiclab $project $version
 elif [ $project = NiftySim ]
 then
   download_from_sourceforge_git $project $version code
