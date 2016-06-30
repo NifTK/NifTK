@@ -80,6 +80,9 @@ void IGIVideoOverlayWidget::OnLeftOverlayCheckBoxChecked(bool checked)
           m_LeftOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   m_LeftOverlayViewer->setVisible(checked);
+  m_OverlayAndTrackedViewer->setVisible(m_LeftImageCheckBox->isChecked()
+      || m_RightImageCheckBox->isChecked()
+      || m_TrackedViewCheckBox->isChecked());
 }
 
 
@@ -97,6 +100,9 @@ void IGIVideoOverlayWidget::OnRightOverlayCheckBoxChecked(bool checked)
           m_RightOverlayViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   m_RightOverlayViewer->setVisible(checked);
+  m_OverlayAndTrackedViewer->setVisible(m_LeftImageCheckBox->isChecked()
+      || m_RightImageCheckBox->isChecked()
+      || m_TrackedViewCheckBox->isChecked());
 }
 
 
@@ -131,6 +137,9 @@ void IGIVideoOverlayWidget::OnTrackedViewerCheckBoxChecked(bool checked)
           m_TrackedViewer->GetRenderWindow()->GetVtkRenderWindow());
   }
   m_TrackedViewer->setVisible(checked);
+  m_OverlayAndTrackedViewer->setVisible(m_LeftImageCheckBox->isChecked()
+      || m_RightImageCheckBox->isChecked()
+      || m_TrackedViewCheckBox->isChecked());
 }
 
 
@@ -183,7 +192,7 @@ void IGIVideoOverlayWidget::OnTransformSelected(const mitk::DataNode* node)
 void IGIVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
 {
   m_DataStorage = storage;
-  
+
   mitk::TimeGeometry::Pointer geometry = storage->ComputeBoundingGeometry3D(storage->GetAll());
   mitk::RenderingManager::GetInstance()->InitializeView(m_3DViewer->GetVtkRenderWindow(), geometry);
 

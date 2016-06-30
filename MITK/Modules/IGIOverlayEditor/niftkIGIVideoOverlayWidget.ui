@@ -125,7 +125,7 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="m_OverlayAndTrackedViewer">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="niftk::SingleVideoWidget" name="m_LeftOverlayViewer" native="true">
