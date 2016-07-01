@@ -35,8 +35,8 @@
 #include <niftkIterativeMonoCameraCalibration.h>
 #include <niftkIterativeStereoCameraCalibration.h>
 #include <niftkNonLinearMaltiHandEyeOptimiser.h>
-#include <niftkNonLinearMaltiNDOFHandEyeOptimiser.h>
-#include <niftkNonLinearMaltiStereoHandEyeOptimiser.h>
+#include <niftkNonLinearNDOFHandEyeOptimiser.h>
+#include <niftkNonLinearStereoHandEyeOptimiser.h>
 
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
@@ -551,7 +551,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageInd
         cameraMatrices
         );
 
-  niftk::NonLinearMaltiNDOFHandEyeOptimiser::Pointer optimiser = niftk::NonLinearMaltiNDOFHandEyeOptimiser::New();
+  niftk::NonLinearNDOFHandEyeOptimiser::Pointer optimiser = niftk::NonLinearNDOFHandEyeOptimiser::New();
   optimiser->SetModel(&m_ModelPoints);
   optimiser->SetPoints(&m_Points[imageIndex]);
   optimiser->SetHandMatrices(&trackingMatrices);
@@ -591,7 +591,7 @@ void NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEyeInStereo(cv::Matx44d
         cameraMatrices
         );
 
-  niftk::NonLinearMaltiStereoHandEyeOptimiser::Pointer optimiser = niftk::NonLinearMaltiStereoHandEyeOptimiser::New();
+  niftk::NonLinearStereoHandEyeOptimiser::Pointer optimiser = niftk::NonLinearStereoHandEyeOptimiser::New();
   optimiser->SetModel(&m_ModelPoints);
   optimiser->SetPoints(&m_Points[0]);
   optimiser->SetRightHandPoints(&m_Points[1]);
