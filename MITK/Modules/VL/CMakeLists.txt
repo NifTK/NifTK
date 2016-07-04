@@ -46,8 +46,8 @@ MITK_CREATE_MODULE(
   PACKAGE_DEPENDS ${_packages}
 )
 
-target_link_libraries(niftkVL 
-  PRIVATE 
+target_link_libraries(niftkVL
+  PRIVATE
     ${VL_LIBRARIES}
 )
 
