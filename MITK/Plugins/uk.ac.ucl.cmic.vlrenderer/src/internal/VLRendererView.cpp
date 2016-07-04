@@ -289,6 +289,5 @@ void VLRendererView::Visible()
 //-----------------------------------------------------------------------------
 void VLRendererView::ReinitDisplay(bool viewEnabled)
 {
-  m_VLQtRenderWindow->ClearScene();
   m_VLQtRenderWindow->AddAllNodesFromDataStorage();
 }
