@@ -78,16 +78,16 @@ private:
    * \brief Utility method to deregister data storage listeners.
    */
   void DeRegisterDataStorageListeners();
-  
+
   /**
    * \brief Called when a DataStorage Node Changed Event was emitted.
    */
   void NodeChanged(const mitk::DataNode* node);
-  
+
   mitk::DataStorage::Pointer m_DataStorage;
 
-  VLQtWidget*    m_OverlayViewer;
-  VLQtWidget*    m_3DViewer;
+  VLQtWidget* m_OverlayViewer;
+  VLQtWidget* m_3DViewer;
 };
 
 #endif // QmitkIGIVLEditor_h
