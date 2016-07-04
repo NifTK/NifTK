@@ -21,7 +21,7 @@
 #include <vlGraphics/OpenGLContext.hpp>
 #include <vlGraphics/Light.hpp>
 #include <vlGraphics/Camera.hpp>
-#include <vlGraphics/RendererVivid.hpp>
+#include <vlVivid/VividRenderer.hpp>
 #include <vlGraphics/Rendering.hpp>
 #include <vlGraphics/RenderingTree.hpp>
 #include <vlGraphics/SceneManagerActorTree.hpp>
@@ -46,28 +46,38 @@
 #include <map>
 #include <set>
 
+// Forward declarations
 
-// forward-decl
-struct cudaGraphicsResource;
-typedef struct cudaGraphicsResource* cudaGraphicsResource_t;
-struct CUDAInterop;
-namespace niftk
-{
-  class CUDAImage;
-  class CUDAImageProperty;
-  class LightweightCUDAImage;
-}
 namespace mitk
 {
   class DataStorage;
 }
+
 namespace niftk
 {
   class PCLData;
 }
 
 struct VLUserData;
+
 class TrackballManipulator;
+
+#ifdef _USE_CUDA
+
+  struct cudaGraphicsResource;
+
+  typedef struct cudaGraphicsResource* cudaGraphicsResource_t;
+
+  struct CUDAInterop;
+
+  namespace niftk
+  {
+    class CUDAImage;
+    class CUDAImageProperty;
+    class LightweightCUDAImage;
+  }
+
+#endif
 
 // #include "OclTriangleSorter.h"
 
@@ -80,6 +90,7 @@ class NIFTKVL_EXPORT VLQtWidget : public QGLWidget, public vl::OpenGLContext
   Q_OBJECT
 
 public:
+
   using vl::Object::setObjectName;
   using QObject::setObjectName;
 
@@ -89,6 +100,51 @@ public:
 
   void setRefreshRate(int msec);
   int refreshRate();
+
+  // from vl::OpenGLContext
+public:
+
+  virtual void setContinuousUpdate(bool continuous);
+  virtual void setWindowTitle(const vl::String& title);
+  virtual bool setFullscreen(bool fullscreen);
+  virtual void show();
+  virtual void hide();
+  virtual void setPosition(int x, int y);
+  virtual vl::ivec2 position() const;
+  virtual void update();                // hides non-virtual QWidget::update()?
+  virtual void setSize(int w, int h);
+  virtual void swapBuffers();           // in QGLWidget too
+  virtual void makeCurrent();           // in QGLWidget too
+  virtual void setMousePosition(int x, int y);
+  virtual void setMouseVisible(bool visible);
+  virtual void getFocus();
+
+  virtual vl::ivec2 size() const;       // BEWARE: not a base class method!
+
+protected:
+
+  void translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out);
+
+  // from QGLWidget
+protected:
+
+  virtual void initializeGL();
+  virtual void resizeGL(int width, int height);
+  virtual void paintGL();
+  virtual void mouseMoveEvent(QMouseEvent* ev);
+  virtual void mousePressEvent(QMouseEvent* ev);
+  virtual void mouseReleaseEvent(QMouseEvent* ev);
+  virtual void wheelEvent(QWheelEvent* ev);
+  virtual void keyPressEvent(QKeyEvent* ev);
+  virtual void keyReleaseEvent(QKeyEvent* ev);
+  // void dragEnterEvent(QDragEnterEvent *ev);
+  // void dropEvent(QDropEvent* ev);
+
+private:
+
+  // QGLContext* context();    // non-const, hiding the one in QGLWidget.
+
+  // --------------------------------------------------------------------------
 
   void SetOclResourceService(OclResourceService* oclserv);
   void SetDataStorage(const mitk::DataStorage::Pointer& dataStorage);
@@ -125,53 +181,6 @@ public:
    */
   vl::FramebufferObject* GetFBO();
 
-  /**
-   * Will throw an exception if CUDA has not been enabled at compile time.
-   */
-  void EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage = 0, const std::string& nodename = "");
-
-
-  // from vl::OpenGLContext
-public:
-  virtual void setContinuousUpdate(bool continuous);
-  virtual void setWindowTitle(const vl::String& title);
-  virtual bool setFullscreen(bool fullscreen);
-  virtual void show();
-  virtual void hide();
-  virtual void setPosition(int x, int y);
-  virtual vl::ivec2 position() const;
-  virtual void update();                // hides non-virtual QWidget::update()?
-  virtual void setSize(int w, int h);
-  virtual void swapBuffers();           // in QGLWidget too
-  virtual void makeCurrent();           // in QGLWidget too
-  virtual void setMousePosition(int x, int y);
-  virtual void setMouseVisible(bool visible);
-  virtual void getFocus();
-
-  virtual vl::ivec2 size() const;       // BEWARE: not a baseclass method!
-
-protected:
-  void translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out);
-
-
-  // from QGLWidget
-protected:
-  virtual void initializeGL();
-  virtual void resizeGL(int width, int height);
-  virtual void paintGL();
-  virtual void mouseMoveEvent(QMouseEvent* ev);
-  virtual void mousePressEvent(QMouseEvent* ev);
-  virtual void mouseReleaseEvent(QMouseEvent* ev);
-  virtual void wheelEvent(QWheelEvent* ev);
-  virtual void keyPressEvent(QKeyEvent* ev);
-  virtual void keyReleaseEvent(QKeyEvent* ev);
-  //void dragEnterEvent(QDragEnterEvent *ev);
-  //void dropEvent(QDropEvent* ev);
-private:
-  QGLContext* context();    // non-const, hiding the one in QGLWidget.
-
-
-
 protected:
 
   virtual void AddDataStorageListeners();
@@ -182,8 +191,6 @@ protected:
   virtual void OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
   virtual void OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
   virtual void OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
-
-
 
   void RenderScene();
   void CreateAndUpdateFBOSizes(int width, int height);
@@ -217,90 +224,95 @@ protected:
   // bool NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& node);
   // bool NodeIsTranslucent(const mitk::DataNode::ConstPointer& node);
 
-
-  mitk::DataStorage::Pointer                  m_DataStorage;
-  mitk::DataNodePropertyListener::Pointer     m_NodeVisibilityListener;
-  mitk::DataNodePropertyListener::Pointer     m_NodeColorPropertyListener;
-  mitk::DataNodePropertyListener::Pointer     m_NodeOpacityPropertyListener;
-
+  mitk::DataStorage::Pointer              m_DataStorage;
+  mitk::DataNodePropertyListener::Pointer m_NodeVisibilityListener;
+  mitk::DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
+  mitk::DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
 
   // side note: default actor block is zero
-  static const int      RENDERBLOCK_OPAQUE            = -1000;
-  static const int      RENDERBLOCK_SORTEDTRANSLUCENT =   900;
-  static const int      RENDERBLOCK_TRANSLUCENT       =  1000;
-  static const int      ENABLEMASK_OPAQUE             = 1 << 0;
-  static const int      ENABLEMASK_TRANSLUCENT        = 1 << 1;
-  static const int      ENABLEMASK_VOLUME             = 1 << 2;
-  static const int      ENABLEMASK_BACKGROUND         = 1 << 3;
-  static const int      ENABLEMASK_SORTEDTRANSLUCENT  = 1 << 4;
+  static const int RENDERBLOCK_OPAQUE            = -1000;
+  static const int RENDERBLOCK_SORTEDTRANSLUCENT =   900;
+  static const int RENDERBLOCK_TRANSLUCENT       =  1000;
+  static const int ENABLEMASK_OPAQUE             = 1 << 0;
+  static const int ENABLEMASK_TRANSLUCENT        = 1 << 1;
+  static const int ENABLEMASK_VOLUME             = 1 << 2;
+  static const int ENABLEMASK_BACKGROUND         = 1 << 3;
+  static const int ENABLEMASK_SORTEDTRANSLUCENT  = 1 << 4;
 
-  vl::ref<vl::RenderingTree>            m_RenderingTree;
-  vl::ref<vl::Rendering>                m_OpaqueObjectsRendering;
-  vl::ref<vl::RendererVivid>            m_Vivid;
-  vl::ref<vl::Rendering>                m_VolumeRendering;
-  vl::ref<vl::Rendering>                m_BackgroundRendering;
-  vl::ref<vl::BlitFramebuffer>          m_FinalBlit;
-  vl::ref<vl::SceneManagerActorTree>    m_SceneManager;
-  vl::ref<vl::Camera>                   m_Camera;
-  vl::ref<vl::Camera>                   m_BackgroundCamera;
-  vl::ref<vl::Light>                    m_Light;
-  // vl::ref<vl::Transform>                m_LightTr;
-  vl::ref<TrackballManipulator>         m_Trackball;
+  vl::ref<vl::VividRenderer>         m_Vivid;
+  vl::ref<vl::Camera>                m_Camera;
+  vl::ref<vl::Light>                 m_Light;
+  // vl::ref<vl::Transform>          m_LightTr;
+  vl::ref<TrackballManipulator>      m_Trackball;
 
-  vl::ref<vl::GLSLProgram>              m_GenericGLSLShader;
-  vl::ref<vl::TexParameter>             m_DefaultTextureParams;
-  vl::ref<vl::Texture>                  m_DefaultTexture;         // empty
+  vl::ref<vl::RenderingTree>         m_RenderingTree;
+  vl::ref<vl::Rendering>             m_OpaqueObjectsRendering;
+  vl::ref<vl::Rendering>             m_VolumeRendering;
+  vl::ref<vl::Rendering>             m_BackgroundRendering;
+  vl::ref<vl::BlitFramebuffer>       m_FinalBlit;
+  vl::ref<vl::SceneManagerActorTree> m_SceneManager;
+  vl::ref<vl::Camera>                m_BackgroundCamera;
 
-  vl::ref<vl::Uniform>                  m_ThresholdVal;   // iso value for volume
+  vl::ref<vl::GLSLProgram>           m_GenericGLSLShader;
+  vl::ref<vl::TexParameter>          m_DefaultTextureParams;
+  vl::ref<vl::Texture>               m_DefaultTexture; // empty
 
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >     m_NodeToActorMap;
-  std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >          m_ActorToRenderableMap;   // FIXME: should go away
-  std::set<mitk::DataNode::ConstPointer>                          m_NodesQueuedForUpdate;
-  mitk::DataNode::ConstPointer                                    m_BackgroundNode;
-  mitk::DataNode::ConstPointer                                    m_CameraNode;
-  int                                 m_BackgroundWidth;
-  int                                 m_BackgroundHeight;
+  vl::ref<vl::Uniform>               m_ThresholdVal; // iso value for volume
 
+  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> > m_NodeToActorMap;
+  std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >      m_ActorToRenderableMap;   // FIXME: should go away
+  std::set<mitk::DataNode::ConstPointer>                      m_NodesQueuedForUpdate;
+  mitk::DataNode::ConstPointer                                m_BackgroundNode;
+  mitk::DataNode::ConstPointer                                m_CameraNode;
+  int m_BackgroundWidth;
+  int m_BackgroundHeight;
 
-  /** @name CUDA-interop related bits. */
-  //@{
+  #ifdef _USE_CUDA
+public:
+    /**
+     * Will throw an exception if CUDA has not been enabled at compile time.
+     */
+    void EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage = 0, const std::string& nodename = "");
 
-  /**
-   * @throws an exception if CUDA support was not enabled at compile time.
-   */
-  void PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
+protected:
+    /** @name CUDA-interop related bits. */
+    //@{
 
-  /** @throws an exception if CUDA support was not enabled at compile time. */
-  void UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node);
+    /**
+     * @throws an exception if CUDA support was not enabled at compile time.
+     */
+    void PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
 
-  /** @throws an exception if CUDA support was not enabled at compile time. */
-  void FreeCUDAInteropTextures();
+    /** @throws an exception if CUDA support was not enabled at compile time. */
+    void UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node);
 
-    /** Will throw if CUDA-support was not enabled at compile time. */
-  vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
+    /** @throws an exception if CUDA support was not enabled at compile time. */
+    void FreeCUDAInteropTextures();
 
-  // will only be non-null if cuda support is enabled at compile time.
-  CUDAInterop* m_CUDAInteropPimpl;
+      /** Will throw if CUDA-support was not enabled at compile time. */
+    vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
 
-  struct TextureDataPOD
-  {
-    vl::ref<vl::Texture>    m_Texture;            // on the vl side
-    unsigned int            m_LastUpdatedID;      // on cuda-manager side
-    cudaGraphicsResource_t  m_CUDARes;            // on cuda(-driver) side
+    // will only be non-null if cuda support is enabled at compile time.
+    CUDAInterop* m_CUDAInteropPimpl;
 
-    TextureDataPOD();
-  };
-  std::map<mitk::DataNode::ConstPointer, TextureDataPOD>     m_NodeToTextureMap;
-  //@}
+    struct TextureDataPOD
+    {
+      vl::ref<vl::Texture>   m_Texture;       // on the vl side
+      unsigned int           m_LastUpdatedID; // on cuda-manager side
+      cudaGraphicsResource_t m_CUDARes;       // on cuda(-driver) side
 
+      TextureDataPOD();
+    };
+    std::map<mitk::DataNode::ConstPointer, TextureDataPOD> m_NodeToTextureMap;
+  #endif
 
   // Currently not used: left here just in case we need it for future fun :)
   OclResourceService* m_OclService;
 
-  // std::set<vl::ref<vl::Actor> >       m_TranslucentActors;
-  // vl::ref<vl::Geometry>               m_TranslucentSurface;
-  // vl::ref<vl::Actor>                  m_TranslucentSurfaceActor;
-  // mitk::OclTriangleSorter           * m_OclTriangleSorter;
+  // std::set<vl::ref<vl::Actor> > m_TranslucentActors;
+  // vl::ref<vl::Geometry>         m_TranslucentSurface;
+  // vl::ref<vl::Actor>            m_TranslucentSurfaceActor;
+  // mitk::OclTriangleSorter*      m_OclTriangleSorter;
 
   // bool m_TranslucentStructuresMerged;
   // bool m_TranslucentStructuresSorted;
@@ -309,10 +321,9 @@ protected:
   // cl_mem m_MergedTranslucentIndexBuf;
   // cl_mem m_MergedTranslucentVertexBuf;
 
-
 protected:
-  int       m_Refresh;
-  QTimer    m_UpdateTimer;
+  int    m_Refresh;
+  QTimer m_UpdateTimer;
 };
 
 

@@ -66,69 +66,68 @@
 #endif
 #endif
 
+//-----------------------------------------------------------------------------
+// CUDA stuff
+//-----------------------------------------------------------------------------
+
 #ifdef _USE_CUDA
-#include <Rendering/VLFramebufferToCUDA.h>
-#include <niftkCUDAManager.h>
-#include <niftkCUDAImage.h>
-#include <niftkLightweightCUDAImage.h>
-#include <niftkCUDAImageProperty.h>
-#include <niftkFlipImageLauncher.h>
-#include <cuda_gl_interop.h>
 
+  #include <Rendering/VLFramebufferToCUDA.h>
+  #include <niftkCUDAManager.h>
+  #include <niftkCUDAImage.h>
+  #include <niftkLightweightCUDAImage.h>
+  #include <niftkCUDAImageProperty.h>
+  #include <niftkFlipImageLauncher.h>
+  #include <cuda_gl_interop.h>
 
-//-----------------------------------------------------------------------------
-struct CUDAInterop
-{
-  std::string                     m_NodeName;
-  mitk::DataStorage::Pointer      m_DataStorage;
+  //-----------------------------------------------------------------------------
 
-  VLFramebufferAdaptor*           m_FBOAdaptor;
+  struct CUDAInterop
+  {
+    std::string m_NodeName;
+    mitk::DataStorage::Pointer m_DataStorage;
 
-  CUDAInterop()
-    : m_FBOAdaptor(0)
+    VLFramebufferAdaptor* m_FBOAdaptor;
+
+    CUDAInterop() : m_FBOAdaptor(0)
+    {
+    }
+
+    ~CUDAInterop()
+    {
+      delete m_FBOAdaptor;
+    }
+  };
+
+  //-----------------------------------------------------------------------------
+
+  VLQtWidget::TextureDataPOD::TextureDataPOD() : m_LastUpdatedID(0) , m_CUDARes(0)
   {
   }
 
-  ~CUDAInterop()
-  {
-    delete m_FBOAdaptor;
-  }
-};
-
+// #else
+//   struct CUDAInterop { };
+#endif
 
 //-----------------------------------------------------------------------------
-VLQtWidget::TextureDataPOD::TextureDataPOD()
-  : m_LastUpdatedID(0)
-  , m_CUDARes(0)
-{
-}
-
-
-#else
-// empty dummy, in case we have no cuda
-struct CUDAInterop { };
-#endif // _USE_CUDA
-
-
+// Init and shutdown VL
 //-----------------------------------------------------------------------------
+
 namespace
 {
   class VLInit
   {
   public:
-    VLInit()
-    {
-      vl::VisualizationLibrary::init();
-    }
-    ~VLInit()
-    {
-      vl::VisualizationLibrary::shutdown();
-    }
+    VLInit() { vl::VisualizationLibrary::init(); }
+    ~VLInit() { vl::VisualizationLibrary::shutdown(); }
   };
 
   VLInit s_ModuleInit;
 }
 
+//-----------------------------------------------------------------------------
+// VLUserData
+//-----------------------------------------------------------------------------
 
 struct VLUserData : public vl::Object
 {
@@ -142,13 +141,17 @@ struct VLUserData : public vl::Object
   itk::ModifiedTimeType m_ImageVtkDataLastModified;
 };
 
-
 //-----------------------------------------------------------------------------
+// VLQtWidget
+//-----------------------------------------------------------------------------
+
 VLQtWidget::VLQtWidget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(parent, shareWidget, f)
   , m_BackgroundWidth(0)
   , m_BackgroundHeight(0)
+#ifdef _USE_CUDA
   , m_CUDAInteropPimpl(0)
+#endif
   , m_OclService(0)
   //, m_OclTriangleSorter(0)
   //, m_TranslucentStructuresMerged(false)
@@ -157,24 +160,21 @@ VLQtWidget::VLQtWidget(QWidget* parent, const QGLWidget* shareWidget, Qt::Window
   //, m_TotalNumOfTranslucentVertices(0)
   //, m_MergedTranslucentIndexBuf(0)
   //, m_MergedTranslucentVertexBuf(0)
-  , m_Refresh(33) // 30 fps
+  , m_Refresh(30) // 30 fps
 {
-  // FIXME: we need this on when we render live movies or manually request an update.
   setContinuousUpdate(false);
   setMouseTracking(true);
   setAutoBufferSwap(false);
   setAcceptDrops(false);
   // let Qt take care of object destruction.
   vl::OpenGLContext::setAutomaticDelete(false);
-
-  // remember: all opengl related init should happen in initializeGL()!
 }
 
-
 //-----------------------------------------------------------------------------
+
 VLQtWidget::~VLQtWidget()
 {
-  niftk::ScopedOGLContext  ctx(this->context());
+  makeCurrent();
 
   RemoveDataStorageListeners();
 
@@ -197,118 +197,13 @@ VLQtWidget::~VLQtWidget()
 
   dispatchDestroyEvent();
 
-
 #ifdef _USE_CUDA
   FreeCUDAInteropTextures();
 #endif
 }
 
-
 //-----------------------------------------------------------------------------
-void VLQtWidget::FreeCUDAInteropTextures()
-{
-  // internal method, so sanity check.
-  assert(QGLContext::currentContext() == QGLWidget::context());
 
-#ifdef _USE_CUDA
-  for (std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
-  {
-    if (i->second.m_CUDARes != 0)
-    {
-      cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
-      if (err != cudaSuccess)
-      {
-        MITK_WARN << "Failed to unregister VL texture from CUDA";
-      }
-    }
-
-    i = m_NodeToTextureMap.erase(i);
-  }
-
-  // if no cuda is available then this is most likely a nullptr.
-  // and if not a nullptr then it's only a dummy. so unconditionally delete it.
-  delete m_CUDAInteropPimpl;
-  m_CUDAInteropPimpl = 0;
-
-#else
-  throw std::runtime_error("CUDA support was not enabled");
-#endif
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::OnNodeModified(const mitk::DataNode* node)
-{
-  mitk::DataNode::ConstPointer   dn(node);
-  QueueUpdateDataNode(dn);
-  // std::cout << "QueueUpdateDataNode: " << typeid(node->GetData()->GetNameOfClass()).name() << '\n';
-  // std::cout << "QueueUpdateDataNode: " << node->GetData()->GetNameOfClass() << '\n';
-  std::cout << "QueueUpdateDataNode: " << node->GetName() << '\n';
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
-{
-  mitk::DataNode::ConstPointer  cdn(node);
-
-  //if (NodeIsTranslucent(cdn))
-  //{
-  //  // we only need to recompute the merged buffer if the changed node is actually translucent.
-  //  m_TranslucentStructuresMerged = false;
-  //}
-
-  QueueUpdateDataNode(cdn);
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
-{
-  mitk::DataNode::ConstPointer  cdn(node);
-
-  //if (NodeIsTranslucent(cdn))
-  //{
-  //  // we only need to recompute the merged buffer if the changed node is actually translucent.
-  //  m_TranslucentStructuresMerged = false;
-  //}
-
-  QueueUpdateDataNode(cdn);
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
-{
-  //m_TranslucentStructuresMerged = false;
-
-  mitk::DataNode::ConstPointer cdn(node);
-  QueueUpdateDataNode(cdn);
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::AddDataStorageListeners()
-{
-  if (m_DataStorage.IsNotNull())
-  {
-    // if someone calls node->Modified() we need to redraw.
-    m_DataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::OnNodeModified));
-
-    m_NodeVisibilityListener = mitk::DataNodePropertyListener::New(m_DataStorage, "visible");
-    m_NodeVisibilityListener->NodePropertyChanged += mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeVisibilityPropertyChanged);
-
-    m_NodeColorPropertyListener = mitk::DataNodePropertyListener::New(m_DataStorage, "color");
-    m_NodeColorPropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeColorPropertyChanged);
-
-    m_NodeOpacityPropertyListener = mitk::DataNodePropertyListener::New(m_DataStorage, "opacity");
-    m_NodeOpacityPropertyListener->NodePropertyChanged += mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>( this, &VLQtWidget::OnNodeOpacityPropertyChanged);
-
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void VLQtWidget::RemoveDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
@@ -325,15 +220,35 @@ void VLQtWidget::RemoveDataStorageListeners()
   }
 }
 
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::AddDataStorageListeners()
+{
+  if (m_DataStorage.IsNotNull())
+  {
+    // Triggered by node->Modified()
+    m_DataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::OnNodeModified));
+
+    m_NodeVisibilityListener = mitk::DataNodePropertyListener::New(m_DataStorage, "visible");
+    m_NodeVisibilityListener->NodePropertyChanged += mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeVisibilityPropertyChanged);
+
+    m_NodeColorPropertyListener = mitk::DataNodePropertyListener::New(m_DataStorage, "color");
+    m_NodeColorPropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeColorPropertyChanged);
+
+    m_NodeOpacityPropertyListener = mitk::DataNodePropertyListener::New(m_DataStorage, "opacity");
+    m_NodeOpacityPropertyListener->NodePropertyChanged += mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>( this, &VLQtWidget::OnNodeOpacityPropertyChanged);
+  }
+}
 
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
 {
-  niftk::ScopedOGLContext  ctx(this->context());
-
-  RemoveDataStorageListeners();
+  makeCurrent();
 
   ClearScene();
+
+  RemoveDataStorageListeners();
 
 #ifdef _USE_CUDA
   FreeCUDAInteropTextures();
@@ -342,885 +257,67 @@ void VLQtWidget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
   m_DataStorage = dataStorage;
   AddDataStorageListeners();
 
-  QMetaObject::invokeMethod(this, "AddAllNodesFromDataStorage", Qt::QueuedConnection);
+  QMetaObject::invokeMethod( this, "AddAllNodesFromDataStorage", Qt::QueuedConnection );
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::SetOclResourceService(OclResourceService* oclserv)
 {
-  // no idea if this is really a necessary restriction.
-  // if it is then maybe the ocl-service should be a constructor parameter.
-  if (m_OclService != 0)
-    throw std::runtime_error("Can set OpenCL service only once");
+ // no idea if this is really a necessary restriction.
+ // if it is then maybe the ocl-service should be a constructor parameter.
+ if (m_OclService != 0)
+   throw std::runtime_error("Can set OpenCL service only once");
 
-  m_OclService = oclserv;
+ m_OclService = oclserv;
 }
 
-
 //-----------------------------------------------------------------------------
-vl::FramebufferObject* VLQtWidget::GetFBO()
+
+void VLQtWidget::OnNodeModified(const mitk::DataNode* node)
 {
-  // createAndUpdateFBOSizes() where we always stuff a proper fbo into the blit.
-  return dynamic_cast<vl::FramebufferObject*>(m_FinalBlit->readFramebuffer());
+  mitk::DataNode::ConstPointer dn(node);
+  QueueUpdateDataNode(dn);
+  // std::cout << "QueueUpdateDataNode: " << typeid(node->GetData()->GetNameOfClass()).name() << '\n';
+  // std::cout << "QueueUpdateDataNode: " << node->GetData()->GetNameOfClass() << '\n';
+  std::cout << "QueueUpdateDataNode: " << node->GetName() << '\n';
 }
 
-
 //-----------------------------------------------------------------------------
-void VLQtWidget::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage, const std::string& nodename)
+
+void VLQtWidget::OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
-#ifdef _USE_CUDA
-  niftk::ScopedOGLContext  ctx(this->context());
-
-  if (enable)
-  {
-    if (datastorage == 0)
-      throw std::runtime_error("Need data storage object");
-
-    delete m_CUDAInteropPimpl;
-    m_CUDAInteropPimpl = new CUDAInterop;
-    m_CUDAInteropPimpl->m_FBOAdaptor = 0;
-    m_CUDAInteropPimpl->m_DataStorage = datastorage;
-    m_CUDAInteropPimpl->m_NodeName = nodename;
-    if (m_CUDAInteropPimpl->m_NodeName.empty())
-    {
-      std::ostringstream    n;
-      n << "0x" << std::hex << (void*) this;
-      m_CUDAInteropPimpl->m_NodeName = n.str();
-    }
-  }
-  else
-  {
-    delete m_CUDAInteropPimpl;
-    m_CUDAInteropPimpl = 0;
-  }
-#else
-  throw std::runtime_error("CUDA support was not enabled");
-#endif
+  mitk::DataNode::ConstPointer cdn(node);
+  QueueUpdateDataNode(cdn);
 }
 
-
 //-----------------------------------------------------------------------------
-void VLQtWidget::initializeGL()
+
+void VLQtWidget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
-  // sanity check: context is initialised by Qt
-  assert(this->context() == QGLContext::currentContext());
-
-  vl::OpenGLContext::initGLContext();
-
-  //// use the device that is running our opengl context as the compute-device
-  //// for sorting triangles in the correct order.
-  //if (m_OclService)
-  //{
-  //  // Have to call makeCurrent() otherwise the shared CL-GL context creation fails
-  //  makeCurrent();
-
-  //  // Force tests to run on the first GPU with shared context
-  //  m_OclService->SpecifyPlatformAndDevice(0, 0, true);
-  //  // Calling this to make sure that the context is created right at startup
-  //  cl_context clContext = m_OclService->GetContext();
-  //}
-
-
-#ifdef _MSC_VER
-  //NvAPI_OGL_ExpertModeSet(NVAPI_OGLEXPERT_DETAIL_ALL, NVAPI_OGLEXPERT_DETAIL_BASIC_INFO, NVAPI_OGLEXPERT_OUTPUT_TO_ALL, 0);
-#endif
-
-
-  m_Camera = new vl::Camera;
-  vl::vec3 eye    = vl::vec3(0,10,35);
-  vl::vec3 center = vl::vec3(0,0,0);
-  vl::vec3 up     = vl::vec3(0,1,0);
-  vl::mat4 view_mat = vl::mat4::getLookAt(eye, center, up);
-  m_Camera->setViewMatrix(view_mat);
-  m_Camera->setObjectName("m_Camera");
-  //m_Camera->viewport()->enableScissorSetup(true);
-  //m_CameraTransform = new vl::Transform;
-  //m_Camera->bindTransform(m_CameraTransform.get());
-
-  vl::vec3 cameraPos = m_Camera->modelingMatrix().getT();
-
-  // m_LightTr = new vl::Transform;
-
-  m_Light = new vl::Light;
-  // m_Light->setAmbient(vl::fvec4(0.1f, 0.1f, 0.1f, 1.0f));
-  // m_Light->setDiffuse(vl::white);
-  // m_Light->bindTransform(m_LightTr.get());
-
-  vl::vec4 lightPos;
-  lightPos[0] = cameraPos[0];
-  lightPos[1] = cameraPos[1];
-  lightPos[2] = cameraPos[2];
-  lightPos[3] = 0;
-  m_Light->setPosition(lightPos);
-
-  m_SceneManager = new vl::SceneManagerActorTree;
-
-  m_BackgroundCamera = new vl::Camera;
-  m_BackgroundCamera->setObjectName("m_BackgroundCamera");
-  // a simple "identity" ortho projection. it maps the background geometry perfectly into the 4 window corners.
-  // actually, clipspace corners. mapping to pixels is done with the viewport, which is dependent on widget sizing.
-  m_BackgroundCamera->setProjectionMatrix(vl::mat4::getOrtho(-1, 1, -1, 1, 1000, -1000), vl::PMT_OrthographicProjection);
-  m_BackgroundCamera->setViewMatrix(vl::mat4::getIdentity());
-
-  m_BackgroundRendering = new vl::Rendering;
-  m_BackgroundRendering->setEnableMask(ENABLEMASK_BACKGROUND);
-  m_BackgroundRendering->setObjectName("m_BackgroundRendering");
-  m_BackgroundRendering->setCamera(m_BackgroundCamera.get());
-  m_BackgroundRendering->sceneManagers()->push_back(m_SceneManager.get());
-  m_BackgroundRendering->setCullingEnabled(false);
-  m_BackgroundRendering->renderer()->setClearFlags(vl::CF_CLEAR_COLOR_DEPTH);   // this overrides the per-viewport setting (always!)
-  m_BackgroundCamera->viewport()->setClearColor(vl::fuchsia);
-  m_BackgroundCamera->viewport()->enableScissorSetup(false);
-
-  // opaque objects dont need any sorting (in theory) but they have to happen before anything else.
-  m_OpaqueObjectsRendering = new vl::Rendering;
-  m_OpaqueObjectsRendering->setObjectName("m_OpaqueObjectsRendering");
-  m_OpaqueObjectsRendering->setCamera(m_Camera.get());
-  m_OpaqueObjectsRendering->sceneManagers()->push_back(m_SceneManager.get());
-  /*
-  m_OpaqueObjectsRendering->setEnableMask(ENABLEMASK_OPAQUE | ENABLEMASK_TRANSLUCENT | ENABLEMASK_SORTEDTRANSLUCENT);
-  // we sort them anyway, front-to-back so that early-fragment rejection can work its magic.
-  m_OpaqueObjectsRendering->setRenderQueueSorter(new vl::RenderQueueSorterAggressive);
-  // dont trash earlier stages.
-  m_OpaqueObjectsRendering->renderer()->setClearFlags(vl::CF_CLEAR_DEPTH);
-  */
-
-  m_OpaqueObjectsRendering->setRenderQueueSorter( NULL );
-  m_OpaqueObjectsRendering->setCullingEnabled( false );
-
-  /* Use Vivid Renderer */
-  m_Vivid = new vl::RendererVivid();
-  m_Vivid->setFramebuffer( vl::OpenGLContext::framebuffer() );
-  m_OpaqueObjectsRendering->setRenderer( m_Vivid.get() );
-  
-  // FIXME: allow switching between rendering modes
-  // m_Vivid->setRenderingMode( vl::RendererVivid::FastRender );
-
-  // Interface VL with Qt's resource system to load GLSL shaders.
-  vl::defFileSystem()->directories().clear();
-  vl::defFileSystem()->directories().push_back( new vl::QtDirectory( ":/VL/" ) );
-
-  // volume rendering is a separate stage, after opaque.
-  // it needs access to the depth-buffer of the opaque geometry so that raycast can clip properly.
-  m_VolumeRendering = new vl::Rendering;
-  m_VolumeRendering->setEnableMask(ENABLEMASK_VOLUME);
-  m_VolumeRendering->setObjectName("m_VolumeRendering");
-  m_VolumeRendering->setCamera(m_Camera.get());
-  m_VolumeRendering->sceneManagers()->push_back(m_SceneManager.get());
-  m_VolumeRendering->setCullingEnabled(true);
-  m_VolumeRendering->renderer()->setClearFlags(vl::CF_DO_NOT_CLEAR);
-  // FIXME: only single volume supported for now, so no queue sorting.
-
-  m_RenderingTree = new vl::RenderingTree;
-  m_RenderingTree->setObjectName("m_RenderingTree");
-  // m_RenderingTree->subRenderings()->push_back(m_BackgroundRendering.get());
-  m_RenderingTree->subRenderings()->push_back(m_OpaqueObjectsRendering.get());
-  // m_RenderingTree->subRenderings()->push_back(m_VolumeRendering.get());
-
-  // once rendering to fbo has finished, blit it to the screen's backbuffer.
-  // a final swapbuffers in renderScene() and/or paintGL() will show it on screen.
-  m_FinalBlit = new vl::BlitFramebuffer;
-  m_FinalBlit->setObjectName("m_FinalBlit");
-  m_FinalBlit->setLinearFilteringEnabled(false);
-  m_FinalBlit->setBufferMask(vl::BB_COLOR_BUFFER_BIT | vl::BB_DEPTH_BUFFER_BIT);
-  m_FinalBlit->setDrawFramebuffer(vl::OpenGLContext::framebuffer());
-  // m_RenderingTree->onFinishedCallbacks()->push_back(m_FinalBlit.get());
-
-  // updating the size of our fbo is a bit of a pain.
-  // CreateAndUpdateFBOSizes(QGLWidget::width(), QGLWidget::height());
-
-  // moves the light with the main camera.
-  // FIXME: attaching this to the rendering looks wrong
-  // m_OpaqueObjectsRendering->transform()->addChild(m_LightTr.get());
-
-  // trackball is active by default because we do not yet have any camera-tracking data.
-  EnableTrackballManipulator(true);
-
-  m_ThresholdVal = new vl::Uniform("val_threshold");
-  m_ThresholdVal->setUniformF(0.5f);
-
-  m_GenericGLSLShader = new vl::GLSLProgram;
-  m_GenericGLSLShader->attachShader(new vl::GLSLVertexShader(LoadGLSLSourceFromResources("generic.vs")));
-  m_GenericGLSLShader->attachShader(new vl::GLSLFragmentShader(LoadGLSLSourceFromResources("generic.fs")));
-  bool linkvalid = m_GenericGLSLShader->linkProgram(true);
-  if (!linkvalid)
-  {
-    MITK_ERROR << "Shader didnt link: \n" << m_GenericGLSLShader->infoLog().toStdString();
-  }
-  bool shadervalid = m_GenericGLSLShader->validateProgram();
-  if (!shadervalid)
-  {
-    MITK_ERROR << "Shader didnt validate: \n" << m_GenericGLSLShader->infoLog().toStdString();
-  }
-
-  m_DefaultTextureParams = new vl::TexParameter;
-  m_DefaultTextureParams->setMinFilter(vl::TPF_LINEAR);
-  m_DefaultTextureParams->setMagFilter(vl::TPF_LINEAR);
-  m_DefaultTextureParams->setWrapS(vl::TPW_CLAMP_TO_BORDER);
-  m_DefaultTextureParams->setWrapT(vl::TPW_CLAMP_TO_BORDER);
-  m_DefaultTextureParams->setWrapR(vl::TPW_CLAMP_TO_BORDER);
-  m_DefaultTextureParams->setBorderColor(vl::fvec4(0, 0, 0, 0));
-
-  unsigned int      defaultTextureValue = 0x00000000;
-  vl::ref<vl::Image>   tempImg = new vl::Image(1, 1, 0, 1, vl::IF_RGBA, vl::IT_UNSIGNED_BYTE);
-  tempImg->allocate();
-  *((unsigned int*) tempImg->pixels()) = defaultTextureValue;
-  m_DefaultTexture = new vl::Texture(1, 1, vl::TF_RGBA, false);
-  m_DefaultTexture->setMipLevel(0, tempImg.get(), false);
-
-
-  vl::OpenGLContext::dispatchInitEvent();
-
-#if 0
-  // debugging
-  mitk::DataNode::Pointer   n = mitk::DataNode::New();
-  mitk::PCLData::Pointer    p = niftk::PCLData::New();
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr  c(new pcl::PointCloud<pcl::PointXYZRGB>);
-  for (int i = 0; i < 100; ++i)
-  {
-    pcl::PointXYZRGB  q(std::rand() % 255, std::rand() % 255, std::rand() % 255);
-    q.x = std::rand() % 255;
-    q.y = std::rand() % 255;
-    q.z = std::rand() % 255;
-    c->push_back(q);
-  }
-  p->SetCloud(c);
-  n->SetData(p);
-
-  m_DataStorage->Add(n);
-#endif
+  mitk::DataNode::ConstPointer cdn(node);
+  QueueUpdateDataNode(cdn);
 }
 
 
 //-----------------------------------------------------------------------------
-void VLQtWidget::SetBackgroundColour(float r, float g, float b)
+
+void VLQtWidget::OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
-  // FIXME
-  m_OpaqueObjectsRendering->camera()->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
-
-  if (m_BackgroundCamera)
-    m_BackgroundCamera->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
-  else
-    QMetaObject::invokeMethod(this, "SetBackgroundColour", Qt::QueuedConnection, Q_ARG(float, r), Q_ARG(float, g), Q_ARG(float, b));
+  mitk::DataNode::ConstPointer cdn(node);
+  QueueUpdateDataNode(cdn);
 }
 
-
 //-----------------------------------------------------------------------------
-void VLQtWidget::EnableTrackballManipulator(bool enable)
+
+void VLQtWidget::QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node)
 {
-  if (enable)
-  {
-    if (m_Trackball.get() == 0)
-    {
-      m_Trackball = new TrackballManipulator;
-      m_Trackball->setEnabled(true);
-      m_Trackball->setCamera(m_Camera.get());
-      //m_Trackball->setTransform(m_CameraTransform.get());
-      m_Trackball->setPivot(vl::vec3(0,0,0));
-      vl::OpenGLContext::addEventListener(m_Trackball.get());
-    }
-  }
-  else
-  {
-    if (m_Trackball.get() != 0)
-    {
-      vl::OpenGLContext::removeEventListener(m_Trackball.get());
-      m_Trackball->setTransform(0);
-      m_Trackball->setCamera(0);
-      m_Trackball = 0;
-    }
-  }
+  m_NodesQueuedForUpdate.insert(node);
+  update();
 }
 
-
 //-----------------------------------------------------------------------------
-void VLQtWidget::CreateAndUpdateFBOSizes(int width, int height)
-{
-  // sanity check: internal method, context should have been activated by caller.
-  assert(this->context() == QGLContext::currentContext());
 
-  // sanitise dimensions. depending on how windows are resized we can get zero here.
-  // but that breaks on the ogl side.
-  width  = std::max(1, width);
-  height = std::max(1, height);
-
-  vl::ref<vl::FramebufferObject> opaqueFBO = vl::OpenGLContext::createFramebufferObject(width, height);
-  opaqueFBO->setObjectName("opaqueFBO");
-  opaqueFBO->addDepthAttachment(new vl::FBODepthBufferAttachment(vl::DBF_DEPTH_COMPONENT24));
-  opaqueFBO->addColorAttachment(vl::AP_COLOR_ATTACHMENT0, new vl::FBOColorBufferAttachment(vl::CBF_RGBA));   // this is a renderbuffer
-  opaqueFBO->setDrawBuffer(vl::RDB_COLOR_ATTACHMENT0);
-
-  m_BackgroundRendering->renderer()->setFramebuffer(opaqueFBO.get());
-  m_OpaqueObjectsRendering->renderer()->setFramebuffer(opaqueFBO.get());
-  m_VolumeRendering->renderer()->setFramebuffer(opaqueFBO.get());
-
-  m_FinalBlit->setReadFramebuffer(opaqueFBO.get());
-  m_FinalBlit->setReadBuffer(vl::RDB_COLOR_ATTACHMENT0);
-
-#ifdef _USE_CUDA
-  if (m_CUDAInteropPimpl)
-  {
-    delete m_CUDAInteropPimpl->m_FBOAdaptor;
-    m_CUDAInteropPimpl->m_FBOAdaptor = new VLFramebufferAdaptor(opaqueFBO.get());
-  }
-#endif
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::resizeGL(int width, int height)
-{
-  // sanity check: context is initialised by Qt
-  assert(this->context() == QGLContext::currentContext());
-
-
-  // dont do anything if window is zero size.
-  // it's an opengl error to have a viewport like that!
-  if ((width <= 0) || (height <= 0))
-    return;
-
-  // no idea if this is necessary...
-  framebuffer()->setWidth(width);
-  framebuffer()->setHeight(height);
-  m_OpaqueObjectsRendering->renderer()->framebuffer()->setWidth(width);
-  m_OpaqueObjectsRendering->renderer()->framebuffer()->setHeight(height);
-  /*
-  m_VolumeRendering->renderer()->framebuffer()->setWidth(width);
-  m_VolumeRendering->renderer()->framebuffer()->setHeight(height);
-
-  CreateAndUpdateFBOSizes(width, height);
-
-  m_FinalBlit->setSrcRect(0, 0, width, height);
-  m_FinalBlit->setDstRect(0, 0, width, height);
-  */
-
-  UpdateViewportAndCameraAfterResize();
-
-  vl::OpenGLContext::dispatchResizeEvent(width, height);
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::UpdateViewportAndCameraAfterResize()
-{
-  // some sane defaults
-  m_Camera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
-  m_BackgroundCamera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
-
-  if (m_BackgroundNode.IsNotNull())
-  {
-    std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator ni = m_NodeToActorMap.find(m_BackgroundNode);
-    if (ni == m_NodeToActorMap.end())
-    {
-      // actor not ready yet, try again later.
-      // this is getting messy... but stuffing our widget here into an editor causes various methods
-      // to be called at the wrong time.
-      QMetaObject::invokeMethod(this, "UpdateViewportAndCameraAfterResize", Qt::QueuedConnection);
-    }
-    else
-    {
-      vl::ref<vl::Actor> backgroundactor = ni->second;
-
-      // this is based on my old araknes video-ar app.
-      // FIXME: aspect ratio?
-      float   width_scale  = (float) QWidget::width()  / (float) m_BackgroundWidth;
-      float   height_scale = (float) QWidget::height() / (float) m_BackgroundHeight;
-      int     vpw = QWidget::width();
-      int     vph = QWidget::height();
-      if (width_scale < height_scale)
-        vph = (int) ((float) m_BackgroundHeight * width_scale);
-      else
-        vpw = (int) ((float) m_BackgroundWidth * height_scale);
-
-      int   vpx = QWidget::width()  / 2 - vpw / 2;
-      int   vpy = QWidget::height() / 2 - vph / 2;
-
-      m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
-      // the main-scene-camera should conform to this viewport too!
-      // otherwise geometry would never line up with the background (for overlays, etc).
-      m_Camera->viewport()->set(vpx, vpy, vpw, vph);
-    }
-  }
-  // this default perspective depends on the viewport!
-  m_Camera->setProjectionPerspective();
-
-  UpdateCameraParameters();
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::paintGL()
-{
-  // sanity check: context is initialised by Qt
-  assert(this->context() == QGLContext::currentContext());
-
-  RenderScene();
-
-  vl::OpenGLContext::dispatchRunEvent();
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::RenderScene()
-{
-  // caller of paintGL() (i.e. Qt's internals) should have activated our context!
-  assert(this->context() == QGLContext::currentContext());
-
-  // update vl-cache for nodes that have been modified since the last frame.
-  for (std::set<mitk::DataNode::ConstPointer>::const_iterator i = m_NodesQueuedForUpdate.begin(); i != m_NodesQueuedForUpdate.end(); ++i)
-  {
-    UpdateDataNode(*i);
-  }
-  m_NodesQueuedForUpdate.clear();
-
-  // UpdateTranslucentTriangles() is clever enough to do work only if necessary.
-  // UpdateTranslucentTriangles();
-
-
-  // update scene graph.
-  vl::mat4 cameraMatrix = m_Camera->modelingMatrix();
-  // FIXME: light is lagging behind one frame
-  // m_LightTr->setLocalMatrix(cameraMatrix);
-
-
-  // trigger execution of the renderer(s).
-  vl::real now_time = vl::Time::currentTime();
-
-  // simple fps stats
-  {
-    static int    counter = 0;
-    ++counter;
-
-    if ((counter % 100) == 0)
-    {
-      static vl::real prev = 0;
-
-      std::cerr << "frame time: " << ((now_time - prev) / 10) << std::endl;
-      prev = m_RenderingTree->frameClock();
-    }
-  }
-  m_RenderingTree->setFrameClock(now_time);
-  m_RenderingTree->render();
-
-  if (vl::OpenGLContext::hasDoubleBuffer())
-    swapBuffers();
-
-  VL_CHECK_OGL();
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::ClearScene()
-{
-  niftk::ScopedOGLContext  ctx(context());
-
-  if (m_SceneManager)
-  {
-    if (m_SceneManager->tree())
-      m_SceneManager->tree()->actors()->clear();
-  }
-
-  //m_TranslucentActors.clear();
-  //m_TranslucentSurface = 0;
-  //m_TranslucentSurfaceActor = 0;
-
-  m_BackgroundNode = 0;
-  m_CameraNode = 0;
-
-  m_NodeToActorMap.clear();
-  m_ActorToRenderableMap.clear();
-  m_NodesQueuedForUpdate.clear();
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::UpdateThresholdVal(int isoVal)
-{
-  niftk::ScopedOGLContext ctx(context());
-
-  float val_threshold = 0.0f;
-  m_ThresholdVal->getUniform(&val_threshold);
-
-  val_threshold = isoVal / 10000.0f;
-  val_threshold = vl::clamp(val_threshold, 0.0f, 1.0f);
-
-  m_ThresholdVal->setUniformF(val_threshold);
-}
-
-
-//-----------------------------------------------------------------------------
-bool VLQtWidget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
-{
-  m_CameraNode = node;
-
-  if (m_CameraNode.IsNotNull())
-  {
-    EnableTrackballManipulator(false);
-    UpdateCameraParameters();
-  }
-  else
-    EnableTrackballManipulator(true);
-
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-vl::mat4 VLQtWidget::GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data)
-{
-  vl::mat4  mat;
-  // intentionally not setIdentity()
-  mat.setNull();
-
-  if (data.IsNotNull())
-  {
-    mitk::BaseGeometry::Pointer   geom = data->GetGeometry();
-    if (geom.IsNotNull())
-    {
-      if (geom->GetVtkTransform() != 0)
-      {
-        vtkSmartPointer<vtkMatrix4x4> vtkmat = vtkSmartPointer<vtkMatrix4x4>::New();
-        geom->GetVtkTransform()->GetMatrix(vtkmat);
-        if (vtkmat.GetPointer() != 0)
-        {
-          for (int i = 0; i < 4; i++)
-          {
-            for (int j = 0; j < 4; j++)
-            {
-              double val = vtkmat->GetElement(i, j);
-              mat.e(i, j) = val;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return mat;
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::UpdateTransformFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data)
-{
-  vl::mat4  mat = GetVLMatrixFromData(data);
-
-  if (!mat.isNull())
-  {
-    txf->setLocalMatrix(mat);
-    txf->computeWorldMatrix();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node)
-{
-  if (node.IsNotNull())
-  {
-    vl::ref<VLUserData>       userdata  = GetUserData(actor);
-    mitk::BaseData::Pointer   data      = node->GetData();
-    if (data.IsNotNull())
-    {
-      mitk::BaseGeometry::Pointer   geom = data->GetGeometry();
-      if (geom.IsNotNull())
-      {
-        if (geom->GetMTime() > userdata->m_TransformLastModified)
-        {
-          UpdateTransformFromData(actor->transform(), data.GetPointer());
-          userdata->m_TransformLastModified = geom->GetMTime();
-        }
-      }
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-vl::ref<VLUserData> VLQtWidget::GetUserData(vl::ref<vl::Actor> actor)
-{
-  vl::ref<VLUserData>   userdata = actor->userData()->as<VLUserData>();
-  if (userdata.get() == 0)
-  {
-    userdata = new VLUserData;
-    actor->setUserData(userdata.get());
-  }
-
-  return userdata;
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::UpdateTransformFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node)
-{
-  if (node.IsNotNull())
-  {
-    UpdateTransformFromData(txf, node->GetData());
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::UpdateCameraParameters()
-{
-  // calibration parameters come from the background node.
-  // so no background, no camera parameters.
-  if (m_BackgroundNode.IsNotNull())
-  {
-#ifdef BUILD_IGI
-    mitk::BaseProperty::Pointer       cambp = m_BackgroundNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
-    if (cambp.IsNotNull())
-    {
-      mitk::CameraIntrinsicsProperty::Pointer cam = dynamic_cast<mitk::CameraIntrinsicsProperty*>(cambp.GetPointer());
-      if (cam.IsNotNull())
-      {
-        mitk::CameraIntrinsics::Pointer   nodeIntrinsic = cam->GetValue();
-
-        if (nodeIntrinsic.IsNotNull())
-        {
-          // based on niftkCore/Rendering/vtkOpenGLMatrixDrivenCamera
-          float   znear = 1;
-          float   zfar  = 10000;
-          float   pixelaspectratio = 1;   // FIXME: depends on background image
-
-          vl::mat4  proj;
-          proj.setNull();
-          proj.e(0, 0) =  2 * nodeIntrinsic->GetFocalLengthX() / (float) m_BackgroundWidth;
-          //proj.e(0, 1) = -2 * 0 / m_ImageWidthInPixels;
-          proj.e(0, 2) = ((float) m_BackgroundWidth - 2 * nodeIntrinsic->GetPrincipalPointX()) / (float) m_BackgroundWidth;
-          proj.e(1, 1) = 2 * (nodeIntrinsic->GetFocalLengthY() / pixelaspectratio) / ((float) m_BackgroundHeight / pixelaspectratio);
-          proj.e(1, 2) = (-((float) m_BackgroundHeight / pixelaspectratio) + 2 * (nodeIntrinsic->GetPrincipalPointY() / pixelaspectratio)) / ((float) m_BackgroundHeight / pixelaspectratio);
-          proj.e(2, 2) = (-zfar - znear) / (zfar - znear);
-          proj.e(2, 3) = -2 * zfar * znear / (zfar - znear);
-          proj.e(3, 2) = -1;
-
-          m_Camera->setProjectionMatrix(proj.transpose(), vl::PMT_UserProjection);
-        }
-      }
-    }
-#endif
-  }
-
-  if (m_CameraNode.IsNotNull())
-  {
-    vl::mat4  mat = GetVLMatrixFromData(m_CameraNode->GetData());
-    if (!mat.isNull())
-      // beware: there is also a view-matrix! the inverse of modelling-matrix.
-      m_Camera->setModelingMatrix(mat);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
-{
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
-
-  // nasty
-  mitk::Image::Pointer  imgp(const_cast<mitk::Image*>(img));
-  vl::ref<vl::Actor>  actor = Add2DImageActor(imgp);
-
-
-  // essentially copied from vl::makeGrid()
-  vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
-
-  vl::ref<vl::ArrayFloat3> vert3 = new vl::ArrayFloat3;
-  vert3->resize(4);
-  vlquad->setVertexArray(vert3.get());
-
-  vl::ref<vl::ArrayFloat2> text2 = new vl::ArrayFloat2;
-  text2->resize(4);
-  vlquad->setTexCoordArray(0, text2.get());
-
-  //  0---3
-  //  |   |
-  //  1---2
-  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
-  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
-  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
-  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
-
-
-  vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
-  polys->indexBuffer()->resize(4);
-  polys->indexBuffer()->at(0) = 0;
-  polys->indexBuffer()->at(1) = 1;
-  polys->indexBuffer()->at(2) = 2;
-  polys->indexBuffer()->at(3) = 3;
-  vlquad->drawCalls().push_back(polys.get());
-
-  // replace original quad with ours.
-  actor->setLod(0, vlquad.get());
-  actor->effect()->shader()->disable(vl::EN_LIGHTING);
-
-  std::string   objName = actor->objectName() + "_background";
-  actor->setObjectName(objName.c_str());
-
-  m_NodeToActorMap[node] = actor;
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
-{
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
-
-#ifdef _USE_CUDA
-  assert(lwci != 0);
-
-  vl::mat4  mat;
-  mat = mat.setIdentity();
-  vl::ref<vl::Transform> tr     = new vl::Transform();
-  tr->setLocalMatrix(mat);
-
-
-  // essentially copied from vl::makeGrid()
-  vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
-
-  vl::ref<vl::ArrayFloat3> vert3 = new vl::ArrayFloat3;
-  vert3->resize(4);
-  vlquad->setVertexArray(vert3.get());
-
-  vl::ref<vl::ArrayFloat2> text2 = new vl::ArrayFloat2;
-  text2->resize(4);
-  vlquad->setTexCoordArray(0, text2.get());
-
-  //  0---3
-  //  |   |
-  //  1---2
-  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
-  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
-  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
-  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
-
-
-  vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
-  polys->indexBuffer()->resize(4);
-  polys->indexBuffer()->at(0) = 0;
-  polys->indexBuffer()->at(1) = 1;
-  polys->indexBuffer()->at(2) = 2;
-  polys->indexBuffer()->at(3) = 3;
-  vlquad->drawCalls().push_back(polys.get());
-
-
-  vl::ref<vl::Effect>    fx = new vl::Effect;
-  fx->shader()->disable(vl::EN_LIGHTING);
-  // UpdateDataNode() takes care of assigning colour etc.
-
-  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[actor] = vlquad;
-
-
-  std::string   objName = actor->objectName() + "_background";
-  actor->setObjectName(objName.c_str());
-
-  m_NodeToActorMap[node] = actor;
-  m_NodeToTextureMap[node] = TextureDataPOD();
-
-#else
-  throw std::runtime_error("No CUDA support enabled at compile time");
-#endif
-}
-
-
-//-----------------------------------------------------------------------------
-bool VLQtWidget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
-{
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
-
-  // clear up after previous background node.
-  if (m_BackgroundNode.IsNotNull())
-  {
-    const mitk::DataNode::ConstPointer    oldbackgroundnode = m_BackgroundNode;
-    m_BackgroundNode = 0;
-    RemoveDataNode(oldbackgroundnode);
-    // add back as normal node.
-    AddDataNode(oldbackgroundnode);
-  }
-
-  // default "no background" value.
-  m_BackgroundWidth  = 0;
-  m_BackgroundHeight = 0;
-
-  bool    result = false;
-  mitk::BaseData::Pointer   basedata;
-  if (node.IsNotNull())
-    basedata = node->GetData();
-  if (basedata.IsNotNull())
-  {
-    // clear up whatever we had cached for the new background node.
-    // it's very likely that it was a normal node before.
-    RemoveDataNode(node);
-
-    mitk::Image::Pointer      imgdata = dynamic_cast<mitk::Image*>(basedata.GetPointer());
-    if (imgdata.IsNotNull())
-    {
-#ifdef _USE_CUDA
-      niftk::CUDAImageProperty::Pointer    cudaimgprop = dynamic_cast<niftk::CUDAImageProperty*>(imgdata->GetProperty("CUDAImageProperty").GetPointer());
-      if (cudaimgprop.IsNotNull())
-      {
-        niftk::LightweightCUDAImage    lwci = cudaimgprop->Get();
-
-        // does the size of cuda-image have to match the mitk-image where it's attached to?
-        // i think it does: it is supposed to be the same data living in cuda.
-        assert(lwci.GetWidth()  == imgdata->GetDimension(0));
-        assert(lwci.GetHeight() == imgdata->GetDimension(1));
-
-        PrepareBackgroundActor(&lwci, imgdata->GetGeometry(), node);
-        result = true;
-      }
-      else
-#endif
-      {
-        PrepareBackgroundActor(imgdata.GetPointer(), imgdata->GetGeometry(), node);
-        result = true;
-      }
-
-      m_BackgroundWidth  = imgdata->GetDimension(0);
-      m_BackgroundHeight = imgdata->GetDimension(1);
-    }
-    else
-    {
-#ifdef _USE_CUDA
-      niftk::CUDAImage::Pointer    cudaimgdata = dynamic_cast<niftk::CUDAImage*>(basedata.GetPointer());
-      if (cudaimgdata.IsNotNull())
-      {
-        niftk::LightweightCUDAImage    lwci = cudaimgdata->GetLightweightCUDAImage();
-        PrepareBackgroundActor(&lwci, cudaimgdata->GetGeometry(), node);
-        result = true;
-
-        m_BackgroundWidth  = lwci.GetWidth();
-        m_BackgroundHeight = lwci.GetHeight();
-      }
-      // no else here
-#endif
-    }
-
-    // UpdateDataNode() depends on m_BackgroundNode.
-    m_BackgroundNode = node;
-    UpdateDataNode(node);
-  }
-
-
-  UpdateViewportAndCameraAfterResize();
-
-  // now that the camera may have changed, fit-view-to-scene again.
-  if (m_CameraNode.IsNull())
-  {
-    if (m_Trackball.get() != 0)
-      m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
-  }
-
-
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 void VLQtWidget::AddAllNodesFromDataStorage()
 {
   if (m_DataStorage.IsNull())
@@ -1254,10 +351,12 @@ void VLQtWidget::AddAllNodesFromDataStorage()
   #endif
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 {
+  makeCurrent();
+
   if (node.IsNull() || node->GetData() == 0)
     return;
 
@@ -1270,43 +369,39 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
   node->GetData()->SetProperty("opacity", node->GetProperty("opacity"));
   node->GetData()->SetProperty("visible", node->GetProperty("visible"));
 
-  bool                    doMitkImageIfSuitable = true;
-  mitk::Image::Pointer    mitkImg   = dynamic_cast<mitk::Image*>(node->GetData());
-  mitk::Surface::Pointer  mitkSurf  = dynamic_cast<mitk::Surface*>(node->GetData());
-  mitk::PointSet::Pointer mitkPS    = dynamic_cast<mitk::PointSet*>(node->GetData());
+  bool doMitkImageIfSuitable = true;
+  mitk::Image::Pointer              mitkImg  = dynamic_cast<mitk::Image*>(node->GetData());
+  mitk::Surface::Pointer            mitkSurf = dynamic_cast<mitk::Surface*>(node->GetData());
+  mitk::PointSet::Pointer           mitkPS   = dynamic_cast<mitk::PointSet*>(node->GetData());
 #ifdef _USE_PCL
-  niftk::PCLData::Pointer  pclPS     = dynamic_cast<niftk::PCLData*>(node->GetData());
+  niftk::PCLData::Pointer           pclPS    = dynamic_cast<niftk::PCLData*>(node->GetData());
 #endif
-  mitk::CoordinateAxesData::Pointer   coords = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+  mitk::CoordinateAxesData::Pointer coords   = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
 #ifdef _USE_CUDA
-  mitk::BaseData::Pointer cudaImg   = dynamic_cast<niftk::CUDAImage*>(node->GetData());
+  mitk::BaseData::Pointer           cudaImg  = dynamic_cast<niftk::CUDAImage*>(node->GetData());
   // this check will prefer a CUDAImageProperty attached to the node's data object.
   // e.g. if there is mitk::Image and an attached CUDAImageProperty then CUDAImageProperty wins and
   // mitk::Image is ignored.
-  doMitkImageIfSuitable = !(dynamic_cast<niftk::CUDAImageProperty*>(node->GetData()->GetProperty("CUDAImageProperty").GetPointer()) != 0);
+  doMitkImageIfSuitable = dynamic_cast<niftk::CUDAImageProperty*>( node->GetData()->GetProperty("CUDAImageProperty").GetPointer() ) == 0;
   if (doMitkImageIfSuitable == false)
   {
     cudaImg = node->GetData();
   }
 #endif
 
+  vl::ref<vl::Actor> newActor;
+  std::string namePrefix;
 
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
-
-
-  vl::ref<vl::Actor>    newActor;
-  std::string           namePrefix;
-  if (mitkImg.IsNotNull() && doMitkImageIfSuitable)
-  {
-    newActor = AddImageActor(mitkImg);
-    namePrefix = "image:";
-  }
-  else
   if (mitkSurf.IsNotNull())
   {
     newActor = AddSurfaceActor(mitkSurf);
     namePrefix = "surface:";
+  }
+  else
+  if (mitkImg.IsNotNull() && doMitkImageIfSuitable)
+  {
+    newActor = AddImageActor(mitkImg);
+    namePrefix = "image:";
   }
   else
   if (mitkPS.IsNotNull())
@@ -1358,18 +453,59 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
   }
 }
 
-
 //-----------------------------------------------------------------------------
-void VLQtWidget::QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node)
+
+void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
 {
-  m_NodesQueuedForUpdate.insert(node);
-  update();
+  makeCurrent();
+
+  // dont leave a dangling update behind.
+  m_NodesQueuedForUpdate.erase(node);
+
+  if (node.IsNull() || node->GetData() == 0)
+    return;
+
+  // recompute the big-fat-translucent-triangle-buffer.
+  // m_TranslucentStructuresMerged = false;
+
+#ifdef _USE_CUDA
+  {
+    std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.find(node);
+    if (i != m_NodeToTextureMap.end())
+    {
+      if (i->second.m_CUDARes != 0)
+      {
+        cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
+        if (err != cudaSuccess)
+        {
+          MITK_WARN << "Failed to unregister VL texture from CUDA";
+        }
+      }
+
+      m_NodeToTextureMap.erase(i);
+    }
+  }
+#endif
+
+  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
+  if (it != m_NodeToActorMap.end())
+  {
+    vl::ref<vl::Actor>    vlActor = it->second;
+    if (vlActor.get() != 0)
+    {
+      m_ActorToRenderableMap.erase(vlActor);
+      m_SceneManager->tree()->eraseActor(vlActor.get());
+      m_NodeToActorMap.erase(it);
+    }
+  }
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 {
+  makeCurrent();
+
   if (node.IsNull() || node->GetData() == 0)
     return;
 
@@ -1399,9 +535,6 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   vl::ref<vl::Actor> vlActor = it->second;
   if (vlActor.get() == 0)
     return;
-
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
 
   bool  isVisble = true;
   mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
@@ -1560,405 +693,11 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   }
 }
 
-
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQtWidget::FindActorForNode(const mitk::DataNode::ConstPointer& node)
-{
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
-  if (it != m_NodeToActorMap.end())
-  {
-    return it->second;
-  }
 
-  return vl::ref<vl::Actor>();
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node)
-{
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  assert(QGLContext::currentContext() == QGLWidget::context());
-
-  if (node.IsNotNull())
-  {
-    mitk::Image::Pointer    img = dynamic_cast<mitk::Image*>(node->GetData());
-    if (img.IsNotNull())
-    {
-      vl::ref<vl::Actor>  vlactor = FindActorForNode(node);
-      if (vlactor.get() != 0)
-      {
-        assert(vlactor->effect());
-        assert(vlactor->effect()->shader());
-
-        vl::ref<VLUserData>   userdata = GetUserData(vlactor);
-        if (img->GetVtkImageData()->GetMTime() > userdata->m_ImageVtkDataLastModified)
-        {
-          vl::ref<vl::Texture> tex = vlactor->effect()->shader()->gocTextureSampler(0)->texture();
-          if (tex.get() != 0)
-          {
-            unsigned int*       dims    = img->GetDimensions();    // we do not own dims!
-            mitk::PixelType     pixType = img->GetPixelType();
-            vl::EImageType      type    = MapITKPixelTypeToVL(pixType.GetComponentType());
-            vl::EImageFormat    format  = MapComponentsToVLColourFormat(pixType.GetNumberOfComponents());
-
-            vl::ref<vl::Image>    vlimg = new vl::Image(dims[0], dims[1], 0, 1, format, type);
-            // sanity check
-            unsigned int  size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
-            assert(vlimg->requiredMemory() == size);
-
-            try
-            {
-              mitk::ImageReadAccessor   readAccess(img);
-              const void*               cPointer = readAccess.GetData();
-              std::memcpy(vlimg->pixels(), cPointer, vlimg->requiredMemory());
-            }
-            catch (...)
-            {
-              // FIXME: error handling?
-              MITK_ERROR << "Did not get pixel read access to 2D image.";
-            }
-
-            tex->setMipLevel(0, vlimg.get(), false);
-
-            userdata->m_ImageVtkDataLastModified = img->GetVtkImageData()->GetMTime();
-          }
-        }
-      }
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node)
-{
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  assert(QGLContext::currentContext() == QGLWidget::context());
-
-#ifdef _USE_CUDA
-  niftk::LightweightCUDAImage    lwcImage;
-
-  niftk::CUDAImage::Pointer cudaimg = dynamic_cast<niftk::CUDAImage*>(node->GetData());
-  if (cudaimg.IsNotNull())
-  {
-    lwcImage = cudaimg->GetLightweightCUDAImage();
-  }
-  else
-  {
-    mitk::Image::Pointer    img = dynamic_cast<mitk::Image*>(node->GetData());
-    if (img.IsNotNull())
-    {
-      niftk::CUDAImageProperty::Pointer prop = dynamic_cast<niftk::CUDAImageProperty*>(img->GetProperty("CUDAImageProperty").GetPointer());
-      if (prop.IsNotNull())
-      {
-        lwcImage = prop->Get();
-      }
-    }
-  }
-
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
-  if (it == m_NodeToActorMap.end())
-    return;
-  vl::ref<vl::Actor>    vlActor = it->second;
-  if (vlActor.get() == 0)
-    return;
-
-  if (lwcImage.GetId() != 0)
-  {
-    // whatever we had cached from a previous frame.
-    TextureDataPOD          texpod    = m_NodeToTextureMap[node];
-
-    // only need to update the vl texture, if content in our cuda buffer has changed.
-    // and the cuda buffer can change only when we have a different id.
-    if (texpod.m_LastUpdatedID != lwcImage.GetId())
-    {
-      cudaError_t   err = cudaSuccess;
-      bool          neednewvltexture = texpod.m_Texture.get() == 0;
-
-      // check if vl-texture size needs to change
-      if (texpod.m_Texture.get() != 0)
-      {
-        neednewvltexture |= lwcImage.GetWidth()  != texpod.m_Texture->width();
-        neednewvltexture |= lwcImage.GetHeight() != texpod.m_Texture->height();
-      }
-
-      if (neednewvltexture)
-      {
-        if (texpod.m_CUDARes)
-        {
-          err = cudaGraphicsUnregisterResource(texpod.m_CUDARes);
-          texpod.m_CUDARes = 0;
-          if (err != cudaSuccess)
-          {
-            MITK_WARN << "Could not unregister VL texture from CUDA. This will likely leak GPU memory.";
-          }
-        }
-
-        texpod.m_Texture = new vl::Texture(lwcImage.GetWidth(), lwcImage.GetHeight(), vl::TF_RGBA8, false);
-        vlActor->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
-        vlActor->effect()->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
-
-        err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
-        if (err != cudaSuccess)
-        {
-          texpod.m_CUDARes = 0;
-          MITK_WARN << "Registering VL texture into CUDA failed. Will not update (properly).";
-        }
-      }
-
-      if (texpod.m_CUDARes)
-      {
-        assert(vlActor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
-
-        niftk::CUDAManager*  cudamng   = niftk::CUDAManager::GetInstance();
-        cudaStream_t         mystream  = cudamng->GetStream("VLQtWidget vl-texture update");
-        niftk::ReadAccessor  inputRA   = cudamng->RequestReadAccess(lwcImage);
-
-        // make sure producer of the cuda-image finished.
-        err = cudaStreamWaitEvent(mystream, inputRA.m_ReadyEvent, 0);
-        if (err != cudaSuccess)
-        {
-          // flood the log
-          MITK_WARN << "cudaStreamWaitEvent failed with error code " << err;
-        }
-
-        // this also guarantees that ogl will have finished doing its thing before mystream starts copying.
-        err = cudaGraphicsMapResources(1, &texpod.m_CUDARes, mystream);
-        if (err == cudaSuccess)
-        {
-          // normally we would need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
-          // but texture coordinates that we have assigned to the quads rendering the current image will do that for us.
-
-          cudaArray_t   arr = 0;
-          err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
-          if (err == cudaSuccess)
-          {
-            err = cudaMemcpy2DToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, inputRA.m_BytePitch, lwcImage.GetWidth() * 4, lwcImage.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
-            if (err == cudaSuccess)
-            {
-              texpod.m_LastUpdatedID = lwcImage.GetId();
-            }
-          }
-
-          err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
-          if (err != cudaSuccess)
-          {
-            MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
-          }
-        }
-        // make sure Autorelease() and Finalise() are always the last things to do for a stream!
-        // otherwise the streamcallback will block subsequent work.
-        // in this case here, the callback managed by CUDAManager that keeps track of refcounts could stall
-        // the opengl driver if cudaGraphicsUnmapResources() came after Autorelease().
-        cudamng->Autorelease(inputRA, mystream);
-      }
-
-      // update cache, even if something went wrong.
-      m_NodeToTextureMap[node] = texpod;
-
-      // helps with debugging
-      vlActor->effect()->shader()->disable(vl::EN_CULL_FACE);
-    }
-  }
-#else
-  throw std::runtime_error("No CUDA-support enabled at compile time!");
-#endif
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
-{
-  // dont leave a dangling update behind.
-  m_NodesQueuedForUpdate.erase(node);
-
-  if (node.IsNull() || node->GetData() == 0)
-    return;
-
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
-
-  // recompute the big-fat-translucent-triangle-buffer.
-  // m_TranslucentStructuresMerged = false;
-
-#ifdef _USE_CUDA
-  {
-    std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.find(node);
-    if (i != m_NodeToTextureMap.end())
-    {
-      if (i->second.m_CUDARes != 0)
-      {
-        cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
-        if (err != cudaSuccess)
-        {
-          MITK_WARN << "Failed to unregister VL texture from CUDA";
-        }
-      }
-
-      m_NodeToTextureMap.erase(i);
-    }
-  }
-#endif
-
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
-  if (it != m_NodeToActorMap.end())
-  {
-    vl::ref<vl::Actor>    vlActor = it->second;
-    if (vlActor.get() != 0)
-    {
-      m_ActorToRenderableMap.erase(vlActor);
-      m_SceneManager->tree()->eraseActor(vlActor.get());
-      m_NodeToActorMap.erase(it);
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord)
-{
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
-
-  vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransformFromData(tr, coord.GetPointer());
-
-  vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
-  vl::ref<vl::ArrayFloat4>      vlColors = new vl::ArrayFloat4;
-  vlVerts->resize(4);
-  vlColors->resize(4);
-
-  // x y z r g b a
-  vlVerts->at(0).x() =  0;   vlVerts->at(0).y() =  0;   vlVerts->at(0).z() =  0;   vlColors->at(0).r() = 0;  vlColors->at(0).g() = 0;  vlColors->at(0).b() = 0;  vlColors->at(0).a() = 1;
-  vlVerts->at(1).x() = 10;   vlVerts->at(1).y() =  0;   vlVerts->at(1).z() =  0;   vlColors->at(1).r() = 1;  vlColors->at(1).g() = 0;  vlColors->at(1).b() = 0;  vlColors->at(1).a() = 1;
-  vlVerts->at(2).x() =  0;   vlVerts->at(2).y() = 10;   vlVerts->at(2).z() =  0;   vlColors->at(2).r() = 0;  vlColors->at(2).g() = 1;  vlColors->at(2).b() = 0;  vlColors->at(2).a() = 1;
-  vlVerts->at(3).x() =  0;   vlVerts->at(3).y() =  0;   vlVerts->at(3).z() = 10;   vlColors->at(3).r() = 0;  vlColors->at(3).g() = 0;  vlColors->at(3).b() = 1;  vlColors->at(2).a() = 1;
-
-
-  vl::ref<vl::DrawElementsUInt>   lines = new vl::DrawElementsUInt(vl::PT_LINES);
-  lines->indexBuffer()->resize(3 * 2);
-  lines->indexBuffer()->at(0) = 0;  lines->indexBuffer()->at(1) = 1;      // x
-  lines->indexBuffer()->at(2) = 0;  lines->indexBuffer()->at(3) = 2;      // y
-  lines->indexBuffer()->at(4) = 0;  lines->indexBuffer()->at(5) = 3;      // z
-
-  vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
-  vlGeom->drawCalls().push_back(lines.get());
-  vlGeom->setVertexArray(vlVerts.get());
-  vlGeom->setColorArray(vlColors.get());
-
-  vl::ref<vl::Effect>   fx = new vl::Effect;
-  fx->shader()->disable(vl::EN_LIGHTING);
-  fx->shader()->setRenderState(new vl::ShadeModel(vl::SM_FLAT));    // important! otherwise colour is wrong.
-  fx->shader()->setRenderState(new vl::LineWidth(5));               // arbitrary
-  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
-
-
-  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[actor] = vlGeom;
-
-  return actor;
-}
-
-
-//-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQtWidget::AddPointCloudActor(niftk::PCLData* pcl)
-{
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
-
-#ifdef _USE_PCL
-  pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr   cloud = pcl->GetCloud();
-
-  vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransformFromData(tr, pcl);
-
-  vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
-  vl::ref<vl::ArrayFloat4>      vlColors = new vl::ArrayFloat4;
-  vlVerts->resize(cloud->size());
-  vlColors->resize(cloud->size());
-  int   j = 0;
-  for (pcl::PointCloud<pcl::PointXYZRGB>::const_iterator i = cloud->begin(); i != cloud->end(); ++i, ++j)
-  {
-    const pcl::PointXYZRGB& p = *i;
-    vlVerts->at(j).x() = p.x;
-    vlVerts->at(j).y() = p.y;
-    vlVerts->at(j).z() = p.z;
-    // would be nice if we could interleave the vl arrays...
-    vlColors->at(j).r() = (float)p.r / 255.0f;
-    vlColors->at(j).g() = (float)p.g / 255.0f;
-    vlColors->at(j).b() = (float)p.b / 255.0f;
-    vlColors->at(j).a() = 1;
-  }
-
-  vl::ref<vl::DrawArrays>       vlPoints = new vl::DrawArrays(vl::PT_POINTS, 0, vlVerts->size());
-  vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
-  vlGeom->drawCalls().push_back(vlPoints.get());
-  vlGeom->setVertexArray(vlVerts.get());
-  vlGeom->setColorArray(vlColors.get());
-
-  vl::ref<vl::Effect>   fx = new vl::Effect;
-  fx->shader()->disable(vl::EN_LIGHTING);
-  // FIXME: currently nothing assigns a pointsize property for PCLData nodes. so set an arbitrary fixed size.
-  fx->shader()->setRenderState(new vl::PointSize(5));
-  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
-
-
-  vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[psActor] = vlGeom;
-
-  return psActor;
-#else
-  throw std::runtime_error("No PCL-support enabled at compile time!");
-#endif
-}
-
-
-//-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQtWidget::AddPointsetActor(const mitk::PointSet::Pointer& mitkPS)
-{
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
-
-  vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransformFromData(tr, mitkPS.GetPointer());
-
-  vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
-  vlVerts->resize(mitkPS->GetSize());
-  int   j = 0;
-  for (mitk::PointSet::PointsConstIterator i = mitkPS->Begin(); i != mitkPS->End(); ++i, ++j)
-  {
-    mitk::PointSet::PointType p = i->Value();
-    vlVerts->at(j).x() = p[0];
-    vlVerts->at(j).y() = p[1];
-    vlVerts->at(j).z() = p[2];
-  }
-
-  vl::ref<vl::DrawArrays>       vlPoints = new vl::DrawArrays(vl::PT_POINTS, 0, vlVerts->size());
-  vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
-  vlGeom->drawCalls().push_back(vlPoints.get());
-  vlGeom->setVertexArray(vlVerts.get());
-
-  vl::ref<vl::Effect>   fx = new vl::Effect;
-  fx->shader()->disable(vl::EN_LIGHTING);
-  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
-
-
-  vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[psActor] = vlGeom;
-
-  return psActor;
-}
-
-
-//-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQtWidget::AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf)
 {
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
+  makeCurrent();
 
   vl::ref<vl::Geometry>  vlSurf = new vl::Geometry();
   ConvertVTKPolyData(mitkSurf->GetVtkPolyData(), vlSurf);
@@ -1983,100 +722,21 @@ vl::ref<vl::Actor> VLQtWidget::AddSurfaceActor(const mitk::Surface::Pointer& mit
   return surfActor;
 }
 
-
 //-----------------------------------------------------------------------------
-vl::ref<vl::Geometry> VLQtWidget::CreateGeometryFor2DImage(int width, int height)
-{
-  vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
-  vl::ref<vl::ArrayFloat3>      vert3 = new vl::ArrayFloat3;
-  vert3->resize(4);
-  vlquad->setVertexArray(vert3.get());
 
-  vl::ref<vl::ArrayFloat2>      text2 = new vl::ArrayFloat2;
-  text2->resize(4);
-  vlquad->setTexCoordArray(0, text2.get());
-
-  //  0---3
-  //  |   |
-  //  1---2
-  vert3->at(0).x() = 0;     vert3->at(0).y() = 0;      vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
-  vert3->at(1).x() = 0;     vert3->at(1).y() = height; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
-  vert3->at(2).x() = width; vert3->at(2).y() = height; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
-  vert3->at(3).x() = width; vert3->at(3).y() = 0;      vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
-
-
-  vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
-  polys->indexBuffer()->resize(4);
-  polys->indexBuffer()->at(0) = 0;
-  polys->indexBuffer()->at(1) = 1;
-  polys->indexBuffer()->at(2) = 2;
-  polys->indexBuffer()->at(3) = 3;
-  vlquad->drawCalls().push_back(polys.get());
-
-  return vlquad;
-}
-
-
-//-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQtWidget::AddCUDAImageActor(const mitk::BaseData* _cudaImg)
-{
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
-
-#ifdef _USE_CUDA
-  niftk::LightweightCUDAImage lwci;
-  const niftk::CUDAImage* cudaImg = dynamic_cast<const niftk::CUDAImage*>(_cudaImg);
-  if (cudaImg != 0)
-  {
-    lwci = cudaImg->GetLightweightCUDAImage();
-  }
-  else
-  {
-    niftk::CUDAImageProperty::Pointer prop = dynamic_cast<niftk::CUDAImageProperty*>(_cudaImg->GetProperty("CUDAImageProperty").GetPointer());
-    if (prop.IsNotNull())
-    {
-      lwci = prop->Get();
-    }
-  }
-  assert(lwci.GetId() != 0);
-
-  vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransformFromData(tr, cudaImg);
-
-  vl::ref<vl::Geometry>         vlquad    = CreateGeometryFor2DImage(lwci.GetWidth(), lwci.GetHeight());
-
-  vl::ref<vl::Effect>    fx = new vl::Effect;
-  fx->shader()->disable(vl::EN_LIGHTING);
-  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
-  // UpdateDataNode() takes care of assigning colour etc.
-
-  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[actor] = vlquad;
-
-  return actor;
-
-#else
-  throw std::runtime_error("No CUDA-support enabled at compile time!");
-#endif
-}
-
-
-//-----------------------------------------------------------------------------
 void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly)
 {
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
+  makeCurrent();
 
   if (vtkPoly == 0)
     return;
 
   /// \brief Buffer in host memory to store cell info
   unsigned int * m_IndexBuffer = 0;
-  
+
   /// \brief Buffer in host memory to store vertex points
   float * m_PointBuffer = 0;
-  
+
   /// \brief Buffer in host memory to store normals associated with vertices
   float * m_NormalBuffer = 0;
 
@@ -2118,7 +778,7 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
     MITK_ERROR <<"More than three vertices / cell detected, can't handle this data type!\n";
     return;
   }
-  
+
   vtkSmartPointer<vtkPoints>     points = vtkPoly->GetPoints();
 
   if (points == 0)
@@ -2133,7 +793,7 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
   if (normals == 0)
   {
     MITK_INFO <<"Generating normals for the vtkPoly data (mitk::OclSurface)";
-    
+
     vtkSmartPointer<vtkPolyDataNormals> normalGen = vtkSmartPointer<vtkPolyDataNormals>::New();
     normalGen->SetInputData(vtkPoly);
     normalGen->AutoOrientNormalsOn();
@@ -2151,21 +811,20 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
     vtkPoly->GetPointData()->GetNormals()->Modified();
     vtkPoly->GetPointData()->Modified();
   }
- 
+
   // Check if we have scalars
   vtkSmartPointer<vtkDataArray> scalars = vtkPoly->GetPointData()->GetScalars();
 
   bool pointsValid  = (points.GetPointer() == 0) ? false : true;
   bool normalsValid = (normals.GetPointer() == 0) ? false : true;
   bool scalarsValid = (scalars.GetPointer() == 0) ? false : true;
-  
+
   unsigned int pointBufferSize = 0;
   unsigned int numOfPoints = static_cast<unsigned int> (points->GetNumberOfPoints());
   pointBufferSize = numOfPoints * sizeof(float) *3;
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Deal with points
-
 
   // Allocate memory
   m_PointBuffer = new float[numOfPoints*3];
@@ -2250,10 +909,10 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
 
   vlVerts->resize(numOfPoints *3);
   vlNormals->resize(numOfPoints *3);
-   
+
   vlPoly->drawCalls().push_back(vlTriangles.get());
   vlTriangles->indexBuffer()->resize(numOfTriangles*3);
-  
+
   vlPoly->setVertexArray(vlVerts.get());
   vlPoly->setNormalArray(vlNormals.get());
 
@@ -2293,11 +952,11 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
   /// \brief Buffer in host memory to store cell info
   if (m_IndexBuffer != 0)
     delete m_IndexBuffer;
-  
+
   /// \brief Buffer in host memory to store vertex points
   if (m_PointBuffer != 0)
     delete m_PointBuffer;
-  
+
   /// \brief Buffer in host memory to store normals associated with vertices
   if (m_NormalBuffer != 0)
     delete m_NormalBuffer;
@@ -2309,12 +968,11 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
   //MITK_INFO <<"Num of VL vertices: " <<vlPoly->vertexArray()->size()/3;
 }
 
-
 //-----------------------------------------------------------------------------
+
 vl::ref<vl::Actor> VLQtWidget::AddImageActor(const mitk::Image::Pointer& mitkImg)
 {
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
+  makeCurrent();
 
   unsigned int* dims = 0;
   dims = mitkImg->GetDimensions();
@@ -2330,55 +988,11 @@ vl::ref<vl::Actor> VLQtWidget::AddImageActor(const mitk::Image::Pointer& mitkImg
   }
 }
 
-
 //-----------------------------------------------------------------------------
-vl::EImageType VLQtWidget::MapITKPixelTypeToVL(int itkComponentType)
-{
-  static const vl::EImageType     typeMap[] =
-  {
-    vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::UNKNOWNCOMPONENTTYPE = 0
-    vl::IT_UNSIGNED_BYTE,   // itk::ImageIOBase::UCHAR = 1
-    vl::IT_BYTE,            // itk::ImageIOBase::CHAR = 2
-    vl::IT_UNSIGNED_SHORT,  // itk::ImageIOBase::USHORT = 3
-    vl::IT_SHORT,           // itk::ImageIOBase::SHORT = 4
-    vl::IT_UNSIGNED_INT,    // itk::ImageIOBase::UINT = 5
-    vl::IT_INT,             // itk::ImageIOBase::INT = 6
-    vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::ULONG = 7
-    vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::LONG = 8
-    vl::IT_FLOAT,           // itk::ImageIOBase::FLOAT = 9
-    vl::IT_IMPLICIT_TYPE    // itk::ImageIOBase::DOUBLE = 10
-  };
 
-  return typeMap[itkComponentType];
-}
-
-
-//-----------------------------------------------------------------------------
-vl::EImageFormat VLQtWidget::MapComponentsToVLColourFormat(int components)
-{
-  // this assumes the image data is a normal colour image, not encoding pointers or
-  // indices, or similar stuff.
-
-  switch (components)
-  {
-    default:
-    case 1:
-      return vl::IF_LUMINANCE;
-    case 2:
-      return vl::IF_RG;
-    case 3:
-      return vl::IF_RGB;
-    case 4:
-      return vl::IF_RGBA;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 vl::ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkImg)
 {
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
+  makeCurrent();
 
   unsigned int*       dims    = mitkImg->GetDimensions();    // we do not own dims!
   mitk::PixelType     pixType = mitkImg->GetPixelType();
@@ -2405,7 +1019,6 @@ vl::ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkI
     MITK_ERROR << "Did not get pixel read access to 2D image.";
   }
 
-
   vl::ref<vl::Transform> tr     = new vl::Transform;
   UpdateTransformFromData(tr, mitkImg.GetPointer());
 
@@ -2426,12 +1039,11 @@ vl::ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkI
   return actor;
 }
 
-
 //-----------------------------------------------------------------------------
+
 vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
 {
-  // FIXME: we shouldn't randomly hope the OpenGL context is active but ensure it is by design.
-  niftk::ScopedOGLContext ctx(context());
+  makeCurrent();
 
   mitk::PixelType pixType = mitkImg->GetPixelType();
   size_t numOfComponents = pixType.GetNumberOfComponents();
@@ -2445,14 +1057,12 @@ vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkI
     std::cout << " BitsPerComponent: " <<pixType.GetBitsPerComponent() << std::endl;
   }
 
-
-  vl::ref<vl::Image>     vlImg;
+  vl::ref<vl::Image> vlImg;
 
   try
   {
-    mitk::ImageReadAccessor   readAccess(mitkImg, mitkImg->GetVolumeData(0));
-    const void*               cPointer = readAccess.GetData();
-
+    mitk::ImageReadAccessor readAccess(mitkImg, mitkImg->GetVolumeData(0));
+    const void* cPointer = readAccess.GetData();
 
     vl::EImageType     type = MapITKPixelTypeToVL(pixType.GetComponentType());
     vl::EImageFormat   format;
@@ -2511,7 +1121,6 @@ vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkI
     assert(false);
   }
 
-
   float opacity;
   mitkImg->GetPropertyList()->GetFloatProperty("opacity", opacity);
 
@@ -2538,7 +1147,7 @@ vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkI
   vl::String vertexShaderSource     = LoadGLSLSourceFromResources("volume_luminance_light.vs");
 
   // The GLSL program used to perform the actual rendering.
-  // The \a volume_luminance_light.fs fragment shader allows you to specify how many 
+  // The \a volume_luminance_light.fs fragment shader allows you to specify how many
   // lights to use (up to 4) and can optionally take advantage of a precomputed normals texture.
   vl::ref<vl::GLSLProgram>    glslShader = fx->shader()->gocGLSLProgram();
   glslShader->attachShader(new vl::GLSLFragmentShader(fragmentShaderSource));
@@ -2623,8 +1232,1046 @@ vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkI
   return imageActor;
 }
 
+//-----------------------------------------------------------------------------
+
+vl::EImageType VLQtWidget::MapITKPixelTypeToVL(int itkComponentType)
+{
+  static const vl::EImageType typeMap[] =
+  {
+    vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::UNKNOWNCOMPONENTTYPE = 0
+    vl::IT_UNSIGNED_BYTE,   // itk::ImageIOBase::UCHAR = 1
+    vl::IT_BYTE,            // itk::ImageIOBase::CHAR = 2
+    vl::IT_UNSIGNED_SHORT,  // itk::ImageIOBase::USHORT = 3
+    vl::IT_SHORT,           // itk::ImageIOBase::SHORT = 4
+    vl::IT_UNSIGNED_INT,    // itk::ImageIOBase::UINT = 5
+    vl::IT_INT,             // itk::ImageIOBase::INT = 6
+    vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::ULONG = 7
+    vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::LONG = 8
+    vl::IT_FLOAT,           // itk::ImageIOBase::FLOAT = 9
+    vl::IT_IMPLICIT_TYPE    // itk::ImageIOBase::DOUBLE = 10
+  };
+
+  return typeMap[itkComponentType];
+}
 
 //-----------------------------------------------------------------------------
+
+vl::EImageFormat VLQtWidget::MapComponentsToVLColourFormat(int components)
+{
+  // this assumes the image data is a normal colour image, not encoding pointers or indices, or similar stuff.
+
+  switch (components)
+  {
+    default:
+    case 1:
+      return vl::IF_LUMINANCE;
+    case 2:
+      return vl::IF_RG;
+    case 3:
+      return vl::IF_RGB;
+    case 4:
+      return vl::IF_RGBA;
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::SetBackgroundColour(float r, float g, float b)
+{
+  // FIXME
+  m_OpaqueObjectsRendering->camera()->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
+
+  if (m_BackgroundCamera)
+    m_BackgroundCamera->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
+  else
+    QMetaObject::invokeMethod(this, "SetBackgroundColour", Qt::QueuedConnection, Q_ARG(float, r), Q_ARG(float, g), Q_ARG(float, b));
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::EnableTrackballManipulator(bool enable)
+{
+  if (enable)
+  {
+    if (m_Trackball.get() == 0)
+    {
+      m_Trackball = new TrackballManipulator;
+      m_Trackball->setEnabled(true);
+      m_Trackball->setCamera(m_Camera.get());
+      //m_Trackball->setTransform(m_CameraTransform.get());
+      m_Trackball->setPivot(vl::vec3(0,0,0));
+      vl::OpenGLContext::addEventListener(m_Trackball.get());
+    }
+  }
+  else
+  {
+    if (m_Trackball.get() != 0)
+    {
+      vl::OpenGLContext::removeEventListener(m_Trackball.get());
+      m_Trackball->setTransform(0);
+      m_Trackball->setCamera(0);
+      m_Trackball = 0;
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::initializeGL()
+{
+  // sanity check: context is initialised by Qt
+  assert( QGLContext::currentContext() == QGLWidget::context() );
+
+  vl::OpenGLContext::initGLContext();
+
+  //// use the device that is running our opengl context as the compute-device
+  //// for sorting triangles in the correct order.
+  //if (m_OclService)
+  //{
+  //  // Have to call makeCurrent() otherwise the shared CL-GL context creation fails
+  //  makeCurrent();
+
+  //  // Force tests to run on the first GPU with shared context
+  //  m_OclService->SpecifyPlatformAndDevice(0, 0, true);
+  //  // Calling this to make sure that the context is created right at startup
+  //  cl_context clContext = m_OclService->GetContext();
+  //}
+
+#ifdef _MSC_VER
+  //NvAPI_OGL_ExpertModeSet(NVAPI_OGLEXPERT_DETAIL_ALL, NVAPI_OGLEXPERT_DETAIL_BASIC_INFO, NVAPI_OGLEXPERT_OUTPUT_TO_ALL, 0);
+#endif
+
+  m_Camera = new vl::Camera;
+  vl::vec3 eye    = vl::vec3(0,10,35);
+  vl::vec3 center = vl::vec3(0,0,0);
+  vl::vec3 up     = vl::vec3(0,1,0);
+  vl::mat4 view_mat = vl::mat4::getLookAt(eye, center, up);
+  m_Camera->setViewMatrix(view_mat);
+  m_Camera->setObjectName("m_Camera");
+  //m_Camera->viewport()->enableScissorSetup(true);
+  //m_CameraTransform = new vl::Transform;
+  //m_Camera->bindTransform(m_CameraTransform.get());
+
+  vl::vec3 cameraPos = m_Camera->modelingMatrix().getT();
+
+  // m_LightTr = new vl::Transform;
+
+  m_Light = new vl::Light;
+  // m_Light->setAmbient(vl::fvec4(0.1f, 0.1f, 0.1f, 1.0f));
+  // m_Light->setDiffuse(vl::white);
+  // m_Light->bindTransform(m_LightTr.get());
+
+  vl::vec4 lightPos;
+  lightPos[0] = cameraPos[0];
+  lightPos[1] = cameraPos[1];
+  lightPos[2] = cameraPos[2];
+  lightPos[3] = 0;
+  m_Light->setPosition(lightPos);
+
+  m_SceneManager = new vl::SceneManagerActorTree;
+
+  m_BackgroundCamera = new vl::Camera;
+  m_BackgroundCamera->setObjectName("m_BackgroundCamera");
+  // a simple "identity" ortho projection. it maps the background geometry perfectly into the 4 window corners.
+  // actually, clipspace corners. mapping to pixels is done with the viewport, which is dependent on widget sizing.
+  m_BackgroundCamera->setProjectionMatrix(vl::mat4::getOrtho(-1, 1, -1, 1, 1000, -1000), vl::PMT_OrthographicProjection);
+  m_BackgroundCamera->setViewMatrix(vl::mat4::getIdentity());
+
+  m_BackgroundRendering = new vl::Rendering;
+  m_BackgroundRendering->setEnableMask(ENABLEMASK_BACKGROUND);
+  m_BackgroundRendering->setObjectName("m_BackgroundRendering");
+  m_BackgroundRendering->setCamera(m_BackgroundCamera.get());
+  m_BackgroundRendering->sceneManagers()->push_back(m_SceneManager.get());
+  m_BackgroundRendering->setCullingEnabled(false);
+  m_BackgroundRendering->renderer()->setClearFlags(vl::CF_CLEAR_COLOR_DEPTH);   // this overrides the per-viewport setting (always!)
+  m_BackgroundCamera->viewport()->setClearColor(vl::fuchsia);
+  m_BackgroundCamera->viewport()->enableScissorSetup(false);
+
+  // opaque objects dont need any sorting (in theory) but they have to happen before anything else.
+  m_OpaqueObjectsRendering = new vl::Rendering;
+  m_OpaqueObjectsRendering->setObjectName("m_OpaqueObjectsRendering");
+  m_OpaqueObjectsRendering->setCamera(m_Camera.get());
+  m_OpaqueObjectsRendering->sceneManagers()->push_back(m_SceneManager.get());
+  /*
+  m_OpaqueObjectsRendering->setEnableMask(ENABLEMASK_OPAQUE | ENABLEMASK_TRANSLUCENT | ENABLEMASK_SORTEDTRANSLUCENT);
+  // we sort them anyway, front-to-back so that early-fragment rejection can work its magic.
+  m_OpaqueObjectsRendering->setRenderQueueSorter(new vl::RenderQueueSorterAggressive);
+  // dont trash earlier stages.
+  m_OpaqueObjectsRendering->renderer()->setClearFlags(vl::CF_CLEAR_DEPTH);
+  */
+
+  m_OpaqueObjectsRendering->setRenderQueueSorter( NULL );
+  m_OpaqueObjectsRendering->setCullingEnabled( false );
+
+  /* Use Vivid Renderer */
+  m_Vivid = new vl::VividRenderer( NULL );
+  m_Vivid->setFramebuffer( vl::OpenGLContext::framebuffer() );
+  m_OpaqueObjectsRendering->setRenderer( m_Vivid.get() );
+
+  // FIXME: allow switching between rendering modes
+  // m_Vivid->setRenderingMode( vl::VividRenderer::FastRender );
+
+  // Interface VL with Qt's resource system to load GLSL shaders.
+  vl::defFileSystem()->directories().clear();
+  vl::defFileSystem()->directories().push_back( new vl::QtDirectory( ":/VL/" ) );
+
+  // volume rendering is a separate stage, after opaque.
+  // it needs access to the depth-buffer of the opaque geometry so that raycast can clip properly.
+  m_VolumeRendering = new vl::Rendering;
+  m_VolumeRendering->setEnableMask(ENABLEMASK_VOLUME);
+  m_VolumeRendering->setObjectName("m_VolumeRendering");
+  m_VolumeRendering->setCamera(m_Camera.get());
+  m_VolumeRendering->sceneManagers()->push_back(m_SceneManager.get());
+  m_VolumeRendering->setCullingEnabled(true);
+  m_VolumeRendering->renderer()->setClearFlags(vl::CF_DO_NOT_CLEAR);
+  // FIXME: only single volume supported for now, so no queue sorting.
+
+  m_RenderingTree = new vl::RenderingTree;
+  m_RenderingTree->setObjectName("m_RenderingTree");
+  // m_RenderingTree->subRenderings()->push_back(m_BackgroundRendering.get());
+  m_RenderingTree->subRenderings()->push_back(m_OpaqueObjectsRendering.get());
+  // m_RenderingTree->subRenderings()->push_back(m_VolumeRendering.get());
+
+  // once rendering to fbo has finished, blit it to the screen's backbuffer.
+  // a final swapbuffers in renderScene() and/or paintGL() will show it on screen.
+  m_FinalBlit = new vl::BlitFramebuffer;
+  m_FinalBlit->setObjectName("m_FinalBlit");
+  m_FinalBlit->setLinearFilteringEnabled(false);
+  m_FinalBlit->setBufferMask(vl::BB_COLOR_BUFFER_BIT | vl::BB_DEPTH_BUFFER_BIT);
+  m_FinalBlit->setDrawFramebuffer(vl::OpenGLContext::framebuffer());
+  // m_RenderingTree->onFinishedCallbacks()->push_back(m_FinalBlit.get());
+
+  // updating the size of our fbo is a bit of a pain.
+  // CreateAndUpdateFBOSizes(QGLWidget::width(), QGLWidget::height());
+
+  // moves the light with the main camera.
+  // FIXME: attaching this to the rendering looks wrong
+  // m_OpaqueObjectsRendering->transform()->addChild(m_LightTr.get());
+
+  // trackball is active by default because we do not yet have any camera-tracking data.
+  EnableTrackballManipulator(true);
+
+  m_ThresholdVal = new vl::Uniform("val_threshold");
+  m_ThresholdVal->setUniformF(0.5f);
+
+  m_GenericGLSLShader = new vl::GLSLProgram;
+  m_GenericGLSLShader->attachShader(new vl::GLSLVertexShader(LoadGLSLSourceFromResources("generic.vs")));
+  m_GenericGLSLShader->attachShader(new vl::GLSLFragmentShader(LoadGLSLSourceFromResources("generic.fs")));
+  bool linkvalid = m_GenericGLSLShader->linkProgram(true);
+  if (!linkvalid)
+  {
+    MITK_ERROR << "Shader didnt link: \n" << m_GenericGLSLShader->infoLog().toStdString();
+  }
+  bool shadervalid = m_GenericGLSLShader->validateProgram();
+  if (!shadervalid)
+  {
+    MITK_ERROR << "Shader didnt validate: \n" << m_GenericGLSLShader->infoLog().toStdString();
+  }
+
+  m_DefaultTextureParams = new vl::TexParameter;
+  m_DefaultTextureParams->setMinFilter(vl::TPF_LINEAR);
+  m_DefaultTextureParams->setMagFilter(vl::TPF_LINEAR);
+  m_DefaultTextureParams->setWrapS(vl::TPW_CLAMP_TO_BORDER);
+  m_DefaultTextureParams->setWrapT(vl::TPW_CLAMP_TO_BORDER);
+  m_DefaultTextureParams->setWrapR(vl::TPW_CLAMP_TO_BORDER);
+  m_DefaultTextureParams->setBorderColor(vl::fvec4(0, 0, 0, 0));
+
+  unsigned int      defaultTextureValue = 0x00000000;
+  vl::ref<vl::Image>   tempImg = new vl::Image(1, 1, 0, 1, vl::IF_RGBA, vl::IT_UNSIGNED_BYTE);
+  tempImg->allocate();
+  *((unsigned int*) tempImg->pixels()) = defaultTextureValue;
+  m_DefaultTexture = new vl::Texture(1, 1, vl::TF_RGBA, false);
+  m_DefaultTexture->setMipLevel(0, tempImg.get(), false);
+
+
+  vl::OpenGLContext::dispatchInitEvent();
+
+#if 0
+  // debugging
+  mitk::DataNode::Pointer   n = mitk::DataNode::New();
+  mitk::PCLData::Pointer    p = niftk::PCLData::New();
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr  c(new pcl::PointCloud<pcl::PointXYZRGB>);
+  for (int i = 0; i < 100; ++i)
+  {
+    pcl::PointXYZRGB  q(std::rand() % 255, std::rand() % 255, std::rand() % 255);
+    q.x = std::rand() % 255;
+    q.y = std::rand() % 255;
+    q.z = std::rand() % 255;
+    c->push_back(q);
+  }
+  p->SetCloud(c);
+  n->SetData(p);
+
+  m_DataStorage->Add(n);
+#endif
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::resizeGL(int width, int height)
+{
+  // sanity check: context is initialised by Qt
+  assert( QGLContext::currentContext() == QGLWidget::context() );
+
+
+  // dont do anything if window is zero size.
+  // it's an opengl error to have a viewport like that!
+  if ((width <= 0) || (height <= 0))
+    return;
+
+  // no idea if this is necessary...
+  framebuffer()->setWidth(width);
+  framebuffer()->setHeight(height);
+  m_OpaqueObjectsRendering->renderer()->framebuffer()->setWidth(width);
+  m_OpaqueObjectsRendering->renderer()->framebuffer()->setHeight(height);
+  /*
+  m_VolumeRendering->renderer()->framebuffer()->setWidth(width);
+  m_VolumeRendering->renderer()->framebuffer()->setHeight(height);
+
+  CreateAndUpdateFBOSizes(width, height);
+
+  m_FinalBlit->setSrcRect(0, 0, width, height);
+  m_FinalBlit->setDstRect(0, 0, width, height);
+  */
+
+  UpdateViewportAndCameraAfterResize();
+
+  vl::OpenGLContext::dispatchResizeEvent(width, height);
+}
+
+//-----------------------------------------------------------------------------
+
+vl::FramebufferObject* VLQtWidget::GetFBO()
+{
+  // createAndUpdateFBOSizes() where we always stuff a proper fbo into the blit.
+  return dynamic_cast<vl::FramebufferObject*>(m_FinalBlit->readFramebuffer());
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::CreateAndUpdateFBOSizes(int width, int height)
+{
+  makeCurrent();
+
+  // sanitise dimensions. depending on how windows are resized we can get zero here.
+  // but that breaks on the ogl side.
+  width  = std::max(1, width);
+  height = std::max(1, height);
+
+  vl::ref<vl::FramebufferObject> opaqueFBO = vl::OpenGLContext::createFramebufferObject(width, height);
+  opaqueFBO->setObjectName("opaqueFBO");
+  opaqueFBO->addDepthAttachment(new vl::FBODepthBufferAttachment(vl::DBF_DEPTH_COMPONENT24));
+  opaqueFBO->addColorAttachment(vl::AP_COLOR_ATTACHMENT0, new vl::FBOColorBufferAttachment(vl::CBF_RGBA));   // this is a renderbuffer
+  opaqueFBO->setDrawBuffer(vl::RDB_COLOR_ATTACHMENT0);
+
+  m_BackgroundRendering->renderer()->setFramebuffer(opaqueFBO.get());
+  m_OpaqueObjectsRendering->renderer()->setFramebuffer(opaqueFBO.get());
+  m_VolumeRendering->renderer()->setFramebuffer(opaqueFBO.get());
+
+  m_FinalBlit->setReadFramebuffer(opaqueFBO.get());
+  m_FinalBlit->setReadBuffer(vl::RDB_COLOR_ATTACHMENT0);
+
+#ifdef _USE_CUDA
+  if (m_CUDAInteropPimpl)
+  {
+    delete m_CUDAInteropPimpl->m_FBOAdaptor;
+    m_CUDAInteropPimpl->m_FBOAdaptor = new VLFramebufferAdaptor(opaqueFBO.get());
+  }
+#endif
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::UpdateViewportAndCameraAfterResize()
+{
+  // some sane defaults
+  m_Camera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
+  m_BackgroundCamera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
+
+  if (m_BackgroundNode.IsNotNull())
+  {
+    std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator ni = m_NodeToActorMap.find(m_BackgroundNode);
+    if (ni == m_NodeToActorMap.end())
+    {
+      // actor not ready yet, try again later.
+      // this is getting messy... but stuffing our widget here into an editor causes various methods
+      // to be called at the wrong time.
+      QMetaObject::invokeMethod(this, "UpdateViewportAndCameraAfterResize", Qt::QueuedConnection);
+    }
+    else
+    {
+      vl::ref<vl::Actor> backgroundactor = ni->second;
+
+      // this is based on my old araknes video-ar app.
+      // FIXME: aspect ratio?
+      float   width_scale  = (float) QWidget::width()  / (float) m_BackgroundWidth;
+      float   height_scale = (float) QWidget::height() / (float) m_BackgroundHeight;
+      int     vpw = QWidget::width();
+      int     vph = QWidget::height();
+      if (width_scale < height_scale)
+        vph = (int) ((float) m_BackgroundHeight * width_scale);
+      else
+        vpw = (int) ((float) m_BackgroundWidth * height_scale);
+
+      int   vpx = QWidget::width()  / 2 - vpw / 2;
+      int   vpy = QWidget::height() / 2 - vph / 2;
+
+      m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
+      // the main-scene-camera should conform to this viewport too!
+      // otherwise geometry would never line up with the background (for overlays, etc).
+      m_Camera->viewport()->set(vpx, vpy, vpw, vph);
+    }
+  }
+  // this default perspective depends on the viewport!
+  m_Camera->setProjectionPerspective();
+
+  UpdateCameraParameters();
+}
+
+
+//-----------------------------------------------------------------------------
+void VLQtWidget::paintGL()
+{
+  // sanity check: context is initialised by Qt
+  assert( QGLContext::currentContext() == QGLWidget::context() );
+
+  RenderScene();
+
+  vl::OpenGLContext::dispatchRunEvent();
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::RenderScene()
+{
+  makeCurrent();
+
+  // update vl-cache for nodes that have been modified since the last frame.
+  for (std::set<mitk::DataNode::ConstPointer>::const_iterator i = m_NodesQueuedForUpdate.begin(); i != m_NodesQueuedForUpdate.end(); ++i)
+  {
+    UpdateDataNode(*i);
+  }
+  m_NodesQueuedForUpdate.clear();
+
+  // UpdateTranslucentTriangles() is clever enough to do work only if necessary.
+  // UpdateTranslucentTriangles();
+
+
+  // update scene graph.
+  vl::mat4 cameraMatrix = m_Camera->modelingMatrix();
+  // FIXME: light is lagging behind one frame
+  // m_LightTr->setLocalMatrix(cameraMatrix);
+
+
+  // trigger execution of the renderer(s).
+  vl::real now_time = vl::Time::currentTime();
+
+  // simple fps stats
+  {
+    static int    counter = 0;
+    ++counter;
+
+    if ((counter % 100) == 0)
+    {
+      static vl::real prev = 0;
+
+      std::cerr << "frame time: " << ((now_time - prev) / 10) << std::endl;
+      prev = m_RenderingTree->frameClock();
+    }
+  }
+  m_RenderingTree->setFrameClock(now_time);
+  m_RenderingTree->render();
+
+  if (vl::OpenGLContext::hasDoubleBuffer())
+    swapBuffers();
+
+  VL_CHECK_OGL();
+}
+
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::ClearScene()
+{
+  makeCurrent();
+
+  if (m_SceneManager)
+  {
+    if (m_SceneManager->tree())
+      m_SceneManager->tree()->actors()->clear();
+  }
+
+  //m_TranslucentActors.clear();
+  //m_TranslucentSurface = 0;
+  //m_TranslucentSurfaceActor = 0;
+
+  m_BackgroundNode = 0;
+  m_CameraNode = 0;
+
+  m_NodeToActorMap.clear();
+  m_ActorToRenderableMap.clear();
+  m_NodesQueuedForUpdate.clear();
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::UpdateThresholdVal(int isoVal)
+{
+  makeCurrent();
+
+  float val_threshold = 0.0f;
+  m_ThresholdVal->getUniform(&val_threshold);
+
+  val_threshold = isoVal / 10000.0f;
+  val_threshold = vl::clamp(val_threshold, 0.0f, 1.0f);
+
+  m_ThresholdVal->setUniformF(val_threshold);
+}
+
+//-----------------------------------------------------------------------------
+
+bool VLQtWidget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
+{
+  m_CameraNode = node;
+
+  if (m_CameraNode.IsNotNull())
+  {
+    EnableTrackballManipulator(false);
+    UpdateCameraParameters();
+  }
+  else
+    EnableTrackballManipulator(true);
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+
+vl::mat4 VLQtWidget::GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data)
+{
+  vl::mat4  mat;
+  // intentionally not setIdentity()
+  mat.setNull();
+
+  if (data.IsNotNull())
+  {
+    mitk::BaseGeometry::Pointer   geom = data->GetGeometry();
+    if (geom.IsNotNull())
+    {
+      if (geom->GetVtkTransform() != 0)
+      {
+        vtkSmartPointer<vtkMatrix4x4> vtkmat = vtkSmartPointer<vtkMatrix4x4>::New();
+        geom->GetVtkTransform()->GetMatrix(vtkmat);
+        if (vtkmat.GetPointer() != 0)
+        {
+          for (int i = 0; i < 4; i++)
+          {
+            for (int j = 0; j < 4; j++)
+            {
+              double val = vtkmat->GetElement(i, j);
+              mat.e(i, j) = val;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return mat;
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::UpdateTransformFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data)
+{
+  vl::mat4  mat = GetVLMatrixFromData(data);
+
+  if (!mat.isNull())
+  {
+    txf->setLocalMatrix(mat);
+    txf->computeWorldMatrix();
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node)
+{
+  if (node.IsNotNull())
+  {
+    vl::ref<VLUserData>       userdata  = GetUserData(actor);
+    mitk::BaseData::Pointer   data      = node->GetData();
+    if (data.IsNotNull())
+    {
+      mitk::BaseGeometry::Pointer   geom = data->GetGeometry();
+      if (geom.IsNotNull())
+      {
+        if (geom->GetMTime() > userdata->m_TransformLastModified)
+        {
+          UpdateTransformFromData(actor->transform(), data.GetPointer());
+          userdata->m_TransformLastModified = geom->GetMTime();
+        }
+      }
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+vl::ref<VLUserData> VLQtWidget::GetUserData(vl::ref<vl::Actor> actor)
+{
+  vl::ref<VLUserData>   userdata = actor->userData()->as<VLUserData>();
+  if (userdata.get() == 0)
+  {
+    userdata = new VLUserData;
+    actor->setUserData(userdata.get());
+  }
+
+  return userdata;
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::UpdateTransformFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node)
+{
+  if (node.IsNotNull())
+  {
+    UpdateTransformFromData(txf, node->GetData());
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::UpdateCameraParameters()
+{
+  // calibration parameters come from the background node.
+  // so no background, no camera parameters.
+  if (m_BackgroundNode.IsNotNull())
+  {
+#ifdef BUILD_IGI
+    mitk::BaseProperty::Pointer       cambp = m_BackgroundNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+    if (cambp.IsNotNull())
+    {
+      mitk::CameraIntrinsicsProperty::Pointer cam = dynamic_cast<mitk::CameraIntrinsicsProperty*>(cambp.GetPointer());
+      if (cam.IsNotNull())
+      {
+        mitk::CameraIntrinsics::Pointer   nodeIntrinsic = cam->GetValue();
+
+        if (nodeIntrinsic.IsNotNull())
+        {
+          // based on niftkCore/Rendering/vtkOpenGLMatrixDrivenCamera
+          float   znear = 1;
+          float   zfar  = 10000;
+          float   pixelaspectratio = 1;   // FIXME: depends on background image
+
+          vl::mat4  proj;
+          proj.setNull();
+          proj.e(0, 0) =  2 * nodeIntrinsic->GetFocalLengthX() / (float) m_BackgroundWidth;
+          //proj.e(0, 1) = -2 * 0 / m_ImageWidthInPixels;
+          proj.e(0, 2) = ((float) m_BackgroundWidth - 2 * nodeIntrinsic->GetPrincipalPointX()) / (float) m_BackgroundWidth;
+          proj.e(1, 1) = 2 * (nodeIntrinsic->GetFocalLengthY() / pixelaspectratio) / ((float) m_BackgroundHeight / pixelaspectratio);
+          proj.e(1, 2) = (-((float) m_BackgroundHeight / pixelaspectratio) + 2 * (nodeIntrinsic->GetPrincipalPointY() / pixelaspectratio)) / ((float) m_BackgroundHeight / pixelaspectratio);
+          proj.e(2, 2) = (-zfar - znear) / (zfar - znear);
+          proj.e(2, 3) = -2 * zfar * znear / (zfar - znear);
+          proj.e(3, 2) = -1;
+
+          m_Camera->setProjectionMatrix(proj.transpose(), vl::PMT_UserProjection);
+        }
+      }
+    }
+#endif
+  }
+
+  if (m_CameraNode.IsNotNull())
+  {
+    vl::mat4  mat = GetVLMatrixFromData(m_CameraNode->GetData());
+    if (!mat.isNull())
+      // beware: there is also a view-matrix! the inverse of modelling-matrix.
+      m_Camera->setModelingMatrix(mat);
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
+{
+  makeCurrent();
+
+  // nasty
+  mitk::Image::Pointer imgp(const_cast<mitk::Image*>(img));
+  vl::ref<vl::Actor> actor = Add2DImageActor(imgp);
+
+
+  // essentially copied from vl::makeGrid()
+  vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
+
+  vl::ref<vl::ArrayFloat3> vert3 = new vl::ArrayFloat3;
+  vert3->resize(4);
+  vlquad->setVertexArray(vert3.get());
+
+  vl::ref<vl::ArrayFloat2> text2 = new vl::ArrayFloat2;
+  text2->resize(4);
+  vlquad->setTexCoordArray(0, text2.get());
+
+  //  0---3
+  //  |   |
+  //  1---2
+  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
+  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
+  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
+  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
+
+
+  vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
+  polys->indexBuffer()->resize(4);
+  polys->indexBuffer()->at(0) = 0;
+  polys->indexBuffer()->at(1) = 1;
+  polys->indexBuffer()->at(2) = 2;
+  polys->indexBuffer()->at(3) = 3;
+  vlquad->drawCalls().push_back(polys.get());
+
+  // replace original quad with ours.
+  actor->setLod(0, vlquad.get());
+  actor->effect()->shader()->disable(vl::EN_LIGHTING);
+
+  std::string   objName = actor->objectName() + "_background";
+  actor->setObjectName(objName.c_str());
+
+  m_NodeToActorMap[node] = actor;
+}
+
+//-----------------------------------------------------------------------------
+
+bool VLQtWidget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
+{
+  makeCurrent();
+
+  // clear up after previous background node.
+  if (m_BackgroundNode.IsNotNull())
+  {
+    const mitk::DataNode::ConstPointer    oldbackgroundnode = m_BackgroundNode;
+    m_BackgroundNode = 0;
+    RemoveDataNode(oldbackgroundnode);
+    // add back as normal node.
+    AddDataNode(oldbackgroundnode);
+  }
+
+  // default "no background" value.
+  m_BackgroundWidth  = 0;
+  m_BackgroundHeight = 0;
+
+  bool    result = false;
+  mitk::BaseData::Pointer   basedata;
+  if (node.IsNotNull())
+    basedata = node->GetData();
+  if (basedata.IsNotNull())
+  {
+    // clear up whatever we had cached for the new background node.
+    // it's very likely that it was a normal node before.
+    RemoveDataNode(node);
+
+    mitk::Image::Pointer imgdata = dynamic_cast<mitk::Image*>(basedata.GetPointer());
+    if (imgdata.IsNotNull())
+    {
+#ifdef _USE_CUDA
+      niftk::CUDAImageProperty::Pointer    cudaimgprop = dynamic_cast<niftk::CUDAImageProperty*>(imgdata->GetProperty("CUDAImageProperty").GetPointer());
+      if (cudaimgprop.IsNotNull())
+      {
+        niftk::LightweightCUDAImage    lwci = cudaimgprop->Get();
+
+        // does the size of cuda-image have to match the mitk-image where it's attached to?
+        // i think it does: it is supposed to be the same data living in cuda.
+        assert(lwci.GetWidth()  == imgdata->GetDimension(0));
+        assert(lwci.GetHeight() == imgdata->GetDimension(1));
+
+        PrepareBackgroundActor(&lwci, imgdata->GetGeometry(), node);
+        result = true;
+      }
+      else
+#endif
+      {
+        PrepareBackgroundActor(imgdata.GetPointer(), imgdata->GetGeometry(), node);
+        result = true;
+      }
+
+      m_BackgroundWidth  = imgdata->GetDimension(0);
+      m_BackgroundHeight = imgdata->GetDimension(1);
+    }
+    else
+    {
+#ifdef _USE_CUDA
+      niftk::CUDAImage::Pointer    cudaimgdata = dynamic_cast<niftk::CUDAImage*>(basedata.GetPointer());
+      if (cudaimgdata.IsNotNull())
+      {
+        niftk::LightweightCUDAImage    lwci = cudaimgdata->GetLightweightCUDAImage();
+        PrepareBackgroundActor(&lwci, cudaimgdata->GetGeometry(), node);
+        result = true;
+
+        m_BackgroundWidth  = lwci.GetWidth();
+        m_BackgroundHeight = lwci.GetHeight();
+      }
+      // no else here
+#endif
+    }
+
+    // UpdateDataNode() depends on m_BackgroundNode.
+    m_BackgroundNode = node;
+    UpdateDataNode(node);
+  }
+
+
+  UpdateViewportAndCameraAfterResize();
+
+  // now that the camera may have changed, fit-view-to-scene again.
+  if (m_CameraNode.IsNull())
+  {
+    if (m_Trackball.get() != 0)
+      m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
+  }
+
+
+  return result;
+}
+
+//-----------------------------------------------------------------------------
+
+vl::ref<vl::Actor> VLQtWidget::FindActorForNode(const mitk::DataNode::ConstPointer& node)
+{
+  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
+  if (it != m_NodeToActorMap.end())
+  {
+    return it->second;
+  }
+
+  return vl::ref<vl::Actor>();
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node)
+{
+  makeCurrent();
+
+  if (node.IsNotNull())
+  {
+    mitk::Image::Pointer    img = dynamic_cast<mitk::Image*>(node->GetData());
+    if (img.IsNotNull())
+    {
+      vl::ref<vl::Actor>  vlactor = FindActorForNode(node);
+      if (vlactor.get() != 0)
+      {
+        assert(vlactor->effect());
+        assert(vlactor->effect()->shader());
+
+        vl::ref<VLUserData>   userdata = GetUserData(vlactor);
+        if (img->GetVtkImageData()->GetMTime() > userdata->m_ImageVtkDataLastModified)
+        {
+          vl::ref<vl::Texture> tex = vlactor->effect()->shader()->gocTextureSampler(0)->texture();
+          if (tex.get() != 0)
+          {
+            unsigned int*       dims    = img->GetDimensions();    // we do not own dims!
+            mitk::PixelType     pixType = img->GetPixelType();
+            vl::EImageType      type    = MapITKPixelTypeToVL(pixType.GetComponentType());
+            vl::EImageFormat    format  = MapComponentsToVLColourFormat(pixType.GetNumberOfComponents());
+
+            vl::ref<vl::Image>    vlimg = new vl::Image(dims[0], dims[1], 0, 1, format, type);
+            // sanity check
+            unsigned int  size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
+            assert(vlimg->requiredMemory() == size);
+
+            try
+            {
+              mitk::ImageReadAccessor   readAccess(img);
+              const void*               cPointer = readAccess.GetData();
+              std::memcpy(vlimg->pixels(), cPointer, vlimg->requiredMemory());
+            }
+            catch (...)
+            {
+              // FIXME: error handling?
+              MITK_ERROR << "Did not get pixel read access to 2D image.";
+            }
+
+            tex->setMipLevel(0, vlimg.get(), false);
+
+            userdata->m_ImageVtkDataLastModified = img->GetVtkImageData()->GetMTime();
+          }
+        }
+      }
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+vl::ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord)
+{
+  makeCurrent();
+
+  vl::ref<vl::Transform> tr     = new vl::Transform;
+  UpdateTransformFromData(tr, coord.GetPointer());
+
+  vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
+  vl::ref<vl::ArrayFloat4>      vlColors = new vl::ArrayFloat4;
+  vlVerts->resize(4);
+  vlColors->resize(4);
+
+  // x y z r g b a
+  vlVerts->at(0).x() =  0;   vlVerts->at(0).y() =  0;   vlVerts->at(0).z() =  0;   vlColors->at(0).r() = 0;  vlColors->at(0).g() = 0;  vlColors->at(0).b() = 0;  vlColors->at(0).a() = 1;
+  vlVerts->at(1).x() = 10;   vlVerts->at(1).y() =  0;   vlVerts->at(1).z() =  0;   vlColors->at(1).r() = 1;  vlColors->at(1).g() = 0;  vlColors->at(1).b() = 0;  vlColors->at(1).a() = 1;
+  vlVerts->at(2).x() =  0;   vlVerts->at(2).y() = 10;   vlVerts->at(2).z() =  0;   vlColors->at(2).r() = 0;  vlColors->at(2).g() = 1;  vlColors->at(2).b() = 0;  vlColors->at(2).a() = 1;
+  vlVerts->at(3).x() =  0;   vlVerts->at(3).y() =  0;   vlVerts->at(3).z() = 10;   vlColors->at(3).r() = 0;  vlColors->at(3).g() = 0;  vlColors->at(3).b() = 1;  vlColors->at(2).a() = 1;
+
+
+  vl::ref<vl::DrawElementsUInt>   lines = new vl::DrawElementsUInt(vl::PT_LINES);
+  lines->indexBuffer()->resize(3 * 2);
+  lines->indexBuffer()->at(0) = 0;  lines->indexBuffer()->at(1) = 1;      // x
+  lines->indexBuffer()->at(2) = 0;  lines->indexBuffer()->at(3) = 2;      // y
+  lines->indexBuffer()->at(4) = 0;  lines->indexBuffer()->at(5) = 3;      // z
+
+  vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
+  vlGeom->drawCalls().push_back(lines.get());
+  vlGeom->setVertexArray(vlVerts.get());
+  vlGeom->setColorArray(vlColors.get());
+
+  vl::ref<vl::Effect>   fx = new vl::Effect;
+  fx->shader()->disable(vl::EN_LIGHTING);
+  fx->shader()->setRenderState(new vl::ShadeModel(vl::SM_FLAT));    // important! otherwise colour is wrong.
+  fx->shader()->setRenderState(new vl::LineWidth(5));               // arbitrary
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+
+
+  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
+  m_ActorToRenderableMap[actor] = vlGeom;
+
+  return actor;
+}
+
+//-----------------------------------------------------------------------------
+
+vl::ref<vl::Actor> VLQtWidget::AddPointCloudActor(niftk::PCLData* pcl)
+{
+  makeCurrent();
+
+#ifdef _USE_PCL
+  pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr   cloud = pcl->GetCloud();
+
+  vl::ref<vl::Transform> tr     = new vl::Transform;
+  UpdateTransformFromData(tr, pcl);
+
+  vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
+  vl::ref<vl::ArrayFloat4>      vlColors = new vl::ArrayFloat4;
+  vlVerts->resize(cloud->size());
+  vlColors->resize(cloud->size());
+  int   j = 0;
+  for (pcl::PointCloud<pcl::PointXYZRGB>::const_iterator i = cloud->begin(); i != cloud->end(); ++i, ++j)
+  {
+    const pcl::PointXYZRGB& p = *i;
+    vlVerts->at(j).x() = p.x;
+    vlVerts->at(j).y() = p.y;
+    vlVerts->at(j).z() = p.z;
+    // would be nice if we could interleave the vl arrays...
+    vlColors->at(j).r() = (float)p.r / 255.0f;
+    vlColors->at(j).g() = (float)p.g / 255.0f;
+    vlColors->at(j).b() = (float)p.b / 255.0f;
+    vlColors->at(j).a() = 1;
+  }
+
+  vl::ref<vl::DrawArrays>       vlPoints = new vl::DrawArrays(vl::PT_POINTS, 0, vlVerts->size());
+  vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
+  vlGeom->drawCalls().push_back(vlPoints.get());
+  vlGeom->setVertexArray(vlVerts.get());
+  vlGeom->setColorArray(vlColors.get());
+
+  vl::ref<vl::Effect>   fx = new vl::Effect;
+  fx->shader()->disable(vl::EN_LIGHTING);
+  // FIXME: currently nothing assigns a pointsize property for PCLData nodes. so set an arbitrary fixed size.
+  fx->shader()->setRenderState(new vl::PointSize(5));
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+
+
+  vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
+  m_ActorToRenderableMap[psActor] = vlGeom;
+
+  return psActor;
+#else
+  throw std::runtime_error("No PCL-support enabled at compile time!");
+#endif
+}
+
+//-----------------------------------------------------------------------------
+
+vl::ref<vl::Actor> VLQtWidget::AddPointsetActor(const mitk::PointSet::Pointer& mitkPS)
+{
+  makeCurrent();
+
+  vl::ref<vl::Transform> tr     = new vl::Transform;
+  UpdateTransformFromData(tr, mitkPS.GetPointer());
+
+  vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
+  vlVerts->resize(mitkPS->GetSize());
+  int   j = 0;
+  for (mitk::PointSet::PointsConstIterator i = mitkPS->Begin(); i != mitkPS->End(); ++i, ++j)
+  {
+    mitk::PointSet::PointType p = i->Value();
+    vlVerts->at(j).x() = p[0];
+    vlVerts->at(j).y() = p[1];
+    vlVerts->at(j).z() = p[2];
+  }
+
+  vl::ref<vl::DrawArrays>       vlPoints = new vl::DrawArrays(vl::PT_POINTS, 0, vlVerts->size());
+  vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
+  vlGeom->drawCalls().push_back(vlPoints.get());
+  vlGeom->setVertexArray(vlVerts.get());
+
+  vl::ref<vl::Effect>   fx = new vl::Effect;
+  fx->shader()->disable(vl::EN_LIGHTING);
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+
+
+  vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
+  m_ActorToRenderableMap[psActor] = vlGeom;
+
+  return psActor;
+}
+
+//-----------------------------------------------------------------------------
+
+vl::ref<vl::Geometry> VLQtWidget::CreateGeometryFor2DImage(int width, int height)
+{
+  vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
+  vl::ref<vl::ArrayFloat3>      vert3 = new vl::ArrayFloat3;
+  vert3->resize(4);
+  vlquad->setVertexArray(vert3.get());
+
+  vl::ref<vl::ArrayFloat2>      text2 = new vl::ArrayFloat2;
+  text2->resize(4);
+  vlquad->setTexCoordArray(0, text2.get());
+
+  //  0---3
+  //  |   |
+  //  1---2
+  vert3->at(0).x() = 0;     vert3->at(0).y() = 0;      vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
+  vert3->at(1).x() = 0;     vert3->at(1).y() = height; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
+  vert3->at(2).x() = width; vert3->at(2).y() = height; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
+  vert3->at(3).x() = width; vert3->at(3).y() = 0;      vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
+
+
+  vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
+  polys->indexBuffer()->resize(4);
+  polys->indexBuffer()->at(0) = 0;
+  polys->indexBuffer()->at(1) = 1;
+  polys->indexBuffer()->at(2) = 2;
+  polys->indexBuffer()->at(3) = 3;
+  vlquad->drawCalls().push_back(polys.get());
+
+  return vlquad;
+}
+
+//-----------------------------------------------------------------------------
+
 vl::String VLQtWidget::LoadGLSLSourceFromResources(const char* filename)
 {
   QString   sourceFilename(filename);
@@ -2646,8 +2293,8 @@ vl::String VLQtWidget::LoadGLSLSourceFromResources(const char* filename)
   }
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::setContinuousUpdate(bool continuous)
 {
   vl::OpenGLContext::setContinuousUpdate(continuous);
@@ -2667,15 +2314,15 @@ void VLQtWidget::setContinuousUpdate(bool continuous)
   }
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::setWindowTitle(const vl::String& title)
 {
   QGLWidget::setWindowTitle( QString::fromStdString(title.toStdString()) );
 }
 
-
 //-----------------------------------------------------------------------------
+
 bool VLQtWidget::setFullscreen(bool fullscreen)
 {
   // fullscreen not allowed (yet)!
@@ -2745,9 +2392,7 @@ vl::ivec2 VLQtWidget::size() const
 //-----------------------------------------------------------------------------
 void VLQtWidget::swapBuffers()
 {
-  // on windows, swapBuffers() does not depend on the opengl rendering context.
-  // instead it is initiated on the device context, which is not implicitly bound to the calling thread.
-  niftk::ScopedOGLContext ctx(context());
+  makeCurrent();
 
   QGLWidget::swapBuffers();
 
@@ -2803,24 +2448,24 @@ void VLQtWidget::swapBuffers()
 #endif
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::makeCurrent()
 {
   QGLWidget::makeCurrent();
   // sanity check
-  assert(QGLContext::currentContext() == QGLWidget::context());
+  assert( QGLContext::currentContext() == QGLWidget::context() );
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::setMousePosition(int x, int y)
 {
   QCursor::setPos(mapToGlobal(QPoint(x,y)));
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::setMouseVisible(bool visible)
 {
   vl::OpenGLContext::setMouseVisible(visible);
@@ -2831,28 +2476,27 @@ void VLQtWidget::setMouseVisible(bool visible)
     QGLWidget::setCursor(Qt::BlankCursor);
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::getFocus()
 {
   QGLWidget::setFocus(Qt::OtherFocusReason);
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::setRefreshRate(int msec)
 {
   m_Refresh = msec;
   m_UpdateTimer.setInterval(m_Refresh);
 }
 
-
 //-----------------------------------------------------------------------------
+
 int VLQtWidget::refreshRate()
 {
   return m_Refresh;
 }
-
 
 #if 0
 //-----------------------------------------------------------------------------
@@ -2888,8 +2532,8 @@ void VLQtWidget::dropEvent(QDropEvent* ev)
 }
 #endif
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::mouseMoveEvent(QMouseEvent* ev)
 {
   if (!vl::OpenGLContext::mIgnoreNextMouseMoveEvent)
@@ -2897,8 +2541,8 @@ void VLQtWidget::mouseMoveEvent(QMouseEvent* ev)
   vl::OpenGLContext::mIgnoreNextMouseMoveEvent = false;
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::mousePressEvent(QMouseEvent* ev)
 {
   vl::EMouseButton bt = vl::NoButton;
@@ -2913,8 +2557,8 @@ void VLQtWidget::mousePressEvent(QMouseEvent* ev)
   vl::OpenGLContext::dispatchMouseDownEvent(bt, ev->x(), ev->y());
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::mouseReleaseEvent(QMouseEvent* ev)
 {
   vl::EMouseButton bt = vl::NoButton;
@@ -2929,15 +2573,15 @@ void VLQtWidget::mouseReleaseEvent(QMouseEvent* ev)
   vl::OpenGLContext::dispatchMouseUpEvent(bt, ev->x(), ev->y());
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::wheelEvent(QWheelEvent* ev)
 {
   vl::OpenGLContext::dispatchMouseWheelEvent(ev->delta() / 120);
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::keyPressEvent(QKeyEvent* ev)
 {
   unsigned short unicode_ch = 0;
@@ -2946,8 +2590,8 @@ void VLQtWidget::keyPressEvent(QKeyEvent* ev)
   vl::OpenGLContext::dispatchKeyPressEvent(unicode_ch, key);
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::keyReleaseEvent(QKeyEvent* ev)
 {
   unsigned short unicode_ch = 0;
@@ -2956,8 +2600,8 @@ void VLQtWidget::keyReleaseEvent(QKeyEvent* ev)
   vl::OpenGLContext::dispatchKeyReleaseEvent(unicode_ch, key);
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLQtWidget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out)
 {
   // translate non unicode characters
@@ -3152,10 +2796,294 @@ void VLQtWidget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, v
 }
 
 //-----------------------------------------------------------------------------
-QGLContext* VLQtWidget::context()
+
+#ifdef _USE_CUDA
+
+void VLQtWidget::FreeCUDAInteropTextures()
 {
-  return const_cast<QGLContext*>(QGLWidget::context());
+  makeCurrent();
+
+  for (std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
+  {
+    if (i->second.m_CUDARes != 0)
+    {
+      cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
+      if (err != cudaSuccess)
+      {
+        MITK_WARN << "Failed to unregister VL texture from CUDA";
+      }
+    }
+
+    i = m_NodeToTextureMap.erase(i);
+  }
+
+  // if no cuda is available then this is most likely a nullptr.
+  // and if not a nullptr then it's only a dummy. so unconditionally delete it.
+  delete m_CUDAInteropPimpl;
+  m_CUDAInteropPimpl = 0;
+
 }
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage, const std::string& nodename)
+{
+  makeCurrent();
+
+  if (enable)
+  {
+    if (datastorage == 0)
+      throw std::runtime_error("Need data storage object");
+
+    delete m_CUDAInteropPimpl;
+    m_CUDAInteropPimpl = new CUDAInterop;
+    m_CUDAInteropPimpl->m_FBOAdaptor = 0;
+    m_CUDAInteropPimpl->m_DataStorage = datastorage;
+    m_CUDAInteropPimpl->m_NodeName = nodename;
+    if (m_CUDAInteropPimpl->m_NodeName.empty())
+    {
+      std::ostringstream    n;
+      n << "0x" << std::hex << (void*) this;
+      m_CUDAInteropPimpl->m_NodeName = n.str();
+    }
+  }
+  else
+  {
+    delete m_CUDAInteropPimpl;
+    m_CUDAInteropPimpl = 0;
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
+{
+  makeCurrent();
+
+  assert(lwci != 0);
+
+  vl::mat4  mat;
+  mat = mat.setIdentity();
+  vl::ref<vl::Transform> tr     = new vl::Transform();
+  tr->setLocalMatrix(mat);
+
+
+  // essentially copied from vl::makeGrid()
+  vl::ref<vl::Geometry>         vlquad = new vl::Geometry;
+
+  vl::ref<vl::ArrayFloat3> vert3 = new vl::ArrayFloat3;
+  vert3->resize(4);
+  vlquad->setVertexArray(vert3.get());
+
+  vl::ref<vl::ArrayFloat2> text2 = new vl::ArrayFloat2;
+  text2->resize(4);
+  vlquad->setTexCoordArray(0, text2.get());
+
+  //  0---3
+  //  |   |
+  //  1---2
+  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
+  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
+  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
+  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
+
+
+  vl::ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
+  polys->indexBuffer()->resize(4);
+  polys->indexBuffer()->at(0) = 0;
+  polys->indexBuffer()->at(1) = 1;
+  polys->indexBuffer()->at(2) = 2;
+  polys->indexBuffer()->at(3) = 3;
+  vlquad->drawCalls().push_back(polys.get());
+
+
+  vl::ref<vl::Effect>    fx = new vl::Effect;
+  fx->shader()->disable(vl::EN_LIGHTING);
+  // UpdateDataNode() takes care of assigning colour etc.
+
+  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
+  m_ActorToRenderableMap[actor] = vlquad;
+
+
+  std::string   objName = actor->objectName() + "_background";
+  actor->setObjectName(objName.c_str());
+
+  m_NodeToActorMap[node] = actor;
+  m_NodeToTextureMap[node] = TextureDataPOD();
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node)
+{
+  makeCurrent();
+
+  niftk::LightweightCUDAImage    lwcImage;
+
+  niftk::CUDAImage::Pointer cudaimg = dynamic_cast<niftk::CUDAImage*>(node->GetData());
+  if (cudaimg.IsNotNull())
+  {
+    lwcImage = cudaimg->GetLightweightCUDAImage();
+  }
+  else
+  {
+    mitk::Image::Pointer    img = dynamic_cast<mitk::Image*>(node->GetData());
+    if (img.IsNotNull())
+    {
+      niftk::CUDAImageProperty::Pointer prop = dynamic_cast<niftk::CUDAImageProperty*>(img->GetProperty("CUDAImageProperty").GetPointer());
+      if (prop.IsNotNull())
+      {
+        lwcImage = prop->Get();
+      }
+    }
+  }
+
+  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
+  if (it == m_NodeToActorMap.end())
+    return;
+  vl::ref<vl::Actor>    vlActor = it->second;
+  if (vlActor.get() == 0)
+    return;
+
+  if (lwcImage.GetId() != 0)
+  {
+    // whatever we had cached from a previous frame.
+    TextureDataPOD          texpod    = m_NodeToTextureMap[node];
+
+    // only need to update the vl texture, if content in our cuda buffer has changed.
+    // and the cuda buffer can change only when we have a different id.
+    if (texpod.m_LastUpdatedID != lwcImage.GetId())
+    {
+      cudaError_t   err = cudaSuccess;
+      bool          neednewvltexture = texpod.m_Texture.get() == 0;
+
+      // check if vl-texture size needs to change
+      if (texpod.m_Texture.get() != 0)
+      {
+        neednewvltexture |= lwcImage.GetWidth()  != texpod.m_Texture->width();
+        neednewvltexture |= lwcImage.GetHeight() != texpod.m_Texture->height();
+      }
+
+      if (neednewvltexture)
+      {
+        if (texpod.m_CUDARes)
+        {
+          err = cudaGraphicsUnregisterResource(texpod.m_CUDARes);
+          texpod.m_CUDARes = 0;
+          if (err != cudaSuccess)
+          {
+            MITK_WARN << "Could not unregister VL texture from CUDA. This will likely leak GPU memory.";
+          }
+        }
+
+        texpod.m_Texture = new vl::Texture(lwcImage.GetWidth(), lwcImage.GetHeight(), vl::TF_RGBA8, false);
+        vlActor->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
+        vlActor->effect()->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
+
+        err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
+        if (err != cudaSuccess)
+        {
+          texpod.m_CUDARes = 0;
+          MITK_WARN << "Registering VL texture into CUDA failed. Will not update (properly).";
+        }
+      }
+
+      if (texpod.m_CUDARes)
+      {
+        assert(vlActor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
+
+        niftk::CUDAManager*  cudamng   = niftk::CUDAManager::GetInstance();
+        cudaStream_t         mystream  = cudamng->GetStream("VLQtWidget vl-texture update");
+        niftk::ReadAccessor  inputRA   = cudamng->RequestReadAccess(lwcImage);
+
+        // make sure producer of the cuda-image finished.
+        err = cudaStreamWaitEvent(mystream, inputRA.m_ReadyEvent, 0);
+        if (err != cudaSuccess)
+        {
+          // flood the log
+          MITK_WARN << "cudaStreamWaitEvent failed with error code " << err;
+        }
+
+        // this also guarantees that ogl will have finished doing its thing before mystream starts copying.
+        err = cudaGraphicsMapResources(1, &texpod.m_CUDARes, mystream);
+        if (err == cudaSuccess)
+        {
+          // normally we would need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
+          // but texture coordinates that we have assigned to the quads rendering the current image will do that for us.
+
+          cudaArray_t   arr = 0;
+          err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
+          if (err == cudaSuccess)
+          {
+            err = cudaMemcpy2DToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, inputRA.m_BytePitch, lwcImage.GetWidth() * 4, lwcImage.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
+            if (err == cudaSuccess)
+            {
+              texpod.m_LastUpdatedID = lwcImage.GetId();
+            }
+          }
+
+          err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
+          if (err != cudaSuccess)
+          {
+            MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
+          }
+        }
+        // make sure Autorelease() and Finalise() are always the last things to do for a stream!
+        // otherwise the streamcallback will block subsequent work.
+        // in this case here, the callback managed by CUDAManager that keeps track of refcounts could stall
+        // the opengl driver if cudaGraphicsUnmapResources() came after Autorelease().
+        cudamng->Autorelease(inputRA, mystream);
+      }
+
+      // update cache, even if something went wrong.
+      m_NodeToTextureMap[node] = texpod;
+
+      // helps with debugging
+      vlActor->effect()->shader()->disable(vl::EN_CULL_FACE);
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+vl::ref<vl::Actor> VLQtWidget::AddCUDAImageActor(const mitk::BaseData* _cudaImg)
+{
+  makeCurrent();
+
+  niftk::LightweightCUDAImage lwci;
+  const niftk::CUDAImage* cudaImg = dynamic_cast<const niftk::CUDAImage*>(_cudaImg);
+  if (cudaImg != 0)
+  {
+    lwci = cudaImg->GetLightweightCUDAImage();
+  }
+  else
+  {
+    niftk::CUDAImageProperty::Pointer prop = dynamic_cast<niftk::CUDAImageProperty*>(_cudaImg->GetProperty("CUDAImageProperty").GetPointer());
+    if (prop.IsNotNull())
+    {
+      lwci = prop->Get();
+    }
+  }
+  assert(lwci.GetId() != 0);
+
+  vl::ref<vl::Transform> tr     = new vl::Transform;
+  UpdateTransformFromData(tr, cudaImg);
+
+  vl::ref<vl::Geometry>         vlquad    = CreateGeometryFor2DImage(lwci.GetWidth(), lwci.GetHeight());
+
+  vl::ref<vl::Effect>    fx = new vl::Effect;
+  fx->shader()->disable(vl::EN_LIGHTING);
+  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+  // UpdateDataNode() takes care of assigning colour etc.
+
+  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
+  m_ActorToRenderableMap[actor] = vlquad;
+
+  return actor;
+
+}
+#endif
 
 ////-----------------------------------------------------------------------------
 //bool VLQtWidget::NodeIsTranslucent(const mitk::DataNode::ConstPointer& node)
@@ -3202,14 +3130,14 @@ QGLContext* VLQtWidget::context()
 //  {
 //    vl::ref<vl::ActorCollection> actors = m_SceneManager->tree()->actors();
 //    int numOfActors = actors->size();
-//  
+//
 //    unsigned int summedNumOfVerts = 0;
 //    for (int i = 0; i < numOfActors; i++)
 //    {
 //      vl::ref<vl::Actor> act = actors->at(i);
 //      std::string objName = act->objectName();
 //      int renderBlock = act->renderBlock();
-//    
+//
 //      size_t found =objName.find("_surface");
 //      if ((found != std::string::npos) && (renderBlock == RENDERBLOCK_TRANSLUCENT))
 //      {
@@ -3291,8 +3219,7 @@ QGLContext* VLQtWidget::context()
 //-----------------------------------------------------------------------------
 //bool VLQtWidget::MergeTranslucentTriangles()
 //{
-//  // sanity check: internal method, context should have been activated by caller.
-//  assert(this->context() == QGLContext::currentContext());
+//  makeCurrent();
 //
 //  vl::ref<vl::ActorCollection> actors = m_SceneManager->tree()->actors();
 //  int numOfActors = actors->size();
@@ -3303,7 +3230,7 @@ QGLContext* VLQtWidget::context()
 //  // hopefully the buffers wrapping vbos will have finished doing stuff.
 //  glFinish();
 //
-//  // Get context 
+//  // Get context
 //  cl_context clContext = m_OclService->GetContext();
 //  cl_command_queue clCmdQue = m_OclService->GetCommandQueue();
 //
@@ -3368,7 +3295,7 @@ QGLContext* VLQtWidget::context()
 //    }
 //  }
 //
-//  // Return if there's nothing to do 
+//  // Return if there's nothing to do
 //  if (translucentSurfaces.size() == 0)
 //  {
 //    // dont call again, there is nothing to merge.
@@ -3390,7 +3317,7 @@ QGLContext* VLQtWidget::context()
 //    // Update triangle counter
 //    unsigned int numOfTriangles = vlTriangles->countTriangles();
 //    m_TotalNumOfTranslucentTriangles += numOfTriangles;
-//    
+//
 //    // Update buffer, get handle and push it to TriangleSorter
 //    vlTriangles->indexBuffer()->updateBufferObject();
 //    GLuint indexBufferHandle = vlTriangles->indexBuffer()->bufferObject()->handle();
@@ -3659,7 +3586,7 @@ QGLContext* VLQtWidget::context()
 //    glFinish();
 //    colorBufferOffset += colorBufSize;
 //    delete colorData;
-// 
+//
 //  }
 //
 ///*
@@ -3677,14 +3604,14 @@ QGLContext* VLQtWidget::context()
 //    float distVal  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[bla]);
 //    //if (distVal >= 1024.0f)
 //    //  distVal = 1023.0f;
-//    
+//
 //    // Color format: AABBGGRR
 //    unsigned char a = 255;
 //    unsigned char b = 0;
 //    unsigned char g = (distVal-minDist)*step;
 //    unsigned char r = 255 - (distVal-minDist)*step;
 //    unsigned int colorVal = r | (g << 8) | (b << 16) | (a << 24);
-//  
+//
 ////    if (bla < 1000)
 ////      std::cout <<"Index: " <<bla <<" dist: " <<std::setprecision(10) <<distVal <<" color: " <<(int)r <<" " <<(int)g <<" " <<(int)b <<"\n";
 //
@@ -3750,7 +3677,7 @@ QGLContext* VLQtWidget::context()
 //    CHECK_OCL_ERR(clStatus);
 //    clVertexBufs.at(ii) = 0;
 //  }
-//  
+//
 //  for (size_t ii = 0; ii < clNormalBufs.size(); ii++)
 //  {
 //    clStatus = clReleaseMemObject(clNormalBufs.at(ii));
@@ -3772,7 +3699,7 @@ QGLContext* VLQtWidget::context()
 //-----------------------------------------------------------------------------
 //bool VLQtWidget::SortTranslucentTriangles()
 //{
-//  // Get context 
+//  // Get context
 //  cl_context clContext = m_OclService->GetContext();
 //  cl_command_queue clCmdQue = m_OclService->GetCommandQueue();
 //
@@ -3804,7 +3731,7 @@ QGLContext* VLQtWidget::context()
 //  vlColors  = dynamic_cast<vl::ArrayUByte4 *>(m_TranslucentSurface->colorArray());
 //
 //  cl_mem mergedDistBufOutput = clCreateBuffer(clContext, CL_MEM_READ_WRITE, m_TotalNumOfTranslucentTriangles*sizeof(cl_uint), 0, 0);
-//  
+//
 //  // Here we retrieve the merged and sorted distance buffer
 //  m_OclTriangleSorter->GetTriangleDistOutput(mergedDistBufOutput, m_TotalNumOfTranslucentTriangles);
 //
@@ -3852,14 +3779,14 @@ QGLContext* VLQtWidget::context()
 //    float distVal  = mitk::OclTriangleSorter::IFloatFlip(mergedDistances[bla]);
 //    //if (distVal >= 1024.0f)
 //    //  distVal = 1023.0f;
-//    
+//
 //    // Color format: AABBGGRR
 //    unsigned char a = 255;
 //    unsigned char b = 0;
 //    unsigned char g = (distVal-minDist)*step;
 //    unsigned char r = 255 - (distVal-minDist)*step;
 //    unsigned int colorVal = r | (g << 8) | (b << 16) | (a << 24);
-//  
+//
 ////    if (bla < 1000)
 ////      std::cout <<"Index: " <<bla <<" dist: " <<std::setprecision(10) <<distVal <<" color: " <<(int)r <<" " <<(int)g <<" " <<(int)b <<"\n";
 //
