@@ -101,6 +101,33 @@ public:
   void setRefreshRate(int msec);
   int refreshRate();
 
+  // --------------------------------------------------------------------------
+
+  void SetOclResourceService(OclResourceService* oclserv);
+  void SetDataStorage(const mitk::DataStorage::Pointer& dataStorage);
+
+  void AddDataNode(const mitk::DataNode::ConstPointer& node);
+  void RemoveDataNode(const mitk::DataNode::ConstPointer& node);
+  void UpdateDataNode(const mitk::DataNode::ConstPointer& node);
+  Q_SLOT void AddAllNodesFromDataStorage();
+
+  void UpdateThresholdVal(int isoVal);
+
+  // ignore alpha for now.
+  Q_SLOT void SetBackgroundColour(float r, float g, float b);
+
+  /**
+   * node can have as data object:
+   * - mitk::Image
+   * - CUDAImage
+   * - mitk::Image with CUDAImageProperty attached.
+   * And for now the image has to be 2D.
+   * Anything else will just be ignored.
+   */
+  bool SetBackgroundNode(const mitk::DataNode::ConstPointer& node);
+
+  bool SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node);
+
   // from vl::OpenGLContext
 public:
 
@@ -144,36 +171,9 @@ private:
 
   // QGLContext* context();    // non-const, hiding the one in QGLWidget.
 
-  // --------------------------------------------------------------------------
-
-  void SetOclResourceService(OclResourceService* oclserv);
-  void SetDataStorage(const mitk::DataStorage::Pointer& dataStorage);
-
-  void AddDataNode(const mitk::DataNode::ConstPointer& node);
-  void RemoveDataNode(const mitk::DataNode::ConstPointer& node);
-  void UpdateDataNode(const mitk::DataNode::ConstPointer& node);
-  Q_SLOT void AddAllNodesFromDataStorage();
-
   void QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node);
 
   void ClearScene();
-
-  void UpdateThresholdVal(int isoVal);
-
-  // ignore alpha for now.
-  Q_SLOT void SetBackgroundColour(float r, float g, float b);
-
-  /**
-   * node can have as data object:
-   * - mitk::Image
-   * - CUDAImage
-   * - mitk::Image with CUDAImageProperty attached.
-   * And for now the image has to be 2D.
-   * Anything else will just be ignored.
-   */
-  bool SetBackgroundNode(const mitk::DataNode::ConstPointer& node);
-
-  bool SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node);
 
   /**
    * Returns the FBO that contains the current renderer output, i.e. the stuff that goes on screen.
