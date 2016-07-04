@@ -246,8 +246,6 @@ void VLQtWidget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
 {
   makeCurrent();
 
-  ClearScene();
-
   RemoveDataStorageListeners();
 
 #ifdef _USE_CUDA
@@ -320,6 +318,10 @@ void VLQtWidget::QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node)
 
 void VLQtWidget::AddAllNodesFromDataStorage()
 {
+  makeCurrent();
+
+  ClearScene();
+
   if (m_DataStorage.IsNull())
     return;
 
