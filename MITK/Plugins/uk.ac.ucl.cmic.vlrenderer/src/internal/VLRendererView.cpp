@@ -102,7 +102,7 @@ void VLRendererView::CreateQtPartControl(QWidget* parent)
     m_Controls = new Ui::VLRendererViewControls();
     m_Controls->setupUi(parent);
 
-    bool  ok = false;
+    bool ok = false;
     ok = QObject::connect(m_Controls->hSlider_navigate, SIGNAL(valueChanged(int )), this, SLOT(On_SliderMoved(int )));
     assert(ok);
 
@@ -144,7 +144,6 @@ void VLRendererView::CreateQtPartControl(QWidget* parent)
   }
 }
 
-
 //-----------------------------------------------------------------------------
 void VLRendererView::InitVLRendering()
 {
@@ -154,9 +153,9 @@ void VLRendererView::InitVLRendering()
 
 
   // renderer uses ocl kernels to sort triangles.
-  ctkPluginContext*     context     = mitk::VLRendererPluginActivator::GetDefault()->GetPluginContext();
-  ctkServiceReference   serviceRef  = context->getServiceReference<OclResourceService>();
-  OclResourceService*   oclService  = context->getService<OclResourceService>(serviceRef);
+  ctkPluginContext*   context     = mitk::VLRendererPluginActivator::GetDefault()->GetPluginContext();
+  ctkServiceReference serviceRef  = context->getServiceReference<OclResourceService>();
+  OclResourceService* oclService  = context->getService<OclResourceService>(serviceRef);
   if (oclService == NULL)
   {
     mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
@@ -179,7 +178,6 @@ void VLRendererView::InitVLRendering()
 #endif
 }
 
-
 //-----------------------------------------------------------------------------
 void VLRendererView::On_SliderMoved(int val)
 {
@@ -187,14 +185,12 @@ void VLRendererView::On_SliderMoved(int val)
   m_VLQtRenderWindow->update();
 }
 
-
 //-----------------------------------------------------------------------------
 void VLRendererView::OnBackgroundNodeSelected(const mitk::DataNode* node)
 {
   m_VLQtRenderWindow->SetBackgroundNode(node);
   // can fail, but we just ignore that.
 }
-
 
 //-----------------------------------------------------------------------------
 void VLRendererView::OnCameraNodeSelected(const mitk::DataNode* node)
@@ -212,7 +208,7 @@ void VLRendererView::OnCameraNodeEnabled(bool enabled)
   }
   else
   {
-    mitk::DataNode::Pointer   n = m_Controls->m_CameraNode->GetSelectedNode();
+    mitk::DataNode::Pointer n = m_Controls->m_CameraNode->GetSelectedNode();
     m_VLQtRenderWindow->SetCameraTrackingNode(n.GetPointer());
   }
 }
@@ -224,15 +220,16 @@ void VLRendererView::OnNodeAdded(mitk::DataNode* node)
   if (node == 0 || node->GetData()== 0)
     return;
 
+  #if 0
   bool isHelper = false;
   node->GetPropertyList()->GetBoolProperty("helper object", isHelper);
-
-  //if (isHelper)
-  //  return;
+  if ( isHelper )
+    return;
+  #endif
 
   m_VLQtRenderWindow->AddDataNode(node);
 
-  MITK_INFO <<"Node added";
+  MITK_INFO << "Node added";
 }
 
 
@@ -242,15 +239,16 @@ void VLRendererView::OnNodeRemoved(mitk::DataNode* node)
   if (node == 0 || node->GetData()== 0)
     return;
 
+  #if 0
   bool isHelper = false;
   node->GetPropertyList()->GetBoolProperty("helper object", isHelper);
-
-  //if (isHelper)
-  //  return;
+  if ( isHelper )
+    return;
+  #endif
 
   m_VLQtRenderWindow->RemoveDataNode(node);
 
-  MITK_INFO <<"Node removed";
+  MITK_INFO << "Node removed";
 }
 
 
@@ -262,7 +260,7 @@ void VLRendererView::OnNodeDeleted(mitk::DataNode* node)
 
   m_VLQtRenderWindow->RemoveDataNode(node);
 
-  MITK_INFO <<"Node deleted";
+  MITK_INFO << "Node deleted";
 }
 
 

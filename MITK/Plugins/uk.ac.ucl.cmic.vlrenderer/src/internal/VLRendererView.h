@@ -76,16 +76,15 @@ protected:
 
   virtual void Visible();
 
-private slots: 
+private slots:
   void OnBackgroundNodeSelected(const mitk::DataNode* node);
   void OnCameraNodeSelected(const mitk::DataNode* node);
   void OnCameraNodeEnabled(bool enabled);
 
-
-private: 
+private:
   void InitVLRendering();
 
-  /// \brief 
+  /// \brief
   void ReinitDisplay(bool viewEnabled = true);
 
   /// \brief All the controls for the main view part.
@@ -97,11 +96,11 @@ private:
 
   // VL rendering specific members
   // FIXME: should just be a pointer, so we can drop the header dependency on vl.
-  vl::ref<VLQtWidget>       m_VLQtRenderWindow;
+  vl::ref<VLQtWidget> m_VLQtRenderWindow;
 
   // Listeners
-  mitk::DataNodePropertyListener::Pointer    m_SelectionListener;
-  mitk::DataNodePropertyListener::Pointer    m_NamePropertyListener;
+  mitk::DataNodePropertyListener::Pointer m_SelectionListener;
+  mitk::DataNodePropertyListener::Pointer m_NamePropertyListener;
 
 };
 
