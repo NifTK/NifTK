@@ -577,15 +577,15 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   }
 
   VIVID_CHECK( vlActor->enableMask() == vl::VividRenderer::DefaultEnableMask ||
-            vlActor->enableMask() == vl::VividRenderer::VolumeEnableMask  );
+               vlActor->enableMask() == vl::VividRenderer::VolumeEnableMask  );
 
-  if (isVisble == false)
+  if ( ! isVisble )
   {
-    vlActor->setEnableMask(0);
+    vlActor->setEnabled( false );
   }
   else
   {
-    vlActor->setEnableMask(0xFFFFFFFF);
+    vlActor->setEnabled( true );
 
     vl::fvec4 color(1, 1, 1, opacity);
     mitk::ColorProperty* colorProp = dynamic_cast<mitk::ColorProperty*>(node->GetProperty("color"));
