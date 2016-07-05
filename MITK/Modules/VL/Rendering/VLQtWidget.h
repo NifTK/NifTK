@@ -79,8 +79,6 @@ class TrackballManipulator;
 
 #endif
 
-// #include "OclTriangleSorter.h"
-
 /**
  * This class is not thread-safe! Methods should only ever be called on the main
  * GUI thread.
@@ -180,10 +178,6 @@ private:
   void ClearScene();
 
   /**
-   * Returns the FBO that contains the current renderer output, i.e. the stuff that goes on screen.
-   * Beware: this can/will return a different object every time you call it!
-   */
-  vl::FramebufferObject* GetFBO();
 
 protected:
 
@@ -228,50 +222,18 @@ protected:
   vl::ref<vl::Actor> FindActorForNode(const mitk::DataNode::ConstPointer& node);
   vl::ref<VLUserData> GetUserData(vl::ref<vl::Actor> actor);
 
-  // void UpdateTranslucentTriangles();
-  // bool SortTranslucentTriangles();
-  // bool MergeTranslucentTriangles();
-  // bool NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& node);
-  // bool NodeIsTranslucent(const mitk::DataNode::ConstPointer& node);
-
   mitk::DataStorage::Pointer              m_DataStorage;
   mitk::DataNodePropertyListener::Pointer m_NodeVisibilityListener;
   mitk::DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
   mitk::DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
 
-  // side note: default actor block is zero
-  static const int RENDERBLOCK_OPAQUE            = -1000;
-  static const int RENDERBLOCK_SORTEDTRANSLUCENT =   900;
-  static const int RENDERBLOCK_TRANSLUCENT       =  1000;
-  static const int ENABLEMASK_OPAQUE             = 1 << 0;
-  static const int ENABLEMASK_TRANSLUCENT        = 1 << 1;
-  static const int ENABLEMASK_VOLUME             = 1 << 2;
-  static const int ENABLEMASK_BACKGROUND         = 1 << 3;
-  static const int ENABLEMASK_SORTEDTRANSLUCENT  = 1 << 4;
 
   vl::ref<vl::VividRenderer>         m_Vivid;
   vl::ref<vl::Camera>                m_Camera;
-  vl::ref<vl::Light>                 m_Light;
-  // vl::ref<vl::Transform>          m_LightTr;
   vl::ref<TrackballManipulator>      m_Trackball;
 
-  vl::ref<vl::RenderingTree>         m_RenderingTree;
-  vl::ref<vl::Rendering>             m_OpaqueObjectsRendering;
-  vl::ref<vl::Rendering>             m_VolumeRendering;
-  vl::ref<vl::Rendering>             m_BackgroundRendering;
-  vl::ref<vl::BlitFramebuffer>       m_FinalBlit;
-  vl::ref<vl::SceneManagerActorTree> m_SceneManager;
-  vl::ref<vl::Camera>                m_BackgroundCamera;
-
-  vl::ref<vl::GLSLProgram>           m_GenericGLSLShader;
-  vl::ref<vl::TexParameter>          m_DefaultTextureParams;
-  vl::ref<vl::Texture>               m_DefaultTexture; // empty
-
-  vl::ref<vl::Uniform>               m_ThresholdVal; // iso value for volume
 
   std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> > m_NodeToActorMap;
-  std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >      m_ActorToRenderableMap;   // FIXME: should go away
-  std::set<mitk::DataNode::ConstPointer>                      m_NodesQueuedForUpdate;
   std::set<mitk::DataNode::ConstPointer>                      m_NodesToUpdate;
   std::set<mitk::DataNode::ConstPointer>                      m_NodesToAdd;
   std::set<mitk::DataNode::ConstPointer>                      m_NodesToRemove;
@@ -322,18 +284,6 @@ protected:
 
   // Currently not used: left here just in case we need it for future fun :)
   OclResourceService* m_OclService;
-
-  // std::set<vl::ref<vl::Actor> > m_TranslucentActors;
-  // vl::ref<vl::Geometry>         m_TranslucentSurface;
-  // vl::ref<vl::Actor>            m_TranslucentSurfaceActor;
-  // mitk::OclTriangleSorter*      m_OclTriangleSorter;
-
-  // bool m_TranslucentStructuresMerged;
-  // bool m_TranslucentStructuresSorted;
-  // cl_uint m_TotalNumOfTranslucentTriangles;
-  // cl_uint m_TotalNumOfTranslucentVertices;
-  // cl_mem m_MergedTranslucentIndexBuf;
-  // cl_mem m_MergedTranslucentVertexBuf;
 
 protected:
   int    m_Refresh;
