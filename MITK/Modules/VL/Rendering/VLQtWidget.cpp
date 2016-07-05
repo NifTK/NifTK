@@ -743,25 +743,26 @@ vl::ref<vl::Actor> VLQtWidget::AddSurfaceActor(const mitk::Surface::Pointer& mit
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly)
+vl::ref<vl::Geometry> VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly)
 {
   makeCurrent();
 
   if (vtkPoly == 0)
-    return;
+    return NULL;
 
-  /// \brief Buffer in host memory to store cell info
-  unsigned int * m_IndexBuffer = 0;
+  vl::ref<vl::Geometry> vlPoly = new vl::Geometry;
 
-  /// \brief Buffer in host memory to store vertex points
-  float * m_PointBuffer = 0;
+  // Buffer in host memory to store cell info
+  unsigned int* m_IndexBuffer = 0;
 
-  /// \brief Buffer in host memory to store normals associated with vertices
-  float * m_NormalBuffer = 0;
+  // Buffer in host memory to store vertex points
+  float* m_PointBuffer = 0;
 
-  /// \brief Buffer in host memory to store scalar info associated with vertices
-  char * m_ScalarBuffer = 0;
+  // Buffer in host memory to store normals associated with vertices
+  float* m_NormalBuffer = 0;
 
+  // Buffer in host memory to store scalar info associated with vertices
+  char* m_ScalarBuffer = 0;
 
   unsigned int numOfvtkPolyPoints = vtkPoly->GetNumberOfPoints();
 
@@ -770,14 +771,15 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
 
   if (pointArrayNum == 0 && numOfvtkPolyPoints == 0)
   {
-    MITK_ERROR <<"No points detected in the vtkPoly data!\n";
-    return;
+    MITK_ERROR << "No points detected in the vtkPoly data!\n";
+    return NULL;
   }
 
   // We'll have to build the cell data if not present already
   int cellArrayNum  = vtkPoly->GetCellData()->GetNumberOfArrays();
-  if (cellArrayNum == 0)
+  if ( cellArrayNum == 0 ) {
     vtkPoly->BuildCells();
+  }
 
   vtkSmartPointer<vtkCellArray> verts;
 
@@ -794,16 +796,16 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
   if (verts->GetMaxCellSize() > 3)
   {
     // Panic and return
-    MITK_ERROR <<"More than three vertices / cell detected, can't handle this data type!\n";
-    return;
+    MITK_ERROR << "More than three vertices / cell detected, can't handle this data type!\n";
+    return NULL;
   }
 
-  vtkSmartPointer<vtkPoints>     points = vtkPoly->GetPoints();
+  vtkSmartPointer<vtkPoints> points = vtkPoly->GetPoints();
 
   if (points == 0)
   {
-    MITK_ERROR <<"Corrupt vtkPoly, returning! \n";
-    return;
+    MITK_ERROR << "Corrupt vtkPoly, returning! \n";
+    return NULL;
   }
 
   // Deal with normals
@@ -811,7 +813,7 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
 
   if (normals == 0)
   {
-    MITK_INFO <<"Generating normals for the vtkPoly data (mitk::OclSurface)";
+    MITK_INFO << "Generating normals for the vtkPoly data (mitk::OclSurface)";
 
     vtkSmartPointer<vtkPolyDataNormals> normalGen = vtkSmartPointer<vtkPolyDataNormals>::New();
     normalGen->SetInputData(vtkPoly);
@@ -822,8 +824,8 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
 
     if (normals == 0)
     {
-      MITK_ERROR <<"Couldn't generate normals, returning! \n";
-      return;
+      MITK_ERROR << "Couldn't generate normals, returning! \n";
+      return NULL;
     }
 
     vtkPoly->GetPointData()->SetNormals(normals);
@@ -840,7 +842,7 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
 
   unsigned int pointBufferSize = 0;
   unsigned int numOfPoints = static_cast<unsigned int> (points->GetNumberOfPoints());
-  pointBufferSize = numOfPoints * sizeof(float) *3;
+  pointBufferSize = numOfPoints * sizeof(float) * 3;
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Deal with points
@@ -920,14 +922,14 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
 
     cellIndex++;
   }
-  MITK_INFO <<"Surface data initialized. Num of Points: " <<points->GetNumberOfPoints() <<" Num of Cells: " <<verts->GetNumberOfCells() <<"\n";
+  MITK_INFO << "Surface data initialized. Num of Points: " <<points->GetNumberOfPoints() << " Num of Cells: " <<verts->GetNumberOfCells() << "\n";
 
   vl::ref<vl::ArrayFloat3>  vlVerts   = new vl::ArrayFloat3;
   vl::ref<vl::ArrayFloat3>  vlNormals = new vl::ArrayFloat3;
   vl::ref<vl::DrawElementsUInt> vlTriangles = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
 
-  vlVerts->resize(numOfPoints *3);
-  vlNormals->resize(numOfPoints *3);
+  vlVerts->resize(numOfPoints * 3);
+  vlNormals->resize(numOfPoints * 3);
 
   vlPoly->drawCalls().push_back(vlTriangles.get());
   vlTriangles->indexBuffer()->resize(numOfTriangles*3);
@@ -935,8 +937,8 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
   vlPoly->setVertexArray(vlVerts.get());
   vlPoly->setNormalArray(vlNormals.get());
 
-  float * vertBufFlotPtr = reinterpret_cast<float *>( vlVerts->ptr());
-  float * normBufFlotPtr = reinterpret_cast<float *>( vlNormals->ptr());
+  float* vertBufFlotPtr = reinterpret_cast<float *>(vlVerts->ptr());
+  float* normBufFlotPtr = reinterpret_cast<float *>(vlNormals->ptr());
 
   // Vertices and normals
   for (unsigned int i=0; i<numOfPoints; ++i)
@@ -968,23 +970,26 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
   vlTriangles->indexBuffer()->updateBufferObject();
   glFinish();
 
-  /// \brief Buffer in host memory to store cell info
+  // Buffer in host memory to store cell info
   if (m_IndexBuffer != 0)
     delete m_IndexBuffer;
 
-  /// \brief Buffer in host memory to store vertex points
+  // Buffer in host memory to store vertex points
   if (m_PointBuffer != 0)
     delete m_PointBuffer;
 
-  /// \brief Buffer in host memory to store normals associated with vertices
+  // Buffer in host memory to store normals associated with vertices
   if (m_NormalBuffer != 0)
     delete m_NormalBuffer;
 
-  /// \brief Buffer in host memory to store scalar info associated with vertices
+  // Buffer in host memory to store scalar info associated with vertices
   if (m_ScalarBuffer != 0)
     delete m_ScalarBuffer;
 
-  //MITK_INFO <<"Num of VL vertices: " <<vlPoly->vertexArray()->size()/3;
+  // MITK_INFO << "Num of VL vertices: " << vlPoly->vertexArray()->size() / 3;
+
+  // Finally convert to adjacency format so we can render silhouettes etc.
+  return vl::AdjacencyExtractor::extract( vlPoly.get() );
 }
 
 //-----------------------------------------------------------------------------

@@ -157,7 +157,7 @@ protected:
   vl::EImageType MapITKPixelTypeToVL(int itkComponentType);
   vl::EImageFormat MapComponentsToVLColourFormat(int components);
   vl::mat4 GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data);
-  void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
+  vl::ref<vl::Geometry> ConvertVTKPolyData(vtkPolyData* vtkPoly);
 
   void CreateAndUpdateFBOSizes(int width, int height);
   void UpdateViewportAndCameraAfterResize();
