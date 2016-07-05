@@ -12,6 +12,7 @@
 
 =============================================================================*/
 
+#include "VLQtWidget.h"
 
 // Blueberry
 #include <berryISelectionService.h>
@@ -145,12 +146,12 @@ void VLRendererView::CreateQtPartControl(QWidget* parent)
 }
 
 //-----------------------------------------------------------------------------
+
 void VLRendererView::InitVLRendering()
 {
   assert(m_VLQtRenderWindow == 0);
-  m_VLQtRenderWindow = new VLQtWidget(0, niftk::SharedOGLContext::GetShareWidget());
+  m_VLQtRenderWindow = new VLQtWidget( 0, niftk::SharedOGLContext::GetShareWidget() );
   m_VLQtRenderWindow->SetDataStorage(GetDataStorage());
-
 
   // renderer uses ocl kernels to sort triangles.
   ctkPluginContext*   context     = mitk::VLRendererPluginActivator::GetDefault()->GetPluginContext();
@@ -165,12 +166,11 @@ void VLRendererView::InitVLRendering()
   // once we have been bounced through the event-loop, i.e. after we return from this method here.
 
 
-  m_Controls->viewLayout->addWidget(m_VLQtRenderWindow.get());
+  m_Controls->viewLayout->addWidget(m_VLQtRenderWindow);
   m_VLQtRenderWindow->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
   m_VLQtRenderWindow->show();
 
-  // default transparency blending function.
-  // vl keeps dumping stuff to the console about blend state mismatch.
+  // This state seems to be left dirty so we reset it to it's default else VL will complain.
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 #ifdef _USE_CUDA

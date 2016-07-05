@@ -12,7 +12,6 @@
 
 =============================================================================*/
 
-
 #ifndef VLRendererView_h
 #define VLRendererView_h
 
@@ -28,8 +27,9 @@
 #include <mitkImage.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
+#include <mitkDataNodePropertyListener.h>
 
-#include <Rendering/VLQtWidget.h>
+class VLQtWidget;
 
 // Note:
 // On Linux, some of the above includes include Xlib.h, transitively.
@@ -95,8 +95,8 @@ private:
 
 
   // VL rendering specific members
-  // FIXME: should just be a pointer, so we can drop the header dependency on vl.
-  vl::ref<VLQtWidget> m_VLQtRenderWindow;
+  // We use a naked pointer not a vl::ref<> because this is also a QObject managed by Qt
+  VLQtWidget* m_VLQtRenderWindow;
 
   // Listeners
   mitk::DataNodePropertyListener::Pointer m_SelectionListener;
