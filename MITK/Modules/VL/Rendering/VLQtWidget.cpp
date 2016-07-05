@@ -12,6 +12,24 @@
 
 =============================================================================*/
 
+#if 1
+  // MS VS
+  #if defined(_MSC_VER)
+    #define VIVID_TRAP() { if (IsDebuggerPresent()) { __debugbreak(); } else ::vl::abort_vl(); }
+  // GNU GCC
+  #elif defined(__GNUG__) || defined(__MINGW32__)
+    #define VIVID_TRAP() { fflush(stdout); fflush(stderr); asm("int $0x3"); }
+  #else
+    #define VIVID_TRAP() { ::vl::abort_vl(); }
+  #endif
+  #define VIVID_CHECK(expr) { if(!(expr)) { ::vl::log_failed_check(#expr,__FILE__,__LINE__); VIVID_TRAP() } }
+  #define VIVID_WARN(expr)  { if(!(expr)) { ::vl::log_failed_check(#expr,__FILE__,__LINE__); } }
+#else
+  #define VIVID_CHECK(expr) {}
+  #define VIVID_WARN(expr) {}
+  #define VIVID_TRAP() {}
+#endif
+
 #include <QTextStream>
 #include <QFile>
 #include <QDir>
@@ -551,6 +569,8 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   // if object is too translucent to not have a effect after blending then just skip it.
   if (opacity < (1.0f / 255.0f))
     isVisble = false;
+  VIVID_CHECK( vlActor->enableMask() == vl::VividRenderer::DefaultEnableMask ||
+            vlActor->enableMask() == vl::VividRenderer::VolumeEnableMask  );
 
   if (isVisble == false)
   {
@@ -1025,8 +1045,8 @@ vl::ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkI
   // UpdateDataNode() takes care of assigning colour etc.
   // FIXME: alpha-blending? independent of opacity prop!
 
-  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[actor] = vlquad;
+  vl::ref<vl::Actor> actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
+  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
   return actor;
 }
@@ -1160,7 +1180,6 @@ vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkI
   vl::ref<vl::RaycastVolume>    raycastVolume = new vl::RaycastVolume;
   // this stuffs the proxy geometry onto our actor, as lod-slot zero.
   raycastVolume->bindActor(imageActor.get());
-
 
   // we do not own dims!
   unsigned int*   dims    = mitkImg->GetDimensions();
@@ -1552,6 +1571,7 @@ void VLQtWidget::UpdateThresholdVal( int isoVal )
 
 bool VLQtWidget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
 {
+  VIVID_CHECK( m_Trackball );
   m_CameraNode = node;
 
   if (m_CameraNode.IsNotNull())
