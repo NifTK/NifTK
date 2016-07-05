@@ -323,7 +323,7 @@ void VLQtWidget::ScheduleNodeRemove( const mitk::DataNode* node )
 void VLQtWidget::InitSceneFromDataStorage()
 {
   // Make sure the system is initialized
-  assert( m_VividRendering.get() );
+  VIVID_CHECK( m_VividRendering.get() );
 
   makeCurrent();
 
@@ -692,24 +692,24 @@ vl::ref<vl::Actor> VLQtWidget::AddSurfaceActor(const mitk::Surface::Pointer& mit
 {
   makeCurrent();
 
-  vl::ref<vl::Geometry>  vlSurf = new vl::Geometry();
+  vl::ref<vl::Geometry> vlSurf = new vl::Geometry();
   ConvertVTKPolyData(mitkSurf->GetVtkPolyData(), vlSurf);
+  vl::ref< vl::Geometry > geom_adj = vl::AdjacencyExtractor::extract( vlSurf.get() );
+  vlSurf->shallowCopyFrom( *geom_adj );
 
   //MITK_INFO <<"Num of vertices: " << vlSurf->vertexArray()->size()/3;
   //ArrayAbstract* posarr = vertexArray() ? vertexArray() : vertexAttribArray(vl::VA_Position) ? vertexAttribArray(vl::VA_Position)->data() : NULL;
-  if (!vlSurf->normalArray())
+  if ( ! vlSurf->normalArray() ) {
     vlSurf->computeNormals();
+  }
 
-  vl::ref<vl::Transform> tr     = new vl::Transform;
+  vl::ref<vl::Transform> tr = new vl::Transform;
   UpdateTransformFromData(tr, mitkSurf.GetPointer());
 
-  vl::ref<vl::Effect>    fx = new vl::Effect;
-  fx->shader()->enable(vl::EN_LIGHTING);
-  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
-  // UpdateDataNode() takes care of assigning colour etc.
+  vl::ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
 
   vl::ref<vl::Actor> surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
+  surfActor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
   return surfActor;
 }
@@ -831,7 +831,7 @@ void VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> 
   {
     // Get the number of normals we have to deal with
     int m_NormalCount = static_cast<unsigned int> (normals->GetNumberOfTuples());
-    assert(m_NormalCount == numOfPoints);
+    VIVID_CHECK(m_NormalCount == numOfPoints);
 
     // Size of the buffer that is required to store all the normals
     unsigned int normalBufferSize = numOfPoints * sizeof(float) * 3;
@@ -996,7 +996,7 @@ vl::ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkI
 
   // sanity check
   unsigned int  size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
-  assert(vlImg->requiredMemory() == size);
+  VIVID_CHECK(vlImg->requiredMemory() == size);
 
   try
   {
@@ -1011,10 +1011,10 @@ vl::ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkI
     MITK_ERROR << "Did not get pixel read access to 2D image.";
   }
 
-  vl::ref<vl::Transform> tr     = new vl::Transform;
+  vl::ref<vl::Transform> tr = new vl::Transform;
   UpdateTransformFromData(tr, mitkImg.GetPointer());
 
-  vl::ref<vl::Geometry>         vlquad = CreateGeometryFor2DImage(dims[0], dims[1]);
+  vl::ref<vl::Geometry> vlquad = CreateGeometryFor2DImage(dims[0], dims[1]);
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->disable(vl::EN_LIGHTING);
@@ -1096,7 +1096,7 @@ vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkI
 
     // sanity check
     unsigned int size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
-    assert(vlImg->requiredMemory() == size);
+    VIVID_CHECK(vlImg->requiredMemory() == size);
     std::memcpy(vlImg->pixels(), cPointer, vlImg->requiredMemory());
 
     vlImg = vlImg->convertFormat(vl::IF_LUMINANCE)->convertType(vl::IT_UNSIGNED_SHORT);
@@ -1110,7 +1110,7 @@ vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkI
   catch(mitk::Exception& e)
   {
     // deal with the situation not to have access
-    assert(false);
+    VIVID_CHECK(false);
   }
 
   float opacity;
@@ -1153,6 +1153,7 @@ vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkI
   //UpdateTransfromFromData(tr, cudaImg);       // FIXME: needs proper thinking through
   imageActor->setTransform(tr.get());
   m_SceneManager->tree()->addActor(imageActor.get());
+  imageActor->setEnableMask( vl::VividRenderer::VolumeEnableMask );
 
   // this is a callback: gets triggered everytime its bound actor is to be rendered.
   // during that callback it updates the uniforms of our glsl shader to match fixed-function state.
@@ -1172,7 +1173,7 @@ vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkI
   float shiftY = 0.0f;//0.5f * spacing[1];
   float shiftZ = 0.0f;//0.5f * spacing[2];
 
-  vl::AABB    volume_box(vl::vec3(-dimX + shiftX, -dimY + shiftY, -dimZ + shiftZ)
+  vl::AABB volume_box(vl::vec3(-dimX + shiftX, -dimY + shiftY, -dimZ + shiftZ)
                        , vl::vec3( dimX + shiftX,  dimY + shiftY,  dimZ + shiftZ));
   raycastVolume->setBox(volume_box);
   raycastVolume->generateTextureCoordinates(vl::ivec3(vlImg->width(), vlImg->height(), vlImg->depth()));
@@ -1300,6 +1301,30 @@ void VLQtWidget::initializeGL()
   //NvAPI_OGL_ExpertModeSet(NVAPI_OGLEXPERT_DETAIL_ALL, NVAPI_OGLEXPERT_DETAIL_BASIC_INFO, NVAPI_OGLEXPERT_OUTPUT_TO_ALL, 0);
 #endif
 
+  // Create our VividRendering!
+  m_VividRendering = new vl::VividRendering( vl::OpenGLContext::framebuffer() );
+  m_VividRendering->setRenderingMode( vl::VividRendering::FrontToBackDepthPeeling ); /* (default) */
+  m_VividRendering->setCullingEnabled( false );
+  // m_VividRendering->setNearFarClippingPlanesOptimized( false );
+
+  // VividRendering nicely prepares for us all the structures we need to use ;)
+  m_VividRenderer = m_VividRendering->vividRenderer();
+  m_VividVolume = m_VividRendering->vividVolume();
+  m_SceneManager = m_VividRendering->sceneManager();
+  m_Camera = m_VividRendering->calibratedCamera();
+
+  // Initialize the trackball manipulator
+  m_Trackball = new TrackballManipulator;
+  m_Trackball->setEnabled( true );
+  m_Trackball->setCamera( m_Camera.get() );
+  m_Trackball->setTransform( NULL );
+  m_Trackball->setPivot( vl::vec3(0,0,0) );
+  vl::OpenGLContext::addEventListener( m_Trackball.get() );
+  // Schedule reset of the camera based on the scene content
+  ScheduleTrackballAdjustView();
+
+  // This is only used by the CUDA stuff
+  CreateAndUpdateFBOSizes( QGLWidget::width(), QGLWidget::height() );
 
   vl::OpenGLContext::dispatchInitEvent();
 
@@ -1325,40 +1350,36 @@ void VLQtWidget::initializeGL()
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::resizeGL(int width, int height)
+void VLQtWidget::resizeGL( int w, int h )
 {
-  // sanity check: context is initialised by Qt
-  assert( QGLContext::currentContext() == QGLWidget::context() );
-
+   VIVID_CHECK( QGLContext::currentContext() == QGLWidget::context() );
 
   // dont do anything if window is zero size.
   // it's an opengl error to have a viewport like that!
-  if ((width <= 0) || (height <= 0))
+  if ( w <= 0 || h <= 0 ) {
     return;
+  }
 
-  // no idea if this is necessary...
-  framebuffer()->setWidth(width);
-  framebuffer()->setHeight(height);
-  m_OpaqueObjectsRendering->renderer()->framebuffer()->setWidth(width);
-  m_OpaqueObjectsRendering->renderer()->framebuffer()->setHeight(height);
-  /*
-  m_VolumeRendering->renderer()->framebuffer()->setWidth(width);
-  m_VolumeRendering->renderer()->framebuffer()->setHeight(height);
+  m_VividRendering->camera()->viewport()->set( 0, 0, w, h );
+  m_VividRendering->camera()->setProjectionPerspective();
 
-  CreateAndUpdateFBOSizes(width, height);
+  CreateAndUpdateFBOSizes( w, h );
 
-  m_FinalBlit->setSrcRect(0, 0, width, height);
-  m_FinalBlit->setDstRect(0, 0, width, height);
-  */
-
+  // MIC FIXME: update calibrated camera setup
   UpdateViewportAndCameraAfterResize();
 
-  vl::OpenGLContext::dispatchResizeEvent(width, height);
+  vl::OpenGLContext::dispatchResizeEvent( w, h );
 }
 
 //-----------------------------------------------------------------------------
 
+void VLQtWidget::paintGL()
 {
+  VIVID_CHECK( QGLContext::currentContext() == QGLWidget::context() );
+
+  RenderScene();
+
+  vl::OpenGLContext::dispatchRunEvent();
 }
 
 //-----------------------------------------------------------------------------
@@ -1496,7 +1517,6 @@ void VLQtWidget::RenderScene()
 
   VL_CHECK_OGL();
 }
-
 
 //-----------------------------------------------------------------------------
 
@@ -1940,8 +1960,8 @@ vl::ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const mitk::CoordinateAxes
   fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
 
 
-  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[actor] = vlGeom;
+  vl::ref<vl::Actor> actor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
+  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
   return actor;
 }
@@ -1990,8 +2010,8 @@ vl::ref<vl::Actor> VLQtWidget::AddPointCloudActor(niftk::PCLData* pcl)
   fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
 
 
-  vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[psActor] = vlGeom;
+  vl::ref<vl::Actor> psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
+  psActor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
   return psActor;
 #else
@@ -2030,8 +2050,8 @@ vl::ref<vl::Actor> VLQtWidget::AddPointsetActor(const mitk::PointSet::Pointer& m
   fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
 
 
-  vl::ref<vl::Actor>    psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[psActor] = vlGeom;
+  vl::ref<vl::Actor> psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
+  psActor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
   return psActor;
 }
@@ -2700,8 +2720,8 @@ void VLQtWidget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci,
   fx->shader()->disable(vl::EN_LIGHTING);
   // UpdateDataNode() takes care of assigning colour etc.
 
-  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[actor] = vlquad;
+  vl::ref<vl::Actor> actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
+  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
 
   std::string   objName = actor->objectName() + "_background";
@@ -2876,8 +2896,8 @@ vl::ref<vl::Actor> VLQtWidget::AddCUDAImageActor(const mitk::BaseData* _cudaImg)
   fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
   // UpdateDataNode() takes care of assigning colour etc.
 
-  vl::ref<vl::Actor>    actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
-  m_ActorToRenderableMap[actor] = vlquad;
+  vl::ref<vl::Actor> actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
+  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
   return actor;
 

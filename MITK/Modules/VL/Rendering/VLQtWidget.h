@@ -19,9 +19,11 @@
 #include <niftkVLExports.h>
 
 #include <vlGraphics/OpenGLContext.hpp>
+#include <vlVivid/VividRenderer.hpp>
+#include <vlVivid/VividRendering.hpp>
+#include <vlVivid/VividVolume.hpp>
 #include <vlGraphics/Light.hpp>
 #include <vlGraphics/Camera.hpp>
-#include <vlVivid/VividRenderer.hpp>
 #include <vlGraphics/Rendering.hpp>
 #include <vlGraphics/RenderingTree.hpp>
 #include <vlGraphics/SceneManagerActorTree.hpp>
@@ -88,7 +90,6 @@ class NIFTKVL_EXPORT VLQtWidget : public QGLWidget, public vl::OpenGLContext
   Q_OBJECT
 
 public:
-
   using vl::Object::setObjectName;
   using QObject::setObjectName;
 
@@ -100,6 +101,7 @@ public:
   void ScheduleNodeRemove(const mitk::DataNode* node);
   void ScheduleNodeUpdate(const mitk::DataNode* node);
   void ScheduleTrackballAdjustView( bool do_it =  true ) { m_ScheduleTrackballAdjustView = do_it; }
+
   void setRefreshRate(int msec);
   int refreshRate();
 
@@ -107,7 +109,6 @@ public:
 
   void SetOclResourceService(OclResourceService* oclserv);
   void SetDataStorage(const mitk::DataStorage::Pointer& dataStorage);
-
 
   void UpdateThresholdVal(int isoVal);
 
@@ -227,11 +228,12 @@ protected:
   mitk::DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
   mitk::DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
 
-
-  vl::ref<vl::VividRenderer>         m_Vivid;
+  vl::ref<vl::VividRendering>        m_VividRendering;
+  vl::ref<vl::VividRenderer>         m_VividRenderer;
+  vl::ref<vl::VividVolume>           m_VividVolume;
+  vl::ref<vl::SceneManagerActorTree> m_SceneManager;
   vl::ref<vl::Camera>                m_Camera;
   vl::ref<TrackballManipulator>      m_Trackball;
-
 
   std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> > m_NodeToActorMap;
   std::set<mitk::DataNode::ConstPointer>                      m_NodesToUpdate;
