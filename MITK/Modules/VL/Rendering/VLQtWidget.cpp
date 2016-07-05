@@ -149,6 +149,7 @@ VLQtWidget::VLQtWidget(QWidget* parent, const QGLWidget* shareWidget, Qt::Window
   : QGLWidget(parent, shareWidget, f)
   , m_BackgroundWidth(0)
   , m_BackgroundHeight(0)
+  , m_ScheduleTrackballAdjustView( true )
 #ifdef _USE_CUDA
   , m_CUDAInteropPimpl(0)
 #endif
@@ -255,7 +256,10 @@ void VLQtWidget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
   m_DataStorage = dataStorage;
   AddDataStorageListeners();
 
-  QMetaObject::invokeMethod( this, "AddAllNodesFromDataStorage", Qt::QueuedConnection );
+  ClearScene();
+
+  update();
+  // QMetaObject::invokeMethod( this, "InitSceneFromDataStorage", Qt::QueuedConnection );
 }
 
 //-----------------------------------------------------------------------------
@@ -274,11 +278,7 @@ void VLQtWidget::SetOclResourceService(OclResourceService* oclserv)
 
 void VLQtWidget::OnNodeModified(const mitk::DataNode* node)
 {
-  mitk::DataNode::ConstPointer dn(node);
-  QueueUpdateDataNode(dn);
-  // std::cout << "QueueUpdateDataNode: " << typeid(node->GetData()->GetNameOfClass()).name() << '\n';
-  // std::cout << "QueueUpdateDataNode: " << node->GetData()->GetNameOfClass() << '\n';
-  std::cout << "QueueUpdateDataNode: " << node->GetName() << '\n';
+  ScheduleNodeUpdate( node );
 }
 
 //-----------------------------------------------------------------------------
@@ -286,7 +286,7 @@ void VLQtWidget::OnNodeModified(const mitk::DataNode* node)
 void VLQtWidget::OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   mitk::DataNode::ConstPointer cdn(node);
-  QueueUpdateDataNode(cdn);
+  ScheduleNodeUpdate(cdn);
 }
 
 //-----------------------------------------------------------------------------
@@ -294,7 +294,7 @@ void VLQtWidget::OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mit
 void VLQtWidget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   mitk::DataNode::ConstPointer cdn(node);
-  QueueUpdateDataNode(cdn);
+  ScheduleNodeUpdate(cdn);
 }
 
 
@@ -303,27 +303,62 @@ void VLQtWidget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::Ba
 void VLQtWidget::OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   mitk::DataNode::ConstPointer cdn(node);
-  QueueUpdateDataNode(cdn);
+  ScheduleNodeUpdate(cdn);
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node)
+void VLQtWidget::ScheduleNodeUpdate( const mitk::DataNode* node )
 {
-  m_NodesQueuedForUpdate.insert(node);
+  m_NodesToRemove.erase( node ); // abort the removal
+  // m_NodesToAdd.erase( node ); // let it add it first
+  m_NodesToUpdate.insert( mitk::DataNode::ConstPointer ( node ) ); // then update
   update();
+
+  const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<name-of-class>";
+  printf("ScheduleNodeUpdate: %s (%s)\n", node->GetName().c_str(), noc );
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::AddAllNodesFromDataStorage()
+void VLQtWidget::ScheduleNodeAdd( const mitk::DataNode* node )
 {
+  // m_NodesToRemove.erase( node ); // remove it first
+  m_NodesToAdd.insert( mitk::DataNode::ConstPointer ( node ) ); // then add
+  // m_NodesToUpdate.erase( node ); // then update
+  update();
+
+  const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<name-of-class>";
+  printf("ScheduleNodeAdd: %s (%s)\n", node->GetName().c_str(), noc );
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::ScheduleNodeRemove( const mitk::DataNode* node )
+{
+  m_NodesToRemove.insert( mitk::DataNode::ConstPointer ( node ) ); // remove it
+  m_NodesToAdd.erase( node );    // abort the addition
+  m_NodesToUpdate.erase( node ); // abort the update
+  update();
+
+  const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<name-of-class>";
+  printf("ScheduleNodeRemove: %s (%s)\n", node->GetName().c_str(), noc );
+}
+
+//-----------------------------------------------------------------------------
+
+void VLQtWidget::InitSceneFromDataStorage()
+{
+  // Make sure the system is initialized
+  assert( m_VividRendering.get() );
+
   makeCurrent();
 
   ClearScene();
 
-  if (m_DataStorage.IsNull())
+  if ( m_DataStorage.IsNull() ) {
     return;
+  }
 
   typedef itk::VectorContainer<unsigned int, mitk::DataNode::Pointer> NodesContainerType;
   NodesContainerType::ConstPointer vc = m_DataStorage->GetAll();
@@ -331,13 +366,14 @@ void VLQtWidget::AddAllNodesFromDataStorage()
   for (unsigned int i = 0; i < vc->Size(); ++i)
   {
     mitk::DataNode::Pointer currentDataNode = vc->ElementAt(i);
-    if (currentDataNode.IsNull() || currentDataNode->GetData()== 0)
+    if (currentDataNode.IsNull() || currentDataNode->GetData()== 0) {
       continue;
-
-    AddDataNode( mitk::DataNode::ConstPointer(currentDataNode.GetPointer()) );
+    } else {
+      AddDataNode( mitk::DataNode::ConstPointer( currentDataNode.GetPointer() ) );
+    }
   }
 
-  #if 1
+  #if 0
     vl::ref< vl::ResourceDatabase > db = new vl::ResourceDatabase;
     for( int i = 0; i < m_SceneManager->tree()->actors()->size(); ++i ) {
       vl::Actor* act = m_SceneManager->tree()->actors()->at(i);
@@ -462,7 +498,8 @@ void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
   makeCurrent();
 
   // dont leave a dangling update behind.
-  m_NodesQueuedForUpdate.erase(node);
+  m_NodesToUpdate.erase(node);
+  m_NodesToAdd.erase(node);
 
   if (node.IsNull() || node->GetData() == 0)
     return;
@@ -1630,16 +1667,43 @@ void VLQtWidget::UpdateViewportAndCameraAfterResize()
   UpdateCameraParameters();
 }
 
+void VLQtWidget::UpdateScene() {
+  // Make sure the system is initialized
+  assert( m_VividRendering.get() );
 
-//-----------------------------------------------------------------------------
-void VLQtWidget::paintGL()
-{
-  // sanity check: context is initialised by Qt
   assert( QGLContext::currentContext() == QGLWidget::context() );
 
-  RenderScene();
+  if ( m_SceneManager->tree()->actors()->empty() ) {
+    InitSceneFromDataStorage();
+  } else {
+    // Execute scheduled removals
+    for ( std::set<mitk::DataNode::ConstPointer>::const_iterator it = m_NodesToRemove.begin(); it != m_NodesToRemove.end(); ++it)
+    {
+      RemoveDataNode(*it);
+    }
+    m_NodesToRemove.clear();
 
-  vl::OpenGLContext::dispatchRunEvent();
+    // Execute scheduled additions
+    for ( std::set<mitk::DataNode::ConstPointer>::const_iterator it = m_NodesToAdd.begin(); it != m_NodesToAdd.end(); ++it)
+    {
+      AddDataNode(*it);
+    }
+    m_NodesToAdd.clear();
+
+    // Execute scheduled updates
+    for ( std::set<mitk::DataNode::ConstPointer>::const_iterator it = m_NodesToUpdate.begin(); it != m_NodesToUpdate.end(); ++it)
+    {
+      UpdateDataNode(*it);
+    }
+    m_NodesToUpdate.clear();
+  }
+
+  // Reset trackball view on demand
+
+  if ( m_ScheduleTrackballAdjustView ) {
+    m_Trackball->adjustView( m_VividRendering.get(), vl::vec3(0,0,1), vl::vec3(0,1,0), 1.0f );
+    m_ScheduleTrackballAdjustView = false;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1648,12 +1712,7 @@ void VLQtWidget::RenderScene()
 {
   makeCurrent();
 
-  // update vl-cache for nodes that have been modified since the last frame.
-  for (std::set<mitk::DataNode::ConstPointer>::const_iterator i = m_NodesQueuedForUpdate.begin(); i != m_NodesQueuedForUpdate.end(); ++i)
-  {
-    UpdateDataNode(*i);
-  }
-  m_NodesQueuedForUpdate.clear();
+  UpdateScene();
 
   // UpdateTranslucentTriangles() is clever enough to do work only if necessary.
   // UpdateTranslucentTriangles();
@@ -1697,22 +1756,25 @@ void VLQtWidget::ClearScene()
 {
   makeCurrent();
 
-  if (m_SceneManager)
+  if ( m_SceneManager )
   {
-    if (m_SceneManager->tree())
+    if ( m_SceneManager->tree() ) {
       m_SceneManager->tree()->actors()->clear();
+    }
   }
 
-  //m_TranslucentActors.clear();
-  //m_TranslucentSurface = 0;
-  //m_TranslucentSurfaceActor = 0;
+  // m_TranslucentActors.clear();
+  // m_TranslucentSurface = 0;
+  // m_TranslucentSurfaceActor = 0;
 
   m_BackgroundNode = 0;
   m_CameraNode = 0;
 
   m_NodeToActorMap.clear();
   m_ActorToRenderableMap.clear();
-  m_NodesQueuedForUpdate.clear();
+  m_NodesToUpdate.clear();
+  m_NodesToAdd.clear();
+  m_NodesToRemove.clear();
 }
 
 //-----------------------------------------------------------------------------

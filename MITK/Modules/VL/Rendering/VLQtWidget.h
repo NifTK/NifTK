@@ -98,6 +98,10 @@ public:
 
   virtual ~VLQtWidget();
 
+  void ScheduleNodeAdd(const mitk::DataNode* node);
+  void ScheduleNodeRemove(const mitk::DataNode* node);
+  void ScheduleNodeUpdate(const mitk::DataNode* node);
+  void ScheduleTrackballAdjustView( bool do_it =  true ) { m_ScheduleTrackballAdjustView = do_it; }
   void setRefreshRate(int msec);
   int refreshRate();
 
@@ -106,10 +110,6 @@ public:
   void SetOclResourceService(OclResourceService* oclserv);
   void SetDataStorage(const mitk::DataStorage::Pointer& dataStorage);
 
-  void AddDataNode(const mitk::DataNode::ConstPointer& node);
-  void RemoveDataNode(const mitk::DataNode::ConstPointer& node);
-  void UpdateDataNode(const mitk::DataNode::ConstPointer& node);
-  Q_SLOT void AddAllNodesFromDataStorage();
 
   void UpdateThresholdVal(int isoVal);
 
@@ -128,6 +128,10 @@ public:
 
   bool SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node);
 
+  void ScheduleSceneRebuild() {
+    ClearScene();
+    update();
+  }
   // from vl::OpenGLContext
 public:
 
@@ -183,10 +187,16 @@ private:
 
 protected:
 
+  void InitSceneFromDataStorage();
+
   virtual void AddDataStorageListeners();
   virtual void RemoveDataStorageListeners();
 
-  //virtual void OnNodeAdded(mitk::DataNode* node);
+  void AddDataNode(const mitk::DataNode::ConstPointer& node);
+  void RemoveDataNode(const mitk::DataNode::ConstPointer& node);
+  void UpdateDataNode(const mitk::DataNode::ConstPointer& node);
+
+  void UpdateScene();
   virtual void OnNodeModified(const mitk::DataNode* node);
   virtual void OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
   virtual void OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
@@ -262,10 +272,14 @@ protected:
   std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> > m_NodeToActorMap;
   std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >      m_ActorToRenderableMap;   // FIXME: should go away
   std::set<mitk::DataNode::ConstPointer>                      m_NodesQueuedForUpdate;
+  std::set<mitk::DataNode::ConstPointer>                      m_NodesToUpdate;
+  std::set<mitk::DataNode::ConstPointer>                      m_NodesToAdd;
+  std::set<mitk::DataNode::ConstPointer>                      m_NodesToRemove;
   mitk::DataNode::ConstPointer                                m_BackgroundNode;
   mitk::DataNode::ConstPointer                                m_CameraNode;
   int m_BackgroundWidth;
   int m_BackgroundHeight;
+  bool m_ScheduleTrackballAdjustView;
 
   #ifdef _USE_CUDA
 public:
