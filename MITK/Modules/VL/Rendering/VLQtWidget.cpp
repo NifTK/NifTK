@@ -1172,7 +1172,7 @@ vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkI
   glslShader->attachShader(new vl::GLSLFragmentShader(fragmentShaderSource));
   glslShader->attachShader(new vl::GLSLVertexShader(vertexShaderSource));
 
-  vl::ref<vl::Actor>    imageActor = new vl::Actor;
+  vl::ref<vl::Actor> imageActor = new vl::Actor;
   imageActor->setEffect(fx.get());
   imageActor->setUniform(m_ThresholdVal.get());
 
@@ -1308,6 +1308,9 @@ void VLQtWidget::initializeGL()
 
   vl::OpenGLContext::initGLContext();
 
+  // Interface VL with Qt's resource system to load GLSL shaders.
+  vl::defFileSystem()->directories().clear();
+  vl::defFileSystem()->directories().push_back( new vl::QtDirectory( ":/VL/" ) );
 
 
 #if 0
