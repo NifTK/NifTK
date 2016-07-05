@@ -90,32 +90,27 @@ class NIFTKVL_EXPORT VLQtWidget : public QGLWidget, public vl::OpenGLContext
   Q_OBJECT
 
 public:
-  using vl::Object::setObjectName;
-  using QObject::setObjectName;
-
   VLQtWidget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0);
 
   virtual ~VLQtWidget();
+
+  // Called by VLRendererView
+  void SetDataStorage(const mitk::DataStorage::Pointer& dataStorage);
+  // Called by VLRendererView
+  void SetOclResourceService(OclResourceService* oclserv);
+  // Called by VLRendererView
+  void UpdateThresholdVal(int isoVal); 
+  // Called by QmitkIGIVLEditor reading preferences settings
+  void SetBackgroundColour(float r, float g, float b); 
 
   void ScheduleNodeAdd(const mitk::DataNode* node);
   void ScheduleNodeRemove(const mitk::DataNode* node);
   void ScheduleNodeUpdate(const mitk::DataNode* node);
   void ScheduleTrackballAdjustView( bool do_it =  true ) { m_ScheduleTrackballAdjustView = do_it; }
+  void ScheduleSceneRebuild() { ClearScene(); update(); }
 
-  void setRefreshRate(int msec);
-  int refreshRate();
-
-  // --------------------------------------------------------------------------
-
-  void SetOclResourceService(OclResourceService* oclserv);
-  void SetDataStorage(const mitk::DataStorage::Pointer& dataStorage);
-
-  void UpdateThresholdVal(int isoVal);
-
-  // ignore alpha for now.
-  Q_SLOT void SetBackgroundColour(float r, float g, float b);
-
-  /**
+  /** 
+   * Called by VLRendererView
    * node can have as data object:
    * - mitk::Image
    * - CUDAImage
@@ -125,42 +120,32 @@ public:
    */
   bool SetBackgroundNode(const mitk::DataNode::ConstPointer& node);
 
+  // Called by VLRendererView
   bool SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node);
-
-  void ScheduleSceneRebuild() {
-    ClearScene();
-    update();
-  }
-
-private:
-  void ClearScene();
 
 protected:
   void InitSceneFromDataStorage();
-
-  virtual void AddDataStorageListeners();
-  virtual void RemoveDataStorageListeners();
+  void ClearScene();
+  void UpdateScene();
+  void RenderScene();
 
   void AddDataNode(const mitk::DataNode::ConstPointer& node);
   void RemoveDataNode(const mitk::DataNode::ConstPointer& node);
   void UpdateDataNode(const mitk::DataNode::ConstPointer& node);
 
-  void UpdateScene();
+  virtual void AddDataStorageListeners();
+  virtual void RemoveDataStorageListeners();
+
   virtual void OnNodeModified(const mitk::DataNode* node);
   virtual void OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
   virtual void OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
   virtual void OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
 
-  void RenderScene();
-  void CreateAndUpdateFBOSizes(int width, int height);
-  Q_SLOT void UpdateViewportAndCameraAfterResize();
-  void UpdateCameraParameters();
   void UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node);
   void UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node);
   void UpdateTransformFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node);
   void UpdateTransformFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data);
-  vl::mat4 GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data);
-  void EnableTrackballManipulator(bool enable);
+
   vl::ref<vl::Actor> AddPointsetActor(const mitk::PointSet::Pointer& mitkPS);
   vl::ref<vl::Actor> AddPointCloudActor(niftk::PCLData* pcl);
   vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
@@ -168,20 +153,22 @@ protected:
   vl::ref<vl::Actor> Add2DImageActor(const mitk::Image::Pointer& mitkImg);
   vl::ref<vl::Actor> Add3DImageActor(const mitk::Image::Pointer& mitkImg);
   vl::ref<vl::Actor> AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord);
+
   vl::EImageType MapITKPixelTypeToVL(int itkComponentType);
   vl::EImageFormat MapComponentsToVLColourFormat(int components);
+  vl::mat4 GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data);
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
-  static vl::String LoadGLSLSourceFromResources(const char* filename);
+
+  void CreateAndUpdateFBOSizes(int width, int height);
+  void UpdateViewportAndCameraAfterResize();
+  void UpdateCameraParameters();
+
   void PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
   vl::ref<vl::Geometry> CreateGeometryFor2DImage(int width, int height);
   vl::ref<vl::Actor> FindActorForNode(const mitk::DataNode::ConstPointer& node);
   vl::ref<VLUserData> GetUserData(vl::ref<vl::Actor> actor);
 
-  mitk::DataStorage::Pointer              m_DataStorage;
-  mitk::DataNodePropertyListener::Pointer m_NodeVisibilityListener;
-  mitk::DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
-  mitk::DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
-
+protected:
   vl::ref<vl::VividRendering>        m_VividRendering;
   vl::ref<vl::VividRenderer>         m_VividRenderer;
   vl::ref<vl::VividVolume>           m_VividVolume;
@@ -189,62 +176,67 @@ protected:
   vl::ref<vl::Camera>                m_Camera;
   vl::ref<TrackballManipulator>      m_Trackball;
 
+  mitk::DataStorage::Pointer              m_DataStorage;
+  mitk::DataNodePropertyListener::Pointer m_NodeVisibilityListener;
+  mitk::DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
+  mitk::DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
+
   std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> > m_NodeToActorMap;
-  std::set<mitk::DataNode::ConstPointer>                      m_NodesToUpdate;
-  std::set<mitk::DataNode::ConstPointer>                      m_NodesToAdd;
-  std::set<mitk::DataNode::ConstPointer>                      m_NodesToRemove;
-  mitk::DataNode::ConstPointer                                m_BackgroundNode;
-  mitk::DataNode::ConstPointer                                m_CameraNode;
-  int m_BackgroundWidth;
-  int m_BackgroundHeight;
+  std::set<mitk::DataNode::ConstPointer> m_NodesToUpdate;
+  std::set<mitk::DataNode::ConstPointer> m_NodesToAdd;
+  std::set<mitk::DataNode::ConstPointer> m_NodesToRemove;
+  mitk::DataNode::ConstPointer           m_BackgroundNode;
+  mitk::DataNode::ConstPointer           m_CameraNode;
+
   bool m_ScheduleTrackballAdjustView;
+  // these two will go away once we render the background using Vivid
+  int m_BackgroundWidth;  
+  int m_BackgroundHeight;
 
-  #ifdef _USE_CUDA
-public:
-    /**
-     * Will throw an exception if CUDA has not been enabled at compile time.
-     */
-    void EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage = 0, const std::string& nodename = "");
-
-protected:
-    /** @name CUDA-interop related bits. */
-    //@{
-
-    /**
-     * @throws an exception if CUDA support was not enabled at compile time.
-     */
-    void PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
-
-    /** @throws an exception if CUDA support was not enabled at compile time. */
-    void UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node);
-
-    /** @throws an exception if CUDA support was not enabled at compile time. */
-    void FreeCUDAInteropTextures();
-
-      /** Will throw if CUDA-support was not enabled at compile time. */
-    vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
-
-    // will only be non-null if cuda support is enabled at compile time.
-    CUDAInterop* m_CUDAInteropPimpl;
-
-    struct TextureDataPOD
-    {
-      vl::ref<vl::Texture>   m_Texture;       // on the vl side
-      unsigned int           m_LastUpdatedID; // on cuda-manager side
-      cudaGraphicsResource_t m_CUDARes;       // on cuda(-driver) side
-
-      TextureDataPOD();
-    };
-    std::map<mitk::DataNode::ConstPointer, TextureDataPOD> m_NodeToTextureMap;
-  #endif
-
-  // Currently not used: left here just in case we need it for future fun :)
+  // Lgacy OpenCL service
   OclResourceService* m_OclService;
 
-protected:
-  int    m_Refresh;
-  QTimer m_UpdateTimer;
+#ifdef _USE_CUDA
+public:
+  /**
+    * Will throw an exception if CUDA has not been enabled at compile time.
+    */
+  void EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage = 0, const std::string& nodename = "");
 
+protected:
+  /** @name CUDA-interop related bits. */
+  //@{
+
+  /**
+    * @throws an exception if CUDA support was not enabled at compile time.
+    */
+  void PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
+
+  /** @throws an exception if CUDA support was not enabled at compile time. */
+  void UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node);
+
+  /** @throws an exception if CUDA support was not enabled at compile time. */
+  void FreeCUDAInteropTextures();
+
+    /** Will throw if CUDA-support was not enabled at compile time. */
+  vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
+
+  // will only be non-null if cuda support is enabled at compile time.
+  CUDAInterop* m_CUDAInteropPimpl;
+
+  struct TextureDataPOD
+  {
+    vl::ref<vl::Texture>   m_Texture;       // on the vl side
+    unsigned int           m_LastUpdatedID; // on cuda-manager side
+    cudaGraphicsResource_t m_CUDARes;       // on cuda(-driver) side
+
+    TextureDataPOD();
+  };
+  std::map<mitk::DataNode::ConstPointer, TextureDataPOD> m_NodeToTextureMap;
+#endif
+
+  // --------------------------------------------------------------------------
+  // Things that should be inherited from vl::Qt5Widget
   // --------------------------------------------------------------------------
 
   // from vl::OpenGLContext
@@ -266,13 +258,14 @@ public:
 
   virtual vl::ivec2 size() const;       // BEWARE: not a base class method!
 
-protected:
+  void setRefreshRate(int msec);
+  int refreshRate();
 
+protected:
   void translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out);
 
   // from QGLWidget
 protected:
-
   virtual void initializeGL();
   virtual void resizeGL(int width, int height);
   virtual void paintGL();
@@ -284,6 +277,11 @@ protected:
   virtual void keyReleaseEvent(QKeyEvent* ev);
   // void dragEnterEvent(QDragEnterEvent *ev);
   // void dropEvent(QDropEvent* ev);
+
+protected:
+  int    m_Refresh;
+  QTimer m_UpdateTimer;
+
 };
 
 

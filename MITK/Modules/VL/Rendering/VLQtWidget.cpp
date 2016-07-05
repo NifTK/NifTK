@@ -1478,7 +1478,7 @@ void VLQtWidget::UpdateViewportAndCameraAfterResize()
       // the main-scene-camera should conform to this viewport too!
       // otherwise geometry would never line up with the background (for overlays, etc).
       m_Camera->viewport()->set(vpx, vpy, vpw, vph);
-    }
+    //}
   }
   // this default perspective depends on the viewport!
   m_Camera->setProjectionPerspective();
@@ -1656,13 +1656,13 @@ void VLQtWidget::UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const mi
 {
   if (node.IsNotNull())
   {
-    vl::ref<VLUserData>       userdata  = GetUserData(actor);
-    mitk::BaseData::Pointer   data      = node->GetData();
+    mitk::BaseData::Pointer data = node->GetData();
     if (data.IsNotNull())
     {
-      mitk::BaseGeometry::Pointer   geom = data->GetGeometry();
+      mitk::BaseGeometry::Pointer geom = data->GetGeometry();
       if (geom.IsNotNull())
       {
+        vl::ref<VLUserData> userdata = GetUserData(actor);
         if (geom->GetMTime() > userdata->m_TransformLastModified)
         {
           UpdateTransformFromData(actor->transform(), data.GetPointer());
@@ -2124,29 +2124,6 @@ vl::ref<vl::Geometry> VLQtWidget::CreateGeometryFor2DImage(int width, int height
   vlquad->drawCalls().push_back(polys.get());
 
   return vlquad;
-}
-
-//-----------------------------------------------------------------------------
-
-vl::String VLQtWidget::LoadGLSLSourceFromResources(const char* filename)
-{
-  QString   sourceFilename(filename);
-  sourceFilename.prepend(":/VL/");
-  QFile   sourceFile;
-  sourceFile.setFileName(sourceFilename);
-
-  if (sourceFile.exists() && sourceFile.open(QIODevice::ReadOnly))
-  {
-    QTextStream   textStream(&sourceFile);
-
-    QString   qContents = textStream.readAll();
-    return vl::String::fromStdString(qContents.toStdString());
-  }
-  else
-  {
-    MITK_ERROR << "Failed to open GLSL source file: " << filename << std::endl;
-    throw std::runtime_error("Failed to open GLSL source file");
-  }
 }
 
 //-----------------------------------------------------------------------------

@@ -45,9 +45,9 @@ QmitkIGIVLEditor::QmitkIGIVLEditor(QWidget * /*parent*/)
 //  m_OpacitySlider->setValue(static_cast<int>(m_OverlayViewer->GetOpacity()*100));
 
   m_OverlayViewer->setVisible(true);
-  m_OverlayViewer->setObjectName("QmitkIGIVLEditor::m_OverlayViewer");
+  m_OverlayViewer->QWidget::setObjectName("QmitkIGIVLEditor::m_OverlayViewer");
   m_3DViewer->setVisible(true);
-  m_3DViewer->setObjectName("QmitkIGIVLEditor::m_3DViewer");
+  m_3DViewer->QWidget::setObjectName("QmitkIGIVLEditor::m_3DViewer");
 
   m_OverlayCheckBox->setChecked(true);
   m_3DViewerCheckBox->setChecked(true);
