@@ -1579,15 +1579,22 @@ void VLQtWidget::UpdateThresholdVal( int isoVal )
 bool VLQtWidget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
 {
   VIVID_CHECK( m_Trackball );
+
+  // Whenever we set the camera node to NULL we recenter the scene using the trackball
+
   m_CameraNode = node;
 
-  if (m_CameraNode.IsNotNull())
+  if (m_CameraNode.IsNull())
   {
-    EnableTrackballManipulator(false);
+    m_Trackball->setEnabled( true );
+    ScheduleTrackballAdjustView( true );
+  } else {
+    m_Trackball->setEnabled( false );
+    ScheduleTrackballAdjustView( false );
     UpdateCameraParameters();
   }
-  else
-    EnableTrackballManipulator(true);
+
+  update();
 
   return true;
 }
