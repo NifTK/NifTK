@@ -228,13 +228,13 @@ void VLRendererView::OnNodeAdded(mitk::DataNode* node)
     return;
   #endif
 
-  m_VLQtRenderWindow->AddDataNode(node);
+  m_VLQtRenderWindow->ScheduleNodeAdd( node );
 
   MITK_INFO << "Node added";
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::OnNodeRemoved(mitk::DataNode* node)
 {
   if (node == 0 || node->GetData()== 0)
@@ -247,25 +247,25 @@ void VLRendererView::OnNodeRemoved(mitk::DataNode* node)
     return;
   #endif
 
-  m_VLQtRenderWindow->RemoveDataNode(node);
+  m_VLQtRenderWindow->ScheduleNodeRemove(node);
 
   MITK_INFO << "Node removed";
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::OnNodeDeleted(mitk::DataNode* node)
 {
   if (node == 0 || node->GetData()== 0)
     return;
 
-  m_VLQtRenderWindow->RemoveDataNode(node);
+  m_VLQtRenderWindow->ScheduleNodeRemove(node);
 
   MITK_INFO << "Node deleted";
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
 #if 0//def _USE_CUDA
@@ -276,8 +276,8 @@ void VLRendererView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::Bas
 #endif
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::Visible()
 {
   QmitkBaseView::Visible();
@@ -286,9 +286,9 @@ void VLRendererView::Visible()
   ReinitDisplay();
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::ReinitDisplay(bool viewEnabled)
 {
-  m_VLQtRenderWindow->AddAllNodesFromDataStorage();
+  m_VLQtRenderWindow->ScheduleSceneRebuild();
 }
