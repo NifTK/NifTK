@@ -564,18 +564,18 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   if (vlActor.get() == 0)
     return;
 
-  bool  isVisble = true;
+  bool isVisble = true;
   mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
-  if (visibleProp != 0)
+  if ( visibleProp ) {
     isVisble = visibleProp->GetValue();
-
+  }
   float opacity = 1.0f;
   mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
-  if (opacityProp != 0)
+  if ( opacityProp ) {
     opacity = opacityProp->GetValue();
-  // if object is too translucent to not have a effect after blending then just skip it.
-  if (opacity < (1.0f / 255.0f))
-    isVisble = false;
+    isVisble &= opacity > 1.0f / 255.0f;
+  }
+
   VIVID_CHECK( vlActor->enableMask() == vl::VividRenderer::DefaultEnableMask ||
             vlActor->enableMask() == vl::VividRenderer::VolumeEnableMask  );
 
