@@ -48,6 +48,7 @@
 #include <vlGraphics/GLSL.hpp>
 #include <vlGraphics/plugins/ioVLX.hpp>
 #include <vlGraphics/FramebufferObject.hpp>
+#include <vlGraphics/AdjacencyExtractor.hpp>
 #include <vlVolume/RaycastVolume.hpp>
 #include <cassert>
 #include <vtkSmartPointer.h>
@@ -165,9 +166,11 @@ struct VLUserData : public vl::Object
 
 VLQtWidget::VLQtWidget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
   : QGLWidget(parent, shareWidget, f)
-  , m_BackgroundWidth(0)
-  , m_BackgroundHeight(0)
+  , m_BackgroundWidth( 0 )
+  , m_BackgroundHeight( 0 )
   , m_ScheduleTrackballAdjustView( true )
+  , m_Refresh(30) // 30 fps
+  , m_OclService(0)
 #ifdef _USE_CUDA
   , m_CUDAInteropPimpl(0)
 #endif
@@ -365,6 +368,7 @@ void VLQtWidget::InitSceneFromDataStorage()
   }
 
   #if 0
+    // dump scene to VLB/VLT format
     vl::ref< vl::ResourceDatabase > db = new vl::ResourceDatabase;
     for( int i = 0; i < m_SceneManager->tree()->actors()->size(); ++i ) {
       vl::Actor* act = m_SceneManager->tree()->actors()->at(i);
@@ -531,20 +535,23 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   }
 
 #if 1
+  // dump node data to be updated
   {
-    printf("---\n");
-    const std::string& name = node.GetPointer()->GetObjectName();
+    printf("\nUpdateDataNode(): ");
+    const std::string& obj_name = node.GetPointer()->GetObjectName();
     mitk::StringProperty* nameProp = dynamic_cast<mitk::StringProperty*>(node->GetProperty("name"));
+    std::string name_prop = "<unknown>";
     if (nameProp != 0) {
-      printf("%s\n", nameProp->GetValue() );
+      name_prop = nameProp->GetValue();
     }
+    printf( "\"%s\" (%s)\n", name_prop.c_str(), obj_name.c_str() );
 
     const mitk::PropertyList::PropertyMap* propList = node->GetPropertyList()->GetMap();
     mitk::PropertyList::PropertyMap::const_iterator it = node->GetPropertyList()->GetMap()->begin();
     for( ; it != node->GetPropertyList()->GetMap()->end(); ++it ) {
       const std::string name = it->first;
       const mitk::BaseProperty::Pointer prop = it->second;
-      printf( "> %s: %s\n", name.c_str(), prop->GetValueAsString().c_str() );
+      printf( "\t%s: %s\n", name.c_str(), prop->GetValueAsString().c_str() );
     }
   }
 #endif
@@ -1348,9 +1355,9 @@ void VLQtWidget::initializeGL()
   vl::OpenGLContext::dispatchInitEvent();
 
 #if 0
-  // debugging
-  mitk::DataNode::Pointer   n = mitk::DataNode::New();
-  mitk::PCLData::Pointer    p = niftk::PCLData::New();
+  // Point cloud data test
+  mitk::DataNode::Pointer n = mitk::DataNode::New();
+  mitk::PCLData::Pointer  p = niftk::PCLData::New();
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr  c(new pcl::PointCloud<pcl::PointXYZRGB>);
   for (int i = 0; i < 100; ++i)
   {
