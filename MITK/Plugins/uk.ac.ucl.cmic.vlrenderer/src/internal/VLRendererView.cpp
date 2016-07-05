@@ -193,28 +193,29 @@ void VLRendererView::OnBackgroundNodeSelected(const mitk::DataNode* node)
 }
 
 //-----------------------------------------------------------------------------
+
 void VLRendererView::OnCameraNodeSelected(const mitk::DataNode* node)
 {
   OnCameraNodeEnabled(m_Controls->m_CameraNodeEnabled->isChecked());
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::OnCameraNodeEnabled(bool enabled)
 {
   if (!enabled)
   {
-    m_VLQtRenderWindow->SetCameraTrackingNode(0);
+    m_VLQtRenderWindow->SetCameraTrackingNode( 0 );
   }
   else
   {
-    mitk::DataNode::Pointer n = m_Controls->m_CameraNode->GetSelectedNode();
-    m_VLQtRenderWindow->SetCameraTrackingNode(n.GetPointer());
+    mitk::DataNode::Pointer node = m_Controls->m_CameraNode->GetSelectedNode();
+    m_VLQtRenderWindow->SetCameraTrackingNode( node.GetPointer() );
   }
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::OnNodeAdded(mitk::DataNode* node)
 {
   if (node == 0 || node->GetData()== 0)
