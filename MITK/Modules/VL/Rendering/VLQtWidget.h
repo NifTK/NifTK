@@ -131,57 +131,11 @@ public:
     ClearScene();
     update();
   }
-  // from vl::OpenGLContext
-public:
-
-  virtual void setContinuousUpdate(bool continuous);
-  virtual void setWindowTitle(const vl::String& title);
-  virtual bool setFullscreen(bool fullscreen);
-  virtual void show();
-  virtual void hide();
-  virtual void setPosition(int x, int y);
-  virtual vl::ivec2 position() const;
-  virtual void update();                // hides non-virtual QWidget::update()?
-  virtual void setSize(int w, int h);
-  virtual void swapBuffers();           // in QGLWidget too
-  virtual void makeCurrent();           // in QGLWidget too
-  virtual void setMousePosition(int x, int y);
-  virtual void setMouseVisible(bool visible);
-  virtual void getFocus();
-
-  virtual vl::ivec2 size() const;       // BEWARE: not a base class method!
-
-protected:
-
-  void translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out);
-
-  // from QGLWidget
-protected:
-
-  virtual void initializeGL();
-  virtual void resizeGL(int width, int height);
-  virtual void paintGL();
-  virtual void mouseMoveEvent(QMouseEvent* ev);
-  virtual void mousePressEvent(QMouseEvent* ev);
-  virtual void mouseReleaseEvent(QMouseEvent* ev);
-  virtual void wheelEvent(QWheelEvent* ev);
-  virtual void keyPressEvent(QKeyEvent* ev);
-  virtual void keyReleaseEvent(QKeyEvent* ev);
-  // void dragEnterEvent(QDragEnterEvent *ev);
-  // void dropEvent(QDropEvent* ev);
 
 private:
-
-  // QGLContext* context();    // non-const, hiding the one in QGLWidget.
-
-  void QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node);
-
   void ClearScene();
 
-  /**
-
 protected:
-
   void InitSceneFromDataStorage();
 
   virtual void AddDataStorageListeners();
@@ -290,6 +244,46 @@ protected:
 protected:
   int    m_Refresh;
   QTimer m_UpdateTimer;
+
+  // --------------------------------------------------------------------------
+
+  // from vl::OpenGLContext
+public:
+  virtual void setContinuousUpdate(bool continuous);
+  virtual void setWindowTitle(const vl::String& title);
+  virtual bool setFullscreen(bool fullscreen);
+  virtual void show();
+  virtual void hide();
+  virtual void setPosition(int x, int y);
+  virtual vl::ivec2 position() const;
+  virtual void update();                // hides non-virtual QWidget::update()?
+  virtual void setSize(int w, int h);
+  virtual void swapBuffers();           // in QGLWidget too
+  virtual void makeCurrent();           // in QGLWidget too
+  virtual void setMousePosition(int x, int y);
+  virtual void setMouseVisible(bool visible);
+  virtual void getFocus();
+
+  virtual vl::ivec2 size() const;       // BEWARE: not a base class method!
+
+protected:
+
+  void translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out);
+
+  // from QGLWidget
+protected:
+
+  virtual void initializeGL();
+  virtual void resizeGL(int width, int height);
+  virtual void paintGL();
+  virtual void mouseMoveEvent(QMouseEvent* ev);
+  virtual void mousePressEvent(QMouseEvent* ev);
+  virtual void mouseReleaseEvent(QMouseEvent* ev);
+  virtual void wheelEvent(QWheelEvent* ev);
+  virtual void keyPressEvent(QKeyEvent* ev);
+  virtual void keyReleaseEvent(QKeyEvent* ev);
+  // void dragEnterEvent(QDragEnterEvent *ev);
+  // void dropEvent(QDropEvent* ev);
 };
 
 
