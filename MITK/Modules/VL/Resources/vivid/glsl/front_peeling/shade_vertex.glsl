@@ -28,10 +28,5 @@ void main()
     CP = gl_ModelViewMatrix * gl_Vertex;
     WP = vl_WorldMatrix * gl_Vertex;
     N = normalize( gl_NormalMatrix * gl_Normal );
-    if ( vl_Vivid.colorMaterialEnabled ) {
-        Color = gl_Color;
-    }
-    else {
-        Color = gl_FrontMaterial.diffuse;
-    }
+    Color = gl_Color;
 }

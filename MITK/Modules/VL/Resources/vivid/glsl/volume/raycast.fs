@@ -128,8 +128,6 @@ vec4 computeFragColorIso( vec3 pos )
 }
 
 void raycastIsosurface() {
-    float actualIsoVal = isoValue;
-
     // Ray direction goes from OP to eyePosition, i.e. back to front
     vec3 ray_dir  = normalize( eyePosition.xyz - OP ) * volumeScalingCorrection;
     vec3 ray_step = ray_dir * sampleStep;
@@ -142,7 +140,7 @@ void raycastIsosurface() {
     vec3 pos000 = vec3( 0.0, 0.0, 0.0 ) + volumeDelta;
 
     float val = texture3D( volumeTexture, gl_TexCoord[0].xyz ).r;
-    bool sign_prev = val > actualIsoVal;
+    bool sign_prev = val > isoValue;
     bool isosurface_found = false;
     gl_FragColor = vec4( 0.0 );
     do {
@@ -154,7 +152,7 @@ void raycastIsosurface() {
         }
 
         val = texture3D( volumeTexture, ray_pos ).r;
-        bool sign_cur = val > actualIsoVal;
+        bool sign_cur = val > isoValue;
 
         if ( sign_cur != sign_prev )
         {

@@ -93,12 +93,12 @@ struct vl_StencilParameters {
 
 struct vl_VividParameters {
     // <per-Actor>
-     // 0=Polys, 1=Outline3D, 2=Polys+Outline3D, 3=Slice, 4=Outline2D, 5=Polys+Outline2D
+    // 0=Polys, 1=Outline3D, 2=Polys+Outline3D, 3=Slice, 4=Outline2D, 5=Polys+Outline2D
     int renderMode;
 
     // <per-Actor>
-    // Similar to GL_COLOR_MATERIAL
-    bool colorMaterialEnabled;
+    // If lighting is disabled Geometry must have a color array
+    bool enableLighting;
 
     // <automatic>
     // Global opacity
