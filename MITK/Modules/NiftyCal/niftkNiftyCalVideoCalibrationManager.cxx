@@ -642,7 +642,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
 
   // Watch out: OpenCV reference counts the image data block.
   // So, if you create two cv::Mat, using say the copy constructor
-  // or assignment constructor, both cv::Mat point to the same memory
+  // or assignment operator, both cv::Mat point to the same memory
   // block, unless you explicitly call the clone method. This
   // causes a problem when we store them in a STL container.
   // So, in the code below, we add the detector and the image into
@@ -658,6 +658,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     niftk::ChessboardPointDetector *chessboardDetector1 = new niftk::ChessboardPointDetector(internalCorners);
     chessboardDetector1->SetImageScaleFactor(scaleFactors);
     chessboardDetector1->SetImage(&copyOfImage1);
+    chessboardDetector1->SetCaching(true);
 
     niftk::PointSet points = chessboardDetector1->GetPoints();
     if (points.size() == m_GridSizeX * m_GridSizeY)
@@ -675,6 +676,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
         new niftk::ChessboardPointDetector(internalCorners);
       chessboardDetector2->SetImageScaleFactor(scaleFactors);
       chessboardDetector2->SetImage(&copyOfImage2);
+      chessboardDetector2->SetCaching(false);
 
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(chessboardDetector2);
       m_ImagesForWarping[imageIndex].push_back(
@@ -690,6 +692,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     niftk::CirclesPointDetector *circlesDetector1 = new niftk::CirclesPointDetector(internalCorners);
     circlesDetector1->SetImageScaleFactor(scaleFactors);
     circlesDetector1->SetImage(&copyOfImage1);
+    circlesDetector1->SetCaching(true);
 
     niftk::PointSet points = circlesDetector1->GetPoints();
     if (points.size() == m_GridSizeX * m_GridSizeY)
@@ -707,6 +710,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
         new niftk::CirclesPointDetector(internalCorners);
       circlesDetector2->SetImageScaleFactor(scaleFactors);
       circlesDetector2->SetImage(&copyOfImage2);
+      circlesDetector2->SetCaching(false);
 
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(circlesDetector2);
       m_ImagesForWarping[imageIndex].push_back(
@@ -721,6 +725,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
     aprilTagsDetector1->SetImageScaleFactor(scaleFactors);
     aprilTagsDetector1->SetImage(&copyOfImage1);
+    aprilTagsDetector1->SetCaching(true);
 
     niftk::PointSet points = aprilTagsDetector1->GetPoints();
     if (points.size() >= m_MinimumNumberOfPoints)
@@ -738,6 +743,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
         new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
       aprilTagsDetector2->SetImageScaleFactor(scaleFactors);
       aprilTagsDetector2->SetImage(&copyOfImage2);
+      aprilTagsDetector2->SetCaching(false);
 
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(aprilTagsDetector2);
       m_ImagesForWarping[imageIndex].push_back(
@@ -763,6 +769,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     circlesIterativeDetector1->SetUseContours(true);
     circlesIterativeDetector1->SetUseInternalResampling(true);
     circlesIterativeDetector1->SetUseTemplateMatching(true);
+    circlesIterativeDetector1->SetCaching(true);
 
     niftk::PointSet points = circlesIterativeDetector1->GetPoints();
     if (points.size() == m_GridSizeX * m_GridSizeY)
@@ -778,15 +785,16 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
 
       niftk::CirclesIterativePointDetector *circlesIterativeDetector2
           = new niftk::CirclesIterativePointDetector(internalCorners, offsetIfNotIterative);
-      circlesIterativeDetector1->SetImage(&copyOfImage2);
-      circlesIterativeDetector1->SetImageScaleFactor(scaleFactors);
-      circlesIterativeDetector1->SetTemplateImage(&m_TemplateImage);
-      circlesIterativeDetector1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
-      circlesIterativeDetector1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
-      circlesIterativeDetector1->SetMaxAreaInPixels(maxArea);
-      circlesIterativeDetector1->SetUseContours(false);
-      circlesIterativeDetector1->SetUseInternalResampling(false);
-      circlesIterativeDetector1->SetUseTemplateMatching(true);
+      circlesIterativeDetector2->SetImage(&copyOfImage2);
+      circlesIterativeDetector2->SetImageScaleFactor(scaleFactors);
+      circlesIterativeDetector2->SetTemplateImage(&m_TemplateImage);
+      circlesIterativeDetector2->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+      circlesIterativeDetector2->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+      circlesIterativeDetector2->SetMaxAreaInPixels(maxArea);
+      circlesIterativeDetector2->SetUseContours(false);
+      circlesIterativeDetector2->SetUseInternalResampling(false);
+      circlesIterativeDetector2->SetUseTemplateMatching(true);
+      circlesIterativeDetector2->SetCaching(false);
 
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(circlesIterativeDetector2);
       m_ImagesForWarping[imageIndex].push_back(
@@ -812,6 +820,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     ringsIterativeDetector1->SetUseContours(true);
     ringsIterativeDetector1->SetUseInternalResampling(true);
     ringsIterativeDetector1->SetUseTemplateMatching(true);
+    ringsIterativeDetector1->SetCaching(true);
 
     niftk::PointSet points = ringsIterativeDetector1->GetPoints();
     if (points.size() == m_GridSizeX * m_GridSizeY)
@@ -836,6 +845,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       ringsIterativeDetector2->SetUseContours(false);
       ringsIterativeDetector2->SetUseInternalResampling(false);
       ringsIterativeDetector2->SetUseTemplateMatching(true);
+      ringsIterativeDetector2->SetCaching(false);
 
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(ringsIterativeDetector2);
       m_ImagesForWarping[imageIndex].push_back(
