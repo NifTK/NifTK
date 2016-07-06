@@ -151,13 +151,13 @@ namespace
 struct VLUserData : public vl::Object
 {
   VLUserData()
-    : m_TransformLastModified(0)
-    , m_ImageVtkDataLastModified(0)
+    : m_TransformModifiedTime(0)
+    , m_ImageModifiedTime(0)
   {
   }
 
-  itk::ModifiedTimeType m_TransformLastModified;
-  itk::ModifiedTimeType m_ImageVtkDataLastModified;
+  itk::ModifiedTimeType m_TransformModifiedTime;
+  itk::ModifiedTimeType m_ImageModifiedTime;
 };
 
 //-----------------------------------------------------------------------------
@@ -394,7 +394,7 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
     return;
 
   // only add node once.
-  if ( FindActorForNode( node ) ) {
+  if ( GetNodeActor( node ) ) {
     return;
   }
 
@@ -557,7 +557,7 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   }
 #endif
 
-  vl::Actor* actor = FindActorForNode(node);
+  vl::Actor* actor = GetNodeActor(node);
   if ( ! actor ) {
     return;
   }
@@ -1284,6 +1284,8 @@ void VLQtWidget::initializeGL()
 #endif
 
 #if 0
+  // Update the rendering at 5 fps so video card doesn't sleep.
+  // Avoid "sticky" effect when rotating scene with mouse.
   disconnect(&m_BackgroundUpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
   connect(&m_BackgroundUpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
   m_BackgroundUpdateTimer.setSingleShot(false);
@@ -1576,10 +1578,10 @@ void VLQtWidget::UpdateActorTransformFromNode(vl::Actor* actor, const mitk::Data
       if (geom.IsNotNull())
       {
         vl::ref<VLUserData> userdata = GetUserData(actor);
-        if (geom->GetMTime() > userdata->m_TransformLastModified)
+        if (geom->GetMTime() > userdata->m_TransformModifiedTime)
         {
           UpdateTransformFromData(actor->transform(), data.GetPointer());
-          userdata->m_TransformLastModified = geom->GetMTime();
+          userdata->m_TransformModifiedTime = geom->GetMTime();
         }
       }
     }
@@ -1805,7 +1807,7 @@ bool VLQtWidget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 
 //-----------------------------------------------------------------------------
 
-vl::Actor* VLQtWidget::FindActorForNode(const mitk::DataNode::ConstPointer& node)
+vl::Actor* VLQtWidget::GetNodeActor(const mitk::DataNode::ConstPointer& node)
 {
   NodeActorMapType::iterator it = m_NodeActorMap.find(node);
   return it == m_NodeActorMap.end() ? NULL : it->second.get();
@@ -1826,14 +1828,14 @@ void VLQtWidget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node
     return;
   }
 
-  vl::Actor* actor = FindActorForNode(node);
+  vl::Actor* actor = GetNodeActor(node);
   if ( actor )
   {
     VIVID_CHECK(actor->effect());
     VIVID_CHECK(actor->effect()->shader());
 
     VLUserData* userdata = GetUserData(actor);
-    if (mitk_img->GetVtkImageData()->GetMTime() > userdata->m_ImageVtkDataLastModified)
+    if (mitk_img->GetVtkImageData()->GetMTime() > userdata->m_ImageModifiedTime)
     {
       vl::ref<vl::Texture> tex = actor->effect()->shader()->gocTextureSampler(0)->texture();
       if (tex.get() != 0)
@@ -1862,7 +1864,7 @@ void VLQtWidget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node
 
         tex->setMipLevel(0, vlimg.get(), false);
 
-        userdata->m_ImageVtkDataLastModified = mitk_img->GetVtkImageData()->GetMTime();
+        userdata->m_ImageModifiedTime = mitk_img->GetVtkImageData()->GetMTime();
       }
     }
   }

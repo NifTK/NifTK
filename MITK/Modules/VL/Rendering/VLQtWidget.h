@@ -168,7 +168,7 @@ protected:
 
   void PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
   vl::ref<vl::Geometry> CreateGeometryFor2DImage(int width, int height);
-  vl::Actor* FindActorForNode(const mitk::DataNode::ConstPointer& node);
+  vl::Actor* GetNodeActor(const mitk::DataNode::ConstPointer& node);
   VLUserData* GetUserData(vl::Actor* actor);
 
 protected:
