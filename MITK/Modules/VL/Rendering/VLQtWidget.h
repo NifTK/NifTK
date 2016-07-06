@@ -142,9 +142,9 @@ protected:
   virtual void OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
 
   void UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node);
-  void UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node);
-  void UpdateTransformFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node);
-  void UpdateTransformFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data);
+  void UpdateActorTransformFromNode(vl::Actor* actor, const mitk::DataNode::ConstPointer& node);
+  void UpdateTransformFromNode(vl::Transform* txf, const mitk::DataNode::ConstPointer& node);
+  void UpdateTransformFromData(vl::Transform* txf, const mitk::BaseData::ConstPointer& data);
 
   vl::ref<vl::Actor> AddPointsetActor(const mitk::PointSet::Pointer& mitkPS);
   vl::ref<vl::Actor> AddPointCloudActor(niftk::PCLData* pcl);
@@ -165,8 +165,8 @@ protected:
 
   void PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
   vl::ref<vl::Geometry> CreateGeometryFor2DImage(int width, int height);
-  vl::ref<vl::Actor> FindActorForNode(const mitk::DataNode::ConstPointer& node);
-  vl::ref<VLUserData> GetUserData(vl::ref<vl::Actor> actor);
+  vl::Actor* FindActorForNode(const mitk::DataNode::ConstPointer& node);
+  VLUserData* GetUserData(vl::Actor* actor);
 
 protected:
   vl::ref<vl::VividRendering>        m_VividRendering;

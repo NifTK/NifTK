@@ -169,7 +169,7 @@ VLQtWidget::VLQtWidget(QWidget* parent, const QGLWidget* shareWidget, Qt::Window
   , m_BackgroundWidth( 0 )
   , m_BackgroundHeight( 0 )
   , m_ScheduleTrackballAdjustView( true )
-  , m_Refresh(30) // 30 fps
+  , m_Refresh(1000 / 30) // 30 fps
   , m_OclService(0)
 #ifdef _USE_CUDA
   , m_CUDAInteropPimpl(0)
@@ -560,9 +560,11 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   if (it == m_NodeToActorMap.end())
     return;
 
-  vl::ref<vl::Actor> vlActor = it->second;
-  if (vlActor.get() == 0)
+  vl::Actor* actor = it->second.get();
+  if ( ! actor ) {
     return;
+  }
+
 
   bool isVisble = true;
   mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
@@ -1644,7 +1646,7 @@ vl::mat4 VLQtWidget::GetVLMatrixFromData(const mitk::BaseData::ConstPointer& dat
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::UpdateTransformFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data)
+void VLQtWidget::UpdateTransformFromData(vl::Transform* txf, const mitk::BaseData::ConstPointer& data)
 {
   vl::mat4  mat = GetVLMatrixFromData(data);
 
@@ -1657,7 +1659,7 @@ void VLQtWidget::UpdateTransformFromData(vl::ref<vl::Transform> txf, const mitk:
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node)
+void VLQtWidget::UpdateActorTransformFromNode(vl::Actor* actor, const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNotNull())
   {
@@ -1680,21 +1682,22 @@ void VLQtWidget::UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const mi
 
 //-----------------------------------------------------------------------------
 
-vl::ref<VLUserData> VLQtWidget::GetUserData(vl::ref<vl::Actor> actor)
+VLUserData* VLQtWidget::GetUserData(vl::Actor* actor)
 {
-  vl::ref<VLUserData>   userdata = actor->userData()->as<VLUserData>();
-  if (userdata.get() == 0)
+  VIVID_CHECK( actor );
+  vl::ref<VLUserData> userdata = actor->userData()->as<VLUserData>();
+  if ( ! userdata )
   {
     userdata = new VLUserData;
-    actor->setUserData(userdata.get());
+    actor->setUserData( userdata.get() );
   }
 
-  return userdata;
+  return userdata.get();
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::UpdateTransformFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node)
+void VLQtWidget::UpdateTransformFromNode(vl::Transform* txf, const mitk::DataNode::ConstPointer& node)
 {
   if (node.IsNotNull())
   {
@@ -1896,15 +1899,15 @@ bool VLQtWidget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 
 //-----------------------------------------------------------------------------
 
-vl::ref<vl::Actor> VLQtWidget::FindActorForNode(const mitk::DataNode::ConstPointer& node)
+vl::Actor* VLQtWidget::FindActorForNode(const mitk::DataNode::ConstPointer& node)
 {
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
+  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator it = m_NodeToActorMap.find(node);
   if (it != m_NodeToActorMap.end())
   {
-    return it->second;
+    return it->second.get();
   }
 
-  return vl::ref<vl::Actor>();
+  return NULL;
 }
 
 //-----------------------------------------------------------------------------
