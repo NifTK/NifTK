@@ -394,8 +394,9 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
     return;
 
   // only add node once.
-  if (m_NodeToActorMap.find(node) != m_NodeToActorMap.end())
+  if ( FindActorForNode( node ) ) {
     return;
+  }
 
   // Propagate color and opacity down to basedata
   node->GetData()->SetProperty("color", node->GetProperty("color"));
@@ -473,7 +474,7 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
     node->GetStringProperty( "name", objName );
     newActor->setObjectName( ( namePrefix + objName ).c_str() );
 
-    m_NodeToActorMap[node] = newActor;
+    m_NodeActorMap[node] = newActor;
 
     // update colour, etc.
     UpdateDataNode(node);
@@ -512,14 +513,14 @@ void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
   }
 #endif
 
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator    it = m_NodeToActorMap.find(node);
-  if (it != m_NodeToActorMap.end())
+  NodeActorMapType::iterator it = m_NodeActorMap.find(node);
+  if (it != m_NodeActorMap.end())
   {
-    vl::ref<vl::Actor>    vlActor = it->second;
-    if (vlActor.get() != 0)
+    vl::ref<vl::Actor>    actor = it->second;
+    if (actor.get() != 0)
     {
-      m_SceneManager->tree()->eraseActor(vlActor.get());
-      m_NodeToActorMap.erase(it);
+      m_SceneManager->tree()->eraseActor(actor.get());
+      m_NodeActorMap.erase(it);
     }
   }
 }
@@ -556,163 +557,65 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   }
 #endif
 
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator it = m_NodeToActorMap.find(node);
-  if (it == m_NodeToActorMap.end())
-    return;
-
-  vl::Actor* actor = it->second.get();
+  vl::Actor* actor = FindActorForNode(node);
   if ( ! actor ) {
     return;
   }
 
+  vl::Shader* shader = actor->effect()->shader();
 
-  bool isVisble = true;
+  // Update visibility
+  bool visible = true;
   mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
   if ( visibleProp ) {
-    isVisble = visibleProp->GetValue();
+    visible = visibleProp->GetValue();
   }
   float opacity = 1.0f;
   mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
   if ( opacityProp ) {
     opacity = opacityProp->GetValue();
-    isVisble &= opacity > 1.0f / 255.0f;
+    visible &= opacity > 1.0f / 255.0f;
   }
+  VIVID_CHECK( actor->enableMask() == vl::VividRenderer::DefaultEnableMask ||
+               actor->enableMask() == vl::VividRenderer::VolumeEnableMask  );
+  actor->setEnabled( visible );
 
-  VIVID_CHECK( vlActor->enableMask() == vl::VividRenderer::DefaultEnableMask ||
-               vlActor->enableMask() == vl::VividRenderer::VolumeEnableMask  );
-
-  if ( ! isVisble )
-  {
-    vlActor->setEnabled( false );
+  // Update color and opacity
+  vl::fvec4 color(1, 1, 1, opacity);
+  mitk::ColorProperty* colorProp = dynamic_cast<mitk::ColorProperty*>(node->GetProperty("color"));
+  if ( colorProp ) {
+    mitk::Color mitkColor = colorProp->GetColor();
+    color.r() = mitkColor.GetRed();
+    color.g() = mitkColor.GetGreen();
+    color.b() = mitkColor.GetBlue();
   }
-  else
-  {
-    vlActor->setEnabled( true );
+  shader->gocMaterial()->setDiffuse( color );
 
-    vl::fvec4 color(1, 1, 1, opacity);
-    mitk::ColorProperty* colorProp = dynamic_cast<mitk::ColorProperty*>(node->GetProperty("color"));
-    if (colorProp != 0)
-    {
-      mitk::Color mitkColor = colorProp->GetColor();
-      color[0] = mitkColor[0];
-      color[1] = mitkColor[1];
-      color[2] = mitkColor[2];
-    }
+  // Update point size
+  float pointsize = 1;
+  node->GetFloatProperty("pointsize", pointsize);
+  // this is part of the standard vivid shader so it must be present.
+  VIVID_CHECK( shader->getPointSize() );
+  shader->getPointSize()->set( pointsize );
+  pointsize > 1 ? shader->enable(vl::EN_POINT_SMOOTH) :
+                  shader->disable(vl::EN_POINT_SMOOTH);
 
-    vl::ref<vl::Effect> fx1 = new vl::Effect;
-    fx1->shader()->enable(vl::EN_BLEND);
-    fx1->shader()->enable(vl::EN_DEPTH_TEST);
-    fx1->shader()->enable(vl::EN_LIGHTING);
-    fx1->shader()->setRenderState( new vl::Light, 0 );
-    fx1->shader()->gocLightModel()->setTwoSide(true);
-    fx1->shader()->gocLightModel()->setLocalViewer(true);
-    fx1->shader()->gocMaterial()->setAmbient( vl::fvec4(1.0f, 1.0f, 1.0f, 1.0f) );
-    fx1->shader()->gocMaterial()->setDiffuse( color );
-    fx1->shader()->gocMaterial()->setSpecular( vl::fvec4(0.5f, 0.5f, 0.5f, 1.0f) );
-    fx1->shader()->gocMaterial()->setShininess(128.0f);
-    //fx1->shader()->gocMaterial()->setColorMaterialEnabled(false);
-    //fx1->shader()->gocMaterial()->setColorMaterial(vl::PF_FRONT_AND_BACK, vl::CM_DIFFUSE);
-    //fx1->shader()->gocUniform("COLOR_MATERIAL_ON")->setUniformI(0);
+  // Update Actor's Transform
+  UpdateActorTransformFromNode(actor, node);
 
-    vlActor->setEffect(fx1.get());
-
-    //vl::ref<vl::Effect> fx = vlActor->effect();
-    //fx->shader()->enable(vl::EN_DEPTH_TEST);
-    //fx->shader()->setRenderState(m_Light.get(), 0);
-    //fx->shader()->gocMaterial()->setDiffuse(vl::white);   // normal shading is done via tint colour.
-    //fx->shader()->gocRenderStateSet()->setRenderState(m_GenericGLSLShader.get(), -1);
-
-    //// the uniform tint colour is defined on the actor, instead of shader or effect.
-    //vlActor->gocUniformSet()->gocUniform("u_TintColour")->setUniform4f(1, color.ptr());
-
-    //// shader still needs to know whether to apply light-shading or not.
-    //float   disableLighting = fx->shader()->isEnabled(vl::EN_LIGHTING) ? 0.0f : 1.0f;
-    //vlActor->gocUniformSet()->gocUniform("u_DisableLighting")->setUniform1f(1, &disableLighting);
-
-    //// by convention, all meaningful texture maps are bound in slot 0.
-    //// slot 1 will have the default-empty-dummy.
-    //if (fx->shader()->getTextureSampler(0) != 0) {
-    //  vlActor->gocUniformSet()->gocUniform("u_TextureMap")->setUniformI(0);
-    //}
-    //else {
-    //  vlActor->gocUniformSet()->gocUniform("u_TextureMap")->setUniformI(1);
-    //}
-
-    //float   pointsize = 1;
-    //bool    haspointsize = node->GetFloatProperty("pointsize", pointsize);
-    //if (haspointsize)
-    //{
-    //  vl::PointSize* ps = fx->shader()->getPointSize();
-    //  if (ps != 0)
-    //  {
-    //    if (ps->pointSize() != pointsize)
-    //      ps = 0;
-    //  }
-
-    //  if (ps == 0)
-    //  {
-    //    fx->shader()->setRenderState(new vl::PointSize(pointsize));
-    //    if (pointsize > 1)
-    //      fx->shader()->enable(vl::EN_POINT_SMOOTH);
-    //    else
-    //      fx->shader()->disable(vl::EN_POINT_SMOOTH);
-    //  }
-    //}
-
-    //bool isVolume = false;
-    //// special case for volumes: they'll have a certain event-callback bound.
-    //for (int i = 0; i < vlActor->actorEventCallbacks()->size(); ++i)
-    //{
-    //  isVolume |= (dynamic_cast<vl::RaycastVolume*>(vlActor->actorEventCallbacks()->at(i)) != 0);
-    //  if (isVolume)
-    //    break;
-    //}
-
-    //if (isVolume)
-    //{
-    //  vlActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
-    //  vlActor->setEnableMask(ENABLEMASK_VOLUME);
-    //  fx->shader()->enable(vl::EN_BLEND);
-    //  fx->shader()->enable(vl::EN_CULL_FACE);
-    //  fx->shader()->gocMaterial()->setTransparency(1.0f);//opacity);
-    //}
-    //else
-    //{
-    //  bool  isProbablyTranslucent = opacity <= (1.0f - (1.0f / 255.0f));
-    //  if (isProbablyTranslucent)
-    //  {
-    //    vlActor->setRenderBlock(RENDERBLOCK_TRANSLUCENT);
-    //    vlActor->setEnableMask(ENABLEMASK_TRANSLUCENT);
-    //    fx->shader()->enable(vl::EN_BLEND);
-    //    // no backface culling for translucent objects: you should be able to see the backside!
-    //    fx->shader()->disable(vl::EN_CULL_FACE);
-    //  }
-    //  else
-    //  {
-    //    vlActor->setRenderBlock(RENDERBLOCK_OPAQUE);
-    //    vlActor->setEnableMask(ENABLEMASK_OPAQUE);
-    //    fx->shader()->disable(vl::EN_BLEND);
-    //    //fx->shader()->enable(vl::EN_CULL_FACE);
-    //    fx->shader()->disable(vl::EN_CULL_FACE);
-    //  }
-    //}
-  }
-
-  UpdateActorTransformFromNode(vlActor, node);
-
-  // does the right thing if node does not contain an mitk-image.
+  // Update texture
   UpdateTextureFromImage(node);
+
+  // Update camera
+  if (node == m_CameraNode) {
+    UpdateCameraParameters();
+  }
 
   // if we do have live-updating textures then we do need to refresh the vl-side of it!
   // even if the node is not visible.
 #ifdef _USE_CUDA
   UpdateGLTexturesFromCUDA(node);
 #endif
-
-  if (node == m_CameraNode)
-  {
-    UpdateCameraParameters();
-  }
 }
 
 //-----------------------------------------------------------------------------
@@ -721,26 +624,19 @@ vl::ref<vl::Actor> VLQtWidget::AddSurfaceActor(const mitk::Surface::Pointer& mit
 {
   makeCurrent();
 
-  vl::ref<vl::Geometry> vlSurf = new vl::Geometry();
-  ConvertVTKPolyData(mitkSurf->GetVtkPolyData(), vlSurf);
-  vl::ref< vl::Geometry > geom_adj = vl::AdjacencyExtractor::extract( vlSurf.get() );
-  vlSurf->shallowCopyFrom( *geom_adj );
+  // MITK_INFO << "Num of vertices: " << vlSurf->vertexArray()->size()/3;
 
-  //MITK_INFO <<"Num of vertices: " << vlSurf->vertexArray()->size()/3;
-  //ArrayAbstract* posarr = vertexArray() ? vertexArray() : vertexAttribArray(vl::VA_Position) ? vertexAttribArray(vl::VA_Position)->data() : NULL;
-  if ( ! vlSurf->normalArray() ) {
-    vlSurf->computeNormals();
+  vl::ref<vl::Geometry> geom = ConvertVTKPolyData(mitkSurf->GetVtkPolyData());
+  if ( ! geom->normalArray() ) {
+    geom->computeNormals();
   }
 
-  vl::ref<vl::Transform> tr = new vl::Transform;
-  UpdateTransformFromData(tr, mitkSurf.GetPointer());
-
   vl::ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-
-  vl::ref<vl::Actor> surfActor = m_SceneManager->tree()->addActor(vlSurf.get(), fx.get(), tr.get());
-  surfActor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-  return surfActor;
+  vl::ref<vl::Transform> tr = new vl::Transform;
+  UpdateTransformFromData(tr.get(), mitkSurf.GetPointer());
+  vl::ref<vl::Actor> actor = m_SceneManager->tree()->addActor(geom.get(), fx.get(), tr.get());
+  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
+  return actor;
 }
 
 //-----------------------------------------------------------------------------
@@ -926,20 +822,20 @@ vl::ref<vl::Geometry> VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly)
   }
   MITK_INFO << "Surface data initialized. Num of Points: " <<points->GetNumberOfPoints() << " Num of Cells: " <<verts->GetNumberOfCells() << "\n";
 
-  vl::ref<vl::ArrayFloat3>  vlVerts   = new vl::ArrayFloat3;
+  vl::ref<vl::ArrayFloat3>  vl_verts   = new vl::ArrayFloat3;
   vl::ref<vl::ArrayFloat3>  vlNormals = new vl::ArrayFloat3;
   vl::ref<vl::DrawElementsUInt> vlTriangles = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
 
-  vlVerts->resize(numOfPoints * 3);
+  vl_verts->resize(numOfPoints * 3);
   vlNormals->resize(numOfPoints * 3);
 
   vlPoly->drawCalls().push_back(vlTriangles.get());
   vlTriangles->indexBuffer()->resize(numOfTriangles*3);
 
-  vlPoly->setVertexArray(vlVerts.get());
+  vlPoly->setVertexArray(vl_verts.get());
   vlPoly->setNormalArray(vlNormals.get());
 
-  float* vertBufFlotPtr = reinterpret_cast<float *>(vlVerts->ptr());
+  float* vertBufFlotPtr = reinterpret_cast<float *>(vl_verts->ptr());
   float* normBufFlotPtr = reinterpret_cast<float *>(vlNormals->ptr());
 
   // Vertices and normals
@@ -967,7 +863,7 @@ vl::ref<vl::Geometry> VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly)
   }
 
   // Make sure that the values are copied onto GPU memory
-  vlVerts->updateBufferObject();
+  vl_verts->updateBufferObject();
   vlNormals->updateBufferObject();
   vlTriangles->indexBuffer()->updateBufferObject();
   glFinish();
@@ -1046,20 +942,19 @@ vl::ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkI
   }
 
   vl::ref<vl::Transform> tr = new vl::Transform;
-  UpdateTransformFromData(tr, mitkImg.GetPointer());
+  UpdateTransformFromData(tr.get(), mitkImg.GetPointer());
 
-  vl::ref<vl::Geometry> vlquad = CreateGeometryFor2DImage(dims[0], dims[1]);
+  vl::ref<vl::Geometry> geom = CreateGeometryFor2DImage(dims[0], dims[1]);
 
-  vl::ref<vl::Effect>    fx = new vl::Effect;
-  fx->shader()->disable(vl::EN_LIGHTING);
-  fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vlImg.get(), vl::TF_UNKNOWN, false));
-  fx->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
-  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
-  // UpdateDataNode() takes care of assigning colour etc.
-  // FIXME: alpha-blending? independent of opacity prop!
+  vl::ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
+  // FIXME: support textured object
+  fx->shader()->gocMaterial()->setFlatColor( vl::fuchsia ); 
+  //fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vlImg.get(), vl::TF_UNKNOWN, false));
+  //fx->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
+  //fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+  //fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
 
-  vl::ref<vl::Actor> actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
+  vl::ref<vl::Actor> actor = m_SceneManager->tree()->addActor(geom.get(), fx.get(), tr.get());
   actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
   return actor;
@@ -1069,6 +964,10 @@ vl::ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkI
 
 vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
 {
+  // MIC FIXME:
+
+  throw std::runtime_error("VLQtWidget::Add3DImageActor(): to be implemented!");
+
   makeCurrent();
 
   mitk::PixelType pixType = mitkImg->GetPixelType();
@@ -1161,27 +1060,27 @@ vl::ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkI
   color[2] = mitkColor[2];
   color[3] = opacity;
 
-  vl::ref<vl::Effect>    fx = new vl::Effect;
+  vl::ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
   fx->shader()->enable(vl::EN_DEPTH_TEST);
   fx->shader()->enable(vl::EN_BLEND);
-  fx->shader()->setRenderState(m_Light.get(), 0);
+  // fx->shader()->setRenderState(m_Light.get(), 0);
   fx->shader()->enable(vl::EN_LIGHTING);
   fx->shader()->gocMaterial()->setDiffuse(color);
   fx->shader()->gocMaterial()->setTransparency(opacity);
 
-  vl::String fragmentShaderSource   = LoadGLSLSourceFromResources("volume_raycast_isosurface_transp.fs");
-  vl::String vertexShaderSource     = LoadGLSLSourceFromResources("volume_luminance_light.vs");
+  //vl::String fragmentShaderSource   = LoadGLSLSourceFromResources("volume_raycast_isosurface_transp.fs");
+  //vl::String vertexShaderSource     = LoadGLSLSourceFromResources("volume_luminance_light.vs");
 
-  // The GLSL program used to perform the actual rendering.
-  // The \a volume_luminance_light.fs fragment shader allows you to specify how many
-  // lights to use (up to 4) and can optionally take advantage of a precomputed normals texture.
-  vl::ref<vl::GLSLProgram>    glslShader = fx->shader()->gocGLSLProgram();
-  glslShader->attachShader(new vl::GLSLFragmentShader(fragmentShaderSource));
-  glslShader->attachShader(new vl::GLSLVertexShader(vertexShaderSource));
+  //// The GLSL program used to perform the actual rendering.
+  //// The \a volume_luminance_light.fs fragment shader allows you to specify how many
+  //// lights to use (up to 4) and can optionally take advantage of a precomputed normals texture.
+  //vl::ref<vl::GLSLProgram>    glslShader = fx->shader()->gocGLSLProgram();
+  //glslShader->attachShader(new vl::GLSLFragmentShader(fragmentShaderSource));
+  //glslShader->attachShader(new vl::GLSLVertexShader(vertexShaderSource));
 
   vl::ref<vl::Actor> imageActor = new vl::Actor;
   imageActor->setEffect(fx.get());
-  imageActor->setUniform(m_ThresholdVal.get());
+  // imageActor->setUniform(m_ThresholdVal.get());
 
   vl::ref<vl::Transform>    tr = new vl::Transform;
   //UpdateTransfromFromData(tr, cudaImg);       // FIXME: needs proper thinking through
@@ -1334,14 +1233,15 @@ void VLQtWidget::initializeGL()
 #endif
 
 #ifdef _MSC_VER
-  //NvAPI_OGL_ExpertModeSet(NVAPI_OGLEXPERT_DETAIL_ALL, NVAPI_OGLEXPERT_DETAIL_BASIC_INFO, NVAPI_OGLEXPERT_OUTPUT_TO_ALL, 0);
+  // NvAPI_OGL_ExpertModeSet(NVAPI_OGLEXPERT_DETAIL_ALL, NVAPI_OGLEXPERT_DETAIL_BASIC_INFO, NVAPI_OGLEXPERT_OUTPUT_TO_ALL, 0);
 #endif
 
   // Create our VividRendering!
   m_VividRendering = new vl::VividRendering( vl::OpenGLContext::framebuffer() );
   m_VividRendering->setRenderingMode( vl::VividRendering::FrontToBackDepthPeeling ); /* (default) */
-  m_VividRendering->setCullingEnabled( false );
-  // m_VividRendering->setNearFarClippingPlanesOptimized( false );
+  m_VividRendering->setCullingEnabled( true );
+  // This creates some flickering on the skin for some reason
+  m_VividRendering->setNearFarClippingPlanesOptimized( false );
 
   // VividRendering nicely prepares for us all the structures we need to use ;)
   m_VividRenderer = m_VividRendering->vividRenderer();
@@ -1382,6 +1282,13 @@ void VLQtWidget::initializeGL()
 
   m_DataStorage->Add(n);
 #endif
+
+#if 0
+  disconnect(&m_BackgroundUpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
+  connect(&m_BackgroundUpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
+  m_BackgroundUpdateTimer.setSingleShot(false);
+  m_BackgroundUpdateTimer.start(1000 / 5);
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1420,10 +1327,11 @@ void VLQtWidget::paintGL()
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::CreateAndUpdateFBOSizes(int width, int height)
+void VLQtWidget::CreateAndUpdateFBOSizes( int width, int height )
 {
   makeCurrent();
 
+#ifdef _USE_CUDA
   // sanitise dimensions. depending on how windows are resized we can get zero here.
   // but that breaks on the ogl side.
   width  = std::max(1, width);
@@ -1435,8 +1343,6 @@ void VLQtWidget::CreateAndUpdateFBOSizes(int width, int height)
   opaqueFBO->addColorAttachment(vl::AP_COLOR_ATTACHMENT0, new vl::FBOColorBufferAttachment(vl::CBF_RGBA));   // this is a renderbuffer
   opaqueFBO->setDrawBuffer(vl::RDB_COLOR_ATTACHMENT0);
 
-
-#ifdef _USE_CUDA
   if (m_CUDAInteropPimpl)
   {
     delete m_CUDAInteropPimpl->m_FBOAdaptor;
@@ -1450,22 +1356,22 @@ void VLQtWidget::CreateAndUpdateFBOSizes(int width, int height)
 void VLQtWidget::UpdateViewportAndCameraAfterResize()
 {
   // some sane defaults
-  m_Camera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
-  m_BackgroundCamera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
+  // m_Camera->viewport()->set( 0, 0, QWidget::width(), QWidget::height() );
+  // m_BackgroundCamera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
 
-  if (m_BackgroundNode.IsNotNull())
+  if ( m_BackgroundNode.IsNotNull() )
   {
-    std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator ni = m_NodeToActorMap.find(m_BackgroundNode);
-    if (ni == m_NodeToActorMap.end())
-    {
-      // actor not ready yet, try again later.
-      // this is getting messy... but stuffing our widget here into an editor causes various methods
-      // to be called at the wrong time.
-      QMetaObject::invokeMethod(this, "UpdateViewportAndCameraAfterResize", Qt::QueuedConnection);
-    }
-    else
-    {
-      vl::ref<vl::Actor> backgroundactor = ni->second;
+    //NodeActorMapType::iterator ni = m_NodeActorMap.find(m_BackgroundNode);
+    //if (ni == m_NodeActorMap.end())
+    //{
+    //  // actor not ready yet, try again later.
+    //  // this is getting messy... but stuffing our widget here into an editor causes various methods
+    //  // to be called at the wrong time.
+    //  QMetaObject::invokeMethod(this, "UpdateViewportAndCameraAfterResize", Qt::QueuedConnection);
+    //}
+    //else
+    //{
+      // vl::ref<vl::Actor> backgroundactor = ni->second;
 
       // this is based on my old araknes video-ar app.
       // FIXME: aspect ratio?
@@ -1569,7 +1475,7 @@ void VLQtWidget::ClearScene()
 
   m_CameraNode = 0;
   m_BackgroundNode = 0;
-  m_NodeToActorMap.clear();
+  m_NodeActorMap.clear();
   m_NodesToUpdate.clear();
   m_NodesToAdd.clear();
   m_NodesToRemove.clear();
@@ -1803,7 +1709,7 @@ void VLQtWidget::PrepareBackgroundActor(const mitk::Image* img, const mitk::Base
   std::string   objName = actor->objectName() + "_background";
   actor->setObjectName(objName.c_str());
 
-  m_NodeToActorMap[node] = actor;
+  m_NodeActorMap[node] = actor;
 }
 
 //-----------------------------------------------------------------------------
@@ -1901,13 +1807,8 @@ bool VLQtWidget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 
 vl::Actor* VLQtWidget::FindActorForNode(const mitk::DataNode::ConstPointer& node)
 {
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator it = m_NodeToActorMap.find(node);
-  if (it != m_NodeToActorMap.end())
-  {
-    return it->second.get();
-  }
-
-  return NULL;
+  NodeActorMapType::iterator it = m_NodeActorMap.find(node);
+  return it == m_NodeActorMap.end() ? NULL : it->second.get();
 }
 
 //-----------------------------------------------------------------------------
@@ -1916,50 +1817,52 @@ void VLQtWidget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node
 {
   makeCurrent();
 
-  if (node.IsNotNull())
+  if ( node.IsNull() ) {
+    return;
+  }
+
+  mitk::Image::Pointer mitk_img = dynamic_cast<mitk::Image*>(node->GetData());
+  if ( mitk_img.IsNull() ) {
+    return;
+  }
+
+  vl::Actor* actor = FindActorForNode(node);
+  if ( actor )
   {
-    mitk::Image::Pointer img = dynamic_cast<mitk::Image*>(node->GetData());
-    if (img.IsNotNull())
+    VIVID_CHECK(actor->effect());
+    VIVID_CHECK(actor->effect()->shader());
+
+    VLUserData* userdata = GetUserData(actor);
+    if (mitk_img->GetVtkImageData()->GetMTime() > userdata->m_ImageVtkDataLastModified)
     {
-      vl::ref<vl::Actor> vlactor = FindActorForNode(node);
-      if (vlactor.get() != 0)
+      vl::ref<vl::Texture> tex = actor->effect()->shader()->gocTextureSampler(0)->texture();
+      if (tex.get() != 0)
       {
-        VIVID_CHECK(vlactor->effect());
-        VIVID_CHECK(vlactor->effect()->shader());
+        unsigned int*       dims    = mitk_img->GetDimensions();    // we do not own dims!
+        mitk::PixelType     pixType = mitk_img->GetPixelType();
+        vl::EImageType      type    = MapITKPixelTypeToVL(pixType.GetComponentType());
+        vl::EImageFormat    format  = MapComponentsToVLColourFormat(pixType.GetNumberOfComponents());
 
-        vl::ref<VLUserData>   userdata = GetUserData(vlactor);
-        if (img->GetVtkImageData()->GetMTime() > userdata->m_ImageVtkDataLastModified)
+        vl::ref<vl::Image>    vlimg = new vl::Image(dims[0], dims[1], 0, 1, format, type);
+        // sanity check
+        unsigned int  size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
+        VIVID_CHECK(vlimg->requiredMemory() == size);
+
+        try
         {
-          vl::ref<vl::Texture> tex = vlactor->effect()->shader()->gocTextureSampler(0)->texture();
-          if (tex.get() != 0)
-          {
-            unsigned int*       dims    = img->GetDimensions();    // we do not own dims!
-            mitk::PixelType     pixType = img->GetPixelType();
-            vl::EImageType      type    = MapITKPixelTypeToVL(pixType.GetComponentType());
-            vl::EImageFormat    format  = MapComponentsToVLColourFormat(pixType.GetNumberOfComponents());
-
-            vl::ref<vl::Image>    vlimg = new vl::Image(dims[0], dims[1], 0, 1, format, type);
-            // sanity check
-            unsigned int  size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
-            VIVID_CHECK(vlimg->requiredMemory() == size);
-
-            try
-            {
-              mitk::ImageReadAccessor   readAccess(img);
-              const void*               cPointer = readAccess.GetData();
-              std::memcpy(vlimg->pixels(), cPointer, vlimg->requiredMemory());
-            }
-            catch (...)
-            {
-              // FIXME: error handling?
-              MITK_ERROR << "Did not get pixel read access to 2D image.";
-            }
-
-            tex->setMipLevel(0, vlimg.get(), false);
-
-            userdata->m_ImageVtkDataLastModified = img->GetVtkImageData()->GetMTime();
-          }
+          mitk::ImageReadAccessor   readAccess(mitk_img);
+          const void*               cPointer = readAccess.GetData();
+          std::memcpy(vlimg->pixels(), cPointer, vlimg->requiredMemory());
         }
+        catch (...)
+        {
+          // FIXME: error handling?
+          MITK_ERROR << "Did not get pixel read access to 2D image.";
+        }
+
+        tex->setMipLevel(0, vlimg.get(), false);
+
+        userdata->m_ImageVtkDataLastModified = mitk_img->GetVtkImageData()->GetMTime();
       }
     }
   }
@@ -1971,41 +1874,40 @@ vl::ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const mitk::CoordinateAxes
 {
   makeCurrent();
 
-  vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransformFromData(tr, coord.GetPointer());
+  vl::ref<vl::Transform> tr = new vl::Transform;
+  UpdateTransformFromData(tr.get(), coord.GetPointer());
 
-  vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
-  vl::ref<vl::ArrayFloat4>      vlColors = new vl::ArrayFloat4;
-  vlVerts->resize(4);
-  vlColors->resize(4);
+  vl::ref<vl::ArrayFloat3> verts  = new vl::ArrayFloat3;
+  vl::ref<vl::ArrayFloat4> colors = new vl::ArrayFloat4;
+  verts->resize(4);
+  colors->resize(4);
+  
+  // Axis length
+  const float AL = 10;
 
   // x y z r g b a
-  vlVerts->at(0).x() =  0;   vlVerts->at(0).y() =  0;   vlVerts->at(0).z() =  0;   vlColors->at(0).r() = 0;  vlColors->at(0).g() = 0;  vlColors->at(0).b() = 0;  vlColors->at(0).a() = 1;
-  vlVerts->at(1).x() = 10;   vlVerts->at(1).y() =  0;   vlVerts->at(1).z() =  0;   vlColors->at(1).r() = 1;  vlColors->at(1).g() = 0;  vlColors->at(1).b() = 0;  vlColors->at(1).a() = 1;
-  vlVerts->at(2).x() =  0;   vlVerts->at(2).y() = 10;   vlVerts->at(2).z() =  0;   vlColors->at(2).r() = 0;  vlColors->at(2).g() = 1;  vlColors->at(2).b() = 0;  vlColors->at(2).a() = 1;
-  vlVerts->at(3).x() =  0;   vlVerts->at(3).y() =  0;   vlVerts->at(3).z() = 10;   vlColors->at(3).r() = 0;  vlColors->at(3).g() = 0;  vlColors->at(3).b() = 1;  vlColors->at(2).a() = 1;
+  verts->at(0).x() =  0; verts->at(0).y() =  0; verts->at(0).z() =  0; colors->at(0).r() = 0; colors->at(0).g() = 0; colors->at(0).b() = 0; colors->at(0).a() = 1;
+  verts->at(1).x() = AL; verts->at(1).y() =  0; verts->at(1).z() =  0; colors->at(1).r() = 1; colors->at(1).g() = 0; colors->at(1).b() = 0; colors->at(1).a() = 1;
+  verts->at(2).x() =  0; verts->at(2).y() = AL; verts->at(2).z() =  0; colors->at(2).r() = 0; colors->at(2).g() = 1; colors->at(2).b() = 0; colors->at(2).a() = 1;
+  verts->at(3).x() =  0; verts->at(3).y() =  0; verts->at(3).z() = AL; colors->at(3).r() = 0; colors->at(3).g() = 0; colors->at(3).b() = 1; colors->at(2).a() = 1;
 
-
-  vl::ref<vl::DrawElementsUInt>   lines = new vl::DrawElementsUInt(vl::PT_LINES);
+  vl::ref<vl::DrawElementsUInt> lines = new vl::DrawElementsUInt(vl::PT_LINES);
   lines->indexBuffer()->resize(3 * 2);
-  lines->indexBuffer()->at(0) = 0;  lines->indexBuffer()->at(1) = 1;      // x
-  lines->indexBuffer()->at(2) = 0;  lines->indexBuffer()->at(3) = 2;      // y
-  lines->indexBuffer()->at(4) = 0;  lines->indexBuffer()->at(5) = 3;      // z
+  lines->indexBuffer()->at(0) = 0; lines->indexBuffer()->at(1) = 1; // x
+  lines->indexBuffer()->at(2) = 0; lines->indexBuffer()->at(3) = 2; // y
+  lines->indexBuffer()->at(4) = 0; lines->indexBuffer()->at(5) = 3; // z
 
-  vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
-  vlGeom->drawCalls().push_back(lines.get());
-  vlGeom->setVertexArray(vlVerts.get());
-  vlGeom->setColorArray(vlColors.get());
+  vl::ref<vl::Geometry> geom = new vl::Geometry;
+  geom->drawCalls().push_back(lines.get());
+  geom->setVertexArray(verts.get());
+  geom->setColorArray(colors.get());
 
-  vl::ref<vl::Effect>   fx = new vl::Effect;
-  fx->shader()->disable(vl::EN_LIGHTING);
-  fx->shader()->setRenderState(new vl::ShadeModel(vl::SM_FLAT));    // important! otherwise colour is wrong.
-  fx->shader()->setRenderState(new vl::LineWidth(5));               // arbitrary
-  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+  vl::ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
+  fx->shader()->getLineWidth()->set( 5 );
+  // Use color array instead of lighting
+  fx->shader()->gocUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
 
-
-  vl::ref<vl::Actor> actor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
+  vl::ref<vl::Actor> actor = m_SceneManager->tree()->addActor(geom.get(), fx.get(), tr.get());
   actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
   return actor;
@@ -2018,47 +1920,43 @@ vl::ref<vl::Actor> VLQtWidget::AddPointCloudActor(niftk::PCLData* pcl)
   makeCurrent();
 
 #ifdef _USE_PCL
-  pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr   cloud = pcl->GetCloud();
+  pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud = pcl->GetCloud();
 
-  vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransformFromData(tr, pcl);
+  vl::ref<vl::Transform> tr = new vl::Transform;
+  UpdateTransformFromData(tr.get(), pcl);
 
-  vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
-  vl::ref<vl::ArrayFloat4>      vlColors = new vl::ArrayFloat4;
-  vlVerts->resize(cloud->size());
-  vlColors->resize(cloud->size());
-  int   j = 0;
+  vl::ref<vl::ArrayFloat3> vl_verts = new vl::ArrayFloat3;
+  vl::ref<vl::ArrayFloat4> vl_colors = new vl::ArrayFloat4;
+  vl_verts->resize(cloud->size());
+  vl_colors->resize(cloud->size());
+  // We could interleave the color and vert array but would we trust the VTK layout?
+  int j = 0;
   for (pcl::PointCloud<pcl::PointXYZRGB>::const_iterator i = cloud->begin(); i != cloud->end(); ++i, ++j)
   {
     const pcl::PointXYZRGB& p = *i;
-    vlVerts->at(j).x() = p.x;
-    vlVerts->at(j).y() = p.y;
-    vlVerts->at(j).z() = p.z;
-    // would be nice if we could interleave the vl arrays...
-    vlColors->at(j).r() = (float)p.r / 255.0f;
-    vlColors->at(j).g() = (float)p.g / 255.0f;
-    vlColors->at(j).b() = (float)p.b / 255.0f;
-    vlColors->at(j).a() = 1;
+
+    vl_verts->at(j).x() = p.x;
+    vl_verts->at(j).y() = p.y;
+    vl_verts->at(j).z() = p.z;
+
+    vl_colors->at(j).r() = (float)p.r / 255.0f;
+    vl_colors->at(j).g() = (float)p.g / 255.0f;
+    vl_colors->at(j).b() = (float)p.b / 255.0f;
+    vl_colors->at(j).a() = 1;
   }
 
-  vl::ref<vl::DrawArrays>       vlPoints = new vl::DrawArrays(vl::PT_POINTS, 0, vlVerts->size());
-  vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
-  vlGeom->drawCalls().push_back(vlPoints.get());
-  vlGeom->setVertexArray(vlVerts.get());
-  vlGeom->setColorArray(vlColors.get());
+  vl::ref<vl::Geometry> geom = new vl::Geometry;
+  vl::ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays(vl::PT_POINTS, 0, vl_verts->size());
+  geom->drawCalls().push_back(draw_arrays.get());
+  geom->setVertexArray(vl_verts.get());
+  geom->setColorArray(vl_colors.get());
 
-  vl::ref<vl::Effect>   fx = new vl::Effect;
-  fx->shader()->disable(vl::EN_LIGHTING);
-  // FIXME: currently nothing assigns a pointsize property for PCLData nodes. so set an arbitrary fixed size.
-  fx->shader()->setRenderState(new vl::PointSize(5));
-  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+  vl::ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
 
+  vl::ref<vl::Actor> actor = m_SceneManager->tree()->addActor(geom.get(), fx.get(), tr.get());
+  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
-  vl::ref<vl::Actor> psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
-  psActor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-  return psActor;
+  return actor;
 #else
   throw std::runtime_error("No PCL-support enabled at compile time!");
 #endif
@@ -2070,35 +1968,31 @@ vl::ref<vl::Actor> VLQtWidget::AddPointsetActor(const mitk::PointSet::Pointer& m
 {
   makeCurrent();
 
-  vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransformFromData(tr, mitkPS.GetPointer());
+  vl::ref<vl::Transform> tr = new vl::Transform;
+  UpdateTransformFromData(tr.get(), mitkPS.GetPointer());
 
-  vl::ref<vl::ArrayFloat3>      vlVerts  = new vl::ArrayFloat3;
-  vlVerts->resize(mitkPS->GetSize());
-  int   j = 0;
+  vl::ref<vl::ArrayFloat3> verts = new vl::ArrayFloat3;
+  verts->resize(mitkPS->GetSize());
+  int j = 0;
   for (mitk::PointSet::PointsConstIterator i = mitkPS->Begin(); i != mitkPS->End(); ++i, ++j)
   {
     mitk::PointSet::PointType p = i->Value();
-    vlVerts->at(j).x() = p[0];
-    vlVerts->at(j).y() = p[1];
-    vlVerts->at(j).z() = p[2];
+    verts->at(j).x() = p[0];
+    verts->at(j).y() = p[1];
+    verts->at(j).z() = p[2];
   }
 
-  vl::ref<vl::DrawArrays>       vlPoints = new vl::DrawArrays(vl::PT_POINTS, 0, vlVerts->size());
-  vl::ref<vl::Geometry>         vlGeom   = new vl::Geometry;
-  vlGeom->drawCalls().push_back(vlPoints.get());
-  vlGeom->setVertexArray(vlVerts.get());
+  vl::ref<vl::Geometry> geom = new vl::Geometry;
+  vl::ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays(vl::PT_POINTS, 0, verts->size());
+  geom->drawCalls().push_back(draw_arrays.get());
+  geom->setVertexArray(verts.get());
 
-  vl::ref<vl::Effect>   fx = new vl::Effect;
-  fx->shader()->disable(vl::EN_LIGHTING);
-  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+  vl::ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
 
+  vl::ref<vl::Actor> actor = m_SceneManager->tree()->addActor(geom.get(), fx.get(), tr.get());
+  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
-  vl::ref<vl::Actor> psActor = m_SceneManager->tree()->addActor(vlGeom.get(), fx.get(), tr.get());
-  psActor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-  return psActor;
+  return actor;
 }
 
 //-----------------------------------------------------------------------------
@@ -2145,8 +2039,7 @@ void VLQtWidget::setContinuousUpdate(bool continuous)
     disconnect(&m_UpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
     connect(&m_UpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
     m_UpdateTimer.setSingleShot(false);
-    m_UpdateTimer.setInterval(m_Refresh);
-    m_UpdateTimer.start(0);
+    m_UpdateTimer.start(m_Refresh);
   }
   else
   {
@@ -2749,7 +2642,7 @@ void VLQtWidget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci,
   std::string   objName = actor->objectName() + "_background";
   actor->setObjectName(objName.c_str());
 
-  m_NodeToActorMap[node] = actor;
+  m_NodeActorMap[node] = actor;
   m_NodeToTextureMap[node] = TextureDataPOD();
 }
 
@@ -2779,11 +2672,11 @@ void VLQtWidget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& no
     }
   }
 
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >::iterator     it = m_NodeToActorMap.find(node);
-  if (it == m_NodeToActorMap.end())
+  NodeActorMapType::iterator     it = m_NodeActorMap.find(node);
+  if (it == m_NodeActorMap.end())
     return;
-  vl::ref<vl::Actor>    vlActor = it->second;
-  if (vlActor.get() == 0)
+  vl::ref<vl::Actor>    actor = it->second;
+  if (actor.get() == 0)
     return;
 
   if (lwcImage.GetId() != 0)
@@ -2818,8 +2711,8 @@ void VLQtWidget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& no
         }
 
         texpod.m_Texture = new vl::Texture(lwcImage.GetWidth(), lwcImage.GetHeight(), vl::TF_RGBA8, false);
-        vlActor->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
-        vlActor->effect()->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
+        actor->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
+        actor->effect()->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
 
         err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
         if (err != cudaSuccess)
@@ -2831,7 +2724,7 @@ void VLQtWidget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& no
 
       if (texpod.m_CUDARes)
       {
-        VIVID_CHECK(vlActor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
+        VIVID_CHECK(actor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
 
         niftk::CUDAManager*  cudamng   = niftk::CUDAManager::GetInstance();
         cudaStream_t         mystream  = cudamng->GetStream("VLQtWidget vl-texture update");
@@ -2880,7 +2773,7 @@ void VLQtWidget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& no
       m_NodeToTextureMap[node] = texpod;
 
       // helps with debugging
-      vlActor->effect()->shader()->disable(vl::EN_CULL_FACE);
+      actor->effect()->shader()->disable(vl::EN_CULL_FACE);
     }
   }
 }
@@ -2907,10 +2800,10 @@ vl::ref<vl::Actor> VLQtWidget::AddCUDAImageActor(const mitk::BaseData* _cudaImg)
   }
   VIVID_CHECK(lwci.GetId() != 0);
 
-  vl::ref<vl::Transform> tr     = new vl::Transform;
-  UpdateTransformFromData(tr, cudaImg);
+  vl::ref<vl::Transform> tr = new vl::Transform;
+  UpdateTransformFromData(tr.get(), cudaImg);
 
-  vl::ref<vl::Geometry>         vlquad    = CreateGeometryFor2DImage(lwci.GetWidth(), lwci.GetHeight());
+  vl::ref<vl::Geometry> vlquad    = CreateGeometryFor2DImage(lwci.GetWidth(), lwci.GetHeight());
 
   vl::ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->disable(vl::EN_LIGHTING);

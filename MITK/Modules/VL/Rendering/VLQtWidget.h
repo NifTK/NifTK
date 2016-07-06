@@ -90,6 +90,9 @@ class NIFTKVL_EXPORT VLQtWidget : public QGLWidget, public vl::OpenGLContext
   Q_OBJECT
 
 public:
+  typedef std::map< mitk::DataNode::ConstPointer, vl::ref<vl::Actor> > NodeActorMapType;
+
+public:
   VLQtWidget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0);
 
   virtual ~VLQtWidget();
@@ -181,7 +184,7 @@ protected:
   mitk::DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
   mitk::DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
 
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> > m_NodeToActorMap;
+  NodeActorMapType m_NodeActorMap;
   std::set<mitk::DataNode::ConstPointer> m_NodesToUpdate;
   std::set<mitk::DataNode::ConstPointer> m_NodesToAdd;
   std::set<mitk::DataNode::ConstPointer> m_NodesToRemove;
@@ -281,6 +284,7 @@ protected:
 protected:
   int    m_Refresh;
   QTimer m_UpdateTimer;
+  QTimer m_BackgroundUpdateTimer;
 
 };
 
