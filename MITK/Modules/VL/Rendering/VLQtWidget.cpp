@@ -484,13 +484,12 @@ void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
   }
 #endif
 
-  NodeActorMapType::iterator it = m_NodeActorMap.find(node);
-  if (it != m_NodeActorMap.end())
-  {
-    vl::ref<vl::Actor>    actor = it->second;
-    if (actor.get() != 0)
-    {
-      m_SceneManager->tree()->eraseActor(actor.get());
+  // Remove Node/Actor couple from map & remove Actor from scene
+  NodeActorMapType::iterator it = m_NodeActorMap.find( node );
+  if ( it != m_NodeActorMap.end() ) {
+    vl::Actor* actor = it->second.get();
+    if ( actor ) {
+      m_SceneManager->tree()->eraseActor( actor );
       m_NodeActorMap.erase(it);
     }
   }
