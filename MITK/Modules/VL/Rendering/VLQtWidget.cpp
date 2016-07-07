@@ -573,8 +573,6 @@ void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
   }
 }
 
-//-----------------------------------------------------------------------------
-
 void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 {
   makeCurrent();
@@ -946,24 +944,20 @@ ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkImg)
 {
   makeCurrent();
 
-  unsigned int*       dims    = mitkImg->GetDimensions();    // we do not own dims!
-  mitk::PixelType     pixType = mitkImg->GetPixelType();
-  vl::EImageType      type    = MapITKPixelTypeToVL(pixType.GetComponentType());
-  vl::EImageFormat    format  = MapComponentsToVLColourFormat(pixType.GetNumberOfComponents());
+  mitk::PixelType  mitk_pixel_type = mitkImg->GetPixelType();
+  vl::EImageType   vl_type         = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
+  vl::EImageFormat vl_format       = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
+  unsigned int*    dims            = mitkImg->GetDimensions();
 
-  ref<vl::Image>    vlImg = new vl::Image(dims[0], dims[1], 0, 1, format, type);
-
-
-  // sanity check
-  unsigned int  size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
-  VIVID_CHECK(vlImg->requiredMemory() == size);
+  ref<vl::Image> vl_img = new vl::Image(dims[0], dims[1], 0, 1, vl_format, vl_type);
 
   try
   {
-    mitk::ImageReadAccessor   readAccess(mitkImg, mitkImg->GetVolumeData(0));
-    const void*               cPointer = readAccess.GetData();
-    std::memcpy(vlImg->pixels(), cPointer, vlImg->requiredMemory());
-
+    unsigned int byte_count = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
+    VIVID_CHECK( vl_img->requiredMemory() == byte_count );
+    mitk::ImageReadAccessor readAccess( mitkImg, mitkImg->GetVolumeData(0) );
+    const void* ptr = readAccess.GetData();
+    std::memcpy( vl_img->pixels(), ptr, byte_count );
   }
   catch (...)
   {
@@ -971,22 +965,19 @@ ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkImg)
     MITK_ERROR << "Did not get pixel read access to 2D image.";
   }
 
+  ref<vl::Geometry> geom = CreateGeometryFor2DImage(dims[0], dims[1]);
+
   ref<vl::Transform> tr = new vl::Transform;
   UpdateTransformFromData(tr.get(), mitkImg.GetPointer());
 
-  ref<vl::Geometry> geom = CreateGeometryFor2DImage(dims[0], dims[1]);
-
   ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-  // FIXME: support textured object
-  fx->shader()->gocMaterial()->setFlatColor( vl::fuchsia ); 
-  //fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vlImg.get(), vl::TF_UNKNOWN, false));
-  //fx->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
-  //fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-  //fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
-
   ref<vl::Actor> actor = m_SceneManager->tree()->addActor(geom.get(), fx.get(), tr.get());
   actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
+  fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
+  fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
+  // When texture mapping is enabled texture is modulated by vertex color
+  geom->setColorArray( vl::white );
   return actor;
 }
 
@@ -2031,33 +2022,27 @@ ref<vl::Actor> VLQtWidget::AddPointsetActor(const mitk::PointSet::Pointer& mitkP
 
 ref<vl::Geometry> VLQtWidget::CreateGeometryFor2DImage(int width, int height)
 {
-  ref<vl::Geometry>         vlquad = new vl::Geometry;
-  ref<vl::ArrayFloat3>      vert3 = new vl::ArrayFloat3;
-  vert3->resize(4);
-  vlquad->setVertexArray(vert3.get());
+  ref<vl::Geometry>    geom = new vl::Geometry;
+  ref<vl::ArrayFloat3> vert  = new vl::ArrayFloat3;
+  vert->resize(4);
+  geom->setVertexArray( vert.get() );
 
-  ref<vl::ArrayFloat2>      text2 = new vl::ArrayFloat2;
-  text2->resize(4);
-  vlquad->setTexCoordArray(0, text2.get());
+  ref<vl::ArrayFloat2> tex_coord = new vl::ArrayFloat2;
+  tex_coord->resize(4);
+  geom->setTexCoordArray(0, tex_coord.get());
 
   //  0---3
   //  |   |
   //  1---2
-  vert3->at(0).x() = 0;     vert3->at(0).y() = 0;      vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
-  vert3->at(1).x() = 0;     vert3->at(1).y() = height; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
-  vert3->at(2).x() = width; vert3->at(2).y() = height; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
-  vert3->at(3).x() = width; vert3->at(3).y() = 0;      vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
+  vert->at(0).x() = 0;     vert->at(0).y() = 0;      vert->at(0).z() = 0; tex_coord->at(0).s() = 0; tex_coord->at(0).t() = 0;
+  vert->at(1).x() = 0;     vert->at(1).y() = height; vert->at(1).z() = 0; tex_coord->at(1).s() = 0; tex_coord->at(1).t() = 1;
+  vert->at(2).x() = width; vert->at(2).y() = height; vert->at(2).z() = 0; tex_coord->at(2).s() = 1; tex_coord->at(2).t() = 1;
+  vert->at(3).x() = width; vert->at(3).y() = 0;      vert->at(3).z() = 0; tex_coord->at(3).s() = 1; tex_coord->at(3).t() = 0;
 
+  ref<vl::DrawArrays> polys = new vl::DrawArrays(vl::PT_QUADS, 0, 4);
+  geom->drawCalls().push_back( polys.get() );
 
-  ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
-  polys->indexBuffer()->resize(4);
-  polys->indexBuffer()->at(0) = 0;
-  polys->indexBuffer()->at(1) = 1;
-  polys->indexBuffer()->at(2) = 2;
-  polys->indexBuffer()->at(3) = 3;
-  vlquad->drawCalls().push_back(polys.get());
-
-  return vlquad;
+  return geom;
 }
 
 //-----------------------------------------------------------------------------
