@@ -886,21 +886,33 @@ bool NiftyCalVideoCalibrationManager::Grab()
     }
   }
 
-  if (!extracted[0] && !extracted[1])
+  if (m_ImageNode[0].IsNotNull() && m_ImageNode[1].IsNull())
   {
-    return isSuccessful;
+    // mono case, early exit.
+    if (!extracted[0])
+    {
+      return isSuccessful;
+    }
   }
-  if (extracted[0] && !extracted[1])
+  else
   {
-    m_OriginalImages[0].pop_back();
-    m_ImagesForWarping[0].pop_back();
-    return isSuccessful;
-  }
-  if (!extracted[0] && extracted[1])
-  {
-    m_OriginalImages[1].pop_back();
-    m_ImagesForWarping[1].pop_back();
-    return isSuccessful;
+    // stereo case, early exit.
+    if (!extracted[0] && !extracted[1])
+    {
+      return isSuccessful;
+    }
+    if (extracted[0] && !extracted[1])
+    {
+      m_OriginalImages[0].pop_back();
+      m_ImagesForWarping[0].pop_back();
+      return isSuccessful;
+    }
+    if (!extracted[0] && extracted[1])
+    {
+      m_OriginalImages[1].pop_back();
+      m_ImagesForWarping[1].pop_back();
+      return isSuccessful;
+    }
   }
 
   // Now we extract the tracking node.
