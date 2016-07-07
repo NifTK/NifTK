@@ -127,6 +127,7 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     // Start these up as disabled, until we have enough images to calibrate.
     m_Controls->m_UndoButton->setEnabled(false);
     m_Controls->m_SaveButton->setEnabled(false);
+    m_Controls->m_ClearButton->setEnabled(false);
 
     // Create manager, before we retrieve preferences which will populate it.
     m_Manager = niftk::NiftyCalVideoCalibrationManager::New();
@@ -175,9 +176,19 @@ void CameraCalView::SetButtonsEnabled(bool isEnabled)
   m_Controls->m_ReferenceTrackerMatrixComboBox->setEnabled(isEnabled);
   m_Controls->m_GrabButton->setEnabled(isEnabled);
 
-  m_Controls->m_UndoButton->setEnabled(m_Manager->GetNumberOfSnapshots() > 0);
-  m_Controls->m_SaveButton->setEnabled(m_Manager->GetNumberOfSnapshots()
-                                       >= m_Manager->GetMinimumNumberOfSnapshotsForCalibrating());
+  if (isEnabled)
+  {
+    m_Controls->m_ClearButton->setEnabled(m_Manager->GetNumberOfSnapshots() > 0);
+    m_Controls->m_UndoButton->setEnabled(m_Manager->GetNumberOfSnapshots() > 0);
+    m_Controls->m_SaveButton->setEnabled(m_Manager->GetNumberOfSnapshots()
+                                         >= m_Manager->GetMinimumNumberOfSnapshotsForCalibrating());
+  }
+  else
+  {
+    m_Controls->m_ClearButton->setEnabled(isEnabled);
+    m_Controls->m_UndoButton->setEnabled(isEnabled);
+    m_Controls->m_SaveButton->setEnabled(isEnabled);
+  }
 }
 
 
