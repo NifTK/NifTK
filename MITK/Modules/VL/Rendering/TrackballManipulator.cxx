@@ -16,7 +16,7 @@
 
 
 //-----------------------------------------------------------------------------
-void TrackballManipulator::mouseWheelEvent(int n)
+void VLTrackballManipulator::mouseWheelEvent(int n)
 {
   // default wheel delta is 120, i think.
   n *= 30;

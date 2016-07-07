@@ -62,7 +62,7 @@ namespace niftk
 
 struct VLUserData;
 
-class TrackballManipulator;
+class VLTrackballManipulator;
 
 #ifdef _USE_CUDA
 
@@ -172,7 +172,7 @@ protected:
   vl::ref<vl::VividVolume>           m_VividVolume;
   vl::ref<vl::SceneManagerActorTree> m_SceneManager;
   vl::ref<vl::Camera>                m_Camera;
-  vl::ref<TrackballManipulator>      m_Trackball;
+  vl::ref<VLTrackballManipulator>    m_Trackball;
 
   mitk::DataStorage::Pointer              m_DataStorage;
   mitk::DataNodePropertyListener::Pointer m_NodeVisibilityListener;
