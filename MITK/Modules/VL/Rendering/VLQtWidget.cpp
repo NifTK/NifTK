@@ -191,6 +191,50 @@ struct VLUserData : public vl::Object
 };
 
 //-----------------------------------------------------------------------------
+// VLNode
+//-----------------------------------------------------------------------------
+
+/** Takes care of managing all VL related aspects with regard to a given mitk::DataNode. */
+class VLNode: public vl::Object {
+public:
+  VLNode( vl::VividRendering* vr, mitk::DataStorage* ds, mitk::DataNode* node, vl::OpenGLContext* gl ) {
+    // Init
+    m_OpenGLContext = gl;
+    m_VividRendering = vr;
+    m_DataStorage = ds;
+    m_DataNode = node;
+    // Activate OpenGL context
+    gl->makeCurrent();
+    // Initialize properties
+    initDataStoreProperties( node );
+  }
+
+  /** Updates all the relevant VL data structures, uniforms etc. according to the node's settings. */
+  virtual void update() = 0;
+
+  /** Removes all the relevant Actor(s) from the scene. */
+  virtual void remove() = 0;
+
+  /** Factory method: creates the right VLNode subclass according to the node's type. */
+  static ref<VLNode> create( const mitk::DataNode* node ) {
+    return NULL;
+  }
+
+private:
+  /** Initializes the value of all Vivid properties in the DataStore. */
+  void initDataStoreProperties( mitk::DataNode* node ) {
+    // MIC FIXME:
+    // ...
+  }
+
+protected:
+  vl::OpenGLContext* m_OpenGLContext;
+  vl::VividRendering* m_VividRendering;
+  mitk::DataStorage* m_DataStorage;
+  mitk::DataNode* m_DataNode;
+};
+
+//-----------------------------------------------------------------------------
 // VLQtWidget
 //-----------------------------------------------------------------------------
 
@@ -316,7 +360,7 @@ void VLQtWidget::ScheduleNodeUpdate( const mitk::DataNode* node )
   m_NodesToUpdate.insert( mitk::DataNode::ConstPointer ( node ) ); // then update
   update();
 
-  const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<name-of-class>";
+  const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<unknown-class>";
   printf("ScheduleNodeUpdate: %s (%s)\n", node->GetName().c_str(), noc );
 }
 
