@@ -886,9 +886,20 @@ bool NiftyCalVideoCalibrationManager::Grab()
     }
   }
 
-  // Early exit? Actually: this->ExtractPoints should throw if it fails.
-  if (!extracted[0])
+  if (!extracted[0] && !extracted[1])
   {
+    return isSuccessful;
+  }
+  if (extracted[0] && !extracted[1])
+  {
+    m_OriginalImages[0].pop_back();
+    m_ImagesForWarping[0].pop_back();
+    return isSuccessful;
+  }
+  if (!extracted[0] && extracted[1])
+  {
+    m_OriginalImages[1].pop_back();
+    m_ImagesForWarping[1].pop_back();
     return isSuccessful;
   }
 
