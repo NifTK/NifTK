@@ -92,21 +92,26 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     m_Controls->setupUi(parent);
 
     mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-    m_Controls->m_LeftCameraComboBox->SetPredicate(isImage);
     m_Controls->m_LeftCameraComboBox->SetAutoSelectNewItems(false);
-    m_Controls->m_RightCameraComboBox->SetPredicate(isImage);
+    m_Controls->m_LeftCameraComboBox->SetPredicate(isImage);
+    m_Controls->m_LeftCameraComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_LeftCameraComboBox->setCurrentIndex(0);
+
     m_Controls->m_RightCameraComboBox->SetAutoSelectNewItems(false);
+    m_Controls->m_RightCameraComboBox->SetPredicate(isImage);
+    m_Controls->m_RightCameraComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_RightCameraComboBox->setCurrentIndex(0);
 
     mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isMatrix = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
-    m_Controls->m_TrackerMatrixComboBox->SetPredicate(isMatrix);
     m_Controls->m_TrackerMatrixComboBox->SetAutoSelectNewItems(false);
-    m_Controls->m_ReferenceTrackerMatrixComboBox->SetPredicate(isMatrix);
-    m_Controls->m_ReferenceTrackerMatrixComboBox->SetAutoSelectNewItems(false);
-
-    m_Controls->m_LeftCameraComboBox->SetDataStorage(dataStorage);
-    m_Controls->m_RightCameraComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_TrackerMatrixComboBox->SetPredicate(isMatrix);
     m_Controls->m_TrackerMatrixComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_TrackerMatrixComboBox->setCurrentIndex(0);
+
+    m_Controls->m_ReferenceTrackerMatrixComboBox->SetAutoSelectNewItems(false);
+    m_Controls->m_ReferenceTrackerMatrixComboBox->SetPredicate(isMatrix);
     m_Controls->m_ReferenceTrackerMatrixComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_ReferenceTrackerMatrixComboBox->setCurrentIndex(0);
 
     connect(m_Controls->m_GrabButton, SIGNAL(pressed()), this, SLOT(OnGrabButtonPressed()));
     connect(m_Controls->m_UndoButton, SIGNAL(pressed()), this, SLOT(OnUnGrabButtonPressed()));
