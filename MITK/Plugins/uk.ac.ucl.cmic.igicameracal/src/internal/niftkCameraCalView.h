@@ -17,7 +17,7 @@
 
 #include <QmitkBaseView.h>
 #include <service/event/ctkEvent.h>
-#include "ui_CameraCalView.h"
+#include "ui_niftkCameraCalView.h"
 #include <niftkNiftyCalVideoCalibrationManager.h>
 #include <QFuture>
 #include <QFutureWatcher>
