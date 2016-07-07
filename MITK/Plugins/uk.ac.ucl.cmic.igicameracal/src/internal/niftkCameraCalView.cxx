@@ -534,26 +534,19 @@ double CameraCalView::RunCalibration()
   {
     errorMessage = e.GetDescription();
     MITK_ERROR << "CameraCalView::RunCalibration() failed:" << e.GetDescription();
+    throw e;
   }
   catch (mitk::Exception& e)
   {
     errorMessage = e.GetDescription();
     MITK_ERROR << "CameraCalView::RunCalibration() failed:" << e.GetDescription();
+    throw e;
   }
   catch (std::exception& e)
   {
     errorMessage = e.what();
     MITK_ERROR << "CameraCalView::RunCalibration() failed:" << e.what();
-  }
-
-  if (!errorMessage.empty())
-  {
-    QMessageBox msgBox;
-    msgBox.setText("An Error Occurred.");
-    msgBox.setInformativeText(QString::fromStdString(errorMessage));
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.setDefaultButton(QMessageBox::Ok);
-    msgBox.exec();
+    throw e;
   }
 
   return rms;
@@ -563,22 +556,29 @@ double CameraCalView::RunCalibration()
 //-----------------------------------------------------------------------------
 void CameraCalView::OnBackgroundCalibrateProcessFinished()
 {
-  double rms = m_BackgroundCalibrateProcessWatcher.result();
-
-  if (rms < 1)
-  {
-    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/green-tick-300px.png");
-    m_Controls->m_ImageLabel->setPixmap(image);
-    m_Controls->m_ImageLabel->show();
-  }
-  else
+  if (m_BackgroundCalibrateProcess.isCanceled()
+      || m_BackgroundCalibrateProcess.resultCount() == 0)
   {
     QPixmap image(":/uk.ac.ucl.cmic.igicameracal/red-cross-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
-  }
 
-  m_Controls->m_ProjectionErrorValue->setText(tr("%1 pixels (%2 images).").arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
+    QMessageBox msgBox;
+    msgBox.setText("An Error Occurred.");
+    msgBox.setInformativeText("The calibration itself failed - check log.");
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+  }
+  else
+  {
+    double rms = m_BackgroundCalibrateProcessWatcher.result();
+    m_Controls->m_ProjectionErrorValue->setText(tr("%1 pixels (%2 images).").arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
+
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/green-tick-300px.png");
+    m_Controls->m_ImageLabel->setPixmap(image);
+    m_Controls->m_ImageLabel->show();
+  }
 
   this->SetButtonsEnabled(true);
 }

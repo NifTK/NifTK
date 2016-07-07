@@ -325,8 +325,8 @@ private:
   std::vector<cv::Mat>                           m_Tvecs[2];
   cv::Mat                                        m_EssentialMatrix;
   cv::Mat                                        m_FundamentalMatrix;
-  cv::Mat                                        m_LeftToRightRotation;
-  cv::Mat                                        m_LeftToRightTranslation;
+  cv::Mat                                        m_LeftToRightRotationMatrix;
+  cv::Mat                                        m_LeftToRightTranslationVector;
   std::vector<cv::Matx44d>                       m_HandEyeMatrices[2];
   std::vector<cv::Matx44d>                       m_ReferenceHandEyeMatrices[2];
 
