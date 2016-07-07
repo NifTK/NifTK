@@ -1902,31 +1902,35 @@ ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const mitk::CoordinateAxesData
 
   ref<vl::ArrayFloat3> verts  = new vl::ArrayFloat3;
   ref<vl::ArrayFloat4> colors = new vl::ArrayFloat4;
-  verts->resize(4);
-  colors->resize(4);
+  verts->resize(6);
+  colors->resize(6);
   
   // Axis length
-  const float AL = 10;
+  float S = 100;
 
-  // x y z r g b a
-  verts->at(0).x() =  0; verts->at(0).y() =  0; verts->at(0).z() =  0; colors->at(0).r() = 0; colors->at(0).g() = 0; colors->at(0).b() = 0; colors->at(0).a() = 1;
-  verts->at(1).x() = AL; verts->at(1).y() =  0; verts->at(1).z() =  0; colors->at(1).r() = 1; colors->at(1).g() = 0; colors->at(1).b() = 0; colors->at(1).a() = 1;
-  verts->at(2).x() =  0; verts->at(2).y() = AL; verts->at(2).z() =  0; colors->at(2).r() = 0; colors->at(2).g() = 1; colors->at(2).b() = 0; colors->at(2).a() = 1;
-  verts->at(3).x() =  0; verts->at(3).y() =  0; verts->at(3).z() = AL; colors->at(3).r() = 0; colors->at(3).g() = 0; colors->at(3).b() = 1; colors->at(2).a() = 1;
-
-  ref<vl::DrawElementsUInt> lines = new vl::DrawElementsUInt(vl::PT_LINES);
-  lines->indexBuffer()->resize(3 * 2);
-  lines->indexBuffer()->at(0) = 0; lines->indexBuffer()->at(1) = 1; // x
-  lines->indexBuffer()->at(2) = 0; lines->indexBuffer()->at(3) = 2; // y
-  lines->indexBuffer()->at(4) = 0; lines->indexBuffer()->at(5) = 3; // z
+  // X Axis
+  verts ->at(0) = vec3(0, 0, 0);
+  verts ->at(1) = vec3(S, 0, 0);
+  colors->at(0) = vl::red;
+  colors->at(1) = vl::red;
+  // Y Axis
+  verts ->at(2) = vec3(0, 0, 0);
+  verts ->at(3) = vec3(0, S, 0);
+  colors->at(2) = vl::green;
+  colors->at(3) = vl::green;
+  // Z Axis
+  verts ->at(4) = vec3(0, 0, 0);
+  verts ->at(5) = vec3(0, 0, S);
+  colors->at(4) = vl::blue;
+  colors->at(5) = vl::blue;
 
   ref<vl::Geometry> geom = new vl::Geometry;
-  geom->drawCalls().push_back(lines.get());
+  geom->drawCalls().push_back( new vl::DrawArrays( vl::PT_LINES, 0, 6 ) );
   geom->setVertexArray(verts.get());
   geom->setColorArray(colors.get());
 
   ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-  fx->shader()->getLineWidth()->set( 5 );
+  fx->shader()->getLineWidth()->set( 2 );
   // Use color array instead of lighting
   fx->shader()->gocUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
 
