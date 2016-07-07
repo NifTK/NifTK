@@ -392,60 +392,62 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
   }
 #endif
 
-  vl::ref<vl::Actor> newActor;
-  std::string namePrefix;
+  vl::ref<vl::Actor> actor;
+  std::string actor_name;
 
   if (mitkSurf.IsNotNull())
   {
-    newActor = AddSurfaceActor(mitkSurf);
-    namePrefix = "surface:";
+    actor = AddSurfaceActor(mitkSurf);
+    actor_name = "surface:";
   }
   else
   if (mitkImg.IsNotNull() && doMitkImageIfSuitable)
   {
-    newActor = AddImageActor(mitkImg);
-    namePrefix = "image:";
+    actor = AddImageActor(mitkImg);
+    actor_name = "image:";
   }
   else
   if (mitkPS.IsNotNull())
   {
-    newActor = AddPointsetActor(mitkPS);
-    namePrefix = "point-set:";
+    actor = AddPointsetActor(mitkPS);
+    actor_name = "point-set:";
   }
   else
   if (coords.IsNotNull())
   {
-    newActor = AddCoordinateAxisActor(coords);
-    namePrefix = "coordinate-axis-data:";
+    actor = AddCoordinateAxisActor(coords);
+    actor_name = "coordinate-axis-data:";
   }
 #ifdef _USE_PCL
   else
   if (pclPS.IsNotNull())
   {
-    newActor = AddPointCloudActor(pclPS);
-    namePrefix = "pcl:";
+    actor = AddPointCloudActor(pclPS);
+    actor_name = "pcl:";
   }
 #endif
 #ifdef _USE_CUDA
   else
   if (cudaImg.IsNotNull())
   {
-    newActor = AddCUDAImageActor(cudaImg);
-    namePrefix = "cuda-image:";
+    actor = AddCUDAImageActor(cudaImg);
+    actor_name = "cuda-image:";
 
     m_NodeToTextureMap[node] = TextureDataPOD();
   }
 #endif
 
-  if (newActor.get() != 0)// && sceneManager()->tree()->actors()->find(newActor.get()) == -1)
-  {
-    std::string objName;
-    node->GetStringProperty( "name", objName );
-    newActor->setObjectName( ( namePrefix + objName ).c_str() );
+  if ( actor ) {
+    // Set object name
+    std::string node_name;
+    node->GetStringProperty( "name", node_name );
+    actor_name += node_name;
+    actor->setObjectName( actor_name );
 
-    m_NodeActorMap[node] = newActor;
+    // Populate Node/Actor map
+    m_NodeActorMap[node] = actor;
 
-    // update colour, etc.
+    // Initialize Actor properties based on Node data (color, visibility, transform, image etc.)
     UpdateDataNode(node);
   }
 }
