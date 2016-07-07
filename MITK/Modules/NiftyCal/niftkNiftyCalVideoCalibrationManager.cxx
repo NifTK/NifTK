@@ -101,6 +101,26 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
   m_FundamentalMatrix = cvCreateMat(3, 3, CV_64FC1);
   m_LeftToRightRotationMatrix = cvCreateMat(3, 3, CV_64FC1);
   m_LeftToRightTranslationVector = cvCreateMat(3, 1, CV_64FC1);
+
+  for (int r = 0; r < 3; r++)
+  {
+    for (int c = 0; c < 3; c++)
+    {
+      if (r == c)
+      {
+        m_EssentialMatrix.at<double>(r, c) = 1;
+        m_FundamentalMatrix.at<double>(r, c) = 1;
+        m_LeftToRightRotationMatrix.at<double>(r, c) = 1;
+      }
+      else
+      {
+        m_EssentialMatrix.at<double>(r, c) = 0;
+        m_FundamentalMatrix.at<double>(r, c) = 0;
+        m_LeftToRightRotationMatrix.at<double>(r, c) = 0;
+      }
+    }
+    m_LeftToRightTranslationVector.at<double>(r, 0) = 0;
+  }
 }
 
 
@@ -1161,7 +1181,6 @@ double NiftyCalVideoCalibrationManager::Calibrate()
                                      m_Rvecs[1],
                                      m_Tvecs[1]
                                     );
-
     }
   }
 
