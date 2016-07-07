@@ -200,39 +200,27 @@ VLQtWidget::~VLQtWidget()
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::RemoveDataStorageListeners()
+void VLQtWidget::AddDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
-    m_DataStorage->ChangedNodeEvent.RemoveListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::OnNodeModified));
-
-    if (m_NodeVisibilityListener)
-      m_NodeVisibilityListener->NodePropertyChanged -= mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeVisibilityPropertyChanged);
-    if (m_NodeColorPropertyListener)
-      m_NodeColorPropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeColorPropertyChanged);
-    if (m_NodeOpacityPropertyListener)
-      m_NodeOpacityPropertyListener->NodePropertyChanged -= mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>( this, &VLQtWidget::OnNodeOpacityPropertyChanged);
-
+    m_DataStorage->AddNodeEvent.    AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeAdd));
+    m_DataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeUpdate));
+    m_DataStorage->RemoveNodeEvent. AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeRemove));
+    m_DataStorage->DeleteNodeEvent. AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeRemove));
   }
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::AddDataStorageListeners()
+void VLQtWidget::RemoveDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
-    // Triggered by node->Modified()
-    m_DataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::OnNodeModified));
-
-    m_NodeVisibilityListener = mitk::DataNodePropertyListener::New(m_DataStorage, "visible");
-    m_NodeVisibilityListener->NodePropertyChanged += mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeVisibilityPropertyChanged);
-
-    m_NodeColorPropertyListener = mitk::DataNodePropertyListener::New(m_DataStorage, "color");
-    m_NodeColorPropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeColorPropertyChanged);
-
-    m_NodeOpacityPropertyListener = mitk::DataNodePropertyListener::New(m_DataStorage, "opacity");
-    m_NodeOpacityPropertyListener->NodePropertyChanged += mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>( this, &VLQtWidget::OnNodeOpacityPropertyChanged);
+    m_DataStorage->AddNodeEvent.    RemoveListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeAdd));
+    m_DataStorage->ChangedNodeEvent.RemoveListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeUpdate));
+    m_DataStorage->RemoveNodeEvent. RemoveListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeRemove));
+    m_DataStorage->DeleteNodeEvent. RemoveListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeRemove));
   }
 }
 
@@ -270,53 +258,12 @@ void VLQtWidget::SetOclResourceService(OclResourceService* oclserv)
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::OnNodeModified(const mitk::DataNode* node)
-{
-  ScheduleNodeUpdate( node );
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
-{
-  mitk::DataNode::ConstPointer cdn(node);
-  ScheduleNodeUpdate(cdn);
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
-{
-  mitk::DataNode::ConstPointer cdn(node);
-  ScheduleNodeUpdate(cdn);
-}
-
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
-{
-  mitk::DataNode::ConstPointer cdn(node);
-  ScheduleNodeUpdate(cdn);
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::ScheduleNodeUpdate( const mitk::DataNode* node )
-{
-  m_NodesToRemove.erase( node ); // abort the removal
-  // m_NodesToAdd.erase( node ); // let it add it first
-  m_NodesToUpdate.insert( mitk::DataNode::ConstPointer ( node ) ); // then update
-  update();
-
-  const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<name-of-class>";
-  printf("ScheduleNodeUpdate: %s (%s)\n", node->GetName().c_str(), noc );
-}
-
-//-----------------------------------------------------------------------------
-
 void VLQtWidget::ScheduleNodeAdd( const mitk::DataNode* node )
 {
+  if ( ! node || ! node->GetData() ) {
+    return;
+  }
+
   // m_NodesToRemove.erase( node ); // remove it first
   m_NodesToAdd.insert( mitk::DataNode::ConstPointer ( node ) ); // then add
   // m_NodesToUpdate.erase( node ); // then update
@@ -328,8 +275,29 @@ void VLQtWidget::ScheduleNodeAdd( const mitk::DataNode* node )
 
 //-----------------------------------------------------------------------------
 
+void VLQtWidget::ScheduleNodeUpdate( const mitk::DataNode* node )
+{
+  if ( ! node || ! node->GetData() ) {
+    return;
+  }
+
+  m_NodesToRemove.erase( node ); // abort the removal
+  // m_NodesToAdd.erase( node ); // let it add it first
+  m_NodesToUpdate.insert( mitk::DataNode::ConstPointer ( node ) ); // then update
+  update();
+
+  const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<name-of-class>";
+  printf("ScheduleNodeUpdate: %s (%s)\n", node->GetName().c_str(), noc );
+}
+
+//-----------------------------------------------------------------------------
+
 void VLQtWidget::ScheduleNodeRemove( const mitk::DataNode* node )
 {
+  if ( ! node /* || ! node->GetData() */ ) {
+    return;
+  }
+
   m_NodesToRemove.insert( mitk::DataNode::ConstPointer ( node ) ); // remove it
   m_NodesToAdd.erase( node );    // abort the addition
   m_NodesToUpdate.erase( node ); // abort the update
@@ -390,8 +358,9 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 {
   makeCurrent();
 
-  if (node.IsNull() || node->GetData() == 0)
+  if ( node.IsNull() || node->GetData() == 0 ) {
     return;
+  }
 
   // only add node once.
   if ( GetNodeActor( node ) ) {

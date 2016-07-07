@@ -69,27 +69,14 @@ VLRendererView::VLRendererView()
 //-----------------------------------------------------------------------------
 VLRendererView::~VLRendererView()
 {
-
-  if (m_SelectionListener)
-  {
-    m_SelectionListener->NodeAdded   -=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeAdded);
-    m_SelectionListener->NodeRemoved -=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeRemoved);
-    m_SelectionListener->NodeDeleted -=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeDeleted);
-  }
-
-  if (m_NamePropertyListener)
-    m_NamePropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<VLRendererView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLRendererView::OnNamePropertyChanged);
-
-
-  MITK_INFO <<"Destructing VLRenderer plugin";
+  MITK_INFO << "Destructing VLRenderer plugin";
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::SetFocus()
 {
 }
-
 
 //-----------------------------------------------------------------------------
 void VLRendererView::CreateQtPartControl(QWidget* parent)
@@ -127,18 +114,6 @@ void VLRendererView::CreateQtPartControl(QWidget* parent)
 
     ok = QObject::connect(m_Controls->m_CameraNodeEnabled, SIGNAL(clicked(bool)), this, SLOT(OnCameraNodeEnabled(bool)));
     assert(ok);
-
-    // Init listener
-    m_SelectionListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "selected", false);
-   // m_SelectionListener->NodePropertyChanged +=  mitk::MessageDelegate2<NewVisualizationView, const mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnSelectionChanged);
-
-    m_SelectionListener->NodeAdded   +=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeAdded);
-    m_SelectionListener->NodeRemoved +=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeRemoved);
-    m_SelectionListener->NodeDeleted +=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeDeleted);
-
-    m_NamePropertyListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "name");
-    m_NamePropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<VLRendererView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLRendererView::OnNamePropertyChanged);
-
 
     // Init the VL visualization part
     InitVLRendering();
@@ -179,6 +154,7 @@ void VLRendererView::InitVLRendering()
 }
 
 //-----------------------------------------------------------------------------
+
 void VLRendererView::On_SliderMoved(int val)
 {
   m_VLQtRenderWindow->UpdateThresholdVal(val);
@@ -212,68 +188,6 @@ void VLRendererView::OnCameraNodeEnabled(bool enabled)
     mitk::DataNode::Pointer node = m_Controls->m_CameraNode->GetSelectedNode();
     m_VLQtRenderWindow->SetCameraTrackingNode( node.GetPointer() );
   }
-}
-
-//-----------------------------------------------------------------------------
-
-void VLRendererView::OnNodeAdded(mitk::DataNode* node)
-{
-  if (node == 0 || node->GetData()== 0)
-    return;
-
-  #if 0
-  bool isHelper = false;
-  node->GetPropertyList()->GetBoolProperty("helper object", isHelper);
-  if ( isHelper )
-    return;
-  #endif
-
-  m_VLQtRenderWindow->ScheduleNodeAdd( node );
-
-  MITK_INFO << "Node added";
-}
-
-//-----------------------------------------------------------------------------
-
-void VLRendererView::OnNodeRemoved(mitk::DataNode* node)
-{
-  if (node == 0 || node->GetData()== 0)
-    return;
-
-  #if 0
-  bool isHelper = false;
-  node->GetPropertyList()->GetBoolProperty("helper object", isHelper);
-  if ( isHelper )
-    return;
-  #endif
-
-  m_VLQtRenderWindow->ScheduleNodeRemove(node);
-
-  MITK_INFO << "Node removed";
-}
-
-//-----------------------------------------------------------------------------
-
-void VLRendererView::OnNodeDeleted(mitk::DataNode* node)
-{
-  if (node == 0 || node->GetData()== 0)
-    return;
-
-  m_VLQtRenderWindow->ScheduleNodeRemove(node);
-
-  MITK_INFO << "Node deleted";
-}
-
-//-----------------------------------------------------------------------------
-
-void VLRendererView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
-{
-#if 0//def _USE_CUDA
-  {
-    // random hack to illustrate how to do cuda kernels in combination with vl rendering
-    niftk::EdgeDetectionExampleLauncher(this->GetDataStorage(), node, renderer);
-  }
-#endif
 }
 
 //-----------------------------------------------------------------------------

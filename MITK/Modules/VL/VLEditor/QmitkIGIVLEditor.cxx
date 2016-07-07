@@ -139,22 +139,22 @@ void QmitkIGIVLEditor::On3DViewerCheckBoxChecked(bool checked)
   m_3DViewer->setVisible(checked);
 }
 
-
 //-----------------------------------------------------------------------------
+
 void QmitkIGIVLEditor::OnOpacitySliderMoved(int value)
 {
   //m_OverlayViewer->SetOpacity(value / 100.0);
 }
 
-
 //-----------------------------------------------------------------------------
+
 void QmitkIGIVLEditor::OnImageSelected(const mitk::DataNode* node)
 {
   m_OverlayViewer->SetBackgroundNode(node);
 }
 
-
 //-----------------------------------------------------------------------------
+
 void QmitkIGIVLEditor::OnTransformSelected(const mitk::DataNode* node)
 {
   m_OverlayViewer->SetCameraTrackingNode(node);

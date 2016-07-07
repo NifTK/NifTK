@@ -97,14 +97,14 @@ public:
 
   virtual ~VLQtWidget();
 
-  // Called by VLRendererView
+  // Called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
   void SetDataStorage(const mitk::DataStorage::Pointer& dataStorage);
-  // Called by VLRendererView
+  // Called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
   void SetOclResourceService(OclResourceService* oclserv);
+  // Called by QmitkIGIVLEditor (via IGIVLEditor)
+  void SetBackgroundColour(float r, float g, float b); 
   // Called by VLRendererView
   void UpdateThresholdVal(int isoVal); 
-  // Called by QmitkIGIVLEditor reading preferences settings
-  void SetBackgroundColour(float r, float g, float b); 
 
   void ScheduleNodeAdd(const mitk::DataNode* node);
   void ScheduleNodeRemove(const mitk::DataNode* node);
@@ -112,8 +112,8 @@ public:
   void ScheduleTrackballAdjustView( bool do_it =  true ) { m_ScheduleTrackballAdjustView = do_it; }
   void ScheduleSceneRebuild() { ClearScene(); update(); }
 
+  // Called by QmitkIGIVLEditor::OnImageSelected(), VLRendererView::OnBackgroundNodeSelected()
   /** 
-   * Called by VLRendererView
    * node can have as data object:
    * - mitk::Image
    * - CUDAImage
@@ -123,7 +123,7 @@ public:
    */
   bool SetBackgroundNode(const mitk::DataNode::ConstPointer& node);
 
-  // Called by VLRendererView
+  // Called by QmitkIGIVLEditor::OnTransformSelected(), VLRendererView::OnCameraNodeSelected()/OnCameraNodeEnabled()
   bool SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node);
 
 protected:
@@ -138,11 +138,6 @@ protected:
 
   virtual void AddDataStorageListeners();
   virtual void RemoveDataStorageListeners();
-
-  virtual void OnNodeModified(const mitk::DataNode* node);
-  virtual void OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
-  virtual void OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
-  virtual void OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
 
   void UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node);
   void UpdateActorTransformFromNode(vl::Actor* actor, const mitk::DataNode::ConstPointer& node);
