@@ -131,6 +131,34 @@
 using namespace vl;
 
 //-----------------------------------------------------------------------------
+// Util functions
+//-----------------------------------------------------------------------------
+
+namespace
+{
+  void dumpNodeInfo( const std::string& prefix, const mitk::DataNode::ConstPointer& node ) {
+    printf( "\n%s: ", prefix.c_str() );
+    const char* class_name = node->GetData() ? node->GetData()->GetNameOfClass() : "<unknown-class>";
+    mitk::StringProperty* name_prop = dynamic_cast<mitk::StringProperty*>(node->GetProperty("name"));
+    const char* object_name2 = "<unknown-name>";
+    if (name_prop != 0) {
+      object_name2 = name_prop->GetValue();
+    }
+    printf( "%s <%s>\n", object_name2, class_name );
+
+    const mitk::PropertyList::PropertyMap* propList = node->GetPropertyList()->GetMap();
+    mitk::PropertyList::PropertyMap::const_iterator it = node->GetPropertyList()->GetMap()->begin();
+    for( ; it != node->GetPropertyList()->GetMap()->end(); ++it ) {
+      const std::string name = it->first;
+      const mitk::BaseProperty::Pointer prop = it->second;
+      printf( "\t%s: %s <%s>\n", name.c_str(), prop->GetValueAsString().c_str(), prop->GetNameOfClass() );
+      if ( name == "size" ) {
+        VIVID_CHECK( node->GetProperty( "size") );
+      }
+    }
+  }
+}
+
 // Init and shutdown VL
 //-----------------------------------------------------------------------------
 
@@ -369,6 +397,9 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
     return;
   }
 
+  #if 0
+    dumpNodeInfo( "AddDataNode()", node );
+  #endif
   // Propagate color and opacity down to basedata
   node->GetData()->SetProperty("color", node->GetProperty("color"));
   node->GetData()->SetProperty("opacity", node->GetProperty("opacity"));
@@ -464,8 +495,9 @@ void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
   m_NodesToUpdate.erase(node);
   m_NodesToAdd.erase(node);
 
-  if (node.IsNull() || node->GetData() == 0)
+  if ( ! node || ! node->GetData() ) {
     return;
+  }
 
 #ifdef _USE_CUDA
   {
@@ -507,27 +539,9 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     return;
   }
 
-#if 1
-  // dump node data to be updated
-  {
-    printf("\nUpdateDataNode(): ");
-    const std::string& obj_name = node.GetPointer()->GetObjectName();
-    mitk::StringProperty* nameProp = dynamic_cast<mitk::StringProperty*>(node->GetProperty("name"));
-    std::string name_prop = "<unknown>";
-    if (nameProp != 0) {
-      name_prop = nameProp->GetValue();
-    }
-    printf( "\"%s\" (%s)\n", name_prop.c_str(), obj_name.c_str() );
-
-    const mitk::PropertyList::PropertyMap* propList = node->GetPropertyList()->GetMap();
-    mitk::PropertyList::PropertyMap::const_iterator it = node->GetPropertyList()->GetMap()->begin();
-    for( ; it != node->GetPropertyList()->GetMap()->end(); ++it ) {
-      const std::string name = it->first;
-      const mitk::BaseProperty::Pointer prop = it->second;
-      printf( "\t%s: %s\n", name.c_str(), prop->GetValueAsString().c_str() );
-    }
-  }
-#endif
+  #if 1
+    dumpNodeInfo( "UpdateDataNode()", node );
+  #endif
 
   vl::Actor* actor = GetNodeActor(node);
   if ( ! actor ) {
