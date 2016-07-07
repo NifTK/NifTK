@@ -159,6 +159,7 @@ namespace
   }
 }
 
+//-----------------------------------------------------------------------------
 // Init and shutdown VL
 //-----------------------------------------------------------------------------
 
@@ -991,26 +992,26 @@ ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
 
   makeCurrent();
 
-  mitk::PixelType pixType = mitkImg->GetPixelType();
-  size_t numOfComponents = pixType.GetNumberOfComponents();
+  mitk::PixelType mitk_pixel_type = mitkImg->GetPixelType();
+  size_t numOfComponents = mitk_pixel_type.GetNumberOfComponents();
 
   if (false)
   {
     std::cout << "Original pixel type:" << std::endl;
-    std::cout << " PixelType: " <<pixType.GetTypeAsString() << std::endl;
-    std::cout << " BitsPerElement: " <<pixType.GetBpe() << std::endl;
+    std::cout << " PixelType: " <<mitk_pixel_type.GetTypeAsString() << std::endl;
+    std::cout << " BitsPerElement: " <<mitk_pixel_type.GetBpe() << std::endl;
     std::cout << " NumberOfComponents: " << numOfComponents << std::endl;
-    std::cout << " BitsPerComponent: " <<pixType.GetBitsPerComponent() << std::endl;
+    std::cout << " BitsPerComponent: " <<mitk_pixel_type.GetBitsPerComponent() << std::endl;
   }
 
-  ref<vl::Image> vlImg;
+  ref<vl::Image> vl_img;
 
   try
   {
     mitk::ImageReadAccessor readAccess(mitkImg, mitkImg->GetVolumeData(0));
     const void* cPointer = readAccess.GetData();
 
-    vl::EImageType     type = MapITKPixelTypeToVL(pixType.GetComponentType());
+    vl::EImageType     type = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
     vl::EImageFormat   format;
 
     if (type != vl::IT_FLOAT)
@@ -1044,21 +1045,21 @@ ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
 
     int bytealign = 1;
     if (dims[2] <= 1)
-      vlImg = new vl::Image(dims[0], dims[1], 0, bytealign, format, type);
+      vl_img = new vl::Image(dims[0], dims[1], 0, bytealign, format, type);
     else
-      vlImg = new vl::Image(dims[0], dims[1], dims[2], bytealign, format, type);
+      vl_img = new vl::Image(dims[0], dims[1], dims[2], bytealign, format, type);
 
     // sanity check
-    unsigned int size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
-    VIVID_CHECK(vlImg->requiredMemory() == size);
-    std::memcpy(vlImg->pixels(), cPointer, vlImg->requiredMemory());
+    unsigned int size = (dims[0] * dims[1] * dims[2]) * mitk_pixel_type.GetSize();
+    VIVID_CHECK(vl_img->requiredMemory() == size);
+    std::memcpy(vl_img->pixels(), cPointer, vl_img->requiredMemory());
 
-    vlImg = vlImg->convertFormat(vl::IF_LUMINANCE)->convertType(vl::IT_UNSIGNED_SHORT);
+    vl_img = vl_img->convertFormat(vl::IF_LUMINANCE)->convertType(vl::IT_UNSIGNED_SHORT);
 /*
     ref<KeyValues> tags = new KeyValues;
     tags->set("Origin")    = Say("%n %n %n") << mitkImg->GetGeometry()->GetOrigin()[0]  << mitkImg->GetGeometry()->GetOrigin()[1]  << mitkImg->GetGeometry()->GetOrigin()[2];
     tags->set("Spacing")   = Say("%n %n %n") << mitkImg->GetGeometry()->GetSpacing()[0] << mitkImg->GetGeometry()->GetSpacing()[1] << mitkImg->GetGeometry()->GetSpacing()[2];
-    vlImg->setTags(tags.get());
+    vl_img->setTags(tags.get());
 */
   }
   catch(mitk::Exception& e)
@@ -1129,11 +1130,11 @@ ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
   vl::AABB volume_box(vl::vec3(-dimX + shiftX, -dimY + shiftY, -dimZ + shiftZ)
                        , vl::vec3( dimX + shiftX,  dimY + shiftY,  dimZ + shiftZ));
   raycastVolume->setBox(volume_box);
-  raycastVolume->generateTextureCoordinates(vl::ivec3(vlImg->width(), vlImg->height(), vlImg->depth()));
+  raycastVolume->generateTextureCoordinates(vl::ivec3(vl_img->width(), vl_img->height(), vl_img->depth()));
 
 
   // note img has been converted unconditionally to IT_UNSIGNED_SHORT above!
-  fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vlImg.get(), vl::TF_LUMINANCE16, false, false));
+  fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vl_img.get(), vl::TF_LUMINANCE16, false, false));
   fx->shader()->gocUniform("volume_texunit")->setUniformI(0);
 
   // generate a simple colored transfer function
@@ -1144,14 +1145,14 @@ ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
 /*
   ref<Image> gradient;
   // note that this can take a while...
-  gradient = vl::genGradientNormals( vlImg.get() );
+  gradient = vl::genGradientNormals( vl_img.get() );
   fx->shader()->gocUniform( "precomputed_gradient" )->setUniformI( 1);
   fx->shader()->gocTextureSampler( 2 )->setTexture( new Texture( gradient.get(), TF_RGBA, false, false ) );
   fx->shader()->gocUniform( "gradient_texunit" )->setUniformI( 2 );
 */
   fx->shader()->gocUniform("precomputed_gradient")->setUniformI(0);
   // used to compute on the fly the normals based on the volume's gradient
-  fx->shader()->gocUniform("gradient_delta")->setUniform(vl::fvec3(0.5f / vlImg->width(), 0.5f / vlImg->height(), 0.5f / vlImg->depth()));
+  fx->shader()->gocUniform("gradient_delta")->setUniform(vl::fvec3(0.5f / vl_img->width(), 0.5f / vl_img->height(), 0.5f / vl_img->depth()));
 
   fx->shader()->gocUniform( "sample_step" )->setUniformF(1.0f / 512.0f);
 
@@ -1862,13 +1863,13 @@ void VLQtWidget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node
       if (tex.get() != 0)
       {
         unsigned int*       dims    = mitk_img->GetDimensions();    // we do not own dims!
-        mitk::PixelType     pixType = mitk_img->GetPixelType();
-        vl::EImageType      type    = MapITKPixelTypeToVL(pixType.GetComponentType());
-        vl::EImageFormat    format  = MapComponentsToVLColourFormat(pixType.GetNumberOfComponents());
+        mitk::PixelType     mitk_pixel_type = mitk_img->GetPixelType();
+        vl::EImageType      type    = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
+        vl::EImageFormat    format  = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
 
         ref<vl::Image>    vlimg = new vl::Image(dims[0], dims[1], 0, 1, format, type);
         // sanity check
-        unsigned int  size = (dims[0] * dims[1] * dims[2]) * pixType.GetSize();
+        unsigned int  size = (dims[0] * dims[1] * dims[2]) * mitk_pixel_type.GetSize();
         VIVID_CHECK(vlimg->requiredMemory() == size);
 
         try
