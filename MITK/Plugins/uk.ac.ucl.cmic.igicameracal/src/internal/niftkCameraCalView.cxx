@@ -484,14 +484,26 @@ void CameraCalView::Calibrate()
   if (m_Manager->GetNumberOfSnapshots()
       >= m_Manager->GetMinimumNumberOfSnapshotsForCalibrating())
   {
-    this->SetButtonsEnabled(false);
+    if (m_Manager->GetModelFileName().empty())
+    {
+      QMessageBox msgBox;
+      msgBox.setText("An Error Occurred.");
+      msgBox.setInformativeText("The model file name is empty - check preferences.");
+      msgBox.setStandardButtons(QMessageBox::Ok);
+      msgBox.setDefaultButton(QMessageBox::Ok);
+      msgBox.exec();
+    }
+    else
+    {
+      this->SetButtonsEnabled(false);
 
-    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/boobaloo-Don-t-Step-No-Gnome--300px.png");
-    m_Controls->m_ImageLabel->setPixmap(image);
-    m_Controls->m_ImageLabel->show();
+      QPixmap image(":/uk.ac.ucl.cmic.igicameracal/boobaloo-Don-t-Step-No-Gnome--300px.png");
+      m_Controls->m_ImageLabel->setPixmap(image);
+      m_Controls->m_ImageLabel->show();
 
-    m_BackgroundCalibrateProcess = QtConcurrent::run(this, &CameraCalView::RunCalibration);
-    m_BackgroundCalibrateProcessWatcher.setFuture(m_BackgroundCalibrateProcess);
+      m_BackgroundCalibrateProcess = QtConcurrent::run(this, &CameraCalView::RunCalibration);
+      m_BackgroundCalibrateProcessWatcher.setFuture(m_BackgroundCalibrateProcess);
+    }
   }
   else
   {
