@@ -526,6 +526,19 @@ PickedPointList::Pointer PickedPointList::CopyByHeader()
   return newPL;
 }
 
+//-----------------------------------------------------------------------------
+PickedPointList::Pointer PickedPointList::TransformPointList ( cv::Mat* transform )
+{
+  mitk::PickedPointList::Pointer newPL = this->CopyByHeader();
+  std::vector < mitk::PickedObject > outObjects;
+  for ( unsigned int i = 0 ; i < m_PickedObjects.size() ; ++ i )
+  {
+    mitk::PickedObject out = m_PickedObjects[i] * transform;
+    outObjects.push_back(out);
+  }
+  newPL->SetPickedObjects ( outObjects );
+  return newPL;
+}
 
 //-----------------------------------------------------------------------------
 void PickedPointList::PutOut (std::ofstream& os )

@@ -211,6 +211,7 @@ std::istream& operator >> ( std::istream& is, PickedObject& po);
 std::ostream& operator << ( std::ostream& os, const PickedObject& po);
 
 extern "C++" NIFTKOPENCVUTILS_EXPORT bool operator < ( const PickedObject &PO1 , const PickedObject &PO2);
+extern "C++" NIFTKOPENCVUTILS_EXPORT bool operator * ( const PickedObject &PO1 , const cv::Mat* transform);
 
 /**
  * \class maintains a set a point vectors and ID's that 
@@ -257,6 +258,7 @@ public:
   void AddDummyPointIfNotPresent ( const mitk::PickedObject& target );
 
   mitk::PickedPointList::Pointer CopyByHeader();
+  mitk::PickedPointList::Pointer TransformPointList (cv::Mat* transform);
 
 protected:
   PickedPointList();
