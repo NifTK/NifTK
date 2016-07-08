@@ -212,24 +212,19 @@ namespace
   vl::mat4 GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data)
   {
     vl::mat4  mat;
-    // intentionally not setIdentity()
+    // Intentionally not setIdentity()
     mat.setNull();
 
-    if (data.IsNotNull())
+    if ( data )
     {
-      mitk::BaseGeometry::Pointer   geom = data->GetGeometry();
-      if (geom.IsNotNull())
-      {
-        if (geom->GetVtkTransform() != 0)
-        {
+      mitk::BaseGeometry::Pointer geom = data->GetGeometry();
+      if ( geom ) {
+        if ( geom->GetVtkTransform() ) {
           vtkSmartPointer<vtkMatrix4x4> vtkmat = vtkSmartPointer<vtkMatrix4x4>::New();
           geom->GetVtkTransform()->GetMatrix(vtkmat);
-          if (vtkmat.GetPointer() != 0)
-          {
-            for (int i = 0; i < 4; i++)
-            {
-              for (int j = 0; j < 4; j++)
-              {
+          if ( vtkmat.GetPointer() ) {
+            for (int i = 0; i < 4; i++) {
+              for (int j = 0; j < 4; j++) {
                 double val = vtkmat->GetElement(i, j);
                 mat.e(i, j) = val;
               }
@@ -651,7 +646,42 @@ void VLNode::updateCommon() {
 
   // MIC FIXME: this won't work when vl_Vivid.enableLighting is off -> create special uniform
   m_Actor->effect()->shader()->getMaterial()->setDiffuse( color );
+
+  // Update transform
+  UpdateTransformFromData( m_Actor->transform(), m_DataNode->GetData() );
 }
+
+//-----------------------------------------------------------------------------
+
+class VLNodeSurface: public VLNode {
+public:
+  VLNodeSurface( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLNode( gl, vr, ds, node ) {
+    m_MitkSurf = dynamic_cast<mitk::Surface*>( node->GetData() );
+    VIVID_CHECK( m_MitkSurf );
+  }
+
+  virtual void init() {
+    VIVID_CHECK( m_MitkSurf );
+
+    ref<vl::Geometry> geom = ConvertVTKPolyData(m_MitkSurf->GetVtkPolyData());
+    if ( ! geom->normalArray() ) {
+      geom->computeNormals();
+    }
+
+    ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
+    ref<vl::Transform> tr = new vl::Transform;
+    UpdateTransformFromData(tr.get(), m_MitkSurf.GetPointer());
+    ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor(geom.get(), fx.get(), tr.get());
+    actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
+     m_Actor = actor;
+  }
+
+  virtual void update() {}
+
+protected:
+  mitk::Surface::Pointer m_MitkSurf;
+};
 
 //-----------------------------------------------------------------------------
 
@@ -751,13 +781,299 @@ public:
     }
   }
 
-  virtual void remove() {
-    m_VividRendering->sceneManager()->tree()->eraseActor( m_Actor.get() );
-    m_Actor = NULL;
+protected:
+  mitk::Image::Pointer m_MitkImage;
+};
+
+//-----------------------------------------------------------------------------
+
+class VLNode3DImage: public VLNode {
+public:
+  VLNode3DImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLNode( gl, vr, ds, node ) {
+    m_MitkImage = dynamic_cast<mitk::Image*>( node->GetData() );
+    VIVID_CHECK( m_MitkImage.IsNotNull() );
   }
+
+  virtual void init() {
+    // This is all legacy code that will go away when we use the vivid volume class
+    // MIC FIXME:
+    throw std::runtime_error("VLQtWidget::Add3DImageActor(): to be implemented!");
+
+    mitk::PixelType mitk_pixel_type = m_MitkImage->GetPixelType();
+    size_t numOfComponents = mitk_pixel_type.GetNumberOfComponents();
+
+    if (false)
+    {
+      std::cout << "Original pixel type:" << std::endl;
+      std::cout << " PixelType: " <<mitk_pixel_type.GetTypeAsString() << std::endl;
+      std::cout << " BitsPerElement: " <<mitk_pixel_type.GetBpe() << std::endl;
+      std::cout << " NumberOfComponents: " << numOfComponents << std::endl;
+      std::cout << " BitsPerComponent: " <<mitk_pixel_type.GetBitsPerComponent() << std::endl;
+    }
+
+    ref<vl::Image> vl_img;
+
+    try
+    {
+      mitk::ImageReadAccessor readAccess(m_MitkImage, m_MitkImage->GetVolumeData(0));
+      const void* cPointer = readAccess.GetData();
+
+      vl::EImageType     type = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
+      vl::EImageFormat   format;
+
+      if (type != vl::IT_FLOAT)
+      {
+        if (numOfComponents == 1)
+          format = vl::IF_LUMINANCE;
+        else if (numOfComponents == 2)
+          format = vl::IF_RG_INTEGER;
+        else if (numOfComponents == 3)
+          format = vl::IF_RGB_INTEGER;
+        else if (numOfComponents == 4)
+          // FIXME: not sure whether we really want integer formats here!
+          //        for now, dont do integer for rgba, we have quite a few rgba images.
+          format = vl::IF_RGBA;//_INTEGER;
+      }
+      else if (type == vl::IT_FLOAT)
+      {
+        if (numOfComponents == 1)
+          format = vl::IF_LUMINANCE;
+        else if (numOfComponents == 2)
+          format = vl::IF_RG;
+        else if (numOfComponents == 3)
+          format = vl::IF_RGB;
+        else if (numOfComponents == 4)
+          format = vl::IF_RGBA;
+      }
+
+      unsigned int* dims = 0;
+      dims = m_MitkImage->GetDimensions();
+      // we do not own dims!
+
+      int bytealign = 1;
+      if (dims[2] <= 1)
+        vl_img = new vl::Image(dims[0], dims[1], 0, bytealign, format, type);
+      else
+        vl_img = new vl::Image(dims[0], dims[1], dims[2], bytealign, format, type);
+
+      // sanity check
+      unsigned int size = (dims[0] * dims[1] * dims[2]) * mitk_pixel_type.GetSize();
+      VIVID_CHECK(vl_img->requiredMemory() == size);
+      std::memcpy(vl_img->pixels(), cPointer, vl_img->requiredMemory());
+
+      vl_img = vl_img->convertFormat(vl::IF_LUMINANCE)->convertType(vl::IT_UNSIGNED_SHORT);
+  /*
+      ref<KeyValues> tags = new KeyValues;
+      tags->set("Origin")    = Say("%n %n %n") << mitk_img->GetGeometry()->GetOrigin()[0]  << mitk_img->GetGeometry()->GetOrigin()[1]  << mitk_img->GetGeometry()->GetOrigin()[2];
+      tags->set("Spacing")   = Say("%n %n %n") << mitk_img->GetGeometry()->GetSpacing()[0] << mitk_img->GetGeometry()->GetSpacing()[1] << mitk_img->GetGeometry()->GetSpacing()[2];
+      vl_img->setTags(tags.get());
+  */
+    }
+    catch(mitk::Exception& e)
+    {
+      // deal with the situation not to have access
+      VIVID_CHECK(false);
+    }
+
+    float opacity;
+    m_MitkImage->GetPropertyList()->GetFloatProperty("opacity", opacity);
+
+    mitk::BaseProperty::Pointer   colourProp = m_MitkImage->GetProperty("color");
+    mitk::Color                   mitkColor;
+    if (colourProp.IsNotNull())
+      mitkColor = dynamic_cast<mitk::ColorProperty*>(colourProp.GetPointer())->GetColor();
+
+    vl::fvec4 color;
+    color[0] = mitkColor[0];
+    color[1] = mitkColor[1];
+    color[2] = mitkColor[2];
+    color[3] = opacity;
+
+    ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
+    fx->shader()->enable(vl::EN_DEPTH_TEST);
+    fx->shader()->enable(vl::EN_BLEND);
+    // fx->shader()->setRenderState(m_Light.get(), 0);
+    fx->shader()->enable(vl::EN_LIGHTING);
+    fx->shader()->gocMaterial()->setDiffuse(color);
+    fx->shader()->gocMaterial()->setTransparency(opacity);
+
+    //vl::String fragmentShaderSource   = LoadGLSLSourceFromResources("volume_raycast_isosurface_transp.fs");
+    //vl::String vertexShaderSource     = LoadGLSLSourceFromResources("volume_luminance_light.vs");
+
+    //// The GLSL program used to perform the actual rendering.
+    //// The \a volume_luminance_light.fs fragment shader allows you to specify how many
+    //// lights to use (up to 4) and can optionally take advantage of a precomputed normals texture.
+    //ref<vl::GLSLProgram>    glslShader = fx->shader()->gocGLSLProgram();
+    //glslShader->attachShader(new vl::GLSLFragmentShader(fragmentShaderSource));
+    //glslShader->attachShader(new vl::GLSLVertexShader(vertexShaderSource));
+
+    ref<vl::Actor> imageActor = new vl::Actor;
+    imageActor->setEffect(fx.get());
+    // imageActor->setUniform(m_ThresholdVal.get());
+
+    ref<vl::Transform>    tr = new vl::Transform;
+    //UpdateTransfromFromData(tr, cudaImg);       // FIXME: needs proper thinking through
+    imageActor->setTransform(tr.get());
+    m_VividRendering->sceneManager()->tree()->addActor(imageActor.get());
+    imageActor->setEnableMask( vl::VividRenderer::VolumeEnableMask );
+
+    // this is a callback: gets triggered everytime its bound actor is to be rendered.
+    // during that callback it updates the uniforms of our glsl shader to match fixed-function state.
+    ref<vl::RaycastVolume>    raycastVolume = new vl::RaycastVolume;
+    // this stuffs the proxy geometry onto our actor, as lod-slot zero.
+    raycastVolume->bindActor(imageActor.get());
+
+    // we do not own dims!
+    unsigned int*   dims    = m_MitkImage->GetDimensions();
+    mitk::Vector3D  spacing = m_MitkImage->GetGeometry()->GetSpacing();
+
+    float dimX = (float) dims[0] * spacing[0] / 2.0f;
+    float dimY = (float) dims[1] * spacing[1] / 2.0f;
+    float dimZ = (float) dims[2] * spacing[2] / 2.0f;
+    float shiftX = 0.0f;//0.5f * spacing[0];
+    float shiftY = 0.0f;//0.5f * spacing[1];
+    float shiftZ = 0.0f;//0.5f * spacing[2];
+
+    vl::AABB volume_box(vl::vec3(-dimX + shiftX, -dimY + shiftY, -dimZ + shiftZ)
+                         , vl::vec3( dimX + shiftX,  dimY + shiftY,  dimZ + shiftZ));
+    raycastVolume->setBox(volume_box);
+    raycastVolume->generateTextureCoordinates(vl::ivec3(vl_img->width(), vl_img->height(), vl_img->depth()));
+
+
+    // note img has been converted unconditionally to IT_UNSIGNED_SHORT above!
+    fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vl_img.get(), vl::TF_LUMINANCE16, false, false));
+    fx->shader()->gocUniform("volume_texunit")->setUniformI(0);
+
+    // generate a simple colored transfer function
+    ref<vl::Image>  trfunc = vl::makeColorSpectrum(1024, vl::blue, vl::royalblue, vl::green, vl::yellow, vl::crimson);
+    // installs the transfer function as texture #1
+    fx->shader()->gocTextureSampler(1)->setTexture(new vl::Texture(trfunc.get()));
+    fx->shader()->gocUniform("trfunc_texunit")->setUniformI(1);
+  /*
+    ref<Image> gradient;
+    // note that this can take a while...
+    gradient = vl::genGradientNormals( vl_img.get() );
+    fx->shader()->gocUniform( "precomputed_gradient" )->setUniformI( 1);
+    fx->shader()->gocTextureSampler( 2 )->setTexture( new Texture( gradient.get(), TF_RGBA, false, false ) );
+    fx->shader()->gocUniform( "gradient_texunit" )->setUniformI( 2 );
+  */
+    fx->shader()->gocUniform("precomputed_gradient")->setUniformI(0);
+    // used to compute on the fly the normals based on the volume's gradient
+    fx->shader()->gocUniform("gradient_delta")->setUniform(vl::fvec3(0.5f / vl_img->width(), 0.5f / vl_img->height(), 0.5f / vl_img->depth()));
+
+    fx->shader()->gocUniform( "sample_step" )->setUniformF(1.0f / 512.0f);
+
+    vtkLinearTransform * nodeVtkTr = m_MitkImage->GetGeometry()->GetVtkTransform();
+    vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    nodeVtkTr->GetMatrix(geometryTransformMatrix);
+
+    float vals[16];
+    for (int i = 0; i < 4; i++)
+    {
+      for (int j = 0; j < 4; j++)
+      {
+        double val = geometryTransformMatrix->GetElement(i, j);
+        vals[i*4+j] = val;
+      }
+    }
+    vl::mat4 mat(vals);
+    tr->setLocalMatrix(mat);
+
+    // refresh window
+    //openglContext()->update();
+
+    m_Actor = imageActor;
+  }
+
+  virtual void update() {}
 
 protected:
   mitk::Image::Pointer m_MitkImage;
+};
+
+//-----------------------------------------------------------------------------
+
+class VLNodeCoordinateAxes: public VLNode {
+public:
+  VLNodeCoordinateAxes( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLNode( gl, vr, ds, node ) {
+    m_MitkAxes = dynamic_cast<mitk::CoordinateAxesData*>( node->GetData() );
+    VIVID_CHECK( m_MitkAxes );
+  }
+
+  virtual void init() {
+    VIVID_CHECK( m_MitkAxes );
+
+    ref<vl::ArrayFloat3> verts  = m_Vertices = new vl::ArrayFloat3;
+    ref<vl::ArrayFloat4> colors = new vl::ArrayFloat4;
+    verts->resize(6);
+    colors->resize(6);
+  
+    // Axis length
+    int S = 100;
+    mitk::IntProperty::Pointer size_prop = dynamic_cast<mitk::IntProperty*>(m_DataNode->GetProperty("size"));
+    if ( size_prop ) {
+      S = size_prop->GetValue();
+    }
+
+    // X Axis
+    verts ->at(0) = vec3(0, 0, 0);
+    verts ->at(1) = vec3(S, 0, 0);
+    colors->at(0) = vl::red;
+    colors->at(1) = vl::red;
+    // Y Axis
+    verts ->at(2) = vec3(0, 0, 0);
+    verts ->at(3) = vec3(0, S, 0);
+    colors->at(2) = vl::green;
+    colors->at(3) = vl::green;
+    // Z Axis
+    verts ->at(4) = vec3(0, 0, 0);
+    verts ->at(5) = vec3(0, 0, S);
+    colors->at(4) = vl::blue;
+    colors->at(5) = vl::blue;
+
+    ref<vl::Geometry> geom = new vl::Geometry;
+    geom->drawCalls().push_back( new vl::DrawArrays( vl::PT_LINES, 0, 6 ) );
+    geom->setVertexArray(verts.get());
+    geom->setColorArray(colors.get());
+
+    ref<vl::Transform> tr = new vl::Transform;
+    UpdateTransformFromData(tr.get(), m_MitkAxes.GetPointer());
+
+    ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
+    fx->shader()->getLineWidth()->set( 2 );
+    // Use color array instead of lighting
+    fx->shader()->gocUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
+
+    ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor(geom.get(), fx.get(), tr.get());
+    actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
+
+    m_Actor = actor;
+  }
+
+  virtual void update() {
+    mitk::IntProperty::Pointer size_prop = dynamic_cast<mitk::IntProperty*>(m_DataNode->GetProperty("size"));
+    if ( size_prop ) {
+      ref<vl::ArrayFloat3> verts = m_Vertices;
+      int S = size_prop->GetValue();
+      // X Axis
+      verts ->at(0) = vec3(0, 0, 0);
+      verts ->at(1) = vec3(S, 0, 0);
+      // Y Axis
+      verts ->at(2) = vec3(0, 0, 0);
+      verts ->at(3) = vec3(0, S, 0);
+      // Z Axis
+      verts ->at(4) = vec3(0, 0, 0);
+      verts ->at(5) = vec3(0, 0, S);
+      // Update VBO
+      m_Vertices->updateBufferObject();
+    }
+  }
+
+protected:
+  mitk::CoordinateAxesData::Pointer m_MitkAxes;
+  ref<vl::ArrayFloat3> m_Vertices;
 };
 
 //-----------------------------------------------------------------------------
@@ -766,15 +1082,23 @@ vl::ref<VLNode> VLNode::create( vl::OpenGLContext* gl, vl::VividRendering* vr, m
   vl::ref<VLNode> vl_node;
 
   mitk::Image* mitk_image = dynamic_cast<mitk::Image*>( node->GetData() );
+  mitk::Surface* mitk_surf = dynamic_cast<mitk::Surface*>(node->GetData());
+  mitk::CoordinateAxesData* mitk_axes = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
 
+  if ( mitk_surf ) {
+    vl_node = new VLNodeSurface( gl, vr, ds, node );
+  } else
   if ( mitk_image ) {
     unsigned int depth = mitk_image->GetDimensions()[2];
     // In VTK a 2x2x1 image is 2D not 3D like in VL
     if ( depth <= 1 ) {
       vl_node = new VLNode2DImage( gl, vr, ds, node );
     } else {
-      // vl_node = new VLNode3DImage( gl, vr, ds, node );
+      vl_node = new VLNode3DImage( gl, vr, ds, node );
     }
+  } else 
+  if ( mitk_axes ) {
+    vl_node = new VLNodeCoordinateAxes( gl, vr, ds, node );
   }
 
   return vl_node;
@@ -990,10 +1314,6 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
   #if 0
     dumpNodeInfo( "AddDataNode()", node );
   #endif
-  // Propagate color and opacity down to basedata
-  node->GetData()->SetProperty("color", node->GetProperty("color"));
-  node->GetData()->SetProperty("opacity", node->GetProperty("opacity"));
-  node->GetData()->SetProperty("visible", node->GetProperty("visible"));
 
   bool doMitkImageIfSuitable = true;
   mitk::Image::Pointer              mitk_img  = dynamic_cast<mitk::Image*>(node->GetData());
@@ -1154,6 +1474,9 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   if ( visibleProp ) {
     visible = visibleProp->GetValue();
   }
+  actor->setEnabled( visible );
+  
+  // Update opacity
   float opacity = 1.0f;
   mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
   if ( opacityProp ) {
@@ -1200,297 +1523,6 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 #ifdef _USE_CUDA
   UpdateGLTexturesFromCUDA(node);
 #endif
-}
-
-//-----------------------------------------------------------------------------
-
-ref<vl::Actor> VLQtWidget::AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf)
-{
-  makeCurrent();
-
-  // MITK_INFO << "Num of vertices: " << vlSurf->vertexArray()->size()/3;
-
-  ref<vl::Geometry> geom = ConvertVTKPolyData(mitkSurf->GetVtkPolyData());
-  if ( ! geom->normalArray() ) {
-    geom->computeNormals();
-  }
-
-  ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-  ref<vl::Transform> tr = new vl::Transform;
-  UpdateTransformFromData(tr.get(), mitkSurf.GetPointer());
-  ref<vl::Actor> actor = m_SceneManager->tree()->addActor(geom.get(), fx.get(), tr.get());
-  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-  return actor;
-}
-
-//-----------------------------------------------------------------------------
-
-ref<vl::Actor> VLQtWidget::AddImageActor(const mitk::Image::Pointer& mitk_img)
-{
-  makeCurrent();
-
-  unsigned int* dims = 0;
-  dims = mitk_img->GetDimensions();
-  // we do not own dims!
-
-  if (dims[2] <= 1)
-  {
-    return Add2DImageActor(mitk_img);
-  }
-  else
-  {
-    return Add3DImageActor(mitk_img);
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitk_img)
-{
-  makeCurrent();
-
-  mitk::PixelType  mitk_pixel_type = mitk_img->GetPixelType();
-  vl::EImageType   vl_type         = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
-  vl::EImageFormat vl_format       = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
-  unsigned int*    dims            = mitk_img->GetDimensions();
-
-  ref<vl::Image> vl_img;
-
-  try
-  {
-    unsigned int buffer_bytes = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
-    mitk::ImageReadAccessor readAccess( mitk_img, mitk_img->GetVolumeData(0) );
-    void* buffer_ptr = const_cast<void*>( readAccess.GetData() );
-    // std::memcpy( vl_img->pixels(), ptr, byte_count );
-    // Use VTK buffer directly instead of allocating one
-    vl_img = new vl::Image( buffer_ptr, buffer_bytes );
-    vl_img->allocate2D(dims[0], dims[1], 1, vl_format, vl_type);
-    VIVID_CHECK( vl_img->requiredMemory() == buffer_bytes );
-  }
-  catch (...)
-  {
-    // FIXME: error handling?
-    MITK_ERROR << "Did not get pixel read access to 2D image.";
-  }
-
-  ref<vl::Geometry> geom = CreateGeometryFor2DImage(dims[0], dims[1]);
-
-  ref<vl::Transform> tr = new vl::Transform;
-  UpdateTransformFromData(tr.get(), mitk_img.GetPointer());
-
-  ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-  ref<vl::Actor> actor = m_SceneManager->tree()->addActor(geom.get(), fx.get(), tr.get());
-  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-  fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
-  fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
-  
-  // When texture mapping is enabled texture is modulated by vertex color
-  geom->setColorArray( vl::white );
-  // These must be present as part of the default Vivid material
-  VIVID_CHECK( fx->shader()->getTextureSampler( vl::VividRendering::UserTexture ) )
-  VIVID_CHECK( fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture() )
-  VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture")->getUniformI() == vl::VividRendering::UserTexture );
-  ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
-  texture->createTexture2D( vl_img.get(), vl::TF_UNKNOWN, false, false );
-
-  return actor;
-}
-
-//-----------------------------------------------------------------------------
-
-ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitk_img)
-{
-  // MIC FIXME:
-
-  throw std::runtime_error("VLQtWidget::Add3DImageActor(): to be implemented!");
-
-  makeCurrent();
-
-  mitk::PixelType mitk_pixel_type = mitk_img->GetPixelType();
-  size_t numOfComponents = mitk_pixel_type.GetNumberOfComponents();
-
-  if (false)
-  {
-    std::cout << "Original pixel type:" << std::endl;
-    std::cout << " PixelType: " <<mitk_pixel_type.GetTypeAsString() << std::endl;
-    std::cout << " BitsPerElement: " <<mitk_pixel_type.GetBpe() << std::endl;
-    std::cout << " NumberOfComponents: " << numOfComponents << std::endl;
-    std::cout << " BitsPerComponent: " <<mitk_pixel_type.GetBitsPerComponent() << std::endl;
-  }
-
-  ref<vl::Image> vl_img;
-
-  try
-  {
-    mitk::ImageReadAccessor readAccess(mitk_img, mitk_img->GetVolumeData(0));
-    const void* cPointer = readAccess.GetData();
-
-    vl::EImageType     type = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
-    vl::EImageFormat   format;
-
-    if (type != vl::IT_FLOAT)
-    {
-      if (numOfComponents == 1)
-        format = vl::IF_LUMINANCE;
-      else if (numOfComponents == 2)
-        format = vl::IF_RG_INTEGER;
-      else if (numOfComponents == 3)
-        format = vl::IF_RGB_INTEGER;
-      else if (numOfComponents == 4)
-        // FIXME: not sure whether we really want integer formats here!
-        //        for now, dont do integer for rgba, we have quite a few rgba images.
-        format = vl::IF_RGBA;//_INTEGER;
-    }
-    else if (type == vl::IT_FLOAT)
-    {
-      if (numOfComponents == 1)
-        format = vl::IF_LUMINANCE;
-      else if (numOfComponents == 2)
-        format = vl::IF_RG;
-      else if (numOfComponents == 3)
-        format = vl::IF_RGB;
-      else if (numOfComponents == 4)
-        format = vl::IF_RGBA;
-    }
-
-    unsigned int* dims = 0;
-    dims = mitk_img->GetDimensions();
-    // we do not own dims!
-
-    int bytealign = 1;
-    if (dims[2] <= 1)
-      vl_img = new vl::Image(dims[0], dims[1], 0, bytealign, format, type);
-    else
-      vl_img = new vl::Image(dims[0], dims[1], dims[2], bytealign, format, type);
-
-    // sanity check
-    unsigned int size = (dims[0] * dims[1] * dims[2]) * mitk_pixel_type.GetSize();
-    VIVID_CHECK(vl_img->requiredMemory() == size);
-    std::memcpy(vl_img->pixels(), cPointer, vl_img->requiredMemory());
-
-    vl_img = vl_img->convertFormat(vl::IF_LUMINANCE)->convertType(vl::IT_UNSIGNED_SHORT);
-/*
-    ref<KeyValues> tags = new KeyValues;
-    tags->set("Origin")    = Say("%n %n %n") << mitk_img->GetGeometry()->GetOrigin()[0]  << mitk_img->GetGeometry()->GetOrigin()[1]  << mitk_img->GetGeometry()->GetOrigin()[2];
-    tags->set("Spacing")   = Say("%n %n %n") << mitk_img->GetGeometry()->GetSpacing()[0] << mitk_img->GetGeometry()->GetSpacing()[1] << mitk_img->GetGeometry()->GetSpacing()[2];
-    vl_img->setTags(tags.get());
-*/
-  }
-  catch(mitk::Exception& e)
-  {
-    // deal with the situation not to have access
-    VIVID_CHECK(false);
-  }
-
-  float opacity;
-  mitk_img->GetPropertyList()->GetFloatProperty("opacity", opacity);
-
-  mitk::BaseProperty::Pointer   colourProp = mitk_img->GetProperty("color");
-  mitk::Color                   mitkColor;
-  if (colourProp.IsNotNull())
-    mitkColor = dynamic_cast<mitk::ColorProperty*>(colourProp.GetPointer())->GetColor();
-
-  vl::fvec4 color;
-  color[0] = mitkColor[0];
-  color[1] = mitkColor[1];
-  color[2] = mitkColor[2];
-  color[3] = opacity;
-
-  ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-  fx->shader()->enable(vl::EN_DEPTH_TEST);
-  fx->shader()->enable(vl::EN_BLEND);
-  // fx->shader()->setRenderState(m_Light.get(), 0);
-  fx->shader()->enable(vl::EN_LIGHTING);
-  fx->shader()->gocMaterial()->setDiffuse(color);
-  fx->shader()->gocMaterial()->setTransparency(opacity);
-
-  //vl::String fragmentShaderSource   = LoadGLSLSourceFromResources("volume_raycast_isosurface_transp.fs");
-  //vl::String vertexShaderSource     = LoadGLSLSourceFromResources("volume_luminance_light.vs");
-
-  //// The GLSL program used to perform the actual rendering.
-  //// The \a volume_luminance_light.fs fragment shader allows you to specify how many
-  //// lights to use (up to 4) and can optionally take advantage of a precomputed normals texture.
-  //ref<vl::GLSLProgram>    glslShader = fx->shader()->gocGLSLProgram();
-  //glslShader->attachShader(new vl::GLSLFragmentShader(fragmentShaderSource));
-  //glslShader->attachShader(new vl::GLSLVertexShader(vertexShaderSource));
-
-  ref<vl::Actor> imageActor = new vl::Actor;
-  imageActor->setEffect(fx.get());
-  // imageActor->setUniform(m_ThresholdVal.get());
-
-  ref<vl::Transform>    tr = new vl::Transform;
-  //UpdateTransfromFromData(tr, cudaImg);       // FIXME: needs proper thinking through
-  imageActor->setTransform(tr.get());
-  m_SceneManager->tree()->addActor(imageActor.get());
-  imageActor->setEnableMask( vl::VividRenderer::VolumeEnableMask );
-
-  // this is a callback: gets triggered everytime its bound actor is to be rendered.
-  // during that callback it updates the uniforms of our glsl shader to match fixed-function state.
-  ref<vl::RaycastVolume>    raycastVolume = new vl::RaycastVolume;
-  // this stuffs the proxy geometry onto our actor, as lod-slot zero.
-  raycastVolume->bindActor(imageActor.get());
-
-  // we do not own dims!
-  unsigned int*   dims    = mitk_img->GetDimensions();
-  mitk::Vector3D  spacing = mitk_img->GetGeometry()->GetSpacing();
-
-  float dimX = (float) dims[0] * spacing[0] / 2.0f;
-  float dimY = (float) dims[1] * spacing[1] / 2.0f;
-  float dimZ = (float) dims[2] * spacing[2] / 2.0f;
-  float shiftX = 0.0f;//0.5f * spacing[0];
-  float shiftY = 0.0f;//0.5f * spacing[1];
-  float shiftZ = 0.0f;//0.5f * spacing[2];
-
-  vl::AABB volume_box(vl::vec3(-dimX + shiftX, -dimY + shiftY, -dimZ + shiftZ)
-                       , vl::vec3( dimX + shiftX,  dimY + shiftY,  dimZ + shiftZ));
-  raycastVolume->setBox(volume_box);
-  raycastVolume->generateTextureCoordinates(vl::ivec3(vl_img->width(), vl_img->height(), vl_img->depth()));
-
-
-  // note img has been converted unconditionally to IT_UNSIGNED_SHORT above!
-  fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vl_img.get(), vl::TF_LUMINANCE16, false, false));
-  fx->shader()->gocUniform("volume_texunit")->setUniformI(0);
-
-  // generate a simple colored transfer function
-  ref<vl::Image>  trfunc = vl::makeColorSpectrum(1024, vl::blue, vl::royalblue, vl::green, vl::yellow, vl::crimson);
-  // installs the transfer function as texture #1
-  fx->shader()->gocTextureSampler(1)->setTexture(new vl::Texture(trfunc.get()));
-  fx->shader()->gocUniform("trfunc_texunit")->setUniformI(1);
-/*
-  ref<Image> gradient;
-  // note that this can take a while...
-  gradient = vl::genGradientNormals( vl_img.get() );
-  fx->shader()->gocUniform( "precomputed_gradient" )->setUniformI( 1);
-  fx->shader()->gocTextureSampler( 2 )->setTexture( new Texture( gradient.get(), TF_RGBA, false, false ) );
-  fx->shader()->gocUniform( "gradient_texunit" )->setUniformI( 2 );
-*/
-  fx->shader()->gocUniform("precomputed_gradient")->setUniformI(0);
-  // used to compute on the fly the normals based on the volume's gradient
-  fx->shader()->gocUniform("gradient_delta")->setUniform(vl::fvec3(0.5f / vl_img->width(), 0.5f / vl_img->height(), 0.5f / vl_img->depth()));
-
-  fx->shader()->gocUniform( "sample_step" )->setUniformF(1.0f / 512.0f);
-
-  vtkLinearTransform * nodeVtkTr = mitk_img->GetGeometry()->GetVtkTransform();
-  vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  nodeVtkTr->GetMatrix(geometryTransformMatrix);
-
-  float vals[16];
-  for (int i = 0; i < 4; i++)
-  {
-    for (int j = 0; j < 4; j++)
-    {
-      double val = geometryTransformMatrix->GetElement(i, j);
-      vals[i*4+j] = val;
-    }
-  }
-  vl::mat4 mat(vals);
-  tr->setLocalMatrix(mat);
-
-  // refresh window
-  //openglContext()->update();
-
-  return imageActor;
 }
 
 //-----------------------------------------------------------------------------
@@ -2010,55 +2042,6 @@ vl::Actor* VLQtWidget::GetNodeActor(const mitk::DataNode::ConstPointer& node)
 {
   NodeActorMapType::iterator it = m_NodeActorMap.find(node);
   return it == m_NodeActorMap.end() ? NULL : it->second.get();
-}
-
-//-----------------------------------------------------------------------------
-
-ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord)
-{
-  makeCurrent();
-
-  ref<vl::Transform> tr = new vl::Transform;
-  UpdateTransformFromData(tr.get(), coord.GetPointer());
-
-  ref<vl::ArrayFloat3> verts  = new vl::ArrayFloat3;
-  ref<vl::ArrayFloat4> colors = new vl::ArrayFloat4;
-  verts->resize(6);
-  colors->resize(6);
-  
-  // Axis length
-  float S = 100;
-
-  // X Axis
-  verts ->at(0) = vec3(0, 0, 0);
-  verts ->at(1) = vec3(S, 0, 0);
-  colors->at(0) = vl::red;
-  colors->at(1) = vl::red;
-  // Y Axis
-  verts ->at(2) = vec3(0, 0, 0);
-  verts ->at(3) = vec3(0, S, 0);
-  colors->at(2) = vl::green;
-  colors->at(3) = vl::green;
-  // Z Axis
-  verts ->at(4) = vec3(0, 0, 0);
-  verts ->at(5) = vec3(0, 0, S);
-  colors->at(4) = vl::blue;
-  colors->at(5) = vl::blue;
-
-  ref<vl::Geometry> geom = new vl::Geometry;
-  geom->drawCalls().push_back( new vl::DrawArrays( vl::PT_LINES, 0, 6 ) );
-  geom->setVertexArray(verts.get());
-  geom->setColorArray(colors.get());
-
-  ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-  fx->shader()->getLineWidth()->set( 2 );
-  // Use color array instead of lighting
-  fx->shader()->gocUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
-
-  ref<vl::Actor> actor = m_SceneManager->tree()->addActor(geom.get(), fx.get(), tr.get());
-  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-  return actor;
 }
 
 //-----------------------------------------------------------------------------

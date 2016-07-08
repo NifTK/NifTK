@@ -109,7 +109,10 @@ public:
   virtual void update() = 0;
 
   /** Removes all the relevant Actor(s) from the scene. */
-  virtual void remove() = 0;
+  virtual void remove() {
+    m_VividRendering->sceneManager()->tree()->eraseActor( m_Actor.get() );
+    m_Actor = NULL;
+  }
 
   /** Factory method: creates the right VLNode subclass according to the node's type. */
   static vl::ref<VLNode> create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node );
@@ -195,11 +198,6 @@ protected:
 
   vl::ref<vl::Actor> AddPointsetActor(const mitk::PointSet::Pointer& mitkPS);
   vl::ref<vl::Actor> AddPointCloudActor(niftk::PCLData* pcl);
-  vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
-  vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
-  vl::ref<vl::Actor> Add2DImageActor(const mitk::Image::Pointer& mitkImg);
-  vl::ref<vl::Actor> Add3DImageActor(const mitk::Image::Pointer& mitkImg);
-  vl::ref<vl::Actor> AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord);
 
   void CreateAndUpdateFBOSizes(int width, int height);
   void UpdateViewportAndCameraAfterResize();
