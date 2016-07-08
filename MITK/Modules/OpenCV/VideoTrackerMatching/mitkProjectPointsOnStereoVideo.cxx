@@ -1588,6 +1588,18 @@ void ProjectPointsOnStereoVideo::AppendClassifierWorldPoints (
 }
 
 //-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::SetAndApplyModelToWorldTransform(cv::Mat* modelToWorld)
+{
+  if ( m_ModelPoints.IsNull() || m_ModelPoints->GetListSize() == 0 )
+  {
+    throw std::runtime_error("Attempted to set modeltoworld transform, but no model points set");
+  }
+  m_ModelToWorldTransform = modelToWorld;
+
+  m_WorldPoints = m_ModelPoints->TransformPointList ( m_ModelToWorldTransform );
+}
+
+//-----------------------------------------------------------------------------
 std::vector <mitk::PickedPointList::Pointer> ProjectPointsOnStereoVideo::GetPointsInLeftLensCS ()
 {
   return m_PointsInLeftLensCS;

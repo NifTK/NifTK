@@ -66,14 +66,14 @@ public:
    * \brief
    * performs the point projection
    */
-  void  Project(mitk::VideoTrackerMatching::Pointer matcher, std::vector<double> * perturbation = NULL);
+  void Project(mitk::VideoTrackerMatching::Pointer matcher, std::vector<double> * perturbation = NULL);
 
   /**
    * \brief
    * Sets the cameratotracker matrix for the passed matcher
    * to match the matrix for the projector
    */
-  void  SetMatcherCameraToTracker(mitk::VideoTrackerMatching::Pointer matcher);
+  void SetMatcherCameraToTracker(mitk::VideoTrackerMatching::Pointer matcher);
 
   /**
    * \brief save the projected coordinates for each frame to a text file
@@ -123,10 +123,16 @@ public:
    * \brief appends point to classifier world points
    */
   void AppendClassifierWorldPoints ( std::vector < mitk::WorldPoint > points );
+  
   /**
    * \brief clear the list of world points
    */
   void ClearWorldPoints ();
+
+  /**
+   * \brief clear the list of model points
+   */
+  void ClearModelPoints ();
 
   std::vector < mitk::PickedPointList::Pointer >  GetPointsInLeftLensCS ();
   std::vector < mitk::ProjectedPointPairsWithTimingError > GetProjectedPoints ();
@@ -162,7 +168,15 @@ public:
   itkSetMacro ( ClassifierScreenBuffer, double);
   itkSetMacro ( TriangulatedPointsOutName, std::string );
   itkSetMacro ( WorldPoints, mitk::PickedPointList::Pointer );
+  itkSetMacro ( ModelPoints, mitk::PickedPointList::Pointer );
   itkSetMacro ( ClassifierWorldPoints, mitk::PickedPointList::Pointer );
+
+  /**
+   * \brief sets the model to world transform and applies it to model points, to create world points, 
+   * throws an error is model points is not yet set
+   */
+  void SetAndApplyModelToWorldTransform ( cv::Mat* transform ); 
+
 protected:
 
   ProjectPointsOnStereoVideo();
