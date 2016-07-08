@@ -81,6 +81,59 @@ class VLTrackballManipulator;
 
 #endif
 
+//-----------------------------------------------------------------------------
+// VLNode
+//-----------------------------------------------------------------------------
+
+/** 
+ * Takes care of managing all VL related aspects with regard to a given mitk::DataNode, ie, maps a mitk::DataNode to VL/Vivid.
+ */
+class VLNode: public vl::Object {
+public:
+  VLNode( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node ) {
+    // Init
+    m_OpenGLContext = gl;
+    m_VividRendering = vr;
+    m_DataStorage = ds;
+    m_DataNode = node;
+    // Activate OpenGL context
+    gl->makeCurrent();
+    // Initialize properties
+    initDataStoreProperties();
+  }
+
+  /** Initializes all the relevant VL data structures, uniforms etc. according to the node's settings. */
+  virtual void init() = 0;
+
+  /** Updates all the relevant VL data structures, uniforms etc. according to the node's settings. */
+  virtual void update() = 0;
+
+  /** Removes all the relevant Actor(s) from the scene. */
+  virtual void remove() = 0;
+
+  /** Factory method: creates the right VLNode subclass according to the node's type. */
+  static vl::ref<VLNode> create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node );
+
+  /** Returns the vl::Actor associated with this VLNode. Note: the specific subclass might handle more than one vl::Actor. */
+  const vl::Actor* actor() const { return m_Actor.get(); }
+  /** Returns the vl::Actor associated with this VLNode. Note: the specific subclass might handle more than one vl::Actor. */
+  vl::Actor* actor() { return m_Actor.get(); }
+
+  /** Updates visibility, opacity and color. */
+  void updateCommon();
+
+private:
+  /** Initializes the value of all Vivid properties in the DataStore. */
+  void initDataStoreProperties();
+
+protected:
+  vl::OpenGLContext* m_OpenGLContext;
+  vl::VividRendering* m_VividRendering;
+  mitk::DataStorage* m_DataStorage;
+  const mitk::DataNode* m_DataNode;
+  vl::ref<vl::Actor> m_Actor;
+};
+
 /**
  * This class is not thread-safe! Methods should only ever be called on the main
  * GUI thread.
@@ -91,6 +144,7 @@ class NIFTKVL_EXPORT VLQtWidget : public QGLWidget, public vl::OpenGLContext
 
 public:
   typedef std::map< mitk::DataNode::ConstPointer, vl::ref<vl::Actor> > NodeActorMapType;
+  typedef std::map< mitk::DataNode::ConstPointer, vl::ref<VLNode> > NodeVLNodeMapType;
 
 public:
   VLQtWidget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0);
@@ -139,11 +193,6 @@ protected:
   virtual void AddDataStorageListeners();
   virtual void RemoveDataStorageListeners();
 
-  void UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node);
-  void UpdateActorTransformFromNode(vl::Actor* actor, const mitk::DataNode::ConstPointer& node);
-  void UpdateTransformFromNode(vl::Transform* txf, const mitk::DataNode::ConstPointer& node);
-  void UpdateTransformFromData(vl::Transform* txf, const mitk::BaseData::ConstPointer& data);
-
   vl::ref<vl::Actor> AddPointsetActor(const mitk::PointSet::Pointer& mitkPS);
   vl::ref<vl::Actor> AddPointCloudActor(niftk::PCLData* pcl);
   vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
@@ -152,19 +201,12 @@ protected:
   vl::ref<vl::Actor> Add3DImageActor(const mitk::Image::Pointer& mitkImg);
   vl::ref<vl::Actor> AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord);
 
-  vl::EImageType MapITKPixelTypeToVL(int itkComponentType);
-  vl::EImageFormat MapComponentsToVLColourFormat(int components);
-  vl::mat4 GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data);
-  vl::ref<vl::Geometry> ConvertVTKPolyData(vtkPolyData* vtkPoly);
-
   void CreateAndUpdateFBOSizes(int width, int height);
   void UpdateViewportAndCameraAfterResize();
   void UpdateCameraParameters();
 
   void PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
-  vl::ref<vl::Geometry> CreateGeometryFor2DImage(int width, int height);
   vl::Actor* GetNodeActor(const mitk::DataNode::ConstPointer& node);
-  VLUserData* GetUserData(vl::Actor* actor);
 
 protected:
   vl::ref<vl::VividRendering>        m_VividRendering;
@@ -180,6 +222,7 @@ protected:
   mitk::DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
 
   NodeActorMapType m_NodeActorMap;
+  NodeVLNodeMapType m_NodeVLNodeMap;
   std::set<mitk::DataNode::ConstPointer> m_NodesToUpdate;
   std::set<mitk::DataNode::ConstPointer> m_NodesToAdd;
   std::set<mitk::DataNode::ConstPointer> m_NodesToRemove;

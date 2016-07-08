@@ -131,11 +131,443 @@
 using namespace vl;
 
 //-----------------------------------------------------------------------------
+// VLUserData
+//-----------------------------------------------------------------------------
+
+struct VLUserData: public vl::Object
+{
+  VLUserData()
+    : m_TransformModifiedTime(0)
+    , m_ImageModifiedTime(0)
+  {
+  }
+
+  itk::ModifiedTimeType m_TransformModifiedTime;
+  itk::ModifiedTimeType m_ImageModifiedTime;
+};
+
+//-----------------------------------------------------------------------------
 // Util functions
 //-----------------------------------------------------------------------------
 
 namespace
 {
+  vl::EImageType MapITKPixelTypeToVL(int itkComponentType)
+  {
+    static const vl::EImageType typeMap[] =
+    {
+      vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::UNKNOWNCOMPONENTTYPE = 0
+      vl::IT_UNSIGNED_BYTE,   // itk::ImageIOBase::UCHAR = 1
+      vl::IT_BYTE,            // itk::ImageIOBase::CHAR = 2
+      vl::IT_UNSIGNED_SHORT,  // itk::ImageIOBase::USHORT = 3
+      vl::IT_SHORT,           // itk::ImageIOBase::SHORT = 4
+      vl::IT_UNSIGNED_INT,    // itk::ImageIOBase::UINT = 5
+      vl::IT_INT,             // itk::ImageIOBase::INT = 6
+      vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::ULONG = 7
+      vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::LONG = 8
+      vl::IT_FLOAT,           // itk::ImageIOBase::FLOAT = 9
+      vl::IT_IMPLICIT_TYPE    // itk::ImageIOBase::DOUBLE = 10
+    };
+
+    return typeMap[itkComponentType];
+  }
+
+  //-----------------------------------------------------------------------------
+
+  vl::EImageFormat MapComponentsToVLColourFormat(int components)
+  {
+    // this assumes the image data is a normal colour image, not encoding pointers or indices, or similar stuff.
+
+    switch (components)
+    {
+      default:
+      case 1:
+        return vl::IF_LUMINANCE;
+      case 2:
+        return vl::IF_RG;
+      case 3:
+        return vl::IF_RGB;
+      case 4:
+        return vl::IF_RGBA;
+    }
+  }
+
+  //-----------------------------------------------------------------------------
+
+  VLUserData* GetUserData(vl::Actor* actor)
+  {
+    VIVID_CHECK( actor );
+    ref<VLUserData> userdata = actor->userData()->as<VLUserData>();
+    if ( ! userdata )
+    {
+      userdata = new VLUserData;
+      actor->setUserData( userdata.get() );
+    }
+
+    return userdata.get();
+  }
+
+  //-----------------------------------------------------------------------------
+
+  vl::mat4 GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data)
+  {
+    vl::mat4  mat;
+    // intentionally not setIdentity()
+    mat.setNull();
+
+    if (data.IsNotNull())
+    {
+      mitk::BaseGeometry::Pointer   geom = data->GetGeometry();
+      if (geom.IsNotNull())
+      {
+        if (geom->GetVtkTransform() != 0)
+        {
+          vtkSmartPointer<vtkMatrix4x4> vtkmat = vtkSmartPointer<vtkMatrix4x4>::New();
+          geom->GetVtkTransform()->GetMatrix(vtkmat);
+          if (vtkmat.GetPointer() != 0)
+          {
+            for (int i = 0; i < 4; i++)
+            {
+              for (int j = 0; j < 4; j++)
+              {
+                double val = vtkmat->GetElement(i, j);
+                mat.e(i, j) = val;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return mat;
+  }
+
+  //-----------------------------------------------------------------------------
+
+  void UpdateTransformFromData(vl::Transform* txf, const mitk::BaseData::ConstPointer& data)
+  {
+    vl::mat4  mat = GetVLMatrixFromData(data);
+
+    if (!mat.isNull())
+    {
+      txf->setLocalMatrix(mat);
+      txf->computeWorldMatrix();
+    }
+  }
+
+  //-----------------------------------------------------------------------------
+
+  void UpdateActorTransformFromNode(vl::Actor* actor, const mitk::DataNode::ConstPointer& node)
+  {
+    if (node.IsNotNull())
+    {
+      mitk::BaseData::Pointer data = node->GetData();
+      if (data.IsNotNull())
+      {
+        mitk::BaseGeometry::Pointer geom = data->GetGeometry();
+        if (geom.IsNotNull())
+        {
+          ref<VLUserData> userdata = GetUserData(actor);
+          if (geom->GetMTime() > userdata->m_TransformModifiedTime)
+          {
+            UpdateTransformFromData(actor->transform(), data.GetPointer());
+            userdata->m_TransformModifiedTime = geom->GetMTime();
+          }
+        }
+      }
+    }
+  }
+
+  //-----------------------------------------------------------------------------
+
+  void UpdateTransformFromNode(vl::Transform* txf, const mitk::DataNode::ConstPointer& node)
+  {
+    if (node.IsNotNull())
+    {
+      UpdateTransformFromData(txf, node->GetData());
+    }
+  }
+
+  //-----------------------------------------------------------------------------
+
+  ref<vl::Geometry> CreateGeometryFor2DImage(int width, int height)
+  {
+    ref<vl::Geometry>    geom = new vl::Geometry;
+    ref<vl::ArrayFloat3> vert  = new vl::ArrayFloat3;
+    vert->resize(4);
+    geom->setVertexArray( vert.get() );
+
+    ref<vl::ArrayFloat2> tex_coord = new vl::ArrayFloat2;
+    tex_coord->resize(4);
+    geom->setTexCoordArray(0, tex_coord.get());
+
+    //  1---2 image-top
+    //  |   |
+    //  0---3 image-bottom
+
+    vert->at(0).x() = 0;     vert->at(0).y() = 0;      vert->at(0).z() = 0; tex_coord->at(0).s() = 0; tex_coord->at(0).t() = 1;
+    vert->at(1).x() = 0;     vert->at(1).y() = height; vert->at(1).z() = 0; tex_coord->at(1).s() = 0; tex_coord->at(1).t() = 0;
+    vert->at(2).x() = width; vert->at(2).y() = height; vert->at(2).z() = 0; tex_coord->at(2).s() = 1; tex_coord->at(2).t() = 0;
+    vert->at(3).x() = width; vert->at(3).y() = 0;      vert->at(3).z() = 0; tex_coord->at(3).s() = 1; tex_coord->at(3).t() = 1;
+
+    ref<vl::DrawArrays> polys = new vl::DrawArrays(vl::PT_QUADS, 0, 4);
+    geom->drawCalls().push_back( polys.get() );
+
+    return geom;
+  }
+
+  //-----------------------------------------------------------------------------
+
+  ref<vl::Geometry> ConvertVTKPolyData(vtkPolyData* vtkPoly)
+  {
+    if ( ! vtkPoly ) {
+      return NULL;
+    }
+
+    ref<vl::Geometry> vlPoly = new vl::Geometry;
+
+    // Buffer in host memory to store cell info
+    unsigned int* m_IndexBuffer = 0;
+
+    // Buffer in host memory to store vertex points
+    float* m_PointBuffer = 0;
+
+    // Buffer in host memory to store normals associated with vertices
+    float* m_NormalBuffer = 0;
+
+    // Buffer in host memory to store scalar info associated with vertices
+    char* m_ScalarBuffer = 0;
+
+    unsigned int numOfvtkPolyPoints = vtkPoly->GetNumberOfPoints();
+
+    // A polydata will always have point data
+    int pointArrayNum = vtkPoly->GetPointData()->GetNumberOfArrays();
+
+    if (pointArrayNum == 0 && numOfvtkPolyPoints == 0)
+    {
+      MITK_ERROR << "No points detected in the vtkPoly data!\n";
+      return NULL;
+    }
+
+    // We'll have to build the cell data if not present already
+    int cellArrayNum  = vtkPoly->GetCellData()->GetNumberOfArrays();
+    if ( cellArrayNum == 0 ) {
+      vtkPoly->BuildCells();
+    }
+
+    vtkSmartPointer<vtkCellArray> verts;
+
+    // Try to get access to cells
+    if (vtkPoly->GetVerts() != 0 && vtkPoly->GetVerts()->GetNumberOfCells() != 0)
+      verts = vtkPoly->GetVerts();
+    else if (vtkPoly->GetLines() != 0 && vtkPoly->GetLines()->GetNumberOfCells() != 0)
+      verts = vtkPoly->GetLines();
+    else if (vtkPoly->GetPolys() != 0 && vtkPoly->GetPolys()->GetNumberOfCells() != 0)
+      verts = vtkPoly->GetPolys();
+    else if (vtkPoly->GetStrips() != 0 && vtkPoly->GetStrips()->GetNumberOfCells() != 0)
+      verts = vtkPoly->GetStrips();
+
+    if (verts->GetMaxCellSize() > 3)
+    {
+      // Panic and return
+      MITK_ERROR << "More than three vertices / cell detected, can't handle this data type!\n";
+      return NULL;
+    }
+
+    vtkSmartPointer<vtkPoints> points = vtkPoly->GetPoints();
+
+    if (points == 0)
+    {
+      MITK_ERROR << "Corrupt vtkPoly, returning! \n";
+      return NULL;
+    }
+
+    // Deal with normals
+    vtkSmartPointer<vtkDataArray> normals = vtkPoly->GetPointData()->GetNormals();
+
+    if (normals == 0)
+    {
+      MITK_INFO << "Generating normals for the vtkPoly data (mitk::OclSurface)";
+
+      vtkSmartPointer<vtkPolyDataNormals> normalGen = vtkSmartPointer<vtkPolyDataNormals>::New();
+      normalGen->SetInputData(vtkPoly);
+      normalGen->AutoOrientNormalsOn();
+      normalGen->Update();
+
+      normals = normalGen->GetOutput()->GetPointData()->GetNormals();
+
+      if (normals == 0)
+      {
+        MITK_ERROR << "Couldn't generate normals, returning! \n";
+        return NULL;
+      }
+
+      vtkPoly->GetPointData()->SetNormals(normals);
+      vtkPoly->GetPointData()->GetNormals()->Modified();
+      vtkPoly->GetPointData()->Modified();
+    }
+
+    // Check if we have scalars
+    vtkSmartPointer<vtkDataArray> scalars = vtkPoly->GetPointData()->GetScalars();
+
+    bool pointsValid  = (points.GetPointer() == 0) ? false : true;
+    bool normalsValid = (normals.GetPointer() == 0) ? false : true;
+    bool scalarsValid = (scalars.GetPointer() == 0) ? false : true;
+
+    unsigned int pointBufferSize = 0;
+    unsigned int numOfPoints = static_cast<unsigned int> (points->GetNumberOfPoints());
+    pointBufferSize = numOfPoints * sizeof(float) * 3;
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Deal with points
+
+    // Allocate memory
+    m_PointBuffer = new float[numOfPoints*3];
+
+    // Copy data to buffer
+    memcpy(m_PointBuffer, points->GetVoidPointer(0), pointBufferSize);
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Deal with normals
+
+    if (normalsValid)
+    {
+      // Get the number of normals we have to deal with
+      int m_NormalCount = static_cast<unsigned int> (normals->GetNumberOfTuples());
+      VIVID_CHECK(m_NormalCount == numOfPoints);
+
+      // Size of the buffer that is required to store all the normals
+      unsigned int normalBufferSize = numOfPoints * sizeof(float) * 3;
+
+      // Allocate memory
+      m_NormalBuffer = new float[numOfPoints*3];
+
+      // Copy data to buffer
+      memcpy(m_NormalBuffer, normals->GetVoidPointer(0), normalBufferSize);
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Deal with scalars (colors or texture coordinates)
+    if (scalarsValid)
+    {
+
+      // Get the number of scalars we have to deal with
+      int m_ScalarCount = static_cast<unsigned int> (scalars->GetNumberOfTuples());
+
+      // Size of the buffer that is required to store all the scalars
+      unsigned int scalarBufferSize = numOfPoints * sizeof(char) * 1;
+
+      // Allocate memory
+      m_ScalarBuffer = new char[numOfPoints];
+
+      // Copy data to buffer
+      memcpy(m_ScalarBuffer, scalars->GetVoidPointer(0), scalarBufferSize);
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Deal with cells - initialize index buffer
+    vtkIdType npts;
+    vtkIdType *pts;
+
+    // Get the number of indices we have to deal with
+    unsigned int m_IndexCount = static_cast<unsigned int> (verts->GetNumberOfCells());
+
+    // Get the max number of vertices / cell
+    int maxPointsPerCell = verts->GetMaxCellSize();
+
+    // Get the number of indices we have to deal with
+    unsigned int numOfTriangles = static_cast<unsigned int> (verts->GetNumberOfCells());
+
+    // Allocate memory for the index buffer
+    m_IndexBuffer = new unsigned int[numOfTriangles*3];
+    memset(m_IndexBuffer, 0, numOfTriangles*3*sizeof(unsigned int));
+
+    verts->InitTraversal();
+
+    unsigned int cellIndex = 0;
+    // Iterating through all the cells
+    while (cellIndex < numOfTriangles)
+    {
+      verts->GetNextCell(npts, pts);
+
+      // Copy the indices into the index buffer
+      for (size_t i = 0; i < static_cast<size_t>(npts); i++)
+        m_IndexBuffer[cellIndex*3 +i] = pts[i];
+
+      cellIndex++;
+    }
+    MITK_INFO << "Surface data initialized. Num of Points: " <<points->GetNumberOfPoints() << " Num of Cells: " <<verts->GetNumberOfCells() << "\n";
+
+    ref<vl::ArrayFloat3>  vl_verts   = new vl::ArrayFloat3;
+    ref<vl::ArrayFloat3>  vlNormals = new vl::ArrayFloat3;
+    ref<vl::DrawElementsUInt> vlTriangles = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
+
+    vl_verts->resize(numOfPoints * 3);
+    vlNormals->resize(numOfPoints * 3);
+
+    vlPoly->drawCalls().push_back(vlTriangles.get());
+    vlTriangles->indexBuffer()->resize(numOfTriangles*3);
+
+    vlPoly->setVertexArray(vl_verts.get());
+    vlPoly->setNormalArray(vlNormals.get());
+
+    float* vertBufFlotPtr = reinterpret_cast<float *>(vl_verts->ptr());
+    float* normBufFlotPtr = reinterpret_cast<float *>(vlNormals->ptr());
+
+    // Vertices and normals
+    for (unsigned int i=0; i<numOfPoints; ++i)
+    {
+      vertBufFlotPtr[3*i + 0] = m_PointBuffer[i*3 +0];
+      vertBufFlotPtr[3*i + 1] = m_PointBuffer[i*3 +1];
+      vertBufFlotPtr[3*i + 2] = m_PointBuffer[i*3 +2];
+
+      normBufFlotPtr[3*i + 0] = m_NormalBuffer[i*3 +0];
+      normBufFlotPtr[3*i + 1] = m_NormalBuffer[i*3 +1];
+      normBufFlotPtr[3*i + 2] = m_NormalBuffer[i*3 +2];
+    }
+
+    // Make sure that the values are copied onto GPU memory
+    //vlPoly->vertexArray()->updateBufferObject();
+    //glFinish();
+
+    // Read triangles
+    for(unsigned int i=0; i<numOfTriangles; ++i)
+    {
+      vlTriangles->indexBuffer()->at(i*3+0) = m_IndexBuffer[i*3 +0];
+      vlTriangles->indexBuffer()->at(i*3+1) = m_IndexBuffer[i*3 +1];
+      vlTriangles->indexBuffer()->at(i*3+2) = m_IndexBuffer[i*3 +2];
+    }
+
+    // Make sure that the values are copied onto GPU memory
+    vl_verts->updateBufferObject();
+    vlNormals->updateBufferObject();
+    vlTriangles->indexBuffer()->updateBufferObject();
+    glFinish();
+
+    // Buffer in host memory to store cell info
+    if (m_IndexBuffer != 0)
+      delete m_IndexBuffer;
+
+    // Buffer in host memory to store vertex points
+    if (m_PointBuffer != 0)
+      delete m_PointBuffer;
+
+    // Buffer in host memory to store normals associated with vertices
+    if (m_NormalBuffer != 0)
+      delete m_NormalBuffer;
+
+    // Buffer in host memory to store scalar info associated with vertices
+    if (m_ScalarBuffer != 0)
+      delete m_ScalarBuffer;
+
+    // MITK_INFO << "Num of VL vertices: " << vlPoly->vertexArray()->size() / 3;
+
+    // Finally convert to adjacency format so we can render silhouettes etc.
+    return vl::AdjacencyExtractor::extract( vlPoly.get() );
+  }
+
+  //-----------------------------------------------------------------------------
+
   void dumpNodeInfo( const std::string& prefix, const mitk::DataNode::ConstPointer& node ) {
     printf( "\n%s: ", prefix.c_str() );
     const char* class_name = node->GetData() ? node->GetData()->GetNameOfClass() : "<unknown-class>";
@@ -176,64 +608,177 @@ namespace
 }
 
 //-----------------------------------------------------------------------------
-// VLUserData
-//-----------------------------------------------------------------------------
-
-struct VLUserData : public vl::Object
-{
-  VLUserData()
-    : m_TransformModifiedTime(0)
-    , m_ImageModifiedTime(0)
-  {
-  }
-
-  itk::ModifiedTimeType m_TransformModifiedTime;
-  itk::ModifiedTimeType m_ImageModifiedTime;
-};
-
-//-----------------------------------------------------------------------------
 // VLNode
 //-----------------------------------------------------------------------------
 
-/** Takes care of managing all VL related aspects with regard to a given mitk::DataNode. */
-class VLNode: public vl::Object {
+// MIC FIXME:
+// UserData should be moved into VLNode itself
+
+void VLNode::initDataStoreProperties() {
+}
+
+//-----------------------------------------------------------------------------
+
+void VLNode::updateCommon() {
+  if ( ! m_Actor ) {
+    return;
+  }
+
+  // Update visibility
+  bool visible = true;
+  mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(m_DataNode->GetProperty("visible"));
+  if ( visibleProp ) {
+    visible = visibleProp->GetValue();
+  }
+  m_Actor->setEnabled( visible );
+  
+  // Update opacity
+  float opacity = 1.0f;
+  mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(m_DataNode->GetProperty("opacity"));
+  if ( opacityProp ) {
+    opacity = opacityProp->GetValue();
+  }
+
+  // Update color
+  vl::fvec4 color(1, 1, 1, opacity);
+  mitk::ColorProperty* colorProp = dynamic_cast<mitk::ColorProperty*>(m_DataNode->GetProperty("color"));
+  if ( colorProp ) {
+    mitk::Color mitkColor = colorProp->GetColor();
+    color.r() = mitkColor.GetRed();
+    color.g() = mitkColor.GetGreen();
+    color.b() = mitkColor.GetBlue();
+  }
+
+  // MIC FIXME: this won't work when vl_Vivid.enableLighting is off -> create special uniform
+  m_Actor->effect()->shader()->getMaterial()->setDiffuse( color );
+}
+
+//-----------------------------------------------------------------------------
+
+class VLNode2DImage: public VLNode {
 public:
-  VLNode( vl::VividRendering* vr, mitk::DataStorage* ds, mitk::DataNode* node, vl::OpenGLContext* gl ) {
-    // Init
-    m_OpenGLContext = gl;
-    m_VividRendering = vr;
-    m_DataStorage = ds;
-    m_DataNode = node;
-    // Activate OpenGL context
-    gl->makeCurrent();
-    // Initialize properties
-    initDataStoreProperties( node );
+  VLNode2DImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLNode( gl, vr, ds, node ) {
+    m_MitkImage = dynamic_cast<mitk::Image*>( node->GetData() );
+    VIVID_CHECK( m_MitkImage.IsNotNull() );
   }
 
-  /** Updates all the relevant VL data structures, uniforms etc. according to the node's settings. */
-  virtual void update() = 0;
+  virtual void init() {
+    VIVID_CHECK( m_MitkImage.IsNotNull() );
 
-  /** Removes all the relevant Actor(s) from the scene. */
-  virtual void remove() = 0;
+    mitk::PixelType  mitk_pixel_type = m_MitkImage->GetPixelType();
+    vl::EImageType   vl_type         = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
+    vl::EImageFormat vl_format       = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
+    unsigned int*    dims            = m_MitkImage->GetDimensions();
 
-  /** Factory method: creates the right VLNode subclass according to the node's type. */
-  static ref<VLNode> create( const mitk::DataNode* node ) {
-    return NULL;
+    ref<vl::Image> vl_img;
+
+    try {
+      unsigned int buffer_bytes = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
+      mitk::ImageReadAccessor readAccess( m_MitkImage, m_MitkImage->GetVolumeData(0) );
+      void* buffer_ptr = const_cast<void*>( readAccess.GetData() );
+      // std::memcpy( vl_img->pixels(), ptr, byte_count );
+      // Use VTK buffer directly instead of allocating one
+      vl_img = new vl::Image( buffer_ptr, buffer_bytes );
+      vl_img->allocate2D(dims[0], dims[1], 1, vl_format, vl_type);
+      VIVID_CHECK( vl_img->requiredMemory() == buffer_bytes );
+    }
+    catch (...) {
+      // FIXME: error handling?
+      MITK_ERROR << "Did not get pixel read access to 2D image.";
+    }
+
+    ref<vl::Geometry> geom = CreateGeometryFor2DImage(dims[0], dims[1]);
+
+    ref<vl::Transform> tr = new vl::Transform;
+    UpdateTransformFromData(tr.get(), m_MitkImage.GetPointer());
+
+    ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
+    m_Actor = m_VividRendering->sceneManager()->tree()->addActor(geom.get(), fx.get(), tr.get());
+    m_Actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
+
+    // These must be present as part of the default Vivid material
+    VIVID_CHECK( fx->shader()->getTextureSampler( vl::VividRendering::UserTexture ) )
+    VIVID_CHECK( fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture() )
+    VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture")->getUniformI() == vl::VividRendering::UserTexture );
+    ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+    texture->createTexture2D( vl_img.get(), vl::TF_UNKNOWN, false, false );
+    fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
+    fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
+    // When texture mapping is enabled the texture is modulated by the vertex color, including the alpha
+    geom->setColorArray( vl::white );
   }
 
-private:
-  /** Initializes the value of all Vivid properties in the DataStore. */
-  void initDataStoreProperties( mitk::DataNode* node ) {
-    // MIC FIXME:
-    // ...
+  virtual void update() {
+    VIVID_CHECK( m_MitkImage.IsNotNull() );
+
+    if ( m_MitkImage->GetVtkImageData()->GetMTime() <= GetUserData( m_Actor.get() )->m_ImageModifiedTime ) {
+      return;
+    }
+
+    ref<vl::Texture> tex = m_Actor->effect()->shader()->gocTextureSampler( vl::VividRendering::UserTexture )->texture();
+    if ( tex )
+    {
+      mitk::PixelType  mitk_pixel_type = m_MitkImage->GetPixelType();
+      vl::EImageType   vl_type         = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
+      vl::EImageFormat vl_format       = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
+      unsigned int*    dims            = m_MitkImage->GetDimensions();
+
+      ref<vl::Image> vl_img;
+
+      // Use smart update functionality
+
+      try
+      {
+        unsigned int buffer_bytes = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
+        mitk::ImageReadAccessor readAccess( m_MitkImage, m_MitkImage->GetVolumeData(0) );
+        void* buffer_ptr = const_cast<void*>( readAccess.GetData() );
+        // std::memcpy( vl_img->pixels(), ptr, byte_count );
+        // Use VTK buffer directly instead of allocating one
+        vl_img = new vl::Image( buffer_ptr, buffer_bytes );
+        vl_img->allocate2D(dims[0], dims[1], 1, vl_format, vl_type);
+        VIVID_CHECK( vl_img->requiredMemory() == buffer_bytes );
+      }
+      catch (...)
+      {
+        // FIXME: error handling?
+        MITK_ERROR << "Did not get pixel read access to 2D image.";
+      }
+
+      tex->setMipLevel(0, vl_img.get(), false);
+
+      GetUserData( m_Actor.get() )->m_ImageModifiedTime = m_MitkImage->GetVtkImageData()->GetMTime();
+    }
+  }
+
+  virtual void remove() {
+    m_VividRendering->sceneManager()->tree()->eraseActor( m_Actor.get() );
+    m_Actor = NULL;
   }
 
 protected:
-  vl::OpenGLContext* m_OpenGLContext;
-  vl::VividRendering* m_VividRendering;
-  mitk::DataStorage* m_DataStorage;
-  mitk::DataNode* m_DataNode;
+  mitk::Image::Pointer m_MitkImage;
 };
+
+//-----------------------------------------------------------------------------
+
+vl::ref<VLNode> VLNode::create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node ) {
+  vl::ref<VLNode> vl_node;
+
+  mitk::Image* mitk_image = dynamic_cast<mitk::Image*>( node->GetData() );
+
+  if ( mitk_image ) {
+    unsigned int depth = mitk_image->GetDimensions()[2];
+    // In VTK a 2x2x1 image is 2D not 3D like in VL
+    if ( depth <= 1 ) {
+      vl_node = new VLNode2DImage( gl, vr, ds, node );
+    } else {
+      // vl_node = new VLNode3DImage( gl, vr, ds, node );
+    }
+  }
+
+  return vl_node;
+}
 
 //-----------------------------------------------------------------------------
 // VLQtWidget
@@ -576,6 +1121,13 @@ void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
 
 void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 {
+  NodeVLNodeMapType::iterator it = m_NodeVLNodeMap.find( node );
+  if ( it != m_NodeVLNodeMap.end() ) {
+    it->second->updateCommon();
+    it->second->update();
+    return;
+  }
+
   makeCurrent();
 
   if ( node.IsNull() || node->GetData() == 0 ) {
@@ -590,6 +1142,9 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   if ( ! actor ) {
     return;
   }
+
+  VIVID_CHECK( actor->enableMask() == vl::VividRenderer::DefaultEnableMask ||
+               actor->enableMask() == vl::VividRenderer::VolumeEnableMask  );
 
   vl::Shader* shader = actor->effect()->shader();
 
@@ -633,7 +1188,7 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   UpdateActorTransformFromNode(actor, node);
 
   // Update texture
-  UpdateTextureFromImage(node);
+  // UpdateTextureFromImage(node);
 
   // Update camera
   if (node == m_CameraNode) {
@@ -670,257 +1225,6 @@ ref<vl::Actor> VLQtWidget::AddSurfaceActor(const mitk::Surface::Pointer& mitkSur
 
 //-----------------------------------------------------------------------------
 
-ref<vl::Geometry> VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly)
-{
-  makeCurrent();
-
-  if (vtkPoly == 0)
-    return NULL;
-
-  ref<vl::Geometry> vlPoly = new vl::Geometry;
-
-  // Buffer in host memory to store cell info
-  unsigned int* m_IndexBuffer = 0;
-
-  // Buffer in host memory to store vertex points
-  float* m_PointBuffer = 0;
-
-  // Buffer in host memory to store normals associated with vertices
-  float* m_NormalBuffer = 0;
-
-  // Buffer in host memory to store scalar info associated with vertices
-  char* m_ScalarBuffer = 0;
-
-  unsigned int numOfvtkPolyPoints = vtkPoly->GetNumberOfPoints();
-
-  // A polydata will always have point data
-  int pointArrayNum = vtkPoly->GetPointData()->GetNumberOfArrays();
-
-  if (pointArrayNum == 0 && numOfvtkPolyPoints == 0)
-  {
-    MITK_ERROR << "No points detected in the vtkPoly data!\n";
-    return NULL;
-  }
-
-  // We'll have to build the cell data if not present already
-  int cellArrayNum  = vtkPoly->GetCellData()->GetNumberOfArrays();
-  if ( cellArrayNum == 0 ) {
-    vtkPoly->BuildCells();
-  }
-
-  vtkSmartPointer<vtkCellArray> verts;
-
-  // Try to get access to cells
-  if (vtkPoly->GetVerts() != 0 && vtkPoly->GetVerts()->GetNumberOfCells() != 0)
-    verts = vtkPoly->GetVerts();
-  else if (vtkPoly->GetLines() != 0 && vtkPoly->GetLines()->GetNumberOfCells() != 0)
-    verts = vtkPoly->GetLines();
-  else if (vtkPoly->GetPolys() != 0 && vtkPoly->GetPolys()->GetNumberOfCells() != 0)
-    verts = vtkPoly->GetPolys();
-  else if (vtkPoly->GetStrips() != 0 && vtkPoly->GetStrips()->GetNumberOfCells() != 0)
-    verts = vtkPoly->GetStrips();
-
-  if (verts->GetMaxCellSize() > 3)
-  {
-    // Panic and return
-    MITK_ERROR << "More than three vertices / cell detected, can't handle this data type!\n";
-    return NULL;
-  }
-
-  vtkSmartPointer<vtkPoints> points = vtkPoly->GetPoints();
-
-  if (points == 0)
-  {
-    MITK_ERROR << "Corrupt vtkPoly, returning! \n";
-    return NULL;
-  }
-
-  // Deal with normals
-  vtkSmartPointer<vtkDataArray> normals = vtkPoly->GetPointData()->GetNormals();
-
-  if (normals == 0)
-  {
-    MITK_INFO << "Generating normals for the vtkPoly data (mitk::OclSurface)";
-
-    vtkSmartPointer<vtkPolyDataNormals> normalGen = vtkSmartPointer<vtkPolyDataNormals>::New();
-    normalGen->SetInputData(vtkPoly);
-    normalGen->AutoOrientNormalsOn();
-    normalGen->Update();
-
-    normals = normalGen->GetOutput()->GetPointData()->GetNormals();
-
-    if (normals == 0)
-    {
-      MITK_ERROR << "Couldn't generate normals, returning! \n";
-      return NULL;
-    }
-
-    vtkPoly->GetPointData()->SetNormals(normals);
-    vtkPoly->GetPointData()->GetNormals()->Modified();
-    vtkPoly->GetPointData()->Modified();
-  }
-
-  // Check if we have scalars
-  vtkSmartPointer<vtkDataArray> scalars = vtkPoly->GetPointData()->GetScalars();
-
-  bool pointsValid  = (points.GetPointer() == 0) ? false : true;
-  bool normalsValid = (normals.GetPointer() == 0) ? false : true;
-  bool scalarsValid = (scalars.GetPointer() == 0) ? false : true;
-
-  unsigned int pointBufferSize = 0;
-  unsigned int numOfPoints = static_cast<unsigned int> (points->GetNumberOfPoints());
-  pointBufferSize = numOfPoints * sizeof(float) * 3;
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Deal with points
-
-  // Allocate memory
-  m_PointBuffer = new float[numOfPoints*3];
-
-  // Copy data to buffer
-  memcpy(m_PointBuffer, points->GetVoidPointer(0), pointBufferSize);
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Deal with normals
-
-  if (normalsValid)
-  {
-    // Get the number of normals we have to deal with
-    int m_NormalCount = static_cast<unsigned int> (normals->GetNumberOfTuples());
-    VIVID_CHECK(m_NormalCount == numOfPoints);
-
-    // Size of the buffer that is required to store all the normals
-    unsigned int normalBufferSize = numOfPoints * sizeof(float) * 3;
-
-    // Allocate memory
-    m_NormalBuffer = new float[numOfPoints*3];
-
-    // Copy data to buffer
-    memcpy(m_NormalBuffer, normals->GetVoidPointer(0), normalBufferSize);
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Deal with scalars (colors or texture coordinates)
-  if (scalarsValid)
-  {
-
-    // Get the number of scalars we have to deal with
-    int m_ScalarCount = static_cast<unsigned int> (scalars->GetNumberOfTuples());
-
-    // Size of the buffer that is required to store all the scalars
-    unsigned int scalarBufferSize = numOfPoints * sizeof(char) * 1;
-
-    // Allocate memory
-    m_ScalarBuffer = new char[numOfPoints];
-
-    // Copy data to buffer
-    memcpy(m_ScalarBuffer, scalars->GetVoidPointer(0), scalarBufferSize);
-  }
-
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // Deal with cells - initialize index buffer
-  vtkIdType npts;
-  vtkIdType *pts;
-
-  // Get the number of indices we have to deal with
-  unsigned int m_IndexCount = static_cast<unsigned int> (verts->GetNumberOfCells());
-
-  // Get the max number of vertices / cell
-  int maxPointsPerCell = verts->GetMaxCellSize();
-
-  // Get the number of indices we have to deal with
-  unsigned int numOfTriangles = static_cast<unsigned int> (verts->GetNumberOfCells());
-
-  // Allocate memory for the index buffer
-  m_IndexBuffer = new unsigned int[numOfTriangles*3];
-  memset(m_IndexBuffer, 0, numOfTriangles*3*sizeof(unsigned int));
-
-  verts->InitTraversal();
-
-  unsigned int cellIndex = 0;
-  // Iterating through all the cells
-  while (cellIndex < numOfTriangles)
-  {
-    verts->GetNextCell(npts, pts);
-
-    // Copy the indices into the index buffer
-    for (size_t i = 0; i < static_cast<size_t>(npts); i++)
-      m_IndexBuffer[cellIndex*3 +i] = pts[i];
-
-    cellIndex++;
-  }
-  MITK_INFO << "Surface data initialized. Num of Points: " <<points->GetNumberOfPoints() << " Num of Cells: " <<verts->GetNumberOfCells() << "\n";
-
-  ref<vl::ArrayFloat3>  vl_verts   = new vl::ArrayFloat3;
-  ref<vl::ArrayFloat3>  vlNormals = new vl::ArrayFloat3;
-  ref<vl::DrawElementsUInt> vlTriangles = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
-
-  vl_verts->resize(numOfPoints * 3);
-  vlNormals->resize(numOfPoints * 3);
-
-  vlPoly->drawCalls().push_back(vlTriangles.get());
-  vlTriangles->indexBuffer()->resize(numOfTriangles*3);
-
-  vlPoly->setVertexArray(vl_verts.get());
-  vlPoly->setNormalArray(vlNormals.get());
-
-  float* vertBufFlotPtr = reinterpret_cast<float *>(vl_verts->ptr());
-  float* normBufFlotPtr = reinterpret_cast<float *>(vlNormals->ptr());
-
-  // Vertices and normals
-  for (unsigned int i=0; i<numOfPoints; ++i)
-  {
-    vertBufFlotPtr[3*i + 0] = m_PointBuffer[i*3 +0];
-    vertBufFlotPtr[3*i + 1] = m_PointBuffer[i*3 +1];
-    vertBufFlotPtr[3*i + 2] = m_PointBuffer[i*3 +2];
-
-    normBufFlotPtr[3*i + 0] = m_NormalBuffer[i*3 +0];
-    normBufFlotPtr[3*i + 1] = m_NormalBuffer[i*3 +1];
-    normBufFlotPtr[3*i + 2] = m_NormalBuffer[i*3 +2];
-  }
-
-  // Make sure that the values are copied onto GPU memory
-  //vlPoly->vertexArray()->updateBufferObject();
-  //glFinish();
-
-  // Read triangles
-  for(unsigned int i=0; i<numOfTriangles; ++i)
-  {
-    vlTriangles->indexBuffer()->at(i*3+0) = m_IndexBuffer[i*3 +0];
-    vlTriangles->indexBuffer()->at(i*3+1) = m_IndexBuffer[i*3 +1];
-    vlTriangles->indexBuffer()->at(i*3+2) = m_IndexBuffer[i*3 +2];
-  }
-
-  // Make sure that the values are copied onto GPU memory
-  vl_verts->updateBufferObject();
-  vlNormals->updateBufferObject();
-  vlTriangles->indexBuffer()->updateBufferObject();
-  glFinish();
-
-  // Buffer in host memory to store cell info
-  if (m_IndexBuffer != 0)
-    delete m_IndexBuffer;
-
-  // Buffer in host memory to store vertex points
-  if (m_PointBuffer != 0)
-    delete m_PointBuffer;
-
-  // Buffer in host memory to store normals associated with vertices
-  if (m_NormalBuffer != 0)
-    delete m_NormalBuffer;
-
-  // Buffer in host memory to store scalar info associated with vertices
-  if (m_ScalarBuffer != 0)
-    delete m_ScalarBuffer;
-
-  // MITK_INFO << "Num of VL vertices: " << vlPoly->vertexArray()->size() / 3;
-
-  // Finally convert to adjacency format so we can render silhouettes etc.
-  return vl::AdjacencyExtractor::extract( vlPoly.get() );
-}
-
-//-----------------------------------------------------------------------------
-
 ref<vl::Actor> VLQtWidget::AddImageActor(const mitk::Image::Pointer& mitk_img)
 {
   makeCurrent();
@@ -951,8 +1255,6 @@ ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitk_img)
   unsigned int*    dims            = mitk_img->GetDimensions();
 
   ref<vl::Image> vl_img;
-
-  // Use smart update functionality
 
   try
   {
@@ -990,8 +1292,6 @@ ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitk_img)
   VIVID_CHECK( fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture() )
   VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture")->getUniformI() == vl::VividRendering::UserTexture );
   ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
-
-  texture->destroyTexture();
   texture->createTexture2D( vl_img.get(), vl::TF_UNKNOWN, false, false );
 
   return actor;
@@ -1072,8 +1372,8 @@ ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitk_img)
     vl_img = vl_img->convertFormat(vl::IF_LUMINANCE)->convertType(vl::IT_UNSIGNED_SHORT);
 /*
     ref<KeyValues> tags = new KeyValues;
-    tags->set("Origin")    = Say("%n %n %n") << mitkImg->GetGeometry()->GetOrigin()[0]  << mitkImg->GetGeometry()->GetOrigin()[1]  << mitkImg->GetGeometry()->GetOrigin()[2];
-    tags->set("Spacing")   = Say("%n %n %n") << mitkImg->GetGeometry()->GetSpacing()[0] << mitkImg->GetGeometry()->GetSpacing()[1] << mitkImg->GetGeometry()->GetSpacing()[2];
+    tags->set("Origin")    = Say("%n %n %n") << mitk_img->GetGeometry()->GetOrigin()[0]  << mitk_img->GetGeometry()->GetOrigin()[1]  << mitk_img->GetGeometry()->GetOrigin()[2];
+    tags->set("Spacing")   = Say("%n %n %n") << mitk_img->GetGeometry()->GetSpacing()[0] << mitk_img->GetGeometry()->GetSpacing()[1] << mitk_img->GetGeometry()->GetSpacing()[2];
     vl_img->setTags(tags.get());
 */
   }
@@ -1132,8 +1432,8 @@ ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitk_img)
   raycastVolume->bindActor(imageActor.get());
 
   // we do not own dims!
-  unsigned int*   dims    = mitkImg->GetDimensions();
-  mitk::Vector3D  spacing = mitkImg->GetGeometry()->GetSpacing();
+  unsigned int*   dims    = mitk_img->GetDimensions();
+  mitk::Vector3D  spacing = mitk_img->GetGeometry()->GetSpacing();
 
   float dimX = (float) dims[0] * spacing[0] / 2.0f;
   float dimY = (float) dims[1] * spacing[1] / 2.0f;
@@ -1191,48 +1491,6 @@ ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitk_img)
   //openglContext()->update();
 
   return imageActor;
-}
-
-//-----------------------------------------------------------------------------
-
-vl::EImageType VLQtWidget::MapITKPixelTypeToVL(int itkComponentType)
-{
-  static const vl::EImageType typeMap[] =
-  {
-    vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::UNKNOWNCOMPONENTTYPE = 0
-    vl::IT_UNSIGNED_BYTE,   // itk::ImageIOBase::UCHAR = 1
-    vl::IT_BYTE,            // itk::ImageIOBase::CHAR = 2
-    vl::IT_UNSIGNED_SHORT,  // itk::ImageIOBase::USHORT = 3
-    vl::IT_SHORT,           // itk::ImageIOBase::SHORT = 4
-    vl::IT_UNSIGNED_INT,    // itk::ImageIOBase::UINT = 5
-    vl::IT_INT,             // itk::ImageIOBase::INT = 6
-    vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::ULONG = 7
-    vl::IT_IMPLICIT_TYPE,   // itk::ImageIOBase::LONG = 8
-    vl::IT_FLOAT,           // itk::ImageIOBase::FLOAT = 9
-    vl::IT_IMPLICIT_TYPE    // itk::ImageIOBase::DOUBLE = 10
-  };
-
-  return typeMap[itkComponentType];
-}
-
-//-----------------------------------------------------------------------------
-
-vl::EImageFormat VLQtWidget::MapComponentsToVLColourFormat(int components)
-{
-  // this assumes the image data is a normal colour image, not encoding pointers or indices, or similar stuff.
-
-  switch (components)
-  {
-    default:
-    case 1:
-      return vl::IF_LUMINANCE;
-    case 2:
-      return vl::IF_RG;
-    case 3:
-      return vl::IF_RGB;
-    case 4:
-      return vl::IF_RGBA;
-  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1556,102 +1814,6 @@ bool VLQtWidget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
 
 //-----------------------------------------------------------------------------
 
-vl::mat4 VLQtWidget::GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data)
-{
-  vl::mat4  mat;
-  // intentionally not setIdentity()
-  mat.setNull();
-
-  if (data.IsNotNull())
-  {
-    mitk::BaseGeometry::Pointer   geom = data->GetGeometry();
-    if (geom.IsNotNull())
-    {
-      if (geom->GetVtkTransform() != 0)
-      {
-        vtkSmartPointer<vtkMatrix4x4> vtkmat = vtkSmartPointer<vtkMatrix4x4>::New();
-        geom->GetVtkTransform()->GetMatrix(vtkmat);
-        if (vtkmat.GetPointer() != 0)
-        {
-          for (int i = 0; i < 4; i++)
-          {
-            for (int j = 0; j < 4; j++)
-            {
-              double val = vtkmat->GetElement(i, j);
-              mat.e(i, j) = val;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return mat;
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::UpdateTransformFromData(vl::Transform* txf, const mitk::BaseData::ConstPointer& data)
-{
-  vl::mat4  mat = GetVLMatrixFromData(data);
-
-  if (!mat.isNull())
-  {
-    txf->setLocalMatrix(mat);
-    txf->computeWorldMatrix();
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::UpdateActorTransformFromNode(vl::Actor* actor, const mitk::DataNode::ConstPointer& node)
-{
-  if (node.IsNotNull())
-  {
-    mitk::BaseData::Pointer data = node->GetData();
-    if (data.IsNotNull())
-    {
-      mitk::BaseGeometry::Pointer geom = data->GetGeometry();
-      if (geom.IsNotNull())
-      {
-        ref<VLUserData> userdata = GetUserData(actor);
-        if (geom->GetMTime() > userdata->m_TransformModifiedTime)
-        {
-          UpdateTransformFromData(actor->transform(), data.GetPointer());
-          userdata->m_TransformModifiedTime = geom->GetMTime();
-        }
-      }
-    }
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-VLUserData* VLQtWidget::GetUserData(vl::Actor* actor)
-{
-  VIVID_CHECK( actor );
-  ref<VLUserData> userdata = actor->userData()->as<VLUserData>();
-  if ( ! userdata )
-  {
-    userdata = new VLUserData;
-    actor->setUserData( userdata.get() );
-  }
-
-  return userdata.get();
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::UpdateTransformFromNode(vl::Transform* txf, const mitk::DataNode::ConstPointer& node)
-{
-  if (node.IsNotNull())
-  {
-    UpdateTransformFromData(txf, node->GetData());
-  }
-}
-
-//-----------------------------------------------------------------------------
-
 void VLQtWidget::UpdateCameraParameters()
 {
   // calibration parameters come from the background node.
@@ -1852,68 +2014,6 @@ vl::Actor* VLQtWidget::GetNodeActor(const mitk::DataNode::ConstPointer& node)
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node)
-{
-  makeCurrent();
-
-  if ( node.IsNull() ) {
-    return;
-  }
-
-  mitk::Image::Pointer mitk_img = dynamic_cast<mitk::Image*>(node->GetData());
-  if ( mitk_img.IsNull() ) {
-    return;
-  }
-
-  vl::Actor* actor = GetNodeActor(node);
-  if ( ! actor ) {
-    return;
-  }
-
-  VIVID_CHECK(actor->effect());
-  VIVID_CHECK(actor->effect()->shader());
-
-  VLUserData* userdata = GetUserData(actor);
-  if (mitk_img->GetVtkImageData()->GetMTime() > userdata->m_ImageModifiedTime)
-  {
-    ref<vl::Texture> tex = actor->effect()->shader()->gocTextureSampler( vl::VividRendering::UserTexture )->texture();
-    if ( tex )
-    {
-      mitk::PixelType  mitk_pixel_type = mitk_img->GetPixelType();
-      vl::EImageType   vl_type         = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
-      vl::EImageFormat vl_format       = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
-      unsigned int*    dims            = mitk_img->GetDimensions();
-
-      ref<vl::Image> vl_img;
-
-      // Use smart update functionality
-
-      try
-      {
-        unsigned int buffer_bytes = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
-        mitk::ImageReadAccessor readAccess( mitk_img, mitk_img->GetVolumeData(0) );
-        void* buffer_ptr = const_cast<void*>( readAccess.GetData() );
-        // std::memcpy( vl_img->pixels(), ptr, byte_count );
-        // Use VTK buffer directly instead of allocating one
-        vl_img = new vl::Image( buffer_ptr, buffer_bytes );
-        vl_img->allocate2D(dims[0], dims[1], 1, vl_format, vl_type);
-        VIVID_CHECK( vl_img->requiredMemory() == buffer_bytes );
-      }
-      catch (...)
-      {
-        // FIXME: error handling?
-        MITK_ERROR << "Did not get pixel read access to 2D image.";
-      }
-
-      tex->setMipLevel(0, vl_img.get(), false);
-
-      userdata->m_ImageModifiedTime = mitk_img->GetVtkImageData()->GetMTime();
-    }
-  }
-}
-
-//-----------------------------------------------------------------------------
-
 ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord)
 {
   makeCurrent();
@@ -2041,34 +2141,6 @@ ref<vl::Actor> VLQtWidget::AddPointsetActor(const mitk::PointSet::Pointer& mitkP
   actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
   return actor;
-}
-
-//-----------------------------------------------------------------------------
-
-ref<vl::Geometry> VLQtWidget::CreateGeometryFor2DImage(int width, int height)
-{
-  ref<vl::Geometry>    geom = new vl::Geometry;
-  ref<vl::ArrayFloat3> vert  = new vl::ArrayFloat3;
-  vert->resize(4);
-  geom->setVertexArray( vert.get() );
-
-  ref<vl::ArrayFloat2> tex_coord = new vl::ArrayFloat2;
-  tex_coord->resize(4);
-  geom->setTexCoordArray(0, tex_coord.get());
-
-  //  1---2 image-top
-  //  |   |
-  //  0---3 image-bottom
-
-  vert->at(0).x() = 0;     vert->at(0).y() = 0;      vert->at(0).z() = 0; tex_coord->at(0).s() = 0; tex_coord->at(0).t() = 1;
-  vert->at(1).x() = 0;     vert->at(1).y() = height; vert->at(1).z() = 0; tex_coord->at(1).s() = 0; tex_coord->at(1).t() = 0;
-  vert->at(2).x() = width; vert->at(2).y() = height; vert->at(2).z() = 0; tex_coord->at(2).s() = 1; tex_coord->at(2).t() = 0;
-  vert->at(3).x() = width; vert->at(3).y() = 0;      vert->at(3).z() = 0; tex_coord->at(3).s() = 1; tex_coord->at(3).t() = 1;
-
-  ref<vl::DrawArrays> polys = new vl::DrawArrays(vl::PT_QUADS, 0, 4);
-  geom->drawCalls().push_back( polys.get() );
-
-  return geom;
 }
 
 //-----------------------------------------------------------------------------
