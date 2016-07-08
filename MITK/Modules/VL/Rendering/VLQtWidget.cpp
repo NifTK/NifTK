@@ -451,7 +451,7 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
   node->GetData()->SetProperty("visible", node->GetProperty("visible"));
 
   bool doMitkImageIfSuitable = true;
-  mitk::Image::Pointer              mitkImg  = dynamic_cast<mitk::Image*>(node->GetData());
+  mitk::Image::Pointer              mitk_img  = dynamic_cast<mitk::Image*>(node->GetData());
   mitk::Surface::Pointer            mitkSurf = dynamic_cast<mitk::Surface*>(node->GetData());
   mitk::PointSet::Pointer           mitkPS   = dynamic_cast<mitk::PointSet*>(node->GetData());
 #ifdef _USE_PCL
@@ -479,9 +479,9 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
     actor_name = "surface:";
   }
   else
-  if (mitkImg.IsNotNull() && doMitkImageIfSuitable)
+  if (mitk_img.IsNotNull() && doMitkImageIfSuitable)
   {
-    actor = AddImageActor(mitkImg);
+    actor = AddImageActor(mitk_img);
     actor_name = "image:";
   }
   else
@@ -921,44 +921,49 @@ ref<vl::Geometry> VLQtWidget::ConvertVTKPolyData(vtkPolyData* vtkPoly)
 
 //-----------------------------------------------------------------------------
 
-ref<vl::Actor> VLQtWidget::AddImageActor(const mitk::Image::Pointer& mitkImg)
+ref<vl::Actor> VLQtWidget::AddImageActor(const mitk::Image::Pointer& mitk_img)
 {
   makeCurrent();
 
   unsigned int* dims = 0;
-  dims = mitkImg->GetDimensions();
+  dims = mitk_img->GetDimensions();
   // we do not own dims!
 
   if (dims[2] <= 1)
   {
-    return Add2DImageActor(mitkImg);
+    return Add2DImageActor(mitk_img);
   }
   else
   {
-    return Add3DImageActor(mitkImg);
+    return Add3DImageActor(mitk_img);
   }
 }
 
 //-----------------------------------------------------------------------------
 
-ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkImg)
+ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitk_img)
 {
   makeCurrent();
 
-  mitk::PixelType  mitk_pixel_type = mitkImg->GetPixelType();
+  mitk::PixelType  mitk_pixel_type = mitk_img->GetPixelType();
   vl::EImageType   vl_type         = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
   vl::EImageFormat vl_format       = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
-  unsigned int*    dims            = mitkImg->GetDimensions();
+  unsigned int*    dims            = mitk_img->GetDimensions();
 
-  ref<vl::Image> vl_img = new vl::Image(dims[0], dims[1], 0, 1, vl_format, vl_type);
+  ref<vl::Image> vl_img;
+
+  // Use smart update functionality
 
   try
   {
-    unsigned int byte_count = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
-    VIVID_CHECK( vl_img->requiredMemory() == byte_count );
-    mitk::ImageReadAccessor readAccess( mitkImg, mitkImg->GetVolumeData(0) );
-    const void* ptr = readAccess.GetData();
-    std::memcpy( vl_img->pixels(), ptr, byte_count );
+    unsigned int buffer_bytes = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
+    mitk::ImageReadAccessor readAccess( mitk_img, mitk_img->GetVolumeData(0) );
+    void* buffer_ptr = const_cast<void*>( readAccess.GetData() );
+    // std::memcpy( vl_img->pixels(), ptr, byte_count );
+    // Use VTK buffer directly instead of allocating one
+    vl_img = new vl::Image( buffer_ptr, buffer_bytes );
+    vl_img->allocate2D(dims[0], dims[1], 1, vl_format, vl_type);
+    VIVID_CHECK( vl_img->requiredMemory() == buffer_bytes );
   }
   catch (...)
   {
@@ -969,7 +974,7 @@ ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkImg)
   ref<vl::Geometry> geom = CreateGeometryFor2DImage(dims[0], dims[1]);
 
   ref<vl::Transform> tr = new vl::Transform;
-  UpdateTransformFromData(tr.get(), mitkImg.GetPointer());
+  UpdateTransformFromData(tr.get(), mitk_img.GetPointer());
 
   ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
   ref<vl::Actor> actor = m_SceneManager->tree()->addActor(geom.get(), fx.get(), tr.get());
@@ -977,6 +982,7 @@ ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkImg)
 
   fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
   fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
+  
   // When texture mapping is enabled texture is modulated by vertex color
   geom->setColorArray( vl::white );
   // These must be present as part of the default Vivid material
@@ -985,21 +991,15 @@ ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkImg)
   VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture")->getUniformI() == vl::VividRendering::UserTexture );
   ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
 
-  // I think we can ignore the format
-  if ( vl_img->width() != texture->width() || vl_img->height() != texture->height() ) {
-    // Recreate new texture (TexParameter is not reset so we can keep the current defaults)
-    texture->destroyTexture();
-    texture->createTexture2D( vl_img.get(), vl::TF_UNKNOWN, false, false );
-  } else {
-    // Update the texture
-    texture->setMipLevel( 0, vl_img.get(), false );
-  }
+  texture->destroyTexture();
+  texture->createTexture2D( vl_img.get(), vl::TF_UNKNOWN, false, false );
+
   return actor;
 }
 
 //-----------------------------------------------------------------------------
 
-ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
+ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitk_img)
 {
   // MIC FIXME:
 
@@ -1007,7 +1007,7 @@ ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
 
   makeCurrent();
 
-  mitk::PixelType mitk_pixel_type = mitkImg->GetPixelType();
+  mitk::PixelType mitk_pixel_type = mitk_img->GetPixelType();
   size_t numOfComponents = mitk_pixel_type.GetNumberOfComponents();
 
   if (false)
@@ -1023,7 +1023,7 @@ ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
 
   try
   {
-    mitk::ImageReadAccessor readAccess(mitkImg, mitkImg->GetVolumeData(0));
+    mitk::ImageReadAccessor readAccess(mitk_img, mitk_img->GetVolumeData(0));
     const void* cPointer = readAccess.GetData();
 
     vl::EImageType     type = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
@@ -1055,7 +1055,7 @@ ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
     }
 
     unsigned int* dims = 0;
-    dims = mitkImg->GetDimensions();
+    dims = mitk_img->GetDimensions();
     // we do not own dims!
 
     int bytealign = 1;
@@ -1084,9 +1084,9 @@ ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
   }
 
   float opacity;
-  mitkImg->GetPropertyList()->GetFloatProperty("opacity", opacity);
+  mitk_img->GetPropertyList()->GetFloatProperty("opacity", opacity);
 
-  mitk::BaseProperty::Pointer   colourProp = mitkImg->GetProperty("color");
+  mitk::BaseProperty::Pointer   colourProp = mitk_img->GetProperty("color");
   mitk::Color                   mitkColor;
   if (colourProp.IsNotNull())
     mitkColor = dynamic_cast<mitk::ColorProperty*>(colourProp.GetPointer())->GetColor();
@@ -1171,7 +1171,7 @@ ref<vl::Actor> VLQtWidget::Add3DImageActor(const mitk::Image::Pointer& mitkImg)
 
   fx->shader()->gocUniform( "sample_step" )->setUniformF(1.0f / 512.0f);
 
-  vtkLinearTransform * nodeVtkTr = mitkImg->GetGeometry()->GetVtkTransform();
+  vtkLinearTransform * nodeVtkTr = mitk_img->GetGeometry()->GetVtkTransform();
   vtkSmartPointer<vtkMatrix4x4> geometryTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   nodeVtkTr->GetMatrix(geometryTransformMatrix);
 
@@ -1866,43 +1866,48 @@ void VLQtWidget::UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node
   }
 
   vl::Actor* actor = GetNodeActor(node);
-  if ( actor )
+  if ( ! actor ) {
+    return;
+  }
+
+  VIVID_CHECK(actor->effect());
+  VIVID_CHECK(actor->effect()->shader());
+
+  VLUserData* userdata = GetUserData(actor);
+  if (mitk_img->GetVtkImageData()->GetMTime() > userdata->m_ImageModifiedTime)
   {
-    VIVID_CHECK(actor->effect());
-    VIVID_CHECK(actor->effect()->shader());
-
-    VLUserData* userdata = GetUserData(actor);
-    if (mitk_img->GetVtkImageData()->GetMTime() > userdata->m_ImageModifiedTime)
+    ref<vl::Texture> tex = actor->effect()->shader()->gocTextureSampler( vl::VividRendering::UserTexture )->texture();
+    if ( tex )
     {
-      ref<vl::Texture> tex = actor->effect()->shader()->gocTextureSampler(0)->texture();
-      if (tex.get() != 0)
+      mitk::PixelType  mitk_pixel_type = mitk_img->GetPixelType();
+      vl::EImageType   vl_type         = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
+      vl::EImageFormat vl_format       = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
+      unsigned int*    dims            = mitk_img->GetDimensions();
+
+      ref<vl::Image> vl_img;
+
+      // Use smart update functionality
+
+      try
       {
-        unsigned int*       dims    = mitk_img->GetDimensions();    // we do not own dims!
-        mitk::PixelType     mitk_pixel_type = mitk_img->GetPixelType();
-        vl::EImageType      type    = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
-        vl::EImageFormat    format  = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
-
-        ref<vl::Image>    vlimg = new vl::Image(dims[0], dims[1], 0, 1, format, type);
-        // sanity check
-        unsigned int  size = (dims[0] * dims[1] * dims[2]) * mitk_pixel_type.GetSize();
-        VIVID_CHECK(vlimg->requiredMemory() == size);
-
-        try
-        {
-          mitk::ImageReadAccessor   readAccess(mitk_img);
-          const void*               cPointer = readAccess.GetData();
-          std::memcpy(vlimg->pixels(), cPointer, vlimg->requiredMemory());
-        }
-        catch (...)
-        {
-          // FIXME: error handling?
-          MITK_ERROR << "Did not get pixel read access to 2D image.";
-        }
-
-        tex->setMipLevel(0, vlimg.get(), false);
-
-        userdata->m_ImageModifiedTime = mitk_img->GetVtkImageData()->GetMTime();
+        unsigned int buffer_bytes = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
+        mitk::ImageReadAccessor readAccess( mitk_img, mitk_img->GetVolumeData(0) );
+        void* buffer_ptr = const_cast<void*>( readAccess.GetData() );
+        // std::memcpy( vl_img->pixels(), ptr, byte_count );
+        // Use VTK buffer directly instead of allocating one
+        vl_img = new vl::Image( buffer_ptr, buffer_bytes );
+        vl_img->allocate2D(dims[0], dims[1], 1, vl_format, vl_type);
+        VIVID_CHECK( vl_img->requiredMemory() == buffer_bytes );
       }
+      catch (...)
+      {
+        // FIXME: error handling?
+        MITK_ERROR << "Did not get pixel read access to 2D image.";
+      }
+
+      tex->setMipLevel(0, vl_img.get(), false);
+
+      userdata->m_ImageModifiedTime = mitk_img->GetVtkImageData()->GetMTime();
     }
   }
 }

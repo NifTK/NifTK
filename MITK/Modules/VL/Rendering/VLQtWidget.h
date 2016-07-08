@@ -173,7 +173,7 @@ protected:
   vl::ref<vl::SceneManagerActorTree> m_SceneManager;
   vl::ref<vl::Camera>                m_Camera;
   vl::ref<VLTrackballManipulator>    m_Trackball;
-
+  
   mitk::DataStorage::Pointer              m_DataStorage;
   mitk::DataNodePropertyListener::Pointer m_NodeVisibilityListener;
   mitk::DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
