@@ -34,6 +34,7 @@ vec3 AdjustSaturation( vec3 rgb, float adjustment )
 
 vec4 LightingStage()
 {
+  vec4 color;
   if ( vl_Vivid.enableLighting ) {
     vec3 l = normalize( gl_LightSource[0].position.xyz - CP.xyz );
     vec3 e = normalize( vec3( 0, 0, 0 ) - CP.xyz ); // vec3( 0.0, 0.0 ,1.0 ) for GL_LIGHT_MODEL_LOCAL_VIEWER = FALSE
@@ -60,14 +61,19 @@ vec4 LightingStage()
     vec3 ambient  = gl_FrontMaterial.ambient.rgb * gl_LightSource[0].ambient.rgb + gl_FrontMaterial.ambient.rgb * gl_LightModel.ambient.rgb;
     vec3 emission = gl_FrontMaterial.emission.rgb;
 
-    vec3 color = ambient + emission + diffuse + specular;
-
-    return vec4( color, gl_FrontMaterial.diffuse.a );
+    color.rgb = ambient + emission + diffuse + specular;
+    color.a = gl_FrontMaterial.diffuse.a;
   }
   else
   {
-    return Color;
+    color = Color;
   }
+
+  if ( vl_Vivid.enableTextureMapping ) {
+    color = color * texture2D( vl_UserTexture, gl_TexCoord[0].st );
+  }
+
+  return color;
 }
 
 vec4 ClippingStage( vec4 color )

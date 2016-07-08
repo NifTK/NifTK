@@ -24,6 +24,7 @@ out vec4 gsColor;
 void main(void)
 {
     gl_Position = gl_Vertex;
+    gl_TexCoord[0] = gl_MultiTexCoord0;
     gsOP = gl_Vertex;
     gsCP = gl_ModelViewMatrix * gl_Vertex;
     gsWP = vl_WorldMatrix * gl_Vertex;

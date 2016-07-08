@@ -20,6 +20,11 @@ uniform mat4 vl_ProjectionMatrix;
 uniform mat4 vl_ModelViewProjectionMatrix;
 uniform mat4 vl_NormalMatrix;
 
+// Texture Mapping
+
+// <automatic>
+uniform sampler2D vl_UserTexture; // Always set to vl::VividRendering::UserTexture
+
 // Smart Fog Stage
 
 struct vl_SmartFogParameters {
@@ -99,6 +104,10 @@ struct vl_VividParameters {
     // <per-Actor>
     // If lighting is disabled Geometry must have a color array
     bool enableLighting;
+
+    // <per-Actor>
+    // Whether to use texture mapping or not
+    bool enableTextureMapping;
 
     // <automatic>
     // Global opacity
