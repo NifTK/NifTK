@@ -979,6 +979,21 @@ ref<vl::Actor> VLQtWidget::Add2DImageActor(const mitk::Image::Pointer& mitkImg)
   fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
   // When texture mapping is enabled texture is modulated by vertex color
   geom->setColorArray( vl::white );
+  // These must be present as part of the default Vivid material
+  VIVID_CHECK( fx->shader()->getTextureSampler( vl::VividRendering::UserTexture ) )
+  VIVID_CHECK( fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture() )
+  VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture")->getUniformI() == vl::VividRendering::UserTexture );
+  ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+
+  // I think we can ignore the format
+  if ( vl_img->width() != texture->width() || vl_img->height() != texture->height() ) {
+    // Recreate new texture (TexParameter is not reset so we can keep the current defaults)
+    texture->destroyTexture();
+    texture->createTexture2D( vl_img.get(), vl::TF_UNKNOWN, false, false );
+  } else {
+    // Update the texture
+    texture->setMipLevel( 0, vl_img.get(), false );
+  }
   return actor;
 }
 
@@ -2036,13 +2051,14 @@ ref<vl::Geometry> VLQtWidget::CreateGeometryFor2DImage(int width, int height)
   tex_coord->resize(4);
   geom->setTexCoordArray(0, tex_coord.get());
 
-  //  0---3
+  //  1---2 image-top
   //  |   |
-  //  1---2
-  vert->at(0).x() = 0;     vert->at(0).y() = 0;      vert->at(0).z() = 0; tex_coord->at(0).s() = 0; tex_coord->at(0).t() = 0;
-  vert->at(1).x() = 0;     vert->at(1).y() = height; vert->at(1).z() = 0; tex_coord->at(1).s() = 0; tex_coord->at(1).t() = 1;
-  vert->at(2).x() = width; vert->at(2).y() = height; vert->at(2).z() = 0; tex_coord->at(2).s() = 1; tex_coord->at(2).t() = 1;
-  vert->at(3).x() = width; vert->at(3).y() = 0;      vert->at(3).z() = 0; tex_coord->at(3).s() = 1; tex_coord->at(3).t() = 0;
+  //  0---3 image-bottom
+
+  vert->at(0).x() = 0;     vert->at(0).y() = 0;      vert->at(0).z() = 0; tex_coord->at(0).s() = 0; tex_coord->at(0).t() = 1;
+  vert->at(1).x() = 0;     vert->at(1).y() = height; vert->at(1).z() = 0; tex_coord->at(1).s() = 0; tex_coord->at(1).t() = 0;
+  vert->at(2).x() = width; vert->at(2).y() = height; vert->at(2).z() = 0; tex_coord->at(2).s() = 1; tex_coord->at(2).t() = 0;
+  vert->at(3).x() = width; vert->at(3).y() = 0;      vert->at(3).z() = 0; tex_coord->at(3).s() = 1; tex_coord->at(3).t() = 1;
 
   ref<vl::DrawArrays> polys = new vl::DrawArrays(vl::PT_QUADS, 0, 4);
   geom->drawCalls().push_back( polys.get() );
