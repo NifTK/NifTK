@@ -25,6 +25,9 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
+namespace niftk
+{
+
 const QString IGIUltrasoundOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET("first background color style sheet");
 const QString IGIUltrasoundOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET("second background color style sheet");
 const QString IGIUltrasoundOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR("first background color");
@@ -227,3 +230,4 @@ void IGIUltrasoundOverlayEditorPreferencePage::ResetColors()
   m_ColorButton2->setStyleSheet(m_SecondColorStyleSheet);
 }
 
+} // end namespace

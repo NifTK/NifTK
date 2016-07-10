@@ -17,7 +17,8 @@
 #include "IGIUltrasoundOverlayEditor.h"
 #include "IGIUltrasoundOverlayEditorPreferencePage.h"
 
-namespace niftk {
+namespace niftk
+{
 
 ctkPluginContext* IGIUltrasoundOverlayEditorActivator::m_PluginContext = 0;
 
@@ -44,7 +45,6 @@ ctkPluginContext* IGIUltrasoundOverlayEditorActivator::getContext()
   return m_PluginContext;
 }
 
-//-----------------------------------------------------------------------------
 } // end namespace
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)

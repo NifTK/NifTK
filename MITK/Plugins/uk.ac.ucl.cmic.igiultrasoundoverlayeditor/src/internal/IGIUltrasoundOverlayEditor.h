@@ -19,12 +19,11 @@
 #include <mitkILinkedRenderWindowPart.h>
 #include <service/event/ctkEvent.h>
 
-class IGIUltrasoundOverlayEditorPrivate;
-
 namespace niftk
 {
+
+class IGIUltrasoundOverlayEditorPrivate;
 class IGIUltrasoundOverlayWidget;
-}
 
 /**
  * \class IGIUltrasoundOverlayEditor
@@ -147,5 +146,7 @@ private:
   const QScopedPointer<IGIUltrasoundOverlayEditorPrivate> d;
 
 };
+
+} // end namespace
 
 #endif

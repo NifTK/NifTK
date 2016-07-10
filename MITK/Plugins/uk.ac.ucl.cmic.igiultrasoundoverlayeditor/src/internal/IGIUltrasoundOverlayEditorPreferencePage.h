@@ -25,6 +25,9 @@ class QWidgetAction;
 class QCheckBox;
 class ctkPathLineEdit;
 
+namespace niftk
+{
+
 /**
  * \class IGIOverlayEditorPreferencePage
  * \brief Preference page for IGIUltrasoundOverlayEditor.
@@ -103,5 +106,7 @@ protected:
 
   berry::IPreferences::Pointer m_IGIUltrasoundOverlayEditorPreferencesNode;
 };
+
+} // end namespace
 
 #endif

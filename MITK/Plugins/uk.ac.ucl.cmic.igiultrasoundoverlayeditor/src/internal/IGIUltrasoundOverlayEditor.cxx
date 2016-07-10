@@ -42,6 +42,9 @@
 #include <internal/IGIUltrasoundOverlayEditorPreferencePage.h>
 #include <internal/IGIUltrasoundOverlayEditorActivator.h>
 
+namespace niftk
+{
+
 const char* IGIUltrasoundOverlayEditor::EDITOR_ID = "org.mitk.editors.igiultrasoundoverlayeditor";
 
 /**
@@ -383,3 +386,5 @@ void IGIUltrasoundOverlayEditor::OnIGIUpdate(const ctkEvent& event)
 {
   d->m_IGIUltrasoundOverlayWidget->Update();
 }
+
+} // end namespace

@@ -17,7 +17,8 @@
 
 #include <ctkPluginActivator.h>
 
-namespace niftk {
+namespace niftk
+{
 
 /**
  * \class IGIUltrasoundOverlayEditorActivator
