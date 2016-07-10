@@ -42,6 +42,9 @@
 #include <internal/IGIVideoOverlayEditorPreferencePage.h>
 #include <internal/IGIVideoOverlayEditorActivator.h>
 
+namespace niftk
+{
+
 const char* IGIVideoOverlayEditor::EDITOR_ID = "org.mitk.editors.igivideooverlayeditor";
 
 /**
@@ -386,3 +389,5 @@ void IGIVideoOverlayEditor::OnIGIUpdate(const ctkEvent& event)
 {
   d->m_IGIVideoOverlayWidget->Update();
 }
+
+} // end namespace

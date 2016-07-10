@@ -16,7 +16,8 @@
 #include "IGIVideoOverlayEditorPreferencePage.h"
 #include "IGIVideoOverlayEditor.h"
 
-namespace niftk {
+namespace niftk
+{
 
 ctkPluginContext* IGIVideoOverlayEditorActivator::m_PluginContext = 0;
 
@@ -43,7 +44,6 @@ ctkPluginContext* IGIVideoOverlayEditorActivator::getContext()
   return m_PluginContext;
 }
 
-//-----------------------------------------------------------------------------
 } // end namespace
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)

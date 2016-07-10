@@ -19,12 +19,12 @@
 #include <mitkILinkedRenderWindowPart.h>
 #include <service/event/ctkEvent.h>
 
-class IGIVideoOverlayEditorPrivate;
-
 namespace niftk
 {
-  class IGIVideoOverlayWidget;
-}
+
+class IGIVideoOverlayEditorPrivate;
+class IGIVideoOverlayWidget;
+
 /**
  * \class IGIVideoOverlayEditor
  * \brief Simple editor that delegates all functionality to a niftk::IGIVideoOverlayWidget,
@@ -144,5 +144,7 @@ private:
   const QScopedPointer<IGIVideoOverlayEditorPrivate> d;
 
 };
+
+} // end namespace
 
 #endif

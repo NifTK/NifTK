@@ -25,12 +25,14 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
+namespace niftk
+{
+
 const QString IGIVideoOverlayEditorPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
 const QString IGIVideoOverlayEditorPreferencePage::FIRST_BACKGROUND_STYLE_SHEET("first background color style sheet");
 const QString IGIVideoOverlayEditorPreferencePage::SECOND_BACKGROUND_STYLE_SHEET("second background color style sheet");
 const QString IGIVideoOverlayEditorPreferencePage::FIRST_BACKGROUND_COLOUR("first background color");
 const QString IGIVideoOverlayEditorPreferencePage::SECOND_BACKGROUND_COLOUR("second background color");
-
 
 //-----------------------------------------------------------------------------
 IGIVideoOverlayEditorPreferencePage::IGIVideoOverlayEditorPreferencePage()
@@ -227,3 +229,4 @@ void IGIVideoOverlayEditorPreferencePage::ResetColors()
   m_ColorButton2->setStyleSheet(m_SecondColorStyleSheet);
 }
 
+} // end namespace

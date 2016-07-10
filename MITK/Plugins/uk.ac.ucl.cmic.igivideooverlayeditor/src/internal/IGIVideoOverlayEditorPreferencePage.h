@@ -25,6 +25,9 @@ class QWidgetAction;
 class QCheckBox;
 class ctkPathLineEdit;
 
+namespace niftk
+{
+
 /**
  * \class IGIVideoOverlayEditorPreferencePage
  * \brief Preference page for IGIVideoOverlayEditor, eg. setting the gradient background.
@@ -82,7 +85,7 @@ public:
    * \brief Stores the name of the preference node that contains the second background colour.
    */
   static const QString SECOND_BACKGROUND_COLOUR;
-  
+
 public slots:
 
   void FirstColorChanged();
@@ -102,5 +105,7 @@ protected:
 
   berry::IPreferences::Pointer m_IGIVideoOverlayEditorPreferencesNode;
 };
+
+} // end namespace
 
 #endif

@@ -6,13 +6,13 @@
       id="org.mitk.editors.igivideooverlayeditor"
       name="Video Overlay Display"
       extensions="mitk"
-      class="IGIVideoOverlayEditor">
+      class="niftk::IGIVideoOverlayEditor">
     </editor>
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
     <page id="org.mitk.editors.IGIVideoOverlayEditor" name="Video Overlay Display"
-      class="IGIVideoOverlayEditorPreferencePage" category="org.mitk.EditorsPreferencePage">
+      class="niftk::IGIVideoOverlayEditorPreferencePage" category="org.mitk.EditorsPreferencePage">
       <keywordreference id="org.mitk.IGIVideoOverlayEditorPreferencePageKeywords"/>
     </page>
   </extension>
