@@ -92,7 +92,7 @@ public slots:
   void SecondColorChanged();
   void ResetColors();
 
-protected:
+private:
 
   QWidget         *m_MainControl;
   ctkPathLineEdit *m_CalibrationFileName;

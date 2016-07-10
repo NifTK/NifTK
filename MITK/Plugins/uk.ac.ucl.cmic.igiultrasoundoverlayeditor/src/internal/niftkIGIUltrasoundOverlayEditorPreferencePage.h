@@ -93,7 +93,7 @@ public slots:
   void SecondColorChanged();
   void ResetColors();
 
-protected:
+private:
 
   QWidget         *m_MainControl;
   QCheckBox       *m_ClipToImagePlane;
