@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "IGIUltrasoundOverlayEditor.h"
+#include "niftkIGIUltrasoundOverlayEditor.h"
 
 #include <berryUIException.h>
 #include <berryIWorkbenchPage.h>
@@ -39,8 +39,8 @@
 #include <mitkIDataStorageService.h>
 
 #include "niftkIGIUltrasoundOverlayWidget.h"
-#include <internal/IGIUltrasoundOverlayEditorPreferencePage.h>
-#include <internal/IGIUltrasoundOverlayEditorActivator.h>
+#include <internal/niftkIGIUltrasoundOverlayEditorPreferencePage.h>
+#include <internal/niftkIGIUltrasoundOverlayEditorActivator.h>
 
 namespace niftk
 {

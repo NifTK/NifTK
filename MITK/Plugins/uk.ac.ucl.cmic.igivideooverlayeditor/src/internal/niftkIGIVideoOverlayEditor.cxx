@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "IGIVideoOverlayEditor.h"
+#include "niftkIGIVideoOverlayEditor.h"
 
 #include <berryUIException.h>
 #include <berryIWorkbenchPage.h>
@@ -39,8 +39,8 @@
 #include <mitkIDataStorageService.h>
 
 #include <niftkIGIVideoOverlayWidget.h>
-#include <internal/IGIVideoOverlayEditorPreferencePage.h>
-#include <internal/IGIVideoOverlayEditorActivator.h>
+#include <internal/niftkIGIVideoOverlayEditorPreferencePage.h>
+#include <internal/niftkIGIVideoOverlayEditorActivator.h>
 
 namespace niftk
 {

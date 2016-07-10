@@ -12,10 +12,9 @@
 
 =============================================================================*/
 
-#include "IGIUltrasoundOverlayEditorActivator.h"
-
-#include "IGIUltrasoundOverlayEditor.h"
-#include "IGIUltrasoundOverlayEditorPreferencePage.h"
+#include "niftkIGIUltrasoundOverlayEditorActivator.h"
+#include "niftkIGIUltrasoundOverlayEditor.h"
+#include "niftkIGIUltrasoundOverlayEditorPreferencePage.h"
 
 namespace niftk
 {

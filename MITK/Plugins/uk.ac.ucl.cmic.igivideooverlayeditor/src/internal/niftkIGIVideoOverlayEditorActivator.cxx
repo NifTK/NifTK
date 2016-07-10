@@ -12,9 +12,9 @@
 
 =============================================================================*/
 
-#include "IGIVideoOverlayEditorActivator.h"
-#include "IGIVideoOverlayEditorPreferencePage.h"
-#include "IGIVideoOverlayEditor.h"
+#include "niftkIGIVideoOverlayEditorActivator.h"
+#include "niftkIGIVideoOverlayEditorPreferencePage.h"
+#include "niftkIGIVideoOverlayEditor.h"
 
 namespace niftk
 {

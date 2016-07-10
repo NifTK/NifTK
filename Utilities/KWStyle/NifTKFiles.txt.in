@@ -63,3 +63,7 @@
 @CMAKE_SOURCE_DIR@/MITK/Modules/QtAudioDataSourceService/internal/niftk*.cxx
 @CMAKE_SOURCE_DIR@/MITK/Modules/UltrasonixDataSourceService/internal/niftk*.h
 @CMAKE_SOURCE_DIR@/MITK/Modules/UltrasonixDataSourceService/internal/niftk*.cxx
+@CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igivideooverlayeditor/src/internal/niftk*.h
+@CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igivideooverlayeditor/src/internal/niftk*.cxx
+@CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igiultrasoundoverlayeditor/src/internal/niftk*.h
+@CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igiultrasoundoverlayeditor/src/internal/niftk*.cxx

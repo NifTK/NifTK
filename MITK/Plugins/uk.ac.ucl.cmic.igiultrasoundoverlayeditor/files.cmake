@@ -16,15 +16,15 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  IGIUltrasoundOverlayEditorActivator.cxx
-  IGIUltrasoundOverlayEditorPreferencePage.cxx
-  IGIUltrasoundOverlayEditor.cxx
+  niftkIGIUltrasoundOverlayEditorActivator.cxx
+  niftkIGIUltrasoundOverlayEditorPreferencePage.cxx
+  niftkIGIUltrasoundOverlayEditor.cxx
 )
 
 set(MOC_H_FILES
-  src/internal/IGIUltrasoundOverlayEditorActivator.h
-  src/internal/IGIUltrasoundOverlayEditorPreferencePage.h
-  src/internal/IGIUltrasoundOverlayEditor.h
+  src/internal/niftkIGIUltrasoundOverlayEditorActivator.h
+  src/internal/niftkIGIUltrasoundOverlayEditorPreferencePage.h
+  src/internal/niftkIGIUltrasoundOverlayEditor.h
 )
 
 set(UI_FILES
