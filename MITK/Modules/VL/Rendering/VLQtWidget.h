@@ -263,15 +263,6 @@ protected:
   // will only be non-null if cuda support is enabled at compile time.
   CUDAInterop* m_CUDAInteropPimpl;
 
-  struct TextureDataPOD
-  {
-    vl::ref<vl::Texture>   m_Texture;       // on the vl side
-    unsigned int           m_LastUpdatedID; // on cuda-manager side
-    cudaGraphicsResource_t m_CUDARes;       // on cuda(-driver) side
-
-    TextureDataPOD();
-  };
-  std::map<mitk::DataNode::ConstPointer, TextureDataPOD> m_NodeToTextureMap;
 #endif
 
   // --------------------------------------------------------------------------

@@ -120,9 +120,15 @@
 
   //-----------------------------------------------------------------------------
 
-  VLQtWidget::TextureDataPOD::TextureDataPOD() : m_LastUpdatedID(0) , m_CUDARes(0)
+  struct TextureDataPOD
   {
-  }
+    vl::ref<vl::Texture>   m_Texture;       // on the vl side
+    unsigned int           m_LastUpdatedID; // on cuda-manager side
+    cudaGraphicsResource_t m_CUDARes;       // on cuda(-driver) side
+
+    TextureDataPOD(): m_LastUpdatedID(0) , m_CUDARes(0) {
+    }
+  };
 
 // #else
 //   struct CUDAInterop { };
@@ -1078,6 +1084,205 @@ protected:
 
 //-----------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------
+
+#ifdef _USE_CUDA
+
+░▐█▀▄─ █▀▀ █───█ ▄▀▄ █▀▀▄ █▀▀
+░▐█▀▀▄ █▀▀ █─█─█ █▀█ █▐█▀ █▀▀
+░▐█▄▄▀ ▀▀▀ ─▀─▀─ ▀─▀ ▀─▀▀ ▀▀▀
+▒▒▒▒██▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒██▒▒▒▒
+▒▒████▄▒▒▒▄▄▄▄▄▄▄▒▒▒▄████▒▒
+▒▒▒▒▒▀▀▒▄█████████▄▒▀▀▒▒▒▒▒
+▒▒▒▒▒▒▒█████████████▒▒▒▒▒▒▒
+▒▒▒▒▒▒▒██▀▀▀███▀▀▀██▒▒▒▒▒▒▒
+▒▒▒▒▒▒▒██▒▒▒███▒▒▒██▒▒▒▒▒▒▒
+▒▒▒▒▒▒▒█████▀▄▀█████▒▒▒▒▒▒▒
+▒▒▒▒▒▒▒▒▒▒███████▒▒▒▒▒▒▒▒▒▒
+▒▒▒▒▄▄▄██▒▒█▀█▀█▒▒██▄▄▄▒▒▒▒
+▒▒▒▒▀▀██▒▒▒▒▒▒▒▒▒▒▒██▀▀▒▒▒▒
+▒▒▒▒▒▒▀▀▒▒▒▒▒▒▒▒▒▒▒▀▀▒▒▒▒▒▒
+░▐█▀█▄ ▄▀▄ █▄─█ ▄▀▀─ █▀▀ █▀▀▄
+░▐█▌▐█ █▀█ █─▀█ █─▀▌ █▀▀ █▐█▀
+░▐█▄█▀ ▀─▀ ▀──▀ ▀▀▀─ ▀▀▀ ▀─▀▀
+
+// WARNING: never compiled nor tested
+// This is just stub code, a raw attempt at reorganizing the legacy experimental CUDA code into the new VLNode logic
+class VLNodeCUDAImage: public VLNode {
+public:
+  VLNodeCUDAImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLNode( gl, vr, ds, node ) {
+    niftk::CUDAImage* cuda_image = dynamic_cast<niftk::CUDAImage*>( node->GetData() );
+    if ( cuda_image ) {
+      m_NiftkLightweightCUDAImage = cuda_image->GetLightweightCUDAImage();
+    } else {
+      niftk::CUDAImageProperty* cuda_image_prop = dynamic_cast<niftk::CUDAImageProperty*>(m_DataNode->GetProperty("CUDAImageProperty").GetPointer());
+      if  (cuda_image_prop ) {
+        m_NiftkLightweightCUDAImage = cuda_image_prop->Get();
+      }
+    }
+    VIVID_CHECK(m_NiftkLightweightCUDAImage.GetId() != 0);
+  }
+
+  virtual void init() {
+
+    niftk::LightweightCUDAImage lwci;
+    const niftk::CUDAImage* cudaImg = dynamic_cast<const niftk::CUDAImage*>(m_NiftkCUDAImage);
+    if (cudaImg != 0)
+    {
+      lwci = cudaImg->GetLightweightCUDAImage();
+    }
+    else
+    {
+      niftk::CUDAImageProperty::Pointer prop = dynamic_cast<niftk::CUDAImageProperty*>(m_DataNode->GetProperty("CUDAImageProperty").GetPointer());
+      if (prop.IsNotNull())
+      {
+        lwci = prop->Get();
+      }
+    }
+    VIVID_CHECK(lwci.GetId() != 0);
+
+    ref<vl::Geometry> vlquad = CreateGeometryFor2DImage(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight());
+
+    ref<vl::Effect>    fx = new vl::Effect;
+    fx->shader()->disable(vl::EN_LIGHTING);
+    fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+    fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+    // UpdateDataNode() takes care of assigning colour etc.
+
+    ref<vl::Transform> tr = new vl::Transform;
+    UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
+
+    ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor(vlquad.get(), fx.get(), tr.get());
+    actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
+
+    m_Actor = actor;
+  }
+
+  virtual void update() {
+    VIVID_CHECK(m_NiftkLightweightCUDAImage.GetId() != 0);
+
+    // BEWARE: 
+    // All the logic below is completely outdated especially with regard to accessing the user texture. See VLNode2DImage for more info.
+    // PS. All the horrific code formatting is from the original code...
+    // - Michele
+
+    // whatever we had cached from a previous frame.
+    TextureDataPOD          texpod    = m_TextureDataPOD;
+
+    // only need to update the vl texture, if content in our cuda buffer has changed.
+    // and the cuda buffer can change only when we have a different id.
+    if (texpod.m_LastUpdatedID != m_NiftkLightweightCUDAImage.GetId())
+    {
+      cudaError_t   err = cudaSuccess;
+      bool          neednewvltexture = texpod.m_Texture.get() == 0;
+
+      // check if vl-texture size needs to change
+      if (texpod.m_Texture.get() != 0)
+      {
+        neednewvltexture |= m_NiftkLightweightCUDAImage.GetWidth()  != texpod.m_Texture->width();
+        neednewvltexture |= m_NiftkLightweightCUDAImage.GetHeight() != texpod.m_Texture->height();
+      }
+
+      if (neednewvltexture)
+      {
+        if (texpod.m_CUDARes)
+        {
+          err = cudaGraphicsUnregisterResource(texpod.m_CUDARes);
+          texpod.m_CUDARes = 0;
+          if (err != cudaSuccess)
+          {
+            MITK_WARN << "Could not unregister VL texture from CUDA. This will likely leak GPU memory.";
+          }
+        }
+
+        texpod.m_Texture = new vl::Texture(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight(), vl::TF_RGBA8, false);
+        actor->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
+        actor->effect()->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
+
+        err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
+        if (err != cudaSuccess)
+        {
+          texpod.m_CUDARes = 0;
+          MITK_WARN << "Registering VL texture into CUDA failed. Will not update (properly).";
+        }
+      }
+
+      if (texpod.m_CUDARes)
+      {
+        VIVID_CHECK(actor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
+
+        niftk::CUDAManager*  cudamng   = niftk::CUDAManager::GetInstance();
+        cudaStream_t         mystream  = cudamng->GetStream("VLQtWidget vl-texture update");
+        niftk::ReadAccessor  inputRA   = cudamng->RequestReadAccess(m_NiftkLightweightCUDAImage);
+
+        // make sure producer of the cuda-image finished.
+        err = cudaStreamWaitEvent(mystream, inputRA.m_ReadyEvent, 0);
+        if (err != cudaSuccess)
+        {
+          // flood the log
+          MITK_WARN << "cudaStreamWaitEvent failed with error code " << err;
+        }
+
+        // this also guarantees that ogl will have finished doing its thing before mystream starts copying.
+        err = cudaGraphicsMapResources(1, &texpod.m_CUDARes, mystream);
+        if (err == cudaSuccess)
+        {
+          // normally we would need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
+          // but texture coordinates that we have assigned to the quads rendering the current image will do that for us.
+
+          cudaArray_t   arr = 0;
+          err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
+          if (err == cudaSuccess)
+          {
+            err = cudaMemcpy2DToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, inputRA.m_BytePitch, m_NiftkLightweightCUDAImage.GetWidth() * 4, m_NiftkLightweightCUDAImage.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
+            if (err == cudaSuccess)
+            {
+              texpod.m_LastUpdatedID = m_NiftkLightweightCUDAImage.GetId();
+            }
+          }
+
+          err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
+          if (err != cudaSuccess)
+          {
+            MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
+          }
+        }
+        // make sure Autorelease() and Finalise() are always the last things to do for a stream!
+        // otherwise the streamcallback will block subsequent work.
+        // in this case here, the callback managed by CUDAManager that keeps track of refcounts could stall
+        // the opengl driver if cudaGraphicsUnmapResources() came after Autorelease().
+        cudamng->Autorelease(inputRA, mystream);
+      }
+
+      // update cache, even if something went wrong.
+      m_TextureDataPOD = texpod;
+
+      // helps with debugging
+      actor->effect()->shader()->disable(vl::EN_CULL_FACE);
+    }
+  }
+
+  virtual void remove() {
+    if ( m_TextureDataPOD.m_CUDARes ) {
+      cudaError_t err = cudaGraphicsUnregisterResource( m_TextureDataPOD.m_CUDARes );
+      if (err != cudaSuccess)
+      {
+        MITK_WARN << "Failed to unregister VL texture from CUDA";
+      }
+      m_TextureDataPOD.m_CUDARes = 0;
+    }
+
+    VLNode::remove();
+  }
+
+protected:
+  niftk::LightweightCUDAImage m_NiftkLightweightCUDAImage;
+  TextureDataPOD m_TextureDataPOD; // m_NodeToTextureMap
+};
+
+#endif
+
 vl::ref<VLNode> VLNode::create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node ) {
   vl::ref<VLNode> vl_node;
 
@@ -1101,6 +1306,11 @@ vl::ref<VLNode> VLNode::create( vl::OpenGLContext* gl, vl::VividRendering* vr, m
     vl_node = new VLNodeCoordinateAxes( gl, vr, ds, node );
   }
 
+#ifdef _USE_CUDA
+  else if ( mitk_pcld ) {
+    vl_node = new VLNodeCUDAImage( gl, vr, ds, node );
+  }
+#endif
   return vl_node;
 }
 
@@ -2746,173 +2956,4 @@ void VLQtWidget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci,
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node)
-{
-  makeCurrent();
-
-  niftk::LightweightCUDAImage    lwcImage;
-
-  niftk::CUDAImage::Pointer cudaimg = dynamic_cast<niftk::CUDAImage*>(node->GetData());
-  if (cudaimg.IsNotNull())
-  {
-    lwcImage = cudaimg->GetLightweightCUDAImage();
-  }
-  else
-  {
-    mitk::Image::Pointer    img = dynamic_cast<mitk::Image*>(node->GetData());
-    if (img.IsNotNull())
-    {
-      niftk::CUDAImageProperty::Pointer prop = dynamic_cast<niftk::CUDAImageProperty*>(img->GetProperty("CUDAImageProperty").GetPointer());
-      if (prop.IsNotNull())
-      {
-        lwcImage = prop->Get();
-      }
-    }
-  }
-
-  NodeActorMapType::iterator     it = m_NodeActorMap.find(node);
-  if (it == m_NodeActorMap.end())
-    return;
-  ref<vl::Actor>    actor = it->second;
-  if (actor.get() == 0)
-    return;
-
-  if (lwcImage.GetId() != 0)
-  {
-    // whatever we had cached from a previous frame.
-    TextureDataPOD          texpod    = m_NodeToTextureMap[node];
-
-    // only need to update the vl texture, if content in our cuda buffer has changed.
-    // and the cuda buffer can change only when we have a different id.
-    if (texpod.m_LastUpdatedID != lwcImage.GetId())
-    {
-      cudaError_t   err = cudaSuccess;
-      bool          neednewvltexture = texpod.m_Texture.get() == 0;
-
-      // check if vl-texture size needs to change
-      if (texpod.m_Texture.get() != 0)
-      {
-        neednewvltexture |= lwcImage.GetWidth()  != texpod.m_Texture->width();
-        neednewvltexture |= lwcImage.GetHeight() != texpod.m_Texture->height();
-      }
-
-      if (neednewvltexture)
-      {
-        if (texpod.m_CUDARes)
-        {
-          err = cudaGraphicsUnregisterResource(texpod.m_CUDARes);
-          texpod.m_CUDARes = 0;
-          if (err != cudaSuccess)
-          {
-            MITK_WARN << "Could not unregister VL texture from CUDA. This will likely leak GPU memory.";
-          }
-        }
-
-        texpod.m_Texture = new vl::Texture(lwcImage.GetWidth(), lwcImage.GetHeight(), vl::TF_RGBA8, false);
-        actor->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
-        actor->effect()->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
-
-        err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
-        if (err != cudaSuccess)
-        {
-          texpod.m_CUDARes = 0;
-          MITK_WARN << "Registering VL texture into CUDA failed. Will not update (properly).";
-        }
-      }
-
-      if (texpod.m_CUDARes)
-      {
-        VIVID_CHECK(actor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
-
-        niftk::CUDAManager*  cudamng   = niftk::CUDAManager::GetInstance();
-        cudaStream_t         mystream  = cudamng->GetStream("VLQtWidget vl-texture update");
-        niftk::ReadAccessor  inputRA   = cudamng->RequestReadAccess(lwcImage);
-
-        // make sure producer of the cuda-image finished.
-        err = cudaStreamWaitEvent(mystream, inputRA.m_ReadyEvent, 0);
-        if (err != cudaSuccess)
-        {
-          // flood the log
-          MITK_WARN << "cudaStreamWaitEvent failed with error code " << err;
-        }
-
-        // this also guarantees that ogl will have finished doing its thing before mystream starts copying.
-        err = cudaGraphicsMapResources(1, &texpod.m_CUDARes, mystream);
-        if (err == cudaSuccess)
-        {
-          // normally we would need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
-          // but texture coordinates that we have assigned to the quads rendering the current image will do that for us.
-
-          cudaArray_t   arr = 0;
-          err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
-          if (err == cudaSuccess)
-          {
-            err = cudaMemcpy2DToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, inputRA.m_BytePitch, lwcImage.GetWidth() * 4, lwcImage.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
-            if (err == cudaSuccess)
-            {
-              texpod.m_LastUpdatedID = lwcImage.GetId();
-            }
-          }
-
-          err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
-          if (err != cudaSuccess)
-          {
-            MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
-          }
-        }
-        // make sure Autorelease() and Finalise() are always the last things to do for a stream!
-        // otherwise the streamcallback will block subsequent work.
-        // in this case here, the callback managed by CUDAManager that keeps track of refcounts could stall
-        // the opengl driver if cudaGraphicsUnmapResources() came after Autorelease().
-        cudamng->Autorelease(inputRA, mystream);
-      }
-
-      // update cache, even if something went wrong.
-      m_NodeToTextureMap[node] = texpod;
-
-      // helps with debugging
-      actor->effect()->shader()->disable(vl::EN_CULL_FACE);
-    }
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-ref<vl::Actor> VLQtWidget::AddCUDAImageActor(const mitk::BaseData* _cudaImg)
-{
-  makeCurrent();
-
-  niftk::LightweightCUDAImage lwci;
-  const niftk::CUDAImage* cudaImg = dynamic_cast<const niftk::CUDAImage*>(_cudaImg);
-  if (cudaImg != 0)
-  {
-    lwci = cudaImg->GetLightweightCUDAImage();
-  }
-  else
-  {
-    niftk::CUDAImageProperty::Pointer prop = dynamic_cast<niftk::CUDAImageProperty*>(_cudaImg->GetProperty("CUDAImageProperty").GetPointer());
-    if (prop.IsNotNull())
-    {
-      lwci = prop->Get();
-    }
-  }
-  VIVID_CHECK(lwci.GetId() != 0);
-
-  ref<vl::Transform> tr = new vl::Transform;
-  UpdateTransformFromData(tr.get(), cudaImg);
-
-  ref<vl::Geometry> vlquad    = CreateGeometryFor2DImage(lwci.GetWidth(), lwci.GetHeight());
-
-  ref<vl::Effect>    fx = new vl::Effect;
-  fx->shader()->disable(vl::EN_LIGHTING);
-  fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-  fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
-  // UpdateDataNode() takes care of assigning colour etc.
-
-  ref<vl::Actor> actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
-  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-  return actor;
-
-}
 #endif
