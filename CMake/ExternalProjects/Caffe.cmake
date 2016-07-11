@@ -22,7 +22,7 @@ if(DEFINED Caffe_DIR AND NOT EXISTS ${Caffe_DIR})
   message(FATAL_ERROR "Caffe_DIR variable is defined but corresponds to non-existing directory \"${Caffe_ROOT}\".")
 endif()
 
-set(version "rc3")
+set(version "7c17be7")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}_hacked.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(Caffe ${version} ${location})
