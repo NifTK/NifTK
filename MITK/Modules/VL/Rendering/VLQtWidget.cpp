@@ -677,7 +677,7 @@ public:
 
     ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
     ref<vl::Transform> tr = new vl::Transform;
-    UpdateTransformFromData(tr.get(), m_MitkSurf.GetPointer());
+    UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
     ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor(geom.get(), fx.get(), tr.get());
     actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
      m_Actor = actor;
@@ -727,7 +727,7 @@ public:
     ref<vl::Geometry> geom = CreateGeometryFor2DImage(dims[0], dims[1]);
 
     ref<vl::Transform> tr = new vl::Transform;
-    UpdateTransformFromData(tr.get(), m_MitkImage.GetPointer());
+    UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
 
     ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
     m_Actor = m_VividRendering->sceneManager()->tree()->addActor(geom.get(), fx.get(), tr.get());
@@ -1045,7 +1045,7 @@ public:
     geom->setColorArray(colors.get());
 
     ref<vl::Transform> tr = new vl::Transform;
-    UpdateTransformFromData(tr.get(), m_MitkAxes.GetPointer());
+    UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
 
     ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
     fx->shader()->getLineWidth()->set( 2 );
@@ -1431,29 +1431,47 @@ protected:
 
 #endif
 
+//-----------------------------------------------------------------------------
+
 vl::ref<VLNode> VLNode::create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node ) {
+  
+  // Map DataNode type to VLNode type
   vl::ref<VLNode> vl_node;
 
-  mitk::Image* mitk_image = dynamic_cast<mitk::Image*>( node->GetData() );
-  mitk::Surface* mitk_surf = dynamic_cast<mitk::Surface*>(node->GetData());
-  mitk::CoordinateAxesData* mitk_axes = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+  mitk::Surface*            mitk_surf = dynamic_cast<mitk::Surface*>(node->GetData());
+  mitk::Image*              mitk_image = dynamic_cast<mitk::Image*>( node->GetData() );
+  mitk::CoordinateAxesData* mitk_axes = dynamic_cast<mitk::CoordinateAxesData*>( node->GetData() );
+  mitk::PointSet*           mitk_pset = dynamic_cast<mitk::PointSet*>( node->GetData() );
+#ifdef _USE_PCL
+  niftk::PCLData*           mitk_pcld = dynamic_cast<niftk::PCLData*>( node->GetData() );
+#endif
+#ifdef _USE_CUDA
+  mitk::BaseData*           cuda_img = dynamic_cast<niftk::CUDAImage*>( node->GetData() );
+#endif
 
   if ( mitk_surf ) {
     vl_node = new VLNodeSurface( gl, vr, ds, node );
-  } else
-  if ( mitk_image ) {
+  } 
+  else if ( mitk_image ) {
     unsigned int depth = mitk_image->GetDimensions()[2];
-    // In VTK a 2x2x1 image is 2D not 3D like in VL
+    // In VTK a NxMx1 image is 2D (in VL a 2D image is NxMx0)
     if ( depth <= 1 ) {
       vl_node = new VLNode2DImage( gl, vr, ds, node );
     } else {
       vl_node = new VLNode3DImage( gl, vr, ds, node );
     }
-  } else 
-  if ( mitk_axes ) {
+  } 
+  else  if ( mitk_axes ) {
     vl_node = new VLNodeCoordinateAxes( gl, vr, ds, node );
+  } 
+  else if ( mitk_pset ) {
+    vl_node = new VLNodePointSet( gl, vr, ds, node );
   }
-
+#ifdef _USE_PCL
+  else if ( mitk_pcld ) {
+    vl_node = new VLNodePCL( gl, vr, ds, node );
+  }
+#endif
 #ifdef _USE_CUDA
   else if ( mitk_pcld ) {
     vl_node = new VLNodeCUDAImage( gl, vr, ds, node );
@@ -1638,7 +1656,7 @@ void VLQtWidget::InitSceneFromDataStorage()
   }
 
   #if 0
-    // dump scene to VLB/VLT format
+    // dump scene to VLB/VLT format for debugging
     ref< vl::ResourceDatabase > db = new vl::ResourceDatabase;
     for( int i = 0; i < m_SceneManager->tree()->actors()->size(); ++i ) {
       vl::Actor* act = m_SceneManager->tree()->actors()->at(i);
@@ -1660,12 +1678,8 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 {
   makeCurrent();
 
-  if ( node.IsNull() || node->GetData() == 0 ) {
-    return;
-  }
-
-  // only add node once.
-  if ( GetNodeActor( node ) ) {
+  // Add only once and only if valid
+  if ( ! node || ! node->GetData() || GetVLNode( node ) != NULL ) {
     return;
   }
 
@@ -1673,83 +1687,13 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
     dumpNodeInfo( "AddDataNode()", node );
   #endif
 
-  bool doMitkImageIfSuitable = true;
-  mitk::Image::Pointer              mitk_img  = dynamic_cast<mitk::Image*>(node->GetData());
-  mitk::Surface::Pointer            mitkSurf = dynamic_cast<mitk::Surface*>(node->GetData());
-  mitk::PointSet::Pointer           mitkPS   = dynamic_cast<mitk::PointSet*>(node->GetData());
-#ifdef _USE_PCL
-  niftk::PCLData::Pointer           pclPS    = dynamic_cast<niftk::PCLData*>(node->GetData());
-#endif
-  mitk::CoordinateAxesData::Pointer coords   = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
-#ifdef _USE_CUDA
-  mitk::BaseData::Pointer           cudaImg  = dynamic_cast<niftk::CUDAImage*>(node->GetData());
-  // this check will prefer a CUDAImageProperty attached to the node's data object.
-  // e.g. if there is mitk::Image and an attached CUDAImageProperty then CUDAImageProperty wins and
-  // mitk::Image is ignored.
-  doMitkImageIfSuitable = dynamic_cast<niftk::CUDAImageProperty*>( node->GetData()->GetProperty("CUDAImageProperty").GetPointer() ) == 0;
-  if (doMitkImageIfSuitable == false)
-  {
-    cudaImg = node->GetData();
-  }
-#endif
-
-  ref<vl::Actor> actor;
-  std::string actor_name;
-
-  if (mitkSurf.IsNotNull())
-  {
-    actor = AddSurfaceActor(mitkSurf);
-    actor_name = "surface:";
-  }
-  else
-  if (mitk_img.IsNotNull() && doMitkImageIfSuitable)
-  {
-    actor = AddImageActor(mitk_img);
-    actor_name = "image:";
-  }
-  else
-  if (mitkPS.IsNotNull())
-  {
-    actor = AddPointsetActor(mitkPS);
-    actor_name = "point-set:";
-  }
-  else
-  if (coords.IsNotNull())
-  {
-    actor = AddCoordinateAxisActor(coords);
-    actor_name = "coordinate-axis-data:";
-  }
-#ifdef _USE_PCL
-  else
-  if (pclPS.IsNotNull())
-  {
-    actor = AddPointCloudActor(pclPS);
-    actor_name = "pcl:";
-  }
-#endif
-#ifdef _USE_CUDA
-  else
-  if (cudaImg.IsNotNull())
-  {
-    actor = AddCUDAImageActor(cudaImg);
-    actor_name = "cuda-image:";
-
-    m_NodeToTextureMap[node] = TextureDataPOD();
-  }
-#endif
-
-  if ( actor ) {
-    // Set object name
-    std::string node_name;
-    node->GetStringProperty( "name", node_name );
-    actor_name += node_name;
-    actor->setObjectName( actor_name );
-
-    // Populate Node/Actor map
-    m_NodeActorMap[node] = actor;
-
-    // Initialize Actor properties based on Node data (color, visibility, transform, image etc.)
-    UpdateDataNode(node);
+  ref<VLNode> vl_node = VLNode::create( this, m_VividRendering.get(), m_DataStorage.GetPointer(), node.GetPointer() );
+  if ( vl_node ) {
+    m_NodeVLNodeMap[ node ] = vl_node;
+    vl_node->init();
+    vl_node->updateCommon();
+    vl_node->update();
+    return;
   }
 }
 
@@ -1763,49 +1707,20 @@ void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
   m_NodesToUpdate.erase(node);
   m_NodesToAdd.erase(node);
 
-  if ( ! node || ! node->GetData() ) {
-    return;
-  }
-
-#ifdef _USE_CUDA
-  {
-    std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.find(node);
-    if (i != m_NodeToTextureMap.end())
-    {
-      if (i->second.m_CUDARes != 0)
-      {
-        cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
-        if (err != cudaSuccess)
-        {
-          MITK_WARN << "Failed to unregister VL texture from CUDA";
-        }
-      }
-
-      m_NodeToTextureMap.erase(i);
-    }
-  }
-#endif
-
-  // Remove Node/Actor couple from map & remove Actor from scene
-  NodeActorMapType::iterator it = m_NodeActorMap.find( node );
-  if ( it != m_NodeActorMap.end() ) {
-    vl::Actor* actor = it->second.get();
-    if ( actor ) {
-      m_SceneManager->tree()->eraseActor( actor );
-      m_NodeActorMap.erase(it);
+  // Remove VLNode and VL data
+  NodeVLNodeMapType::iterator it = m_NodeVLNodeMap.find( node );
+  if ( it != m_NodeVLNodeMap.end() ) {
+    VLNode* vl_node = it->second.get();
+    VIVID_CHECK( vl_node );
+    if ( vl_node ) {
+      vl_node->remove();
+      m_NodeVLNodeMap.erase(it);
     }
   }
 }
 
 void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 {
-  NodeVLNodeMapType::iterator it = m_NodeVLNodeMap.find( node );
-  if ( it != m_NodeVLNodeMap.end() ) {
-    it->second->updateCommon();
-    it->second->update();
-    return;
-  }
-
   makeCurrent();
 
   if ( node.IsNull() || node->GetData() == 0 ) {
@@ -1816,71 +1731,17 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     dumpNodeInfo( "UpdateDataNode()", node );
   #endif
 
-  vl::Actor* actor = GetNodeActor(node);
-  if ( ! actor ) {
+  NodeVLNodeMapType::iterator it = m_NodeVLNodeMap.find( node );
+  if ( it != m_NodeVLNodeMap.end() ) {
+    it->second->updateCommon();
+    it->second->update();
     return;
   }
-
-  VIVID_CHECK( actor->enableMask() == vl::VividRenderer::DefaultEnableMask ||
-               actor->enableMask() == vl::VividRenderer::VolumeEnableMask  );
-
-  vl::Shader* shader = actor->effect()->shader();
-
-  // Update visibility
-  bool visible = true;
-  mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
-  if ( visibleProp ) {
-    visible = visibleProp->GetValue();
-  }
-  actor->setEnabled( visible );
-  
-  // Update opacity
-  float opacity = 1.0f;
-  mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(node->GetProperty("opacity"));
-  if ( opacityProp ) {
-    opacity = opacityProp->GetValue();
-    visible &= opacity > 1.0f / 255.0f;
-  }
-  VIVID_CHECK( actor->enableMask() == vl::VividRenderer::DefaultEnableMask ||
-               actor->enableMask() == vl::VividRenderer::VolumeEnableMask  );
-  actor->setEnabled( visible );
-
-  // Update color and opacity
-  vl::fvec4 color(1, 1, 1, opacity);
-  mitk::ColorProperty* colorProp = dynamic_cast<mitk::ColorProperty*>(node->GetProperty("color"));
-  if ( colorProp ) {
-    mitk::Color mitkColor = colorProp->GetColor();
-    color.r() = mitkColor.GetRed();
-    color.g() = mitkColor.GetGreen();
-    color.b() = mitkColor.GetBlue();
-  }
-  shader->gocMaterial()->setDiffuse( color );
-
-  // Update point size
-  float pointsize = 1;
-  node->GetFloatProperty("pointsize", pointsize);
-  // this is part of the standard vivid shader so it must be present.
-  VIVID_CHECK( shader->getPointSize() );
-  shader->getPointSize()->set( pointsize );
-  pointsize > 1 ? shader->enable(vl::EN_POINT_SMOOTH) :
-                  shader->disable(vl::EN_POINT_SMOOTH);
-
-  // Update Actor's Transform
-  UpdateActorTransformFromNode(actor, node);
-
-  // Update texture
-  // UpdateTextureFromImage(node);
 
   // Update camera
   if (node == m_CameraNode) {
     UpdateCameraParameters();
   }
-
-  // if we do have live-updating textures then we do need to refresh the vl-side of it!
-  // even if the node is not visible.
-#ifdef _USE_CUDA
-  UpdateGLTexturesFromCUDA(node);
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2200,6 +2061,7 @@ bool VLQtWidget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
     m_Trackball->setEnabled( true );
     ScheduleTrackballAdjustView( true );
   } else {
+    dumpNodeInfo( "CameraNode()", node );
     m_Trackball->setEnabled( false );
     ScheduleTrackballAdjustView( false );
     UpdateCameraParameters();
@@ -3009,7 +2871,7 @@ void VLQtWidget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci,
   fx->shader()->disable(vl::EN_LIGHTING);
   // UpdateDataNode() takes care of assigning colour etc.
 
-  ref<vl::Actor> actor = m_SceneManager->tree()->addActor(vlquad.get(), fx.get(), tr.get());
+  ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor(vlquad.get(), fx.get(), tr.get());
   actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
 
 
