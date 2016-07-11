@@ -150,7 +150,6 @@ class NIFTKVL_EXPORT VLQtWidget : public QGLWidget, public vl::OpenGLContext
   Q_OBJECT
 
 public:
-  typedef std::map< mitk::DataNode::ConstPointer, vl::ref<vl::Actor> > NodeActorMapType;
   typedef std::map< mitk::DataNode::ConstPointer, vl::ref<VLNode> > NodeVLNodeMapType;
 
 public:
