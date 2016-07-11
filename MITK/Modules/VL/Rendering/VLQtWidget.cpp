@@ -1,4 +1,4 @@
-/*=============================================================================
+﻿/*=============================================================================
 
   NifTK: A software platform for medical image computing.
 
@@ -1084,6 +1084,154 @@ protected:
 
 //-----------------------------------------------------------------------------
 
+class VLNodePointSet: public VLNode {
+public:
+  VLNodePointSet( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLNode( gl, vr, ds, node ) {
+    m_MitkPointSet = dynamic_cast<mitk::PointSet*>( node->GetData() );
+    VIVID_CHECK( m_MitkPointSet );
+  }
+
+  virtual void init() {
+    VIVID_CHECK( m_MitkPointSet );
+    ref<vl::ArrayFloat3> verts = new vl::ArrayFloat3;
+    verts->resize(m_MitkPointSet->GetSize());
+    int j = 0;
+    for (mitk::PointSet::PointsConstIterator i = m_MitkPointSet->Begin(); i != m_MitkPointSet->End(); ++i, ++j)
+    {
+      mitk::PointSet::PointType p = i->Value();
+      verts->at(j).x() = p[0];
+      verts->at(j).y() = p[1];
+      verts->at(j).z() = p[2];
+    }
+
+    ref<vl::Geometry> geom = new vl::Geometry;
+    ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays(vl::PT_POINTS, 0, verts->size());
+    geom->drawCalls().push_back(draw_arrays.get());
+    geom->setVertexArray(verts.get());
+
+    ref<vl::Transform> tr = new vl::Transform;
+    UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
+
+    ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
+
+    ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor(geom.get(), fx.get(), tr.get());
+    actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
+
+    m_Actor = actor;
+  }
+
+  virtual void update() {
+    // Update point size
+    float pointsize = 1;
+    m_DataNode->GetFloatProperty( "pointsize", pointsize );
+    Shader* shader = m_Actor->effect()->shader();
+    // This is part of the standard vivid shader so it must be present.
+    VIVID_CHECK( shader->getPointSize() );
+    shader->getPointSize()->set( pointsize );
+    if ( pointsize > 1 ) {
+      shader->enable( vl::EN_POINT_SMOOTH );
+    } else {
+      shader->disable( vl::EN_POINT_SMOOTH );
+    }
+  }
+
+protected:
+  mitk::PointSet::Pointer m_MitkPointSet;
+};
+
+//-----------------------------------------------------------------------------
+
+#ifdef _USE_PCL
+
+░▐█▀▄─ █▀▀ █───█ ▄▀▄ █▀▀▄ █▀▀
+░▐█▀▀▄ █▀▀ █─█─█ █▀█ █▐█▀ █▀▀
+░▐█▄▄▀ ▀▀▀ ─▀─▀─ ▀─▀ ▀─▀▀ ▀▀▀
+▒▒▒▒██▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒██▒▒▒▒
+▒▒████▄▒▒▒▄▄▄▄▄▄▄▒▒▒▄████▒▒
+▒▒▒▒▒▀▀▒▄█████████▄▒▀▀▒▒▒▒▒
+▒▒▒▒▒▒▒█████████████▒▒▒▒▒▒▒
+▒▒▒▒▒▒▒██▀▀▀███▀▀▀██▒▒▒▒▒▒▒
+▒▒▒▒▒▒▒██▒▒▒███▒▒▒██▒▒▒▒▒▒▒
+▒▒▒▒▒▒▒█████▀▄▀█████▒▒▒▒▒▒▒
+▒▒▒▒▒▒▒▒▒▒███████▒▒▒▒▒▒▒▒▒▒
+▒▒▒▒▄▄▄██▒▒█▀█▀█▒▒██▄▄▄▒▒▒▒
+▒▒▒▒▀▀██▒▒▒▒▒▒▒▒▒▒▒██▀▀▒▒▒▒
+▒▒▒▒▒▒▀▀▒▒▒▒▒▒▒▒▒▒▒▀▀▒▒▒▒▒▒
+░▐█▀█▄ ▄▀▄ █▄─█ ▄▀▀─ █▀▀ █▀▀▄
+░▐█▌▐█ █▀█ █─▀█ █─▀▌ █▀▀ █▐█▀
+░▐█▄█▀ ▀─▀ ▀──▀ ▀▀▀─ ▀▀▀ ▀─▀▀
+
+// WARNING: never compiled nor tested
+class VLNodePCL: public VLNode {
+public:
+  VLNodePCL( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLNode( gl, vr, ds, node ) {
+    m_NiftkPCL = dynamic_cast<niftk::PCLData*>( node->GetData() );
+    VIVID_CHECK( m_NiftkPCL );
+  }
+
+  virtual void init() {
+    VIVID_CHECK( m_NiftkPCL );
+    pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud = m_NiftkPCL->GetCloud();
+
+    ref<vl::ArrayFloat3> vl_verts = new vl::ArrayFloat3;
+    ref<vl::ArrayFloat4> vl_colors = new vl::ArrayFloat4;
+    vl_verts->resize(cloud->size());
+    vl_colors->resize(cloud->size());
+    // We could interleave the color and vert array but do we trust the VTK layout?
+    int j = 0;
+    for (pcl::PointCloud<pcl::PointXYZRGB>::const_iterator i = cloud->begin(); i != cloud->end(); ++i, ++j) {
+      const pcl::PointXYZRGB& p = *i;
+
+      vl_verts->at(j).x() = p.x;
+      vl_verts->at(j).y() = p.y;
+      vl_verts->at(j).z() = p.z;
+
+      vl_colors->at(j).r() = (float)p.r / 255.0f;
+      vl_colors->at(j).g() = (float)p.g / 255.0f;
+      vl_colors->at(j).b() = (float)p.b / 255.0f;
+      vl_colors->at(j).a() = 1;
+    }
+
+    ref<vl::Geometry> geom = new vl::Geometry;
+    ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays( vl::PT_POINTS, 0, vl_verts->size() );
+    geom->drawCalls().push_back( draw_arrays.get() );
+    geom->setVertexArray( vl_verts.get() );
+    geom->setColorArray( vl_colors.get() );
+
+    ref<vl::Transform> tr = new vl::Transform;
+    UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
+
+    ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
+
+    ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor( geom.get(), fx.get(), tr.get() );
+    actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
+
+    m_Actor = actor;
+  }
+
+  virtual void update() {
+    // Update point size
+    float pointsize = 1;
+    m_DataNode->GetFloatProperty( "pointsize", pointsize );
+    Shader* shader = m_Actor->effect()->shader();
+    // This is part of the standard vivid shader so it must be present.
+    VIVID_CHECK( shader->getPointSize() );
+    shader->getPointSize()->set( pointsize );
+    if ( pointsize > 1 ) {
+      shader->enable( vl::EN_POINT_SMOOTH );
+    } else {
+      shader->disable( vl::EN_POINT_SMOOTH );
+    }
+  }
+
+protected:
+  niftk::PCLData::Pointer m_NiftkPCL;
+};
+
+#endif
+
 //-----------------------------------------------------------------------------
 
 #ifdef _USE_CUDA
@@ -1737,6 +1885,14 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 
 //-----------------------------------------------------------------------------
 
+VLNode* VLQtWidget::GetVLNode( const mitk::DataNode::ConstPointer& node )
+{
+  NodeVLNodeMapType::iterator it = m_NodeVLNodeMap.find( node );
+  return it == m_NodeVLNodeMap.end() ? NULL : it->second.get();
+}
+
+//-----------------------------------------------------------------------------
+
 void VLQtWidget::SetBackgroundColour(float r, float g, float b)
 {
   m_VividRendering->camera()->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
@@ -2014,7 +2170,7 @@ void VLQtWidget::ClearScene()
 
   m_CameraNode = 0;
   m_BackgroundNode = 0;
-  m_NodeActorMap.clear();
+  m_NodeVLNodeMap.clear();
   m_NodesToUpdate.clear();
   m_NodesToAdd.clear();
   m_NodesToRemove.clear();
@@ -2244,96 +2400,6 @@ bool VLQtWidget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
   //}
 
   return result;
-}
-
-//-----------------------------------------------------------------------------
-
-vl::Actor* VLQtWidget::GetNodeActor(const mitk::DataNode::ConstPointer& node)
-{
-  NodeActorMapType::iterator it = m_NodeActorMap.find(node);
-  return it == m_NodeActorMap.end() ? NULL : it->second.get();
-}
-
-//-----------------------------------------------------------------------------
-
-ref<vl::Actor> VLQtWidget::AddPointCloudActor(niftk::PCLData* pcl)
-{
-  makeCurrent();
-
-#ifdef _USE_PCL
-  pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud = pcl->GetCloud();
-
-  ref<vl::Transform> tr = new vl::Transform;
-  UpdateTransformFromData(tr.get(), pcl);
-
-  ref<vl::ArrayFloat3> vl_verts = new vl::ArrayFloat3;
-  ref<vl::ArrayFloat4> vl_colors = new vl::ArrayFloat4;
-  vl_verts->resize(cloud->size());
-  vl_colors->resize(cloud->size());
-  // We could interleave the color and vert array but would we trust the VTK layout?
-  int j = 0;
-  for (pcl::PointCloud<pcl::PointXYZRGB>::const_iterator i = cloud->begin(); i != cloud->end(); ++i, ++j)
-  {
-    const pcl::PointXYZRGB& p = *i;
-
-    vl_verts->at(j).x() = p.x;
-    vl_verts->at(j).y() = p.y;
-    vl_verts->at(j).z() = p.z;
-
-    vl_colors->at(j).r() = (float)p.r / 255.0f;
-    vl_colors->at(j).g() = (float)p.g / 255.0f;
-    vl_colors->at(j).b() = (float)p.b / 255.0f;
-    vl_colors->at(j).a() = 1;
-  }
-
-  ref<vl::Geometry> geom = new vl::Geometry;
-  ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays(vl::PT_POINTS, 0, vl_verts->size());
-  geom->drawCalls().push_back(draw_arrays.get());
-  geom->setVertexArray(vl_verts.get());
-  geom->setColorArray(vl_colors.get());
-
-  ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-
-  ref<vl::Actor> actor = m_SceneManager->tree()->addActor(geom.get(), fx.get(), tr.get());
-  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-  return actor;
-#else
-  throw std::runtime_error("No PCL-support enabled at compile time!");
-#endif
-}
-
-//-----------------------------------------------------------------------------
-
-ref<vl::Actor> VLQtWidget::AddPointsetActor(const mitk::PointSet::Pointer& mitkPS)
-{
-  makeCurrent();
-
-  ref<vl::Transform> tr = new vl::Transform;
-  UpdateTransformFromData(tr.get(), mitkPS.GetPointer());
-
-  ref<vl::ArrayFloat3> verts = new vl::ArrayFloat3;
-  verts->resize(mitkPS->GetSize());
-  int j = 0;
-  for (mitk::PointSet::PointsConstIterator i = mitkPS->Begin(); i != mitkPS->End(); ++i, ++j)
-  {
-    mitk::PointSet::PointType p = i->Value();
-    verts->at(j).x() = p[0];
-    verts->at(j).y() = p[1];
-    verts->at(j).z() = p[2];
-  }
-
-  ref<vl::Geometry> geom = new vl::Geometry;
-  ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays(vl::PT_POINTS, 0, verts->size());
-  geom->drawCalls().push_back(draw_arrays.get());
-  geom->setVertexArray(verts.get());
-
-  ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-
-  ref<vl::Actor> actor = m_SceneManager->tree()->addActor(geom.get(), fx.get(), tr.get());
-  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-  return actor;
 }
 
 //-----------------------------------------------------------------------------

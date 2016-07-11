@@ -102,6 +102,10 @@ public:
     initDataStoreProperties();
   }
 
+  virtual ~VLNode() {
+    remove();
+  }
+
   /** Initializes all the relevant VL data structures, uniforms etc. according to the node's settings. */
   virtual void init() = 0;
 
@@ -196,15 +200,12 @@ protected:
   virtual void AddDataStorageListeners();
   virtual void RemoveDataStorageListeners();
 
-  vl::ref<vl::Actor> AddPointsetActor(const mitk::PointSet::Pointer& mitkPS);
-  vl::ref<vl::Actor> AddPointCloudActor(niftk::PCLData* pcl);
-
   void CreateAndUpdateFBOSizes(int width, int height);
   void UpdateViewportAndCameraAfterResize();
   void UpdateCameraParameters();
 
   void PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
-  vl::Actor* GetNodeActor(const mitk::DataNode::ConstPointer& node);
+  VLNode* VLQtWidget::GetVLNode( const mitk::DataNode::ConstPointer& node );
 
 protected:
   vl::ref<vl::VividRendering>        m_VividRendering;
@@ -219,8 +220,7 @@ protected:
   mitk::DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
   mitk::DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
 
-  NodeActorMapType m_NodeActorMap;
-  NodeVLNodeMapType m_NodeVLNodeMap;
+  NodeVLNodeMapType                      m_NodeVLNodeMap;
   std::set<mitk::DataNode::ConstPointer> m_NodesToUpdate;
   std::set<mitk::DataNode::ConstPointer> m_NodesToAdd;
   std::set<mitk::DataNode::ConstPointer> m_NodesToRemove;
