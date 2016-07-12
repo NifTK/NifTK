@@ -109,6 +109,11 @@ struct vl_VividParameters {
     // Whether to use texture mapping or not
     bool enableTextureMapping;
 
+    // <per-Actor>
+    // Whether to render points as textured point sprites
+    // Requires enableTextureMapping=1
+    bool enablePointSprite;
+
     // <automatic>
     // Global opacity
     float alpha;

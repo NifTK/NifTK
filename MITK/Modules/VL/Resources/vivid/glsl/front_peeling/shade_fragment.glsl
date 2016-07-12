@@ -69,6 +69,9 @@ vec4 LightingStage()
     color = Color;
   }
 
+  if ( vl_Vivid.enablePointSprite ) {
+    color = color * texture2D( vl_UserTexture, gl_PointCoord.st );
+  } else
   if ( vl_Vivid.enableTextureMapping ) {
     color = color * texture2D( vl_UserTexture, gl_TexCoord[0].st );
   }
