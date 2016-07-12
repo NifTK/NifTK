@@ -615,10 +615,10 @@ namespace
 
 //-----------------------------------------------------------------------------
 
-vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom) {
+vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom, vl::Effect* effect = NULL) {
   VIVID_CHECK( m_DataNode );
   VIVID_CHECK( m_VividRendering );
-  ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
+  ref<vl::Effect> fx = effect ? effect : vl::VividRendering::makeVividEffect();
   ref<vl::Transform> tr = new vl::Transform;
   UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
   ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor( geom, fx.get(), tr.get() );
@@ -1069,11 +1069,43 @@ public:
   VLMapperPointSet( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
     : VLMapper( gl, vr, ds, node ) {
     m_MitkPointSet = dynamic_cast<mitk::PointSet*>( node->GetData() );
+    m_3DSphereMode = true;
+
     VIVID_CHECK( m_MitkPointSet );
   }
 
-  virtual void init() {
+  virtual void init() { }
+
+  virtual void init3D() {
     VIVID_CHECK( m_MitkPointSet );
+    VIVID_CHECK( m_3DSphereMode );
+
+    // Remove 2D data and init 3D data.
+    remove();
+    m_SphereActors = new vl::ActorTree;
+    m_VividRendering->sceneManager()->tree()->addChild( m_SphereActors.get() );
+
+    m_3DSphereGeom = vl::makeIcosphere( vec3(0,0,0), 1, 2, true );
+    m_3DSphereFX = vl::VividRendering::makeVividEffect();
+    int j = 0;
+    for (mitk::PointSet::PointsConstIterator i = m_MitkPointSet->Begin(); i != m_MitkPointSet->End(); ++i, ++j)
+    {
+      mitk::PointSet::PointType p = i->Value();
+      vl::vec3 pos( p[0], p[1], p[2] );
+      ref<Actor> actor = initActor( m_3DSphereGeom.get(), m_3DSphereFX.get() );
+      ref<vl::Transform> tr = new vl::Transform( vl::mat4::getTranslation( pos ) );
+      actor->setTransform( tr.get() );
+      m_SphereActors->addActor( actor.get() );
+    }
+  }
+
+  virtual void init2D() {
+    VIVID_CHECK( m_MitkPointSet );
+    VIVID_CHECK( ! m_3DSphereMode );
+
+    // Remove 3D data and init 2D data.
+    remove();
+
     ref<vl::ArrayFloat3> verts = new vl::ArrayFloat3;
     verts->resize(m_MitkPointSet->GetSize());
     int j = 0;
@@ -1085,13 +1117,13 @@ public:
       verts->at(j).z() = p[2];
     }
 
-    m_Geometry = new vl::Geometry;
+    m_2DGeometry = new vl::Geometry;
     ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays( vl::PT_POINTS, 0, verts->size() );
-    m_Geometry->drawCalls().push_back(draw_arrays.get());
-    m_Geometry->setVertexArray( verts.get() );
-    m_Geometry->setColorArray( vl::white );
+    m_2DGeometry->drawCalls().push_back(draw_arrays.get());
+    m_2DGeometry->setVertexArray( verts.get() );
+    m_2DGeometry->setColorArray( vl::white );
 
-    m_Actor = initActor( m_Geometry.get() );
+    m_Actor = initActor( m_2DGeometry.get() );
     ref<vl::Effect> fx = m_Actor->effect();
     fx->shader()->getUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
     fx->shader()->getUniform( "vl_Vivid.enablePointSprite" )->setUniformI( 1 );
@@ -1102,14 +1134,10 @@ public:
   }
 
   virtual void update() {
-    Shader* shader = m_Actor->effect()->shader();
-    // This is part of the standard vivid shader so it must be present.
-    VIVID_CHECK( shader->getPointSize() );
 
-    // Update point size
+    // Get point size
     float pointsize = 1;
     m_DataNode->GetFloatProperty( "pointsize", pointsize );
-    shader->getPointSize()->set( pointsize );
 
     // Get color
     float rgb[3];
@@ -1119,12 +1147,54 @@ public:
     float opacity = 1;
     m_DataNode->GetFloatProperty( "opacity", opacity );
 
-    m_Geometry->setColorArray( vl::vec4( rgb[0], rgb[1], rgb[2], opacity ) );
+    if ( m_3DSphereMode ) {
+      if ( ! m_SphereActors ) {
+        init3D();
+      }
+
+      // Set color
+      m_3DSphereFX->shader()->getMaterial()->setDiffuse( vl::vec4( rgb[0], rgb[1], rgb[2], opacity ) );
+      // Set size
+      for( int i = 0; i < m_SphereActors->actors()->size(); ++i ) {
+        Transform* tr = m_SphereActors->actors()->at( i )->transform();
+        tr->worldMatrix().e(0,0) = pointsize * 2;
+        tr->worldMatrix().e(1,1) = pointsize * 2;
+        tr->worldMatrix().e(2,2) = pointsize * 2;
+      }
+    } else {
+      if ( ! m_2DGeometry ) {
+        init2D();
+      }
+      
+      VIVID_CHECK( m_Actor );
+
+      Shader* shader = m_Actor->effect()->shader();
+      // This is part of the standard vivid shader so it must be present.
+      VIVID_CHECK( shader->getPointSize() );
+      shader->getPointSize()->set( pointsize );
+      m_2DGeometry->setColorArray( vl::vec4( rgb[0], rgb[1], rgb[2], opacity ) );
+    }
+  }
+
+  void remove() {
+    VLMapper::remove();
+    m_2DGeometry = NULL;
+    if ( m_SphereActors ) {
+      m_SphereActors->actors()->clear();
+      m_VividRendering->sceneManager()->tree()->eraseChild( m_SphereActors.get() );
+      m_SphereActors = NULL;
+      m_3DSphereGeom = NULL;
+      m_3DSphereFX = NULL;
+    }
   }
 
 protected:
   mitk::PointSet::Pointer m_MitkPointSet;
-  ref<vl::Geometry> m_Geometry;
+  bool m_3DSphereMode;
+  ref<vl::ActorTree> m_SphereActors;
+  ref<Geometry> m_3DSphereGeom;
+  ref<Effect> m_3DSphereFX;
+  ref<vl::Geometry> m_2DGeometry;
 };
 
 //-----------------------------------------------------------------------------

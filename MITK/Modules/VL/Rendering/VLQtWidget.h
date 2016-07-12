@@ -129,13 +129,13 @@ public:
   /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
   vl::Actor* actor() { return m_Actor.get(); }
 
-  /** Updates visibility, opacity and color. */
+  /** Updates visibility, opacity, color, etc. and Vivid related common settings. */
   void updateCommon();
 
 protected:
   /** Initializes the value of all Vivid properties in the DataStore. */
   void initDataStoreProperties();
-  vl::ref<vl::Actor> initActor(vl::Geometry* geom);
+  vl::ref<vl::Actor> initActor(vl::Geometry* geom, vl::Effect* fx);
 
 protected:
   vl::OpenGLContext* m_OpenGLContext;
