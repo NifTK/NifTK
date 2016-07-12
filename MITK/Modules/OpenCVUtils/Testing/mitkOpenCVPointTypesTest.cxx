@@ -50,10 +50,10 @@ void TestPickedObjectCompare()
 
   MITK_TEST_CONDITION ( ! p1.HeadersMatch(p2) , "Testing headers don't match for different framenumbers" );
   MITK_TEST_CONDITION ( p2 < p1 , "Testing < operator for frame number = 200");
-  
+
   p2.m_FrameNumber = 200;
   p2.m_Channel = "left";
-  
+
   MITK_TEST_CONDITION ( ! p1.HeadersMatch(p2) , "Testing headers don't match for different channels" );
 
   p1.m_Channel = "left";
@@ -65,11 +65,20 @@ void TestPickedObjectCompare()
 
   MITK_TEST_CONDITION ( ! p1.HeadersMatch(p2) , "Testing wild card for p1 doesn't  match" );
   MITK_TEST_CONDITION ( p2.HeadersMatch(p1) , "Testing wild card for p2 does match" );
-  
+
   p1.m_TimeStamp = 100;
   MITK_TEST_CONDITION ( ! p2.HeadersMatch (p1, 10) , "Testing timing error check works - no match" );
   MITK_TEST_CONDITION ( p2.HeadersMatch (p1, 101) , "Testing timing error check works - match" );
 
+}
+
+void TestPickedObjectMultipy()
+{
+  mitk::PickedObject p1;
+  cv::Mat* mat = new cv::Mat;
+
+  mitk::PickedObject p2 = p1 * mat;
+  MITK_TEST_CONDITION ( false, "please implement picked object multiply test");
 }
 
 int mitkOpenCVPointTypesTest(int argc, char * argv[])
@@ -77,7 +86,7 @@ int mitkOpenCVPointTypesTest(int argc, char * argv[])
   // always start with this!
   MITK_TEST_BEGIN("mitkPointTypesTest");
 
-  mitk::ProjectedPointPair point1 = mitk::ProjectedPointPair ( 
+  mitk::ProjectedPointPair point1 = mitk::ProjectedPointPair (
       cv::Point2d ( std::numeric_limits<double>::quiet_NaN(), 0.0),
       cv::Point2d ( 0.0, 0.0));
   mitk::ProjectedPointPair point2 = mitk::ProjectedPointPair ();
@@ -103,6 +112,7 @@ int mitkOpenCVPointTypesTest(int argc, char * argv[])
   mitk::WorldPoint x;
 
   TestPickedObjectCompare();
+  TestPickedObjectMultipy();
   MITK_TEST_END();
 }
 
