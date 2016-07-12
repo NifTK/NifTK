@@ -71,6 +71,10 @@ vec4 LightingStage()
 
   if ( vl_Vivid.enablePointSprite ) {
     color = color * texture2D( vl_UserTexture, gl_PointCoord.st );
+    // More aggressive pixel discard for point sprites
+    if ( color.a < 0.004 ) {
+      discard;
+    }
   } else
   if ( vl_Vivid.enableTextureMapping ) {
     color = color * texture2D( vl_UserTexture, gl_TexCoord[0].st );
