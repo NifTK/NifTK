@@ -173,7 +173,15 @@ bool operator< (const PickedObject &po1, const PickedObject &po2 )
   }
 }
 
+//-----------------------------------------------------------------------------
+PickedObject operator * (const PickedObject &po1, const cv::Mat* transform)
+{
+  PickedObject out = po1.CopyByHeader();
 
+  out.m_Points = *transform * po1.m_Points;
+  assert ( out.m_Points.size() == po1.m_Points.size() );
+  return out;
+}
 
 //-----------------------------------------------------------------------------
 WorldPoint::WorldPoint()
@@ -237,9 +245,9 @@ ProjectedPointPair::ProjectedPointPair(cv::Point2d left , cv::Point2d right)
 //-----------------------------------------------------------------------------
 bool ProjectedPointPair::LeftNaNOrInf()
 {
-  if ( (boost::math::isnan(m_Left.x)) || 
-      (boost::math::isnan(m_Left.y)) || 
-      (boost::math::isinf(m_Left.x)) || 
+  if ( (boost::math::isnan(m_Left.x)) ||
+      (boost::math::isnan(m_Left.y)) ||
+      (boost::math::isinf(m_Left.x)) ||
       (boost::math::isinf(m_Left.y)))
   {
     return true;
@@ -247,7 +255,7 @@ bool ProjectedPointPair::LeftNaNOrInf()
   else
   {
     return false;
-  }    
+  }
 }
 
 
@@ -263,7 +271,7 @@ bool WorldPoint::IsNaN()
   else
   {
     return false;
-  }    
+  }
 }
 
 
@@ -280,7 +288,7 @@ bool ProjectedPointPair::RightNaNOrInf()
   else
   {
     return false;
-  }    
+  }
 }
 
 
@@ -331,7 +339,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
     mitkThrow() << "mitk::VideoFrame, error reading video file";
     return;
   }
-  
+
   std::string line;
   if ( std::getline(*frameMapLogFile, line).bad() )
   {
@@ -347,7 +355,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
       return;
     }
   }
-  
+
   std::stringstream linestream(line);
   linestream >> m_FrameNumber >> m_SequenceNumber >> m_Channel >> m_TimeStamp;
   if ( linestream.bad() )
@@ -372,7 +380,7 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
 bool VideoFrame::WriteToFile ( std::string prefix )
 {
   std::string filename;
-  if ( m_Left ) 
+  if ( m_Left )
   {
     filename = prefix + boost::lexical_cast<std::string>(m_TimeStamp) + "_left.bmp";
   }
@@ -407,7 +415,7 @@ PickedObject::PickedObject()
 }
 
 //-----------------------------------------------------------------------------
-PickedObject::PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp, 
+PickedObject::PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp,
     cv::Scalar scalar)
 : m_Id (-1)
 , m_IsLine (false)
@@ -447,7 +455,7 @@ bool PickedObject::HeadersMatch(const PickedObject& otherPickedObject, const lon
     timingError = otherPickedObject.m_TimeStamp - m_TimeStamp;
   }
 
-  if ( ( m_Channel ==  otherPickedObject.m_Channel ) &&  
+  if ( ( m_Channel ==  otherPickedObject.m_Channel ) &&
        ( m_IsLine == otherPickedObject.m_IsLine ) &&
        ( m_FrameNumber == otherPickedObject.m_FrameNumber ) &&
        ( ( m_Id == otherPickedObject.m_Id ) || ( otherPickedObject.m_Id == -1 ) ) &&
@@ -513,13 +521,13 @@ PickedPointList::~PickedPointList()
 PickedPointList::Pointer PickedPointList::CopyByHeader()
 {
   mitk::PickedPointList::Pointer newPL = mitk::PickedPointList::New();
-   
+
   newPL->m_InLineMode = m_InLineMode;
   newPL->m_InOrderedMode = m_InOrderedMode;
   newPL->m_IsModified = true;
   newPL->m_XScale = m_XScale;
   newPL->m_YScale = m_YScale;
-  
+
   newPL->m_TimeStamp = m_TimeStamp;
   newPL->m_FrameNumber = m_FrameNumber;
   newPL->m_Channel = m_Channel;
@@ -547,7 +555,7 @@ void PickedPointList::PutOut (std::ofstream& os )
 }
 
 //-----------------------------------------------------------------------------
-std::vector < mitk::PickedObject > PickedPointList::GetPickedObjects  () const 
+std::vector < mitk::PickedObject > PickedPointList::GetPickedObjects  () const
 {
   return m_PickedObjects;
 }
@@ -617,7 +625,7 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
       assert ( m_PickedObjects[i].m_Points.size() <= 1 );
       for ( unsigned int j = 0 ; j < m_PickedObjects[i].m_Points.size() ; j ++ )
       {
-        if ( mitk::IsNotNaNorInf ( m_PickedObjects[i].m_Points[j] ) ) 
+        if ( mitk::IsNotNaNorInf ( m_PickedObjects[i].m_Points[j] ) )
         {
           cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
           cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar);
@@ -632,7 +640,7 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
         bool lineStarted = false;
         for ( unsigned int j = 0 ; j < m_PickedObjects[i].m_Points.size() ; j ++ )
         {
-          if ( mitk::IsNotNaNorInf ( m_PickedObjects[i].m_Points[j] ) ) 
+          if ( mitk::IsNotNaNorInf ( m_PickedObjects[i].m_Points[j] ) )
           {
             if ( ! lineStarted )
             {
@@ -658,7 +666,7 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
 cv::Mat PickedPointList::CreateMaskImage(const cv::Mat& image)
 {
   cv::Mat mask = cv::Mat::zeros(image.rows, image.cols, CV_8UC1);
-  
+
   std::vector < std::vector < cv::Point2i > > contours;
   for ( int i = 0 ; i < m_PickedObjects.size() ; i ++ )
   {
@@ -667,7 +675,7 @@ cv::Mat PickedPointList::CreateMaskImage(const cv::Mat& image)
       if ( m_PickedObjects[i].m_Points.size() > 0 )
       {
         std::vector < cv::Point2i > points;
-        
+
         for ( unsigned int j = 0 ; j <  m_PickedObjects[i].m_Points.size() ; j ++ )
         {
           points.push_back(mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]));
@@ -676,7 +684,7 @@ cv::Mat PickedPointList::CreateMaskImage(const cv::Mat& image)
       }
     }
   }
-  if ( contours.size() > 0 ) 
+  if ( contours.size() > 0 )
   {
     cv::drawContours (mask, contours , -1, cv::Scalar(255), CV_FILLED);
   }
@@ -953,7 +961,7 @@ unsigned int PickedPointList::SkipOrderedPoint()
     {
       return m_PickedObjects.size();
     }
-    else 
+    else
     {
       PickedObject pickedObject(m_Channel, m_FrameNumber, m_TimeStamp, cv::Scalar ( 255, 255 , 255 ));
       pickedObject.m_IsLine = true;
@@ -1022,7 +1030,7 @@ cv::Point2i Point3dToPoint2i (const cv::Point3d& point)
   {
     mitkThrow() << "Attempted to cast point3d to point2i with non zero z";
   }
-  if ( mitk::IsNotNaNorInf ( point ) ) 
+  if ( mitk::IsNotNaNorInf ( point ) )
   {
     return cv::Point2i ( boost::math::round(point.x), boost::math::round(point.y) );
   }
