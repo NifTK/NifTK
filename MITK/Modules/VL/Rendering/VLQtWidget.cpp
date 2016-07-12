@@ -635,31 +635,20 @@ void VLMapper::updateCommon() {
 
   // Update visibility
   bool visible = true;
-  mitk::BoolProperty* visibleProp = dynamic_cast<mitk::BoolProperty*>(m_DataNode->GetProperty("visible"));
-  if ( visibleProp ) {
-    visible = visibleProp->GetValue();
-  }
+  m_DataNode->GetBoolProperty( "visible", visible );
   m_Actor->setEnabled( visible );
   
   // Update opacity
   float opacity = 1.0f;
-  mitk::FloatProperty* opacityProp = dynamic_cast<mitk::FloatProperty*>(m_DataNode->GetProperty("opacity"));
-  if ( opacityProp ) {
-    opacity = opacityProp->GetValue();
-  }
+  m_DataNode->GetFloatProperty( "opacity", opacity );
 
   // Update color
-  vl::fvec4 color(1, 1, 1, opacity);
-  mitk::ColorProperty* colorProp = dynamic_cast<mitk::ColorProperty*>(m_DataNode->GetProperty("color"));
-  if ( colorProp ) {
-    mitk::Color mitkColor = colorProp->GetColor();
-    color.r() = mitkColor.GetRed();
-    color.g() = mitkColor.GetGreen();
-    color.b() = mitkColor.GetBlue();
-  }
+  float rgb[3] = { 1, 1, 1 };
+  m_DataNode->GetColor( rgb );
 
-  // MIC FIXME: this won't work when vl_Vivid.enableLighting is off -> create special uniform
-  m_Actor->effect()->shader()->getMaterial()->setDiffuse( color );
+  // MIC FIXME:
+  // This won't work when vl_Vivid.enableLighting is off -> create special uniform
+  m_Actor->effect()->shader()->getMaterial()->setDiffuse( vl::vec4( rgb[0], rgb[1], rgb[2], opacity ) );
 
   // Update transform
   UpdateTransformFromData( m_Actor->transform(), m_DataNode->GetData() );
@@ -1122,15 +1111,15 @@ public:
     m_DataNode->GetFloatProperty( "pointsize", pointsize );
     shader->getPointSize()->set( pointsize );
 
-    // Get Color
-    float RGB[3];
-    m_DataNode->GetColor(RGB);
+    // Get color
+    float rgb[3];
+    m_DataNode->GetColor(rgb);
 
-    // Get Opacity
+    // Get opacity
     float opacity = 1;
     m_DataNode->GetFloatProperty( "opacity", opacity );
 
-    m_Geometry->setColorArray( vl::vec4( RGB[0], RGB[1], RGB[2], opacity ) );
+    m_Geometry->setColorArray( vl::vec4( rgb[0], rgb[1], rgb[2], opacity ) );
   }
 
 protected:
