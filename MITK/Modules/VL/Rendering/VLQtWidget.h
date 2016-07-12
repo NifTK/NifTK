@@ -82,15 +82,18 @@ class VLTrackballManipulator;
 #endif
 
 //-----------------------------------------------------------------------------
-// VLNode
+// VLMapper
 //-----------------------------------------------------------------------------
+
+// VLMapper
+// - makeCurrent(): when creating, updating and deleting? Or should we do it externally and remove m_OpenGLContext
 
 /** 
  * Takes care of managing all VL related aspects with regard to a given mitk::DataNode, ie, maps a mitk::DataNode to VL/Vivid.
  */
-class VLNode: public vl::Object {
+class VLMapper: public vl::Object {
 public:
-  VLNode( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node ) {
+  VLMapper( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node ) {
     // Init
     m_OpenGLContext = gl;
     m_VividRendering = vr;
@@ -102,7 +105,7 @@ public:
     initDataStoreProperties();
   }
 
-  virtual ~VLNode() {
+  virtual ~VLMapper() {
     remove();
   }
 
@@ -118,12 +121,12 @@ public:
     m_Actor = NULL;
   }
 
-  /** Factory method: creates the right VLNode subclass according to the node's type. */
-  static vl::ref<VLNode> create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node );
+  /** Factory method: creates the right VLMapper subclass according to the node's type. */
+  static vl::ref<VLMapper> create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node );
 
-  /** Returns the vl::Actor associated with this VLNode. Note: the specific subclass might handle more than one vl::Actor. */
+  /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
   const vl::Actor* actor() const { return m_Actor.get(); }
-  /** Returns the vl::Actor associated with this VLNode. Note: the specific subclass might handle more than one vl::Actor. */
+  /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
   vl::Actor* actor() { return m_Actor.get(); }
 
   /** Updates visibility, opacity and color. */

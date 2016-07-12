@@ -1,4 +1,4 @@
-﻿/*=============================================================================
+/*=============================================================================
 
   NifTK: A software platform for medical image computing.
 
@@ -67,7 +67,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <niftkScopedOGLContext.h>
-#include "TrackballManipulator.h"
+// #include "TrackballManipulator.h"
 #ifdef BUILD_IGI
 #include <CameraCalibration/niftkUndistortion.h>
 #include <mitkCameraIntrinsicsProperty.h>
@@ -609,16 +609,13 @@ namespace
 }
 
 //-----------------------------------------------------------------------------
-// VLNode
+// VLMapper
 //-----------------------------------------------------------------------------
 
-// MIC FIXME:
-// UserData should be moved into VLNode itself
 
-void VLNode::initDataStoreProperties() {
 //-----------------------------------------------------------------------------
 
-vl::ref<vl::Actor> VLNode::initActor(vl::Geometry* geom) {
+vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom) {
   VIVID_CHECK( m_DataNode );
   VIVID_CHECK( m_VividRendering );
   ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
@@ -631,7 +628,7 @@ vl::ref<vl::Actor> VLNode::initActor(vl::Geometry* geom) {
 
 //-----------------------------------------------------------------------------
 
-void VLNode::updateCommon() {
+void VLMapper::updateCommon() {
   if ( ! m_Actor ) {
     return;
   }
@@ -670,10 +667,10 @@ void VLNode::updateCommon() {
 
 //-----------------------------------------------------------------------------
 
-class VLNodeSurface: public VLNode {
+class VLMapperSurface: public VLMapper {
 public:
-  VLNodeSurface( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLNode( gl, vr, ds, node ) {
+  VLMapperSurface( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLMapper( gl, vr, ds, node ) {
     m_MitkSurf = dynamic_cast<mitk::Surface*>( node->GetData() );
     VIVID_CHECK( m_MitkSurf );
   }
@@ -681,7 +678,7 @@ public:
   virtual void init() {
     VIVID_CHECK( m_MitkSurf );
 
-    ref<vl::Geometry> geom = ConvertVTKPolyData(m_MitkSurf->GetVtkPolyData());
+    ref<vl::Geometry> geom = ConvertVTKPolyData( m_MitkSurf->GetVtkPolyData() );
     if ( ! geom->normalArray() ) {
       geom->computeNormals();
     }
@@ -697,10 +694,10 @@ protected:
 
 //-----------------------------------------------------------------------------
 
-class VLNode2DImage: public VLNode {
+class VLMapper2DImage: public VLMapper {
 public:
-  VLNode2DImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLNode( gl, vr, ds, node ) {
+  VLMapper2DImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLMapper( gl, vr, ds, node ) {
     m_MitkImage = dynamic_cast<mitk::Image*>( node->GetData() );
     VIVID_CHECK( m_MitkImage.IsNotNull() );
   }
@@ -793,10 +790,10 @@ protected:
 
 //-----------------------------------------------------------------------------
 
-class VLNode3DImage: public VLNode {
+class VLMapper3DImage: public VLMapper {
 public:
-  VLNode3DImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLNode( gl, vr, ds, node ) {
+  VLMapper3DImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLMapper( gl, vr, ds, node ) {
     m_MitkImage = dynamic_cast<mitk::Image*>( node->GetData() );
     VIVID_CHECK( m_MitkImage.IsNotNull() );
   }
@@ -804,7 +801,7 @@ public:
   virtual void init() {
     // This is all legacy code that will go away when we use the vivid volume class
     // MIC FIXME:
-    throw std::runtime_error("VLQtWidget::Add3DImageActor(): to be implemented!");
+    throw std::runtime_error("VLSceneView::Add3DImageActor(): to be implemented!");
 
     mitk::PixelType mitk_pixel_type = m_MitkImage->GetPixelType();
     size_t numOfComponents = mitk_pixel_type.GetNumberOfComponents();
@@ -1000,10 +997,10 @@ protected:
 
 //-----------------------------------------------------------------------------
 
-class VLNodeCoordinateAxes: public VLNode {
+class VLMapperCoordinateAxes: public VLMapper {
 public:
-  VLNodeCoordinateAxes( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLNode( gl, vr, ds, node ) {
+  VLMapperCoordinateAxes( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLMapper( gl, vr, ds, node ) {
     m_MitkAxes = dynamic_cast<mitk::CoordinateAxesData*>( node->GetData() );
     VIVID_CHECK( m_MitkAxes );
   }
@@ -1078,10 +1075,10 @@ protected:
 
 //-----------------------------------------------------------------------------
 
-class VLNodePointSet: public VLNode {
+class VLMapperPointSet: public VLMapper {
 public:
-  VLNodePointSet( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLNode( gl, vr, ds, node ) {
+  VLMapperPointSet( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLMapper( gl, vr, ds, node ) {
     m_MitkPointSet = dynamic_cast<mitk::PointSet*>( node->GetData() );
     VIVID_CHECK( m_MitkPointSet );
   }
@@ -1129,7 +1126,6 @@ protected:
 //-----------------------------------------------------------------------------
 
 #ifdef _USE_PCL
-
 /*    
        WARNING: 
 never compiled nor tested
@@ -1144,10 +1140,10 @@ never compiled nor tested
  {_"            "_}
 
 */                          
-class VLNodePCL: public VLNode {
+class VLMapperPCL: public VLMapper {
 public:
-  VLNodePCL( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLNode( gl, vr, ds, node ) {
+  VLMapperPCL( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLMapper( gl, vr, ds, node ) {
     m_NiftkPCL = dynamic_cast<niftk::PCLData*>( node->GetData() );
     VIVID_CHECK( m_NiftkPCL );
   }
@@ -1181,15 +1177,7 @@ public:
     geom->setVertexArray( vl_verts.get() );
     geom->setColorArray( vl_colors.get() );
 
-    ref<vl::Transform> tr = new vl::Transform;
-    UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
-
-    ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-
-    ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor( geom.get(), fx.get(), tr.get() );
-    actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-    m_Actor = actor;
+    m_Actor = initActor( geom.get() );
   }
 
   virtual void update() {
@@ -1230,13 +1218,13 @@ never compiled nor tested
  {_"            "_}
 
 
-This is just stub code, a raw attempt at reorganizing the legacy experimental CUDA code into the new VLNode logic
+This is just stub code, a raw attempt at reorganizing the legacy experimental CUDA code into the new VLMapper logic
 
 */                          
-class VLNodeCUDAImage: public VLNode {
+class VLMapperCUDAImage: public VLMapper {
 public:
-  VLNodeCUDAImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLNode( gl, vr, ds, node ) {
+  VLMapperCUDAImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
+    : VLMapper( gl, vr, ds, node ) {
     niftk::CUDAImage* cuda_image = dynamic_cast<niftk::CUDAImage*>( node->GetData() );
     if ( cuda_image ) {
       m_NiftkLightweightCUDAImage = cuda_image->GetLightweightCUDAImage();
@@ -1269,26 +1257,19 @@ public:
 
     ref<vl::Geometry> vlquad = CreateGeometryFor2DImage(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight());
 
-    ref<vl::Effect>    fx = new vl::Effect;
+    m_Actor = initActor( vlquad.get() );
+    ref<Effect> fx = m_Actor->effect();
+
     fx->shader()->disable(vl::EN_LIGHTING);
     fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
     fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
-    // UpdateDataNode() takes care of assigning colour etc.
-
-    ref<vl::Transform> tr = new vl::Transform;
-    UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
-
-    ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor(vlquad.get(), fx.get(), tr.get());
-    actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-    m_Actor = actor;
   }
 
   virtual void update() {
     VIVID_CHECK(m_NiftkLightweightCUDAImage.GetId() != 0);
 
     // BEWARE: 
-    // All the logic below is completely outdated especially with regard to accessing the user texture. See VLNode2DImage for more info.
+    // All the logic below is completely outdated especially with regard to accessing the user texture. See VLMapper2DImage for more info.
     // PS. All the horrific code formatting is from the original code...
     // - Michele
 
@@ -1338,7 +1319,7 @@ public:
         VIVID_CHECK(actor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
 
         niftk::CUDAManager*  cudamng   = niftk::CUDAManager::GetInstance();
-        cudaStream_t         mystream  = cudamng->GetStream("VLQtWidget vl-texture update");
+        cudaStream_t         mystream  = cudamng->GetStream("VLSceneView vl-texture update");
         niftk::ReadAccessor  inputRA   = cudamng->RequestReadAccess(m_NiftkLightweightCUDAImage);
 
         // make sure producer of the cuda-image finished.
@@ -1398,7 +1379,7 @@ public:
       m_TextureDataPOD.m_CUDARes = 0;
     }
 
-    VLNode::remove();
+    VLMapper::remove();
   }
 
 protected:
@@ -1410,10 +1391,10 @@ protected:
 
 //-----------------------------------------------------------------------------
 
-vl::ref<VLNode> VLNode::create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node ) {
+vl::ref<VLMapper> VLMapper::create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node ) {
   
-  // Map DataNode type to VLNode type
-  vl::ref<VLNode> vl_node;
+  // Map DataNode type to VLMapper type
+  vl::ref<VLMapper> vl_node;
 
   mitk::Surface*            mitk_surf = dynamic_cast<mitk::Surface*>(node->GetData());
   mitk::Image*              mitk_image = dynamic_cast<mitk::Image*>( node->GetData() );
@@ -1427,31 +1408,31 @@ vl::ref<VLNode> VLNode::create( vl::OpenGLContext* gl, vl::VividRendering* vr, m
 #endif
 
   if ( mitk_surf ) {
-    vl_node = new VLNodeSurface( gl, vr, ds, node );
+    vl_node = new VLMapperSurface( gl, vr, ds, node );
   } 
   else if ( mitk_image ) {
     unsigned int depth = mitk_image->GetDimensions()[2];
     // In VTK a NxMx1 image is 2D (in VL a 2D image is NxMx0)
     if ( depth <= 1 ) {
-      vl_node = new VLNode2DImage( gl, vr, ds, node );
+      vl_node = new VLMapper2DImage( gl, vr, ds, node );
     } else {
-      vl_node = new VLNode3DImage( gl, vr, ds, node );
+      vl_node = new VLMapper3DImage( gl, vr, ds, node );
     }
   } 
   else  if ( mitk_axes ) {
-    vl_node = new VLNodeCoordinateAxes( gl, vr, ds, node );
+    vl_node = new VLMapperCoordinateAxes( gl, vr, ds, node );
   } 
   else if ( mitk_pset ) {
-    vl_node = new VLNodePointSet( gl, vr, ds, node );
+    vl_node = new VLMapperPointSet( gl, vr, ds, node );
   }
 #ifdef _USE_PCL
   else if ( mitk_pcld ) {
-    vl_node = new VLNodePCL( gl, vr, ds, node );
+    vl_node = new VLMapperPCL( gl, vr, ds, node );
   }
 #endif
 #ifdef _USE_CUDA
   else if ( mitk_pcld ) {
-    vl_node = new VLNodeCUDAImage( gl, vr, ds, node );
+    vl_node = new VLMapperCUDAImage( gl, vr, ds, node );
   }
 #endif
   return vl_node;
