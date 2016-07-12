@@ -616,6 +616,17 @@ namespace
 // UserData should be moved into VLNode itself
 
 void VLNode::initDataStoreProperties() {
+//-----------------------------------------------------------------------------
+
+vl::ref<vl::Actor> VLNode::initActor(vl::Geometry* geom) {
+  VIVID_CHECK( m_DataNode );
+  VIVID_CHECK( m_VividRendering );
+  ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
+  ref<vl::Transform> tr = new vl::Transform;
+  UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
+  ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor( geom, fx.get(), tr.get() );
+  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
+  return actor;
 }
 
 //-----------------------------------------------------------------------------
@@ -675,12 +686,7 @@ public:
       geom->computeNormals();
     }
 
-    ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-    ref<vl::Transform> tr = new vl::Transform;
-    UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
-    ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor(geom.get(), fx.get(), tr.get());
-    actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-     m_Actor = actor;
+    m_Actor = initActor( geom.get() );
   }
 
   virtual void update() {}
@@ -726,12 +732,8 @@ public:
 
     ref<vl::Geometry> geom = CreateGeometryFor2DImage(dims[0], dims[1]);
 
-    ref<vl::Transform> tr = new vl::Transform;
-    UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
-
-    ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-    m_Actor = m_VividRendering->sceneManager()->tree()->addActor(geom.get(), fx.get(), tr.get());
-    m_Actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
+    m_Actor = initActor( geom.get() );
+    ref<Effect> fx = m_Actor->effect();
 
     // These must be present as part of the default Vivid material
     VIVID_CHECK( fx->shader()->getTextureSampler( vl::VividRendering::UserTexture ) )
@@ -761,8 +763,6 @@ public:
       unsigned int*    dims            = m_MitkImage->GetDimensions();
 
       ref<vl::Image> vl_img;
-
-      // Use smart update functionality
 
       try
       {
@@ -1044,18 +1044,12 @@ public:
     geom->setVertexArray(verts.get());
     geom->setColorArray(colors.get());
 
-    ref<vl::Transform> tr = new vl::Transform;
-    UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
+    m_Actor = initActor( geom.get() );
+    ref<Effect> fx = m_Actor->effect();
 
-    ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
     fx->shader()->getLineWidth()->set( 2 );
     // Use color array instead of lighting
     fx->shader()->gocUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
-
-    ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor(geom.get(), fx.get(), tr.get());
-    actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-    m_Actor = actor;
   }
 
   virtual void update() {
@@ -1110,15 +1104,7 @@ public:
     geom->drawCalls().push_back(draw_arrays.get());
     geom->setVertexArray(verts.get());
 
-    ref<vl::Transform> tr = new vl::Transform;
-    UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
-
-    ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-
-    ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor(geom.get(), fx.get(), tr.get());
-    actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-    m_Actor = actor;
+    m_Actor = initActor( geom.get() );
   }
 
   virtual void update() {
@@ -1144,25 +1130,20 @@ protected:
 
 #ifdef _USE_PCL
 
-░▐█▀▄─ █▀▀ █───█ ▄▀▄ █▀▀▄ █▀▀
-░▐█▀▀▄ █▀▀ █─█─█ █▀█ █▐█▀ █▀▀
-░▐█▄▄▀ ▀▀▀ ─▀─▀─ ▀─▀ ▀─▀▀ ▀▀▀
-▒▒▒▒██▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒██▒▒▒▒
-▒▒████▄▒▒▒▄▄▄▄▄▄▄▒▒▒▄████▒▒
-▒▒▒▒▒▀▀▒▄█████████▄▒▀▀▒▒▒▒▒
-▒▒▒▒▒▒▒█████████████▒▒▒▒▒▒▒
-▒▒▒▒▒▒▒██▀▀▀███▀▀▀██▒▒▒▒▒▒▒
-▒▒▒▒▒▒▒██▒▒▒███▒▒▒██▒▒▒▒▒▒▒
-▒▒▒▒▒▒▒█████▀▄▀█████▒▒▒▒▒▒▒
-▒▒▒▒▒▒▒▒▒▒███████▒▒▒▒▒▒▒▒▒▒
-▒▒▒▒▄▄▄██▒▒█▀█▀█▒▒██▄▄▄▒▒▒▒
-▒▒▒▒▀▀██▒▒▒▒▒▒▒▒▒▒▒██▀▀▒▒▒▒
-▒▒▒▒▒▒▀▀▒▒▒▒▒▒▒▒▒▒▒▀▀▒▒▒▒▒▒
-░▐█▀█▄ ▄▀▄ █▄─█ ▄▀▀─ █▀▀ █▀▀▄
-░▐█▌▐█ █▀█ █─▀█ █─▀▌ █▀▀ █▐█▀
-░▐█▄█▀ ▀─▀ ▀──▀ ▀▀▀─ ▀▀▀ ▀─▀▀
+/*    
+       WARNING: 
+never compiled nor tested
 
-// WARNING: never compiled nor tested
+     _.--""--._
+    /  _    _  \
+ _  ( (_\  /_) )  _
+{ \._\   /\   /_./ }
+/_"=-.}______{.-="_\
+ _  _.=("""")=._  _
+(_'"_.-"`~~`"-._"'_)
+ {_"            "_}
+
+*/                          
 class VLNodePCL: public VLNode {
 public:
   VLNodePCL( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
@@ -1235,27 +1216,23 @@ protected:
 //-----------------------------------------------------------------------------
 
 #ifdef _USE_CUDA
+/*    
+       WARNING: 
+never compiled nor tested
 
-░▐█▀▄─ █▀▀ █───█ ▄▀▄ █▀▀▄ █▀▀
-░▐█▀▀▄ █▀▀ █─█─█ █▀█ █▐█▀ █▀▀
-░▐█▄▄▀ ▀▀▀ ─▀─▀─ ▀─▀ ▀─▀▀ ▀▀▀
-▒▒▒▒██▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒██▒▒▒▒
-▒▒████▄▒▒▒▄▄▄▄▄▄▄▒▒▒▄████▒▒
-▒▒▒▒▒▀▀▒▄█████████▄▒▀▀▒▒▒▒▒
-▒▒▒▒▒▒▒█████████████▒▒▒▒▒▒▒
-▒▒▒▒▒▒▒██▀▀▀███▀▀▀██▒▒▒▒▒▒▒
-▒▒▒▒▒▒▒██▒▒▒███▒▒▒██▒▒▒▒▒▒▒
-▒▒▒▒▒▒▒█████▀▄▀█████▒▒▒▒▒▒▒
-▒▒▒▒▒▒▒▒▒▒███████▒▒▒▒▒▒▒▒▒▒
-▒▒▒▒▄▄▄██▒▒█▀█▀█▒▒██▄▄▄▒▒▒▒
-▒▒▒▒▀▀██▒▒▒▒▒▒▒▒▒▒▒██▀▀▒▒▒▒
-▒▒▒▒▒▒▀▀▒▒▒▒▒▒▒▒▒▒▒▀▀▒▒▒▒▒▒
-░▐█▀█▄ ▄▀▄ █▄─█ ▄▀▀─ █▀▀ █▀▀▄
-░▐█▌▐█ █▀█ █─▀█ █─▀▌ █▀▀ █▐█▀
-░▐█▄█▀ ▀─▀ ▀──▀ ▀▀▀─ ▀▀▀ ▀─▀▀
+     _.--""--._
+    /  _    _  \
+ _  ( (_\  /_) )  _
+{ \._\   /\   /_./ }
+/_"=-.}______{.-="_\
+ _  _.=("""")=._  _
+(_'"_.-"`~~`"-._"'_)
+ {_"            "_}
 
-// WARNING: never compiled nor tested
-// This is just stub code, a raw attempt at reorganizing the legacy experimental CUDA code into the new VLNode logic
+
+This is just stub code, a raw attempt at reorganizing the legacy experimental CUDA code into the new VLNode logic
+
+*/                          
 class VLNodeCUDAImage: public VLNode {
 public:
   VLNodeCUDAImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )

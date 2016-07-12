@@ -129,9 +129,10 @@ public:
   /** Updates visibility, opacity and color. */
   void updateCommon();
 
-private:
+protected:
   /** Initializes the value of all Vivid properties in the DataStore. */
   void initDataStoreProperties();
+  vl::ref<vl::Actor> initActor(vl::Geometry* geom);
 
 protected:
   vl::OpenGLContext* m_OpenGLContext;
