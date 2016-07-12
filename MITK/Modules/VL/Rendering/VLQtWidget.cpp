@@ -1462,8 +1462,6 @@ VLSceneView::VLSceneView() :
 
   RemoveDataStorageListeners();
 
-  // dispatchDestroyEvent();
-
 #ifdef _USE_CUDA
   FreeCUDAInteropTextures();
 #endif
@@ -1769,8 +1767,6 @@ void VLSceneView::initEvent()
   // This is only used by the CUDA stuff
   CreateAndUpdateFBOSizes( openglContext()->width(), openglContext()->height() );
 
-  // vl::OpenGLContext::dispatchInitEvent();
-
 #if 0
   // Point cloud data test
   mitk::DataNode::Pointer n = mitk::DataNode::New();
@@ -1810,8 +1806,6 @@ void VLSceneView::resizeEvent( int w, int h )
 
   // MIC FIXME: update calibrated camera setup
   UpdateViewportAndCameraAfterResize();
-
-  // vl::OpenGLContext::dispatchResizeEvent( w, h );
 }
 
 //-----------------------------------------------------------------------------
@@ -1821,8 +1815,6 @@ void VLSceneView::updateEvent()
   VIVID_CHECK( contextIsCurrent() );
 
   RenderScene();
-
-  // vl::OpenGLContext::dispatchUpdateEvent();
 }
 
 //-----------------------------------------------------------------------------
