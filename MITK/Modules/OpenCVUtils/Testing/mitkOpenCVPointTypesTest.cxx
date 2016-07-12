@@ -20,6 +20,7 @@
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
 #include <mitkOpenCVPointTypes.h>
+#include <mitkOpenCVMaths.h>
 #include <cmath>
 
 /**
@@ -75,10 +76,36 @@ void TestPickedObjectCompare()
 void TestPickedObjectMultipy()
 {
   mitk::PickedObject p1;
-  cv::Mat* mat = new cv::Mat;
+  cv::Mat* mat = new cv::Mat(4,4,CV_64FC1);
+
+  for ( unsigned int i = 0 ; i < 3 ; ++i )
+  {
+    for ( unsigned int j = 0 ; j < 3 ; ++j )
+    {
+      if ( i != j )
+      {
+        mat->at<double>(i,j) = 0.0;
+      }
+      else
+      {
+        mat->at<double>(i,j) = 1.0;
+      }
+    }
+  }
+  mat->at<double>(0,3) = 20;
+  mat->at<double>(1,3) = -30;
+  mat->at<double>(2,3) = 0;
+  mat->at<double>(3,3) = 1.0;
+
+  p1.m_Points.push_back ( cv::Point3d ( 0.0, 0.0, 0.0 ) );
+  p1.m_Points.push_back ( cv::Point3d ( 1.0, 0.0, 5.0 ) );
+  p1.m_Points.push_back ( cv::Point3d ( 0.0, 100.0, 0.0 ) );
 
   mitk::PickedObject p2 = p1 * mat;
-  MITK_TEST_CONDITION ( false, "please implement picked object multiply test");
+  MITK_TEST_CONDITION ( p2.HeadersMatch ( p1, 1 ), "Testing that header for multiplied picked objects matches input");
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(p2.m_Points[0],cv::Point3d ( 20.0, -30.0 ,0.0 ), 1e-6), "Testing value of multiplied picked object 0 " << p2.m_Points[0]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(p2.m_Points[1],cv::Point3d ( 21.0, -30.0 ,5.0 ), 1e-6), "Testing value of multiplied picked object 1 " << p2.m_Points[1]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(p2.m_Points[2],cv::Point3d ( 20.0, 70.0 , 0.0 ), 1e-6), "Testing value of multiplied picked object 2 " << p2.m_Points[2]);
 }
 
 int mitkOpenCVPointTypesTest(int argc, char * argv[])
