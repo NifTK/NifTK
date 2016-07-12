@@ -1439,37 +1439,30 @@ vl::ref<VLMapper> VLMapper::create( vl::OpenGLContext* gl, vl::VividRendering* v
 }
 
 //-----------------------------------------------------------------------------
-// VLQtWidget
+// VLSceneView
 //-----------------------------------------------------------------------------
 
-VLQtWidget::VLQtWidget(QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
-  : QGLWidget(parent, shareWidget, f)
-  , m_BackgroundWidth( 0 )
+VLSceneView::VLSceneView() : 
+  // Qt5Widget(parent, shareWidget, f)
+  m_BackgroundWidth( 0 )
   , m_BackgroundHeight( 0 )
   , m_ScheduleTrackballAdjustView( true )
-  , m_Refresh(1000 / 30) // 30 fps
-  , m_OclService(0)
+  , m_OclService( 0 )
 #ifdef _USE_CUDA
   , m_CUDAInteropPimpl(0)
 #endif
 {
-  setContinuousUpdate(false);
-  setMouseTracking(true);
-  setAutoBufferSwap(false);
-  setAcceptDrops(false);
-  // let Qt take care of object destruction.
-  vl::OpenGLContext::setAutomaticDelete(false);
 }
 
 //-----------------------------------------------------------------------------
 
-VLQtWidget::~VLQtWidget()
+ void VLSceneView::destroyEvent()
 {
-  makeCurrent();
+  openglContext()->makeCurrent();
 
   RemoveDataStorageListeners();
 
-  dispatchDestroyEvent();
+  // dispatchDestroyEvent();
 
 #ifdef _USE_CUDA
   FreeCUDAInteropTextures();
@@ -1478,35 +1471,35 @@ VLQtWidget::~VLQtWidget()
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::AddDataStorageListeners()
+void VLSceneView::AddDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
-    m_DataStorage->AddNodeEvent.    AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeAdd));
-    m_DataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeUpdate));
-    m_DataStorage->RemoveNodeEvent. AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeRemove));
-    m_DataStorage->DeleteNodeEvent. AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeRemove));
+    m_DataStorage->AddNodeEvent.    AddListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeAdd));
+    m_DataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeUpdate));
+    m_DataStorage->RemoveNodeEvent. AddListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeRemove));
+    m_DataStorage->DeleteNodeEvent. AddListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeRemove));
   }
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::RemoveDataStorageListeners()
+void VLSceneView::RemoveDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
-    m_DataStorage->AddNodeEvent.    RemoveListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeAdd));
-    m_DataStorage->ChangedNodeEvent.RemoveListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeUpdate));
-    m_DataStorage->RemoveNodeEvent. RemoveListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeRemove));
-    m_DataStorage->DeleteNodeEvent. RemoveListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::ScheduleNodeRemove));
+    m_DataStorage->AddNodeEvent.    RemoveListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeAdd));
+    m_DataStorage->ChangedNodeEvent.RemoveListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeUpdate));
+    m_DataStorage->RemoveNodeEvent. RemoveListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeRemove));
+    m_DataStorage->DeleteNodeEvent. RemoveListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeRemove));
   }
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
+void VLSceneView::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
 {
-  makeCurrent();
+  openglContext()->makeCurrent();
 
   RemoveDataStorageListeners();
 
@@ -1519,12 +1512,12 @@ void VLQtWidget::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
 
   ClearScene();
 
-  update();
+  openglContext()->update();
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::SetOclResourceService(OclResourceService* oclserv)
+void VLSceneView::SetOclResourceService(OclResourceService* oclserv)
 {
  // no idea if this is really a necessary restriction.
  // if it is then maybe the ocl-service should be a constructor parameter.
@@ -1536,7 +1529,7 @@ void VLQtWidget::SetOclResourceService(OclResourceService* oclserv)
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::ScheduleNodeAdd( const mitk::DataNode* node )
+void VLSceneView::ScheduleNodeAdd( const mitk::DataNode* node )
 {
   if ( ! node || ! node->GetData() ) {
     return;
@@ -1545,7 +1538,7 @@ void VLQtWidget::ScheduleNodeAdd( const mitk::DataNode* node )
   // m_NodesToRemove.erase( node ); // remove it first
   m_NodesToAdd.insert( mitk::DataNode::ConstPointer ( node ) ); // then add
   // m_NodesToUpdate.erase( node ); // then update
-  update();
+  openglContext()->update();
 
   const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<name-of-class>";
   printf("ScheduleNodeAdd: %s (%s)\n", node->GetName().c_str(), noc );
@@ -1553,7 +1546,7 @@ void VLQtWidget::ScheduleNodeAdd( const mitk::DataNode* node )
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::ScheduleNodeUpdate( const mitk::DataNode* node )
+void VLSceneView::ScheduleNodeUpdate( const mitk::DataNode* node )
 {
   if ( ! node || ! node->GetData() ) {
     return;
@@ -1562,7 +1555,7 @@ void VLQtWidget::ScheduleNodeUpdate( const mitk::DataNode* node )
   m_NodesToRemove.erase( node ); // abort the removal
   // m_NodesToAdd.erase( node ); // let it add it first
   m_NodesToUpdate.insert( mitk::DataNode::ConstPointer ( node ) ); // then update
-  update();
+  openglContext()->update();
 
   const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<unknown-class>";
   printf("ScheduleNodeUpdate: %s (%s)\n", node->GetName().c_str(), noc );
@@ -1570,7 +1563,7 @@ void VLQtWidget::ScheduleNodeUpdate( const mitk::DataNode* node )
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::ScheduleNodeRemove( const mitk::DataNode* node )
+void VLSceneView::ScheduleNodeRemove( const mitk::DataNode* node )
 {
   if ( ! node /* || ! node->GetData() */ ) {
     return;
@@ -1579,7 +1572,7 @@ void VLQtWidget::ScheduleNodeRemove( const mitk::DataNode* node )
   m_NodesToRemove.insert( mitk::DataNode::ConstPointer ( node ) ); // remove it
   m_NodesToAdd.erase( node );    // abort the addition
   m_NodesToUpdate.erase( node ); // abort the update
-  update();
+  openglContext()->update();
 
   const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<name-of-class>";
   printf("ScheduleNodeRemove: %s (%s)\n", node->GetName().c_str(), noc );
@@ -1587,12 +1580,12 @@ void VLQtWidget::ScheduleNodeRemove( const mitk::DataNode* node )
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::InitSceneFromDataStorage()
+void VLSceneView::InitSceneFromDataStorage()
 {
   // Make sure the system is initialized
   VIVID_CHECK( m_VividRendering.get() );
 
-  makeCurrent();
+  openglContext()->makeCurrent();
 
   ClearScene();
 
@@ -1632,12 +1625,12 @@ void VLQtWidget::InitSceneFromDataStorage()
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
+void VLSceneView::AddDataNode(const mitk::DataNode::ConstPointer& node)
 {
-  makeCurrent();
+  openglContext()->makeCurrent();
 
   // Add only once and only if valid
-  if ( ! node || ! node->GetData() || GetVLNode( node ) != NULL ) {
+  if ( ! node || ! node->GetData() || GetVLMapper( node ) != NULL ) {
     return;
   }
 
@@ -1645,9 +1638,9 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
     dumpNodeInfo( "AddDataNode()", node );
   #endif
 
-  ref<VLNode> vl_node = VLNode::create( this, m_VividRendering.get(), m_DataStorage.GetPointer(), node.GetPointer() );
+  ref<VLMapper> vl_node = VLMapper::create( openglContext(), m_VividRendering.get(), m_DataStorage.GetPointer(), node.GetPointer() );
   if ( vl_node ) {
-    m_NodeVLNodeMap[ node ] = vl_node;
+    m_DataNodeVLMapperMap[ node ] = vl_node;
     vl_node->init();
     vl_node->updateCommon();
     vl_node->update();
@@ -1657,29 +1650,29 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
+void VLSceneView::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
 {
-  makeCurrent();
+  openglContext()->makeCurrent();
 
   // dont leave a dangling update behind.
   m_NodesToUpdate.erase(node);
   m_NodesToAdd.erase(node);
 
-  // Remove VLNode and VL data
-  NodeVLNodeMapType::iterator it = m_NodeVLNodeMap.find( node );
-  if ( it != m_NodeVLNodeMap.end() ) {
-    VLNode* vl_node = it->second.get();
+  // Remove VLMapper and VL data
+  DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.find( node );
+  if ( it != m_DataNodeVLMapperMap.end() ) {
+    VLMapper* vl_node = it->second.get();
     VIVID_CHECK( vl_node );
     if ( vl_node ) {
       vl_node->remove();
-      m_NodeVLNodeMap.erase(it);
+      m_DataNodeVLMapperMap.erase(it);
     }
   }
 }
 
-void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
+void VLSceneView::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 {
-  makeCurrent();
+  openglContext()->makeCurrent();
 
   if ( node.IsNull() || node->GetData() == 0 ) {
     return;
@@ -1689,8 +1682,8 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     dumpNodeInfo( "UpdateDataNode()", node );
   #endif
 
-  NodeVLNodeMapType::iterator it = m_NodeVLNodeMap.find( node );
-  if ( it != m_NodeVLNodeMap.end() ) {
+  DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.find( node );
+  if ( it != m_DataNodeVLMapperMap.end() ) {
     it->second->updateCommon();
     it->second->update();
     return;
@@ -1704,27 +1697,27 @@ void VLQtWidget::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 
 //-----------------------------------------------------------------------------
 
-VLNode* VLQtWidget::GetVLNode( const mitk::DataNode::ConstPointer& node )
+VLMapper* VLSceneView::GetVLMapper( const mitk::DataNode::ConstPointer& node )
 {
-  NodeVLNodeMapType::iterator it = m_NodeVLNodeMap.find( node );
-  return it == m_NodeVLNodeMap.end() ? NULL : it->second.get();
+  DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.find( node );
+  return it == m_DataNodeVLMapperMap.end() ? NULL : it->second.get();
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::SetBackgroundColour(float r, float g, float b)
+void VLSceneView::SetBackgroundColour(float r, float g, float b)
 {
   m_VividRendering->camera()->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
-  update();
+  openglContext()->update();
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::initializeGL()
+void VLSceneView::initEvent()
 {
-  VIVID_CHECK( QGLContext::currentContext() == QGLWidget::context() );
+  VIVID_CHECK( contextIsCurrent() );
 
-  vl::OpenGLContext::initGLContext();
+  // vl::OpenGLContext::initGLContext();
 
   // Interface VL with Qt's resource system to load GLSL shaders.
   vl::defFileSystem()->directories().clear();
@@ -1749,9 +1742,9 @@ void VLQtWidget::initializeGL()
 #endif
 
   // Create our VividRendering!
-  m_VividRendering = new vl::VividRendering( vl::OpenGLContext::framebuffer() );
+  m_VividRendering = new vl::VividRendering;
   m_VividRendering->setRenderingMode( vl::VividRendering::FrontToBackDepthPeeling ); /* (default) */
-  m_VividRendering->setCullingEnabled( true );
+  m_VividRendering->setCullingEnabled( false );
   // This creates some flickering on the skin for some reason
   m_VividRendering->setNearFarClippingPlanesOptimized( false );
 
@@ -1759,6 +1752,8 @@ void VLQtWidget::initializeGL()
   m_VividRenderer = m_VividRendering->vividRenderer();
   m_VividVolume = m_VividRendering->vividVolume();
   m_SceneManager = m_VividRendering->sceneManager();
+
+  // In the future Camera (and Trackball) should belong in VLView and be set upon rendering.
   m_Camera = m_VividRendering->calibratedCamera();
 
   // Initialize the trackball manipulator
@@ -1767,14 +1762,14 @@ void VLQtWidget::initializeGL()
   m_Trackball->setCamera( m_Camera.get() );
   m_Trackball->setTransform( NULL );
   m_Trackball->setPivot( vl::vec3(0,0,0) );
-  vl::OpenGLContext::addEventListener( m_Trackball.get() );
+  openglContext()->addEventListener( m_Trackball.get() );
   // Schedule reset of the camera based on the scene content
   ScheduleTrackballAdjustView();
 
   // This is only used by the CUDA stuff
-  CreateAndUpdateFBOSizes( QGLWidget::width(), QGLWidget::height() );
+  CreateAndUpdateFBOSizes( openglContext()->width(), openglContext()->height() );
 
-  vl::OpenGLContext::dispatchInitEvent();
+  // vl::OpenGLContext::dispatchInitEvent();
 
 #if 0
   // Point cloud data test
@@ -1794,22 +1789,13 @@ void VLQtWidget::initializeGL()
 
   m_DataStorage->Add(n);
 #endif
-
-#if 0
-  // Update the rendering at 5 fps so video card doesn't sleep.
-  // Avoid "sticky" effect when rotating scene with mouse.
-  disconnect(&m_BackgroundUpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
-  connect(&m_BackgroundUpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
-  m_BackgroundUpdateTimer.setSingleShot(false);
-  m_BackgroundUpdateTimer.start(1000 / 5);
-#endif
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::resizeGL( int w, int h )
+void VLSceneView::resizeEvent( int w, int h )
 {
-   VIVID_CHECK( QGLContext::currentContext() == QGLWidget::context() );
+   VIVID_CHECK( contextIsCurrent() );
 
   // dont do anything if window is zero size.
   // it's an opengl error to have a viewport like that!
@@ -1825,25 +1811,25 @@ void VLQtWidget::resizeGL( int w, int h )
   // MIC FIXME: update calibrated camera setup
   UpdateViewportAndCameraAfterResize();
 
-  vl::OpenGLContext::dispatchResizeEvent( w, h );
+  // vl::OpenGLContext::dispatchResizeEvent( w, h );
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::paintGL()
+void VLSceneView::updateEvent()
 {
-  VIVID_CHECK( QGLContext::currentContext() == QGLWidget::context() );
+  VIVID_CHECK( contextIsCurrent() );
 
   RenderScene();
 
-  vl::OpenGLContext::dispatchRunEvent();
+  // vl::OpenGLContext::dispatchUpdateEvent();
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::CreateAndUpdateFBOSizes( int width, int height )
+void VLSceneView::CreateAndUpdateFBOSizes( int width, int height )
 {
-  makeCurrent();
+  openglContext()->makeCurrent();
 
 #ifdef _USE_CUDA
   // sanitise dimensions. depending on how windows are resized we can get zero here.
@@ -1867,7 +1853,7 @@ void VLQtWidget::CreateAndUpdateFBOSizes( int width, int height )
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::UpdateViewportAndCameraAfterResize()
+void VLSceneView::UpdateViewportAndCameraAfterResize()
 {
   // some sane defaults
   // m_Camera->viewport()->set( 0, 0, QWidget::width(), QWidget::height() );
@@ -1889,17 +1875,17 @@ void VLQtWidget::UpdateViewportAndCameraAfterResize()
 
       // this is based on my old araknes video-ar app.
       // FIXME: aspect ratio?
-      float   width_scale  = (float) QWidget::width()  / (float) m_BackgroundWidth;
-      float   height_scale = (float) QWidget::height() / (float) m_BackgroundHeight;
-      int     vpw = QWidget::width();
-      int     vph = QWidget::height();
+      float   width_scale  = (float) openglContext()->width()  / (float) m_BackgroundWidth;
+      float   height_scale = (float) openglContext()->height() / (float) m_BackgroundHeight;
+      int     vpw = openglContext()->width();
+      int     vph = openglContext()->height();
       if (width_scale < height_scale)
         vph = (int) ((float) m_BackgroundHeight * width_scale);
       else
         vpw = (int) ((float) m_BackgroundWidth * height_scale);
 
-      int   vpx = QWidget::width()  / 2 - vpw / 2;
-      int   vpy = QWidget::height() / 2 - vph / 2;
+      int   vpx = openglContext()->width()  / 2 - vpw / 2;
+      int   vpy = openglContext()->height() / 2 - vph / 2;
 
       // m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
       // the main-scene-camera should conform to this viewport too!
@@ -1913,10 +1899,10 @@ void VLQtWidget::UpdateViewportAndCameraAfterResize()
   UpdateCameraParameters();
 }
 
-void VLQtWidget::UpdateScene() {
+void VLSceneView::UpdateScene() {
   // Make sure the system is initialized
   VIVID_CHECK( m_VividRendering.get() );
-  VIVID_CHECK( QGLContext::currentContext() == QGLWidget::context() );
+  VIVID_CHECK( contextIsCurrent() );
 
   if ( m_SceneManager->tree()->actors()->empty() ) {
     InitSceneFromDataStorage();
@@ -1953,9 +1939,9 @@ void VLQtWidget::UpdateScene() {
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::RenderScene()
+void VLSceneView::RenderScene()
 {
-  makeCurrent();
+  openglContext()->makeCurrent();
 
   UpdateScene();
 
@@ -1964,11 +1950,14 @@ void VLQtWidget::RenderScene()
   m_VividRendering->setFrameClock( now_time );
 
   // Execute rendering
-  m_VividRendering->render();
+  m_VividRendering->render( openglContext()->framebuffer() );
 
   // Show rendering
-  if ( vl::OpenGLContext::hasDoubleBuffer() ) {
-    swapBuffers();
+  if ( openglContext()->hasDoubleBuffer() ) {
+#ifdef _USE_CUDA
+    cudaSwapBuffers();
+#endif
+    openglContext()->swapBuffers();
   }
 
   VL_CHECK_OGL();
@@ -1976,9 +1965,9 @@ void VLQtWidget::RenderScene()
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::ClearScene()
+void VLSceneView::ClearScene()
 {
-  makeCurrent();
+  openglContext()->makeCurrent();
 
   if ( m_SceneManager )
   {
@@ -1989,7 +1978,7 @@ void VLQtWidget::ClearScene()
 
   m_CameraNode = 0;
   m_BackgroundNode = 0;
-  m_NodeVLNodeMap.clear();
+  m_DataNodeVLMapperMap.clear();
   m_NodesToUpdate.clear();
   m_NodesToAdd.clear();
   m_NodesToRemove.clear();
@@ -1997,7 +1986,7 @@ void VLQtWidget::ClearScene()
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::UpdateThresholdVal( int isoVal )
+void VLSceneView::UpdateThresholdVal( int isoVal )
 {
   float iso = isoVal / 10000.0f;
   iso = vl::clamp( iso, 0.0f, 1.0f );
@@ -2006,7 +1995,7 @@ void VLQtWidget::UpdateThresholdVal( int isoVal )
 
 //-----------------------------------------------------------------------------
 
-bool VLQtWidget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
+bool VLSceneView::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
 {
   VIVID_CHECK( m_Trackball );
 
@@ -2025,14 +2014,14 @@ bool VLQtWidget::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
     UpdateCameraParameters();
   }
 
-  update();
+  openglContext()->update();
 
   return true;
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::UpdateCameraParameters()
+void VLSceneView::UpdateCameraParameters()
 {
   // calibration parameters come from the background node.
   // so no background, no camera parameters.
@@ -2084,9 +2073,11 @@ void VLQtWidget::UpdateCameraParameters()
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
+// MIC FIXME: remove this
+void VLSceneView::PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
 {
-  makeCurrent();
+  /*
+  openglContext()->makeCurrent();
 
   // nasty
   mitk::Image::Pointer imgp(const_cast<mitk::Image*>(img));
@@ -2129,13 +2120,14 @@ void VLQtWidget::PrepareBackgroundActor(const mitk::Image* img, const mitk::Base
   actor->setObjectName(objName.c_str());
 
   m_NodeActorMap[node] = actor;
+  */
 }
 
 //-----------------------------------------------------------------------------
 
-bool VLQtWidget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
+bool VLSceneView::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 {
-  makeCurrent();
+  openglContext()->makeCurrent();
 
   // clear up after previous background node.
   if (m_BackgroundNode.IsNotNull())
@@ -2224,107 +2216,9 @@ bool VLQtWidget::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::setContinuousUpdate(bool continuous)
-{
-  vl::OpenGLContext::setContinuousUpdate(continuous);
-
-  if (continuous)
-  {
-    disconnect(&m_UpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
-    connect(&m_UpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
-    m_UpdateTimer.setSingleShot(false);
-    m_UpdateTimer.start(m_Refresh);
-  }
-  else
-  {
-    disconnect(&m_UpdateTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
-    m_UpdateTimer.stop();
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::setWindowTitle(const vl::String& title)
-{
-  QGLWidget::setWindowTitle( QString::fromStdString(title.toStdString()) );
-}
-
-//-----------------------------------------------------------------------------
-
-bool VLQtWidget::setFullscreen(bool fullscreen)
-{
-  // fullscreen not allowed (yet)!
-  fullscreen = false;
-
-  mFullscreen = fullscreen;
-  if (fullscreen)
-    QGLWidget::setWindowState(QGLWidget::windowState() | Qt::WindowFullScreen);
-  else
-    QGLWidget::setWindowState(QGLWidget::windowState() & (~Qt::WindowFullScreen));
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::show()
-{
-  QGLWidget::show();
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::hide()
-{
-  QGLWidget::hide();
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::setPosition(int x, int y)
-{
-  QGLWidget::move(x,y);
-}
-
-
-//-----------------------------------------------------------------------------
-vl::ivec2 VLQtWidget::position() const
-{
-  return vl::ivec2(QGLWidget::pos().x(), QGLWidget::pos().y());
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::update()
-{
-  // schedules a repaint, will eventually call into paintGL()
-  QGLWidget::update();
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::setSize(int w, int h)
-{
-  // this already excludes the window's frame so it's ok for Visualization Library standards
-  QGLWidget::resize(w,h);
-}
-
-
-//-----------------------------------------------------------------------------
-vl::ivec2 VLQtWidget::size() const
-{
-  // this already excludes the window's frame so it's ok for Visualization Library standards
-  return vl::ivec2(QGLWidget::size().width(), QGLWidget::size().height());
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::swapBuffers()
-{
-  makeCurrent();
-
-  QGLWidget::swapBuffers();
-
 #ifdef _USE_CUDA
+void VLSceneView::cudaSwapBuffers()
+{
   if (m_CUDAInteropPimpl)
   {
     cudaError_t          err         = cudaSuccess;
@@ -2373,363 +2267,13 @@ void VLQtWidget::swapBuffers()
     else
       node->Modified();
   }
-#endif
 }
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::makeCurrent()
+void VLSceneView::FreeCUDAInteropTextures()
 {
-  QGLWidget::makeCurrent();
-  // sanity check
-  VIVID_CHECK( QGLContext::currentContext() == QGLWidget::context() );
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::setMousePosition(int x, int y)
-{
-  QCursor::setPos(mapToGlobal(QPoint(x,y)));
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::setMouseVisible(bool visible)
-{
-  vl::OpenGLContext::setMouseVisible(visible);
-
-  if (visible)
-    QGLWidget::setCursor(Qt::ArrowCursor);
-  else
-    QGLWidget::setCursor(Qt::BlankCursor);
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::getFocus()
-{
-  QGLWidget::setFocus(Qt::OtherFocusReason);
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::setRefreshRate(int msec)
-{
-  m_Refresh = msec;
-  m_UpdateTimer.setInterval(m_Refresh);
-}
-
-//-----------------------------------------------------------------------------
-
-int VLQtWidget::refreshRate()
-{
-  return m_Refresh;
-}
-
-#if 0
-//-----------------------------------------------------------------------------
-void VLQtWidget::dragEnterEvent(QDragEnterEvent *ev)
-{
-  if (ev->mimeData()->hasUrls())
-    ev->acceptProposedAction();
-}
-
-
-//-----------------------------------------------------------------------------
-void VLQtWidget::dropEvent(QDropEvent* ev)
-{
-  if ( ev->mimeData()->hasUrls() )
-  {
-    std::vector<vl::String> files;
-    QList<QUrl> list = ev->mimeData()->urls();
-    for(int i=0; i<list.size(); ++i)
-    {
-      if (list[i].path().isEmpty())
-        continue;
-      #ifdef WIN32
-        if (list[i].path()[0] == '/')
-          files.push_back( list[i].path().toStdString().c_str()+1 );
-        else
-          files.push_back( list[i].path().toStdString().c_str() );
-      #else
-        files.push_back( list[i].path().toStdString().c_str() );
-      #endif
-    }
-    dispatchFileDroppedEvent(files);
-  }
-}
-#endif
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::mouseMoveEvent(QMouseEvent* ev)
-{
-  if (!vl::OpenGLContext::mIgnoreNextMouseMoveEvent)
-    dispatchMouseMoveEvent(ev->x(), ev->y());
-  vl::OpenGLContext::mIgnoreNextMouseMoveEvent = false;
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::mousePressEvent(QMouseEvent* ev)
-{
-  vl::EMouseButton bt = vl::NoButton;
-  switch(ev->button())
-  {
-  case Qt::LeftButton:  bt = vl::LeftButton; break;
-  case Qt::RightButton: bt = vl::RightButton; break;
-  case Qt::MidButton:   bt = vl::MiddleButton; break;
-  default:
-    bt = vl::UnknownButton; break;
-  }
-  vl::OpenGLContext::dispatchMouseDownEvent(bt, ev->x(), ev->y());
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::mouseReleaseEvent(QMouseEvent* ev)
-{
-  vl::EMouseButton bt = vl::NoButton;
-  switch(ev->button())
-  {
-  case Qt::LeftButton:  bt = vl::LeftButton; break;
-  case Qt::RightButton: bt = vl::RightButton; break;
-  case Qt::MidButton:   bt = vl::MiddleButton; break;
-  default:
-    bt = vl::UnknownButton; break;
-  }
-  vl::OpenGLContext::dispatchMouseUpEvent(bt, ev->x(), ev->y());
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::wheelEvent(QWheelEvent* ev)
-{
-  vl::OpenGLContext::dispatchMouseWheelEvent(ev->delta() / 120);
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::keyPressEvent(QKeyEvent* ev)
-{
-  unsigned short unicode_ch = 0;
-  vl::EKey key = vl::Key_None;
-  translateKeyEvent(ev, unicode_ch, key);
-  vl::OpenGLContext::dispatchKeyPressEvent(unicode_ch, key);
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::keyReleaseEvent(QKeyEvent* ev)
-{
-  unsigned short unicode_ch = 0;
-  vl::EKey key = vl::Key_None;
-  translateKeyEvent(ev, unicode_ch, key);
-  vl::OpenGLContext::dispatchKeyReleaseEvent(unicode_ch, key);
-}
-
-//-----------------------------------------------------------------------------
-
-void VLQtWidget::translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out)
-{
-  // translate non unicode characters
-  key_out     = vl::Key_None;
-  unicode_out = 0;
-
-  switch(ev->key())
-  {
-    case Qt::Key_Clear:    key_out = vl::Key_Clear; break;
-    case Qt::Key_Control:  key_out = vl::Key_Ctrl; break;
-    // case Qt::Key_LCONTROL: key_out = Key_LeftCtrl; break;
-    // case Qt::Key_RCONTROL: key_out = Key_RightCtrl; break;
-    case Qt::Key_Alt:     key_out = vl::Key_Alt; break;
-    // case Qt::Key_LMENU:    key_out = Key_LeftAlt; break;
-    // case Qt::Key_RMENU:    key_out = Key_RightAlt; break;
-    case Qt::Key_Shift:    key_out = vl::Key_Shift; break;
-    // case Qt::Key_LSHIFT:   key_out = Key_LeftShift; break;
-    // case Qt::Key_RSHIFT:   key_out = Key_RightShift; break;
-    case Qt::Key_Insert:   key_out = vl::Key_Insert; break;
-    case Qt::Key_Delete:   key_out = vl::Key_Delete; break;
-    case Qt::Key_Home:     key_out = vl::Key_Home; break;
-    case Qt::Key_End:      key_out = vl::Key_End; break;
-    case Qt::Key_Print:    key_out = vl::Key_Print; break;
-    case Qt::Key_Pause:    key_out = vl::Key_Pause; break;
-    case Qt::Key_PageUp:   key_out = vl::Key_PageUp; break;
-    case Qt::Key_PageDown: key_out = vl::Key_PageDown; break;
-    case Qt::Key_Left:     key_out = vl::Key_Left; break;
-    case Qt::Key_Right:    key_out = vl::Key_Right; break;
-    case Qt::Key_Up:       key_out = vl::Key_Up; break;
-    case Qt::Key_Down:     key_out = vl::Key_Down; break;
-    case Qt::Key_F1:       key_out = vl::Key_F1; break;
-    case Qt::Key_F2:       key_out = vl::Key_F2; break;
-    case Qt::Key_F3:       key_out = vl::Key_F3; break;
-    case Qt::Key_F4:       key_out = vl::Key_F4; break;
-    case Qt::Key_F5:       key_out = vl::Key_F5; break;
-    case Qt::Key_F6:       key_out = vl::Key_F6; break;
-    case Qt::Key_F7:       key_out = vl::Key_F7; break;
-    case Qt::Key_F8:       key_out = vl::Key_F8; break;
-    case Qt::Key_F9:       key_out = vl::Key_F9; break;
-    case Qt::Key_F10:      key_out = vl::Key_F10; break;
-    case Qt::Key_F11:      key_out = vl::Key_F11; break;
-    case Qt::Key_F12:      key_out = vl::Key_F12; break;
-
-    case Qt::Key_0: key_out = vl::Key_0; break;
-    case Qt::Key_1: key_out = vl::Key_1; break;
-    case Qt::Key_2: key_out = vl::Key_2; break;
-    case Qt::Key_3: key_out = vl::Key_3; break;
-    case Qt::Key_4: key_out = vl::Key_4; break;
-    case Qt::Key_5: key_out = vl::Key_5; break;
-    case Qt::Key_6: key_out = vl::Key_6; break;
-    case Qt::Key_7: key_out = vl::Key_7; break;
-    case Qt::Key_8: key_out = vl::Key_8; break;
-    case Qt::Key_9: key_out = vl::Key_9; break;
-
-    case Qt::Key_A: key_out = vl::Key_A; break;
-    case Qt::Key_B: key_out = vl::Key_B; break;
-    case Qt::Key_C: key_out = vl::Key_C; break;
-    case Qt::Key_D: key_out = vl::Key_D; break;
-    case Qt::Key_E: key_out = vl::Key_E; break;
-    case Qt::Key_F: key_out = vl::Key_F; break;
-    case Qt::Key_G: key_out = vl::Key_G; break;
-    case Qt::Key_H: key_out = vl::Key_H; break;
-    case Qt::Key_I: key_out = vl::Key_I; break;
-    case Qt::Key_J: key_out = vl::Key_J; break;
-    case Qt::Key_K: key_out = vl::Key_K; break;
-    case Qt::Key_L: key_out = vl::Key_L; break;
-    case Qt::Key_M: key_out = vl::Key_M; break;
-    case Qt::Key_N: key_out = vl::Key_N; break;
-    case Qt::Key_O: key_out = vl::Key_O; break;
-    case Qt::Key_P: key_out = vl::Key_P; break;
-    case Qt::Key_Q: key_out = vl::Key_Q; break;
-    case Qt::Key_R: key_out = vl::Key_R; break;
-    case Qt::Key_S: key_out = vl::Key_S; break;
-    case Qt::Key_T: key_out = vl::Key_T; break;
-    case Qt::Key_U: key_out = vl::Key_U; break;
-    case Qt::Key_V: key_out = vl::Key_V; break;
-    case Qt::Key_W: key_out = vl::Key_W; break;
-    case Qt::Key_X: key_out = vl::Key_X; break;
-    case Qt::Key_Y: key_out = vl::Key_Y; break;
-    case Qt::Key_Z: key_out = vl::Key_Z; break;
-  }
-
-  // fill unicode
-  QString ustring = ev->text();
-  if ( ustring.length() == 1 )
-  {
-    unicode_out = ustring[0].unicode();
-
-    // fill key
-    switch(unicode_out)
-    {
-      case L'0': key_out = vl::Key_0; break;
-      case L'1': key_out = vl::Key_1; break;
-      case L'2': key_out = vl::Key_2; break;
-      case L'3': key_out = vl::Key_3; break;
-      case L'4': key_out = vl::Key_4; break;
-      case L'5': key_out = vl::Key_5; break;
-      case L'6': key_out = vl::Key_6; break;
-      case L'7': key_out = vl::Key_7; break;
-      case L'8': key_out = vl::Key_8; break;
-      case L'9': key_out = vl::Key_9; break;
-
-      case L'A': key_out = vl::Key_A; break;
-      case L'B': key_out = vl::Key_B; break;
-      case L'C': key_out = vl::Key_C; break;
-      case L'D': key_out = vl::Key_D; break;
-      case L'E': key_out = vl::Key_E; break;
-      case L'F': key_out = vl::Key_F; break;
-      case L'G': key_out = vl::Key_G; break;
-      case L'H': key_out = vl::Key_H; break;
-      case L'I': key_out = vl::Key_I; break;
-      case L'J': key_out = vl::Key_J; break;
-      case L'K': key_out = vl::Key_K; break;
-      case L'L': key_out = vl::Key_L; break;
-      case L'M': key_out = vl::Key_M; break;
-      case L'N': key_out = vl::Key_N; break;
-      case L'O': key_out = vl::Key_O; break;
-      case L'P': key_out = vl::Key_P; break;
-      case L'Q': key_out = vl::Key_Q; break;
-      case L'R': key_out = vl::Key_R; break;
-      case L'S': key_out = vl::Key_S; break;
-      case L'T': key_out = vl::Key_T; break;
-      case L'U': key_out = vl::Key_U; break;
-      case L'V': key_out = vl::Key_V; break;
-      case L'W': key_out = vl::Key_W; break;
-      case L'X': key_out = vl::Key_X; break;
-      case L'Y': key_out = vl::Key_Y; break;
-      case L'Z': key_out = vl::Key_Z; break;
-
-      case L'a': key_out = vl::Key_A; break;
-      case L'b': key_out = vl::Key_B; break;
-      case L'c': key_out = vl::Key_C; break;
-      case L'd': key_out = vl::Key_D; break;
-      case L'e': key_out = vl::Key_E; break;
-      case L'f': key_out = vl::Key_F; break;
-      case L'g': key_out = vl::Key_G; break;
-      case L'h': key_out = vl::Key_H; break;
-      case L'i': key_out = vl::Key_I; break;
-      case L'j': key_out = vl::Key_J; break;
-      case L'k': key_out = vl::Key_K; break;
-      case L'l': key_out = vl::Key_L; break;
-      case L'm': key_out = vl::Key_M; break;
-      case L'n': key_out = vl::Key_N; break;
-      case L'o': key_out = vl::Key_O; break;
-      case L'p': key_out = vl::Key_P; break;
-      case L'q': key_out = vl::Key_Q; break;
-      case L'r': key_out = vl::Key_R; break;
-      case L's': key_out = vl::Key_S; break;
-      case L't': key_out = vl::Key_T; break;
-      case L'u': key_out = vl::Key_U; break;
-      case L'v': key_out = vl::Key_V; break;
-      case L'w': key_out = vl::Key_W; break;
-      case L'x': key_out = vl::Key_X; break;
-      case L'y': key_out = vl::Key_Y; break;
-      case L'z': key_out = vl::Key_Z; break;
-
-      case 13: key_out = vl::Key_Return; break;
-      case 8: key_out = vl::Key_BackSpace; break;
-      case 9: key_out = vl::Key_Tab; break;
-      case L' ': key_out = vl::Key_Space; break;
-
-      case 27: key_out = vl::Key_Escape; break;
-      case L'!': key_out = vl::Key_Exclam; break;
-      case L'"': key_out = vl::Key_QuoteDbl; break;
-      case L'#': key_out = vl::Key_Hash; break;
-      case L'$': key_out = vl::Key_Dollar; break;
-      case L'&': key_out = vl::Key_Ampersand; break;
-      case L'\'': key_out = vl::Key_Quote; break;
-      case L'(': key_out = vl::Key_LeftParen; break;
-      case L')': key_out = vl::Key_RightParen; break;
-      case L'*': key_out = vl::Key_Asterisk; break;
-      case L'+': key_out = vl::Key_Plus; break;
-      case L',': key_out = vl::Key_Comma; break;
-      case L'-': key_out = vl::Key_Minus; break;
-      case L'.': key_out = vl::Key_Period; break;
-      case L'\\': key_out = vl::Key_Slash; break;
-      case L':': key_out = vl::Key_Colon; break;
-      case L';': key_out = vl::Key_Semicolon; break;
-      case L'<': key_out = vl::Key_Less; break;
-      case L'=': key_out = vl::Key_Equal; break;
-      case L'>': key_out = vl::Key_Greater; break;
-      case L'?': key_out = vl::Key_Question; break;
-      case L'@': key_out = vl::Key_At; break;
-      case L'[': key_out = vl::Key_LeftBracket; break;
-      case L'/': key_out = vl::Key_BackSlash; break;
-      case L']': key_out = vl::Key_RightBracket; break;
-      case L'|': key_out = vl::Key_Caret; break;
-      case L'_': key_out = vl::Key_Underscore; break;
-      case L'`': key_out = vl::Key_QuoteLeft; break;
-    }
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-#ifdef _USE_CUDA
-
-void VLQtWidget::FreeCUDAInteropTextures()
-{
-  makeCurrent();
+  openglContext()->makeCurrent();
 
   for (std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
   {
@@ -2754,9 +2298,9 @@ void VLQtWidget::FreeCUDAInteropTextures()
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage, const std::string& nodename)
+void VLSceneView::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage, const std::string& nodename)
 {
-  makeCurrent();
+  openglContext()->makeCurrent();
 
   if (enable)
   {
@@ -2784,9 +2328,9 @@ void VLQtWidget::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorag
 
 //-----------------------------------------------------------------------------
 
-void VLQtWidget::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
+void VLSceneView::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
 {
-  makeCurrent();
+  openglContext()->makeCurrent();
 
   VIVID_CHECK(lwci != 0);
 

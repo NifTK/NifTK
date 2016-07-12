@@ -85,16 +85,16 @@ void QmitkIGIVLEditor::SetBackgroundColour(unsigned int aabbggrr)
   float   r = (aabbggrr & 0xFF) / 255.0f;
   float   g = ((aabbggrr & 0xFF00) >> 8) / 255.0f;
   float   b = ((aabbggrr & 0xFF0000) >> 16) / 255.0f;
-  m_OverlayViewer->SetBackgroundColour(r, g, b);
-  m_3DViewer->SetBackgroundColour(r, g, b);
+  m_OverlayViewer->vlSceneView()->SetBackgroundColour(r, g, b);
+  m_3DViewer->vlSceneView()->SetBackgroundColour(r, g, b);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkIGIVLEditor::SetOclResourceService(OclResourceService* oclserv)
 {
-  m_OverlayViewer->SetOclResourceService(oclserv);
-  m_3DViewer->SetOclResourceService(oclserv);
+  m_OverlayViewer->vlSceneView()->SetOclResourceService(oclserv);
+  m_3DViewer->vlSceneView()->SetOclResourceService(oclserv);
 }
 
 
@@ -143,21 +143,21 @@ void QmitkIGIVLEditor::On3DViewerCheckBoxChecked(bool checked)
 
 void QmitkIGIVLEditor::OnOpacitySliderMoved(int value)
 {
-  //m_OverlayViewer->SetOpacity(value / 100.0);
+  //m_OverlayViewer->vlSceneView()->SetOpacity(value / 100.0);
 }
 
 //-----------------------------------------------------------------------------
 
 void QmitkIGIVLEditor::OnImageSelected(const mitk::DataNode* node)
 {
-  m_OverlayViewer->SetBackgroundNode(node);
+  m_OverlayViewer->vlSceneView()->SetBackgroundNode(node);
 }
 
 //-----------------------------------------------------------------------------
 
 void QmitkIGIVLEditor::OnTransformSelected(const mitk::DataNode* node)
 {
-  m_OverlayViewer->SetCameraTrackingNode(node);
+  m_OverlayViewer->vlSceneView()->SetCameraTrackingNode(node);
 }
 
 
@@ -178,8 +178,8 @@ void QmitkIGIVLEditor::SetDataStorage(mitk::DataStorage* storage)
       (this, &QmitkIGIVLEditor::NodeChanged ) );
   }
 
-  m_3DViewer->SetDataStorage(storage);
-  m_OverlayViewer->SetDataStorage(storage);
+  m_3DViewer->vlSceneView()->SetDataStorage(storage);
+  m_OverlayViewer->vlSceneView()->SetDataStorage(storage);
 
   m_ImageCombo->SetDataStorage(storage);
   m_TransformCombo->SetDataStorage(storage);

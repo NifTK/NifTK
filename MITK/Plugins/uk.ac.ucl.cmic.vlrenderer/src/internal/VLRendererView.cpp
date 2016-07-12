@@ -126,7 +126,7 @@ void VLRendererView::InitVLRendering()
 {
   assert(m_VLQtRenderWindow == 0);
   m_VLQtRenderWindow = new VLQtWidget( 0, niftk::SharedOGLContext::GetShareWidget() );
-  m_VLQtRenderWindow->SetDataStorage(GetDataStorage());
+  m_VLQtRenderWindow->vlSceneView()->SetDataStorage(GetDataStorage());
 
   // renderer uses ocl kernels to sort triangles.
   ctkPluginContext*   context     = mitk::VLRendererPluginActivator::GetDefault()->GetPluginContext();
@@ -136,7 +136,7 @@ void VLRendererView::InitVLRendering()
   {
     mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
   }
-  m_VLQtRenderWindow->SetOclResourceService(oclService);
+  m_VLQtRenderWindow->vlSceneView()->SetOclResourceService(oclService);
   // note: m_VLQtRenderWindow will use that service instance in initializeGL(), which will only be called
   // once we have been bounced through the event-loop, i.e. after we return from this method here.
 
@@ -149,7 +149,7 @@ void VLRendererView::InitVLRendering()
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 #ifdef _USE_CUDA
-  //m_VLQtRenderWindow->EnableFBOCopyToDataStorageViaCUDA(true, GetDataStorage(), "vl-framebuffer");
+  m_VLQtRenderWindow->EnableFBOCopyToDataStorageViaCUDA(true, GetDataStorage(), "vl-framebuffer");
 #endif
 }
 
@@ -157,14 +157,14 @@ void VLRendererView::InitVLRendering()
 
 void VLRendererView::On_SliderMoved(int val)
 {
-  m_VLQtRenderWindow->UpdateThresholdVal(val);
+  m_VLQtRenderWindow->vlSceneView()->UpdateThresholdVal(val);
   m_VLQtRenderWindow->update();
 }
 
 //-----------------------------------------------------------------------------
 void VLRendererView::OnBackgroundNodeSelected(const mitk::DataNode* node)
 {
-  m_VLQtRenderWindow->SetBackgroundNode(node);
+  m_VLQtRenderWindow->vlSceneView()->SetBackgroundNode(node);
   // can fail, but we just ignore that.
 }
 
@@ -181,12 +181,12 @@ void VLRendererView::OnCameraNodeEnabled(bool enabled)
 {
   if (!enabled)
   {
-    m_VLQtRenderWindow->SetCameraTrackingNode( 0 );
+    m_VLQtRenderWindow->vlSceneView()->SetCameraTrackingNode( 0 );
   }
   else
   {
     mitk::DataNode::Pointer node = m_Controls->m_CameraNode->GetSelectedNode();
-    m_VLQtRenderWindow->SetCameraTrackingNode( node.GetPointer() );
+    m_VLQtRenderWindow->vlSceneView()->SetCameraTrackingNode( node.GetPointer() );
   }
 }
 
@@ -204,5 +204,5 @@ void VLRendererView::Visible()
 
 void VLRendererView::ReinitDisplay(bool viewEnabled)
 {
-  m_VLQtRenderWindow->ScheduleSceneRebuild();
+  m_VLQtRenderWindow->vlSceneView()->ScheduleSceneRebuild();
 }

@@ -13,11 +13,12 @@
 =============================================================================*/
 
 
-#ifndef Qt4Window_INCLUDE_ONCE
-#define Qt4Window_INCLUDE_ONCE
+#ifndef VLQtWidget_INCLUDE_ONCE
+#define VLQtWidget_INCLUDE_ONCE
 
 #include <niftkVLExports.h>
 
+#include <vlQt5/Qt5Widget.hpp>
 #include <vlGraphics/OpenGLContext.hpp>
 #include <vlVivid/VividRenderer.hpp>
 #include <vlVivid/VividRendering.hpp>
@@ -32,6 +33,7 @@
 #include <vlGraphics/BlitFramebuffer.hpp>
 #include <vlGraphics/Texture.hpp>
 #include <vlCore/VisualizationLibrary.hpp>
+#include "TrackballManipulator.h"
 #include <QMouseEvent>
 #include <QWidget>
 #include <QTimer>
@@ -61,8 +63,6 @@ namespace niftk
 }
 
 struct VLUserData;
-
-class VLTrackballManipulator;
 
 #ifdef _USE_CUDA
 
@@ -145,21 +145,27 @@ protected:
   vl::ref<vl::Actor> m_Actor;
 };
 
-/**
- * This class is not thread-safe! Methods should only ever be called on the main
- * GUI thread.
- */
-class NIFTKVL_EXPORT VLQtWidget : public QGLWidget, public vl::OpenGLContext
+//-----------------------------------------------------------------------------
+// VLSceneView
+// We could further divide this into:
+// * VLScene: 
+//  - view-independent data that can be shared across VLViews and VLQtWidgets.
+//  - receives data store events
+//  - upon data store update signals an update request to all VLViews.
+// * VLSceneView: 
+//  - view-dependent data and manipulators: camera, trackball, background settings, etc.
+//  - receives use interaction events
+// This to allow the VL and OpenGL data to be instanced only once and shared across OpenGL contexts.
+// For the moment we use the simpler and safer approach of instancing data for every VLQtWidget.
+//-----------------------------------------------------------------------------
+
+class NIFTKVL_EXPORT VLSceneView: public vl::UIEventListener
 {
-  Q_OBJECT
+public:
+  typedef std::map< mitk::DataNode::ConstPointer, vl::ref<VLMapper> > DataNodeVLMapperMapType;
 
 public:
-  typedef std::map< mitk::DataNode::ConstPointer, vl::ref<VLNode> > NodeVLNodeMapType;
-
-public:
-  VLQtWidget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0);
-
-  virtual ~VLQtWidget();
+  VLSceneView();
 
   // Called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
   void SetDataStorage(const mitk::DataStorage::Pointer& dataStorage);
@@ -174,7 +180,7 @@ public:
   void ScheduleNodeRemove(const mitk::DataNode* node);
   void ScheduleNodeUpdate(const mitk::DataNode* node);
   void ScheduleTrackballAdjustView( bool do_it =  true ) { m_ScheduleTrackballAdjustView = do_it; }
-  void ScheduleSceneRebuild() { ClearScene(); update(); }
+  void ScheduleSceneRebuild() { ClearScene(); openglContext()->update(); }
 
   // Called by QmitkIGIVLEditor::OnImageSelected(), VLRendererView::OnBackgroundNodeSelected()
   /** 
@@ -190,7 +196,14 @@ public:
   // Called by QmitkIGIVLEditor::OnTransformSelected(), VLRendererView::OnCameraNodeSelected()/OnCameraNodeEnabled()
   bool SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node);
 
+  VLTrackballManipulator* trackball() { return m_Trackball.get(); }
+  const VLTrackballManipulator* trackball() const { return m_Trackball.get(); }
+  vl::Camera* camera() { return m_Camera.get(); }
+  const vl::Camera* camera() const { return m_Camera.get(); }
+
 protected:
+  bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt5::Qt5Widget>()->QGLWidget::context(); }
+  
   void InitSceneFromDataStorage();
   void ClearScene();
   void UpdateScene();
@@ -208,7 +221,7 @@ protected:
   void UpdateCameraParameters();
 
   void PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
-  VLNode* VLQtWidget::GetVLNode( const mitk::DataNode::ConstPointer& node );
+  VLMapper* GetVLMapper( const mitk::DataNode::ConstPointer& node );
 
 protected:
   vl::ref<vl::VividRendering>        m_VividRendering;
@@ -223,7 +236,7 @@ protected:
   mitk::DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
   mitk::DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
 
-  NodeVLNodeMapType                      m_NodeVLNodeMap;
+  DataNodeVLMapperMapType                m_DataNodeVLMapperMap;
   std::set<mitk::DataNode::ConstPointer> m_NodesToUpdate;
   std::set<mitk::DataNode::ConstPointer> m_NodesToAdd;
   std::set<mitk::DataNode::ConstPointer> m_NodesToRemove;
@@ -236,87 +249,76 @@ protected:
   int m_BackgroundHeight;
 
   // Lgacy OpenCL service
+
   OclResourceService* m_OclService;
+
+  // CUDA support
 
 #ifdef _USE_CUDA
 public:
-  /**
-    * Will throw an exception if CUDA has not been enabled at compile time.
-    */
   void EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage = 0, const std::string& nodename = "");
 
 protected:
-  /** @name CUDA-interop related bits. */
-  //@{
+  virtual void cudaSwapBuffers();
 
-  /**
-    * @throws an exception if CUDA support was not enabled at compile time.
-    */
   void PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
 
-  /** @throws an exception if CUDA support was not enabled at compile time. */
   void UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node);
 
-  /** @throws an exception if CUDA support was not enabled at compile time. */
   void FreeCUDAInteropTextures();
 
-    /** Will throw if CUDA-support was not enabled at compile time. */
   vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
 
-  // will only be non-null if cuda support is enabled at compile time.
   CUDAInterop* m_CUDAInteropPimpl;
 
 #endif
 
+protected:
   // --------------------------------------------------------------------------
-  // Things that should be inherited from vl::Qt5Widget
+  // vl::UIEventListener implementation
   // --------------------------------------------------------------------------
 
-  // from vl::OpenGLContext
-public:
-  virtual void setContinuousUpdate(bool continuous);
-  virtual void setWindowTitle(const vl::String& title);
-  virtual bool setFullscreen(bool fullscreen);
-  virtual void show();
-  virtual void hide();
-  virtual void setPosition(int x, int y);
-  virtual vl::ivec2 position() const;
-  virtual void update();                // hides non-virtual QWidget::update()?
-  virtual void setSize(int w, int h);
-  virtual void swapBuffers();           // in QGLWidget too
-  virtual void makeCurrent();           // in QGLWidget too
-  virtual void setMousePosition(int x, int y);
-  virtual void setMouseVisible(bool visible);
-  virtual void getFocus();
+  virtual void initEvent();
+  virtual void resizeEvent(int width, int height);
+  virtual void updateEvent();
+  virtual void destroyEvent();
 
-  virtual vl::ivec2 size() const;       // BEWARE: not a base class method!
-
-  void setRefreshRate(int msec);
-  int refreshRate();
-
-protected:
-  void translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out);
-
-  // from QGLWidget
-protected:
-  virtual void initializeGL();
-  virtual void resizeGL(int width, int height);
-  virtual void paintGL();
-  virtual void mouseMoveEvent(QMouseEvent* ev);
-  virtual void mousePressEvent(QMouseEvent* ev);
-  virtual void mouseReleaseEvent(QMouseEvent* ev);
-  virtual void wheelEvent(QWheelEvent* ev);
-  virtual void keyPressEvent(QKeyEvent* ev);
-  virtual void keyReleaseEvent(QKeyEvent* ev);
-  // void dragEnterEvent(QDragEnterEvent *ev);
-  // void dropEvent(QDropEvent* ev);
-
-protected:
-  int    m_Refresh;
-  QTimer m_UpdateTimer;
-  QTimer m_BackgroundUpdateTimer;
-
+  virtual void addedListenerEvent(vl::OpenGLContext *) { }
+  virtual void removedListenerEvent(vl::OpenGLContext *) { }
+  virtual void enableEvent(bool) { }
+  virtual void visibilityEvent(bool) { }
+  virtual void mouseMoveEvent(int,int) { }
+  virtual void mouseUpEvent(vl::EMouseButton,int,int) { }
+  virtual void mouseDownEvent(vl::EMouseButton,int,int) { }
+  virtual void mouseWheelEvent(int) { }
+  virtual void keyPressEvent(unsigned short,vl::EKey) { }
+  virtual void keyReleaseEvent(unsigned short,vl::EKey) { }
+  virtual void fileDroppedEvent(const std::vector<vl::String>&) { }
 };
 
+//-----------------------------------------------------------------------------
+// VLQtWidget
+//-----------------------------------------------------------------------------
+
+class VLQtWidget: public vlQt5::Qt5Widget {
+public:
+  VLQtWidget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0)
+  : Qt5Widget(parent, shareWidget, f) {
+    m_VLSceneView = new VLSceneView;
+    addEventListener( m_VLSceneView.get() );
+    setRefreshRate( 1000 / 30 ); // 30 fps in milliseconds
+    setContinuousUpdate(false);
+    setMouseTracking(true);
+    setAutoBufferSwap(false);
+    setAcceptDrops(false);
+  }
+
+  void setVLSceneView( VLSceneView* vl_view ) { m_VLSceneView = vl_view; }
+  VLSceneView* vlSceneView() { return m_VLSceneView.get(); }
+  const VLSceneView* vlSceneView() const { return m_VLSceneView.get(); }
+
+protected:
+  vl::ref<VLSceneView> m_VLSceneView;
+};
 
 #endif
