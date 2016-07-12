@@ -27,7 +27,7 @@ bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> p
   frame0000points.push_back(cv::Point3d(-14.1034  ,   1.5127 ,  132.9415 ));
   frame0000points.push_back(cv::Point3d(24.3209  ,   3.3657 ,  126.3173));
   frame0000points.push_back(cv::Point3d(26.4292 ,  -23.5841 ,  131.1581));
-  
+
   std::vector <cv::Point3d> frame1155points;
   frame1155points.push_back(cv::Point3d(-17.28927 ,  -26.38782 ,  128.45949));
   frame1155points.push_back(cv::Point3d( -18.88983  ,   0.32739 ,  124.57826));
@@ -59,8 +59,8 @@ bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> p
     MITK_ERROR << "Points in left lens returned with wrong point vector size " << frame0Points.size() << " , " << frame1155Points.size();
     return false;
   }
-  
-  for ( int i = 0 ; i < 4 ; i ++ ) 
+
+  for ( int i = 0 ; i < 4 ; i ++ )
   {
     Error += fabs ( frame0Points[i].m_Points[0].x - frame0000points[i].x);
     Error += fabs ( frame0Points[i].m_Points[0].y - frame0000points[i].y);
@@ -102,7 +102,7 @@ bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> p
     }
   }
 
-  if ( Error < 2e-3 ) 
+  if ( Error < 2e-3 )
   {
     return true;
   }
@@ -112,7 +112,7 @@ bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> p
   }
 }
 
-bool CheckProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector) 
+bool CheckProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
 {
 
   double Error = 0.0;
@@ -122,14 +122,14 @@ bool CheckProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
   leftErrors.push_back(cv::Point2d(39.9234, 0.0393168 ));
   leftErrors.push_back(cv::Point2d(-0.259703, 29.6481));
   leftErrors.push_back(cv::Point2d(19.0695, 11.079));
-  
+
   std::vector <cv::Point2d> rightErrors;
   rightErrors.push_back(cv::Point2d(0.195419, 0.23519));
   rightErrors.push_back(cv::Point2d(40.7176, -0.0442551 ));
   rightErrors.push_back(cv::Point2d(-0.522525, 30.5887 ));
   rightErrors.push_back(cv::Point2d(19.3863, 11.421));
-  
-  for ( int i = 0 ; i < 4 ; i ++ ) 
+
+  for ( int i = 0 ; i < 4 ; i ++ )
   {
     Error += fabs ( Projector->GetLeftProjectionErrors()[i].x - leftErrors[i].x);
     Error += fabs ( Projector->GetLeftProjectionErrors()[i].y - leftErrors[i].y);
@@ -138,7 +138,7 @@ bool CheckProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
     Error += fabs ( Projector->GetRightProjectionErrors()[i].y - rightErrors[i].y);
   }
 
-  if ( Error < 2e-3 ) 
+  if ( Error < 2e-3 )
   {
     return true;
   }
@@ -147,7 +147,7 @@ bool CheckProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
     return false;
   }
 }
-bool CheckReProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector) 
+bool CheckReProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
 {
 
   double Error = 0.0;
@@ -157,14 +157,14 @@ bool CheckReProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projecto
   leftErrors.push_back(cv::Point3d(2.5, 0.0, 0.0 ));
   leftErrors.push_back(cv::Point3d(0.0, 3.6, 0.0));
   leftErrors.push_back(cv::Point3d(1.2, 1.4, 0.0));
-  
+
   std::vector <cv::Point3d> rightErrors;
   rightErrors.push_back(cv::Point3d(0.0, 0.0, 0.0));
   rightErrors.push_back(cv::Point3d(2.49889, 0.00106, -0.0));;
   rightErrors.push_back(cv::Point3d(-0.00019,3.59972 , 0.0));
   rightErrors.push_back(cv::Point3d(1.19939, 1.40040 , -0.0));
-  
-  for ( int i = 0 ; i < 4 ; i ++ ) 
+
+  for ( int i = 0 ; i < 4 ; i ++ )
   {
     Error += fabs ( Projector->GetLeftReProjectionErrors()[i].x - leftErrors[i].x);
     Error += fabs ( Projector->GetLeftReProjectionErrors()[i].y - leftErrors[i].y);
@@ -175,7 +175,7 @@ bool CheckReProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projecto
     Error += fabs ( Projector->GetRightReProjectionErrors()[i].z - rightErrors[i].z);
   }
 
-  if ( Error < 4e-2 ) 
+  if ( Error < 4e-2 )
   {
     return true;
   }
@@ -184,7 +184,7 @@ bool CheckReProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projecto
     return false;
   }
 }
-bool CheckTriangulationErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector) 
+bool CheckTriangulationErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
 {
 
   double Error = 0.0;
@@ -194,15 +194,15 @@ bool CheckTriangulationErrors (mitk::ProjectPointsOnStereoVideo::Pointer Project
   leftErrors.push_back(cv::Point3d(-2.5, 0.0, 0.0 ));
   leftErrors.push_back(cv::Point3d(0.0, -3.6, 0.0));
   leftErrors.push_back(cv::Point3d(-1.2, -1.4, 0.0));
-  
-  for ( int i = 0 ; i < 4 ; i ++ ) 
+
+  for ( int i = 0 ; i < 4 ; i ++ )
   {
     Error += fabs ( Projector->GetTriangulationErrors()[i].x - leftErrors[i].x);
     Error += fabs ( Projector->GetTriangulationErrors()[i].y - leftErrors[i].y);
     Error += fabs ( Projector->GetTriangulationErrors()[i].z - leftErrors[i].z);
   }
 
-  if ( Error < 2e-2 ) 
+  if ( Error < 2e-2 )
   {
     return true;
   }
@@ -225,7 +225,7 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   matcher->SetFlipMatrices(false);
   Projector->SetMatcherCameraToTracker(matcher);
   //check it initialised, check it gets the right matrix with the right time error
-  MITK_TEST_CONDITION_REQUIRED (Projector->GetInitOK() , "Testing mitkProjectPointsOnStereoVideo Initialised OK"); 
+  MITK_TEST_CONDITION_REQUIRED (Projector->GetInitOK() , "Testing mitkProjectPointsOnStereoVideo Initialised OK");
 
   //here are the on screen points manually found in frames 0 and 1155
   std::vector < mitk::ProjectedPointPair > frame0000ScreenPoints;
@@ -234,39 +234,39 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   std::vector < unsigned int > frame0000framenumbers;
   std::vector < unsigned int > frame1155framenumbers;
   std::vector < unsigned int > frame1400framenumbers;
-  frame0000ScreenPoints.push_back (mitk::ProjectedPointPair 
+  frame0000ScreenPoints.push_back (mitk::ProjectedPointPair
       ( cv::Point2d(756,72), cv::Point2d(852,84 )) );
-  frame0000ScreenPoints.push_back (mitk::ProjectedPointPair 
+  frame0000ScreenPoints.push_back (mitk::ProjectedPointPair
       ( cv::Point2d(1426,78), cv::Point2d(1524,90 )) );
-  frame0000ScreenPoints.push_back (mitk::ProjectedPointPair 
+  frame0000ScreenPoints.push_back (mitk::ProjectedPointPair
       ( cv::Point2d(1406,328), cv::Point2d(1506,342 )) );
-  frame0000ScreenPoints.push_back (mitk::ProjectedPointPair 
+  frame0000ScreenPoints.push_back (mitk::ProjectedPointPair
       ( cv::Point2d(702,306), cv::Point2d(798,320 )) );
-  for ( unsigned int i = 0 ; i < 4 ; i ++ ) 
+  for ( unsigned int i = 0 ; i < 4 ; i ++ )
   {
     frame0000framenumbers.push_back(2);
   }
- frame1155ScreenPoints.push_back (mitk::ProjectedPointPair 
+ frame1155ScreenPoints.push_back (mitk::ProjectedPointPair
       ( cv::Point2d(668,34), cv::Point2d(762,52 )) );
-  frame1155ScreenPoints.push_back (mitk::ProjectedPointPair 
+  frame1155ScreenPoints.push_back (mitk::ProjectedPointPair
       ( cv::Point2d(1378,50), cv::Point2d(1474,62 )) );
-  frame1155ScreenPoints.push_back (mitk::ProjectedPointPair 
+  frame1155ScreenPoints.push_back (mitk::ProjectedPointPair
       ( cv::Point2d(1372,308), cv::Point2d(1468,324)) );
-  frame1155ScreenPoints.push_back (mitk::ProjectedPointPair 
+  frame1155ScreenPoints.push_back (mitk::ProjectedPointPair
       ( cv::Point2d(628,296), cv::Point2d( 714,308)) );
-  for ( unsigned int i = 0 ; i < 4 ; i ++ ) 
+  for ( unsigned int i = 0 ; i < 4 ; i ++ )
   {
     frame1155framenumbers.push_back(1155);
   }
-  frame1400ScreenPoints.push_back (mitk::ProjectedPointPair 
+  frame1400ScreenPoints.push_back (mitk::ProjectedPointPair
       ( cv::Point2d(438,32), cv::Point2d(340,10 )) );
-  frame1400ScreenPoints.push_back (mitk::ProjectedPointPair 
+  frame1400ScreenPoints.push_back (mitk::ProjectedPointPair
       ( cv::Point2d(1016,162), cv::Point2d(930,142 )) );
-  frame1400ScreenPoints.push_back (mitk::ProjectedPointPair 
+  frame1400ScreenPoints.push_back (mitk::ProjectedPointPair
       ( cv::Point2d(798,386), cv::Point2d(714,368)) );
-  frame1400ScreenPoints.push_back (mitk::ProjectedPointPair 
+  frame1400ScreenPoints.push_back (mitk::ProjectedPointPair
       ( cv::Point2d(216,240), cv::Point2d( 122,220)) );
-  for ( unsigned int i = 0 ; i < 4 ; i ++ ) 
+  for ( unsigned int i = 0 ; i < 4 ; i ++ )
   {
     frame1400framenumbers.push_back(1400);
   }
@@ -279,13 +279,13 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   WorldGridPoints.push_back ( mitk::WorldPoint (cv::Point3d(-826.8,-168.4,-2007.0)));
 
   Projector->AppendWorldPoints(WorldGridPoints);
- 
+
 //  Projector->SetWorldPointsByTriangulation(frame1155ScreenPoints,1155);
   Projector->AppendWorldPointsByTriangulation(frame0000ScreenPoints,frame0000framenumbers, matcher);
   Projector->AppendWorldPointsByTriangulation(frame1400ScreenPoints,frame1400framenumbers, matcher);
 
  Projector->Project(matcher);
-  MITK_TEST_CONDITION_REQUIRED (Projector->GetProjectOK(), "Testing mitkProjectPointsOnStereoVideo projected OK"); 
+  MITK_TEST_CONDITION_REQUIRED (Projector->GetProjectOK(), "Testing mitkProjectPointsOnStereoVideo projected OK");
 
   MITK_TEST_CONDITION(CheckTransformedPointVector(Projector->GetPointsInLeftLensCS()), "Testing projected points");
 
@@ -320,6 +320,21 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   MITK_TEST_CONDITION(CheckProjectionErrors(Projector), "Testing projection Errors");
   MITK_TEST_CONDITION(CheckReProjectionErrors(Projector), "Testing re-projection Errors");
   MITK_TEST_CONDITION(CheckTriangulationErrors(Projector), "Testing triangulation Errors");
+
+  //now we're going to repeat this test using more grid points, and a model to world transform
+  Projector->ClearWorldPoints();
+  mitk::PickedPointList::Pointer ModelGridPoints = mitk::PickedPointList::New();
+ /* ModelGridPoints.push_back(mitk::WorldPoint (cv::Point3d (0.0 , 0.0 , 0.0 )));
+  ModelGridPoints.push_back(mitk::WorldPoint (cv::Point3d (3*12 ,0.0 , 0.0 )));
+  ModelGridPoints.push_back(mitk::WorldPoint (cv::Point3d (3*12 , 3*10 , 0.0 )));
+  ModelGridPoints.push_back(mitk::WorldPoint (cv::Point3d ((0.0 , 3*10 , 0.0 )));*/
+  Projector->SetModelPoints(ModelGridPoints);
+  Projector->Project(matcher);
+
+  MITK_TEST_CONDITION(false, "The following tests should fail");
+  MITK_TEST_CONDITION(CheckProjectionErrors(Projector), "Testing projection Errors with model to world transform");
+  MITK_TEST_CONDITION(CheckReProjectionErrors(Projector), "Testing re-projection Errors with model to world transform");
+  MITK_TEST_CONDITION(CheckTriangulationErrors(Projector), "Testing triangulation Errors with model to world transform");
 
   MITK_TEST_END();
 }
