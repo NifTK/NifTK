@@ -1096,31 +1096,46 @@ public:
       verts->at(j).z() = p[2];
     }
 
-    ref<vl::Geometry> geom = new vl::Geometry;
-    ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays(vl::PT_POINTS, 0, verts->size());
-    geom->drawCalls().push_back(draw_arrays.get());
-    geom->setVertexArray(verts.get());
+    m_Geometry = new vl::Geometry;
+    ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays( vl::PT_POINTS, 0, verts->size() );
+    m_Geometry->drawCalls().push_back(draw_arrays.get());
+    m_Geometry->setVertexArray( verts.get() );
+    m_Geometry->setColorArray( vl::white );
 
-    m_Actor = initActor( geom.get() );
+    m_Actor = initActor( m_Geometry.get() );
+    ref<vl::Effect> fx = m_Actor->effect();
+    fx->shader()->getUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
+    fx->shader()->getUniform( "vl_Vivid.enablePointSprite" )->setUniformI( 1 );
+    fx->shader()->gocUniform( "vl_Vivid.enableTextureMapping" )->setUniformI( 1 );
+    ref<vl::Image> img = new Image("/vivid/images/sphere.png");
+    ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+    texture->createTexture2D( img.get(), vl::TF_UNKNOWN, false, false );
   }
 
   virtual void update() {
-    // Update point size
-    float pointsize = 1;
-    m_DataNode->GetFloatProperty( "pointsize", pointsize );
     Shader* shader = m_Actor->effect()->shader();
     // This is part of the standard vivid shader so it must be present.
     VIVID_CHECK( shader->getPointSize() );
+
+    // Update point size
+    float pointsize = 1;
+    m_DataNode->GetFloatProperty( "pointsize", pointsize );
     shader->getPointSize()->set( pointsize );
-    if ( pointsize > 1 ) {
-      shader->enable( vl::EN_POINT_SMOOTH );
-    } else {
-      shader->disable( vl::EN_POINT_SMOOTH );
-    }
+
+    // Get Color
+    float RGB[3];
+    m_DataNode->GetColor(RGB);
+
+    // Get Opacity
+    float opacity = 1;
+    m_DataNode->GetFloatProperty( "opacity", opacity );
+
+    m_Geometry->setColorArray( vl::vec4( RGB[0], RGB[1], RGB[2], opacity ) );
   }
 
 protected:
   mitk::PointSet::Pointer m_MitkPointSet;
+  ref<vl::Geometry> m_Geometry;
 };
 
 //-----------------------------------------------------------------------------
@@ -1933,7 +1948,7 @@ void VLSceneView::UpdateScene() {
 
 void VLSceneView::RenderScene()
 {
-  openglContext()->makeCurrent();
+  VIVID_CHECK( contextIsCurrent() );
 
   UpdateScene();
 
