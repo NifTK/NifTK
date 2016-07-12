@@ -16,5 +16,6 @@
     <file>vivid/glsl/front_peeling/shade_fragment.glsl</file>
     <file>vivid/glsl/front_peeling/shade_vertex.glsl</file>
     <file>vivid/glsl/front_peeling/shade_vertex_outline.glsl</file>
+    <file>vivid/images/sphere.png</file>
   </qresource>
 </RCC>
