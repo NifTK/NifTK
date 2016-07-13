@@ -904,21 +904,20 @@ bool NiftyCalVideoCalibrationManager::Grab()
     // stereo case, early exit.
     if (!extracted[0] && !extracted[1])
     {
-      std::cerr << "Matt, both failed" << std::endl;
       return isSuccessful;
     }
     if (extracted[0] && !extracted[1])
     {
-      std::cerr << "Matt, right failed" << std::endl;
       m_OriginalImages[0].pop_back();
       m_ImagesForWarping[0].pop_back();
+      m_Points[0].pop_back();
       return isSuccessful;
     }
     if (!extracted[0] && extracted[1])
     {
-      std::cerr << "Matt, left failed" << std::endl;
       m_OriginalImages[1].pop_back();
       m_ImagesForWarping[1].pop_back();
+      m_Points[1].pop_back();
       return isSuccessful;
     }
   }
@@ -1147,10 +1146,10 @@ double NiftyCalVideoCalibrationManager::Calibrate()
             m_Distortion[0],
             m_Intrinsic[1],
             m_Distortion[1],
-            m_EssentialMatrix,
-            m_FundamentalMatrix,
             m_LeftToRightRotationMatrix,
             m_LeftToRightTranslationVector,
+            m_EssentialMatrix,
+            m_FundamentalMatrix,
             CV_CALIB_USE_INTRINSIC_GUESS
             );
 
@@ -1175,15 +1174,11 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     // Don't change the order of these.
     // Malti requires an initial hand-eye, so we use Tsai.
     m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, false);
-    std::cerr << "Matt, done left tsai:" << m_HandEyeMatrices[0][TSAI_1989] << std::endl;
     m_HandEyeMatrices[0][KANG_2014] = DoKangHandEye(0, false);
-    std::cerr << "Matt, done left kang:" << m_HandEyeMatrices[0][KANG_2014] << std::endl;
     m_HandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0, false);
-    std::cerr << "Matt, done left malti:" << m_HandEyeMatrices[0][MALTI_2013] << std::endl;
     if (m_ImageNode[1].IsNull())
     {
       m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC] = DoFullExtrinsicHandEye(0, false);
-      std::cerr << "Matt, done left full:" << m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC] << std::endl;
     }
 
     if (m_ImageNode[1].IsNotNull())
@@ -1191,17 +1186,14 @@ double NiftyCalVideoCalibrationManager::Calibrate()
       // Don't change the order of these.
       // Malti requires an initial hand-eye, so we use Tsai.
       m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, false);
-      std::cerr << "Matt, done right tsai:" << m_HandEyeMatrices[1][TSAI_1989] << std::endl;
       m_HandEyeMatrices[1][KANG_2014] = DoKangHandEye(1, false);
-      std::cerr << "Matt, done right kang:" << m_HandEyeMatrices[1][KANG_2014] << std::endl;
       m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, false);
-      std::cerr << "Matt, done right malti:" << m_HandEyeMatrices[1][MALTI_2013] << std::endl;
 
       DoFullExtrinsicHandEyeInStereo(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
                                      m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC],
                                      false
                                     );
-      std::cerr << "Matt, done right full:" << m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC] << std::endl;
+
     } // end if we are in stereo.
 
     if (m_ReferenceTrackingTransformNode.IsNotNull())
@@ -1232,8 +1224,6 @@ double NiftyCalVideoCalibrationManager::Calibrate()
       } // end if we are in stereo
     } // end if we have a reference matrix.
   } // end if we have tracking data.
-
-  std::cerr << "Matt, done hand-eye" << std::endl;
 
   // If true, we set properties on the images,
   // so that the overlay viewer renders in correctly calibrated mode.
