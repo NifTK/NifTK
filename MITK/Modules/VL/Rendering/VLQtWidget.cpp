@@ -711,6 +711,36 @@ public:
 
   static const char* VLGlobalSettingsName() { return "VL Global Settings"; }
 
+  static void update(Actor* actor, mitk::DataNode* vl_global_settings) {
+
+    VIVID_CHECK( actor );
+    VIVID_CHECK( vl_global_settings );
+
+    // Fog
+
+    int fog_mode = getEnumProp( vl_global_settings, "Fog.Mode", 0 );
+    int fog_target = getEnumProp( vl_global_settings, "Fog.Target", 0 );
+    vec4 fog_color = getColorProp( vl_global_settings, "Fog.Color", vl::black );
+    float fog_start = getFloatProp( vl_global_settings, "Fog.Start", 0 );
+    float fog_end = getFloatProp( vl_global_settings, "Fog.End", 0 );
+    float fog_density = getFloatProp( vl_global_settings, "Fog.Density", 0 );
+
+    Shader* sh = actor->effect()->shader();
+    // Fog
+    sh->gocFog()->setColor( fog_color);
+    sh->gocUniform("vl_Vivid.smartFog.mode")->setUniformI( fog_mode );
+    sh->gocUniform("vl_Vivid.smartFog.target")->setUniformI( fog_target );
+    sh->gocFog()->setStart( fog_start );
+    sh->gocFog()->setEnd( fog_end );
+    sh->gocFog()->setDensity( fog_density );
+    printf( "---\n" );
+    printf( "mode: %d\n", fog_mode );
+    printf( "target: %d\n", fog_target );
+    printf( "start: %d\n", fog_start );
+    printf( "end: %d\n", fog_end );
+    printf( "density: %d\n", fog_density );
+  }
+
 protected:
   void initProperties() 
   {
@@ -763,6 +793,22 @@ protected:
 
 //-----------------------------------------------------------------------------
 // VLMapper
+//-----------------------------------------------------------------------------
+
+VLMapper::VLMapper( const mitk::DataNode* node, VLSceneView* sv ) {
+  // Init
+  VIVID_CHECK( node );
+  VIVID_CHECK( sv );
+  m_DataNode = node;
+  m_VLSceneView = sv;
+  m_OpenGLContext = sv->openglContext();
+  m_VividRendering = sv->vividRendering();
+  m_DataStorage = sv->dataStorage();
+  VIVID_CHECK( m_OpenGLContext );
+  VIVID_CHECK( m_VividRendering );
+  VIVID_CHECK( m_DataStorage );
+}
+
 //-----------------------------------------------------------------------------
 
 void VLMapper::initVLPropertiesPointSet() {
@@ -846,10 +892,9 @@ void VLMapper::updateCommon() {
 
 class VLMapperVLGlobalSettings: public VLMapper {
 public:
-  VLMapperVLGlobalSettings( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node, VLSceneView* vl_scene_view )
-    : VLMapper( gl, vr, ds, node ) {
+  VLMapperVLGlobalSettings( const mitk::DataNode* node, VLSceneView* sv )
+    : VLMapper( node, sv ) {
     m_VLGlobalSettings = dynamic_cast<const VLGlobalSettingsDataNode*>( node );
-    m_VLSceneView = vl_scene_view;
   }
 
   virtual void init() { }
@@ -861,39 +906,8 @@ public:
 
   virtual void updateVLGlobalSettings() { /* we don't have anything to set */ }
 
-  static void update(Actor* actor, mitk::DataNode* vl_global_settings) {
-
-    VIVID_CHECK( actor );
-    VIVID_CHECK( vl_global_settings );
-
-    // Fog
-
-    int fog_mode = getEnumProp( vl_global_settings, "Fog.Mode", 0 );
-    int fog_target = getEnumProp( vl_global_settings, "Fog.Target", 0 );
-    vec4 fog_color = getColorProp( vl_global_settings, "Fog.Color", vl::black );
-    float fog_start = getFloatProp( vl_global_settings, "Fog.Start", 0 );
-    float fog_end = getFloatProp( vl_global_settings, "Fog.End", 0 );
-    float fog_density = getFloatProp( vl_global_settings, "Fog.Density", 0 );
-
-    Shader* sh = actor->effect()->shader();
-    // Fog
-    sh->gocFog()->setColor( fog_color);
-    sh->gocUniform("vl_Vivid.smartFog.mode")->setUniformI( fog_mode );
-    sh->gocUniform("vl_Vivid.smartFog.target")->setUniformI( fog_target );
-    sh->gocFog()->setStart( fog_start );
-    sh->gocFog()->setEnd( fog_end );
-    sh->gocFog()->setDensity( fog_density );
-    printf( "---\n" );
-    printf( "mode: %d\n", fog_mode );
-    printf( "target: %d\n", fog_target );
-    printf( "start: %d\n", fog_start );
-    printf( "end: %d\n", fog_end );
-    printf( "density: %d\n", fog_density );
-  }
-
 protected:
   VLGlobalSettingsDataNode::ConstPointer m_VLGlobalSettings;
-  VLSceneView* m_VLSceneView;
 };
 
 //-----------------------------------------------------------------------------
@@ -903,15 +917,15 @@ void VLMapper::updateVLGlobalSettings() {
   if ( ! node ) {
     return;
   }
-  VLMapperVLGlobalSettings::update( m_Actor.get(), node );
+  VLGlobalSettingsDataNode::update( m_Actor.get(), node );
 }
 
 //-----------------------------------------------------------------------------
 
 class VLMapperSurface: public VLMapper {
 public:
-  VLMapperSurface( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLMapper( gl, vr, ds, node ) {
+  VLMapperSurface( const mitk::DataNode* node, VLSceneView* sv )
+    : VLMapper( node, sv ) {
     m_MitkSurf = dynamic_cast<mitk::Surface*>( node->GetData() );
     VIVID_CHECK( m_MitkSurf );
   }
@@ -938,8 +952,8 @@ protected:
 
 class VLMapper2DImage: public VLMapper {
 public:
-  VLMapper2DImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLMapper( gl, vr, ds, node ) {
+  VLMapper2DImage( const mitk::DataNode* node, VLSceneView* sv )
+    : VLMapper( node, sv ) {
     m_MitkImage = dynamic_cast<mitk::Image*>( node->GetData() );
     VIVID_CHECK( m_MitkImage.IsNotNull() );
   }
@@ -1035,8 +1049,8 @@ protected:
 
 class VLMapper3DImage: public VLMapper {
 public:
-  VLMapper3DImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLMapper( gl, vr, ds, node ) {
+  VLMapper3DImage( const mitk::DataNode* node, VLSceneView* sv )
+    : VLMapper( node, sv ) {
     m_MitkImage = dynamic_cast<mitk::Image*>( node->GetData() );
     VIVID_CHECK( m_MitkImage.IsNotNull() );
   }
@@ -1242,8 +1256,8 @@ protected:
 
 class VLMapperCoordinateAxes: public VLMapper {
 public:
-  VLMapperCoordinateAxes( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLMapper( gl, vr, ds, node ) {
+  VLMapperCoordinateAxes( const mitk::DataNode* node, VLSceneView* sv )
+    : VLMapper( node, sv ) {
     m_MitkAxes = dynamic_cast<mitk::CoordinateAxesData*>( node->GetData() );
     VIVID_CHECK( m_MitkAxes );
   }
@@ -1321,8 +1335,8 @@ protected:
 
 class VLMapperPointSet: public VLMapper {
 public:
-  VLMapperPointSet( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLMapper( gl, vr, ds, node ) {
+  VLMapperPointSet( const mitk::DataNode* node, VLSceneView* sv )
+    : VLMapper( node, sv ) {
     m_MitkPointSet = dynamic_cast<mitk::PointSet*>( node->GetData() );
     m_3DSphereMode = true;
     initVLPropertiesPointSet();
@@ -1459,13 +1473,13 @@ public:
     }
 
     if ( m_Actor) {
-      VLMapperVLGlobalSettings::update( m_Actor.get(), node );
+      VLGlobalSettingsDataNode::update( m_Actor.get(), node );
     } 
     else if (m_SphereActors) {
       vl::ActorCollection actors;
       m_SphereActors->extractActors( actors );
       for( int i = 0; i < actors.size(); ++i ) {
-        VLMapperVLGlobalSettings::update( actors[i].get(), node );
+        VLGlobalSettingsDataNode::update( actors[i].get(), node );
       }
     }
   }
@@ -1499,8 +1513,8 @@ never compiled nor tested
 */                          
 class VLMapperPCL: public VLMapper {
 public:
-  VLMapperPCL( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLMapper( gl, vr, ds, node ) {
+  VLMapperPCL( const mitk::DataNode* node, VLSceneView* sv )
+    : VLMapper( node , sv ) {
     m_NiftkPCL = dynamic_cast<niftk::PCLData*>( node->GetData() );
     VIVID_CHECK( m_NiftkPCL );
   }
@@ -1581,8 +1595,8 @@ This is just stub code, a raw attempt at reorganizing the legacy experimental CU
 */                          
 class VLMapperCUDAImage: public VLMapper {
 public:
-  VLMapperCUDAImage( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node )
-    : VLMapper( gl, vr, ds, node ) {
+  VLMapperCUDAImage( const mitk::DataNode* node, VLSceneView* sv )
+    : VLMapper( node, sv ) {
     niftk::CUDAImage* cuda_image = dynamic_cast<niftk::CUDAImage*>( node->GetData() );
     if ( cuda_image ) {
       m_NiftkLightweightCUDAImage = cuda_image->GetLightweightCUDAImage();
@@ -1750,7 +1764,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 
-vl::ref<VLMapper> VLMapper::create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node, VLSceneView* scene_view ) {
+vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv ) {
   
   // Map DataNode type to VLMapper type
   vl::ref<VLMapper> vl_node;
@@ -1768,40 +1782,40 @@ vl::ref<VLMapper> VLMapper::create( vl::OpenGLContext* gl, vl::VividRendering* v
 #endif
 
   if ( vl_global ) {
-    vl_node = new VLMapperVLGlobalSettings( gl, vr, ds, node, scene_view );
+    vl_node = new VLMapperVLGlobalSettings( node, sv );
   } 
   else
   if ( mitk_surf ) {
-    vl_node = new VLMapperSurface( gl, vr, ds, node );
+    vl_node = new VLMapperSurface( node, sv );
   } 
   else 
   if ( mitk_image ) {
     unsigned int depth = mitk_image->GetDimensions()[2];
     // In VTK a NxMx1 image is 2D (in VL a 2D image is NxMx0)
     if ( depth <= 1 ) {
-      vl_node = new VLMapper2DImage( gl, vr, ds, node );
+      vl_node = new VLMapper2DImage( node, sv );
     } else {
-      vl_node = new VLMapper3DImage( gl, vr, ds, node );
+      vl_node = new VLMapper3DImage( node, sv );
     }
   } 
   else  
   if ( mitk_axes ) {
-    vl_node = new VLMapperCoordinateAxes( gl, vr, ds, node );
+    vl_node = new VLMapperCoordinateAxes( node, sv );
   } 
   else 
   if ( mitk_pset ) {
-    vl_node = new VLMapperPointSet( gl, vr, ds, node );
+    vl_node = new VLMapperPointSet( node, sv );
   }
 #ifdef _USE_PCL
   else 
   if ( mitk_pcld ) {
-    vl_node = new VLMapperPCL( gl, vr, ds, node );
+    vl_node = new VLMapperPCL( node, sv );
   }
 #endif
 #ifdef _USE_CUDA
   else 
   if ( mitk_pcld ) {
-    vl_node = new VLMapperCUDAImage( gl, vr, ds, node );
+    vl_node = new VLMapperCUDAImage( node, sv );
   }
 #endif
   return vl_node;
@@ -2014,7 +2028,7 @@ VLMapper* VLSceneView::AddDataNode(const mitk::DataNode::ConstPointer& node)
     dumpNodeInfo( "AddDataNode()", node );
   #endif
 
-  ref<VLMapper> vl_node = VLMapper::create( openglContext(), m_VividRendering.get(), m_DataStorage.GetPointer(), node.GetPointer(), this );
+  ref<VLMapper> vl_node = VLMapper::create( node.GetPointer(), this );
   if ( vl_node ) {
     m_DataNodeVLMapperMap[ node ] = vl_node;
     vl_node->init();

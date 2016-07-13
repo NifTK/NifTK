@@ -95,15 +95,7 @@ class VLSceneView;
  */
 class VLMapper: public vl::Object {
 public:
-  VLMapper( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node ) {
-    // Init
-    m_OpenGLContext = gl;
-    m_VividRendering = vr;
-    m_DataStorage = ds;
-    m_DataNode = node;
-    // Activate OpenGL context
-    gl->makeCurrent();
-  }
+  VLMapper( const mitk::DataNode* node, VLSceneView* sv );
 
   virtual ~VLMapper() {
     remove();
@@ -122,7 +114,7 @@ public:
   }
 
   /** Factory method: creates the right VLMapper subclass according to the node's type. */
-  static vl::ref<VLMapper> create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node, VLSceneView* );
+  static vl::ref<VLMapper> create( const mitk::DataNode* node, VLSceneView* );
 
   /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
   const vl::Actor* actor() const { return m_Actor.get(); }
@@ -148,6 +140,7 @@ protected:
   vl::OpenGLContext* m_OpenGLContext;
   vl::VividRendering* m_VividRendering;
   mitk::DataStorage* m_DataStorage;
+  VLSceneView* m_VLSceneView;
   const mitk::DataNode* m_DataNode;
   vl::ref<vl::Actor> m_Actor;
 };
@@ -188,6 +181,12 @@ public:
   void ScheduleNodeUpdate(const mitk::DataNode* node);
   void ScheduleTrackballAdjustView( bool do_it =  true ) { m_ScheduleTrackballAdjustView = do_it; }
   void ScheduleSceneRebuild() { ClearScene(); m_ScheduleInitScene = true; openglContext()->update(); }
+
+  mitk::DataStorage* dataStorage() { return m_DataStorage.GetPointer(); }
+  const mitk::DataStorage* dataStorage() const { return m_DataStorage.GetPointer(); }
+
+  vl::VividRendering* vividRendering() { return m_VividRendering.get(); }
+  const vl::VividRendering* vividRendering() const { return m_VividRendering.get(); }
 
   // Called by QmitkIGIVLEditor::OnImageSelected(), VLRendererView::OnBackgroundNodeSelected()
   /** 
