@@ -134,7 +134,7 @@ protected:
   // VL volume properties
   void initVLPropertiesVolume();
   // Initialize an Actor to be used with the Vivid renderer
-  vl::ref<vl::Actor> initActor(vl::Geometry* geom, vl::Effect* fx  = NULL, vl::Transform* tr = NULL);
+  vl::ref<vl::Actor> initActor(vl::Geometry* geom, vl::Effect* fx = NULL, vl::Transform* tr = NULL );
 
 protected:
   vl::OpenGLContext* m_OpenGLContext;

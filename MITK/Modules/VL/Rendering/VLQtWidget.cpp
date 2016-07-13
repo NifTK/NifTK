@@ -857,6 +857,11 @@ vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom, vl::Effect* effect, v
   UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
   ref<vl::Actor> actor = new vl::Actor( geom, fx.get(), tr.get() );
   actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
+  VLGlobalSettingsDataNode* node = dynamic_cast<VLGlobalSettingsDataNode*>( m_DataStorage->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() ) );
+  VIVID_CHECK( node );
+  if ( node ) {
+    VLGlobalSettingsDataNode::update( actor.get(), node );
+  }
   return actor;
 }
 
@@ -1411,6 +1416,9 @@ public:
     }
     m_3DSphereMode = 0 == mode;
 
+    bool visible = true;
+    m_DataNode->GetBoolProperty( "visible", visible );
+
     // Get point size
     float pointsize = 1;
     m_DataNode->GetFloatProperty( m_3DSphereMode ? "VL.Point.Size3D" : "VL.Point.Size2D", pointsize );
@@ -1428,11 +1436,14 @@ public:
         init3D();
       }
 
-      // Set color
+      // Set color/opacity
       m_3DSphereFX->shader()->getMaterial()->setDiffuse( vl::vec4( rgb[0], rgb[1], rgb[2], opacity ) );
-      // Set size
       for( int i = 0; i < m_SphereActors->actors()->size(); ++i ) {
-        Transform* tr = m_SphereActors->actors()->at( i )->transform();
+        // Set visible
+        Actor* act = m_SphereActors->actors()->at( i );
+        act->setEnabled( visible );
+        // Set size
+        Transform* tr = act->transform();
         mat4& local = tr->localMatrix();
         local.e(0,0) = pointsize * 2;
         local.e(1,1) = pointsize * 2;
@@ -1879,7 +1890,7 @@ void VLSceneView::RemoveDataStorageListeners()
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
+void VLSceneView::SetDataStorage(const mitk::DataStorage::Pointer& ds)
 {
   openglContext()->makeCurrent();
 
@@ -1889,10 +1900,16 @@ void VLSceneView::SetDataStorage(const mitk::DataStorage::Pointer& dataStorage)
   FreeCUDAInteropTextures();
 #endif
 
-  m_DataStorage = dataStorage;
+  m_DataStorage = ds;
   AddDataStorageListeners();
 
   ClearScene();
+
+  // Initialize VL Global Settings if not present
+  if ( ! ds->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() ) ) {
+    mitk::DataNode::Pointer node = VLGlobalSettingsDataNode::New();
+    ds->Add( node.GetPointer() );
+  }
 
   openglContext()->update();
 }
@@ -2036,7 +2053,6 @@ VLMapper* VLSceneView::AddDataNode(const mitk::DataNode::ConstPointer& node)
     vl_node->update();
     // so we do these after to make sure their updates are not lost
     vl_node->updateCommon();
-    vl_node->updateVLGlobalSettings();
   }
 
   return vl_node.get();
@@ -2082,7 +2098,6 @@ void VLSceneView::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
     it->second->update();
     // so we do these after to make sure their updates are not lost
     it->second->updateCommon();
-    it->second->updateVLGlobalSettings();
     return;
   }
 
@@ -2165,13 +2180,6 @@ void VLSceneView::initEvent()
 
   // This is only used by the CUDA stuff
   CreateAndUpdateFBOSizes( openglContext()->width(), openglContext()->height() );
-
-  // Initialize VL Global Settings only once
-
-  if ( ! m_DataStorage->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() ) ) {
-    mitk::DataNode::Pointer node = VLGlobalSettingsDataNode::New();
-    m_DataStorage->Add( node.GetPointer () );
-  }
 
 #if 0
   // Point cloud data test
