@@ -114,6 +114,11 @@ bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> p
 
 bool CheckProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
 {
+  if ( Projector->GetLeftProjectionErrors().size() != 4 || Projector->GetRightProjectionErrors().size() != 4 )
+  {
+    MITK_ERROR << "Wrong number of points in projected error vector";
+    return false;
+  }
 
   double Error = 0.0;
   //these points were not calculated independently, so this is more a regression test
@@ -149,6 +154,11 @@ bool CheckProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
 }
 bool CheckReProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
 {
+  if ( Projector->GetLeftReProjectionErrors().size() != 4 || Projector->GetRightReProjectionErrors().size() != 4 )
+  {
+    MITK_ERROR << "Wrong number of points in reprojected error vector";
+    return false;
+  }
 
   double Error = 0.0;
   //some errors calculated independently.
@@ -186,6 +196,12 @@ bool CheckReProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projecto
 }
 bool CheckTriangulationErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
 {
+
+  if ( Projector->GetTriangulationErrors().size() != 4 )
+  {
+    MITK_ERROR << "Wrong number of points in triangulated error vector";
+    return false;
+  }
 
   double Error = 0.0;
   //some errors calculated independently.
