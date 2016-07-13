@@ -618,30 +618,30 @@ void VLMapper::initVLPropertiesGlobal() {
 
 void VLMapper::initVLPropertiesPointSet() {
   // Init only once
-  if ( m_DataNode->GetProperty( "VL.PointMode" ) ) {
+  if ( m_DataNode->GetProperty( "VL.Point.Mode" ) ) {
     return;
   }
 
   mitk::EnumerationProperty::Pointer point_set_mode = mitk::EnumerationProperty::New();
   point_set_mode->AddEnum("3D", 0);
   point_set_mode->AddEnum("2D", 1);
-  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.PointMode", point_set_mode);
+  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Mode", point_set_mode);
   point_set_mode->SetValue( 0 );
   
   mitk::FloatProperty::Pointer point_size_2d = mitk::FloatProperty::New();
-  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.PointSize2D", point_size_2d);
+  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Size2D", point_size_2d);
   point_size_2d->SetValue( 5 );
   
   mitk::FloatProperty::Pointer point_size_3d = mitk::FloatProperty::New();
-  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.PointSize3D", point_size_3d);
+  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Size3D", point_size_3d);
   point_size_3d->SetValue( 5 );
   
   mitk::FloatProperty::Pointer point_opacity = mitk::FloatProperty::New();
-  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.PointOpacity", point_opacity);
+  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Opacity", point_opacity);
   point_opacity->SetValue( 1 );
   
   mitk::ColorProperty::Pointer point_color = mitk::ColorProperty::New();
-  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.PointColor", point_color);
+  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Color", point_color);
   point_color->SetValue( mitk::Color( 1 ) );
   
   // MIC FIXME: need to somehow update the DataStorage views
@@ -650,11 +650,11 @@ void VLMapper::initVLPropertiesPointSet() {
 
 //-----------------------------------------------------------------------------
 
-vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom, vl::Effect* effect = NULL) {
+vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom, vl::Effect* effect, vl::Transform* transform) {
   VIVID_CHECK( m_DataNode );
   VIVID_CHECK( m_VividRendering );
   ref<vl::Effect> fx = effect ? effect : vl::VividRendering::makeVividEffect();
-  ref<vl::Transform> tr = new vl::Transform;
+  ref<vl::Transform> tr = transform ? transform : new vl::Transform;
   UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
   ref<vl::Actor> actor = new vl::Actor( geom, fx.get(), tr.get() );
   actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
@@ -1131,8 +1131,7 @@ public:
       mitk::PointSet::PointType p = i->Value();
       vl::vec3 pos( p[0], p[1], p[2] );
       ref<Actor> actor = initActor( m_3DSphereGeom.get(), m_3DSphereFX.get() );
-      ref<vl::Transform> tr = new vl::Transform( vl::mat4::getTranslation( pos ) );
-      actor->setTransform( tr.get() );
+      actor->transform()->setLocalAndWorldMatrix( vl::mat4::getTranslation( pos ) );
       m_SphereActors->addActor( actor.get() );
     }
   }
@@ -1175,7 +1174,7 @@ public:
   virtual void update() {
     // Get mode
     int mode = 0;
-    const mitk::EnumerationProperty* mode_prop = dynamic_cast<const mitk::EnumerationProperty*>( m_DataNode->GetProperty( "VL.PointMode" ) );
+    const mitk::EnumerationProperty* mode_prop = dynamic_cast<const mitk::EnumerationProperty*>( m_DataNode->GetProperty( "VL.Point.Mode" ) );
     if ( mode_prop ) {
       mode = mode_prop->GetValueAsId();
     }
@@ -1183,15 +1182,15 @@ public:
 
     // Get point size
     float pointsize = 1;
-    m_DataNode->GetFloatProperty( m_3DSphereMode ? "VL.PointSize3D" : "VL.PointSize2D", pointsize );
+    m_DataNode->GetFloatProperty( m_3DSphereMode ? "VL.Point.Size3D" : "VL.Point.Size2D", pointsize );
 
     // Get color
     float rgb[3];
-    m_DataNode->GetColor( rgb, NULL, "VL.PointColor" );
+    m_DataNode->GetColor( rgb, NULL, "VL.Point.Color" );
 
     // Get opacity
     float opacity = 1;
-    m_DataNode->GetFloatProperty( "VL.PointOpacity", opacity );
+    m_DataNode->GetFloatProperty( "VL.Point.Opacity", opacity );
 
     if ( m_3DSphereMode ) {
       if ( ! m_SphereActors ) {
@@ -1203,9 +1202,11 @@ public:
       // Set size
       for( int i = 0; i < m_SphereActors->actors()->size(); ++i ) {
         Transform* tr = m_SphereActors->actors()->at( i )->transform();
-        tr->worldMatrix().e(0,0) = pointsize * 2;
-        tr->worldMatrix().e(1,1) = pointsize * 2;
-        tr->worldMatrix().e(2,2) = pointsize * 2;
+        mat4& local = tr->localMatrix();
+        local.e(0,0) = pointsize * 2;
+        local.e(1,1) = pointsize * 2;
+        local.e(2,2) = pointsize * 2;
+        tr->computeWorldMatrix();
       }
     } else {
       if ( ! m_2DGeometry ) {
@@ -1719,11 +1720,11 @@ void VLSceneView::InitSceneFromDataStorage()
 
   for (unsigned int i = 0; i < vc->Size(); ++i)
   {
-    mitk::DataNode::Pointer currentDataNode = vc->ElementAt(i);
-    if (currentDataNode.IsNull() || currentDataNode->GetData()== 0) {
+    mitk::DataNode::Pointer node = vc->ElementAt(i);
+    if ( ! node || ! node->GetData() ) {
       continue;
     } else {
-      AddDataNode( mitk::DataNode::ConstPointer( currentDataNode.GetPointer() ) );
+      AddDataNode( node.GetPointer() );
     }
   }
 
