@@ -25,8 +25,8 @@
   #define VIVID_CHECK(expr) { if(!(expr)) { ::vl::log_failed_check(#expr,__FILE__,__LINE__); VIVID_TRAP() } }
   #define VIVID_WARN(expr)  { if(!(expr)) { ::vl::log_failed_check(#expr,__FILE__,__LINE__); } }
 #else
-  #define VIVID_CHECK(expr) {}
-  #define VIVID_WARN(expr) {}
+  #define VIVID_CHECK(expr) { (expr) }
+  #define VIVID_WARN(expr) { (expr) }
   #define VIVID_TRAP() {}
 #endif
 
@@ -154,11 +154,78 @@ struct VLUserData: public vl::Object
 };
 
 //-----------------------------------------------------------------------------
+// mitk::EnumerationProperty wrapper classes
+//-----------------------------------------------------------------------------
+
+class VL_Point_Mode_Property: public mitk::EnumerationProperty
+{
+public:
+  mitkClassMacro( VL_Point_Mode_Property, EnumerationProperty );
+  itkFactorylessNewMacro(Self)
+  VL_Point_Mode_Property() {
+    AddEnum("3D", 0);
+    AddEnum("2D", 1);
+  }
+};
+
+class VL_Global_Fog_Target_Property: public mitk::EnumerationProperty
+{
+public:
+  mitkClassMacro( VL_Global_Fog_Target_Property, EnumerationProperty );
+  itkFactorylessNewMacro(Self)
+  VL_Global_Fog_Target_Property() {
+    AddEnum("Color",      0);
+    AddEnum("Alpha",      1);
+    AddEnum("Saturation", 2);
+  }
+};
+
+class VL_Global_Fog_Mode_Property: public mitk::EnumerationProperty
+{
+public:
+  mitkClassMacro( VL_Global_Fog_Mode_Property, EnumerationProperty );
+  itkFactorylessNewMacro(Self)
+  VL_Global_Fog_Mode_Property() {
+    AddEnum("Off",    0);
+    AddEnum("Linear", 1);
+    AddEnum("Exp",    2);
+    AddEnum("Exp2",   3);
+  }
+};
+
+//-----------------------------------------------------------------------------
 // Util functions
 //-----------------------------------------------------------------------------
 
 namespace
 {
+  int getEnumProp( const mitk::DataNode* node, const char* prop_name, int defval = 0 ) {
+    const mitk::EnumerationProperty* mode_prop = dynamic_cast<const mitk::EnumerationProperty*>( node->GetProperty( prop_name ) );
+    if ( mode_prop ) {
+      return mode_prop->GetValueAsId();
+    } else {
+      return defval;
+    }
+  }
+
+  float getFloatProp( const mitk::DataNode* node, const char* prop_name, float defval = 0 ) {
+    float val = defval;
+    VIVID_CHECK( node->GetFloatProperty( prop_name, val ) );
+    return val;
+  }
+
+  int getIntProp( const mitk::DataNode* node, const char* prop_name, int defval = 0 ) {
+    int val = defval;
+    VIVID_CHECK( node->GetIntProperty( prop_name, val ) );
+    return val;
+  }
+
+  vl::vec4 getColorProp( const mitk::DataNode* node, const char* prop_name, vl::vec4 defval = vl::white ) {
+    float rgb[3] = { defval.r(), defval.g(), defval.b() };
+    node->GetColor(rgb, NULL, prop_name );
+    return vl::vec4( rgb[0], rgb[1], rgb[2], defval.a() );
+  }
+
   vl::EImageType MapITKPixelTypeToVL(int itkComponentType)
   {
     static const vl::EImageType typeMap[] =
@@ -610,11 +677,93 @@ namespace
 }
 
 //-----------------------------------------------------------------------------
-// VLMapper
+// VLGlobalSettingsDataNode
 //-----------------------------------------------------------------------------
 
-void VLMapper::initVLPropertiesGlobal() {
-}
+class VLDummyData: public mitk::BaseData
+{
+public:
+  mitkClassMacro(VLDummyData, BaseData);
+  itkFactorylessNewMacro(Self)
+  itkCloneMacro(Self)
+protected:
+  virtual bool VerifyRequestedRegion(){return false;};
+  virtual bool RequestedRegionIsOutsideOfTheBufferedRegion(){return false;};
+  virtual void SetRequestedRegionToLargestPossibleRegion(){};
+  virtual void SetRequestedRegion( const itk::DataObject * /*data*/){};
+};
+
+class VLGlobalSettingsDataNode: public mitk::DataNode
+{
+public:
+  mitkClassMacro(VLGlobalSettingsDataNode, DataNode);
+  itkFactorylessNewMacro(Self)
+  itkCloneMacro(Self)
+
+  VLGlobalSettingsDataNode() {
+    SetName( VLGlobalSettingsName() );
+    // Needs dummy data otherwise it doesn't show up
+    mitk::BaseData::Pointer data = VLDummyData::New();
+    SetData( data.GetPointer() );
+
+    initProperties();
+  }
+
+  static const char* VLGlobalSettingsName() { return "VL Global Settings"; }
+
+protected:
+  void initProperties() 
+  {
+    // Fog
+
+    // 0=OFF, 1=Linear, 2=Exp, 3=Exp2
+    // gocUniform("vl_Vivid.smartFog.mode")->setUniformI( 1 );   
+    mitk::EnumerationProperty::Pointer fog_mode = VL_Global_Fog_Mode_Property::New();
+    SetProperty("Fog.Mode", fog_mode);
+    VIVID_CHECK( fog_mode->SetValue( 0 ) );
+
+    // 0=Color, 1=Alpha, 2=Saturation
+    // gocUniform("vl_Vivid.smartFog.target")->setUniformI( 0 ); 
+    mitk::EnumerationProperty::Pointer fog_target = VL_Global_Fog_Target_Property::New();
+    SetProperty("Fog.Target", fog_target);
+    VIVID_CHECK( fog_target->SetValue( 0 ) );
+  
+    // gocFog()->setColor( ... );
+    mitk::ColorProperty::Pointer fog_color = mitk::ColorProperty::New();
+    SetProperty("Fog.Color", fog_color);
+    fog_color->SetValue( mitk::Color( 0.0f ) );
+
+    // Only used with Linear mode
+    // gocFog()->setStart( ... ); 
+    mitk::FloatProperty::Pointer fog_start = mitk::FloatProperty::New();
+    SetProperty("Fog.Start", fog_start);
+    fog_start->SetValue( 0 );
+
+    // Only used with Linear mode
+    // gocFog()->setEnd( ... );   
+    mitk::FloatProperty::Pointer fog_stop = mitk::FloatProperty::New();
+    SetProperty("Fog.End", fog_stop);
+    fog_stop->SetValue( 1000 );
+
+    // Only used with Exp & Exp2 mode
+    // gocFog()->setDensity( ... );                         
+    mitk::FloatProperty::Pointer fog_density = mitk::FloatProperty::New();
+    SetProperty("Fog.Density", fog_density);
+    fog_density->SetValue( 1 );
+
+    // Stencil 
+    // - enable/disable
+    // - sphere radius
+    // - sphere position
+
+    // Rendering mode
+  }
+
+};
+
+//-----------------------------------------------------------------------------
+// VLMapper
+//-----------------------------------------------------------------------------
 
 void VLMapper::initVLPropertiesPointSet() {
   // Init only once
@@ -622,9 +771,7 @@ void VLMapper::initVLPropertiesPointSet() {
     return;
   }
 
-  mitk::EnumerationProperty::Pointer point_set_mode = mitk::EnumerationProperty::New();
-  point_set_mode->AddEnum("3D", 0);
-  point_set_mode->AddEnum("2D", 1);
+  mitk::EnumerationProperty::Pointer point_set_mode = VL_Point_Mode_Property::New();
   const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Mode", point_set_mode);
   point_set_mode->SetValue( 0 );
   
@@ -646,6 +793,12 @@ void VLMapper::initVLPropertiesPointSet() {
   
   // MIC FIXME: need to somehow update the DataStorage views
   m_DataStorage->Modified();
+}
+
+void VLMapper::initVLPropertiesSurface() {
+}
+
+void VLMapper::initVLPropertiesVolume() {
 }
 
 //-----------------------------------------------------------------------------
@@ -687,6 +840,70 @@ void VLMapper::updateCommon() {
 
   // Update transform
   UpdateTransformFromData( m_Actor->transform(), m_DataNode->GetData() );
+}
+
+//-----------------------------------------------------------------------------
+
+class VLMapperVLGlobalSettings: public VLMapper {
+public:
+  VLMapperVLGlobalSettings( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node, VLSceneView* vl_scene_view )
+    : VLMapper( gl, vr, ds, node ) {
+    m_VLGlobalSettings = dynamic_cast<const VLGlobalSettingsDataNode*>( node );
+    m_VLSceneView = vl_scene_view;
+  }
+
+  virtual void init() { }
+
+  virtual void update() {
+    // Update everyone in the scene
+    m_VLSceneView->requestVLGlobalSettingsUpdate();
+  }
+
+  virtual void updateVLGlobalSettings() { /* we don't have anything to set */ }
+
+  static void update(Actor* actor, mitk::DataNode* vl_global_settings) {
+
+    VIVID_CHECK( actor );
+    VIVID_CHECK( vl_global_settings );
+
+    // Fog
+
+    int fog_mode = getEnumProp( vl_global_settings, "Fog.Mode", 0 );
+    int fog_target = getEnumProp( vl_global_settings, "Fog.Target", 0 );
+    vec4 fog_color = getColorProp( vl_global_settings, "Fog.Color", vl::black );
+    float fog_start = getFloatProp( vl_global_settings, "Fog.Start", 0 );
+    float fog_end = getFloatProp( vl_global_settings, "Fog.End", 0 );
+    float fog_density = getFloatProp( vl_global_settings, "Fog.Density", 0 );
+
+    Shader* sh = actor->effect()->shader();
+    // Fog
+    sh->gocFog()->setColor( fog_color);
+    sh->gocUniform("vl_Vivid.smartFog.mode")->setUniformI( fog_mode );
+    sh->gocUniform("vl_Vivid.smartFog.target")->setUniformI( fog_target );
+    sh->gocFog()->setStart( fog_start );
+    sh->gocFog()->setEnd( fog_end );
+    sh->gocFog()->setDensity( fog_density );
+    printf( "---\n" );
+    printf( "mode: %d\n", fog_mode );
+    printf( "target: %d\n", fog_target );
+    printf( "start: %d\n", fog_start );
+    printf( "end: %d\n", fog_end );
+    printf( "density: %d\n", fog_density );
+  }
+
+protected:
+  VLGlobalSettingsDataNode::ConstPointer m_VLGlobalSettings;
+  VLSceneView* m_VLSceneView;
+};
+
+//-----------------------------------------------------------------------------
+
+void VLMapper::updateVLGlobalSettings() {
+  mitk::DataNode* node = m_DataStorage->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() );
+  if ( ! node ) {
+    return;
+  }
+  VLMapperVLGlobalSettings::update( m_Actor.get(), node );
 }
 
 //-----------------------------------------------------------------------------
@@ -1235,6 +1452,25 @@ public:
     }
   }
 
+  virtual void updateVLGlobalSettings() {
+    mitk::DataNode* node = m_DataStorage->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() );
+    if ( ! node ) {
+      return;
+    }
+
+    if ( m_Actor) {
+      VLMapperVLGlobalSettings::update( m_Actor.get(), node );
+    } 
+    else if (m_SphereActors) {
+      vl::ActorCollection actors;
+      m_SphereActors->extractActors( actors );
+      for( int i = 0; i < actors.size(); ++i ) {
+        VLMapperVLGlobalSettings::update( actors[i].get(), node );
+      }
+    }
+  }
+
+
 protected:
   mitk::PointSet::Pointer m_MitkPointSet;
   bool m_3DSphereMode;
@@ -1514,11 +1750,12 @@ protected:
 
 //-----------------------------------------------------------------------------
 
-vl::ref<VLMapper> VLMapper::create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node ) {
+vl::ref<VLMapper> VLMapper::create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node, VLSceneView* scene_view ) {
   
   // Map DataNode type to VLMapper type
   vl::ref<VLMapper> vl_node;
 
+  const VLGlobalSettingsDataNode* vl_global = dynamic_cast<const VLGlobalSettingsDataNode*>(node);
   mitk::Surface*            mitk_surf = dynamic_cast<mitk::Surface*>(node->GetData());
   mitk::Image*              mitk_image = dynamic_cast<mitk::Image*>( node->GetData() );
   mitk::CoordinateAxesData* mitk_axes = dynamic_cast<mitk::CoordinateAxesData*>( node->GetData() );
@@ -1530,10 +1767,15 @@ vl::ref<VLMapper> VLMapper::create( vl::OpenGLContext* gl, vl::VividRendering* v
   mitk::BaseData*           cuda_img = dynamic_cast<niftk::CUDAImage*>( node->GetData() );
 #endif
 
+  if ( vl_global ) {
+    vl_node = new VLMapperVLGlobalSettings( gl, vr, ds, node, scene_view );
+  } 
+  else
   if ( mitk_surf ) {
     vl_node = new VLMapperSurface( gl, vr, ds, node );
   } 
-  else if ( mitk_image ) {
+  else 
+  if ( mitk_image ) {
     unsigned int depth = mitk_image->GetDimensions()[2];
     // In VTK a NxMx1 image is 2D (in VL a 2D image is NxMx0)
     if ( depth <= 1 ) {
@@ -1542,19 +1784,23 @@ vl::ref<VLMapper> VLMapper::create( vl::OpenGLContext* gl, vl::VividRendering* v
       vl_node = new VLMapper3DImage( gl, vr, ds, node );
     }
   } 
-  else  if ( mitk_axes ) {
+  else  
+  if ( mitk_axes ) {
     vl_node = new VLMapperCoordinateAxes( gl, vr, ds, node );
   } 
-  else if ( mitk_pset ) {
+  else 
+  if ( mitk_pset ) {
     vl_node = new VLMapperPointSet( gl, vr, ds, node );
   }
 #ifdef _USE_PCL
-  else if ( mitk_pcld ) {
+  else 
+  if ( mitk_pcld ) {
     vl_node = new VLMapperPCL( gl, vr, ds, node );
   }
 #endif
 #ifdef _USE_CUDA
-  else if ( mitk_pcld ) {
+  else 
+  if ( mitk_pcld ) {
     vl_node = new VLMapperCUDAImage( gl, vr, ds, node );
   }
 #endif
@@ -1647,6 +1893,14 @@ void VLSceneView::SetOclResourceService(OclResourceService* oclserv)
    throw std::runtime_error("Can set OpenCL service only once");
 
  m_OclService = oclserv;
+}
+
+//-----------------------------------------------------------------------------
+
+void VLSceneView::requestVLGlobalSettingsUpdate() {
+  for( DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.begin(); it != m_DataNodeVLMapperMap.end(); ++it ) {
+    it->second->updateVLGlobalSettings();
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1747,27 +2001,31 @@ void VLSceneView::InitSceneFromDataStorage()
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::AddDataNode(const mitk::DataNode::ConstPointer& node)
+VLMapper* VLSceneView::AddDataNode(const mitk::DataNode::ConstPointer& node)
 {
   openglContext()->makeCurrent();
 
   // Add only once and only if valid
   if ( ! node || ! node->GetData() || GetVLMapper( node ) != NULL ) {
-    return;
+    return NULL;
   }
 
   #if 0
     dumpNodeInfo( "AddDataNode()", node );
   #endif
 
-  ref<VLMapper> vl_node = VLMapper::create( openglContext(), m_VividRendering.get(), m_DataStorage.GetPointer(), node.GetPointer() );
+  ref<VLMapper> vl_node = VLMapper::create( openglContext(), m_VividRendering.get(), m_DataStorage.GetPointer(), node.GetPointer(), this );
   if ( vl_node ) {
     m_DataNodeVLMapperMap[ node ] = vl_node;
     vl_node->init();
-    vl_node->updateCommon();
+    // this might recreate new Actors
     vl_node->update();
-    return;
+    // so we do these after to make sure their updates are not lost
+    vl_node->updateCommon();
+    vl_node->updateVLGlobalSettings();
   }
+
+  return vl_node.get();
 }
 
 //-----------------------------------------------------------------------------
@@ -1806,8 +2064,11 @@ void VLSceneView::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 
   DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.find( node );
   if ( it != m_DataNodeVLMapperMap.end() ) {
-    it->second->updateCommon();
+    // this might recreate new Actors
     it->second->update();
+    // so we do these after to make sure their updates are not lost
+    it->second->updateCommon();
+    it->second->updateVLGlobalSettings();
     return;
   }
 
@@ -1890,6 +2151,13 @@ void VLSceneView::initEvent()
 
   // This is only used by the CUDA stuff
   CreateAndUpdateFBOSizes( openglContext()->width(), openglContext()->height() );
+
+  // Initialize VL Global Settings only once
+
+  if ( ! m_DataStorage->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() ) ) {
+    mitk::DataNode::Pointer node = VLGlobalSettingsDataNode::New();
+    m_DataStorage->Add( node.GetPointer () );
+  }
 
 #if 0
   // Point cloud data test

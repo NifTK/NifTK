@@ -64,6 +64,8 @@ namespace niftk
 
 struct VLUserData;
 
+class VLSceneView;
+
 #ifdef _USE_CUDA
 
   struct cudaGraphicsResource;
@@ -101,8 +103,6 @@ public:
     m_DataNode = node;
     // Activate OpenGL context
     gl->makeCurrent();
-    // Initialize properties
-    initVLPropertiesGlobal();
   }
 
   virtual ~VLMapper() {
@@ -122,7 +122,7 @@ public:
   }
 
   /** Factory method: creates the right VLMapper subclass according to the node's type. */
-  static vl::ref<VLMapper> create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node );
+  static vl::ref<VLMapper> create( vl::OpenGLContext* gl, vl::VividRendering* vr, mitk::DataStorage* ds, const mitk::DataNode* node, VLSceneView* );
 
   /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
   const vl::Actor* actor() const { return m_Actor.get(); }
@@ -132,9 +132,9 @@ public:
   /** Updates visibility, opacity, color, etc. and Vivid related common settings. */
   void updateCommon();
 
+  virtual void updateVLGlobalSettings();
+
 protected:
-  // VL global properties
-  void initVLPropertiesGlobal();
   // VL surface properties
   void initVLPropertiesSurface();
   // VL point set properties
@@ -208,6 +208,8 @@ public:
   vl::Camera* camera() { return m_Camera.get(); }
   const vl::Camera* camera() const { return m_Camera.get(); }
 
+  void requestVLGlobalSettingsUpdate();
+
 protected:
   bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt5::Qt5Widget>()->QGLWidget::context(); }
   
@@ -216,7 +218,8 @@ protected:
   void UpdateScene();
   void RenderScene();
 
-  void AddDataNode(const mitk::DataNode::ConstPointer& node);
+  // Returned VLMapper can be NULL
+  VLMapper* AddDataNode(const mitk::DataNode::ConstPointer& node);
   void RemoveDataNode(const mitk::DataNode::ConstPointer& node);
   void UpdateDataNode(const mitk::DataNode::ConstPointer& node);
 
