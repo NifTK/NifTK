@@ -159,7 +159,12 @@ mitk::DataNode::Pointer NiftyCalVideoCalibrationManager::GetRightImageNode() con
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints(cv::Matx44d& transform)
 {
-  m_ModelPointsToVisualise->Clear();
+  // This gets called
+  // (a) when the model is first loaded
+  // (b) with each new calibration, as calibration updates the model-to-world.
+  //
+  // Try not to erase/create new points, as the Video Overlay Display goes nuts.
+
   niftk::Model3D::const_iterator iter;
   for (iter = m_ModelPoints.begin();
        iter != m_ModelPoints.end();
@@ -179,7 +184,16 @@ void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints(cv::Matx44d& transf
     p4[1] = p3(1, 0);
     p4[2] = p3(2, 0);
 
-    m_ModelPointsToVisualise->InsertPoint((*iter).first, p4);
+    mitk::Point3D tmp;
+
+    if (m_ModelPointsToVisualise->GetPointIfExists((*iter).first, &tmp))
+    {
+      m_ModelPointsToVisualise->SetPoint((*iter).first, p4);
+    }
+    else
+    {
+      m_ModelPointsToVisualise->InsertPoint((*iter).first, p4);
+    }
   }
 }
 
