@@ -60,6 +60,7 @@
 #include <vtkCellArray.h>
 #include <vtkPolyDataNormals.h>
 #include <vtkImageData.h>
+#include <mitkEnumerationProperty.h>
 #include <mitkProperties.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkDataStorage.h>
@@ -612,6 +613,40 @@ namespace
 // VLMapper
 //-----------------------------------------------------------------------------
 
+void VLMapper::initVLPropertiesGlobal() {
+}
+
+void VLMapper::initVLPropertiesPointSet() {
+  // Init only once
+  if ( m_DataNode->GetProperty( "VL.PointMode" ) ) {
+    return;
+  }
+
+  mitk::EnumerationProperty::Pointer point_set_mode = mitk::EnumerationProperty::New();
+  point_set_mode->AddEnum("3D", 0);
+  point_set_mode->AddEnum("2D", 1);
+  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.PointMode", point_set_mode);
+  point_set_mode->SetValue( 0 );
+  
+  mitk::FloatProperty::Pointer point_size_2d = mitk::FloatProperty::New();
+  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.PointSize2D", point_size_2d);
+  point_size_2d->SetValue( 5 );
+  
+  mitk::FloatProperty::Pointer point_size_3d = mitk::FloatProperty::New();
+  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.PointSize3D", point_size_3d);
+  point_size_3d->SetValue( 5 );
+  
+  mitk::FloatProperty::Pointer point_opacity = mitk::FloatProperty::New();
+  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.PointOpacity", point_opacity);
+  point_opacity->SetValue( 1 );
+  
+  mitk::ColorProperty::Pointer point_color = mitk::ColorProperty::New();
+  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.PointColor", point_color);
+  point_color->SetValue( mitk::Color( 1 ) );
+  
+  // MIC FIXME: need to somehow update the DataStorage views
+  m_DataStorage->Modified();
+}
 
 //-----------------------------------------------------------------------------
 
@@ -621,7 +656,7 @@ vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom, vl::Effect* effect = 
   ref<vl::Effect> fx = effect ? effect : vl::VividRendering::makeVividEffect();
   ref<vl::Transform> tr = new vl::Transform;
   UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
-  ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor( geom, fx.get(), tr.get() );
+  ref<vl::Actor> actor = new vl::Actor( geom, fx.get(), tr.get() );
   actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
   return actor;
 }
@@ -673,6 +708,7 @@ public:
     }
 
     m_Actor = initActor( geom.get() );
+    m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
   }
 
   virtual void update() {}
@@ -719,6 +755,7 @@ public:
     ref<vl::Geometry> geom = CreateGeometryFor2DImage(dims[0], dims[1]);
 
     m_Actor = initActor( geom.get() );
+    m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
     ref<Effect> fx = m_Actor->effect();
 
     // These must be present as part of the default Vivid material
@@ -1031,6 +1068,7 @@ public:
     geom->setColorArray(colors.get());
 
     m_Actor = initActor( geom.get() );
+    m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
     ref<Effect> fx = m_Actor->effect();
 
     fx->shader()->getLineWidth()->set( 2 );
@@ -1070,7 +1108,7 @@ public:
     : VLMapper( gl, vr, ds, node ) {
     m_MitkPointSet = dynamic_cast<mitk::PointSet*>( node->GetData() );
     m_3DSphereMode = true;
-
+    initVLPropertiesPointSet();
     VIVID_CHECK( m_MitkPointSet );
   }
 
@@ -1124,6 +1162,7 @@ public:
     m_2DGeometry->setColorArray( vl::white );
 
     m_Actor = initActor( m_2DGeometry.get() );
+    m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
     ref<vl::Effect> fx = m_Actor->effect();
     fx->shader()->getUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
     fx->shader()->getUniform( "vl_Vivid.enablePointSprite" )->setUniformI( 1 );
@@ -1134,18 +1173,25 @@ public:
   }
 
   virtual void update() {
+    // Get mode
+    int mode = 0;
+    const mitk::EnumerationProperty* mode_prop = dynamic_cast<const mitk::EnumerationProperty*>( m_DataNode->GetProperty( "VL.PointMode" ) );
+    if ( mode_prop ) {
+      mode = mode_prop->GetValueAsId();
+    }
+    m_3DSphereMode = 0 == mode;
 
     // Get point size
     float pointsize = 1;
-    m_DataNode->GetFloatProperty( "pointsize", pointsize );
+    m_DataNode->GetFloatProperty( m_3DSphereMode ? "VL.PointSize3D" : "VL.PointSize2D", pointsize );
 
     // Get color
     float rgb[3];
-    m_DataNode->GetColor(rgb);
+    m_DataNode->GetColor( rgb, NULL, "VL.PointColor" );
 
     // Get opacity
     float opacity = 1;
-    m_DataNode->GetFloatProperty( "opacity", opacity );
+    m_DataNode->GetFloatProperty( "VL.PointOpacity", opacity );
 
     if ( m_3DSphereMode ) {
       if ( ! m_SphereActors ) {
@@ -1252,6 +1298,7 @@ public:
     geom->setColorArray( vl_colors.get() );
 
     m_Actor = initActor( geom.get() );
+    m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
   }
 
   virtual void update() {
@@ -1332,6 +1379,7 @@ public:
     ref<vl::Geometry> vlquad = CreateGeometryFor2DImage(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight());
 
     m_Actor = initActor( vlquad.get() );
+    m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
     ref<Effect> fx = m_Actor->effect();
 
     fx->shader()->disable(vl::EN_LIGHTING);
@@ -1521,6 +1569,7 @@ VLSceneView::VLSceneView() :
   m_BackgroundWidth( 0 )
   , m_BackgroundHeight( 0 )
   , m_ScheduleTrackballAdjustView( true )
+  , m_ScheduleInitScene ( true )
   , m_OclService( 0 )
 #ifdef _USE_CUDA
   , m_CUDAInteropPimpl(0)
@@ -1970,8 +2019,9 @@ void VLSceneView::UpdateScene() {
   VIVID_CHECK( m_VividRendering.get() );
   VIVID_CHECK( contextIsCurrent() );
 
-  if ( m_SceneManager->tree()->actors()->empty() ) {
+  if ( m_ScheduleInitScene ) {
     InitSceneFromDataStorage();
+    m_ScheduleInitScene = false;
   } else {
     // Execute scheduled removals
     for ( std::set<mitk::DataNode::ConstPointer>::const_iterator it = m_NodesToRemove.begin(); it != m_NodesToRemove.end(); ++it)
@@ -2039,6 +2089,7 @@ void VLSceneView::ClearScene()
   {
     if ( m_SceneManager->tree() ) {
       m_SceneManager->tree()->actors()->clear();
+      m_SceneManager->tree()->eraseAllChildren();
     }
   }
 

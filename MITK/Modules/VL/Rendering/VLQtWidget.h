@@ -102,7 +102,7 @@ public:
     // Activate OpenGL context
     gl->makeCurrent();
     // Initialize properties
-    initDataStoreProperties();
+    initVLPropertiesGlobal();
   }
 
   virtual ~VLMapper() {
@@ -133,8 +133,15 @@ public:
   void updateCommon();
 
 protected:
-  /** Initializes the value of all Vivid properties in the DataStore. */
-  void initDataStoreProperties();
+  // VL global properties
+  void initVLPropertiesGlobal();
+  // VL surface properties
+  void initVLPropertiesSurface();
+  // VL point set properties
+  void initVLPropertiesPointSet();
+  // VL volume properties
+  void initVLPropertiesVolume();
+  // Initialize an Actor to be used with the Vivid renderer
   vl::ref<vl::Actor> initActor(vl::Geometry* geom, vl::Effect* fx);
 
 protected:
@@ -180,7 +187,7 @@ public:
   void ScheduleNodeRemove(const mitk::DataNode* node);
   void ScheduleNodeUpdate(const mitk::DataNode* node);
   void ScheduleTrackballAdjustView( bool do_it =  true ) { m_ScheduleTrackballAdjustView = do_it; }
-  void ScheduleSceneRebuild() { ClearScene(); openglContext()->update(); }
+  void ScheduleSceneRebuild() { ClearScene(); m_ScheduleInitScene = true; openglContext()->update(); }
 
   // Called by QmitkIGIVLEditor::OnImageSelected(), VLRendererView::OnBackgroundNodeSelected()
   /** 
@@ -244,6 +251,7 @@ protected:
   mitk::DataNode::ConstPointer           m_CameraNode;
 
   bool m_ScheduleTrackballAdjustView;
+  bool m_ScheduleInitScene;
   // these two will go away once we render the background using Vivid
   int m_BackgroundWidth;  
   int m_BackgroundHeight;
