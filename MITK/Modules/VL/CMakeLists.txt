@@ -41,7 +41,7 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
 endif()
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS Rendering
+  INCLUDE_DIRS Rendering VLEditor
   DEPENDS ${_modules}
   PACKAGE_DEPENDS ${_packages}
 )

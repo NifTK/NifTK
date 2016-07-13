@@ -12,29 +12,14 @@
 #
 #============================================================================*/
 
-set(CPP_FILES
-  Rendering/VLQtWidget.cpp
-  Rendering/OclTriangleSorter.cxx
-  Rendering/TrackballManipulator.cxx
-  VLEditor/niftkIGIVLVideoOverlayWidget.cxx
-)
+project(uk_ac_ucl_cmic_igivlvideooverlayeditor)
 
-set(MOC_H_FILES
-  Rendering/VLQtWidget.h
-  VLEditor/niftkIGIVLVideoOverlayWidget.h
-)
-
-set(UI_FILES
-  VLEditor/niftkIGIVLVideoOverlayWidget.ui
-)
-
-set(QRC_FILES
-  Resources/niftkVL.qrc
-)
-
-if(CUDA_FOUND AND NIFTK_USE_CUDA)
-  set(CPP_FILES
-    ${CPP_FILES}
-    Rendering/VLFramebufferToCUDA.cxx
+mitk_create_plugin(
+  EXPORT_DIRECTIVE UK_AC_UCL_CMIC_IGIVLVIDEOOVERLAYEDITOR
+  EXPORTED_INCLUDE_SUFFIXES src
+  MODULE_DEPENDS niftkVL
   )
+
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(uk_ac_ucl_cmic_igivlvideooverlayeditor)
 endif()

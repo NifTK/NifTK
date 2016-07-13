@@ -56,12 +56,6 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
 )
 
-if(BUILD_VL)
-  set(PROJECT_PLUGINS
-    ${PROJECT_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.vlrenderer:ON              # Prototype
-  )
-endif()
 
 # ---------------------------------------------------------------------------------------------------
 # NiftyView Specific Plugins
@@ -130,7 +124,7 @@ endif()
 if(BUILD_VL)
   set(NiftyIGI_PLUGINS
     ${NiftyIGI_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.igivleditor:ON
+    Plugins/uk.ac.ucl.cmic.igivlvideooverlayeditor:ON
   )
 endif()
 

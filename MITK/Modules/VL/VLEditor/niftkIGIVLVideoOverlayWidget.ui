@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>QmitkIGIVLEditor</class>
- <widget class="QWidget" name="QmitkIGIVLEditor">
+ <class>niftk::IGIVLVideoOverlayWidget</class>
+ <widget class="QWidget" name="niftk::IGIVLVideoOverlayWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1226</width>
-    <height>480</height>
+    <width>1007</width>
+    <height>374</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,62 +19,62 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QLabel" name="m_ImageLabel">
+        <widget class="QCheckBox" name="m_LeftImageCheckBox">
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
          <property name="text">
-          <string>image:</string>
+          <string>left</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QmitkDataStorageComboBox" name="m_ImageCombo">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>150</width>
-           <height>0</height>
-          </size>
-         </property>
-        </widget>
+        <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_LeftImageCombo"/>
        </item>
        <item>
-        <widget class="QLabel" name="m_TransformLabel">
+        <widget class="QCheckBox" name="m_RightImageCheckBox">
+         <property name="layoutDirection">
+          <enum>Qt::RightToLeft</enum>
+         </property>
          <property name="text">
-          <string>transform:</string>
+          <string>right</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QmitkDataStorageComboBox" name="m_TransformCombo">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>150</width>
-           <height>0</height>
-          </size>
-         </property>
-        </widget>
+        <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_RightImageCombo"/>
        </item>
        <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Preferred</enum>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="m_TrackingLabel">
+         <property name="text">
+          <string>tracking</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_TrackingCombo"/>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>80</width>
+           <width>40</width>
            <height>20</height>
           </size>
          </property>
@@ -83,7 +83,7 @@
        <item>
         <widget class="QLabel" name="m_OpacityLabel">
          <property name="text">
-          <string>overlay opacity</string>
+          <string>opacity</string>
          </property>
         </widget>
        </item>
@@ -107,38 +107,16 @@
         </widget>
        </item>
        <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Preferred</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>80</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="m_OverlayCheckBox">
-         <property name="layoutDirection">
-          <enum>Qt::RightToLeft</enum>
-         </property>
+        <widget class="QCheckBox" name="m_TrackedViewCheckBox">
          <property name="text">
-          <string>overlay</string>
+          <string>tracked</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="m_3DViewerCheckBox">
-         <property name="layoutDirection">
-          <enum>Qt::RightToLeft</enum>
-         </property>
+        <widget class="QCheckBox" name="m_3DViewCheckBox">
          <property name="text">
-          <string>3D viewer</string>
+          <string>3D</string>
          </property>
         </widget>
        </item>
@@ -157,9 +135,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QmitkDataStorageComboBox</class>
+   <class>QmitkDataStorageComboBoxWithSelectNone</class>
    <extends>QComboBox</extends>
-   <header>QmitkDataStorageComboBox.h</header>
+   <header location="global">QmitkDataStorageComboBoxWithSelectNone.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

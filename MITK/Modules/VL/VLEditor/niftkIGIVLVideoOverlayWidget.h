@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkIGIVLEditor_h
-#define QmitkIGIVLEditor_h
+#ifndef niftkIGIVLVideoOverlayWidget_h
+#define niftkIGIVLVideoOverlayWidget_h
 
 // Note:
 // The None constant is defined by Xlib.h and it is also declared as an enum
@@ -24,55 +24,53 @@
 #undef None
 #endif
 
-#include "ui_QmitkIGIVLEditor.h"
+#include "ui_niftkIGIVLVideoOverlayWidget.h"
 #include "niftkVLExports.h"
 #include <QWidget>
 #include <mitkColorProperty.h>
 #include <mitkDataStorage.h>
 
-
-class QmitkRenderWindow;
 class VLQtWidget;
 class OclResourceService;
+class QHBoxLayout;
 
+namespace niftk
+{
 
 /**
- * \class QmitkIGIVLEditor
- * \see IGIVLEditor
- */
-class NIFTKVL_EXPORT QmitkIGIVLEditor : public QWidget, public Ui_QmitkIGIVLEditor
+* \class QmitkIGIVLEditor
+* \see IGIVLEditor
+*/
+class NIFTKVL_EXPORT IGIVLVideoOverlayWidget : public QWidget, public Ui_IGIVLVideoOverlayWidget
 {
 
   Q_OBJECT
 
 public:
 
-  QmitkIGIVLEditor(QWidget *parent);
-  virtual ~QmitkIGIVLEditor();
+  IGIVLVideoOverlayWidget(QWidget *parent);
+  virtual ~IGIVLVideoOverlayWidget();
 
   void SetOclResourceService(OclResourceService* oclserv);
-
   void SetBackgroundColour(unsigned int aabbggrr);
-
+  void SetEyeHandFileName(const std::string& fileName) {} // ToDo
   void SetDataStorage(mitk::DataStorage* storage);
-
-  /**
-   * \brief Called by framework (event from ctkEventAdmin), to indicate that an update should be performed.
-   */
-  void Update();
 
 private slots:
 
-  void OnOverlayCheckBoxChecked(bool);
+  void OnLeftOverlayCheckBoxChecked(bool);
+  void OnRightOverlayCheckBoxChecked(bool);
   void On3DViewerCheckBoxChecked(bool);
+  void OnTrackedViewerCheckBoxChecked(bool);
   void OnOpacitySliderMoved(int);
-  void OnImageSelected(const mitk::DataNode* node);
+  void OnLeftImageSelected(const mitk::DataNode* node);
+  void OnRightImageSelected(const mitk::DataNode* node);
   void OnTransformSelected(const mitk::DataNode* node);
 
 private:
 
-  QmitkIGIVLEditor(const QmitkIGIVLEditor&);  // Purposefully not implemented.
-  void operator=(const QmitkIGIVLEditor&);  // Purposefully not implemented.
+  IGIVLVideoOverlayWidget(const IGIVLVideoOverlayWidget&);  // Purposefully not implemented.
+  void operator=(const IGIVLVideoOverlayWidget&);  // Purposefully not implemented.
 
   /**
    * \brief Utility method to deregister data storage listeners.
@@ -86,8 +84,14 @@ private:
   
   mitk::DataStorage::Pointer m_DataStorage;
 
-  VLQtWidget*    m_OverlayViewer;
-  VLQtWidget*    m_3DViewer;
+  QHBoxLayout* m_HorizontalLayout;
+  QWidget*     m_OverlayViewers;
+  VLQtWidget*  m_LeftOverlayViewer;
+  VLQtWidget*  m_RightOverlayViewer;
+  VLQtWidget*  m_TrackedViewer;
+  VLQtWidget*  m_3DViewer;
 };
+
+} // end namespace
 
 #endif // QmitkIGIVLEditor_h

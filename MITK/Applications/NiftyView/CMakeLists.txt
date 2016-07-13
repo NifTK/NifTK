@@ -52,14 +52,6 @@ set(_include_plugins
   uk.ac.ucl.cmic.xnat
 )
 
-
-if(BUILD_VL)
-  set(_include_plugins
-    ${_include_plugins}
-    uk.ac.ucl.cmic.vlrenderer
-  )
-endif()
-
 NIFTK_CREATE_GUI_APPLICATION(
   NAME NiftyView
   INCLUDE_PLUGINS ${_include_plugins}
