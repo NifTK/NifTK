@@ -259,24 +259,24 @@ namespace
 
   //-----------------------------------------------------------------------------
 
-  void UpdateActorTransformFromNode(vl::Actor* actor, const mitk::DataNode::ConstPointer& node)
+  void UpdateActorTransformFromNode( vl::Actor* actor, const mitk::DataNode* node )
   {
-    if (node.IsNotNull())
+    if ( ! node ) {
+      return;
+    }
+    const mitk::BaseData* data = node->GetData();
+    if ( ! data ) {
+      return;
+    }
+    const mitk::BaseGeometry* geom = data->GetGeometry();
+    if ( ! geom ) {
+      return;
+    }
+    VLUserData* userdata = GetUserData( actor );
+    if ( geom->GetMTime() > userdata->m_TransformModifiedTime )
     {
-      mitk::BaseData::Pointer data = node->GetData();
-      if (data.IsNotNull())
-      {
-        mitk::BaseGeometry::Pointer geom = data->GetGeometry();
-        if (geom.IsNotNull())
-        {
-          ref<VLUserData> userdata = GetUserData(actor);
-          if (geom->GetMTime() > userdata->m_TransformModifiedTime)
-          {
-            UpdateTransformFromData(actor->transform(), data.GetPointer());
-            userdata->m_TransformModifiedTime = geom->GetMTime();
-          }
-        }
-      }
+      UpdateTransformFromData( actor->transform(), data );
+      userdata->m_TransformModifiedTime = geom->GetMTime();
     }
   }
 
