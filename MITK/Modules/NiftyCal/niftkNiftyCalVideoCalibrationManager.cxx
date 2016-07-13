@@ -1068,6 +1068,10 @@ double NiftyCalVideoCalibrationManager::Calibrate()
 
   double rms = 0;
 
+  cv::Matx21d tmpRMS;
+  tmpRMS(0, 0) = 0;
+  tmpRMS(1, 0) = 0;
+
   if (m_ImageNode[0].IsNull())
   {
     mitkThrow() << "Left image should never be NULL.";
@@ -1083,45 +1087,52 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     if (m_ImageNode[1].IsNull())
     {
       rms = niftk::IterativeMonoCameraCalibration(
-            m_ModelPoints,
-            m_ReferenceDataForIterativeCalib,
-            m_OriginalImages[0],
-            m_ImagesForWarping[0],
-            m_ImageSize,
-            m_Intrinsic[0],
-            m_Distortion[0],
-            m_Rvecs[0],
-            m_Tvecs[0]
-            );
+        m_ModelPoints,
+        m_ReferenceDataForIterativeCalib,
+        m_OriginalImages[0],
+        m_ImagesForWarping[0],
+        m_ImageSize,
+        m_Intrinsic[0],
+        m_Distortion[0],
+        m_Rvecs[0],
+        m_Tvecs[0]
+       );
     }
     else
     {
-      cv::Matx21d rmss = niftk::IterativeStereoCameraCalibration(
-            m_Do3DOptimisation,
-            m_ModelPoints,
-            m_ReferenceDataForIterativeCalib,
-            m_OriginalImages[0],
-            m_OriginalImages[1],
-            m_ImageSize,
-            m_ImagesForWarping[0],
-            m_Intrinsic[0],
-            m_Distortion[0],
-            m_Rvecs[0],
-            m_Tvecs[0],
-            m_ImagesForWarping[1],
-            m_Intrinsic[1],
-            m_Distortion[1],
-            m_Rvecs[1],
-            m_Tvecs[1],
-            m_EssentialMatrix,
-            m_FundamentalMatrix,
-            m_LeftToRightRotationMatrix,
-            m_LeftToRightTranslationVector
-            );
-      rms = rmss(0, 0);
+      tmpRMS = niftk::IterativeStereoCameraCalibration(
+        m_Do3DOptimisation,
+        m_ModelPoints,
+        m_ReferenceDataForIterativeCalib,
+        m_OriginalImages[0],
+        m_OriginalImages[1],
+        m_ImageSize,
+        m_ImagesForWarping[0],
+        m_Intrinsic[0],
+        m_Distortion[0],
+        m_Rvecs[0],
+        m_Tvecs[0],
+        m_ImagesForWarping[1],
+        m_Intrinsic[1],
+        m_Distortion[1],
+        m_Rvecs[1],
+        m_Tvecs[1],
+        m_EssentialMatrix,
+        m_FundamentalMatrix,
+        m_LeftToRightRotationMatrix,
+        m_LeftToRightTranslationVector
+        );
+      if (m_Do3DOptimisation)
+      {
+        rms = tmpRMS(1, 0);
+      }
+      else
+      {
+        rms = tmpRMS(0, 0);
+      }
 
-      MITK_INFO << "Iterative Stereo: projection error=" << rmss(0,0)
-                << ", reconstruction error=" << rmss(1, 0)
+      MITK_INFO << "Iterative Stereo: projection error=" << tmpRMS(0,0)
+                << ", reconstruction error=" << tmpRMS(1, 0)
                 << ", did 3D optimisation=" << m_Do3DOptimisation
                 << std::endl;
     }
@@ -1129,56 +1140,55 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   else
   {
     rms = niftk::MonoCameraCalibration(
-          m_ModelPoints,
-          m_Points[0],
-          m_ImageSize,
-          m_Intrinsic[0],
-          m_Distortion[0],
-          m_Rvecs[0],
-          m_Tvecs[0]
-          );
+      m_ModelPoints,
+      m_Points[0],
+      m_ImageSize,
+      m_Intrinsic[0],
+      m_Distortion[0],
+      m_Rvecs[0],
+      m_Tvecs[0]
+      );
 
     if (m_ImageNode[1].IsNotNull())
     {
-
       niftk::MonoCameraCalibration(
-            m_ModelPoints,
-            m_Points[1],
-            m_ImageSize,
-            m_Intrinsic[1],
-            m_Distortion[1],
-            m_Rvecs[1],
-            m_Tvecs[1]
-            );
+        m_ModelPoints,
+        m_Points[1],
+        m_ImageSize,
+        m_Intrinsic[1],
+        m_Distortion[1],
+        m_Rvecs[1],
+        m_Tvecs[1]
+        );
 
-      rms = niftk::StereoCameraCalibration(
-            m_ModelPoints,
-            m_Points[0],
-            m_Points[1],
-            m_ImageSize,
-            m_Intrinsic[0],
-            m_Distortion[0],
-            m_Intrinsic[1],
-            m_Distortion[1],
-            m_LeftToRightRotationMatrix,
-            m_LeftToRightTranslationVector,
-            m_EssentialMatrix,
-            m_FundamentalMatrix,
-            CV_CALIB_USE_INTRINSIC_GUESS
-            );
-
-      niftk::ComputeStereoExtrinsics(m_ModelPoints,
-                                     m_Points[0],
-                                     m_ImageSize,
-                                     m_Intrinsic[0],
-                                     m_Distortion[0],
-                                     m_LeftToRightRotationMatrix,
-                                     m_LeftToRightTranslationVector,
-                                     m_Rvecs[0],
-                                     m_Tvecs[0],
-                                     m_Rvecs[1],
-                                     m_Tvecs[1]
-                                    );
+      tmpRMS = niftk::StereoCameraCalibration(
+        m_Do3DOptimisation,
+        m_ModelPoints,
+        m_Points[0],
+        m_Points[1],
+        m_ImageSize,
+        m_Intrinsic[0],
+        m_Distortion[0],
+        m_Rvecs[0],
+        m_Tvecs[0],
+        m_Intrinsic[1],
+        m_Distortion[1],
+        m_Rvecs[1],
+        m_Tvecs[1],
+        m_LeftToRightRotationMatrix,
+        m_LeftToRightTranslationVector,
+        m_EssentialMatrix,
+        m_FundamentalMatrix,
+        CV_CALIB_USE_INTRINSIC_GUESS
+        );
+      if (m_Do3DOptimisation)
+      {
+        rms = tmpRMS(1, 0);
+      }
+      else
+      {
+        rms = tmpRMS(0, 0);
+      }
     }
   }
 
