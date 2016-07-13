@@ -605,7 +605,8 @@ void NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEyeInStereo(cv::Matx44d
   optimiser->SetRightIntrinsic(&m_Intrinsic[0]);   // i.e. we DON'T optimise these.
   optimiser->SetRightDistortion(&m_Distortion[0]); // i.e. we DON'T optimise these.
 
-  cv::Matx44d stereoExtrinsics = niftk::RodriguesToMatrix(m_LeftToRightRotationMatrix, m_LeftToRightTranslationVector);
+  cv::Matx44d stereoExtrinsics = niftk::RotationAndTranslationToMatrix(
+        m_LeftToRightRotationMatrix, m_LeftToRightTranslationVector);
 
   optimiser->Optimise(modelToWorld, handEye, stereoExtrinsics);
 
