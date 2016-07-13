@@ -330,8 +330,9 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   ModelGridPoints.push_back(mitk::WorldPoint (cv::Point3d ((0.0 , 3*10 , 0.0 )));*/
   Projector->SetModelPoints(ModelGridPoints);
   Projector->Project(matcher);
+  Projector->CalculateProjectionErrors("");
+  Projector->CalculateTriangulationErrors("");
 
-  MITK_TEST_CONDITION(false, "The following tests should fail");
   MITK_TEST_CONDITION(CheckProjectionErrors(Projector), "Testing projection Errors with model to world transform");
   MITK_TEST_CONDITION(CheckReProjectionErrors(Projector), "Testing re-projection Errors with model to world transform");
   MITK_TEST_CONDITION(CheckTriangulationErrors(Projector), "Testing triangulation Errors with model to world transform");
