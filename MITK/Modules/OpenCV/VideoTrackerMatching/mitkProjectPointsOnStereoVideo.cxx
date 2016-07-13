@@ -1059,6 +1059,13 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   {
     ClassifyGoldStandardPoints ();
   }
+
+  //clear the result vectors
+  m_LeftProjectionErrors.clear();
+  m_RightProjectionErrors.clear();
+  m_LeftReProjectionErrors.clear();
+  m_RightReProjectionErrors.clear();
+
   // for each point in the gold standard vectors m_LeftGoldStandardPoints
   // find the corresponding point in m_ProjectedPoints and calculate the projection 
   // error in pixels. We don't define what the point correspondence is, so 

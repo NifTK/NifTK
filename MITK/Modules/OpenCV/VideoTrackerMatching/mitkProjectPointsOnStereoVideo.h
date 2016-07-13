@@ -146,12 +146,12 @@ public:
   itkGetMacro ( TriangulationErrors, std::vector < cv::Point3d > );
 
   /**
-   * \brief calculates the projection and re-projection errors
+   * \brief calculates the projection and re-projection errors, removing any existing results
    */
   void CalculateProjectionErrors (std::string outPrefix);
 
   /**
-   * \brief calculates the triangulation errors
+   * \brief calculates the triangulation errors, removing any existing results
    */
   void CalculateTriangulationErrors (std::string outPrefix);
 
