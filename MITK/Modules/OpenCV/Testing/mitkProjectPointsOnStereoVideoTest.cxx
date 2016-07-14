@@ -340,10 +340,11 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   //now we're going to repeat this test using more grid points, and a model to world transform
   Projector->ClearWorldPoints();
   mitk::PickedPointList::Pointer ModelGridPoints = mitk::PickedPointList::New();
- /* ModelGridPoints.push_back(mitk::WorldPoint (cv::Point3d (0.0 , 0.0 , 0.0 )));
-  ModelGridPoints.push_back(mitk::WorldPoint (cv::Point3d (3*12 ,0.0 , 0.0 )));
-  ModelGridPoints.push_back(mitk::WorldPoint (cv::Point3d (3*12 , 3*10 , 0.0 )));
-  ModelGridPoints.push_back(mitk::WorldPoint (cv::Point3d ((0.0 , 3*10 , 0.0 )));*/
+  ModelGridPoints->AddPoint ( cv::Point3d ( 0.0, 0.0, 0.0 ), cv::Scalar ( 255,255,255));
+  ModelGridPoints->AddPoint ( cv::Point3d ( 39.0, 0.0, 0.0 ), cv::Scalar ( 255,255,255));
+  ModelGridPoints->AddPoint ( cv::Point3d ( 39.0, 27.0, 0.0 ), cv::Scalar ( 255,255,255));
+  ModelGridPoints->AddPoint ( cv::Point3d ( 0.0, 27.0, 0.0 ), cv::Scalar ( 255,255,255));
+
   Projector->SetModelPoints(ModelGridPoints);
   Projector->Project(matcher);
   Projector->CalculateProjectionErrors("");
