@@ -62,6 +62,7 @@
 #include <vtkImageData.h>
 #include <mitkEnumerationProperty.h>
 #include <mitkProperties.h>
+#include <mitkProperties.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkDataStorage.h>
 #include <mitkImage.h>
@@ -162,34 +163,67 @@ class VL_Point_Mode_Property: public mitk::EnumerationProperty
 public:
   mitkClassMacro( VL_Point_Mode_Property, EnumerationProperty );
   itkFactorylessNewMacro(Self)
+protected:
   VL_Point_Mode_Property() {
     AddEnum("3D", 0);
     AddEnum("2D", 1);
   }
 };
 
-class VL_Global_Fog_Target_Property: public mitk::EnumerationProperty
+class VL_Smart_Target_Property: public mitk::EnumerationProperty
 {
 public:
-  mitkClassMacro( VL_Global_Fog_Target_Property, EnumerationProperty );
+  mitkClassMacro( VL_Smart_Target_Property, EnumerationProperty );
   itkFactorylessNewMacro(Self)
-  VL_Global_Fog_Target_Property() {
+protected:
+  VL_Smart_Target_Property() {
     AddEnum("Color",      0);
     AddEnum("Alpha",      1);
     AddEnum("Saturation", 2);
   }
 };
 
-class VL_Global_Fog_Mode_Property: public mitk::EnumerationProperty
+class VL_Fog_Mode_Property: public mitk::EnumerationProperty
 {
 public:
-  mitkClassMacro( VL_Global_Fog_Mode_Property, EnumerationProperty );
+  mitkClassMacro( VL_Fog_Mode_Property, EnumerationProperty );
   itkFactorylessNewMacro(Self)
-  VL_Global_Fog_Mode_Property() {
+protected:
+  VL_Fog_Mode_Property() {
     AddEnum("Off",    0);
     AddEnum("Linear", 1);
     AddEnum("Exp",    2);
     AddEnum("Exp2",   3);
+  }
+};
+
+class VL_Render_Mode_Property: public mitk::EnumerationProperty
+{
+public:
+  mitkClassMacro( VL_Render_Mode_Property, EnumerationProperty );
+  itkFactorylessNewMacro(Self)
+protected:
+  VL_Render_Mode_Property() {
+    AddEnum("Polys",           0);
+    AddEnum("Outline3D",       1);
+    AddEnum("Polys+Outline3D", 2);
+    AddEnum("Slice",           3);
+    AddEnum("Outline2D",       4);
+    AddEnum("Polys+Outline2D", 5);
+  }
+};
+
+class VL_Clip_Mode_Property: public mitk::EnumerationProperty
+{
+public:
+  mitkClassMacro( VL_Clip_Mode_Property, EnumerationProperty );
+  itkFactorylessNewMacro(Self)
+protected:
+  VL_Clip_Mode_Property() {
+    AddEnum("Off",    0);
+    AddEnum("Sphere", 1);
+    AddEnum("Box",    2);
+    AddEnum("Plane",  3);
   }
 };
 
@@ -199,31 +233,275 @@ public:
 
 namespace
 {
-  int getEnumProp( const mitk::DataNode* node, const char* prop_name, int defval = 0 ) {
-    const mitk::EnumerationProperty* mode_prop = dynamic_cast<const mitk::EnumerationProperty*>( node->GetProperty( prop_name ) );
-    if ( mode_prop ) {
-      return mode_prop->GetValueAsId();
+  vl::vec3 getVector3DProp( const mitk::DataNode* node, const char* prop_name, vl::vec3 defval ) {
+    VIVID_CHECK( dynamic_cast<const mitk::Vector3DProperty*>( node->GetProperty( prop_name ) ) );
+    const mitk::Vector3DProperty* prop = dynamic_cast<const mitk::Vector3DProperty*>( node->GetProperty( prop_name ) );
+    if ( prop ) {
+      double* val = prop->GetValue().GetDataPointer();
+      return vl::vec3( (float)val[0], (float)val[1], (float)val[2] );
     } else {
       return defval;
     }
   }
 
+  vl::vec3 getPoint3DProp( const mitk::DataNode* node, const char* prop_name, vl::vec3 defval ) {
+    VIVID_CHECK( dynamic_cast<const mitk::Point3dProperty*>( node->GetProperty( prop_name ) ) );
+    const mitk::Point3dProperty* prop = dynamic_cast<const mitk::Point3dProperty*>( node->GetProperty( prop_name ) );
+    if ( prop ) {
+      double* val = prop->GetValue().GetDataPointer();
+      return vl::vec3( (float)val[0], (float)val[1], (float)val[2] );
+    } else {
+      return defval;
+    }
+  }
+
+  vl::vec4 getPoint4DProp( const mitk::DataNode* node, const char* prop_name, vl::vec4 defval ) {
+    VIVID_CHECK( dynamic_cast<const mitk::Point4dProperty*>( node->GetProperty( prop_name ) ) );
+    const mitk::Point4dProperty* prop = dynamic_cast<const mitk::Point4dProperty*>( node->GetProperty( prop_name ) );
+    if ( prop ) {
+      double* val = prop->GetValue().GetDataPointer();
+      return vl::vec4( (float)val[0], (float)val[1], (float)val[2], (float)val[4] );
+    } else {
+      return defval;
+    }
+  }
+
+  int getEnumProp( const mitk::DataNode* node, const char* prop_name, int defval = 0 ) {
+    VIVID_CHECK( dynamic_cast<const mitk::EnumerationProperty*>( node->GetProperty( prop_name ) ) );
+    const mitk::EnumerationProperty* prop = dynamic_cast<const mitk::EnumerationProperty*>( node->GetProperty( prop_name ) );
+    if ( prop ) {
+      return prop->GetValueAsId();
+    } else {
+      return defval;
+    }
+  }
+
+  bool getBoolProp( const mitk::DataNode* node, const char* prop_name, bool defval ) {
+    VIVID_CHECK( dynamic_cast<const mitk::BoolProperty*>( node->GetProperty( prop_name ) ) );
+    bool val = defval;
+    node->GetBoolProperty( prop_name, val );
+    return val;
+  }
+
   float getFloatProp( const mitk::DataNode* node, const char* prop_name, float defval = 0 ) {
+    VIVID_CHECK( dynamic_cast<const mitk::FloatProperty*>( node->GetProperty( prop_name ) ) );
     float val = defval;
-    VIVID_CHECK( node->GetFloatProperty( prop_name, val ) );
+    node->GetFloatProperty( prop_name, val );
     return val;
   }
 
   int getIntProp( const mitk::DataNode* node, const char* prop_name, int defval = 0 ) {
+    VIVID_CHECK( dynamic_cast<const mitk::IntProperty*>( node->GetProperty( prop_name ) ) );
     int val = defval;
-    VIVID_CHECK( node->GetIntProperty( prop_name, val ) );
+    node->GetIntProperty( prop_name, val );
     return val;
   }
 
   vl::vec4 getColorProp( const mitk::DataNode* node, const char* prop_name, vl::vec4 defval = vl::white ) {
+    VIVID_CHECK( dynamic_cast<const mitk::ColorProperty*>( node->GetProperty( prop_name ) ) );
     float rgb[3] = { defval.r(), defval.g(), defval.b() };
     node->GetColor(rgb, NULL, prop_name );
     return vl::vec4( rgb[0], rgb[1], rgb[2], defval.a() );
+  }
+
+
+  void initFogProps( mitk::DataNode* node )
+  {
+    // init only once if multiple views are open
+    if ( node->GetProperty("VL.Fog.Mode") ) {
+      return;
+    }
+
+    // gocUniform("vl_Vivid.smartFog.mode")
+    mitk::EnumerationProperty::Pointer fog_mode = VL_Fog_Mode_Property::New();
+    node->SetProperty("VL.Fog.Mode", fog_mode);
+    fog_mode->SetValue( 0 );
+
+    // gocUniform("vl_Vivid.smartFog.target")
+    mitk::EnumerationProperty::Pointer fog_target = VL_Smart_Target_Property::New();
+    node->SetProperty("VL.Fog.Target", fog_target);
+    fog_target->SetValue( 0 );
+
+    // gocFog()->setColor( . );
+    mitk::ColorProperty::Pointer fog_color = mitk::ColorProperty::New();
+    node->SetProperty("VL.Fog.Color", fog_color);
+    fog_color->SetValue( vl::darkgray.ptr() );
+
+    // Only used with Linear mode
+    // gocFog()->setStart( . );
+    mitk::FloatProperty::Pointer fog_start = mitk::FloatProperty::New();
+    node->SetProperty("VL.Fog.Start", fog_start);
+    fog_start->SetValue( 0 );
+
+    // Only used with Linear mode
+    // gocFog()->setEnd( . );
+    mitk::FloatProperty::Pointer fog_stop = mitk::FloatProperty::New();
+    node->SetProperty("VL.Fog.End", fog_stop);
+    fog_stop->SetValue( 1000 );
+
+    // Only used with Exp & Exp2 mode
+    // gocFog()->setDensity( . );
+    mitk::FloatProperty::Pointer fog_density = mitk::FloatProperty::New();
+    node->SetProperty("VL.Fog.Density", fog_density);
+    fog_density->SetValue( 1 );
+  }
+
+  void updateFogProps( Effect* fx, const mitk::DataNode* node )
+  {
+    int fog_mode = getEnumProp( node, "VL.Fog.Mode", 0 );
+    int fog_target = getEnumProp( node, "VL.Fog.Target", 0 );
+    vec4 fog_color = getColorProp( node, "VL.Fog.Color", vl::black );
+    float fog_start = getFloatProp( node, "VL.Fog.Start", 0 );
+    float fog_end = getFloatProp( node, "VL.Fog.End", 0 );
+    float fog_density = getFloatProp( node, "VL.Fog.Density", 0 );
+
+    Shader* sh = fx->shader();
+
+    sh->gocFog()->setColor( fog_color);
+    sh->getUniform("vl_Vivid.smartFog.mode")->setUniformI( fog_mode );
+    sh->getUniform("vl_Vivid.smartFog.target")->setUniformI( fog_target );
+    sh->gocFog()->setStart( fog_start );
+    sh->gocFog()->setEnd( fog_end );
+    sh->gocFog()->setDensity( fog_density );
+  }
+
+  void initClipProps( mitk::DataNode* node )
+  {
+    // init only once if multiple views are open
+    if ( node->GetProperty("VL.Clip.0.Mode") ) {
+      return;
+    }
+
+    #define CLIP_UNIT(field) (std::string("VL.Clip.") + i + '.' + field).c_str()
+
+    for( char i = '0'; i < '4'; ++i ) {
+
+      // gocUniform("vl_Vivid.smartClip[0].mode")
+      mitk::EnumerationProperty::Pointer mode = VL_Clip_Mode_Property::New();
+      node->SetProperty(CLIP_UNIT("Mode"), mode);
+      mode->SetValue( 0 );
+
+      // gocUniform("vl_Vivid.smartClip[0].target")
+      mitk::EnumerationProperty::Pointer target = VL_Smart_Target_Property::New();
+      node->SetProperty(CLIP_UNIT("Target"), target);
+      target->SetValue( 0 );
+
+      // gocUniform("vl_Vivid.smartClip[0].color")
+      mitk::ColorProperty::Pointer color = mitk::ColorProperty::New();
+      node->SetProperty(CLIP_UNIT("Color"), color);
+      color->SetValue( vl::fuchsia.ptr() );
+
+      // gocUniform("vl_Vivid.smartClip[0].fadeRange")
+      mitk::FloatProperty::Pointer fade_range = mitk::FloatProperty::New();
+      node->SetProperty(CLIP_UNIT("FadeRange"), fade_range);
+      fade_range->SetValue( 0 );
+
+      // gocUniform("vl_Vivid.smartClip[0].plane")
+      mitk::Point4dProperty::Pointer plane = mitk::Point4dProperty::New();
+      node->SetProperty(CLIP_UNIT("Plane"), plane);
+      plane->SetValue( vec4(1,0,0,0).ptr() );
+
+      // MIC FIXME: test origin
+      vec4 W(6, -128, -1027, 0);
+
+      // gocUniform("vl_Vivid.smartClip[0].sphere")
+      mitk::Point4dProperty::Pointer sphere = mitk::Point4dProperty::New();
+      node->SetProperty(CLIP_UNIT("Sphere"), sphere);
+      sphere->SetValue( (W + vec4(0, 0, 0, 250)).ptr() );
+
+      // gocUniform("vl_Vivid.smartClip[0].boxMin")
+      mitk::Point3dProperty::Pointer box_min = mitk::Point3dProperty::New();
+      node->SetProperty(CLIP_UNIT("BoxMin"), box_min);
+      box_min->SetValue( (W.xyz() + vec3(-100,-100,-100)).ptr() );
+
+      // gocUniform("vl_Vivid.smartClip[0].boxMax")
+      mitk::Point3dProperty::Pointer box_max = mitk::Point3dProperty::New();
+      node->SetProperty(CLIP_UNIT("BoxMax"), box_max);
+      box_max->SetValue( (W.xyz() + vec3(+100,+100,+100)).ptr() );
+
+      // gocUniform("vl_Vivid.smartClip[0].reverse")
+      mitk::BoolProperty::Pointer reverse = mitk::BoolProperty::New();
+      node->SetProperty(CLIP_UNIT("Reverse"), reverse);
+      reverse->SetValue( false );
+    }
+
+    #undef CLIP_UNIT
+  }
+
+  void updateClipProps( Effect* fx, const mitk::DataNode* node )
+  {
+    #define CLIP_UNIT(field) (std::string("VL.Clip.") + i + '.' + field).c_str()
+    #define CLIP_UNIT2(field) (std::string("vl_Vivid.smartClip[") + i + "]." + field).c_str()
+
+    for( char i = '0'; i < '4'; ++i ) {
+
+      int mode = getEnumProp( node, CLIP_UNIT("Mode"), 0 );
+      int targ = getEnumProp( node, CLIP_UNIT("Target"), 0 );
+      vl::vec4 color = getColorProp( node, CLIP_UNIT("Color"), vl::black );
+      float range = getFloatProp( node, CLIP_UNIT("FadeRange"), 0 );
+      vl::vec4 plane = getPoint4DProp( node, CLIP_UNIT("Plane"), vl::vec4(0,0,0,0) );
+      vl::vec4 sphere = getPoint4DProp( node, CLIP_UNIT("Sphere"), vl::vec4(0,0,0,0) );
+      vl::vec3 bmin = getPoint3DProp( node, CLIP_UNIT("BoxMin"), vl::vec3(0,0,0) );
+      vl::vec3 bmax = getPoint3DProp( node, CLIP_UNIT("BoxMax"), vl::vec3(0,0,0) );
+      bool reverse = getBoolProp( node, CLIP_UNIT("Reverse"), false );
+
+      Shader* sh = fx->shader();
+
+      sh->gocUniform(CLIP_UNIT2("mode"))->setUniformI( mode );
+      sh->gocUniform(CLIP_UNIT2("target"))->setUniformI( targ );
+      sh->gocUniform(CLIP_UNIT2("color"))->setUniform( color  );
+      sh->gocUniform(CLIP_UNIT2("fadeRange"))->setUniform( range );
+      sh->gocUniform(CLIP_UNIT2("plane"))->setUniform( plane );
+      sh->gocUniform(CLIP_UNIT2("sphere"))->setUniform( sphere );
+      sh->gocUniform(CLIP_UNIT2("boxMin"))->setUniform( bmin );
+      sh->gocUniform(CLIP_UNIT2("boxMax"))->setUniform( bmax );
+      sh->gocUniform(CLIP_UNIT2("reverse"))->setUniformI( reverse);
+    }
+
+    #undef CLIP_UNIT
+    #undef CLIP_UNIT2
+  }
+
+  void initRenderModeProps( mitk::DataNode* node )
+  {
+    // init only once if multiple views are open
+    if ( node->GetProperty("VL.RenderMode") ) {
+      return;
+    }
+
+    // gocUniform("vl_Vivid.renderMode")
+    mitk::EnumerationProperty::Pointer mode = VL_Render_Mode_Property::New();
+    node->SetProperty("VL.RenderMode", mode);
+    mode->SetValue( 0 );
+
+    // gocUniform("vl_Vivid.outline.color")
+    mitk::ColorProperty::Pointer outline_color = mitk::ColorProperty::New();
+    node->SetProperty("VL.Outline.Color", outline_color);
+    outline_color->SetValue( vl::yellow.ptr() );
+
+    // gocUniform("vl_Vivid.outline.width")
+    mitk::IntProperty::Pointer outline_width = mitk::IntProperty::New();
+    node->SetProperty("VL.Outline.Width", outline_width);
+    outline_width->SetValue( 2 );
+
+    // gocUniform("vl_Vivid.outline.slicePlane")
+    mitk::Point4dProperty::Pointer outline_slice_plane = mitk::Point4dProperty::New();
+    node->SetProperty("VL.Outline.SlicePlane", outline_slice_plane);
+    outline_slice_plane->SetValue( vec4(1,0,0,0).ptr() );
+  }
+
+  void updateRenderModeProps( Effect* fx, const mitk::DataNode* node ) {
+    int mode = getEnumProp( node, "VL.RenderMode", 0 );
+    vec4 color = getColorProp( node, "VL.Outline.Color", vl::yellow );
+    int width = getIntProp( node, "VL.Outline.Width", 2 );
+    vec4 slice_plane = getPoint4DProp( node, "VL.Outline.SlicePlane", vec4(0,0,0,0) );
+
+    Shader* sh = fx->shader();
+
+    sh->getUniform("vl_Vivid.renderMode")->setUniformI( mode );
+    sh->getUniform("vl_Vivid.outline.color")->setUniform( color );
+    sh->getUniform("vl_Vivid.outline.width")->setUniformF( (float)width );
+    sh->getUniform("vl_Vivid.outline.slicePlane")->setUniform( slice_plane );
   }
 
   vl::EImageType MapITKPixelTypeToVL(int itkComponentType)
@@ -706,87 +984,17 @@ public:
     mitk::BaseData::Pointer data = VLDummyData::New();
     SetData( data.GetPointer() );
 
-    initProperties();
+    initGlobalProperties();
   }
 
   static const char* VLGlobalSettingsName() { return "VL Global Settings"; }
 
-  static void update(Actor* actor, mitk::DataNode* vl_global_settings) {
-
-    VIVID_CHECK( actor );
-    VIVID_CHECK( vl_global_settings );
-
-    // Fog
-
-    int fog_mode = getEnumProp( vl_global_settings, "Fog.Mode", 0 );
-    int fog_target = getEnumProp( vl_global_settings, "Fog.Target", 0 );
-    vec4 fog_color = getColorProp( vl_global_settings, "Fog.Color", vl::black );
-    float fog_start = getFloatProp( vl_global_settings, "Fog.Start", 0 );
-    float fog_end = getFloatProp( vl_global_settings, "Fog.End", 0 );
-    float fog_density = getFloatProp( vl_global_settings, "Fog.Density", 0 );
-
-    Shader* sh = actor->effect()->shader();
-    // Fog
-    sh->gocFog()->setColor( fog_color);
-    sh->gocUniform("vl_Vivid.smartFog.mode")->setUniformI( fog_mode );
-    sh->gocUniform("vl_Vivid.smartFog.target")->setUniformI( fog_target );
-    sh->gocFog()->setStart( fog_start );
-    sh->gocFog()->setEnd( fog_end );
-    sh->gocFog()->setDensity( fog_density );
-    printf( "---\n" );
-    printf( "mode: %d\n", fog_mode );
-    printf( "target: %d\n", fog_target );
-    printf( "start: %d\n", fog_start );
-    printf( "end: %d\n", fog_end );
-    printf( "density: %d\n", fog_density );
-  }
-
 protected:
-  void initProperties() 
+  void initGlobalProperties()
   {
-    // Fog
-
-    // 0=OFF, 1=Linear, 2=Exp, 3=Exp2
-    // gocUniform("vl_Vivid.smartFog.mode")->setUniformI( 1 );   
-    mitk::EnumerationProperty::Pointer fog_mode = VL_Global_Fog_Mode_Property::New();
-    SetProperty("Fog.Mode", fog_mode);
-    VIVID_CHECK( fog_mode->SetValue( 0 ) );
-
-    // 0=Color, 1=Alpha, 2=Saturation
-    // gocUniform("vl_Vivid.smartFog.target")->setUniformI( 0 ); 
-    mitk::EnumerationProperty::Pointer fog_target = VL_Global_Fog_Target_Property::New();
-    SetProperty("Fog.Target", fog_target);
-    VIVID_CHECK( fog_target->SetValue( 0 ) );
-  
-    // gocFog()->setColor( ... );
-    mitk::ColorProperty::Pointer fog_color = mitk::ColorProperty::New();
-    SetProperty("Fog.Color", fog_color);
-    fog_color->SetValue( mitk::Color( 0.0f ) );
-
-    // Only used with Linear mode
-    // gocFog()->setStart( ... ); 
-    mitk::FloatProperty::Pointer fog_start = mitk::FloatProperty::New();
-    SetProperty("Fog.Start", fog_start);
-    fog_start->SetValue( 0 );
-
-    // Only used with Linear mode
-    // gocFog()->setEnd( ... );   
-    mitk::FloatProperty::Pointer fog_stop = mitk::FloatProperty::New();
-    SetProperty("Fog.End", fog_stop);
-    fog_stop->SetValue( 1000 );
-
-    // Only used with Exp & Exp2 mode
-    // gocFog()->setDensity( ... );                         
-    mitk::FloatProperty::Pointer fog_density = mitk::FloatProperty::New();
-    SetProperty("Fog.Density", fog_density);
-    fog_density->SetValue( 1 );
-
-    // Stencil 
-    // - enable/disable
-    // - sphere radius
-    // - sphere position
-
-    // Rendering mode
+    initRenderModeProps(this);
+    initFogProps(this);
+    initClipProps(this);
   }
 
 };
@@ -811,44 +1019,6 @@ VLMapper::VLMapper( const mitk::DataNode* node, VLSceneView* sv ) {
 
 //-----------------------------------------------------------------------------
 
-void VLMapper::initVLPropertiesPointSet() {
-  // Init only once
-  if ( m_DataNode->GetProperty( "VL.Point.Mode" ) ) {
-    return;
-  }
-
-  mitk::EnumerationProperty::Pointer point_set_mode = VL_Point_Mode_Property::New();
-  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Mode", point_set_mode);
-  point_set_mode->SetValue( 0 );
-  
-  mitk::FloatProperty::Pointer point_size_2d = mitk::FloatProperty::New();
-  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Size2D", point_size_2d);
-  point_size_2d->SetValue( 5 );
-  
-  mitk::FloatProperty::Pointer point_size_3d = mitk::FloatProperty::New();
-  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Size3D", point_size_3d);
-  point_size_3d->SetValue( 5 );
-  
-  mitk::FloatProperty::Pointer point_opacity = mitk::FloatProperty::New();
-  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Opacity", point_opacity);
-  point_opacity->SetValue( 1 );
-  
-  mitk::ColorProperty::Pointer point_color = mitk::ColorProperty::New();
-  const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Color", point_color);
-  point_color->SetValue( mitk::Color( 1 ) );
-  
-  // MIC FIXME: need to somehow update the DataStorage views
-  m_DataStorage->Modified();
-}
-
-void VLMapper::initVLPropertiesSurface() {
-}
-
-void VLMapper::initVLPropertiesVolume() {
-}
-
-//-----------------------------------------------------------------------------
-
 vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom, vl::Effect* effect, vl::Transform* transform) {
   VIVID_CHECK( m_DataNode );
   VIVID_CHECK( m_VividRendering );
@@ -857,11 +1027,6 @@ vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom, vl::Effect* effect, v
   UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
   ref<vl::Actor> actor = new vl::Actor( geom, fx.get(), tr.get() );
   actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-  VLGlobalSettingsDataNode* node = dynamic_cast<VLGlobalSettingsDataNode*>( m_DataStorage->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() ) );
-  VIVID_CHECK( node );
-  if ( node ) {
-    VLGlobalSettingsDataNode::update( actor.get(), node );
-  }
   return actor;
 }
 
@@ -873,21 +1038,19 @@ void VLMapper::updateCommon() {
   }
 
   // Update visibility
-  bool visible = true;
-  m_DataNode->GetBoolProperty( "visible", visible );
+  bool visible = getBoolProp( m_DataNode, "visible", true );
   m_Actor->setEnabled( visible );
-  
-  // Update opacity
-  float opacity = 1.0f;
-  m_DataNode->GetFloatProperty( "opacity", opacity );
 
   // Update color
-  float rgb[3] = { 1, 1, 1 };
-  m_DataNode->GetColor( rgb );
+  vl::vec4 color = getColorProp( m_DataNode, "color", vl::white );
 
-  // MIC FIXME:
-  // This won't work when vl_Vivid.enableLighting is off -> create special uniform
-  m_Actor->effect()->shader()->getMaterial()->setDiffuse( vl::vec4( rgb[0], rgb[1], rgb[2], opacity ) );
+  // Update opacity
+  color.a() = getFloatProp( m_DataNode, "opacity", 1.0f );
+
+  // Set color & opacity
+  // NOTE:
+  // This "opacity" settings only works for "vl_Vivid.enableLighting == true", for example it's ignored by mitk::Image nodes
+  m_Actor->effect()->shader()->getMaterial()->setDiffuse( color );
 
   // Update transform
   UpdateTransformFromData( m_Actor->transform(), m_DataNode->GetData() );
@@ -905,8 +1068,6 @@ public:
   virtual void init() { }
 
   virtual void update() {
-    // Update everyone in the scene
-    m_VLSceneView->requestVLGlobalSettingsUpdate();
   }
 
   virtual void updateVLGlobalSettings() { /* we don't have anything to set */ }
@@ -914,16 +1075,6 @@ public:
 protected:
   VLGlobalSettingsDataNode::ConstPointer m_VLGlobalSettings;
 };
-
-//-----------------------------------------------------------------------------
-
-void VLMapper::updateVLGlobalSettings() {
-  mitk::DataNode* node = m_DataStorage->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() );
-  if ( ! node ) {
-    return;
-  }
-  VLGlobalSettingsDataNode::update( m_Actor.get(), node );
-}
 
 //-----------------------------------------------------------------------------
 
@@ -938,6 +1089,11 @@ public:
   virtual void init() {
     VIVID_CHECK( m_MitkSurf );
 
+    mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
+    initRenderModeProps( node );
+    initFogProps( node );
+    initClipProps( node );
+
     ref<vl::Geometry> geom = ConvertVTKPolyData( m_MitkSurf->GetVtkPolyData() );
     if ( ! geom->normalArray() ) {
       geom->computeNormals();
@@ -947,7 +1103,11 @@ public:
     m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
   }
 
-  virtual void update() {}
+  virtual void update() {
+    updateRenderModeProps( m_Actor->effect(), m_DataNode );
+    updateFogProps( m_Actor->effect(), m_DataNode );
+    updateClipProps( m_Actor->effect(), m_DataNode );
+  }
 
 protected:
   mitk::Surface::Pointer m_MitkSurf;
@@ -965,6 +1125,11 @@ public:
 
   virtual void init() {
     VIVID_CHECK( m_MitkImage.IsNotNull() );
+
+    mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
+    // initRenderModeProps( node ); /* does not apply */
+    initFogProps( node );
+    initClipProps( node );
 
     mitk::PixelType  mitk_pixel_type = m_MitkImage->GetPixelType();
     vl::EImageType   vl_type         = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
@@ -1008,6 +1173,10 @@ public:
 
   virtual void update() {
     VIVID_CHECK( m_MitkImage.IsNotNull() );
+
+    // updateRenderModeProps(); /* does not apply here */
+    updateFogProps( m_Actor->effect(), m_DataNode );
+    updateClipProps( m_Actor->effect(), m_DataNode );
 
     if ( m_MitkImage->GetVtkImageData()->GetMTime() <= GetUserData( m_Actor.get() )->m_ImageModifiedTime ) {
       return;
@@ -1274,7 +1443,7 @@ public:
     ref<vl::ArrayFloat4> colors = new vl::ArrayFloat4;
     verts->resize(6);
     colors->resize(6);
-  
+
     // Axis length
     int S = 100;
     mitk::IntProperty::Pointer size_prop = dynamic_cast<mitk::IntProperty*>(m_DataNode->GetProperty("size"));
@@ -1344,13 +1513,46 @@ public:
     : VLMapper( node, sv ) {
     m_MitkPointSet = dynamic_cast<mitk::PointSet*>( node->GetData() );
     m_3DSphereMode = true;
-    initVLPropertiesPointSet();
+    m_PointFX = vl::VividRendering::makeVividEffect();
     VIVID_CHECK( m_MitkPointSet );
   }
 
-  virtual void init() { }
+  void initPointSetProps()
+  {
+    // init only once if multiple views are open
+    if ( m_DataNode->GetProperty("VL.Point.Mode") ) {
+      return;
+    }
 
-  virtual void init3D() {
+    mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
+    // initRenderModeProps( node ); /* does not apply to points */
+    initFogProps( node );
+    initClipProps( node );
+
+    mitk::EnumerationProperty::Pointer point_set_mode = VL_Point_Mode_Property::New();
+    const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Mode", point_set_mode);
+    point_set_mode->SetValue( 0 );
+
+    mitk::FloatProperty::Pointer point_size_2d = mitk::FloatProperty::New();
+    const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Size2D", point_size_2d);
+    point_size_2d->SetValue( 5 );
+
+    mitk::FloatProperty::Pointer point_size_3d = mitk::FloatProperty::New();
+    const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Size3D", point_size_3d);
+    point_size_3d->SetValue( 5 );
+
+    mitk::FloatProperty::Pointer point_opacity = mitk::FloatProperty::New();
+    const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Opacity", point_opacity);
+    point_opacity->SetValue( 1 );
+
+    mitk::ColorProperty::Pointer point_color = mitk::ColorProperty::New();
+    const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Color", point_color);
+    point_color->SetValue( vl::yellow.ptr() );
+  }
+
+  virtual void init() { initPointSetProps(); }
+
+  void init3D() {
     VIVID_CHECK( m_MitkPointSet );
     VIVID_CHECK( m_3DSphereMode );
 
@@ -1360,19 +1562,18 @@ public:
     m_VividRendering->sceneManager()->tree()->addChild( m_SphereActors.get() );
 
     m_3DSphereGeom = vl::makeIcosphere( vec3(0,0,0), 1, 2, true );
-    m_3DSphereFX = vl::VividRendering::makeVividEffect();
     int j = 0;
     for (mitk::PointSet::PointsConstIterator i = m_MitkPointSet->Begin(); i != m_MitkPointSet->End(); ++i, ++j)
     {
       mitk::PointSet::PointType p = i->Value();
       vl::vec3 pos( p[0], p[1], p[2] );
-      ref<Actor> actor = initActor( m_3DSphereGeom.get(), m_3DSphereFX.get() );
+      ref<Actor> actor = initActor( m_3DSphereGeom.get(), m_PointFX.get() );
       actor->transform()->setLocalAndWorldMatrix( vl::mat4::getTranslation( pos ) );
       m_SphereActors->addActor( actor.get() );
     }
   }
 
-  virtual void init2D() {
+  void init2D() {
     VIVID_CHECK( m_MitkPointSet );
     VIVID_CHECK( ! m_3DSphereMode );
 
@@ -1396,48 +1597,46 @@ public:
     m_2DGeometry->setVertexArray( verts.get() );
     m_2DGeometry->setColorArray( vl::white );
 
-    m_Actor = initActor( m_2DGeometry.get() );
+    m_Actor = initActor( m_2DGeometry.get(), m_PointFX.get() );
     m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
     ref<vl::Effect> fx = m_Actor->effect();
-    fx->shader()->getUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
-    fx->shader()->getUniform( "vl_Vivid.enablePointSprite" )->setUniformI( 1 );
-    fx->shader()->gocUniform( "vl_Vivid.enableTextureMapping" )->setUniformI( 1 );
     ref<vl::Image> img = new Image("/vivid/images/sphere.png");
     ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
     texture->createTexture2D( img.get(), vl::TF_UNKNOWN, false, false );
   }
 
   virtual void update() {
-    // Get mode
-    int mode = 0;
-    const mitk::EnumerationProperty* mode_prop = dynamic_cast<const mitk::EnumerationProperty*>( m_DataNode->GetProperty( "VL.Point.Mode" ) );
-    if ( mode_prop ) {
-      mode = mode_prop->GetValueAsId();
-    }
-    m_3DSphereMode = 0 == mode;
+    // updateRenderModeProps(); /* does not apply here */
+    updateFogProps( m_PointFX.get(), m_DataNode );
+    updateClipProps( m_PointFX.get(), m_DataNode );
 
-    bool visible = true;
-    m_DataNode->GetBoolProperty( "visible", visible );
+    // Get mode
+    m_3DSphereMode = 0 == getEnumProp( m_DataNode, "VL.Point.Mode", 0 );
+
+    // Get visibility
+    bool visible = getBoolProp( m_DataNode, "visible", true );
 
     // Get point size
-    float pointsize = 1;
-    m_DataNode->GetFloatProperty( m_3DSphereMode ? "VL.Point.Size3D" : "VL.Point.Size2D", pointsize );
+    float pointsize = getFloatProp( m_DataNode, m_3DSphereMode ? "VL.Point.Size3D" : "VL.Point.Size2D", 1.0f );
 
     // Get color
-    float rgb[3];
-    m_DataNode->GetColor( rgb, NULL, "VL.Point.Color" );
+    vl::vec4 color = getColorProp( m_DataNode, "VL.Point.Color", vl::white );
 
     // Get opacity
-    float opacity = 1;
-    m_DataNode->GetFloatProperty( "VL.Point.Opacity", opacity );
+    color.a() = getFloatProp( m_DataNode, "VL.Point.Opacity", 1.0f );
 
     if ( m_3DSphereMode ) {
       if ( ! m_SphereActors ) {
         init3D();
       }
 
+      // 3D mode settings
+      m_PointFX->shader()->getUniform( "vl_Vivid.enableLighting" )->setUniformI( 1 );
+      m_PointFX->shader()->getUniform( "vl_Vivid.enablePointSprite" )->setUniformI( 0 );
+      m_PointFX->shader()->gocUniform( "vl_Vivid.enableTextureMapping" )->setUniformI( 0 );
+
       // Set color/opacity
-      m_3DSphereFX->shader()->getMaterial()->setDiffuse( vl::vec4( rgb[0], rgb[1], rgb[2], opacity ) );
+      m_PointFX->shader()->getMaterial()->setDiffuse( color );
       for( int i = 0; i < m_SphereActors->actors()->size(); ++i ) {
         // Set visible
         Actor* act = m_SphereActors->actors()->at( i );
@@ -1454,14 +1653,19 @@ public:
       if ( ! m_2DGeometry ) {
         init2D();
       }
-      
-      VIVID_CHECK( m_Actor );
 
-      Shader* shader = m_Actor->effect()->shader();
-      // This is part of the standard vivid shader so it must be present.
-      VIVID_CHECK( shader->getPointSize() );
-      shader->getPointSize()->set( pointsize );
-      m_2DGeometry->setColorArray( vl::vec4( rgb[0], rgb[1], rgb[2], opacity ) );
+      VIVID_CHECK( m_Actor );
+      VIVID_CHECK( m_PointFX->shader()->getPointSize() );
+
+      // 2d mode settings
+      m_PointFX->shader()->getUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
+      m_PointFX->shader()->getUniform( "vl_Vivid.enablePointSprite" )->setUniformI( 1 );
+      m_PointFX->shader()->gocUniform( "vl_Vivid.enableTextureMapping" )->setUniformI( 1 );
+
+      // set point size
+      m_PointFX->shader()->getPointSize()->set( pointsize );
+      // set color
+      m_2DGeometry->setColorArray( color );
     }
   }
 
@@ -1473,43 +1677,24 @@ public:
       m_VividRendering->sceneManager()->tree()->eraseChild( m_SphereActors.get() );
       m_SphereActors = NULL;
       m_3DSphereGeom = NULL;
-      m_3DSphereFX = NULL;
+      m_PointFX = NULL;
     }
   }
-
-  virtual void updateVLGlobalSettings() {
-    mitk::DataNode* node = m_DataStorage->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() );
-    if ( ! node ) {
-      return;
-    }
-
-    if ( m_Actor) {
-      VLGlobalSettingsDataNode::update( m_Actor.get(), node );
-    } 
-    else if (m_SphereActors) {
-      vl::ActorCollection actors;
-      m_SphereActors->extractActors( actors );
-      for( int i = 0; i < actors.size(); ++i ) {
-        VLGlobalSettingsDataNode::update( actors[i].get(), node );
-      }
-    }
-  }
-
 
 protected:
   mitk::PointSet::Pointer m_MitkPointSet;
   bool m_3DSphereMode;
   ref<vl::ActorTree> m_SphereActors;
   ref<Geometry> m_3DSphereGeom;
-  ref<Effect> m_3DSphereFX;
+  ref<Effect> m_PointFX;
   ref<vl::Geometry> m_2DGeometry;
 };
 
 //-----------------------------------------------------------------------------
 
 #ifdef _USE_PCL
-/*    
-       WARNING: 
+/*
+       WARNING:
 never compiled nor tested
 
      _.--""--._
@@ -1521,7 +1706,7 @@ never compiled nor tested
 (_'"_.-"`~~`"-._"'_)
  {_"            "_}
 
-*/                          
+*/
 class VLMapperPCL: public VLMapper {
 public:
   VLMapperPCL( const mitk::DataNode* node, VLSceneView* sv )
@@ -1587,8 +1772,8 @@ protected:
 //-----------------------------------------------------------------------------
 
 #ifdef _USE_CUDA
-/*    
-       WARNING: 
+/*
+       WARNING:
 never compiled nor tested
 
      _.--""--._
@@ -1603,7 +1788,7 @@ never compiled nor tested
 
 This is just stub code, a raw attempt at reorganizing the legacy experimental CUDA code into the new VLMapper logic
 
-*/                          
+*/
 class VLMapperCUDAImage: public VLMapper {
 public:
   VLMapperCUDAImage( const mitk::DataNode* node, VLSceneView* sv )
@@ -1652,7 +1837,7 @@ public:
   virtual void update() {
     VIVID_CHECK(m_NiftkLightweightCUDAImage.GetId() != 0);
 
-    // BEWARE: 
+    // BEWARE:
     // All the logic below is completely outdated especially with regard to accessing the user texture. See VLMapper2DImage for more info.
     // PS. All the horrific code formatting is from the original code...
     // - Michele
@@ -1776,7 +1961,7 @@ protected:
 //-----------------------------------------------------------------------------
 
 vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv ) {
-  
+
   // Map DataNode type to VLMapper type
   vl::ref<VLMapper> vl_node;
 
@@ -1794,12 +1979,12 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
 
   if ( vl_global ) {
     vl_node = new VLMapperVLGlobalSettings( node, sv );
-  } 
+  }
   else
   if ( mitk_surf ) {
     vl_node = new VLMapperSurface( node, sv );
-  } 
-  else 
+  }
+  else
   if ( mitk_image ) {
     unsigned int depth = mitk_image->GetDimensions()[2];
     // In VTK a NxMx1 image is 2D (in VL a 2D image is NxMx0)
@@ -1808,23 +1993,23 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
     } else {
       vl_node = new VLMapper3DImage( node, sv );
     }
-  } 
-  else  
+  }
+  else
   if ( mitk_axes ) {
     vl_node = new VLMapperCoordinateAxes( node, sv );
-  } 
-  else 
+  }
+  else
   if ( mitk_pset ) {
     vl_node = new VLMapperPointSet( node, sv );
   }
 #ifdef _USE_PCL
-  else 
+  else
   if ( mitk_pcld ) {
     vl_node = new VLMapperPCL( node, sv );
   }
 #endif
 #ifdef _USE_CUDA
-  else 
+  else
   if ( mitk_pcld ) {
     vl_node = new VLMapperCUDAImage( node, sv );
   }
@@ -1836,7 +2021,7 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
 // VLSceneView
 //-----------------------------------------------------------------------------
 
-VLSceneView::VLSceneView() : 
+VLSceneView::VLSceneView() :
   // Qt5Widget(parent, shareWidget, f)
   m_BackgroundWidth( 0 )
   , m_BackgroundHeight( 0 )
@@ -1855,7 +2040,7 @@ VLSceneView::VLSceneView() :
 {
   openglContext()->makeCurrent();
 
-  RemoveDataStorageListeners();
+  removeDataStorageListeners();
 
 #ifdef _USE_CUDA
   FreeCUDAInteropTextures();
@@ -1864,46 +2049,46 @@ VLSceneView::VLSceneView() :
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::AddDataStorageListeners()
+void VLSceneView::addDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
-    m_DataStorage->AddNodeEvent.    AddListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeAdd));
-    m_DataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeUpdate));
-    m_DataStorage->RemoveNodeEvent. AddListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeRemove));
-    m_DataStorage->DeleteNodeEvent. AddListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeRemove));
+    m_DataStorage->AddNodeEvent.    AddListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::scheduleNodeAdd));
+    m_DataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::scheduleNodeUpdate));
+    m_DataStorage->RemoveNodeEvent. AddListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::scheduleNodeRemove));
+    m_DataStorage->DeleteNodeEvent. AddListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::scheduleNodeRemove));
   }
 }
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::RemoveDataStorageListeners()
+void VLSceneView::removeDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
-    m_DataStorage->AddNodeEvent.    RemoveListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeAdd));
-    m_DataStorage->ChangedNodeEvent.RemoveListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeUpdate));
-    m_DataStorage->RemoveNodeEvent. RemoveListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeRemove));
-    m_DataStorage->DeleteNodeEvent. RemoveListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::ScheduleNodeRemove));
+    m_DataStorage->AddNodeEvent.    RemoveListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::scheduleNodeAdd));
+    m_DataStorage->ChangedNodeEvent.RemoveListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::scheduleNodeUpdate));
+    m_DataStorage->RemoveNodeEvent. RemoveListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::scheduleNodeRemove));
+    m_DataStorage->DeleteNodeEvent. RemoveListener(mitk::MessageDelegate1<VLSceneView, const mitk::DataNode*>(this, &VLSceneView::scheduleNodeRemove));
   }
 }
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::SetDataStorage(const mitk::DataStorage::Pointer& ds)
+void VLSceneView::setDataStorage(const mitk::DataStorage::Pointer& ds)
 {
   openglContext()->makeCurrent();
 
-  RemoveDataStorageListeners();
+  removeDataStorageListeners();
 
 #ifdef _USE_CUDA
   FreeCUDAInteropTextures();
 #endif
 
   m_DataStorage = ds;
-  AddDataStorageListeners();
+  addDataStorageListeners();
 
-  ClearScene();
+  clearScene();
 
   // Initialize VL Global Settings if not present
   if ( ! ds->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() ) ) {
@@ -1916,7 +2101,7 @@ void VLSceneView::SetDataStorage(const mitk::DataStorage::Pointer& ds)
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::SetOclResourceService(OclResourceService* oclserv)
+void VLSceneView::setOclResourceService(OclResourceService* oclserv)
 {
  // no idea if this is really a necessary restriction.
  // if it is then maybe the ocl-service should be a constructor parameter.
@@ -1928,15 +2113,7 @@ void VLSceneView::SetOclResourceService(OclResourceService* oclserv)
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::requestVLGlobalSettingsUpdate() {
-  for( DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.begin(); it != m_DataNodeVLMapperMap.end(); ++it ) {
-    it->second->updateVLGlobalSettings();
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-void VLSceneView::ScheduleNodeAdd( const mitk::DataNode* node )
+void VLSceneView::scheduleNodeAdd( const mitk::DataNode* node )
 {
   if ( ! node || ! node->GetData() ) {
     return;
@@ -1953,7 +2130,7 @@ void VLSceneView::ScheduleNodeAdd( const mitk::DataNode* node )
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::ScheduleNodeUpdate( const mitk::DataNode* node )
+void VLSceneView::scheduleNodeUpdate( const mitk::DataNode* node )
 {
   if ( ! node || ! node->GetData() ) {
     return;
@@ -1970,7 +2147,7 @@ void VLSceneView::ScheduleNodeUpdate( const mitk::DataNode* node )
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::ScheduleNodeRemove( const mitk::DataNode* node )
+void VLSceneView::scheduleNodeRemove( const mitk::DataNode* node )
 {
   if ( ! node /* || ! node->GetData() */ ) {
     return;
@@ -1987,14 +2164,14 @@ void VLSceneView::ScheduleNodeRemove( const mitk::DataNode* node )
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::InitSceneFromDataStorage()
+void VLSceneView::initSceneFromDataStorage()
 {
   // Make sure the system is initialized
   VIVID_CHECK( m_VividRendering.get() );
 
   openglContext()->makeCurrent();
 
-  ClearScene();
+  clearScene();
 
   if ( m_DataStorage.IsNull() ) {
     return;
@@ -2009,7 +2186,7 @@ void VLSceneView::InitSceneFromDataStorage()
     if ( ! node || ! node->GetData() ) {
       continue;
     } else {
-      AddDataNode( node.GetPointer() );
+      addDataNode( node.GetPointer() );
     }
   }
 
@@ -2032,17 +2209,17 @@ void VLSceneView::InitSceneFromDataStorage()
 
 //-----------------------------------------------------------------------------
 
-VLMapper* VLSceneView::AddDataNode(const mitk::DataNode::ConstPointer& node)
+VLMapper* VLSceneView::addDataNode(const mitk::DataNode::ConstPointer& node)
 {
   openglContext()->makeCurrent();
 
   // Add only once and only if valid
-  if ( ! node || ! node->GetData() || GetVLMapper( node ) != NULL ) {
+  if ( ! node || ! node->GetData() || getVLMapper( node ) != NULL ) {
     return NULL;
   }
 
   #if 0
-    dumpNodeInfo( "AddDataNode()", node );
+    dumpNodeInfo( "addDataNode()", node );
   #endif
 
   ref<VLMapper> vl_node = VLMapper::create( node.GetPointer(), this );
@@ -2060,7 +2237,7 @@ VLMapper* VLSceneView::AddDataNode(const mitk::DataNode::ConstPointer& node)
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
+void VLSceneView::removeDataNode(const mitk::DataNode::ConstPointer& node)
 {
   openglContext()->makeCurrent();
 
@@ -2080,7 +2257,7 @@ void VLSceneView::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
   }
 }
 
-void VLSceneView::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
+void VLSceneView::updateDataNode(const mitk::DataNode::ConstPointer& node)
 {
   openglContext()->makeCurrent();
 
@@ -2089,7 +2266,7 @@ void VLSceneView::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
   }
 
   #if 1
-    dumpNodeInfo( "UpdateDataNode()", node );
+    dumpNodeInfo( "updateDataNode()", node );
   #endif
 
   DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.find( node );
@@ -2103,13 +2280,13 @@ void VLSceneView::UpdateDataNode(const mitk::DataNode::ConstPointer& node)
 
   // Update camera
   if (node == m_CameraNode) {
-    UpdateCameraParameters();
+    updateCameraParameters();
   }
 }
 
 //-----------------------------------------------------------------------------
 
-VLMapper* VLSceneView::GetVLMapper( const mitk::DataNode::ConstPointer& node )
+VLMapper* VLSceneView::getVLMapper( const mitk::DataNode::ConstPointer& node )
 {
   DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.find( node );
   return it == m_DataNodeVLMapperMap.end() ? NULL : it->second.get();
@@ -2117,7 +2294,7 @@ VLMapper* VLSceneView::GetVLMapper( const mitk::DataNode::ConstPointer& node )
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::SetBackgroundColour(float r, float g, float b)
+void VLSceneView::setBackgroundColour(float r, float g, float b)
 {
   m_VividRendering->camera()->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
   openglContext()->update();
@@ -2176,10 +2353,10 @@ void VLSceneView::initEvent()
   m_Trackball->setPivot( vl::vec3(0,0,0) );
   openglContext()->addEventListener( m_Trackball.get() );
   // Schedule reset of the camera based on the scene content
-  ScheduleTrackballAdjustView();
+  scheduleTrackballAdjustView();
 
   // This is only used by the CUDA stuff
-  CreateAndUpdateFBOSizes( openglContext()->width(), openglContext()->height() );
+  createAndUpdateFBOSizes( openglContext()->width(), openglContext()->height() );
 
 #if 0
   // Point cloud data test
@@ -2216,10 +2393,10 @@ void VLSceneView::resizeEvent( int w, int h )
   m_VividRendering->camera()->viewport()->set( 0, 0, w, h );
   m_VividRendering->camera()->setProjectionPerspective();
 
-  CreateAndUpdateFBOSizes( w, h );
+  createAndUpdateFBOSizes( w, h );
 
   // MIC FIXME: update calibrated camera setup
-  UpdateViewportAndCameraAfterResize();
+  updateViewportAndCameraAfterResize();
 }
 
 //-----------------------------------------------------------------------------
@@ -2228,12 +2405,12 @@ void VLSceneView::updateEvent()
 {
   VIVID_CHECK( contextIsCurrent() );
 
-  RenderScene();
+  renderScene();
 }
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::CreateAndUpdateFBOSizes( int width, int height )
+void VLSceneView::createAndUpdateFBOSizes( int width, int height )
 {
   openglContext()->makeCurrent();
 
@@ -2259,7 +2436,7 @@ void VLSceneView::CreateAndUpdateFBOSizes( int width, int height )
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::UpdateViewportAndCameraAfterResize()
+void VLSceneView::updateViewportAndCameraAfterResize()
 {
   // some sane defaults
   // m_Camera->viewport()->set( 0, 0, QWidget::width(), QWidget::height() );
@@ -2273,7 +2450,7 @@ void VLSceneView::UpdateViewportAndCameraAfterResize()
     //  // actor not ready yet, try again later.
     //  // this is getting messy... but stuffing our widget here into an editor causes various methods
     //  // to be called at the wrong time.
-    //  QMetaObject::invokeMethod(this, "UpdateViewportAndCameraAfterResize", Qt::QueuedConnection);
+    //  QMetaObject::invokeMethod(this, "updateViewportAndCameraAfterResize", Qt::QueuedConnection);
     //}
     //else
     //{
@@ -2302,36 +2479,36 @@ void VLSceneView::UpdateViewportAndCameraAfterResize()
   // this default perspective depends on the viewport!
   m_Camera->setProjectionPerspective();
 
-  UpdateCameraParameters();
+  updateCameraParameters();
 }
 
-void VLSceneView::UpdateScene() {
+void VLSceneView::updateScene() {
   // Make sure the system is initialized
   VIVID_CHECK( m_VividRendering.get() );
   VIVID_CHECK( contextIsCurrent() );
 
   if ( m_ScheduleInitScene ) {
-    InitSceneFromDataStorage();
+    initSceneFromDataStorage();
     m_ScheduleInitScene = false;
   } else {
     // Execute scheduled removals
     for ( std::set<mitk::DataNode::ConstPointer>::const_iterator it = m_NodesToRemove.begin(); it != m_NodesToRemove.end(); ++it)
     {
-      RemoveDataNode(*it);
+      removeDataNode(*it);
     }
     m_NodesToRemove.clear();
 
     // Execute scheduled additions
     for ( std::set<mitk::DataNode::ConstPointer>::const_iterator it = m_NodesToAdd.begin(); it != m_NodesToAdd.end(); ++it)
     {
-      AddDataNode(*it);
+      addDataNode(*it);
     }
     m_NodesToAdd.clear();
 
     // Execute scheduled updates
     for ( std::set<mitk::DataNode::ConstPointer>::const_iterator it = m_NodesToUpdate.begin(); it != m_NodesToUpdate.end(); ++it)
     {
-      UpdateDataNode(*it);
+      updateDataNode(*it);
     }
     m_NodesToUpdate.clear();
   }
@@ -2346,11 +2523,11 @@ void VLSceneView::UpdateScene() {
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::RenderScene()
+void VLSceneView::renderScene()
 {
   VIVID_CHECK( contextIsCurrent() );
 
-  UpdateScene();
+  updateScene();
 
   // Set frame time for all the rendering
   vl::real now_time = vl::Time::currentTime();
@@ -2372,7 +2549,7 @@ void VLSceneView::RenderScene()
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::ClearScene()
+void VLSceneView::clearScene()
 {
   openglContext()->makeCurrent();
 
@@ -2381,6 +2558,11 @@ void VLSceneView::ClearScene()
     if ( m_SceneManager->tree() ) {
       m_SceneManager->tree()->actors()->clear();
       m_SceneManager->tree()->eraseAllChildren();
+      m_VividRendering->stencilActors().clear();
+      // These depend on the global settings
+      // m_VividRendering->setBackgroundImageEnabled(false);
+      // m_VividRendering->setStencilEnabled(false);
+      // m_VividRendering->setStencilBackground(vl::black);
     }
   }
 
@@ -2394,7 +2576,7 @@ void VLSceneView::ClearScene()
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::UpdateThresholdVal( int isoVal )
+void VLSceneView::updateThresholdVal( int isoVal )
 {
   float iso = isoVal / 10000.0f;
   iso = vl::clamp( iso, 0.0f, 1.0f );
@@ -2403,7 +2585,7 @@ void VLSceneView::UpdateThresholdVal( int isoVal )
 
 //-----------------------------------------------------------------------------
 
-bool VLSceneView::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
+bool VLSceneView::setCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
 {
   VIVID_CHECK( m_Trackball );
 
@@ -2414,12 +2596,12 @@ bool VLSceneView::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node
   if (m_CameraNode.IsNull())
   {
     m_Trackball->setEnabled( true );
-    ScheduleTrackballAdjustView( true );
+    scheduleTrackballAdjustView( true );
   } else {
     dumpNodeInfo( "CameraNode()", node );
     m_Trackball->setEnabled( false );
-    ScheduleTrackballAdjustView( false );
-    UpdateCameraParameters();
+    scheduleTrackballAdjustView( false );
+    updateCameraParameters();
   }
 
   openglContext()->update();
@@ -2429,7 +2611,7 @@ bool VLSceneView::SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::UpdateCameraParameters()
+void VLSceneView::updateCameraParameters()
 {
   // calibration parameters come from the background node.
   // so no background, no camera parameters.
@@ -2482,7 +2664,7 @@ void VLSceneView::UpdateCameraParameters()
 //-----------------------------------------------------------------------------
 
 // MIC FIXME: remove this
-void VLSceneView::PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
+void VLSceneView::prepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
 {
   /*
   openglContext()->makeCurrent();
@@ -2533,7 +2715,7 @@ void VLSceneView::PrepareBackgroundActor(const mitk::Image* img, const mitk::Bas
 
 //-----------------------------------------------------------------------------
 
-bool VLSceneView::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
+bool VLSceneView::setBackgroundNode(const mitk::DataNode::ConstPointer& node)
 {
   openglContext()->makeCurrent();
 
@@ -2542,9 +2724,9 @@ bool VLSceneView::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
   {
     const mitk::DataNode::ConstPointer    oldbackgroundnode = m_BackgroundNode;
     m_BackgroundNode = 0;
-    RemoveDataNode(oldbackgroundnode);
+    removeDataNode(oldbackgroundnode);
     // add back as normal node.
-    AddDataNode(oldbackgroundnode);
+    addDataNode(oldbackgroundnode);
   }
 
   // default "no background" value.
@@ -2559,7 +2741,7 @@ bool VLSceneView::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
   {
     // clear up whatever we had cached for the new background node.
     // it's very likely that it was a normal node before.
-    RemoveDataNode(node);
+    removeDataNode(node);
 
     mitk::Image::Pointer imgdata = dynamic_cast<mitk::Image*>(basedata.GetPointer());
     if (imgdata.IsNotNull())
@@ -2575,13 +2757,13 @@ bool VLSceneView::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
         VIVID_CHECK(lwci.GetWidth()  == imgdata->GetDimension(0));
         VIVID_CHECK(lwci.GetHeight() == imgdata->GetDimension(1));
 
-        PrepareBackgroundActor(&lwci, imgdata->GetGeometry(), node);
+        prepareBackgroundActor(&lwci, imgdata->GetGeometry(), node);
         result = true;
       }
       else
 #endif
       {
-        PrepareBackgroundActor(imgdata.GetPointer(), imgdata->GetGeometry(), node);
+        prepareBackgroundActor(imgdata.GetPointer(), imgdata->GetGeometry(), node);
         result = true;
       }
 
@@ -2595,7 +2777,7 @@ bool VLSceneView::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
       if (cudaimgdata.IsNotNull())
       {
         niftk::LightweightCUDAImage    lwci = cudaimgdata->GetLightweightCUDAImage();
-        PrepareBackgroundActor(&lwci, cudaimgdata->GetGeometry(), node);
+        prepareBackgroundActor(&lwci, cudaimgdata->GetGeometry(), node);
         result = true;
 
         m_BackgroundWidth  = lwci.GetWidth();
@@ -2605,12 +2787,12 @@ bool VLSceneView::SetBackgroundNode(const mitk::DataNode::ConstPointer& node)
 #endif
     }
 
-    // UpdateDataNode() depends on m_BackgroundNode.
+    // updateDataNode() depends on m_BackgroundNode.
     m_BackgroundNode = node;
-    UpdateDataNode(node);
+    updateDataNode(node);
   }
 
-  UpdateViewportAndCameraAfterResize();
+  updateViewportAndCameraAfterResize();
 
   // now that the camera may have changed, fit-view-to-scene again.
   //if (m_CameraNode.IsNull())
@@ -2736,7 +2918,7 @@ void VLSceneView::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStora
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
+void VLSceneView::prepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
 {
   openglContext()->makeCurrent();
 
@@ -2779,7 +2961,7 @@ void VLSceneView::PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci
 
   ref<vl::Effect>    fx = new vl::Effect;
   fx->shader()->disable(vl::EN_LIGHTING);
-  // UpdateDataNode() takes care of assigning colour etc.
+  // updateDataNode() takes care of assigning colour etc.
 
   ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor(vlquad.get(), fx.get(), tr.get());
   actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );

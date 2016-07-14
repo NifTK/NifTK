@@ -85,16 +85,16 @@ void QmitkIGIVLEditor::SetBackgroundColour(unsigned int aabbggrr)
   float   r = (aabbggrr & 0xFF) / 255.0f;
   float   g = ((aabbggrr & 0xFF00) >> 8) / 255.0f;
   float   b = ((aabbggrr & 0xFF0000) >> 16) / 255.0f;
-  m_OverlayViewer->vlSceneView()->SetBackgroundColour(r, g, b);
-  m_3DViewer->vlSceneView()->SetBackgroundColour(r, g, b);
+  m_OverlayViewer->vlSceneView()->setBackgroundColour(r, g, b);
+  m_3DViewer->vlSceneView()->setBackgroundColour(r, g, b);
 }
 
 
 //-----------------------------------------------------------------------------
 void QmitkIGIVLEditor::SetOclResourceService(OclResourceService* oclserv)
 {
-  m_OverlayViewer->vlSceneView()->SetOclResourceService(oclserv);
-  m_3DViewer->vlSceneView()->SetOclResourceService(oclserv);
+  m_OverlayViewer->vlSceneView()->setOclResourceService(oclserv);
+  m_3DViewer->vlSceneView()->setOclResourceService(oclserv);
 }
 
 
@@ -150,14 +150,14 @@ void QmitkIGIVLEditor::OnOpacitySliderMoved(int value)
 
 void QmitkIGIVLEditor::OnImageSelected(const mitk::DataNode* node)
 {
-  m_OverlayViewer->vlSceneView()->SetBackgroundNode(node);
+  m_OverlayViewer->vlSceneView()->setBackgroundNode(node);
 }
 
 //-----------------------------------------------------------------------------
 
 void QmitkIGIVLEditor::OnTransformSelected(const mitk::DataNode* node)
 {
-  m_OverlayViewer->vlSceneView()->SetCameraTrackingNode(node);
+  m_OverlayViewer->vlSceneView()->setCameraTrackingNode(node);
 }
 
 
@@ -178,8 +178,8 @@ void QmitkIGIVLEditor::SetDataStorage(mitk::DataStorage* storage)
       (this, &QmitkIGIVLEditor::NodeChanged ) );
   }
 
-  m_3DViewer->vlSceneView()->SetDataStorage(storage);
-  m_OverlayViewer->vlSceneView()->SetDataStorage(storage);
+  m_3DViewer->vlSceneView()->setDataStorage(storage);
+  m_OverlayViewer->vlSceneView()->setDataStorage(storage);
 
   m_ImageCombo->SetDataStorage(storage);
   m_TransformCombo->SetDataStorage(storage);

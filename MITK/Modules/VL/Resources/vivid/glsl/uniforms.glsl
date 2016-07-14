@@ -51,15 +51,15 @@ struct vl_SmartClipParameters {
 // Outline
 
 struct OutlineParameters {
-    // <per-Actor>
+    // <per-Shader>
     // Clipping plane for Slice Outline mode in World Coordinates
     vec4 slicePlane;
 
-    // <per-Actor>
+    // <per-Shader>
     // Outline color
     vec4 color;
 
-    // <automatic>
+    // <per-Shader>
     // Outline width
     float width;
 
@@ -97,19 +97,19 @@ struct vl_StencilParameters {
 };
 
 struct vl_VividParameters {
-    // <per-Actor>
+    // <per-Shader>
     // 0=Polys, 1=Outline3D, 2=Polys+Outline3D, 3=Slice, 4=Outline2D, 5=Polys+Outline2D
     int renderMode;
 
-    // <per-Actor>
+    // <per-Shader>
     // If lighting is disabled Geometry must have a color array
     bool enableLighting;
 
-    // <per-Actor>
+    // <per-Shader>
     // Whether to use texture mapping or not
     bool enableTextureMapping;
 
-    // <per-Actor>
+    // <per-Shader>
     // Whether to render points as textured point sprites
     // Requires enableTextureMapping=1
     bool enablePointSprite;
@@ -121,13 +121,13 @@ struct vl_VividParameters {
     // <automatic>
     vl_StencilParameters stencil;
 
-    // <automatic> / <per-Actor>
+    // <automatic> / <per-Shader>
     OutlineParameters outline;
 
-    // <per-Actor>
+    // <per-Shader>
     vl_SmartFogParameters smartFog;
 
-    // <per-Actor>
+    // <per-Shader>
     vl_SmartClipParameters smartClip[ VL_SMART_CLIP_SIZE ];
 };
 
