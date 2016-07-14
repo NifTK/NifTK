@@ -170,12 +170,7 @@ public:
   itkSetMacro ( WorldPoints, mitk::PickedPointList::Pointer );
   itkSetMacro ( ModelPoints, mitk::PickedPointList::Pointer );
   itkSetMacro ( ClassifierWorldPoints, mitk::PickedPointList::Pointer );
-
-  /**
-   * \brief sets the model to world transform and applies it to model points, to create world points, 
-   * throws an error is model points is not yet set
-   */
-  void SetAndApplyModelToWorldTransform ( cv::Mat* transform ); 
+  void SetModelToWorldTransform ( cv::Mat* ); 
 
 protected:
 
