@@ -1147,11 +1147,11 @@ public:
     vec4 bg_color = getColorProp( m_DataNode, "VL.Global.BackgroundColor", vl::black );
     float opacity = getFloatProp( m_DataNode, "VL.Global.Opacity", 1 );
 
-    m_VividRendering->setStencilEnabled(enable);
-    m_VividRendering->setStencilBackground(stencil_bg_color);
-    m_VividRendering->setStencilSmoothness(stencil_smooth);
+    m_VividRendering->setStencilEnabled( enable );
+    m_VividRendering->setStencilBackground( stencil_bg_color );
+    m_VividRendering->setStencilSmoothness( stencil_smooth );
     m_VividRendering->setRenderingMode( (VividRendering::ERenderingMode)render_mode );
-    m_VividRendering->calibratedCamera()->viewport()->setClearColor( bg_color );
+    m_VividRendering->setBackgroundColor( bg_color );
     m_VividRendering->setAlpha( opacity );
   }
 
@@ -2397,7 +2397,7 @@ VLMapper* VLSceneView::getVLMapper( const mitk::DataNode::ConstPointer& node )
 
 void VLSceneView::setBackgroundColour(float r, float g, float b)
 {
-  m_VividRendering->camera()->viewport()->setClearColor(vl::fvec4(r, g, b, 1));
+  m_VividRendering->setBackgroundColor( fvec4(r, g, b, 1) );
   openglContext()->update();
 }
 
