@@ -331,6 +331,11 @@ namespace
   }
 
   void initVolumeProps( mitk::DataNode* node ) {
+    // init only once if multiple views are open
+    if ( node->GetProperty("VL.Volume.Mode") ) {
+      return;
+    }
+
     mitk::EnumerationProperty::Pointer mode = VL_Volume_Mode_Property::New();
     node->AddProperty( "VL.Volume.Mode", mode);
     mode->SetValue( 0 );
@@ -1282,8 +1287,8 @@ public:
 
     try {
       unsigned int buffer_bytes = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
-      mitk::ImageReadAccessor readAccess( m_MitkImage, m_MitkImage->GetVolumeData(0) );
-      void* buffer_ptr = const_cast<void*>( readAccess.GetData() );
+      mitk::ImageReadAccessor image_reader( m_MitkImage, m_MitkImage->GetVolumeData(0) );
+      void* buffer_ptr = const_cast<void*>( image_reader.GetData() );
       // std::memcpy( vl_img->pixels(), ptr, byte_count );
       // Use VTK buffer directly instead of allocating one
       vl_img = new vl::Image( buffer_ptr, buffer_bytes );
@@ -1336,8 +1341,8 @@ public:
       try
       {
         unsigned int buffer_bytes = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
-        mitk::ImageReadAccessor readAccess( m_MitkImage, m_MitkImage->GetVolumeData(0) );
-        void* buffer_ptr = const_cast<void*>( readAccess.GetData() );
+        mitk::ImageReadAccessor image_reader( m_MitkImage, m_MitkImage->GetVolumeData(0) );
+        void* buffer_ptr = const_cast<void*>( image_reader.GetData() );
         // Use VTK buffer directly, no VL imag allocation needed
         ref<vl::Image> vl_img = new vl::Image( buffer_ptr, buffer_bytes );
         vl_img->allocate2D(dims[0], dims[1], 1, vl_format, vl_type);
@@ -1387,63 +1392,29 @@ public:
 
     try
     {
-      mitk::ImageReadAccessor readAccess(m_MitkImage, m_MitkImage->GetVolumeData(0));
-      const void* cPointer = readAccess.GetData();
-
-      vl::EImageType   type   = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
-      vl::EImageFormat format = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
-
-      //if (type != vl::IT_FLOAT)
-      //{
-      //  if (numOfComponents == 1)
-      //    format = vl::IF_LUMINANCE;
-      //  else if (numOfComponents == 2)
-      //    format = vl::IF_RG_INTEGER;
-      //  else if (numOfComponents == 3)
-      //    format = vl::IF_RGB_INTEGER;
-      //  else if (numOfComponents == 4)
-      //    // FIXME: not sure whether we really want integer formats here!
-      //    //        for now, dont do integer for rgba, we have quite a few rgba images.
-      //    format = vl::IF_RGBA;//_INTEGER;
-      //}
-      //else if (type == vl::IT_FLOAT)
-      //{
-      //  if (numOfComponents == 1)
-      //    format = vl::IF_LUMINANCE;
-      //  else if (numOfComponents == 2)
-      //    format = vl::IF_RG;
-      //  else if (numOfComponents == 3)
-      //    format = vl::IF_RGB;
-      //  else if (numOfComponents == 4)
-      //    format = vl::IF_RGBA;
-      //}
-
       unsigned int* dims = dims = m_MitkImage->GetDimensions();
-      VIVID_CHECK( dims[2] > 1 )
+      VIVID_CHECK( dims[2] > 1 );
 
-      vl_img = new vl::Image(dims[0], dims[1], dims[2], 1, format, type);
+      mitk::ImageReadAccessor image_reader( m_MitkImage, m_MitkImage->GetVolumeData(0) );
+      void* img_ptr = const_cast<void*>( image_reader.GetData() );
+      unsigned int buffer_bytes = (dims[0] * dims[1] * dims[2]) * mitk_pixel_type.GetSize();
 
-      // sanity check
-      unsigned int size = (dims[0] * dims[1] * dims[2]) * mitk_pixel_type.GetSize();
-      VIVID_CHECK(vl_img->requiredMemory() == size);
-      std::memcpy(vl_img->pixels(), cPointer, vl_img->requiredMemory());
+      vl::EImageType   vl_type   = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
+      vl::EImageFormat vl_format = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
 
+      // Don't allocate the image, use VTK buffer directly
+      vl_img = new vl::Image(img_ptr, buffer_bytes);
+      vl_img->allocate3D(dims[0], dims[1], dims[2], 1, vl_format, vl_type);
+      VIVID_CHECK(vl_img->requiredMemory() == buffer_bytes);
+
+      // FIXME: at the moment we only support 1 channel with 0..1 float data
+      // NOTE:
+      // - This creates and destroys one temp image per conversion
+      // - Within the volume rendering shader values are all mapped to 0..1 however we could
+      //   pass a `vec2 vl_Vivid.volume.dataRange` uniform to inform the shader of what the
+      //   original data rage was so we can map back to it. We could use this range also to map
+      //   the Iso value. We could use this to support more easily things like Hounsfield units etc.
       vl_img = vl_img->convertFormat(vl::IF_LUMINANCE)->convertType(vl::IT_FLOAT);
-
-      vl::vec3 origin, spacing;
-      if ( m_MitkImage->GetGeometry() ) {
-        origin.x()  = m_MitkImage->GetGeometry()->GetOrigin()[0];
-        origin.y()  = m_MitkImage->GetGeometry()->GetOrigin()[1];
-        origin.z()  = m_MitkImage->GetGeometry()->GetOrigin()[2];
-        spacing.x() = m_MitkImage->GetGeometry()->GetSpacing()[0];
-        spacing.y() = m_MitkImage->GetGeometry()->GetSpacing()[1];
-        spacing.z() = m_MitkImage->GetGeometry()->GetSpacing()[2];
-      }
-
-      // ref<KeyValues> tags = new KeyValues;
-      // tags->set("Origin")    = Say("%n %n %n") << mitk_img->GetGeometry()->GetOrigin()[0]  << mitk_img->GetGeometry()->GetOrigin()[1]  << mitk_img->GetGeometry()->GetOrigin()[2];
-      // tags->set("Spacing")   = Say("%n %n %n") << mitk_img->GetGeometry()->GetSpacing()[0] << mitk_img->GetGeometry()->GetSpacing()[1] << mitk_img->GetGeometry()->GetSpacing()[2];
-      // vl_img->setTags(tags.get());
     }
     catch(mitk::Exception& e)
     {
@@ -1451,99 +1422,27 @@ public:
       VIVID_CHECK( false );
     }
 
-    //float opacity;
-    //m_MitkImage->GetPropertyList()->GetFloatProperty("opacity", opacity);
+    vl::vec3 origin(0,0,0), spacing(1,1,1);
+    if ( m_MitkImage->GetGeometry() ) {
+      origin.x()  = m_MitkImage->GetGeometry()->GetOrigin()[0];
+      origin.y()  = m_MitkImage->GetGeometry()->GetOrigin()[1];
+      origin.z()  = m_MitkImage->GetGeometry()->GetOrigin()[2];
+      spacing.x() = m_MitkImage->GetGeometry()->GetSpacing()[0];
+      spacing.y() = m_MitkImage->GetGeometry()->GetSpacing()[1];
+      spacing.z() = m_MitkImage->GetGeometry()->GetSpacing()[2];
+    }
 
-    //mitk::BaseProperty::Pointer   colourProp = m_MitkImage->GetProperty("color");
-    //mitk::Color                   mitkColor;
-    //if (colourProp.IsNotNull())
-    //  mitkColor = dynamic_cast<mitk::ColorProperty*>(colourProp.GetPointer())->GetColor();
+    unsigned int* dims = m_MitkImage->GetDimensions();
 
-    //vl::fvec4 color;
-    //color[0] = mitkColor[0];
-    //color[1] = mitkColor[1];
-    //color[2] = mitkColor[2];
-    //color[3] = opacity;
+    float vx = dims[0] * spacing.x() / 2.0f;
+    float vy = dims[1] * spacing.y() / 2.0f;
+    float vz = dims[2] * spacing.z() / 2.0f;
 
-    //ref<vl::Effect> fx = vl::VividRendering::makeVividEffect();
-    //fx->shader()->enable(vl::EN_DEPTH_TEST);
-    //fx->shader()->enable(vl::EN_BLEND);
-    //// fx->shader()->setRenderState(m_Light.get(), 0);
-    //fx->shader()->enable(vl::EN_LIGHTING);
-    //fx->shader()->gocMaterial()->setDiffuse(color);
-    //fx->shader()->gocMaterial()->setTransparency(opacity);
-
-    //vl::String fragmentShaderSource   = LoadGLSLSourceFromResources("volume_raycast_isosurface_transp.fs");
-    //vl::String vertexShaderSource     = LoadGLSLSourceFromResources("volume_luminance_light.vs");
-
-    //// The GLSL program used to perform the actual rendering.
-    //// The \a volume_luminance_light.fs fragment shader allows you to specify how many
-    //// lights to use (up to 4) and can optionally take advantage of a precomputed normals texture.
-    //ref<vl::GLSLProgram>    glslShader = fx->shader()->gocGLSLProgram();
-    //glslShader->attachShader(new vl::GLSLFragmentShader(fragmentShaderSource));
-    //glslShader->attachShader(new vl::GLSLVertexShader(vertexShaderSource));
-
-    //ref<vl::Actor> imageActor = new vl::Actor;
-    //imageActor->setEffect(fx.get());
-    //// imageActor->setUniform(m_ThresholdVal.get());
-
-    //ref<vl::Transform>    tr = new vl::Transform;
-    ////UpdateTransfromFromData(tr, cudaImg);       // FIXME: needs proper thinking through
-    //imageActor->setTransform(tr.get());
-    //m_VividRendering->sceneManager()->tree()->addActor(imageActor.get());
-    //imageActor->setEnableMask( vl::VividRenderer::VolumeEnableMask );
-
-    //// this is a callback: gets triggered everytime its bound actor is to be rendered.
-    //// during that callback it updates the uniforms of our glsl shader to match fixed-function state.
-    //ref<vl::RaycastVolume>    raycastVolume = new vl::RaycastVolume;
-    //// this stuffs the proxy geometry onto our actor, as lod-slot zero.
-    //raycastVolume->bindActor(imageActor.get());
-
-    // we do not own dims!
-    unsigned int*   dims    = m_MitkImage->GetDimensions();
-    mitk::Vector3D  spacing = m_MitkImage->GetGeometry()->GetSpacing();
-
-    float dimX = (float) dims[0] * spacing[0] / 2.0f;
-    float dimY = (float) dims[1] * spacing[1] / 2.0f;
-    float dimZ = (float) dims[2] * spacing[2] / 2.0f;
-    float shiftX = 0.0f; // 0.5f * spacing[0];
-    float shiftY = 0.0f; // 0.5f * spacing[1];
-    float shiftZ = 0.0f; // 0.5f * spacing[2];
-
-    vl::AABB volume_box( vl::vec3(-dimX + shiftX, -dimY + shiftY, -dimZ + shiftZ),
-                         vl::vec3( dimX + shiftX,  dimY + shiftY,  dimZ + shiftZ) );
-    //raycastVolume->setBox(volume_box);
-    //raycastVolume->generateTextureCoordinates(vl::ivec3(vl_img->width(), vl_img->height(), vl_img->depth()));
+    vl::AABB volume_box( vl::vec3(-vx + origin.x(), -vy + origin.y(), -vz + origin.z() ),
+                         vl::vec3( vx + origin.x(),  vy + origin.y(),  vz + origin.z() ) );
 
     m_VividRendering->setupVolume( vl_img.get(), volume_box, NULL);
     m_Actor = m_VividRendering->vividVolume()->volumeActor();
-    //m_VividRendering->vividVolume()->setIsoValue( 0.5 );
-    //m_VividRendering->vividVolume()->setVolumeMode( vl::VividVolume::Isosurface );
-    //m_VividRendering->vividVolume()->setVolumeDensity( 1.0f );
-    //m_VividRendering->vividVolume()->setSamplesPerRay( 256 );
-
-
-  //  // note img has been converted unconditionally to IT_UNSIGNED_SHORT above!
-  //  fx->shader()->gocTextureSampler(0)->setTexture(new vl::Texture(vl_img.get(), vl::TF_LUMINANCE16, false, false));
-  //  fx->shader()->gocUniform("volume_texunit")->setUniformI(0);
-
-  //  // generate a simple colored transfer function
-  //  ref<vl::Image>  trfunc = vl::makeColorSpectrum(1024, vl::blue, vl::royalblue, vl::green, vl::yellow, vl::crimson);
-  //  // installs the transfer function as texture #1
-  //  fx->shader()->gocTextureSampler(1)->setTexture(new vl::Texture(trfunc.get()));
-  //  fx->shader()->gocUniform("trfunc_texunit")->setUniformI(1);
-  ///*
-  //  ref<Image> gradient;
-  //  // note that this can take a while...
-  //  gradient = vl::genGradientNormals( vl_img.get() );
-  //  fx->shader()->gocUniform( "precomputed_gradient" )->setUniformI( 1);
-  //  fx->shader()->gocTextureSampler( 2 )->setTexture( new Texture( gradient.get(), TF_RGBA, false, false ) );
-  //  fx->shader()->gocUniform( "gradient_texunit" )->setUniformI( 2 );
-  //*/
-  //  fx->shader()->gocUniform("precomputed_gradient")->setUniformI(0);
-  //  // used to compute on the fly the normals based on the volume's gradient
-  //  fx->shader()->gocUniform("gradient_delta")->setUniform(vl::fvec3(0.5f / vl_img->width(), 0.5f / vl_img->height(), 0.5f / vl_img->depth()));
-  //  fx->shader()->gocUniform( "sample_step" )->setUniformF(1.0f / 512.0f);
 
 #if 0
     vtkLinearTransform * nodeVtkTr = m_MitkImage->GetGeometry()->GetVtkTransform();
@@ -1565,6 +1464,7 @@ public:
   }
 
   virtual void update() {
+    updateCommon();
     updateVolumeProps( m_VividRendering->vividVolume(), m_DataNode );
   }
 
