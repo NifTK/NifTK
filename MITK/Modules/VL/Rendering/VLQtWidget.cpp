@@ -49,7 +49,7 @@
 #include <vlGraphics/plugins/ioVLX.hpp>
 #include <vlGraphics/FramebufferObject.hpp>
 #include <vlGraphics/AdjacencyExtractor.hpp>
-#include <vlVolume/RaycastVolume.hpp>
+#include <vlVivid/VividVolume.hpp>
 #include <cassert>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
@@ -1388,6 +1388,7 @@ public:
   VLMapper3DImage( const mitk::DataNode* node, VLSceneView* sv )
     : VLMapper( node, sv ) {
     m_MitkImage = dynamic_cast<mitk::Image*>( node->GetData() );
+    m_VividVolume = new vl::VividVolume( m_VividRendering );
     VIVID_CHECK( m_MitkImage.IsNotNull() );
   }
 
@@ -1396,14 +1397,13 @@ public:
     initVolumeProps( node );
 
     mitk::PixelType mitk_pixel_type = m_MitkImage->GetPixelType();
-    size_t numOfComponents = mitk_pixel_type.GetNumberOfComponents();
 
 #if 1
-    std::cout << " MITK pixel type:" << std::endl;
-    std::cout << " PixelType: " << mitk_pixel_type.GetTypeAsString() << std::endl;
-    std::cout << " BitsPerElement: " << mitk_pixel_type.GetBpe() << std::endl;
-    std::cout << " NumberOfComponents: " << numOfComponents << std::endl;
-    std::cout << " BitsPerComponent: " << mitk_pixel_type.GetBitsPerComponent() << std::endl;
+    std::cout << "MITK pixel type:"       << std::endl;
+    std::cout << "\tPixelType: "          << mitk_pixel_type.GetTypeAsString() << std::endl;
+    std::cout << "\tBitsPerElement: "     << mitk_pixel_type.GetBpe() << std::endl;
+    std::cout << "\tNumberOfComponents: " << mitk_pixel_type.GetNumberOfComponents() << std::endl;
+    std::cout << "\tBitsPerComponent: "   << mitk_pixel_type.GetBitsPerComponent() << std::endl;
 #endif
 
     unsigned int* dims = dims = m_MitkImage->GetDimensions();
@@ -1456,8 +1456,10 @@ public:
     vl::AABB volume_box( vl::vec3(-vx + origin.x(), -vy + origin.y(), -vz + origin.z() ),
                          vl::vec3( vx + origin.x(),  vy + origin.y(),  vz + origin.z() ) );
 
-    m_VividRendering->setupVolume( vl_img.get(), volume_box, NULL);
-    m_Actor = m_VividRendering->vividVolume()->volumeActor();
+    m_VividVolume->setupVolume( vl_img.get(), volume_box, NULL);
+    m_Actor = m_VividVolume->volumeActor();
+    m_VividRendering->sceneManager()->tree()->eraseActor( m_Actor.get() );
+    m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
 
 #if 0
     vtkLinearTransform * nodeVtkTr = m_MitkImage->GetGeometry()->GetVtkTransform();
@@ -1487,11 +1489,12 @@ public:
     m_Actor->transform()->localMatrix().e(1,1) =
     m_Actor->transform()->localMatrix().e(2,2) = 1;
     m_Actor->transform()->computeWorldMatrix();
-    updateVolumeProps( m_VividRendering->vividVolume(), m_DataNode );
+    updateVolumeProps( m_VividVolume.get(), m_DataNode );
   }
 
 protected:
   mitk::Image::Pointer m_MitkImage;
+  ref<vl::VividVolume> m_VividVolume;
 };
 
 //-----------------------------------------------------------------------------
@@ -2416,7 +2419,6 @@ void VLSceneView::initEvent()
 
   // VividRendering nicely prepares for us all the structures we need to use ;)
   m_VividRenderer = m_VividRendering->vividRenderer();
-  m_VividVolume = m_VividRendering->vividVolume();
   m_SceneManager = m_VividRendering->sceneManager();
 
   // In the future Camera (and Trackball) should belong in VLView and be set upon rendering.
@@ -2659,7 +2661,8 @@ void VLSceneView::updateThresholdVal( int isoVal )
 {
   float iso = isoVal / 10000.0f;
   iso = vl::clamp( iso, 0.0f, 1.0f );
-  m_VividRendering->vividVolume()->setIsoValue( iso );
+  // m_VividRendering->vividVolume()->setIsoValue( iso );
+  VIVID_CHECK( 0 );
 }
 
 //-----------------------------------------------------------------------------

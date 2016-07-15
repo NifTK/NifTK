@@ -21,7 +21,6 @@
 #include <vlGraphics/OpenGLContext.hpp>
 #include <vlVivid/VividRenderer.hpp>
 #include <vlVivid/VividRendering.hpp>
-#include <vlVivid/VividVolume.hpp>
 #include <vlGraphics/Light.hpp>
 #include <vlGraphics/Camera.hpp>
 #include <vlGraphics/Rendering.hpp>
@@ -224,7 +223,6 @@ protected:
 protected:
   vl::ref<vl::VividRendering>        m_VividRendering;
   vl::ref<vl::VividRenderer>         m_VividRenderer;
-  vl::ref<vl::VividVolume>           m_VividVolume;
   vl::ref<vl::SceneManagerActorTree> m_SceneManager;
   vl::ref<vl::Camera>                m_Camera;
   vl::ref<VLTrackballManipulator>    m_Trackball;
