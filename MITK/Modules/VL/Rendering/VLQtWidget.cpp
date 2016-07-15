@@ -158,6 +158,19 @@ struct VLUserData: public vl::Object
 // mitk::EnumerationProperty wrapper classes
 //-----------------------------------------------------------------------------
 
+class VL_Vivid_Mode_Property: public mitk::EnumerationProperty
+{
+public:
+  mitkClassMacro( VL_Vivid_Mode_Property, EnumerationProperty );
+  itkFactorylessNewMacro(Self)
+protected:
+  VL_Vivid_Mode_Property() {
+    AddEnum("DepthPeeling",  0);
+    AddEnum("FastRender",    1);
+    AddEnum("StencilRender", 2);
+  }
+};
+
 class VL_Point_Mode_Property: public mitk::EnumerationProperty
 {
 public:
@@ -304,6 +317,53 @@ namespace
     return vl::vec4( rgb[0], rgb[1], rgb[2], defval.a() );
   }
 
+  void initMaterialProps( mitk::DataNode* node )
+  {
+    // init only once if multiple views are open
+    if ( node->GetProperty("VL.Material.Color") ) {
+      return;
+    }
+
+    // Get defaults from vl::Material
+    vl::Material m;
+
+    mitk::ColorProperty::Pointer color = mitk::ColorProperty::New();
+    node->SetProperty("VL.Material.Color", color);
+    color->SetValue( m.frontDiffuse().ptr() );
+
+    mitk::FloatProperty::Pointer opacity = mitk::FloatProperty::New();
+    node->SetProperty("VL.Material.Opacity", opacity);
+    opacity->SetValue( 1 );
+
+    mitk::ColorProperty::Pointer spec_color = mitk::ColorProperty::New();
+    node->SetProperty("VL.Material.Specular.Color", spec_color);
+    spec_color->SetValue( m.frontSpecular().ptr() );
+
+    mitk::FloatProperty::Pointer spec_shininess = mitk::FloatProperty::New();
+    node->SetProperty("VL.Material.Specular.Shininess", spec_shininess);
+    spec_shininess->SetValue( m.frontShininess() );
+
+    // Stencil option is available only for Surface-like objects
+
+    mitk::BoolProperty::Pointer is_stencil = mitk::BoolProperty::New();
+    node->SetProperty("VL.IsStencil", is_stencil);
+    is_stencil->SetValue( m.frontShininess() );
+  }
+
+  void updateMaterialProps( Effect* fx, const mitk::DataNode* node )
+  {
+    vec4 color = getColorProp( node, "VL.Material.Color" );
+    color.a() = getFloatProp( node, "VL.Material.Opacity" );
+    vec4 spec_color = getColorProp( node, "VL.Material.Specular.Color" );
+    float shininess = getFloatProp( node, "VL.Material.Specular.Shininess" );
+
+    Shader* sh = fx->shader();
+
+    sh->getMaterial()->setDiffuse( color );
+    sh->getMaterial()->setSpecular( spec_color );
+    sh->getMaterial()->setShininess( shininess );
+  }
+
 
   void initFogProps( mitk::DataNode* node )
   {
@@ -401,23 +461,20 @@ namespace
       node->SetProperty(CLIP_UNIT("Plane"), plane);
       plane->SetValue( vec4(1,0,0,0).ptr() );
 
-      // MIC FIXME: test origin
-      vec4 W(6, -128, -1027, 0);
-
       // gocUniform("vl_Vivid.smartClip[0].sphere")
       mitk::Point4dProperty::Pointer sphere = mitk::Point4dProperty::New();
       node->SetProperty(CLIP_UNIT("Sphere"), sphere);
-      sphere->SetValue( (W + vec4(0, 0, 0, 250)).ptr() );
+      sphere->SetValue( vec4(0, 0, 0, 250).ptr() );
 
       // gocUniform("vl_Vivid.smartClip[0].boxMin")
       mitk::Point3dProperty::Pointer box_min = mitk::Point3dProperty::New();
       node->SetProperty(CLIP_UNIT("BoxMin"), box_min);
-      box_min->SetValue( (W.xyz() + vec3(-100,-100,-100)).ptr() );
+      box_min->SetValue( vec3(-100,-100,-100).ptr() );
 
       // gocUniform("vl_Vivid.smartClip[0].boxMax")
       mitk::Point3dProperty::Pointer box_max = mitk::Point3dProperty::New();
       node->SetProperty(CLIP_UNIT("BoxMax"), box_max);
-      box_max->SetValue( (W.xyz() + vec3(+100,+100,+100)).ptr() );
+      box_max->SetValue( vec3(+100,+100,+100).ptr() );
 
       // gocUniform("vl_Vivid.smartClip[0].reverse")
       mitk::BoolProperty::Pointer reverse = mitk::BoolProperty::New();
@@ -995,6 +1052,31 @@ protected:
     initRenderModeProps(this);
     initFogProps(this);
     initClipProps(this);
+
+    // Truly globals
+    mitk::BoolProperty::Pointer enable = mitk::BoolProperty::New();
+    AddProperty( "VL.Global.Stencil.Enable", enable );
+    enable->SetValue( false );
+
+    mitk::ColorProperty::Pointer stencil_bg_color = mitk::ColorProperty::New();
+    AddProperty( "VL.Global.Stencil.BackgroundColor", stencil_bg_color );
+    stencil_bg_color->SetValue( vl::black.ptr() );
+
+    mitk::FloatProperty::Pointer stencil_smooth = mitk::FloatProperty::New();
+    AddProperty( "VL.Global.Stencil.Smoothness", stencil_smooth );
+    stencil_smooth->SetValue( 10 );
+
+    mitk::EnumerationProperty::Pointer render_mode = VL_Vivid_Mode_Property::New();
+    AddProperty( "VL.Global.RenderMode", render_mode );
+    render_mode->SetValue( 0 );
+
+    mitk::ColorProperty::Pointer bg_color = mitk::ColorProperty::New();
+    AddProperty( "VL.Global.BackgroundColor", bg_color );
+    bg_color->SetValue( vl::lightgray.ptr() );
+
+    mitk::FloatProperty::Pointer opacity = mitk::FloatProperty::New();
+    AddProperty( "VL.Global.Opacity", opacity );
+    opacity->SetValue( 1 );
   }
 
 };
@@ -1041,17 +1123,6 @@ void VLMapper::updateCommon() {
   bool visible = getBoolProp( m_DataNode, "visible", true );
   m_Actor->setEnabled( visible );
 
-  // Update color
-  vl::vec4 color = getColorProp( m_DataNode, "color", vl::white );
-
-  // Update opacity
-  color.a() = getFloatProp( m_DataNode, "opacity", 1.0f );
-
-  // Set color & opacity
-  // NOTE:
-  // This "opacity" settings only works for "vl_Vivid.enableLighting == true", for example it's ignored by mitk::Image nodes
-  m_Actor->effect()->shader()->getMaterial()->setDiffuse( color );
-
   // Update transform
   UpdateTransformFromData( m_Actor->transform(), m_DataNode->GetData() );
 }
@@ -1068,6 +1139,19 @@ public:
   virtual void init() { }
 
   virtual void update() {
+    bool enable = getBoolProp( m_DataNode, "VL.Global.Stencil.Enable", false );
+    vec4 stencil_bg_color = getColorProp( m_DataNode, "VL.Global.Stencil.BackgroundColor", vl::black );
+    float stencil_smooth = getFloatProp( m_DataNode, "VL.Global.Stencil.Smoothness", 10 );
+    int render_mode = getEnumProp( m_DataNode, "VL.Global.RenderMode", 0 );
+    vec4 bg_color = getColorProp( m_DataNode, "VL.Global.BackgroundColor", vl::black );
+    float opacity = getFloatProp( m_DataNode, "VL.Global.Opacity", 1 );
+
+    m_VividRendering->setStencilEnabled(enable);
+    m_VividRendering->setStencilBackground(stencil_bg_color);
+    m_VividRendering->setStencilSmoothness(stencil_smooth);
+    m_VividRendering->setRenderingMode( (VividRendering::ERenderingMode)render_mode );
+    m_VividRendering->calibratedCamera()->viewport()->setClearColor( bg_color );
+    m_VividRendering->setAlpha( opacity );
   }
 
   virtual void updateVLGlobalSettings() { /* we don't have anything to set */ }
@@ -1091,6 +1175,7 @@ public:
 
     mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
     initRenderModeProps( node );
+    initMaterialProps( node );
     initFogProps( node );
     initClipProps( node );
 
@@ -1104,9 +1189,22 @@ public:
   }
 
   virtual void update() {
+    updateCommon();
+    updateMaterialProps( m_Actor->effect(), m_DataNode );
     updateRenderModeProps( m_Actor->effect(), m_DataNode );
     updateFogProps( m_Actor->effect(), m_DataNode );
     updateClipProps( m_Actor->effect(), m_DataNode );
+
+    // Stencil
+    bool is_stencil = getBoolProp( m_DataNode, "VL.IsStencil", false );
+    std::vector< ref<Actor> >::iterator it = std::find( m_VividRendering->stencilActors().begin(), m_VividRendering->stencilActors().end(), m_Actor.get() );
+    if ( ! is_stencil && it != m_VividRendering->stencilActors().end() ) {
+      m_VividRendering->stencilActors().erase( it );
+    } else
+    if ( is_stencil && it == m_VividRendering->stencilActors().end() ) {
+      m_VividRendering->stencilActors().push_back( m_Actor );
+    }
+
   }
 
 protected:
@@ -1174,6 +1272,7 @@ public:
   virtual void update() {
     VIVID_CHECK( m_MitkImage.IsNotNull() );
 
+    updateCommon();
     // updateRenderModeProps(); /* does not apply here */
     updateFogProps( m_Actor->effect(), m_DataNode );
     updateClipProps( m_Actor->effect(), m_DataNode );
@@ -1482,6 +1581,11 @@ public:
   }
 
   virtual void update() {
+    updateCommon();
+    // updateRenderModeProps();
+    // updateFogProps();
+    // updateClipProps();
+
     mitk::IntProperty::Pointer size_prop = dynamic_cast<mitk::IntProperty*>(m_DataNode->GetProperty("size"));
     if ( size_prop ) {
       ref<vl::ArrayFloat3> verts = m_Vertices;
@@ -1606,6 +1710,7 @@ public:
   }
 
   virtual void update() {
+    // updateCommon();
     // updateRenderModeProps(); /* does not apply here */
     updateFogProps( m_PointFX.get(), m_DataNode );
     updateClipProps( m_PointFX.get(), m_DataNode );
@@ -1677,7 +1782,6 @@ public:
       m_VividRendering->sceneManager()->tree()->eraseChild( m_SphereActors.get() );
       m_SphereActors = NULL;
       m_3DSphereGeom = NULL;
-      m_PointFX = NULL;
     }
   }
 
@@ -1749,6 +1853,7 @@ public:
   }
 
   virtual void update() {
+    updateCommon();
     // Update point size
     float pointsize = 1;
     m_DataNode->GetFloatProperty( "pointsize", pointsize );
@@ -1835,6 +1940,7 @@ public:
   }
 
   virtual void update() {
+    updateCommon();
     VIVID_CHECK(m_NiftkLightweightCUDAImage.GetId() != 0);
 
     // BEWARE:
@@ -2226,10 +2332,7 @@ VLMapper* VLSceneView::addDataNode(const mitk::DataNode::ConstPointer& node)
   if ( vl_node ) {
     m_DataNodeVLMapperMap[ node ] = vl_node;
     vl_node->init();
-    // this might recreate new Actors
     vl_node->update();
-    // so we do these after to make sure their updates are not lost
-    vl_node->updateCommon();
   }
 
   return vl_node.get();
@@ -2273,8 +2376,6 @@ void VLSceneView::updateDataNode(const mitk::DataNode::ConstPointer& node)
   if ( it != m_DataNodeVLMapperMap.end() ) {
     // this might recreate new Actors
     it->second->update();
-    // so we do these after to make sure their updates are not lost
-    it->second->updateCommon();
     return;
   }
 
@@ -2332,7 +2433,7 @@ void VLSceneView::initEvent()
 
   // Create our VividRendering!
   m_VividRendering = new vl::VividRendering;
-  m_VividRendering->setRenderingMode( vl::VividRendering::FrontToBackDepthPeeling ); /* (default) */
+  m_VividRendering->setRenderingMode( vl::VividRendering::DepthPeeling ); /* (default) */
   m_VividRendering->setCullingEnabled( false );
   // This creates some flickering on the skin for some reason
   m_VividRendering->setNearFarClippingPlanesOptimized( false );
