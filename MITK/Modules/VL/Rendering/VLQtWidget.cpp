@@ -1289,26 +1289,22 @@ public:
       vl::EImageFormat vl_format       = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
       unsigned int*    dims            = m_MitkImage->GetDimensions();
 
-      ref<vl::Image> vl_img;
-
       try
       {
         unsigned int buffer_bytes = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
         mitk::ImageReadAccessor readAccess( m_MitkImage, m_MitkImage->GetVolumeData(0) );
         void* buffer_ptr = const_cast<void*>( readAccess.GetData() );
-        // std::memcpy( vl_img->pixels(), ptr, byte_count );
-        // Use VTK buffer directly instead of allocating one
-        vl_img = new vl::Image( buffer_ptr, buffer_bytes );
+        // Use VTK buffer directly, no VL imag allocation needed
+        ref<vl::Image> vl_img = new vl::Image( buffer_ptr, buffer_bytes );
         vl_img->allocate2D(dims[0], dims[1], 1, vl_format, vl_type);
         VIVID_CHECK( vl_img->requiredMemory() == buffer_bytes );
+        tex->setMipLevel(0, vl_img.get(), false);
       }
       catch (...)
       {
         // FIXME: error handling?
         MITK_ERROR << "Did not get pixel read access to 2D image.";
       }
-
-      tex->setMipLevel(0, vl_img.get(), false);
 
       GetUserData( m_Actor.get() )->m_ImageModifiedTime = m_MitkImage->GetVtkImageData()->GetMTime();
     }
