@@ -187,10 +187,10 @@ public:
    * And for now the image has to be 2D.
    * Anything else will just be ignored.
    */
-  bool setBackgroundNode(const mitk::DataNode::ConstPointer& node);
+  bool setBackgroundNode(const mitk::DataNode* node);
 
   // Called by QmitkIGIVLEditor::OnTransformSelected(), VLRendererView::OnCameraNodeSelected()/OnCameraNodeEnabled()
-  bool setCameraTrackingNode(const mitk::DataNode::ConstPointer& node);
+  bool setCameraTrackingNode(const mitk::DataNode* node);
 
   VLTrackballManipulator* trackball() { return m_Trackball.get(); }
   const VLTrackballManipulator* trackball() const { return m_Trackball.get(); }
@@ -206,9 +206,9 @@ protected:
   void renderScene();
 
   // Returned VLMapper can be NULL
-  VLMapper* addDataNode(const mitk::DataNode::ConstPointer& node);
-  void removeDataNode(const mitk::DataNode::ConstPointer& node);
-  void updateDataNode(const mitk::DataNode::ConstPointer& node);
+  VLMapper* addDataNode(const mitk::DataNode* node);
+  void removeDataNode(const mitk::DataNode* node);
+  void updateDataNode(const mitk::DataNode* node);
 
   virtual void addDataStorageListeners();
   virtual void removeDataStorageListeners();
@@ -218,7 +218,7 @@ protected:
   void updateCameraParameters();
 
   void prepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
-  VLMapper* getVLMapper(const mitk::DataNode::ConstPointer& node);
+  VLMapper* getVLMapper(const mitk::DataNode* node);
 
 protected:
   vl::ref<vl::VividRendering>        m_VividRendering;
@@ -260,7 +260,7 @@ protected:
 
   void PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
 
-  void UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node);
+  void UpdateGLTexturesFromCUDA(const mitk::DataNode* node);
 
   void FreeCUDAInteropTextures();
 

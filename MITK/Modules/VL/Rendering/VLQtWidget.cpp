@@ -739,10 +739,9 @@ namespace
 
   //-----------------------------------------------------------------------------
 
-  void UpdateTransformFromNode(vl::Transform* txf, const mitk::DataNode::ConstPointer& node)
+  void UpdateTransformFromNode(vl::Transform* txf, const mitk::DataNode* node)
   {
-    if (node.IsNotNull())
-    {
+    if ( node ) {
       UpdateTransformFromData(txf, node->GetData());
     }
   }
@@ -1027,7 +1026,7 @@ namespace
 
   //-----------------------------------------------------------------------------
 
-  void dumpNodeInfo( const std::string& prefix, const mitk::DataNode::ConstPointer& node ) {
+  void dumpNodeInfo( const std::string& prefix, const mitk::DataNode* node ) {
     printf( "\n%s: ", prefix.c_str() );
     const char* class_name = node->GetData() ? node->GetData()->GetNameOfClass() : "<unknown-class>";
     mitk::StringProperty* name_prop = dynamic_cast<mitk::StringProperty*>(node->GetProperty("name"));
@@ -1146,7 +1145,6 @@ protected:
     AddProperty( "VL.Global.Opacity", opacity );
     opacity->SetValue( 1 );
   }
-
 };
 
 //-----------------------------------------------------------------------------
@@ -1275,7 +1273,7 @@ public:
   }
 
 protected:
-  mitk::Surface::Pointer m_MitkSurf;
+  const mitk::Surface* m_MitkSurf;
 };
 
 //-----------------------------------------------------------------------------
@@ -1285,11 +1283,11 @@ public:
   VLMapper2DImage( const mitk::DataNode* node, VLSceneView* sv )
     : VLMapper( node, sv ) {
     m_MitkImage = dynamic_cast<mitk::Image*>( node->GetData() );
-    VIVID_CHECK( m_MitkImage.IsNotNull() );
+    VIVID_CHECK( m_MitkImage );
   }
 
   virtual void init() {
-    VIVID_CHECK( m_MitkImage.IsNotNull() );
+    VIVID_CHECK( m_MitkImage );
 
     mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
     // initRenderModeProps( node ); /* does not apply */
@@ -1337,7 +1335,7 @@ public:
   }
 
   virtual void update() {
-    VIVID_CHECK( m_MitkImage.IsNotNull() );
+    VIVID_CHECK( m_MitkImage );
 
     updateCommon();
     // updateRenderModeProps(); /* does not apply here */
@@ -1378,7 +1376,7 @@ public:
   }
 
 protected:
-  mitk::Image::Pointer m_MitkImage;
+  mitk::Image* m_MitkImage;
 };
 
 //-----------------------------------------------------------------------------
@@ -1389,7 +1387,7 @@ public:
     : VLMapper( node, sv ) {
     m_MitkImage = dynamic_cast<mitk::Image*>( node->GetData() );
     m_VividVolume = new vl::VividVolume( m_VividRendering );
-    VIVID_CHECK( m_MitkImage.IsNotNull() );
+    VIVID_CHECK( m_MitkImage );
   }
 
   virtual void init() {
@@ -1493,7 +1491,7 @@ public:
   }
 
 protected:
-  mitk::Image::Pointer m_MitkImage;
+  const mitk::Image* m_MitkImage;
   ref<vl::VividVolume> m_VividVolume;
 };
 
@@ -1577,7 +1575,7 @@ public:
   }
 
 protected:
-  mitk::CoordinateAxesData::Pointer m_MitkAxes;
+  const mitk::CoordinateAxesData* m_MitkAxes;
   ref<vl::ArrayFloat3> m_Vertices;
 };
 
@@ -1758,7 +1756,7 @@ public:
   }
 
 protected:
-  mitk::PointSet::Pointer m_MitkPointSet;
+  const mitk::PointSet* m_MitkPointSet;
   bool m_3DSphereMode;
   ref<vl::ActorTree> m_SphereActors;
   ref<Geometry> m_3DSphereGeom;
@@ -2038,8 +2036,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 
-vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv ) {
-
+vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv )
+{
   // Map DataNode type to VLMapper type
   vl::ref<VLMapper> vl_node;
 
@@ -2065,11 +2063,10 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
   else
   if ( mitk_image ) {
     unsigned int depth = mitk_image->GetDimensions()[2];
-    // In VTK a NxMx1 image is 2D (in VL a 2D image is NxMx0)
-    if ( depth <= 1 ) {
-      vl_node = new VLMapper2DImage( node, sv );
-    } else {
+    if ( depth > 1 ) {
       vl_node = new VLMapper3DImage( node, sv );
+    } else {
+      vl_node = new VLMapper2DImage( node, sv );
     }
   }
   else
@@ -2235,7 +2232,12 @@ void VLSceneView::scheduleNodeRemove( const mitk::DataNode* node )
     return;
   }
 
+#if 1
+  // deal with it immediately
+  removeDataNode( node );
+#else
   m_NodesToRemove.insert( mitk::DataNode::ConstPointer ( node ) ); // remove it
+#endif
   m_NodesToAdd.erase( node );    // abort the addition
   m_NodesToUpdate.erase( node ); // abort the update
   openglContext()->update();
@@ -2293,7 +2295,7 @@ void VLSceneView::initSceneFromDataStorage()
 
 //-----------------------------------------------------------------------------
 
-VLMapper* VLSceneView::addDataNode(const mitk::DataNode::ConstPointer& node)
+VLMapper* VLSceneView::addDataNode(const mitk::DataNode* node)
 {
   openglContext()->makeCurrent();
 
@@ -2307,7 +2309,7 @@ VLMapper* VLSceneView::addDataNode(const mitk::DataNode::ConstPointer& node)
     dumpNodeInfo( "addDataNode()->GetData()", node->GetData() );
   #endif
 
-  ref<VLMapper> vl_node = VLMapper::create( node.GetPointer(), this );
+  ref<VLMapper> vl_node = VLMapper::create( node, this );
   if ( vl_node ) {
     m_DataNodeVLMapperMap[ node ] = vl_node;
     vl_node->init();
@@ -2319,7 +2321,7 @@ VLMapper* VLSceneView::addDataNode(const mitk::DataNode::ConstPointer& node)
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::removeDataNode(const mitk::DataNode::ConstPointer& node)
+void VLSceneView::removeDataNode(const mitk::DataNode* node)
 {
   openglContext()->makeCurrent();
 
@@ -2339,11 +2341,11 @@ void VLSceneView::removeDataNode(const mitk::DataNode::ConstPointer& node)
   }
 }
 
-void VLSceneView::updateDataNode(const mitk::DataNode::ConstPointer& node)
+void VLSceneView::updateDataNode(const mitk::DataNode* node)
 {
   openglContext()->makeCurrent();
 
-  if ( node.IsNull() || node->GetData() == 0 ) {
+  if ( ! node || node->GetData() == 0 ) {
     return;
   }
 
@@ -2366,7 +2368,7 @@ void VLSceneView::updateDataNode(const mitk::DataNode::ConstPointer& node)
 
 //-----------------------------------------------------------------------------
 
-VLMapper* VLSceneView::getVLMapper( const mitk::DataNode::ConstPointer& node )
+VLMapper* VLSceneView::getVLMapper( const mitk::DataNode* node )
 {
   DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.find( node );
   return it == m_DataNodeVLMapperMap.end() ? NULL : it->second.get();
@@ -2570,12 +2572,14 @@ void VLSceneView::updateScene() {
     initSceneFromDataStorage();
     m_ScheduleInitScene = false;
   } else {
+#if 0
     // Execute scheduled removals
     for ( std::set<mitk::DataNode::ConstPointer>::const_iterator it = m_NodesToRemove.begin(); it != m_NodesToRemove.end(); ++it)
     {
       removeDataNode(*it);
     }
     m_NodesToRemove.clear();
+#endif
 
     // Execute scheduled additions
     m_ScheduleTrackballAdjustView |= m_NodesToAdd.size() > 0;
@@ -2667,7 +2671,7 @@ void VLSceneView::updateThresholdVal( int isoVal )
 
 //-----------------------------------------------------------------------------
 
-bool VLSceneView::setCameraTrackingNode(const mitk::DataNode::ConstPointer& node)
+bool VLSceneView::setCameraTrackingNode(const mitk::DataNode* node)
 {
   VIVID_CHECK( m_Trackball );
 
@@ -2797,7 +2801,7 @@ void VLSceneView::prepareBackgroundActor(const mitk::Image* img, const mitk::Bas
 
 //-----------------------------------------------------------------------------
 
-bool VLSceneView::setBackgroundNode(const mitk::DataNode::ConstPointer& node)
+bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
 {
   openglContext()->makeCurrent();
 
@@ -2817,7 +2821,7 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode::ConstPointer& node)
 
   bool    result = false;
   mitk::BaseData::Pointer   basedata;
-  if (node.IsNotNull())
+  if ( node )
     basedata = node->GetData();
   if (basedata.IsNotNull())
   {
