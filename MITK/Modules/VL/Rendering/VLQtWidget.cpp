@@ -697,14 +697,20 @@ namespace
 
   //-----------------------------------------------------------------------------
 
-  void UpdateTransformFromData(vl::Transform* txf, const mitk::BaseData::ConstPointer& data)
+  void UpdateTransformFromData(vl::Transform* tr, const mitk::BaseData::ConstPointer& data)
   {
-    vl::mat4  mat = GetVLMatrixFromData(data);
+    vl::mat4 m = GetVLMatrixFromData(data);
 
-    if (!mat.isNull())
+    printf("Transform: %p\n", tr );
+    if ( ! m.isNull() )
     {
-      txf->setLocalMatrix(mat);
-      txf->computeWorldMatrix();
+      tr->setLocalMatrix(m);
+      tr->computeWorldMatrix();
+#if 0
+      for(int i = 0; i < 4; ++i ) {
+        printf("%f %f %f %f\n", m.e(0,i), m.e(1,i), m.e(2,i), m.e(3,i) );
+      }
+#endif
     }
   }
 
@@ -1037,9 +1043,21 @@ namespace
       const std::string name = it->first;
       const mitk::BaseProperty::Pointer prop = it->second;
       printf( "\t%s: %s <%s>\n", name.c_str(), prop->GetValueAsString().c_str(), prop->GetNameOfClass() );
-      if ( name == "size" ) {
-        VIVID_CHECK( node->GetProperty( "size") );
-      }
+    }
+  }
+
+  void dumpNodeInfo( const std::string& prefix, const mitk::BaseData::ConstPointer& data ) {
+    printf( "\n%s: ", prefix.c_str() );
+    const char* class_name = data->GetNameOfClass();
+    std::string object_name2 = data->GetProperty("name") ? data->GetProperty("name")->GetValueAsString() : "<unknown-name>";
+    printf( "%s <%s>\n", object_name2.c_str(), class_name );
+
+    const mitk::PropertyList::PropertyMap* propList = data->GetPropertyList()->GetMap();
+    mitk::PropertyList::PropertyMap::const_iterator it = data->GetPropertyList()->GetMap()->begin();
+    for( ; it != data->GetPropertyList()->GetMap()->end(); ++it ) {
+      const std::string name = it->first;
+      const mitk::BaseProperty::Pointer prop = it->second;
+      printf( "\t%s: %s <%s>\n", name.c_str(), prop->GetValueAsString().c_str(), prop->GetNameOfClass() );
     }
   }
 }
@@ -1381,20 +1399,19 @@ public:
     size_t numOfComponents = mitk_pixel_type.GetNumberOfComponents();
 
 #if 1
-    std::cout << " Original pixel type:" << std::endl;
+    std::cout << " MITK pixel type:" << std::endl;
     std::cout << " PixelType: " << mitk_pixel_type.GetTypeAsString() << std::endl;
     std::cout << " BitsPerElement: " << mitk_pixel_type.GetBpe() << std::endl;
     std::cout << " NumberOfComponents: " << numOfComponents << std::endl;
     std::cout << " BitsPerComponent: " << mitk_pixel_type.GetBitsPerComponent() << std::endl;
 #endif
 
+    unsigned int* dims = dims = m_MitkImage->GetDimensions();
+    VIVID_CHECK( dims[2] > 1 );
     ref<vl::Image> vl_img;
 
     try
     {
-      unsigned int* dims = dims = m_MitkImage->GetDimensions();
-      VIVID_CHECK( dims[2] > 1 );
-
       mitk::ImageReadAccessor image_reader( m_MitkImage, m_MitkImage->GetVolumeData(0) );
       void* img_ptr = const_cast<void*>( image_reader.GetData() );
       unsigned int buffer_bytes = (dims[0] * dims[1] * dims[2]) * mitk_pixel_type.GetSize();
@@ -1414,7 +1431,7 @@ public:
       //   pass a `vec2 vl_Vivid.volume.dataRange` uniform to inform the shader of what the
       //   original data rage was so we can map back to it. We could use this range also to map
       //   the Iso value. We could use this to support more easily things like Hounsfield units etc.
-      vl_img = vl_img->convertFormat(vl::IF_LUMINANCE)->convertType(vl::IT_FLOAT);
+      vl_img = vl_img->convertFormat( vl::IF_LUMINANCE )->convertType( vl::IT_FLOAT );
     }
     catch(mitk::Exception& e)
     {
@@ -1431,8 +1448,6 @@ public:
       spacing.y() = m_MitkImage->GetGeometry()->GetSpacing()[1];
       spacing.z() = m_MitkImage->GetGeometry()->GetSpacing()[2];
     }
-
-    unsigned int* dims = m_MitkImage->GetDimensions();
 
     float vx = dims[0] * spacing.x() / 2.0f;
     float vy = dims[1] * spacing.y() / 2.0f;
@@ -1465,6 +1480,13 @@ public:
 
   virtual void update() {
     updateCommon();
+    // Neutralize scaling - screws up our rendering.
+    // VTK seems to need it to render non cubic volumes.
+    // NOTE: we assume there is no rotation.
+    m_Actor->transform()->localMatrix().e(0,0) =
+    m_Actor->transform()->localMatrix().e(1,1) =
+    m_Actor->transform()->localMatrix().e(2,2) = 1;
+    m_Actor->transform()->computeWorldMatrix();
     updateVolumeProps( m_VividRendering->vividVolume(), m_DataNode );
   }
 
@@ -2277,8 +2299,9 @@ VLMapper* VLSceneView::addDataNode(const mitk::DataNode::ConstPointer& node)
     return NULL;
   }
 
-  #if 0
+  #if 1
     dumpNodeInfo( "addDataNode()", node );
+    dumpNodeInfo( "addDataNode()->GetData()", node->GetData() );
   #endif
 
   ref<VLMapper> vl_node = VLMapper::create( node.GetPointer(), this );
