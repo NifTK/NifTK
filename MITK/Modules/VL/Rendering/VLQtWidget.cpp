@@ -2230,8 +2230,10 @@ void VLSceneView::scheduleNodeAdd( const mitk::DataNode* node )
   // m_NodesToUpdate.erase( node ); // then update
   openglContext()->update();
 
+#if 0
   const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<name-of-class>";
   printf("ScheduleNodeAdd: %s (%s)\n", node->GetName().c_str(), noc );
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2247,8 +2249,10 @@ void VLSceneView::scheduleNodeUpdate( const mitk::DataNode* node )
   m_NodesToUpdate.insert( mitk::DataNode::ConstPointer ( node ) ); // then update
   openglContext()->update();
 
+#if 0
   const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<unknown-class>";
   printf("ScheduleNodeUpdate: %s (%s)\n", node->GetName().c_str(), noc );
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2264,8 +2268,10 @@ void VLSceneView::scheduleNodeRemove( const mitk::DataNode* node )
   m_NodesToUpdate.erase( node ); // abort the update
   openglContext()->update();
 
+#if 0
   const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<name-of-class>";
   printf("ScheduleNodeRemove: %s (%s)\n", node->GetName().c_str(), noc );
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2368,7 +2374,7 @@ void VLSceneView::updateDataNode(const mitk::DataNode::ConstPointer& node)
     return;
   }
 
-  #if 1
+  #if 0
     dumpNodeInfo( "updateDataNode()", node );
   #endif
 
