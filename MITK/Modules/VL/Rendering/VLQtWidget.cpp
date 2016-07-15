@@ -2607,6 +2607,7 @@ void VLSceneView::updateScene() {
     m_NodesToAdd.clear();
 
     // Execute scheduled updates
+    ! m_NodesToUpdate.empty() ? NULL : openglContext()->update();
     for ( std::set<mitk::DataNode::ConstPointer>::const_iterator it = m_NodesToUpdate.begin(); it != m_NodesToUpdate.end(); ++it)
     {
       updateDataNode(*it);
