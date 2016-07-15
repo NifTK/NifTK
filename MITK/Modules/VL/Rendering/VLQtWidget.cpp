@@ -273,7 +273,7 @@ namespace
     const mitk::Point4dProperty* prop = dynamic_cast<const mitk::Point4dProperty*>( node->GetProperty( prop_name ) );
     if ( prop ) {
       double* val = prop->GetValue().GetDataPointer();
-      return vl::vec4( (float)val[0], (float)val[1], (float)val[2], (float)val[4] );
+      return vl::vec4( (float)val[0], (float)val[1], (float)val[2], (float)val[3] );
     } else {
       return defval;
     }
@@ -1049,11 +1049,12 @@ public:
 protected:
   void initGlobalProperties()
   {
-    initRenderModeProps(this);
-    initFogProps(this);
-    initClipProps(this);
+    // initRenderModeProps(this);
+    // initFogProps(this);
+    // initClipProps(this);
 
     // Truly globals
+
     mitk::BoolProperty::Pointer enable = mitk::BoolProperty::New();
     AddProperty( "VL.Global.Stencil.Enable", enable );
     enable->SetValue( false );
@@ -1204,7 +1205,6 @@ public:
     if ( is_stencil && it == m_VividRendering->stencilActors().end() ) {
       m_VividRendering->stencilActors().push_back( m_Actor );
     }
-
   }
 
 protected:
