@@ -241,6 +241,7 @@ protected:
 
   bool m_ScheduleTrackballAdjustView;
   bool m_ScheduleInitScene;
+
   // these two will go away once we render the background using Vivid
   int m_BackgroundWidth;
   int m_BackgroundHeight;

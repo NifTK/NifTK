@@ -701,12 +701,12 @@ namespace
   {
     vl::mat4 m = GetVLMatrixFromData(data);
 
-    printf("Transform: %p\n", tr );
     if ( ! m.isNull() )
     {
       tr->setLocalMatrix(m);
       tr->computeWorldMatrix();
 #if 0
+      printf("Transform: %p\n", tr );
       for(int i = 0; i < 4; ++i ) {
         printf("%f %f %f %f\n", m.e(0,i), m.e(1,i), m.e(2,i), m.e(3,i) );
       }
@@ -1581,15 +1581,17 @@ protected:
 
 //-----------------------------------------------------------------------------
 
-class VLMapperPointSet: public VLMapper {
+class VLMapperPoints: public VLMapper {
 public:
-  VLMapperPointSet( const mitk::DataNode* node, VLSceneView* sv )
+  VLMapperPoints( const mitk::DataNode* node, VLSceneView* sv )
     : VLMapper( node, sv ) {
-    m_MitkPointSet = dynamic_cast<mitk::PointSet*>( node->GetData() );
     m_3DSphereMode = true;
     m_PointFX = vl::VividRendering::makeVividEffect();
-    VIVID_CHECK( m_MitkPointSet );
+    m_PositionArray = new vl::ArrayFloat3;
+    m_ColorArray = new vl::ArrayFloat4;
   }
+
+  virtual void updatePoints( const vl::vec4& color ) = 0 ;
 
   void initPointSetProps()
   {
@@ -1627,7 +1629,6 @@ public:
   virtual void init() { initPointSetProps(); }
 
   void init3D() {
-    VIVID_CHECK( m_MitkPointSet );
     VIVID_CHECK( m_3DSphereMode );
 
     // Remove 2D data and init 3D data.
@@ -1636,40 +1637,33 @@ public:
     m_VividRendering->sceneManager()->tree()->addChild( m_SphereActors.get() );
 
     m_3DSphereGeom = vl::makeIcosphere( vec3(0,0,0), 1, 2, true );
-    int j = 0;
-    for (mitk::PointSet::PointsConstIterator i = m_MitkPointSet->Begin(); i != m_MitkPointSet->End(); ++i, ++j)
+    for( int i = 0; i < m_PositionArray->size(); ++i )
     {
-      mitk::PointSet::PointType p = i->Value();
-      vl::vec3 pos( p[0], p[1], p[2] );
-      ref<Actor> actor = initActor( m_3DSphereGeom.get(), m_PointFX.get() );
+      const vl::vec3& pos = m_PositionArray->at( i );
+      ref<Actor> actor = initActor( m_3DSphereGeom.get()/*, m_PointFX.get()*/ );
       actor->transform()->setLocalAndWorldMatrix( vl::mat4::getTranslation( pos ) );
       m_SphereActors->addActor( actor.get() );
+      // Colorize the sphere with the point's color
+      actor->effect()->shader()->getMaterial()->setDiffuse( m_ColorArray->at( i ) );
     }
   }
 
   void init2D() {
-    VIVID_CHECK( m_MitkPointSet );
     VIVID_CHECK( ! m_3DSphereMode );
 
     // Remove 3D data and init 2D data.
     remove();
 
-    ref<vl::ArrayFloat3> verts = new vl::ArrayFloat3;
-    verts->resize(m_MitkPointSet->GetSize());
-    int j = 0;
-    for (mitk::PointSet::PointsConstIterator i = m_MitkPointSet->Begin(); i != m_MitkPointSet->End(); ++i, ++j)
-    {
-      mitk::PointSet::PointType p = i->Value();
-      verts->at(j).x() = p[0];
-      verts->at(j).y() = p[1];
-      verts->at(j).z() = p[2];
+    // Initialize color array
+    for( int i = 0; i < m_ColorArray->size(); ++i ) {
+      m_ColorArray->at( i ) = vl::white;
     }
 
     m_2DGeometry = new vl::Geometry;
-    ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays( vl::PT_POINTS, 0, verts->size() );
+    ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays( vl::PT_POINTS, 0, m_PositionArray->size() );
     m_2DGeometry->drawCalls().push_back(draw_arrays.get());
-    m_2DGeometry->setVertexArray( verts.get() );
-    m_2DGeometry->setColorArray( vl::white );
+    m_2DGeometry->setVertexArray( m_PositionArray.get() );
+    m_2DGeometry->setColorArray( m_ColorArray.get() );
 
     m_Actor = initActor( m_2DGeometry.get(), m_PointFX.get() );
     m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
@@ -1699,6 +1693,8 @@ public:
 
     // Get opacity
     color.a() = getFloatProp( m_DataNode, "VL.Point.Opacity", 1.0f );
+
+    updatePoints( color );
 
     if ( m_3DSphereMode ) {
       if ( ! m_SphereActors ) {
@@ -1739,8 +1735,6 @@ public:
 
       // set point size
       m_PointFX->shader()->getPointSize()->set( pointsize );
-      // set color
-      m_2DGeometry->setColorArray( color );
     }
   }
 
@@ -1756,90 +1750,78 @@ public:
   }
 
 protected:
-  const mitk::PointSet* m_MitkPointSet;
   bool m_3DSphereMode;
   ref<vl::ActorTree> m_SphereActors;
   ref<Geometry> m_3DSphereGeom;
   ref<Effect> m_PointFX;
   ref<vl::Geometry> m_2DGeometry;
+  ref<vl::ArrayFloat3> m_PositionArray;
+  ref<vl::ArrayFloat4> m_ColorArray;
+};
+
+//-----------------------------------------------------------------------------
+
+class VLMapperPointSet: public VLMapperPoints {
+public:
+  VLMapperPointSet( const mitk::DataNode* node, VLSceneView* sv )
+    : VLMapperPoints( node, sv ) {
+    m_MitkPointSet = dynamic_cast<mitk::PointSet*>( node->GetData() );
+    VIVID_CHECK( m_MitkPointSet );
+  }
+
+  virtual void updatePoints( const vl::vec4& color ) {
+    VIVID_CHECK( m_MitkPointSet );
+
+    m_PositionArray->resize( m_MitkPointSet->GetSize() );
+    m_ColorArray->resize( m_MitkPointSet->GetSize() );
+
+    int j = 0;
+    for ( mitk::PointSet::PointsConstIterator i = m_MitkPointSet->Begin(); i != m_MitkPointSet->End(); ++i, ++j )
+    {
+      const mitk::PointSet::PointType& p = i->Value();
+      m_PositionArray->at( j ) = vl::vec3( p[0], p[1], p[2] );
+      m_ColorArray->at( j ) = color;
+    }
+    m_PositionArray->updateBufferObject();
+    m_ColorArray->updateBufferObject();
+  }
+
+protected:
+  const mitk::PointSet* m_MitkPointSet;
 };
 
 //-----------------------------------------------------------------------------
 
 #ifdef _USE_PCL
-/*
-       WARNING:
-never compiled nor tested
 
-     _.--""--._
-    /  _    _  \
- _  ( (_\  /_) )  _
-{ \._\   /\   /_./ }
-/_"=-.}______{.-="_\
- _  _.=("""")=._  _
-(_'"_.-"`~~`"-._"'_)
- {_"            "_}
-
-*/
-class VLMapperPCL: public VLMapper {
+class VLMapperPCL: public VLMapperPoints {
 public:
   VLMapperPCL( const mitk::DataNode* node, VLSceneView* sv )
-    : VLMapper( node , sv ) {
+    : VLMapperPoints( node, sv ) {
     m_NiftkPCL = dynamic_cast<niftk::PCLData*>( node->GetData() );
     VIVID_CHECK( m_NiftkPCL );
   }
 
-  virtual void init() {
+  virtual void updatePoints( const vl::vec4& ) {
     VIVID_CHECK( m_NiftkPCL );
     pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud = m_NiftkPCL->GetCloud();
 
-    ref<vl::ArrayFloat3> vl_verts = new vl::ArrayFloat3;
-    ref<vl::ArrayFloat4> vl_colors = new vl::ArrayFloat4;
-    vl_verts->resize(cloud->size());
-    vl_colors->resize(cloud->size());
-    // We could interleave the color and vert array but do we trust the VTK layout?
+    m_PositionArray->resize( cloud->size() );
+    m_ColorArray->resize( cloud->size() );
+
     int j = 0;
     for (pcl::PointCloud<pcl::PointXYZRGB>::const_iterator i = cloud->begin(); i != cloud->end(); ++i, ++j) {
       const pcl::PointXYZRGB& p = *i;
-
-      vl_verts->at(j).x() = p.x;
-      vl_verts->at(j).y() = p.y;
-      vl_verts->at(j).z() = p.z;
-
-      vl_colors->at(j).r() = (float)p.r / 255.0f;
-      vl_colors->at(j).g() = (float)p.g / 255.0f;
-      vl_colors->at(j).b() = (float)p.b / 255.0f;
-      vl_colors->at(j).a() = 1;
+      m_PositionArray->at(j) = vl::vec3(p.x, p.y, p.z);
+      m_ColorArray->at(j) = vl::vec4(p.r / 255.0f, p.g / 255.0f, p.b / 255.0f, 1);
     }
 
-    ref<vl::Geometry> geom = new vl::Geometry;
-    ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays( vl::PT_POINTS, 0, vl_verts->size() );
-    geom->drawCalls().push_back( draw_arrays.get() );
-    geom->setVertexArray( vl_verts.get() );
-    geom->setColorArray( vl_colors.get() );
-
-    m_Actor = initActor( geom.get() );
-    m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
-  }
-
-  virtual void update() {
-    updateCommon();
-    // Update point size
-    float pointsize = 1;
-    m_DataNode->GetFloatProperty( "pointsize", pointsize );
-    Shader* shader = m_Actor->effect()->shader();
-    // This is part of the standard vivid shader so it must be present.
-    VIVID_CHECK( shader->getPointSize() );
-    shader->getPointSize()->set( pointsize );
-    if ( pointsize > 1 ) {
-      shader->enable( vl::EN_POINT_SMOOTH );
-    } else {
-      shader->disable( vl::EN_POINT_SMOOTH );
-    }
+    m_PositionArray->updateBufferObject();
+    m_ColorArray->updateBufferObject();
   }
 
 protected:
-  niftk::PCLData::Pointer m_NiftkPCL;
+  const niftk::PCLData* m_NiftkPCL;
 };
 
 #endif
@@ -2439,17 +2421,16 @@ void VLSceneView::initEvent()
   // This is only used by the CUDA stuff
   createAndUpdateFBOSizes( openglContext()->width(), openglContext()->height() );
 
-#if 0
+#if 1
   // Point cloud data test
   mitk::DataNode::Pointer n = mitk::DataNode::New();
-  mitk::PCLData::Pointer  p = niftk::PCLData::New();
+  niftk::PCLData::Pointer p = niftk::PCLData::New();
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr  c(new pcl::PointCloud<pcl::PointXYZRGB>);
-  for (int i = 0; i < 100; ++i)
-  {
-    pcl::PointXYZRGB  q(std::rand() % 255, std::rand() % 255, std::rand() % 255);
-    q.x = std::rand() % 255;
-    q.y = std::rand() % 255;
-    q.z = std::rand() % 255;
+  for (int i = 0; i < 10000; ++i) {
+    pcl::PointXYZRGB  q(std::rand() % 256, std::rand() % 256, std::rand() % 256);
+    q.x = std::rand() % 256;
+    q.y = std::rand() % 256;
+    q.z = std::rand() % 256;
     c->push_back(q);
   }
   p->SetCloud(c);
