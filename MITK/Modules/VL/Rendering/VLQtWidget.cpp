@@ -1854,7 +1854,7 @@ public:
     if ( cuda_image ) {
       m_NiftkLightweightCUDAImage = cuda_image->GetLightweightCUDAImage();
     } else {
-      niftk::CUDAImageProperty* cuda_image_prop = dynamic_cast<niftk::CUDAImageProperty*>(m_DataNode->GetProperty("CUDAImageProperty").GetPointer());
+      niftk::CUDAImageProperty* cuda_image_prop = dynamic_cast<niftk::CUDAImageProperty*>(m_DataNode->GetProperty("CUDAImageProperty"));
       if  (cuda_image_prop ) {
         m_NiftkLightweightCUDAImage = cuda_image_prop->Get();
       }
@@ -1863,32 +1863,39 @@ public:
   }
 
   virtual void init() {
+    VIVID_CHECK( m_NiftkLightweightCUDAImage.GetId() != 0 );
 
-    niftk::LightweightCUDAImage lwci;
-    const niftk::CUDAImage* cudaImg = dynamic_cast<const niftk::CUDAImage*>(m_NiftkCUDAImage);
-    if (cudaImg != 0)
-    {
-      lwci = cudaImg->GetLightweightCUDAImage();
-    }
-    else
-    {
-      niftk::CUDAImageProperty::Pointer prop = dynamic_cast<niftk::CUDAImageProperty*>(m_DataNode->GetProperty("CUDAImageProperty").GetPointer());
-      if (prop.IsNotNull())
-      {
-        lwci = prop->Get();
-      }
-    }
-    VIVID_CHECK(lwci.GetId() != 0);
+    //niftk::LightweightCUDAImage lwci;
+    //const niftk::CUDAImage* cudaImg = dynamic_cast<const niftk::CUDAImage*>(m_NiftkCUDAImage);
+    //if (cudaImg != 0)
+    //{
+    //  lwci = cudaImg->GetLightweightCUDAImage();
+    //}
+    //else
+    //{
+    //  niftk::CUDAImageProperty::Pointer prop = dynamic_cast<niftk::CUDAImageProperty*>(m_DataNode->GetProperty("CUDAImageProperty"));
+    //  if (prop.IsNotNull())
+    //  {
+    //    lwci = prop->Get();
+    //  }
+    //}
+    //VIVID_CHECK(lwci.GetId() != 0);
 
     ref<vl::Geometry> vlquad = CreateGeometryFor2DImage(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight());
 
     m_Actor = initActor( vlquad.get() );
     m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
-    ref<Effect> fx = m_Actor->effect();
+    Effect* fx = m_Actor->effect();
 
-    fx->shader()->disable(vl::EN_LIGHTING);
-    fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-    fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+    m_TextureDataPOD.m_Texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+    fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
+    fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
+    vlquad->setColorArray( vl::white );
+
+    //ref<Effect> fx = m_Actor->effect();
+    //fx->shader()->disable(vl::EN_LIGHTING);
+    //fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
+    //fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
   }
 
   virtual void update() {
@@ -1901,7 +1908,7 @@ public:
     // - Michele
 
     // whatever we had cached from a previous frame.
-    TextureDataPOD          texpod    = m_TextureDataPOD;
+    TextureDataPOD& texpod = m_TextureDataPOD;
 
     // only need to update the vl texture, if content in our cuda buffer has changed.
     // and the cuda buffer can change only when we have a different id.
@@ -1929,9 +1936,11 @@ public:
           }
         }
 
-        texpod.m_Texture = new vl::Texture(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight(), vl::TF_RGBA8, false);
-        actor->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
-        actor->effect()->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
+        // FIXME: don't destroy and recreate the texture every time
+        texpod.m_Texture->createTexture2D(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight(), vl::TF_RGBA8, false);
+        //texpod.m_Texture = new vl::Texture(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight(), vl::TF_RGBA8, false);
+        //actor->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
+        //actor->effect()->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
 
         err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
         if (err != cudaSuccess)
@@ -1943,7 +1952,7 @@ public:
 
       if (texpod.m_CUDARes)
       {
-        VIVID_CHECK(actor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
+        // VIVID_CHECK(actor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
 
         niftk::CUDAManager*  cudamng   = niftk::CUDAManager::GetInstance();
         cudaStream_t         mystream  = cudamng->GetStream("VLSceneView vl-texture update");
@@ -1989,10 +1998,10 @@ public:
       }
 
       // update cache, even if something went wrong.
-      m_TextureDataPOD = texpod;
+      // m_TextureDataPOD = texpod;
 
       // helps with debugging
-      actor->effect()->shader()->disable(vl::EN_CULL_FACE);
+      // actor->effect()->shader()->disable(vl::EN_CULL_FACE);
     }
   }
 
@@ -2482,7 +2491,7 @@ void VLSceneView::createAndUpdateFBOSizes( int width, int height )
   width  = std::max(1, width);
   height = std::max(1, height);
 
-  ref<vl::FramebufferObject> opaqueFBO = vl::OpenGLContext::createFramebufferObject(width, height);
+  ref<vl::FramebufferObject> opaqueFBO = openglContext()->createFramebufferObject(width, height);
   opaqueFBO->setObjectName("opaqueFBO");
   opaqueFBO->addDepthAttachment(new vl::FBODepthBufferAttachment(vl::DBF_DEPTH_COMPONENT24));
   opaqueFBO->addColorAttachment(vl::AP_COLOR_ATTACHMENT0, new vl::FBOColorBufferAttachment(vl::CBF_RGBA));   // this is a renderbuffer
