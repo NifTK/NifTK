@@ -309,6 +309,16 @@ namespace
     return val;
   }
 
+  bool setBoolProp( mitk::DataNode* node, const char* prop_name, bool val ) {
+    VIVID_CHECK( dynamic_cast<const mitk::BoolProperty*>( node->GetProperty( prop_name ) ) );
+    mitk::BoolProperty* prop = dynamic_cast<mitk::BoolProperty*>( node->GetProperty( prop_name ) );
+    if ( ! prop ) {
+      return false;
+    }
+    prop->SetValue( val );
+    return true;
+  }
+
   float getFloatProp( const mitk::DataNode* node, const char* prop_name, float defval = 0 ) {
     VIVID_CHECK( dynamic_cast<const mitk::FloatProperty*>( node->GetProperty( prop_name ) ) );
     float val = defval;
