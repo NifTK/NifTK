@@ -22,10 +22,23 @@ if(DEFINED GLog_DIR AND NOT EXISTS ${GLog_DIR})
   message(FATAL_ERROR "GLog_DIR variable is defined but corresponds to non-existing directory \"${GLog_ROOT}\".")
 endif()
 
-set(version "0.3.3")
-set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${version}.tar.gz")
+#set(version "0.3.4")
+#set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${version}.tar.gz")
+
+set(version "0472b91")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${version}.zip")
 
 niftkMacroDefineExternalProjectVariables(GLog ${version} ${location})
+
+set(proj_DEPENDENCIES GFlags)
+
+
+message( "EP_COMMON_ARGS:"                ${EP_COMMON_ARGS}              )
+message( "NifTK_PREFIX_PATH:"             ${NifTK_PREFIX_PATH}           )
+message( "GFlags_LIBRARY_DIR:"            ${GFlags_LIBRARY_DIR}          )
+message( "GFlags_DIR:"                    ${GFlags_DIR}                  )
+message( "EP_COMMON_CACHE_ARGS:"          ${EP_COMMON_CACHE_ARGS}        )
+message( "EP_COMMON_CACHE_DEFAULT_ARGS:"  ${EP_COMMON_CACHE_DEFAULT_ARGS})
 
 if(NOT DEFINED GLog_DIR)
 
@@ -46,6 +59,9 @@ if(NOT DEFINED GLog_DIR)
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
       -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
+      -DCMAKE_SHARED_LINKER_FLAGS:STRING=${GFlags_LIBRARY_DIR}
+      -DCMAKE_LIBRARY_PATH:PATH=${GFlags_LIBRARY_DIR}
+      -Dgflags_DIR:PATH=${GFlags_DIR}
     CMAKE_CACHE_ARGS
       ${EP_COMMON_CACHE_ARGS}
     CMAKE_CACHE_DEFAULT_ARGS
