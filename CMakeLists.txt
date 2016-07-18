@@ -605,8 +605,8 @@ mitkFunctionAddExternalProject(NAME NiftyCal  OFF ADVANCED DEPENDS OpenCV AprilT
 
 mitkFunctionAddExternalProject(NAME OpenBLAS OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME ProtoBuf OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME GLog     OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME GFlags   OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME GLog     OFF ADVANCED GFlags)
 mitkFunctionAddExternalProject(NAME Caffe    OFF ADVANCED DEPENDS OpenBLAS Boost ProtoBuf GLog GFlags HDF5 ZLIB)
 
 

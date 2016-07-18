@@ -22,9 +22,19 @@ if(DEFINED Caffe_DIR AND NOT EXISTS ${Caffe_DIR})
   message(FATAL_ERROR "Caffe_DIR variable is defined but corresponds to non-existing directory \"${Caffe_ROOT}\".")
 endif()
 
-#set(version "7c17be7-EliGibson-NifTK")
+# Caffe only (minor CMake mods)
+#set(version "rc3-NifTK")
+
+# Caffe with Eli Gibson's minimal set of mods
 #set(version "rc3-EliGibson-NifTK")
-set(version "rc3-NifTK")
+
+# Eli's clone of Caffe with more mods
+#set(version "7c17be7-EliGibson-NifTK")
+
+# NifTK Caffe rc3 clone with NifTK relevant mods
+# https://cmiclab.cs.ucl.ac.uk/CMIC/CaffeNifTK
+set(version "8058da2")
+
 set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(Caffe ${version} ${location})
