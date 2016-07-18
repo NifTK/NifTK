@@ -660,6 +660,31 @@ namespace
     }
   }
 
+  ref<vl::Image> wrapMitk2DImage( const mitk::Image* mitk_image ) {
+    mitk::PixelType  mitk_pixel_type = mitk_image->GetPixelType();
+    vl::EImageType   vl_type         = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
+    vl::EImageFormat vl_format       = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
+    unsigned int*    dims            = mitk_image->GetDimensions();
+    VIVID_CHECK( dims[2] == 1 );
+
+    try
+    {
+      unsigned int buffer_bytes = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
+      mitk::ImageReadAccessor image_reader( mitk_image, mitk_image->GetVolumeData(0) );
+      void* buffer_ptr = const_cast<void*>( image_reader.GetData() );
+      // Use VTK buffer directly, no VL image allocation needed
+      ref<vl::Image> vl_img = new vl::Image( buffer_ptr, buffer_bytes );
+      vl_img->allocate2D(dims[0], dims[1], 1, vl_format, vl_type);
+      VIVID_CHECK( vl_img->requiredMemory() == buffer_bytes );
+      return vl_img;
+    }
+    catch (...)
+    {
+      MITK_ERROR << "Did not get pixel read access to 2D image.";
+      return NULL;
+    }
+  }
+
   //-----------------------------------------------------------------------------
 
   VLUserData* GetUserData(vl::Actor* actor)
@@ -1304,29 +1329,8 @@ public:
     initFogProps( node );
     initClipProps( node );
 
-    mitk::PixelType  mitk_pixel_type = m_MitkImage->GetPixelType();
-    vl::EImageType   vl_type         = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
-    vl::EImageFormat vl_format       = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
-    unsigned int*    dims            = m_MitkImage->GetDimensions();
-
-    ref<vl::Image> vl_img;
-
-    try {
-      unsigned int buffer_bytes = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
-      mitk::ImageReadAccessor image_reader( m_MitkImage, m_MitkImage->GetVolumeData(0) );
-      void* buffer_ptr = const_cast<void*>( image_reader.GetData() );
-      // std::memcpy( vl_img->pixels(), ptr, byte_count );
-      // Use VTK buffer directly instead of allocating one
-      vl_img = new vl::Image( buffer_ptr, buffer_bytes );
-      vl_img->allocate2D(dims[0], dims[1], 1, vl_format, vl_type);
-      VIVID_CHECK( vl_img->requiredMemory() == buffer_bytes );
-    }
-    catch (...) {
-      // FIXME: error handling?
-      MITK_ERROR << "Did not get pixel read access to 2D image.";
-    }
-
-    ref<vl::Geometry> geom = CreateGeometryFor2DImage(dims[0], dims[1]);
+    ref<vl::Image> img = wrapMitk2DImage( m_MitkImage );
+    ref<vl::Geometry> geom = CreateGeometryFor2DImage( img->width(), img->height() );
 
     m_Actor = initActor( geom.get() );
     m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
@@ -1337,7 +1341,7 @@ public:
     VIVID_CHECK( fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture() )
     VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture")->getUniformI() == vl::VividRendering::UserTexture );
     ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
-    texture->createTexture2D( vl_img.get(), vl::TF_UNKNOWN, false, false );
+    texture->createTexture2D( img.get(), vl::TF_UNKNOWN, false, false );
     fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
     fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
     // When texture mapping is enabled the texture is modulated by the vertex color, including the alpha
@@ -1356,33 +1360,11 @@ public:
       return;
     }
 
-    ref<vl::Texture> tex = m_Actor->effect()->shader()->gocTextureSampler( vl::VividRendering::UserTexture )->texture();
-    if ( tex )
-    {
-      mitk::PixelType  mitk_pixel_type = m_MitkImage->GetPixelType();
-      vl::EImageType   vl_type         = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
-      vl::EImageFormat vl_format       = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
-      unsigned int*    dims            = m_MitkImage->GetDimensions();
-
-      try
-      {
-        unsigned int buffer_bytes = dims[0] * dims[1] * dims[2] * mitk_pixel_type.GetSize();
-        mitk::ImageReadAccessor image_reader( m_MitkImage, m_MitkImage->GetVolumeData(0) );
-        void* buffer_ptr = const_cast<void*>( image_reader.GetData() );
-        // Use VTK buffer directly, no VL imag allocation needed
-        ref<vl::Image> vl_img = new vl::Image( buffer_ptr, buffer_bytes );
-        vl_img->allocate2D(dims[0], dims[1], 1, vl_format, vl_type);
-        VIVID_CHECK( vl_img->requiredMemory() == buffer_bytes );
-        tex->setMipLevel(0, vl_img.get(), false);
-      }
-      catch (...)
-      {
-        // FIXME: error handling?
-        MITK_ERROR << "Did not get pixel read access to 2D image.";
-      }
-
-      GetUserData( m_Actor.get() )->m_ImageModifiedTime = m_MitkImage->GetVtkImageData()->GetMTime();
-    }
+    vl::Texture* tex = m_Actor->effect()->shader()->gocTextureSampler( vl::VividRendering::UserTexture )->texture();
+    VIVID_CHECK( tex );
+    ref<vl::Image> img = wrapMitk2DImage( m_MitkImage );
+    tex->setMipLevel(0, img.get(), false);
+    GetUserData( m_Actor.get() )->m_ImageModifiedTime = m_MitkImage->GetVtkImageData()->GetMTime();
   }
 
 protected:
@@ -1946,11 +1928,7 @@ public:
           }
         }
 
-        // FIXME: don't destroy and recreate the texture every time
-        texpod.m_Texture->createTexture2D(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight(), vl::TF_RGBA8, false);
-        //texpod.m_Texture = new vl::Texture(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight(), vl::TF_RGBA8, false);
-        //actor->effect()->shader()->gocTextureSampler(0)->setTexture(texpod.m_Texture.get());
-        //actor->effect()->shader()->gocTextureSampler(0)->setTexParameter(m_DefaultTextureParams.get());
+        texpod.m_Texture->createTexture2D(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight(), vl::TF_RGBA, false);
 
         err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
         if (err != cudaSuccess)
@@ -2099,8 +2077,7 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
 
 VLSceneView::VLSceneView() :
   // Qt5Widget(parent, shareWidget, f)
-  m_BackgroundWidth( 0 )
-  , m_BackgroundHeight( 0 )
+  m_BackgroundSize( ivec2( 0, 0 ) )
   , m_ScheduleTrackballAdjustView( true )
   , m_ScheduleInitScene ( true )
   , m_OclService( 0 )
@@ -2539,14 +2516,14 @@ void VLSceneView::updateViewportAndCameraAfterResize()
 
       // this is based on my old araknes video-ar app.
       // FIXME: aspect ratio?
-      float   width_scale  = (float) openglContext()->width()  / (float) m_BackgroundWidth;
-      float   height_scale = (float) openglContext()->height() / (float) m_BackgroundHeight;
+      float   width_scale  = (float) openglContext()->width()  / (float) m_BackgroundSize.x();
+      float   height_scale = (float) openglContext()->height() / (float) m_BackgroundSize.y();
       int     vpw = openglContext()->width();
       int     vph = openglContext()->height();
       if (width_scale < height_scale)
-        vph = (int) ((float) m_BackgroundHeight * width_scale);
+        vph = (int) ((float) m_BackgroundSize.y() * width_scale);
       else
-        vpw = (int) ((float) m_BackgroundWidth * height_scale);
+        vpw = (int) ((float) m_BackgroundSize.x() * height_scale);
 
       int   vpx = openglContext()->width()  / 2 - vpw / 2;
       int   vpy = openglContext()->height() / 2 - vph / 2;
@@ -2721,11 +2698,11 @@ void VLSceneView::updateCameraParameters()
 
           vl::mat4  proj;
           proj.setNull();
-          proj.e(0, 0) =  2 * nodeIntrinsic->GetFocalLengthX() / (float) m_BackgroundWidth;
+          proj.e(0, 0) =  2 * nodeIntrinsic->GetFocalLengthX() / (float) m_BackgroundSize.x();
           //proj.e(0, 1) = -2 * 0 / m_ImageWidthInPixels;
-          proj.e(0, 2) = ((float) m_BackgroundWidth - 2 * nodeIntrinsic->GetPrincipalPointX()) / (float) m_BackgroundWidth;
-          proj.e(1, 1) = 2 * (nodeIntrinsic->GetFocalLengthY() / pixelaspectratio) / ((float) m_BackgroundHeight / pixelaspectratio);
-          proj.e(1, 2) = (-((float) m_BackgroundHeight / pixelaspectratio) + 2 * (nodeIntrinsic->GetPrincipalPointY() / pixelaspectratio)) / ((float) m_BackgroundHeight / pixelaspectratio);
+          proj.e(0, 2) = ((float) m_BackgroundSize.x() - 2 * nodeIntrinsic->GetPrincipalPointX()) / (float) m_BackgroundSize.x();
+          proj.e(1, 1) = 2 * (nodeIntrinsic->GetFocalLengthY() / pixelaspectratio) / ((float) m_BackgroundSize.y() / pixelaspectratio);
+          proj.e(1, 2) = (-((float) m_BackgroundSize.y() / pixelaspectratio) + 2 * (nodeIntrinsic->GetPrincipalPointY() / pixelaspectratio)) / ((float) m_BackgroundSize.y() / pixelaspectratio);
           proj.e(2, 2) = (-zfar - znear) / (zfar - znear);
           proj.e(2, 3) = -2 * zfar * znear / (zfar - znear);
           proj.e(3, 2) = -1;
@@ -2815,10 +2792,6 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
     addDataNode(oldbackgroundnode);
   }
 
-  // default "no background" value.
-  m_BackgroundWidth  = 0;
-  m_BackgroundHeight = 0;
-
   bool    result = false;
   mitk::BaseData::Pointer   basedata;
   if ( node )
@@ -2853,21 +2826,21 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
         result = true;
       }
 
-      m_BackgroundWidth  = imgdata->GetDimension(0);
-      m_BackgroundHeight = imgdata->GetDimension(1);
+      m_BackgroundSize.x() = imgdata->GetDimension(0);
+      m_BackgroundSize.y() = imgdata->GetDimension(1);
     }
     else
     {
 #ifdef _USE_CUDA
-      niftk::CUDAImage::Pointer    cudaimgdata = dynamic_cast<niftk::CUDAImage*>(basedata.GetPointer());
+      niftk::CUDAImage::Pointer cudaimgdata = dynamic_cast<niftk::CUDAImage*>(basedata.GetPointer());
       if (cudaimgdata.IsNotNull())
       {
         niftk::LightweightCUDAImage    lwci = cudaimgdata->GetLightweightCUDAImage();
         prepareBackgroundActor(&lwci, cudaimgdata->GetGeometry(), node);
         result = true;
 
-        m_BackgroundWidth  = lwci.GetWidth();
-        m_BackgroundHeight = lwci.GetHeight();
+        m_BackgroundSize.x() = lwci.GetWidth();
+        m_BackgroundSize.y() = lwci.GetHeight();
       }
       // no else here
 #endif

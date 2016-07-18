@@ -115,9 +115,9 @@ public:
   static vl::ref<VLMapper> create(const mitk::DataNode* node, VLSceneView*);
 
   /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
-  const vl::Actor* actor() const { return m_Actor.get(); }
-  /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
   vl::Actor* actor() { return m_Actor.get(); }
+  /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
+  const vl::Actor* actor() const { return m_Actor.get(); }
 
   /** Updates visibility, opacity, color, etc. and Vivid related common settings. */
   void updateCommon();
@@ -242,9 +242,8 @@ protected:
   bool m_ScheduleTrackballAdjustView;
   bool m_ScheduleInitScene;
 
-  // these two will go away once we render the background using Vivid
-  int m_BackgroundWidth;
-  int m_BackgroundHeight;
+  // MIC FIXME: remove this
+  vl::ivec2 m_BackgroundSize;
 
   // Lgacy OpenCL service
 
