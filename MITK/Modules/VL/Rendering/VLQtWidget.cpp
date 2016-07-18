@@ -2095,6 +2095,8 @@ VLSceneView::VLSceneView() :
 
   removeDataStorageListeners();
 
+  clearScene();
+
 #ifdef _USE_CUDA
   FreeCUDAInteropTextures();
 #endif
