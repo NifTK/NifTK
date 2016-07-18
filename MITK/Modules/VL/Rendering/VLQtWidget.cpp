@@ -2782,7 +2782,34 @@ void VLSceneView::prepareBackgroundActor(const mitk::Image* img, const mitk::Bas
 
 bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
 {
-  openglContext()->makeCurrent();
+  m_BackgroundNode = node;
+
+  if ( ! node ) {
+    m_VividRendering->setBackgroundImageEnabled( false );
+    return true;
+  }
+
+  // Use VLMapper2DImage's texture as background texture
+  VLMapper2DImage* img_mapper = dynamic_cast<VLMapper2DImage*>( getVLMapper( node ) );
+  if ( ! img_mapper ) {
+    return false;
+  }
+  vl::Texture* tex = img_mapper->actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+  m_VividRendering->backgroundTexSampler()->setTexture( tex );
+
+  // Hide 3D plane with 2D image on it
+  setBoolProp( const_cast<mitk::DataNode*>(node), "visible", false );
+
+  // Enable background rendering
+  m_VividRendering->setBackgroundImageEnabled( true );
+
+  openglContext()->update();
+
+  return true;
+
+/* obsolete
+
+  // ----
 
   // clear up after previous background node.
   if (m_BackgroundNode.IsNotNull())
@@ -2863,6 +2890,9 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
   //}
 
   return result;
+  */
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
