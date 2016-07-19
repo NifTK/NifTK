@@ -159,7 +159,7 @@ public:
   void scheduleNodeAdd(const mitk::DataNode* node);
   void scheduleNodeRemove(const mitk::DataNode* node);
   void scheduleNodeUpdate(const mitk::DataNode* node);
-  void scheduleTrackballAdjustView(bool do_it = true) { m_ScheduleTrackballAdjustView = do_it; }
+  void scheduleTrackballAdjustView(bool schedule = true) { m_ScheduleTrackballAdjustView = schedule; }
   void scheduleSceneRebuild() { clearScene(); m_ScheduleInitScene = true; openglContext()->update(); }
 
   mitk::DataStorage* dataStorage() { return m_DataStorage.GetPointer(); }

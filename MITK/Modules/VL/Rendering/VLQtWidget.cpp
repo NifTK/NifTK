@@ -1950,23 +1950,28 @@ public:
     m_CudaResource = NULL;
   }
 
+  virtual niftk::LightweightCUDAImage getLWCI() {
+    niftk::LightweightCUDAImage lwci;
+    niftk::CUDAImage* cuda_image = dynamic_cast<niftk::CUDAImage*>( m_DataNode->GetData() );
+    if ( cuda_image ) {
+      lwci = cuda_image->GetLightweightCUDAImage();
+    } else {
+      niftk::CUDAImageProperty* cuda_img_prop = dynamic_cast<niftk::CUDAImageProperty*>( m_DataNode->GetData()->GetProperty("CUDAImageProperty").GetPointer() );
+      if  (cuda_img_prop ) {
+        lwci = cuda_img_prop->Get();
+      }
+    }
+    VIVID_CHECK(lwci.GetId() != 0);
+    return lwci;
+  }
+
   virtual void init() {
     mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
     // initRenderModeProps( node ); /* does not apply */
     initFogProps( node );
     initClipProps( node );
 
-    niftk::LightweightCUDAImage lwci;
-    niftk::CUDAImage* cuda_image = dynamic_cast<niftk::CUDAImage*>( m_DataNode->GetData() );
-    if ( cuda_image ) {
-      lwci = cuda_image->GetLightweightCUDAImage();
-    } else {
-      niftk::CUDAImageProperty* cuda_image_prop = dynamic_cast<niftk::CUDAImageProperty*>(m_DataNode->GetProperty("CUDAImageProperty"));
-      if  (cuda_image_prop ) {
-        lwci = cuda_image_prop->Get();
-      }
-    }
-    VIVID_CHECK(lwci.GetId() != 0);
+    niftk::LightweightCUDAImage lwci = getLWCI();
 
     ref<vl::Geometry> vlquad = CreateGeometryFor2DImage( lwci.GetWidth(), lwci.GetHeight() );
 
@@ -1996,17 +2001,7 @@ public:
 
     // Get the niftk::LightweightCUDAImage
 
-    niftk::LightweightCUDAImage lwci;
-    niftk::CUDAImage* cuda_image = dynamic_cast<niftk::CUDAImage*>( m_DataNode->GetData() );
-    if ( cuda_image ) {
-      lwci = cuda_image->GetLightweightCUDAImage();
-    } else {
-      niftk::CUDAImageProperty* cuda_image_prop = dynamic_cast<niftk::CUDAImageProperty*>(m_DataNode->GetProperty("CUDAImageProperty"));
-      if  (cuda_image_prop ) {
-        lwci = cuda_image_prop->Get();
-      }
-    }
-    VIVID_CHECK(lwci.GetId() != 0);
+    niftk::LightweightCUDAImage lwci = getLWCI();
 
     cudaError_t err = cudaSuccess;
 
@@ -2082,6 +2077,7 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
 #endif
 #ifdef _USE_CUDA
   mitk::BaseData*           cuda_img = dynamic_cast<niftk::CUDAImage*>( node->GetData() );
+  niftk::CUDAImageProperty* cuda_img_prop = dynamic_cast<niftk::CUDAImageProperty*>( node->GetData()->GetProperty("CUDAImageProperty").GetPointer() );
 #endif
 
   if ( vl_global ) {
@@ -2092,6 +2088,12 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
     vl_node = new VLMapperSurface( node, sv );
   }
   else
+#ifdef _USE_CUDA
+  if ( cuda_img || cuda_img_prop ) {
+    vl_node = new VLMapperCUDAImage( node, sv );
+  }
+  else
+#endif
   if ( mitk_image ) {
     unsigned int depth = mitk_image->GetDimensions()[2];
     if ( depth > 1 ) {
@@ -2112,12 +2114,6 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
   else
   if ( mitk_pcld ) {
     vl_node = new VLMapperPCL( node, sv );
-  }
-#endif
-#ifdef _USE_CUDA
-  else
-  if ( cuda_img ) {
-    vl_node = new VLMapperCUDAImage( node, sv );
   }
 #endif
   return vl_node;
@@ -2434,10 +2430,6 @@ void VLSceneView::initEvent()
     // Calling this to make sure that the context is created right at startup
     cl_context clContext = m_OclService->GetContext();
   }
-#endif
-
-#ifdef _MSC_VER
-  // NvAPI_OGL_ExpertModeSet(NVAPI_OGLEXPERT_DETAIL_ALL, NVAPI_OGLEXPERT_DETAIL_BASIC_INFO, NVAPI_OGLEXPERT_OUTPUT_TO_ALL, 0);
 #endif
 
   // Interface VL with Qt's resource system to load GLSL shaders.
