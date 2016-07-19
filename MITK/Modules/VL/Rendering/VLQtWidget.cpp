@@ -135,10 +135,7 @@ using namespace vl;
       glBindFramebuffer(GL_FRAMEBUFFER, m_FramebufferId);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_TextureTarget, m_TextureId, 0);
 
-      // Bind texture to CUDA resource
-
-      // FIXME: this needs a check to find out whether the ogl context for the fbo is currently active
-      // FIXME: needs another check to find out which device that ogl context lives on
+      // Get CUDA representation for our GL texture
 
       cudaError_t err = cudaSuccess;
       err = cudaGraphicsGLRegisterImage( &m_CudaResource, m_TextureId, m_TextureTarget, cudaGraphicsRegisterFlagsNone );
@@ -153,7 +150,7 @@ using namespace vl;
       // CUDAImage
       m_CUDAImage = niftk::CUDAImage::New();
       niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
-      cudaStream_t mystream = cm->GetStream("VL-CUDA-TEST");
+      cudaStream_t mystream = cm->GetStream("VL-CUDA-STREAM");
       niftk::WriteAccessor wa = cm->RequestOutputImage(w, h, 4);
       niftk::LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
       // cm->Autorelease(wa, mystream);
@@ -198,7 +195,7 @@ using namespace vl;
 
       // Copy texture to CUDAImage
       niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
-      cudaStream_t mystream = cm->GetStream("VL-CUDA-TEST");
+      cudaStream_t mystream = cm->GetStream("VL-CUDA-STREAM");
       niftk::WriteAccessor wa = cm->RequestOutputImage(w, h, 4);
 
       cudaError_t err = cudaSuccess;
@@ -2026,6 +2023,7 @@ public:
     // Update texture size and cuda graphics resource
 
     if ( m_Texture->width() != lwci.GetWidth() || m_Texture->height() != lwci.GetHeight() ) {
+      VIVID_CHECK(m_CudaResource);
       cudaGraphicsUnregisterResource(m_CudaResource);
       m_CudaResource = NULL;
       m_Texture->createTexture2D( lwci.GetWidth(), lwci.GetHeight(), TF_RGBA, false );
@@ -2035,131 +2033,27 @@ public:
       }
     }
 
-    {
-      niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
-      cudaStream_t mystream = cm->GetStream("VL-CUDA-TEST");
-      niftk::ReadAccessor ra = cm->RequestReadAccess(lwci);
+    niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
+    cudaStream_t mystream = cm->GetStream("VL-CUDA-STREAM");
+    niftk::ReadAccessor ra = cm->RequestReadAccess(lwci);
 
-      // make sure producer of the cuda-image finished.
-      err = cudaStreamWaitEvent(mystream, ra.m_ReadyEvent, 0);
-      VIVID_CHECK(err == cudaSuccess);
+    // make sure producer of the cuda-image finished.
+    err = cudaStreamWaitEvent(mystream, ra.m_ReadyEvent, 0);
+    VIVID_CHECK(err == cudaSuccess);
 
-      err = cudaGraphicsMapResources(1, &m_CudaResource, mystream);
-      VIVID_CHECK(err == cudaSuccess);
+    err = cudaGraphicsMapResources(1, &m_CudaResource, mystream);
+    VIVID_CHECK(err == cudaSuccess);
 
-      cudaArray_t arr = 0;
-      err = cudaGraphicsSubResourceGetMappedArray(&arr, m_CudaResource, 0, 0);
-      VIVID_CHECK(err == cudaSuccess);
+    cudaArray_t arr = 0;
+    err = cudaGraphicsSubResourceGetMappedArray(&arr, m_CudaResource, 0, 0);
+    VIVID_CHECK(err == cudaSuccess);
 
-      err = cudaMemcpy2DToArrayAsync(arr, 0, 0, ra.m_DevicePointer, ra.m_BytePitch, lwci.GetWidth() * 4, lwci.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
+    err = cudaMemcpy2DToArrayAsync(arr, 0, 0, ra.m_DevicePointer, ra.m_BytePitch, lwci.GetWidth() * 4, lwci.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
 
-      err = cudaGraphicsUnmapResources(1, &m_CudaResource, mystream);
-      VIVID_CHECK(err == cudaSuccess);
+    err = cudaGraphicsUnmapResources(1, &m_CudaResource, mystream);
+    VIVID_CHECK(err == cudaSuccess);
 
-      cm->Autorelease(ra, mystream);
-    }
-
-    return;
-
-    //// --------------------------------------------------------------------------------------------
-
-    //// BEWARE:
-    //// All the logic below is completely outdated especially with regard to accessing the user texture. See VLMapper2DImage for more info.
-    //// PS. All the horrific code formatting is from the original code...
-    //// - Michele
-
-    //// whatever we had cached from a previous frame.
-    //TextureDataPOD& texpod = m_TextureDataPOD;
-
-    //// only need to update the vl texture, if content in our cuda buffer has changed.
-    //// and the cuda buffer can change only when we have a different id.
-    //if (texpod.m_LastUpdatedID != lwci.GetId())
-    //{
-    //  cudaError_t   err = cudaSuccess;
-    //  bool          neednewvltexture = texpod.m_Texture.get() == 0;
-
-    //  // check if vl-texture size needs to change
-    //  if (texpod.m_Texture.get() != 0)
-    //  {
-    //    neednewvltexture |= lwci.GetWidth()  != texpod.m_Texture->width();
-    //    neednewvltexture |= lwci.GetHeight() != texpod.m_Texture->height();
-    //  }
-
-    //  if (neednewvltexture)
-    //  {
-    //    if (texpod.m_CUDARes)
-    //    {
-    //      err = cudaGraphicsUnregisterResource(texpod.m_CUDARes);
-    //      texpod.m_CUDARes = 0;
-    //      if (err != cudaSuccess)
-    //      {
-    //        MITK_WARN << "Could not unregister VL texture from CUDA. This will likely leak GPU memory.";
-    //      }
-    //    }
-
-    //    texpod.m_Texture->createTexture2D(lwci.GetWidth(), lwci.GetHeight(), vl::TF_RGBA, false);
-
-    //    err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
-    //    if (err != cudaSuccess)
-    //    {
-    //      texpod.m_CUDARes = 0;
-    //      MITK_WARN << "Registering VL texture into CUDA failed. Will not update (properly).";
-    //    }
-    //  }
-
-    //  if (texpod.m_CUDARes)
-    //  {
-    //    // VIVID_CHECK(actor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
-
-    //    niftk::CUDAManager*  cm   = niftk::CUDAManager::GetInstance();
-    //    cudaStream_t         mystream  = cm->GetStream("VL-CUDA-TEST");
-    //    niftk::ReadAccessor  ra   = cm->RequestReadAccess(lwci);
-
-    //    // make sure producer of the cuda-image finished.
-    //    err = cudaStreamWaitEvent(mystream, ra.m_ReadyEvent, 0);
-    //    if (err != cudaSuccess)
-    //    {
-    //      // flood the log
-    //      MITK_WARN << "cudaStreamWaitEvent failed with error code " << err;
-    //    }
-
-    //    // this also guarantees that ogl will have finished doing its thing before mystream starts copying.
-    //    err = cudaGraphicsMapResources(1, &texpod.m_CUDARes, mystream);
-    //    if (err == cudaSuccess)
-    //    {
-    //      // normally we would need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
-    //      // but texture coordinates that we have assigned to the quads rendering the current image will do that for us.
-
-    //      cudaArray_t   arr = 0;
-    //      err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
-    //      if (err == cudaSuccess)
-    //      {
-    //        err = cudaMemcpy2DToArrayAsync(arr, 0, 0, ra.m_DevicePointer, ra.m_BytePitch, lwci.GetWidth() * 4, lwci.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
-    //        if (err == cudaSuccess)
-    //        {
-    //          texpod.m_LastUpdatedID = lwci.GetId();
-    //        }
-    //      }
-
-    //      err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
-    //      if (err != cudaSuccess)
-    //      {
-    //        MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
-    //      }
-    //    }
-    //    // make sure Autorelease() and Finalise() are always the last things to do for a stream!
-    //    // otherwise the streamcallback will block subsequent work.
-    //    // in this case here, the callback managed by CUDAManager that keeps track of refcounts could stall
-    //    // the opengl driver if cudaGraphicsUnmapResources() came after Autorelease().
-    //    cm->Autorelease(ra, mystream);
-    //  }
-
-    //  // update cache, even if something went wrong.
-    //  // m_TextureDataPOD = texpod;
-
-    //  // helps with debugging
-    //  // actor->effect()->shader()->disable(vl::EN_CULL_FACE);
-    //}
+    cm->Autorelease(ra, mystream);
   }
 
   virtual void remove() {
@@ -2629,12 +2523,6 @@ void VLSceneView::resizeEvent( int w, int h )
 
   m_VividRendering->camera()->viewport()->set( 0, 0, w, h );
   m_VividRendering->camera()->setProjectionPerspective();
-
-  // obsolete
-  // createAndUpdateFBOSizes( w, h );
-
-  // MIC FIXME: update calibrated camera setup
-  updateViewportAndCameraAfterResize();
 }
 
 //-----------------------------------------------------------------------------
