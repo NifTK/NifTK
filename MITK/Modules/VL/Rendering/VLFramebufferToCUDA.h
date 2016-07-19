@@ -12,6 +12,8 @@
 
 =============================================================================*/
 
+// THIS FILE IS OBSOLETE
+
 #ifndef VLFramebufferToCUDA_h
 #define VLFramebufferToCUDA_h
 

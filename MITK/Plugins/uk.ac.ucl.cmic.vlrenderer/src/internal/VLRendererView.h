@@ -93,7 +93,6 @@ private:
   /// \brief Store a reference to the parent widget of this view.
   QWidget *m_Parent;
 
-
   // VL rendering specific members
   // We use a naked pointer not a vl::ref<> because this is also a QObject managed by Qt
   VLQtWidget* m_VLQtRenderWindow;

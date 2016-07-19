@@ -147,10 +147,6 @@ void VLRendererView::InitVLRendering()
 
   // This state seems to be left dirty so we reset it to it's default else VL will complain.
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-#ifdef _USE_CUDA
-  m_VLQtRenderWindow->EnableFBOCopyToDataStorageViaCUDA(true, GetDataStorage(), "vl-framebuffer");
-#endif
 }
 
 //-----------------------------------------------------------------------------

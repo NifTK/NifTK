@@ -66,18 +66,7 @@ class VLSceneView;
 
 #ifdef _USE_CUDA
 
-struct cudaGraphicsResource;
-
-typedef struct cudaGraphicsResource* cudaGraphicsResource_t;
-
-struct CUDAInterop;
-
-namespace niftk
-{
-  class CUDAImage;
-  class CUDAImageProperty;
-  class LightweightCUDAImage;
-}
+  class CudaTest;
 
 #endif
 
@@ -156,6 +145,7 @@ public:
 
 public:
   VLSceneView();
+  ~VLSceneView();
 
   // Called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
   void setDataStorage(const mitk::DataStorage::Pointer& dataStorage);
@@ -213,11 +203,10 @@ protected:
   virtual void addDataStorageListeners();
   virtual void removeDataStorageListeners();
 
-  void createAndUpdateFBOSizes(int width, int height);
+  // void createAndUpdateFBOSizes(int width, int height); // obsolete
   void updateViewportAndCameraAfterResize();
   void updateCameraParameters();
 
-  void prepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
   VLMapper* getVLMapper(const mitk::DataNode* node);
 
 protected:
@@ -252,22 +241,8 @@ protected:
   // CUDA support
 
 #ifdef _USE_CUDA
-public:
-  void EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage = 0, const std::string& nodename = "");
-
 protected:
-  virtual void cudaSwapBuffers();
-
-  void PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
-
-  void UpdateGLTexturesFromCUDA(const mitk::DataNode* node);
-
-  void FreeCUDAInteropTextures();
-
-  vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
-
-  CUDAInterop* m_CUDAInteropPimpl;
-
+  CudaTest* m_CudaTest;
 #endif
 
 protected:

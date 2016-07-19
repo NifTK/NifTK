@@ -69,7 +69,6 @@
 #include <stdexcept>
 #include <sstream>
 #include <niftkScopedOGLContext.h>
-// #include "TrackballManipulator.h"
 #ifdef BUILD_IGI
 #include <CameraCalibration/niftkUndistortion.h>
 #include <mitkCameraIntrinsicsProperty.h>
@@ -87,13 +86,14 @@
 #endif
 #endif
 
+using namespace vl;
+
 //-----------------------------------------------------------------------------
 // CUDA stuff
 //-----------------------------------------------------------------------------
 
 #ifdef _USE_CUDA
 
-  #include <Rendering/VLFramebufferToCUDA.h>
   #include <niftkCUDAManager.h>
   #include <niftkCUDAImage.h>
   #include <niftkLightweightCUDAImage.h>
@@ -101,42 +101,176 @@
   #include <niftkFlipImageLauncher.h>
   #include <cuda_gl_interop.h>
 
-  //-----------------------------------------------------------------------------
+  // #define VL_CUDA_TEST
 
-  struct CUDAInterop
-  {
-    std::string m_NodeName;
-    mitk::DataStorage::Pointer m_DataStorage;
+  class CudaTest {
+    cudaGraphicsResource_t m_CudaResource;
+    GLuint m_FramebufferId;
+    GLuint m_TextureId;
+    GLuint m_TextureTarget;
+    mitk::DataNode::Pointer m_DataNode;
+    niftk::CUDAImage::Pointer m_CUDAImage;
 
-    VLFramebufferAdaptor* m_FBOAdaptor;
-
-    CUDAInterop() : m_FBOAdaptor(0)
-    {
+  public:
+    CudaTest() {
+      m_CudaResource = NULL;
+      GLuint m_FramebufferId = 0;
+      GLuint m_TextureId = 0;
+      GLuint m_TextureTarget = 0;
     }
 
-    ~CUDAInterop()
-    {
-      delete m_FBOAdaptor;
+    mitk::DataNode* init(int w, int h) {
+      m_CudaResource = NULL;
+      m_TextureTarget = GL_TEXTURE_2D;
+      glGenFramebuffers(1, &m_FramebufferId);
+      glGenTextures(1, &m_TextureId);
+
+      glBindTexture(m_TextureTarget, m_TextureId);
+      glTexParameteri(m_TextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
+      glTexParameteri(m_TextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
+      glTexParameteri(m_TextureTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(m_TextureTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexImage2D(m_TextureTarget, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_FLOAT, 0);
+
+      glBindFramebuffer(GL_FRAMEBUFFER, m_FramebufferId);
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_TextureTarget, m_TextureId, 0);
+
+      // Bind texture to CUDA resource
+
+      // FIXME: this needs a check to find out whether the ogl context for the fbo is currently active
+      // FIXME: needs another check to find out which device that ogl context lives on
+
+      cudaError_t err = cudaSuccess;
+      err = cudaGraphicsGLRegisterImage( &m_CudaResource, m_TextureId, m_TextureTarget, cudaGraphicsRegisterFlagsNone );
+      if ( err != cudaSuccess ) {
+        throw std::runtime_error("cudaGraphicsGLRegisterImage() failed.");
+      }
+
+      // Init CUDAImage
+
+      // node
+      m_DataNode = mitk::DataNode::New();
+      // CUDAImage
+      m_CUDAImage = niftk::CUDAImage::New();
+      niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
+      cudaStream_t mystream = cm->GetStream("VL-CUDA-TEST");
+      niftk::WriteAccessor wa = cm->RequestOutputImage(w, h, 4);
+      niftk::LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
+      // cm->Autorelease(wa, mystream);
+      m_CUDAImage->SetLightweightCUDAImage(lwci);
+      m_DataNode->SetData(m_CUDAImage);
+      m_DataNode->SetName("CUDAImage Test");
+      m_DataNode->SetVisibility(true);
+
+      return m_DataNode.GetPointer();
+    }
+
+    void renderTriangle( int w, int h ) {
+      glBindFramebuffer( GL_FRAMEBUFFER, m_FramebufferId );
+      glDrawBuffer( GL_COLOR_ATTACHMENT0 );
+      glViewport( 0, 0, w, h );
+      glScissor( 0, 0, w, h );
+      glEnable( GL_SCISSOR_TEST );
+      glClearColor( 1.0f, 1.0f, 0.0f, 1.0f );
+      glClear( GL_COLOR_BUFFER_BIT );
+      glMatrixMode( GL_MODELVIEW );
+      float zrot = vl::fract( vl::Time::currentTime() ) * 360.0f;
+      glLoadMatrixf( vl::mat4::getRotationXYZ( 0, 0, zrot ).ptr() );
+      glMatrixMode( GL_PROJECTION );
+      glLoadIdentity();
+      glOrtho(-1, 1, -1, 1, -1, 1);
+      glDisable( GL_LIGHTING );
+      glDisable( GL_CULL_FACE );
+      glDisable( GL_DEPTH_TEST );
+
+      glBegin( GL_TRIANGLES );
+        glColor3f( 1, 0, 0 );
+        glVertex3f( -1, -1, 0 );
+        glColor3f( 0, 1, 0 );
+        glVertex3f( 0, 1, 0 );
+        glColor3f( 0, 0, 1 );
+        glVertex3f( 1, -1, 0 );
+      glEnd();
+
+      glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+      glDrawBuffer( GL_BACK );
+      glDisable( GL_SCISSOR_TEST );
+
+      // Copy texture to CUDAImage
+      niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
+      cudaStream_t mystream = cm->GetStream("VL-CUDA-TEST");
+      niftk::WriteAccessor wa = cm->RequestOutputImage(w, h, 4);
+
+      cudaError_t err = cudaSuccess;
+      cudaArray_t arr = 0;
+
+      err = cudaGraphicsMapResources(1, &m_CudaResource, mystream);
+      VIVID_CHECK(err == cudaSuccess);
+
+      err = cudaGraphicsSubResourceGetMappedArray(&arr, m_CudaResource, 0, 0);
+      VIVID_CHECK(err == cudaSuccess);
+
+      err = cudaMemcpy2DFromArrayAsync(wa.m_DevicePointer, wa.m_BytePitch, arr, 0, 0, wa.m_PixelWidth * 4, wa.m_PixelHeight, cudaMemcpyDeviceToDevice, mystream);
+      VIVID_CHECK(err == cudaSuccess);
+
+      err = cudaGraphicsUnmapResources(1, &m_CudaResource, mystream);
+      VIVID_CHECK(err == cudaSuccess);
+
+      niftk::LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
+      // cm->Autorelease(wa, mystream);
+      m_CUDAImage->SetLightweightCUDAImage(lwci);
+
+      m_DataNode->Modified();
+      m_DataNode->Update();
+    }
+
+    void renderQuad(int w, int h) {
+      glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+      glDrawBuffer( GL_BACK );
+      glViewport( 0, 0, w, h );
+      glScissor( 0, 0, w, h );
+      glEnable( GL_SCISSOR_TEST );
+      glClearColor( 1.0f, 0, 0, 1.0 );
+      glClear( GL_COLOR_BUFFER_BIT );
+      glMatrixMode( GL_MODELVIEW );
+      glLoadIdentity();
+      glMatrixMode( GL_PROJECTION );
+      glOrtho(-1.1f, 1.1f, -1.1f, 1.1f, -1.1f, 1.1f);
+      glDisable( GL_LIGHTING );
+      glDisable( GLU_CULLING );
+
+      glEnable( m_TextureTarget );
+      VL_glActiveTexture( GL_TEXTURE0 );
+      glBindTexture( m_TextureTarget, m_TextureId );
+
+      glBegin( GL_QUADS );
+        glColor3f( 1, 1, 1 );
+        glTexCoord2f( 0, 0 );
+        glVertex3f( -1, -1, 0 );
+
+        glColor3f( 1, 1, 1 );
+        glTexCoord2f( 1, 0 );
+        glVertex3f( 1, -1, 0 );
+
+        glColor3f( 1, 1, 1 );
+        glTexCoord2f( 1, 1 );
+        glVertex3f( 1, 1, 0 );
+
+        glColor3f( 1, 1, 1 );
+        glTexCoord2f( 0, 1 );
+        glVertex3f( -1, 1, 0 );
+      glEnd();
+
+      glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+      glDrawBuffer( GL_BACK );
+      glDisable( GL_TEXTURE_2D );
+      VL_glActiveTexture( GL_TEXTURE0 );
+      glBindTexture( GL_TEXTURE_2D, 0 );
+      glDisable( GL_SCISSOR_TEST );
     }
   };
 
-  //-----------------------------------------------------------------------------
-
-  struct TextureDataPOD
-  {
-    vl::ref<vl::Texture>   m_Texture;       // on the vl side
-    unsigned int           m_LastUpdatedID; // on cuda-manager side
-    cudaGraphicsResource_t m_CUDARes;       // on cuda(-driver) side
-
-    TextureDataPOD(): m_LastUpdatedID(0) , m_CUDARes(0) {
-    }
-  };
-
-// #else
-//   struct CUDAInterop { };
 #endif
-
-using namespace vl;
 
 //-----------------------------------------------------------------------------
 // VLUserData
@@ -1821,194 +1955,228 @@ protected:
 //-----------------------------------------------------------------------------
 
 #ifdef _USE_CUDA
-/*
-       WARNING:
-never compiled nor tested
 
-     _.--""--._
-    /  _    _  \
- _  ( (_\  /_) )  _
-{ \._\   /\   /_./ }
-/_"=-.}______{.-="_\
- _  _.=("""")=._  _
-(_'"_.-"`~~`"-._"'_)
- {_"            "_}
-
-
-This is just stub code, a raw attempt at reorganizing the legacy experimental CUDA code into the new VLMapper logic
-
-*/
 class VLMapperCUDAImage: public VLMapper {
 public:
   VLMapperCUDAImage( const mitk::DataNode* node, VLSceneView* sv )
     : VLMapper( node, sv ) {
-    niftk::CUDAImage* cuda_image = dynamic_cast<niftk::CUDAImage*>( node->GetData() );
-    if ( cuda_image ) {
-      m_NiftkLightweightCUDAImage = cuda_image->GetLightweightCUDAImage();
-    } else {
-      niftk::CUDAImageProperty* cuda_image_prop = dynamic_cast<niftk::CUDAImageProperty*>(m_DataNode->GetProperty("CUDAImageProperty"));
-      if  (cuda_image_prop ) {
-        m_NiftkLightweightCUDAImage = cuda_image_prop->Get();
-      }
-    }
-    VIVID_CHECK(m_NiftkLightweightCUDAImage.GetId() != 0);
+    m_CudaResource = NULL;
   }
 
   virtual void init() {
-    VIVID_CHECK( m_NiftkLightweightCUDAImage.GetId() != 0 );
+    mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
+    // initRenderModeProps( node ); /* does not apply */
+    initFogProps( node );
+    initClipProps( node );
 
-    //niftk::LightweightCUDAImage lwci;
-    //const niftk::CUDAImage* cudaImg = dynamic_cast<const niftk::CUDAImage*>(m_NiftkCUDAImage);
-    //if (cudaImg != 0)
-    //{
-    //  lwci = cudaImg->GetLightweightCUDAImage();
-    //}
-    //else
-    //{
-    //  niftk::CUDAImageProperty::Pointer prop = dynamic_cast<niftk::CUDAImageProperty*>(m_DataNode->GetProperty("CUDAImageProperty"));
-    //  if (prop.IsNotNull())
-    //  {
-    //    lwci = prop->Get();
-    //  }
-    //}
-    //VIVID_CHECK(lwci.GetId() != 0);
+    niftk::LightweightCUDAImage lwci;
+    niftk::CUDAImage* cuda_image = dynamic_cast<niftk::CUDAImage*>( m_DataNode->GetData() );
+    if ( cuda_image ) {
+      lwci = cuda_image->GetLightweightCUDAImage();
+    } else {
+      niftk::CUDAImageProperty* cuda_image_prop = dynamic_cast<niftk::CUDAImageProperty*>(m_DataNode->GetProperty("CUDAImageProperty"));
+      if  (cuda_image_prop ) {
+        lwci = cuda_image_prop->Get();
+      }
+    }
+    VIVID_CHECK(lwci.GetId() != 0);
 
-    ref<vl::Geometry> vlquad = CreateGeometryFor2DImage(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight());
+    ref<vl::Geometry> vlquad = CreateGeometryFor2DImage( lwci.GetWidth(), lwci.GetHeight() );
 
     m_Actor = initActor( vlquad.get() );
     m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
     Effect* fx = m_Actor->effect();
 
-    m_TextureDataPOD.m_Texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
     fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
     fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
     vlquad->setColorArray( vl::white );
 
-    //ref<Effect> fx = m_Actor->effect();
-    //fx->shader()->disable(vl::EN_LIGHTING);
-    //fx->shader()->gocTextureSampler(1)->setTexture(m_DefaultTexture.get());
-    //fx->shader()->gocTextureSampler(1)->setTexParameter(m_DefaultTextureParams.get());
+    m_Texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+    VIVID_CHECK( m_Texture );
+    VIVID_CHECK( m_Texture->handle() );
+    cudaError_t err = cudaSuccess;
+    err = cudaGraphicsGLRegisterImage( &m_CudaResource, m_Texture->handle(), m_Texture->dimension(), cudaGraphicsRegisterFlagsNone );
+    if ( err != cudaSuccess ) {
+      throw std::runtime_error("cudaGraphicsGLRegisterImage() failed.");
+    }
   }
 
   virtual void update() {
     updateCommon();
-    VIVID_CHECK(m_NiftkLightweightCUDAImage.GetId() != 0);
+    // updateRenderModeProps(); /* does not apply here */
+    updateFogProps( m_Actor->effect(), m_DataNode );
+    updateClipProps( m_Actor->effect(), m_DataNode );
 
-    // BEWARE:
-    // All the logic below is completely outdated especially with regard to accessing the user texture. See VLMapper2DImage for more info.
-    // PS. All the horrific code formatting is from the original code...
-    // - Michele
+    // Get the niftk::LightweightCUDAImage
 
-    // whatever we had cached from a previous frame.
-    TextureDataPOD& texpod = m_TextureDataPOD;
-
-    // only need to update the vl texture, if content in our cuda buffer has changed.
-    // and the cuda buffer can change only when we have a different id.
-    if (texpod.m_LastUpdatedID != m_NiftkLightweightCUDAImage.GetId())
-    {
-      cudaError_t   err = cudaSuccess;
-      bool          neednewvltexture = texpod.m_Texture.get() == 0;
-
-      // check if vl-texture size needs to change
-      if (texpod.m_Texture.get() != 0)
-      {
-        neednewvltexture |= m_NiftkLightweightCUDAImage.GetWidth()  != texpod.m_Texture->width();
-        neednewvltexture |= m_NiftkLightweightCUDAImage.GetHeight() != texpod.m_Texture->height();
+    niftk::LightweightCUDAImage lwci;
+    niftk::CUDAImage* cuda_image = dynamic_cast<niftk::CUDAImage*>( m_DataNode->GetData() );
+    if ( cuda_image ) {
+      lwci = cuda_image->GetLightweightCUDAImage();
+    } else {
+      niftk::CUDAImageProperty* cuda_image_prop = dynamic_cast<niftk::CUDAImageProperty*>(m_DataNode->GetProperty("CUDAImageProperty"));
+      if  (cuda_image_prop ) {
+        lwci = cuda_image_prop->Get();
       }
-
-      if (neednewvltexture)
-      {
-        if (texpod.m_CUDARes)
-        {
-          err = cudaGraphicsUnregisterResource(texpod.m_CUDARes);
-          texpod.m_CUDARes = 0;
-          if (err != cudaSuccess)
-          {
-            MITK_WARN << "Could not unregister VL texture from CUDA. This will likely leak GPU memory.";
-          }
-        }
-
-        texpod.m_Texture->createTexture2D(m_NiftkLightweightCUDAImage.GetWidth(), m_NiftkLightweightCUDAImage.GetHeight(), vl::TF_RGBA, false);
-
-        err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
-        if (err != cudaSuccess)
-        {
-          texpod.m_CUDARes = 0;
-          MITK_WARN << "Registering VL texture into CUDA failed. Will not update (properly).";
-        }
-      }
-
-      if (texpod.m_CUDARes)
-      {
-        // VIVID_CHECK(actor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
-
-        niftk::CUDAManager*  cudamng   = niftk::CUDAManager::GetInstance();
-        cudaStream_t         mystream  = cudamng->GetStream("VLSceneView vl-texture update");
-        niftk::ReadAccessor  inputRA   = cudamng->RequestReadAccess(m_NiftkLightweightCUDAImage);
-
-        // make sure producer of the cuda-image finished.
-        err = cudaStreamWaitEvent(mystream, inputRA.m_ReadyEvent, 0);
-        if (err != cudaSuccess)
-        {
-          // flood the log
-          MITK_WARN << "cudaStreamWaitEvent failed with error code " << err;
-        }
-
-        // this also guarantees that ogl will have finished doing its thing before mystream starts copying.
-        err = cudaGraphicsMapResources(1, &texpod.m_CUDARes, mystream);
-        if (err == cudaSuccess)
-        {
-          // normally we would need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
-          // but texture coordinates that we have assigned to the quads rendering the current image will do that for us.
-
-          cudaArray_t   arr = 0;
-          err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
-          if (err == cudaSuccess)
-          {
-            err = cudaMemcpy2DToArrayAsync(arr, 0, 0, inputRA.m_DevicePointer, inputRA.m_BytePitch, m_NiftkLightweightCUDAImage.GetWidth() * 4, m_NiftkLightweightCUDAImage.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
-            if (err == cudaSuccess)
-            {
-              texpod.m_LastUpdatedID = m_NiftkLightweightCUDAImage.GetId();
-            }
-          }
-
-          err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
-          if (err != cudaSuccess)
-          {
-            MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
-          }
-        }
-        // make sure Autorelease() and Finalise() are always the last things to do for a stream!
-        // otherwise the streamcallback will block subsequent work.
-        // in this case here, the callback managed by CUDAManager that keeps track of refcounts could stall
-        // the opengl driver if cudaGraphicsUnmapResources() came after Autorelease().
-        cudamng->Autorelease(inputRA, mystream);
-      }
-
-      // update cache, even if something went wrong.
-      // m_TextureDataPOD = texpod;
-
-      // helps with debugging
-      // actor->effect()->shader()->disable(vl::EN_CULL_FACE);
     }
+    VIVID_CHECK(lwci.GetId() != 0);
+
+    cudaError_t err = cudaSuccess;
+
+    // Update texture size and cuda graphics resource
+
+    if ( m_Texture->width() != lwci.GetWidth() || m_Texture->height() != lwci.GetHeight() ) {
+      cudaGraphicsUnregisterResource(m_CudaResource);
+      m_CudaResource = NULL;
+      m_Texture->createTexture2D( lwci.GetWidth(), lwci.GetHeight(), TF_RGBA, false );
+      err = cudaGraphicsGLRegisterImage( &m_CudaResource, m_Texture->handle(), m_Texture->dimension(), cudaGraphicsRegisterFlagsNone );
+      if ( err != cudaSuccess ) {
+        throw std::runtime_error("cudaGraphicsGLRegisterImage() failed.");
+      }
+    }
+
+    {
+      niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
+      cudaStream_t mystream = cm->GetStream("VL-CUDA-TEST");
+      niftk::ReadAccessor ra = cm->RequestReadAccess(lwci);
+
+      // make sure producer of the cuda-image finished.
+      err = cudaStreamWaitEvent(mystream, ra.m_ReadyEvent, 0);
+      VIVID_CHECK(err == cudaSuccess);
+
+      err = cudaGraphicsMapResources(1, &m_CudaResource, mystream);
+      VIVID_CHECK(err == cudaSuccess);
+
+      cudaArray_t arr = 0;
+      err = cudaGraphicsSubResourceGetMappedArray(&arr, m_CudaResource, 0, 0);
+      VIVID_CHECK(err == cudaSuccess);
+
+      err = cudaMemcpy2DToArrayAsync(arr, 0, 0, ra.m_DevicePointer, ra.m_BytePitch, lwci.GetWidth() * 4, lwci.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
+
+      err = cudaGraphicsUnmapResources(1, &m_CudaResource, mystream);
+      VIVID_CHECK(err == cudaSuccess);
+
+      cm->Autorelease(ra, mystream);
+    }
+
+    return;
+
+    //// --------------------------------------------------------------------------------------------
+
+    //// BEWARE:
+    //// All the logic below is completely outdated especially with regard to accessing the user texture. See VLMapper2DImage for more info.
+    //// PS. All the horrific code formatting is from the original code...
+    //// - Michele
+
+    //// whatever we had cached from a previous frame.
+    //TextureDataPOD& texpod = m_TextureDataPOD;
+
+    //// only need to update the vl texture, if content in our cuda buffer has changed.
+    //// and the cuda buffer can change only when we have a different id.
+    //if (texpod.m_LastUpdatedID != lwci.GetId())
+    //{
+    //  cudaError_t   err = cudaSuccess;
+    //  bool          neednewvltexture = texpod.m_Texture.get() == 0;
+
+    //  // check if vl-texture size needs to change
+    //  if (texpod.m_Texture.get() != 0)
+    //  {
+    //    neednewvltexture |= lwci.GetWidth()  != texpod.m_Texture->width();
+    //    neednewvltexture |= lwci.GetHeight() != texpod.m_Texture->height();
+    //  }
+
+    //  if (neednewvltexture)
+    //  {
+    //    if (texpod.m_CUDARes)
+    //    {
+    //      err = cudaGraphicsUnregisterResource(texpod.m_CUDARes);
+    //      texpod.m_CUDARes = 0;
+    //      if (err != cudaSuccess)
+    //      {
+    //        MITK_WARN << "Could not unregister VL texture from CUDA. This will likely leak GPU memory.";
+    //      }
+    //    }
+
+    //    texpod.m_Texture->createTexture2D(lwci.GetWidth(), lwci.GetHeight(), vl::TF_RGBA, false);
+
+    //    err = cudaGraphicsGLRegisterImage(&texpod.m_CUDARes, texpod.m_Texture->handle(), GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard);
+    //    if (err != cudaSuccess)
+    //    {
+    //      texpod.m_CUDARes = 0;
+    //      MITK_WARN << "Registering VL texture into CUDA failed. Will not update (properly).";
+    //    }
+    //  }
+
+    //  if (texpod.m_CUDARes)
+    //  {
+    //    // VIVID_CHECK(actor->effect()->shader()->getTextureSampler(0)->texture() == texpod.m_Texture);
+
+    //    niftk::CUDAManager*  cm   = niftk::CUDAManager::GetInstance();
+    //    cudaStream_t         mystream  = cm->GetStream("VL-CUDA-TEST");
+    //    niftk::ReadAccessor  ra   = cm->RequestReadAccess(lwci);
+
+    //    // make sure producer of the cuda-image finished.
+    //    err = cudaStreamWaitEvent(mystream, ra.m_ReadyEvent, 0);
+    //    if (err != cudaSuccess)
+    //    {
+    //      // flood the log
+    //      MITK_WARN << "cudaStreamWaitEvent failed with error code " << err;
+    //    }
+
+    //    // this also guarantees that ogl will have finished doing its thing before mystream starts copying.
+    //    err = cudaGraphicsMapResources(1, &texpod.m_CUDARes, mystream);
+    //    if (err == cudaSuccess)
+    //    {
+    //      // normally we would need to flip image! ogl is left-bottom, whereas everywhere else is left-top origin.
+    //      // but texture coordinates that we have assigned to the quads rendering the current image will do that for us.
+
+    //      cudaArray_t   arr = 0;
+    //      err = cudaGraphicsSubResourceGetMappedArray(&arr, texpod.m_CUDARes, 0, 0);
+    //      if (err == cudaSuccess)
+    //      {
+    //        err = cudaMemcpy2DToArrayAsync(arr, 0, 0, ra.m_DevicePointer, ra.m_BytePitch, lwci.GetWidth() * 4, lwci.GetHeight(), cudaMemcpyDeviceToDevice, mystream);
+    //        if (err == cudaSuccess)
+    //        {
+    //          texpod.m_LastUpdatedID = lwci.GetId();
+    //        }
+    //      }
+
+    //      err = cudaGraphicsUnmapResources(1, &texpod.m_CUDARes, mystream);
+    //      if (err != cudaSuccess)
+    //      {
+    //        MITK_WARN << "Cannot unmap VL texture from CUDA. This will probably kill the renderer. Error code: " << err;
+    //      }
+    //    }
+    //    // make sure Autorelease() and Finalise() are always the last things to do for a stream!
+    //    // otherwise the streamcallback will block subsequent work.
+    //    // in this case here, the callback managed by CUDAManager that keeps track of refcounts could stall
+    //    // the opengl driver if cudaGraphicsUnmapResources() came after Autorelease().
+    //    cm->Autorelease(ra, mystream);
+    //  }
+
+    //  // update cache, even if something went wrong.
+    //  // m_TextureDataPOD = texpod;
+
+    //  // helps with debugging
+    //  // actor->effect()->shader()->disable(vl::EN_CULL_FACE);
+    //}
   }
 
   virtual void remove() {
-    if ( m_TextureDataPOD.m_CUDARes ) {
-      cudaError_t err = cudaGraphicsUnregisterResource( m_TextureDataPOD.m_CUDARes );
-      if (err != cudaSuccess)
-      {
-        MITK_WARN << "Failed to unregister VL texture from CUDA";
+    if ( m_CudaResource ) {
+      cudaError_t err = cudaGraphicsUnregisterResource( m_CudaResource );
+      if (err != cudaSuccess) {
+        MITK_WARN << "cudaGraphicsUnregisterResource() failed.";
       }
-      m_TextureDataPOD.m_CUDARes = 0;
+      m_CudaResource = NULL;
     }
 
     VLMapper::remove();
   }
 
 protected:
-  niftk::LightweightCUDAImage m_NiftkLightweightCUDAImage;
-  TextureDataPOD m_TextureDataPOD; // m_NodeToTextureMap
+    cudaGraphicsResource_t m_CudaResource;
+    ref<Texture> m_Texture;
 };
 
 #endif
@@ -2064,7 +2232,7 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
 #endif
 #ifdef _USE_CUDA
   else
-  if ( mitk_pcld ) {
+  if ( cuda_img ) {
     vl_node = new VLMapperCUDAImage( node, sv );
   }
 #endif
@@ -2081,10 +2249,17 @@ VLSceneView::VLSceneView() :
   , m_ScheduleTrackballAdjustView( true )
   , m_ScheduleInitScene ( true )
   , m_OclService( 0 )
-#ifdef _USE_CUDA
-  , m_CUDAInteropPimpl(0)
-#endif
 {
+#ifdef _USE_CUDA
+  m_CudaTest = new CudaTest;
+#endif
+}
+
+VLSceneView::~VLSceneView() {
+#ifdef _USE_CUDA
+  delete m_CudaTest;
+  m_CudaTest = NULL;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2096,10 +2271,6 @@ VLSceneView::VLSceneView() :
   removeDataStorageListeners();
 
   clearScene();
-
-#ifdef _USE_CUDA
-  FreeCUDAInteropTextures();
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2135,10 +2306,6 @@ void VLSceneView::setDataStorage(const mitk::DataStorage::Pointer& ds)
   openglContext()->makeCurrent();
 
   removeDataStorageListeners();
-
-#ifdef _USE_CUDA
-  FreeCUDAInteropTextures();
-#endif
 
   m_DataStorage = ds;
   addDataStorageListeners();
@@ -2305,6 +2472,10 @@ void VLSceneView::removeDataNode(const mitk::DataNode* node)
 {
   openglContext()->makeCurrent();
 
+  if ( node == m_BackgroundNode ) {
+    setBackgroundNode( NULL );
+  }
+
   // dont leave a dangling update behind.
   m_NodesToUpdate.erase(node);
   m_NodesToAdd.erase(node);
@@ -2368,13 +2539,6 @@ void VLSceneView::initEvent()
 {
   VIVID_CHECK( contextIsCurrent() );
 
-  // vl::OpenGLContext::initGLContext();
-
-  // Interface VL with Qt's resource system to load GLSL shaders.
-  vl::defFileSystem()->directories().clear();
-  vl::defFileSystem()->directories().push_back( new vl::QtDirectory( ":/VL/" ) );
-
-
 #if 0
   // Mic: this seems to be failing for me.
   // use the device that is running our opengl context as the compute-device
@@ -2391,6 +2555,10 @@ void VLSceneView::initEvent()
 #ifdef _MSC_VER
   // NvAPI_OGL_ExpertModeSet(NVAPI_OGLEXPERT_DETAIL_ALL, NVAPI_OGLEXPERT_DETAIL_BASIC_INFO, NVAPI_OGLEXPERT_OUTPUT_TO_ALL, 0);
 #endif
+
+  // Interface VL with Qt's resource system to load GLSL shaders.
+  vl::defFileSystem()->directories().clear();
+  vl::defFileSystem()->directories().push_back( new vl::QtDirectory( ":/VL/" ) );
 
   // Create our VividRendering!
   m_VividRendering = new vl::VividRendering;
@@ -2416,25 +2584,34 @@ void VLSceneView::initEvent()
   // Schedule reset of the camera based on the scene content
   scheduleTrackballAdjustView();
 
-  // This is only used by the CUDA stuff
-  createAndUpdateFBOSizes( openglContext()->width(), openglContext()->height() );
-
-#if 1
-  // Point cloud data test
-  mitk::DataNode::Pointer n = mitk::DataNode::New();
-  niftk::PCLData::Pointer p = niftk::PCLData::New();
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr  c(new pcl::PointCloud<pcl::PointXYZRGB>);
-  for (int i = 0; i < 10000; ++i) {
-    pcl::PointXYZRGB  q(std::rand() % 256, std::rand() % 256, std::rand() % 256);
-    q.x = std::rand() % 256;
-    q.y = std::rand() % 256;
-    q.z = std::rand() % 256;
-    c->push_back(q);
+#ifdef VL_CUDA_TEST // CUDA test
+  {
+    mitk::DataNode::Pointer node = m_CudaTest->init( 100, 100 );
+    m_DataStorage->Add(node);
   }
-  p->SetCloud(c);
-  n->SetData(p);
+#endif
 
-  m_DataStorage->Add(n);
+#if 0 // PCL test
+  {
+    // Point cloud data test
+    mitk::DataNode::Pointer node = mitk::DataNode::New();
+    niftk::PCLData::Pointer pcl = niftk::PCLData::New();
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr  c(new pcl::PointCloud<pcl::PointXYZRGB>);
+    for (int i = 0; i < 10000; ++i) {
+      pcl::PointXYZRGB  q(std::rand() % 256, std::rand() % 256, std::rand() % 256);
+      q.x = std::rand() % 256;
+      q.y = std::rand() % 256;
+      q.z = std::rand() % 256;
+      c->push_back(q);
+    }
+    pcl->SetCloud(c);
+    node->SetData(pcl);
+
+    node->SetName("PCL Test");
+    node->SetVisibility(true);
+
+    m_DataStorage->Add(node);
+  }
 #endif
 }
 
@@ -2453,7 +2630,8 @@ void VLSceneView::resizeEvent( int w, int h )
   m_VividRendering->camera()->viewport()->set( 0, 0, w, h );
   m_VividRendering->camera()->setProjectionPerspective();
 
-  createAndUpdateFBOSizes( w, h );
+  // obsolete
+  // createAndUpdateFBOSizes( w, h );
 
   // MIC FIXME: update calibrated camera setup
   updateViewportAndCameraAfterResize();
@@ -2469,78 +2647,6 @@ void VLSceneView::updateEvent()
 }
 
 //-----------------------------------------------------------------------------
-
-void VLSceneView::createAndUpdateFBOSizes( int width, int height )
-{
-  openglContext()->makeCurrent();
-
-#ifdef _USE_CUDA
-  // sanitise dimensions. depending on how windows are resized we can get zero here.
-  // but that breaks on the ogl side.
-  width  = std::max(1, width);
-  height = std::max(1, height);
-
-  ref<vl::FramebufferObject> opaqueFBO = openglContext()->createFramebufferObject(width, height);
-  opaqueFBO->setObjectName("opaqueFBO");
-  opaqueFBO->addDepthAttachment(new vl::FBODepthBufferAttachment(vl::DBF_DEPTH_COMPONENT24));
-  opaqueFBO->addColorAttachment(vl::AP_COLOR_ATTACHMENT0, new vl::FBOColorBufferAttachment(vl::CBF_RGBA));   // this is a renderbuffer
-  opaqueFBO->setDrawBuffer(vl::RDB_COLOR_ATTACHMENT0);
-
-  if (m_CUDAInteropPimpl)
-  {
-    delete m_CUDAInteropPimpl->m_FBOAdaptor;
-    m_CUDAInteropPimpl->m_FBOAdaptor = new VLFramebufferAdaptor(opaqueFBO.get());
-  }
-#endif
-}
-
-//-----------------------------------------------------------------------------
-
-void VLSceneView::updateViewportAndCameraAfterResize()
-{
-  // some sane defaults
-  // m_Camera->viewport()->set( 0, 0, QWidget::width(), QWidget::height() );
-  // m_BackgroundCamera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
-
-  if ( m_BackgroundNode.IsNotNull() )
-  {
-    //NodeActorMapType::iterator ni = m_NodeActorMap.find(m_BackgroundNode);
-    //if (ni == m_NodeActorMap.end())
-    //{
-    //  // actor not ready yet, try again later.
-    //  // this is getting messy... but stuffing our widget here into an editor causes various methods
-    //  // to be called at the wrong time.
-    //  QMetaObject::invokeMethod(this, "updateViewportAndCameraAfterResize", Qt::QueuedConnection);
-    //}
-    //else
-    //{
-      // ref<vl::Actor> backgroundactor = ni->second;
-
-      // this is based on my old araknes video-ar app.
-      // FIXME: aspect ratio?
-      float   width_scale  = (float) openglContext()->width()  / (float) m_BackgroundSize.x();
-      float   height_scale = (float) openglContext()->height() / (float) m_BackgroundSize.y();
-      int     vpw = openglContext()->width();
-      int     vph = openglContext()->height();
-      if (width_scale < height_scale)
-        vph = (int) ((float) m_BackgroundSize.y() * width_scale);
-      else
-        vpw = (int) ((float) m_BackgroundSize.x() * height_scale);
-
-      int   vpx = openglContext()->width()  / 2 - vpw / 2;
-      int   vpy = openglContext()->height() / 2 - vph / 2;
-
-      // m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
-      // the main-scene-camera should conform to this viewport too!
-      // otherwise geometry would never line up with the background (for overlays, etc).
-      m_Camera->viewport()->set(vpx, vpy, vpw, vph);
-    //}
-  }
-  // this default perspective depends on the viewport!
-  m_Camera->setProjectionPerspective();
-
-  updateCameraParameters();
-}
 
 void VLSceneView::updateScene() {
   // Make sure the system is initialized
@@ -2600,11 +2706,13 @@ void VLSceneView::renderScene()
   // Execute rendering
   m_VividRendering->render( openglContext()->framebuffer() );
 
+
+#ifdef VL_CUDA_TEST // Cuda test
+  m_CudaTest->renderTriangle( 100, 100 );
+#endif
+
   // Show rendering
   if ( openglContext()->hasDoubleBuffer() ) {
-#ifdef _USE_CUDA
-    cudaSwapBuffers();
-#endif
     openglContext()->swapBuffers();
   }
 
@@ -2615,20 +2723,20 @@ void VLSceneView::renderScene()
 
 void VLSceneView::clearScene()
 {
+  if ( ! m_VividRendering ) {
+    return;
+  }
+
   openglContext()->makeCurrent();
 
-  if ( m_SceneManager )
-  {
-    if ( m_SceneManager->tree() ) {
-      m_SceneManager->tree()->actors()->clear();
-      m_SceneManager->tree()->eraseAllChildren();
-      m_VividRendering->stencilActors().clear();
-      // These depend on the global settings
-      // m_VividRendering->setBackgroundImageEnabled(false);
-      // m_VividRendering->setStencilEnabled(false);
-      // m_VividRendering->setStencilBackground(vl::black);
-    }
+  // Shut down VLMappers
+  for ( DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.begin(); it != m_DataNodeVLMapperMap.end(); ++it ) {
+    it->second->remove();
   }
+
+  m_VividRendering->stencilActors().clear();
+  m_SceneManager->tree()->actors()->clear();
+  m_SceneManager->tree()->eraseAllChildren();
 
   m_CameraNode = 0;
   m_BackgroundNode = 0;
@@ -2636,6 +2744,94 @@ void VLSceneView::clearScene()
   m_NodesToUpdate.clear();
   m_NodesToAdd.clear();
   m_NodesToRemove.clear();
+}
+
+//-----------------------------------------------------------------------------
+
+bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
+{
+  m_BackgroundNode = node;
+
+  if ( ! node ) {
+    m_VividRendering->setBackgroundImageEnabled( false );
+    return true;
+  }
+
+  // Wire up background texture
+  VLMapper2DImage* img2d_mapper = dynamic_cast<VLMapper2DImage*>( getVLMapper( node ) );
+  VLMapperCUDAImage* imgCu_mapper = dynamic_cast<VLMapperCUDAImage*>( getVLMapper( node ) );
+  vl::Texture* tex = NULL;
+  if ( img2d_mapper ) {
+    tex = img2d_mapper->actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+  } else
+  if ( imgCu_mapper ) {
+    tex = imgCu_mapper->actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+  } else {
+    return false;
+  }
+  m_VividRendering->backgroundTexSampler()->setTexture( tex );
+
+  // Hide 3D plane with 2D image on it
+  setBoolProp( const_cast<mitk::DataNode*>(node), "visible", false );
+
+  // Enable background rendering
+  m_VividRendering->setBackgroundImageEnabled( true );
+
+  openglContext()->update();
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+
+/*
+                            no man's land starts here
+*/
+
+void VLSceneView::updateViewportAndCameraAfterResize()
+{
+  // some sane defaults
+  // m_Camera->viewport()->set( 0, 0, QWidget::width(), QWidget::height() );
+  // m_BackgroundCamera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
+
+  if ( m_BackgroundNode.IsNotNull() )
+  {
+    //NodeActorMapType::iterator ni = m_NodeActorMap.find(m_BackgroundNode);
+    //if (ni == m_NodeActorMap.end())
+    //{
+    //  // actor not ready yet, try again later.
+    //  // this is getting messy... but stuffing our widget here into an editor causes various methods
+    //  // to be called at the wrong time.
+    //  QMetaObject::invokeMethod(this, "updateViewportAndCameraAfterResize", Qt::QueuedConnection);
+    //}
+    //else
+    //{
+      // ref<vl::Actor> backgroundactor = ni->second;
+
+      // this is based on my old araknes video-ar app.
+      // FIXME: aspect ratio?
+      float   width_scale  = (float) openglContext()->width()  / (float) m_BackgroundSize.x();
+      float   height_scale = (float) openglContext()->height() / (float) m_BackgroundSize.y();
+      int     vpw = openglContext()->width();
+      int     vph = openglContext()->height();
+      if (width_scale < height_scale)
+        vph = (int) ((float) m_BackgroundSize.y() * width_scale);
+      else
+        vpw = (int) ((float) m_BackgroundSize.x() * height_scale);
+
+      int   vpx = openglContext()->width()  / 2 - vpw / 2;
+      int   vpy = openglContext()->height() / 2 - vph / 2;
+
+      // m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
+      // the main-scene-camera should conform to this viewport too!
+      // otherwise geometry would never line up with the background (for overlays, etc).
+      m_Camera->viewport()->set(vpx, vpy, vpw, vph);
+    //}
+  }
+  // this default perspective depends on the viewport!
+  m_Camera->setProjectionPerspective();
+
+  updateCameraParameters();
 }
 
 //-----------------------------------------------------------------------------
@@ -2725,346 +2921,3 @@ void VLSceneView::updateCameraParameters()
     }
   }
 }
-
-//-----------------------------------------------------------------------------
-
-// MIC FIXME: remove this
-void VLSceneView::prepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
-{
-  /*
-  openglContext()->makeCurrent();
-
-  // nasty
-  mitk::Image::Pointer imgp(const_cast<mitk::Image*>(img));
-  ref<vl::Actor> actor = Add2DImageActor(imgp);
-
-
-  // essentially copied from vl::makeGrid()
-  ref<vl::Geometry>         vlquad = new vl::Geometry;
-
-  ref<vl::ArrayFloat3> vert3 = new vl::ArrayFloat3;
-  vert3->resize(4);
-  vlquad->setVertexArray(vert3.get());
-
-  ref<vl::ArrayFloat2> text2 = new vl::ArrayFloat2;
-  text2->resize(4);
-  vlquad->setTexCoordArray(0, text2.get());
-
-  //  0---3
-  //  |   |
-  //  1---2
-  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
-  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
-  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
-  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
-
-
-  ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
-  polys->indexBuffer()->resize(4);
-  polys->indexBuffer()->at(0) = 0;
-  polys->indexBuffer()->at(1) = 1;
-  polys->indexBuffer()->at(2) = 2;
-  polys->indexBuffer()->at(3) = 3;
-  vlquad->drawCalls().push_back(polys.get());
-
-  // replace original quad with ours.
-  actor->setLod(0, vlquad.get());
-  actor->effect()->shader()->disable(vl::EN_LIGHTING);
-
-  std::string   objName = actor->objectName() + "_background";
-  actor->setObjectName(objName.c_str());
-
-  m_NodeActorMap[node] = actor;
-  */
-}
-
-//-----------------------------------------------------------------------------
-
-bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
-{
-  m_BackgroundNode = node;
-
-  if ( ! node ) {
-    m_VividRendering->setBackgroundImageEnabled( false );
-    return true;
-  }
-
-  // Use VLMapper2DImage's texture as background texture
-  VLMapper2DImage* img_mapper = dynamic_cast<VLMapper2DImage*>( getVLMapper( node ) );
-  if ( ! img_mapper ) {
-    return false;
-  }
-  vl::Texture* tex = img_mapper->actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
-  m_VividRendering->backgroundTexSampler()->setTexture( tex );
-
-  // Hide 3D plane with 2D image on it
-  setBoolProp( const_cast<mitk::DataNode*>(node), "visible", false );
-
-  // Enable background rendering
-  m_VividRendering->setBackgroundImageEnabled( true );
-
-  openglContext()->update();
-
-  return true;
-
-/* obsolete
-
-  // ----
-
-  // clear up after previous background node.
-  if (m_BackgroundNode.IsNotNull())
-  {
-    const mitk::DataNode::ConstPointer    oldbackgroundnode = m_BackgroundNode;
-    m_BackgroundNode = 0;
-    removeDataNode(oldbackgroundnode);
-    // add back as normal node.
-    addDataNode(oldbackgroundnode);
-  }
-
-  bool    result = false;
-  mitk::BaseData::Pointer   basedata;
-  if ( node )
-    basedata = node->GetData();
-  if (basedata.IsNotNull())
-  {
-    // clear up whatever we had cached for the new background node.
-    // it's very likely that it was a normal node before.
-    removeDataNode(node);
-
-    mitk::Image::Pointer imgdata = dynamic_cast<mitk::Image*>(basedata.GetPointer());
-    if (imgdata.IsNotNull())
-    {
-#ifdef _USE_CUDA
-      niftk::CUDAImageProperty::Pointer    cudaimgprop = dynamic_cast<niftk::CUDAImageProperty*>(imgdata->GetProperty("CUDAImageProperty").GetPointer());
-      if (cudaimgprop.IsNotNull())
-      {
-        niftk::LightweightCUDAImage    lwci = cudaimgprop->Get();
-
-        // does the size of cuda-image have to match the mitk-image where it's attached to?
-        // i think it does: it is supposed to be the same data living in cuda.
-        VIVID_CHECK(lwci.GetWidth()  == imgdata->GetDimension(0));
-        VIVID_CHECK(lwci.GetHeight() == imgdata->GetDimension(1));
-
-        prepareBackgroundActor(&lwci, imgdata->GetGeometry(), node);
-        result = true;
-      }
-      else
-#endif
-      {
-        prepareBackgroundActor(imgdata.GetPointer(), imgdata->GetGeometry(), node);
-        result = true;
-      }
-
-      m_BackgroundSize.x() = imgdata->GetDimension(0);
-      m_BackgroundSize.y() = imgdata->GetDimension(1);
-    }
-    else
-    {
-#ifdef _USE_CUDA
-      niftk::CUDAImage::Pointer cudaimgdata = dynamic_cast<niftk::CUDAImage*>(basedata.GetPointer());
-      if (cudaimgdata.IsNotNull())
-      {
-        niftk::LightweightCUDAImage    lwci = cudaimgdata->GetLightweightCUDAImage();
-        prepareBackgroundActor(&lwci, cudaimgdata->GetGeometry(), node);
-        result = true;
-
-        m_BackgroundSize.x() = lwci.GetWidth();
-        m_BackgroundSize.y() = lwci.GetHeight();
-      }
-      // no else here
-#endif
-    }
-
-    // updateDataNode() depends on m_BackgroundNode.
-    m_BackgroundNode = node;
-    updateDataNode(node);
-  }
-
-  updateViewportAndCameraAfterResize();
-
-  // now that the camera may have changed, fit-view-to-scene again.
-  //if (m_CameraNode.IsNull())
-  //{
-  //  m_Trackball->setEnabled( true );
-  //  m_Trackball->adjustView(m_SceneManager.get(), vl::vec3(0, 0, 1), vl::vec3(0, 1, 0), 1.0f);
-  //}
-
-  return result;
-  */
-
-  return true;
-}
-
-//-----------------------------------------------------------------------------
-
-#ifdef _USE_CUDA
-void VLSceneView::cudaSwapBuffers()
-{
-  if (m_CUDAInteropPimpl)
-  {
-    cudaError_t          err         = cudaSuccess;
-    niftk::CUDAManager*  cudamanager = niftk::CUDAManager::GetInstance();
-    cudaStream_t         mystream    = cudamanager->GetStream(m_CUDAInteropPimpl->m_NodeName);
-    niftk::WriteAccessor outputWA    = cudamanager->RequestOutputImage(QWidget::width(), QWidget::height(), 4);
-    cudaArray_t          fboarr      = m_CUDAInteropPimpl->m_FBOAdaptor->Map(mystream);
-
-    // side note: cuda-arrays are always measured in bytes, never in pixels.
-    err = cudaMemcpy2DFromArrayAsync(outputWA.m_DevicePointer, outputWA.m_BytePitch, fboarr, 0, 0, outputWA.m_PixelWidth * 4, outputWA.m_PixelHeight, cudaMemcpyDeviceToDevice, mystream);
-    // not sure what to do if it fails. do not throw an exception, that's for sure.
-    if (err != cudaSuccess)
-    {
-      VIVID_CHECK(false);
-    }
-
-    // the opengl-interop side is done, renderer can continue from now on.
-    m_CUDAInteropPimpl->m_FBOAdaptor->Unmap(mystream);
-
-    // need to flip the image! ogl is left-bottom, but everywhere else is left-top origin!
-    niftk::WriteAccessor  flippedWA   = cudamanager->RequestOutputImage(outputWA.m_PixelWidth, outputWA.m_PixelHeight, 4);
-    // FIXME: instead of explicitly flipping we could bind the fboarr to a texture, and do a single write out.
-    niftk::FlipImageLauncher(outputWA, flippedWA, mystream);
-
-    niftk::LightweightCUDAImage lwciFlipped = cudamanager->Finalise(flippedWA, mystream);
-    // Finalise() needs to come before Autorelease(), for performance reasons.
-    cudamanager->Autorelease(outputWA, mystream);
-
-    bool    isNewNode = false;
-    mitk::DataNode::Pointer node = m_CUDAInteropPimpl->m_DataStorage->GetNamedNode(m_CUDAInteropPimpl->m_NodeName);
-    if (node.IsNull())
-    {
-      isNewNode = true;
-      node = mitk::DataNode::New();
-      node->SetName(m_CUDAInteropPimpl->m_NodeName);
-      node->SetVisibility(false);
-      //node->SetBoolProperty("helper object", true);
-    }
-    niftk::CUDAImage::Pointer  img = dynamic_cast<niftk::CUDAImage*>(node->GetData());
-    if (img.IsNull())
-      img = niftk::CUDAImage::New();
-    img->SetLightweightCUDAImage(lwciFlipped);
-    node->SetData(img);
-    if (isNewNode)
-      m_CUDAInteropPimpl->m_DataStorage->Add(node);
-    else
-      node->Modified();
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-void VLSceneView::FreeCUDAInteropTextures()
-{
-  openglContext()->makeCurrent();
-
-  for (std::map<mitk::DataNode::ConstPointer, TextureDataPOD>::iterator i = m_NodeToTextureMap.begin(); i != m_NodeToTextureMap.end(); )
-  {
-    if (i->second.m_CUDARes != 0)
-    {
-      cudaError_t err = cudaGraphicsUnregisterResource(i->second.m_CUDARes);
-      if (err != cudaSuccess)
-      {
-        MITK_WARN << "Failed to unregister VL texture from CUDA";
-      }
-    }
-
-    i = m_NodeToTextureMap.erase(i);
-  }
-
-  // if no cuda is available then this is most likely a nullptr.
-  // and if not a nullptr then it's only a dummy. so unconditionally delete it.
-  delete m_CUDAInteropPimpl;
-  m_CUDAInteropPimpl = 0;
-
-}
-
-//-----------------------------------------------------------------------------
-
-void VLSceneView::EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage, const std::string& nodename)
-{
-  openglContext()->makeCurrent();
-
-  if (enable)
-  {
-    if (datastorage == 0)
-      throw std::runtime_error("Need data storage object");
-
-    delete m_CUDAInteropPimpl;
-    m_CUDAInteropPimpl = new CUDAInterop;
-    m_CUDAInteropPimpl->m_FBOAdaptor = 0;
-    m_CUDAInteropPimpl->m_DataStorage = datastorage;
-    m_CUDAInteropPimpl->m_NodeName = nodename;
-    if (m_CUDAInteropPimpl->m_NodeName.empty())
-    {
-      std::ostringstream    n;
-      n << "0x" << std::hex << (void*) this;
-      m_CUDAInteropPimpl->m_NodeName = n.str();
-    }
-  }
-  else
-  {
-    delete m_CUDAInteropPimpl;
-    m_CUDAInteropPimpl = 0;
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-void VLSceneView::prepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node)
-{
-  openglContext()->makeCurrent();
-
-  VIVID_CHECK(lwci != 0);
-
-  vl::mat4  mat;
-  mat = mat.setIdentity();
-  ref<vl::Transform> tr     = new vl::Transform();
-  tr->setLocalMatrix(mat);
-
-
-  // essentially copied from vl::makeGrid()
-  ref<vl::Geometry>         vlquad = new vl::Geometry;
-
-  ref<vl::ArrayFloat3> vert3 = new vl::ArrayFloat3;
-  vert3->resize(4);
-  vlquad->setVertexArray(vert3.get());
-
-  ref<vl::ArrayFloat2> text2 = new vl::ArrayFloat2;
-  text2->resize(4);
-  vlquad->setTexCoordArray(0, text2.get());
-
-  //  0---3
-  //  |   |
-  //  1---2
-  vert3->at(0).x() = -1; vert3->at(0).y() =  1; vert3->at(0).z() = 0;  text2->at(0).s() = 0; text2->at(0).t() = 0;
-  vert3->at(1).x() = -1; vert3->at(1).y() = -1; vert3->at(1).z() = 0;  text2->at(1).s() = 0; text2->at(1).t() = 1;
-  vert3->at(2).x() =  1; vert3->at(2).y() = -1; vert3->at(2).z() = 0;  text2->at(2).s() = 1; text2->at(2).t() = 1;
-  vert3->at(3).x() =  1; vert3->at(3).y() =  1; vert3->at(3).z() = 0;  text2->at(3).s() = 1; text2->at(3).t() = 0;
-
-
-  ref<vl::DrawElementsUInt> polys = new vl::DrawElementsUInt(vl::PT_QUADS);
-  polys->indexBuffer()->resize(4);
-  polys->indexBuffer()->at(0) = 0;
-  polys->indexBuffer()->at(1) = 1;
-  polys->indexBuffer()->at(2) = 2;
-  polys->indexBuffer()->at(3) = 3;
-  vlquad->drawCalls().push_back(polys.get());
-
-
-  ref<vl::Effect>    fx = new vl::Effect;
-  fx->shader()->disable(vl::EN_LIGHTING);
-  // updateDataNode() takes care of assigning colour etc.
-
-  ref<vl::Actor> actor = m_VividRendering->sceneManager()->tree()->addActor(vlquad.get(), fx.get(), tr.get());
-  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
-
-
-  std::string   objName = actor->objectName() + "_background";
-  actor->setObjectName(objName.c_str());
-
-  m_NodeActorMap[node] = actor;
-  m_NodeToTextureMap[node] = TextureDataPOD();
-}
-
-//-----------------------------------------------------------------------------
-
-#endif
