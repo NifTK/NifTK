@@ -13,21 +13,11 @@
 =============================================================================*/
 
 #if 1
-  // MS VS
-  #if defined(_MSC_VER)
-    #define VIVID_TRAP() { if (IsDebuggerPresent()) { __debugbreak(); } else ::vl::abort_vl(); }
-  // GNU GCC
-  #elif defined(__GNUG__) || defined(__MINGW32__)
-    #define VIVID_TRAP() { fflush(stdout); fflush(stderr); asm("int $0x3"); }
-  #else
-    #define VIVID_TRAP() { ::vl::abort_vl(); }
-  #endif
-  #define VIVID_CHECK(expr) { if(!(expr)) { ::vl::log_failed_check(#expr,__FILE__,__LINE__); VIVID_TRAP() } }
-  #define VIVID_WARN(expr)  { if(!(expr)) { ::vl::log_failed_check(#expr,__FILE__,__LINE__); } }
+  #define VIVID_CHECK(expr) { if ( ! ( expr ) ) { ::vl::log_failed_check( #expr, __FILE__, __LINE__ ); throw std::runtime_error( #expr ); } }
+  #define VIVID_WARN(expr)  { if ( ! ( expr ) ) { ::vl::log_failed_check( #expr, __FILE__, __LINE__ ); } }
 #else
   #define VIVID_CHECK(expr) { (expr) }
   #define VIVID_WARN(expr) { (expr) }
-  #define VIVID_TRAP() {}
 #endif
 
 #include <QTextStream>
