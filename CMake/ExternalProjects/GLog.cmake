@@ -50,8 +50,8 @@ if(NOT DEFINED GLog_DIR)
     INSTALL_DIR ${proj_INSTALL}
     URL ${proj_LOCATION}
     URL_MD5 ${proj_CHECKSUM}
-    CONFIGURE_COMMAND "${proj_SOURCE}/configure"
-      "--prefix=${proj_INSTALL}"
+    #CONFIGURE_COMMAND "${proj_SOURCE}/configure"
+    #  "--prefix=${proj_INSTALL}"
     #UPDATE_COMMAND ""
     #BUILD_COMMAND ""
     #INSTALL_COMMAND ""
@@ -59,9 +59,9 @@ if(NOT DEFINED GLog_DIR)
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
       -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
-      -DCMAKE_SHARED_LINKER_FLAGS:STRING=${GFlags_LIBRARY_DIR}
-      -DCMAKE_LIBRARY_PATH:PATH=${GFlags_LIBRARY_DIR}
-      -Dgflags_DIR:PATH=${GFlags_DIR}
+      -DCMAKE_SHARED_LINKER_FLAGS:STRING="-L${GFlags_LIBRARY_DIR}"
+      -DCMAKE_EXE_LINKER_FLAGS:STRING="-L${GFlags_LIBRARY_DIR}"
+      -Dgflags_DIR:PATH="${GFlags_DIR}/lib/cmake/gflags"
     CMAKE_CACHE_ARGS
       ${EP_COMMON_CACHE_ARGS}
     CMAKE_CACHE_DEFAULT_ARGS
