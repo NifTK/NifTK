@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __nifitkLabelMapReader_h
-#define __nifitkLabelMapReader_h
+#ifndef niftkLabelMapReader_h
+#define niftkLabelMapReader_h
 
 
 #include <mitkAbstractFileReader.h>
@@ -22,46 +22,44 @@
 
 class QmitkLookupTableContainer;
 
-namespace niftk 
+namespace niftk
 {
 
 /**
  * \class mitkLabelMapReader
- * \brief Reader for label map files. 
+ * \brief Reader for label map files.
  * \ingroup IO
  */
 class LabelMapReader : public mitk::AbstractFileReader
 {
 
-public: 
+public:
 
   LabelMapReader();
   LabelMapReader(const LabelMapReader & other);
   virtual LabelMapReader * Clone() const override;
   virtual ~LabelMapReader(){};
   
-  using mitk::AbstractFileReader::Read;
-  
   /**
-   * \brief Read the file and return mitkBaseData 
+   * \brief Read the file and return mitkBaseData
    */
-  virtual std::vector<itk::SmartPointer<mitk::BaseData> > Read() override;  
+  virtual std::vector<itk::SmartPointer<mitk::BaseData> > Read() override;
     
   /**
-   * \brief Get a QmitkLookupTableContainer from file 
+   * \brief Get a QmitkLookupTableContainer from file
    */
   virtual QmitkLookupTableContainer* GetLookupTableContainer();
  
   /**
-   * \brief Set the order to assign the QmitkLookupTableContainer as 
-   *  the label map file does not store this information 
+   * \brief Set the order to assign the QmitkLookupTableContainer as
+   *  the label map file does not store this information
    */
   void SetOrder(int order){m_Order = order;}
 
-private: 
+private:
 
   /** \brief Parse the istream to determine the labels, colors. */
-  bool ReadLabelMap(std::istream &);  
+  bool ReadLabelMap(std::istream &);
 
   /** To temporarily store the labels (pixel value/name). */
   niftk::LabeledLookupTableProperty::LabelListType m_Labels;
