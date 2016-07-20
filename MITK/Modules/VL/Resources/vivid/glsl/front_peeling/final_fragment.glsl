@@ -23,7 +23,7 @@ void main()
 
     if ( vl_Vivid.stencil.enabled ) {
         gl_FragColor.rgb = frontColor.rgb + vl_Vivid.stencil.backgroundColor.rgb * frontColor.a;
-        gl_FragColor.a = vl_Vivid.alpha;
+        gl_FragColor.a = vl_Vivid.opacity;
 
         float stencil = texture2DRect(vl_Vivid.stencil.texture, gl_FragCoord.xy ).r;
         // uncomment to smooth only the "inside" of the stencil
@@ -41,6 +41,6 @@ void main()
         gl_FragColor.a *= stencil;
     } else {
         gl_FragColor.rgb = frontColor.rgb;
-        gl_FragColor.a = ( 1.0 - frontColor.a ) * vl_Vivid.alpha;
+        gl_FragColor.a = ( 1.0 - frontColor.a ) * vl_Vivid.opacity;
     }
 }

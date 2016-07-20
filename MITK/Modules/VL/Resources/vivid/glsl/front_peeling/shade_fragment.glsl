@@ -35,7 +35,12 @@ vec3 AdjustSaturation( vec3 rgb, float adjustment )
 vec4 LightingStage()
 {
   vec4 color;
-  if ( vl_Vivid.enableLighting ) {
+  if ( vl_Vivid.outline3DRendering || ! vl_Vivid.enableLighting )
+  {
+    color = Color;
+  }
+  else
+  {
     vec3 l = normalize( gl_LightSource[0].position.xyz - CP.xyz );
     vec3 e = normalize( vec3( 0, 0, 0 ) - CP.xyz ); // vec3( 0.0, 0.0 ,1.0 ) for GL_LIGHT_MODEL_LOCAL_VIEWER = FALSE
     vec3 n = normalize( N );
@@ -63,10 +68,6 @@ vec4 LightingStage()
 
     color.rgb = ambient + emission + diffuse + specular;
     color.a = gl_FrontMaterial.diffuse.a;
-  }
-  else
-  {
-    color = Color;
   }
 
   if ( vl_Vivid.enablePointSprite ) {

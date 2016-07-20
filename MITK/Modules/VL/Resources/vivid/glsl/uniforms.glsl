@@ -115,8 +115,12 @@ struct vl_VividParameters {
     bool enablePointSprite;
 
     // <automatic>
+    // Whether the current shader is rendering a 3D outline
+    bool outline3DRendering;
+
+    // <automatic>
     // Global opacity
-    float alpha;
+    float opacity;
 
     // <automatic>
     vl_StencilParameters stencil;

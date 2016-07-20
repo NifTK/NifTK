@@ -181,7 +181,7 @@ void raycastIsosurface() {
     if ( ! isosurface_found ) {
         discard;
     } else {
-        gl_FragColor.a *= vl_Vivid.alpha;
+        gl_FragColor.a *= vl_Vivid.opacity;
     }
 }
 
@@ -228,7 +228,7 @@ void raycastDirect() {
         gl_FragColor.a += ( 1.0 - gl_FragColor.a ) * rgba.a;
     } while(true);
 
-    gl_FragColor.a *= vl_Vivid.alpha;
+    gl_FragColor.a *= vl_Vivid.opacity;
 }
 
 void raycastMIP() {
@@ -273,7 +273,7 @@ void raycastMIP() {
     if ( visible ) {
         float lookup = transferFunctionDelta + ( 1.0 - 2.0 * transferFunctionDelta ) * max_val;
         gl_FragColor = texture1D( transferFunctionTexture, lookup );
-        gl_FragColor.a *= vl_Vivid.alpha;
+        gl_FragColor.a *= vl_Vivid.opacity;
     } else {
         discard;
     }

@@ -31,7 +31,7 @@ void main()
 
         if ( stencil > 0 && stencil < squared ) {
             gl_FragColor = vl_Vivid.outline.color;
-            gl_FragColor.a *= vl_Vivid.alpha;
+            gl_FragColor.a *= vl_Vivid.opacity;
             return;
         }
     }
