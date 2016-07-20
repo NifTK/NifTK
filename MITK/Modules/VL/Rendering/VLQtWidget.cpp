@@ -91,6 +91,8 @@ using namespace vl;
   #include <niftkFlipImageLauncher.h>
   #include <cuda_gl_interop.h>
 
+  #define VL_CUDA_STREAM_NAME "VL-CUDA-STREAM"
+
   // #define VL_CUDA_TEST
 
   class CudaTest {
@@ -140,7 +142,7 @@ using namespace vl;
       // CUDAImage
       m_CUDAImage = niftk::CUDAImage::New();
       niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
-      cudaStream_t mystream = cm->GetStream("VL-CUDA-STREAM");
+      cudaStream_t mystream = cm->GetStream(VL_CUDA_STREAM_NAME);
       niftk::WriteAccessor wa = cm->RequestOutputImage(w, h, 4);
       niftk::LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
       // cm->Autorelease(wa, mystream);
@@ -185,7 +187,7 @@ using namespace vl;
 
       // Copy texture to CUDAImage
       niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
-      cudaStream_t mystream = cm->GetStream("VL-CUDA-STREAM");
+      cudaStream_t mystream = cm->GetStream(VL_CUDA_STREAM_NAME);
       niftk::WriteAccessor wa = cm->RequestOutputImage(w, h, 4);
 
       cudaError_t err = cudaSuccess;
@@ -2019,7 +2021,7 @@ public:
     }
 
     niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
-    cudaStream_t mystream = cm->GetStream("VL-CUDA-STREAM");
+    cudaStream_t mystream = cm->GetStream(VL_CUDA_STREAM_NAME);
     niftk::ReadAccessor ra = cm->RequestReadAccess(lwci);
 
     // make sure producer of the cuda-image finished.
