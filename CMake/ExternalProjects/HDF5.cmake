@@ -24,10 +24,10 @@ if(DEFINED HDF5_DIR AND NOT EXISTS ${HDF5_DIR})
 
 endif()
 
-set(version "1.10.0-patch1")
-set(location "${NIFTK_EP_TARBALL_LOCATION}/hdf5-${version}.tar.gz")
+set(HDF5_VERSION "1.10.0-patch1")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/hdf5-${HDF5_VERSION}.tar.gz")
 
-niftkMacroDefineExternalProjectVariables(HDF5 ${version} ${location})
+niftkMacroDefineExternalProjectVariables(HDF5 ${HDF5_VERSION} ${location})
 
 if(NOT DEFINED HDF5_DIR)
 

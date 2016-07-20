@@ -22,10 +22,10 @@ if(DEFINED GFlags_DIR AND NOT EXISTS ${GFlags_DIR})
   message(FATAL_ERROR "GFlags_DIR variable is defined but corresponds to non-existing directory \"${GFlags_ROOT}\".")
 endif()
 
-set(version "2.1.2")
-set(location "${NIFTK_EP_TARBALL_LOCATION}/gflags-${version}.tar.gz")
+set(GFlags_VERSION "2.1.2")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/gflags-${GFlags_VERSION}.tar.gz")
 
-niftkMacroDefineExternalProjectVariables(GFlags ${version} ${location})
+niftkMacroDefineExternalProjectVariables(GFlags ${GFlags_VERSION} ${location})
 
 if(NOT DEFINED GFlags_DIR)
 

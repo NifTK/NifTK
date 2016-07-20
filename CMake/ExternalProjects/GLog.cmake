@@ -22,23 +22,15 @@ if(DEFINED GLog_DIR AND NOT EXISTS ${GLog_DIR})
   message(FATAL_ERROR "GLog_DIR variable is defined but corresponds to non-existing directory \"${GLog_ROOT}\".")
 endif()
 
-#set(version "0.3.4")
-#set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${version}.tar.gz")
+#set(GLog_VERSION "0.3.4")
+#set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${GLog_VERSION}.tar.gz")
 
-set(version "0472b91")
-set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${version}.zip")
+set(GLog_VERSION "0472b91")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${GLog_VERSION}.zip")
 
-niftkMacroDefineExternalProjectVariables(GLog ${version} ${location})
+niftkMacroDefineExternalProjectVariables(GLog ${GLog_VERSION} ${location})
 
 set(proj_DEPENDENCIES GFlags)
-
-
-message( "EP_COMMON_ARGS:"                ${EP_COMMON_ARGS}              )
-message( "NifTK_PREFIX_PATH:"             ${NifTK_PREFIX_PATH}           )
-message( "GFlags_LIBRARY_DIR:"            ${GFlags_LIBRARY_DIR}          )
-message( "GFlags_DIR:"                    ${GFlags_DIR}                  )
-message( "EP_COMMON_CACHE_ARGS:"          ${EP_COMMON_CACHE_ARGS}        )
-message( "EP_COMMON_CACHE_DEFAULT_ARGS:"  ${EP_COMMON_CACHE_DEFAULT_ARGS})
 
 if(NOT DEFINED GLog_DIR)
 
