@@ -3,19 +3,19 @@
     <file>vivid/glsl/uniforms.glsl</file>
     <file>vivid/glsl/volume/raycast.vs</file>
     <file>vivid/glsl/volume/raycast.fs</file>
-    <file>vivid/glsl/front_peeling/blend_fragment.glsl</file>
-    <file>vivid/glsl/front_peeling/blend_vertex.glsl</file>
-    <file>vivid/glsl/front_peeling/final_fragment.glsl</file>
-    <file>vivid/glsl/front_peeling/final_vertex.glsl</file>
-    <file>vivid/glsl/front_peeling/init_fragment.glsl</file>
-    <file>vivid/glsl/front_peeling/outline.geom</file>
-    <file>vivid/glsl/front_peeling/outline2d_fragment.glsl</file>
-    <file>vivid/glsl/front_peeling/outline2d_vertex.glsl</file>
-    <file>vivid/glsl/front_peeling/outline3d_fragment.glsl</file>
-    <file>vivid/glsl/front_peeling/peel_fragment.glsl</file>
-    <file>vivid/glsl/front_peeling/shade_fragment.glsl</file>
-    <file>vivid/glsl/front_peeling/shade_vertex.glsl</file>
-    <file>vivid/glsl/front_peeling/shade_vertex_outline.glsl</file>
+    <file>vivid/glsl/front_peeling/blend.fs</file>
+    <file>vivid/glsl/front_peeling/blend.vs</file>
+    <file>vivid/glsl/front_peeling/final.fs</file>
+    <file>vivid/glsl/front_peeling/final.vs</file>
+    <file>vivid/glsl/front_peeling/init.fs</file>
+    <file>vivid/glsl/front_peeling/outline.gs</file>
+    <file>vivid/glsl/front_peeling/outline2d.fs</file>
+    <file>vivid/glsl/front_peeling/outline2d.vs</file>
+    <file>vivid/glsl/front_peeling/outline3d.fs</file>
+    <file>vivid/glsl/front_peeling/peel.fs</file>
+    <file>vivid/glsl/front_peeling/shade.fs</file>
+    <file>vivid/glsl/front_peeling/shade.vs</file>
+    <file>vivid/glsl/front_peeling/shade_outline.vs</file>
     <file>vivid/images/sphere.png</file>
   </qresource>
 </RCC>
