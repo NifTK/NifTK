@@ -22,7 +22,7 @@ if(DEFINED ProtoBuf-CMake_DIR AND NOT EXISTS ${ProtoBuf-CMake_DIR})
   message(FATAL_ERROR "ProtoBuf-CMake_DIR variable is defined but corresponds to non-existing directory \"${ProtoBuf-CMake_ROOT}\".")
 endif()
 
-set(version "304c1f5")
+set(version "9c19a2e")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/protobuf-cmake-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(ProtoBuf-CMake ${version} ${location})
