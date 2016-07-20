@@ -143,7 +143,7 @@ void QmitkIGIVLEditor::On3DViewerCheckBoxChecked(bool checked)
 
 void QmitkIGIVLEditor::OnOpacitySliderMoved(int value)
 {
-  //m_OverlayViewer->vlSceneView()->SetOpacity(value / 100.0);
+  m_OverlayViewer->vlSceneView()->setOpacity( value / 100.0 );
 }
 
 //-----------------------------------------------------------------------------
@@ -170,7 +170,7 @@ void QmitkIGIVLEditor::SetDataStorage(mitk::DataStorage* storage)
   }
 
   m_DataStorage = storage;
-  
+
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->ChangedNodeEvent.AddListener

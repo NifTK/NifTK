@@ -2633,6 +2633,12 @@ void VLSceneView::clearScene()
 
 //-----------------------------------------------------------------------------
 
+void VLSceneView::setOpacity( float opacity )
+{
+  m_VividRendering->setAlpha( opacity );
+  openglContext()->update();
+}
+
 bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
 {
   m_BackgroundNode = node;

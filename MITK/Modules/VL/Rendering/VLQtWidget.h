@@ -168,15 +168,10 @@ public:
   vl::VividRendering* vividRendering() { return m_VividRendering.get(); }
   const vl::VividRendering* vividRendering() const { return m_VividRendering.get(); }
 
+  // Defines the opacity of the 3D renering above the background.
+  void setOpacity( float opacity );
+
   // Called by QmitkIGIVLEditor::OnImageSelected(), VLRendererView::OnBackgroundNodeSelected()
-  /**
-   * node can have as data object:
-   * - mitk::Image
-   * - CUDAImage
-   * - mitk::Image with CUDAImageProperty attached.
-   * And for now the image has to be 2D.
-   * Anything else will just be ignored.
-   */
   bool setBackgroundNode(const mitk::DataNode* node);
 
   // Called by QmitkIGIVLEditor::OnTransformSelected(), VLRendererView::OnCameraNodeSelected()/OnCameraNodeEnabled()
