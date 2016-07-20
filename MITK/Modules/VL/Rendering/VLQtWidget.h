@@ -198,8 +198,6 @@ protected:
   virtual void addDataStorageListeners();
   virtual void removeDataStorageListeners();
 
-  // void createAndUpdateFBOSizes(int width, int height); // obsolete
-  void updateViewportAndCameraAfterResize();
   void updateCameraParameters();
 
   VLMapper* getVLMapper(const mitk::DataNode* node);
@@ -225,9 +223,6 @@ protected:
 
   bool m_ScheduleTrackballAdjustView;
   bool m_ScheduleInitScene;
-
-  // MIC FIXME: remove this
-  vl::ivec2 m_BackgroundSize;
 
   // Lgacy OpenCL service
 

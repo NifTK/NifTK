@@ -20,11 +20,12 @@
   #define VIVID_WARN(expr) { (expr) }
 #endif
 
+#include "VLQtWidget.h"
+
 #include <QTextStream>
 #include <QFile>
 #include <QDir>
 
-#include "VLQtWidget.h"
 #include <vlQt5/QtDirectory.hpp>
 #include <vlQt5/QtFile.hpp>
 #include <vlCore/Log.hpp>
@@ -40,7 +41,6 @@
 #include <vlGraphics/FramebufferObject.hpp>
 #include <vlGraphics/AdjacencyExtractor.hpp>
 #include <vlVivid/VividVolume.hpp>
-#include <cassert>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <vtkLinearTransform.h>
@@ -50,40 +50,37 @@
 #include <vtkCellArray.h>
 #include <vtkPolyDataNormals.h>
 #include <vtkImageData.h>
-#include <mitkEnumerationProperty.h>
-#include <mitkProperties.h>
-#include <mitkProperties.h>
-#include <mitkImageReadAccessor.h>
 #include <mitkDataStorage.h>
+#include <mitkProperties.h>
+#include <mitkEnumerationProperty.h>
 #include <mitkImage.h>
-#include <stdexcept>
-#include <sstream>
-#include <niftkScopedOGLContext.h>
-#ifdef BUILD_IGI
-#include <CameraCalibration/niftkUndistortion.h>
-#include <mitkCameraIntrinsicsProperty.h>
-#include <mitkCameraIntrinsics.h>
-#endif
 #include <mitkCoordinateAxesData.h>
+#include <mitkImageReadAccessor.h>
+#include <stdexcept>
+
+#ifdef BUILD_IGI
+  #include <CameraCalibration/niftkUndistortion.h>
+  #include <mitkCameraIntrinsicsProperty.h>
+  #include <mitkCameraIntrinsics.h>
+#endif
 
 #ifdef _USE_PCL
-#include <niftkPCLData.h>
+  #include <niftkPCLData.h>
 #endif
 
 #ifdef _MSC_VER
-#ifdef _USE_NVAPI
-#include <nvapi.h>
-#endif
+  #ifdef _USE_NVAPI
+    #include <nvapi.h>
+  #endif
 #endif
 
 using namespace vl;
 
 //-----------------------------------------------------------------------------
-// CUDA stuff
+// CUDA
 //-----------------------------------------------------------------------------
 
 #ifdef _USE_CUDA
-
   #include <niftkCUDAManager.h>
   #include <niftkCUDAImage.h>
   #include <niftkLightweightCUDAImage.h>
@@ -131,9 +128,7 @@ using namespace vl;
 
       cudaError_t err = cudaSuccess;
       err = cudaGraphicsGLRegisterImage( &m_CudaResource, m_TextureId, m_TextureTarget, cudaGraphicsRegisterFlagsNone );
-      if ( err != cudaSuccess ) {
-        throw std::runtime_error("cudaGraphicsGLRegisterImage() failed.");
-      }
+      VIVID_CHECK( err == cudaSuccess );
 
       // Init CUDAImage
 
@@ -148,7 +143,7 @@ using namespace vl;
       // cm->Autorelease(wa, mystream);
       m_CUDAImage->SetLightweightCUDAImage(lwci);
       m_DataNode->SetData(m_CUDAImage);
-      m_DataNode->SetName("CUDAImage Test");
+      m_DataNode->SetName("CUDAImage VL Test");
       m_DataNode->SetVisibility(true);
 
       return m_DataNode.GetPointer();
@@ -258,7 +253,6 @@ using namespace vl;
       glDisable( GL_SCISSOR_TEST );
     }
   };
-
 #endif
 
 //-----------------------------------------------------------------------------
@@ -267,12 +261,7 @@ using namespace vl;
 
 struct VLUserData: public vl::Object
 {
-  VLUserData()
-    : m_TransformModifiedTime(0)
-    , m_ImageModifiedTime(0)
-  {
-  }
-
+  VLUserData(): m_TransformModifiedTime(0), m_ImageModifiedTime(0) { }
   itk::ModifiedTimeType m_TransformModifiedTime;
   itk::ModifiedTimeType m_ImageModifiedTime;
 };
@@ -2126,11 +2115,9 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
 //-----------------------------------------------------------------------------
 
 VLSceneView::VLSceneView() :
-  // Qt5Widget(parent, shareWidget, f)
-  m_BackgroundSize( ivec2( 0, 0 ) )
-  , m_ScheduleTrackballAdjustView( true )
-  , m_ScheduleInitScene ( true )
-  , m_OclService( 0 )
+  m_ScheduleTrackballAdjustView( true ),
+  m_ScheduleInitScene ( true ),
+  m_OclService( 0 )
 {
 #ifdef _USE_CUDA
   m_CudaTest = new CudaTest;
@@ -2386,11 +2373,10 @@ void VLSceneView::removeDataNode(const mitk::DataNode* node)
 
 void VLSceneView::updateDataNode(const mitk::DataNode* node)
 {
-  openglContext()->makeCurrent();
+  VIVID_CHECK( node );
+  VIVID_CHECK( node->GetData() );
 
-  if ( ! node || node->GetData() == 0 ) {
-    return;
-  }
+  openglContext()->makeCurrent();
 
   #if 0
     dumpNodeInfo( "updateDataNode()", node );
@@ -2400,11 +2386,13 @@ void VLSceneView::updateDataNode(const mitk::DataNode* node)
   if ( it != m_DataNodeVLMapperMap.end() ) {
     // this might recreate new Actors
     it->second->update();
-    return;
   }
 
-  // Update camera
-  if (node == m_CameraNode) {
+  // The camera node contains the camera position information
+  // The background node contains the camera intrinsics info
+  // BTW, we also call updateCameraParameters() on resize.
+  // update camera
+  if ( node == m_CameraNode || node == m_BackgroundNode ) {
     updateCameraParameters();
   }
 }
@@ -2515,8 +2503,7 @@ void VLSceneView::resizeEvent( int w, int h )
     return;
   }
 
-  m_VividRendering->camera()->viewport()->set( 0, 0, w, h );
-  m_VividRendering->camera()->setProjectionPerspective();
+  updateCameraParameters();
 }
 
 //-----------------------------------------------------------------------------
@@ -2588,7 +2575,6 @@ void VLSceneView::renderScene()
   // Execute rendering
   m_VividRendering->render( openglContext()->framebuffer() );
 
-
 #ifdef VL_CUDA_TEST // Cuda test
   m_CudaTest->renderTriangle( 100, 100 );
 #endif
@@ -2639,9 +2625,14 @@ void VLSceneView::setOpacity( float opacity )
   openglContext()->update();
 }
 
+//-----------------------------------------------------------------------------
+
 bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
 {
   m_BackgroundNode = node;
+
+  // update camera viewport based on background node intrinsics present or not
+  updateCameraParameters();
 
   if ( ! node ) {
     m_VividRendering->setBackgroundImageEnabled( false );
@@ -2679,52 +2670,6 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
                             no man's land starts here
 */
 
-void VLSceneView::updateViewportAndCameraAfterResize()
-{
-  // some sane defaults
-  // m_Camera->viewport()->set( 0, 0, QWidget::width(), QWidget::height() );
-  // m_BackgroundCamera->viewport()->set(0, 0, QWidget::width(), QWidget::height());
-
-  if ( m_BackgroundNode.IsNotNull() )
-  {
-    //NodeActorMapType::iterator ni = m_NodeActorMap.find(m_BackgroundNode);
-    //if (ni == m_NodeActorMap.end())
-    //{
-    //  // actor not ready yet, try again later.
-    //  // this is getting messy... but stuffing our widget here into an editor causes various methods
-    //  // to be called at the wrong time.
-    //  QMetaObject::invokeMethod(this, "updateViewportAndCameraAfterResize", Qt::QueuedConnection);
-    //}
-    //else
-    //{
-      // ref<vl::Actor> backgroundactor = ni->second;
-
-      // this is based on my old araknes video-ar app.
-      // FIXME: aspect ratio?
-      float   width_scale  = (float) openglContext()->width()  / (float) m_BackgroundSize.x();
-      float   height_scale = (float) openglContext()->height() / (float) m_BackgroundSize.y();
-      int     vpw = openglContext()->width();
-      int     vph = openglContext()->height();
-      if (width_scale < height_scale)
-        vph = (int) ((float) m_BackgroundSize.y() * width_scale);
-      else
-        vpw = (int) ((float) m_BackgroundSize.x() * height_scale);
-
-      int   vpx = openglContext()->width()  / 2 - vpw / 2;
-      int   vpy = openglContext()->height() / 2 - vph / 2;
-
-      // m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
-      // the main-scene-camera should conform to this viewport too!
-      // otherwise geometry would never line up with the background (for overlays, etc).
-      m_Camera->viewport()->set(vpx, vpy, vpw, vph);
-    //}
-  }
-  // this default perspective depends on the viewport!
-  m_Camera->setProjectionPerspective();
-
-  updateCameraParameters();
-}
-
 //-----------------------------------------------------------------------------
 
 void VLSceneView::updateThresholdVal( int isoVal )
@@ -2750,9 +2695,11 @@ bool VLSceneView::setCameraTrackingNode(const mitk::DataNode* node)
     m_Trackball->setEnabled( true );
     scheduleTrackballAdjustView( true );
   } else {
-    dumpNodeInfo( "CameraNode()", node );
+    dumpNodeInfo( "CameraNode():", node );
+    dumpNodeInfo( "node->GetData()", node->GetData() );
     m_Trackball->setEnabled( false );
     scheduleTrackballAdjustView( false );
+    // update camera position
     updateCameraParameters();
   }
 
@@ -2765,50 +2712,88 @@ bool VLSceneView::setCameraTrackingNode(const mitk::DataNode* node)
 
 void VLSceneView::updateCameraParameters()
 {
-  // calibration parameters come from the background node.
-  // so no background, no camera parameters.
-  if (m_BackgroundNode.IsNotNull())
-  {
-#ifdef BUILD_IGI
-    mitk::BaseProperty::Pointer cambp = m_BackgroundNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
-    if (cambp.IsNotNull())
-    {
-      mitk::CameraIntrinsicsProperty::Pointer cam = dynamic_cast<mitk::CameraIntrinsicsProperty*>(cambp.GetPointer());
-      if (cam.IsNotNull())
-      {
-        mitk::CameraIntrinsics::Pointer nodeIntrinsic = cam->GetValue();
+  int win_w = openglContext()->width();
+  int win_h = openglContext()->height();
 
-        if (nodeIntrinsic.IsNotNull())
-        {
-          // based on niftkCore/Rendering/vtkOpenGLMatrixDrivenCamera
-          float znear = 1;
-          float zfar  = 10000;
-          float pixelaspectratio = 1;   // FIXME: depends on background image
+  m_Camera->viewport()->set( 0, 0, win_w, win_h );
+  // set default perspective projection
+  m_Camera->setProjectionPerspective();
 
-          vl::mat4  proj;
-          proj.setNull();
-          proj.e(0, 0) =  2 * nodeIntrinsic->GetFocalLengthX() / (float) m_BackgroundSize.x();
-          //proj.e(0, 1) = -2 * 0 / m_ImageWidthInPixels;
-          proj.e(0, 2) = ((float) m_BackgroundSize.x() - 2 * nodeIntrinsic->GetPrincipalPointX()) / (float) m_BackgroundSize.x();
-          proj.e(1, 1) = 2 * (nodeIntrinsic->GetFocalLengthY() / pixelaspectratio) / ((float) m_BackgroundSize.y() / pixelaspectratio);
-          proj.e(1, 2) = (-((float) m_BackgroundSize.y() / pixelaspectratio) + 2 * (nodeIntrinsic->GetPrincipalPointY() / pixelaspectratio)) / ((float) m_BackgroundSize.y() / pixelaspectratio);
-          proj.e(2, 2) = (-zfar - znear) / (zfar - znear);
-          proj.e(2, 3) = -2 * zfar * znear / (zfar - znear);
-          proj.e(3, 2) = -1;
+  // update camera viewport and projecton
 
-          m_Camera->setProjectionMatrix(proj.transpose(), vl::PMT_UserProjection);
-        }
-      }
-    }
-#endif
-  }
+  // if ( m_VividRendering->backgroundImageEnabled() )
+  // {
+  //   VIVID_CHECK( m_BackgroundNode );
+  //   int bkgr_w = m_VividRendering->backgroundTexSampler()->texture()->width();
+  //   int bkgr_h = m_VividRendering->backgroundTexSampler()->texture()->width();
 
-  if (m_CameraNode.IsNotNull())
-  {
-    vl::mat4 mat = GetVLMatrixFromData(m_CameraNode->GetData());
+  //   // this is based on my old araknes video-ar app.
+  //   // FIXME: aspect ratio?
+  //   float width_scale  = (float) win_w  / (float) bkgr_w;
+  //   float height_scale = (float) win_h / (float) bkgr_h;
+  //   int   vpw = win_w;
+  //   int   vph = win_h;
+  //   if (width_scale < height_scale)
+  //     vph = (int) ((float) bkgr_h * width_scale);
+  //   else
+  //     vpw = (int) ((float) bkgr_w * height_scale);
+
+  //   int   vpx = win_h  / 2 - vpw / 2;
+  //   int   vpy = win_h / 2 - vph / 2;
+
+  //   // m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
+  //   // the main-scene-camera should conform to this viewport too!
+  //   // otherwise geometry would never line up with the background (for overlays, etc).
+  //   m_Camera->viewport()->set(vpx, vpy, vpw, vph);
+
+  //   // this default perspective depends on the viewport!
+  //   m_Camera->setProjectionPerspective();
+
+  //   ...
+
+  //   // calibration parameters come from the background node.
+  //   // so no background, no camera parameters.
+  //   #ifdef BUILD_IGI
+  //     mitk::BaseProperty::Pointer cambp = m_BackgroundNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+  //     if (cambp.IsNotNull())
+  //     {
+  //       mitk::CameraIntrinsicsProperty::Pointer cam = dynamic_cast<mitk::CameraIntrinsicsProperty*>(cambp.GetPointer());
+  //       if (cam.IsNotNull())
+  //       {
+  //         mitk::CameraIntrinsics::Pointer nodeIntrinsic = cam->GetValue();
+
+  //         if (nodeIntrinsic.IsNotNull())
+  //         {
+  //           // based on niftkCore/Rendering/vtkOpenGLMatrixDrivenCamera
+  //           float znear = 1;
+  //           float zfar  = 10000;
+  //           float pixelaspectratio = 1;   // FIXME: depends on background image
+
+  //           vl::mat4  proj;
+  //           proj.setNull();
+  //           proj.e(0, 0) =  2 * nodeIntrinsic->GetFocalLengthX() / (float) bkgr_w;
+  //           //proj.e(0, 1) = -2 * 0 / m_ImageWidthInPixels;
+  //           proj.e(0, 2) = ((float) bkgr_w - 2 * nodeIntrinsic->GetPrincipalPointX()) / (float) bkgr_w;
+  //           proj.e(1, 1) = 2 * (nodeIntrinsic->GetFocalLengthY() / pixelaspectratio) / ((float) bkgr_h / pixelaspectratio);
+  //           proj.e(1, 2) = (-((float) bkgr_h / pixelaspectratio) + 2 * (nodeIntrinsic->GetPrincipalPointY() / pixelaspectratio)) / ((float) bkgr_h / pixelaspectratio);
+  //           proj.e(2, 2) = (-zfar - znear) / (zfar - znear);
+  //           proj.e(2, 3) = -2 * zfar * znear / (zfar - znear);
+  //           proj.e(3, 2) = -1;
+
+  //           m_Camera->setProjectionMatrix(proj.transpose(), vl::PMT_UserProjection);
+  //         }
+  //       }
+  //     }
+  //   #endif
+  // }
+
+  // update camera position
+
+  if ( m_CameraNode ) {
+    vl::mat4 mat = GetVLMatrixFromData( m_CameraNode->GetData() );
+    VIVID_CHECK( ! mat.isNull() );
     if ( ! mat.isNull() ) {
-      // beware: there is also a view-matrix! the inverse of modelling-matrix.
-      m_Camera->setModelingMatrix(mat);
+      m_Camera->setModelingMatrix( mat );
     }
   }
 }
