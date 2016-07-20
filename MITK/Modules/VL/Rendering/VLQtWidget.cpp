@@ -1325,7 +1325,7 @@ vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom, vl::Effect* effect, v
   ref<vl::Transform> tr = transform ? transform : new vl::Transform;
   UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
   ref<vl::Actor> actor = new vl::Actor( geom, fx.get(), tr.get() );
-  actor->setEnableMask( vl::VividRenderer::DefaultEnableMask );
+  actor->setEnableMask( vl::VividRenderer::VividEnableMask );
   return actor;
 }
 
