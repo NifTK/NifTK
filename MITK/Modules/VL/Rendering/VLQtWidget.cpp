@@ -1291,6 +1291,10 @@ protected:
     mitk::FloatProperty::Pointer opacity = mitk::FloatProperty::New();
     AddProperty( "VL.Global.Opacity", opacity );
     opacity->SetValue( 1 );
+
+    mitk::IntProperty::Pointer passes = mitk::IntProperty::New();
+    AddProperty( "VL.Global.DepthPeelingPasses", passes );
+    passes->SetValue( 4 );
   }
 };
 
@@ -1358,13 +1362,15 @@ public:
     int render_mode = getEnumProp( m_DataNode, "VL.Global.RenderMode", 0 );
     vec4 bg_color = getColorProp( m_DataNode, "VL.Global.BackgroundColor", vl::black );
     float opacity = getFloatProp( m_DataNode, "VL.Global.Opacity", 1 );
+    int passes = getIntProp( m_DataNode, "VL.Global.DepthPeelingPasses", 4 );
 
     m_VividRendering->setStencilEnabled( enable );
     m_VividRendering->setStencilBackground( stencil_bg_color );
     m_VividRendering->setStencilSmoothness( stencil_smooth );
     m_VividRendering->setRenderingMode( (VividRendering::ERenderingMode)render_mode );
     m_VividRendering->setBackgroundColor( bg_color );
-    m_VividRendering->setAlpha( opacity );
+    m_VividRendering->setOpacity( opacity );
+    m_VividRendering->vividRenderer()->setNumPasses( passes );
   }
 
   virtual void updateVLGlobalSettings() { /* we don't have anything to set */ }
@@ -2623,6 +2629,12 @@ void VLSceneView::setOpacity( float opacity )
 {
   m_VividRendering->setAlpha( opacity );
   openglContext()->update();
+}
+
+//-----------------------------------------------------------------------------
+
+void VLSceneView::setDepthPeelingPasses( int passes ) {
+  m_VividRenderer->setNumPasses( passes );
 }
 
 //-----------------------------------------------------------------------------

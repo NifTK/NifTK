@@ -161,6 +161,9 @@ public:
   // Defines the opacity of the 3D renering above the background.
   void setOpacity( float opacity );
 
+  // Number of depth peeling passes to be done.
+  void setDepthPeelingPasses( int passes );
+
   // Called by QmitkIGIVLEditor::OnImageSelected(), VLRendererView::OnBackgroundNodeSelected()
   bool setBackgroundNode(const mitk::DataNode* node);
 
