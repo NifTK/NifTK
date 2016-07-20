@@ -2215,6 +2215,16 @@ void VLSceneView::setOclResourceService(OclResourceService* oclserv)
 
 //-----------------------------------------------------------------------------
 
+void VLSceneView::scheduleSceneRebuild()
+{
+  clearScene();
+  m_ScheduleInitScene = true;
+  m_ScheduleTrackballAdjustView = true;
+  openglContext()->update();
+}
+
+//-----------------------------------------------------------------------------
+
 void VLSceneView::scheduleNodeAdd( const mitk::DataNode* node )
 {
   if ( ! node || ! node->GetData() ) {
@@ -2555,7 +2565,7 @@ void VLSceneView::updateScene() {
 
   // Reset trackball view on demand
 
-  if ( m_ScheduleTrackballAdjustView ) {
+  if ( m_ScheduleTrackballAdjustView && m_Trackball->isEnabled() ) {
     m_Trackball->adjustView( m_VividRendering.get(), vl::vec3(0,0,1), vl::vec3(0,1,0), 1.0f );
     m_ScheduleTrackballAdjustView = false;
   }
@@ -2614,6 +2624,9 @@ void VLSceneView::clearScene()
   m_NodesToUpdate.clear();
   m_NodesToAdd.clear();
   m_NodesToRemove.clear();
+
+  m_ScheduleInitScene = true;
+  m_ScheduleTrackballAdjustView = true;
 }
 
 //-----------------------------------------------------------------------------
