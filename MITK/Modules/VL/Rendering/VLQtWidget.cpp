@@ -2627,7 +2627,7 @@ void VLSceneView::clearScene()
 
 void VLSceneView::setOpacity( float opacity )
 {
-  m_VividRendering->setAlpha( opacity );
+  m_VividRendering->setOpacity( opacity );
   openglContext()->update();
 }
 
@@ -2730,6 +2730,7 @@ void VLSceneView::updateCameraParameters()
   // default perspective projection
   m_Camera->viewport()->set( 0, 0, win_w, win_h );
   m_Camera->setProjectionPerspective();
+  VIVID_CHECK( m_Camera->viewport()->isScissorEnabled() );
 
   // update camera viewport and projecton
 
@@ -2756,8 +2757,6 @@ void VLSceneView::updateCameraParameters()
             int width  = image->GetDimension(0);
             int height = image->GetDimension(1);
             m_Camera->setCalibratedImageSize(width, height, imgScaling[0] / imgScaling[1]);
-            // VIVID_CHECK( width == m_VividRendering->backgroundTexSampler()->texture()->width() );
-            // VIVID_CHECK( height == m_VividRendering->backgroundTexSampler()->texture()->height() );
 
             // intrinsic parameters
             m_Camera->setIntrinsicParameters(
