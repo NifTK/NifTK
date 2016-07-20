@@ -2715,77 +2715,53 @@ void VLSceneView::updateCameraParameters()
   int win_w = openglContext()->width();
   int win_h = openglContext()->height();
 
+  // default perspective projection
   m_Camera->viewport()->set( 0, 0, win_w, win_h );
-  // set default perspective projection
   m_Camera->setProjectionPerspective();
 
   // update camera viewport and projecton
 
-  // if ( m_VividRendering->backgroundImageEnabled() )
-  // {
-  //   VIVID_CHECK( m_BackgroundNode );
-  //   int bkgr_w = m_VividRendering->backgroundTexSampler()->texture()->width();
-  //   int bkgr_h = m_VividRendering->backgroundTexSampler()->texture()->width();
+  if ( m_VividRendering->backgroundImageEnabled() )
+  {
+    // Calibration parameters come from the background node.
+    VIVID_CHECK( m_BackgroundNode );
 
-  //   // this is based on my old araknes video-ar app.
-  //   // FIXME: aspect ratio?
-  //   float width_scale  = (float) win_w  / (float) bkgr_w;
-  //   float height_scale = (float) win_h / (float) bkgr_h;
-  //   int   vpw = win_w;
-  //   int   vph = win_h;
-  //   if (width_scale < height_scale)
-  //     vph = (int) ((float) bkgr_h * width_scale);
-  //   else
-  //     vpw = (int) ((float) bkgr_w * height_scale);
+    #ifdef BUILD_IGI
+      mitk::BaseProperty::Pointer cam_cal_prop = m_BackgroundNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
+      if ( cam_cal_prop ) {
+        mitk::CameraIntrinsicsProperty::Pointer cam_intr_prop = dynamic_cast<mitk::CameraIntrinsicsProperty*>(cam_cal_prop.GetPointer());
+        if ( cam_intr_prop ) {
+          mitk::CameraIntrinsics::Pointer intrinsics = cam_intr_prop->GetValue();
+          if ( intrinsics ) {
+            // set up calibration parameters
 
-  //   int   vpx = win_h  / 2 - vpw / 2;
-  //   int   vpy = win_h / 2 - vph / 2;
+            // screen size
+            m_Camera->setScreenSize( win_w, win_h );
 
-  //   // m_BackgroundCamera->viewport()->set(vpx, vpy, vpw, vph);
-  //   // the main-scene-camera should conform to this viewport too!
-  //   // otherwise geometry would never line up with the background (for overlays, etc).
-  //   m_Camera->viewport()->set(vpx, vpy, vpw, vph);
+            // image size and pixel aspect ratio
+            mitk::Image* image = dynamic_cast<mitk::Image*>( m_BackgroundNode->GetData() );
+            mitk::Vector3D  imgScaling = image->GetGeometry()->GetSpacing();
+            int width  = image->GetDimension(0);
+            int height = image->GetDimension(1);
+            m_Camera->setCalibratedImageSize(width, height, imgScaling[0] / imgScaling[1]);
+            // VIVID_CHECK( width == m_VividRendering->backgroundTexSampler()->texture()->width() );
+            // VIVID_CHECK( height == m_VividRendering->backgroundTexSampler()->texture()->height() );
 
-  //   // this default perspective depends on the viewport!
-  //   m_Camera->setProjectionPerspective();
+            // intrinsic parameters
+            m_Camera->setIntrinsicParameters(
+              intrinsics->GetFocalLengthX(),
+              intrinsics->GetFocalLengthY(),
+              intrinsics->GetPrincipalPointX(),
+              intrinsics->GetPrincipalPointY()
+            );
 
-  //   ...
-
-  //   // calibration parameters come from the background node.
-  //   // so no background, no camera parameters.
-  //   #ifdef BUILD_IGI
-  //     mitk::BaseProperty::Pointer cambp = m_BackgroundNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
-  //     if (cambp.IsNotNull())
-  //     {
-  //       mitk::CameraIntrinsicsProperty::Pointer cam = dynamic_cast<mitk::CameraIntrinsicsProperty*>(cambp.GetPointer());
-  //       if (cam.IsNotNull())
-  //       {
-  //         mitk::CameraIntrinsics::Pointer nodeIntrinsic = cam->GetValue();
-
-  //         if (nodeIntrinsic.IsNotNull())
-  //         {
-  //           // based on niftkCore/Rendering/vtkOpenGLMatrixDrivenCamera
-  //           float znear = 1;
-  //           float zfar  = 10000;
-  //           float pixelaspectratio = 1;   // FIXME: depends on background image
-
-  //           vl::mat4  proj;
-  //           proj.setNull();
-  //           proj.e(0, 0) =  2 * nodeIntrinsic->GetFocalLengthX() / (float) bkgr_w;
-  //           //proj.e(0, 1) = -2 * 0 / m_ImageWidthInPixels;
-  //           proj.e(0, 2) = ((float) bkgr_w - 2 * nodeIntrinsic->GetPrincipalPointX()) / (float) bkgr_w;
-  //           proj.e(1, 1) = 2 * (nodeIntrinsic->GetFocalLengthY() / pixelaspectratio) / ((float) bkgr_h / pixelaspectratio);
-  //           proj.e(1, 2) = (-((float) bkgr_h / pixelaspectratio) + 2 * (nodeIntrinsic->GetPrincipalPointY() / pixelaspectratio)) / ((float) bkgr_h / pixelaspectratio);
-  //           proj.e(2, 2) = (-zfar - znear) / (zfar - znear);
-  //           proj.e(2, 3) = -2 * zfar * znear / (zfar - znear);
-  //           proj.e(3, 2) = -1;
-
-  //           m_Camera->setProjectionMatrix(proj.transpose(), vl::PMT_UserProjection);
-  //         }
-  //       }
-  //     }
-  //   #endif
-  // }
+            // updates projection and viewport based on the given parameters
+            m_Camera->updateCalibration();
+          }
+        }
+      }
+    #endif
+  }
 
   // update camera position
 

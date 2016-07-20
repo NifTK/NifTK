@@ -21,16 +21,6 @@
 #include <vlGraphics/OpenGLContext.hpp>
 #include <vlVivid/VividRenderer.hpp>
 #include <vlVivid/VividRendering.hpp>
-#include <vlGraphics/Light.hpp>
-#include <vlGraphics/Camera.hpp>
-#include <vlGraphics/Rendering.hpp>
-#include <vlGraphics/RenderingTree.hpp>
-#include <vlGraphics/SceneManagerActorTree.hpp>
-#include <vlGraphics/Geometry.hpp>
-#include <vlGraphics/Uniform.hpp>
-#include <vlGraphics/BlitFramebuffer.hpp>
-#include <vlGraphics/Texture.hpp>
-#include <vlCore/VisualizationLibrary.hpp>
 #include "TrackballManipulator.h"
 #include <QMouseEvent>
 #include <QWidget>
@@ -179,8 +169,8 @@ public:
 
   VLTrackballManipulator* trackball() { return m_Trackball.get(); }
   const VLTrackballManipulator* trackball() const { return m_Trackball.get(); }
-  vl::Camera* camera() { return m_Camera.get(); }
-  const vl::Camera* camera() const { return m_Camera.get(); }
+  vl::CalibratedCamera* camera() { return m_Camera.get(); }
+  const vl::CalibratedCamera* camera() const { return m_Camera.get(); }
 
 protected:
   bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt5::Qt5Widget>()->QGLWidget::context(); }
@@ -206,7 +196,7 @@ protected:
   vl::ref<vl::VividRendering>        m_VividRendering;
   vl::ref<vl::VividRenderer>         m_VividRenderer;
   vl::ref<vl::SceneManagerActorTree> m_SceneManager;
-  vl::ref<vl::Camera>                m_Camera;
+  vl::ref<vl::CalibratedCamera>      m_Camera;
   vl::ref<VLTrackballManipulator>    m_Trackball;
 
   mitk::DataStorage::Pointer              m_DataStorage;
