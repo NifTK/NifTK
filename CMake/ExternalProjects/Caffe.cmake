@@ -39,7 +39,7 @@ set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(Caffe ${version} ${location})
 
-set(proj_DEPENDENCIES Boost GFlags GLog OpenBLAS ProtoBuf HDF5)
+set(proj_DEPENDENCIES Boost GFlags GLog OpenBLAS ProtoBuf-CMake ProtoBuf HDF5)
 
 if(${NIFTK_USE_CUDA})
   set(CPU_ONLY OFF)
