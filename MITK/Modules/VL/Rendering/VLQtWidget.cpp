@@ -1741,7 +1741,7 @@ public:
         Actor* act = m_SphereActors->actors()->at( i );
         act->setEnabled( visible );
         // Set color/opacity
-        act->effect()->shader()->getMaterial()->setDiffuse( color );
+        act->effect()->shader()->getMaterial()->setDiffuse( m_ColorArray->at( i ) );
         // Update other Vivid settings
         // updateRenderModeProps(); /* does not apply here */
         updateFogProps( act->effect(), m_DataNode );
