@@ -12,12 +12,23 @@
 
 =============================================================================*/
 
-#if 1
-  #define VIVID_CHECK(expr) { if ( ! ( expr ) ) { ::vl::log_failed_check( #expr, __FILE__, __LINE__ ); throw std::runtime_error( #expr ); } }
-  #define VIVID_WARN(expr)  { if ( ! ( expr ) ) { ::vl::log_failed_check( #expr, __FILE__, __LINE__ ); } }
+// NOTE:
+// In production you may want to review these checks and handle them as gracefully as possible.
+#if defined(_MSC_VER)
+  #define VIVID_TRAP() { if (IsDebuggerPresent()) { __debugbreak(); } else ::vl::abort_vl(); }
+#elif defined(__GNUG__) || defined(__MINGW32__)
+  #define VIVID_TRAP() { fflush(stdout); fflush(stderr); asm("int $0x3"); }
 #else
-  #define VIVID_CHECK(expr) { (expr) }
-  #define VIVID_WARN(expr) { (expr) }
+  #define VIVID_TRAP() { ::vl::abort_vl(); }
+#endif
+#if 1
+  // This is better for debugging
+  #define VIVID_CHECK(expr) { if ( ! ( expr ) ) { ::vl::log_failed_check( #expr, __FILE__, __LINE__ ); VIVID_TRAP(); } }
+#else
+  // This allows the user to ignore the exception while giving full info about the error
+  #define STRINGIZE_DETAIL(x) #x
+  #define STRINGIZE(x) STRINGIZE_DETAIL(x)
+  #define VIVID_CHECK(expr) { if ( ! (expr) ) { throw std::runtime_error( __FILE__ " line " STRINGIZE(__LINE__) ": " #expr ); } }
 #endif
 
 #include "VLQtWidget.h"
@@ -929,246 +940,139 @@ namespace
       return NULL;
     }
 
-    ref<vl::Geometry> vlPoly = new vl::Geometry;
+    ref<vl::Geometry> vl_geom = new vl::Geometry;
 
     // Buffer in host memory to store cell info
-    unsigned int* m_IndexBuffer = 0;
+    // unsigned int* m_IndexBuffer = 0;
 
     // Buffer in host memory to store vertex points
-    float* m_PointBuffer = 0;
+    // float* m_PointBuffer = 0;
 
     // Buffer in host memory to store normals associated with vertices
-    float* m_NormalBuffer = 0;
+    // float* m_NormalBuffer = 0;
 
     // Buffer in host memory to store scalar info associated with vertices
-    char* m_ScalarBuffer = 0;
+    // char* m_ScalarBuffer = 0;
 
-    unsigned int numOfvtkPolyPoints = vtkPoly->GetNumberOfPoints();
-
-    // A polydata will always have point data
-    int pointArrayNum = vtkPoly->GetPointData()->GetNumberOfArrays();
-
-    if (pointArrayNum == 0 && numOfvtkPolyPoints == 0)
+    vtkSmartPointer<vtkPoints> points = vtkPoly->GetPoints();
+    if ( ! points )
     {
-      MITK_ERROR << "No points detected in the vtkPoly data!\n";
+      MITK_ERROR << "No points in vtkPolyData. Skipping.\n";
       return NULL;
     }
 
-    // We'll have to build the cell data if not present already
-    int cellArrayNum  = vtkPoly->GetCellData()->GetNumberOfArrays();
-    if ( cellArrayNum == 0 ) {
+    if ( ! vtkPoly->GetPointData() )
+    {
+      MITK_ERROR << "No points data in the vtkPolyData data. Skipping.\n";
+      return NULL;
+    }
+
+    // Build the cell data if not present already
+    int cell_array_count = vtkPoly->GetCellData()->GetNumberOfArrays();
+    if ( cell_array_count == 0 ) {
       vtkPoly->BuildCells();
     }
 
-    vtkSmartPointer<vtkCellArray> verts;
+    vtkSmartPointer<vtkCellArray> primitives = NULL;
 
-    // Try to get access to cells
-    if (vtkPoly->GetVerts() != 0 && vtkPoly->GetVerts()->GetNumberOfCells() != 0)
-      verts = vtkPoly->GetVerts();
-    else if (vtkPoly->GetLines() != 0 && vtkPoly->GetLines()->GetNumberOfCells() != 0)
-      verts = vtkPoly->GetLines();
-    else if (vtkPoly->GetPolys() != 0 && vtkPoly->GetPolys()->GetNumberOfCells() != 0)
-      verts = vtkPoly->GetPolys();
-    else if (vtkPoly->GetStrips() != 0 && vtkPoly->GetStrips()->GetNumberOfCells() != 0)
-      verts = vtkPoly->GetStrips();
+    // For the moment we only support triangle data. Supporting other types is easy, I just didn't have any data to test.
 
-    if (verts->GetMaxCellSize() > 3)
+    // Access primitive/cell data
+    if ( vtkPoly->GetPolys() && vtkPoly->GetPolys()->GetNumberOfCells() ) {
+      primitives = vtkPoly->GetPolys();
+      MITK_INFO << "vtkPolyData polygons found.\n";
+    }
+    else
+    if ( vtkPoly->GetVerts() && vtkPoly->GetVerts()->GetNumberOfCells() ) {
+      primitives = vtkPoly->GetVerts();
+      MITK_ERROR << "vtkPolyData verts not supported. Skipping.\n";
+    }
+    else
+    if ( vtkPoly->GetLines() && vtkPoly->GetLines()->GetNumberOfCells() ) {
+      primitives = vtkPoly->GetLines();
+      MITK_ERROR << "vtkPolyData lines not supported. Skipping.\n";
+    }
+    else
+    if ( vtkPoly->GetStrips() && vtkPoly->GetStrips()->GetNumberOfCells() ) {
+      primitives = vtkPoly->GetStrips();
+      MITK_ERROR << "vtkPolyData strips not supported. Skipping.\n";
+      return NULL;
+    }
+
+    if ( ! primitives )
+    {
+      MITK_ERROR << "No primitive found in vtkPolyData data. Skipping.\n";
+      return NULL;
+    }
+
+    int max_cell_size = primitives->GetMaxCellSize();
+    if ( max_cell_size != 3 )
     {
       // Panic and return
-      MITK_ERROR << "More than three vertices / cell detected, can't handle this data type!\n";
+      MITK_ERROR << "Only polygons with 3 vertices are supported, not " << max_cell_size << ". Skipping.\n";
       return NULL;
     }
 
-    vtkSmartPointer<vtkPoints> points = vtkPoly->GetPoints();
+    unsigned int point_buffer_size = 0;
+    unsigned int point_count = static_cast<unsigned int> (points->GetNumberOfPoints());
+    point_buffer_size = point_count * sizeof(float) * 3;
 
-    if (points == 0)
+    // setup triangles index buffer
+
+    int triangle_count = (int)primitives->GetNumberOfCells();
+
+    ref<vl::DrawElementsUInt> vl_draw_elements = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
+    vl_draw_elements->indexBuffer()->resize( triangle_count * 3 );
+    vl_geom->drawCalls().push_back(vl_draw_elements.get());
+
+    // copy triangles
+    primitives->InitTraversal();
+    for( int cell_index = 0; cell_index < triangle_count; ++cell_index )
     {
-      MITK_ERROR << "Corrupt vtkPoly, returning! \n";
-      return NULL;
-    }
-
-    // Deal with normals
-    vtkSmartPointer<vtkDataArray> normals = vtkPoly->GetPointData()->GetNormals();
-
-    if (normals == 0)
-    {
-      MITK_INFO << "Generating normals for the vtkPoly data (mitk::OclSurface)";
-
-      vtkSmartPointer<vtkPolyDataNormals> normalGen = vtkSmartPointer<vtkPolyDataNormals>::New();
-      normalGen->SetInputData(vtkPoly);
-      normalGen->AutoOrientNormalsOn();
-      normalGen->Update();
-
-      normals = normalGen->GetOutput()->GetPointData()->GetNormals();
-
-      if (normals == 0)
-      {
-        MITK_ERROR << "Couldn't generate normals, returning! \n";
-        return NULL;
+      vtkIdType npts = 0;
+      vtkIdType *pts = 0;
+      primitives->GetNextCell( npts, pts );
+      for (vtkIdType i = 0; i < npts; ++i) {
+        vl_draw_elements->indexBuffer()->at( cell_index * 3 + i ) = pts[i];
       }
-
-      vtkPoly->GetPointData()->SetNormals(normals);
-      vtkPoly->GetPointData()->GetNormals()->Modified();
-      vtkPoly->GetPointData()->Modified();
     }
 
-    // Check if we have scalars
-    vtkSmartPointer<vtkDataArray> scalars = vtkPoly->GetPointData()->GetScalars();
+    // setup vertices
+    ref<vl::ArrayFloat3> vl_verts = new vl::ArrayFloat3;
+    vl_verts->resize(point_count);
+    memcpy(vl_verts->ptr(), points->GetVoidPointer(0), point_buffer_size);
+    vl_geom->setVertexArray(vl_verts.get());
 
-    bool pointsValid  = (points.GetPointer() == 0) ? false : true;
-    bool normalsValid = (normals.GetPointer() == 0) ? false : true;
-    bool scalarsValid = (scalars.GetPointer() == 0) ? false : true;
-
-    unsigned int pointBufferSize = 0;
-    unsigned int numOfPoints = static_cast<unsigned int> (points->GetNumberOfPoints());
-    pointBufferSize = numOfPoints * sizeof(float) * 3;
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Deal with points
-
-    // Allocate memory
-    m_PointBuffer = new float[numOfPoints*3];
-
-    // Copy data to buffer
-    memcpy(m_PointBuffer, points->GetVoidPointer(0), pointBufferSize);
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Deal with normals
-
-    if (normalsValid)
+    // setup normals
+    vtkSmartPointer<vtkDataArray> normals = vtkPoly->GetPointData()->GetNormals();
+    if ( normals )
     {
       // Get the number of normals we have to deal with
-      int m_NormalCount = static_cast<unsigned int> (normals->GetNumberOfTuples());
-      VIVID_CHECK(m_NormalCount == numOfPoints);
-
-      // Size of the buffer that is required to store all the normals
-      unsigned int normalBufferSize = numOfPoints * sizeof(float) * 3;
-
-      // Allocate memory
-      m_NormalBuffer = new float[numOfPoints*3];
-
-      // Copy data to buffer
-      memcpy(m_NormalBuffer, normals->GetVoidPointer(0), normalBufferSize);
+      int normal_count = (int)normals->GetNumberOfTuples();
+      if ( normal_count == point_count )
+      {
+        ref<vl::ArrayFloat3> vl_normals = new vl::ArrayFloat3;
+        vl_normals->resize(point_count);
+        memcpy(vl_normals->ptr(), normals->GetVoidPointer(0), point_buffer_size);
+        vl_geom->setNormalArray(vl_normals.get());
+      }
+      else
+      {
+        MITK_ERROR << "Invalid normals for vtkPolyData. VL will recompute them.\n";
+        MITK_ERROR << "normal_count: " << normal_count << " vs point_count: " << point_count << "\n";
+        normals = NULL;
+      }
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Deal with scalars (colors or texture coordinates)
-    if (scalarsValid)
-    {
+    MITK_INFO << "Computing surface adjacency... ";
 
-      // Get the number of scalars we have to deal with
-      int m_ScalarCount = static_cast<unsigned int> (scalars->GetNumberOfTuples());
+    vl_geom = vl::AdjacencyExtractor::extract( vl_geom.get() );
 
-      // Size of the buffer that is required to store all the scalars
-      unsigned int scalarBufferSize = numOfPoints * sizeof(char) * 1;
+    MITK_INFO << "done.\n";
 
-      // Allocate memory
-      m_ScalarBuffer = new char[numOfPoints];
+    MITK_INFO << "Surface data initialized. Points: " << points->GetNumberOfPoints() << ", Cells: " << primitives->GetNumberOfCells() << "\n";
 
-      // Copy data to buffer
-      memcpy(m_ScalarBuffer, scalars->GetVoidPointer(0), scalarBufferSize);
-    }
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // Deal with cells - initialize index buffer
-    vtkIdType npts;
-    vtkIdType *pts;
-
-    // Get the number of indices we have to deal with
-    unsigned int m_IndexCount = static_cast<unsigned int> (verts->GetNumberOfCells());
-
-    // Get the max number of vertices / cell
-    int maxPointsPerCell = verts->GetMaxCellSize();
-
-    // Get the number of indices we have to deal with
-    unsigned int numOfTriangles = static_cast<unsigned int> (verts->GetNumberOfCells());
-
-    // Allocate memory for the index buffer
-    m_IndexBuffer = new unsigned int[numOfTriangles*3];
-    memset(m_IndexBuffer, 0, numOfTriangles*3*sizeof(unsigned int));
-
-    verts->InitTraversal();
-
-    unsigned int cellIndex = 0;
-    // Iterating through all the cells
-    while (cellIndex < numOfTriangles)
-    {
-      verts->GetNextCell(npts, pts);
-
-      // Copy the indices into the index buffer
-      for (size_t i = 0; i < static_cast<size_t>(npts); i++)
-        m_IndexBuffer[cellIndex*3 +i] = pts[i];
-
-      cellIndex++;
-    }
-    MITK_INFO << "Surface data initialized. Num of Points: " <<points->GetNumberOfPoints() << " Num of Cells: " <<verts->GetNumberOfCells() << "\n";
-
-    ref<vl::ArrayFloat3>  vl_verts   = new vl::ArrayFloat3;
-    ref<vl::ArrayFloat3>  vlNormals = new vl::ArrayFloat3;
-    ref<vl::DrawElementsUInt> vlTriangles = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
-
-    vl_verts->resize(numOfPoints * 3);
-    vlNormals->resize(numOfPoints * 3);
-
-    vlPoly->drawCalls().push_back(vlTriangles.get());
-    vlTriangles->indexBuffer()->resize(numOfTriangles*3);
-
-    vlPoly->setVertexArray(vl_verts.get());
-    vlPoly->setNormalArray(vlNormals.get());
-
-    float* vertBufFlotPtr = reinterpret_cast<float *>(vl_verts->ptr());
-    float* normBufFlotPtr = reinterpret_cast<float *>(vlNormals->ptr());
-
-    // Vertices and normals
-    for (unsigned int i=0; i<numOfPoints; ++i)
-    {
-      vertBufFlotPtr[3*i + 0] = m_PointBuffer[i*3 +0];
-      vertBufFlotPtr[3*i + 1] = m_PointBuffer[i*3 +1];
-      vertBufFlotPtr[3*i + 2] = m_PointBuffer[i*3 +2];
-
-      normBufFlotPtr[3*i + 0] = m_NormalBuffer[i*3 +0];
-      normBufFlotPtr[3*i + 1] = m_NormalBuffer[i*3 +1];
-      normBufFlotPtr[3*i + 2] = m_NormalBuffer[i*3 +2];
-    }
-
-    // Make sure that the values are copied onto GPU memory
-    //vlPoly->vertexArray()->updateBufferObject();
-    //glFinish();
-
-    // Read triangles
-    for(unsigned int i=0; i<numOfTriangles; ++i)
-    {
-      vlTriangles->indexBuffer()->at(i*3+0) = m_IndexBuffer[i*3 +0];
-      vlTriangles->indexBuffer()->at(i*3+1) = m_IndexBuffer[i*3 +1];
-      vlTriangles->indexBuffer()->at(i*3+2) = m_IndexBuffer[i*3 +2];
-    }
-
-    // Make sure that the values are copied onto GPU memory
-    vl_verts->updateBufferObject();
-    vlNormals->updateBufferObject();
-    vlTriangles->indexBuffer()->updateBufferObject();
-    glFinish();
-
-    // Buffer in host memory to store cell info
-    if (m_IndexBuffer != 0)
-      delete m_IndexBuffer;
-
-    // Buffer in host memory to store vertex points
-    if (m_PointBuffer != 0)
-      delete m_PointBuffer;
-
-    // Buffer in host memory to store normals associated with vertices
-    if (m_NormalBuffer != 0)
-      delete m_NormalBuffer;
-
-    // Buffer in host memory to store scalar info associated with vertices
-    if (m_ScalarBuffer != 0)
-      delete m_ScalarBuffer;
-
-    // MITK_INFO << "Num of VL vertices: " << vlPoly->vertexArray()->size() / 3;
-
-    // Finally convert to adjacency format so we can render silhouettes etc.
-    return vl::AdjacencyExtractor::extract( vlPoly.get() );
+    return vl_geom;
   }
 
   //-----------------------------------------------------------------------------
@@ -1353,7 +1257,7 @@ public:
     m_VLGlobalSettings = dynamic_cast<const VLGlobalSettingsDataNode*>( node );
   }
 
-  virtual void init() { }
+  virtual bool init() { return true; }
 
   virtual void update() {
     bool enable = getBoolProp( m_DataNode, "VL.Global.Stencil.Enable", false );
@@ -1389,7 +1293,7 @@ public:
     VIVID_CHECK( m_MitkSurf );
   }
 
-  virtual void init() {
+  virtual bool init() {
     VIVID_CHECK( m_MitkSurf );
 
     mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
@@ -1399,12 +1303,18 @@ public:
     initClipProps( node );
 
     ref<vl::Geometry> geom = ConvertVTKPolyData( m_MitkSurf->GetVtkPolyData() );
+    if ( ! geom ) {
+      return false;
+    }
+
     if ( ! geom->normalArray() ) {
       geom->computeNormals();
     }
 
     m_Actor = initActor( geom.get() );
     m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
+
+    return true;
   }
 
   virtual void update() {
@@ -1439,7 +1349,7 @@ public:
     VIVID_CHECK( m_MitkImage );
   }
 
-  virtual void init() {
+  virtual bool init() {
     VIVID_CHECK( m_MitkImage );
 
     mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
@@ -1464,6 +1374,8 @@ public:
     fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
     // When texture mapping is enabled the texture is modulated by the vertex color, including the alpha
     geom->setColorArray( vl::white );
+
+    return true;
   }
 
   virtual void update() {
@@ -1500,7 +1412,7 @@ public:
     VIVID_CHECK( m_MitkImage );
   }
 
-  virtual void init() {
+  virtual bool init() {
     mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
     initVolumeProps( node );
 
@@ -1586,6 +1498,7 @@ public:
     vl::mat4 mat(vals);
     tr->setLocalMatrix(mat);
 #endif
+    return true;
   }
 
   virtual void update() {
@@ -1615,7 +1528,7 @@ public:
     VIVID_CHECK( m_MitkAxes );
   }
 
-  virtual void init() {
+  virtual bool init() {
     VIVID_CHECK( m_MitkAxes );
 
     ref<vl::ArrayFloat3> verts  = m_Vertices = new vl::ArrayFloat3;
@@ -1658,6 +1571,8 @@ public:
     fx->shader()->getLineWidth()->set( 2 );
     // Use color array instead of lighting
     fx->shader()->gocUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
+
+    return true;
   }
 
   virtual void update() {
@@ -1736,7 +1651,7 @@ public:
     point_color->SetValue( vl::yellow.ptr() );
   }
 
-  virtual void init() { initPointSetProps(); }
+  virtual bool init() { initPointSetProps(); return true; }
 
   void init3D() {
     VIVID_CHECK( m_3DSphereMode );
@@ -1962,7 +1877,7 @@ public:
     return lwci;
   }
 
-  virtual void init() {
+  virtual bool init() {
     mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
     // initRenderModeProps( node ); /* does not apply */
     initFogProps( node );
@@ -1987,7 +1902,9 @@ public:
     err = cudaGraphicsGLRegisterImage( &m_CudaResource, m_Texture->handle(), m_Texture->dimension(), cudaGraphicsRegisterFlagsNone );
     if ( err != cudaSuccess ) {
       throw std::runtime_error("cudaGraphicsGLRegisterImage() failed.");
+      return false;
     }
+    return true;
   }
 
   virtual void update() {
@@ -2336,16 +2253,17 @@ VLMapper* VLSceneView::addDataNode(const mitk::DataNode* node)
     return NULL;
   }
 
-  #if 1
+  #if 0
     dumpNodeInfo( "addDataNode()", node );
     dumpNodeInfo( "addDataNode()->GetData()", node->GetData() );
   #endif
 
   ref<VLMapper> vl_node = VLMapper::create( node, this );
   if ( vl_node ) {
-    m_DataNodeVLMapperMap[ node ] = vl_node;
-    vl_node->init();
-    vl_node->update();
+    if ( vl_node->init() ) {
+      m_DataNodeVLMapperMap[ node ] = vl_node;
+      vl_node->update();
+    }
   }
 
   return vl_node.get();

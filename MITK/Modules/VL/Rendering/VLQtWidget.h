@@ -79,7 +79,7 @@ public:
   }
 
   /** Initializes all the relevant VL data structures, uniforms etc. according to the node's settings. */
-  virtual void init() = 0;
+  virtual bool init() = 0;
 
   /** Updates all the relevant VL data structures, uniforms etc. according to the node's settings. */
   virtual void update() = 0;
