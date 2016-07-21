@@ -1762,6 +1762,7 @@ void ProjectPointsOnStereoVideo::ProjectAxes()
 void ProjectPointsOnStereoVideo::ClearWorldPoints()
 {
   m_WorldPoints->ClearList();
+  m_WorldPoints = NULL;
   m_ProjectOK = false;
 }
 
