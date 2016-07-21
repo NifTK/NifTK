@@ -45,7 +45,7 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
   PointType seedPoint;
 
   SizeType regionSize;
-  regionSize.Fill(7);
+  regionSize.Fill(9);
 
   IndexType regionIndex;
   regionIndex.Fill(0);
@@ -89,23 +89,73 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
 
   // Test 2. Single Seed in middle. Grey scale image is concentric squares of equal intensity. No contours.
   greyImage->FillBuffer(0);
-  regionSize.Fill(5);
+  regionSize.Fill(7);
   regionIndex.Fill(1);
   region.SetSize(regionSize);
   region.SetIndex(regionIndex);
   FillImageRegionWithValue<short, 2>(1, greyImage, region);
-  regionSize.Fill(3);
+  regionSize.Fill(5);
   regionIndex.Fill(2);
   region.SetSize(regionSize);
   region.SetIndex(regionIndex);
   FillImageRegionWithValue<short, 2>(2, greyImage, region);
-
+  regionSize.Fill(3);
   regionIndex.Fill(3);
+  region.SetSize(regionSize);
+  region.SetIndex(regionIndex);
+  FillImageRegionWithValue<short, 2>(3, greyImage, region);
+
+  regionIndex.Fill(4);
   contourImage->TransformIndexToPhysicalPoint(regionIndex, seedPoint);
   points->GetPoints()->InsertElement(0, seedPoint);
 
-  filter->SetLowerThreshold(2);
-  filter->SetUpperThreshold(2);
+  /*
+   * Grey image:
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  8  |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  7  |   0   |   1   |   1   |   1   |   1   |   1   |   1   |   1   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  6  |   0   |   1   |   2   |   2   |   2   |   2   |   2   |   1   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  5  |   0   |   1   |   2   |   3   |   3   |   3   |   2   |   1   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  4  |   0   |   1   |   2   |   3   |   3   |   3   |   2   |   1   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  3  |   0   |   1   |   2   |   3   |   3   |   3   |   2   |   1   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  2  |   0   |   1   |   2   |   2   |   2   |   2   |   2   |   1   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  1  |   0   |   1   |   1   |   1   |   1   |   1   |   1   |   1   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  0  |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+
+         0       1       2       3       4       5       6       7       8
+
+      Seed in the middle, at (4, 4).
+  */
+
+  filter->SetLowerThreshold(3);
+  filter->SetUpperThreshold(3);
   filter->Update();
 
   numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
@@ -116,8 +166,8 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
   }
 
   // Test 3. Single seed in middle. Different Threshold.
-  filter->SetLowerThreshold(1);
-  filter->SetUpperThreshold(2);
+  filter->SetLowerThreshold(2);
+  filter->SetUpperThreshold(3);
   filter->Update();
   numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
   if (numberOfVoxels != 25)
@@ -139,36 +189,113 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
 
   // Test 5. Single seed in middle. Test we go right to edge without crashing.
   filter->SetLowerThreshold(0);
-  filter->SetUpperThreshold(2);
+  filter->SetUpperThreshold(3);
   filter->Update();
   numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
-  if (numberOfVoxels != 49)
+  if (numberOfVoxels != 81)
   {
-    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: expected 49, but got " << numberOfVoxels << std::endl;
+    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: expected 81, but got " << numberOfVoxels << std::endl;
     return EXIT_FAILURE;
   }
 
   // Test 6. Create closed contour in Contour image. Region growing should go up to and including contour.
   contourImage->FillBuffer(0);
-  regionSize.Fill(5);
+  regionSize.Fill(7);
   regionIndex.Fill(1);
   region.SetSize(regionSize);
   region.SetIndex(regionIndex);
   FillImageRegionWithValue<unsigned char, 2>(255, contourImage, region);
   regionSize.Fill(3);
-  regionIndex.Fill(2);
+  regionIndex.Fill(3);
   region.SetSize(regionSize);
   region.SetIndex(regionIndex);
   FillImageRegionWithValue<unsigned char, 2>(0, contourImage, region);
+  filter->SetManualContourImageBorderValue(255);
+
+  /*
+   * Contour image with contour point set:
+   *
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  8  |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  7  |   0   |  255  |  255  |  255  |  255  |  255  |  255  |  255  |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------o---o---+---o---+---o---+---o---+---o---o-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  6  |   0   |  255  o  255  |  255  |  255  |  255  |  255  o  255  |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  5  |   0   |  255  o  255  |   0   |   0   |   0   |  255  o  255  |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  4  |   0   |  255  o  255  |   0   |   0   |   0   |  255  o  255  |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  3  |   0   |  255  o  255  |   0   |   0   |   0   |  255  o  255  |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  2  |   0   |  255  o  255  |  255  |  255  |  255  |  255  o  255  |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------o---o---+---o---+---o---+---o---+---o---o-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  1  |   0   |  255  |  255  |  255  |  255  |  255  |  255  |  255  |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  0  |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+
+         0       1       2       3       4       5       6       7       8
+  */
 
   // Check we painted the right number of voxels in the contour image.
   numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, contourImage);
-  if (numberOfVoxels != 16)
+  if (numberOfVoxels != 40)
   {
-    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: expected 16, but got " << numberOfVoxels << std::endl;
+    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: expected 40, but got " << numberOfVoxels << std::endl;
     return EXIT_FAILURE;
   }
 
+
+  std::vector<itk::PolyLineParametricPath<2>::Pointer> contourPaths;
+  {
+    itk::PolyLineParametricPath<2>::Pointer contourPath = itk::PolyLineParametricPath<2>::New();
+
+    double contourPoints[][2] = {
+      {1.5, 1.5}, {2.0, 1.5}, {3.0, 1.5}, {4.0, 1.5}, {5.0, 1.5}, {6.0, 1.5},
+      {6.5, 1.5}, {6.5, 2.0}, {6.5, 3.0}, {6.5, 4.0}, {6.5, 5.0}, {6.5, 6.0},
+      {6.5, 6.5}, {6.0, 6.5}, {5.0, 6.5}, {4.0, 6.5}, {3.0, 6.5}, {2.0, 6.5},
+      {1.5, 6.5}, {1.5, 6.0}, {1.5, 5.0}, {1.5, 4.0}, {1.5, 3.0}, {1.5, 2.0},
+      {1.5, 1.5}
+    };
+    for (int i = 0; i < sizeof(contourPoints) / sizeof(contourPoints[0]); ++i)
+    {
+      itk::ContinuousIndex<float, 2> index;
+      index[0] = contourPoints[i][0];
+      index[1] = contourPoints[i][1];
+
+      PointType point;
+      contourImage->TransformContinuousIndexToPhysicalPoint(index, point);
+
+      itk::PolyLineParametricPath<2>::ContinuousIndexType idx;
+      idx.CastFrom(point);
+
+      contourPath->AddVertex(idx);
+    }
+
+    contourPaths.push_back(contourPath);
+  }
+
+
+  filter->SetManualContours(&contourPaths);
   filter->SetManualContourImage(contourImage);
   filter->Modified();
   filter->Update();
@@ -181,41 +308,146 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
     return EXIT_FAILURE;
   }
 
-  // Test 7. Creating a single voxel space in the contour. Then whole image should fill.
-  regionIndex[0] = 3;
+  // Test 7. Creating a gap in the contour. Then whole image should fill.
+  regionIndex[0] = 4;
   regionIndex[1] = 1;
+  contourImage->SetPixel(regionIndex, 0);
+  regionIndex[0] = 4;
+  regionIndex[1] = 2;
   contourImage->SetPixel(regionIndex, 0);
   filter->SetManualContourImage(contourImage);
   filter->Modified();
   filter->Update();
 
   numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
-  if (numberOfVoxels != 49)
+  if (numberOfVoxels != 81)
   {
-    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: expected 49 after contour broken, but got " << numberOfVoxels << std::endl;
+    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: expected 81 after contour broken, but got " << numberOfVoxels << std::endl;
     return EXIT_FAILURE;
   }
 
   // Test 8. Draw a line across the contour image like when doing editing in MIDAS.
+
+  /*
+   * Contour image with contour point set:
+   *
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  8  |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  7  |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  6  |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  5  |  255  |  255  |  255  |   0   |   0   |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     o---o---+---o---o-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  4  |  255  |  255  o  255  |   0   |   0   |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  3  |   0   |  255  o  255  |  255  |   0   |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------o---o---o-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  2  |   0   |  255  |  255  o  255  |  255  |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------o---o---o-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  1  |   0   |   0   |  255  |  255  o  255  |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------+-------+-------+-------+-------+-------+
+     |       |       |       |       |       |       |       |       |       |
+  0  |   0   |   0   |   0   |  255  o  255  |   0   |   0   |   0   |   0   |
+     |       |       |       |       |       |       |       |       |       |
+     +-------+-------+-------+-------o-------+-------+-------+-------+-------+
+
+         0       1       2       3       4       5       6       7       8
+  */
+
   contourImage->FillBuffer(0);
-  regionIndex[0] = 3; regionIndex[1] = 0; contourImage->SetPixel(regionIndex, 255);
-  regionIndex[0] = 2; regionIndex[1] = 1; contourImage->SetPixel(regionIndex, 255);
-  regionIndex[0] = 3; regionIndex[1] = 1; contourImage->SetPixel(regionIndex, 255);
-  regionIndex[0] = 1; regionIndex[1] = 2; contourImage->SetPixel(regionIndex, 255);
-  regionIndex[0] = 2; regionIndex[1] = 2; contourImage->SetPixel(regionIndex, 255);
-  regionIndex[0] = 1; regionIndex[1] = 3; contourImage->SetPixel(regionIndex, 255);
-  regionIndex[0] = 0; regionIndex[1] = 4; contourImage->SetPixel(regionIndex, 255);
-  regionIndex[0] = 1; regionIndex[1] = 4; contourImage->SetPixel(regionIndex, 255);
+  {
+    int lineVoxelIndices[][2] = {
+      {0, 5},
+      {1, 5},
+      {2, 5},
+      {0, 4},
+      {1, 4},
+      {2, 4},
+      {1, 3},
+      {2, 3},
+      {3, 3},
+      {1, 2},
+      {2, 2},
+      {3, 2},
+      {4, 2},
+      {2, 1},
+      {3, 1},
+      {4, 1},
+      {3, 0},
+      {4, 0},
+    };
+    for (int i = 0; i < sizeof(lineVoxelIndices) / sizeof(lineVoxelIndices[0]); ++i)
+    {
+      IndexType index;
+      index[0] = lineVoxelIndices[i][0];
+      index[1] = lineVoxelIndices[i][1];
+      contourImage->SetPixel(index, 255);
+    }
+  }
+
   filter->SetManualContourImage(contourImage);
+
+  contourPaths.clear();
+  {
+    itk::PolyLineParametricPath<2>::Pointer contourPath = itk::PolyLineParametricPath<2>::New();
+
+    double contourPoints[][2] = {
+      {-0.5, 4.5}, {0.0, 4.5}, {1.0, 4.5},
+      {1.5, 4.5}, {1.5, 4.0}, {1.5, 3.0},
+      {1.5, 2.5}, {2.0, 2.5},
+      {2.5, 2.5}, {2.5, 2.0},
+      {2.5, 1.5}, {3.0, 1.5},
+      {3.5, 1.5}, {3.5, 1.0}, {3.5, 0.0},
+      {3.5, -0.5},
+    };
+    for (int i = 0; i < sizeof(contourPoints) / sizeof(contourPoints[0]); ++i)
+    {
+      itk::ContinuousIndex<float, 2> index;
+      index[0] = contourPoints[i][0];
+      index[1] = contourPoints[i][1];
+
+      PointType point;
+      contourImage->TransformContinuousIndexToPhysicalPoint(index, point);
+
+      itk::PolyLineParametricPath<2>::ContinuousIndexType idx;
+      idx.CastFrom(point);
+
+      contourPath->AddVertex(idx);
+    }
+
+    contourPaths.push_back(contourPath);
+  }
+
+
+  filter->SetManualContours(&contourPaths);
+
   filter->SetLowerThreshold(1);
-  filter->SetUpperThreshold(2);
+  filter->SetUpperThreshold(3);
   filter->Modified();
   filter->Update();
 
   numberOfVoxels = CountVoxelsAboveValue<unsigned char, 2>(0, filter->GetOutput());
-  if (numberOfVoxels != 24)
+  if (numberOfVoxels != 42)
   {
-    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: expected 24 after contour painted, but got " << numberOfVoxels << std::endl;
+    std::cerr << "itkMIDASRegionGrowingImageFilterTest2: expected 42 after contour painted, but got " << numberOfVoxels << std::endl;
     return EXIT_FAILURE;
   }
 

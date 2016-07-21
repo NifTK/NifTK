@@ -34,11 +34,15 @@ class CMIC_QT_NIFTYMIDASAPP QmitkNiftyMIDASAppWorkbenchAdvisor: public QmitkBase
 {
 public:
 
+  typedef QmitkBaseAppWorkbenchAdvisor Superclass;
+
   /// \brief Returns uk.ac.ucl.cmic.niftyview.midasperspective which should match that in plugin.xml.
   virtual QString GetInitialWindowPerspectiveId();
 
   /// \brief Gets the resource name of the window icon.
   virtual QString GetWindowIconResourcePath() const;
+
+  virtual void PostStartup();
 
 protected:
 

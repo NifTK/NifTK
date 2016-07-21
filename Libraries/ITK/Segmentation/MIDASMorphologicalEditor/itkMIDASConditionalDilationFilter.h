@@ -111,7 +111,7 @@ namespace itk
     unsigned int m_UpperThreshold;
   };
 
-} //end namespace itk
+}
 
 #ifndef ITK_MANUAL_INSTANTIATION
 #include "itkMIDASConditionalDilationFilter.txx"

@@ -100,9 +100,9 @@ private:
   RegionType m_Region;
   OutputPixelType m_OutputBackgroundValue;
 
-}; // end class
+};
 
-} // end namespace
+}
 
 #ifndef ITK_MANUAL_INSTANTIATION
 #include "itkMIDASMaskByRegionImageFilter.txx"

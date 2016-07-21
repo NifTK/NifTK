@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>429</width>
-    <height>113</height>
+    <height>124</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -199,7 +199,7 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0">
+     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0">
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -252,6 +252,16 @@
         </property>
         <property name="text">
          <string>directions</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_ShowIntensityAnnotationCheckBox">
+        <property name="toolTip">
+         <string>Shows the intensity of the selected voxel in the visible images</string>
+        </property>
+        <property name="text">
+         <string>intensity</string>
         </property>
        </widget>
       </item>

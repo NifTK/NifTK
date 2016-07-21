@@ -22,11 +22,9 @@
 namespace niftk
 {
 
-/**
-* \class MouseEventEater
-* \brief Qt event filter to eat mouse events
-* \ingroup uk.ac.ucl.cmic.thumbnail
-*/
+/// \class MouseEventEater
+/// \brief Qt event filter to eat mouse events
+/// \ingroup uk.ac.ucl.cmic.thumbnail
 class NIFTKCOREGUI_EXPORT MouseEventEater : public QObject
 {
   Q_OBJECT
@@ -66,8 +64,8 @@ protected:
   }
 private:
   bool m_IsEating;
-}; // end class
+};
 
-} // end namespace
+}
 
 #endif

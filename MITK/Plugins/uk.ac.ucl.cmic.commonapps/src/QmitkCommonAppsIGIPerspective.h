@@ -29,12 +29,12 @@ class CMIC_QT_COMMONAPPS QmitkCommonAppsIGIPerspective : public QObject, public 
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPerspectiveFactory)
-  
+
 public:
 
   QmitkCommonAppsIGIPerspective();
   QmitkCommonAppsIGIPerspective(const QmitkCommonAppsIGIPerspective& other);
-  
+
   void CreateInitialLayout(berry::IPageLayout::Pointer layout) override;
 
 };

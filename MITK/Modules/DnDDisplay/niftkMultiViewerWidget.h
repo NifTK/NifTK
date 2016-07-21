@@ -69,14 +69,21 @@ class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerWidget : public QWidget
 
 public:
 
+  enum ViewerBindingOption
+  {
+    PositionBinding = 1,
+    CursorBinding = 2,
+    MagnificationBinding = 4,
+    WindowLayoutBinding = 8,
+    GeometryBinding = 16
+  };
+
   /// \brief Constructor which builds up the controls and layout, and sets the selected viewer to the first (0th),
   /// the default drop type to DNDDISPLAY_DROP_SINGLE, and sets the number of rows and columns to those
   /// specified in the constructor parameter list.
   niftkMultiViewerWidget(
       niftkMultiViewerVisibilityManager* visibilityManager,
       mitk::RenderingManager* renderingManager,
-      int defaultViewerRows,
-      int defaultViewerColumns,
       QWidget* parent = 0, Qt::WindowFlags f = 0);
 
   /// \brief Destructor, where we assume that all Qt widgets will be destroyed automatically.
@@ -86,6 +93,19 @@ public:
   /// \brief As each niftkSingleViewerWidget may have its own rendering manager,
   /// we may have to manually ask each viewer to re-render.
   void RequestUpdateAll();
+
+  /// \brief Sets the number of viewers.
+  void SetViewerNumber(int viewerRows, int viewerColumns);
+
+  /// \brief Gets the viewer in the given row and column.
+  /// Indexing starts from 0.
+  niftkSingleViewerWidget* GetViewer(int row, int column) const;
+
+  /// \brief Gets the viewer binding options.
+  int GetBindingOptions() const;
+
+  /// \brief Sets the viewer binding options.
+  void SetBindingOptions(int bindingOptions);
 
   /// \brief Set the background colour on all contained viewers, and we don't currently provide gradient backgrounds.
   void SetBackgroundColour(QColor backgroundColour);
@@ -149,6 +169,12 @@ public:
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
 
+  /// \brief Tells if the intensity annotation is visible.
+  bool IsIntensityAnnotationVisible() const;
+
+  /// \brief Sets the visibility of the intensity annotation.
+  void SetIntensityAnnotationVisible(bool visible);
+
   /// \brief Gets the flag controlling whether to see the 3D window in orthogonal (2x2) window layout.
   bool GetShow3DWindowIn2x2WindowLayout() const;
 
@@ -176,11 +202,11 @@ public:
   /// \brief Shows or hides the cursor.
   virtual bool ToggleCursorVisibility();
 
-  /// \brief Sets this viewer to Thumbnail Mode, which means a grid of 5 x 5 viewers, and controls disabled.
-  void SetThumbnailMode(bool enabled);
-
   /// \brief Gets the flag indicating whether this viewer is currently in thumnail mode.
   bool GetThumbnailMode() const;
+
+  /// \brief Sets this viewer to Thumbnail Mode, which means a grid of 5 x 5 viewers, and controls disabled.
+  void SetThumbnailMode(bool thumbnailMode);
 
   /// \brief Returns the orientation from the window layout, or WINDOW_ORIENTATION_UNKNOWN if not known (i.e. if 3D window layout is selected).
   WindowOrientation GetOrientation() const;
@@ -232,7 +258,11 @@ public:
   void SetFocused();
 
   /// \brief Shows the control panel if the mouse pointer is moved over the pin button.
-  virtual bool eventFilter(QObject* object, QEvent* event) override;
+  virtual bool eventFilter(QObject* object, QEvent* event);
+
+signals:
+
+  void BindingOptionsChanged(int bindingOptions);
 
 protected slots:
 
@@ -250,6 +280,9 @@ protected slots:
 
   /// \brief Called when the show direction annotations option has been changed through the control panel.
   void OnShowDirectionAnnotationsControlsChanged(bool visible);
+
+  /// \brief Called when the show intensity annotation option has been changed through the control panel.
+  void OnShowIntensityAnnotationControlsChanged(bool visible);
 
   /// \brief Called when the show 3D window option has been changed through the control panel.
   void OnShow3DWindowControlChanged(bool visible);
@@ -319,6 +352,12 @@ protected slots:
   /// \brief Called when the show cursor option has been changed in a viewer.
   void OnCursorVisibilityChanged(bool visible);
 
+  /// \brief Called when the show direction annotations option has been changed in a viewer.
+  void OnDirectionAnnotationsVisibilityChanged(bool visible);
+
+  /// \brief Called when the show intensity annotation option has been changed in a viewer.
+  void OnIntensityAnnotationVisibilityChanged(bool visible);
+
   /// \brief Called when the popup widget opens/closes, and used to re-render the viewers.
   void OnPopupOpened(bool opened);
 
@@ -326,24 +365,6 @@ protected slots:
   void OnPinButtonToggled(bool checked);
 
 private:
-
-  /// \brief Will return the index of the selected viewer or 0 if none is selected.
-  int GetSelectedViewerIndex() const;
-
-  /// \brief Gets the row number, given a viewer index [0, m_MaxRows * m_MaxCols - 1]
-  int GetViewerRowFromIndex(int index) const;
-
-  /// \brief Gets the column number, given a viewer index [0, m_MaxRows * m_MaxCols - 1]
-  int GetViewerColumnFromIndex(int index) const;
-
-  /// \brief Gets the index, given a row [0, m_MaxRows - 1] and column [0, m_MaxCols - 1] number.
-  int GetViewerIndexFromRowAndColumn(int row, int column) const;
-
-  /// \brief Main method to change the number of viewers.
-  void SetViewerNumber(int numberOfRows, int numberOfColumns, bool isThumbnailMode);
-
-  /// \brief Called from the QRadioButtons to set the layout.
-  void SetWindowLayout(WindowLayout windowLayout);
 
   /// \brief Creates a new viewer with the given name.
   /// The name is used to construct the name of the renderers, since the renderers must
@@ -383,19 +404,21 @@ private:
 
   // Member variables for control purposes.
   int m_SelectedViewerIndex;
-  int m_DefaultViewerRows;
-  int m_DefaultViewerColumns;
+  int m_ViewerRows;
+  int m_ViewerColumns;
   int m_ViewerRowsInNonThumbnailMode;
   int m_ViewerColumnsInNonThumbnailMode;
   bool m_Show3DWindowIn2x2WindowLayout;
   bool m_CursorDefaultVisibility;
   QColor m_BackgroundColour;
   bool m_RememberSettingsPerWindowLayout;
-  bool m_IsThumbnailMode;
+  bool m_ThumbnailMode;
   bool m_LinkedNavigationEnabled;
   double m_Magnification;
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;
+
+  int m_BindingOptions;
 
   niftkMultiViewerControls* m_ControlPanel;
 

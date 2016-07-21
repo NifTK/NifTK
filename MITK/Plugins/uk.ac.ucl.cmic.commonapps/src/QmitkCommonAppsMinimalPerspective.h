@@ -20,7 +20,7 @@
 
 /**
  * \class QmitkCommonAppsMinimalPerspective
- * \brief Default Perspective, called 'Minimal' to discourage incrementally adding to it.  
+ * \brief Default Perspective, called 'Minimal' to discourage incrementally adding to it.
  * \ingroup uk_ac_ucl_cmic_commonapps_internal
  *
  * Note: We have to load at least one view component, to get an editor created.
@@ -29,14 +29,14 @@ class CMIC_QT_COMMONAPPS QmitkCommonAppsMinimalPerspective : public QObject, pub
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPerspectiveFactory)
-  
+
 public:
 
   QmitkCommonAppsMinimalPerspective();
   QmitkCommonAppsMinimalPerspective(const QmitkCommonAppsMinimalPerspective& other);
-  
+
   void CreateInitialLayout(berry::IPageLayout::Pointer layout) override;
 
 };
 
-#endif 
+#endif

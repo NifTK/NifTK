@@ -489,7 +489,7 @@ CentOS 7 release installer:
   - installer_file="niftk-${version}-linux-${os_version}-x64.tar.gz"
   - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
   - "# Upload the tarball"
-  - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+  - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NiftyMIDAS/install/
 
   only:
   - tags

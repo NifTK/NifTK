@@ -17,7 +17,7 @@ project(uk_ac_ucl_cmic_midasgeneralsegmentor)
 mitk_create_plugin(
   EXPORT_DIRECTIVE MIDASGENERALSEGMENTOR_EXPORTS
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS MitkQtWidgetsExt niftkMIDASGui
+  MODULE_DEPENDS MitkQtWidgetsExt niftkMIDASGui niftkITK
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

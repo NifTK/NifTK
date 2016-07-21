@@ -19,6 +19,7 @@
 #include <mitkFocusManager.h>
 #include <mitkSliceNavigationController.h>
 #include <mitkWeakPointerProperty.h>
+#include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateProperty.h>
 #include <mitkNodePredicateAnd.h>
 #include <QmitkRenderWindow.h>
@@ -234,22 +235,7 @@ void QmitkBaseView::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseRenderer* QmitkBaseView::GetFocusedRenderer()
-{
-  Q_D(QmitkBaseView);
-  return d->m_Focused2DRenderer;
-}
-
-
-//-----------------------------------------------------------------------------
 mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationController()
-{
-  return this->GetSliceNavigationControllerInternal();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationControllerInternal()
 {
   mitk::SliceNavigationController::Pointer result = NULL;
 
@@ -271,20 +257,6 @@ mitk::SliceNavigationController* QmitkBaseView::GetSliceNavigationControllerInte
     }
   }
   return result;
-}
-
-
-//-----------------------------------------------------------------------------
-int QmitkBaseView::GetSliceNumberFromSliceNavigationController()
-{
-  int sliceNumber = -1;
-
-  mitk::SliceNavigationController::Pointer snc = this->GetSliceNavigationController();
-  if (snc.IsNotNull())
-  {
-    sliceNumber = snc->GetSlice()->GetPos();
-  }
-  return sliceNumber;
 }
 
 
@@ -344,28 +316,39 @@ mitk::DataStorage::Pointer QmitkBaseView::GetDataStorage() const
 
 
 //-----------------------------------------------------------------------------
-bool QmitkBaseView::SetMainWindowCursorVisible(bool visible)
+QList<mitk::DataNode::Pointer> QmitkBaseView::GetDataManagerSelection() const
 {
-  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+  return SuperClass::GetDataManagerSelection();
+}
 
-  mitk::BaseRenderer* mainAxialRenderer = renderWindowPart->GetQmitkRenderWindow("axial")->GetRenderer();
-  mitk::BaseRenderer* mainSagittalRenderer = renderWindowPart->GetQmitkRenderWindow("sagittal")->GetRenderer();
-  mitk::BaseRenderer* mainCoronalRenderer = renderWindowPart->GetQmitkRenderWindow("coronal")->GetRenderer();
 
-  mitk::StringProperty::Pointer crossPlaneNameProperty = mitk::StringProperty::New();
-  mitk::WeakPointerProperty::Pointer crossPlaneRendererProperty = mitk::WeakPointerProperty::New();
+//-----------------------------------------------------------------------------
+void QmitkBaseView::FireNodeSelected(mitk::DataNode::Pointer node)
+{
+  SuperClass::FireNodeSelected(node);
+}
 
-  mitk::NodePredicateAnd::Pointer crossPlanePredicate = mitk::NodePredicateAnd::New(
-        mitk::NodePredicateProperty::New("name", crossPlaneNameProperty),
-        mitk::NodePredicateProperty::New("renderer", crossPlaneRendererProperty));
 
+//-----------------------------------------------------------------------------
+bool QmitkBaseView::IsActiveEditorCursorVisible() const
+{
   mitk::DataStorage* dataStorage = this->GetDataStorage();
   if (!dataStorage)
   {
     return false;
   }
 
-  crossPlaneNameProperty->SetValue("widget1Plane");
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+
+  mitk::BaseRenderer* mainAxialRenderer = renderWindowPart->GetQmitkRenderWindow("axial")->GetRenderer();
+  mitk::BaseRenderer* mainSagittalRenderer = renderWindowPart->GetQmitkRenderWindow("sagittal")->GetRenderer();
+
+  mitk::WeakPointerProperty::Pointer crossPlaneRendererProperty = mitk::WeakPointerProperty::New();
+
+  mitk::NodePredicateAnd::Pointer crossPlanePredicate = mitk::NodePredicateAnd::New(
+        mitk::NodePredicateDataType::New("PlaneGeometryData"),
+        mitk::NodePredicateProperty::New("renderer", crossPlaneRendererProperty));
+
   crossPlaneRendererProperty->SetValue(mainAxialRenderer);
   mitk::DataNode* axialCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
   if (!axialCrossPlaneNode)
@@ -373,16 +356,46 @@ bool QmitkBaseView::SetMainWindowCursorVisible(bool visible)
     return false;
   }
 
-  crossPlaneNameProperty->SetValue("widget2Plane");
+  bool isAxialPlaneNodeVisible = false;
+  axialCrossPlaneNode->GetVisibility(isAxialPlaneNodeVisible, mainSagittalRenderer);
+
+  return isAxialPlaneNodeVisible;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::SetActiveEditorCursorVisible(bool visible) const
+{
+  mitk::DataStorage* dataStorage = this->GetDataStorage();
+  if (!dataStorage)
+  {
+    return;
+  }
+
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+
+  mitk::BaseRenderer* mainAxialRenderer = renderWindowPart->GetQmitkRenderWindow("axial")->GetRenderer();
+  mitk::BaseRenderer* mainSagittalRenderer = renderWindowPart->GetQmitkRenderWindow("sagittal")->GetRenderer();
+  mitk::BaseRenderer* mainCoronalRenderer = renderWindowPart->GetQmitkRenderWindow("coronal")->GetRenderer();
+
+  mitk::WeakPointerProperty::Pointer crossPlaneRendererProperty = mitk::WeakPointerProperty::New();
+
+  mitk::NodePredicateAnd::Pointer crossPlanePredicate = mitk::NodePredicateAnd::New(
+        mitk::NodePredicateDataType::New("PlaneGeometryData"),
+        mitk::NodePredicateProperty::New("renderer", crossPlaneRendererProperty));
+
+  crossPlaneRendererProperty->SetValue(mainAxialRenderer);
+  mitk::DataNode* axialCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
+  if (!axialCrossPlaneNode)
+  {
+    return;
+  }
+
   crossPlaneRendererProperty->SetValue(mainSagittalRenderer);
   mitk::DataNode* sagittalCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
 
-  crossPlaneNameProperty->SetValue("widget3Plane");
   crossPlaneRendererProperty->SetValue(mainCoronalRenderer);
   mitk::DataNode* coronalCrossPlaneNode = dataStorage->GetNode(crossPlanePredicate);
-
-  bool wasVisible;
-  axialCrossPlaneNode->GetVisibility(wasVisible, mainSagittalRenderer);
 
   axialCrossPlaneNode->SetVisibility(visible, mainAxialRenderer);
   axialCrossPlaneNode->SetVisibility(visible, mainSagittalRenderer);
@@ -397,8 +410,13 @@ bool QmitkBaseView::SetMainWindowCursorVisible(bool visible)
   mainAxialRenderer->RequestUpdate();
   mainSagittalRenderer->RequestUpdate();
   mainCoronalRenderer->RequestUpdate();
+}
 
-  return wasVisible;
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::RequestRenderWindowUpdate(mitk::RenderingManager::RequestType requestType)
+{
+  SuperClass::RequestRenderWindowUpdate(requestType);
 }
 
 
@@ -453,9 +471,9 @@ QmitkRenderWindow* QmitkBaseView::GetRenderWindow(QString id)
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* QmitkBaseView::GetSelectedRenderWindow()
+QmitkRenderWindow* QmitkBaseView::GetSelectedRenderWindow() const
 {
-  QmitkRenderWindow* renderWindow = 0;
+  QmitkRenderWindow* renderWindow = nullptr;
 
   if (mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart())
   {
@@ -481,7 +499,7 @@ void QmitkBaseView::SetViewToCoordinate(const mitk::Point3D &coordinate)
 
 
 //-----------------------------------------------------------------------------
-void QmitkBaseView::FocusOnCurrentWindow()
+void QmitkBaseView::FocusOnCurrentWindow() const
 {
   mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
   if (renderWindowPart != NULL)
@@ -495,5 +513,22 @@ void QmitkBaseView::FocusOnCurrentWindow()
       focusManager->SetFocused(base);
     }
   }
+}
 
+
+//-----------------------------------------------------------------------------
+mitk::Point3D QmitkBaseView::GetSelectedPosition() const
+{
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+  assert(renderWindowPart);
+  return renderWindowPart->GetSelectedPosition();
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkBaseView::SetSelectedPosition(const mitk::Point3D& selectedPosition)
+{
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+  assert(renderWindowPart);
+  renderWindowPart->SetSelectedPosition(selectedPosition);
 }

@@ -171,4 +171,4 @@ MIDASImageUpdateRegionProcessor<TPixel, VImageDimension>
   this->CopyImageRegionToDestination(m_BeforeImage);
 }
 
-} // end namespace
+}

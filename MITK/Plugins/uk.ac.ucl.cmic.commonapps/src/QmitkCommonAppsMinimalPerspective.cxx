@@ -19,7 +19,7 @@
 QmitkCommonAppsMinimalPerspective::QmitkCommonAppsMinimalPerspective()
 {
 }
- 
+
 
 //-----------------------------------------------------------------------------
 QmitkCommonAppsMinimalPerspective::QmitkCommonAppsMinimalPerspective(const QmitkCommonAppsMinimalPerspective& other)

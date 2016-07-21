@@ -126,8 +126,14 @@ public:
   /// \brief Returns true if the show orientation directions check box is set, otherwise false.
   bool AreDirectionAnnotationsVisible() const;
 
-  /// \brief Sets the show orientation direction option check box to the given value.
+  /// \brief Sets the show orientation direction check box to the given value.
   void SetDirectionAnnotationsVisible(bool visible);
+
+  /// \brief Returns true if the show intensity check box is set, otherwise false.
+  bool IsIntensityAnnotationVisible() const;
+
+  /// \brief Sets the show intensity check box to the given value.
+  void SetIntensityAnnotationVisible(bool visible);
 
   /// \brief Returns true if the show 3D window check box is set, otherwise false.
   bool Is3DWindowVisible() const;
@@ -169,6 +175,9 @@ signals:
 
   /// \brief Emitted when the show direction annotations option has changed.
   void ShowDirectionAnnotationsChanged(bool visible);
+
+  /// \brief Emitted when the show intensity annotation option has changed.
+  void ShowIntensityAnnotationChanged(bool visible);
 
   /// \brief Emitted when the show 3D window option has changed.
   void Show3DWindowChanged(bool visible);

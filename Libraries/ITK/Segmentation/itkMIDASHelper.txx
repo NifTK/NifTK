@@ -219,4 +219,4 @@ void GetOrientationLabelFromITKImage(const itk::Image<TPixel, VImageDimension>* 
   }
 }
 
-} // end namespace
+}

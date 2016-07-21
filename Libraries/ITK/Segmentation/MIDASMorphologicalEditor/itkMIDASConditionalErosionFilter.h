@@ -97,7 +97,7 @@ namespace itk
     PixelType2 m_UpperThreshold;
   };
 
-} //end namespace itk
+}
 
 #ifndef ITK_MANUAL_INSTANTIATION
 #include "itkMIDASConditionalErosionFilter.txx"

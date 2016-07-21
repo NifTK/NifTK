@@ -68,10 +68,10 @@ private:
   PixelType m_WipeValue;
 };
 
-} // end namespace
+}
 
 #ifndef ITK_MANUAL_INSTANTIATION
 #include "itkMIDASImageUpdateClearRegionProcessor.txx"
 #endif
 
-#endif // ITKMIDASIMAGEUPDATECLEARREGIONPROCESSOR_H
+#endif

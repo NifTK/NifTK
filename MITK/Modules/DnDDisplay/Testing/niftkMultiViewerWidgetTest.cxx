@@ -24,6 +24,7 @@
 #include <mitkStandaloneDataStorage.h>
 #include <mitkTestingMacros.h>
 
+#include <QmitkMimeTypes.h>
 #include <QmitkRegisterClasses.h>
 
 #include <mitkNifTKCoreObjectFactory.h>
@@ -53,6 +54,10 @@ niftkMultiViewerWidgetTestClass::niftkMultiViewerWidgetTestClass()
 : QObject()
 , d_ptr(new niftkMultiViewerWidgetTestClassPrivate())
 {
+  Q_D(niftkMultiViewerWidgetTestClass);
+
+  d->MultiViewer = nullptr;
+  d->InteractiveMode = false;
 }
 
 
@@ -135,7 +140,7 @@ void niftkMultiViewerWidgetTestClass::init()
   Q_D(niftkMultiViewerWidgetTestClass);
 
   // Create the niftkMultiViewerWidget
-  d->MultiViewer = new niftkMultiViewerWidget(d->VisibilityManager, d->RenderingManager, 1, 1);
+  d->MultiViewer = new niftkMultiViewerWidget(d->VisibilityManager, d->RenderingManager);
 
   // Setup GUI a bit more.
   d->MultiViewer->SetDropType(DNDDISPLAY_DROP_SINGLE);
@@ -145,6 +150,7 @@ void niftkMultiViewerWidgetTestClass::init()
   d->MultiViewer->SetShowDropTypeControls(false);
   d->MultiViewer->SetCursorDefaultVisibility(true);
   d->MultiViewer->SetDirectionAnnotationsVisible(true);
+  d->MultiViewer->SetIntensityAnnotationVisible(true);
   d->MultiViewer->SetShow3DWindowIn2x2WindowLayout(false);
   d->MultiViewer->SetShowMagnificationSlider(true);
   d->MultiViewer->SetRememberSettingsPerWindowLayout(true);
@@ -179,23 +185,38 @@ void niftkMultiViewerWidgetTestClass::dropNodes(QWidget* window, const std::vect
   Q_D(niftkMultiViewerWidgetTestClass);
 
   QMimeData* mimeData = new QMimeData;
+  QMimeData* mimeData2 = new QMimeData;
   QString dataNodeAddresses("");
+  QByteArray byteArray;
+  byteArray.resize(sizeof(quintptr) * nodes.size());
+
+  QDataStream ds(&byteArray, QIODevice::WriteOnly);
+  QTextStream ts(&dataNodeAddresses);
   for (int i = 0; i < nodes.size(); ++i)
   {
-    long dataNodeAddress = reinterpret_cast<long>(nodes[i]);
-    QTextStream(&dataNodeAddresses) << dataNodeAddress;
-
+    quintptr dataNodeAddress = reinterpret_cast<quintptr>(nodes[i]);
+    ds << dataNodeAddress;
+    ts << dataNodeAddress;
     if (i != nodes.size() - 1)
     {
-      QTextStream(&dataNodeAddresses) << ",";
+      ts << ",";
     }
   }
-  mimeData->setData("application/x-mitk-datanodes", QByteArray(dataNodeAddresses.toAscii()));
-  QStringList types;
-  types << "application/x-mitk-datanodes";
-  QDropEvent dropEvent(window->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
+  mimeData->setData("application/x-mitk-datanodes", QByteArray(dataNodeAddresses.toLatin1()));
+  mimeData2->setData(QmitkMimeTypes::DataNodePtrs, byteArray);
+//  QStringList types;
+//  types << "application/x-mitk-datanodes";
+  QDragEnterEvent dragEnterEvent(window->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData, Qt::LeftButton, Qt::NoModifier);
+  QDropEvent dropEvent(window->rect().center(), Qt::CopyAction | Qt::MoveAction, mimeData2, Qt::LeftButton, Qt::NoModifier);
   dropEvent.acceptProposedAction();
-  QApplication::instance()->sendEvent(window, &dropEvent);
+  if (!qApp->notify(window, &dragEnterEvent))
+  {
+    QTest::qWarn("Drag enter event not accepted by receiving widget.");
+  }
+  if (!qApp->notify(window, &dropEvent))
+  {
+    QTest::qWarn("Drop event not accepted by receiving widget.");
+  }
 }
 
 
@@ -204,7 +225,11 @@ void niftkMultiViewerWidgetTestClass::testViewer()
 {
   Q_D(niftkMultiViewerWidgetTestClass);
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   QTest::qWaitForWindowShown(d->MultiViewer);
+#else
+  QVERIFY(QTest::qWaitForWindowExposed(d->MultiViewer));
+#endif
 
   /// Remove the comment signs while you are doing interactive testing.
   if (d->InteractiveMode)

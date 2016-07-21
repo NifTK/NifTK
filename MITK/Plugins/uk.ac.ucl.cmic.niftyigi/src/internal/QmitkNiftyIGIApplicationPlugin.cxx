@@ -40,7 +40,12 @@ QString QmitkNiftyIGIApplicationPlugin::GetHelpHomePageURL() const
 //-----------------------------------------------------------------------------
 void QmitkNiftyIGIApplicationPlugin::start(ctkPluginContext* context)
 {
-  QmitkCommonAppsApplicationPlugin::start(context);
+  /// Note:
+  /// This function has to be redefined so that the superclass
+  /// implementation does not run again. The overridden function
+  /// has been executed when the commonapps plugin has been loaded.
+
+  this->SetPluginContext(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyIGIApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsIGIPerspective, context);
@@ -54,15 +59,10 @@ void QmitkNiftyIGIApplicationPlugin::start(ctkPluginContext* context)
 //-----------------------------------------------------------------------------
 void QmitkNiftyIGIApplicationPlugin::stop(ctkPluginContext* context)
 {
-  this->UnregisterDataStorageListener();
-}
-
-
-//-----------------------------------------------------------------------------
-void QmitkNiftyIGIApplicationPlugin::NodeAdded(const mitk::DataNode *constNode)
-{
-  mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
-  this->RegisterLevelWindowProperty("uk.ac.ucl.cmic.niftyigi", node);
+  /// Note:
+  /// This function has to be redefined so that the superclass
+  /// implementation does not run again. The overridden function 
+  /// will be executed when the commonapps plugin gets unloaded.
 }
 
 

@@ -22,17 +22,15 @@
 namespace niftk
 {
 
-/**
-* \class QmitkWheelEventEater
-* \brief Qt event filter to eat wheel events.
-*/
-class NIFTKCOREGUI_EXPORT QmitkWheelEventEater : public QObject
+/// \class WheelEventEater
+/// \brief Qt event filter to eat wheel events.
+class NIFTKCOREGUI_EXPORT WheelEventEater : public QObject
 {
   Q_OBJECT
 
 public:
-  QmitkWheelEventEater(QWidget* parent=NULL) : QObject(parent) { m_IsEating = true; }
-  ~QmitkWheelEventEater() {}
+  WheelEventEater(QWidget* parent=NULL) : QObject(parent) { m_IsEating = true; }
+  ~WheelEventEater() {}
   void SetIsEating(bool b) { m_IsEating = b; }
   bool GetIsEating() const { return m_IsEating; }
 protected:
@@ -49,8 +47,8 @@ protected:
   }
 private:
   bool m_IsEating;
-}; // end class
+};
 
-} // end namespace
+}
 
 #endif

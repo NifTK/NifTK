@@ -60,7 +60,7 @@ if(NOT DEFINED MITK_DIR)
     set(_enabled_plugins "")
 
     # Common requirements for GUI applications:
-    if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI)
+    if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI OR NIFTK_Apps/NiftyMIDAS)
 
       list(APPEND _enabled_modules
         Core                    # needed by niftkCore
@@ -124,6 +124,7 @@ if(NOT DEFINED MITK_DIR)
 
         list(APPEND _enabled_plugins
           org.mitk.gui.qt.common.legacy           # needed by org.mitk.gui.qt.basicimageprocessing
+          org.mitk.gui.qt.ext             # needed by uk.ac.ucl.cmic.gui.qt.commonapps
           org.mitk.gui.qt.basicimageprocessing
           org.mitk.gui.qt.volumevisualization
           org.mitk.gui.qt.pointsetinteraction
@@ -154,6 +155,7 @@ if(NOT DEFINED MITK_DIR)
       if(MITK_USE_BLUEBERRY)
 
         list(APPEND _enabled_plugins
+          org.mitk.gui.qt.ext             # needed by uk.ac.ucl.cmic.gui.qt.commonapps
           org.mitk.gui.qt.aicpregistration
           org.mitk.gui.qt.stdmultiwidgeteditor    # needed by org.mitk.gui.qt.common.legacy
           org.mitk.gui.qt.common.legacy           # needed by org_mitk_gui_qt_igttracking
@@ -161,6 +163,19 @@ if(NOT DEFINED MITK_DIR)
         )
       endif()
 
+    endif()
+
+    # Additionally required for NiftyMIDAS:
+    if(NIFTK_Apps/NiftyMIDAS)
+
+      list(APPEND _enabled_modules
+        SegmentationUI          # needed by niftkMIDASGui
+      )
+
+      list(APPEND _enabled_plugins
+        org.mitk.gui.qt.cmdlinemodules
+        org.mitk.gui.qt.measurementtoolbox
+      )
     endif()
 
     if(BUILD_VL)

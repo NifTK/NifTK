@@ -454,4 +454,4 @@ MIDASRegionOfInterestCalculator<TPixel, VImageDimension>
   return outputRegion;
 }
 
-} // end namespace
+}

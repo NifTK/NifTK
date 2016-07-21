@@ -17,6 +17,7 @@
 #include <berryUIException.h>
 #include <berryIWorkbenchPage.h>
 #include <berryIPreferencesService.h>
+#include <berryPlatform.h>
 
 #include <QGridLayout>
 #include <QToolButton>
@@ -35,7 +36,7 @@
 #include <ctkPopupWidget.h>
 #include <niftkSingleViewerControls.h>
 
-const std::string QmitkSingleViewerEditor::EDITOR_ID = "org.mitk.editors.dnddisplay";
+const QString QmitkSingleViewerEditor::EDITOR_ID = "org.mitk.editors.dnddisplay";
 
 class QmitkSingleViewerEditorPrivate
 {
@@ -46,7 +47,7 @@ public:
   niftkSingleViewerWidget* m_SingleViewer;
   niftkMultiViewerVisibilityManager::Pointer m_VisibilityManager;
   mitk::RenderingManager::Pointer m_RenderingManager;
-  berry::IPartListener::Pointer m_PartListener;
+  QScopedPointer<berry::IPartListener> m_PartListener;
   mitk::IRenderingManager* m_RenderingManagerInterface;
 
   bool m_ShowCursor;
@@ -76,14 +77,14 @@ struct QmitkSingleViewerEditorPartListener : public berry::IPartListener
 
 
   //-----------------------------------------------------------------------------
-  Events::Types GetPartEventTypes() const
+  Events::Types GetPartEventTypes() const override
   {
     return Events::CLOSED | Events::HIDDEN | Events::VISIBLE;
   }
 
 
   //-----------------------------------------------------------------------------
-  void PartClosed (berry::IWorkbenchPartReference::Pointer partRef)
+  void PartClosed(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
     if (partRef->GetId() == QmitkSingleViewerEditor::EDITOR_ID)
     {
@@ -99,7 +100,7 @@ struct QmitkSingleViewerEditorPartListener : public berry::IPartListener
 
 
   //-----------------------------------------------------------------------------
-  void PartHidden (berry::IWorkbenchPartReference::Pointer partRef)
+  void PartHidden(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
     if (partRef->GetId() == QmitkSingleViewerEditor::EDITOR_ID)
     {
@@ -115,7 +116,7 @@ struct QmitkSingleViewerEditorPartListener : public berry::IPartListener
 
 
   //-----------------------------------------------------------------------------
-  void PartVisible (berry::IWorkbenchPartReference::Pointer partRef)
+  void PartVisible(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
     if (partRef->GetId() == QmitkSingleViewerEditor::EDITOR_ID)
     {
@@ -178,7 +179,7 @@ QmitkSingleViewerEditor::QmitkSingleViewerEditor()
 //-----------------------------------------------------------------------------
 QmitkSingleViewerEditor::~QmitkSingleViewerEditor()
 {
-  this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener);
+  this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener.data());
 
   // Deregister focus observer.
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -282,7 +283,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
 
-    berry::IPreferencesService::Pointer prefService = berry::Platform::GetServiceRegistry().GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+    berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
     berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(EDITOR_ID)).Cast<berry::IBerryPreferences>();
     assert( prefs );
 
@@ -291,9 +292,10 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     WindowLayout defaultLayout =
         (WindowLayout)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2)); // default = coronal
 
-    QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black"));
+    QString backgroundColourName = prefs->Get(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black");
     QColor backgroundColour(backgroundColourName);
     bool showDirectionAnnotations = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true);
+    bool showIntensityAnnotation = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true);
     bool showShowingOptions = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true);
     bool showWindowLayoutControls = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true);
     bool showMagnificationSlider = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true);
@@ -326,6 +328,8 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 //    d->m_SingleViewer->SetCursorDefaultVisibility(show2DCursors);
     d->m_SingleViewer->SetDirectionAnnotationsVisible(showDirectionAnnotations);
     d->m_ControlPanel->SetDirectionAnnotationsVisible(showDirectionAnnotations);
+    d->m_SingleViewer->SetIntensityAnnotationVisible(showIntensityAnnotation);
+    d->m_ControlPanel->SetIntensityAnnotationVisible(showIntensityAnnotation);
     d->m_SingleViewer->SetShow3DWindowIn2x2WindowLayout(show3DWindowInMultiWindowLayout);
     d->m_ControlPanel->SetMagnificationControlsVisible(showMagnificationSlider);
     d->m_SingleViewer->SetRememberSettingsPerWindowLayout(rememberSettingsPerLayout);
@@ -338,7 +342,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 
     d->m_VisibilityManager->RegisterViewer(d->m_SingleViewer);
 
-    this->GetSite()->GetPage()->AddPartListener(berry::IPartListener::Pointer(d->m_PartListener));
+    this->GetSite()->GetPage()->AddPartListener(d->m_PartListener.data());
 
     d->m_LayoutForRenderWindows->addWidget(d->m_SingleViewer, 0, 0);
 
@@ -353,6 +357,8 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     this->connect(d->m_SingleViewer, SIGNAL(ScaleFactorChanged(WindowOrientation, double)), SLOT(OnScaleFactorChanged(WindowOrientation, double)));
     this->connect(d->m_SingleViewer, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
     this->connect(d->m_SingleViewer, SIGNAL(CursorVisibilityChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
+    this->connect(d->m_SingleViewer, SIGNAL(DirectionAnnotationsVisibilityChanged(bool)), SLOT(OnDirectionAnnotationsVisibilityChanged(bool)));
+    this->connect(d->m_SingleViewer, SIGNAL(IntensityAnnotationVisibilityChanged(bool)), SLOT(OnIntensityAnnotationVisibilityChanged(bool)));
 
     this->connect(d->m_ControlPanel, SIGNAL(SelectedSliceChanged(int)), SLOT(OnSelectedSliceControlChanged(int)));
     this->connect(d->m_ControlPanel, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepControlChanged(int)));
@@ -360,6 +366,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
 
     this->connect(d->m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityControlChanged(bool)));
     this->connect(d->m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsControlChanged(bool)));
+    this->connect(d->m_ControlPanel, SIGNAL(ShowIntensityAnnotationChanged(bool)), SLOT(OnShowIntensityAnnotationControlChanged(bool)));
     this->connect(d->m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), SLOT(OnShow3DWindowControlChanged(bool)));
 
     this->connect(d->m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutControlChanged(WindowLayout)));
@@ -421,7 +428,7 @@ void QmitkSingleViewerEditor::OnPreferencesChanged( const berry::IBerryPreferenc
 {
   if (d->m_SingleViewer != NULL)
   {
-    QString backgroundColourName = QString::fromStdString (prefs->GetByteArray(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black"));
+    QString backgroundColourName = prefs->Get(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black");
     QColor backgroundColour(backgroundColourName);
     d->m_SingleViewer->SetBackgroundColour(backgroundColour);
     d->m_VisibilityManager->SetInterpolationType((DnDDisplayInterpolationType)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2)));
@@ -432,6 +439,7 @@ void QmitkSingleViewerEditor::OnPreferencesChanged( const berry::IBerryPreferenc
     d->m_ShowCursor = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true);
 
     d->m_SingleViewer->SetDirectionAnnotationsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
+    d->m_SingleViewer->SetIntensityAnnotationVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
     d->m_SingleViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
     d->m_SingleViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
     d->m_ControlPanel->SetSliceTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
@@ -736,6 +744,15 @@ void QmitkSingleViewerEditor::OnShowDirectionAnnotationsControlChanged(bool visi
 
 
 //-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnShowIntensityAnnotationControlChanged(bool visible)
+{
+  bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
+  d->m_SingleViewer->SetIntensityAnnotationVisible(visible);
+  d->m_SingleViewer->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
 void QmitkSingleViewerEditor::OnCursorVisibilityControlChanged(bool visible)
 {
   bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
@@ -825,6 +842,24 @@ void QmitkSingleViewerEditor::OnCursorVisibilityChanged(bool visible)
 {
   bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
   d->m_ControlPanel->SetCursorVisible(visible);
+  d->m_ControlPanel->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnDirectionAnnotationsVisibilityChanged(bool visible)
+{
+  bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
+  d->m_ControlPanel->SetDirectionAnnotationsVisible(visible);
+  d->m_ControlPanel->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkSingleViewerEditor::OnIntensityAnnotationVisibilityChanged(bool visible)
+{
+  bool signalsWereBlocked = d->m_ControlPanel->blockSignals(true);
+  d->m_ControlPanel->SetIntensityAnnotationVisible(visible);
   d->m_ControlPanel->blockSignals(signalsWereBlocked);
 }
 
