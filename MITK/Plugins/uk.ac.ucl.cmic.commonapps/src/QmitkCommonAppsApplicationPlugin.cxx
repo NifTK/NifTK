@@ -15,8 +15,6 @@
 #include "QmitkCommonAppsApplicationPlugin.h"
 #include "QmitkCommonAppsApplicationPreferencePage.h"
 #include "QmitkNiftyViewApplicationPreferencePage.h"
-#include "internal/QmitkAppInstancesPreferencePage.h"
-#include "internal/QmitkModuleView.h"
 
 #include <berryPlatform.h>
 #include <berryPlatformUI.h>
@@ -58,6 +56,7 @@
 #include <usModuleContext.h>
 #include <usModuleInitialization.h>
 
+#include <QApplication>
 #include <QDateTime>
 #include <QFileInfo>
 #include <QMainWindow>
@@ -164,8 +163,6 @@ void QmitkCommonAppsApplicationPlugin::start(ctkPluginContext* context)
   this->SetPluginContext(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsApplicationPreferencePage, m_Context)
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkAppInstancesPreferencePage, m_Context)
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkModuleView, m_Context)
 
   this->RegisterDataStorageListener();
   this->BlankDepartmentalLogo();
@@ -178,17 +175,27 @@ void QmitkCommonAppsApplicationPlugin::start(ctkPluginContext* context)
   propertyExtensions->AddExtension("Image Rendering.Lowest Value Opacity", opacityPropertyExtension.GetPointer());
   propertyExtensions->AddExtension("Image Rendering.Highest Value Opacity", opacityPropertyExtension.GetPointer());
 
-  /// Note:
-  /// Reimplementing functionality from QmitkCommonExtPlugin:
+  // Get the property whether to process application arguments here.
+  // By default, the arguments are processed by MITK, but custom applications
+  // can suppress this and do the processing themselves, for example to introduce
+  // new switches or options.
+  QVariant processArgsByMITKProperty = context->getProperty("applicationArgs.processByMITK");
+  bool processArgs = processArgsByMITKProperty.isValid() && !processArgsByMITKProperty.toBool();
 
-  if (qApp->metaObject()->indexOfSignal("messageReceived(QByteArray)") > -1)
+  if (processArgs)
   {
-    connect(qApp, SIGNAL(messageReceived(QByteArray)), this, SLOT(handleIPCMessage(QByteArray)));
-  }
+    /// Note:
+    /// Reimplementing functionality from QmitkCommonExtPlugin:
 
-  QStringList args = berry::Platform::GetApplicationArgs();
-  // This is a potentially long running operation.
-  LoadDataFromDisk(args, true);
+    if (qApp->metaObject()->indexOfSignal("messageReceived(QByteArray)") > -1)
+    {
+      connect(qApp, SIGNAL(messageReceived(QByteArray)), this, SLOT(handleIPCMessage(QByteArray)));
+    }
+
+    QStringList args = berry::Platform::GetApplicationArgs();
+    // This is a potentially long running operation.
+    LoadDataFromDisk(args, true);
+  }
 }
 
 

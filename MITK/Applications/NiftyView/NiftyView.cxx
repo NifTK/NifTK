@@ -29,6 +29,7 @@ int main(int argc, char** argv)
   myApp.setOrganizationName("CMIC");
 
   myApp.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.niftyview");
+  myApp.setProperty("applicationArgs.processByMITK", false);
 
   return myApp.run();
 }

@@ -46,10 +46,11 @@ void QmitkNiftyViewApplicationPlugin::start(ctkPluginContext* context)
   /// implementation does not run again. The overridden function 
   /// has been executed when the commonapps plugin has been loaded.
 
+  this->SetPluginContext(context);
+
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsMinimalPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsIGIPerspective, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkCommonAppsApplicationPreferencePage, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();

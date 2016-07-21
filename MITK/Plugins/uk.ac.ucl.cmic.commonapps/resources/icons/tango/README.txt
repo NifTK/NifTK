@@ -1,1 +1,0 @@
-This icon theme is based on the tango-icon-theme of the Tango Desktop Project ( http://tango.freedesktop.org/ )
