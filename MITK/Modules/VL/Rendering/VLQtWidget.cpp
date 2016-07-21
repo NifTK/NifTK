@@ -942,18 +942,6 @@ namespace
 
     ref<vl::Geometry> vl_geom = new vl::Geometry;
 
-    // Buffer in host memory to store cell info
-    // unsigned int* m_IndexBuffer = 0;
-
-    // Buffer in host memory to store vertex points
-    // float* m_PointBuffer = 0;
-
-    // Buffer in host memory to store normals associated with vertices
-    // float* m_NormalBuffer = 0;
-
-    // Buffer in host memory to store scalar info associated with vertices
-    // char* m_ScalarBuffer = 0;
-
     vtkSmartPointer<vtkPoints> points = vtkPoly->GetPoints();
     if ( ! points )
     {
@@ -975,7 +963,13 @@ namespace
 
     vtkSmartPointer<vtkCellArray> primitives = NULL;
 
-    // For the moment we only support triangle data. Supporting other types is easy, I just didn't have any data to test.
+    // For the moment we only support tris/quads/polygons (no strips, points and lines).
+    // Supporting other types is possible with some care. I just didn't have any data to test.
+    // Things to look out for:
+    // - AdjacencyExtractor expects polygons/tris/strips and transforms them into triangles: skip it in this case.
+    // - Compute normals also expects triangles: skip it in this case.
+    // - 3D Outline rendering geometry shader also expects triangles: skip it in this case.
+    // - Maybe something else...
 
     // Access primitive/cell data
     if ( vtkPoly->GetPolys() && vtkPoly->GetPolys()->GetNumberOfCells() ) {
@@ -983,19 +977,21 @@ namespace
       MITK_INFO << "vtkPolyData polygons found.\n";
     }
     else
+    if ( vtkPoly->GetStrips() && vtkPoly->GetStrips()->GetNumberOfCells() ) {
+      primitives = vtkPoly->GetStrips();
+      MITK_ERROR << "vtkPolyData strips not supported. Skipping.\n";
+      return NULL;
+    }
+    else
     if ( vtkPoly->GetVerts() && vtkPoly->GetVerts()->GetNumberOfCells() ) {
       primitives = vtkPoly->GetVerts();
       MITK_ERROR << "vtkPolyData verts not supported. Skipping.\n";
+      return NULL;
     }
     else
     if ( vtkPoly->GetLines() && vtkPoly->GetLines()->GetNumberOfCells() ) {
       primitives = vtkPoly->GetLines();
       MITK_ERROR << "vtkPolyData lines not supported. Skipping.\n";
-    }
-    else
-    if ( vtkPoly->GetStrips() && vtkPoly->GetStrips()->GetNumberOfCells() ) {
-      primitives = vtkPoly->GetStrips();
-      MITK_ERROR << "vtkPolyData strips not supported. Skipping.\n";
       return NULL;
     }
 
@@ -1005,37 +1001,13 @@ namespace
       return NULL;
     }
 
+    // NOTE:
+    // We now support a list of eterogeneous polygons of any size thanks to VL's primitive restart and triangle iterator.
     int max_cell_size = primitives->GetMaxCellSize();
-    if ( max_cell_size != 3 )
-    {
-      // Panic and return
-      MITK_ERROR << "Only polygons with 3 vertices are supported, not " << max_cell_size << ". Skipping.\n";
-      return NULL;
-    }
 
     unsigned int point_buffer_size = 0;
     unsigned int point_count = static_cast<unsigned int> (points->GetNumberOfPoints());
     point_buffer_size = point_count * sizeof(float) * 3;
-
-    // setup triangles index buffer
-
-    int triangle_count = (int)primitives->GetNumberOfCells();
-
-    ref<vl::DrawElementsUInt> vl_draw_elements = new vl::DrawElementsUInt(vl::PT_TRIANGLES);
-    vl_draw_elements->indexBuffer()->resize( triangle_count * 3 );
-    vl_geom->drawCalls().push_back(vl_draw_elements.get());
-
-    // copy triangles
-    primitives->InitTraversal();
-    for( int cell_index = 0; cell_index < triangle_count; ++cell_index )
-    {
-      vtkIdType npts = 0;
-      vtkIdType *pts = 0;
-      primitives->GetNextCell( npts, pts );
-      for (vtkIdType i = 0; i < npts; ++i) {
-        vl_draw_elements->indexBuffer()->at( cell_index * 3 + i ) = pts[i];
-      }
-    }
 
     // setup vertices
     ref<vl::ArrayFloat3> vl_verts = new vl::ArrayFloat3;
@@ -1064,9 +1036,44 @@ namespace
       }
     }
 
+    // setup triangles index buffer
+
+    int primitive_count = (int)primitives->GetNumberOfCells();
+
+    ref<vl::DrawElementsUInt> vl_draw_elements = new vl::DrawElementsUInt( vl::PT_POLYGON );
+    vl_draw_elements->setPrimitiveRestartEnabled(true);
+    vl_geom->drawCalls().push_back( vl_draw_elements.get() );
+    std::vector< vl::DrawElementsUInt::index_type > indices;
+    indices.reserve( primitive_count * max_cell_size );
+
+    // copy triangles
+    primitives->InitTraversal();
+    for( int cell_index = 0; cell_index < primitive_count; ++cell_index )
+    {
+      vtkIdType npts = 0;
+      vtkIdType *pts = 0;
+      primitives->GetNextCell( npts, pts );
+      // mark the start of a new primitive
+      if ( cell_index != 0 ) {
+        indices.push_back( vl::DrawElementsUInt::primitive_restart_index );
+      }
+      for (vtkIdType i = 0; i < npts; ++i) {
+        VIVID_CHECK( pts[i] < vl_verts->size() );
+        indices.push_back( pts[i] );
+      }
+    }
+    if ( indices.empty() ) {
+      MITK_ERROR << "No polygons found. Skipping.\n";
+      return NULL;
+    }
+    vl_draw_elements->indexBuffer()->resize( indices.size() );
+    memcpy( vl_draw_elements->indexBuffer()->ptr(), &indices[0], indices.size() * sizeof(indices[0]) );
+
     MITK_INFO << "Computing surface adjacency... ";
 
     vl_geom = vl::AdjacencyExtractor::extract( vl_geom.get() );
+
+    vl_draw_elements = vl_geom->drawCalls().at(0)->as<vl::DrawElementsUInt>();
 
     MITK_INFO << "done.\n";
 
@@ -1307,6 +1314,7 @@ public:
       return false;
     }
 
+    // in VL if verts are shared across primitives they're smoothed out, VTK however seem to keep them flat.
     if ( ! geom->normalArray() ) {
       geom->computeNormals();
     }
