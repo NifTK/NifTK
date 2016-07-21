@@ -134,6 +134,11 @@ public:
    */
   void ClearModelPoints ();
 
+  /**
+   * \brief clear the list of gold standard points
+   */
+  void ClearGoldStandardPoints ();
+
   std::vector < mitk::PickedPointList::Pointer >  GetPointsInLeftLensCS ();
   std::vector < mitk::ProjectedPointPairsWithTimingError > GetProjectedPoints ();
   itkGetMacro ( InitOK, bool);

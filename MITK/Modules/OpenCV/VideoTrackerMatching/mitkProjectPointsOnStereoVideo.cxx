@@ -1766,4 +1766,19 @@ void ProjectPointsOnStereoVideo::ClearWorldPoints()
   m_ProjectOK = false;
 }
 
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::ClearModelPoints()
+{
+  m_ModelPoints->ClearList();
+  m_ModelPoints = NULL;
+  m_ProjectOK = false;
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::ClearGoldStandardPoints()
+{
+  m_GoldStandardPoints.clear();
+}
+
+
 } // end namespace
