@@ -1075,8 +1075,6 @@ namespace
 
     vl_draw_elements = vl_geom->drawCalls().at(0)->as<vl::DrawElementsUInt>();
 
-    MITK_INFO << "done.\n";
-
     MITK_INFO << "Surface data initialized. Points: " << points->GetNumberOfPoints() << ", Cells: " << primitives->GetNumberOfCells() << "\n";
 
     return vl_geom;
@@ -1222,6 +1220,7 @@ VLMapper::VLMapper( const mitk::DataNode* node, VLSceneView* sv ) {
   m_OpenGLContext = sv->openglContext();
   m_VividRendering = sv->vividRendering();
   m_DataStorage = sv->dataStorage();
+  m_DataNodeVividUpdateEnabled = true;
   VIVID_CHECK( m_OpenGLContext );
   VIVID_CHECK( m_VividRendering );
   VIVID_CHECK( m_DataStorage );
@@ -1327,19 +1326,15 @@ public:
 
   virtual void update() {
     updateCommon();
-    updateMaterialProps( m_Actor->effect(), m_DataNode );
-    updateRenderModeProps( m_Actor->effect(), m_DataNode );
-    updateFogProps( m_Actor->effect(), m_DataNode );
-    updateClipProps( m_Actor->effect(), m_DataNode );
+    if ( isDataNodeVividUpdateEnabled() ) {
+      updateMaterialProps( m_Actor->effect(), m_DataNode );
+      updateRenderModeProps( m_Actor->effect(), m_DataNode );
+      updateFogProps( m_Actor->effect(), m_DataNode );
+      updateClipProps( m_Actor->effect(), m_DataNode );
 
-    // Stencil
-    bool is_stencil = getBoolProp( m_DataNode, "VL.IsStencil", false );
-    std::vector< ref<Actor> >::iterator it = std::find( m_VividRendering->stencilActors().begin(), m_VividRendering->stencilActors().end(), m_Actor.get() );
-    if ( ! is_stencil && it != m_VividRendering->stencilActors().end() ) {
-      m_VividRendering->stencilActors().erase( it );
-    } else
-    if ( is_stencil && it == m_VividRendering->stencilActors().end() ) {
-      m_VividRendering->stencilActors().push_back( m_Actor );
+      // Stencil
+      bool is_stencil = getBoolProp( m_DataNode, "VL.IsStencil", false );
+      setIsStencil( is_stencil );
     }
   }
 
@@ -1390,9 +1385,11 @@ public:
     VIVID_CHECK( m_MitkImage );
 
     updateCommon();
-    // updateRenderModeProps(); /* does not apply here */
-    updateFogProps( m_Actor->effect(), m_DataNode );
-    updateClipProps( m_Actor->effect(), m_DataNode );
+    if ( isDataNodeVividUpdateEnabled() ) {
+      // updateRenderModeProps(); /* does not apply here */
+      updateFogProps( m_Actor->effect(), m_DataNode );
+      updateClipProps( m_Actor->effect(), m_DataNode );
+    }
 
     if ( m_MitkImage->GetVtkImageData()->GetMTime() <= GetUserData( m_Actor.get() )->m_ImageModifiedTime ) {
       return;
@@ -1404,6 +1401,9 @@ public:
     tex->setMipLevel(0, img.get(), false);
     GetUserData( m_Actor.get() )->m_ImageModifiedTime = m_MitkImage->GetVtkImageData()->GetMTime();
   }
+
+  Texture* texture() { return actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture(); }
+  const Texture* texture() const { return actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture(); }
 
 protected:
   mitk::Image* m_MitkImage;
@@ -1619,7 +1619,7 @@ public:
   VLMapperPoints( const mitk::DataNode* node, VLSceneView* sv )
     : VLMapper( node, sv ) {
     m_3DSphereMode = true;
-    m_PointFX = vl::VividRendering::makeVividEffect();
+    m_Point2DFX = vl::VividRendering::makeVividEffect();
     m_PositionArray = new vl::ArrayFloat3;
     m_ColorArray = new vl::ArrayFloat4;
   }
@@ -1673,7 +1673,7 @@ public:
     for( int i = 0; i < m_PositionArray->size(); ++i )
     {
       const vl::vec3& pos = m_PositionArray->at( i );
-      ref<Actor> actor = initActor( m_3DSphereGeom.get()/*, m_PointFX.get()*/ );
+      ref<Actor> actor = initActor( m_3DSphereGeom.get() );
       actor->transform()->setLocalAndWorldMatrix( vl::mat4::getTranslation( pos ) );
       m_SphereActors->addActor( actor.get() );
       // Colorize the sphere with the point's color
@@ -1698,19 +1698,21 @@ public:
     m_2DGeometry->setVertexArray( m_PositionArray.get() );
     m_2DGeometry->setColorArray( m_ColorArray.get() );
 
-    m_Actor = initActor( m_2DGeometry.get(), m_PointFX.get() );
+    m_Actor = initActor( m_2DGeometry.get(), m_Point2DFX.get() );
     m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
     ref<vl::Effect> fx = m_Actor->effect();
     ref<vl::Image> img = new Image("/vivid/images/sphere.png");
     ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
     texture->createTexture2D( img.get(), vl::TF_UNKNOWN, false, false );
+
+    // 2d mode settings
+    m_Point2DFX->shader()->getUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
+    m_Point2DFX->shader()->getUniform( "vl_Vivid.enablePointSprite" )->setUniformI( 1 );
+    m_Point2DFX->shader()->gocUniform( "vl_Vivid.enableTextureMapping" )->setUniformI( 1 );
   }
 
   virtual void update() {
     // updateCommon();
-    // updateRenderModeProps(); /* does not apply here */
-    updateFogProps( m_PointFX.get(), m_DataNode );
-    updateClipProps( m_PointFX.get(), m_DataNode );
 
     // Get mode
     m_3DSphereMode = 0 == getEnumProp( m_DataNode, "VL.Point.Mode", 0 );
@@ -1734,17 +1736,16 @@ public:
         init3D();
       }
 
-      // 3D mode settings
-      m_PointFX->shader()->getUniform( "vl_Vivid.enableLighting" )->setUniformI( 1 );
-      m_PointFX->shader()->getUniform( "vl_Vivid.enablePointSprite" )->setUniformI( 0 );
-      m_PointFX->shader()->gocUniform( "vl_Vivid.enableTextureMapping" )->setUniformI( 0 );
-
-      // Set color/opacity
-      m_PointFX->shader()->getMaterial()->setDiffuse( color );
       for( int i = 0; i < m_SphereActors->actors()->size(); ++i ) {
         // Set visible
         Actor* act = m_SphereActors->actors()->at( i );
         act->setEnabled( visible );
+        // Set color/opacity
+        act->effect()->shader()->getMaterial()->setDiffuse( color );
+        // Update other Vivid settings
+        // updateRenderModeProps(); /* does not apply here */
+        updateFogProps( act->effect(), m_DataNode );
+        updateClipProps( act->effect(), m_DataNode );
         // Set size
         Transform* tr = act->transform();
         mat4& local = tr->localMatrix();
@@ -1759,15 +1760,14 @@ public:
       }
 
       VIVID_CHECK( m_Actor );
-      VIVID_CHECK( m_PointFX->shader()->getPointSize() );
+      VIVID_CHECK( m_Point2DFX->shader()->getPointSize() );
 
-      // 2d mode settings
-      m_PointFX->shader()->getUniform( "vl_Vivid.enableLighting" )->setUniformI( 0 );
-      m_PointFX->shader()->getUniform( "vl_Vivid.enablePointSprite" )->setUniformI( 1 );
-      m_PointFX->shader()->gocUniform( "vl_Vivid.enableTextureMapping" )->setUniformI( 1 );
+      // updateRenderModeProps(); /* does not apply here */
+      updateFogProps( m_Point2DFX.get(), m_DataNode );
+      updateClipProps( m_Point2DFX.get(), m_DataNode );
 
       // set point size
-      m_PointFX->shader()->getPointSize()->set( pointsize );
+      m_Point2DFX->shader()->getPointSize()->set( pointsize );
     }
   }
 
@@ -1786,7 +1786,7 @@ protected:
   bool m_3DSphereMode;
   ref<vl::ActorTree> m_SphereActors;
   ref<Geometry> m_3DSphereGeom;
-  ref<Effect> m_PointFX;
+  ref<Effect> m_Point2DFX;
   ref<vl::Geometry> m_2DGeometry;
   ref<vl::ArrayFloat3> m_PositionArray;
   ref<vl::ArrayFloat4> m_ColorArray;
@@ -1917,9 +1917,11 @@ public:
 
   virtual void update() {
     updateCommon();
-    // updateRenderModeProps(); /* does not apply here */
-    updateFogProps( m_Actor->effect(), m_DataNode );
-    updateClipProps( m_Actor->effect(), m_DataNode );
+    if ( isDataNodeVividUpdateEnabled() ) {
+      // updateRenderModeProps(); /* does not apply here */
+      updateFogProps( m_Actor->effect(), m_DataNode );
+      updateClipProps( m_Actor->effect(), m_DataNode );
+    }
 
     // Get the niftk::LightweightCUDAImage
 
@@ -1974,6 +1976,9 @@ public:
 
     VLMapper::remove();
   }
+
+  Texture* texture() { return actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture(); }
+  const Texture* texture() const { return actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture(); }
 
 protected:
     cudaGraphicsResource_t m_CudaResource;
@@ -2141,6 +2146,16 @@ void VLSceneView::scheduleSceneRebuild()
   m_ScheduleInitScene = true;
   m_ScheduleTrackballAdjustView = true;
   openglContext()->update();
+}
+
+//-----------------------------------------------------------------------------
+
+void VLSceneView::scheduleTrackballAdjustView(bool schedule)
+{
+  m_ScheduleTrackballAdjustView = schedule;
+  if ( schedule ) {
+    openglContext()->update();
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -2582,10 +2597,10 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
   VLMapperCUDAImage* imgCu_mapper = dynamic_cast<VLMapperCUDAImage*>( getVLMapper( node ) );
   vl::Texture* tex = NULL;
   if ( img2d_mapper ) {
-    tex = img2d_mapper->actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+    tex = img2d_mapper->texture();
   } else
   if ( imgCu_mapper ) {
-    tex = imgCu_mapper->actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+    tex = imgCu_mapper->texture();
   } else {
     return false;
   }

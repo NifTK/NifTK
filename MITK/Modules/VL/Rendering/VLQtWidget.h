@@ -93,15 +93,41 @@ public:
   /** Factory method: creates the right VLMapper subclass according to the node's type. */
   static vl::ref<VLMapper> create(const mitk::DataNode* node, VLSceneView*);
 
+  /** Updates visibility, opacity, color, etc. and Vivid related common settings. */
+  void updateCommon();
+
+  /** When enabled (default) the mapper will reflect updates to the VL.* variables coming from the DataNode.
+      This is useful when you want one object to have the same VL settings across different views/qwidgets.
+      Disable this when you want one object to have different settings across different views/qwidgets and
+      ignore the VL.* properties of the DataNode.
+      This only applies to VLMapperSurface, VLMapper2DImage &  VLMapperCUDAImage for now. */
+  bool setDataNodeVividUpdateEnabled(bool enable) { m_DataNodeVividUpdateEnabled = enable; }
+  bool isDataNodeVividUpdateEnabled() const { return m_DataNodeVividUpdateEnabled; }
+
+  //-----------------------------------------------------------------
+  // User managed Vivid API to be used when isDataNodeVividUpdateEnabled() == false
+  //-----------------------------------------------------------------
+
+  /** Use this Actor as stencil (see also m_VividRendering->setStencilEnabled(bool)). */
+  void setIsStencil( bool is_stencil ) {
+    std::vector< vl::ref<vl::Actor> >::iterator it = std::find( m_VividRendering->stencilActors().begin(), m_VividRendering->stencilActors().end(), actor() );
+    if ( ! is_stencil && it != m_VividRendering->stencilActors().end() ) {
+      m_VividRendering->stencilActors().erase( it );
+    } else
+    if ( is_stencil && it == m_VividRendering->stencilActors().end() ) {
+      m_VividRendering->stencilActors().push_back( m_Actor );
+    }
+  }
+  bool isStencil() const {
+    return std::find( m_VividRendering->stencilActors().begin(), m_VividRendering->stencilActors().end(), actor() ) != m_VividRendering->stencilActors().end();
+  }
+
+protected:
   /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
   vl::Actor* actor() { return m_Actor.get(); }
   /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
   const vl::Actor* actor() const { return m_Actor.get(); }
 
-  /** Updates visibility, opacity, color, etc. and Vivid related common settings. */
-  void updateCommon();
-
-protected:
   // Initialize an Actor to be used with the Vivid renderer
   vl::ref<vl::Actor> initActor(vl::Geometry* geom, vl::Effect* fx = NULL, vl::Transform* tr = NULL);
 
@@ -112,20 +138,11 @@ protected:
   VLSceneView* m_VLSceneView;
   const mitk::DataNode* m_DataNode;
   vl::ref<vl::Actor> m_Actor;
+  bool m_DataNodeVividUpdateEnabled;
 };
 
 //-----------------------------------------------------------------------------
 // VLSceneView
-// We could further divide this into:
-// * VLScene:
-//  - view-independent data that can be shared across VLViews and VLQtWidgets.
-//  - receives data store events
-//  - upon data store update signals an update request to all VLViews.
-// * VLSceneView:
-//  - view-dependent data and manipulators: camera, trackball, background settings, etc.
-//  - receives use interaction events
-// This to allow the VL and OpenGL data to be instanced only once and shared across OpenGL contexts.
-// For the moment we use the simpler and safer approach of instancing data for every VLQtWidget.
 //-----------------------------------------------------------------------------
 
 class NIFTKVL_EXPORT VLSceneView : public vl::UIEventListener
@@ -139,17 +156,26 @@ public:
 
   // Called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
   void setDataStorage(const mitk::DataStorage::Pointer& dataStorage);
-  // Called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
-  void setOclResourceService(OclResourceService* oclserv);
+
+  // Called by QmitkIGIVLEditor::OnImageSelected(), VLRendererView::OnBackgroundNodeSelected()
+  bool setBackgroundNode(const mitk::DataNode* node);
+
+  // Called by QmitkIGIVLEditor::OnTransformSelected(), VLRendererView::OnCameraNodeSelected()/OnCameraNodeEnabled()
+  bool setCameraTrackingNode(const mitk::DataNode* node);
+
   // Called by QmitkIGIVLEditor (via IGIVLEditor)
   void setBackgroundColour(float r, float g, float b);
-  // Called by VLRendererView
-  void updateThresholdVal(int isoVal);
 
+  // Defines the opacity of the 3D renering above the background.
+  void setOpacity( float opacity );
+
+  // Number of depth peeling passes to be done.
+  void setDepthPeelingPasses( int passes );
+
+  void scheduleTrackballAdjustView(bool schedule = true);
   void scheduleNodeAdd(const mitk::DataNode* node);
   void scheduleNodeRemove(const mitk::DataNode* node);
   void scheduleNodeUpdate(const mitk::DataNode* node);
-  void scheduleTrackballAdjustView(bool schedule = true) { m_ScheduleTrackballAdjustView = schedule; }
   void scheduleSceneRebuild();
 
   mitk::DataStorage* dataStorage() { return m_DataStorage.GetPointer(); }
@@ -158,23 +184,17 @@ public:
   vl::VividRendering* vividRendering() { return m_VividRendering.get(); }
   const vl::VividRendering* vividRendering() const { return m_VividRendering.get(); }
 
-  // Defines the opacity of the 3D renering above the background.
-  void setOpacity( float opacity );
-
-  // Number of depth peeling passes to be done.
-  void setDepthPeelingPasses( int passes );
-
-  // Called by QmitkIGIVLEditor::OnImageSelected(), VLRendererView::OnBackgroundNodeSelected()
-  bool setBackgroundNode(const mitk::DataNode* node);
-
-  // Called by QmitkIGIVLEditor::OnTransformSelected(), VLRendererView::OnCameraNodeSelected()/OnCameraNodeEnabled()
-  bool setCameraTrackingNode(const mitk::DataNode* node);
-
   VLTrackballManipulator* trackball() { return m_Trackball.get(); }
   const VLTrackballManipulator* trackball() const { return m_Trackball.get(); }
+
   vl::CalibratedCamera* camera() { return m_Camera.get(); }
   const vl::CalibratedCamera* camera() const { return m_Camera.get(); }
 
+  // Obsolete: called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
+  void setOclResourceService(OclResourceService* oclserv);
+
+  // Obsolete: called by VLRendererView
+  void updateThresholdVal(int isoVal);
 protected:
   bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt5::Qt5Widget>()->QGLWidget::context(); }
 
