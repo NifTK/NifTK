@@ -2098,6 +2098,7 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
 VLSceneView::VLSceneView() :
   m_ScheduleTrackballAdjustView( true ),
   m_ScheduleInitScene ( true ),
+  m_RenderingInProgressGuard ( true),
   m_OclService( 0 )
 {
 #ifdef _USE_CUDA
@@ -2245,20 +2246,23 @@ void VLSceneView::scheduleNodeUpdate( const mitk::DataNode* node )
 
 void VLSceneView::scheduleNodeRemove( const mitk::DataNode* node )
 {
+  // If this fails most probably someone is calling this from another thread.
+  VIVID_CHECK( ! m_RenderingInProgressGuard );
+
   if ( ! node /* || ! node->GetData() */ ) {
     return;
   }
 
-#if 1
+#if 0
+  m_NodesToRemove.insert( mitk::DataNode::ConstPointer ( node ) ); // remove it
+#else
   // deal with it immediately
   removeDataNode( node );
-#else
-  m_NodesToRemove.insert( mitk::DataNode::ConstPointer ( node ) ); // remove it
 #endif
+
   m_NodesToAdd.erase( node );    // abort the addition
   m_NodesToUpdate.erase( node ); // abort the update
   openglContext()->update();
-
 #if 0
   const char* noc = node->GetData() ? node->GetData()->GetNameOfClass() : "<name-of-class>";
   printf("ScheduleNodeRemove: %s (%s)\n", node->GetName().c_str(), noc );
@@ -2372,6 +2376,7 @@ void VLSceneView::updateDataNode(const mitk::DataNode* node)
 
   #if 0
     dumpNodeInfo( "updateDataNode()", node );
+    dumpNodeInfo( "updateDataNode()->GetData()", node->GetData() );
   #endif
 
   DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.find( node );
@@ -2533,6 +2538,8 @@ void VLSceneView::updateScene() {
       removeDataNode(*it);
     }
     m_NodesToRemove.clear();
+#else
+     VIVID_CHECK( m_NodesToRemove.empty() );
 #endif
 
     // Execute scheduled additions
@@ -2564,6 +2571,8 @@ void VLSceneView::updateScene() {
 
 void VLSceneView::renderScene()
 {
+  m_RenderingInProgressGuard = true;
+
   VIVID_CHECK( contextIsCurrent() );
 
   updateScene();
@@ -2583,6 +2592,8 @@ void VLSceneView::renderScene()
   if ( openglContext()->hasDoubleBuffer() ) {
     openglContext()->swapBuffers();
   }
+
+  m_RenderingInProgressGuard = false;
 
   VL_CHECK_OGL();
 }

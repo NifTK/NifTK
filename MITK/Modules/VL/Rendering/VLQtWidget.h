@@ -237,6 +237,7 @@ protected:
 
   bool m_ScheduleTrackballAdjustView;
   bool m_ScheduleInitScene;
+  bool m_RenderingInProgressGuard;
 
   // Lgacy OpenCL service
 
