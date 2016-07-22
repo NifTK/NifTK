@@ -2370,9 +2370,6 @@ void VLSceneView::removeDataNode(const mitk::DataNode* node)
 
 void VLSceneView::updateDataNode(const mitk::DataNode* node)
 {
-  VIVID_CHECK( node );
-  VIVID_CHECK( node->GetData() );
-
   ScopedOpenGLContext glctx(m_QGLWidget);
 
   #if 0
@@ -2684,22 +2681,6 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
 
 //-----------------------------------------------------------------------------
 
-/*
-                            no man's land starts here
-*/
-
-//-----------------------------------------------------------------------------
-
-void VLSceneView::updateThresholdVal( int isoVal )
-{
-  float iso = isoVal / 10000.0f;
-  iso = vl::clamp( iso, 0.0f, 1.0f );
-  // m_VividRendering->vividVolume()->setIsoValue( iso );
-  VIVID_CHECK( 0 );
-}
-
-//-----------------------------------------------------------------------------
-
 bool VLSceneView::setCameraTrackingNode(const mitk::DataNode* node)
 {
   VIVID_CHECK( m_Trackball );
@@ -2790,3 +2771,17 @@ void VLSceneView::updateCameraParameters()
     }
   }
 }
+
+//-----------------------------------------------------------------------------
+/*
+                                    Obsolete
+*/
+
+void VLSceneView::updateThresholdVal( int isoVal )
+{
+  float iso = isoVal / 10000.0f;
+  iso = vl::clamp( iso, 0.0f, 1.0f );
+  // m_VividRendering->vividVolume()->setIsoValue( iso );
+  VIVID_CHECK( 0 );
+}
+
