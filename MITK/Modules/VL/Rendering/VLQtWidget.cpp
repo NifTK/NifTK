@@ -923,7 +923,7 @@ namespace
     vert->resize(4);
     geom->setVertexArray( vert.get() );
 
-    ref<vl::ArrayFloat2> tex_coord = new vl::ArrayFloat2;
+    ref<vl::ArrayFloat3> tex_coord = new vl::ArrayFloat3;
     tex_coord->resize(4);
     geom->setTexCoordArray(0, tex_coord.get());
 
@@ -1373,6 +1373,9 @@ public:
     ref<vl::Image> img = wrapMitk2DImage( m_MitkImage );
     ref<vl::Geometry> geom = CreateGeometryFor2DImage( img->width(), img->height() );
 
+    m_VertexArray = geom->vertexArray()->as<vl::ArrayFloat3>(); VIVID_CHECK( m_VertexArray );
+    m_TexCoordArray = geom->vertexArray()->as<vl::ArrayFloat3>(); VIVID_CHECK( m_TexCoordArray );
+
     m_Actor = initActor( geom.get() );
     m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
     ref<Effect> fx = m_Actor->effect();
@@ -1415,8 +1418,18 @@ public:
   Texture* texture() { return actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture(); }
   const Texture* texture() const { return actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture(); }
 
+  //! This vertex array contains 4 points representing the plane
+  ArrayFloat3* vertexArray() { return m_VertexArray.get(); }
+  const ArrayFloat3* vertexArray() const { return m_VertexArray.get(); }
+
+  //! This texture coordinates array contains 4 3D texture coordinates one for each plane corner
+  ArrayFloat3* texCoordarray() { return m_TexCoordArray.get(); }
+  const ArrayFloat3* texCoordarray() const { return m_TexCoordArray.get(); }
+
 protected:
   mitk::Image* m_MitkImage;
+  ref<ArrayFloat3> m_VertexArray;
+  ref<ArrayFloat3> m_TexCoordArray;
 };
 
 //-----------------------------------------------------------------------------
@@ -2446,13 +2459,21 @@ void VLSceneView::initEvent()
   }
 #endif
 
+#if 0 // PointSet test
+  {
+    mitk::DataNode::Pointer node = new mitk::DataNode::New();
+    mitk::PointSet::Pointer pointset = new mitk::PointSet::New();
+    ... left as an exercise for the student ...
+  }
+#endif
+
 #if 0 // PCL test
   {
     // Point cloud data test
     mitk::DataNode::Pointer node = mitk::DataNode::New();
     niftk::PCLData::Pointer pcl = niftk::PCLData::New();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr  c(new pcl::PointCloud<pcl::PointXYZRGB>);
-    for (int i = 0; i < 10000; ++i) {
+    for (int i = 0; i < 1000; ++i) {
       pcl::PointXYZRGB  q(std::rand() % 256, std::rand() % 256, std::rand() % 256);
       q.x = std::rand() % 256;
       q.y = std::rand() % 256;
