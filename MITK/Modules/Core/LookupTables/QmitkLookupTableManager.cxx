@@ -90,7 +90,7 @@ QmitkLookupTableManager::QmitkLookupTableManager()
     QmitkLookupTableContainer *lut = NULL;
     QString fileName = fileDir.filePath(labelMapList[i]);
     MITK_DEBUG << "QmitkLookupTableManager():Loading txt " << fileName.toLocal8Bit().constData();
-   
+
     mitk::FileReaderRegistry* frr = new mitk::FileReaderRegistry();
 
     mitk::MimeType myMimeType = frr->GetMimeTypeForFile(fileName.toStdString());
@@ -107,7 +107,7 @@ QmitkLookupTableManager::QmitkLookupTableManager()
     {
       MITK_ERROR << "No reader found for mime type: " << myMimeType.GetName();
     }
-    
+
     myReader->SetInput(fileName.toStdString());
     std::vector<mitk::BaseData::Pointer> container = myReader->Read(); // this will never work because the file does not exist!¬!!!!
     if (container.empty())
@@ -152,7 +152,7 @@ QmitkLookupTableManager::~QmitkLookupTableManager()
       delete (*mapIter).second;
     }
   }
-  
+
   m_Containers.clear();
 }
 

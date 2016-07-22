@@ -372,18 +372,18 @@ public:
     p3[0] = std::numeric_limits<double>::infinity();
     p3[1] = 7;
     p3[2] = 8;
-    
-    p4[0] = 3; 
+
+    p4[0] = 3;
     p4[1] = std::numeric_limits<float>::quiet_NaN();
     p4[2] = 5;
 
-    p5[0] = 3; 
+    p5[0] = 3;
     p5[1] = 4;
     p5[2] = std::numeric_limits<double>::quiet_NaN();
 
-    p6[0] = std::numeric_limits<double>::quiet_NaN(); 
-    p6[1] = std::numeric_limits<double>::quiet_NaN(); 
-    p6[2] = std::numeric_limits<double>::quiet_NaN(); 
+    p6[0] = std::numeric_limits<double>::quiet_NaN();
+    p6[1] = std::numeric_limits<double>::quiet_NaN();
+    p6[2] = std::numeric_limits<double>::quiet_NaN();
 
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(mitk::CheckForNaNPoint(p1), false),".. Testing that CheckFormNaNPoint returns false for a point with no NaNs");
 
@@ -404,7 +404,7 @@ public:
   static void TestRMS()
   {
     MITK_TEST_OUTPUT(<< "Starting TestRMS...");
-    
+
     mitk::PointSet::Pointer fixedPoints = mitk::PointSet::New();
     mitk::PointSet::Pointer movingPoints = mitk::PointSet::New();
 
@@ -423,7 +423,7 @@ public:
     p3f[0] = 6;  p3m[0] = 8;
     p3f[1] = 7;  p3m[1] = 9;
     p3f[2] = 8;  p3m[2] = 10;
-    
+
     fixedPoints->InsertPoint(1, p1f);
     fixedPoints->InsertPoint(2, p2f);
     movingPoints->InsertPoint(1, p1m);
@@ -436,7 +436,7 @@ public:
 
     // 2 points with same error gives same RMS.
     movingPoints->InsertPoint(2, p2m);
-    rms = mitk::GetRMSErrorBetweenPoints(*fixedPoints, *movingPoints);    
+    rms = mitk::GetRMSErrorBetweenPoints(*fixedPoints, *movingPoints);
     expected = 1.732050808;
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(rms, expected, 0.00001),".. Testing GetRMSErrorBetweenPoints 2, expected=" << expected << ", actual=" << rms);
 
@@ -445,7 +445,7 @@ public:
     rms = mitk::GetRMSErrorBetweenPoints(*fixedPoints, *movingPoints);
     expected = 2.449489743;
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(rms, expected, 0.00001),".. Testing GetRMSErrorBetweenPoints 3, expected=" << expected << ", actual=" << rms);
-    
+
     // Add transformation of -1, -1, -1, which should remove all error, except point 3.
     // And in this case, as it is RMS, we have 3 points, so the mean goes down to 1, and is not SQRT(3).
     mitk::Point3D trans;
@@ -458,7 +458,7 @@ public:
     expected = 1;
     MITK_TEST_CONDITION_REQUIRED(mitk::Equal(rms, expected, 0.00001),".. Testing GetRMSErrorBetweenPoints 4, expected=" << expected << ", actual=" << rms);
   }
-  
+
 };
 
 /**

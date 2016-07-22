@@ -32,7 +32,7 @@ class NIFTKCORE_EXPORT QmitkLookupTableContainer : public mitk::BaseData
 public:
 
   typedef std::pair<int, QString> LabelType;
-  typedef std::vector<LabelType> LabelListType; 
+  typedef std::vector<LabelType> LabelListType;
 
   mitkClassMacro(QmitkLookupTableContainer, mitk::BaseData);
 
@@ -66,16 +66,16 @@ public:
 
   /** Get scaled property. */
   bool GetIsScaled() const { return m_IsScaled; }
- 
+
 
   /** Set labels. */
   void SetLabels(const LabelListType& labels){ m_Labels = labels; }
-  
+
   /** Get labels. */
  LabelListType GetLabels()const { return m_Labels; }
 
- void SetRequestedRegionToLargestPossibleRegion() override {}  
- 
+ void SetRequestedRegionToLargestPossibleRegion() override {}
+
  bool RequestedRegionIsOutsideOfTheBufferedRegion() override { return false; }
 
  virtual bool VerifyRequestedRegion() override { return true; }

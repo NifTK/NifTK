@@ -59,7 +59,7 @@ public:
   /// This can be used to avoid eventual infinite recursion.
   /// Returns true if the listener was already blocked, otherwise false.
   bool SetBlocked(bool blocked);
-  
+
   /// \brief GUI independent message callback.
   Message1<mitk::DataNode*> NodeAdded;
   Message1<mitk::DataNode*> NodeChanged;

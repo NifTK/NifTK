@@ -41,7 +41,7 @@ NIFTKCORE_EXPORT bool Load2DPointFromFile(const std::string& fileName, mitk::Poi
 NIFTKCORE_EXPORT bool Load3DPointFromFile(const std::string& fileName, mitk::Point3D& point);
 
 /**
- * \brief Load a plain text file of 4 rows of 4 space separated numbers into a vtkMatrix4x4.  
+ * \brief Load a plain text file of 4 rows of 4 space separated numbers into a vtkMatrix4x4.
  * \param fileName full path of file name
  * \return vtkSmartPointer<vtkMatrix4x4> that the caller is responsible for
  */
@@ -51,7 +51,7 @@ NIFTKCORE_EXPORT vtkSmartPointer<vtkMatrix4x4> LoadVtkMatrix4x4FromFile(const st
  * \brief Save the matrix to a plain text file of 4 rows of 4 space separated numbers.
  * \param fileName full path of file name
  * \param matrix a matrix
- * \return true if successful and false otherwise 
+ * \return true if successful and false otherwise
  */
 NIFTKCORE_EXPORT bool SaveVtkMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& matrix);
 

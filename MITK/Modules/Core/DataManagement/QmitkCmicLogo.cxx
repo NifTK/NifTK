@@ -54,9 +54,9 @@ CMICLogo::CMICLogo()
   m_Mapper            = vtkPolyDataMapper::New();
   m_PngReader         = vtkPNGReader::New();
   m_VtkImageImport    = vtkImageImport::New();
-  
+
   m_LogoPosition  = CMICLogo::LowerRight;
- 
+
   m_IsEnabled                  = false;
   m_ForceShowMBIDepartmentLogo = false;
 
@@ -72,17 +72,17 @@ CMICLogo::~CMICLogo()
   if ( m_RenderWindow != NULL )
     if ( this->IsEnabled() )
       this->Disable();
-  
+
   if ( m_Mapper != NULL )
     m_Mapper->Delete();
-  
+
   if ( m_OuterCubeActor!=NULL )
     m_OuterCubeActor->Delete();
   if ( m_InnerCubeActor!=NULL )
     m_InnerCubeActor->Delete();
   if ( m_MiddleCubeActor!=NULL )
     m_MiddleCubeActor->Delete();
-  
+
   if ( m_Renderer != NULL )
     m_Renderer->Delete();
 
@@ -134,7 +134,7 @@ vtkActor* CMICLogo::GetActor()
 }
 
 /**
- * Returns the mapper associated with the 
+ * Returns the mapper associated with the
  * logo.
  */
 vtkPolyDataMapper* CMICLogo::GetMapper()
@@ -176,15 +176,15 @@ void CMICLogo::Enable()
 
 
  //   m_OuterCubeActor->SetOpacity(m_Opacity);
-    
+
     m_Renderer->AddActor( m_OuterCubeActor );
     m_Renderer->InteractiveOff();
-    
+
     SetupCamera();
   //  SetupPosition();
-    
+
     mitk::VtkLayerController::GetInstance(m_RenderWindow)->InsertForegroundRenderer(m_Renderer,false);
-    
+
     m_IsEnabled = true;
   }
 }
@@ -199,8 +199,8 @@ void CMICLogo::SetupCamera()
 
   double focalPoint[3];
   double position[3];
-  
-  position[0] = 0; 
+
+  position[0] = 0;
   position[1] = 0;
   position[2] = 0;
 
@@ -266,7 +266,7 @@ void CMICLogo::SetRequestedRegionToLargestPossibleRegion()
 
 bool CMICLogo::RequestedRegionIsOutsideOfTheBufferedRegion()
 {
-    return false;    
+    return false;
 }
 
 bool CMICLogo::VerifyRequestedRegion()

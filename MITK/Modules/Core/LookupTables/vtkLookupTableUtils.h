@@ -23,25 +23,25 @@
  * \file vtkLookupTableUtils.h
  * \brief General functions for altering vtkLookupTables
  */
- 
+
   class vtkLookupTable;
-  
+
 namespace mitk
 {
   /**
    * Basic label typedefs
    */
   typedef std::pair<int, std::string> LabelType;
-  typedef std::vector<LabelType> LabelsListType;  
+  typedef std::vector<LabelType> LabelsListType;
   typedef std::vector<QColor> ColorListType;
-  
+
   /**
    * \brief Replace the color in the LookupTable at the given index
    */
   NIFTKCORE_EXPORT vtkLookupTable* ChangeColor(vtkLookupTable* lut, int value, const QColor& newColor);
 
   /**
-   * \brief Swap colors in the LookupTable at the given indices. 
+   * \brief Swap colors in the LookupTable at the given indices.
    */
   NIFTKCORE_EXPORT vtkLookupTable* SwapColors(vtkLookupTable* lut, int value1, int value2);
 
@@ -52,7 +52,7 @@ namespace mitk
   NIFTKCORE_EXPORT vtkLookupTable* ResizeLookupTable(vtkLookupTable* lut, double newMaximum);
 
   NIFTKCORE_EXPORT vtkLookupTable* CreateEmptyLookupTable(const QColor& lowColor = QColor(0, 0, 0, 0), const QColor& highColor = QColor(0, 0, 0, 0));
-  
+
 }
 
 #endif // vtkLookupTableUtils_h

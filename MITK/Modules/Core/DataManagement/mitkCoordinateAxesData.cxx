@@ -154,17 +154,17 @@ bool CoordinateAxesData::SaveToFile(const std::string& fileName) const
 mitk::Point3D CoordinateAxesData::MultiplyPoint(const mitk::Point3D& point) const
 {
   // ToDo: This could be made faster, by avoiding copying stuff.
-  
+
   vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
   this->GetVtkMatrix(*matrix);
-  
+
   double p[4];
   p[0] = point[0];
   p[1] = point[1];
   p[2] = point[2];
   p[3] = 1;
   matrix->MultiplyPoint(p, p);
-  
+
   mitk::Point3D out;
   out[0] = p[0];
   out[1] = p[1];
@@ -188,7 +188,7 @@ void CoordinateAxesData::SetTranslation(const double& tx, const double& ty, cons
   matrix->SetElement(0, 3, tx);
   matrix->SetElement(1, 3, ty);
   matrix->SetElement(2, 3, tz);
-  this->SetVtkMatrix(*matrix);  
+  this->SetVtkMatrix(*matrix);
 }
 
 } // end namespace

@@ -26,7 +26,7 @@
 #include <mitkDataNode.h>
 #include <mitkImageAccessByItk.h>
 
-#include <mitkNifTKCoreObjectFactory.h>
+#include <niftkCoreObjectFactory.h>
 #include <niftkImageUtils.h>
 
 /**

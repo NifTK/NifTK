@@ -12,42 +12,45 @@
 
 =============================================================================*/
 
-#include "mitkNifTKMeshSmoother.h"
+#include "niftkMeshSmoother.h"
 #include <algorithm>
 #include <unordered_set>
 
 namespace std
 {
-  template <>
-  struct hash<mitk::BasicVertex>
-  {
-      size_t operator()(mitk::BasicVertex const & x) const
-      {
-        return ((51 + std::hash<int>()(x.GetCoordX() )) * 51 + std::hash<int>()(x.GetCoordY())) * 51 + std::hash<int>()(x.GetCoordZ() );
-      }
-  };
 
-  bool operator==(mitk::BasicVertex const & x, mitk::BasicVertex const & y)
+template <>
+struct hash<niftk::BasicVertex>
+{
+  size_t operator()(niftk::BasicVertex const & x) const
   {
-    return (x.GetCoordX() == y.GetCoordX() && x.GetCoordY() == y.GetCoordY() && x.GetCoordZ() == y.GetCoordZ());
+    return ((51 + std::hash<int>()(x.GetCoordX() )) * 51 + std::hash<int>()(x.GetCoordY())) * 51 + std::hash<int>()(x.GetCoordZ() );
   }
+};
+
+bool operator==(niftk::BasicVertex const & x, niftk::BasicVertex const & y)
+{
+  return (x.GetCoordX() == y.GetCoordX() && x.GetCoordY() == y.GetCoordY() && x.GetCoordZ() == y.GetCoordZ());
+}
+
 }
 
 
-namespace mitk {
-
-struct vec_equal : std::unary_function<mitk::BasicVertex, bool> 
+namespace niftk
 {
-  mitk::BasicVertex m_Vert;
-  vec_equal(mitk::BasicVertex v):m_Vert(v) {}
-  
-  bool operator() (mitk::BasicVertex const& otherVert) const 
+
+struct vec_equal : std::unary_function<BasicVertex, bool>
+{
+  BasicVertex m_Vert;
+  vec_equal(BasicVertex v):m_Vert(v) {}
+
+  bool operator() (BasicVertex const& otherVert) const
   {
-    bool vertCoordsEqu = (m_Vert.GetCoordX() == otherVert.GetCoordX() && 
+    bool vertCoordsEqu = (m_Vert.GetCoordX() == otherVert.GetCoordX() &&
                           m_Vert.GetCoordY() == otherVert.GetCoordY() &&
                           m_Vert.GetCoordZ() == otherVert.GetCoordZ());
 
-    bool vertNormsEqu  = (m_Vert.GetNormalX() == otherVert.GetNormalX() && 
+    bool vertNormsEqu  = (m_Vert.GetNormalX() == otherVert.GetNormalX() &&
                           m_Vert.GetNormalY() == otherVert.GetNormalY() &&
                           m_Vert.GetNormalZ() == otherVert.GetNormalZ());
 
@@ -116,9 +119,9 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
     return false;
 
   if( 's' == tolower(buffer[0]) &&
-    'o' == tolower(buffer[1]) && 
-    'l' == tolower(buffer[2]) && 
-    'i' == tolower(buffer[3]) && 
+    'o' == tolower(buffer[1]) &&
+    'l' == tolower(buffer[2]) &&
+    'i' == tolower(buffer[3]) &&
     'd' == tolower(buffer[4]) )
   {
     MITK_INFO << "Encountered ASCII STL file header -- aborting." << std::endl;
@@ -176,9 +179,9 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
 
         // Get vertex components.
         float tmp = v.GetCoordX();
-        memcpy(&tmp, cp, sizeof(float)); 
+        memcpy(&tmp, cp, sizeof(float));
         cp += sizeof(float);
-        
+
         tmp = v.GetCoordY();
         memcpy(&tmp, cp, sizeof(float));
         cp += sizeof(float);
@@ -263,7 +266,7 @@ bool MeshSmoother::LoadFromBinarySTL(const char *const file_name, const bool gen
   //}
 
   return true;
-} 
+}
 
 // This produces results that are practically identical to Meshlab
 void MeshSmoother::LaplaceSmooth(const float scale)
@@ -587,7 +590,7 @@ void MeshSmoother::GenerateVertexNormals(void)
   {
     m_VertexNormals[i].Normalize();
 
-    // Sometimes we must invert the normals 
+    // Sometimes we must invert the normals
     if (m_FlipNormals)
     {
       m_MeshDataExt->m_Vertices[i].SetNormalX(m_MeshDataExt->m_Vertices[i].GetNormalX() - m_VertexNormals[i].GetX());
@@ -810,7 +813,7 @@ void MeshSmoother::FixCracks(void)
     BasicVec3D vert1 = m_MeshDataExt->m_Vertices[problem_edges_vec[i].indices[0]].GetCoords();
     BasicVec3D vert2 = m_MeshDataExt->m_Vertices[problem_edges_vec[closest_problem_edges_vec_index].indices[0]].GetCoords();
     BasicVec3D vert3 = m_MeshDataExt->m_Vertices[problem_edges_vec[closest_problem_edges_vec_index].indices[1]].GetCoords();
-    
+
     if(vert1.DistanceSquared(vert2) > vert1.DistanceSquared(vert3))
     {
       size_t temp = problem_edges_vec[closest_problem_edges_vec_index].indices[0];
@@ -904,10 +907,10 @@ bool MeshSmoother::MergeVertexPair(const size_t keeper, const size_t goner)
 
   // Note: At this point, m_Vertices[goner] is now a rogue vertex.
   // We will skip erasing it from the vertices vector because that would mean a whole lot more work
-  // (we'd have to reindex every vertex after it in the vector, etc.). Instead it will simply not be 
+  // (we'd have to reindex every vertex after it in the vector, etc.). Instead it will simply not be
   // referenced in the triangle list.
 
   return true;
 }
 
-} //endof mitk namespace
+}

@@ -15,11 +15,11 @@
 #include "niftkCustomVTKAxesActor.h"
 #include <vtkTextProperty.h>
 
-niftk::CustomVTKAxesActor::CustomVTKAxesActor() 
-: vtkAxesActor() 
+niftk::CustomVTKAxesActor::CustomVTKAxesActor()
+: vtkAxesActor()
 {
   //default: 0.25
-  m_AxesLabelWidth = 0.1; 
+  m_AxesLabelWidth = 0.1;
   this->XAxisLabel->SetWidth(0.1);
   this->YAxisLabel->SetWidth(0.1);
   this->ZAxisLabel->SetWidth(0.1);

@@ -12,26 +12,24 @@ See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
 
-#ifndef __mitkBasicTriangle_h
-#define __mitkBasicTriangle_h
+#ifndef niftkBasicTriangle_h
+#define niftkBasicTriangle_h
 
 #include <assert.h>
 #include <iostream>
 #include "niftkCoreExports.h"
-#include "mitkBasicVec3D.h"
+#include "niftkBasicVec3D.h"
 
-namespace mitk
+namespace niftk
 {
 
 class BasicVertex;
 class BasicMesh;
 
-/**
-* \class BasicTriangle
-* \brief Simple triangle implementation that is used in the Surface Extraction 
-* and surface smoothing and decimation algorithms. It keeps hold of vertices,
-* triangle index and has an active flag.
-*/
+/// \class BasicTriangle
+/// \brief Simple triangle implementation that is used in the Surface Extraction
+/// and surface smoothing and decimation algorithms. It keeps hold of vertices,
+/// triangle index and has an active flag.
 
 class NIFTKCORE_EXPORT BasicTriangle
 {
@@ -41,7 +39,7 @@ public:
   /// \brief Constructor with vertex indices as parameters
   BasicTriangle(int v1, int v2, int v3);
   /// \brief Constructor with mesh pointer and vertex indices as parameters
-  BasicTriangle(mitk::BasicMesh* mp, int v1, int v2, int v3);
+  BasicTriangle(BasicMesh* mp, int v1, int v2, int v3);
 
   /// \brief Destructors
   virtual ~BasicTriangle();
@@ -51,7 +49,7 @@ public:
 
   /// \brief Assignment operator
   BasicTriangle& operator=(const BasicTriangle& t);
-  
+
   /// \brief Comparison operator. It assumes pointing to same list of verts.
   bool operator==(const BasicTriangle& t);
 
@@ -88,7 +86,7 @@ public:
   const BasicVec3D& GetVert2Coords() const;
   /// \brief Gets the const reference to the coordinates (Vec3D) of the third member vertex
   const BasicVec3D& GetVert3Coords() const;
-  
+
   /// \brief Gets the const reference to the first member vertex
   const BasicVertex& GetVert1() const;
   /// \brief Gets the const reference to the second member vertex
@@ -117,7 +115,7 @@ public:
   const BasicVec3D & GetTriNormal() const { return m_TriNormal; }
   /// \brief Gets the coordinates of the triangle normal as a float[3] array
   float* GetTriNormalArray();
-  
+
   /// \brief Gets the X component of the triangle normal
   float GetTriNormalX() { return m_TriNormal.GetX(); }
   /// \brief Gets the Y component of the triangle normal
@@ -131,10 +129,10 @@ public:
   void SetTriNormalY(float ny) { m_TriNormal.SetY(ny); }
   /// \brief Sets the Z component of the triangle normal
   void SetTriNormalZ(float nz) { m_TriNormal.SetZ(nz); }
-  
+
   /// \brief Re-computes the normal for the BasicTriangle
   void CalcNormal();
-   
+
   /// \brief Returns area of BasicTriangle
   float CalcArea();
 
@@ -174,7 +172,7 @@ protected:
   int m_Vert3; // index of the third member vertex
 
   BasicVec3D    m_TriNormal;         // normal to plane
-  mutable float m_TriNormalArray[3]; //used for returning values 
+  mutable float m_TriNormalArray[3]; //used for returning values
 
   // This parameter is the "d" in the
   // plane equation ax + by + cz + d = 0
@@ -183,8 +181,8 @@ protected:
   bool        m_Active; // active flag
   BasicMesh * m_Mesh;   // pointer to the mesh structure that holds the current triangle
   int         m_Index;  // index in list of BasicTriangles w/in mesh
- };
+};
 
- } // end of namespace
+}
 
-#endif //__mitkBasicTriangle_h
+#endif

@@ -13,12 +13,14 @@ See LICENSE.txt in the top level directory for details.
 =============================================================================*/
 
 #include <assert.h>
-#include "mitkBasicTriangle.h"
 
-#include "mitkBasicMesh.h"
+#include "niftkBasicTriangle.h"
 
-namespace mitk
+#include "niftkBasicMesh.h"
+
+namespace niftk
 {
+
 // Constructors
 BasicTriangle::BasicTriangle()
 : m_Vert1(-1)
@@ -46,7 +48,7 @@ BasicTriangle::BasicTriangle(int v1, int v2, int v3)
 {
 }
 
-BasicTriangle::BasicTriangle(mitk::BasicMesh* mp, int v1, int v2, int v3)
+BasicTriangle::BasicTriangle(BasicMesh* mp, int v1, int v2, int v3)
 : m_Vert1(v1)
 , m_Vert2(v2)
 , m_Vert3(v3)
@@ -96,8 +98,8 @@ BasicTriangle& BasicTriangle::operator=(const BasicTriangle& t)
 // assumes pointing to same list of verts
 bool BasicTriangle::operator==(const BasicTriangle& t)
 {
-  return (m_Vert1 == t.m_Vert1 && 
-          m_Vert2 == t.m_Vert2 && 
+  return (m_Vert1 == t.m_Vert1 &&
+          m_Vert2 == t.m_Vert2 &&
           m_Vert3 == t.m_Vert3 &&
           m_Mesh == t.m_Mesh
     );
@@ -119,7 +121,7 @@ void BasicTriangle::ChangeVertex(int vFrom, int vTo)
   if (vFrom == m_Vert1)
   {
     m_Vert1 = vTo;
-  } 
+  }
   else if (vFrom == m_Vert2)
   {
     m_Vert2 = vTo;
@@ -169,7 +171,7 @@ const BasicVec3D& BasicTriangle::GetVert2Coords() const
   return m_Mesh->GetVertex(m_Vert2).GetCoords();
 }
 
-const BasicVec3D& BasicTriangle::GetVert3Coords() const 
+const BasicVec3D& BasicTriangle::GetVert3Coords() const
 {
   return m_Mesh->GetVertex(m_Vert3).GetCoords();
 }
@@ -185,7 +187,7 @@ const BasicVertex& BasicTriangle::GetVert2() const
   return m_Mesh->GetVertex(m_Vert2);
 }
 
-const BasicVertex& BasicTriangle::GetVert3() const 
+const BasicVertex& BasicTriangle::GetVert3() const
 {
   return m_Mesh->GetVertex(m_Vert3);
 }
@@ -225,7 +227,7 @@ float* BasicTriangle::GetTriNormalArray()
   m_TriNormalArray[0]=m_TriNormal.GetX();
   m_TriNormalArray[1]=m_TriNormal.GetY();
   m_TriNormalArray[2]=m_TriNormal.GetZ();
-  return m_TriNormalArray; 
+  return m_TriNormalArray;
 }
 
 // Calculate normal of triangle

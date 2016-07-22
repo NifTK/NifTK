@@ -12,15 +12,15 @@ See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
 
-#ifndef __mitkBasicVertex_h
-#define __mitkBasicVertex_h
+#ifndef niftkBasicVertex_h
+#define niftkBasicVertex_h
 
 #include <set>
 
-#include "mitkBasicVec3D.h"
+#include "niftkBasicVec3D.h"
 #include "niftkCoreExports.h"
 
-namespace mitk
+namespace niftk
 {
 
 class BasicMesh;
@@ -28,40 +28,40 @@ class BasicMesh;
 // Used to store an edge -- two vertices which have only one
 // triangle in common form an edge of the mesh.
 struct Border
-{ 
+{
   int vert1;
   int vert2;
   int triIndex;
 
   // We need operator< because it's used by the STL's set<> to determine equality
   // (if (not a<b) and (not b>a) then a is equal to b)
-  bool operator <(const Border& b) const 
-  { 
+  bool operator <(const Border& b) const
+  {
     int v1, v2, b1, b2;
 
     // make sure the smaller vert index is always first.
     if (vert1 < vert2)
-    { 
+    {
       v1 = vert1; v2 = vert2;
-    } 
-    else 
-    { 
+    }
+    else
+    {
       v1 = vert2; v2 = vert1;
     }
 
     if (b.vert1 < b.vert2)
-    { 
+    {
       b1 = b.vert1; b2 = b.vert2;
-    } 
-    else 
-    { 
+    }
+    else
+    {
       b1 = b.vert2; b2 = b.vert1;
     }
 
-    if (v1 < b1) 
+    if (v1 < b1)
       return true;
 
-    if (v1 > b1) 
+    if (v1 > b1)
       return false;
 
     return (v2 < b2); // v1 == b1
@@ -70,12 +70,12 @@ struct Border
 
 /**
 * \class BasicVertex
-* \brief Simple vertex implementation that is used in the Surface Extraction 
+* \brief Simple vertex implementation that is used in the Surface Extraction
 * and surface smoothing and decimation algorithms. It has both a position and a normal.
 */
 
 class NIFTKCORE_EXPORT BasicVertex
-{ 
+{
 
 public:
   /// \brief Default constructor
@@ -187,7 +187,7 @@ public:
   const std::set<int>& GetVertNeighbors() const { return m_VertNeighbors; }
   // \brief Get the whole set of vertex neighbours
   std::set<int>&       GetVertNeighbors()       { return m_VertNeighbors; }
-  
+
   /// \brief Get the whole set of triangle neighbours - const
   const std::set<int>& GetTriNeighbors() const  { return m_TriNeighbors; }
   /// \brief Get the whole set of triangle neighbours
@@ -222,10 +222,10 @@ public:
   inline void SetActive(bool b) { m_Active = b; }
 
   /// \brief Checks if the current vertex is on the border of the mesh
-  /// (i.e. is there an edge which uses this vertex which 
+  /// (i.e. is there an edge which uses this vertex which
   /// is only used for one triangle?)
-  bool IsBorder(BasicMesh& m); 
-  
+  bool IsBorder(BasicMesh& m);
+
   /// \brief Gets the set of border edges
   /// Is the current vertex on an edge?  If so, get edge information.
   /// This is used to put constraints on the border so that the mesh
@@ -265,7 +265,7 @@ private:
   int        m_Index;
   double     m_QuadricError[4][4]; // Used for Quadric error cost.
   double     m_QuadricTriArea;     // summed area of triangles used to compute quadrics
-  
+
   mutable float m_V[3];            //mutable floats used for returning values
   mutable float m_VN[3];           //mutable floats used for returning values
 };

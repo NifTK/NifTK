@@ -69,8 +69,8 @@ double mitk::GetSquaredDistanceBetweenPoints(const mitk::Point3D& a, const mitk:
 
 //-----------------------------------------------------------------------------
 double mitk::GetRMSErrorBetweenPoints(
-  const mitk::PointSet& fixedPoints, 
-  const mitk::PointSet& movingPoints, 
+  const mitk::PointSet& fixedPoints,
+  const mitk::PointSet& movingPoints,
   const mitk::CoordinateAxesData * const transform)
 {
   mitk::PointSet::DataType* itkPointSet = movingPoints.GetPointSet();
@@ -80,20 +80,20 @@ double mitk::GetRMSErrorBetweenPoints(
   mitk::PointSet::PointType fixedPoint;
   mitk::PointSet::PointType movingPoint;
   mitk::PointSet::PointType transformedMovingPoint;
-  
+
   double rmsError = 0;
   unsigned long int numberOfPointsUsed = 0;
-  
+
   for (pIt = points->Begin(); pIt != points->End(); ++pIt)
   {
     pointID = pIt->Index();
     movingPoint = pIt->Value();
-    
+
     if (fixedPoints.GetPointIfExists(pointID, &fixedPoint))
     {
       if (transform != NULL)
       {
-        transformedMovingPoint = transform->MultiplyPoint(movingPoint); 
+        transformedMovingPoint = transform->MultiplyPoint(movingPoint);
         rmsError += mitk::GetSquaredDistanceBetweenPoints(fixedPoint, transformedMovingPoint);
       }
       else
@@ -106,7 +106,7 @@ double mitk::GetRMSErrorBetweenPoints(
   if (numberOfPointsUsed > 0)
   {
     rmsError /= static_cast<double>(numberOfPointsUsed);
-    rmsError = sqrt(rmsError);      
+    rmsError = sqrt(rmsError);
   }
   else
   {
@@ -386,7 +386,7 @@ int mitk::RemoveNaNPoints(
     pointID = pointsIt->Index();
     point = pointsIt->Value();
 
-        
+
     if ( mitk::CheckForNaNPoint(point) )
     {
       removedPoints++;

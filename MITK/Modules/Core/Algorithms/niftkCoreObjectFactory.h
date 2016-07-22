@@ -12,26 +12,27 @@
 
 =============================================================================*/
 
-#ifndef mitkNifTKCoreObjectFactory_h
-#define mitkNifTKCoreObjectFactory_h
+#ifndef niftkCoreObjectFactory_h
+#define niftkCoreObjectFactory_h
 
 #include <mitkCoreObjectFactory.h>
 #include <niftkCoreExports.h>
 
-namespace mitk {
+namespace niftk
+{
 
 /**
- * \class NifTKCoreObjectFactory
+ * \class CoreObjectFactory
  * \brief Object factory class to instantiate or set properties on our non-IO related classes.
  */
-class NIFTKCORE_EXPORT NifTKCoreObjectFactory : public CoreObjectFactoryBase
+class NIFTKCORE_EXPORT CoreObjectFactory : public mitk::CoreObjectFactoryBase
 {
 public:
-  mitkClassMacro(NifTKCoreObjectFactory,CoreObjectFactoryBase);
-  itkNewMacro(NifTKCoreObjectFactory);
+  mitkClassMacro(CoreObjectFactory, mitk::CoreObjectFactoryBase);
+  itkNewMacro(CoreObjectFactory);
 
   /// \see CoreObjectFactoryBase::CreateMapper
-  virtual Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId) override;
+  virtual mitk::Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId) override;
 
   /// \see CoreObjectFactoryBase::SetDefaultProperties
   virtual void SetDefaultProperties(mitk::DataNode* node) override;
@@ -49,8 +50,8 @@ public:
   DEPRECATED(virtual mitk::CoreObjectFactoryBase::MultimapType GetSaveFileExtensionsMap());
 
 protected:
-  NifTKCoreObjectFactory();
-  virtual ~NifTKCoreObjectFactory();
+  CoreObjectFactory();
+  virtual ~CoreObjectFactory();
 
   void CreateFileExtensionsMap();
   MultimapType m_FileExtensionsMap;
@@ -58,7 +59,7 @@ protected:
 
 };
 
-} // end namespace
+}
 
 #endif
 

@@ -12,10 +12,10 @@ See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
 
-#include "mitkBasicVertex.h"
-#include "mitkBasicMesh.h"
+#include "niftkBasicVertex.h"
+#include "niftkBasicMesh.h"
 
-namespace mitk
+namespace niftk
 {
 
 // Constructors and Destructors
@@ -81,17 +81,17 @@ BasicVertex::BasicVertex(const BasicVertex& v)
 {
   // copy quadric
   for (int i = 0; i < 4; ++i)
-  { 
+  {
     for (int j = 0; j < 4; ++j)
-    { 
+    {
       m_QuadricError[i][j] = v.m_QuadricError[i][j];
     }
   }
 }
 
 // destructor
-BasicVertex::~BasicVertex() 
-{ 
+BasicVertex::~BasicVertex()
+{
   m_VertNeighbors.clear();
   m_TriNeighbors.clear();
   //if (m_VertNeighbors.size() != 0)
@@ -103,13 +103,13 @@ BasicVertex::~BasicVertex()
 
 
 // Assignment operator
-BasicVertex& BasicVertex::operator=(const BasicVertex& v) 
-{ 
+BasicVertex& BasicVertex::operator=(const BasicVertex& v)
+{
   if (this == &v)
     return *this; // check for assignment to self
 
   m_Coords =v.m_Coords;
-  m_Normal = v.m_Normal; 
+  m_Normal = v.m_Normal;
   m_VertNeighbors = v.m_VertNeighbors;
   m_TriNeighbors = v.m_TriNeighbors;
   m_Active = v.m_Active;
@@ -119,10 +119,10 @@ BasicVertex& BasicVertex::operator=(const BasicVertex& v)
   m_QuadricTriArea = v.m_QuadricTriArea;
 
   // copy quadric
-  for (int i = 0; i < 4; ++i) 
-  { 
-    for (int j = 0; j < 4; ++j) 
-    { 
+  for (int i = 0; i < 4; ++i)
+  {
+    for (int j = 0; j < 4; ++j)
+    {
       m_QuadricError[i][j] = v.m_QuadricError[i][j];
     }
   }
@@ -131,7 +131,7 @@ BasicVertex& BasicVertex::operator=(const BasicVertex& v)
 
 // Assignment operator
 BasicVertex& BasicVertex::operator=(const float av[3])
-{ 
+{
   m_Coords.SetX(av[0]);
   m_Coords.SetY(av[1]);
   m_Coords.SetZ(av[2]);
@@ -150,13 +150,13 @@ BasicVertex& BasicVertex::operator=(const float av[3])
 
 // Comparision operators
 bool BasicVertex::operator==(const BasicVertex& v)
-{ 
+{
   bool isEqual = (m_Coords == v.m_Coords && m_Normal == v.m_Normal);
   return isEqual;
 }
 
-bool BasicVertex::operator!=(const BasicVertex& v) 
-{ 
+bool BasicVertex::operator!=(const BasicVertex& v)
+{
   return (m_Coords != v.m_Coords || m_Normal != v.m_Normal);
 }
 
@@ -232,16 +232,16 @@ std::ostream&
 }
 
 // NOTE: a better solution would be to return a reference
-const float* BasicVertex::GetCoordArray() const 
-{ 
+const float* BasicVertex::GetCoordArray() const
+{
   m_V[0]=m_Coords.GetX();
   m_V[1]=m_Coords.GetY();
   m_V[2]=m_Coords.GetZ();
   return m_V;
 }
 
-const float* BasicVertex::GetNormalArray() const 
-{ 
+const float* BasicVertex::GetNormalArray() const
+{
   m_VN[0]=m_Normal.GetX();
   m_VN[1]=m_Normal.GetY();
   m_VN[2]=m_Normal.GetZ();
@@ -250,11 +250,11 @@ const float* BasicVertex::GetNormalArray() const
 
 // Used for Garland & Heckbert's quadric edge collapse cost (used for mesh simplifications/progressive meshes)
 void BasicVertex::InitQuadric()
-{ 
+{
   for (int i = 0; i < 4; ++i)
-  { 
+  {
     for (int j = 0; j < 4; ++j)
-    { 
+    {
       m_QuadricError[i][j] = -1;
     }
   }
@@ -275,7 +275,7 @@ void BasicVertex::CalcQuadric(BasicMesh& m, bool bUseTriArea)
   {
     int triIndex = *pos;
     BasicTriangle& t = m.GetTri(triIndex);
-    if (t.IsActive()) 
+    if (t.IsActive())
     {
       float triArea = 1;
       if (bUseTriArea)
@@ -318,9 +318,9 @@ void BasicVertex::CalcQuadric(BasicMesh& m, bool bUseTriArea)
 }
 
 void BasicVertex::GetQuadric(double Qret[4][4])
-{ 
+{
   for (int i = 0; i < 4; ++i)
-  { 
+  {
     for (int j = 0; j < 4; ++j)
     {
       Qret[i][j] = m_QuadricError[i][j];
@@ -328,8 +328,8 @@ void BasicVertex::GetQuadric(double Qret[4][4])
   }
 }
 
-void BasicVertex::SetQuadric(double Qnew[4][4]) 
-{ 
+void BasicVertex::SetQuadric(double Qnew[4][4])
+{
   for (int i = 0; i < 4; ++i)
   {
     for (int j = 0; j < 4; ++j)
@@ -343,7 +343,7 @@ void BasicVertex::SetQuadric(double Qnew[4][4])
 
 // Go through the list of all neighboring vertices, and see how many
 // triangles this vertex has in common w/ each neighboring vertex.  Normally
-// there will be two triangles in common, but if there is only one, then this 
+// there will be two triangles in common, but if there is only one, then this
 // vertex is on an edge.
 bool BasicVertex::IsBorder(BasicMesh& m)
 {
@@ -376,7 +376,7 @@ void BasicVertex::GetAllBorderEdges(std::set<Border> &borderSet, BasicMesh& m)
 {
   // Go through the list of all neighboring vertices, and see how many
   // triangles this vertex has in common w/ each neighboring vertex.  Normally
-  // there will be two triangles in common, but if there is only one, then this 
+  // there will be two triangles in common, but if there is only one, then this
   // vertex is on an edge.
   std::set<int>::iterator pos, pos2;
 

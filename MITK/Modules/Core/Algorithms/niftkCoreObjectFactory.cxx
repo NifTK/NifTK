@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkNifTKCoreObjectFactory.h"
+#include "niftkCoreObjectFactory.h"
 
 #include <itkObjectFactory.h>
 #include <mitkProperties.h>
@@ -25,37 +25,40 @@
 #include <mitkFastPointSetVtkMapper3D.h>
 #include <mitkPointSetVtkMapper3D.h>
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-mitk::NifTKCoreObjectFactory::NifTKCoreObjectFactory()
-:CoreObjectFactoryBase()
+CoreObjectFactory::CoreObjectFactory()
+: mitk::CoreObjectFactoryBase()
 {
   static bool alreadyDone = false;
   if (!alreadyDone)
   {
-    MITK_DEBUG << "NifTKCoreObjectFactory c'tor" << std::endl;
+    MITK_DEBUG << "niftk::CoreObjectFactory c'tor" << std::endl;
 
-    MITK_DEBUG << "NifTKCoreObjectFactory c'tor finished" << std::endl;
+    MITK_DEBUG << "niftk::CoreObjectFactory c'tor finished" << std::endl;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::NifTKCoreObjectFactory::~NifTKCoreObjectFactory()
+CoreObjectFactory::~CoreObjectFactory()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode* node, MapperSlotId id)
+mitk::Mapper::Pointer CoreObjectFactory::CreateMapper(mitk::DataNode* node, MapperSlotId id)
 {
   mitk::Mapper::Pointer newMapper = NULL;
   mitk::BaseData *data = node->GetData();
 
   if ( id == mitk::BaseRenderer::Standard3D )
   {
-    if (dynamic_cast<PointSet*>(data) != NULL )
+    if (dynamic_cast<mitk::PointSet*>(data) != NULL )
     {
-      mitk::PointSet* pointSet = dynamic_cast<PointSet*>(data);
+      mitk::PointSet* pointSet = dynamic_cast<mitk::PointSet*>(data);
       if (pointSet->GetSize() > 1000)
       {
         newMapper = mitk::FastPointSetVtkMapper3D::New();
@@ -66,7 +69,7 @@ mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode*
       }
       newMapper->SetDataNode(node);
     }
-    else if (dynamic_cast<CoordinateAxesData*>(data) != NULL)
+    else if (dynamic_cast<mitk::CoordinateAxesData*>(data) != NULL)
     {
       newMapper = mitk::CoordinateAxesVtkMapper3D::New();
       newMapper->SetDataNode(node);
@@ -77,7 +80,7 @@ mitk::Mapper::Pointer mitk::NifTKCoreObjectFactory::CreateMapper(mitk::DataNode*
 
 
 //-----------------------------------------------------------------------------
-void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
+void CoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
 {
 
   if(node == NULL)
@@ -94,7 +97,7 @@ void mitk::NifTKCoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void mitk::NifTKCoreObjectFactory::CreateFileExtensionsMap()
+void CoreObjectFactory::CreateFileExtensionsMap()
 {
   MITK_DEBUG << "Registering additional file extensions." << std::endl;
   MITK_DEBUG << "Registering additional file extensions." << std::endl;
@@ -102,21 +105,21 @@ void mitk::NifTKCoreObjectFactory::CreateFileExtensionsMap()
 
 
 //-----------------------------------------------------------------------------
-mitk::NifTKCoreObjectFactory::MultimapType mitk::NifTKCoreObjectFactory::GetFileExtensionsMap()
+CoreObjectFactory::MultimapType CoreObjectFactory::GetFileExtensionsMap()
 {
   return m_FileExtensionsMap;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::NifTKCoreObjectFactory::MultimapType mitk::NifTKCoreObjectFactory::GetSaveFileExtensionsMap()
+CoreObjectFactory::MultimapType CoreObjectFactory::GetSaveFileExtensionsMap()
 {
   return m_SaveFileExtensionsMap;
 }
 
 
 //-----------------------------------------------------------------------------
-const char* mitk::NifTKCoreObjectFactory::GetFileExtensions()
+const char* CoreObjectFactory::GetFileExtensions()
 {
   std::string fileExtension;
   this->CreateFileExtensions(m_FileExtensionsMap, fileExtension);
@@ -125,7 +128,7 @@ const char* mitk::NifTKCoreObjectFactory::GetFileExtensions()
 
 
 //-----------------------------------------------------------------------------
-const char* mitk::NifTKCoreObjectFactory::GetSaveFileExtensions()
+const char* CoreObjectFactory::GetSaveFileExtensions()
 {
   std::string fileExtension;
   this->CreateFileExtensions(m_SaveFileExtensionsMap, fileExtension);
@@ -136,22 +139,23 @@ const char* mitk::NifTKCoreObjectFactory::GetSaveFileExtensions()
 //-----------------------------------------------------------------------------
 struct RegisterNifTKCoreObjectFactory{
   RegisterNifTKCoreObjectFactory()
-    : m_Factory( mitk::NifTKCoreObjectFactory::New() )
+    : m_Factory( CoreObjectFactory::New() )
   {
-    MITK_DEBUG << "Registering NifTKCoreObjectFactory..." << std::endl;
+    MITK_DEBUG << "Registering niftk::CoreObjectFactory..." << std::endl;
     mitk::CoreObjectFactory::GetInstance()->RegisterExtraFactory( m_Factory );
   }
 
   ~RegisterNifTKCoreObjectFactory()
   {
-    MITK_DEBUG << "Un-Registering NifTKCoreObjectFactory..." << std::endl;
+    MITK_DEBUG << "Un-Registering niftk::CoreObjectFactory..." << std::endl;
     mitk::CoreObjectFactory::GetInstance()->UnRegisterExtraFactory( m_Factory );
   }
 
-  mitk::NifTKCoreObjectFactory::Pointer m_Factory;
+  CoreObjectFactory::Pointer m_Factory;
 };
 
 
 //-----------------------------------------------------------------------------
 static RegisterNifTKCoreObjectFactory registerNifTKCoreObjectFactory;
 
+}

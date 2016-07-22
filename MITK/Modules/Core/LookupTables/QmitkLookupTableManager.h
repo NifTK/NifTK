@@ -34,7 +34,7 @@
 class QmitkLookupTableContainer;
 class vtkLookupTable;
 
-class NIFTKCORE_EXPORT QmitkLookupTableManager 
+class NIFTKCORE_EXPORT QmitkLookupTableManager
 {
 
 public:
@@ -61,8 +61,8 @@ public:
   /**
    * \brief Returns the list of names in the map.
    */
-  std::vector<QString> GetTableNames();  
-  
+  std::vector<QString> GetTableNames();
+
   /**
   * \brief Add the given LookupTableContainer to the set of containers
   */

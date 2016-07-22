@@ -32,8 +32,8 @@ niftk::LabeledLookupTableProperty::LabeledLookupTableProperty(const LabeledLooku
 
 //-----------------------------------------------------------------------------
 niftk::LabeledLookupTableProperty::LabeledLookupTableProperty(
-  const std::string& name, 
-  const mitk::LookupTable::Pointer lut, 
+  const std::string& name,
+  const mitk::LookupTable::Pointer lut,
   const LabelListType& labels
   )
 : Superclass(name, lut, false)
@@ -44,9 +44,9 @@ niftk::LabeledLookupTableProperty::LabeledLookupTableProperty(
 
 //-----------------------------------------------------------------------------
 niftk::LabeledLookupTableProperty::LabeledLookupTableProperty(
-  const std::string& name, 
-  const mitk::LookupTable::Pointer lut, 
-  const LabelListType& labels, 
+  const std::string& name,
+  const mitk::LookupTable::Pointer lut,
+  const LabelListType& labels,
   bool scale
   )
 : Superclass(name, lut, scale)

@@ -17,11 +17,11 @@ set(H_FILES
 )
 
 set(CPP_FILES
-  Algorithms/mitkNifTKCoreObjectFactory.cxx
+  Algorithms/niftkCoreObjectFactory.cxx
   Algorithms/niftkAffineTransformer.cxx
-  Algorithms/mitkNifTKCMC33.cpp
-  Algorithms/mitkNifTKImageToSurfaceFilter.cpp
-  Algorithms/mitkNifTKMeshSmoother.cpp
+  Algorithms/niftkCMC33.cxx
+  Algorithms/niftkImageToSurfaceFilter.cxx
+  Algorithms/niftkMeshSmoother.cxx
   Common/niftkImageUtils.cxx
   Common/niftkImageOrientationUtils.cxx
   Common/mitkPointUtils.cxx
@@ -34,10 +34,10 @@ set(CPP_FILES
   DataManagement/mitkDataNodeVisibilityTracker.cxx
   DataManagement/mitkCoordinateAxesData.cxx
   DataManagement/mitkCoordinateAxesDataOpUpdate.cxx
-  DataManagement/mitkBasicMesh.cpp
-  DataManagement/mitkBasicTriangle.cpp
-  DataManagement/mitkBasicVec3D.cpp
-  DataManagement/mitkBasicVertex.cpp
+  DataManagement/niftkBasicMesh.cxx
+  DataManagement/niftkBasicTriangle.cxx
+  DataManagement/niftkBasicVec3D.cxx
+  DataManagement/niftkBasicVertex.cxx
   DataManagement/QmitkCmicLogo.cxx
   LookupTables/QmitkLookupTableContainer.cxx
   LookupTables/QmitkLookupTableSaxHandler.cxx

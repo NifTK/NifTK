@@ -36,14 +36,14 @@ public:
 
   mitkClassMacro(LabeledLookupTableProperty, niftk::NamedLookupTableProperty);
   itkNewMacro(LabeledLookupTableProperty);
-  mitkNewMacro3Param(LabeledLookupTableProperty, 
-                     const std::string&, 
-                     const mitk::LookupTable::Pointer, 
+  mitkNewMacro3Param(LabeledLookupTableProperty,
+                     const std::string&,
+                     const mitk::LookupTable::Pointer,
                      const LabelListType&);
-  mitkNewMacro4Param(LabeledLookupTableProperty, 
-                     const std::string&, 
-                     const mitk::LookupTable::Pointer, 
-                     const LabelListType&, 
+  mitkNewMacro4Param(LabeledLookupTableProperty,
+                     const std::string&,
+                     const mitk::LookupTable::Pointer,
+                     const LabelListType&,
                      bool);
 
   /** Get list of labels*/
@@ -57,12 +57,12 @@ protected:
   virtual ~LabeledLookupTableProperty();
   LabeledLookupTableProperty();
   LabeledLookupTableProperty(const LabeledLookupTableProperty& other);
-  LabeledLookupTableProperty(const std::string& name, 
-                             const mitk::LookupTable::Pointer lut, 
+  LabeledLookupTableProperty(const std::string& name,
+                             const mitk::LookupTable::Pointer lut,
                              const LabelListType& labels);
-  LabeledLookupTableProperty(const std::string& name, 
-                             const mitk::LookupTable::Pointer lut, 
-                             const LabelListType& labels, 
+  LabeledLookupTableProperty(const std::string& name,
+                             const mitk::LookupTable::Pointer lut,
+                             const LabelListType& labels,
                              bool scale);
 
 private:

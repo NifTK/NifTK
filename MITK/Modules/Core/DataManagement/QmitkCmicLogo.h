@@ -31,24 +31,24 @@ class vtkPNGReader;
 class vtkImageImport;
 
 
-class RenderWindow;  
+class RenderWindow;
 /**
  * Renders a company logo in the foreground
  * of a vtkRenderWindow.
- 
+
  */
 class NIFTKCORE_EXPORT CMICLogo : public mitk::BaseData
 {
 public:
 
   mitkClassMacro( CMICLogo, BaseData );
-  
+
   itkNewMacro( Self );
 
   enum LogoPosition{ UpperLeft, UpperRight, LowerLeft, LowerRight, Middle };
 
-  
-  
+
+
   /**
    * Sets the renderwindow, in which the logo
    * will be shown. Make sure, you have called this function
@@ -57,7 +57,7 @@ public:
   virtual void SetRenderWindow( vtkRenderWindow* renderWindow );
 
   /**
-   * Sets the source file for the logo. 
+   * Sets the source file for the logo.
    */
   virtual void SetLogoSource(const char* filename);
   /**
@@ -69,7 +69,7 @@ public:
    * where 1 is a nice little logo
    */
   virtual void SetZoomFactor( double factor );
-  
+
   /**
    * Enables drawing of the logo.
    * If you want to disable it, call the Disable() function.
@@ -81,31 +81,31 @@ public:
    * If you want to enable it, call the Enable() function.
    */
   virtual void Disable();
-  
+
   /**
    * Checks, if the logo is currently
    * enabled (visible)
    */
   virtual bool IsEnabled();
-   
+
   /**
    * Empty implementation, since the ManufacturerLogo doesn't
    * support the requested region concept
    */
   virtual void SetRequestedRegionToLargestPossibleRegion() override;
-  
+
   /**
    * Empty implementation, since the ManufacturerLogo doesn't
    * support the requested region concept
    */
   virtual bool RequestedRegionIsOutsideOfTheBufferedRegion() override;
-  
+
   /**
    * Empty implementation, since the ManufacturerLogo doesn't
    * support the requested region concept
    */
   virtual bool VerifyRequestedRegion() override;
-  
+
   /**
    * Empty implementation, since the ManufacturerLogo doesn't
    * support the requested region concept
@@ -136,11 +136,11 @@ public:
   virtual vtkPolyDataMapper* GetMapper();
 
   /**
-   * If set true, this method forces the logo rendering mechanism that it always 
+   * If set true, this method forces the logo rendering mechanism that it always
    * renders the MBI department logo, independent from mainapp option settings.
    */
   virtual void ForceMBILogoVisible(bool visible);
-  
+
 protected:
   void SetupCamera();
   void SetupPosition();

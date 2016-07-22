@@ -65,7 +65,7 @@ public:
    * \brief Warning: slow method to transform point by current matrix.
    */
   mitk::Point3D MultiplyPoint(const mitk::Point3D& point) const;
-  
+
   /**
    * \brief Utility method for unit testing that will simply set the transformation to be equal to a translation.
    */
@@ -73,9 +73,9 @@ public:
 
   /**
    * \brief Utility method for unit testing that will simply set the transformation to be equal to a translation.
-   */  
+   */
   void SetTranslation(const double& tx, const double& ty, const double& tz);
-  
+
 protected:
   CoordinateAxesData();
   ~CoordinateAxesData();

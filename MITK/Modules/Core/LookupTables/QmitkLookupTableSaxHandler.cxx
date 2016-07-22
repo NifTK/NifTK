@@ -78,7 +78,7 @@ bool QmitkLookupTableSaxHandler
     if (!scaledStr.isEmpty() && isScaled == 0)
     {
       m_IsScaled = false;
-    } 
+    }
   }
   else if (qName == "colour")
   {
@@ -105,7 +105,7 @@ bool QmitkLookupTableSaxHandler
     MITK_ERROR << "startElement():qName=" << qName.toLocal8Bit().constData() << ", which is unrecognised";
     return false;
   }
-  
+
   return true;
 }
 

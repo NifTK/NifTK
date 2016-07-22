@@ -2,12 +2,12 @@
 
 The Medical Imaging Interaction Toolkit (MITK)
 
-Copyright (c) German Cancer Research Center, 
+Copyright (c) German Cancer Research Center,
 Division of Medical and Biological Informatics.
 All rights reserved.
 
-This software is distributed WITHOUT ANY WARRANTY; without 
-even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+This software is distributed WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR
 A PARTICULAR PURPOSE.
 
 See LICENSE.txt or http://www.mitk.org for details.
@@ -117,8 +117,8 @@ bool niftk::AffineTransformDataInteractor3D::UpdateCurrentRendererPointers(const
 
 bool niftk::AffineTransformDataInteractor3D::CheckObject(const mitk::InteractionEvent *interactionEvent)
 {
-  
-  if (!UpdateCurrentRendererPointers(interactionEvent) || 
+
+  if (!UpdateCurrentRendererPointers(interactionEvent) ||
     this->GetDataNode()->GetData() == NULL || this->m_BoundingObjectNode == NULL)
   {
     return false;
@@ -132,14 +132,14 @@ bool niftk::AffineTransformDataInteractor3D::CheckObject(const mitk::Interaction
     //Could not resolve current display position: go back to start state
     return false;
   }
-  
+
   mitk::Point3D currentlyPickedWorldPoint = pe->GetPositionInWorld();
   m_CurrentlyPickedDisplayPoint = pe->GetPointerPositionOnScreen();
-  
+
   // Get the timestep to also support 3D+t
   int timeStep = 0;
   mitk::ScalarType timeInMS = 0.0;
-  
+
   if (m_CurrentRenderer != NULL)
   {
     timeStep = m_CurrentRenderer->GetTimeStep(m_BoundingObjectNode->GetData());
@@ -164,7 +164,7 @@ bool niftk::AffineTransformDataInteractor3D::SelectObject(mitk::StateMachineActi
 {
   // Color object red
   this->GetDataNode()->SetColor(1.0, 0.0, 0.0);
-  
+
   mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
   renderManager->RequestUpdateAll();
 
@@ -175,7 +175,7 @@ bool niftk::AffineTransformDataInteractor3D::DeselectObject(mitk::StateMachineAc
 {
   // Color object white
   this->GetDataNode()->SetColor(1.0, 1.0, 1.0);
-  
+
   mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
   renderManager->RequestUpdateAll();
 
@@ -210,7 +210,7 @@ bool niftk::AffineTransformDataInteractor3D::InitMove(mitk::StateMachineAction* 
 
   // Get the timestep to also support 3D+t
   int timeStep = 0;
-    
+
   if (m_CurrentRenderer != NULL)
   {
     timeStep = m_CurrentRenderer->GetTimeStep(this->GetDataNode()->GetData());
@@ -257,7 +257,7 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
 
   // Get the timestep to also support 3D+t
   int timeStep = 0;
-    
+
   if (m_CurrentRenderer != NULL)
     timeStep = m_CurrentRenderer->GetTimeStep(this->GetDataNode()->GetData());
 
@@ -327,7 +327,7 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
       // Reset current Geometry3D to original state (pre-interaction) and
       // apply rotation
       mitk::RotationOperation op(mitk::OpROTATE, rotationCenter, rotationAxis, rotationAngle);
-      mitk::BaseGeometry::Pointer newGeometry 
+      mitk::BaseGeometry::Pointer newGeometry
         = dynamic_cast<mitk::BaseGeometry*>(this->GetDataNode()->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
 
       if (newGeometry.IsNotNull())
@@ -352,7 +352,7 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
   }
 
   interactionEvent->GetSender()->GetRenderingManager()->RequestUpdateAll();
- 
+
   return true;
 }
 
@@ -372,10 +372,10 @@ bool niftk::AffineTransformDataInteractor3D::AcceptMove(mitk::StateMachineAction
 
   // rest and compose transform in the correct order
   m_UpdatedGeometry->Initialize();
-  
+
   vtkSmartPointer<vtkMatrix4x4> originalTransformation = m_OriginalGeometry->GetVtkMatrix();
   vtkSmartPointer<vtkMatrix4x4> invertedOriginalTransformation = vtkSmartPointer<vtkMatrix4x4>::New();
-  vtkMatrix4x4::Invert(originalTransformation, invertedOriginalTransformation); 
+  vtkMatrix4x4::Invert(originalTransformation, invertedOriginalTransformation);
 
 
   m_UpdatedGeometry->Compose(invertedOriginalTransformation);

@@ -50,12 +50,12 @@ vtkLookupTable* SwapColors(vtkLookupTable* lut, int value1, int value2)
     newLUT = vtkLookupTable::New();
     newLUT->DeepCopy(lut);
   }
-  
+
   vtkIdType index1 = newLUT->GetIndex(value1);
   vtkIdType index2 = newLUT->GetIndex(value2);
 
   //one of the values does not exist in the annotations -- so reinitialize
-  if (index1 == -1) 
+  if (index1 == -1)
   {
     vtkSmartPointer<vtkIntArray> annotationValueArray = dynamic_cast<vtkIntArray*>(newLUT->GetAnnotatedValues());
     vtkSmartPointer<vtkStringArray> annotationNameArray = newLUT->GetAnnotations();
@@ -139,7 +139,7 @@ vtkLookupTable* CreateEmptyLookupTable(const QColor& lowColor, const QColor& hig
   lookupTable->SetSaturationRange(lowColor.saturation(), highColor.saturation());
   lookupTable->SetAlphaRange(lowColor.alpha(), highColor.alpha());
   lookupTable->SetNanColor(0, 0, 0, highColor.alpha());
-  lookupTable->SetIndexedLookup(true);  
+  lookupTable->SetIndexedLookup(true);
 
   lookupTable->Build();
 

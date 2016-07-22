@@ -22,15 +22,15 @@
 *  @date    07/03/2008
 *
 *  @brief   MarchingCubes CMC33 Algorithm
-* 
+*
 *  Updated to include the updates and corrections from:
 *    Custodio, Lis, et al. "Practical considerations on Marching Cubes 33 topological correctness." Computers & Graphics (2013).
 *    http://liscustodio.github.io/C_MC33/
 */
 //________________________________________________
 
-#ifndef mitkNifTKCMC33LookUpTable_h
-#define mitkNifTKCMC33LookUpTable_h
+#ifndef niftkCMC33LookUpTable_h
+#define niftkCMC33LookUpTable_h
 
 
 //_____________________________________________________________________________
@@ -2380,6 +2380,4 @@ static const char casesClassic[256][16] = {
 };
 //_____________________________________________________________________________
 
-
-
-#endif // mitkNifTKCMC33LookUpTable_h
+#endif

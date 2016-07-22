@@ -53,7 +53,7 @@ public:
 
   /// \brief Sets the list of renderers to check.
   void SetRenderers(const std::vector<const mitk::BaseRenderer*>& renderers);
-  
+
   /// \brief GUI independent message callback.
   Message2<mitk::DataNode*, const mitk::BaseRenderer*> NodePropertyChanged;
 

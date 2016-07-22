@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkNifTKImageToSurfaceFilter.h"
+#include "niftkImageToSurfaceFilter.h"
 
 #include "mitkException.h"
 #include <vtkImageData.h>
@@ -42,9 +42,12 @@
 #include <mitkImageCast.h>
 #include <mitkProgressBar.h>
 #include <mitkGlobalInteraction.h>
-#include "mitkNifTKMeshSmoother.h"
+#include "niftkMeshSmoother.h"
 
-mitk::NifTKImageToSurfaceFilter::NifTKImageToSurfaceFilter():
+namespace niftk
+{
+
+ImageToSurfaceFilter::ImageToSurfaceFilter():
   m_Threshold(100.0f),
   m_SurfaceExtractionType(StandardExtractor),
   m_InputSmoothingType(NoInputSmoothing),
@@ -66,18 +69,18 @@ mitk::NifTKImageToSurfaceFilter::NifTKImageToSurfaceFilter():
 {
 }
 
-mitk::NifTKImageToSurfaceFilter::~NifTKImageToSurfaceFilter()
+ImageToSurfaceFilter::~ImageToSurfaceFilter()
 {
 }
 
-void mitk::NifTKImageToSurfaceFilter::VTKSurfaceExtraction(mitk::Image *inputImage, vtkSmartPointer<vtkPolyData> vtkSurface)
+void ImageToSurfaceFilter::VTKSurfaceExtraction(mitk::Image *inputImage, vtkSmartPointer<vtkPolyData> vtkSurface)
 {
   vtkImageData *vtkimage = inputImage->GetVtkImageData();
   vtkImageChangeInformation *indexCoordinatesImageFilter = vtkImageChangeInformation::New();
   indexCoordinatesImageFilter->SetInputData(vtkimage);
   indexCoordinatesImageFilter->SetOutputOrigin(0.0,0.0,0.0);
   indexCoordinatesImageFilter->Update();
-  ProgressBar::GetInstance()->Progress();
+  mitk::ProgressBar::GetInstance()->Progress();
 
   //MarchingCube -->create Surface
   vtkMarchingCubes *vtkMC = vtkMarchingCubes::New();
@@ -89,7 +92,7 @@ void mitk::NifTKImageToSurfaceFilter::VTKSurfaceExtraction(mitk::Image *inputIma
 
   vtkSurface->DeepCopy(vtkMC->GetOutput());
 
-  ProgressBar::GetInstance()->Progress();
+  mitk::ProgressBar::GetInstance()->Progress();
 
   if(vtkSurface->GetNumberOfPoints() > 0)
   {
@@ -121,12 +124,12 @@ void mitk::NifTKImageToSurfaceFilter::VTKSurfaceExtraction(mitk::Image *inputIma
   vtkMC->Delete();
 }
 
-void mitk::NifTKImageToSurfaceFilter::CMC33SurfaceExtraction(mitk::Image *inputImage, mitk::MeshData * meshData)
+void ImageToSurfaceFilter::CMC33SurfaceExtraction(mitk::Image *inputImage, MeshData * meshData)
 {
   itk::Image<float, 3>::Pointer inputItkImage;
   mitk::CastToItkImage(inputImage, inputItkImage);
 
-  mitk::CMC33 * cmcExtractor = new mitk::CMC33(inputImage->GetDimension(0), inputImage->GetDimension(1), inputImage->GetDimension(2));
+  CMC33 * cmcExtractor = new CMC33(inputImage->GetDimension(0), inputImage->GetDimension(1), inputImage->GetDimension(2));
   cmcExtractor->set_input_data(inputItkImage->GetBufferPointer());
   cmcExtractor->set_output_data(meshData);
   cmcExtractor->enable_normal_computing(false);
@@ -137,17 +140,17 @@ void mitk::NifTKImageToSurfaceFilter::CMC33SurfaceExtraction(mitk::Image *inputI
   delete cmcExtractor;
 }
 
-void mitk::NifTKImageToSurfaceFilter::MeshSmoothing(MeshData * mesh)
+void ImageToSurfaceFilter::MeshSmoothing(MeshData * mesh)
 {
   //clock_t time0 = clock();
-  
+
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Smooth the surface mesh and fix normals
-  mitk::MeshSmoother * meshSmoother = new mitk::MeshSmoother();
+  MeshSmoother * meshSmoother = new MeshSmoother();
   meshSmoother->InitWithExternalData(mesh);
-  
+
   //clock_t time1 = clock();
-  
+
   float lambda = 0.5f;
   float mu = -0.53f;
 
@@ -182,13 +185,13 @@ void mitk::NifTKImageToSurfaceFilter::MeshSmoothing(MeshData * mesh)
   //printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 }
 
-void mitk::NifTKImageToSurfaceFilter::ComputeSmoothNormals(MeshData * meshData)
+void ImageToSurfaceFilter::ComputeSmoothNormals(MeshData * meshData)
 {
   //clock_t time = clock();
 
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Smooth the surface mesh and fix normals
-  mitk::MeshSmoother * meshSmoother = new mitk::MeshSmoother();
+  MeshSmoother * meshSmoother = new MeshSmoother();
   meshSmoother->InitWithExternalData(meshData);
 
   //clock_t time2 = clock();
@@ -203,7 +206,7 @@ void mitk::NifTKImageToSurfaceFilter::ComputeSmoothNormals(MeshData * meshData)
   //printf("Normal computation - getting output took %lf secs.\n", (double) (time4 - time3) / CLOCKS_PER_SEC);
 }
 
-void mitk::NifTKImageToSurfaceFilter::EditSurface(
+void ImageToSurfaceFilter::EditSurface(
   MeshData * meshData,
   bool recomputeNormals,
   bool flipNormals,
@@ -214,7 +217,7 @@ void mitk::NifTKImageToSurfaceFilter::EditSurface(
 
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Smooth the surface mesh and fix normals
-  mitk::MeshSmoother * meshSmoother = new mitk::MeshSmoother();
+  MeshSmoother * meshSmoother = new MeshSmoother();
   meshSmoother->InitWithExternalData(meshData);
 
   //clock_t time2 = clock();
@@ -239,7 +242,7 @@ void mitk::NifTKImageToSurfaceFilter::EditSurface(
 }
 
 
-void mitk::NifTKImageToSurfaceFilter::SurfaceSmoothingVTK(vtkSmartPointer<vtkPolyData> vtkSurface)
+void ImageToSurfaceFilter::SurfaceSmoothingVTK(vtkSmartPointer<vtkPolyData> vtkSurface)
 {
   switch (m_SurfaceSmoothingType)
   {
@@ -286,7 +289,7 @@ void mitk::NifTKImageToSurfaceFilter::SurfaceSmoothingVTK(vtkSmartPointer<vtkPol
   }
 }
 
-void mitk::NifTKImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mitk::Surface *surface)
+void ImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mitk::Surface *surface)
 {
   // Create working image / surface
   mitk::Image::Pointer workingImage = 0;
@@ -348,11 +351,11 @@ void mitk::NifTKImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mit
 
   if (!workingImage)
   {
-    MITK_INFO << "SurfaceExtractorView::createSurface(): No reference image. Should not arrive here.";
+    MITK_INFO << "niftk::ImageToSurfaceFilter::createSurface(): No reference image. Should not arrive here.";
     return;
   }
 
-  ProgressBar::GetInstance()->Progress();
+  mitk::ProgressBar::GetInstance()->Progress();
 
   // By default we want VTK to compute the normals
   m_VTKNormalCompute = true;
@@ -361,7 +364,7 @@ void mitk::NifTKImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mit
   // Here we decide which extraction method to use
   switch (m_SurfaceExtractionType)
   {
-    case StandardExtractor: 
+    case StandardExtractor:
     {
       // Extract surface VTK style
        VTKSurfaceExtraction(workingImage, vtkSurface);
@@ -371,14 +374,14 @@ void mitk::NifTKImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mit
 
     case EnhancedCPUExtractor:
     {
-      // Create a new instance of meshdata 
-      mitk::MeshData * meshData = new MeshData();
+      // Create a new instance of meshdata
+      MeshData * meshData = new MeshData();
 
-      std::vector<BasicVertex> vertices; 
+      std::vector<BasicVertex> vertices;
       std::vector<BasicTriangle> triangles;
       int numOfVertices = 0;
       int numOfTriangles = 0;
-      
+
       // In this case we do not want VTK to compute the normals
       m_VTKNormalCompute = false;
 
@@ -395,11 +398,11 @@ void mitk::NifTKImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mit
         delete imgProc;
       }
 
-      // Run the Corrected Marching Cubes33 algorithm to extract the surface 
+      // Run the Corrected Marching Cubes33 algorithm to extract the surface
       // and get the resulting vertices and triangles
       CMC33SurfaceExtraction(workingImage, meshData);
       time2 = clock();
-      ProgressBar::GetInstance()->Progress();
+      mitk::ProgressBar::GetInstance()->Progress();
 
       // Perform the custom smoothing on the raw mesh
       if (m_PerformSurfaceSmoothing && (m_SurfaceSmoothingType == TaubinSmoothing || m_SurfaceSmoothingType == CurvatureNormalSmooth || m_SurfaceSmoothingType == InverseEdgeLengthSmooth))
@@ -408,17 +411,17 @@ void mitk::NifTKImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mit
         ComputeSmoothNormals(meshData);
 
       time3 = clock();
-      ProgressBar::GetInstance()->Progress();
+      mitk::ProgressBar::GetInstance()->Progress();
 
       // Let's build a VTK surface
       vtkSurface = BuildVTKPolyData(meshData);
-      ProgressBar::GetInstance()->Progress();
+      mitk::ProgressBar::GetInstance()->Progress();
 
       triangles.clear();
       vertices.clear();
       delete meshData;
 
-      ProgressBar::GetInstance()->Progress();
+      mitk::ProgressBar::GetInstance()->Progress();
     }
     break;
 
@@ -452,7 +455,7 @@ void mitk::NifTKImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mit
 
   clock_t time6 = clock();
 
-  ProgressBar::GetInstance()->Progress();
+  mitk::ProgressBar::GetInstance()->Progress();
 
    // Decimate the surface mesh
   if (m_PerformSurfaceDecimation)
@@ -489,14 +492,14 @@ void mitk::NifTKImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mit
     }
   }
 
-  ProgressBar::GetInstance()->Progress();
+  mitk::ProgressBar::GetInstance()->Progress();
 
   clock_t time7 = clock();
 
   if (m_PerformSurfaceCleaning)
   {
 
-    vtkSmartPointer<vtkPolyDataConnectivityFilter> connectivityFilter = 
+    vtkSmartPointer<vtkPolyDataConnectivityFilter> connectivityFilter =
       vtkSmartPointer<vtkPolyDataConnectivityFilter>::New();
     connectivityFilter->SetInputData(vtkSurface);
     connectivityFilter->SetExtractionModeToAllRegions();
@@ -507,7 +510,7 @@ void mitk::NifTKImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mit
     vtkSmartPointer<vtkIdTypeArray> sizes = connectivityFilter->GetRegionSizes();
     vtkSmartPointer<vtkPolyData> regions = connectivityFilter->GetOutput();
 
-    connectivityFilter->SetExtractionModeToSpecifiedRegions(); 
+    connectivityFilter->SetExtractionModeToSpecifiedRegions();
 
     //MITK_INFO <<"Num of extracted regions: " <<numOfRegions;
 
@@ -524,7 +527,7 @@ void mitk::NifTKImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mit
     }
 
     connectivityFilter->Update();
-  
+
     vtkSurface = connectivityFilter->GetOutput();
 
     // Clean the results - not sure if this does any good
@@ -544,7 +547,7 @@ void mitk::NifTKImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mit
 
   clock_t time8 = clock();
 
-  ProgressBar::GetInstance()->Progress();
+  mitk::ProgressBar::GetInstance()->Progress();
 
   // Set the output with geometry
   surface->SetVtkPolyData(vtkSurface);
@@ -572,7 +575,7 @@ void mitk::NifTKImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mit
   surface->Update();
 }
 
-vtkSmartPointer<vtkPolyData> mitk::NifTKImageToSurfaceFilter::BuildVTKPolyData(MeshData * meshData)
+vtkSmartPointer<vtkPolyData> ImageToSurfaceFilter::BuildVTKPolyData(MeshData * meshData)
 {
   vtkSmartPointer<vtkPolyData>  polyData   = vtkSmartPointer<vtkPolyData>::New();
   vtkSmartPointer<vtkPoints>    pointArray = vtkSmartPointer<vtkPoints>::New();
@@ -593,18 +596,18 @@ vtkSmartPointer<vtkPolyData> mitk::NifTKImageToSurfaceFilter::BuildVTKPolyData(M
     pid[0] = pointArray->InsertNextPoint(point);
     vertArray->InsertNextCell ( 1,pid );
   }
-  
+
   // Add the points to a polydata
   if (polyData == 0)
     polyData = vtkSmartPointer<vtkPolyData>::New();
-  
+
   polyData->Reset();
 
   polyData->SetPoints(pointArray);
   //polyData->SetVerts(vertArray);
   polyData->GetCellData()->Update();
   polyData->GetPointData()->Update();
- 
+
   vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
   cells->Initialize();
 
@@ -628,10 +631,10 @@ vtkSmartPointer<vtkPolyData> mitk::NifTKImageToSurfaceFilter::BuildVTKPolyData(M
   if (!m_VTKNormalCompute)
   {
     vtkSmartPointer<vtkFloatArray> pointNormalsArray = vtkSmartPointer<vtkFloatArray>::New();
-    pointNormalsArray->SetNumberOfComponents(3); 
+    pointNormalsArray->SetNumberOfComponents(3);
 
     vtkSmartPointer<vtkFloatArray> triangleNormalsArray = vtkSmartPointer<vtkFloatArray>::New();
-    triangleNormalsArray->SetNumberOfComponents(3); 
+    triangleNormalsArray->SetNumberOfComponents(3);
 
     float normal[3];
 
@@ -681,7 +684,7 @@ vtkSmartPointer<vtkPolyData> mitk::NifTKImageToSurfaceFilter::BuildVTKPolyData(M
   return polyData;
 }
 
-void mitk::NifTKImageToSurfaceFilter::GenerateData()
+void ImageToSurfaceFilter::GenerateData()
 {
   mitk::Surface *surface = this->GetOutput();
   mitk::Image * inputImage = (mitk::Image*)GetInput();
@@ -695,7 +698,7 @@ void mitk::NifTKImageToSurfaceFilter::GenerateData()
 
   if ((tmax-tstart) > 0)
   {
-    ProgressBar::GetInstance()->AddStepsToDo( 4 * (tmax - tstart)  );
+    mitk::ProgressBar::GetInstance()->AddStepsToDo( 4 * (tmax - tstart)  );
   }
 
   //mitk::Stepper* timeStepper = mitk::RenderingManager::GetInstance()->GetTimeNavigationController()->GetTime();
@@ -712,17 +715,17 @@ void mitk::NifTKImageToSurfaceFilter::GenerateData()
 
     CreateSurface(workingImage, surface);
 
-    ProgressBar::GetInstance()->Progress();
+    mitk::ProgressBar::GetInstance()->Progress();
   }
 }
 
-void mitk::NifTKImageToSurfaceFilter::SetInput(const mitk::Image *image)
+void ImageToSurfaceFilter::SetInput(const mitk::Image *image)
 {
   // Process object is not const-correct so the const_cast is required here
   this->ProcessObject::SetNthInput(0, const_cast< mitk::Image * >( image ) );
 }
 
-const mitk::Image *mitk::NifTKImageToSurfaceFilter::GetInput(void)
+const mitk::Image *ImageToSurfaceFilter::GetInput(void)
 {
   if (this->GetNumberOfInputs() < 1)
   {
@@ -733,12 +736,17 @@ const mitk::Image *mitk::NifTKImageToSurfaceFilter::GetInput(void)
     ( this->ProcessObject::GetInput(0) );
 }
 
-void mitk::NifTKImageToSurfaceFilter::GenerateOutputInformation()
+void ImageToSurfaceFilter::GenerateOutputInformation()
 {
   mitk::Image::ConstPointer inputImage  =(mitk::Image*) this->GetInput();
   mitk::Surface::Pointer output = this->GetOutput();
 
   itkDebugMacro(<<"GenerateOutputInformation()");
 
-  if(inputImage.IsNull()) return;
+  if (inputImage.IsNull())
+  {
+    return;
+  }
+}
+
 }

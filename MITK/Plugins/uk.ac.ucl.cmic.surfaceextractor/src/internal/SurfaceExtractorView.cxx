@@ -41,7 +41,7 @@
 #include <mitkIDataStorageService.h>
 #include <mitkNodePredicateDataType.h>
 
-#include <mitkNifTKImageToSurfaceFilter.h>
+#include <niftkImageToSurfaceFilter.h>
 
 #include <QButtonGroup>
 #include <QSlider>
@@ -116,20 +116,20 @@ public:
   bool   m_IsActivated;
   float  m_Threshold;
   
-  mitk::NifTKImageToSurfaceFilter
+  niftk::ImageToSurfaceFilter
     ::SurfaceExtractionMethod    m_SurfaceExtractionType;
   
-  mitk::NifTKImageToSurfaceFilter
+  niftk::ImageToSurfaceFilter
     ::InputSmoothingMethod       m_InputSmoothingType;
   int                            m_InputSmoothingIterations;
   float                          m_InputSmoothingRadius;
 
-  mitk::NifTKImageToSurfaceFilter
+  niftk::ImageToSurfaceFilter
     ::SurfaceSmoothingMethod     m_SurfaceSmoothingType;
   int                            m_SurfaceSmoothingIterations;
   float                          m_SurfaceSmoothingParameter;
 
-  mitk::NifTKImageToSurfaceFilter
+  niftk::ImageToSurfaceFilter
     ::SurfaceDecimationMethod    m_SurfaceDecimationType;
   double                         m_TargetReduction;
 
@@ -213,17 +213,17 @@ SurfaceExtractorView::SurfaceExtractorView()
   d->m_IsActivated = false;
   d->m_Threshold = 100;
 
-  d->m_SurfaceExtractionType = mitk::NifTKImageToSurfaceFilter::StandardExtractor;
+  d->m_SurfaceExtractionType = niftk::ImageToSurfaceFilter::StandardExtractor;
 
-  d->m_InputSmoothingType = mitk::NifTKImageToSurfaceFilter::NoInputSmoothing;
+  d->m_InputSmoothingType = niftk::ImageToSurfaceFilter::NoInputSmoothing;
   d->m_InputSmoothingIterations = 1;
   d->m_InputSmoothingRadius = 0.5;
 
-  d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::NoSurfaceSmoothing;
+  d->m_SurfaceSmoothingType = niftk::ImageToSurfaceFilter::NoSurfaceSmoothing;
   d->m_SurfaceSmoothingIterations = 10;
   d->m_SurfaceSmoothingParameter = 0.5;
 
-  d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::NoDecimation;
+  d->m_SurfaceDecimationType = niftk::ImageToSurfaceFilter::NoDecimation;
   d->m_TargetReduction = 0.1;
 
   d->m_PerformSurfaceCleaning = true;
@@ -474,13 +474,13 @@ void SurfaceExtractorView::OnApplyClicked()
   switch (index)
   {
     case 0:
-      d->m_InputSmoothingType = mitk::NifTKImageToSurfaceFilter::NoInputSmoothing;
+      d->m_InputSmoothingType = niftk::ImageToSurfaceFilter::NoInputSmoothing;
       break;
     case 1:
-      d->m_InputSmoothingType = mitk::NifTKImageToSurfaceFilter::MedianSmoothing;
+      d->m_InputSmoothingType = niftk::ImageToSurfaceFilter::MedianSmoothing;
       break;
     case 2:
-      d->m_InputSmoothingType = mitk::NifTKImageToSurfaceFilter::GaussianSmoothing;
+      d->m_InputSmoothingType = niftk::ImageToSurfaceFilter::GaussianSmoothing;
       break;
   }
 
@@ -488,13 +488,13 @@ void SurfaceExtractorView::OnApplyClicked()
   switch (index)
   {
     case 0:
-      d->m_SurfaceExtractionType = mitk::NifTKImageToSurfaceFilter::StandardExtractor;
+      d->m_SurfaceExtractionType = niftk::ImageToSurfaceFilter::StandardExtractor;
       break;
     case 1:
-      d->m_SurfaceExtractionType = mitk::NifTKImageToSurfaceFilter::EnhancedCPUExtractor;
+      d->m_SurfaceExtractionType = niftk::ImageToSurfaceFilter::EnhancedCPUExtractor;
       break;
     case 2:
-      d->m_SurfaceExtractionType = mitk::NifTKImageToSurfaceFilter::GPUExtractor;
+      d->m_SurfaceExtractionType = niftk::ImageToSurfaceFilter::GPUExtractor;
       break;
   }
 
@@ -502,25 +502,25 @@ void SurfaceExtractorView::OnApplyClicked()
   switch (index)
   {
     case 0:
-      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::NoDecimation;
+      d->m_SurfaceDecimationType = niftk::ImageToSurfaceFilter::NoDecimation;
       break;
     case 1:
-      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::DecimatePro;
+      d->m_SurfaceDecimationType = niftk::ImageToSurfaceFilter::DecimatePro;
       break;
     case 2:
-      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::QuadricVTK;
+      d->m_SurfaceDecimationType = niftk::ImageToSurfaceFilter::QuadricVTK;
       break;
     case 3:
-      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::Quadric;
+      d->m_SurfaceDecimationType = niftk::ImageToSurfaceFilter::Quadric;
       break;
     case 4:
-      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::QuadricTri;
+      d->m_SurfaceDecimationType = niftk::ImageToSurfaceFilter::QuadricTri;
       break;
     case 5:
-      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::Melax;
+      d->m_SurfaceDecimationType = niftk::ImageToSurfaceFilter::Melax;
       break;
     case 6:
-      d->m_SurfaceDecimationType = mitk::NifTKImageToSurfaceFilter::ShortestEdge;
+      d->m_SurfaceDecimationType = niftk::ImageToSurfaceFilter::ShortestEdge;
       break;
   }
   
@@ -528,22 +528,22 @@ void SurfaceExtractorView::OnApplyClicked()
   switch (index)
   {
     case 0:
-      d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::NoSurfaceSmoothing;
+      d->m_SurfaceSmoothingType = niftk::ImageToSurfaceFilter::NoSurfaceSmoothing;
       break;
     case 1:
-      d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::StandardVTKSmoothing;
+      d->m_SurfaceSmoothingType = niftk::ImageToSurfaceFilter::StandardVTKSmoothing;
       break;
     case 2:
-      d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::WindowedSincSmoothing;
+      d->m_SurfaceSmoothingType = niftk::ImageToSurfaceFilter::WindowedSincSmoothing;
       break;
     case 3:
-      d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::TaubinSmoothing;
+      d->m_SurfaceSmoothingType = niftk::ImageToSurfaceFilter::TaubinSmoothing;
       break;
     case 4:
-      d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::CurvatureNormalSmooth;
+      d->m_SurfaceSmoothingType = niftk::ImageToSurfaceFilter::CurvatureNormalSmooth;
       break;
     case 5:
-      d->m_SurfaceSmoothingType = mitk::NifTKImageToSurfaceFilter::InverseEdgeLengthSmooth;
+      d->m_SurfaceSmoothingType = niftk::ImageToSurfaceFilter::InverseEdgeLengthSmooth;
       break;
   }
 
@@ -637,7 +637,7 @@ void SurfaceExtractorView::UpdateSurfaceNode()
   {
     mitk::LabeledImageToSurfaceFilter::Pointer filter = mitk::LabeledImageToSurfaceFilter::New();
     filter->SetGaussianStandardDeviation(d->m_InputSmoothingRadius);
-    if (d->m_InputSmoothingType == mitk::NifTKImageToSurfaceFilter::NoInputSmoothing)
+    if (d->m_InputSmoothingType == niftk::ImageToSurfaceFilter::NoInputSmoothing)
       filter->SetSmooth(false);
     else
       filter->SetSmooth(true);
@@ -648,7 +648,7 @@ void SurfaceExtractorView::UpdateSurfaceNode()
   
     // If the decimation value is non-zero we set the decimation type
     // Setting NoDecimation disables the whole processing
-    if (d->m_SurfaceDecimationType == mitk::NifTKImageToSurfaceFilter::NoDecimation)
+    if (d->m_SurfaceDecimationType == niftk::ImageToSurfaceFilter::NoDecimation)
       filter->SetDecimate(mitk::ImageToSurfaceFilter::NoDecimation);
     else
       filter->SetDecimate(mitk::ImageToSurfaceFilter::DecimatePro);
@@ -665,7 +665,7 @@ void SurfaceExtractorView::UpdateSurfaceNode()
   }
   else
   {
-    mitk::NifTKImageToSurfaceFilter::Pointer filter = mitk::NifTKImageToSurfaceFilter::New();
+    niftk::ImageToSurfaceFilter::Pointer filter = niftk::ImageToSurfaceFilter::New();
     filter->SetInput(referenceImage);
     filter->SetThreshold(d->m_Threshold);
 
@@ -674,17 +674,17 @@ void SurfaceExtractorView::UpdateSurfaceNode()
     filter->SetSurfaceSmoothingType(d->m_SurfaceSmoothingType);
     filter->SetInputSmoothingType(d->m_InputSmoothingType);
 
-    if (d->m_InputSmoothingType == mitk::NifTKImageToSurfaceFilter::NoInputSmoothing)
+    if (d->m_InputSmoothingType == niftk::ImageToSurfaceFilter::NoInputSmoothing)
       filter->SetPerformInputSmoothing(false);
     else
       filter->SetPerformInputSmoothing(true);
 
-    if (d->m_SurfaceSmoothingType == mitk::NifTKImageToSurfaceFilter::NoSurfaceSmoothing)
+    if (d->m_SurfaceSmoothingType == niftk::ImageToSurfaceFilter::NoSurfaceSmoothing)
       filter->SetPerformSurfaceSmoothing(false);
     else
       filter->SetPerformSurfaceSmoothing(true);
 
-    if (d->m_SurfaceDecimationType == mitk::NifTKImageToSurfaceFilter::NoDecimation)
+    if (d->m_SurfaceDecimationType == niftk::ImageToSurfaceFilter::NoDecimation)
       filter->SetPerformSurfaceDecimation(false);
     else
       filter->SetPerformSurfaceDecimation(true);

@@ -12,25 +12,23 @@
 
 =============================================================================*/
 
-#ifndef __mitkBasicVec3D_h
-#define __mitkBasicVec3D_h
+#ifndef niftkBasicVec3D_h
+#define niftkBasicVec3D_h
 
 #include <math.h>
 #include <iostream>
 
 #include "niftkCoreExports.h"
 
-namespace mitk
+namespace niftk
 {
 
-/**
- * \class BasicVec3D
- * \brief Simple 3D Vector implementation that is used in the Surface Extraction 
- * and surface smoothing and decimation algorithms.
- */
+/// \class BasicVec3D
+/// \brief Simple 3D Vector implementation that is used in the Surface Extraction
+/// and surface smoothing and decimation algorithms.
 
 class NIFTKCORE_EXPORT BasicVec3D
-{ 
+{
 public:
   /// \brief Default constructor
   BasicVec3D();
@@ -135,6 +133,6 @@ private:
   //@}
 };
 
-} // end of namespace
+}
 
-#endif // #ifndef __mitkBasicVec3D_h
+#endif

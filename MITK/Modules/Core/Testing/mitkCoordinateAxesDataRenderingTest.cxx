@@ -27,7 +27,7 @@
 #include <vtkRegressionTestImage.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkCoordinateAxesVtkMapper3D.h>
-#include <mitkNifTKCoreObjectFactory.h>
+#include <niftkCoreObjectFactory.h>
 
 /**
  * \file Test harness for mitk::CoordinateAxesData and mitk::CoordinateAxesVtkMapper3D.

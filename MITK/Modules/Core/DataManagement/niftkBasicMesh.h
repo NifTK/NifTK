@@ -12,23 +12,21 @@ See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
 
-#ifndef __mitkBasicMesh_h
-#define __mitkBasicMesh_h
+#ifndef niftkBasicMesh_h
+#define niftkBasicMesh_h
 
 #include <vector>
 #include "niftkCoreExports.h"
-#include "mitkBasicVertex.h"
-#include "mitkBasicTriangle.h"
+#include "niftkBasicVertex.h"
+#include "niftkBasicTriangle.h"
 
-namespace mitk
+namespace niftk
 {
 
-  /**
-* \class BasicMesh
-* \brief Simple mesh implementation that is used in the Surface Extraction 
-* and surface smoothing and decimation algorithms. This stores a list of vertices
-* and another list of triangles (which references the vertex list)
-*/
+/// \class BasicMesh
+/// \brief Simple mesh implementation that is used in the Surface Extraction
+/// and surface smoothing and decimation algorithms. This stores a list of vertices
+/// and another list of triangles (which references the vertex list)
 
 class  NIFTKCORE_EXPORT BasicMesh
 {

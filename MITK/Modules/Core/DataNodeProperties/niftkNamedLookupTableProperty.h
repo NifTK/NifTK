@@ -42,7 +42,7 @@ public:
 
   itkSetMacro(IsScaled,bool);
   itkGetConstMacro(IsScaled,bool);
-  
+
   itkBooleanMacro(IsScaled);
 
 protected:

@@ -45,12 +45,12 @@ NIFTKCORE_EXPORT double GetSquaredDistanceBetweenPoints(const mitk::Point3D& a, 
 /**
  * \brief Gets the RMS error between fixed point set and a moving point set, with optional transform specified.
  *
- * Iterates through the moving point set, and if the corresponding point exists in the fixed point set, 
+ * Iterates through the moving point set, and if the corresponding point exists in the fixed point set,
  * will compute the squared distance error, and accumulate this into the RMS error.
  */
 NIFTKCORE_EXPORT double GetRMSErrorBetweenPoints(
-  const mitk::PointSet& fixed, 
-  const mitk::PointSet& moving, 
+  const mitk::PointSet& fixed,
+  const mitk::PointSet& moving,
   const mitk::CoordinateAxesData * const transform = NULL);
 
 /**

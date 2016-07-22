@@ -22,7 +22,7 @@
 *  @date    07/03/2008
 *
 *  @brief   MarchingCubes CMC33 Algorithm
-* 
+*
 *  Updated to include the updates and corrections from:
 *    Custodio, Lis, et al. "Practical considerations on Marching Cubes 33 topological correctness." Computers & Graphics (2013).
 *    http://liscustodio.github.io/C_MC33/
@@ -35,22 +35,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <float.h>
-#include <iostream> 
+#include <iostream>
 #include <fstream>
 #include <algorithm>
 #include <vector>
 
-#include "mitkNifTKCMC33.h"
-#include "mitkNifTKCMC33LookUpTable.h"
+#include "niftkCMC33.h"
+#include "niftkCMC33LookUpTable.h"
 
 // step size of the arrays of vertices and triangles
 #define ALLOC_SIZE 65536
 
-namespace mitk {
+namespace niftk
+{
+
 //_____________________________________________________________________________
 // print cube for debug
-void CMC33::print_cube() 
-{ 
+void CMC33::print_cube()
+{
   printf("\t%f %f %f %f %f %f %f %f\n", _cube[0], _cube[1], _cube[2], _cube[3], _cube[4], _cube[5], _cube[6], _cube[7]);
 }
 //_____________________________________________________________________________
@@ -139,7 +141,7 @@ void CMC33::init_temps()
 {
   if(!_ext_data)
     _data = new real [_size_x * _size_y * _size_z];
-  
+
   _x_verts = new int [_size_x * _size_y * _size_z];
   _y_verts = new int [_size_x * _size_y * _size_z];
   _z_verts = new int [_size_x * _size_y * _size_z];
@@ -244,9 +246,9 @@ void CMC33::compute_intersection_points(real iso)
       for(_i = 0; _i < _size_x; _i++)
       {
         _cube[0] = get_data(_i, _j, _k) - iso;
-        if(_i < _size_x - 1) 
+        if(_i < _size_x - 1)
           _cube[1] = get_data(_i+1, _j , _k) - iso;
-        else 
+        else
           _cube[1] = _cube[0];
 
         if(_j < _size_y - 1)
@@ -310,8 +312,8 @@ bool CMC33::test_face(schar face)
 
   switch(face)
   {
-  case -1: 
-  case 1 : 
+  case -1:
+  case 1 :
     A = _cube[0];
     B = _cube[4];
     C = _cube[5];
@@ -352,9 +354,9 @@ bool CMC33::test_face(schar face)
     C = _cube[6];
     D = _cube[5];
     break;
-  default: 
+  default:
     printf("Invalid face code %d\n", face);
-    print_cube(); 
+    print_cube();
     A = B = C = D = 0;
     break;
   };
@@ -507,7 +509,7 @@ bool CMC33::test_interior(schar s)
     test += 4;
   if(Dt >= 0)
     test += 8;
-  
+
   switch(test)
   {
     case 0 : return s>0;
@@ -558,9 +560,9 @@ bool CMC33::modified_test_interior(schar s)
     edge = interior_ambiguity(amb_face, s);
     inter_amb += interior_ambiguity_verification(edge);
 
-    if (inter_amb == 0) 
+    if (inter_amb == 0)
       return false;
-    else 
+    else
       return true;
     break;
   case 6:
@@ -588,9 +590,9 @@ bool CMC33::modified_test_interior(schar s)
     edge = interior_ambiguity(amb_face, s);
     inter_amb += interior_ambiguity_verification(edge);
 
-    if (inter_amb == 0) 
+    if (inter_amb == 0)
       return false;
-    else 
+    else
       return true;
     break;
   case 10:
@@ -619,7 +621,7 @@ bool CMC33::modified_test_interior(schar s)
       return true;
     break;
   }
-  
+
   //std::cout <<"Should never get here!\n";
   return false;
 }
@@ -680,14 +682,14 @@ int CMC33::interior_ambiguity_verification(int edge)
   real t, At = 0, Bt = 0, Ct = 0, Dt = 0, a = 0, b = 0;
   real verify;
 
-  switch (edge) 
+  switch (edge)
   {
 
   case 0:
     a = (_cube[0] - _cube[1]) * (_cube[7] - _cube[6])
       - (_cube[4] - _cube[5]) * (_cube[3] - _cube[2]);
-    
-    b = _cube[6] * (_cube[0] - _cube[1]) 
+
+    b = _cube[6] * (_cube[0] - _cube[1])
       + _cube[1] * (_cube[7] - _cube[6])
       - _cube[2] * (_cube[4] - _cube[5])
       - _cube[5] * (_cube[3] - _cube[2]);
@@ -777,7 +779,7 @@ int CMC33::interior_ambiguity_verification(int edge)
       + _cube[0] * (_cube[6] - _cube[7])
       - _cube[4] * (_cube[2] - _cube[3])
       - _cube[3] * (_cube[5] - _cube[4]);
-    
+
     if (a > 0)
       return 1;
 
@@ -1112,7 +1114,7 @@ bool CMC33::interior_test_case13_2(float isovalue)
   double dy = b * d - a * f;
   double dz = c * d - a * g;
 
-  if (dx != 0.0f && dy != 0.0f && dz != 0.0f) 
+  if (dx != 0.0f && dy != 0.0f && dz != 0.0f)
   {
     if (dx * dy * dz < 0)
       return true;
@@ -1123,7 +1125,7 @@ bool CMC33::interior_test_case13_2(float isovalue)
     y1 = (-c * dy - disc) / (a * dy);
     z1 = (-b * dz - disc) / (a * dz);
 
-    if ((x1 > 0) && (x1 < 1) && (y1 > 0) && (y1 < 1) && (z1 > 0) && (z1 < 1)) 
+    if ((x1 > 0) && (x1 < 1) && (y1 > 0) && (y1 < 1) && (z1 > 0) && (z1 < 1))
     {
         numbercritivalpoints++;
 
@@ -1158,7 +1160,7 @@ bool CMC33::interior_test_case13_2(float isovalue)
       return critival_point_value1 * critival_point_value2 < 0;
     }
 
-  } 
+  }
   else
     return true;
 }
@@ -1498,11 +1500,11 @@ void CMC33::process_cube()
       break;
       */
       _subconfig = 1;
-      if (_config == 0) 
+      if (_config == 0)
       {
         if (interior_test_case13())
           add_triangle(tiling13_5_1[0][1], 6);
-        else 
+        else
         {
           if (tunnelOrientation == 1)
             add_triangle(tiling13_5_2[0][1], 10);
@@ -1514,7 +1516,7 @@ void CMC33::process_cube()
       {
         if (interior_test_case13())
           add_triangle(tiling13_5_1[1][1], 6);
-        else 
+        else
         {
           if (tunnelOrientation == 1)
             add_triangle(tiling13_5_2[1][1], 10);
@@ -1537,7 +1539,7 @@ void CMC33::process_cube()
       {
         if (interior_test_case13())
           add_triangle(tiling13_5_1[0][2], 6);
-        else 
+        else
         {
           if (tunnelOrientation == 1)
             add_triangle(tiling13_5_2[0][2], 10);
@@ -1915,8 +1917,8 @@ int CMC33::add_x_vertex()
     vert->SetNormalY((1-u)*get_y_grad(_i,_j,_k) + u*get_y_grad(_i+1,_j,_k));
     vert->SetNormalZ((1-u)*get_z_grad(_i,_j,_k) + u*get_z_grad(_i+1,_j,_k));
 
-    u = (real) sqrt(vert->GetNormalX() * vert->GetNormalX() 
-                  + vert->GetNormalY() * vert->GetNormalY() 
+    u = (real) sqrt(vert->GetNormalX() * vert->GetNormalX()
+                  + vert->GetNormalY() * vert->GetNormalY()
                   + vert->GetNormalZ() * vert->GetNormalZ());
     if(u > 0)
     {
@@ -2025,9 +2027,9 @@ int CMC33::add_c_vertex()
 
   // Computes the average of the intersection points of the cube
   vid = get_x_vert(_i , _j , _k);
-  if(vid != -1) 
-  { 
-    ++u; 
+  if(vid != -1)
+  {
+    ++u;
     const BasicVertex &v = m_MeshDataExt->m_Vertices[vid];
     vert->SetCoordX(vert->GetCoordX() + v.GetCoordX());
     vert->SetCoordY(vert->GetCoordY() + v.GetCoordY());
@@ -2049,7 +2051,7 @@ int CMC33::add_c_vertex()
     vert->SetCoordX(vert->GetCoordX() + v.GetCoordX());
     vert->SetCoordY(vert->GetCoordY() + v.GetCoordY());
     vert->SetCoordZ(vert->GetCoordZ() + v.GetCoordZ());
-    
+
     if (_computeNormals)
     {
       vert->SetNormalX(vert->GetNormalX() + v.GetNormalX());
@@ -2277,8 +2279,4 @@ void CMC33::resizeAndAllocateConnectivity(int index)
   }
 }
 
-//_____________________________________________________________________________
-
-} // end of mitk namespace
-//_____________________________________________________________________________
-//_____________________________________________________________________________
+}
