@@ -534,8 +534,13 @@ namespace
 
   void updateMaterialProps( Effect* fx, const mitk::DataNode* node )
   {
+#if 0
     vec4 color = getColorProp( node, "VL.Material.Color" );
     color.a() = getFloatProp( node, "VL.Material.Opacity" );
+#else
+    vec4 color = getColorProp( node, "color" );
+    color.a() = getFloatProp( node, "opacity" );
+#endif
     vec4 spec_color = getColorProp( node, "VL.Material.Specular.Color" );
     float shininess = getFloatProp( node, "VL.Material.Specular.Shininess" );
 
@@ -731,7 +736,12 @@ namespace
 
   void updateRenderModeProps( Effect* fx, const mitk::DataNode* node ) {
     int mode = getEnumProp( node, "VL.RenderMode", 0 );
+#if 0
     vec4 color = getColorProp( node, "VL.Outline.Color", vl::yellow );
+#else
+    vec4 color = getColorProp( node, "color" );
+    color.a() = getFloatProp( node, "opacity" );
+#endif
     int width = getIntProp( node, "VL.Outline.Width", 2 );
     vec4 slice_plane = getPoint4DProp( node, "VL.Outline.SlicePlane", vec4(0,0,0,0) );
 
