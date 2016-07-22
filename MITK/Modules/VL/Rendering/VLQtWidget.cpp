@@ -1622,6 +1622,7 @@ public:
     m_Point2DFX = vl::VividRendering::makeVividEffect();
     m_PositionArray = new vl::ArrayFloat3;
     m_ColorArray = new vl::ArrayFloat4;
+    m_DrawPoints = new vl::DrawArrays( vl::PT_POINTS, 0, 0 );
   }
 
   virtual void updatePoints( const vl::vec4& color ) = 0 ;
@@ -1693,8 +1694,8 @@ public:
     }
 
     m_2DGeometry = new vl::Geometry;
-    ref<vl::DrawArrays> draw_arrays = new vl::DrawArrays( vl::PT_POINTS, 0, m_PositionArray->size() );
-    m_2DGeometry->drawCalls().push_back(draw_arrays.get());
+    m_DrawPoints = new vl::DrawArrays( vl::PT_POINTS, 0, m_PositionArray->size() );
+    m_2DGeometry->drawCalls().push_back( m_DrawPoints.get() );
     m_2DGeometry->setVertexArray( m_PositionArray.get() );
     m_2DGeometry->setColorArray( m_ColorArray.get() );
 
@@ -1790,6 +1791,7 @@ protected:
   ref<vl::Geometry> m_2DGeometry;
   ref<vl::ArrayFloat3> m_PositionArray;
   ref<vl::ArrayFloat4> m_ColorArray;
+  ref<vl::DrawArrays> m_DrawPoints;
 };
 
 //-----------------------------------------------------------------------------
@@ -1804,6 +1806,16 @@ public:
 
   virtual void updatePoints( const vl::vec4& color ) {
     VIVID_CHECK( m_MitkPointSet );
+
+    // If point set size changed force a rebuild of the 3D spheres, actors etc.
+    // TODO: use event listeners instead of this brute force approach
+    if ( m_PositionArray->size() != m_MitkPointSet->GetSize() ) {
+      if ( m_3DSphereMode ) {
+        remove();
+      } else {
+        m_DrawPoints->setCount( m_MitkPointSet->GetSize() );
+      }
+    }
 
     m_PositionArray->resize( m_MitkPointSet->GetSize() );
     m_ColorArray->resize( m_MitkPointSet->GetSize() );
@@ -1835,9 +1847,19 @@ public:
     VIVID_CHECK( m_NiftkPCL );
   }
 
-  virtual void updatePoints( const vl::vec4& ) {
+  virtual void updatePoints( const vl::vec4& /*color*/ ) {
     VIVID_CHECK( m_NiftkPCL );
     pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud = m_NiftkPCL->GetCloud();
+
+    // If point set size changed force a rebuild of the 3D spheres, actors etc.
+    // TODO: use event listeners instead of this brute force approach
+    if ( m_PositionArray->size() != cloud->size() ) {
+      if ( m_3DSphereMode ) {
+        remove();
+      } else {
+        m_DrawPoints->setCount( cloud->size() );
+      }
+    }
 
     m_PositionArray->resize( cloud->size() );
     m_ColorArray->resize( cloud->size() );
