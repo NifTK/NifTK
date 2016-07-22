@@ -22,7 +22,8 @@ if(DEFINED OpenBLAS_DIR AND NOT EXISTS ${OpenBLAS_DIR})
   message(FATAL_ERROR "OpenBLAS_DIR variable is defined but corresponds to non-existing directory \"${OpenBLAS_ROOT}\".")
 endif()
 
-set(version "0.2.18")
+#set(version "0.2.18")
+set(version "27b5211")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/OpenBLAS-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(OpenBLAS ${version} ${location})
