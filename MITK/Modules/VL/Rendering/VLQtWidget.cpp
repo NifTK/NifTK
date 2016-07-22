@@ -281,13 +281,13 @@ struct VLUserData: public vl::Object
 // mitk::EnumerationProperty wrapper classes
 //-----------------------------------------------------------------------------
 
-class VL_Vivid_Mode_Property: public mitk::EnumerationProperty
+class VL_Render_Mode_Property: public mitk::EnumerationProperty
 {
 public:
-  mitkClassMacro( VL_Vivid_Mode_Property, EnumerationProperty );
+  mitkClassMacro( VL_Render_Mode_Property, EnumerationProperty );
   itkFactorylessNewMacro(Self)
 protected:
-  VL_Vivid_Mode_Property() {
+  VL_Render_Mode_Property() {
     AddEnum("DepthPeeling",  0);
     AddEnum("FastRender",    1);
     AddEnum("StencilRender", 2);
@@ -346,22 +346,6 @@ protected:
   }
 };
 
-class VL_Render_Mode_Property: public mitk::EnumerationProperty
-{
-public:
-  mitkClassMacro( VL_Render_Mode_Property, EnumerationProperty );
-  itkFactorylessNewMacro(Self)
-protected:
-  VL_Render_Mode_Property() {
-    AddEnum("Polys",           0);
-    AddEnum("Outline3D",       1);
-    AddEnum("Polys+Outline3D", 2);
-    AddEnum("Slice",           3);
-    AddEnum("Outline2D",       4);
-    AddEnum("Polys+Outline2D", 5);
-  }
-};
-
 class VL_Clip_Mode_Property: public mitk::EnumerationProperty
 {
 public:
@@ -373,6 +357,22 @@ protected:
     AddEnum("Sphere", 1);
     AddEnum("Box",    2);
     AddEnum("Plane",  3);
+  }
+};
+
+class VL_Surface_Mode_Property: public mitk::EnumerationProperty
+{
+public:
+  mitkClassMacro( VL_Surface_Mode_Property, EnumerationProperty );
+  itkFactorylessNewMacro(Self)
+protected:
+  VL_Surface_Mode_Property() {
+    AddEnum("Polys",           0);
+    AddEnum("Outline3D",       1);
+    AddEnum("Polys+Outline3D", 2);
+    AddEnum("Slice",           3);
+    AddEnum("Outline2D",       4);
+    AddEnum("Polys+Outline2D", 5);
   }
 };
 
@@ -709,13 +709,13 @@ namespace
   void initRenderModeProps( mitk::DataNode* node )
   {
     // init only once if multiple views are open
-    if ( node->GetProperty("VL.RenderMode") ) {
+    if ( node->GetProperty("VL.SurfaceMode") ) {
       return;
     }
 
     // gocUniform("vl_Vivid.renderMode")
-    mitk::EnumerationProperty::Pointer mode = VL_Render_Mode_Property::New();
-    node->SetProperty("VL.RenderMode", mode);
+    mitk::EnumerationProperty::Pointer mode = VL_Surface_Mode_Property::New();
+    node->SetProperty("VL.SurfaceMode", mode);
     mode->SetValue( 0 );
 
     // gocUniform("vl_Vivid.outline.color")
@@ -735,7 +735,7 @@ namespace
   }
 
   void updateRenderModeProps( Effect* fx, const mitk::DataNode* node ) {
-    int mode = getEnumProp( node, "VL.RenderMode", 0 );
+    int mode = getEnumProp( node, "VL.SurfaceMode", 0 );
 #if 0
     vec4 color = getColorProp( node, "VL.Outline.Color", vl::yellow );
 #else
@@ -1176,7 +1176,7 @@ public:
     initGlobalProperties();
   }
 
-  static const char* VLGlobalSettingsName() { return "VL Global Settings"; }
+  static const char* VLGlobalSettingsName() { return "VL Debug"; }
 
 protected:
   void initGlobalProperties()
@@ -1199,7 +1199,7 @@ protected:
     AddProperty( "VL.Global.Stencil.Smoothness", stencil_smooth );
     stencil_smooth->SetValue( 10 );
 
-    mitk::EnumerationProperty::Pointer render_mode = VL_Vivid_Mode_Property::New();
+    mitk::EnumerationProperty::Pointer render_mode = VL_Render_Mode_Property::New();
     AddProperty( "VL.Global.RenderMode", render_mode );
     render_mode->SetValue( 0 );
 
@@ -1245,7 +1245,7 @@ vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom, vl::Effect* effect, v
   ref<vl::Transform> tr = transform ? transform : new vl::Transform;
   UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
   ref<vl::Actor> actor = new vl::Actor( geom, fx.get(), tr.get() );
-  actor->setEnableMask( vl::VividRenderer::VividEnableMask );
+  actor->setEnableMask( vl::Vivid::VividEnableMask );
   return actor;
 }
 
@@ -1287,7 +1287,7 @@ public:
     m_VividRendering->setStencilEnabled( enable );
     m_VividRendering->setStencilBackground( stencil_bg_color );
     m_VividRendering->setStencilSmoothness( stencil_smooth );
-    m_VividRendering->setRenderingMode( (VividRendering::ERenderingMode)render_mode );
+    m_VividRendering->setRenderingMode( (vl::Vivid::ERenderingMode)render_mode );
     m_VividRendering->setBackgroundColor( bg_color );
     m_VividRendering->setOpacity( opacity );
     m_VividRendering->vividRenderer()->setNumPasses( passes );
@@ -1381,10 +1381,10 @@ public:
     ref<Effect> fx = m_Actor->effect();
 
     // These must be present as part of the default Vivid material
-    VIVID_CHECK( fx->shader()->getTextureSampler( vl::VividRendering::UserTexture ) )
-    VIVID_CHECK( fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture() )
-    VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture")->getUniformI() == vl::VividRendering::UserTexture );
-    ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+    VIVID_CHECK( fx->shader()->getTextureSampler( vl::Vivid::UserTexture ) )
+    VIVID_CHECK( fx->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture() )
+    VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture")->getUniformI() == vl::Vivid::UserTexture );
+    ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture();
     texture->createTexture2D( img.get(), vl::TF_UNKNOWN, false, false );
     fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
     fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
@@ -1408,15 +1408,15 @@ public:
       return;
     }
 
-    vl::Texture* tex = m_Actor->effect()->shader()->gocTextureSampler( vl::VividRendering::UserTexture )->texture();
+    vl::Texture* tex = m_Actor->effect()->shader()->gocTextureSampler( vl::Vivid::UserTexture )->texture();
     VIVID_CHECK( tex );
     ref<vl::Image> img = wrapMitk2DImage( m_MitkImage );
     tex->setMipLevel(0, img.get(), false);
     GetUserData( m_Actor.get() )->m_ImageModifiedTime = m_MitkImage->GetVtkImageData()->GetMTime();
   }
 
-  Texture* texture() { return actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture(); }
-  const Texture* texture() const { return actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture(); }
+  Texture* texture() { return actor()->effect()->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture(); }
+  const Texture* texture() const { return actor()->effect()->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture(); }
 
   //! This vertex array contains 4 points representing the plane
   ArrayFloat3* vertexArray() { return m_VertexArray.get(); }
@@ -1726,7 +1726,7 @@ public:
     m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
     ref<vl::Effect> fx = m_Actor->effect();
     ref<vl::Image> img = new Image("/vivid/images/sphere.png");
-    ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+    ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture();
     texture->createTexture2D( img.get(), vl::TF_UNKNOWN, false, false );
 
     // 2d mode settings
@@ -1948,7 +1948,7 @@ public:
     fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
     vlquad->setColorArray( vl::white );
 
-    m_Texture = fx->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture();
+    m_Texture = fx->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture();
     VIVID_CHECK( m_Texture );
     VIVID_CHECK( m_Texture->handle() );
     cudaError_t err = cudaSuccess;
@@ -2022,8 +2022,8 @@ public:
     VLMapper::remove();
   }
 
-  Texture* texture() { return actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture(); }
-  const Texture* texture() const { return actor()->effect()->shader()->getTextureSampler( vl::VividRendering::UserTexture )->texture(); }
+  Texture* texture() { return actor()->effect()->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture(); }
+  const Texture* texture() const { return actor()->effect()->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture(); }
 
 protected:
     cudaGraphicsResource_t m_CudaResource;
@@ -2433,7 +2433,7 @@ void VLSceneView::initEvent()
 
   // Create our VividRendering!
   m_VividRendering = new vl::VividRendering;
-  m_VividRendering->setRenderingMode( vl::VividRendering::DepthPeeling ); /* (default) */
+  m_VividRendering->setRenderingMode( vl::Vivid::DepthPeeling ); /* (default) */
   m_VividRendering->setCullingEnabled( false );
   // This creates some flickering on the skin for some reason
   m_VividRendering->setNearFarClippingPlanesOptimized( false );
