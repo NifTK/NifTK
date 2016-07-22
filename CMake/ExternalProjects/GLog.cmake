@@ -25,8 +25,11 @@ endif()
 #set(GLog_VERSION "0.3.4")
 #set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${GLog_VERSION}.tar.gz")
 
-set(GLog_VERSION "0472b91")
-set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${GLog_VERSION}.zip")
+#set(GLog_VERSION "0472b91")
+#set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${GLog_VERSION}.zip")
+
+set(GLog_VERSION "e8ddd96")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${GLog_VERSION}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(GLog ${GLog_VERSION} ${location})
 
