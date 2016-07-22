@@ -2099,6 +2099,7 @@ VLSceneView::VLSceneView() :
   m_ScheduleTrackballAdjustView( true ),
   m_ScheduleInitScene ( true ),
   m_RenderingInProgressGuard ( true),
+  m_QGLWidget( NULL ),
   m_OclService( 0 )
 {
 #ifdef _USE_CUDA
@@ -2117,7 +2118,7 @@ VLSceneView::~VLSceneView() {
 
  void VLSceneView::destroyEvent()
 {
-  openglContext()->makeCurrent();
+  ScopedOpenGLContext glctx(m_QGLWidget);
 
   removeDataStorageListeners();
 
@@ -2154,7 +2155,7 @@ void VLSceneView::removeDataStorageListeners()
 
 void VLSceneView::setDataStorage(const mitk::DataStorage::Pointer& ds)
 {
-  openglContext()->makeCurrent();
+  ScopedOpenGLContext glctx(m_QGLWidget);
 
   removeDataStorageListeners();
 
@@ -2276,7 +2277,7 @@ void VLSceneView::initSceneFromDataStorage()
   // Make sure the system is initialized
   VIVID_CHECK( m_VividRendering.get() );
 
-  openglContext()->makeCurrent();
+  ScopedOpenGLContext glctx(m_QGLWidget);
 
   clearScene();
 
@@ -2318,7 +2319,7 @@ void VLSceneView::initSceneFromDataStorage()
 
 VLMapper* VLSceneView::addDataNode(const mitk::DataNode* node)
 {
-  openglContext()->makeCurrent();
+  ScopedOpenGLContext glctx(m_QGLWidget);
 
   // Add only once and only if valid
   if ( ! node || ! node->GetData() || getVLMapper( node ) != NULL ) {
@@ -2345,7 +2346,7 @@ VLMapper* VLSceneView::addDataNode(const mitk::DataNode* node)
 
 void VLSceneView::removeDataNode(const mitk::DataNode* node)
 {
-  openglContext()->makeCurrent();
+  ScopedOpenGLContext glctx(m_QGLWidget);
 
   if ( node == m_BackgroundNode ) {
     setBackgroundNode( NULL );
@@ -2372,7 +2373,7 @@ void VLSceneView::updateDataNode(const mitk::DataNode* node)
   VIVID_CHECK( node );
   VIVID_CHECK( node->GetData() );
 
-  openglContext()->makeCurrent();
+  ScopedOpenGLContext glctx(m_QGLWidget);
 
   #if 0
     dumpNodeInfo( "updateDataNode()", node );
@@ -2606,7 +2607,7 @@ void VLSceneView::clearScene()
     return;
   }
 
-  openglContext()->makeCurrent();
+  ScopedOpenGLContext glctx(m_QGLWidget);
 
   // Shut down VLMappers
   for ( DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.begin(); it != m_DataNodeVLMapperMap.end(); ++it ) {

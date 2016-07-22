@@ -196,6 +196,9 @@ public:
   // Obsolete: called by VLRendererView
   void updateThresholdVal(int isoVal);
 
+  // Only used for ScopedOpenGLContext
+  QGLWidget* m_QGLWidget;
+
 protected:
   bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt5::Qt5Widget>()->QGLWidget::context(); }
 
@@ -282,6 +285,7 @@ public:
   VLQtWidget(QWidget* parent = NULL, const QGLWidget* shareWidget = NULL, Qt::WindowFlags f = 0)
     : Qt5Widget(parent, shareWidget, f) {
     m_VLSceneView = new VLSceneView;
+    m_VLSceneView->m_QGLWidget = this;
     addEventListener(m_VLSceneView.get());
     setRefreshRate(1000 / 30); // 30 fps in milliseconds
     setContinuousUpdate(false);
@@ -296,6 +300,21 @@ public:
 
 protected:
   vl::ref<VLSceneView> m_VLSceneView;
+};
+
+// Adding doneCurrent() seems to have fixed the crash when loading the 2D Images, not sure why,
+// so we use this class now instead of the standard openglContext()->makeCurrent().
+class ScopedOpenGLContext {
+public:
+  ScopedOpenGLContext(QGLWidget* qgl) {
+    m_QGLWidget = qgl;
+    m_QGLWidget->makeCurrent();
+  }
+  ~ScopedOpenGLContext() {
+    m_QGLWidget->doneCurrent();
+  }
+protected:
+  QGLWidget* m_QGLWidget;
 };
 
 #endif
