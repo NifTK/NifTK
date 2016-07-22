@@ -1,0 +1,38 @@
+#!/bin/bash
+
+#/*============================================================================
+#
+#  NifTK: A software platform for medical image computing.
+#
+#  Copyright (c) University College London (UCL). All rights reserved.
+#
+#  This software is distributed WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+#  PURPOSE.
+#
+#  See LICENSE.txt in the top level directory for details.
+#
+#============================================================================*/
+
+filename=`readlink -f "$0"`
+binpath=`dirname ${filename}`
+upone=`dirname ${binpath}`
+
+export PATH=${upone}:$PATH
+export PATH=${binpath}:$PATH
+export LD_LIBRARY_PATH=${binpath}:$LD_LIBRARY_PATH
+
+# The MATLAB system call adds an additional '-c' to the command.
+# This shift removes it.
+shift
+
+# We store the remainder of the command in a string.
+cmd="$*"
+
+# and use eval. Do not use any of the exec commands below.
+eval $cmd
+
+#exec ${SHELL:-/bin/sh} $*
+#exec ${SHELL:-/bin/sh} -c "$*"
+#exec ${SHELL:-/bin/sh} -l $*
+
