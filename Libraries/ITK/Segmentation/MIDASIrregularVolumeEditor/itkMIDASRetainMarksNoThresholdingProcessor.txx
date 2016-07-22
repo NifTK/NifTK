@@ -64,4 +64,4 @@ MIDASRetainMarksNoThresholdingProcessor<TPixel, VImageDimension>
   this->Modified();
 }
 
-} // end namespace
+}

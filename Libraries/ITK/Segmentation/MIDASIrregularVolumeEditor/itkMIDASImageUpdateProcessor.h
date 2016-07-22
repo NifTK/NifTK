@@ -83,12 +83,12 @@ private:
 
   ImagePointer m_DestinationImage;
 
-}; // end class
+};
 
-} // end namespace
+}
 
 #ifndef ITK_MANUAL_INSTANTIATION
 #include "itkMIDASImageUpdateProcessor.txx"
 #endif
 
-#endif // ITKMIDASIMAGEUPDATEPROCESSOR_H
+#endif

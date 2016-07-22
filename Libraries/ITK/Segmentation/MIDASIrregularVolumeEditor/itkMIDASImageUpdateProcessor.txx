@@ -46,4 +46,4 @@ MIDASImageUpdateProcessor<TPixel, VImageDimension>
   }  
 }
 
-} // end namespace
+}

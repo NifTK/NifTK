@@ -59,6 +59,12 @@ public:
                  const SegmentationImageType* dilationsAdditionsImage,
                  const SegmentationImageType* dilationsSubtractionsImage);
 
+  /// \brief Set erosion subtractions input image.
+  void SetErosionSubtractionsInput(const SegmentationImageType* erosionsSubtractionsImage);
+
+  /// \brief Set dilation subtractions input image.
+  void SetDilationSubtractionsInput(const SegmentationImageType* dilationsSubtractionsImage);
+
   /// \brief Set parameters on pipeline, where parameters come directly from GUI controls.
   void SetParams(const MorphologicalSegmentorPipelineParams& params);
 

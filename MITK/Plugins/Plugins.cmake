@@ -48,6 +48,9 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.snapshot:ON
   Plugins/uk.ac.ucl.cmic.imagestatistics:ON
   Plugins/uk.ac.ucl.cmic.xnat:ON
+  Plugins/uk.ac.ucl.cmic.niftyreg:OFF                     # Must be after the xnat plugin
+  Plugins/uk.ac.ucl.cmic.niftyseg:OFF                     # Not ready yet.
+  Plugins/uk.ac.ucl.cmic.breastsegmentation:OFF           # Under development
 
 # This 'common' plugin is our preferred base class for things that can't just derive from MITK.
   Plugins/uk.ac.ucl.cmic.common:ON
@@ -84,12 +87,13 @@ endif()
 
 set(NiftyMIDAS_PLUGINS
   Plugins/uk.ac.ucl.cmic.commonmidas:ON
+  Plugins/uk.ac.ucl.cmic.dnddisplay:ON
   Plugins/uk.ac.ucl.cmic.niftymidas:ON
   Plugins/uk.ac.ucl.cmic.sideviewer:ON
   Plugins/uk.ac.ucl.cmic.thumbnail:ON
   Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
   Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
-  Plugins/uk.ac.ucl.cmic.dnddisplay:ON
+  Plugins/uk.ac.ucl.cmic.pointsetconverter:ON
 )
 
 if(NIFTK_Apps/NiftyMIDAS)

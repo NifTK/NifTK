@@ -1349,7 +1349,7 @@ IntensityProfileView::askXValues(mitk::DataNode* node)
   mitk::FloatLookupTableProperty::Pointer xValueFloatProp;
   mitk::IntLookupTableProperty::Pointer xValueIntProp;
   mitk::StringLookupTableProperty::Pointer xValueStringProp;
-  if (node->GetProperty(xValueFloatProp, text.toAscii().data())) {
+  if (node->GetProperty(xValueFloatProp, text.toLatin1().data())) {
     mitk::FloatLookupTable xValueLut = xValueFloatProp->GetValue();
     int n = xValueLut.GetLookupTable().size();
     for (int i = 0; i < n; ++i) {
@@ -1367,7 +1367,7 @@ IntensityProfileView::askXValues(mitk::DataNode* node)
       }
     }
   }
-  else if (node->GetProperty(xValueIntProp, text.toAscii().data())) {
+  else if (node->GetProperty(xValueIntProp, text.toLatin1().data())) {
     mitk::IntLookupTable xValueLut = xValueIntProp->GetValue();
     int n = xValueLut.GetLookupTable().size();
     for (int i = 0; i < n; ++i) {
@@ -1385,7 +1385,7 @@ IntensityProfileView::askXValues(mitk::DataNode* node)
       }
     }
   }
-  else if (node->GetProperty(xValueStringProp, text.toAscii().data())) {
+  else if (node->GetProperty(xValueStringProp, text.toLatin1().data())) {
     mitk::StringLookupTable xValueLut = xValueStringProp->GetValue();
     int n = xValueLut.GetLookupTable().size();
     for (int i = 0; i < n; ++i) {

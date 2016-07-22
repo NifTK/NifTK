@@ -16,25 +16,22 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  MIDASMorphologicalSegmentorViewActivator.cxx
-  MIDASMorphologicalSegmentorViewPreferencePage.cxx
-  MIDASMorphologicalSegmentorViewControlsImpl.cxx
-  MIDASMorphologicalSegmentorView.cxx
+  niftkMorphologicalSegmentorActivator.cxx
+  niftkMorphologicalSegmentorPreferencePage.cxx
+  niftkMorphologicalSegmentorView.cxx
 )
 
 set(UI_FILES
-  src/internal/MIDASMorphologicalSegmentorViewControls.ui
 )
 
 set(MOC_H_FILES
-  src/internal/MIDASMorphologicalSegmentorViewActivator.h
-  src/internal/MIDASMorphologicalSegmentorViewControlsImpl.h
-  src/internal/MIDASMorphologicalSegmentorView.h
-  src/internal/MIDASMorphologicalSegmentorViewPreferencePage.h
+  src/internal/niftkMorphologicalSegmentorActivator.h
+  src/internal/niftkMorphologicalSegmentorPreferencePage.h
+  src/internal/niftkMorphologicalSegmentorView.h
 )
 
 set(CACHED_RESOURCE_FILES
-  resources/MIDASMorphologicalSegmentor.png
+  resources/niftkMorphologicalSegmentor.png
   plugin.xml
 # list of resource files which can be used by the plug-in
 # system without loading the plug-ins shared library,
@@ -43,8 +40,6 @@ set(CACHED_RESOURCE_FILES
 )
 
 set(QRC_FILES
-# uncomment the following line if you want to use Qt resources
-#  resources/MIDASMorphologicalSegmentorView.qrc
 )
 
 set(CPP_FILES 

@@ -29,10 +29,10 @@ set(NIFTK_NIFTYMIDAS_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyM
 set(_exclude_plugins
   org_mitk_gui_qt_extapplication
   org_mitk_gui_qt_volumevisualization
-  org_mitk_gui_qt_pointsetinteraction
   org_mitk_gui_qt_stdmultiwidgeteditor
+  org_mitk_gui_qt_common_legacy
   org_mitk_gui_qt_segmentation
-  org_mitk_gui_qt_measurementtoolbox
+  org_mitk_gui_qt_pointsetinteraction
   org_mitk_gui_qt_moviemaker
 )
 
@@ -58,6 +58,7 @@ set(_include_plugins
   uk.ac.ucl.cmic.midasmorphologicalsegmentor
   uk.ac.ucl.cmic.midasgeneralsegmentor
   uk.ac.ucl.cmic.dnddisplay
+  uk.ac.ucl.cmic.pointsetconverter
 )
 
 NIFTK_CREATE_GUI_APPLICATION(

@@ -83,10 +83,10 @@ private:
   bool m_CopyBackground;
 };
 
-} // end namespace
+}
 
 #ifndef ITK_MANUAL_INSTANTIATION
 #include "itkMIDASImageUpdatePasteRegionProcessor.txx"
 #endif
 
-#endif // ITKMIDASIMAGEUPDATEPASTEREGIONPROCESSOR_H
+#endif

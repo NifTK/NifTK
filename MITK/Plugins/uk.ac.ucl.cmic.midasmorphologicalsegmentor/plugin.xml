@@ -4,12 +4,14 @@
   <extension point="org.blueberry.ui.views">
     <view id="uk.ac.ucl.cmic.midasmorphologicalsegmentor"
           name="Morphological Editor"
-          class="MIDASMorphologicalSegmentorView"
-          icon="resources/MIDASMorphologicalSegmentor.png" />
+          class="niftk::MorphologicalSegmentorView"
+          icon="resources/niftkMorphologicalSegmentor.png" />
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="uk.ac.ucl.cmic.midasmorphologicalsegmentor.preferencepage" name="MIDAS Morphological Editor" class="MIDASMorphologicalSegmentorViewPreferencePage">
+    <page id="uk.ac.ucl.cmic.midasmorphologicalsegmentor.preferencepage"
+          name="MIDAS Morphological Editor"
+          class="niftk::MorphologicalSegmentorPreferencePage">
       <keywordreference id="uk.ac.ucl.cmic.midasmorphologicalsegmentor.keywords"></keywordreference>
     </page>
   </extension>

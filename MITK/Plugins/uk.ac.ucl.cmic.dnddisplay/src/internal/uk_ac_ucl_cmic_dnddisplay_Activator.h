@@ -17,7 +17,15 @@
 
 #include <ctkPluginActivator.h>
 
+#include <vector>
+
+class QmitkRenderWindow;
+
 namespace mitk {
+
+class DataNode;
+class DataStorage;
+
 
 /**
  * \class uk_ac_ucl_cmic_dnddisplay_Activator
@@ -29,19 +37,28 @@ class uk_ac_ucl_cmic_dnddisplay_Activator :
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  Q_PLUGIN_METADATA(IID "uk_ac_ucl_cmic_dnddisplay")
+#endif
 
 public:
+
+  uk_ac_ucl_cmic_dnddisplay_Activator();
 
   void start(ctkPluginContext* context);
   void stop(ctkPluginContext* context);
 
-  static ctkPluginContext* GetPluginContext();
+  static uk_ac_ucl_cmic_dnddisplay_Activator* GetInstance();
+
+  ctkPluginContext* GetPluginContext();
 
 private:
 
-  static ctkPluginContext* s_PluginContext;
+  static uk_ac_ucl_cmic_dnddisplay_Activator* s_Instance;
 
-}; // uk_ac_ucl_cmic_dnddisplay_Activator
+  ctkPluginContext* m_PluginContext;
+
+};
 
 }
 

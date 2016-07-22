@@ -33,6 +33,7 @@ class BaseRenderer;
 class DataStorage;
 class IRenderWindowPart;
 class RenderingManager;
+class SliceNavigationController;
 }
 
 class QmitkBaseView;
@@ -194,7 +195,7 @@ private:
   mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
   /// \brief Filter that tells which nodes should not be handled.
-  mitk::DataNodeStringPropertyFilter::Pointer m_MIDASToolNodeNameFilter;
+  mitk::DataNodeStringPropertyFilter::Pointer m_ToolNodeNameFilter;
 
   /// \brief The current magnification in the selected window of the viewer in this widget.
   /// It is used to increase or decrease the magnification value to the closest integers
@@ -214,7 +215,7 @@ private:
   const mitk::TimeGeometry* m_TimeGeometry;
 
   /// \brief Listener to catch events when an editor becomes visible or gets destroyed.
-  berry::IPartListener::Pointer m_EditorLifeCycleListener;
+  QScopedPointer<berry::IPartListener> m_EditorLifeCycleListener;
 
   niftkSingleViewerWidget* m_Viewer;
   QWidget* m_ControlsWidget;

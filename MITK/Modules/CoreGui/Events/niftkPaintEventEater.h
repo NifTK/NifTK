@@ -22,10 +22,8 @@
 namespace niftk
 {
 
-/**
-* \class QmitkPaintEventEater
-* \brief Qt Event Filter to eat paint events.
-*/
+/// \class PaintEventEater
+/// \brief Qt Event Filter to eat paint events.
 class NIFTKCOREGUI_EXPORT PaintEventEater : public QObject
 {
   Q_OBJECT
@@ -61,8 +59,8 @@ protected:
   }
 private:
   bool m_IsEating;
-}; // end class
+};
 
-} // end namespace
+}
 
 #endif

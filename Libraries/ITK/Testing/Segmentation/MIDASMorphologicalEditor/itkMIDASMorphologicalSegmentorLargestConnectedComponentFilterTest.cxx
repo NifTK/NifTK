@@ -33,8 +33,8 @@ bool _RunTest(const _Test &test)
   typedef itk::ImageFileReader<__InputImgType> __LoaderType;
   typedef itk::MIDASMorphologicalSegmentorLargestConnectedComponentImageFilter<__InputImgType, __RegionImgType> __FilterType;
 
-  const string testCaseFilename = test.Name + (t_Dim == 2? ".png" : ".nii");
-  const string refFilename = test.Name + "_largest_region" + (t_Dim == 2? ".png" : ".nii");
+  const std::string testCaseFilename = test.Name + (t_Dim == 2? ".png" : ".nii");
+  const std::string refFilename = test.Name + "_largest_region" + (t_Dim == 2? ".png" : ".nii");
 
   typename __LoaderType::Pointer sp_loader;
   typename __FilterType::Pointer sp_filter;

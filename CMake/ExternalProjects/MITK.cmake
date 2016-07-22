@@ -21,7 +21,7 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-set(version "bdd49ecdfa")
+set(version "d625e252dc")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
@@ -60,7 +60,7 @@ if(NOT DEFINED MITK_DIR)
     set(_enabled_plugins "")
 
     # Common requirements for GUI applications:
-    if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI)
+    if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI OR NIFTK_Apps/NiftyMIDAS)
 
       list(APPEND _enabled_modules
         Core                    # needed by niftkCore
@@ -123,7 +123,7 @@ if(NOT DEFINED MITK_DIR)
       if(MITK_USE_BLUEBERRY)
 
         list(APPEND _enabled_plugins
-          org.mitk.gui.qt.common.legacy           # needed by org.mitk.gui.qt.basicimageprocessing
+          org.mitk.gui.qt.common.legacy   # needed by org.mitk.gui.qt.basicimageprocessing
           org.mitk.gui.qt.basicimageprocessing
           org.mitk.gui.qt.volumevisualization
           org.mitk.gui.qt.pointsetinteraction
@@ -161,6 +161,19 @@ if(NOT DEFINED MITK_DIR)
         )
       endif()
 
+    endif()
+
+    # Additionally required for NiftyMIDAS:
+    if(NIFTK_Apps/NiftyMIDAS)
+
+      list(APPEND _enabled_modules
+        SegmentationUI          # needed by niftkMIDASGui
+      )
+
+      list(APPEND _enabled_plugins
+        org.mitk.gui.qt.cmdlinemodules
+        org.mitk.gui.qt.measurementtoolbox
+      )
     endif()
 
     if(BUILD_VL)

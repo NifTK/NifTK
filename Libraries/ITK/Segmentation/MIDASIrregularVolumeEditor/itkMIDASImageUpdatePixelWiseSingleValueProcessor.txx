@@ -175,4 +175,4 @@ MIDASImageUpdatePixelWiseSingleValueProcessor<TPixel, VImageDimension>
   this->ApplyListToDestinationImage(m_After);
 }
 
-} // end namespace
+}

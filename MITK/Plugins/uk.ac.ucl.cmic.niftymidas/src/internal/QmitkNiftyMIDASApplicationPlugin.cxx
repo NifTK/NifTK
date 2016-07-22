@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "QmitkNiftyMIDASApplicationPlugin.h"
-#include <QmitkMIDASSegmentationPerspective.h>
-#include <QmitkMIDASQCPerspective.h>
+#include <niftkSegmentationPerspective.h>
+#include <niftkQCPerspective.h>
 #include <QmitkNiftyViewApplicationPreferencePage.h>
 #include "../QmitkNiftyMIDASApplication.h"
 
@@ -40,11 +40,16 @@ QString QmitkNiftyMIDASApplicationPlugin::GetHelpHomePageURL() const
 //-----------------------------------------------------------------------------
 void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
 {
-  QmitkCommonAppsApplicationPlugin::start(context);
+  /// Note:
+  /// This function has to be redefined so that the superclass
+  /// implementation does not run again. The overridden function
+  /// has been executed when the commonapps plugin has been loaded.
+
+  this->SetPluginContext(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyMIDASApplication, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkMIDASSegmentationPerspective, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkMIDASQCPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(niftk::SegmentationPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(niftk::QCPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();
@@ -63,17 +68,14 @@ void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
 //-----------------------------------------------------------------------------
 void QmitkNiftyMIDASApplicationPlugin::stop(ctkPluginContext* context)
 {
-  this->UnregisterDataStorageListener();
+  /// Note:
+  /// This function has to be redefined so that the superclass
+  /// implementation does not run again. The overridden function
+  /// will be executed when the commonapps plugin gets unloaded.
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkNiftyMIDASApplicationPlugin::NodeAdded(const mitk::DataNode *constNode)
-{
-  mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
-  this->RegisterLevelWindowProperty("uk.ac.ucl.cmic.niftymidas", node);
-}
-
-
-//-----------------------------------------------------------------------------
-Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_niftymidas, QmitkNiftyMIDASApplicationPlugin)
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_niftymidas, QmitkNiftyMIDASApplicationPlugin)
+#endif

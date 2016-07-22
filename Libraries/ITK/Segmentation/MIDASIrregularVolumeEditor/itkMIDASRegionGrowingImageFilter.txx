@@ -27,7 +27,6 @@ MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 , m_SegmentationContourImageBorderValue(1)
 , m_SegmentationContourImageOutsideValue(2)
 , m_ManualContourImageBorderValue(1)
-, m_ManualContourImageNonBorderValue(0)
 , m_EraseFullSlice(false)
 , m_UsePropMaskMode(false)
 {
@@ -142,21 +141,24 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
     OutputPixelType segmentationContourImageCurrentPixel = segmentationContourImage->GetPixel(currentImgIdx);
     OutputPixelType segmentationContourImageNextPixel = segmentationContourImage->GetPixel(nextImgIdx);
 
-    if ((segmentationContourImageCurrentPixel != m_SegmentationContourImageInsideValue
-         || !isFullyConnected)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageInsideValue
-            || segmentationContourImageNextPixel != m_SegmentationContourImageBorderValue
-            || isFullyConnected)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageBorderValue
-            || segmentationContourImageNextPixel != m_SegmentationContourImageBorderValue
-            || !isFullyConnected)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageBorderValue
-            || segmentationContourImageNextPixel != m_SegmentationContourImageInsideValue)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageOutsideValue
-            || !isFullyConnected)
-        && (segmentationContourImageCurrentPixel != m_SegmentationContourImageOutsideValue
-            || segmentationContourImageNextPixel != m_SegmentationContourImageBorderValue
-            || isFullyConnected))
+    bool addVoxel =
+        (segmentationContourImageCurrentPixel == m_SegmentationContourImageInsideValue
+         && isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageInsideValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
+            & !isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
+            && isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageInsideValue)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
+            && isFullyConnected)
+        || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
+            && !isFullyConnected);
+
+    if (!addVoxel)
     {
       return;
     }
@@ -168,22 +170,15 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
     OutputPixelType manualContourCurrentPixel = manualContourImage->GetPixel(currentImgIdx);
     OutputPixelType manualContourNextPixel = manualContourImage->GetPixel(nextImgIdx);
 
-    if (manualContourCurrentPixel == m_ManualContourImageNonBorderValue)
+    bool addVoxel =
+        manualContourCurrentPixel != m_ManualContourImageBorderValue
+        || (isFullyConnected
+            && (manualContourNextPixel != m_ManualContourImageBorderValue
+                 || !this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx)));
+
+    if (!addVoxel)
     {
-      if (manualContourNextPixel != m_ManualContourImageNonBorderValue
-          && !isFullyConnected)
-      {
-        return;
-      }
-    }
-    else // if (manualContourCurrentPixel != m_ManualContourImageNonBorderValue)
-    {
-      if (manualContourNextPixel == m_ManualContourImageNonBorderValue
-          || !isFullyConnected
-          || this->IsCrossingLine(m_ManualContours, currentImgIdx, nextImgIdx))
-      {
-        return;
-      }
+      return;
     }
   }
 
@@ -261,14 +256,14 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
           for (int axis = __ImageSizeType::GetSizeDimension() - 1; axis >= 0; axis--)
           {
             if (   (int)imgIdx[axis] < (int)m_RegionOfInterest.GetIndex()[axis]
-                && abs(m_RegionOfInterest.GetIndex()[axis] - imgIdx[axis]) <= (int)m_MaximumSeedProjectionDistanceInVoxels
+                && std::abs(m_RegionOfInterest.GetIndex()[axis] - imgIdx[axis]) <= (int)m_MaximumSeedProjectionDistanceInVoxels
                )
             {
               imgIdx[axis] = m_RegionOfInterest.GetIndex()[axis];
             }
             else if (
                        (int)imgIdx[axis] > (int)(m_RegionOfInterest.GetIndex()[axis] + m_RegionOfInterest.GetSize()[axis] - 1)
-                    && abs(long(m_RegionOfInterest.GetIndex()[axis] + m_RegionOfInterest.GetSize()[axis] -1 - imgIdx[axis])) <= (int)m_MaximumSeedProjectionDistanceInVoxels
+                    && std::abs(long(m_RegionOfInterest.GetIndex()[axis] + m_RegionOfInterest.GetSize()[axis] -1 - imgIdx[axis])) <= (int)m_MaximumSeedProjectionDistanceInVoxels
                     )
             {
               imgIdx[axis] = m_RegionOfInterest.GetIndex()[axis] + m_RegionOfInterest.GetSize()[axis] - 1;
@@ -353,7 +348,7 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
       /*
        * This mode iterates in a 8 (2D), or 26 (3D) connected neighbourhood, and is
        * used for the MIDAS region growing algorithm, where you grow up to and
-       * including the lines drawn by the mitkMIDASDrawTool and mitkMIDASPolyTool.
+       * including the lines drawn by the niftk::DrawTool and niftk::PolyTool.
        */
 
       neighborhoodRegionStartingIndex = currImgIndex;

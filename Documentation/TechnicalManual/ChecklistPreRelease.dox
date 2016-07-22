@@ -40,7 +40,6 @@ new use cases and test cases emerge.
   <tr><td>\subpage TestProcedureMIDASEditor</td><td></td><td></td><td></td></tr>
   <tr><td>\subpage TestProcedureGeneralSegmentor</td><td></td><td></td><td></td></tr>
   <tr><td>\subpage TestProcedureMIDASMorph</td><td></td><td></td><td></td></tr>
-  <tr><td>\subpage TestProcedureMITKSegmentation</td><td></td><td></td><td></td></tr>
   <tr><td>\subpage TestProcedureNiftyReg</td><td></td><td></td><td></td></tr>
   <tr><td>\subpage TestProcedureSnapshot</td><td></td><td></td><td></td></tr>
   <tr><td>\subpage TestProcedureSurfaceExtractor</td><td></td><td></td><td></td></tr>

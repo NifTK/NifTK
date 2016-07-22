@@ -15,7 +15,7 @@
 MITK_CREATE_MODULE(
   INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
   PACKAGE_DEPENDS ITK|ITKCommon
-  DEPENDS niftkCore MitkSegmentation niftkDnDDisplay
+  DEPENDS niftkCore MitkSegmentation
 )
 
 target_link_libraries(niftkMIDAS PRIVATE niftkcommon niftkITK)

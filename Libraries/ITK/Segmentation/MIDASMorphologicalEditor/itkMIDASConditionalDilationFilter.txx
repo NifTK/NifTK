@@ -166,6 +166,6 @@ namespace itk
 
   }
   
-}//end namespace itk
+}
 
 #endif

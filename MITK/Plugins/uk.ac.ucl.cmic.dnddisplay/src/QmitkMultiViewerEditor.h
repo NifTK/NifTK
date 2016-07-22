@@ -69,7 +69,7 @@ public:
   QmitkMultiViewerEditor();
   ~QmitkMultiViewerEditor();
 
-  static const std::string EDITOR_ID;
+  static const QString EDITOR_ID;
 
   /// \brief Get hold of the internal niftkMultiViewerWidget.
   niftkMultiViewerWidget* GetMultiViewer();
@@ -167,9 +167,15 @@ protected:
   /// \brief Creates the main Qt GUI element parts.
   virtual void CreateQtPartControl(QWidget* parent);
 
+private slots:
+
+  void ProcessCommandLineArguments();
+
 private:
 
   const QScopedPointer<QmitkMultiViewerEditorPrivate> d;
+
+  friend class QmitkMultiViewerEditorPrivate;
 };
 
 #endif

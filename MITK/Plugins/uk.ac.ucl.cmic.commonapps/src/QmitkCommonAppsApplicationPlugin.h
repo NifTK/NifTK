@@ -48,7 +48,7 @@ class CMIC_QT_COMMONAPPS QmitkCommonAppsApplicationPlugin : public berry::Abstra
 public:
 
   QmitkCommonAppsApplicationPlugin();
-  ~QmitkCommonAppsApplicationPlugin();
+  virtual ~QmitkCommonAppsApplicationPlugin();
 
   static QmitkCommonAppsApplicationPlugin* GetDefault();
   ctkPluginContext* GetPluginContext() const;
@@ -87,9 +87,6 @@ protected:
   /// \brief Deliberately not virtual method that registers initial property values of "outline binary"=true and "opacity"=1 for binary images.
   void RegisterBinaryImageProperties(const QString& preferencesNodeName, mitk::DataNode *constNode);
 
-  /// \brief Deliberately not virtual method thats called by derived classes, to register any extensions that this plugin knows about.
-  void RegisterQmitkCommonAppsExtensions();
-
   /// \brief Deliberately not virtual method thats called by derived classes, to set the departmental logo to blank.
   void BlankDepartmentalLogo();
 
@@ -107,6 +104,12 @@ protected:
   void SetFileOpenTriggersReinit(bool openEditor);
 
 private:
+
+  /// \brief Parses a node property value that was specified on the command line.
+  QVariant ParsePropertyValue(const QString& propertyValue);
+
+  /// \brief Sets node properties from a map of QVariant values per renderer name per property name.
+  void SetNodeProperty(mitk::DataNode* node, const QString& propertyName, const QVariant& propertyValue, const QString& rendererName = QString());
 
   /// \brief Private method that checks whether or not we are already updating and if not, calls NodeAdded()
   void NodeAddedProxy(const mitk::DataNode *node);
@@ -127,11 +130,21 @@ private:
   template<typename TPixel, unsigned int VImageDimension>
   void
   ITKGetStatistics(
-      itk::Image<TPixel, VImageDimension> *itkImage,
+      const itk::Image<TPixel, VImageDimension> *itkImage,
       float &min,
       float &max,
       float &mean,
       float &stdDev);
+
+
+  void LoadDataFromDisk(const QStringList& args, bool globalReinit);
+  void startNewInstance(const QStringList& args, const QStringList &files);
+
+private Q_SLOTS:
+
+  void handleIPCMessage(const QByteArray &msg);
+
+private:
 
   ctkPluginContext* m_Context;
   ctkServiceTracker<mitk::IDataStorageService*>* m_DataStorageServiceTracker;

@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkDataNodePropertyListener.h"
+
 #include <itkCommand.h>
 
 #include <mitkBaseRenderer.h>
@@ -230,8 +231,12 @@ void DataNodePropertyListener::AddObservers(mitk::DataNode* node)
   }
 
   /// Note:
-  /// We register the property observers to itk::AnyEvent that includes
-  /// itk::ModifiedEvent and itk::DeleteEvent as well.
+  /// We do *not* register the property observers to itk::AnyEvent that includes
+  /// itk::ModifiedEvent and itk::DeleteEvent as well. We only register them to
+  /// itk::ModifiedEvent.
+  /// Registering them to both caused crash when a node was deleted, because the
+  /// at node deletion the properties are deleted as well, and the OnPropertyChange
+  /// handler was called while its 'host' node was being destructed.
 
   std::vector<unsigned long> propertyObserverTags(m_Renderers.size() + 1);
 
@@ -239,7 +244,7 @@ void DataNodePropertyListener::AddObservers(mitk::DataNode* node)
   if (globalProperty)
   {
     PropertyChangedCommand::Pointer command = PropertyChangedCommand::New(this, node, 0);
-    propertyObserverTags[0] = globalProperty->AddObserver(itk::AnyEvent(), command);
+    propertyObserverTags[0] = globalProperty->AddObserver(itk::ModifiedEvent(), command);
   }
   else
   {
@@ -255,7 +260,7 @@ void DataNodePropertyListener::AddObservers(mitk::DataNode* node)
     if (rendererSpecificProperty && rendererSpecificProperty != globalProperty)
     {
       PropertyChangedCommand::Pointer command = PropertyChangedCommand::New(this, node, m_Renderers[i]);
-      propertyObserverTags[i + 1] = rendererSpecificProperty->AddObserver(itk::AnyEvent(), command);
+      propertyObserverTags[i + 1] = rendererSpecificProperty->AddObserver(itk::ModifiedEvent(), command);
     }
     else
     {
@@ -311,7 +316,11 @@ void DataNodePropertyListener::AddAllObservers()
   mitk::DataStorage::SetOfObjects::ConstPointer all = dataStorage->GetAll();
   for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
   {
-    this->AddObservers(it->Value().GetPointer());
+    mitk::DataNode* node = it->Value();
+    if (this->Pass(node))
+    {
+      this->AddObservers(node);
+    }
   }
 }
 
