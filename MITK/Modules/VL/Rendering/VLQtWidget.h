@@ -96,19 +96,69 @@ public:
   /** Updates visibility, opacity, color, etc. and Vivid related common settings. */
   void updateCommon();
 
+  //--------------------------------------------------------------------------------
+
   /** When enabled (default) the mapper will reflect updates to the VL.* variables coming from the DataNode.
       This is useful when you want one object to have the same VL settings across different views/qwidgets.
       Disable this when you want one object to have different settings across different views/qwidgets and
-      ignore the VL.* properties of the DataNode.
-      This only applies to VLMapperSurface, VLMapper2DImage &  VLMapperCUDAImage for now. */
-  bool setDataNodeVividUpdateEnabled(bool enable) { m_DataNodeVividUpdateEnabled = enable; }
+      ignore the VL.* properties of the DataNode. Updates to the "visible" property are also ignored.
+      This only applies to VLMapperSurface, VLMapper2DImage, VLMapperCUDAImage for now. */
+  bool setDataNodeVividUpdateEnabled( bool enable ) { m_DataNodeVividUpdateEnabled = enable; }
   bool isDataNodeVividUpdateEnabled() const { return m_DataNodeVividUpdateEnabled; }
 
-  //-----------------------------------------------------------------
+  //--------------------------------------------------------------------------------
   // User managed Vivid API to be used when isDataNodeVividUpdateEnabled() == false
-  //-----------------------------------------------------------------
+  //--------------------------------------------------------------------------------
 
-  /** Use this Actor as stencil (see also m_VividRendering->setStencilEnabled(bool)). */
+  // Only applies to VLMapperSurface, VLMapper2DImage, VLMapperCUDAImage for now.
+
+  // Rendering Mode
+  // Whether a surface is rendered with polygons, 3D outline, 2D outline or an outline-slice through a plane.
+  // 3D outlines & slice mode:
+  //  - computed on the GPU by a geometry shader
+  //  - are clipped by the stencil
+  //  - interact with the depth buffer (ie they're visible only if they're in front of other objects)
+  //  - include creases inside the silhouette regardless of whether they're facing or not the viewer
+  // 2D outlines:
+  //  - computed using offscreen image based edge detection
+  //  - are not clipped against the stencil
+  //  - do not interact with depth buffer (ie they're always in front of any geometry)
+  //  - look cleaner, renders only the external silhouette of an object
+
+  void setRenderingMode(vl::Vivid::ERenderingMode mode) {
+    actor()->effect()->shader()->getUniform("vl_Vivid.renderMode")->setUniformI( mode );
+  }
+  vl::Vivid::ERenderingMode renderingMode() const {
+    return (vl::Vivid::ERenderingMode)actor()->effect()->shader()->getUniform("vl_Vivid.renderMode")->getUniformI();
+  }
+
+  // Outline
+  // Properties of both the 2D and 3D outlines
+
+  void setOutlineColor(const vl::vec4& color ) {
+    actor()->effect()->shader()->getUniform("vl_Vivid.outline.color")->setUniform( color );
+  }
+  vl::vec4 outlineColor() const {
+    return actor()->effect()->shader()->getUniform("vl_Vivid.outline.color")->getUniform4F();
+  }
+
+  void setOutlineWidth( float width ) {
+    actor()->effect()->shader()->getUniform("vl_Vivid.outline.width")->setUniformF( width );
+  }
+  float outlineWidth() const {
+    return actor()->effect()->shader()->getUniform("vl_Vivid.outline.width")->getUniformF();
+  }
+
+  void setOutlineSlicePlane( const vl::vec4& plane ) {
+    actor()->effect()->shader()->getUniform("vl_Vivid.outline.slicePlane")->setUniform( plane );
+  }
+  vl::vec4 outlineSlicePlane() const {
+    return actor()->effect()->shader()->getUniform("vl_Vivid.outline.slicePlane")->getUniform4F();
+  }
+
+  // Stencil
+
+  /** Use this Actor as stencil (used when m_VividRendering->setStencilEnabled(true)). */
   void setIsStencil( bool is_stencil ) {
     std::vector< vl::ref<vl::Actor> >::iterator it = std::find( m_VividRendering->stencilActors().begin(), m_VividRendering->stencilActors().end(), actor() );
     if ( ! is_stencil && it != m_VividRendering->stencilActors().end() ) {
@@ -121,6 +171,187 @@ public:
   bool isStencil() const {
     return std::find( m_VividRendering->stencilActors().begin(), m_VividRendering->stencilActors().end(), actor() ) != m_VividRendering->stencilActors().end();
   }
+
+  // Material & Opacity
+  // Simplified standard OpenGL material properties only difference is they're rendered using high quality per-pixel lighting.
+
+  void setMaterialDiffuseRGBA(const vl::vec4& rgba) {
+    actor()->effect()->shader()->getMaterial()->setFrontDiffuse( rgba );
+  }
+  const vl::vec4& materialDiffuseRGBA() const {
+    return actor()->effect()->shader()->getMaterial()->frontDiffuse();
+  }
+
+  void setMaterialSpecularColor(const vl::vec4& color ) {
+    actor()->effect()->shader()->getMaterial()->setFrontSpecular( color );
+  }
+  const vl::vec4& materialSpecularColor() const {
+    return actor()->effect()->shader()->getMaterial()->frontSpecular();
+  }
+
+  void setMaterialSpecularShininess( float shininess ) {
+    actor()->effect()->shader()->getMaterial()->setFrontShininess( shininess );
+  }
+  float materialSpecularShininess() const {
+    return actor()->effect()->shader()->getMaterial()->frontShininess();
+  }
+
+  // Smart Fog
+  // Fog behaves as in standard OpenGL (see red book for settings) except that instead of just targeting the color
+  // we can target also alpha and saturation.
+
+  void setFogMode( vl::Vivid::EFogMode mode ) {
+    actor()->effect()->shader()->gocUniform("vl_Vivid.smartFog.mode")->setUniformI( mode );
+  }
+  vl::Vivid::EFogMode fogMode() const {
+    return (vl::Vivid::EFogMode)actor()->effect()->shader()->getUniform("vl_Vivid.smartFog.mode")->getUniformI();
+  }
+
+  void setFogTarget( vl::Vivid::ESmartTarget target ) {
+    actor()->effect()->shader()->gocUniform("vl_Vivid.smartFog.target")->setUniformI( target );
+  }
+  vl::Vivid::ESmartTarget fogTarget() const {
+    return (vl::Vivid::ESmartTarget)actor()->effect()->shader()->getUniform("vl_Vivid.smartFog.target")->getUniformI();
+  }
+
+  void setFogColor( const vl::vec4& color ) {
+    actor()->effect()->shader()->gocFog()->setColor( color );
+  }
+  const vl::vec4& fogColor() const {
+    return actor()->effect()->shader()->getFog()->color();
+  }
+
+  void setFogStart( float start ) {
+    actor()->effect()->shader()->gocFog()->setStart( start );
+  }
+  float fogStart() const {
+    return actor()->effect()->shader()->getFog()->start();
+  }
+
+  void setFogEnd( float end ) {
+    actor()->effect()->shader()->gocFog()->setEnd( end );
+  }
+  float fogEnd() const {
+    return actor()->effect()->shader()->getFog()->end();
+  }
+
+  void setFogDensity( float density ) {
+    actor()->effect()->shader()->gocFog()->setDensity( density );
+  }
+  float fogDensity() const {
+    return actor()->effect()->shader()->getFog()->density();
+  }
+
+  // Smart Clipping
+  // We can have up to 4 "clipping units" active: see `i` parameter.
+  // We can target color, alpha and saturation -> setClipTarget()
+  // We can have various clipping modes: plane, sphere, box -> setClipMode()
+  // We can have soft clipping -> setClipFadeRange()
+  // We can reverse the clipping effect -> setClipReverse() - by default the negative/outside space is "clipped"
+
+  #define SMARTCLIP(var) (std::string("vl_Vivid.smartClip[") + (char)('0' + i) + "]." + var).c_str()
+
+  void setClipMode( int i, vl::Vivid::EClipMode mode ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("mode"))->setUniformI( mode );
+  }
+  vl::Vivid::EClipMode clipMode( int i ) const {
+    return (vl::Vivid::EClipMode)actor()->effect()->shader()->getUniform(SMARTCLIP("mode"))->getUniformI();
+  }
+
+  void setClipTarget( int i, vl::Vivid::ESmartTarget target ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("target"))->setUniformI( target );
+  }
+  vl::Vivid::ESmartTarget clipTarget( int i ) const {
+    return (vl::Vivid::ESmartTarget)actor()->effect()->shader()->getUniform(SMARTCLIP("target"))->getUniformI();
+  }
+
+  void setClipFadeRange( int i, float fadeRange ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("fadeRange"))->setUniformF( fadeRange );
+  }
+  float clipFadeRange( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("fadeRange"))->getUniformF();
+  }
+
+  void setClipColor( int i, const vl::vec4& color ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("color"))->setUniform( color );
+  }
+  vl::vec4 clipColor( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("color"))->getUniform4F();
+  }
+
+  void setClipPlane( int i, const vl::vec4& plane ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("plane"))->setUniform( plane );
+  }
+  vl::vec4 clipPlane( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("plane"))->getUniform4F();
+  }
+
+  void setClipSphere( int i, const vl::vec4& sphere ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("sphere"))->setUniform( sphere );
+  }
+  vl::vec4 clipSphere( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("sphere"))->getUniform4F();
+  }
+
+  void setClipBoxMin( int i, const vl::vec3& boxMin ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("boxMin"))->setUniform( boxMin );
+  }
+  vl::vec3 clipBoxMin( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("boxMin"))->getUniform3F();
+  }
+
+  void setClipBoxMax( int i, const vl::vec3& boxMax ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("boxMax"))->setUniform( boxMax );
+  }
+  vl::vec3 clipBoxMax( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("boxMax"))->getUniform3F();
+  }
+
+  void setClipReverse( int i, bool reverse ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("reverse"))->setUniformI( reverse );
+  }
+  bool clipReverse( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("reverse"))->getUniformI();
+  }
+
+  #undef SMARTCLIP
+
+  // Texturing
+
+  void setTexture( vl::Texture* tex ) {
+    actor()->effect()->shader()->gocTextureSampler( vl::Vivid::UserTexture )->setTexture( tex );
+  }
+  vl::Texture* texture() {
+    return actor()->effect()->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture();
+  }
+  const vl::Texture* texture() const {
+    return actor()->effect()->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture();
+  }
+
+  void setTextureMappingEnabled( bool enable ) {
+    actor()->effect()->shader()->gocUniform( "vl_Vivid.enableTextureMapping" )->setUniformI( enable );
+  }
+  bool isTextureMappingEnabled() const {
+    return actor()->effect()->shader()->getUniform( "vl_Vivid.enableTextureMapping" )->getUniformI();
+  }
+
+  // NOTE: point sprites require texture mapping to be enabled as well.
+  // See also pointSize().
+  void setPointSpriteEnabled( bool enable ) {
+    actor()->effect()->shader()->gocUniform( "vl_Vivid.enablePointSprite" )->setUniformI( enable );
+  }
+  bool isPointSpriteEnabled() const {
+    return actor()->effect()->shader()->getUniform( "vl_Vivid.enablePointSprite" )->getUniformI();
+  }
+
+  // Other Vivid supported render states
+
+  vl::PointSize* pointSize() { return actor()->effect()->shader()->getPointSize(); }
+  const vl::PointSize* pointSize() const { return actor()->effect()->shader()->getPointSize(); }
+
+  // Useful to render surfaces in wireframe
+  vl::PolygonMode* polygonMode() { return actor()->effect()->shader()->getPolygonMode(); }
+  const vl::PolygonMode* polygonMode() const { return actor()->effect()->shader()->getPolygonMode(); }
 
 protected:
   /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */

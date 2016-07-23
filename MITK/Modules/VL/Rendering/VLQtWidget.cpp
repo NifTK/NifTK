@@ -1256,9 +1256,11 @@ void VLMapper::updateCommon() {
     return;
   }
 
-  // Update visibility
-  bool visible = getBoolProp( m_DataNode, "visible", true );
-  m_Actor->setEnabled( visible );
+  if ( isDataNodeVividUpdateEnabled() ) {
+    // Update visibility
+    bool visible = getBoolProp( m_DataNode, "visible", true );
+    m_Actor->setEnabled( visible );
+  }
 
   // Update transform
   UpdateTransformFromData( m_Actor->transform(), m_DataNode->GetData() );
@@ -1415,9 +1417,6 @@ public:
     tex->setMipLevel(0, img.get(), false);
     GetUserData( m_Actor.get() )->m_ImageModifiedTime = m_MitkImage->GetVtkImageData()->GetMTime();
   }
-
-  Texture* texture() { return actor()->effect()->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture(); }
-  const Texture* texture() const { return actor()->effect()->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture(); }
 
   //! This vertex array contains 4 points representing the plane
   ArrayFloat3* vertexArray() { return m_VertexArray.get(); }
@@ -2022,9 +2021,6 @@ public:
 
     VLMapper::remove();
   }
-
-  Texture* texture() { return actor()->effect()->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture(); }
-  const Texture* texture() const { return actor()->effect()->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture(); }
 
 protected:
     cudaGraphicsResource_t m_CudaResource;
