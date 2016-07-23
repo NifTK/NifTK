@@ -96,6 +96,11 @@ public:
   /** Updates visibility, opacity, color, etc. and Vivid related common settings. */
   void updateCommon();
 
+  /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
+  vl::Actor* actor() { return m_Actor.get(); }
+  /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
+  const vl::Actor* actor() const { return m_Actor.get(); }
+
   //--------------------------------------------------------------------------------
 
   /** When enabled (default) the mapper will reflect updates to the VL.* variables coming from the DataNode.
@@ -354,11 +359,6 @@ public:
   const vl::PolygonMode* polygonMode() const { return actor()->effect()->shader()->getPolygonMode(); }
 
 protected:
-  /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
-  vl::Actor* actor() { return m_Actor.get(); }
-  /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
-  const vl::Actor* actor() const { return m_Actor.get(); }
-
   // Initialize an Actor to be used with the Vivid renderer
   vl::ref<vl::Actor> initActor(vl::Geometry* geom, vl::Effect* fx = NULL, vl::Transform* tr = NULL);
 
@@ -402,6 +402,11 @@ public:
 
   // Number of depth peeling passes to be done.
   void setDepthPeelingPasses( int passes );
+
+  // Positions the camera for optimal visibility of currently selected DataNode
+  void reInit(const vl::vec3& dir = vl::vec3(0,0,1), const vl::vec3& up = vl::vec3(0,1,0), float bias=1.0f);
+  // Positions the camera for optimal scene visibility
+  void globalReInit(const vl::vec3& dir = vl::vec3(0,0,1), const vl::vec3& up = vl::vec3(0,1,0), float bias=1.0f);
 
   void scheduleTrackballAdjustView(bool schedule = true);
   void scheduleNodeAdd(const mitk::DataNode* node);

@@ -2639,6 +2639,31 @@ void VLSceneView::setDepthPeelingPasses( int passes ) {
 
 //-----------------------------------------------------------------------------
 
+void VLSceneView::reInit(const vl::vec3& dir, const vl::vec3& up, float bias) {
+  AABB aabb;
+  for ( DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.begin();
+        it != m_DataNodeVLMapperMap.end();
+        ++it ) {
+    if ( getBoolProp( it->first.GetPointer(), "selected", false ) ) {
+      aabb = it->second->actor()->boundingBox();
+      break;
+    }
+  }
+  if ( ! aabb.isNull() ) {
+    m_Trackball->adjustView( aabb, dir, up, bias );
+    openglContext()->update();
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void VLSceneView::globalReInit(const vl::vec3& dir, const vl::vec3& up, float bias) {
+  m_Trackball->adjustView( m_VividRendering.get(), dir, up, bias );
+  openglContext()->update();
+}
+
+//-----------------------------------------------------------------------------
+
 bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
 {
   m_BackgroundNode = node;
