@@ -23,7 +23,9 @@ uniform mat4 vl_NormalMatrix;
 // Texture Mapping
 
 // <automatic>
-uniform sampler2D vl_UserTexture; // Always set to vl::VividRendering::UserTexture
+uniform sampler1D vl_UserTexture1D; // Always set to vl::VividRendering::UserTexture
+uniform sampler2D vl_UserTexture2D; // Always set to vl::VividRendering::UserTexture
+uniform sampler3D vl_UserTexture3D; // Always set to vl::VividRendering::UserTexture
 
 // Smart Fog Stage
 
@@ -108,6 +110,10 @@ struct vl_VividParameters {
     // <per-Shader>
     // Whether to use texture mapping or not
     bool enableTextureMapping;
+
+    // <automatic>
+    // Whether the texture is a 1D, 2D or 3D texture
+    int textureDimension;
 
     // <per-Shader>
     // Whether to render points as textured point sprites

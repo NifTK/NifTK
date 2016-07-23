@@ -71,14 +71,26 @@ vec4 LightingStage()
   }
 
   if ( vl_Vivid.enablePointSprite ) {
-    color = color * texture2D( vl_UserTexture, gl_PointCoord.st );
+    if ( vl_Vivid.textureDimension == 2 ) {
+      color = color * texture2D( vl_UserTexture2D, gl_PointCoord.st );
+    }
+
     // More aggressive pixel discard for point sprites
     if ( color.a < 0.004 ) {
       discard;
     }
   } else
   if ( vl_Vivid.enableTextureMapping ) {
-    color = color * texture2D( vl_UserTexture, gl_TexCoord[0].st );
+    if ( vl_Vivid.textureDimension == 1 ) {
+      color = color * texture1D( vl_UserTexture1D, gl_TexCoord[0].s );
+    } else
+    if ( vl_Vivid.textureDimension == 2 ) {
+      color = color * texture2D( vl_UserTexture2D, gl_TexCoord[0].st );
+    } else
+    if ( vl_Vivid.textureDimension == 3 ) {
+      color = color * texture3D( vl_UserTexture3D, gl_TexCoord[0].str );
+    }
+
   }
 
   return color;
@@ -165,7 +177,7 @@ vec4 ClippingStage( vec4 color )
                 }
             }
 
-            if ( vl_Vivid.smartClip[i].reverse == true ) {
+            if ( vl_Vivid.smartClip[i].reverse == false ) {
                 clip_factor = 1.0 - clip_factor;
             }
 

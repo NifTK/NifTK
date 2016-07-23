@@ -1383,7 +1383,8 @@ public:
     // These must be present as part of the default Vivid material
     VIVID_CHECK( fx->shader()->getTextureSampler( vl::Vivid::UserTexture ) )
     VIVID_CHECK( fx->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture() )
-    VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture")->getUniformI() == vl::Vivid::UserTexture );
+    VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture2D") );
+    VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture2D")->getUniformI() == vl::Vivid::UserTexture );
     ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture();
     texture->createTexture2D( img.get(), vl::TF_UNKNOWN, false, false );
     fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
