@@ -14,6 +14,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
+// THIS FILE IS OBSOLETE
+
 #ifndef __mitkOclTriangleSorter_h
 #define __mitkOclTriangleSorter_h
 
@@ -49,10 +51,10 @@ public:
   void AddGLVertexBuffer(const GLuint vertBufHandle, unsigned int vertCount);
   /// \brief Adds an index buffer to be merged
   void AddGLIndexBuffer(const GLuint idxBufHandle, unsigned int idxCount);
-  
+
   /// \brief Adds camera position that is used for distance computation
   inline void SetViewPoint(cl_float4 vp) { m_ViewPoint = vp; }
-  
+
   /// \brief Sorts the merged index buffer based on triangle distance
   bool SortIndexBufferByDist(cl_mem &mergedIndexBuf, cl_mem &mergedVertexBuf, cl_uint triCount, cl_uint vertCount);
 
@@ -85,7 +87,7 @@ protected:
 private:
   /// \brief Compile and initialize all computing kernels
   void InitKernels();
-  
+
   // Sorting related kernels
   bool LaunchRadixSort(cl_mem bfKeyVal, cl_uint count);
   bool RadixLocal(cl_uint datasetSize, cl_mem data, cl_mem hist, cl_mem blockHists, int bitOffset);
@@ -97,7 +99,7 @@ private:
 
   /// \brief Performs coordinate transform and computes distance of the viewpoint from each vertex. Returns with the resulting mem object
   bool TransformVerticesAndComputeDistance(cl_mem vertexBuf, cl_uint numOfVertices, cl_float4 viewPoint);
-  
+
   /// \brief Computes the triangle distances from the vertex distances. Returns the array of floats as cl_mem
   bool ComputeTriangleDistances(cl_mem vertexDistances, cl_uint numOfVertices, cl_mem indexBuffer, cl_uint numOfTriangles);
 

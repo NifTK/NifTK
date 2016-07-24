@@ -76,12 +76,12 @@ private:
    * \brief Utility method to deregister data storage listeners.
    */
   void DeRegisterDataStorageListeners();
-  
+
   /**
    * \brief Called when a DataStorage Node Changed Event was emitted.
    */
   void NodeChanged(const mitk::DataNode* node);
-  
+
   mitk::DataStorage::Pointer m_DataStorage;
 
   QHBoxLayout* m_HorizontalLayout;

@@ -14,7 +14,7 @@
 
 # render code needs opencl for translucent triangle sorting.
 set(_modules MitkOpenCL niftkCoreGui)
-set(_packages Qt4|QtGui Qt4|QtOpenGL Qt5|Gui Qt5|OpenGL VL|VLCore VL|VLGraphics VL|VLVolume VL|VLQt5)
+set(_packages Qt4|QtGui Qt4|QtOpenGL Qt5|Gui Qt5|OpenGL VL|VLCore VL|VLGraphics VL|VLVolume VL|VLVivid VL|VLQt5)
 
 if(BUILD_PCL)
   # pcl depends on eigen
@@ -46,8 +46,8 @@ MITK_CREATE_MODULE(
   PACKAGE_DEPENDS ${_packages}
 )
 
-target_link_libraries(niftkVL 
-  PRIVATE 
+target_link_libraries(niftkVL
+  PRIVATE
     ${VL_LIBRARIES}
 )
 

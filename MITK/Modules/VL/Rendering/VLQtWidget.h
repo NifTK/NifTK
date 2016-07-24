@@ -12,23 +12,16 @@
 
 =============================================================================*/
 
-
-#ifndef Qt4Window_INCLUDE_ONCE
-#define Qt4Window_INCLUDE_ONCE
+#ifndef VLQtWidget_INCLUDE_ONCE
+#define VLQtWidget_INCLUDE_ONCE
 
 #include <niftkVLExports.h>
 
+#include <vlQt5/Qt5Widget.hpp>
 #include <vlGraphics/OpenGLContext.hpp>
-#include <vlGraphics/Light.hpp>
-#include <vlGraphics/Camera.hpp>
-#include <vlGraphics/Rendering.hpp>
-#include <vlGraphics/RenderingTree.hpp>
-#include <vlGraphics/SceneManagerActorTree.hpp>
-#include <vlGraphics/Geometry.hpp>
-#include <vlGraphics/Uniform.hpp>
-#include <vlGraphics/BlitFramebuffer.hpp>
-#include <vlGraphics/Texture.hpp>
-#include <vlCore/VisualizationLibrary.hpp>
+#include <vlVivid/VividRenderer.hpp>
+#include <vlVivid/VividRendering.hpp>
+#include "TrackballManipulator.h"
 #include <QMouseEvent>
 #include <QWidget>
 #include <QTimer>
@@ -45,271 +38,519 @@
 #include <map>
 #include <set>
 
+// Forward declarations
 
-// forward-decl
-struct cudaGraphicsResource;
-typedef struct cudaGraphicsResource* cudaGraphicsResource_t;
-struct CUDAInterop;
-namespace niftk
-{
-class CUDAImage;
-class CUDAImageProperty;
-class LightweightCUDAImage;
-}
 namespace mitk
 {
-class DataStorage;
+  class DataStorage;
 }
+
 namespace niftk
 {
-class PCLData;
+  class PCLData;
 }
+
 struct VLUserData;
-class TrackballManipulator;
 
-#include "OclTriangleSorter.h"
+class VLSceneView;
 
+#ifdef _USE_CUDA
+
+  class CudaTest;
+
+#endif
+
+//-----------------------------------------------------------------------------
+// VLMapper
+//-----------------------------------------------------------------------------
+
+// VLMapper
+// - makeCurrent(): when creating, updating and deleting? Or should we do it externally and remove m_OpenGLContext
 
 /**
- * This class is not thread-safe! Methods should only ever be called on the main
- * GUI thread.
+ * Takes care of managing all VL related aspects with regard to a given mitk::DataNode, ie, maps a mitk::DataNode to VL/Vivid.
  */
-class NIFTKVL_EXPORT VLQtWidget : public QGLWidget, public vl::OpenGLContext
-{
-  Q_OBJECT
-
+class VLMapper : public vl::Object {
 public:
-  using vl::Object::setObjectName;
-  using QObject::setObjectName;
+  VLMapper(const mitk::DataNode* node, VLSceneView* sv);
 
-  VLQtWidget(QWidget* parent=NULL, const QGLWidget* shareWidget=NULL, Qt::WindowFlags f=0);
+  virtual ~VLMapper() {
+    remove();
+  }
 
-  virtual ~VLQtWidget();
+  /** Initializes all the relevant VL data structures, uniforms etc. according to the node's settings. */
+  virtual bool init() = 0;
 
-  void setRefreshRate(int msec);
-  int refreshRate();
+  /** Updates all the relevant VL data structures, uniforms etc. according to the node's settings. */
+  virtual void update() = 0;
 
-  void SetOclResourceService(OclResourceService* oclserv);
-  void SetDataStorage(const mitk::DataStorage::Pointer& dataStorage);
+  /** Removes all the relevant Actor(s) from the scene. */
+  virtual void remove() {
+    m_VividRendering->sceneManager()->tree()->eraseActor(m_Actor.get());
+    m_Actor = NULL;
+  }
 
-  void AddDataNode(const mitk::DataNode::ConstPointer& node);
-  void RemoveDataNode(const mitk::DataNode::ConstPointer& node);
-  void UpdateDataNode(const mitk::DataNode::ConstPointer& node);
-  Q_SLOT void AddAllNodesFromDataStorage();
+  /** Factory method: creates the right VLMapper subclass according to the node's type. */
+  static vl::ref<VLMapper> create(const mitk::DataNode* node, VLSceneView*);
 
-  void QueueUpdateDataNode(const mitk::DataNode::ConstPointer& node);
+  /** Updates visibility, opacity, color, etc. and Vivid related common settings. */
+  void updateCommon();
 
-  void ClearScene();
+  /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
+  vl::Actor* actor() { return m_Actor.get(); }
+  /** Returns the vl::Actor associated with this VLMapper. Note: the specific subclass might handle more than one vl::Actor. */
+  const vl::Actor* actor() const { return m_Actor.get(); }
 
-  void UpdateThresholdVal(int isoVal);
+  //--------------------------------------------------------------------------------
 
-  // ignore alpha for now.
-  Q_SLOT void SetBackgroundColour(float r, float g, float b);
+  /** When enabled (default) the mapper will reflect updates to the VL.* variables coming from the DataNode.
+      This is useful when you want one object to have the same VL settings across different views/qwidgets.
+      Disable this when you want one object to have different settings across different views/qwidgets and
+      ignore the VL.* properties of the DataNode. Updates to the "visible" property are also ignored.
+      This only applies to VLMapperSurface, VLMapper2DImage, VLMapperCUDAImage for now. */
+  bool setDataNodeVividUpdateEnabled( bool enable ) { m_DataNodeVividUpdateEnabled = enable; }
+  bool isDataNodeVividUpdateEnabled() const { return m_DataNodeVividUpdateEnabled; }
 
-  /**
-   * node can have as data object:
-   * - mitk::Image
-   * - CUDAImage
-   * - mitk::Image with CUDAImageProperty attached.
-   * And for now the image has to be 2D.
-   * Anything else will just be ignored.
-   */
-  bool SetBackgroundNode(const mitk::DataNode::ConstPointer& node);
+  //--------------------------------------------------------------------------------
+  // User managed Vivid API to be used when isDataNodeVividUpdateEnabled() == false
+  //--------------------------------------------------------------------------------
 
-  bool SetCameraTrackingNode(const mitk::DataNode::ConstPointer& node);
+  // Only applies to VLMapperSurface, VLMapper2DImage, VLMapperCUDAImage for now.
 
-  /**
-   * Returns the FBO that contains the current renderer output, i.e. the stuff that goes on screen.
-   * Beware: this can/will return a different object every time you call it!
-   */
-  vl::FramebufferObject* GetFBO();
+  // Rendering Mode
+  // Whether a surface is rendered with polygons, 3D outline, 2D outline or an outline-slice through a plane.
+  // 3D outlines & slice mode:
+  //  - computed on the GPU by a geometry shader
+  //  - are clipped by the stencil
+  //  - interact with the depth buffer (ie they're visible only if they're in front of other objects)
+  //  - include creases inside the silhouette regardless of whether they're facing or not the viewer
+  // 2D outlines:
+  //  - computed using offscreen image based edge detection
+  //  - are not clipped against the stencil
+  //  - do not interact with depth buffer (ie they're always in front of any geometry)
+  //  - look cleaner, renders only the external silhouette of an object
 
-  /**
-   * Will throw an exception if CUDA has not been enabled at compile time.
-   */
-  void EnableFBOCopyToDataStorageViaCUDA(bool enable, mitk::DataStorage* datastorage = 0, const std::string& nodename = "");
+  void setRenderingMode(vl::Vivid::ERenderingMode mode) {
+    actor()->effect()->shader()->getUniform("vl_Vivid.renderMode")->setUniformI( mode );
+  }
+  vl::Vivid::ERenderingMode renderingMode() const {
+    return (vl::Vivid::ERenderingMode)actor()->effect()->shader()->getUniform("vl_Vivid.renderMode")->getUniformI();
+  }
 
+  // Outline
+  // Properties of both the 2D and 3D outlines
 
-  // from vl::OpenGLContext
-public:
-  virtual void setContinuousUpdate(bool continuous);
-  virtual void setWindowTitle(const vl::String& title);
-  virtual bool setFullscreen(bool fullscreen);
-  virtual void show();
-  virtual void hide();
-  virtual void setPosition(int x, int y);
-  virtual vl::ivec2 position() const;
-  virtual void update();                // hides non-virtual QWidget::update()?
-  virtual void setSize(int w, int h);
-  virtual void swapBuffers();           // in QGLWidget too
-  virtual void makeCurrent();           // in QGLWidget too
-  virtual void setMousePosition(int x, int y);
-  virtual void setMouseVisible(bool visible);
-  virtual void getFocus();
+  void setOutlineColor(const vl::vec4& color ) {
+    actor()->effect()->shader()->getUniform("vl_Vivid.outline.color")->setUniform( color );
+  }
+  vl::vec4 outlineColor() const {
+    return actor()->effect()->shader()->getUniform("vl_Vivid.outline.color")->getUniform4F();
+  }
 
-  virtual vl::ivec2 size() const;       // BEWARE: not a baseclass method!
+  void setOutlineWidth( float width ) {
+    actor()->effect()->shader()->getUniform("vl_Vivid.outline.width")->setUniformF( width );
+  }
+  float outlineWidth() const {
+    return actor()->effect()->shader()->getUniform("vl_Vivid.outline.width")->getUniformF();
+  }
+
+  void setOutlineSlicePlane( const vl::vec4& plane ) {
+    actor()->effect()->shader()->getUniform("vl_Vivid.outline.slicePlane")->setUniform( plane );
+  }
+  vl::vec4 outlineSlicePlane() const {
+    return actor()->effect()->shader()->getUniform("vl_Vivid.outline.slicePlane")->getUniform4F();
+  }
+
+  // Stencil
+
+  /** Use this Actor as stencil (used when m_VividRendering->setStencilEnabled(true)). */
+  void setIsStencil( bool is_stencil ) {
+    std::vector< vl::ref<vl::Actor> >::iterator it = std::find( m_VividRendering->stencilActors().begin(), m_VividRendering->stencilActors().end(), actor() );
+    if ( ! is_stencil && it != m_VividRendering->stencilActors().end() ) {
+      m_VividRendering->stencilActors().erase( it );
+    } else
+    if ( is_stencil && it == m_VividRendering->stencilActors().end() ) {
+      m_VividRendering->stencilActors().push_back( m_Actor );
+    }
+  }
+  bool isStencil() const {
+    return std::find( m_VividRendering->stencilActors().begin(), m_VividRendering->stencilActors().end(), actor() ) != m_VividRendering->stencilActors().end();
+  }
+
+  // Material & Opacity
+  // Simplified standard OpenGL material properties only difference is they're rendered using high quality per-pixel lighting.
+
+  void setMaterialDiffuseRGBA(const vl::vec4& rgba) {
+    actor()->effect()->shader()->getMaterial()->setFrontDiffuse( rgba );
+  }
+  const vl::vec4& materialDiffuseRGBA() const {
+    return actor()->effect()->shader()->getMaterial()->frontDiffuse();
+  }
+
+  void setMaterialSpecularColor(const vl::vec4& color ) {
+    actor()->effect()->shader()->getMaterial()->setFrontSpecular( color );
+  }
+  const vl::vec4& materialSpecularColor() const {
+    return actor()->effect()->shader()->getMaterial()->frontSpecular();
+  }
+
+  void setMaterialSpecularShininess( float shininess ) {
+    actor()->effect()->shader()->getMaterial()->setFrontShininess( shininess );
+  }
+  float materialSpecularShininess() const {
+    return actor()->effect()->shader()->getMaterial()->frontShininess();
+  }
+
+  // Smart Fog
+  // Fog behaves as in standard OpenGL (see red book for settings) except that instead of just targeting the color
+  // we can target also alpha and saturation.
+
+  void setFogMode( vl::Vivid::EFogMode mode ) {
+    actor()->effect()->shader()->gocUniform("vl_Vivid.smartFog.mode")->setUniformI( mode );
+  }
+  vl::Vivid::EFogMode fogMode() const {
+    return (vl::Vivid::EFogMode)actor()->effect()->shader()->getUniform("vl_Vivid.smartFog.mode")->getUniformI();
+  }
+
+  void setFogTarget( vl::Vivid::ESmartTarget target ) {
+    actor()->effect()->shader()->gocUniform("vl_Vivid.smartFog.target")->setUniformI( target );
+  }
+  vl::Vivid::ESmartTarget fogTarget() const {
+    return (vl::Vivid::ESmartTarget)actor()->effect()->shader()->getUniform("vl_Vivid.smartFog.target")->getUniformI();
+  }
+
+  void setFogColor( const vl::vec4& color ) {
+    actor()->effect()->shader()->gocFog()->setColor( color );
+  }
+  const vl::vec4& fogColor() const {
+    return actor()->effect()->shader()->getFog()->color();
+  }
+
+  void setFogStart( float start ) {
+    actor()->effect()->shader()->gocFog()->setStart( start );
+  }
+  float fogStart() const {
+    return actor()->effect()->shader()->getFog()->start();
+  }
+
+  void setFogEnd( float end ) {
+    actor()->effect()->shader()->gocFog()->setEnd( end );
+  }
+  float fogEnd() const {
+    return actor()->effect()->shader()->getFog()->end();
+  }
+
+  void setFogDensity( float density ) {
+    actor()->effect()->shader()->gocFog()->setDensity( density );
+  }
+  float fogDensity() const {
+    return actor()->effect()->shader()->getFog()->density();
+  }
+
+  // Smart Clipping
+  // We can have up to 4 "clipping units" active: see `i` parameter.
+  // We can target color, alpha and saturation -> setClipTarget()
+  // We can have various clipping modes: plane, sphere, box -> setClipMode()
+  // We can have soft clipping -> setClipFadeRange()
+  // We can reverse the clipping effect -> setClipReverse() - by default the negative/outside space is "clipped"
+
+  #define SMARTCLIP(var) (std::string("vl_Vivid.smartClip[") + (char)('0' + i) + "]." + var).c_str()
+
+  void setClipMode( int i, vl::Vivid::EClipMode mode ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("mode"))->setUniformI( mode );
+  }
+  vl::Vivid::EClipMode clipMode( int i ) const {
+    return (vl::Vivid::EClipMode)actor()->effect()->shader()->getUniform(SMARTCLIP("mode"))->getUniformI();
+  }
+
+  void setClipTarget( int i, vl::Vivid::ESmartTarget target ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("target"))->setUniformI( target );
+  }
+  vl::Vivid::ESmartTarget clipTarget( int i ) const {
+    return (vl::Vivid::ESmartTarget)actor()->effect()->shader()->getUniform(SMARTCLIP("target"))->getUniformI();
+  }
+
+  void setClipFadeRange( int i, float fadeRange ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("fadeRange"))->setUniformF( fadeRange );
+  }
+  float clipFadeRange( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("fadeRange"))->getUniformF();
+  }
+
+  void setClipColor( int i, const vl::vec4& color ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("color"))->setUniform( color );
+  }
+  vl::vec4 clipColor( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("color"))->getUniform4F();
+  }
+
+  void setClipPlane( int i, const vl::vec4& plane ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("plane"))->setUniform( plane );
+  }
+  vl::vec4 clipPlane( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("plane"))->getUniform4F();
+  }
+
+  void setClipSphere( int i, const vl::vec4& sphere ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("sphere"))->setUniform( sphere );
+  }
+  vl::vec4 clipSphere( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("sphere"))->getUniform4F();
+  }
+
+  void setClipBoxMin( int i, const vl::vec3& boxMin ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("boxMin"))->setUniform( boxMin );
+  }
+  vl::vec3 clipBoxMin( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("boxMin"))->getUniform3F();
+  }
+
+  void setClipBoxMax( int i, const vl::vec3& boxMax ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("boxMax"))->setUniform( boxMax );
+  }
+  vl::vec3 clipBoxMax( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("boxMax"))->getUniform3F();
+  }
+
+  void setClipReverse( int i, bool reverse ) {
+    actor()->effect()->shader()->gocUniform(SMARTCLIP("reverse"))->setUniformI( reverse );
+  }
+  bool clipReverse( int i ) const {
+    return actor()->effect()->shader()->getUniform(SMARTCLIP("reverse"))->getUniformI();
+  }
+
+  #undef SMARTCLIP
+
+  // Texturing
+
+  void setTexture( vl::Texture* tex ) {
+    actor()->effect()->shader()->gocTextureSampler( vl::Vivid::UserTexture )->setTexture( tex );
+  }
+  vl::Texture* texture() {
+    return actor()->effect()->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture();
+  }
+  const vl::Texture* texture() const {
+    return actor()->effect()->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture();
+  }
+
+  void setTextureMappingEnabled( bool enable ) {
+    actor()->effect()->shader()->gocUniform( "vl_Vivid.enableTextureMapping" )->setUniformI( enable );
+  }
+  bool isTextureMappingEnabled() const {
+    return actor()->effect()->shader()->getUniform( "vl_Vivid.enableTextureMapping" )->getUniformI();
+  }
+
+  // NOTE: point sprites require texture mapping to be enabled as well.
+  // See also pointSize().
+  void setPointSpriteEnabled( bool enable ) {
+    actor()->effect()->shader()->gocUniform( "vl_Vivid.enablePointSprite" )->setUniformI( enable );
+  }
+  bool isPointSpriteEnabled() const {
+    return actor()->effect()->shader()->getUniform( "vl_Vivid.enablePointSprite" )->getUniformI();
+  }
+
+  // Other Vivid supported render states
+
+  vl::PointSize* pointSize() { return actor()->effect()->shader()->getPointSize(); }
+  const vl::PointSize* pointSize() const { return actor()->effect()->shader()->getPointSize(); }
+
+  // Useful to render surfaces in wireframe
+  vl::PolygonMode* polygonMode() { return actor()->effect()->shader()->getPolygonMode(); }
+  const vl::PolygonMode* polygonMode() const { return actor()->effect()->shader()->getPolygonMode(); }
 
 protected:
-  void translateKeyEvent(QKeyEvent* ev, unsigned short& unicode_out, vl::EKey& key_out);
-
-
-  // from QGLWidget
-protected:
-  virtual void initializeGL();
-  virtual void resizeGL(int width, int height);
-  virtual void paintGL();
-  virtual void mouseMoveEvent(QMouseEvent* ev);
-  virtual void mousePressEvent(QMouseEvent* ev);
-  virtual void mouseReleaseEvent(QMouseEvent* ev);
-  virtual void wheelEvent(QWheelEvent* ev);
-  virtual void keyPressEvent(QKeyEvent* ev);
-  virtual void keyReleaseEvent(QKeyEvent* ev);
-  //void dragEnterEvent(QDragEnterEvent *ev);
-  //void dropEvent(QDropEvent* ev);
-private:
-  QGLContext* context();    // non-const, hiding the one in QGLWidget.
-
-
+  // Initialize an Actor to be used with the Vivid renderer
+  vl::ref<vl::Actor> initActor(vl::Geometry* geom, vl::Effect* fx = NULL, vl::Transform* tr = NULL);
 
 protected:
-
-  virtual void AddDataStorageListeners();
-  virtual void RemoveDataStorageListeners();
-
-  //virtual void OnNodeAdded(mitk::DataNode* node);
-  virtual void OnNodeModified(const mitk::DataNode* node);
-  virtual void OnNodeVisibilityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
-  virtual void OnNodeColorPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
-  virtual void OnNodeOpacityPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
-
-
-
-  void RenderScene();
-  void CreateAndUpdateFBOSizes(int width, int height);
-  Q_SLOT void UpdateViewportAndCameraAfterResize();
-  void UpdateCameraParameters();
-  void UpdateTextureFromImage(const mitk::DataNode::ConstPointer& node);
-  void UpdateActorTransformFromNode(vl::ref<vl::Actor> actor, const mitk::DataNode::ConstPointer& node);
-  void UpdateTransformFromNode(vl::ref<vl::Transform> txf, const mitk::DataNode::ConstPointer& node);
-  void UpdateTransformFromData(vl::ref<vl::Transform> txf, const mitk::BaseData::ConstPointer& data);
-  vl::mat4 GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data);
-  void EnableTrackballManipulator(bool enable);
-  vl::ref<vl::Actor> AddPointsetActor(const mitk::PointSet::Pointer& mitkPS);
-  vl::ref<vl::Actor> AddPointCloudActor(niftk::PCLData* pcl);
-  vl::ref<vl::Actor> AddSurfaceActor(const mitk::Surface::Pointer& mitkSurf);
-  vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
-  vl::ref<vl::Actor> Add2DImageActor(const mitk::Image::Pointer& mitkImg);
-  vl::ref<vl::Actor> Add3DImageActor(const mitk::Image::Pointer& mitkImg);
-  vl::ref<vl::Actor> AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord);
-  vl::EImageType MapITKPixelTypeToVL(int itkComponentType);
-  vl::EImageFormat MapComponentsToVLColourFormat(int components);
-  void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
-  static vl::String LoadGLSLSourceFromResources(const char* filename);
-  void PrepareBackgroundActor(const mitk::Image* img, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
-  vl::ref<vl::Geometry> CreateGeometryFor2DImage(int width, int height);
-  vl::ref<vl::Actor> FindActorForNode(const mitk::DataNode::ConstPointer& node);
-  vl::ref<VLUserData> GetUserData(vl::ref<vl::Actor> actor);
-
-  void UpdateTranslucentTriangles();
-  bool SortTranslucentTriangles();
-  bool MergeTranslucentTriangles();
-  bool NodeIsOnTranslucentList(const mitk::DataNode::ConstPointer& node);
-  bool NodeIsTranslucent(const mitk::DataNode::ConstPointer& node);
-
-
-  mitk::DataStorage::Pointer                  m_DataStorage;
-  mitk::DataNodePropertyListener::Pointer     m_NodeVisibilityListener;
-  mitk::DataNodePropertyListener::Pointer     m_NodeColorPropertyListener;
-  mitk::DataNodePropertyListener::Pointer     m_NodeOpacityPropertyListener;
-
-
-  // side note: default actor block is zero
-  static const int      RENDERBLOCK_OPAQUE            = -1000;
-  static const int      RENDERBLOCK_SORTEDTRANSLUCENT =   900;
-  static const int      RENDERBLOCK_TRANSLUCENT       =  1000;
-  static const int      ENABLEMASK_OPAQUE             = 1 << 0;
-  static const int      ENABLEMASK_TRANSLUCENT        = 1 << 1;
-  static const int      ENABLEMASK_VOLUME             = 1 << 2;
-  static const int      ENABLEMASK_BACKGROUND         = 1 << 3;
-  static const int      ENABLEMASK_SORTEDTRANSLUCENT  = 1 << 4;
-
-  vl::ref<vl::RenderingTree>            m_RenderingTree;
-  vl::ref<vl::Rendering>                m_OpaqueObjectsRendering;
-  vl::ref<vl::Rendering>                m_VolumeRendering;
-  vl::ref<vl::Rendering>                m_BackgroundRendering;
-  vl::ref<vl::BlitFramebuffer>          m_FinalBlit;
-  vl::ref<vl::SceneManagerActorTree>    m_SceneManager;
-  vl::ref<vl::Camera>                   m_Camera;
-  vl::ref<vl::Camera>                   m_BackgroundCamera;
-  vl::ref<vl::Light>                    m_Light;
-  vl::ref<vl::Transform>                m_LightTr;
-  vl::ref<TrackballManipulator>         m_Trackball;
-
-  vl::ref<vl::GLSLProgram>              m_GenericGLSLShader;
-  vl::ref<vl::TexParameter>             m_DefaultTextureParams;
-  vl::ref<vl::Texture>                  m_DefaultTexture;         // empty
-
-  vl::ref<vl::Uniform>                  m_ThresholdVal;   // iso value for volume
-
-  std::map<mitk::DataNode::ConstPointer, vl::ref<vl::Actor> >     m_NodeToActorMap;
-  std::map<vl::ref<vl::Actor>, vl::ref<vl::Renderable> >          m_ActorToRenderableMap;   // FIXME: should go away
-  std::set<mitk::DataNode::ConstPointer>                          m_NodesQueuedForUpdate;
-  mitk::DataNode::ConstPointer                                    m_BackgroundNode;
-  mitk::DataNode::ConstPointer                                    m_CameraNode;
-  int                                 m_BackgroundWidth;
-  int                                 m_BackgroundHeight;
-
-
-  /** @name CUDA-interop related bits. */
-  //@{
-
-  /**
-   * @throws an exception if CUDA support was not enabled at compile time.
-   */
-  void PrepareBackgroundActor(const niftk::LightweightCUDAImage* lwci, const mitk::BaseGeometry* geom, const mitk::DataNode::ConstPointer node);
-
-  /** @throws an exception if CUDA support was not enabled at compile time. */
-  void UpdateGLTexturesFromCUDA(const mitk::DataNode::ConstPointer& node);
-
-  /** @throws an exception if CUDA support was not enabled at compile time. */
-  void FreeCUDAInteropTextures();
-
-    /** Will throw if CUDA-support was not enabled at compile time. */
-  vl::ref<vl::Actor> AddCUDAImageActor(const mitk::BaseData* cudaImg);
-
-  // will only be non-null if cuda support is enabled at compile time.
-  CUDAInterop* m_CUDAInteropPimpl;
-
-  struct TextureDataPOD
-  {
-    vl::ref<vl::Texture>    m_Texture;            // on the vl side
-    unsigned int            m_LastUpdatedID;      // on cuda-manager side
-    cudaGraphicsResource_t  m_CUDARes;            // on cuda(-driver) side
-
-    TextureDataPOD();
-  };
-  std::map<mitk::DataNode::ConstPointer, TextureDataPOD>     m_NodeToTextureMap;
-  //@}
-
-
-  OclResourceService*                 m_OclService;
-  std::set<vl::ref<vl::Actor> >       m_TranslucentActors;
-  vl::ref<vl::Geometry>               m_TranslucentSurface;
-  vl::ref<vl::Actor>                  m_TranslucentSurfaceActor;
-  mitk::OclTriangleSorter           * m_OclTriangleSorter;
-
-  bool m_TranslucentStructuresMerged;
-  bool m_TranslucentStructuresSorted;
-  cl_uint m_TotalNumOfTranslucentTriangles;
-  cl_uint m_TotalNumOfTranslucentVertices;
-  cl_mem m_MergedTranslucentIndexBuf;
-  cl_mem m_MergedTranslucentVertexBuf;
-
-
-protected:
-  int       m_Refresh;
-  QTimer    m_UpdateTimer;
+  vl::OpenGLContext* m_OpenGLContext;
+  vl::VividRendering* m_VividRendering;
+  mitk::DataStorage* m_DataStorage;
+  VLSceneView* m_VLSceneView;
+  const mitk::DataNode* m_DataNode;
+  vl::ref<vl::Actor> m_Actor;
+  bool m_DataNodeVividUpdateEnabled;
 };
 
+//-----------------------------------------------------------------------------
+// VLSceneView
+//-----------------------------------------------------------------------------
+
+class NIFTKVL_EXPORT VLSceneView : public vl::UIEventListener
+{
+public:
+  typedef std::map< mitk::DataNode::ConstPointer, vl::ref<VLMapper> > DataNodeVLMapperMapType;
+
+public:
+  VLSceneView();
+  ~VLSceneView();
+
+  // Called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
+  void setDataStorage(const mitk::DataStorage::Pointer& dataStorage);
+
+  // Called by QmitkIGIVLEditor::OnTransformSelected(), VLRendererView::OnCameraNodeSelected()/OnCameraNodeEnabled()
+  bool setCameraTrackingNode(const mitk::DataNode* node);
+
+  // Called by QmitkIGIVLEditor::OnImageSelected(), VLRendererView::OnBackgroundNodeSelected()
+  bool setBackgroundNode(const mitk::DataNode* node);
+
+  // Called by QmitkIGIVLEditor (via IGIVLEditor)
+  void setBackgroundColour(float r, float g, float b);
+
+  // Defines the opacity of the 3D renering above the background.
+  void setOpacity( float opacity );
+
+  // Number of depth peeling passes to be done.
+  void setDepthPeelingPasses( int passes );
+
+  // Positions the camera for optimal visibility of currently selected DataNode
+  void reInit(const vl::vec3& dir = vl::vec3(0,0,1), const vl::vec3& up = vl::vec3(0,1,0), float bias=1.0f);
+  // Positions the camera for optimal scene visibility
+  void globalReInit(const vl::vec3& dir = vl::vec3(0,0,1), const vl::vec3& up = vl::vec3(0,1,0), float bias=1.0f);
+
+  void scheduleTrackballAdjustView(bool schedule = true);
+  void scheduleNodeAdd(const mitk::DataNode* node);
+  void scheduleNodeRemove(const mitk::DataNode* node);
+  void scheduleNodeUpdate(const mitk::DataNode* node);
+  void scheduleSceneRebuild();
+
+  mitk::DataStorage* dataStorage() { return m_DataStorage.GetPointer(); }
+  const mitk::DataStorage* dataStorage() const { return m_DataStorage.GetPointer(); }
+
+  vl::VividRendering* vividRendering() { return m_VividRendering.get(); }
+  const vl::VividRendering* vividRendering() const { return m_VividRendering.get(); }
+
+  VLTrackballManipulator* trackball() { return m_Trackball.get(); }
+  const VLTrackballManipulator* trackball() const { return m_Trackball.get(); }
+
+  vl::CalibratedCamera* camera() { return m_Camera.get(); }
+  const vl::CalibratedCamera* camera() const { return m_Camera.get(); }
+
+  // Obsolete: called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
+  void setOclResourceService(OclResourceService* oclserv);
+
+  // Obsolete: called by VLRendererView
+  void updateThresholdVal(int isoVal);
+
+  // Only used for ScopedOpenGLContext
+  QGLWidget* m_QGLWidget;
+
+protected:
+  bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt5::Qt5Widget>()->QGLWidget::context(); }
+
+  void initSceneFromDataStorage();
+  void clearScene();
+  void updateScene();
+  void renderScene();
+
+  // Returned VLMapper can be NULL
+  VLMapper* addDataNode(const mitk::DataNode* node);
+  void removeDataNode(const mitk::DataNode* node);
+  void updateDataNode(const mitk::DataNode* node);
+
+  virtual void addDataStorageListeners();
+  virtual void removeDataStorageListeners();
+
+  void updateCameraParameters();
+
+  VLMapper* getVLMapper(const mitk::DataNode* node);
+
+protected:
+  vl::ref<vl::VividRendering>        m_VividRendering;
+  vl::ref<vl::VividRenderer>         m_VividRenderer;
+  vl::ref<vl::SceneManagerActorTree> m_SceneManager;
+  vl::ref<vl::CalibratedCamera>      m_Camera;
+  vl::ref<VLTrackballManipulator>    m_Trackball;
+
+  mitk::DataStorage::Pointer              m_DataStorage;
+  mitk::DataNodePropertyListener::Pointer m_NodeVisibilityListener;
+  mitk::DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
+  mitk::DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
+
+  DataNodeVLMapperMapType                m_DataNodeVLMapperMap;
+  std::set<mitk::DataNode::ConstPointer> m_NodesToUpdate;
+  std::set<mitk::DataNode::ConstPointer> m_NodesToAdd;
+  std::set<mitk::DataNode::ConstPointer> m_NodesToRemove;
+  mitk::DataNode::ConstPointer           m_BackgroundNode;
+  mitk::DataNode::ConstPointer           m_CameraNode;
+
+  bool m_ScheduleTrackballAdjustView;
+  bool m_ScheduleInitScene;
+  bool m_RenderingInProgressGuard;
+
+  // Lgacy OpenCL service
+
+  OclResourceService* m_OclService;
+
+  // CUDA support
+
+#ifdef _USE_CUDA
+protected:
+  CudaTest* m_CudaTest;
+#endif
+
+protected:
+  // --------------------------------------------------------------------------
+  // vl::UIEventListener implementation
+  // --------------------------------------------------------------------------
+
+  virtual void initEvent();
+  virtual void resizeEvent(int width, int height);
+  virtual void updateEvent();
+  virtual void destroyEvent();
+
+  virtual void addedListenerEvent(vl::OpenGLContext *) { }
+  virtual void removedListenerEvent(vl::OpenGLContext *) { }
+  virtual void enableEvent(bool) { }
+  virtual void visibilityEvent(bool) { }
+  virtual void mouseMoveEvent(int, int) { }
+  virtual void mouseUpEvent(vl::EMouseButton, int, int) { }
+  virtual void mouseDownEvent(vl::EMouseButton, int, int) { }
+  virtual void mouseWheelEvent(int) { }
+  virtual void keyPressEvent(unsigned short, vl::EKey) { }
+  virtual void keyReleaseEvent(unsigned short, vl::EKey) { }
+  virtual void fileDroppedEvent(const std::vector<vl::String>&) { }
+};
+
+//-----------------------------------------------------------------------------
+// VLQtWidget
+//-----------------------------------------------------------------------------
+
+class VLQtWidget : public vlQt5::Qt5Widget {
+public:
+  VLQtWidget(QWidget* parent = NULL, const QGLWidget* shareWidget = NULL, Qt::WindowFlags f = 0)
+    : Qt5Widget(parent, shareWidget, f) {
+    m_VLSceneView = new VLSceneView;
+    m_VLSceneView->m_QGLWidget = this;
+    addEventListener(m_VLSceneView.get());
+    setRefreshRate(1000 / 30); // 30 fps in milliseconds
+    setContinuousUpdate(false);
+    setMouseTracking(true);
+    setAutoBufferSwap(false);
+    setAcceptDrops(false);
+  }
+
+  void setVLSceneView(VLSceneView* vl_view) { m_VLSceneView = vl_view; }
+  VLSceneView* vlSceneView() { return m_VLSceneView.get(); }
+  const VLSceneView* vlSceneView() const { return m_VLSceneView.get(); }
+
+protected:
+  vl::ref<VLSceneView> m_VLSceneView;
+};
+
+// Adding doneCurrent() seems to have fixed the crash when loading the 2D Images, not sure why,
+// so we use this class now instead of the standard openglContext()->makeCurrent().
+class ScopedOpenGLContext {
+public:
+  ScopedOpenGLContext(QGLWidget* qgl) {
+    m_QGLWidget = qgl;
+    m_QGLWidget->makeCurrent();
+  }
+  ~ScopedOpenGLContext() {
+    m_QGLWidget->doneCurrent();
+  }
+protected:
+  QGLWidget* m_QGLWidget;
+};
 
 #endif

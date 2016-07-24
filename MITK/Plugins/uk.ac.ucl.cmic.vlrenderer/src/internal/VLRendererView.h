@@ -12,7 +12,6 @@
 
 =============================================================================*/
 
-
 #ifndef VLRendererView_h
 #define VLRendererView_h
 
@@ -28,8 +27,9 @@
 #include <mitkImage.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
+#include <mitkDataNodePropertyListener.h>
 
-#include <Rendering/VLQtWidget.h>
+class VLQtWidget;
 
 // Note:
 // On Linux, some of the above includes include Xlib.h, transitively.
@@ -65,27 +65,26 @@ protected:
 
   virtual void SetFocus();
 
-  /// \brief Called by framework when a node was removed from the datastorage
-  virtual void OnNodeRemoved(mitk::DataNode* node);
+  ///// \brief Called by framework when a node was removed from the datastorage
+  //virtual void OnNodeRemoved(mitk::DataNode* node);
 
-  /// \brief Called by framework when a node was added to the datastorage
-  virtual void OnNodeAdded(mitk::DataNode* node);
-  virtual void OnNodeDeleted(mitk::DataNode* node);
+  ///// \brief Called by framework when a node was added to the datastorage
+  //virtual void OnNodeAdded(mitk::DataNode* node);
+  //virtual void OnNodeDeleted(mitk::DataNode* node);
 
-  void OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
+  //void OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer = 0);
 
   virtual void Visible();
 
-private slots: 
+private slots:
   void OnBackgroundNodeSelected(const mitk::DataNode* node);
   void OnCameraNodeSelected(const mitk::DataNode* node);
   void OnCameraNodeEnabled(bool enabled);
 
-
-private: 
+private:
   void InitVLRendering();
 
-  /// \brief 
+  /// \brief
   void ReinitDisplay(bool viewEnabled = true);
 
   /// \brief All the controls for the main view part.
@@ -94,15 +93,13 @@ private:
   /// \brief Store a reference to the parent widget of this view.
   QWidget *m_Parent;
 
-
   // VL rendering specific members
-  // FIXME: should just be a pointer, so we can drop the header dependency on vl.
-  vl::ref<VLQtWidget>       m_VLQtRenderWindow;
+  // We use a naked pointer not a vl::ref<> because this is also a QObject managed by Qt
+  VLQtWidget* m_VLQtRenderWindow;
 
-  // Listeners
-  mitk::DataNodePropertyListener::Pointer    m_SelectionListener;
-  mitk::DataNodePropertyListener::Pointer    m_NamePropertyListener;
-
+  //// Listeners
+  //mitk::DataNodePropertyListener::Pointer m_SelectionListener;
+  //mitk::DataNodePropertyListener::Pointer m_NamePropertyListener;
 };
 
 #endif // VLRendererView_h

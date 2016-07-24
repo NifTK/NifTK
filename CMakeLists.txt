@@ -484,13 +484,12 @@ endif()
 # Qt version related variables
 
 if(APPLE)
-  set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+  set(DESIRED_QT_VERSION 5 CACHE STRING "Pick a version of Qt to use: 4 or 5")
 else()
 
-  # For now, we stick with Qt 4.
+  # For now, we stick with Qt 5.
 
-  #set(DESIRED_QT_VERSION 5 CACHE STRING "Pick a version of Qt to use: 4 or 5")
-  set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+  set(DESIRED_QT_VERSION 5 CACHE STRING "Pick a version of Qt to use: 4 or 5")
 
 endif()
 
@@ -592,7 +591,7 @@ mitkFunctionAddExternalProject(NAME RTK                  OFF ADVANCED DEPENDS IT
 # -----------------------------------------
 # Other MITK_USE_* options not related to external projects build via the NifTK superbuild
 
-#env_option(MITK_USE_OpenCL "Use OpenCL GPU-Computing library" OFF)
+env_option(MITK_USE_OpenCL "Use OpenCL GPU-Computing library" ON)
 
 if (BUILD_IGI)
   set(MITK_USE_AprilTags ON CACHE BOOL "" FORCE)
@@ -882,7 +881,7 @@ if (BUILD_MESHING)
     ${CMAKE_SOURCE_DIR}/Libraries/Meshing
   )
 endif (BUILD_MESHING)
- 
+
 ######################################################################
 # Find CUDA: Required by the Nifty packages
 ######################################################################
@@ -1378,7 +1377,7 @@ endif(BUILD_RTK)
 ######################################################################
 
 if(BUILD_VL)
-  find_package(VL COMPONENTS VLCore VLGraphics VLVolume REQUIRED)
+  find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLVivid VLQt5 REQUIRED)
   if(VL_FOUND)
     message("Found VL")
     #include(${VL_USE_FILE})
@@ -1839,7 +1838,7 @@ endif()
 configure_file(${CMAKE_SOURCE_DIR}/CMake/CPackOptions.cmake.in
                ${CMAKE_BINARY_DIR}/NIFTKCPackOptions.cmake)
 
-# 3. Set a variable with the name of this file.		
+# 3. Set a variable with the name of this file.
 set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/NIFTKCPackOptions.cmake")
 
 # 4. Include this optional file.
@@ -1945,7 +1944,7 @@ foreach(target_to_export ${targets_to_export})
   if(autoload_targets)
 
 # Watch out for the newline in this next set statement. Its intentional, and necessary.
-    set(NIFTK_EXPORTED_TARGET_PROPERTIES "${NIFTK_EXPORTED_TARGET_PROPERTIES} 
+    set(NIFTK_EXPORTED_TARGET_PROPERTIES "${NIFTK_EXPORTED_TARGET_PROPERTIES}
 set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_TARGETS \"${autoload_targets}\")")
 
   endif()
@@ -1953,7 +1952,7 @@ set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_TARGETS \"${a
   if(autoload_dir)
 
 # Watch out for the newline in this next set statement. Its intentional, and necessary.
-    set(NIFTK_EXPORTED_TARGET_PROPERTIES "${NIFTK_EXPORTED_TARGET_PROPERTIES} 
+    set(NIFTK_EXPORTED_TARGET_PROPERTIES "${NIFTK_EXPORTED_TARGET_PROPERTIES}
 set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_DIRECTORY \"${autoload_dir}\")")
 
   endif()

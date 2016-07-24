@@ -109,7 +109,7 @@ if(NOT DEFINED MITK_DIR)
           org.mitk.gui.qt.properties
         )
       endif()
-    endif() 
+    endif()
 
     # Additionally required for NiftyView:
     if(NIFTK_Apps/NiftyView)

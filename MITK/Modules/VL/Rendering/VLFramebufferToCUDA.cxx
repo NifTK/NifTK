@@ -22,8 +22,8 @@
 #include <mitkLogMacros.h>
 #include <vlGraphics/OpenGLContext.hpp>
 
-
 //-----------------------------------------------------------------------------
+
 VLFramebufferAdaptor::VLFramebufferAdaptor(vl::FramebufferObject* fbo)
   : m_GfxRes(0)
 {
@@ -34,7 +34,7 @@ VLFramebufferAdaptor::VLFramebufferAdaptor(vl::FramebufferObject* fbo)
   fbo->openglContext()->makeCurrent();
 
   // find the first colour attachment
-  vl::ref<vl::FBOAbstractAttachment>    colorAttachment;
+  vl::ref<vl::FBOAbstractAttachment> colorAttachment;
   for (int i = 0; i < (vl::AP_COLOR_ATTACHMENT15 - vl::AP_COLOR_ATTACHMENT0 + 1); ++i)
   {
     // some iterator type that derefs to FBOAbstractAttachment
@@ -76,7 +76,7 @@ VLFramebufferAdaptor::VLFramebufferAdaptor(vl::FramebufferObject* fbo)
 
   cudaError_t             err = cudaSuccess;
   cudaGraphicsResource_t  gfxres = 0;
-  err = cudaGraphicsGLRegisterImage(&gfxres, glId, glTarget, cudaGraphicsRegisterFlagsReadOnly);
+  err = cudaGraphicsGLRegisterImage(&gfxres, glId, glTarget, cudaGraphicsRegisterFlagsNone);
   if (err != cudaSuccess)
   {
     throw std::runtime_error("Cannot register FBO attachment with CUDA");
@@ -133,7 +133,7 @@ VLFramebufferAdaptor::~VLFramebufferAdaptor()
 //-----------------------------------------------------------------------------
 cudaArray_t VLFramebufferAdaptor::Map(cudaStream_t stream)
 {
-  cudaError_t   err = cudaSuccess;
+  cudaError_t err = cudaSuccess;
   err = cudaGraphicsMapResources(1, &m_GfxRes, stream);
   if (err != cudaSuccess)
   {

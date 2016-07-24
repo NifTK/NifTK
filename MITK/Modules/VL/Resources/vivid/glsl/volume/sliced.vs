@@ -1,25 +1,31 @@
 /**************************************************************************************/
 /*                                                                                    */
-/*  Copyright (c) 2005-2011, Michele Bosi.                                            */
+/*  Copyright (c) 2005-2016, Michele Bosi.                                            */
 /*  All rights reserved.                                                              */
 /*                                                                                    */
 /*  This file is part of Visualization Library                                        */
-/*  http://www.visualizationlibrary.org                                               */
+/*  http://visualizationlibrary.org                                                   */
 /*                                                                                    */
 /*  Released under the OSI approved Simplified BSD License                            */
 /*  http://www.opensource.org/licenses/bsd-license.php                                */
 /*                                                                                    */
 /**************************************************************************************/
 
-// Simply passes the vertex frag_position and texture coordinate to the fragment shader. 
-// It also passes the vertex coord in object space to perform per-pixel lighting.
+////////////////////////////////////////////////////////////////////////////////////////
+//
+// LEGACY - NOT ACTUALLY SUPPORTED
+//
+////////////////////////////////////////////////////////////////////////////////////////
 
-varying vec3 frag_position; // in object space
+#version 150 compatibility
 
-void main(void)
+// #pragma VL include /vivid/glsl/uniforms.glsl
+
+out vec4 CP; // camera-space vertex
+
+void main()
 {
-	frag_position = gl_Vertex.xyz;
-	gl_TexCoord[0] = gl_MultiTexCoord0;
-	gl_Position = ftransform();
+    gl_Position = ftransform();
+    gl_TexCoord[0] = gl_MultiTexCoord0;
+    CP = gl_ModelViewMatrix * gl_Vertex;
 }
-// Have fun!
