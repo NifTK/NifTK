@@ -469,7 +469,7 @@ namespace
       return;
     }
 
-    mitk::EnumerationProperty::Pointer mode = VL_Volume_Mode_Property::New();
+    VL_Volume_Mode_Property::Pointer mode = VL_Volume_Mode_Property::New();
     node->AddProperty( "VL.Volume.Mode", mode);
     mode->SetValue( 0 );
 
@@ -560,12 +560,12 @@ namespace
     }
 
     // gocUniform("vl_Vivid.smartFog.mode")
-    mitk::EnumerationProperty::Pointer fog_mode = VL_Fog_Mode_Property::New();
+    VL_Fog_Mode_Property::Pointer fog_mode = VL_Fog_Mode_Property::New();
     node->SetProperty("VL.Fog.Mode", fog_mode);
     fog_mode->SetValue( 0 );
 
     // gocUniform("vl_Vivid.smartFog.target")
-    mitk::EnumerationProperty::Pointer fog_target = VL_Smart_Target_Property::New();
+    VL_Smart_Target_Property::Pointer fog_target = VL_Smart_Target_Property::New();
     node->SetProperty("VL.Fog.Target", fog_target);
     fog_target->SetValue( 0 );
 
@@ -624,12 +624,12 @@ namespace
     for( char i = '0'; i < '4'; ++i ) {
 
       // gocUniform("vl_Vivid.smartClip[0].mode")
-      mitk::EnumerationProperty::Pointer mode = VL_Clip_Mode_Property::New();
+      VL_Clip_Mode_Property::Pointer mode = VL_Clip_Mode_Property::New();
       node->SetProperty(CLIP_UNIT("Mode"), mode);
       mode->SetValue( 0 );
 
       // gocUniform("vl_Vivid.smartClip[0].target")
-      mitk::EnumerationProperty::Pointer target = VL_Smart_Target_Property::New();
+      VL_Smart_Target_Property::Pointer target = VL_Smart_Target_Property::New();
       node->SetProperty(CLIP_UNIT("Target"), target);
       target->SetValue( 0 );
 
@@ -714,7 +714,7 @@ namespace
     }
 
     // gocUniform("vl_Vivid.renderMode")
-    mitk::EnumerationProperty::Pointer mode = VL_Surface_Mode_Property::New();
+    VL_Surface_Mode_Property::Pointer mode = VL_Surface_Mode_Property::New();
     node->SetProperty("VL.SurfaceMode", mode);
     mode->SetValue( 0 );
 
@@ -1170,7 +1170,7 @@ public:
   VLGlobalSettingsDataNode() {
     SetName( VLGlobalSettingsName() );
     // Needs dummy data otherwise it doesn't show up
-    mitk::BaseData::Pointer data = VLDummyData::New();
+    VLDummyData::Pointer data = VLDummyData::New();
     SetData( data.GetPointer() );
 
     initGlobalProperties();
@@ -1199,7 +1199,7 @@ protected:
     AddProperty( "VL.Global.Stencil.Smoothness", stencil_smooth );
     stencil_smooth->SetValue( 10 );
 
-    mitk::EnumerationProperty::Pointer render_mode = VL_Render_Mode_Property::New();
+    VL_Render_Mode_Property::Pointer render_mode = VL_Render_Mode_Property::New();
     AddProperty( "VL.Global.RenderMode", render_mode );
     render_mode->SetValue( 0 );
 
@@ -1662,7 +1662,7 @@ public:
     initFogProps( node );
     initClipProps( node );
 
-    mitk::EnumerationProperty::Pointer point_set_mode = VL_Point_Mode_Property::New();
+    VL_Point_Mode_Property::Pointer point_set_mode = VL_Point_Mode_Property::New();
     const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Mode", point_set_mode);
     point_set_mode->SetValue( 0 );
 
@@ -2163,7 +2163,7 @@ void VLSceneView::setDataStorage(const mitk::DataStorage::Pointer& ds)
 
   // Initialize VL Global Settings if not present
   if ( ! ds->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() ) ) {
-    mitk::DataNode::Pointer node = VLGlobalSettingsDataNode::New();
+    VLGlobalSettingsDataNode::Pointer node = VLGlobalSettingsDataNode::New();
     ds->Add( node.GetPointer() );
   }
 
@@ -2677,15 +2677,24 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
   }
 
   // Wire up background texture
-  VLMapper2DImage* img2d_mapper = dynamic_cast<VLMapper2DImage*>( getVLMapper( node ) );
+#ifdef _USE_CUDA
   VLMapperCUDAImage* imgCu_mapper = dynamic_cast<VLMapperCUDAImage*>( getVLMapper( node ) );
+#endif
+
+  VLMapper2DImage* img2d_mapper = dynamic_cast<VLMapper2DImage*>( getVLMapper( node ) );
   vl::Texture* tex = NULL;
-  if ( img2d_mapper ) {
+  if ( img2d_mapper )
+  {
     tex = img2d_mapper->texture();
-  } else
-  if ( imgCu_mapper ) {
+  }
+#ifdef _USE_CUDA
+  else if ( imgCu_mapper )
+  {
     tex = imgCu_mapper->texture();
-  } else {
+  }
+#endif
+  else
+  {
     return false;
   }
   m_VividRendering->backgroundTexSampler()->setTexture( tex );
