@@ -98,20 +98,20 @@ void IGIVLVideoOverlayWidget::SetBackgroundColour(unsigned int aabbggrr)
   float   r = (aabbggrr & 0xFF) / 255.0f;
   float   g = ((aabbggrr & 0xFF00) >> 8) / 255.0f;
   float   b = ((aabbggrr & 0xFF0000) >> 16) / 255.0f;
-  m_LeftOverlayViewer->SetBackgroundColour(r, g, b);
-  m_RightOverlayViewer->SetBackgroundColour(r, g, b);
-  m_TrackedViewer->SetBackgroundColour(r, g, b);
-  m_3DViewer->SetBackgroundColour(r, g, b);
+  m_LeftOverlayViewer->vlSceneView()->setBackgroundColour(r, g, b);
+  m_RightOverlayViewer->vlSceneView()->setBackgroundColour(r, g, b);
+  m_TrackedViewer->vlSceneView()->setBackgroundColour(r, g, b);
+  m_3DViewer->vlSceneView()->setBackgroundColour(r, g, b);
 }
 
 
 //-----------------------------------------------------------------------------
 void IGIVLVideoOverlayWidget::SetOclResourceService(OclResourceService* oclserv)
 {
-  m_LeftOverlayViewer->SetOclResourceService(oclserv);
-  m_RightOverlayViewer->SetOclResourceService(oclserv);
-  m_TrackedViewer->SetOclResourceService(oclserv);
-  m_3DViewer->SetOclResourceService(oclserv);
+  m_LeftOverlayViewer->vlSceneView()->setOclResourceService(oclserv);
+  m_RightOverlayViewer->vlSceneView()->setOclResourceService(oclserv);
+  m_TrackedViewer->vlSceneView()->setOclResourceService(oclserv);
+  m_3DViewer->vlSceneView()->setOclResourceService(oclserv);
 }
 
 
@@ -176,8 +176,8 @@ void IGIVLVideoOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
 {
   if (node != nullptr)
   {
-    m_LeftOverlayViewer->SetBackgroundNode(node);
-    m_TrackedViewer->SetBackgroundNode(node);
+    m_LeftOverlayViewer->vlSceneView()->setBackgroundNode(node);
+    m_TrackedViewer->vlSceneView()->setBackgroundNode(node);
   }
 }
 
@@ -187,7 +187,7 @@ void IGIVLVideoOverlayWidget::OnRightImageSelected(const mitk::DataNode* node)
 {
   if (node != nullptr)
   {
-    m_RightOverlayViewer->SetBackgroundNode(node);
+    m_RightOverlayViewer->vlSceneView()->setBackgroundNode(node);
   }
 }
 
@@ -197,9 +197,9 @@ void IGIVLVideoOverlayWidget::OnTransformSelected(const mitk::DataNode* node)
 {
   if (node != nullptr)
   {
-    m_LeftOverlayViewer->SetCameraTrackingNode(node);
-    m_RightOverlayViewer->SetCameraTrackingNode(node);
-    m_TrackedViewer->SetCameraTrackingNode(node);
+    m_LeftOverlayViewer->vlSceneView()->setCameraTrackingNode(node);
+    m_RightOverlayViewer->vlSceneView()->setCameraTrackingNode(node);
+    m_TrackedViewer->vlSceneView()->setCameraTrackingNode(node);
   }
 }
 
@@ -221,10 +221,10 @@ void IGIVLVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
       (this, &IGIVLVideoOverlayWidget::NodeChanged ) );
   }
 
-  m_3DViewer->SetDataStorage(storage);
-  m_LeftOverlayViewer->SetDataStorage(storage);
-  m_RightOverlayViewer->SetDataStorage(storage);
-  m_TrackedViewer->SetDataStorage(storage);
+  m_3DViewer->vlSceneView()->setDataStorage(storage);
+  m_LeftOverlayViewer->vlSceneView()->setDataStorage(storage);
+  m_RightOverlayViewer->vlSceneView()->setDataStorage(storage);
+  m_TrackedViewer->vlSceneView()->setDataStorage(storage);
 
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage =
       mitk::TNodePredicateDataType<mitk::Image>::New();
