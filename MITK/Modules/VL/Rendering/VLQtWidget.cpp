@@ -33,9 +33,7 @@
 
 #include "VLQtWidget.h"
 
-#include <QTextStream>
-#include <QFile>
-#include <QDir>
+//#include <vlGraphics/plugins/ioVLX.hpp> // debugging
 
 #include <vlQt4/QtDirectory.hpp>
 #include <vlQt4/QtFile.hpp>
@@ -48,7 +46,6 @@
 #include <vlGraphics/GeometryPrimitives.hpp>
 #include <vlGraphics/RenderQueueSorter.hpp>
 #include <vlGraphics/GLSL.hpp>
-#include <vlGraphics/plugins/ioVLX.hpp>
 #include <vlGraphics/FramebufferObject.hpp>
 #include <vlGraphics/AdjacencyExtractor.hpp>
 #include <vlVivid/VividVolume.hpp>
