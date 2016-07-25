@@ -14,7 +14,7 @@
 
 # only try to find the VL package if not done already on the top-level cmakelists.
 if(NOT VL_FOUND)
-  find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLQt5 REQUIRED)
+  find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLVivid VLQt4 REQUIRED)
 endif()
 
 if(VL_FOUND)

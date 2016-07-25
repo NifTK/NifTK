@@ -1377,7 +1377,7 @@ endif(BUILD_RTK)
 ######################################################################
 
 if(BUILD_VL)
-  find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLVivid VLQt5 REQUIRED)
+  find_package(VL COMPONENTS VLCore VLGraphics VLVolume VLVivid VLQt4 REQUIRED)
   if(VL_FOUND)
     message("Found VL")
     #include(${VL_USE_FILE})

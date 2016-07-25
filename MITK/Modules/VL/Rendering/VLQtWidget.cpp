@@ -37,8 +37,8 @@
 #include <QFile>
 #include <QDir>
 
-#include <vlQt5/QtDirectory.hpp>
-#include <vlQt5/QtFile.hpp>
+#include <vlQt4/QtDirectory.hpp>
+#include <vlQt4/QtFile.hpp>
 #include <vlCore/Log.hpp>
 #include <vlCore/Time.hpp>
 #include <vlCore/Colors.hpp>

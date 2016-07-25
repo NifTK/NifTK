@@ -17,7 +17,7 @@
 
 #include <niftkVLExports.h>
 
-#include <vlQt5/Qt5Widget.hpp>
+#include <vlQt4/Qt4Widget.hpp>
 #include <vlGraphics/OpenGLContext.hpp>
 #include <vlVivid/VividRenderer.hpp>
 #include <vlVivid/VividRendering.hpp>
@@ -436,7 +436,7 @@ public:
   QGLWidget* m_QGLWidget;
 
 protected:
-  bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt5::Qt5Widget>()->QGLWidget::context(); }
+  bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt4::Qt4Widget>()->QGLWidget::context(); }
 
   void initSceneFromDataStorage();
   void clearScene();
@@ -516,10 +516,10 @@ protected:
 // VLQtWidget
 //-----------------------------------------------------------------------------
 
-class VLQtWidget : public vlQt5::Qt5Widget {
+class VLQtWidget : public vlQt4::Qt4Widget {
 public:
   VLQtWidget(QWidget* parent = NULL, const QGLWidget* shareWidget = NULL, Qt::WindowFlags f = 0)
-    : Qt5Widget(parent, shareWidget, f) {
+    : Qt4Widget(parent, shareWidget, f) {
     m_VLSceneView = new VLSceneView;
     m_VLSceneView->m_QGLWidget = this;
     addEventListener(m_VLSceneView.get());
