@@ -2842,17 +2842,3 @@ void VLSceneView::updateCameraParameters()
     }
   }
 }
-
-//-----------------------------------------------------------------------------
-/*
-                                    Obsolete
-*/
-
-void VLSceneView::updateThresholdVal( int isoVal )
-{
-  float iso = isoVal / 10000.0f;
-  iso = vl::clamp( iso, 0.0f, 1.0f );
-  // m_VividRendering->vividVolume()->setIsoValue( iso );
-  VIVID_CHECK( 0 );
-}
-

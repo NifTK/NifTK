@@ -429,10 +429,7 @@ public:
   // Obsolete: called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
   void setOclResourceService(OclResourceService* oclserv);
 
-  // Obsolete: called by VLRendererView
-  void updateThresholdVal(int isoVal);
-
-  // Only used for ScopedOpenGLContext
+  // Used by niftk::ScopedOGLContext
   QGLWidget* m_QGLWidget;
 
 protected:
