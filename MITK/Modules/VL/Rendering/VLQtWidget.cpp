@@ -2103,6 +2103,35 @@ VLSceneView::VLSceneView() :
 #ifdef _USE_CUDA
   m_CudaTest = new CudaTest;
 #endif
+
+  // Note: here we don't have yet access to openglContext(), ie it's NULL
+
+  // Interface VL with Qt's resource system to load GLSL shaders.
+  vl::defFileSystem()->directories().clear();
+  vl::defFileSystem()->directories().push_back( new vl::QtDirectory( ":/VL/" ) );
+
+  // Create our VividRendering!
+  m_VividRendering = new vl::VividRendering;
+  m_VividRendering->setRenderingMode( vl::Vivid::DepthPeeling ); /* (default) */
+  m_VividRendering->setCullingEnabled( false );
+  // This creates some flickering on the skin for some reason
+  m_VividRendering->setNearFarClippingPlanesOptimized( false );
+  // Tries to accelerate rendering when no translucent objects are in the scene
+  m_VividRendering->setDepthPeelingAutoThrottleEnabled( true );
+
+  // VividRendering nicely prepares for us all the structures we need to use ;)
+  m_VividRenderer = m_VividRendering->vividRenderer();
+  m_SceneManager = m_VividRendering->sceneManager();
+
+  // In the future Camera (and Trackball) should belong in VLView and be set upon rendering.
+  m_Camera = m_VividRendering->calibratedCamera();
+
+  // Initialize the trackball manipulator
+  m_Trackball = new VLTrackballManipulator;
+  m_Trackball->setEnabled( true );
+  m_Trackball->setCamera( m_Camera.get() );
+  m_Trackball->setTransform( NULL );
+  m_Trackball->setPivot( vl::vec3(0,0,0) );
 }
 
 VLSceneView::~VLSceneView() {
@@ -2433,30 +2462,6 @@ void VLSceneView::initEvent()
   MITK_INFO << "GL_SHADING_LANGUAGE_VERSION: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";
   MITK_INFO << "\n";
 
-  // Interface VL with Qt's resource system to load GLSL shaders.
-  vl::defFileSystem()->directories().clear();
-  vl::defFileSystem()->directories().push_back( new vl::QtDirectory( ":/VL/" ) );
-
-  // Create our VividRendering!
-  m_VividRendering = new vl::VividRendering;
-  m_VividRendering->setRenderingMode( vl::Vivid::DepthPeeling ); /* (default) */
-  m_VividRendering->setCullingEnabled( false );
-  // This creates some flickering on the skin for some reason
-  m_VividRendering->setNearFarClippingPlanesOptimized( false );
-
-  // VividRendering nicely prepares for us all the structures we need to use ;)
-  m_VividRenderer = m_VividRendering->vividRenderer();
-  m_SceneManager = m_VividRendering->sceneManager();
-
-  // In the future Camera (and Trackball) should belong in VLView and be set upon rendering.
-  m_Camera = m_VividRendering->calibratedCamera();
-
-  // Initialize the trackball manipulator
-  m_Trackball = new VLTrackballManipulator;
-  m_Trackball->setEnabled( true );
-  m_Trackball->setCamera( m_Camera.get() );
-  m_Trackball->setTransform( NULL );
-  m_Trackball->setPivot( vl::vec3(0,0,0) );
   openglContext()->addEventListener( m_Trackball.get() );
   // Schedule reset of the camera based on the scene content
   scheduleTrackballAdjustView();
