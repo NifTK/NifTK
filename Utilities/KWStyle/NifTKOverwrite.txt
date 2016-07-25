@@ -11,3 +11,4 @@ niftkUltrasonixDataSourceService\.h InternalVariables Disable
 niftkSerializerMacros\.h Namespace Disable
 niftkWindowsHotkeyHandler\.h MemberFunctions Disable
 niftkSharedOGLContext\.h InternalVariables Disable
+niftkNiftyCalVideoCalibrationManager\.h InternalVariables Disable

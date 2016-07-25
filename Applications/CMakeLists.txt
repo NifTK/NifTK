@@ -125,6 +125,7 @@ set(_applications
   KMeansWindowBSI
   KMeansWindowWithLinearRegressionNormalisationBSI
   KNDoubleWindowBSI
+  LinearSubdivisionPolyDataFilter
   LogInvertImage
   MakeLapUSProbeAprilTagsVisualisation
   MakeLapUSProbeARUCOModel

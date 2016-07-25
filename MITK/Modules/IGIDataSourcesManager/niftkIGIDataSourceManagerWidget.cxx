@@ -225,6 +225,24 @@ void IGIDataSourceManagerWidget::StopRecording()
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::PauseUpdate()
+{
+  QMutexLocker locker(&m_Lock);
+
+  m_Manager->StopUpdateTimer();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::RestartUpdate()
+{
+  QMutexLocker locker(&m_Lock);
+
+  m_Manager->StartUpdateTimer();
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnPlayStart()
 {
   QMutexLocker locker(&m_Lock);

@@ -588,6 +588,8 @@ mitkFunctionAddExternalProject(NAME MITK      ON  ADVANCED NO_CACHE DEPENDS ITK 
 
 mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON ADVANCED DEPENDS ITK)
 mitkFunctionAddExternalProject(NAME RTK                  OFF ADVANCED DEPENDS ITK GDCM)
+mitkFunctionAddExternalProject(NAME NiftyCal  OFF ADVANCED DEPENDS OpenCV AprilTags Eigen ITK)
+
 # -----------------------------------------
 # Other MITK_USE_* options not related to external projects build via the NifTK superbuild
 
@@ -597,11 +599,13 @@ if (BUILD_IGI)
   set(MITK_USE_AprilTags ON CACHE BOOL "" FORCE)
   set(MITK_USE_ArUco ON CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyLink ON CACHE BOOL "" FORCE)
+  set(MITK_USE_NiftyCal ON CACHE BOOL "" FORCE)
   set(MITK_USE_OpenCV ON CACHE BOOL "" FORCE)
 else()
   set(MITK_USE_AprilTags OFF CACHE BOOL "" FORCE)
   set(MITK_USE_ArUco OFF CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyLink OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_NiftyCal OFF CACHE BOOL "" FORCE)
   set(MITK_USE_OpenCV OFF CACHE BOOL "" FORCE)
 endif()
 
@@ -1614,7 +1618,7 @@ endif()
 # These represent the libraries that the apps, libraries and unit tests actually link against
 #############################################################################################
 
-set(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIOCore vtkIOLegacy vtkCommonCore vtkRenderingCore vtkRenderingOpenGL vtkFiltersSources vtkFiltersGeometry vtkInteractionStyle vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkIOImage vtkIOPLY)
+set(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIOCore vtkIOLegacy vtkCommonCore vtkRenderingCore vtkRenderingOpenGL vtkFiltersSources vtkFiltersGeometry vtkFiltersModeling vtkInteractionStyle vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkIOImage vtkIOPLY)
 set(NIFTK_VTK_LIBS_WITH_QT vtkViewsQt vtkRenderingQt vtkGUISupportQt vtkGUISupportQtSQL vtkGUISupportQtWebkit)
 
 ######################################################################

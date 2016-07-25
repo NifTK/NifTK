@@ -36,6 +36,7 @@
 #include <QDateTime>
 #include <QTextStream>
 #include <QDir>
+#include <QMutexLocker>
 
 namespace niftk
 {
@@ -100,6 +101,8 @@ bool IGIDataSourceManager::IsUpdateTimerOn() const
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StopUpdateTimer()
 {
+  QMutexLocker locker(&m_Lock);
+
   m_GuiUpdateTimer->stop();
 }
 
@@ -107,6 +110,8 @@ void IGIDataSourceManager::StopUpdateTimer()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StartUpdateTimer()
 {
+  QMutexLocker locker(&m_Lock);
+
   if (m_Sources.size() > 0)
   {
     m_GuiUpdateTimer->start();
@@ -872,6 +877,8 @@ void IGIDataSourceManager::GrabScreen()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::OnUpdateGui()
 {
+  QMutexLocker locker(&m_Lock);
+
   if (m_IsPlayingBack)
   {
     if (m_IsPlayingBackAutomatically)

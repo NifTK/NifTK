@@ -12,26 +12,27 @@
 
 =============================================================================*/
 
-#include "DataSourcesViewActivator.h"
+#include "niftkCameraCalViewActivator.h"
+#include "niftkCameraCalView.h"
+#include "niftkCameraCalViewPreferencePage.h"
 #include <QtPlugin>
-#include "DataSourcesView.h"
-#include "DataSourcesViewPreferencePage.h"
 
-namespace mitk {
+namespace niftk
+{
 
-ctkPluginContext* DataSourcesViewActivator::m_PluginContext = 0;
+ctkPluginContext* CameraCalViewActivator::m_PluginContext = 0;
 
 //-----------------------------------------------------------------------------
-void DataSourcesViewActivator::start(ctkPluginContext* context)
+void CameraCalViewActivator::start(ctkPluginContext* context)
 {
-  BERRY_REGISTER_EXTENSION_CLASS(DataSourcesView, context)
-  BERRY_REGISTER_EXTENSION_CLASS(DataSourcesViewPreferencePage, context)
+  BERRY_REGISTER_EXTENSION_CLASS(CameraCalView, context)
+  BERRY_REGISTER_EXTENSION_CLASS(CameraCalViewPreferencePage, context)
   m_PluginContext = context;
 }
 
 
 //-----------------------------------------------------------------------------
-void DataSourcesViewActivator::stop(ctkPluginContext* context)
+void CameraCalViewActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
   m_PluginContext = NULL;
@@ -39,7 +40,7 @@ void DataSourcesViewActivator::stop(ctkPluginContext* context)
 
 
 //-----------------------------------------------------------------------------
-ctkPluginContext* DataSourcesViewActivator::getContext()
+ctkPluginContext* CameraCalViewActivator::getContext()
 {
   return m_PluginContext;
 }
@@ -47,5 +48,5 @@ ctkPluginContext* DataSourcesViewActivator::getContext()
 } // end namespace
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igidatasources, mitk::DataSourcesViewActivator)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_igicameracal, niftk::CameraCalViewActivator)
 #endif

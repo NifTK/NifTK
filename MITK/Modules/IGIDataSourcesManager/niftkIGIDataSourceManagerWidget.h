@@ -66,6 +66,16 @@ public:
   */
   void StopRecording();
 
+  /**
+  * \brief Called from the Plugin (e.g event bus) to pause the DataStorage update process.
+  */
+  void PauseUpdate();
+
+  /**
+  * \brief Called from the Plugin (e.g event bus) to restart the DataStorage update process.
+  */
+  void RestartUpdate();
+
 signals:
 
   /**
