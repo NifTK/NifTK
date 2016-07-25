@@ -2691,28 +2691,52 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
     return true;
   }
 
+  vl::Texture* tex = NULL;
+  mitk::Vector3D img_spacing;
+  int width  = 0;
+  int height = 0;
+
   // Wire up background texture
 #ifdef _USE_CUDA
   VLMapperCUDAImage* imgCu_mapper = dynamic_cast<VLMapperCUDAImage*>( getVLMapper( node ) );
 #endif
 
   VLMapper2DImage* img2d_mapper = dynamic_cast<VLMapper2DImage*>( getVLMapper( node ) );
-  vl::Texture* tex = NULL;
   if ( img2d_mapper )
   {
+    // assign texture
     tex = img2d_mapper->texture();
+    // image size and pixel aspect ratio
+    mitk::Image* image = dynamic_cast<mitk::Image*>( node->GetData() );
+    img_spacing = image->GetGeometry()->GetSpacing();
+    width = image->GetDimension(0);
+    height = image->GetDimension(1);
   }
 #ifdef _USE_CUDA
   else if ( imgCu_mapper )
   {
+    // assign texture
     tex = imgCu_mapper->texture();
+    // image size and pixel aspect ratio
+    niftk::CUDAImage* cuda_image = dynamic_cast<niftk::CUDAImage*>( node->GetData() ); VIVID_CHECK(cuda_image);
+    img_spacing = cuda_image->GetGeometry()->GetSpacing();
+    niftk::LightweightCUDAImage lwci = cuda_image->GetLightweightCUDAImage();
+    width = lwci.GetWidth();
+    height = lwci.GetHeight();
   }
 #endif
   else
   {
     return false;
   }
+  // set background texture
   m_VividRendering->backgroundTexSampler()->setTexture( tex );
+  // set background aspect ratio
+  VIVID_CHECK(img_spacing[0]);
+  VIVID_CHECK(img_spacing[1]);
+  VIVID_CHECK(width);
+  VIVID_CHECK(height);
+  m_Camera->setCalibratedImageSize(width, height, img_spacing[0] / img_spacing[1]);
 
   // Hide 3D plane with 2D image on it
   setBoolProp( const_cast<mitk::DataNode*>(node), "visible", false );
