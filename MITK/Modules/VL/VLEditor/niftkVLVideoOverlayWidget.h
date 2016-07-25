@@ -37,8 +37,9 @@ namespace niftk
 {
 
 /**
-* \class QmitkIGIVLEditor
-* \see IGIVLEditor
+* \class VLVideoOverlayWidget
+* \brief Contains 4 coordinated VL views for AR purposes (e.g. liver project).
+* \see niftk::IGIVLVideoOverlayEditor
 */
 class NIFTKVL_EXPORT VLVideoOverlayWidget : public QWidget, public Ui_VLVideoOverlayWidget
 {

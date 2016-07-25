@@ -36,8 +36,9 @@ namespace niftk
 {
 
 /**
-* \class QmitkIGIVLEditor
-* \see IGIVLEditor
+* \class VLStandardDisplayWidget
+* \brief Contains 4 coordinated VL views for radiological viewing purposes (e.g. EpiNav project).
+* \see niftk::VLStandardDisplayEditor
 */
 class NIFTKVL_EXPORT VLStandardDisplayWidget : public QWidget, public Ui_VLStandardDisplayWidget
 {
