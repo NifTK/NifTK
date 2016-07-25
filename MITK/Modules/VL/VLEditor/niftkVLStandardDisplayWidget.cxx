@@ -81,13 +81,18 @@ void VLStandardDisplayWidget::SetDataStorage(mitk::DataStorage* storage)
   }
 
   m_DataStorage = storage;
-  
+
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->ChangedNodeEvent.AddListener
       (mitk::MessageDelegate1<VLStandardDisplayWidget, const mitk::DataNode*>
       (this, &VLStandardDisplayWidget::NodeChanged ) );
   }
+
+  m_AxialViewer->vlSceneView()->setDataStorage( storage );
+  m_SagittalViewer->vlSceneView()->setDataStorage( storage );
+  m_CoronalViewer->vlSceneView()->setDataStorage( storage );
+  m_3DViewer->vlSceneView()->setDataStorage( storage );
 }
 
 
