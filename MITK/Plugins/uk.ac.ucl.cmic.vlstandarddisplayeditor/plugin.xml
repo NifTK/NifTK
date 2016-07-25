@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+  <extension point="org.blueberry.ui.editors">
+    <editor
+      id="org.mitk.editors.igivlvideooverlayeditor"
+      name="VL Standard Display"
+      extensions="mitk"
+      class="niftk::VLStandardDisplayEditor">
+    </editor>
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="org.mitk.editors.VLStandardDisplayEditor" name="VL Standard Display"
+      class="niftk::VLStandardDisplayEditorPreferencePage" category="org.mitk.EditorsPreferencePage">
+      <keywordreference id="org.mitk.VLStandardDisplayEditorPreferencePageKeywords"/>
+    </page>
+  </extension>
+</plugin>

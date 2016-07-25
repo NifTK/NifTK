@@ -65,6 +65,13 @@ set(NiftyView_PLUGINS
   Plugins/uk.ac.ucl.cmic.niftyview:ON
 )
 
+if(BUILD_VL)
+  set(NiftyView_PLUGINS
+    ${NiftyView_PLUGINS}
+    Plugins/uk.ac.ucl.cmic.vlstandarddisplayeditor:ON
+  )
+endif()
+
 if(NIFTK_Apps/NiftyView)
   set(PROJECT_PLUGINS
     ${PROJECT_PLUGINS}
