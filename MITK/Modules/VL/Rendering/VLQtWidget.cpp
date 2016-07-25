@@ -2402,6 +2402,7 @@ VLMapper* VLSceneView::getVLMapper( const mitk::DataNode* node )
 
 void VLSceneView::setBackgroundColour(float r, float g, float b)
 {
+  VIVID_CHECK( m_VividRendering );
   m_VividRendering->setBackgroundColor( fvec4(r, g, b, 1) );
   openglContext()->update();
 }
@@ -2677,6 +2678,7 @@ void VLSceneView::globalReInit(const vl::vec3& dir, const vl::vec3& up, float bi
 
 bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
 {
+  VIVID_CHECK( m_VividRendering );
   m_BackgroundNode = node;
 
   // update camera viewport based on background node intrinsics present or not
@@ -2725,6 +2727,7 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
 
 bool VLSceneView::setCameraTrackingNode(const mitk::DataNode* node)
 {
+  VIVID_CHECK( m_VividRendering );
   VIVID_CHECK( m_Trackball );
 
   // Whenever we set the camera node to NULL we recenter the scene using the trackball
