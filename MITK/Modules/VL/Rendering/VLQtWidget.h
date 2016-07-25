@@ -429,9 +429,6 @@ public:
   // Obsolete: called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
   void setOclResourceService(OclResourceService* oclserv);
 
-  // Used by niftk::ScopedOGLContext
-  QGLWidget* m_QGLWidget;
-
 protected:
   bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt4::Qt4Widget>()->QGLWidget::context(); }
 
@@ -453,6 +450,9 @@ protected:
   VLMapper* getVLMapper(const mitk::DataNode* node);
 
 protected:
+  // Used by niftk::ScopedOGLContext
+  QGLWidget* m_QGLWidget;
+
   vl::ref<vl::VividRendering>        m_VividRendering;
   vl::ref<vl::VividRenderer>         m_VividRenderer;
   vl::ref<vl::SceneManagerActorTree> m_SceneManager;
@@ -517,8 +517,7 @@ class VLQtWidget : public vlQt4::Qt4Widget {
 public:
   VLQtWidget(QWidget* parent = NULL, const QGLWidget* shareWidget = NULL, Qt::WindowFlags f = 0)
     : Qt4Widget(parent, shareWidget, f) {
-    m_VLSceneView = new VLSceneView;
-    m_VLSceneView->m_QGLWidget = this;
+    m_VLSceneView = new VLSceneView( this );
     addEventListener(m_VLSceneView.get());
     setRefreshRate(1000 / 30); // 30 fps in milliseconds
     setContinuousUpdate(false);

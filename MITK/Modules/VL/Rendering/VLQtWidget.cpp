@@ -2090,11 +2090,11 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
 // VLSceneView
 //-----------------------------------------------------------------------------
 
-VLSceneView::VLSceneView() :
+VLSceneView::VLSceneView( QGLWidget* qglwidget ) :
   m_ScheduleTrackballAdjustView( true ),
   m_ScheduleInitScene ( true ),
   m_RenderingInProgressGuard ( false ),
-  m_QGLWidget( NULL ),
+  m_QGLWidget( qglwidget ),
   m_OclService( 0 )
 {
 #ifdef _USE_CUDA
