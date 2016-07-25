@@ -538,19 +538,4 @@ protected:
   vl::ref<VLSceneView> m_VLSceneView;
 };
 
-// Adding doneCurrent() seems to have fixed the crash when loading the 2D Images, not sure why,
-// so we use this class now instead of the standard openglContext()->makeCurrent().
-class ScopedOpenGLContext {
-public:
-  ScopedOpenGLContext(QGLWidget* qgl) {
-    m_QGLWidget = qgl;
-    m_QGLWidget->makeCurrent();
-  }
-  ~ScopedOpenGLContext() {
-    m_QGLWidget->doneCurrent();
-  }
-protected:
-  QGLWidget* m_QGLWidget;
-};
-
 #endif

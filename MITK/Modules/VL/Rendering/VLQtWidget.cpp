@@ -67,6 +67,7 @@
 #include <mitkImage.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkImageReadAccessor.h>
+#include <niftkScopedOGLContext.h>
 #include <stdexcept>
 
 #ifdef BUILD_IGI
@@ -2115,7 +2116,7 @@ VLSceneView::~VLSceneView() {
 
  void VLSceneView::destroyEvent()
 {
-  ScopedOpenGLContext glctx(m_QGLWidget);
+  niftk::ScopedOGLContext glctx( const_cast<QGLContext*>(m_QGLWidget->context()) );
 
   removeDataStorageListeners();
 
@@ -2152,7 +2153,7 @@ void VLSceneView::removeDataStorageListeners()
 
 void VLSceneView::setDataStorage(const mitk::DataStorage::Pointer& ds)
 {
-  ScopedOpenGLContext glctx(m_QGLWidget);
+  niftk::ScopedOGLContext glctx( const_cast<QGLContext*>(m_QGLWidget->context()) );
 
   removeDataStorageListeners();
 
@@ -2274,7 +2275,7 @@ void VLSceneView::initSceneFromDataStorage()
   // Make sure the system is initialized
   VIVID_CHECK( m_VividRendering.get() );
 
-  ScopedOpenGLContext glctx(m_QGLWidget);
+  niftk::ScopedOGLContext glctx( const_cast<QGLContext*>(m_QGLWidget->context()) );
 
   clearScene();
 
@@ -2316,7 +2317,7 @@ void VLSceneView::initSceneFromDataStorage()
 
 VLMapper* VLSceneView::addDataNode(const mitk::DataNode* node)
 {
-  ScopedOpenGLContext glctx(m_QGLWidget);
+  niftk::ScopedOGLContext glctx( const_cast<QGLContext*>(m_QGLWidget->context()) );
 
   // Add only once and only if valid
   if ( ! node || ! node->GetData() || getVLMapper( node ) != NULL ) {
@@ -2343,7 +2344,7 @@ VLMapper* VLSceneView::addDataNode(const mitk::DataNode* node)
 
 void VLSceneView::removeDataNode(const mitk::DataNode* node)
 {
-  ScopedOpenGLContext glctx(m_QGLWidget);
+  niftk::ScopedOGLContext glctx( const_cast<QGLContext*>(m_QGLWidget->context()) );
 
   if ( node == m_BackgroundNode ) {
     setBackgroundNode( NULL );
@@ -2367,7 +2368,7 @@ void VLSceneView::removeDataNode(const mitk::DataNode* node)
 
 void VLSceneView::updateDataNode(const mitk::DataNode* node)
 {
-  ScopedOpenGLContext glctx(m_QGLWidget);
+  niftk::ScopedOGLContext glctx( const_cast<QGLContext*>(m_QGLWidget->context()) );
 
   #if 0
     dumpNodeInfo( "updateDataNode()", node );
@@ -2604,7 +2605,7 @@ void VLSceneView::clearScene()
     return;
   }
 
-  ScopedOpenGLContext glctx(m_QGLWidget);
+  niftk::ScopedOGLContext glctx( const_cast<QGLContext*>(m_QGLWidget->context()) );
 
   // Shut down VLMappers
   for ( DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.begin(); it != m_DataNodeVLMapperMap.end(); ++it ) {
