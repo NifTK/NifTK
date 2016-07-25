@@ -524,6 +524,20 @@ public:
     setMouseTracking(true);
     setAutoBufferSwap(false);
     setAcceptDrops(false);
+
+    // Explicitly request OpenGL 3.2 Compatibility profile.
+    QGLContext* glctx = new QGLContext(this->context()->format(), this);
+    QGLFormat fmt = this->context()->format();
+    fmt.setDoubleBuffer( true );
+    #if QT_VERSION >= 0x040700
+      fmt.setProfile(QGLFormat::CompatibilityProfile);
+      fmt.setVersion(3, 2);
+    #endif
+    glctx->setFormat(fmt);
+    glctx->create(NULL);
+    this->setContext(glctx);
+    makeCurrent();
+    MITK_INFO << "VLQtWidget: created OpenGL context version: " << glGetString(GL_VERSION) << "\n";
   }
 
   void setVLSceneView(VLSceneView* vl_view) { m_VLSceneView = vl_view; }
