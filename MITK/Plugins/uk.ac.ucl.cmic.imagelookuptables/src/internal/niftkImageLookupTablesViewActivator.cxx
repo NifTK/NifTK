@@ -12,13 +12,14 @@
 
 =============================================================================*/
 
-#include "ImageLookupTablesViewActivator.h"
-#include "ImageLookupTablesView.h"
+#include "niftkImageLookupTablesViewActivator.h"
+
 #include <QtPlugin>
 
-#include "QmitkImageLookupTablesPreferencePage.h"
+#include "niftkImageLookupTablesView.h"
+#include "niftkImageLookupTablesPreferencePage.h"
 
-namespace mitk 
+namespace niftk
 {
 
 ImageLookupTablesViewActivator* ImageLookupTablesViewActivator::s_Inst = 0;
@@ -41,7 +42,7 @@ ImageLookupTablesViewActivator::~ImageLookupTablesViewActivator()
 void ImageLookupTablesViewActivator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(ImageLookupTablesView, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkImageLookupTablesPreferencePage, context);
+  BERRY_REGISTER_EXTENSION_CLASS(ImageLookupTablesPreferencePage, context);
   m_Context = context;
 }
 
@@ -68,21 +69,21 @@ ctkPluginContext* ImageLookupTablesViewActivator::GetPluginContext() const
 
 
 //-----------------------------------------------------------------------------
-QmitkLookupTableProviderService* ImageLookupTablesViewActivator::GetQmitkLookupTableProviderService()
+LookupTableProviderService* ImageLookupTablesViewActivator::GetLookupTableProviderService()
 {
   ctkPluginContext* context = ImageLookupTablesViewActivator::GetDefault()->GetPluginContext();
-  ctkServiceReference serviceRef = context->getServiceReference<QmitkLookupTableProviderService>();
-  QmitkLookupTableProviderService* lutService = context->getService<QmitkLookupTableProviderService>(serviceRef);
+  ctkServiceReference serviceRef = context->getServiceReference<LookupTableProviderService>();
+  LookupTableProviderService* lutService = context->getService<LookupTableProviderService>(serviceRef);
   
   if (lutService == NULL)
   {
-    mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
+    mitkThrow() << "Failed to find niftk::LookupTableProviderService." << std::endl;
   }
 
   return lutService;
 }
 
-} // end namespace
+}
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_imagelookuptables, mitk::ImageLookupTablesViewActivator)

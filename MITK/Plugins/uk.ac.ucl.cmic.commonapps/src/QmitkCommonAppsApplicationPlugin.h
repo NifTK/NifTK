@@ -16,16 +16,20 @@
 #define QmitkCommonAppsApplicationPlugin_h
 
 #include <uk_ac_ucl_cmic_commonapps_Export.h>
+
 #include <ctkServiceTracker.h>
-#include <berryAbstractUICTKPlugin.h>
-#include <berryIPreferences.h>
-#include <mitkIDataStorageService.h>
-#include <QmitkLookupTableProviderService.h>
 
 #include <itkImage.h>
 
 #include <QObject>
 #include <QString>
+
+#include <berryAbstractUICTKPlugin.h>
+#include <berryIPreferences.h>
+#include <mitkIDataStorageService.h>
+
+#include <niftkLookupTableProviderService.h>
+
 
 namespace mitk {
   class DataNode;
@@ -118,7 +122,7 @@ private:
   void NodeRemovedProxy(const mitk::DataNode *node);
 
   /// \brief Returns the lookup table provider service.
-  QmitkLookupTableProviderService* GetLookupTableProvider();
+  niftk::LookupTableProviderService* GetLookupTableProvider();
 
   /// \brief Private method that retrieves the DataStorage from the m_DataStorageServiceTracker
   const mitk::DataStorage* GetDataStorage();

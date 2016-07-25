@@ -39,6 +39,6 @@ private:
   virtual PNMWriterService * Clone() const override;
 };
 
-} // end of namespace mitk
+}
 
 #endif

@@ -12,21 +12,26 @@
 
 =============================================================================*/
 
-#ifndef QmitkLookupTableContainer_h
-#define QmitkLookupTableContainer_h
+#ifndef niftkLookupTableContainer_h
+#define niftkLookupTableContainer_h
 
-#include <mitkBaseData.h>
 #include <niftkCoreExports.h>
 
-#include <QString>
 #include <vtkLookupTable.h>
 
+#include <mitkBaseData.h>
+
+#include <QString>
+
+namespace niftk
+{
+
 /**
- * \class QmitkLookupTableContainer
+ * \class LookupTableContainer
  * \brief Class to contain a vtkLookupTable and to store meta-data attributes
  * like display name, which order to display it in in GUI, etc.
  */
-class NIFTKCORE_EXPORT QmitkLookupTableContainer : public mitk::BaseData
+class NIFTKCORE_EXPORT LookupTableContainer : public mitk::BaseData
 {
 
 public:
@@ -34,17 +39,17 @@ public:
   typedef std::pair<int, QString> LabelType;
   typedef std::vector<LabelType> LabelListType;
 
-  mitkClassMacro(QmitkLookupTableContainer, mitk::BaseData);
+  mitkClassMacro(LookupTableContainer, mitk::BaseData);
 
 
   /** Constructor that takes a lookup table. */
-  QmitkLookupTableContainer(const vtkLookupTable* lut);
+  LookupTableContainer(const vtkLookupTable* lut);
 
   /** Constructor that takes a lookup table and a set of labels*/
-  QmitkLookupTableContainer(const vtkLookupTable* lut, const LabelListType& labels);
+  LookupTableContainer(const vtkLookupTable* lut, const LabelListType& labels);
 
   /** Destructor. */
-  virtual ~QmitkLookupTableContainer();
+  virtual ~LookupTableContainer();
 
   /** Get the vtkLookupTable. */
   const vtkLookupTable* GetLookupTable() const { return m_LookupTable; }
@@ -85,10 +90,10 @@ public:
 private:
 
   /** Deliberately prohibit copy constructor. */
-  QmitkLookupTableContainer(const QmitkLookupTableContainer&) {}
+  LookupTableContainer(const LookupTableContainer&) {}
 
   /** Deliberately prohibit assignment. */
-  void operator=(const QmitkLookupTableContainer&) {}
+  void operator=(const LookupTableContainer&) {}
 
   /** This is it! */
   const vtkLookupTable* m_LookupTable;
@@ -106,5 +111,7 @@ private:
   LabelListType m_Labels;
 
 };
+
+}
 
 #endif

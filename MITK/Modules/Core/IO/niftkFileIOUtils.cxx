@@ -115,7 +115,7 @@ bool Load3DPointFromFile(const std::string& fileName, mitk::Point3D& point)
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkMatrix4x4> LoadVtkMatrix4x4FromFile(const std::string& fileName)
 {
-  return niftk::LoadMatrix4x4FromFile(fileName, true);
+  return LoadMatrix4x4FromFile(fileName, true);
 }
 
 
@@ -125,7 +125,7 @@ bool SaveVtkMatrix4x4ToFile (const std::string& fileName, const vtkMatrix4x4& ma
   bool isSuccessful = false;
   if (fileName.length() > 0)
   {
-    isSuccessful = niftk::SaveMatrix4x4ToFile(fileName, matrix);
+    isSuccessful = SaveMatrix4x4ToFile(fileName, matrix);
   }
   return isSuccessful;
 }
@@ -136,7 +136,7 @@ std::vector<mitk::PointSet::Pointer> LoadPointSetsFromDirectory(const std::strin
 {
   std::vector<mitk::PointSet::Pointer> pointSets;
 
-  std::vector<std::string> files = niftk::GetFilesInDirectory(fullDirectoryName);
+  std::vector<std::string> files = GetFilesInDirectory(fullDirectoryName);
   std::sort(files.begin(), files.end());
 
   if (files.size() > 0)
@@ -167,7 +167,7 @@ void LoadTimeStampData(const std::string& fileName, std::set<unsigned long long>
 {
   if (fileName.size() > 0)
   {
-    if (!niftk::FileExists(fileName))
+    if (!FileExists(fileName))
     {
       mitkThrow() << "File:" << fileName << ", doesn't exist";
     }

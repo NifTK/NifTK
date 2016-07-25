@@ -582,7 +582,7 @@ void QmitkCommonAppsApplicationPlugin::OnLookupTablePropertyChanged(const itk::O
         if (gotLowest && gotHighest && gotIndex)
         {
           // Get LUT from Micro Service.
-          QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
+          niftk::LookupTableProviderService *lutService = this->GetLookupTableProvider();
           niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
           node->SetProperty("LookupTable", mitkLUTProperty);
         }
@@ -593,15 +593,15 @@ void QmitkCommonAppsApplicationPlugin::OnLookupTablePropertyChanged(const itk::O
 
 
 //-----------------------------------------------------------------------------
-QmitkLookupTableProviderService* QmitkCommonAppsApplicationPlugin::GetLookupTableProvider()
+niftk::LookupTableProviderService* QmitkCommonAppsApplicationPlugin::GetLookupTableProvider()
 {
   us::ModuleContext* context = us::GetModuleContext();
-  us::ServiceReference<QmitkLookupTableProviderService> ref = context->GetServiceReference<QmitkLookupTableProviderService>();
-  QmitkLookupTableProviderService* lutService = context->GetService<QmitkLookupTableProviderService>(ref);
+  us::ServiceReference<niftk::LookupTableProviderService> ref = context->GetServiceReference<niftk::LookupTableProviderService>();
+  niftk::LookupTableProviderService* lutService = context->GetService<niftk::LookupTableProviderService>(ref);
 
   if (lutService == NULL)
   {
-    mitkThrow() << "Failed to find QmitkLookupTableProviderService." << std::endl;
+    mitkThrow() << "Failed to find niftk::LookupTableProviderService." << std::endl;
   }
 
   return lutService;
@@ -626,7 +626,7 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
         QString defaultName = "grey";
 
         // Get LUT from Micro Service.
-        QmitkLookupTableProviderService *lutService = this->GetLookupTableProvider();
+        niftk::LookupTableProviderService* lutService = this->GetLookupTableProvider();
         niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(defaultName, lowestOpacity, highestOpacity);
 
         node->ReplaceProperty("LookupTable", mitkLUTProperty);

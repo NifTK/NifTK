@@ -13,48 +13,54 @@
 =============================================================================*/
 
 #include "niftkLabelMapWriter.h"
-#include "niftkCoreIOMimeTypes.h"
+
+#include <fstream>
+
+#include <vtkSmartPointer.h>
 
 #include <mitkAbstractFileWriter.h>
 #include <mitkCustomMimeType.h>
 #include <mitkLogMacros.h>
 #include <mitkCommon.h>
-#include <vtkSmartPointer.h>
-#include <QmitkLookupTableContainer.h>
 
-#include <fstream>
+#include "niftkCoreIOMimeTypes.h"
+#include "niftkLookupTableContainer.h"
+
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-niftk::LabelMapWriter::LabelMapWriter()
-: mitk::AbstractFileWriter(QmitkLookupTableContainer::GetStaticNameOfClass(),
-                           mitk::CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()),
-                           niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
+LabelMapWriter::LabelMapWriter()
+: mitk::AbstractFileWriter(LookupTableContainer::GetStaticNameOfClass(),
+                           mitk::CustomMimeType(CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()),
+                           CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
 {
   RegisterService();
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::LabelMapWriter::LabelMapWriter(const niftk::LabelMapWriter & other)
+LabelMapWriter::LabelMapWriter(const LabelMapWriter & other)
 : mitk::AbstractFileWriter(other)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::LabelMapWriter::~LabelMapWriter()
+LabelMapWriter::~LabelMapWriter()
 {
 }
 
 //-----------------------------------------------------------------------------
-niftk::LabelMapWriter * niftk::LabelMapWriter::Clone() const
+LabelMapWriter * LabelMapWriter::Clone() const
 {
-  return new niftk::LabelMapWriter(*this);
+  return new LabelMapWriter(*this);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftk::LabelMapWriter::Write()
+void LabelMapWriter::Write()
 {
 
   std::ostream* out;
@@ -76,8 +82,8 @@ void niftk::LabelMapWriter::Write()
   }
   
   std::string outputLocation;
-  QmitkLookupTableContainer::ConstPointer lutContainer
-    = dynamic_cast<const QmitkLookupTableContainer*>(this->GetInput());
+  LookupTableContainer::ConstPointer lutContainer
+    = dynamic_cast<const LookupTableContainer*>(this->GetInput());
 
   try
   {
@@ -107,7 +113,7 @@ void niftk::LabelMapWriter::Write()
 
 
 //-----------------------------------------------------------------------------
-void niftk::LabelMapWriter::WriteLabelMap(
+void LabelMapWriter::WriteLabelMap(
   LabeledLookupTableProperty::LabelListType labels,
   vtkLookupTable* lookupTable) const
 {
@@ -146,4 +152,6 @@ void niftk::LabelMapWriter::WriteLabelMap(
 
   outfile.flush();
   outfile.close();
+}
+
 }

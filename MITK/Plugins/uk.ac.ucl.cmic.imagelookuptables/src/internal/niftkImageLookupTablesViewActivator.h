@@ -12,13 +12,15 @@
 
 =============================================================================*/
 
-#ifndef ImageLookupTablesViewActivator_h
-#define ImageLookupTablesViewActivator_h
+#ifndef niftkImageLookupTablesViewActivator_h
+#define niftkImageLookupTablesViewActivator_h
 
 #include <ctkPluginActivator.h>
-#include <QmitkLookupTableProviderService.h>
 
-namespace mitk {
+#include <niftkLookupTableProviderService.h>
+
+namespace niftk
+{
 
 /**
  * \class ImageLookupTablesViewActivator
@@ -41,7 +43,7 @@ public:
 
   static ImageLookupTablesViewActivator* GetDefault();
   ctkPluginContext* GetPluginContext() const;
-  static QmitkLookupTableProviderService* GetQmitkLookupTableProviderService();
+  static LookupTableProviderService* GetLookupTableProviderService();
 
   void start(ctkPluginContext* context) override;
   void stop(ctkPluginContext* context) override;

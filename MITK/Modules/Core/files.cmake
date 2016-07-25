@@ -40,9 +40,9 @@ set(CPP_FILES
   DataManagement/niftkDataNodeVisibilityTracker.cxx
   DataManagement/niftkDataStorageListener.cxx
   DataManagement/niftkDataStorageUtils.cxx
-  LookupTables/QmitkLookupTableContainer.cxx
-  LookupTables/QmitkLookupTableSaxHandler.cxx
-  LookupTables/QmitkLookupTableManager.cxx
+  LookupTables/niftkLookupTableContainer.cxx
+  LookupTables/niftkLookupTableSaxHandler.cxx
+  LookupTables/niftkLookupTableManager.cxx
   LookupTables/niftkVtkLookupTableUtils.cxx
   Rendering/niftkCoordinateAxesVtkMapper3D.cxx
   Rendering/niftkCustomVTKAxesActor.cxx

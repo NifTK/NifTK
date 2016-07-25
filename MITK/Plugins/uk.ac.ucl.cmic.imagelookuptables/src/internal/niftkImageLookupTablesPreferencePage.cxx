@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "QmitkImageLookupTablesPreferencePage.h"
+#include "niftkImageLookupTablesPreferencePage.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -22,10 +22,14 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const QString QmitkImageLookupTablesPreferencePage::PRECISION_NAME("precision");
+
+namespace niftk
+{
+
+const QString ImageLookupTablesPreferencePage::PRECISION_NAME("precision");
 
 //-----------------------------------------------------------------------------
-QmitkImageLookupTablesPreferencePage::QmitkImageLookupTablesPreferencePage()
+ImageLookupTablesPreferencePage::ImageLookupTablesPreferencePage()
 : m_MainControl(0)
 , m_Precision(0)
 , m_Initializing(false)
@@ -35,7 +39,7 @@ QmitkImageLookupTablesPreferencePage::QmitkImageLookupTablesPreferencePage()
 
 
 //-----------------------------------------------------------------------------
-QmitkImageLookupTablesPreferencePage::QmitkImageLookupTablesPreferencePage(const QmitkImageLookupTablesPreferencePage& other)
+ImageLookupTablesPreferencePage::ImageLookupTablesPreferencePage(const ImageLookupTablesPreferencePage& other)
 : berry::Object(), QObject()
 {
   Q_UNUSED(other)
@@ -44,21 +48,21 @@ QmitkImageLookupTablesPreferencePage::QmitkImageLookupTablesPreferencePage(const
 
 
 //-----------------------------------------------------------------------------
-QmitkImageLookupTablesPreferencePage::~QmitkImageLookupTablesPreferencePage()
+ImageLookupTablesPreferencePage::~ImageLookupTablesPreferencePage()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkImageLookupTablesPreferencePage::Init(berry::IWorkbench::Pointer )
+void ImageLookupTablesPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkImageLookupTablesPreferencePage::CreateQtControl(QWidget* parent)
+void ImageLookupTablesPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
@@ -85,14 +89,14 @@ void QmitkImageLookupTablesPreferencePage::CreateQtControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-QWidget* QmitkImageLookupTablesPreferencePage::GetQtControl() const
+QWidget* ImageLookupTablesPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkImageLookupTablesPreferencePage::PerformOk()
+bool ImageLookupTablesPreferencePage::PerformOk()
 {
   m_ImageLookupTablesPreferencesNode->PutInt(PRECISION_NAME, m_Precision->text().toInt());
   return true;
@@ -100,14 +104,15 @@ bool QmitkImageLookupTablesPreferencePage::PerformOk()
 
 
 //-----------------------------------------------------------------------------
-void QmitkImageLookupTablesPreferencePage::PerformCancel()
+void ImageLookupTablesPreferencePage::PerformCancel()
 {
-
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkImageLookupTablesPreferencePage::Update()
+void ImageLookupTablesPreferencePage::Update()
 {
   m_Precision->setValue(m_ImageLookupTablesPreferencesNode->GetInt(PRECISION_NAME, 2));
+}
+
 }

@@ -12,20 +12,26 @@
 
 =============================================================================*/
 
-#ifndef QmitkLookupTableSaxHandler_h
-#define QmitkLookupTableSaxHandler_h
+#ifndef niftkLookupTableSaxHandler_h
+#define niftkLookupTableSaxHandler_h
 
 #include <niftkCoreExports.h>
+
 #include <vector>
-#include <QString>
+
 #include <QColor>
+#include <QString>
 #include <QXmlDefaultHandler>
 
 class vtkLookupTable;
-class QmitkLookupTableContainer;
+
+namespace niftk
+{
+
+class LookupTableContainer;
 
 /**
- * \class QmitkLookupTableSaxHandler
+ * \class LookupTableSaxHandler
  * \brief SAX handler to load lookup tables into LookupTableContainer objects.
  *
  * This class is not designed to be re-used. For each lookup table,
@@ -36,16 +42,16 @@ class QmitkLookupTableContainer;
  * This class is not thread safe, so you should load lookup tables
  * one at a time, in a single thread.
  */
-class NIFTKCORE_EXPORT QmitkLookupTableSaxHandler : public QXmlDefaultHandler
+class NIFTKCORE_EXPORT LookupTableSaxHandler : public QXmlDefaultHandler
 {
 
 public:
 
   /** No-arg constructor. */
-  QmitkLookupTableSaxHandler();
+  LookupTableSaxHandler();
 
   /** Returns the internal lookup table, you should not call this until the parsing has finished sucessfully. */
-  QmitkLookupTableContainer* GetLookupTableContainer();
+  LookupTableContainer* GetLookupTableContainer();
 
   /** Methods that we must implement for the handler. */
   bool startElement(const QString& namespaceURI,
@@ -82,5 +88,7 @@ private:
   std::vector<QColor> m_List;
 
 };
+
+}
 
 #endif

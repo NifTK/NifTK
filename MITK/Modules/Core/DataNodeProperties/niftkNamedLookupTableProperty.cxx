@@ -27,7 +27,7 @@ NamedLookupTableProperty::NamedLookupTableProperty()
 
 
 //-----------------------------------------------------------------------------
-NamedLookupTableProperty::NamedLookupTableProperty(const niftk::NamedLookupTableProperty& other)
+NamedLookupTableProperty::NamedLookupTableProperty(const NamedLookupTableProperty& other)
 : Superclass(other)
 , m_Name(other.m_Name)
 , m_IsScaled(other.m_IsScaled)

@@ -12,40 +12,46 @@
 
 =============================================================================*/
 
-#ifndef QmitkLookupTableManager_h
-#define QmitkLookupTableManager_h
+#ifndef niftkLookupTableManager_h
+#define niftkLookupTableManager_h
 
 #include <niftkCoreExports.h>
+
 #include <unordered_map>
 #include <vector>
+
 #include <QString>
 
+
+class vtkLookupTable;
+
+namespace niftk
+{
+
+class LookupTableContainer;
+
 /**
- * \class QmitkLookupTableManager
- * \brief Class to manage access to QmitkLookupTableContainers.
+ * \class LookupTableManager
+ * \brief Class to manage access to LookupTableContainers.
  *
- * Each QmitkLookupTableContainers contains 1 vtkLookupTable.
- * These are loaded from disc when the QmitkLookupTableManager is created.
+ * Each LookupTableContainers contains 1 vtkLookupTable.
+ * These are loaded from disc when the LookupTableManager is created.
  * This manager class takes care of providing copies of the
  * lookup tables. So, when the client calls CloneLookupTable(),
  * the client owns the provided vtkLookupTable, and should delete it when done.
  */
-
-class QmitkLookupTableContainer;
-class vtkLookupTable;
-
-class NIFTKCORE_EXPORT QmitkLookupTableManager
+class NIFTKCORE_EXPORT LookupTableManager
 {
 
 public:
 
-  typedef std::unordered_map<std::string, const QmitkLookupTableContainer*> LookupTableMapType;
+  typedef std::unordered_map<std::string, const LookupTableContainer*> LookupTableMapType;
 
   /** No-arg constructor. */
-  QmitkLookupTableManager();
+  LookupTableManager();
 
   /** Destructor, to get rid of all lookup tables. */
-  virtual ~QmitkLookupTableManager();
+  virtual ~LookupTableManager();
 
   /**
    * Gets the total number of lookup tables loaded.
@@ -56,7 +62,7 @@ public:
    * Returns a pointer to the nth lookup table container in the list, or NULL
    * if index < 0, or index >= GetNumberOfLookupTables().
    */
-  const QmitkLookupTableContainer* GetLookupTableContainer(const QString& name);
+  const LookupTableContainer* GetLookupTableContainer(const QString& name);
 
   /**
    * \brief Returns the list of names in the map.
@@ -66,12 +72,12 @@ public:
   /**
   * \brief Add the given LookupTableContainer to the set of containers
   */
-  void AddLookupTableContainer(const QmitkLookupTableContainer* container);
+  void AddLookupTableContainer(const LookupTableContainer* container);
 
   /**
   * \brief Replace the LookupTableContainer with name with the given LookupTableContainer
   */
-  void ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& name);
+  void ReplaceLookupTableContainer(const LookupTableContainer* container, const QString& name);
 
   /** Checks that name exists within the containers map. */
   bool CheckName(const QString& name);
@@ -82,5 +88,7 @@ private:
   LookupTableMapType m_Containers;
 
 };
+
+}
 
 #endif

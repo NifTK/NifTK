@@ -22,7 +22,7 @@
 #include <QColor>
 
 /**
- * \file vtkLookupTableUtils.h
+ * \file niftkVtkLookupTableUtils.h
  * \brief General functions for altering vtkLookupTables
  */
 

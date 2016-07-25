@@ -29,14 +29,14 @@ namespace niftk
  * \brief Provides a property so that each value/color has an associated name.
  * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
  */
-class NIFTKCORE_EXPORT LabeledLookupTableProperty : public niftk::NamedLookupTableProperty
+class NIFTKCORE_EXPORT LabeledLookupTableProperty : public NamedLookupTableProperty
 {
 public:
 
   typedef std::pair<int, QString> LabelType;
   typedef std::vector<LabelType> LabelListType;
 
-  mitkClassMacro(LabeledLookupTableProperty, niftk::NamedLookupTableProperty);
+  mitkClassMacro(LabeledLookupTableProperty, NamedLookupTableProperty);
   itkNewMacro(LabeledLookupTableProperty);
   mitkNewMacro3Param(LabeledLookupTableProperty,
                      const std::string&,

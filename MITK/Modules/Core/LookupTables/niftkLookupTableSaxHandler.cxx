@@ -12,14 +12,22 @@
 
 =============================================================================*/
 
-#include "QmitkLookupTableSaxHandler.h"
-#include "QmitkLookupTableContainer.h"
+#include "niftkLookupTableSaxHandler.h"
+
 #include <QMessageBox>
+
 #include <vtkLookupTable.h>
+
 #include <mitkLogMacros.h>
 
+#include "niftkLookupTableContainer.h"
+
+
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-QmitkLookupTableSaxHandler::QmitkLookupTableSaxHandler()
+LookupTableSaxHandler::LookupTableSaxHandler()
 : m_IsPreMultiplied(false)
 , m_Order(-1)
 , m_IsScaled(true)
@@ -30,7 +38,7 @@ QmitkLookupTableSaxHandler::QmitkLookupTableSaxHandler()
 
 
 //-----------------------------------------------------------------------------
-QmitkLookupTableContainer* QmitkLookupTableSaxHandler::GetLookupTableContainer()
+LookupTableContainer* LookupTableSaxHandler::GetLookupTableContainer()
 {
   MITK_DEBUG << "GetLookupTableContainer():list.size()=" << m_List.size();
 
@@ -45,7 +53,7 @@ QmitkLookupTableContainer* QmitkLookupTableSaxHandler::GetLookupTableContainer()
     lookupTable->SetTableValue(i, c.redF(), c.greenF(), c.blueF(), c.alphaF());
   }
 
-  QmitkLookupTableContainer *lookupTableContainer = new QmitkLookupTableContainer(lookupTable);
+  LookupTableContainer *lookupTableContainer = new LookupTableContainer(lookupTable);
   lookupTableContainer->SetOrder(m_Order);
   lookupTableContainer->SetDisplayName(m_DisplayName);
   lookupTableContainer->SetIsScaled(m_IsScaled);
@@ -55,7 +63,7 @@ QmitkLookupTableContainer* QmitkLookupTableSaxHandler::GetLookupTableContainer()
 
 
 //-----------------------------------------------------------------------------
-bool QmitkLookupTableSaxHandler
+bool LookupTableSaxHandler
 ::startElement(
     const QString& /* namespaceURI */,
     const QString& /* localName */,
@@ -111,14 +119,14 @@ bool QmitkLookupTableSaxHandler
 
 
 //-----------------------------------------------------------------------------
-bool QmitkLookupTableSaxHandler::characters(const QString &str)
+bool LookupTableSaxHandler::characters(const QString &str)
 {
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkLookupTableSaxHandler
+bool LookupTableSaxHandler
 ::endElement(
     const QString & /* namespaceURI */,
     const QString & /* localName */,
@@ -130,7 +138,7 @@ bool QmitkLookupTableSaxHandler
 
 
 //-----------------------------------------------------------------------------
-bool QmitkLookupTableSaxHandler::fatalError(const QXmlParseException &exception)
+bool LookupTableSaxHandler::fatalError(const QXmlParseException &exception)
 {
   QMessageBox::warning(0, QObject::tr("SAX Handler"),
                           QObject::tr("Parse error at line %1, column %2:\n%3.")
@@ -138,4 +146,6 @@ bool QmitkLookupTableSaxHandler::fatalError(const QXmlParseException &exception)
                          .arg(exception.columnNumber())
                          .arg(exception.message()));
   return false;
+}
+
 }

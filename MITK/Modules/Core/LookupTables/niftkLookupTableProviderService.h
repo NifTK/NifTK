@@ -12,25 +12,30 @@
 
 =============================================================================*/
 
-#ifndef QmitkLookupTableProviderService_h
-#define QmitkLookupTableProviderService_h
+#ifndef niftkLookupTableProviderService_h
+#define niftkLookupTableProviderService_h
 
-#include <vector>
 #include <string>
-#include <niftkNamedLookupTableProperty.h>
-#include <niftkLabeledLookupTableProperty.h>
+#include <vector>
 
 // Microservices
 #include <mitkServiceInterface.h>
 
+#include <niftkLabeledLookupTableProperty.h>
+#include <niftkNamedLookupTableProperty.h>
+
 class vtkLookupTable;
-class QmitkLookupTableContainer;
+
+namespace niftk
+{
+
+class LookupTableContainer;
 
 /**
- * \class QmitkLookupTableProviderService
+ * \class LookupTableProviderService
  * \brief Service to provide lookup tables.
  */
-struct QmitkLookupTableProviderService
+struct LookupTableProviderService
 {
   /**
    * \brief Returns the number of lookup tables that this service knows about.
@@ -56,24 +61,24 @@ struct QmitkLookupTableProviderService
   /**
    * \brief Same as CreateLookupTable, but wraps it into a niftk::NamedLookupTableProperty.
    */
-  virtual niftk::NamedLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName,
+  virtual NamedLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName,
                                                                             float lowestValueOpacity,
                                                                             float highestValueOpacity) = 0;
 
   /**
    * \brief Similar to CreateLookupTable, but create a niftk::LabeledLookupTableProperty.
    */
-  virtual niftk::LabeledLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName) = 0;
+  virtual LabeledLookupTableProperty::Pointer CreateLookupTableProperty(const QString& lookupTableName) = 0;
 
   /**
    * \brief Add a new LookupTableContainer to the LookupTableManager.
    */
-  virtual void AddNewLookupTableContainer(const QmitkLookupTableContainer* container) = 0;
+  virtual void AddNewLookupTableContainer(const LookupTableContainer* container) = 0;
 
   /**
    * \brief Replace the LookupTableContainer of the given name with another.
    */
-  virtual void ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& lookupTableName) = 0;
+  virtual void ReplaceLookupTableContainer(const LookupTableContainer* container, const QString& lookupTableName) = 0;
 
   /**
    * \brief Returns the display names of  all table.
@@ -87,6 +92,8 @@ struct QmitkLookupTableProviderService
 
 };
 
-MITK_DECLARE_SERVICE_INTERFACE(QmitkLookupTableProviderService, "QmitkLookupTableProviderService/1.0")
+}
+
+MITK_DECLARE_SERVICE_INTERFACE(niftk::LookupTableProviderService, "LookupTableProviderService/1.0")
 
 #endif

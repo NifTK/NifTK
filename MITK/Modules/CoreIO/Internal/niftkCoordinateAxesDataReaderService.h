@@ -40,6 +40,6 @@ private:
   virtual CoordinateAxesDataReaderService* Clone() const override;
 };
 
-} // end namespace
+}
 
 #endif

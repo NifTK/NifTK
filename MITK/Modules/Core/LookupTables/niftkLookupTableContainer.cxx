@@ -12,10 +12,13 @@
 
 =============================================================================*/
 
-#include "QmitkLookupTableContainer.h"
+#include "niftkLookupTableContainer.h"
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut)
+LookupTableContainer::LookupTableContainer(const vtkLookupTable* lut)
 : m_Order(-1)
 , m_IsScaled(true)
 , m_DisplayName("None")
@@ -31,7 +34,7 @@ QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut)
 
 
 //-----------------------------------------------------------------------------
-QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut, const LabelListType& labels)
+LookupTableContainer::LookupTableContainer(const vtkLookupTable* lut, const LabelListType& labels)
 {
   vtkLookupTable *newTable = vtkLookupTable::New();
   newTable->DeepCopy(const_cast<vtkLookupTable*>(lut));
@@ -49,7 +52,7 @@ QmitkLookupTableContainer::QmitkLookupTableContainer(const vtkLookupTable* lut, 
 
 
 //-----------------------------------------------------------------------------
-QmitkLookupTableContainer::~QmitkLookupTableContainer()
+LookupTableContainer::~LookupTableContainer()
 {
   if (m_LookupTable != NULL)
   {
@@ -57,4 +60,6 @@ QmitkLookupTableContainer::~QmitkLookupTableContainer()
     nonConst->Delete();
     nonConst = NULL;
   }
+}
+
 }

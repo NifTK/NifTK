@@ -67,6 +67,6 @@ private:
 
 };
 
-} // end namespace
+}
 
 #endif

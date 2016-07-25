@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef ImageLookupTablesView_h
-#define ImageLookupTablesView_h
+#ifndef niftkImageLookupTablesView_h
+#define niftkImageLookupTablesView_h
 
 #include "ui_ImageLookupTablesViewControls.h"
 
@@ -24,8 +24,12 @@
 
 class QWidget;
 class QSlider;
-class QmitkLookupTableManager;
 class vtkLookupTable;
+
+namespace niftk
+{
+
+class LookupTableManager;
 
 /**
  * \class ImageLookupTablesView
@@ -280,5 +284,7 @@ private:
    */
   unsigned long int m_LevelWindowPropertyObserverTag;
 };
+
+}
 
 #endif

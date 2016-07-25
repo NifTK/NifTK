@@ -12,64 +12,71 @@
 
 =============================================================================*/
 
-#include "QmitkLookupTableProviderServiceImpl_p.h"
-#include "QmitkLookupTableManager.h"
-#include "QmitkLookupTableContainer.h"
+#include "niftkLookupTableProviderServiceImpl_p.h"
+
 #include <iostream>
+
 #include <vtkLookupTable.h>
+
 #include <mitkExceptionMacro.h>
 #include <mitkLookupTable.h>
 
+#include "niftkLookupTableContainer.h"
+#include "niftkLookupTableManager.h"
+
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-QmitkLookupTableProviderServiceImpl::QmitkLookupTableProviderServiceImpl()
+LookupTableProviderServiceImpl::LookupTableProviderServiceImpl()
 {
   m_Manager.reset(NULL);
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkLookupTableManager* QmitkLookupTableProviderServiceImpl::GetManager()
+LookupTableManager* LookupTableProviderServiceImpl::GetManager()
 {
   if (m_Manager.get() == NULL)
   {
-    m_Manager.reset(new QmitkLookupTableManager);
+    m_Manager.reset(new LookupTableManager);
   }
   return m_Manager.get();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkLookupTableProviderServiceImpl::~QmitkLookupTableProviderServiceImpl()
+LookupTableProviderServiceImpl::~LookupTableProviderServiceImpl()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-unsigned int QmitkLookupTableProviderServiceImpl::GetNumberOfLookupTables()
+unsigned int LookupTableProviderServiceImpl::GetNumberOfLookupTables()
 {
   return this->GetManager()->GetNumberOfLookupTables();
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkLookupTableProviderServiceImpl::CheckName(const QString& name)
+bool LookupTableProviderServiceImpl::CheckName(const QString& name)
 {
   return this->GetManager()->CheckName(name);
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<QString>QmitkLookupTableProviderServiceImpl::GetTableNames()
+std::vector<QString>LookupTableProviderServiceImpl::GetTableNames()
 {
   return this->GetManager()->GetTableNames();
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkLookupTableProviderServiceImpl::GetIsScaled(const QString& lookupTableName)
+bool LookupTableProviderServiceImpl::GetIsScaled(const QString& lookupTableName)
 {
-  const QmitkLookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableName);
+  const LookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableName);
   if (lutContainer == NULL)
   {
     mitkThrow() << "Lookup table name " << lookupTableName.toStdString().c_str() << " is invalid." << std::endl;
@@ -81,9 +88,9 @@ bool QmitkLookupTableProviderServiceImpl::GetIsScaled(const QString& lookupTable
 
 //-----------------------------------------------------------------------------
 niftk::LabeledLookupTableProperty::LabelListType
-QmitkLookupTableProviderServiceImpl::GetLabels(const QString& lookupTableName)
+LookupTableProviderServiceImpl::GetLabels(const QString& lookupTableName)
 {
-  const QmitkLookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableName);
+  const LookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableName);
   if (lutContainer == NULL)
   {
     mitkThrow() << "Lookup table name " << lookupTableName.toStdString().c_str() << " is invalid." << std::endl;
@@ -94,10 +101,10 @@ QmitkLookupTableProviderServiceImpl::GetLabels(const QString& lookupTableName)
 
 
 //-----------------------------------------------------------------------------
-vtkLookupTable* QmitkLookupTableProviderServiceImpl
+vtkLookupTable* LookupTableProviderServiceImpl
 ::CreateLookupTable(const QString& lookupTableName, float lowestValueOpacity, float highestValueOpacity)
 {
-  const QmitkLookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableName);
+  const LookupTableContainer* lutContainer = this->GetManager()->GetLookupTableContainer(lookupTableName);
   if (lutContainer == NULL)
   {
     mitkThrow() << "Lookup table name " << lookupTableName.toStdString().c_str() << " is invalid." << std::endl;
@@ -128,7 +135,7 @@ vtkLookupTable* QmitkLookupTableProviderServiceImpl
 
 //-----------------------------------------------------------------------------
 niftk::NamedLookupTableProperty::Pointer 
-QmitkLookupTableProviderServiceImpl
+LookupTableProviderServiceImpl
 ::CreateLookupTableProperty(const QString& lookupTableName, float lowestValueOpacity, float highestValueOpacity)
 {
   vtkLookupTable *vtkLUT = this->CreateLookupTable(lookupTableName, lowestValueOpacity, highestValueOpacity);
@@ -147,7 +154,7 @@ QmitkLookupTableProviderServiceImpl
 
 //-----------------------------------------------------------------------------
 niftk::LabeledLookupTableProperty::Pointer 
-QmitkLookupTableProviderServiceImpl::CreateLookupTableProperty(const QString& lookupTableName)
+LookupTableProviderServiceImpl::CreateLookupTableProperty(const QString& lookupTableName)
 {
   vtkLookupTable *vtkLUT = this->CreateLookupTable(lookupTableName, 0, 0);
 
@@ -165,27 +172,29 @@ QmitkLookupTableProviderServiceImpl::CreateLookupTableProperty(const QString& lo
 
 
 //-----------------------------------------------------------------------------
-void QmitkLookupTableProviderServiceImpl::AddNewLookupTableContainer(const QmitkLookupTableContainer* container) 
+void LookupTableProviderServiceImpl::AddNewLookupTableContainer(const LookupTableContainer* container) 
 {
-  QmitkLookupTableManager* manager = this->GetManager();
+  LookupTableManager* manager = this->GetManager();
   if (manager == NULL)
   {
     return;
   }
-  
+
   manager->AddLookupTableContainer(container);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkLookupTableProviderServiceImpl
-::ReplaceLookupTableContainer(const QmitkLookupTableContainer* container, const QString& lookupTableName) 
+void LookupTableProviderServiceImpl
+::ReplaceLookupTableContainer(const LookupTableContainer* container, const QString& lookupTableName) 
 {
-  QmitkLookupTableManager* manager = this->GetManager();
+  LookupTableManager* manager = this->GetManager();
   if (manager == NULL)
   {
     return;
   }
-  
+
   manager->ReplaceLookupTableContainer(container, container->GetDisplayName());
+}
+
 }

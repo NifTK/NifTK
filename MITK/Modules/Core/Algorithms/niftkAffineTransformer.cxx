@@ -44,13 +44,6 @@
 
 #include "niftkDataStorageUtils.h"
 
-const std::string niftk::AffineTransformer::VIEW_ID                   = "uk.ac.ucl.cmic.affinetransformview";
-const std::string niftk::AffineTransformer::INITIAL_TRANSFORM_KEY     = "niftk.initaltransform";
-const std::string niftk::AffineTransformer::INCREMENTAL_TRANSFORM_KEY = "niftk.incrementaltransform";
-const std::string niftk::AffineTransformer::PRELOADED_TRANSFORM_KEY   = "niftk.preloadedtransform";
-const std::string niftk::AffineTransformer::DISPLAYED_TRANSFORM_KEY   = "niftk.displayedtransform";
-const std::string niftk::AffineTransformer::DISPLAYED_PARAMETERS_KEY  = "niftk.displayedtransformparameters";
-
 //-----------------------------------------------------------------------------
 //              Templated ITK pipelines to perform the resampling
 //-----------------------------------------------------------------------------
@@ -237,6 +230,14 @@ void _ApplyTransformMultiChannel(itk::Image<TMultiChannelPixelType, t_Dim> *p_it
 //-----------------------------------------------------------------------------
 namespace niftk
 {
+
+const std::string AffineTransformer::VIEW_ID                   = "uk.ac.ucl.cmic.affinetransformview";
+const std::string AffineTransformer::INITIAL_TRANSFORM_KEY     = "niftk.initaltransform";
+const std::string AffineTransformer::INCREMENTAL_TRANSFORM_KEY = "niftk.incrementaltransform";
+const std::string AffineTransformer::PRELOADED_TRANSFORM_KEY   = "niftk.preloadedtransform";
+const std::string AffineTransformer::DISPLAYED_TRANSFORM_KEY   = "niftk.displayedtransform";
+const std::string AffineTransformer::DISPLAYED_PARAMETERS_KEY  = "niftk.displayedtransformparameters";
+
 
 //-----------------------------------------------------------------------------
 AffineTransformer::AffineTransformer()

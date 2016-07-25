@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkImageLookupTablesPreferencePage_h
-#define QmitkImageLookupTablesPreferencePage_h
+#ifndef niftkImageLookupTablesPreferencePage_h
+#define niftkImageLookupTablesPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
@@ -23,22 +23,25 @@ class QRadioButton;
 class QDoubleSpinBox;
 class QSpinBox;
 
+namespace niftk
+{
+
 /**
- * \class QmitkImageLookupTablesPreferencePage
+ * \class ImageLookupTablesPreferencePage
  * \brief Preferences page for this plugin, enabling choice of spin box precision.
  * \ingroup uk_ac_ucl_cmic_gui_imagelookuptables
  *
  */
-class QmitkImageLookupTablesPreferencePage : public QObject, public berry::IQtPreferencePage
+class ImageLookupTablesPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
 
-  QmitkImageLookupTablesPreferencePage();
-  QmitkImageLookupTablesPreferencePage(const QmitkImageLookupTablesPreferencePage& other);
-  ~QmitkImageLookupTablesPreferencePage();
+  ImageLookupTablesPreferencePage();
+  ImageLookupTablesPreferencePage(const ImageLookupTablesPreferencePage& other);
+  ~ImageLookupTablesPreferencePage();
 
   static const QString PRECISION_NAME;
 
@@ -72,7 +75,10 @@ protected:
   bool m_Initializing;
 
   berry::IPreferences::Pointer m_ImageLookupTablesPreferencesNode;
+
 };
+
+}
 
 #endif
 
