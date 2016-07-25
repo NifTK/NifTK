@@ -1065,7 +1065,7 @@ namespace
       primitives->GetNextCell( npts, pts );
       // mark the start of a new primitive
       if ( cell_index != 0 ) {
-// MJC        indices.push_back( vl::DrawElementsUInt::primitive_restart_index );
+        indices.push_back( vl::DrawElementsUInt::index_type(~0) );
       }
       for (vtkIdType i = 0; i < npts; ++i) {
         VIVID_CHECK( pts[i] < vl_verts->size() );
@@ -2546,7 +2546,10 @@ void VLSceneView::updateScene() {
     m_NodesToAdd.clear();
 
     // Execute scheduled updates
-    // MJC m_NodesToUpdate.size() > 0 ? openglContext()->update() : 0;
+    if (m_NodesToUpdate.size() > 0)
+    {
+      openglContext()->update();
+    }
     for ( std::set<mitk::DataNode::ConstPointer>::const_iterator it = m_NodesToUpdate.begin(); it != m_NodesToUpdate.end(); ++it)
     {
       updateDataNode(*it);
