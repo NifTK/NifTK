@@ -159,27 +159,35 @@ mitk::DataNode::Pointer NiftyCalVideoCalibrationManager::GetRightImageNode() con
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints(cv::Matx44d& transform)
 {
-  m_ModelPointsToVisualise->Clear();
-  niftk::Model3D::const_iterator iter;
-  for (iter = m_ModelPoints.begin();
-       iter != m_ModelPoints.end();
-       ++iter
-       )
+  if (m_DataStorage.IsNotNull())
   {
-    cv::Point3d p1 = (*iter).second.point;
-    cv::Matx41d p2;
-    p2(0, 0) = p1.x;
-    p2(1, 0) = p1.y;
-    p2(2, 0) = p1.z;
-    p2(3, 0) = 1;
-    cv::Matx41d p3 = transform * p2;
+    m_DataStorage->Remove(m_ModelPointsToVisualiseDataNode);
 
-    mitk::Point3D p4;
-    p4[0] = p3(0, 0);
-    p4[1] = p3(1, 0);
-    p4[2] = p3(2, 0);
+    m_ModelPointsToVisualise->Clear();
+    niftk::Model3D::const_iterator iter;
+    for (iter = m_ModelPoints.begin();
+         iter != m_ModelPoints.end();
+         ++iter
+         )
+    {
+      cv::Point3d p1 = (*iter).second.point;
+      cv::Matx41d p2;
+      p2(0, 0) = p1.x;
+      p2(1, 0) = p1.y;
+      p2(2, 0) = p1.z;
+      p2(3, 0) = 1;
+      cv::Matx41d p3 = transform * p2;
 
-    m_ModelPointsToVisualise->InsertPoint((*iter).first, p4);
+      mitk::Point3D p4;
+      p4[0] = p3(0, 0);
+      p4[1] = p3(1, 0);
+      p4[2] = p3(2, 0);
+
+      m_ModelPointsToVisualise->InsertPoint((*iter).first, p4);
+    }
+
+    m_DataStorage->Add(m_ModelPointsToVisualiseDataNode);
+
   }
 }
 
@@ -203,11 +211,6 @@ void NiftyCalVideoCalibrationManager::SetModelFileName(const std::string& fileNa
 
   cv::Matx44d id = cv::Matx44d::eye();
   this->UpdateVisualisedPoints(id);
-
-  if (m_DataStorage.IsNotNull() && !m_DataStorage->Exists(m_ModelPointsToVisualiseDataNode))
-  {
-    m_DataStorage->Add(m_ModelPointsToVisualiseDataNode);
-  }
   this->Modified();
 }
 
