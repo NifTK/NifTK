@@ -2425,6 +2425,13 @@ void VLSceneView::initEvent()
   }
 #endif
 
+  MITK_INFO << "OpenGL Context Info:\n";
+  MITK_INFO << "GL_VERSION: " << glGetString(GL_VERSION) << "\n";
+  MITK_INFO << "GL_VENDOR: " << glGetString(GL_VENDOR) << "\n";
+  MITK_INFO << "GL_RENDERER: " << glGetString(GL_RENDERER) << "\n";
+  MITK_INFO << "GL_SHADING_LANGUAGE_VERSION: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";
+  MITK_INFO << "\n";
+
   // Interface VL with Qt's resource system to load GLSL shaders.
   vl::defFileSystem()->directories().clear();
   vl::defFileSystem()->directories().push_back( new vl::QtDirectory( ":/VL/" ) );
