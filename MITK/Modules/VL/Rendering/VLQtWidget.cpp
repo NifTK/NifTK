@@ -2096,7 +2096,7 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
 VLSceneView::VLSceneView() :
   m_ScheduleTrackballAdjustView( true ),
   m_ScheduleInitScene ( true ),
-  m_RenderingInProgressGuard ( true),
+  m_RenderingInProgressGuard ( false ),
   m_QGLWidget( NULL ),
   m_OclService( 0 )
 {
