@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkIGIVLVideoOverlayWidget_h
-#define niftkIGIVLVideoOverlayWidget_h
+#ifndef niftkVLVideoOverlayWidget_h
+#define niftkVLVideoOverlayWidget_h
 
 // Note:
 // The None constant is defined by Xlib.h and it is also declared as an enum
@@ -24,7 +24,7 @@
 #undef None
 #endif
 
-#include "ui_niftkIGIVLVideoOverlayWidget.h"
+#include "ui_niftkVLVideoOverlayWidget.h"
 #include "niftkVLExports.h"
 #include <QWidget>
 #include <mitkColorProperty.h>
@@ -41,15 +41,15 @@ namespace niftk
 * \class QmitkIGIVLEditor
 * \see IGIVLEditor
 */
-class NIFTKVL_EXPORT IGIVLVideoOverlayWidget : public QWidget, public Ui_IGIVLVideoOverlayWidget
+class NIFTKVL_EXPORT VLVideoOverlayWidget : public QWidget, public Ui_VLVideoOverlayWidget
 {
 
   Q_OBJECT
 
 public:
 
-  IGIVLVideoOverlayWidget(QWidget *parent);
-  virtual ~IGIVLVideoOverlayWidget();
+  VLVideoOverlayWidget(QWidget *parent);
+  virtual ~VLVideoOverlayWidget();
 
   void SetOclResourceService(OclResourceService* oclserv);
   void SetBackgroundColour(unsigned int aabbggrr);
@@ -69,8 +69,8 @@ private slots:
 
 private:
 
-  IGIVLVideoOverlayWidget(const IGIVLVideoOverlayWidget&);  // Purposefully not implemented.
-  void operator=(const IGIVLVideoOverlayWidget&);  // Purposefully not implemented.
+  VLVideoOverlayWidget(const VLVideoOverlayWidget&);  // Purposefully not implemented.
+  void operator=(const VLVideoOverlayWidget&);  // Purposefully not implemented.
 
   /**
    * \brief Utility method to deregister data storage listeners.

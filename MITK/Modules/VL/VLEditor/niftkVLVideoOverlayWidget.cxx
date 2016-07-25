@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkIGIVLVideoOverlayWidget.h"
+#include "niftkVLVideoOverlayWidget.h"
 #include <VLQtWidget.h>
 #include <niftkSharedOGLContext.h>
 #include <mitkNodePredicateDataType.h>
@@ -23,7 +23,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIVLVideoOverlayWidget::IGIVLVideoOverlayWidget(QWidget * /*parent*/)
+VLVideoOverlayWidget::VLVideoOverlayWidget(QWidget * /*parent*/)
 : m_HorizontalLayout(nullptr)
 , m_OverlayViewers(nullptr)
 , m_LeftOverlayViewer(nullptr)
@@ -37,18 +37,18 @@ IGIVLVideoOverlayWidget::IGIVLVideoOverlayWidget(QWidget * /*parent*/)
   m_HorizontalLayout = new QHBoxLayout(m_OverlayViewers);
   m_HorizontalLayout->setContentsMargins(0, 0, 0, 0);
   m_LeftOverlayViewer = new VLQtWidget(m_OverlayViewers, niftk::SharedOGLContext::GetShareWidget());
-  m_LeftOverlayViewer->setObjectName("IGIVLVideoOverlayWidget::m_LeftOverlayViewer");
+  m_LeftOverlayViewer->setObjectName("VLVideoOverlayWidget::m_LeftOverlayViewer");
   m_HorizontalLayout->addWidget(m_LeftOverlayViewer);
   m_RightOverlayViewer = new VLQtWidget(m_OverlayViewers, niftk::SharedOGLContext::GetShareWidget());
-  m_RightOverlayViewer->setObjectName("IGIVLVideoOverlayWidget::m_RightOverlayViewer");
+  m_RightOverlayViewer->setObjectName("VLVideoOverlayWidget::m_RightOverlayViewer");
   m_HorizontalLayout->addWidget(m_RightOverlayViewer);
   m_TrackedViewer = new VLQtWidget(m_OverlayViewers, niftk::SharedOGLContext::GetShareWidget());
-  m_TrackedViewer->setObjectName("IGIVLVideoOverlayWidget::m_TrackedViewer");
+  m_TrackedViewer->setObjectName("VLVideoOverlayWidget::m_TrackedViewer");
   m_HorizontalLayout->addWidget(m_TrackedViewer);
 
   m_Splitter->addWidget(m_OverlayViewers);
   m_3DViewer = new VLQtWidget(m_Splitter, niftk::SharedOGLContext::GetShareWidget());
-  m_3DViewer->setObjectName("IGIVLVideoOverlayWidget::m_3DViewer");
+  m_3DViewer->setObjectName("VLVideoOverlayWidget::m_3DViewer");
   m_Splitter->addWidget(m_3DViewer);
 
   m_OpacitySlider->setMinimum(0);
@@ -86,14 +86,14 @@ IGIVLVideoOverlayWidget::IGIVLVideoOverlayWidget(QWidget * /*parent*/)
 
 
 //-----------------------------------------------------------------------------
-IGIVLVideoOverlayWidget::~IGIVLVideoOverlayWidget()
+VLVideoOverlayWidget::~VLVideoOverlayWidget()
 {
   this->DeRegisterDataStorageListeners();
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::SetBackgroundColour(unsigned int aabbggrr)
+void VLVideoOverlayWidget::SetBackgroundColour(unsigned int aabbggrr)
 {
   float   r = (aabbggrr & 0xFF) / 255.0f;
   float   g = ((aabbggrr & 0xFF00) >> 8) / 255.0f;
@@ -106,7 +106,7 @@ void IGIVLVideoOverlayWidget::SetBackgroundColour(unsigned int aabbggrr)
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::SetOclResourceService(OclResourceService* oclserv)
+void VLVideoOverlayWidget::SetOclResourceService(OclResourceService* oclserv)
 {
   m_LeftOverlayViewer->vlSceneView()->setOclResourceService(oclserv);
   m_RightOverlayViewer->vlSceneView()->setOclResourceService(oclserv);
@@ -116,19 +116,19 @@ void IGIVLVideoOverlayWidget::SetOclResourceService(OclResourceService* oclserv)
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::DeRegisterDataStorageListeners()
+void VLVideoOverlayWidget::DeRegisterDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->ChangedNodeEvent.RemoveListener
-      (mitk::MessageDelegate1<IGIVLVideoOverlayWidget, const mitk::DataNode*>
-      (this, &IGIVLVideoOverlayWidget::NodeChanged ) );
+      (mitk::MessageDelegate1<VLVideoOverlayWidget, const mitk::DataNode*>
+      (this, &VLVideoOverlayWidget::NodeChanged ) );
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::OnLeftOverlayCheckBoxChecked(bool checked)
+void VLVideoOverlayWidget::OnLeftOverlayCheckBoxChecked(bool checked)
 {
   m_LeftOverlayViewer->setVisible(checked);
   m_OverlayViewers->setVisible(   m_LeftImageCheckBox->isChecked()
@@ -138,7 +138,7 @@ void IGIVLVideoOverlayWidget::OnLeftOverlayCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::OnRightOverlayCheckBoxChecked(bool checked)
+void VLVideoOverlayWidget::OnRightOverlayCheckBoxChecked(bool checked)
 {
   m_RightOverlayViewer->setVisible(checked);
   m_OverlayViewers->setVisible(   m_LeftImageCheckBox->isChecked()
@@ -148,14 +148,14 @@ void IGIVLVideoOverlayWidget::OnRightOverlayCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::On3DViewerCheckBoxChecked(bool checked)
+void VLVideoOverlayWidget::On3DViewerCheckBoxChecked(bool checked)
 {
   m_3DViewer->setVisible(checked);
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::OnTrackedViewerCheckBoxChecked(bool checked)
+void VLVideoOverlayWidget::OnTrackedViewerCheckBoxChecked(bool checked)
 {
   m_TrackedViewer->setVisible(checked);
   m_OverlayViewers->setVisible(   m_LeftImageCheckBox->isChecked()
@@ -165,14 +165,14 @@ void IGIVLVideoOverlayWidget::OnTrackedViewerCheckBoxChecked(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::OnOpacitySliderMoved(int value)
+void VLVideoOverlayWidget::OnOpacitySliderMoved(int value)
 {
   MITK_WARN << "Not implemented yet.";
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
+void VLVideoOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
 {
   if (node != nullptr)
   {
@@ -183,7 +183,7 @@ void IGIVLVideoOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::OnRightImageSelected(const mitk::DataNode* node)
+void VLVideoOverlayWidget::OnRightImageSelected(const mitk::DataNode* node)
 {
   if (node != nullptr)
   {
@@ -193,7 +193,7 @@ void IGIVLVideoOverlayWidget::OnRightImageSelected(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::OnTransformSelected(const mitk::DataNode* node)
+void VLVideoOverlayWidget::OnTransformSelected(const mitk::DataNode* node)
 {
   if (node != nullptr)
   {
@@ -205,7 +205,7 @@ void IGIVLVideoOverlayWidget::OnTransformSelected(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
+void VLVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
 {
   if (m_DataStorage.IsNotNull() && m_DataStorage != storage)
   {
@@ -217,8 +217,8 @@ void IGIVLVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->ChangedNodeEvent.AddListener
-      (mitk::MessageDelegate1<IGIVLVideoOverlayWidget, const mitk::DataNode*>
-      (this, &IGIVLVideoOverlayWidget::NodeChanged ) );
+      (mitk::MessageDelegate1<VLVideoOverlayWidget, const mitk::DataNode*>
+      (this, &VLVideoOverlayWidget::NodeChanged ) );
   }
 
   m_3DViewer->vlSceneView()->setDataStorage(storage);
@@ -261,7 +261,7 @@ void IGIVLVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
 
 
 //-----------------------------------------------------------------------------
-void IGIVLVideoOverlayWidget::NodeChanged(const mitk::DataNode* node)
+void VLVideoOverlayWidget::NodeChanged(const mitk::DataNode* node)
 {
 }
 

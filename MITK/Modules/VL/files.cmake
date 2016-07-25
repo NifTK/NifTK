@@ -16,18 +16,18 @@ set(CPP_FILES
   Rendering/VLQtWidget.cpp
   Rendering/OclTriangleSorter.cxx
   Rendering/TrackballManipulator.cxx
-  VLEditor/niftkIGIVLVideoOverlayWidget.cxx
+  VLEditor/niftkVLVideoOverlayWidget.cxx
   VLEditor/niftkVLStandardDisplayWidget.cxx
 )
 
 set(MOC_H_FILES
   Rendering/VLQtWidget.h
-  VLEditor/niftkIGIVLVideoOverlayWidget.h
+  VLEditor/niftkVLVideoOverlayWidget.h
   VLEditor/niftkVLStandardDisplayWidget.h
 )
 
 set(UI_FILES
-  VLEditor/niftkIGIVLVideoOverlayWidget.ui
+  VLEditor/niftkVLVideoOverlayWidget.ui
   VLEditor/niftkVLStandardDisplayWidget.ui
 )
 

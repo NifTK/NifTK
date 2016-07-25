@@ -22,7 +22,7 @@
 // Note:
 // This header must be included before mitkOclResourceService.h to avoid name clash between Xlib.h and Qt.
 // Both headers define a 'None' constant. The header below undefines it to avoid compile error with gcc.
-#include <niftkIGIVLVideoOverlayWidget.h>
+#include <niftkVLVideoOverlayWidget.h>
 
 #include <mitkColorProperty.h>
 #include <mitkDataStorageEditorInput.h>
@@ -48,7 +48,7 @@ public:
   IGIVLVideoOverlayEditorPrivate();
   ~IGIVLVideoOverlayEditorPrivate();
 
-  niftk::IGIVLVideoOverlayWidget* m_IGIVLVideoOverlayWidget;
+  niftk::VLVideoOverlayWidget* m_VLVideoOverlayWidget;
   std::string m_FirstBackgroundColor;
   std::string m_SecondBackgroundColor;
   QScopedPointer<berry::IPartListener> m_PartListener;
@@ -81,7 +81,7 @@ struct IGIOverlayWidgetPartListener : public berry::IPartListener
     if (partRef->GetId() == IGIVLVideoOverlayEditor::EDITOR_ID)
     {
       IGIVLVideoOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIVLVideoOverlayEditor>();
-      if (d->m_IGIVLVideoOverlayWidget == editor->GetIGIVLVideoOverlayWidget())
+      if (d->m_VLVideoOverlayWidget == editor->GetVLVideoOverlayWidget())
       {
         // Call editor to turn things off as the widget is being closed.
       }
@@ -94,7 +94,7 @@ struct IGIOverlayWidgetPartListener : public berry::IPartListener
     if (partRef->GetId() == IGIVLVideoOverlayEditor::EDITOR_ID)
     {
       IGIVLVideoOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIVLVideoOverlayEditor>();
-      if (d->m_IGIVLVideoOverlayWidget == editor->GetIGIVLVideoOverlayWidget())
+      if (d->m_VLVideoOverlayWidget == editor->GetVLVideoOverlayWidget())
       {
         // Call editor to turn things off as the widget is being hidden.
       }
@@ -107,7 +107,7 @@ struct IGIOverlayWidgetPartListener : public berry::IPartListener
     if (partRef->GetId() == IGIVLVideoOverlayEditor::EDITOR_ID)
     {
       IGIVLVideoOverlayEditor::Pointer editor = partRef->GetPart(false).Cast<IGIVLVideoOverlayEditor>();
-      if (d->m_IGIVLVideoOverlayWidget == editor->GetIGIVLVideoOverlayWidget())
+      if (d->m_VLVideoOverlayWidget == editor->GetVLVideoOverlayWidget())
       {
         // Call editor to turn things on as the widget is being made visible.
       }
@@ -123,7 +123,7 @@ private:
 
 //-----------------------------------------------------------------------------
 IGIVLVideoOverlayEditorPrivate::IGIVLVideoOverlayEditorPrivate()
-  : m_IGIVLVideoOverlayWidget(0)
+  : m_VLVideoOverlayWidget(0)
   , m_PartListener(new IGIOverlayWidgetPartListener(this))
 {}
 
@@ -149,9 +149,9 @@ IGIVLVideoOverlayEditor::~IGIVLVideoOverlayEditor()
 
 
 //-----------------------------------------------------------------------------
-niftk::IGIVLVideoOverlayWidget* IGIVLVideoOverlayEditor::GetIGIVLVideoOverlayWidget()
+niftk::VLVideoOverlayWidget* IGIVLVideoOverlayEditor::GetVLVideoOverlayWidget()
 {
-  return d->m_IGIVLVideoOverlayWidget;
+  return d->m_VLVideoOverlayWidget;
 }
 
 
@@ -259,17 +259,17 @@ bool IGIVLVideoOverlayEditor::IsLinkedNavigationEnabled() const
 //-----------------------------------------------------------------------------
 void IGIVLVideoOverlayEditor::CreateQtPartControl(QWidget* parent)
 {
-  if (d->m_IGIVLVideoOverlayWidget == 0)
+  if (d->m_VLVideoOverlayWidget == 0)
   {
 
     mitk::DataStorage::Pointer ds = this->GetDataStorage();
 
-    d->m_IGIVLVideoOverlayWidget = new niftk::IGIVLVideoOverlayWidget(parent);
-    d->m_IGIVLVideoOverlayWidget->SetDataStorage(ds);
+    d->m_VLVideoOverlayWidget = new niftk::VLVideoOverlayWidget(parent);
+    d->m_VLVideoOverlayWidget->SetDataStorage(ds);
 
     QHBoxLayout* layout = new QHBoxLayout(parent);
     layout->setContentsMargins(0,0,0,0);
-    layout->addWidget(d->m_IGIVLVideoOverlayWidget);
+    layout->addWidget(d->m_VLVideoOverlayWidget);
 
     ctkPluginContext*     context     = niftk::IGIVLVideoOverlayEditorActivator::/*GetDefault()->*/getContext();
     ctkServiceReference   serviceRef  = context->getServiceReference<OclResourceService>();
@@ -278,7 +278,7 @@ void IGIVLVideoOverlayEditor::CreateQtPartControl(QWidget* parent)
     {
       mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
     }
-    d->m_IGIVLVideoOverlayWidget->SetOclResourceService(oclService);
+    d->m_VLVideoOverlayWidget->SetOclResourceService(oclService);
 
     this->GetSite()->GetPage()->AddPartListener(d->m_PartListener.data());
 
@@ -304,10 +304,10 @@ void IGIVLVideoOverlayEditor::OnPreferencesChanged(const berry::IBerryPreference
                                                   IGIVLVideoOverlayEditorPreferencePage::DEFAULT_BACKGROUND_COLOR);
   std::string calibrationFileName = prefs->Get(IGIVLVideoOverlayEditorPreferencePage::CALIBRATION_FILE_NAME, "").toStdString();
 
-  if (d->m_IGIVLVideoOverlayWidget != 0)
+  if (d->m_VLVideoOverlayWidget != 0)
   {
-    d->m_IGIVLVideoOverlayWidget->SetBackgroundColour(backgroundColour);
-    d->m_IGIVLVideoOverlayWidget->SetEyeHandFileName(calibrationFileName);
+    d->m_VLVideoOverlayWidget->SetBackgroundColour(backgroundColour);
+    d->m_VLVideoOverlayWidget->SetEyeHandFileName(calibrationFileName);
   }
 }
 
@@ -315,9 +315,9 @@ void IGIVLVideoOverlayEditor::OnPreferencesChanged(const berry::IBerryPreference
 //-----------------------------------------------------------------------------
 void IGIVLVideoOverlayEditor::SetFocus()
 {
-  if (d->m_IGIVLVideoOverlayWidget != 0)
+  if (d->m_VLVideoOverlayWidget != 0)
   {
-    d->m_IGIVLVideoOverlayWidget->setFocus();
+    d->m_VLVideoOverlayWidget->setFocus();
   }
 }
 

@@ -22,11 +22,11 @@ namespace niftk
 {
 
 class IGIVLVideoOverlayEditorPrivate;
-class IGIVLVideoOverlayWidget;
+class VLVideoOverlayWidget;
 
 /**
  * \class IGIVLVideoOverlayEditor
- * \brief Simple editor that delegates all functionality to a niftk::IGIVLVideoOverlayWidget,
+ * \brief Simple editor that delegates all functionality to a niftk::VLVideoOverlayWidget,
  * and most methods are dummy or do-nothing implementations, as the widget is for
  * a very specific purpose and most of the mitk::ILinkedRenderWindowPart are not needed.
  * \ingroup uk_ac_ucl_cmic_IGIVLVideoOverlayeditor_internal
@@ -45,7 +45,7 @@ public:
   IGIVLVideoOverlayEditor();
   ~IGIVLVideoOverlayEditor();
 
-  niftk::IGIVLVideoOverlayWidget* GetIGIVLVideoOverlayWidget();
+  niftk::VLVideoOverlayWidget* GetVLVideoOverlayWidget();
 
   // -------------------  mitk::IRenderWindowPart  ----------------------
 

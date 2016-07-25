@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>niftk::IGIVLVideoOverlayWidget</class>
- <widget class="QWidget" name="niftk::IGIVLVideoOverlayWidget">
+ <class>niftk::VLVideoOverlayWidget</class>
+ <widget class="QWidget" name="niftk::VLVideoOverlayWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
