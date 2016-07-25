@@ -48,11 +48,6 @@ if(BUILD_VL)
       )
     endif()
 
-    set(_vl_qt_support 0)
-    if(MITK_USE_Qt4 OR MITK_USE_Qt5)
-      set(_vl_qt_support 1)
-    endif()
-
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
@@ -70,7 +65,9 @@ if(BUILD_VL)
         -DBUILD_SHARED_LIBS:BOOL=${EP_BUILD_SHARED_LIBS}
         -DBUILD_TESTING:BOOL=${EP_BUILD_TESTING}
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
-        -DVL_GUI_QT4_SUPPORT:BOOL=${_vl_qt_support}
+        -DVL_GUI_QT5_SUPPORT:BOOL=${MITK_USE_Qt5}
+        -DVL_GUI_QT5_EXAMPLES:BOOL=0
+        -DVL_GUI_QT4_SUPPORT:BOOL=${MITK_USE_Qt4}
         -DVL_GUI_QT4_EXAMPLES:BOOL=0
         -DVL_USER_DATA_OBJECT:BOOL=1
         ${additional_cmake_args}
