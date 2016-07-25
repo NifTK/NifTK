@@ -14,6 +14,7 @@
 /* raycast isosurface, transparent */
 
 #version 150 compatibility
+#extension GL_ARB_texture_rectangle : enable
 
 #pragma VL include /vivid/glsl/uniforms.glsl
 

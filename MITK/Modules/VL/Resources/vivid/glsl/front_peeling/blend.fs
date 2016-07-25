@@ -10,6 +10,7 @@
 //--------------------------------------------------------------------------------------
 
 #version 150 compatibility
+#extension GL_ARB_texture_rectangle : enable
 
 uniform sampler2DRect TempTex;
 
