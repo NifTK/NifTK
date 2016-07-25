@@ -22,7 +22,6 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QSignalMapper>
-#include <QSlider>
 #include <QXmlSimpleReader>
 
 #include <itkCommand.h>
