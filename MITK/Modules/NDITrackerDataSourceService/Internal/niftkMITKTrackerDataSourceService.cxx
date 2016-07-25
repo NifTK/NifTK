@@ -440,7 +440,12 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
     if (coords.IsNull())
     {
       coords = mitk::CoordinateAxesData::New();
+
+      // We remove and add to trigger the NodeAdded event,
+      // which is not emmitted if the node was added with no data.
+      this->GetDataStorage()->Remove(node);
       node->SetData(coords);
+      this->GetDataStorage()->Add(node);
     }
 
     vtkSmartPointer<vtkMatrix4x4> matrix = dataType->GetTrackingData();

@@ -23,7 +23,7 @@
  * The only difference to the standard vl::TrackballManipulator is handling
  * mouse-wheel events and pretending they originated from the zoom-button-press.
  */
-class NIFTKVL_EXPORT TrackballManipulator : public vl::TrackballManipulator
+class NIFTKVL_EXPORT VLTrackballManipulator : public vl::TrackballManipulator
 {
 
 public:

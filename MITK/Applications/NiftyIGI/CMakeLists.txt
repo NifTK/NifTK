@@ -77,8 +77,7 @@ endif()
 if(BUILD_VL)
   set(_include_plugins
     ${_include_plugins}
-    uk.ac.ucl.cmic.vlrenderer
-    uk.ac.ucl.cmic.igivleditor
+    uk.ac.ucl.cmic.igivlvideooverlayeditor
   )
 endif()
 
