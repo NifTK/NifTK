@@ -27,11 +27,9 @@
 #include "ui_niftkVLStandardDisplayWidget.h"
 #include "niftkVLExports.h"
 #include <QWidget>
-#include <mitkColorProperty.h>
 #include <mitkDataStorage.h>
 
 class VLQtWidget;
-class OclResourceService;
 class QHBoxLayout;
 
 namespace niftk
@@ -51,21 +49,10 @@ public:
   VLStandardDisplayWidget(QWidget *parent);
   virtual ~VLStandardDisplayWidget();
 
-  void SetOclResourceService(OclResourceService* oclserv);
   void SetBackgroundColour(unsigned int aabbggrr);
-  void SetEyeHandFileName(const std::string& fileName) {} // ToDo
   void SetDataStorage(mitk::DataStorage* storage);
 
 private slots:
-
-  void OnLeftOverlayCheckBoxChecked(bool);
-  void OnRightOverlayCheckBoxChecked(bool);
-  void On3DViewerCheckBoxChecked(bool);
-  void OnTrackedViewerCheckBoxChecked(bool);
-  void OnOpacitySliderMoved(int);
-  void OnLeftImageSelected(const mitk::DataNode* node);
-  void OnRightImageSelected(const mitk::DataNode* node);
-  void OnTransformSelected(const mitk::DataNode* node);
 
 private:
 
@@ -84,14 +71,12 @@ private:
 
   mitk::DataStorage::Pointer m_DataStorage;
 
-  QHBoxLayout* m_HorizontalLayout;
-  QWidget*     m_OverlayViewers;
-  VLQtWidget*  m_LeftOverlayViewer;
-  VLQtWidget*  m_RightOverlayViewer;
-  VLQtWidget*  m_TrackedViewer;
+  VLQtWidget*  m_AxialViewer;
+  VLQtWidget*  m_SagittalViewer;
+  VLQtWidget*  m_CoronalViewer;
   VLQtWidget*  m_3DViewer;
 };
 
 } // end namespace
 
-#endif // QmitkIGIVLEditor_h
+#endif

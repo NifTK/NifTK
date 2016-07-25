@@ -27,7 +27,6 @@
 #include <mitkColorProperty.h>
 #include <mitkDataStorageEditorInput.h>
 #include <mitkIDataStorageService.h>
-#include <mitkOclResourceService.h>
 
 #include <internal/niftkVLStandardDisplayEditorPreferencePage.h>
 #include <internal/niftkVLStandardDisplayEditorActivator.h>
@@ -270,15 +269,6 @@ void VLStandardDisplayEditor::CreateQtPartControl(QWidget* parent)
     QHBoxLayout* layout = new QHBoxLayout(parent);
     layout->setContentsMargins(0,0,0,0);
     layout->addWidget(d->m_VLStandardDisplayWidget);
-
-    ctkPluginContext*     context     = niftk::VLStandardDisplayEditorActivator::/*GetDefault()->*/getContext();
-    ctkServiceReference   serviceRef  = context->getServiceReference<OclResourceService>();
-    OclResourceService*   oclService  = context->getService<OclResourceService>(serviceRef);
-    if (oclService == NULL)
-    {
-      mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
-    }
-    d->m_VLStandardDisplayWidget->SetOclResourceService(oclService);
 
     this->GetSite()->GetPage()->AddPartListener(d->m_PartListener.data());
 

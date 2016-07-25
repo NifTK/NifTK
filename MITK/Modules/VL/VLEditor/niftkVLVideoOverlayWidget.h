@@ -27,7 +27,6 @@
 #include "ui_niftkVLVideoOverlayWidget.h"
 #include "niftkVLExports.h"
 #include <QWidget>
-#include <mitkColorProperty.h>
 #include <mitkDataStorage.h>
 
 class VLQtWidget;
@@ -94,4 +93,4 @@ private:
 
 } // end namespace
 
-#endif // QmitkIGIVLEditor_h
+#endif
