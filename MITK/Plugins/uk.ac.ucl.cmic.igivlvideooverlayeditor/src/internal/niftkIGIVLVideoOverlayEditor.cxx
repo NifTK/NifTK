@@ -27,10 +27,11 @@
 #include <mitkColorProperty.h>
 #include <mitkDataStorageEditorInput.h>
 #include <mitkIDataStorageService.h>
-#include <mitkOclResourceService.h>
 
 #include <internal/niftkIGIVLVideoOverlayEditorPreferencePage.h>
 #include <internal/niftkIGIVLVideoOverlayEditorActivator.h>
+
+#include <mitkOclResourceService.h>
 
 namespace niftk
 {
