@@ -16,11 +16,11 @@
 #include "niftkUltrasoundPointerCalibrationCostFunction.h"
 #include <niftkArunLeastSquaresPointRegistration.h>
 #include <mitkExceptionMacro.h>
-#include <mitkPointUtils.h>
 #include <mitkOpenCVMaths.h>
 #include <itkLevenbergMarquardtOptimizer.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <niftkPointUtils.h>
 
 namespace niftk
 {
@@ -115,12 +115,12 @@ double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
   }
 
   // Take a guess at the relative scale.
-  double scaleOfImagePoints = mitk::FindLargestDistanceBetweenTwoPoints(*m_UltrasoundImagePoints);
+  double scaleOfImagePoints = FindLargestDistanceBetweenTwoPoints(*m_UltrasoundImagePoints);
   if (fabs(scaleOfImagePoints) < 0.001)
   {
     mitkThrow() << "Image points too close together";
   }
-  double scaleOfSensorPoints = mitk::FindLargestDistanceBetweenTwoPoints(*m_SensorPoints);
+  double scaleOfSensorPoints = FindLargestDistanceBetweenTwoPoints(*m_SensorPoints);
   if (fabs(scaleOfSensorPoints) < 0.001)
   {
     mitkThrow() << "Sensor points too close together";
@@ -130,7 +130,7 @@ double UltrasoundPointerBasedCalibration::DoPointerBasedCalibration()
 
   // Now scale the image points.
   mitk::PointSet::Pointer scaledImagePoints = mitk::PointSet::New();
-  mitk::ScalePointSets(*m_UltrasoundImagePoints, *scaledImagePoints, millimetresPerPixel);
+  ScalePointSets(*m_UltrasoundImagePoints, *scaledImagePoints, millimetresPerPixel);
 
   // Run SVD based registration, which throws mitk::Exception on error.
   vtkSmartPointer<vtkMatrix4x4> regMatrix = vtkSmartPointer<vtkMatrix4x4>::New();

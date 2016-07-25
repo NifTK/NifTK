@@ -22,7 +22,7 @@ namespace niftk
 
 /**
 * @class CoordinateAxesDataWriterService
-* @brief Saves a mitk::CoordinateAxesData into a 4x4 Matrix text file.
+* @brief Saves a niftk::CoordinateAxesData into a 4x4 Matrix text file.
 * @internal
 */
 class CoordinateAxesDataWriterService : public mitk::AbstractFileWriter

@@ -12,11 +12,13 @@
 
 =============================================================================*/
 
-#ifndef __niftkLabeledLookupTableProperty_h
-#define __niftkLabeledLookupTableProperty_h
+#ifndef niftkLabeledLookupTableProperty_h
+#define niftkLabeledLookupTableProperty_h
 
 #include "niftkCoreExports.h"
+
 #include "niftkNamedLookupTableProperty.h"
+
 #include <QString>
 
 namespace niftk

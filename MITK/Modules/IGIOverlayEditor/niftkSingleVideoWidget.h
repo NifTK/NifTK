@@ -61,17 +61,17 @@ public:
   /**
    * \brief Stores ds in base-class and sets it on the niftk::BitmapOverlay.
    */
-  virtual void SetDataStorage(mitk::DataStorage* ds);
+  virtual void SetDataStorage(mitk::DataStorage* ds) override;
 
   /**
    * \brief Overrides base class to set the selected node on the niftk::BitmapOverlay.
    */
-  virtual void SetImageNode(mitk::DataNode* node);
+  virtual void SetImageNode(mitk::DataNode* node) override;
 
   /**
    * \brief Called from base class and gives us an opportunity to update renderings etc.
    */
-  virtual void Update();
+  virtual void Update() override;
 
   /**
    * \brief If true, will enable the bitmap overlay, if false, will disable it.
@@ -79,7 +79,7 @@ public:
   void SetUseOverlay(const bool& b);
 
   /**
-   * \brief Sets a node, which should contain an mitk::CoordinateAxesData,
+   * \brief Sets a node, which should contain a niftk::CoordinateAxesData,
    * which is used for moving the camera around.
    *
    * For example, if this viewer is to render like a tracked laparoscope,
@@ -111,17 +111,17 @@ protected:
   /**
    * \brief Called when a DataStorage Node Removed Event was emitted.
    */
-  virtual void NodeRemoved(const mitk::DataNode* node);
+  virtual void NodeRemoved(const mitk::DataNode* node) override;
 
   /**
    * \brief Called when a DataStorage Node Changes Event was emitted.
    */
-  virtual void NodeChanged(const mitk::DataNode* node);
+  virtual void NodeChanged(const mitk::DataNode* node) override;
 
   /**
    * \brief Called when a DataStorage Node Added Event was emitted.
    */
-  virtual void NodeAdded(const mitk::DataNode* node);
+  virtual void NodeAdded(const mitk::DataNode* node) override;
 
   /**
    * \brief Re-implemented so we can correctly scale image while resizeing.

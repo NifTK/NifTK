@@ -13,19 +13,23 @@
 =============================================================================*/
 
 #include "QmitkIGIUtils.h"
+
 #include <QFile>
 #include <QMessageBox>
-#include <mitkSTLFileReader.h>
-#include <mitkFileIOUtils.h>
-#include <mitkDataStorageUtils.h>
+
 #include <igtlStringMessage.h>
+
 #include <NiftyLinkUtils.h>
 #include <NiftyLinkXMLBuilder.h>
 
 #include <vtkCubeSource.h>
-#include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
 
+#include <mitkSTLFileReader.h>
+
+#include <niftkDataStorageUtils.h>
+#include <niftkFileIOUtils.h>
 
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer LoadSurfaceFromSTLFile(const QString& surfaceFilename)
@@ -99,7 +103,7 @@ bool SaveMatrixToFile(const vtkMatrix4x4& matrix, const QString& fileName)
     return isSuccessful;
   }
 
-  isSuccessful = mitk::SaveVtkMatrix4x4ToFile(fileName.toStdString(), matrix);
+  isSuccessful = niftk::SaveVtkMatrix4x4ToFile(fileName.toStdString(), matrix);
 
   if (!isSuccessful)
   {
@@ -158,11 +162,11 @@ void ApplyMatricesToAllTransformsInCheckbox(const vtkMatrix4x4& transform, const
     // These throw exceptions if there is any error.
     if (composeRatherThanSet)
     {
-      mitk::ComposeTransformWithNode(transform, node);
+      niftk::ComposeTransformWithNode(transform, node);
     }
     else
     {
-      mitk::ApplyTransformToNode(transform, node);
+      niftk::ApplyTransformToNode(transform, node);
     }
 
   } // end foreach node

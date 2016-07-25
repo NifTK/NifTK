@@ -15,9 +15,11 @@
 #include "niftkMITKTrackerDataSourceService.h"
 #include "niftkIGITrackerDataType.h"
 #include <niftkIGIDataSourceUtils.h>
-#include <mitkCoordinateAxesData.h>
-#include <mitkFileIOUtils.h>
+#include <niftkCoordinateAxesData.h>
+#include <niftkFileIOUtils.h>
+
 #include <mitkExceptionMacro.h>
+
 #include <QDir>
 #include <QMutexLocker>
 
@@ -365,7 +367,7 @@ void MITKTrackerDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
   {
     QString fileName =  toolPath + QDir::separator() + tr("%1.txt").arg(data->GetTimeStampInNanoSeconds());
 
-    bool success = mitk::SaveVtkMatrix4x4ToFile(fileName.toStdString(), *matrix);
+    bool success = SaveVtkMatrix4x4ToFile(fileName.toStdString(), *matrix);
     if (!success)
     {
       mitkThrow() << "Failed to save IGITrackerDataType to " << fileName.toStdString();
@@ -436,10 +438,10 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
       mitkThrow() << "Can't find mitk::DataNode with name " << bufferName.toStdString();
     }
 
-    mitk::CoordinateAxesData::Pointer coords = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+    CoordinateAxesData::Pointer coords = dynamic_cast<CoordinateAxesData*>(node->GetData());
     if (coords.IsNull())
     {
-      coords = mitk::CoordinateAxesData::New();
+      coords = CoordinateAxesData::New();
       node->SetData(coords);
     }
 

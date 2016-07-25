@@ -13,9 +13,13 @@
 =============================================================================*/
 
 #include "niftkCustomVTKAxesActor.h"
+
 #include <vtkTextProperty.h>
 
-niftk::CustomVTKAxesActor::CustomVTKAxesActor()
+namespace niftk
+{
+
+CustomVTKAxesActor::CustomVTKAxesActor()
 : vtkAxesActor()
 {
   //default: 0.25
@@ -47,4 +51,6 @@ niftk::CustomVTKAxesActor::CustomVTKAxesActor()
   tprop->BoldOff();
   tprop->ShadowOn();
   this->ZAxisLabel->SetCaptionTextProperty(tprop);
+}
+
 }

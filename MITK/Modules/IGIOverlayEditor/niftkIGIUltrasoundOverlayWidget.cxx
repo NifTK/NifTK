@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkIGIUltrasoundOverlayWidget.h"
-#include <mitkCoordinateAxesData.h>
+#include <niftkCoordinateAxesData.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkImage.h>
 #include <mitkBaseRenderer.h>

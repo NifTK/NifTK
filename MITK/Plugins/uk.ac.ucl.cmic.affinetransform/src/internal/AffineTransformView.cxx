@@ -12,9 +12,7 @@
 
 =============================================================================*/
  
-// Blueberry
-#include <berryISelectionService.h>
-#include <berryIWorkbenchWindow.h>
+#include "AffineTransformView.h"
 
 // Qt
 #include <QMessageBox>
@@ -59,10 +57,13 @@
 #include <usModuleRegistry.h>
 #include <usGetModuleContext.h>
 
-// NIFTK
-#include "AffineTransformView.h"
-#include <mitkAffineTransformDataNodeProperty.h>
-#include <mitkAffineTransformParametersDataNodeProperty.h>
+// Blueberry
+#include <berryISelectionService.h>
+#include <berryIWorkbenchWindow.h>
+
+// NifTK
+#include <niftkAffineTransformDataNodeProperty.h>
+#include <niftkAffineTransformParametersDataNodeProperty.h>
 #include <niftkConversionUtils.h>
 
 //-----------------------------------------------------------------------------
@@ -605,9 +606,9 @@ void AffineTransformView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part
 }
 
 //-----------------------------------------------------------------------------
-void AffineTransformView::SetUIValues(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty)
+void AffineTransformView::SetUIValues(niftk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty)
 {
-  mitk::AffineTransformParametersDataNodeProperty::ParametersType params = parametersProperty->GetAffineTransformParameters();
+  niftk::AffineTransformParametersDataNodeProperty::ParametersType params = parametersProperty->GetAffineTransformParameters();
 
   m_Controls->rotationSpinBoxX->setValue(params[0]);
   m_Controls->rotationSpinBoxY->setValue(params[1]);
@@ -636,9 +637,9 @@ void AffineTransformView::SetUIValues(mitk::AffineTransformParametersDataNodePro
 }
 
 //-----------------------------------------------------------------------------
-void AffineTransformView::GetValuesFromUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty)
+void AffineTransformView::GetValuesFromUI(niftk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty)
 {
-  mitk::AffineTransformParametersDataNodeProperty::ParametersType params = parametersProperty->GetAffineTransformParameters();
+  niftk::AffineTransformParametersDataNodeProperty::ParametersType params = parametersProperty->GetAffineTransformParameters();
 
   params[0] = m_Controls->rotationSpinBoxX->value();
   params[1] = m_Controls->rotationSpinBoxY->value();
@@ -707,7 +708,7 @@ void AffineTransformView::UpdateTransformDisplay()
 void AffineTransformView::OnParameterChanged() 
 {
   // Collect the parameters from the UI then send them to the AffineTransformer
-  mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
+  niftk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty = niftk::AffineTransformParametersDataNodeProperty::New();
   GetValuesFromUI(parametersProperty);
 
   // Pass the parameters to the transformer
@@ -740,7 +741,7 @@ void AffineTransformView::OnResetTransformPushed()
 void AffineTransformView::ResetUIValues()
 {
   // Reset transformation parameters to identity
-  mitk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
+  niftk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersProperty = niftk::AffineTransformParametersDataNodeProperty::New();
   affineTransformParametersProperty->Identity();
 
   // Update the UI
@@ -766,7 +767,7 @@ void AffineTransformView::ResetUIValues()
 void AffineTransformView::ResetAffineTransformer()
 {
   // Reset transformation parameters to identity
-  mitk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersProperty = mitk::AffineTransformParametersDataNodeProperty::New();
+  niftk::AffineTransformParametersDataNodeProperty::Pointer affineTransformParametersProperty = niftk::AffineTransformParametersDataNodeProperty::New();
   affineTransformParametersProperty->Identity();
 
   // Update the transformer

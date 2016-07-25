@@ -16,55 +16,57 @@
 #include "ImageLookupTablesViewActivator.h"
 
 #include <QButtonGroup>
-#include <QSlider>
+#include <QColorDialog>
 #include <QDebug>
-#include <qfiledialog.h>
-#include <qsignalmapper.h>
-#include <qinputdialog.h>
-#include <qcolordialog.h>
-#include <qmessagebox.h>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QSignalMapper>
+#include <QSlider>
 #include <QXmlSimpleReader>
-#include <QmitkLookupTableSaxHandler.h>
-#include <mitkIOUtil.h>
 
-#include <itkImage.h>
 #include <itkCommand.h>
-#include <itkStatisticsImageFilter.h>
 #include <itkEventObject.h>
+#include <itkImage.h>
+#include <itkStatisticsImageFilter.h>
+
 #include <vtkLookupTable.h>
 
 #include <mitkImage.h>
 #include <mitkImageAccessByItk.h>
+#include <mitkIOUtil.h>
+#include <mitkLevelWindowManager.h>
 #include <mitkLookupTable.h>
 #include <mitkLookupTableProperty.h>
-#include <niftkNamedLookupTableProperty.h>
-#include <niftkLabeledLookupTableProperty.h>
-
+#include <mitkNodePredicateAnd.h>
+#include <mitkNodePredicateData.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateNot.h>
+#include <mitkNodePredicateProperty.h>
 #include <mitkRenderingManager.h>
 #include <mitkRenderingModeProperty.h>
-#include <mitkDataStorageUtils.h>
+#include <mitkVtkResliceInterpolationProperty.h>
+
+#include <QmitkLookupTableSaxHandler.h>
+
 #include <berryIBerryPreferences.h>
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
-#include <berryIPreferencesService.h>
 
 #include "QmitkImageLookupTablesPreferencePage.h"
-#include "vtkLookupTableUtils.h"
 #include <QmitkLookupTableManager.h>
 #include <QmitkLookupTableContainer.h>
 #include <QmitkLookupTableProviderService.h>
-#include <mitkLevelWindowManager.h>
-#include <mitkNodePredicateData.h>
-#include <mitkNodePredicateDataType.h>
-#include <mitkNodePredicateProperty.h>
-#include <mitkNodePredicateAnd.h>
-#include <mitkNodePredicateNot.h>
-#include <mitkVtkResliceInterpolationProperty.h>
 
 #include <usModule.h>
-#include <usModuleRegistry.h>
 #include <usModuleContext.h>
 #include <usModuleInitialization.h>
+#include <usModuleRegistry.h>
+
+#include <niftkDataStorageUtils.h>
+#include <niftkLabeledLookupTableProperty.h>
+#include <niftkNamedLookupTableProperty.h>
+#include "niftkVtkLookupTableUtils.h"
 
 const QString ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables";
 
@@ -367,7 +369,7 @@ bool ImageLookupTablesView::IsSelectionValid(const QList<mitk::DataNode::Pointer
     return false;
   }
 
-  bool isValid = mitk::IsNodeAGreyScaleImage(node);
+  bool isValid = niftk::IsNodeAGreyScaleImage(node);
   return isValid;
 }
 
@@ -930,7 +932,7 @@ void ImageLookupTablesView::OnNewButtonPressed()
   QColor lowColor(0, 0, 0, lowestOpacity);
   QColor highColor(0, 0, 0, highestOpacity);
 
-  QmitkLookupTableContainer * newContainer = new QmitkLookupTableContainer(mitk::CreateEmptyLookupTable(lowColor, highColor));
+  QmitkLookupTableContainer * newContainer = new QmitkLookupTableContainer(niftk::CreateEmptyLookupTable(lowColor, highColor));
   newContainer->SetDisplayName(newLabelName);
   newContainer->SetIsScaled(false);
   newContainer->SetOrder(lutService->GetNumberOfLookupTables());
@@ -1077,7 +1079,7 @@ void ImageLookupTablesView::OnAddLabelButtonPressed()
 
   // increment the range by 1
   vtkSmartPointer<vtkLookupTable> newLUT;
-  newLUT.TakeReference(mitk::ResizeLookupTable(oldLUT,newValue+1));
+  newLUT.TakeReference(niftk::ResizeLookupTable(oldLUT,newValue+1));
   labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
 
   UpdateLabelMapTable();
@@ -1126,7 +1128,7 @@ void ImageLookupTablesView::OnRemoveLabelButtonPressed()
     {
       int value = labels.at(j).first;
       vtkSmartPointer<vtkLookupTable> newLUT;
-      newLUT.TakeReference(mitk::ChangeColor(lut, value, nanColor));
+      newLUT.TakeReference(niftk::ChangeColor(lut, value, nanColor));
       labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
     }
     
@@ -1289,7 +1291,7 @@ void ImageLookupTablesView::OnColorButtonPressed(int index)
   }
   
   vtkSmartPointer<vtkLookupTable> newLUT;
-  newLUT.TakeReference(mitk::ChangeColor(lut, value,newColor));
+  newLUT.TakeReference(niftk::ChangeColor(lut, value,newColor));
   labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
 
   QPushButton* btnColor = qobject_cast<QPushButton*>(m_Controls->widget_LabelTable->cellWidget(index, 0));
@@ -1385,7 +1387,7 @@ void ImageLookupTablesView::OnLabelMapTableCellChanged(int row, int column)
     int oldValue = labels.at(row).first;
     
     vtkSmartPointer<vtkLookupTable> newLUT;
-    newLUT.TakeReference(mitk::SwapColors(lut, oldValue, newValue));
+    newLUT.TakeReference(niftk::SwapColors(lut, oldValue, newValue));
     labelProperty->GetLookupTable()->SetVtkLookupTable(newLUT);
 
     labels.at(row).first = newValue;

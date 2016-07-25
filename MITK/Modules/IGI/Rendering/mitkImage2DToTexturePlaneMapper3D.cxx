@@ -20,7 +20,6 @@
 #include <mitkImage.h>
 #include <mitkVector.h>
 #include <mitkExceptionMacro.h>
-#include <mitkPointUtils.h>
 
 #include <vtkIdTypeArray.h>
 #include <vtkFloatArray.h>
@@ -31,6 +30,8 @@
 #include <vtkActor.h>
 #include <vtkPointData.h>
 #include <vtkImageData.h>
+
+#include <niftkPointUtils.h>
 
 namespace mitk {
 
@@ -204,8 +205,8 @@ void Image2DToTexturePlaneMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* 
     }
 
     image->GetGeometry()->IndexToWorld(indexPoints[4], worldPoints[4]);
-    mitk::GetDifference(worldPoints[4], worldPoints[0], normal);
-    mitk::Normalise(normal);
+    niftk::GetDifference(worldPoints[4], worldPoints[0], normal);
+    niftk::Normalise(normal);
     for (unsigned int i = 0; i < 4; i++)
     {
       ls->m_NormalsArray->SetTuple3(i, normal[0], normal[1], normal[2]);

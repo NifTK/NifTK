@@ -18,7 +18,7 @@
 #include <mitkBaseRenderer.h>
 #include <mitkRenderingManager.h>
 #include <mitkTimeGeometry.h>
-#include <mitkCoordinateAxesData.h>
+#include <niftkCoordinateAxesData.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkFocusManager.h>
 
@@ -188,7 +188,7 @@ void QmitkIGIVLEditor::SetDataStorage(mitk::DataStorage* storage)
   m_ImageCombo->SetPredicate(isImage);
   m_ImageCombo->SetAutoSelectNewItems(false);
 
-  mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+  mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::New();
   m_TransformCombo->SetPredicate(isTransform);
   m_TransformCombo->SetAutoSelectNewItems(false);
 }

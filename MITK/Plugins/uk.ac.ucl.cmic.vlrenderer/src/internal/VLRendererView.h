@@ -100,8 +100,8 @@ private:
   vl::ref<VLQtWidget>       m_VLQtRenderWindow;
 
   // Listeners
-  mitk::DataNodePropertyListener::Pointer    m_SelectionListener;
-  mitk::DataNodePropertyListener::Pointer    m_NamePropertyListener;
+  niftk::DataNodePropertyListener::Pointer    m_SelectionListener;
+  niftk::DataNodePropertyListener::Pointer    m_NamePropertyListener;
 
 };
 

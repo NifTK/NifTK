@@ -67,7 +67,7 @@
 #include <QtPlugin>
 
 #include <NifTKConfigure.h>
-#include <mitkDataStorageUtils.h>
+#include <niftkDataStorageUtils.h>
 
 
 US_INITIALIZE_MODULE
@@ -344,7 +344,7 @@ void QmitkCommonAppsApplicationPlugin::NodeRemoved(const mitk::DataNode *constNo
 
   // Removing observers on a node thats being deleted?
 
-  if (mitk::IsNodeAGreyScaleImage(node))
+  if (niftk::IsNodeAGreyScaleImage(node))
   {
     std::map<mitk::DataNode*, unsigned long int>::iterator lowestIter;
     lowestIter = m_NodeToLowestOpacityObserverMap.find(node);
@@ -415,7 +415,7 @@ berry::IPreferences::Pointer QmitkCommonAppsApplicationPlugin::GetPreferencesNod
 void QmitkCommonAppsApplicationPlugin::RegisterLevelWindowProperty(
     const QString& preferencesNodeName, mitk::DataNode *node)
 {
-  if (mitk::IsNodeAGreyScaleImage(node))
+  if (niftk::IsNodeAGreyScaleImage(node))
   {
     mitk::Image::ConstPointer image = dynamic_cast<mitk::Image*>(node->GetData());
     berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
@@ -566,7 +566,7 @@ void QmitkCommonAppsApplicationPlugin::OnLookupTablePropertyChanged(const itk::O
     if (iter != m_PropertyToNodeMap.end())
     {
       mitk::DataNode *node = iter->second;
-      if (node != NULL && mitk::IsNodeAGreyScaleImage(node))
+      if (node != NULL && niftk::IsNodeAGreyScaleImage(node))
       {
         float lowestOpacity = 1;
         bool gotLowest = node->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
@@ -611,7 +611,7 @@ QmitkLookupTableProviderService* QmitkCommonAppsApplicationPlugin::GetLookupTabl
 //-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(const QString& preferencesNodeName, mitk::DataNode *node)
 {
-  if (mitk::IsNodeAGreyScaleImage(node))
+  if (niftk::IsNodeAGreyScaleImage(node))
   {
     berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
     if (prefNode.IsNotNull())
@@ -637,7 +637,7 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
       node->SetProperty("Image Rendering.Lowest Value Opacity", mitk::FloatProperty::New(lowestOpacity));
       node->SetProperty("Image Rendering.Highest Value Opacity", mitk::FloatProperty::New(highestOpacity));
 
-      if (mitk::IsNodeAGreyScaleImage(node))
+      if (niftk::IsNodeAGreyScaleImage(node))
       {
         unsigned long int observerId;
 
@@ -664,7 +664,7 @@ void QmitkCommonAppsApplicationPlugin::RegisterImageRenderingModeProperties(cons
 void QmitkCommonAppsApplicationPlugin::RegisterInterpolationProperty(
     const QString& preferencesNodeName, mitk::DataNode *node)
 {
-  if (mitk::IsNodeAGreyScaleImage(node))
+  if (niftk::IsNodeAGreyScaleImage(node))
   {
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
@@ -721,7 +721,7 @@ void QmitkCommonAppsApplicationPlugin::RegisterInterpolationProperty(
 //-----------------------------------------------------------------------------
 void QmitkCommonAppsApplicationPlugin::RegisterBinaryImageProperties(const QString& preferencesNodeName, mitk::DataNode *node)
 {
-  if (mitk::IsNodeABinaryImage(node))
+  if (niftk::IsNodeABinaryImage(node))
   {
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);

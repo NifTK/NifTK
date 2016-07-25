@@ -13,10 +13,11 @@
 =============================================================================*/
 
 #include <fstream>
+
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
-#include <mitkMergePointClouds.h>
 
+#include <niftkMergePointClouds.h>
 #include <niftkMergePointCloudsCLP.h>
 
 int main(int argc, char* argv[])
@@ -27,7 +28,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    mitk::MergePointClouds::Pointer   merger = mitk::MergePointClouds::New();
+    niftk::MergePointClouds::Pointer   merger = niftk::MergePointClouds::New();
 
     boost::filesystem::recursive_directory_iterator   end_itr;
     boost::regex    mpsfilter("(.+\\.mps)");

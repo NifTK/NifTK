@@ -16,7 +16,7 @@
 #include <mitkTestingMacros.h>
 #include <mitkDataStorage.h>
 #include <mitkStandaloneDataStorage.h>
-#include <mitkCoordinateAxesData.h>
+#include <niftkCoordinateAxesData.h>
 #include <QmitkIGINiftyLinkDataType.h>
 #include <QmitkIGITrackerSource.h>
 #include <NiftyLinkMessageContainer.h>
@@ -94,7 +94,7 @@ int QmitkIGITrackerSourceTransformTest(int argc, char* argv[])
   MITK_TEST_CONDITION_REQUIRED(node.IsNotNull(), ".. Testing if node is not null");
 
   // Check that it contains a matrix that equals the above matrix.
-  mitk::CoordinateAxesData::Pointer coord = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+  niftk::CoordinateAxesData::Pointer coord = dynamic_cast<niftk::CoordinateAxesData*>(node->GetData());
   MITK_TEST_CONDITION_REQUIRED(coord.IsNotNull(), ".. Testing if coord is not null");
 
   coord->GetVtkMatrix(*tmpMatrix);

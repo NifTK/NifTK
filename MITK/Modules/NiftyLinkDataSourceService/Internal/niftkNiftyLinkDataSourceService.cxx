@@ -17,13 +17,10 @@
 #include <niftkIGIDataSourceUtils.h>
 #include <NiftyLinkImageMessageHelpers.h>
 
-#include <mitkFileIOUtils.h>
-#include <mitkCoordinateAxesData.h>
-#include <mitkAffineTransformDataNodeProperty.h>
 #include <mitkImage.h>
 #include <mitkImageWriteAccessor.h>
-
 #include <mitkIOUtil.h>
+
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 
@@ -34,6 +31,10 @@
 #include <QFileInfo>
 
 #include <cv.h>
+
+#include <niftkFileIOUtils.h>
+#include <niftkCoordinateAxesData.h>
+#include <niftkAffineTransformDataNodeProperty.h>
 
 namespace niftk
 {
@@ -420,7 +421,7 @@ void NiftyLinkDataSourceService::LoadTrackingData(
   {
     if ((*iter).endsWith(QString(".txt")))
     {
-      vtkSmartPointer<vtkMatrix4x4> vtkMat = mitk::LoadVtkMatrix4x4FromFile((*iter).toStdString());
+      vtkSmartPointer<vtkMatrix4x4> vtkMat = LoadVtkMatrix4x4FromFile((*iter).toStdString());
 
       igtl::Matrix4x4 mat;
       for (int r = 0; r < 4; r++)
@@ -858,10 +859,10 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveTrackingData(
       mitkThrow() << this->GetName().toStdString() << ":Can't find mitk::DataNode with name " << toolName.toStdString();
     }
 
-    mitk::CoordinateAxesData::Pointer coord = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+    CoordinateAxesData::Pointer coord = dynamic_cast<CoordinateAxesData*>(node->GetData());
     if (coord.IsNull())
     {
-      coord = mitk::CoordinateAxesData::New();
+      coord = CoordinateAxesData::New();
 
       // We remove and add to trigger the NodeAdded event,
       // which is not emmitted if the node was added with no data.
@@ -871,7 +872,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveTrackingData(
     }
     coord->SetVtkMatrix(*vtkMat);
 
-    mitk::AffineTransformDataNodeProperty::Pointer affTransProp = mitk::AffineTransformDataNodeProperty::New();
+    AffineTransformDataNodeProperty::Pointer affTransProp = AffineTransformDataNodeProperty::New();
     affTransProp->SetTransform(*vtkMat);
 
     std::string propertyName = "niftk." + toolName.toStdString();

@@ -22,20 +22,20 @@
 
 #include <itkImage.h>
 
-#include <vtkRenderWindowInteractor.h>
 #include <vtkInteractorStyle.h>
-#include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
+#include <vtkRenderWindowInteractor.h>
 
-#include <mitkAffineTransformParametersDataNodeProperty.h>
+#include <mitkBaseGeometry.h>
+#include <mitkBoundingObject.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
-#include <mitkBaseGeometry.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkWeakPointer.h>
-#include <mitkBoundingObject.h>
 
 #include <niftkAffineTransformer.h>
+#include <niftkAffineTransformParametersDataNodeProperty.h>
 #include <niftkCustomVTKAxesActor.h>
 
 #include "ui_AffineTransformViewControls.h"
@@ -133,13 +133,13 @@ class AffineTransformView : public QmitkBaseView
     void SetSliderControlsEnabled(bool isEnabled);
 
     /** Sets the controls to the values given in the specific parameters property. */
-    void SetUIValues(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
+    void SetUIValues(niftk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
 
     /** Sets the controls to the Identity. */
     void ResetUIValues();
 
     /** Gets the values from the controls and stores them on the specified parametersProperty. */
-    void GetValuesFromUI(mitk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
+    void GetValuesFromUI(niftk::AffineTransformParametersDataNodeProperty::Pointer parametersProperty);
 
     /** Gets the values from the displayed matrix and stores them in a vtkMatrix. */
     void GetValuesFromDisplay(vtkSmartPointer<vtkMatrix4x4> transform);

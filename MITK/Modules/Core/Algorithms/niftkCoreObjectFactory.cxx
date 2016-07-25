@@ -15,15 +15,17 @@
 #include "niftkCoreObjectFactory.h"
 
 #include <itkObjectFactory.h>
-#include <mitkProperties.h>
+
 #include <mitkBaseRenderer.h>
 #include <mitkDataNode.h>
 #include <mitkImage.h>
-#include <mitkPointSet.h>
-#include <mitkCoordinateAxesVtkMapper3D.h>
 #include <mitkImageVtkMapper2D.h>
-#include <mitkFastPointSetVtkMapper3D.h>
+#include <mitkPointSet.h>
 #include <mitkPointSetVtkMapper3D.h>
+#include <mitkProperties.h>
+
+#include "niftkCoordinateAxesVtkMapper3D.h"
+#include "niftkFastPointSetVtkMapper3D.h"
 
 namespace niftk
 {
@@ -61,7 +63,7 @@ mitk::Mapper::Pointer CoreObjectFactory::CreateMapper(mitk::DataNode* node, Mapp
       mitk::PointSet* pointSet = dynamic_cast<mitk::PointSet*>(data);
       if (pointSet->GetSize() > 1000)
       {
-        newMapper = mitk::FastPointSetVtkMapper3D::New();
+        newMapper = FastPointSetVtkMapper3D::New();
       }
       else
       {
@@ -69,9 +71,9 @@ mitk::Mapper::Pointer CoreObjectFactory::CreateMapper(mitk::DataNode* node, Mapp
       }
       newMapper->SetDataNode(node);
     }
-    else if (dynamic_cast<mitk::CoordinateAxesData*>(data) != NULL)
+    else if (dynamic_cast<CoordinateAxesData*>(data) != NULL)
     {
-      newMapper = mitk::CoordinateAxesVtkMapper3D::New();
+      newMapper = CoordinateAxesVtkMapper3D::New();
       newMapper->SetDataNode(node);
     }
   }
@@ -88,10 +90,10 @@ void CoreObjectFactory::SetDefaultProperties(mitk::DataNode* node)
     return;
   }
 
-  mitk::CoordinateAxesData::Pointer coordinateAxesData = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+  CoordinateAxesData::Pointer coordinateAxesData = dynamic_cast<CoordinateAxesData*>(node->GetData());
   if (coordinateAxesData.IsNotNull())
   {
-    mitk::CoordinateAxesVtkMapper3D::SetDefaultProperties(node);
+    CoordinateAxesVtkMapper3D::SetDefaultProperties(node);
   }
 }
 

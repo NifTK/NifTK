@@ -14,9 +14,9 @@
 
 # tests with no extra command line parameter
 set(MODULE_TESTS
-  mitkITKRegionParametersDataNodePropertyTest.cxx
-  mitkPointUtilsTest.cxx
-  mitkMergePointCloudsTest.cxx
+  niftkITKRegionParametersDataNodePropertyTest.cxx
+  niftkPointUtilsTest.cxx
+  niftkMergePointCloudsTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
@@ -24,5 +24,5 @@ set(MODULE_CUSTOM_TESTS
   niftkAsAcquiredOrientationTest.cxx
   niftkImageUtilsTest.cxx
   niftkCompareImagesForEqualityTest.cxx
-  mitkCoordinateAxesDataRenderingTest.cxx
+  niftkCoordinateAxesDataRenderingTest.cxx
 )

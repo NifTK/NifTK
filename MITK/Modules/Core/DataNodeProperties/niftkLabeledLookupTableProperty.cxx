@@ -13,17 +13,19 @@
 =============================================================================*/
 
 #include "niftkLabeledLookupTableProperty.h"
-#include <QString>
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-niftk::LabeledLookupTableProperty::LabeledLookupTableProperty()
+LabeledLookupTableProperty::LabeledLookupTableProperty()
 : Superclass()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::LabeledLookupTableProperty::LabeledLookupTableProperty(const LabeledLookupTableProperty& other)
+LabeledLookupTableProperty::LabeledLookupTableProperty(const LabeledLookupTableProperty& other)
 : Superclass(other)
 , m_Labels(other.m_Labels)
 {
@@ -31,7 +33,7 @@ niftk::LabeledLookupTableProperty::LabeledLookupTableProperty(const LabeledLooku
 
 
 //-----------------------------------------------------------------------------
-niftk::LabeledLookupTableProperty::LabeledLookupTableProperty(
+LabeledLookupTableProperty::LabeledLookupTableProperty(
   const std::string& name,
   const mitk::LookupTable::Pointer lut,
   const LabelListType& labels
@@ -43,7 +45,7 @@ niftk::LabeledLookupTableProperty::LabeledLookupTableProperty(
 
 
 //-----------------------------------------------------------------------------
-niftk::LabeledLookupTableProperty::LabeledLookupTableProperty(
+LabeledLookupTableProperty::LabeledLookupTableProperty(
   const std::string& name,
   const mitk::LookupTable::Pointer lut,
   const LabelListType& labels,
@@ -56,13 +58,13 @@ niftk::LabeledLookupTableProperty::LabeledLookupTableProperty(
 
 
 //-----------------------------------------------------------------------------
-niftk::LabeledLookupTableProperty::~LabeledLookupTableProperty()
+LabeledLookupTableProperty::~LabeledLookupTableProperty()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-itk::LightObject::Pointer niftk::LabeledLookupTableProperty::InternalClone() const
+itk::LightObject::Pointer LabeledLookupTableProperty::InternalClone() const
 {
   itk::LightObject::Pointer result(new Self(*this));
   return result;
@@ -70,7 +72,7 @@ itk::LightObject::Pointer niftk::LabeledLookupTableProperty::InternalClone() con
 
 
 //-----------------------------------------------------------------------------
-bool niftk::LabeledLookupTableProperty::IsEqual(const BaseProperty& property) const
+bool LabeledLookupTableProperty::IsEqual(const BaseProperty& property) const
 {
   LabelListType otherLabels = static_cast<const Self&>(property).m_Labels;
   bool sameLabels = (m_Labels.size() == otherLabels.size());
@@ -98,7 +100,7 @@ bool niftk::LabeledLookupTableProperty::IsEqual(const BaseProperty& property) co
 
 
 //-----------------------------------------------------------------------------
-bool niftk::LabeledLookupTableProperty::Assign(const BaseProperty& property)
+bool LabeledLookupTableProperty::Assign(const BaseProperty& property)
 {
   this->m_LookupTable = static_cast<const Self&>(property).m_LookupTable;
   this->SetName( static_cast<const Self&>(property).GetName() );
@@ -106,4 +108,6 @@ bool niftk::LabeledLookupTableProperty::Assign(const BaseProperty& property)
   this->m_Labels = static_cast<const Self&>(property).m_Labels;
 
   return true;
+}
+
 }
