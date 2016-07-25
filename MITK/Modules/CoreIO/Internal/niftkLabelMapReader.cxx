@@ -24,7 +24,7 @@
 #include <vtkLookupTable.h>
 #include <vtkIntArray.h>
 #include <vtkStringArray.h>
-#include <QFile.h>
+#include <QFile>
 #include <sstream>
 #include <iostream>
 

@@ -18,11 +18,11 @@
 #include <QButtonGroup>
 #include <QSlider>
 #include <QDebug>
-#include <qfiledialog.h>
-#include <qsignalmapper.h>
-#include <qinputdialog.h>
-#include <qcolordialog.h>
-#include <qmessagebox.h>
+#include <QFileDialog>
+#include <QSignalMapper>
+#include <QInputDialog>
+#include <QColorDialog>
+#include <QMessageBox>
 #include <QXmlSimpleReader>
 #include <QmitkLookupTableSaxHandler.h>
 #include <mitkIOUtil.h>
