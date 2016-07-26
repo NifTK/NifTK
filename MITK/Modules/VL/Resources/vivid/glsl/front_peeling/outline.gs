@@ -32,7 +32,7 @@ out vec3 N;
 out vec4 Color;
 
 void emitOutlineVertex(int i) {
-    gl_Position = ( gl_ProjectionMatrix * ( gl_ModelViewMatrix * gl_PositionIn[i] + vec4( 0, 0, vl_Vivid.outline.eyeOffset, 0 ) ) );
+    gl_Position = ( vl_ProjectionMatrix * ( vl_ModelViewMatrix * gl_PositionIn[i] + vec4( 0, 0, vl_Vivid.outline.eyeOffset, 0 ) ) );
     gl_Position.z -= vl_Vivid.outline.clipOffset * gl_Position.w;
 
     OP = gsOP[i];
@@ -45,12 +45,12 @@ void emitOutlineVertex(int i) {
 }
 
 void outline() {
-    vec3 V0 = ( gl_ModelViewMatrix * gl_PositionIn[0] ).xyz;
-    vec3 V1 = ( gl_ModelViewMatrix * gl_PositionIn[1] ).xyz;
-    vec3 V2 = ( gl_ModelViewMatrix * gl_PositionIn[2] ).xyz;
-    vec3 V3 = ( gl_ModelViewMatrix * gl_PositionIn[3] ).xyz;
-    vec3 V4 = ( gl_ModelViewMatrix * gl_PositionIn[4] ).xyz;
-    vec3 V5 = ( gl_ModelViewMatrix * gl_PositionIn[5] ).xyz;
+    vec3 V0 = ( vl_ModelViewMatrix * gl_PositionIn[0] ).xyz;
+    vec3 V1 = ( vl_ModelViewMatrix * gl_PositionIn[1] ).xyz;
+    vec3 V2 = ( vl_ModelViewMatrix * gl_PositionIn[2] ).xyz;
+    vec3 V3 = ( vl_ModelViewMatrix * gl_PositionIn[3] ).xyz;
+    vec3 V4 = ( vl_ModelViewMatrix * gl_PositionIn[4] ).xyz;
+    vec3 V5 = ( vl_ModelViewMatrix * gl_PositionIn[5] ).xyz;
 
     // polygon normals
     // no need to normalize these
@@ -93,9 +93,9 @@ void outline() {
 }
 
 void emitClipVertex(int i, int j, float t) {
-    // gl_Position = ( gl_ProjectionMatrix * ( gl_ModelViewMatrix * mix( gl_PositionIn[i], gl_PositionIn[j], t ) + vec4( 0, 0, vl_Vivid.outline.eyeOffset, 0 ) ) );
+    // gl_Position = ( vl_ProjectionMatrix * ( vl_ModelViewMatrix * mix( gl_PositionIn[i], gl_PositionIn[j], t ) + vec4( 0, 0, vl_Vivid.outline.eyeOffset, 0 ) ) );
     // gl_Position.z -= vl_Vivid.outline.clipOffset * gl_Position.w;
-    gl_Position = gl_ModelViewProjectionMatrix * mix( gl_PositionIn[i], gl_PositionIn[j], t );
+    gl_Position = vl_ModelViewProjectionMatrix * mix( gl_PositionIn[i], gl_PositionIn[j], t );
 
     OP = mix( gsOP[i], gsOP[j], t );
     WP = mix( gsWP[i], gsWP[j], t );

@@ -13,7 +13,9 @@
 
 #version 150 compatibility
 
+#pragma VL include /vivid/glsl/uniforms.glsl
+
 void main()
 {
-    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+    gl_Position = vl_ModelViewProjectionMatrix * gl_Vertex;
 }
