@@ -17,7 +17,13 @@
 
 #include <niftkVLExports.h>
 
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <vlQt5/Qt5Widget.hpp>
+#else
 #include <vlQt4/Qt4Widget.hpp>
+#endif
+
 #include <vlGraphics/OpenGLContext.hpp>
 #include <vlVivid/VividRenderer.hpp>
 #include <vlVivid/VividRendering.hpp>
@@ -430,7 +436,11 @@ public:
   void setOclResourceService(OclResourceService* oclserv);
 
 protected:
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt5::Qt5Widget>()->QGLWidget::context(); }
+#else
   bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt4::Qt4Widget>()->QGLWidget::context(); }
+#endif
 
   void initSceneFromDataStorage();
   void clearScene();
@@ -512,11 +522,17 @@ protected:
 //-----------------------------------------------------------------------------
 // VLQtWidget
 //-----------------------------------------------------------------------------
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+class VLQtWidget : public vlQt5::Qt5Widget {
+public:
+  VLQtWidget(QWidget* parent = NULL, const QGLWidget* shareWidget = NULL, Qt::WindowFlags f = 0)
+    : Qt5Widget(parent, shareWidget, f) {
+#else
 class VLQtWidget : public vlQt4::Qt4Widget {
 public:
   VLQtWidget(QWidget* parent = NULL, const QGLWidget* shareWidget = NULL, Qt::WindowFlags f = 0)
     : Qt4Widget(parent, shareWidget, f) {
+#endif
     m_VLSceneView = new VLSceneView( this );
     addEventListener(m_VLSceneView.get());
     setRefreshRate(1000 / 30); // 30 fps in milliseconds

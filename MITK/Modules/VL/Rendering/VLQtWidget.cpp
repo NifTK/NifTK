@@ -35,8 +35,13 @@
 
 //#include <vlGraphics/plugins/ioVLX.hpp> // debugging
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <vlQt5/QtDirectory.hpp>
+#include <vlQt5/QtFile.hpp>
+#else
 #include <vlQt4/QtDirectory.hpp>
 #include <vlQt4/QtFile.hpp>
+#endif
 #include <vlCore/Log.hpp>
 #include <vlCore/Time.hpp>
 #include <vlCore/Colors.hpp>
