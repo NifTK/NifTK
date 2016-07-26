@@ -339,16 +339,17 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
 
   //now we're going to repeat this test using more grid points, and a model to world transform
   Projector->ClearWorldPoints();
-  Projector->ClearGoldStandardPoints();
   mitk::PickedPointList::Pointer ModelGridPoints = mitk::PickedPointList::New();
+  //the gold standard points were classified during the last projection, so this time 
+  //let's use an ordered point list
+  //check it's in ordered mode
+  ModelGridPoints->SetInOrderedMode(true);
   ModelGridPoints->AddPoint ( cv::Point3d ( 0.0, 0.0, 0.0 ), cv::Scalar ( 255,255,255));
   ModelGridPoints->AddPoint ( cv::Point3d ( 39.0, 0.0, 0.0 ), cv::Scalar ( 255,255,255));
   ModelGridPoints->AddPoint ( cv::Point3d ( 39.0, 27.0, 0.0 ), cv::Scalar ( 255,255,255));
   ModelGridPoints->AddPoint ( cv::Point3d ( 0.0, 27.0, 0.0 ), cv::Scalar ( 255,255,255));
 
   Projector->SetModelPoints(ModelGridPoints);
-  Projector->SetLeftGoldStandardPoints(leftGS, matcher);
-  Projector->SetRightGoldStandardPoints(rightGS, matcher);
   Projector->Project(matcher);
   Projector->CalculateProjectionErrors("");
   Projector->CalculateTriangulationErrors("");
