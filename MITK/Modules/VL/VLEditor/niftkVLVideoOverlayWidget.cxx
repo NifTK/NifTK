@@ -55,6 +55,7 @@ VLVideoOverlayWidget::VLVideoOverlayWidget(QWidget * /*parent*/)
   m_OpacitySlider->setMaximum(100);
   m_OpacitySlider->setSingleStep(1);
   m_OpacitySlider->setPageStep(10);
+  m_OpacitySlider->setValue(100);
 
   bool ok = false;
   ok = connect(m_3DViewCheckBox, SIGNAL(toggled(bool)), this, SLOT(On3DViewerCheckBoxChecked(bool)));
