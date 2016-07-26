@@ -382,7 +382,7 @@ public:
   typedef std::map< mitk::DataNode::ConstPointer, vl::ref<VLMapper> > DataNodeVLMapperMapType;
 
 public:
-  VLSceneView();
+  VLSceneView( QGLWidget* qglwidget );
   ~VLSceneView();
 
   // Called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
