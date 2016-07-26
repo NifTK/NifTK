@@ -21,7 +21,6 @@ set(CPP_FILES
 )
 
 set(MOC_H_FILES
-  Rendering/VLQtWidget.h
   VLEditor/niftkVLVideoOverlayWidget.h
   VLEditor/niftkVLStandardDisplayWidget.h
 )
