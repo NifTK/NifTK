@@ -549,9 +549,12 @@ namespace
 
     Shader* sh = fx->shader();
 
-    sh->getMaterial()->setDiffuse( color );
-    sh->getMaterial()->setSpecular( spec_color );
-    sh->getMaterial()->setShininess( shininess );
+
+    sh->getUniform( "vl_Vivid.material.diffuse" )->setUniform( color );
+    sh->getUniform( "vl_Vivid.material.specular" )->setUniform( spec_color );
+    // sh->getUniform( "vl_Vivid.material.ambient" )->setUniform( ... );
+    // sh->getUniform( "vl_Vivid.material.emission" )->setUniform( ... );
+    sh->getUniform( "vl_Vivid.material.shininess" )->setUniformF( shininess );
   }
 
 
@@ -562,12 +565,12 @@ namespace
       return;
     }
 
-    // gocUniform("vl_Vivid.smartFog.mode")
+    // gocUniform("vl_Vivid.fog.mode")
     VL_Fog_Mode_Property::Pointer fog_mode = VL_Fog_Mode_Property::New();
     node->SetProperty("VL.Fog.Mode", fog_mode);
     fog_mode->SetValue( 0 );
 
-    // gocUniform("vl_Vivid.smartFog.target")
+    // gocUniform("vl_Vivid.fog.target")
     VL_Smart_Target_Property::Pointer fog_target = VL_Smart_Target_Property::New();
     node->SetProperty("VL.Fog.Target", fog_target);
     fog_target->SetValue( 0 );
@@ -607,12 +610,12 @@ namespace
 
     Shader* sh = fx->shader();
 
-    sh->gocFog()->setColor( fog_color);
-    sh->getUniform("vl_Vivid.smartFog.mode")->setUniformI( fog_mode );
-    sh->getUniform("vl_Vivid.smartFog.target")->setUniformI( fog_target );
-    sh->gocFog()->setStart( fog_start );
-    sh->gocFog()->setEnd( fog_end );
-    sh->gocFog()->setDensity( fog_density );
+    sh->getUniform("vl_Vivid.fog.mode")->setUniformI( fog_mode );
+    sh->getUniform("vl_Vivid.fog.target")->setUniformI( fog_target );
+    sh->getUniform("vl_Vivid.fog.color")->setUniform( fog_color );
+    sh->getUniform("vl_Vivid.fog.start")->setUniformF( fog_start );
+    sh->getUniform("vl_Vivid.fog.end")->setUniformF( fog_end );
+    sh->getUniform("vl_Vivid.fog.density")->setUniformF( fog_density );
   }
 
   void initClipProps( mitk::DataNode* node )
@@ -1704,7 +1707,7 @@ public:
       actor->transform()->setLocalAndWorldMatrix( vl::mat4::getTranslation( pos ) );
       m_SphereActors->addActor( actor.get() );
       // Colorize the sphere with the point's color
-      actor->effect()->shader()->getMaterial()->setDiffuse( m_ColorArray->at( i ) );
+      actor->effect()->shader()->gocUniform( "vl_Vivid.material.diffuse" )->setUniform( m_ColorArray->at( i ) );
     }
   }
 
@@ -1768,7 +1771,7 @@ public:
         Actor* act = m_SphereActors->actors()->at( i );
         act->setEnabled( visible );
         // Set color/opacity
-        act->effect()->shader()->getMaterial()->setDiffuse( m_ColorArray->at( i ) );
+        act->effect()->shader()->gocUniform( "vl_Vivid.material.diffuse" )->setUniform( m_ColorArray->at( i ) );
         // Update other Vivid settings
         // updateRenderModeProps(); /* does not apply here */
         updateFogProps( act->effect(), m_DataNode );
