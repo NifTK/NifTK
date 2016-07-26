@@ -25,7 +25,7 @@
 #include <berryIWorkbenchPart.h>
 
 // Qmitk for Qt/MITK stuff.
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 
 namespace berry
 {
@@ -40,10 +40,10 @@ class BaseSegmentorController;
 /// \class BaseSegmentorView
 /// \brief Base view component for MIDAS Segmentation widgets.
 ///
-/// \sa QmitkBaseView
+/// \sa BaseView
 /// \sa MorphologicalSegmentorView
 /// \sa GeneralSegmentorView
-class CMIC_QT_COMMONMIDAS BaseSegmentorView : public QmitkBaseView
+class CMIC_QT_COMMONMIDAS BaseSegmentorView : public BaseView
 {
 
   Q_OBJECT

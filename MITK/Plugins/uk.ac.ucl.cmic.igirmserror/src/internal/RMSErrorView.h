@@ -15,7 +15,7 @@
 #ifndef RMSErrorView_h
 #define RMSErrorView_h
 
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include <QmitkRMSErrorWidget.h>
 
@@ -24,7 +24,7 @@
  * \brief User interface to simply setup the QmitkRMSErrorWidget.
  * \ingroup uk_ac_ucl_cmic_igirmserror_internal
 */
-class RMSErrorView : public QmitkBaseView
+class RMSErrorView : public niftk::BaseView
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)

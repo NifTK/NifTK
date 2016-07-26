@@ -13,21 +13,21 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  QmitkBaseView.cxx
+  niftkBaseView.cxx
 )
 
 set(INTERNAL_CPP_FILES
-  CommonActivator.cxx
-  VisibilityChangedCommand.cxx
-  VisibilityChangeObserver.cxx
+  niftkCommonActivator.cxx
+  niftkVisibilityChangedCommand.cxx
+  niftkVisibilityChangeObserver.cxx
 )
 
 set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/internal/CommonActivator.h
-  src/QmitkBaseView.h
+  src/internal/niftkCommonActivator.h
+  src/niftkBaseView.h
 )
 
 set(CACHED_RESOURCE_FILES

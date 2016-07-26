@@ -281,7 +281,7 @@ void VLRendererView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::Bas
 //-----------------------------------------------------------------------------
 void VLRendererView::Visible()
 {
-  QmitkBaseView::Visible();
+  niftk::BaseView::Visible();
 
   // Make sure that we show all the nodes that are already present in DataStorage
   ReinitDisplay();

@@ -380,7 +380,7 @@ bool ImageLookupTablesView::IsSelectionValid(const QList<mitk::DataNode::Pointer
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::Activated()
 {
-  QmitkBaseView::Activated();
+  BaseView::Activated();
 
   berry::IWorkbenchPart::Pointer nullPart;
   this->OnSelectionChanged(nullPart, this->GetDataManagerSelection());

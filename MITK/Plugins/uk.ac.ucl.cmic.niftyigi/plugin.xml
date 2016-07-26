@@ -4,7 +4,7 @@
 
   <extension id="uk.ac.ucl.cmic.niftyigi" point="org.blueberry.osgi.applications">
     <application>
-      <run class="QmitkNiftyIGIApplication"/>
+      <run class="niftk::NiftyIGIApplication"/>
     </application>
   </extension>
 
@@ -12,14 +12,14 @@
     <perspective
       id="uk.ac.ucl.cmic.niftyigi.igiperspective"
       name="IGI Perspective"
-      class="QmitkCommonAppsIGIPerspective"
+      class="niftk::CommonAppsIGIPerspective"
 	  icon="resources/icon_cmic.xpm">
     </perspective>
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="uk.ac.ucl.cmic.commonapps.QmitkCommonAppsApplicationPreferencePage" name="Application Preferences" class="QmitkCommonAppsApplicationPreferencePage">
-      <keywordreference id="uk.ac.ucl.cmic.commonapps.QmitkCommonAppsApplicationPreferencePageKeywords"></keywordreference>
+    <page id="uk.ac.ucl.cmic.commonapps.CommonAppsApplicationPreferencePage" name="Application Preferences" class="niftk::CommonAppsApplicationPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.commonapps.CommonAppsApplicationPreferencePageKeywords"></keywordreference>
     </page>
   </extension>
 

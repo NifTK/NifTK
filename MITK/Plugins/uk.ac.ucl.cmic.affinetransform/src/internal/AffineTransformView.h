@@ -16,7 +16,7 @@
 #define AffineTransformView_h
 
 #include <QmitkAbstractView.h>
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <QmitkRenderWindow.h>
 #include <berryISelectionListener.h>
 
@@ -49,7 +49,7 @@
  *
  * \ingroup uk_ac_ucl_cmic_affinetransform_internal
  */
-class AffineTransformView : public QmitkBaseView
+class AffineTransformView : public niftk::BaseView
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)

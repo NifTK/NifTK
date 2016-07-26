@@ -19,7 +19,7 @@
 
 #include <mitkRenderingManager.h>
 
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 
 namespace berry
 {
@@ -35,9 +35,9 @@ class QmitkSideViewerWidget;
  *
  * \ingroup uk_ac_ucl_cmic_common
  *
- * \sa QmitkBaseView
+ * \sa BaseView
  */
-class CMIC_QT_SIDEVIEWER QmitkSideViewerView : public QmitkBaseView
+class CMIC_QT_SIDEVIEWER QmitkSideViewerView : public BaseView
 {
 
   Q_OBJECT

@@ -36,7 +36,6 @@ class RenderingManager;
 class SliceNavigationController;
 }
 
-class QmitkBaseView;
 class QmitkRenderWindow;
 
 class niftkSingleViewerWidget;
@@ -46,6 +45,12 @@ class QDoubleSpinBox;
 class QLabel;
 class QRadioButton;
 class QSpinBox;
+
+
+namespace niftk
+{
+class BaseView;
+}
 
 /**
  * \class QmitkSideViewerWidget
@@ -74,7 +79,7 @@ public:
   ///       The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
   ///       rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
   ///
-  QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent, mitk::RenderingManager* renderingManager);
+  QmitkSideViewerWidget(niftk::BaseView* view, QWidget* parent, mitk::RenderingManager* renderingManager);
 
   /// \brief Destructs the QmitkSideViewerWidget object.
   virtual ~QmitkSideViewerWidget();
@@ -154,7 +159,7 @@ private:
   void SetupUi(QWidget* parent);
 
   /// \brief The view that contains this widget.
-  QmitkBaseView* m_ContainingView;
+  niftk::BaseView* m_ContainingView;
 
   /// \brief The identifier of the focus change listener.
   unsigned long m_FocusManagerObserverTag;

@@ -13,19 +13,19 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  QmitkNiftyIGIApplication.cxx
-  QmitkNiftyIGIAppWorkbenchAdvisor.cxx
-  QmitkNiftyIGIWorkbenchWindowAdvisor.cxx
+  niftkNiftyIGIApplication.cxx
+  niftkNiftyIGIAppWorkbenchAdvisor.cxx
+  niftkNiftyIGIWorkbenchWindowAdvisor.cxx
 )
 
 set(INTERNAL_CPP_FILES
-  QmitkNiftyIGIApplicationPlugin.cxx
+  niftkNiftyIGIApplicationPlugin.cxx
 )
 
 set(MOC_H_FILES
-  src/QmitkNiftyIGIApplication.h
-  src/QmitkNiftyIGIWorkbenchWindowAdvisor.h
-  src/internal/QmitkNiftyIGIApplicationPlugin.h
+  src/niftkNiftyIGIApplication.h
+  src/niftkNiftyIGIWorkbenchWindowAdvisor.h
+  src/internal/niftkNiftyIGIApplicationPlugin.h
 )
 
 set(CACHED_RESOURCE_FILES
@@ -40,7 +40,7 @@ set(CACHED_RESOURCE_FILES
 
 set(QRC_FILES
 # uncomment the following line if you want to use Qt resources
-  resources/QmitkNiftyIGIApplication.qrc
+  resources/niftkNiftyIGIApplication.qrc
 )
 
 set(CPP_FILES )

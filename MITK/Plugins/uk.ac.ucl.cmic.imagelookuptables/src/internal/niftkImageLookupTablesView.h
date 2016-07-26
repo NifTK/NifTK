@@ -17,7 +17,7 @@
 
 #include "ui_ImageLookupTablesViewControls.h"
 
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <mitkLevelWindowManager.h>
 #include <mitkDataNode.h>
 #include <mitkImage.h>
@@ -36,7 +36,7 @@ class LookupTableManager;
  * \brief Provides a simple GUI enabling the selection of window, level, min, max and a choice of lookup tables.
  * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
  */
-class ImageLookupTablesView : public QmitkBaseView
+class ImageLookupTablesView : public niftk::BaseView
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
@@ -66,7 +66,7 @@ public:
 protected:
 
   /**
-   * \brief \see QmitkBaseView::Activated()
+   * \brief \see niftk::BaseView::Activated()
    */
   virtual void Activated() override;
 

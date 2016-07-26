@@ -18,7 +18,7 @@ mitk_create_plugin(
   EXPORT_DIRECTIVE CMIC_QT_COMMON
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS niftkCoreGui
-  )
+)
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(uk_ac_ucl_cmic_common)

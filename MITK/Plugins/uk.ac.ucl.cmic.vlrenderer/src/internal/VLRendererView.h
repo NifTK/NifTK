@@ -21,7 +21,7 @@
 
 #include <berryQtViewPart.h>
 #include <berryIBerryPreferences.h>
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <QmitkRenderWindow.h>
 #include <mitkDataNode.h>
 #include <mitkSurface.h>
@@ -42,7 +42,7 @@
  * \brief Provides a simple GUI to visualize stuff
  * \ingroup uk_ac_ucl_cmic_VLRenderer_internal
  */
-class VLRendererView : public QmitkBaseView
+class VLRendererView : public niftk::BaseView
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)

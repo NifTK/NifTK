@@ -44,7 +44,7 @@ BaseSegmentorView::~BaseSegmentorView()
 //-----------------------------------------------------------------------------
 void BaseSegmentorView::Activated()
 {
-  QmitkBaseView::Activated();
+  BaseView::Activated();
 
   assert(m_SegmentorController);
   m_SegmentorController->OnViewGetsActivated();
@@ -54,7 +54,7 @@ void BaseSegmentorView::Activated()
 //-----------------------------------------------------------------------------
 void BaseSegmentorView::Deactivated()
 {
-  QmitkBaseView::Deactivated();
+  BaseView::Deactivated();
 
   assert(m_SegmentorController);
   m_SegmentorController->OnViewGetsDeactivated();
@@ -64,7 +64,7 @@ void BaseSegmentorView::Deactivated()
 //-----------------------------------------------------------------------------
 void BaseSegmentorView::Visible()
 {
-  QmitkBaseView::Visible();
+  BaseView::Visible();
 
   assert(m_SegmentorController);
   m_SegmentorController->OnViewGetsVisible();
@@ -74,7 +74,7 @@ void BaseSegmentorView::Visible()
 //-----------------------------------------------------------------------------
 void BaseSegmentorView::Hidden()
 {
-  QmitkBaseView::Hidden();
+  BaseView::Hidden();
 
   assert(m_SegmentorController);
   m_SegmentorController->OnViewGetsHidden();

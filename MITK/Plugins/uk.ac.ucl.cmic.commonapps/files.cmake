@@ -13,27 +13,27 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  QmitkCommonAppsApplicationPlugin.cxx
-  QmitkCommonAppsApplicationPreferencePage.cxx
-  QmitkBaseApplication.cxx
-  QmitkBaseAppWorkbenchAdvisor.cxx
-  QmitkBaseWorkbenchWindowAdvisor.cxx
-  QmitkNiftyViewApplicationPreferencePage.cxx
-  QmitkCommonAppsMinimalPerspective.cxx
-  QmitkCommonAppsIGIPerspective.cxx
+  niftkCommonAppsApplicationPlugin.cxx
+  niftkCommonAppsApplicationPreferencePage.cxx
+  niftkBaseApplication.cxx
+  niftkBaseAppWorkbenchAdvisor.cxx
+  niftkBaseWorkbenchWindowAdvisor.cxx
+  niftkNiftyViewApplicationPreferencePage.cxx
+  niftkCommonAppsMinimalPerspective.cxx
+  niftkCommonAppsIGIPerspective.cxx
 )
 
 set(INTERNAL_CPP_FILES
 )
 
 set(MOC_H_FILES
-  src/QmitkCommonAppsApplicationPlugin.h
-  src/QmitkCommonAppsApplicationPreferencePage.h
-  src/QmitkBaseApplication.h
-  src/QmitkBaseWorkbenchWindowAdvisor.h
-  src/QmitkNiftyViewApplicationPreferencePage.h
-  src/QmitkCommonAppsMinimalPerspective.h
-  src/QmitkCommonAppsIGIPerspective.h
+  src/niftkCommonAppsApplicationPlugin.h
+  src/niftkCommonAppsApplicationPreferencePage.h
+  src/niftkBaseApplication.h
+  src/niftkBaseWorkbenchWindowAdvisor.h
+  src/niftkNiftyViewApplicationPreferencePage.h
+  src/niftkCommonAppsMinimalPerspective.h
+  src/niftkCommonAppsIGIPerspective.h
 )
 
 set(CACHED_RESOURCE_FILES

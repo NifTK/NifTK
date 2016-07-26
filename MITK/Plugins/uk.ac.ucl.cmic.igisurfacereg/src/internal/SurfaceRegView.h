@@ -15,7 +15,7 @@
 #ifndef SurfaceRegView_h
 #define SurfaceRegView_h
 
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include "ui_SurfaceRegView.h"
 #include <vtkSmartPointer.h>
 #include <niftkICPBasedRegistration.h>
@@ -33,7 +33,7 @@ class vtkMatrix4x4;
  *
  * \ingroup uk_ac_ucl_cmic_igisurfacereg_internal
 */
-class SurfaceRegView : public QmitkBaseView
+class SurfaceRegView : public niftk::BaseView
 {  
   /**
    * this is needed for all Qt objects that should have a Qt meta-object
