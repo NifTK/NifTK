@@ -167,7 +167,8 @@ void VLVideoOverlayWidget::OnTrackedViewerCheckBoxChecked(bool checked)
 //-----------------------------------------------------------------------------
 void VLVideoOverlayWidget::OnOpacitySliderMoved(int value)
 {
-  MITK_WARN << "Not implemented yet.";
+  m_LeftOverlayViewer->vlSceneView()->setOpacity(static_cast<float>(value)/100.0);
+  m_RightOverlayViewer->vlSceneView()->setOpacity(static_cast<float>(value)/100.0);
 }
 
 
