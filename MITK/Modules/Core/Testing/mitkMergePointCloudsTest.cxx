@@ -132,8 +132,9 @@ static void TestSimpleCases()
 //-----------------------------------------------------------------------------
 int mitkMergePointCloudsTest(int argc, char* argv[])
 {
+  MITK_TEST_BEGIN("mitkMergePointCloudsTest");
   TestErrorConditions();
   TestSimpleCases();
 
-  return EXIT_SUCCESS;
+  MITK_TEST_END();
 }
