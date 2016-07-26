@@ -2160,6 +2160,28 @@ VLSceneView::~VLSceneView() {
   removeDataStorageListeners();
 
   clearScene();
+
+  // It's important do delete the VividRenderer here while the GL context
+  // is still available as it disposes all the internal GL objects used.
+
+  m_VividRendering = NULL;
+  m_VividRenderer = NULL;
+  m_SceneManager = NULL;
+  m_Camera = NULL;
+  m_Trackball = NULL;
+
+  m_DataStorage = NULL;
+  m_NodeVisibilityListener = NULL;
+  m_NodeColorPropertyListener = NULL;
+  m_NodeOpacityPropertyListener = NULL;
+
+  m_DataNodeVLMapperMap.clear();
+  m_NodesToUpdate.clear();
+  m_NodesToAdd.clear();
+  m_NodesToRemove.clear();
+  m_BackgroundNode = NULL;
+  m_CameraNode = NULL;
+
 }
 
 //-----------------------------------------------------------------------------
