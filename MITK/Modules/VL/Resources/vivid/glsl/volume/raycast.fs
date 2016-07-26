@@ -68,7 +68,7 @@ vec4 computeFragColorDirect( vec3 pos )
     float luminance = texture3D( volumeTexture, pos ).r;
 
     #if 1
-        vec3 N = gl_NormalMatrix * ( texture3D( gradientTexture, pos ).xyz * 2.0 - 1.0 );
+        vec3 N = vl_NormalMatrix * ( texture3D( gradientTexture, pos ).xyz * 2.0 - 1.0 );
     #else
         vec3 a, b;
         a.x = texture3D( volumeTexture, pos - vec3( gradientDelta.x, 0.0, 0.0 ) ).r;
@@ -77,7 +77,7 @@ vec4 computeFragColorDirect( vec3 pos )
         b.x = texture3D( volumeTexture, pos + vec3( gradientDelta.x, 0.0, 0.0 ) ).r;
         b.y = texture3D( volumeTexture, pos + vec3( 0.0, gradientDelta.y, 0.0 ) ).r;
         b.z = texture3D( volumeTexture, pos + vec3( 0.0, 0.0, gradientDelta.z ) ).r;
-        vec3 N  = gl_NormalMatrix * normalize( a - b );
+        vec3 N  = vl_NormalMatrix * normalize( a - b );
     #endif
 
     float lookup = transferFunctionDelta + ( 1.0 - 2.0 * transferFunctionDelta ) * luminance;
@@ -101,7 +101,7 @@ vec4 computeFragColorIso( vec3 pos )
     float luminance = texture3D( volumeTexture, pos ).r;
 
     #if 1
-        vec3 N = gl_NormalMatrix * ( texture3D( gradientTexture, pos ).xyz * 2.0 - 1.0 );
+        vec3 N = vl_NormalMatrix * ( texture3D( gradientTexture, pos ).xyz * 2.0 - 1.0 );
     #else
         vec3 a, b;
         a.x = texture3D( volumeTexture, pos - vec3( gradientDelta.x, 0.0, 0.0 ) ).r;
@@ -110,7 +110,7 @@ vec4 computeFragColorIso( vec3 pos )
         b.x = texture3D( volumeTexture, pos + vec3( gradientDelta.x, 0.0, 0.0 ) ).r;
         b.y = texture3D( volumeTexture, pos + vec3( 0.0, gradientDelta.y, 0.0 ) ).r;
         b.z = texture3D( volumeTexture, pos + vec3( 0.0, 0.0, gradientDelta.z ) ).r;
-        vec3 N  = gl_NormalMatrix * normalize( a - b );
+        vec3 N  = vl_NormalMatrix * normalize( a - b );
     #endif
 
     float lookup = transferFunctionDelta + ( 1.0 - 2.0 * transferFunctionDelta ) * luminance;
@@ -163,7 +163,7 @@ void raycastIsosurface() {
 
             // Depth test: must be done here!
             vec3 ray_op = volumeBoxMin + (volumeBoxMax - volumeBoxMin) * ray_pos;
-            vec4 P = gl_ModelViewProjectionMatrix * vec4( ray_op, 1 );
+            vec4 P = vl_ModelViewProjectionMatrix * vec4( ray_op, 1 );
             float z = ( P.z / P.w + 1.0 ) / 2.0;
             if ( z > pixelDepth ) {
                 continue;
@@ -215,7 +215,7 @@ void raycastDirect() {
         // Don't compute the depth test if we know it's already visible
         if ( ! visible ) {
             vec3 ray_op = volumeBoxMin + (volumeBoxMax - volumeBoxMin) * ray_pos;
-            vec4 P = gl_ModelViewProjectionMatrix * vec4( ray_op, 1 );
+            vec4 P = vl_ModelViewProjectionMatrix * vec4( ray_op, 1 );
             float z = ( P.z / P.w + 1.0 ) / 2.0;
             if ( z > pixelDepth ) {
                 continue;
@@ -260,7 +260,7 @@ void raycastMIP() {
         // Don't compute the depth test if we know it's already visible
         if ( ! visible ) {
             vec3 ray_op = volumeBoxMin + (volumeBoxMax - volumeBoxMin) * ray_pos;
-            vec4 P = gl_ModelViewProjectionMatrix * vec4( ray_op, 1 );
+            vec4 P = vl_ModelViewProjectionMatrix * vec4( ray_op, 1 );
             float z = ( P.z / P.w + 1.0 ) / 2.0;
             if ( z < pixelDepth ) {
                 visible = true;

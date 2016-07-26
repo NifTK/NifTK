@@ -26,8 +26,8 @@ void main(void)
     gl_Position = gl_Vertex;
     gl_TexCoord[0] = gl_MultiTexCoord0;
     gsOP = gl_Vertex;
-    gsCP = gl_ModelViewMatrix * gl_Vertex;
+    gsCP = vl_ModelViewMatrix * gl_Vertex;
     gsWP = vl_WorldMatrix * gl_Vertex;
-    gsN = normalize(gl_NormalMatrix * gl_Normal);
+    gsN = normalize(vl_NormalMatrix * gl_Normal);
     gsColor = gl_Color;
 }

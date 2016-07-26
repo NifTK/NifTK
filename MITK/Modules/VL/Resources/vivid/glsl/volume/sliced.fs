@@ -19,7 +19,7 @@
 
 #version 150 compatibility
 
-// #pragma VL include /vivid/glsl/uniforms.glsl
+#pragma VL include /vivid/glsl/uniforms.glsl
 
 // Automatic settings
 
@@ -62,7 +62,7 @@ void main()
     sample2.y = texture3D( volumeTexture, gl_TexCoord[0].xyz + vec3( 0.0, gradientDelta.y, 0.0 ) ).r;
     sample1.z = texture3D( volumeTexture, gl_TexCoord[0].xyz - vec3( 0.0, 0.0, gradientDelta.z ) ).r;
     sample2.z = texture3D( volumeTexture, gl_TexCoord[0].xyz + vec3( 0.0, 0.0, gradientDelta.z ) ).r;
-    vec3 N  = gl_NormalMatrix * normalize( sample1 - sample2 );
+    vec3 N  = vl_NormalMatrix * normalize( sample1 - sample2 );
 
     // simple two-side lighting
 

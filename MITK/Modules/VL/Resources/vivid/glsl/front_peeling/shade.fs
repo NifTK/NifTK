@@ -41,7 +41,7 @@ vec4 LightingStage()
   }
   else
   {
-    vec3 l = normalize( gl_LightSource[0].position.xyz - CP.xyz );
+    vec3 l = normalize( vl_Vivid.light.position.xyz - CP.xyz );
     vec3 e = normalize( vec3( 0, 0, 0 ) - CP.xyz ); // vec3( 0.0, 0.0 ,1.0 ) for GL_LIGHT_MODEL_LOCAL_VIEWER = FALSE
     vec3 n = normalize( N );
     vec3 H = normalize( l + e );
@@ -54,20 +54,20 @@ vec4 LightingStage()
       n = n * -1;
     }
 
-    vec3 diffuse = gl_FrontMaterial.diffuse.rgb * gl_LightSource[0].diffuse.rgb;
+    vec3 diffuse = vl_Vivid.material.diffuse.rgb * vl_Vivid.light.diffuse.rgb;
     diffuse = diffuse * vec3( max( 0.0, NdotL ) );
 
     float NdotH = max( 0.0, dot( n, H ) );
     vec3 specular = vec3( 0.0 );
     if ( NdotL > 0.0 ) {
-      specular = gl_FrontMaterial.specular.rgb * gl_LightSource[0].specular.rgb * pow( NdotH, gl_FrontMaterial.shininess );
+      specular = vl_Vivid.material.specular.rgb * vl_Vivid.light.specular.rgb * pow( NdotH, vl_Vivid.material.shininess );
     }
 
-    vec3 ambient  = gl_FrontMaterial.ambient.rgb * gl_LightSource[0].ambient.rgb + gl_FrontMaterial.ambient.rgb * gl_LightModel.ambient.rgb;
-    vec3 emission = gl_FrontMaterial.emission.rgb;
+    vec3 ambient  = vl_Vivid.material.ambient.rgb * vl_Vivid.light.ambient.rgb + vl_Vivid.material.ambient.rgb * gl_LightModel.ambient.rgb;
+    vec3 emission = vl_Vivid.material.emission.rgb;
 
     color.rgb = ambient + emission + diffuse + specular;
-    color.a = gl_FrontMaterial.diffuse.a;
+    color.a = vl_Vivid.material.diffuse.a;
   }
 
   if ( vl_Vivid.enablePointSprite ) {
@@ -199,33 +199,34 @@ vec4 ClippingStage( vec4 color )
 
 vec4 FogStage( vec4 color )
 {
-    if ( vl_Vivid.smartFog.mode > 0 && color.a > 0 ) {
+    float scale = 1.0 / ( vl_Vivid.fog.end - vl_Vivid.fog.start );
+    if ( vl_Vivid.fog.mode > 0 && color.a > 0 ) {
         // Compute fog factor
         float dist = length( CP.xyz );
         float fog_factor = 0;
-        if ( vl_Vivid.smartFog.mode == 1 ) {
+        if ( vl_Vivid.fog.mode == 1 ) {
             // Linear
-            fog_factor = ( gl_Fog.end - dist ) * gl_Fog.scale;
+            fog_factor = ( vl_Vivid.fog.end - dist ) * scale;
         } else
-        if ( vl_Vivid.smartFog.mode == 2 ) {
+        if ( vl_Vivid.fog.mode == 2 ) {
             // Exp
-            fog_factor = 1.0 / exp( gl_Fog.density * dist );
+            fog_factor = 1.0 / exp( vl_Vivid.fog.density * dist );
         } else
-        if ( vl_Vivid.smartFog.mode == 3 ) {
+        if ( vl_Vivid.fog.mode == 3 ) {
             // Exp2
-            fog_factor = 1.0 / exp( ( gl_Fog.density * dist ) * ( gl_Fog.density * dist ) );
+            fog_factor = 1.0 / exp( ( vl_Vivid.fog.density * dist ) * ( vl_Vivid.fog.density * dist ) );
         }
         fog_factor = clamp( fog_factor, 0, 1.0 );
 
-        if (vl_Vivid.smartFog.target == 0) {
+        if (vl_Vivid.fog.target == 0) {
             // Color
-            color.xyz = mix( gl_Fog.color.xyz, color.xyz, fog_factor );
+            color.xyz = mix( vl_Vivid.fog.color.xyz, color.xyz, fog_factor );
         } else
-        if (vl_Vivid.smartFog.target == 1) {
+        if (vl_Vivid.fog.target == 1) {
             // Transparency
             color.a = color.a * fog_factor;
         } else
-        if (vl_Vivid.smartFog.target == 2) {
+        if (vl_Vivid.fog.target == 2) {
             // Saturation
             color.xyz = AdjustSaturation( color.xyz, fog_factor );
         }

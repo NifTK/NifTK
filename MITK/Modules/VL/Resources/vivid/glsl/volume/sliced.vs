@@ -19,13 +19,13 @@
 
 #version 150 compatibility
 
-// #pragma VL include /vivid/glsl/uniforms.glsl
+#pragma VL include /vivid/glsl/uniforms.glsl
 
 out vec4 CP; // camera-space vertex
 
 void main()
 {
-    gl_Position = ftransform();
+    gl_Position = vl_ModelViewProjectionMatrix * gl_Vertex;
     gl_TexCoord[0] = gl_MultiTexCoord0;
-    CP = gl_ModelViewMatrix * gl_Vertex;
+    CP = vl_ModelViewMatrix * gl_Vertex;
 }

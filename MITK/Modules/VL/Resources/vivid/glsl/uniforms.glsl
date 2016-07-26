@@ -18,7 +18,7 @@ uniform mat4 vl_WorldMatrix;
 uniform mat4 vl_ModelViewMatrix;
 uniform mat4 vl_ProjectionMatrix;
 uniform mat4 vl_ModelViewProjectionMatrix;
-uniform mat4 vl_NormalMatrix;
+uniform mat3 vl_NormalMatrix;
 
 // Texture Mapping
 
@@ -32,6 +32,25 @@ uniform sampler3D vl_UserTexture3D; // Always set to vl::VividRendering::UserTex
 struct vl_SmartFogParameters {
     int mode;   // 0 = OFF, 1 = Linear, 2 = Exp, 3 = Exp2
     int target; // 0 = Color, 1 = Alpha, 2 = Saturation
+    vec4 color;
+    float density;
+    float start;
+    float end;
+};
+
+struct vl_MaterialParameters {
+  vec4 diffuse;
+  vec4 specular;
+  vec4 ambient;
+  vec4 emission;
+  float shininess;
+};
+
+struct vl_LightParameters {
+  vec4 position;
+  vec4 diffuse;
+  vec4 specular;
+  vec4 ambient;
 };
 
 // Smart Clip Stage
@@ -52,7 +71,7 @@ struct vl_SmartClipParameters {
 
 // Outline
 
-struct OutlineParameters {
+struct vl_OutlineParameters {
     // <per-Shader>
     // Clipping plane for Slice Outline mode in World Coordinates
     vec4 slicePlane;
@@ -132,10 +151,16 @@ struct vl_VividParameters {
     vl_StencilParameters stencil;
 
     // <automatic> / <per-Shader>
-    OutlineParameters outline;
+    vl_OutlineParameters outline;
+
+    // <per-shader>
+    vl_MaterialParameters material;
 
     // <per-Shader>
-    vl_SmartFogParameters smartFog;
+    vl_SmartFogParameters fog;
+
+    // <per-Shader>
+    vl_LightParameters light;
 
     // <per-Shader>
     vl_SmartClipParameters smartClip[ VL_SMART_CLIP_SIZE ];
