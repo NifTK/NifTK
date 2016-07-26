@@ -48,9 +48,9 @@ static void TestErrorConditions()
 
     MITK_TEST_CONDITION(!"No exception thrown", "MergePointClouds: Exception on non-existent file");
   }
-  catch (const std::runtime_error& e)
+  catch ( const mitk::Exception& e )
   {
-    MITK_TEST_CONDITION("Threw and caught correct exception", "MergePointClouds: Exception on non-existent file");
+    MITK_TEST_CONDITION("Threw and caught correct exception", "MergePointClouds: mitk Exception on non-existent file");
   }
   catch (...)
   {
