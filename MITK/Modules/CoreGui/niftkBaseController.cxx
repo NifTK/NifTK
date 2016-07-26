@@ -41,7 +41,7 @@ class BaseControllerPrivate
 
   IBaseView* m_View;
 
-  class DataStorageListener : private mitk::DataStorageListener
+  class DataStorageListener : public mitk::DataStorageListener
   {
   public:
     DataStorageListener(BaseControllerPrivate* d, mitk::DataStorage* dataStorage)
@@ -73,7 +73,7 @@ class BaseControllerPrivate
     BaseControllerPrivate* m_D;
   };
 
-  class VisibilityListener : private mitk::DataNodePropertyListener
+  class VisibilityListener : public mitk::DataNodePropertyListener
   {
   public:
     VisibilityListener(BaseControllerPrivate* d, mitk::DataStorage* dataStorage)
