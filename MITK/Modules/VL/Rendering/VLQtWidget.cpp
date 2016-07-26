@@ -729,6 +729,10 @@ namespace
     node->SetProperty("VL.Outline.Color", outline_color);
     outline_color->SetValue( vl::yellow.ptr() );
 
+    mitk::FloatProperty::Pointer outline_opacity = mitk::FloatProperty::New();
+    node->SetProperty("VL.Outline.Opacity", outline_opacity);
+    outline_opacity->SetValue( 1 );
+
     // gocUniform("vl_Vivid.outline.width")
     mitk::IntProperty::Pointer outline_width = mitk::IntProperty::New();
     node->SetProperty("VL.Outline.Width", outline_width);
@@ -742,8 +746,9 @@ namespace
 
   void updateRenderModeProps( Effect* fx, const mitk::DataNode* node ) {
     int mode = getEnumProp( node, "VL.SurfaceMode", 0 );
-#if 0
+#if 1
     vec4 color = getColorProp( node, "VL.Outline.Color", vl::yellow );
+    color.a() = getFloatProp( node, "VL.Outline.Opacity" );
 #else
     vec4 color = getColorProp( node, "color" );
     color.a() = getFloatProp( node, "opacity" );
