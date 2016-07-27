@@ -98,4 +98,4 @@ MIDASImageUpdateCopyRegionProcessor<TPixel, VImageDimension>
   this->SetAfterImage(pasteImageFilter->GetOutput());
 }
 
-} // end namespace
+}

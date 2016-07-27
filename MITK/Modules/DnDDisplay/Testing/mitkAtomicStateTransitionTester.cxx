@@ -69,7 +69,11 @@ AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionT
           /// Note:
           /// The SIGNAL macro preprends a '2' before the signals and '1' before slots.
           /// So that the connect mechanism works, we have to imitate this behaviour here.
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
           QByteArray signal(metaMethod.signature());
+#else
+          QByteArray signal(metaMethod.methodSignature());
+#endif
           signal.prepend('2');
           this->Connect(qTestObject, signal);
         }

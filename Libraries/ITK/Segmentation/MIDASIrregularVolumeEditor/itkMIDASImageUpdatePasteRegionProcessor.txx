@@ -101,4 +101,4 @@ MIDASImageUpdatePasteRegionProcessor<TPixel, VImageDimension>
   }   
 }
 
-} // end namespace
+}

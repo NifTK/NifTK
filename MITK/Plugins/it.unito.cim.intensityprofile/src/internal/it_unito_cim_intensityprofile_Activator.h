@@ -28,6 +28,9 @@ class it_unito_cim_intensityprofile_Activator :
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  Q_PLUGIN_METADATA(IID "it_unito_cim_intensityprofile")
+#endif
 
 public:
 

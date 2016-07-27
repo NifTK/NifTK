@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin>
+
+  <extension point="org.blueberry.ui.views">
+    <view id="org.mitk.views.pointsetconverter"
+          name="Point Set Converter"
+          class="PointSetConverterView"
+          icon="resources/pointset_interaction.png" />
+  </extension>
+
+</plugin>

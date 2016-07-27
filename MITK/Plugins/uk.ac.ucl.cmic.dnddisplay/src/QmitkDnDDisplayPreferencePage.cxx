@@ -25,31 +25,32 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE("default image interpolation");
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR("DnD display background colour");
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET("DnD display background colour stylesheet");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE("default image interpolation");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR("DnD display background colour");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET("DnD display background colour stylesheet");
 
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING("DnD display slice select tracking");
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING("DnD display time select tracking");
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING("DnD display magnification select tracking");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING("DnD display slice select tracking");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING("DnD display time select tracking");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING("DnD display magnification select tracking");
 
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS("DnD display show 2D cursors");
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS("DnD display show direction annotations");
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT("DnD display show 3D window in multiple window layout");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS("DnD display show 2D cursors");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS("DnD display show direction annotations");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION("DnD display show intensity annotation");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT("DnD display show 3D window in multiple window layout");
 
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT("DnD display default window layout");
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT("DnD display remember view settings of each window layout");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT("DnD display default window layout");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT("DnD display remember view settings of each window layout");
 
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER("DnD display default number of view rows");
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER("DnD display default number of view columns");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER("DnD display default number of view rows");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER("DnD display default number of view columns");
 
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_DROP_TYPE("DnD display default drop type");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_DROP_TYPE("DnD display default drop type");
 
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER("DnD display show magnification slider");
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS("DnD display show showing options");
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS("DnD display show window layout controls");
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS("DnD display show view number controls");
-const std::string QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS("DnD display show drop type widgets");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER("DnD display show magnification slider");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS("DnD display show showing options");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS("DnD display show window layout controls");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS("DnD display show view number controls");
+const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS("DnD display show drop type widgets");
 
 //-----------------------------------------------------------------------------
 QmitkDnDDisplayPreferencePage::QmitkDnDDisplayPreferencePage()
@@ -60,6 +61,7 @@ QmitkDnDDisplayPreferencePage::QmitkDnDDisplayPreferencePage()
 , m_MagnificationSelectTracking(NULL)
 , m_Show2DCursorsCheckBox(NULL)
 , m_ShowDirectionAnnotationsCheckBox(NULL)
+, m_ShowIntensityAnnotationCheckBox(NULL)
 , m_Show3DWindowInMultiWindowLayoutCheckBox(NULL)
 , m_DefaultWindowLayoutComboBox(NULL)
 , m_RememberEachWindowLayoutsViewerSettings(NULL)
@@ -93,9 +95,7 @@ void QmitkDnDDisplayPreferencePage::Init(berry::IWorkbench::Pointer )
 //-----------------------------------------------------------------------------
 void QmitkDnDDisplayPreferencePage::CreateQtControl(QWidget* parent)
 {
-  berry::IPreferencesService::Pointer prefService
-    = berry::Platform::GetServiceRegistry()
-    .GetServiceById<berry::IPreferencesService>(berry::IPreferencesService::ID);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   m_DnDDisplayPreferencesNode = prefService->GetSystemPreferences()->Node(QmitkMultiViewerEditor::EDITOR_ID);
 
@@ -123,6 +123,9 @@ void QmitkDnDDisplayPreferencePage::CreateQtControl(QWidget* parent)
 
   m_ShowDirectionAnnotationsCheckBox = new QCheckBox(parent);
   formLayout->addRow("show direction annotations", m_ShowDirectionAnnotationsCheckBox);
+
+  m_ShowIntensityAnnotationCheckBox = new QCheckBox(parent);
+  formLayout->addRow("show intensity annotation", m_ShowIntensityAnnotationCheckBox);
 
   m_Show3DWindowInMultiWindowLayoutCheckBox = new QCheckBox(parent);
   formLayout->addRow("show 3D window in multiple window layout", m_Show3DWindowInMultiWindowLayoutCheckBox);
@@ -209,8 +212,8 @@ QWidget* QmitkDnDDisplayPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool QmitkDnDDisplayPreferencePage::PerformOk()
 {
-  m_DnDDisplayPreferencesNode->Put(DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET, m_BackgroundColorStyleSheet.toStdString());
-  m_DnDDisplayPreferencesNode->PutByteArray(DNDDISPLAY_BACKGROUND_COLOUR, m_BackgroundColor);
+  m_DnDDisplayPreferencesNode->Put(DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET, m_BackgroundColorStyleSheet);
+  m_DnDDisplayPreferencesNode->Put(DNDDISPLAY_BACKGROUND_COLOUR, m_BackgroundColor);
   m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER, m_DefaultNumberOfViewerRowsSpinBox->value());
   m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER, m_DefaultNumberOfViewerColumnsSpinBox->value());
   m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, m_DefaultWindowLayoutComboBox->currentIndex());
@@ -222,6 +225,7 @@ bool QmitkDnDDisplayPreferencePage::PerformOk()
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, m_ShowViewerNumberControlsCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_2D_CURSORS, m_Show2DCursorsCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, m_ShowDirectionAnnotationsCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, m_ShowIntensityAnnotationCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, m_Show3DWindowInMultiWindowLayoutCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, m_ShowMagnificationSliderCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, m_RememberEachWindowLayoutsViewerSettings->isChecked());
@@ -241,8 +245,8 @@ void QmitkDnDDisplayPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void QmitkDnDDisplayPreferencePage::Update()
 {
-  m_BackgroundColorStyleSheet = QString::fromStdString(m_DnDDisplayPreferencesNode->Get(DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET, ""));
-  m_BackgroundColor = m_DnDDisplayPreferencesNode->GetByteArray(DNDDISPLAY_BACKGROUND_COLOUR, "");
+  m_BackgroundColorStyleSheet = m_DnDDisplayPreferencesNode->Get(DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET, "");
+  m_BackgroundColor = m_DnDDisplayPreferencesNode->Get(DNDDISPLAY_BACKGROUND_COLOUR, "");
   if (m_BackgroundColorStyleSheet=="")
   {
     m_BackgroundColorStyleSheet = "background-color: rgb(0, 0, 0)";
@@ -264,6 +268,7 @@ void QmitkDnDDisplayPreferencePage::Update()
   m_ShowViewerNumberControlsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true));
   m_Show2DCursorsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_2D_CURSORS, true));
   m_ShowDirectionAnnotationsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
+  m_ShowIntensityAnnotationCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
   m_Show3DWindowInMultiWindowLayoutCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
   m_ShowMagnificationSliderCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
   m_RememberEachWindowLayoutsViewerSettings->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
@@ -295,7 +300,7 @@ void QmitkDnDDisplayPreferencePage::OnBackgroundColourChanged()
     QStringList backgroundColour;
     backgroundColour << colour.name();
 
-    m_BackgroundColor = backgroundColour.replaceInStrings(";","\\;").join(";").toStdString();
+    m_BackgroundColor = backgroundColour.replaceInStrings(";","\\;").join(";");
   }
  }
 

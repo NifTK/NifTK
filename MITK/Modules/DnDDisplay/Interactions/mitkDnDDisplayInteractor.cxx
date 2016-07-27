@@ -16,7 +16,7 @@
 
 #include <string.h>
 
-#include "../niftkSingleViewerWidget.h"
+#include <QTimer>
 
 #include <mitkBaseRenderer.h>
 #include <mitkGlobalInteraction.h>
@@ -24,8 +24,9 @@
 #include <mitkLine.h>
 #include <mitkSliceNavigationController.h>
 
-#include <QTimer>
+#include <niftkInteractionEventObserverMutex.h>
 
+#include "niftkSingleViewerWidget.h"
 
 //-----------------------------------------------------------------------------
 mitk::DnDDisplayInteractor::DnDDisplayInteractor(niftkSingleViewerWidget* viewer)
@@ -65,10 +66,19 @@ void mitk::DnDDisplayInteractor::Notify(InteractionEvent* interactionEvent, bool
 //-----------------------------------------------------------------------------
 void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
 {
-  Superclass::ConnectActionsAndFunctions();
+  /// Note:
+  /// We do not call the overridden function here. It assign handlers to actions
+  /// that are not defined for this state machine.
+
+  CONNECT_FUNCTION("startSelectingPosition", StartSelectingPosition);
   CONNECT_FUNCTION("selectPosition", SelectPosition);
-  CONNECT_FUNCTION("initMove", InitMove);
-  CONNECT_FUNCTION("initZoom", InitZoom);
+  CONNECT_FUNCTION("stopSelectingPosition", StopSelectingPosition);
+  CONNECT_FUNCTION("startPanning", StartPanning);
+  CONNECT_FUNCTION("pan", Pan);
+  CONNECT_FUNCTION("stopPanning", StopPanning);
+  CONNECT_FUNCTION("startZooming", StartZooming);
+  CONNECT_FUNCTION("zoom", Zoom);
+  CONNECT_FUNCTION("stopZooming", StopZooming);
   CONNECT_FUNCTION("setWindowLayoutToAxial", SetWindowLayoutToAxial);
   CONNECT_FUNCTION("setWindowLayoutToSagittal", SetWindowLayoutToSagittal);
   CONNECT_FUNCTION("setWindowLayoutToCoronal", SetWindowLayoutToCoronal);
@@ -76,6 +86,8 @@ void mitk::DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("setWindowLayoutToMulti", SetWindowLayoutToMulti);
   CONNECT_FUNCTION("toggleMultiWindowLayout", ToggleMultiWindowLayout);
   CONNECT_FUNCTION("toggleCursorVisibility", ToggleCursorVisibility);
+  CONNECT_FUNCTION("toggleDirectionAnnotations", ToggleDirectionAnnotations);
+  CONNECT_FUNCTION("toggleIntensityAnnotation", ToggleIntensityAnnotation);
   CONNECT_FUNCTION("selectPreviousSlice", SelectPreviousSlice);
   CONNECT_FUNCTION("selectNextSlice", SelectNextSlice);
   CONNECT_FUNCTION("selectPreviousTimeStep", SelectPreviousTimeStep);
@@ -106,6 +118,13 @@ QmitkRenderWindow* mitk::DnDDisplayInteractor::GetRenderWindow(mitk::BaseRendere
 
 
 //-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::StartSelectingPosition(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  niftk::InteractionEventObserverMutex::GetInstance()->Lock(this);
+}
+
+
+//-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
@@ -118,11 +137,7 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* action, Inte
   }
 
   InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
-  if (positionEvent == NULL)
-  {
-    MITK_WARN << "mitk DnDDisplayInteractor cannot process the event: " << interactionEvent->GetNameOfClass();
-    return false;
-  }
+  assert(positionEvent);
 
   // First, check if the slice navigation controllers have a valid geometry,
   // i.e. an image is loaded.
@@ -153,14 +168,19 @@ bool mitk::DnDDisplayInteractor::SelectPosition(StateMachineAction* action, Inte
 
 
 //-----------------------------------------------------------------------------
-bool mitk::DnDDisplayInteractor::InitMove(StateMachineAction* action, InteractionEvent* interactionEvent)
+bool mitk::DnDDisplayInteractor::StopSelectingPosition(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
 {
-  InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
-  if (positionEvent == NULL)
-  {
-    MITK_WARN << "mitk DnDDisplayInteractor cannot process the event: " << interactionEvent->GetNameOfClass();
-    return false;
-  }
+  niftk::InteractionEventObserverMutex::GetInstance()->Unlock(this);
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::StartPanning(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  niftk::InteractionEventObserverMutex::GetInstance()->Lock(this);
+
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(interactionEvent);
+  assert(positionEvent);
 
   // First, check if the slice navigation controllers have a valid geometry,
   // i.e. an image is loaded.
@@ -187,15 +207,27 @@ bool mitk::DnDDisplayInteractor::InitMove(StateMachineAction* action, Interactio
 }
 
 
-//-----------------------------------------------------------------------------
-bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, InteractionEvent* interactionEvent)
+////-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::Pan(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
-  InteractionPositionEvent* positionEvent = dynamic_cast<InteractionPositionEvent*>(interactionEvent);
-  if (positionEvent == NULL)
-  {
-    MITK_WARN << "mitk DnDDisplayInteractor cannot process the event: " << interactionEvent->GetNameOfClass();
-    return false;
-  }
+  return Superclass::Move(action, interactionEvent);
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::StopPanning(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  niftk::InteractionEventObserverMutex::GetInstance()->Unlock(this);
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::StartZooming(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  niftk::InteractionEventObserverMutex::GetInstance()->Lock(this);
+
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(interactionEvent);
+  assert(positionEvent);
 
   // First, check if the slice navigation controllers have a valid geometry,
   // i.e. an image is loaded.
@@ -235,6 +267,20 @@ bool mitk::DnDDisplayInteractor::InitZoom(StateMachineAction* action, Interactio
   m_Viewer->BlockUpdate(updateWasBlocked);
 
   return result;
+}
+
+
+////-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::Zoom(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  return Superclass::Zoom(action, interactionEvent);
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::StopZooming(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  niftk::InteractionEventObserverMutex::GetInstance()->Unlock(this);
 }
 
 
@@ -290,6 +336,22 @@ bool mitk::DnDDisplayInteractor::ToggleMultiWindowLayout(StateMachineAction* act
 bool mitk::DnDDisplayInteractor::ToggleCursorVisibility(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
   m_Viewer->ToggleCursorVisibility();
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::ToggleDirectionAnnotations(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  m_Viewer->ToggleDirectionAnnotations();
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool mitk::DnDDisplayInteractor::ToggleIntensityAnnotation(StateMachineAction* action, InteractionEvent* interactionEvent)
+{
+  m_Viewer->ToggleIntensityAnnotation();
   return true;
 }
 
@@ -405,6 +467,8 @@ bool mitk::DnDDisplayInteractor::SelectNextTimeStep(StateMachineAction* action, 
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesBackwards(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
+  niftk::InteractionEventObserverMutex::GetInstance()->Lock(this);
+
   this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(SelectPreviousSlice()));
   m_AutoScrollTimer->start();
 
@@ -415,6 +479,8 @@ bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesBackwards(StateMachi
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesForwards(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
+  niftk::InteractionEventObserverMutex::GetInstance()->Lock(this);
+
   this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(SelectNextSlice()));
   m_AutoScrollTimer->start();
   return true;
@@ -424,6 +490,8 @@ bool mitk::DnDDisplayInteractor::StartScrollingThroughSlicesForwards(StateMachin
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsBackwards(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
+  niftk::InteractionEventObserverMutex::GetInstance()->Lock(this);
+
   this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(SelectPreviousTimeStep()));
   m_AutoScrollTimer->start();
   return true;
@@ -433,6 +501,8 @@ bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsBackwards(StateMa
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsForwards(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
+  niftk::InteractionEventObserverMutex::GetInstance()->Lock(this);
+
   this->connect(m_AutoScrollTimer, SIGNAL(timeout()), SLOT(SelectNextTimeStep()));
   m_AutoScrollTimer->start();
   return true;
@@ -442,6 +512,8 @@ bool mitk::DnDDisplayInteractor::StartScrollingThroughTimeStepsForwards(StateMac
 //-----------------------------------------------------------------------------
 bool mitk::DnDDisplayInteractor::StopScrolling(StateMachineAction* action, InteractionEvent* interactionEvent)
 {
+  niftk::InteractionEventObserverMutex::GetInstance()->Unlock(this);
+
   m_AutoScrollTimer->stop();
   m_AutoScrollTimer->disconnect(this);
   return true;

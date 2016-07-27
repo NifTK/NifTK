@@ -79,10 +79,10 @@ private:
   RegionType   m_SourceRegionOfInterest;
 };
 
-} // end namespace
+}
 
 #ifndef ITK_MANUAL_INSTANTIATION
 #include "itkMIDASImageUpdateCopyRegionProcessor.txx"
 #endif
 
-#endif // ITKIMAGEUPDATEBYREGIONPROCESSOR_H
+#endif

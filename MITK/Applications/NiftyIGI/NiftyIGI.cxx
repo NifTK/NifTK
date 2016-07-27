@@ -16,19 +16,18 @@
 
 #include <QVariant>
 
-/**
- * \file NiftyIGI.cxx
- * \brief Main entry point for NiftyIGI application.
- */
-
+/// \file NiftyIGI.cxx
+/// \brief Main entry point for NiftyIGI application.
 int main(int argc, char** argv)
 {
-  // Create a QApplication instance first
   mitk::BaseApplication myApp(argc, argv);
   myApp.setApplicationName("NiftyIGI");
   myApp.setOrganizationName("CMIC");
 
   myApp.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.niftyigi");
+  /// We disable processing command line arguments by MITK so that we can introduce
+  /// new options. See the uk.ac.ucl.cmic.commonapps plugin activator for details.
+  myApp.setProperty("applicationArgs.processByMITK", false);
 
   return myApp.run();
 }

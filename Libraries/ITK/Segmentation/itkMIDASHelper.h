@@ -151,7 +151,7 @@ namespace itk
   void GetOrientationLabelFromITKImage(
       const itk::Image<TPixel, VImageDimension>* itkImage, std::string &label);
 
-} // end namespace
+}
 
 
 #ifndef ITK_MANUAL_INSTANTIATION

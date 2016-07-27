@@ -54,7 +54,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void 
+void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::SetForegroundValue(unsigned char foregroundValue)
 {
@@ -65,7 +65,7 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
-void 
+void
 MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 ::SetBackgroundValue(unsigned char backgroundValue)
 {
@@ -146,6 +146,27 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
 
   m_RethresholdingFilter->SetBinaryImageInput(m_DilationConnectedComponentFilter->GetOutput());
   m_RethresholdingFilter->SetThresholdedImageInput(m_ThresholdingMaskFilter->GetOutput());
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+MorphologicalSegmentorPipeline<TPixel, VImageDimension>
+::SetErosionSubtractionsInput(const SegmentationImageType* erosionsSubtractionsImage)
+{
+  m_ErosionMaskFilter->SetInput(2, erosionsSubtractionsImage);
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void
+MorphologicalSegmentorPipeline<TPixel, VImageDimension>
+::SetDilationSubtractionsInput(const SegmentationImageType* dilationsSubtractionsImage)
+{
+  m_DilationFilter->SetConnectionBreakerImage(dilationsSubtractionsImage);
+  m_DilationMaskFilter->SetInput(2, dilationsSubtractionsImage);
 }
 
 
@@ -272,110 +293,50 @@ MorphologicalSegmentorPipeline<TPixel, VImageDimension>
   }
   else if (m_Stage == EROSION || m_Stage == DILATION)
   {
-    // Simple case first - no editing.
-    
-    if (!editingFlags[0] && !editingFlags[1] && !editingFlags[2] && !editingFlags[3])
+    // Simple cases first - no editing.
+    if (m_Stage == EROSION && !editingFlags[0] && !editingFlags[1])
     {
-      if (m_Stage == EROSION)
-      {
-        m_ErosionConnectedComponentFilter->UpdateLargestPossibleRegion();
-      }
-      else if (m_Stage == DILATION)
-      {
-        m_DilationConnectedComponentFilter->UpdateLargestPossibleRegion();
-      }
+      m_ErosionConnectedComponentFilter->UpdateLargestPossibleRegion();
+    }
+    else if (m_Stage == DILATION && !editingFlags[2] && !editingFlags[3])
+    {
+      m_DilationConnectedComponentFilter->UpdateLargestPossibleRegion();
     }
     else
     {
       // Else: We are doing live updates.
       // Note: We try and update as small a section of the pipeline as possible - as GUI has to be interactive.
+      typename SegmentationImageType::ConstPointer inputImage =
+          m_Stage == EROSION ? m_ErosionMaskFilter->GetInput(editingFlags[0] ? 1 : 2) : m_DilationMaskFilter->GetInput(editingFlags[2] ? 1 : 2);
+      typename SegmentationImageType::Pointer outputImage =
+          m_Stage == EROSION ? m_ErosionConnectedComponentFilter->GetOutput() : m_DilationConnectedComponentFilter->GetOutput();
 
-      typename SegmentationImageType::Pointer outputImage = NULL;
-      typename SegmentationImageType::ConstPointer inputImage = NULL;
-      int updateMethod = 0;
-      
-      typedef itk::Image<TPixel, VImageDimension> ImageType;
-      typedef typename ImageType::IndexType       IndexType;
-      typedef typename ImageType::SizeType        SizeType;
-      typedef typename ImageType::RegionType      RegionType;
-    
-      IndexType  editingRegionStartIndex;
-      SizeType   editingRegionSize;
-      RegionType editingRegionOfInterest;
-    
-      for (int i = 0; i < 3; i++)
+      typename SegmentationImageType::RegionType editingROI;
+      for (int i = 0; i < 3; ++i)
       {
-        editingRegionStartIndex[i] = editingRegion[i];
-        editingRegionSize[i] = editingRegion[i + 3];
+        editingROI.SetIndex(i, editingRegion[i]);
+        editingROI.SetSize(i, editingRegion[i + 3]);
       }
-      editingRegionOfInterest.SetIndex(editingRegionStartIndex);
-      editingRegionOfInterest.SetSize(editingRegionSize);
-  
-      // If Either of these are set, we must be in erosions tab, so m_Stage == EROSION.
-      if (editingFlags[0] || editingFlags[1])
-      {
-        if (editingFlags[0])
-        {
-          inputImage = m_ErosionMaskFilter->GetInput(1);
-          outputImage = m_ErosionConnectedComponentFilter->GetOutput();
-          updateMethod = 1;
-        }
-        else if (editingFlags[1])
-        {
-          inputImage = m_ErosionMaskFilter->GetInput(2);
-          outputImage = m_ErosionConnectedComponentFilter->GetOutput();
-          updateMethod = 2;
-        }
-      }
-      else // We are on dilations tab, so m_Stage == DILATION.
-      {
-        if (editingFlags[2])
-        {
-          inputImage = m_DilationMaskFilter->GetInput(1);
-          outputImage = m_DilationConnectedComponentFilter->GetOutput();
-          updateMethod = 1;
-        }
-        else if (editingFlags[3])
-        {
-          inputImage = m_DilationMaskFilter->GetInput(2);
-          outputImage = m_DilationConnectedComponentFilter->GetOutput();
-          updateMethod = 2;
-        }      
-      }
-      // Now we have decided, input, output, and which method.
-      if (updateMethod == 1)
-      {
-        itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIterator(inputImage, editingRegionOfInterest);
-        itk::ImageRegionIterator<SegmentationImageType> outputIterator(outputImage, editingRegionOfInterest);
-        
-        for (outputIterator.GoToBegin(), editedRegionIterator.GoToBegin();
-            !outputIterator.IsAtEnd();
-            ++outputIterator, ++editedRegionIterator)
-        {
-          if (outputIterator.Get() > 0 || editedRegionIterator.Get() > 0)
-          {
-            outputIterator.Set(m_ForegroundValue);
-          }
-          else
-          {
-            outputIterator.Set(m_BackgroundValue);
-          }
-        }        
-      }
-      else if (updateMethod == 2)
-      {
-        itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIterator(inputImage, editingRegionOfInterest);
-        itk::ImageRegionIterator<SegmentationImageType> outputIterator(outputImage, editingRegionOfInterest);
 
-        for (outputIterator.GoToBegin(), editedRegionIterator.GoToBegin();
-            !outputIterator.IsAtEnd();
-            ++outputIterator, ++editedRegionIterator)
+      itk::ImageRegionConstIterator<SegmentationImageType> editedRegionIt(inputImage, editingROI);
+      itk::ImageRegionIterator<SegmentationImageType> outputIt(outputImage, editingROI);
+
+      if (editingFlags[0] || editingFlags[2])
+      {
+        for (outputIt.GoToBegin(), editedRegionIt.GoToBegin(); !outputIt.IsAtEnd(); ++outputIt, ++editedRegionIt)
         {
-          if (editedRegionIterator.Get() > 0)
+          outputIt.Set(outputIt.Get() || editedRegionIt.Get() ? m_ForegroundValue : m_BackgroundValue);
+        }
+      }
+      else
+      {
+        for (outputIt.GoToBegin(), editedRegionIt.GoToBegin(); !outputIt.IsAtEnd(); ++outputIt, ++editedRegionIt)
+        {
+          if (editedRegionIt.Get())
           {
-            outputIterator.Set(m_BackgroundValue);
+            outputIt.Set(m_BackgroundValue);
           }
-        }        
+        }
       }
     }
   }

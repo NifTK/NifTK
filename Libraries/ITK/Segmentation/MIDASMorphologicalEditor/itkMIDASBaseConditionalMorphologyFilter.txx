@@ -211,9 +211,8 @@ namespace itk
     // Give subclasses chance to tidy things up, or close things down before we exit this filter.
     this->AfterFilter();
 
-  }//end of generatedata method
+  }
 
-}//end namespace itk
-
+}
 
 #endif

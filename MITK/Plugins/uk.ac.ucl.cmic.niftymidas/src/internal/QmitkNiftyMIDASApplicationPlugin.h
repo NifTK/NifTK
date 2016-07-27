@@ -25,19 +25,19 @@
 class QmitkNiftyMIDASApplicationPlugin : public QmitkCommonAppsApplicationPlugin
 {
   Q_OBJECT
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+  Q_PLUGIN_METADATA(IID "uk_ac_ucl_cmic_niftymidas")
+#endif
   
 public:
 
   QmitkNiftyMIDASApplicationPlugin();
   ~QmitkNiftyMIDASApplicationPlugin();
 
-  virtual void start(ctkPluginContext*);
-  virtual void stop(ctkPluginContext*);
+  virtual void start(ctkPluginContext*) override;
+  virtual void stop(ctkPluginContext*) override;
 
 protected:
-
-  /// \brief Called each time a data node is added, so we make sure it is initialised with a Window/Level.
-  virtual void NodeAdded(const mitk::DataNode *node);
 
   /// \brief Called by framework to get a URL for help system.
   virtual QString GetHelpHomePageURL() const;
@@ -46,4 +46,4 @@ private:
 
 };
 
-#endif /* QMITKNIFTYMIDASAPPLICATIONPLUGIN_H_ */
+#endif

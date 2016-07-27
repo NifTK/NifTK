@@ -13,28 +13,26 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  QmitkMIDASBaseSegmentationFunctionality.cxx
+  niftkBaseSegmentorView.cxx
 )
 
 set(INTERNAL_CPP_FILES
-  MIDASActivator.cxx
+  niftkCommonMIDASActivator.cxx
 )
 
 set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/internal/MIDASActivator.h
-  src/QmitkMIDASBaseSegmentationFunctionality.h
+  src/niftkBaseSegmentorView.h
+  src/internal/niftkCommonMIDASActivator.h
 )
 
 set(CACHED_RESOURCE_FILES
   plugin.xml
 )
 
-# todo: add some qt style sheet resources
 set(QRC_FILES
-  resources/CommonMIDASResources.qrc
 )
 
 set(CPP_FILES )

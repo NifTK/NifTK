@@ -12,11 +12,17 @@
 #
 #============================================================================*/
 
+set(H_FILES
+  niftkIBaseView.h
+)
+
 set(CPP_FILES
   Widgets/niftkDataStorageCheckableComboBox.cxx
   Widgets/niftkHelpAboutDialog.cxx
   Rendering/niftkSharedOGLContext.cxx
   Rendering/niftkScopedOGLContext.cxx
+  niftkBaseController.cxx
+  niftkBaseGUI.cxx
 )
 
 set(MOC_H_FILES
@@ -25,6 +31,8 @@ set(MOC_H_FILES
   Events/niftkMouseEventEater.h
   Widgets/niftkDataStorageCheckableComboBox.h
   Widgets/niftkHelpAboutDialog.h
+  niftkBaseController.h
+  niftkBaseGUI.h
 )
 
 set(UI_FILES

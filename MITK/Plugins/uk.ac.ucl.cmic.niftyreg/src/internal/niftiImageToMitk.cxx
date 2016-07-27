@@ -25,7 +25,7 @@
 #include "niftiImageToMitk.h"
 #include <mitkBaseProcess.h>
 #include <mitkImageAccessByItk.h>
-
+#include <mitkImageCast.h>
 
 // ---------------------------------------------------------------------------
 // Normalize()

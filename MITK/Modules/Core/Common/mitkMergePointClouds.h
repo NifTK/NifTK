@@ -50,6 +50,7 @@ public:
   /**
    * @throws std::runtime_error if filename is empty
    * @throws std::runtime_error if the file cannot be read/parsed
+   * @throws mitk::Exception if the file does not exist
    */
   void AddPointSet(const std::string& filename);
 

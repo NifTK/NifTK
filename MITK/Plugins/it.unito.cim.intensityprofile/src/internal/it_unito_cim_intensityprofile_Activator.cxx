@@ -38,4 +38,7 @@ void it_unito_cim_intensityprofile_Activator::stop(ctkPluginContext* context)
 
 }
 
-Q_EXPORT_PLUGIN2(it_unito_cim_intensityprofile, mitk::it_unito_cim_intensityprofile_Activator)
+//-----------------------------------------------------------------------------
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(it_unito_cim_intensityprofile, mitk::it_unito_cim_intensityprofile_Activator)
+#endif

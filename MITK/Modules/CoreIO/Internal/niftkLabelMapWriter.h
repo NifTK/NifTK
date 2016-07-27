@@ -12,25 +12,21 @@
 
 =============================================================================*/
 
-#ifndef __niftkLabelMapWriter_h
-#define __niftkLabelMapWriter_h
-
-
+#ifndef niftkLabelMapWriter_h
+#define niftkLabelMapWriter_h
 
 #include <mitkAbstractFileWriter.h>
 #include "niftkLabeledLookupTableProperty.h"
 
-
-
-namespace niftk 
+namespace niftk
 {
 
 
 /**
-  * \brief Writer to save labeled lookup tables in the format of Slicer v 4.4.0.  
+  * \brief Writer to save labeled lookup tables in the format of Slicer v 4.4.0.
   *
-  * The labels are assumed to correspond to the range of the 
-  * vtkLookupTable. Out of range label values will be 
+  * The labels are assumed to correspond to the range of the
+  * vtkLookupTable. Out of range label values will be
   * assigned a color according to GetTableValue().
   *
   * \ingroup IO
@@ -38,14 +34,14 @@ namespace niftk
 class LabelMapWriter : public mitk::AbstractFileWriter
 {
 
-public: 
+public:
 
   LabelMapWriter();
   virtual ~LabelMapWriter();
 
-  virtual void Write() override;  
+  virtual void Write() override;
 
-private: 
+private:
 
   LabelMapWriter(const LabelMapWriter & other);
   virtual LabelMapWriter * Clone() const override;
@@ -53,7 +49,7 @@ private:
   /** \brief Write labels, lookuptable to stream. */
   void WriteLabelMap(
     LabeledLookupTableProperty::LabelListType labels,
-    vtkLookupTable* lookupTable) const; 
+    vtkLookupTable* lookupTable) const;
 };
 
 } // namespace mitk

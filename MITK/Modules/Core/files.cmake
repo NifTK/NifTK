@@ -13,7 +13,7 @@
 #============================================================================*/
 
 set(H_FILES
-  Common/mitkMIDASEnums.h
+  Common/niftkImageOrientation.h
 )
 
 set(CPP_FILES
@@ -22,8 +22,8 @@ set(CPP_FILES
   Algorithms/mitkNifTKCMC33.cpp
   Algorithms/mitkNifTKImageToSurfaceFilter.cpp
   Algorithms/mitkNifTKMeshSmoother.cpp
-  Common/mitkMIDASImageUtils.cxx
-  Common/mitkMIDASOrientationUtils.cxx
+  Common/niftkImageUtils.cxx
+  Common/niftkImageOrientationUtils.cxx
   Common/mitkPointUtils.cxx
   Common/mitkMergePointClouds.cxx
   DataManagement/mitkDataNodeBoolPropertyFilter.cxx
@@ -56,6 +56,7 @@ set(CPP_FILES
   #IO/niftkCoreIOMimeTypes.cxx
   Interactions/mitkPointSetUpdate.cxx
   Interactions/niftkAffineTransformDataInteractor3D.cxx
+  Interactions/niftkInteractionEventObserverMutex.cxx
 )
 
 set(MOC_H_FILES

@@ -27,7 +27,7 @@
 //-----------------------------------------------------------------------------
 niftk::LabelMapWriter::LabelMapWriter()
 : mitk::AbstractFileWriter(QmitkLookupTableContainer::GetStaticNameOfClass(),
-                           mitk::CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()), 
+                           mitk::CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()),
                            niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
 {
   RegisterService();
@@ -81,10 +81,10 @@ void niftk::LabelMapWriter::Write()
 
   try
   {
-    const std::string& locale = "C";
     const std::string& currLocale = setlocale( LC_ALL, NULL );
-    setlocale(LC_ALL, locale.c_str());
 
+    const std::string& locale = "C";
+    setlocale(LC_ALL, locale.c_str());
 
     std::locale previousLocale(out->getloc());
     std::locale I("C");
@@ -92,9 +92,10 @@ void niftk::LabelMapWriter::Write()
     
    
     // const_cast here because vtk is stupid and vtkLookupTable->GetTableValue() is not a const function
-    vtkLookupTable* unconstTable = const_cast<vtkLookupTable*> (lutContainer->GetLookupTable()); 
+    vtkLookupTable* unconstTable = const_cast<vtkLookupTable*> (lutContainer->GetLookupTable());
     WriteLabelMap(lutContainer->GetLabels(), unconstTable);
     
+    out->imbue( previousLocale );
     setlocale(LC_ALL, currLocale.c_str());
   }
   catch(const std::exception& e)
@@ -119,10 +120,10 @@ void niftk::LabelMapWriter::WriteLabelMap(
   
   for (unsigned int i = 0; i < labels.size(); i++)
   {
-    int value = labels.at(i).first;  
+    int value = labels.at(i).first;
     QString name = labels.at(i).second;
 
-    // in the slicer file format white space is used to denote space betweeen values, 
+    // in the slicer file format white space is used to denote space betweeen values,
     // replacing all white spaces/empty strings with a character to ensure proper IO.
     if (name.isEmpty())
     {
@@ -140,7 +141,6 @@ void niftk::LabelMapWriter::WriteLabelMap(
     int b = rgba[2] * 255;
     int a = rgba[3] * 255;
 
-    std::ostringstream  line;
     outfile << value << " " << name.toStdString() << " "<< r << " " << g << " " << b << " " << a << "\n";
   }
 

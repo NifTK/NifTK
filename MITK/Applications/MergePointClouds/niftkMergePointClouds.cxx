@@ -60,6 +60,10 @@ int main(int argc, char* argv[])
     mpsfile << "</time_series></point_set></point_set_file>" << std::endl;
     mpsfile.close();
   }
+  catch (const mitk::Exception& e)
+  {
+    MITK_ERROR << "Caught '" << typeid(e).name() << "': " << e.what();
+  }
   catch (const std::exception& e)
   {
     MITK_ERROR << "Caught '" << typeid(e).name() << "': " << e.what();

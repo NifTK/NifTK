@@ -17,9 +17,10 @@
 
 #include <QColor>
 
+#include <mitkBaseGeometry.h>
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
-#include <mitkBaseGeometry.h>
+#include <mitkTextOverlay2D.h>
 #include <mitkVector.h>
 #include <QmitkStdMultiWidget.h>
 
@@ -108,6 +109,12 @@ public:
 
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
+
+  /// \brief Tells if the intensity annotation is visible.
+  bool IsIntensityAnnotationVisible() const;
+
+  /// \brief Sets the visibility of the intensity annotation.
+  void SetIntensityAnnotationVisible(bool visible);
 
   /// \brief Returns the flag indicating if nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
   bool GetShow3DWindowIn2x2WindowLayout() const;
@@ -450,6 +457,12 @@ private:
   /// \brief Callback function that gets called by the mitk::FocusManager to indicate the currently focused window.
   void OnFocusChanged();
 
+  /// \brief Initialises the annotations that show the intensity values in the visible images in the 2D windows.
+  void InitialiseIntensityAnnotations();
+
+  /// \brief Updates the annotation that shows the intensity values in the visible images in the given window.
+  void UpdateIntensityAnnotation(int windowIndex) const;
+
   std::vector<QmitkRenderWindow*> m_RenderWindows;
 
   /// \brief The name of the viewer.
@@ -567,6 +580,9 @@ private:
   std::vector<bool> m_ScaleFactorHasChanged;
   bool m_CursorPositionBindingHasChanged;
   bool m_ScaleFactorBindingHasChanged;
+
+  mitk::TextOverlay2D::Pointer m_IntensityAnnotations[3];
+  bool m_IntensityAnnotationIsVisible;
 
   friend class DisplayGeometryModificationCommand;
 

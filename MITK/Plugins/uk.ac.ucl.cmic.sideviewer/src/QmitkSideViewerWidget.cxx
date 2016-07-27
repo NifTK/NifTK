@@ -55,12 +55,12 @@ public:
 
 private:
 
-  Events::Types GetPartEventTypes() const
+  Events::Types GetPartEventTypes() const override
   {
     return Events::VISIBLE;
   }
 
-  void PartVisible(berry::IWorkbenchPartReference::Pointer partRef)
+  void PartVisible(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
     berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
 
@@ -118,8 +118,9 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
 , m_Magnification(0.0)
 , m_MainWindowOrientation(WINDOW_ORIENTATION_UNKNOWN)
 , m_SingleWindowLayouts()
-, m_MIDASToolNodeNameFilter(0)
+, m_ToolNodeNameFilter(0)
 , m_TimeGeometry(0)
+, m_EditorLifeCycleListener(new EditorLifeCycleListener(this))
 , m_RenderingManager(renderingManager)
 {
   this->SetupUi(parent);
@@ -178,31 +179,31 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
   renderers.push_back(m_Viewer->GetCoronalWindow()->GetRenderer());
 
   /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
-//    mitk::MIDASDataNodeNameStringFilter::Pointer filter = mitk::MIDASDataNodeNameStringFilter::New();
+//    niftk::ToolWorkingDataNameFilter::Pointer filter = niftk::ToolWorkingDataNameFilter::New();
 
-  m_MIDASToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
-  m_MIDASToolNodeNameFilter->SetPropertyName("name");
-  m_MIDASToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
-  m_MIDASToolNodeNameFilter->AddToList("MIDASContourTool");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_SEEDS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_PRIOR_CONTOURS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_NEXT_CONTOURS");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS_DRAW_CONTOURS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
-  m_MIDASToolNodeNameFilter->AddToList("MORPHO_SEGMENTATION_OF_LAST_STAGE");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool anchor points");
-  m_MIDASToolNodeNameFilter->AddToList("MIDAS PolyTool previous contour");
-  m_MIDASToolNodeNameFilter->AddToList("Paintbrush_Node");
+  m_ToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
+  m_ToolNodeNameFilter->SetPropertyName("name");
+  m_ToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
+  m_ToolNodeNameFilter->AddToList("MIDAS Background Contour");
+  m_ToolNodeNameFilter->AddToList("MIDAS_SEEDS");
+  m_ToolNodeNameFilter->AddToList("MIDAS_CURRENT_CONTOURS");
+  m_ToolNodeNameFilter->AddToList("MIDAS_REGION_GROWING_IMAGE");
+  m_ToolNodeNameFilter->AddToList("MIDAS_PRIOR_CONTOURS");
+  m_ToolNodeNameFilter->AddToList("MIDAS_NEXT_CONTOURS");
+  m_ToolNodeNameFilter->AddToList("MIDAS_DRAW_CONTOURS");
+  m_ToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_SUBTRACTIONS");
+  m_ToolNodeNameFilter->AddToList("MORPH_EDITS_EROSIONS_ADDITIONS");
+  m_ToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_SUBTRACTIONS");
+  m_ToolNodeNameFilter->AddToList("MORPH_EDITS_DILATIONS_ADDITIONS");
+  m_ToolNodeNameFilter->AddToList("MORPHO_SEGMENTATION_OF_LAST_STAGE");
+  m_ToolNodeNameFilter->AddToList("PolyTool anchor points");
+  m_ToolNodeNameFilter->AddToList("PolyTool previous contour");
+  m_ToolNodeNameFilter->AddToList("Paintbrush_Node");
 
   m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(dataStorage);
   m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
   m_VisibilityTracker->SetManagedRenderers(renderers);
-  m_VisibilityTracker->AddFilter(m_MIDASToolNodeNameFilter.GetPointer());
+  m_VisibilityTracker->AddFilter(m_ToolNodeNameFilter.GetPointer());
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
 
@@ -247,8 +248,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* paren
     m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
   }
 
-  m_EditorLifeCycleListener = new EditorLifeCycleListener(this);
-  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener);
+  m_ContainingView->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener.data());
 
   /// Note:
   /// Direct call to m_Viewer->FitToDisplay() does not work because the function
@@ -270,7 +270,7 @@ QmitkSideViewerWidget::~QmitkSideViewerWidget()
     m_MainRenderingManager = 0;
   }
 
-  m_ContainingView->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener);
+  m_ContainingView->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener.data());
 
   // Deregister focus observer.
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -814,30 +814,31 @@ void QmitkSideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderW
   {
     m_MainWindow->GetSliceNavigationController()->ConnectGeometrySendEvent(this);
   }
-  if (m_MainAxialWindow)
+
+  /// Note that changing the window layout resets the geometry, what sets the selected position in the centre.
+  /// Therefore, we need to set the slice indexes to that of the main windows.
+
+  if (mainAxialWindow)
   {
     m_MainAxialSnc->ConnectGeometryEvents(axialSnc);
     axialSnc->ConnectGeometryEvents(m_MainAxialSnc);
     this->connect(m_MainAxialWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+    axialSnc->GetSlice()->SetPos(m_MainAxialSnc->GetSlice()->GetPos());
   }
   if (mainSagittalWindow)
   {
     m_MainSagittalSnc->ConnectGeometryEvents(sagittalSnc);
     sagittalSnc->ConnectGeometryEvents(m_MainSagittalSnc);
     this->connect(m_MainSagittalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+    sagittalSnc->GetSlice()->SetPos(m_MainSagittalSnc->GetSlice()->GetPos());
   }
   if (mainCoronalWindow)
   {
     m_MainCoronalSnc->ConnectGeometryEvents(coronalSnc);
     coronalSnc->ConnectGeometryEvents(m_MainCoronalSnc);
     this->connect(m_MainCoronalWindow, SIGNAL(destroyed(QObject*)), SLOT(OnAMainWindowDestroyed(QObject*)));
+    coronalSnc->GetSlice()->SetPos(m_MainCoronalSnc->GetSlice()->GetPos());
   }
-
-  /// Note that changing the window layout resets the geometry, what sets the selected position in the centre.
-  /// Therefore, we resend the main window position here.
-  m_MainAxialWindow->GetSliceNavigationController()->SendSlice();
-  m_MainSagittalWindow->GetSliceNavigationController()->SendSlice();
-  m_MainCoronalWindow->GetSliceNavigationController()->SendSlice();
 
   m_Viewer->RequestUpdate();
 }
@@ -855,12 +856,9 @@ mitk::IRenderWindowPart* QmitkSideViewerWidget::GetSelectedEditor()
   if (!renderWindowPart)
   {
     // No suitable active editor found, check visible editors
-    std::list<berry::IEditorReference::Pointer> editors = page->GetEditorReferences();
-    std::list<berry::IEditorReference::Pointer>::iterator editorsIt = editors.begin();
-    std::list<berry::IEditorReference::Pointer>::iterator editorsEnd = editors.end();
-    for ( ; editorsIt != editorsEnd; ++editorsIt)
+    foreach (berry::IEditorReference::Pointer editor, page->GetEditorReferences())
     {
-      berry::IWorkbenchPart::Pointer part = (*editorsIt)->GetPart(false);
+      berry::IWorkbenchPart::Pointer part = editor->GetPart(false);
       if (page->IsPartVisible(part))
       {
         renderWindowPart = dynamic_cast<mitk::IRenderWindowPart*>(part.GetPointer());

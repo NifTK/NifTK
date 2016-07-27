@@ -90,6 +90,12 @@ protected:
   /// Empty implementation, subclasses can redefine it.
   virtual void OnNodeDeleted(mitk::DataNode* node);
 
+  /// \brief Checks the node against the list of filters.
+  ///
+  /// \param node A data node to check
+  /// \return true if the data node passess all filters and false otherwise.
+  bool Pass(const mitk::DataNode* node) const;
+
 private:
 
   /// \brief Called to register to the data storage.
@@ -97,12 +103,6 @@ private:
 
   /// \brief Called to un-register from the data storage.
   void RemoveListeners();
-
-  /// \brief Checks the node against the list of filters.
-  ///
-  /// \param node A data node to check
-  /// \return true if the data node passess all filters and false otherwise.
-  bool Pass(const mitk::DataNode* node) const;
 
   /// \brief Called when a DataStorage AddNodeEvent was emmitted and calls NodeAdded afterwards,
   /// and subclasses should override the NodeAdded event.

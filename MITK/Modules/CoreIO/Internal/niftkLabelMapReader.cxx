@@ -24,14 +24,16 @@
 #include <vtkLookupTable.h>
 #include <vtkIntArray.h>
 #include <vtkStringArray.h>
-#include <QFile.h>
+#include <QFile>
 #include <sstream>
 #include <iostream>
 
 
 //-----------------------------------------------------------------------------
 niftk::LabelMapReader::LabelMapReader()
-: mitk::AbstractFileReader(mitk::CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()), niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
+: mitk::AbstractFileReader(mitk::CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()),
+                           niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
+, m_Order(0)
 {
   m_ServiceReg = this->RegisterService();
 }
@@ -40,6 +42,7 @@ niftk::LabelMapReader::LabelMapReader()
 //-----------------------------------------------------------------------------
 niftk::LabelMapReader::LabelMapReader(const LabelMapReader &other)
 : mitk::AbstractFileReader(other)
+, m_Order(0)
 {
 }
 
@@ -71,11 +74,11 @@ std::vector<itk::SmartPointer<mitk::BaseData> > niftk::LabelMapReader::Read()
   if (fileName.find(":") == 0)
   {
     QFile lutFile(fileName.c_str());
-    lutFile.open(QIODevice::ReadOnly);   
+    lutFile.open(QIODevice::ReadOnly);
 
     // this is a dirty hack to get the resource file in the right format to read
     std::string fileStr(lutFile.readAll());
-    std::stringstream sStream; 
+    std::stringstream sStream;
     sStream << fileStr;
     isLoaded = this->ReadLabelMap(sStream);
     lutFile.close();
@@ -130,12 +133,16 @@ bool niftk::LabelMapReader::ReadLabelMap(std::istream & file)
 
     try
     {
-      int value, red, green, blue, alpha;
+      int value = 0;
+      int red = 0;
+      int green = 0;
+      int blue = 0;
+      int alpha = 0;
       
       // find value
       size_t firstSpace = line.find_first_of(' ');
       std::string firstDigit = line.substr(0, firstSpace);
-      sscanf(firstDigit.c_str(), "%i", &value);
+      sscanf(firstDigit.c_str(), "%10i", &value);
 
       // find name
       size_t firstLtr = line.find_first_not_of(' ', firstSpace);
@@ -152,7 +159,7 @@ bool niftk::LabelMapReader::ReadLabelMap(std::istream & file)
 
       // colors;
       std::string colorStr = line.substr(lastLtr, line.size() - lastLtr);
-      sscanf(colorStr.c_str(), "%i %i %i %i", &red, &green, &blue, &alpha);
+      sscanf(colorStr.c_str(), "%3i %3i %3i %3i", &red, &green, &blue, &alpha);
 
       QmitkLookupTableContainer::LabelType label = std::make_pair(value, name);
       m_Labels.push_back(label);
@@ -197,8 +204,8 @@ QmitkLookupTableContainer* niftk::LabelMapReader::GetLookupTableContainer()
 
   vtkSmartPointer<vtkLookupTable> lookupTable = vtkLookupTable::New();
   
-  /** 
-   * To initialize a table with all values for one default color 
+  /**
+   * To initialize a table with all values for one default color
    * (black,completely transparent), I restrict all of the ranges.
    */
   lookupTable->SetValueRange(0,0);
@@ -206,16 +213,16 @@ QmitkLookupTableContainer* niftk::LabelMapReader::GetLookupTableContainer()
   lookupTable->SetSaturationRange(0,0);
   lookupTable->SetAlphaRange(0,0);
 
-  /** 
+  /**
    * Number of table values: to map values above/below range to
    * the default color, define table value above/below label range.
    */
   int numberOfValues = max + 2;
-  lookupTable->SetNumberOfTableValues(numberOfValues); 
+  lookupTable->SetNumberOfTableValues(numberOfValues);
   lookupTable->SetTableRange(0, max);
   lookupTable->SetNanColor(0, 0, 0, 0);
 
-  lookupTable->SetIndexedLookup(true);  
+  lookupTable->SetIndexedLookup(true);
   lookupTable->Build();
 
   vtkSmartPointer<vtkIntArray> annotationValueArray = vtkIntArray::New();

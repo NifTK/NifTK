@@ -17,11 +17,13 @@
 
 #include <niftkDnDDisplayExports.h>
 
-#include <mitkDisplayInteractor.h>
-#include <niftkDnDDisplayEnums.h>
-
 #include <vector>
+
 #include <QObject>
+
+#include <mitkDisplayInteractor.h>
+
+#include <niftkDnDDisplayEnums.h>
 
 class niftkSingleViewerWidget;
 class QmitkRenderWindow;
@@ -51,7 +53,7 @@ class NIFTKDNDDISPLAY_EXPORT DnDDisplayInteractor: public QObject, public mitk::
 
 public:
   mitkClassMacro(DnDDisplayInteractor, DisplayInteractor)
-  mitkNewMacro1Param(Self, niftkSingleViewerWidget*);
+  mitkNewMacro1Param(Self, niftkSingleViewerWidget*)
 
   /**
    * By this function the Observer gets notifier about new events.
@@ -65,51 +67,71 @@ protected:
   DnDDisplayInteractor(niftkSingleViewerWidget* viewer);
   virtual ~DnDDisplayInteractor();
 
-  virtual void ConnectActionsAndFunctions() override;
+  virtual void ConnectActionsAndFunctions();
 
-  virtual bool SelectPosition(StateMachineAction*, InteractionEvent*);
+  virtual bool StartSelectingPosition(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  virtual bool SelectPosition(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  virtual bool StopSelectingPosition(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Like Superclass::Init, but blocks the update and selects the focused window.
-  virtual bool InitMove(StateMachineAction*, InteractionEvent*);
+  virtual bool StartPanning(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  virtual bool Pan(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief
+  virtual bool StopPanning(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Like Superclass::Init, but blocks the update and selects the focused window.
   /// It also changes the selected position to the middle of the focused voxel.
-  virtual bool InitZoom(StateMachineAction*, InteractionEvent*);
+  virtual bool StartZooming(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  virtual bool Zoom(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief
+  virtual bool StopZooming(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Switches to axial window layout.
-  virtual bool SetWindowLayoutToAxial(StateMachineAction*, InteractionEvent*);
+  virtual bool SetWindowLayoutToAxial(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Switches to sagittal window layout.
-  virtual bool SetWindowLayoutToSagittal(StateMachineAction*, InteractionEvent*);
+  virtual bool SetWindowLayoutToSagittal(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Switches to coronal window layout.
-  virtual bool SetWindowLayoutToCoronal(StateMachineAction*, InteractionEvent*);
+  virtual bool SetWindowLayoutToCoronal(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Switches to 3D window layout.
-  virtual bool SetWindowLayoutTo3D(StateMachineAction*, InteractionEvent*);
+  virtual bool SetWindowLayoutTo3D(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Switches to multi window layout.
-  virtual bool SetWindowLayoutToMulti(StateMachineAction*, InteractionEvent*);
+  virtual bool SetWindowLayoutToMulti(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Toggles between single and multi window layout.
-  virtual bool ToggleMultiWindowLayout(StateMachineAction*, InteractionEvent*);
+  virtual bool ToggleMultiWindowLayout(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Toggles the visibility of the cursor.
   virtual bool ToggleCursorVisibility(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief Toggles displaying the direction annotations on/off.
+  virtual bool ToggleDirectionAnnotations(StateMachineAction* action, InteractionEvent* interactionEvent);
+
+  /// \brief Toggles displaying the intensity annotation on/off.
+  virtual bool ToggleIntensityAnnotation(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Selects the previous slice.
   /// The slices are ordered in the following way:
   ///   <li>axial: inferior to superior
   ///   <li>sagittal: right to left
   ///   <li>coronal: anterior to posterior
-  virtual bool SelectPreviousSlice(StateMachineAction*, InteractionEvent*);
+  virtual bool SelectPreviousSlice(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Selects the next slice.
   /// The slices are ordered in the following way:
   ///   <li>axial: inferior to superior
   ///   <li>sagittal: right to left
   ///   <li>coronal: anterior to posterior
-  virtual bool SelectNextSlice(StateMachineAction*, InteractionEvent*);
+  virtual bool SelectNextSlice(StateMachineAction* action, InteractionEvent* interactionEvent);
 
   /// \brief Selects the previous time step.
   virtual bool SelectPreviousTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent);

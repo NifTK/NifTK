@@ -16,6 +16,10 @@
 #include "QmitkBaseWorkbenchWindowAdvisor.h"
 #include <QMessageBox>
 
+#include <mitkDataStorage.h>
+
+#include "QmitkCommonAppsApplicationPlugin.h"
+
 //-----------------------------------------------------------------------------
 void QmitkBaseAppWorkbenchAdvisor::Initialize(berry::IWorkbenchConfigurer::Pointer configurer)
 {
@@ -49,6 +53,53 @@ QmitkBaseWorkbenchWindowAdvisor* QmitkBaseAppWorkbenchAdvisor::CreateQmitkBaseWo
     berry::IWorkbenchWindowConfigurer::Pointer configurer)
 {
   return new QmitkBaseWorkbenchWindowAdvisor(this, configurer);
+}
+
+
+// --------------------------------------------------------------------------
+mitk::DataStorage* QmitkBaseAppWorkbenchAdvisor::GetDataStorage()
+{
+  mitk::DataStorage::Pointer dataStorage = 0;
+
+  ctkPluginContext* context = QmitkCommonAppsApplicationPlugin::GetDefault()->GetPluginContext();
+  ctkServiceReference dsServiceRef = context->getServiceReference<mitk::IDataStorageService>();
+  if (dsServiceRef)
+  {
+    mitk::IDataStorageService* dsService = context->getService<mitk::IDataStorageService>(dsServiceRef);
+    if (dsService)
+    {
+      mitk::IDataStorageReference::Pointer dataStorageRef = dsService->GetActiveDataStorage();
+      dataStorage = dataStorageRef->GetDataStorage();
+    }
+  }
+
+  return dataStorage;
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkBaseAppWorkbenchAdvisor::PostStartup()
+{
+  /// Note:
+  /// The fixedLayer property is set to true for all the images opened from the command line, so that
+  /// the order of the images is not overwritten by the DataManager when it opens everything from the
+  /// data storage.
+  /// Now that the workbench is up and the data manager plugin loaded everything, we can clear the
+  /// fixedLayer property, so that the user can rearrange the layers by drag and drop in the data manager.
+
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+  mitk::DataStorage::SetOfObjects::ConstPointer nodes = dataStorage->GetAll();
+
+  for (mitk::DataStorage::SetOfObjects::ConstIterator it = nodes->Begin(); it != nodes->End(); ++it)
+  {
+    mitk::DataNode* node = it->Value();
+    bool fixedLayer = false;
+    node->GetBoolProperty("fixedLayer", fixedLayer);
+    if (fixedLayer)
+    {
+      node->SetBoolProperty("fixedLayer", false);
+    }
+  }
 }
 
 

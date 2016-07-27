@@ -122,6 +122,40 @@ elseif(UNIX)
   set(_install_rpath "\$ORIGIN/../lib")
 endif()
 
+
+# Experimental code to install external project libraries with RPATH.
+# It is used when EP_ALWAYS_USE_INSTALL_DIR is enabled.
+# It is known to break the packaging on Mac and Linux.
+set(INSTALL_WITH_RPATH ${EP_ALWAYS_USE_INSTALL_DIR})
+
+if (INSTALL_WITH_RPATH)
+
+  # This is a workaround for passing linker flags
+  # actually down to the linker invocation
+  set(_cmake_required_flags_orig ${CMAKE_REQUIRED_FLAGS})
+  set(CMAKE_REQUIRED_FLAGS "-Wl,-rpath")
+  mitkFunctionCheckCompilerFlags(${CMAKE_REQUIRED_FLAGS} _has_rpath_flag)
+  set(CMAKE_REQUIRED_FLAGS ${_cmake_required_flags_orig})
+
+  set(_install_rpath_linkflag )
+  if(_has_rpath_flag)
+    if(APPLE)
+      set(_install_rpath_linkflag "-Wl,-rpath,@loader_path/../lib")
+    else()
+      set(_install_rpath_linkflag "-Wl,-rpath='$ORIGIN/../lib'")
+    endif()
+  endif()
+
+  set(_install_rpath)
+  if(APPLE)
+    set(_install_rpath "@loader_path/../lib")
+  elseif(UNIX)
+    # this work for libraries as well as executables
+    set(_install_rpath "\$ORIGIN/../lib")
+  endif()
+
+endif (INSTALL_WITH_RPATH)
+
 set(EP_COMMON_ARGS
   -DCMAKE_CXX_EXTENSIONS:STRING=${CMAKE_CXX_EXTENSIONS}
   -DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}

@@ -15,17 +15,17 @@ has been implemented within NiftyView using
 
 \li An MITK plugin:
 \verbatim
-NifTK/MITK/Plugins/uk.ac.ucl.cmic/midasmorphologicalsegmentor
+NifTK/Code/Gui/MITK/Plugins/uk.ac.ucl.cmic/midasmorphologicalsegmentor
 \endverbatim
 \li Qt widgets, signals and slots.
 \li An abstract interface defining an ITK pipeline.
 \li ITK classes in: 
 \verbatim
-NifTK/Libraries/ITK/Segmentation
+NifTK/Code/Libs/ITK/Segmentation
 \endverbatim
 \li Unit tests for ITK classes in:
 \verbatim
-NifTK/Libraries/ITK/Testing/Segmentation
+NifTK/Testing/Code/Libs/ITK/Segmentation
 \endverbatim
 
 \section ArchitectureMIDASMorphEditorDescription Class Overview
@@ -37,27 +37,27 @@ Figure 1 shows the class overview, and Figure 2 shows the initial view of the MI
 \image html ArchitectureMIDASMorphEditorTab1.png "Figure 2. The initial tab, showin the 4 stages of the process as a QTabbedWidget, the image selector and tool selector."
 
 The MIDAS Morphological Editor is provided as an MITK plugin called MIDASMorphologicalSegmentorView derived 
-from QAbstractView. The QmitkMIDASBaseSegmentationFunctionality contains 
-QmitkMIDASImageAndSegmentationSelectorWidget providing the image selector and new segmentation button at 
-the top of the plugin.  QmitkMIDASBaseSegmentationFunctionality also contains an MITK QmitkToolGUIArea and 
+from QAbstractView. The niftkBaseSegmentationView contains 
+niftkMIDASImageAndSegmentationSelectorWidget providing the image selector and new segmentation button at 
+the top of the plugin.  niftkBaseSegmentationView also contains an MITK QmitkToolGUIArea and 
 QmitkToolSelectionBox, and QmitkToolSelectionBox creates an mitk::ToolManager. These MITK classes are part 
 of the <a href="http://www.sciencedirect.com/science/article/pii/S0169260709001229">MITK Segmentation Framework</a>. 
 To understand this plugin, you must read that paper.
 
-The main GUI control is assembed in MIDASMorphologicalSegmentorView and comprises:
+The main GUI control is assembed in niftk::MorphologicalSegmentorView and comprises:
 
-\li a QmitkMIDASImageAndSegmentationSelectorWidget contained in QmitkMIDASBaseSegmentationFunctionality
-\li a QmitkMIDASToolSelectorWidget contained in QmitkMIDASBaseSegmentationFunctionality 
-\li a MIDASMorphologicalSegmentorViewControlsImpl contained in MIDASMorphologicalSegmentorView 
+\li a niftk::ImageAndSegmentationSelectorWidget contained in niftk::BaseSegmentatorView
+\li a niftk::ToolSelectorWidget contained in niftk::BaseSegmentatorView 
+\li a niftk::MorphologicalSegmentorViewControlsImpl contained in niftk::MorphologicalSegmentorView 
 
-in that order.  The GUI classes created in QmitkMIDASBaseSegmentationFunctionality are also used 
-in the MIDASGeneralSegmentorView, providing common functionality, look and feel for both plugins.
+in that order.  The GUI classes created in niftk::BaseSegmentatorView are also used 
+in the niftk::GeneralSegmentorView, providing common functionality, look and feel for both plugins.
 
-The GUI components use Qt signals and slots to call methods on MIDASMorphologicalSegmentorView.
-MIDASMorphologicalSegmentorView contains a MIDASMorphologicalSegmentorPipelineManager
+The GUI components use Qt signals and slots to call methods on niftk::MorphologicalSegmentorView.
+niftk::MorphologicalSegmentorView contains a niftk::MorphologicalSegmentorPipelineManager
 which itself contains a MorphologicalSegmentorPipelineInterface
 which is implemented by MorphologicalSegmentorPipeline using ITK.  The whole plugin is essentially 
-a Qt GUI, calling methods in MIDASMorphologicalSegmentorView which sets parameters on the ITK pipeline, 
+a Qt GUI, calling methods in niftk::MorphologicalSegmentorView which sets parameters on the ITK pipeline, 
 which updates, and produces an output, which can be visualised using MITK and hence VTK as a binary image.
 
 \section ArchitectureMIDASMorphEditorPipeline Pipeline Operation
@@ -97,7 +97,7 @@ single working data. In our case, the working data are 4 intermediate image that
 ITK pipeline. 
 
 Furthermore, the <a href="http://docs.mitk.org/nightly-qt4/InteractionPage.html">MITK undo/redo framework</a> 
-is used so that the mitk::MIDASPaintbrushTool can undo and redo the edits.
+is used so that the niftk::PaintbrushTool can undo and redo the edits.
 
 \section ArchitectureMIDASMorphEditorConclusion Conclusion
 

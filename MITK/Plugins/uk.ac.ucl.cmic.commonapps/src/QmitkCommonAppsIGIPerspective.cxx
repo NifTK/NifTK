@@ -19,7 +19,7 @@
 QmitkCommonAppsIGIPerspective::QmitkCommonAppsIGIPerspective()
 {
 }
- 
+
 
 //-----------------------------------------------------------------------------
 QmitkCommonAppsIGIPerspective::QmitkCommonAppsIGIPerspective(const QmitkCommonAppsIGIPerspective& other)
