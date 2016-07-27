@@ -90,8 +90,10 @@ public:
 
 private slots:
 
+  void OnDoIterativeChecked(bool);
   void OnFeaturesComboSelected();
   void OnHandEyeComboSelected();
+
   void On3DModelButtonPressed();
   void OnModelToTrackerButtonPressed();
   void OnReferenceImageButtonPressed();

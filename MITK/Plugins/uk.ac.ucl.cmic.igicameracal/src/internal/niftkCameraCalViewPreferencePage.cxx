@@ -121,12 +121,15 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   assert(ok);
   ok = connect(m_Ui->m_PreviousCalibrationDirToolButton, SIGNAL(pressed()), this, SLOT(OnPreviousCalibrationDirButtonPressed()));
   assert(ok);
+  ok = connect(m_Ui->m_IterativeCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnDoIterativeChecked(bool)));
+  assert(ok);
 
   m_Ui->m_FeaturesComboBox->setCurrentIndex(0);
   m_Ui->m_TagFamilyComboBox->setCurrentIndex(1);
   m_Ui->m_IterativeCheckBox->setChecked(false);
   m_Ui->m_Do3DOptimisationCheckBox->setChecked(false);
   m_Ui->m_HandEyeComboBox->setCurrentIndex(0);
+  this->OnDoIterativeChecked(false);
   this->OnFeaturesComboSelected();
   this->OnHandEyeComboSelected();
 
@@ -144,33 +147,62 @@ QWidget* CameraCalViewPreferencePage::GetQtControl() const
 
 
 //-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnDoIterativeChecked(bool isChecked)
+{
+  m_Ui->m_ReferenceImageLabel->setVisible(isChecked);
+  m_Ui->m_ReferenceImageLineEdit->setVisible(isChecked);
+  m_Ui->m_ReferenceImagePushButton->setVisible(isChecked);
+  m_Ui->m_ReferencePointsLabel->setVisible(isChecked);
+  m_Ui->m_ReferencePointsLineEdit->setVisible(isChecked);
+  m_Ui->m_ReferencePointsPushButton->setVisible(isChecked);
+}
+
+
+//-----------------------------------------------------------------------------
 void CameraCalViewPreferencePage::OnFeaturesComboSelected()
 {
   switch(m_Ui->m_FeaturesComboBox->currentIndex())
   {
     case niftk::NiftyCalVideoCalibrationManager::CHESS_BOARD:
     case niftk::NiftyCalVideoCalibrationManager::CIRCLE_GRID:
+      m_Ui->m_GridSizeLabel->setVisible(true);
+      m_Ui->m_GridPointsInXSpinBox->setVisible(true);
+      m_Ui->m_ByLabel->setVisible(true);
+      m_Ui->m_GridPointsInYSpinBox->setVisible(true);
+      m_Ui->m_TagFamilyLabel->setVisible(false);
+      m_Ui->m_TagFamilyComboBox->setVisible(false);
+      m_Ui->m_MinPointsLabel->setVisible(false);
+      m_Ui->m_MinPointsSpinBox->setVisible(false);
+      m_Ui->m_TemplateImageLabel->setVisible(false);
+      m_Ui->m_TemplateImageLineEdit->setVisible(false);
+      m_Ui->m_TemplateImagePushButton->setVisible(false);
+    break;
     case niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_CIRCLES:
     case niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_RINGS:
       m_Ui->m_GridSizeLabel->setVisible(true);
       m_Ui->m_GridPointsInXSpinBox->setVisible(true);
       m_Ui->m_ByLabel->setVisible(true);
       m_Ui->m_GridPointsInYSpinBox->setVisible(true);
-      m_Ui->m_TagFamilyComboBox->setVisible(false);
       m_Ui->m_TagFamilyLabel->setVisible(false);
-      m_Ui->m_MinPointsSpinBox->setVisible(false);
+      m_Ui->m_TagFamilyComboBox->setVisible(false);
       m_Ui->m_MinPointsLabel->setVisible(false);
+      m_Ui->m_MinPointsSpinBox->setVisible(false);
+      m_Ui->m_TemplateImageLabel->setVisible(true);
+      m_Ui->m_TemplateImageLineEdit->setVisible(true);
+      m_Ui->m_TemplateImagePushButton->setVisible(true);
     break;
-
     case niftk::NiftyCalVideoCalibrationManager::APRIL_TAGS:
       m_Ui->m_GridSizeLabel->setVisible(false);
       m_Ui->m_GridPointsInXSpinBox->setVisible(false);
       m_Ui->m_ByLabel->setVisible(false);
       m_Ui->m_GridPointsInYSpinBox->setVisible(false);
-      m_Ui->m_TagFamilyComboBox->setVisible(true);
       m_Ui->m_TagFamilyLabel->setVisible(true);
-      m_Ui->m_MinPointsSpinBox->setVisible(true);
+      m_Ui->m_TagFamilyComboBox->setVisible(true);
       m_Ui->m_MinPointsLabel->setVisible(true);
+      m_Ui->m_MinPointsSpinBox->setVisible(true);
+      m_Ui->m_TemplateImageLabel->setVisible(false);
+      m_Ui->m_TemplateImageLineEdit->setVisible(false);
+      m_Ui->m_TemplateImagePushButton->setVisible(false);
     break;
   }
 }
