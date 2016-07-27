@@ -106,10 +106,10 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
   m_Intrinsic[0] = cv::Mat::eye(3, 3, CV_64FC1);
   m_Intrinsic[1] = cvCreateMat(3, 3, CV_64FC1);
   m_Intrinsic[1] = cv::Mat::eye(3, 3, CV_64FC1);
-  m_Distortion[0] = cvCreateMat(1, 5, CV_64FC1);
-  m_Distortion[0] = cv::Mat::zeros(1, 5, CV_64FC1);
-  m_Distortion[1] = cvCreateMat(1, 5, CV_64FC1);
-  m_Distortion[1] = cv::Mat::zeros(1, 5, CV_64FC1);
+  m_Distortion[0] = cvCreateMat(1, 5, CV_64FC1);    // Note: NiftyCal and OpenCV by default use 5 params.
+  m_Distortion[0] = cv::Mat::zeros(1, 5, CV_64FC1); // But MITK only uses 4, so we save/load 4 :-(
+  m_Distortion[1] = cvCreateMat(1, 5, CV_64FC1);    // Note: NiftyCal and OpenCV by default use 5 params.
+  m_Distortion[1] = cv::Mat::zeros(1, 5, CV_64FC1); // But MITK only uses 4, so we save/load 4 :-(
   m_LeftToRightRotationMatrix = cvCreateMat(3,3,CV_64FC1);
   m_LeftToRightRotationMatrix = cv::Mat::eye(3, 3, CV_64FC1);
   m_LeftToRightTranslationVector = cvCreateMat(3,1,CV_64FC1);
@@ -1392,9 +1392,9 @@ void NiftyCalVideoCalibrationManager::SetStereoExtrinsicsOnImage(const cv::Mat& 
 void NiftyCalVideoCalibrationManager::LoadCalibrationFromDirectory(const std::string& dirName)
 {
   cv::Mat leftCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
-  cv::Mat leftCameraDistortion = cv::Mat(1,4,CV_64FC1); // we only save 4 params. ToDo.
+  cv::Mat leftCameraDistortion = cv::Mat(1,4,CV_64FC1); // we only save 4 params, as MITK only uses 4.
   cv::Mat rightCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
-  cv::Mat rightCameraDistortion = cv::Mat(1,4,CV_64FC1); // we only save 4 params. ToDo.
+  cv::Mat rightCameraDistortion = cv::Mat(1,4,CV_64FC1); // we only save 4 params, as MITK only uses 4.
   cv::Mat rightToLeftRotationMatrix = cv::Mat(3,3,CV_64FC1);
   cv::Mat rightToLeftTranslationVector = cv::Mat(3,1,CV_64FC1);
   cv::Mat leftCameraToTracker = cv::Mat(4,4,CV_64FC1);
