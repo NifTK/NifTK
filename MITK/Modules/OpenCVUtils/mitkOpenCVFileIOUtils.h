@@ -174,7 +174,7 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadHandeyeFromPlainText ( const std::
  * in the file, while line ID's are stored in the file name
  * framenumber etc are settable by parameters
  */
-extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedPointList::Pointer LoadPickedPointListFromDirectory (
+extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (
     const std::string& directoryName ,
     unsigned int frameNumber = 0 ,
     unsigned long long timestamp = 0, 

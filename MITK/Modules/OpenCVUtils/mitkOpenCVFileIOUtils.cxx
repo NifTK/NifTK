@@ -811,7 +811,7 @@ void LoadHandeyeFromPlainText (const std::string& filename,
 }
 
 //-----------------------------------------------------------------------------
-mitk::PickedPointList::Pointer LoadPickedPointListFromDirectory (const std::string& directory,
+mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (const std::string& directory,
     unsigned int frameNumber, unsigned long long timestamp, std::string channel, 
     cv::Scalar scalar )
 {

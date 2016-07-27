@@ -108,8 +108,23 @@ int main(int argc, char** argv)
     std::vector < mitk::WorldPoint > worldPointsWithScalars;
     if ( input3DDirectory.length() != 0 )
     {
-      projector->SetWorldPoints ( mitk::LoadPickedPointListFromDirectory ( input3DDirectory ));
+      projector->SetModelPoints ( mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( input3DDirectory ));
     }
+    if ( modelToWorld.length() != 0 )
+    {
+      cv::Mat* modelToWorldMat = new cv::Mat(4,4,CV_64FC1);
+      if ( mitk::ReadTrackerMatrix(modelToWorld, *modelToWorldMat) )
+      {
+        projector->SetModelToWorldTransform ( modelToWorldMat );
+      }
+      else
+      {
+        MITK_ERROR << "Failed to read mode to world file " << modelToWorld << ", halting";
+        return EXIT_FAILURE;
+      }
+    }
+
+
     if ( input2D.length() != 0 ) 
     {
       std::ifstream fin(input2D.c_str());
