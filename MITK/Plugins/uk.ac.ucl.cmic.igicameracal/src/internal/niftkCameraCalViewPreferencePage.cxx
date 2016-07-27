@@ -43,6 +43,7 @@ const QString CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME("reference 
 const QString CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME("reference points");
 const QString CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME("minimum number of points");
 const QString CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME("template image");
+const QString CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME("previous calibration directory");
 
 //-----------------------------------------------------------------------------
 CameraCalViewPreferencePage::CameraCalViewPreferencePage()
@@ -117,6 +118,8 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   ok = connect(m_Ui->m_ReferencePointsPushButton, SIGNAL(pressed()), this, SLOT(OnReferencePointsButtonPressed()));
   assert(ok);
   ok = connect(m_Ui->m_TemplateImagePushButton, SIGNAL(pressed()), this, SLOT(OnTemplateImageButtonPressed()));
+  assert(ok);
+  ok = connect(m_Ui->m_PreviousCalibrationDirToolButton, SIGNAL(pressed()), this, SLOT(OnPreviousCalibrationDirButtonPressed()));
   assert(ok);
 
   m_Ui->m_FeaturesComboBox->setCurrentIndex(0);
@@ -261,6 +264,19 @@ void CameraCalViewPreferencePage::OnReferencePointsButtonPressed()
 
 
 //-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnPreviousCalibrationDirButtonPressed()
+{
+  QString dirName = QFileDialog::getExistingDirectory(m_Control,
+      tr("Previous Calibration"), "");
+
+  if (!dirName.isEmpty())
+  {
+    m_Ui->m_PreviousCalibrationDirLineEdit->setText(dirName);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool CameraCalViewPreferencePage::PerformOk()
 {
   m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::DO_ITERATIVE_NODE_NAME, m_Ui->m_IterativeCheckBox->isChecked());
@@ -279,6 +295,7 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, m_Ui->m_HandEyeComboBox->currentIndex());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME, m_Ui->m_MinPointsSpinBox->value());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME, m_Ui->m_TemplateImageLineEdit->text());
+  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME, m_Ui->m_PreviousCalibrationDirLineEdit->text());
   return true;
 }
 
@@ -309,6 +326,7 @@ void CameraCalViewPreferencePage::Update()
   m_Ui->m_HandEyeComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)));
   m_Ui->m_MinPointsSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints));
   m_Ui->m_TemplateImageLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME, ""));
+  m_Ui->m_PreviousCalibrationDirLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME, ""));
 }
 
 } // end namespace

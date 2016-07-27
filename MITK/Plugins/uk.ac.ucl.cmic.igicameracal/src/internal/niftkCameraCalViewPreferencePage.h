@@ -61,6 +61,7 @@ public:
   static const QString MODEL_TO_TRACKER_NODE_NAME;
   static const QString MINIMUM_NUMBER_POINTS_NODE_NAME;
   static const QString TEMPLATE_IMAGE_NODE_NAME;
+  static const QString PREVIOUS_CALIBRATION_DIR_NODE_NAME;
 
   CameraCalViewPreferencePage();
   CameraCalViewPreferencePage(const CameraCalViewPreferencePage& other);
@@ -96,6 +97,7 @@ private slots:
   void OnReferenceImageButtonPressed();
   void OnReferencePointsButtonPressed();
   void OnTemplateImageButtonPressed();
+  void OnPreviousCalibrationDirButtonPressed();
 
 private:
 
