@@ -1216,7 +1216,7 @@ protected:
 
     mitk::ColorProperty::Pointer bg_color = mitk::ColorProperty::New();
     AddProperty( "VL.Global.BackgroundColor", bg_color );
-    bg_color->SetValue( vl::lightgray.ptr() );
+    bg_color->SetValue( vl::black.ptr() );
 
     mitk::FloatProperty::Pointer opacity = mitk::FloatProperty::New();
     AddProperty( "VL.Global.Opacity", opacity );
@@ -1618,6 +1618,7 @@ public:
   }
 
   virtual void update() {
+
     updateCommon();
     // updateRenderModeProps();
     // updateFogProps();
