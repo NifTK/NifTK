@@ -327,7 +327,6 @@ void NiftyCalVideoCalibrationManager::UpdateCameraToWorldPosition()
       node = mitk::DataNode::New();
       node->SetName(cameraToWorldNode);
       node->SetBoolProperty("helper object", true);
-      m_DataStorage->Add(node);
     }
 
     mitk::CoordinateAxesData::Pointer coords = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
@@ -335,6 +334,7 @@ void NiftyCalVideoCalibrationManager::UpdateCameraToWorldPosition()
     {
       coords = mitk::CoordinateAxesData::New();
       node->SetData(coords);
+      m_DataStorage->Add(node);
     }
 
     coords->SetVtkMatrix(*cameraToWorldMatrix);
@@ -1253,7 +1253,10 @@ void NiftyCalVideoCalibrationManager::UpdateDisplayNodes()
   // so that the overlay viewer renders in correctly calibrated mode.
   if (m_UpdateNodes)
   {
-    this->SetIntrinsicsOnImage(m_Intrinsic[0], m_Distortion[0], "niftk.CameraCalibration", m_ImageNode[0]);
+    if (m_ImageNode[0].IsNotNull())
+    {
+      this->SetIntrinsicsOnImage(m_Intrinsic[0], m_Distortion[0], "niftk.CameraCalibration", m_ImageNode[0]);
+    }
 
     if (m_ImageNode[1].IsNotNull())
     {
