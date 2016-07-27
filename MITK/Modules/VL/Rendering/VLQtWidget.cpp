@@ -1393,7 +1393,9 @@ public:
     m_TexCoordArray = geom->vertexArray()->as<vl::ArrayFloat3>(); VIVID_CHECK( m_TexCoordArray );
 
     m_Actor = initActor( geom.get() );
-    m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
+    // NOTE: for the moment we don't render it
+    // FIXME: the DataNode itself should be disabled
+    // m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
     ref<Effect> fx = m_Actor->effect();
 
     // These must be present as part of the default Vivid material
@@ -1956,7 +1958,9 @@ public:
     ref<vl::Geometry> vlquad = CreateGeometryFor2DImage( lwci.GetWidth(), lwci.GetHeight() );
 
     m_Actor = initActor( vlquad.get() );
-    m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
+    // NOTE: for the moment we don't render it
+    // FIXME: the DataNode itself should be disabled
+    // m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
     Effect* fx = m_Actor->effect();
 
     fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
