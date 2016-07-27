@@ -320,20 +320,20 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   ModelGridPoints->AddPoint ( cv::Point3d (37.519204, -2.088515, -0.274778), cv::Scalar ( 255,255,255));
 
   cv::Mat* modelToWorldTransform = new cv::Mat(4,4,CV_64FC1);
-  modelToWorldTransform->at<double>(0,0) = -1.4656e-02;
-  modelToWorldTransform->at<double>(0,1) = 2.1285e-01;
-  modelToWorldTransform->at<double>(0,2) = -9.7697e-01;
-  modelToWorldTransform->at<double>(0,3) = -8.2607e+02;
+  modelToWorldTransform->at<double>(0,0) = -0.0146565;
+  modelToWorldTransform->at<double>(0,1) = 0.212855;
+  modelToWorldTransform->at<double>(0,2) = -0.976974;
+  modelToWorldTransform->at<double>(0,3) = -826.074;
 
-  modelToWorldTransform->at<double>(1,0) = 9.9866e-01;
-  modelToWorldTransform->at<double>(1,1) = 5.1653e-02;
-  modelToWorldTransform->at<double>(1,2) = -3.7281e-03;
-  modelToWorldTransform->at<double>(1,3) = -2.0576e+02;
+  modelToWorldTransform->at<double>(1,0) = 0.998658;
+  modelToWorldTransform->at<double>(1,1) = 0.051653;
+  modelToWorldTransform->at<double>(1,2) = -0.00372809;
+  modelToWorldTransform->at<double>(1,3) = -205.762;
 
-  modelToWorldTransform->at<double>(2,0) = 4.9670e-02;
-  modelToWorldTransform->at<double>(2,1) = -9.7572e-01;
-  modelToWorldTransform->at<double>(2,2) = -2.1333e-01;
-  modelToWorldTransform->at<double>(2,3) = -2.0110e+03;
+  modelToWorldTransform->at<double>(2,0) = 0.049670;
+  modelToWorldTransform->at<double>(2,1) = -0.975717;
+  modelToWorldTransform->at<double>(2,2) = -0.213327;
+  modelToWorldTransform->at<double>(2,3) = -2010.96;
 
   modelToWorldTransform->at<double>(3,0) = 0.0;
   modelToWorldTransform->at<double>(3,1) = 0.0;
