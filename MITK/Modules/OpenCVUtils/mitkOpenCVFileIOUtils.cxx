@@ -502,7 +502,7 @@ void SavePickedObjects ( const std::vector < mitk::PickedObject > & points, std:
 //---------------------------------------------------------------------------
 void LoadPickedObjectsFromDirectory (  std::vector < mitk::PickedObject > & points, const std::string& directory )
 {
-  boost::regex timeStampFilter ( "([0-9]{19})*(.xml)");
+  boost::regex timeStampFilter ( "([0-9]{19})(.+)(Points.xml)");
   boost::filesystem::directory_iterator endItr;
   unsigned int fileInCount = 0;
 
@@ -514,12 +514,16 @@ void LoadPickedObjectsFromDirectory (  std::vector < mitk::PickedObject > & poin
       std::string stringthing = it->path().filename().string();
       if ( boost::regex_match( stringthing.c_str(), what, timeStampFilter) )
       {
-        std::ifstream fin ( stringthing.c_str() );
+        std::ifstream fin ( it->path().string() );
         if ( fin )
         {
           mitk::LoadPickedObjects ( points, fin );
           ++fileInCount;
           fin.close();
+        }
+        else
+        {
+          MITK_ERROR << "Failed to open " << it->path().string();
         }
       }
     }
