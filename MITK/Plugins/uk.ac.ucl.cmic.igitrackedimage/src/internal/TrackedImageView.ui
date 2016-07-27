@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>743</width>
-    <height>810</height>
+    <height>795</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,7 +48,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_ImageToWorldNode"/>
+        <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_ImageToWorldNode"/>
        </item>
       </layout>
      </item>
@@ -130,6 +130,11 @@
    <extends>QWidget</extends>
    <header>QmitkRenderWindow.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QmitkDataStorageComboBoxWithSelectNone</class>
+   <extends>QComboBox</extends>
+   <header location="global">QmitkDataStorageComboBoxWithSelectNone.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

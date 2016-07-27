@@ -15,7 +15,7 @@
 project(uk_ac_ucl_cmic_commonmidas)
 
 mitk_create_plugin(
-  EXPORT_DIRECTIVE CMIC_QT_COMMONMIDAS
+  EXPORT_DIRECTIVE COMMONMIDAS_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS niftkMIDASGui
 )

@@ -14,6 +14,7 @@
 
 #include "niftkMITKAuroraCubeDataSourceFactory.h"
 #include "niftkMITKTrackerDataSourceService.h"
+#include "niftkMITKTrackerDialog.h"
 #include <niftkAuroraCubeTracker.h>
 
 namespace niftk
@@ -33,6 +34,13 @@ MITKAuroraCubeDataSourceFactory::~MITKAuroraCubeDataSourceFactory()
 
 
 //-----------------------------------------------------------------------------
+IGIInitialisationDialog* MITKAuroraCubeDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
+{
+  return new niftk::MITKTrackerDialog(parent, this->GetName(), 115200);
+}
+
+
+//-----------------------------------------------------------------------------
 IGIDataSourceI::Pointer MITKAuroraCubeDataSourceFactory::CreateService(
     mitk::DataStorage::Pointer dataStorage,
     const IGIDataSourceProperties& properties) const
@@ -40,11 +48,12 @@ IGIDataSourceI::Pointer MITKAuroraCubeDataSourceFactory::CreateService(
 
   std::string portName;
   std::string fileName;
+  int         baudRate;
 
-  this->ExtractProperties(properties, portName, fileName);
+  this->ExtractProperties(properties, portName, fileName, baudRate);
 
   niftk::AuroraCubeTracker::Pointer tracker = niftk::AuroraCubeTracker::New(
-        dataStorage, portName, fileName
+        dataStorage, portName, fileName, baudRate
         );
 
   niftk::MITKTrackerDataSourceService::Pointer serviceInstance

@@ -13,26 +13,30 @@
 =============================================================================*/
 
 #include "niftkCoreIOObjectFactory.h"
+
 #include <itkObjectFactory.h>
 
 #include <mitkAbstractFileIO.h>
-#include <mitkItkImageIO.h>
-#include <mitkProperties.h>
 #include <mitkBaseRenderer.h>
 #include <mitkDataNode.h>
 #include <mitkImage.h>
-#include <mitkIOMimeTypes.h>
-#include <mitkPointSet.h>
-#include <mitkCoordinateAxesVtkMapper3D.h>
 #include <mitkImageVtkMapper2D.h>
-#include <mitkFastPointSetVtkMapper3D.h>
+#include <mitkIOMimeTypes.h>
+#include <mitkItkImageIO.h>
+#include <mitkPointSet.h>
 #include <mitkPointSetVtkMapper3D.h>
+#include <mitkProperties.h>
+
+#include <niftkEnvironmentHelper.h>
+
+#include <itkDRCAnalyzeImageIO.h>
+#include <itkINRImageIO.h>
+#include <itkNiftiImageIO3201.h>
+
+#include <niftkCoordinateAxesVtkMapper3D.h>
+#include <niftkFastPointSetVtkMapper3D.h>
 
 #include "niftkCoreIOMimeTypes.h"
-#include <niftkEnvironmentHelper.h>
-#include <itkDRCAnalyzeImageIO.h>
-#include <itkNiftiImageIO3201.h>
-#include <itkINRImageIO.h>
 
 namespace niftk
 {
@@ -202,4 +206,4 @@ struct RegisterNifTKCoreIOObjectFactory{
 //-----------------------------------------------------------------------------
 static RegisterNifTKCoreIOObjectFactory registerNifTKCoreIOObjectFactory;
 
-} // end namespace
+}

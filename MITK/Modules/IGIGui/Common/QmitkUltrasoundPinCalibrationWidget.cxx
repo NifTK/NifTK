@@ -13,16 +13,20 @@
 =============================================================================*/
 
 #include "QmitkUltrasoundPinCalibrationWidget.h"
-#include <stdexcept>
-#include <mitkOpenCVFileIOUtils.h>
-#include <mitkFileIOUtils.h>
-#include <niftkFileHelper.h>
-#include <stdexcept>
+
 #include <iostream>
+#include <stdexcept>
+
 #include <QApplication>
 #include <QMessageBox>
+
 #include <vtkPNGReader.h>
 //#include <vtkNIFTIImageReader.h> // this header isn't in VTK yet
+
+#include <mitkOpenCVFileIOUtils.h>
+
+#include <niftkFileHelper.h>
+#include <niftkFileIOUtils.h>
 
 //-----------------------------------------------------------------------------
 QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(

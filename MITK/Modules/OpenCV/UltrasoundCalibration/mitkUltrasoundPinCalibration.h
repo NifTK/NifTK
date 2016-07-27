@@ -30,8 +30,8 @@ class NIFTKOPENCV_EXPORT UltrasoundPinCalibration : public mitk::InvariantPointC
 
 public:
 
-  mitkClassMacro(UltrasoundPinCalibration, mitk::InvariantPointCalibration);
-  itkNewMacro(UltrasoundPinCalibration);
+  mitkClassMacro(UltrasoundPinCalibration, mitk::InvariantPointCalibration)
+  itkNewMacro(UltrasoundPinCalibration)
 
   void SetImageScaleFactors(const mitk::Point2D& point);
   mitk::Point2D GetImageScaleFactors() const;

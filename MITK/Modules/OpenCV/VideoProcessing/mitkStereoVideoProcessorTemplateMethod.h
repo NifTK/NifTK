@@ -32,7 +32,7 @@ class NIFTKOPENCV_EXPORT StereoVideoProcessorTemplateMethod : public BaseVideoPr
 
 public:
 
-  mitkClassMacro(StereoVideoProcessorTemplateMethod, BaseVideoProcessor);
+  mitkClassMacro(StereoVideoProcessorTemplateMethod, BaseVideoProcessor)
 
   /**
    * \see BaseVideoProcessor::Initialize()

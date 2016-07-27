@@ -36,8 +36,8 @@ class NIFTKIGIDATASOURCES_EXPORT IGIWaitForSavedDataSourceBuffer : public IGIDat
 {
 public:
 
-  mitkClassMacroItkParent(IGIWaitForSavedDataSourceBuffer, IGIDataSourceBuffer);
-  mitkNewMacro2Param(IGIWaitForSavedDataSourceBuffer, BufferType::size_type, IGIBufferedSaveableDataSourceI*);
+  mitkClassMacroItkParent(IGIWaitForSavedDataSourceBuffer, IGIDataSourceBuffer)
+  mitkNewMacro2Param(IGIWaitForSavedDataSourceBuffer, BufferType::size_type, IGIBufferedSaveableDataSourceI*)
 
   /**
   * \brief Clears down the buffer, opting not to delete an

@@ -52,7 +52,8 @@ set(_include_plugins
   uk.ac.ucl.cmic.affinetransform
   uk.ac.ucl.cmic.surfaceextractor
   uk.ac.ucl.cmic.snapshot
-  uk.ac.ucl.cmic.igioverlayeditor
+  uk.ac.ucl.cmic.igivideooverlayeditor
+  uk.ac.ucl.cmic.igiultrasoundoverlayeditor
   uk.ac.ucl.cmic.igidatasources
   uk.ac.ucl.cmic.igisurfacerecon
   uk.ac.ucl.cmic.igitrackedimage

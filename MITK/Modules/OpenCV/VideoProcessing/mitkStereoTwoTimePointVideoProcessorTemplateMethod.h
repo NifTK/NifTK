@@ -30,7 +30,7 @@ class NIFTKOPENCV_EXPORT StereoTwoTimePointVideoProcessorTemplateMethod : public
 
 public:
 
-  mitkClassMacro(StereoTwoTimePointVideoProcessorTemplateMethod, StereoVideoProcessorTemplateMethod);
+  mitkClassMacro(StereoTwoTimePointVideoProcessorTemplateMethod, StereoVideoProcessorTemplateMethod)
 
   /**
    * \see BaseVideoProcessor::Initialize()

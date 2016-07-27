@@ -27,8 +27,8 @@ class NamedLookupTablePropertySerializer : public mitk::LookupTablePropertySeria
 {
 public:
 
-  mitkClassMacro(NamedLookupTablePropertySerializer, mitk::LookupTablePropertySerializer);
-  itkNewMacro(Self);
+  mitkClassMacro(NamedLookupTablePropertySerializer, mitk::LookupTablePropertySerializer)
+  itkNewMacro(Self)
 
   virtual TiXmlElement* Serialize() override;
   virtual mitk::BaseProperty::Pointer Deserialize(TiXmlElement*) override;

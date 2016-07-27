@@ -45,8 +45,8 @@ class NIFTKMIDAS_EXPORT DrawTool : public ContourTool {
 
 public:
 
-  mitkClassMacro(DrawTool, ContourTool);
-  itkNewMacro(DrawTool);
+  mitkClassMacro(DrawTool, ContourTool)
+  itkNewMacro(DrawTool)
 
   virtual void InitializeStateMachine();
 

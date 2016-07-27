@@ -26,6 +26,7 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
                                mitk::TrackingDeviceData deviceData,
                                std::string toolConfigFileName,
                                int preferredFramesPerSecond,
+                               int baudRate,
                                int measurementVolumeNumber
                                )
 : NDITracker(dataStorage, portName, deviceData, toolConfigFileName, preferredFramesPerSecond)
@@ -59,7 +60,7 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
 
   std::string pName = ConvertPortNameToPortIndexPlusOne(m_PortName);
   m_Tracker.SetSerialPort(std::stoi(pName));
-  m_Tracker.SetBaudRate(115200);
+  m_Tracker.SetBaudRate(baudRate);
   m_Tracker.SetMeasurementVolumeNumber(measurementVolumeNumber);
 
   if (m_Tracker.InternalConnect() != niftk::NDICAPITracker::PLUS_SUCCESS)

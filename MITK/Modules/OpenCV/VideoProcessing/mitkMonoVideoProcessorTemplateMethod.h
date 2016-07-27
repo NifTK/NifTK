@@ -31,7 +31,7 @@ class NIFTKOPENCV_EXPORT MonoVideoProcessorTemplateMethod : public BaseVideoProc
 
 public:
 
-  mitkClassMacro(MonoVideoProcessorTemplateMethod, BaseVideoProcessor);
+  mitkClassMacro(MonoVideoProcessorTemplateMethod, BaseVideoProcessor)
 
   /**
    * \see BaseVideoProcessor::Initialize()

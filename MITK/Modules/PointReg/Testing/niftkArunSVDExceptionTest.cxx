@@ -16,16 +16,19 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include <niftkArunLeastSquaresPointRegistration.h>
-#include <mitkTestingMacros.h>
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
+
 #include <mitkExceptionMacro.h>
+#include <mitkIOUtil.h>
 #include <mitkLogMacros.h>
 #include <mitkPointSet.h>
-#include <mitkIOUtil.h>
-#include <vtkSmartPointer.h>
-#include <vtkMatrix4x4.h>
+#include <mitkTestingMacros.h>
+
+#include <niftkArunLeastSquaresPointRegistration.h>
+
 #include <niftkFileHelper.h>
-#include <mitkFileIOUtils.h>
+#include <niftkFileIOUtils.h>
 
 /**
  * \file niftkArunSVDExceptionTest.cxx

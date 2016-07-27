@@ -56,9 +56,9 @@ signals:
 public:
   enum { INTERACTION_MODE_TRANSLATION, INTERACTION_MODE_ROTATION };
 
-  mitkClassMacro(AffineTransformInteractor3D, mitk::Interactor);
-  mitkNewMacro3Param(Self, const char *, mitk::DataNode *, int);
-  mitkNewMacro2Param(Self, const char *, mitk::DataNode *);
+  mitkClassMacro(AffineTransformInteractor3D, mitk::Interactor)
+  mitkNewMacro3Param(Self, const char *, mitk::DataNode *, int)
+  mitkNewMacro2Param(Self, const char *, mitk::DataNode *)
 
   void SetInteractionMode( unsigned int interactionMode );
   void SetInteractionModeToTranslation();

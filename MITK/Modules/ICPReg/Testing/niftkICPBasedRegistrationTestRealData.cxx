@@ -13,17 +13,21 @@
 =============================================================================*/
 
 #include <cstdlib>
+
 #include <boost/math/special_functions/fpclassify.hpp>
-#include <mitkTestingMacros.h>
-#include <niftkICPBasedRegistration.h>
+
+#include <vtkMinimalStandardRandomSequence.h>
+#include <vtkSmartPointer.h>
+#include <vtkTransform.h>
+
 #include <mitkDataStorage.h>
 #include <mitkIOUtil.h>
-#include <mitkCoordinateAxesData.h>
-#include <mitkAffineTransformDataNodeProperty.h>
+#include <mitkTestingMacros.h>
+
+#include <niftkAffineTransformDataNodeProperty.h>
+#include <niftkCoordinateAxesData.h>
+#include <niftkICPBasedRegistration.h>
 #include <niftkVTKFunctions.h>
-#include <vtkTransform.h>
-#include <vtkSmartPointer.h>
-#include <vtkMinimalStandardRandomSequence.h>
 
 bool MatrixOK ( vtkMatrix4x4 * matrix )
 {

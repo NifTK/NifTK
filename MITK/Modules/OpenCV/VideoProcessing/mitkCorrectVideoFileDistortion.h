@@ -32,8 +32,8 @@ class NIFTKOPENCV_EXPORT CorrectVideoFileDistortion : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(CorrectVideoFileDistortion, itk::Object);
-  itkNewMacro(CorrectVideoFileDistortion);
+  mitkClassMacroItkParent(CorrectVideoFileDistortion, itk::Object)
+  itkNewMacro(CorrectVideoFileDistortion)
 
   bool Correct(
       const std::string& inputImageFileName,

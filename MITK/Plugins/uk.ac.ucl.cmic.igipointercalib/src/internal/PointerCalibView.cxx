@@ -16,24 +16,29 @@
 #include "PointerCalibView.h"
 #include "PointerCalibViewPreferencePage.h"
 #include "PointerCalibViewActivator.h"
+
+#include <QCoreApplication>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QObject>
+
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
 #include <service/event/ctkEventConstants.h>
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
+
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
+
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateOr.h>
 #include <mitkPointSet.h>
-#include <mitkCoordinateAxesData.h>
-#include <mitkFileIOUtils.h>
-#include <mitkPointUtils.h>
-#include <vtkMatrix4x4.h>
-#include <vtkSmartPointer.h>
-#include <QMessageBox>
-#include <QCoreApplication>
-#include <QObject>
-#include <QFileDialog>
+
+#include <niftkCoordinateAxesData.h>
+#include <niftkFileIOUtils.h>
+#include <niftkPointUtils.h>
 
 const std::string PointerCalibView::VIEW_ID = "uk.ac.ucl.cmic.igipointercalib";
 
@@ -114,7 +119,7 @@ void PointerCalibView::CreateQtPartControl( QWidget *parent )
     m_Interactor->SetEventConfig("PointSetConfig.xml");
     m_Interactor->SetDataNode(m_ImagePointsNode);
 
-    mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+    mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::New();
 
     m_Controls->m_PointerToWorldNode->SetPredicate(isTransform);
     m_Controls->m_PointerToWorldNode->SetDataStorage(dataStorage);
@@ -319,7 +324,7 @@ void PointerCalibView::OnPointRemoved()
       temporaryPoints->InsertPoint(pointID, pIt->Value());
     }
   }
-  mitk::CopyPointSets(*temporaryPoints, *m_SensorPoints);
+  niftk::CopyPointSets(*temporaryPoints, *m_SensorPoints);
 
   this->UpdateRegistration();
   this->UpdateDisplayedPoints();
@@ -341,11 +346,11 @@ mitk::Point3D PointerCalibView::GetPointerTipInSensorCoordinates() const
       && tipCoordinateInModelCoordinates != NULL)
   {
 
-    mitk::CoordinateAxesData::Pointer sensorToWorldTransform =
-        dynamic_cast<mitk::CoordinateAxesData*>(sensorToWorldNode->GetData());
+    niftk::CoordinateAxesData::Pointer sensorToWorldTransform =
+        dynamic_cast<niftk::CoordinateAxesData*>(sensorToWorldNode->GetData());
 
-    mitk::CoordinateAxesData::Pointer pointerToWorldTransform =
-        dynamic_cast<mitk::CoordinateAxesData*>(pointerToWorldNode->GetData());
+    niftk::CoordinateAxesData::Pointer pointerToWorldTransform =
+        dynamic_cast<niftk::CoordinateAxesData*>(pointerToWorldNode->GetData());
 
     if (sensorToWorldTransform.IsNotNull() && pointerToWorldTransform.IsNotNull())
     {
@@ -398,6 +403,6 @@ void PointerCalibView::OnSaveToFileButtonPressed()
   vtkSmartPointer<vtkMatrix4x4> matrix = m_Calibrator->GetRigidBodyMatrix();
   if (fileName.size() > 0)
   {
-    mitk::SaveVtkMatrix4x4ToFile(fileName.toStdString(), *matrix);
+    niftk::SaveVtkMatrix4x4ToFile(fileName.toStdString(), *matrix);
   }
 }

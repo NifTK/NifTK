@@ -40,8 +40,8 @@ class Image;
 class NIFTKIGI_EXPORT Image2DToTexturePlaneMapper3D : public VtkMapper
 {
 public:
-  mitkClassMacro(Image2DToTexturePlaneMapper3D, VtkMapper);
-  itkNewMacro(Self);
+  mitkClassMacro(Image2DToTexturePlaneMapper3D, VtkMapper)
+  itkNewMacro(Self)
 
   virtual vtkProp* GetVtkProp(mitk::BaseRenderer* renderer) override;
   virtual const mitk::Image* GetInput();

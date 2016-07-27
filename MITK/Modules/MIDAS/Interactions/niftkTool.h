@@ -63,7 +63,7 @@ class NIFTKMIDAS_EXPORT Tool : public mitk::FeedbackContourTool, public Filterin
 
 public:
 
-  mitkClassMacro(Tool, mitk::FeedbackContourTool);
+  mitkClassMacro(Tool, mitk::FeedbackContourTool)
 
   /// \brief Loads the behaviour string to the global interaction.
   /// This function should be called before any niftk::Tool object is created.

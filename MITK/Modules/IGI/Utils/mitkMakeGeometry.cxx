@@ -13,14 +13,15 @@
 =============================================================================*/
 
 #include "mitkMakeGeometry.h"
-#include <mitkFileIOUtils.h>
 
-#include <vtkCubeSource.h>
-#include <vtkSmartPointer.h>
-#include <vtkPolyData.h>
-#include <vtkIdList.h>
 #include <vtkCleanPolyData.h>
-#include <mitkPointUtils.h>
+#include <vtkCubeSource.h>
+#include <vtkIdList.h>
+#include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
+
+#include <niftkFileIOUtils.h>
+#include <niftkPointUtils.h>
 #include <niftkVTKIGIGeometry.h>
 
 //-----------------------------------------------------------------------------
@@ -240,7 +241,7 @@ mitk::PointSet::Pointer MakePointSetOfBifurcations(const std::vector<vtkPolyData
           mitkPoint[2] = point[2];
           pointSetToAverage->InsertPoint(pointSetToAverage->GetSize(), mitkPoint);
         }
-        mitk::Point3D centroid = mitk::ComputeCentroid(*pointSetToAverage);
+        mitk::Point3D centroid = niftk::ComputeCentroid(*pointSetToAverage);
         pointSet->InsertPoint(pointSet->GetSize(), centroid);
       }
       pointSetToAverage->Clear();

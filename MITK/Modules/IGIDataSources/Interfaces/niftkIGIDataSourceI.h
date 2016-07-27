@@ -72,7 +72,7 @@ class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceI : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(IGIDataSourceI, itk::Object);
+  mitkClassMacroItkParent(IGIDataSourceI, itk::Object)
 
   /**
   * \brief Returns the unique name of the data source, e.g. OpenCV-0.

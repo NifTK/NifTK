@@ -15,7 +15,7 @@
 project(uk_ac_ucl_cmic_niftyview)
 
 mitk_create_plugin(
-  EXPORT_DIRECTIVE CMIC_QT_NIFTYVIEWAPP
+  EXPORT_DIRECTIVE NIFTYVIEW_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS niftkCoreGui
 )

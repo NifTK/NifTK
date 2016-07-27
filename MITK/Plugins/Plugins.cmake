@@ -26,7 +26,7 @@
 # hence you declare a dependency in manifest_headers.cmake
 # on org.mitk.gui.qt.common.
 #
-# If you then subsequently change to derive from QmitkBaseView
+# If you then subsequently change to derive from niftk::BaseView
 # from the NifTK project, and declare a dependency in
 # manifest_headers.cmake on uk.ac.ucl.cmic.common
 # then your plugin must occur AFTER uk.ac.ucl.cmic.common.
@@ -109,7 +109,8 @@ endif()
 
 set(NiftyIGI_PLUGINS
   Plugins/uk.ac.ucl.cmic.niftyigi:ON
-  Plugins/uk.ac.ucl.cmic.igioverlayeditor:ON
+  Plugins/uk.ac.ucl.cmic.igivideooverlayeditor:ON
+  Plugins/uk.ac.ucl.cmic.igiultrasoundoverlayeditor:ON
   Plugins/uk.ac.ucl.cmic.igidatasources:ON
   Plugins/uk.ac.ucl.cmic.igisurfacerecon:ON
   Plugins/uk.ac.ucl.cmic.igitrackedimage:ON

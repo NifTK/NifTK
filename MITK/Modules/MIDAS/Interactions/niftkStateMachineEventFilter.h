@@ -43,7 +43,7 @@ class NIFTKMIDAS_EXPORT StateMachineEventFilter
 
 public:
 
-  mitkClassMacroNoParent(StateMachineEventFilter);
+  mitkClassMacroNoParent(StateMachineEventFilter)
 
   StateMachineEventFilter();
   virtual ~StateMachineEventFilter();

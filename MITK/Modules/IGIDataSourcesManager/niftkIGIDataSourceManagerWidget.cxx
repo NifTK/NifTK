@@ -89,8 +89,9 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   ok = QObject::connect(m_TimeStampEdit, SIGNAL(editingFinished()),
                         this, SLOT(OnPlaybackTimestampEditFinished()));
   assert(ok);
-  ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)),
-                        this, SLOT(OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)));
+  ok = QObject::connect(m_Manager,
+    SIGNAL(UpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >)),
+    this, SLOT(OnUpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >)));
   assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedRendering()),
                         this, SIGNAL(UpdateFinishedRendering()));
@@ -161,8 +162,9 @@ IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
   ok = QObject::disconnect(m_TimeStampEdit, SIGNAL(editingFinished()),
                            this, SLOT(OnPlaybackTimestampEditFinished()));
   assert(ok);
-  ok = QObject::disconnect(m_Manager, SIGNAL(UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)),
-                           this, SLOT(OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >)));
+  ok = QObject::disconnect(m_Manager,
+    SIGNAL(UpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >)),
+    this, SLOT(OnUpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >)));
   assert(ok);
   ok = QObject::disconnect(m_Manager, SIGNAL(PlaybackTimerAdvanced(int)),
                            this, SLOT(OnPlaybackTimeAdvanced(int)));
@@ -523,8 +525,11 @@ void IGIDataSourceManagerWidget::OnFreezeTableHeaderClicked(int section)
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(QList< QList<IGIDataItemInfo> > infos)
+void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(
+    niftk::IGIDataType::IGITimeType timeNow, QList< QList<IGIDataItemInfo> > infos)
 {
+  emit UpdateGuiFinishedDataSources (timeNow);
+
   QMutexLocker locker(&m_Lock);
 
   // This can happen if this gets called before a data source is added.

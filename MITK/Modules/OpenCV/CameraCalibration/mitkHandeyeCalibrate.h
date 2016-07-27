@@ -34,8 +34,8 @@ class NIFTKOPENCV_EXPORT HandeyeCalibrate : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(HandeyeCalibrate, itk::Object);
-  itkNewMacro(HandeyeCalibrate);
+  mitkClassMacroItkParent(HandeyeCalibrate, itk::Object)
+  itkNewMacro(HandeyeCalibrate)
   
   /**
    * \brief Calibration function that returns the residual errors, rotation and 

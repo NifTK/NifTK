@@ -13,19 +13,25 @@
 =============================================================================*/
 
 #include "QmitkImageAndTransformSenderWidget.h"
-#include <mitkNodePredicateDataType.h>
-#include <mitkPointUtils.h>
+
+#include <cstring>
+
+#include <QDir>
+#include <QFileDialog>
+
+#include <igtlImageMessage.h>
+#include <igtlTransformMessage.h>
+
+#include <mitkExceptionMacro.h>
 #include <mitkImage.h>
 #include <mitkImageReadAccessor.h>
-#include <mitkExceptionMacro.h>
-#include <cstring>
-#include <igtlTransformMessage.h>
-#include <igtlImageMessage.h>
-#include <niftkFileHelper.h>
-#include <QDir>
 #include <mitkIOUtil.h>
+#include <mitkNodePredicateDataType.h>
+
 #include <QmitkIGIUtils.h>
-#include <QFileDialog>
+
+#include <niftkFileHelper.h>
+#include <niftkPointUtils.h>
 
 //-----------------------------------------------------------------------------
 QmitkImageAndTransformSenderWidget::QmitkImageAndTransformSenderWidget(QWidget *parent)
@@ -154,7 +160,7 @@ void QmitkImageAndTransformSenderWidget::SetDataStorage(const mitk::DataStorage*
   m_ImageCombo->SetPredicate(isImage);
   m_ImageCombo->SetAutoSelectNewItems(false);
 
-  mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+  mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::New();
   m_TransformCombo->SetDataStorage(m_DataStorage);
   m_TransformCombo->SetPredicate(isTransform);
   m_TransformCombo->SetAutoSelectNewItems(false);
@@ -197,14 +203,14 @@ mitk::DataNode::Pointer QmitkImageAndTransformSenderWidget::GetSelectedTransform
 
 
 //-----------------------------------------------------------------------------
-mitk::CoordinateAxesData::Pointer QmitkImageAndTransformSenderWidget::GetSelectedTransform() const
+niftk::CoordinateAxesData::Pointer QmitkImageAndTransformSenderWidget::GetSelectedTransform() const
 {
-  mitk::CoordinateAxesData* transform = NULL;
+  niftk::CoordinateAxesData* transform = NULL;
 
   mitk::DataNode::Pointer node = m_TransformCombo->GetSelectedNode();
   if (node.IsNotNull())
   {
-    transform = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+    transform = dynamic_cast<niftk::CoordinateAxesData*>(node->GetData());
   }
   return transform;
 

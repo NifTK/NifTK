@@ -13,18 +13,20 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <limits>
-#include <stdexcept>
-#include <sstream>
 #include <iostream>
-#include <vtkSmartPointer.h>
-#include <vtkMatrix4x4.h>
-#include <mitkExceptionMacro.h>
+#include <limits>
+#include <sstream>
+#include <stdexcept>
 
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
+
+#include <mitkExceptionMacro.h>
 #include <mitkOpenCVFileIOUtils.h>
-#include <mitkFileIOUtils.h>
-#include <niftkFileHelper.h>
+
 #include <niftkAverageTrackingMatricesCLP.h>
+#include <niftkFileIOUtils.h>
+#include <niftkFileHelper.h>
 
 int main(int argc, char** argv)
 {
@@ -156,7 +158,7 @@ int main(int argc, char** argv)
       outputMatrix->SetElement(i, 3, translationVector.at<double>(0,i));
     }
 
-    bool isSuccessfullyWritten = mitk::SaveVtkMatrix4x4ToFile(outputMatrixFile, *outputMatrix);
+    bool isSuccessfullyWritten = niftk::SaveVtkMatrix4x4ToFile(outputMatrixFile, *outputMatrix);
     if (!isSuccessfullyWritten)
     {
       std::ostringstream errorMessage;

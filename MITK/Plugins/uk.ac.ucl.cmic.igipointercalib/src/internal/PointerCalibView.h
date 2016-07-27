@@ -16,7 +16,7 @@
 #define PointerCalibView_h
 
 #include "ui_PointerCalibView.h"
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
@@ -29,7 +29,7 @@
  * \brief User interface for Ultrasound Pointer Based Calibration as described in Muratore 2001.
  * \ingroup uk_ac_ucl_cmic_igipointercalib_internal
 */
-class PointerCalibView : public QmitkBaseView
+class PointerCalibView : public niftk::BaseView
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)

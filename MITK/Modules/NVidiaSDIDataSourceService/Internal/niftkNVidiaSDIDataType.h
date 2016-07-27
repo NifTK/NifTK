@@ -31,8 +31,8 @@ public:
   //typedef unsigned __int64 NVidiaSDITimeType;
   typedef unsigned long long NVidiaSDITimeType;
 
-  mitkClassMacro(NVidiaSDIDataType, IGIDataType);
-  mitkNewMacro3Param(NVidiaSDIDataType, unsigned int, unsigned int, NVidiaSDITimeType);
+  mitkClassMacro(NVidiaSDIDataType, IGIDataType)
+  mitkNewMacro3Param(NVidiaSDIDataType, unsigned int, unsigned int, NVidiaSDITimeType)
 
   unsigned int GetSequenceNumber() const;
   unsigned int GetCookie() const;

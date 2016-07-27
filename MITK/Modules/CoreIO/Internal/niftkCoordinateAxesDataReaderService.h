@@ -22,7 +22,7 @@ namespace niftk
 
 /**
 * @class CoordinateAxesDataReaderService
-* @brief Loads a 4x4 Matrix into a mitk::CoordinateAxesData.
+* @brief Loads a 4x4 Matrix into a niftk::CoordinateAxesData.
 * @internal
 */
 class CoordinateAxesDataReaderService: public mitk::AbstractFileReader
@@ -40,6 +40,6 @@ private:
   virtual CoordinateAxesDataReaderService* Clone() const override;
 };
 
-} // end namespace
+}
 
 #endif

@@ -2,12 +2,12 @@
 
 The Medical Imaging Interaction Toolkit (MITK)
 
-Copyright (c) German Cancer Research Center, 
+Copyright (c) German Cancer Research Center,
 Division of Medical and Biological Informatics.
 All rights reserved.
 
-This software is distributed WITHOUT ANY WARRANTY; without 
-even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+This software is distributed WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR
 A PARTICULAR PURPOSE.
 
 See LICENSE.txt or http://www.mitk.org for details.
@@ -85,13 +85,13 @@ protected:
   bool UpdateCurrentRendererPointers(const mitk::InteractionEvent * interactionEvent);
 
   bool CheckObject(const mitk::InteractionEvent *interactionEvent);
-  
+
   bool SelectObject(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   bool DeselectObject(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   bool InitMove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
-  
+
   bool Move(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   bool AcceptMove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
@@ -109,15 +109,15 @@ private:
   double                     m_CurrentlyPickedPointWorld[4];
 
   mitk::BaseGeometry::Pointer  m_OriginalGeometry;
-  
+
   mitk::BaseGeometry::Pointer  m_UpdatedGeometry;
 
   mitk::Vector3D               m_ObjectNormal;
-  
+
   mitk::BaseRenderer        * m_CurrentRenderer;
   vtkRenderer               * m_CurrentVtkRenderer;
   vtkCamera                 * m_CurrentCamera;
-  
+
   mitk::DataNode            * m_BoundingObjectNode;
 };
 

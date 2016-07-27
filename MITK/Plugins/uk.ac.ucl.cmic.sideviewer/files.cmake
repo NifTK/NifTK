@@ -13,21 +13,21 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  QmitkSideViewerView.cxx
-  QmitkSideViewerWidget.cxx
+  niftkSideViewerView.cxx
+  niftkSideViewerWidget.cxx
 )
 
 set(INTERNAL_CPP_FILES
-  SideViewerActivator.cxx
+  niftkPluginActivator.cxx
 )
 
 set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/internal/SideViewerActivator.h
-  src/QmitkSideViewerView.h
-  src/QmitkSideViewerWidget.h
+  src/internal/niftkPluginActivator.h
+  src/niftkSideViewerView.h
+  src/niftkSideViewerWidget.h
 )
 
 set(CACHED_RESOURCE_FILES

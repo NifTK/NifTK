@@ -12,20 +12,16 @@
 
 =============================================================================*/
 
-#ifndef __niftkSingleViewerWidgetTest_h
-#define __niftkSingleViewerWidgetTest_h
+#ifndef niftkSingleViewerWidgetTest_h
+#define niftkSingleViewerWidgetTest_h
 
 #include <QObject>
 
-#include <mitkAtomicStateTransitionTester.cxx>
+#include <niftkAtomicStateTransitionTester.cxx>
 
 #include <niftkSingleViewerWidgetState.h>
 
 #include <vector>
-
-class niftkSingleViewerWidgetTestClassPrivate;
-
-class niftkSingleViewerWidget;
 
 namespace mitk
 {
@@ -34,7 +30,14 @@ class DataNode;
 
 class QmitkRenderWindow;
 
-class niftkSingleViewerWidgetTestClass: public QObject
+
+namespace niftk
+{
+class SingleViewerWidget;
+class SingleViewerWidgetTestClassPrivate;
+
+
+class SingleViewerWidgetTestClass: public QObject
 {
   Q_OBJECT
 
@@ -42,15 +45,15 @@ public:
 
   enum WorldAxes { SagittalAxis, CoronalAxis, AxialAxis };
 
-  typedef mitk::AtomicStateTransitionTester<const niftkSingleViewerWidget*, niftkSingleViewerWidgetState> ViewerStateTester;
-  typedef niftkSingleViewerWidgetState ViewerState;
-  typedef niftkSingleViewerWidgetTestClass Self;
+  typedef AtomicStateTransitionTester<const SingleViewerWidget*, SingleViewerWidgetState> ViewerStateTester;
+  typedef SingleViewerWidgetState ViewerState;
+  typedef SingleViewerWidgetTestClass Self;
 
   /// \brief Constructs a niftkSingleViewerWidgetTestClass object.
-  explicit niftkSingleViewerWidgetTestClass();
+  explicit SingleViewerWidgetTestClass();
 
   /// \brief Destructs the niftkSingleViewerWidgetTestClass object.
-  virtual ~niftkSingleViewerWidgetTestClass();
+  virtual ~SingleViewerWidgetTestClass();
 
   /// \brief Gets the name of the image file to load into the viewer.
   std::string GetFileName() const;
@@ -241,12 +244,13 @@ private:
   static void MouseWheel(QWidget* window, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                          QPoint point, int delta, Qt::Orientation orientation = Qt::Vertical);
 
-  QScopedPointer<niftkSingleViewerWidgetTestClassPrivate> d_ptr;
+  QScopedPointer<SingleViewerWidgetTestClassPrivate> d_ptr;
 
-  Q_DECLARE_PRIVATE(niftkSingleViewerWidgetTestClass)
-  Q_DISABLE_COPY(niftkSingleViewerWidgetTestClass)
+  Q_DECLARE_PRIVATE(SingleViewerWidgetTestClass)
+  Q_DISABLE_COPY(SingleViewerWidgetTestClass)
 };
 
+}
 
 int niftkSingleViewerWidgetTest(int argc, char* argv[]);
 

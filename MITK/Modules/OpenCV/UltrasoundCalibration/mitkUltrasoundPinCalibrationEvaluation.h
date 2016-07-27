@@ -33,8 +33,8 @@ class NIFTKOPENCV_EXPORT UltrasoundPinCalibrationEvaluation : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(UltrasoundPinCalibrationEvaluation, itk::Object);
-  itkNewMacro(UltrasoundPinCalibrationEvaluation);
+  mitkClassMacroItkParent(UltrasoundPinCalibrationEvaluation, itk::Object)
+  itkNewMacro(UltrasoundPinCalibrationEvaluation)
 
   /**
    * \brief Does evaluation.

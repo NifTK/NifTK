@@ -29,7 +29,7 @@ class NIFTKNDITRACKERS_EXPORT PLUSNDITracker : public niftk::NDITracker
 {
 public:
 
-  mitkClassMacroItkParent(PLUSNDITracker, niftk::NDITracker);
+  mitkClassMacroItkParent(PLUSNDITracker, niftk::NDITracker)
 
   /**
   * \brief Retrives the current tracking data.
@@ -44,6 +44,7 @@ protected:
                  mitk::TrackingDeviceData deviceData,
                  std::string toolConfigFileName,
                  int preferredFramesPerSecond,
+                 int baudRate,
                  int measurementVolumeNumber
                  ); // Purposefully hidden.
 

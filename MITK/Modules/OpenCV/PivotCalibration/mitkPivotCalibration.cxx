@@ -13,19 +13,24 @@
 =============================================================================*/
 
 #include "mitkPivotCalibration.h"
-#include <mitkFileIOUtils.h>
-#include <niftkFileHelper.h>
-#include <vtkSmartPointer.h>
-#include <vtkMatrix4x4.h>
-#include <mitkCameraCalibrationFacade.h>
-#include <mitkOpenCVMaths.h>
-#include <mitkOpenCVFileIOUtils.h>
-#include <niftkMathsUtils.h>
-#include <stdexcept>
-#include <sstream>
-#include <cstdlib>
 
-namespace mitk {
+#include <cstdlib>
+#include <sstream>
+#include <stdexcept>
+
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
+
+#include <mitkCameraCalibrationFacade.h>
+#include <mitkOpenCVFileIOUtils.h>
+#include <mitkOpenCVMaths.h>
+
+#include <niftkFileIOUtils.h>
+#include <niftkFileHelper.h>
+#include <niftkMathsUtils.h>
+
+namespace mitk
+{
 
 //-----------------------------------------------------------------------------
 PivotCalibration::PivotCalibration()

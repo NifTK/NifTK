@@ -29,8 +29,8 @@ class UltrasonixDataType : public IGIDataType
 {
 public:
 
-  mitkClassMacro(UltrasonixDataType, IGIDataType);
-  itkNewMacro(UltrasonixDataType);
+  mitkClassMacro(UltrasonixDataType, IGIDataType)
+  itkNewMacro(UltrasonixDataType)
 
   /**
   * \brief Used for loading in an image.

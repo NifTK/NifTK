@@ -15,7 +15,7 @@
 #ifndef PointRegView_h
 #define PointRegView_h
 
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_PointRegView.h"
 #include <vtkSmartPointer.h>
@@ -31,7 +31,7 @@ class vtkMatrix4x4;
  *
  * \ingroup uk_ac_ucl_cmic_igipointreg_internal
 */
-class PointRegView : public QmitkBaseView
+class PointRegView : public niftk::BaseView
 {  
   /**
    * this is needed for all Qt objects that should have a Qt meta-object

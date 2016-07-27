@@ -73,7 +73,7 @@ public:
   void SetIntrinsicParameters(const double& fx, const double& fy,
                               const double &cx, const double& cy
                               );
-protected:  
+protected:
 
   vtkOpenGLMatrixDrivenCamera();
   ~vtkOpenGLMatrixDrivenCamera() {}

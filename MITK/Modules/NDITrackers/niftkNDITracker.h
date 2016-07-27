@@ -44,7 +44,7 @@ class NIFTKNDITRACKERS_EXPORT NDITracker : public itk::Object
 {
 public:
 
-  mitkClassMacroItkParent(NDITracker, itk::Object);
+  mitkClassMacroItkParent(NDITracker, itk::Object)
   itkGetMacro(PreferredFramesPerSecond, int);
 
   /**

@@ -32,14 +32,9 @@ class NIFTKIGI_EXPORT TrackedImage : public itk::Object
 {
 public:
 
-  mitkClassMacroItkParent(TrackedImage, itk::Object);
-  itkNewMacro(TrackedImage);
+  mitkClassMacroItkParent(TrackedImage, itk::Object)
+  itkNewMacro(TrackedImage)
 
-  /**
-   * \brief Stores the name of a DataNode property, indicating the currently selected image = niftk.trackedimage
-   */
-  static const char* TRACKED_IMAGE_SELECTED_PROPERTY_NAME;
-  
   /**
    * \brief Computes the new position/scaling of the tracked image plane.
    */

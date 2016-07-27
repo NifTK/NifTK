@@ -27,13 +27,16 @@
 #include <QmitkMimeTypes.h>
 #include <QmitkRegisterClasses.h>
 
-#include <mitkNifTKCoreObjectFactory.h>
+#include <niftkCoreObjectFactory.h>
 #include <niftkSingleViewerWidget.h>
 #include <niftkMultiViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
 
 
-class niftkMultiViewerWidgetTestClassPrivate
+namespace niftk
+{
+
+class MultiViewerWidgetTestClassPrivate
 {
 public:
   std::string FileName;
@@ -42,19 +45,19 @@ public:
 
   mitk::DataNode::Pointer ImageNode;
 
-  niftkMultiViewerWidget* MultiViewer;
-  niftkMultiViewerVisibilityManager::Pointer VisibilityManager;
+  MultiViewerWidget* MultiViewer;
+  MultiViewerVisibilityManager::Pointer VisibilityManager;
 
   bool InteractiveMode;
 };
 
 
 // --------------------------------------------------------------------------
-niftkMultiViewerWidgetTestClass::niftkMultiViewerWidgetTestClass()
+MultiViewerWidgetTestClass::MultiViewerWidgetTestClass()
 : QObject()
-, d_ptr(new niftkMultiViewerWidgetTestClassPrivate())
+, d_ptr(new MultiViewerWidgetTestClassPrivate())
 {
-  Q_D(niftkMultiViewerWidgetTestClass);
+  Q_D(MultiViewerWidgetTestClass);
 
   d->MultiViewer = nullptr;
   d->InteractiveMode = false;
@@ -62,47 +65,47 @@ niftkMultiViewerWidgetTestClass::niftkMultiViewerWidgetTestClass()
 
 
 // --------------------------------------------------------------------------
-niftkMultiViewerWidgetTestClass::~niftkMultiViewerWidgetTestClass()
+MultiViewerWidgetTestClass::~MultiViewerWidgetTestClass()
 {
 }
 
 
 // --------------------------------------------------------------------------
-std::string niftkMultiViewerWidgetTestClass::GetFileName() const
+std::string MultiViewerWidgetTestClass::GetFileName() const
 {
-  Q_D(const niftkMultiViewerWidgetTestClass);
+  Q_D(const MultiViewerWidgetTestClass);
   return d->FileName;
 }
 
 
 // --------------------------------------------------------------------------
-void niftkMultiViewerWidgetTestClass::SetFileName(const std::string& fileName)
+void MultiViewerWidgetTestClass::SetFileName(const std::string& fileName)
 {
-  Q_D(niftkMultiViewerWidgetTestClass);
+  Q_D(MultiViewerWidgetTestClass);
   d->FileName = fileName;
 }
 
 
 // --------------------------------------------------------------------------
-bool niftkMultiViewerWidgetTestClass::GetInteractiveMode() const
+bool MultiViewerWidgetTestClass::GetInteractiveMode() const
 {
-  Q_D(const niftkMultiViewerWidgetTestClass);
+  Q_D(const MultiViewerWidgetTestClass);
   return d->InteractiveMode;
 }
 
 
 // --------------------------------------------------------------------------
-void niftkMultiViewerWidgetTestClass::SetInteractiveMode(bool interactiveMode)
+void MultiViewerWidgetTestClass::SetInteractiveMode(bool interactiveMode)
 {
-  Q_D(niftkMultiViewerWidgetTestClass);
+  Q_D(MultiViewerWidgetTestClass);
   d->InteractiveMode = interactiveMode;
 }
 
 
 // --------------------------------------------------------------------------
-void niftkMultiViewerWidgetTestClass::initTestCase()
+void MultiViewerWidgetTestClass::initTestCase()
 {
-  Q_D(niftkMultiViewerWidgetTestClass);
+  Q_D(MultiViewerWidgetTestClass);
 
   QmitkRegisterClasses();
 
@@ -119,7 +122,7 @@ void niftkMultiViewerWidgetTestClass::initTestCase()
 
   d->ImageNode = (*allImages)[0];
 
-  d->VisibilityManager = niftkMultiViewerVisibilityManager::New(d->DataStorage);
+  d->VisibilityManager = MultiViewerVisibilityManager::New(d->DataStorage);
   d->VisibilityManager->SetInterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION);
   d->VisibilityManager->SetDefaultWindowLayout(WINDOW_LAYOUT_CORONAL);
   d->VisibilityManager->SetDropType(DNDDISPLAY_DROP_SINGLE);
@@ -127,20 +130,20 @@ void niftkMultiViewerWidgetTestClass::initTestCase()
 
 
 // --------------------------------------------------------------------------
-void niftkMultiViewerWidgetTestClass::cleanupTestCase()
+void MultiViewerWidgetTestClass::cleanupTestCase()
 {
-  Q_D(niftkMultiViewerWidgetTestClass);
+  Q_D(MultiViewerWidgetTestClass);
   d->VisibilityManager = 0;
 }
 
 
 // --------------------------------------------------------------------------
-void niftkMultiViewerWidgetTestClass::init()
+void MultiViewerWidgetTestClass::init()
 {
-  Q_D(niftkMultiViewerWidgetTestClass);
+  Q_D(MultiViewerWidgetTestClass);
 
-  // Create the niftkMultiViewerWidget
-  d->MultiViewer = new niftkMultiViewerWidget(d->VisibilityManager, d->RenderingManager);
+  // Create the MultiViewerWidget
+  d->MultiViewer = new MultiViewerWidget(d->VisibilityManager, d->RenderingManager);
 
   // Setup GUI a bit more.
   d->MultiViewer->SetDropType(DNDDISPLAY_DROP_SINGLE);
@@ -171,18 +174,18 @@ void niftkMultiViewerWidgetTestClass::init()
 
 
 // --------------------------------------------------------------------------
-void niftkMultiViewerWidgetTestClass::cleanup()
+void MultiViewerWidgetTestClass::cleanup()
 {
-  Q_D(niftkMultiViewerWidgetTestClass);
+  Q_D(MultiViewerWidgetTestClass);
   delete d->MultiViewer;
   d->MultiViewer = 0;
 }
 
 
 // --------------------------------------------------------------------------
-void niftkMultiViewerWidgetTestClass::dropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes)
+void MultiViewerWidgetTestClass::dropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes)
 {
-  Q_D(niftkMultiViewerWidgetTestClass);
+  Q_D(MultiViewerWidgetTestClass);
 
   QMimeData* mimeData = new QMimeData;
   QMimeData* mimeData2 = new QMimeData;
@@ -221,9 +224,9 @@ void niftkMultiViewerWidgetTestClass::dropNodes(QWidget* window, const std::vect
 
 
 // --------------------------------------------------------------------------
-void niftkMultiViewerWidgetTestClass::testViewer()
+void MultiViewerWidgetTestClass::testViewer()
 {
-  Q_D(niftkMultiViewerWidgetTestClass);
+  Q_D(MultiViewerWidgetTestClass);
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   QTest::qWaitForWindowShown(d->MultiViewer);
@@ -240,6 +243,8 @@ void niftkMultiViewerWidgetTestClass::testViewer()
   }
 
   QVERIFY(true);
+}
+
 }
 
 
@@ -265,7 +270,7 @@ int niftkMultiViewerWidgetTest(int argc, char* argv[])
   QApplication app(argc, argv);
   Q_UNUSED(app);
 
-  niftkMultiViewerWidgetTestClass test;
+  niftk::MultiViewerWidgetTestClass test;
 
   std::string interactiveModeOption("-i");
   for (int i = 1; i < argc; ++i)

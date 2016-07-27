@@ -21,26 +21,31 @@
 
 #include "niftkDnDDisplayEnums.h"
 
+
 namespace Ui
 {
 class niftkSingleViewerControls;
 }
 
+
+namespace niftk
+{
+
 /**
- * \class niftkSingleViewerControls
+ * \class SingleViewerControls
  * \brief Control panel for the DnD display.
  */
-class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerControls : public QWidget
+class NIFTKDNDDISPLAY_EXPORT SingleViewerControls : public QWidget
 {
   Q_OBJECT
   
 public:
 
-  /// \brief Constructs the niftkSingleViewerControls object.
-  explicit niftkSingleViewerControls(QWidget *parent = 0);
+  /// \brief Constructs the SingleViewerControls object.
+  explicit SingleViewerControls(QWidget *parent = 0);
 
-  /// \brief Destructs the niftkSingleViewerControls object.
-  virtual ~niftkSingleViewerControls();
+  /// \brief Destructs the SingleViewerControls object.
+  virtual ~SingleViewerControls();
   
   /// \brief Tells if the magnification controls are visible.
   bool AreMagnificationControlsVisible() const;
@@ -228,5 +233,7 @@ private:
   static WindowLayout s_MultiWindowLayouts[];
   static int const s_MultiWindowLayoutNumber;
 };
+
+}
 
 #endif

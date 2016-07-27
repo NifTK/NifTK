@@ -13,22 +13,27 @@
 =============================================================================*/
 
 #include "mitkUltrasoundTransformAndImageMerger.h"
-#include <mitkExceptionMacro.h>
-#include <mitkOpenCVMaths.h>
-#include <mitkOpenCVFileIOUtils.h>
-#include <mitkFileIOUtils.h>
-#include <mitkCameraCalibrationFacade.h>
-#include <mitkImagePixelReadAccessor.h>
-#include <mitkTrackingAndTimeStampsContainer.h>
-#include <niftkFileHelper.h>
-#include <niftkVTKFunctions.h>
-#include <mitkIOUtil.h>
-#include <itkImage.h>
-#include <itkImageFileWriter.h>
+
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 
-namespace mitk {
+#include <itkImage.h>
+#include <itkImageFileWriter.h>
+
+#include <mitkExceptionMacro.h>
+#include <mitkCameraCalibrationFacade.h>
+#include <mitkImagePixelReadAccessor.h>
+#include <mitkIOUtil.h>
+#include <mitkOpenCVFileIOUtils.h>
+#include <mitkOpenCVMaths.h>
+#include <mitkTrackingAndTimeStampsContainer.h>
+
+#include <niftkFileHelper.h>
+#include <niftkFileIOUtils.h>
+#include <niftkVTKFunctions.h>
+
+namespace mitk
+{
 
 //-----------------------------------------------------------------------------
 UltrasoundTransformAndImageMerger::~UltrasoundTransformAndImageMerger()

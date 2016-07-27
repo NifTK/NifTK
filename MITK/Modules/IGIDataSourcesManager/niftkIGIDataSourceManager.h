@@ -278,7 +278,7 @@ signals:
   /**
   * \brief Emmitted when this manager has asked each data source to update, and they have all updated.
   */
-  void UpdateFinishedDataSources(QList< QList<IGIDataItemInfo> >);
+  void UpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >);
 
   /**
   * \brief Emmitted when this manager has called for rendering to be updated, and that call has completed.

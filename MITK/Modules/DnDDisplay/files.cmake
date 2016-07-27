@@ -24,7 +24,7 @@ set(CPP_FILES
   niftkSingleViewerControls.cxx
   niftkSingleViewerWidget.cxx
   vtkSideAnnotation.cxx
-  Interactions/mitkDnDDisplayInteractor.cxx
+  Interactions/niftkDnDDisplayInteractor.cxx
 )
 
 set(MOC_H_FILES 
@@ -34,7 +34,7 @@ set(MOC_H_FILES
   niftkMultiWindowWidget_p.h
   niftkSingleViewerWidget.h
   niftkMultiViewerVisibilityManager.h
-  Interactions/mitkDnDDisplayInteractor.h
+  Interactions/niftkDnDDisplayInteractor.h
 )
 
 set(UI_FILES

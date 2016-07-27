@@ -46,8 +46,8 @@ class NIFTKMIDAS_EXPORT PolyTool : public ContourTool {
 
 public:
 
-  mitkClassMacro(PolyTool, Tool);
-  itkNewMacro(PolyTool);
+  mitkClassMacro(PolyTool, Tool)
+  itkNewMacro(PolyTool)
 
   /// \see mitk::Tool::GetName()
   virtual const char* GetName() const;

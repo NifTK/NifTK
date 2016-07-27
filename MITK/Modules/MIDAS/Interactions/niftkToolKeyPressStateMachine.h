@@ -37,8 +37,8 @@ class NIFTKMIDAS_EXPORT ToolKeyPressStateMachine : public mitk::EventStateMachin
 {
 
 public:
-  mitkClassMacro(ToolKeyPressStateMachine, mitk::EventStateMachine); // this creates the Self typedef
-  mitkNewMacro1Param(Self, ToolKeyPressResponder*);
+  mitkClassMacro(ToolKeyPressStateMachine, mitk::EventStateMachine) // this creates the Self typedef
+  mitkNewMacro1Param(Self, ToolKeyPressResponder*)
 
   /**
    * By this function the Observer gets notified about new events.

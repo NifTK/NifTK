@@ -113,14 +113,14 @@ void QmitkStereoImageAndCameraSelectionWidget::SetCameraNode(mitk::DataNode* nod
 
 
 //-----------------------------------------------------------------------------
-mitk::CoordinateAxesData* QmitkStereoImageAndCameraSelectionWidget::GetCameraTransform() const
+niftk::CoordinateAxesData* QmitkStereoImageAndCameraSelectionWidget::GetCameraTransform() const
 {
-  mitk::CoordinateAxesData* result = NULL;
+  niftk::CoordinateAxesData* result = NULL;
 
   mitk::DataNode* node = this->GetCameraNode();
   if (node != NULL)
   {
-    result = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+    result = dynamic_cast<niftk::CoordinateAxesData*>(node->GetData());
   }
 
   return result;
@@ -142,7 +142,7 @@ void QmitkStereoImageAndCameraSelectionWidget::SetDataStorage(const mitk::DataSt
   m_RightImageCombo->SetPredicate(isImage);
   m_RightImageCombo->SetAutoSelectNewItems(false);
 
-  mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isCoords = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+  mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::Pointer isCoords = mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::New();
   m_CameraPositionComboBox->SetDataStorage(m_DataStorage);
   m_CameraPositionComboBox->SetAutoSelectNewItems(false);
   m_CameraPositionComboBox->SetPredicate(isCoords);

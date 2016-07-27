@@ -18,7 +18,11 @@
 
 #include <ctkDoubleSpinBox.h>
 
-WindowLayout niftkSingleViewerControls::s_MultiWindowLayouts[] = {
+
+namespace niftk
+{
+
+WindowLayout SingleViewerControls::s_MultiWindowLayouts[] = {
   WINDOW_LAYOUT_ORTHO,
   WINDOW_LAYOUT_3H,
   WINDOW_LAYOUT_3V,
@@ -30,10 +34,10 @@ WindowLayout niftkSingleViewerControls::s_MultiWindowLayouts[] = {
   WINDOW_LAYOUT_SAG_AX_V
 };
 
-int const niftkSingleViewerControls::s_MultiWindowLayoutNumber = sizeof(s_MultiWindowLayouts) / sizeof(WindowLayout);
+int const SingleViewerControls::s_MultiWindowLayoutNumber = sizeof(s_MultiWindowLayouts) / sizeof(WindowLayout);
 
 //-----------------------------------------------------------------------------
-niftkSingleViewerControls::niftkSingleViewerControls(QWidget *parent)
+SingleViewerControls::SingleViewerControls(QWidget *parent)
 : QWidget(parent)
 , m_ShowShowOptions(true)
 , m_ShowWindowLayoutControls(true)
@@ -99,19 +103,19 @@ niftkSingleViewerControls::niftkSingleViewerControls(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-niftkSingleViewerControls::~niftkSingleViewerControls()
+SingleViewerControls::~SingleViewerControls()
 {
 }
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerControls::AreMagnificationControlsVisible() const
+bool SingleViewerControls::AreMagnificationControlsVisible() const
 {
   return ui->m_MagnificationLabel->isVisible() && ui->m_MagnificationSlider->isVisible();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetMagnificationControlsVisible(bool visible)
+void SingleViewerControls::SetMagnificationControlsVisible(bool visible)
 {
   ui->m_MagnificationLabel->setVisible(visible);
   ui->m_MagnificationSlider->setVisible(visible);
@@ -119,14 +123,14 @@ void niftkSingleViewerControls::SetMagnificationControlsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerControls::AreMagnificationControlsEnabled() const
+bool SingleViewerControls::AreMagnificationControlsEnabled() const
 {
   return ui->m_MagnificationLabel->isEnabled() && ui->m_MagnificationSlider->isEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetMagnificationControlsEnabled(bool enabled)
+void SingleViewerControls::SetMagnificationControlsEnabled(bool enabled)
 {
   ui->m_MagnificationLabel->setEnabled(enabled);
   ui->m_MagnificationSlider->setEnabled(enabled);
@@ -134,14 +138,14 @@ void niftkSingleViewerControls::SetMagnificationControlsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerControls::AreShowOptionsVisible() const
+bool SingleViewerControls::AreShowOptionsVisible() const
 {
   return m_ShowShowOptions;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetShowOptionsVisible(bool visible)
+void SingleViewerControls::SetShowOptionsVisible(bool visible)
 {
   m_ShowShowOptions = visible;
   ui->m_ShowOptionsWidget->setVisible(visible);
@@ -150,14 +154,14 @@ void niftkSingleViewerControls::SetShowOptionsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerControls::AreWindowLayoutControlsVisible() const
+bool SingleViewerControls::AreWindowLayoutControlsVisible() const
 {
   return m_ShowWindowLayoutControls;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetWindowLayoutControlsVisible(bool visible)
+void SingleViewerControls::SetWindowLayoutControlsVisible(bool visible)
 {
   m_ShowWindowLayoutControls = visible;
   ui->m_WindowLayoutSeparator->setVisible(visible);
@@ -168,49 +172,49 @@ void niftkSingleViewerControls::SetWindowLayoutControlsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::OnSelectedSliceChanged(double selectedSlice)
+void SingleViewerControls::OnSelectedSliceChanged(double selectedSlice)
 {
   emit SelectedSliceChanged(static_cast<int>(selectedSlice));
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::OnTimeStepChanged(double timeStep)
+void SingleViewerControls::OnTimeStepChanged(double timeStep)
 {
   emit TimeStepChanged(static_cast<int>(timeStep));
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetSliceTracking(bool tracking)
+void SingleViewerControls::SetSliceTracking(bool tracking)
 {
   ui->m_SliceSlider->setTracking(tracking);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetTimeStepTracking(bool tracking)
+void SingleViewerControls::SetTimeStepTracking(bool tracking)
 {
   ui->m_TimeStepSlider->setTracking(tracking);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetMagnificationTracking(bool tracking)
+void SingleViewerControls::SetMagnificationTracking(bool tracking)
 {
   ui->m_MagnificationSlider->setTracking(tracking);
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerControls::GetMaxSlice() const
+int SingleViewerControls::GetMaxSlice() const
 {
   return static_cast<int>(ui->m_SliceSlider->maximum());
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetMaxSlice(int maxSlice)
+void SingleViewerControls::SetMaxSlice(int maxSlice)
 {
   bool wasBlocked = ui->m_SliceSlider->blockSignals(true);
   ui->m_SliceSlider->setMaximum(maxSlice);
@@ -219,14 +223,14 @@ void niftkSingleViewerControls::SetMaxSlice(int maxSlice)
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerControls::GetSelectedSlice() const
+int SingleViewerControls::GetSelectedSlice() const
 {
   return static_cast<int>(ui->m_SliceSlider->value());
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetSelectedSlice(int selectedSlice)
+void SingleViewerControls::SetSelectedSlice(int selectedSlice)
 {
   bool wasBlocked = ui->m_SliceSlider->blockSignals(true);
   ui->m_SliceSlider->setValue(selectedSlice);
@@ -235,14 +239,14 @@ void niftkSingleViewerControls::SetSelectedSlice(int selectedSlice)
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerControls::GetMaxTimeStep() const
+int SingleViewerControls::GetMaxTimeStep() const
 {
   return static_cast<int>(ui->m_TimeStepSlider->maximum());
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetMaxTimeStep(int maxTimeStep)
+void SingleViewerControls::SetMaxTimeStep(int maxTimeStep)
 {
   bool wasBlocked = ui->m_TimeStepSlider->blockSignals(true);
   ui->m_TimeStepSlider->setMaximum(maxTimeStep);
@@ -251,14 +255,14 @@ void niftkSingleViewerControls::SetMaxTimeStep(int maxTimeStep)
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerControls::GetTimeStep() const
+int SingleViewerControls::GetTimeStep() const
 {
   return static_cast<int>(ui->m_TimeStepSlider->value());
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetTimeStep(int timeStep)
+void SingleViewerControls::SetTimeStep(int timeStep)
 {
   bool wasBlocked = ui->m_TimeStepSlider->blockSignals(true);
   ui->m_TimeStepSlider->setValue(timeStep);
@@ -267,14 +271,14 @@ void niftkSingleViewerControls::SetTimeStep(int timeStep)
 
 
 //-----------------------------------------------------------------------------
-double niftkSingleViewerControls::GetMinMagnification() const
+double SingleViewerControls::GetMinMagnification() const
 {
   return ui->m_MagnificationSlider->minimum();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetMinMagnification(double minMagnification)
+void SingleViewerControls::SetMinMagnification(double minMagnification)
 {
   bool wasBlocked = ui->m_MagnificationSlider->blockSignals(true);
   ui->m_MagnificationSlider->setMinimum(minMagnification);
@@ -283,14 +287,14 @@ void niftkSingleViewerControls::SetMinMagnification(double minMagnification)
 
 
 //-----------------------------------------------------------------------------
-double niftkSingleViewerControls::GetMaxMagnification() const
+double SingleViewerControls::GetMaxMagnification() const
 {
   return ui->m_MagnificationSlider->maximum();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetMaxMagnification(double maxMagnification)
+void SingleViewerControls::SetMaxMagnification(double maxMagnification)
 {
   bool wasBlocked = ui->m_MagnificationSlider->blockSignals(true);
   ui->m_MagnificationSlider->setMaximum(maxMagnification);
@@ -299,14 +303,14 @@ void niftkSingleViewerControls::SetMaxMagnification(double maxMagnification)
 
 
 //-----------------------------------------------------------------------------
-double niftkSingleViewerControls::GetMagnification() const
+double SingleViewerControls::GetMagnification() const
 {
   return ui->m_MagnificationSlider->value();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetMagnification(double magnification)
+void SingleViewerControls::SetMagnification(double magnification)
 {
   bool wasBlocked = ui->m_MagnificationSlider->blockSignals(true);
   ui->m_MagnificationSlider->setValue(magnification);
@@ -315,14 +319,14 @@ void niftkSingleViewerControls::SetMagnification(double magnification)
 
 
 //-----------------------------------------------------------------------------
-WindowLayout niftkSingleViewerControls::GetWindowLayout() const
+WindowLayout SingleViewerControls::GetWindowLayout() const
 {
   return m_WindowLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetWindowLayout(WindowLayout windowLayout)
+void SingleViewerControls::SetWindowLayout(WindowLayout windowLayout)
 {
   if (windowLayout == m_WindowLayout)
   {
@@ -378,19 +382,19 @@ void niftkSingleViewerControls::SetWindowLayout(WindowLayout windowLayout)
 
   m_WindowLayout = windowLayout;
 
-  ui->m_WindowBindingWidget->setEnabled(::IsMultiWindowLayout(windowLayout));
+  ui->m_WindowBindingWidget->setEnabled(niftk::IsMultiWindowLayout(windowLayout));
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerControls::AreWindowCursorsBound() const
+bool SingleViewerControls::AreWindowCursorsBound() const
 {
   return ui->m_BindWindowCursorsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetWindowCursorsBound(bool bound)
+void SingleViewerControls::SetWindowCursorsBound(bool bound)
 {
   bool wasBlocked = ui->m_BindWindowCursorsCheckBox->blockSignals(true);
   ui->m_BindWindowCursorsCheckBox->setChecked(bound);
@@ -399,14 +403,14 @@ void niftkSingleViewerControls::SetWindowCursorsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerControls::AreWindowMagnificationsBound() const
+bool SingleViewerControls::AreWindowMagnificationsBound() const
 {
   return ui->m_BindWindowMagnificationsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetWindowMagnificationsBound(bool bound)
+void SingleViewerControls::SetWindowMagnificationsBound(bool bound)
 {
   bool wasBlocked = ui->m_BindWindowMagnificationsCheckBox->blockSignals(true);
   ui->m_BindWindowMagnificationsCheckBox->setChecked(bound);
@@ -415,14 +419,14 @@ void niftkSingleViewerControls::SetWindowMagnificationsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerControls::IsCursorVisible() const
+bool SingleViewerControls::IsCursorVisible() const
 {
   return ui->m_ShowCursorCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetCursorVisible(bool visible)
+void SingleViewerControls::SetCursorVisible(bool visible)
 {
   bool wasBlocked = ui->m_ShowCursorCheckBox->blockSignals(true);
   ui->m_ShowCursorCheckBox->setChecked(visible);
@@ -431,14 +435,14 @@ void niftkSingleViewerControls::SetCursorVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerControls::AreDirectionAnnotationsVisible() const
+bool SingleViewerControls::AreDirectionAnnotationsVisible() const
 {
   return ui->m_ShowDirectionAnnotationsCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetDirectionAnnotationsVisible(bool visible)
+void SingleViewerControls::SetDirectionAnnotationsVisible(bool visible)
 {
   bool wasBlocked = ui->m_ShowDirectionAnnotationsCheckBox->blockSignals(true);
   ui->m_ShowDirectionAnnotationsCheckBox->setChecked(visible);
@@ -447,14 +451,14 @@ void niftkSingleViewerControls::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerControls::IsIntensityAnnotationVisible() const
+bool SingleViewerControls::IsIntensityAnnotationVisible() const
 {
   return ui->m_ShowIntensityAnnotationCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::SetIntensityAnnotationVisible(bool visible)
+void SingleViewerControls::SetIntensityAnnotationVisible(bool visible)
 {
   bool wasBlocked = ui->m_ShowIntensityAnnotationCheckBox->blockSignals(true);
   ui->m_ShowIntensityAnnotationCheckBox->setChecked(visible);
@@ -463,14 +467,14 @@ void niftkSingleViewerControls::SetIntensityAnnotationVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerControls::Is3DWindowVisible() const
+bool SingleViewerControls::Is3DWindowVisible() const
 {
   return ui->m_Show3DWindowCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::Set3DWindowVisible(bool visible)
+void SingleViewerControls::Set3DWindowVisible(bool visible)
 {
   bool wasBlocked = ui->m_Show3DWindowCheckBox->blockSignals(true);
   ui->m_Show3DWindowCheckBox->setChecked(visible);
@@ -479,7 +483,7 @@ void niftkSingleViewerControls::Set3DWindowVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::OnAxialWindowRadioButtonToggled(bool checked)
+void SingleViewerControls::OnAxialWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -490,7 +494,7 @@ void niftkSingleViewerControls::OnAxialWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::OnSagittalWindowRadioButtonToggled(bool checked)
+void SingleViewerControls::OnSagittalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -501,7 +505,7 @@ void niftkSingleViewerControls::OnSagittalWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::OnCoronalWindowRadioButtonToggled(bool checked)
+void SingleViewerControls::OnCoronalWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -512,7 +516,7 @@ void niftkSingleViewerControls::OnCoronalWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::On3DWindowRadioButtonToggled(bool checked)
+void SingleViewerControls::On3DWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -523,7 +527,7 @@ void niftkSingleViewerControls::On3DWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::OnMultiWindowRadioButtonToggled(bool checked)
+void SingleViewerControls::OnMultiWindowRadioButtonToggled(bool checked)
 {
   if (checked)
   {
@@ -534,9 +538,11 @@ void niftkSingleViewerControls::OnMultiWindowRadioButtonToggled(bool checked)
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerControls::OnMultiWindowComboBoxIndexChanged(int index)
+void SingleViewerControls::OnMultiWindowComboBoxIndexChanged(int index)
 {
   ui->m_MultiWindowRadioButton->setChecked(true);
   this->SetWindowLayout(s_MultiWindowLayouts[index]);
   emit WindowLayoutChanged(s_MultiWindowLayouts[index]);
+}
+
 }

@@ -22,16 +22,14 @@
 #include "VLRendererView.h"
 #include "VLRendererPluginActivator.h"
 
-#include <mitkNodePredicateNot.h>
-#include <mitkNodePredicateProperty.h>
-#include <mitkImageReadAccessor.h>
-#include <mitkDataStorageUtils.h>
-#include <mitkNodePredicateDataType.h>
-#include <mitkNodePredicateOr.h>
-#include <mitkDataStorage.h>
 #include <mitkDataNode.h>
-#include <mitkDataNodePropertyListener.h>
+#include <mitkDataStorage.h>
+#include <mitkImageReadAccessor.h>
 #include <mitkMessage.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateNot.h>
+#include <mitkNodePredicateOr.h>
+#include <mitkNodePredicateProperty.h>
 
 // THIS IS VERY IMPORTANT
 // If nothing is included from the mitk::OpenCL module the resource service will not get registered
@@ -45,6 +43,8 @@
 #include <usModuleResourceStream.h>
 #include <usModuleRegistry.h>
 
+#include <niftkDataNodePropertyListener.h>
+#include <niftkDataStorageUtils.h>
 #include <niftkSharedOGLContext.h>
 
 #ifdef _USE_CUDA
@@ -128,14 +128,14 @@ void VLRendererView::CreateQtPartControl(QWidget* parent)
     assert(ok);
 
     // Init listener
-    m_SelectionListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "selected", false);
+    m_SelectionListener = niftk::DataNodePropertyListener::New(GetDataStorage(), "selected", false);
    // m_SelectionListener->NodePropertyChanged +=  mitk::MessageDelegate2<NewVisualizationView, const mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnSelectionChanged);
 
     m_SelectionListener->NodeAdded   +=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeAdded);
     m_SelectionListener->NodeRemoved +=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeRemoved);
     m_SelectionListener->NodeDeleted +=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeDeleted);
 
-    m_NamePropertyListener = mitk::DataNodePropertyListener::New(GetDataStorage(), "name");
+    m_NamePropertyListener = niftk::DataNodePropertyListener::New(GetDataStorage(), "name");
     m_NamePropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<VLRendererView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLRendererView::OnNamePropertyChanged);
 
 
@@ -281,7 +281,7 @@ void VLRendererView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::Bas
 //-----------------------------------------------------------------------------
 void VLRendererView::Visible()
 {
-  QmitkBaseView::Visible();
+  niftk::BaseView::Visible();
 
   // Make sure that we show all the nodes that are already present in DataStorage
   ReinitDisplay();

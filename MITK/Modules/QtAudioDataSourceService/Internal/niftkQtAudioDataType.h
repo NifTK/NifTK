@@ -28,8 +28,8 @@ class QtAudioDataType : public IGIDataType
 {
 public:
 
-  mitkClassMacro(QtAudioDataType, IGIDataType);
-  itkNewMacro(QtAudioDataType);
+  mitkClassMacro(QtAudioDataType, IGIDataType)
+  itkNewMacro(QtAudioDataType)
 
   void SetBlob(const char* blob, std::size_t length);
   std::pair<const char*, std::size_t> GetBlob() const;

@@ -24,21 +24,25 @@
 
 #include "ui_niftkMultiViewerControls.h"
 
+
+namespace niftk
+{
+
 /**
- * \class niftkMultiViewerControls
+ * \class MultiViewerControls
  * \brief Control panel for the DnD display.
  */
-class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerControls : public niftkSingleViewerControls, private Ui_niftkMultiViewerControls
+class NIFTKDNDDISPLAY_EXPORT MultiViewerControls : public SingleViewerControls, private Ui_niftkMultiViewerControls
 {
   Q_OBJECT
   
 public:
 
-  /// \brief Constructs the niftkMultiViewerControls object.
-  explicit niftkMultiViewerControls(QWidget *parent = 0);
+  /// \brief Constructs the MultiViewerControls object.
+  explicit MultiViewerControls(QWidget *parent = 0);
 
-  /// \brief Destructs the niftkMultiViewerControls object.
-  virtual ~niftkMultiViewerControls();
+  /// \brief Destructs the MultiViewerControls object.
+  virtual ~MultiViewerControls();
   
   /// \brief Tells if the viewer number controls are visible.
   bool AreViewerNumberControlsVisible() const;
@@ -168,5 +172,7 @@ private:
   bool m_ShowViewerNumberControls;
   bool m_ShowDropTypeControls;
 };
+
+}
 
 #endif

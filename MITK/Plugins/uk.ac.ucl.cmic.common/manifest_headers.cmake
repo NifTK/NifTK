@@ -1,4 +1,4 @@
-set(Plugin-Name "CMIC Common Qt Gui Classes")
+set(Plugin-Name "CMIC Common BlueBerry Classes")
 set(Plugin-Version "0.1")
 set(Plugin-Vendor "CMIC, Centre For Medical Image Computing, UCL.")
 set(Plugin-ContactAddress "http://cmic.cs.ucl.ac.uk/")

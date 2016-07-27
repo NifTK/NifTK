@@ -24,13 +24,17 @@
 
 #include <usGetModuleContext.h>
 #include <usModuleRegistry.h>
-#include <mitkPointUtils.h>
+
+#include <niftkPointUtils.h>
 
 #include "niftkMultiWindowWidget_p.h"
 
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget* parent, mitk::RenderingManager* renderingManager, const QString& name)
+SingleViewerWidget::SingleViewerWidget(QWidget* parent, mitk::RenderingManager* renderingManager, const QString& name)
 : QWidget(parent)
 , m_GridLayout(NULL)
 , m_MultiWidget(NULL)
@@ -61,19 +65,19 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget* parent, mitk::Renderin
     m_WindowLayoutInitialised[windowLayoutIndex] = false;
   }
 
-  // Create the main niftkMultiWindowWidget
-  m_MultiWidget = new niftkMultiWindowWidget(this, NULL, m_RenderingManager, mitk::BaseRenderer::RenderingMode::Standard, name);
+  // Create the main MultiWindowWidget
+  m_MultiWidget = new MultiWindowWidget(this, NULL, m_RenderingManager, mitk::BaseRenderer::RenderingMode::Standard, name);
   m_MultiWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
   m_GridLayout = new QGridLayout(this);
-  m_GridLayout->setObjectName(QString::fromUtf8("niftkSingleViewerWidget::m_GridLayout"));
+  m_GridLayout->setObjectName(QString::fromUtf8("SingleViewerWidget::m_GridLayout"));
   m_GridLayout->setContentsMargins(1, 1, 1, 1);
   m_GridLayout->setVerticalSpacing(0);
   m_GridLayout->setHorizontalSpacing(0);
   m_GridLayout->addWidget(m_MultiWidget);
 
-  // Connect to niftkMultiWindowWidget, so we can listen for signals.
+  // Connect to MultiWindowWidget, so we can listen for signals.
   this->connect(this->GetAxialWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
@@ -89,7 +93,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget* parent, mitk::Renderin
 
 
 //-----------------------------------------------------------------------------
-niftkSingleViewerWidget::~niftkSingleViewerWidget()
+SingleViewerWidget::~SingleViewerWidget()
 {
   // Release the display interactor.
   this->SetDisplayInteractionsEnabled(false);
@@ -97,7 +101,7 @@ niftkSingleViewerWidget::~niftkSingleViewerWidget()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
+void SingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
 {
   Q_UNUSED(renderWindow);
   emit NodesDropped(nodes);
@@ -106,14 +110,14 @@ void niftkSingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, st
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
+void SingleViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 {
   emit WindowLayoutChanged(windowLayout);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selectedPosition)
+void SingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selectedPosition)
 {
   /// A double click can result in 0 or 1 SelectedPositionChanged event, depending on if you
   /// double click exactly where the cursor is or not.
@@ -131,7 +135,7 @@ void niftkSingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& sel
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnCursorPositionChanged(int windowIndex, const mitk::Vector2D& cursorPosition)
+void SingleViewerWidget::OnCursorPositionChanged(int windowIndex, const mitk::Vector2D& cursorPosition)
 {
   /// A double click can result in up to three CursorPositionChanged events, depending on
   /// how many coordinates of the selected position have changed, if any.
@@ -150,203 +154,203 @@ void niftkSingleViewerWidget::OnCursorPositionChanged(int windowIndex, const mit
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnScaleFactorChanged(int windowIndex, double scaleFactor)
+void SingleViewerWidget::OnScaleFactorChanged(int windowIndex, double scaleFactor)
 {
   emit ScaleFactorChanged(WindowOrientation(windowIndex), scaleFactor);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnCursorPositionBindingChanged()
+void SingleViewerWidget::OnCursorPositionBindingChanged()
 {
   emit CursorPositionBindingChanged(this->GetCursorPositionBinding());
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::OnScaleFactorBindingChanged()
+void SingleViewerWidget::OnScaleFactorBindingChanged()
 {
   emit ScaleFactorBindingChanged(this->GetScaleFactorBinding());
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsFocused() const
+bool SingleViewerWidget::IsFocused() const
 {
   return m_MultiWidget->IsFocused();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetFocused()
+void SingleViewerWidget::SetFocused()
 {
   m_MultiWidget->SetFocused();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* niftkSingleViewerWidget::GetSelectedRenderWindow() const
+QmitkRenderWindow* SingleViewerWidget::GetSelectedRenderWindow() const
 {
   return m_MultiWidget->GetSelectedRenderWindow();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
+void SingleViewerWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
 {
   m_MultiWidget->SetSelectedRenderWindow(renderWindow);
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<QmitkRenderWindow*> niftkSingleViewerWidget::GetVisibleRenderWindows() const
+std::vector<QmitkRenderWindow*> SingleViewerWidget::GetVisibleRenderWindows() const
 {
   return m_MultiWidget->GetVisibleRenderWindows();
 }
 
 
 //-----------------------------------------------------------------------------
-const std::vector<QmitkRenderWindow*>& niftkSingleViewerWidget::GetRenderWindows() const
+const std::vector<QmitkRenderWindow*>& SingleViewerWidget::GetRenderWindows() const
 {
   return m_MultiWidget->GetRenderWindows();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* niftkSingleViewerWidget::GetAxialWindow() const
+QmitkRenderWindow* SingleViewerWidget::GetAxialWindow() const
 {
   return m_MultiWidget->GetRenderWindows()[0];
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* niftkSingleViewerWidget::GetSagittalWindow() const
+QmitkRenderWindow* SingleViewerWidget::GetSagittalWindow() const
 {
   return m_MultiWidget->GetRenderWindows()[1];
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* niftkSingleViewerWidget::GetCoronalWindow() const
+QmitkRenderWindow* SingleViewerWidget::GetCoronalWindow() const
 {
   return m_MultiWidget->GetRenderWindows()[2];
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* niftkSingleViewerWidget::Get3DWindow() const
+QmitkRenderWindow* SingleViewerWidget::Get3DWindow() const
 {
   return m_MultiWidget->GetRenderWindows()[3];
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetEnabled(bool enabled)
+void SingleViewerWidget::SetEnabled(bool enabled)
 {
   m_MultiWidget->SetEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsEnabled() const
+bool SingleViewerWidget::IsEnabled() const
 {
   return m_MultiWidget->IsEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsCursorVisible() const
+bool SingleViewerWidget::IsCursorVisible() const
 {
   return m_MultiWidget->IsCursorVisible();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorVisible(bool visible)
+void SingleViewerWidget::SetCursorVisible(bool visible)
 {
   m_MultiWidget->SetCursorVisible(visible);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::AreDirectionAnnotationsVisible() const
+bool SingleViewerWidget::AreDirectionAnnotationsVisible() const
 {
   return m_MultiWidget->AreDirectionAnnotationsVisible();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetDirectionAnnotationsVisible(bool visible)
+void SingleViewerWidget::SetDirectionAnnotationsVisible(bool visible)
 {
   m_MultiWidget->SetDirectionAnnotationsVisible(visible);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsIntensityAnnotationVisible() const
+bool SingleViewerWidget::IsIntensityAnnotationVisible() const
 {
   return m_MultiWidget->IsIntensityAnnotationVisible();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetIntensityAnnotationVisible(bool visible)
+void SingleViewerWidget::SetIntensityAnnotationVisible(bool visible)
 {
   m_MultiWidget->SetIntensityAnnotationVisible(visible);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::GetShow3DWindowIn2x2WindowLayout() const
+bool SingleViewerWidget::GetShow3DWindowIn2x2WindowLayout() const
 {
   return m_MultiWidget->GetShow3DWindowIn2x2WindowLayout();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetShow3DWindowIn2x2WindowLayout(bool enabled)
+void SingleViewerWidget::SetShow3DWindowIn2x2WindowLayout(bool enabled)
 {
   m_MultiWidget->SetShow3DWindowIn2x2WindowLayout(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetBackgroundColour(QColor colour)
+void SingleViewerWidget::SetBackgroundColour(QColor colour)
 {
   m_MultiWidget->SetBackgroundColour(colour);
 }
 
 
 //-----------------------------------------------------------------------------
-QColor niftkSingleViewerWidget::GetBackgroundColour() const
+QColor SingleViewerWidget::GetBackgroundColour() const
 {
   return m_MultiWidget->GetBackgroundColour();
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerWidget::GetMaxSlice(WindowOrientation orientation) const
+int SingleViewerWidget::GetMaxSlice(WindowOrientation orientation) const
 {
   return m_MultiWidget->GetMaxSlice(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerWidget::GetMaxTimeStep() const
+int SingleViewerWidget::GetMaxTimeStep() const
 {
   return m_MultiWidget->GetMaxTimeStep();
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::ContainsRenderWindow(QmitkRenderWindow *renderWindow) const
+bool SingleViewerWidget::ContainsRenderWindow(QmitkRenderWindow *renderWindow) const
 {
   return m_MultiWidget->ContainsRenderWindow(renderWindow);
 }
 
 
 //-----------------------------------------------------------------------------
-WindowOrientation niftkSingleViewerWidget::GetOrientation() const
+WindowOrientation SingleViewerWidget::GetOrientation() const
 {
   /// Note:
   /// This line exploits that the order of orientations are the same and
@@ -356,63 +360,63 @@ WindowOrientation niftkSingleViewerWidget::GetOrientation() const
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::FitToDisplay(double scaleFactor)
+void SingleViewerWidget::FitToDisplay(double scaleFactor)
 {
   m_MultiWidget->FitRenderWindows(scaleFactor);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
+void SingleViewerWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
 {
   m_MultiWidget->SetVisibility(nodes, visible);
 }
 
 
 //-----------------------------------------------------------------------------
-double niftkSingleViewerWidget::GetMinMagnification() const
+double SingleViewerWidget::GetMinMagnification() const
 {
   return m_MinimumMagnification;
 }
 
 
 //-----------------------------------------------------------------------------
-double niftkSingleViewerWidget::GetMaxMagnification() const
+double SingleViewerWidget::GetMaxMagnification() const
 {
   return m_MaximumMagnification;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetRememberSettingsPerWindowLayout(bool remember)
+void SingleViewerWidget::SetRememberSettingsPerWindowLayout(bool remember)
 {
   m_RememberSettingsPerWindowLayout = remember;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::GetRememberSettingsPerWindowLayout() const
+bool SingleViewerWidget::GetRememberSettingsPerWindowLayout() const
 {
   return m_RememberSettingsPerWindowLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsLinkedNavigationEnabled() const
+bool SingleViewerWidget::IsLinkedNavigationEnabled() const
 {
   return m_MultiWidget->IsLinkedNavigationEnabled();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetLinkedNavigationEnabled(bool linkedNavigationEnabled)
+void SingleViewerWidget::SetLinkedNavigationEnabled(bool linkedNavigationEnabled)
 {
   m_MultiWidget->SetLinkedNavigationEnabled(linkedNavigationEnabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetDisplayInteractionsEnabled(bool enabled)
+void SingleViewerWidget::SetDisplayInteractionsEnabled(bool enabled)
 {
   if (enabled == this->AreDisplayInteractionsEnabled())
   {
@@ -423,7 +427,7 @@ void niftkSingleViewerWidget::SetDisplayInteractionsEnabled(bool enabled)
   if (enabled)
   {
     // Here we create our own display interactor...
-    m_DisplayInteractor = mitk::DnDDisplayInteractor::New(this);
+    m_DisplayInteractor = DnDDisplayInteractor::New(this);
 
     us::Module* niftkDnDDisplayModule = us::ModuleRegistry::GetModule("niftkDnDDisplay");
     m_DisplayInteractor->LoadStateMachine("DnDDisplayInteraction.xml", niftkDnDDisplayModule);
@@ -447,49 +451,49 @@ void niftkSingleViewerWidget::SetDisplayInteractionsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::AreDisplayInteractionsEnabled() const
+bool SingleViewerWidget::AreDisplayInteractionsEnabled() const
 {
   return m_DisplayInteractor.IsNotNull();
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::GetCursorPositionBinding() const
+bool SingleViewerWidget::GetCursorPositionBinding() const
 {
   return m_MultiWidget->GetCursorPositionBinding();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorPositionBinding(bool cursorPositionBinding)
+void SingleViewerWidget::SetCursorPositionBinding(bool cursorPositionBinding)
 {
   m_MultiWidget->SetCursorPositionBinding(cursorPositionBinding);
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::GetScaleFactorBinding() const
+bool SingleViewerWidget::GetScaleFactorBinding() const
 {
   return m_MultiWidget->GetScaleFactorBinding();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetScaleFactorBinding(bool scaleFactorBinding)
+void SingleViewerWidget::SetScaleFactorBinding(bool scaleFactorBinding)
 {
   m_MultiWidget->SetScaleFactorBinding(scaleFactorBinding);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::RequestUpdate()
+void SingleViewerWidget::RequestUpdate()
 {
   m_MultiWidget->RequestUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::ResetLastPositions()
+void SingleViewerWidget::ResetLastPositions()
 {
   m_LastSelectedPositions.clear();
   m_LastSelectedPositionTimes.clear();
@@ -504,14 +508,14 @@ void niftkSingleViewerWidget::ResetLastPositions()
 
 
 //-----------------------------------------------------------------------------
-const mitk::TimeGeometry* niftkSingleViewerWidget::GetTimeGeometry() const
+const mitk::TimeGeometry* SingleViewerWidget::GetTimeGeometry() const
 {
   return m_TimeGeometry;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
+void SingleViewerWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   assert(timeGeometry);
   m_TimeGeometry = timeGeometry;
@@ -545,7 +549,7 @@ void niftkSingleViewerWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeom
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetBoundTimeGeometry(const mitk::TimeGeometry* timeGeometry)
+void SingleViewerWidget::SetBoundTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   assert(timeGeometry);
   m_BoundTimeGeometry = timeGeometry;
@@ -577,14 +581,14 @@ void niftkSingleViewerWidget::SetBoundTimeGeometry(const mitk::TimeGeometry* tim
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::IsBoundTimeGeometryActive()
+bool SingleViewerWidget::IsBoundTimeGeometryActive()
 {
   return m_IsBoundTimeGeometryActive;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetBoundTimeGeometryActive(bool isBoundTimeGeometryActive)
+void SingleViewerWidget::SetBoundTimeGeometryActive(bool isBoundTimeGeometryActive)
 {
   if (isBoundTimeGeometryActive == m_IsBoundTimeGeometryActive)
   {
@@ -601,14 +605,14 @@ void niftkSingleViewerWidget::SetBoundTimeGeometryActive(bool isBoundTimeGeometr
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerWidget::GetSelectedSlice(WindowOrientation orientation) const
+int SingleViewerWidget::GetSelectedSlice(WindowOrientation orientation) const
 {
   return m_MultiWidget->GetSelectedSlice(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetSelectedSlice(WindowOrientation orientation, int selectedSlice)
+void SingleViewerWidget::SetSelectedSlice(WindowOrientation orientation, int selectedSlice)
 {
   if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
@@ -618,7 +622,7 @@ void niftkSingleViewerWidget::SetSelectedSlice(WindowOrientation orientation, in
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::MoveSlice(WindowOrientation orientation, int delta, bool restart)
+void SingleViewerWidget::MoveSlice(WindowOrientation orientation, int delta, bool restart)
 {
   if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
@@ -628,28 +632,28 @@ void niftkSingleViewerWidget::MoveSlice(WindowOrientation orientation, int delta
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerWidget::GetTimeStep() const
+int SingleViewerWidget::GetTimeStep() const
 {
   return m_MultiWidget->GetTimeStep();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetTimeStep(int timeStep)
+void SingleViewerWidget::SetTimeStep(int timeStep)
 {
   m_MultiWidget->SetTimeStep(timeStep);
 }
 
 
 //-----------------------------------------------------------------------------
-WindowLayout niftkSingleViewerWidget::GetWindowLayout() const
+WindowLayout SingleViewerWidget::GetWindowLayout() const
 {
   return m_WindowLayout;
 }
 
 
 // --------------------------------------------------------------------------
-mitk::Vector2D niftkSingleViewerWidget::GetCentrePosition(int windowIndex)
+mitk::Vector2D SingleViewerWidget::GetCentrePosition(int windowIndex)
 {
   mitk::BaseRenderer* renderer = this->GetRenderWindows()[windowIndex]->GetRenderer();
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
@@ -670,7 +674,7 @@ mitk::Vector2D niftkSingleViewerWidget::GetCentrePosition(int windowIndex)
 
 
 // --------------------------------------------------------------------------
-std::vector<mitk::Vector2D> niftkSingleViewerWidget::GetCentrePositions()
+std::vector<mitk::Vector2D> SingleViewerWidget::GetCentrePositions()
 {
   const std::vector<QmitkRenderWindow*>& renderWindows = this->GetRenderWindows();
 
@@ -694,7 +698,7 @@ std::vector<mitk::Vector2D> niftkSingleViewerWidget::GetCentrePositions()
 
 
 //-----------------------------------------------------------------------------
-mitk::Vector2D niftkSingleViewerWidget::GetCursorPositionFromCentre(int windowIndex, const mitk::Vector2D& centrePosition)
+mitk::Vector2D SingleViewerWidget::GetCursorPositionFromCentre(int windowIndex, const mitk::Vector2D& centrePosition)
 {
   mitk::BaseRenderer* renderer = this->GetRenderWindows()[windowIndex]->GetRenderer();
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
@@ -745,7 +749,7 @@ mitk::Vector2D niftkSingleViewerWidget::GetCursorPositionFromCentre(int windowIn
 
 
 // --------------------------------------------------------------------------
-std::vector<mitk::Vector2D> niftkSingleViewerWidget::GetCursorPositionsFromCentres(const std::vector<mitk::Vector2D>& centrePositions)
+std::vector<mitk::Vector2D> SingleViewerWidget::GetCursorPositionsFromCentres(const std::vector<mitk::Vector2D>& centrePositions)
 {
   const std::vector<QmitkRenderWindow*>& renderWindows = this->GetRenderWindows();
 
@@ -769,7 +773,7 @@ std::vector<mitk::Vector2D> niftkSingleViewerWidget::GetCursorPositionsFromCentr
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
+void SingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 {
   if (windowLayout != WINDOW_LAYOUT_UNKNOWN && windowLayout != m_WindowLayout)
   {
@@ -798,7 +802,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 
     // Now store the current window layout/orientation.
     m_WindowLayout = windowLayout;
-    if (! ::IsSingleWindowLayout(windowLayout))
+    if (!niftk::IsSingleWindowLayout(windowLayout))
     {
       m_MultiWindowLayout = windowLayout;
     }
@@ -825,8 +829,8 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       /// This moves the displayed region to the middle of the render window and the
       /// sets the scale factor so that the image fits the render window.
       m_MultiWidget->FitRenderWindows();
-      m_MultiWidget->SetCursorPositionBinding(::IsMultiWindowLayout(windowLayout));
-      m_MultiWidget->SetScaleFactorBinding(::IsMultiWindowLayout(windowLayout));
+      m_MultiWidget->SetCursorPositionBinding(niftk::IsMultiWindowLayout(windowLayout));
+      m_MultiWidget->SetScaleFactorBinding(niftk::IsMultiWindowLayout(windowLayout));
 
       m_WindowLayoutInitialised[Index(windowLayout)] = true;
     }
@@ -839,14 +843,14 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 
 
 //-----------------------------------------------------------------------------
-const mitk::Point3D& niftkSingleViewerWidget::GetSelectedPosition() const
+const mitk::Point3D& SingleViewerWidget::GetSelectedPosition() const
 {
   return m_MultiWidget->GetSelectedPosition();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetSelectedPosition(const mitk::Point3D& selectedPosition)
+void SingleViewerWidget::SetSelectedPosition(const mitk::Point3D& selectedPosition)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -856,14 +860,14 @@ void niftkSingleViewerWidget::SetSelectedPosition(const mitk::Point3D& selectedP
 
 
 //-----------------------------------------------------------------------------
-mitk::Vector2D niftkSingleViewerWidget::GetCursorPosition(WindowOrientation orientation) const
+mitk::Vector2D SingleViewerWidget::GetCursorPosition(WindowOrientation orientation) const
 {
   return m_MultiWidget->GetCursorPosition(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorPosition(WindowOrientation orientation, const mitk::Vector2D& cursorPosition)
+void SingleViewerWidget::SetCursorPosition(WindowOrientation orientation, const mitk::Vector2D& cursorPosition)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -873,14 +877,14 @@ void niftkSingleViewerWidget::SetCursorPosition(WindowOrientation orientation, c
 
 
 //-----------------------------------------------------------------------------
-const std::vector<mitk::Vector2D>& niftkSingleViewerWidget::GetCursorPositions() const
+const std::vector<mitk::Vector2D>& SingleViewerWidget::GetCursorPositions() const
 {
   return m_MultiWidget->GetCursorPositions();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions)
+void SingleViewerWidget::SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -890,14 +894,14 @@ void niftkSingleViewerWidget::SetCursorPositions(const std::vector<mitk::Vector2
 
 
 //-----------------------------------------------------------------------------
-double niftkSingleViewerWidget::GetScaleFactor(WindowOrientation orientation) const
+double SingleViewerWidget::GetScaleFactor(WindowOrientation orientation) const
 {
   return m_MultiWidget->GetScaleFactor(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetScaleFactor(WindowOrientation orientation, double scaleFactor)
+void SingleViewerWidget::SetScaleFactor(WindowOrientation orientation, double scaleFactor)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -907,14 +911,14 @@ void niftkSingleViewerWidget::SetScaleFactor(WindowOrientation orientation, doub
 
 
 //-----------------------------------------------------------------------------
-const std::vector<double>& niftkSingleViewerWidget::GetScaleFactors() const
+const std::vector<double>& SingleViewerWidget::GetScaleFactors() const
 {
   return m_MultiWidget->GetScaleFactors();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetScaleFactors(const std::vector<double>& scaleFactors)
+void SingleViewerWidget::SetScaleFactors(const std::vector<double>& scaleFactors)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -924,14 +928,14 @@ void niftkSingleViewerWidget::SetScaleFactors(const std::vector<double>& scaleFa
 
 
 //-----------------------------------------------------------------------------
-double niftkSingleViewerWidget::GetMagnification(WindowOrientation orientation) const
+double SingleViewerWidget::GetMagnification(WindowOrientation orientation) const
 {
   return m_MultiWidget->GetMagnification(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetMagnification(WindowOrientation orientation, double magnification)
+void SingleViewerWidget::SetMagnification(WindowOrientation orientation, double magnification)
 {
   if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
   {
@@ -941,7 +945,7 @@ void niftkSingleViewerWidget::SetMagnification(WindowOrientation orientation, do
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::paintEvent(QPaintEvent *event)
+void SingleViewerWidget::paintEvent(QPaintEvent *event)
 {
   QWidget::paintEvent(event);
   std::vector<QmitkRenderWindow*> renderWindows = this->GetVisibleRenderWindows();
@@ -953,7 +957,7 @@ void niftkSingleViewerWidget::paintEvent(QPaintEvent *event)
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> niftkSingleViewerWidget::GetWidgetPlanes()
+std::vector<mitk::DataNode*> SingleViewerWidget::GetWidgetPlanes()
 {
   std::vector<mitk::DataNode*> result;
   result.push_back(m_MultiWidget->GetWidgetPlane1());
@@ -964,34 +968,34 @@ std::vector<mitk::DataNode*> niftkSingleViewerWidget::GetWidgetPlanes()
 
 
 //-----------------------------------------------------------------------------
-int niftkSingleViewerWidget::GetSliceUpDirection(WindowOrientation orientation) const
+int SingleViewerWidget::GetSliceUpDirection(WindowOrientation orientation) const
 {
   return m_MultiWidget->GetSliceUpDirection(orientation);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetDefaultSingleWindowLayout(WindowLayout windowLayout)
+void SingleViewerWidget::SetDefaultSingleWindowLayout(WindowLayout windowLayout)
 {
   m_SingleWindowLayout = windowLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::SetDefaultMultiWindowLayout(WindowLayout windowLayout)
+void SingleViewerWidget::SetDefaultMultiWindowLayout(WindowLayout windowLayout)
 {
   m_MultiWindowLayout = windowLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::ToggleMultiWindowLayout()
+void SingleViewerWidget::ToggleMultiWindowLayout()
 {
   if (m_GeometryInitialised)
   {
     WindowLayout nextWindowLayout;
 
-    if (::IsSingleWindowLayout(m_WindowLayout))
+    if (niftk::IsSingleWindowLayout(m_WindowLayout))
     {
       nextWindowLayout = m_MultiWindowLayout;
     }
@@ -1049,7 +1053,7 @@ void niftkSingleViewerWidget::ToggleMultiWindowLayout()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::ToggleCursorVisibility()
+void SingleViewerWidget::ToggleCursorVisibility()
 {
   bool visible = !this->IsCursorVisible();
 
@@ -1062,7 +1066,7 @@ void niftkSingleViewerWidget::ToggleCursorVisibility()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::ToggleDirectionAnnotations()
+void SingleViewerWidget::ToggleDirectionAnnotations()
 {
   bool visible = !this->AreDirectionAnnotationsVisible();
 
@@ -1075,7 +1079,7 @@ void niftkSingleViewerWidget::ToggleDirectionAnnotations()
 
 
 //-----------------------------------------------------------------------------
-void niftkSingleViewerWidget::ToggleIntensityAnnotation()
+void SingleViewerWidget::ToggleIntensityAnnotation()
 {
   bool visible = !this->IsIntensityAnnotationVisible();
 
@@ -1088,7 +1092,9 @@ void niftkSingleViewerWidget::ToggleIntensityAnnotation()
 
 
 //-----------------------------------------------------------------------------
-bool niftkSingleViewerWidget::BlockUpdate(bool blocked)
+bool SingleViewerWidget::BlockUpdate(bool blocked)
 {
   return m_MultiWidget->BlockUpdate(blocked);
+}
+
 }

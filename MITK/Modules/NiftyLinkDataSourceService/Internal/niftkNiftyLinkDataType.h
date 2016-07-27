@@ -30,8 +30,8 @@ class NiftyLinkDataType : public IGIDataType
 
 public:
 
-  mitkClassMacro(NiftyLinkDataType, IGIDataType);
-  itkNewMacro(NiftyLinkDataType);
+  mitkClassMacro(NiftyLinkDataType, IGIDataType)
+  itkNewMacro(NiftyLinkDataType)
 
   virtual void* GetData() const override { return m_Message.data(); }
 

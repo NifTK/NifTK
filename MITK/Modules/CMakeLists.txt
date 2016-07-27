@@ -60,6 +60,7 @@ if(BUILD_IGI)
     SurfRecon
     NDITrackers
     IGI
+    IGIOverlayEditor
     IGIGui
     IGIServices
     IGIDataSources

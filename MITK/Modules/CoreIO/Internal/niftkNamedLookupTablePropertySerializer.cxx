@@ -18,23 +18,26 @@
 #include "niftkSerializerMacros.h"
 
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-niftk::NamedLookupTablePropertySerializer::NamedLookupTablePropertySerializer()
+NamedLookupTablePropertySerializer::NamedLookupTablePropertySerializer()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::NamedLookupTablePropertySerializer::~NamedLookupTablePropertySerializer()
+NamedLookupTablePropertySerializer::~NamedLookupTablePropertySerializer()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-TiXmlElement* niftk::NamedLookupTablePropertySerializer::Serialize()
+TiXmlElement* NamedLookupTablePropertySerializer::Serialize()
 {
-  if (const niftk::NamedLookupTableProperty* prop =
-        dynamic_cast<const niftk::NamedLookupTableProperty*>(m_Property.GetPointer()))
+  if (const NamedLookupTableProperty* prop =
+        dynamic_cast<const NamedLookupTableProperty*>(m_Property.GetPointer()))
   {
     TiXmlElement* element = new TiXmlElement("NamedLookupTable");
     element->SetAttribute("Name", prop->GetName());
@@ -57,14 +60,14 @@ TiXmlElement* niftk::NamedLookupTablePropertySerializer::Serialize()
 
 
 //-----------------------------------------------------------------------------
-mitk::BaseProperty::Pointer niftk::NamedLookupTablePropertySerializer::Deserialize(TiXmlElement* element)
+mitk::BaseProperty::Pointer NamedLookupTablePropertySerializer::Deserialize(TiXmlElement* element)
 {
   if (!element)
   {
     return NULL;
   }
 
-  niftk::NamedLookupTableProperty::Pointer namedLUT = niftk::NamedLookupTableProperty::New();
+  NamedLookupTableProperty::Pointer namedLUT = NamedLookupTableProperty::New();
 
   std::string name;
   if (element->QueryStringAttribute("Name", &name) == TIXML_SUCCESS)
@@ -92,6 +95,8 @@ mitk::BaseProperty::Pointer niftk::NamedLookupTablePropertySerializer::Deseriali
   }
 
   return namedLUT.GetPointer();
+}
+
 }
 
 NIFTK_REGISTER_SERIALIZER(NamedLookupTablePropertySerializer)

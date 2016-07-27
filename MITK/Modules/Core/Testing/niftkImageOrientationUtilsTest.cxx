@@ -28,7 +28,7 @@
 #include <niftkImageOrientation.h>
 #include <niftkImageUtils.h>
 #include <niftkImageOrientationUtils.h>
-#include <mitkNifTKCoreObjectFactory.h>
+#include <niftkCoreObjectFactory.h>
 
 /**
  * \brief Test class for niftkImageOrientationUtilsTest.

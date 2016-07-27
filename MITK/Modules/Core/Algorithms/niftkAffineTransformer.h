@@ -21,8 +21,9 @@
 #include <mitkImage.h>
 #include <vtkSmartPointer.h>
 #include <vtkLinearTransform.h>
-#include <mitkAffineTransformParametersDataNodeProperty.h>
-#include <mitkAffineTransformDataNodeProperty.h>
+
+#include "niftkAffineTransformParametersDataNodeProperty.h"
+#include "niftkAffineTransformDataNodeProperty.h"
 
 #include "niftkCoreExports.h"
 
@@ -80,10 +81,8 @@ public:
   /// \brief See class introduction.
   static const std::string DISPLAYED_PARAMETERS_KEY;
 
-  //-----------------------------------------------------------------------------
-  /// \brief MITK style class and New macros
-  mitkClassMacroItkParent(AffineTransformer, itk::Object);
-  itkNewMacro(AffineTransformer);
+  mitkClassMacroItkParent(AffineTransformer, itk::Object)
+  itkNewMacro(AffineTransformer)
 
   /// Get / Set the "RotateAroundCenter" flag
   itkGetMacro(RotateAroundCenter, bool);
@@ -96,8 +95,7 @@ public:
   mitk::DataStorage::Pointer GetDataStorage() const;
 
   /// \brief Get the transform parameters from the current data node
-  mitk::AffineTransformParametersDataNodeProperty::Pointer
-     GetCurrentTransformParameters() const;
+  AffineTransformParametersDataNodeProperty::Pointer GetCurrentTransformParameters() const;
 
   /// \brief Get a transform matrix from the current data node
   vtkSmartPointer<vtkMatrix4x4> GetTransformMatrixFromNode(std::string which) const;
@@ -108,12 +106,11 @@ public:
   ///  \brief Reset the transform to initial state
   void ResetTransform();
 
-  //-----------------------------------------------------------------------------
   /// \brief Called when a node changed.
   void OnNodeChanged(mitk::DataNode::Pointer node);
 
   /** \brief Slot for all changes to transformation parameters. */
-  void OnParametersChanged(mitk::AffineTransformParametersDataNodeProperty::Pointer paramsProperty);
+  void OnParametersChanged(AffineTransformParametersDataNodeProperty::Pointer paramsProperty);
 
   /** \brief Slot for saving transform to disk. */
   void OnSaveTransform(std::string filename);
@@ -127,8 +124,7 @@ public:
   /** \brief Slot for resampling the current image. */
   void OnResampleTransform();
 
-
-    /** Called by _InitialiseNodeProperties to initialise (to Identity) a specified transform property on a node. */
+  /** Called by _InitialiseNodeProperties to initialise (to Identity) a specified transform property on a node. */
   void InitialiseTransformProperty(std::string name, mitk::DataNode::Pointer node);
 
   /** Called by OnSelectionChanged to setup a node with default transformation properties, if it doesn't already have them. */
@@ -164,7 +160,7 @@ protected:
 
 private:
   /// \brief This member stores the actual transformation paramters updated from the UI
-  mitk::AffineTransformParametersDataNodeProperty::Pointer m_CurrDispTransfProp;
+  AffineTransformParametersDataNodeProperty::Pointer m_CurrDispTransfProp;
 
   /// \brief This class needs a DataStorage to work.
   mitk::DataStorage::Pointer m_DataStorage;
@@ -183,8 +179,8 @@ private:
   double                     m_Rotation[3];
   double                     m_Scaling[3];
   double                     m_Shearing[3];
-}; // end class
+};
 
-} // end namespace
+}
 
 #endif

@@ -19,7 +19,7 @@
 #include "ui_QmitkStereoImageAndCameraSelectionWidget.h"
 #include <QWidget>
 #include <mitkImage.h>
-#include <mitkCoordinateAxesData.h>
+#include <niftkCoordinateAxesData.h>
 #include <mitkDataStorage.h>
 
 /**
@@ -39,7 +39,7 @@ public:
   mitk::DataNode* GetLeftNode() const;
   mitk::Image* GetRightImage() const;
   mitk::DataNode* GetRightNode() const;
-  mitk::CoordinateAxesData* GetCameraTransform() const;
+  niftk::CoordinateAxesData* GetCameraTransform() const;
   mitk::DataNode* GetCameraNode() const;
   void SetCameraNode(mitk::DataNode* node);
 

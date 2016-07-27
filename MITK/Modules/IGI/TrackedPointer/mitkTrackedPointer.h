@@ -37,8 +37,8 @@ class NIFTKIGI_EXPORT TrackedPointer : public itk::Object,
 {
 public:
 
-  mitkClassMacroItkParent(TrackedPointer, itk::Object);
-  itkNewMacro(TrackedPointer);
+  mitkClassMacroItkParent(TrackedPointer, itk::Object)
+  itkNewMacro(TrackedPointer)
 
   /**
    * \brief Stores the default value of whether to update the view (i.e. center it) each time the pointer moves, defaults to false.

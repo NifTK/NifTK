@@ -45,8 +45,8 @@ class NIFTKMIDAS_EXPORT SeedTool : public Tool {
 
 public:
 
-  mitkClassMacro(SeedTool, Tool);
-  itkNewMacro(SeedTool);
+  mitkClassMacro(SeedTool, Tool)
+  itkNewMacro(SeedTool)
 
   virtual void InitializeStateMachine();
 

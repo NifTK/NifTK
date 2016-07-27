@@ -42,8 +42,8 @@ class NIFTKOPENCV_EXPORT FindAndTriangulateCrossHair : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(FindAndTriangulateCrossHair, itk::Object);
-  itkNewMacro(FindAndTriangulateCrossHair);
+  mitkClassMacroItkParent(FindAndTriangulateCrossHair, itk::Object)
+  itkNewMacro(FindAndTriangulateCrossHair)
 
   /** 
    * \brief

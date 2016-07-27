@@ -40,8 +40,8 @@ class PaintbrushToolGUI : public QmitkToolGUI
 
 public:
 
-  mitkClassMacro(PaintbrushToolGUI, QmitkToolGUI);
-  itkNewMacro(PaintbrushToolGUI);
+  mitkClassMacro(PaintbrushToolGUI, QmitkToolGUI)
+  itkNewMacro(PaintbrushToolGUI)
 
   /// \brief Method to set or initialise the size of the cursor (radius of influence).
   void OnCursorSizeChanged(int current);

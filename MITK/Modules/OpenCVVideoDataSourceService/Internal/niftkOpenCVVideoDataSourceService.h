@@ -49,8 +49,8 @@ class OpenCVVideoDataSourceService
 
 public:
 
-  mitkClassMacroItkParent(OpenCVVideoDataSourceService, IGIDataSource);
-  mitkNewMacro3Param(OpenCVVideoDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
+  mitkClassMacroItkParent(OpenCVVideoDataSourceService, IGIDataSource)
+  mitkNewMacro3Param(OpenCVVideoDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer)
 
   /**
   * \see  IGIDataSourceI::StartPlayback()

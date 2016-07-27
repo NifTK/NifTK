@@ -63,7 +63,7 @@ else()
   # Our version number. Edit this to generate a new version.
   # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
   # Also, Trac 1592, version number must change if CTK changes significantly.
-  project(NIFTK VERSION 16.06.1)
+  project(NIFTK VERSION 16.04.1)
 endif()
 
 ######################################################################
@@ -155,7 +155,6 @@ option(BUILD_Python "Build Python wrapping." OFF)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
 option(BUILD_RTK "Build RTK - Experimental." OFF)
 option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
-option(BUILD_ITKFFTW "Build ITK's FFTW - Not Supported." OFF)
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
@@ -271,7 +270,6 @@ mark_as_advanced(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES)
 mark_as_advanced(BUILD_CAMINO)
 mark_as_advanced(BUILD_PCL)
 mark_as_advanced(BUILD_RTK)
-mark_as_advanced(BUILD_ITKFFTW)
 mark_as_advanced(BUILD_MESHING)
 
 ######################################################################
@@ -788,18 +786,29 @@ set(OPENCV_ADDITIONAL_CXX_FLAGS "" CACHE STRING "Additional CXX Flags for OpenCV
 mark_as_advanced(OPENCV_ADDITIONAL_CXX_FLAGS)
 set(OPENCV_WITH_CUDA OFF CACHE BOOL "Build OpenCV with CUDA support (takes a long time)")
 mark_as_advanced(OPENCV_WITH_CUDA)
-if(WIN32)
-  set(OPENCV_WITH_FFMPEG ON CACHE BOOL "Build OpenCV with FFMPEG support")
-else(WIN32)
-  set(OPENCV_WITH_FFMPEG OFF CACHE BOOL "Build OpenCV with FFMPEG support")
-endif(WIN32)
-mark_as_advanced(OPENCV_WITH_FFMPEG)
 set(OPENCV_WITH_NONFREE OFF CACHE BOOL "Build OpenCV with nonfree library")
 mark_as_advanced(OPENCV_WITH_NONFREE)
 
 set(NIFTYSIM_USE_CUDA OFF CACHE BOOL "Build NiftySim with CUDA support")
 mark_as_advanced(NIFTYSIM_USE_CUDA)
 
+######################################################################
+# GPL restricted options. These must default to off.
+# Basically, a researcher/developer can turn them on and use them.
+# But we cannot distribute binaries unless we distribute code
+# under the GPL, which we do not want to do. So, do not distribute.
+######################################################################
+option(BUILD_ITKFFTW "Build ITK's FFTW - Not Supported, do not distribute, due to GPL restrictions." OFF)
+mark_as_advanced(BUILD_ITKFFTW)
+if(BUILD_ITKFFTW)
+  message(WARNING "You have chosen to compile FFTW. This means the binary code, and all executables linked against it will be covered by GPL. This means if you distribute binaries, you must also distribute all the NifTK source code and all the FFTW source code using the GPL license. Hence this option is not supported by NifTK.")
+endif(BUILD_ITKFFTW)
+
+option(OPENCV_WITH_FFMPEG "Build OpenCV with FFMPEG support - Not Supported, do not distribute, due to GPL restrictions." OFF)
+mark_as_advanced(OPENCV_WITH_FFMPEG)
+if(OPENCV_WITH_FFMPEG)
+  message(WARNING "You have chosen to compile FFmpeg support. This is not recommended. It is possible to distribute FFmpeg under LGPLv2.1, but only if you fully comply with the legal requirements, and specifically, as FFmpeg contains GPL code, do not compile GPL code into FFmpeg. If you compile GPL code into FFmpeg and distribute binaries, you must also distribute all the NifTK source code along with all the FFmpeg source code using the GPL license. Hence this option is not supported by NifTK.")
+endif()
 
 ########################################################################
 # Set NIFTK_INSTALL_PREFIX, and NIFTK_LINK_PREFIX, used in scripts.
@@ -821,14 +830,6 @@ endif(BUILD_GUI)
 if(BUILD_GUI)
   set(NIFTK_GENERATE_DOXYGEN_HELP ON)
 endif(BUILD_GUI)
-
-if(BUILD_ITKFFTW)
-  message(WARNING "You have chosen to compile FFTW. This means the binary code, and all executables linked against it will be covered by GPL. This means if you distribute binaries, you must also distribute all the NifTK source code and all the FFTW source code. This option is not supported by NifTK.")
-endif(BUILD_ITKFFTW)
-
-if(OPENCV_WITH_FFMPEG)
-  message(WARNING "You have chosen to compile FFmpeg support. This is not recommended. It is possible to distribute FFmpeg under LGPLv2.1, but only if you fully comply with the legal requirements, and specifically, as FFmpeg contains GPL code, do not compile GPL code into FFmpeg. If you compile GPL code into FFmpeg and distribute binaries, you must also distribute all the NifTK source code along with all the FFmpeg source code. This option is not supported by NifTK.")
-endif()
 
 ########################################################################
 # Simplest if we list ALL our include directories here.
@@ -1735,7 +1736,6 @@ if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
   install(FILES ${CAMINO_MAN_FILES} DESTINATION man/man1/ PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
   install(FILES ${CAMINO_BIN_FILES} DESTINATION bin PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endif()
-
 
 ######################################################################
 # ffmpeg packaging hacks.

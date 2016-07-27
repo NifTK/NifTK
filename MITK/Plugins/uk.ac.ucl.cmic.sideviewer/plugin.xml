@@ -8,7 +8,7 @@
     <view id="uk.ac.ucl.cmic.sideviewer"
         name="Side Viewer"
         category="org.mitk.views.general"
-        class="QmitkSideViewerView"
+        class="niftk::SideViewerView"
         icon="resources/sideviewer-icon.png" />
   </extension>
 </plugin>

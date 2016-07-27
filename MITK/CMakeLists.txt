@@ -68,9 +68,9 @@ if(MITK_USE_BLUEBERRY)
 
   # These are required, because people turn the apps off
   # and expect all the corresponding plugins to do the same.
-#  niftkMacroForcePluginCacheValue(${NiftyView_PLUGINS} ${NIFTK_Apps/NiftyView})
+  niftkMacroForcePluginCacheValue(${NiftyView_PLUGINS} ${NIFTK_Apps/NiftyView})
   niftkMacroForcePluginCacheValue(${NiftyMIDAS_PLUGINS} ${NIFTK_Apps/NiftyMIDAS})
-#  niftkMacroForcePluginCacheValue(${NiftyIGI_PLUGINS} ${NIFTK_Apps/NiftyIGI})
+  niftkMacroForcePluginCacheValue(${NiftyIGI_PLUGINS} ${NIFTK_Apps/NiftyIGI})
 
   ctkMacroSetupPlugins(${PROJECT_PLUGINS}
                        APPS ${_apps_fullpath} 

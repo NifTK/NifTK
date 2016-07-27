@@ -16,7 +16,7 @@
 #define UndistortView_h
 
 #include <berryISelectionListener.h>
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_UndistortViewControls.h"
 #include <niftkUndistortion.h>
@@ -27,7 +27,7 @@
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkImage.h>
 
-class UndistortView : public QmitkBaseView, public Ui::UndistortViewControls
+class UndistortView : public niftk::BaseView, public Ui::UndistortViewControls
 {
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)

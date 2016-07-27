@@ -15,7 +15,7 @@
 #ifndef PivotCalibrationView_h
 #define PivotCalibrationView_h
 
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include "ui_PivotCalibrationView.h"
 
 #include <vtkSmartPointer.h>
@@ -30,7 +30,7 @@
  *
  * \ingroup uk_ac_ucl_cmic_igiultrasoundctreg_internal
 */
-class PivotCalibrationView : public QmitkBaseView
+class PivotCalibrationView : public niftk::BaseView
 {  
   /**
    * this is needed for all Qt objects that should have a Qt meta-object

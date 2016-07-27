@@ -34,8 +34,8 @@ namespace mitk
 class NIFTKOPENCV_EXPORT TwoTrackerAnalysis : public TwoTrackerMatching
 {
 public: 
-  mitkClassMacroItkParent ( TwoTrackerAnalysis, itk::Object);
-  itkNewMacro (TwoTrackerAnalysis);
+  mitkClassMacroItkParent ( TwoTrackerAnalysis, itk::Object)
+  itkNewMacro (TwoTrackerAnalysis)
 
   /**
    * \brief Temporal calibration of two tracking streams. The Lag is adjusted so as to 

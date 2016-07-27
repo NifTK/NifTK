@@ -44,7 +44,7 @@ class NIFTKMIDAS_EXPORT StateMachineRendererFilter : public StateMachineEventFil
 
 public:
 
-  mitkClassMacro(StateMachineRendererFilter, StateMachineEventFilter);
+  mitkClassMacro(StateMachineRendererFilter, StateMachineEventFilter)
 
   /// \brief Returns true if the sender of the event (the renderer where the event
   /// comes from) is not among the renderers added to this object.

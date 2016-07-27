@@ -34,8 +34,8 @@ class NIFTKOPENCV_EXPORT CameraCalibrationFromDirectory : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(CameraCalibrationFromDirectory, itk::Object);
-  itkNewMacro(CameraCalibrationFromDirectory);
+  mitkClassMacroItkParent(CameraCalibrationFromDirectory, itk::Object)
+  itkNewMacro(CameraCalibrationFromDirectory)
 
   /**
    * \brief Calibration function that returns the reprojection error (squared error).

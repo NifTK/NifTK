@@ -47,7 +47,7 @@
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkCameraIntrinsics.h>
 #endif
-#include <mitkCoordinateAxesData.h>
+#include <niftkCoordinateAxesData.h>
 
 #ifdef _USE_PCL
 #include <niftkPCLData.h>
@@ -320,13 +320,13 @@ void VLQtWidget::AddDataStorageListeners()
     // if someone calls node->Modified() we need to redraw.
     m_DataStorage->ChangedNodeEvent.AddListener(mitk::MessageDelegate1<VLQtWidget, const mitk::DataNode*>(this, &VLQtWidget::OnNodeModified));
 
-    m_NodeVisibilityListener = mitk::DataNodePropertyListener::New(m_DataStorage, "visible");
+    m_NodeVisibilityListener = niftk::DataNodePropertyListener::New(m_DataStorage, "visible");
     m_NodeVisibilityListener->NodePropertyChanged += mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeVisibilityPropertyChanged);
 
-    m_NodeColorPropertyListener = mitk::DataNodePropertyListener::New(m_DataStorage, "color");
+    m_NodeColorPropertyListener = niftk::DataNodePropertyListener::New(m_DataStorage, "color");
     m_NodeColorPropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLQtWidget::OnNodeColorPropertyChanged);
 
-    m_NodeOpacityPropertyListener = mitk::DataNodePropertyListener::New(m_DataStorage, "opacity");
+    m_NodeOpacityPropertyListener = niftk::DataNodePropertyListener::New(m_DataStorage, "opacity");
     m_NodeOpacityPropertyListener->NodePropertyChanged += mitk::MessageDelegate2<VLQtWidget, mitk::DataNode*, const mitk::BaseRenderer*>( this, &VLQtWidget::OnNodeOpacityPropertyChanged);
 
   }
@@ -1273,7 +1273,7 @@ void VLQtWidget::AddDataNode(const mitk::DataNode::ConstPointer& node)
 #ifdef _USE_PCL
   niftk::PCLData::Pointer  pclPS     = dynamic_cast<niftk::PCLData*>(node->GetData());
 #endif
-  mitk::CoordinateAxesData::Pointer   coords = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+  niftk::CoordinateAxesData::Pointer   coords = dynamic_cast<niftk::CoordinateAxesData*>(node->GetData());
 #ifdef _USE_CUDA
   mitk::BaseData::Pointer cudaImg   = dynamic_cast<niftk::CUDAImage*>(node->GetData());
   // this check will prefer a CUDAImageProperty attached to the node's data object.
@@ -1783,7 +1783,7 @@ void VLQtWidget::RemoveDataNode(const mitk::DataNode::ConstPointer& node)
 
 
 //-----------------------------------------------------------------------------
-vl::ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord)
+vl::ref<vl::Actor> VLQtWidget::AddCoordinateAxisActor(const niftk::CoordinateAxesData::Pointer& coord)
 {
   // beware: vl does not draw a clean boundary between what is client and what is server side state.
   // so we always need our opengl context current.
@@ -3106,7 +3106,7 @@ bool VLQtWidget::MergeTranslucentTriangles()
     vlColors->bufferObject()->setBufferSubData(colorBufferOffset, colorBufSize, colorData);
     glFinish();
     colorBufferOffset += colorBufSize;
-    delete colorData;
+    delete[] colorData;
  
   }
 
