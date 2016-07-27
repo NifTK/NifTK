@@ -264,6 +264,19 @@ private:
    */
   void SavePoints(const std::string& prefix, const std::list<niftk::PointSet>& points);
 
+  void SetIntrinsicsOnImage(const cv::Mat& intrinsics,
+                            const cv::Mat& distortion,
+                            const std::string& propertyName,
+                            mitk::DataNode::Pointer image);
+
+  void SetStereoExtrinsicsOnImage(const cv::Mat& leftToRightRotationMatrix,
+                                  const cv::Mat& leftToRightTranslationVector,
+                                  const std::string& propertyName,
+                                  mitk::DataNode::Pointer image
+                                  );
+
+  void UpdateDisplayNodes();
+
   typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> > MatrixProperty;
 
   // Data from Plugin/DataStorage.
