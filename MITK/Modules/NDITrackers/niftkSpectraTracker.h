@@ -29,8 +29,8 @@ class NIFTKNDITRACKERS_EXPORT SpectraTracker : public niftk::PLUSNDITracker
 {
 public:
 
-  mitkClassMacroItkParent(SpectraTracker, niftk::PLUSNDITracker);
-  mitkNewMacro4Param(SpectraTracker, mitk::DataStorage::Pointer, std::string, std::string, int);
+  mitkClassMacroItkParent(SpectraTracker, niftk::PLUSNDITracker)
+  mitkNewMacro4Param(SpectraTracker, mitk::DataStorage::Pointer, std::string, std::string, int)
 
 protected:
 

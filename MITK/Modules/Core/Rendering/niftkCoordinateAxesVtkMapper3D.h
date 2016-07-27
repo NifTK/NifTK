@@ -33,8 +33,8 @@ namespace niftk
 class NIFTKCORE_EXPORT CoordinateAxesVtkMapper3D : public mitk::VtkMapper
 {
 public:
-  mitkClassMacro(CoordinateAxesVtkMapper3D, mitk::VtkMapper);
-  itkNewMacro(Self);
+  mitkClassMacro(CoordinateAxesVtkMapper3D, mitk::VtkMapper)
+  itkNewMacro(Self)
 
   virtual vtkProp *GetVtkProp(mitk::BaseRenderer *renderer) override;
   const CoordinateAxesData* GetInput();

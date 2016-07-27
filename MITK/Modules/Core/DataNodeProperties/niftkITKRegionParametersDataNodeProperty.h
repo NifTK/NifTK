@@ -34,8 +34,8 @@ class NIFTKCORE_EXPORT ITKRegionParametersDataNodeProperty : public mitk::BasePr
 
 public:
 
-  mitkClassMacro(ITKRegionParametersDataNodeProperty, mitk::BaseProperty);
-  itkNewMacro(ITKRegionParametersDataNodeProperty);
+  mitkClassMacro(ITKRegionParametersDataNodeProperty, mitk::BaseProperty)
+  itkNewMacro(ITKRegionParametersDataNodeProperty)
 
   /**
    * \brief Parameters are 6 integers, corresponding to index[X, Y, Z] and size[X, Y, Z].

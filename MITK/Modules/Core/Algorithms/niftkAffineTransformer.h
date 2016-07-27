@@ -81,8 +81,8 @@ public:
   /// \brief See class introduction.
   static const std::string DISPLAYED_PARAMETERS_KEY;
 
-  mitkClassMacroItkParent(AffineTransformer, itk::Object);
-  itkNewMacro(AffineTransformer);
+  mitkClassMacroItkParent(AffineTransformer, itk::Object)
+  itkNewMacro(AffineTransformer)
 
   /// Get / Set the "RotateAroundCenter" flag
   itkGetMacro(RotateAroundCenter, bool);

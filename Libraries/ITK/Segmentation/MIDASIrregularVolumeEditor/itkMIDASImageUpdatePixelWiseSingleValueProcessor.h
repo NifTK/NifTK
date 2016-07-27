@@ -40,10 +40,10 @@ public:
   typedef SmartPointer<const Self>                           ConstPointer;
 
   /** Method for creation through the object factory. */
-  itkNewMacro(Self);
+  itkNewMacro(Self)
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(MIDASImageUpdatePixelWiseSingleValueProcessor, MIDASImageUpdateProcessor);
+  itkTypeMacro(MIDASImageUpdatePixelWiseSingleValueProcessor, MIDASImageUpdateProcessor)
 
   /** Additional typedefs */
   typedef TPixel PixelType;
@@ -56,8 +56,8 @@ public:
   typedef std::vector<TPixel>             DataListType;
 
   /** Set/Get the pixel value to update. */
-  itkSetMacro(Value, PixelType);
-  itkGetMacro(Value, PixelType);
+  itkSetMacro(Value, PixelType)
+  itkGetMacro(Value, PixelType)
 
   /** Clears the list of indexes. */
   void ClearList();
@@ -72,14 +72,14 @@ public:
   std::vector<int> ComputeMinimalBoundingBox();
 
   /** \see ImageUpdateProcessor::Undo() */
-  virtual void Undo();
+  virtual void Undo() override;
 
   /** \see ImageUpdateProcessor::Redo() */
-  virtual void Redo();
+  virtual void Redo() override;
 
 protected:
   MIDASImageUpdatePixelWiseSingleValueProcessor();
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
   virtual ~MIDASImageUpdatePixelWiseSingleValueProcessor() {}
 
 private:

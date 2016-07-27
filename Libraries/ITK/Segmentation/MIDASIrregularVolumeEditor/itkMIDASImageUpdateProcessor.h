@@ -44,7 +44,7 @@ public:
   typedef SmartPointer<const Self>  ConstPointer;
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(MIDASImageUpdateProcessor, Object);
+  itkTypeMacro(MIDASImageUpdateProcessor, Object)
 
   /** Dimension of the image.  This constant is used by functions that are
    * templated over image type (as opposed to being templated over pixel type
@@ -61,8 +61,8 @@ public:
   typedef typename ImageType::RegionType  RegionType;
 
   /** Set the destination image, which is the image actually modified. This is not a filter with separate input/output. */
-  itkSetObjectMacro(DestinationImage, ImageType);
-  itkGetObjectMacro(DestinationImage, ImageType);
+  itkSetObjectMacro(DestinationImage, ImageType)
+  itkGetObjectMacro(DestinationImage, ImageType)
 
   /** Sub-classes decide how to implement this. */
   virtual void Undo() = 0;
@@ -72,7 +72,7 @@ public:
 
 protected:
   MIDASImageUpdateProcessor();
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
   virtual ~MIDASImageUpdateProcessor() {}
 
   virtual void ValidateInputs();

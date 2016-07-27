@@ -35,8 +35,8 @@ class NIFTKCORE_EXPORT DataNodeStringPropertyFilter : public DataNodeFilter
 
 public:
 
-  mitkClassMacro(DataNodeStringPropertyFilter, DataNodeFilter);
-  itkNewMacro(DataNodeStringPropertyFilter);
+  mitkClassMacro(DataNodeStringPropertyFilter, DataNodeFilter)
+  itkNewMacro(DataNodeStringPropertyFilter)
 
   /// \brief Sets the property name used for filtering.
   itkSetMacro(PropertyName, std::string);

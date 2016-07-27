@@ -44,8 +44,8 @@ class NIFTKOPENCV_EXPORT MakeMaskImagesFromStereoVideo : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(MakeMaskImagesFromStereoVideo, itk::Object);
-  itkNewMacro(MakeMaskImagesFromStereoVideo);
+  mitkClassMacroItkParent(MakeMaskImagesFromStereoVideo, itk::Object)
+  itkNewMacro(MakeMaskImagesFromStereoVideo)
 
   /** 
    * \brief

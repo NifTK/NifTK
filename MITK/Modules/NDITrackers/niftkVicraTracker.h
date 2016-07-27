@@ -29,8 +29,8 @@ class NIFTKNDITRACKERS_EXPORT VicraTracker : public niftk::PLUSNDITracker
 {
 public:
 
-  mitkClassMacroItkParent(VicraTracker, niftk::PLUSNDITracker);
-  mitkNewMacro4Param(VicraTracker, mitk::DataStorage::Pointer, std::string, std::string, int);
+  mitkClassMacroItkParent(VicraTracker, niftk::PLUSNDITracker)
+  mitkNewMacro4Param(VicraTracker, mitk::DataStorage::Pointer, std::string, std::string, int)
 
 protected:
 

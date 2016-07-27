@@ -45,8 +45,8 @@ class NIFTKPOINTREG_EXPORT PointBasedRegistration : public itk::Object
 {
 public:
 
-  mitkClassMacroItkParent(PointBasedRegistration, itk::Object);
-  itkNewMacro(PointBasedRegistration);
+  mitkClassMacroItkParent(PointBasedRegistration, itk::Object)
+  itkNewMacro(PointBasedRegistration)
 
   /**
   * \brief If true, will try to filter matching pairs of points using the mitk::PointSet PointID feature.

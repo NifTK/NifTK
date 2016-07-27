@@ -38,8 +38,8 @@ class NIFTKIGIOVERLAYEDITOR_EXPORT BitmapOverlay : public itk::Object
 {
 public:
 
-  mitkClassMacroItkParent( BitmapOverlay, itk::Object );
-  itkNewMacro( Self );
+  mitkClassMacroItkParent( BitmapOverlay, itk::Object )
+  itkNewMacro( Self )
 
   /**
    * \brief Set a pointer to the mitk::DataStorage containing the image data for the overlay.

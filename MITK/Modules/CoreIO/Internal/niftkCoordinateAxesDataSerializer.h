@@ -28,7 +28,7 @@ namespace niftk
 class CoordinateAxesDataSerializer : public mitk::BaseDataSerializer
 {
 public:
-  mitkClassMacro( CoordinateAxesDataSerializer, BaseDataSerializer );
+  mitkClassMacro( CoordinateAxesDataSerializer, BaseDataSerializer )
   itkFactorylessNewMacro(Self)
   itkCloneMacro(Self)
   virtual std::string Serialize() override;

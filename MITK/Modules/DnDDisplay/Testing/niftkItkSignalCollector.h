@@ -41,8 +41,8 @@ public:
 class ItkSignalCollector : public itk::Command
 {
 public:
-  mitkClassMacroItkParent(ItkSignalCollector, itk::Command);
-  itkNewMacro(ItkSignalCollector);
+  mitkClassMacroItkParent(ItkSignalCollector, itk::Command)
+  itkNewMacro(ItkSignalCollector)
 
   typedef std::pair<const itk::Object*, itk::EventObject*> Signal;
   typedef std::vector<Signal> Signals;
@@ -83,15 +83,15 @@ protected:
   virtual ~ItkSignalCollector();
 
   /// \brief Prints the collected signals to the given stream or to the standard output if no stream is given.
-  virtual void PrintSelf(std::ostream & os, itk::Indent indent) const;
+  virtual void PrintSelf(std::ostream & os, itk::Indent indent) const override;
 
 private:
 
   /// \brief Called when the event happens to the caller.
-  virtual void Execute(itk::Object* caller, const itk::EventObject& event);
+  virtual void Execute(itk::Object* caller, const itk::EventObject& event) override;
 
   /// \brief Called when the event happens to the caller.
-  virtual void Execute(const itk::Object* object, const itk::EventObject& event);
+  virtual void Execute(const itk::Object* object, const itk::EventObject& event) override;
 
   typedef std::multimap<itk::Object::Pointer, unsigned long> ObserverMap;
   ObserverMap m_ObserverTags;

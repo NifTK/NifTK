@@ -39,8 +39,8 @@ public:
   typedef SystemTimeServiceI::TimeType IGITimeType;
   typedef unsigned long int IGIIndexType;
 
-  mitkClassMacroItkParent(IGIDataType, itk::Object);
-  itkNewMacro(IGIDataType);
+  mitkClassMacroItkParent(IGIDataType, itk::Object)
+  itkNewMacro(IGIDataType)
 
   IGITimeType GetTimeStampInNanoSeconds() const;
   void SetTimeStampInNanoSeconds(const IGITimeType& time);

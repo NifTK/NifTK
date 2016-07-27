@@ -41,8 +41,8 @@ class NIFTKOPENCV_EXPORT VideoToSurface : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(VideoToSurface, itk::Object);
-  itkNewMacro(VideoToSurface);
+  mitkClassMacroItkParent(VideoToSurface, itk::Object)
+  itkNewMacro(VideoToSurface)
 
   /** 
    * \brief

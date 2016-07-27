@@ -40,8 +40,8 @@ class DrawToolGUI : public QmitkToolGUI
 
 public:
 
-  mitkClassMacro(DrawToolGUI, QmitkToolGUI);
-  itkNewMacro(DrawToolGUI);
+  mitkClassMacro(DrawToolGUI, QmitkToolGUI)
+  itkNewMacro(DrawToolGUI)
 
   /// \brief Method to set or initialise the size of the cursor (radius of influence).
   void OnCursorSizeChanged(double cursorSize);

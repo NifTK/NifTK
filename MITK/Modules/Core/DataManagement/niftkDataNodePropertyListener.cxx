@@ -24,8 +24,8 @@ namespace niftk
 class PropertyChangedCommand : public itk::Command
 {
 public:
-  mitkClassMacroItkParent(PropertyChangedCommand, itk::Command);
-  mitkNewMacro3Param(PropertyChangedCommand, DataNodePropertyListener*, mitk::DataNode*, const mitk::BaseRenderer*);
+  mitkClassMacroItkParent(PropertyChangedCommand, itk::Command)
+  mitkNewMacro3Param(PropertyChangedCommand, DataNodePropertyListener*, mitk::DataNode*, const mitk::BaseRenderer*)
 
   PropertyChangedCommand(DataNodePropertyListener* observer, mitk::DataNode* node, const mitk::BaseRenderer* renderer)
   : m_Observer(observer)

@@ -69,8 +69,8 @@ class QtSignalCollector : public QObject, public itk::Object, private QtSignalLi
   Q_OBJECT
 
 public:
-  mitkClassMacroItkParent(QtSignalCollector, QObject);
-  itkNewMacro(QtSignalCollector);
+  mitkClassMacroItkParent(QtSignalCollector, QObject)
+  itkNewMacro(QtSignalCollector)
 
   typedef std::pair<const QObject*, QByteArray> Signal;
   typedef std::vector<Signal> Signals;
@@ -108,10 +108,10 @@ protected:
   virtual ~QtSignalCollector();
 
   /// \brief Prints the collected signals to the given stream or to the standard output if no stream is given.
-  virtual void PrintSelf(std::ostream & os, itk::Indent indent) const;
+  virtual void PrintSelf(std::ostream & os, itk::Indent indent) const override;
 
   /// \brief Adds the object-signal pair to the list of collected signals.
-  virtual void OnQtSignalReceived(const QObject* object, const char* signal);
+  virtual void OnQtSignalReceived(const QObject* object, const char* signal) override;
 
 private:
 

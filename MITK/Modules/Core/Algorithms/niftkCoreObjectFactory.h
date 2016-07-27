@@ -28,8 +28,8 @@ namespace niftk
 class NIFTKCORE_EXPORT CoreObjectFactory : public mitk::CoreObjectFactoryBase
 {
 public:
-  mitkClassMacro(CoreObjectFactory, mitk::CoreObjectFactoryBase);
-  itkNewMacro(CoreObjectFactory);
+  mitkClassMacro(CoreObjectFactory, mitk::CoreObjectFactoryBase)
+  itkNewMacro(CoreObjectFactory)
 
   /// \see CoreObjectFactoryBase::CreateMapper
   virtual mitk::Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId) override;

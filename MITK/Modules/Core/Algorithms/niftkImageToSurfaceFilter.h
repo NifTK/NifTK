@@ -65,8 +65,8 @@ public:
   enum SurfaceSmoothingMethod  {NoSurfaceSmoothing, TaubinSmoothing, CurvatureNormalSmooth, InverseEdgeLengthSmooth, WindowedSincSmoothing, StandardVTKSmoothing};
   enum InputSmoothingMethod    {NoInputSmoothing, GaussianSmoothing, MedianSmoothing};
 
-  mitkClassMacro(ImageToSurfaceFilter, SurfaceSource);
-  itkNewMacro(Self);
+  mitkClassMacro(ImageToSurfaceFilter, SurfaceSource)
+  itkNewMacro(Self)
 
   /// \brief For each image time slice a surface will be created. This method is called by Update().
   virtual void GenerateData() override;

@@ -64,8 +64,8 @@ class NIFTKDNDDISPLAY_EXPORT MultiViewerVisibilityManager : public QObject, publ
 
 public:
 
-  mitkClassMacro(MultiViewerVisibilityManager, DataNodePropertyListener);
-  mitkNewMacro1Param(MultiViewerVisibilityManager, const mitk::DataStorage::Pointer);
+  mitkClassMacro(MultiViewerVisibilityManager, DataNodePropertyListener)
+  mitkNewMacro1Param(MultiViewerVisibilityManager, const mitk::DataStorage::Pointer)
 
   /// \brief This class must (checked with assert) have a non-NULL mitk::DataStorage so it is injected in the constructor, and we register to AddNodeEvent, RemoveNodeEvent.
   MultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage);

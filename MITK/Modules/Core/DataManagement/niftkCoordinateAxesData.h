@@ -39,8 +39,8 @@ public:
   typedef RegionType::IndexType IndexType;
   typedef RegionType::SizeType  SizeType;
 
-  mitkClassMacro(CoordinateAxesData, mitk::BaseData);
-  itkNewMacro(Self);
+  mitkClassMacro(CoordinateAxesData, mitk::BaseData)
+  itkNewMacro(Self)
 
   static const char* FILE_NAME;
   static const char* FILE_EXTENSION;

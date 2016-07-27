@@ -39,9 +39,9 @@ class NIFTKCORE_EXPORT AffineTransformParametersDataNodeProperty : public mitk::
 
 public:
 
-  mitkClassMacro(AffineTransformParametersDataNodeProperty, mitk::BaseProperty);
-  itkNewMacro(AffineTransformParametersDataNodeProperty);
-  mitkNewMacro1Param(AffineTransformParametersDataNodeProperty, const std::vector<double>&);
+  mitkClassMacro(AffineTransformParametersDataNodeProperty, mitk::BaseProperty)
+  itkNewMacro(AffineTransformParametersDataNodeProperty)
+  mitkNewMacro1Param(AffineTransformParametersDataNodeProperty, const std::vector<double>&)
 
   /**
    * \brief The ParametersType is defined to be an array of double, it should be exactly 13 doubles long.

@@ -29,8 +29,8 @@ class OpenCVVideoDataType : public IGIDataType
 {
 public:
 
-  mitkClassMacro(OpenCVVideoDataType, IGIDataType);
-  itkNewMacro(OpenCVVideoDataType);
+  mitkClassMacro(OpenCVVideoDataType, IGIDataType)
+  itkNewMacro(OpenCVVideoDataType)
 
   /**
   * \brief Used for loading in an image.

@@ -36,17 +36,17 @@ public:
   typedef std::pair<int, QString> LabelType;
   typedef std::vector<LabelType> LabelListType;
 
-  mitkClassMacro(LabeledLookupTableProperty, NamedLookupTableProperty);
-  itkNewMacro(LabeledLookupTableProperty);
+  mitkClassMacro(LabeledLookupTableProperty, NamedLookupTableProperty)
+  itkNewMacro(LabeledLookupTableProperty)
   mitkNewMacro3Param(LabeledLookupTableProperty,
                      const std::string&,
                      const mitk::LookupTable::Pointer,
-                     const LabelListType&);
+                     const LabelListType&)
   mitkNewMacro4Param(LabeledLookupTableProperty,
                      const std::string&,
                      const mitk::LookupTable::Pointer,
                      const LabelListType&,
-                     bool);
+                     bool)
 
   /** Get list of labels*/
   inline LabelListType GetLabels() const {return m_Labels;}

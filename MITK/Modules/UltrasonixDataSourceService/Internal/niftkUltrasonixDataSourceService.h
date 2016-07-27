@@ -47,8 +47,8 @@ class UltrasonixDataSourceService
 
 public:
 
-  mitkClassMacroItkParent(UltrasonixDataSourceService, IGIDataSource);
-  mitkNewMacro3Param(UltrasonixDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
+  mitkClassMacroItkParent(UltrasonixDataSourceService, IGIDataSource)
+  mitkNewMacro3Param(UltrasonixDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer)
 
   /**
   * \see  IGIDataSourceI::StartPlayback()

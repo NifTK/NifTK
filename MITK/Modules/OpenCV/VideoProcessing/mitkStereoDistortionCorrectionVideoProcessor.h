@@ -29,8 +29,8 @@ class NIFTKOPENCV_EXPORT StereoDistortionCorrectionVideoProcessor : public Stere
 
 public:
 
-  mitkClassMacro(StereoDistortionCorrectionVideoProcessor, StereoOneTimePointVideoProcessorTemplateMethod);
-  mitkNewMacro3Param(StereoDistortionCorrectionVideoProcessor, const bool&, const std::string&, const std::string&);
+  mitkClassMacro(StereoDistortionCorrectionVideoProcessor, StereoOneTimePointVideoProcessorTemplateMethod)
+  mitkNewMacro3Param(StereoDistortionCorrectionVideoProcessor, const bool&, const std::string&, const std::string&)
 
   /**
    * \brief Call before StereoDistortionCorrectionVideoProcessor::Initialize().

@@ -60,8 +60,8 @@ class AtomicStateTransitionTester : public itk::Object, private ItkSignalListene
 {
 public:
 
-  mitkClassMacroItkParent(AtomicStateTransitionTester, itk::Object);
-  mitkNewMacro1Param(AtomicStateTransitionTester, TestObject);
+  mitkClassMacroItkParent(AtomicStateTransitionTester, itk::Object)
+  mitkNewMacro1Param(AtomicStateTransitionTester, TestObject)
 
   typedef ItkSignalCollector::Signal ItkSignal;
   typedef ItkSignalCollector::Signals ItkSignals;

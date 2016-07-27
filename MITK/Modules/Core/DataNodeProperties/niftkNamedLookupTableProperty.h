@@ -31,10 +31,10 @@ class NIFTKCORE_EXPORT NamedLookupTableProperty : public mitk::LookupTableProper
 {
 public:
 
-  mitkClassMacro(NamedLookupTableProperty, mitk::LookupTableProperty);
-  itkNewMacro(NamedLookupTableProperty);
-  mitkNewMacro2Param(NamedLookupTableProperty, const std::string&, const mitk::LookupTable::Pointer);
-  mitkNewMacro3Param(NamedLookupTableProperty, const std::string&, const mitk::LookupTable::Pointer, bool);
+  mitkClassMacro(NamedLookupTableProperty, mitk::LookupTableProperty)
+  itkNewMacro(NamedLookupTableProperty)
+  mitkNewMacro2Param(NamedLookupTableProperty, const std::string&, const mitk::LookupTable::Pointer)
+  mitkNewMacro3Param(NamedLookupTableProperty, const std::string&, const mitk::LookupTable::Pointer, bool)
 
   virtual std::string GetValueAsString() const override;
 

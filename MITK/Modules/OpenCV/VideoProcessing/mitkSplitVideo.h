@@ -33,8 +33,8 @@ class NIFTKOPENCV_EXPORT SplitVideo : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(SplitVideo, itk::Object);
-  itkNewMacro(SplitVideo);
+  mitkClassMacroItkParent(SplitVideo, itk::Object)
+  itkNewMacro(SplitVideo)
 
   bool Split(
       const std::string& inputImageFileName,

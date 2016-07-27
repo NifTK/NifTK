@@ -33,8 +33,8 @@ namespace mitk
 class NIFTKOPENCV_EXPORT TrackerAnalysis : public VideoTrackerMatching
 {
 public: 
-  mitkClassMacroItkParent ( TrackerAnalysis, itk::Object);
-  itkNewMacro (TrackerAnalysis);
+  mitkClassMacroItkParent ( TrackerAnalysis, itk::Object)
+  itkNewMacro (TrackerAnalysis)
 
   /**
    * \brief Pass a file name that defines the position of a point fixed in world

@@ -41,8 +41,8 @@ class NIFTKOPENCV_EXPORT HandeyeCalibrateFromDirectory : public mitk::HandeyeCal
 
 public:
 
-  mitkClassMacroItkParent(HandeyeCalibrateFromDirectory, itk::Object);
-  itkNewMacro(HandeyeCalibrateFromDirectory);
+  mitkClassMacroItkParent(HandeyeCalibrateFromDirectory, itk::Object)
+  itkNewMacro(HandeyeCalibrateFromDirectory)
   
   void InitialiseOutputDirectory();
   void InitialiseVideo ();

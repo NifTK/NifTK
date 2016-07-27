@@ -37,8 +37,8 @@ class NIFTKCORE_EXPORT AffineTransformDataNodeProperty : public mitk::BaseProper
 
 public:
 
-  mitkClassMacro(AffineTransformDataNodeProperty, mitk::BaseProperty);
-  itkNewMacro(Self);
+  mitkClassMacro(AffineTransformDataNodeProperty, mitk::BaseProperty)
+  itkNewMacro(Self)
 
   /**
    * \return R/W access to transform.

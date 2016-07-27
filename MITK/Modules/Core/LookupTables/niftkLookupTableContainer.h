@@ -39,7 +39,7 @@ public:
   typedef std::pair<int, QString> LabelType;
   typedef std::vector<LabelType> LabelListType;
 
-  mitkClassMacro(LookupTableContainer, mitk::BaseData);
+  mitkClassMacro(LookupTableContainer, mitk::BaseData)
 
 
   /** Constructor that takes a lookup table. */

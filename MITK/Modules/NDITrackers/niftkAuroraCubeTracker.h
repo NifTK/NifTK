@@ -29,8 +29,8 @@ class NIFTKNDITRACKERS_EXPORT AuroraCubeTracker : public niftk::PLUSNDITracker
 {
 public:
 
-  mitkClassMacroItkParent(AuroraCubeTracker, niftk::PLUSNDITracker);
-  mitkNewMacro4Param(AuroraCubeTracker, mitk::DataStorage::Pointer, std::string, std::string, int);
+  mitkClassMacroItkParent(AuroraCubeTracker, niftk::PLUSNDITracker)
+  mitkNewMacro4Param(AuroraCubeTracker, mitk::DataStorage::Pointer, std::string, std::string, int)
 
 protected:
 

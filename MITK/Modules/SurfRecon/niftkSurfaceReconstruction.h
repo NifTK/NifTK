@@ -77,8 +77,8 @@ public:
 
 public:
 
-  mitkClassMacroItkParent(SurfaceReconstruction, itk::Object);
-  itkNewMacro(SurfaceReconstruction);
+  mitkClassMacroItkParent(SurfaceReconstruction, itk::Object)
+  itkNewMacro(SurfaceReconstruction)
 
   /**
    * @warning niftk::Undistortion::s_StereoRigTransformationPropertyName is taken from either image1 or image2

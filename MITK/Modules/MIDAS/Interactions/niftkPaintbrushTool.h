@@ -91,8 +91,8 @@ public:
   static const std::string DILATIONS_SUBTRACTIONS_NAME;
 
 
-  mitkClassMacro(PaintbrushTool, mitk::SegTool2D);
-  itkNewMacro(PaintbrushTool);
+  mitkClassMacro(PaintbrushTool, mitk::SegTool2D)
+  itkNewMacro(PaintbrushTool)
 
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> ImageType;
   typedef itk::MIDASImageUpdatePixelWiseSingleValueProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;

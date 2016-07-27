@@ -51,8 +51,8 @@ namespace niftk
 class NIFTKCORE_EXPORT FastPointSetVtkMapper3D : public mitk::VtkMapper
 {
 public:
-  mitkClassMacro(FastPointSetVtkMapper3D, mitk::VtkMapper);
-  itkNewMacro(Self);
+  mitkClassMacro(FastPointSetVtkMapper3D, mitk::VtkMapper)
+  itkNewMacro(Self)
 
   virtual vtkProp* GetVtkProp(mitk::BaseRenderer* renderer) override;
   virtual const mitk::PointSet* GetInput();

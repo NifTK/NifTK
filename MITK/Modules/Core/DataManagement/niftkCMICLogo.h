@@ -42,9 +42,8 @@ class NIFTKCORE_EXPORT CMICLogo : public mitk::BaseData
 {
 public:
 
-  mitkClassMacro( CMICLogo, BaseData );
-
-  itkNewMacro( Self );
+  mitkClassMacro( CMICLogo, BaseData )
+  itkNewMacro( Self )
 
   enum LogoPosition{ UpperLeft, UpperRight, LowerLeft, LowerRight, Middle };
 

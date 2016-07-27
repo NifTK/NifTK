@@ -47,12 +47,12 @@ class NIFTKCORE_EXPORT DataNodePropertyListener : public DataStorageListener
 
 public:
 
-  mitkClassMacro(DataNodePropertyListener, DataStorageListener);
-  mitkNewMacro2Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&);
-  mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, bool);
-  mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, int);
-  mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, float);
-  mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, const std::string&);
+  mitkClassMacro(DataNodePropertyListener, DataStorageListener)
+  mitkNewMacro2Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&)
+  mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, bool)
+  mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, int)
+  mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, float)
+  mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, const std::string&)
 
   /// \brief Sets the list of renderers to check.
   void SetRenderers(const std::vector<const mitk::BaseRenderer*>& renderers);

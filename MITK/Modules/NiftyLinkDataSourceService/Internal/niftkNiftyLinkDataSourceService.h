@@ -72,7 +72,7 @@ class NiftyLinkDataSourceService
 
 public:
 
-  mitkClassMacroItkParent(NiftyLinkDataSourceService, IGIDataSource);
+  mitkClassMacroItkParent(NiftyLinkDataSourceService, IGIDataSource)
 
   /**
   * \see  IGIDataSourceI::StartPlayback()

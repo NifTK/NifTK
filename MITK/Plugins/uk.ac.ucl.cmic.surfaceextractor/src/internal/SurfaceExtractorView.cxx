@@ -58,8 +58,8 @@
 class NodePredicateLabelImage : public mitk::NodePredicateBase
 {
 public:
-  mitkClassMacro(NodePredicateLabelImage, NodePredicateBase);
-  itkNewMacro(NodePredicateLabelImage);
+  mitkClassMacro(NodePredicateLabelImage, NodePredicateBase)
+  itkNewMacro(NodePredicateLabelImage)
 
   //##Documentation
   //## @brief Standard Destructor

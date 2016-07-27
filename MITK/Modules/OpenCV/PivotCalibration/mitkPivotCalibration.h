@@ -39,8 +39,8 @@ class NIFTKOPENCV_EXPORT PivotCalibration : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(PivotCalibration, itk::Object);
-  itkNewMacro(PivotCalibration);
+  mitkClassMacroItkParent(PivotCalibration, itk::Object)
+  itkNewMacro(PivotCalibration)
 
   itkSetMacro(SingularValueThreshold, double);
   itkGetMacro(SingularValueThreshold, double);

@@ -42,9 +42,9 @@ class niftkSingleViewerWidgetState : public itk::Object
 {
 public:
 
-  mitkClassMacroItkParent(niftkSingleViewerWidgetState, itk::Object);
-  mitkNewMacro1Param(niftkSingleViewerWidgetState, const niftkSingleViewerWidget*);
-  mitkNewMacro1Param(niftkSingleViewerWidgetState, Self::Pointer);
+  mitkClassMacroItkParent(niftkSingleViewerWidgetState, itk::Object)
+  mitkNewMacro1Param(niftkSingleViewerWidgetState, const niftkSingleViewerWidget*)
+  mitkNewMacro1Param(niftkSingleViewerWidgetState, Self::Pointer)
 
   /// \brief Gets the time geometry of the viewer.
   itkGetConstMacro(TimeGeometry, const mitk::TimeGeometry*);

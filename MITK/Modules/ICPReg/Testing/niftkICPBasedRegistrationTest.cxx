@@ -33,8 +33,8 @@ namespace niftk
 class TestICPBasedRegistration : public ICPBasedRegistration
 {
 public:
-  mitkClassMacro(TestICPBasedRegistration, ICPBasedRegistration);
-  itkNewMacro(TestICPBasedRegistration);
+  mitkClassMacro(TestICPBasedRegistration, ICPBasedRegistration)
+  itkNewMacro(TestICPBasedRegistration)
   bool SetIndexToWorld(mitk::DataNode::Pointer node , vtkMatrix4x4 * matrix);
   bool CompareMatrices(vtkMatrix4x4 * m1, vtkMatrix4x4 * m2);
   virtual void Initialize(){};

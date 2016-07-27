@@ -33,8 +33,8 @@ class IGITrackerDataType : public IGIDataType
 {
 public:
 
-  mitkClassMacro(IGITrackerDataType, IGIDataType);
-  itkNewMacro(IGITrackerDataType);
+  mitkClassMacro(IGITrackerDataType, IGIDataType)
+  itkNewMacro(IGITrackerDataType)
 
   void SetTrackingData(vtkSmartPointer<vtkMatrix4x4> data);
   vtkSmartPointer<vtkMatrix4x4> GetTrackingData() const;

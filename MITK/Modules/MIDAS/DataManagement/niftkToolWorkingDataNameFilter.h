@@ -49,8 +49,8 @@ class NIFTKMIDAS_EXPORT ToolWorkingDataNameFilter : public DataNodeStringPropert
 
 public:
 
-  mitkClassMacro(ToolWorkingDataNameFilter, DataNodeStringPropertyFilter);
-  itkNewMacro(ToolWorkingDataNameFilter);
+  mitkClassMacro(ToolWorkingDataNameFilter, DataNodeStringPropertyFilter)
+  itkNewMacro(ToolWorkingDataNameFilter)
 
 protected:
 

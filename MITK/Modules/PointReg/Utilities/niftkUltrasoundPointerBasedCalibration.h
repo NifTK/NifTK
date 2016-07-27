@@ -33,8 +33,8 @@ class NIFTKPOINTREG_EXPORT UltrasoundPointerBasedCalibration : public itk::Objec
 {
 public:
 
-  mitkClassMacroItkParent(UltrasoundPointerBasedCalibration, itk::Object);
-  itkNewMacro(UltrasoundPointerBasedCalibration);
+  mitkClassMacroItkParent(UltrasoundPointerBasedCalibration, itk::Object)
+  itkNewMacro(UltrasoundPointerBasedCalibration)
 
   /**
   * \brief Returns (copies) the calibration matrix (rigid body and scaling)

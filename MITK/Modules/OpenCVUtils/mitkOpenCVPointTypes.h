@@ -219,8 +219,8 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT bool operator < ( const PickedObject &PO1 ,
 class NIFTKOPENCVUTILS_EXPORT PickedPointList : public itk::Object
 {
 public:
-  mitkClassMacroItkParent(PickedPointList, itk::Object);
-  itkNewMacro(PickedPointList);
+  mitkClassMacroItkParent(PickedPointList, itk::Object)
+  itkNewMacro(PickedPointList)
 
   void PutOut (std::ofstream& os);
   void AnnotateImage (cv::Mat& image);

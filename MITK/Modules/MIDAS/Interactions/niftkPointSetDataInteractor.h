@@ -33,7 +33,7 @@ namespace niftk
 class NIFTKMIDAS_EXPORT PointSetDataInteractor : public mitk::PointSetDataInteractor, public FilteringStateMachine
 {
 public:
-  mitkClassMacro(PointSetDataInteractor, mitk::PointSetDataInteractor);
+  mitkClassMacro(PointSetDataInteractor, mitk::PointSetDataInteractor)
   itkFactorylessNewMacro(Self)
   itkCloneMacro(Self)
 

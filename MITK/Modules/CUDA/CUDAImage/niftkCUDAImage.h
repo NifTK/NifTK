@@ -30,9 +30,8 @@ class NIFTKCUDA_EXPORT CUDAImage : public mitk::BaseData
 {
 
 public:
-  mitkClassMacro(CUDAImage, mitk::BaseData);
-
-  itkFactorylessNewMacro(Self);
+  mitkClassMacro(CUDAImage, mitk::BaseData)
+  itkFactorylessNewMacro(Self)
 
   /** @name MITK stuff not applicable. */
   //@{

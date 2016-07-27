@@ -32,7 +32,7 @@ class NIFTKCORE_EXPORT DataNodeFilter : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(DataNodeFilter, itk::Object);
+  mitkClassMacroItkParent(DataNodeFilter, itk::Object)
 
   /// \brief Method to decide if the node should be passed.
   /// \param node a candidate node

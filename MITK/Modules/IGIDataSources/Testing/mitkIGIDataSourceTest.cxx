@@ -22,9 +22,9 @@ namespace mitk
 class TestIGIDataSource : public IGIDataSource
 {
 public:
-  mitkClassMacro(TestIGIDataSource, IGIDataSource);
-  mitkNewMacro1Param(TestIGIDataSource, mitk::DataStorage*);
-  virtual void Initialize(){};
+  mitkClassMacro(TestIGIDataSource, IGIDataSource)
+  mitkNewMacro1Param(TestIGIDataSource, mitk::DataStorage*)
+  virtual void Initialize(){}
   mitk::IGIDataType::Pointer TestRequestData(igtlUint64 requestedTimeStamp)
   {
     return IGIDataSource::RequestData(requestedTimeStamp);

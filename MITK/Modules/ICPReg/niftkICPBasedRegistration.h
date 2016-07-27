@@ -42,8 +42,8 @@ class NIFTKICPREG_EXPORT ICPBasedRegistration : public itk::Object
 {
 public:
 
-  mitkClassMacroItkParent(ICPBasedRegistration, itk::Object);
-  itkNewMacro(ICPBasedRegistration);
+  mitkClassMacroItkParent(ICPBasedRegistration, itk::Object)
+  itkNewMacro(ICPBasedRegistration)
 
   itkSetMacro(MaximumIterations, int);
   itkSetMacro(MaximumNumberOfLandmarkPointsToUse, int);

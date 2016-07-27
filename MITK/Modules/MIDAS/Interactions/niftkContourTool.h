@@ -52,7 +52,7 @@ class NIFTKMIDAS_EXPORT ContourTool : public Tool {
 
 public:
 
-  mitkClassMacro(ContourTool, Tool);
+  mitkClassMacro(ContourTool, Tool)
 
   /// \brief We store the name of a property to say we are editing.
   static const std::string EDITING_PROPERTY_NAME;
