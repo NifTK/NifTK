@@ -327,6 +327,7 @@ private:
   bool                                           m_UpdateNodes;
   unsigned int                                   m_MinimumNumberOfPoints;
   std::string                                    m_TemplateImageFileName;
+  std::string                                    m_CalibrationDirName;
 
   // Data used for temporary storage
   cv::Mat                                        m_TmpImage[2];

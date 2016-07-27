@@ -82,6 +82,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_TagFamily(NiftyCalVideoCalibrationManager::DefaultTagFamily)
 , m_UpdateNodes(NiftyCalVideoCalibrationManager::DefaultUpdateNodes)
 , m_MinimumNumberOfPoints(NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints)
+, m_CalibrationDirName("")
 {
   m_ImageNode[0] = nullptr;
   m_ImageNode[1] = nullptr;
@@ -131,6 +132,10 @@ void NiftyCalVideoCalibrationManager::SetDataStorage(
 void NiftyCalVideoCalibrationManager::SetLeftImageNode(mitk::DataNode::Pointer node)
 {
   this->m_ImageNode[0] = node;
+  if (!m_CalibrationDirName.empty())
+  {
+    this->UpdateDisplayNodes();
+  }
   this->Modified();
 }
 
@@ -146,6 +151,10 @@ mitk::DataNode::Pointer NiftyCalVideoCalibrationManager::GetLeftImageNode() cons
 void NiftyCalVideoCalibrationManager::SetRightImageNode(mitk::DataNode::Pointer node)
 {
   this->m_ImageNode[1] = node;
+  if (!m_CalibrationDirName.empty())
+  {
+    this->UpdateDisplayNodes();
+  }
   this->Modified();
 }
 
@@ -165,6 +174,7 @@ void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints(cv::Matx44d& transf
     m_DataStorage->Remove(m_ModelPointsToVisualiseDataNode);
 
     m_ModelPointsToVisualise->Clear();
+
     niftk::Model3D::const_iterator iter;
     for (iter = m_ModelPoints.begin();
          iter != m_ModelPoints.end();
@@ -1400,6 +1410,7 @@ void NiftyCalVideoCalibrationManager::LoadCalibrationFromDirectory(const std::st
     m_HandEyeMatrices[1][i] = rightHandEye;
   }
 
+  m_CalibrationDirName = dirName;
   this->UpdateDisplayNodes();
 }
 
