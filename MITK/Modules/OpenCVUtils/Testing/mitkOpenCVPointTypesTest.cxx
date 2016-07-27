@@ -103,9 +103,28 @@ void TestPickedObjectMultipy()
 
   mitk::PickedObject p2 = p1 * mat;
   MITK_TEST_CONDITION ( p2.HeadersMatch ( p1, 1 ), "Testing that header for multiplied picked objects matches input");
-  MITK_TEST_CONDITION ( mitk::NearlyEqual(p2.m_Points[0],cv::Point3d ( 20.0, -30.0 ,0.0 ), 1e-6), "Testing value of multiplied picked object 0 " << p2.m_Points[0]);
-  MITK_TEST_CONDITION ( mitk::NearlyEqual(p2.m_Points[1],cv::Point3d ( 21.0, -30.0 ,5.0 ), 1e-6), "Testing value of multiplied picked object 1 " << p2.m_Points[1]);
-  MITK_TEST_CONDITION ( mitk::NearlyEqual(p2.m_Points[2],cv::Point3d ( 20.0, 70.0 , 0.0 ), 1e-6), "Testing value of multiplied picked object 2 " << p2.m_Points[2]);
+  MITK_TEST_CONDITION ( p2.m_Points.size() == 3, "Testing that there are 3 points in the output vector");
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(p2.m_Points[0],cv::Point3d ( 20.0, -30.0 ,0.0 ), 1e-6), "Testing value of multiplied picked object 0 " << p2.m_Points[0] << p1.m_Points[0]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(p2.m_Points[1],cv::Point3d ( 21.0, -30.0 ,5.0 ), 1e-6), "Testing value of multiplied picked object 1 " << p2.m_Points[1]<< p1.m_Points[1]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(p2.m_Points[2],cv::Point3d ( 20.0, 70.0 , 0.0 ), 1e-6), "Testing value of multiplied picked object 2 " << p2.m_Points[2]<< p1.m_Points[2]);
+
+  //let's also test these in the context of transforming a point list
+  std::vector<mitk::PickedObject> vector1;
+  vector1.push_back(p1);
+
+  mitk::PickedPointList::Pointer list1 = mitk::PickedPointList::New();
+  list1->SetPickedObjects (vector1);
+
+  mitk::PickedPointList::Pointer list2 = list1->TransformPointList(mat);
+
+  std::vector<mitk::PickedObject> vector2 = list2->GetPickedObjects();
+
+  MITK_TEST_CONDITION ( vector2[0].HeadersMatch ( p1, 1 ), "Testing that header for multiplied picked objects matches input");
+  MITK_TEST_CONDITION ( vector2[0].m_Points.size() == 3, "Testing that there are 3 points in the output vector using PickedPointListWrapper");
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(vector2[0].m_Points[0],cv::Point3d ( 20.0, -30.0 ,0.0 ), 1e-6), "Testing value of multiplied picked object 0 using PickedPointList wrapper" << vector2[0].m_Points[0]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(vector2[0].m_Points[1],cv::Point3d ( 21.0, -30.0 ,5.0 ), 1e-6), "Testing value of multiplied picked object 1 using PickedPointList wrapper" << vector2[0].m_Points[1]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(vector2[0].m_Points[2],cv::Point3d ( 20.0, 70.0 , 0.0 ), 1e-6), "Testing value of multiplied picked object 2 using PickedPointList wrapper" << vector2[0].m_Points[2]);
+
 }
 
 int mitkOpenCVPointTypesTest(int argc, char * argv[])
