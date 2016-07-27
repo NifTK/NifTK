@@ -28,5 +28,5 @@ set(CPP_FILES
   Internal/niftkPNMWriterService.cxx
   Internal/niftkLabelMapReader.cxx
   Internal/niftkLabelMapWriter.cxx
-  Internal/QmitkLookupTableProviderServiceImpl.cxx
+  Internal/niftkLookupTableProviderServiceImpl.cxx
 )

@@ -16,18 +16,21 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include <niftkFileHelper.h>
-#include <niftkMathsUtils.h>
-#include <mitkTestingMacros.h>
+#include <cmath>
+
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
+
 #include <mitkExceptionMacro.h>
+#include <mitkIOUtil.h>
 #include <mitkLogMacros.h>
 #include <mitkOpenCVMaths.h>
-#include <mitkIOUtil.h>
-#include <mitkFileIOUtils.h>
+#include <mitkTestingMacros.h>
+
+#include <niftkFileIOUtils.h>
+#include <niftkFileHelper.h>
+#include <niftkMathsUtils.h>
 #include <niftkUltrasoundPointerBasedCalibration.h>
-#include <vtkSmartPointer.h>
-#include <vtkMatrix4x4.h>
-#include <cmath>
 
 /**
  * \file Test harness for Ultrasound Pointer based calibration (Muratore 2001).
@@ -43,7 +46,7 @@ int niftkUltrasoundPointerBasedCalibrationTest(int argc, char * argv[])
   }
   mitk::PointSet::Pointer imagePoints = mitk::IOUtil::LoadPointSet(argv[1]);
   mitk::PointSet::Pointer sensorPoints = mitk::IOUtil::LoadPointSet(argv[2]);
-  vtkSmartPointer<vtkMatrix4x4> expectedResult = mitk::LoadVtkMatrix4x4FromFile(argv[3]);
+  vtkSmartPointer<vtkMatrix4x4> expectedResult = niftk::LoadVtkMatrix4x4FromFile(argv[3]);
   float expectedResidual = atof(argv[4]);
 
   niftk::UltrasoundPointerBasedCalibration::Pointer calibrator = niftk::UltrasoundPointerBasedCalibration::New();
@@ -53,7 +56,7 @@ int niftkUltrasoundPointerBasedCalibrationTest(int argc, char * argv[])
   double residual = calibrator->DoPointerBasedCalibration();
 
   vtkSmartPointer<vtkMatrix4x4> actualResult = calibrator->GetCalibrationMatrix();
-  mitk::SaveVtkMatrix4x4ToFile("/tmp/matt.4x4", *actualResult);
+  niftk::SaveVtkMatrix4x4ToFile("/tmp/matt.4x4", *actualResult);
 
   for (int i = 0; i < 4; i++)
   {

@@ -23,7 +23,7 @@
  * \brief Plugin class to start up the NiftyMIDAS application.
  * \ingroup uk_ac_ucl_cmic_niftymidas
  */
-class CMIC_QT_NIFTYMIDASAPP QmitkNiftyMIDASApplication : public QmitkBaseApplication
+class NIFTYMIDAS_EXPORT QmitkNiftyMIDASApplication : public QmitkBaseApplication
 {
   Q_OBJECT
   Q_INTERFACES(berry::IApplication)

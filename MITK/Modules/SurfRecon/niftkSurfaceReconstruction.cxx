@@ -13,17 +13,21 @@
 =============================================================================*/
 
 #include "niftkSurfaceReconstruction.h"
-#include "niftkSequentialCpuQds.h"
-#include <niftkImageConversion.h>
+
 #include <opencv2/core/core_c.h>
+
 #include <mitkImageReadAccessor.h>
+#include <mitkCameraCalibrationFacade.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkPointSet.h>
-#include <mitkCoordinateAxesData.h>
-#include <mitkCameraCalibrationFacade.h>
+
+#include <niftkCoordinateAxesData.h>
+#include <niftkImageConversion.h>
 #ifdef _USE_PCL
 #include <niftkPCLData.h>
 #endif
+
+#include "niftkSequentialCpuQds.h"
 
 namespace niftk 
 {

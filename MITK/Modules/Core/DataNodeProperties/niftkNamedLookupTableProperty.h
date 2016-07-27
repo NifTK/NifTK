@@ -12,10 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __niftkNamedLookupTableProperty_h
-#define __niftkNamedLookupTableProperty_h
+#ifndef niftkNamedLookupTableProperty_h
+#define niftkNamedLookupTableProperty_h
 
 #include "niftkCoreExports.h"
+
 #include <mitkLookupTableProperty.h>
 
 namespace niftk
@@ -42,7 +43,7 @@ public:
 
   itkSetMacro(IsScaled,bool);
   itkGetConstMacro(IsScaled,bool);
-  
+
   itkBooleanMacro(IsScaled);
 
 protected:

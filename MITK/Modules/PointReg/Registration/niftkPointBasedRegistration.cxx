@@ -13,10 +13,13 @@
 =============================================================================*/
 
 #include "niftkPointBasedRegistration.h"
+
 #include <limits>
+
 #include <mitkExceptionMacro.h>
-#include <mitkPointUtils.h>
 #include <mitkNavigationDataLandmarkTransformFilter.h>
+
+#include <niftkPointUtils.h>
 #include "niftkArunLeastSquaresPointRegistration.h"
 
 namespace niftk
@@ -61,8 +64,8 @@ double PointBasedRegistration::Update(
 
   if (m_StripNaNFromInput)
   {
-    int fixedPointsRemoved = mitk::RemoveNaNPoints(*fixedPointSet, *noNaNFixedPoints);
-    int movingPointsRemoved = mitk::RemoveNaNPoints(*movingPointSet, *noNaNMovingPoints);
+    int fixedPointsRemoved = RemoveNaNPoints(*fixedPointSet, *noNaNFixedPoints);
+    int movingPointsRemoved = RemoveNaNPoints(*movingPointSet, *noNaNMovingPoints);
     if ( fixedPointsRemoved != 0 )
     {
       MITK_INFO << "Removed " << fixedPointsRemoved << " NaN points from fixed data";
@@ -77,11 +80,11 @@ double PointBasedRegistration::Update(
 
   if (m_UsePointIDToMatchPoints)
   {
-    int numberOfFilteredPoints = mitk::FilterMatchingPoints(*fixedPoints,
-                                                            *movingPoints,
-                                                            *filteredFixedPoints,
-                                                            *filteredMovingPoints
-                                                            );
+    int numberOfFilteredPoints = FilterMatchingPoints(*fixedPoints,
+                                                      *movingPoints,
+                                                      *filteredFixedPoints,
+                                                      *filteredMovingPoints
+                                                      );
     if (numberOfFilteredPoints < 3)
       mitkThrow() << "After filtering by pointID, there were only "
                   << filteredFixedPoints->GetSize() << " 'fixed' points and "

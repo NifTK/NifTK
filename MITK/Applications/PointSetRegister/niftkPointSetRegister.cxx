@@ -13,15 +13,17 @@
 =============================================================================*/
 
 #include <cstdlib>
+
 #include <vtkTransform.h>
 #include <vtkSmartPointer.h>
 #include <vtkMinimalStandardRandomSequence.h>
-#include <mitkPointSetReader.h>
-#include <mitkDataStorageUtils.h>
 
-#include <niftkVTKFunctions.h>
+#include <mitkPointSetReader.h>
+
+#include <niftkDataStorageUtils.h>
 #include <niftkPointBasedRegistration.h>
 #include <niftkPointSetRegisterCLP.h>
+#include <niftkVTKFunctions.h>
 
 int main(int argc, char** argv)
 {
@@ -56,14 +58,14 @@ int main(int argc, char** argv)
     niftk::RandomTransform ( randomTrans , perturbTrans, perturbTrans ,perturbTrans, 
         perturbRot, perturbRot, perturbRot);
     randomMatrix = randomTrans->GetMatrix();
-    mitk::ComposeTransformWithNode(*randomMatrix, movingnode);
+    niftk::ComposeTransformWithNode(*randomMatrix, movingnode);
   }
 
   vtkMatrix4x4 * initialTransform = vtkMatrix4x4::New();
   if ( initTrans.length() != 0 ) 
   {
     initialTransform = niftk::LoadMatrix4x4FromFile(initTrans);
-    mitk::ComposeTransformWithNode(*initialTransform, movingnode);
+    niftk::ComposeTransformWithNode(*initialTransform, movingnode);
   }
    
   vtkMatrix4x4 * resultMatrix = vtkMatrix4x4::New();

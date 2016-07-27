@@ -13,16 +13,17 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <limits>
 #include <fstream>
-#include <mitkExceptionMacro.h>
-
-#include <mitkOpenCVPointTypes.h>
-#include <mitkOpenCVFileIOUtils.h>
-#include <mitkFileIOUtils.h>
-#include <niftkFileHelper.h>
-#include <niftkVideoToImagesCLP.h>
+#include <limits>
 #include <set>
+
+#include <mitkExceptionMacro.h>
+#include <mitkOpenCVFileIOUtils.h>
+#include <mitkOpenCVPointTypes.h>
+
+#include <niftkFileHelper.h>
+#include <niftkFileIOUtils.h>
+#include <niftkVideoToImagesCLP.h>
 
 int main(int argc, char** argv)
 {
@@ -46,7 +47,7 @@ int main(int argc, char** argv)
 
     // If user specifies a list of timeStamps, we should load that.
     std::set<unsigned long long> setOfTimeStamps;
-    mitk::LoadTimeStampData(timeStamps, setOfTimeStamps);
+    niftk::LoadTimeStampData(timeStamps, setOfTimeStamps);
 
     // Now read video and frameMap.
     std::vector <std::string> videoFiles = niftk::FindVideoData(videoInputDirectory);

@@ -13,17 +13,21 @@
 =============================================================================*/
 
 #include "niftkCoordinateAxesDataReaderService.h"
-#include "niftkCoreIOMimeTypes.h"
-#include <mitkCoordinateAxesData.h>
-#include <mitkFileIOUtils.h>
-#include <vtkSmartPointer.h>
-#include <vtkMatrix4x4.h>
 
 #include <iostream>
 #include <fstream>
 #include <locale>
 
-namespace niftk {
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
+
+#include <niftkCoordinateAxesData.h>
+#include <niftkFileIOUtils.h>
+
+#include "niftkCoreIOMimeTypes.h"
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 CoordinateAxesDataReaderService::CoordinateAxesDataReaderService()
@@ -63,12 +67,12 @@ std::vector< itk::SmartPointer<mitk::BaseData> > CoordinateAxesDataReaderService
   std::string fileName = this->GetInputLocation();
   MITK_DEBUG << "Reading .4x4 transform from:" << fileName << std::endl;
 
-  vtkSmartPointer<vtkMatrix4x4> matrix = mitk::LoadVtkMatrix4x4FromFile(fileName);
-  mitk::CoordinateAxesData::Pointer transform = mitk::CoordinateAxesData::New();
+  vtkSmartPointer<vtkMatrix4x4> matrix = LoadVtkMatrix4x4FromFile(fileName);
+  CoordinateAxesData::Pointer transform = CoordinateAxesData::New();
   transform->SetVtkMatrix(*matrix);
 
   result.push_back(itk::SmartPointer<mitk::BaseData>(transform));
   return result;
 }
 
-} // end namespace mitk
+}

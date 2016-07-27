@@ -15,7 +15,7 @@
 project(uk_ac_ucl_cmic_niftymidas)
 
 mitk_create_plugin(
-  EXPORT_DIRECTIVE CMIC_QT_NIFTYMIDASAPP
+  EXPORT_DIRECTIVE NIFTYMIDAS_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS niftkCoreGui niftkDnDDisplay
 )

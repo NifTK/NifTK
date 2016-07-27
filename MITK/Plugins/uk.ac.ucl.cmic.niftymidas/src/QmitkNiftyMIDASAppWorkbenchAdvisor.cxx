@@ -18,7 +18,7 @@
 #include <berryIWorkbenchConfigurer.h>
 #include <berryPlatform.h>
 
-#include <QmitkCommonAppsApplicationPlugin.h>
+#include <niftkCommonActivator.h>
 
 //-----------------------------------------------------------------------------
 QString QmitkNiftyMIDASAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()

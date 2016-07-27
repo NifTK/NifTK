@@ -14,25 +14,31 @@
 
 #include "TrackedImageView.h"
 #include "TrackedImageViewPreferencePage.h"
+
+#include <QMessageBox>
+
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
 #include <service/event/ctkEventConstants.h>
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
-#include <mitkNodePredicateDataType.h>
-#include <mitkImage.h>
-#include <mitkSurface.h>
+
 #include <vtkMatrix4x4.h>
-#include "TrackedImageViewActivator.h"
-#include <mitkCoordinateAxesData.h>
-#include <mitkTrackedImage.h>
-#include <mitkFileIOUtils.h>
-#include <mitkRenderingManager.h>
+
+#include <mitkExceptionMacro.h>
+#include <mitkImage.h>
 #include <mitkImage2DToTexturePlaneMapper3D.h>
 #include <mitkIOUtil.h>
-#include <mitkExceptionMacro.h>
-#include <QMessageBox>
+#include <mitkNodePredicateDataType.h>
+#include <mitkRenderingManager.h>
+#include <mitkSurface.h>
+#include <mitkTrackedImage.h>
+
+#include <niftkCoordinateAxesData.h>
+#include <niftkFileIOUtils.h>
+
+#include "TrackedImageViewActivator.h"
 
 const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
 
@@ -80,7 +86,7 @@ void TrackedImageView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ImageNode->SetDataStorage(dataStorage);
     m_Controls->m_ImageNode->setCurrentIndex(0);
 
-    mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+    mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::New();
     m_Controls->m_ImageToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ImageToWorldNode->SetPredicate(isTransform);
     m_Controls->m_ImageToWorldNode->SetDataStorage(dataStorage);
@@ -130,7 +136,7 @@ void TrackedImageView::RetrievePreferenceValues()
     std::string calibEmToOpticalFileName = prefs->Get(TrackedImageViewPreferencePage::EMTOWORLDCALIBRATION_FILE_NAME, "").toStdString();
     if ( calibEmToOpticalFileName.size() > 0 )
     {
-      m_EmToOpticalMatrix = mitk::LoadVtkMatrix4x4FromFile(calibEmToOpticalFileName);
+      m_EmToOpticalMatrix = niftk::LoadVtkMatrix4x4FromFile(calibEmToOpticalFileName);
     }
     else
     {
@@ -139,10 +145,10 @@ void TrackedImageView::RetrievePreferenceValues()
     }
 
     std::string imageToTrackingSensorFileName = prefs->Get(TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME, "").toStdString();
-    vtkSmartPointer<vtkMatrix4x4> imageToSensorTransform = mitk::LoadVtkMatrix4x4FromFile(imageToTrackingSensorFileName);
+    vtkSmartPointer<vtkMatrix4x4> imageToSensorTransform = niftk::LoadVtkMatrix4x4FromFile(imageToTrackingSensorFileName);
 
     std::string scaleFileName = prefs->Get(TrackedImageViewPreferencePage::SCALE_FILE_NAME, "").toStdString();
-    vtkSmartPointer<vtkMatrix4x4> image2SensorScale = mitk::LoadVtkMatrix4x4FromFile(scaleFileName);
+    vtkSmartPointer<vtkMatrix4x4> image2SensorScale = niftk::LoadVtkMatrix4x4FromFile(scaleFileName);
 
     if (prefs->GetBool(TrackedImageViewPreferencePage::FLIP_X_SCALING, false))
     {
@@ -252,7 +258,7 @@ void TrackedImageView::OnClonePushButtonClicked()
       mitk::Image::Pointer savedMitkImage = image->Clone();
 
       // Save the 4x4 matrix of the geometry to disk.
-      mitk::CoordinateAxesData::Pointer transform = mitk::CoordinateAxesData::New();
+      niftk::CoordinateAxesData::Pointer transform = niftk::CoordinateAxesData::New();
       transform->SetGeometry(savedMitkImage->GetGeometry());
       isSuccessful = transform->SaveToFile(fileNameForGeometry.toStdString());
       if (!isSuccessful)

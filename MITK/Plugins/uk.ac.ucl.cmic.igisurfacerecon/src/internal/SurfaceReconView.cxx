@@ -26,7 +26,7 @@
 #include <QFileDialog>
 #include <QDateTime>
 #include <QMessageBox>
-#include <mitkCoordinateAxesData.h>
+#include <niftkCoordinateAxesData.h>
 #include "SurfaceReconViewPreferencePage.h"
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>

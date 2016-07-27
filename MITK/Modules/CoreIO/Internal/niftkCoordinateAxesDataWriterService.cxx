@@ -13,15 +13,17 @@
 =============================================================================*/
 
 #include "niftkCoordinateAxesDataWriterService.h"
+
+#include <niftkCoordinateAxesData.h>
+
 #include "niftkCoreIOMimeTypes.h"
-#include <mitkCoordinateAxesData.h>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
 CoordinateAxesDataWriterService::CoordinateAxesDataWriterService()
-: mitk::AbstractFileWriter(mitk::CoordinateAxesData::GetStaticNameOfClass(),
+: mitk::AbstractFileWriter(CoordinateAxesData::GetStaticNameOfClass(),
                            mitk::CustomMimeType(niftk::CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_NAME()),
                            "NifTK Coordinate Axes Writer")
 {
@@ -54,8 +56,8 @@ void CoordinateAxesDataWriterService::Write()
 {
   std::string fileName = this->GetOutputLocation();
 
-  mitk::CoordinateAxesData::ConstPointer transform = dynamic_cast<const mitk::CoordinateAxesData*>(this->GetInput());
+  CoordinateAxesData::ConstPointer transform = dynamic_cast<const CoordinateAxesData*>(this->GetInput());
   transform->SaveToFile(fileName);
 }
 
-} // end namespace
+}

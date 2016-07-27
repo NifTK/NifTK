@@ -16,21 +16,27 @@
 
 #include <QWidget>
 
+
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-niftk::BaseGUI::BaseGUI(QWidget* parent)
+BaseGUI::BaseGUI(QWidget* parent)
   : QObject(parent)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::BaseGUI::~BaseGUI()
+BaseGUI::~BaseGUI()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-QWidget* niftk::BaseGUI::GetParent() const
+QWidget* BaseGUI::GetParent() const
 {
   return dynamic_cast<QWidget*>(this->parent());
+}
+
 }

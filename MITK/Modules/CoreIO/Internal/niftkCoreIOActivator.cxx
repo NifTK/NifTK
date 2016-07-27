@@ -13,13 +13,18 @@
 =============================================================================*/
 
 #include "niftkCoreIOActivator.h"
-#include "niftkCoreIOMimeTypes.h"
-#include <usModuleContext.h>
-#include "QmitkLookupTableProviderServiceImpl_p.h"
 
+#include <usModuleContext.h>
+
+#include "niftkCoreIOMimeTypes.h"
+#include "niftkLookupTableProviderServiceImpl_p.h"
+
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-niftk::CoreIOActivator::CoreIOActivator()
+CoreIOActivator::CoreIOActivator()
   : m_CoordinateAxesDataReaderService(NULL),
     m_CoordinateAxesDataWriterService(NULL),
     m_PNMReaderService(NULL),
@@ -32,12 +37,12 @@ niftk::CoreIOActivator::CoreIOActivator()
 
 
 //-----------------------------------------------------------------------------
-void niftk::CoreIOActivator::Load(us::ModuleContext* context)
+void CoreIOActivator::Load(us::ModuleContext* context)
 {
-  m_LookupTableProviderService.reset(new QmitkLookupTableProviderServiceImpl);
+  m_LookupTableProviderService.reset(new LookupTableProviderServiceImpl);
 
   us::ServiceProperties props;
-  context->RegisterService<QmitkLookupTableProviderService>(m_LookupTableProviderService.get(), props);
+  context->RegisterService<LookupTableProviderService>(m_LookupTableProviderService.get(), props);
 
   props[ us::ServiceConstants::SERVICE_RANKING() ] = 10;
 
@@ -62,7 +67,7 @@ void niftk::CoreIOActivator::Load(us::ModuleContext* context)
 
 
 //-----------------------------------------------------------------------------
-void niftk::CoreIOActivator::Unload(us::ModuleContext*)
+void CoreIOActivator::Unload(us::ModuleContext*)
 {
   m_CoordinateAxesDataReaderService.reset(NULL);
   m_CoordinateAxesDataWriterService.reset(NULL);
@@ -73,6 +78,8 @@ void niftk::CoreIOActivator::Unload(us::ModuleContext*)
   m_LookupTableProviderService.reset(NULL);
   m_LabelMapReaderService.reset(NULL);
   m_LabelMapWriterService.reset(NULL);
+}
+
 }
 
 US_EXPORT_MODULE_ACTIVATOR(niftk::CoreIOActivator)

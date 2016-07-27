@@ -15,7 +15,7 @@
 #ifndef TrackedImageView_h
 #define TrackedImageView_h
 
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 
 #include "ui_TrackedImageView.h"
 #include <service/event/ctkEvent.h>
@@ -32,7 +32,7 @@ class vtkMatrix4x4;
  *
  * \ingroup uk_ac_ucl_cmic_igitrackedimage_internal
 */
-class TrackedImageView : public QmitkBaseView
+class TrackedImageView : public niftk::BaseView
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)

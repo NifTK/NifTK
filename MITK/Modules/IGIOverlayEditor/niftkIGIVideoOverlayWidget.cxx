@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkIGIVideoOverlayWidget.h"
-#include <mitkCoordinateAxesData.h>
+#include <niftkCoordinateAxesData.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkImage.h>
 #include <mitkBaseRenderer.h>
@@ -217,8 +217,8 @@ void IGIVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
   m_RightImageCombo->SetDataStorage(storage);
   m_RightImageCombo->setCurrentIndex(0);
 
-  mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform =
-      mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+  mitk::TNodePredicateDataType<CoordinateAxesData>::Pointer isTransform =
+      mitk::TNodePredicateDataType<CoordinateAxesData>::New();
 
   m_TrackingCombo->SetAutoSelectNewItems(false);
   m_TrackingCombo->SetPredicate(isTransform);

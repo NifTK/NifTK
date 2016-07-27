@@ -20,10 +20,10 @@
 #include <niftkLabeledLookupTableProperty.h>
 #include <QColor>
 
-class QmitkLookupTableContainer;
-
 namespace niftk
 {
+
+class LookupTableContainer;
 
 /**
  * \class mitkLabelMapReader
@@ -46,12 +46,12 @@ public:
   virtual std::vector<itk::SmartPointer<mitk::BaseData> > Read() override;
     
   /**
-   * \brief Get a QmitkLookupTableContainer from file
+   * \brief Get a LookupTableContainer from file
    */
-  virtual QmitkLookupTableContainer* GetLookupTableContainer();
+  virtual LookupTableContainer* GetLookupTableContainer();
  
   /**
-   * \brief Set the order to assign the QmitkLookupTableContainer as
+   * \brief Set the order to assign the LookupTableContainer as
    *  the label map file does not store this information
    */
   void SetOrder(int order){m_Order = order;}
@@ -78,6 +78,6 @@ private:
 
 };
 
-} // namespace mitk
+}
 
-#endif // __mitkLabelMapReaderService_h
+#endif

@@ -22,8 +22,8 @@
 #include <mitkGlobalInteraction.h>
 #include <QmitkRenderWindow.h>
 
-#include <mitkDataStorageListener.h>
-#include <mitkDataNodePropertyListener.h>
+#include <niftkDataStorageListener.h>
+#include <niftkDataNodePropertyListener.h>
 
 #include "niftkBaseGUI.h"
 #include "niftkIBaseView.h"
@@ -45,7 +45,7 @@ class BaseControllerPrivate
   {
   public:
     DataStorageListener(BaseControllerPrivate* d, mitk::DataStorage* dataStorage)
-      : mitk::DataStorageListener(dataStorage),
+      : niftk::DataStorageListener(dataStorage),
         m_D(d)
     {
     }
@@ -77,7 +77,7 @@ class BaseControllerPrivate
   {
   public:
     VisibilityListener(BaseControllerPrivate* d, mitk::DataStorage* dataStorage)
-      : mitk::DataNodePropertyListener(dataStorage, "visible"),
+      : niftk::DataNodePropertyListener(dataStorage, "visible"),
         m_D(d)
     {
     }

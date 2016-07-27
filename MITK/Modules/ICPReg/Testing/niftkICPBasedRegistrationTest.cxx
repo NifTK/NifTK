@@ -13,17 +13,20 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <mitkTestingMacros.h>
-#include <niftkICPBasedRegistration.h>
+
+#include <vtkMinimalStandardRandomSequence.h>
+#include <vtkSmartPointer.h>
+#include <vtkTransform.h>
+
 #include <mitkDataStorage.h>
 #include <mitkIOUtil.h>
-#include <mitkCoordinateAxesData.h>
-#include <mitkAffineTransformDataNodeProperty.h>
-#include <mitkDataStorageUtils.h>
+#include <mitkTestingMacros.h>
+
+#include <niftkAffineTransformDataNodeProperty.h>
+#include <niftkCoordinateAxesData.h>
+#include <niftkDataStorageUtils.h>
+#include <niftkICPBasedRegistration.h>
 #include <niftkVTKFunctions.h>
-#include <vtkTransform.h>
-#include <vtkSmartPointer.h>
-#include <vtkMinimalStandardRandomSequence.h>
 
 namespace niftk
 {
@@ -136,8 +139,8 @@ int niftkICPBasedRegistrationTest(int argc, char* argv[])
   {
     std::cout << "Starting registration test with index2world both identity.";
     registerer->Update(fixednode, movingnode, *resultMatrix);
-    mitk::ComposeTransformWithNode(*resultMatrix, movingnode);
-    mitk::GetCurrentTransformFromNode(movingnode, *movingMatrix);
+    niftk::ComposeTransformWithNode(*resultMatrix, movingnode);
+    niftk::GetCurrentTransformFromNode(movingnode, *movingMatrix);
     MITK_TEST_CONDITION_REQUIRED(registerer->CompareMatrices(movingMatrix,fixedMatrix), ".. Testing 2 ID");
   }
   else
@@ -158,8 +161,8 @@ int niftkICPBasedRegistrationTest(int argc, char* argv[])
   {
     std::cout << "Starting registration test with moving index2world non identity.";
     registerer->Update(fixednode, movingnode, *resultMatrix);
-    mitk::ComposeTransformWithNode(*resultMatrix, movingnode);
-    mitk::GetCurrentTransformFromNode(movingnode, *movingMatrix);
+    niftk::ComposeTransformWithNode(*resultMatrix, movingnode);
+    niftk::GetCurrentTransformFromNode(movingnode, *movingMatrix);
     MITK_TEST_CONDITION_REQUIRED(registerer->CompareMatrices(movingMatrix,fixedMatrix), ".. Testing moving non ID");
   }
   else
@@ -178,8 +181,8 @@ int niftkICPBasedRegistrationTest(int argc, char* argv[])
   {
     std::cout << "Starting registration test with fixed index2world non identity.";
     registerer->Update(fixednode, movingnode, *resultMatrix);
-    mitk::ComposeTransformWithNode(*resultMatrix, movingnode);
-    mitk::GetCurrentTransformFromNode(movingnode, *movingMatrix);
+    niftk::ComposeTransformWithNode(*resultMatrix, movingnode);
+    niftk::GetCurrentTransformFromNode(movingnode, *movingMatrix);
     MITK_TEST_CONDITION_REQUIRED(registerer->CompareMatrices(movingMatrix,fixedMatrix), ".. Testing fixed non ID");
   }
   else
@@ -203,8 +206,8 @@ int niftkICPBasedRegistrationTest(int argc, char* argv[])
   {
     std::cout << "Starting registration test with both index2world non identity.";
     registerer->Update(fixednode, movingnode, *resultMatrix);
-    mitk::ComposeTransformWithNode(*resultMatrix, movingnode);
-    mitk::GetCurrentTransformFromNode(movingnode, *movingMatrix);
+    niftk::ComposeTransformWithNode(*resultMatrix, movingnode);
+    niftk::GetCurrentTransformFromNode(movingnode, *movingMatrix);
     MITK_TEST_CONDITION_REQUIRED(registerer->CompareMatrices(movingMatrix,fixedMatrix), ".. Testing both non ID");
   }
   else

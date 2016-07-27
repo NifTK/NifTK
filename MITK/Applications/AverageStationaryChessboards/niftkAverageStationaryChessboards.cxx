@@ -13,21 +13,23 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <limits>
-#include <stdexcept>
-#include <sstream>
 #include <iostream>
+#include <limits>
+#include <sstream>
+#include <stdexcept>
+
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
-#include <mitkExceptionMacro.h>
-#include <mitkPointSet.h>
-#include <mitkIOUtil.h>
 
-#include <mitkOpenCVFileIOUtils.h>
-#include <mitkFileIOUtils.h>
 #include <mitkCameraCalibrationFacade.h>
-#include <niftkFileHelper.h>
+#include <mitkExceptionMacro.h>
+#include <mitkIOUtil.h>
+#include <mitkOpenCVFileIOUtils.h>
+#include <mitkPointSet.h>
+
 #include <niftkAverageStationaryChessboardsCLP.h>
+#include <niftkFileHelper.h>
+#include <niftkFileIOUtils.h>
 
 int main(int argc, char** argv)
 {

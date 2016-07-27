@@ -17,9 +17,10 @@
 #include <mitkFileReaderRegistry.h>
 #include <mitkFileWriterRegistry.h>
 #include <mitkFileWriterSelector.h>
-#include <mitkCoordinateAxesData.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+
+#include <niftkCoordinateAxesData.h>
 
 /**
  *  @brief Tests for reading/writing .4x4 files via Services.
@@ -30,7 +31,7 @@ int niftkCoordinateAxesDataReaderWriterServiceTest(int argc , char* argv[])
   MITK_TEST_BEGIN("niftkCoordinateAxesDataReaderWriterServiceTest")
   MITK_TEST_CONDITION_REQUIRED(argc == 2,"Testing invocation.")
 
-  // Create matrix to store. The mitk::CoordinateAxesData only store the 3x3 rotation
+  // Create matrix to store. The niftk::CoordinateAxesData only store the 3x3 rotation
   // matrix plus the offset. So the bottom row is always as per Identity matrix.
   vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
   matrix->Identity();
@@ -43,7 +44,7 @@ int niftkCoordinateAxesDataReaderWriterServiceTest(int argc , char* argv[])
   }
   MITK_TEST_CONDITION_REQUIRED(matrix != NULL,"Testing matrix instantiation.")
 
-  mitk::CoordinateAxesData::Pointer cad = mitk::CoordinateAxesData::New();
+  niftk::CoordinateAxesData::Pointer cad = niftk::CoordinateAxesData::New();
   cad->SetVtkMatrix(*matrix);
 
   // Get CoordinateAxesData writer(s), check for only 1.
@@ -102,7 +103,7 @@ int niftkCoordinateAxesDataReaderWriterServiceTest(int argc , char* argv[])
     std::vector<mitk::BaseData::Pointer> data = reader->Read();
     MITK_TEST_CONDITION_REQUIRED( !data.empty(), "Testing non-empty data with valid input file name!");
 
-    mitk::CoordinateAxesData* cadFromFile = dynamic_cast<mitk::CoordinateAxesData*>(data[0].GetPointer());
+    niftk::CoordinateAxesData* cadFromFile = dynamic_cast<niftk::CoordinateAxesData*>(data[0].GetPointer());
     MITK_TEST_CONDITION_REQUIRED(cadFromFile != NULL,"Check if reader returned null")
 
     vtkSmartPointer<vtkMatrix4x4> matrixFromFile = vtkSmartPointer<vtkMatrix4x4>::New();

@@ -13,15 +13,16 @@
 =============================================================================*/
 
 #include "mitkInvariantPointCalibration.h"
-#include <mitkFileIOUtils.h>
-#include <niftkFileHelper.h>
-#include <mitkCameraCalibrationFacade.h>
-#include <mitkOpenCVMaths.h>
-#include <mitkOpenCVFileIOUtils.h>
-#include <mitkExceptionMacro.h>
+
 #include <iostream>
 
-namespace mitk {
+#include <mitkCameraCalibrationFacade.h>
+#include <mitkExceptionMacro.h>
+#include <mitkOpenCVFileIOUtils.h>
+#include <mitkOpenCVMaths.h>
+
+namespace mitk
+{
 
 //-----------------------------------------------------------------------------
 InvariantPointCalibration::InvariantPointCalibration()

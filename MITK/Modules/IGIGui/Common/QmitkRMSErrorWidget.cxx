@@ -13,11 +13,14 @@
 =============================================================================*/
 
 #include "QmitkRMSErrorWidget.h"
+
+#include <vtkSmartPointer.h>
+
 #include <mitkNodePredicateDataType.h>
 #include <mitkPointSet.h>
-#include <mitkCoordinateAxesData.h>
-#include <vtkSmartPointer.h>
-#include <mitkPointUtils.h>
+
+#include <niftkCoordinateAxesData.h>
+#include <niftkPointUtils.h>
 
 //-----------------------------------------------------------------------------
 QmitkRMSErrorWidget::QmitkRMSErrorWidget(QWidget *parent)
@@ -48,7 +51,7 @@ void QmitkRMSErrorWidget::SetDataStorage(const mitk::DataStorage* dataStorage)
   m_MovingCombo->SetPredicate(isPointSet);
   m_MovingCombo->SetAutoSelectNewItems(false);
   
-  mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+  mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::New();
   m_TransformCombo->SetDataStorage(m_DataStorage);
   m_TransformCombo->SetPredicate(isTransform);
   m_TransformCombo->SetAutoSelectNewItems(false);
@@ -106,13 +109,13 @@ void QmitkRMSErrorWidget::Update()
     }
   }
 
-  mitk::CoordinateAxesData::Pointer transform = NULL;
+  niftk::CoordinateAxesData::Pointer transform = NULL;
   if(m_TransformCombo->GetSelectedNode())
   {
     mitk::BaseData::Pointer transformNode = m_TransformCombo->GetSelectedNode()->GetData();
     if (transformNode.IsNotNull())
     {
-      transform = dynamic_cast<mitk::CoordinateAxesData*>(transformNode.GetPointer());
+      transform = dynamic_cast<niftk::CoordinateAxesData*>(transformNode.GetPointer());
       if (transform.IsNull())
       {
         m_RMSError->setText("Transform is invalid.");
@@ -139,7 +142,7 @@ void QmitkRMSErrorWidget::Update()
     return;    
   }
   
-  double rms = mitk::GetRMSErrorBetweenPoints(*fixedPoints, *movingPoints, transform.GetPointer());
+  double rms = niftk::GetRMSErrorBetweenPoints(*fixedPoints, *movingPoints, transform.GetPointer());
   QString rmsString = QString::number(rms);
   m_RMSError->setText(rmsString);
 }

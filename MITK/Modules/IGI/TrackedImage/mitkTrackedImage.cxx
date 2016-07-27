@@ -13,12 +13,15 @@
 =============================================================================*/
 
 #include "mitkTrackedImage.h"
-#include <mitkCoordinateAxesData.h>
-#include <vtkSmartPointer.h>
-#include <vtkMatrix4x4.h>
+
 #include <vtkImageData.h>
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
+
 #include <mitkImage.h>
 #include <mitkSurface.h>
+
+#include <niftkCoordinateAxesData.h>
 
 namespace mitk
 {
@@ -48,7 +51,7 @@ void TrackedImage::Update(const mitk::DataNode::Pointer imageNode,
     return;
   }
 
-  mitk::CoordinateAxesData::Pointer trackingSensorToWorld = dynamic_cast<mitk::CoordinateAxesData*>(trackingSensorToTrackerNode->GetData());
+  niftk::CoordinateAxesData::Pointer trackingSensorToWorld = dynamic_cast<niftk::CoordinateAxesData*>(trackingSensorToTrackerNode->GetData());
   if (trackingSensorToWorld.IsNull())
   {
     MITK_ERROR << "TrackedImage::Update, invalid trackingSensorToWorld";

@@ -12,11 +12,13 @@
 
 =============================================================================*/
 
-#ifndef __niftkLabeledLookupTableProperty_h
-#define __niftkLabeledLookupTableProperty_h
+#ifndef niftkLabeledLookupTableProperty_h
+#define niftkLabeledLookupTableProperty_h
 
 #include "niftkCoreExports.h"
+
 #include "niftkNamedLookupTableProperty.h"
+
 #include <QString>
 
 namespace niftk
@@ -27,23 +29,23 @@ namespace niftk
  * \brief Provides a property so that each value/color has an associated name.
  * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
  */
-class NIFTKCORE_EXPORT LabeledLookupTableProperty : public niftk::NamedLookupTableProperty
+class NIFTKCORE_EXPORT LabeledLookupTableProperty : public NamedLookupTableProperty
 {
 public:
 
   typedef std::pair<int, QString> LabelType;
   typedef std::vector<LabelType> LabelListType;
 
-  mitkClassMacro(LabeledLookupTableProperty, niftk::NamedLookupTableProperty);
+  mitkClassMacro(LabeledLookupTableProperty, NamedLookupTableProperty);
   itkNewMacro(LabeledLookupTableProperty);
-  mitkNewMacro3Param(LabeledLookupTableProperty, 
-                     const std::string&, 
-                     const mitk::LookupTable::Pointer, 
+  mitkNewMacro3Param(LabeledLookupTableProperty,
+                     const std::string&,
+                     const mitk::LookupTable::Pointer,
                      const LabelListType&);
-  mitkNewMacro4Param(LabeledLookupTableProperty, 
-                     const std::string&, 
-                     const mitk::LookupTable::Pointer, 
-                     const LabelListType&, 
+  mitkNewMacro4Param(LabeledLookupTableProperty,
+                     const std::string&,
+                     const mitk::LookupTable::Pointer,
+                     const LabelListType&,
                      bool);
 
   /** Get list of labels*/
@@ -57,12 +59,12 @@ protected:
   virtual ~LabeledLookupTableProperty();
   LabeledLookupTableProperty();
   LabeledLookupTableProperty(const LabeledLookupTableProperty& other);
-  LabeledLookupTableProperty(const std::string& name, 
-                             const mitk::LookupTable::Pointer lut, 
+  LabeledLookupTableProperty(const std::string& name,
+                             const mitk::LookupTable::Pointer lut,
                              const LabelListType& labels);
-  LabeledLookupTableProperty(const std::string& name, 
-                             const mitk::LookupTable::Pointer lut, 
-                             const LabelListType& labels, 
+  LabeledLookupTableProperty(const std::string& name,
+                             const mitk::LookupTable::Pointer lut,
+                             const LabelListType& labels,
                              bool scale);
 
 private:

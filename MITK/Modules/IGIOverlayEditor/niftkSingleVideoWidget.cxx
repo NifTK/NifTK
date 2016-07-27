@@ -13,15 +13,17 @@
 =============================================================================*/
 
 #include "niftkSingleVideoWidget.h"
-#include <niftkVTKFunctions.h>
-#include <niftkUndistortion.h>
-#include <mitkCoordinateAxesData.h>
-#include <mitkCameraIntrinsics.h>
-#include <mitkCameraIntrinsicsProperty.h>
-#include <mitkDataStorageUtils.h>
 
 #include <vtkCamera.h>
 #include <vtkTransform.h>
+
+#include <mitkCameraIntrinsics.h>
+#include <mitkCameraIntrinsicsProperty.h>
+
+#include <niftkCoordinateAxesData.h>
+#include <niftkDataStorageUtils.h>
+#include <niftkUndistortion.h>
+#include <niftkVTKFunctions.h>
 
 namespace niftk
 {
@@ -250,8 +252,8 @@ void SingleVideoWidget::UpdateCameraViaTrackingTransformation()
   //                                    - to construct the camera to world.
   if (m_TransformNode.IsNotNull())
   {
-    mitk::CoordinateAxesData::Pointer transform =
-        dynamic_cast<mitk::CoordinateAxesData*>(m_TransformNode->GetData());
+    CoordinateAxesData::Pointer transform =
+        dynamic_cast<CoordinateAxesData*>(m_TransformNode->GetData());
 
     if (transform.IsNotNull())
     {

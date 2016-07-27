@@ -18,6 +18,10 @@
 
 #include <niftkVLExports.h>
 
+#include <map>
+#include <set>
+
+#include <vlCore/VisualizationLibrary.hpp>
 #include <vlGraphics/OpenGLContext.hpp>
 #include <vlGraphics/Light.hpp>
 #include <vlGraphics/Camera.hpp>
@@ -28,23 +32,22 @@
 #include <vlGraphics/Uniform.hpp>
 #include <vlGraphics/BlitFramebuffer.hpp>
 #include <vlGraphics/Texture.hpp>
-#include <vlCore/VisualizationLibrary.hpp>
+
 #include <QMouseEvent>
 #include <QWidget>
 #include <QTimer>
 #include <QObject>
 #include <QGLWidget>
-#include <mitkOclResourceService.h>
+
 #include <mitkDataNode.h>
-#include <mitkSurface.h>
 #include <mitkDataStorage.h>
 #include <mitkImage.h>
+#include <mitkOclResourceService.h>
 #include <mitkPointSet.h>
-#include <mitkCoordinateAxesData.h>
-#include <mitkDataNodePropertyListener.h>
-#include <map>
-#include <set>
+#include <mitkSurface.h>
 
+#include <niftkCoordinateAxesData.h>
+#include <niftkDataNodePropertyListener.h>
 
 // forward-decl
 struct cudaGraphicsResource;
@@ -200,7 +203,7 @@ protected:
   vl::ref<vl::Actor> AddImageActor(const mitk::Image::Pointer& mitkImg);
   vl::ref<vl::Actor> Add2DImageActor(const mitk::Image::Pointer& mitkImg);
   vl::ref<vl::Actor> Add3DImageActor(const mitk::Image::Pointer& mitkImg);
-  vl::ref<vl::Actor> AddCoordinateAxisActor(const mitk::CoordinateAxesData::Pointer& coord);
+  vl::ref<vl::Actor> AddCoordinateAxisActor(const niftk::CoordinateAxesData::Pointer& coord);
   vl::EImageType MapITKPixelTypeToVL(int itkComponentType);
   vl::EImageFormat MapComponentsToVLColourFormat(int components);
   void ConvertVTKPolyData(vtkPolyData* vtkPoly, vl::ref<vl::Geometry> vlPoly);
@@ -218,9 +221,9 @@ protected:
 
 
   mitk::DataStorage::Pointer                  m_DataStorage;
-  mitk::DataNodePropertyListener::Pointer     m_NodeVisibilityListener;
-  mitk::DataNodePropertyListener::Pointer     m_NodeColorPropertyListener;
-  mitk::DataNodePropertyListener::Pointer     m_NodeOpacityPropertyListener;
+  niftk::DataNodePropertyListener::Pointer     m_NodeVisibilityListener;
+  niftk::DataNodePropertyListener::Pointer     m_NodeColorPropertyListener;
+  niftk::DataNodePropertyListener::Pointer     m_NodeOpacityPropertyListener;
 
 
   // side note: default actor block is zero

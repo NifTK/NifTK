@@ -13,19 +13,24 @@
 =============================================================================*/
 
 #include "mitkMakeMaskImagesFromStereoVideo.h"
-#include <mitkCameraCalibrationFacade.h>
-#include <mitkOpenCVMaths.h>
-#include <mitkOpenCVFileIOUtils.h>
-#include <mitkOpenCVPointTypes.h>
-#include <cv.h>
-//#include <opencv2/highgui/highgui.hpp>
-#include <highgui.h>
-#include <niftkFileHelper.h>
-#include <mitkFileIOUtils.h>
+
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
-namespace mitk {
+#include <cv.h>
+//#include <opencv2/highgui/highgui.hpp>
+#include <highgui.h>
+
+#include <mitkCameraCalibrationFacade.h>
+#include <mitkOpenCVFileIOUtils.h>
+#include <mitkOpenCVMaths.h>
+#include <mitkOpenCVPointTypes.h>
+
+#include <niftkFileHelper.h>
+#include <niftkFileIOUtils.h>
+
+namespace mitk
+{
 
 //-----------------------------------------------------------------------------
 MakeMaskImagesFromStereoVideo::MakeMaskImagesFromStereoVideo()
@@ -58,7 +63,7 @@ void MakeMaskImagesFromStereoVideo::Initialise(std::string directory)
 {
   m_InitOK = false;
   m_Directory = directory;
-  mitk::LoadTimeStampData(m_TimeStampsFile, m_TimeStampsSet);
+  niftk::LoadTimeStampData(m_TimeStampsFile, m_TimeStampsSet);
   if (m_TimeStampsSet.size() > 0)
   {
     m_Frequency = 1;

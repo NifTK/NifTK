@@ -14,7 +14,7 @@
 
 #include "QmitkSideViewerWidget.h"
 
-#include "QmitkBaseView.h"
+#include "niftkBaseView.h"
 
 #include <berryIWorkbenchPage.h>
 
@@ -100,7 +100,7 @@ private:
 
 
 //-----------------------------------------------------------------------------
-QmitkSideViewerWidget::QmitkSideViewerWidget(QmitkBaseView* view, QWidget* parent, mitk::RenderingManager* renderingManager)
+QmitkSideViewerWidget::QmitkSideViewerWidget(BaseView* view, QWidget* parent, mitk::RenderingManager* renderingManager)
 : QWidget(parent)
 , m_ContainingView(view)
 , m_FocusManagerObserverTag(0)
