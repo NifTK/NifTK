@@ -270,17 +270,34 @@ private:
    */
   void SavePoints(const std::string& prefix, const std::list<niftk::PointSet>& points);
 
+  /**
+   * \brief Utility method to apply intrinsic and distortion parameters
+   * to an image by setting a mitk::CameraIntrinsics property.
+   */
   void SetIntrinsicsOnImage(const cv::Mat& intrinsics,
                             const cv::Mat& distortion,
                             const std::string& propertyName,
                             mitk::DataNode::Pointer image);
 
+  /**
+   * \brief Utility method to apply a stereo (left-to-right) transformation
+   * to an image node, by setting a property containing the matrix.
+   *
+   * Note: NifTK standard is Right-to-Left, whereas NiftyCal and OpenCV
+   * by default use Left-To-Right. So, here, this method is private
+   * as we specifically handle data in this class, which by NiftyCal and OpenCV
+   * convention use Left-to-Right.
+   */
   void SetStereoExtrinsicsOnImage(const cv::Mat& leftToRightRotationMatrix,
                                   const cv::Mat& leftToRightTranslationVector,
                                   const std::string& propertyName,
                                   mitk::DataNode::Pointer image
                                   );
 
+  /**
+   * \brief Combined method to update properties on image nodes, and to
+   * move the model points to the correct location in space.
+   */
   void UpdateDisplayNodes();
 
   typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> > MatrixProperty;
