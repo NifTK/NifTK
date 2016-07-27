@@ -885,9 +885,12 @@ namespace
       tr->setLocalMatrix(m);
       tr->computeWorldMatrix();
 #if 0
-      printf("Transform: %p\n", tr );
-      for(int i = 0; i < 4; ++i ) {
-        printf("%f %f %f %f\n", m.e(0,i), m.e(1,i), m.e(2,i), m.e(3,i) );
+      static bool print_matrix = false;
+      if ( print_matrix ) {
+        printf("Transform: %p\n", tr );
+        for(int i = 0; i < 4; ++i ) {
+          printf("%f %f %f %f\n", m.e(0,i), m.e(1,i), m.e(2,i), m.e(3,i) );
+        }
       }
 #endif
     }
