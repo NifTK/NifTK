@@ -500,6 +500,34 @@ void SavePickedObjects ( const std::vector < mitk::PickedObject > & points, std:
 }
 
 //---------------------------------------------------------------------------
+void LoadPickedObjectsFromDirectory (  std::vector < mitk::PickedObject > & points, const std::string& directory )
+{
+  boost::regex timeStampFilter ( "([0-9]{19})*(.xml)");
+  boost::filesystem::directory_iterator endItr;
+  unsigned int fileInCount = 0;
+
+  for ( boost::filesystem::directory_iterator it(directory); it != endItr ; ++it)
+  {
+    if ( boost::filesystem::is_regular_file (it->status()) )
+    {
+      boost::cmatch what;
+      std::string stringthing = it->path().filename().string();
+      if ( boost::regex_match( stringthing.c_str(), what, timeStampFilter) )
+      {
+        std::ifstream fin ( stringthing.c_str() );
+        if ( fin )
+        {
+          mitk::LoadPickedObjects ( points, fin );
+          ++fileInCount;
+          fin.close();
+        }
+      }
+    }
+  }
+  MITK_INFO << "Read " << fileInCount << " picked object files from directory " << directory;
+}
+
+//---------------------------------------------------------------------------
 void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istream& is )
 {
   boost::property_tree::ptree pt;

@@ -73,6 +73,14 @@
       <label>The measured points in all screens, as a picked object xml file</label>
       <channel>input</channel>
     </file>
+   
+    <directory>
+      <name>goldStandardDirectory</name>
+      <longflag>goldStandardDirectory</longflag>
+      <description>The measured points in all screens, as a directory of picked object xml files</description>
+      <label>The measured points in all screens, as a directory of picked object xml files</label>
+      <channel>input</channel>
+    </directory>
     
     <file>
       <name>leftGoldStandard</name>

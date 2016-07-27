@@ -226,6 +226,13 @@ int main(int argc, char** argv)
         MITK_ERROR << "Failed to open " << goldStandardObjects << " for input";
       }
     }
+    if ( goldStandardDirectory.length() != 0 )
+    {
+      std::vector < mitk::PickedObject > pickedObjects;
+      mitk::LoadPickedObjectsFromDirectory ( pickedObjects, goldStandardDirectory );
+      projector->SetGoldStandardObjects (pickedObjects);
+    }
+
     if ( leftGoldStandard.length() != 0 ) 
     {
       std::ifstream fin(leftGoldStandard.c_str());
