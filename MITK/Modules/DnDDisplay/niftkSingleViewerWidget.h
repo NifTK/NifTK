@@ -78,7 +78,7 @@ class MultiWindowWidget;
 class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget
 {
 
-  Q_OBJECT;
+  Q_OBJECT
 
 public:
 

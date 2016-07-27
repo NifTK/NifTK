@@ -72,7 +72,7 @@ protected:
   DnDDisplayInteractor(niftkSingleViewerWidget* viewer);
   virtual ~DnDDisplayInteractor();
 
-  virtual void ConnectActionsAndFunctions();
+  virtual void ConnectActionsAndFunctions() override;
 
   virtual bool StartSelectingPosition(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
@@ -92,7 +92,7 @@ protected:
   /// It also changes the selected position to the middle of the focused voxel.
   virtual bool StartZooming(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
-  virtual bool Zoom(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+  virtual bool Zoom(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent) override;
 
   /// \brief
   virtual bool StopZooming(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);

@@ -125,6 +125,7 @@ QmitkRenderWindow* DnDDisplayInteractor::GetRenderWindow(mitk::BaseRenderer* ren
 bool DnDDisplayInteractor::StartSelectingPosition(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
 {
   niftk::InteractionEventObserverMutex::GetInstance()->Lock(this);
+  return true;
 }
 
 
@@ -175,6 +176,7 @@ bool DnDDisplayInteractor::SelectPosition(mitk::StateMachineAction* action, mitk
 bool DnDDisplayInteractor::StopSelectingPosition(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
 {
   niftk::InteractionEventObserverMutex::GetInstance()->Unlock(this);
+  return true;
 }
 
 
@@ -222,6 +224,7 @@ bool DnDDisplayInteractor::Pan(mitk::StateMachineAction* action, mitk::Interacti
 bool DnDDisplayInteractor::StopPanning(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
 {
   niftk::InteractionEventObserverMutex::GetInstance()->Unlock(this);
+  return true;
 }
 
 
@@ -285,6 +288,7 @@ bool DnDDisplayInteractor::Zoom(mitk::StateMachineAction* action, mitk::Interact
 bool DnDDisplayInteractor::StopZooming(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
 {
   niftk::InteractionEventObserverMutex::GetInstance()->Unlock(this);
+  return true;
 }
 
 
