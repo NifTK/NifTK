@@ -13,27 +13,27 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  niftkCommonAppsApplicationPlugin.cxx
-  niftkCommonAppsApplicationPreferencePage.cxx
   niftkBaseApplication.cxx
-  niftkBaseAppWorkbenchAdvisor.cxx
+  niftkBaseApplicationPluginActivator.cxx
+  niftkBaseApplicationPreferencePage.cxx
+  niftkBaseWorkbenchAdvisor.cxx
   niftkBaseWorkbenchWindowAdvisor.cxx
-  niftkNiftyViewApplicationPreferencePage.cxx
-  niftkCommonAppsMinimalPerspective.cxx
-  niftkCommonAppsIGIPerspective.cxx
+  niftkMinimalPerspective.cxx
+  niftkIGIPerspective.cxx
 )
 
 set(INTERNAL_CPP_FILES
+  niftkPluginActivator.cxx
 )
 
 set(MOC_H_FILES
-  src/niftkCommonAppsApplicationPlugin.h
-  src/niftkCommonAppsApplicationPreferencePage.h
+  src/internal/niftkPluginActivator.h
   src/niftkBaseApplication.h
+  src/niftkBaseApplicationPluginActivator.h
+  src/niftkBaseApplicationPreferencePage.h
   src/niftkBaseWorkbenchWindowAdvisor.h
-  src/niftkNiftyViewApplicationPreferencePage.h
-  src/niftkCommonAppsMinimalPerspective.h
-  src/niftkCommonAppsIGIPerspective.h
+  src/niftkMinimalPerspective.h
+  src/niftkIGIPerspective.h
 )
 
 set(CACHED_RESOURCE_FILES

@@ -14,18 +14,20 @@
 
 set(SRC_CPP_FILES
   niftkNiftyViewApplication.cxx
+  niftkNiftyViewPreferencePage.cxx
   niftkNiftyViewAppWorkbenchAdvisor.cxx
   niftkNiftyViewWorkbenchWindowAdvisor.cxx
 )
 
 set(INTERNAL_CPP_FILES
-  niftkNiftyViewApplicationPlugin.cxx
+  niftkPluginActivator.cxx
 )
 
 set(MOC_H_FILES
   src/niftkNiftyViewApplication.h
+  src/niftkNiftyViewPreferencePage.h
   src/niftkNiftyViewWorkbenchWindowAdvisor.h
-  src/internal/niftkNiftyViewApplicationPlugin.h
+  src/internal/niftkPluginActivator.h
 )
 
 set(CACHED_RESOURCE_FILES

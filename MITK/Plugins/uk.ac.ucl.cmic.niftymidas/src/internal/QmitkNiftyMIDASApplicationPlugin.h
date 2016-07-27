@@ -15,14 +15,14 @@
 #ifndef QmitkNiftyMIDASApplicationPlugin_h
 #define QmitkNiftyMIDASApplicationPlugin_h
 
-#include <QmitkCommonAppsApplicationPlugin.h>
+#include <niftkBaseApplicationPluginActivator.h>
 
 /**
  * \class QmitkNiftyMIDASApplicationPlugin
  * \brief Implements QT and CTK specific functionality to launch the application as a plugin.
  * \ingroup uk_ac_ucl_cmic_niftymidas_internal
  */
-class QmitkNiftyMIDASApplicationPlugin : public QmitkCommonAppsApplicationPlugin
+class QmitkNiftyMIDASApplicationPlugin : public BaseApplicationPluginActivator
 {
   Q_OBJECT
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)

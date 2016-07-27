@@ -12,19 +12,13 @@
     <perspective
       id="uk.ac.ucl.cmic.niftyview.minimalperspective"
       name="Minimal Perspective"
-      class="niftk::CommonAppsMinimalPerspective"
+      class="niftk::MinimalPerspective"
       icon="resources/icon_ucl.xpm">
     </perspective>
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="uk.ac.ucl.cmic.commonapps.CommonAppsApplicationPreferencePage" name="Application Preferences" class="niftk::CommonAppsApplicationPreferencePage">
-      <keywordreference id="uk.ac.ucl.cmic.commonapps.CommonAppsApplicationPreferencePageKeywords"></keywordreference>
-    </page>
-  </extension>
-
-  <extension point="org.blueberry.ui.preferencePages">
-    <page id="uk.ac.ucl.cmic.niftyview.NiftyViewPreferencePage" name="Application Preferences - NiftyView" class="niftk::NiftyViewApplicationPreferencePage">
+    <page id="uk.ac.ucl.cmic.niftyview.NiftyViewPreferencePage" name="Application Preferences" class="niftk::NiftyViewPreferencePage">
       <keywordreference id="uk.ac.ucl.cmic.niftyview.NiftyViewPreferencePageKeywords"></keywordreference>
     </page>
   </extension>

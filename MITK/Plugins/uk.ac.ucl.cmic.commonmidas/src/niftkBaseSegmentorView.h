@@ -43,7 +43,7 @@ class BaseSegmentorController;
 /// \sa BaseView
 /// \sa MorphologicalSegmentorView
 /// \sa GeneralSegmentorView
-class CMIC_QT_COMMONMIDAS BaseSegmentorView : public BaseView
+class COMMONMIDAS_EXPORT BaseSegmentorView : public BaseView
 {
 
   Q_OBJECT

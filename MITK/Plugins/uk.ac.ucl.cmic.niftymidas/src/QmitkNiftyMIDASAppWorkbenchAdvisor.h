@@ -23,18 +23,18 @@
 #endif
 
 #include <uk_ac_ucl_cmic_niftymidas_Export.h>
-#include <QmitkBaseAppWorkbenchAdvisor.h>
+#include <QmitkBaseWorkbenchAdvisor.h>
 
 /**
  * \class QmitkNiftyMIDASAppWorkbenchAdvisor
  * \brief Advisor class to set up the initial NiftyMIDAS workbench.
  * \ingroup uk_ac_ucl_cmic_niftymidas
  */
-class CMIC_QT_NIFTYMIDASAPP QmitkNiftyMIDASAppWorkbenchAdvisor: public QmitkBaseAppWorkbenchAdvisor
+class NIFTYMIDAS_EXPORT QmitkNiftyMIDASAppWorkbenchAdvisor: public QmitkBaseWorkbenchAdvisor
 {
 public:
 
-  typedef QmitkBaseAppWorkbenchAdvisor Superclass;
+  typedef QmitkBaseWorkbenchAdvisor Superclass;
 
   /// \brief Returns uk.ac.ucl.cmic.niftyview.midasperspective which should match that in plugin.xml.
   virtual QString GetInitialWindowPerspectiveId();

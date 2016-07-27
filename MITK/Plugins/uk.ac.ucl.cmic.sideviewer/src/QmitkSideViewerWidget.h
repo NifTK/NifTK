@@ -66,7 +66,7 @@ class BaseView;
  *     a. update visibility properties so that whatever is visible in main editor is visible in this widget.
  * </pre>
  */
-class CMIC_QT_SIDEVIEWER QmitkSideViewerWidget : public QWidget
+class SIDEVIEWER_EXPORT QmitkSideViewerWidget : public QWidget
 {
   Q_OBJECT
 

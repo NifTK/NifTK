@@ -37,7 +37,7 @@ class QmitkSideViewerWidget;
  *
  * \sa BaseView
  */
-class CMIC_QT_SIDEVIEWER QmitkSideViewerView : public BaseView
+class SIDEVIEWER_EXPORT QmitkSideViewerView : public BaseView
 {
 
   Q_OBJECT

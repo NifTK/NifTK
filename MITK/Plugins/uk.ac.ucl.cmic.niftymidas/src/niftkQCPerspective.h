@@ -25,7 +25,7 @@ namespace niftk
 /// \brief Perspective for doing scan quality control (QC).
 ///
 /// Note: We have to load at least one view component, to get an editor created.
-class CMIC_QT_NIFTYMIDASAPP QCPerspective : public QObject, public berry::IPerspectiveFactory
+class NIFTYMIDAS_EXPORT QCPerspective : public QObject, public berry::IPerspectiveFactory
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPerspectiveFactory)

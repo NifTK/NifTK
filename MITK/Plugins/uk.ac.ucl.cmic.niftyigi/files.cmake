@@ -19,13 +19,13 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  niftkNiftyIGIApplicationPlugin.cxx
+  niftkPluginActivator.cxx
 )
 
 set(MOC_H_FILES
   src/niftkNiftyIGIApplication.h
   src/niftkNiftyIGIWorkbenchWindowAdvisor.h
-  src/internal/niftkNiftyIGIApplicationPlugin.h
+  src/internal/niftkPluginActivator.h
 )
 
 set(CACHED_RESOURCE_FILES

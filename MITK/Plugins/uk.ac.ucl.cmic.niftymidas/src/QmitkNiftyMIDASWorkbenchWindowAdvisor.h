@@ -24,7 +24,7 @@
  * \ingroup uk_ac_ucl_cmic_niftymidas
  * \sa QmitkHelpAboutDialog
  */
-class CMIC_QT_NIFTYMIDASAPP QmitkNiftyMIDASWorkbenchWindowAdvisor : public QmitkBaseWorkbenchWindowAdvisor
+class NIFTYMIDAS_EXPORT QmitkNiftyMIDASWorkbenchWindowAdvisor : public QmitkBaseWorkbenchWindowAdvisor
 {
   Q_OBJECT
 

@@ -15,7 +15,7 @@
 #include "QmitkNiftyMIDASApplicationPlugin.h"
 #include <niftkSegmentationPerspective.h>
 #include <niftkQCPerspective.h>
-#include <QmitkNiftyViewApplicationPreferencePage.h>
+#include <QmitkNiftyViewPreferencePage.h>
 #include "../QmitkNiftyMIDASApplication.h"
 
 //-----------------------------------------------------------------------------
@@ -40,17 +40,12 @@ QString QmitkNiftyMIDASApplicationPlugin::GetHelpHomePageURL() const
 //-----------------------------------------------------------------------------
 void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
 {
-  /// Note:
-  /// This function has to be redefined so that the superclass
-  /// implementation does not run again. The overridden function
-  /// has been executed when the commonapps plugin has been loaded.
-
-  this->SetPluginContext(context);
+  BaseApplicationPluginActivator::start(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyMIDASApplication, context);
   BERRY_REGISTER_EXTENSION_CLASS(niftk::SegmentationPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(niftk::QCPerspective, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewApplicationPreferencePage, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewPreferencePage, context);
 
   this->RegisterHelpSystem();
   /// Note:
@@ -68,10 +63,7 @@ void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
 //-----------------------------------------------------------------------------
 void QmitkNiftyMIDASApplicationPlugin::stop(ctkPluginContext* context)
 {
-  /// Note:
-  /// This function has to be redefined so that the superclass
-  /// implementation does not run again. The overridden function
-  /// will be executed when the commonapps plugin gets unloaded.
+  BaseApplicationPluginActivator::stop(context);
 }
 
 

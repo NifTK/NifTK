@@ -23,9 +23,9 @@ trials. It is not intended for clinical use.
 segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Programs In Biomedicine,
 (53), 15-25, 1997. 
 <a href="http://www.sciencedirect.com/science/article/pii/S0169260797018038">doi:10.1016/S0169-2607(97)01803-8</a>.
-\li <a href="qthelp://uk.ac.ucl.cmic.commonapps/bundle/WorkbenchMainWindow.html">The Main Window</a>
-\li <a href="qthelp://uk.ac.ucl.cmic.commonapps/bundle/WorkbenchEditors.html">Editors</a>
-\li <a href="qthelp://uk.ac.ucl.cmic.commonapps/bundle/WorkbenchViews.html">Views</a>
-\li <a href="qthelp://uk.ac.ucl.cmic.commonapps/bundle/WorkbenchPerspectives.html">Perspectives</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.common/bundle/WorkbenchMainWindow.html">The Main Window</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.common/bundle/WorkbenchEditors.html">Editors</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.common/bundle/WorkbenchViews.html">Views</a>
+\li <a href="qthelp://uk.ac.ucl.cmic.common/bundle/WorkbenchPerspectives.html">Perspectives</a>
 
 */
