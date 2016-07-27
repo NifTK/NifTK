@@ -1685,11 +1685,11 @@ public:
 
     mitk::FloatProperty::Pointer point_size_2d = mitk::FloatProperty::New();
     const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Size2D", point_size_2d);
-    point_size_2d->SetValue( 5 );
+    point_size_2d->SetValue( 10 );
 
     mitk::FloatProperty::Pointer point_size_3d = mitk::FloatProperty::New();
     const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Size3D", point_size_3d);
-    point_size_3d->SetValue( 5 );
+    point_size_3d->SetValue( 1 );
 
     mitk::FloatProperty::Pointer point_opacity = mitk::FloatProperty::New();
     const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Opacity", point_opacity);
