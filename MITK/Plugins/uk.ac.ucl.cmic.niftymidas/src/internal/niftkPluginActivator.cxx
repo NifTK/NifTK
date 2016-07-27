@@ -12,40 +12,45 @@
 
 =============================================================================*/
 
-#include "QmitkNiftyMIDASApplicationPlugin.h"
+#include "niftkPluginActivator.h"
+
 #include <niftkSegmentationPerspective.h>
 #include <niftkQCPerspective.h>
-#include <QmitkNiftyViewPreferencePage.h>
-#include "../QmitkNiftyMIDASApplication.h"
+#include <niftkBaseApplicationPreferencePage.h>
+#include "../niftkNiftyMIDASApplication.h"
+
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-QmitkNiftyMIDASApplicationPlugin::QmitkNiftyMIDASApplicationPlugin()
+PluginActivator::PluginActivator()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkNiftyMIDASApplicationPlugin::~QmitkNiftyMIDASApplicationPlugin()
+PluginActivator::~PluginActivator()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-QString QmitkNiftyMIDASApplicationPlugin::GetHelpHomePageURL() const
+QString PluginActivator::GetHelpHomePageURL() const
 {
   return QString("qthelp://uk.ac.ucl.cmic.niftymidas/bundle/uk_ac_ucl_cmic_niftymidas_intro.html");
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
+void PluginActivator::start(ctkPluginContext* context)
 {
   BaseApplicationPluginActivator::start(context);
 
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyMIDASApplication, context);
-  BERRY_REGISTER_EXTENSION_CLASS(niftk::SegmentationPerspective, context);
-  BERRY_REGISTER_EXTENSION_CLASS(niftk::QCPerspective, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkNiftyViewPreferencePage, context);
+  BERRY_REGISTER_EXTENSION_CLASS(NiftyMIDASApplication, context);
+  BERRY_REGISTER_EXTENSION_CLASS(SegmentationPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(QCPerspective, context);
+  BERRY_REGISTER_EXTENSION_CLASS(BaseApplicationPreferencePage, context);
 
   this->RegisterHelpSystem();
   /// Note:
@@ -61,13 +66,14 @@ void QmitkNiftyMIDASApplicationPlugin::start(ctkPluginContext* context)
 
 
 //-----------------------------------------------------------------------------
-void QmitkNiftyMIDASApplicationPlugin::stop(ctkPluginContext* context)
+void PluginActivator::stop(ctkPluginContext* context)
 {
   BaseApplicationPluginActivator::stop(context);
 }
 
+}
 
 //-----------------------------------------------------------------------------
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_niftymidas, QmitkNiftyMIDASApplicationPlugin)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_niftymidas, niftk::PluginActivator)
 #endif

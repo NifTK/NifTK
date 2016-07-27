@@ -17,12 +17,8 @@
 #include <itkCommand.h>
 
 #include <mitkDataStorage.h>
-#include <mitkDataStorageUtils.h>
 #include <mitkDisplayGeometry.h>
 #include <mitkGlobalInteraction.h>
-
-#include <niftkMouseEventEater.h>
-#include <niftkWheelEventEater.h>
 
 #include <usGetModuleContext.h>
 #include <usModule.h>
@@ -32,6 +28,10 @@
 #include <vtkCubeSource.h>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
+
+#include <niftkDataStorageUtils.h>
+#include <niftkMouseEventEater.h>
+#include <niftkWheelEventEater.h>
 
 
 //-----------------------------------------------------------------------------
@@ -79,7 +79,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent, mitk::Re
 
   /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
 
-  m_ToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
+  m_ToolNodeNameFilter = niftk::DataNodeStringPropertyFilter::New();
   m_ToolNodeNameFilter->SetPropertyName("name");
   m_ToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
   m_ToolNodeNameFilter->AddToList("MIDAS Background Contour");
@@ -98,7 +98,7 @@ QmitkThumbnailRenderWindow::QmitkThumbnailRenderWindow(QWidget *parent, mitk::Re
   m_ToolNodeNameFilter->AddToList("PolyTool previous contour");
   m_ToolNodeNameFilter->AddToList("Paintbrush_Node");
 
-  m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(m_DataStorage);
+  m_VisibilityTracker = niftk::DataNodeVisibilityTracker::New(m_DataStorage);
 
   std::vector<const mitk::BaseRenderer*> renderers;
   renderers.push_back(m_Renderer);
@@ -429,7 +429,7 @@ void QmitkThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
   // Guarantee no recursions when a new node event is created in NodeAdded()
   if(!m_InDataStorageChanged
       && node != NULL
-      && !mitk::IsNodeAHelperObject(node)
+      && !niftk::IsNodeAHelperObject(node)
       && node != m_BoundingBoxNode
       )
   {
@@ -458,7 +458,7 @@ void QmitkThumbnailRenderWindow::NodeChangedProxy( const mitk::DataNode* node )
   // Guarantee no recursions when a new node event is created in NodeAdded()
   if(!m_InDataStorageChanged
       && node != NULL
-      && !mitk::IsNodeAHelperObject(node)
+      && !niftk::IsNodeAHelperObject(node)
       && node != m_BoundingBoxNode
       )
   {

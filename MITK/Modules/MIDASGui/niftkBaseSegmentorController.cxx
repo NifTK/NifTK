@@ -21,8 +21,7 @@
 
 #include <QmitkRenderWindow.h>
 
-#include <mitkDataStorageUtils.h>
-
+#include <niftkDataStorageUtils.h>
 #include <niftkIBaseView.h>
 
 #include "Internal/niftkBaseSegmentorGUI.h"
@@ -186,7 +185,7 @@ mitk::Image* BaseSegmentorController::GetReferenceImage()
 //-----------------------------------------------------------------------------
 mitk::DataNode* BaseSegmentorController::FindReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode)
 {
-  mitk::DataNode* result = mitk::FindFirstParentImage(this->GetDataStorage(), segmentationNode, false);
+  mitk::DataNode* result = niftk::FindFirstParentImage(this->GetDataStorage(), segmentationNode, false);
   return result;
 }
 
@@ -205,21 +204,21 @@ void BaseSegmentorController::SetReferenceImageSelected()
 //-----------------------------------------------------------------------------
 bool BaseSegmentorController::IsAReferenceImage(const mitk::DataNode::Pointer node)
 {
-  return mitk::IsNodeAGreyScaleImage(node);
+  return niftk::IsNodeAGreyScaleImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
 bool BaseSegmentorController::IsASegmentationImage(const mitk::DataNode::Pointer node)
 {
-  return mitk::IsNodeABinaryImage(node);
+  return niftk::IsNodeABinaryImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
 bool BaseSegmentorController::IsAWorkingImage(const mitk::DataNode::Pointer node)
 {
-  return mitk::IsNodeABinaryImage(node);
+  return niftk::IsNodeABinaryImage(node);
 }
 
 
@@ -435,7 +434,7 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
     {
       segmentationImageNode = selectedNode;
     }
-    else if (mitk::IsNodeABinaryImage(selectedNode) && this->CanStartSegmentationForBinaryNode(selectedNode))
+    else if (niftk::IsNodeABinaryImage(selectedNode) && this->CanStartSegmentationForBinaryNode(selectedNode))
     {
       segmentationImageNode = selectedNode;
     }

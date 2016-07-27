@@ -12,14 +12,18 @@
 
 =============================================================================*/
 
-#ifndef __niftkSingleViewerWidgetState_h
-#define __niftkSingleViewerWidgetState_h
+#ifndef niftkSingleViewerWidgetState_h
+#define niftkSingleViewerWidgetState_h
 
 #include <niftkSingleViewerWidget.h>
 
 #include <QTest>
 
 #include <mitkGlobalInteraction.h>
+
+
+namespace niftk
+{
 
 static bool EqualsWithTolerance1(const mitk::Point3D& worldPosition1, const mitk::Point3D& worldPosition2, double tolerance = 0.001)
 {
@@ -115,7 +119,7 @@ public:
     std::vector<QmitkRenderWindow*> renderWindows = m_Viewer->GetRenderWindows();
     for (int i = 0; i < 3; ++i)
     {
-      if (renderWindows[i]->isVisible() && !::EqualsWithTolerance(cursorPositions1[i], cursorPositions2[i], tolerance))
+      if (renderWindows[i]->isVisible() && !niftk::EqualsWithTolerance(cursorPositions1[i], cursorPositions2[i], tolerance))
       {
         return false;
       }
@@ -130,7 +134,7 @@ public:
     std::vector<QmitkRenderWindow*> renderWindows = m_Viewer->GetRenderWindows();
     for (int i = 0; i < 3; ++i)
     {
-      if (renderWindows[i]->isVisible() && !::EqualsWithTolerance(scaleFactors1[i], scaleFactors2[i], tolerance))
+      if (renderWindows[i]->isVisible() && !niftk::EqualsWithTolerance(scaleFactors1[i], scaleFactors2[i], tolerance))
       {
         return false;
       }
@@ -146,7 +150,7 @@ public:
         && this->GetWindowLayout() == otherState.GetWindowLayout()
         && this->GetSelectedRenderWindow() == otherState.GetSelectedRenderWindow()
         && this->GetTimeStep() == otherState.GetTimeStep()
-        && ::EqualsWithTolerance1(this->GetSelectedPosition(), otherState.GetSelectedPosition(), 0.001)
+        && niftk::EqualsWithTolerance1(this->GetSelectedPosition(), otherState.GetSelectedPosition(), 0.001)
         && this->EqualsWithTolerance(this->GetCursorPositions(), otherState.GetCursorPositions(), 0.01)
         && this->EqualsWithTolerance(this->GetScaleFactors(), otherState.GetScaleFactors(), 0.01)
         && this->GetCursorPositionBinding() == otherState.GetCursorPositionBinding()
@@ -180,7 +184,7 @@ public:
     {
       os << indent << "Time step: " << this->GetTimeStep() << " ; " << otherState->GetTimeStep() << std::endl;
     }
-    if (!::EqualsWithTolerance1(this->GetSelectedPosition(), otherState->GetSelectedPosition(), 0.001))
+    if (!niftk::EqualsWithTolerance1(this->GetSelectedPosition(), otherState->GetSelectedPosition(), 0.001))
     {
       os << indent << "Selected position: " << this->GetSelectedPosition() << ", " << otherState->GetSelectedPosition() << std::endl;
     }
@@ -363,7 +367,7 @@ protected:
   }
 
   /// \brief Prints the collected signals to the given stream or to the standard output if no stream is given.
-  virtual void PrintSelf(std::ostream & os, itk::Indent indent) const
+  virtual void PrintSelf(std::ostream & os, itk::Indent indent) const override
   {
 //    os << indent << "time geometry: " << m_TimeGeometry << std::endl;
     os << indent << "orientation: " << m_Orientation << std::endl;
@@ -422,5 +426,7 @@ private:
   /// \brief Tells if the world axis is flipped or not.
   mitk::Vector3D m_UpDirections;
 };
+
+}
 
 #endif

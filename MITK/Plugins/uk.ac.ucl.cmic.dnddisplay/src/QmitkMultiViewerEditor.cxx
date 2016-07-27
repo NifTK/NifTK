@@ -35,6 +35,10 @@
 #include <niftkMultiViewerVisibilityManager.h>
 #include "QmitkDnDDisplayPreferencePage.h"
 
+
+namespace niftk
+{
+
 const QString QmitkMultiViewerEditor::EDITOR_ID = "org.mitk.editors.dndmultidisplay";
 
 class QmitkMultiViewerEditorPrivate
@@ -51,8 +55,8 @@ public:
 
   void DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes);
 
-  niftkMultiViewerWidget* m_MultiViewer;
-  niftkMultiViewerVisibilityManager::Pointer m_MultiViewerVisibilityManager;
+  MultiViewerWidget* m_MultiViewer;
+  MultiViewerVisibilityManager::Pointer m_MultiViewerVisibilityManager;
   mitk::RenderingManager::Pointer m_RenderingManager;
   QScopedPointer<berry::IPartListener> m_PartListener;
   mitk::IRenderingManager* m_RenderingManagerInterface;
@@ -365,7 +369,7 @@ void QmitkMultiViewerEditorPrivate::ProcessCommandLineArguments()
       --viewerRow;
       --viewerColumn;
 
-      WindowLayout windowLayout = ::GetWindowLayout(windowLayoutName.toStdString());
+      WindowLayout windowLayout = niftk::GetWindowLayout(windowLayoutName.toStdString());
 
       if (windowLayout == WINDOW_LAYOUT_UNKNOWN)
       {
@@ -618,55 +622,55 @@ void QmitkMultiViewerEditorPrivate::ProcessCommandLineArguments()
         {
           if (value)
           {
-            bindingOptions |= niftkMultiViewerWidget::PositionBinding;
+            bindingOptions |= MultiViewerWidget::PositionBinding;
           }
           else
           {
-            bindingOptions &= ~niftkMultiViewerWidget::PositionBinding;
+            bindingOptions &= ~MultiViewerWidget::PositionBinding;
           }
         }
         else if (viewerBindingOptionName == QString("cursor"))
         {
           if (value)
           {
-            bindingOptions |= niftkMultiViewerWidget::CursorBinding;
+            bindingOptions |= MultiViewerWidget::CursorBinding;
           }
           else
           {
-            bindingOptions &= ~niftkMultiViewerWidget::CursorBinding;
+            bindingOptions &= ~MultiViewerWidget::CursorBinding;
           }
         }
         else if (viewerBindingOptionName == QString("magnification"))
         {
           if (value)
           {
-            bindingOptions |= niftkMultiViewerWidget::MagnificationBinding;
+            bindingOptions |= MultiViewerWidget::MagnificationBinding;
           }
           else
           {
-            bindingOptions &= ~niftkMultiViewerWidget::MagnificationBinding;
+            bindingOptions &= ~MultiViewerWidget::MagnificationBinding;
           }
         }
         else if (viewerBindingOptionName == QString("layout"))
         {
           if (value)
           {
-            bindingOptions |= niftkMultiViewerWidget::WindowLayoutBinding;
+            bindingOptions |= MultiViewerWidget::WindowLayoutBinding;
           }
           else
           {
-            bindingOptions &= ~niftkMultiViewerWidget::WindowLayoutBinding;
+            bindingOptions &= ~MultiViewerWidget::WindowLayoutBinding;
           }
         }
         else if (viewerBindingOptionName == QString("geometry"))
         {
           if (value)
           {
-            bindingOptions |= niftkMultiViewerWidget::GeometryBinding;
+            bindingOptions |= MultiViewerWidget::GeometryBinding;
           }
           else
           {
-            bindingOptions &= ~niftkMultiViewerWidget::GeometryBinding;
+            bindingOptions &= ~MultiViewerWidget::GeometryBinding;
           }
         }
         else if (viewerBindingOptionName == QString("all"))
@@ -674,11 +678,11 @@ void QmitkMultiViewerEditorPrivate::ProcessCommandLineArguments()
           if (value)
           {
             bindingOptions =
-                niftkMultiViewerWidget::PositionBinding
-                | niftkMultiViewerWidget::CursorBinding
-                | niftkMultiViewerWidget::MagnificationBinding
-                | niftkMultiViewerWidget::WindowLayoutBinding
-                | niftkMultiViewerWidget::GeometryBinding
+                MultiViewerWidget::PositionBinding
+                | MultiViewerWidget::CursorBinding
+                | MultiViewerWidget::MagnificationBinding
+                | MultiViewerWidget::WindowLayoutBinding
+                | MultiViewerWidget::GeometryBinding
                 ;
           }
           else
@@ -793,15 +797,15 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
     bool magnificationTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true);
     bool timeStepTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true);
 
-    d->m_MultiViewerVisibilityManager = niftkMultiViewerVisibilityManager::New(dataStorage);
+    d->m_MultiViewerVisibilityManager = MultiViewerVisibilityManager::New(dataStorage);
     d->m_MultiViewerVisibilityManager->SetInterpolationType(defaultInterpolationType);
     d->m_MultiViewerVisibilityManager->SetDefaultWindowLayout(defaultLayout);
     d->m_MultiViewerVisibilityManager->SetDropType(defaultDropType);
 
     d->m_RenderingManager->SetDataStorage(dataStorage);
 
-    // Create the niftkMultiViewerWidget
-    d->m_MultiViewer = new niftkMultiViewerWidget(
+    // Create the MultiViewerWidget
+    d->m_MultiViewer = new MultiViewerWidget(
         d->m_MultiViewerVisibilityManager,
         d->m_RenderingManager,
         parent);
@@ -861,7 +865,7 @@ void QmitkMultiViewerEditor::ProcessCommandLineArguments()
 
 
 //-----------------------------------------------------------------------------
-niftkMultiViewerWidget* QmitkMultiViewerEditor::GetMultiViewer()
+MultiViewerWidget* QmitkMultiViewerEditor::GetMultiViewer()
 {
   return d->m_MultiViewer;
 }
@@ -952,14 +956,14 @@ void QmitkMultiViewerEditor::SetSelectedPosition(const mitk::Point3D &position, 
 //-----------------------------------------------------------------------------
 void QmitkMultiViewerEditor::EnableDecorations(bool enable, const QStringList &decorations)
 {
-  // Deliberately do nothing. ToDo - maybe get niftkMultiViewerWidget to support it.
+  // Deliberately do nothing. ToDo - maybe get MultiViewerWidget to support it.
 }
 
 
 //-----------------------------------------------------------------------------
 bool QmitkMultiViewerEditor::IsDecorationEnabled(const QString &decoration) const
 {
-  // Deliberately deny having any decorations. ToDo - maybe get niftkMultiViewerWidget to support it.
+  // Deliberately deny having any decorations. ToDo - maybe get MultiViewerWidget to support it.
   return false;
 }
 
@@ -967,7 +971,7 @@ bool QmitkMultiViewerEditor::IsDecorationEnabled(const QString &decoration) cons
 //-----------------------------------------------------------------------------
 QStringList QmitkMultiViewerEditor::GetDecorations() const
 {
-  // Deliberately return nothing. ToDo - maybe get niftkMultiViewerWidget to support it.
+  // Deliberately return nothing. ToDo - maybe get MultiViewerWidget to support it.
   QStringList decorations;
   return decorations;
 }
@@ -983,7 +987,7 @@ mitk::IRenderingManager* QmitkMultiViewerEditor::GetRenderingManager() const
 //-----------------------------------------------------------------------------
 mitk::SlicesRotator* QmitkMultiViewerEditor::GetSlicesRotator() const
 {
-  // Deliberately return nothing. ToDo - maybe get niftkMultiViewerWidget to support it.
+  // Deliberately return nothing. ToDo - maybe get MultiViewerWidget to support it.
   return NULL;
 }
 
@@ -991,7 +995,7 @@ mitk::SlicesRotator* QmitkMultiViewerEditor::GetSlicesRotator() const
 //-----------------------------------------------------------------------------
 mitk::SlicesSwiveller* QmitkMultiViewerEditor::GetSlicesSwiveller() const
 {
-  // Deliberately return nothing. ToDo - maybe get niftkMultiViewerWidget to support it.
+  // Deliberately return nothing. ToDo - maybe get MultiViewerWidget to support it.
   return NULL;
 }
 
@@ -999,7 +1003,7 @@ mitk::SlicesSwiveller* QmitkMultiViewerEditor::GetSlicesSwiveller() const
 //-----------------------------------------------------------------------------
 void QmitkMultiViewerEditor::EnableSlicingPlanes(bool enable)
 {
-  // Deliberately do nothing. ToDo - maybe get niftkMultiViewerWidget to support it.
+  // Deliberately do nothing. ToDo - maybe get MultiViewerWidget to support it.
   Q_UNUSED(enable);
 }
 
@@ -1007,7 +1011,7 @@ void QmitkMultiViewerEditor::EnableSlicingPlanes(bool enable)
 //-----------------------------------------------------------------------------
 bool QmitkMultiViewerEditor::IsSlicingPlanesEnabled() const
 {
-  // Deliberately do nothing. ToDo - maybe get niftkMultiViewerWidget to support it.
+  // Deliberately do nothing. ToDo - maybe get MultiViewerWidget to support it.
   return false;
 }
 
@@ -1023,4 +1027,6 @@ void QmitkMultiViewerEditor::EnableLinkedNavigation(bool enable)
 bool QmitkMultiViewerEditor::IsLinkedNavigationEnabled() const
 {
   return d->m_MultiViewer->IsLinkedNavigationEnabled();
+}
+
 }

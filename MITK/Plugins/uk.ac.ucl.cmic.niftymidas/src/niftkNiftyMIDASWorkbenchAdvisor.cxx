@@ -12,38 +12,43 @@
 
 =============================================================================*/
 
-#include "QmitkNiftyMIDASAppWorkbenchAdvisor.h"
-#include "QmitkNiftyMIDASWorkbenchWindowAdvisor.h"
+#include "niftkNiftyMIDASWorkbenchAdvisor.h"
+#include "niftkNiftyMIDASWorkbenchWindowAdvisor.h"
+
+#include <mitkLogMacros.h>
 
 #include <berryIWorkbenchConfigurer.h>
 #include <berryPlatform.h>
 
-#include <niftkCommonActivator.h>
+#include "internal/niftkPluginActivator.h"
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-QString QmitkNiftyMIDASAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
+QString NiftyMIDASWorkbenchAdvisor::GetInitialWindowPerspectiveId()
 {
   return "uk.ac.ucl.cmic.niftymidas.segmentation_perspective";
 }
 
 
 //-----------------------------------------------------------------------------
-QString QmitkNiftyMIDASAppWorkbenchAdvisor::GetWindowIconResourcePath() const
+QString NiftyMIDASWorkbenchAdvisor::GetWindowIconResourcePath() const
 {
-  return ":/QmitkNiftyMIDASApplication/icon_ion.xpm";
+  return ":/NiftyMIDASApplication/icon_ion.xpm";
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkBaseWorkbenchWindowAdvisor* QmitkNiftyMIDASAppWorkbenchAdvisor::CreateQmitkBaseWorkbenchWindowAdvisor(
+BaseWorkbenchWindowAdvisor* NiftyMIDASWorkbenchAdvisor::CreateBaseWorkbenchWindowAdvisor(
     berry::IWorkbenchWindowConfigurer::Pointer configurer)
 {
-  return new QmitkNiftyMIDASWorkbenchWindowAdvisor(this, configurer);
+  return new NiftyMIDASWorkbenchWindowAdvisor(this, configurer);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
+void NiftyMIDASWorkbenchAdvisor::PostStartup()
 {
   Superclass::PostStartup();
 
@@ -94,4 +99,6 @@ void QmitkNiftyMIDASAppWorkbenchAdvisor::PostStartup()
       workbench->ShowPerspective(perspectiveDescriptor->GetId(), workbenchWindow);
     }
   }
+}
+
 }

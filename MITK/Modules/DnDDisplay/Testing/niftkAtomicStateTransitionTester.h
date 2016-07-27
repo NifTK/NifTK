@@ -12,11 +12,11 @@
 
 =============================================================================*/
 
-#ifndef __mitkAtomicStateTransitionTester_h
-#define __mitkAtomicStateTransitionTester_h
+#ifndef niftkAtomicStateTransitionTester_h
+#define niftkAtomicStateTransitionTester_h
 
-#include <mitkItkSignalCollector.h>
-#include <mitkQtSignalCollector.h>
+#include <niftkItkSignalCollector.h>
+#include <niftkQtSignalCollector.h>
 
 #include <QObject>
 #include <QByteArray>
@@ -26,7 +26,7 @@
 
 #include <map>
 
-namespace mitk
+namespace niftk
 {
 
 /// \class AtomicStateTransitionTester
@@ -38,7 +38,7 @@ namespace mitk
 ///
 /// Pattern of use:
 ///
-///     typedef mitk::AtomicStateTransitionTester<Viewer, ViewerState> ViewerStateTester;
+///     typedef niftk::AtomicStateTransitionTester<Viewer, ViewerState> ViewerStateTester;
 ///     ViewerStateTester::Pointer viewerStateTester = ViewerStateTester::New(viewer);
 ///
 ///   Connect the object to the ITK or Qt events sent out from this object or some of its aggregated objects:
@@ -56,18 +56,18 @@ namespace mitk
 ///   ...
 ///
 template <class TestObject, class TestObjectState>
-class AtomicStateTransitionTester : public itk::Object, private mitk::ItkSignalListener, private mitk::QtSignalListener
+class AtomicStateTransitionTester : public itk::Object, private ItkSignalListener, private QtSignalListener
 {
 public:
 
   mitkClassMacroItkParent(AtomicStateTransitionTester, itk::Object);
   mitkNewMacro1Param(AtomicStateTransitionTester, TestObject);
 
-  typedef mitk::ItkSignalCollector::Signal ItkSignal;
-  typedef mitk::ItkSignalCollector::Signals ItkSignals;
+  typedef ItkSignalCollector::Signal ItkSignal;
+  typedef ItkSignalCollector::Signals ItkSignals;
 
-  typedef mitk::QtSignalCollector::Signal QtSignal;
-  typedef mitk::QtSignalCollector::Signals QtSignals;
+  typedef QtSignalCollector::Signal QtSignal;
+  typedef QtSignalCollector::Signals QtSignals;
 
   /// \brief Gets the object whose state consistency is being tested.
   itkGetConstMacro(TestObject, TestObject);
@@ -192,10 +192,10 @@ private:
   typename TestObjectState::Pointer m_ExpectedState;
 
   /// \brief ITK signal collector.
-  mitk::ItkSignalCollector::Pointer m_ItkSignalCollector;
+  ItkSignalCollector::Pointer m_ItkSignalCollector;
 
   /// \brief Qt signal collector.
-  mitk::QtSignalCollector::Pointer m_QtSignalCollector;
+  QtSignalCollector::Pointer m_QtSignalCollector;
 
 };
 

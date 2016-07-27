@@ -17,7 +17,7 @@
 
 #include <ctkPluginActivator.h>
 
-namespace mitk
+namespace niftk
 {
 
 class SideViewerActivator :

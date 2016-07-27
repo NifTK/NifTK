@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __mitkItkSignalCollector_h
-#define __mitkItkSignalCollector_h
+#ifndef niftkItkSignalCollector_h
+#define niftkItkSignalCollector_h
 
 #include <itkCommand.h>
 #include <itkEventObject.h>
@@ -22,7 +22,7 @@
 
 #include <vector>
 
-namespace mitk
+namespace niftk
 {
 
 /// \class ItkSignalListener

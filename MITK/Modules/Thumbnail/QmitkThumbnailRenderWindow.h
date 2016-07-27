@@ -19,14 +19,15 @@
 
 #include <mitkCuboid.h>
 #include <mitkDataNode.h>
-#include <mitkDataNodeStringPropertyFilter.h>
 #include <mitkDataStorage.h>
-#include <mitkDataNodeVisibilityTracker.h>
 #include <mitkRenderingManager.h>
 
 #include <QmitkRenderWindow.h>
 
 #include "mitkThumbnailInteractor.h"
+
+#include <niftkDataNodeStringPropertyFilter.h>
+#include <niftkDataNodeVisibilityTracker.h>
 
 namespace niftk
 {
@@ -235,9 +236,9 @@ private:
   bool m_InDataStorageChanged;
 
   /// \brief To track visibility changes.
-  mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
+  niftk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
-  mitk::DataNodeStringPropertyFilter::Pointer m_ToolNodeNameFilter;
+  niftk::DataNodeStringPropertyFilter::Pointer m_ToolNodeNameFilter;
 
   mitk::ThumbnailInteractor::Pointer m_DisplayInteractor;
 

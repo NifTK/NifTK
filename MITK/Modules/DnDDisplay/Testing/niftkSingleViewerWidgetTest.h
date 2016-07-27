@@ -12,20 +12,16 @@
 
 =============================================================================*/
 
-#ifndef __niftkSingleViewerWidgetTest_h
-#define __niftkSingleViewerWidgetTest_h
+#ifndef niftkSingleViewerWidgetTest_h
+#define niftkSingleViewerWidgetTest_h
 
 #include <QObject>
 
-#include <mitkAtomicStateTransitionTester.cxx>
+#include <niftkAtomicStateTransitionTester.cxx>
 
 #include <niftkSingleViewerWidgetState.h>
 
 #include <vector>
-
-class niftkSingleViewerWidgetTestClassPrivate;
-
-class niftkSingleViewerWidget;
 
 namespace mitk
 {
@@ -33,6 +29,13 @@ class DataNode;
 }
 
 class QmitkRenderWindow;
+
+
+namespace niftk
+{
+class niftkSingleViewerWidget;
+class niftkSingleViewerWidgetTestClassPrivate;
+
 
 class niftkSingleViewerWidgetTestClass: public QObject
 {
@@ -42,7 +45,7 @@ public:
 
   enum WorldAxes { SagittalAxis, CoronalAxis, AxialAxis };
 
-  typedef mitk::AtomicStateTransitionTester<const niftkSingleViewerWidget*, niftkSingleViewerWidgetState> ViewerStateTester;
+  typedef AtomicStateTransitionTester<const niftkSingleViewerWidget*, niftkSingleViewerWidgetState> ViewerStateTester;
   typedef niftkSingleViewerWidgetState ViewerState;
   typedef niftkSingleViewerWidgetTestClass Self;
 
@@ -247,6 +250,7 @@ private:
   Q_DISABLE_COPY(niftkSingleViewerWidgetTestClass)
 };
 
+}
 
 int niftkSingleViewerWidgetTest(int argc, char* argv[]);
 

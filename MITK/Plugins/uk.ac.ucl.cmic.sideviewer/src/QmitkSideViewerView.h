@@ -27,6 +27,10 @@ class IBerryPreferences;
 }
 
 class QmitkRenderWindow;
+
+
+namespace niftk
+{
 class QmitkSideViewerWidget;
 
 /**
@@ -77,4 +81,7 @@ private:
   /// \brief Provides an additional view of the segmented image, so plugin can be used on second monitor.
   QmitkSideViewerWidget *m_SideViewerWidget;
 };
+
+}
+
 #endif

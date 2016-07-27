@@ -17,15 +17,15 @@
 #include <itkImageDuplicator.h>
 
 #include <mitkDataNode.h>
-#include <mitkDataStorageUtils.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
 #include <mitkITKImageImport.h>
 #include <mitkSegmentationObjectFactory.h>
 
+#include <niftkDataStorageUtils.h>
 #include <niftkImageUtils.h>
 #include <niftkImageOrientationUtils.h>
-#include <mitkITKRegionParametersDataNodeProperty.h>
+#include <niftkITKRegionParametersDataNodeProperty.h>
 #include <niftkPaintbrushTool.h>
 #include <niftkTool.h>
 
@@ -118,7 +118,7 @@ mitk::DataNode::Pointer MorphologicalSegmentorPipelineManager::GetSegmentationNo
   mitk::DataNode::Pointer workingDataNode = this->GetToolManager()->GetWorkingData(0);
   if (workingDataNode.IsNotNull())
   {
-    mitk::DataNode::Pointer segmentationDataNode = mitk::FindFirstParentImage(this->GetDataStorage().GetPointer(), workingDataNode, true);
+    mitk::DataNode::Pointer segmentationDataNode = niftk::FindFirstParentImage(this->GetDataStorage().GetPointer(), workingDataNode, true);
     if (segmentationDataNode.IsNotNull())
     {
       result = segmentationDataNode;
@@ -244,13 +244,13 @@ bool MorphologicalSegmentorPipelineManager::IsNodeASegmentationImage(const mitk:
 
   bool result = false;
 
-  if (mitk::IsNodeABinaryImage(node))
+  if (niftk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, false);
+    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
     if (parent.IsNotNull())
     {
       // Should also have at least 4 children (see PaintbrushTool)
-      mitk::DataStorage::SetOfObjects::Pointer children = mitk::FindDerivedImages(this->GetDataStorage(), node, true);
+      mitk::DataStorage::SetOfObjects::Pointer children = niftk::FindDerivedImages(this->GetDataStorage(), node, true);
       for (std::size_t i = 0; i < children->size(); ++i)
       {
         set.insert(children->at(i)->GetName());
@@ -274,9 +274,9 @@ bool MorphologicalSegmentorPipelineManager::IsNodeAWorkingImage(const mitk::Data
   assert(node);
   bool result = false;
 
-  if (mitk::IsNodeABinaryImage(node))
+  if (niftk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, true);
+    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, true);
     if (parent.IsNotNull())
     {
       std::string name;
@@ -320,7 +320,7 @@ std::vector<mitk::DataNode*> MorphologicalSegmentorPipelineManager::GetWorkingDa
   std::vector<mitk::DataNode*> workingData(4);
   std::fill(workingData.begin(), workingData.end(), (mitk::DataNode*) 0);
 
-  mitk::DataStorage::SetOfObjects::Pointer children = mitk::FindDerivedImages(this->GetDataStorage(), node, true );
+  mitk::DataStorage::SetOfObjects::Pointer children = niftk::FindDerivedImages(this->GetDataStorage(), node, true );
 
   for (std::size_t i = 0; i < children->size(); i++)
   {
@@ -360,9 +360,9 @@ mitk::DataNode* MorphologicalSegmentorPipelineManager::GetSegmentationNodeFromWo
   assert(node);
   mitk::DataNode* segmentationNode = NULL;
 
-  if (mitk::IsNodeABinaryImage(node))
+  if (niftk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, true);
+    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, true);
     if (parent.IsNotNull())
     {
       segmentationNode = parent;
@@ -496,8 +496,8 @@ void MorphologicalSegmentorPipelineManager::UpdateSegmentation()
     {
       bool isEditing = false;
 
-      mitk::ITKRegionParametersDataNodeProperty::Pointer editingProperty
-        = static_cast<mitk::ITKRegionParametersDataNodeProperty*>(
+      ITKRegionParametersDataNodeProperty::Pointer editingProperty
+        = static_cast<ITKRegionParametersDataNodeProperty*>(
             workingData[i]->GetProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str()));
 
       if (editingProperty.IsNotNull())

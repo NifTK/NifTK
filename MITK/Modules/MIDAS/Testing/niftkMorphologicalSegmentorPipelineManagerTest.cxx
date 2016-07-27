@@ -36,8 +36,8 @@
 #include <mitkTestingMacros.h>
 #include <mitkToolManager.h>
 
+#include <niftkCoreObjectFactory.h>
 #include <niftkMorphologicalSegmentorPipelineManager.h>
-#include <mitkNifTKCoreObjectFactory.h>
 #include <niftkPaintbrushTool.h>
 #include <niftkTool.h>
 

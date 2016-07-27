@@ -13,34 +13,38 @@
 =============================================================================*/
 
 #include "niftkMultiViewerVisibilityManager.h"
-#include "niftkSingleViewerWidget.h"
 #include <mitkVtkResliceInterpolationProperty.h>
-#include <mitkDataStorageUtils.h>
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
 #include <itkConversionUtils.h>
 #include <itkSpatialOrientationAdapter.h>
 
+#include <niftkDataStorageUtils.h>
+
+#include "niftkSingleViewerWidget.h"
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-niftkMultiViewerVisibilityManager::niftkMultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage)
-  : mitk::DataNodePropertyListener(dataStorage, "visible")
+MultiViewerVisibilityManager::MultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage)
+  : niftk::DataNodePropertyListener(dataStorage, "visible")
 , m_InterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION)
 , m_AutomaticallyAddChildren(true)
 , m_Accumulate(false)
 , m_FocusManagerObserverTag(0)
 {
   // Register focus observer.
-  itk::SimpleMemberCommand<niftkMultiViewerVisibilityManager>::Pointer onFocusChangedCommand = itk::SimpleMemberCommand<niftkMultiViewerVisibilityManager>::New();
-  onFocusChangedCommand->SetCallbackFunction(this, &niftkMultiViewerVisibilityManager::OnFocusChanged);
+  itk::SimpleMemberCommand<MultiViewerVisibilityManager>::Pointer onFocusChangedCommand = itk::SimpleMemberCommand<MultiViewerVisibilityManager>::New();
+  onFocusChangedCommand->SetCallbackFunction(this, &MultiViewerVisibilityManager::OnFocusChanged);
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
 }
 
 
 //-----------------------------------------------------------------------------
-niftkMultiViewerVisibilityManager::~niftkMultiViewerVisibilityManager()
+MultiViewerVisibilityManager::~MultiViewerVisibilityManager()
 {
   // Deregister focus observer.
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -49,7 +53,7 @@ niftkMultiViewerVisibilityManager::~niftkMultiViewerVisibilityManager()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget* viewer)
+void MultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget* viewer)
 {
   std::set<mitk::DataNode*> newNodes;
   m_DataNodesPerViewer.push_back(newNodes);
@@ -77,7 +81,7 @@ void niftkMultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget* 
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::DeregisterViewers(std::size_t startIndex, std::size_t endIndex)
+void MultiViewerVisibilityManager::DeregisterViewers(std::size_t startIndex, std::size_t endIndex)
 {
   if (endIndex == -1)
   {
@@ -94,7 +98,7 @@ void niftkMultiViewerVisibilityManager::DeregisterViewers(std::size_t startIndex
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::ClearViewers(std::size_t startIndex, std::size_t endIndex)
+void MultiViewerVisibilityManager::ClearViewers(std::size_t startIndex, std::size_t endIndex)
 {
   if (endIndex == -1)
   {
@@ -108,7 +112,7 @@ void niftkMultiViewerVisibilityManager::ClearViewers(std::size_t startIndex, std
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
+void MultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
 {
   // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
   for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
@@ -151,7 +155,7 @@ void niftkMultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
     // registered as a child of a grey scale image. If the parent grey scale image is already
     // registered as visible in a viewer, then the child image is made visible, which has the effect of
     // immediately showing the segmented volume.
-    mitk::DataNode::Pointer parent = mitk::FindParentGreyScaleImage(this->GetDataStorage(), node);
+    mitk::DataNode::Pointer parent = niftk::FindParentGreyScaleImage(this->GetDataStorage(), node);
     if (parent.IsNotNull())
     {
       for (std::size_t i = 0; i < m_DataNodesPerViewer.size(); i++)
@@ -184,7 +188,7 @@ void niftkMultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::OnNodeRemoved(mitk::DataNode* node)
+void MultiViewerVisibilityManager::OnNodeRemoved(mitk::DataNode* node)
 {
   Superclass::OnNodeRemoved(node);
 
@@ -212,7 +216,7 @@ void niftkMultiViewerVisibilityManager::OnNodeRemoved(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
+void MultiViewerVisibilityManager::OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   /// Note:
   /// The renderer must be 0 because we are listening to the global visibility only.
@@ -267,7 +271,7 @@ void niftkMultiViewerVisibilityManager::OnPropertyChanged(mitk::DataNode* node, 
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::RemoveNodesFromViewer(int viewerIndex)
+void MultiViewerVisibilityManager::RemoveNodesFromViewer(int viewerIndex)
 {
   niftkSingleViewerWidget *viewer = m_Viewers[viewerIndex];
   assert(viewer);
@@ -286,14 +290,14 @@ void niftkMultiViewerVisibilityManager::RemoveNodesFromViewer(int viewerIndex)
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiViewerVisibilityManager::GetNodesInViewer(int viewerIndex)
+int MultiViewerVisibilityManager::GetNodesInViewer(int viewerIndex)
 {
   return m_DataNodesPerViewer[viewerIndex].size();
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNode* node, bool initialVisibility)
+void MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNode* node, bool initialVisibility)
 {
   niftkSingleViewerWidget* viewer = m_Viewers[viewerIndex];
   assert(viewer);
@@ -325,7 +329,7 @@ void niftkMultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::D
 
 
 //-----------------------------------------------------------------------------
-mitk::TimeGeometry::Pointer niftkMultiViewerVisibilityManager::GetTimeGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex)
+mitk::TimeGeometry::Pointer MultiViewerVisibilityManager::GetTimeGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex)
 {
   mitk::TimeGeometry::Pointer geometry = NULL;
   int indexThatWeActuallyUsed = -1;
@@ -389,7 +393,7 @@ mitk::TimeGeometry::Pointer niftkMultiViewerVisibilityManager::GetTimeGeometry(s
   // volumes are correctly assigned to parents.
   if (indexThatWeActuallyUsed != -1)
   {
-    if (!mitk::IsNodeAGreyScaleImage(nodes[indexThatWeActuallyUsed]))
+    if (!niftk::IsNodeAGreyScaleImage(nodes[indexThatWeActuallyUsed]))
     {
       mitk::DataNode::Pointer node = FindParentGreyScaleImage(this->GetDataStorage(), nodes[indexThatWeActuallyUsed]);
       if (node.IsNotNull())
@@ -409,7 +413,7 @@ mitk::TimeGeometry::Pointer niftkMultiViewerVisibilityManager::GetTimeGeometry(s
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void
-niftkMultiViewerVisibilityManager::GetAsAcquiredOrientation(itk::Image<TPixel, VImageDimension>* itkImage, WindowOrientation& outputOrientation)
+MultiViewerVisibilityManager::GetAsAcquiredOrientation(itk::Image<TPixel, VImageDimension>* itkImage, WindowOrientation& outputOrientation)
 {
   typedef itk::Image<TPixel, VImageDimension> ImageType;
 
@@ -455,7 +459,7 @@ niftkMultiViewerVisibilityManager::GetAsAcquiredOrientation(itk::Image<TPixel, V
 
 
 //-----------------------------------------------------------------------------
-WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk::DataNode*> nodes)
+WindowLayout MultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk::DataNode*> nodes)
 {
 
   WindowLayout windowLayout = m_DefaultWindowLayout;
@@ -482,12 +486,12 @@ WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk
       }
       catch (const mitk::AccessByItkException &e)
       {
-        MITK_ERROR << "niftkMultiViewerVisibilityManager::OnNodesDropped failed to work out 'As Acquired' orientation." << e.what() << std::endl;
+        MITK_ERROR << "MultiViewerVisibilityManager::OnNodesDropped failed to work out 'As Acquired' orientation." << e.what() << std::endl;
       }
     }
     else
     {
-      MITK_ERROR << "niftkMultiViewerVisibilityManager::OnNodesDropped failed to find an image to work out 'As Acquired' orientation." << std::endl;
+      MITK_ERROR << "MultiViewerVisibilityManager::OnNodesDropped failed to find an image to work out 'As Acquired' orientation." << std::endl;
     }
 
     if (orientation == WINDOW_ORIENTATION_AXIAL)
@@ -504,7 +508,7 @@ WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk
     }
     else
     {
-      MITK_ERROR << "niftkMultiViewerVisibilityManager::OnNodesDropped defaulting to window layout " << windowLayout << std::endl;
+      MITK_ERROR << "MultiViewerVisibilityManager::OnNodesDropped defaulting to window layout " << windowLayout << std::endl;
     }
   }
   return windowLayout;
@@ -512,7 +516,7 @@ WindowLayout niftkMultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::OnFocusChanged()
+void MultiViewerVisibilityManager::OnFocusChanged()
 {
   mitk::BaseRenderer* focusedRenderer = mitk::GlobalInteraction::GetInstance()->GetFocus();
 
@@ -545,7 +549,7 @@ void niftkMultiViewerVisibilityManager::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::UpdateGlobalVisibilities(mitk::BaseRenderer* renderer)
+void MultiViewerVisibilityManager::UpdateGlobalVisibilities(mitk::BaseRenderer* renderer)
 {
   bool wasBlocked = this->SetBlocked(true);
   mitk::DataStorage::SetOfObjects::ConstPointer all = this->GetDataStorage()->GetAll();
@@ -564,7 +568,7 @@ void niftkMultiViewerVisibilityManager::UpdateGlobalVisibilities(mitk::BaseRende
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> nodes)
+void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> nodes)
 {
   niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
 
@@ -777,4 +781,6 @@ void niftkMultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNod
   } // end if (we have valid input)
 
   this->UpdateGlobalVisibilities(viewer->GetSelectedRenderWindow()->GetRenderer());
+}
+
 }

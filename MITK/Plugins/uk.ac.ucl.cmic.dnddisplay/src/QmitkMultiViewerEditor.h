@@ -40,6 +40,11 @@ namespace mitk
 class DataNode;
 }
 
+class QmitkRenderWindow;
+
+namespace niftk
+{
+
 /**
  * \class QmitkMultiViewerEditor
  * \brief Provides a display with with multiple image viewers on up to 5 x 5 panes of equal
@@ -54,8 +59,7 @@ class DataNode;
  */
 
 class QmitkMultiViewerEditorPrivate;
-class niftkMultiViewerWidget;
-class QmitkRenderWindow;
+class MultiViewerWidget;
 
 class DNDDISPLAY_EXPORT QmitkMultiViewerEditor :
   public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
@@ -72,7 +76,7 @@ public:
   static const QString EDITOR_ID;
 
   /// \brief Get hold of the internal niftkMultiViewerWidget.
-  niftkMultiViewerWidget* GetMultiViewer();
+  MultiViewerWidget* GetMultiViewer();
 
   // -------------------  mitk::IRenderWindowPart  ----------------------
 
@@ -177,5 +181,7 @@ private:
 
   friend class QmitkMultiViewerEditorPrivate;
 };
+
+}
 
 #endif

@@ -12,17 +12,21 @@
 
 =============================================================================*/
 
-#include "QmitkNiftyMIDASApplication.h"
-#include "QmitkNiftyMIDASAppWorkbenchAdvisor.h"
+#include "niftkNiftyMIDASApplication.h"
+#include "niftkNiftyMIDASWorkbenchAdvisor.h"
+
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-QmitkNiftyMIDASApplication::QmitkNiftyMIDASApplication()
+NiftyMIDASApplication::NiftyMIDASApplication()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkNiftyMIDASApplication::QmitkNiftyMIDASApplication(const QmitkNiftyMIDASApplication& other)
+NiftyMIDASApplication::NiftyMIDASApplication(const NiftyMIDASApplication& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -30,7 +34,9 @@ QmitkNiftyMIDASApplication::QmitkNiftyMIDASApplication(const QmitkNiftyMIDASAppl
 
 
 //-----------------------------------------------------------------------------
-berry::WorkbenchAdvisor* QmitkNiftyMIDASApplication::GetWorkbenchAdvisor()
+berry::WorkbenchAdvisor* NiftyMIDASApplication::GetWorkbenchAdvisor()
 {
-  return new QmitkNiftyMIDASAppWorkbenchAdvisor();
+  return new NiftyMIDASWorkbenchAdvisor();
+}
+
 }

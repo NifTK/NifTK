@@ -12,17 +12,19 @@
 
 =============================================================================*/
 
-#ifndef QmitkNiftyMIDASApplicationPlugin_h
-#define QmitkNiftyMIDASApplicationPlugin_h
+#ifndef niftkPluginActivator_h
+#define niftkPluginActivator_h
 
 #include <niftkBaseApplicationPluginActivator.h>
 
+namespace niftk
+{
+
 /**
- * \class QmitkNiftyMIDASApplicationPlugin
- * \brief Implements QT and CTK specific functionality to launch the application as a plugin.
+ * \class PluginActivator
  * \ingroup uk_ac_ucl_cmic_niftymidas_internal
  */
-class QmitkNiftyMIDASApplicationPlugin : public BaseApplicationPluginActivator
+class PluginActivator : public BaseApplicationPluginActivator
 {
   Q_OBJECT
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
@@ -31,8 +33,8 @@ class QmitkNiftyMIDASApplicationPlugin : public BaseApplicationPluginActivator
   
 public:
 
-  QmitkNiftyMIDASApplicationPlugin();
-  ~QmitkNiftyMIDASApplicationPlugin();
+  PluginActivator();
+  ~PluginActivator();
 
   virtual void start(ctkPluginContext*) override;
   virtual void stop(ctkPluginContext*) override;
@@ -40,10 +42,10 @@ public:
 protected:
 
   /// \brief Called by framework to get a URL for help system.
-  virtual QString GetHelpHomePageURL() const;
-
-private:
+  virtual QString GetHelpHomePageURL() const override;
 
 };
+
+}
 
 #endif

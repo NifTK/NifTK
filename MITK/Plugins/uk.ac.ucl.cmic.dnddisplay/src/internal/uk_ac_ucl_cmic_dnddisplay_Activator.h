@@ -21,11 +21,15 @@
 
 class QmitkRenderWindow;
 
-namespace mitk {
-
+namespace mitk
+{
 class DataNode;
 class DataStorage;
+}
 
+
+namespace niftk
+{
 
 /**
  * \class uk_ac_ucl_cmic_dnddisplay_Activator

@@ -19,12 +19,11 @@
 
 #include <berryIPartListener.h>
 
-#include <mitkDataNodeVisibilityTracker.h>
-#include <mitkDataNodeStringPropertyFilter.h>
-
 #include <QMap>
 #include <QWidget>
 
+#include <niftkDataNodeVisibilityTracker.h>
+#include <niftkDataNodeStringPropertyFilter.h>
 #include <niftkDnDDisplayEnums.h>
 
 namespace mitk
@@ -38,8 +37,6 @@ class SliceNavigationController;
 
 class QmitkRenderWindow;
 
-class niftkSingleViewerWidget;
-
 class QComboBox;
 class QDoubleSpinBox;
 class QLabel;
@@ -50,7 +47,8 @@ class QSpinBox;
 namespace niftk
 {
 class BaseView;
-}
+class niftkSingleViewerWidget;
+
 
 /**
  * \class QmitkSideViewerWidget
@@ -79,7 +77,7 @@ public:
   ///       The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
   ///       rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
   ///
-  QmitkSideViewerWidget(niftk::BaseView* view, QWidget* parent, mitk::RenderingManager* renderingManager);
+  QmitkSideViewerWidget(BaseView* view, QWidget* parent, mitk::RenderingManager* renderingManager);
 
   /// \brief Destructs the QmitkSideViewerWidget object.
   virtual ~QmitkSideViewerWidget();
@@ -159,7 +157,7 @@ private:
   void SetupUi(QWidget* parent);
 
   /// \brief The view that contains this widget.
-  niftk::BaseView* m_ContainingView;
+  BaseView* m_ContainingView;
 
   /// \brief The identifier of the focus change listener.
   unsigned long m_FocusManagerObserverTag;
@@ -197,10 +195,10 @@ private:
   /// \brief The slice navigation controller of the coronal window of the selected editor.
   mitk::SliceNavigationController* m_MainCoronalSnc;
 
-  mitk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
+  DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
   /// \brief Filter that tells which nodes should not be handled.
-  mitk::DataNodeStringPropertyFilter::Pointer m_ToolNodeNameFilter;
+  DataNodeStringPropertyFilter::Pointer m_ToolNodeNameFilter;
 
   /// \brief The current magnification in the selected window of the viewer in this widget.
   /// It is used to increase or decrease the magnification value to the closest integers
@@ -237,5 +235,7 @@ private:
 
   mitk::RenderingManager* m_RenderingManager;
 };
+
+}
 
 #endif

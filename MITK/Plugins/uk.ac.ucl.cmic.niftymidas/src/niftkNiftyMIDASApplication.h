@@ -12,26 +12,31 @@
 
 =============================================================================*/
 
-#ifndef QmitkNiftyMIDASApplication_h
-#define QmitkNiftyMIDASApplication_h
+#ifndef niftkNiftyMIDASApplication_h
+#define niftkNiftyMIDASApplication_h
 
 #include <uk_ac_ucl_cmic_niftymidas_Export.h>
-#include <QmitkBaseApplication.h>
+
+#include <niftkBaseApplication.h>
+
+
+namespace niftk
+{
 
 /**
- * \class QmitkNiftyMIDASApplication
+ * \class NiftyMIDASApplication
  * \brief Plugin class to start up the NiftyMIDAS application.
  * \ingroup uk_ac_ucl_cmic_niftymidas
  */
-class NIFTYMIDAS_EXPORT QmitkNiftyMIDASApplication : public QmitkBaseApplication
+class NIFTYMIDAS_EXPORT NiftyMIDASApplication : public BaseApplication
 {
   Q_OBJECT
   Q_INTERFACES(berry::IApplication)
 
 public:
 
-  QmitkNiftyMIDASApplication();
-  QmitkNiftyMIDASApplication(const QmitkNiftyMIDASApplication& other);
+  NiftyMIDASApplication();
+  NiftyMIDASApplication(const NiftyMIDASApplication& other);
 
 protected:
 
@@ -40,4 +45,6 @@ protected:
 
 };
 
-#endif /*QMITKNIFTYMIDASAPPLICATION_H_*/
+}
+
+#endif

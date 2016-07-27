@@ -12,34 +12,41 @@
 
 =============================================================================*/
 
-#ifndef QmitkNiftyMIDASWorkbenchWindowAdvisor_h
-#define QmitkNiftyMIDASWorkbenchWindowAdvisor_h
+#ifndef niftkNiftyMIDASWorkbenchWindowAdvisor_h
+#define niftkNiftyMIDASWorkbenchWindowAdvisor_h
 
 #include <uk_ac_ucl_cmic_niftymidas_Export.h>
-#include <QmitkBaseWorkbenchWindowAdvisor.h>
+
+#include <niftkBaseWorkbenchWindowAdvisor.h>
+
+
+namespace niftk
+{
 
 /**
- * \class QmitkNiftyMIDASWorkbenchWindowAdvisor
+ * \class NiftyMIDASWorkbenchWindowAdvisor
  * \brief Advisor class to set up NiftyMIDAS windows on startup.
  * \ingroup uk_ac_ucl_cmic_niftymidas
- * \sa QmitkHelpAboutDialog
+ * \sa niftk::HelpAboutDialog
  */
-class NIFTYMIDAS_EXPORT QmitkNiftyMIDASWorkbenchWindowAdvisor : public QmitkBaseWorkbenchWindowAdvisor
+class NIFTYMIDAS_EXPORT NiftyMIDASWorkbenchWindowAdvisor : public BaseWorkbenchWindowAdvisor
 {
   Q_OBJECT
 
 public:
 
-  QmitkNiftyMIDASWorkbenchWindowAdvisor(berry::WorkbenchAdvisor* wbAdvisor,
+  NiftyMIDASWorkbenchWindowAdvisor(berry::WorkbenchAdvisor* wbAdvisor,
     berry::IWorkbenchWindowConfigurer::Pointer configurer);
 
   /**
-   * \brief We override QmitkBaseWorkbenchWindowAdvisor::PostWindowCreate
+   * \brief We override BaseWorkbenchWindowAdvisor::PostWindowCreate
    * to additionally provide an option to force the MITK display open
    * with an environment variable called NIFTK_MITK_DISPLAY=ON.
    */
-  virtual void PostWindowCreate();
+  virtual void PostWindowCreate() override;
+
 };
 
-#endif /*QMITKNIFTYMIDASWORKBENCHWINDOWADVISOR_H_*/
+}
 
+#endif

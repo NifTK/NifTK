@@ -24,10 +24,14 @@
 
 #include <usGetModuleContext.h>
 #include <usModuleRegistry.h>
-#include <mitkPointUtils.h>
+
+#include <niftkPointUtils.h>
 
 #include "niftkMultiWindowWidget_p.h"
 
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget* parent, mitk::RenderingManager* renderingManager, const QString& name)
@@ -61,8 +65,8 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget* parent, mitk::Renderin
     m_WindowLayoutInitialised[windowLayoutIndex] = false;
   }
 
-  // Create the main niftkMultiWindowWidget
-  m_MultiWidget = new niftkMultiWindowWidget(this, NULL, m_RenderingManager, mitk::BaseRenderer::RenderingMode::Standard, name);
+  // Create the main MultiWindowWidget
+  m_MultiWidget = new MultiWindowWidget(this, NULL, m_RenderingManager, mitk::BaseRenderer::RenderingMode::Standard, name);
   m_MultiWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -73,7 +77,7 @@ niftkSingleViewerWidget::niftkSingleViewerWidget(QWidget* parent, mitk::Renderin
   m_GridLayout->setHorizontalSpacing(0);
   m_GridLayout->addWidget(m_MultiWidget);
 
-  // Connect to niftkMultiWindowWidget, so we can listen for signals.
+  // Connect to MultiWindowWidget, so we can listen for signals.
   this->connect(this->GetAxialWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
@@ -423,7 +427,7 @@ void niftkSingleViewerWidget::SetDisplayInteractionsEnabled(bool enabled)
   if (enabled)
   {
     // Here we create our own display interactor...
-    m_DisplayInteractor = mitk::DnDDisplayInteractor::New(this);
+    m_DisplayInteractor = DnDDisplayInteractor::New(this);
 
     us::Module* niftkDnDDisplayModule = us::ModuleRegistry::GetModule("niftkDnDDisplay");
     m_DisplayInteractor->LoadStateMachine("DnDDisplayInteraction.xml", niftkDnDDisplayModule);
@@ -798,7 +802,7 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
 
     // Now store the current window layout/orientation.
     m_WindowLayout = windowLayout;
-    if (! ::IsSingleWindowLayout(windowLayout))
+    if (!niftk::IsSingleWindowLayout(windowLayout))
     {
       m_MultiWindowLayout = windowLayout;
     }
@@ -825,8 +829,8 @@ void niftkSingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       /// This moves the displayed region to the middle of the render window and the
       /// sets the scale factor so that the image fits the render window.
       m_MultiWidget->FitRenderWindows();
-      m_MultiWidget->SetCursorPositionBinding(::IsMultiWindowLayout(windowLayout));
-      m_MultiWidget->SetScaleFactorBinding(::IsMultiWindowLayout(windowLayout));
+      m_MultiWidget->SetCursorPositionBinding(niftk::IsMultiWindowLayout(windowLayout));
+      m_MultiWidget->SetScaleFactorBinding(niftk::IsMultiWindowLayout(windowLayout));
 
       m_WindowLayoutInitialised[Index(windowLayout)] = true;
     }
@@ -991,7 +995,7 @@ void niftkSingleViewerWidget::ToggleMultiWindowLayout()
   {
     WindowLayout nextWindowLayout;
 
-    if (::IsSingleWindowLayout(m_WindowLayout))
+    if (niftk::IsSingleWindowLayout(m_WindowLayout))
     {
       nextWindowLayout = m_MultiWindowLayout;
     }
@@ -1091,4 +1095,6 @@ void niftkSingleViewerWidget::ToggleIntensityAnnotation()
 bool niftkSingleViewerWidget::BlockUpdate(bool blocked)
 {
   return m_MultiWidget->BlockUpdate(blocked);
+}
+
 }

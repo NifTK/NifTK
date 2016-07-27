@@ -25,7 +25,6 @@
 #include <mitkITKImageImport.h>
 #include <mitkOperationEvent.h>
 #include <mitkPlanarCircle.h>
-#include <mitkPointUtils.h>
 #include <mitkToolManager.h>
 #include <mitkUndoController.h>
 #include <mitkVector.h>
@@ -34,6 +33,7 @@
 #include <usGetModuleContext.h>
 
 #include <niftkInteractionEventObserverMutex.h>
+#include <niftkPointUtils.h>
 
 #include "niftkDrawTool.xpm"
 #include "niftkDrawToolEventInterface.h"

@@ -24,14 +24,18 @@
 #include <mitkDataStorage.h>
 #include <mitkProperties.h>
 
-#include <mitkDataNodePropertyListener.h>
+#include <niftkDataNodePropertyListener.h>
 
 #include "niftkDnDDisplayEnums.h"
+
+
+namespace niftk
+{
 
 class niftkSingleViewerWidget;
 
 /**
- * \class niftkMultiViewerVisibilityManager
+ * \class MultiViewerVisibilityManager
  * \brief Maintains a list of niftkSingleViewerWidgets and coordinates visibility
  * properties by listening to AddNodeEvent, RemoveNodeEvent and listening directly
  * to Modified events from the nodes "visible" property in DataStorage.
@@ -54,23 +58,23 @@ class niftkSingleViewerWidget;
  * the MITK display that does not maintain renderer specific visibilities to its render
  * windows.
  */
-class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerVisibilityManager : public QObject, public mitk::DataNodePropertyListener
+class NIFTKDNDDISPLAY_EXPORT MultiViewerVisibilityManager : public QObject, public DataNodePropertyListener
 {
   Q_OBJECT
 
 public:
 
-  mitkClassMacro(niftkMultiViewerVisibilityManager, mitk::DataNodePropertyListener);
-  mitkNewMacro1Param(niftkMultiViewerVisibilityManager, const mitk::DataStorage::Pointer);
+  mitkClassMacro(MultiViewerVisibilityManager, DataNodePropertyListener);
+  mitkNewMacro1Param(MultiViewerVisibilityManager, const mitk::DataStorage::Pointer);
 
   /// \brief This class must (checked with assert) have a non-NULL mitk::DataStorage so it is injected in the constructor, and we register to AddNodeEvent, RemoveNodeEvent.
-  niftkMultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage);
+  MultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage);
 
   /// \brief Destructor, which unregisters all the listeners.
-  virtual ~niftkMultiViewerVisibilityManager();
+  virtual ~MultiViewerVisibilityManager();
 
-  niftkMultiViewerVisibilityManager(const niftkMultiViewerVisibilityManager&); // Purposefully not implemented.
-  niftkMultiViewerVisibilityManager& operator=(const niftkMultiViewerVisibilityManager&); // Purposefully not implemented.
+  MultiViewerVisibilityManager(const MultiViewerVisibilityManager&); // Purposefully not implemented.
+  MultiViewerVisibilityManager& operator=(const MultiViewerVisibilityManager&); // Purposefully not implemented.
 
   /// \brief Each new viewer should first be registered with this class, so this class can manage renderer specific visibility properties.
   void RegisterViewer(niftkSingleViewerWidget *viewer);
@@ -191,5 +195,7 @@ private:
 
   unsigned long m_FocusManagerObserverTag;
 };
+
+}
 
 #endif

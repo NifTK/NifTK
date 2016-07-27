@@ -21,6 +21,10 @@
 
 #include "QmitkSideViewerWidget.h"
 
+
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
 QmitkSideViewerView::QmitkSideViewerView()
 : m_RenderingManager(0)
@@ -121,4 +125,6 @@ void QmitkSideViewerView::RetrievePreferenceValues()
 QString QmitkSideViewerView::GetPreferencesNodeName()
 {
   return "/uk_ac_ucl_cmic_sideviewer";
+}
+
 }

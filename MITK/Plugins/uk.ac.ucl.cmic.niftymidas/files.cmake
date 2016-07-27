@@ -13,21 +13,22 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  QmitkNiftyMIDASApplication.cxx
-  QmitkNiftyMIDASAppWorkbenchAdvisor.cxx
-  QmitkNiftyMIDASWorkbenchWindowAdvisor.cxx
+  niftkNiftyMIDASApplication.cxx
+  niftkNiftyMIDASWorkbenchAdvisor.cxx
+  niftkNiftyMIDASWorkbenchWindowAdvisor.cxx
   niftkQCPerspective.cxx
   niftkSegmentationPerspective.cxx
 )
 
 set(INTERNAL_CPP_FILES
-  QmitkNiftyMIDASApplicationPlugin.cxx
+  niftkPluginActivator.cxx
 )
 
 set(MOC_H_FILES
-  src/QmitkNiftyMIDASApplication.h
-  src/QmitkNiftyMIDASWorkbenchWindowAdvisor.h
-  src/internal/QmitkNiftyMIDASApplicationPlugin.h
+  src/internal/niftkPluginActivator.h
+  src/niftkNiftyMIDASApplication.h
+  src/niftkNiftyMIDASWorkbenchAdvisor.h
+  src/niftkNiftyMIDASWorkbenchWindowAdvisor.h
   src/niftkQCPerspective.h
   src/niftkSegmentationPerspective.h
 )

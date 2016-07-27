@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef mitkDnDDisplayInteractor_h
-#define mitkDnDDisplayInteractor_h
+#ifndef niftkDnDDisplayInteractor_h
+#define niftkDnDDisplayInteractor_h
 
 #include <niftkDnDDisplayExports.h>
 
@@ -25,14 +25,19 @@
 
 #include <niftkDnDDisplayEnums.h>
 
-class niftkSingleViewerWidget;
 class QmitkRenderWindow;
 class QTimer;
 
 namespace mitk
 {
-
 class FocusManager;
+}
+
+
+namespace niftk
+{
+
+class niftkSingleViewerWidget;
 
 /**
  *\class DnDDisplayInteractor
@@ -61,7 +66,7 @@ public:
    * its infrastructure.
    * It also checks if event is to be accepted when i already has been processed by a DataInteractor.
    */
-  virtual void Notify(InteractionEvent* interactionEvent, bool isHandled) override;
+  virtual void Notify(mitk::InteractionEvent* interactionEvent, bool isHandled) override;
 
 protected:
   DnDDisplayInteractor(niftkSingleViewerWidget* viewer);
@@ -69,90 +74,90 @@ protected:
 
   virtual void ConnectActionsAndFunctions();
 
-  virtual bool StartSelectingPosition(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool StartSelectingPosition(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
-  virtual bool SelectPosition(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool SelectPosition(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
-  virtual bool StopSelectingPosition(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool StopSelectingPosition(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Like Superclass::Init, but blocks the update and selects the focused window.
-  virtual bool StartPanning(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool StartPanning(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
-  virtual bool Pan(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool Pan(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief
-  virtual bool StopPanning(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool StopPanning(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Like Superclass::Init, but blocks the update and selects the focused window.
   /// It also changes the selected position to the middle of the focused voxel.
-  virtual bool StartZooming(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool StartZooming(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
-  virtual bool Zoom(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool Zoom(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief
-  virtual bool StopZooming(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool StopZooming(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Switches to axial window layout.
-  virtual bool SetWindowLayoutToAxial(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool SetWindowLayoutToAxial(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Switches to sagittal window layout.
-  virtual bool SetWindowLayoutToSagittal(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool SetWindowLayoutToSagittal(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Switches to coronal window layout.
-  virtual bool SetWindowLayoutToCoronal(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool SetWindowLayoutToCoronal(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Switches to 3D window layout.
-  virtual bool SetWindowLayoutTo3D(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool SetWindowLayoutTo3D(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Switches to multi window layout.
-  virtual bool SetWindowLayoutToMulti(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool SetWindowLayoutToMulti(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Toggles between single and multi window layout.
-  virtual bool ToggleMultiWindowLayout(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool ToggleMultiWindowLayout(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Toggles the visibility of the cursor.
-  virtual bool ToggleCursorVisibility(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool ToggleCursorVisibility(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Toggles displaying the direction annotations on/off.
-  virtual bool ToggleDirectionAnnotations(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool ToggleDirectionAnnotations(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Toggles displaying the intensity annotation on/off.
-  virtual bool ToggleIntensityAnnotation(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool ToggleIntensityAnnotation(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Selects the previous slice.
   /// The slices are ordered in the following way:
   ///   <li>axial: inferior to superior
   ///   <li>sagittal: right to left
   ///   <li>coronal: anterior to posterior
-  virtual bool SelectPreviousSlice(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool SelectPreviousSlice(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Selects the next slice.
   /// The slices are ordered in the following way:
   ///   <li>axial: inferior to superior
   ///   <li>sagittal: right to left
   ///   <li>coronal: anterior to posterior
-  virtual bool SelectNextSlice(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool SelectNextSlice(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Selects the previous time step.
-  virtual bool SelectPreviousTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool SelectPreviousTimeStep(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Selects the next time step.
-  virtual bool SelectNextTimeStep(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool SelectNextTimeStep(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Starts scrolling through slices in a loop backwards.
-  virtual bool StartScrollingThroughSlicesBackwards(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool StartScrollingThroughSlicesBackwards(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Starts scrolling through slices in a loop in posterior direction.
-  virtual bool StartScrollingThroughSlicesForwards(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool StartScrollingThroughSlicesForwards(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Starts scrolling through time steps in a loop, backwards.
-  virtual bool StartScrollingThroughTimeStepsBackwards(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool StartScrollingThroughTimeStepsBackwards(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Starts scrolling through time steps in a loop, forwards.
-  virtual bool StartScrollingThroughTimeStepsForwards(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool StartScrollingThroughTimeStepsForwards(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Stops scrolling through slices.
-  virtual bool StopScrolling(StateMachineAction* action, InteractionEvent* interactionEvent);
+  virtual bool StopScrolling(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
 private slots:
 

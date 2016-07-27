@@ -13,7 +13,7 @@
 #============================================================================*/
 
 set(MOC_H_FILES
-  mitkQtSignalCollector.h
+  niftkQtSignalCollector.h
   niftkMultiViewerWidgetTest.h
   niftkSingleViewerWidgetTest.h
 )

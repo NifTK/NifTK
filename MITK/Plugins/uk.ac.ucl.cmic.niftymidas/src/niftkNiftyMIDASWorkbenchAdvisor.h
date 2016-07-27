@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkNiftyMIDASAppWorkbenchAdvisor_h
-#define QmitkNiftyMIDASAppWorkbenchAdvisor_h
+#ifndef niftkNiftyMIDASWorkbenchAdvisor_h
+#define niftkNiftyMIDASWorkbenchAdvisor_h
 
 #ifdef __MINGW32__
 // We need to inlclude winbase.h here in order to declare
@@ -23,18 +23,23 @@
 #endif
 
 #include <uk_ac_ucl_cmic_niftymidas_Export.h>
-#include <QmitkBaseWorkbenchAdvisor.h>
+
+#include <niftkBaseWorkbenchAdvisor.h>
+
+
+namespace niftk
+{
 
 /**
- * \class QmitkNiftyMIDASAppWorkbenchAdvisor
+ * \class NiftyMIDASWorkbenchAdvisor
  * \brief Advisor class to set up the initial NiftyMIDAS workbench.
  * \ingroup uk_ac_ucl_cmic_niftymidas
  */
-class NIFTYMIDAS_EXPORT QmitkNiftyMIDASAppWorkbenchAdvisor: public QmitkBaseWorkbenchAdvisor
+class NIFTYMIDAS_EXPORT NiftyMIDASWorkbenchAdvisor: public BaseWorkbenchAdvisor
 {
 public:
 
-  typedef QmitkBaseWorkbenchAdvisor Superclass;
+  typedef BaseWorkbenchAdvisor Superclass;
 
   /// \brief Returns uk.ac.ucl.cmic.niftyview.midasperspective which should match that in plugin.xml.
   virtual QString GetInitialWindowPerspectiveId();
@@ -49,9 +54,11 @@ protected:
   /**
    * \brief Actually creates the derived WorkbenchWindowAdvisor.
    */
-  virtual QmitkBaseWorkbenchWindowAdvisor* CreateQmitkBaseWorkbenchWindowAdvisor(
-      berry::IWorkbenchWindowConfigurer::Pointer configurer);
+  virtual BaseWorkbenchWindowAdvisor* CreateBaseWorkbenchWindowAdvisor(
+      berry::IWorkbenchWindowConfigurer::Pointer configurer) override;
 
 };
 
-#endif /*QMITKNIFTYMIDASAPPWORKBENCHADVISOR_H_*/
+}
+
+#endif

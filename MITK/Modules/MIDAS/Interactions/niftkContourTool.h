@@ -22,7 +22,8 @@
 #include <mitkMessage.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
-#include <mitkPointUtils.h>
+
+#include <niftkPointUtils.h>
 
 #include "niftkContourToolEventInterface.h"
 #include "niftkTool.h"

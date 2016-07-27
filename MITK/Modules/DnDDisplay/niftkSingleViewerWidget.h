@@ -30,24 +30,29 @@
 #include <QWidget>
 
 #include "niftkDnDDisplayEnums.h"
-#include "Interactions/mitkDnDDisplayInteractor.h"
+#include "Interactions/niftkDnDDisplayInteractor.h"
 
 class QGridLayout;
-class niftkMultiWindowWidget;
+
+
+namespace niftk
+{
+
+class MultiWindowWidget;
 
 /**
  * \class niftkSingleViewerWidget
- * \brief A widget to wrap a single niftkMultiWindowWidget,
+ * \brief A widget to wrap a single MultiWindowWidget,
  * providing methods for switching the render window layout, remembering
  * the last slice, magnification and cursor position.
  *
- * IMPORTANT: This class acts as a wrapper for niftkMultiWindowWidget.
- * Do not expose niftkMultiWindowWidget, or any member variables, or any
- * dependency from niftkMultiWindowWidget to the rest of the application.
+ * IMPORTANT: This class acts as a wrapper for MultiWindowWidget.
+ * Do not expose MultiWindowWidget, or any member variables, or any
+ * dependency from MultiWindowWidget to the rest of the application.
  *
  * Additionally, this widget contains its own mitk::RenderingManager which is passed to the
- * niftkMultiWindowWidget, which is itself a sub-class of QmitkStdMultiWidget.
- * This means the niftkMultiWindowWidget will update and render independently of the
+ * MultiWindowWidget, which is itself a sub-class of QmitkStdMultiWidget.
+ * This means the MultiWindowWidget will update and render independently of the
  * rest of the application, and care must be taken to manage this. The reason is that
  * each of these viewers in a multi-viewer could have it's own geometry, and sometimes
  * a very different geometry from other windows, and then when the "Bind Slices" button
@@ -68,7 +73,7 @@ class niftkMultiWindowWidget;
  * </pre>
  *
  * \sa QmitkRenderWindow
- * \sa niftkMultiWindowWidget
+ * \sa MultiWindowWidget
  */
 class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget
 {
@@ -431,7 +436,7 @@ private:
   mitk::RenderingManager::Pointer m_RenderingManager;
 
   QGridLayout* m_GridLayout;
-  niftkMultiWindowWidget* m_MultiWidget;
+  MultiWindowWidget* m_MultiWidget;
 
   bool m_IsBoundTimeGeometryActive;
   mitk::TimeGeometry::ConstPointer m_TimeGeometry;       // This comes from which ever image is dropped, so not visible outside this class.
@@ -500,7 +505,7 @@ private:
   WindowLayout m_SingleWindowLayout;
   WindowLayout m_MultiWindowLayout;
 
-  mitk::DnDDisplayInteractor::Pointer m_DisplayInteractor;
+  DnDDisplayInteractor::Pointer m_DisplayInteractor;
 
   /**
    * Reference to the service registration of the display interactor.
@@ -508,5 +513,7 @@ private:
    */
   us::ServiceRegistrationU m_DisplayInteractorService;
 };
+
+}
 
 #endif

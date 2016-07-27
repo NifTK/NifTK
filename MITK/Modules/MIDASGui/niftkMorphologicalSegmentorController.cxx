@@ -17,12 +17,12 @@
 #include <QMessageBox>
 
 #include <mitkImageStatisticsHolder.h>
-#include <mitkITKRegionParametersDataNodeProperty.h>
 #include <mitkPlane.h>
 #include <mitkUndoController.h>
 
-#include <mitkDataStorageUtils.h>
+#include <niftkDataStorageUtils.h>
 #include <niftkIBaseView.h>
+#include <niftkITKRegionParametersDataNodeProperty.h>
 #include <niftkPaintbrushTool.h>
 
 #include "Internal/niftkMorphologicalSegmentorGUI.h"
@@ -155,7 +155,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
   mitk::DataNode::Pointer newSegmentation;
   bool isRestarting = false;
 
-  if (mitk::IsNodeABinaryImage(selectedNode)
+  if (niftk::IsNodeABinaryImage(selectedNode)
       && this->CanStartSegmentationForBinaryNode(selectedNode)
       && !this->IsASegmentationImage(selectedNode)
       )
@@ -195,7 +195,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
 
 
     // Create extra data and store with ToolManager
-    mitk::ITKRegionParametersDataNodeProperty::Pointer erodeAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+    ITKRegionParametersDataNodeProperty::Pointer erodeAddEditingProp = ITKRegionParametersDataNodeProperty::New();
     erodeAddEditingProp->SetSize(1,1,1);
     erodeAddEditingProp->SetValid(false);
     mitk::DataNode::Pointer erodeAddNode = paintbrushTool->CreateEmptySegmentationNode(referenceImage, PaintbrushTool::EROSIONS_ADDITIONS_NAME, col->GetColor());
@@ -205,7 +205,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     erodeAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
     erodeAddNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeAddEditingProp);
 
-    mitk::ITKRegionParametersDataNodeProperty::Pointer erodeSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+    ITKRegionParametersDataNodeProperty::Pointer erodeSubtractEditingProp = ITKRegionParametersDataNodeProperty::New();
     erodeSubtractEditingProp->SetSize(1,1,1);
     erodeSubtractEditingProp->SetValid(false);
     mitk::DataNode::Pointer erodeSubtractNode = paintbrushTool->CreateEmptySegmentationNode( referenceImage, PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME, col->GetColor());
@@ -215,7 +215,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     erodeSubtractNode->SetProperty("binaryimage.selectedcolor", col);
     erodeSubtractNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), erodeSubtractEditingProp);
 
-    mitk::ITKRegionParametersDataNodeProperty::Pointer dilateAddEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+    ITKRegionParametersDataNodeProperty::Pointer dilateAddEditingProp = ITKRegionParametersDataNodeProperty::New();
     dilateAddEditingProp->SetSize(1,1,1);
     dilateAddEditingProp->SetValid(false);
     mitk::DataNode::Pointer dilateAddNode = paintbrushTool->CreateEmptySegmentationNode( referenceImage, PaintbrushTool::DILATIONS_ADDITIONS_NAME, col->GetColor());
@@ -225,7 +225,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     dilateAddNode->SetProperty("binaryimage.selectedcolor", segmentationColor);
     dilateAddNode->AddProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str(), dilateAddEditingProp);
 
-    mitk::ITKRegionParametersDataNodeProperty::Pointer dilateSubtractEditingProp = mitk::ITKRegionParametersDataNodeProperty::New();
+    ITKRegionParametersDataNodeProperty::Pointer dilateSubtractEditingProp = ITKRegionParametersDataNodeProperty::New();
     dilateSubtractEditingProp->SetSize(1,1,1);
     dilateSubtractEditingProp->SetValid(false);
     mitk::DataNode::Pointer dilateSubtractNode = paintbrushTool->CreateEmptySegmentationNode( referenceImage, PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME, col->GetColor());
@@ -562,8 +562,8 @@ void MorphologicalSegmentorController::OnSegmentationEdited(int imageIndex)
   {
     mitk::DataNode* node = toolManager->GetWorkingData(imageIndex);
     assert(node);
-    mitk::ITKRegionParametersDataNodeProperty::Pointer prop =
-        dynamic_cast<mitk::ITKRegionParametersDataNodeProperty*>(node->GetProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str()));
+    ITKRegionParametersDataNodeProperty::Pointer prop =
+        dynamic_cast<ITKRegionParametersDataNodeProperty*>(node->GetProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str()));
     if (prop.IsNotNull() && prop->HasVolume())
     {
       m_PipelineManager->UpdateSegmentation();

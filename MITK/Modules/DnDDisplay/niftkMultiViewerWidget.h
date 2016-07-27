@@ -45,25 +45,29 @@ class QButtonGroup;
 class QToolButton;
 class ctkPopupWidget;
 
-class niftkMultiViewerControls;
+
+namespace niftk
+{
+
+class MultiViewerControls;
 
 /**
- * \class niftkMultiViewerWidget
+ * \class MultiViewerWidget
  * \brief Provides up to 5 x 5 image viewing panes, arranged as rows and columns.
  *
  * This is a large, composite widget, containing a central area that can be
  * used to view images, several controls located at the top of the widget and
  * all the necessary plumbing to make it work. This widget is used as the
- * main editor widget of the niftkMultiViewerEditor.
+ * main editor widget of the MultiViewerEditor.
  *
  * The standard viewer layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2)
  * image panes, each showing a single 2D image slice.  This class contains
  * m_MaxRows x m_MaxCols niftkSingleViewerWidget each of which itself wraps
- * a niftkMultiWindowWidget which derives from QmitkStdMultiWidget,
+ * a MultiWindowWidget which derives from QmitkStdMultiWidget,
  * meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
  * including the option for 3D render window.
  */
-class NIFTKDNDDISPLAY_EXPORT niftkMultiViewerWidget : public QWidget
+class NIFTKDNDDISPLAY_EXPORT MultiViewerWidget : public QWidget
 {
   Q_OBJECT
 
@@ -81,14 +85,14 @@ public:
   /// \brief Constructor which builds up the controls and layout, and sets the selected viewer to the first (0th),
   /// the default drop type to DNDDISPLAY_DROP_SINGLE, and sets the number of rows and columns to those
   /// specified in the constructor parameter list.
-  niftkMultiViewerWidget(
-      niftkMultiViewerVisibilityManager* visibilityManager,
+  MultiViewerWidget(
+      MultiViewerVisibilityManager* visibilityManager,
       mitk::RenderingManager* renderingManager,
       QWidget* parent = 0, Qt::WindowFlags f = 0);
 
   /// \brief Destructor, where we assume that all Qt widgets will be destroyed automatically.
-  /// Note that we don't create or own the niftkMultiViewerVisibilityManager.
-  virtual ~niftkMultiViewerWidget();
+  /// Note that we don't create or own the MultiViewerVisibilityManager.
+  virtual ~MultiViewerWidget();
 
   /// \brief As each niftkSingleViewerWidget may have its own rendering manager,
   /// we may have to manually ask each viewer to re-render.
@@ -193,10 +197,10 @@ public:
   /// \brief Sets the magnification slider to be tracking.
   void SetMagnificationTracking(bool tracking);
 
-  /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window changes time step.
+  /// \brief Most likely called from the MultiViewerEditor to request that the currently selected window changes time step.
   void SetTimeStep(int timeStep);
 
-  /// \brief Most likely called from the niftkMultiViewerEditor to request that the currently selected window switches 3D.
+  /// \brief Most likely called from the MultiViewerEditor to request that the currently selected window switches 3D.
   void SetSelectedWindowTo3D();
 
   /// \brief Shows or hides the cursor.
@@ -380,7 +384,7 @@ private:
   /// \brief Selects the render window of the given viewer.
   void SetSelectedRenderWindow(int selectedViewerIndex, QmitkRenderWindow* selectedRenderWindow);
 
-  niftkMultiViewerControls* CreateControlPanel(QWidget* parent);
+  MultiViewerControls* CreateControlPanel(QWidget* parent);
 
   // Layouts
   QGridLayout* m_TopLevelLayout;
@@ -399,7 +403,7 @@ private:
 
   // Dependencies, injected via constructor.
   // We don't own them, so don't try to delete them.
-  niftkMultiViewerVisibilityManager* m_VisibilityManager;
+  MultiViewerVisibilityManager* m_VisibilityManager;
   mitk::RenderingManager* m_RenderingManager;
 
   // Member variables for control purposes.
@@ -420,9 +424,11 @@ private:
 
   int m_BindingOptions;
 
-  niftkMultiViewerControls* m_ControlPanel;
+  MultiViewerControls* m_ControlPanel;
 
   unsigned long m_FocusManagerObserverTag;
 };
+
+}
 
 #endif

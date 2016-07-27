@@ -12,26 +12,30 @@
 
 =============================================================================*/
 
-#include "QmitkNiftyMIDASWorkbenchWindowAdvisor.h"
+#include "niftkNiftyMIDASWorkbenchWindowAdvisor.h"
 
 #include <QMainWindow>
 #include <QStatusBar>
 
 #include <QmitkMemoryUsageIndicatorView.h>
 
+
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-QmitkNiftyMIDASWorkbenchWindowAdvisor::QmitkNiftyMIDASWorkbenchWindowAdvisor(
+NiftyMIDASWorkbenchWindowAdvisor::NiftyMIDASWorkbenchWindowAdvisor(
     berry::WorkbenchAdvisor* wbAdvisor,
     berry::IWorkbenchWindowConfigurer::Pointer configurer)
-: QmitkBaseWorkbenchWindowAdvisor(wbAdvisor, configurer)
+: BaseWorkbenchWindowAdvisor(wbAdvisor, configurer)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkNiftyMIDASWorkbenchWindowAdvisor::PostWindowCreate()
+void NiftyMIDASWorkbenchWindowAdvisor::PostWindowCreate()
 {
-  QmitkBaseWorkbenchWindowAdvisor::PostWindowCreate();
+  BaseWorkbenchWindowAdvisor::PostWindowCreate();
 
   // very bad hack...
   berry::IWorkbenchWindow::Pointer window = this->GetWindowConfigurer()->GetWindow();
@@ -50,4 +54,6 @@ void QmitkNiftyMIDASWorkbenchWindowAdvisor::PostWindowCreate()
       }
     }
   }
+}
+
 }

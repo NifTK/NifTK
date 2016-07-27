@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "mitkItkSignalCollector.h"
+#include "niftkItkSignalCollector.h"
 
 #include <mitkSliceNavigationController.h>
 #include <mitkFocusManager.h>
 
 #include <algorithm>
 
-namespace mitk
+namespace niftk
 {
 
 //-----------------------------------------------------------------------------

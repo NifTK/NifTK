@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef __mitkQtSignalCollector_h
-#define __mitkQtSignalCollector_h
+#ifndef niftkQtSignalCollector_h
+#define niftkQtSignalCollector_h
 
 #include <QObject>
 
@@ -23,7 +23,7 @@
 
 #include <vector>
 
-namespace mitk
+namespace niftk
 {
 
 /// \class QtSignalListener

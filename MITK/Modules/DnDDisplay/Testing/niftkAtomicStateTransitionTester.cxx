@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "mitkAtomicStateTransitionTester.h"
+#include "niftkAtomicStateTransitionTester.h"
 
 #include <QTest>
 #include <QMetaObject>
@@ -33,7 +33,7 @@ struct is_pointer<T*>
 };
 
 
-namespace mitk
+namespace niftk
 {
 
 //-----------------------------------------------------------------------------
@@ -46,10 +46,10 @@ AtomicStateTransitionTester<TestObject, TestObjectState>::AtomicStateTransitionT
 , m_ExpectedState(0)
 {
   /// We collect the ITK signals using an ItkSignalCollector object.
-  m_ItkSignalCollector = mitk::ItkSignalCollector::New();
+  m_ItkSignalCollector = ItkSignalCollector::New();
   m_ItkSignalCollector->AddListener(this);
 
-  m_QtSignalCollector = mitk::QtSignalCollector::New();
+  m_QtSignalCollector = QtSignalCollector::New();
   m_QtSignalCollector->AddListener(this);
 
   /// If the tested object is a QObject then let us discover its public signals and connect this object to them.

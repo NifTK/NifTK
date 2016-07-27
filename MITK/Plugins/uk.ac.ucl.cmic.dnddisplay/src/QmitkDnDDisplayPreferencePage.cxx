@@ -25,6 +25,10 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
+
+namespace niftk
+{
+
 const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE("default image interpolation");
 const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR("DnD display background colour");
 const QString QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET("DnD display background colour stylesheet");
@@ -320,4 +324,6 @@ void QmitkDnDDisplayPreferencePage::OnResetMIDASBackgroundColour()
   m_BackgroundColorStyleSheet = "background-color: rgb(255,250,240)"; // That strange MIDAS off-white colour.
   m_BackgroundColor = "#fffaf0";                                      // That strange MIDAS off-white colour.
   m_BackgroundColourButton->setStyleSheet(m_BackgroundColorStyleSheet);
+}
+
 }

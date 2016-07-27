@@ -18,9 +18,9 @@
 #include <itkOrthogonalContourExtractor2DImageFilter.h>
 
 #include <mitkImageToItk.h>
-#include <mitkPointUtils.h>
 
 #include <niftkContourTool.h>
+#include <niftkPointUtils.h>
 #include "niftkGeneralSegmentorPipeline.h"
 #include "niftkGeneralSegmentorPipelineCache.h"
 
@@ -479,7 +479,7 @@ void ITKPropagateToRegionGrowingImage
   typedef typename itk::Image<unsigned char, VImageDimension> BinaryImageType;
 
   // First take a copy of input seeds, as we need to store them for Undo/Redo purposes.
-  mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
+  niftk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
 
   // Work out the output region of interest that will be affected.
   // We want the region upstream/downstream/both of the slice of interest
@@ -1040,7 +1040,7 @@ void ITKPreprocessingOfSeedsForChangingSlice(
   if (oldSliceAxis == newSliceAxis && std::abs(newSliceIndex - oldSliceIndex) == 1 && newSliceIsEmpty)
   {
     // Copy all input seeds, as we are moving to an empty slice.
-    mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
+    niftk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
 
     // Take all seeds on the current slice number, and propagate to new slice.
     ITKPropagateSeedsToNewSlice(
@@ -1076,13 +1076,13 @@ void ITKPreprocessingOfSeedsForChangingSlice(
     }
     else
     {
-      mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
-      mitk::CopyPointSets(*inputSeeds, *outputNewSeeds);
+      niftk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
+      niftk::CopyPointSets(*inputSeeds, *outputNewSeeds);
     }
   }
   else  // changing orientation
   {
-    mitk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
+    niftk::CopyPointSets(*inputSeeds, *outputCopyOfInputSeeds);
 
     ITKAddNewSeedsToPointSet(
         itkImage,

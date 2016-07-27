@@ -142,17 +142,11 @@ void TestSimpleCases()
 //-----------------------------------------------------------------------------
 int niftkMergePointCloudsTest(int argc, char* argv[])
 {
-<<<<<<< HEAD:MITK/Modules/Core/Testing/mitkMergePointCloudsTest.cxx
-  MITK_TEST_BEGIN("mitkMergePointCloudsTest");
-  TestErrorConditions();
-  TestSimpleCases();
-=======
   // always start with this!
   MITK_TEST_BEGIN("niftkMergePointCloudsTest");
 
   niftk::TestErrorConditions();
   niftk::TestSimpleCases();
->>>>>>> niftk/4705-niftk-namespace:MITK/Modules/Core/Testing/niftkMergePointCloudsTest.cxx
 
   MITK_TEST_END();
 }

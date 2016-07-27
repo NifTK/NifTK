@@ -25,6 +25,10 @@ class QComboBox;
 class QSpinBox;
 class QCheckBox;
 
+
+namespace niftk
+{
+
 /**
  * \class QmitkDnDDisplayPreferencePage
  * \brief Provides a preferences page for the NifTK DnD Display, including default number of rows,
@@ -151,5 +155,7 @@ private:
 
   berry::IPreferences::Pointer m_DnDDisplayPreferencesNode;
 };
+
+}
 
 #endif

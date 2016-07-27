@@ -42,6 +42,10 @@
 #include <QSpinBox>
 #include <QVBoxLayout>
 
+
+namespace niftk
+{
+
 class EditorLifeCycleListener : public berry::IPartListener
 {
   berryObjectMacro(EditorLifeCycleListener)
@@ -181,7 +185,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(BaseView* view, QWidget* parent, mi
   /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
 //    niftk::ToolWorkingDataNameFilter::Pointer filter = niftk::ToolWorkingDataNameFilter::New();
 
-  m_ToolNodeNameFilter = mitk::DataNodeStringPropertyFilter::New();
+  m_ToolNodeNameFilter = DataNodeStringPropertyFilter::New();
   m_ToolNodeNameFilter->SetPropertyName("name");
   m_ToolNodeNameFilter->AddToList("One of FeedbackContourTool's feedback nodes");
   m_ToolNodeNameFilter->AddToList("MIDAS Background Contour");
@@ -200,7 +204,7 @@ QmitkSideViewerWidget::QmitkSideViewerWidget(BaseView* view, QWidget* parent, mi
   m_ToolNodeNameFilter->AddToList("PolyTool previous contour");
   m_ToolNodeNameFilter->AddToList("Paintbrush_Node");
 
-  m_VisibilityTracker = mitk::DataNodeVisibilityTracker::New(dataStorage);
+  m_VisibilityTracker = DataNodeVisibilityTracker::New(dataStorage);
   m_VisibilityTracker->SetNodesToIgnore(m_Viewer->GetWidgetPlanes());
   m_VisibilityTracker->SetManagedRenderers(renderers);
   m_VisibilityTracker->AddFilter(m_ToolNodeNameFilter.GetPointer());
@@ -920,7 +924,7 @@ void QmitkSideViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
   {
     m_CoronalWindowRadioButton->setChecked(true);
   }
-  else if (::IsMultiWindowLayout(windowLayout))
+  else if (niftk::IsMultiWindowLayout(windowLayout))
   {
     m_MultiWindowRadioButton->setChecked(true);
     if (windowLayout == WINDOW_LAYOUT_COR_AX_H
@@ -1027,4 +1031,6 @@ void QmitkSideViewerWidget::SetGeometry(const itk::EventObject& geometrySendEven
 
     m_TimeGeometry = timeGeometry;
   }
+}
+
 }

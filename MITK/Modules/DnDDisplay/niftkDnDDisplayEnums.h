@@ -15,6 +15,10 @@
 #ifndef niftkDnDDisplayEnums_h
 #define niftkDnDDisplayEnums_h
 
+
+namespace niftk
+{
+
 /*!
  * \enum WindowOrientation
  * \brief Describes the different types of orientation, axial, sagittal, coronal,
@@ -173,5 +177,7 @@ enum DnDDisplayInterpolationType
   DNDDISPLAY_LINEAR_INTERPOLATION,
   DNDDISPLAY_CUBIC_INTERPOLATION
 };
+
+}
 
 #endif

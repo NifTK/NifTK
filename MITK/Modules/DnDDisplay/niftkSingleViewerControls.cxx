@@ -18,6 +18,10 @@
 
 #include <ctkDoubleSpinBox.h>
 
+
+namespace niftk
+{
+
 WindowLayout niftkSingleViewerControls::s_MultiWindowLayouts[] = {
   WINDOW_LAYOUT_ORTHO,
   WINDOW_LAYOUT_3H,
@@ -378,7 +382,7 @@ void niftkSingleViewerControls::SetWindowLayout(WindowLayout windowLayout)
 
   m_WindowLayout = windowLayout;
 
-  ui->m_WindowBindingWidget->setEnabled(::IsMultiWindowLayout(windowLayout));
+  ui->m_WindowBindingWidget->setEnabled(niftk::IsMultiWindowLayout(windowLayout));
 }
 
 
@@ -539,4 +543,6 @@ void niftkSingleViewerControls::OnMultiWindowComboBoxIndexChanged(int index)
   ui->m_MultiWindowRadioButton->setChecked(true);
   this->SetWindowLayout(s_MultiWindowLayouts[index]);
   emit WindowLayoutChanged(s_MultiWindowLayouts[index]);
+}
+
 }

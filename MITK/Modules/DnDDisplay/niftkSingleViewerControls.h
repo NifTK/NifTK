@@ -21,10 +21,15 @@
 
 #include "niftkDnDDisplayEnums.h"
 
+
 namespace Ui
 {
 class niftkSingleViewerControls;
 }
+
+
+namespace niftk
+{
 
 /**
  * \class niftkSingleViewerControls
@@ -228,5 +233,7 @@ private:
   static WindowLayout s_MultiWindowLayouts[];
   static int const s_MultiWindowLayoutNumber;
 };
+
+}
 
 #endif

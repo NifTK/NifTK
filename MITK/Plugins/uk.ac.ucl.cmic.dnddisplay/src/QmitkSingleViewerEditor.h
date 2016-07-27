@@ -41,6 +41,11 @@ namespace mitk
   class DataNode;
 }
 
+class QmitkRenderWindow;
+
+namespace niftk
+{
+
 /**
  * \class QmitkSingleViewerEditor
  * \brief Simple image viewer that supports cursor and magnification binding.
@@ -56,7 +61,6 @@ namespace mitk
 class QmitkSingleViewerEditorPrivate;
 class niftkSingleViewerWidget;
 class niftkSingleViewerControls;
-class QmitkRenderWindow;
 
 class DNDDISPLAY_EXPORT QmitkSingleViewerEditor :
   public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
@@ -208,7 +212,7 @@ protected slots:
   void OnShow3DWindowControlChanged(bool visible);
 
   /// \brief Called when the window layout has been changed through the control panel.
-  void OnWindowLayoutControlChanged(WindowLayout windowLayout);
+  void OnWindowLayoutControlChanged(niftk::WindowLayout windowLayout);
 
   /// \brief Called when the binding of cursors in the render windows of a viewer has been changed through the control panel.
   void OnWindowCursorBindingControlChanged(bool);
@@ -225,10 +229,10 @@ protected slots:
   void OnTimeStepChanged(int timeStep);
 
   /// \brief Called when the scale factor of a viewer has changed by zooming in one of its render windows.
-  void OnScaleFactorChanged(WindowOrientation orientation, double scaleFactor);
+  void OnScaleFactorChanged(niftk::WindowOrientation orientation, double scaleFactor);
 
   /// \brief Called when the window layout of a viewer has changed.
-  void OnWindowLayoutChanged(WindowLayout windowLayout);
+  void OnWindowLayoutChanged(niftk::WindowLayout windowLayout);
 
   /// \brief Called when the show cursor option has been changed in a viewer.
   void OnCursorVisibilityChanged(bool visible);
@@ -243,5 +247,7 @@ private:
 
   const QScopedPointer<QmitkSingleViewerEditorPrivate> d;
 };
+
+}
 
 #endif

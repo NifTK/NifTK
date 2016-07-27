@@ -38,8 +38,12 @@ namespace mitk
 class SliceNavigationController;
 }
 
+
+namespace niftk
+{
+
 /**
- * \class niftkMultiWindowWidget
+ * \class MultiWindowWidget
  * \brief Subclass of QmitkStdMultiWidget to provide MIDAS specific functionality
  * by having convenient methods to control geometry, background, cursors on/off etc.
  * via calling methods in the base class QmitkStdMultiWidget.
@@ -70,9 +74,9 @@ class SliceNavigationController;
  *
  * \sa QmitkStdMultiWidget
  * \sa niftkSingleViewerWidget
- * \sa niftkMultiViewerWidget
+ * \sa MultiViewerWidget
  */
-class niftkMultiWindowWidget : private QmitkStdMultiWidget
+class MultiWindowWidget : private QmitkStdMultiWidget
 {
 
   Q_OBJECT
@@ -82,14 +86,14 @@ class niftkMultiWindowWidget : private QmitkStdMultiWidget
 public:
 
   /// \brief Constructor.
-  niftkMultiWindowWidget(QWidget* parent = 0,
+  MultiWindowWidget(QWidget* parent = 0,
                          Qt::WindowFlags f = 0,
                          mitk::RenderingManager* renderingManager = 0,
                          mitk::BaseRenderer::RenderingMode::Type renderingMode = mitk::BaseRenderer::RenderingMode::Standard,
                          const QString& name = "DnD-Viewer");
 
   /// \brief Destructor.
-  virtual ~niftkMultiWindowWidget();
+  virtual ~MultiWindowWidget();
 
   /// \brief Return whether this widget is considered 'enabled'.
   bool IsEnabled() const;
@@ -587,5 +591,7 @@ private:
   friend class DisplayGeometryModificationCommand;
 
 };
+
+}
 
 #endif

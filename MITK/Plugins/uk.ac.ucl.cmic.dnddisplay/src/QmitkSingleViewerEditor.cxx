@@ -36,6 +36,10 @@
 #include <ctkPopupWidget.h>
 #include <niftkSingleViewerControls.h>
 
+
+namespace niftk
+{
+
 const QString QmitkSingleViewerEditor::EDITOR_ID = "org.mitk.editors.dnddisplay";
 
 class QmitkSingleViewerEditorPrivate
@@ -45,7 +49,7 @@ public:
   ~QmitkSingleViewerEditorPrivate();
 
   niftkSingleViewerWidget* m_SingleViewer;
-  niftkMultiViewerVisibilityManager::Pointer m_VisibilityManager;
+  MultiViewerVisibilityManager::Pointer m_VisibilityManager;
   mitk::RenderingManager::Pointer m_RenderingManager;
   QScopedPointer<berry::IPartListener> m_PartListener;
   mitk::IRenderingManager* m_RenderingManagerInterface;
@@ -306,7 +310,7 @@ void QmitkSingleViewerEditor::CreateQtPartControl(QWidget* parent)
     bool magnificationTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true);
     bool timeStepTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true);
 
-    d->m_VisibilityManager = niftkMultiViewerVisibilityManager::New(dataStorage);
+    d->m_VisibilityManager = MultiViewerVisibilityManager::New(dataStorage);
     d->m_VisibilityManager->SetInterpolationType(defaultInterpolationType);
     d->m_VisibilityManager->SetDefaultWindowLayout(defaultLayout);
     d->m_VisibilityManager->SetDropType(DNDDISPLAY_DROP_SINGLE);
@@ -870,4 +874,6 @@ void QmitkSingleViewerEditor::OnWindowLayoutChanged(WindowLayout windowLayout)
   d->m_ControlPanel->SetWindowLayout(windowLayout);
   d->m_ControlPanel->SetWindowCursorsBound(d->m_SingleViewer->GetCursorPositionBinding());
   d->m_ControlPanel->SetWindowMagnificationsBound(d->m_SingleViewer->GetScaleFactorBinding());
+}
+
 }

@@ -39,17 +39,21 @@
 
 #include "vtkSideAnnotation_p.h"
 
+
+namespace niftk
+{
+
 /**
  * This class is to notify the SingleViewerWidget about the display geometry changes of a render window.
  */
 class DisplayGeometryModificationCommand : public itk::Command
 {
 public:
-  mitkNewMacro2Param(DisplayGeometryModificationCommand, niftkMultiWindowWidget*, int);
+  mitkNewMacro2Param(DisplayGeometryModificationCommand, MultiWindowWidget*, int);
 
 
   //-----------------------------------------------------------------------------
-  DisplayGeometryModificationCommand(niftkMultiWindowWidget* multiWindowWidget, int windowIndex)
+  DisplayGeometryModificationCommand(MultiWindowWidget* multiWindowWidget, int windowIndex)
   : itk::Command()
   , m_MultiWindowWidget(multiWindowWidget)
   , m_WindowIndex(windowIndex)
@@ -72,13 +76,13 @@ public:
   }
 
 private:
-  niftkMultiWindowWidget* const m_MultiWindowWidget;
+  MultiWindowWidget* const m_MultiWindowWidget;
   int m_WindowIndex;
 };
 
 
 //-----------------------------------------------------------------------------
-niftkMultiWindowWidget::niftkMultiWindowWidget(
+MultiWindowWidget::MultiWindowWidget(
     QWidget* parent,
     Qt::WindowFlags flags,
     mitk::RenderingManager* renderingManager,
@@ -214,24 +218,24 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   this->DisableColoredRectangles();
 
   // Register to listen to SliceNavigators, slice changed events.
-  itk::ReceptorMemberCommand<niftkMultiWindowWidget>::Pointer onAxialSliceChangedCommand =
-    itk::ReceptorMemberCommand<niftkMultiWindowWidget>::New();
-  onAxialSliceChangedCommand->SetCallbackFunction(this, &niftkMultiWindowWidget::OnAxialSliceChanged);
+  itk::ReceptorMemberCommand<MultiWindowWidget>::Pointer onAxialSliceChangedCommand =
+    itk::ReceptorMemberCommand<MultiWindowWidget>::New();
+  onAxialSliceChangedCommand->SetCallbackFunction(this, &MultiWindowWidget::OnAxialSliceChanged);
   m_AxialSliceObserverTag = mitkWidget1->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onAxialSliceChangedCommand);
 
-  itk::ReceptorMemberCommand<niftkMultiWindowWidget>::Pointer onSagittalSliceChangedCommand =
-    itk::ReceptorMemberCommand<niftkMultiWindowWidget>::New();
-  onSagittalSliceChangedCommand->SetCallbackFunction(this, &niftkMultiWindowWidget::OnSagittalSliceChanged);
+  itk::ReceptorMemberCommand<MultiWindowWidget>::Pointer onSagittalSliceChangedCommand =
+    itk::ReceptorMemberCommand<MultiWindowWidget>::New();
+  onSagittalSliceChangedCommand->SetCallbackFunction(this, &MultiWindowWidget::OnSagittalSliceChanged);
   m_SagittalSliceObserverTag = mitkWidget2->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSagittalSliceChangedCommand);
 
-  itk::ReceptorMemberCommand<niftkMultiWindowWidget>::Pointer onCoronalSliceChangedCommand =
-    itk::ReceptorMemberCommand<niftkMultiWindowWidget>::New();
-  onCoronalSliceChangedCommand->SetCallbackFunction(this, &niftkMultiWindowWidget::OnCoronalSliceChanged);
+  itk::ReceptorMemberCommand<MultiWindowWidget>::Pointer onCoronalSliceChangedCommand =
+    itk::ReceptorMemberCommand<MultiWindowWidget>::New();
+  onCoronalSliceChangedCommand->SetCallbackFunction(this, &MultiWindowWidget::OnCoronalSliceChanged);
   m_CoronalSliceObserverTag = mitkWidget3->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onCoronalSliceChangedCommand);
 
-  itk::ReceptorMemberCommand<niftkMultiWindowWidget>::Pointer onTimeStepChangedCommand =
-    itk::ReceptorMemberCommand<niftkMultiWindowWidget>::New();
-  onTimeStepChangedCommand->SetCallbackFunction(this, &niftkMultiWindowWidget::OnTimeStepChanged);
+  itk::ReceptorMemberCommand<MultiWindowWidget>::Pointer onTimeStepChangedCommand =
+    itk::ReceptorMemberCommand<MultiWindowWidget>::New();
+  onTimeStepChangedCommand->SetCallbackFunction(this, &MultiWindowWidget::OnTimeStepChanged);
 //  m_TimeStepObserverTag = m_TimeNavigationController->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(NULL, 0), onTimeStepChangedCommand);
   m_TimeStepObserverTag = m_RenderWindows[AXIAL]->GetSliceNavigationController()->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(NULL, 0), onTimeStepChangedCommand);
 
@@ -269,9 +273,9 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
   }
 
   // We listen to FocusManager to detect when things have changed focus, and hence to highlight the "current window".
-  itk::SimpleMemberCommand<niftkMultiWindowWidget>::Pointer onFocusChangedCommand =
-    itk::SimpleMemberCommand<niftkMultiWindowWidget>::New();
-  onFocusChangedCommand->SetCallbackFunction(this, &niftkMultiWindowWidget::OnFocusChanged);
+  itk::SimpleMemberCommand<MultiWindowWidget>::Pointer onFocusChangedCommand =
+    itk::SimpleMemberCommand<MultiWindowWidget>::New();
+  onFocusChangedCommand->SetCallbackFunction(this, &MultiWindowWidget::OnFocusChanged);
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
@@ -286,7 +290,7 @@ niftkMultiWindowWidget::niftkMultiWindowWidget(
 
 
 //-----------------------------------------------------------------------------
-niftkMultiWindowWidget::~niftkMultiWindowWidget()
+MultiWindowWidget::~MultiWindowWidget()
 {
   this->SetEnabled(false);
 
@@ -332,7 +336,7 @@ niftkMultiWindowWidget::~niftkMultiWindowWidget()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(int windowIndex)
+void MultiWindowWidget::AddDisplayGeometryModificationObserver(int windowIndex)
 {
   mitk::BaseRenderer* renderer = m_RenderWindows[windowIndex]->GetRenderer();
   assert(renderer);
@@ -351,7 +355,7 @@ void niftkMultiWindowWidget::AddDisplayGeometryModificationObserver(int windowIn
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::RemoveDisplayGeometryModificationObserver(int windowIndex)
+void MultiWindowWidget::RemoveDisplayGeometryModificationObserver(int windowIndex)
 {
   mitk::BaseRenderer* renderer = m_RenderWindows[windowIndex]->GetRenderer();
   assert(renderer);
@@ -364,28 +368,28 @@ void niftkMultiWindowWidget::RemoveDisplayGeometryModificationObserver(int windo
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnAxialSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
+void MultiWindowWidget::OnAxialSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
   this->OnSelectedPositionChanged(AXIAL);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnSagittalSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
+void MultiWindowWidget::OnSagittalSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
   this->OnSelectedPositionChanged(SAGITTAL);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnCoronalSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
+void MultiWindowWidget::OnCoronalSliceChanged(const itk::EventObject& /*geometrySliceEvent*/)
 {
   this->OnSelectedPositionChanged(CORONAL);
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnTimeStepChanged(const itk::EventObject& /*geometryTimeEvent*/)
+void MultiWindowWidget::OnTimeStepChanged(const itk::EventObject& /*geometryTimeEvent*/)
 {
   if (!m_BlockSncEvents && m_Geometry != NULL)
   {
@@ -405,7 +409,7 @@ void niftkMultiWindowWidget::OnTimeStepChanged(const itk::EventObject& /*geometr
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetBackgroundColour(QColor colour)
+void MultiWindowWidget::SetBackgroundColour(QColor colour)
 {
   m_BackgroundColour = colour;
   mitk::Color backgroundColour;
@@ -415,21 +419,21 @@ void niftkMultiWindowWidget::SetBackgroundColour(QColor colour)
 
 
 //-----------------------------------------------------------------------------
-QColor niftkMultiWindowWidget::GetBackgroundColour() const
+QColor MultiWindowWidget::GetBackgroundColour() const
 {
   return m_BackgroundColour;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::IsFocused() const
+bool MultiWindowWidget::IsFocused() const
 {
   return m_IsFocused;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetFocused()
+void MultiWindowWidget::SetFocused()
 {
   if (!m_IsFocused)
   {
@@ -444,7 +448,7 @@ void niftkMultiWindowWidget::SetFocused()
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow* niftkMultiWindowWidget::GetSelectedRenderWindow() const
+QmitkRenderWindow* MultiWindowWidget::GetSelectedRenderWindow() const
 {
   assert(m_SelectedWindowIndex >= 0 && m_SelectedWindowIndex < m_RenderWindows.size());
 
@@ -453,7 +457,7 @@ QmitkRenderWindow* niftkMultiWindowWidget::GetSelectedRenderWindow() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
+void MultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWindow)
 {
   std::size_t selectedWindowIndex = std::find(m_RenderWindows.begin(), m_RenderWindows.end(), renderWindow) - m_RenderWindows.begin();
   assert(selectedWindowIndex != m_RenderWindows.size());
@@ -463,7 +467,7 @@ void niftkMultiWindowWidget::SetSelectedRenderWindow(QmitkRenderWindow* renderWi
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetSelectedWindowIndex() const
+int MultiWindowWidget::GetSelectedWindowIndex() const
 {
   assert(m_SelectedWindowIndex >= 0 && m_SelectedWindowIndex < m_RenderWindows.size());
 
@@ -471,7 +475,7 @@ int niftkMultiWindowWidget::GetSelectedWindowIndex() const
 }
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)
+void MultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)
 {
   assert(selectedWindowIndex >= 0 && selectedWindowIndex < m_RenderWindows.size());
 
@@ -501,9 +505,9 @@ void niftkMultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)
 }
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::UpdateBorders()
+void MultiWindowWidget::UpdateBorders()
 {
-  // When we "Select", the selection is at the level of the niftkMultiWindowWidget
+  // When we "Select", the selection is at the level of the MultiWindowWidget
   // so the whole of this widget is selected. However, we may have clicked in
   // a specific view, so it still helps to highlight the most recently clicked on view.
   // Also, if you are displaying ortho window layout (2x2) then you actually have 4 windows present,
@@ -552,7 +556,7 @@ void niftkMultiWindowWidget::UpdateBorders()
 
 
 //-----------------------------------------------------------------------------
-std::vector<QmitkRenderWindow*> niftkMultiWindowWidget::GetVisibleRenderWindows() const
+std::vector<QmitkRenderWindow*> MultiWindowWidget::GetVisibleRenderWindows() const
 {
   std::vector<QmitkRenderWindow*> renderWindows;
 
@@ -577,7 +581,7 @@ std::vector<QmitkRenderWindow*> niftkMultiWindowWidget::GetVisibleRenderWindows(
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::RequestUpdate()
+void MultiWindowWidget::RequestUpdate()
 {
   // The point of all this is to minimise the number of Updates.
   // So, ONLY call RequestUpdate on the specific window that is shown.
@@ -635,14 +639,14 @@ void niftkMultiWindowWidget::RequestUpdate()
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::IsEnabled() const
+bool MultiWindowWidget::IsEnabled() const
 {
   return m_Enabled;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetEnabled(bool enabled)
+void MultiWindowWidget::SetEnabled(bool enabled)
 {
   // See also constructor for things that are ALWAYS on/off.
   if (enabled != m_Enabled)
@@ -662,14 +666,14 @@ void niftkMultiWindowWidget::SetEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::IsCursorVisible() const
+bool MultiWindowWidget::IsCursorVisible() const
 {
   return m_CursorVisibility;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCursorVisible(bool visible)
+void MultiWindowWidget::SetCursorVisible(bool visible)
 {
   // Here, "locally" means, for this widget, so we are setting Renderer Specific properties.
   m_CursorVisibility = visible;
@@ -687,7 +691,7 @@ void niftkMultiWindowWidget::SetCursorVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::AreDirectionAnnotationsVisible() const
+bool MultiWindowWidget::AreDirectionAnnotationsVisible() const
 {
   return m_DirectionAnnotations[AXIAL]->GetVisibility()
       && m_DirectionAnnotations[SAGITTAL]->GetVisibility()
@@ -696,7 +700,7 @@ bool niftkMultiWindowWidget::AreDirectionAnnotationsVisible() const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
+void MultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
 {
   m_DirectionAnnotations[AXIAL]->SetVisibility(visible);
   m_DirectionAnnotations[SAGITTAL]->SetVisibility(visible);
@@ -706,14 +710,14 @@ void niftkMultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::IsIntensityAnnotationVisible() const
+bool MultiWindowWidget::IsIntensityAnnotationVisible() const
 {
   return m_IntensityAnnotationIsVisible;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetIntensityAnnotationVisible(bool visible)
+void MultiWindowWidget::SetIntensityAnnotationVisible(bool visible)
 {
   if (visible != m_IntensityAnnotationIsVisible)
   {
@@ -725,14 +729,14 @@ void niftkMultiWindowWidget::SetIntensityAnnotationVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::GetShow3DWindowIn2x2WindowLayout() const
+bool MultiWindowWidget::GetShow3DWindowIn2x2WindowLayout() const
 {
   return m_Show3DWindowIn2x2WindowLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetShow3DWindowIn2x2WindowLayout(bool visible)
+void MultiWindowWidget::SetShow3DWindowIn2x2WindowLayout(bool visible)
 {
   m_Show3DWindowIn2x2WindowLayout = visible;
   this->Update3DWindowVisibility();
@@ -740,7 +744,7 @@ void niftkMultiWindowWidget::SetShow3DWindowIn2x2WindowLayout(bool visible)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::Update3DWindowVisibility()
+void MultiWindowWidget::Update3DWindowVisibility()
 {
   if (m_DataStorage.IsNotNull())
   {
@@ -787,7 +791,7 @@ void niftkMultiWindowWidget::Update3DWindowVisibility()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visibility)
+void MultiWindowWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visibility)
 {
   if (renderWindow != NULL && node != NULL)
   {
@@ -807,7 +811,7 @@ void niftkMultiWindowWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visibility)
+void MultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visibility)
 {
   for (std::size_t i = 0; i < nodes.size(); ++i)
   {
@@ -821,7 +825,7 @@ void niftkMultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, b
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::ContainsRenderWindow(QmitkRenderWindow* renderWindow) const
+bool MultiWindowWidget::ContainsRenderWindow(QmitkRenderWindow* renderWindow) const
 {
   return mitkWidget1 == renderWindow
       || mitkWidget2 == renderWindow
@@ -831,14 +835,14 @@ bool niftkMultiWindowWidget::ContainsRenderWindow(QmitkRenderWindow* renderWindo
 
 
 //-----------------------------------------------------------------------------
-const std::vector<QmitkRenderWindow*>& niftkMultiWindowWidget::GetRenderWindows() const
+const std::vector<QmitkRenderWindow*>& MultiWindowWidget::GetRenderWindows() const
 {
   return m_RenderWindows;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::FitRenderWindows(double scaleFactor)
+void MultiWindowWidget::FitRenderWindows(double scaleFactor)
 {
   if (!m_Geometry)
   {
@@ -939,7 +943,7 @@ void niftkMultiWindowWidget::FitRenderWindows(double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor)
+void MultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor)
 {
   assert(windowIndex < 3);
 
@@ -1017,7 +1021,7 @@ void niftkMultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
+void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   if (timeGeometry != NULL)
   {
@@ -1429,7 +1433,7 @@ void niftkMultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeome
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
+void MultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 {
 /// The viewer is not correctly initialised if this check is enabled.
 //  if (windowLayout == m_WindowLayout)
@@ -1619,8 +1623,8 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   this->mitkWidget3Container->setVisible(showCoronal);
   this->mitkWidget4Container->setVisible(show3D);
 
-  m_CursorPositionBinding = ::IsMultiWindowLayout(windowLayout);
-  m_ScaleFactorBinding = ::IsMultiWindowLayout(windowLayout);
+  m_CursorPositionBinding = niftk::IsMultiWindowLayout(windowLayout);
+  m_ScaleFactorBinding = niftk::IsMultiWindowLayout(windowLayout);
 
   m_WindowLayout = windowLayout;
   m_WindowLayoutHasChanged = true;
@@ -1662,14 +1666,14 @@ void niftkMultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 
 
 //-----------------------------------------------------------------------------
-WindowLayout niftkMultiWindowWidget::GetWindowLayout() const
+WindowLayout MultiWindowWidget::GetWindowLayout() const
 {
   return m_WindowLayout;
 }
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetMaxSlice(int windowIndex) const
+int MultiWindowWidget::GetMaxSlice(int windowIndex) const
 {
   int maxSlice = 0;
 
@@ -1685,7 +1689,7 @@ int niftkMultiWindowWidget::GetMaxSlice(int windowIndex) const
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetMaxTimeStep() const
+int MultiWindowWidget::GetMaxTimeStep() const
 {
 //  return m_TimeNavigationController->GetTime()->GetSteps() - 1;
   return m_RenderWindows[AXIAL]->GetSliceNavigationController()->GetTime()->GetSteps() - 1;
@@ -1693,14 +1697,14 @@ int niftkMultiWindowWidget::GetMaxTimeStep() const
 
 
 //-----------------------------------------------------------------------------
-const mitk::Vector2D& niftkMultiWindowWidget::GetCursorPosition(int windowIndex) const
+const mitk::Vector2D& MultiWindowWidget::GetCursorPosition(int windowIndex) const
 {
   return m_CursorPositions[windowIndex];
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCursorPosition(int windowIndex, const mitk::Vector2D& cursorPosition)
+void MultiWindowWidget::SetCursorPosition(int windowIndex, const mitk::Vector2D& cursorPosition)
 {
   bool updateWasBlocked = this->BlockUpdate(true);
 
@@ -1761,7 +1765,7 @@ void niftkMultiWindowWidget::SetCursorPosition(int windowIndex, const mitk::Vect
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::MoveToCursorPosition(int windowIndex)
+void MultiWindowWidget::MoveToCursorPosition(int windowIndex)
 {
   if (m_Geometry)
   {
@@ -1797,7 +1801,7 @@ void niftkMultiWindowWidget::MoveToCursorPosition(int windowIndex)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnDisplayGeometryModified(int windowIndex)
+void MultiWindowWidget::OnDisplayGeometryModified(int windowIndex)
 {
   if (m_BlockDisplayEvents || !m_Geometry)
   {
@@ -1888,7 +1892,7 @@ void niftkMultiWindowWidget::OnDisplayGeometryModified(int windowIndex)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnOriginChanged(int windowIndex, bool beingPanned)
+void MultiWindowWidget::OnOriginChanged(int windowIndex, bool beingPanned)
 {
   if (m_Geometry)
   {
@@ -1952,7 +1956,7 @@ void niftkMultiWindowWidget::OnOriginChanged(int windowIndex, bool beingPanned)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnScaleFactorChanged(int windowIndex, double scaleFactor)
+void MultiWindowWidget::OnScaleFactorChanged(int windowIndex, double scaleFactor)
 {
   if (m_Geometry)
   {
@@ -1980,7 +1984,7 @@ void niftkMultiWindowWidget::OnScaleFactorChanged(int windowIndex, double scaleF
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnSelectedPositionChanged(int windowIndex)
+void MultiWindowWidget::OnSelectedPositionChanged(int windowIndex)
 {
   if (!m_BlockSncEvents && m_Geometry != NULL)
   {
@@ -1999,7 +2003,7 @@ void niftkMultiWindowWidget::OnSelectedPositionChanged(int windowIndex)
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetSelectedSlice(int windowIndex) const
+int MultiWindowWidget::GetSelectedSlice(int windowIndex) const
 {
   assert(0 <= windowIndex && windowIndex < 3);
 
@@ -2021,7 +2025,7 @@ int niftkMultiWindowWidget::GetSelectedSlice(int windowIndex) const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice)
+void MultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice)
 {
   if (m_Geometry != NULL)
   {
@@ -2041,7 +2045,7 @@ void niftkMultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::MoveSlice(int windowIndex, int slices, bool restart)
+void MultiWindowWidget::MoveSlice(int windowIndex, int slices, bool restart)
 {
   if (m_Geometry && windowIndex < 3 && slices != 0)
   {
@@ -2099,14 +2103,14 @@ void niftkMultiWindowWidget::MoveSlice(int windowIndex, int slices, bool restart
 
 
 //-----------------------------------------------------------------------------
-const mitk::Point3D& niftkMultiWindowWidget::GetSelectedPosition() const
+const mitk::Point3D& MultiWindowWidget::GetSelectedPosition() const
 {
   return m_SelectedPosition;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPosition)
+void MultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPosition)
 {
   if (selectedPosition != m_SelectedPosition)
   {
@@ -2162,7 +2166,7 @@ void niftkMultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPo
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::InitialiseIntensityAnnotations()
+void MultiWindowWidget::InitialiseIntensityAnnotations()
 {
   for (int i = 0; i < 3; ++i)
   {
@@ -2186,7 +2190,7 @@ void niftkMultiWindowWidget::InitialiseIntensityAnnotations()
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
+void MultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
 {
   if (windowIndex >= 0 && windowIndex < 3)
   {
@@ -2272,14 +2276,14 @@ void niftkMultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetTimeStep() const
+int MultiWindowWidget::GetTimeStep() const
 {
   return m_TimeStep;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetTimeStep(int timeStep)
+void MultiWindowWidget::SetTimeStep(int timeStep)
 {
   if (timeStep != m_TimeStep)
   {
@@ -2294,7 +2298,7 @@ void niftkMultiWindowWidget::SetTimeStep(int timeStep)
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SynchroniseCursorPositions(int windowIndex)
+void MultiWindowWidget::SynchroniseCursorPositions(int windowIndex)
 {
   /// sagittal[1] <-> coronal[1]      (if m_CursorAxialPositionsAreBound is set)
   /// axial[0] <-> coronal[0]         (if m_CursorSagittalPositionsAreBound is set)
@@ -2430,14 +2434,14 @@ void niftkMultiWindowWidget::SynchroniseCursorPositions(int windowIndex)
 
 
 //-----------------------------------------------------------------------------
-const std::vector<mitk::Vector2D>& niftkMultiWindowWidget::GetCursorPositions() const
+const std::vector<mitk::Vector2D>& MultiWindowWidget::GetCursorPositions() const
 {
   return m_CursorPositions;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions)
+void MultiWindowWidget::SetCursorPositions(const std::vector<mitk::Vector2D>& cursorPositions)
 {
   assert(cursorPositions.size() == 3);
 
@@ -2455,7 +2459,7 @@ void niftkMultiWindowWidget::SetCursorPositions(const std::vector<mitk::Vector2D
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::UpdateCursorPosition(int windowIndex)
+void MultiWindowWidget::UpdateCursorPosition(int windowIndex)
 {
   bool updateWasBlocked = this->BlockUpdate(true);
 
@@ -2483,14 +2487,14 @@ void niftkMultiWindowWidget::UpdateCursorPosition(int windowIndex)
 
 
 //-----------------------------------------------------------------------------
-double niftkMultiWindowWidget::GetScaleFactor(int windowIndex) const
+double MultiWindowWidget::GetScaleFactor(int windowIndex) const
 {
   return m_ScaleFactors[windowIndex];
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetScaleFactor(int windowIndex, double scaleFactor)
+void MultiWindowWidget::SetScaleFactor(int windowIndex, double scaleFactor)
 {
   bool updateWasBlocked = this->BlockUpdate(true);
 
@@ -2518,14 +2522,14 @@ void niftkMultiWindowWidget::SetScaleFactor(int windowIndex, double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
-const std::vector<double>& niftkMultiWindowWidget::GetScaleFactors() const
+const std::vector<double>& MultiWindowWidget::GetScaleFactors() const
 {
   return m_ScaleFactors;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFactors)
+void MultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFactors)
 {
   assert(scaleFactors.size() == 3);
 
@@ -2545,7 +2549,7 @@ void niftkMultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFac
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::ZoomAroundCursorPosition(int windowIndex)
+void MultiWindowWidget::ZoomAroundCursorPosition(int windowIndex)
 {
   if (m_Geometry)
   {
@@ -2571,7 +2575,7 @@ void niftkMultiWindowWidget::ZoomAroundCursorPosition(int windowIndex)
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetDominantAxis(int windowIndex) const
+int MultiWindowWidget::GetDominantAxis(int windowIndex) const
 {
   int axisWithLongerSide = 0;
 
@@ -2597,7 +2601,7 @@ int niftkMultiWindowWidget::GetDominantAxis(int windowIndex) const
 
 
 //-----------------------------------------------------------------------------
-double niftkMultiWindowWidget::GetMagnification(int windowIndex) const
+double MultiWindowWidget::GetMagnification(int windowIndex) const
 {
   double magnification = 0.0;
 
@@ -2620,7 +2624,7 @@ double niftkMultiWindowWidget::GetMagnification(int windowIndex) const
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetMagnification(int windowIndex, double magnification)
+void MultiWindowWidget::SetMagnification(int windowIndex, double magnification)
 {
   if (m_Geometry)
   {
@@ -2643,7 +2647,7 @@ void niftkMultiWindowWidget::SetMagnification(int windowIndex, double magnificat
 
 
 //-----------------------------------------------------------------------------
-int niftkMultiWindowWidget::GetSliceUpDirection(WindowOrientation orientation) const
+int MultiWindowWidget::GetSliceUpDirection(WindowOrientation orientation) const
 {
   int upDirection = 0;
   if (m_Geometry && orientation >= 0 && orientation < 3)
@@ -2666,7 +2670,7 @@ int niftkMultiWindowWidget::GetSliceUpDirection(WindowOrientation orientation) c
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::OnFocusChanged()
+void MultiWindowWidget::OnFocusChanged()
 {
   if (m_BlockFocusEvents)
   {
@@ -2711,14 +2715,14 @@ void niftkMultiWindowWidget::OnFocusChanged()
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::IsLinkedNavigationEnabled() const
+bool MultiWindowWidget::IsLinkedNavigationEnabled() const
 {
   return m_LinkedNavigationEnabled;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetLinkedNavigationEnabled(bool linkedNavigationEnabled)
+void MultiWindowWidget::SetLinkedNavigationEnabled(bool linkedNavigationEnabled)
 {
   if (linkedNavigationEnabled != m_LinkedNavigationEnabled)
   {
@@ -2729,14 +2733,14 @@ void niftkMultiWindowWidget::SetLinkedNavigationEnabled(bool linkedNavigationEna
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::GetCursorPositionBinding() const
+bool MultiWindowWidget::GetCursorPositionBinding() const
 {
   return m_CursorPositionBinding;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetCursorPositionBinding(bool cursorPositionBinding)
+void MultiWindowWidget::SetCursorPositionBinding(bool cursorPositionBinding)
 {
   if (cursorPositionBinding != m_CursorPositionBinding)
   {
@@ -2767,14 +2771,14 @@ void niftkMultiWindowWidget::SetCursorPositionBinding(bool cursorPositionBinding
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::GetScaleFactorBinding() const
+bool MultiWindowWidget::GetScaleFactorBinding() const
 {
   return m_ScaleFactorBinding;
 }
 
 
 //-----------------------------------------------------------------------------
-void niftkMultiWindowWidget::SetScaleFactorBinding(bool scaleFactorBinding)
+void MultiWindowWidget::SetScaleFactorBinding(bool scaleFactorBinding)
 {
   if (scaleFactorBinding != m_ScaleFactorBinding)
   {
@@ -2803,7 +2807,7 @@ void niftkMultiWindowWidget::SetScaleFactorBinding(bool scaleFactorBinding)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::BlockDisplayEvents(bool blocked)
+bool MultiWindowWidget::BlockDisplayEvents(bool blocked)
 {
   bool eventsWereBlocked = m_BlockDisplayEvents;
   m_BlockDisplayEvents = blocked;
@@ -2812,7 +2816,7 @@ bool niftkMultiWindowWidget::BlockDisplayEvents(bool blocked)
 
 
 //-----------------------------------------------------------------------------
-bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
+bool MultiWindowWidget::BlockUpdate(bool blocked)
 {
   bool updateWasBlocked = m_BlockUpdate;
 
@@ -3025,4 +3029,6 @@ bool niftkMultiWindowWidget::BlockUpdate(bool blocked)
   }
 
   return updateWasBlocked;
+}
+
 }

@@ -36,7 +36,7 @@
 #include <QtPlugin>
 
 
-namespace mitk
+namespace niftk
 {
 
 uk_ac_ucl_cmic_dnddisplay_Activator* uk_ac_ucl_cmic_dnddisplay_Activator::s_Instance = 0;
@@ -81,9 +81,9 @@ ctkPluginContext* uk_ac_ucl_cmic_dnddisplay_Activator::GetPluginContext()
   return m_PluginContext;
 }
 
-} // end namespace
+}
 
 //-----------------------------------------------------------------------------
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_dnddisplay, mitk::uk_ac_ucl_cmic_dnddisplay_Activator)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_dnddisplay, niftk::uk_ac_ucl_cmic_dnddisplay_Activator)
 #endif
