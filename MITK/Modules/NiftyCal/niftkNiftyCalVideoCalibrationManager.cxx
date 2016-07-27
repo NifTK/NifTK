@@ -93,11 +93,27 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
     m_ReferenceHandEyeMatrices[0].push_back(cv::Matx44d::eye()); // left
     m_ReferenceHandEyeMatrices[1].push_back(cv::Matx44d::eye()); // right
   }
+  m_ModelToWorld = cv::Matx44d::eye();
+
   m_ModelPointsToVisualise = mitk::PointSet::New();
   m_ModelPointsToVisualiseDataNode = mitk::DataNode::New();
   m_ModelPointsToVisualiseDataNode->SetData(m_ModelPointsToVisualise);
   m_ModelPointsToVisualiseDataNode->SetName("CalibrationModelPoints");
   m_ModelPointsToVisualiseDataNode->SetBoolProperty("helper object", true);
+
+  // These must be initialised for the use-case where we load them from disk.
+  m_Intrinsic[0] = cvCreateMat(3, 3, CV_64FC1);
+  m_Intrinsic[0] = cv::Mat::eye(3, 3, CV_64FC1);
+  m_Intrinsic[1] = cvCreateMat(3, 3, CV_64FC1);
+  m_Intrinsic[1] = cv::Mat::eye(3, 3, CV_64FC1);
+  m_Distortion[0] = cvCreateMat(1, 5, CV_64FC1);
+  m_Distortion[0] = cv::Mat::zeros(1, 5, CV_64FC1);
+  m_Distortion[1] = cvCreateMat(1, 5, CV_64FC1);
+  m_Distortion[1] = cv::Mat::zeros(1, 5, CV_64FC1);
+  m_LeftToRightRotationMatrix = cvCreateMat(3,3,CV_64FC1);
+  m_LeftToRightRotationMatrix = cv::Mat::eye(3, 3, CV_64FC1);
+  m_LeftToRightTranslationVector = cvCreateMat(3,1,CV_64FC1);
+  m_LeftToRightTranslationVector = cv::Mat::eye(3, 1, CV_64FC1);
 }
 
 
@@ -163,6 +179,18 @@ void NiftyCalVideoCalibrationManager::SetRightImageNode(mitk::DataNode::Pointer 
 mitk::DataNode::Pointer NiftyCalVideoCalibrationManager::GetRightImageNode() const
 {
   return m_ImageNode[1];
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::SetTrackingTransformNode(mitk::DataNode::Pointer node)
+{
+  this->m_TrackingTransformNode = node;
+  if (!m_CalibrationDirName.empty())
+  {
+    this->UpdateDisplayNodes();
+  }
+  this->Modified();
 }
 
 
@@ -348,6 +376,7 @@ void NiftyCalVideoCalibrationManager::UpdateCameraToWorldPosition()
     }
 
     coords->SetVtkMatrix(*cameraToWorldMatrix);
+    node->Modified();
   }
 }
 
@@ -1246,6 +1275,20 @@ double NiftyCalVideoCalibrationManager::Calibrate()
 
       } // end if we are in stereo
     } // end if we have a reference matrix.
+
+    // Compute a model to world for visualisation purposes.
+    std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
+    if (cameraMatrices.size() > 0)
+    {
+      std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
+
+      m_ModelToWorld = niftk::CalculateAverageModelToWorld(
+            m_HandEyeMatrices[0][m_HandeyeMethod],
+            trackingMatrices,
+            cameraMatrices
+            );
+    }
+
   } // end if we have tracking data.
 
   // Sets properties on images, and updates visualised points.
@@ -1285,17 +1328,9 @@ void NiftyCalVideoCalibrationManager::UpdateDisplayNodes()
 
     if (m_TrackingTransformNode.IsNotNull())
     {
-      std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
-      std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
-
-      cv::Matx44d modelToWorld = niftk::CalculateAverageModelToWorld(
-            m_HandEyeMatrices[0][m_HandeyeMethod],
-            trackingMatrices,
-            cameraMatrices
-            );
-
-      this->UpdateVisualisedPoints(modelToWorld);
+      this->UpdateVisualisedPoints(m_ModelToWorld);
     }
+
   } // end if updating nodes
 }
 
@@ -1357,30 +1392,41 @@ void NiftyCalVideoCalibrationManager::SetStereoExtrinsicsOnImage(const cv::Mat& 
 void NiftyCalVideoCalibrationManager::LoadCalibrationFromDirectory(const std::string& dirName)
 {
   cv::Mat leftCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
-  cv::Mat leftCameraDistortion = cv::Mat(1,4,CV_64FC1);
+  cv::Mat leftCameraDistortion = cv::Mat(1,4,CV_64FC1); // we only save 4 params. ToDo.
   cv::Mat rightCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
-  cv::Mat rightCameraDistortion = cv::Mat(1,4,CV_64FC1);
+  cv::Mat rightCameraDistortion = cv::Mat(1,4,CV_64FC1); // we only save 4 params. ToDo.
   cv::Mat rightToLeftRotationMatrix = cv::Mat(3,3,CV_64FC1);
   cv::Mat rightToLeftTranslationVector = cv::Mat(3,1,CV_64FC1);
   cv::Mat leftCameraToTracker = cv::Mat(4,4,CV_64FC1);
   cv::Mat rightCameraToTracker = cv::Mat(4,4,CV_64FC1);
+  cv::Mat modelToWorld = cv::Mat(4,4,CV_64FC1);
 
   std::string dir = dirName + niftk::GetFileSeparator();
 
-  mitk::LoadCameraIntrinsicsFromPlainText(dir + "calib.left.intrinsics.txt",
+  std::string leftIntrinsicsFile  = dir + "calib.left.intrinsic.txt";
+  std::string rightIntrinsicsFile = dir + "calib.right.intrinsic.txt";
+  std::string rightToLeftFile     = dir + "calib.r2l.txt";
+  std::string leftEyeHandFile     = dir + "calib.left.handeye.txt";
+  std::string rightEyeHandFile    = dir + "calib.right.handeye.txt";
+  std::string modelToWorldFile    = dir + "calib.model2world.txt";
+
+  mitk::LoadCameraIntrinsicsFromPlainText(leftIntrinsicsFile,
                                           &leftCameraIntrinsic, &leftCameraDistortion);
 
-  mitk::LoadCameraIntrinsicsFromPlainText (dir + "calib.right.intrinsics.txt",
-                                           &rightCameraIntrinsic, &rightCameraDistortion);
+  mitk::LoadCameraIntrinsicsFromPlainText(rightIntrinsicsFile,
+                                          &rightCameraIntrinsic, &rightCameraDistortion);
 
-  mitk::LoadStereoTransformsFromPlainText (dir + "calib.r2l.txt",
-                                           &rightToLeftRotationMatrix, &rightToLeftTranslationVector);
+  mitk::LoadStereoTransformsFromPlainText(rightToLeftFile,
+                                          &rightToLeftRotationMatrix, &rightToLeftTranslationVector);
 
-  mitk::LoadHandeyeFromPlainText (dir + "calib.left.handeye.txt",
-                                  &leftCameraToTracker);
+  mitk::LoadHandeyeFromPlainText(leftEyeHandFile,
+                                 &leftCameraToTracker);
 
-  mitk::LoadHandeyeFromPlainText (dir + "calib.right.handeye.txt",
-                                  &rightCameraToTracker);
+  mitk::LoadHandeyeFromPlainText(rightEyeHandFile,
+                                 &rightCameraToTracker);
+
+  mitk::LoadHandeyeFromPlainText(modelToWorldFile,
+                                 &modelToWorld);
 
   cv::Matx44d rightToLeft = niftk::RotationAndTranslationToMatrix(rightToLeftRotationMatrix,
                                                                   rightToLeftTranslationVector
@@ -1391,23 +1437,24 @@ void NiftyCalVideoCalibrationManager::LoadCalibrationFromDirectory(const std::st
   cv::Matx44d rightEyeHand(rightCameraToTracker);
   cv::Matx44d rightHandEye = rightEyeHand.inv(cv::DECOMP_SVD);
 
-  m_Intrinsic[0] = leftCameraIntrinsic;
-  m_Intrinsic[1] = rightCameraIntrinsic;
-  m_Distortion[0] = leftCameraDistortion;
-  m_Distortion[1] = rightCameraDistortion;
-
   for (int r = 0; r < 3; r++)
   {
     for (int c = 0; c < 3; c++)
     {
       m_LeftToRightRotationMatrix.at<double>(r, c) = leftToRight(r, c);
+      m_Intrinsic[0].at<double>(r, c) = leftCameraIntrinsic.at<double>(r, c);
+      m_Intrinsic[1].at<double>(r, c) = rightCameraIntrinsic.at<double>(r, c);
+      m_ModelToWorld(r, c) = modelToWorld.at<double>(r,c);
     }
     m_LeftToRightTranslationVector.at<double>(0, r) = leftToRight(r, 3);
+    m_ModelToWorld(r, 3) = modelToWorld.at<double>(r, 3);
   }
   for (int i = 0; i < 4; i++)
   {
     m_HandEyeMatrices[0][i] = leftHandEye;
     m_HandEyeMatrices[1][i] = rightHandEye;
+    m_Distortion[0].at<double>(0, i) = leftCameraDistortion.at<double>(0, i);
+    m_Distortion[1].at<double>(0, i) = rightCameraDistortion.at<double>(0, i);
   }
 
   m_CalibrationDirName = dirName;
@@ -1430,14 +1477,14 @@ void NiftyCalVideoCalibrationManager::Save()
 
   MITK_INFO << "Saving calibration to:" << m_OutputDirName << ":";
 
-  niftk::SaveNifTKIntrinsics(m_Intrinsic[0], m_Distortion[0], m_OutputDirName + "calib.left.intrinsics.txt");
+  niftk::SaveNifTKIntrinsics(m_Intrinsic[0], m_Distortion[0], m_OutputDirName + "calib.left.intrinsic.txt");
   this->SaveImages("calib.left.images.", m_OriginalImages[0]);
   this->SavePoints("calib.left.points.", m_Points[0]);
 
   if (m_ImageNode[1].IsNotNull())
   {
     niftk::SaveNifTKIntrinsics(
-      m_Intrinsic[1], m_Distortion[1], m_OutputDirName + "calib.right.intrinsics.txt");
+      m_Intrinsic[1], m_Distortion[1], m_OutputDirName + "calib.right.intrinsic.txt");
 
     niftk::SaveNifTKStereoExtrinsics(
       m_LeftToRightRotationMatrix, m_LeftToRightTranslationVector, m_OutputDirName + "calib.r2l.txt");
@@ -1572,6 +1619,9 @@ void NiftyCalVideoCalibrationManager::Save()
             + "calib.right.handeye.reference.params.txt");
       }
     } // end if we have a reference transform
+
+    niftk::Save4x4Matrix(m_ModelToWorld, m_OutputDirName + "calib.model2world.txt");
+
   } // end if we have tracking info
 
   MITK_INFO << "Saving calibration to:" << m_OutputDirName << ": - DONE.";

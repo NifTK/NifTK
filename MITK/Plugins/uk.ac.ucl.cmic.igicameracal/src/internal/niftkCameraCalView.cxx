@@ -242,7 +242,8 @@ void CameraCalView::RetrievePreferenceValues()
     std::string calibrationDir = prefs->Get(CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME, "").toStdString();
     if (!calibrationDir.empty())
     {
-      m_Manager->LoadCalibrationFromDirectory(calibrationDir);
+      QDir dirName(QString::fromStdString(calibrationDir));
+      m_Manager->LoadCalibrationFromDirectory(dirName.absolutePath().toStdString());
     }
 
     m_Manager->SetCalibrationPattern(

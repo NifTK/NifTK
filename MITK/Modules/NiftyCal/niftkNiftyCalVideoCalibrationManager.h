@@ -83,7 +83,7 @@ public:
   void SetRightImageNode(mitk::DataNode::Pointer node);
   mitk::DataNode::Pointer GetRightImageNode() const;
 
-  itkSetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
+  void SetTrackingTransformNode(mitk::DataNode::Pointer node);
   itkGetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
 
   itkSetMacro(ReferenceTrackingTransformNode, mitk::DataNode::Pointer);
@@ -366,6 +366,7 @@ private:
   cv::Mat                                        m_LeftToRightTranslationVector;
   std::vector<cv::Matx44d>                       m_HandEyeMatrices[2];
   std::vector<cv::Matx44d>                       m_ReferenceHandEyeMatrices[2];
+  cv::Matx44d                                    m_ModelToWorld;
 
 }; // end class
 
