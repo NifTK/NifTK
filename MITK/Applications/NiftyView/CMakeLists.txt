@@ -55,7 +55,7 @@ set(_include_plugins
 if(BUILD_VL)
   set(_include_plugins
     ${_include_plugins}
-    uk.ac.ucl.cmic.vlstandarddisplayeditor
+#    uk.ac.ucl.cmic.vlstandarddisplayeditor
   )
 endif()
 
