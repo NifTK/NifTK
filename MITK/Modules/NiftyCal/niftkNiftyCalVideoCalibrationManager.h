@@ -183,6 +183,12 @@ public:
    */
   void UpdateCameraToWorldPosition();
 
+  /**
+   * \brief Loads our NifTK standard named calibration files from disk,
+   * overwriting all the existing, intrinsic, distortion, hand-eye etc.
+   */
+  void LoadCalibrationFromDirectory(const std::string& dirName);
+
 protected:
 
   NiftyCalVideoCalibrationManager(); // Purposefully hidden.

@@ -19,6 +19,7 @@
 #include <mitkProperties.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
 #include <niftkFileHelper.h>
 #include <niftkImageConversion.h>
 
@@ -1337,6 +1338,68 @@ void NiftyCalVideoCalibrationManager::SetStereoExtrinsicsOnImage(const cv::Mat& 
     image->SetProperty(propertyName.c_str(), matrixProp);
   }
 }
+
+
+//-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::LoadCalibrationFromDirectory(const std::string& dirName)
+{
+  cv::Mat leftCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
+  cv::Mat leftCameraDistortion = cv::Mat(1,4,CV_64FC1);
+  cv::Mat rightCameraIntrinsic = cv::Mat(3,3,CV_64FC1);
+  cv::Mat rightCameraDistortion = cv::Mat(1,4,CV_64FC1);
+  cv::Mat rightToLeftRotationMatrix = cv::Mat(3,3,CV_64FC1);
+  cv::Mat rightToLeftTranslationVector = cv::Mat(3,1,CV_64FC1);
+  cv::Mat leftCameraToTracker = cv::Mat(4,4,CV_64FC1);
+  cv::Mat rightCameraToTracker = cv::Mat(4,4,CV_64FC1);
+
+  std::string dir = dirName + niftk::GetFileSeparator();
+
+  mitk::LoadCameraIntrinsicsFromPlainText(dir + "calib.left.intrinsics.txt",
+                                          &leftCameraIntrinsic, &leftCameraDistortion);
+
+  mitk::LoadCameraIntrinsicsFromPlainText (dir + "calib.right.intrinsics.txt",
+                                           &rightCameraIntrinsic, &rightCameraDistortion);
+
+  mitk::LoadStereoTransformsFromPlainText (dir + "calib.r2l.txt",
+                                           &rightToLeftRotationMatrix, &rightToLeftTranslationVector);
+
+  mitk::LoadHandeyeFromPlainText (dir + "calib.left.handeye.txt",
+                                  &leftCameraToTracker);
+
+  mitk::LoadHandeyeFromPlainText (dir + "calib.right.handeye.txt",
+                                  &rightCameraToTracker);
+
+  cv::Matx44d rightToLeft = niftk::RotationAndTranslationToMatrix(rightToLeftRotationMatrix,
+                                                                  rightToLeftTranslationVector
+                                                                  );
+  cv::Matx44d leftToRight = rightToLeft.inv();
+  cv::Matx44d leftEyeHand(leftCameraToTracker);
+  cv::Matx44d leftHandEye = leftEyeHand.inv(cv::DECOMP_SVD);
+  cv::Matx44d rightEyeHand(rightCameraToTracker);
+  cv::Matx44d rightHandEye = rightEyeHand.inv(cv::DECOMP_SVD);
+
+  m_Intrinsic[0] = leftCameraIntrinsic;
+  m_Intrinsic[1] = rightCameraIntrinsic;
+  m_Distortion[0] = leftCameraDistortion;
+  m_Distortion[1] = rightCameraDistortion;
+
+  for (int r = 0; r < 3; r++)
+  {
+    for (int c = 0; c < 3; c++)
+    {
+      m_LeftToRightRotationMatrix.at<double>(r, c) = leftToRight(r, c);
+    }
+    m_LeftToRightTranslationVector.at<double>(0, r) = leftToRight(r, 3);
+  }
+  for (int i = 0; i < 4; i++)
+  {
+    m_HandEyeMatrices[0][i] = leftHandEye;
+    m_HandEyeMatrices[1][i] = rightHandEye;
+  }
+
+  this->UpdateDisplayNodes();
+}
+
 
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::Save()
