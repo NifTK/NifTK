@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkSingleViewerEditor_h
-#define QmitkSingleViewerEditor_h
+#ifndef niftkSingleViewerEditor_h
+#define niftkSingleViewerEditor_h
 
 #include <berryQtEditorPart.h>
 #include <berryIPartListener.h>
@@ -38,7 +38,7 @@
 
 namespace mitk
 {
-  class DataNode;
+class DataNode;
 }
 
 class QmitkRenderWindow;
@@ -47,7 +47,7 @@ namespace niftk
 {
 
 /**
- * \class QmitkSingleViewerEditor
+ * \class SingleViewerEditor
  * \brief Simple image viewer that supports cursor and magnification binding.
  *
  * As of 18th April 2012, this editor inherits from the QmitkAbstractRenderEditor, and hence
@@ -58,26 +58,26 @@ namespace niftk
  * \ingroup uk_ac_ucl_cmic_dnddisplay
  */
 
-class QmitkSingleViewerEditorPrivate;
-class niftkSingleViewerWidget;
-class niftkSingleViewerControls;
+class SingleViewerEditorPrivate;
+class SingleViewerWidget;
+class SingleViewerControls;
 
-class DNDDISPLAY_EXPORT QmitkSingleViewerEditor :
+class DNDDISPLAY_EXPORT SingleViewerEditor :
   public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
 {
   Q_OBJECT
 
 public:
 
-  berryObjectMacro(QmitkSingleViewerEditor)
+  berryObjectMacro(SingleViewerEditor)
 
-  QmitkSingleViewerEditor();
-  ~QmitkSingleViewerEditor();
+  SingleViewerEditor();
+  ~SingleViewerEditor();
 
   static const QString EDITOR_ID;
 
-  /// \brief Get hold of the internal niftkSingleViewerWidget.
-  niftkSingleViewerWidget* GetSingleViewer();
+  /// \brief Get hold of the internal SingleViewerWidget.
+  SingleViewerWidget* GetSingleViewer();
 
   // -------------------  mitk::IRenderWindowPart  ----------------------
 
@@ -169,7 +169,7 @@ public:
 
 protected:
 
-  /// \brief Tells the contained niftkSingleViewerWidget to SetFocus().
+  /// \brief Tells the contained SingleViewerWidget to SetFocus().
   virtual void SetFocus();
 
   /// \brief Called when the preferences object of this editor changed.
@@ -178,7 +178,7 @@ protected:
   /// \brief Creates the main Qt GUI element parts.
   virtual void CreateQtPartControl(QWidget* parent);
 
-  niftkSingleViewerControls* CreateControlPanel(QWidget* parent);
+  SingleViewerControls* CreateControlPanel(QWidget* parent);
 
 protected slots:
 
@@ -245,7 +245,7 @@ protected slots:
 
 private:
 
-  const QScopedPointer<QmitkSingleViewerEditorPrivate> d;
+  const QScopedPointer<SingleViewerEditorPrivate> d;
 };
 
 }

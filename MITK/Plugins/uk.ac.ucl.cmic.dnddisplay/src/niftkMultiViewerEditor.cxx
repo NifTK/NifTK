@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "QmitkMultiViewerEditor.h"
+#include "niftkMultiViewerEditor.h"
 
 #include <berryUIException.h>
 #include <berryIWorkbenchPage.h>
@@ -33,19 +33,19 @@
 
 #include <niftkMultiViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
-#include "QmitkDnDDisplayPreferencePage.h"
+#include "niftkDnDDisplayPreferencePage.h"
 
 
 namespace niftk
 {
 
-const QString QmitkMultiViewerEditor::EDITOR_ID = "org.mitk.editors.dndmultidisplay";
+const QString MultiViewerEditor::EDITOR_ID = "org.mitk.editors.dndmultidisplay";
 
-class QmitkMultiViewerEditorPrivate
+class MultiViewerEditorPrivate
 {
 public:
-  QmitkMultiViewerEditorPrivate(QmitkMultiViewerEditor* q);
-  ~QmitkMultiViewerEditorPrivate();
+  MultiViewerEditorPrivate(MultiViewerEditor* q);
+  ~MultiViewerEditorPrivate();
 
   static bool s_AreCommandLineArgumentsProcessed;
 
@@ -61,18 +61,18 @@ public:
   QScopedPointer<berry::IPartListener> m_PartListener;
   mitk::IRenderingManager* m_RenderingManagerInterface;
 
-  QmitkMultiViewerEditor* q_ptr;
+  MultiViewerEditor* q_ptr;
 };
 
-bool QmitkMultiViewerEditorPrivate::s_AreCommandLineArgumentsProcessed = false;
+bool MultiViewerEditorPrivate::s_AreCommandLineArgumentsProcessed = false;
 
 //-----------------------------------------------------------------------------
-struct QmitkMultiViewerEditorPartListener : public berry::IPartListener
+struct MultiViewerEditorPartListener : public berry::IPartListener
 {
-  berryObjectMacro(QmitkMultiViewerEditorPartListener)
+  berryObjectMacro(MultiViewerEditorPartListener)
 
   //-----------------------------------------------------------------------------
-  QmitkMultiViewerEditorPartListener(QmitkMultiViewerEditorPrivate* dd)
+  MultiViewerEditorPartListener(MultiViewerEditorPrivate* dd)
     : d(dd)
   {}
 
@@ -87,9 +87,9 @@ struct QmitkMultiViewerEditorPartListener : public berry::IPartListener
   //-----------------------------------------------------------------------------
   void PartClosed(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
-    if (partRef->GetId() == QmitkMultiViewerEditor::EDITOR_ID)
+    if (partRef->GetId() == MultiViewerEditor::EDITOR_ID)
     {
-      QmitkMultiViewerEditor::Pointer dndDisplayEditor = partRef->GetPart(false).Cast<QmitkMultiViewerEditor>();
+      MultiViewerEditor::Pointer dndDisplayEditor = partRef->GetPart(false).Cast<MultiViewerEditor>();
 
       if (dndDisplayEditor.IsNotNull()
         && dndDisplayEditor->GetMultiViewer() == d->m_MultiViewer)
@@ -103,9 +103,9 @@ struct QmitkMultiViewerEditorPartListener : public berry::IPartListener
   //-----------------------------------------------------------------------------
   void PartHidden(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
-    if (partRef->GetId() == QmitkMultiViewerEditor::EDITOR_ID)
+    if (partRef->GetId() == MultiViewerEditor::EDITOR_ID)
     {
-      QmitkMultiViewerEditor::Pointer dndDisplayEditor = partRef->GetPart(false).Cast<QmitkMultiViewerEditor>();
+      MultiViewerEditor::Pointer dndDisplayEditor = partRef->GetPart(false).Cast<MultiViewerEditor>();
 
       if (dndDisplayEditor.IsNotNull()
         && dndDisplayEditor->GetMultiViewer() == d->m_MultiViewer)
@@ -119,9 +119,9 @@ struct QmitkMultiViewerEditorPartListener : public berry::IPartListener
   //-----------------------------------------------------------------------------
   void PartVisible(const berry::IWorkbenchPartReference::Pointer& partRef) override
   {
-    if (partRef->GetId() == QmitkMultiViewerEditor::EDITOR_ID)
+    if (partRef->GetId() == MultiViewerEditor::EDITOR_ID)
     {
-      QmitkMultiViewerEditor::Pointer dndDisplayEditor = partRef->GetPart(false).Cast<QmitkMultiViewerEditor>();
+      MultiViewerEditor::Pointer dndDisplayEditor = partRef->GetPart(false).Cast<MultiViewerEditor>();
 
       if (dndDisplayEditor.IsNotNull()
         && dndDisplayEditor->GetMultiViewer() == d->m_MultiViewer)
@@ -133,18 +133,18 @@ struct QmitkMultiViewerEditorPartListener : public berry::IPartListener
 
 private:
 
-  QmitkMultiViewerEditorPrivate* const d;
+  MultiViewerEditorPrivate* const d;
 
 };
 
 
 //-----------------------------------------------------------------------------
-QmitkMultiViewerEditorPrivate::QmitkMultiViewerEditorPrivate(QmitkMultiViewerEditor* q)
+MultiViewerEditorPrivate::MultiViewerEditorPrivate(MultiViewerEditor* q)
 : q_ptr(q)
 , m_MultiViewer(0)
 , m_MultiViewerVisibilityManager(0)
 , m_RenderingManager(0)
-, m_PartListener(new QmitkMultiViewerEditorPartListener(this))
+, m_PartListener(new MultiViewerEditorPartListener(this))
 , m_RenderingManagerInterface(0)
 {
   /// Note:
@@ -168,7 +168,7 @@ QmitkMultiViewerEditorPrivate::QmitkMultiViewerEditorPrivate(QmitkMultiViewerEdi
 
 
 //-----------------------------------------------------------------------------
-QmitkMultiViewerEditorPrivate::~QmitkMultiViewerEditorPrivate()
+MultiViewerEditorPrivate::~MultiViewerEditorPrivate()
 {
   if (m_RenderingManagerInterface != NULL)
   {
@@ -178,14 +178,14 @@ QmitkMultiViewerEditorPrivate::~QmitkMultiViewerEditorPrivate()
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMultiViewerEditorPrivate::AreCommandLineArgumentsProcessed()
+bool MultiViewerEditorPrivate::AreCommandLineArgumentsProcessed()
 {
   return s_AreCommandLineArgumentsProcessed;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMultiViewerEditorPrivate::ProcessCommandLineArguments()
+void MultiViewerEditorPrivate::ProcessCommandLineArguments()
 {
   QStringList args = berry::Platform::GetApplicationArgs();
 
@@ -287,7 +287,7 @@ void QmitkMultiViewerEditorPrivate::ProcessCommandLineArguments()
         continue;
       }
 
-      niftkSingleViewerWidget* viewer = m_MultiViewer->GetViewer(viewerRow, viewerColumn);
+      SingleViewerWidget* viewer = m_MultiViewer->GetViewer(viewerRow, viewerColumn);
 
       if (!viewer)
       {
@@ -377,7 +377,7 @@ void QmitkMultiViewerEditorPrivate::ProcessCommandLineArguments()
         continue;
       }
 
-      niftkSingleViewerWidget* viewer = m_MultiViewer->GetViewer(viewerRow, viewerColumn);
+      SingleViewerWidget* viewer = m_MultiViewer->GetViewer(viewerRow, viewerColumn);
 
       if (!viewer)
       {
@@ -542,7 +542,7 @@ void QmitkMultiViewerEditorPrivate::ProcessCommandLineArguments()
         }
       }
 
-      niftkSingleViewerWidget* viewer = m_MultiViewer->GetViewer(viewerRow, viewerColumn);
+      SingleViewerWidget* viewer = m_MultiViewer->GetViewer(viewerRow, viewerColumn);
 
       if (!viewer)
       {
@@ -709,7 +709,7 @@ void QmitkMultiViewerEditorPrivate::ProcessCommandLineArguments()
 
 
 // --------------------------------------------------------------------------
-void QmitkMultiViewerEditorPrivate::DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes)
+void MultiViewerEditorPrivate::DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes)
 {
   QMimeData* mimeData = new QMimeData;
   QMimeData* mimeData2 = new QMimeData;
@@ -749,21 +749,21 @@ void QmitkMultiViewerEditorPrivate::DropNodes(QmitkRenderWindow* renderWindow, c
 
 
 //-----------------------------------------------------------------------------
-QmitkMultiViewerEditor::QmitkMultiViewerEditor()
-: d(new QmitkMultiViewerEditorPrivate(this))
+MultiViewerEditor::MultiViewerEditor()
+: d(new MultiViewerEditorPrivate(this))
 {
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkMultiViewerEditor::~QmitkMultiViewerEditor()
+MultiViewerEditor::~MultiViewerEditor()
 {
   this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener.data());
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
+void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
 {
   if (d->m_MultiViewer == NULL)
   {
@@ -775,27 +775,27 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
     assert( prefs );
 
     DnDDisplayInterpolationType defaultInterpolationType =
-        (DnDDisplayInterpolationType)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2));
+        (DnDDisplayInterpolationType)(prefs->GetInt(DnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2));
     WindowLayout defaultLayout =
-        (WindowLayout)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2)); // default = coronal
+        (WindowLayout)(prefs->GetInt(DnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2)); // default = coronal
     DnDDisplayDropType defaultDropType =
-        (DnDDisplayDropType)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_DROP_TYPE, 0));
+        (DnDDisplayDropType)(prefs->GetInt(DnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_DROP_TYPE, 0));
 
-    int defaultNumberOfRows = prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER, 1);
-    int defaultNumberOfColumns = prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER, 1);
-    bool showDropTypeControls = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false);
-    bool showDirectionAnnotations = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true);
-    bool showIntensityAnnotation = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true);
-    bool showShowingOptions = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true);
-    bool showWindowLayoutControls = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true);
-    bool showViewerNumberControls = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true);
-    bool showMagnificationSlider = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true);
-    bool show3DWindowInMultiWindowLayout = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false);
-    bool show2DCursors = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true);
-    bool rememberSettingsPerLayout = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true);
-    bool sliceIndexTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true);
-    bool magnificationTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true);
-    bool timeStepTracking = prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true);
+    int defaultNumberOfRows = prefs->GetInt(DnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER, 1);
+    int defaultNumberOfColumns = prefs->GetInt(DnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER, 1);
+    bool showDropTypeControls = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false);
+    bool showDirectionAnnotations = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true);
+    bool showIntensityAnnotation = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true);
+    bool showShowingOptions = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true);
+    bool showWindowLayoutControls = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true);
+    bool showViewerNumberControls = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true);
+    bool showMagnificationSlider = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true);
+    bool show3DWindowInMultiWindowLayout = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false);
+    bool show2DCursors = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true);
+    bool rememberSettingsPerLayout = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true);
+    bool sliceIndexTracking = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true);
+    bool magnificationTracking = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true);
+    bool timeStepTracking = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true);
 
     d->m_MultiViewerVisibilityManager = MultiViewerVisibilityManager::New(dataStorage);
     d->m_MultiViewerVisibilityManager->SetInterpolationType(defaultInterpolationType);
@@ -836,7 +836,7 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
     gridLayout->setContentsMargins(0, 0, 0, 0);
     gridLayout->setSpacing(0);
 
-    prefs->OnChanged.AddListener( berry::MessageDelegate1<QmitkMultiViewerEditor, const berry::IBerryPreferences*>( this, &QmitkMultiViewerEditor::OnPreferencesChanged ) );
+    prefs->OnChanged.AddListener( berry::MessageDelegate1<MultiViewerEditor, const berry::IBerryPreferences*>( this, &MultiViewerEditor::OnPreferencesChanged ) );
     this->OnPreferencesChanged(prefs.GetPointer());
   }
 
@@ -850,7 +850,7 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
   /// event filters and such, we delay the call to process the command line arguments by
   /// one millisecond. This leaves time for this function to return, and the arguments will
   /// be processed as soon as possible.
-  if (!QmitkMultiViewerEditorPrivate::AreCommandLineArgumentsProcessed())
+  if (!MultiViewerEditorPrivate::AreCommandLineArgumentsProcessed())
   {
     QTimer::singleShot(1, this, SLOT(ProcessCommandLineArguments()));
   }
@@ -858,21 +858,21 @@ void QmitkMultiViewerEditor::CreateQtPartControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void QmitkMultiViewerEditor::ProcessCommandLineArguments()
+void MultiViewerEditor::ProcessCommandLineArguments()
 {
   d->ProcessCommandLineArguments();
 }
 
 
 //-----------------------------------------------------------------------------
-MultiViewerWidget* QmitkMultiViewerEditor::GetMultiViewer()
+MultiViewerWidget* MultiViewerEditor::GetMultiViewer()
 {
   return d->m_MultiViewer;
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMultiViewerEditor::SetFocus()
+void MultiViewerEditor::SetFocus()
 {
   if (d->m_MultiViewer != 0)
   {
@@ -882,29 +882,29 @@ void QmitkMultiViewerEditor::SetFocus()
 
 
 //-----------------------------------------------------------------------------
-void QmitkMultiViewerEditor::OnPreferencesChanged( const berry::IBerryPreferences* prefs )
+void MultiViewerEditor::OnPreferencesChanged( const berry::IBerryPreferences* prefs )
 {
   if (d->m_MultiViewer != NULL)
   {
-    QString backgroundColourName = prefs->Get(QmitkDnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black");
+    QString backgroundColourName = prefs->Get(DnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black");
     QColor backgroundColour(backgroundColourName);
     d->m_MultiViewer->SetBackgroundColour(backgroundColour);
-    d->m_MultiViewer->SetInterpolationType((DnDDisplayInterpolationType)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2)));
-    d->m_MultiViewer->SetDefaultWindowLayout((WindowLayout)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2))); // default coronal
-    d->m_MultiViewer->SetDropType((DnDDisplayDropType)(prefs->GetInt(QmitkDnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_DROP_TYPE, 0)));
-    d->m_MultiViewer->SetShowDropTypeControls(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false));
-    d->m_MultiViewer->SetShowOptionsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true));
-    d->m_MultiViewer->SetWindowLayoutControlsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true));
-    d->m_MultiViewer->SetViewerNumberControlsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true));
-    d->m_MultiViewer->SetShowMagnificationSlider(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
-    d->m_MultiViewer->SetCursorDefaultVisibility(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true));
-    d->m_MultiViewer->SetDirectionAnnotationsVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
-    d->m_MultiViewer->SetIntensityAnnotationVisible(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
-    d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
-    d->m_MultiViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
-    d->m_MultiViewer->SetSliceTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
-    d->m_MultiViewer->SetTimeStepTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true));
-    d->m_MultiViewer->SetMagnificationTracking(prefs->GetBool(QmitkDnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true));
+    d->m_MultiViewer->SetInterpolationType((DnDDisplayInterpolationType)(prefs->GetInt(DnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2)));
+    d->m_MultiViewer->SetDefaultWindowLayout((WindowLayout)(prefs->GetInt(DnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2))); // default coronal
+    d->m_MultiViewer->SetDropType((DnDDisplayDropType)(prefs->GetInt(DnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_DROP_TYPE, 0)));
+    d->m_MultiViewer->SetShowDropTypeControls(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false));
+    d->m_MultiViewer->SetShowOptionsVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true));
+    d->m_MultiViewer->SetWindowLayoutControlsVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true));
+    d->m_MultiViewer->SetViewerNumberControlsVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true));
+    d->m_MultiViewer->SetShowMagnificationSlider(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
+    d->m_MultiViewer->SetCursorDefaultVisibility(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true));
+    d->m_MultiViewer->SetDirectionAnnotationsVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
+    d->m_MultiViewer->SetIntensityAnnotationVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
+    d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
+    d->m_MultiViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
+    d->m_MultiViewer->SetSliceTracking(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
+    d->m_MultiViewer->SetTimeStepTracking(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true));
+    d->m_MultiViewer->SetMagnificationTracking(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true));
   }
 }
 
@@ -913,12 +913,12 @@ void QmitkMultiViewerEditor::OnPreferencesChanged( const berry::IBerryPreference
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow *QmitkMultiViewerEditor::GetActiveQmitkRenderWindow() const
+QmitkRenderWindow *MultiViewerEditor::GetActiveQmitkRenderWindow() const
 {
   QmitkRenderWindow* activeRenderWindow = d->m_MultiViewer->GetSelectedRenderWindow();
   if (!activeRenderWindow)
   {
-    niftkSingleViewerWidget* selectedViewer = d->m_MultiViewer->GetSelectedViewer();
+    SingleViewerWidget* selectedViewer = d->m_MultiViewer->GetSelectedViewer();
     activeRenderWindow = selectedViewer->GetAxialWindow();
   }
   return activeRenderWindow;
@@ -926,42 +926,42 @@ QmitkRenderWindow *QmitkMultiViewerEditor::GetActiveQmitkRenderWindow() const
 
 
 //-----------------------------------------------------------------------------
-QHash<QString, QmitkRenderWindow *> QmitkMultiViewerEditor::GetQmitkRenderWindows() const
+QHash<QString, QmitkRenderWindow *> MultiViewerEditor::GetQmitkRenderWindows() const
 {
   return d->m_MultiViewer->GetRenderWindows();
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkRenderWindow *QmitkMultiViewerEditor::GetQmitkRenderWindow(const QString &id) const
+QmitkRenderWindow *MultiViewerEditor::GetQmitkRenderWindow(const QString &id) const
 {
   return d->m_MultiViewer->GetRenderWindow(id);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D QmitkMultiViewerEditor::GetSelectedPosition(const QString& id) const
+mitk::Point3D MultiViewerEditor::GetSelectedPosition(const QString& id) const
 {
   return d->m_MultiViewer->GetSelectedPosition(id);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMultiViewerEditor::SetSelectedPosition(const mitk::Point3D &position, const QString& id)
+void MultiViewerEditor::SetSelectedPosition(const mitk::Point3D &position, const QString& id)
 {
   return d->m_MultiViewer->SetSelectedPosition(position, id);
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkMultiViewerEditor::EnableDecorations(bool enable, const QStringList &decorations)
+void MultiViewerEditor::EnableDecorations(bool enable, const QStringList &decorations)
 {
   // Deliberately do nothing. ToDo - maybe get MultiViewerWidget to support it.
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMultiViewerEditor::IsDecorationEnabled(const QString &decoration) const
+bool MultiViewerEditor::IsDecorationEnabled(const QString &decoration) const
 {
   // Deliberately deny having any decorations. ToDo - maybe get MultiViewerWidget to support it.
   return false;
@@ -969,7 +969,7 @@ bool QmitkMultiViewerEditor::IsDecorationEnabled(const QString &decoration) cons
 
 
 //-----------------------------------------------------------------------------
-QStringList QmitkMultiViewerEditor::GetDecorations() const
+QStringList MultiViewerEditor::GetDecorations() const
 {
   // Deliberately return nothing. ToDo - maybe get MultiViewerWidget to support it.
   QStringList decorations;
@@ -978,14 +978,14 @@ QStringList QmitkMultiViewerEditor::GetDecorations() const
 
 
 //-----------------------------------------------------------------------------
-mitk::IRenderingManager* QmitkMultiViewerEditor::GetRenderingManager() const
+mitk::IRenderingManager* MultiViewerEditor::GetRenderingManager() const
 {
   return d->m_RenderingManagerInterface;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::SlicesRotator* QmitkMultiViewerEditor::GetSlicesRotator() const
+mitk::SlicesRotator* MultiViewerEditor::GetSlicesRotator() const
 {
   // Deliberately return nothing. ToDo - maybe get MultiViewerWidget to support it.
   return NULL;
@@ -993,7 +993,7 @@ mitk::SlicesRotator* QmitkMultiViewerEditor::GetSlicesRotator() const
 
 
 //-----------------------------------------------------------------------------
-mitk::SlicesSwiveller* QmitkMultiViewerEditor::GetSlicesSwiveller() const
+mitk::SlicesSwiveller* MultiViewerEditor::GetSlicesSwiveller() const
 {
   // Deliberately return nothing. ToDo - maybe get MultiViewerWidget to support it.
   return NULL;
@@ -1001,7 +1001,7 @@ mitk::SlicesSwiveller* QmitkMultiViewerEditor::GetSlicesSwiveller() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMultiViewerEditor::EnableSlicingPlanes(bool enable)
+void MultiViewerEditor::EnableSlicingPlanes(bool enable)
 {
   // Deliberately do nothing. ToDo - maybe get MultiViewerWidget to support it.
   Q_UNUSED(enable);
@@ -1009,7 +1009,7 @@ void QmitkMultiViewerEditor::EnableSlicingPlanes(bool enable)
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMultiViewerEditor::IsSlicingPlanesEnabled() const
+bool MultiViewerEditor::IsSlicingPlanesEnabled() const
 {
   // Deliberately do nothing. ToDo - maybe get MultiViewerWidget to support it.
   return false;
@@ -1017,14 +1017,14 @@ bool QmitkMultiViewerEditor::IsSlicingPlanesEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void QmitkMultiViewerEditor::EnableLinkedNavigation(bool enable)
+void MultiViewerEditor::EnableLinkedNavigation(bool enable)
 {
   d->m_MultiViewer->EnableLinkedNavigation(enable);
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkMultiViewerEditor::IsLinkedNavigationEnabled() const
+bool MultiViewerEditor::IsLinkedNavigationEnabled() const
 {
   return d->m_MultiViewer->IsLinkedNavigationEnabled();
 }

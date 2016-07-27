@@ -32,7 +32,7 @@ namespace niftk
  * \class MultiViewerControls
  * \brief Control panel for the DnD display.
  */
-class NIFTKDNDDISPLAY_EXPORT MultiViewerControls : public niftkSingleViewerControls, private Ui_niftkMultiViewerControls
+class NIFTKDNDDISPLAY_EXPORT MultiViewerControls : public SingleViewerControls, private Ui_niftkMultiViewerControls
 {
   Q_OBJECT
   

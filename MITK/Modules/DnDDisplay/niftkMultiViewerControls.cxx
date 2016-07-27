@@ -22,7 +22,7 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 MultiViewerControls::MultiViewerControls(QWidget *parent)
-: niftkSingleViewerControls(new QWidget())
+: SingleViewerControls(new QWidget())
 , m_ShowViewerNumberControls(true)
 , m_ShowDropTypeControls(true)
 {

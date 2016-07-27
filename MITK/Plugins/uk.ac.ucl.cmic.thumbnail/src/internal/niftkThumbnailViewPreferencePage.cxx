@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "QmitkThumbnailViewPreferencePage.h"
+#include "niftkThumbnailViewPreferencePage.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -24,13 +24,17 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_THICKNESS("thumbnail view box thickness");
-const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_OPACITY("thumbnail view box opacity");
-const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_LAYER("thumbnail view box layer");
-const QString QmitkThumbnailViewPreferencePage::THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS("thumbnail track only main windows");
+
+namespace niftk
+{
+
+const QString ThumbnailViewPreferencePage::THUMBNAIL_BOX_THICKNESS("thumbnail view box thickness");
+const QString ThumbnailViewPreferencePage::THUMBNAIL_BOX_OPACITY("thumbnail view box opacity");
+const QString ThumbnailViewPreferencePage::THUMBNAIL_BOX_LAYER("thumbnail view box layer");
+const QString ThumbnailViewPreferencePage::THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS("thumbnail track only main windows");
 
 //-----------------------------------------------------------------------------
-QmitkThumbnailViewPreferencePage::QmitkThumbnailViewPreferencePage()
+ThumbnailViewPreferencePage::ThumbnailViewPreferencePage()
 : m_MainControl(0)
 , m_BoxThickness(0)
 , m_BoxOpacity(0)
@@ -43,30 +47,30 @@ QmitkThumbnailViewPreferencePage::QmitkThumbnailViewPreferencePage()
 
 
 //-----------------------------------------------------------------------------
-QmitkThumbnailViewPreferencePage::QmitkThumbnailViewPreferencePage(const QmitkThumbnailViewPreferencePage& other)
+ThumbnailViewPreferencePage::ThumbnailViewPreferencePage(const ThumbnailViewPreferencePage& other)
 : berry::Object(), QObject()
 {
   Q_UNUSED(other)
-  throw std::runtime_error("QmitkThumbnailViewPreferencePage copy constructor not implemented");
+  throw std::runtime_error("ThumbnailViewPreferencePage copy constructor not implemented");
 }
 
 
 //-----------------------------------------------------------------------------
-QmitkThumbnailViewPreferencePage::~QmitkThumbnailViewPreferencePage()
+ThumbnailViewPreferencePage::~ThumbnailViewPreferencePage()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailViewPreferencePage::Init(berry::IWorkbench::Pointer )
+void ThumbnailViewPreferencePage::Init(berry::IWorkbench::Pointer )
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailViewPreferencePage::CreateQtControl(QWidget* parent)
+void ThumbnailViewPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
 
@@ -118,14 +122,14 @@ void QmitkThumbnailViewPreferencePage::CreateQtControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-QWidget* QmitkThumbnailViewPreferencePage::GetQtControl() const
+QWidget* ThumbnailViewPreferencePage::GetQtControl() const
 {
   return m_MainControl;
 }
 
 
 //-----------------------------------------------------------------------------
-bool QmitkThumbnailViewPreferencePage::PerformOk()
+bool ThumbnailViewPreferencePage::PerformOk()
 {
   m_ThumbnailPreferencesNode->PutDouble(THUMBNAIL_BOX_OPACITY, m_BoxOpacity->value());
   m_ThumbnailPreferencesNode->PutInt(THUMBNAIL_BOX_THICKNESS, m_BoxThickness->value());
@@ -136,17 +140,19 @@ bool QmitkThumbnailViewPreferencePage::PerformOk()
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailViewPreferencePage::PerformCancel()
+void ThumbnailViewPreferencePage::PerformCancel()
 {
 
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkThumbnailViewPreferencePage::Update()
+void ThumbnailViewPreferencePage::Update()
 {
   m_BoxThickness->setValue(m_ThumbnailPreferencesNode->GetInt(THUMBNAIL_BOX_THICKNESS, 1));
   m_BoxLayer->setValue(m_ThumbnailPreferencesNode->GetInt(THUMBNAIL_BOX_LAYER, 99));
   m_BoxOpacity->setValue(m_ThumbnailPreferencesNode->GetDouble(THUMBNAIL_BOX_OPACITY, 1));
   m_TrackOnlyMainWindows->setChecked(m_ThumbnailPreferencesNode->GetBool(THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS, true));
+}
+
 }

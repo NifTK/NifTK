@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkThumbnailViewPreferencePage_h
-#define QmitkThumbnailViewPreferencePage_h
+#ifndef niftkThumbnailViewPreferencePage_h
+#define niftkThumbnailViewPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <berryIPreferences.h>
@@ -24,23 +24,27 @@ class QDoubleSpinBox;
 class QCheckBox;
 class QPushButton;
 
+
+namespace niftk
+{
+
 /**
- * \class QmitkThumbnailViewPreferencePage
+ * \class ThumbnailViewPreferencePage
  * \brief Preferences page for the ThumbnailView plugin, enabling the user to set
  * line thickness, opacity, layer, and whether to respond to mouse events.
  * \ingroup uk_ac_ucl_cmic_gui_thumbnail
  *
  */
-class QmitkThumbnailViewPreferencePage : public QObject, public berry::IQtPreferencePage
+class ThumbnailViewPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
 
-  QmitkThumbnailViewPreferencePage();
-  QmitkThumbnailViewPreferencePage(const QmitkThumbnailViewPreferencePage& other);
-  ~QmitkThumbnailViewPreferencePage();
+  ThumbnailViewPreferencePage();
+  ThumbnailViewPreferencePage(const ThumbnailViewPreferencePage& other);
+  ~ThumbnailViewPreferencePage();
 
   void CreateQtControl(QWidget* widget);
   QWidget* GetQtControl() const;
@@ -82,5 +86,6 @@ protected:
   berry::IPreferences::Pointer m_ThumbnailPreferencesNode;
 };
 
-#endif /* _QMITKTHUMBNAILVIEWPREFERENCE_PAGE_H_INCLUDED */
+}
 
+#endif

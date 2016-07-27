@@ -12,41 +12,59 @@
 
 =============================================================================*/
 
-#include "SideViewerActivator.h"
+#include "niftkPluginActivator.h"
+
+#include <niftkSideViewerView.h>
 
 #include <QtPlugin>
-#include <mitkGlobalInteraction.h>
-#include "QmitkSideViewerView.h"
+
 
 namespace niftk
 {
 
-ctkPluginContext* SideViewerActivator::s_PluginContext(NULL);
+PluginActivator* PluginActivator::s_Instance = 0;
 
 //-----------------------------------------------------------------------------
-void SideViewerActivator::start(ctkPluginContext* context)
+PluginActivator::PluginActivator()
+: m_Context(nullptr)
 {
-  s_PluginContext = context;
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkSideViewerView, context);
+  assert(!s_Instance);
+  s_Instance = this;
 }
 
 
 //-----------------------------------------------------------------------------
-void SideViewerActivator::stop(ctkPluginContext* context)
+void PluginActivator::start(ctkPluginContext* context)
+{
+  m_Context = context;
+
+  BERRY_REGISTER_EXTENSION_CLASS(SideViewerView, context);
+}
+
+
+//-----------------------------------------------------------------------------
+void PluginActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
 }
 
 
 //-----------------------------------------------------------------------------
-ctkPluginContext* SideViewerActivator::GetPluginContext()
+PluginActivator* PluginActivator::GetInstance()
 {
-  return s_PluginContext;
+  return s_Instance;
+}
+
+
+//-----------------------------------------------------------------------------
+ctkPluginContext* PluginActivator::GetContext()
+{
+  return m_Context;
 }
 
 }
 
 //-----------------------------------------------------------------------------
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_sideviewer, niftk::SideViewerActivator)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_sideviewer, niftk::PluginActivator)
 #endif

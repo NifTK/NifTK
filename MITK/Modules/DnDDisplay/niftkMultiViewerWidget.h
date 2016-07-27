@@ -62,7 +62,7 @@ class MultiViewerControls;
  *
  * The standard viewer layout is up to 5x5 (but normally, 1x1, 1x2, 1x3 or 2x2)
  * image panes, each showing a single 2D image slice.  This class contains
- * m_MaxRows x m_MaxCols niftkSingleViewerWidget each of which itself wraps
+ * m_MaxRows x m_MaxCols SingleViewerWidget each of which itself wraps
  * a MultiWindowWidget which derives from QmitkStdMultiWidget,
  * meaning that we can actually have up to m_MaxRows x m_MaxCols ortho viewers,
  * including the option for 3D render window.
@@ -94,7 +94,7 @@ public:
   /// Note that we don't create or own the MultiViewerVisibilityManager.
   virtual ~MultiViewerWidget();
 
-  /// \brief As each niftkSingleViewerWidget may have its own rendering manager,
+  /// \brief As each SingleViewerWidget may have its own rendering manager,
   /// we may have to manually ask each viewer to re-render.
   void RequestUpdateAll();
 
@@ -103,7 +103,7 @@ public:
 
   /// \brief Gets the viewer in the given row and column.
   /// Indexing starts from 0.
-  niftkSingleViewerWidget* GetViewer(int row, int column) const;
+  SingleViewerWidget* GetViewer(int row, int column) const;
 
   /// \brief Gets the viewer binding options.
   int GetBindingOptions() const;
@@ -216,7 +216,7 @@ public:
   WindowOrientation GetOrientation() const;
 
   /// \brief Will return the selected viewer or the first viewer if none is selected.
-  niftkSingleViewerWidget* GetSelectedViewer() const;
+  SingleViewerWidget* GetSelectedViewer() const;
 
   /**
    * \see mitk::IRenderWindowPart::GetActiveRenderWindow(), where we return the currently selected QmitkRenderWindow.
@@ -373,7 +373,7 @@ private:
   /// \brief Creates a new viewer with the given name.
   /// The name is used to construct the name of the renderers, since the renderers must
   /// have a unique name.
-  niftkSingleViewerWidget* CreateViewer(const QString& name);
+  SingleViewerWidget* CreateViewer(const QString& name);
 
   /// \brief Force all 2D cursor visibility flags.
   void Update2DCursorVisibility();
@@ -399,7 +399,7 @@ private:
   static const int m_MaxViewerColumns = 5;
 
   // All the viewer windows.
-  QList<niftkSingleViewerWidget*> m_Viewers;
+  QList<SingleViewerWidget*> m_Viewers;
 
   // Dependencies, injected via constructor.
   // We don't own them, so don't try to delete them.

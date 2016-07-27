@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkDnDDisplayPreferencePage_h
-#define QmitkDnDDisplayPreferencePage_h
+#ifndef niftkDnDDisplayPreferencePage_h
+#define niftkDnDDisplayPreferencePage_h
 
 #include <berryIQtPreferencePage.h>
 #include <uk_ac_ucl_cmic_dnddisplay_Export.h>
@@ -30,19 +30,19 @@ namespace niftk
 {
 
 /**
- * \class QmitkDnDDisplayPreferencePage
+ * \class DnDDisplayPreferencePage
  * \brief Provides a preferences page for the NifTK DnD Display, including default number of rows,
  * default number of columns, image interpolation, default window layout and background colour.
  * \ingroup uk_ac_ucl_cmic_dnddisplay
  */
-struct DNDDISPLAY_EXPORT QmitkDnDDisplayPreferencePage : public QObject, public berry::IQtPreferencePage
+struct DNDDISPLAY_EXPORT DnDDisplayPreferencePage : public QObject, public berry::IQtPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
-  QmitkDnDDisplayPreferencePage();
-  QmitkDnDDisplayPreferencePage(const QmitkDnDDisplayPreferencePage& other);
+  DnDDisplayPreferencePage();
+  DnDDisplayPreferencePage(const DnDDisplayPreferencePage& other);
 
   void CreateQtControl(QWidget* widget);
   QWidget* GetQtControl() const;

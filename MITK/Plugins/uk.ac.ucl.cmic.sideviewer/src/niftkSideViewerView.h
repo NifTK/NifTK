@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkSideViewerView_h
-#define QmitkSideViewerView_h
+#ifndef niftkSideViewerView_h
+#define niftkSideViewerView_h
 
 #include <uk_ac_ucl_cmic_sideviewer_Export.h>
 
@@ -31,26 +31,26 @@ class QmitkRenderWindow;
 
 namespace niftk
 {
-class QmitkSideViewerWidget;
+class SideViewerWidget;
 
 /**
- * \class QmitkSideViewerView
+ * \class SideViewerView
  * \brief Base view component for MIDAS Segmentation widgets.
  *
  * \ingroup uk_ac_ucl_cmic_common
  *
  * \sa BaseView
  */
-class SIDEVIEWER_EXPORT QmitkSideViewerView : public BaseView
+class SIDEVIEWER_EXPORT SideViewerView : public BaseView
 {
 
   Q_OBJECT
 
 public:
 
-  QmitkSideViewerView();
-  QmitkSideViewerView(const QmitkSideViewerView& other);
-  virtual ~QmitkSideViewerView();
+  SideViewerView();
+  SideViewerView(const SideViewerView& other);
+  virtual ~SideViewerView();
 
 protected:
 
@@ -79,7 +79,7 @@ private:
   mitk::RenderingManager::Pointer m_RenderingManager;
 
   /// \brief Provides an additional view of the segmented image, so plugin can be used on second monitor.
-  QmitkSideViewerWidget *m_SideViewerWidget;
+  SideViewerWidget *m_SideViewerWidget;
 };
 
 }

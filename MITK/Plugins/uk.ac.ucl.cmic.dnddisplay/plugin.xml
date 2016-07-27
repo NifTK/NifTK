@@ -7,7 +7,7 @@
       name="DnD Display"
       extensions="mitk"
       default="true"
-      class="QmitkMultiViewerEditor">
+      class="niftk::MultiViewerEditor">
     </editor>
   </extension>
   <!--extension point="org.blueberry.ui.editors">
@@ -15,12 +15,12 @@
       id="org.mitk.editors.singleviewer"
       name="DnD Single Viewer"
       extensions="mitk"
-      class="QmitkSingleViewerEditor">
+      class="niftk::SingleViewerEditor">
     </editor>
   </extension-->
   <extension point="org.blueberry.ui.preferencePages">
     <page id="org.niftk.DnDDisplayPreferencePage" name="Drag and Drop Display" 
-      class="QmitkDnDDisplayPreferencePage" category="org.mitk.EditorsPreferencePage">
+      class="niftk::DnDDisplayPreferencePage" category="org.mitk.EditorsPreferencePage">
       <keywordreference id="org.niftk.DnDDisplayPreferencePageKeywords"/>
     </page>     
   </extension>

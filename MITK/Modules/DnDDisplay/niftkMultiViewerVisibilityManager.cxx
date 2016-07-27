@@ -53,7 +53,7 @@ MultiViewerVisibilityManager::~MultiViewerVisibilityManager()
 
 
 //-----------------------------------------------------------------------------
-void MultiViewerVisibilityManager::RegisterViewer(niftkSingleViewerWidget* viewer)
+void MultiViewerVisibilityManager::RegisterViewer(SingleViewerWidget* viewer)
 {
   std::set<mitk::DataNode*> newNodes;
   m_DataNodesPerViewer.push_back(newNodes);
@@ -273,7 +273,7 @@ void MultiViewerVisibilityManager::OnPropertyChanged(mitk::DataNode* node, const
 //-----------------------------------------------------------------------------
 void MultiViewerVisibilityManager::RemoveNodesFromViewer(int viewerIndex)
 {
-  niftkSingleViewerWidget *viewer = m_Viewers[viewerIndex];
+  SingleViewerWidget *viewer = m_Viewers[viewerIndex];
   assert(viewer);
 
   std::vector<mitk::DataNode*> nodes;
@@ -299,7 +299,7 @@ int MultiViewerVisibilityManager::GetNodesInViewer(int viewerIndex)
 //-----------------------------------------------------------------------------
 void MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNode* node, bool initialVisibility)
 {
-  niftkSingleViewerWidget* viewer = m_Viewers[viewerIndex];
+  SingleViewerWidget* viewer = m_Viewers[viewerIndex];
   assert(viewer);
 
   m_DataNodesPerViewer[viewerIndex].insert(node);
@@ -523,7 +523,7 @@ void MultiViewerVisibilityManager::OnFocusChanged()
   bool found = false;
   for (int i = 0; i < m_Viewers.size(); ++i)
   {
-    niftkSingleViewerWidget* viewer = m_Viewers[i];
+    SingleViewerWidget* viewer = m_Viewers[i];
     const std::vector<QmitkRenderWindow*>& renderWindows = viewer->GetRenderWindows();
     std::vector<QmitkRenderWindow*>::const_iterator it = renderWindows.begin();
     std::vector<QmitkRenderWindow*>::const_iterator itEnd = renderWindows.end();
@@ -570,7 +570,7 @@ void MultiViewerVisibilityManager::UpdateGlobalVisibilities(mitk::BaseRenderer* 
 //-----------------------------------------------------------------------------
 void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> nodes)
 {
-  niftkSingleViewerWidget* viewer = qobject_cast<niftkSingleViewerWidget*>(this->sender());
+  SingleViewerWidget* viewer = qobject_cast<SingleViewerWidget*>(this->sender());
 
   int viewerIndex = std::find(m_Viewers.begin(), m_Viewers.end(), viewer) - m_Viewers.begin();
   WindowLayout windowLayout = this->GetWindowLayout(nodes);

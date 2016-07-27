@@ -33,11 +33,11 @@ class QmitkRenderWindow;
 
 namespace niftk
 {
-class niftkSingleViewerWidget;
-class niftkSingleViewerWidgetTestClassPrivate;
+class SingleViewerWidget;
+class SingleViewerWidgetTestClassPrivate;
 
 
-class niftkSingleViewerWidgetTestClass: public QObject
+class SingleViewerWidgetTestClass: public QObject
 {
   Q_OBJECT
 
@@ -45,15 +45,15 @@ public:
 
   enum WorldAxes { SagittalAxis, CoronalAxis, AxialAxis };
 
-  typedef AtomicStateTransitionTester<const niftkSingleViewerWidget*, niftkSingleViewerWidgetState> ViewerStateTester;
-  typedef niftkSingleViewerWidgetState ViewerState;
-  typedef niftkSingleViewerWidgetTestClass Self;
+  typedef AtomicStateTransitionTester<const SingleViewerWidget*, SingleViewerWidgetState> ViewerStateTester;
+  typedef SingleViewerWidgetState ViewerState;
+  typedef SingleViewerWidgetTestClass Self;
 
   /// \brief Constructs a niftkSingleViewerWidgetTestClass object.
-  explicit niftkSingleViewerWidgetTestClass();
+  explicit SingleViewerWidgetTestClass();
 
   /// \brief Destructs the niftkSingleViewerWidgetTestClass object.
-  virtual ~niftkSingleViewerWidgetTestClass();
+  virtual ~SingleViewerWidgetTestClass();
 
   /// \brief Gets the name of the image file to load into the viewer.
   std::string GetFileName() const;
@@ -244,10 +244,10 @@ private:
   static void MouseWheel(QWidget* window, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                          QPoint point, int delta, Qt::Orientation orientation = Qt::Vertical);
 
-  QScopedPointer<niftkSingleViewerWidgetTestClassPrivate> d_ptr;
+  QScopedPointer<SingleViewerWidgetTestClassPrivate> d_ptr;
 
-  Q_DECLARE_PRIVATE(niftkSingleViewerWidgetTestClass)
-  Q_DISABLE_COPY(niftkSingleViewerWidgetTestClass)
+  Q_DECLARE_PRIVATE(SingleViewerWidgetTestClass)
+  Q_DISABLE_COPY(SingleViewerWidgetTestClass)
 };
 
 }

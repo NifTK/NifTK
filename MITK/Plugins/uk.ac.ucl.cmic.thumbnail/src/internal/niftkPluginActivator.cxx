@@ -12,30 +12,32 @@
 
 =============================================================================*/
 
-#include "QmitkThumbnailViewPreferencePage.h"
-#include "ThumbnailViewActivator.h"
-#include "ThumbnailView.h"
+#include "niftkPluginActivator.h"
+
+#include "niftkThumbnailViewPreferencePage.h"
+#include "niftkThumbnailView.h"
 #include <QtPlugin>
 
-namespace mitk {
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
-void ThumbnailViewActivator::start(ctkPluginContext* context)
+void PluginActivator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(ThumbnailView, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkThumbnailViewPreferencePage, context);
+  BERRY_REGISTER_EXTENSION_CLASS(ThumbnailViewPreferencePage, context);
 }
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailViewActivator::stop(ctkPluginContext* context)
+void PluginActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
 }
 
-} // end namespace
+}
 
 //-----------------------------------------------------------------------------
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_thumbnailview, mitk::ThumbnailViewActivator)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_thumbnailview, niftk::PluginActivator)
 #endif

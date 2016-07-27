@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef uk_ac_ucl_cmic_dnddisplay_Activator_h
-#define uk_ac_ucl_cmic_dnddisplay_Activator_h
+#ifndef niftkPluginActivator_h
+#define niftkPluginActivator_h
 
 #include <ctkPluginActivator.h>
 
@@ -32,11 +32,11 @@ namespace niftk
 {
 
 /**
- * \class uk_ac_ucl_cmic_dnddisplay_Activator
+ * \class PluginActivator
  * \brief CTK Plugin Activator class for the DnD Display Plugin.
  * \ingroup uk_ac_ucl_cmic_dnddisplay_internal
  */
-class uk_ac_ucl_cmic_dnddisplay_Activator :
+class PluginActivator :
   public QObject, public ctkPluginActivator
 {
   Q_OBJECT
@@ -47,20 +47,20 @@ class uk_ac_ucl_cmic_dnddisplay_Activator :
 
 public:
 
-  uk_ac_ucl_cmic_dnddisplay_Activator();
+  PluginActivator();
 
-  void start(ctkPluginContext* context);
-  void stop(ctkPluginContext* context);
+  void start(ctkPluginContext* context) override;
+  void stop(ctkPluginContext* context) override;
 
-  static uk_ac_ucl_cmic_dnddisplay_Activator* GetInstance();
+  static PluginActivator* GetInstance();
 
-  ctkPluginContext* GetPluginContext();
+  ctkPluginContext* GetContext();
 
 private:
 
-  static uk_ac_ucl_cmic_dnddisplay_Activator* s_Instance;
+  static PluginActivator* s_Instance;
 
-  ctkPluginContext* m_PluginContext;
+  ctkPluginContext* m_Context;
 
 };
 

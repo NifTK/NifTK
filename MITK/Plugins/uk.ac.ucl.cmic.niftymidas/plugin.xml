@@ -4,7 +4,7 @@
 
   <extension id="uk.ac.ucl.cmic.niftymidas" point="org.blueberry.osgi.applications">
     <application>
-      <run class="QmitkNiftyMIDASApplication"/>
+      <run class="niftk::NiftyMIDASApplication"/>
     </application>
   </extension>
 

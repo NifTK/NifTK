@@ -41,7 +41,7 @@ namespace niftk
 class MultiWindowWidget;
 
 /**
- * \class niftkSingleViewerWidget
+ * \class SingleViewerWidget
  * \brief A widget to wrap a single MultiWindowWidget,
  * providing methods for switching the render window layout, remembering
  * the last slice, magnification and cursor position.
@@ -75,20 +75,20 @@ class MultiWindowWidget;
  * \sa QmitkRenderWindow
  * \sa MultiWindowWidget
  */
-class NIFTKDNDDISPLAY_EXPORT niftkSingleViewerWidget : public QWidget
+class NIFTKDNDDISPLAY_EXPORT SingleViewerWidget : public QWidget
 {
 
   Q_OBJECT
 
 public:
 
-  /// \brief Constructs a niftkSingleViewerWidget object.
+  /// \brief Constructs a SingleViewerWidget object.
   /// \param parent The parent object.
   /// \param renderingManager The rendering manager.
   /// \param The name of the viewer.
   ///        The name is used to construct the name of the renderers and must therefore be unique.
-  niftkSingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0, const QString& name = "DnD-Viewer");
-  virtual ~niftkSingleViewerWidget();
+  SingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0, const QString& name = "DnD-Viewer");
+  virtual ~SingleViewerWidget();
 
   /// \brief Returns the enabled flag.
   bool IsEnabled() const;

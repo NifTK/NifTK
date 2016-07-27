@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkSideViewerWidget_h
-#define QmitkSideViewerWidget_h
+#ifndef niftkSideViewerWidget_h
+#define niftkSideViewerWidget_h
 
 #include <uk_ac_ucl_cmic_sideviewer_Export.h>
 
@@ -47,12 +47,12 @@ class QSpinBox;
 namespace niftk
 {
 class BaseView;
-class niftkSingleViewerWidget;
+class SingleViewerWidget;
 
 
 /**
- * \class QmitkSideViewerWidget
- * \brief Qt Widget to provide a single niftkSingleViewerWidget, and some associated
+ * \class SideViewerWidget
+ * \brief Qt Widget to provide a single SingleViewerWidget, and some associated
  * buttons controlling 2/3 view, vertical/horizontal and axial/coronal/sagittal/ortho.
  *
  * The widget will display whatever data nodes are visible in the currently focused
@@ -64,23 +64,23 @@ class niftkSingleViewerWidget;
  *     a. update visibility properties so that whatever is visible in main editor is visible in this widget.
  * </pre>
  */
-class SIDEVIEWER_EXPORT QmitkSideViewerWidget : public QWidget
+class SIDEVIEWER_EXPORT SideViewerWidget : public QWidget
 {
   Q_OBJECT
 
 public:
 
-  /// \brief Constructs a QmitkSideViewerWidget object.
+  /// \brief Constructs a SideViewerWidget object.
   ///
   /// \param view Sets the containing view for callback purposes.
   ///
   ///       The reason we do this, is so that we can ask QmitkAbstractView for the mitkIRenderWindowPart
   ///       rather than have any hard coded reference to any widget such as DnDMultiWindowWidget.
   ///
-  QmitkSideViewerWidget(BaseView* view, QWidget* parent, mitk::RenderingManager* renderingManager);
+  SideViewerWidget(BaseView* view, QWidget* parent, mitk::RenderingManager* renderingManager);
 
-  /// \brief Destructs the QmitkSideViewerWidget object.
-  virtual ~QmitkSideViewerWidget();
+  /// \brief Destructs the SideViewerWidget object.
+  virtual ~SideViewerWidget();
 
   void SetFocused();
 
@@ -220,7 +220,7 @@ private:
   /// \brief Listener to catch events when an editor becomes visible or gets destroyed.
   QScopedPointer<berry::IPartListener> m_EditorLifeCycleListener;
 
-  niftkSingleViewerWidget* m_Viewer;
+  SingleViewerWidget* m_Viewer;
   QWidget* m_ControlsWidget;
   QWidget* m_LayoutWidget;
   QRadioButton* m_CoronalWindowRadioButton;

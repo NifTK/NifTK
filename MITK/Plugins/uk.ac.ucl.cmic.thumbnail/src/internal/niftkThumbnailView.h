@@ -12,8 +12,8 @@
 
 =============================================================================*/
  
-#ifndef ThumbnailView_h
-#define ThumbnailView_h
+#ifndef niftkThumbnailView_h
+#define niftkThumbnailView_h
 
 #include <QmitkAbstractView.h>
 #include <berryIPartListener.h>
@@ -27,7 +27,10 @@
 #include <mitkRenderingManager.h>
 
 
-class QmitkThumbnailRenderWindow;
+namespace niftk
+{
+
+class ThumbnailRenderWindow;
 
 /**
  * \class ThumbnailView
@@ -38,7 +41,7 @@ class QmitkThumbnailRenderWindow;
  * widget QmitkThumnailRenderWindow, and does almost nothing else.
  * Do not try and add loads more functionality here, just do the necessary plumbing.
  *
- * \sa QmitkThumbnailRenderWindow
+ * \sa ThumbnailRenderWindow
 */
 class ThumbnailView : public QmitkAbstractView
 {  
@@ -98,7 +101,7 @@ private:
   unsigned long m_FocusManagerObserverTag;
 
   /// \brief The thumbnail render window.
-  QmitkThumbnailRenderWindow* m_ThumbnailWindow;
+  ThumbnailRenderWindow* m_ThumbnailWindow;
 
   /// \brief Tells if the plugin should track only windows of editors, not views.
   bool m_TrackOnlyMainWindows;
@@ -107,5 +110,7 @@ private:
   QScopedPointer<berry::IPartListener> m_EditorLifeCycleListener;
 
 };
+
+}
 
 #endif

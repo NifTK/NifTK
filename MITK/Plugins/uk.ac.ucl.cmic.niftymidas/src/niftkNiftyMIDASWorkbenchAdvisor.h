@@ -42,12 +42,12 @@ public:
   typedef BaseWorkbenchAdvisor Superclass;
 
   /// \brief Returns uk.ac.ucl.cmic.niftyview.midasperspective which should match that in plugin.xml.
-  virtual QString GetInitialWindowPerspectiveId();
+  virtual QString GetInitialWindowPerspectiveId() override;
 
   /// \brief Gets the resource name of the window icon.
-  virtual QString GetWindowIconResourcePath() const;
+  virtual QString GetWindowIconResourcePath() const override;
 
-  virtual void PostStartup();
+  virtual void PostStartup() override;
 
 protected:
 

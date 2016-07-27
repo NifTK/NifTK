@@ -37,7 +37,7 @@ class FocusManager;
 namespace niftk
 {
 
-class niftkSingleViewerWidget;
+class SingleViewerWidget;
 
 /**
  *\class DnDDisplayInteractor
@@ -58,7 +58,7 @@ class NIFTKDNDDISPLAY_EXPORT DnDDisplayInteractor: public QObject, public mitk::
 
 public:
   mitkClassMacro(DnDDisplayInteractor, DisplayInteractor)
-  mitkNewMacro1Param(Self, niftkSingleViewerWidget*)
+  mitkNewMacro1Param(Self, SingleViewerWidget*)
 
   /**
    * By this function the Observer gets notifier about new events.
@@ -69,7 +69,7 @@ public:
   virtual void Notify(mitk::InteractionEvent* interactionEvent, bool isHandled) override;
 
 protected:
-  DnDDisplayInteractor(niftkSingleViewerWidget* viewer);
+  DnDDisplayInteractor(SingleViewerWidget* viewer);
   virtual ~DnDDisplayInteractor();
 
   virtual void ConnectActionsAndFunctions() override;
@@ -181,7 +181,7 @@ private:
 
   QmitkRenderWindow* GetRenderWindow(mitk::BaseRenderer* renderer);
 
-  niftkSingleViewerWidget* m_Viewer;
+  SingleViewerWidget* m_Viewer;
 
   std::vector<mitk::BaseRenderer*> m_Renderers;
 

@@ -38,13 +38,13 @@ static bool EqualsWithTolerance(const mitk::Vector2D& cursorPosition1, const mit
       && std::abs(cursorPosition1[1] - cursorPosition2[1]) < tolerance;
 }
 
-class niftkSingleViewerWidgetState : public itk::Object
+class SingleViewerWidgetState : public itk::Object
 {
 public:
 
-  mitkClassMacroItkParent(niftkSingleViewerWidgetState, itk::Object)
-  mitkNewMacro1Param(niftkSingleViewerWidgetState, const niftkSingleViewerWidget*)
-  mitkNewMacro1Param(niftkSingleViewerWidgetState, Self::Pointer)
+  mitkClassMacroItkParent(SingleViewerWidgetState, itk::Object)
+  mitkNewMacro1Param(SingleViewerWidgetState, const SingleViewerWidget*)
+  mitkNewMacro1Param(SingleViewerWidgetState, Self::Pointer)
 
   /// \brief Gets the time geometry of the viewer.
   itkGetConstMacro(TimeGeometry, const mitk::TimeGeometry*);
@@ -142,7 +142,7 @@ public:
     return true;
   }
 
-  bool operator==(const niftkSingleViewerWidgetState& otherState) const
+  bool operator==(const SingleViewerWidgetState& otherState) const
   {
     return
         this->GetTimeGeometry() == otherState.GetTimeGeometry()
@@ -157,12 +157,12 @@ public:
         && this->GetScaleFactorBinding() == otherState.GetScaleFactorBinding();
   }
 
-  inline bool operator!=(const niftkSingleViewerWidgetState& otherState) const
+  inline bool operator!=(const SingleViewerWidgetState& otherState) const
   {
     return !(*this == otherState);
   }
 
-  void PrintDifference(niftkSingleViewerWidgetState::Pointer otherState, std::ostream & os = std::cout, itk::Indent indent = 0) const
+  void PrintDifference(SingleViewerWidgetState::Pointer otherState, std::ostream & os = std::cout, itk::Indent indent = 0) const
   {
     if (this->GetTimeGeometry() != otherState->GetTimeGeometry())
     {
@@ -323,8 +323,8 @@ public:
 
 protected:
 
-  /// \brief Constructs a niftkSingleViewerWidgetState object that stores the current state of the specified viewer.
-  niftkSingleViewerWidgetState(const niftkSingleViewerWidget* viewer)
+  /// \brief Constructs a SingleViewerWidgetState object that stores the current state of the specified viewer.
+  SingleViewerWidgetState(const SingleViewerWidget* viewer)
   : itk::Object()
   , m_Viewer(viewer)
   , m_TimeGeometry(viewer->GetTimeGeometry())
@@ -343,8 +343,8 @@ protected:
     m_UpDirections[2] = m_Viewer->GetSliceUpDirection(WINDOW_ORIENTATION_AXIAL);
   }
 
-  /// \brief Constructs a niftkSingleViewerWidgetState object as a copy of another state object.
-  niftkSingleViewerWidgetState(Self::Pointer otherState)
+  /// \brief Constructs a SingleViewerWidgetState object as a copy of another state object.
+  SingleViewerWidgetState(Self::Pointer otherState)
   : itk::Object()
   , m_Viewer(otherState->m_Viewer)
   , m_TimeGeometry(otherState->GetTimeGeometry())
@@ -361,8 +361,8 @@ protected:
   {
   }
 
-  /// \brief Destructs a niftkSingleViewerWidgetState object.
-  virtual ~niftkSingleViewerWidgetState()
+  /// \brief Destructs a SingleViewerWidgetState object.
+  virtual ~SingleViewerWidgetState()
   {
   }
 
@@ -391,7 +391,7 @@ protected:
 private:
 
   /// \brief The viewer.
-  const niftkSingleViewerWidget* m_Viewer;
+  const SingleViewerWidget* m_Viewer;
 
   /// \brief The time geometry of the viewer.
   const mitk::TimeGeometry* m_TimeGeometry;

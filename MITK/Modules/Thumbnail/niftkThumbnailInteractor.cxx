@@ -12,14 +12,18 @@
 
 =============================================================================*/
 
-#include "mitkThumbnailInteractor.h"
+#include "niftkThumbnailInteractor.h"
 
 #include <mitkBaseRenderer.h>
 #include <mitkInteractionPositionEvent.h>
 
-#include <QmitkThumbnailRenderWindow.h>
+#include <niftkThumbnailRenderWindow.h>
 
-mitk::ThumbnailInteractor::ThumbnailInteractor(QmitkThumbnailRenderWindow* thumbnailWindow)
+
+namespace niftk
+{
+
+ThumbnailInteractor::ThumbnailInteractor(ThumbnailRenderWindow* thumbnailWindow)
 : mitk::DisplayInteractor()
 , m_ThumbnailWindow(thumbnailWindow)
 , m_ZoomFactor(1.05)
@@ -29,11 +33,11 @@ mitk::ThumbnailInteractor::ThumbnailInteractor(QmitkThumbnailRenderWindow* thumb
   m_CurrentDisplayCoordinate.Fill(0);
 }
 
-mitk::ThumbnailInteractor::~ThumbnailInteractor()
+ThumbnailInteractor::~ThumbnailInteractor()
 {
 }
 
-void mitk::ThumbnailInteractor::Notify(InteractionEvent* interactionEvent, bool isHandled)
+void ThumbnailInteractor::Notify(mitk::InteractionEvent* interactionEvent, bool isHandled)
 {
   mitk::BaseRenderer* renderer = interactionEvent->GetSender();
   if (m_Renderer == renderer)
@@ -42,7 +46,7 @@ void mitk::ThumbnailInteractor::Notify(InteractionEvent* interactionEvent, bool 
   }
 }
 
-void mitk::ThumbnailInteractor::ConnectActionsAndFunctions()
+void ThumbnailInteractor::ConnectActionsAndFunctions()
 {
   /// Note:
   /// We do not delegate the call to the superclass because do not want
@@ -52,9 +56,9 @@ void mitk::ThumbnailInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("zoom", Zoom);
 }
 
-bool mitk::ThumbnailInteractor::Init(StateMachineAction* action, InteractionEvent* interactionEvent)
+bool ThumbnailInteractor::Init(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
-  InteractionPositionEvent* positionEvent = static_cast<InteractionPositionEvent*>(interactionEvent);
+  mitk::InteractionPositionEvent* positionEvent = static_cast<mitk::InteractionPositionEvent*>(interactionEvent);
 
   m_LastDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
   m_CurrentDisplayCoordinate = positionEvent->GetPointerPositionOnScreen();
@@ -62,9 +66,9 @@ bool mitk::ThumbnailInteractor::Init(StateMachineAction* action, InteractionEven
   return true;
 }
 
-bool mitk::ThumbnailInteractor::Move(StateMachineAction* action, InteractionEvent* interactionEvent)
+bool ThumbnailInteractor::Move(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
-  InteractionPositionEvent* positionEvent = static_cast<InteractionPositionEvent*>(interactionEvent);
+  mitk::InteractionPositionEvent* positionEvent = static_cast<mitk::InteractionPositionEvent*>(interactionEvent);
 
   mitk::Point2D displayCoordinate = positionEvent->GetPointerPositionOnScreen();
   mitk::Vector2D displacement = displayCoordinate - m_LastDisplayCoordinate;
@@ -75,11 +79,11 @@ bool mitk::ThumbnailInteractor::Move(StateMachineAction* action, InteractionEven
   return true;
 }
 
-bool mitk::ThumbnailInteractor::Zoom(StateMachineAction* action, InteractionEvent* interactionEvent)
+bool ThumbnailInteractor::Zoom(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   double scaleFactor = 1.0;
 
-  InteractionPositionEvent* positionEvent = static_cast<InteractionPositionEvent*>(interactionEvent);
+  mitk::InteractionPositionEvent* positionEvent = static_cast<mitk::InteractionPositionEvent*>(interactionEvent);
 
   float distance = m_CurrentDisplayCoordinate[1] - m_LastDisplayCoordinate[1];
 
@@ -99,4 +103,6 @@ bool mitk::ThumbnailInteractor::Zoom(StateMachineAction* action, InteractionEven
   m_ThumbnailWindow->OnBoundingBoxZoomed(scaleFactor);
 
   return true;
+}
+
 }

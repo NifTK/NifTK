@@ -41,11 +41,11 @@
 namespace niftk
 {
 
-class niftkSingleViewerWidgetTestClassPrivate
+class SingleViewerWidgetTestClassPrivate
 {
 public:
 
-  niftkSingleViewerWidgetTestClassPrivate()
+  SingleViewerWidgetTestClassPrivate()
   : GeometrySendEvent(NULL, 0)
   , GeometryUpdateEvent(NULL, 0)
   , GeometryTimeEvent(NULL, 0)
@@ -76,7 +76,7 @@ public:
   /// i.e. moving towards the bottom, left or back.
   mitk::Vector3D WorldUpDirections;
 
-  niftkSingleViewerWidget* Viewer;
+  SingleViewerWidget* Viewer;
   MultiViewerVisibilityManager::Pointer VisibilityManager;
 
   QmitkRenderWindow* AxialWindow;
@@ -88,7 +88,7 @@ public:
   mitk::SliceNavigationController* SagittalSnc;
   mitk::SliceNavigationController* CoronalSnc;
 
-  niftkSingleViewerWidgetTestClass::ViewerStateTester::Pointer StateTester;
+  SingleViewerWidgetTestClass::ViewerStateTester::Pointer StateTester;
 
   bool InteractiveMode;
 
@@ -111,11 +111,11 @@ public:
 
 
 // --------------------------------------------------------------------------
-niftkSingleViewerWidgetTestClass::niftkSingleViewerWidgetTestClass()
+SingleViewerWidgetTestClass::SingleViewerWidgetTestClass()
 : QObject()
-, d_ptr(new niftkSingleViewerWidgetTestClassPrivate())
+, d_ptr(new SingleViewerWidgetTestClassPrivate())
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   d->ImageNode = 0;
   d->Image = 0;
@@ -142,45 +142,45 @@ niftkSingleViewerWidgetTestClass::niftkSingleViewerWidgetTestClass()
 
 
 // --------------------------------------------------------------------------
-niftkSingleViewerWidgetTestClass::~niftkSingleViewerWidgetTestClass()
+SingleViewerWidgetTestClass::~SingleViewerWidgetTestClass()
 {
 }
 
 
 // --------------------------------------------------------------------------
-std::string niftkSingleViewerWidgetTestClass::GetFileName() const
+std::string SingleViewerWidgetTestClass::GetFileName() const
 {
-  Q_D(const niftkSingleViewerWidgetTestClass);
+  Q_D(const SingleViewerWidgetTestClass);
   return d->FileName;
 }
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::SetFileName(const std::string& fileName)
+void SingleViewerWidgetTestClass::SetFileName(const std::string& fileName)
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
   d->FileName = fileName;
 }
 
 
 // --------------------------------------------------------------------------
-bool niftkSingleViewerWidgetTestClass::GetInteractiveMode() const
+bool SingleViewerWidgetTestClass::GetInteractiveMode() const
 {
-  Q_D(const niftkSingleViewerWidgetTestClass);
+  Q_D(const SingleViewerWidgetTestClass);
   return d->InteractiveMode;
 }
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::SetInteractiveMode(bool interactiveMode)
+void SingleViewerWidgetTestClass::SetInteractiveMode(bool interactiveMode)
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
   d->InteractiveMode = interactiveMode;
 }
 
 
 // --------------------------------------------------------------------------
-mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldOrigin(const mitk::BaseGeometry* geometry)
+mitk::Point3D SingleViewerWidgetTestClass::GetWorldOrigin(const mitk::BaseGeometry* geometry)
 {
   const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
   itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
@@ -213,7 +213,7 @@ mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldOrigin(const mitk::BaseG
 
 
 // --------------------------------------------------------------------------
-mitk::Vector3D niftkSingleViewerWidgetTestClass::GetWorldUpDirections(const mitk::BaseGeometry* geometry)
+mitk::Vector3D SingleViewerWidgetTestClass::GetWorldUpDirections(const mitk::BaseGeometry* geometry)
 {
   const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
   itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
@@ -237,7 +237,7 @@ mitk::Vector3D niftkSingleViewerWidgetTestClass::GetWorldUpDirections(const mitk
 
 
 // --------------------------------------------------------------------------
-mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldBottomLeftBackCorner(const mitk::BaseGeometry* geometry)
+mitk::Point3D SingleViewerWidgetTestClass::GetWorldBottomLeftBackCorner(const mitk::BaseGeometry* geometry)
 {
   const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
   itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
@@ -295,7 +295,7 @@ mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldBottomLeftBackCorner(con
 
 
 // --------------------------------------------------------------------------
-QPoint niftkSingleViewerWidgetTestClass::GetPointAtCursorPosition(QmitkRenderWindow *renderWindow, const mitk::Vector2D& cursorPosition)
+QPoint SingleViewerWidgetTestClass::GetPointAtCursorPosition(QmitkRenderWindow *renderWindow, const mitk::Vector2D& cursorPosition)
 {
   QRect rect = renderWindow->rect();
   double x = cursorPosition[0] * rect.width();
@@ -305,7 +305,7 @@ QPoint niftkSingleViewerWidgetTestClass::GetPointAtCursorPosition(QmitkRenderWin
 
 
 // --------------------------------------------------------------------------
-mitk::Vector2D niftkSingleViewerWidgetTestClass::GetDisplayPositionAtPoint(QmitkRenderWindow *renderWindow, const QPoint& point)
+mitk::Vector2D SingleViewerWidgetTestClass::GetDisplayPositionAtPoint(QmitkRenderWindow *renderWindow, const QPoint& point)
 {
   QRect rect = renderWindow->rect();
   mitk::Vector2D cursorPosition;
@@ -316,9 +316,9 @@ mitk::Vector2D niftkSingleViewerWidgetTestClass::GetDisplayPositionAtPoint(Qmitk
 
 
 // --------------------------------------------------------------------------
-mitk::Vector2D niftkSingleViewerWidgetTestClass::GetCentrePosition(int windowIndex)
+mitk::Vector2D SingleViewerWidgetTestClass::GetCentrePosition(int windowIndex)
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   mitk::BaseRenderer* renderer = d->Viewer->GetRenderWindows()[windowIndex]->GetRenderer();
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
@@ -339,9 +339,9 @@ mitk::Vector2D niftkSingleViewerWidgetTestClass::GetCentrePosition(int windowInd
 
 
 // --------------------------------------------------------------------------
-std::vector<mitk::Vector2D> niftkSingleViewerWidgetTestClass::GetCentrePositions()
+std::vector<mitk::Vector2D> SingleViewerWidgetTestClass::GetCentrePositions()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   const std::vector<QmitkRenderWindow*>& renderWindows = d->Viewer->GetRenderWindows();
 
@@ -365,9 +365,9 @@ std::vector<mitk::Vector2D> niftkSingleViewerWidgetTestClass::GetCentrePositions
 
 
 // --------------------------------------------------------------------------
-mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldPositionAtDisplayPosition(int windowIndex, const mitk::Vector2D& displayPosition)
+mitk::Point3D SingleViewerWidgetTestClass::GetWorldPositionAtDisplayPosition(int windowIndex, const mitk::Vector2D& displayPosition)
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   mitk::BaseRenderer* renderer = d->Viewer->GetRenderWindows()[windowIndex]->GetRenderer();
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
@@ -387,9 +387,9 @@ mitk::Point3D niftkSingleViewerWidgetTestClass::GetWorldPositionAtDisplayPositio
 
 
 // --------------------------------------------------------------------------
-mitk::Vector2D niftkSingleViewerWidgetTestClass::GetDisplayPositionAtWorldPosition(int windowIndex, const mitk::Point3D& worldPosition)
+mitk::Vector2D SingleViewerWidgetTestClass::GetDisplayPositionAtWorldPosition(int windowIndex, const mitk::Point3D& worldPosition)
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   mitk::BaseRenderer* renderer = d->Viewer->GetRenderWindows()[windowIndex]->GetRenderer();
   mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
@@ -409,18 +409,18 @@ mitk::Vector2D niftkSingleViewerWidgetTestClass::GetDisplayPositionAtWorldPositi
 
 
 // --------------------------------------------------------------------------
-double niftkSingleViewerWidgetTestClass::GetVoxelCentreCoordinate(int axis, double position)
+double SingleViewerWidgetTestClass::GetVoxelCentreCoordinate(int axis, double position)
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   return std::floor((position + 0.5 * d->WorldSpacings[axis]) / d->WorldSpacings[axis]) * d->WorldSpacings[axis];
 }
 
 
 // --------------------------------------------------------------------------
-mitk::Point3D niftkSingleViewerWidgetTestClass::GetVoxelCentrePosition(const mitk::Point3D& position)
+mitk::Point3D SingleViewerWidgetTestClass::GetVoxelCentrePosition(const mitk::Point3D& position)
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   mitk::Point3D voxelCentrePosition;
   for (int axis = 0; axis < 3; ++axis)
@@ -433,9 +433,9 @@ mitk::Point3D niftkSingleViewerWidgetTestClass::GetVoxelCentrePosition(const mit
 
 
 // --------------------------------------------------------------------------
-bool niftkSingleViewerWidgetTestClass::Equals(const mitk::Point3D& selectedPosition1, const mitk::Point3D& selectedPosition2, double tolerance)
+bool SingleViewerWidgetTestClass::Equals(const mitk::Point3D& selectedPosition1, const mitk::Point3D& selectedPosition2, double tolerance)
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   for (int i = 0; i < 3; ++i)
   {
@@ -452,16 +452,16 @@ bool niftkSingleViewerWidgetTestClass::Equals(const mitk::Point3D& selectedPosit
 
 
 // --------------------------------------------------------------------------
-bool niftkSingleViewerWidgetTestClass::Equals(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance)
+bool SingleViewerWidgetTestClass::Equals(const mitk::Vector2D& cursorPosition1, const mitk::Vector2D& cursorPosition2, double tolerance)
 {
   return std::abs(cursorPosition1[0] - cursorPosition2[0]) <= tolerance && std::abs(cursorPosition1[1] - cursorPosition2[1]) <= tolerance;
 }
 
 
 // --------------------------------------------------------------------------
-bool niftkSingleViewerWidgetTestClass::Equals(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance)
+bool SingleViewerWidgetTestClass::Equals(const std::vector<mitk::Vector2D>& cursorPositions1, const std::vector<mitk::Vector2D>& cursorPositions2, double tolerance)
 {
-  Q_D(const niftkSingleViewerWidgetTestClass);
+  Q_D(const SingleViewerWidgetTestClass);
 
   const std::vector<QmitkRenderWindow*>& renderWindows = d->Viewer->GetRenderWindows();
 
@@ -474,9 +474,9 @@ bool niftkSingleViewerWidgetTestClass::Equals(const std::vector<mitk::Vector2D>&
 
 
 // --------------------------------------------------------------------------
-mitk::Point3D niftkSingleViewerWidgetTestClass::GetRandomWorldPosition() const
+mitk::Point3D SingleViewerWidgetTestClass::GetRandomWorldPosition() const
 {
-  Q_D(const niftkSingleViewerWidgetTestClass);
+  Q_D(const SingleViewerWidgetTestClass);
 
   mitk::BaseGeometry* geometry = d->Image->GetGeometry();
 
@@ -488,7 +488,7 @@ mitk::Point3D niftkSingleViewerWidgetTestClass::GetRandomWorldPosition() const
 
 
 // --------------------------------------------------------------------------
-mitk::Vector2D niftkSingleViewerWidgetTestClass::GetRandomDisplayPosition()
+mitk::Vector2D SingleViewerWidgetTestClass::GetRandomDisplayPosition()
 {
   mitk::Vector2D randomDisplayPosition;
   randomDisplayPosition[0] = (double) std::rand() / RAND_MAX;
@@ -498,7 +498,7 @@ mitk::Vector2D niftkSingleViewerWidgetTestClass::GetRandomDisplayPosition()
 
 
 // --------------------------------------------------------------------------
-std::vector<mitk::Vector2D> niftkSingleViewerWidgetTestClass::GetRandomDisplayPositions(std::size_t size)
+std::vector<mitk::Vector2D> SingleViewerWidgetTestClass::GetRandomDisplayPositions(std::size_t size)
 {
   std::vector<mitk::Vector2D> randomDisplayPositions(size);
   for (std::size_t i = 0; i < size; ++i)
@@ -510,14 +510,14 @@ std::vector<mitk::Vector2D> niftkSingleViewerWidgetTestClass::GetRandomDisplayPo
 
 
 // --------------------------------------------------------------------------
-double niftkSingleViewerWidgetTestClass::GetRandomScaleFactor()
+double SingleViewerWidgetTestClass::GetRandomScaleFactor()
 {
   return 2.0 * std::rand() / RAND_MAX;
 }
 
 
 // --------------------------------------------------------------------------
-std::vector<double> niftkSingleViewerWidgetTestClass::GetRandomScaleFactors(std::size_t size)
+std::vector<double> SingleViewerWidgetTestClass::GetRandomScaleFactors(std::size_t size)
 {
   std::vector<double> randomScaleFactors(size);
   for (std::size_t i = 0; i < size; ++i)
@@ -529,9 +529,9 @@ std::vector<double> niftkSingleViewerWidgetTestClass::GetRandomScaleFactors(std:
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::SetRandomPositions()
+void SingleViewerWidgetTestClass::SetRandomPositions()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   d->StateTester->Clear();
   d->Viewer->SetSelectedPosition(this->GetRandomWorldPosition());
@@ -543,9 +543,9 @@ void niftkSingleViewerWidgetTestClass::SetRandomPositions()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::initTestCase()
+void SingleViewerWidgetTestClass::initTestCase()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   QmitkRegisterClasses();
 
@@ -599,20 +599,20 @@ void niftkSingleViewerWidgetTestClass::initTestCase()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::cleanupTestCase()
+void SingleViewerWidgetTestClass::cleanupTestCase()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
   d->VisibilityManager = 0;
 }
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::init()
+void SingleViewerWidgetTestClass::init()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
-  d->Viewer = new niftkSingleViewerWidget(0, d->RenderingManager);
-  d->Viewer->setObjectName(tr("niftkSingleViewerWidget"));
+  d->Viewer = new SingleViewerWidget(0, d->RenderingManager);
+  d->Viewer->setObjectName(tr("SingleViewerWidget"));
 
 //  QColor backgroundColour("black");
   QColor backgroundColour("#fffaf0");
@@ -668,9 +668,9 @@ void niftkSingleViewerWidgetTestClass::init()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::cleanup()
+void SingleViewerWidgetTestClass::cleanup()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   /// Release the pointer so that the desctructor is be called.
   d->StateTester = 0;
@@ -690,9 +690,9 @@ void niftkSingleViewerWidgetTestClass::cleanup()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes)
+void SingleViewerWidgetTestClass::DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes)
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   QMimeData* mimeData = new QMimeData;
   QMimeData* mimeData2 = new QMimeData;
@@ -731,7 +731,7 @@ void niftkSingleViewerWidgetTestClass::DropNodes(QmitkRenderWindow* renderWindow
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::MouseWheel(QWidget* widget,
+void SingleViewerWidgetTestClass::MouseWheel(QWidget* widget,
                             Qt::MouseButtons buttons,
                             Qt::KeyboardModifiers modifiers,
                             QPoint position, int delta,
@@ -751,9 +751,9 @@ void niftkSingleViewerWidgetTestClass::MouseWheel(QWidget* widget,
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testViewer()
+void SingleViewerWidgetTestClass::testViewer()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   /// Tests if the viewer has been successfully created.
   QVERIFY(d->Viewer);
@@ -761,9 +761,9 @@ void niftkSingleViewerWidgetTestClass::testViewer()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testGetTimeGeometry()
+void SingleViewerWidgetTestClass::testGetTimeGeometry()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   const mitk::TimeGeometry* imageTimeGeometry = d->Image->GetTimeGeometry();
   const mitk::BaseGeometry* imageGeometry = imageTimeGeometry->GetGeometryForTimePoint(0);
@@ -981,9 +981,9 @@ void niftkSingleViewerWidgetTestClass::testGetTimeGeometry()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSetSelectedSlice2()
+void SingleViewerWidgetTestClass::testSetSelectedSlice2()
 {
-//  Q_D(niftkSingleViewerWidgetTestClass);
+//  Q_D(SingleViewerWidgetTestClass);
 
 //  const mitk::TimeGeometry* imageTimeGeometry = d->Image->GetTimeGeometry();
 //  const mitk::Geometry3D* imageGeometry = imageTimeGeometry->GetGeometryForTimePoint(0);
@@ -1225,9 +1225,9 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedSlice2()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
+void SingleViewerWidgetTestClass::testSetTimeGeometry()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   const mitk::TimeGeometry* imageTimeGeometry = d->Image->GetTimeGeometry();
   const mitk::BaseGeometry* imageGeometry = imageTimeGeometry->GetGeometryForTimePoint(0);
@@ -1759,9 +1759,9 @@ void niftkSingleViewerWidgetTestClass::testSetTimeGeometry()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testGetOrientation()
+void SingleViewerWidgetTestClass::testGetOrientation()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   ViewerState::Pointer state = ViewerState::New(d->Viewer);
   d->StateTester->SetExpectedState(state);
@@ -1776,9 +1776,9 @@ void niftkSingleViewerWidgetTestClass::testGetOrientation()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testGetSelectedPosition()
+void SingleViewerWidgetTestClass::testGetSelectedPosition()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   /// Make sure that the state does not change and no signal is sent out.
   ViewerState::Pointer state = ViewerState::New(d->Viewer);
@@ -1813,9 +1813,9 @@ void niftkSingleViewerWidgetTestClass::testGetSelectedPosition()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
+void SingleViewerWidgetTestClass::testSetSelectedPosition()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   ViewerState::Pointer expectedState = ViewerState::New(d->Viewer);
   int expectedAxialSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL);
@@ -1974,9 +1974,9 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 
 
 // --------------------------------------------------------------------------
-//void niftkSingleViewerWidgetTestClass::testGetSelectedSlice()
+//void SingleViewerWidgetTestClass::testGetSelectedSlice()
 //{
-//  Q_D(niftkSingleViewerWidgetTestClass);
+//  Q_D(SingleViewerWidgetTestClass);
 
 //  int expectedAxialSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL);
 //  int expectedSagittalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL);
@@ -2012,9 +2012,9 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedPosition()
 //  QCOMPARE(sagittalSlice, expectedSagittalSlice);
 //}
 
-void niftkSingleViewerWidgetTestClass::testGetSelectedSlice()
+void SingleViewerWidgetTestClass::testGetSelectedSlice()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   int expectedAxialSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL);
   int expectedSagittalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL);
@@ -2062,9 +2062,9 @@ void niftkSingleViewerWidgetTestClass::testGetSelectedSlice()
 }
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSetSelectedSlice()
+void SingleViewerWidgetTestClass::testSetSelectedSlice()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
 //  ViewerState::Pointer expectedState = ViewerState::New(d->Viewer);
 
@@ -2093,9 +2093,9 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedSlice()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testGetCursorPosition()
+void SingleViewerWidgetTestClass::testGetCursorPosition()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   /// Note that the cursor positions of a render window are first initialised
   /// when the render window gets visible.
@@ -2133,9 +2133,9 @@ void niftkSingleViewerWidgetTestClass::testGetCursorPosition()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSetCursorPosition()
+void SingleViewerWidgetTestClass::testSetCursorPosition()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   ViewerState::Pointer expectedState = ViewerState::New(d->Viewer);
 
@@ -2182,9 +2182,9 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPosition()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testGetCursorPositions()
+void SingleViewerWidgetTestClass::testGetCursorPositions()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   /// Note that the cursor positions of a render window are first initialised
   /// when the render window gets visible.
@@ -2208,9 +2208,9 @@ void niftkSingleViewerWidgetTestClass::testGetCursorPositions()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
+void SingleViewerWidgetTestClass::testSetCursorPositions()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   /// Note:
   /// The GetCursorPositions/SetCursorPositions functions return/accept
@@ -2359,9 +2359,9 @@ void niftkSingleViewerWidgetTestClass::testSetCursorPositions()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testGetWindowLayout()
+void SingleViewerWidgetTestClass::testGetWindowLayout()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   /// The default window layout was set to coronal in the init() function.
   QCOMPARE(d->Viewer->GetWindowLayout(), WINDOW_LAYOUT_CORONAL);
@@ -2369,9 +2369,9 @@ void niftkSingleViewerWidgetTestClass::testGetWindowLayout()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testGetSelectedRenderWindow()
+void SingleViewerWidgetTestClass::testGetSelectedRenderWindow()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   /// The default window layout was set to coronal in the init() function.
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->CoronalWindow);
@@ -2379,9 +2379,9 @@ void niftkSingleViewerWidgetTestClass::testGetSelectedRenderWindow()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSetSelectedRenderWindow()
+void SingleViewerWidgetTestClass::testSetSelectedRenderWindow()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
 
@@ -2413,9 +2413,9 @@ void niftkSingleViewerWidgetTestClass::testSetSelectedRenderWindow()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
+void SingleViewerWidgetTestClass::testSetWindowLayout()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
 
@@ -2732,9 +2732,9 @@ void niftkSingleViewerWidgetTestClass::testSetWindowLayout()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout()
+void SingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   d->Viewer->SetRememberSettingsPerWindowLayout(true);
 
@@ -2975,9 +2975,9 @@ void niftkSingleViewerWidgetTestClass::testRememberPositionsPerWindowLayout()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
+void SingleViewerWidgetTestClass::testSelectPositionByInteraction()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   QPoint newPoint;
   ViewerState::Pointer expectedState;
@@ -3520,9 +3520,9 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionByInteraction()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testChangeSliceByMouseInteraction()
+void SingleViewerWidgetTestClass::testChangeSliceByMouseInteraction()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   QPoint centre;
   ViewerState::Pointer expectedState;
@@ -3604,9 +3604,9 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByMouseInteraction()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testChangeSliceByKeyInteraction()
+void SingleViewerWidgetTestClass::testChangeSliceByKeyInteraction()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   QPoint centre;
   ViewerState::Pointer expectedState;
@@ -3683,9 +3683,9 @@ void niftkSingleViewerWidgetTestClass::testChangeSliceByKeyInteraction()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationController()
+void SingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationController()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
 //  ViewerState::Pointer expectedState = ViewerState::New(d->Viewer);
 
@@ -3741,9 +3741,9 @@ void niftkSingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationCont
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationController()
+void SingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationController()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   const mitk::TimeGeometry* timeGeometry = d->Viewer->GetTimeGeometry();
   mitk::BaseGeometry* worldGeometry = timeGeometry->GetGeometryForTimeStep(0);
@@ -3804,9 +3804,9 @@ void niftkSingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationC
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testSelectRenderWindowByInteraction()
+void SingleViewerWidgetTestClass::testSelectRenderWindowByInteraction()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   QCOMPARE(d->Viewer->IsFocused(), true);
   QCOMPARE(d->Viewer->GetSelectedRenderWindow(), d->CoronalWindow);
@@ -3827,9 +3827,9 @@ void niftkSingleViewerWidgetTestClass::testSelectRenderWindowByInteraction()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testCursorPositionBinding()
+void SingleViewerWidgetTestClass::testCursorPositionBinding()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
   d->StateTester->Clear();
@@ -3902,9 +3902,9 @@ void niftkSingleViewerWidgetTestClass::testCursorPositionBinding()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testScaleFactorBinding()
+void SingleViewerWidgetTestClass::testScaleFactorBinding()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
   d->StateTester->Clear();
@@ -3914,9 +3914,9 @@ void niftkSingleViewerWidgetTestClass::testScaleFactorBinding()
 
 
 // --------------------------------------------------------------------------
-void niftkSingleViewerWidgetTestClass::testCursorPositionAndScaleFactorBinding()
+void SingleViewerWidgetTestClass::testCursorPositionAndScaleFactorBinding()
 {
-  Q_D(niftkSingleViewerWidgetTestClass);
+  Q_D(SingleViewerWidgetTestClass);
 
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
   d->StateTester->Clear();
@@ -3952,7 +3952,7 @@ int niftkSingleViewerWidgetTest(int argc, char* argv[])
 
   std::srand((unsigned) std::time(0));
 
-  niftk::niftkSingleViewerWidgetTestClass test;
+  niftk::SingleViewerWidgetTestClass test;
 
   std::string interactiveModeOption("-i");
   for (int i = 1; i < argc; ++i)

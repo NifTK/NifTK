@@ -32,11 +32,11 @@
 namespace niftk
 {
 
-class niftkSingleViewerWidget;
+class SingleViewerWidget;
 
 /**
  * \class MultiViewerVisibilityManager
- * \brief Maintains a list of niftkSingleViewerWidgets and coordinates visibility
+ * \brief Maintains a list of SingleViewerWidgets and coordinates visibility
  * properties by listening to AddNodeEvent, RemoveNodeEvent and listening directly
  * to Modified events from the nodes "visible" property in DataStorage.
  *
@@ -77,7 +77,7 @@ public:
   MultiViewerVisibilityManager& operator=(const MultiViewerVisibilityManager&); // Purposefully not implemented.
 
   /// \brief Each new viewer should first be registered with this class, so this class can manage renderer specific visibility properties.
-  void RegisterViewer(niftkSingleViewerWidget *viewer);
+  void RegisterViewer(SingleViewerWidget *viewer);
 
   /// \brief De-registers a range of viewers, which means actually removing them from m_DataNodes and m_Viewers.
   /// Start index inclusive, end index exclusive.
@@ -175,7 +175,7 @@ private:
   std::vector< std::set<mitk::DataNode*> > m_DataNodesPerViewer;
 
   // Additionally, we manage a list of viewers, where m_DataNodes.size() == m_Viewers.size() should always be true.
-  std::vector< niftkSingleViewerWidget* > m_Viewers;
+  std::vector< SingleViewerWidget* > m_Viewers;
 
   // Keeps track of the current mode, as it effects the response when images are dropped, as images are spread over single, multiple or all windows.
   DnDDisplayDropType m_DropType;

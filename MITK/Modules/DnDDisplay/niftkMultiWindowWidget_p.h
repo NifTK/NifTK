@@ -52,9 +52,9 @@ namespace niftk
  * subclass QmitkStdMultiWidget so that we can optionally have 3D views, ortho-views etc.
  *
  * Please do NOT expose this class to the rest of the NiftyView code-base, or else
- * dependency management becomes a bit of an issue.  The class niftkSingleViewerWidget
+ * dependency management becomes a bit of an issue.  The class SingleViewerWidget
  * wraps this one, and the rest of our application should only deal with
- * niftkSingleViewerWidget.
+ * SingleViewerWidget.
  *
  * Note: The requirements specification for MIDAS style zoom basically says:
  * <pre>
@@ -73,7 +73,7 @@ namespace niftk
  * the size of the longer side of the voxels is used for the calculation for each orientation.
  *
  * \sa QmitkStdMultiWidget
- * \sa niftkSingleViewerWidget
+ * \sa SingleViewerWidget
  * \sa MultiViewerWidget
  */
 class MultiWindowWidget : private QmitkStdMultiWidget
@@ -81,7 +81,7 @@ class MultiWindowWidget : private QmitkStdMultiWidget
 
   Q_OBJECT
 
-  friend class niftkSingleViewerWidget;
+  friend class SingleViewerWidget;
 
 public:
 

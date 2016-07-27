@@ -12,34 +12,58 @@
 
 =============================================================================*/
 
-#ifndef ThumbnailViewActivator_h
-#define ThumbnailViewActivator_h
+#ifndef niftkPluginActivator_h
+#define niftkPluginActivator_h
 
 #include <ctkPluginActivator.h>
 
-namespace mitk {
+#include <vector>
+
+class QmitkRenderWindow;
+
+namespace mitk
+{
+class DataNode;
+class DataStorage;
+}
+
+
+namespace niftk
+{
 
 /**
- * \class ThumbnailViewActivator
- * \brief CTK Plugin Activator class for ThumbnailView.
- * \ingroup uk.ac.ucl.cmic.thumbnail_internal
+ * \class PluginActivator
+ * \brief CTK Plugin Activator class for the DnD Display Plugin.
+ * \ingroup uk_ac_ucl_cmic_dnddisplay_internal
  */
-class ThumbnailViewActivator :
+class PluginActivator :
   public QObject, public ctkPluginActivator
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  Q_PLUGIN_METADATA(IID "uk_ac_ucl_cmic_thumbnail")
+  Q_PLUGIN_METADATA(IID "uk_ac_ucl_cmic_sideviewer")
 #endif
 
 public:
 
-  void start(ctkPluginContext* context);
-  void stop(ctkPluginContext* context);
+  PluginActivator();
 
-}; // ThumbnailViewActivator
+  void start(ctkPluginContext* context) override;
+  void stop(ctkPluginContext* context) override;
+
+  static PluginActivator* GetInstance();
+
+  ctkPluginContext* GetContext();
+
+private:
+
+  static PluginActivator* s_Instance;
+
+  ctkPluginContext* m_Context;
+
+};
 
 }
 
-#endif // THUMBNAILVIEWACTIVATOR_H
+#endif

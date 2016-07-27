@@ -12,21 +12,21 @@
 
 =============================================================================*/
 
-#include "QmitkSideViewerView.h"
+#include "niftkSideViewerView.h"
 
 #include <berryIBerryPreferences.h>
 #include <berryPlatform.h>
 
 #include <mitkVtkResliceInterpolationProperty.h>
 
-#include "QmitkSideViewerWidget.h"
+#include "niftkSideViewerWidget.h"
 
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-QmitkSideViewerView::QmitkSideViewerView()
+SideViewerView::SideViewerView()
 : m_RenderingManager(0)
 , m_SideViewerWidget(0)
 {
@@ -34,8 +34,8 @@ QmitkSideViewerView::QmitkSideViewerView()
 
 
 //-----------------------------------------------------------------------------
-QmitkSideViewerView::QmitkSideViewerView(
-    const QmitkSideViewerView& other)
+SideViewerView::SideViewerView(
+    const SideViewerView& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -43,7 +43,7 @@ QmitkSideViewerView::QmitkSideViewerView(
 
 
 //-----------------------------------------------------------------------------
-QmitkSideViewerView::~QmitkSideViewerView()
+SideViewerView::~SideViewerView()
 {
   if (m_SideViewerWidget)
   {
@@ -53,14 +53,14 @@ QmitkSideViewerView::~QmitkSideViewerView()
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerView::CreateQtPartControl(QWidget *parent)
+void SideViewerView::CreateQtPartControl(QWidget *parent)
 {
   if (!m_SideViewerWidget)
   {
     m_RenderingManager = mitk::RenderingManager::New();
     m_RenderingManager->SetDataStorage(this->GetDataStorage());
 
-    m_SideViewerWidget = new QmitkSideViewerWidget(this, parent, m_RenderingManager);
+    m_SideViewerWidget = new SideViewerWidget(this, parent, m_RenderingManager);
     m_SideViewerWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
@@ -70,14 +70,14 @@ void QmitkSideViewerView::CreateQtPartControl(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerView::SetFocus()
+void SideViewerView::SetFocus()
 {
   m_SideViewerWidget->SetFocused();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerView::ApplyDisplayOptions(mitk::DataNode* node)
+void SideViewerView::ApplyDisplayOptions(mitk::DataNode* node)
 {
   if (!node)
   {
@@ -98,14 +98,14 @@ void QmitkSideViewerView::ApplyDisplayOptions(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerView::OnPreferencesChanged(const berry::IBerryPreferences*)
+void SideViewerView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
 }
 
 
 //-----------------------------------------------------------------------------
-void QmitkSideViewerView::RetrievePreferenceValues()
+void SideViewerView::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
@@ -122,7 +122,7 @@ void QmitkSideViewerView::RetrievePreferenceValues()
 
 
 //-----------------------------------------------------------------------------
-QString QmitkSideViewerView::GetPreferencesNodeName()
+QString SideViewerView::GetPreferencesNodeName()
 {
   return "/uk_ac_ucl_cmic_sideviewer";
 }

@@ -8,12 +8,12 @@
     <view id="uk.ac.ucl.cmic.thumbnail"
           name="Thumbnail"
           category="org.mitk.views.general" 
-          class="ThumbnailView"
+          class="niftk::ThumbnailView"
           icon="resources/icon.xpm" />
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="uk.ac.ucl.cmic.ThumbnailViewPreferencePage" name="Thumbnail" class="QmitkThumbnailViewPreferencePage">
+    <page id="uk.ac.ucl.cmic.ThumbnailViewPreferencePage" name="Thumbnail" class="niftk::ThumbnailViewPreferencePage">
       <keywordreference id="uk.ac.ucl.cmic.ThumbnailViewPreferencePageKeywords"></keywordreference>
     </page>
   </extension>

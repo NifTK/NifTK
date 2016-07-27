@@ -12,20 +12,22 @@
 
 =============================================================================*/
 
-#ifndef mitkThumbnailInteractor_h
-#define mitkThumbnailInteractor_h
+#ifndef niftkThumbnailInteractor_h
+#define niftkThumbnailInteractor_h
 
 #include <niftkThumbnailExports.h>
 
 #include <mitkDisplayInteractor.h>
 
-class QmitkThumbnailRenderWindow;
-
 namespace mitk
 {
-
 class BaseRenderer;
 class SliceNavigationController;
+}
+
+namespace niftk
+{
+class ThumbnailRenderWindow;
 
 /**
  *\class ThumbnailInteractor
@@ -33,13 +35,13 @@ class SliceNavigationController;
  *
  * @ingroup Interaction
  **/
-class NIFTKTHUMBNAIL_EXPORT ThumbnailInteractor: public DisplayInteractor
+class NIFTKTHUMBNAIL_EXPORT ThumbnailInteractor: public mitk::DisplayInteractor
 {
 public:
-  mitkClassMacro(ThumbnailInteractor, DisplayInteractor)
+  mitkClassMacro(ThumbnailInteractor, mitk::DisplayInteractor)
 
   // Thumbnail window customisation: thumbnail window passed as argument
-  mitkNewMacro1Param(Self, QmitkThumbnailRenderWindow*);
+  mitkNewMacro1Param(Self, ThumbnailRenderWindow*)
 
   /**
    * By this function the Observer gets notifier about new events.
@@ -47,25 +49,25 @@ public:
    * its infrastructure.
    * It also checks if event is to be accepted when i already has been processed by a DataInteractor.
    */
-  virtual void Notify(InteractionEvent* interactionEvent, bool isHandled) override;
+  virtual void Notify(mitk::InteractionEvent* interactionEvent, bool isHandled) override;
 
 protected:
 
-  ThumbnailInteractor(QmitkThumbnailRenderWindow* thumbnailWindow);
+  ThumbnailInteractor(ThumbnailRenderWindow* thumbnailWindow);
   virtual ~ThumbnailInteractor();
 
   virtual void ConnectActionsAndFunctions() override;
 
-  virtual bool Init(StateMachineAction* action, InteractionEvent* event) override;
-  virtual bool Move(StateMachineAction* action, InteractionEvent* event) override;
-  virtual bool Zoom(StateMachineAction* action, InteractionEvent* event) override;
+  virtual bool Init(mitk::StateMachineAction* action, mitk::InteractionEvent* event) override;
+  virtual bool Move(mitk::StateMachineAction* action, mitk::InteractionEvent* event) override;
+  virtual bool Zoom(mitk::StateMachineAction* action, mitk::InteractionEvent* event) override;
 
 private:
 
   /**
    * The thumbnail window that this display interactor belongs to.
    */
-  QmitkThumbnailRenderWindow* m_ThumbnailWindow;
+  ThumbnailRenderWindow* m_ThumbnailWindow;
 
   /**
    * Renderer of the thumbnail window that this display interactor belongs to.

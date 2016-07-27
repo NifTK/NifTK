@@ -33,7 +33,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-DnDDisplayInteractor::DnDDisplayInteractor(niftkSingleViewerWidget* viewer)
+DnDDisplayInteractor::DnDDisplayInteractor(SingleViewerWidget* viewer)
 : mitk::DisplayInteractor()
 , m_Viewer(viewer)
 , m_Renderers(4)
@@ -388,7 +388,7 @@ bool DnDDisplayInteractor::SelectPreviousSlice(mitk::StateMachineAction* action,
   /// Note:
   /// This does not work if the slice are locked.
   /// See:
-  ///   niftkSingleViewerWidget::SetNavigationControllerEventListening(bool)
+  ///   SingleViewerWidget::SetNavigationControllerEventListening(bool)
   /// and
   ///   QmitkMultiWindowWidget::SetWidgetPlanesLocked(bool)
 
@@ -428,7 +428,7 @@ bool DnDDisplayInteractor::SelectNextSlice(mitk::StateMachineAction* action, mit
   /// Note:
   /// This does not work if the slice are locked.
   /// See:
-  ///   niftkSingleViewerWidget::SetNavigationControllerEventListening(bool)
+  ///   SingleViewerWidget::SetNavigationControllerEventListening(bool)
   /// and
   ///   QmitkMultiWindowWidget::SetWidgetPlanesLocked(bool)
 

@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "uk_ac_ucl_cmic_dnddisplay_Activator.h"
+#include "niftkPluginActivator.h"
 
 #include <berryPlatform.h>
 #include <berryPlatformUI.h>
@@ -25,9 +25,9 @@
 #include <QmitkMimeTypes.h>
 
 #include <niftkMultiViewerWidget.h>
-#include <QmitkDnDDisplayPreferencePage.h>
-#include <QmitkMultiViewerEditor.h>
-//#include <QmitkSingleViewerEditor.h>
+#include <niftkDnDDisplayPreferencePage.h>
+#include <niftkMultiViewerEditor.h>
+//#include <niftkSingleViewerEditor.h>
 
 #include <QApplication>
 #include <QDragEnterEvent>
@@ -39,11 +39,11 @@
 namespace niftk
 {
 
-uk_ac_ucl_cmic_dnddisplay_Activator* uk_ac_ucl_cmic_dnddisplay_Activator::s_Instance = 0;
+PluginActivator* PluginActivator::s_Instance = 0;
 
 //-----------------------------------------------------------------------------
-uk_ac_ucl_cmic_dnddisplay_Activator::uk_ac_ucl_cmic_dnddisplay_Activator()
-: m_PluginContext()
+PluginActivator::PluginActivator()
+: m_Context(nullptr)
 {
   assert(!s_Instance);
   s_Instance = this;
@@ -51,39 +51,39 @@ uk_ac_ucl_cmic_dnddisplay_Activator::uk_ac_ucl_cmic_dnddisplay_Activator()
 
 
 //-----------------------------------------------------------------------------
-void uk_ac_ucl_cmic_dnddisplay_Activator::start(ctkPluginContext* context)
+void PluginActivator::start(ctkPluginContext* context)
 {
-  m_PluginContext = context;
+  m_Context = context;
 
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkMultiViewerEditor, context);
-//  BERRY_REGISTER_EXTENSION_CLASS(QmitkSingleViewerEditor, context);
-  BERRY_REGISTER_EXTENSION_CLASS(QmitkDnDDisplayPreferencePage, context);
+  BERRY_REGISTER_EXTENSION_CLASS(MultiViewerEditor, context);
+//  BERRY_REGISTER_EXTENSION_CLASS(SingleViewerEditor, context);
+  BERRY_REGISTER_EXTENSION_CLASS(DnDDisplayPreferencePage, context);
 }
 
 
 //-----------------------------------------------------------------------------
-void uk_ac_ucl_cmic_dnddisplay_Activator::stop(ctkPluginContext* context)
+void PluginActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
 }
 
 
 //-----------------------------------------------------------------------------
-uk_ac_ucl_cmic_dnddisplay_Activator* uk_ac_ucl_cmic_dnddisplay_Activator::GetInstance()
+PluginActivator* PluginActivator::GetInstance()
 {
   return s_Instance;
 }
 
 
 //-----------------------------------------------------------------------------
-ctkPluginContext* uk_ac_ucl_cmic_dnddisplay_Activator::GetPluginContext()
+ctkPluginContext* PluginActivator::GetContext()
 {
-  return m_PluginContext;
+  return m_Context;
 }
 
 }
 
 //-----------------------------------------------------------------------------
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_dnddisplay, niftk::uk_ac_ucl_cmic_dnddisplay_Activator)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_dnddisplay, niftk::PluginActivator)
 #endif

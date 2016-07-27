@@ -12,33 +12,32 @@
 
 =============================================================================*/
 
-#ifndef SideViewerActivator_h
-#define SideViewerActivator_h
+#ifndef niftkPluginActivator_h
+#define niftkPluginActivator_h
 
 #include <ctkPluginActivator.h>
 
 namespace niftk
 {
 
-class SideViewerActivator :
+/**
+ * \class PluginActivator
+ * \brief CTK Plugin Activator class for ThumbnailView.
+ * \ingroup uk.ac.ucl.cmic.thumbnail_internal
+ */
+class PluginActivator :
   public QObject, public ctkPluginActivator
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  Q_PLUGIN_METADATA(IID "uk_ac_ucl_cmic_sideviewer")
+  Q_PLUGIN_METADATA(IID "uk_ac_ucl_cmic_thumbnail")
 #endif
 
 public:
 
-  void start(ctkPluginContext* context);
-  void stop(ctkPluginContext* context);
-
-  static ctkPluginContext* GetPluginContext();
-
-private:
-
-  static ctkPluginContext* s_PluginContext;
+  void start(ctkPluginContext* context) override;
+  void stop(ctkPluginContext* context) override;
 
 };
 

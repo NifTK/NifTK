@@ -12,7 +12,8 @@
 
 =============================================================================*/
 
-#include "ThumbnailView.h"
+#include "niftkThumbnailView.h"
+
 #include <berryIPreferencesService.h>
 #include <berryIBerryPreferences.h>
 #include <berryIWorkbenchPage.h>
@@ -20,10 +21,15 @@
 #include <mitkDataStorage.h>
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
-#include "QmitkThumbnailViewPreferencePage.h"
-#include <QmitkThumbnailRenderWindow.h>
+
+#include "niftkThumbnailViewPreferencePage.h"
+#include <niftkThumbnailRenderWindow.h>
 
 #include <QHBoxLayout>
+
+
+namespace niftk
+{
 
 const std::string ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnail";
 
@@ -153,7 +159,7 @@ void ThumbnailView::CreateQtPartControl(QWidget* parent)
 {
   if (!m_ThumbnailWindow)
   {
-    m_ThumbnailWindow = new QmitkThumbnailRenderWindow(parent, m_RenderingManager);
+    m_ThumbnailWindow = new ThumbnailRenderWindow(parent, m_RenderingManager);
     QHBoxLayout* layout = new QHBoxLayout(parent);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_ThumbnailWindow);
@@ -237,16 +243,16 @@ void ThumbnailView::RetrievePreferenceValues()
 
   assert( prefs );
 
-  int thickness = prefs->GetInt(QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_THICKNESS, 1);
-  int layer = prefs->GetInt(QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_LAYER, 99);
-  double opacity = prefs->GetDouble(QmitkThumbnailViewPreferencePage::THUMBNAIL_BOX_OPACITY, 1);
+  int thickness = prefs->GetInt(ThumbnailViewPreferencePage::THUMBNAIL_BOX_THICKNESS, 1);
+  int layer = prefs->GetInt(ThumbnailViewPreferencePage::THUMBNAIL_BOX_LAYER, 99);
+  double opacity = prefs->GetDouble(ThumbnailViewPreferencePage::THUMBNAIL_BOX_OPACITY, 1);
 
   m_ThumbnailWindow->SetBoundingBoxLineThickness(thickness);
   m_ThumbnailWindow->SetBoundingBoxOpacity(opacity);
   m_ThumbnailWindow->SetBoundingBoxLayer(layer);
 
   bool onlyMainWindowsWereTracked = m_TrackOnlyMainWindows;
-  m_TrackOnlyMainWindows = prefs->GetBool(QmitkThumbnailViewPreferencePage::THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS, true);
+  m_TrackOnlyMainWindows = prefs->GetBool(ThumbnailViewPreferencePage::THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS, true);
 
   if (m_TrackOnlyMainWindows != onlyMainWindowsWereTracked)
   {
@@ -367,4 +373,6 @@ mitk::IRenderWindowPart* ThumbnailView::GetSelectedEditor()
   }
 
   return renderWindowPart;
+}
+
 }

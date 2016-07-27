@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef QmitkThumbnailRenderWindow_h
-#define QmitkThumbnailRenderWindow_h
+#ifndef niftkThumbnailRenderWindow_h
+#define niftkThumbnailRenderWindow_h
 
 #include <niftkThumbnailExports.h>
 
@@ -24,19 +24,19 @@
 
 #include <QmitkRenderWindow.h>
 
-#include "mitkThumbnailInteractor.h"
+#include "niftkThumbnailInteractor.h"
 
 #include <niftkDataNodeStringPropertyFilter.h>
 #include <niftkDataNodeVisibilityTracker.h>
+
 
 namespace niftk
 {
 class MouseEventEater;
 class WheelEventEater;
-}
 
 /**
- * \class QmitkThumbnailRenderWindow
+ * \class ThumbnailRenderWindow
  * \brief Subclass of QmitkRenderWindow to track to another QmitkRenderWindow
  * and provide a zoomed-out view with an overlay of a bounding box to provide the
  * current size of the currently tracked QmitkRenderWindow's view-port size.
@@ -68,17 +68,17 @@ class WheelEventEater;
  * \sa mitk::DataStorage
  * \sa mitk::FocusManager
  */
-class NIFTKTHUMBNAIL_EXPORT QmitkThumbnailRenderWindow : public QmitkRenderWindow
+class NIFTKTHUMBNAIL_EXPORT ThumbnailRenderWindow : public QmitkRenderWindow
 {
   Q_OBJECT
 
 public:
 
-  /// \brief Constructs a QmitkThumbnailRenderWindow object.
-  QmitkThumbnailRenderWindow(QWidget *parent, mitk::RenderingManager* renderingManager);
+  /// \brief Constructs a ThumbnailRenderWindow object.
+  ThumbnailRenderWindow(QWidget *parent, mitk::RenderingManager* renderingManager);
 
-  /// \brief Destructs the QmitkThumbnailRenderWindow object.
-  ~QmitkThumbnailRenderWindow();
+  /// \brief Destructs the ThumbnailRenderWindow object.
+  ~ThumbnailRenderWindow();
 
   /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
   bool AreDisplayInteractionsEnabled() const;
@@ -227,20 +227,20 @@ private:
   unsigned long m_TrackedTimeStepSelectorTag;
 
   /// \brief Squash all mouse events.
-  niftk::MouseEventEater* m_MouseEventEater;
+  MouseEventEater* m_MouseEventEater;
 
   /// \brief Squash all wheel events.
-  niftk::WheelEventEater* m_WheelEventEater;
+  WheelEventEater* m_WheelEventEater;
 
   /// \brief Simply keeps track of whether we are currently processing an update to avoid repeated/recursive calls.
   bool m_InDataStorageChanged;
 
   /// \brief To track visibility changes.
-  niftk::DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
+  DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
 
-  niftk::DataNodeStringPropertyFilter::Pointer m_ToolNodeNameFilter;
+  DataNodeStringPropertyFilter::Pointer m_ToolNodeNameFilter;
 
-  mitk::ThumbnailInteractor::Pointer m_DisplayInteractor;
+  ThumbnailInteractor::Pointer m_DisplayInteractor;
 
   /**
    * Reference to the service registration of the display interactor.
@@ -248,9 +248,10 @@ private:
    */
   us::ServiceRegistrationU m_DisplayInteractorService;
 
-  friend class mitk::ThumbnailInteractor;
+  friend class ThumbnailInteractor;
 
 };
 
+}
 
 #endif
