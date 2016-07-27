@@ -2871,10 +2871,18 @@ void VLSceneView::updateCameraParameters()
   // update camera position
 
   if ( m_CameraNode ) {
-    vl::mat4 mat = GetVLMatrixFromData( m_CameraNode->GetData() );
-    VIVID_CHECK( ! mat.isNull() );
-    if ( ! mat.isNull() ) {
-      m_Camera->setModelingMatrix( mat );
+    vl::mat4 mat1 = GetVLMatrixFromData( m_CameraNode->GetData() );
+    VIVID_CHECK( ! mat1.isNull() );
+    if ( ! mat1.isNull() ) {
+      vl::vec4 origin(0, 0, 0, 1);
+      vl::vec4 focalPoint(0, 0, 1000, 1);
+      vl::vec4 viewUp(0, -1000, 0, 1);
+      origin = mat1 * origin;
+      focalPoint = mat1 * focalPoint;
+      viewUp = mat1 * viewUp;
+      viewUp = viewUp - origin;
+      vl::mat4 mat2 = vl::mat4::getLookAt(origin.xyz(), focalPoint.xyz(), viewUp.xyz());
+      m_Camera->setViewMatrix( mat2 );
     }
   }
 }
