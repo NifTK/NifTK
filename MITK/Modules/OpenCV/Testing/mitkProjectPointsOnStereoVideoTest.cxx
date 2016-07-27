@@ -18,7 +18,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/core_c.h>
 
-bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> points)
+bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> points, unsigned int expectedVectorSize )
 {
   double Error = 0.0;
   //here are some points calculated indepenently
@@ -54,7 +54,7 @@ bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> p
   std::vector < mitk::PickedObject > frame0Points = points[0]->GetPickedObjects();
   std::vector < mitk::PickedObject > frame1155Points = points[1155]->GetPickedObjects();
 
-  if ( ( frame0Points.size() != 12 ) || frame1155Points.size() != 12 )
+  if ( ( frame0Points.size() != expectedVectorSize ) || frame1155Points.size() != expectedVectorSize )
   {
     MITK_ERROR << "Points in left lens returned with wrong point vector size " << frame0Points.size() << " , " << frame1155Points.size();
     return false;
@@ -108,6 +108,7 @@ bool CheckTransformedPointVector (std::vector <mitk::PickedPointList::Pointer> p
   }
   else
   {
+    MITK_ERROR << "Absolute error = " << Error << ": too high for projected point vector, failing.";
     return false;
   }
 }
@@ -149,6 +150,7 @@ bool CheckProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
   }
   else
   {
+    MITK_ERROR << "Absolute projection error = " << Error << ": too high for projected point vector, failing.";
     return false;
   }
 }
@@ -191,6 +193,7 @@ bool CheckReProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projecto
   }
   else
   {
+    MITK_ERROR << "Absolute reprojection error = " << Error << ": too high for projected point vector, failing.";
     return false;
   }
 }
@@ -224,6 +227,7 @@ bool CheckTriangulationErrors (mitk::ProjectPointsOnStereoVideo::Pointer Project
   }
   else
   {
+    MITK_ERROR << "Absolute triangulation error = " << Error << ": too high for projected point vector, failing.";
     return false;
   }
 }
@@ -300,15 +304,55 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   Projector->AppendWorldPointsByTriangulation(frame0000ScreenPoints,frame0000framenumbers, matcher);
   Projector->AppendWorldPointsByTriangulation(frame1400ScreenPoints,frame1400framenumbers, matcher);
 
- Projector->Project(matcher);
+  Projector->Project(matcher);
   MITK_TEST_CONDITION_REQUIRED (Projector->GetProjectOK(), "Testing mitkProjectPointsOnStereoVideo projected OK");
 
-  MITK_TEST_CONDITION(CheckTransformedPointVector(Projector->GetPointsInLeftLensCS()), "Testing projected points");
+  MITK_TEST_CONDITION(CheckTransformedPointVector(Projector->GetPointsInLeftLensCS(), 12), "Testing projected points");
 
+  Projector->ClearWorldPoints();
+
+  mitk::PickedPointList::Pointer ModelGridPoints = mitk::PickedPointList::New();
+
+  ModelGridPoints->SetInOrderedMode(true);
+  ModelGridPoints->AddPoint ( cv::Point3d (-1.416343, -0.452355, 0.051662), cv::Scalar ( 255,255,255));
+  ModelGridPoints->AddPoint ( cv::Point3d (-0.612092, 26.578511, -0.110197), cv::Scalar ( 255,255,255));
+  ModelGridPoints->AddPoint ( cv::Point3d (38.401987, 25.359090, -0.449377), cv::Scalar ( 255,255,255));
+  ModelGridPoints->AddPoint ( cv::Point3d (37.519204, -2.088515, -0.274778), cv::Scalar ( 255,255,255));
+
+  cv::Mat* modelToWorldTransform = new cv::Mat(4,4,CV_64FC1);
+  modelToWorldTransform->at<double>(0,0) = -1.4656e-02;
+  modelToWorldTransform->at<double>(0,1) = 2.1285e-01;
+  modelToWorldTransform->at<double>(0,2) = -9.7697e-01;
+  modelToWorldTransform->at<double>(0,3) = -8.2607e+02;
+
+  modelToWorldTransform->at<double>(1,0) = 9.9866e-01;
+  modelToWorldTransform->at<double>(1,1) = 5.1653e-02;
+  modelToWorldTransform->at<double>(1,2) = -3.7281e-03;
+  modelToWorldTransform->at<double>(1,3) = -2.0576e+02;
+
+  modelToWorldTransform->at<double>(2,0) = 4.9670e-02;
+  modelToWorldTransform->at<double>(2,1) = -9.7572e-01;
+  modelToWorldTransform->at<double>(2,2) = -2.1333e-01;
+  modelToWorldTransform->at<double>(2,3) = -2.0110e+03;
+
+  modelToWorldTransform->at<double>(3,0) = 0.0;
+  modelToWorldTransform->at<double>(3,1) = 0.0;
+  modelToWorldTransform->at<double>(3,2) = 0.0;
+  modelToWorldTransform->at<double>(3,3) = 1.0;
+
+  Projector->SetModelToWorldTransform(modelToWorldTransform);
+  Projector->SetModelPoints(ModelGridPoints);
+
+  Projector->Project(matcher);
+  MITK_TEST_CONDITION_REQUIRED (Projector->GetProjectOK(), "Testing mitkProjectPointsOnStereoVideo projected OK, when using model to world");
+
+  MITK_TEST_CONDITION(CheckTransformedPointVector(Projector->GetPointsInLeftLensCS(), 4), "Testing projected points, when using model to world");
+
+  Projector->ClearWorldPoints();
+  Projector->ClearModelPoints();
   //these are the gold standard projected points for frame 1155
   //1155 664.844 69.984 753.793 68.306 628.092 279.283 711.968 279.424 1264.44 296.217 1365.82 296.783 1277.2 79.8817 1380.06 75.8718
   //these are perturbed world points that should yield the following errors for frame 1155
-  Projector->ClearWorldPoints();
   WorldGridPoints.clear();
   WorldGridPoints.push_back(mitk::WorldPoint (cv::Point3d (-826.2000 ,  -207.2000 ,-2010.6000 )));
   WorldGridPoints.push_back(mitk::WorldPoint (cv::Point3d (-820.4406 ,  -202.5256 , -2036.5725 )));
@@ -339,15 +383,13 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
 
   //now we're going to repeat this test using more grid points, and a model to world transform
   Projector->ClearWorldPoints();
-  mitk::PickedPointList::Pointer ModelGridPoints = mitk::PickedPointList::New();
-  //the gold standard points were classified during the last projection, so this time 
-  //let's use an ordered point list
-  //check it's in ordered mode
+  Projector->SetModelToWorldTransform(modelToWorldTransform);
+
   ModelGridPoints->SetInOrderedMode(true);
-  ModelGridPoints->AddPoint ( cv::Point3d ( 0.0, 0.0, 0.0 ), cv::Scalar ( 255,255,255));
-  ModelGridPoints->AddPoint ( cv::Point3d ( 39.0, 0.0, 0.0 ), cv::Scalar ( 255,255,255));
-  ModelGridPoints->AddPoint ( cv::Point3d ( 39.0, 27.0, 0.0 ), cv::Scalar ( 255,255,255));
-  ModelGridPoints->AddPoint ( cv::Point3d ( 0.0, 27.0, 0.0 ), cv::Scalar ( 255,255,255));
+  ModelGridPoints->AddPoint ( cv::Point3d (-1.416343, -0.452355, 0.051662), cv::Scalar ( 255,255,255));
+  ModelGridPoints->AddPoint ( cv::Point3d (1.877316, 26.356847, -0.051924), cv::Scalar ( 255,255,255));
+  ModelGridPoints->AddPoint ( cv::Point3d (38.706592, 28.911089, 0.051656), cv::Scalar ( 255,255,255));
+  ModelGridPoints->AddPoint ( cv::Point3d (38.832543, -0.813564, -0.051916), cv::Scalar ( 255,255,255));
 
   Projector->SetModelPoints(ModelGridPoints);
   Projector->Project(matcher);
