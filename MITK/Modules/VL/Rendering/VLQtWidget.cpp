@@ -70,6 +70,7 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkImageReadAccessor.h>
 #include <niftkScopedOGLContext.h>
+#include <niftkVTKFunctions.h>
 #include <stdexcept>
 
 #ifdef BUILD_IGI
@@ -846,10 +847,44 @@ namespace
 
   //-----------------------------------------------------------------------------
 
-  vl::mat4 GetVLMatrixFromData(const mitk::BaseData::ConstPointer& data)
+  mat4 getVLMatrix(const itk::Matrix<float, 4, 4>& itkmat)
   {
-    vl::mat4  mat;
-    // Intentionally not setIdentity()
+    mat4 mat;
+    mat.setNull();
+    for (int i = 0; i < 4; ++i)
+    {
+      for (int j = 0; j < 4; ++j)
+      {
+        mat.e(i, j) = itkmat[i][j];
+      }
+    }
+    return mat;
+  }
+
+  //-----------------------------------------------------------------------------
+
+  // Returns null matrix if no vtk matrix is found
+  mat4 getVLMatrix(vtkSmartPointer<vtkMatrix4x4> vtkmat)
+  {
+    mat4 mat;
+    mat.setNull();
+    if ( vtkmat.GetPointer() ) {
+      for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+          mat.e(i, j) = vtkmat->GetElement(i, j);
+        }
+      }
+    }
+
+    return mat;
+  }
+
+  //-----------------------------------------------------------------------------
+
+  // Returns null matrix if no vtk matrix is found
+  mat4 getVLMatrix(const mitk::BaseData::ConstPointer& data)
+  {
+    mat4 mat;
     mat.setNull();
 
     if ( data )
@@ -859,14 +894,7 @@ namespace
         if ( geom->GetVtkTransform() ) {
           vtkSmartPointer<vtkMatrix4x4> vtkmat = vtkSmartPointer<vtkMatrix4x4>::New();
           geom->GetVtkTransform()->GetMatrix(vtkmat);
-          if ( vtkmat.GetPointer() ) {
-            for (int i = 0; i < 4; i++) {
-              for (int j = 0; j < 4; j++) {
-                double val = vtkmat->GetElement(i, j);
-                mat.e(i, j) = val;
-              }
-            }
-          }
+          mat = getVLMatrix(vtkmat);
         }
       }
     }
@@ -2122,6 +2150,8 @@ VLSceneView::VLSceneView( QGLWidget* qglwidget ) :
   m_CudaTest = new CudaTest;
 #endif
 
+  m_EyeHandMatrix.setNull();
+
   // Note: here we don't have yet access to openglContext(), ie it's NULL
 
   // Interface VL with Qt's resource system to load GLSL shaders.
@@ -2725,6 +2755,8 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
 {
   VIVID_CHECK( m_VividRendering );
   m_BackgroundNode = node;
+  m_BackgroundImage = NULL;
+  m_BackgroundCUDAImage = NULL;
 
   // update camera viewport based on background node intrinsics present or not
   updateCameraParameters();
@@ -2750,10 +2782,10 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
     // assign texture
     tex = img2d_mapper->texture();
     // image size and pixel aspect ratio
-    mitk::Image* image = dynamic_cast<mitk::Image*>( node->GetData() );
-    img_spacing = image->GetGeometry()->GetSpacing();
-    width = image->GetDimension(0);
-    height = image->GetDimension(1);
+    m_BackgroundImage = dynamic_cast<mitk::Image*>( node->GetData() );
+    img_spacing = m_BackgroundImage->GetGeometry()->GetSpacing();
+    width = m_BackgroundImage->GetDimension(0);
+    height = m_BackgroundImage->GetDimension(1);
   }
 #ifdef _USE_CUDA
   else if ( imgCu_mapper )
@@ -2761,9 +2793,9 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
     // assign texture
     tex = imgCu_mapper->texture();
     // image size and pixel aspect ratio
-    niftk::CUDAImage* cuda_image = dynamic_cast<niftk::CUDAImage*>( node->GetData() ); VIVID_CHECK(cuda_image);
-    img_spacing = cuda_image->GetGeometry()->GetSpacing();
-    niftk::LightweightCUDAImage lwci = cuda_image->GetLightweightCUDAImage();
+    m_BackgroundCUDAImage = dynamic_cast<niftk::CUDAImage*>( node->GetData() ); VIVID_CHECK(m_BackgroundCUDAImage);
+    img_spacing = m_BackgroundCUDAImage->GetGeometry()->GetSpacing();
+    niftk::LightweightCUDAImage lwci = m_BackgroundCUDAImage->GetLightweightCUDAImage();
     width = lwci.GetWidth();
     height = lwci.GetHeight();
   }
@@ -2823,6 +2855,24 @@ bool VLSceneView::setCameraTrackingNode(const mitk::DataNode* node)
 
 //-----------------------------------------------------------------------------
 
+void VLSceneView::setEyeHandFileName(const std::string& fileName) {
+  m_EyeHandMatrix.setNull();
+
+  if ( ! fileName.empty() )
+  {
+    // Note: Currently doesn't do error handling properly.
+    // i.e no return code, no exception.
+    vtkSmartPointer<vtkMatrix4x4> vtkmat = niftk::LoadMatrix4x4FromFile(fileName);
+    m_EyeHandMatrix = getVLMatrix(vtkmat);
+    if ( m_EyeHandMatrix.isNull() ) 
+    {
+      mitkThrow() << "Failed to niftk::LoadMatrix4x4FromFile(" << fileName << ")";
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+
 void VLSceneView::updateCameraParameters()
 {
   int win_w = openglContext()->width();
@@ -2878,18 +2928,59 @@ void VLSceneView::updateCameraParameters()
   // update camera position
 
   if ( m_CameraNode ) {
-    vl::mat4 mat1 = GetVLMatrixFromData( m_CameraNode->GetData() );
-    VIVID_CHECK( ! mat1.isNull() );
-    if ( ! mat1.isNull() ) {
-      vl::vec4 origin(0, 0, 0, 1);
-      vl::vec4 focalPoint(0, 0, 1000, 1);
-      vl::vec4 viewUp(0, -1000, 0, 1);
-      origin = mat1 * origin;
-      focalPoint = mat1 * focalPoint;
-      viewUp = mat1 * viewUp;
-      viewUp = viewUp - origin;
-      vl::mat4 mat2 = vl::mat4::getLookAt(origin.xyz(), focalPoint.xyz(), viewUp.xyz());
-      m_Camera->setViewMatrix( mat2 );
+    // This implies a right handed coordinate system.
+    // By default, assume camera position is at origin, looking down the world +ve z-axis.
+    vec3 origin(0, 0, 0);
+    vec3 focalPoint(0, 0, 1000);
+    vec3 viewUp(0, -1000, 0);
+
+    // If the stereo right to left matrix exists, we must be doing the right hand image.
+    // So, in this case, we have an extra transformation to consider.
+    if ( m_BackgroundImage )
+    {
+      niftk::Undistortion::MatrixProperty::Pointer prop = 
+        dynamic_cast<niftk::Undistortion::MatrixProperty*>(
+          m_BackgroundImage->GetProperty( niftk::Undistortion::s_StereoRigTransformationPropertyName ).GetPointer() );
+
+      if ( prop.IsNotNull() )
+      {
+        mat4 rig_txf = getVLMatrix( prop->GetValue() );
+        origin = rig_txf * origin;
+        focalPoint = rig_txf * focalPoint;
+        viewUp = rig_txf * viewUp;
+        viewUp = viewUp - origin;
+      }
     }
+
+    // If additionally, the user has selected a transformation matrix, we move camera accordingly.
+    // Note, 2 use-cases:
+    // (a) User specifies camera to world - just use the matrix as given.
+    // (b) User specified eye-hand matrix - multiply by eye-hand then tracking matrix
+    //                                    - to construct the camera to world.
+
+    // this is the camera modeling matrix (not the view matrix, its inverse)
+    mat4 camera_to_world;
+    mat4 supplied_matrix = getVLMatrix( m_CameraNode->GetData() ); 
+    VIVID_CHECK( ! supplied_matrix.isNull() );
+    if ( ! supplied_matrix.isNull() ) 
+    {
+      if ( m_EyeHandMatrix.isNull() )
+      {
+        // Use case (a) - supplied transform is camera to world.
+        camera_to_world = supplied_matrix;
+      } 
+      else
+      {
+        // Use case (b) - supplied transform is a tracking transform.
+        camera_to_world = supplied_matrix * m_EyeHandMatrix;
+      }
+
+      origin = camera_to_world * origin;
+      focalPoint = camera_to_world * focalPoint;
+      viewUp = camera_to_world * viewUp;
+      viewUp = viewUp - origin;
+    }
+
+    m_Camera->setViewMatrix( mat4::getLookAt(origin, focalPoint, viewUp) );
   }
 }

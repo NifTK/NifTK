@@ -41,6 +41,7 @@
 #include <mitkPointSet.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkDataNodePropertyListener.h>
+#include <niftkCUDAImage.h>
 #include <map>
 #include <set>
 
@@ -397,6 +398,8 @@ public:
   // Called by QmitkIGIVLEditor::OnTransformSelected(), VLRendererView::OnCameraNodeSelected()/OnCameraNodeEnabled()
   bool setCameraTrackingNode(const mitk::DataNode* node);
 
+  void setEyeHandFileName(const std::string& fileName);
+
   // Called by QmitkIGIVLEditor::OnImageSelected(), VLRendererView::OnBackgroundNodeSelected()
   bool setBackgroundNode(const mitk::DataNode* node);
 
@@ -478,8 +481,14 @@ protected:
   std::set<mitk::DataNode::ConstPointer> m_NodesToUpdate;
   std::set<mitk::DataNode::ConstPointer> m_NodesToAdd;
   std::set<mitk::DataNode::ConstPointer> m_NodesToRemove;
-  mitk::DataNode::ConstPointer           m_BackgroundNode;
   mitk::DataNode::ConstPointer           m_CameraNode;
+
+  mitk::DataNode::ConstPointer m_BackgroundNode;
+  mitk::Image::ConstPointer m_BackgroundImage;
+#ifdef _USE_CUDA
+  niftk::CUDAImage::ConstPointer m_BackgroundCUDAImage;
+#endif
+  vl::mat4 m_EyeHandMatrix;
 
   bool m_ScheduleTrackballAdjustView;
   bool m_ScheduleInitScene;
