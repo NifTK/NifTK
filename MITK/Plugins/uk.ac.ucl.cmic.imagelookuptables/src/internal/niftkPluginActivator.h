@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkImageLookupTablesViewActivator_h
-#define niftkImageLookupTablesViewActivator_h
+#ifndef niftkPluginActivator_h
+#define niftkPluginActivator_h
 
 #include <ctkPluginActivator.h>
 
@@ -23,11 +23,11 @@ namespace niftk
 {
 
 /**
- * \class ImageLookupTablesViewActivator
+ * \class PluginActivator
  * \brief CTK Plugin Activator class for ImageLookupTablesView.
  * \ingroup uk_ac_ucl_cmic_imagelookuptables_internal
  */
-class ImageLookupTablesViewActivator :
+class PluginActivator :
   public QObject, public ctkPluginActivator
 {
   Q_OBJECT
@@ -38,20 +38,25 @@ class ImageLookupTablesViewActivator :
 
 public:
 
-  ImageLookupTablesViewActivator();
-  ~ImageLookupTablesViewActivator();
+  PluginActivator();
+  virtual ~PluginActivator();
 
-  static ImageLookupTablesViewActivator* GetDefault();
-  ctkPluginContext* GetPluginContext() const;
-  static LookupTableProviderService* GetLookupTableProviderService();
+  static PluginActivator* GetInstance();
+
+  ctkPluginContext* GetContext() const;
+
+  LookupTableProviderService* GetLookupTableProviderService() const;
 
   void start(ctkPluginContext* context) override;
+
   void stop(ctkPluginContext* context) override;
 
 private:
 
   ctkPluginContext* m_Context;
-  static ImageLookupTablesViewActivator* s_Inst;
+
+  static PluginActivator* s_Instance;
+
 };
 
 }

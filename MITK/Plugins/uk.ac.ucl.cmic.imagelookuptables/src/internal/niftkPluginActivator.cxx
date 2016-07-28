@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkImageLookupTablesViewActivator.h"
+#include "niftkPluginActivator.h"
 
 #include <QtPlugin>
 
@@ -22,60 +22,61 @@
 namespace niftk
 {
 
-ImageLookupTablesViewActivator* ImageLookupTablesViewActivator::s_Inst = 0;
+PluginActivator* PluginActivator::s_Instance = nullptr;
 
 //-----------------------------------------------------------------------------
-ImageLookupTablesViewActivator::ImageLookupTablesViewActivator()
-: m_Context(NULL)
+PluginActivator::PluginActivator()
+: m_Context(nullptr)
 {
-  s_Inst = this;
+  assert(!s_Instance);
+  s_Instance = this;
 }
 
 
 //-----------------------------------------------------------------------------
-ImageLookupTablesViewActivator::~ImageLookupTablesViewActivator()
+PluginActivator::~PluginActivator()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void ImageLookupTablesViewActivator::start(ctkPluginContext* context)
+void PluginActivator::start(ctkPluginContext* context)
 {
+  m_Context = context;
+
   BERRY_REGISTER_EXTENSION_CLASS(ImageLookupTablesView, context);
   BERRY_REGISTER_EXTENSION_CLASS(ImageLookupTablesPreferencePage, context);
-  m_Context = context;
 }
 
 
 //-----------------------------------------------------------------------------
-void ImageLookupTablesViewActivator::stop(ctkPluginContext* context)
+void PluginActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
 }
 
 
 //-----------------------------------------------------------------------------
-ImageLookupTablesViewActivator* ImageLookupTablesViewActivator::GetDefault()
+PluginActivator* PluginActivator::GetInstance()
 {
-  return s_Inst;
+  return s_Instance;
 }
 
 
 //-----------------------------------------------------------------------------
-ctkPluginContext* ImageLookupTablesViewActivator::GetPluginContext() const
+ctkPluginContext* PluginActivator::GetContext() const
 {
   return m_Context;
 }
 
 
 //-----------------------------------------------------------------------------
-LookupTableProviderService* ImageLookupTablesViewActivator::GetLookupTableProviderService()
+LookupTableProviderService* PluginActivator::GetLookupTableProviderService() const
 {
-  ctkPluginContext* context = ImageLookupTablesViewActivator::GetDefault()->GetPluginContext();
-  ctkServiceReference serviceRef = context->getServiceReference<LookupTableProviderService>();
-  LookupTableProviderService* lutService = context->getService<LookupTableProviderService>(serviceRef);
-  
-  if (lutService == NULL)
+  ctkServiceReference serviceRef = m_Context->getServiceReference<LookupTableProviderService>();
+  LookupTableProviderService* lutService = m_Context->getService<LookupTableProviderService>(serviceRef);
+
+  if (lutService == nullptr)
   {
     mitkThrow() << "Failed to find niftk::LookupTableProviderService." << std::endl;
   }
@@ -86,5 +87,5 @@ LookupTableProviderService* ImageLookupTablesViewActivator::GetLookupTableProvid
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_imagelookuptables, mitk::ImageLookupTablesViewActivator)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_imagelookuptables, niftk::PluginActivator)
 #endif
