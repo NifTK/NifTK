@@ -328,7 +328,8 @@ int main(int argc, char** argv)
     if ( outputErrors.length() != 0 ) 
     {
       projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
-      projector->CalculateProjectionErrors(outputErrors);
+      bool useNewOutputFormat = false;
+      projector->CalculateProjectionErrors(outputErrors, useNewOutputFormat);
       projector->CalculateTriangulationErrors(outputErrors);
     }
     else

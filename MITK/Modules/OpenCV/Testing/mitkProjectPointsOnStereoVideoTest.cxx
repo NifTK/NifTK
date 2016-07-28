@@ -374,7 +374,7 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   rightGS.push_back(mitk::GoldStandardPoint (1155,-1, cv::Point2d(1380.06, 75.8718)));
   Projector->SetLeftGoldStandardPoints(leftGS, matcher);
   Projector->SetRightGoldStandardPoints(rightGS, matcher);
-  Projector->CalculateProjectionErrors("");
+  Projector->CalculateProjectionErrors("",false);
   Projector->CalculateTriangulationErrors("");
 
   MITK_TEST_CONDITION(CheckProjectionErrors(Projector), "Testing projection Errors");
@@ -393,7 +393,7 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
 
   Projector->SetModelPoints(ModelGridPoints);
   Projector->Project(matcher);
-  Projector->CalculateProjectionErrors("");
+  Projector->CalculateProjectionErrors("",false);
   Projector->CalculateTriangulationErrors("");
 
   MITK_TEST_CONDITION(CheckProjectionErrors(Projector), "Testing projection Errors with model to world transform");

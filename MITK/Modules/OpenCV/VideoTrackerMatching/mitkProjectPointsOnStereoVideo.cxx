@@ -1097,7 +1097,7 @@ mitk::PickedObject ProjectPointsOnStereoVideo::TriangulatePickedObjects (mitk::P
   return po_leftLens;
 }
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefix)
+void ProjectPointsOnStereoVideo::CalculateProjectionErrors (const std::string& outPrefix, const bool& useNewOutputFormat)
 {
   if ( ! m_ProjectOK )
   {
@@ -1130,22 +1130,36 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
     this->CalculateProjectionError( m_GoldStandardPoints[i]);
     this->CalculateReProjectionError ( m_GoldStandardPoints[i]);
   }
-  
+  if ( ! useNewOutputFormat )
+  {
+    this->WriteProjectionErrorsInOldFormat (outPrefix);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::WriteProjectionErrorsInOldFormat (const std::string& outPrefix)
+{
+
+  std::ofstream lpout;
+  std::ofstream rpout;
+  std::ofstream lrpout;
+  std::ofstream rrpout;
+
   std::vector < cv::Point2d > leftProjectionErrors;
-  for ( std::vector<mitk::PickedObject>::iterator it = m_LeftProjectionErrors.begin() ; 
+  for ( std::vector<mitk::PickedObject>::iterator it = m_LeftProjectionErrors.begin() ;
       it < m_LeftProjectionErrors.end() ; ++ it )
   {
     leftProjectionErrors.push_back ( cv::Point2d (it->m_Points[0].x, it->m_Points[0].y ));
   }
 
   std::vector < cv::Point2d > rightProjectionErrors;
-  for ( std::vector<mitk::PickedObject>::iterator it = m_RightProjectionErrors.begin() ; 
+  for ( std::vector<mitk::PickedObject>::iterator it = m_RightProjectionErrors.begin() ;
       it < m_RightProjectionErrors.end() ; ++ it )
   {
     rightProjectionErrors.push_back ( cv::Point2d (it->m_Points[0].x, it->m_Points[0].y ));
   }
 
-  std::ofstream lpout (std::string (outPrefix + "_leftProjection.errors").c_str());
+  lpout.open (std::string (outPrefix + "_leftProjection.errors").c_str());
   lpout << "#xpixels ypixels" << std::endl;
   for ( unsigned int i = 0 ; i < leftProjectionErrors.size() ; i ++ )
   {
@@ -1169,7 +1183,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   lpout << "#Ref. rms       = " << xrms << ", " << yrms << ", " << rms << std::endl;
   lpout.close();
 
-  std::ofstream rpout (std::string (outPrefix + "_rightProjection.errors").c_str());
+  rpout.open (std::string (outPrefix + "_rightProjection.errors").c_str());
   rpout << "#xpixels ypixels" << std::endl;
   for ( unsigned int i = 0 ; i < rightProjectionErrors.size() ; i ++ )
   {
@@ -1192,19 +1206,19 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   rpout.close();
 
   std::vector<cv::Point3d> leftReProjectionErrors;
-  for ( std::vector<mitk::PickedObject>::iterator it = m_LeftReProjectionErrors.begin() ; 
+  for ( std::vector<mitk::PickedObject>::iterator it = m_LeftReProjectionErrors.begin() ;
       it < m_LeftReProjectionErrors.end() ; ++ it )
   {
     leftReProjectionErrors.push_back ( it->m_Points[0]);
   }
   std::vector<cv::Point3d> rightReProjectionErrors;
-  for ( std::vector<mitk::PickedObject>::iterator it = m_RightReProjectionErrors.begin() ; 
+  for ( std::vector<mitk::PickedObject>::iterator it = m_RightReProjectionErrors.begin() ;
       it < m_RightReProjectionErrors.end() ; ++ it )
   {
     rightReProjectionErrors.push_back ( it->m_Points[0]);
   }
 
-  std::ofstream lrpout (std::string (outPrefix + "_leftReProjection.errors").c_str());
+  lrpout.open(std::string (outPrefix + "_leftReProjection.errors").c_str());
   lrpout << "#xmm ymm zmm" << std::endl;
   for ( unsigned int i = 0 ; i < m_LeftReProjectionErrors.size() ; i ++ )
   {
@@ -1228,7 +1242,7 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   lrpout << "#Ref. rms        = " << xrms << ", " << yrms << ", " << rms << std::endl;
   lrpout.close();
 
-  std::ofstream rrpout (std::string (outPrefix + "_rightReProjection.errors").c_str());
+  rrpout.open(std::string (outPrefix + "_rightReProjection.errors").c_str());
   rrpout << "#xpixels ypixels" << std::endl;
   for ( unsigned int i = 0 ; i < m_RightReProjectionErrors.size() ; i ++ )
   {

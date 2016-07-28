@@ -123,7 +123,7 @@ public:
    * \brief appends point to classifier world points
    */
   void AppendClassifierWorldPoints ( std::vector < mitk::WorldPoint > points );
-  
+
   /**
    * \brief clear the list of world points
    */
@@ -152,8 +152,9 @@ public:
 
   /**
    * \brief calculates the projection and re-projection errors, removing any existing results
+   * \params the prefix for the output file, and the output file behavior
    */
-  void CalculateProjectionErrors (std::string outPrefix);
+  void CalculateProjectionErrors (const std::string& outPrefix, const bool& useNewOutputFormat );
 
   /**
    * \brief calculates the triangulation errors, removing any existing results
@@ -175,7 +176,7 @@ public:
   itkSetMacro ( WorldPoints, mitk::PickedPointList::Pointer );
   itkSetMacro ( ModelPoints, mitk::PickedPointList::Pointer );
   itkSetMacro ( ClassifierWorldPoints, mitk::PickedPointList::Pointer );
-  void SetModelToWorldTransform ( cv::Mat* ); 
+  void SetModelToWorldTransform ( cv::Mat* );
 
 protected:
 
@@ -328,10 +329,22 @@ private:
    * This must be run after project and before any error calculation
    */
   void ClassifyGoldStandardPoints ();
-  /* \brief use this this find video data, used m_Directory and set m_VideoIn
+
+  /* \brief
+   * use this this find video data, used m_Directory and set m_VideoIn
    */
   void FindVideoData (mitk::VideoTrackerMatching::Pointer trackerMatcher);
 
+  /* \brief
+   * writes out projection and reprojection errors in the old format, kept this for comparison with
+   * old results (pre July 2016)
+   */
+  void WriteProjectionErrorsInOldFormat (const std::string& outPrefix);
+
+  /* \brief
+   * writes out reprojection results in the post July 2016 format
+   */
+  void WriteProjectionErrorsInNewFormat (const std::string& outPrefix);
 }; // end class
 
 } // end namespace
