@@ -113,7 +113,7 @@ void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
   if (!m_Controls)
   {
     // Create UI.
-    m_Controls = new Ui::ImageLookupTablesViewControls();
+    m_Controls = new Ui::niftkImageLookupTablesViewControls();
     m_Controls->setupUi(parent);
 
     // Decide which group boxes are open/closed.
