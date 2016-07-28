@@ -62,7 +62,7 @@ void IGIVideoOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
   QFormLayout *formLayout = new QFormLayout;
 
   m_CalibrationFileName = new ctkPathLineEdit();
-  formLayout->addRow("calibration matrix file name", m_CalibrationFileName);
+  formLayout->addRow("eye-to-hand matrix file name", m_CalibrationFileName);
 
   // gradient background
   QLabel* gBName = new QLabel;
