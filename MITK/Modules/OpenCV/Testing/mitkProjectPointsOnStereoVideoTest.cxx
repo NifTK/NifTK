@@ -137,11 +137,11 @@ bool CheckProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
 
   for ( int i = 0 ; i < 4 ; i ++ )
   {
-    Error += fabs ( Projector->GetLeftProjectionErrors()[i].x - leftErrors[i].x);
-    Error += fabs ( Projector->GetLeftProjectionErrors()[i].y - leftErrors[i].y);
+    Error += fabs ( Projector->GetLeftProjectionErrors()[i].m_Points[0].x - leftErrors[i].x);
+    Error += fabs ( Projector->GetLeftProjectionErrors()[i].m_Points[0].y - leftErrors[i].y);
 
-    Error += fabs ( Projector->GetRightProjectionErrors()[i].x - rightErrors[i].x);
-    Error += fabs ( Projector->GetRightProjectionErrors()[i].y - rightErrors[i].y);
+    Error += fabs ( Projector->GetRightProjectionErrors()[i].m_Points[0].x - rightErrors[i].x);
+    Error += fabs ( Projector->GetRightProjectionErrors()[i].m_Points[0].y - rightErrors[i].y);
   }
 
   if ( Error < 2e-3 )
@@ -178,13 +178,13 @@ bool CheckReProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projecto
 
   for ( int i = 0 ; i < 4 ; i ++ )
   {
-    Error += fabs ( Projector->GetLeftReProjectionErrors()[i].x - leftErrors[i].x);
-    Error += fabs ( Projector->GetLeftReProjectionErrors()[i].y - leftErrors[i].y);
-    Error += fabs ( Projector->GetLeftReProjectionErrors()[i].z - leftErrors[i].z);
+    Error += fabs ( Projector->GetLeftReProjectionErrors()[i].m_Points[0].x - leftErrors[i].x);
+    Error += fabs ( Projector->GetLeftReProjectionErrors()[i].m_Points[0].y - leftErrors[i].y);
+    Error += fabs ( Projector->GetLeftReProjectionErrors()[i].m_Points[0].z - leftErrors[i].z);
 
-    Error += fabs ( Projector->GetRightReProjectionErrors()[i].x - rightErrors[i].x);
-    Error += fabs ( Projector->GetRightReProjectionErrors()[i].y - rightErrors[i].y);
-    Error += fabs ( Projector->GetRightReProjectionErrors()[i].z - rightErrors[i].z);
+    Error += fabs ( Projector->GetRightReProjectionErrors()[i].m_Points[0].x - rightErrors[i].x);
+    Error += fabs ( Projector->GetRightReProjectionErrors()[i].m_Points[0].y - rightErrors[i].y);
+    Error += fabs ( Projector->GetRightReProjectionErrors()[i].m_Points[0].z - rightErrors[i].z);
   }
 
   if ( Error < 4e-2 )
@@ -216,9 +216,9 @@ bool CheckTriangulationErrors (mitk::ProjectPointsOnStereoVideo::Pointer Project
 
   for ( int i = 0 ; i < 4 ; i ++ )
   {
-    Error += fabs ( Projector->GetTriangulationErrors()[i].x - leftErrors[i].x);
-    Error += fabs ( Projector->GetTriangulationErrors()[i].y - leftErrors[i].y);
-    Error += fabs ( Projector->GetTriangulationErrors()[i].z - leftErrors[i].z);
+    Error += fabs ( Projector->GetTriangulationErrors()[i].m_Points[0].x - leftErrors[i].x);
+    Error += fabs ( Projector->GetTriangulationErrors()[i].m_Points[0].y - leftErrors[i].y);
+    Error += fabs ( Projector->GetTriangulationErrors()[i].m_Points[0].z - leftErrors[i].z);
   }
 
   if ( Error < 2e-2 )

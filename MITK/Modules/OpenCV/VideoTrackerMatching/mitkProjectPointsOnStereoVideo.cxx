@@ -876,7 +876,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
   for ( unsigned int i = 0 ; i < m_TriangulatedGoldStandardPoints.size() ; i ++ )
   {
     mitk::PickedObject leftLensObject = GetMatchingPickedObject ( m_TriangulatedGoldStandardPoints[i], *m_PointsInLeftLensCS[m_TriangulatedGoldStandardPoints[i].m_FrameNumber] );
-    cv::Point3d triangulationError;
+    mitk::PickedObject triangulationError;
     leftLensObject.DistanceTo ( m_TriangulatedGoldStandardPoints[i], triangulationError, m_AllowableTimingError );
     m_TriangulationErrors.push_back ( triangulationError );
   }
@@ -885,7 +885,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
   tout << "#xmm ymm zmm" << std::endl;
   for ( unsigned int i = 0 ; i < m_TriangulationErrors.size() ; i ++ )
   {
-    tout << m_TriangulationErrors[i] << std::endl;
+    tout << m_TriangulationErrors[i].m_Points[0] << std::endl;
   }
   cv::Point3d error3dStdDev;
   cv::Point3d error3dMean;
@@ -893,7 +893,14 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
   double yrms;
   double zrms;
   double rms;
-  error3dMean = mitk::GetCentroid(m_TriangulationErrors, false, &error3dStdDev);
+  std::vector<cv::Point3d> triangulationErrors;
+  for ( std::vector<mitk::PickedObject>::iterator it = m_TriangulationErrors.begin() ;
+      it < m_TriangulationErrors.end() ; ++ it )
+  {
+    triangulationErrors.push_back ( it->m_Points[0]);
+  }
+
+  error3dMean = mitk::GetCentroid(triangulationErrors, false, &error3dStdDev);
   tout << "#Mean Error      = " << error3dMean << std::endl;
   tout << "#StdDev          = " << error3dStdDev << std::endl;
   xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
@@ -901,7 +908,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
   zrms = sqrt ( error3dMean.z * error3dMean.z + error3dStdDev.z * error3dStdDev.z );
   rms = sqrt ( xrms*xrms + yrms*yrms + zrms*zrms);
   tout << "#rms             = " << xrms << ", " << yrms << ", " << zrms << ", " << rms << std::endl;
-  error3dMean = mitk::GetCentroid(m_TriangulationErrors, true, &error3dStdDev);
+  error3dMean = mitk::GetCentroid(triangulationErrors, true, &error3dStdDev);
   tout << "#Ref. Mean Error = " << error3dMean << std::endl;
   tout << "#Ref. StdDev     = " << error3dStdDev << std::endl;
   xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
@@ -1123,23 +1130,37 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
     this->CalculateProjectionError( m_GoldStandardPoints[i]);
     this->CalculateReProjectionError ( m_GoldStandardPoints[i]);
   }
+  
+  std::vector < cv::Point2d > leftProjectionErrors;
+  for ( std::vector<mitk::PickedObject>::iterator it = m_LeftProjectionErrors.begin() ; 
+      it < m_LeftProjectionErrors.end() ; ++ it )
+  {
+    leftProjectionErrors.push_back ( cv::Point2d (it->m_Points[0].x, it->m_Points[0].y ));
+  }
+
+  std::vector < cv::Point2d > rightProjectionErrors;
+  for ( std::vector<mitk::PickedObject>::iterator it = m_RightProjectionErrors.begin() ; 
+      it < m_RightProjectionErrors.end() ; ++ it )
+  {
+    rightProjectionErrors.push_back ( cv::Point2d (it->m_Points[0].x, it->m_Points[0].y ));
+  }
 
   std::ofstream lpout (std::string (outPrefix + "_leftProjection.errors").c_str());
   lpout << "#xpixels ypixels" << std::endl;
-  for ( unsigned int i = 0 ; i < m_LeftProjectionErrors.size() ; i ++ )
+  for ( unsigned int i = 0 ; i < leftProjectionErrors.size() ; i ++ )
   {
-    lpout << m_LeftProjectionErrors[i] << std::endl;
+    lpout << leftProjectionErrors[i] << std::endl;
   }
   cv::Point2d errorStdDev;
   cv::Point2d errorMean;
-  errorMean = mitk::GetCentroid(m_LeftProjectionErrors, false, &errorStdDev);
+  errorMean = mitk::GetCentroid(leftProjectionErrors, false, &errorStdDev);
   lpout << "#Mean Error     = " << errorMean << std::endl;
   lpout << "#StdDev         = " << errorStdDev << std::endl;
   double xrms = sqrt ( errorMean.x * errorMean.x + errorStdDev.x * errorStdDev.x );
   double yrms = sqrt ( errorMean.y * errorMean.y + errorStdDev.y * errorStdDev.y );
   double rms = sqrt ( xrms*xrms + yrms*yrms);
   lpout << "#rms            = " << xrms << ", " << yrms << ", " << rms << std::endl;
-  errorMean = mitk::GetCentroid(m_LeftProjectionErrors, true, &errorStdDev);
+  errorMean = mitk::GetCentroid(leftProjectionErrors, true, &errorStdDev);
   lpout << "#Ref Mean Error = " << errorMean << std::endl;
   lpout << "#Ref StdDev     = " << errorStdDev << std::endl;
   xrms = sqrt ( errorMean.x * errorMean.x + errorStdDev.x * errorStdDev.x );
@@ -1150,18 +1171,18 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
 
   std::ofstream rpout (std::string (outPrefix + "_rightProjection.errors").c_str());
   rpout << "#xpixels ypixels" << std::endl;
-  for ( unsigned int i = 0 ; i < m_RightProjectionErrors.size() ; i ++ )
+  for ( unsigned int i = 0 ; i < rightProjectionErrors.size() ; i ++ )
   {
-    rpout << m_RightProjectionErrors[i] << std::endl;
+    rpout << rightProjectionErrors[i] << std::endl;
   }
-  errorMean = mitk::GetCentroid(m_RightProjectionErrors, false, &errorStdDev);
+  errorMean = mitk::GetCentroid(rightProjectionErrors, false, &errorStdDev);
   rpout << "#Mean Error      = " << errorMean << std::endl;
   rpout << "#StdDev          = " << errorStdDev << std::endl;
   xrms = sqrt ( errorMean.x * errorMean.x + errorStdDev.x * errorStdDev.x );
   yrms = sqrt ( errorMean.y * errorMean.y + errorStdDev.y * errorStdDev.y );
   rms = sqrt ( xrms*xrms + yrms*yrms);
   rpout << "#rms             = " << xrms << ", " << yrms << ", " << rms << std::endl;
-  errorMean = mitk::GetCentroid(m_RightProjectionErrors, true, &errorStdDev);
+  errorMean = mitk::GetCentroid(rightProjectionErrors, true, &errorStdDev);
   rpout << "#Ref. Mean Error = " << errorMean << std::endl;
   rpout << "#Ref. StdDev     = " << errorStdDev << std::endl;
   xrms = sqrt ( errorMean.x * errorMean.x + errorStdDev.x * errorStdDev.x );
@@ -1170,22 +1191,35 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   rpout << "#Ref. rms        = " << xrms << ", " << yrms << ", " << rms << std::endl;
   rpout.close();
 
+  std::vector<cv::Point3d> leftReProjectionErrors;
+  for ( std::vector<mitk::PickedObject>::iterator it = m_LeftReProjectionErrors.begin() ; 
+      it < m_LeftReProjectionErrors.end() ; ++ it )
+  {
+    leftReProjectionErrors.push_back ( it->m_Points[0]);
+  }
+  std::vector<cv::Point3d> rightReProjectionErrors;
+  for ( std::vector<mitk::PickedObject>::iterator it = m_RightReProjectionErrors.begin() ; 
+      it < m_RightReProjectionErrors.end() ; ++ it )
+  {
+    rightReProjectionErrors.push_back ( it->m_Points[0]);
+  }
+
   std::ofstream lrpout (std::string (outPrefix + "_leftReProjection.errors").c_str());
   lrpout << "#xmm ymm zmm" << std::endl;
   for ( unsigned int i = 0 ; i < m_LeftReProjectionErrors.size() ; i ++ )
   {
-    lrpout << m_LeftReProjectionErrors[i] << std::endl;
+    lrpout << m_LeftReProjectionErrors[i].m_Points[0] << std::endl;
   }
   cv::Point3d error3dStdDev;
   cv::Point3d error3dMean;
-  error3dMean = mitk::GetCentroid(m_LeftReProjectionErrors, false, &error3dStdDev);
+  error3dMean = mitk::GetCentroid(leftReProjectionErrors, false, &error3dStdDev);
   lrpout << "#Mean Error      = " << error3dMean << std::endl;
   lrpout << "#StdDev          = " << error3dStdDev << std::endl;
   xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
   yrms = sqrt ( error3dMean.y * error3dMean.y + error3dStdDev.y * error3dStdDev.y );
   rms = sqrt ( xrms*xrms + yrms*yrms);
   lrpout << "#rms             = " << xrms << ", " << yrms << ", " << rms << std::endl;
-  error3dMean = mitk::GetCentroid(m_LeftReProjectionErrors, true, &error3dStdDev);
+  error3dMean = mitk::GetCentroid(leftReProjectionErrors, true, &error3dStdDev);
   lrpout << "#Ref. Mean Error = " << error3dMean << std::endl;
   lrpout << "#Ref. StdDev     = " << error3dStdDev << std::endl;
   xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
@@ -1198,16 +1232,16 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (std::string outPrefi
   rrpout << "#xpixels ypixels" << std::endl;
   for ( unsigned int i = 0 ; i < m_RightReProjectionErrors.size() ; i ++ )
   {
-    rrpout << m_RightReProjectionErrors[i] << std::endl;
+    rrpout << m_RightReProjectionErrors[i].m_Points[0] << std::endl;
   }
-  error3dMean = mitk::GetCentroid(m_RightReProjectionErrors, false, &error3dStdDev);
+  error3dMean = mitk::GetCentroid(rightReProjectionErrors, false, &error3dStdDev);
   rrpout << "#Mean Error      = " << error3dMean << std::endl;
   rrpout << "#StdDev          = " << error3dStdDev << std::endl;
   xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
   yrms = sqrt ( error3dMean.y * error3dMean.y + error3dStdDev.y * error3dStdDev.y );
   rms = sqrt ( xrms*xrms + yrms*yrms);
   rrpout << "#rms             = " << xrms << ", " << yrms << ", " << rms << std::endl;
-  error3dMean = mitk::GetCentroid(m_RightReProjectionErrors, true, &error3dStdDev);
+  error3dMean = mitk::GetCentroid(rightReProjectionErrors, true, &error3dStdDev);
   rrpout << "#Ref. Mean Error = " << error3dMean << std::endl;
   rrpout << "#Ref. StdDev     = " << error3dStdDev << std::endl;
   xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
@@ -1250,13 +1284,12 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
 
   reprojectedObject.m_Channel = "left_lens";
 
-  cv::Point3d reprojectionError;
+  mitk::PickedObject reprojectionError;
   reprojectedObject.DistanceTo ( matchingObject, reprojectionError, m_AllowableTimingError);
 
-  MITK_INFO << reprojectionError;
   //for lines there will be a small residual z error, as the closest point to the projected line may not be
   //on the plane. Let's check that this remains fairly small
-  if ( fabs (reprojectionError.z ) < m_ReprojectionErrorZLimit )
+  if ( fabs (reprojectionError.m_Points[0].z ) < m_ReprojectionErrorZLimit )
   {
     if ( GSPoint.m_Channel == "left" )
     {
@@ -1272,7 +1305,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
     MITK_WARN << "Rejecting reprojection error for point id " << reprojectedObject.m_Id <<
       " channel " << GSPoint.m_Channel <<
       " frame " << reprojectedObject.m_FrameNumber <<
-      " as z component error is too high : " << reprojectionError.z;
+      " as z component error is too high : " << reprojectionError.m_Points[0].z;
   }
 }
 
@@ -1282,15 +1315,15 @@ void ProjectPointsOnStereoVideo::CalculateProjectionError ( mitk::PickedObject G
   mitk::PickedObject matchingObject = GetMatchingPickedObject ( GSPoint, *m_ProjectedPointLists[GSPoint.m_FrameNumber] );
   assert ( matchingObject.m_FrameNumber == GSPoint.m_FrameNumber );
 
-  cv::Point3d projectionError;
+  mitk::PickedObject projectionError;
   GSPoint.DistanceTo(matchingObject, projectionError, m_AllowableTimingError );
   if ( GSPoint.m_Channel == "left" )
   {
-    m_LeftProjectionErrors.push_back(cv::Point2d ( projectionError.x, projectionError.y));
+    m_LeftProjectionErrors.push_back( projectionError);
   }
   else
   {
-    m_RightProjectionErrors.push_back(cv::Point2d ( projectionError.x, projectionError.y));
+    m_RightProjectionErrors.push_back( projectionError );
   }
 }
 

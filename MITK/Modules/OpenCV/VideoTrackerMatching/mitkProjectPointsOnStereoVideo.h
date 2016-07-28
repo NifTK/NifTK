@@ -144,11 +144,11 @@ public:
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( ProjectOK, bool);
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
-  itkGetMacro ( LeftProjectionErrors, std::vector < cv::Point2d > );
-  itkGetMacro ( RightProjectionErrors, std::vector < cv::Point2d > );
-  itkGetMacro ( LeftReProjectionErrors, std::vector < cv::Point3d > );
-  itkGetMacro ( RightReProjectionErrors, std::vector < cv::Point3d > );
-  itkGetMacro ( TriangulationErrors, std::vector < cv::Point3d > );
+  itkGetMacro ( LeftProjectionErrors, std::vector < mitk::PickedObject > );
+  itkGetMacro ( RightProjectionErrors, std::vector < mitk::PickedObject > );
+  itkGetMacro ( LeftReProjectionErrors, std::vector < mitk::PickedObject > );
+  itkGetMacro ( RightReProjectionErrors, std::vector < mitk::PickedObject > );
+  itkGetMacro ( TriangulationErrors, std::vector < mitk::PickedObject > );
 
   /**
    * \brief calculates the projection and re-projection errors, removing any existing results
@@ -252,11 +252,11 @@ private:
   mitk::PickedPointList::Pointer                        m_ClassifierWorldPoints;  //the world points to project, to classify the gold standard screen points
   std::vector < mitk::PickedPointList::Pointer >        m_ClassifierProjectedPointLists; // the projected points used for classifying the gold standard screen points
 
-  std::vector < cv::Point2d >                           m_LeftProjectionErrors;  //the projection errors in pixels
-  std::vector < cv::Point2d >                           m_RightProjectionErrors;  //the projection errors in pixels
-  std::vector < cv::Point3d >                           m_LeftReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
-  std::vector < cv::Point3d >                           m_RightReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
-  std::vector < cv::Point3d >                           m_TriangulationErrors; // the triangulation errors
+  std::vector < mitk::PickedObject >                    m_LeftProjectionErrors;  //the projection errors in pixels
+  std::vector < mitk::PickedObject >                    m_RightProjectionErrors;  //the projection errors in pixels
+  std::vector < mitk::PickedObject >                    m_LeftReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
+  std::vector < mitk::PickedObject >                    m_RightReProjectionErrors; // the projection errors in mm reprojected onto a plane normal to the camera lens
+  std::vector < mitk::PickedObject >                           m_TriangulationErrors; // the triangulation errors
 
   cv::VideoCapture*             m_Capture;
   CvVideoWriter*                m_LeftWriter;

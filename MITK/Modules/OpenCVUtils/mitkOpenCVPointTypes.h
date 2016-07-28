@@ -208,7 +208,6 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
 };
 
 std::istream& operator >> ( std::istream& is, PickedObject& po);
-std::ostream& operator << ( std::ostream& os, const PickedObject& po);
 
 extern "C++" NIFTKOPENCVUTILS_EXPORT bool operator < ( const PickedObject &PO1 , const PickedObject &PO2);
 extern "C++" NIFTKOPENCVUTILS_EXPORT PickedObject operator * ( const PickedObject &PO1 , const cv::Mat* transform);
