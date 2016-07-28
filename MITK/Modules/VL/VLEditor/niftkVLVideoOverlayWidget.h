@@ -53,7 +53,7 @@ public:
 
   void SetOclResourceService(OclResourceService* oclserv);
   void SetBackgroundColour(unsigned int aabbggrr);
-  void SetEyeHandFileName(const std::string& fileName) {} // ToDo
+  void SetEyeHandFileName(const std::string& fileName);
   void SetDataStorage(mitk::DataStorage* storage);
 
 private slots:
