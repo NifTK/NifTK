@@ -2740,7 +2740,9 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
   VIVID_CHECK( m_VividRendering );
   m_BackgroundNode = node;
   m_BackgroundImage = NULL;
+#ifdef _USE_CUDA
   m_BackgroundCUDAImage = NULL;
+#endif
 
   if ( ! node ) {
     m_VividRendering->setBackgroundImageEnabled( false );
