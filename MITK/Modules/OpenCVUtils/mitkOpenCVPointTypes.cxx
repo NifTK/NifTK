@@ -485,22 +485,29 @@ PickedObject PickedObject::CopyByHeader() const
 
 
 //-----------------------------------------------------------------------------
-double PickedObject::DistanceTo(const PickedObject& otherPickedObject , cv::Point3d& deltas,  const long long& allowableTimingError) const
+double PickedObject::DistanceTo(const PickedObject& otherPickedObject , PickedObject& deltas,  const long long& allowableTimingError) const
 {
+  deltas = this->CopyByHeader();
+  deltas.m_Points.clear();
   if ( ( ! otherPickedObject.HeadersMatch (*this) ) || ( otherPickedObject.m_Points.size() < 1 ) || ( m_Points.size() < 1 ) )
   {
-    deltas = cv::Point3d (  std::numeric_limits<double>::infinity(),  std::numeric_limits<double>::infinity(),  std::numeric_limits<double>::infinity() );
+    deltas.m_Points.push_back(cv::Point3d (  std::numeric_limits<double>::infinity(),  std::numeric_limits<double>::infinity(),  std::numeric_limits<double>::infinity()));
+
     return std::numeric_limits<double>::infinity();
   }
+  double returnDistance;
+  cv::Point3d signedDistance;
   if ( m_IsLine )
   {
     unsigned int splineOrder = 1;
-    return mitk::DistanceBetweenTwoSplines ( m_Points, otherPickedObject.m_Points, splineOrder , &deltas );
+    returnDistance = mitk::DistanceBetweenTwoSplines ( m_Points, otherPickedObject.m_Points, splineOrder , &signedDistance );
   }
   else
   {
-    return mitk::DistanceBetweenTwoPoints ( m_Points[0], otherPickedObject.m_Points[0], &deltas );
+    returnDistance = mitk::DistanceBetweenTwoPoints ( m_Points[0], otherPickedObject.m_Points[0], &signedDistance );
   }
+  deltas.m_Points.push_back ( signedDistance );
+  return returnDistance;
 }
 
 //-----------------------------------------------------------------------------
