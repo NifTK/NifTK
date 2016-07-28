@@ -2203,8 +2203,6 @@ VLSceneView::~VLSceneView() {
   m_NodesToRemove.clear();
   m_CameraNode = NULL;
   m_BackgroundNode = NULL;
-  m_VividRendering->setBackgroundImageEnabled( false );
-
 }
 
 //-----------------------------------------------------------------------------
