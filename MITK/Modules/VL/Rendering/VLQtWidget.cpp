@@ -2201,8 +2201,9 @@ VLSceneView::~VLSceneView() {
   m_NodesToUpdate.clear();
   m_NodesToAdd.clear();
   m_NodesToRemove.clear();
-  m_BackgroundNode = NULL;
   m_CameraNode = NULL;
+  m_BackgroundNode = NULL;
+  m_VividRendering->setBackgroundImageEnabled( false );
 
 }
 
@@ -2683,12 +2684,13 @@ void VLSceneView::clearScene()
   m_SceneManager->tree()->actors()->clear();
   m_SceneManager->tree()->eraseAllChildren();
 
-  m_CameraNode = 0;
-  m_BackgroundNode = 0;
   m_DataNodeVLMapperMap.clear();
   m_NodesToUpdate.clear();
   m_NodesToAdd.clear();
   m_NodesToRemove.clear();
+  m_CameraNode = 0;
+  m_BackgroundNode = 0;
+  m_VividRendering->setBackgroundImageEnabled( false );
 
   m_ScheduleInitScene = true;
   m_ScheduleTrackballAdjustView = true;
@@ -2742,12 +2744,12 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
   m_BackgroundImage = NULL;
   m_BackgroundCUDAImage = NULL;
 
-  // update camera viewport based on background node intrinsics present or not
-  updateCameraParameters();
-
   if ( ! node ) {
     m_VividRendering->setBackgroundImageEnabled( false );
+    updateCameraParameters();
     return true;
+  } else {
+    updateCameraParameters();
   }
 
   vl::Texture* tex = NULL;

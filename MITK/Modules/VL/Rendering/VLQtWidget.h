@@ -454,6 +454,7 @@ protected:
   virtual void addDataStorageListeners();
   virtual void removeDataStorageListeners();
 
+  // Update camera position, projection and viewport
   void updateCameraParameters();
 
   VLMapper* getVLMapper(const mitk::DataNode* node);
