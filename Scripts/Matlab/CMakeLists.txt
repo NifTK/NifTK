@@ -12,26 +12,12 @@
 #
 #============================================================================*/
 
-add_subdirectory(Common)
-add_subdirectory(Freesurfer)
-add_subdirectory(Fluid)
-add_subdirectory(Registration)
-add_subdirectory(SIENA)
-add_subdirectory(GradwarpCorrection)
-add_subdirectory(BoundaryShiftIntegral)
-add_subdirectory(TBSS)
-add_subdirectory(Utilities)
-add_subdirectory(CorticalThickness)
-add_subdirectory(Parcellation)
-add_subdirectory(MAPS)
-add_subdirectory(Slicer)
-add_subdirectory(IGI)
-add_subdirectory(Matlab)
-
 if(NOT WIN32)
-  add_subdirectory(MSTools)
+  if(APPLE)
+    configure_file(${CMAKE_SOURCE_DIR}/Scripts/Matlab/matlab_shell-For-Mac.sh.in ${EXECUTABLE_OUTPUT_PATH}/matlab_shell.sh @ONLY)
+  else()
+    configure_file(${CMAKE_SOURCE_DIR}/Scripts/Matlab/matlab_shell.sh.in ${EXECUTABLE_OUTPUT_PATH}/matlab_shell.sh @ONLY)
+  endif()
+  MITK_INSTALL(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/matlab_shell.sh)
 endif()
 
-if(BUILD_CAMINO)
-  add_subdirectory(Camino)
-endif()
