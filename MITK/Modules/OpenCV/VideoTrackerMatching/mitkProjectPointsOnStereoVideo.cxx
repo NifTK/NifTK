@@ -1134,6 +1134,11 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (const std::string& o
   {
     this->WriteProjectionErrorsInOldFormat (outPrefix);
   }
+  else
+  {
+    this->WriteProjectionErrorsInNewFormat (outPrefix);
+  }
+
 }
 
 //-----------------------------------------------------------------------------
@@ -1263,6 +1268,81 @@ void ProjectPointsOnStereoVideo::WriteProjectionErrorsInOldFormat (const std::st
   rms = sqrt ( xrms*xrms + yrms*yrms);
   rrpout << "#Ref. rms        = " << xrms << ", " << yrms << ", " << rms << std::endl;
   rrpout.close();
+
+}
+
+//-----------------------------------------------------------------------------
+void ProjectPointsOnStereoVideo::WriteProjectionErrorsInNewFormat (const std::string& outPrefix)
+{
+
+  std::ofstream out;
+
+  out.open (std::string (outPrefix + "_ReProjectionErrors.txt").c_str());
+  out << "# frame , type , id , channel , xmm , ymm , zmm , gsx , gsy , gsz , mpx , mpy , mpz << std::endl";
+
+  std::vector<cv::Point3d> reProjectionErrors;
+  for ( std::vector<mitk::PickedObject>::iterator it = m_LeftReProjectionErrors.begin() ;
+      it < m_LeftReProjectionErrors.end() ; ++ it )
+  {
+    reProjectionErrors.push_back ( it->m_Points[0]);
+    std::string type;
+    if ( it->m_IsLine )
+    {
+      type = "line";
+    }
+    else
+    {
+      type = "point";
+    }
+    out << it->m_FrameNumber << " , " << type << " , " << it->m_Id << " , " << it->m_Channel << " , ";
+    out << it->m_Points[0].x << " , " << it->m_Points[0].y << " , " << it->m_Points[0].z << " , ";
+    out << it->m_Points[1].x << " , " << it->m_Points[1].y << " , " << it->m_Points[1].z << " , ";
+    out << it->m_Points[2].x << " , " << it->m_Points[2].y << " , " << it->m_Points[2].z << " , ";
+    out << std::endl;
+  }
+
+  for ( std::vector<mitk::PickedObject>::iterator it = m_RightReProjectionErrors.begin() ;
+      it < m_RightReProjectionErrors.end() ; ++ it )
+  {
+    reProjectionErrors.push_back ( it->m_Points[0]);
+    std::string type;
+    if ( it->m_IsLine )
+    {
+      type = "line";
+    }
+    else
+    {
+      type = "point";
+    }
+    out << it->m_FrameNumber << " , " << type << " , " << it->m_Id << " , " << it->m_Channel << " , ";
+    out << it->m_Points[0].x << " , " << it->m_Points[0].y << " , " << it->m_Points[0].z << " , ";
+    out << it->m_Points[1].x << " , " << it->m_Points[1].y << " , " << it->m_Points[1].z << " , ";
+    out << it->m_Points[2].x << " , " << it->m_Points[2].y << " , " << it->m_Points[2].z << " , ";
+    out << std::endl;
+  }
+
+
+  cv::Point3d error3dStdDev;
+  cv::Point3d error3dMean;
+  double xrms;
+  double yrms;
+  double rms;
+
+  error3dMean = mitk::GetCentroid(reProjectionErrors, false, &error3dStdDev);
+  out << "#Mean Error      = " << error3dMean << std::endl;
+  out << "#StdDev          = " << error3dStdDev << std::endl;
+  xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
+  yrms = sqrt ( error3dMean.y * error3dMean.y + error3dStdDev.y * error3dStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  out << "#rms             = " << xrms << ", " << yrms << ", " << rms << std::endl;
+  error3dMean = mitk::GetCentroid(reProjectionErrors, true, &error3dStdDev);
+  out << "#Ref. Mean Error = " << error3dMean << std::endl;
+  out << "#Ref. StdDev     = " << error3dStdDev << std::endl;
+  xrms = sqrt ( error3dMean.x * error3dMean.x + error3dStdDev.x * error3dStdDev.x );
+  yrms = sqrt ( error3dMean.y * error3dMean.y + error3dStdDev.y * error3dStdDev.y );
+  rms = sqrt ( xrms*xrms + yrms*yrms);
+  out << "#Ref. rms        = " << xrms << ", " << yrms << ", " << rms << std::endl;
+  out.close();
 
 }
 
