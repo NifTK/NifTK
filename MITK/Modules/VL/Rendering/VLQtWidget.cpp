@@ -1234,9 +1234,9 @@ protected:
     AddProperty( "VL.Global.RenderMode", render_mode );
     render_mode->SetValue( 0 );
 
-    mitk::ColorProperty::Pointer bg_color = mitk::ColorProperty::New();
-    AddProperty( "VL.Global.BackgroundColor", bg_color );
-    bg_color->SetValue( vl::black.ptr() );
+    //mitk::ColorProperty::Pointer bg_color = mitk::ColorProperty::New();
+    //AddProperty( "VL.Global.BackgroundColor", bg_color );
+    //bg_color->SetValue( vl::black.ptr() );
 
     mitk::FloatProperty::Pointer opacity = mitk::FloatProperty::New();
     AddProperty( "VL.Global.Opacity", opacity );
@@ -1313,7 +1313,7 @@ public:
     vec4 stencil_bg_color = getColorProp( m_DataNode, "VL.Global.Stencil.BackgroundColor", vl::black );
     float stencil_smooth = getFloatProp( m_DataNode, "VL.Global.Stencil.Smoothness", 10 );
     int render_mode = getEnumProp( m_DataNode, "VL.Global.RenderMode", 0 );
-    vec4 bg_color = getColorProp( m_DataNode, "VL.Global.BackgroundColor", vl::black );
+    // vec4 bg_color = getColorProp( m_DataNode, "VL.Global.BackgroundColor", vl::black );
     float opacity = getFloatProp( m_DataNode, "VL.Global.Opacity", 1 );
     int passes = getIntProp( m_DataNode, "VL.Global.DepthPeelingPasses", 4 );
 
@@ -1321,7 +1321,7 @@ public:
     m_VividRendering->setStencilBackground( stencil_bg_color );
     m_VividRendering->setStencilSmoothness( stencil_smooth );
     m_VividRendering->setRenderingMode( (vl::Vivid::ERenderingMode)render_mode );
-    m_VividRendering->setBackgroundColor( bg_color );
+    // m_VividRendering->setBackgroundColor( bg_color );
     m_VividRendering->setOpacity( opacity );
     m_VividRendering->vividRenderer()->setNumPasses( passes );
   }
