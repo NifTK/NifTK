@@ -174,7 +174,7 @@ using namespace vl;
       glClear( GL_COLOR_BUFFER_BIT );
       glMatrixMode( GL_MODELVIEW );
       float zrot = vl::fract( vl::Time::currentTime() ) * 360.0f;
-      glLoadMatrixf( vl::mat4::getRotationXYZ( 0, 0, zrot ).ptr() );
+      glLoadMatrixf( mat4::getRotationXYZ( 0, 0, zrot ).ptr() );
       glMatrixMode( GL_PROJECTION );
       glLoadIdentity();
       glOrtho(-1, 1, -1, 1, -1, 1);
@@ -408,12 +408,12 @@ namespace
     }
   }
 
-  vl::vec4 getPoint4DProp( const mitk::DataNode* node, const char* prop_name, vl::vec4 defval ) {
+  vec4 getPoint4DProp( const mitk::DataNode* node, const char* prop_name, vec4 defval ) {
     VIVID_CHECK( dynamic_cast<const mitk::Point4dProperty*>( node->GetProperty( prop_name ) ) );
     const mitk::Point4dProperty* prop = dynamic_cast<const mitk::Point4dProperty*>( node->GetProperty( prop_name ) );
     if ( prop ) {
       double* val = prop->GetValue().GetDataPointer();
-      return vl::vec4( (float)val[0], (float)val[1], (float)val[2], (float)val[3] );
+      return vec4( (float)val[0], (float)val[1], (float)val[2], (float)val[3] );
     } else {
       return defval;
     }
@@ -460,11 +460,11 @@ namespace
     return val;
   }
 
-  vl::vec4 getColorProp( const mitk::DataNode* node, const char* prop_name, vl::vec4 defval = vl::white ) {
+  vec4 getColorProp( const mitk::DataNode* node, const char* prop_name, vec4 defval = vl::white ) {
     VIVID_CHECK( dynamic_cast<const mitk::ColorProperty*>( node->GetProperty( prop_name ) ) );
     float rgb[3] = { defval.r(), defval.g(), defval.b() };
     node->GetColor(rgb, NULL, prop_name );
-    return vl::vec4( rgb[0], rgb[1], rgb[2], defval.a() );
+    return vec4( rgb[0], rgb[1], rgb[2], defval.a() );
   }
 
   void initVolumeProps( mitk::DataNode* node ) {
@@ -688,10 +688,10 @@ namespace
 
       int mode = getEnumProp( node, CLIP_UNIT("Mode"), 0 );
       int targ = getEnumProp( node, CLIP_UNIT("Target"), 0 );
-      vl::vec4 color = getColorProp( node, CLIP_UNIT("Color"), vl::black );
+      vec4 color = getColorProp( node, CLIP_UNIT("Color"), vl::black );
       float range = getFloatProp( node, CLIP_UNIT("FadeRange"), 0 );
-      vl::vec4 plane = getPoint4DProp( node, CLIP_UNIT("Plane"), vl::vec4(0,0,0,0) );
-      vl::vec4 sphere = getPoint4DProp( node, CLIP_UNIT("Sphere"), vl::vec4(0,0,0,0) );
+      vec4 plane = getPoint4DProp( node, CLIP_UNIT("Plane"), vec4(0,0,0,0) );
+      vec4 sphere = getPoint4DProp( node, CLIP_UNIT("Sphere"), vec4(0,0,0,0) );
       vl::vec3 bmin = getPoint3DProp( node, CLIP_UNIT("BoxMin"), vl::vec3(0,0,0) );
       vl::vec3 bmax = getPoint3DProp( node, CLIP_UNIT("BoxMax"), vl::vec3(0,0,0) );
       bool reverse = getBoolProp( node, CLIP_UNIT("Reverse"), false );
@@ -787,7 +787,7 @@ namespace
 
   //-----------------------------------------------------------------------------
 
-  vl::EImageFormat MapComponentsToVLColourFormat(int components)
+  vl::EImageFormat mapComponentsToVLColourFormat(int components)
   {
     // this assumes the image data is a normal colour image, not encoding pointers or indices, or similar stuff.
 
@@ -808,7 +808,7 @@ namespace
   ref<vl::Image> wrapMitk2DImage( const mitk::Image* mitk_image ) {
     mitk::PixelType  mitk_pixel_type = mitk_image->GetPixelType();
     vl::EImageType   vl_type         = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
-    vl::EImageFormat vl_format       = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
+    vl::EImageFormat vl_format       = mapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
     unsigned int*    dims            = mitk_image->GetDimensions();
     VIVID_CHECK( dims[2] == 1 );
 
@@ -832,7 +832,7 @@ namespace
 
   //-----------------------------------------------------------------------------
 
-  VLUserData* GetUserData(vl::Actor* actor)
+  VLUserData* getUserData(vl::Actor* actor)
   {
     VIVID_CHECK( actor );
     ref<VLUserData> userdata = actor->userData()->as<VLUserData>();
@@ -904,9 +904,9 @@ namespace
 
   //-----------------------------------------------------------------------------
 
-  void UpdateTransformFromData(vl::Transform* tr, const mitk::BaseData::ConstPointer& data)
+  void updateTransform(vl::Transform* tr, const mitk::BaseData* data)
   {
-    vl::mat4 m = GetVLMatrixFromData(data);
+    mat4 m = getVLMatrix(data);
 
     if ( ! m.isNull() )
     {
@@ -926,42 +926,19 @@ namespace
 
   //-----------------------------------------------------------------------------
 
-  void UpdateActorTransformFromNode( vl::Actor* actor, const mitk::DataNode* node )
-  {
-    if ( ! node ) {
-      return;
-    }
-    const mitk::BaseData* data = node->GetData();
-    if ( ! data ) {
-      return;
-    }
-    const mitk::BaseGeometry* geom = data->GetGeometry();
-    if ( ! geom ) {
-      return;
-    }
-    VLUserData* userdata = GetUserData( actor );
-    if ( geom->GetMTime() > userdata->m_TransformModifiedTime )
-    {
-      UpdateTransformFromData( actor->transform(), data );
-      userdata->m_TransformModifiedTime = geom->GetMTime();
-    }
-  }
-
-  //-----------------------------------------------------------------------------
-
-  void UpdateTransformFromNode(vl::Transform* txf, const mitk::DataNode* node)
+  void updateTransform(vl::Transform* txf, const mitk::DataNode* node)
   {
     if ( node ) {
-      UpdateTransformFromData(txf, node->GetData());
+      updateTransform(txf, node->GetData());
     }
   }
 
   //-----------------------------------------------------------------------------
 
-  ref<vl::Geometry> CreateGeometryFor2DImage(int width, int height)
+  ref<vl::Geometry> make2DImageGeometry(int width, int height)
   {
     ref<vl::Geometry>    geom = new vl::Geometry;
-    ref<vl::ArrayFloat3> vert  = new vl::ArrayFloat3;
+    ref<vl::ArrayFloat3> vert = new vl::ArrayFloat3;
     vert->resize(4);
     geom->setVertexArray( vert.get() );
 
@@ -986,9 +963,9 @@ namespace
 
   //-----------------------------------------------------------------------------
 
-  ref<vl::Geometry> ConvertVTKPolyData(vtkPolyData* vtkPoly)
+  ref<vl::Geometry> getVLGeometry(vtkPolyData* vtkPoly)
   {
-    if ( ! vtkPoly ) {
+    if ( ! vtkPoly ) { 
       return NULL;
     }
 
@@ -1297,7 +1274,7 @@ vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom, vl::Effect* effect, v
   VIVID_CHECK( m_VividRendering );
   ref<vl::Effect> fx = effect ? effect : vl::VividRendering::makeVividEffect();
   ref<vl::Transform> tr = transform ? transform : new vl::Transform;
-  UpdateTransformFromData( tr.get(), m_DataNode->GetData() );
+  updateTransform( tr.get(), m_DataNode->GetData() );
   ref<vl::Actor> actor = new vl::Actor( geom, fx.get(), tr.get() );
   actor->setEnableMask( vl::Vivid::VividEnableMask );
   return actor;
@@ -1317,7 +1294,7 @@ void VLMapper::updateCommon() {
   }
 
   // Update transform
-  UpdateTransformFromData( m_Actor->transform(), m_DataNode->GetData() );
+  updateTransform( m_Actor->transform(), m_DataNode->GetData() );
 }
 
 //-----------------------------------------------------------------------------
@@ -1374,7 +1351,7 @@ public:
     initFogProps( node );
     initClipProps( node );
 
-    ref<vl::Geometry> geom = ConvertVTKPolyData( m_MitkSurf->GetVtkPolyData() );
+    ref<vl::Geometry> geom = getVLGeometry( m_MitkSurf->GetVtkPolyData() );
     if ( ! geom ) {
       return false;
     }
@@ -1422,7 +1399,7 @@ public:
     initClipProps( node );
 
     ref<vl::Image> img = wrapMitk2DImage( m_MitkImage );
-    ref<vl::Geometry> geom = CreateGeometryFor2DImage( img->width(), img->height() );
+    ref<vl::Geometry> geom = make2DImageGeometry( img->width(), img->height() );
 
     m_VertexArray = geom->vertexArray()->as<vl::ArrayFloat3>(); VIVID_CHECK( m_VertexArray );
     m_TexCoordArray = geom->vertexArray()->as<vl::ArrayFloat3>(); VIVID_CHECK( m_TexCoordArray );
@@ -1458,7 +1435,7 @@ public:
       updateClipProps( m_Actor->effect(), m_DataNode );
     }
 
-    if ( m_MitkImage->GetVtkImageData()->GetMTime() <= GetUserData( m_Actor.get() )->m_ImageModifiedTime ) {
+    if ( m_MitkImage->GetVtkImageData()->GetMTime() <= getUserData( m_Actor.get() )->m_ImageModifiedTime ) {
       return;
     }
 
@@ -1466,7 +1443,7 @@ public:
     VIVID_CHECK( tex );
     ref<vl::Image> img = wrapMitk2DImage( m_MitkImage );
     tex->setMipLevel(0, img.get(), false);
-    GetUserData( m_Actor.get() )->m_ImageModifiedTime = m_MitkImage->GetVtkImageData()->GetMTime();
+    getUserData( m_Actor.get() )->m_ImageModifiedTime = m_MitkImage->GetVtkImageData()->GetMTime();
   }
 
   //! This vertex array contains 4 points representing the plane
@@ -1519,7 +1496,7 @@ public:
       unsigned int buffer_bytes = (dims[0] * dims[1] * dims[2]) * mitk_pixel_type.GetSize();
 
       vl::EImageType   vl_type   = MapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
-      vl::EImageFormat vl_format = MapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
+      vl::EImageFormat vl_format = mapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
 
       // Don't allocate the image, use VTK buffer directly
       vl_img = new vl::Image(img_ptr, buffer_bytes);
@@ -1577,7 +1554,7 @@ public:
         vals[i*4+j] = val;
       }
     }
-    vl::mat4 mat(vals);
+    mat4 mat(vals);
     tr->setLocalMatrix(mat);
 #endif
     return true;
@@ -1700,7 +1677,7 @@ public:
     m_DrawPoints = new vl::DrawArrays( vl::PT_POINTS, 0, 0 );
   }
 
-  virtual void updatePoints( const vl::vec4& color ) = 0 ;
+  virtual void updatePoints( const vec4& color ) = 0 ;
 
   void initPointSetProps()
   {
@@ -1750,7 +1727,7 @@ public:
     {
       const vl::vec3& pos = m_PositionArray->at( i );
       ref<Actor> actor = initActor( m_3DSphereGeom.get() );
-      actor->transform()->setLocalAndWorldMatrix( vl::mat4::getTranslation( pos ) );
+      actor->transform()->setLocalAndWorldMatrix( mat4::getTranslation( pos ) );
       m_SphereActors->addActor( actor.get() );
       // Colorize the sphere with the point's color
       actor->effect()->shader()->gocUniform( "vl_Vivid.material.diffuse" )->setUniform( m_ColorArray->at( i ) );
@@ -1800,7 +1777,7 @@ public:
     float pointsize = getFloatProp( m_DataNode, m_3DSphereMode ? "VL.Point.Size3D" : "VL.Point.Size2D", 1.0f );
 
     // Get color
-    vl::vec4 color = getColorProp( m_DataNode, "VL.Point.Color", vl::white );
+    vec4 color = getColorProp( m_DataNode, "VL.Point.Color", vl::white );
 
     // Get opacity
     color.a() = getFloatProp( m_DataNode, "VL.Point.Opacity", 1.0f );
@@ -1879,7 +1856,7 @@ public:
     VIVID_CHECK( m_MitkPointSet );
   }
 
-  virtual void updatePoints( const vl::vec4& color ) {
+  virtual void updatePoints( const vec4& color ) {
     VIVID_CHECK( m_MitkPointSet );
 
     // If point set size changed force a rebuild of the 3D spheres, actors etc.
@@ -1922,7 +1899,7 @@ public:
     VIVID_CHECK( m_NiftkPCL );
   }
 
-  virtual void updatePoints( const vl::vec4& /*color*/ ) {
+  virtual void updatePoints( const vec4& /*color*/ ) {
     VIVID_CHECK( m_NiftkPCL );
     pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud = m_NiftkPCL->GetCloud();
 
@@ -1943,7 +1920,7 @@ public:
     for (pcl::PointCloud<pcl::PointXYZRGB>::const_iterator i = cloud->begin(); i != cloud->end(); ++i, ++j) {
       const pcl::PointXYZRGB& p = *i;
       m_PositionArray->at(j) = vl::vec3(p.x, p.y, p.z);
-      m_ColorArray->at(j) = vl::vec4(p.r / 255.0f, p.g / 255.0f, p.b / 255.0f, 1);
+      m_ColorArray->at(j) = vec4(p.r / 255.0f, p.g / 255.0f, p.b / 255.0f, 1);
     }
 
     m_PositionArray->updateBufferObject();
@@ -1990,7 +1967,7 @@ public:
 
     niftk::LightweightCUDAImage lwci = getLWCI();
 
-    ref<vl::Geometry> vlquad = CreateGeometryFor2DImage( lwci.GetWidth(), lwci.GetHeight() );
+    ref<vl::Geometry> vlquad = make2DImageGeometry( lwci.GetWidth(), lwci.GetHeight() );
 
     m_Actor = initActor( vlquad.get() );
     // NOTE: for the moment we don't render it

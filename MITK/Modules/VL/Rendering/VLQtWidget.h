@@ -392,18 +392,14 @@ public:
   VLSceneView( QGLWidget* qglwidget );
   ~VLSceneView();
 
-  // Called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
   void setDataStorage(const mitk::DataStorage::Pointer& dataStorage);
 
-  // Called by QmitkIGIVLEditor::OnTransformSelected(), VLRendererView::OnCameraNodeSelected()/OnCameraNodeEnabled()
   bool setCameraTrackingNode(const mitk::DataNode* node);
 
   void setEyeHandFileName(const std::string& fileName);
 
-  // Called by QmitkIGIVLEditor::OnImageSelected(), VLRendererView::OnBackgroundNodeSelected()
   bool setBackgroundNode(const mitk::DataNode* node);
 
-  // Called by QmitkIGIVLEditor (via IGIVLEditor)
   void setBackgroundColour(float r, float g, float b);
 
   // Defines the opacity of the 3D renering above the background.
