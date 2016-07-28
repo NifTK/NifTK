@@ -1062,33 +1062,13 @@ namespace
     point_buffer_size = point_count * sizeof(float) * 3;
 
     // setup vertices
+
     ref<vl::ArrayFloat3> vl_verts = new vl::ArrayFloat3;
     vl_verts->resize(point_count);
     memcpy(vl_verts->ptr(), points->GetVoidPointer(0), point_buffer_size);
     vl_geom->setVertexArray(vl_verts.get());
 
-    // setup normals
-    vtkSmartPointer<vtkDataArray> normals = vtkPoly->GetPointData()->GetNormals();
-    if ( normals )
-    {
-      // Get the number of normals we have to deal with
-      int normal_count = (int)normals->GetNumberOfTuples();
-      if ( normal_count == point_count )
-      {
-        ref<vl::ArrayFloat3> vl_normals = new vl::ArrayFloat3;
-        vl_normals->resize(point_count);
-        memcpy(vl_normals->ptr(), normals->GetVoidPointer(0), point_buffer_size);
-        vl_geom->setNormalArray(vl_normals.get());
-      }
-      else
-      {
-        MITK_ERROR << "Invalid normals for vtkPolyData. VL will recompute them.\n";
-        MITK_ERROR << "normal_count: " << normal_count << " vs point_count: " << point_count << "\n";
-        normals = NULL;
-      }
-    }
-
-    // setup triangles index buffer
+    // setup triangles
 
     int primitive_count = (int)primitives->GetNumberOfCells();
 
@@ -1120,6 +1100,38 @@ namespace
     }
     vl_draw_elements->indexBuffer()->resize( indices.size() );
     memcpy( vl_draw_elements->indexBuffer()->ptr(), &indices[0], indices.size() * sizeof(indices[0]) );
+
+    // setup normals
+
+    // looks like the normals we get at this point are sometimes not up to date, 
+    // we may want to use vtkPolyDataNormals to generate them, for the moment we
+    // dont bother and let VL compute them.
+#if 0
+    vtkSmartPointer<vtkDataArray> normals = vtkPoly->GetPointData()->GetNormals();
+    if ( normals )
+    {
+      // Get the number of normals we have to deal with
+      int normal_count = (int)normals->GetNumberOfTuples();
+      if ( normal_count == point_count )
+      {
+        ref<vl::ArrayFloat3> vl_normals = new vl::ArrayFloat3;
+        vl_normals->resize(point_count);
+        memcpy(vl_normals->ptr(), normals->GetVoidPointer(0), point_buffer_size);
+        vl_geom->setNormalArray(vl_normals.get());
+      }
+      else
+      {
+        MITK_ERROR << "Invalid normals for vtkPolyData. VL will recompute them.\n";
+        MITK_ERROR << "normal_count: " << normal_count << " vs point_count: " << point_count << "\n";
+        normals = NULL;
+      }
+    }
+#else
+    // in VL if verts are shared across primitives they're smoothed out, VTK however seem to keep them flat.
+    if ( ! vl_geom->normalArray() ) {
+      vl_geom->computeNormals();
+    }
+#endif
 
     MITK_INFO << "Computing surface adjacency... ";
 
@@ -1365,11 +1377,6 @@ public:
     ref<vl::Geometry> geom = ConvertVTKPolyData( m_MitkSurf->GetVtkPolyData() );
     if ( ! geom ) {
       return false;
-    }
-
-    // in VL if verts are shared across primitives they're smoothed out, VTK however seem to keep them flat.
-    if ( ! geom->normalArray() ) {
-      geom->computeNormals();
     }
 
     m_Actor = initActor( geom.get() );
