@@ -507,6 +507,9 @@ double PickedObject::DistanceTo(const PickedObject& otherPickedObject , PickedOb
     returnDistance = mitk::DistanceBetweenTwoPoints ( m_Points[0], otherPickedObject.m_Points[0], &signedDistance );
   }
   deltas.m_Points.push_back ( signedDistance );
+  deltas.m_Points.push_back ( mitk::GetCentroid ( this->m_Points, false, NULL ));
+  deltas.m_Points.push_back ( mitk::GetCentroid ( otherPickedObject.m_Points, false, NULL ));
+
   return returnDistance;
 }
 
