@@ -42,7 +42,7 @@
 #include <mitkCoordinateAxesData.h>
 #include <mitkDataNodePropertyListener.h>
 #ifdef _USE_CUDA
-#include <niftkCUDAImage.h>
+  #include <niftkCUDAImage.h>
 #endif
 #include <map>
 #include <set>
