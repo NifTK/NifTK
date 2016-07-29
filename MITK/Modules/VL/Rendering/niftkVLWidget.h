@@ -35,12 +35,12 @@ class VLSceneView;
 // VLWidget
 //-----------------------------------------------------------------------------
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-class VLWidget : public vlQt5::Qt5Widget {
+class NIFTKVL_EXPORT VLWidget : public vlQt5::Qt5Widget {
 public:
   VLWidget(QWidget* parent = NULL, const QGLWidget* shareWidget = NULL, Qt::WindowFlags f = 0)
     : Qt5Widget(parent, shareWidget, f) {
 #else
-class VLWidget : public vlQt4::Qt4Widget {
+class NIFTKVL_EXPORT VLWidget : public vlQt4::Qt4Widget {
 public:
   VLWidget(QWidget* parent = NULL, const QGLWidget* shareWidget = NULL, Qt::WindowFlags f = 0)
     : Qt4Widget(parent, shareWidget, f) {
@@ -65,7 +65,7 @@ public:
     glctx->create(NULL);
     this->setContext(glctx);
     makeCurrent();
-    MITK_INFO << "VLWidget: created OpenGL context version: " << glGetString(GL_VERSION) << "\n";
+    MITK_INFO << "niftk::VLWidget: created OpenGL context version: " << glGetString(GL_VERSION) << "\n";
   }
 
   void setVLSceneView(VLSceneView* vl_view) { m_VLSceneView = vl_view; }
