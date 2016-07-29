@@ -669,14 +669,14 @@ void VLSceneView::initEvent()
   }
 #endif
 
-#if 1 // PCL test
+#if 0 // PCL test
   {
     /*
      10,000 Points Test:
      3D Spheres mode:
-      - In debug mode allocation/deallocation is super slow, can take 30 seconds or so. 
+      - In debug mode allocation/deallocation is quite slow, can take 30 seconds or so. 
         Even if we share the same geometry every point has to dinamically allocate it's own Actor, Effect, Shader, several Uniforms and Transform.
-      - Rendering is also slow, probably not so much for the number of triangles but for the overhead of setting up the object before rendering.
+      - Rendering is slower than I expected, probably not so much for the number of triangles but for the overhead of setting up the object before rendering.
         The Vivid renderer is not heavily optimized to minimize the number of render state changes favouring flexibility instead.
         If this becomes a real issue there's big room for improvements performancewise. Let me know.
      2D Sprites mode:
