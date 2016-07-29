@@ -1278,7 +1278,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
 
     // Compute a model to world for visualisation purposes.
     std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
-    if (cameraMatrices.size() > 0)
+    if (!cameraMatrices.empty())
     {
       std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
 
