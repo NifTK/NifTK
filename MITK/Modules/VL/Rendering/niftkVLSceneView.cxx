@@ -16,6 +16,7 @@
 #include "niftkVLUtils.h"
 #include "niftkVLMapper.h"
 #include "niftkVLSceneView.h"
+#include "niftkVLGlobalSettingsDataNode.h"
 
 //#include <vlGraphics/plugins/ioVLX.hpp> // debugging
 

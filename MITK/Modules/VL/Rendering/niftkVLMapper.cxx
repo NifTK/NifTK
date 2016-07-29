@@ -15,6 +15,7 @@
 #include "niftkVLMapper.h"
 #include "niftkVLSceneView.h"
 #include "niftkVLUtils.h"
+#include "niftkVLGlobalSettingsDataNode.h"
 #include <vlGraphics/Actor.hpp>
 #include <vlGraphics/GeometryPrimitives.hpp>
 #include <vlVivid/VividRendering.hpp>
