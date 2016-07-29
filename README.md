@@ -12,15 +12,15 @@ If you use this software, please cite [this paper][citation].
 Useful Links
 ------------------
 
- - [NifTK platform home page][niftk-platform].
- - [NifTK project home page][niftk-project].
- - [Binaries][binaries].
- - [Installation instructions][install-instructions].
- - [Documentation][docs].
- - [Build instructions][build-instructions].
+ - [NifTK platform home page][niftk-platform]
+ - [NifTK project home page][niftk-project]
+ - [Binaries][binaries]
+ - [Installation instructions][install-instructions]
+ - [Documentation][docs]
+ - [Build instructions][build-instructions]
  - [Wiki pages][wiki]
- - [Mailing list][mailinglist].
- - [Dashboard][dashboard].
+ - [Mailing list][mailinglist]
+ - [Dashboard][dashboard]
  
 License
 -----------
