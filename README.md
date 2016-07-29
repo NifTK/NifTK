@@ -1,7 +1,7 @@
 NifTK
 -----
 
-Welcome to the NifTK project. This project contains several Graphical User Interfaces (GUIs), 
+Welcome to the NifTK project. This project contains several applications with graphical user interface,
 and various command line applications and command line scripts. The NifTK project is part
 of the overall NifTK platform.
 
@@ -12,13 +12,16 @@ If you use this software, please cite [this paper][citation].
 Useful Links
 ------------------
 
+ - [NifTK platform home page][niftk-platform].
+ - [NifTK project home page][niftk-project].
+ - [Binaries][binaries].
+ - [Installation instructions][install-instructions].
+ - [Documentation][docs].
+ - [Build instructions][build-instructions].
+ - [Wiki pages][wiki]
  - [Mailing list][mailinglist].
- - [NifTK home page][niftk].
  - [Dashboard][dashboard].
- - [Nightly code documentation][doxygen].
- - [Build instructions][build].
- - [Installation instructions for when you download binaries][install].
-
+ 
 License
 -----------
 
@@ -52,11 +55,15 @@ NifTK is a cross-platform C++ library and officially supports:
 [uclh]: http://www.uclh.nhs.uk
 [innovateuk]: https://www.innovateuk.org
 [epsrc]: http://www.epsrc.ac.uk
+[niftk-platform]: http://www.niftk.org
+[niftk-project]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK
+[binaries]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/install
+[install-instructions]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/docs/latest/InstallationInstructions.html
+[docs]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/docs
+[build-instructions]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/docs/master/BuildInstructions.html
+[wiki]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/wikis/home
 [mailinglist]: https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users
 [dashboard]: http://cdash.cmiclab.cs.ucl.ac.uk/index.php?project=NifTK 
-[doxygen]: http://cmic.cs.ucl.ac.uk/platform/niftk/current/html
 [citation]: http://link.springer.com/article/10.1007%2Fs11548-014-1124-7
-[niftk]: http://www.niftk.org
 [seb]: http://cmic.cs.ucl.ac.uk/staff/sebastien_ourselin
-[build]: http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/BuildInstructions.html
-[install]: http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/InstallationInstructions.html
+
