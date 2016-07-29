@@ -1837,13 +1837,13 @@ endif()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 configure_file(${CMAKE_SOURCE_DIR}/CMake/CPackOptions.cmake.in
-               ${CMAKE_BINARY_DIR}/NIFTKCPackOptions.cmake)
+               ${CMAKE_BINARY_DIR}/NifTKCPackOptions.cmake)
 
-# 3. Set a variable with the name of this file.		
-set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/NIFTKCPackOptions.cmake")
+# 3. Set a variable with the name of this file.
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/NifTKCPackOptions.cmake")
 
 # 4. Include this optional file.
-include(NIFTKCPackOptions)
+include(NifTKCPackOptions)
 
 # 5. Include CPack module once all variables are set.
 include(CPack)

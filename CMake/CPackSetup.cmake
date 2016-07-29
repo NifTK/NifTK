@@ -38,10 +38,10 @@ if(NOT CPACK_GENERATOR)
     if(APPLE)
       set(CPACK_GENERATOR "DragNDrop")
     else()
-      set(CPACK_GENERATOR TGZ)
+      set(CPACK_GENERATOR TBZ2)
     endif()
     
-    set(CPACK_SOURCE_GENERATOR TGZ)
+    set(CPACK_SOURCE_GENERATOR TBZ2)
     
   endif()
 endif(NOT CPACK_GENERATOR)

@@ -468,8 +468,8 @@ Ubuntu 14.04 release installer:
   - source /etc/os-release
   - os_version="${ID}-${VERSION_ID}"
   - make package
-  - installer_file="niftk-${version}-linux-${os_version}-x64.tar.gz"
-  - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
+  - installer_file="niftk-${version}-linux-${os_version}-x64.tar.bz2"
+  - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
   - "# Upload the tarball"
   - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
 
@@ -491,8 +491,8 @@ CentOS 7 release installer:
   - source /etc/os-release
   - os_version="${ID}-${VERSION_ID}"
   - make package
-  - installer_file="niftk-${version}-linux-${os_version}-x64.tar.gz"
-  - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
+  - installer_file="niftk-${version}-linux-${os_version}-x64.tar.bz2"
+  - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
   - "# Upload the tarball"
   - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
 
@@ -514,8 +514,8 @@ Cluster release installer:
   - source /etc/os-release
   - os_version="${ID}-${VERSION_ID}"
   - make package
-  - installer_file="niftk-${version}-linux-${os_version}-x64.tar.gz"
-  - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
+  - installer_file="niftk-${version}-linux-${os_version}-x64.tar.bz2"
+  - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
   - install_prefix=/share/apps/cmic/niftk/niftk-${niftk_version_string}
   - install_tmp_dir="${install_prefix}-tmp"
   - mkdir ${install_tmp_dir}
@@ -546,8 +546,8 @@ Managed CentOS 7 release installer:
   - source /etc/os-release
   - os_version="${ID}-${VERSION_ID}"
   - make package
-  - installer_file="niftk-${version}-linux-${os_version}-x64.tar.gz"
-  - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
+  - installer_file="niftk-${version}-linux-${os_version}-x64.tar.bz2"
+  - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
   - install_prefix=/cs/research/medic/common2/paramedic/share/cmic/niftk-scientific/niftk-${niftk_version_string}
   - install_tmp_dir="${install_prefix}-tmp"
   - mkdir ${install_tmp_dir}
