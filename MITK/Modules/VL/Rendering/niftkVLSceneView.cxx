@@ -94,10 +94,9 @@ namespace
   #include <niftkFlipImageLauncher.h>
   #include <cuda_gl_interop.h>
 
-  #define VL_CUDA_STREAM_NAME "VL-CUDA-STREAM"
-
   // #define VL_CUDA_TEST
-
+namespace niftk
+{
   class CudaTest {
     cudaGraphicsResource_t m_CudaResource;
     GLuint m_FramebufferId;
@@ -259,6 +258,9 @@ namespace
       glDisable( GL_SCISSOR_TEST );
     }
   };
+
+} // namespace niftk
+
 #endif
 
 //-----------------------------------------------------------------------------

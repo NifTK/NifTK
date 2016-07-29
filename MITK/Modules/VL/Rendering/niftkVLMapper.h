@@ -20,10 +20,22 @@
 #include <vlCore/Vector3.hpp>
 #include <vlCore/Vector4.hpp>
 #include <vlCore/vlnamespace.hpp>
+#include <vlGraphics/Texture.hpp>
 #include <vlVivid/VividRendering.hpp>
 
 #include <mitkDataNode.h>
 #include <mitkBaseData.h>
+
+#ifdef _USE_CUDA
+  #include <niftkCUDAManager.h>
+  #include <niftkCUDAImage.h>
+  #include <niftkLightweightCUDAImage.h>
+  #include <niftkCUDAImageProperty.h>
+  #include <niftkFlipImageLauncher.h>
+  #include <cuda_gl_interop.h>
+#endif
+
+#define VL_CUDA_STREAM_NAME "VL-CUDA-STREAM"
 
 namespace mitk
 {
@@ -510,7 +522,7 @@ public:
 
 protected:
     cudaGraphicsResource_t m_CudaResource;
-    vl::ref<Texture> m_Texture;
+    vl::ref<vl::Texture> m_Texture;
 };
 
 #endif

@@ -24,6 +24,7 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkImage.h>
 #include <mitkDataStorage.h>
+#include <mitkDataNode.h>
 #include <mitkPointSet.h>
 #include <mitkCoordinateAxesData.h>
 #include <mitkDataStorage.h>
@@ -717,7 +718,7 @@ void VLMapperPCL::updatePoints( const vec4& /*color*/ ) {
 
 #ifdef _USE_CUDA
 
-VLMapperCUDAImage( const mitk::DataNode* node, VLSceneView* sv )
+VLMapperCUDAImage::VLMapperCUDAImage( const mitk::DataNode* node, VLSceneView* sv )
   : VLMapper( node, sv ) {
   m_CudaResource = NULL;
 }
@@ -739,13 +740,13 @@ niftk::LightweightCUDAImage VLMapperCUDAImage::getLWCI() {
 
 bool VLMapperCUDAImage::init() {
   mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
-  // initRenderModeProps( node ); /* does not apply */
-  initFogProps( node );
-  initClipProps( node );
+  // VLUtils::initRenderModeProps( node ); /* does not apply */
+  VLUtils::initFogProps( node );
+  VLUtils::initClipProps( node );
 
   niftk::LightweightCUDAImage lwci = getLWCI();
 
-  ref<vl::Geometry> vlquad = make2DImageGeometry( lwci.GetWidth(), lwci.GetHeight() );
+  ref<vl::Geometry> vlquad = VLUtils::make2DImageGeometry( lwci.GetWidth(), lwci.GetHeight() );
 
   m_Actor = initActor( vlquad.get() );
   // NOTE: for the moment we don't render it
@@ -772,9 +773,9 @@ bool VLMapperCUDAImage::init() {
 void VLMapperCUDAImage::update() {
   updateCommon();
   if ( isDataNodeVividUpdateEnabled() ) {
-    // updateRenderModeProps(); /* does not apply here */
-    updateFogProps( m_Actor->effect(), m_DataNode );
-    updateClipProps( m_Actor->effect(), m_DataNode );
+    // VLUtils::updateRenderModeProps(); /* does not apply here */
+    VLUtils::updateFogProps( m_Actor->effect(), m_DataNode );
+    VLUtils::updateClipProps( m_Actor->effect(), m_DataNode );
   }
 
   // Get the niftk::LightweightCUDAImage
