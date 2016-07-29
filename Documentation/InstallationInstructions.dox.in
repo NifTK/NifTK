@@ -30,11 +30,11 @@ and similarly for other bundles.
 \section InstallationInstructionsLinux Linux
 
 <ol>
-<li> Download the .tar.gz file, into the directory you want to install into. For these instructions 
+<li> Download the .tar.bz2 file, into the directory you want to install into. For these instructions 
     we will call this <INSTALL_DIR>, which should be substituted below for your installation dir. 
 <li> Extract the tar file using:
 \verbatim
-tar -zxvf @NIFTK_DEPLOY_NAME@.tar.gz 
+tar xvjf @NIFTK_DEPLOY_NAME@.tar.bz2
 \endverbatim
 <li> If you are running a bash shell put:
 \verbatim
