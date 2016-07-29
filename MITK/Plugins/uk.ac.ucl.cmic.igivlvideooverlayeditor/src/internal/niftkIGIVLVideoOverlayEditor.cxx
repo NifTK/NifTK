@@ -61,12 +61,12 @@ public:
  * \brief Used to handle interaction with the contained overlay
  * editor widget when this IGIVLVideoOverlayEditor is opened/closed etc.
  */
-struct IGIOverlayWidgetPartListener : public berry::IPartListener
+struct IGIVLOverlayWidgetPartListener : public berry::IPartListener
 {
-  berryObjectMacro(IGIOverlayWidgetPartListener)
+  berryObjectMacro(IGIVLOverlayWidgetPartListener)
 
   //---------------------------------------------------------------------------
-  IGIOverlayWidgetPartListener(IGIVLVideoOverlayEditorPrivate* dd)
+  IGIVLOverlayWidgetPartListener(IGIVLVideoOverlayEditorPrivate* dd)
     : d(dd)
   {}
 
@@ -125,7 +125,7 @@ private:
 //-----------------------------------------------------------------------------
 IGIVLVideoOverlayEditorPrivate::IGIVLVideoOverlayEditorPrivate()
   : m_VLVideoOverlayWidget(0)
-  , m_PartListener(new IGIOverlayWidgetPartListener(this))
+  , m_PartListener(new IGIVLOverlayWidgetPartListener(this))
 {}
 
 
