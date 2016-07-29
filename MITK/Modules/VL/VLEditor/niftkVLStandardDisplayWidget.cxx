@@ -53,10 +53,10 @@ void VLStandardDisplayWidget::SetBackgroundColour(unsigned int aabbggrr)
   float   r = (aabbggrr & 0xFF) / 255.0f;
   float   g = ((aabbggrr & 0xFF00) >> 8) / 255.0f;
   float   b = ((aabbggrr & 0xFF0000) >> 16) / 255.0f;
-  m_AxialViewer->vlSceneView()->setBackgroundColour(r, g, b);
-  m_SagittalViewer->vlSceneView()->setBackgroundColour(r, g, b);
-  m_CoronalViewer->vlSceneView()->setBackgroundColour(r, g, b);
-  m_3DViewer->vlSceneView()->setBackgroundColour(r, g, b);
+  m_AxialViewer->vlSceneView()->setBackgroundColor(r, g, b);
+  m_SagittalViewer->vlSceneView()->setBackgroundColor(r, g, b);
+  m_CoronalViewer->vlSceneView()->setBackgroundColor(r, g, b);
+  m_3DViewer->vlSceneView()->setBackgroundColor(r, g, b);
 }
 
 

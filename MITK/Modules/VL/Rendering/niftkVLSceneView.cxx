@@ -532,13 +532,13 @@ void VLSceneView::initSceneFromDataStorage()
 
 //-----------------------------------------------------------------------------
 
-VLMapper* VLSceneView::addDataNode(const mitk::DataNode* node)
+void VLSceneView::addDataNode(const mitk::DataNode* node)
 {
   niftk::ScopedOGLContext glctx( const_cast<QGLContext*>(m_VLWidget->context()) );
 
   // Add only once and only if valid
   if ( ! node || ! node->GetData() || getVLMapper( node ) != NULL ) {
-    return NULL;
+    return;
   }
 
   #if 0
@@ -553,8 +553,6 @@ VLMapper* VLSceneView::addDataNode(const mitk::DataNode* node)
       vl_node->update();
     }
   }
-
-  return vl_node.get();
 }
 
 //-----------------------------------------------------------------------------
@@ -613,15 +611,6 @@ VLMapper* VLSceneView::getVLMapper( const mitk::DataNode* node )
 {
   DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.find( node );
   return it == m_DataNodeVLMapperMap.end() ? NULL : it->second.get();
-}
-
-//-----------------------------------------------------------------------------
-
-void VLSceneView::setBackgroundColour(float r, float g, float b)
-{
-  VIVID_CHECK( m_VividRendering );
-  m_VividRendering->setBackgroundColor( fvec4(r, g, b, 1) );
-  openglContext()->update();
 }
 
 //-----------------------------------------------------------------------------
@@ -843,6 +832,38 @@ void VLSceneView::clearScene()
 
 //-----------------------------------------------------------------------------
 
+void VLSceneView::setRenderingMode( vl::Vivid::ERenderingMode mode )
+{
+  m_VividRendering->setRenderingMode( mode );
+  openglContext()->update();
+}
+
+//-----------------------------------------------------------------------------
+
+vl::Vivid::ERenderingMode VLSceneView::renderingMode() const
+{
+  return m_VividRendering->renderingMode();
+}
+
+//-----------------------------------------------------------------------------
+
+void VLSceneView::setBackgroundColor(float r, float g, float b)
+{
+  VIVID_CHECK( m_VividRendering );
+  m_VividRendering->setBackgroundColor( fvec4(r, g, b, 1) );
+  openglContext()->update();
+}
+
+//-----------------------------------------------------------------------------
+
+vec3 VLSceneView::backgroundColor() const
+{
+  VIVID_CHECK( m_VividRendering );
+  return m_VividRendering->backgroundColor().rgb();
+}
+
+//-----------------------------------------------------------------------------
+
 void VLSceneView::setOpacity( float opacity )
 {
   m_VividRendering->setOpacity( opacity );
@@ -851,8 +872,68 @@ void VLSceneView::setOpacity( float opacity )
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::setDepthPeelingPasses( int passes ) {
-  m_VividRenderer->setNumPasses( passes );
+float VLSceneView::opacity() const
+{
+  return m_VividRendering->opacity();
+}
+
+//-----------------------------------------------------------------------------
+
+void VLSceneView::setDepthPeelingPasses( int n ) 
+{
+  m_VividRenderer->setNumPasses( n );
+  openglContext()->update();
+}
+
+//-----------------------------------------------------------------------------
+
+int VLSceneView::depthPeelingPasses() const 
+{
+  return m_VividRenderer->numPasses();
+}
+
+//-----------------------------------------------------------------------------
+
+void VLSceneView::setStencilEnabled( bool enabled )
+{
+  m_VividRendering->setStencilEnabled( enabled );
+}
+
+//-----------------------------------------------------------------------------
+
+bool VLSceneView::isStencilEnabled() const
+{
+  return m_VividRendering->isStencilEnabled();
+}
+
+//-----------------------------------------------------------------------------
+
+void VLSceneView::setStencilBackgroundColor( const vl::vec4& color )
+{
+  m_VividRendering->setStencilBackgroundColor( color );
+  openglContext()->update();
+}
+
+//-----------------------------------------------------------------------------
+
+const vl::vec4& VLSceneView::stencilBackgroundColor() const
+{
+  return m_VividRendering->stencilBackgroundColor();
+}
+
+//-----------------------------------------------------------------------------
+
+void VLSceneView::setStencilSmoothness( float smoothness )
+{
+  m_VividRendering->setStencilSmoothness( smoothness );
+  openglContext()->update();
+}
+
+//-----------------------------------------------------------------------------
+
+float VLSceneView::stencilSmoothness() const
+{
+  return m_VividRendering->stencilSmoothness();
 }
 
 //-----------------------------------------------------------------------------

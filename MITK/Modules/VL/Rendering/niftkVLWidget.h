@@ -31,9 +31,19 @@ namespace niftk
 
 class VLSceneView;
 
-//-----------------------------------------------------------------------------
-// VLWidget
-//-----------------------------------------------------------------------------
+/**
+ * \brief A QGLWidget containing a niftk::VLSceneView.
+ * 
+ * Usually you only have to create a VLWidget and use vlSceneView() to set the data store and various Vivid options etc.
+ *
+ * Under niftk::VLWidget there are a few layers that implement the OpenGL rendering in decreasing order of abstraction:
+ * 1) niftk::VLWidget
+ * 2) niftk::VLSceneView / niftk::VLMapper
+ * 3) vl::VividRendering
+ * 4) Visualization Library
+ * 5) OpenGL
+ *
+ */
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 class NIFTKVL_EXPORT VLWidget : public vlQt5::Qt5Widget {
 public:
@@ -68,8 +78,8 @@ public:
     MITK_INFO << "niftk::VLWidget: created OpenGL context version: " << glGetString(GL_VERSION) << "\n";
   }
 
-  void setVLSceneView(VLSceneView* vl_view) { m_VLSceneView = vl_view; }
   VLSceneView* vlSceneView() { return m_VLSceneView.get(); }
+
   const VLSceneView* vlSceneView() const { return m_VLSceneView.get(); }
 
   bool contextIsCurrent() { return QGLContext::currentContext() == QGLWidget::context(); }

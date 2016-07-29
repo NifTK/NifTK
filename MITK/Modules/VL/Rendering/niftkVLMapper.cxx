@@ -162,13 +162,13 @@ void VLMapperVLGlobalSettings::update() {
   // float opacity = VLUtils::getFloatProp( m_DataNode, "VL.Global.Opacity", 1 );
   int passes = VLUtils::getIntProp( m_DataNode, "VL.Global.DepthPeelingPasses", 4 );
 
-  m_VividRendering->setStencilEnabled( enable );
-  m_VividRendering->setStencilBackground( stencil_bg_color );
-  m_VividRendering->setStencilSmoothness( stencil_smooth );
-  m_VividRendering->setRenderingMode( (vl::Vivid::ERenderingMode)render_mode );
+  m_VLSceneView->setStencilEnabled( enable );
+  m_VLSceneView->setStencilBackgroundColor( stencil_bg_color );
+  m_VLSceneView->setStencilSmoothness( stencil_smooth );
+  m_VLSceneView->setRenderingMode( (vl::Vivid::ERenderingMode)render_mode );
   // m_VividRendering->setBackgroundColor( bg_color );
   // m_VividRendering->setOpacity( opacity );
-  m_VividRendering->vividRenderer()->setNumPasses( passes );
+  m_VLSceneView->setDepthPeelingPasses( passes );
 }
 
 void VLMapperVLGlobalSettings::updateVLGlobalSettings() { /* we don't have anything to set */ }
