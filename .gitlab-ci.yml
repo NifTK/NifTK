@@ -89,11 +89,12 @@ Continuous docs:
   - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
   - "# Extract the tarball and replace the old files"
   - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
-        rm -rf `readlink -f niftk-current-docs.tar.bz2` `readlink -f current` ;
-        rm niftk-current-docs current ;
+        rm -rf `readlink -f niftk-master-docs.tar.bz2` `readlink -f master` ;
+        rm niftk-master-docs.tar.bz2 master ;
         tar xfj niftk-${version}-docs.tar.bz2 ;
-        ln -s niftk-${version}-docs.tar.bz2 niftk-current-docs.tar.bz2 ;
-        ln -s niftk-${version}-docs current"
+        mv niftk-${version}-docs ${version} ;
+        ln -s niftk-${version}-docs.tar.bz2 niftk-master-docs.tar.bz2 ;
+        ln -s ${version} master"
 
   only:
   - master
@@ -443,7 +444,11 @@ Release docs:
   - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
   - "# Extract the tarball and replace the old files"
   - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
-        tar xfj niftk-${version}-docs.tar.bz2"
+        rm niftk-lastest-docs.tar.bz2 latest ;
+        tar xfj niftk-${version}-docs.tar.bz2 ;
+        mv niftk-${version}-docs ${version} ;
+        ln -s niftk-${version}-docs.tar.bz2 niftk-latest-docs.tar.bz2 ;
+        ln -s ${version} latest"
 
   only:
   - tags
@@ -489,7 +494,7 @@ CentOS 7 release installer:
   - installer_file="niftk-${version}-linux-${os_version}-x64.tar.gz"
   - mv niftk-${niftk_version_string}.tar.gz ${installer_file}
   - "# Upload the tarball"
-  - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NiftyMIDAS/install/
+  - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
 
   only:
   - tags
