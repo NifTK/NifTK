@@ -12,62 +12,71 @@
 
 =============================================================================*/
 
-#ifndef VLQtWidget_INCLUDE_ONCE
-#define VLQtWidget_INCLUDE_ONCE
+#ifndef niftkVLMapper_h
+#define niftkVLMapper_h
 
 #include <niftkVLExports.h>
+#include <niftkVLUtils.h> // TODO: remove this
 
-#include <QtGlobal>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-#include <vlQt5/Qt5Widget.hpp>
-#else
-#include <vlQt4/Qt4Widget.hpp>
-#endif
-
-#include <vlGraphics/OpenGLContext.hpp>
-#include <vlVivid/VividRenderer.hpp>
+#include <vlCore/Vector3.hpp>
+#include <vlCore/Vector4.hpp>
+#include <vlCore/vlnamespace.hpp>
 #include <vlVivid/VividRendering.hpp>
-#include "TrackballManipulator.h"
-#include <QMouseEvent>
-#include <QWidget>
-#include <QTimer>
-#include <QObject>
-#include <QGLWidget>
-#include <mitkOclResourceService.h>
-#include <mitkDataNode.h>
-#include <mitkSurface.h>
-#include <mitkDataStorage.h>
-#include <mitkImage.h>
-#include <mitkPointSet.h>
-#include <mitkCoordinateAxesData.h>
-#include <mitkDataNodePropertyListener.h>
-#ifdef _USE_CUDA
-  #include <niftkCUDAImage.h>
-#endif
-#include <map>
-#include <set>
 
-// Forward declarations
+#include <mitkDataNode.h>
+#include <mitkBaseData.h>
 
 namespace mitk
 {
   class DataStorage;
+  class PointSet;
+  class CoordinateAxesData;
+  class DataStorage;
+  class Surface;
 }
 
 namespace niftk
 {
-  class PCLData;
-}
-
-struct VLUserData;
-
 class VLSceneView;
 
-#ifdef _USE_CUDA
+//-----------------------------------------------------------------------------
+// VLGlobalSettingsDataNode
+// TODO: move this elsewhere
+//-----------------------------------------------------------------------------
 
-  class CudaTest;
+class NIFTKVL_EXPORT VLDummyData: public mitk::BaseData
+{
+public:
+  mitkClassMacro(VLDummyData, BaseData);
+  itkFactorylessNewMacro(Self)
+  itkCloneMacro(Self)
+protected:
+  virtual bool VerifyRequestedRegion(){return false;};
+  virtual bool RequestedRegionIsOutsideOfTheBufferedRegion(){return false;};
+  virtual void SetRequestedRegionToLargestPossibleRegion(){};
+  virtual void SetRequestedRegion( const itk::DataObject * /*data*/){};
+};
 
-#endif
+class NIFTKVL_EXPORT VLGlobalSettingsDataNode: public mitk::DataNode
+{
+public:
+  mitkClassMacro(VLGlobalSettingsDataNode, DataNode);
+  itkFactorylessNewMacro(Self)
+  itkCloneMacro(Self)
+
+  VLGlobalSettingsDataNode() {
+    SetName( VLGlobalSettingsName() );
+    // Needs dummy data otherwise it doesn't show up
+    VLDummyData::Pointer data = VLDummyData::New();
+    SetData( data.GetPointer() );
+
+    VLUtils::initGlobalProps(this);
+  }
+
+  static const char* VLGlobalSettingsName() { return "VL Debug"; }
+
+protected:
+};
 
 //-----------------------------------------------------------------------------
 // VLMapper
@@ -79,7 +88,7 @@ class VLSceneView;
 /**
  * Takes care of managing all VL related aspects with regard to a given mitk::DataNode, ie, maps a mitk::DataNode to VL/Vivid.
  */
-class VLMapper : public vl::Object {
+class NIFTKVL_EXPORT VLMapper : public vl::Object {
 public:
   VLMapper(const mitk::DataNode* node, VLSceneView* sv);
 
@@ -96,7 +105,7 @@ public:
   /** Removes all the relevant Actor(s) from the scene. */
   virtual void remove() {
     m_VividRendering->sceneManager()->tree()->eraseActor(m_Actor.get());
-    m_Actor = NULL;
+    m_Actor = 0;
   }
 
   /** Factory method: creates the right VLMapper subclass according to the node's type. */
@@ -117,7 +126,7 @@ public:
       Disable this when you want one object to have different settings across different views/qwidgets and
       ignore the VL.* properties of the DataNode. Updates to the "visible" property are also ignored.
       This only applies to VLMapperSurface, VLMapper2DImage, VLMapperCUDAImage for now. */
-  bool setDataNodeVividUpdateEnabled( bool enable ) { m_DataNodeVividUpdateEnabled = enable; }
+  void setDataNodeVividUpdateEnabled( bool enable ) { m_DataNodeVividUpdateEnabled = enable; }
   bool isDataNodeVividUpdateEnabled() const { return m_DataNodeVividUpdateEnabled; }
 
   //--------------------------------------------------------------------------------
@@ -382,194 +391,173 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-// VLSceneView
+
+class NIFTKVL_EXPORT VLMapperVLGlobalSettings: public VLMapper {
+public:
+  VLMapperVLGlobalSettings( const mitk::DataNode* node, VLSceneView* sv );
+
+  virtual bool init();
+
+  virtual void update();
+
+  virtual void updateVLGlobalSettings();
+
+protected:
+  VLGlobalSettingsDataNode::ConstPointer m_VLGlobalSettings;
+};
+
 //-----------------------------------------------------------------------------
 
-class NIFTKVL_EXPORT VLSceneView : public vl::UIEventListener
+class NIFTKVL_EXPORT VLMapperSurface: public VLMapper {
+public:
+  VLMapperSurface( const mitk::DataNode* node, VLSceneView* sv );
+
+  virtual bool init();
+
+  virtual void update();
+
+protected:
+  const mitk::Surface* m_MitkSurf;
+};
+
+//-----------------------------------------------------------------------------
+
+class NIFTKVL_EXPORT VLMapper2DImage: public VLMapper {
+public:
+  VLMapper2DImage( const mitk::DataNode* node, VLSceneView* sv );
+
+  virtual bool init();
+
+  virtual void update();
+
+  //! This vertex array contains 4 points representing the plane
+  vl::ArrayFloat3* vertexArray() { return m_VertexArray.get(); }
+  const vl::ArrayFloat3* vertexArray() const { return m_VertexArray.get(); }
+
+  //! This texture coordinates array contains 4 3D texture coordinates one for each plane corner
+  vl::ArrayFloat3* texCoordarray() { return m_TexCoordArray.get(); }
+  const vl::ArrayFloat3* texCoordarray() const { return m_TexCoordArray.get(); }
+
+protected:
+  mitk::Image* m_MitkImage;
+  vl::ref<vl::ArrayFloat3> m_VertexArray;
+  vl::ref<vl::ArrayFloat3> m_TexCoordArray;
+};
+
+//-----------------------------------------------------------------------------
+
+class NIFTKVL_EXPORT VLMapper3DImage: public VLMapper {
+public:
+  VLMapper3DImage( const mitk::DataNode* node, VLSceneView* sv );
+
+  virtual bool init();
+
+  virtual void update();
+
+protected:
+  const mitk::Image* m_MitkImage;
+  vl::ref<vl::VividVolume> m_VividVolume;
+};
+
+//-----------------------------------------------------------------------------
+
+class NIFTKVL_EXPORT VLMapperCoordinateAxes: public VLMapper {
+public:
+  VLMapperCoordinateAxes( const mitk::DataNode* node, VLSceneView* sv );
+
+  virtual bool init();
+
+  virtual void update();
+
+protected:
+  const mitk::CoordinateAxesData* m_MitkAxes;
+  vl::ref<vl::ArrayFloat3> m_Vertices;
+};
+
+//-----------------------------------------------------------------------------
+
+class NIFTKVL_EXPORT VLMapperPoints: public VLMapper {
+public:
+  VLMapperPoints( const mitk::DataNode* node, VLSceneView* sv );
+
+  virtual void updatePoints( const vl::vec4& color ) = 0 ;
+
+  void initPointSetProps();
+
+  virtual bool init();
+
+  virtual void update();
+
+  void remove();
+
+protected:
+  void init3D();
+  void init2D();
+
+protected:
+  bool m_3DSphereMode;
+  vl::ref<vl::ActorTree> m_SphereActors;
+  vl::ref<vl::Geometry> m_3DSphereGeom;
+  vl::ref<vl::Effect> m_Point2DFX;
+  vl::ref<vl::Geometry> m_2DGeometry;
+  vl::ref<vl::ArrayFloat3> m_PositionArray;
+  vl::ref<vl::ArrayFloat4> m_ColorArray;
+  vl::ref<vl::DrawArrays> m_DrawPoints;
+};
+
+//-----------------------------------------------------------------------------
+
+class NIFTKVL_EXPORT VLMapperPointSet: public VLMapperPoints
 {
 public:
-  typedef std::map< mitk::DataNode::ConstPointer, vl::ref<VLMapper> > DataNodeVLMapperMapType;
+  VLMapperPointSet( const mitk::DataNode* node, VLSceneView* sv );
 
-public:
-  VLSceneView( QGLWidget* qglwidget );
-  ~VLSceneView();
-
-  void setDataStorage(const mitk::DataStorage::Pointer& dataStorage);
-
-  bool setCameraTrackingNode(const mitk::DataNode* node);
-
-  void setEyeHandFileName(const std::string& fileName);
-
-  bool setBackgroundNode(const mitk::DataNode* node);
-
-  void setBackgroundColour(float r, float g, float b);
-
-  // Defines the opacity of the 3D renering above the background.
-  void setOpacity( float opacity );
-
-  // Number of depth peeling passes to be done.
-  void setDepthPeelingPasses( int passes );
-
-  // Positions the camera for optimal visibility of currently selected DataNode
-  void reInit(const vl::vec3& dir = vl::vec3(0,0,1), const vl::vec3& up = vl::vec3(0,1,0), float bias=1.0f);
-  // Positions the camera for optimal scene visibility
-  void globalReInit(const vl::vec3& dir = vl::vec3(0,0,1), const vl::vec3& up = vl::vec3(0,1,0), float bias=1.0f);
-
-  void scheduleTrackballAdjustView(bool schedule = true);
-  void scheduleNodeAdd(const mitk::DataNode* node);
-  void scheduleNodeRemove(const mitk::DataNode* node);
-  void scheduleNodeUpdate(const mitk::DataNode* node);
-  void scheduleSceneRebuild();
-
-  mitk::DataStorage* dataStorage() { return m_DataStorage.GetPointer(); }
-  const mitk::DataStorage* dataStorage() const { return m_DataStorage.GetPointer(); }
-
-  vl::VividRendering* vividRendering() { return m_VividRendering.get(); }
-  const vl::VividRendering* vividRendering() const { return m_VividRendering.get(); }
-
-  VLTrackballManipulator* trackball() { return m_Trackball.get(); }
-  const VLTrackballManipulator* trackball() const { return m_Trackball.get(); }
-
-  vl::CalibratedCamera* camera() { return m_Camera.get(); }
-  const vl::CalibratedCamera* camera() const { return m_Camera.get(); }
-
-  // Obsolete: called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
-  void setOclResourceService(OclResourceService* oclserv);
+  virtual void updatePoints( const vl::vec4& color );
 
 protected:
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt5::Qt5Widget>()->QGLWidget::context(); }
-#else
-  bool contextIsCurrent() { return openglContext() && QGLContext::currentContext() == openglContext()->as<vlQt4::Qt4Widget>()->QGLWidget::context(); }
-#endif
-
-  void initSceneFromDataStorage();
-  void clearScene();
-  void updateScene();
-  void renderScene();
-
-  // Returned VLMapper can be NULL
-  VLMapper* addDataNode(const mitk::DataNode* node);
-  void removeDataNode(const mitk::DataNode* node);
-  void updateDataNode(const mitk::DataNode* node);
-
-  virtual void addDataStorageListeners();
-  virtual void removeDataStorageListeners();
-
-  // Update camera position, projection and viewport
-  void updateCameraParameters();
-
-  VLMapper* getVLMapper(const mitk::DataNode* node);
-
-protected:
-  // Used by niftk::ScopedOGLContext
-  QGLWidget* m_QGLWidget;
-
-  vl::ref<vl::VividRendering>        m_VividRendering;
-  vl::ref<vl::VividRenderer>         m_VividRenderer;
-  vl::ref<vl::SceneManagerActorTree> m_SceneManager;
-  vl::ref<vl::CalibratedCamera>      m_Camera;
-  vl::ref<VLTrackballManipulator>    m_Trackball;
-
-  mitk::DataStorage::Pointer              m_DataStorage;
-  mitk::DataNodePropertyListener::Pointer m_NodeVisibilityListener;
-  mitk::DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
-  mitk::DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
-
-  DataNodeVLMapperMapType                m_DataNodeVLMapperMap;
-  std::set<mitk::DataNode::ConstPointer> m_NodesToUpdate;
-  std::set<mitk::DataNode::ConstPointer> m_NodesToAdd;
-  std::set<mitk::DataNode::ConstPointer> m_NodesToRemove;
-  mitk::DataNode::ConstPointer           m_CameraNode;
-
-  mitk::DataNode::ConstPointer m_BackgroundNode;
-  mitk::Image::ConstPointer m_BackgroundImage;
-#ifdef _USE_CUDA
-  niftk::CUDAImage::ConstPointer m_BackgroundCUDAImage;
-#endif
-  vl::mat4 m_EyeHandMatrix;
-
-  bool m_ScheduleTrackballAdjustView;
-  bool m_ScheduleInitScene;
-  bool m_RenderingInProgressGuard;
-
-  // Lgacy OpenCL service
-
-  OclResourceService* m_OclService;
-
-  // CUDA support
-
-#ifdef _USE_CUDA
-protected:
-  CudaTest* m_CudaTest;
-#endif
-
-protected:
-  // --------------------------------------------------------------------------
-  // vl::UIEventListener implementation
-  // --------------------------------------------------------------------------
-
-  virtual void initEvent();
-  virtual void resizeEvent(int width, int height);
-  virtual void updateEvent();
-  virtual void destroyEvent();
-
-  virtual void addedListenerEvent(vl::OpenGLContext *) { }
-  virtual void removedListenerEvent(vl::OpenGLContext *) { }
-  virtual void enableEvent(bool) { }
-  virtual void visibilityEvent(bool) { }
-  virtual void mouseMoveEvent(int, int) { }
-  virtual void mouseUpEvent(vl::EMouseButton, int, int) { }
-  virtual void mouseDownEvent(vl::EMouseButton, int, int) { }
-  virtual void mouseWheelEvent(int) { }
-  virtual void keyPressEvent(unsigned short, vl::EKey) { }
-  virtual void keyReleaseEvent(unsigned short, vl::EKey) { }
-  virtual void fileDroppedEvent(const std::vector<vl::String>&) { }
+  const mitk::PointSet* m_MitkPointSet;
 };
 
 //-----------------------------------------------------------------------------
-// VLQtWidget
-//-----------------------------------------------------------------------------
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-class VLQtWidget : public vlQt5::Qt5Widget {
-public:
-  VLQtWidget(QWidget* parent = NULL, const QGLWidget* shareWidget = NULL, Qt::WindowFlags f = 0)
-    : Qt5Widget(parent, shareWidget, f) {
-#else
-class VLQtWidget : public vlQt4::Qt4Widget {
-public:
-  VLQtWidget(QWidget* parent = NULL, const QGLWidget* shareWidget = NULL, Qt::WindowFlags f = 0)
-    : Qt4Widget(parent, shareWidget, f) {
-#endif
-    m_VLSceneView = new VLSceneView( this );
-    addEventListener(m_VLSceneView.get());
-    setRefreshRate(1000 / 30); // 30 fps in milliseconds
-    setContinuousUpdate(false);
-    setMouseTracking(true);
-    setAutoBufferSwap(false);
-    setAcceptDrops(false);
 
-    // Explicitly request OpenGL 3.2 Compatibility profile.
-    QGLContext* glctx = new QGLContext(this->context()->format(), this);
-    QGLFormat fmt = this->context()->format();
-    fmt.setDoubleBuffer( true );
-    #if QT_VERSION >= 0x040700
-      fmt.setProfile(QGLFormat::CompatibilityProfile);
-      fmt.setVersion(3, 2);
-    #endif
-    glctx->setFormat(fmt);
-    glctx->create(NULL);
-    this->setContext(glctx);
-    makeCurrent();
-    MITK_INFO << "VLQtWidget: created OpenGL context version: " << glGetString(GL_VERSION) << "\n";
-  }
+#ifdef _USE_PCL
 
-  void setVLSceneView(VLSceneView* vl_view) { m_VLSceneView = vl_view; }
-  VLSceneView* vlSceneView() { return m_VLSceneView.get(); }
-  const VLSceneView* vlSceneView() const { return m_VLSceneView.get(); }
+class NIFTKVL_EXPORT VLMapperPCL: public VLMapperPoints {
+public:
+  VLMapperPCL( const mitk::DataNode* node, VLSceneView* sv );
+
+  virtual void updatePoints( const vl::vec4& /*color*/ );
 
 protected:
-  vl::ref<VLSceneView> m_VLSceneView;
+  const niftk::PCLData* m_NiftkPCL;
 };
 
 #endif
+
+//-----------------------------------------------------------------------------
+
+#ifdef _USE_CUDA
+
+class NIFTKVL_EXPORT VLMapperCUDAImage: public VLMapper {
+public:
+  VLMapperCUDAImage( const mitk::DataNode* node, VLSceneView* sv );
+
+  niftk::LightweightCUDAImage getLWCI();
+
+  virtual bool init();
+
+  virtual void update();
+
+  virtual void remove();
+
+protected:
+    cudaGraphicsResource_t m_CudaResource;
+    vl::ref<Texture> m_Texture;
+};
+
+#endif
+
+}
+
+#endif
+

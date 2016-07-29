@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkVLVideoOverlayWidget.h"
-#include <VLQtWidget.h>
+#include <niftkVLWidget.h>
 #include <niftkSharedOGLContext.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkImage.h>
@@ -36,18 +36,18 @@ VLVideoOverlayWidget::VLVideoOverlayWidget(QWidget * /*parent*/)
   m_OverlayViewers = new QWidget(m_Splitter);
   m_HorizontalLayout = new QHBoxLayout(m_OverlayViewers);
   m_HorizontalLayout->setContentsMargins(0, 0, 0, 0);
-  m_LeftOverlayViewer = new VLQtWidget(m_OverlayViewers, niftk::SharedOGLContext::GetShareWidget());
+  m_LeftOverlayViewer = new VLWidget(m_OverlayViewers, niftk::SharedOGLContext::GetShareWidget());
   m_LeftOverlayViewer->setObjectName("VLVideoOverlayWidget::m_LeftOverlayViewer");
   m_HorizontalLayout->addWidget(m_LeftOverlayViewer);
-  m_RightOverlayViewer = new VLQtWidget(m_OverlayViewers, niftk::SharedOGLContext::GetShareWidget());
+  m_RightOverlayViewer = new VLWidget(m_OverlayViewers, niftk::SharedOGLContext::GetShareWidget());
   m_RightOverlayViewer->setObjectName("VLVideoOverlayWidget::m_RightOverlayViewer");
   m_HorizontalLayout->addWidget(m_RightOverlayViewer);
-  m_TrackedViewer = new VLQtWidget(m_OverlayViewers, niftk::SharedOGLContext::GetShareWidget());
+  m_TrackedViewer = new VLWidget(m_OverlayViewers, niftk::SharedOGLContext::GetShareWidget());
   m_TrackedViewer->setObjectName("VLVideoOverlayWidget::m_TrackedViewer");
   m_HorizontalLayout->addWidget(m_TrackedViewer);
 
   m_Splitter->addWidget(m_OverlayViewers);
-  m_3DViewer = new VLQtWidget(m_Splitter, niftk::SharedOGLContext::GetShareWidget());
+  m_3DViewer = new VLWidget(m_Splitter, niftk::SharedOGLContext::GetShareWidget());
   m_3DViewer->setObjectName("VLVideoOverlayWidget::m_3DViewer");
   m_Splitter->addWidget(m_3DViewer);
 

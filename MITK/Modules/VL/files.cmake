@@ -13,8 +13,11 @@
 #============================================================================*/
 
 set(CPP_FILES
-  Rendering/VLQtWidget.cpp
-  Rendering/TrackballManipulator.cxx
+  Rendering/niftkVLWidget.cxx
+  Rendering/niftkVLSceneView.cxx
+  Rendering/niftkVLMapper.cxx
+  Rendering/niftkVLUtils.cxx
+  Rendering/niftkVLTrackballManipulator.cxx
   VLEditor/niftkVLVideoOverlayWidget.cxx
   VLEditor/niftkVLStandardDisplayWidget.cxx
 )

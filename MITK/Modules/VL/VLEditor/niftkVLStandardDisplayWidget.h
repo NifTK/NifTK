@@ -29,11 +29,12 @@
 #include <QWidget>
 #include <mitkDataStorage.h>
 
-class VLQtWidget;
 class QHBoxLayout;
 
 namespace niftk
 {
+  
+class VLWidget;
 
 /**
 * \class VLStandardDisplayWidget
@@ -72,10 +73,10 @@ private:
 
   mitk::DataStorage::Pointer m_DataStorage;
 
-  VLQtWidget*  m_AxialViewer;
-  VLQtWidget*  m_SagittalViewer;
-  VLQtWidget*  m_CoronalViewer;
-  VLQtWidget*  m_3DViewer;
+  VLWidget*  m_AxialViewer;
+  VLWidget*  m_SagittalViewer;
+  VLWidget*  m_CoronalViewer;
+  VLWidget*  m_3DViewer;
 };
 
 } // end namespace

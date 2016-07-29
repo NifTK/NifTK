@@ -12,17 +12,4 @@
 
 =============================================================================*/
 
-#include "TrackballManipulator.h"
-
-
-//-----------------------------------------------------------------------------
-void VLTrackballManipulator::mouseWheelEvent(int n)
-{
-  // default wheel delta is 120, i think.
-  n *= 30;
-
-  // fake a zoom button event.
-  vl::TrackballManipulator::mouseDownEvent((vl::EMouseButton) zoomButton(), 100, 100);
-  vl::TrackballManipulator::mouseMoveEvent(100, 100 + n);
-  vl::TrackballManipulator::mouseUpEvent((vl::EMouseButton) zoomButton(), 100, 100 + n);
-}
+#include "niftkVLWidget.h"

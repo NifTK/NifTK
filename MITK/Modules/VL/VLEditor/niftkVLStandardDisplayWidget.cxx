@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkVLStandardDisplayWidget.h"
-#include <VLQtWidget.h>
+#include <niftkVLWidget.h>
 #include <niftkSharedOGLContext.h>
 
 namespace niftk
@@ -25,16 +25,16 @@ VLStandardDisplayWidget::VLStandardDisplayWidget(QWidget * /*parent*/)
   this->setupUi(this);
 
   m_GridLayout->setContentsMargins(0, 0, 0, 0);
-  m_AxialViewer = new VLQtWidget(this, niftk::SharedOGLContext::GetShareWidget());
+  m_AxialViewer = new VLWidget(this, niftk::SharedOGLContext::GetShareWidget());
   m_AxialViewer->setObjectName("VLVideoOverlayWidget::m_AxialViewer");
   m_GridLayout->addWidget(m_AxialViewer, 0, 0);
-  m_SagittalViewer = new VLQtWidget(this, niftk::SharedOGLContext::GetShareWidget());
+  m_SagittalViewer = new VLWidget(this, niftk::SharedOGLContext::GetShareWidget());
   m_SagittalViewer->setObjectName("VLVideoOverlayWidget::m_SagittalViewer");
   m_GridLayout->addWidget(m_SagittalViewer, 0, 1);
-  m_CoronalViewer = new VLQtWidget(this, niftk::SharedOGLContext::GetShareWidget());
+  m_CoronalViewer = new VLWidget(this, niftk::SharedOGLContext::GetShareWidget());
   m_CoronalViewer->setObjectName("VLVideoOverlayWidget::m_CoronalViewer");
   m_GridLayout->addWidget(m_CoronalViewer, 1, 0);
-  m_3DViewer = new VLQtWidget(this, niftk::SharedOGLContext::GetShareWidget());
+  m_3DViewer = new VLWidget(this, niftk::SharedOGLContext::GetShareWidget());
   m_3DViewer->setObjectName("VLVideoOverlayWidget::m_3DViewer");
   m_GridLayout->addWidget(m_3DViewer, 1, 1);
 }
