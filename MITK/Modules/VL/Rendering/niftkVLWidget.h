@@ -15,16 +15,16 @@
 #ifndef niftkVLWidget_h
 #define niftkVLWidget_h
 
-#include <niftkVLExports.h>
-#include <niftkVLMapper.h>
-#include <niftkVLSceneView.h>
-
 #include <QtGlobal>
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <vlQt5/Qt5Widget.hpp>
 #else
 #include <vlQt4/Qt4Widget.hpp>
 #endif
+
+#include <niftkVLExports.h>
+#include <niftkVLMapper.h>
+#include <niftkVLSceneView.h>
 
 namespace niftk 
 {
