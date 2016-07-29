@@ -107,16 +107,6 @@ void VLVideoOverlayWidget::SetBackgroundColour(unsigned int aabbggrr)
 
 
 //-----------------------------------------------------------------------------
-void VLVideoOverlayWidget::SetOclResourceService(OclResourceService* oclserv)
-{
-  m_LeftOverlayViewer->vlSceneView()->setOclResourceService(oclserv);
-  m_RightOverlayViewer->vlSceneView()->setOclResourceService(oclserv);
-  m_TrackedViewer->vlSceneView()->setOclResourceService(oclserv);
-  m_3DViewer->vlSceneView()->setOclResourceService(oclserv);
-}
-
-
-//-----------------------------------------------------------------------------
 void VLVideoOverlayWidget::DeRegisterDataStorageListeners()
 {
   if (m_DataStorage.IsNotNull())

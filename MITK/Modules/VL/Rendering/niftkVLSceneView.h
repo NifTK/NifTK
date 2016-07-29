@@ -19,7 +19,6 @@
 #include <niftkVLMapper.h>
 #include "niftkVLTrackballManipulator.h"
 #include <vlGraphics/UIEventListener.hpp>
-#include <mitkOclResourceService.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 #include <mitkImage.h>
@@ -93,9 +92,6 @@ public:
   vl::CalibratedCamera* camera() { return m_Camera.get(); }
   const vl::CalibratedCamera* camera() const { return m_Camera.get(); }
 
-  // Obsolete: called by VLRendererView, QmitkIGIVLEditor (via IGIVLEditor)
-  void setOclResourceService(OclResourceService* oclserv);
-
 protected:
   void initSceneFromDataStorage();
   void clearScene();
@@ -146,10 +142,6 @@ protected:
   bool m_ScheduleTrackballAdjustView;
   bool m_ScheduleInitScene;
   bool m_RenderingInProgressGuard;
-
-  // Lgacy OpenCL service
-
-  OclResourceService* m_OclService;
 
   // CUDA support
 
