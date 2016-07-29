@@ -50,6 +50,7 @@ namespace niftk
 {
 
 class VLSceneView;
+class PCLData;
 
 //-----------------------------------------------------------------------------
 // VLMapper

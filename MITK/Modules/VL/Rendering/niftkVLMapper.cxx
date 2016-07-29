@@ -30,6 +30,10 @@
 #include <mitkDataStorage.h>
 #include <mitkSurface.h>
 
+#ifdef _USE_PCL
+  #include <niftkPCLData.h>
+#endif
+
 using namespace niftk;
 using namespace vl;
 

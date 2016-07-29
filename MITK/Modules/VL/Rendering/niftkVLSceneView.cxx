@@ -669,13 +669,25 @@ void VLSceneView::initEvent()
   }
 #endif
 
-#if 0 // PCL test
+#if 1 // PCL test
   {
+    /*
+     10,000 Points Test:
+     3D Spheres mode:
+      - In debug mode allocation/deallocation is super slow, can take 30 seconds or so. 
+        Even if we share the same geometry every point has to dinamically allocate it's own Actor, Effect, Shader, several Uniforms and Transform.
+      - Rendering is also slow, probably not so much for the number of triangles but for the overhead of setting up the object before rendering.
+        The Vivid renderer is not heavily optimized to minimize the number of render state changes favouring flexibility instead.
+        If this becomes a real issue there's big room for improvements performancewise. Let me know.
+     2D Sprites mode:
+      - Allocation and rendering seems as fast as it gets, as all the points are represented by one single Geometry,Actor,Effect,Shader group
+        and rendring is done with one single draw call.
+    */
     // Point cloud data test
     mitk::DataNode::Pointer node = mitk::DataNode::New();
     niftk::PCLData::Pointer pcl = niftk::PCLData::New();
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr  c(new pcl::PointCloud<pcl::PointXYZRGB>);
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 10000; ++i) {
       pcl::PointXYZRGB  q(std::rand() % 256, std::rand() % 256, std::rand() % 256);
       q.x = std::rand() % 256;
       q.y = std::rand() % 256;
