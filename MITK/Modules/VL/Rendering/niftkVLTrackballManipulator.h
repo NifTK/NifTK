@@ -12,12 +12,14 @@
 
 =============================================================================*/
 
-#ifndef TrackballManipulator_h
-#define TrackballManipulator_h
+#ifndef niftkVLTrackballManipulator_h
+#define niftkVLTrackballManipulator_h
 
 #include <niftkVLExports.h>
 #include <vlGraphics/TrackballManipulator.hpp>
 
+namespace niftk
+{
 
 /**
  * The only difference to the standard vl::TrackballManipulator is handling
@@ -25,10 +27,10 @@
  */
 class NIFTKVL_EXPORT VLTrackballManipulator : public vl::TrackballManipulator
 {
-
 public:
   virtual void mouseWheelEvent(int n);
 };
 
+}
 
-#endif // TrackballManipulator_h
+#endif

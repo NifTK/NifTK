@@ -13,9 +13,11 @@
 #============================================================================*/
 
 set(CPP_FILES
-  Rendering/VLQtWidget.cpp
-  Rendering/OclTriangleSorter.cxx
-  Rendering/TrackballManipulator.cxx
+  Rendering/niftkVLWidget.cxx
+  Rendering/niftkVLSceneView.cxx
+  Rendering/niftkVLMapper.cxx
+  Rendering/niftkVLUtils.cxx
+  Rendering/niftkVLTrackballManipulator.cxx
   VLEditor/niftkVLVideoOverlayWidget.cxx
   VLEditor/niftkVLStandardDisplayWidget.cxx
 )
@@ -37,6 +39,5 @@ set(QRC_FILES
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
   set(CPP_FILES
     ${CPP_FILES}
-    Rendering/VLFramebufferToCUDA.cxx
   )
 endif()

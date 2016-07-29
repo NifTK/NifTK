@@ -29,12 +29,13 @@
 #include <QWidget>
 #include <mitkDataStorage.h>
 
-class VLQtWidget;
 class OclResourceService;
 class QHBoxLayout;
 
 namespace niftk
 {
+
+class VLWidget;
 
 /**
 * \class VLVideoOverlayWidget
@@ -86,10 +87,10 @@ private:
 
   QHBoxLayout* m_HorizontalLayout;
   QWidget*     m_OverlayViewers;
-  VLQtWidget*  m_LeftOverlayViewer;
-  VLQtWidget*  m_RightOverlayViewer;
-  VLQtWidget*  m_TrackedViewer;
-  VLQtWidget*  m_3DViewer;
+  VLWidget*  m_LeftOverlayViewer;
+  VLWidget*  m_RightOverlayViewer;
+  VLWidget*  m_TrackedViewer;
+  VLWidget*  m_3DViewer;
 };
 
 } // end namespace
