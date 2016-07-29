@@ -271,8 +271,7 @@ VLSceneView::VLSceneView( VLWidget* vlwidget ) :
   m_ScheduleTrackballAdjustView( true ),
   m_ScheduleInitScene ( true ),
   m_RenderingInProgressGuard ( false ),
-  m_VLWidget( vlwidget ),
-  m_OclService( 0 )
+  m_VLWidget( vlwidget )
 {
 #ifdef _USE_CUDA
   m_CudaTest = new CudaTest;
@@ -399,18 +398,6 @@ void VLSceneView::setDataStorage(mitk::DataStorage* ds)
   }
 
   openglContext()->update();
-}
-
-//-----------------------------------------------------------------------------
-
-void VLSceneView::setOclResourceService(OclResourceService* oclserv)
-{
- // no idea if this is really a necessary restriction.
- // if it is then maybe the ocl-service should be a constructor parameter.
- if (m_OclService != 0)
-   throw std::runtime_error("Can set OpenCL service only once");
-
- m_OclService = oclserv;
 }
 
 //-----------------------------------------------------------------------------

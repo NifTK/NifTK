@@ -272,15 +272,6 @@ void IGIVLVideoOverlayEditor::CreateQtPartControl(QWidget* parent)
     layout->setContentsMargins(0,0,0,0);
     layout->addWidget(d->m_VLVideoOverlayWidget);
 
-    ctkPluginContext*     context     = niftk::IGIVLVideoOverlayEditorActivator::/*GetDefault()->*/getContext();
-    ctkServiceReference   serviceRef  = context->getServiceReference<OclResourceService>();
-    OclResourceService*   oclService  = context->getService<OclResourceService>(serviceRef);
-    if (oclService == NULL)
-    {
-      mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
-    }
-    d->m_VLVideoOverlayWidget->SetOclResourceService(oclService);
-
     this->GetSite()->GetPage()->AddPartListener(d->m_PartListener.data());
 
     QMetaObject::invokeMethod(this, "OnPreferencesChanged", Qt::QueuedConnection);

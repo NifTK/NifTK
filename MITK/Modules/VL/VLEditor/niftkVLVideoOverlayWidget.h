@@ -52,7 +52,6 @@ public:
   VLVideoOverlayWidget(QWidget *parent);
   virtual ~VLVideoOverlayWidget();
 
-  void SetOclResourceService(OclResourceService* oclserv);
   void SetBackgroundColour(unsigned int aabbggrr);
   void SetEyeHandFileName(const std::string& fileName);
   void SetDataStorage(mitk::DataStorage* storage);
