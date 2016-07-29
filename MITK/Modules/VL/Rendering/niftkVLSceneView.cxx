@@ -377,6 +377,10 @@ void VLSceneView::removeDataStorageListeners()
 
 void VLSceneView::setDataStorage(mitk::DataStorage* ds)
 {
+  if ( ds == m_DataStorage ) {
+    return;
+  }
+
   niftk::ScopedOGLContext glctx( const_cast<QGLContext*>(m_VLWidget->context()) );
 
   removeDataStorageListeners();

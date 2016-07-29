@@ -144,7 +144,6 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
 
 VLMapperVLGlobalSettings::VLMapperVLGlobalSettings( const mitk::DataNode* node, VLSceneView* sv )
   : VLMapper( node, sv ) {
-  m_VLGlobalSettings = dynamic_cast<const VLGlobalSettingsDataNode*>( node );
 }
 
 bool VLMapperVLGlobalSettings::init() { return true; }

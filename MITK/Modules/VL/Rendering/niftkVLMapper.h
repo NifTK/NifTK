@@ -38,7 +38,6 @@ namespace niftk
 {
 
 class VLSceneView;
-class VLGlobalSettingsDataNode;
 
 //-----------------------------------------------------------------------------
 // VLMapper
@@ -363,9 +362,6 @@ public:
   virtual void update();
 
   virtual void updateVLGlobalSettings();
-
-protected:
-  const VLGlobalSettingsDataNode* m_VLGlobalSettings;
 };
 
 //-----------------------------------------------------------------------------
