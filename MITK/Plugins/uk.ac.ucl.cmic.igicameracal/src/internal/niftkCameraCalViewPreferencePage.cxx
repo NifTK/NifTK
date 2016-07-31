@@ -100,7 +100,7 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_TagFamilyComboBox->addItem("36h11");
 
   m_Ui->m_HandEyeComboBox->addItem("Tsai 1989", QVariant(niftk::NiftyCalVideoCalibrationManager::TSAI_1989));
-  m_Ui->m_HandEyeComboBox->addItem("Kang 2014", QVariant(niftk::NiftyCalVideoCalibrationManager::KANG_2014));
+  m_Ui->m_HandEyeComboBox->addItem("Shahidi 2002", QVariant(niftk::NiftyCalVideoCalibrationManager::SHAHIDI_2002));
   m_Ui->m_HandEyeComboBox->addItem("Malti 2013", QVariant(niftk::NiftyCalVideoCalibrationManager::MALTI_2013));
   m_Ui->m_HandEyeComboBox->addItem("Non-linear, extrinsic.", QVariant(niftk::NiftyCalVideoCalibrationManager::NON_LINEAR_EXTRINSIC));
 
@@ -221,7 +221,7 @@ void CameraCalViewPreferencePage::OnHandEyeComboSelected()
       m_Ui->m_ModelToTrackerToolButton->setVisible(false);
     break;
 
-    case niftk::NiftyCalVideoCalibrationManager::KANG_2014:
+    case niftk::NiftyCalVideoCalibrationManager::SHAHIDI_2002:
       m_Ui->m_ModelToTrackerLabel->setVisible(true);
       m_Ui->m_ModelToTrackerLineEdit->setVisible(true);
       m_Ui->m_ModelToTrackerToolButton->setVisible(true);

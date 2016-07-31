@@ -54,7 +54,7 @@ public:
   {
     // Order must match that in niftk::CameraCalViewPreferencePage
     TSAI_1989,
-    KANG_2014,
+    SHAHIDI_2002,
     MALTI_2013,
     NON_LINEAR_EXTRINSIC
   };
@@ -233,9 +233,9 @@ private:
   cv::Matx44d DoTsaiHandEye(int imageIndex, bool useReference);
 
   /**
-   * \brief Actually does Kang 2014 hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
+   * \brief Actually does Shahidi 2002 hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
    */
-  cv::Matx44d DoKangHandEye(int imageIndex, bool useReference);
+  cv::Matx44d DoShahidiHandEye(int imageIndex, bool useReference);
 
   /**
    * \brief Actually does Malti's 2013 hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.

@@ -1,15 +1,90 @@
 /**
-\page uk_ac_ucl_cmic_igicameracal The Camera Calibration View
+\page uk_ac_ucl_cmic_igicameracal The Video Camera Calibration View
 
-\image html icon.png "The Icon for the Camera Calibration View"
+\image html icon.png "The Icon for the Video Camera Calibration View"
 
 \section CameraCalIntro Introduction
 
-\section CameraCalUsage Usage
+The Video Camera Calibration plugin provides a multitude of different calibration methods.
+
+\li Feature detectors: OpenCV chessboard, OpenCV assymetrical circle pattern, AprilTags,
+template matching of dots and rings.
+\li Iterative refinement of control points [1].
+\li Optimisation: 2D (reprojection) error or 3D (reconstruction) error.
+\li Handeye calibration: Tsai 1989 [2], Shahidi 2002 [3], an adaptation of Malti 2013 [4].
 
 \section CameraCalPreferences Preferences
 
+Before attempting to calibrate, you must set all the necessary preferences for your method of choice.
+
+\image html MainPrefs.png "Figure 1: The Preference Page"
+
+\li previous calibration directory: You can specify a previous calibration directory and the files
+calib.left.intrinsic.txt, calib.right.intrinsic.txt, calib.r2l.txt, calib.left.handeye.txt,
+calib.right.handeye.txt and calib.model2world.txt are loaded into the plugin. This is a new
+and as-yet lightly tested feature, feedback is required.
+\li rescale image: Most feature detectors run in OpenCV which ignores pixel sizes. So, if you have
+anisotropic pixel sizes (in millimetres), you may want to resize the image in the x and y direction.
+\li model file: You must specifiy a model text file where each line contains the point identifier
+followed by x y and z coordinates all space separated.
+\li Minimum number of views: Once you have this many views or more, calibration is recomputed at each image grab.
+\li do 3D optimisation: If clicked, will minimise reconstruction (triangulated 3D) error, otherwise reprojection error.
+\li do iterative calibration: See [1].
+\li features to detect: See below.
+\li preferred hand-eye method: This plugin will calculate 3 hand-eye methods, so you specify your
+"preferred" one, which means when the output is saved you get that one in calib.left.handeye.txt and
+when its visualised, you see your preferred one.
+
+\subsection CameraCalPreferencesFeatures Feature Selection
+
+\image html Features.png "Figure 2: Chosing the type of features to detect."
+
+You may select different feature detectors, each of which may have different
+parameters to set. For example, the OpenCV chessboard requires you to set the grid size,
+and AprilTags requires you to set the Tag Family identifier.
+
+\subsection CameraCalPreferencesTemplates Template Matching
+
+\image html TemplateMatching.png "Figure 3: Chosing the template image to match."
+
+If doing template matching, you must provide a template of the correct scale to match.
+
+\subsection CameraCalPreferencesIterative Iterative Refinement
+
+\image html Iterative.png "Figure 4: Iterative Refinement requires a canonical image, and the 2D locations of each feature. See [1]."
+
+If selected, you can do Iterative Refinement of Control Points [1], which requires a
+canonical (face on) image, and the exact location of each feature point in 2D.
+
+\subsection CameraCalPreferencesHandEye Hand-Eye Calibration
+
+\image html HandEye.png "Figure 5: Chosing the hand-eye method, see [2], [3], [4]."
+
+Note: NifTK actually uses Eye-Hand matrices, so you can just multiply a camera point
+by the eye-hand matrix, and then the tracker matrix to get a point in world coordinates.
+
+\section CameraCalUsage Usage
+
+Once you have set up the correct preferences, calibration is easy. Figure 6 shows the main controls.
+
+\image html MainScreen.png "Figure 6: The Main Controls"
+
+\li grab: Takes a picture, with a green tick indicating success and a red cross indicating failure.
+\li undo: Drops the most recent picture.
+\li clear: Removes all currently taken picture.
+\li save: Saves all calibration information into a folder.
+
+Once you have enough images (specified using the above preferences), calibration proceeds automatically.
+If the footswitch plugin is opened, you can use a USB footswitch.
+
+Note: A known issue with the footswitch plugin is that it doesn't initialise if it is
+automatically open when the Workbench starts. You may need to stop and restart it.
+
 \section CameraCalReferences References
 
+\li [1] <a href="http://dx.doi.org/10.1109/ICCVW.2009.5457474">Datta 2009</a>
+\li [2] <a href="http://dx.doi.org/10.1109/70.34770">Tsai 1989</a>
+\li [3] <a href="http://dx.doi.org/10.1109/TMI.2002.806597">Shahidi 2002</a>
+\li [4] <a href="http://dx.doi.org/10.1002/rcs.1478">Malti 2013</a>
 */
 
