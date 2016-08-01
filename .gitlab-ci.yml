@@ -3,7 +3,6 @@ stages:
   - build
   - test
   - deploy
-  - cleanup
 
 before_script:
   - export src_dir=${CI_PROJECT_DIR}
@@ -104,23 +103,6 @@ Continuous docs:
   - linux, continuous
 
 
-Linux continuous clean up:
-
-  stage: cleanup
-
-  script:
-  - rm -rf ${sb_dir}
-  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
-
-  only:
-  - branches
-
-  tags:
-  - linux, continuous
-
-
 Mac continuous build:
 
   stage: build
@@ -162,23 +144,6 @@ Mac continuous test:
   - mac, continuous
 
 
-Mac continuous clean up:
-
-  stage: cleanup
-
-  script:
-  - rm -rf ${sb_dir}
-  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
-
-  only:
-  - branches
-
-  tags:
-  - mac, continuous
-
-
 Windows continuous build:
 
   stage: build
@@ -203,23 +168,6 @@ Windows continuous test:
   script:
   - cd ${pb_dir}
 #  - ctest -E CTE-Stream -S CTestContinuous.cmake -V
-
-  only:
-  - branches
-
-  tags:
-  - windows, continuous
-
-
-Windows continuous clean up:
-
-  stage: cleanup
-
-  script:
-  - rm -rf ${sb_dir}
-  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
 
   only:
   - branches
@@ -347,79 +295,6 @@ Mac release build:
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
         ${src_dir}
   - make -j 8
-
-  only:
-  - tags
-
-  tags:
-  - mac, release
-
-
-# Dummy test jobs to prevent that deploy job is preceded by clean job.
-
-Ubuntu 14.04 release test:
-
-  stage: test
-
-  script:
-  - echo
-
-  only:
-  - tags
-
-  tags:
-  - linux, ubuntu-14.04, unmanaged, release
-
-
-CentOS 7 release test:
-
-  stage: test
-
-  script:
-  - echo
-
-  only:
-  - tags
-
-  tags:
-  - linux, centos-7, unmanaged, release
-
-
-Cluster release test:
-
-  stage: test
-
-  script:
-  - echo
-
-  only:
-  - tags
-
-  tags:
-  - linux, centos-6, cluster, release
-
-
-Managed CentOS 7 release test:
-
-  stage: test
-
-  script:
-  - echo
-
-  only:
-  - tags
-
-  tags:
-  - linux, centos-7, managed, release
-
-
-# Dummy test job to prevent that deploy job is preceded by clean job.
-Mac release test:
-
-  stage: test
-
-  script:
-  - echo
 
   only:
   - tags
@@ -596,107 +471,15 @@ Mac release installer:
 
 
 ##########################################
-# Jobs for cleaning up
+# Clean up (same on every platform)
 ##########################################
 
 
-Ubuntu 14.04 release clean up:
+after_script:
 
-  stage: cleanup
-
-  script:
+  - export src_dir=${CI_PROJECT_DIR}
+  - export git_hash=${CI_BUILD_REF:0:6}
+  - export ep_dir="${CI_PROJECT_DIR}-ep"
+  - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}"
   - rm -rf ${sb_dir}
   - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
-
-  only:
-  - tags
-
-  tags:
-  - linux, ubuntu-14.04, unmanaged, release
-
-
-CentOS 7 release clean up:
-
-  stage: cleanup
-
-  script:
-  - rm -rf ${sb_dir}
-  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
-
-  only:
-  - tags
-
-  tags:
-  - linux, centos-7, unmanaged, release
-
-
-Cluster release clean up:
-
-  stage: cleanup
-
-  script:
-  - rm -rf ${sb_dir}
-  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
-
-  only:
-  - tags
-
-  tags:
-  - linux, centos-6, cluster, release
-
-
-Managed CentOS 7 release clean up:
-
-  stage: cleanup
-
-  script:
-  - rm -rf ${sb_dir}
-  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
-
-  only:
-  - tags
-
-  tags:
-  - linux, centos-7, managed, release
-
-
-Mac release clean up:
-
-  stage: cleanup
-
-  script:
-  - rm -rf ${sb_dir}
-  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
-
-  only:
-  - tags
-
-  tags:
-  - mac, release
-
-
-#Windows release clean up:
-#
-#  stage: cleanup
-#
-#  script:
-#  - rm -rf ${sb_dir}
-#  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-#
-#  when: always
-#
-#  only:
-#  - tags
-#
-#  tags:
-#  - windows, release
