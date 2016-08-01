@@ -14,19 +14,25 @@
 
 // Qmitk
 #include "SurfaceRegView.h"
-#include "SurfaceRegViewPreferencePage.h"
+
+#include <limits>
+
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QtConcurrentRun>
+
+#include <vtkDoubleArray.h>
+#include <vtkMatrix4x4.h>
+
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateOr.h>
 #include <mitkSurface.h>
-#include <vtkMatrix4x4.h>
-#include <mitkDataStorageUtils.h>
-#include <QMessageBox>
-#include <QtConcurrentRun>
 #include <QmitkIGIUtils.h>
-#include <QFileDialog>
+
+#include <niftkDataStorageUtils.h>
 #include <niftkVTKFunctions.h>
-#include <vtkDoubleArray.h>
-#include <limits>
+
+#include "SurfaceRegViewPreferencePage.h"
 
 
 const std::string SurfaceRegView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacereg";

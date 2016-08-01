@@ -13,15 +13,18 @@
 =============================================================================*/
 
 #include "niftkHandeyeCalibrateUsingRegistration.h"
+
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkPointSet.h>
 #include <mitkIOUtil.h>
-#include <mitkFileIOUtils.h>
-#include <mitkPointUtils.h>
 #include <mitkExceptionMacro.h>
+
+#include <niftkFileIOUtils.h>
+#include <niftkPointUtils.h>
 #include <niftkArunLeastSquaresPointRegistration.h>
 #include <niftkFileHelper.h>
+
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 
@@ -77,7 +80,7 @@ void HandeyeCalibrateUsingRegistration::Calibrate(const std::string& modelInputF
 
   if (cameraPointsDirectory.size() > 0 && niftk::DirectoryExists(cameraPointsDirectory))
   {
-    cameraPoints = mitk::LoadPointSetsFromDirectory(cameraPointsDirectory);
+    cameraPoints = LoadPointSetsFromDirectory(cameraPointsDirectory);
   }
 
   if (cameraPoints.size() == 0)
@@ -121,7 +124,7 @@ void HandeyeCalibrateUsingRegistration::Calibrate(const std::string& modelInputF
     *calibrationMatrix
     );
 
-  mitk::SaveVtkMatrix4x4ToFile(outputMatrixFile, *calibrationMatrix);
+  SaveVtkMatrix4x4ToFile(outputMatrixFile, *calibrationMatrix);
 }
 
 
@@ -177,7 +180,7 @@ void HandeyeCalibrateUsingRegistration::Calibrate (
     }
 
     // This Clears (deletes and repopulates) the modelPointsInTrackerSpace list each time.
-    mitk::TransformPointsByVtkMatrix(modelPointSet, *trackingTransform, *modelPointsInTrackerSpace);
+    TransformPointsByVtkMatrix(modelPointSet, *trackingTransform, *modelPointsInTrackerSpace);
 
     // Gets the first point (origin) of each camera point set... i.e. in camera coordinates.
     // Using an iterator, as the first point is not guaranteed to be labelled as zero.

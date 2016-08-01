@@ -1,20 +1,20 @@
-set(SRC_CPP_FILES    
+set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  ImageLookupTablesViewActivator.cxx
-  QmitkImageLookupTablesPreferencePage.cxx
-  ImageLookupTablesView.cxx
+  niftkImageLookupTablesPreferencePage.cxx
+  niftkImageLookupTablesView.cxx
+  niftkPluginActivator.cxx
 )
 
 set(UI_FILES
-  src/internal/ImageLookupTablesViewControls.ui
+  src/internal/niftkImageLookupTablesViewControls.ui
 )
 
 set(MOC_H_FILES
-  src/internal/QmitkImageLookupTablesPreferencePage.h
-  src/internal/ImageLookupTablesViewActivator.h
-  src/internal/ImageLookupTablesView.h
+  src/internal/niftkImageLookupTablesPreferencePage.h
+  src/internal/niftkImageLookupTablesView.h
+  src/internal/niftkPluginActivator.h
 )
 
 set(CACHED_RESOURCE_FILES
@@ -30,7 +30,7 @@ set(QRC_FILES
   resources/ImageLookupTables.qrc
 )
 
-set(CPP_FILES 
+set(CPP_FILES
 )
 
 foreach(file ${INTERNAL_CPP_FILES})

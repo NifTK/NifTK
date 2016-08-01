@@ -45,8 +45,8 @@ class NIFTKOPENCV_EXPORT ProjectPointsOnStereoVideo : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(ProjectPointsOnStereoVideo, itk::Object);
-  itkNewMacro(ProjectPointsOnStereoVideo);
+  mitkClassMacroItkParent(ProjectPointsOnStereoVideo, itk::Object)
+  itkNewMacro(ProjectPointsOnStereoVideo)
 
   /** 
    * \brief

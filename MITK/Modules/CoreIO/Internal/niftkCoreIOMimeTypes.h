@@ -15,10 +15,12 @@
 #ifndef niftkCoreIOMimeTypes_h
 #define niftkCoreIOMimeTypes_h
 
-#include <mitkCustomMimeType.h>
 #include <string>
 
-namespace niftk {
+#include <mitkCustomMimeType.h>
+
+namespace niftk
+{
 
 /**
 * @class CoreIOMimeTypes
@@ -79,6 +81,6 @@ private:
   CoreIOMimeTypes(const CoreIOMimeTypes&); // purposely not implemented
 };
 
-} // end namespace
+}
 
 #endif

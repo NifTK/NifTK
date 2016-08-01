@@ -15,8 +15,12 @@
 #include "niftkCoreIOMimeTypes.h"
 #include <mitkIOMimeTypes.h>
 
+
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-std::vector<mitk::CustomMimeType*> niftk::CoreIOMimeTypes::Get()
+std::vector<mitk::CustomMimeType*> CoreIOMimeTypes::Get()
 {
   std::vector<mitk::CustomMimeType*> mimeTypes;
 
@@ -33,7 +37,7 @@ std::vector<mitk::CustomMimeType*> niftk::CoreIOMimeTypes::Get()
 
 
 //-----------------------------------------------------------------------------
-mitk::CustomMimeType niftk::CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE()
+mitk::CustomMimeType CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE()
 {
   std::string category = "4x4 Transform File";
 
@@ -46,7 +50,7 @@ mitk::CustomMimeType niftk::CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_NAME()
+std::string CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_NAME()
 {
   static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".4x4";
   return name;
@@ -54,7 +58,7 @@ std::string niftk::CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_NAME()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_DESCRIPTION()
+std::string CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_DESCRIPTION()
 {
   static std::string description = "4x4 Transforms";
   return description;
@@ -62,7 +66,7 @@ std::string niftk::CoreIOMimeTypes::TRANSFORM4X4_MIMETYPE_DESCRIPTION()
 
 
 //-----------------------------------------------------------------------------
-mitk::CustomMimeType niftk::CoreIOMimeTypes::ANALYZE_MIMETYPE()
+mitk::CustomMimeType CoreIOMimeTypes::ANALYZE_MIMETYPE()
 {
   mitk::CustomMimeType mimeType(ANALYZE_MIMETYPE_NAME());
   mimeType.AddExtension("hdr");
@@ -76,7 +80,7 @@ mitk::CustomMimeType niftk::CoreIOMimeTypes::ANALYZE_MIMETYPE()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::ANALYZE_MIMETYPE_NAME()
+std::string CoreIOMimeTypes::ANALYZE_MIMETYPE_NAME()
 {
   static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".image.analyze";
   return name;
@@ -84,7 +88,7 @@ std::string niftk::CoreIOMimeTypes::ANALYZE_MIMETYPE_NAME()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::ANALYZE_MIMETYPE_DESCRIPTION()
+std::string CoreIOMimeTypes::ANALYZE_MIMETYPE_DESCRIPTION()
 {
   static std::string description = "Image in Analyze format";
   return description;
@@ -92,7 +96,7 @@ std::string niftk::CoreIOMimeTypes::ANALYZE_MIMETYPE_DESCRIPTION()
 
 
 //-----------------------------------------------------------------------------
-mitk::CustomMimeType niftk::CoreIOMimeTypes::NIFTI_MIMETYPE()
+mitk::CustomMimeType CoreIOMimeTypes::NIFTI_MIMETYPE()
 {
   mitk::CustomMimeType mimeType(NIFTI_MIMETYPE_NAME());
   mimeType.AddExtension("nii");
@@ -105,7 +109,7 @@ mitk::CustomMimeType niftk::CoreIOMimeTypes::NIFTI_MIMETYPE()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::NIFTI_MIMETYPE_NAME()
+std::string CoreIOMimeTypes::NIFTI_MIMETYPE_NAME()
 {
   static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".image.nifti";
   return name;
@@ -113,7 +117,7 @@ std::string niftk::CoreIOMimeTypes::NIFTI_MIMETYPE_NAME()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::NIFTI_MIMETYPE_DESCRIPTION()
+std::string CoreIOMimeTypes::NIFTI_MIMETYPE_DESCRIPTION()
 {
   static std::string description = "Image in NIfTI format";
   return description;
@@ -121,7 +125,7 @@ std::string niftk::CoreIOMimeTypes::NIFTI_MIMETYPE_DESCRIPTION()
 
 
 //-----------------------------------------------------------------------------
-mitk::CustomMimeType niftk::CoreIOMimeTypes::INRIA_MIMETYPE()
+mitk::CustomMimeType CoreIOMimeTypes::INRIA_MIMETYPE()
 {
   mitk::CustomMimeType mimeType(INRIA_MIMETYPE_NAME());
   mimeType.AddExtension("inr");
@@ -133,7 +137,7 @@ mitk::CustomMimeType niftk::CoreIOMimeTypes::INRIA_MIMETYPE()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::INRIA_MIMETYPE_NAME()
+std::string CoreIOMimeTypes::INRIA_MIMETYPE_NAME()
 {
   static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".image.inria";
   return name;
@@ -141,7 +145,7 @@ std::string niftk::CoreIOMimeTypes::INRIA_MIMETYPE_NAME()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::INRIA_MIMETYPE_DESCRIPTION()
+std::string CoreIOMimeTypes::INRIA_MIMETYPE_DESCRIPTION()
 {
   static std::string description = "Image in MedINRIA format";
   return description;
@@ -149,7 +153,7 @@ std::string niftk::CoreIOMimeTypes::INRIA_MIMETYPE_DESCRIPTION()
 
 
 //-----------------------------------------------------------------------------
-mitk::CustomMimeType niftk::CoreIOMimeTypes::PNM_MIMETYPE()
+mitk::CustomMimeType CoreIOMimeTypes::PNM_MIMETYPE()
 {
   mitk::CustomMimeType mimeType(PNM_MIMETYPE_NAME());
   std::string category = "PNM Image File";
@@ -164,7 +168,7 @@ mitk::CustomMimeType niftk::CoreIOMimeTypes::PNM_MIMETYPE()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::PNM_MIMETYPE_NAME()
+std::string CoreIOMimeTypes::PNM_MIMETYPE_NAME()
 {
   // Have to pick one that becomes the default. PPM is the least restrictive.
   static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".ppm";
@@ -173,7 +177,7 @@ std::string niftk::CoreIOMimeTypes::PNM_MIMETYPE_NAME()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::PNM_MIMETYPE_DESCRIPTION()
+std::string CoreIOMimeTypes::PNM_MIMETYPE_DESCRIPTION()
 {
   static std::string description = std::string("The portable pixmap format (PPM), the portable graymap format (PGM) ")
       + std::string("and the portable bitmap format (PBM) are image file formats ")
@@ -183,7 +187,7 @@ std::string niftk::CoreIOMimeTypes::PNM_MIMETYPE_DESCRIPTION()
 
 
 //-----------------------------------------------------------------------------
-mitk::CustomMimeType niftk::CoreIOMimeTypes::PGM_MIMETYPE()
+mitk::CustomMimeType CoreIOMimeTypes::PGM_MIMETYPE()
 {
   mitk::CustomMimeType mimeType(PGM_MIMETYPE_NAME());
   std::string category = "PGM Image File";
@@ -196,7 +200,7 @@ mitk::CustomMimeType niftk::CoreIOMimeTypes::PGM_MIMETYPE()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::PGM_MIMETYPE_NAME()
+std::string CoreIOMimeTypes::PGM_MIMETYPE_NAME()
 {
   static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".pgm";
   return name;
@@ -204,7 +208,7 @@ std::string niftk::CoreIOMimeTypes::PGM_MIMETYPE_NAME()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::PGM_MIMETYPE_DESCRIPTION()
+std::string CoreIOMimeTypes::PGM_MIMETYPE_DESCRIPTION()
 {
   static std::string description = "Image in Portable GreyMap format";
   return description;
@@ -212,7 +216,7 @@ std::string niftk::CoreIOMimeTypes::PGM_MIMETYPE_DESCRIPTION()
 
 
 //-----------------------------------------------------------------------------
-mitk::CustomMimeType niftk::CoreIOMimeTypes::PPM_MIMETYPE()
+mitk::CustomMimeType CoreIOMimeTypes::PPM_MIMETYPE()
 {
   mitk::CustomMimeType mimeType(PPM_MIMETYPE_NAME());
   std::string category = "PPM Image File";
@@ -225,7 +229,7 @@ mitk::CustomMimeType niftk::CoreIOMimeTypes::PPM_MIMETYPE()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::PPM_MIMETYPE_NAME()
+std::string CoreIOMimeTypes::PPM_MIMETYPE_NAME()
 {
   static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".ppm";
   return name;
@@ -233,7 +237,7 @@ std::string niftk::CoreIOMimeTypes::PPM_MIMETYPE_NAME()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::PPM_MIMETYPE_DESCRIPTION()
+std::string CoreIOMimeTypes::PPM_MIMETYPE_DESCRIPTION()
 {
   static std::string description = "Image in Portable PixelMap format";
   return description;
@@ -242,7 +246,7 @@ std::string niftk::CoreIOMimeTypes::PPM_MIMETYPE_DESCRIPTION()
 
 // ----------------------------------------------------------------
 // LabelMap Mime type
-mitk::CustomMimeType niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE()
+mitk::CustomMimeType CoreIOMimeTypes::LABELMAP_MIMETYPE()
 {
   mitk::CustomMimeType mimeType(LABELMAP_MIMETYPE_NAME());
   std::string category = "LabelMap File";
@@ -253,19 +257,19 @@ mitk::CustomMimeType niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE()
   return mimeType;
 }
 
-std::string niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()
+std::string CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()
 {
   static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".txt";
   return name;
 }
 
-std::string niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION()
+std::string CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION()
 {
   static std::string description = "Label map that defines the mapping between color and pixel value.";
   return description;
 }
 //-----------------------------------------------------------------------------
-mitk::CustomMimeType niftk::CoreIOMimeTypes::PBM_MIMETYPE()
+mitk::CustomMimeType CoreIOMimeTypes::PBM_MIMETYPE()
 {
   mitk::CustomMimeType mimeType(PBM_MIMETYPE_NAME());
   std::string category = "PBM Image File";
@@ -278,7 +282,7 @@ mitk::CustomMimeType niftk::CoreIOMimeTypes::PBM_MIMETYPE()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::PBM_MIMETYPE_NAME()
+std::string CoreIOMimeTypes::PBM_MIMETYPE_NAME()
 {
   static std::string name = mitk::IOMimeTypes::DEFAULT_BASE_NAME() + ".pbm";
   return name;
@@ -286,8 +290,10 @@ std::string niftk::CoreIOMimeTypes::PBM_MIMETYPE_NAME()
 
 
 //-----------------------------------------------------------------------------
-std::string niftk::CoreIOMimeTypes::PBM_MIMETYPE_DESCRIPTION()
+std::string CoreIOMimeTypes::PBM_MIMETYPE_DESCRIPTION()
 {
   static std::string description = "Image in Portable BitMap format";
   return description;
+}
+
 }

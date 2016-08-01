@@ -17,12 +17,12 @@
 #include <mitkCameraIntrinsics.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkProperties.h>
-#include <mitkCoordinateAxesData.h>
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <niftkFileHelper.h>
 #include <niftkImageConversion.h>
 
+#include <niftkCoordinateAxesData.h>
 #include <niftkMatrixUtilities.h>
 #include <niftkNiftyCalTypes.h>
 #include <niftkChessboardPointDetector.h>
@@ -336,7 +336,7 @@ void NiftyCalVideoCalibrationManager::UpdateCameraToWorldPosition()
 {
   if (m_TrackingTransformNode.IsNotNull())
   {
-    mitk::CoordinateAxesData::Pointer tracking = dynamic_cast<mitk::CoordinateAxesData*>(
+    CoordinateAxesData::Pointer tracking = dynamic_cast<CoordinateAxesData*>(
           m_TrackingTransformNode->GetData());
     if (tracking.IsNull())
     {
@@ -367,10 +367,10 @@ void NiftyCalVideoCalibrationManager::UpdateCameraToWorldPosition()
       node->SetBoolProperty("helper object", true);
     }
 
-    mitk::CoordinateAxesData::Pointer coords = dynamic_cast<mitk::CoordinateAxesData*>(node->GetData());
+    CoordinateAxesData::Pointer coords = dynamic_cast<CoordinateAxesData*>(node->GetData());
     if (coords.IsNull())
     {
-      coords = mitk::CoordinateAxesData::New();
+      coords = CoordinateAxesData::New();
       node->SetData(coords);
       m_DataStorage->Add(node);
     }
@@ -967,7 +967,7 @@ bool NiftyCalVideoCalibrationManager::Grab()
   // Now we extract the tracking node.
   if (m_TrackingTransformNode.IsNotNull())
   {
-    mitk::CoordinateAxesData::Pointer tracking = dynamic_cast<mitk::CoordinateAxesData*>(
+    CoordinateAxesData::Pointer tracking = dynamic_cast<CoordinateAxesData*>(
           m_TrackingTransformNode->GetData());
 
     if (tracking.IsNull())
@@ -989,7 +989,7 @@ bool NiftyCalVideoCalibrationManager::Grab()
     m_TrackingMatrices.push_back(openCVMat);
 
     // Visualise it.
-    mitk::CoordinateAxesData::Pointer copyOfTrackingMatrix = mitk::CoordinateAxesData::New();
+    CoordinateAxesData::Pointer copyOfTrackingMatrix = CoordinateAxesData::New();
     copyOfTrackingMatrix->SetVtkMatrix(*mat);
     mitk::DataNode::Pointer trackingNode = mitk::DataNode::New();
     trackingNode->SetData(copyOfTrackingMatrix);
@@ -1013,7 +1013,7 @@ bool NiftyCalVideoCalibrationManager::Grab()
   // Now we extract the reference tracking node - ToDo: fix code duplication.
   if (m_ReferenceTrackingTransformNode.IsNotNull())
   {
-    mitk::CoordinateAxesData::Pointer tracking = dynamic_cast<mitk::CoordinateAxesData*>(
+    CoordinateAxesData::Pointer tracking = dynamic_cast<CoordinateAxesData*>(
           m_ReferenceTrackingTransformNode->GetData());
 
     if (tracking.IsNull())

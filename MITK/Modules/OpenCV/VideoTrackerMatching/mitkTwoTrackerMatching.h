@@ -32,8 +32,8 @@ namespace mitk
 class NIFTKOPENCV_EXPORT TwoTrackerMatching : public itk::Object
 {
 public: 
-  mitkClassMacroItkParent ( TwoTrackerMatching, itk::Object);
-  itkNewMacro (TwoTrackerMatching);
+  mitkClassMacroItkParent ( TwoTrackerMatching, itk::Object)
+  itkNewMacro (TwoTrackerMatching)
 
   /**
    * \brief Initialise the class by passing it two directory names.

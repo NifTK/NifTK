@@ -19,7 +19,7 @@
 #pragma warning( disable : 4250 )
 #endif
 
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <mitkCuboid.h>
 #include <mitkOperationActor.h>
 #include <mitkOperation.h>
@@ -37,7 +37,7 @@
 * \brief Highly Experimental.
 */
 
-class QmitkPointSetCropper : public QmitkBaseView, public mitk::OperationActor
+class QmitkPointSetCropper : public niftk::BaseView, public mitk::OperationActor
 {
 
   /// Operation base class, which holds pointers to a node of the data tree (mitk::DataNode)

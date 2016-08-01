@@ -30,8 +30,8 @@ class NIFTKOPENCV_EXPORT VideoHandEyeCalibration : public mitk::InvariantPointCa
 
 public:
 
-  mitkClassMacro(VideoHandEyeCalibration, mitk::InvariantPointCalibration);
-  itkNewMacro(VideoHandEyeCalibration);
+  mitkClassMacro(VideoHandEyeCalibration, mitk::InvariantPointCalibration)
+  itkNewMacro(VideoHandEyeCalibration)
 
   /**
    * \see mitk::InvariantPointCalibration::Calibrate().

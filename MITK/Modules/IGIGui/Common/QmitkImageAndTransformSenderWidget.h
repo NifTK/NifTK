@@ -21,7 +21,7 @@
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 #include <mitkImage.h>
-#include <mitkCoordinateAxesData.h>
+#include <niftkCoordinateAxesData.h>
 #include <vtkMatrix4x4.h>
 #include <igtlClientSocket.h>
 #include <igtlServerSocket.h>
@@ -44,7 +44,7 @@ public:
   mitk::DataNode::Pointer GetSelectedImageNode() const;
   mitk::Image::Pointer GetSelectedImage() const;
   mitk::DataNode::Pointer GetSelectedTransformNode() const;
-  mitk::CoordinateAxesData::Pointer GetSelectedTransform() const;
+  niftk::CoordinateAxesData::Pointer GetSelectedTransform() const;
 
   void SetImageWidgetsVisible(const bool& isVisible);
   void SetTransformWidgetsVisible(const bool& isVisible);

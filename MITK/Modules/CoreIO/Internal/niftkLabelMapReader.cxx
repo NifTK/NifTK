@@ -14,7 +14,7 @@
 
 #include "niftkLabelMapReader.h"
 #include "niftkCoreIOMimeTypes.h"
-#include "LookupTables/QmitkLookupTableContainer.h"
+#include "niftkLookupTableContainer.h"
 
 #include <mitkCustomMimeType.h>
 #include <mitkLogMacros.h>
@@ -29,8 +29,11 @@
 #include <iostream>
 
 
+namespace niftk
+{
+
 //-----------------------------------------------------------------------------
-niftk::LabelMapReader::LabelMapReader()
+LabelMapReader::LabelMapReader()
 : mitk::AbstractFileReader(mitk::CustomMimeType(niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_NAME()),
                            niftk::CoreIOMimeTypes::LABELMAP_MIMETYPE_DESCRIPTION())
 , m_Order(0)
@@ -40,7 +43,7 @@ niftk::LabelMapReader::LabelMapReader()
 
 
 //-----------------------------------------------------------------------------
-niftk::LabelMapReader::LabelMapReader(const LabelMapReader &other)
+LabelMapReader::LabelMapReader(const LabelMapReader &other)
 : mitk::AbstractFileReader(other)
 , m_Order(0)
 {
@@ -48,14 +51,14 @@ niftk::LabelMapReader::LabelMapReader(const LabelMapReader &other)
 
 
 //-----------------------------------------------------------------------------
-niftk::LabelMapReader * niftk::LabelMapReader::Clone() const
+LabelMapReader * LabelMapReader::Clone() const
 {
   return new niftk::LabelMapReader(*this);
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<itk::SmartPointer<mitk::BaseData> > niftk::LabelMapReader::Read()
+std::vector<itk::SmartPointer<mitk::BaseData> > LabelMapReader::Read()
 {
   // make sure the internal datatypes are empty
   m_Labels.clear();
@@ -108,14 +111,14 @@ std::vector<itk::SmartPointer<mitk::BaseData> > niftk::LabelMapReader::Read()
     MITK_ERROR << "Unable to read NifTK label map!";
   }
 
-  QmitkLookupTableContainer::Pointer containter = GetLookupTableContainer();
+  LookupTableContainer::Pointer containter = GetLookupTableContainer();
   result.push_back(itk::SmartPointer<mitk::BaseData>(containter));
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-bool niftk::LabelMapReader::ReadLabelMap(std::istream & file)
+bool LabelMapReader::ReadLabelMap(std::istream & file)
 {
   bool isLoaded = false;
 
@@ -161,7 +164,7 @@ bool niftk::LabelMapReader::ReadLabelMap(std::istream & file)
       std::string colorStr = line.substr(lastLtr, line.size() - lastLtr);
       sscanf(colorStr.c_str(), "%3i %3i %3i %3i", &red, &green, &blue, &alpha);
 
-      QmitkLookupTableContainer::LabelType label = std::make_pair(value, name);
+      LookupTableContainer::LabelType label = std::make_pair(value, name);
       m_Labels.push_back(label);
 
       QColor fileColor(red, green, blue, alpha);
@@ -181,7 +184,7 @@ bool niftk::LabelMapReader::ReadLabelMap(std::istream & file)
 
 
 //-----------------------------------------------------------------------------
-QmitkLookupTableContainer* niftk::LabelMapReader::GetLookupTableContainer()
+LookupTableContainer* LabelMapReader::GetLookupTableContainer()
 {
   if (m_Colors.empty() || m_Labels.empty())
   {
@@ -233,12 +236,12 @@ QmitkLookupTableContainer* niftk::LabelMapReader::GetLookupTableContainer()
   {
     int vtkInd = m_Labels.at(i).first;
     std::string name = m_Labels.at(i).second.toStdString();
-    
+
     double r = m_Colors.at(i).redF();
     double g = m_Colors.at(i).greenF();
     double b = m_Colors.at(i).blueF();
     double a = m_Colors.at(i).alphaF();
-    
+
     lookupTable->SetTableValue(vtkInd, r, g, b, a);
 
     annotationValueArray->InsertValue(vtkInd, vtkInd);
@@ -248,9 +251,11 @@ QmitkLookupTableContainer* niftk::LabelMapReader::GetLookupTableContainer()
   lookupTable->SetAnnotations(annotationValueArray, annotationNameArray);
 
   // place into container
-  QmitkLookupTableContainer* lookupTableContainer = new QmitkLookupTableContainer(lookupTable, m_Labels);
+  LookupTableContainer* lookupTableContainer = new LookupTableContainer(lookupTable, m_Labels);
   lookupTableContainer->SetDisplayName(m_DisplayName);
   lookupTableContainer->SetOrder(m_Order);
 
   return lookupTableContainer;
+}
+
 }

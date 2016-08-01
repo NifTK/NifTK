@@ -16,22 +16,25 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include <niftkArunLeastSquaresPointRegistration.h>
-#include <mitkTestingMacros.h>
-#include <mitkExceptionMacro.h>
-#include <mitkLogMacros.h>
-#include <mitkPointSet.h>
-#include <mitkIOUtil.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+
+#include <mitkExceptionMacro.h>
+#include <mitkIOUtil.h>
+#include <mitkLogMacros.h>
+#include <mitkPointSet.h>
+#include <mitkTestingMacros.h>
+
+#include <niftkArunLeastSquaresPointRegistration.h>
+
 #include <niftkFileHelper.h>
-#include <mitkFileIOUtils.h>
+#include <niftkFileIOUtils.h>
 
 /**
  * \file niftkArunSVDRegTest.cxx
  * \brief Unit test for niftk::PointBasedRegistrationUsingSVD
  */
-int niftkArunSVDRegTest ( int argc, char * argv[] )
+int niftkArunSVDRegTest( int argc, char * argv[] )
 {
   // always start with this!
   MITK_TEST_BEGIN("niftkArunSVDRegTest");
@@ -44,7 +47,7 @@ int niftkArunSVDRegTest ( int argc, char * argv[] )
 
   mitk::PointSet::Pointer fixedPoints = mitk::IOUtil::LoadPointSet(argv[1]);
   mitk::PointSet::Pointer movingPoints = mitk::IOUtil::LoadPointSet(argv[2]);
-  vtkSmartPointer<vtkMatrix4x4> expected = mitk::LoadVtkMatrix4x4FromFile(argv[3]);
+  vtkSmartPointer<vtkMatrix4x4> expected = niftk::LoadVtkMatrix4x4FromFile(argv[3]);
   vtkSmartPointer<vtkMatrix4x4> actual = vtkSmartPointer<vtkMatrix4x4>::New();
   double fre = niftk::PointBasedRegistrationUsingSVD(fixedPoints, movingPoints, *actual);
 

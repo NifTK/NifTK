@@ -25,8 +25,7 @@
 
 #include <QmitkRenderWindow.h>
 
-#include <mitkDataStorageUtils.h>
-
+#include <niftkDataStorageUtils.h>
 #include <niftkIBaseView.h>
 #include <niftkGeneralSegmentorUtils.h>
 #include <niftkDrawTool.h>
@@ -214,10 +213,10 @@ bool GeneralSegmentorController::IsASegmentationImage(const mitk::DataNode::Poin
   assert(node);
   bool result = false;
 
-  if (mitk::IsNodeABinaryImage(node))
+  if (niftk::IsNodeABinaryImage(node))
   {
 
-    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, false);
+    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
 
     if (parent.IsNotNull())
     {
@@ -251,9 +250,9 @@ std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingDataFromSegme
   assert(node);
   std::vector<mitk::DataNode*> result;
 
-  if (mitk::IsNodeABinaryImage(node))
+  if (niftk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, false);
+    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
 
     if (parent.IsNotNull())
     {
@@ -299,12 +298,12 @@ bool GeneralSegmentorController::CanStartSegmentationForBinaryNode(const mitk::D
 {
   bool canRestart = false;
 
-  if (node.IsNotNull() && mitk::IsNodeABinaryImage(node))
+  if (node.IsNotNull() && niftk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode::Pointer parent = mitk::FindFirstParentImage(this->GetDataStorage(), node, false);
+    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
     if (parent.IsNotNull())
     {
-      if (mitk::IsNodeAGreyScaleImage(parent))
+      if (niftk::IsNodeAGreyScaleImage(parent))
       {
         canRestart = true;
       }
@@ -344,7 +343,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   mitk::DataNode::Pointer newSegmentation;
   bool isRestarting = false;
 
-  if (mitk::IsNodeABinaryImage(selectedNode)
+  if (niftk::IsNodeABinaryImage(selectedNode)
       && this->CanStartSegmentationForBinaryNode(selectedNode)
       && !this->IsASegmentationImage(selectedNode)
       )
@@ -2378,8 +2377,8 @@ bool GeneralSegmentorController::DoWipe(int direction)
 
           if (direction == 0)
           {
-            mitk::CopyPointSets(*seeds, *copyOfInputSeeds);
-            mitk::CopyPointSets(*seeds, *outputSeeds);
+            niftk::CopyPointSets(*seeds, *copyOfInputSeeds);
+            niftk::CopyPointSets(*seeds, *outputSeeds);
 
             AccessFixedDimensionByItk_n(segmentationImage,
                 ITKCalculateSliceRegionAsVector, 3,
@@ -2961,7 +2960,7 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
       mitk::PointSet* newSeeds = op->GetSeeds();
       assert(newSeeds);
 
-      mitk::CopyPointSets(*newSeeds, *seeds);
+      niftk::CopyPointSets(*newSeeds, *seeds);
 
       seeds->Modified();
       seedsNode->Modified();

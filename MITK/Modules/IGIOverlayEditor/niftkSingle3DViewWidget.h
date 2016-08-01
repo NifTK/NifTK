@@ -16,7 +16,7 @@
 #define niftkSingle3DViewWidget_h
 
 #include "niftkIGIOverlayEditorExports.h"
-#include <QmitkCmicLogo.h>
+#include <niftkCMICLogo.h>
 
 #include <mitkRenderingManager.h>
 #include <mitkRenderWindowFrame.h>
@@ -73,17 +73,17 @@ public:
   void SetGradientBackgroundColors(const mitk::Color& upper, const mitk::Color& lower);
 
   /**
-   * \brief Calls mitk::CMICLogo::EnableDepartmentLogo(), and is currently unused.
+   * \brief Calls niftk::CMICLogo::EnableDepartmentLogo(), and is currently unused.
    */
   void EnableDepartmentLogo();
 
   /**
-   * \brief Calls mitk::CMICLogo::DisableDepartmentLogo(), and is currently unused.
+   * \brief Calls niftk::CMICLogo::DisableDepartmentLogo(), and is currently unused.
    */
   void DisableDepartmentLogo();
 
   /**
-   * \brief Calls mitk::CMICLogo::SetDepartmentLogoPath(), and is currently unused.
+   * \brief Calls niftk::CMICLogo::SetDepartmentLogoPath(), and is currently unused.
    */
   void SetDepartmentLogoPath(const QString& path);
 
@@ -149,6 +149,6 @@ private:
   CMICLogo::Pointer                  m_LogoRendering;
 };
 
-} // end namespace
+}
 
 #endif

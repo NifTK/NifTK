@@ -53,9 +53,9 @@ class MITKTrackerDataSourceService
 
 public:
 
-  mitkClassMacroItkParent(MITKTrackerDataSourceService, IGIDataSource);
+  mitkClassMacroItkParent(MITKTrackerDataSourceService, IGIDataSource)
   mitkNewMacro5Param(MITKTrackerDataSourceService, QString, QString,
-                     const IGIDataSourceProperties&, mitk::DataStorage::Pointer, niftk::NDITracker::Pointer);
+                     const IGIDataSourceProperties&, mitk::DataStorage::Pointer, niftk::NDITracker::Pointer)
 
   /**
   * \see  IGIDataSourceI::StartPlayback()

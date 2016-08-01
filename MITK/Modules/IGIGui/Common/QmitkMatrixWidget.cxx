@@ -21,7 +21,8 @@
 #else
 #include <QStandardPaths>
 #endif
-#include <mitkFileIOUtils.h>
+
+#include <niftkFileIOUtils.h>
 
 //-----------------------------------------------------------------------------
 QmitkMatrixWidget::QmitkMatrixWidget(QWidget *parent)
@@ -94,7 +95,7 @@ void QmitkMatrixWidget::OnLoadButtonPressed()
   if (fileName.size() > 0)
   {
     // TO DO: Better error handling
-    m_Matrix = mitk::LoadVtkMatrix4x4FromFile(fileName.toStdString());
+    m_Matrix = niftk::LoadVtkMatrix4x4FromFile(fileName.toStdString());
     this->SynchroniseWidgetWithMatrix();
   }
 }

@@ -20,14 +20,15 @@
 
 #include <berryQtViewPart.h>
 #include <berryIBerryPreferences.h>
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <QmitkRenderWindow.h>
 #include <mitkDataNode.h>
 #include <mitkSurface.h>
 #include <mitkImage.h>
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
-#include <mitkDataNodePropertyListener.h>
+
+//#include <niftkDataNodePropertyListener.h>
 
 class VLQtWidget;
 
@@ -42,7 +43,7 @@ class VLQtWidget;
  * \brief Provides a simple GUI to visualize stuff
  * \ingroup uk_ac_ucl_cmic_VLRenderer_internal
  */
-class VLRendererView : public QmitkBaseView
+class VLRendererView : public niftk::BaseView
 {
 
   // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
@@ -98,8 +99,8 @@ private:
   VLQtWidget* m_VLQtRenderWindow;
 
   //// Listeners
-  //mitk::DataNodePropertyListener::Pointer m_SelectionListener;
-  //mitk::DataNodePropertyListener::Pointer m_NamePropertyListener;
+  //niftk::DataNodePropertyListener::Pointer m_SelectionListener;
+  //niftk::DataNodePropertyListener::Pointer m_NamePropertyListener;
 };
 
 #endif // VLRendererView_h

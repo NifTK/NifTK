@@ -47,8 +47,8 @@ class QtAudioDataSourceService
 
 public:
 
-  mitkClassMacroItkParent(QtAudioDataSourceService, IGIDataSource);
-  mitkNewMacro3Param(QtAudioDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
+  mitkClassMacroItkParent(QtAudioDataSourceService, IGIDataSource)
+  mitkNewMacro3Param(QtAudioDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer)
 
   /**
   * \see  IGIDataSourceI::StartPlayback()

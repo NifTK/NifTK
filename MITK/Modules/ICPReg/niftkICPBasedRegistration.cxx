@@ -13,19 +13,23 @@
 =============================================================================*/
 
 #include "niftkICPBasedRegistration.h"
-#include <niftkVTKIterativeClosestPoint.h>
-#include <niftkVTKBackfaceCullingFilter.h>
-#include <niftkVTKFunctions.h>
+
+#include <limits>
+
 #include <vtkCellArray.h>
 #include <vtkPoints.h>
+#include <vtkPolyDataNormals.h>
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
-#include <vtkPolyDataNormals.h>
-#include <mitkAffineTransformDataNodeProperty.h>
-#include <mitkDataStorageUtils.h>
-#include <mitkSurface.h>
+
 #include <mitkExceptionMacro.h>
-#include <limits>
+#include <mitkSurface.h>
+
+#include <niftkAffineTransformDataNodeProperty.h>
+#include <niftkDataStorageUtils.h>
+#include <niftkVTKBackfaceCullingFilter.h>
+#include <niftkVTKFunctions.h>
+#include <niftkVTKIterativeClosestPoint.h>
 
 namespace niftk
 {
@@ -159,7 +163,7 @@ void ICPBasedRegistration::NodeToPolyData (
     vtkPolyData *polyTemp = surface->GetVtkPolyData();
 
     vtkSmartPointer<vtkMatrix4x4> indexToWorld = vtkSmartPointer<vtkMatrix4x4>::New();
-    mitk::GetCurrentTransformFromNode(node, *indexToWorld);
+    GetCurrentTransformFromNode(node, *indexToWorld);
 
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
     transform->SetMatrix(indexToWorld);
@@ -193,7 +197,7 @@ void ICPBasedRegistration::NodeToPolyData (
       normalFilter->Update();
 
       vtkSmartPointer<vtkMatrix4x4> camtxf = vtkSmartPointer<vtkMatrix4x4>::New();
-      mitk::GetCurrentTransformFromNode(cameraNode, *camtxf);
+      GetCurrentTransformFromNode(cameraNode, *camtxf);
 
       vtkSmartPointer<niftk::BackfaceCullingFilter> backfacecullingfilter =
           vtkSmartPointer<niftk::BackfaceCullingFilter>::New();

@@ -36,8 +36,8 @@ class NIFTKOPENCV_EXPORT EvaluateIntrinsicParametersOnNumberOfFrames : public it
 
 public:
 
-  mitkClassMacroItkParent(EvaluateIntrinsicParametersOnNumberOfFrames, itk::Object);
-  itkNewMacro(EvaluateIntrinsicParametersOnNumberOfFrames);
+  mitkClassMacroItkParent(EvaluateIntrinsicParametersOnNumberOfFrames, itk::Object)
+  itkNewMacro(EvaluateIntrinsicParametersOnNumberOfFrames)
   
   void InitialiseOutputDirectory();
   void InitialiseVideo();

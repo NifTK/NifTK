@@ -16,24 +16,29 @@
 #include "TrackedPointerView.h"
 #include "TrackedPointerViewPreferencePage.h"
 #include "TrackedPointerViewActivator.h"
+
+#include <QCoreApplication>
+#include <QMessageBox>
+#include <QObject>
+
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
 #include <service/event/ctkEventConstants.h>
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
+
+#include <vtkMatrix4x4.h>
+
+#include <mitkImage.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateOr.h>
-#include <mitkImage.h>
-#include <mitkSurface.h>
 #include <mitkPointSet.h>
-#include <vtkMatrix4x4.h>
-#include <mitkCoordinateAxesData.h>
+#include <mitkSurface.h>
 #include <mitkTrackedPointer.h>
-#include <mitkFileIOUtils.h>
-#include <QMessageBox>
-#include <QCoreApplication>
-#include <QObject>
+
+#include <niftkCoordinateAxesData.h>
+#include <niftkFileIOUtils.h>
 
 const std::string TrackedPointerView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedpointer";
 
@@ -88,7 +93,7 @@ void TrackedPointerView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ProbeSurfaceNode->SetPredicate(isSurfaceOrPointSet);
     m_Controls->m_ProbeSurfaceNode->SetDataStorage(dataStorage);
 
-    mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+    mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::Pointer isTransform = mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::New();
     m_Controls->m_ProbeToWorldNode->SetAutoSelectNewItems(false);
     m_Controls->m_ProbeToWorldNode->SetPredicate(isTransform);
     m_Controls->m_ProbeToWorldNode->SetDataStorage(dataStorage);
@@ -135,7 +140,7 @@ void TrackedPointerView::RetrievePreferenceValues()
   if (prefs.IsNotNull())
   {
     m_TipToProbeFileName = prefs->Get(TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME, "").toStdString();
-    m_TipToProbeTransform = mitk::LoadVtkMatrix4x4FromFile(m_TipToProbeFileName);
+    m_TipToProbeTransform = niftk::LoadVtkMatrix4x4FromFile(m_TipToProbeFileName);
 
     m_UpdateViewCoordinate = prefs->GetBool(TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME, mitk::TrackedPointer::UPDATE_VIEW_COORDINATE_DEFAULT);
     m_NumberOfPointsToAverageOver = prefs->GetInt(TrackedPointerViewPreferencePage::NUMBER_OF_SAMPLES_TO_AVERAGE, 1);

@@ -46,8 +46,8 @@ class NIFTKIGIDATASOURCES_EXPORT QImageToMitkImageFilter : public mitk::ImageSou
     typedef itk::RGBAPixel< float > FloatRGBAPixelType;
     typedef itk::RGBAPixel< double > DoubleRGBAPixelType;
 
-    mitkClassMacro(QImageToMitkImageFilter, mitk::ImageSource);
-    itkNewMacro(QImageToMitkImageFilter);
+    mitkClassMacro(QImageToMitkImageFilter, mitk::ImageSource)
+    itkNewMacro(QImageToMitkImageFilter)
 
     void SetQImage(const QImage* image);
     itkGetMacro(QImage, const QImage*);

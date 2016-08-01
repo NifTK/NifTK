@@ -15,7 +15,7 @@
 #ifndef DataSourcesView_h
 #define DataSourcesView_h
 
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <niftkIGIDataType.h>
 #include <niftkIGIDataSourceManagerWidget.h>
 #include <berryIBerryPreferences.h>
@@ -30,7 +30,7 @@ namespace niftk
 * \brief User interface to provide Image Guided Surgery functionality.
 * \ingroup uk_ac_ucl_cmic_igidatasources_internal
 */
-class DataSourcesView : public QmitkBaseView
+class DataSourcesView : public niftk::BaseView
 {  
   /**
   * this is needed for all Qt objects that should have a Qt meta-object

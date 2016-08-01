@@ -17,7 +17,6 @@
 #include "niftkCameraCalViewActivator.h"
 #include <niftkNiftyCalException.h>
 #include <mitkNodePredicateDataType.h>
-#include <mitkCoordinateAxesData.h>
 #include <mitkImage.h>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -27,6 +26,8 @@
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
 #include <service/event/ctkEventConstants.h>
+
+#include <niftkCoordinateAxesData.h>
 
 namespace niftk
 {
@@ -102,7 +103,7 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_RightCameraComboBox->SetDataStorage(dataStorage);
     m_Controls->m_RightCameraComboBox->setCurrentIndex(0);
 
-    mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::Pointer isMatrix = mitk::TNodePredicateDataType<mitk::CoordinateAxesData>::New();
+    mitk::TNodePredicateDataType<CoordinateAxesData>::Pointer isMatrix = mitk::TNodePredicateDataType<CoordinateAxesData>::New();
     m_Controls->m_TrackerMatrixComboBox->SetAutoSelectNewItems(false);
     m_Controls->m_TrackerMatrixComboBox->SetPredicate(isMatrix);
     m_Controls->m_TrackerMatrixComboBox->SetDataStorage(dataStorage);

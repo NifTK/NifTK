@@ -30,8 +30,8 @@ namespace mitk {
 class NIFTKIGI_EXPORT NifTKIGIObjectFactory : public CoreObjectFactoryBase
 {
   public:
-    mitkClassMacro(NifTKIGIObjectFactory,CoreObjectFactoryBase);
-    itkNewMacro(NifTKIGIObjectFactory);
+    mitkClassMacro(NifTKIGIObjectFactory,CoreObjectFactoryBase)
+    itkNewMacro(NifTKIGIObjectFactory)
 
     /// \see CoreObjectFactoryBase::CreateMapper
     virtual Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId) override;

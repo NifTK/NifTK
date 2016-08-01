@@ -13,12 +13,12 @@
 #============================================================================*/
 
 set(CPP_FILES
-  QmitkThumbnailRenderWindow.cxx
-  mitkThumbnailInteractor.cxx
+  niftkThumbnailRenderWindow.cxx
+  niftkThumbnailInteractor.cxx
 )
 
 set(MOC_H_FILES 
-  QmitkThumbnailRenderWindow.h
+  niftkThumbnailRenderWindow.h
 )
 
 set(UI_FILES

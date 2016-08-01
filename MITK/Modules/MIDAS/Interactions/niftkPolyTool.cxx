@@ -17,7 +17,6 @@
 #include <mitkBaseRenderer.h>
 #include <mitkContourModel.h>
 #include <mitkOperationEvent.h>
-#include <mitkPointUtils.h>
 #include <mitkToolManager.h>
 #include <mitkUndoController.h>
 
@@ -25,6 +24,7 @@
 #include <usModuleResource.h>
 
 #include <niftkInteractionEventObserverMutex.h>
+#include <niftkPointUtils.h>
 
 #include "niftkPolyTool.xpm"
 #include "niftkPolyToolEventInterface.h"
@@ -316,7 +316,7 @@ void PolyTool::UpdateFeedbackContour(
     for (unsigned long i = 0; i < contourReferencePointsInput.GetNumberOfVertices(); i++)
     {
       p1 = contourReferencePointsInput.GetVertexAt(i)->Coordinates;
-      distance = mitk::GetSquaredDistanceBetweenPoints(p1, closestCornerPoint);
+      distance = niftk::GetSquaredDistanceBetweenPoints(p1, closestCornerPoint);
       if (distance < closestDistance)
       {
         closestDistance = distance;

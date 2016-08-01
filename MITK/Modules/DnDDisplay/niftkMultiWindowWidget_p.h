@@ -38,8 +38,12 @@ namespace mitk
 class SliceNavigationController;
 }
 
+
+namespace niftk
+{
+
 /**
- * \class niftkMultiWindowWidget
+ * \class MultiWindowWidget
  * \brief Subclass of QmitkStdMultiWidget to provide MIDAS specific functionality
  * by having convenient methods to control geometry, background, cursors on/off etc.
  * via calling methods in the base class QmitkStdMultiWidget.
@@ -48,9 +52,9 @@ class SliceNavigationController;
  * subclass QmitkStdMultiWidget so that we can optionally have 3D views, ortho-views etc.
  *
  * Please do NOT expose this class to the rest of the NiftyView code-base, or else
- * dependency management becomes a bit of an issue.  The class niftkSingleViewerWidget
+ * dependency management becomes a bit of an issue.  The class SingleViewerWidget
  * wraps this one, and the rest of our application should only deal with
- * niftkSingleViewerWidget.
+ * SingleViewerWidget.
  *
  * Note: The requirements specification for MIDAS style zoom basically says:
  * <pre>
@@ -69,27 +73,27 @@ class SliceNavigationController;
  * the size of the longer side of the voxels is used for the calculation for each orientation.
  *
  * \sa QmitkStdMultiWidget
- * \sa niftkSingleViewerWidget
- * \sa niftkMultiViewerWidget
+ * \sa SingleViewerWidget
+ * \sa MultiViewerWidget
  */
-class niftkMultiWindowWidget : private QmitkStdMultiWidget
+class MultiWindowWidget : private QmitkStdMultiWidget
 {
 
   Q_OBJECT
 
-  friend class niftkSingleViewerWidget;
+  friend class SingleViewerWidget;
 
 public:
 
   /// \brief Constructor.
-  niftkMultiWindowWidget(QWidget* parent = 0,
+  MultiWindowWidget(QWidget* parent = 0,
                          Qt::WindowFlags f = 0,
                          mitk::RenderingManager* renderingManager = 0,
                          mitk::BaseRenderer::RenderingMode::Type renderingMode = mitk::BaseRenderer::RenderingMode::Standard,
                          const QString& name = "DnD-Viewer");
 
   /// \brief Destructor.
-  virtual ~niftkMultiWindowWidget();
+  virtual ~MultiWindowWidget();
 
   /// \brief Return whether this widget is considered 'enabled'.
   bool IsEnabled() const;
@@ -587,5 +591,7 @@ private:
   friend class DisplayGeometryModificationCommand;
 
 };
+
+}
 
 #endif

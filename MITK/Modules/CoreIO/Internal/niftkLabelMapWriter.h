@@ -16,11 +16,11 @@
 #define niftkLabelMapWriter_h
 
 #include <mitkAbstractFileWriter.h>
+
 #include "niftkLabeledLookupTableProperty.h"
 
 namespace niftk
 {
-
 
 /**
   * \brief Writer to save labeled lookup tables in the format of Slicer v 4.4.0.
@@ -52,6 +52,6 @@ private:
     vtkLookupTable* lookupTable) const;
 };
 
-} // namespace mitk
+}
 
 #endif

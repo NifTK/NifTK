@@ -25,6 +25,7 @@ int main(int argc, char** argv)
   myApp.setOrganizationName("CMIC");
 
   myApp.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.niftyigi");
+
   /// We disable processing command line arguments by MITK so that we can introduce
   /// new options. See the uk.ac.ucl.cmic.commonapps plugin activator for details.
   myApp.setProperty("applicationArgs.processByMITK", false);

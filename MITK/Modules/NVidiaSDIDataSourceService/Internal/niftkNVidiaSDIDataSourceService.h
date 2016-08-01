@@ -51,8 +51,8 @@ class NVidiaSDIDataSourceService
 
 public:
 
-  mitkClassMacroItkParent(NVidiaSDIDataSourceService, IGIDataSource);
-  mitkNewMacro3Param(NVidiaSDIDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer);
+  mitkClassMacroItkParent(NVidiaSDIDataSourceService, IGIDataSource)
+  mitkNewMacro3Param(NVidiaSDIDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer)
 
     // This should match libvideo/SDIInput::InterlacedBehaviour
   enum InterlacedBehaviour

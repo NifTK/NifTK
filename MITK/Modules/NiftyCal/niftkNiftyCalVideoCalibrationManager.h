@@ -21,13 +21,13 @@
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 #include <mitkPointSet.h>
-#include <mitkCoordinateAxesData.h>
 #include <niftkPointUtilities.h>
 #include <niftkIPoint2DDetector.h>
 #include <cv.h>
 #include <list>
 
-namespace niftk {
+namespace niftk
+{
 
 /**
  * \class NiftyCalVideoCalibrationManager

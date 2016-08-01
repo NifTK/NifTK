@@ -32,8 +32,8 @@ class NIFTKOPENCV_EXPORT StereoPointProjectionIntoTwoImages : public itk::Object
 
 public:
 
-  mitkClassMacroItkParent(StereoPointProjectionIntoTwoImages, itk::Object);
-  itkNewMacro(StereoPointProjectionIntoTwoImages);
+  mitkClassMacroItkParent(StereoPointProjectionIntoTwoImages, itk::Object)
+  itkNewMacro(StereoPointProjectionIntoTwoImages)
 
   bool Project(const std::string& input3DFileName,
       const std::string& inputLeftImageName,

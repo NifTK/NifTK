@@ -48,7 +48,7 @@ class NIFTKIGIDATASOURCES_EXPORT IGIDataSource : public niftk::IGIDataSourceI
 {
 public:
 
-  mitkClassMacroItkParent(IGIDataSource, niftk::IGIDataSourceI);
+  mitkClassMacroItkParent(IGIDataSource, niftk::IGIDataSourceI)
 
   /**
   * \see IGIDataSourceI::GetName()

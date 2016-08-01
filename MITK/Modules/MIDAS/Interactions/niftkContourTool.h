@@ -22,7 +22,8 @@
 #include <mitkMessage.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
-#include <mitkPointUtils.h>
+
+#include <niftkPointUtils.h>
 
 #include "niftkContourToolEventInterface.h"
 #include "niftkTool.h"
@@ -51,7 +52,7 @@ class NIFTKMIDAS_EXPORT ContourTool : public Tool {
 
 public:
 
-  mitkClassMacro(ContourTool, Tool);
+  mitkClassMacro(ContourTool, Tool)
 
   /// \brief We store the name of a property to say we are editing.
   static const std::string EDITING_PROPERTY_NAME;

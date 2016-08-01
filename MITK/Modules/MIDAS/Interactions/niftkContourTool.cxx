@@ -248,7 +248,7 @@ void ContourTool::GetClosestCornerPoint2D(
 
       m_SegmentationImageGeometry->IndexToWorld(testCornerPointInVx, testCornerPointInMm);
 
-      testSquaredDistance = mitk::GetSquaredDistanceBetweenPoints(testCornerPointInMm, pointInTrueMm);
+      testSquaredDistance = niftk::GetSquaredDistanceBetweenPoints(testCornerPointInMm, pointInTrueMm);
 
       if (testSquaredDistance < bestSquaredDistanceSoFar)
       {
@@ -305,7 +305,7 @@ void ContourTool::GetAdditionalCornerPoint(
   this->ConvertPointInMmToVx(c2InMm, c2InVx);
   this->ConvertPointInMmToVx(p2InMm, p2InVx);
 
-  mitk::GetDifference(c2InVx, c1InVx, difference);
+  niftk::GetDifference(c2InVx, c1InVx, difference);
 
   c3InVx = c1InVx;
   c3InVx[whichTwoAxesInVx[0]] += difference[whichTwoAxesInVx[0]];
@@ -313,8 +313,8 @@ void ContourTool::GetAdditionalCornerPoint(
   c4InVx = c1InVx;
   c4InVx[whichTwoAxesInVx[1]] += difference[whichTwoAxesInVx[1]];
 
-  if (mitk::GetSquaredDistanceBetweenPoints(c3InVx, p2InVx)
-      < mitk::GetSquaredDistanceBetweenPoints(c4InVx, p2InVx))
+  if (niftk::GetSquaredDistanceBetweenPoints(c3InVx, p2InVx)
+      < niftk::GetSquaredDistanceBetweenPoints(c4InVx, p2InVx))
   {
     m_SegmentationImageGeometry->IndexToWorld(c3InVx, cornerPointInMm);
   }
@@ -373,7 +373,7 @@ bool ContourTool::DrawLineAroundVoxelEdges(
   this->ConvertPointInMmToVx(currentPointInMm, currentPointInVx);
 
   // Work out the smallest dimension and hence the step size along the line
-  double stepSize = mitk::CalculateStepSize(spacing);
+  double stepSize = niftk::CalculateStepSize(spacing);
 
   // In this method, we are working entirely in millimetres.
   // However, we have "true" millimetres, and also, if we convert
@@ -383,11 +383,11 @@ bool ContourTool::DrawLineAroundVoxelEdges(
 
   // Work out the vector we are stepping along in true millimetre coordinates.
   mitk::Point3D vectorDifference;
-  mitk::GetDifference(currentPointInMm, mostRecentPointInMm, vectorDifference);
+  niftk::GetDifference(currentPointInMm, mostRecentPointInMm, vectorDifference);
 
   // Calculate length^2, because if length^2 is zero, we haven't moved the mouse, so we
   // can abandon this method to avoid division by zero errors.
-  double length = mitk::GetSquaredDistanceBetweenPoints(currentPointInMm, mostRecentPointInMm);
+  double length = niftk::GetSquaredDistanceBetweenPoints(currentPointInMm, mostRecentPointInMm);
 
   // So, all remaining work is only done if we had a vector with some length to it.
   if (length > 0)

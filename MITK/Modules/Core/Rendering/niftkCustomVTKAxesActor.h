@@ -40,6 +40,5 @@ class NIFTKCORE_EXPORT CustomVTKAxesActor : public vtkAxesActor
 };
 
 }
- 
+
 #endif
- 

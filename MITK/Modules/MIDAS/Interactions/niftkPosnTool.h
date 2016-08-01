@@ -32,8 +32,8 @@ class NIFTKMIDAS_EXPORT PosnTool : public Tool
 {
 
 public:
-  mitkClassMacro(PosnTool, Tool);
-  itkNewMacro(PosnTool);
+  mitkClassMacro(PosnTool, Tool)
+  itkNewMacro(PosnTool)
 
   virtual const char* GetName() const;
   virtual const char** GetXPM() const;

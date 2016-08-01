@@ -32,8 +32,8 @@ class NIFTKIGI_EXPORT TrackedImage : public itk::Object
 {
 public:
 
-  mitkClassMacroItkParent(TrackedImage, itk::Object);
-  itkNewMacro(TrackedImage);
+  mitkClassMacroItkParent(TrackedImage, itk::Object)
+  itkNewMacro(TrackedImage)
 
   /**
    * \brief Computes the new position/scaling of the tracked image plane.

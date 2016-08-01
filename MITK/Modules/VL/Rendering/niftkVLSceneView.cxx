@@ -33,18 +33,21 @@
 #include <vlCore/Time.hpp>
 #include <vlGraphics/GeometryPrimitives.hpp>
 #include <vlVivid/VividVolume.hpp>
+
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <vtkLinearTransform.h>
 #include <vtkImageData.h>
+
 #include <mitkDataStorage.h>
 #include <mitkProperties.h>
 #include <mitkEnumerationProperty.h>
 #include <mitkImage.h>
-#include <mitkCoordinateAxesData.h>
 #include <mitkImageReadAccessor.h>
+
 #include <niftkScopedOGLContext.h>
 #include <niftkVTKFunctions.h>
+
 #include <stdexcept>
 
 #ifdef BUILD_IGI
@@ -63,23 +66,20 @@
   #endif
 #endif
 
-using namespace niftk;
-using namespace vl;
-
 //-----------------------------------------------------------------------------
 // Init and shutdown VL
 //-----------------------------------------------------------------------------
 
 namespace
 {
-  class VLInit
-  {
-  public:
-    VLInit() { vl::VisualizationLibrary::init(); }
-    ~VLInit() { vl::VisualizationLibrary::shutdown(); }
-  };
+class VLInit
+{
+public:
+  VLInit() { vl::VisualizationLibrary::init(); }
+  ~VLInit() { vl::VisualizationLibrary::shutdown(); }
+};
 
-  VLInit s_ModuleInit;
+VLInit s_ModuleInit;
 }
 
 //-----------------------------------------------------------------------------
@@ -87,181 +87,191 @@ namespace
 //-----------------------------------------------------------------------------
 
 #ifdef _USE_CUDA
-  #include <niftkCUDAManager.h>
-  #include <niftkCUDAImage.h>
-  #include <niftkLightweightCUDAImage.h>
-  #include <niftkCUDAImageProperty.h>
-  #include <niftkFlipImageLauncher.h>
-  #include <cuda_gl_interop.h>
 
-  // #define VL_CUDA_TEST
+#include <niftkCUDAManager.h>
+#include <niftkCUDAImage.h>
+#include <niftkLightweightCUDAImage.h>
+#include <niftkCUDAImageProperty.h>
+#include <niftkFlipImageLauncher.h>
+#include <cuda_gl_interop.h>
+
+// #define VL_CUDA_TEST
 namespace niftk
 {
-  class CudaTest {
-    cudaGraphicsResource_t m_CudaResource;
-    GLuint m_FramebufferId;
-    GLuint m_TextureId;
-    GLuint m_TextureTarget;
-    mitk::DataNode::Pointer m_DataNode;
-    niftk::CUDAImage::Pointer m_CUDAImage;
+class CudaTest
+{
+  cudaGraphicsResource_t m_CudaResource;
+  GLuint m_FramebufferId;
+  GLuint m_TextureId;
+  GLuint m_TextureTarget;
+  mitk::DataNode::Pointer m_DataNode;
+  niftk::CUDAImage::Pointer m_CUDAImage;
 
-  public:
-    CudaTest() {
-      m_CudaResource = NULL;
-      GLuint m_FramebufferId = 0;
-      GLuint m_TextureId = 0;
-      GLuint m_TextureTarget = 0;
-    }
+public:
+  CudaTest()
+  {
+    m_CudaResource = NULL;
+    GLuint m_FramebufferId = 0;
+    GLuint m_TextureId = 0;
+    GLuint m_TextureTarget = 0;
+  }
 
-    mitk::DataNode* init(int w, int h) {
-      m_CudaResource = NULL;
-      m_TextureTarget = GL_TEXTURE_2D;
-      glGenFramebuffers(1, &m_FramebufferId);
-      glGenTextures(1, &m_TextureId);
+  mitk::DataNode* init(int w, int h)
+  {
+    m_CudaResource = NULL;
+    m_TextureTarget = GL_TEXTURE_2D;
+    glGenFramebuffers(1, &m_FramebufferId);
+    glGenTextures(1, &m_TextureId);
 
-      glBindTexture(m_TextureTarget, m_TextureId);
-      glTexParameteri(m_TextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
-      glTexParameteri(m_TextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
-      glTexParameteri(m_TextureTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(m_TextureTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      glTexImage2D(m_TextureTarget, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_FLOAT, 0);
+    glBindTexture(m_TextureTarget, m_TextureId);
+    glTexParameteri(m_TextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(m_TextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(m_TextureTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(m_TextureTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(m_TextureTarget, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_FLOAT, 0);
 
-      glBindFramebuffer(GL_FRAMEBUFFER, m_FramebufferId);
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_TextureTarget, m_TextureId, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_FramebufferId);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_TextureTarget, m_TextureId, 0);
 
-      // Get CUDA representation for our GL texture
+    // Get CUDA representation for our GL texture
 
-      cudaError_t err = cudaSuccess;
-      err = cudaGraphicsGLRegisterImage( &m_CudaResource, m_TextureId, m_TextureTarget, cudaGraphicsRegisterFlagsNone );
-      VIVID_CHECK( err == cudaSuccess );
+    cudaError_t err = cudaSuccess;
+    err = cudaGraphicsGLRegisterImage( &m_CudaResource, m_TextureId, m_TextureTarget, cudaGraphicsRegisterFlagsNone );
+    VIVID_CHECK( err == cudaSuccess );
 
-      // Init CUDAImage
+    // Init CUDAImage
 
-      // node
-      m_DataNode = mitk::DataNode::New();
-      // CUDAImage
-      m_CUDAImage = niftk::CUDAImage::New();
-      niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
-      cudaStream_t mystream = cm->GetStream(VL_CUDA_STREAM_NAME);
-      niftk::WriteAccessor wa = cm->RequestOutputImage(w, h, 4);
-      niftk::LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
-      // cm->Autorelease(wa, mystream);
-      m_CUDAImage->SetLightweightCUDAImage(lwci);
-      m_DataNode->SetData(m_CUDAImage);
-      m_DataNode->SetName("CUDAImage VL Test");
-      m_DataNode->SetVisibility(true);
+    // node
+    m_DataNode = mitk::DataNode::New();
+    // CUDAImage
+    m_CUDAImage = niftk::CUDAImage::New();
+    niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
+    cudaStream_t mystream = cm->GetStream(VL_CUDA_STREAM_NAME);
+    niftk::WriteAccessor wa = cm->RequestOutputImage(w, h, 4);
+    niftk::LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
+    // cm->Autorelease(wa, mystream);
+    m_CUDAImage->SetLightweightCUDAImage(lwci);
+    m_DataNode->SetData(m_CUDAImage);
+    m_DataNode->SetName("CUDAImage VL Test");
+    m_DataNode->SetVisibility(true);
 
-      return m_DataNode.GetPointer();
-    }
+    return m_DataNode.GetPointer();
+  }
 
-    void renderTriangle( int w, int h ) {
-      glBindFramebuffer( GL_FRAMEBUFFER, m_FramebufferId );
-      glDrawBuffer( GL_COLOR_ATTACHMENT0 );
-      glViewport( 0, 0, w, h );
-      glScissor( 0, 0, w, h );
-      glEnable( GL_SCISSOR_TEST );
-      glClearColor( 1.0f, 1.0f, 0.0f, 1.0f );
-      glClear( GL_COLOR_BUFFER_BIT );
-      glMatrixMode( GL_MODELVIEW );
-      float zrot = vl::fract( vl::Time::currentTime() ) * 360.0f;
-      glLoadMatrixf( mat4::getRotationXYZ( 0, 0, zrot ).ptr() );
-      glMatrixMode( GL_PROJECTION );
-      glLoadIdentity();
-      glOrtho(-1, 1, -1, 1, -1, 1);
-      glDisable( GL_LIGHTING );
-      glDisable( GL_CULL_FACE );
-      glDisable( GL_DEPTH_TEST );
+  void renderTriangle( int w, int h )
+  {
+    glBindFramebuffer( GL_FRAMEBUFFER, m_FramebufferId );
+    glDrawBuffer( GL_COLOR_ATTACHMENT0 );
+    glViewport( 0, 0, w, h );
+    glScissor( 0, 0, w, h );
+    glEnable( GL_SCISSOR_TEST );
+    glClearColor( 1.0f, 1.0f, 0.0f, 1.0f );
+    glClear( GL_COLOR_BUFFER_BIT );
+    glMatrixMode( GL_MODELVIEW );
+    float zrot = vl::fract( vl::Time::currentTime() ) * 360.0f;
+    glLoadMatrixf( vl::mat4::getRotationXYZ( 0, 0, zrot ).ptr() );
+    glMatrixMode( GL_PROJECTION );
+    glLoadIdentity();
+    glOrtho(-1, 1, -1, 1, -1, 1);
+    glDisable( GL_LIGHTING );
+    glDisable( GL_CULL_FACE );
+    glDisable( GL_DEPTH_TEST );
 
-      glBegin( GL_TRIANGLES );
-        glColor3f( 1, 0, 0 );
-        glVertex3f( -1, -1, 0 );
-        glColor3f( 0, 1, 0 );
-        glVertex3f( 0, 1, 0 );
-        glColor3f( 0, 0, 1 );
-        glVertex3f( 1, -1, 0 );
-      glEnd();
+    glBegin( GL_TRIANGLES );
+      glColor3f( 1, 0, 0 );
+      glVertex3f( -1, -1, 0 );
+      glColor3f( 0, 1, 0 );
+      glVertex3f( 0, 1, 0 );
+      glColor3f( 0, 0, 1 );
+      glVertex3f( 1, -1, 0 );
+    glEnd();
 
-      glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-      glDrawBuffer( GL_BACK );
-      glDisable( GL_SCISSOR_TEST );
+    glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+    glDrawBuffer( GL_BACK );
+    glDisable( GL_SCISSOR_TEST );
 
-      // Copy texture to CUDAImage
-      niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
-      cudaStream_t mystream = cm->GetStream(VL_CUDA_STREAM_NAME);
-      niftk::WriteAccessor wa = cm->RequestOutputImage(w, h, 4);
+    // Copy texture to CUDAImage
+    niftk::CUDAManager* cm = niftk::CUDAManager::GetInstance();
+    cudaStream_t mystream = cm->GetStream(VL_CUDA_STREAM_NAME);
+    niftk::WriteAccessor wa = cm->RequestOutputImage(w, h, 4);
 
-      cudaError_t err = cudaSuccess;
-      cudaArray_t arr = 0;
+    cudaError_t err = cudaSuccess;
+    cudaArray_t arr = 0;
 
-      err = cudaGraphicsMapResources(1, &m_CudaResource, mystream);
-      VIVID_CHECK(err == cudaSuccess);
+    err = cudaGraphicsMapResources(1, &m_CudaResource, mystream);
+    VIVID_CHECK(err == cudaSuccess);
 
-      err = cudaGraphicsSubResourceGetMappedArray(&arr, m_CudaResource, 0, 0);
-      VIVID_CHECK(err == cudaSuccess);
+    err = cudaGraphicsSubResourceGetMappedArray(&arr, m_CudaResource, 0, 0);
+    VIVID_CHECK(err == cudaSuccess);
 
-      err = cudaMemcpy2DFromArrayAsync(wa.m_DevicePointer, wa.m_BytePitch, arr, 0, 0, wa.m_PixelWidth * 4, wa.m_PixelHeight, cudaMemcpyDeviceToDevice, mystream);
-      VIVID_CHECK(err == cudaSuccess);
+    err = cudaMemcpy2DFromArrayAsync(wa.m_DevicePointer, wa.m_BytePitch, arr, 0, 0, wa.m_PixelWidth * 4, wa.m_PixelHeight, cudaMemcpyDeviceToDevice, mystream);
+    VIVID_CHECK(err == cudaSuccess);
 
-      err = cudaGraphicsUnmapResources(1, &m_CudaResource, mystream);
-      VIVID_CHECK(err == cudaSuccess);
+    err = cudaGraphicsUnmapResources(1, &m_CudaResource, mystream);
+    VIVID_CHECK(err == cudaSuccess);
 
-      niftk::LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
-      // cm->Autorelease(wa, mystream);
-      m_CUDAImage->SetLightweightCUDAImage(lwci);
+    niftk::LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
+    // cm->Autorelease(wa, mystream);
+    m_CUDAImage->SetLightweightCUDAImage(lwci);
 
-      m_DataNode->Modified();
-      m_DataNode->Update();
-    }
+    m_DataNode->Modified();
+    m_DataNode->Update();
+  }
 
-    void renderQuad(int w, int h) {
-      glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-      glDrawBuffer( GL_BACK );
-      glViewport( 0, 0, w, h );
-      glScissor( 0, 0, w, h );
-      glEnable( GL_SCISSOR_TEST );
-      glClearColor( 1.0f, 0, 0, 1.0 );
-      glClear( GL_COLOR_BUFFER_BIT );
-      glMatrixMode( GL_MODELVIEW );
-      glLoadIdentity();
-      glMatrixMode( GL_PROJECTION );
-      glOrtho(-1.1f, 1.1f, -1.1f, 1.1f, -1.1f, 1.1f);
-      glDisable( GL_LIGHTING );
-      glDisable( GLU_CULLING );
+  void renderQuad(int w, int h)
+  {
+    glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+    glDrawBuffer( GL_BACK );
+    glViewport( 0, 0, w, h );
+    glScissor( 0, 0, w, h );
+    glEnable( GL_SCISSOR_TEST );
+    glClearColor( 1.0f, 0, 0, 1.0 );
+    glClear( GL_COLOR_BUFFER_BIT );
+    glMatrixMode( GL_MODELVIEW );
+    glLoadIdentity();
+    glMatrixMode( GL_PROJECTION );
+    glOrtho(-1.1f, 1.1f, -1.1f, 1.1f, -1.1f, 1.1f);
+    glDisable( GL_LIGHTING );
+    glDisable( GLU_CULLING );
 
-      glEnable( m_TextureTarget );
-      VL_glActiveTexture( GL_TEXTURE0 );
-      glBindTexture( m_TextureTarget, m_TextureId );
+    glEnable( m_TextureTarget );
+    VL_glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( m_TextureTarget, m_TextureId );
 
-      glBegin( GL_QUADS );
-        glColor3f( 1, 1, 1 );
-        glTexCoord2f( 0, 0 );
-        glVertex3f( -1, -1, 0 );
+    glBegin( GL_QUADS );
+      glColor3f( 1, 1, 1 );
+      glTexCoord2f( 0, 0 );
+      glVertex3f( -1, -1, 0 );
 
-        glColor3f( 1, 1, 1 );
-        glTexCoord2f( 1, 0 );
-        glVertex3f( 1, -1, 0 );
+      glColor3f( 1, 1, 1 );
+      glTexCoord2f( 1, 0 );
+      glVertex3f( 1, -1, 0 );
 
-        glColor3f( 1, 1, 1 );
-        glTexCoord2f( 1, 1 );
-        glVertex3f( 1, 1, 0 );
+      glColor3f( 1, 1, 1 );
+      glTexCoord2f( 1, 1 );
+      glVertex3f( 1, 1, 0 );
 
-        glColor3f( 1, 1, 1 );
-        glTexCoord2f( 0, 1 );
-        glVertex3f( -1, 1, 0 );
-      glEnd();
+      glColor3f( 1, 1, 1 );
+      glTexCoord2f( 0, 1 );
+      glVertex3f( -1, 1, 0 );
+    glEnd();
 
-      glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-      glDrawBuffer( GL_BACK );
-      glDisable( GL_TEXTURE_2D );
-      VL_glActiveTexture( GL_TEXTURE0 );
-      glBindTexture( GL_TEXTURE_2D, 0 );
-      glDisable( GL_SCISSOR_TEST );
-    }
-  };
+    glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+    glDrawBuffer( GL_BACK );
+    glDisable( GL_TEXTURE_2D );
+    VL_glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    glDisable( GL_SCISSOR_TEST );
+  }
+};
 
 } // namespace niftk
 
 #endif
+
+
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 // VLSceneView
@@ -318,7 +328,7 @@ VLSceneView::~VLSceneView() {
 
 //-----------------------------------------------------------------------------
 
- void VLSceneView::destroyEvent()
+void VLSceneView::destroyEvent()
 {
   niftk::ScopedOGLContext glctx( const_cast<QGLContext*>(m_VLWidget->context()) );
 
@@ -378,7 +388,8 @@ void VLSceneView::removeDataStorageListeners()
 
 void VLSceneView::setDataStorage(mitk::DataStorage* ds)
 {
-  if ( ds == m_DataStorage ) {
+  if ( ds == m_DataStorage )
+  {
     return;
   }
 
@@ -392,7 +403,8 @@ void VLSceneView::setDataStorage(mitk::DataStorage* ds)
   clearScene();
 
   // Initialize VL Global Settings if not present
-  if ( ! ds->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() ) ) {
+  if ( ! ds->GetNamedNode( VLGlobalSettingsDataNode::VLGlobalSettingsName() ) )
+  {
     VLGlobalSettingsDataNode::Pointer node = VLGlobalSettingsDataNode::New();
     ds->Add( node.GetPointer() );
   }
@@ -415,7 +427,8 @@ void VLSceneView::scheduleSceneRebuild()
 void VLSceneView::scheduleTrackballAdjustView(bool schedule)
 {
   m_ScheduleTrackballAdjustView = schedule;
-  if ( schedule ) {
+  if ( schedule )
+  {
     openglContext()->update();
   }
 }
@@ -424,7 +437,8 @@ void VLSceneView::scheduleTrackballAdjustView(bool schedule)
 
 void VLSceneView::scheduleNodeAdd( const mitk::DataNode* node )
 {
-  if ( ! node || ! node->GetData() ) {
+  if ( ! node || ! node->GetData() )
+  {
     return;
   }
 
@@ -515,7 +529,7 @@ void VLSceneView::initSceneFromDataStorage()
 
   #if 0
     // dump scene to VLB/VLT format for debugging
-    ref< vl::ResourceDatabase > db = new vl::ResourceDatabase;
+    vl::ref< vl::ResourceDatabase > db = new vl::ResourceDatabase;
     for( int i = 0; i < m_SceneManager->tree()->actors()->size(); ++i ) {
       vl::Actor* act = m_SceneManager->tree()->actors()->at(i);
       if ( act->enableMask() ) {
@@ -546,7 +560,7 @@ void VLSceneView::addDataNode(const mitk::DataNode* node)
     dumpNodeInfo( "addDataNode()->GetData()", node->GetData() );
   #endif
 
-  ref<VLMapper> vl_node = VLMapper::create( node, this );
+  vl::ref<VLMapper> vl_node = VLMapper::create( node, this );
   if ( vl_node ) {
     if ( vl_node->init() ) {
       m_DataNodeVLMapperMap[ node ] = vl_node;
@@ -850,13 +864,13 @@ vl::Vivid::ERenderingMode VLSceneView::renderingMode() const
 void VLSceneView::setBackgroundColor(float r, float g, float b)
 {
   VIVID_CHECK( m_VividRendering );
-  m_VividRendering->setBackgroundColor( fvec4(r, g, b, 1) );
+  m_VividRendering->setBackgroundColor( vl::fvec4(r, g, b, 1) );
   openglContext()->update();
 }
 
 //-----------------------------------------------------------------------------
 
-vec3 VLSceneView::backgroundColor() const
+vl::vec3 VLSceneView::backgroundColor() const
 {
   VIVID_CHECK( m_VividRendering );
   return m_VividRendering->backgroundColor().rgb();
@@ -939,7 +953,7 @@ float VLSceneView::stencilSmoothness() const
 //-----------------------------------------------------------------------------
 
 void VLSceneView::reInit(const vl::vec3& dir, const vl::vec3& up, float bias) {
-  AABB aabb;
+  vl::AABB aabb;
   for ( DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.begin();
         it != m_DataNodeVLMapperMap.end();
         ++it ) {
@@ -1144,9 +1158,9 @@ void VLSceneView::updateCameraParameters()
   if ( m_CameraNode ) {
     // This implies a right handed coordinate system.
     // By default, assume camera position is at origin, looking down the world +ve z-axis.
-    vec3 origin(0, 0, 0);
-    vec3 focalPoint(0, 0, 1000);
-    vec3 viewUp(0, -1000, 0);
+    vl::vec3 origin(0, 0, 0);
+    vl::vec3 focalPoint(0, 0, 1000);
+    vl::vec3 viewUp(0, -1000, 0);
 
     // If the stereo right to left matrix exists, we must be doing the right hand image.
     // So, in this case, we have an extra transformation to consider.
@@ -1158,7 +1172,7 @@ void VLSceneView::updateCameraParameters()
 
       if ( prop.IsNotNull() )
       {
-        mat4 rig_txf = VLUtils::getVLMatrix( prop->GetValue() );
+        vl::mat4 rig_txf = VLUtils::getVLMatrix( prop->GetValue() );
         origin = rig_txf * origin;
         focalPoint = rig_txf * focalPoint;
         viewUp = rig_txf * viewUp;
@@ -1173,8 +1187,8 @@ void VLSceneView::updateCameraParameters()
     //                                    - to construct the camera to world.
 
     // this is the camera modeling matrix (not the view matrix, its inverse)
-    mat4 camera_to_world;
-    mat4 supplied_matrix = VLUtils::getVLMatrix( m_CameraNode->GetData() );
+    vl::mat4 camera_to_world;
+    vl::mat4 supplied_matrix = VLUtils::getVLMatrix( m_CameraNode->GetData() );
     VIVID_CHECK( ! supplied_matrix.isNull() );
     if ( ! supplied_matrix.isNull() )
     {
@@ -1195,6 +1209,8 @@ void VLSceneView::updateCameraParameters()
       viewUp = viewUp - origin;
     }
 
-    m_Camera->setViewMatrix( mat4::getLookAt(origin, focalPoint, viewUp) );
+    m_Camera->setViewMatrix( vl::mat4::getLookAt(origin, focalPoint, viewUp) );
   }
+}
+
 }

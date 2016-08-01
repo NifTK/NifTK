@@ -16,15 +16,6 @@
 #include "PivotCalibrationView.h"
 #include "PivotCalibrationViewActivator.h"
 
-#include <QmitkIGIUtils.h>
-#include <mitkCoordinateAxesData.h>
-#include <mitkIOUtil.h>
-#include <mitkFileIOUtils.h>
-
-#include "niftkFileHelper.h"
-#include <niftkVTKFunctions.h>
-#include <mitkPivotCalibration.h>
-
 #include <ctkDictionary.h>
 #include <ctkPluginContext.h>
 #include <ctkServiceReference.h>
@@ -32,23 +23,31 @@
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
 
+#include <mitkBaseGeometry.h>
+#include <mitkDataNodeFactory.h>
+#include <mitkIOUtil.h>
 #include <mitkNodePredicateBase.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkNodePredicateOr.h>
-#include <mitkDataStorageUtils.h>
-#include <mitkDataNodeFactory.h>
-#include <mitkBaseGeometry.h>
+#include <mitkPivotCalibration.h>
+#include <QmitkIGIUtils.h>
 
+#include <QFileDialog>
 #include <QMessageBox>
 #include <QtConcurrentRun>
-#include <QFileDialog>
 
 #include <vtkMatrix4x4.h>
 #include <vtkTransform.h>
 
 #include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
+
+#include <niftkCoordinateAxesData.h>
+#include <niftkDataStorageUtils.h>
+#include <niftkFileIOUtils.h>
+#include <niftkFileHelper.h>
+#include <niftkVTKFunctions.h>
 
 
 //-----------------------------------------------------------------------------

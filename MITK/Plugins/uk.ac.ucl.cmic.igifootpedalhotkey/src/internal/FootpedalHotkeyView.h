@@ -15,7 +15,7 @@
 #ifndef FootpedalHotkeyView_h
 #define FootpedalHotkeyView_h
 
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_FootpedalHotkeyViewWidget.h"
 #include <QTimer>
@@ -31,7 +31,7 @@ namespace niftk
  * what window currently has focus, the foot pedal presses will always be routed to this plugin.
  * It then sends off a CTK event to trigger an action in some other plugin.
  */
-class FootpedalHotkeyView : public QmitkBaseView, public Ui::FootpedalHotkeyViewWidget
+class FootpedalHotkeyView : public niftk::BaseView, public Ui::FootpedalHotkeyViewWidget
 {  
   Q_OBJECT
 

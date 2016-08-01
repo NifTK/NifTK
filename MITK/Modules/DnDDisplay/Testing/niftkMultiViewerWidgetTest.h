@@ -12,28 +12,31 @@
 
 =============================================================================*/
 
-#ifndef __niftkMultiViewerWidgetTest_h
-#define __niftkMultiViewerWidgetTest_h
+#ifndef niftkMultiViewerWidgetTest_h
+#define niftkMultiViewerWidgetTest_h
 
 #include <QObject>
 
 #include <vector>
-
-class niftkMultiViewerWidgetTestClassPrivate;
 
 namespace mitk
 {
 class DataNode;
 }
 
-class niftkMultiViewerWidgetTestClass: public QObject
+namespace niftk
+{
+class MultiViewerWidgetTestClassPrivate;
+
+
+class MultiViewerWidgetTestClass: public QObject
 {
   Q_OBJECT
 
 public:
 
-  explicit niftkMultiViewerWidgetTestClass();
-  virtual ~niftkMultiViewerWidgetTestClass();
+  explicit MultiViewerWidgetTestClass();
+  virtual ~MultiViewerWidgetTestClass();
 
   /// \brief Gets the name of the image file to load into the viewer.
   std::string GetFileName() const;
@@ -70,12 +73,13 @@ private:
 
   void dropNodes(QWidget* window, const std::vector<mitk::DataNode*>& nodes);
 
-  QScopedPointer<niftkMultiViewerWidgetTestClassPrivate> d_ptr;
+  QScopedPointer<MultiViewerWidgetTestClassPrivate> d_ptr;
 
-  Q_DECLARE_PRIVATE(niftkMultiViewerWidgetTestClass)
-  Q_DISABLE_COPY(niftkMultiViewerWidgetTestClass)
+  Q_DECLARE_PRIVATE(MultiViewerWidgetTestClass)
+  Q_DISABLE_COPY(MultiViewerWidgetTestClass)
 };
 
+}
 
 int niftkMultiViewerWidgetTest(int argc, char* argv[]);
 

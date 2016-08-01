@@ -15,7 +15,7 @@
 #ifndef TrackedPointerView_h
 #define TrackedPointerView_h
 
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_TrackedPointerView.h"
 #include <vtkSmartPointer.h>
@@ -29,7 +29,7 @@ class vtkMatrix4x4;
  * \brief User interface to provide controls for a tracked pointer.
  * \ingroup uk_ac_ucl_cmic_igitrackedpointer_internal
 */
-class TrackedPointerView : public QmitkBaseView
+class TrackedPointerView : public niftk::BaseView
 {  
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)

@@ -15,7 +15,7 @@
 #ifndef niftkCameraCalView_h
 #define niftkCameraCalView_h
 
-#include <QmitkBaseView.h>
+#include <niftkBaseView.h>
 #include <service/event/ctkEvent.h>
 #include "ui_niftkCameraCalView.h"
 #include <niftkNiftyCalVideoCalibrationManager.h>
@@ -31,7 +31,7 @@ namespace niftk
  * \brief User interface to provide controls to do mono/stereo, video camera calibration.
  * \ingroup uk_ac_ucl_cmic_igicameracal_internal
  */
-class CameraCalView : public QmitkBaseView
+class CameraCalView : public BaseView
 {  
   /**
    * this is needed for all Qt objects that should have a Qt meta-object

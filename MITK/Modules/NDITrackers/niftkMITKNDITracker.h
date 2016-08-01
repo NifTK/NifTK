@@ -31,7 +31,7 @@ class NIFTKNDITRACKERS_EXPORT MITKNDITracker : public niftk::NDITracker
 {
 public:
 
-  mitkClassMacroItkParent(MITKNDITracker, niftk::NDITracker);
+  mitkClassMacroItkParent(MITKNDITracker, niftk::NDITracker)
 
   /**
   * \brief Retrives the current tracking data.

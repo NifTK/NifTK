@@ -13,33 +13,36 @@
 =============================================================================*/
 
 #include "niftkCoordinateAxesDataSerializer.h"
-#include "mitkCoordinateAxesData.h"
-#include "niftkCoordinateAxesDataWriterService.h"
 
 #include <itksys/SystemTools.hxx>
 
+#include <niftkCoordinateAxesData.h>
+
+#include "niftkCoordinateAxesDataWriterService.h"
 #include "niftkSerializerMacros.h"
 
 NIFTK_REGISTER_SERIALIZER(CoordinateAxesDataSerializer)
 
+namespace niftk
+{
 
-niftk::CoordinateAxesDataSerializer::CoordinateAxesDataSerializer()
+CoordinateAxesDataSerializer::CoordinateAxesDataSerializer()
 {
 }
 
 
-niftk::CoordinateAxesDataSerializer::~CoordinateAxesDataSerializer()
+CoordinateAxesDataSerializer::~CoordinateAxesDataSerializer()
 {
 }
 
 
-std::string niftk::CoordinateAxesDataSerializer::Serialize()
+std::string CoordinateAxesDataSerializer::Serialize()
 {
-  const mitk::CoordinateAxesData* image = dynamic_cast<const mitk::CoordinateAxesData*>( m_Data.GetPointer() );
+  const CoordinateAxesData* image = dynamic_cast<const CoordinateAxesData*>( m_Data.GetPointer() );
   if (image == NULL)
   {
     MITK_ERROR << " Object at " << (const void*) this->m_Data
-              << " is not an mitk::CoordinateAxesData. Cannot serialize as CoordinateAxesData.";
+              << " is not an CoordinateAxesData. Cannot serialize as CoordinateAxesData.";
     return "";
   }
 
@@ -56,7 +59,7 @@ std::string niftk::CoordinateAxesDataSerializer::Serialize()
   {
     niftk::CoordinateAxesDataWriterService writer;
     writer.SetOutputLocation(fullname);
-    writer.SetInput(const_cast<mitk::CoordinateAxesData*>(image));
+    writer.SetInput(const_cast<CoordinateAxesData*>(image));
     writer.Write();
   }
   catch (std::exception& e)
@@ -68,5 +71,8 @@ std::string niftk::CoordinateAxesDataSerializer::Serialize()
               << e.what();
     return "";
   }
+
   return filename;
+}
+
 }

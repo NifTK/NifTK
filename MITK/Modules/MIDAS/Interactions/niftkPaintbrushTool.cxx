@@ -17,13 +17,10 @@
 #include <vtkImageData.h>
 
 #include <mitkBaseRenderer.h>
-#include <mitkDataStorageUtils.h>
 #include <mitkDisplayInteractor.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkInstantiateAccessFunctions.h>
 #include <mitkITKImageImport.h>
-#include <mitkITKRegionParametersDataNodeProperty.h>
-#include <mitkPointUtils.h>
 #include <mitkRenderingManager.h>
 #include <mitkToolManager.h>
 #include <mitkUndoController.h>
@@ -34,7 +31,10 @@
 #include <usModule.h>
 #include <usModuleRegistry.h>
 
+#include <niftkDataStorageUtils.h>
 #include <niftkInteractionEventObserverMutex.h>
+#include <niftkITKRegionParametersDataNodeProperty.h>
+#include <niftkPointUtils.h>
 
 #include "niftkPaintbrushTool.xpm"
 #include "niftkPaintbrushToolOpEditImage.h"
@@ -227,7 +227,7 @@ void PaintbrushTool::GetListOfAffectedVoxels(
   double *spacing = vtkImage->GetSpacing();
 
   // Work out the smallest dimension and hence the step size along the line
-  double stepSize = mitk::CalculateStepSize(spacing);
+  double stepSize = niftk::CalculateStepSize(spacing);
 
   mitk::Point3D mostRecentPoint = previousPoint;
   mitk::Point3D vectorDifference;
@@ -239,8 +239,8 @@ void PaintbrushTool::GetListOfAffectedVoxels(
 //  dont forget to set projectedPointIn3DVoxels equal invalid value, then track
 //  all new points and only add to processor list if different to previous.
 
-  mitk::GetDifference(currentPoint, mostRecentPoint, vectorDifference);
-  double length = mitk::GetSquaredDistanceBetweenPoints(currentPoint, mostRecentPoint);
+  niftk::GetDifference(currentPoint, mostRecentPoint, vectorDifference);
+  double length = niftk::GetSquaredDistanceBetweenPoints(currentPoint, mostRecentPoint);
 
   // So, all remaining work is only done if we had a vector with some length to it.
   if (length > 0)
@@ -541,7 +541,7 @@ void PaintbrushTool::SetRegion(unsigned int dataIndex, bool valid, const std::ve
 
   // This property should always exist, as we create it when the volume is created.
   mitk::BaseProperty* baseProperty = workingNode->GetProperty(REGION_PROPERTY_NAME.c_str());
-  mitk::ITKRegionParametersDataNodeProperty::Pointer prop = dynamic_cast<mitk::ITKRegionParametersDataNodeProperty*>(baseProperty);
+  ITKRegionParametersDataNodeProperty::Pointer prop = dynamic_cast<ITKRegionParametersDataNodeProperty*>(baseProperty);
 
   if (valid)
   {

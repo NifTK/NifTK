@@ -15,9 +15,9 @@
 #include <mitkPointSet.h>
 #include <mitkIOUtil.h>
 
-#include <mitkPointUtils.h>
 #include <niftkConversionUtils.h>
 #include <niftkMakeChessBoardPointSetCLP.h>
+#include <niftkPointUtils.h>
 
 /**
  * \brief Generates a 2D image with a calibration pattern.
@@ -42,8 +42,8 @@ int main(int argc, char** argv)
     dx[i] = right[i] - origin[i];
     dy[i] = down[i] - origin[i];
   }
-  mitk::Normalise(dx);
-  mitk::Normalise(dy);
+  niftk::Normalise(dx);
+  niftk::Normalise(dy);
 
   mitk::Point3D point;
   mitk::PointSet::Pointer pointSet = mitk::PointSet::New();

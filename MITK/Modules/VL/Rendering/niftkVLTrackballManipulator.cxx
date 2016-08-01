@@ -14,7 +14,8 @@
 
 #include "niftkVLTrackballManipulator.h"
 
-using namespace niftk;
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 void VLTrackballManipulator::mouseWheelEvent(int n)
@@ -26,4 +27,6 @@ void VLTrackballManipulator::mouseWheelEvent(int n)
   vl::TrackballManipulator::mouseDownEvent((vl::EMouseButton) zoomButton(), 100, 100);
   vl::TrackballManipulator::mouseMoveEvent(100, 100 + n);
   vl::TrackballManipulator::mouseUpEvent((vl::EMouseButton) zoomButton(), 100, 100 + n);
+}
+
 }

@@ -22,7 +22,8 @@
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 #include <mitkImage.h>
-#include <mitkDataNodePropertyListener.h>
+
+#include <niftkDataNodePropertyListener.h>
 
 namespace mitk
 {
@@ -63,7 +64,7 @@ class VLWidget;
  * - niftk::CUDAImage -> niftk::VLMapperCUDAImage: can be used as background.
  * - mitk::PointSet -> niftk::VLMapperPointSet: a static set of points of the same size and color drawn as 3D spheres or 2D point sprites.
  * - niftk::PCLData -> niftk::VLMapperPCL: a static set of points of the same size but different color drawn as 3D spheres or 2D point sprites.
- * - mitk::CoordinateAxesData -> niftk::VLMapperCoordinateAxes: 3 red, green and blue lines perpedicular to one another representing the X, Y and Z axes.
+ * - CoordinateAxesData -> niftk::VLMapperCoordinateAxes: 3 red, green and blue lines perpedicular to one another representing the X, Y and Z axes.
  * - niftk::VLGlobalSettingsDataNode -> niftk::VLMapperVLGlobalSettings: a utility to change the global settings of all active VLWidgets like stencil settings, rendering mode and depth peeling passes.
  */
 class NIFTKVL_EXPORT VLSceneView : public vl::UIEventListener
@@ -220,12 +221,12 @@ protected:
   vl::ref<vl::VividRenderer>         m_VividRenderer;
   vl::ref<vl::SceneManagerActorTree> m_SceneManager;
   vl::ref<vl::CalibratedCamera>      m_Camera;
-  vl::ref<niftk::VLTrackballManipulator>    m_Trackball;
+  vl::ref<niftk::VLTrackballManipulator> m_Trackball;
 
-  mitk::DataStorage::Pointer              m_DataStorage;
-  mitk::DataNodePropertyListener::Pointer m_NodeVisibilityListener;
-  mitk::DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
-  mitk::DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
+  mitk::DataStorage::Pointer        m_DataStorage;
+  DataNodePropertyListener::Pointer m_NodeVisibilityListener;
+  DataNodePropertyListener::Pointer m_NodeColorPropertyListener;
+  DataNodePropertyListener::Pointer m_NodeOpacityPropertyListener;
 
   DataNodeVLMapperMapType                m_DataNodeVLMapperMap;
   std::set<mitk::DataNode::ConstPointer> m_NodesToUpdate;
@@ -248,8 +249,8 @@ protected:
   CudaTest* m_CudaTest;
 #endif
 
-protected: 
-  
+protected:
+
   // vl::UIEventListener implementation
 
   virtual void initEvent();

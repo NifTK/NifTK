@@ -16,15 +16,15 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  ThumbnailViewActivator.cxx
-  QmitkThumbnailViewPreferencePage.cxx
-  ThumbnailView.cxx
+  niftkPluginActivator.cxx
+  niftkThumbnailView.cxx
+  niftkThumbnailViewPreferencePage.cxx
 )
 
 set(MOC_H_FILES
-  src/internal/QmitkThumbnailViewPreferencePage.h
-  src/internal/ThumbnailViewActivator.h
-  src/internal/ThumbnailView.h
+  src/internal/niftkPluginActivator.h
+  src/internal/niftkThumbnailView.h
+  src/internal/niftkThumbnailViewPreferencePage.h
 )
 
 # list of resource files which can be used by the plug-in

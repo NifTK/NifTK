@@ -2,12 +2,12 @@
 
 The Medical Imaging Interaction Toolkit (MITK)
 
-Copyright (c) German Cancer Research Center, 
+Copyright (c) German Cancer Research Center,
 Division of Medical and Biological Informatics.
 All rights reserved.
 
-This software is distributed WITHOUT ANY WARRANTY; without 
-even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+This software is distributed WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR
 A PARTICULAR PURPOSE.
 
 See LICENSE.txt or http://www.mitk.org for details.
@@ -29,10 +29,13 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <QDebug>
 
+
+namespace niftk
+{
+
 //how precise must the user pick the point
 //default value
-niftk::AffineTransformDataInteractor3D
-::AffineTransformDataInteractor3D()
+AffineTransformDataInteractor3D::AffineTransformDataInteractor3D()
 : m_InteractionMode(INTERACTION_MODE_TRANSLATION)
 , m_AxesFixed(false)
 , m_InitialPickedDisplayPoint(mitk::Point2D())
@@ -50,11 +53,13 @@ niftk::AffineTransformDataInteractor3D
   m_ObjectNormal[2] = 1.0;
 }
 
-niftk::AffineTransformDataInteractor3D::~AffineTransformDataInteractor3D()
+
+AffineTransformDataInteractor3D::~AffineTransformDataInteractor3D()
 {
 }
 
-void niftk::AffineTransformDataInteractor3D::ConnectActionsAndFunctions()
+
+void AffineTransformDataInteractor3D::ConnectActionsAndFunctions()
 {
   CONNECT_CONDITION("overObject", CheckObject);
   CONNECT_FUNCTION("selectObject", SelectObject);
@@ -64,27 +69,32 @@ void niftk::AffineTransformDataInteractor3D::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("accept", AcceptMove);
 }
 
-void niftk::AffineTransformDataInteractor3D::SetInteractionMode(unsigned int interactionMode)
+
+void AffineTransformDataInteractor3D::SetInteractionMode(unsigned int interactionMode)
 {
   m_InteractionMode = interactionMode;
 }
 
-void niftk::AffineTransformDataInteractor3D::SetInteractionModeToTranslation()
+
+void AffineTransformDataInteractor3D::SetInteractionModeToTranslation()
 {
   m_InteractionMode = INTERACTION_MODE_TRANSLATION;
 }
 
-void niftk::AffineTransformDataInteractor3D::SetInteractionModeToRotation()
+
+void AffineTransformDataInteractor3D::SetInteractionModeToRotation()
 {
   m_InteractionMode = INTERACTION_MODE_ROTATION;
 }
 
-unsigned int niftk::AffineTransformDataInteractor3D::GetInteractionMode() const
+
+unsigned int AffineTransformDataInteractor3D::GetInteractionMode() const
 {
   return m_InteractionMode;
 }
 
-bool niftk::AffineTransformDataInteractor3D::UpdateCurrentRendererPointers(const mitk::InteractionEvent * interactionEvent)
+
+bool AffineTransformDataInteractor3D::UpdateCurrentRendererPointers(const mitk::InteractionEvent * interactionEvent)
 {
   // Get Event and extract renderer
   if (interactionEvent == NULL)
@@ -115,10 +125,10 @@ bool niftk::AffineTransformDataInteractor3D::UpdateCurrentRendererPointers(const
 }
 
 
-bool niftk::AffineTransformDataInteractor3D::CheckObject(const mitk::InteractionEvent *interactionEvent)
+bool AffineTransformDataInteractor3D::CheckObject(const mitk::InteractionEvent *interactionEvent)
 {
-  
-  if (!UpdateCurrentRendererPointers(interactionEvent) || 
+
+  if (!UpdateCurrentRendererPointers(interactionEvent) ||
     this->GetDataNode()->GetData() == NULL || this->m_BoundingObjectNode == NULL)
   {
     return false;
@@ -132,14 +142,14 @@ bool niftk::AffineTransformDataInteractor3D::CheckObject(const mitk::Interaction
     //Could not resolve current display position: go back to start state
     return false;
   }
-  
+
   mitk::Point3D currentlyPickedWorldPoint = pe->GetPositionInWorld();
   m_CurrentlyPickedDisplayPoint = pe->GetPointerPositionOnScreen();
-  
+
   // Get the timestep to also support 3D+t
   int timeStep = 0;
   mitk::ScalarType timeInMS = 0.0;
-  
+
   if (m_CurrentRenderer != NULL)
   {
     timeStep = m_CurrentRenderer->GetTimeStep(m_BoundingObjectNode->GetData());
@@ -160,29 +170,32 @@ bool niftk::AffineTransformDataInteractor3D::CheckObject(const mitk::Interaction
   return true;
 }
 
-bool niftk::AffineTransformDataInteractor3D::SelectObject(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+
+bool AffineTransformDataInteractor3D::SelectObject(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   // Color object red
   this->GetDataNode()->SetColor(1.0, 0.0, 0.0);
-  
+
   mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
   renderManager->RequestUpdateAll();
 
   return true;
 }
 
-bool niftk::AffineTransformDataInteractor3D::DeselectObject(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+
+bool AffineTransformDataInteractor3D::DeselectObject(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   // Color object white
   this->GetDataNode()->SetColor(1.0, 1.0, 1.0);
-  
+
   mitk::RenderingManager::Pointer renderManager = mitk::RenderingManager::GetInstance();
   renderManager->RequestUpdateAll();
 
   return true;
 }
 
-bool niftk::AffineTransformDataInteractor3D::InitMove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+
+bool AffineTransformDataInteractor3D::InitMove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   if (!UpdateCurrentRendererPointers(interactionEvent) || this->GetDataNode()->GetData() == NULL)
   {
@@ -210,7 +223,7 @@ bool niftk::AffineTransformDataInteractor3D::InitMove(mitk::StateMachineAction* 
 
   // Get the timestep to also support 3D+t
   int timeStep = 0;
-    
+
   if (m_CurrentRenderer != NULL)
   {
     timeStep = m_CurrentRenderer->GetTimeStep(this->GetDataNode()->GetData());
@@ -223,7 +236,8 @@ bool niftk::AffineTransformDataInteractor3D::InitMove(mitk::StateMachineAction* 
   return true;
 }
 
-bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+
+bool AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   if (!UpdateCurrentRendererPointers(interactionEvent) || this->GetDataNode()->GetData() == NULL)
   {
@@ -257,7 +271,7 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
 
   // Get the timestep to also support 3D+t
   int timeStep = 0;
-    
+
   if (m_CurrentRenderer != NULL)
     timeStep = m_CurrentRenderer->GetTimeStep(this->GetDataNode()->GetData());
 
@@ -327,7 +341,7 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
       // Reset current Geometry3D to original state (pre-interaction) and
       // apply rotation
       mitk::RotationOperation op(mitk::OpROTATE, rotationCenter, rotationAxis, rotationAngle);
-      mitk::BaseGeometry::Pointer newGeometry 
+      mitk::BaseGeometry::Pointer newGeometry
         = dynamic_cast<mitk::BaseGeometry*>(this->GetDataNode()->GetData()->GetGeometry(timeStep)->Clone().GetPointer());
 
       if (newGeometry.IsNotNull())
@@ -352,16 +366,18 @@ bool niftk::AffineTransformDataInteractor3D::Move(mitk::StateMachineAction* acti
   }
 
   interactionEvent->GetSender()->GetRenderingManager()->RequestUpdateAll();
- 
+
   return true;
 }
 
-vtkMatrix4x4* niftk::AffineTransformDataInteractor3D::GetUpdatedGeometry()
+
+vtkMatrix4x4* AffineTransformDataInteractor3D::GetUpdatedGeometry()
 {
  return m_UpdatedGeometry->GetVtkMatrix();
 }
 
-bool niftk::AffineTransformDataInteractor3D::AcceptMove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+
+bool AffineTransformDataInteractor3D::AcceptMove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
 
   // Get the timestep to also support 3D+t
@@ -372,10 +388,10 @@ bool niftk::AffineTransformDataInteractor3D::AcceptMove(mitk::StateMachineAction
 
   // rest and compose transform in the correct order
   m_UpdatedGeometry->Initialize();
-  
+
   vtkSmartPointer<vtkMatrix4x4> originalTransformation = m_OriginalGeometry->GetVtkMatrix();
   vtkSmartPointer<vtkMatrix4x4> invertedOriginalTransformation = vtkSmartPointer<vtkMatrix4x4>::New();
-  vtkMatrix4x4::Invert(originalTransformation, invertedOriginalTransformation); 
+  vtkMatrix4x4::Invert(originalTransformation, invertedOriginalTransformation);
 
 
   m_UpdatedGeometry->Compose(invertedOriginalTransformation);
@@ -388,36 +404,39 @@ bool niftk::AffineTransformDataInteractor3D::AcceptMove(mitk::StateMachineAction
   return true;
 }
 
- void niftk::AffineTransformDataInteractor3D::SetAxesFixed(bool on, int which)
- {
-   if (on == true)
-   {
-     m_AxesFixed = true;
 
-     if (which == 0)
-     {
-       // Initialize vector arithmetic
-       m_ObjectNormal[0] = 0.0;
-       m_ObjectNormal[1] = 0.0;
-       m_ObjectNormal[2] = 1.0;
-     }
-     else if (which == 1)
-     {
-       // Initialize vector arithmetic
-       m_ObjectNormal[0] = 0.0;
-       m_ObjectNormal[1] = 1.0;
-       m_ObjectNormal[2] = 0.0;
-     }
-     else if (which == 2)
-     {
-       // Initialize vector arithmetic
-       m_ObjectNormal[0] = 1.0;
-       m_ObjectNormal[1] = 0.0;
-       m_ObjectNormal[2] = 0.0;
-     }
-   }
-   else
-   {
-     m_AxesFixed = false;
-   }
- }
+void AffineTransformDataInteractor3D::SetAxesFixed(bool on, int which)
+{
+  if (on == true)
+  {
+    m_AxesFixed = true;
+
+    if (which == 0)
+    {
+      // Initialize vector arithmetic
+      m_ObjectNormal[0] = 0.0;
+      m_ObjectNormal[1] = 0.0;
+      m_ObjectNormal[2] = 1.0;
+    }
+    else if (which == 1)
+    {
+      // Initialize vector arithmetic
+      m_ObjectNormal[0] = 0.0;
+      m_ObjectNormal[1] = 1.0;
+      m_ObjectNormal[2] = 0.0;
+    }
+    else if (which == 2)
+    {
+      // Initialize vector arithmetic
+      m_ObjectNormal[0] = 1.0;
+      m_ObjectNormal[1] = 0.0;
+      m_ObjectNormal[2] = 0.0;
+    }
+  }
+  else
+  {
+    m_AxesFixed = false;
+  }
+}
+
+}

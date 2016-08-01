@@ -50,8 +50,8 @@ public:
 
   typedef std::set<niftk::IGIDataType::Pointer, TimeStampComparator> BufferType;
 
-  mitkClassMacroItkParent(IGIDataSourceBuffer, itk::Object);
-  mitkNewMacro1Param(IGIDataSourceBuffer, BufferType::size_type);
+  mitkClassMacroItkParent(IGIDataSourceBuffer, itk::Object)
+  mitkNewMacro1Param(IGIDataSourceBuffer, BufferType::size_type)
 
   QString GetName() const;
   void SetName(QString name);

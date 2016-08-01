@@ -13,15 +13,18 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <mitkTestingMacros.h>
-#include <mitkTrackedPointer.h>
-#include <vtkMatrix4x4.h>
+
 #include <vtkLinearTransform.h>
-#include <vtkTransform.h>
+#include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
+#include <vtkTransform.h>
+
 #include <mitkDataNode.h>
 #include <mitkSurface.h>
-#include <mitkCoordinateAxesData.h>
+#include <mitkTestingMacros.h>
+#include <mitkTrackedPointer.h>
+
+#include <niftkCoordinateAxesData.h>
 
 /**
  * \file mitkTrackedPointerTest.cxx.
@@ -42,7 +45,7 @@ int mitkTrackedPointerTest(int /*argc*/, char* /*argv*/[])
   vtkSmartPointer<vtkMatrix4x4> expectdMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   expectdMatrix->DeepCopy(expectedMatrixArray);
 
-  mitk::CoordinateAxesData::Pointer coords = mitk::CoordinateAxesData::New();
+  niftk::CoordinateAxesData::Pointer coords = niftk::CoordinateAxesData::New();
   coords->SetVtkMatrix(*trackingMatrix);
 
   mitk::DataNode::Pointer pointerToWorldNode = mitk::DataNode::New();

@@ -17,8 +17,9 @@
 
 #include "niftkMIDASExports.h"
 
-#include <mitkDataNodeStringPropertyFilter.h>
 #include <mitkDataStorage.h>
+
+#include <niftkDataNodeStringPropertyFilter.h>
 
 namespace niftk
 {
@@ -43,13 +44,13 @@ namespace niftk
  * Paintbrush_Node
  * </pre>
  */
-class NIFTKMIDAS_EXPORT ToolWorkingDataNameFilter : public mitk::DataNodeStringPropertyFilter
+class NIFTKMIDAS_EXPORT ToolWorkingDataNameFilter : public DataNodeStringPropertyFilter
 {
 
 public:
 
-  mitkClassMacro(ToolWorkingDataNameFilter, mitk::DataNodeStringPropertyFilter);
-  itkNewMacro(ToolWorkingDataNameFilter);
+  mitkClassMacro(ToolWorkingDataNameFilter, DataNodeStringPropertyFilter)
+  itkNewMacro(ToolWorkingDataNameFilter)
 
 protected:
 

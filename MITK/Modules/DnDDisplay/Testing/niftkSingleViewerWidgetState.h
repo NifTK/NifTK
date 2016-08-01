@@ -12,14 +12,18 @@
 
 =============================================================================*/
 
-#ifndef __niftkSingleViewerWidgetState_h
-#define __niftkSingleViewerWidgetState_h
+#ifndef niftkSingleViewerWidgetState_h
+#define niftkSingleViewerWidgetState_h
 
 #include <niftkSingleViewerWidget.h>
 
 #include <QTest>
 
 #include <mitkGlobalInteraction.h>
+
+
+namespace niftk
+{
 
 static bool EqualsWithTolerance1(const mitk::Point3D& worldPosition1, const mitk::Point3D& worldPosition2, double tolerance = 0.001)
 {
@@ -34,13 +38,13 @@ static bool EqualsWithTolerance(const mitk::Vector2D& cursorPosition1, const mit
       && std::abs(cursorPosition1[1] - cursorPosition2[1]) < tolerance;
 }
 
-class niftkSingleViewerWidgetState : public itk::Object
+class SingleViewerWidgetState : public itk::Object
 {
 public:
 
-  mitkClassMacroItkParent(niftkSingleViewerWidgetState, itk::Object);
-  mitkNewMacro1Param(niftkSingleViewerWidgetState, const niftkSingleViewerWidget*);
-  mitkNewMacro1Param(niftkSingleViewerWidgetState, Self::Pointer);
+  mitkClassMacroItkParent(SingleViewerWidgetState, itk::Object)
+  mitkNewMacro1Param(SingleViewerWidgetState, const SingleViewerWidget*)
+  mitkNewMacro1Param(SingleViewerWidgetState, Self::Pointer)
 
   /// \brief Gets the time geometry of the viewer.
   itkGetConstMacro(TimeGeometry, const mitk::TimeGeometry*);
@@ -115,7 +119,7 @@ public:
     std::vector<QmitkRenderWindow*> renderWindows = m_Viewer->GetRenderWindows();
     for (int i = 0; i < 3; ++i)
     {
-      if (renderWindows[i]->isVisible() && !::EqualsWithTolerance(cursorPositions1[i], cursorPositions2[i], tolerance))
+      if (renderWindows[i]->isVisible() && !niftk::EqualsWithTolerance(cursorPositions1[i], cursorPositions2[i], tolerance))
       {
         return false;
       }
@@ -130,7 +134,7 @@ public:
     std::vector<QmitkRenderWindow*> renderWindows = m_Viewer->GetRenderWindows();
     for (int i = 0; i < 3; ++i)
     {
-      if (renderWindows[i]->isVisible() && !::EqualsWithTolerance(scaleFactors1[i], scaleFactors2[i], tolerance))
+      if (renderWindows[i]->isVisible() && !niftk::EqualsWithTolerance(scaleFactors1[i], scaleFactors2[i], tolerance))
       {
         return false;
       }
@@ -138,7 +142,7 @@ public:
     return true;
   }
 
-  bool operator==(const niftkSingleViewerWidgetState& otherState) const
+  bool operator==(const SingleViewerWidgetState& otherState) const
   {
     return
         this->GetTimeGeometry() == otherState.GetTimeGeometry()
@@ -146,19 +150,19 @@ public:
         && this->GetWindowLayout() == otherState.GetWindowLayout()
         && this->GetSelectedRenderWindow() == otherState.GetSelectedRenderWindow()
         && this->GetTimeStep() == otherState.GetTimeStep()
-        && ::EqualsWithTolerance1(this->GetSelectedPosition(), otherState.GetSelectedPosition(), 0.001)
+        && niftk::EqualsWithTolerance1(this->GetSelectedPosition(), otherState.GetSelectedPosition(), 0.001)
         && this->EqualsWithTolerance(this->GetCursorPositions(), otherState.GetCursorPositions(), 0.01)
         && this->EqualsWithTolerance(this->GetScaleFactors(), otherState.GetScaleFactors(), 0.01)
         && this->GetCursorPositionBinding() == otherState.GetCursorPositionBinding()
         && this->GetScaleFactorBinding() == otherState.GetScaleFactorBinding();
   }
 
-  inline bool operator!=(const niftkSingleViewerWidgetState& otherState) const
+  inline bool operator!=(const SingleViewerWidgetState& otherState) const
   {
     return !(*this == otherState);
   }
 
-  void PrintDifference(niftkSingleViewerWidgetState::Pointer otherState, std::ostream & os = std::cout, itk::Indent indent = 0) const
+  void PrintDifference(SingleViewerWidgetState::Pointer otherState, std::ostream & os = std::cout, itk::Indent indent = 0) const
   {
     if (this->GetTimeGeometry() != otherState->GetTimeGeometry())
     {
@@ -180,7 +184,7 @@ public:
     {
       os << indent << "Time step: " << this->GetTimeStep() << " ; " << otherState->GetTimeStep() << std::endl;
     }
-    if (!::EqualsWithTolerance1(this->GetSelectedPosition(), otherState->GetSelectedPosition(), 0.001))
+    if (!niftk::EqualsWithTolerance1(this->GetSelectedPosition(), otherState->GetSelectedPosition(), 0.001))
     {
       os << indent << "Selected position: " << this->GetSelectedPosition() << ", " << otherState->GetSelectedPosition() << std::endl;
     }
@@ -319,8 +323,8 @@ public:
 
 protected:
 
-  /// \brief Constructs a niftkSingleViewerWidgetState object that stores the current state of the specified viewer.
-  niftkSingleViewerWidgetState(const niftkSingleViewerWidget* viewer)
+  /// \brief Constructs a SingleViewerWidgetState object that stores the current state of the specified viewer.
+  SingleViewerWidgetState(const SingleViewerWidget* viewer)
   : itk::Object()
   , m_Viewer(viewer)
   , m_TimeGeometry(viewer->GetTimeGeometry())
@@ -339,8 +343,8 @@ protected:
     m_UpDirections[2] = m_Viewer->GetSliceUpDirection(WINDOW_ORIENTATION_AXIAL);
   }
 
-  /// \brief Constructs a niftkSingleViewerWidgetState object as a copy of another state object.
-  niftkSingleViewerWidgetState(Self::Pointer otherState)
+  /// \brief Constructs a SingleViewerWidgetState object as a copy of another state object.
+  SingleViewerWidgetState(Self::Pointer otherState)
   : itk::Object()
   , m_Viewer(otherState->m_Viewer)
   , m_TimeGeometry(otherState->GetTimeGeometry())
@@ -357,13 +361,13 @@ protected:
   {
   }
 
-  /// \brief Destructs a niftkSingleViewerWidgetState object.
-  virtual ~niftkSingleViewerWidgetState()
+  /// \brief Destructs a SingleViewerWidgetState object.
+  virtual ~SingleViewerWidgetState()
   {
   }
 
   /// \brief Prints the collected signals to the given stream or to the standard output if no stream is given.
-  virtual void PrintSelf(std::ostream & os, itk::Indent indent) const
+  virtual void PrintSelf(std::ostream & os, itk::Indent indent) const override
   {
 //    os << indent << "time geometry: " << m_TimeGeometry << std::endl;
     os << indent << "orientation: " << m_Orientation << std::endl;
@@ -387,7 +391,7 @@ protected:
 private:
 
   /// \brief The viewer.
-  const niftkSingleViewerWidget* m_Viewer;
+  const SingleViewerWidget* m_Viewer;
 
   /// \brief The time geometry of the viewer.
   const mitk::TimeGeometry* m_TimeGeometry;
@@ -422,5 +426,7 @@ private:
   /// \brief Tells if the world axis is flipped or not.
   mitk::Vector3D m_UpDirections;
 };
+
+}
 
 #endif

@@ -13,16 +13,20 @@
 =============================================================================*/
 
 #include "mitkTrackedPointer.h"
-#include <mitkCoordinateAxesData.h>
-#include <vtkSmartPointer.h>
+
 #include <vtkMatrix4x4.h>
-#include <mitkSurface.h>
-#include <mitkRenderingManager.h>
-#include <mitkPointSetUpdate.h>
-#include <mitkPointUtils.h>
-#include <mitkUndoController.h>
+#include <vtkSmartPointer.h>
+
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
+#include <mitkRenderingManager.h>
+#include <mitkSurface.h>
+#include <mitkUndoController.h>
+
+#include <niftkCoordinateAxesData.h>
+#include <niftkPointSetUpdate.h>
+#include <niftkPointUtils.h>
+
 
 const bool mitk::TrackedPointer::UPDATE_VIEW_COORDINATE_DEFAULT(false);
 const std::string mitk::TrackedPointer::TRACKED_POINTER_POINTSET_NAME("TrackedPointerPointSet");
@@ -93,10 +97,10 @@ void TrackedPointer::OnGrabPoint(const mitk::Point3D& point)
   mitk::UndoStackItem::IncCurrGroupEventId();
   mitk::UndoStackItem::ExecuteIncrement();
 
-  mitk::PointSetUpdate* doOp = new mitk::PointSetUpdate(OP_UPDATE_POINTSET, currentPointSet);
+  niftk::PointSetUpdate* doOp = new niftk::PointSetUpdate(OP_UPDATE_POINTSET, currentPointSet);
   doOp->AppendPoint(point);
 
-  mitk::PointSetUpdate* undoOp = new mitk::PointSetUpdate(OP_UPDATE_POINTSET, currentPointSet);
+  niftk::PointSetUpdate* undoOp = new niftk::PointSetUpdate(OP_UPDATE_POINTSET, currentPointSet);
   mitk::OperationEvent *operationEvent = new mitk::OperationEvent(this, doOp, undoOp, "Update PointSet");
   mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
 
@@ -113,8 +117,8 @@ void TrackedPointer::OnClearPoints()
   mitk::UndoStackItem::IncCurrGroupEventId();
   mitk::UndoStackItem::ExecuteIncrement();
 
-  mitk::PointSetUpdate* doOp = new mitk::PointSetUpdate(OP_UPDATE_POINTSET, NULL);
-  mitk::PointSetUpdate* undoOp = new mitk::PointSetUpdate(OP_UPDATE_POINTSET, currentPointSet);
+  niftk::PointSetUpdate* doOp = new niftk::PointSetUpdate(OP_UPDATE_POINTSET, NULL);
+  niftk::PointSetUpdate* undoOp = new niftk::PointSetUpdate(OP_UPDATE_POINTSET, currentPointSet);
   mitk::OperationEvent *operationEvent = new mitk::OperationEvent(this, doOp, undoOp, "Update PointSet");
   mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent( operationEvent );
 
@@ -132,11 +136,11 @@ void TrackedPointer::ExecuteOperation(mitk::Operation* operation)
   {
     case OP_UPDATE_POINTSET:
 
-      mitk::PointSetUpdate* op = static_cast<mitk::PointSetUpdate*>(operation);
+      niftk::PointSetUpdate* op = static_cast<niftk::PointSetUpdate*>(operation);
       mitk::PointSet::Pointer pointSet = this->RetrievePointSet();
       const mitk::PointSet *newPointSet = op->GetPointSet();
 
-      mitk::CopyPointSets(*newPointSet,  *pointSet);
+      niftk::CopyPointSets(*newPointSet,  *pointSet);
 
       mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 
@@ -153,7 +157,7 @@ void TrackedPointer::Update(
          mitk::Point3D& tipCoordinate
          )
 {
-  mitk::CoordinateAxesData::Pointer pointerToWorld = dynamic_cast<mitk::CoordinateAxesData*>(pointerToWorldNode->GetData());
+  niftk::CoordinateAxesData::Pointer pointerToWorld = dynamic_cast<niftk::CoordinateAxesData*>(pointerToWorldNode->GetData());
   if (pointerToWorld.IsNull())
   {
     MITK_ERROR << "TrackedPointer::Update, invalid pointerToWorldNode";

@@ -31,8 +31,8 @@ namespace niftk
 class CoreIOObjectFactory : public mitk::CoreObjectFactoryBase
 {
 public:
-  mitkClassMacro(CoreIOObjectFactory, mitk::CoreObjectFactoryBase);
-  itkNewMacro(CoreIOObjectFactory);
+  mitkClassMacro(CoreIOObjectFactory, mitk::CoreObjectFactoryBase)
+  itkNewMacro(CoreIOObjectFactory)
 
   /// \see CoreObjectFactoryBase::CreateMapper
   virtual mitk::Mapper::Pointer CreateMapper(mitk::DataNode* node, MapperSlotId slotId) override;
@@ -67,6 +67,6 @@ private:
 
 };
 
-} // end namespace
+}
 
 #endif

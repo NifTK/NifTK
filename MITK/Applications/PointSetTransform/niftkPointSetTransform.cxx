@@ -19,9 +19,9 @@
 #include <vtkSmartPointer.h>
 #include <vtkMinimalStandardRandomSequence.h>
 
-#include <niftkVTKFunctions.h>
-#include <mitkPointUtils.h>
+#include <niftkPointUtils.h>
 #include <niftkPointSetTransformCLP.h>
+#include <niftkVTKFunctions.h>
 
 int main(int argc, char** argv)
 {
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
   }
 
   vtkMatrix4x4::Multiply4x4 (userTransform, randomMatrix,combinedTransform);
-  mitk::TransformPointsByVtkMatrix ( *movingPoints, *combinedTransform, *movedPoints);
+  niftk::TransformPointsByVtkMatrix ( *movingPoints, *combinedTransform, *movedPoints);
   if ( output.length () != 0 ) 
   {
     mitk::PointSetWriter::Pointer writer = mitk::PointSetWriter::New();

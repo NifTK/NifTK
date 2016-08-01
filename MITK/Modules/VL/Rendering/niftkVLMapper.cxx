@@ -26,22 +26,24 @@
 #include <mitkDataStorage.h>
 #include <mitkDataNode.h>
 #include <mitkPointSet.h>
-#include <mitkCoordinateAxesData.h>
 #include <mitkDataStorage.h>
 #include <mitkSurface.h>
+
+#include <niftkCoordinateAxesData.h>
 
 #ifdef _USE_PCL
   #include <niftkPCLData.h>
 #endif
 
-using namespace niftk;
-using namespace vl;
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 // niftk::VLMapper
 //-----------------------------------------------------------------------------
 
-VLMapper::VLMapper( const mitk::DataNode* node, VLSceneView* sv ) {
+VLMapper::VLMapper( const mitk::DataNode* node, VLSceneView* sv )
+{
   // Init
   VIVID_CHECK( node );
   VIVID_CHECK( sv );
@@ -58,25 +60,29 @@ VLMapper::VLMapper( const mitk::DataNode* node, VLSceneView* sv ) {
 
 //-----------------------------------------------------------------------------
 
-vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom, vl::Effect* effect, vl::Transform* transform) {
+vl::ref<vl::Actor> VLMapper::initActor(vl::Geometry* geom, vl::Effect* effect, vl::Transform* transform)
+{
   VIVID_CHECK( m_DataNode );
   VIVID_CHECK( m_VividRendering );
-  ref<vl::Effect> fx = effect ? effect : vl::VividRendering::makeVividEffect();
-  ref<vl::Transform> tr = transform ? transform : new vl::Transform;
+  vl::ref<vl::Effect> fx = effect ? effect : vl::VividRendering::makeVividEffect();
+  vl::ref<vl::Transform> tr = transform ? transform : new vl::Transform;
   VLUtils::updateTransform( tr.get(), m_DataNode->GetData() );
-  ref<vl::Actor> actor = new vl::Actor( geom, fx.get(), tr.get() );
+  vl::ref<vl::Actor> actor = new vl::Actor( geom, fx.get(), tr.get() );
   actor->setEnableMask( vl::Vivid::VividEnableMask );
   return actor;
 }
 
 //-----------------------------------------------------------------------------
 
-void VLMapper::updateCommon() {
-  if ( ! m_Actor ) {
+void VLMapper::updateCommon()
+{
+  if ( ! m_Actor )
+  {
     return;
   }
 
-  if ( isDataNodeVividUpdateEnabled() ) {
+  if ( isDataNodeVividUpdateEnabled() )
+  {
     // Update visibility
     bool visible = VLUtils::getBoolProp( m_DataNode, "visible", true );
     m_Actor->setEnabled( visible );
@@ -96,7 +102,7 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
   const VLGlobalSettingsDataNode* vl_global = dynamic_cast<const VLGlobalSettingsDataNode*>(node);
   mitk::Surface*            mitk_surf = dynamic_cast<mitk::Surface*>(node->GetData());
   mitk::Image*              mitk_image = dynamic_cast<mitk::Image*>( node->GetData() );
-  mitk::CoordinateAxesData* mitk_axes = dynamic_cast<mitk::CoordinateAxesData*>( node->GetData() );
+  CoordinateAxesData* mitk_axes = dynamic_cast<CoordinateAxesData*>( node->GetData() );
   mitk::PointSet*           mitk_pset = dynamic_cast<mitk::PointSet*>( node->GetData() );
 #ifdef _USE_PCL
   niftk::PCLData*           mitk_pcld = dynamic_cast<niftk::PCLData*>( node->GetData() );
@@ -106,39 +112,48 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
   niftk::CUDAImageProperty* cuda_img_prop = dynamic_cast<niftk::CUDAImageProperty*>( node->GetData()->GetProperty("CUDAImageProperty").GetPointer() );
 #endif
 
-  if ( vl_global ) {
+  if ( vl_global )
+  {
     vl_node = new VLMapperVLGlobalSettings( node, sv );
   }
-  else
-  if ( mitk_surf ) {
+  else if ( mitk_surf )
+  {
     vl_node = new VLMapperSurface( node, sv );
   }
   else
 #ifdef _USE_CUDA
-  if ( cuda_img || cuda_img_prop ) {
+  if ( cuda_img || cuda_img_prop )
+  {
     vl_node = new VLMapperCUDAImage( node, sv );
   }
   else
 #endif
-  if ( mitk_image ) {
+  if ( mitk_image )
+  {
     unsigned int depth = mitk_image->GetDimensions()[2];
-    if ( depth > 1 ) {
+    if ( depth > 1 )
+    {
       vl_node = new VLMapper3DImage( node, sv );
-    } else {
+    }
+    else
+    {
       vl_node = new VLMapper2DImage( node, sv );
     }
   }
   else
-  if ( mitk_axes ) {
+  if ( mitk_axes )
+  {
     vl_node = new VLMapperCoordinateAxes( node, sv );
   }
   else
-  if ( mitk_pset ) {
+  if ( mitk_pset )
+  {
     vl_node = new VLMapperPointSet( node, sv );
   }
 #ifdef _USE_PCL
   else
-  if ( mitk_pcld ) {
+  if ( mitk_pcld )
+  {
     vl_node = new VLMapperPCL( node, sv );
   }
 #endif
@@ -148,17 +163,22 @@ vl::ref<VLMapper> VLMapper::create( const mitk::DataNode* node, VLSceneView* sv 
 //-----------------------------------------------------------------------------
 
 VLMapperVLGlobalSettings::VLMapperVLGlobalSettings( const mitk::DataNode* node, VLSceneView* sv )
-  : VLMapper( node, sv ) {
+  : VLMapper( node, sv )
+{
 }
 
-bool VLMapperVLGlobalSettings::init() { return true; }
+bool VLMapperVLGlobalSettings::init()
+{
+  return true;
+}
 
-void VLMapperVLGlobalSettings::update() {
+void VLMapperVLGlobalSettings::update()
+{
   bool enable = VLUtils::getBoolProp( m_DataNode, "VL.Global.Stencil.Enable", false );
-  vec4 stencil_bg_color = VLUtils::getColorProp( m_DataNode, "VL.Global.Stencil.BackgroundColor", vl::black );
+  vl::vec4 stencil_bg_color = VLUtils::getColorProp( m_DataNode, "VL.Global.Stencil.BackgroundColor", vl::black );
   float stencil_smooth = VLUtils::getFloatProp( m_DataNode, "VL.Global.Stencil.Smoothness", 10 );
   int render_mode = VLUtils::getEnumProp( m_DataNode, "VL.Global.RenderMode", 0 );
-  // vec4 bg_color = VLUtils::getColorProp( m_DataNode, "VL.Global.BackgroundColor", vl::black );
+  // vl::vec4 bg_color = VLUtils::getColorProp( m_DataNode, "VL.Global.BackgroundColor", vl::black );
   // float opacity = VLUtils::getFloatProp( m_DataNode, "VL.Global.Opacity", 1 );
   int passes = VLUtils::getIntProp( m_DataNode, "VL.Global.DepthPeelingPasses", 4 );
 
@@ -171,17 +191,22 @@ void VLMapperVLGlobalSettings::update() {
   m_VLSceneView->setDepthPeelingPasses( passes );
 }
 
-void VLMapperVLGlobalSettings::updateVLGlobalSettings() { /* we don't have anything to set */ }
+void VLMapperVLGlobalSettings::updateVLGlobalSettings()
+{
+  /* we don't have anything to set */
+}
 
 //-----------------------------------------------------------------------------
 
 VLMapperSurface::VLMapperSurface( const mitk::DataNode* node, VLSceneView* sv )
-  : VLMapper( node, sv ) {
+  : VLMapper( node, sv )
+{
   m_MitkSurf = dynamic_cast<mitk::Surface*>( node->GetData() );
   VIVID_CHECK( m_MitkSurf );
 }
 
-bool VLMapperSurface::init() {
+bool VLMapperSurface::init()
+{
   VIVID_CHECK( m_MitkSurf );
 
   mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
@@ -190,7 +215,7 @@ bool VLMapperSurface::init() {
   VLUtils::initFogProps( node );
   VLUtils::initClipProps( node );
 
-  ref<vl::Geometry> geom = VLUtils::getVLGeometry( m_MitkSurf->GetVtkPolyData() );
+  vl::ref<vl::Geometry> geom = VLUtils::getVLGeometry( m_MitkSurf->GetVtkPolyData() );
   if ( ! geom ) {
     return false;
   }
@@ -201,9 +226,11 @@ bool VLMapperSurface::init() {
   return true;
 }
 
-void VLMapperSurface::update() {
+void VLMapperSurface::update()
+{
   updateCommon();
-  if ( isDataNodeVividUpdateEnabled() ) {
+  if ( isDataNodeVividUpdateEnabled() )
+  {
     VLUtils::updateMaterialProps( m_Actor->effect(), m_DataNode );
     VLUtils::updateRenderModeProps( m_Actor->effect(), m_DataNode );
     VLUtils::updateFogProps( m_Actor->effect(), m_DataNode );
@@ -233,8 +260,8 @@ bool VLMapper2DImage::init()
   VLUtils::initFogProps( node );
   VLUtils::initClipProps( node );
 
-  ref<vl::Image> img = VLUtils::wrapMitk2DImage( m_MitkImage );
-  ref<vl::Geometry> geom = VLUtils::make2DImageGeometry( img->width(), img->height() );
+  vl::ref<vl::Image> img = VLUtils::wrapMitk2DImage( m_MitkImage );
+  vl::ref<vl::Geometry> geom = VLUtils::make2DImageGeometry( img->width(), img->height() );
 
   m_VertexArray = geom->vertexArray()->as<vl::ArrayFloat3>(); VIVID_CHECK( m_VertexArray );
   m_TexCoordArray = geom->vertexArray()->as<vl::ArrayFloat3>(); VIVID_CHECK( m_TexCoordArray );
@@ -243,14 +270,14 @@ bool VLMapper2DImage::init()
   // NOTE: for the moment we don't render it
   // FIXME: the DataNode itself should be disabled
   // m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
-  ref<Effect> fx = m_Actor->effect();
+  vl::ref<vl::Effect> fx = m_Actor->effect();
 
   // These must be present as part of the default Vivid material
   VIVID_CHECK( fx->shader()->getTextureSampler( vl::Vivid::UserTexture ) )
   VIVID_CHECK( fx->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture() )
   VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture2D") );
   VIVID_CHECK( fx->shader()->getUniform("vl_UserTexture2D")->getUniformI() == vl::Vivid::UserTexture );
-  ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture();
+  vl::ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture();
   texture->createTexture2D( img.get(), vl::TF_UNKNOWN, false, false );
   fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
   fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
@@ -265,19 +292,21 @@ void VLMapper2DImage::update()
   VIVID_CHECK( m_MitkImage );
 
   updateCommon();
-  if ( isDataNodeVividUpdateEnabled() ) {
+  if ( isDataNodeVividUpdateEnabled() )
+  {
     // VLUtils::updateRenderModeProps(); /* does not apply here */
     VLUtils::updateFogProps( m_Actor->effect(), m_DataNode );
     VLUtils::updateClipProps( m_Actor->effect(), m_DataNode );
   }
 
-  if ( m_MitkImage->GetVtkImageData()->GetMTime() <= VLUtils::getUserData( m_Actor.get() )->m_ImageModifiedTime ) {
+  if ( m_MitkImage->GetVtkImageData()->GetMTime() <= VLUtils::getUserData( m_Actor.get() )->m_ImageModifiedTime )
+  {
     return;
   }
 
   vl::Texture* tex = m_Actor->effect()->shader()->gocTextureSampler( vl::Vivid::UserTexture )->texture();
   VIVID_CHECK( tex );
-  ref<vl::Image> img = VLUtils::wrapMitk2DImage( m_MitkImage );
+  vl::ref<vl::Image> img = VLUtils::wrapMitk2DImage( m_MitkImage );
   tex->setMipLevel(0, img.get(), false);
   VLUtils::getUserData( m_Actor.get() )->m_ImageModifiedTime = m_MitkImage->GetVtkImageData()->GetMTime();
 }
@@ -285,13 +314,15 @@ void VLMapper2DImage::update()
 //-----------------------------------------------------------------------------
 
 VLMapper3DImage::VLMapper3DImage( const mitk::DataNode* node, VLSceneView* sv )
-  : VLMapper( node, sv ) {
+  : VLMapper( node, sv )
+{
   m_MitkImage = dynamic_cast<mitk::Image*>( node->GetData() );
   m_VividVolume = new vl::VividVolume( m_VividRendering );
   VIVID_CHECK( m_MitkImage );
 }
 
-bool VLMapper3DImage::init() {
+bool VLMapper3DImage::init()
+{
   mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
   VLUtils::initVolumeProps( node );
 
@@ -307,7 +338,7 @@ bool VLMapper3DImage::init() {
 
   unsigned int* dims = dims = m_MitkImage->GetDimensions();
   VIVID_CHECK( dims[2] > 1 );
-  ref<vl::Image> vl_img;
+  vl::ref<vl::Image> vl_img;
 
   try
   {
@@ -339,7 +370,8 @@ bool VLMapper3DImage::init() {
   }
 
   vl::vec3 origin(0,0,0), spacing(1,1,1);
-  if ( m_MitkImage->GetGeometry() ) {
+  if ( m_MitkImage->GetGeometry() )
+  {
     origin.x()  = m_MitkImage->GetGeometry()->GetOrigin()[0];
     origin.y()  = m_MitkImage->GetGeometry()->GetOrigin()[1];
     origin.z()  = m_MitkImage->GetGeometry()->GetOrigin()[2];
@@ -381,7 +413,8 @@ bool VLMapper3DImage::init() {
   return true;
 }
 
-void VLMapper3DImage::update() {
+void VLMapper3DImage::update()
+{
   updateCommon();
   // Neutralize scaling - screws up our rendering.
   // VTK seems to need it to render non cubic volumes.
@@ -396,50 +429,53 @@ void VLMapper3DImage::update() {
 //-----------------------------------------------------------------------------
 
 VLMapperCoordinateAxes::VLMapperCoordinateAxes( const mitk::DataNode* node, VLSceneView* sv )
-  : VLMapper( node, sv ) {
-  m_MitkAxes = dynamic_cast<mitk::CoordinateAxesData*>( node->GetData() );
+  : VLMapper( node, sv )
+{
+  m_MitkAxes = dynamic_cast<CoordinateAxesData*>( node->GetData() );
   VIVID_CHECK( m_MitkAxes );
 }
 
-bool VLMapperCoordinateAxes::init() {
+bool VLMapperCoordinateAxes::init()
+{
   VIVID_CHECK( m_MitkAxes );
 
-  ref<vl::ArrayFloat3> verts  = m_Vertices = new vl::ArrayFloat3;
-  ref<vl::ArrayFloat4> colors = new vl::ArrayFloat4;
+  vl::ref<vl::ArrayFloat3> verts  = m_Vertices = new vl::ArrayFloat3;
+  vl::ref<vl::ArrayFloat4> colors = new vl::ArrayFloat4;
   verts->resize(6);
   colors->resize(6);
 
   // Axis length
   int S = 100;
   mitk::IntProperty::Pointer size_prop = dynamic_cast<mitk::IntProperty*>(m_DataNode->GetProperty("size"));
-  if ( size_prop ) {
+  if ( size_prop )
+  {
     S = size_prop->GetValue();
   }
 
   // X Axis
-  verts ->at(0) = vec3(0, 0, 0);
-  verts ->at(1) = vec3(S, 0, 0);
+  verts ->at(0) = vl::vec3(0, 0, 0);
+  verts ->at(1) = vl::vec3(S, 0, 0);
   colors->at(0) = vl::red;
   colors->at(1) = vl::red;
   // Y Axis
-  verts ->at(2) = vec3(0, 0, 0);
-  verts ->at(3) = vec3(0, S, 0);
+  verts ->at(2) = vl::vec3(0, 0, 0);
+  verts ->at(3) = vl::vec3(0, S, 0);
   colors->at(2) = vl::green;
   colors->at(3) = vl::green;
   // Z Axis
-  verts ->at(4) = vec3(0, 0, 0);
-  verts ->at(5) = vec3(0, 0, S);
+  verts ->at(4) = vl::vec3(0, 0, 0);
+  verts ->at(5) = vl::vec3(0, 0, S);
   colors->at(4) = vl::blue;
   colors->at(5) = vl::blue;
 
-  ref<vl::Geometry> geom = new vl::Geometry;
+  vl::ref<vl::Geometry> geom = new vl::Geometry;
   geom->drawCalls().push_back( new vl::DrawArrays( vl::PT_LINES, 0, 6 ) );
   geom->setVertexArray(verts.get());
   geom->setColorArray(colors.get());
 
   m_Actor = initActor( geom.get() );
   m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
-  ref<Effect> fx = m_Actor->effect();
+  vl::ref<vl::Effect> fx = m_Actor->effect();
 
   fx->shader()->getLineWidth()->set( 2 );
   // Use color array instead of lighting
@@ -448,26 +484,27 @@ bool VLMapperCoordinateAxes::init() {
   return true;
 }
 
-void VLMapperCoordinateAxes::update() {
-
+void VLMapperCoordinateAxes::update()
+{
   updateCommon();
   // updateRenderModeProps();
   // updateFogProps();
   // updateClipProps();
 
   mitk::IntProperty::Pointer size_prop = dynamic_cast<mitk::IntProperty*>(m_DataNode->GetProperty("size"));
-  if ( size_prop ) {
-    ref<vl::ArrayFloat3> verts = m_Vertices;
+  if ( size_prop )
+  {
+    vl::ref<vl::ArrayFloat3> verts = m_Vertices;
     int S = size_prop->GetValue();
     // X Axis
-    verts ->at(0) = vec3(0, 0, 0);
-    verts ->at(1) = vec3(S, 0, 0);
+    verts ->at(0) = vl::vec3(0, 0, 0);
+    verts ->at(1) = vl::vec3(S, 0, 0);
     // Y Axis
-    verts ->at(2) = vec3(0, 0, 0);
-    verts ->at(3) = vec3(0, S, 0);
+    verts ->at(2) = vl::vec3(0, 0, 0);
+    verts ->at(3) = vl::vec3(0, S, 0);
     // Z Axis
-    verts ->at(4) = vec3(0, 0, 0);
-    verts ->at(5) = vec3(0, 0, S);
+    verts ->at(4) = vl::vec3(0, 0, 0);
+    verts ->at(5) = vl::vec3(0, 0, S);
     // Update VBO
     m_Vertices->updateBufferObject();
   }
@@ -476,7 +513,8 @@ void VLMapperCoordinateAxes::update() {
 //-----------------------------------------------------------------------------
 
 VLMapperPoints::VLMapperPoints( const mitk::DataNode* node, VLSceneView* sv )
-  : VLMapper( node, sv ) {
+  : VLMapper( node, sv )
+{
   m_3DSphereMode = true;
   m_Point2DFX = vl::VividRendering::makeVividEffect();
   m_PositionArray = new vl::ArrayFloat3;
@@ -487,7 +525,8 @@ VLMapperPoints::VLMapperPoints( const mitk::DataNode* node, VLSceneView* sv )
 void VLMapperPoints::initPointSetProps()
 {
   // init only once if multiple views are open
-  if ( m_DataNode->GetProperty("VL.Point.Mode") ) {
+  if ( m_DataNode->GetProperty("VL.Point.Mode") )
+  {
     return;
   }
 
@@ -517,7 +556,8 @@ void VLMapperPoints::initPointSetProps()
   point_color->SetValue( vl::yellow.ptr() );
 }
 
-bool VLMapperPoints::init() { 
+bool VLMapperPoints::init()
+{
   initPointSetProps(); 
   return true; 
 }
@@ -530,26 +570,28 @@ void VLMapperPoints::init3D() {
   m_SphereActors = new vl::ActorTree;
   m_VividRendering->sceneManager()->tree()->addChild( m_SphereActors.get() );
 
-  m_3DSphereGeom = vl::makeIcosphere( vec3(0,0,0), 1, 2, true );
+  m_3DSphereGeom = vl::makeIcosphere( vl::vec3(0,0,0), 1, 2, true );
   for( int i = 0; i < m_PositionArray->size(); ++i )
   {
     const vl::vec3& pos = m_PositionArray->at( i );
-    ref<Actor> actor = initActor( m_3DSphereGeom.get() );
-    actor->transform()->setLocalAndWorldMatrix( mat4::getTranslation( pos ) );
+    vl::ref<vl::Actor> actor = initActor( m_3DSphereGeom.get() );
+    actor->transform()->setLocalAndWorldMatrix( vl::mat4::getTranslation( pos ) );
     m_SphereActors->addActor( actor.get() );
     // Colorize the sphere with the point's color
     actor->effect()->shader()->gocUniform( "vl_Vivid.material.diffuse" )->setUniform( m_ColorArray->at( i ) );
   }
 }
 
-void VLMapperPoints::init2D() {
+void VLMapperPoints::init2D()
+{
   VIVID_CHECK( ! m_3DSphereMode );
 
   // Remove 3D data and init 2D data.
   remove();
 
   // Initialize color array
-  for( int i = 0; i < m_ColorArray->size(); ++i ) {
+  for( int i = 0; i < m_ColorArray->size(); ++i )
+  {
     m_ColorArray->at( i ) = vl::white;
   }
 
@@ -561,9 +603,9 @@ void VLMapperPoints::init2D() {
 
   m_Actor = initActor( m_2DGeometry.get(), m_Point2DFX.get() );
   m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
-  ref<vl::Effect> fx = m_Actor->effect();
-  ref<vl::Image> img = new Image("/vivid/images/sphere.png");
-  ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture();
+  vl::ref<vl::Effect> fx = m_Actor->effect();
+  vl::ref<vl::Image> img = new vl::Image("/vivid/images/sphere.png");
+  vl::ref<vl::Texture> texture = fx->shader()->getTextureSampler( vl::Vivid::UserTexture )->texture();
   texture->createTexture2D( img.get(), vl::TF_UNKNOWN, false, false );
 
   // 2d mode settings
@@ -572,7 +614,8 @@ void VLMapperPoints::init2D() {
   m_Point2DFX->shader()->gocUniform( "vl_Vivid.enableTextureMapping" )->setUniformI( 1 );
 }
 
-void VLMapperPoints::update() {
+void VLMapperPoints::update()
+{
   // updateCommon();
 
   // Get mode
@@ -585,21 +628,24 @@ void VLMapperPoints::update() {
   float pointsize = VLUtils::getFloatProp( m_DataNode, m_3DSphereMode ? "VL.Point.Size3D" : "VL.Point.Size2D", 1.0f );
 
   // Get color
-  vec4 color = VLUtils::getColorProp( m_DataNode, "VL.Point.Color", vl::white );
+  vl::vec4 color = VLUtils::getColorProp( m_DataNode, "VL.Point.Color", vl::white );
 
   // Get opacity
   color.a() = VLUtils::getFloatProp( m_DataNode, "VL.Point.Opacity", 1.0f );
 
   updatePoints( color );
 
-  if ( m_3DSphereMode ) {
-    if ( ! m_SphereActors ) {
+  if ( m_3DSphereMode )
+  {
+    if ( ! m_SphereActors )
+    {
       init3D();
     }
 
-    for( int i = 0; i < m_SphereActors->actors()->size(); ++i ) {
+    for( int i = 0; i < m_SphereActors->actors()->size(); ++i )
+    {
       // Set visible
-      Actor* act = m_SphereActors->actors()->at( i );
+      vl::Actor* act = m_SphereActors->actors()->at( i );
       act->setEnabled( visible );
       // Set color/opacity
       act->effect()->shader()->gocUniform( "vl_Vivid.material.diffuse" )->setUniform( m_ColorArray->at( i ) );
@@ -608,15 +654,18 @@ void VLMapperPoints::update() {
       VLUtils::updateFogProps( act->effect(), m_DataNode );
       VLUtils::updateClipProps( act->effect(), m_DataNode );
       // Set size
-      Transform* tr = act->transform();
-      mat4& local = tr->localMatrix();
+      vl::Transform* tr = act->transform();
+      vl::mat4& local = tr->localMatrix();
       local.e(0,0) = pointsize * 2;
       local.e(1,1) = pointsize * 2;
       local.e(2,2) = pointsize * 2;
       tr->computeWorldMatrix();
     }
-  } else {
-    if ( ! m_2DGeometry ) {
+  }
+  else
+  {
+    if ( ! m_2DGeometry )
+    {
       init2D();
     }
 
@@ -632,10 +681,12 @@ void VLMapperPoints::update() {
   }
 }
 
-void VLMapperPoints::remove() {
+void VLMapperPoints::remove()
+{
   VLMapper::remove();
   m_2DGeometry = NULL;
-  if ( m_SphereActors ) {
+  if ( m_SphereActors )
+  {
     m_SphereActors->actors()->clear();
     m_VividRendering->sceneManager()->tree()->eraseChild( m_SphereActors.get() );
     m_SphereActors = NULL;
@@ -651,15 +702,19 @@ VLMapperPointSet::VLMapperPointSet( const mitk::DataNode* node, VLSceneView* sv 
   VIVID_CHECK( m_MitkPointSet );
 }
 
-void VLMapperPointSet::updatePoints( const vec4& color ) {
+void VLMapperPointSet::updatePoints( const vl::vec4& color ) {
   VIVID_CHECK( m_MitkPointSet );
 
   // If point set size changed force a rebuild of the 3D spheres, actors etc.
   // TODO: use event listeners instead of this brute force approach
-  if ( m_PositionArray->size() != m_MitkPointSet->GetSize() ) {
-    if ( m_3DSphereMode ) {
+  if ( m_PositionArray->size() != m_MitkPointSet->GetSize() )
+  {
+    if ( m_3DSphereMode )
+    {
       remove();
-    } else {
+    }
+    else
+    {
       m_DrawPoints->setCount( m_MitkPointSet->GetSize() );
     }
   }
@@ -688,7 +743,7 @@ VLMapperPCL::VLMapperPCL( const mitk::DataNode* node, VLSceneView* sv )
   VIVID_CHECK( m_NiftkPCL );
 }
 
-void VLMapperPCL::updatePoints( const vec4& /*color*/ ) {
+void VLMapperPCL::updatePoints( const vl::vec4& /*color*/ ) {
   VIVID_CHECK( m_NiftkPCL );
   pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud = m_NiftkPCL->GetCloud();
 
@@ -709,7 +764,7 @@ void VLMapperPCL::updatePoints( const vec4& /*color*/ ) {
   for (pcl::PointCloud<pcl::PointXYZRGB>::const_iterator i = cloud->begin(); i != cloud->end(); ++i, ++j) {
     const pcl::PointXYZRGB& p = *i;
     m_PositionArray->at(j) = vl::vec3(p.x, p.y, p.z);
-    m_ColorArray->at(j) = vec4(p.r / 255.0f, p.g / 255.0f, p.b / 255.0f, 1);
+    m_ColorArray->at(j) = vl::vec4(p.r / 255.0f, p.g / 255.0f, p.b / 255.0f, 1);
   }
 
   m_PositionArray->updateBufferObject();
@@ -727,14 +782,19 @@ VLMapperCUDAImage::VLMapperCUDAImage( const mitk::DataNode* node, VLSceneView* s
   m_CudaResource = NULL;
 }
 
-niftk::LightweightCUDAImage VLMapperCUDAImage::getLWCI() {
+niftk::LightweightCUDAImage VLMapperCUDAImage::getLWCI()
+{
   niftk::LightweightCUDAImage lwci;
   niftk::CUDAImage* cuda_image = dynamic_cast<niftk::CUDAImage*>( m_DataNode->GetData() );
-  if ( cuda_image ) {
+  if ( cuda_image )
+  {
     lwci = cuda_image->GetLightweightCUDAImage();
-  } else {
+  }
+  else
+  {
     niftk::CUDAImageProperty* cuda_img_prop = dynamic_cast<niftk::CUDAImageProperty*>( m_DataNode->GetData()->GetProperty("CUDAImageProperty").GetPointer() );
-    if  (cuda_img_prop ) {
+    if  (cuda_img_prop )
+    {
       lwci = cuda_img_prop->Get();
     }
   }
@@ -742,7 +802,8 @@ niftk::LightweightCUDAImage VLMapperCUDAImage::getLWCI() {
   return lwci;
 }
 
-bool VLMapperCUDAImage::init() {
+bool VLMapperCUDAImage::init()
+{
   mitk::DataNode* node = const_cast<mitk::DataNode*>( m_DataNode );
   // VLUtils::initRenderModeProps( node ); /* does not apply */
   VLUtils::initFogProps( node );
@@ -750,7 +811,7 @@ bool VLMapperCUDAImage::init() {
 
   niftk::LightweightCUDAImage lwci = getLWCI();
 
-  ref<vl::Geometry> vlquad = VLUtils::make2DImageGeometry( lwci.GetWidth(), lwci.GetHeight() );
+  vl::ref<vl::Geometry> vlquad = VLUtils::make2DImageGeometry( lwci.GetWidth(), lwci.GetHeight() );
 
   m_Actor = initActor( vlquad.get() );
   // NOTE: for the moment we don't render it
@@ -767,16 +828,19 @@ bool VLMapperCUDAImage::init() {
   VIVID_CHECK( m_Texture->handle() );
   cudaError_t err = cudaSuccess;
   err = cudaGraphicsGLRegisterImage( &m_CudaResource, m_Texture->handle(), m_Texture->dimension(), cudaGraphicsRegisterFlagsNone );
-  if ( err != cudaSuccess ) {
+  if ( err != cudaSuccess )
+  {
     throw std::runtime_error("cudaGraphicsGLRegisterImage() failed.");
     return false;
   }
   return true;
 }
 
-void VLMapperCUDAImage::update() {
+void VLMapperCUDAImage::update()
+{
   updateCommon();
-  if ( isDataNodeVividUpdateEnabled() ) {
+  if ( isDataNodeVividUpdateEnabled() )
+  {
     // VLUtils::updateRenderModeProps(); /* does not apply here */
     VLUtils::updateFogProps( m_Actor->effect(), m_DataNode );
     VLUtils::updateClipProps( m_Actor->effect(), m_DataNode );
@@ -790,13 +854,15 @@ void VLMapperCUDAImage::update() {
 
   // Update texture size and cuda graphics resource
 
-  if ( m_Texture->width() != lwci.GetWidth() || m_Texture->height() != lwci.GetHeight() ) {
+  if ( m_Texture->width() != lwci.GetWidth() || m_Texture->height() != lwci.GetHeight() )
+  {
     VIVID_CHECK(m_CudaResource);
     cudaGraphicsUnregisterResource(m_CudaResource);
     m_CudaResource = NULL;
     m_Texture->createTexture2D( lwci.GetWidth(), lwci.GetHeight(), TF_RGBA, false );
     err = cudaGraphicsGLRegisterImage( &m_CudaResource, m_Texture->handle(), m_Texture->dimension(), cudaGraphicsRegisterFlagsNone );
-    if ( err != cudaSuccess ) {
+    if ( err != cudaSuccess )
+    {
       throw std::runtime_error("cudaGraphicsGLRegisterImage() failed.");
     }
   }
@@ -824,10 +890,13 @@ void VLMapperCUDAImage::update() {
   cm->Autorelease(ra, mystream);
 }
 
-void VLMapperCUDAImage::remove() {
-  if ( m_CudaResource ) {
+void VLMapperCUDAImage::remove()
+{
+  if ( m_CudaResource )
+  {
     cudaError_t err = cudaGraphicsUnregisterResource( m_CudaResource );
-    if (err != cudaSuccess) {
+    if (err != cudaSuccess)
+    {
       MITK_WARN << "cudaGraphicsUnregisterResource() failed.";
     }
     m_CudaResource = NULL;
@@ -838,3 +907,4 @@ void VLMapperCUDAImage::remove() {
 
 #endif
 
+}

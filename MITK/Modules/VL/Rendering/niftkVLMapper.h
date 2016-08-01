@@ -40,18 +40,17 @@
 
 namespace mitk
 {
-  class DataStorage;
-  class PointSet;
-  class CoordinateAxesData;
-  class DataStorage;
-  class Surface;
+class DataStorage;
+class PointSet;
+class Surface;
 }
 
 namespace niftk
 {
 
-class VLSceneView;
+class CoordinateAxesData;
 class PCLData;
+class VLSceneView;
 
 /**
  * \brief A VL representation of a mitk::DataNode for rendering purposes.
@@ -63,7 +62,8 @@ class PCLData;
  * is updated its relative VLMapper::update() method is called. VLMapper keeps an internal pointer to the
  * tracked mitk::DataNode so that on update() it can fetch all its values and update accordingly.
  */
-class NIFTKVL_EXPORT VLMapper : public vl::Object {
+class NIFTKVL_EXPORT VLMapper : public vl::Object
+{
 public:
   VLMapper(const mitk::DataNode* node, VLSceneView* sv);
 
@@ -486,7 +486,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 
-class NIFTKVL_EXPORT VLMapperVLGlobalSettings: public VLMapper {
+class NIFTKVL_EXPORT VLMapperVLGlobalSettings: public VLMapper
+{
 public:
   VLMapperVLGlobalSettings( const mitk::DataNode* node, VLSceneView* sv );
 
@@ -499,7 +500,8 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class NIFTKVL_EXPORT VLMapperSurface: public VLMapper {
+class NIFTKVL_EXPORT VLMapperSurface: public VLMapper
+{
 public:
   VLMapperSurface( const mitk::DataNode* node, VLSceneView* sv );
 
@@ -513,7 +515,8 @@ protected:
 
 //-----------------------------------------------------------------------------
 
-class NIFTKVL_EXPORT VLMapper2DImage: public VLMapper {
+class NIFTKVL_EXPORT VLMapper2DImage: public VLMapper
+{
 public:
   VLMapper2DImage( const mitk::DataNode* node, VLSceneView* sv );
 
@@ -561,7 +564,7 @@ public:
   virtual void update();
 
 protected:
-  const mitk::CoordinateAxesData* m_MitkAxes;
+  const CoordinateAxesData* m_MitkAxes;
   vl::ref<vl::ArrayFloat3> m_Vertices;
 };
 
@@ -613,7 +616,8 @@ protected:
 
 #ifdef _USE_PCL
 
-class NIFTKVL_EXPORT VLMapperPCL: public VLMapperPoints {
+class NIFTKVL_EXPORT VLMapperPCL: public VLMapperPoints
+{
 public:
   VLMapperPCL( const mitk::DataNode* node, VLSceneView* sv );
 
@@ -629,7 +633,8 @@ protected:
 
 #ifdef _USE_CUDA
 
-class NIFTKVL_EXPORT VLMapperCUDAImage: public VLMapper {
+class NIFTKVL_EXPORT VLMapperCUDAImage: public VLMapper
+{
 public:
   VLMapperCUDAImage( const mitk::DataNode* node, VLSceneView* sv );
 
@@ -651,4 +656,3 @@ protected:
 }
 
 #endif
-

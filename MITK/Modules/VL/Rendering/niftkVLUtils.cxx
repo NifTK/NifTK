@@ -31,8 +31,8 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkImage.h>
 
-using namespace niftk;
-using namespace vl;
+namespace niftk
+{
 
 //-----------------------------------------------------------------------------
 // niftk::VLUtils
@@ -64,12 +64,12 @@ vl::vec3 VLUtils::getPoint3DProp( const mitk::DataNode* node, const char* prop_n
 
 //-----------------------------------------------------------------------------
 
-vec4 VLUtils::getPoint4DProp( const mitk::DataNode* node, const char* prop_name, vec4 defval ) {
+vl::vec4 VLUtils::getPoint4DProp( const mitk::DataNode* node, const char* prop_name, vl::vec4 defval ) {
   VIVID_CHECK( dynamic_cast<const mitk::Point4dProperty*>( node->GetProperty( prop_name ) ) );
   const mitk::Point4dProperty* prop = dynamic_cast<const mitk::Point4dProperty*>( node->GetProperty( prop_name ) );
   if ( prop ) {
     double* val = prop->GetValue().GetDataPointer();
-    return vec4( (float)val[0], (float)val[1], (float)val[2], (float)val[3] );
+    return vl::vec4( (float)val[0], (float)val[1], (float)val[2], (float)val[3] );
   } else {
     return defval;
   }
@@ -128,11 +128,11 @@ int VLUtils::getIntProp( const mitk::DataNode* node, const char* prop_name, int 
 
 //-----------------------------------------------------------------------------
 
-vec4 VLUtils::getColorProp( const mitk::DataNode* node, const char* prop_name, vec4 defval ) {
+vl::vec4 VLUtils::getColorProp( const mitk::DataNode* node, const char* prop_name, vl::vec4 defval ) {
   VIVID_CHECK( dynamic_cast<const mitk::ColorProperty*>( node->GetProperty( prop_name ) ) );
   float rgb[3] = { defval.r(), defval.g(), defval.b() };
   node->GetColor(rgb, NULL, prop_name );
-  return vec4( rgb[0], rgb[1], rgb[2], defval.a() );
+  return vl::vec4( rgb[0], rgb[1], rgb[2], defval.a() );
 }
 
 //-----------------------------------------------------------------------------
@@ -251,19 +251,19 @@ void VLUtils::initMaterialProps( mitk::DataNode* node )
 
 //-----------------------------------------------------------------------------
 
-void VLUtils::updateMaterialProps( Effect* fx, const mitk::DataNode* node )
+void VLUtils::updateMaterialProps( vl::Effect* fx, const mitk::DataNode* node )
 {
 #if 0
-  vec4 color = VLUtils::getColorProp( node, "VL.Material.Color" );
+  vl::vec4 color = VLUtils::getColorProp( node, "VL.Material.Color" );
   color.a() = VLUtils::getFloatProp( node, "VL.Material.Opacity" );
 #else
-  vec4 color = VLUtils::getColorProp( node, "color" );
+  vl::vec4 color = VLUtils::getColorProp( node, "color" );
   color.a() = VLUtils::getFloatProp( node, "opacity" );
 #endif
-  vec4 spec_color = VLUtils::getColorProp( node, "VL.Material.Specular.Color" );
+  vl::vec4 spec_color = VLUtils::getColorProp( node, "VL.Material.Specular.Color" );
   float shininess = VLUtils::getFloatProp( node, "VL.Material.Specular.Shininess" );
 
-  Shader* sh = fx->shader();
+  vl::Shader* sh = fx->shader();
 
 
   sh->getUniform( "vl_Vivid.material.diffuse" )->setUniform( color );
@@ -318,16 +318,16 @@ void VLUtils::initFogProps( mitk::DataNode* node )
 
 //-----------------------------------------------------------------------------
 
-void VLUtils::updateFogProps( Effect* fx, const mitk::DataNode* node )
+void VLUtils::updateFogProps( vl::Effect* fx, const mitk::DataNode* node )
 {
   int fog_mode = VLUtils::getEnumProp( node, "VL.Fog.Mode", 0 );
   int fog_target = VLUtils::getEnumProp( node, "VL.Fog.Target", 0 );
-  vec4 fog_color = VLUtils::getColorProp( node, "VL.Fog.Color", vl::black );
+  vl::vec4 fog_color = VLUtils::getColorProp( node, "VL.Fog.Color", vl::black );
   float fog_start = VLUtils::getFloatProp( node, "VL.Fog.Start", 0 );
   float fog_end = VLUtils::getFloatProp( node, "VL.Fog.End", 0 );
   float fog_density = VLUtils::getFloatProp( node, "VL.Fog.Density", 0 );
 
-  Shader* sh = fx->shader();
+  vl::Shader* sh = fx->shader();
 
   sh->getUniform("vl_Vivid.fog.mode")->setUniformI( fog_mode );
   sh->getUniform("vl_Vivid.fog.target")->setUniformI( fog_target );
@@ -373,22 +373,22 @@ void VLUtils::initClipProps( mitk::DataNode* node )
     // gocUniform("vl_Vivid.smartClip[0].plane")
     mitk::Point4dProperty::Pointer plane = mitk::Point4dProperty::New();
     node->SetProperty(CLIP_UNIT("Plane"), plane);
-    plane->SetValue( vec4(1,0,0,0).ptr() );
+    plane->SetValue( vl::vec4(1,0,0,0).ptr() );
 
     // gocUniform("vl_Vivid.smartClip[0].sphere")
     mitk::Point4dProperty::Pointer sphere = mitk::Point4dProperty::New();
     node->SetProperty(CLIP_UNIT("Sphere"), sphere);
-    sphere->SetValue( vec4(0, 0, 0, 250).ptr() );
+    sphere->SetValue( vl::vec4(0, 0, 0, 250).ptr() );
 
     // gocUniform("vl_Vivid.smartClip[0].boxMin")
     mitk::Point3dProperty::Pointer box_min = mitk::Point3dProperty::New();
     node->SetProperty(CLIP_UNIT("BoxMin"), box_min);
-    box_min->SetValue( vec3(-100,-100,-100).ptr() );
+    box_min->SetValue( vl::vec3(-100,-100,-100).ptr() );
 
     // gocUniform("vl_Vivid.smartClip[0].boxMax")
     mitk::Point3dProperty::Pointer box_max = mitk::Point3dProperty::New();
     node->SetProperty(CLIP_UNIT("BoxMax"), box_max);
-    box_max->SetValue( vec3(+100,+100,+100).ptr() );
+    box_max->SetValue( vl::vec3(+100,+100,+100).ptr() );
 
     // gocUniform("vl_Vivid.smartClip[0].reverse")
     mitk::BoolProperty::Pointer reverse = mitk::BoolProperty::New();
@@ -401,7 +401,7 @@ void VLUtils::initClipProps( mitk::DataNode* node )
 
 //-----------------------------------------------------------------------------
 
-void VLUtils::updateClipProps( Effect* fx, const mitk::DataNode* node )
+void VLUtils::updateClipProps( vl::Effect* fx, const mitk::DataNode* node )
 {
   #define CLIP_UNIT(field) (std::string("VL.Clip.") + i + '.' + field).c_str()
   #define CLIP_UNIT2(field) (std::string("vl_Vivid.smartClip[") + i + "]." + field).c_str()
@@ -410,15 +410,15 @@ void VLUtils::updateClipProps( Effect* fx, const mitk::DataNode* node )
 
     int mode = VLUtils::getEnumProp( node, CLIP_UNIT("Mode"), 0 );
     int targ = VLUtils::getEnumProp( node, CLIP_UNIT("Target"), 0 );
-    vec4 color = VLUtils::getColorProp( node, CLIP_UNIT("Color"), vl::black );
+    vl::vec4 color = VLUtils::getColorProp( node, CLIP_UNIT("Color"), vl::black );
     float range = VLUtils::getFloatProp( node, CLIP_UNIT("FadeRange"), 0 );
-    vec4 plane = getPoint4DProp( node, CLIP_UNIT("Plane"), vec4(0,0,0,0) );
-    vec4 sphere = getPoint4DProp( node, CLIP_UNIT("Sphere"), vec4(0,0,0,0) );
+    vl::vec4 plane = getPoint4DProp( node, CLIP_UNIT("Plane"), vl::vec4(0,0,0,0) );
+    vl::vec4 sphere = getPoint4DProp( node, CLIP_UNIT("Sphere"), vl::vec4(0,0,0,0) );
     vl::vec3 bmin = getPoint3DProp( node, CLIP_UNIT("BoxMin"), vl::vec3(0,0,0) );
     vl::vec3 bmax = getPoint3DProp( node, CLIP_UNIT("BoxMax"), vl::vec3(0,0,0) );
     bool reverse = VLUtils::getBoolProp( node, CLIP_UNIT("Reverse"), false );
 
-    Shader* sh = fx->shader();
+    vl::Shader* sh = fx->shader();
 
     sh->gocUniform(CLIP_UNIT2("mode"))->setUniformI( mode );
     sh->gocUniform(CLIP_UNIT2("target"))->setUniformI( targ );
@@ -466,22 +466,22 @@ void VLUtils::initRenderModeProps( mitk::DataNode* node )
   // gocUniform("vl_Vivid.outline.slicePlane")
   mitk::Point4dProperty::Pointer outline_slice_plane = mitk::Point4dProperty::New();
   node->SetProperty("VL.Outline.SlicePlane", outline_slice_plane);
-  outline_slice_plane->SetValue( vec4(1,0,0,0).ptr() );
+  outline_slice_plane->SetValue( vl::vec4(1,0,0,0).ptr() );
 }
 
-void VLUtils::updateRenderModeProps( Effect* fx, const mitk::DataNode* node ) {
+void VLUtils::updateRenderModeProps( vl::Effect* fx, const mitk::DataNode* node ) {
   int mode = VLUtils::getEnumProp( node, "VL.SurfaceMode", 0 );
 #if 1
-  vec4 color = VLUtils::getColorProp( node, "VL.Outline.Color", vl::yellow );
+  vl::vec4 color = VLUtils::getColorProp( node, "VL.Outline.Color", vl::yellow );
   color.a() = VLUtils::getFloatProp( node, "VL.Outline.Opacity" );
 #else
-  vec4 color = VLUtils::getColorProp( node, "color" );
+  vl::vec4 color = VLUtils::getColorProp( node, "color" );
   color.a() = VLUtils::getFloatProp( node, "opacity" );
 #endif
   int width = VLUtils::getIntProp( node, "VL.Outline.Width", 2 );
-  vec4 slice_plane = getPoint4DProp( node, "VL.Outline.SlicePlane", vec4(0,0,0,0) );
+  vl::vec4 slice_plane = getPoint4DProp( node, "VL.Outline.SlicePlane", vl::vec4(0,0,0,0) );
 
-  Shader* sh = fx->shader();
+  vl::Shader* sh = fx->shader();
 
   sh->getUniform("vl_Vivid.renderMode")->setUniformI( mode );
   sh->getUniform("vl_Vivid.outline.color")->setUniform( color );
@@ -533,7 +533,7 @@ vl::EImageFormat VLUtils::mapComponentsToVLColourFormat(int components)
 
 //-----------------------------------------------------------------------------
 
-ref<vl::Image> VLUtils::wrapMitk2DImage( const mitk::Image* mitk_image ) {
+vl::ref<vl::Image> VLUtils::wrapMitk2DImage( const mitk::Image* mitk_image ) {
   mitk::PixelType  mitk_pixel_type = mitk_image->GetPixelType();
   vl::EImageType   vl_type         = mapITKPixelTypeToVL(mitk_pixel_type.GetComponentType());
   vl::EImageFormat vl_format       = mapComponentsToVLColourFormat(mitk_pixel_type.GetNumberOfComponents());
@@ -546,7 +546,7 @@ ref<vl::Image> VLUtils::wrapMitk2DImage( const mitk::Image* mitk_image ) {
     mitk::ImageReadAccessor image_reader( mitk_image, mitk_image->GetVolumeData(0) );
     void* buffer_ptr = const_cast<void*>( image_reader.GetData() );
     // Use VTK buffer directly, no VL image allocation needed
-    ref<vl::Image> vl_img = new vl::Image( buffer_ptr, buffer_bytes );
+    vl::ref<vl::Image> vl_img = new vl::Image( buffer_ptr, buffer_bytes );
     vl_img->allocate2D(dims[0], dims[1], 1, vl_format, vl_type);
     VIVID_CHECK( vl_img->requiredMemory() == buffer_bytes );
     return vl_img;
@@ -563,7 +563,7 @@ ref<vl::Image> VLUtils::wrapMitk2DImage( const mitk::Image* mitk_image ) {
 VLUserData* VLUtils::getUserData(vl::Actor* actor)
 {
   VIVID_CHECK( actor );
-  ref<VLUserData> userdata = actor->userData()->as<VLUserData>();
+  vl::ref<VLUserData> userdata = actor->userData()->as<VLUserData>();
   if ( ! userdata )
   {
     userdata = new VLUserData;
@@ -575,9 +575,9 @@ VLUserData* VLUtils::getUserData(vl::Actor* actor)
 
 //-----------------------------------------------------------------------------
 
-mat4 VLUtils::getVLMatrix(const itk::Matrix<float, 4, 4>& itkmat)
+vl::mat4 VLUtils::getVLMatrix(const itk::Matrix<float, 4, 4>& itkmat)
 {
-  mat4 mat;
+  vl::mat4 mat;
   mat.setNull();
   for (int i = 0; i < 4; ++i)
   {
@@ -592,9 +592,9 @@ mat4 VLUtils::getVLMatrix(const itk::Matrix<float, 4, 4>& itkmat)
 //-----------------------------------------------------------------------------
 
 // Returns null matrix if no vtk matrix is found
-mat4 VLUtils::getVLMatrix(vtkSmartPointer<vtkMatrix4x4> vtkmat)
+vl::mat4 VLUtils::getVLMatrix(vtkSmartPointer<vtkMatrix4x4> vtkmat)
 {
-  mat4 mat;
+  vl::mat4 mat;
   mat.setNull();
   if ( vtkmat.GetPointer() ) {
     for (int i = 0; i < 4; i++) {
@@ -610,9 +610,9 @@ mat4 VLUtils::getVLMatrix(vtkSmartPointer<vtkMatrix4x4> vtkmat)
 //-----------------------------------------------------------------------------
 
 // Returns null matrix if no vtk matrix is found
-mat4 VLUtils::getVLMatrix(const mitk::BaseData* data)
+vl::mat4 VLUtils::getVLMatrix(const mitk::BaseData* data)
 {
-  mat4 mat;
+  vl::mat4 mat;
   mat.setNull();
 
   if ( data )
@@ -634,7 +634,7 @@ mat4 VLUtils::getVLMatrix(const mitk::BaseData* data)
 
 void VLUtils::updateTransform(vl::Transform* tr, const mitk::BaseData* data)
 {
-  mat4 m = getVLMatrix(data);
+  vl::mat4 m = getVLMatrix(data);
 
   if ( ! m.isNull() )
   {
@@ -663,14 +663,14 @@ void VLUtils::updateTransform(vl::Transform* txf, const mitk::DataNode* node)
 
 //-----------------------------------------------------------------------------
 
-ref<vl::Geometry> VLUtils::make2DImageGeometry(int width, int height)
+vl::ref<vl::Geometry> VLUtils::make2DImageGeometry(int width, int height)
 {
-  ref<vl::Geometry>    geom = new vl::Geometry;
-  ref<vl::ArrayFloat3> vert = new vl::ArrayFloat3;
+  vl::ref<vl::Geometry>    geom = new vl::Geometry;
+  vl::ref<vl::ArrayFloat3> vert = new vl::ArrayFloat3;
   vert->resize(4);
   geom->setVertexArray( vert.get() );
 
-  ref<vl::ArrayFloat3> tex_coord = new vl::ArrayFloat3;
+  vl::ref<vl::ArrayFloat3> tex_coord = new vl::ArrayFloat3;
   tex_coord->resize(4);
   geom->setTexCoordArray(0, tex_coord.get());
 
@@ -683,7 +683,7 @@ ref<vl::Geometry> VLUtils::make2DImageGeometry(int width, int height)
   vert->at(2).x() = width; vert->at(2).y() = height; vert->at(2).z() = 0; tex_coord->at(2).s() = 1; tex_coord->at(2).t() = 0;
   vert->at(3).x() = width; vert->at(3).y() = 0;      vert->at(3).z() = 0; tex_coord->at(3).s() = 1; tex_coord->at(3).t() = 1;
 
-  ref<vl::DrawArrays> polys = new vl::DrawArrays(vl::PT_QUADS, 0, 4);
+  vl::ref<vl::DrawArrays> polys = new vl::DrawArrays(vl::PT_QUADS, 0, 4);
   geom->drawCalls().push_back( polys.get() );
 
   return geom;
@@ -691,13 +691,13 @@ ref<vl::Geometry> VLUtils::make2DImageGeometry(int width, int height)
 
 //-----------------------------------------------------------------------------
 
-ref<vl::Geometry> VLUtils::getVLGeometry(vtkPolyData* vtkPoly)
+vl::ref<vl::Geometry> VLUtils::getVLGeometry(vtkPolyData* vtkPoly)
 {
   if ( ! vtkPoly ) {
     return NULL;
   }
 
-  ref<vl::Geometry> vl_geom = new vl::Geometry;
+  vl::ref<vl::Geometry> vl_geom = new vl::Geometry;
 
   vtkSmartPointer<vtkPoints> points = vtkPoly->GetPoints();
   if ( ! points )
@@ -768,7 +768,7 @@ ref<vl::Geometry> VLUtils::getVLGeometry(vtkPolyData* vtkPoly)
 
   // setup vertices
 
-  ref<vl::ArrayFloat3> vl_verts = new vl::ArrayFloat3;
+  vl::ref<vl::ArrayFloat3> vl_verts = new vl::ArrayFloat3;
   vl_verts->resize(point_count);
   memcpy(vl_verts->ptr(), points->GetVoidPointer(0), point_buffer_size);
   vl_geom->setVertexArray(vl_verts.get());
@@ -777,7 +777,7 @@ ref<vl::Geometry> VLUtils::getVLGeometry(vtkPolyData* vtkPoly)
 
   int primitive_count = (int)primitives->GetNumberOfCells();
 
-  ref<vl::DrawElementsUInt> vl_draw_elements = new vl::DrawElementsUInt( vl::PT_POLYGON );
+  vl::ref<vl::DrawElementsUInt> vl_draw_elements = new vl::DrawElementsUInt( vl::PT_POLYGON );
   vl_draw_elements->setPrimitiveRestartEnabled(true);
   vl_geom->drawCalls().push_back( vl_draw_elements.get() );
   std::vector< vl::DrawElementsUInt::index_type > indices;
@@ -819,7 +819,7 @@ ref<vl::Geometry> VLUtils::getVLGeometry(vtkPolyData* vtkPoly)
     int normal_count = (int)normals->GetNumberOfTuples();
     if ( normal_count == point_count )
     {
-      ref<vl::ArrayFloat3> vl_normals = new vl::ArrayFloat3;
+      vl::ref<vl::ArrayFloat3> vl_normals = new vl::ArrayFloat3;
       vl_normals->resize(point_count);
       memcpy(vl_normals->ptr(), normals->GetVoidPointer(0), point_buffer_size);
       vl_geom->setNormalArray(vl_normals.get());
@@ -887,5 +887,4 @@ void VLUtils::dumpNodeInfo( const std::string& prefix, const mitk::BaseData* dat
   }
 }
 
-//-----------------------------------------------------------------------------
-
+}

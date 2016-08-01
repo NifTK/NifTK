@@ -23,16 +23,14 @@
 #include "VLRendererView.h"
 #include "VLRendererPluginActivator.h"
 
-#include <mitkNodePredicateNot.h>
-#include <mitkNodePredicateProperty.h>
-#include <mitkImageReadAccessor.h>
-#include <mitkDataStorageUtils.h>
-#include <mitkNodePredicateDataType.h>
-#include <mitkNodePredicateOr.h>
-#include <mitkDataStorage.h>
 #include <mitkDataNode.h>
-#include <mitkDataNodePropertyListener.h>
+#include <mitkDataStorage.h>
+#include <mitkImageReadAccessor.h>
 #include <mitkMessage.h>
+#include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateNot.h>
+#include <mitkNodePredicateOr.h>
+#include <mitkNodePredicateProperty.h>
 
 // THIS IS VERY IMPORTANT
 // If nothing is included from the mitk::OpenCL module the resource service will not get registered
@@ -46,6 +44,8 @@
 #include <usModuleResourceStream.h>
 #include <usModuleRegistry.h>
 
+#include <niftkDataNodePropertyListener.h>
+#include <niftkDataStorageUtils.h>
 #include <niftkSharedOGLContext.h>
 
 #ifdef _USE_CUDA
@@ -190,7 +190,7 @@ void VLRendererView::OnCameraNodeEnabled(bool enabled)
 
 void VLRendererView::Visible()
 {
-  QmitkBaseView::Visible();
+  niftk::BaseView::Visible();
 
   // Make sure that we show all the nodes that are already present in DataStorage
   ReinitDisplay();

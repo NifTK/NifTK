@@ -27,9 +27,9 @@ namespace niftk
 class NIFTKPCL_EXPORT PCLData : public mitk::BaseData
 {
 public:
-  mitkClassMacro(PCLData, mitk::BaseData);
+  mitkClassMacro(PCLData, mitk::BaseData)
 
-  itkFactorylessNewMacro(Self);
+  itkFactorylessNewMacro(Self)
 
 
   /** @name MITK stuff not applicable. */
