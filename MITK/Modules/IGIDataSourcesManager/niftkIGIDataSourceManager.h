@@ -35,6 +35,7 @@
 #include <QList>
 #include <QString>
 #include <QObject>
+#include <QMutex>
 
 namespace niftk
 {
@@ -355,6 +356,7 @@ private:
   QList<niftk::IGIDataSourceI::Pointer>                            m_Sources;
   QMap<QString, niftk::IGIDataSourceFactoryServiceI*>              m_NameToFactoriesMap;
   QMap<QString, niftk::IGIDataSourceFactoryServiceI*>              m_LegacyNameToFactoriesMap;
+  QMutex                                                           m_Lock;
   QTimer                                                          *m_GuiUpdateTimer;
   int                                                              m_FrameRate;
   QString                                                          m_DirectoryPrefix;

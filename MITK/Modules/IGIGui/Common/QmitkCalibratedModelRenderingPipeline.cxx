@@ -186,7 +186,10 @@ void QmitkCalibratedModelRenderingPipeline::SaveData()
 
     if (isFacingLeft && isFacingRight)
     {
-      outputFile << id << " " << point[0] << " " << point[1] << " " << point[2] << " " << cameraPoint[0] << " " << cameraPoint[1] << " " << cameraPoint[2] << " " << imageLeft[0]*scaleFactors[0] << " " << imageLeft[1]*scaleFactors[1] << " " << imageRight[0]*scaleFactors[0] << " " << imageRight[1]*scaleFactors[1] << std::endl;
+      outputFile << id << " ";
+      outputFile.precision(10);
+      outputFile.width(10);
+      outputFile << point[0] << " " << point[1] << " " << point[2] << " " << cameraPoint[0] << " " << cameraPoint[1] << " " << cameraPoint[2] << " " << imageLeft[0]*scaleFactors[0] << " " << imageLeft[1]*scaleFactors[1] << " " << imageRight[0]*scaleFactors[0] << " " << imageRight[1]*scaleFactors[1] << std::endl;
       mitkPoint[0] = cameraPoint[0];
       mitkPoint[1] = cameraPoint[1];
       mitkPoint[2] = cameraPoint[2];

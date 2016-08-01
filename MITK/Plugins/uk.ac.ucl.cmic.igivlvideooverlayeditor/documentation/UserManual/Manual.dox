@@ -1,0 +1,41 @@
+/**
+\page uk_ac_ucl_cmic_igivlvideooverlayeditor The VL Video Overlay Display
+
+\section VLVideoOverlayDisplayIntro Introduction
+
+The VL Video Overlay Display is an "Editor" in MITK-speak, meaning that it fills the centre part of
+the screen, and provides a view of the data in the Data Manager. It is a custom viewer
+for providing augmented reality displays, merging rendered surface meshes and video data.
+
+\section VLVideoOverlayDisplayUsageTrackedCamera Usage
+
+Imagine you have a video capturing device such as a laparoscope,
+connected via the Data Sources View (see Figure 1).
+
+\image html pelvis-lap-07.jpg "Figure 1: Physical layout of a tracked (e.g. NDI Polaris) laparoscope, viewing a pelvis phantom."
+
+Then the VL Video Overlay Display can be used to provide augmented reality,
+merging video data with rendererd data (see Figure 2).
+
+\image html Screenshot-Pelvis-Laparoscope.png "Figure 2: The VL Overlay Display merges laparoscopic video with rendered CT data (left) and displays a VTK 3D world (right)."
+
+The controls for the display itself are simple. See Figure 3.
+
+\image html OverlayEditorTrackedCameraControls.jpg "Figure 3: The Controls."
+
+\li On the left side of the screen are two check-boxes to display either left and/or right video channels.
+\li To the right of the "left image:" checkbox, you see a combo box labelled "please select" allowing the user to select the left hand video image.
+\li To the right of the "right image:" checkbox, you see a combo box labelled "please select" allowing the user to select the right hand video image.
+\li To the right of the "transform:" label, you see a combo box labelled "please select" allowing the user to select a camera transformation.
+\li The 'overlay opacity' controls the blending between video and virtual data.
+\li The '3D viewer' checkbox toggles the 3D (right) window on/off.
+
+\section VLVideoOverlayDisplayTrackingTransformation Tracking Transformation
+
+The "tracking" combo box enables the user to specify a tracking transformation.
+This should correspond to the world-to-camera matrix. So, if you are tracking a laparoscope
+you would normally compose the inverse of the tracker-to-laparoscope transform, followed
+by the hand-eye(camera) transform to give tracker(world)-to-camera.
+
+*/
+

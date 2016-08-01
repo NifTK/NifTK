@@ -59,12 +59,6 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
 )
 
-if(BUILD_VL)
-  set(PROJECT_PLUGINS
-    ${PROJECT_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.vlrenderer:ON              # Prototype
-  )
-endif()
 
 # ---------------------------------------------------------------------------------------------------
 # NiftyView Specific Plugins
@@ -73,6 +67,13 @@ endif()
 set(NiftyView_PLUGINS
   Plugins/uk.ac.ucl.cmic.niftyview:ON
 )
+
+if(BUILD_VL)
+  set(NiftyView_PLUGINS
+    ${NiftyView_PLUGINS}
+    Plugins/uk.ac.ucl.cmic.vlstandarddisplayeditor:ON
+  )
+endif()
 
 if(NIFTK_Apps/NiftyView)
   set(PROJECT_PLUGINS
@@ -122,6 +123,7 @@ set(NiftyIGI_PLUGINS
   Plugins/uk.ac.ucl.cmic.igipointsetcropper:ON
   Plugins/uk.ac.ucl.cmic.igipivotcalibration:ON
   Plugins/uk.ac.ucl.cmic.igipointercalib:ON
+  Plugins/uk.ac.ucl.cmic.igicameracal:ON
 )
 
 if(WIN32)
@@ -134,7 +136,7 @@ endif()
 if(BUILD_VL)
   set(NiftyIGI_PLUGINS
     ${NiftyIGI_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.igivleditor:ON
+    Plugins/uk.ac.ucl.cmic.igivlvideooverlayeditor:ON
   )
 endif()
 

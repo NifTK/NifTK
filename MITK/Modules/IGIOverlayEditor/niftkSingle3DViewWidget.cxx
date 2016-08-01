@@ -110,7 +110,7 @@ void Single3DViewWidget::SetDataStorage( mitk::DataStorage* dataStorage )
 
   m_DataStorage = dataStorage;
 
-  if (m_DataStorage.IsNull())
+  if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->RemoveNodeEvent.AddListener
       (mitk::MessageDelegate1<Single3DViewWidget, const mitk::DataNode*>

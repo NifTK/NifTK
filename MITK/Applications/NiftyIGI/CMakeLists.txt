@@ -65,6 +65,7 @@ set(_include_plugins
   uk.ac.ucl.cmic.igipivotcalibration
   uk.ac.ucl.cmic.igipointercalib
   uk.ac.ucl.cmic.igipointsetcropper
+  uk.ac.ucl.cmic.igicameracal
 )
 
 if(WIN32)
@@ -77,8 +78,7 @@ endif()
 if(BUILD_VL)
   set(_include_plugins
     ${_include_plugins}
-    uk.ac.ucl.cmic.vlrenderer
-    uk.ac.ucl.cmic.igivleditor
+    uk.ac.ucl.cmic.igivlvideooverlayeditor
   )
 endif()
 

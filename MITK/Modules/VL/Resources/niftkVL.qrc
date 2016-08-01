@@ -1,9 +1,21 @@
 <!DOCTYPE RCC><RCC version="1.0">
-  <qresource prefix="/NewVisualization">
-    <file>TriangleSorter.cl</file>
-    <file>volume_luminance_light.vs</file>
-    <file>volume_raycast_isosurface_transp.fs</file>
-    <file>generic.fs</file>
-    <file>generic.vs</file>
+  <qresource prefix="/VL">
+    <file>vivid/glsl/uniforms.glsl</file>
+    <file>vivid/glsl/volume/raycast.vs</file>
+    <file>vivid/glsl/volume/raycast.fs</file>
+    <file>vivid/glsl/front_peeling/blend.fs</file>
+    <file>vivid/glsl/front_peeling/blend.vs</file>
+    <file>vivid/glsl/front_peeling/final.fs</file>
+    <file>vivid/glsl/front_peeling/final.vs</file>
+    <file>vivid/glsl/front_peeling/init.fs</file>
+    <file>vivid/glsl/front_peeling/outline.gs</file>
+    <file>vivid/glsl/front_peeling/outline2d.fs</file>
+    <file>vivid/glsl/front_peeling/outline2d.vs</file>
+    <file>vivid/glsl/front_peeling/outline3d.fs</file>
+    <file>vivid/glsl/front_peeling/peel.fs</file>
+    <file>vivid/glsl/front_peeling/shade.fs</file>
+    <file>vivid/glsl/front_peeling/shade.vs</file>
+    <file>vivid/glsl/front_peeling/shade_outline.vs</file>
+    <file>vivid/images/sphere.png</file>
   </qresource>
 </RCC>

@@ -58,6 +58,7 @@ if(BUILD_IGI)
     ICPReg
     OpenCV
     SurfRecon
+    NiftyCal
     NDITrackers
     IGI
     IGIOverlayEditor

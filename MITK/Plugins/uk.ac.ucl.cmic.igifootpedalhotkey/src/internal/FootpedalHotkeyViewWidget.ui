@@ -75,7 +75,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Record data</string>
+      <string>(unassigned)</string>
      </property>
     </widget>
    </item>

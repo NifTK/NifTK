@@ -38,6 +38,7 @@ Linux continuous build:
         -DBUILD_TESTING:BOOL=ON
         -DNIFTK_USE_CPPCHECK:BOOL=ON
         -DNIFTK_USE_KWSTYLE:BOOL=ON
+        -DDESIRED_QT_VERSION:STRING=4
         -DNIFTK_Apps/NiftyView:BOOL=ON
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
         ${src_dir}
@@ -132,6 +133,7 @@ Mac continuous build:
         -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
         -DEP_DIRECTORY_PER_VERSION:BOOL=ON
         -DBUILD_TESTING:BOOL=ON
+        -DDESIRED_QT_VERSION:STRING=4
         -DNIFTYLINK_CHECK_COVERAGE=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
@@ -241,6 +243,7 @@ Ubuntu 14.04 release build:
   - cmake -DBUILD_TESTING:BOOL=OFF
         -DNIFTK_USE_CPPCHECK:BOOL=OFF
         -DNIFTK_USE_KWSTYLE:BOOL=OFF
+        -DDESIRED_QT_VERSION:STRING=4
         -DBUILD_Python:BOOL=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
@@ -264,6 +267,7 @@ CentOS 7 release build:
   - cmake -DBUILD_TESTING:BOOL=OFF
         -DNIFTK_USE_CPPCHECK:BOOL=OFF
         -DNIFTK_USE_KWSTYLE:BOOL=OFF
+        -DDESIRED_QT_VERSION:STRING=4
         -DBUILD_Python:BOOL=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
@@ -287,6 +291,7 @@ Cluster release build:
   - cmake -DBUILD_TESTING:BOOL=OFF
         -DNIFTK_USE_CPPCHECK:BOOL=OFF
         -DNIFTK_USE_KWSTYLE:BOOL=OFF
+        -DDESIRED_QT_VERSION:STRING=4
         -DBUILD_Python:BOOL=ON
         -DOPENCV_WITH_FFMPEG:BOOL=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON
@@ -311,6 +316,7 @@ Managed CentOS 7 release build:
   - cmake -DBUILD_TESTING:BOOL=OFF
         -DNIFTK_USE_CPPCHECK:BOOL=OFF
         -DNIFTK_USE_KWSTYLE:BOOL=OFF
+        -DDESIRED_QT_VERSION:STRING=4
         -DBUILD_Python:BOOL=ON
         -DOPENCV_WITH_FFMPEG:BOOL=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON
@@ -335,6 +341,7 @@ Mac release build:
   - cmake -DBUILD_TESTING:BOOL=OFF
         -DNIFTK_USE_CPPCHECK:BOOL=OFF
         -DNIFTK_USE_KWSTYLE:BOOL=OFF
+        -DDESIRED_QT_VERSION:STRING=4
         -DBUILD_Python:BOOL=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
