@@ -19,7 +19,9 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 OIGTLSystemTimeService::OIGTLSystemTimeService()
+: m_Mutex(itk::FastMutexLock::New())
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
   m_TimeStamp = igtl::TimeStamp::New();
   m_TimeStamp->GetTime();
 }
@@ -35,6 +37,7 @@ OIGTLSystemTimeService::~OIGTLSystemTimeService()
 //-----------------------------------------------------------------------------
 SystemTimeServiceI::TimeType OIGTLSystemTimeService::GetSystemTimeInNanoseconds() const
 {
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
   m_TimeStamp->GetTime();
   return m_TimeStamp->GetTimeStampInNanoseconds();
 }
