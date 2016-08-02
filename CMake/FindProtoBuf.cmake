@@ -16,6 +16,8 @@ set(ProtoBuf_FOUND)
 
 set(ProtoBuf_DIR @ProtoBuf_DIR@ CACHE PATH "Directory containing ProtoBuf installation")
 
+message( "FindProtoBuf.cmake ProtoBuf_DIR: ${ProtoBuf_DIR}" )
+
 find_path(ProtoBuf_INCLUDE_DIR
   NAME protobuf.h
   PATHS ${ProtoBuf_DIR}/include
@@ -51,8 +53,8 @@ find_program(ProtoBuf_PROTOC_EXECUTABLE
   PATHS ${ProtoBuf_DIR}/bin
   NO_DEFAULT_PATH)
 
-message( "FindProtoBuf.cmake ProtoBuf_INCLUDE_DIR:    ${ProtoBuf_INCLUDE_DIR}" )
-message( "FindProtoBuf.cmake ProtoBuf_LIBRARY:        ${ProtoBuf_LIBRARY}        ${ProtoBuf_LIBRARY_DEBUG}"       )
+message( "FindProtoBuf.cmake ProtoBuf_INCLUDE_DIR:       ${ProtoBuf_INCLUDE_DIR}" )
+message( "FindProtoBuf.cmake ProtoBuf_LIBRARY:           ${ProtoBuf_LIBRARY} ${ProtoBuf_LIBRARY_DEBUG}")
 message( "FindProtoBuf.cmake ProtoBuf_PROTOC_EXECUTABLE: ${ProtoBuf_PROTOC_EXECUTABLE}" )
 
 if(ProtoBuf_LIBRARY AND ProtoBuf_INCLUDE_DIR AND ProtoBuf_PROTOC_EXECUTABLE)
