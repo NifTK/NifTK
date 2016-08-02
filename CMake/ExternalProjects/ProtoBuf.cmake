@@ -58,34 +58,6 @@ if(NOT DEFINED ProtoBuf_DIR)
   set(ProtoBuf_INCLUDE_DIR ${ProtoBuf_DIR}/include)
   set(ProtoBuf_LIBRARY_DIR ${ProtoBuf_DIR}/lib)
 
-  # Needed by Caffe
-  find_library(ProtoBuf_LIBRARY_RELEASE NAMES protobuf
-               PATHS ${ProtoBuf_DIR}
-               PATH_SUFFIXES lib lib/Release
-               NO_DEFAULT_PATH)
-  find_library(ProtoBuf_LIBRARY_DEBUG NAMES protobufd
-               PATHS ${ProtoBuf_DIR}
-               PATH_SUFFIXES lib lib/Debug
-               NO_DEFAULT_PATH)
-
-  set(ProtoBuf_LIBRARY )
-  if(ProtoBuf_LIBRARY_RELEASE)
-    list(APPEND ProtoBuf_LIBRARY ${ProtoBuf_LIBRARY_RELEASE})
-  endif()
-  if(ProtoBuf_LIBRARY_DEBUG)
-    list(APPEND ProtoBuf_LIBRARY ${ProtoBuf_LIBRARY_DEBUG})
-  endif()
-
-  find_program(ProtoBuf_PROTOC_EXECUTABLE
-    NAME protoc
-    PATHS ${ProtoBuf_DIR}/bin
-    NO_DEFAULT_PATH
-  )
-
-  message("ProtoBuf_INCLUDE_DIR ${ProtoBuf_INCLUDE_DIR}")
-  message("ProtoBuf_LIBRARY ${ProtoBuf_LIBRARY}")
-  message("ProtoBuf_PROTOC_EXECUTABLE ${ProtoBuf_PROTOC_EXECUTABLE}")
-
   mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading ProtoBuf from ${ProtoBuf_DIR}.")

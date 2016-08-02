@@ -20,7 +20,7 @@
 # Sanity checks
 if(DEFINED HDF5_DIR AND NOT EXISTS ${HDF5_DIR})
 
-  message(FATAL_ERROR "HDF5_DIR variable is defined but corresponds to non-existing directory \"${HDF5_ROOT}\".")
+  message(FATAL_ERROR "HDF5_DIR variable is defined but corresponds to non-existing directory \"${HDF5_DIR}\".")
 
 endif()
 
@@ -48,7 +48,6 @@ if(NOT DEFINED HDF5_DIR)
       ${EP_COMMON_ARGS}
       -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       --enable-cxx
-      -DCMAKE_BUILD_TYPE=Release
     CMAKE_CACHE_ARGS
       ${EP_COMMON_CACHE_ARGS}
     CMAKE_CACHE_DEFAULT_ARGS
@@ -60,10 +59,8 @@ if(NOT DEFINED HDF5_DIR)
   set(HDF5_DIR ${proj_INSTALL})
   set(HDF5_INCLUDE_DIR ${HDF5_DIR}/include)
   set(HDF5_LIBRARY_DIR ${HDF5_DIR}/lib)
-
-  # If using: cmake-3.2.3/share/cmake-3.2/Modules/FindHDF5.cmake
-  set(ENV{HDF5_ROOT_DIR_HINT} ${HDF5_DIR}/share/cmake)  
-  set(ENV{HDF5_ROOT} ${HDF5_DIR})  
+  set(HDF5_HL_INCLUDE_DIR ${HDF5_INCLUDE_DIR})
+  set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIR})
 
   mitkFunctionInstallExternalCMakeProject(${proj})
 
