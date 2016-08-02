@@ -134,7 +134,7 @@ vtkLookupTable* LookupTableProviderServiceImpl
 
 
 //-----------------------------------------------------------------------------
-niftk::NamedLookupTableProperty::Pointer 
+niftk::NamedLookupTableProperty::Pointer
 LookupTableProviderServiceImpl
 ::CreateLookupTableProperty(const QString& lookupTableName, float lowestValueOpacity, float highestValueOpacity)
 {
@@ -153,7 +153,7 @@ LookupTableProviderServiceImpl
 
 
 //-----------------------------------------------------------------------------
-niftk::LabeledLookupTableProperty::Pointer 
+niftk::LabeledLookupTableProperty::Pointer
 LookupTableProviderServiceImpl::CreateLookupTableProperty(const QString& lookupTableName)
 {
   vtkLookupTable *vtkLUT = this->CreateLookupTable(lookupTableName, 0, 0);
@@ -172,7 +172,7 @@ LookupTableProviderServiceImpl::CreateLookupTableProperty(const QString& lookupT
 
 
 //-----------------------------------------------------------------------------
-void LookupTableProviderServiceImpl::AddNewLookupTableContainer(const LookupTableContainer* container) 
+void LookupTableProviderServiceImpl::AddNewLookupTableContainer(const LookupTableContainer* container)
 {
   LookupTableManager* manager = this->GetManager();
   if (manager == NULL)
@@ -186,7 +186,7 @@ void LookupTableProviderServiceImpl::AddNewLookupTableContainer(const LookupTabl
 
 //-----------------------------------------------------------------------------
 void LookupTableProviderServiceImpl
-::ReplaceLookupTableContainer(const LookupTableContainer* container, const QString& lookupTableName) 
+::ReplaceLookupTableContainer(const LookupTableContainer* container, const QString& lookupTableName)
 {
   LookupTableManager* manager = this->GetManager();
   if (manager == NULL)

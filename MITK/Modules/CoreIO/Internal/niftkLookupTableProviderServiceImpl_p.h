@@ -77,7 +77,8 @@ public:
   /**
    * \see LookupTableProviderService::ReplaceLookupTableContainer()
    */
-  virtual void ReplaceLookupTableContainer(const LookupTableContainer* container, const QString& lookupTableName) override;
+  virtual void ReplaceLookupTableContainer(const LookupTableContainer* container,
+                                           const QString& lookupTableName) override;
 
   /**
    * \see LookupTableProviderService::GetIsScaled
