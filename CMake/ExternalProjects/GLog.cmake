@@ -58,6 +58,24 @@ if(NOT DEFINED GLog_DIR)
   set(GLog_INCLUDE_DIR ${GLog_DIR}/include)
   set(GLog_LIBRARY_DIR ${GLog_DIR}/lib)
 
+  # Needed by Caffe
+  find_library(GLog_LIBRARY_RELEASE NAMES glog
+               PATHS ${GLog_DIR}
+               PATH_SUFFIXES lib lib/Release
+               NO_DEFAULT_PATH)
+  find_library(GLog_LIBRARY_DEBUG NAMES glogd
+               PATHS ${GLog_DIR}
+               PATH_SUFFIXES lib lib/Debug
+               NO_DEFAULT_PATH)
+
+  set(GLog_LIBRARY )
+  if(GLog_LIBRARY_RELEASE)
+    list(APPEND GLog_LIBRARY ${GLog_LIBRARY_RELEASE})
+  endif()
+  if(GLog_LIBRARY_DEBUG)
+    list(APPEND GLog_LIBRARY ${GLog_LIBRARY_DEBUG})
+  endif()
+
   mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading GLog from ${GLog_DIR}.")

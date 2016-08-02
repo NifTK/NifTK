@@ -56,7 +56,26 @@ if(NOT DEFINED GFlags_DIR)
   set(GFlags_DIR ${proj_INSTALL})
   set(GFlags_INCLUDE_DIR ${GFlags_DIR}/include)
   set(GFlags_LIBRARY_DIR ${GFlags_DIR}/lib)
+  set(GFlags_LIBRARY ${GFlags_LIBRARY_DIR}/)
   
+  # Needed by Caffe
+  find_library(GFlags_LIBRARY_RELEASE NAMES gflags
+               PATHS ${GFlags_DIR}
+               PATH_SUFFIXES lib lib/Release
+               NO_DEFAULT_PATH)
+  find_library(GFlags_LIBRARY_DEBUG NAMES gflagsd
+               PATHS ${GFlags_DIR}
+               PATH_SUFFIXES lib lib/Debug
+               NO_DEFAULT_PATH)
+
+  set(GFlags_LIBRARY )
+  if(GFlags_LIBRARY_RELEASE)
+    list(APPEND GFlags_LIBRARY ${GFlags_LIBRARY_RELEASE})
+  endif()
+  if(GFlags_LIBRARY_DEBUG)
+    list(APPEND GFlags_LIBRARY ${GFlags_LIBRARY_DEBUG})
+  endif()
+
   mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading GFlags from ${GFlags_DIR}.")

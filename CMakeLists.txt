@@ -1257,6 +1257,7 @@ endif(BUILD_IGI)
 # Find Caffe
 ######################################################################
 
+<<<<<<< HEAD
 #message("CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}")
 #
 if(BUILD_Caffe)
@@ -1267,6 +1268,9 @@ if(BUILD_Caffe)
 #    message("Didn't find HDF5")
 #  endif()
 #
+=======
+if(BUILD_Caffe)
+>>>>>>> Initial version which compiles on SL6, Caffe on by default for testing
   find_package(Caffe)
   if(Caffe_FOUND)
     message("Found Caffe")
