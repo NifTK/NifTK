@@ -170,6 +170,14 @@
     </file>
 
     <file>
+      <name>outputErrorsNewFormat</name>
+      <longflag>outputErrorsNewFormat</longflag>
+      <description>Write out the reprojection errors in post July 2016 format</description>
+      <label>Write out the reprojection errors in post July 2016 format</label>
+      <channel>output</channel>
+    </file>
+
+    <file>
       <name>outputTriangulatedPoints</name>
       <longflag>outputTriangulatedPoints</longflag>
       <description>Output Trianguled 3D points</description>

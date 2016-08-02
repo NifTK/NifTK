@@ -340,7 +340,13 @@ int main(int argc, char** argv)
         projector->TriangulateGoldStandardPoints(outputTriangulatedPoints, matcher);
       }
     }
-   
+
+    if ( outputErrorsNewFormat.length() != 0 )
+    {
+      projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
+      bool useNewOutputFormat = true;
+      projector->CalculateProjectionErrors(outputErrorsNewFormat, useNewOutputFormat);
+    }
 
     returnStatus = EXIT_SUCCESS;
   }
