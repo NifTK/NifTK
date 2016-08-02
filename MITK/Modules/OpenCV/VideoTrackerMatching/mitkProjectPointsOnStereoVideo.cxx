@@ -1297,7 +1297,7 @@ void ProjectPointsOnStereoVideo::WriteProjectionErrorsInNewFormat (const std::st
     out << it->m_FrameNumber << " , " << type << " , " << it->m_Id << " , " << it->m_Channel << " , ";
     out << it->m_Points[0].x << " , " << it->m_Points[0].y << " , " << it->m_Points[0].z << " , ";
     out << it->m_Points[1].x << " , " << it->m_Points[1].y << " , " << it->m_Points[1].z << " , ";
-    out << it->m_Points[2].x << " , " << it->m_Points[2].y << " , " << it->m_Points[2].z << " , ";
+    out << it->m_Points[2].x << " , " << it->m_Points[2].y << " , " << it->m_Points[2].z;
     out << std::endl;
   }
 
@@ -1317,7 +1317,7 @@ void ProjectPointsOnStereoVideo::WriteProjectionErrorsInNewFormat (const std::st
     out << it->m_FrameNumber << " , " << type << " , " << it->m_Id << " , " << it->m_Channel << " , ";
     out << it->m_Points[0].x << " , " << it->m_Points[0].y << " , " << it->m_Points[0].z << " , ";
     out << it->m_Points[1].x << " , " << it->m_Points[1].y << " , " << it->m_Points[1].z << " , ";
-    out << it->m_Points[2].x << " , " << it->m_Points[2].y << " , " << it->m_Points[2].z << " , ";
+    out << it->m_Points[2].x << " , " << it->m_Points[2].y << " , " << it->m_Points[2].z;
     out << std::endl;
   }
 
