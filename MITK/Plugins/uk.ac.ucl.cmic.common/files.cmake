@@ -28,8 +28,6 @@ set(UI_FILES
 set(MOC_H_FILES
   src/niftkBaseView.h
   src/internal/niftkPluginActivator.h
-  src/internal/niftkVisibilityChangedCommand.h
-  src/internal/niftkVisibilityChangeObserver.h
 )
 
 set(CACHED_RESOURCE_FILES
