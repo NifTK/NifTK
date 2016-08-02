@@ -37,7 +37,6 @@ fi
 
 masks=$(ls *leftMask.png)
 
-NIFTK_BIN="/home/thompson/work/build/NiftySLS-dbg/NifTK-build/bin/"
 for mask in $masks 
 do
 	timestamp=${mask%_leftMask.png*}
@@ -68,31 +67,31 @@ do
 	then
 		echo Found everything I need for $mask
 		
-		${NIFTK_BIN}niftkCorrectVideoDistortion --input ${timestamp}_left.png \
+		niftkCorrectVideoDistortion --input ${timestamp}_left.png \
 			--intrinsicLeft ../scope_calibration/calib.left.intrinsic.xml \
 			--distortionLeft ../scope_calibration/calib.left.distortion.xml \
 			--output ${timestamp}_left_undistorted.png
 
-		${NIFTK_BIN}niftkCorrectVideoDistortion --input ${timestamp}_leftMask.png \
+		niftkCorrectVideoDistortion --input ${timestamp}_leftMask.png \
 			--intrinsicLeft ../scope_calibration/calib.left.intrinsic.xml \
 			--distortionLeft ../scope_calibration/calib.left.distortion.xml \
 			--output ${timestamp}_leftMask_undistorted.png
 
-		${NIFTK_BIN}niftkCorrectVideoDistortion --input ${timestamp}_right.png \
+		niftkCorrectVideoDistortion --input ${timestamp}_right.png \
 			--intrinsicLeft ../scope_calibration/calib.right.intrinsic.xml \
 			--distortionLeft ../scope_calibration/calib.right.distortion.xml \
 			--output ${timestamp}_right_undistorted.png
 
-		${NIFTK_BIN}niftkCorrectVideoDistortion --input ${timestamp}_rightMask.png \
+		niftkCorrectVideoDistortion --input ${timestamp}_rightMask.png \
 			--intrinsicLeft ../scope_calibration/calib.right.intrinsic.xml \
 			--distortionLeft ../scope_calibration/calib.right.distortion.xml \
 			--output ${timestamp}_rightMask_undistorted.png
 
-		${NIFTK_BIN}niftkImageFeatureMatching --left ${timestamp}_left_undistorted.png \
+		niftkImageFeatureMatching --left ${timestamp}_left_undistorted.png \
 			--right ${timestamp}_right_undistorted.png \
 			--output ${timestamp}_pointPairs.txt
 
-		${NIFTK_BIN}niftkTriangulate2DPointPairsTo3D --inputPointPairs ${timestamp}_pointPairs.txt \
+		niftkTriangulate2DPointPairsTo3D --inputPointPairs ${timestamp}_pointPairs.txt \
 			--intrinsicRight ../scope_calibration/calib.right.intrinsic.nodistortion.txt \
 			--intrinsicLeft ../scope_calibration/calib.left.intrinsic.nodistortion.txt \
 			--rightToLeftExtrinsics ../scope_calibration/calib.r2l.txt \
