@@ -349,7 +349,7 @@ Ubuntu 14.04 release installer:
   - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
   - source /etc/os-release
   - os_version="${ID}-${VERSION_ID}"
-  - make package
+  - cpack --config CPackConfig.cmake
   - installer_file="niftk-${version}-linux-${os_version}-x64.tar.bz2"
   - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
   - "# Upload the tarball"
@@ -372,7 +372,7 @@ CentOS 7 release installer:
   - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
   - source /etc/os-release
   - os_version="${ID}-${VERSION_ID}"
-  - make package
+  - cpack --config CPackConfig.cmake
   - installer_file="niftk-${version}-linux-${os_version}-x64.tar.bz2"
   - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
   - "# Upload the tarball"
@@ -395,7 +395,7 @@ Cluster release installer:
   - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
   - source /etc/os-release
   - os_version="${ID}-${VERSION_ID}"
-  - make package
+  - cpack --config CPackConfig.cmake
   - installer_file="niftk-${version}-linux-${os_version}-x64.tar.bz2"
   - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
   - install_prefix=/share/apps/cmic/niftk/niftk-${niftk_version_string}
@@ -427,7 +427,7 @@ Managed CentOS 7 release installer:
   - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
   - source /etc/os-release
   - os_version="${ID}-${VERSION_ID}"
-  - make package
+  - cpack --config CPackConfig.cmake
   - installer_file="niftk-${version}-linux-${os_version}-x64.tar.bz2"
   - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
   - install_prefix=/cs/research/medic/common2/paramedic/share/cmic/niftk-scientific/niftk-${niftk_version_string}
@@ -457,7 +457,7 @@ Mac release installer:
   - version=${CI_BUILD_TAG}
   - cd ${pb_dir}
   - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
-  - make package
+  - cpack --config CPackConfig.cmake
   - installer_file="niftk-${version}-mac-10.10.dmg"
   - mv niftk-${niftk_version_string}.dmg ${installer_file}
   - "# Upload the installer image"
