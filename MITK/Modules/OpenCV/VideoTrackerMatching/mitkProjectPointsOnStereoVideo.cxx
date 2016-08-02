@@ -1278,7 +1278,7 @@ void ProjectPointsOnStereoVideo::WriteProjectionErrorsInNewFormat (const std::st
   std::ofstream out;
 
   out.open (std::string (outPrefix + "_ReProjectionErrors.txt").c_str());
-  out << "# frame , type , id , channel , xmm , ymm , zmm , gsx , gsy , gsz , mpx , mpy , mpz << std::endl";
+  out << "# frame , type , id , channel , xmm , ymm , zmm , gsx , gsy , gsz , mpx , mpy , mpz" << std::endl;
 
   std::vector<cv::Point3d> reProjectionErrors;
   for ( std::vector<mitk::PickedObject>::iterator it = m_LeftReProjectionErrors.begin() ;
