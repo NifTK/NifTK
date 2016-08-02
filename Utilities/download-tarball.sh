@@ -15,7 +15,7 @@ function print_usage() {
   echo "
 Usage:
 
-    download-tarball.sh [-s|--sources] [-r|--repository] <project> <version>
+    download-tarball.sh [-s|--sources] [-r|--repository] [-h|--history] <project> <version>
 
 Options:
 
@@ -29,9 +29,9 @@ The options can be combined but at least one of them must be given. The suggeste
 options are -r for the git and -sr for the subversion projects.
 
 The '--history' option implies '--repository' and it can be applied for projects
-with a git repository. With this option the tarball will contain the cloned repo-
-sitory, with the complete history of every remote branches. When this option is
-omitted (but '--repository' is specified), the tarball will only contain the
+with a git repository. With this option the tarball will contain the whole cloned
+repository, with the complete history of every remote branches. When this option
+is omitted (but '--repository' is specified), the tarball will only contain the
 commit that is specified in the '<version>' argument.
 
 Supported projects:
