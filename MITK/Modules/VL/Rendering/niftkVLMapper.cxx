@@ -35,6 +35,8 @@
   #include <niftkPCLData.h>
 #endif
 
+using namespace vl;
+
 namespace niftk
 {
 
