@@ -159,6 +159,12 @@ option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
 option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
+#option(BUILD_OpenBLAS "Build OpenBLAS." OFF)
+#option(BUILD_ProtoBuf "Build ProtoBuf." OFF)
+#option(BUILD_GLog "Build GLog." OFF)
+#option(BUILD_GFlags "Build GFlags." OFF)
+#option(BUILD_HDF5 "Build HDF5." OFF)
+option(BUILD_CAFFE "Build Caffe." ON)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 # the console window is normally shown only for debug builds. but can be explicitly enabled.
 #if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -271,6 +277,12 @@ mark_as_advanced(BUILD_CAMINO)
 mark_as_advanced(BUILD_PCL)
 mark_as_advanced(BUILD_RTK)
 mark_as_advanced(BUILD_MESHING)
+#mark_as_advanced(BUILD_OpenBLAS)
+#mark_as_advanced(BUILD_ProtoBuf)
+#mark_as_advanced(BUILD_GLog)
+#mark_as_advanced(BUILD_GFlags)
+#mark_as_advanced(BUILD_HDF5)
+mark_as_advanced(BUILD_CAFFE)
 
 ######################################################################
 # Make sure Git is available.
@@ -579,6 +591,7 @@ mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
 
 mitkFunctionAddExternalProject(NAME DCMTK     ON  ADVANCED)
 mitkFunctionAddExternalProject(NAME GDCM      ON  ADVANCED)
+mitkFunctionAddExternalProject(NAME HDF5      OFF ADVANCED) # Needs to be built prior to ITK (used by Caffe)
 mitkFunctionAddExternalProject(NAME ITK       ON  ADVANCED NO_CACHE DEPENDS GDCM)
 mitkFunctionAddExternalProject(NAME SimpleITK OFF ADVANCED DEPENDS ITK GDCM SWIG)
 mitkFunctionAddExternalProject(NAME VTK       ON  ADVANCED NO_CACHE)
@@ -589,6 +602,13 @@ mitkFunctionAddExternalProject(NAME MITK      ON  ADVANCED NO_CACHE DEPENDS ITK 
 mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON ADVANCED DEPENDS ITK)
 mitkFunctionAddExternalProject(NAME RTK                  OFF ADVANCED DEPENDS ITK GDCM)
 mitkFunctionAddExternalProject(NAME NiftyCal  OFF ADVANCED DEPENDS OpenCV AprilTags Eigen ITK)
+
+mitkFunctionAddExternalProject(NAME OpenBLAS OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME ProtoBuf OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME GLog     OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME GFlags   OFF ADVANCED)
+mitkFunctionAddExternalProject(NAME Caffe    OFF ADVANCED DEPENDS OpenBLAS Boost ProtoBuf GLog GFlags HDF5 ZLIB)
+
 
 # -----------------------------------------
 # Other MITK_USE_* options not related to external projects build via the NifTK superbuild
@@ -649,6 +669,22 @@ if (BUILD_RTK)
   set(MITK_USE_RTK ON CACHE BOOL "" FORCE)
 else()
   set(MITK_USE_RTK OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_CAFFE)
+  set(MITK_USE_Caffe    ON CACHE BOOL "" FORCE)
+  set(MITK_USE_OpenBLAS ON CACHE BOOL "" FORCE)
+  set(MITK_USE_ProtoBuf ON CACHE BOOL "" FORCE)
+  set(MITK_USE_GLog     ON CACHE BOOL "" FORCE)
+  set(MITK_USE_GFlags   ON CACHE BOOL "" FORCE)
+  set(MITK_USE_HDF5     ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_Caffe    OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_OpenBLAS OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_ProtoBuf OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_GLog     OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_GFlags   OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_HDF5     OFF CACHE BOOL "" FORCE)
 endif()
 
 ######################################################################
@@ -978,6 +1014,12 @@ configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake ${CMAKE_BINARY_DIR}/
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindAprilTags.cmake ${CMAKE_BINARY_DIR}/FindAprilTags.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindOpenBLAS.cmake ${CMAKE_BINARY_DIR}/FindOpenBLAS.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindProtoBuf.cmake ${CMAKE_BINARY_DIR}/FindProtoBuf.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindGLog.cmake ${CMAKE_BINARY_DIR}/FindGLog.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindGFlags.cmake ${CMAKE_BINARY_DIR}/FindGFlags.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindHDF5.cmake ${CMAKE_BINARY_DIR}/FindHDF5.cmake @ONLY)
+#configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCaffe.cmake ${CMAKE_BINARY_DIR}/FindCaffe.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)
@@ -1204,6 +1246,20 @@ if(BUILD_IGI)
   endif()
 
 endif(BUILD_IGI)
+
+
+######################################################################
+# Find Caffe
+######################################################################
+
+if(BUILD_Caffe)
+  find_package(Caffe)
+  if(Caffe_FOUND)
+    message("Found Caffe")
+  else()
+    message("Didn't find Caffe")
+  endif()
+endif()
 
 
 ######################################################################
@@ -1745,6 +1801,18 @@ if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
       )
   install(FILES ${CAMINO_MAN_FILES} DESTINATION man/man1/ PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
   install(FILES ${CAMINO_BIN_FILES} DESTINATION bin PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+endif()
+
+# Caffe
+if(BUILD_CAFFE)
+  file(GLOB CAFFE_BIN_FILES
+       ${Caffe_DIR}/bin/*
+      )
+  file(GLOB CAFFE_MAN_FILES
+       ${Caffe_DIR}/man/man1/*
+      )
+  install(FILES ${CAFFE_MAN_FILES} DESTINATION man/man1/ PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
+  install(FILES ${CAFFE_BIN_FILES} DESTINATION bin PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endif()
 
 ######################################################################
