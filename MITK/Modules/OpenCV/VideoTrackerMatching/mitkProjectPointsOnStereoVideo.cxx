@@ -1354,8 +1354,27 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
   mitk::PickedObject matchingObject = GetMatchingPickedObject ( toMatch, *m_PointsInLeftLensCS[GSPoint.m_FrameNumber] );
   assert ( matchingObject.m_FrameNumber == GSPoint.m_FrameNumber );
 
+  cv::Mat worldToLeftCamera = m_WorldToLeftCameraMatrices[GSPoint.m_FrameNumber];
+  cv::Mat worldToCamera = worldToLeftCamera;
   if ( GSPoint.m_Channel != "left" )
   {
+    cv::Mat rightToLeftCamera = cvCreateMat(4,4,CV_64FC1);
+    for ( unsigned int i = 0 ; i < 3 ; ++i )
+    {
+      for ( unsigned int j = 0 ; j < 3 ; ++j )
+      {
+        rightToLeftCamera.at<double>(i,j) = m_RightToLeftRotationMatrix->at<double>(i,j);
+      }
+    }
+    for ( unsigned int i = 0 ; i < 3 ; ++i )
+    {
+      rightToLeftCamera.at<double>(i,3) = m_RightToLeftTranslationVector->at<double>(i);
+      rightToLeftCamera.at<double>(3,i) = 0.0;
+    }
+    rightToLeftCamera.at<double>(3,3) = 1.0;
+    worldToCamera = rightToLeftCamera.inv() * worldToLeftCamera;
+
+
     //transform points from left right lens
     for ( unsigned int i = 0 ; i < matchingObject.m_Points.size() ; i ++ )
     {
@@ -1380,6 +1399,9 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
 
   mitk::PickedObject reprojectionError;
   reprojectedObject.DistanceTo ( matchingObject, reprojectionError, m_AllowableTimingError);
+
+  reprojectionError.m_Points[1] = worldToCamera.inv() * reprojectionError.m_Points[1];
+  reprojectionError.m_Points[2] = worldToCamera.inv() * reprojectionError.m_Points[2];
 
   //for lines there will be a small residual z error, as the closest point to the projected line may not be
   //on the plane. Let's check that this remains fairly small
