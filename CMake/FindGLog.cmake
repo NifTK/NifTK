@@ -16,9 +16,6 @@ set(GLog_FOUND)
 
 set(GLog_DIR @GLog_DIR@ CACHE PATH "Directory containing GLog installation")
 
-message( FATAL_ERROR "FindGLog.cmake CMAKE_DEBUG_POSTFIX: ${CMAKE_DEBUG_POSTFIX}" )
-
-
 set(GLog_INCLUDE_DIR
   NAME glog.h
   PATHS ${GLog_DIR}/include
