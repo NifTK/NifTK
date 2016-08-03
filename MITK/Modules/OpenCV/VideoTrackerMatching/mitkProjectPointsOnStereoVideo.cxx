@@ -1418,10 +1418,20 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
   }
   else
   {
-    MITK_WARN << "Rejecting reprojection error for point id " << reprojectedObject.m_Id <<
-      " channel " << GSPoint.m_Channel <<
-      " frame " << reprojectedObject.m_FrameNumber <<
-      " as z component error is too high : " << reprojectionError.m_Points[0].z;
+    if ( ! GSPoint.m_IsLine )
+    {
+      MITK_WARN << "Rejecting reprojection error for point id " << reprojectedObject.m_Id <<
+        " channel " << GSPoint.m_Channel <<
+        " frame " << reprojectedObject.m_FrameNumber <<
+        " as z component error is too high : " << reprojectionError.m_Points[0].z;
+    }
+    else
+    {
+      MITK_WARN << "Rejecting reprojection error for line id " << reprojectedObject.m_Id <<
+        " channel " << GSPoint.m_Channel <<
+        " frame " << reprojectedObject.m_FrameNumber <<
+        " as z component error is too high : " << reprojectionError.m_Points[0].z;
+    }
   }
 }
 
@@ -1895,14 +1905,11 @@ void ProjectPointsOnStereoVideo::ProjectAxes()
         output2DAxesPointsLeft,
         output2DAxesPointsRight);
 
-  MITK_INFO << leftCameraAxesPoints;
   for ( unsigned int i = 0 ; i < 4 ; i ++ )
   {
-    MITK_INFO << i;
     mitk::ProjectedPointPair pointPair;
     pointPair.m_Left = cv::Point2d(CV_MAT_ELEM(*output2DAxesPointsLeft,double,i,0),CV_MAT_ELEM(*output2DAxesPointsLeft,double,i,1));
     pointPair.m_Right = cv::Point2d(CV_MAT_ELEM(*output2DAxesPointsRight,double,i,0),CV_MAT_ELEM(*output2DAxesPointsRight,double,i,1));
-    MITK_INFO << "Left" << pointPair.m_Left << "Right" << pointPair.m_Right;
 
     m_ScreenAxesPoints.m_Points.push_back(pointPair);
   }
