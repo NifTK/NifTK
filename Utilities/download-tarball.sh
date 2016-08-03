@@ -34,6 +34,14 @@ repository, with the complete history of every remote branches. When this option
 is omitted (but '--repository' is specified), the tarball will only contain the
 commit that is specified in the '<version>' argument.
 
+Keeping the repository without history requires git 2.5.0 or newer.
+Commands to install git into your home bin directory:
+
+    git clone https://github.com/git/git
+    cd git
+    make
+    make install
+
 Supported projects:
 
     MITK
@@ -106,6 +114,25 @@ fi
 if [[ ! $keep_sources && ! $keep_repository ]]
 then
   print_usage
+fi
+
+if [[ $keep_repository && ! $keep_history ]]
+then
+  git_version_regex="^git version ([0-9]+)\.([0-9]+)\.([0-9]+)(\.([0-9]+))?$"
+  git_version=`git --version`
+  if [[ $git_version =~ $git_version_regex ]]
+  then
+    git_major_version="${BASH_REMATCH[1]}"
+    git_minor_version="${BASH_REMATCH[2]}"
+    if [[ ! ( ${git_major_version} -ge 2 && ${git_minor_version} -ge 5 ) ]]
+    then
+      echo "Obsolete git version."
+      print_usage
+    fi
+  else
+    echo "Unrecognised git version."
+    print_usage
+  fi
 fi
 
 project=$1
