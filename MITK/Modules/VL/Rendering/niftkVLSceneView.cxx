@@ -307,10 +307,9 @@ VLSceneView::VLSceneView( VLWidget* vlwidget ) :
   m_VividRendering->setDepthPeelingAutoThrottleEnabled( true );
 
   // VividRendering nicely prepares for us all the structures we need to use ;)
-  m_VividRenderer = m_VividRendering->vividRenderer();
   m_SceneManager = m_VividRendering->sceneManager();
 
-  // In the future Camera (and Trackball) should belong in VLView and be set upon rendering.
+  // In the future Camera (and Trackball) may belong in VLView and be set upon rendering.
   m_Camera = m_VividRendering->calibratedCamera();
 
   // Initialize the trackball manipulator
@@ -342,7 +341,6 @@ void VLSceneView::destroyEvent()
   // is still available as it disposes all the internal GL objects used.
 
   m_VividRendering = NULL;
-  m_VividRenderer = NULL;
   m_SceneManager = NULL;
   m_Camera = NULL;
   m_Trackball = NULL;
@@ -898,7 +896,7 @@ float VLSceneView::opacity() const
 
 void VLSceneView::setDepthPeelingPasses( int n )
 {
-  m_VividRenderer->setNumPasses( n );
+  m_VividRendering->setDepthPeelingPasses( n );
   openglContext()->update();
 }
 
@@ -906,7 +904,7 @@ void VLSceneView::setDepthPeelingPasses( int n )
 
 int VLSceneView::depthPeelingPasses() const
 {
-  return m_VividRenderer->numPasses();
+  return m_VividRendering->depthPeelingPasses();
 }
 
 //-----------------------------------------------------------------------------

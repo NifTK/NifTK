@@ -224,7 +224,6 @@ protected:
   VLWidget* m_VLWidget;
 
   vl::ref<vl::VividRendering>        m_VividRendering;
-  vl::ref<vl::VividRenderer>         m_VividRenderer;
   vl::ref<vl::SceneManagerActorTree> m_SceneManager;
   vl::ref<vl::CalibratedCamera>      m_Camera;
   vl::ref<niftk::VLTrackballManipulator> m_Trackball;

@@ -19,6 +19,7 @@
 #include <vlGraphics/Actor.hpp>
 #include <vlGraphics/GeometryPrimitives.hpp>
 #include <vlVivid/VividRendering.hpp>
+#include <vlVivid/VividVolume.hpp>
 #include <mitkDataNode.h>
 #include <mitkProperties.h>
 #include <mitkImageReadAccessor.h>

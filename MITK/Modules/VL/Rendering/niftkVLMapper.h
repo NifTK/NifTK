@@ -23,6 +23,7 @@
 #include <vlCore/vlnamespace.hpp>
 #include <vlGraphics/Texture.hpp>
 #include <vlVivid/VividRendering.hpp>
+#include <vlVivid/VividVolume.hpp>
 
 #include <mitkDataNode.h>
 #include <mitkBaseData.h>
