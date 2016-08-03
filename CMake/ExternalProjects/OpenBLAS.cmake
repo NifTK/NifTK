@@ -22,55 +22,59 @@ if(DEFINED OpenBLAS_DIR AND NOT EXISTS ${OpenBLAS_DIR})
   message(FATAL_ERROR "OpenBLAS_DIR variable is defined but corresponds to non-existing directory \"${OpenBLAS_ROOT}\".")
 endif()
 
-#set(version "0.2.18")
-set(version "27b5211")
-set(location "${NIFTK_EP_TARBALL_LOCATION}/OpenBLAS-${version}.tar.gz")
+if(NOT APPLE)
 
-niftkMacroDefineExternalProjectVariables(OpenBLAS ${version} ${location})
+  #set(version "0.2.18")
+  set(version "27b5211")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/OpenBLAS-${version}.tar.gz")
 
-if(NOT DEFINED OpenBLAS_DIR)
+  niftkMacroDefineExternalProjectVariables(OpenBLAS ${version} ${location})
 
-  ExternalProject_Add(${proj}
-    LIST_SEPARATOR ^^
-    PREFIX ${proj_CONFIG}
-    SOURCE_DIR ${proj_SOURCE}
-    BINARY_DIR ${proj_BUILD}
-    INSTALL_DIR ${proj_INSTALL}
-    URL ${proj_LOCATION}
-    URL_MD5 ${proj_CHECKSUM}
-    #CONFIGURE_COMMAND ""
-    #UPDATE_COMMAND ""
-    #BUILD_COMMAND ""
-    INSTALL_COMMAND ""
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${EP_COMMON_ARGS}
-      -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
-      -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
-    CMAKE_CACHE_ARGS
-      ${EP_COMMON_CACHE_ARGS}
-    CMAKE_CACHE_DEFAULT_ARGS
-      ${EP_COMMON_CACHE_DEFAULT_ARGS}
-    DEPENDS ${proj_DEPENDENCIES}
-  )
+  if(NOT DEFINED OpenBLAS_DIR)
 
-  set(OpenBLAS_SOURCE_DIR ${proj_SOURCE})
-  set(OpenBLAS_DIR        ${proj_BUILD})
-  set(OpenBLAS_INCLUDE_DIR ${OpenBLAS_SOURCE_DIR})
-  set(OpenBLAS_LIBRARY_DIR ${OpenBLAS_DIR}/lib)
+    ExternalProject_Add(${proj}
+      LIST_SEPARATOR ^^
+      PREFIX ${proj_CONFIG}
+      SOURCE_DIR ${proj_SOURCE}
+      BINARY_DIR ${proj_BUILD}
+      INSTALL_DIR ${proj_INSTALL}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
+      #CONFIGURE_COMMAND ""
+      #UPDATE_COMMAND ""
+      #BUILD_COMMAND ""
+      INSTALL_COMMAND ""
+      CMAKE_GENERATOR ${gen}
+      CMAKE_ARGS
+        ${EP_COMMON_ARGS}
+        -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
+        -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
+      CMAKE_CACHE_ARGS
+        ${EP_COMMON_CACHE_ARGS}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${EP_COMMON_CACHE_DEFAULT_ARGS}
+      DEPENDS ${proj_DEPENDENCIES}
+    )
 
-  install(DIRECTORY ${proj_BUILD}/include
-          DESTINATION ${proj_INSTALL})
+    set(OpenBLAS_SOURCE_DIR ${proj_SOURCE})
+    set(OpenBLAS_DIR        ${proj_BUILD})
+    set(OpenBLAS_INCLUDE_DIR ${OpenBLAS_SOURCE_DIR})
+    set(OpenBLAS_LIBRARY_DIR ${OpenBLAS_DIR}/lib)
 
-  install(DIRECTORY ${proj_BUILD}/lib
-          DESTINATION ${proj_INSTALL})
+    install(DIRECTORY ${proj_BUILD}/include
+            DESTINATION ${proj_INSTALL})
 
-  mitkFunctionInstallExternalCMakeProject(${proj})
+    install(DIRECTORY ${proj_BUILD}/lib
+            DESTINATION ${proj_INSTALL})
 
-  message("SuperBuild loading OpenBLAS from ${OpenBLAS_DIR}.")
+    mitkFunctionInstallExternalCMakeProject(${proj})
 
-else(NOT DEFINED OpenBLAS_DIR)
+    message("SuperBuild loading OpenBLAS from ${OpenBLAS_DIR}.")
 
-  mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+  else(NOT DEFINED OpenBLAS_DIR)
 
-endif(NOT DEFINED OpenBLAS_DIR)
+    mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
+
+  endif(NOT DEFINED OpenBLAS_DIR)
+endif()
+
