@@ -344,7 +344,7 @@ private:
   /* \brief
    * writes out reprojection results in the post July 2016 format
    */
-  void WriteProjectionErrorsInNewFormat (const std::string& outPrefix);
+  void WriteProjectionErrorsInNewFormat (const std::string& outFile);
 }; // end class
 
 } // end namespace

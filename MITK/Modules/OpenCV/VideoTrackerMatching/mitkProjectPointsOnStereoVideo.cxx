@@ -1272,12 +1272,12 @@ void ProjectPointsOnStereoVideo::WriteProjectionErrorsInOldFormat (const std::st
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::WriteProjectionErrorsInNewFormat (const std::string& outPrefix)
+void ProjectPointsOnStereoVideo::WriteProjectionErrorsInNewFormat (const std::string& outFile)
 {
 
   std::ofstream out;
 
-  out.open (std::string (outPrefix + "_ReProjectionErrors.txt").c_str());
+  out.open (std::string (outFile).c_str());
   out << "# frame , type , id , channel , xmm , ymm , zmm , gsx , gsy , gsz , mpx , mpy , mpz" << std::endl;
 
   std::vector<cv::Point3d> reProjectionErrors;

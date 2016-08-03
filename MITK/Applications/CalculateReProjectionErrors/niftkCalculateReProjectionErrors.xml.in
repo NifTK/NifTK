@@ -51,18 +51,18 @@
     </directory>
   
     <boolean>
-      <name>saveAnnotateWithGS</name>
-      <longflag>saveAnnotateWithGS</longflag>
+      <name>saveImages</name>
+      <longflag>saveImages</longflag>
       <description>Save frames annotated with gold standard selections</description>
       <label>Save frames annotated with gold standard selections</label>
       <channel>output</channel>
     </boolean>
 
     <file>
-      <name>outputErrorsNewFormat</name>
-      <longflag>outputErrorsNewFormat</longflag>
-      <description>Write out the reprojection errors in post July 2016 format</description>
-      <label>Write out the reprojection errors in post July 2016 format</label>
+      <name>outputFile</name>
+      <longflag>outputFile</longflag>
+      <description>Name of file to write reprojection errors to.</description>
+      <label>Name of file to write reprojection errors to.</label>
       <channel>output</channel>
     </file>
 

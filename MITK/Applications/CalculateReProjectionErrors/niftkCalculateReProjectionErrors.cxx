@@ -70,12 +70,12 @@ int main(int argc, char** argv)
     projector->SetProjectorScreenBuffer(projectorScreenBuffer);
     projector->SetClassifierScreenBuffer(classifierScreenBuffer);
     projector->SetVisualiseTrackingStatus(showTrackingStatus);
-    if ( saveAnnotateWithGS )
+    if ( saveImages )
     {
       annotateWithGS = false;
     }
     projector->SetAnnotateWithGoldStandards(annotateWithGS);
-    projector->SetWriteAnnotatedGoldStandards(saveAnnotateWithGS);
+    projector->SetWriteAnnotatedGoldStandards(saveImages);
 
     if ( outputVideo )
     {
@@ -140,11 +140,11 @@ int main(int argc, char** argv)
 
     projector->Project(matcher);
 
-    if ( outputErrorsNewFormat.length() != 0 )
+    if ( outputFile.length() != 0 )
     {
       projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
       bool useNewOutputFormat = true;
-      projector->CalculateProjectionErrors(outputErrorsNewFormat, useNewOutputFormat);
+      projector->CalculateProjectionErrors(outputFile, useNewOutputFormat);
     }
 
     returnStatus = EXIT_SUCCESS;
