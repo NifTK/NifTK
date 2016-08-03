@@ -24,7 +24,7 @@ find_file(ProtoBuf-CMake_CMakeLists
 
 message( "FindProtoBuf-CMake.cmake ProtoBuf-CMake_CMakeLists: ${ProtoBuf-CMake_CMakeLists}" )
 
-if((ProtoBuf-CMake_CMakeLists)
+if(ProtoBuf-CMake_CMakeLists)
 
   set(ProtoBuf-CMake_FOUND 1)
 
