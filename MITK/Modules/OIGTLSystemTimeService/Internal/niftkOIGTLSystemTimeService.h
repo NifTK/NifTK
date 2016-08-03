@@ -17,6 +17,7 @@
 
 #include <niftkSystemTimeServiceI.h>
 #include <igtlTimeStamp.h>
+#include <itkFastMutexLock.h>
 
 namespace niftk
 {
@@ -42,7 +43,8 @@ private:
   OIGTLSystemTimeService(const OIGTLSystemTimeService&); // deliberately not implemented
   OIGTLSystemTimeService& operator=(const OIGTLSystemTimeService&); // deliberately not implemented
 
-  igtl::TimeStamp::Pointer m_TimeStamp;
+  itk::FastMutexLock::Pointer m_Mutex;
+  igtl::TimeStamp::Pointer    m_TimeStamp;
 };
 
 } // end namespace
