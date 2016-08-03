@@ -72,7 +72,7 @@ int main(int argc, char** argv)
     projector->SetVisualiseTrackingStatus(showTrackingStatus);
     if ( saveImages )
     {
-      annotateWithGS = false;
+      annotateWithGS = true;
     }
     projector->SetAnnotateWithGoldStandards(annotateWithGS);
     projector->SetWriteAnnotatedGoldStandards(saveImages);

@@ -524,7 +524,9 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             goldStandardPointList->AnnotateImage(videoImage);
             if ( m_WriteAnnotatedGoldStandards )
             {
-              std::string outname = boost::lexical_cast<std::string>(framenumber) + ".png";
+              std::ostringstream ss;
+              ss << "frame_" << std::setw(6) << std::setfill('0') << framenumber << ".png";
+              std::string outname = ss.str();
               cv::imwrite(outname,videoImage);
             }
 
