@@ -531,6 +531,7 @@ void VLSceneView::initSceneFromDataStorage()
 
   #if 0
     // dump scene to VLB/VLT format for debugging
+    // requires #include <vlGraphics/plugins/ioVLX.hpp>
     vl::ref< vl::ResourceDatabase > db = new vl::ResourceDatabase;
     for( int i = 0; i < m_SceneManager->tree()->actors()->size(); ++i ) {
       vl::Actor* act = m_SceneManager->tree()->actors()->at(i);
@@ -1070,8 +1071,10 @@ bool VLSceneView::setCameraTrackingNode(const mitk::DataNode* node)
     m_Trackball->setEnabled( true );
     scheduleTrackballAdjustView( true );
   } else {
+#if 0
     VLUtils::dumpNodeInfo( "CameraNode():", node );
     VLUtils::dumpNodeInfo( "node->GetData()", node->GetData() );
+#endif
     m_Trackball->setEnabled( false );
     scheduleTrackballAdjustView( false );
     // update camera position

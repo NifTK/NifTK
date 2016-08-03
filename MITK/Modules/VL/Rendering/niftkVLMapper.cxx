@@ -247,13 +247,13 @@ void VLMapperSurface::update()
 //-----------------------------------------------------------------------------
 
 VLMapper2DImage::VLMapper2DImage( const mitk::DataNode* node, VLSceneView* sv )
-  : VLMapper( node, sv ) 
+  : VLMapper( node, sv )
 {
   m_MitkImage = dynamic_cast<mitk::Image*>( node->GetData() );
   VIVID_CHECK( m_MitkImage );
 }
 
-bool VLMapper2DImage::init() 
+bool VLMapper2DImage::init()
 {
   VIVID_CHECK( m_MitkImage );
 
@@ -270,7 +270,7 @@ bool VLMapper2DImage::init()
 
   m_Actor = initActor( geom.get() );
   // NOTE: for the moment we don't render it
-  // FIXME: the DataNode itself should be disabled
+  // FIXME: the DataNode itself should be disabled at init time?
   // m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
   vl::ref<vl::Effect> fx = m_Actor->effect();
 
@@ -289,7 +289,7 @@ bool VLMapper2DImage::init()
   return true;
 }
 
-void VLMapper2DImage::update() 
+void VLMapper2DImage::update()
 {
   VIVID_CHECK( m_MitkImage );
 
@@ -560,8 +560,8 @@ void VLMapperPoints::initPointSetProps()
 
 bool VLMapperPoints::init()
 {
-  initPointSetProps(); 
-  return true; 
+  initPointSetProps();
+  return true;
 }
 
 void VLMapperPoints::init3D() {
@@ -817,7 +817,7 @@ bool VLMapperCUDAImage::init()
 
   m_Actor = initActor( vlquad.get() );
   // NOTE: for the moment we don't render it
-  // FIXME: the DataNode itself should be disabled
+  // FIXME: the DataNode itself should be disabled at init time?
   // m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
   Effect* fx = m_Actor->effect();
 
