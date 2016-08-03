@@ -540,7 +540,6 @@ void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istr
     boost::property_tree::read_xml (is, pt);
     BOOST_FOREACH ( boost::property_tree::ptree::value_type const& v , pt.get_child("picked_object_list") )
     {
-      MITK_INFO << v.first;
       if ( v.first == "picked_object" )
       {
         mitk::PickedObject po;
