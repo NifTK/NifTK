@@ -500,6 +500,38 @@ void SavePickedObjects ( const std::vector < mitk::PickedObject > & points, std:
 }
 
 //---------------------------------------------------------------------------
+void LoadPickedObjectsFromDirectory (  std::vector < mitk::PickedObject > & points, const std::string& directory )
+{
+  boost::regex timeStampFilter ( "([0-9]{19})(.+)(Points.xml)");
+  boost::filesystem::directory_iterator endItr;
+  unsigned int fileInCount = 0;
+
+  for ( boost::filesystem::directory_iterator it(directory); it != endItr ; ++it)
+  {
+    if ( boost::filesystem::is_regular_file (it->status()) )
+    {
+      boost::cmatch what;
+      std::string stringthing = it->path().filename().string();
+      if ( boost::regex_match( stringthing.c_str(), what, timeStampFilter) )
+      {
+        std::ifstream fin ( it->path().string() );
+        if ( fin )
+        {
+          mitk::LoadPickedObjects ( points, fin );
+          ++fileInCount;
+          fin.close();
+        }
+        else
+        {
+          MITK_ERROR << "Failed to open " << it->path().string();
+        }
+      }
+    }
+  }
+  MITK_INFO << "Read " << fileInCount << " picked object files from directory " << directory;
+}
+
+//---------------------------------------------------------------------------
 void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istream& is )
 {
   boost::property_tree::ptree pt;
@@ -508,7 +540,6 @@ void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istr
     boost::property_tree::read_xml (is, pt);
     BOOST_FOREACH ( boost::property_tree::ptree::value_type const& v , pt.get_child("picked_object_list") )
     {
-      MITK_INFO << v.first;
       if ( v.first == "picked_object" )
       {
         mitk::PickedObject po;
@@ -811,7 +842,7 @@ void LoadHandeyeFromPlainText (const std::string& filename,
 }
 
 //-----------------------------------------------------------------------------
-mitk::PickedPointList::Pointer LoadPickedPointListFromDirectory (const std::string& directory,
+mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (const std::string& directory,
     unsigned int frameNumber, unsigned long long timestamp, std::string channel, 
     cv::Scalar scalar )
 {

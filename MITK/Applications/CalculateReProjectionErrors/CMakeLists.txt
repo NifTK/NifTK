@@ -13,9 +13,10 @@
 #============================================================================*/
 
 NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-  NAME niftkReviewVideoData
+  NAME niftkCalculateReProjectionErrors 
   BUILD_SLICER
   INSTALL_SCRIPT
   TARGET_LIBRARIES
     niftkOpenCV
 )
+
