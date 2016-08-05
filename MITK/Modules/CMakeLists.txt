@@ -47,6 +47,13 @@ if(BUILD_PCL)
   )
 endif()
 
+if(BUILD_CAFFE)
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    Caffe
+  )
+endif()
+
 if(BUILD_IGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
