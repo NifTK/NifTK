@@ -33,7 +33,7 @@ endif()
 
 # NifTK Caffe rc3 clone with NifTK relevant mods
 # https://cmiclab.cs.ucl.ac.uk/CMIC/CaffeNifTK
-set(version "3a241b2")
+set(version "4899049")
 
 set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
 
