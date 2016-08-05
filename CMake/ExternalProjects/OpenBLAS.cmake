@@ -32,6 +32,12 @@ if(NOT APPLE)
 
   if(NOT DEFINED OpenBLAS_DIR)
 
+    if(WIN32)
+      set(OpenBLAS_USE_THREAD OFF)
+    else(WIN32)    
+      set(OpenBLAS_USE_THREAD ON)
+    endif(WIN32)
+
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
@@ -49,7 +55,8 @@ if(NOT APPLE)
         ${EP_COMMON_ARGS}
         -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
         -DCMAKE_INSTALL_PREFIX:PATH=${proj_INSTALL}
-      CMAKE_CACHE_ARGS
+        -DUSE_THREAD:BOOL=${OpenBLAS_USE_THREAD}
+     CMAKE_CACHE_ARGS
         ${EP_COMMON_CACHE_ARGS}
       CMAKE_CACHE_DEFAULT_ARGS
         ${EP_COMMON_CACHE_DEFAULT_ARGS}
@@ -77,4 +84,5 @@ if(NOT APPLE)
 
   endif(NOT DEFINED OpenBLAS_DIR)
 endif()
+
 
