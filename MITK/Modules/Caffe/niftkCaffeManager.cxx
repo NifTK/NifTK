@@ -33,4 +33,12 @@ CaffeManager::~CaffeManager()
 }
 
 
+//-----------------------------------------------------------------------------
+void CaffeManager::Segment(const mitk::DataNode::ConstPointer &inputImage,
+                           const mitk::DataNode::Pointer &outputImage
+                          )
+{
+  // Do some segmentation.
+}
+
 } // end namespace

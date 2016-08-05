@@ -19,6 +19,7 @@
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 #include <mitkCommon.h>
+#include <mitkDataNode.h>
 
 namespace niftk
 {
@@ -28,6 +29,11 @@ namespace niftk
  * \brief Manager class to coordinate Caffe segmentation.
  *
  * All errors must be thrown as a subclass of mitk::Exception.
+ *
+ * The class is stateful. It is assumed that the constructor will
+ * initialise the network, so if the constructor is successful,
+ * the class should be ready to segment. Then all subsequent
+ * calls to the Segment method will compute a segmented image.
  */
 class NIFTKCAFFE_EXPORT CaffeManager : public itk::Object
 {
@@ -35,6 +41,10 @@ public:
 
   mitkClassMacroItkParent(CaffeManager, itk::Object)
   mitkNewMacro2Param(CaffeManager, const std::string&, const std::string&)
+
+  void Segment(const mitk::DataNode::ConstPointer& inputImage,
+               const mitk::DataNode::Pointer& outputImage
+               );
 
 protected:
 
