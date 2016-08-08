@@ -25,7 +25,7 @@ endif()
 if(NOT APPLE)
 
   #set(version "0.2.18")
-  set(version "7daf34e")
+  set(version "53e849f")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/OpenBLAS-${version}.tar.gz")
 
   niftkMacroDefineExternalProjectVariables(OpenBLAS ${version} ${location})
