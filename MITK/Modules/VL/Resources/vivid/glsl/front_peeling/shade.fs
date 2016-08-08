@@ -82,13 +82,13 @@ vec4 LightingStage()
   } else
   if ( vl_Vivid.enableTextureMapping ) {
     if ( vl_Vivid.textureDimension == 1 ) {
-      color = color * texture1D( vl_UserTexture1D, gl_TexCoord[0].s );
+      color = color * texture1D( vl_UserTexture1D, gl_TexCoord[0].x );
     } else
     if ( vl_Vivid.textureDimension == 2 ) {
-      color = color * texture2D( vl_UserTexture2D, gl_TexCoord[0].st );
+      color = color * texture2D( vl_UserTexture2D, gl_TexCoord[0].xy );
     } else
     if ( vl_Vivid.textureDimension == 3 ) {
-      color = color * texture3D( vl_UserTexture3D, gl_TexCoord[0].str );
+      color = color * texture3D( vl_UserTexture3D, gl_TexCoord[0].xyz );
     }
 
   }
