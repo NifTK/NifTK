@@ -12,21 +12,16 @@
 #
 #============================================================================*/
 
-set(_modules niftkCoreGui)
-
-if(CUDA_FOUND AND NIFTK_USE_CUDA)
-  list(APPEND _modules CUDA)
-endif()
-
-MITK_CREATE_MODULE(
-  DEPENDS ${_modules}
-  PACKAGE_DEPENDS Caffe
+set(CPP_FILES
+  Internal/niftkCaffeSegGUI.cxx
+  niftkCaffeSegController.cxx
 )
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkCaffe)
-endif()
+set(MOC_H_FILES 
+  Internal/niftkCaffeSegGUI.h
+  niftkCaffeSegController.h
+)
 
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif()
+set(UI_FILES
+  Internal/niftkCaffeSegGUI.ui
+)

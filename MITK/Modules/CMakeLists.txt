@@ -51,6 +51,7 @@ if(BUILD_CAFFE)
   set(MODULE_DIRS
     ${MODULE_DIRS}
     Caffe
+    CaffeGui
   )
 endif()
 

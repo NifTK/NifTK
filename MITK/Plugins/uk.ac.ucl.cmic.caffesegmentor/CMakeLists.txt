@@ -12,21 +12,14 @@
 #
 #============================================================================*/
 
-set(_modules niftkCoreGui)
+project(uk_ac_ucl_cmic_caffesegmentor)
 
-if(CUDA_FOUND AND NIFTK_USE_CUDA)
-  list(APPEND _modules CUDA)
-endif()
-
-MITK_CREATE_MODULE(
-  DEPENDS ${_modules}
-  PACKAGE_DEPENDS Caffe
+mitk_create_plugin(
+  EXPORT_DIRECTIVE CAFFESEG_EXPORTS
+  EXPORTED_INCLUDE_SUFFIXES src
+  MODULE_DEPENDS niftkCaffeGui 
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkCaffe)
-endif()
-
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
+  cotire(uk_ac_ucl_cmic_caffesegmentor)
 endif()
