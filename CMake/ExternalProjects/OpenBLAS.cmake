@@ -49,7 +49,7 @@ if(NOT APPLE)
       #CONFIGURE_COMMAND ""
       #UPDATE_COMMAND ""
       #BUILD_COMMAND ""
-      #INSTALL_COMMAND ""
+      INSTALL_COMMAND ""
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
