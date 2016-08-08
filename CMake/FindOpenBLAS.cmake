@@ -29,14 +29,14 @@ set(OpenBLAS_LIBRARY )
 if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 
   find_library(OpenBLAS_LIBRARY NAMES openblas
-               PATHS ${OpenBLAS_LIBRARY_DIR}
+               PATHS ${OpenBLAS_DIR} ${OpenBLAS_LIBRARY_DIR}
                PATH_SUFFIXES Release
                NO_DEFAULT_PATH)
 
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
   find_library(OpenBLAS_LIBRARY NAMES openblasd
-               PATHS ${OpenBLAS_LIBRARY_DIR}
+               PATHS ${OpenBLAS_DIR} ${OpenBLAS_LIBRARY_DIR}
                PATH_SUFFIXES Debug
                NO_DEFAULT_PATH)
 

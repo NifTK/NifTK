@@ -25,7 +25,7 @@ endif()
 if(NOT APPLE)
 
   #set(version "0.2.18")
-  set(version "36a4f90")
+  set(version "33286d7")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/OpenBLAS-${version}.tar.gz")
 
   niftkMacroDefineExternalProjectVariables(OpenBLAS ${version} ${location})
@@ -49,7 +49,7 @@ if(NOT APPLE)
       #CONFIGURE_COMMAND ""
       #UPDATE_COMMAND ""
       #BUILD_COMMAND ""
-      INSTALL_COMMAND ""
+      #INSTALL_COMMAND ""
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
