@@ -45,11 +45,35 @@ if(NOT APPLE)
 endif()
 
 if(${NIFTK_USE_CUDA})
-  set(CPU_ONLY OFF)
+  set(CPU_ONLY ON)
 else()
   set(CPU_ONLY ON)
 endif()
 
+set(_protobuf_args
+  -DPROTOBUF_DIR:PATH=${ProtoBuf_DIR}
+  -DPROTOBUF_INCLUDE_DIR:PATH=${ProtoBuf_INCLUDE_DIR}
+  -DPROTOBUF_LIBRARY_DIR:PATH=${ProtoBuf_LIBRARY_DIR}
+)
+if (WIN32)
+  list(APPEND _protobuf_args -DPROTOBUF_PROTOC_EXECUTABLE:FILEPATH=${ProtoBuf_DIR}/bin/protoc.exe)
+else()
+  list(APPEND _protobuf_args -DPROTOBUF_PROTOC_EXECUTABLE:FILEPATH=${ProtoBuf_BUILD_DIR}/protoc/protoc)  
+endif()
+
+set(_openblas_args)
+if(NOT APPLE)
+  set(_openblas_args
+    -DOpenBLAS_DIR:PATH=${OpenBLAS_DIR}
+    -DOpenBLAS_INCLUDE_DIR:PATH=${OpenBLAS_INCLUDE_DIR}
+    -DOpenBLAS_LIBRARY_DIR:PATH=${OpenBLAS_LIBRARY_DIR}
+  )
+endif()
+if(WIN32)
+  list(APPEND _openblas_args -DOpenBLAS_LIB:FILEPATH=${OpenBLAS_LIBRARY_DIR}/libopenblas.dll)
+else()
+  list(APPEND _openblas_args -DOpenBLAS_LIB:FILEPATH=${OpenBLAS_LIBRARY_DIR}/libopenblas.so)
+endif()
 
 if(NOT DEFINED Caffe_DIR)
 
@@ -72,12 +96,6 @@ if(NOT DEFINED Caffe_DIR)
       -DNIFTK_BINARY_DIR:PATH=${CMAKE_BINARY_DIR}
       #-DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
       #-DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}
-      #-DBOOST_ROOT:PATH=${BOOST_ROOT}
-      #-DBOOST_INCLUDEDIR:PATH=${BOOST_ROOT}/include
-      #-DBOOST_LIBRARYDIR:PATH=${BOOST_ROOT}/lib
-      -DBoost_DIR:PATH=${BOOST_ROOT}
-      -DBoost_INCLUDE_DIR:PATH=${BOOST_ROOT}/include
-      -DBoost_LIBRARY_DIR:PATH=${BOOST_ROOT}/lib
       #
       -DGFLAGS_DIR:PATH=${GFlags_DIR}
       -DGFLAGS_INCLUDE_DIRS:PATH=${GFlags_INCLUDE_DIR}
@@ -89,17 +107,12 @@ if(NOT DEFINED Caffe_DIR)
       -DGLOG_LIBRARY_DIR:PATH=${GLog_LIBRARY_DIR}
       #-DGLOG_LIBRARIES:PATH=${GLog_LIBRARY}
       #
-      -DOpenBLAS_DIR:PATH=${OpenBLAS_DIR}
-      -DOpenBLAS_INCLUDE_DIR:PATH=${OpenBLAS_INCLUDE_DIR}
-      -DOpenBLAS_LIBRARY_DIR:PATH=${OpenBLAS_LIBRARY_DIR}
-      #-DOpenBLAS_LIB:PATH=${OpenBLAS_LIBRARY}
       #
-      -DPROTOBUF_DIR:PATH=${ProtoBuf_DIR}
-      -DPROTOBUF_INCLUDE_DIR:PATH=${ProtoBuf_INCLUDE_DIR}
-      -DPROTOBUF_LIBRARY_DIR:PATH=${ProtoBuf_LIBRARY_DIR}
-      #-DPROTOBUF_LIBRARY:PATH=${ProtoBuf_LIBRARY}
-      -DPROTOBUF_PROTOC_EXECUTABLE=${ProtoBuf_BUILD_DIR}/protoc/protoc
+      ${_protobuf_args}
       #
+      ${_openblas_args}
+      #
+      -DBoost_ADDITIONAL_VERSIONS:STRING=1.56
       -DHDF5_DIR:PATH=${HDF5_DIR}
       #-DHDF5_ROOT:PATH=${HDF5_DIR}
       #-DHDF5_ROOT_DIR:PATH=${HDF5_DIR}
@@ -123,9 +136,6 @@ if(NOT DEFINED Caffe_DIR)
     CMAKE_CACHE_ARGS
       ${EP_COMMON_CACHE_ARGS}
       -DBLAS:STRING=Open
-      -DBoost_DIR:PATH=${BOOST_ROOT}
-      -DBoost_INCLUDE_DIR:PATH=${BOOST_ROOT}/include
-      -DBoost_LIBRARY_DIR:PATH=${BOOST_ROOT}/lib
     CMAKE_CACHE_DEFAULT_ARGS
       ${EP_COMMON_CACHE_DEFAULT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}
