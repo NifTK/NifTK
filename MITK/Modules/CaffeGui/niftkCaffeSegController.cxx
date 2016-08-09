@@ -34,7 +34,9 @@ public:
   std::string                  m_NetworkDescriptionFileName;
   std::string                  m_NetworkWeightsFileName;
   niftk::CaffeManager::Pointer m_LeftManager;
+  mitk::DataNode*              m_LeftDataNode;
   niftk::CaffeManager::Pointer m_RightManager;
+  mitk::DataNode*              m_RightDataNode;
   bool                         m_IsUpdatingManually;
   itk::FastMutexLock::Pointer  m_Mutex;
 };
@@ -44,7 +46,9 @@ public:
 CaffeSegControllerPrivate::CaffeSegControllerPrivate(CaffeSegController* caffeSegController)
 : q_ptr(caffeSegController)
 , m_LeftManager(nullptr)
+, m_LeftDataNode(nullptr)
 , m_RightManager(nullptr)
+, m_RightDataNode(nullptr)
 , m_IsUpdatingManually(false)
 , m_Mutex(itk::FastMutexLock::New())
 {
@@ -121,10 +125,7 @@ void CaffeSegController::OnManualUpdateClicked(bool isChecked)
   Q_D(CaffeSegController);
   itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
 
-  if (isChecked)
-  {
-    d->m_IsUpdatingManually = true;
-  }
+  d->m_IsUpdatingManually = isChecked;
 }
 
 
@@ -134,10 +135,7 @@ void CaffeSegController::OnAutomaticUpdateClicked(bool isChecked)
   Q_D(CaffeSegController);
   itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
 
-  if (isChecked)
-  {
-    d->m_IsUpdatingManually = false;
-  }
+  d->m_IsUpdatingManually = !isChecked;
 }
 
 
@@ -174,6 +172,7 @@ void CaffeSegController::OnLeftSelectionChanged(const mitk::DataNode* node)
   itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
 
   if (node != nullptr
+      && d->m_LeftManager.IsNull()
       && !(d->m_NetworkDescriptionFileName.empty())
       && !(d->m_NetworkWeightsFileName.empty()))
   {
@@ -181,6 +180,7 @@ void CaffeSegController::OnLeftSelectionChanged(const mitk::DataNode* node)
                                                 d->m_NetworkWeightsFileName
                                                );
   }
+  d->m_LeftDataNode = const_cast<mitk::DataNode*>(node);
 }
 
 
@@ -191,6 +191,7 @@ void CaffeSegController::OnRightSelectionChanged(const mitk::DataNode* node)
   itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
 
   if (node != nullptr
+      && d->m_RightManager.IsNull()
       && !(d->m_NetworkDescriptionFileName.empty())
       && !(d->m_NetworkWeightsFileName.empty()))
   {
@@ -198,6 +199,7 @@ void CaffeSegController::OnRightSelectionChanged(const mitk::DataNode* node)
                                                  d->m_NetworkWeightsFileName
                                                 );
   }
+  d->m_RightDataNode = const_cast<mitk::DataNode*>(node);
 }
 
 
@@ -207,10 +209,19 @@ void CaffeSegController::InternalUpdate()
   Q_D(CaffeSegController);
   itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
 
-  MITK_INFO << "CaffeSegController::InternalUpdate()";
+  // We could parallelise this?
 
-  // Basically, if either m_LeftManager or m_RightManager is not null, we update them.
-  // Sure, this could be multi-threaded etc. For a first try, do single threaded?
+  if (   d->m_LeftManager.IsNotNull()
+      && d->m_LeftDataNode != nullptr)
+  {
+    d->m_LeftManager->Segment(this->GetDataStorage(), d->m_LeftDataNode);
+  }
+
+  if (   d->m_RightManager.IsNotNull()
+      && d->m_RightDataNode != nullptr)
+  {
+    d->m_RightManager->Segment(this->GetDataStorage(), d->m_RightDataNode);
+  }
 }
 
 } // end namespace
