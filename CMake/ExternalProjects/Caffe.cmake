@@ -31,9 +31,12 @@ endif()
 # Eli's clone of Caffe with more mods
 #set(version "7c17be7-EliGibson-NifTK")
 
-# NifTK Caffe rc3 clone with NifTK relevant mods
+# NifTK Caffe rc3 clone with NifTK relevant mods from Eli
 # https://cmiclab.cs.ucl.ac.uk/CMIC/CaffeNifTK
-set(version "bba1c6f")
+#set(version "bba1c6f")
+
+# Microsoft Caffe Windows branch https://github.com/BVLC/caffe/tree/windows
+set(version "5db3074")
 
 set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
 
