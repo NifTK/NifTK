@@ -20,6 +20,7 @@
 
 class QWidget;
 class QPushButton;
+class ctkPathLineEdit;
 
 namespace niftk
 {
@@ -36,6 +37,16 @@ public:
 
   /// \brief Stores the name of the preferences node.
   static const QString PREFERENCES_NODE_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that contains the name of the network description file.
+   */
+  static const QString NETWORK_DESCRIPTION_FILE_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that contains the name of the network weights file.
+   */
+  static const QString NETWORK_WEIGHTS_FILE_NAME;
 
   CaffeSegmentorPreferencePage();
   CaffeSegmentorPreferencePage(const CaffeSegmentorPreferencePage& other);
@@ -66,8 +77,10 @@ protected slots:
 
 protected:
 
-  QWidget*  m_MainControl;
-  bool      m_Initializing;
+  QWidget*         m_MainControl;
+  ctkPathLineEdit* m_NetworkDescriptionFileName;
+  ctkPathLineEdit* m_NetworkWeightsFileName;
+  bool             m_Initializing;
 
   berry::IPreferences::Pointer m_CaffeSegmentorPreferencesNode;
 };

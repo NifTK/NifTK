@@ -16,6 +16,7 @@
 #define niftkCaffeSegmentorView_h
 
 #include <niftkBaseView.h>
+#include <service/event/ctkEvent.h>
 
 namespace niftk
 {
@@ -64,11 +65,15 @@ protected:
   /// \brief Retrieve's the pref values from preference service, and store locally.
   virtual void RetrievePreferenceValues();
 
+private slots:
+
+  /// \brief We listen to the event bus to trigger updates.
+  void OnUpdate(const ctkEvent& event);
+
 private:
 
   /// \brief The Caffe segmentor controller that realises the GUI logic behind the view.
   CaffeSegController* m_CaffeSegController;
-
 };
 
 } // end namespace

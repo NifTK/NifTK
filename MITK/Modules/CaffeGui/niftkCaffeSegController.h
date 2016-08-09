@@ -42,6 +42,23 @@ public:
   /// This function has to be called from the CreateQtPartControl function of the view.
   virtual void SetupGUI(QWidget* parent) override;
 
+  /// \brief Sets the Caffe network description (.prototxt) file.
+  void SetNetworkDescriptionFileName(const std::string& description);
+
+  /// \brief Sets the Caffe network weights (.caffemodel) file.
+  void SetNetworkWeightsFileName(const std::string& weights);
+
+  /// \brief Called from GUI by IGIUPDATE trigger.
+  void Update();
+
+public slots:
+
+  void OnLeftSelectionChanged(const mitk::DataNode*);
+  void OnRightSelectionChanged(const mitk::DataNode*);
+  void OnDoItNowPressed();
+  void OnManualUpdateClicked(bool);
+  void OnAutomaticUpdateClicked(bool);
+
 protected:
 
   /// \brief Creates the widget that holds the GUI components of the view.
@@ -55,6 +72,8 @@ private:
 
   QScopedPointer<CaffeSegControllerPrivate> d_ptr;
   Q_DECLARE_PRIVATE(CaffeSegController);
+
+  void InternalUpdate();
 
 };
 

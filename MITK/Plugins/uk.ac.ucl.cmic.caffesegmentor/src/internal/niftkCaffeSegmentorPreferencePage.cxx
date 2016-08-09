@@ -18,6 +18,7 @@
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
+#include <ctkPathLineEdit.h>
 
 #include <niftkBaseView.h>
 
@@ -25,6 +26,8 @@ namespace niftk
 {
 
 const QString CaffeSegmentorPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_caffesegmentor");
+const QString CaffeSegmentorPreferencePage::NETWORK_DESCRIPTION_FILE_NAME("network description");
+const QString CaffeSegmentorPreferencePage::NETWORK_WEIGHTS_FILE_NAME("network weights");
 
 //-----------------------------------------------------------------------------
 CaffeSegmentorPreferencePage::CaffeSegmentorPreferencePage()
@@ -61,6 +64,7 @@ void CaffeSegmentorPreferencePage::Init(berry::IWorkbench::Pointer )
 void CaffeSegmentorPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
+
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
   m_CaffeSegmentorPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
 
@@ -68,6 +72,12 @@ void CaffeSegmentorPreferencePage::CreateQtControl(QWidget* parent)
 
   QFormLayout *formLayout = new QFormLayout;
   m_MainControl->setLayout(formLayout);
+
+  m_NetworkDescriptionFileName = new ctkPathLineEdit();
+  formLayout->addRow("network description file name", m_NetworkDescriptionFileName);
+
+  m_NetworkWeightsFileName = new ctkPathLineEdit();
+  formLayout->addRow("network weights file name", m_NetworkWeightsFileName);
 
   this->Update();
 
@@ -85,6 +95,8 @@ QWidget* CaffeSegmentorPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool CaffeSegmentorPreferencePage::PerformOk()
 {
+  m_CaffeSegmentorPreferencesNode->Put(CaffeSegmentorPreferencePage::NETWORK_DESCRIPTION_FILE_NAME, m_NetworkDescriptionFileName->currentPath());
+  m_CaffeSegmentorPreferencesNode->Put(CaffeSegmentorPreferencePage::NETWORK_WEIGHTS_FILE_NAME, m_NetworkWeightsFileName->currentPath());
   return true;
 }
 
@@ -98,6 +110,8 @@ void CaffeSegmentorPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void CaffeSegmentorPreferencePage::Update()
 {
+  m_NetworkDescriptionFileName->setCurrentPath(m_CaffeSegmentorPreferencesNode->Get(CaffeSegmentorPreferencePage::NETWORK_DESCRIPTION_FILE_NAME, ""));
+  m_NetworkWeightsFileName->setCurrentPath(m_CaffeSegmentorPreferencesNode->Get(CaffeSegmentorPreferencePage::NETWORK_WEIGHTS_FILE_NAME, ""));
 }
 
 } // end namespace

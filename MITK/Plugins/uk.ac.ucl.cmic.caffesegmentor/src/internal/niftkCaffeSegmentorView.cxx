@@ -14,11 +14,19 @@
 
 #include "niftkCaffeSegmentorView.h"
 #include "niftkCaffeSegmentorPreferencePage.h"
+#include "niftkCaffeSegmentorActivator.h"
 #include <niftkCaffeSegController.h>
+
 #include <berryPlatform.h>
 #include <berryIBerryPreferences.h>
 #include <berryIPreferences.h>
 #include <berryIPreferencesService.h>
+#include <ctkDictionary.h>
+#include <ctkPluginContext.h>
+#include <ctkServiceReference.h>
+#include <service/event/ctkEventConstants.h>
+#include <service/event/ctkEventAdmin.h>
+#include <service/event/ctkEvent.h>
 
 namespace niftk
 {
@@ -70,6 +78,15 @@ void CaffeSegmentorView::CreateQtPartControl(QWidget* parent)
 
   // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
   this->RetrievePreferenceValues();
+
+  ctkServiceReference ref = niftk::CaffeSegmentorActivator::getContext()->getServiceReference<ctkEventAdmin>();
+  if (ref)
+  {
+    ctkEventAdmin* eventAdmin = niftk::CaffeSegmentorActivator::getContext()->getService<ctkEventAdmin>(ref);
+    ctkDictionary properties;
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
+    eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
+  }
 }
 
 
@@ -90,6 +107,19 @@ void CaffeSegmentorView::RetrievePreferenceValues()
       = (prefService->GetSystemPreferences()->Node(CaffeSegmentorPreferencePage::PREFERENCES_NODE_NAME))
         .Cast<berry::IBerryPreferences>();
   assert( prefs );
+
+  std::string networkDescription = prefs->Get(CaffeSegmentorPreferencePage::NETWORK_DESCRIPTION_FILE_NAME, "").toStdString();
+  m_CaffeSegController->SetNetworkDescriptionFileName(networkDescription);
+
+  std::string networkWeights = prefs->Get(CaffeSegmentorPreferencePage::NETWORK_WEIGHTS_FILE_NAME, "").toStdString();
+  m_CaffeSegController->SetNetworkWeightsFileName(networkWeights);
+}
+
+
+//-----------------------------------------------------------------------------
+void CaffeSegmentorView::OnUpdate(const ctkEvent& event)
+{
+  m_CaffeSegController->Update();
 }
 
 } // end namespace

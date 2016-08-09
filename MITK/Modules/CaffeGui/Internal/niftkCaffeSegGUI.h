@@ -17,6 +17,7 @@
 #include <QWidget>
 #include "ui_niftkCaffeSegGUI.h"
 #include <niftkBaseGUI.h>
+#include <mitkDataStorage.h>
 
 namespace niftk
 {
@@ -33,6 +34,16 @@ public:
 
   CaffeSegGUI(QWidget* parent);
   virtual ~CaffeSegGUI();
+
+  void SetDataStorage(mitk::DataStorage* storage);
+
+signals:
+
+  void OnLeftSelectionChanged(const mitk::DataNode*);
+  void OnRightSelectionChanged(const mitk::DataNode*);
+  void OnDoItNowPressed();
+  void OnManualUpdateClicked(bool);
+  void OnAutomaticUpdateClicked(bool);
 
 private:
 
