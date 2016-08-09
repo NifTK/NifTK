@@ -30,11 +30,9 @@
 namespace niftk
 {
 
-/**
- * \class NiftyMIDASWorkbenchAdvisor
- * \brief Advisor class to set up the initial NiftyMIDAS workbench.
- * \ingroup uk_ac_ucl_cmic_niftymidas
- */
+/// \class NiftyMIDASWorkbenchAdvisor
+/// \brief Advisor class to set up the initial NiftyMIDAS workbench.
+/// \ingroup uk_ac_ucl_cmic_niftymidas
 class NIFTYMIDAS_EXPORT NiftyMIDASWorkbenchAdvisor: public BaseWorkbenchAdvisor
 {
 public:
@@ -47,13 +45,9 @@ public:
   /// \brief Gets the resource name of the window icon.
   virtual QString GetWindowIconResourcePath() const override;
 
-  virtual void PostStartup() override;
-
 protected:
 
-  /**
-   * \brief Actually creates the derived WorkbenchWindowAdvisor.
-   */
+  /// \brief Actually creates the derived WorkbenchWindowAdvisor.
   virtual BaseWorkbenchWindowAdvisor* CreateBaseWorkbenchWindowAdvisor(
       berry::IWorkbenchWindowConfigurer::Pointer configurer) override;
 
