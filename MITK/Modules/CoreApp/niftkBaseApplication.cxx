@@ -15,6 +15,7 @@
 #include <niftkBaseApplication.h>
 
 #include <QString>
+#include <QStringList>
 #include <QVariant>
 
 namespace niftk
@@ -34,11 +35,29 @@ void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
 {
   mitk::BaseApplication::defineOptions(options);
 
+  Poco::Util::Option openOption("open", "o", "opens a file with the given name");
+  openOption.argument("<name>:<file>").repeatable(true);
+  openOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &BaseApplication::HandleRepeatableOption));
+  options.addOption(openOption);
+
   Poco::Util::Option perspectiveOption("perspective", "", "the initial window perspective");
   perspectiveOption.argument("<perspective>").binding(PROP_PERSPECTIVE.toStdString());
   options.addOption(perspectiveOption);
+
 }
 
+void BaseApplication::HandleRepeatableOption(const std::string& name, const std::string& value)
+{
+  QString propertyName = "applicationArgs.";
+  propertyName.append(QString::fromStdString(name));
+
+  QStringList valueList = this->getProperty(propertyName).toStringList();
+  valueList.append(QString::fromStdString(value));
+  this->setProperty(propertyName, QVariant::fromValue(valueList));
+}
+
+
+const QString BaseApplication::PROP_OPEN = "applicationArgs.open";
 const QString BaseApplication::PROP_PERSPECTIVE = "applicationArgs.perspective";
 
 }

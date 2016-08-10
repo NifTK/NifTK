@@ -50,13 +50,30 @@ class NIFTKCOREAPP_EXPORT BaseApplication : public mitk::BaseApplication
 {
 public:
 
+  static const QString PROP_OPEN;
   static const QString PROP_PERSPECTIVE;
 
   BaseApplication(int argc, char **argv);
 
-  /// Define command line arguments
-  /// @param options
+protected:
+
+  /// \brief Define command line arguments
+  /// \param options
   void defineOptions(Poco::Util::OptionSet& options) override;
+
+  /// \brief Collects values for repeatable options and stores them as a list
+  ///
+  /// It works similarly to the binding function. However, the binding function
+  /// does not care if the option is repeatable or not. In case of repetition,
+  /// the last supplied value is kept as a property of the framework context.
+  ///
+  /// This function collects the values for a property and stores them as a
+  /// QStringList.
+  ///
+  /// \param name The name of the option. It is the long form even if the short
+  ///             form is applied.
+  /// \param value The value specified for the option.
+  void HandleRepeatableOption(const std::string& name, const std::string& value);
 
 };
 
