@@ -34,9 +34,8 @@ CaffeManager::~CaffeManager()
 
 
 //-----------------------------------------------------------------------------
-void CaffeManager::Segment(const mitk::DataNode::ConstPointer &inputImage,
-                           const mitk::DataNode::Pointer &outputImage
-                          )
+void CaffeManager::Segment(const mitk::DataStorage::ConstPointer &dataStorage,
+                           const mitk::DataNode::ConstPointer &inputImage)
 {
   // Do some segmentation.
 }

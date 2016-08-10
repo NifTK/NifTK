@@ -20,6 +20,7 @@
 #include <itkObjectFactoryBase.h>
 #include <mitkCommon.h>
 #include <mitkDataNode.h>
+#include <mitkDataStorage.h>
 
 namespace niftk
 {
@@ -42,9 +43,8 @@ public:
   mitkClassMacroItkParent(CaffeManager, itk::Object)
   mitkNewMacro2Param(CaffeManager, const std::string&, const std::string&)
 
-  void Segment(const mitk::DataNode::ConstPointer& inputImage,
-               const mitk::DataNode::Pointer& outputImage
-               );
+  void Segment(const mitk::DataStorage::ConstPointer& dataStorage,
+               const mitk::DataNode::ConstPointer& inputImage);
 
 protected:
 
