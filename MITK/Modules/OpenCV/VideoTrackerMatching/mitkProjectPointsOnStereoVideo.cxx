@@ -161,7 +161,7 @@ void ProjectPointsOnStereoVideo::FindVideoData(mitk::VideoTrackerMatching::Point
       }
     }
 
-    if ( m_SaveVideo )
+    if ( m_SaveVideo || m_WriteAnnotatedGoldStandards )
     {
       try
       {
@@ -526,7 +526,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
             {
               std::ostringstream ss;
               ss << "frame_" << std::setw(6) << std::setfill('0') << framenumber << ".png";
-              std::string outname = ss.str();
+              std::string outname = m_OutDirectory + niftk::GetFileSeparator() + ss.str();
               cv::imwrite(outname,videoImage);
             }
 
@@ -1280,7 +1280,7 @@ void ProjectPointsOnStereoVideo::WriteProjectionErrorsInNewFormat (const std::st
   std::ofstream out;
 
   out.open (std::string (outFile).c_str());
-  out << "# frame , type , id , channel , xmm , ymm , zmm , gsx , gsy , gsz , mpx , mpy , mpz" << std::endl;
+  out << "# frame , type , id , channel , x_error_mm_lens , y_error_mm_lens , z_error_mm_lens , gsx_world , gsy_world , gsz_world , mpx_world , mpy_world , mpz_world, gsx_lens , gsy_lens , gsz_lens , mpx_lens , mpy_lens , mpz_lens" << std::endl;
 
   std::vector<cv::Point3d> reProjectionErrors;
   for ( std::vector<mitk::PickedObject>::iterator it = m_LeftReProjectionErrors.begin() ;
@@ -1299,7 +1299,9 @@ void ProjectPointsOnStereoVideo::WriteProjectionErrorsInNewFormat (const std::st
     out << it->m_FrameNumber << " , " << type << " , " << it->m_Id << " , " << it->m_Channel << " , ";
     out << it->m_Points[0].x << " , " << it->m_Points[0].y << " , " << it->m_Points[0].z << " , ";
     out << it->m_Points[1].x << " , " << it->m_Points[1].y << " , " << it->m_Points[1].z << " , ";
-    out << it->m_Points[2].x << " , " << it->m_Points[2].y << " , " << it->m_Points[2].z;
+    out << it->m_Points[2].x << " , " << it->m_Points[2].y << " , " << it->m_Points[2].z << " , ";
+    out << it->m_Points[3].x << " , " << it->m_Points[3].y << " , " << it->m_Points[3].z << " , ";
+    out << it->m_Points[4].x << " , " << it->m_Points[4].y << " , " << it->m_Points[4].z;
     out << std::endl;
   }
 
@@ -1319,7 +1321,9 @@ void ProjectPointsOnStereoVideo::WriteProjectionErrorsInNewFormat (const std::st
     out << it->m_FrameNumber << " , " << type << " , " << it->m_Id << " , " << it->m_Channel << " , ";
     out << it->m_Points[0].x << " , " << it->m_Points[0].y << " , " << it->m_Points[0].z << " , ";
     out << it->m_Points[1].x << " , " << it->m_Points[1].y << " , " << it->m_Points[1].z << " , ";
-    out << it->m_Points[2].x << " , " << it->m_Points[2].y << " , " << it->m_Points[2].z;
+    out << it->m_Points[2].x << " , " << it->m_Points[2].y << " , " << it->m_Points[2].z << " , ";
+    out << it->m_Points[3].x << " , " << it->m_Points[3].y << " , " << it->m_Points[3].z << " , ";
+    out << it->m_Points[4].x << " , " << it->m_Points[4].y << " , " << it->m_Points[4].z;
     out << std::endl;
   }
 
@@ -1402,6 +1406,10 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
   mitk::PickedObject reprojectionError;
   reprojectedObject.DistanceTo ( matchingObject, reprojectionError, m_AllowableTimingError);
 
+  //crispin would like points in lens coordinates as well as world, so lets copy the points in
+  //lens coordinates to the back of the vector, before multiplying them to put them in world.
+  reprojectionError.m_Points.push_back(reprojectionError.m_Points[1]);
+  reprojectionError.m_Points.push_back(reprojectionError.m_Points[2]);
   reprojectionError.m_Points[1] = worldToCamera.inv() * reprojectionError.m_Points[1];
   reprojectionError.m_Points[2] = worldToCamera.inv() * reprojectionError.m_Points[2];
 
