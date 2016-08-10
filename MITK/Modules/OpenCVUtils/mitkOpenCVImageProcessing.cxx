@@ -123,4 +123,46 @@ unsigned int ApplyMask ( std::vector <std::pair < cv::Point2d, cv::Point2d > >& 
   return originalSize - pointPairs.size();
 }
 
-} // end namespace
+} // end mitk namespace
+
+namespace niftk
+{
+//-----------------------------------------------------------------------------
+void SegmentLiverPhantom(const std::string& inputFileName,
+                         const std::string& outputFileName
+                         )
+{
+  cv::Mat bgr = cv::imread(inputFileName);
+
+  std::vector<cv::Mat> split;
+  cv::split(bgr, split);
+
+  cv::Mat low;
+  cv::threshold(split[2], low, 40, 255, cv::THRESH_BINARY_INV);
+
+  cv::Mat high;
+  cv::threshold(split[2], high, 160, 255, cv::THRESH_BINARY);
+
+  cv::Mat output = low.clone();
+
+  for (int r = 0; r < output.rows; r++)
+  {
+    for (int c = 0; c < output.cols; c++)
+    {
+      if (   low.at<unsigned char>(r, c) > 0
+          || high.at<unsigned char>(r, c) > 0
+          )
+      {
+        output.at<unsigned char>(r, c) = 0;
+      }
+      else
+      {
+        output.at<unsigned char>(r, c) = 255;
+      }
+    }
+  }
+
+  cv::imwrite(outputFileName, output);
+}
+
+} // end niftk namespace

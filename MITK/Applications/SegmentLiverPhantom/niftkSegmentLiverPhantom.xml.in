@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Segment Liver Phantom</title>
+  <description><![CDATA[Segments a liver phantom from plain white/black background.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+       
+    <file>
+      <name>inputImage</name>
+      <longflag>inputImage</longflag>
+      <description>The input image</description>
+      <label>Input Image</label>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>outputImage</name>
+      <longflag>outputImage</longflag>
+      <description>The output image</description>
+      <label>Output Image</label>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+  
+</executable>
