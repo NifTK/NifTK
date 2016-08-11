@@ -43,7 +43,9 @@ int niftkCaffeBasicTest(int argc, char * argv[])
 
   // Do segmentation.
   niftk::CaffeManager::Pointer manager = niftk::CaffeManager::New(modelFile, weightsFile);
-  manager->Segment(inputImage, outputImage);
+
+  // To Do: Create some mitk::DataStorage like we do in other unit tests.
+  //manager->Segment(dataStorage, inputImage);
 
   int numberOfActualPixels = 0;
   // Need some way of counting the number of pixels.
