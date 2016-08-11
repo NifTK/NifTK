@@ -31,6 +31,7 @@
 #include <mitkFloatPropertyExtension.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
+#include <mitkIOUtil.h>
 #include <mitkIPropertyExtensions.h>
 #include <mitkLevelWindowProperty.h>
 #include <mitkLogMacros.h>
@@ -162,6 +163,8 @@ void PluginActivator::start(ctkPluginContext* context)
   propertyExtensions->AddExtension("Image Rendering.Lowest Value Opacity", opacityPropertyExtension.GetPointer());
   propertyExtensions->AddExtension("Image Rendering.Highest Value Opacity", opacityPropertyExtension.GetPointer());
 
+  this->ProcessOptions();
+
   // Get the property whether to process application arguments here.
   // By default, the arguments are processed by MITK, but custom applications
   // can suppress this and do the processing themselves, for example to introduce
@@ -196,7 +199,7 @@ void PluginActivator::stop(ctkPluginContext* context)
 
 
 //-----------------------------------------------------------------------------
-const mitk::DataStorage* PluginActivator::GetDataStorage()
+mitk::DataStorage::Pointer PluginActivator::GetDataStorage()
 {
   mitk::DataStorage::Pointer dataStorage = NULL;
 
@@ -259,6 +262,13 @@ void PluginActivator::BlankDepartmentalLogo()
 
   berry::IPreferences::Pointer logoPref = prefService->GetSystemPreferences()->Node("org.mitk.editors.stdmultiwidget");
   logoPref->Put("DepartmentLogo", "");
+}
+
+
+//-----------------------------------------------------------------------------
+QString PluginActivator::GetHelpHomePageURL() const
+{
+  return QString::null;
 }
 
 
@@ -695,6 +705,73 @@ void PluginActivator::RegisterBinaryImageProperties(const QString& preferencesNo
       node->SetBoolProperty("outline binary", true);
     } // end if have pref node
   } // end if node is binary image
+}
+
+
+//-----------------------------------------------------------------------------
+void PluginActivator::ProcessOptions()
+{
+  int layer = 0;
+
+  for (QString openArg: this->GetContext()->getProperty("applicationArgs.open").toStringList())
+  {
+    int colonIndex = openArg.indexOf(':');
+    QString nodeName = openArg.mid(0, colonIndex);
+    QString filePath = openArg.mid(colonIndex + 1);
+
+    if (filePath.right(5) == ".mitk")
+    {
+      MITK_WARN << "Invalid syntax for opening an MITK project. The '--open' option is for opening images with a given name." << std::endl
+                << "Omit the '--open' option and provide the file path only." << std::endl;
+      continue;
+    }
+
+    if (nodeName.isEmpty())
+    {
+      MITK_WARN << "Invalid syntax for opening a file. Provide a name for the file. For example:" << std::endl
+                << std::endl
+                << "    --open T1:/path/to/reference-image.nii.gz" << std::endl
+                << std::endl
+                << "If you want to use the original name, omit the '--open' option and provide the file path only." << std::endl
+                << std::endl;
+      continue;
+    }
+
+    if (filePath.isEmpty())
+    {
+      MITK_WARN << "Invalid syntax for opening a file. Provide a path to the file. For example:" << std::endl
+                << std::endl
+                << "    --open T1:/path/to/reference-image.nii.gz" << std::endl
+                << std::endl;
+      continue;
+    }
+
+    try
+    {
+      mitk::DataStorage::SetOfObjects::Pointer nodes = mitk::IOUtil::Load(filePath.toStdString(), *this->GetDataStorage());
+      int counter = 0;
+      for (auto& node: *nodes)
+      {
+        if (counter == 0)
+        {
+          node->SetName(nodeName.toStdString().c_str());
+        }
+        else
+        {
+          node->SetName(QString("%1 #%2").arg(nodeName, counter + 1).toStdString().c_str());
+        }
+
+        ++layer;
+        node->SetIntProperty("layer", layer);
+        node->SetBoolProperty("fixedLayer", true);
+      }
+    }
+    catch (const mitk::Exception& exception)
+    {
+      MITK_ERROR << "Failed to open file: " << filePath.toStdString();
+      MITK_ERROR << exception.what();
+    }
+  }
 }
 
 

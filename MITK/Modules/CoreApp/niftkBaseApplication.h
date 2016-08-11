@@ -44,6 +44,8 @@ namespace niftk
 ///
 /// Supported options:
 ///
+///   --open | -o   <name>:<file>        opens the file with the given name
+///
 ///   --perspective <perspective>        sets the initial perspective
 ///
 class NIFTKCOREAPP_EXPORT BaseApplication : public mitk::BaseApplication

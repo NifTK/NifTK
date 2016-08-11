@@ -105,7 +105,7 @@ protected:
   virtual void NodeRemoved(const mitk::DataNode *node);
 
   /// \brief Derived classes should provide a URL for which help page to use as the 'home' page.
-  virtual QString GetHelpHomePageURL() const { return QString(); }
+  virtual QString GetHelpHomePageURL() const override;
 
 private:
 
@@ -125,7 +125,7 @@ private:
   niftk::LookupTableProviderService* GetLookupTableProvider();
 
   /// \brief Private method that retrieves the DataStorage from the m_DataStorageServiceTracker
-  const mitk::DataStorage* GetDataStorage();
+  mitk::DataStorage::Pointer GetDataStorage();
 
   /// \brief Retrieves the preferences node name, or Null if unsuccessful.
   berry::IPreferences::Pointer GetPreferencesNode(const QString& preferencesNodeName);
@@ -140,6 +140,8 @@ private:
       float &mean,
       float &stdDev);
 
+  /// \brief Processes the command line options defined by niftk::BaseApplication.
+  void ProcessOptions();
 
   void LoadDataFromDisk(const QStringList& args, bool globalReinit);
   void startNewInstance(const QStringList& args, const QStringList &files);
