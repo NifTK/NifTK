@@ -47,8 +47,12 @@ int main(int argc, char* argv[])
     mitk::DataNode::Pointer outputImage = mitk::DataNode::New();
 
     niftk::CaffeManager::Pointer manager = niftk::CaffeManager::New(model, weights);
-    manager->Segment(inputImage, outputImage);
 
+    // ToDo: Create an mitk::DataStorage like we do in unit tests 
+    // manager->Segment(dataStorage, inputImage);
+
+    // ToDo: Write output image
+    //
     returnStatus = EXIT_SUCCESS;
   }
   catch (mitk::Exception& e)
