@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Laparoscopic Demo</category>
-  <title>Project Tracked Points on Stereo Video</title>
+  <title>Calculate ReProjection Errors</title>
   <description><![CDATA[Interrogates a tracking and video directory for tracking data and a .framemap.log file, given model and video points and a model to world transform it calculates the reprojection error and writes to a user specified file. Optionally we can write out images of each frame used.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
