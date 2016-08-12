@@ -44,7 +44,13 @@ namespace niftk
 ///
 /// Supported options:
 ///
-///   --open | -o   <name>:<file>        opens the file with the given name
+///   --open, -o <name>:<file>
+///
+///         opens the file with the given name
+///
+///   --derives-from, -d <source data name>:<data name>[,<data name>]...
+///
+///         makes the data nodes derive from (the 'children' of) the source data
 ///
 ///   --perspective <perspective>        sets the initial perspective
 ///
@@ -53,6 +59,7 @@ class NIFTKCOREAPP_EXPORT BaseApplication : public mitk::BaseApplication
 public:
 
   static const QString PROP_OPEN;
+  static const QString PROP_DERIVES_FROM;
   static const QString PROP_PERSPECTIVE;
 
   BaseApplication(int argc, char **argv);
@@ -76,6 +83,17 @@ protected:
   ///             form is applied.
   /// \param value The value specified for the option.
   void HandleRepeatableOption(const std::string& name, const std::string& value);
+
+  /// \brief Overwrites the description of existing options for prettier formatting.
+  /// Capitalises the initial letter, adds a period to the end, and puts an extra
+  /// new line before and after the description.
+  void ReformatOptionDescriptions(Poco::Util::OptionSet& options);
+
+  /// \brief Callback function for the '--help' option.
+  /// The callback function of the base class is replaced to this implementation,
+  /// so that we can define a header, footer, and can have longer description of
+  /// options.
+  void PrintHelp(const std::string& name, const std::string& value);
 
 };
 

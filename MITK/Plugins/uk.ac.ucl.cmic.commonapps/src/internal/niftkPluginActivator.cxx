@@ -711,6 +711,8 @@ void PluginActivator::RegisterBinaryImageProperties(const QString& preferencesNo
 //-----------------------------------------------------------------------------
 void PluginActivator::ProcessOptions()
 {
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+
   int layer = 0;
 
   for (QString openArg: this->GetContext()->getProperty("applicationArgs.open").toStringList())
@@ -721,7 +723,7 @@ void PluginActivator::ProcessOptions()
 
     if (filePath.right(5) == ".mitk")
     {
-      MITK_WARN << "Invalid syntax for opening an MITK project. The '--open' option is for opening images with a given name." << std::endl
+      MITK_WARN << "Invalid syntax for opening an MITK project. The '--open' option is for opening single data files with a given name." << std::endl
                 << "Omit the '--open' option and provide the file path only." << std::endl;
       continue;
     }
@@ -748,7 +750,7 @@ void PluginActivator::ProcessOptions()
 
     try
     {
-      mitk::DataStorage::SetOfObjects::Pointer nodes = mitk::IOUtil::Load(filePath.toStdString(), *this->GetDataStorage());
+      mitk::DataStorage::SetOfObjects::Pointer nodes = mitk::IOUtil::Load(filePath.toStdString(), *dataStorage);
       int counter = 0;
       for (auto& node: *nodes)
       {
@@ -772,6 +774,58 @@ void PluginActivator::ProcessOptions()
       MITK_ERROR << exception.what();
     }
   }
+
+  std::map<mitk::DataNode::Pointer, mitk::DataStorage::SetOfObjects::Pointer> sourcesOfDerivedNodes;
+
+  for (QString derivesFromArg: this->GetContext()->getProperty("applicationArgs.derives-from").toStringList())
+  {
+    int colonIndex = derivesFromArg.indexOf(':');
+    QString sourceDataName = derivesFromArg.mid(0, colonIndex);
+    QString derivedDataNamesPart = derivesFromArg.mid(colonIndex + 1);
+    QStringList derivedDataNames = derivedDataNamesPart.split(",");
+
+    mitk::DataNode::Pointer sourceNode = dataStorage->GetNamedNode(sourceDataName.toStdString());
+
+    if (sourceNode.IsNull())
+    {
+      MITK_ERROR << "Data not found with the name: " << sourceDataName.toStdString() << std::endl
+                 << "Make sure you specified a data file with this name or used the '--open' option "
+                    "to open a data file with this name." << std::endl
+                 << "Skipping adding these as derived data for this source: " << derivedDataNamesPart.toStdString() << ".";
+      continue;
+    }
+
+    for (const QString& derivedDataName: derivedDataNames)
+    {
+      mitk::DataNode::Pointer derivedNode = dataStorage->GetNamedNode(derivedDataName.toStdString());
+
+      if (derivedNode.IsNull())
+      {
+        MITK_ERROR << "Data not found with the name: " << derivedDataName.toStdString() << std::endl
+                   << "Make sure you specified a data file with this name or used the '--open' option"
+                      "to open a data file with this name." << std::endl
+                   << "Skipping adding this data as derived data for the source: " << sourceDataName.toStdString() << ".";
+        continue;
+      }
+
+      auto sourcesOfDerivedNodesIt = sourcesOfDerivedNodes.find(sourceNode);
+      if (sourcesOfDerivedNodesIt == sourcesOfDerivedNodes.end())
+      {
+        mitk::DataStorage::SetOfObjects::Pointer sourceDataNodes = mitk::DataStorage::SetOfObjects::New();
+        sourcesOfDerivedNodesIt = sourcesOfDerivedNodes.insert(std::make_pair(derivedNode, sourceDataNodes)).first;
+      }
+      sourcesOfDerivedNodesIt->second->InsertElement(0, sourceNode);
+    }
+  }
+
+  for (const auto& sourcesOfDerivedNode: sourcesOfDerivedNodes)
+  {
+    const auto& derivedNode = sourcesOfDerivedNode.first;
+    const auto& sourceNodes = sourcesOfDerivedNode.second;
+    dataStorage->Remove(derivedNode);
+    dataStorage->Add(derivedNode, sourceNodes);
+  }
+
 }
 
 
