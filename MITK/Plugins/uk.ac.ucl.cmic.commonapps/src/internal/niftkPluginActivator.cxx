@@ -713,9 +713,10 @@ void PluginActivator::ProcessOptions()
 {
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
 
-  int layer = 0;
+  QStringList openArgs = this->GetContext()->getProperty("applicationArgs.open").toStringList();
+  int layer = openArgs.size() - 1;
 
-  for (QString openArg: this->GetContext()->getProperty("applicationArgs.open").toStringList())
+  for (QString openArg: openArgs)
   {
     int colonIndex = openArg.indexOf(':');
     QString nodeName = openArg.mid(0, colonIndex);
@@ -763,9 +764,7 @@ void PluginActivator::ProcessOptions()
           node->SetName(QString("%1 #%2").arg(nodeName, counter + 1).toStdString().c_str());
         }
 
-        ++layer;
-        node->SetIntProperty("layer", layer);
-        node->SetBoolProperty("fixedLayer", true);
+        node->SetIntProperty("layer", layer--);
       }
     }
     catch (const mitk::Exception& exception)
@@ -1079,7 +1078,6 @@ void PluginActivator::LoadDataFromDisk(const QStringList &arguments, bool global
 
                 ++layer;
                 node->SetIntProperty("layer", layer);
-                node->SetBoolProperty("fixedLayer", true);
 
                 if (!parentsSpecified)
                 {

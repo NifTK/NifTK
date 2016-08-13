@@ -50,15 +50,18 @@ void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
 
   Poco::Util::Option openOption("open", "o",
       "\n"
-      "Opens a file with the given name.\n");
+      "Opens a file with the given name. Several files can be opened by repeating this\n"
+      "option. The data nodes will appear in the Data Manager in the same order as listed\n"
+      "on the command line, i.e. the first data will be in the uppermost layer.\n");
   openOption.argument("<name>:<file>").repeatable(true);
   openOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &BaseApplication::HandleRepeatableOption));
   options.addOption(openOption);
 
   Poco::Util::Option derivesFromOption("derives-from", "d",
       "\n"
-      "Makes the data nodes derive from the given source data.\n"
-      "The data nodes will appear as children of the source data in the Data Manager.\n");
+      "Makes the data nodes derive from the given source data. The data nodes will appear\n"
+      "as children of the source data in the Data Manager, in the same order as listed\n"
+      "on the command line, i.e. first data will be in the uppermost layer.\n");
   derivesFromOption.argument("<source data name>:<data name>[,<data name>]...").repeatable(true);
   derivesFromOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &BaseApplication::HandleRepeatableOption));
   options.addOption(derivesFromOption);
