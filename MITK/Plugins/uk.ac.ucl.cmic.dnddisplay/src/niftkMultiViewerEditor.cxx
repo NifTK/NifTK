@@ -33,6 +33,7 @@
 
 #include <niftkMultiViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
+#include "internal/niftkPluginActivator.h"
 #include "niftkDnDDisplayPreferencePage.h"
 
 
@@ -187,6 +188,142 @@ bool MultiViewerEditorPrivate::AreCommandLineArgumentsProcessed()
 //-----------------------------------------------------------------------------
 void MultiViewerEditorPrivate::ProcessCommandLineArguments()
 {
+  ctkPluginContext* pluginContext = PluginActivator::GetInstance()->GetContext();
+
+  QString viewerNumberArg = pluginContext->getProperty("applicationArgs.viewer-number").toString();
+
+  if (!viewerNumberArg.isNull())
+  {
+    int rows = 0;
+    int columns = 0;
+
+    QStringList viewersArgParts = viewerNumberArg.split("x");
+    if (viewersArgParts.size() == 2)
+    {
+      rows = viewersArgParts[0].toInt();
+      columns = viewersArgParts[1].toInt();
+    }
+    else if (viewersArgParts.size() == 1)
+    {
+      rows = 1;
+      columns = viewerNumberArg.toInt();
+    }
+
+    if (rows == 0 || columns == 0)
+    {
+      MITK_ERROR << "Invalid viewer number: " << viewerNumberArg.toStdString();
+    }
+    else
+    {
+      m_MultiViewer->SetViewerNumber(rows, columns);
+    }
+  }
+
+  for (QString dndArg: pluginContext->getProperty("applicationArgs.drag-and-drop").toStringList())
+  {
+    QStringList dndArgParts = dndArg.split(":");
+
+    if (dndArgParts.size() == 0)
+    {
+      MITK_ERROR << "No data node specified for the --drag-and-drop option. Skipping option.";
+      continue;
+    }
+
+    QString nodeNamesPart = dndArgParts[0];
+    QStringList nodeNames = nodeNamesPart.split(",");
+
+    if (nodeNames.empty())
+    {
+      MITK_ERROR << "Invalid arguments: No data specified to drag.";
+      continue;
+    }
+
+    mitk::DataStorage::Pointer dataStorage = q_ptr->GetDataStorage();
+
+    std::vector<mitk::DataNode*> nodes;
+
+    for (const QString& nodeName: nodeNames)
+    {
+      mitk::DataNode* node = dataStorage->GetNamedNode(nodeName.toStdString());
+      if (node)
+      {
+        nodes.push_back(node);
+      }
+      else
+      {
+        MITK_ERROR << "Invalid argument: unknown data to drag: " << nodeName.toStdString();
+        continue;
+      }
+    }
+
+    QSet<int> viewerIndices;
+
+    if (dndArgParts.size() == 1)
+    {
+      viewerIndices.insert(0);
+    }
+    else if (dndArgParts.size() == 2)
+    {
+      for (const QString& viewerIndexPart: dndArgParts[1].split(","))
+      {
+        QStringList rowAndColumn = viewerIndexPart.split("x");
+
+        int row = 0;
+        int column = 0;
+
+        if (rowAndColumn.size() == 1)
+        {
+          bool ok;
+          column = rowAndColumn[0].toInt(&ok) - 1;
+          if (!ok || column < 0 || column >= m_MultiViewer->GetNumberOfColumns())
+          {
+            MITK_ERROR << "Invalid viewer index: " << viewerIndexPart.toStdString();
+            continue;
+          }
+        }
+        else if (rowAndColumn.size() == 2)
+        {
+          bool ok1, ok2;
+          row = rowAndColumn[0].toInt(&ok1) - 1;
+          column = rowAndColumn[1].toInt(&ok2) - 1;
+          if (!ok1 || !ok2
+              || row < 0 || row >= m_MultiViewer->GetNumberOfRows()
+              || column < 0 || column >= m_MultiViewer->GetNumberOfColumns())
+          {
+            MITK_ERROR << "Invalid viewer index." << viewerIndexPart.toStdString();
+            continue;
+          }
+        }
+        else
+        {
+          MITK_ERROR << "Invalid viewer index." << viewerIndexPart.toStdString();
+          continue;
+        }
+
+        viewerIndices.insert(row * m_MultiViewer->GetNumberOfColumns() + column);
+      }
+    }
+    else if (dndArgParts.size() > 2)
+    {
+      MITK_ERROR << "Invalid syntax for the --drag-and-drop option.";
+      continue;
+    }
+
+    for (int viewerIndex: viewerIndices)
+    {
+      int row = viewerIndex / m_MultiViewer->GetNumberOfColumns();
+      int column = viewerIndex % m_MultiViewer->GetNumberOfColumns();
+
+      SingleViewerWidget* viewer = m_MultiViewer->GetViewer(row, column);
+      assert(viewer);
+
+      QmitkRenderWindow* selectedWindow = viewer->GetSelectedRenderWindow();
+      assert(selectedWindow);
+
+      this->DropNodes(selectedWindow, nodes);
+    }
+  }
+
   QStringList args = berry::Platform::GetApplicationArgs();
 
   for (QStringList::const_iterator it = args.begin(); it != args.end(); ++it)

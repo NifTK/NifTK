@@ -20,6 +20,15 @@
 #include <mitkBaseApplication.h>
 
 
+namespace Poco
+{
+namespace Util
+{
+class HelpFormatter;
+}
+}
+
+
 namespace niftk
 {
 
@@ -95,6 +104,10 @@ protected:
   /// Capitalises the initial letter, adds a period to the end, and puts an extra
   /// new line before and after the description.
   void ReformatOptionDescriptions(Poco::Util::OptionSet& options);
+
+  virtual Poco::Util::HelpFormatter* CreateHelpFormatter();
+
+private:
 
   /// \brief Callback function for the '--help' option.
   /// The callback function of the base class is replaced to this implementation,

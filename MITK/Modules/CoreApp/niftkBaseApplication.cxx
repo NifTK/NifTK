@@ -141,12 +141,12 @@ void BaseApplication::ReformatOptionDescriptions(Poco::Util::OptionSet& options)
 }
 
 
-void BaseApplication::PrintHelp(const std::string& /*name*/, const std::string& /*value*/)
+Poco::Util::HelpFormatter* BaseApplication::CreateHelpFormatter()
 {
-  Poco::Util::HelpFormatter help(this->options());
-  help.setCommand(this->commandName());
-  help.setUsage("[<option>]... [<image file>]... [<project file>]...");
-  help.setHeader(
+  Poco::Util::HelpFormatter* helpFormatter = new Poco::Util::HelpFormatter(this->options());
+  helpFormatter->setCommand(this->commandName());
+  helpFormatter->setUsage("[<option>]... [<image file>]... [<project file>]...");
+  helpFormatter->setHeader(
       "\n"
       "The descriptions of the available options are given below. Any other argument\n"
       "is regarded as a data file that is to be opened. Images files will appear with\n"
@@ -189,11 +189,22 @@ void BaseApplication::PrintHelp(const std::string& /*name*/, const std::string& 
       "";
   examples.replace("${commandName}", QString::fromStdString(this->commandName()));
 
-  help.setFooter(examples.toStdString());
-  help.setUnixStyle(true);
-  help.setIndent(4);
-  help.setWidth(160);
-  help.format(std::cout);
+  helpFormatter->setFooter(examples.toStdString());
+  helpFormatter->setUnixStyle(true);
+  helpFormatter->setIndent(4);
+  helpFormatter->setWidth(160);
+
+  return helpFormatter;
+}
+
+
+void BaseApplication::PrintHelp(const std::string& /*name*/, const std::string& /*value*/)
+{
+  Poco::Util::HelpFormatter* helpFormatter = this->CreateHelpFormatter();
+
+  helpFormatter->format(std::cout);
+
+  delete helpFormatter;
 
   std::exit(EXIT_OK);
 }
