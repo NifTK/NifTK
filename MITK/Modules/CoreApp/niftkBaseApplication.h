@@ -52,7 +52,13 @@ namespace niftk
 ///
 ///         makes the data nodes derive from (the 'children' of) the source data
 ///
-///   --perspective <perspective>        sets the initial perspective
+///   --property, -p <data name>:<property>=<value>[,<property>=<value>]...
+///
+///         sets properties of a data node to the give values
+///
+///   --perspective, -P <perspective>
+///
+///         sets the initial perspective
 ///
 class NIFTKCOREAPP_EXPORT BaseApplication : public mitk::BaseApplication
 {
@@ -60,6 +66,7 @@ public:
 
   static const QString PROP_OPEN;
   static const QString PROP_DERIVES_FROM;
+  static const QString PROP_PROPERTY;
   static const QString PROP_PERSPECTIVE;
 
   BaseApplication(int argc, char **argv);

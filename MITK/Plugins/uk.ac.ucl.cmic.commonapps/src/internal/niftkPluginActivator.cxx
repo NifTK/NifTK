@@ -825,6 +825,39 @@ void PluginActivator::ProcessOptions()
     dataStorage->Add(derivedNode, sourceNodes);
   }
 
+  for (QString propertyArg: this->GetContext()->getProperty("applicationArgs.property").toStringList())
+  {
+    int colonIndex = propertyArg.indexOf(':');
+    QString dataNodeName = propertyArg.mid(0, colonIndex);
+    QString propertyNamesAndValuesPart = propertyArg.mid(colonIndex + 1);
+
+    mitk::DataNode::Pointer dataNode = dataStorage->GetNamedNode(dataNodeName.toStdString());
+
+    if (dataNode.IsNull())
+    {
+      MITK_ERROR << "Data not found with the name: " << dataNodeName.toStdString() << std::endl
+                 << "Make sure you specified a data file with this name or used the '--open' option "
+                    "to open a data file with this name." << std::endl
+                 << "Skipping setting properties for this data: " << dataNodeName.toStdString() << ".";
+      continue;
+    }
+
+    for (QString propertyNameAndValuePart: propertyNamesAndValuesPart.split(","))
+    {
+      QStringList propertyNameAndValue = propertyNameAndValuePart.split("=");
+      if (propertyNameAndValue.size() != 2)
+      {
+        MITK_ERROR << "Invalid argument: You must specify property values in the form <property name>=<value>.";
+        continue;
+      }
+
+      const QString& propertyName = propertyNameAndValue[0];
+      const QString& propertyValue = propertyNameAndValue[1];
+
+      QVariant value = this->ParsePropertyValue(propertyValue);
+      this->SetNodeProperty(dataNode, propertyName, value);
+    }
+  }
 }
 
 
@@ -1133,44 +1166,47 @@ QVariant PluginActivator::ParsePropertyValue(const QString& propertyValue)
   else
   {
     bool ok = false;
-    int intValue = propertyValue.toInt(&ok);
+    double doubleValue = propertyValue.toDouble(&ok);
     if (ok)
     {
-      propertyTypedValue.setValue(intValue);
-    }
-    else
-    {
-      double doubleValue = propertyValue.toDouble(&ok);
-      if (ok)
+      if (propertyValue.contains('.') || propertyValue.contains('e') || propertyValue.contains('E'))
       {
         propertyTypedValue.setValue(doubleValue);
       }
       else
       {
-        int hyphenIndex = propertyValue.indexOf('-', 1);
-        if (hyphenIndex != -1)
+        int intValue = propertyValue.toInt(&ok);
+        if (ok)
         {
-          /// It might be a level window min-max range.
-          QString minPart = propertyValue.mid(0, hyphenIndex);
-          QString maxPart = propertyValue.mid(hyphenIndex + 1, propertyValue.length() - hyphenIndex);
-          double minValue = minPart.toDouble(&ok);
-          if (ok)
-          {
-            double maxValue = maxPart.toDouble(&ok);
-            if (ok)
-            {
-              QLevelWindow range;
-              range.SetWindowBounds(minValue, maxValue);
-              propertyTypedValue.setValue(range);
-            }
-          }
-        }
-
-        if (!ok)
-        {
-          propertyTypedValue.setValue(propertyValue);
+          propertyTypedValue.setValue(intValue);
         }
       }
+    }
+    else
+    {
+      int hyphenIndex = propertyValue.indexOf('-', 1);
+      if (hyphenIndex != -1)
+      {
+        /// It might be a level window min-max range.
+        QString minPart = propertyValue.mid(0, hyphenIndex);
+        QString maxPart = propertyValue.mid(hyphenIndex + 1, propertyValue.length() - hyphenIndex);
+        double minValue = minPart.toDouble(&ok);
+        if (ok)
+        {
+          double maxValue = maxPart.toDouble(&ok);
+          if (ok)
+          {
+            QLevelWindow range;
+            range.SetWindowBounds(minValue, maxValue);
+            propertyTypedValue.setValue(range);
+          }
+        }
+      }
+    }
+
+    if (!ok)
+    {
+      propertyTypedValue.setValue(propertyValue);
     }
   }
 

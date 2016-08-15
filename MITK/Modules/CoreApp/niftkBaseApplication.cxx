@@ -29,6 +29,7 @@ namespace niftk
 
 const QString BaseApplication::PROP_OPEN = "applicationArgs.open";
 const QString BaseApplication::PROP_DERIVES_FROM = "applicationArgs.derives-from";
+const QString BaseApplication::PROP_PROPERTY = "applicationArgs.property";
 const QString BaseApplication::PROP_PERSPECTIVE = "applicationArgs.perspective";
 
 
@@ -66,7 +67,32 @@ void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
   derivesFromOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &BaseApplication::HandleRepeatableOption));
   options.addOption(derivesFromOption);
 
-  Poco::Util::Option perspectiveOption("perspective", "",
+  Poco::Util::Option propertyOption("property", "p",
+      "\n"
+      "Sets properties of a data node to the given values.\n"
+      "The type of the property is determined as follows:\n"
+      "    - 'true', 'on' and 'yes' will become a bool property with 'true' value.\n"
+      "    - 'false', 'off' and 'no' will become a bool property with 'false' value.\n"
+      "    - Decimal numbers without fractional and exponential part will become an\n"
+      "      int property.\n"
+      "    - Other decimal numbers (with fractional and/or exponential part) will\n"
+      "      become a float property. If you want an integer number to be interpreted\n"
+      "      as a float property, specify it with a '.0' fractional part.\n"
+      "    - Number ranges in the form '<number>-<number>' will become a level-window\n"
+      "      property with the given lower and upper bound.\n"
+      "    - Anything else will become a string property. String values can be enclosed\n"
+      "      within single or double quotes. This is necessary if the value contains\n"
+      "      white space or when it is in any of the previous form (boolean, decimal\n"
+      "      number or number range) but you want it to be interpreted as a string.\n"
+      "      The leading and trailing quote will be removed from the final string value.\n"
+      "      You will likely need to protect the quotes and spaces by backslash because\n"
+      "      of your shell.\n"
+      "");
+  propertyOption.argument("<data name>:<property>=<value>[,<property>=<value>]...").repeatable(true);
+  propertyOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &BaseApplication::HandleRepeatableOption));
+  options.addOption(propertyOption);
+
+  Poco::Util::Option perspectiveOption("perspective", "P",
       "\n"
       "The initial window perspective.\n");
   perspectiveOption.argument("<perspective>").binding(PROP_PERSPECTIVE.toStdString());
@@ -136,20 +162,34 @@ void BaseApplication::PrintHelp(const std::string& /*name*/, const std::string& 
       "\n"
       "Options:");
 
-  std::string commandName = this->commandName();
 
-  std::stringstream footerStream;
-  footerStream
-      << "Examples:\n"
-         "\n"
-         "    " << commandName << " --open T1:/path/to/image.nii.gz --open mask:/path/to/hippo.nii.gz --derives-from T1:mask\n"
-         "\n"
-         "This command will open 'image.nii.gz' as 'T1' and 'hippo.nii.gz' as 'mask',\n"
-         "and it makes 'mask' a derived image ('child') of T1.\n"
-         "The next command is equivalent, with shorter notations:"
-         "    " << commandName << " -o T1:/path/to/image.nii.gz -o mask:/path/to/mask.nii.gz -d T1:mask\n";
+  QString examples =
+      "Examples:\n"
+      "\n"
+      "The following command will open 'image.nii.gz' as 'T1', 'left-hippocampus.nii.gz' as\n"
+      "'l-hippo' and 'right-hippocampus.nii.gz' as 'r-hippo', and it makes the segmentations\n"
+      "derived images ('children') of T1:\n"
+      "\n"
+      "    ${commandName} --open T1:/path/to/image.nii.gz --open l-hippo:/path/to/left-hippocampus.nii.gz \\\n"
+      "        --open r-hippo:/path/to/right-hippocampus.nii.gz \\\n"
+      "        --derives-from T1:l-hippo,r-hippo\n"
+      "\n"
+      "The next command is equivalent, with shorter notations:\n"
+      "\n"
+      "    ${commandName} -o T1:/path/to/image.nii.gz -o l-hippo:/path/to/left-hippocampus.nii.gz\\\n"
+      "         -o r-hippo:/path/to/right-hippocampus.nii.gz -d T1:l-hippo,r-hippo\n"
+      "\n"
+      "The following command opens a reference image and a mask, sets the intensity range of\n"
+      "the reference image to 100-3500, disables the feature of outlining the binary images\n"
+      "so that the mask is rendered as a solid layer rather than a contour, and sets the opacity\n"
+      "to make it transparent.\n"
+      "\n"
+      "    ${commandName} -o T1:image.nii.gz -o mask:segmentation.nii.gz -d T1:mask \\\n"
+      "        -p T1:levelwindow=100-3500 -p mask:outline\\ binary=false,opacity=0.3\n"
+      "";
+  examples.replace("${commandName}", QString::fromStdString(this->commandName()));
 
-  help.setFooter(footerStream.str());
+  help.setFooter(examples.toStdString());
   help.setUnixStyle(true);
   help.setIndent(4);
   help.setWidth(160);
