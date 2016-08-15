@@ -21,7 +21,7 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 OpenCVVideoDataSourceFactory::OpenCVVideoDataSourceFactory()
-: IGIDataSourceFactoryServiceI("USB Frame Grabber",
+: IGIDataSourceFactoryServiceI("OpenCV Video",
                                false, // don't need to configure at startup
                                true   // can configure lag while running
                                )
