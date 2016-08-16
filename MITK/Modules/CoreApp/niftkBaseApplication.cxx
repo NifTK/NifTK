@@ -37,10 +37,6 @@ BaseApplication::BaseApplication(int argc, char **argv)
   : mitk::BaseApplication(argc, argv)
 {
   this->setOrganizationName("CMIC");
-
-  /// We disable processing command line arguments by MITK so that we can introduce
-  /// new options. See the uk.ac.ucl.cmic.commonapps plugin activator for details.
-  this->setProperty("applicationArgs.processByMITK", false);
 }
 
 void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
